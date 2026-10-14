@@ -26,7 +26,7 @@ dependencies = [
     "capstone>=5.0.9,<6",
     # What the Scry servers share (the reply contract, the probe, the live bench), pinned by
     # its release tag so a build reads exactly the core it was tested against.
-    "scry-core @ git+https://github.com/scry-mcp/scry-core@v0.1.0",
+    "scry-core @ git+https://github.com/scry-mcp/scry-core@v0.2.0",
 ]
 
 [dependency-groups]
@@ -51,6 +51,8 @@ allow-direct-references = true
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+# THE BAR IS SCRY-CORE'S: [tool.ruff] and [tool.mypy] below are its `pyproject.toml`'s own, and
+# [tool.pytest.ini_options] is its base plus this repository's live tier and anchors.
 [tool.ruff]
 line-length = 100
 target-version = "py311"
@@ -79,6 +81,9 @@ markers = ["live: drives a REAL emulator; deselected by default, opt in with `-m
 # plugin, and a bare run exits 0 having measured nothing. A partial run goes red on the floor by
 # construction, because the floor is the whole repository's: pass `--no-cov` for one of those.
 addopts = "-m 'not live' --cov"
+# The shape guard (scry-core's `reply_shapes` plugin) wraps these: the contract every envelope goes
+# through, and the server whose `_summary` every reply crosses.
+reply_shapes_anchors = ["scry_core.reply_contract", "dosbox_x_server"]
 
 [tool.coverage.run]
 branch = true

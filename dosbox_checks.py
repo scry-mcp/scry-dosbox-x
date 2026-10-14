@@ -562,6 +562,12 @@ def check(tool: str, /, **given: Any) -> None:
         judge(**given)
 
 
+def probe_check(tool: str, given: dict[str, Any], effective: dict[str, Any]) -> None:
+    """`check` in the shape `scry_core.probe.Check` takes: the server's `tool()` wrapper judges
+    the arguments the caller GAVE, so the probe does the same and `effective` is not used."""
+    check(tool, **given)
+
+
 def preflight(op: str, args: dict[str, Any], *, serial: bool) -> None:
     """Run the operation's value checks on a step's arguments, raising the refusal the
     synchronous tool would have raised. Called by the sequence over every step before the

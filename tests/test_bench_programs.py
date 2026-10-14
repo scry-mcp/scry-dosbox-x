@@ -104,7 +104,7 @@ def test_a_program_off_its_pins_is_a_reason(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
 ) -> None:
     bp = _programs(monkeypatch, tmp_path)
-    assert tmp_path / "bench/bench.json" == bp.BENCH_MANIFEST, "the manifest is the bench's own"
+    assert tmp_path / "bench/bench.json" == bp.BENCH.manifest, "the manifest is the bench's own"
     (tmp_path / "bench/bench.json").write_text(
         '[{"path": "real/EXES/REAL.EXE", "sha256": "", "source_repo": "s", '
         '"source_path": "EXES/REAL.EXE", "source_commit": ""}]')
@@ -194,9 +194,9 @@ def test_a_file_the_program_opens_that_the_manifest_does_not_pin_is_a_reason(
     every = ("real/EXES/REAL.EXE", "real/EXES/REAL.MAP", "real/SCRIPTS/dosbox-run.conf")
     _pinned(tmp_path, tuple(f for f in every if f != left_out))
     assert bp.missing(bp.DOS_REAL16) == (
-        f"program dos-real16 opens {left_out}, which {bp.BENCH_MANIFEST} does not pin: pin it "
+        f"program dos-real16 opens {left_out}, which {bp.BENCH.manifest} does not pin: pin it "
         "there, or name a file it pins")
-    bp._reasons.clear()
+    monkeypatch.setattr(bp, "BENCH", bp.bench.Bench(bp.BENCH.root))
     _pinned(tmp_path, every)
     assert bp.missing(bp.DOS_REAL16) == ""
 
@@ -271,3 +271,23 @@ def test_a_clock_conf_without_one_fixed_cycles_line_is_refused(
     _dos_real16_alt(bp, tmp_path, gold)
     with pytest.raises(RuntimeError, match="one fixed `cycles` line"):
         bp.session_conf(bp.DOS_REAL16_ALT, tmp_path / "scratch")
+
+
+def test_the_bench_root_is_the_variable_or_the_users_data_and_the_manifest_lives_in_it(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    """This repository resolves its own bench and hands the directory to `scry_core.live_bench`,
+    which knows no server: `DOSBOX_X_LIVE_BENCH` (a `~` expanded, a relative path made absolute)
+    or `~/.local/share/scry-bench/dosbox-x`."""
+    bp = _programs(monkeypatch, tmp_path)
+    assert bp.BENCH.root == tmp_path / "bench"
+    assert tmp_path / "bench" / "bench.json" == bp.BENCH.manifest
+    monkeypatch.delenv("DOSBOX_X_LIVE_BENCH")
+    assert bp._root() == Path.home() / ".local/share/scry-bench/dosbox-x"
+    monkeypatch.setenv("DOSBOX_X_LIVE_BENCH", "~/b")
+    assert bp._root() == Path.home() / "b"
+    monkeypatch.setenv("DOSBOX_X_LIVE_BENCH", "relative")
+    assert bp._root() == Path.cwd() / "relative"
+    assert bp.missing(bp.DOS_REAL16).endswith(
+        f"`python -m scry_core.live_bench check --bench {tmp_path / 'bench'}`"), (
+        "the remedy names --bench")

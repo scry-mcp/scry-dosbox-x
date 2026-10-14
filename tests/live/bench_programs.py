@@ -1,8 +1,8 @@
 """The DOS programs the live tier runs from the bench: their copies, pinned by
 `scry_core.live_bench` in the bench's own `bench.json`, one directory per program under the
-bench's root (`DOSBOX_X_LIVE_BENCH`), each in its project's own layout; and `missing`, which says
-why one cannot run. Shared by the matrix and the pytest live files; importing it reads the
-bench's `identity.json` once and runs nothing.
+bench's root, which `_root` resolves, each in its project's own layout; and `missing`, which says
+why one cannot run. Shared by the matrix and the pytest live files; importing it reads the bench's
+`identity.json` once and runs nothing.
 
 A PROGRAM IS NAMED HERE BY ITS LABEL, never by its own name: what the case covers (`dos-real16`,
 real mode with a Borland map) is what this tree says, and whatever names the program lives in
@@ -14,6 +14,7 @@ directory, so the bench pins what the project wrote and no file naming a path of
 from __future__ import annotations
 
 import json
+import os
 import re
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -21,11 +22,18 @@ from pathlib import Path
 
 from scry_core import live_bench as bench
 
-BENCH = bench.root("dosbox-x")
-#: The manifest of every file the live tier reads from the bench.
-BENCH_MANIFEST = BENCH / "bench.json"
+
+def _root() -> Path:
+    held = os.environ.get("DOSBOX_X_LIVE_BENCH", "")
+    if held:
+        return Path(held).expanduser().absolute()
+    return Path.home() / ".local" / "share" / "scry-bench" / "dosbox-x"
+
+
+#: The bench, with the manifest of every file the live tier reads from it.
+BENCH = bench.Bench(_root())
 #: What each label stands for on this machine: `{label: {key: value}}`, every value a string.
-IDENTITY = BENCH / "identity.json"
+IDENTITY = BENCH.root / "identity.json"
 #: The labels, and the keys each one's identity carries: `dir`, its directory under the bench;
 #: `exe` and `map`, its build inside it; `launch`, the line its run conf starts it with;
 #: `process`, the name DOS gives its memory block; `e9_line`, the line it logs on the E9 port at
@@ -36,7 +44,6 @@ PATH_KEYS = ("exe", "map")
 #: The serial stub's directory, mounted and run by every derived conf: the guest half of the
 #: serial route.
 STUB_DIR = Path(__file__).resolve().parents[2] / "guest"
-_reasons: dict[str, str] = {}
 
 
 def _known(label: str, key: str = "dir") -> None:
@@ -110,7 +117,7 @@ class Program:
 
     @property
     def root(self) -> Path:
-        return BENCH / (value(self.label, "dir") or self.label)
+        return BENCH.root / (value(self.label, "dir") or self.label)
 
     @property
     def exe(self) -> str:
@@ -154,33 +161,20 @@ def _unpinned(program: Program) -> str:
     """The first file `program` opens that the manifest does not pin, as a reason, or empty: a
     file opened unpinned would be read unchecked."""
     try:
-        pinned = {e.path for e in bench.load(BENCH_MANIFEST)}
+        pinned = BENCH.pinned
     except bench.Invalid as e:
         return f"bench {e}"
     off = next((p for p in opened(program) if p not in pinned), None)
     return "" if off is None else (
-        f"program {program.label} opens {off}, which {BENCH_MANIFEST} does not pin: pin it "
+        f"program {program.label} opens {off}, which {BENCH.manifest} does not pin: pin it "
         "there, or name a file it pins")
-
-
-def manifest_absent() -> str:
-    """Why there is no manifest to judge the copies by, or empty: it is not tracked, so `fill`
-    cannot make it, and the remedy is to put the bench's own back."""
-    if BENCH_MANIFEST.is_file():
-        return ""
-    return (f"bench manifest ABSENT: {BENCH_MANIFEST} pins every copy and is kept only in the "
-            "bench; restore it there, then `python -m scry_core.live_bench check`")
 
 
 def missing(program: Program) -> str:
     """Why `program` cannot run here, or empty: its identity, then its copies (naming the first
     absent or wrong one), then whether every file it opens is one the manifest pins."""
-    if program.label not in _reasons:
-        _reasons[program.label] = (
-            identity_missing(program.label) or manifest_absent()
-            or bench.missing("dosbox-x", BENCH_MANIFEST, f"{value(program.label, 'dir')}/")
-            or _unpinned(program))
-    return _reasons[program.label]
+    return (identity_missing(program.label)
+            or BENCH.missing(f"{value(program.label, 'dir')}/") or _unpinned(program))
 
 
 def session_conf(program: Program, into: Path) -> Path:

@@ -1543,9 +1543,8 @@ map, the data it opens and its project's own run conf, under `DOSBOX_X_LIVE_BENC
 name and E9 line each program's label stands for (its keys: `IDENTITY_KEYS` in
 `tests/live/bench_programs.py`). Neither is tracked, because both name the
 programs; the tracked live code names only the labels. `uv run python -m scry_core.live_bench
-fill --server dosbox-x --manifest <bench>/bench.json --from <source_repo>=<checkout>` copies them
-from their checkouts and `check --server dosbox-x --manifest <bench>/bench.json` says whether
-they still match; the session conf is derived from the pinned run conf at run time, and a case
+fill --bench <bench> --from <source_repo>=<checkout>` copies them from their checkouts and `check
+--bench <bench>` says whether they still match; the session conf is derived from the pinned run conf at run time, and a case
 whose identity is incomplete or whose copies are absent or wrong is skipped, or its cells
 BLOCKED, naming what is wrong.
 
