@@ -21,7 +21,7 @@ commit path this would therefore be INVALID in every clone but one, and a gate t
 almost always invalid is a gate people learn to ignore.  It is declared in
 `tests/gates-manual.txt` with that reason.
 
-WHY THE PATHS ARE RELATIVE AND THE ROOT ARRIVES AT RUN TIME.  A tracked manifest naming
+WHY THE PATHS ARE RELATIVE AND THE ROOT ARRIVES AT RUN TIME.  A manifest naming
 `/Users/<somebody>/Code/...` carries a username and a folder layout that mean nothing to
 anyone else and that go stale the first time a directory moves.  The manifest names a
 project by its REPOSITORY NAME and a path inside it; `--root` (or `MAPSWEEP_ROOT`) says

@@ -45,7 +45,7 @@ SURVIVOR_CELL = "E the survivor reads and takes one write"
 E_CELLS = cells(
     ("E the program carries its E9 channel", "known: an `info` build writes `[INF]` lines"),
     ("E symbols_load refuses a map with no publics",
-     "tests/real-maps.json: refused, NO `Publics by ...` section"),
+     "mapsweep's manifest of real maps: refused, NO `Publics by ...` section"),
     ("E run_to with the game's timer as control runs for a bound and rests on it",
      "REFERENCE.md, Advancing the machine: at the bound the machine rests on the control"),
     ("E the stub announces the serial route", "REFERENCE.md, Input and the screen"),

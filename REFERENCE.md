@@ -1574,12 +1574,13 @@ holds, and goes red when the two part company in either direction: a count that 
 an unchanged file means the reader has begun reading something that is not a symbol.
 
 ```sh
-uv run python mapsweep.py --manifest tests/real-maps.json --root /where/those/maps/live
+uv run python mapsweep.py --manifest <bench>/real-maps.json --root /where/those/maps/live
 ```
 
 It is **manual and declared as such** in `tests/gates-manual.txt`, with the reason: the
-material is not in this repository and is not versioned here, so on the commit path it would
-be INVALID in every clone but the author's, and a gate that is almost always invalid is one
+material is not in this repository and is not versioned here, nor is the manifest, which names
+it and so lives in the bench beside `bench.json`; on the commit path the sweep would be INVALID
+in every clone but the author's, and a gate that is almost always invalid is one
 people learn to ignore. It covers the Borland, Open Watcom and `nm` formats on real material;
 the GNU `ld` map is deliberately absent, because the only one is the fixture this package
 generated, which lives INSIDE the repository, and the sweep is for material that does not.
