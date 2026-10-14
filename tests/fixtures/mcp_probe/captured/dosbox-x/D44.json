@@ -1,0 +1,36 @@
+{
+ "task": {
+  "id": "D44",
+  "prompt": "Put the host mouse pointer at the middle of the emulator's front window.",
+  "tool": "send_mouse",
+  "args": {
+   "place": "center"
+  },
+  "allow": [
+   "focus"
+  ],
+  "grammar": [
+   "center"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D44: {\"tool\": \"send_mouse\", \"args\": {\"place\": \"center\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D44: {\"tool\": \"send_mouse\", \"args\": {\"place\": \"center\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D44: {\"tool\": \"send_mouse\", \"args\": {\"place\": \"center\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

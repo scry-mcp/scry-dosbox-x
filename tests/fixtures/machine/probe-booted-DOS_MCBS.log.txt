@@ -1,0 +1,12 @@
+MCB Seg  Size (bytes)  PSP Seg (notes)  Filename
+Conventional memory:
+   0450         10992     0008 (DOS)    
+   0700          2464     0701          COMMAND
+   079B           720     0701          COMMAND
+   07C9          1168     0814          PROBE
+   0813        622256     0814          PROBE
+   9FFF  END OF CHAIN
+Upper memory:
+   9FFF        180224     0008 (DOS)    SC      
+   CC00         81904     0000 (free)   
+   E000  END OF CHAIN

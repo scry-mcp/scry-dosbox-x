@@ -1,0 +1,3 @@
+VGA DAC info: bits=6 pel_mask=ffh pel_index[RGB]=00h
+state=01h write_index=02h read_index=01h first_changed=256
+hidac_counter=0 reg02=00h

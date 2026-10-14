@@ -1,0 +1,106 @@
+{
+  "_comment": [
+    "The user's OWN linker maps, and what each one holds. `mapsweep --manifest this",
+    "--root <where those repositories live>` reads them where they live and goes RED",
+    "when reality and this file part company, in EITHER direction.",
+    "",
+    "THE PATHS ARE RELATIVE AND NAME A REPOSITORY, never an absolute location: a",
+    "tracked file carrying a username and a home-directory layout is a file that means",
+    "nothing on the next machine and goes stale the first time a directory moves.",
+    "",
+    "THIS MATERIAL IS NOT IN THIS REPOSITORY and is not versioned here -- it is the",
+    "author's own, and one of the projects is unpublished. That is exactly why the",
+    "sweep is declared MANUAL in tests/gates-manual.txt: on the commit path it would be",
+    "INVALID in every clone but one.",
+    "",
+    "THE NUMBERS WERE READ BY THE SHIPPED READER and then LOOKED AT. The",
+    "sweep can only tell you a count MOVED; whether a count is CORRECT is a judgement",
+    "made once, by a person, exactly as blessing any golden is."
+  ],
+
+  "SPEEDF": {
+    "path": "speedf-msdos/EXES/SPEEDF.MAP",
+    "expect": {"symbols": 307, "overlay_idle": 80, "unreadable": 0}
+  },
+  "CBLOCK": {
+    "path": "dosbox-iomega/PROGRAMS/BLKCOMP/CBLOCK.MAP",
+    "expect": {"symbols": 142, "overlay_idle": 0, "unreadable": 0}
+  },
+  "ROUTER": {
+    "path": "dosbox-iomega/BP/EXES/ROUTER.MAP",
+    "expect": {"symbols": 117, "overlay_idle": 0, "unreadable": 0}
+  },
+  "3D-INTRO": {
+    "path": "dosbox-iomega/BP/PROG/3D-INTRO.MAP",
+    "expect": {"symbols": 127, "overlay_idle": 0, "unreadable": 0}
+  },
+  "FRACT_CO": {
+    "path": "dosbox-iomega/BP/PROG/FRACT_CO.MAP",
+    "expect": {"symbols": 66, "overlay_idle": 0, "unreadable": 0}
+  },
+
+  "_lineup_note": [
+    "LineUp is EXPECTED to be refused, and that is a fact about how that project LINKS",
+    "rather than about this reader: its map is 42 lines of segment table with no",
+    "`Publics by ...` section at all, so there is no symbol in it to place. It has its",
+    "own card in that project's board. The expectation is the REASON and not merely",
+    "the fact of refusing -- every refusal is a refusal, so matching on 'it failed'",
+    "would accept a file that started failing for something else entirely."
+  ],
+  "LINEUP": {
+    "path": "lineup-msdos/EXES/LINEUP.MAP",
+    "expect": {"refused": "NO `Publics by ...` section"}
+  },
+
+  "_rechip_note": [
+    "ReChip's is not a linker map at all: `make symbols` runs DJGPP's `nm` over the DEV",
+    "binary. It is in the sweep because it is one of the three projects this work exists",
+    "to cover, and because it is the only entry whose count moves whenever that program",
+    "does -- so a disagreement here is expected after real work there and is re-blessed",
+    "deliberately, which is the opposite of the finished programs above, whose maps",
+    "describe work that is not moving."
+  ],
+  "RECHIPD": {
+    "path": "rechip/build/RECHIPD.SYM",
+    "expect": {"symbols": 9652, "overlay_idle": 0, "unreadable": 0}
+  },
+
+  "_format_coverage_note": [
+    "THE FOUR ROWS BELOW EXIST BECAUSE THE SEVEN ABOVE ARE SIX BORLAND MAPS AND ONE",
+    "`nm` LISTING. This file's own reason for existing is that a format is not",
+    "demonstrated by one artefact, and it was demonstrating one format six times",
+    "while the two newest readers -- Open Watcom, and the SECTIONED Borland path --",
+    "had no real material here at all.",
+    "",
+    "HELLO32 is the map that refuted the shipped reader in two measured ways (the",
+    "mark is `Idle` and not `idle`; the `Start` column is `section:offset` with every",
+    "offset zero). Its row pins what the corrected reader makes of it, so a relapse",
+    "on either point moves a number here.",
+    "",
+    "THE TWO WATCOM MAPS ARE ONE SOURCE THROUGH LINKERS 32 YEARS APART, which is",
+    "what makes the pair worth more than either alone: they must both read, and",
+    "their counts differ (69 against 65) because the 1994 library is not the 2026",
+    "one. A reader that started ignoring the older one would still be green on the",
+    "newer.",
+    "",
+    "THE GNU `ld` MAP IS NOT HERE AND THAT IS CORRECT: the only one is the fixture",
+    "this package generated, which lives INSIDE the repository, and the sweep exists",
+    "for material that does not. It is read by tests/test_dosbox_x_fixtures.py, where",
+    "its 912 non-symbol lines are pinned -- the number that keeps the majority-loss",
+    "refusal from ever being extended to the flat readers, where it would refuse every",
+    "GNU map ever written. A row for it here was written and then REFUSED by this",
+    "file's own relative-path guard, which is the guard working."
+  ],
+  "HELLO32": {
+    "path": "dosbox-win98/HELLO32.MAP",
+    "expect": {"symbols": 362, "overlay_idle": 146, "unreadable": 0}
+  },
+  "OW20": {
+    "path": "dosbox-iomega/OWTEST/OW20-HELLO.MAP",
+    "expect": {"symbols": 69, "overlay_idle": 0, "unreadable": 0}
+  },
+  "WC10": {
+    "path": "dosbox-iomega/OWTEST/WC10-HEL.MAP",
+    "expect": {"symbols": 65, "overlay_idle": 0, "unreadable": 0}
+  }
+}

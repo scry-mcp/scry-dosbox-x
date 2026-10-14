@@ -1,0 +1,3 @@
+VGA Graphics controller info: index=00h setreset=00h
+enablesetreset=00h color-comp=00h data-rotate=00h rdmapsel=00h
+mode=00h misc=00h color-dont-care=00h bitmask=00h

@@ -1,0 +1,30 @@
+BIOS memory blocks:
+Region            Status What
+000f0000-000f8daf FREE        
+000f8db0-000f8db5 ALLOC  FIX  IBM ROM BASIC entry point
+000f8db6-000fac78 FREE        
+000fac79-000fac7e ALLOC  FIX  IBM ROM BASIC entry point
+000fac7f-000fc9af FREE        
+000fc9b0-000fc9ef ALLOC  DYN  BIOS default reset location (CODE)
+000fc9f0-000fc9fd ALLOC  DYN  DOSBox vm86 hack
+000fc9fe-000fc9ff FREE        
+000fca00-000fdfff ALLOC  DYN  DOSBox callback area
+000fe000-000fe00d FREE        
+000fe00e-000fe02f ALLOC  FIX  BIOS ID string
+000fe030-000fe05a FREE        
+000fe05b-000fe05d ALLOC  FIX  BIOS default reset location (JMP)
+000fe05e-000fe060 FREE        
+000fe061-000fe074 ALLOC  FIX  BIOS version string
+000fe075-000fe87f FREE        
+000fe880-000fe888 ALLOC  FIX  BIOS default IRQ8-15 location
+000fe889-000fe986 FREE        
+000fe987-000fe9a6 ALLOC  FIX  BIOS default IRQ1 location
+000fe9a7-000ffa6d FREE        
+000ffa6e-000ffe6d ALLOC  FIX  BIOS 8x8 font (first 128 chars)
+000ffe6e-000ffea4 FREE        
+000ffea5-000ffeb7 ALLOC  FIX  BIOS default IRQ0 location
+000ffeb8-000fff52 FREE        
+000fff53-000fff53 ALLOC  FIX  BIOS default handler location
+000fff54-000fff54 ALLOC  FIX  BIOS default INT5 location
+000fff55-000fff5b ALLOC  FIX  BIOS default IRQ2-7 location
+000fff5c-000fffef FREE        

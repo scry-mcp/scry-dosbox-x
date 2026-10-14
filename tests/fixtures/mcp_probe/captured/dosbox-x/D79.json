@@ -1,0 +1,32 @@
+{
+ "task": {
+  "id": "D79",
+  "prompt": "The guest is stopped. Trace 250000 instructions with their registers into /tmp/big.trace, allowing the call up to 300 seconds of wall time.",
+  "tool": "trace",
+  "args": {
+   "instructions": 250000,
+   "dest": "/tmp/big.trace",
+   "seconds": 300
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D79: {\"tool\": \"trace\", \"args\": {\"instructions\": 250000, \"shape\": \"normal\", \"dest\": \"/tmp/big.trace\", \"seconds\": 300}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D79: {\"tool\": \"trace\", \"args\": {\"instructions\": 250000, \"dest\": \"/tmp/big.trace\", \"seconds\": 300}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D79: {\"tool\": \"trace\", \"args\": {\"instructions\": 250000, \"shape\": \"normal\", \"dest\": \"/tmp/big.trace\", \"seconds\": 300}}"
+   ],
+   "right": true
+  }
+ ]
+}

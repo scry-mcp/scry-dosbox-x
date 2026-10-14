@@ -1,0 +1,35 @@
+{
+ "task": {
+  "id": "D77",
+  "prompt": "The guest is stopped. Trace the next 2000 instructions, recording nothing but the address of each one, into /tmp/addrs.trace.",
+  "tool": "trace",
+  "args": {
+   "instructions": 2000,
+   "shape": "cs_ip",
+   "dest": "/tmp/addrs.trace"
+  },
+  "grammar": [
+   "cs_ip"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D77: {\"tool\": \"trace\", \"args\": {\"instructions\": 2000, \"shape\": \"cs_ip\", \"dest\": \"/tmp/addrs.trace\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

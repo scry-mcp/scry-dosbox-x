@@ -1,0 +1,7 @@
+VGA draw info: resizing=0 width=720 height=400 blocks=80
+address=f00h panning=0 bytes-skip=0 lin-mask=3ffff pln-mask=ffff
+addr-add=a0h line-length=2880 addrline-total=16 addrline=8
+line-total=400 vblank-skip=0 lines-done=392 split-line=1024
+byte-pan-shft=2 render-stop=0 render-max=1 scrn-ratio=1.333
+blinking=1 blink=0 char9dot=1 has-split=0 vret-trig=0
+bpp=32 curs-addr=8c0h curs-s=13 curs-e=14 curs-c=14 curs-d=0 curs-en=1

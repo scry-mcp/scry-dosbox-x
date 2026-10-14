@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D86",
+  "prompt": "Which notes have I left on places in this program so far?",
+  "tool": "comment_list",
+  "args": {}
+ },
+ "runs": [
+  {
+   "lines": [
+    "D86: {\"tool\": \"comment_list\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D86: {\"tool\": \"comment_list\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D86: {\"tool\": \"comment_list\", \"args\": {}}"
+   ],
+   "right": true
+  }
+ ]
+}

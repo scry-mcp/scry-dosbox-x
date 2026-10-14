@@ -1,0 +1,20 @@
+MCB Seg  Size (bytes)  PSP Seg (notes)  Filename
+Conventional memory:
+   0450         10992     0008 (DOS)    
+   0700          2464     0701          COMMAND
+   079B           720     0701          COMMAND
+   07C9          1168     0814          INJECT
+   0813           624     0814          INJECT
+   083B          1168     0886          RECHIPD
+   0885         16640     0886          RECHIPD
+   0C96        165520     0886          RECHIPD
+   3500         61440     0000 (free)   RECHIPD
+   4401        376784     0000 (free)   
+   9FFF  END OF CHAIN
+Upper memory:
+   9FFF        180224     0008 (DOS)    SC      
+   CC00            96     0886          RECHIPD
+   CC07          1056     0000 (free)   $P$G
+   CC4A         44304     CC4B          CWSDPMI
+   D71C         36400     0000 (free)   
+   E000  END OF CHAIN

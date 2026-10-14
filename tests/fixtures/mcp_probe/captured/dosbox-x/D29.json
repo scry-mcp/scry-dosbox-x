@@ -1,0 +1,42 @@
+{
+ "task": {
+  "id": "D29",
+  "prompt": "Load the Borland map /opt/dosfury/FURY.MAP of the real-mode program loaded at segment 0x0A00, so at base 0xA000, keeping only the names in which the regex sfx is found, and keeping the section and compiler-label symbols too.",
+  "tool": "symbols_load",
+  "args": {
+   "source": "/opt/dosfury/FURY.MAP",
+   "base": {
+    "any_of": [
+     "A000",
+     "0xA000",
+     "a000",
+     "0xa000",
+     "0A000",
+     "0x0A000"
+    ]
+   },
+   "pattern": "sfx",
+   "keep_noise": true
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D29: {\"tool\": \"symbols_load\", \"args\": {\"source\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D29: {\"tool\": \"symbols_load\", \"args\": {\"source\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D29: {\"tool\": \"symbols_load\", \"args\": {\"source\": \"/opt/dosfury/FURY.MAP\", \"base\": \"A000\", \"pattern\": \"sfx\", \"keep_noise\": true}}"
+   ],
+   "right": true
+  }
+ ]
+}

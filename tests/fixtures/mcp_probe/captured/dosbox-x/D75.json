@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D75",
+  "prompt": "The guest is stopped. Let it run until the word READY shows up anywhere in the 320x200 graphics picture, as pixels.",
+  "expect": "CANNOT",
+  "about": "screen_wait"
+ },
+ "runs": [
+  {
+   "lines": [
+    "D75: CANNOT no pixel pattern matching tool for graphics modes"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D75: CANNOT screen_wait matches text only, not graphics pixels"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D75: CANNOT screen_wait matches text on text-mode screens only, not graphics pixels"
+   ],
+   "right": true
+  }
+ ]
+}

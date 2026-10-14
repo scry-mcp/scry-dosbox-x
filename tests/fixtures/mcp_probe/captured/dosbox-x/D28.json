@@ -1,0 +1,31 @@
+{
+ "task": {
+  "id": "D28",
+  "prompt": "Break when the guest calls the BIOS video function 0Eh (teletype output) through INT 10h.",
+  "tool": "breakpoint_interrupt",
+  "args": {
+   "number": 16,
+   "ah": 14
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 16, \"ah\": 14}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 16, \"ah\": 14}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D28: {\"tool\": \"breakpoint_interrupt\", \"args\": {\"number\": 16, \"ah\": 14}}"
+   ],
+   "right": true
+  }
+ ]
+}

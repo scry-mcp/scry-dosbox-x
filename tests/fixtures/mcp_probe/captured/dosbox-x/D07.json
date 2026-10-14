@@ -1,0 +1,35 @@
+{
+ "task": {
+  "id": "D07",
+  "prompt": "When did DOSBox-X's own log (not the guest's) print a line matching LEVEL [0-9]+ START? Wait up to 45 seconds for it.",
+  "tool": "log_wait",
+  "args": {
+   "pattern": "LEVEL [0-9]+ START",
+   "channel": "emulator",
+   "seconds": 45
+  },
+  "grammar": [
+   "emulator"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+   ],
+   "right": true
+  }
+ ]
+}

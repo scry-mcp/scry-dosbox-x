@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D63",
+  "prompt": "The guest is running and must not be stopped: list the DOS memory control blocks it holds at this moment.",
+  "expect": "CANNOT",
+  "about": "machine_map"
+ },
+ "runs": [
+  {
+   "lines": [
+    "D63: CANNOT - machine_map requires machine stopped; guest is running"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D63: CANNOT machine_map requires machine stopped"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D63: CANNOT machine_map requires the machine stopped"
+   ],
+   "right": true
+  }
+ ]
+}

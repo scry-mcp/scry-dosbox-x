@@ -1,0 +1,30 @@
+{
+ "task": {
+  "id": "D42",
+  "prompt": "Clear the watch declared as [_player_ptr]+0x1C.",
+  "tool": "watch_clear",
+  "args": {
+   "ref": "[_player_ptr]+0x1C"
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D42: {\"tool\": \"watch_clear\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D42: {\"tool\": \"watch_clear\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D42: {\"tool\": \"watch_clear\", \"args\": {\"ref\": \"[_player_ptr]+0x1C\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

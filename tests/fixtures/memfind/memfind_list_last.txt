@@ -1,0 +1,4 @@
+DEBUG: [MEMFIND] Address: 0000:0004FE (lin 000004FE) Current Value: 00
+DEBUG: [MEMFIND] Address: 0000:0004FF (lin 000004FF) Current Value: 00
+DEBUG: [MEMFIND] Matched values during current instance: 000100
+I-> _

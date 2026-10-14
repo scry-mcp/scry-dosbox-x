@@ -1,0 +1,36 @@
+{
+ "task": {
+  "id": "D06",
+  "prompt": "Show the newest 30 lines of the guest's own E9 instrumentation that match ^SCORE, with a count of the matching lines per first word.",
+  "tool": "log",
+  "args": {
+   "pattern": "^SCORE",
+   "channel": "guest",
+   "limit": 30,
+   "labels": true
+  },
+  "grammar": [
+   "guest"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D06: {\"tool\": \"log\", \"args\": {\"pattern\": \"^SCORE\", \"channel\": \"guest\", \"limit\": 30, \"labels\": true}}"
+   ],
+   "right": true
+  }
+ ]
+}

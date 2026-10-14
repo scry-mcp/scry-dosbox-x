@@ -1,0 +1,5 @@
+VGA Attribute Controller info: attrindexmode=0
+mode_control=00h horz-pel-pan=00h overscan-color=00h
+color-plane-en=00h color-select=00h index=00h
+disabled-by-index=0 disabled-by-idx1-bit5=0 index-written=0
+palette={ 00 00 00 00-00 00 00 00-00 00 00 00-00 00 00 00 }

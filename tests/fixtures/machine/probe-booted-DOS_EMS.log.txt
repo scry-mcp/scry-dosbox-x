@@ -1,0 +1,9 @@
+EMS memory (type Mixed) handles:
+Handle Address  Size (bytes)    Name
+     0 00110000 00060000 
+EMS page frame 0x000e0000-0x000effff
+Handle Page(p/l) Address
+--        0/     000e0000-000e3fff
+--        1/     000e4000-000e7fff
+--        2/     000e8000-000ebfff
+--        3/     000ec000-000effff

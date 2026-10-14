@@ -1,0 +1,43 @@
+{
+ "task": {
+  "id": "D18",
+  "prompt": "Write the bytes 90 90 at 1A2B:0100.",
+  "tool": "write",
+  "args": {
+   "ref": {
+    "any_of": [
+     "1A2B:0100",
+     "1a2b:0100",
+     "1A2B:100",
+     "1a2b:100"
+    ]
+   },
+   "data_hex": {
+    "any_of": [
+     "9090",
+     "90 90"
+    ]
+   }
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D18: {\"tool\": \"write\", \"args\": {\"ref\": \"1A2B:0100\", \"data_hex\": \"9090\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

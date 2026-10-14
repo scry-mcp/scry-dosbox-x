@@ -1,0 +1,30 @@
+{
+ "task": {
+  "id": "D37",
+  "prompt": "Clear the breakpoint declared as BPINT 10 AH=0E.",
+  "tool": "breakpoint_clear",
+  "args": {
+   "ref": "BPINT 10 AH=0E"
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D37: {\"tool\": \"breakpoint_clear\", \"args\": {\"ref\": \"BPINT 10 AH=0E\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D37: {\"tool\": \"breakpoint_clear\", \"args\": {\"ref\": \"BPINT 10 AH=0E\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D37: {\"tool\": \"breakpoint_clear\", \"args\": {\"ref\": \"BPINT 10 AH=0E\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

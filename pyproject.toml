@@ -1,0 +1,96 @@
+[project]
+name = "scry-dosbox-x"
+version = "0.1.0"
+description = "One live DOSBox-X session held open, and its MCP server"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = ["dosbox-x", "dos", "emulator", "debugger", "mcp"]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Debuggers",
+    "Topic :: System :: Emulators",
+]
+dependencies = [
+    # UPPER-BOUNDED on purpose: `MCPServer` is a 2.x API. Without the bound a future
+    # 3.x installs cleanly and then fails at import, which is a broken install that
+    # looks like a broken server.
+    "mcp>=2.1.0,<3",
+    # `disassemble`'s decoder: the debugger has no disassembly command, so x86 is decoded on
+    # the host. Capstone because it ships one prebuilt wheel per platform this package runs on
+    # (no native build) and hands over instruction groups and operand details, so a branch and
+    # its target come from the decoder's fields, never from its text. Bounded like `mcp`: a
+    # major version is a different API until somebody has measured it.
+    "capstone>=5.0.9,<6",
+    # What the Scry servers share (the reply contract, the probe, the live bench), pinned by
+    # its release tag so a build reads exactly the core it was tested against.
+    "scry-core @ git+https://github.com/scry-mcp/scry-core@v0.1.0",
+]
+
+[dependency-groups]
+dev = ["mypy>=1.11", "pytest>=8.0", "pytest-cov>=5.0", "ruff>=0.6"]
+
+[project.scripts]
+scry-dosbox-x = "dosbox_x_server:main"
+
+[tool.hatch.build.targets.wheel]
+# A GLOB, not a list of names: a hand-kept list is a whitelist that goes short the day a module
+# is added, and the wheel then dies at import on somebody else's machine while every test here
+# stays green. Anchored to the package root, so the tests do not ship; the two development
+# scripts are excluded by name, which fails in the safe direction (a new file ships).
+include = ["/*.py", "keypost.swift", "guest/inject.asm", "guest/INJECT.COM"]
+exclude = ["/bench.py", "/mapsweep.py", "/conftest.py"]
+
+[tool.hatch.metadata]
+# `scry-core` is pinned by its git tag, a direct reference hatchling refuses unless told.
+allow-direct-references = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "SIM", "W"]
+# N818 wants every exception renamed to `...Error`. The concept is called INVALID across every
+# tool here (exit code 3, and the word the programs print), so the class that raises it is
+# `Invalid`: one spelling per concept outranks a generic naming convention.
+ignore = ["N818"]
+
+[tool.mypy]
+# NO PATH LIST: a hand-kept list of directories is always one short of the tree.
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+warn_return_any = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# A TIER THAT LAUNCHES EMULATORS MAY NOT BE REACHED BY ACCIDENT: a stranger running `pytest` from
+# a clone would otherwise launch an emulator per case. Opting in is explicit (`pytest -m live`),
+# and a command-line `-m` beats this one.
+markers = ["live: drives a REAL emulator; deselected by default, opt in with `-m live`"]
+# `--cov` IS HERE SO EVERY `pytest` JUDGES THE FLOOR: without the flag pytest-cov registers no
+# plugin, and a bare run exits 0 having measured nothing. A partial run goes red on the floor by
+# construction, because the floor is the whole repository's: pass `--no-cov` for one of those.
+addopts = "-m 'not live' --cov"
+
+[tool.coverage.run]
+branch = true
+parallel = true
+concurrency = ["multiprocessing", "thread"]
+source = ["."]
+omit = [".venv/*"]
+
+[tool.coverage.report]
+# THE FLOOR IS THE VENDOR'S: coverage.py's `fail_under`, judged by pytest-cov at the end of every
+# `--cov` run. The number is the total the run that fixed it measured, raised by hand from a run.
+# It counts lines EXECUTED, not asserted: what proves a test bites is having seen it red.
+fail_under = 93.68
+precision = 2
+show_missing = true

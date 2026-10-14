@@ -1,0 +1,25 @@
+What the debugger's code pane, its stop surveys and its memory held on live DOSBox-X sessions
+of the package's own guests, captured with `dosbox-x --version` 2026.08.31 (the Homebrew build,
+heavy debug), headless. A script drove this server in process: each `C seg:off` and each survey
+is the `Session.command` delta after the ANSI strip, each `.bin` the `memdump` tool's file, each
+`*-registers.json` the register mapping of the `registers` tool's reply. Nothing here is
+authored: the tests read these files, and where a test needs a shape no capture holds it
+changes one field of one of them and says which.
+
+code-*      the code guest (`code.conf`, `break_on_int3=True`), loaded at segment 0814:
+  code-0814-0100.bin          the program's bytes from 0814:0100
+  code-C-NN-OOOOOOOO.txt      `C 0814:OOOO`, the pane walked from 0100 to past the strings, each
+                              `C` at the last line the previous pane showed
+  code-C-elsewhere.txt        `C 0000:0000` at the second stop
+  code-survey-after-C-elsewhere.txt   the next survey: the pane still at 0000:0000
+  code-stop1-*                the first `int 3` (no frame): its survey, registers, and the stack
+                              from SS:SP
+  code-stop2-*                the `int 3` in `inner`: survey, registers, the stack from SS:SP and
+                              the frame from SS:BP
+middle-*    a second session of the code guest, `code.sym` loaded at 8140 and a breakpoint on
+            `middle`: middle-bp-* is that stop (its first byte, `enter`), middle-inner-* the
+            `int 3` in `inner` after it
+probe-*     the probe guest (`probe.conf`) after `run_for(frames=1)`, `probe.sym` loaded at 8140:
+  probe-0814-0100.bin          its bytes from 0814:0100
+  probe-C-start.txt, -emit.txt `C 0814:010B` and `C 0814:0137`
+  probe-survey-after-run_for.txt   the survey of that stop, at 0814:0106

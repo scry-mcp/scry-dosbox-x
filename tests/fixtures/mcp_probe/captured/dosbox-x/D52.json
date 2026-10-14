@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D52",
+  "prompt": "Step the guest BACKWARDS by 3 instructions, undoing what they did.",
+  "expect": "CANNOT",
+  "about": "step"
+ },
+ "runs": [
+  {
+   "lines": [
+    "D52: CANNOT step instruction backward (step tool only advances guest)"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D52: CANNOT step does not support backward instruction execution"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D52: CANNOT step tool has no backward mode"
+   ],
+   "right": true
+  }
+ ]
+}

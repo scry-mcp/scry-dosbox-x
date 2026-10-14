@@ -1,0 +1,65 @@
+{
+ "task": {
+  "id": "D51",
+  "prompt": "Press enter on the running guest, then check that a new E9 line matching ^MENU arrives within 12 seconds, and show me the last 30 E9 lines that match MENU|KEY. A console step inside waits at most 18 seconds for a stop.",
+  "tool": "drive",
+  "args": {
+   "any_of": [
+    {
+     "act": [
+      {
+       "op": "send_keys",
+       "keys": [
+        "enter"
+       ]
+      }
+     ],
+     "expect": "^MENU",
+     "seconds": 12,
+     "pattern": "MENU|KEY",
+     "limit": 30,
+     "wait": 18
+    },
+    {
+     "act": [
+      {
+       "op": "send_keys",
+       "keys": [
+        "enter"
+       ],
+       "expect": "^MENU",
+       "seconds": 12
+      }
+     ],
+     "pattern": "MENU|KEY",
+     "limit": 30,
+     "wait": 18
+    }
+   ]
+  },
+  "grammar": [
+   "send_keys",
+   "enter"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"wait\": 18}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"wait\": 18}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"], \"expect\": \"^MENU\"}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"wait\": 18}}"
+   ],
+   "right": false
+  }
+ ]
+}

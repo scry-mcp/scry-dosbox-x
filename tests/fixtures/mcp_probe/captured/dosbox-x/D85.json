@@ -1,0 +1,31 @@
+{
+ "task": {
+  "id": "D85",
+  "prompt": "The guest is stopped and its symbol table is loaded. Note on the routine draw_sprite that it clears the back buffer first.",
+  "tool": "comment_add",
+  "args": {
+   "ref": "draw_sprite",
+   "text": "clears the back buffer first"
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D85: {\"tool\": \"comment_add\", \"args\": {\"ref\": \"draw_sprite\", \"text\": \"clears the back buffer first\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D85: {\"tool\": \"comment_add\", \"args\": {\"ref\": \"draw_sprite\", \"text\": \"clears the back buffer first\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D85: {\"tool\": \"comment_add\", \"args\": {\"ref\": \"draw_sprite\", \"text\": \"clears the back buffer first\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

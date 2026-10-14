@@ -1,0 +1,3 @@
+DEBUG: Starting log
+DEBUG: cpu log LOGCPU.TXT stopped
+ISA Plug & Play BIOS enabled

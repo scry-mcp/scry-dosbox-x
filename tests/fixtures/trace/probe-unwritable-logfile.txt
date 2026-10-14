@@ -1,0 +1,3 @@
+DEBUG: Starting log
+DEBUG: Logfile couldn't be created.
+*** Debugger command not recognized

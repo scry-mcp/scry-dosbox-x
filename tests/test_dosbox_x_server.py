@@ -1,0 +1,7089 @@
+"""What the MCP surface refuses, what it always says, and that it exists at all.
+
+These are CONTRACT tests, not emulator tests: none of them launches DOSBox-X. What
+they hold is the part that has to be true before one is involved.
+
+THE STUB REPRODUCES THE CONTRACT, NOT THE CODE.  An earlier version's stub returned a
+path it had not written, which is exactly what the real `memdump` wrongly did -- so
+the test AGREED WITH THE BUG and the suite could not tell "the guard fired" from
+"this tool never works". A double is built from what the thing PROMISES.
+"""
+
+from __future__ import annotations
+
+import ast
+import dataclasses
+import inspect
+import itertools
+import json
+import re
+import shutil
+import subprocess
+import tempfile
+import textwrap
+import threading
+import time
+from collections.abc import Callable
+from pathlib import Path
+from types import SimpleNamespace
+from typing import Any, cast
+from unittest import mock
+
+import pytest
+
+import dosbox_arming as arming
+import dosbox_checks as checks
+import dosbox_declarations as dec
+import dosbox_inputs as inputs
+import dosbox_placement as placement
+import dosbox_running as running
+import dosbox_sequence as sequence
+import dosbox_session as ds
+import dosbox_state as dstate
+import dosbox_symbols as dsym
+import dosbox_x_server as server
+
+# A `SELINFO CS` reply CAPTURED from a live DJGPP program under CWSDPMI (DOSBox-X
+# this build). It is pasted whole rather than reduced, because the property
+# it exists to exercise is the NOISE: the debugger overlays a descriptor line into the
+# REGISTER pane (`ss: b:00008240`) as well as printing the one that was asked for, so a
+# reader that searches the screen for the first `b:` returns the STACK selector's base
+# for a question about the code selector -- a wrong answer of exactly the right shape.
+SELINFO_SCREEN = (
+    "ooooRegister Overviewoooooooooooooooooooooooooooooooooooooooooo\r\n"
+    "EAX=0000000A  ESI=00400000  DS=00AF   ES=00AF   FS=008F   SS=008F Pr32\r\n"
+    "ECX=00000001  EBP=0000091C  ss: b:00008240 type:12 parbg    PAGEPSE IOPL3\r\n"
+    "EDX=001798A6  ESP=00000760l:0000FFFF dpl : 3 10010    cc=237868    RUN\r\n"
+    "ooooOutputoooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+    "SelectorInfo CS:\r\n"
+    "CS: b:00400000 type:1B parbg\nl:0023FFFF dpl : 3 10011\r\n"
+    "SelectorInfo DS:\r\n"
+    "DS: b:00400000 type:13 parbg\nl:0023FFFF dpl : 3 10011\r\n"
+    "I-> _")
+
+# The same three records DOSBox-X itself wrote, reused here so a contract case and the
+# converter's golden cannot drift apart about what the format is.
+MEASURED_BASE = 0x00400000
+
+
+def _log_wait_as_guest(self: Any, pattern: str, seconds: float, channel: str, mark: int = 0,
+                       progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+    """A double's `log_wait`: the guest channel through its own `e9_wait`, once for the
+    three doubles that only ever answer the guest."""
+    got: dict[str, object] = self.e9_wait(pattern, seconds, mark=mark, progress=progress)
+    return got
+
+
+class FakeSession:
+    """The narrowest faithful stand-in for a session: it does what the contract says.
+
+    Deliberately NOT a stand-in for the emulator. Nothing here tests what DOSBox-X
+    does; it exists so the server's own promises can be exercised without one.
+    """
+
+    def __init__(self, *, alive: bool = True, screen: str = "some screen",
+                 mode: str = "Real") -> None:
+        self.altered = False
+        # THE MODE THE PANE NAMES, declared: the data-view screens here are real-mode, and a
+        # case that measures a base off the protected-mode `SELINFO` capture says `Pr32`, or
+        # the double would be two machines at once.
+        self.mode = mode
+        self._alive = alive
+        self._screen = screen
+        self.closed = 0
+        # The launch a tool reads relative paths from (`cwd`) and the E9 channel from
+        # (`logfile`); the real one is a `Launch`, and these are the two fields reached.
+        self.launch = SimpleNamespace(cwd=Path("/"), logfile=None, watched=False)
+        self.e9_calls: list[tuple[str, int]] = []
+        self.log_calls: list[tuple[str, int, str]] = []
+        self.loaded: list[tuple[str, int]] = []
+        # WHAT THE ADDRESS-TAKING TOOLS WERE ACTUALLY HANDED. Without this the double
+        # could not tell a tool that forwards its caller's address from one that
+        # forwards zero, and MEASURED, that break came back GREEN:
+        # `memdump(0, 0, length, ...)` passed the whole contract tier.
+        self.memdump_calls: list[tuple[int, int, int]] = []
+
+    reap_failed = ""      # read by the `close` tool and by `start`'s failure arm
+    survey_text = ""      # the last stop survey's screen: no code pane on these fixed screens
+    ended_how = "none"    # how `close` ended it, read by the `close` tool beside the code
+
+    def alive(self) -> bool:
+        return self._alive
+
+    def wait_ready(self, timeout: float = 30.0, progress: Any = None) -> float:
+        """Found MISSING the moment the drift check stopped looking only for the
+        literal spelling `_live().name`. `start` calls it, and no contract case had
+        ever reached it against this double because every `start` case tests a refusal
+        that fires before a process exists."""
+        return 0.0
+
+    def send_input(self, mode: str, args: list[str]) -> dict[str, str]:
+        return {"trusted": "true", "activated": "true", "posted": "1", "restored": "true"}
+
+    def break_in(self, seconds: float = 5.0,
+                 progress: ds.Progress = ds.no_progress) -> float:
+        raise ds.Invalid("no_channel", "this session is headless: there is no window")
+
+    def click_menu(self, menu: str, item: str,
+                   progress: ds.Progress = ds.no_progress) -> float:
+        raise ds.Invalid("no_channel", "this session is headless: there is no window")
+
+    def state_save(self, name: str, seconds: float = 20.0,
+                   progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+        raise ds.Invalid("no_channel", "this session is headless: there is no window")
+
+    def state_load(self, name: str, seconds: float = 20.0,
+                   progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+        raise ds.Invalid("no_channel", "this session is headless: there is no window")
+
+    def state_list(self) -> dict[str, object]:
+        return {"state_dir": "/x/save", "states": [], "working_slot": None}
+
+    def snapshot(self, dest: Path | None = None, seconds: float = 10.0,
+                 progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+        raise ds.Invalid("no_channel", "this session is headless: there is no window")
+
+    def state(self) -> dict[str, object]:
+        # The REAL shape. A two-key stub let the whole `altered` guarantee be
+        # deleted from the real `state()` with the suite still green. The COUNT is
+        # deliberately not written here: a number in a comment goes false at the
+        # next field, and the test derives it from the real `state()` instead.
+        return {"pid": 4242, "alive": self._alive, "altered": self.altered,
+                "conf": "/x/g.conf", "conf_digest": "abc123", "conf_changed_on_disk": False,
+                "watched": False, "seconds_bound": 60, "seconds_elapsed": 1.0,
+                "terminal_bytes_dropped": 0, "drain_alive": True,
+                "drain_ended": "", "captures": "off",
+                "state_dir": "the emulator's own save/ under its working directory"}
+
+    def command(self, text: str, **_: object) -> str:
+        return self._screen
+
+    def retrace(self, began: float, deadline: float,
+                progress: ds.Progress = ds.no_progress) -> tuple[bool, float]:
+        return False, 0.0     # lands at once; run_for's own cases replay captured retraces
+
+    def log_cpu(self, word: str, count: int, began: float, deadline: float,
+                progress: ds.Progress = ds.no_progress) -> tuple[bool, float]:
+        return False, 0.0     # stops at once; trace's own cases replay captured logs
+
+    def registers(self) -> dict[str, str]:
+        return {"EAX": "00001234"}
+
+    def at_debugger(self) -> bool:
+        return True
+
+    def where(self) -> dict[str, str]:
+        """The real `read_memory` needs the CPU mode now (decision 38, to take the
+        offset ceiling from it); this stands in with a real-mode reading, which is what
+        these fixed screens are. A case needing protected mode passes `mode`."""
+        return {"cs": "F000", "eip": "0000FFF0", "mode": self.mode}
+
+    def where_and_registers(self) -> tuple[dict[str, str], dict[str, str]]:
+        return self.where(), self.registers()
+
+    def stop_survey(self) -> tuple[dict[str, str], dict[str, str], list[dict[str, str]]]:
+        return self.where(), self.registers(), self.breakpoints()
+
+    def read_memory(self, seg: int, off: int, mode: str | None = None) -> list[str]:
+        """THE REAL METHOD, run against this double's screen.
+
+        It is delegated rather than reimplemented because the thing worth exercising
+        here is the parsing and the "is the address I asked for actually in this"
+        check, and a double that reimplemented them would be agreeing with itself. It
+        works because the real method reaches only for `command`, `where` and `alive`,
+        all of which this stands in for.
+        """
+        return ds.Session.read_memory(self, seg, off, mode)  # type: ignore[arg-type]
+
+    def read_bytes(self, seg: int, off: int, n: int, mode: str | None = None) -> bytes:
+        """THE REAL METHOD too, over this double's screen: it reaches only `read_memory`."""
+        return ds.Session.read_bytes(self, seg, off, n, mode)  # type: ignore[arg-type]
+
+    # The name-layer tools reach these on a session; the double carries them so the
+    # drift check sees the surface. Cases that exercise the tools for real install a
+    # richer stand-in; here they only need to EXIST and answer plausibly.
+    def breakpoints(self) -> list[dict[str, str]]:
+        return []
+
+    def listing(self, command: str) -> str:
+        return ""
+
+    def intvec(self) -> str:
+        return ""
+
+    def arm_code_breakpoint(self, seg: int, off: int) -> dict[str, object]:
+        return {"target": f"{seg:04X}:{off:04X}", "entry": f"BP {seg:04X}:{off:04X}",
+                "breakpoints": []}
+
+    def clear_code_breakpoint(self, seg: int, off: int) -> dict[str, object]:
+        return {"entry": f"BP {seg:04X}:{off:04X}", "removed": True}
+
+    def clear_interrupt_breakpoint(self, number: int,
+                                   ah: int | None = None) -> dict[str, object]:
+        return {"entry": ds.interrupt_row(number, ah), "removed": True}
+
+    masks = False       # a register the debugger masks: the pane answers something else
+    rom = False         # memory the write cannot change: the readback says so
+
+    def write_memory(self, seg: int, off: int, data: bytes,
+                     mode: str | None = None) -> dict[str, object]:
+        self.altered = True
+        self.writes = getattr(self, "writes", []) + [(seg, off, data)]
+        back = bytes(len(data)) if self.rom else data
+        return {"written": len(data), "readback": back.hex(), "verified": back == data}
+
+    def set_register(self, name: str, value: int) -> dict[str, object]:
+        self.altered = True
+        got = "00000000" if self.masks else f"{value:08X}"
+        return {"registers": {"EAX": got}, "readback": got, "verified": got == f"{value:08X}"}
+
+    def breakpoint_interrupt(self, number: int, ah: int | None = None) -> str:
+        return f"DEBUG: Set interrupt breakpoint at INT {number:02X}"
+
+    def resume(self) -> dict[str, object]:
+        # THE REAL FIELD SET, and a CONSTANT rather than a reading, which is honest
+        # here in a way a computed answer would not be: this double stands in for the
+        # session so the SERVER's cases have something to call. What `halted` is really
+        # read off is exercised next door, against captured deltas.
+        return {"screen": "", "halted": False, "stopped_at": None}
+
+    # THE DEBUGGING TRIO, as CONTRACTS rather than as behaviour. What they really do is
+    # driven against a debugger double in `test_dosbox_x_debug.py`, which is where the
+    # stepping loop and the read-the-list-back discipline are held to account. Here
+    # they exist so the SERVER's cases -- the envelope, the lock, the refusals -- have
+    # something to call, and each returns the field set its tool promises: a stub that
+    # returned a bare `{}` would let a tool drop `running` or `arrived` with nothing to
+    # say so.
+    def step(self, mode: str = "over", count: int = 1) -> dict[str, object]:
+        return {"mode": mode, "asked": count, "completed": count, "running": False,
+                "moved": True, "stalled": 0,
+                "before": {"cs": "F000", "eip": "0000FFF0", "mode": "Real"},
+                "after": {"cs": "F000", "eip": "0000FFF5", "mode": "Real"}}
+
+    def run_to(self, seg: int, off: int, seconds: float,
+               control: tuple[int, int] | None = None,
+               progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+        # `waited_s` IS A MEASUREMENT AND NOT THE BOUND. Echoing `seconds` straight back
+        # would answer the caller with the caller's own argument under the name of an
+        # elapsed time -- which is the shape of the
+        # `length` defect `read_memory` was built to remove, reproduced in the stand-in
+        # for a tool that got it right. A constant is honest here where the argument is
+        # not: it is visibly not a measurement.
+        return {"target": f"{seg:04X}:{off:04X}", "arrived": True, "running": False,
+                "stopped_at": {"cs": f"{seg:04X}", "eip": f"{off:08X}",
+                               "mode": "Real"},
+                "waited_s": 0.25, "bound_expired": False,
+                "breakpoint_removed": True, "note": "", "control": None}
+
+    def watch(self, segment: int, offset: int) -> dict[str, object]:
+        return {"command": "BPM 0040:006C", "mode": "Real",
+                "armed": "BPMEM 0040:006C", "breakpoints": [],
+                "fires_on": "a CHANGE to the value"}
+
+    def e9_mark(self) -> int:
+        return 0
+
+    def send_scancodes(self, data: bytes) -> int:
+        return len(data)
+
+    def e9_since_mark(self, mark: int) -> list[str]:
+        return ["Bochs port E9h: [+ 0.000] BOOT  . start"]
+
+    def e9_new_since(self, offset: int) -> tuple[list[str], int]:
+        return ["Bochs port E9h: [+ 0.000] BOOT  . start"][offset:], 1
+
+    def e9_wait(self, pattern: str, seconds: float, mark: int = 0,
+                progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+        return self.log_wait(pattern, seconds, "guest", mark=mark, progress=progress)
+
+    def log_wait(self, pattern: str, seconds: float, channel: str, mark: int = 0,
+                 progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+        # `arrived_during` AND `lines_examined`, WHICH THE REAL METHOD RETURNS. This used
+        # to drop both and invent `lines_scanned`, a name that has never existed --
+        # under a comment claiming each of these "returns the field set its tool
+        # promises".
+        ds.check_channel(channel)
+        return {"line": "Bochs port E9h: [+ 0.000] BOOT  . start", "already": True,
+                "lines_total": 1, "lines_before": 0, "arrived_during": 0, "waited_s": 0.0,
+                "lines_examined": 1, "since_mark": 0}
+
+    def e9(self, pattern: str, limit: int) -> tuple[list[str], int]:
+        self.e9_calls.append((pattern, limit))
+        return ["one line"], 500          # MANY matched, ONE returned
+
+    def e9_lines(self) -> list[str]:
+        self.e9_calls.append((".", 0))          # 0: no limit, the whole channel
+        return ["one line"]
+
+    def log(self, pattern: str, limit: int, channel: str) -> tuple[list[str], int]:
+        ds.check_channel(channel)
+        self.log_calls.append((pattern, limit, channel))
+        return ["one line"], 500
+
+    def memdump(self, seg: int, off: int, length: int, dest: Path) -> Path:
+        self.memdump_calls.append((seg, off, length))
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(b"\x00" * length)   # the contract: bytes actually land
+        return dest
+
+    def captures(self) -> list[dict[str, object]]:
+        # Two files, largest LAST: the text-mode boot and then the real one. That
+        # ordering is the contract `capture_frame`'s default rests on.
+        return [{"path": "/caps/run_000.avi", "bytes": 107194, "riff_avi": True,
+                 "frames": 40, "complete": True},
+                {"path": "/caps/run_001.avi", "bytes": 19296742, "riff_avi": True,
+                 "frames": 5428, "complete": True}]
+
+    def frame(self, at: int, dest: Path, source: Path | None = None) -> Path:
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(b"\x89PNG" + b"\x00" * 2000)   # the contract: an image lands
+        return dest
+
+    def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
+        self.closed += 1
+        self._alive = False
+        self.ended_how = "quit"
+        return 0
+
+    def selector(self, reg: str) -> dict[str, int]:
+        """THE REAL METHOD, run against a CAPTURED descriptor screen.
+
+        Delegated for the same reason `read_memory` is: what is worth exercising here
+        is the anchoring on this command's own echo, and a double that reimplemented it
+        would be agreeing with itself. `SELINFO_SCREEN` carries the register-pane
+        overlay that makes the anchoring necessary in the first place.
+        """
+        # SAVED AND RESTORED. `command()` returns `self._screen` for EVERY command, so
+        # replacing it outright left any case that read a screen AFTER `symbols_load`
+        # parsing the descriptor capture instead of its own fixture. No case does that
+        # today, which makes it a trap rather than a failure -- and the kind that is
+        # found by the case somebody writes next.
+        was = self._screen
+        try:
+            self._screen = SELINFO_SCREEN
+            return ds.Session.selector(self, reg)      # type: ignore[arg-type]
+        finally:
+            self._screen = was
+
+    def load_symbols(self, data: bytes) -> list[tuple[str, int]]:
+        """What the debugger would hold afterwards, INCLUDING what it already held.
+
+        `LV` APPENDS -- measured, three names loaded on top of two left five -- so the
+        double accumulates. A stub that returned only the last load would let the
+        server claim `loaded` is the size of this load, which is the one property the
+        real command does not have.
+        """
+        self.loaded += dsym.decode(data)
+        return list(self.loaded)
+
+
+@pytest.fixture(autouse=True)
+def clean_session() -> Any:
+    """No live session before a case, and NONE LEFT BEHIND after one.
+
+    The teardown half was missing and its docstring claimed it anyway. It matters
+    because the whole suite shares ONE process: a stub left in a module global outlives the
+    file that set it.
+
+    THE SYMBOL TABLE IS A MODULE GLOBAL TOO, and leaving it was measured doing exactly
+    what this warns about: `test_find_refuses_before_anything_is_loaded` came back `ok`
+    with zero matches, because an earlier case in this file had left a table installed.
+    It is only ever cleared in production by `start`, `close` and the burial of a dead
+    session -- and `install()` reaches past all three.
+    """
+    dstate.STATE.session = None
+    dstate.STATE.store = None
+    dstate.STATE.session_origin = None
+    dstate.STATE.conf_fingerprint = None
+    dstate.STATE.last_stop.clear()
+    dstate.STATE.clear_running_state()
+    dstate.STATE.forget_symbols()
+    yield
+    dstate.STATE.session = None
+    dstate.STATE.store = None
+    dstate.STATE.session_origin = None      # a case that set it must not stale the next one's
+    dstate.STATE.conf_fingerprint = None
+    dstate.STATE.last_stop.clear()          # nor date the next one's answers by its stops
+    dstate.STATE.clear_running_state()      # nor leave it a queue to drain
+    dstate.STATE.forget_symbols()
+
+
+_STORE_TMP = tempfile.mkdtemp(prefix="dosbox-x-server-test-")
+_INSTALL_SEQ = itertools.count()
+
+
+def install(**kw: Any) -> FakeSession:
+    s = FakeSession(**kw)
+    dstate.STATE.session = s  # type: ignore[assignment]
+    # A SESSION AND ITS STORE COME TOGETHER: `start` sets both, and three breakpoint
+    # tools read the store, so a double with a session and no store is a state
+    # production never has. The conf key is a MONOTONIC counter, never `id(s)`: CPython
+    # reuses the address of a freed object, so `id`-keyed stores over one shared file
+    # made a later install inherit an earlier test's declarations.
+    dstate.STATE.store = dec.DeclarationStore(
+        f"install-{next(_INSTALL_SEQ)}", path=Path(_STORE_TMP) / "declarations.json")
+    return s
+
+
+# ------------------------------------------------------------------- the surface
+
+def test_the_server_reports_the_name_it_is_installed_as() -> None:
+    """The name it declares must equal the name it is registered as, which is also
+    what namespaces its tools. That exact mismatch has happened on this fleet before:
+    a server declared one name, was installed as another, and the first was by then
+    the name of a different thing entirely."""
+    assert server.mcp.name == "dosbox-x"
+
+
+def test_a_cap_of_zero_would_lie_and_is_refused() -> None:
+    """`out[-0:]` is the WHOLE string, so a cap of zero returns everything while
+    declaring itself a tail. It is a `ValueError` rather than an `Invalid`: `keep` is
+    never a caller's (three call sites, all literals), so a bad one is a bug in this
+    module, and `Invalid` would dress it as a statement about the caller's request.
+
+    This guard shipped with no test at all, in the commit whose own headline finding
+    was that a guard nothing can turn red is not a guard."""
+    for bad in (0, -1):
+        with pytest.raises(ValueError, match="is not a cap"):
+            dstate.delta("abcdef", bad)
+    # The control: a real cap behaves, at and either side of the boundary.
+    assert dstate.delta("abcdef", 6) == {
+        "screen_delta": "abcdef", "screen_chars": 6, "clipped": False}
+    assert dstate.delta("abcdef", 4) == {
+        "screen_delta": "cdef", "screen_chars": 6, "clipped": True}
+
+
+def test_a_dead_session_that_had_been_written_to_says_so_in_its_refusal() -> None:
+    """`_live()` clears the global before raising, so `_reply` can no longer describe
+    what it just buried and `session` comes back null. The module docstring promises
+    every reply carries `altered`, "the INVALID ones too"; this is the one path where
+    the field cannot exist, so the REASON carries it instead.
+
+    Without it, a caller who forced a register and whose emulator then hit its bound
+    gets an INVALID with no trace that anything was pushed."""
+    written = FakeSession(alive=False)
+    written.altered = True
+    dstate.STATE.session = written  # type: ignore[assignment]
+    got = server.registers()
+    assert got["status"] == "INVALID"
+    assert "HAD been written to" in str(got["message"]), got["message"]
+
+    # AND THE CONTROL, which is what makes the assertion above about `altered` and not
+    # about the refusal happening at all: an untouched session is buried silently.
+    dstate.STATE.session = FakeSession(alive=False)  # type: ignore[assignment]
+    clean = server.registers()
+    assert clean["status"] == "INVALID"
+    assert "HAD been written to" not in str(clean["message"]), clean["message"]
+
+
+def test_a_close_that_could_not_reap_the_child_says_so_in_its_reply() -> None:
+    """The field REACHING A CALLER, which is a different claim from it being set.
+
+    It was set inside `close()` and read nowhere: `close`'s reply captures the session
+    state BEFORE closing, and every call site discards the session immediately
+    afterwards, so a SIGKILLed-but-unreaped child came back as `exit_code: null` with
+    nothing beside it -- the exact reply the field exists to prevent. MEASURED on the
+    real server, twice: once as the original defect, and once again after it was
+    "fixed", because blanking the new read left the whole battery green.
+
+    So this asserts the REPLY, not the object.
+    """
+    class Unreapable(FakeSession):
+        def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
+            self.reap_failed = "SIGKILL was sent and the process had not been reaped"
+            self._alive = False
+            return None
+
+    dstate.STATE.session = Unreapable()  # type: ignore[assignment]
+    got = cast(dict[str, Any], server.close())
+    assert got["exit_code"] is None
+    assert str(got["reap_failed"]).startswith("SIGKILL was sent"), got
+
+    # THE CONTROL: an ordinary close reports an empty string, so the assertion above is
+    # about an unreaped child and not about the key merely existing.
+    dstate.STATE.session = FakeSession()  # type: ignore[assignment]
+    clean = cast(dict[str, Any], server.close())
+    assert clean["exit_code"] == 0 and clean["reap_failed"] == "", clean
+
+
+def test_a_start_that_left_an_unreapable_emulator_says_so(tmp_path: Path) -> None:
+    """The ONE path besides `close` where an unreaped child can be seen.
+
+    `reap_failed` is set inside `close()`'s `if self.proc.poll() is None:` block, so it
+    exists only when a LIVE session is closed. Two consumers were added for it in
+    earlier rounds and BOTH sat on the dead branch, where `poll()` is non-None and the
+    signals never run: MEASURED, closing an already-exited session leaves the field
+    empty, so neither could ever fire. They are deleted.
+
+    This arm is where it matters. `wait_ready` raising with the child still running is
+    exactly the case where SIGKILL can fail to reap, and the reply is a refusal that
+    would otherwise say nothing about the emulator it left behind.
+    """
+    class Unreapable:
+        """THE FIELD IS EARNED BY BEING CLOSED, not preset.
+
+        Its first version set `reap_failed` as a class attribute, so `if
+        session.reap_failed:` fired whether or not `close()` had run -- and
+        MEASURED, deleting the `session.close()` above it left the whole battery
+        green, restoring the very defect the comment there names. A real `Session`
+        cannot present a non-empty `reap_failed` before `close()` has run, so a
+        double that does is the "state the real class cannot occupy" this commit
+        convicted three earlier rounds of building.
+        """
+
+        argv = ["dosbox-x"]
+        unreapable = True
+
+        def __init__(self) -> None:
+            self.reap_failed = ""
+            self.closed = 0
+
+        def wait_ready(self, timeout: float = 30.0, progress: Any = None) -> float:
+            raise ds.Invalid("session_broken", "the debugger never appeared")
+
+        def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
+            self.closed += 1
+            if self.unreapable:
+                self.reap_failed = ("SIGKILL was sent and the process had not been "
+                                    "reaped 1.0s later")
+            return None
+
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    made: list[Unreapable] = []
+
+    def build(_l: object) -> Unreapable:
+        made.append(Unreapable())
+        return made[-1]
+
+    with mock.patch("dosbox_x_server.ds.Session", build):
+        got = cast(dict[str, Any], server.start(
+            conf=str(conf), cwd=str(tmp_path), seconds=30))
+    assert got["status"] == "INVALID"
+    assert "the debugger never appeared" in str(got["message"]), got
+    assert "may still be running" in str(got["message"]), got
+    # THE SESSION WAS ACTUALLY CLOSED. What makes deleting that `close()` go red is
+    # the DOUBLE earning `reap_failed` inside its own `close()` -- measured, this
+    # assertion alone is not what fires. It is here so the call is pinned directly
+    # rather than only through its side effect, and the distinction is written down
+    # because a later pass reading a vaguer comment could remove the earning and keep
+    # this line, which would reopen the hole.
+    assert made[0].closed == 1, "the refused session was never closed"
+    assert dstate.STATE.session is None
+
+    # THE CONTROL: the same refusal from a session that WAS reaped says nothing about
+    # a stray emulator, so the assertion above is about the reaping.
+    class Reaped(Unreapable):
+        unreapable = False
+
+    with mock.patch("dosbox_x_server.ds.Session", lambda _l: Reaped()):
+        ok = cast(dict[str, Any], server.start(
+            conf=str(conf), cwd=str(tmp_path), seconds=30))
+    assert "the debugger never appeared" in str(ok["message"])
+    assert "may still be running" not in str(ok["message"]), ok
+
+
+def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
+    """`tool()` translates only `Invalid`, so a `TimeoutExpired` out of `frame()`
+    escaped raw -- losing BOTH of this module's contracts at once: the reply stops
+    saying which nothing it found, and stops carrying the session's state.
+
+    `build_check` catches the same exception twelve lines of comment deep, for the same
+    reason. This one shipped without a test.
+
+    A LIMIT SAID OUT LOUD: `dosbox_session.subprocess` IS the stdlib module, so these
+    patches are process-wide for the duration of the block. That is safe here because
+    the blocks are two statements long, but this suite runs in ONE pytest process,
+    which is the same hazard `clean_session`'s
+    docstring is about. Keep them short."""
+    def hangs(*_a: object, **_k: object) -> None:
+        raise subprocess.TimeoutExpired(cmd="ffmpeg", timeout=ds.FFMPEG_SECS)
+
+    src = tmp_path / "cap.avi"
+    src.write_bytes(b"RIFF")
+    fake = SimpleNamespace(captures=lambda: [{"path": str(src)}])
+    with (mock.patch("dosbox_session.subprocess.run", hangs),
+          mock.patch("dosbox_session.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
+          pytest.raises(ds.Invalid, match="did not return within")):
+        ds.Session.frame(fake, 0, tmp_path / "out.png")  # type: ignore[arg-type]
+
+    # THE GREEN BESIDE IT, without which an unconditional `raise Invalid` at the top of
+    # `frame()` passes -- MEASURED, it did. There is no other contract case in which
+    # the real `frame()` SUCCEEDS: the double's `frame` is a stub and the only other
+    # case is a second refusal.
+    dest = tmp_path / "ok.png"
+
+    argv: list[list[str]] = []
+
+    def writes(*a: object, **_k: object) -> object:
+        argv.append(list(cast("list[str]", a[0])))
+        dest.write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 2000)
+        return SimpleNamespace(stdout="", stderr="", returncode=0)
+
+    with (mock.patch("dosbox_session.subprocess.run", writes),
+          mock.patch("dosbox_session.shutil.which", lambda _n: "/usr/bin/ffmpeg")):
+        got = ds.Session.frame(fake, 0, dest)  # type: ignore[arg-type]
+    assert got == dest and dest.stat().st_size > 1000
+    # THE FORMAT IS FORCED IN THE ARGV, which no test could see while every one of
+    # them mocked `subprocess.run` without looking at what it was handed. Without
+    # these flags ffmpeg picks the encoder from `dest`'s EXTENSION, and MEASURED on
+    # ffmpeg 9.0.1 a frame past the end then writes a 1307-byte frameless container at
+    # exit 0 -- a file that passes every other check in the guard.
+    assert argv, "the mock never saw a command line"
+    assert argv[0][-5:] == ["-f", "image2", "-c:v", "png", str(dest)], argv[0]
+
+    # AND ffmpeg EXITING 0 HAVING WRITTEN NOTHING, which is the commonest real failure
+    # (a frame past the end of the capture) and was exercised by NEITHER tier: the
+    # empty-output guard could be deleted with the whole battery green, and `frame()`
+    # would then return a path it had not written -- the defect this file's own header
+    # says the double was rebuilt to stop agreeing with.
+    def writes_nothing(*_a: object, **_k: object) -> object:
+        return SimpleNamespace(stdout="", stderr="Output file is empty",
+                               returncode=0)
+
+    with (mock.patch("dosbox_session.subprocess.run", writes_nothing),
+          mock.patch("dosbox_session.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
+          pytest.raises(ds.Invalid, match="ffmpeg exited 0 but no image")):
+        ds.Session.frame(fake, 99999, tmp_path / "never.png")  # type: ignore[arg-type]
+
+    # AND ffmpeg FAILING WHILE LEAVING A NON-EMPTY FILE, which the size check alone
+    # cannot see. MEASURED on ffmpeg 7.x: a frame past the end writes nothing for a
+    # `.png` destination but a 261-byte frameless container for an `.mp4` one, so
+    # "a file exists and is not empty" and "ffmpeg succeeded" are different questions
+    # and only the first was being asked.
+    bad = tmp_path / "junk.png"
+
+    def fails_but_writes(*_a: object, **_k: object) -> object:
+        bad.write_bytes(b"not an image, but not empty either")
+        return SimpleNamespace(stdout="", stderr="Conversion failed", returncode=1)
+
+    # AND THE TWO REFUSALS SAY DIFFERENT THINGS, which is the point: a non-zero exit
+    # is ffmpeg reporting its own failure with the reason in hand, while an empty
+    # output at exit 0 is the frame-past-the-end shape where the cause is a guess.
+    # Merged, the message blamed "a frame past the end" for a conversion error.
+    with (mock.patch("dosbox_session.subprocess.run", fails_but_writes),
+          mock.patch("dosbox_session.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
+          pytest.raises(ds.Invalid, match="ffmpeg exited 1")):
+        ds.Session.frame(fake, 5, bad)  # type: ignore[arg-type]
+
+    # AND A WELL-FORMED FILE OF THE WRONG KIND at exit 0, which neither the code nor
+    # the size can see. MEASURED on ffmpeg 9.0.1: a frame past the end of a real
+    # capture, with `dest` named `.mp4`, produced a 1307-byte FRAMELESS CONTAINER at
+    # exit 0 -- every term of the guard false, and `frame()` returned it as a still.
+    # The format is forced now, so this should be unreachable through the real ffmpeg;
+    # it is asserted anyway because the defect was a file that passed every test but
+    # the one nobody was making.
+    container = tmp_path / "container.mp4"
+
+    def writes_a_container(*_a: object, **_k: object) -> object:
+        container.write_bytes(b"\x00\x00\x00\x20ftypisom" + b"\x00" * 1275)
+        return SimpleNamespace(stdout="", stderr="", returncode=0)
+
+    with (mock.patch("dosbox_session.subprocess.run", writes_a_container),
+          mock.patch("dosbox_session.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
+          pytest.raises(ds.Invalid, match="is not a PNG")):
+        ds.Session.frame(fake, 99999, container)  # type: ignore[arg-type]
+
+
+def _tools_called_in_tests(source: str) -> set[str]:
+    """The tools a test file CALLS THROUGH THE SERVER from inside its `test_*` functions.
+
+    Only a call inside a test function is a case. A helper that starts or closes the
+    session for every case calls `server.start` and `server.close` too, and counting
+    those made both tools "covered" by plumbing that asserts nothing about them. And
+    only `server.<tool>(...)` counts: not a Session method that shares the name, and
+    not the words in a comment."""
+    called: set[str] = set()
+    for fn in ast.walk(ast.parse(source)):
+        if not isinstance(fn, ast.FunctionDef) or not fn.name.startswith("test_"):
+            continue
+        for node in ast.walk(fn):
+            if (isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Attribute)
+                    and isinstance(node.func.value, ast.Name)
+                    and node.func.value.id == "server"):
+                called.add(node.func.attr)
+    return called
+
+
+def test_the_live_case_counter_ignores_helpers_comments_and_session_methods() -> None:
+    """The control for the contract below: a tool called only from a helper, only in a
+    comment, or only as a Session method is NOT a live case, and one called inside a
+    `test_*` function is. Without this the contract could go green on plumbing."""
+    source = (
+        "def start_ok():\n    return server.start()\n"
+        "def test_one():\n    s = start_ok()\n    server.registers()  # server.debug()\n"
+        "    s.memdump()\n    server.close()\n"
+    )
+    assert _tools_called_in_tests(source) == {"registers", "close"}
+
+
+def test_every_tool_has_a_live_case_naming_it() -> None:
+    """The "every tool has a live case" claim, GATED instead of asserted in prose.
+
+    It was a sentence in a file header, and a sentence cannot notice a case being
+    skipped: the watched-mode case skips when its placement flags are absent, so on a
+    host whose display topology cannot be read the live file reports "22 passed" and a
+    reader takes the whole surface as covered. A skip and a pass print the same
+    thing without `-rs`.
+
+    NO COUNT IS WRITTEN DOWN HERE. A docstring that names a number of tools, or a number
+    of contract tests, is stale prose inside the gate that exists to stop prose going
+    stale, which is the sharpest form the defect takes. A number in a durable text expires
+    by itself and nobody re-reads it to notice; the INVARIANT (every registered tool has a
+    live case) does not.
+
+    IT RUNS AT CONTRACT TIER ON PURPOSE. This is the one assertion about live coverage
+    that must not itself depend on an emulator, a display or an environment variable --
+    otherwise the check meant to catch a silent skip can be silently skipped.
+
+    THE POPULATION COMES FROM THE MCP REGISTRY, not from a list here, so a tool added
+    tomorrow turns this red until it has a live case, and a list nobody maintains
+    cannot quietly fall behind the surface.
+
+    IT PARSES THE SOURCE, it does not search it, and the first version searched. That
+    version's condition ended in `f".{t}(" not in text`, which subsumed its own two
+    earlier clauses and made them dead -- so a tool counted as covered if ANY dotted
+    call of that name appeared anywhere, including inside a COMMENT, and including
+    `s.memdump(...)` on a `Session` object, which is not the tool at all. Both were
+    demonstrated: deleting the only real call to the `debug` tool and leaving the words
+    in a comment kept the gate green. An AST cannot be satisfied by prose.
+    """
+    live = Path(str(server.__file__)).parent / "tests" / "live"
+    called: set[str] = set()
+    for path in sorted(live.glob("test_*.py")):
+        called |= _tools_called_in_tests(path.read_text(encoding="utf-8"))
+    missing = sorted(set(server.registered_tools()) - called)
+    assert not missing, (
+        f"these tools have no live case that CALLS them through the server: "
+        f"{missing}. A tool with no live case is a tool whose green means nothing -- "
+        f"`memdump` shipped having never once worked, with the whole contract tier "
+        f"green over it")
+
+
+def test_every_tool_this_server_promises_is_actually_registered() -> None:
+    """MEASURED: `mcp.tool()` returns the function unchanged, so dropping the
+    registration leaves every other test green while the server exposes NOTHING.
+    Nothing asserted the surface existed, only that individual functions behaved."""
+    expected = {"start", "status", "close", "log", "debug", "registers",
+                "set_register", "write", "breakpoint_interrupt", "resume", "read_memory",
+                "disassemble", "call_stack", "memdump", "find", "scan_start", "scan_filter",
+                "scan_clear",
+                "captures", "capture_frame", "build_check",
+                "symbols_load", "symbols_find", "step", "run_to", "run_for", "log_wait",
+                "breakpoint_at", "breakpoint_list", "breakpoint_clear",
+                "watch_add", "watch_list", "watch_clear", "perform",
+                "state_save", "state_load", "state_list", "snapshot",
+                "send_keys", "send_mouse", "drive", "stop", "machine_map",
+                "interrupt_vectors", "palette", "screen_view", "screen_signature",
+                "screen_wait", "trace", "comment_add", "comment_list", "comment_delete",
+                "comment_save", "comment_load"}
+    got = server.registered_tools()
+    assert set(got) == expected
+    # NOT a length check against `expected`: `registered_tools()` reads a dict keyed
+    # by name, so a duplicate cannot exist and that assertion described a state the
+    # data structure cannot hold. What CAN go wrong is the registry disagreeing with
+    # the module's own function list, so that is what is asked.
+    assert sorted(got) == sorted(set(got)), "the registry handed back a name twice"
+
+
+# ------------------------------------------------------------------- the refusals
+
+def test_an_unknown_mode_is_refused_by_name(tmp_path: Path) -> None:
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    got = server.start(conf=str(conf), cwd=str(tmp_path), seconds=30, mode="quick")
+    assert got["status"] == "INVALID"
+    assert "quick" in got["message"]
+
+
+def test_quick_is_absent_on_purpose_and_refused_for_that_reason(tmp_path: Path) -> None:
+    """The reason is asserted, not just the status.
+
+    Without that, this passed on a host with no `dosbox-x`: accepting `quick` would
+    fall through to the PATH refusal and the test would stay green. Worse, on a host
+    WITH the binary it would fall through to a real launch and spawn an emulator from
+    a contract test -- the hazard the session tests were restructured to remove,
+    intact one layer up.
+    """
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    got = server.start(conf=str(conf), cwd=str(tmp_path), seconds=1, mode="quick")
+    assert got["status"] == "INVALID"
+    assert "quick" in got["message"] and "headless" in got["message"]
+
+
+def test_a_second_session_is_refused_while_the_first_is_alive(tmp_path: Path) -> None:
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    install(alive=True)
+    got = server.start(conf=str(conf), cwd=str(tmp_path), seconds=30)
+    assert got["status"] == "INVALID"
+    assert "already live" in got["message"]
+
+
+def live_callers() -> set[str]:
+    """The tools that CALL `_live()`, asked of the source rather than remembered.
+
+    A list here is a list that falls behind the surface, which is what happened: it
+    named ten of the sixteen, under a docstring reading "THE POPULATION, not a sample
+    of three". What a hand-written population misses is the NEWEST tools, which is
+    exactly the direction that kind of list fails in.
+
+    IT PARSES, it does not search, for the same reason
+    `test_every_tool_has_a_live_case_naming_it` does: `"_live()" in text` is satisfied
+    by a comment.
+    """
+    tree = ast.parse(Path(str(server.__file__)).read_text(encoding="utf-8"))
+    return {node.name for node in tree.body
+            if isinstance(node, ast.FunctionDef)
+            and any(isinstance(sub, ast.Call) and isinstance(sub.func, ast.Name)
+                    and sub.func.id == "_live" for sub in ast.walk(node))}
+
+
+def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
+        tmp_path: Path) -> None:
+    """THE POPULATION, DERIVED. Each of these calls `_live()`, and a tool that stopped
+    doing so would answer from a corpse.
+
+    THE ARGUMENTS CANNOT BE DERIVED -- a parser cannot invent a valid `segment` -- so
+    they stay written here, and the check that they COVER the population is what is
+    derived. A tool added tomorrow turns this red until it has a row, which is the one
+    thing the old hand-written dict could not do.
+    """
+    nm = tmp_path / "s.nm"
+    nm.write_text("00001000 T _main\n", encoding="utf-8")
+    calls: dict[str, Callable[[], dict[str, Any]]] = {
+        "log": lambda: server.log(channel="guest", pattern="x"),
+        "debug": lambda: server.debug(command="BPLIST"),
+        "registers": server.registers,
+        "set_register": lambda: server.set_register(name="ax", value=1),
+        "write": lambda: server.write(ref="0040:0100", data_hex="00"),
+        "breakpoint_interrupt": lambda: server.breakpoint_interrupt(number=0x21),
+        "resume": server.resume, "stop": server.stop,
+        "read_memory": lambda: server.read_memory(ref="0000:00000000"),
+        "memdump": lambda: server.memdump(ref="0000:00000000", length=8, dest="/tmp/x"),
+        "find": lambda: server.find(ref="0000:00000000", length=8, data_hex="00"),
+        "scan_start": lambda: server.scan_start(ref="0000:00000000", length=8),
+        "scan_filter": lambda: server.scan_filter(operator="=", value=0),
+        "scan_clear": server.scan_clear,
+        "captures": server.captures,
+        "capture_frame": lambda: server.capture_frame(at=0, dest="/tmp/x.png"),
+        "log_wait": lambda: server.log_wait(channel="guest", pattern="x", seconds=1.0),
+        "run_to": lambda: server.run_to(ref="0000:0000", control="0000:0020", seconds=1.0),
+        "run_for": lambda: server.run_for(frames=1),
+        "trace": lambda: server.trace(instructions=1, dest="/tmp/x.trace"),
+        "step": lambda: server.step(mode="over", count=1),
+        "symbols_find": lambda: server.symbols_find(name="_main"),
+        "disassemble": lambda: server.disassemble(ref="0814:0100"),
+        "call_stack": server.call_stack,
+        "machine_map": server.machine_map,
+        "interrupt_vectors": server.interrupt_vectors,
+        "palette": server.palette,
+        "screen_view": server.screen_view,
+        "screen_signature": server.screen_signature,
+        "screen_wait": lambda: server.screen_wait(text="C:"),
+        "symbols_load": lambda: server.symbols_load(source=str(nm), base="10000"),
+        "state_save": lambda: server.state_save(name="x"),
+        "state_load": lambda: server.state_load(name="x"),
+        "state_list": server.state_list,
+        "snapshot": server.snapshot,
+        "breakpoint_at": lambda: server.breakpoint_at(ref="_main"),
+        "breakpoint_list": server.breakpoint_list,
+        "breakpoint_clear": lambda: server.breakpoint_clear(ref=None),
+        "watch_add": lambda: server.watch_add(ref="_main", mode="change", length=4),
+        "watch_list": server.watch_list,
+        "watch_clear": lambda: server.watch_clear(ref=None),
+        "perform": lambda: server.perform(steps=[{"op": "registers"}]),
+        "send_keys": lambda: server.send_keys(keys=["a"]),
+        "send_mouse": lambda: server.send_mouse(button="left"),
+        "drive": lambda: server.drive(act=[{"op": "status"}]),
+        "comment_add": lambda: server.comment_add(ref="_main", text="x"),
+        "comment_list": server.comment_list,
+        "comment_delete": lambda: server.comment_delete(ref="_main"),
+        "comment_save": lambda: server.comment_save(dest="/tmp/x.comments.tsv"),
+        "comment_load": lambda: server.comment_load(source=str(nm)),
+    }
+    missing = sorted(live_callers() - set(calls))
+    assert not missing, (
+        f"these tools ask for a live session and are not exercised here: {missing}. "
+        f"A tool that stopped calling `_live()` would answer from a corpse and nothing "
+        f"would say so")
+    for name, call in calls.items():
+        got = call()
+        assert got["status"] == "INVALID", name
+        assert "no live session" in got["message"], name
+
+
+def test_a_dead_session_is_closed_cleared_and_answered_as_absent() -> None:
+    """Leaving a corpse installed is what made `status` keep reporting it and made the
+    next `start` leak its terminal instead of reclaiming it."""
+    dead = install(alive=False)
+    got = server.registers()
+    assert got["status"] == "INVALID"
+    assert dead.closed == 1
+    assert dstate.STATE.session is None
+
+
+# ------------------------------------------------------------------- the answers
+
+def test_the_success_path_of_each_reader_returns_a_result(tmp_path: Path) -> None:
+    """THE GREEN BESIDE THE REDS. Without it a reader could raise INVALID
+    unconditionally and every refusal test above would still pass."""
+    # THE SCREEN IS BUILT FROM THE ADDRESS BEING ASKED FOR, not pasted: `read_memory`
+    # refuses a reply that does not contain the row it asked about, so a hand-written
+    # row would have to be edited in step with the arguments below and would go stale
+    # silently the day they change.
+    seg, off = 0x0749, 0
+    row = f"{seg:04X}:{off:08X} " + " ".join(["00"] * 16) + "  " + "." * 16
+    install(screen=f"some screen\r\n{row}\r\n")
+    assert server.registers()["registers"]["EAX"] == "00001234"
+    assert server.debug(command="BPLIST")["status"] == "ok"
+    got = server.read_memory(ref=f"{seg:04X}:{off:08X}")
+    assert got["status"] == "ok"
+    assert got["rows"] == [row], got
+    assert "INT 21" in server.breakpoint_interrupt(number=0x21)["screen_delta"]
+    assert server.resume()["status"] == "ok"
+
+
+def test_a_reader_that_got_an_empty_screen_says_so(tmp_path: Path) -> None:
+    install(screen="   \n")
+    assert server.debug(command="BPLIST")["status"] == "INVALID"
+    assert server.read_memory(ref="0000:00000000")["status"] == "INVALID"
+
+
+def test_log_reports_how_many_matched_not_how_many_came_back() -> None:
+    """Different answers. Reporting the slice's length under the name `matched` meant
+    a caller asking "how many times did this fire" got the limit back."""
+    install()
+    got = server.log(channel="guest", pattern="loudness", limit=1)
+    assert got["lines_total"] == 500
+    assert len(got["lines"]) == 1
+    assert got["truncated"] is True
+
+
+def test_log_passes_the_callers_pattern_limit_and_channel_through() -> None:
+    s = install()
+    server.log(channel="guest", pattern="PERF", limit=7)
+    assert s.log_calls == [("PERF", 7, "guest")]
+
+
+def test_a_dump_returns_the_path_the_bytes_actually_landed_at(tmp_path: Path) -> None:
+    """The success path, which had NO test: the only case was one where the file was
+    absent, so the size half of the guard could be deleted and stay green."""
+    install()
+    dest = tmp_path / "out" / "mem.bin"
+    got = server.memdump(ref="0749:00000000", length=16, dest=str(dest))
+    assert got["status"] == "ok"
+    assert Path(got["path"]) == dest and got["bytes"] == 16
+
+
+# --------------------------------------------------------------- the reply shape
+
+def test_every_reply_carries_whether_the_machine_was_written_to() -> None:
+    s = install()
+    assert server.status()["session"]["altered"] is False
+    server.set_register(name="ax", value=0x10)
+    assert s.altered is True
+    assert server.status()["session"]["altered"] is True
+
+
+def test_an_invalid_reply_carries_it_too() -> None:
+    """The one a caller reasons hardest about, and the one an earlier version handed
+    back with no trace that the machine had been forced."""
+    install(screen="   \n")                 # nothing but whitespace comes back
+    server.set_register(name="ax", value=0x10)
+    got = server.debug(command="BPLIST")
+    assert got["status"] == "INVALID"
+    assert got["session"]["altered"] is True
+
+
+def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
+    """The contract belongs to the real object, so the real function is what runs here.
+
+    `Session.state` is called UNBOUND against a minimal object carrying only the four
+    attributes it reads, which exercises the actual code without a process existing.
+    With only a hand-written stub in play, `altered` could be deleted from the real
+    `state()` and the whole suite stayed green -- the headline guarantee gated by a
+    double that had been written to agree with it.
+
+    EVERY VALUE IS ASSERTED, not just the key set. An adversarial pass proved the
+    earlier version toothless: breaking `"alive": self.alive()` to a hardcoded `True`,
+    and `"terminal_bytes_dropped"` to a hardcoded `0`, each left all 56 green. Five of
+    the nine values were checked by nothing, including the counter the whole drain
+    change is about.
+    """
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    dead = threading.Thread(target=lambda: None)
+    fake = SimpleNamespace(
+        proc=SimpleNamespace(pid=4242),
+        alive=lambda: False, altered=True, conf_digest=ds._digest(conf),
+        started_at=time.monotonic() - 3.0, dropped=4096,
+        _drainer=dead, drain_ended="reading the terminal failed: OSError()",
+        launch=ds.Launch(conf=conf, cwd=tmp_path, seconds=60, watched=True,
+                         window_flags=["-set", "sdl display=1"]))
+    got = ds.Session.state(fake)  # type: ignore[arg-type]
+    assert set(got) == {"pid", "alive", "altered", "conf", "conf_digest",
+                        "conf_changed_on_disk", "watched", "seconds_bound",
+                        "seconds_elapsed", "terminal_bytes_dropped",
+                        "drain_alive", "drain_ended", "captures", "state_dir"}
+    # WHETHER CAPTURES ARE ON is said here, at `start` and on every reply, and not only by
+    # `captures` refusing: otherwise a caller has to probe `captures` to learn there are
+    # none.
+    assert got["captures"] == "off"
+    fake.launch = ds.Launch(conf=conf, cwd=tmp_path, seconds=60, capture_video=True,
+                            program="X.EXE", captures_dir=tmp_path / "caps")
+    assert ds.Session.state(fake)["captures"] == str(tmp_path / "caps")  # type: ignore[arg-type]
+    fake.launch = ds.Launch(conf=conf, cwd=tmp_path, seconds=60, capture_video=True,
+                            program="X.EXE")
+    assert ds.Session.state(fake)["captures"] == "on, in the emulator's own directory"  # type: ignore[arg-type]
+    # The pid is the emulator's OWN handle, so a caller ending a run by pid (or checking
+    # the one it thinks is the session's) reads it here instead of hunting it with `ps`.
+    assert got["pid"] == 4242
+    # Each of these PASSES THROUGH a distinct attribute, so a value hardcoded in
+    # `state()` fails here instead of being absorbed.
+    assert got["alive"] is False
+    assert got["altered"] is True
+    assert got["watched"] is True
+    assert got["conf"] == str(conf)
+    assert got["seconds_bound"] == 60
+    assert cast(float, got["seconds_elapsed"]) >= 3.0
+    # Reported rather than inferred: the terminal buffer is bounded, so a caller has
+    # no other way to tell a screen it saw whole from one missing its oldest bytes.
+    assert got["terminal_bytes_dropped"] == 4096
+    # A drainer that died takes every later read with it while `alive` still says the
+    # emulator is up. Both halves are carried: whether it is running, and how it ended.
+    assert got["drain_alive"] is False
+    assert got["drain_ended"] == "reading the terminal failed: OSError()"
+    assert got["conf_changed_on_disk"] is False
+    # And it NOTICES when the conf moves under a live session, which is the only
+    # reason the digest is carried at all.
+    conf.write_text("[sdl]\nchanged\n", encoding="utf-8")
+    assert ds.Session.state(fake)["conf_changed_on_disk"] is True  # type: ignore[arg-type]
+
+
+def test_the_double_has_not_drifted_from_what_it_stands_in_for(tmp_path: Path) -> None:
+    """A stub that has fallen behind the real shape is how a test starts agreeing with
+    a bug instead of with a contract."""
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    fake = SimpleNamespace(
+        proc=SimpleNamespace(pid=4242),
+        alive=lambda: True, altered=False, conf_digest="x",
+        started_at=time.monotonic(), dropped=0,
+        _drainer=None, drain_ended="",
+        launch=ds.Launch(conf=conf, cwd=tmp_path, seconds=60))
+    real = ds.Session.state(fake)  # type: ignore[arg-type]
+    assert set(FakeSession().state()) == set(real)
+    # AND THE METHOD SURFACE, which this case's own name promised and did not check.
+    # MEASURED: adding `read_memory` to the server left this green and made two other
+    # cases die with an `AttributeError` -- a crash, not a contract failure, and one
+    # the `tool()` wrapper deliberately does NOT translate, so on the real path it
+    # would have escaped as a traceback rather than as INVALID.
+    #
+    # THE LIST IS DERIVED FROM THE SERVER'S OWN SOURCE, never written out here: a
+    # parallel list is populated by whoever remembers, which is the same defect one
+    # level up.
+    #
+    #
+    # EVERY ATTRIBUTE THE SERVER USES THAT IS NOT ON AN IMPORTED MODULE, intersected
+    # with what `Session` actually has. Three derivations have now been tried and the
+    # first two each failed in one direction:
+    #
+    #   `_live()\.(\w+)` by TEXT      -- saw 10, missed 5, and any `sess = _live()`
+    #                                    refactor blinded it completely.
+    #   any `.name` by TEXT           -- read comments and docstrings, and made
+    #                                    `subprocess.run` into a phantom requirement.
+    #   `_live()` usage by AST        -- precise about the source of the call and
+    #                                    therefore NARROWER than the regex it replaced:
+    #                                    MEASURED, it covered 10 where the regex had
+    #                                    covered 14, so deleting `wait_ready` from the
+    #                                    double went green. A guard against going blind
+    #                                    that itself went blind.
+    #
+    # This one is by AST (so prose cannot contribute) and excludes attributes reached
+    # on an IMPORT (so `subprocess.run` cannot), which is the pair of properties the
+    # three attempts each had one of.
+    #
+    # THE POPULATION IS THE PACKAGE, not the server file: the tool bodies live in the
+    # modules beside it (`dosbox_arming`, `dosbox_inputs`, ...), so a derivation that read
+    # one file would have gone blind a fourth way, on the day the server was carved.
+    #
+    # AND EACH FILE IS READ AGAINST ITS OWN IMPORTS. Pooling every module's import
+    # aliases into one set before deciding which attribute reads to keep would let a
+    # local variable in one file, named like an import alias of ANOTHER file, hide its
+    # attribute reads from the derivation: a hole no case fell through yet, closed
+    # before one does.
+    package = Path(str(server.__file__)).parent
+    used: set[str] = set()
+    for path in sorted(package.glob("dosbox_*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        modules = {a.asname or a.name.split(".")[0]
+                   for n in ast.walk(tree) if isinstance(n, ast.Import) for a in n.names}
+        modules |= {a.asname or a.name
+                    for n in ast.walk(tree) if isinstance(n, ast.ImportFrom)
+                    for a in n.names}
+        used |= {n.attr for n in ast.walk(tree) if isinstance(n, ast.Attribute)
+                 and not (isinstance(n.value, ast.Name) and n.value.id in modules)}
+    # CALLABLE ONLY, said out loud because the comment above says "what `Session`
+    # actually has" and this is narrower: every non-callable instance attribute is
+    # dropped, `altered`, `argv` and `reap_failed` among them. The first and last are
+    # read by the server and covered by their own cases; `argv` is not on the double at
+    # all and is harmless only because `start` always builds a real `Session`.
+    called = {n for n in used
+              if not n.startswith("_") and callable(getattr(ds.Session, n, None))}
+    # THE FLOOR IS NAMED, NOT COUNTED. Its first version was `>= 10`, which is exactly
+    # what the broken derivation produced, so it was green on the very regression it
+    # was added to stop. These are used on a session in plain sight, and the last four
+    # are the ones the AST-only version silently dropped.
+    for sentinel in ("registers", "read_memory", "memdump", "log",
+                     "alive", "close", "state", "wait_ready"):
+        assert sentinel in called, (
+            f"the derivation no longer sees `{sentinel}`, which the server plainly "
+            f"uses on a session: it has gone blind and this check is empty")
+    for name in sorted(called):
+        assert hasattr(ds.Session, name), f"the server calls a `Session.{name}` that does not exist"
+        assert hasattr(FakeSession(), name), (
+            f"the double has fallen behind: the server calls `{name}` on the session "
+            f"and this stub does not have it")
+    # THE COUNT IS DERIVED FROM THE REAL SHAPE, never written in prose. A comment on
+    # `FakeSession` naming how many keys it holds has to be hand-edited by whoever adds
+    # one -- a number in a comment that nothing checks is false at the next field and
+    # nobody notices.
+    assert len(FakeSession().state()) == len(real)
+
+
+def test_closing_when_there_was_nothing_is_not_a_failure() -> None:
+    got = server.close()
+    assert got["status"] == "ok" and got["closed"] is False
+
+
+def test_closing_a_live_session_closes_it_and_clears_it() -> None:
+    """The real path, which had no test: removing `_SESSION = None` left the session
+    installed and every later `start` refusing "a session is already live"."""
+    s = install()
+    got = server.close()
+    assert got["closed"] is True and got["exit_code"] == 0
+    assert s.closed == 1
+    assert dstate.STATE.session is None
+    # And the reply still carries the state it HAD, because a caller reading a close
+    # is entitled to know whether what it just ended had been written to.
+    assert got["session"]["altered"] is False
+
+
+# ------------------------------------------------------------------ the wrapper
+
+def test_invalid_is_surfaced_and_not_swallowed(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The wrapper turns `Invalid` into a reply that SAYS INVALID. Letting it escape
+    as an exception, or flattening it to an empty result, are the two ways an
+    instrument that examined nothing gets read as one that found nothing."""
+
+    # A throwaway tool the pre-gate registry has never heard of: named as machine-judged
+    # for the test, since an unknown name there is a programmer's error by design.
+    monkeypatch.setattr(checks, "MACHINE_JUDGES", checks.MACHINE_JUDGES | {"boom_invalid"})
+
+    @server.tool("Boom invalid", summary=lambda args, reply: "boom_invalid: ok")
+    def boom_invalid() -> dict[str, object]:
+        raise ds.Invalid("unexpected_answer", "I examined nothing")
+
+    try:
+        got = boom_invalid()
+        assert got["status"] == "INVALID" and got["message"] == "I examined nothing"
+    finally:
+        # The throwaway registration LEAVES the live surface, or every later assertion
+        # about that surface (the roster in the instructions) is order-dependent.
+        server.mcp._tool_manager._tools.pop("boom_invalid", None)
+        server._SUMMARIES.pop("boom_invalid", None)
+
+
+def test_a_real_bug_is_not_dressed_up_as_invalid(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The EXCEPTION IDENTITY axis. Widening the wrapper to `except Exception` leaves
+    the case above green while every genuine defect -- an AttributeError, a timeout --
+    starts reporting itself as "I examined nothing", which is a broken instrument
+    calling itself clean."""
+
+    # A throwaway tool the pre-gate registry has never heard of: named as machine-judged
+    # for the test, since an unknown name there is a programmer's error by design.
+    monkeypatch.setattr(checks, "MACHINE_JUDGES", checks.MACHINE_JUDGES | {"boom_bug"})
+
+    @server.tool("Boom bug", summary=lambda args, reply: "boom_bug: ok")
+    def boom_bug() -> dict[str, object]:
+        raise AttributeError("a real defect")
+
+    try:
+        with pytest.raises(AttributeError):
+            boom_bug()
+    finally:
+        server.mcp._tool_manager._tools.pop("boom_bug", None)
+        server._SUMMARIES.pop("boom_bug", None)
+
+
+def test_both_halves_of_the_capture_come_back(tmp_path: Path) -> None:
+    """BOTH, and they are not symmetric. The VIDEO is the emulator's own doing and
+    needs no keypress; the STILL is an EXTRACTION from it, because the emulator's own
+    screenshot is a mapper action with no non-interactive trigger at all.
+
+    The bug this closes: `capture_video=True` started a recording and NO tool handed
+    back the file. It recorded and did not say so.
+    """
+    install()
+    got = server.captures()
+    assert got["status"] == "ok"
+    assert [c["frames"] for c in got["captures"]] == [40, 5428], (
+        "largest last: the default source for a still depends on that order")
+
+    dest = tmp_path / "shot" / "frame.png"
+    shot = server.capture_frame(at=1400, dest=str(dest))
+    assert shot["status"] == "ok"
+    assert Path(shot["path"]) == dest and shot["bytes"] > 0
+    assert shot["at"] == 1400
+
+
+def test_a_dump_of_the_wrong_size_is_not_the_dump_that_was_asked_for(
+        tmp_path: Path) -> None:
+    """The size is the ONLY thing tying those bytes to this request, so it is checked
+    for EQUALITY.
+
+    The first version asked only `> 0`, which accepts a truncated write, a wrong
+    segment that landed short, and any leftover file with a byte in it. `length` was
+    in hand the whole time. `Session.memdump` runs UNBOUND here against a stand-in
+    whose `command` writes the file the debugger would have written -- the real method,
+    the real check, no emulator.
+    """
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    work = tmp_path / "work"
+    work.mkdir()
+    launch = ds.Launch(conf=conf, cwd=work, seconds=60)
+
+    def writes(nbytes: int) -> Callable[..., str]:
+        def command(_text: str, **_k: object) -> str:
+            (work / ds.MEMDUMP_NAME).write_bytes(b"\xAB" * nbytes)
+            return f"DEBUG: {ds.MEMDUMP_OK}."
+        return command
+
+    short = SimpleNamespace(launch=launch, command=writes(100))
+    # The REAL candidate list, asked of the real method: a hand-written one here
+    # would stop covering a location the module adds later.
+    short._memdump_candidates = lambda: ds.Session._memdump_candidates(short)  # type: ignore[arg-type]
+    with pytest.raises(ds.Invalid, match="holds 100"):
+        ds.Session.memdump(short, 0, 0x400, 256, tmp_path / "a.bin")  # type: ignore[arg-type]
+
+    assert not (work / ds.MEMDUMP_NAME).exists(), "the refused dump's own file is removed"
+    # And the control: the RIGHT size goes through, so the refusal above is about the
+    # length and not about this path being broken.
+    exact = SimpleNamespace(launch=launch, command=writes(256))
+    exact._memdump_candidates = lambda: ds.Session._memdump_candidates(exact)  # type: ignore[arg-type]
+    got = ds.Session.memdump(exact, 0, 0x400, 256, tmp_path / "b.bin")  # type: ignore[arg-type]
+    assert got.stat().st_size == 256
+
+
+def test_a_dump_refuses_rather_than_deleting_what_is_already_there(
+        tmp_path: Path) -> None:
+    """It will not delete from the emulator's working directory, which is somebody's
+    project. The earlier version unlinked every candidate with the error SUPPRESSED,
+    so the staleness guarantee rested on an error nobody read."""
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    work = tmp_path / "work"
+    work.mkdir()
+    mine = work / ds.MEMDUMP_NAME
+    mine.write_bytes(b"a file the caller cares about")
+    fake = SimpleNamespace(
+        launch=ds.Launch(conf=conf, cwd=work, seconds=60),
+        command=lambda *_a, **_k: "this should never be reached")
+    fake._memdump_candidates = lambda: ds.Session._memdump_candidates(fake)  # type: ignore[arg-type]
+    with pytest.raises(ds.Invalid, match="already sitting at"):
+        ds.Session.memdump(fake, 0, 0x400, 256, tmp_path / "out.bin")  # type: ignore[arg-type]
+    assert mine.read_bytes() == b"a file the caller cares about"
+
+
+# ------------------------------------------- a caller's path is absolute, `~` refused
+
+def _launch_of(**kw: Any) -> ds.Launch:
+    """Run `start` far enough to capture the `Launch` it built, and no further.
+
+    `ds.Session` is replaced by a builder that records its argument and then refuses,
+    so nothing is spawned and `start` returns INVALID. `shutil.which` is stubbed, so these
+    cases need no DOSBox-X installed."""
+    seen: list[ds.Launch] = []
+
+    def build(launch: ds.Launch) -> Any:
+        seen.append(launch)
+        raise ds.Invalid("session_broken", "not starting anything: this case wants the Launch only")
+
+    with mock.patch("dosbox_x_server.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
+         mock.patch("dosbox_x_server.ds.Session", build):
+        server.start(**kw)
+    assert seen, "`start` never reached the Launch"
+    return seen[0]
+
+
+def test_start_takes_every_path_as_written(tmp_path: Path) -> None:
+    """Each of `start`'s paths asserted SEPARATELY: they are separate arguments, so one
+    assertion over one of them would leave the others free to regress."""
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    launch = _launch_of(conf=str(conf), cwd=str(tmp_path), seconds=30,
+                        captures_dir=str(tmp_path / "caps"), logfile=str(tmp_path / "e9.log"),
+                        state_dir=str(tmp_path / "states"))
+    assert launch.conf == conf and launch.cwd == tmp_path.resolve()
+    assert launch.captures_dir == tmp_path / "caps" and launch.logfile == tmp_path / "e9.log"
+    assert launch.state_dir == tmp_path / "states"
+
+
+@pytest.mark.parametrize("arg", ["conf", "cwd", "captures_dir", "logfile", "state_dir"])
+def test_start_refuses_a_tilde_in_every_path_and_builds_nothing(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, arg: str) -> None:
+    """`Path("~/g.conf")` is a RELATIVE path whose first component is `~`: nothing here
+    expands it, so it is refused by name before any session is built, and nothing is made
+    at the literal `~` either."""
+    monkeypatch.chdir(tmp_path)
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    kw: dict[str, Any] = {"conf": str(conf), "cwd": str(tmp_path), "seconds": 30,
+                          arg: "~/x"}
+    built: list[ds.Launch] = []
+    with mock.patch("dosbox_x_server.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
+         mock.patch("dosbox_x_server.ds.Session", built.append):
+        got = cast(dict[str, Any], server.start(**kw))
+    assert got["code"] == "bad_argument" and f"{arg}='~/x'" in got["message"], got
+    assert built == [] and not (tmp_path / "~").exists()
+
+
+def test_the_two_optional_paths_stay_absent_when_the_caller_omits_them(tmp_path: Path) -> None:
+    """`captures_dir` and `logfile` are absent unless given: "the caller said nothing" never
+    turns into a path (a captures directory at the working directory, an `e9` channel
+    reading a directory, both `ok`)."""
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    launch = _launch_of(conf=str(conf), cwd=str(tmp_path), seconds=30)
+    assert launch.captures_dir is None and launch.logfile is None
+    assert launch.state_dir == tmp_path.resolve() / "save"
+
+
+def test_memdump_refuses_a_tilde_dest_and_writes_nowhere(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`~/dump.bin` taken as written would put the bytes in a directory literally named `~`:
+    it is refused before any session is asked, and no `~` directory is made."""
+    monkeypatch.chdir(tmp_path)
+    fake = install()
+    got = cast(dict[str, Any],
+               server.memdump(ref="0000:00000400", length=16, dest="~/dump.bin"))
+    assert got["code"] == "bad_argument" and "`~`" in got["message"], got
+    assert fake.memdump_calls == [] and not (tmp_path / "~").exists()
+
+
+def test_capture_frame_refuses_a_tilde_in_either_path(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`dest` AND `source`, separately, because they are two arguments."""
+    monkeypatch.chdir(tmp_path)
+    fake = install()
+    seen: list[Any] = []
+    fake.frame = lambda *a, **k: seen.append(a)  # type: ignore[method-assign,assignment]
+    for kw in ({"dest": "~/shot.png"},
+               {"dest": str(tmp_path / "shot.png"), "source": "~/run.avi"}):
+        got = cast(dict[str, Any], server.capture_frame(5, **kw))
+        assert got["code"] == "bad_argument" and "`~`" in got["message"], got
+    assert seen == [] and not (tmp_path / "~").exists()
+
+
+def test_an_omitted_capture_source_stays_absent_rather_than_becoming_a_path(
+        tmp_path: Path) -> None:
+    """The source defaults to "the largest capture", decided inside the session; an omitted
+    one is handed down as absent, never as a path."""
+    fake = install()
+    seen: list[Path | None] = []
+
+    def frame(at: int, dest: Path, source: Path | None = None) -> Path:
+        seen.append(source)
+        dest.write_bytes(b"\x89PNG")
+        return dest
+
+    fake.frame = frame  # type: ignore[method-assign]
+    server.capture_frame(5, str(tmp_path / "shot.png"))
+    assert seen == [Path("/caps/run_001.avi")], "the default source is the largest capture"
+
+
+@pytest.mark.parametrize("bad", ["~nosuchuser-here/x", "~\x00/x"])
+def test_a_tilde_user_or_a_nul_is_a_refusal_and_not_a_traceback(
+        tmp_path: Path, bad: str) -> None:
+    """`tool()` translates only `Invalid`, so both spellings are refused cleanly, through three
+    tools, each reply carrying its session block."""
+    got = cast(dict[str, Any], server.start(conf=bad, cwd=str(tmp_path), seconds=30))
+    assert got["code"] == "bad_argument" and "session" in got, got
+    install()
+    got = cast(dict[str, Any], server.memdump(ref="0000:00000400", length=16, dest=bad))
+    assert got["code"] == "bad_argument" and "session" in got, got
+    got = cast(dict[str, Any], server.snapshot(dest=bad))
+    assert got["code"] == "bad_argument", got
+    # The control: an absolute path in a directory that is there goes through.
+    ok = cast(dict[str, Any], server.memdump(ref="0000:00000400", length=16,
+                                             dest=str(tmp_path / "fine.bin")))
+    assert ok["status"] == "ok", ok
+
+
+# ------------------------------------------------------------------------- symbols
+
+NM_TEXT = ("0016df20 T _main\n"
+           "0005c830 T _engine_load_midi\n"
+           "0005aa20 T _engine_create\n"
+           "0013a020 t .text\n")
+
+
+def _source(tmp_path: Path, text: str = NM_TEXT) -> str:
+    p = tmp_path / "rechipd.sym"
+    p.write_text(text, encoding="utf-8")
+    return str(p)
+
+
+def test_the_base_is_measured_off_the_machine_and_not_assumed(tmp_path: Path) -> None:
+    """The one fact a symbol file cannot be built without, and the one place it lives.
+
+    A toolchain emits OFFSETS; this debugger's var list stores LINEAR addresses. Under
+    a DPMI host the difference is decided at load time, so it is read from the running
+    machine -- and the LIMIT comes back beside it because that is the independent thing
+    a caller can check the base against.
+    """
+    install(mode="Pr32")
+    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path)))
+    assert got["status"] == "ok", got
+    assert got["base"] == MEASURED_BASE, got
+    assert got["limit"] == 0x0023FFFF, got
+    assert got["base_from"] == "CS", got
+
+
+def test_the_base_is_read_from_this_commands_echo_and_not_the_first_on_screen(
+        tmp_path: Path) -> None:
+    """The debugger overlays `ss: b:00008240` into the register pane, so a reader that
+    takes the first `b:` on the screen answers about the STACK selector.
+
+    This is the case that makes the anchoring load-bearing rather than tidy: the stack
+    base is in the captured screen, above the answer, and it is a perfectly plausible
+    number.
+    """
+    install(mode="Pr32")
+    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path),
+                                                   base_from="DS"))
+    assert got["base"] == MEASURED_BASE, got
+    assert got["base"] != 0x00008240, "it answered with the stack selector's base"
+
+
+def test_an_explicit_base_reports_no_limit_rather_than_inventing_one(
+        tmp_path: Path) -> None:
+    """The limit is what lets a caller check the base is really this program's, so a
+    fabricated one would hand their own assumption back as evidence for itself."""
+    install()
+    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path),
+                                                   base="100000"))
+    assert got["base"] == 0x00100000, got
+    assert got["limit"] == -1, got
+    assert got["base_from"] == "caller", got
+
+
+def test_every_parsed_symbol_is_accounted_for_in_the_reply(tmp_path: Path) -> None:
+    """The counts are what a caller reads INSTEAD of the names, so they must sum."""
+    install(mode="Pr32")
+    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path)))
+    assert got["parsed"] == 4, got
+    assert (got["kept"] + got["excluded_sections"] + got["excluded_pattern"]
+            + got["unencodable_count"]) == got["parsed"], got
+    assert got["excluded_sections"] == 1, got
+    assert got["truncated_names"] == 1, got    # `_engine_load_midi` is 17 characters
+
+
+def test_the_accounting_still_sums_when_the_unencodable_list_is_truncated(
+        tmp_path: Path) -> None:
+    """`unencodable` is a POSITIONAL SLICE, so it needs a count beside it or the
+    reply's own arithmetic stops adding up -- and the caller's conservation check fails
+    silently, over a reply whose whole purpose is that the counts are what you read
+    instead of the names.
+
+    THE FIXTURE HAS TO EXCEED THE CAP. The other case has four symbols and at most one
+    unencodable, so it could never reach it: the sum held there while it was broken,
+    and the assertion was written against `len(...)`, which encoded the break.
+    """
+    install(mode="Pr32")
+    text = "".join(f"0000{i:04x} T _caf\u00e9{i}\n" for i in range(12)) + "00009999 T _ok\n"
+    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path, text)))
+    assert got["parsed"] == 13, got
+    assert got["unencodable_count"] == 12, got
+    assert len(got["unencodable"]) == 8, "the list is capped, which is the point"
+    assert (got["kept"] + got["excluded_sections"] + got["excluded_pattern"]
+            + got["unencodable_count"]) == got["parsed"], got
+
+
+def test_loaded_is_read_back_out_of_the_debugger_and_lv_appends(
+        tmp_path: Path) -> None:
+    """`ok` is not evidence: this emulator prints it for a filename it truncated.
+
+    And `LV` appends, measured, so a second load leaves BOTH lists -- `loaded` is the
+    debugger's whole holding, not the size of this call. A tool reporting the latter
+    would be describing something the real command does not do.
+    """
+    install(mode="Pr32")
+    src = _source(tmp_path)
+    first = cast(dict[str, Any], server.symbols_load(source=src))
+    assert first["loaded"] == first["kept"] == 3, first
+    second = cast(dict[str, Any], server.symbols_load(source=src))
+    assert second["kept"] == 3, second
+    assert second["loaded"] == 6, second
+
+
+def test_the_bytes_that_went_in_carry_the_measured_linear_address(
+        tmp_path: Path) -> None:
+    """End to end through the server: `nm`'s 0x16DF20 plus the machine's 0x400000 is
+    the 0x56DF20 the live debugger was measured holding for `_main`."""
+    s = install(mode="Pr32")
+    server.symbols_load(source=_source(tmp_path))
+    assert ("_main", 0x0056DF20) in s.loaded, s.loaded
+
+
+def test_a_source_that_is_not_a_symbol_list_is_refused_by_name(tmp_path: Path) -> None:
+    install()
+    src = _source(tmp_path, "make: *** No rule to make target 'all'.  Stop.\n")
+    got = cast(dict[str, Any], server.symbols_load(source=src))
+    assert got["status"] == "INVALID", got
+    assert "rechipd.sym" in got["message"], got
+    assert "session" in got, got
+
+
+def test_a_register_this_debugger_does_not_report_is_refused_not_sent(
+        tmp_path: Path) -> None:
+    """`SELINFO` answers an argument it does not know with an EMPTY name and an all-zero
+    descriptor rather than an error -- measured on `SELINFO AF` -- which reads exactly
+    like a real selector based at 0."""
+    install(mode="Pr32")
+    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path),
+                                                   base_from="AX"))
+    assert got["status"] == "INVALID", got
+    assert "ZEROED" in got["message"], got
+
+
+def test_a_pattern_narrows_by_the_full_name(tmp_path: Path) -> None:
+    install(mode="Pr32")
+    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path),
+                                                   pattern="^_engine"))
+    assert got["kept"] == 2, got
+    assert got["excluded_pattern"] == 1, got   # `_main`; `.text` is a section
+
+
+# A BORLAND MAP WITH AN OVERLAY, minimal and NOT the symbols suite's captured fixture:
+# what is being asserted here is the SEAM -- that the flag survives the tool boundary --
+# and the parsing of it is that suite's, next to the real file it was captured from.
+TLINK_TEXT = (
+    " Start  Stop   Length Name               Class\r\n"
+    "\r\n"
+    " 00000H 0ACD7H 0ACD8H _TEXT              CODE\r\n"
+    "\r\n"
+    "  Address         Publics by Name\r\n"
+    "\r\n"
+    " 0D74:00E21 idle  ACTIVEIMAN\r\n"
+    " 0459:00123       ACTIVE_CLS\r\n"
+    "\r\n"
+    "Program entry point at 0000:0000\r\n")
+
+
+def test_an_overlay_symbol_reaches_the_caller_flagged_and_counted(tmp_path: Path)\
+        -> None:
+    """CONDITIONALITY AT THE BOUNDARY, which is the only place it is worth anything.
+
+    TLINK writes `idle` beside a public in an overlay it has not made resident, so that
+    address holds whatever is swapped in when you look. The reader carries the flag now;
+    this is the case that says an MCP caller SEES it -- both as a count of how much of
+    the table is like that, and per symbol, because a total cannot answer about the one
+    name you asked for.
+
+    THE BASE IS PASSED. A Borland map is real-mode `SEG:OFFS` and `base_from` measures a
+    DPMI selector that does not exist there, which is the tool's own documented refusal.
+    """
+    install()
+    src = tmp_path / "speedf.map"
+    src.write_text(TLINK_TEXT, encoding="utf-8")
+    got = cast(dict[str, Any], server.symbols_load(source=str(src), base="1000"))
+    assert got["status"] == "ok", got
+    assert got["kept"] == 2, got
+    assert got["overlay_idle"] == 1, got
+    # A SUBSET AND NOT A BUCKET: the counts above still partition `parsed`, so a caller
+    # checking the accounting is not told a symbol went missing.
+    assert (got["kept"] + got["excluded_sections"] + got["excluded_pattern"]
+            + got["excluded_unplaceable"] + got["unencodable_count"]
+            == got["parsed"] == 2), got
+
+    flagged = cast(dict[str, Any], server.symbols_find(name="ACTIVEIMAN"))
+    assert flagged["symbols"][0]["idle"] is True, flagged
+    # THE CONTROL, without which `idle: True` hardcoded satisfies the line above.
+    plain = cast(dict[str, Any], server.symbols_find(name="ACTIVE_CLS"))
+    assert plain["symbols"][0]["idle"] is False, plain
+    # AND THE OTHER BRANCH of the same tool, which builds its reply separately.
+    linear = f"{0x1000 + 0x0D74 * 16 + 0x00E21:X}"
+    by_addr = cast(dict[str, Any], server.symbols_find(linear=linear))
+    assert by_addr["name"] == "ACTIVEIMAN" and by_addr["idle"] is True, by_addr
+
+
+def test_an_nm_table_is_reported_with_no_overlay_symbols(tmp_path: Path) -> None:
+    """THE CONTROL FOR THE FORMAT: `nm` has no such concept, so anything but zero here
+    would be this server inventing one. Without it, a hardcoded 1 passes the case
+    above."""
+    install(mode="Pr32")
+    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path)))
+    assert got["overlay_idle"] == 0, got
+    found = cast(dict[str, Any], server.symbols_find(name="_main"))
+    assert found["symbols"][0]["idle"] is False, found
+
+
+# TWO SECTIONS AT THE SAME OFFSET, and the `Start` column reading ZERO -- both of them
+# copied from the real artefact (`HELLO32.MAP`) rather than from the vendor's
+# documentation, which is where the previous version of this came from and where it was
+# wrong. Two sections because with one, a reply that ignored the section index and one
+# that used it are the same reply.
+TLINK32_TEXT = (
+    " Start         Length     Name               Class\r\n"
+    "\r\n"
+    " 0001:00000000 0000214D4H _TEXT              CODE\r\n"
+    " 0002:00000000 0000059B8H _DATA              DATA\r\n"
+    "\r\n"
+    "  Address         Publics by Name\r\n"
+    "\r\n"
+    " 0001:000000E4       _main\r\n"
+    " 0002:000000E4       _table\r\n"
+    "\r\n"
+    "Program entry point at 0001:000000E4\r\n")
+
+
+def test_a_32_bit_map_reaches_the_caller_through_the_tool(tmp_path: Path) -> None:
+    """THE WHOLE SEAM, which nothing exercised: every 32-bit assertion lived one layer
+    down, against `sym.parse` directly.
+
+    `symbols_load` -> `parse` -> the 32-bit path -> `plan` -> `encode` -> the debugger ->
+    `_placed` is where the arithmetic a caller actually sees is decided.
+
+    `section_bases` IS THE POINT OF THE CASE NOW, and it replaced `base=0`. That old
+    argument rested on the belief that the map's `Start` column is a full address, so
+    the offsets coming out were already complete; the real artefact prints zeros there,
+    which makes `base=0` mean "put everything at its raw offset". A sectioned map is
+    placed from a table the CALLER supplies, because the bases are not in the file.
+
+    THE TWO BASES ARE DISTINCT AND THE TWO SYMBOLS SHARE AN OFFSET, which is what lets
+    this fail at all: with one base, or with the section index ignored, `_main` and
+    `_table` come back at the same address and the reply reads exactly as right.
+    """
+    install()
+    src = tmp_path / "flat.map"
+    src.write_text(TLINK32_TEXT, encoding="utf-8")
+    got = cast(dict[str, Any], server.symbols_load(
+        source=str(src), section_bases={"1": "0x401000", "2": "0x423000"}))
+    assert got["status"] == "ok", got
+    assert got["kept"] == 2 and got["unreadable"] == 0, got
+    assert got["overlay_idle"] == 0, got
+
+    at = {}
+    for name in ("_main", "_table"):
+        found = cast(dict[str, Any], server.symbols_find(name=name))
+        one = found["symbols"][0]
+        assert one["offset"] == 0x000000E4, one
+        assert one["idle"] is False, one
+        at[name] = (one["section"], one["linear"])
+    assert at == {"_main": (1, 0x004010E4), "_table": (2, 0x004230E4)}, at
+
+
+def test_a_sectioned_map_refuses_a_section_the_caller_did_not_position(
+        tmp_path: Path) -> None:
+    """The refusal a caller most needs, through the layer they meet it at: it NAMES the
+    section nobody positioned rather than reporting a row as lost."""
+    install()
+    src = tmp_path / "flat.map"
+    src.write_text(TLINK32_TEXT, encoding="utf-8")
+    # THE TOOL DECORATOR TRANSLATES A REFUSAL INTO A REPLY rather than letting it
+    # escape, which is the whole reason `Invalid` exists as its own type -- so the
+    # assertion is on the reply, not on an exception.
+    got = cast(dict[str, Any], server.symbols_load(
+        source=str(src), section_bases={"1": "0x401000"}))
+    assert got["status"] != "ok", got
+    assert "section 2" in str(got["message"]), got["message"]
+    assert "_table" in str(got["message"]), got["message"]
+
+
+def test_section_bases_keys_arrive_as_json_strings_and_are_read_as_numbers(
+        tmp_path: Path) -> None:
+    """JSON HAS NO INTEGER KEYS, so the table reaches this tool keyed on `"1"`.
+
+    Accepted as it comes, it would match NO symbol -- every one of them carries an `int`
+    section -- while looking exactly like a table that does, and the caller would be told
+    their sections are unpositioned about a table naming all of them.
+    """
+    install()
+    src = tmp_path / "flat.map"
+    src.write_text(TLINK32_TEXT, encoding="utf-8")
+    got = cast(dict[str, Any], server.symbols_load(
+        source=str(src), section_bases={"0x1": "0x401000", "2": "0x423000"}))
+    assert got["kept"] == 2, got
+    # AND A KEY THAT IS NOT A NUMBER IS REFUSED rather than silently dropped, because a
+    # dropped key is a section that then reads as unpositioned.
+    bad = cast(dict[str, Any], server.symbols_load(
+        source=str(src), section_bases={"_TEXT": "0x401000"}))
+    assert bad["status"] != "ok", bad
+    assert "section indices" in str(bad["message"]), bad["message"]
+
+
+# ------------------------------------------------------------- finding one again
+
+def test_find_refuses_before_anything_is_loaded() -> None:
+    install()
+    got = cast(dict[str, Any], server.symbols_find(name="_main"))
+    assert got["status"] == "INVALID", got
+    assert "no symbol table" in got["message"], got
+
+
+def test_find_answers_with_both_addresses(tmp_path: Path) -> None:
+    """The offset is what the toolchain printed and the linear is what the debugger
+    shows; quoting one makes the reader do the arithmetic this tool got right once."""
+    install(mode="Pr32")
+    server.symbols_load(source=_source(tmp_path))
+    got = cast(dict[str, Any], server.symbols_find(name="_main"))
+    assert got["status"] == "ok", got
+    assert got["symbols"][0]["offset"] == 0x0016DF20, got
+    assert got["symbols"][0]["linear"] == 0x0056DF20, got
+
+
+def test_find_by_linear_takes_the_base_back_off(tmp_path: Path) -> None:
+    install(mode="Pr32")
+    server.symbols_load(source=_source(tmp_path))
+    got = cast(dict[str, Any], server.symbols_find(linear="0056DF24"))
+    assert got["name"] == "_main", got
+    assert got["delta"] == 4, got
+
+
+def test_find_by_linear_takes_hex_text_and_refuses_a_number(tmp_path: Path) -> None:
+    """`linear` is hex TEXT, so no caller converts hex to decimal: a number is
+    refused naming the argument, never read as hex digits or coerced, and so is text that is
+    not a hex address."""
+    install(mode="Pr32")
+    server.symbols_load(source=_source(tmp_path))
+    prefixed = cast(dict[str, Any], server.symbols_find(linear="0x56DF24"))
+    assert prefixed["name"] == "_main" and prefixed["delta"] == 4, prefixed
+    for bad in (0x0056DF24, "56DFZZ", "-56DF24"):
+        got = cast(dict[str, Any], server.symbols_find(linear=bad))
+        assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+        assert "linear is" in got["message"], got["message"]
+
+
+def test_find_wants_exactly_one_question(tmp_path: Path) -> None:
+    install()
+    server.symbols_load(source=_source(tmp_path))
+    both = cast(dict[str, Any], server.symbols_find(name="_main", linear="1"))
+    assert both["status"] == "INVALID", both
+    neither = cast(dict[str, Any], server.symbols_find())
+    assert neither["status"] == "INVALID", neither
+
+
+def test_the_table_is_forgotten_when_the_session_goes(tmp_path: Path) -> None:
+    """THE STALE-BASE GUARD, and it is the reason the table is cleared at all.
+
+    A base belongs to ONE loaded process. Kept across a close, `symbols_find` goes on
+    adding the old base to its offsets and hands back a confident linear address for a
+    program that is no longer running -- which this package treats as worse than a
+    refusal, because a refusal is visible.
+    """
+    install(mode="Pr32")
+    server.symbols_load(source=_source(tmp_path))
+    assert cast(dict[str, Any], server.symbols_find(name="_main"))["status"] == "ok"
+    server.close()
+    got = cast(dict[str, Any], server.symbols_find(name="_main"))
+    assert got["status"] == "INVALID", got
+    assert dstate.STATE.table == [], "the table outlived the session it was measured on"
+
+
+def test_a_session_that_died_on_its_bound_takes_the_table_with_it(
+        tmp_path: Path) -> None:
+    """THE MOST DANGEROUS OF THE THREE CLEARING SITES, and the one no test reached.
+
+    `_forget_symbols` runs when the session OBJECT changes. A session that expires on
+    its own bound changes no object: it is buried inside `_live()`, and `symbols_find`
+    did not call `_live()` at all -- so it answered `ok` with a linear address for a
+    program that was gone, and whether the caller got that or a refusal depended on
+    whether they happened to call another tool first.
+    """
+    s = install()
+    server.symbols_load(source=_source(tmp_path))
+    s._alive = False                      # what a bound expiring looks like from here
+    got = cast(dict[str, Any], server.symbols_find(linear="0056DF24"))
+    assert got["status"] == "INVALID", got
+    assert "no live session" in got["message"], got
+    assert dstate.STATE.table == [], "the table outlived the process it was measured on"
+
+
+def test_a_new_session_does_not_inherit_the_previous_ones_table(
+        tmp_path: Path) -> None:
+    """The second untested site. `start` clears ABOVE every validation, so it is
+    reached with no previous session and on every failure path -- but nothing asserted
+    it, and deleting that one call left the whole suite green.
+
+    IT CLEARS EVEN WHEN `start` GOES ON TO REFUSE, which is the direction that matters:
+    the clear sits above every validation, so a `start` that fails for any reason still
+    does not leave the previous program's base behind.
+    """
+    s = install(mode="Pr32")
+    server.symbols_load(source=_source(tmp_path))
+    assert dstate.STATE.table, "precondition: a table is installed"
+    s._alive = False                    # the previous session's bound has expired
+    server.start(conf=str(tmp_path / "nope.conf"), cwd=str(tmp_path), seconds=30)
+    assert dstate.STATE.table == [], (
+        "a new session inherited the previous one's table, so `symbols_find` would add "
+        "a dead program's base to its offsets")
+
+
+def test_a_start_refused_because_a_session_is_live_keeps_the_table(
+        tmp_path: Path) -> None:
+    """The mirror, and it is what stops "clear on every start" being the whole answer:
+    a `start` refused because the machine is still up has changed nothing, and the
+    table still describes the program that is still running."""
+    install(mode="Pr32")
+    server.symbols_load(source=_source(tmp_path))
+    got = cast(dict[str, Any], server.start(conf=str(tmp_path / "x.conf"),
+                                            cwd=str(tmp_path), seconds=30))
+    assert got["status"] == "INVALID" and "already live" in got["message"], got
+    assert cast(dict[str, Any],
+                server.symbols_find(name="_main"))["status"] == "ok"
+
+
+# A `SELINFO CS` reply CAPTURED at `-break-start` (real mode, at the reset vector). The
+# descriptor is all zeroes and it is INDISTINGUISHABLE from the reply for a selector nothing
+# has set up -- which is why the type field is what decides, not the base.
+SELINFO_ZEROED = (
+    "ooooRegister Overviewoooooooooooooooooooooooooooooooooooooooooo\r\n"
+    "EAX=00000000  ESI=00000000  DS=0000   ES=0000   SS=0000 Real\r\n"
+    "EBX=00000000  EDI=00000000  CS=F000   EIP=0000FFF0  C0 Z0 S0 O0\r\n"
+    "ooooOutputoooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+    "SelectorInfo CS:\r\n"
+    "CS: b:00000000 type:00 parbg\nl:00000000 dpl : 0 00000\r\n"
+    "I-> _")
+
+
+# `SELINFO CS` at a real-mode stop INSIDE a program (the probe guest at 0814:012A),
+# captured through the MCP client: the echo and nothing else, no descriptor line at all.
+SELINFO_REAL_MODE_IN_A_PROGRAM = "SelectorInfo CS:\r\n\n\nI-> _"
+
+
+def test_a_real_mode_map_with_no_base_is_refused_before_selinfo_is_asked(
+        tmp_path: Path) -> None:
+    """In real mode there are no descriptors to measure a base from, and this build's
+    `SELINFO` there prints no descriptor line at all inside a program, so asking it could only
+    give the parser's refusal, which names the wrong cause. The register pane already says the
+    mode, so the refusal comes first and names the cause and the remedy: `base` as hex text,
+    the load segment times 16. A 16-bit protected-mode pane has descriptors and is measured."""
+    class RealModeProgram(FakeSession):
+        asked: list[str] = []
+
+        def selector(self, reg: str) -> dict[str, int]:
+            self.asked.append(reg)
+            self._screen = SELINFO_REAL_MODE_IN_A_PROGRAM
+            return ds.Session.selector(self, reg)      # type: ignore[arg-type]
+
+    s = RealModeProgram()
+    s.asked = []
+    dstate.STATE.session = s                                # type: ignore[assignment]
+    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path)))
+    assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+    assert "real mode" in got["message"].lower() and "`base`" in got["message"], got
+    assert "* 16" in got["message"], got
+    assert s.asked == [], "SELINFO was asked in real mode"
+    pr16 = FakeSession(mode="Pr16")
+    dstate.STATE.session = pr16                             # type: ignore[assignment]
+    measured = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path)))
+    assert measured["status"] == "ok" and measured["base"] == MEASURED_BASE, measured
+
+
+def test_an_absent_descriptor_is_refused_rather_than_placed_at_base_zero(
+        tmp_path: Path) -> None:
+    """THE GUARD THAT MATTERS MOST, because its failure mode is silent and plausible.
+
+    A zeroed descriptor (the shape `SELINFO` gives at the reset vector, and for a selector
+    nothing has set up) taken at face value is `base = 0`, which places every symbol at its
+    raw offset -- a table that loads without complaint, reports `ok`, and names whatever
+    occupies low memory. Real mode is refused before it is asked; this is the guard that is
+    left, for a protected-mode selector with no present descriptor.
+
+    The type field is what separates it from a real descriptor, and it separates it from
+    NOTHING ELSE: base 0 alone is not the signal, because a base of 0 is a legal thing
+    for a descriptor to have.
+    """
+    class Unset(FakeSession):
+        """The double with the zeroed descriptor, on a protected-mode pane."""
+
+        def where(self) -> dict[str, str]:
+            return {"cs": "00A7", "eip": "00000000", "mode": "Pr32"}
+
+        def selector(self, reg: str) -> dict[str, int]:
+            self._screen = SELINFO_ZEROED
+            return ds.Session.selector(self, reg)      # type: ignore[arg-type]
+
+    s = Unset()
+    dstate.STATE.session = s                                # type: ignore[assignment]
+    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path)))
+    assert got["status"] == "INVALID", got
+    assert "no present descriptor" in got["message"], got
+    assert "raw offset" in got["message"], got
+
+    # AND THE CONTROL: an explicit base still goes through on that same machine, so the
+    # refusal is about the DESCRIPTOR and not a helper that refuses everything.
+    ok = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path),
+                                                  base="F0000"))
+    assert ok["status"] == "ok", ok
+    assert ("_main", 0x000F0000 + 0x0016DF20) in s.loaded, s.loaded
+
+
+def test_an_empty_name_is_a_listing_and_not_a_lookup(tmp_path: Path) -> None:
+    """`startswith("")` is true of every symbol, so an empty name matched all of them
+    under `status: ok` -- honest arithmetic, and not the question anybody asked."""
+    install()
+    server.symbols_load(source=_source(tmp_path))
+    got = cast(dict[str, Any], server.symbols_find(name=""))
+    assert got["status"] == "INVALID", got
+
+
+def test_a_failed_load_does_not_replace_a_table_that_was_working(
+        tmp_path: Path) -> None:
+    """A REFUSAL THAT ALSO CORRUPTS STATE inverts this module's one rule.
+
+    `load_symbols` refuses on many paths -- seven at the time of writing, and the count
+    is not the point, which is why this no longer quotes one: it said FOUR while the
+    method already had six. Installing the table before calling it meant a refused load
+    still replaced a good one: the caller got INVALID from `symbols_load` and `ok` from
+    `symbols_find`, answering out of a table the debugger does not hold.
+    """
+    s = install(mode="Pr32")
+    server.symbols_load(source=_source(tmp_path))
+    good = cast(dict[str, Any], server.symbols_find(name="_main"))["symbols"][0]
+
+    def refuse(data: bytes) -> list[tuple[str, int]]:
+        raise ds.Invalid("unexpected_answer", "the debugger did not acknowledge it")
+
+    s.load_symbols = refuse                     # type: ignore[method-assign]
+    other = _source(tmp_path, "00001000 T _somebody_elses_main\n")
+    bad = cast(dict[str, Any], server.symbols_load(source=other))
+    assert bad["status"] == "INVALID", bad
+    still = cast(dict[str, Any], server.symbols_find(name="_main"))
+    assert still["status"] == "ok", still
+    assert still["symbols"][0] == good, "a refused load replaced a working table"
+
+
+def test_the_descriptor_type_is_reported_so_a_caller_can_see_what_was_read(
+        tmp_path: Path) -> None:
+    """`1B` is a 32-bit code segment and `13` is data; an explicit base reports `-1`
+    because there was no descriptor to read at all."""
+    install(mode="Pr32")
+    measured = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path)))
+    assert measured["descriptor"] == 0x1B, measured
+    given = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path),
+                                                     base="1000"))
+    assert given["descriptor"] == -1, given
+
+
+def test_a_source_that_cannot_be_read_is_a_refusal_and_not_a_traceback(
+        tmp_path: Path) -> None:
+    """`tool()` translates only `Invalid`, and a mistyped path is this tool's likeliest first
+    call: it is refused naming the file it did not find, with the session block."""
+    install()
+    got = cast(dict[str, Any], server.symbols_load(source=str(tmp_path / "nope.sym")))
+    assert got["status"] == "INVALID", got
+    assert "no symbol file at" in got["message"], got
+    assert "session" in got, got
+
+    # A DIRECTORY is the other spelling of the same mistake, and it raises a different
+    # OSError subclass -- so it is here rather than assumed to be covered.
+    d = cast(dict[str, Any], server.symbols_load(source=str(tmp_path)))
+    assert d["status"] == "INVALID", d
+
+
+# ---------------------------------- the three blind spots that were MEASURED
+#
+# Each of these breaks came back GREEN over the whole contract tier. They are the
+# same shape as the defect `read_memory`'s own docstring convicts -- accept a number,
+# never use it, echo it back -- and that one was fixed while its two neighbours were
+# not.
+
+
+def test_memdump_forwards_the_address_the_caller_asked_for(tmp_path: Path) -> None:
+    """`_live().memdump(0, 0, length, ...)` passed every case: the double ignored the
+    segment and the offset, so nothing could tell a tool that forwards its caller's
+    address from one that dumps low memory and reports `ok`."""
+    fake = install()
+    dest = tmp_path / "d.bin"
+    # Inside one segment's 64 KiB, so it is one command whatever the mode; a range past offset
+    # 0xFFFF is `test_dosbox_x_dump.py`'s, where the windows and the descriptor are judged.
+    got = cast(dict[str, Any], server.memdump(ref="0749:00001A44",
+                                              length=64, dest=str(dest)))
+    assert got["status"] == "ok"
+    assert fake.memdump_calls == [(0x0749, 0x1A44, 64)], fake.memdump_calls
+    # AND THE LENGTH IS NOT 16, which is what both pre-existing dump cases happened to
+    # request -- so a break pinning the literal 16 was green as well.
+    assert got["bytes"] == 64
+
+
+def test_set_register_writes_the_value_it_was_given() -> None:
+    """`_live().set_register(name, 0)` was green: the only case asserted `altered` and
+    the session block, never the mapping that comes back, so the VALUE was unwatched."""
+    fake = install()
+    got = cast(dict[str, Any], server.set_register(name="EAX", value=0xDEADBEEF))
+    assert got["registers"]["EAX"] == "DEADBEEF", got["registers"]
+    # READ BACK: `readback` is what the pane says and `verified` whether it equals what
+    # was sent; a register the debugger masks answers false under `status: ok` and
+    # `altered` either way, rather than being refused.
+    assert got["readback"] == "DEADBEEF" and got["verified"] is True and got["value"] == 0xDEADBEEF
+    assert got["summary"] == "set_register EAX = 3735928559, verified True"
+    # THE CONTROL: a different value has to produce a different answer, or this is
+    # asserting a constant.
+    again = cast(dict[str, Any], server.set_register(name="EAX", value=1))
+    assert again["registers"]["EAX"] == "00000001"
+    fake.masks = True
+    masked = cast(dict[str, Any], server.set_register(name="EAX", value=0x10000))
+    assert masked["status"] == "ok" and masked["verified"] is False
+    assert masked["readback"] == "00000000" and masked["session"]["altered"] is True
+
+
+def test_the_central_distinctness_guarantee_is_gated_and_not_merely_written() -> None:
+    """`Plan.check()`'s own docstring says the guarantee "was measurably FALSE for a
+    while, and a guarantee that lives only in a test is one that holds until somebody
+    edits the function without running that test" -- and then NOTHING tested the check
+    itself. Removing its uniqueness raise passed the whole tier.
+
+    All three of its refusals are exercised here, each built by hand rather than by
+    `plan()`, because `plan()` cannot produce an invalid one and a check that can only
+    be fed valid input is not being checked.
+    """
+    two = [dsym.Symbol("_a", 1), dsym.Symbol("_b", 2)]
+    with pytest.raises(dsym.BadSymbolText, match="belonging to another symbol"):
+        dsym.Plan(parsed=2, symbols=two, short=["x", "x"]).check()
+    with pytest.raises(dsym.BadSymbolText, match="cannot be zipped"):
+        dsym.Plan(parsed=2, symbols=two, short=["x"]).check()
+    with pytest.raises(dsym.BadSymbolText, match="accounting does not add up"):
+        dsym.Plan(parsed=99, symbols=two, short=["x", "y"]).check()
+    # THE CONTROL: a well-formed plan passes all three, so this is not a check that
+    # refuses everything.
+    dsym.Plan(parsed=2, symbols=two, short=["x", "y"]).check()
+
+
+# ------------------------------------------------ the verification pass
+
+def test_build_check_is_invalid_and_not_ok_when_there_is_no_binary() -> None:
+    """`build_check` had NO contract case at all -- not one, which is what the finding
+    said, but none.
+
+    MEASURED: `grep build_check tests/` matched a comment, a string inside another
+    test's expected set, and ONE case in the LIVE tier; `pytest -k build_check` selected
+    zero of 288. So the defect its own docstring records -- "An earlier version
+    returned `ok` with `binary: None`, the one tool whose purpose is examining
+    preconditions reporting a clean result for a missing tool" -- was pinned by nothing
+    that runs on a commit, and by nothing else either.
+
+    THE PATH IS PATCHED, NOT THE ANSWER: `shutil.which` is what decides, so that is
+    what the double stands in for, and the real body runs.
+    """
+    with mock.patch("dosbox_x_server.shutil.which", lambda _n: None):
+        got = cast(dict[str, Any], server.build_check())
+    assert got["status"] == "INVALID", got
+    assert "nothing here can work" in str(got["message"])
+    assert got.get("binary") is None, "an INVALID reply may not carry a binary"
+
+
+def test_build_check_is_invalid_when_the_build_has_no_debugger() -> None:
+    """The precondition it exists for. A build without the debugger starts fine and
+    then hangs `start` until its timeout, so a `build_check` that could not tell them
+    apart would send a caller looking at their config."""
+    with (mock.patch("dosbox_x_server.shutil.which", lambda _n: "/usr/bin/dosbox-x"),
+          mock.patch("dosbox_x_server.subprocess.run",
+                     lambda *_a, **_k: SimpleNamespace(stdout="usage: ...", stderr=""))):
+        got = cast(dict[str, Any], server.build_check())
+    assert got["status"] == "INVALID", got
+    assert "without the debugger" in str(got["message"])
+
+
+def test_build_check_says_ok_and_names_the_surface_on_a_good_build(tmp_path: Path) -> None:
+    """THE GREEN BESIDE THE TWO REDS. Without it both cases above pass over a
+    `build_check` that raises unconditionally. The binary is a file of this case's own,
+    carrying the help line a heavy-debug build compiles, and one without it says false."""
+    binary = tmp_path / "dosbox-x"
+    binary.write_bytes(b"\x00" + ds.HEAVY_DEBUG_MARK + b"\x00")
+    with (mock.patch("dosbox_x_server.shutil.which", lambda _n: str(binary)),
+          mock.patch("dosbox_x_server.subprocess.run",
+                     lambda *_a, **_k: SimpleNamespace(stdout="-break-start\n",
+                                                       stderr=""))):
+        got = cast(dict[str, Any], server.build_check())
+        binary.write_bytes(b"\x00LOGS only\x00")
+        plain = cast(dict[str, Any], server.build_check())
+    assert got["status"] == "ok", got
+    assert got["binary"] == str(binary)
+    assert got["debugger"] is True
+    assert got["heavy_debug"] is True and plain["heavy_debug"] is False, (got, plain)
+    # NOT COMPARED AGAINST `registered_tools()`, which is what `build_check` itself
+    # returns: both sides move together, so `registered_tools() -> []` made the
+    # assertion `set() == set()`. It is held to a FLOOR and to tools named here.
+    tools = set(cast("list[str]", got["tools"]))
+    assert {"start", "close", "status", "build_check"} <= tools, tools
+    assert len(tools) >= 20, f"the surface shrank to {len(tools)}: {sorted(tools)}"
+
+
+def test_build_check_refuses_to_start_a_second_emulator_beside_a_live_one() -> None:
+    """It answers by running `dosbox-x -helpdebug`, which is a SECOND process of the
+    same binary -- and on a build without the debugger that is not a help listing, it
+    is a full emulator for the whole 20 s bound, because this build does not refuse an
+    option it does not know: it starts.
+
+    `start` refuses exactly this, in as many words. MEASURED before the fix: with a
+    live session installed, `build_check` spawned
+    `['/opt/homebrew/bin/dosbox-x', '-helpdebug']` with a 20 s timeout and returned
+    `ok`, while `start` in the identical state refused.
+
+    THE SPAWN IS WATCHED, not merely the status: asserting INVALID alone would pass
+    over a refusal raised AFTER the process had already been started.
+    """
+    install(alive=True)
+    spawned: list[list[str]] = []
+
+    def watched(cmd: list[str], **_k: object) -> object:
+        spawned.append(list(cmd))
+        return SimpleNamespace(stdout="-break-start\n", stderr="")
+
+    with (mock.patch("dosbox_x_server.shutil.which", lambda _n: "/usr/bin/dosbox-x"),
+          mock.patch("dosbox_x_server.subprocess.run", watched)):
+        got = cast(dict[str, Any], server.build_check())
+    assert got["status"] == "INVALID", got
+    assert "SECOND emulator" in str(got["message"])
+    assert spawned == [], f"it started one anyway: {spawned}"
+
+
+def test_a_limit_means_nothing_where_one_symbol_comes_back_and_is_not_refused_there(
+) -> None:
+    """`limit <= 0` was refused ABOVE the branch split, so it fired for `offset` and
+    `linear` -- which answer with exactly one symbol and never slice.
+
+    MEASURED before the fix: on the offset branch `limit=1` and `limit=10` returned
+    byte-identical replies (the proof it is not read) while `limit=0` was refused.
+    """
+    install(alive=True)
+    dstate.STATE.install_table([dsym.Symbol(name="_main", offset=0x1000, kind="T"),
+                                dsym.Symbol(name="_next", offset=0x2000, kind="T")])
+    dstate.STATE.base.update(base=0x10000)
+    try:
+        zero = cast(dict[str, Any], server.symbols_find(offset=0x1004, limit=0))
+        assert zero["status"] == "ok", zero
+        assert zero["name"] == "_main"
+        # AND IT IS STILL REFUSED WHERE IT MEANS SOMETHING, or this would have moved
+        # the defect rather than fixed it.
+        bad = cast(dict[str, Any], server.symbols_find(name="_ma", limit=0))
+        assert bad["status"] == "INVALID", bad
+        assert "would return nothing" in str(bad["message"])
+        # AND A CEILING, because a `limit` with no top hands a whole table back under the
+        # name of a lookup. The ceiling itself is taken, one past it refused,
+        # and the offset branch, which never reads `limit`, is still not corrected about it.
+        top = cast(dict[str, Any], server.symbols_find(name="_", limit=placement.SYMBOLS_LIMIT_MAX))
+        assert top["status"] == "ok" and top["symbols_total"] == 2, top
+        over = cast(dict[str, Any],
+                    server.symbols_find(name="_", limit=placement.SYMBOLS_LIMIT_MAX + 1))
+        assert over["status"] == "INVALID", over
+        assert f"1..{placement.SYMBOLS_LIMIT_MAX}" in str(over["message"]), over
+        fine = cast(dict[str, Any], server.symbols_find(offset=0x1004, limit=10 ** 6))
+        assert fine["status"] == "ok", fine
+    finally:
+        dstate.STATE.forget_symbols()
+
+
+def test_a_bad_pattern_is_a_refusal_and_not_a_traceback(tmp_path: Path) -> None:
+    """`dosbox_symbols.plan` compiled the caller's regex bare, and `symbols_load`'s
+    only guard is `except BadSymbolText`.
+
+    End to end through the tool, that lets
+    `re.PatternError: missing ), unterminated subpattern at position 0` come OUT of
+    `symbols_load` -- no `status`, no `reason`, no session block. The reader that takes a
+    pattern is the layer that owes the guard, and `dosbox_session.compiled` carries it.
+    """
+    install(alive=True)
+    src = tmp_path / "s.nm"
+    src.write_text("00001000 T _main\n00002000 T _next\n", encoding="utf-8")
+    got = cast(dict[str, Any], server.symbols_load(source=str(src), base="10000",
+                                                   pattern="(unclosed"))
+    assert got["status"] == "INVALID", got
+    assert "not a usable pattern" in str(got["message"])
+    assert "session" in got, "an INVALID reply must still carry the session block"
+    # AND IT DOES NOT BLAME THE FILE. `BadSymbolText`'s translation prefixes the
+    # caller's path, which is right for text that would not parse and wrong for an
+    # argument typed at the tool: a refusal reading
+    # `INVALID: /path/to/s.nm: that is not a usable pattern` names a file that is
+    # perfectly readable and was read.
+    assert str(src) not in str(got["message"]), (
+        f"the refusal names the source file for a defect in the PATTERN: "
+        f"{got['message']}")
+    # THE GREEN BESIDE IT: a pattern that compiles still works, or this passes over a
+    # `plan` that refuses every pattern.
+    ok = cast(dict[str, Any], server.symbols_load(source=str(src), base="10000",
+                                                  pattern="^_ma"))
+    assert ok["status"] == "ok", ok
+
+
+def test_a_read_memory_reply_carries_the_whole_data_view_and_not_just_the_row_asked_for(
+) -> None:
+    """The fixture held ONE row, and the reply's whole value is that EIGHT come back.
+
+    This tool returns rows instead of a screen precisely because the debugger's data
+    view holds eight of them and a positional cut fell inside them -- so the answer
+    began at E040 for a caller who had asked about E000. MEASURED before this case:
+    reducing `read_memory` to return only the row asked for left the ENTIRE contract
+    tier green (252 passed), over the exact defect the tool exists to prevent.
+    """
+    seg, off = 0x0749, 0
+    rows = [f"{seg:04X}:{off + 16 * i:08X} " + " ".join([f"{i:02X}"] * 16)
+            + "  " + "." * 16 for i in range(8)]
+    install(screen="some screen\r\n" + "\r\n".join(rows) + "\r\n")
+    got = cast(dict[str, Any], server.read_memory(ref=f"{seg:04X}:{off:08X}"))
+    assert got["status"] == "ok", got
+    assert got["rows"] == rows, got
+    assert len(got["rows"]) == 8, (
+        f"the data view paints eight rows and {len(got['rows'])} came back: a reply "
+        f"holding only the row asked for is the defect this tool was built against")
+
+
+def test_read_memory_refuses_a_segment_that_will_not_fit_the_command() -> None:
+    """The range check had no contract case at all: removing it left the
+    whole contract tier green (252 passed, measured), and its only cover was one
+    assertion in the LIVE tier -- the tier that skips itself on a machine with no
+    conf."""
+    seg, off = 0x0749, 0
+    row = f"{seg:04X}:{off:08X} " + " ".join(["00"] * 16) + "  " + "." * 16
+    install(screen=f"some screen\r\n{row}\r\n")
+    got = cast(dict[str, Any], server.read_memory(ref="10000:00000000"))
+    assert got["status"] == "INVALID", got
+    # THE MESSAGE IS ABOUT THE ARGUMENT, not about the screen. Without the check the
+    # call falls through to the row-match refusal, whose text blames the reply -- so
+    # asserting only INVALID would pass over the defect.
+    assert "a segment is 0x0000 to 0xFFFF" in str(got["message"]), got["message"]
+
+
+def test_each_double_returns_the_field_set_the_real_method_returns() -> None:
+    """The comment above the four debugging doubles claims exactly this, and it was
+    FALSE for two of them.
+
+    MEASURED by AST before the fix: `step`'s double was missing `moved` and `stalled`
+    -- and `stalled` was added by the fix pass, so the double had never been
+    brought forward with the fix it stands in for -- while `e9_wait`'s was missing
+    `arrived_during` and `lines_examined` and INVENTED `lines_scanned`, a field the real
+    method has never returned.
+
+    A DOUBLE IS CAPTURED FROM THE REAL THING, NEVER AUTHORED FROM WHAT SOMEBODY
+    BELIEVES IT LOOKS LIKE, and these four were authored. A comment saying they agree
+    is a reminder, and reminders are what fail; this reads BOTH sides and compares
+    them, so the claim cannot go stale again in either direction. It compares NAMES and
+    not values: a stub's values are its own business, and its field set is a contract.
+    """
+    for name in ("step", "run_to", "watch", "log_wait"):
+        branches = returned_key_sets(getattr(ds.Session, name))
+        double = returned_key_sets(getattr(FakeSession, name))
+        assert branches, f"nothing was read off the real {name}: this measured nothing"
+        assert len(double) == 1, f"the {name} double should have one return"
+        # PER BRANCH, NOT THE UNION, which is how the first version of this gate could
+        # be fooled. `e9_wait` has FOUR dict returns and `run_to` two; a set
+        # comprehension over all of them unions the keys, so a field present on three
+        # branches and missing from the fourth was invisible -- and that is the exact
+        # defect `run_to`'s own comment names ("a field that appears on one branch is a
+        # field a caller must first discover the shape of the reply to read").
+        # MEASURED: all four methods return an IDENTICAL key set on every branch today,
+        # so this is a real invariant and not a convenience.
+        for i, real in enumerate(branches):
+            assert real == branches[0], (
+                f"`{name}` return #{i} carries a different field set from its first: "
+                f"missing {sorted(branches[0] - real)}, extra {sorted(real - branches[0])}"
+                f". A caller cannot be asked to discover the reply's shape per branch")
+        assert double[0] == branches[0], (
+            f"the `{name}` double and the real method disagree. Missing from the "
+            f"double: {sorted(branches[0] - double[0])}. Invented by it: "
+            f"{sorted(double[0] - branches[0])}")
+
+
+def test_a_delta_longer_than_the_cap_is_cut_and_says_so() -> None:
+    """The `clipped: True` branch, owned by a case that NAMES it.
+
+    It was a tail-end assertion inside `test_a_cap_of_zero_would_lie_and_is_refused`,
+    which is a case about a different guard -- so the live tier, looking for somewhere
+    to delegate this branch to, delegated it to a TOOL instead and got it wrong.
+
+    MEASURED against a real emulator: on a STOPPED machine no ordinary
+    command on this build reaches a cap -- `debug("BPLIST")` is 2973 and
+    `debug("HELP")`, the longest listing the debugger prints, is 3083, both under the
+    4000 `debug` passes. So on a STOPPED machine this branch is not reachable live (a
+    running guest's `resume` reaches its own cap, its Output pane scrolling through the
+    settle, and the tool's contract says so), and it is covered HERE, on a screen built to
+    exceed the cap.
+    """
+    out = "x" * 5000
+    got = dstate.delta(out, 4000)
+    assert got["clipped"] is True
+    assert len(cast(str, got["screen_delta"])) == 4000, "the delta is cut to the cap"
+    assert got["screen_chars"] == 5000, (
+        "`screen_chars` is the WHOLE screen and not the slice -- reporting the slice's "
+        "length is the defect the field exists to make visible")
+    assert cast(str, got["screen_delta"]) == out[-4000:], "it keeps the TAIL"
+
+
+def returned_key_sets(fn: object) -> list[frozenset[str]]:
+    """The literal keys of EACH dict a function returns, one set per `return`.
+
+    PER BRANCH and never unioned: a union cannot see a field dropped from one return of
+    several, which is the shape `run_to` and `e9_wait` are most exposed to (two and four
+    dict returns respectively).
+
+    A LIMIT, said out loud: it reads dict LITERALS. A reply assembled into a variable
+    and returned by name, or built with `**`, comes back short or empty -- which the
+    callers guard against by asserting the result is non-empty rather than trusting it.
+    """
+    src = textwrap.dedent(inspect.getsource(cast(Any, fn)))
+    return [frozenset(k.value for k in node.value.keys
+                      if isinstance(k, ast.Constant) and isinstance(k.value, str))
+            for node in ast.walk(ast.parse(src))
+            if isinstance(node, ast.Return) and isinstance(node.value, ast.Dict)]
+
+def test_the_status_docstring_names_every_field_its_reply_carries() -> None:
+    """An MCP caller reads this docstring and NOT the README, which `status`'s own
+    docstring says -- and it then described five of eleven fields.
+
+    The six it left out included `conf_changed_on_disk`, the one field that says the
+    session no longer reproduces the config it was started from. MEASURED before the
+    fix: only `alive` and `terminal_bytes_dropped` appeared by name at all.
+
+    IT IS DERIVED AND NOT REMEMBERED, which is the point: a docstring brought up to
+    date once falls behind at the next field, and nothing notices. This reads the
+    REPLY and requires each key to appear in the text, so the next field added turns it
+    red until it is described.
+    """
+    install(alive=True)
+    got = cast(dict[str, Any], server.status())
+    doc = server.status.__doc__ or ""
+    # MATCHED AS A ROW, NOT AS A SUBSTRING. `k not in doc` is shadowed by longer
+    # names: `alive` sits inside `drain_alive`, and `conf` inside `conf_digest`,
+    # `conf_changed_on_disk` and the word `config`. MEASURED, both rows could be
+    # deleted from the docstring and this stayed green -- over the one defect it is
+    # here to catch.
+    unnamed = sorted(k for k in cast(dict[str, Any], got["session"])
+                     if not re.search(rf"^\s+{re.escape(k)}\s", doc, re.M))
+    assert not unnamed, (
+        f"`status` returns these and its docstring does not name them: {unnamed}. An "
+        f"MCP caller reads the docstring and not the README")
+    # AND IT MEASURED SOMETHING: without this, a reply that lost its session block
+    # would pass by having nothing to check.
+    assert len(cast(dict[str, Any], got["session"])) >= 11, got
+    # A LIMIT, SAID OUT LOUD: this asks whether the field has a ROW, not whether what is
+    # written beside it is true. It catches a field going UNDESCRIBED, which is what
+    # happened to six of the eleven; it cannot catch one being described wrongly.
+
+
+def test_read_memory_refuses_an_offset_that_will_not_fit_the_command() -> None:
+    """The guard immediately below the segment one, and it was in the state the segment
+    guard was FOUND in: no contract case at all, so removing it left the
+    whole tier green.
+
+    Without it the call formats `D 0000:10000` and falls through to the row-match
+    refusal, whose message blames the SCREEN -- so a caller is told the debugger
+    answered about somewhere else when what was wrong was their own argument.
+    """
+    seg, off = 0x0749, 0
+    row = f"{seg:04X}:{off:08X} " + " ".join(["00"] * 16) + "  " + "." * 16
+    install(screen=f"some screen\r\n{row}\r\n")
+    got = cast(dict[str, Any], server.read_memory(ref="0000:00010000"))
+    assert got["status"] == "INVALID", got
+    # Decision 38 made the ceiling mode-aware; in the real mode this double reports,
+    # 0x10000 still addresses nothing, and the refusal says so rather than blaming the
+    # screen.
+    assert "past 0xFFFF addresses nothing" in str(got["message"]), got["message"]
+
+
+# ------------------------------------------ every bucket the plan carries, at the seam
+#
+# `nm` OUTPUT WITH SEVERAL BUCKETS NON-EMPTY, captured from a real listing: a long name
+# (truncated_names), two statics that shorten to the same fifteen (disambiguated), a section
+# label (noise) and an absolute (unplaceable). A reply full of zeroes cannot tell a
+# counter that travelled from one that was defaulted, so the fixture has to make several
+# of them move at once.
+#
+# EVERY BUCKET A DIFFERENT NUMBER, and that is the load-bearing property rather than
+# tidiness: with two buckets both at zero, SWAPPING them in the reply is invisible.
+# MEASURED -- the first version had `excluded_noise` and `excluded_pattern` both 0
+# (`.comment` is type `N`, so it leaves as UNPLACEABLE before the noise filter ever sees
+# it, and no pattern was passed), and exchanging those two fields came back GREEN.
+# So: THREE section labels of a PLACEABLE type for the noise bucket, ONE `N` and ONE `A`
+# for the unplaceable one, and a `pattern` that drops exactly two more.
+NM_FRAGMENT = (
+    "0001c2b0 T _map_demo_a_very_long_symbol_name\n"
+    "0001c300 t _map_demo_helper_alpha\n"
+    "0001c310 t _map_demo_helper_alphb\n"
+    "0001c340 D _keepme_table\n"
+    "0001c350 T _keepme_main\n"
+    "0001c360 T _dropme_one\n"
+    "0001c370 T _dropme_two\n"
+    "0001c380 T .text\n"
+    "0001c390 T .data\n"
+    "0001c3a0 T .bss\n"
+    "00000000 N .comment\n"
+    "000003f8 A _port\n")
+
+def test_the_caller_is_told_about_every_bucket_the_plan_carries(tmp_path: Path) -> None:
+    """CONSERVATION AT THE BOUNDARY, which is the only place it is worth anything.
+
+    `Plan.check()`'s sum grew a term and `symbols_load`'s reply did not, so an MCP
+    caller got a report whose buckets do not add up to `parsed` and no field explaining
+    the gap -- the exact failure `Plan`'s docstring says cannot happen.
+
+    IT IS DERIVED FROM THE DATACLASS AND IT USED TO SAY SO WHILE LISTING SEVEN NAMES BY
+    HAND, which is the same false claim one level up: a future bucket was NOT caught,
+    the test simply had to be edited when one arrived -- and `overlay_idle` is the one
+    that arrived and proved it.
+
+    IT IS DERIVED BY EXCLUSION AND NOT BY TYPE, which is the correction after that. The
+    first version kept the fields typed `int`, with a floor of eight against a population
+    of nine -- so retyping ONE counter `int | None` dropped it out of the set (`f.type` is
+    a STRING here, `"int | None"`), left eight, passed the floor, and stopped requiring
+    that counter to reach the caller at all. A filter on the SHAPE of a field standing in
+    for a claim about the POPULATION is exactly the wrong way round. Now every field must
+    be reported unless it is named below, so a retyped counter forces a red or an
+    explicit exception rather than vanishing.
+    """
+    import dataclasses
+    # THE THREE THAT TRAVEL BY ANOTHER ROUTE, each named with its reason: `unencodable`
+    # goes out truncated to eight PLUS its own length, and `symbols`/`short` are the
+    # table itself rather than a number about it.
+    carried_otherwise = {"unencodable", "symbols", "short"}
+    fields = {f.name for f in dataclasses.fields(dsym.Plan)}
+    assert carried_otherwise < fields, f"an exception names no field: {fields}"
+    counters = fields - carried_otherwise
+    assert "overlay_idle" in counters, counters
+    # THE REPLY, NOT THE SOURCE TEXT. Grepping `inspect.getsource(symbols_load)` for
+    # `plan.<counter>` is a LEXICAL test of the axis "does the counter reach the caller":
+    # `getsource` returns comments and the docstring too, so a counter named in one of
+    # this function's (long) comments satisfies it while the key is gone from the returned
+    # dict -- and so does `_unused = plan.truncated_names`. The caller then gets a
+    # reply whose buckets do not sum to `parsed`, which is the property the docstring
+    # says cannot happen.
+    #
+    # THE FIXTURE IS CHOSEN SO SEVERAL COUNTERS ARE NON-ZERO, because a reply full of
+    # zeroes cannot tell a counter that travelled from one that was defaulted.
+    install()
+    src = tmp_path / "prog.sym"
+    src.write_text(NM_FRAGMENT, encoding="utf-8")
+    reply = cast(dict[str, Any], server.symbols_load(
+        source=str(src), base="0", pattern="^_(keepme|map_demo)"))
+    assert reply["status"] == "ok", reply
+    plan = dsym.plan(dsym.parse(NM_FRAGMENT)[0], pattern="^_(keepme|map_demo)",
+                     unreadable=0)
+    # WHICH REPLY KEY CARRIES WHICH BUCKET, declared. Two weaker forms were tried and
+    # both are recorded because each looked right:
+    #
+    #   `f"plan.{c}" in inspect.getsource(symbols_load)` -- LEXICAL. `getsource` returns
+    #       comments and the docstring, so a counter named in a comment satisfied it with
+    #       the key gone from the reply, and so did `_unused = plan.truncated_names`.
+    #   `getattr(plan, c) in reply.values()` -- VALUE MEMBERSHIP, which is identity's
+    #       opposite: it asks whether that NUMBER appears anywhere, and on a real fixture
+    #       several buckets share a value. MEASURED: deleting the count from the reply
+    #       entirely left this case GREEN, because some other field happened to hold the
+    #       same number.
+    #
+    # The mapping is a second statement of the reply's shape and could drift, which is
+    # why `counters` is derived from the dataclass and the mapping must cover it EXACTLY:
+    # a bucket added to `Plan` fails here until somebody says where it goes.
+    carries = {
+        "parsed": "parsed", "excluded_noise": "excluded_sections",
+        "excluded_pattern": "excluded_pattern",
+        "excluded_unplaceable": "excluded_unplaceable",
+        "truncated_names": "truncated_names",
+        "disambiguated": "disambiguated", "renamed": "renamed",
+        "unreadable": "unreadable", "overlay_idle": "overlay_idle",
+    }
+    assert set(carries) == counters, (
+        f"the mapping and the dataclass disagree: {set(carries) ^ counters}")
+    for field_name, key in carries.items():
+        assert key in reply, f"symbols_load's reply has no `{key}`"
+        # THE TYPE BEFORE THE VALUE, because `True == 1` and `False == 0`: every counter
+        # here is a COUNT, and a bucket that turned into a flag would satisfy the equality
+        # below against the 0 or 1 it happens to hold, which is the one drift this loop
+        # could not see.
+        assert type(reply[key]) is int, (
+            f"reply[{key!r}] is {type(reply[key]).__name__}, and a count is an int")
+        assert reply[key] == getattr(plan, field_name), (
+            f"reply[{key!r}] is {reply[key]!r}, plan.{field_name} is "
+            f"{getattr(plan, field_name)!r}")
+    # AND THE FIXTURE HAS TO MAKE SEVERAL OF THEM MOVE, or every comparison above is
+    # 0 == 0 and a reply of all zeroes would satisfy it.
+    non_zero = [c for c in counters if getattr(plan, c)]
+    assert len(non_zero) >= 4, f"this fixture leaves too much at zero to tell: {non_zero}"
+    # A SECOND READ WITH A DIFFERENT FILTER, and this is the identity axis rather than
+    # the presence one. The loop above catches a SWAP between two reply keys only when
+    # their values differ, and on any one fixture some buckets coincide -- MEASURED,
+    # `excluded_noise` and `excluded_pattern` were both 0 on the first version of this
+    # fixture and exchanging those two fields in the reply came back GREEN.
+    #
+    # Reading the SAME file twice under different `pattern`s moves the buckets by
+    # different amounts, so a fixed swap has to survive BOTH vectors to stay invisible.
+    other = cast(dict[str, Any], server.symbols_load(
+        source=str(src), base="0", pattern="^_dropme"))
+    plan2 = dsym.plan(dsym.parse(NM_FRAGMENT)[0], pattern="^_dropme", unreadable=0)
+    for field_name, key in carries.items():
+        assert other[key] == getattr(plan2, field_name), (
+            f"second read: reply[{key!r}] is {other[key]!r}, plan.{field_name} is "
+            f"{getattr(plan2, field_name)!r}")
+    moved = [k for k in carries.values() if reply[k] != other[k]]
+    assert len(moved) >= 3, f"the two reads barely differ, so a swap could hide: {moved}"
+    # THE LIMIT, said out loud: two buckets equal in BOTH reads could still be exchanged
+    # unseen. What closes that is a third fixture, not a stronger assertion here.
+    # AND `unencodable` REACHES THE CALLER ANYWAY, so the exception list cannot become a
+    # hiding place: it goes out truncated to eight PLUS its own length.
+    assert "unencodable_count" in reply, sorted(reply)
+
+
+# ------------------------------------- asking a SECTIONED table where you have stopped
+
+def test_a_sectioned_table_answers_a_linear_address_without_being_told_the_section(
+        tmp_path: Path) -> None:
+    """THE BRANCH A CALLER WHO HAS STOPPED SOMEWHERE ACTUALLY USES.
+
+    A linear address answers the section question itself: it falls inside exactly one
+    section's base, and picking the greatest base at or below it is the encoder's own
+    arithmetic run backwards. Making the caller work the section out first would hand
+    back the sum they came here to have computed.
+    """
+    install()
+    src = tmp_path / "flat.map"
+    src.write_text(TLINK32_TEXT, encoding="utf-8")
+    server.symbols_load(source=str(src),
+                        section_bases={"1": "0x401000", "2": "0x423000"})
+    # 0x4010F0 is 12 bytes past `_main`, which is section 1 offset 0xE4.
+    got = cast(dict[str, Any], server.symbols_find(linear="4010F0"))
+    assert got["name"] == "_main" and got["section"] == 1, got
+    assert got["delta"] == 0xC, got
+    # AND THE OTHER SECTION, at the SAME distance past its own symbol -- which a table
+    # that ignored the section index would answer with `_main` too, because 0x4230F0 is
+    # also above section 1's base.
+    other = cast(dict[str, Any], server.symbols_find(linear="4230F0"))
+    assert other["name"] == "_table" and other["section"] == 2, other
+    assert other["delta"] == 0xC, other
+
+
+def test_an_offset_alone_is_refused_on_a_sectioned_table(tmp_path: Path) -> None:
+    """The sections OVERLAP, so a bare offset exists in every one of them. Answering it
+    would mean picking one silently -- which is exactly the confident wrong answer this
+    package treats as worse than a refusal."""
+    install()
+    src = tmp_path / "flat.map"
+    src.write_text(TLINK32_TEXT, encoding="utf-8")
+    server.symbols_load(source=str(src),
+                        section_bases={"1": "0x401000", "2": "0x423000"})
+    got = cast(dict[str, Any], server.symbols_find(offset=0xE4))
+    assert got["status"] != "ok", got
+    assert "SECTIONED" in str(got["message"]), got["message"]
+    # WITH THE SECTION NAMED it answers, and the two sections give DIFFERENT symbols for
+    # the same offset -- which is the whole reason the bare form is refused.
+    one = cast(dict[str, Any], server.symbols_find(offset=0xE4, section=1))
+    two = cast(dict[str, Any], server.symbols_find(offset=0xE4, section=2))
+    assert (one["name"], two["name"]) == ("_main", "_table"), (one, two)
+
+
+def test_an_address_below_every_section_is_refused_rather_than_folded(
+        tmp_path: Path) -> None:
+    """Below every base there is no section to subtract, and choosing one anyway would
+    produce a negative offset and then the nearest symbol of whatever section that was."""
+    install()
+    src = tmp_path / "flat.map"
+    src.write_text(TLINK32_TEXT, encoding="utf-8")
+    server.symbols_load(source=str(src),
+                        section_bases={"1": "0x401000", "2": "0x423000"})
+    got = cast(dict[str, Any], server.symbols_find(linear="0x1000"))
+    assert got["status"] != "ok", got
+    assert "below every section" in str(got["message"]), got["message"]
+
+
+def test_a_flat_table_refuses_a_question_about_a_section_it_does_not_have(
+        tmp_path: Path) -> None:
+    """A flat table has exactly one section, so naming a different one is a question
+    about something that is not there -- and answering it with the flat symbols would be
+    agreeing with a mistaken premise."""
+    install()
+    src = tmp_path / "prog.sym"
+    src.write_text(NM_FRAGMENT, encoding="utf-8")
+    server.symbols_load(source=str(src), base="0")
+    got = cast(dict[str, Any], server.symbols_find(offset=0x1c350, section=2))
+    assert got["status"] != "ok", got
+    assert "loaded FLAT" in str(got["message"]), got["message"]
+    # AND WITHOUT IT, the same question answers.
+    ok = cast(dict[str, Any], server.symbols_find(offset=0x1c350))
+    assert ok["name"] == "_keepme_main", ok
+
+
+def test_nothing_below_the_asked_offset_names_the_section_it_looked_in(
+        tmp_path: Path) -> None:
+    """"Nothing in the table" is a statement about the TABLE, and on a sectioned load it
+    has to say WHICH section it examined -- otherwise a caller reads it as a statement
+    about the whole program."""
+    install()
+    src = tmp_path / "flat.map"
+    src.write_text(TLINK32_TEXT, encoding="utf-8")
+    server.symbols_load(source=str(src),
+                        section_bases={"1": "0x401000", "2": "0x423000"})
+    got = cast(dict[str, Any], server.symbols_find(offset=0x10, section=1))
+    assert got["status"] != "ok", got
+    assert "section 1" in str(got["message"]), got["message"]
+
+
+def test_the_server_declares_instructions_and_they_name_what_a_caller_needs() -> None:
+    """The `instructions` field is how the PROTOCOL hands a session the server's own contract.
+
+    Nothing else asserts it: deleting the `instructions=` argument, or truncating it to "",
+    leaves the suite green while every session loses the text. The failure direction is silence,
+    which is what a compliant server looks like.
+
+    It asserts the CLAIMS, not the wording, and the claims it pins are the ones easiest to get
+    FALSE: `build_check` described as validating a reading, which it does not, and the console
+    reader described as taking a `pattern`, which it does not have.
+    """
+    text = server.mcp.instructions
+    assert text, "the server declares no instructions at all"
+    # ABSENCE, not just presence: a phrase that must not be there is not checked by
+    # asserting the ones that must.
+    for phrase, why in (
+        ("ToolSearch", "the deferred-tools rule is the session's own, loaded every session"),
+        ("validates the session",
+         "build_check answers about the BUILD, never about a reading: a session is not "
+         "something it validates"),
+        ("console reader", "the pattern belongs to e9; `debug` takes only `command`"),
+        ("cycles", "the guest-clock rule is the session's own, and a verbatim second copy here "
+                   "is the duplication the deleted SessionStart hook was killed for"),
+    ):
+        assert phrase not in text, f"the instructions carry {phrase!r}: {why}"
+    assert "BUILD" in text and "REFUSES" in text, (
+        "build_check must be described as what it is: a precondition check that refuses while a "
+        "session is live"
+    )
+    assert "read_memory" in text, (
+        "this server's own docstrings say a VALUE goes through registers/read_memory/memdump; "
+        "instructions naming only e9 and debug send a caller to the positional tail"
+    )
+
+
+# ============================ the name layer: breakpoints and watches ============
+
+class NamesFake:
+    """A session double for the name-layer tools: it holds a mutable BPLIST so arming and
+    clearing are visible to `breakpoint_list`, and answers `where`/`registers` so the
+    server can derive a seg:off. Real vs protected mode and the CS/DS selectors are set by
+    the test, since they are exactly what the derivation turns on."""
+
+    survey_text = ""      # its stop survey paints no screen, so no code pane
+
+    def __init__(self, *, mode: str = "Pr32", cs: str = "00A7", ds_: str = "00AF",
+                 conf: Path | None = None, arm_fails: bool = False,
+                 watched: bool = True, input_port: int | None = None) -> None:
+        self.mode, self.cs, self.ds = mode, cs, ds_
+        self.arm_fails = arm_fails
+        # THE GUEST RUNS: one switch that makes every console method refuse the way the
+        # real ones do (where, registers, the list, arming, clearing, a watch, a load), and
+        # `at_debugger()` say so passively -- the shape the running-guest contract is
+        # written against.
+        self._running = False
+        self.stop_count = 0                  # bumped when `running` goes True -> False
+        self.stop_unread = False             # the guest stopped and no contact has seen it yet
+        self.reap_failed = ""                # what `close` reports beside the exit code
+        self.ended_how = "none"              # and how it ended, in `close`'s own words
+        self.mem: dict[tuple[int, int], bytes] = {}
+        self.log: list[str] | None = []      # None models a session with no logfile
+        self.eip = "00000000"
+        self.halted = False
+        self.step_running = False
+        self.runto_running = False
+        self.control_hits = 0
+        self.rows: list[dict[str, str]] = []
+        self.bp_calls = 0                    # how many times the list was READ (a round trip each)
+        self.survey_calls = 0                # how many one-repaint stop surveys were taken
+        self.bp_raises = False               # True models a running machine: a list read refuses
+        self.where_raises = False            # True models a running machine: where() refuses
+        self.where_refusals = 0              # >0: refuse where() this many times, then stop
+        self.alive_flag = True               # False models an emulator that has died
+        self.registers_raises = False        # True models a cut pane: registers() refuses
+        self.altered = False                 # _live() reads this when burying a dead session
+        self.dies_on_resume = False          # True: alive at perform start, dead after resume
+        self.input_calls: list[tuple[str, list[str]]] = []   # what send_input was asked
+        self.input_refusal: str | None = None    # the helper's refusal before posting, if any
+        self.break_ins = 0                       # how many times the menu route was taken
+        self.input_focus: list[bool] = []                    # keep_focus per call
+        self.input_facts: dict[str, str] | None = None       # override send_input's reply
+        self.input_effect: str | None = None      # a log line the guest writes on a post
+        self.after_effect: list[str] = []         # what it writes after that, for a LOOK
+        self.resume_effect: list[str] = []        # what it writes during a resume
+        self.scancodes_sent: list[bytes] = []     # what the serial route was handed
+        self.wait_calls: list[tuple[str, float, int]] = []  # what e9_wait was asked, with the mark
+        self.full_reads = 0                  # whole-log reads (`e9`), which a stop must not pay
+        self.incremental_reads = 0           # reads of what is new since the last stop
+        self.wait_raises: Exception | None = None  # e9_wait refuses with THIS (a gone emulator)
+        self.stops_during_wait = False       # a breakpoint fires while e9_wait is looking
+        self.runto_calls: list[tuple[int, int, float]] = []   # the seg:off run_to was given
+        # send_keys/send_mouse need a windowed session; default watched so the name-layer
+        # cases that pre-date input still build one, and a case can pass watched=False.
+        self.launch = ds.Launch(conf=conf or Path("/x.conf"), cwd=Path("/"), seconds=60,
+                                watched=watched, input_port=input_port)
+
+    def alive(self) -> bool:
+        return self.alive_flag
+
+    # THE TERMINAL, derived from the same state `where()` answers from: the sequence
+    # executor's wait LISTENS for the prompt instead of typing a poll, so a fake with no
+    # terminal is a fake the wait cannot hear a stop on. A machine that stops after a few
+    # polls (`where_refusals`) is heard after that many reads, as it was polled before.
+    _screen = ""
+
+    def _read(self, timeout: float) -> str:
+        if self.where_refusals > 0:
+            self.where_refusals -= 1
+            return ""
+        if self.where_raises or self.running:
+            time.sleep(min(timeout, 0.05))
+            return ""
+        return ds.PROMPT
+
+    def _mark_stopped(self) -> None:
+        pass
+
+    def state(self) -> dict[str, object]:
+        return {"alive": True, "altered": False}
+
+    def send_scancodes(self, data: bytes) -> int:
+        self.scancodes_sent.append(bytes(data))
+        if self.input_effect is not None and self.log is not None:
+            self.log.append(self.input_effect)
+            self.log.extend(self.after_effect)
+        return len(data)
+
+    def break_in(self, seconds: float = 5.0,
+                 progress: ds.Progress = ds.no_progress) -> float:
+        """The menu route of the real one: refused headless, otherwise the machine is at
+        the debugger a moment later, which the running flag's setter counts as a stop."""
+        if not self.launch.watched:
+            raise ds.Invalid("no_channel", "this session is headless: there is no window")
+        self.break_ins += 1
+        self.running = False
+        return 0.12
+
+    def send_input(self, mode: str, args: list[str], *,
+                   keep_focus: bool = False) -> dict[str, str]:
+        if self.input_refusal is not None:      # the helper refused before any event went out
+            raise ds.Invalid("bad_argument", self.input_refusal)
+        self.input_calls.append((mode, list(args)))
+        self.input_focus.append(keep_focus)
+        # THE GUEST REACTS, when the test says so: the post lands a line in the log, which
+        # is what a real program acting on the key does (a cue token, say), and then
+        # whatever else it writes afterwards (`after_effect`), which a LOOK must see.
+        if self.input_effect is not None and self.log is not None:
+            self.log.append(self.input_effect)
+            self.log.extend(self.after_effect)
+        if self.input_facts is not None:
+            return self.input_facts
+        # THE HELPER COUNTS EVENTS, NOT ARGUMENTS: `keys` carries the modifier word first,
+        # which is not a key, so `posted` is the names after it -- as the real helper counts.
+        # And a call that KEEPS the focus answers `kept`, never `true`: the real helper cannot
+        # say it put the previous app back when it was asked not to.
+        posted = len(args) - 1 if mode == "keys" else 1
+        return {"trusted": "true", "activated": "true", "posted": str(posted),
+                "window": "2088,68,1280,960", "restored": "kept" if keep_focus else "true"}
+
+    def e9_mark(self) -> int:
+        if self.log is None:
+            raise ds.Invalid("no_channel", "this session was started without a logfile")
+        return len(self.log)
+
+    def e9_since_mark(self, mark: int) -> list[str]:
+        if self.log is None:
+            raise ds.Invalid("no_channel", "this session was started without a logfile")
+        return list(self.log[mark:])
+
+    def e9_new_since(self, offset: int) -> tuple[list[str], int]:
+        if self.log is None:
+            raise ds.Invalid("no_channel", "this session was started without a logfile")
+        self.incremental_reads += 1
+        return list(self.log[offset:]), len(self.log)
+
+    log_wait = _log_wait_as_guest
+
+    def e9_wait(self, pattern: str, seconds: float, mark: int = 0,
+                progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+        self.wait_calls.append((pattern, seconds, mark))
+        if self.wait_raises is not None:
+            raise self.wait_raises
+        if self.stops_during_wait:
+            self.running = False             # the stop is counted, as the real flag counts it
+            raise ds.E9Stopped(f"the machine is stopped at the debugger, so a wait for "
+                               f"{pattern!r} cannot end: a stopped guest writes nothing",
+                               waited_s=0.4, arrived=0)
+        # THE REAL METHOD'S OWN REFUSALS, in its own types: a bad pattern and a bad bound
+        # are `Invalid` (not a raw re.error), and an expired bound is `E9Expired`, which is
+        # the one type the server may read as a miss.
+        rx = ds.compiled(pattern)
+        if not 0 < seconds <= ds.RUN_TO_MAX:
+            raise ds.Invalid("bad_argument", f"a wait of {seconds} is not a bound")
+        if self.log is None:
+            raise ds.Invalid("no_channel", "this session was started without a logfile")
+        hits = [ln for ln in self.log[mark:] if rx.search(ln)]
+        if not hits:
+            raise ds.E9Expired(f"nothing matched {pattern!r} in {seconds}s")
+        # The effect line was appended by `send_input` BEFORE this wait began, so the
+        # honest answer is the real method's: it was ALREADY there on the first read.
+        return {"line": hits[0], "already": True, "lines_total": len(hits),
+                "lines_before": self.log[mark:].index(hits[0]), "arrived_during": 0,
+                "waited_s": 0.0, "lines_examined": len(self.log) - mark,
+                "since_mark": mark}
+
+    def where(self) -> dict[str, str]:
+        if self.where_refusals > 0:
+            self.where_refusals -= 1         # a machine that stops after a few polls
+            raise ds.NotStopped("the machine is running; where() refuses")
+        if self.where_raises or self.running:
+            raise ds.NotStopped("the machine is running; where() refuses")
+        return {"cs": self.cs, "eip": self.eip, "mode": self.mode}
+
+    @property
+    def running(self) -> bool:
+        return self._running
+
+    @running.setter
+    def running(self, value: bool) -> None:
+        if self._running and not value:
+            self.stop_count += 1            # the machine came to rest: a stop, like the real one
+        self._running = value
+
+    def at_debugger(self) -> bool:
+        # A STOP NOBODY HAS READ YET: the real peek finds the prompt in the drain and counts
+        # the transition then and there, so the count moves INSIDE this call and not before.
+        if self.stop_unread:
+            self.stop_unread = False
+            self.running = False
+        return not self.running
+
+    def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
+        self.alive_flag = False
+        self.ended_how = "killed"
+        return 0
+
+    def where_and_registers(self) -> tuple[dict[str, str], dict[str, str]]:
+        return self.where(), self.registers()
+
+    def stop_survey(self) -> tuple[dict[str, str], dict[str, str], list[dict[str, str]]]:
+        """ONE repaint's worth, like the real one: the list comes with the pane, so this
+        counts as a survey and NOT as a `breakpoints()` read (`bp_calls` stays)."""
+        self.survey_calls += 1
+        return self.where(), self.registers(), [dict(r) for r in self.rows]
+
+    def registers(self) -> dict[str, str]:
+        if self.registers_raises:
+            raise ds.NotStopped("a cut pane: no register pane came back")
+        if self.running:
+            raise ds.NotStopped("no register pane came back from `BPLIST` (emulator running)")
+        return {"CS": self.cs, "DS": self.ds, "EIP": self.eip}
+
+    def e9(self, pattern: str, limit: int) -> tuple[list[str], int]:
+        if self.log is None:
+            raise ds.Invalid("no_channel", "this session was started without a logfile")
+        self.full_reads += 1
+        hit = [ln for ln in self.log if re.search(pattern, ln)]
+        return hit[-limit:], len(hit)
+
+    def e9_lines(self) -> list[str]:
+        if self.log is None:
+            raise ds.Invalid("no_channel", "this session was started without a logfile")
+        self.full_reads += 1
+        return list(self.log)
+
+    def breakpoints(self) -> list[dict[str, str]]:
+        self.bp_calls += 1
+        if self.bp_raises or self.running:
+            raise ds.NotStopped("the machine is running; the debugger took no list")
+        return [dict(r) for r in self.rows]
+
+    def read_memory(self, seg: int, off: int, mode: str | None = None) -> list[str]:
+        return [f"{seg:04X}:{off:04X} 00 11 22 33"]
+
+    def read_bytes(self, seg: int, off: int, n: int, mode: str | None = None) -> bytes:
+        return self.mem.get((seg, off), bytes(n))[:n]
+
+    def memdump(self, seg: int, off: int, length: int, dest: Path) -> Path:
+        """What was asked, recorded BEFORE the console check, so a case can tell a dump
+        refused by the tool from one the session was handed and turned down."""
+        self.memdump_calls = getattr(self, "memdump_calls", []) + [(seg, off, length)]
+        self._console()
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(bytes(length))
+        return dest
+
+    def write_memory(self, seg: int, off: int, data: bytes,
+                     mode: str | None = None) -> dict[str, object]:
+        self._console()
+        self.mem[(seg, off)] = data
+        return {"written": len(data), "readback": data.hex(), "verified": True}
+
+    def resume(self) -> dict[str, object]:
+        if self.dies_on_resume:
+            self.alive_flag = False          # the guest's bound expired during the run
+        if self.log is not None:
+            self.log.extend(self.resume_effect)   # what the guest wrote while it ran
+        return {"halted": self.halted,
+                "stopped_at": {"cs": self.cs, "eip": self.eip, "mode": self.mode},
+                "screen": "ooooOutputoooo\r\nI-> _"}
+
+    def step(self, mode: str = "over", count: int = 1) -> dict[str, object]:
+        return {"running": self.step_running, "completed": count, "moved": True,
+                "stalled": 0, "before": {"cs": self.cs, "eip": self.eip, "mode": self.mode},
+                "after": {"cs": self.cs, "eip": self.eip, "mode": self.mode}}
+
+    def run_to(self, segment: int, offset: int, seconds: float,
+               control: tuple[int, int] | None = None,
+               progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+        self.runto_calls.append((segment, offset, seconds))
+        self.last_control = control
+        ctl = (None if control is None else
+               {"at": f"{control[0]:04X}:{control[1]:04X}", "hits": self.control_hits,
+                "removed": not self.runto_running})
+        return {"target": f"{segment:04X}:{offset:04X}",     # the session's own spelling
+                "running": self.runto_running, "arrived": not self.runto_running,
+                "stopped_at": {"cs": self.cs, "eip": self.eip, "mode": self.mode},
+                "breakpoint_removed": not self.runto_running, "control": ctl}
+
+    def command(self, text: str, **_k: object) -> str:
+        if text.startswith("BPDEL "):
+            idx = text.split()[1]
+            self.rows = [r for r in self.rows if r.get("index") != idx]
+        return ""
+
+    def arm_code_breakpoint(self, seg: int, off: int) -> dict[str, object]:
+        if self.running:
+            raise ds.NotStopped("the machine is running; nothing was armed")
+        if self.arm_fails:
+            raise ds.Invalid("not_stopped", "the machine is running; nothing was armed")
+        entry = f"BP {seg:04X}:{off:04X}"
+        self.rows.append({"index": f"{len(self.rows):02d}", "entry": entry})
+        return {"target": f"{seg:04X}:{off:04X}", "entry": entry, "breakpoints": self.rows}
+
+    def _console(self) -> None:
+        if self.running:
+            raise ds.NotStopped("the machine is running; the console takes no command")
+
+    def clear_code_breakpoint(self, seg: int, off: int) -> dict[str, object]:
+        self._console()
+        entry = f"BP {seg:04X}:{off:04X}"
+        before = len(self.rows)
+        self.rows = [r for r in self.rows if r["entry"] != entry]
+        return {"entry": entry, "removed": len(self.rows) < before}
+
+    def breakpoint_interrupt(self, number: int, ah: int | None = None) -> str:
+        self._console()
+        entry = ds.interrupt_row(number, ah)
+        self.rows.append({"index": f"{len(self.rows):02d}", "entry": entry})
+        return f"DEBUG: Set interrupt breakpoint at INT {number:02X}"
+
+    def clear_interrupt_breakpoint(self, number: int,
+                                   ah: int | None = None) -> dict[str, object]:
+        self._console()
+        entry = ds.interrupt_row(number, ah)
+        before = len(self.rows)
+        self.rows = [r for r in self.rows if r["entry"] != entry]
+        return {"entry": entry, "removed": len(self.rows) < before}
+
+    def load_symbols(self, data: bytes) -> list[tuple[str, int]]:
+        if self.running:      # the REAL one wraps its NotStopped into a plain Invalid
+            raise ds.Invalid("unexpected_answer",
+                "no register pane came back, so this console is not taking "
+                             "commands")
+        self.loads = getattr(self, "loads", 0) + 1
+        return [("loaded", 0)]
+
+    def selector(self, reg: str) -> dict[str, int]:
+        if self.running:      # likewise: a plain Invalid in the real session
+            raise ds.Invalid("unexpected_answer", "no register pane came back")
+        return {"base": 0x00400000, "limit": 0x0023FFFF, "type": 0x1B}
+
+    def watch(self, segment: int | None = None, offset: int | None = None,
+              linear: int | None = None) -> dict[str, object]:
+        self._console()
+        seg, off = int(segment or 0), int(offset or 0)
+        armed = f"BPPM {seg:04X}:{off:08X}" if self.mode.startswith("Pr") \
+            else f"BPMEM {seg:04X}:{off:04X}"
+        # THE REAL DEBUGGER APPENDS A TRAILING HIT COUNT to a memory-watch row that a code
+        # breakpoint's does not carry -- captured, not invented, because a clean double hid
+        # exactly this and a live run caught it.
+        self.rows.append({"index": f"{len(self.rows):02d}", "entry": f"{armed} (00)"})
+        return {"command": f"BP.. {seg:04X}:{off:04X}", "mode": self.mode,
+                "addressing": "segment", "armed": armed, "breakpoints": self.rows,
+                "fires_on": "a change"}
+
+
+def _names(tmp_path: Path, *, symbols: list[dsym.Symbol] | None = None,
+           base: int = 0x00400000, **kw: Any) -> NamesFake:
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    dstate.STATE.store = dec.DeclarationStore(str(conf), path=tmp_path / "decl.json")
+    dstate.STATE.install_table(symbols or [])
+    dstate.STATE.base.clear()
+    dstate.STATE.base.update({"base": base, "limit": -1, "type": -1})
+    fake = NamesFake(conf=conf, **kw)
+    dstate.STATE.session = fake  # type: ignore[assignment]
+    return fake
+
+
+def test_decide_by_reads_the_shape_of_the_ref() -> None:
+    assert placement.decide_by("_uicue_apply") == "symbol"
+    assert placement.decide_by("00A7:0016DD80") == "address"
+
+
+def test_a_bare_linear_address_is_refused_it_has_no_segment() -> None:
+    with pytest.raises(ds.Invalid, match="no segment to arm at"):
+        placement.parse_seg_off("0x400000")
+    assert placement.parse_seg_off("00A7:16DD80") == (0xA7, 0x16DD80)
+
+
+def test_target_for_takes_the_selector_in_protected_mode_and_the_paragraph_in_real() -> None:
+    """The heart of decision 17: the caller gives an offset, the server gives the seg:off,
+    and which it is turns on the mode. Protected: the selector CS, offset unchanged. Real:
+    the load paragraph, and a high offset split so it still fits 16 bits."""
+    prot = NamesFake(mode="Pr32", cs="00A7")
+    assert placement.target_for(0x16DD80, "CS", prot) == (0xA7, 0x16DD80)  # type: ignore[arg-type]
+    dstate.STATE.base.clear()
+    dstate.STATE.base.update({"base": 0x7DF0, "limit": -1, "type": -1})
+    real = NamesFake(mode="Real")
+    assert placement.target_for(0x599, "CS", real) == (0x7DF, 0x599)   # type: ignore[arg-type]
+    # a high real-mode offset (a data segment) is split so off <= 0xFFFF and folds back.
+    seg, off = placement.target_for(0x140E0, "DS", real)   # type: ignore[arg-type]
+    assert seg * 16 + off == 0x7DF0 + 0x140E0 and off <= 0xFFFF
+
+
+def test_breakpoint_at_a_symbol_arms_stores_and_says_when_it_is_marked(
+        tmp_path: Path) -> None:
+    """S3: arming on a linker-marked public SAYS so (a fact, not a refusal), and the
+    declaration is stored so it survives a rebuild."""
+    syms = [dsym.Symbol("_uicue_apply", 0x3D5E0, kind="T"),
+            dsym.Symbol("ATRCT_RUN", 0x599, kind="T", idle=True)]     # one marked public
+    _names(tmp_path, symbols=syms)
+    got = server.breakpoint_at(ref="_uicue_apply")
+    assert got["status"] == "ok" and got["armed"] is True
+    assert got["entry"] == "BP 00A7:3D5E0"
+    assert got["note"] is None
+    assert [d.ref for d in dstate.STATE.store.declarations()] == ["_uicue_apply"]   # type: ignore[union-attr]
+    marked = server.breakpoint_at(ref="ATRCT_RUN")
+    assert marked["armed"] is True and marked["marked"] is True
+    assert "linker's mark" in str(marked["note"])
+
+
+def test_re_declaring_a_breakpoint_is_a_no_op_that_re_arms_a_lost_row(
+        tmp_path: Path) -> None:
+    """The owner's QA call: re-declaring is a no-op, not a refusal, so a declaration script
+    survives a re-run after a rebuild. `already_stored` says which. AND the arm still runs,
+    so a declaration whose debugger row was LOST (a new session cleared BPLIST) is re-armed
+    rather than reported armed while absent -- the gone-then-rearm path no live case reaches
+    because the live one re-declares a still-armed row."""
+    syms = [dsym.Symbol("_uicue_apply", 0x3D5E0, kind="T", idle=True)]  # marked, for note
+    fake = _names(tmp_path, symbols=syms)
+    first = server.breakpoint_at(ref="_uicue_apply")
+    assert first["already_stored"] is False and first["armed"] is True
+    assert first["marked"] is True and "linker's mark" in str(first["note"])
+    again = server.breakpoint_at(ref="_uicue_apply")
+    assert again["already_stored"] is True and again["armed"] is True
+    assert len([r for r in fake.rows if r["entry"] == "BP 00A7:3D5E0"]) == 1
+    # THE NOTE SURVIVES the no-op: dropping it would lose the mark warning on the repeated
+    # call a rebuild makes most.
+    assert again["marked"] is True and "linker's mark" in str(again["note"])
+    # ROW LOST (new session), re-declared -> re-armed, not falsely reported armed.
+    fake.rows.clear()
+    rearmed = server.breakpoint_at(ref="_uicue_apply")
+    assert rearmed["already_stored"] is True and rearmed["armed"] is True
+    assert [r["entry"] for r in fake.rows] == ["BP 00A7:3D5E0"]
+    assert len(dstate.STATE.store.declarations()) == 1   # type: ignore[union-attr]
+
+
+def test_re_declaring_a_change_watch_is_a_no_op_and_keeps_the_pr_caveat(
+        tmp_path: Path) -> None:
+    """A change-watch re-declared after a rebuild must not stack a second BPPM, and the
+    protected-mode caveat rides the no-op reply too."""
+    syms = [dsym.Symbol("_g_rate", 0x1234, kind="D")]
+    fake = _names(tmp_path, symbols=syms, mode="Pr32")
+    first = server.watch_add(ref="_g_rate", mode="change", length=4)
+    assert first["already_stored"] is False and first["armed"] is True
+    assert "protected-mode watch" in str(first["caveat"])
+    again = server.watch_add(ref="_g_rate", mode="change", length=4)
+    assert again["already_stored"] is True and again["armed"] is True
+    assert "protected-mode watch" in str(again["caveat"])
+    assert len([r for r in fake.rows if r["entry"].startswith("BPPM")]) == 1
+
+
+def test_a_by_address_declaration_on_a_running_machine_is_kept_unarmed_not_invalid(
+        tmp_path: Path) -> None:
+    """REGRESSION GUARD: the already-armed check reads the live list, which refuses a
+    running machine -- so it must sit inside the try that answers `unarmed`, or a
+    by-address ref (which reaches arming without touching the machine) escapes as INVALID
+    with the declaration already stored and no `stored` in the reply."""
+    fake = _names(tmp_path, arm_fails=True)
+    fake.bp_raises = True                         # the running machine refuses a list read
+    bp = server.breakpoint_at(ref="00A7:0100")
+    assert bp["status"] == "ok" and bp["stored"] is True and bp["armed"] is False
+    # A refusal of the RUNNING kind now queues the declaration for the next stop (the
+    # running-guest contract); what this guard pins is unchanged: `ok`,
+    # `stored`, and never an INVALID with the declaration already in the store.
+    assert bp["state"] == "pending"
+    w = server.watch_add(ref="00A7:0100", mode="change", length=4)
+    assert w["status"] == "ok" and w["stored"] is True and w["armed"] is False
+    assert w["state"] == "pending"
+
+
+def test_an_interrupt_breakpoint_is_stored_listed_cleared_and_not_double_armed(
+        tmp_path: Path) -> None:
+    """The whole interrupt-in-store path at the SERVER level, which the live tier alone
+    covered (and it is env-gated): stored on arm, shown armed in the list, a foreign BPINT
+    surfaced, re-arm is a no-op that does not stack a row, and clear removes it and disarms
+    the debugger row -- by text, since the row carries no seg:off."""
+    fake = _names(tmp_path)
+    armed = server.breakpoint_interrupt(number=0x21)
+    assert armed["stored"] is True and armed["already_stored"] is False
+    assert armed["entry"] == "BPINT 21", "the row spelling the docstring promises"
+    assert [r["entry"] for r in fake.rows] == ["BPINT 21"]
+    listed = server.breakpoint_list()
+    row = next(b for b in listed["breakpoints"] if b["ref"] == "BPINT 21")
+    assert row["state"] == "armed" and listed["foreign"] == []
+    # RE-ARM IS A NO-OP: no second BPINT 21 row, and the reply says already_stored.
+    again = server.breakpoint_interrupt(number=0x21)
+    assert again["already_stored"] is True and again["armed"] is True
+    assert [r["entry"] for r in fake.rows] == ["BPINT 21"]
+    # A BPINT the store did not place is FOREIGN, matched by its text.
+    fake.rows.append({"index": "09", "entry": "BPINT 10"})
+    assert "BPINT 10" in server.breakpoint_list()["foreign"]
+    # CLEAR removes the declaration and disarms the row it owns, leaving the foreign one.
+    cleared = server.breakpoint_clear()
+    assert cleared["declarations_cleared"] == 1 and cleared["disarmed"] == ["BPINT 21"]
+    assert [r["entry"] for r in fake.rows] == ["BPINT 10"]
+    assert dstate.STATE.store.declarations() == []   # type: ignore[union-attr]
+
+
+def test_perform_runs_steps_in_order_and_stops_at_the_first_failure(
+        tmp_path: Path) -> None:
+    """Decisions 2 and 3: a list of the server's own ops runs in order, and a failing step
+    STOPS the sequence with a full account -- the steps that ran, which failed and why, and
+    nothing after it. Here an ambiguous name fails the second step; the third never runs."""
+    syms = [dsym.Symbol("_main", 0x1000, kind="T"),
+            dsym.Symbol("dup", 0x2000, kind="t"), dsym.Symbol("dup", 0x3000, kind="t")]
+    _names(tmp_path, symbols=syms)
+    out = server.perform(steps=[
+        {"op": "breakpoint_at", "ref": "_main"},
+        {"op": "breakpoint_at", "ref": "dup"},          # ambiguous -> fails here
+        {"op": "breakpoint_at", "ref": "_main"},        # must NOT run
+    ])
+    assert out["status"] == "INVALID" and out["failed_at"] == 1, out
+    assert out["completed"] == 1, out
+    assert [r["op"] for r in out["ran"]] == ["breakpoint_at"], out   # only the first SUCCEEDED
+    assert out["failed"]["op"] == "breakpoint_at", out               # the second is here
+    assert "names 2 symbols" in out["message"], out
+
+
+def test_perform_refuses_an_unknown_or_deferred_op(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The vocabulary is the server's own op names (decision 34). An unknown op is refused
+    naming the vocabulary. NOTHING is deferred today (send_keys is built), so the deferred
+    MECHANISM is proven by injecting a fake deferred op: it is refused as not-yet-built,
+    naming the right index, with earlier steps run first -- the shape a future deferral needs.
+    """
+    _names(tmp_path)
+    unknown = server.perform(steps=[{"op": "warp_core"}])
+    assert unknown["status"] == "INVALID" and "not a step" in unknown["message"]
+    # THE REFUSAL NAMES THE VOCABULARY (decision 34), not just "not a step": dropping the
+    # op list from the message would leave the weaker assertion green.
+    assert "resume" in unknown["message"], unknown
+    # THE DEFERRED MECHANISM, with a fake deferral (send_keys is real now): a deferred op is
+    # refused as a LATER step, naming its index, and the steps before it run first.
+    monkeypatch.setattr(sequence, "DEFERRED_OPS", {"registers"})
+    deferred = server.perform(steps=[{"op": "status"}, {"op": "registers"}])
+    assert deferred["status"] == "INVALID" and "not built yet" in deferred["message"]
+    assert deferred["failed_at"] == 1 and [r["op"] for r in deferred["ran"]] == ["status"]
+    monkeypatch.undo()
+    # A malformed step carries failed_at like every other failure, not a missing key.
+    shapeless = server.perform(steps=["registers"])   # not an {op: ...} object
+    assert shapeless["status"] == "INVALID" and "not a" in shapeless["message"]
+    assert shapeless["failed_at"] == 0, shapeless
+
+
+def test_send_keys_and_send_mouse_refuse_a_headless_session(tmp_path: Path) -> None:
+    """The driver's ACT half needs a WINDOW: a host input event reaches the guest through the
+    emulator's on-screen surface, so a headless session is refused, named, before anything is
+    posted into a void that would report success."""
+    _names(tmp_path, watched=False)
+    calls: list[Callable[[], dict[str, Any]]] = [
+        lambda: server.send_keys(keys=["a"]),
+        lambda: server.send_mouse(button="left")]
+    for call in calls:
+        got = call()
+        assert got["status"] == "INVALID" and "windowed session" in got["message"], got
+
+
+def test_send_keys_dispatches_the_names_and_modifiers_and_reports_focus(
+        tmp_path: Path) -> None:
+    """A windowed session posts the keys through send_input, joining the modifiers with '+',
+    and the reply carries the focus borrow/return so a window stealing focus is announced."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True                      # input goes to a RUNNING guest
+    # TWO modifiers, so the '+' JOIN is actually exercised (one would pass any separator).
+    got = cast(dict[str, Any], server.send_keys(keys=["a", "enter"],
+                                                modifiers=["ctrl", "shift"]))
+    assert got["status"] == "ok" and got["keys"] == ["a", "enter"]
+    assert got["posted"] == 2 and got["activated"] is True and got["restored"] is True
+    assert fake.input_calls == [("keys", ["ctrl+shift", "a", "enter"])], fake.input_calls
+    # no modifiers -> the helper's "-" sentinel; empty keys refused.
+    server.send_keys(keys=["b"])
+    assert fake.input_calls[-1] == ("keys", ["-", "b"]), fake.input_calls
+    empty = cast(dict[str, Any], server.send_keys(keys=[]))
+    assert empty["status"] == "INVALID" and "at least one key" in empty["message"]
+    # A BARE STRING is refused, not splatted into characters (the transport passes JSON).
+    astr = cast(dict[str, Any], server.send_keys(keys=cast(Any, "enter")))
+    assert astr["status"] == "INVALID" and "not a string" in astr["message"]
+    # the false-mapping half: a helper that did not activate is reported as such, and the
+    # attempts the window server took ride through as a number.
+    fake.input_calls.clear()
+    fake.input_facts = {"trusted": "true", "activated": "false", "attempts": "4",
+                        "posted": "1", "restored": "false"}
+    off = cast(dict[str, Any], server.send_keys(keys=["c"]))
+    assert off["activated"] is False and off["restored"] is False and off["attempts"] == 4
+    assert off["restore"] == "failed"
+    # the third answer of the hand-back: nothing to hand it back to is not a failure.
+    fake.input_facts = {"trusted": "true", "activated": "true", "attempts": "1",
+                        "posted": "1", "restored": "skipped"}
+    skipped = cast(dict[str, Any], server.send_keys(keys=["c"]))
+    assert skipped["restored"] is False and skipped["restore"] == "skipped"
+
+
+def test_send_mouse_takes_one_of_three_shapes(tmp_path: Path) -> None:
+    """A `button` click, an `x`/`y` pointer placement, or a `dx`/`dy` guest motion: exactly
+    one per call, never two, never none, never half of one. The mouse KEEPS the focus by
+    default (a captured mouse is released when the window loses it), and `send_keys` hands
+    it back by default; both take `focus` explicitly."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True                      # input goes to a RUNNING guest
+    click = cast(dict[str, Any], server.send_mouse(button="left"))
+    assert click["status"] == "ok" and fake.input_calls[-1] == ("click", ["left"])
+    assert fake.input_focus == [True], "the mouse keeps the focus unless told otherwise"
+    # the focus-announce fields come through for a click, not only for send_keys -- and a
+    # kept focus is `restored: False` (nothing was put back) with `restore: "kept"`.
+    assert click["posted"] == 1 and click["activated"] is True
+    assert click["restored"] is False and click["restore"] == "kept", click
+    assert click["window"] == [2088, 68, 1280, 960]
+    right = cast(dict[str, Any], server.send_mouse(button="right", focus="return"))
+    assert right["status"] == "ok" and fake.input_calls[-1] == ("click", ["right"])
+    assert right["restored"] is True and right["restore"] == "done"
+    assert fake.input_focus == [True, False]
+    move = cast(dict[str, Any], server.send_mouse(x=100, y=200))
+    assert move["status"] == "ok" and fake.input_calls[-1] == ("move", ["100", "200"])
+    assert "caveat" in move
+    centre = cast(dict[str, Any], server.send_mouse(place="center"))
+    assert centre["status"] == "ok" and fake.input_calls[-1] == ("move", ["center"])
+    nudge = cast(dict[str, Any], server.send_mouse(dx=-30, dy=0))
+    assert nudge["status"] == "ok" and fake.input_calls[-1] == ("nudge", ["-30", "0"])
+    assert nudge["dx"] == -30 and nudge["dy"] == 0
+    bad_calls: list[Callable[[], dict[str, Any]]] = [
+        lambda: server.send_mouse(button="left", x=1, y=2),
+        lambda: server.send_mouse(x=1, y=2, dx=3, dy=4),
+        lambda: server.send_mouse(place="center", dx=1, dy=1),
+        lambda: server.send_mouse()]
+    for bad_call in bad_calls:
+        got = bad_call()
+        assert got["status"] == "INVALID" and "name ONE event" in got["message"], got
+    # WHOLE NUMBERS ONLY, refused here rather than by the helper after the focus was taken:
+    # a perform step hands values over untyped.
+    posted_before = len(fake.input_calls)
+    bad_nums: list[Callable[[], dict[str, Any]]] = [
+        lambda: server.send_mouse(dx=cast(Any, 1.5), dy=0),
+        lambda: server.send_mouse(x=cast(Any, "12"), y=3),
+        lambda: server.send_mouse(dx=cast(Any, True), dy=0)]
+    for bad_num in bad_nums:
+        got = bad_num()
+        assert got["status"] == "INVALID" and "whole number" in got["message"], got
+    assert len(fake.input_calls) == posted_before, "a refused number must not have posted"
+    # THE BOUND IS THE SERVER'S TOO, not only the native helper's. A nudge past the cap
+    # that reaches the host comes back as `host_failed` with the helper's exit code, while
+    # `send_keys` refuses an unknown key name before touching anything: two neighbouring
+    # tools validating in different layers, for no reason a caller can see.
+    posted_before = len(fake.input_calls)
+    over_calls: list[Callable[[], dict[str, Any]]] = [
+        lambda: server.send_mouse(dx=inputs.MAX_NUDGE_PX + 1, dy=0),
+        lambda: server.send_mouse(dx=0, dy=-(inputs.MAX_NUDGE_PX + 1))]
+    for over in over_calls:
+        got = over()
+        assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+        assert str(inputs.MAX_NUDGE_PX) in got["message"], got
+    assert len(fake.input_calls) == posted_before, "a refused nudge must not have posted"
+    edge = cast(dict[str, Any], server.send_mouse(dx=inputs.MAX_NUDGE_PX, dy=0))
+    assert edge["status"] == "ok", "the cap itself is allowed, one past it is not"
+    notcentre = cast(dict[str, Any], server.send_mouse(place="corner"))
+    assert notcentre["status"] == "INVALID" and "'center'" in notcentre["message"]
+    xonly = cast(dict[str, Any], server.send_mouse(x=100))     # y missing
+    assert xonly["status"] == "INVALID" and "BOTH `x` and `y`" in xonly["message"]
+    dxonly = cast(dict[str, Any], server.send_mouse(dx=5))
+    assert dxonly["status"] == "INVALID" and "BOTH `dx` and `dy`" in dxonly["message"]
+    bad = cast(dict[str, Any], server.send_mouse(button="middle"))
+    assert bad["status"] == "INVALID" and "left" in bad["message"]
+    badfocus = cast(dict[str, Any], server.send_mouse(button="left", focus="steal"))
+    assert badfocus["status"] == "INVALID" and "focus is" in badfocus["message"]
+    # keys: the default hands the focus back, and `keep` is honoured and announced.
+    fake.input_focus.clear()
+    server.send_keys(keys=["a"])
+    kept = cast(dict[str, Any], server.send_keys(keys=["a"], focus="keep"))
+    assert fake.input_focus == [False, True] and "stays there" in kept["note"]
+    # every answer of the hand-back has its word, and a helper that said nothing is `unknown`.
+    for fact, word in (("kept", "kept"), ("lost", "lost"), ("skipped", "skipped"),
+                       ("false", "failed"), (None, "unknown")):
+        facts = {"trusted": "true", "activated": "true", "attempts": "1", "posted": "1"}
+        if fact is not None:
+            facts["restored"] = fact
+        fake.input_facts = facts
+        got = cast(dict[str, Any], server.send_mouse(button="left"))
+        assert got["restore"] == word and got["restored"] is False, (fact, got)
+        assert got["window"] is None
+
+
+E9_KEY_ACT = "Bochs port E9h: [+  66.628] ACT   . key_cue_a=0 b=-1 on=0"
+
+
+def test_send_keys_with_an_expectation_confirms_the_guest_reacted(tmp_path: Path) -> None:
+    """THE TWO-CHANNEL HALF: a key is not delivered because it was posted, it is delivered
+    because the GUEST reacted. With `expect` the tool marks the log BEFORE the post, posts,
+    and waits for a NEW line matching it; the reply then says the effect was SEEN and quotes
+    the line. The mark is asserted to be the pre-post position, because a mark taken after
+    the post would hide a reaction that landed at once."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True                      # input goes to a RUNNING guest
+    fake.log = ["Bochs port E9h: [+   0.000] BOOT  . start"]
+    fake.input_effect = E9_KEY_ACT
+    got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a", seconds=5))
+    assert got["status"] == "ok" and got["posted"] == 1, got
+    # `seen_before_waiting`, not `already`: the reaction was written AFTER the post (the
+    # fake appends it on send) and was there when the wait first looked from the mark, and
+    # `lines_before` says nothing sat between the mark and it (measured).
+    assert got["effect"] == {"checked": True, "seen": True, "expected": "key_cue_a",
+                             "line": E9_KEY_ACT, "seen_before_waiting": True,
+                             "lines_before": 0, "waited_s": 0.0, "lines_total": 1}, got["effect"]
+    assert "already" not in got["effect"]
+    assert fake.wait_calls == [("key_cue_a", 5, 1)], fake.wait_calls   # mark = 1 line, pre-post
+    # THE DEFAULT BOUND is a named constant, passed through when `seconds` is omitted.
+    server.send_keys(keys=["a"], expect="key_cue_a")
+    assert fake.wait_calls[-1][1] == inputs.EFFECT_WAIT_DEFAULT_S
+
+
+def test_send_keys_reports_a_swallowed_key_as_a_miss_not_a_success(tmp_path: Path) -> None:
+    """THE FALSE SUCCESS THIS EXISTS TO REFUSE. The guest swallows the key (a modal had the
+    focus) and writes nothing, AND an earlier line already matches the pattern -- the cue
+    fired at some point before this post. The reply is INVALID, says the guest did not
+    react, still reports the post that happened (a miss is not 'nothing was sent'), and the
+    stale line is NOT served as the reaction: the wait was asked from the mark, past it."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True                      # input goes to a RUNNING guest
+    fake.log = ["Bochs port E9h: [+   0.000] BOOT  . start", E9_KEY_ACT]   # a STALE match
+    fake.input_effect = None                                              # the guest is silent
+    got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a", seconds=2))
+    assert got["status"] == "INVALID", got
+    assert "did not react" in got["message"] and "key_cue_a" in got["message"], got["message"]
+    assert got["posted"] == 1 and got["activated"] is True, got     # the post is still reported
+    assert got["effect"]["checked"] is True and got["effect"]["seen"] is False, got["effect"]
+    assert fake.wait_calls == [("key_cue_a", 2, 2)], fake.wait_calls   # from PAST the stale line
+    assert fake.input_calls == [("keys", ["-", "a"])]
+
+
+def test_send_keys_an_instrument_that_broke_is_not_reported_as_a_miss(
+        tmp_path: Path) -> None:
+    """ONLY AN EXPIRED BOUND IS A MISS. The wait also refuses when the emulator is GONE or
+    the log SHRUNK, and those are the instrument breaking, not the guest ignoring the key:
+    the reply says the effect could NOT be verified, leads with the wait's own words, and
+    never claims the program swallowed anything. Seen red: catching the base class turned a
+    dead emulator into "the guest did not react ... the emulator is GONE"."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True                      # input goes to a RUNNING guest
+    fake.wait_raises = ds.Invalid("session_broken", "the emulator is GONE, 0.2s into a 10.0s wait")
+    got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a"))
+    assert got["status"] == "INVALID" and got["posted"] == 1, got
+    assert got["effect"] == {"checked": False, "expected": "key_cue_a",
+                             "why": "the emulator is GONE, 0.2s into a 10.0s wait"}, got
+    assert "could NOT be verified" in got["message"] and "GONE" in got["message"], got["message"]
+    assert "did not react" not in got["message"], got["message"]
+
+
+def test_send_keys_without_an_expectation_says_it_did_not_verify(tmp_path: Path) -> None:
+    """No `expect`, no verification -- and the reply SAYS so instead of letting `posted`
+    read as delivered. `effect.checked` is False with the reason, so a caller cannot take
+    the ok for a landing. And `seconds` with nothing to bound is REFUSED, not ignored."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True                      # input goes to a RUNNING guest
+    got = cast(dict[str, Any], server.send_keys(keys=["a"]))
+    assert got["status"] == "ok" and got["posted"] == 1, got
+    assert got["effect"]["checked"] is False and "expect" in got["effect"]["why"], got
+    assert fake.wait_calls == []
+    orphan = cast(dict[str, Any], server.send_keys(keys=["a"], seconds=5))
+    assert orphan["status"] == "INVALID" and "silently ignored" in orphan["message"], orphan
+    assert len(fake.input_calls) == 1, "the refused call must not have posted"
+
+
+def test_send_keys_expectation_that_cannot_be_checked_is_refused_before_the_post(
+        tmp_path: Path) -> None:
+    """A post cannot be taken back, so everything that would make the verification
+    impossible is refused BEFORE it: no logfile (no channel to see a reaction in), a
+    pattern that is empty or not a regex, a wait that is not a bound or not a number (a
+    `perform` step hands values over untyped). `input_calls` stays empty -- the key was NOT
+    sent and then reported unverifiable."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True                      # input goes to a RUNNING guest
+    fake.log = None                                   # a session with no logfile
+    nolog = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a"))
+    assert nolog["status"] == "INVALID" and "logfile" in nolog["message"], nolog
+    fake.log = []
+    badrx = cast(dict[str, Any], server.send_keys(keys=["a"], expect="(unclosed"))
+    assert badrx["status"] == "INVALID" and "pattern" in badrx["message"].lower(), badrx
+    empty = cast(dict[str, Any], server.send_keys(keys=["a"], expect=""))
+    assert empty["status"] == "INVALID" and "every line" in empty["message"], empty
+    nobound = cast(dict[str, Any], server.send_keys(keys=["a"], expect="x", seconds=0))
+    assert nobound["status"] == "INVALID" and "bound" in nobound["message"], nobound
+    # UNTYPED VALUES, as a perform step delivers them: a TypeError out of the comparison or
+    # the regex compiler is a traceback the tool wrapper does not translate.
+    astr = cast(dict[str, Any], server.perform(steps=[
+        {"op": "send_keys", "keys": ["a"], "expect": "x", "seconds": "3"}]))
+    assert astr["status"] == "INVALID" and "is a number" in astr["message"], astr
+    nonstr = cast(dict[str, Any], server.perform(steps=[
+        {"op": "send_keys", "keys": ["a"], "expect": 5}]))
+    assert nonstr["status"] == "INVALID" and "expect is a string" in nonstr["message"], nonstr
+    assert fake.input_calls == [], "a refused verification must not have posted anything"
+
+
+def test_send_mouse_takes_the_same_expectation(tmp_path: Path) -> None:
+    """The mouse half verifies through the same path: a click OR a move with `expect` is
+    confirmed or reported missed exactly as a key is."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True                      # input goes to a RUNNING guest
+    fake.input_effect = "Bochs port E9h: [+   1.000] UI    . ask via CLICK on button 0"
+    hit = cast(dict[str, Any], server.send_mouse(button="left", expect="via CLICK"))
+    assert hit["status"] == "ok" and hit["effect"]["seen"] is True, hit
+    moved = cast(dict[str, Any], server.send_mouse(x=10, y=20, expect="via CLICK"))
+    assert moved["status"] == "ok" and moved["effect"]["seen"] is True, moved
+    assert fake.input_calls[-1] == ("move", ["10", "20"])
+    fake.input_effect = None
+    miss = cast(dict[str, Any], server.send_mouse(button="left", expect="via CLICK",
+                                                  seconds=1))
+    assert miss["status"] == "INVALID" and miss["effect"]["seen"] is False, miss
+    assert miss["posted"] == 1
+    # THE HELPER'S REFUSAL BEFORE POSTING (the pointer outside the window) carries the
+    # same fields as a miss, `posted` at zero: a bare reason left a caller reading
+    # `posted` with a KeyError, and the docstring promising the post reported.
+    fake.input_refusal = ("keypost click failed (exit 7): the host pointer is outside the "
+                          "emulator's window; nothing was posted")
+    for refused in (server.send_mouse(button="left", expect="via CLICK", seconds=1),
+                    server.send_mouse(button="left")):
+        assert refused["status"] == "INVALID" and "nothing was posted" in refused["message"]
+        assert refused["posted"] == 0 and refused["route"] == "window", refused
+        assert refused["effect"]["seen"] is False and refused["activated"] is False
+
+
+def test_perform_stops_at_a_send_keys_step_whose_expectation_missed(tmp_path: Path) -> None:
+    """Decision 3 meets the driver: a sequence whose key was swallowed STOPS there, naming
+    the step, rather than carrying on as if the program had taken the key."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True                      # input goes to a RUNNING guest
+    out = cast(dict[str, Any], server.perform(steps=[
+        {"op": "send_keys", "keys": ["a"], "expect": "key_cue_a", "seconds": 1},
+        {"op": "status"}]))
+    assert out["status"] == "INVALID" and out["failed_at"] == 0, out
+    assert out["failed"]["op"] == "send_keys" and out["failed"]["reply"]["posted"] == 1
+    assert out["ran"] == []
+
+
+def test_run_to_takes_a_symbol_or_an_address_like_the_readers_do(tmp_path: Path) -> None:
+    """Decision 11 reaches `run_to`: a symbol resolves through the same path the breakpoint
+    and reader tools use (the code selector in protected mode, the paragraph in real mode),
+    a raw SEG:OFF is taken as written, and a name absent from this build is refused before
+    anything runs. The reply names the ref and the target it resolved to."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("_uicue_apply", 0x3D5E0, kind="T"),
+                                     dsym.Symbol("twice", 0x10, kind="t"),
+                                     dsym.Symbol("twice", 0x20, kind="t")])
+    by_name = cast(dict[str, Any],
+                   server.run_to(ref="_uicue_apply", control="0000:0020", seconds=5))
+    assert by_name["status"] == "ok" and by_name["arrived"] is True, by_name
+    assert fake.runto_calls == [(0xA7, 0x3D5E0, 5)], fake.runto_calls   # CS, the symbol's offset
+    # `target` is the SESSION'S spelling, handed back untouched (a second spelling beside
+    # the note that quotes the first is two names for one address).
+    assert by_name["ref"] == "_uicue_apply" and by_name["target"] == "00A7:3D5E0"
+    by_addr = cast(dict[str, Any], server.run_to(ref="F000:0E05", control="0000:0020"))
+    assert fake.runto_calls[-1] == (0xF000, 0xE05, 30.0)
+    assert by_addr["target"] == "F000:0E05", by_addr
+    absent = cast(dict[str, Any], server.run_to(ref="_nobody", control="0000:0020"))
+    assert absent["status"] == "INVALID" and "not a symbol" in absent["message"], absent
+    twice = cast(dict[str, Any], server.run_to(ref="twice", control="0000:0020"))
+    assert twice["status"] == "INVALID" and "names 2 symbols" in twice["message"], twice
+    empty = cast(dict[str, Any], server.run_to(ref="", control="0000:0020"))
+    assert empty["status"] == "INVALID", empty            # not a DeclarationError traceback
+    assert len(fake.runto_calls) == 2, "a refused ref must not have run anything"
+    # THE OLD SPELLING IS GONE: the numeric pair is not a parameter any more.
+    old = cast(dict[str, Any], server.perform(steps=[
+        {"op": "run_to", "segment": 0, "offset": 0x10, "control": "0000:0020"}]))
+    assert old["status"] == "INVALID" and "bad arguments" in old["message"], old
+
+
+def test_scan_sequence_composes_set1_makes_and_breaks_in_order() -> None:
+    """The serial route's bytes: modifiers' makes, each key's make and break, the
+    modifiers' breaks in reverse; an extended key repeats its E0 prefix on the break; an
+    unknown name or a modifier a DOS keyboard lacks is refused with nothing composed."""
+    assert inputs.scan_sequence(["a"], "-") == bytes([0x1E, 0x9E])
+    assert inputs.scan_sequence(["a", "enter"], "-") == bytes([0x1E, 0x9E, 0x1C, 0x9C])
+    assert inputs.scan_sequence(["a"], "shift") == bytes([0x2A, 0x1E, 0x9E, 0xAA])
+    assert inputs.scan_sequence(["up"], "ctrl+alt") == bytes(
+        [0x1D, 0x38, 0xE0, 0x48, 0xE0, 0xC8, 0xB8, 0x9D])
+    assert inputs.scan_sequence(["F11"], "-") == bytes([0x57, 0xD7])   # names are case-free
+    with pytest.raises(ds.Invalid, match="unknown key name"):
+        inputs.scan_sequence(["a", "bogus"], "-")
+    with pytest.raises(ds.Invalid, match="no command key"):
+        inputs.scan_sequence(["a"], "cmd")
+
+
+def test_send_keys_takes_the_serial_route_when_the_session_has_a_port(
+        tmp_path: Path) -> None:
+    """A session started with `input_port` sends keys down the socket: headless is fine, the
+    reply says `route: serial` with the byte and tick counts and no window facts, `expect`
+    verifies the same way, and the mouse is refused on a HEADLESS serial session rather than
+    sent nowhere, naming the remedy for that session. A session without a port keeps the
+    window route and its window requirement; one with a port AND a window sends keys down
+    the socket and clicks through the window."""
+    fake = _names(tmp_path, watched=False, input_port=5555)
+    fake.running = True                       # a RUNNING guest, as a key is sent to
+    fake.input_effect = E9_KEY_ACT
+    got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a"))
+    assert got["status"] == "ok" and got["route"] == "serial", got
+    assert got["posted"] == 1 and got["bytes"] == 2 and got["ticks"] == 2, got
+    assert "activated" not in got and "focus" not in got, got
+    assert got["effect"]["seen"] is True, got["effect"]
+    assert fake.scancodes_sent == [bytes([0x1E, 0x9E])] and fake.input_calls == []
+    shifted = cast(dict[str, Any], server.send_keys(keys=["b"], modifiers=["shift"]))
+    assert fake.scancodes_sent[-1] == bytes([0x2A, 0x30, 0xB0, 0xAA]) and shifted["ticks"] == 4
+    mouse = cast(dict[str, Any], server.send_mouse(button="left"))
+    assert mouse["status"] == "INVALID" and "mode='shared'" in mouse["message"], mouse
+    assert len(fake.scancodes_sent) == 2, "a refused mouse must not have sent bytes"
+    # A STOPPED MACHINE IS REFUSED, not fed bytes that would land at the next resume.
+    fake.running = False
+    stopped = cast(dict[str, Any], server.send_keys(keys=["a"]))
+    assert stopped["status"] == "INVALID" and "STOPPED at the debugger" in stopped["message"]
+    assert len(fake.scancodes_sent) == 2
+    # THE CAP, on either route: a long text goes in several calls.
+    fake.running = True
+    capped = cast(dict[str, Any], server.send_keys(keys=["a"] * 65))
+    assert capped["status"] == "INVALID" and "at most 64" in capped["message"], capped
+    assert len(fake.scancodes_sent) == 2
+    # A MISS on the serial route does not blame a window it never had.
+    fake.input_effect = None
+    miss = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a", seconds=1))
+    assert miss["status"] == "INVALID" and "focus" not in miss["message"], miss["message"]
+    windowed = _names(tmp_path, watched=True)
+    windowed.running = True                  # input goes to a RUNNING guest
+    win = cast(dict[str, Any], server.send_keys(keys=["a"]))
+    assert win["route"] == "window" and windowed.scancodes_sent == []
+    both = _names(tmp_path, watched=True, input_port=5555)
+    both.running = True
+    assert cast(dict[str, Any], server.send_keys(keys=["a"]))["route"] == "serial"
+    click = cast(dict[str, Any], server.send_mouse(button="left"))
+    assert click["status"] == "ok" and click["route"] == "window", click
+    assert both.input_calls == [("click", ["left"])] and len(both.scancodes_sent) == 1
+
+
+def test_the_two_input_routes_share_one_key_vocabulary() -> None:
+    """A caller says the same key name whichever route answers: the names the window
+    route's helper knows (parsed out of `keypost.swift`, the file the helper is compiled
+    from) and the names the serial route's set-1 table knows are the SAME set, so a key that
+    works on one route cannot be refused on the other."""
+    source = Path(str(server.__file__)).with_name("keypost.swift").read_text(encoding="utf-8")
+    # the declaration's own type reads `[String: CGKeyCode]`, so the table starts at `= [`
+    table = source.split("let KEYCODES", 1)[1].split("= [", 1)[1].split("]", 1)[0]
+    helper_names = set(re.findall(r'"([a-z0-9]+)":\s*\d+', table))
+    assert helper_names, "the helper's table could not be read out of keypost.swift"
+    assert helper_names == set(inputs.SCAN_SET1), (
+        f"only in the helper: {sorted(helper_names - set(inputs.SCAN_SET1))}; only in the "
+        f"serial table: {sorted(set(inputs.SCAN_SET1) - helper_names)}")
+
+
+def test_the_shipped_stub_matches_its_source(tmp_path: Path) -> None:
+    """`guest/INJECT.COM` is the assembled `guest/inject.asm`, byte for byte: a COM edited by
+    hand, or a source edited without reassembling, is what this turns red on. It needs NASM
+    to reassemble and SKIPS without it, saying so, rather than reporting a match it never
+    checked."""
+    nasm = shutil.which("nasm")
+    if nasm is None:
+        pytest.skip("nasm is not on PATH, so the stub cannot be reassembled to compare")
+    guest = Path(str(server.__file__)).parent / "guest"
+    out = tmp_path / "INJECT.COM"
+    subprocess.run([nasm, "-f", "bin", str(guest / "inject.asm"), "-o", str(out)], check=True)
+    assert out.read_bytes() == (guest / "INJECT.COM").read_bytes(), (
+        "guest/INJECT.COM is not the assembled guest/inject.asm: reassemble it")
+    assert out.stat().st_size < 1024, "the stub is meant to be tiny"
+
+
+def test_drive_marks_acts_verifies_and_looks_from_the_mark(tmp_path: Path) -> None:
+    """The Chrome-driver shape for a DOS program: the log is marked BEFORE the act, the act
+    runs as `perform` runs it, the overall `expect` is waited for from that mark, and the
+    LOOK is what the guest wrote since it (filtered, last N). A stale line before the mark
+    is neither the verification nor part of the look."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True                      # input goes to a RUNNING guest
+    fake.where_raises = True              # a RUNNING guest, as a key is sent to
+    fake.log = ["Bochs port E9h: [+   0.000] BOOT  . start", E9_KEY_ACT]   # a STALE cue
+    fake.input_effect = "Bochs port E9h: [+   9.000] ACT   . key_cue_a=1 b=-1 on=1"
+    out = cast(dict[str, Any], server.drive(
+        act=[{"op": "send_keys", "keys": ["a"]}], expect="key_cue_a", seconds=5,
+        pattern="ACT", limit=10))
+    assert out["status"] == "ok", out
+    assert out["act"]["completed"] == 1 and out["act"]["failed_at"] is None, out["act"]
+    assert out["verify"]["seen"] is True and "on=1" in out["verify"]["line"], out["verify"]
+    assert fake.wait_calls[-1] == ("key_cue_a", 5.0, 2), fake.wait_calls   # from the mark
+    e9 = out["looked"]["e9"]
+    assert e9["available"] is True and e9["since_mark"] == 2, e9
+    assert e9["written"] == 1 and e9["lines_total"] == 1 and e9["lines"] == [fake.input_effect]
+    # THE CUT, THE FILTER AND THE COUNTS, each pinned by a fixture that separates them:
+    # three lines land after the mark, one of which does not match `pattern`; `limit=1`
+    # keeps the LAST matching one, `written` counts all three, `lines_total` the two.
+    fake.log = [f"Bochs port E9h: [+   {i}.000] PERF  . tick={i}" for i in range(6)]
+    mark_before = len(fake.log)
+    fake.input_effect = "Bochs port E9h: [+   7.000] PERF  . tick=7"
+    fake.after_effect = ["Bochs port E9h: [+   7.100] VU    . ball play=0",
+                         "Bochs port E9h: [+   7.200] PERF  . tick=8"]
+    out = cast(dict[str, Any], server.drive(act=[{"op": "send_keys", "keys": ["b"]}],
+                                             pattern="tick", limit=1))
+    e9 = out["looked"]["e9"]
+    assert e9["since_mark"] == mark_before, e9
+    assert (e9["written"], e9["lines_total"], len(e9["lines"])) == (3, 2, 1), e9
+    assert e9["lines"] == [fake.after_effect[1]] and e9["pattern"] == "tick", e9
+    assert out["verify"]["checked"] is False and "no `expect`" in out["verify"]["why"]
+    assert out["act"]["failed"] is None
+
+
+def test_drive_reports_a_miss_a_failed_act_and_refuses_what_it_cannot_do(
+        tmp_path: Path) -> None:
+    """A guest that did not do what was expected is INVALID with the account of what ran
+    and the look beside it; a step that failed stops the act before any verification; and
+    everything the call cannot honour -- no logfile, an empty act, a bad look or bound,
+    seconds with no expect -- is refused before the act moves anything."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True                      # input goes to a RUNNING guest
+    fake.where_raises = True              # a RUNNING guest, as a key is sent to
+    fake.input_effect = None
+    miss = cast(dict[str, Any], server.drive(act=[{"op": "send_keys", "keys": ["a"]}],
+                                              expect="key_cue_a", seconds=1))
+    assert miss["status"] == "INVALID" and "did not do what was expected" in miss["message"]
+    assert miss["act"]["completed"] == 1 and miss["verify"]["seen"] is False, miss
+    assert miss["looked"]["e9"]["written"] == 0
+    failed = cast(dict[str, Any], server.drive(
+        act=[{"op": "send_keys", "keys": ["a"], "expect": "never", "seconds": 1},
+             {"op": "status"}], expect="key_cue_a"))
+    assert failed["status"] == "INVALID" and "stopped at step 0" in failed["message"], failed
+    assert "verify" not in failed and failed["act"]["failed"]["op"] == "send_keys"
+    assert len(fake.wait_calls) == 2, "the overall expect must not be waited for after a failure"
+    assert failed["act"]["failed"]["op"] == "send_keys"
+    # EVERY REFUSAL COMES BEFORE THE ACT MOVES ANYTHING: each of these carries a step that
+    # would post a key, and none of them posts. An unknown op among the steps is refused up
+    # front too, where `perform` would have run the steps before it.
+    posted, waited = len(fake.input_calls), len(fake.wait_calls)
+    key = {"op": "send_keys", "keys": ["a"]}
+    refusals: list[Callable[[], dict[str, Any]]] = [
+        lambda: server.drive(act=[]),
+        lambda: server.drive(act=[key], pattern="("),
+        lambda: server.drive(act=[key], limit=0),
+        lambda: server.drive(act=[key], seconds=3),
+        lambda: server.drive(act=[key], expect=""),
+        lambda: server.drive(act=[key], wait=-1),      # 0 is "never wait"; below it is not a bound
+        lambda: server.drive(act=[key, {"op": "warp_core"}]),
+        lambda: server.drive(act=[key, "not a step"])]
+    for refusal in refusals:
+        got = refusal()
+        assert got["status"] == "INVALID", got
+    fake.log = None
+    nolog = cast(dict[str, Any], server.drive(act=[key]))
+    assert nolog["status"] == "INVALID" and "logfile" in nolog["message"]
+    assert (len(fake.input_calls), len(fake.wait_calls)) == (posted, waited), (
+        "a refused drive must not have acted or waited")
+    # `perform` refuses the same non-bound `wait`.
+    assert cast(dict[str, Any], server.perform(steps=[{"op": "status"}], wait=-1))["status"] \
+        == "INVALID"
+
+
+def test_drive_carries_the_verify_refusals_own_code_when_the_instrument_broke(
+        tmp_path: Path) -> None:
+    """The act ran and the VERIFY could not be made because the wait's instrument broke (the
+    emulator GONE, the log SHRUNK): the reply's `code` is the wait's own, not a word invented
+    here, and `verify` carries it too, so a caller can tell a broken instrument from a miss
+    without parsing prose."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True
+    fake.where_raises = True
+    fake.input_effect = None
+    fake.wait_raises = ds.Invalid("session_broken", "the emulator is GONE, 0.2s into a 1s wait")
+    out = cast(dict[str, Any], server.drive(act=[{"op": "send_keys", "keys": ["a"]}],
+                                             expect="key_cue_a", seconds=1))
+    assert out["status"] == "INVALID" and out["code"] == "session_broken", out
+    assert "could NOT be verified" in out["message"] and "GONE" in out["message"], out
+    assert out["verify"]["checked"] is False and out["verify"]["code"] == "session_broken"
+
+
+def test_drive_verifies_a_stopped_guest_with_one_read_and_no_wait(tmp_path: Path) -> None:
+    """A guest stopped at the debugger cannot write a line, so an act that ended at a stop is
+    verified with ONE read since the mark: seen if the line is already there, a miss that
+    SAYS the machine is stopped otherwise -- never a wait that burns the bound on a machine
+    that could not act and then blames the program. Seen red: the wait ran its whole bound."""
+    fake = _names(tmp_path, watched=True)
+    fake.halted = True                    # a resume that halts at once: the act ends stopped
+    fake.log = ["Bochs port E9h: [+   0.000] BOOT  . start"]
+    miss = cast(dict[str, Any], server.drive(act=[{"op": "resume"}], expect="key_cue_a",
+                                              seconds=5))
+    assert miss["status"] == "INVALID" and miss["verify"]["seen"] is False, miss
+    assert "STOPPED at the debugger" in miss["verify"]["why"], miss["verify"]
+    assert fake.wait_calls == [], "a stopped guest is read, not waited for"
+    # the line the guest wrote BEFORE stopping (during the act) is the verification.
+    fake.resume_effect = [E9_KEY_ACT]
+    seen = cast(dict[str, Any], server.drive(act=[{"op": "resume"}], expect="key_cue_a"))
+    assert seen["status"] == "ok" and seen["verify"]["seen"] is True, seen
+    assert seen["verify"]["waited_s"] == 0.0 and fake.wait_calls == []
+
+
+def test_perform_a_running_ok_step_leaves_the_machine_as_it_found_it(tmp_path: Path) -> None:
+    """R1's shape, `resume` then `send_keys`: the key step runs on the RUNNING guest and
+    must not make the executor believe the machine stopped. Two consequences, both seen red
+    when a running-OK op overwrote `running`: the TAIL still waits for the stop the resume was
+    heading for and hands back the enriched reply; and a CONSOLE step after `[resume, status]`
+    is held at the decision-37 boundary ("still running") rather than dispatched into a
+    running machine and failing on a cut pane."""
+    fake = _names(tmp_path, watched=True)
+    fake.input_effect = E9_KEY_ACT
+    fake.halted = False              # the resume leaves the machine running...
+    fake.where_refusals = 2          # ...and it stops after two polls of the tail
+    server.breakpoint_at(ref="00A7:0100")   # R1 ARMS before it resumes: the stop is coming
+    # THE RESUME LETS IT RUN, and only the resume: the machine is at rest until the F5, which
+    # `resume` itself checks, and away from the debugger from then on.
+    released: list[bool] = []
+    real_resume = fake.resume
+
+    def resume_and_run() -> dict[str, object]:
+        released.append(True)
+        return real_resume()
+
+    fake.resume = resume_and_run  # type: ignore[method-assign]
+    fake.at_debugger = lambda: not released  # type: ignore[method-assign]
+    out = cast(dict[str, Any], server.perform(steps=[
+        {"op": "resume"},
+        {"op": "send_keys", "keys": ["a"], "expect": "key_cue_a"},
+        {"op": "status"}], wait=5.0))
+    assert out["status"] == "ok" and out["completed"] == 3, out
+    assert out["ran"][1]["reply"]["effect"]["seen"] is True, out["ran"][1]
+    assert "stopped" in out and "registers" in out["stopped"], out
+    # the boundary half: a console op after a running-OK op still waits, and says so.
+    fake.where_refusals = 0
+    fake.where_raises = True
+    fake.registers_raises = True
+    released.clear()                  # at rest again for the next list's resume
+    held = cast(dict[str, Any], server.perform(steps=[
+        {"op": "resume"}, {"op": "status"}, {"op": "registers"}], wait=0.5))
+    assert held["status"] == "INVALID" and held["failed_at"] == 2, held
+    assert "still running" in held["message"], held["message"]
+
+
+def test_perform_waits_for_a_stop_before_a_console_step_after_a_resume(
+        tmp_path: Path) -> None:
+    """Decision 37: a `resume` that leaves the machine running ends the console-driven part.
+    A running-OK op (`status`) may follow at once; a CONSOLE op (`registers`) makes the
+    sequence WAIT for the next stop first. The fake stays running, so the console step is
+    refused naming the boundary rather than dispatched into the void."""
+    fake = _names(tmp_path)
+    fake.halted = False                 # resume leaves it running
+    fake.where_raises = True            # ...and the running machine refuses where()
+    # a running-OK op after resume is fine (it does not touch the console)
+    ok = server.perform(steps=[{"op": "resume"}, {"op": "status"}], wait=0.5)
+    assert ok["status"] == "ok", ok
+    # a console op after resume, with the machine never stopping, is refused (decision 37)
+    blocked = server.perform(steps=[{"op": "resume"}, {"op": "registers"}], wait=0.5)
+    assert blocked["status"] == "INVALID" and "still running" in blocked["message"], blocked
+    assert blocked["failed_at"] == 1, blocked
+
+
+def test_perform_tail_waits_for_the_stop_and_returns_the_enriched_reply(
+        tmp_path: Path) -> None:
+    """When the sequence ends with the machine RUNNING, perform waits for the stop it was
+    heading for and hands back the ENRICHED reply at it (registers, watches, attribution) --
+    the value R1/R3 want. Here resume leaves it running and `where()` refuses twice then
+    succeeds, modelling a breakpoint that fires a moment later. The reply carries `stopped`
+    and NOT a stray `base` field (the tail called `_stop_reply` with no base fields)."""
+    fake = _names(tmp_path)
+    fake.halted = False                 # resume leaves it running
+    fake.where_refusals = 2             # ...then the machine stops (a breakpoint fires)
+    out = server.perform(steps=[{"op": "resume"}], wait=2.0)
+    assert out["status"] == "ok", out
+    assert "stopped" in out and "base" not in out["stopped"], out
+    stop = out["stopped"]
+    assert "registers" in stop and "watches" in stop and "attribution" in stop, stop
+
+
+def test_perform_tail_says_so_if_the_machine_never_stops(tmp_path: Path) -> None:
+    """The honest other half: a sequence that ends running and does NOT stop within `wait`
+    reports still_running rather than pretending it reached a stop."""
+    fake = _names(tmp_path)
+    fake.halted = False
+    fake.where_raises = True            # never stops
+    out = server.perform(steps=[{"op": "resume"}], wait=0.5)
+    assert out["status"] == "ok", out
+    assert out.get("still_running") is True and "did not stop" in out["note"], out
+
+
+def test_perform_console_step_after_resume_runs_once_the_machine_stops(
+        tmp_path: Path) -> None:
+    """Decision 37's WIN, mid-sequence: resume leaves the machine running, and a CONSOLE op
+    that follows waits for the stop and THEN runs. `where()` refuses twice (running) then
+    succeeds (a breakpoint fired), so the wait bridges the resume and `registers` dispatches.
+    Without the wait clearing `running`, the console op would be refused or sent into the
+    void; this proves it is neither."""
+    fake = _names(tmp_path)
+    fake.halted = False                 # resume leaves it running
+    fake.where_refusals = 2             # ...then the machine stops
+    out = server.perform(steps=[{"op": "resume"}, {"op": "registers"}], wait=2.0)
+    assert out["status"] == "ok", out
+    assert [r["op"] for r in out["ran"]] == ["resume", "registers"], out
+
+
+def test_run_to_with_a_cold_control_and_an_expired_bound_is_invalid(tmp_path: Path) -> None:
+    """Decision 12 of the emulator roadmap: with a control armed, a bound that ran out and a
+    control that NEVER fired proves nothing about the target, so the reply is INVALID with
+    the account attached, never a plain non-arrival. A control that DID fire keeps the
+    ordinary running reply, because then the silence is a measurement."""
+    fake = _names(tmp_path)
+    fake.runto_running = True
+    fake.where_raises = True
+    cold = cast(dict[str, Any], server.run_to(ref="0000:0010", control="0000:0020", seconds=1))
+    assert cold["status"] == "INVALID", cold
+    assert "never fired" in cold["message"] and "0000:0020" in cold["message"], cold
+    assert cold["control"] == {"at": "0000:0020", "hits": 0, "removed": False}, cold
+    assert cold["summary"].startswith("run_to: INVALID"), cold["summary"]
+    assert fake.runto_calls[-1][:2] == (0, 0x10), fake.runto_calls
+    fake.control_hits = 7
+    hot = cast(dict[str, Any], server.run_to(ref="0000:0010", control="0000:0020", seconds=1))
+    assert hot["status"] == "ok" and hot["running"] is True, hot
+    assert hot["summary"] == "run_to 0000:0010: still running, control counted 7", hot["summary"]
+    # And WITHOUT a control the run is refused before the machine moves: one row per
+    # address means a stop at the target could not be told from the target itself.
+    calls = len(fake.runto_calls)
+    plain = cast(dict[str, Any], server.run_to(ref="0000:0010", seconds=1))
+    assert plain["status"] == "INVALID" and "no control" in plain["message"], plain
+    assert len(fake.runto_calls) == calls, "nothing was sent"
+
+
+def test_run_to_resolves_a_symbolic_control_and_perform_passes_one_through(
+        tmp_path: Path) -> None:
+    """A symbol as the control resolves through the same layer as a symbol as the target,
+    even beside a raw-address target (which alone would skip the survey); and a `perform`
+    step carries `control` to `run_to` like any other argument, since the step is bound
+    against the live signature."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("_hot", 0x3D5E0, kind="T")])
+    fake.control_hits = 2
+    got = cast(dict[str, Any], server.run_to(ref="00A7:00000010", control="_hot", seconds=1))
+    assert got["status"] == "ok", got
+    assert fake.last_control == (0xA7, 0x3D5E0), fake.last_control   # CS, the symbol's offset
+    assert got["control"] == {"at": "00A7:3D5E0", "hits": 2, "removed": True}, got
+    out = cast(dict[str, Any], server.perform(
+        steps=[{"op": "run_to", "ref": "00A7:00000010", "control": "_hot", "seconds": 1}]))
+    assert out["status"] == "ok" and out["completed"] == 1, out
+    assert out["ran"][0]["reply"]["control"]["hits"] == 2, out["ran"][0]
+
+
+def test_every_reply_opens_with_a_summary_and_closes_with_the_session(tmp_path: Path) -> None:
+    """The line the client paints is the tool's name, its arguments and its reply, so the
+    reply's FIRST field is the one-line summary, on an ok reply and on an INVALID one alike,
+    and the `session` block stays last. Read from a live-shaped double through the wrapper,
+    which is the only place the order is decided."""
+    fake = _names(tmp_path)
+    ok = cast(dict[str, Any], server.registers())
+    assert list(ok)[0] == "summary" and list(ok)[-1] == "session", list(ok)
+    assert ok["summary"].startswith("registers: "), ok["summary"]
+    fake.running = True
+    refused = cast(dict[str, Any], server.registers())
+    assert refused["status"] == "INVALID"
+    assert list(refused)[0] == "summary" and refused["summary"].startswith("registers: INVALID")
+
+
+def test_every_tool_declares_a_title_and_the_readers_a_read_only_hint() -> None:
+    """`title` is what the client shows; `readOnlyHint` is what lets it run readers in
+    parallel. A reader without the hint is merely slower; a WRITER with it is a lie a client
+    would act on, so the writers are pinned as not read-only by name."""
+    tools = {t.name: t for t in server.mcp._tool_manager.list_tools()}
+    untitled = sorted(n for n, t in tools.items() if not t.title)
+    assert not untitled, f"tools with no title: {untitled}"
+    read_only = {n for n, t in tools.items()
+                 if t.annotations is not None and t.annotations.read_only_hint}
+    # EQUALITY, not containment: a new tool wrongly marked read-only must break this line,
+    # and a hand-kept list of writers would not see a tool absent from both lists. The
+    # readers keep the hint although the first contact after a stop applies pending
+    # declarations: that write is the declaring call's, not the reader's (owner's call).
+    assert read_only == {"status", "log", "log_wait", "registers", "read_memory", "find",
+                         "disassemble", "call_stack",
+                         "symbols_find", "machine_map",
+                         "breakpoint_list", "watch_list", "captures", "build_check",
+                         "state_list", "comment_list"}, read_only
+
+
+def test_perform_run_to_that_ran_off_arms_the_boundary_and_the_tail(
+        tmp_path: Path) -> None:
+    """`_leaves_running` covers `run_to`/`step`, not just `resume`: a `run_to` that came back
+    RUNNING (bound expired without arrival) arms the same resume boundary. Here it leaves the
+    machine running and the tail waits for the stop, returning the enriched reply -- proving
+    the boundary is armed by run_to, not only by resume."""
+    fake = _names(tmp_path)
+    fake.runto_running = True           # run_to bound expired: still running
+    fake.where_refusals = 1             # then it stops
+    fake.control_hits = 1          # the control fired: a run that ran off is a measurement
+    out = server.perform(steps=[{"op": "run_to", "ref": "0000:0000", "control": "0000:0020"}],
+                         wait=2.0)
+    assert out["status"] == "ok", out
+    assert "stopped" in out, out        # the tail waited and enriched
+    # and a CONSOLE op after a ran-off run_to that never stops is refused at the boundary.
+    fake2 = _names(tmp_path)
+    fake2.runto_running = True
+    fake2.control_hits = 1               # the control fired: the run-off is a measurement
+    fake2.where_raises = True           # never stops
+    blocked = server.perform(
+        steps=[{"op": "run_to", "ref": "0000:0000", "control": "0000:0020"}, {"op": "registers"}],
+        wait=0.5)
+    assert blocked["status"] == "INVALID" and "still running" in blocked["message"], blocked
+    assert blocked["failed_at"] == 1, blocked
+
+
+def test_perform_reports_a_gone_emulator_as_gone_not_still_running(
+        tmp_path: Path) -> None:
+    """A dead emulator makes where() refuse exactly as a running one does, so `_wait_for_stop`
+    checks alive() and the sequence says GONE, not 'still running' -- the confident wrong
+    answer that would otherwise contradict the session.alive:False in the same reply. Both
+    the boundary and the tail are covered."""
+    # TAIL: resume leaves running, the emulator dies during the run, the wait finds it gone.
+    fake = _names(tmp_path)
+    fake.halted = False
+    fake.where_raises = True
+    fake.dies_on_resume = True          # alive when perform starts, dead after the resume
+    out = server.perform(steps=[{"op": "resume"}], wait=0.5)
+    assert out["status"] == "ok" and out.get("gone") is True, out
+    assert "GONE" in out["note"], out
+    # BOUNDARY: a console op after a running step, emulator gone -> refused naming GONE.
+    fake2 = _names(tmp_path)
+    fake2.halted = False
+    fake2.where_raises = True
+    fake2.dies_on_resume = True
+    blocked = server.perform(steps=[{"op": "resume"}, {"op": "registers"}], wait=0.5)
+    assert blocked["status"] == "INVALID" and "GONE" in blocked["message"], blocked
+
+
+def test_perform_a_deep_type_error_in_a_tool_is_not_masked_as_bad_arguments(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A genuine TypeError raised INSIDE a tool must escape as the bug it is, not be relabeled
+    'bad arguments' -- the anti-pattern tool() forbids. Args are bound against the real
+    signature first (a true bad-arg name IS reported), and only then is the tool called."""
+    _names(tmp_path)
+    # a real bad-argument name is still reported as such (bound before dispatch)
+    bad = server.perform(steps=[{"op": "registers", "nope": 1}])
+    assert bad["status"] == "INVALID" and "bad arguments" in bad["message"], bad
+    # a TypeError from inside the tool body escapes rather than being masked
+    monkeypatch.setattr(server, "registers", lambda: (_ for _ in ()).throw(TypeError("boom")))
+    with pytest.raises(TypeError, match="boom"):
+        server.perform(steps=[{"op": "registers"}])
+
+
+def test_perform_tail_keeps_the_account_when_the_final_enrichment_refuses(
+        tmp_path: Path) -> None:
+    """A cut pane at the final stop must not throw away the whole sequence: `_stop_reply` is
+    guarded, so a refusal there marks the enrichment unavailable while `ran`/`completed`
+    stand. Here where() succeeds for the wait then registers() refuses inside `_stop_reply`."""
+    fake = _names(tmp_path)
+    fake.halted = False                 # resume leaves running
+    fake.where_refusals = 1             # the wait succeeds on the next poll
+    fake.registers_raises = True        # _stop_reply reads registers and it refuses (cut pane)
+    out = server.perform(steps=[{"op": "resume"}], wait=2.0)
+    assert out["status"] == "ok", out   # the sequence account survives
+    assert out["completed"] == 1 and [r["op"] for r in out["ran"]] == ["resume"], out
+    assert out["stopped"]["enrichment"]["available"] is False, out
+
+
+def test_start_with_a_plan_runs_it_on_the_fresh_session_and_folds_the_boot_in(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`start(plan=...)` runs the plan on the fresh session through the SAME executor, and
+    folds the boot reply in under `start` (stripped of status/session). A failing plan leaves
+    the session OPEN. Driven with ds.Session mocked, since start itself boots an emulator."""
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+
+    class Booted(NamesFake):
+        argv = ["dosbox-x", "-conf", "g.conf"]
+        def wait_ready(self, timeout: float = 30.0, progress: Any = None) -> float:
+            return 0.5
+
+    made: list[Booted] = []
+    def build(_l: object) -> Booted:
+        b = Booted(conf=conf)
+        made.append(b)
+        return b
+
+    with mock.patch("dosbox_x_server.ds.Session", build):
+        out = cast(dict[str, Any], server.start(
+            conf=str(conf), cwd=str(tmp_path), seconds=30,
+            plan=[{"op": "registers"}]))
+    assert out["status"] == "ok", out
+    assert [r["op"] for r in out["ran"]] == ["registers"], out
+    # THE BOOT IS FOLDED IN under `start`, stripped of status/session.
+    assert out["start"]["mode"] == "headless" and "argv" in out["start"], out
+    assert "status" not in out["start"] and "session" not in out["start"], out
+
+    # A plan that FAILS AT A STEP leaves the session OPEN (start does not close it): a symbol
+    # watch with no size passes the list's check and is refused by its step. Clear the
+    # session the first start installed, or this start refuses "already live" before the plan.
+    dstate.STATE.session = None
+    with mock.patch("dosbox_x_server.ds.Session", build):
+        failed = cast(dict[str, Any], server.start(
+            conf=str(conf), cwd=str(tmp_path), seconds=30,
+            plan=[{"op": "watch_add", "ref": "no_such", "mode": "show"}]))
+    assert failed["status"] == "INVALID" and failed["failed_at"] == 0, failed
+    # annotated `object` so mypy does not narrow `dstate.STATE.session` here and then call the
+    # reassignment below unreachable (ruff rewrites getattr, so the annotation is the seam).
+    still_open: object = dstate.STATE.session
+    assert still_open is not None, "a failed plan closed the session"
+    # AND no plan short-circuits to the plain boot reply.
+    dstate.STATE.session = None
+    with mock.patch("dosbox_x_server.ds.Session", build):
+        plain = cast(dict[str, Any], server.start(
+            conf=str(conf), cwd=str(tmp_path), seconds=30))
+    assert plain["status"] == "ok" and "ran" not in plain and "start" not in plain, plain
+
+
+def test_perform_bad_arguments_for_a_step_are_reported_not_crashed(tmp_path: Path) -> None:
+    """A wrong argument name for an op is the sequence's to report -- the tool never sees the
+    call, so it cannot translate it -- rather than a TypeError escaping."""
+    _names(tmp_path)
+    out = server.perform(steps=[{"op": "registers", "bogus": 1}])
+    assert out["status"] == "INVALID" and "bad arguments" in out["message"], out
+
+
+def test_start_with_a_plan_runs_it_on_the_fresh_session(tmp_path: Path) -> None:
+    """Decision 2's other moment: `start(plan=...)` runs the plan through the SAME executor,
+    and folds the started-reply in under `start` so a caller sees both the boot and the plan.
+    Driven with a FakeSession installed by hand, since `start` itself boots an emulator."""
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    dstate.STATE.store = dec.DeclarationStore(str(conf), path=tmp_path / "decl.json")
+    fake = NamesFake(conf=conf)
+    dstate.STATE.session = fake  # type: ignore[assignment]
+    # exercise the executor path start(plan=) uses, without re-booting: call _run_steps the
+    # way start does, then assert the fold-in shape start applies.
+    ran = sequence.run_steps(fake, [{"op": "registers"}], 1.0, server._step_ops())  # type: ignore[arg-type]
+    assert ran["status"] == "ok" and ran["completed"] == 1
+    assert ran["ran"][0]["op"] == "registers"
+
+
+def _start_on_a_booted_fake(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                            **kw: Any) -> dict[str, Any]:
+    """`start` driven whole without an emulator: the session is faked at the seam `start`
+    builds it through, and the boot is answered as ready at once."""
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+
+    class Booted(NamesFake):
+        argv = ["dosbox-x", "-conf", "g.conf"]
+
+        def wait_ready(self, timeout: float = 30.0, progress: Any = None) -> float:
+            return 0.5
+
+    monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
+    with mock.patch("dosbox_x_server.ds.Session", lambda _l: Booted(conf=conf)):
+        return cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path), seconds=60,
+                                                 **kw))
+
+
+def test_start_with_a_plan_keeps_session_as_the_last_key(tmp_path: Path,
+                                                         monkeypatch: pytest.MonkeyPatch) -> None:
+    """THE ENVELOPE CLOSES WITH `session` on every reply, and the one reply with a plan did
+    not: the start facts were appended AFTER it, so a reader taking the last key as the
+    session block read the start facts instead. Found by a repository's session driving
+    the server. The session is faked at the seam `start` builds it through, so the plan
+    path runs whole without an emulator."""
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch, plan=[{"op": "status"}], plan_wait=0)
+    assert got["status"] == "ok" and "start" in got, got
+    assert list(got)[-1] == "session", f"the reply ends in {list(got)[-1]!r}, not `session`"
+
+
+def test_breakpoint_clear_by_ref_takes_the_family_without_touching_watches(
+        tmp_path: Path) -> None:
+    """`breakpoint_clear` clears breakpoints AND interrupts (decision 10's family), and a
+    watch of the same session is left alone -- that is `watch_clear`'s job."""
+    syms = [dsym.Symbol("_uicue_apply", 0x3D5E0, kind="T")]
+    fake = _names(tmp_path, symbols=syms)
+    server.breakpoint_at(ref="_uicue_apply")
+    server.breakpoint_interrupt(number=0x21)
+    server.watch_add(ref="00AF:0100", mode="change", length=4)
+    cleared = server.breakpoint_clear()
+    assert cleared["declarations_cleared"] == 2                  # bp + interrupt, not watch
+    kinds = sorted(d.kind for d in dstate.STATE.store.declarations())  # type: ignore[union-attr]
+    assert kinds == ["watch"], kinds
+    assert any(r["entry"].startswith("BPPM") or r["entry"].startswith("BPMEM")
+               for r in fake.rows), fake.rows
+
+
+def test_breakpoint_at_an_ambiguous_name_is_refused_and_stores_nothing(
+        tmp_path: Path) -> None:
+    syms = [dsym.Symbol("dup", 0x1000, kind="t"), dsym.Symbol("dup", 0x2000, kind="t")]
+    _names(tmp_path, symbols=syms)
+    got = server.breakpoint_at(ref="dup")
+    assert got["status"] == "INVALID" and "names 2 symbols" in str(got["message"])
+    assert dstate.STATE.store.declarations() == []   # type: ignore[union-attr]
+
+
+def test_breakpoint_at_an_unresolved_name_is_kept_not_armed(tmp_path: Path) -> None:
+    _names(tmp_path, symbols=[dsym.Symbol("_main", 0x1000, kind="T")])
+    got = server.breakpoint_at(ref="ensure_soundfont")
+    assert got["status"] == "ok" and got["armed"] is False
+    assert got["state"] == "unresolved"
+    assert [d.ref for d in dstate.STATE.store.declarations()] == ["ensure_soundfont"]  # type: ignore[union-attr]
+
+
+def test_breakpoint_list_shows_armed_unresolved_and_foreign(tmp_path: Path) -> None:
+    """Decision 33: a declaration is armed/unresolved/gone, and a BP the store did not put
+    there is foreign, listed and never deleted."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("_main", 0x16DD80, kind="T")])
+    server.breakpoint_at(ref="_main")            # armed
+    server.breakpoint_at(ref="gone_symbol")      # unresolved
+    fake.rows.append({"index": "09", "entry": "BP F000:E05B"})   # a foreign leftover
+    got = server.breakpoint_list()
+    states = {b["ref"]: b["state"] for b in got["breakpoints"]}
+    assert states == {"_main": "armed", "gone_symbol": "unresolved"}
+    assert got["foreign"] == ["BP F000:E05B"]
+
+
+def test_breakpoint_clear_disarms_only_its_own_and_leaves_the_foreign(
+        tmp_path: Path) -> None:
+    fake = _names(tmp_path, symbols=[dsym.Symbol("_main", 0x16DD80, kind="T")])
+    server.breakpoint_at(ref="_main")
+    fake.rows.append({"index": "09", "entry": "BP F000:E05B"})    # foreign
+    got = server.breakpoint_clear()
+    assert got["declarations_cleared"] == 1
+    assert got["disarmed"] == ["BP 00A7:16DD80"]
+    assert {r["entry"] for r in fake.rows} == {"BP F000:E05B"}    # the foreign one stays
+    assert dstate.STATE.store.declarations() == []   # type: ignore[union-attr]
+
+
+def test_symbols_load_rearms_a_declaration_at_its_new_address(tmp_path: Path) -> None:
+    """Decision 7 / example R4: a breakpoint declared by name, then a rebuild moves the
+    symbol; symbols_load re-resolves and re-arms it at the new address by itself."""
+    nm = tmp_path / "one.nm"
+    nm.write_text("0016dd80 T _main\n", encoding="utf-8")
+    fake = _names(tmp_path)
+    # declare while unresolved (no table yet loaded through symbols_load)
+    server.breakpoint_at(ref="_main")
+    assert fake.rows == [], "nothing to arm against before a table is loaded"
+    got = server.symbols_load(source=str(nm), base="400000")
+    assert got["status"] == "ok"
+    assert got["declarations"]["rearmed"] == 1
+    assert any(r["entry"] == "BP 00A7:16DD80" for r in fake.rows)
+
+
+def test_watch_add_refuses_show_and_change_on_one_address(tmp_path: Path) -> None:
+    """Decision 29 at the tool: one address may not be both a show and a
+    change watch."""
+    _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
+    r = server.watch_add(ref="g_rate", mode="show", length=4, fmt="u32")
+    assert r["status"] == "ok" and r["armed"] is False
+    clash = server.watch_add(ref="g_rate", mode="change", length=4, fmt="u32")
+    assert clash["status"] == "INVALID" and "both a show AND a change watch" in str(
+        clash["message"])
+
+
+def test_a_protected_mode_change_watch_carries_the_paging_caveat(tmp_path: Path) -> None:
+    """Phase 1's BPPM finding, surfaced: a change-watch in protected mode is armed but its
+    reply says the firing is not to be trusted under paging."""
+    _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")], mode="Pr32")
+    got = server.watch_add(ref="g_rate", mode="change", length=4, fmt="u32")
+    assert got["status"] == "ok" and got["armed"] is True
+    assert "paging host" in str(got["caveat"])
+
+
+def test_watch_list_matches_a_watch_despite_its_trailing_hit_count(tmp_path: Path) -> None:
+    """A memory-watch BPLIST row carries a `(00)` hit count a code breakpoint's does not.
+    watch_list must match by PREFIX or the armed watch reads as `gone` AND its own entry
+    reappears as `foreign` -- which a live run caught before this case existed."""
+    _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")], mode="Pr32")
+    server.watch_add(ref="g_rate", mode="change", length=4, fmt="u32")
+    got = server.watch_list()
+    row = next(w for w in got["watches"] if w["ref"] == "g_rate")
+    assert row["state"] == "armed", got
+    assert row["length"] == 4 and "width" not in row, "the list speaks watch_add's word"
+    assert got["foreign"] == [], got
+
+
+def test_breakpoint_at_by_address_parses_the_seg_off(tmp_path: Path) -> None:
+    _names(tmp_path)
+    got = server.breakpoint_at(ref="00A7:16DD80")
+    assert got["status"] == "ok" and got["by"] == "address" and got["armed"] is True
+    assert got["entry"] == "BP 00A7:16DD80"
+
+
+def test_breakpoint_at_stores_but_reports_unarmed_when_arming_fails(tmp_path: Path) -> None:
+    fake = _names(tmp_path, symbols=[dsym.Symbol("_main", 0x16DD80, kind="T")])
+    fake.arm_fails = True
+    got = server.breakpoint_at(ref="_main")
+    assert got["status"] == "ok" and got["armed"] is False and got["state"] == "unarmable"
+    assert [d.ref for d in dstate.STATE.store.declarations()] == ["_main"]  # type: ignore[union-attr]
+
+
+def test_a_bad_by_is_refused(tmp_path: Path) -> None:
+    _names(tmp_path, symbols=[dsym.Symbol("_main", 0x1000, kind="T")])
+    assert server.breakpoint_at(ref="_main", by="guess")["status"] == "INVALID"
+    assert server.watch_add(ref="_main", mode="change", length=4, by="guess")[
+        "status"] == "INVALID"
+
+
+def test_breakpoint_list_reports_gone_when_the_debugger_no_longer_holds_it(
+        tmp_path: Path) -> None:
+    fake = _names(tmp_path, symbols=[dsym.Symbol("_main", 0x16DD80, kind="T")])
+    server.breakpoint_at(ref="_main")
+    fake.rows.clear()          # the debugger lost it (a close, or a hand BPDEL)
+    got = server.breakpoint_list()
+    assert got["breakpoints"][0]["state"] == "gone"
+
+
+def test_breakpoint_list_reports_an_ambiguous_declaration_without_crashing(
+        tmp_path: Path) -> None:
+    _names(tmp_path)
+    dstate.STATE.store.add(dec.Declaration("breakpoint", "symbol", "dup"))   # type: ignore[union-attr]
+    dstate.STATE.install_table([dsym.Symbol("dup", 0x1000, kind="t"),
+                        dsym.Symbol("dup", 0x2000, kind="t")])
+    got = server.breakpoint_list()
+    assert got["breakpoints"][0]["state"] == "ambiguous"
+
+
+def test_watch_add_read_mode_stores_and_arms_nothing(tmp_path: Path) -> None:
+    fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
+    got = server.watch_add(ref="g_rate", mode="show", length=4, fmt="u32")
+    assert got["status"] == "ok" and got["armed"] is False and got["mode"] == "show"
+    assert fake.rows == [], "a show watch must arm nothing"
+    # dec 12, one word per concept: the state `watch_add` gives a resolved show watch is
+    # the SAME word `watch_list` gives it: a word per tool would make the identical watch
+    # report two different states.
+    assert got["state"] == "resolved"
+    lst = server.watch_list()
+    assert lst["watches"][0]["state"] == "resolved"
+
+
+def test_watch_add_an_unresolved_change_is_kept_not_refused(tmp_path: Path) -> None:
+    _names(tmp_path, symbols=[dsym.Symbol("other", 0x1000, kind="d")])
+    got = server.watch_add(ref="g_gone", mode="change", length=4, fmt="u32")
+    assert got["status"] == "ok" and got["armed"] is False and got["state"] == "unresolved"
+    assert "g_gone" in [d.ref for d in dstate.STATE.store.declarations()]  # type: ignore[union-attr]
+
+
+def test_watch_clear_disarms_change_and_leaves_read_alone(tmp_path: Path) -> None:
+    _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
+    server.watch_add(ref="g_rate", mode="show", length=4, fmt="u32")     # arms nothing
+    server.watch_add(ref="0040:006C", mode="change", length=4)          # arms a BPPM row
+    got = server.watch_clear()
+    assert got["declarations_cleared"] == 2
+    assert got["disarmed"], "the change-watch's entry should have been removed"
+    assert dstate.STATE.store.declarations() == []   # type: ignore[union-attr]
+
+
+def test_rearm_counts_unresolved_and_ambiguous(tmp_path: Path) -> None:
+    nm = tmp_path / "s.nm"
+    nm.write_text("00001000 T _main\n", encoding="utf-8")
+    _names(tmp_path)
+    server.breakpoint_at(ref="_main")          # will resolve once loaded
+    server.breakpoint_at(ref="_gone")          # stays unresolved
+    got = server.symbols_load(source=str(nm), base="400000")
+    assert got["declarations"]["unresolved"] == 1
+    assert got["declarations"]["rearmed"] == 1
+
+
+def test_target_for_refuses_a_real_mode_symbol_that_folds_past_1mb() -> None:
+    """A real-mode offset high enough that base+offset crosses 0x100000 cannot be split to
+    seg:off without dropping bit 20, so it is REFUSED rather than armed at a wrong
+    paragraph. base 0xF0000 + offset 0x20000 = linear 0x110000 -> the split would return
+    seg 0x1000, off 0, which folds back to 0x10000, not 0x110000."""
+    real = NamesFake(mode="Real")
+    dstate.STATE.base.clear()
+    dstate.STATE.base.update({"base": 0xF0000, "limit": -1, "type": -1})
+    with pytest.raises(ds.Invalid, match="past the 0xFFFFF"):
+        placement.target_for(0x20000, "CS", real)   # type: ignore[arg-type]
+
+
+def test_breakpoint_list_tells_unarmable_from_ambiguous_from_unresolved(
+        tmp_path: Path) -> None:
+    """The three non-armed states are DISTINCT and must not collapse. A real-mode table
+    with no flat base makes a resolvable symbol `unarmable` (the address cannot be worked
+    out now), NEVER `ambiguous` (which would lie that the name is defined twice). A name
+    defined twice is `ambiguous`; a name absent is `unresolved`. Before the fix a single
+    `except Invalid` labelled the no-base case `ambiguous` too."""
+    dup = [dsym.Symbol("twice", 0x100, kind="T"), dsym.Symbol("twice", 0x200, kind="T")]
+    one = dsym.Symbol("once", 0x300, kind="T")
+    _names(tmp_path, symbols=[*dup, one], mode="Real")
+    dstate.STATE.base.clear()
+    dstate.STATE.base.update({"base": -1, "limit": -1, "type": -1})   # sectioned: no flat base
+    st = dstate.STATE.store
+    assert st is not None
+    st.add(dec.Declaration("breakpoint", "symbol", "once"))
+    st.add(dec.Declaration("breakpoint", "symbol", "twice"))
+    st.add(dec.Declaration("breakpoint", "symbol", "absent"))
+    listed = server.breakpoint_list()
+    states = {b["ref"]: b["state"] for b in listed["breakpoints"]}
+    assert states == {"once": "unarmable", "twice": "ambiguous", "absent": "unresolved"}
+
+
+def test_watch_held_matches_by_value_across_widths_and_never_a_code_bp() -> None:
+    """A watch is recognised by its numbers, so the debugger's varying offset width does
+    not make an armed watch read as gone. A code breakpoint at the same address is NOT a
+    match: clearing a watch must never delete a code breakpoint."""
+    rows = [{"index": "00", "entry": "BPPM 00AF:6024 (00)"},        # narrow width
+            {"index": "01", "entry": "BP 00AF:00006024"}]           # a code BP, same addr
+    hit = arming.watch_held(rows, 0xAF, 0x6024)
+    assert hit is not None and hit["index"] == "00"                 # the watch, not the BP
+    assert arming.watch_held(rows, 0xAF, 0x9999) is None
+
+
+def test_watch_clear_reports_disarmed_only_after_reading_the_removal_back(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`disarmed` is the machine's answer read back, not a claim that a BPDEL must have
+    taken. If the debugger still lists the watch after the delete, the tool does not say it
+    was disarmed."""
+    fake = _names(tmp_path)
+    server.watch_add(ref="0040:006C", mode="change", length=4)     # arms a BPPM row
+    monkeypatch.setattr(fake, "command", lambda *_a, **_k: "")    # BPDEL is a no-op now
+    got = server.watch_clear()
+    assert got["declarations_cleared"] == 1
+    assert got["disarmed"] == [], "the watch was NOT gone from the list, so not disarmed"
+
+
+def test_start_refuses_a_corrupt_declaration_file_before_launching(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A corrupt or hand-edited declarations file fails as a clean INVALID BEFORE the
+    emulator boots, never a traceback after it is already up. The store is built and
+    validated before the session, so `ds.Session` is never even constructed here."""
+    state = tmp_path / "state"
+    (state / "dosbox-x-debug").mkdir(parents=True)
+    (state / "dosbox-x-debug" / "declarations.json").write_text(
+        '["not a mapping"]', encoding="utf-8")
+    monkeypatch.setenv("XDG_STATE_HOME", str(state))
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
+
+    def no_session(*_a: object, **_k: object) -> object:
+        raise AssertionError("ds.Session must not be built when the store is corrupt")
+    monkeypatch.setattr(ds, "Session", no_session)
+    dstate.STATE.session = None
+    got = cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path), seconds=1))
+    assert got["status"] == "INVALID" and "not a mapping" in got["message"]
+    assert dstate.STATE.session is None, "no session may be left behind by a refused start"
+
+
+def test_store_requires_a_started_session() -> None:
+    """Every tool that reaches the store gets a named refusal, not an AttributeError, when
+    no session has keyed one yet."""
+    dstate.STATE.store = None
+    with pytest.raises(ds.Invalid, match="no declaration store"):
+        arming.current_store()
+
+
+def test_parse_seg_off_refuses_a_non_hex_pair() -> None:
+    with pytest.raises(ds.Invalid, match="not a hex SEG:OFF"):
+        placement.parse_seg_off("ZZ:GG")
+
+
+def test_breakpoint_at_a_symbol_with_no_flat_base_is_stored_unarmed(tmp_path: Path) -> None:
+    """A real-mode symbol whose table has no flat base cannot be placed right now, so it is
+    STORED and reported `unarmed` with the reason -- not refused, not armed at a guess."""
+    _names(tmp_path, symbols=[dsym.Symbol("_x", 0x100, kind="T")], mode="Real")
+    dstate.STATE.base.clear()
+    dstate.STATE.base.update({"base": -1, "limit": -1, "type": -1})
+    got = cast(dict[str, Any], server.breakpoint_at(ref="_x"))
+    assert got["stored"] is True and got["armed"] is False and got["state"] == "unarmable"
+    assert "FLAT base" in got["why"]
+
+
+def test_rearm_counts_ambiguous_and_unarmable_apart(tmp_path: Path) -> None:
+    """`symbols_load`'s re-arm reports each non-armed reason under its OWN name: a duplicate
+    name is `ambiguous`, a resolvable name with no base yet is `unarmable`, and neither is
+    counted as the other."""
+    dup = [dsym.Symbol("dup", 0x1, kind="T"), dsym.Symbol("dup", 0x2, kind="T")]
+    _names(tmp_path, symbols=[*dup, dsym.Symbol("one", 0x3, kind="T")], mode="Real")
+    st = dstate.STATE.store
+    assert st is not None
+    st.add(dec.Declaration("breakpoint", "symbol", "one"))
+    st.add(dec.Declaration("breakpoint", "symbol", "dup"))
+    dstate.STATE.base.clear()
+    dstate.STATE.base.update({"base": -1, "limit": -1, "type": -1})
+    got = arming.rearm_declarations(cast(Any, dstate.STATE.session))
+    assert got == {"rearmed": 0, "rearmed_refs": [], "stale": [], "unresolved": 0,
+                   "ambiguous": 1, "unarmable": 1}
+
+
+def test_watch_flows_in_real_mode_arm_list_and_clear(tmp_path: Path) -> None:
+    """The real-mode watch path: a change watch lists as a `BPMEM` row (the display spelling
+    `_watch_entry` gives real mode), reads back `armed`, and clears."""
+    _names(tmp_path, mode="Real")
+    dstate.STATE.base.clear()
+    dstate.STATE.base.update({"base": 0x7DF0, "limit": -1, "type": -1})
+    w = cast(dict[str, Any], server.watch_add(ref="0100:0200", mode="change", length=4))
+    assert w["armed"] is True
+    lst = cast(dict[str, Any], server.watch_list())
+    assert lst["watches"][0]["state"] == "armed"
+    assert str(lst["watches"][0]["entry"]).startswith("BPMEM ")
+    cl = cast(dict[str, Any], server.watch_clear())
+    assert cl["disarmed"]
+    assert cast(dict[str, Any], server.watch_list())["watches"] == []
+
+
+def test_watch_list_reports_gone_and_foreign(tmp_path: Path) -> None:
+    """A declared change watch the debugger no longer holds is `gone`; a memory-watch row
+    the store never placed is `foreign` and listed, never silently taken as one of ours."""
+    fake = _names(tmp_path, mode="Real")
+    dstate.STATE.base.clear()
+    dstate.STATE.base.update({"base": 0, "limit": -1, "type": -1})
+    server.watch_add(ref="0100:0200", mode="change", length=4)          # armed
+    fake.rows.append({"index": "09", "entry": "BPMEM 0300:0400 (00)"})  # foreign
+    fake.rows = [r for r in fake.rows if not r["entry"].startswith("BPMEM 0100")]  # gone
+    lst = cast(dict[str, Any], server.watch_list())
+    states = {w["ref"]: w["state"] for w in lst["watches"]}
+    assert states["0100:0200"] == "gone"
+    assert "BPMEM 0300:0400 (00)" in lst["foreign"]
+
+
+def test_watch_list_states_unresolved_and_ambiguous(tmp_path: Path) -> None:
+    """A watch on a name absent this build is `unresolved`; a name defined twice is
+    `ambiguous` with its reason -- the same vocabulary the breakpoint list uses."""
+    dup = [dsym.Symbol("two", 0x1, kind="d"), dsym.Symbol("two", 0x2, kind="d")]
+    _names(tmp_path, symbols=dup)
+    st = dstate.STATE.store
+    assert st is not None
+    st.add(dec.Declaration("watch", "symbol", "two", width=4, fmt="u32", watch_mode="change"))
+    st.add(dec.Declaration("watch", "symbol", "gone", width=4, fmt="u32", watch_mode="show"))
+    lst = cast(dict[str, Any], server.watch_list())
+    states = {w["ref"]: w["state"] for w in lst["watches"]}
+    assert states["two"] == "ambiguous" and states["gone"] == "unresolved"
+
+
+def test_watch_add_change_that_cannot_arm_is_kept_unarmed(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A change watch that resolves but cannot arm (the machine moved) is STORED and
+    reported `unarmed`, its intent kept for a later stop."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("g_x", 0x1000, kind="d")])
+
+    def boom(**_k: object) -> dict[str, object]:
+        raise ds.Invalid("not_stopped", "the machine is running; nothing was armed")
+    monkeypatch.setattr(fake, "watch", boom)
+    got = cast(dict[str, Any], server.watch_add(ref="g_x", mode="change", length=4))
+    assert got["armed"] is False and got["state"] == "unarmable"
+
+
+def test_watch_clear_skips_an_unresolvable_change_and_still_clears_the_store(
+        tmp_path: Path) -> None:
+    """A change watch that no longer resolves armed nothing to remove, so `watch_clear`
+    skips the debugger for it but still drops the declaration (it is the store's)."""
+    _names(tmp_path, symbols=[])          # empty table: the name will not resolve
+    st = dstate.STATE.store
+    assert st is not None
+    st.add(dec.Declaration("watch", "symbol", "gone", width=4, fmt="u32",
+                           watch_mode="change"))
+    got = cast(dict[str, Any], server.watch_clear())
+    assert got["declarations_cleared"] == 1 and got["disarmed"] == []
+
+
+def test_read_memory_takes_a_symbol_or_a_seg_off_ref(tmp_path: Path) -> None:
+    """Decision 11 reaches the readers as ONE spelling (owner's QA call): `read_memory`
+    locates its address from a symbol OR a raw SEG:OFF `ref`, and both read the same place.
+    The numeric segment/offset pair a reader once also took is gone -- one way to say one
+    address. A protected-mode data symbol resolves against the live DS selector."""
+    _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")], ds_="00AF")
+    by_name = cast(dict[str, Any], server.read_memory(ref="g_rate", length=4))
+    assert by_name["status"] == "ok" and by_name["segment"] == 0xAF
+    assert by_name["hex"] == "00112233" and by_name["length"] == 4, by_name
+    assert by_name["offset"] == 0x17A6EC
+    by_addr = cast(dict[str, Any], server.read_memory(ref="00AF:0017A6EC", length=4))
+    assert (by_addr["segment"], by_addr["offset"]) == (0xAF, 0x17A6EC)
+
+
+def test_read_memory_refuses_an_unlocatable_or_ambiguous_target(tmp_path: Path) -> None:
+    """A read needs a concrete address, so an absent name or a doubly-defined name is a
+    named refusal -- never a read at a guessed address."""
+    _names(tmp_path, symbols=[dsym.Symbol("dup", 0x1, kind="d"),
+                              dsym.Symbol("dup", 0x2, kind="d")])
+    absent = cast(dict[str, Any], server.read_memory(ref="nope"))
+    assert absent["status"] == "INVALID" and "not a symbol" in absent["message"]
+    ambig = cast(dict[str, Any], server.read_memory(ref="dup"))
+    assert ambig["status"] == "INVALID" and "names 2 symbols" in ambig["message"]
+    # A BARE NUMBER (no colon) is a symbol lookup, not a linear address -- `_decide_by` keys
+    # on the colon. Pinned directly so a regression that read bare hex as an address (the
+    # confusion _decide_by's own docstring warns of) would redden here.
+    numeric = cast(dict[str, Any], server.read_memory(ref="400000"))
+    assert numeric["status"] == "INVALID" and "not a symbol" in numeric["message"]
+
+
+def test_render_watch_reads_the_bytes_as_little_endian_values() -> None:
+    """N bytes read as the declared format, x86 little-endian: one scalar is one value, a
+    width of several is a list, and the grammar's shapes decode to theirs."""
+    import struct as _s
+    assert arming.render_watch(bytes([0x78, 0x56, 0x34, 0x12]), 4, "u32") == 0x12345678
+    assert arming.render_watch(bytes([0xFF, 0xFF, 0xFF, 0xFF]), 4, "i32") == -1
+    assert arming.render_watch(_s.pack("<f", 1.5), 4, "f32") == 1.5
+    assert arming.render_watch(bytes([1, 0, 2, 0]), 4, "u16") == [1, 2]     # two of them
+    assert arming.render_watch(bytes([1, 2, 3, 4]), 4, "u8") == [1, 2, 3, 4]
+    assert arming.render_watch(bytes([0x2A]), 1, "u8") == 0x2A
+    assert arming.render_watch(bytes([1, 0, 2, 0]), 0, "u16[2]") == [1, 2]
+    assert arming.render_watch(b"RE\0\0\xfe\xff", 0, "{name:char[4],x:i16}") == {
+        "name": "RE", "x": -2}
+
+
+def test_evaluate_watches_reads_read_mode_together_and_bytes_for_a_struct(
+        tmp_path: Path) -> None:
+    """R2 and R5: the three rate globals come back TOGETHER in one evaluation, each rendered
+    as its declared u32, and a struct declared as u8 comes back as its bytes with no fields
+    invented. A protected-mode data symbol resolves against the live DS selector."""
+    fake = _names(tmp_path, symbols=[
+        dsym.Symbol("g_eng_rate", 0x1000, kind="d"),
+        dsym.Symbol("g_eng_samples_tick", 0x1004, kind="d"),
+        dsym.Symbol("g_bufsamp", 0x1008, kind="d"),
+        dsym.Symbol("g_cue", 0x2000, kind="d"),
+    ], ds_="00AF")
+    fake.mem[(0xAF, 0x1000)] = (44100).to_bytes(4, "little")
+    fake.mem[(0xAF, 0x1004)] = (735).to_bytes(4, "little")
+    fake.mem[(0xAF, 0x1008)] = (512).to_bytes(4, "little")
+    fake.mem[(0xAF, 0x2000)] = bytes([1, 2, 3, 4, 5, 6, 7, 8])
+    st = dstate.STATE.store
+    assert st is not None
+    for name in ("g_eng_rate", "g_eng_samples_tick", "g_bufsamp"):
+        st.add(dec.Declaration("watch", "symbol", name, width=4, fmt="u32",
+                               watch_mode="show"))
+    st.add(dec.Declaration("watch", "symbol", "g_cue", width=8, fmt="u8",
+                           watch_mode="show"))
+    out = arming.evaluate_watches(fake)  # type: ignore[arg-type]
+    by = {w["ref"]: w for w in out}
+    assert by["g_eng_rate"]["value"] == 44100 and by["g_eng_rate"]["state"] == "evaluated"
+    assert by["g_eng_samples_tick"]["value"] == 735
+    assert by["g_bufsamp"]["value"] == 512
+    assert by["g_cue"]["value"] == [1, 2, 3, 4, 5, 6, 7, 8]   # bytes, no fields (R5)
+    assert by["g_cue"]["bytes"] == "0102030405060708"
+
+
+def test_evaluate_watches_will_not_read_a_change_watch_off_its_trap(tmp_path: Path) -> None:
+    """A break-on-change watch armed a trap byte in its memory (decision 29), so its value
+    is NOT read here -- the reply carries the reason instead of a value that would be the
+    trap. Unresolved and unreadable watches carry why, never a guessed value."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("g_x", 0x1000, kind="d")], ds_="00AF")
+    st = dstate.STATE.store
+    assert st is not None
+    st.add(dec.Declaration("watch", "symbol", "g_x", width=4, fmt="u32",
+                           watch_mode="change"))
+    st.add(dec.Declaration("watch", "symbol", "g_absent", width=4, fmt="u32",
+                           watch_mode="show"))
+    by = {w["ref"]: w for w in arming.evaluate_watches(fake)}  # type: ignore[arg-type]
+    assert "value" not in by["g_x"] and "trap" in by["g_x"]["note"]
+    assert by["g_absent"]["state"] == "unresolved" and "value" not in by["g_absent"]
+
+
+def test_stop_reply_carries_registers_watches_attribution_and_e9_off(tmp_path: Path) -> None:
+    """Decision 13: a stop reply always carries the registers, the watches evaluated, the
+    attribution, and the E9 summary -- and E9 is OFF by default (decision 15), showing only
+    the count and how to turn it on, since the volume can blow up context."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x1000, kind="d")], ds_="00AF")
+    fake.mem[(0xAF, 0x1000)] = (48000).to_bytes(4, "little")
+    fake.log = ["boot", "rate=48000", "tick"]
+    st = dstate.STATE.store
+    assert st is not None
+    st.add(dec.Declaration("watch", "symbol", "g_rate", width=4, fmt="u32",
+                           watch_mode="show"))
+    out = running.stop_reply(fake, halted=True)  # type: ignore[arg-type]
+    assert out["status"] == "ok" and out["halted"] is True
+    assert out["registers"]["CS"] == "00A7" and out["registers"]["DS"] == "00AF"
+    assert out["watches"][0]["value"] == 48000 and out["watches"][0]["state"] == "evaluated"
+    assert out["attribution"]["attributed"] is False       # nothing declared at CS:EIP
+    assert out["e9"]["lines_total"] == 3 and out["e9"]["shown"] == 0 and "how" in out["e9"]
+
+
+def test_attribution_names_a_breakpoint_at_the_stop_or_says_it_cannot(tmp_path: Path) -> None:
+    """Attribution is by ADDRESS COMPARISON. A code breakpoint declared at CS:EIP is named;
+    a stop elsewhere is an honest cannot-say, naming the reason (no hit flag)."""
+    fake = _names(tmp_path)
+    fake.cs, fake.eip = "00A7", "00001A27"
+    st = dstate.STATE.store
+    assert st is not None
+    st.add(dec.Declaration("breakpoint", "address", "00A7:00001A27"))
+    st.add(dec.Declaration("breakpoint", "address", "00A7:00009999"))
+    hit = arming.attribute_stop(fake, where=fake.where())  # type: ignore[arg-type]
+    assert hit["attributed"] is True and hit["ref"] == "00A7:00001A27"
+    fake.eip = "00005555"
+    miss = arming.attribute_stop(fake, where=fake.where())  # type: ignore[arg-type]
+    assert miss["attributed"] is False and "no hit flag" in miss["why"]
+
+
+def test_e9_summary_serves_each_mode_and_is_honest_about_seconds(tmp_path: Path) -> None:
+    """The E9 switch: all / lines:N / since, with a count and a filter; a session with no
+    logfile says so; and seconds:N is not served, naming the missing per-line timestamp."""
+    fake = _names(tmp_path)
+    fake.log = [f"line{i}" for i in range(10)]
+    dstate.STATE.e9_mark["count"] = 0
+    allm = running.e9_summary(fake, "all", ".")  # type: ignore[arg-type]
+    assert allm["lines_total"] == 10 and len(allm["lines"]) == 10
+    lim = running.e9_summary(fake, "lines:3", ".")  # type: ignore[arg-type]
+    assert lim["shown"] == 3 and lim["lines"] == ["line7", "line8", "line9"]
+    dstate.STATE.e9_mark["count"] = 10
+    fake.log += ["line10", "line11"]
+    since = running.e9_summary(fake, "since", ".")  # type: ignore[arg-type]
+    assert since["since_last_stop"] == 2 and since["lines"] == ["line10", "line11"]
+    fake.log = None
+    assert running.e9_summary(fake, "none", ".")["available"] is False  # type: ignore[arg-type]
+    fake.log = []
+    assert "unsupported" in running.e9_summary(fake, "seconds:5", ".")  # type: ignore[arg-type]
+
+
+STAMP = r"\[\+\s*(\d+\.\d+)\]"     # a guest's own `[+SSSS.mmm]`, a monotonic guest clock
+
+
+def test_e9_seconds_window_is_cut_on_the_guests_own_clock(tmp_path: Path) -> None:
+    """`seconds:N` is served when the caller lends the stamp: "now" is the latest stamp in
+    the log, a line is in the window when its own stamp is within N of it, a line with no
+    stamp is COUNTED and never placed, the filter still applies, and with no stamp at all
+    the block says there is no clock rather than guessing one. Validation refuses the mode
+    without a stamp, and a stamp with the wrong number of groups, before the machine moves."""
+    fake = _names(tmp_path)
+    fake.log = ["Bochs port E9h: [+   1.000] PERF  . a",
+                "Bochs port E9h: [+   8.500] ACT   . b",
+                "Bochs port E9h: [+   9.900] PERF  . c",
+                "Bochs port E9h: no stamp here",
+                "Bochs port E9h: [+  10.250] ACT   . d"]
+    got = running.e9_summary(fake, "seconds:2", ".", STAMP)  # type: ignore[arg-type]
+    assert got["now"] == 10.25 and got["window_s"] == 2, got
+    assert [ln[-1] for ln in got["lines"]] == ["b", "c", "d"] and got["shown"] == 3, got
+    assert got["unstamped"] == 1, got
+    only_act = running.e9_summary(fake, "seconds:2", "ACT", STAMP)  # type: ignore[arg-type]
+    assert [ln[-1] for ln in only_act["lines"]] == ["b", "d"], only_act
+    noclock = running.e9_summary(fake, "seconds:2", ".", r"never (\d+)")  # type: ignore[arg-type]
+    assert noclock["shown"] == 0 and "no clock" in noclock["unsupported"], noclock
+    with pytest.raises(ds.Invalid, match="needs `e9_stamp`"):
+        running.e9_validate("seconds:2", ".")
+    with pytest.raises(ds.Invalid, match="exactly ONE group"):
+        running.e9_validate("seconds:2", ".", r"\[(\+)(\d+)\]")
+    running.e9_validate("seconds:2", ".", STAMP)          # the good shape passes
+    # AND THROUGH A TOOL: a resume that halts carries the window, cut on the guest's clock.
+    fake.halted = True
+    reply = cast(dict[str, Any], server.resume(e9="seconds:2", e9_stamp=STAMP))
+    assert reply["e9"]["shown"] == 3 and reply["e9"]["now"] == 10.25, reply["e9"]
+    bad = cast(dict[str, Any], server.resume(e9="seconds:2"))
+    assert bad["status"] == "INVALID" and "e9_stamp" in bad["message"]
+
+
+def test_resume_enriches_a_halt_and_leaves_a_running_machine_bare(tmp_path: Path) -> None:
+    """The wiring: a resume that HALTED carries the full stop reply (watches, E9, ...); one
+    that left the machine running carries only its base, because a running machine has
+    nothing to read and `where` would refuse it."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x1000, kind="d")], ds_="00AF")
+    fake.mem[(0xAF, 0x1000)] = (60).to_bytes(4, "little")
+    fake.log = ["a", "b"]
+    st = dstate.STATE.store
+    assert st is not None
+    st.add(dec.Declaration("watch", "symbol", "g_rate", width=4, fmt="u32",
+                           watch_mode="show"))
+    fake.halted = True
+    out = cast(dict[str, Any], server.resume())
+    assert out["halted"] is True and out["watches"][0]["value"] == 60
+    assert out["e9"]["lines_total"] == 2
+    fake.halted = False
+    bare = cast(dict[str, Any], server.resume())
+    assert bare["halted"] is False and "watches" not in bare and "e9" not in bare
+
+
+def test_step_and_run_to_enrich_a_stop_but_not_a_still_running_machine(
+        tmp_path: Path) -> None:
+    """step and run_to carry the full stop reply when they STOPPED, and only the base answer
+    when the machine ran on (a CALL that never returned; a bound that expired) -- a running
+    machine has nothing to read."""
+    fake = _names(tmp_path)
+    stopped_step = cast(dict[str, Any], server.step(mode="over"))
+    assert "registers" in stopped_step and "e9" in stopped_step
+    fake.step_running = True
+    ran = cast(dict[str, Any], server.step(mode="over"))
+    assert ran["running"] is True and "registers" not in ran and "e9" not in ran
+    stopped_run = cast(dict[str, Any], server.run_to(ref="0000:0010", control="0000:0020"))
+    assert stopped_run["arrived"] is True and "watches" in stopped_run
+    fake.runto_running = True
+    timed = cast(dict[str, Any], server.run_to(ref="0000:0010", control="0000:0020"))
+    assert timed["running"] is True and "watches" not in timed
+
+
+def test_evaluate_watches_skips_a_breakpoint_and_reports_why_and_unreadable(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The evaluator walks only watch declarations (a breakpoint in the store is skipped), an
+    ambiguous watch carries its why, and a read whose bytes cannot be fetched is `unreadable`
+    with the reason -- never a value at a guessed address."""
+    dup = [dsym.Symbol("two", 0x1, kind="d"), dsym.Symbol("two", 0x2, kind="d")]
+    fake = _names(tmp_path, symbols=[*dup, dsym.Symbol("ok", 0x1000, kind="d")], ds_="00AF")
+    st = dstate.STATE.store
+    assert st is not None
+    st.add(dec.Declaration("breakpoint", "address", "00A7:0010"))          # skipped
+    st.add(dec.Declaration("watch", "symbol", "two", width=4, fmt="u32",
+                           watch_mode="show"))                             # ambiguous + why
+    st.add(dec.Declaration("watch", "symbol", "ok", width=4, fmt="u32",
+                           watch_mode="show"))                             # unreadable
+
+    def boom(_s: int, _o: int, _n: int, mode: str | None = None) -> bytes:
+        raise ds.Invalid("unexpected_answer", "the data view did not come back")
+    monkeypatch.setattr(fake, "read_bytes", boom)
+    by = {w["ref"]: w for w in arming.evaluate_watches(fake)}  # type: ignore[arg-type]
+    assert set(by) == {"two", "ok"}                            # the breakpoint is not listed
+    assert by["two"]["state"] == "ambiguous" and "why" in by["two"]
+    assert by["ok"]["state"] == "unreadable" and "did not come back" in by["ok"]["why"]
+
+
+def test_attribution_in_real_mode_compares_the_linear_address(tmp_path: Path) -> None:
+    """Real-mode attribution compares LINEAR addresses, so a breakpoint declared at one
+    seg:off matches a stop the debugger reports through a different aliasing paragraph."""
+    fake = _names(tmp_path, mode="Real")
+    fake.cs, fake.eip = "1000", "00000010"        # linear 0x10010
+    st = dstate.STATE.store
+    assert st is not None
+    st.add(dec.Declaration("breakpoint", "address", "0FFF:00000110"))   # 0xFFF0+0x110=0x10100? no
+    st.add(dec.Declaration("breakpoint", "address", "1001:00000000"))   # linear 0x10010 -- same
+    hit = arming.attribute_stop(fake, where=fake.where())  # type: ignore[arg-type]
+    assert hit["attributed"] is True and hit["ref"] == "1001:00000000"
+
+
+def test_a_bad_e9_arg_is_refused_before_the_machine_moves(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A stop tool RESUMES the guest, which is irreversible, so a malformed E9 display arg is
+    refused BEFORE the F5 -- not after, where it would throw away a whole real stop reply."""
+    fake = _names(tmp_path)
+
+    def nope() -> dict[str, object]:
+        raise AssertionError("resume must not run when the e9 arg is invalid")
+    monkeypatch.setattr(fake, "resume", nope)
+    bad = cast(dict[str, Any], server.resume(e9="bogus"))
+    assert bad["status"] == "INVALID" and "e9 is" in bad["message"]
+    zero = cast(dict[str, Any], server.resume(e9="lines:0"))
+    assert zero["status"] == "INVALID" and "must be positive" in zero["message"]
+    badre = cast(dict[str, Any], server.resume(e9_filter="["))
+    assert badre["status"] == "INVALID"
+
+
+def test_a_halt_whose_position_is_unreadable_keeps_the_halt(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A halt is a real observation. If the position cannot be read (a cut pane, where()
+    refusing), the halt and its base fields stand and the enrichment is marked unavailable --
+    the whole reply is NOT thrown away for a read that could not be made."""
+    fake = _names(tmp_path)
+    fake.halted = True
+
+    def cut() -> dict[str, str]:
+        raise ds.Invalid("unexpected_answer", "the register pane came back cut")
+    monkeypatch.setattr(fake, "where", cut)
+    out = cast(dict[str, Any], server.resume())
+    assert out["status"] == "ok" and out["halted"] is True
+    assert out["enrichment"]["available"] is False and "cut" in out["enrichment"]["why"]
+    assert "registers" not in out
+
+
+def test_a_read_watch_is_not_read_off_a_change_watchs_armed_trap(tmp_path: Path) -> None:
+    """decision 29 airtight against aliasing: a show watch whose address is CURRENTLY armed as
+    a memory watch (however declared) is `shadowed`, not read -- its bytes would be the trap."""
+    fake = _names(tmp_path, ds_="00AF")
+    fake.rows.append({"index": "00", "entry": "BPPM 00AF:00006024 (00)"})   # armed elsewhere
+    fake.mem[(0xAF, 0x6024)] = (999).to_bytes(4, "little")
+    st = dstate.STATE.store
+    assert st is not None
+    st.add(dec.Declaration("watch", "address", "00AF:00006024", width=4, fmt="u32",
+                           watch_mode="show"))
+    w = arming.evaluate_watches(fake)[0]  # type: ignore[arg-type]
+    assert w["state"] == "shadowed" and "value" not in w and "trap" in w["note"]
+
+
+def test_since_is_filter_independent_across_stops(tmp_path: Path) -> None:
+    """The since-last-stop mark is the UNFILTERED count, so a `since` window is the same
+    whatever filter this or the previous stop used."""
+    fake = _names(tmp_path)
+    fake.log = ["A err", "B ok", "C err"]
+    dstate.STATE.e9_mark["count"] = 0
+    b1 = running.e9_summary(fake, "all", "err")  # type: ignore[arg-type]
+    assert b1["lines_total"] == 2 and b1["unfiltered"] == 3
+    dstate.STATE.e9_mark["count"] = b1["unfiltered"]     # what _stop_reply stores
+    assert fake.log is not None
+    fake.log += ["D new", "E err2"]
+    b2 = running.e9_summary(fake, "since", ".")  # type: ignore[arg-type]
+    assert b2["since_last_stop"] == 2 and b2["lines"] == ["D new", "E err2"]
+
+
+def test_a_read_watch_wider_than_128_bytes_is_refused_at_declaration(tmp_path: Path) -> None:
+    """A width no stop could ever serve is refused up front, pointing at memdump, rather than
+    stored only to report `unreadable` at every stop."""
+    _names(tmp_path)
+    got = cast(dict[str, Any], server.watch_add(ref="0040:0000", mode="show", length=256,
+                                                fmt="u8"))
+    assert got["status"] == "INVALID" and "region" in got["message"]
+
+
+# ----------------------------------------------------- the ref you clear with
+
+def test_every_declaration_reply_carries_the_ref_that_clears_it(tmp_path: Path) -> None:
+    """MEASURED on a real guest: `breakpoint_interrupt(0x21, ah=0x4B)` answered with
+    an `entry` and no `ref`, and the spelling that clears it -- the debugger's own
+    `BPINT 21 AH=4B` -- was in no description and no reply, so the caller's
+    `breakpoint_clear(ref="BPINT 21 4B")` cleared nothing. The reply of every tool that
+    creates a declaration carries `ref`, and that string clears it."""
+    fake = _names(tmp_path)
+    armed = server.breakpoint_interrupt(number=0x21, ah=0x4B)
+    assert armed["ref"] == "BPINT 21 AH=4B", armed
+    assert [r["entry"] for r in fake.rows] == ["BPINT 21 AH=4B"]
+    cleared = server.breakpoint_clear(ref=armed["ref"])
+    assert cleared["status"] == "ok" and cleared["declarations_cleared"] == 1, cleared
+    assert fake.rows == []
+    watched = server.watch_add(ref="_g_state", mode="show", length=4)
+    assert watched["ref"] == "_g_state", watched
+    assert server.watch_clear(ref=watched["ref"])["declarations_cleared"] == 1
+
+
+def test_clearing_a_ref_that_matches_nothing_is_refused_naming_what_there_is(
+        tmp_path: Path) -> None:
+    """A zero in green is indistinguishable from "nothing to clear" for a caller who spelt
+    the ref wrong, and that caller left a breakpoint armed (measured). A `ref`
+    that matches no declaration is INVALID and names the refs the store holds; clearing
+    ALL of an empty store stays `ok` with 0, because there the zero is the answer."""
+    _names(tmp_path)
+    server.breakpoint_interrupt(number=0x21, ah=0x4B)
+    wrong = server.breakpoint_clear(ref="BPINT 21 4B")
+    assert wrong["status"] == "INVALID", wrong
+    assert "BPINT 21 AH=4B" in wrong["message"], wrong["message"]
+    assert server.breakpoint_list()["breakpoints"][0]["state"] == "armed"
+    assert server.watch_clear(ref="_nope")["status"] == "INVALID"
+    server.breakpoint_clear()
+    empty = server.breakpoint_clear()
+    assert empty["status"] == "ok" and empty["declarations_cleared"] == 0, empty
+    assert server.watch_clear()["status"] == "ok"
+
+
+# ------------------------------------------- stale raw addresses across sessions
+
+def test_symbols_load_leaves_another_builds_raw_address_stale_and_names_what_it_rearmed(
+        tmp_path: Path) -> None:
+    """The same defect at the server: a raw-address breakpoint from session s1 over an OLDER
+    build must NOT re-arm itself in session s2 (per build: kept, listed `stale`, not armed,
+    because it re-resolves against nothing), a
+    by-symbol one must, and `symbols_load` names WHICH refs it re-armed and which it left
+    stale rather than handing back a count. Re-declaring the raw address in s2 adopts it."""
+    nm = tmp_path / "one.nm"
+    nm.write_text("0016dd80 T _main\n", encoding="utf-8")
+    fake = _names(tmp_path)
+    dstate.STATE.session_origin = "s1"
+    dstate.STATE.conf_fingerprint = "conf-of-an-older-build"
+    server.breakpoint_at(ref="00A7:5C6F0")
+    server.breakpoint_at(ref="_main")
+    # A NEW SESSION over a REBUILT program: the emulator's own list starts empty, the origin
+    # changes, and the map loaded below fingerprints a different build.
+    fake.rows.clear()
+    dstate.STATE.session_origin = "s2"
+    dstate.STATE.conf_fingerprint = ds.fingerprint(fake.launch.conf)
+    got = server.symbols_load(source=str(nm), base="400000")
+    assert got["declarations"]["rearmed"] == 1, got["declarations"]
+    assert got["declarations"]["rearmed_refs"] == ["_main"], got["declarations"]
+    assert got["declarations"]["stale"] == ["00A7:5C6F0"], got["declarations"]
+    assert [r["entry"] for r in fake.rows] == ["BP 00A7:16DD80"], fake.rows
+    listed = {b["ref"]: b for b in server.breakpoint_list()["breakpoints"]}
+    assert listed["00A7:5C6F0"]["state"] == "stale", listed
+    assert listed["00A7:5C6F0"]["origin"] == "s1" and listed["00A7:5C6F0"]["created_at"]
+    assert listed["_main"]["state"] == "armed" and listed["_main"]["origin"] == "s1"
+    # ADOPTION: declaring the same raw address in s2 arms it and moves its origin here.
+    adopted = server.breakpoint_at(ref="00A7:5C6F0")
+    assert adopted["already_stored"] is True and adopted["armed"] is True, adopted
+    row = next(b for b in server.breakpoint_list()["breakpoints"] if b["ref"] == "00A7:5C6F0")
+    assert row["state"] == "armed" and row["origin"] == "s2", row
+
+
+class _Booted(NamesFake):
+    """A double `start` builds through its seam and finds ready at once."""
+    argv = ["dosbox-x", "-conf", "g.conf"]
+
+    def wait_ready(self, timeout: float = 30.0, progress: Any = None) -> float:
+        return 0.5
+
+
+def build_of(conf: Path, nm_text: str, base: int = 0x400000) -> str:
+    """The stamp of the batch an `nm` map loaded at `base` makes over `conf`."""
+    return dec.Build.of(ds.fingerprint(conf), [(s.name, dsym.place(s, {dsym.FLAT: base}))
+                                               for s in dsym.parse_nm(nm_text)]).stamp
+
+
+def _start_over_a_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                        stamped: dict[str, str | None], double: type[NamesFake] = _Booted,
+                        conf_text: str = "[sdl]\n") -> tuple[dict[str, Any], NamesFake]:
+    """`start` driven whole over a store an earlier session left: each raw address in
+    `stamped` declared as a breakpoint with that build fingerprint (None: this start's own,
+    the conf alone). The store lives under a state directory of the case's own; the conf
+    holds `conf_text`, so a case can edit the conf between two sessions."""
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
+    conf = tmp_path / "g.conf"
+    conf.write_text(conf_text, encoding="utf-8")
+    store = dec.DeclarationStore(str(conf.resolve()))
+    for ref, fp in stamped.items():
+        store.add(dec.Declaration("breakpoint", "address", ref, created_at="t0", origin="s1",
+                                  fingerprint=fp or ds.fingerprint(conf.resolve())))
+    booted = double(conf=conf)
+    monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
+    with mock.patch("dosbox_x_server.ds.Session", lambda _l: booted):
+        got = cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path), seconds=60))
+    return got, booted
+
+
+def test_start_re_arms_a_raw_address_left_over_the_same_build_and_not_another_builds(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """PER BUILD: a raw-address breakpoint an earlier session declared over the build a start
+    has (the conf, no map loaded yet) is re-armed at `start` and listed `armed`, because over
+    an unchanged program it still names the same instruction. One declared over another
+    build, and one declared over a map (which waits for that map's `symbols_load`), stay
+    `stale` and are not armed."""
+    mapf = tmp_path / "prog.map"
+    mapf.write_text("0016dd80 T _main\n", encoding="utf-8")
+    (tmp_path / "g.conf").write_text("[sdl]\n", encoding="utf-8")
+    over_map = build_of((tmp_path / "g.conf").resolve(), mapf.read_text(encoding="utf-8"))
+    got, booted = _start_over_a_store(tmp_path, monkeypatch, {
+        "00A7:0100": None, "00A7:0200": "fp-of-another-build", "00A7:0300": over_map})
+    assert got["status"] == "ok", got
+    assert [r["entry"] for r in booted.rows] == ["BP 00A7:0100"], booted.rows
+    listed = server.breakpoint_list()
+    assert listed["debugger_read"] is True, listed
+    rows = {b["ref"]: b for b in listed["breakpoints"]}
+    assert rows["00A7:0100"]["state"] == "armed", rows
+    assert rows["00A7:0200"]["state"] == "stale", rows
+    assert rows["00A7:0300"]["state"] == "stale", rows
+
+
+def test_a_re_arm_at_start_that_cannot_read_the_list_is_said_not_fatal(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The re-arm at `start` runs once the session is installed, so a refusal there must not
+    turn the whole `start` INVALID over a live emulator (the next `start` would then be
+    refused as already live). The session comes up, and the reply says the re-arm was
+    refused and why; the declaration stays stored."""
+    class CutList(_Booted):
+        def breakpoints(self) -> list[dict[str, str]]:
+            raise ds.Invalid("unexpected_answer", "no BPLIST header came back")
+
+    got, _ = _start_over_a_store(tmp_path, monkeypatch, {"00A7:0100": None}, CutList)
+    assert got["status"] == "ok", got
+    assert "no BPLIST header" in got["rearm_refused"], got
+    assert dstate.STATE.session is not None
+    assert [d.ref for d in dstate.STATE.store.declarations()] == ["00A7:0100"]  # type: ignore[union-attr]
+
+
+def test_start_with_nothing_to_re_arm_does_not_read_the_list(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """With no raw address of this build stored (only another build's), the re-arm at `start`
+    reads no list: a start costs no console round trip for declarations it would not arm."""
+    got, booted = _start_over_a_store(tmp_path, monkeypatch,
+                                      {"00A7:0200": "fp-of-another-build"})
+    assert got["status"] == "ok" and "rearm_refused" not in got, got
+    assert booted.bp_calls == 0, booted.bp_calls
+
+
+def test_a_stored_address_the_parser_refuses_is_listed_and_clearable(tmp_path: Path) -> None:
+    """A hand-edited or older declaration file is the one input the tools do not get to
+    validate, and one unreadable address in it would make `breakpoint_list` and every
+    `breakpoint_clear` die on that row, so nothing could list or remove it. It is
+    `unarmable` with the parser's words, and its own ref clears it."""
+    _names(tmp_path)
+    dstate.STATE.store.add(dec.Declaration("breakpoint", "address", "0x1234"))  # type: ignore[union-attr]
+    rows = server.breakpoint_list()["breakpoints"]
+    assert rows[0]["state"] == "unarmable" and "cannot be read" in rows[0]["why"], rows
+    assert server.breakpoint_clear(ref="0x1234")["declarations_cleared"] == 1
+
+
+# ------------------------------ a relative path refused, an absolute one named
+
+def test_a_relative_path_is_refused_and_an_absolute_one_names_the_file_it_looked_at(
+        tmp_path: Path) -> None:
+    """A relative path is judged against one directory and used in another (the server's
+    own, the emulator's `cwd`), so it is refused before anything reads it, `cwd` included;
+    an absolute path stands, and a refusal names the absolute path it looked at."""
+    nm = tmp_path / "one.nm"
+    nm.write_text("0016dd80 T _main\n", encoding="utf-8")
+    fake = _names(tmp_path)
+    fake.launch = dataclasses.replace(fake.launch, cwd=tmp_path)
+    rel = server.symbols_load(source="one.nm", base="400000")
+    assert rel["code"] == "bad_argument" and "relative" in rel["message"], rel
+    got = server.symbols_load(source=str(nm), base="400000")
+    assert got["status"] == "ok", got
+    missing = server.symbols_load(source=str(tmp_path / "nope.nm"), base="400000")
+    assert missing["status"] == "INVALID" and str(tmp_path / "nope.nm") in missing["message"], (
+        missing)
+    dstate.STATE.session = None
+    rel = server.start(conf="x.conf", cwd="rel/dir", seconds=30)
+    assert rel["status"] == "INVALID" and "cwd='rel/dir' is relative" in rel["message"], rel
+
+
+# ------------------------------- no wait at the end for a running-guest tail
+
+def test_perform_does_not_wait_for_a_stop_when_the_last_step_was_a_running_guest_op(
+        tmp_path: Path) -> None:
+    """MEASURED on a real guest: `perform([..., resume, e9_wait, send_keys, e9])`
+    came back after the FULL 30 s `wait` with "did not stop within 30.0s" -- a stop nobody
+    asked for, because the list ended in `e9`. The tail waits only when the LAST step is
+    the one that released the machine, or something declared can still produce a stop (a
+    breakpoint, an interrupt, a change-watch: R1 arms one before it resumes and wants the
+    stop). With nothing declared, the sequence returns at once, still running, and says why
+    no stop was waited for. Two controls beside it: a list ending in `resume` still waits,
+    and the same list with a breakpoint declared waits too."""
+    fake = _names(tmp_path)
+    fake.halted = False
+    fake.where_raises = True            # never stops
+    # A RELEASE THE DOUBLE ITSELF RECORDS: after a running-guest step the sequence asks the
+    # session whether the machine stopped, so the F5 (or a `run_to` that ran off) has to leave
+    # it running there too, and each case parks it again before its own `resume`.
+    released, ran_to = fake.resume, fake.run_to
+
+    def _resume() -> dict[str, object]:
+        fake.running = True
+        return released()
+
+    def _run_to(*a: Any, **k: Any) -> dict[str, object]:
+        fake.running = fake.runto_running
+        return ran_to(*a, **k)
+
+    fake.resume, fake.run_to = _resume, _run_to  # type: ignore[method-assign]
+    began = time.monotonic()
+    out = server.perform(steps=[{"op": "resume"}, {"op": "status"}], wait=5.0)
+    assert out["status"] == "ok" and out.get("still_running") is True, out
+    assert time.monotonic() - began < 2.0, "the tail waited for a stop nobody asked for"
+    assert "no stop was waited for" in out["note"], out
+    fake.running = False
+    began = time.monotonic()
+    tail = server.perform(steps=[{"op": "resume"}], wait=0.6)
+    assert tail.get("still_running") is True and time.monotonic() - began >= 0.5, tail
+    fake.running = False
+    server.breakpoint_at(ref="00A7:0100")
+    began = time.monotonic()
+    armed = server.perform(steps=[{"op": "resume"}, {"op": "status"}], wait=0.6)
+    assert armed.get("still_running") is True and time.monotonic() - began >= 0.5, armed
+    # `wait=0` NEVER waits, breakpoint or not, and says so.
+    fake.running = False
+    began = time.monotonic()
+    zero = server.perform(steps=[{"op": "resume"}, {"op": "status"}], wait=0)
+    assert zero.get("still_running") is True and time.monotonic() - began < 0.5, zero
+    assert "wait=0" in zero["note"], zero
+    # A STALE raw address (another build's, never re-armed) cannot stop it: no wait.
+    fake.running = False
+    server.breakpoint_clear()
+    dstate.STATE.session_origin = "s2"
+    dstate.STATE.conf_fingerprint = "fp-now"
+    dstate.STATE.store.add(dec.Declaration("breakpoint", "address", "00A7:0200",  # type: ignore[union-attr]
+                                      origin="s1", fingerprint="fp-old"))
+    fake.running = False
+    began = time.monotonic()
+    stale = server.perform(steps=[{"op": "resume"}, {"op": "status"}], wait=5.0)
+    assert stale.get("still_running") is True and time.monotonic() - began < 2.0, stale
+    # A `run_to` that ran off leaves ITS OWN breakpoint armed, so the tail waits for it.
+    fake.running = False
+    server.breakpoint_clear()
+    fake.runto_running = True
+    fake.control_hits = 1                # the control fired: the run-off is a measurement
+    fake.running = False
+    began = time.monotonic()
+    ran_off = server.perform(steps=[{"op": "run_to", "ref": "0000:0000", "control": "0000:0020"},
+                                    {"op": "status"}],
+                             wait=0.6)
+    assert ran_off.get("still_running") is True and time.monotonic() - began >= 0.5, ran_off
+
+
+# --------------------------------------------------------- an orphan says so
+
+def test_a_declaration_from_a_store_that_kept_no_origin_is_listed_as_an_orphan(
+        tmp_path: Path) -> None:
+    """MEASURED on a real guest: a show watch from an older store sat in every stop
+    reply with `origin: null` and nothing to tell it from this session's, and the breakpoint
+    broom left it. Both families list such a row as `orphan` with the ref that clears it,
+    and each broom sweeps only its own family."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
+    dstate.STATE.session_origin = "s2"
+    store = dstate.STATE.store
+    assert store is not None
+    store.add(dec.Declaration("watch", "symbol", "g_rate", width=4, fmt="u32", watch_mode="show"))
+    store.add(dec.Declaration("breakpoint", "address", "00A7:0100"))
+    store.add(dec.Declaration("interrupt", "address", "BPINT 21"))
+    watches = server.watch_list()["watches"]
+    assert watches[0]["state"] == "orphan" and "EVALUATED" in watches[0]["why"], watches
+    bps = {b["ref"]: b for b in server.breakpoint_list()["breakpoints"]}
+    assert bps["00A7:0100"]["state"] == "orphan" and bps["BPINT 21"]["state"] == "orphan", bps
+    assert bps["00A7:0100"]["orphan"] is True and "EVALUATED" not in bps["00A7:0100"]["why"]
+    # THE STOP REPLY SAYS IT TOO: the orphan show watch is evaluated, flagged as nobody's.
+    fake.halted = True
+    stop = server.resume()
+    assert stop["watches"][0]["state"] == "evaluated" and stop["watches"][0]["orphan"] is True, stop
+    # HELD WINS, AND AN UNRESOLVED NAME STAYS UNRESOLVED: an orphan the debugger holds is
+    # `armed` (and its row is NOT foreign), an orphan symbol this build lacks is `unresolved`
+    # -- the facts a caller acts on, with `orphan: true` beside them.
+    store.add(dec.Declaration("breakpoint", "symbol", "g_rate"))
+    store.add(dec.Declaration("breakpoint", "symbol", "nope"))
+    fake.rows.append({"index": "00", "entry": "BP 00A7:0017A6EC"})
+    listed = server.breakpoint_list()
+    bps = {b["ref"]: b for b in listed["breakpoints"]}
+    assert bps["g_rate"]["state"] == "armed" and bps["g_rate"]["orphan"] is True, bps
+    assert bps["nope"]["state"] == "unresolved" and bps["nope"]["orphan"] is True, bps
+    assert listed["foreign"] == [], listed
+    store.add(dec.Declaration("watch", "address", "00A7:0200", width=4, fmt="u32",
+                              watch_mode="change"))
+    fake.rows.append({"index": "01", "entry": "BPPM 00A7:00000200 (00)"})
+    wl = server.watch_list()
+    armed = next(w for w in wl["watches"] if w["ref"] == "00A7:0200")
+    assert armed["state"] == "armed" and armed["orphan"] is True and wl["foreign"] == [], wl
+    fake.rows.clear()
+    assert server.breakpoint_clear()["declarations_cleared"] == 4      # the watches stay
+    assert sorted(w["ref"] for w in server.watch_list()["watches"]) == ["00A7:0200", "g_rate"]
+    assert server.watch_clear()["declarations_cleared"] == 2
+    assert fake.rows == []
+
+
+# ------------------------------------------- a stop reads the list once
+
+def test_a_stop_reads_the_breakpoint_list_once_and_shares_it(tmp_path: Path) -> None:
+    """MEASURED on a real guest: a `resume` that stopped cost four `BPLIST` round
+    trips, two of them for the same screen -- the watches re-read the list the stop's own
+    repaint already carried. A stop takes ONE survey (where, registers, list) and evaluates
+    the watches against it; `breakpoints()` is not read again on the way."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
+    server.watch_add(ref="g_rate", mode="show", length=4, fmt="u32")
+    fake.halted = True                   # the resume stops again at once
+    fake.bp_calls = fake.survey_calls = 0
+    got = server.resume()
+    assert got["halted"] is True and got["watches"][0]["state"] == "evaluated", got
+    assert fake.survey_calls == 1, fake.survey_calls
+    assert fake.bp_calls == 0, f"the stop re-read the list {fake.bp_calls} time(s)"
+
+
+# ------------------------------------- lists answer while the guest runs (T1)
+
+def test_the_lists_answer_from_the_store_and_the_last_stop_while_the_guest_runs(
+        tmp_path: Path) -> None:
+    """MEASURED on a real guest: `breakpoint_list` with the guest running answered
+    INVALID with `registers`' own text, while its description promised rows from the store.
+    The server HOLDS the answer: the declarations, and the debugger's list as the last stop's
+    survey saw it. Running, the lists answer from those two, say `debugger_read: false` and
+    `last_stop` the last stop; stopped, they read the debugger and say `debugger_read: true`."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("_main", 0x1000, kind="T"),
+                                     dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
+    server.breakpoint_at(ref="_main")
+    server.watch_add(ref="g_rate", mode="show", length=4, fmt="u32")
+    fake.halted = True
+    stop = server.resume()                       # the survey of this stop is remembered
+    assert stop["halted"] is True
+    stopped = server.breakpoint_list()
+    assert stopped["debugger_read"] is True and stopped["breakpoints"][0]["state"] == "armed"
+    # THE GUEST RUNS: the console refuses, the lists do not.
+    fake.halted = False
+    fake.bp_raises = True
+    fake.where_raises = True
+    running = server.breakpoint_list()
+    assert running["status"] == "ok", running
+    assert running["debugger_read"] is False, running
+    # stop 1 is the park the machine was found in at the first contact; the resume's halt
+    # is stop 2, and that is what dates the answer.
+    assert running["last_stop"]["stop_seq"] == 2, running
+    assert running["last_stop"]["at"] == "00A7:00000000", running
+    assert running["breakpoints"][0]["ref"] == "_main"
+    assert running["breakpoints"][0]["state"] == "armed", running      # as of the last stop
+    watches = server.watch_list()
+    assert watches["status"] == "ok" and watches["debugger_read"] is False, watches
+    assert watches["watches"][0]["state"] == "resolved", watches
+    # NEVER STOPPED: nothing to date the answer by, and the rows still come.
+    dstate.STATE.last_stop.clear()
+    fresh = server.breakpoint_list()
+    assert fresh["status"] == "ok" and fresh["last_stop"] is None, fresh
+    assert fresh["breakpoints"][0]["state"] == "unarmable", fresh
+
+
+# --------------------------------------- the pending queue, applied at the stop (T2)
+
+def test_what_is_asked_while_the_guest_runs_is_applied_at_the_next_stop(
+        tmp_path: Path) -> None:
+    """The running-guest contract (the owner's decision): a declaration, a clear or a symbol
+    load asked while the guest runs answers `pending`, and the next stop applies it before
+    evaluating anything and says so in `applied_on_stop`. Before this, `unarmable` and "the
+    debugger's list was left as it was" were the answers, and nobody applied them later."""
+    nm = tmp_path / "one.nm"
+    nm.write_text("00001000 T _main\n0017a6ec d g_rate\n", encoding="utf-8")
+    fake = _names(tmp_path, symbols=[dsym.Symbol("_old", 0x2000, kind="T")])
+    server.breakpoint_at(ref="_old")                     # armed while stopped, to be cleared
+    assert [r["entry"] for r in fake.rows] == ["BP 00A7:2000"]
+    fake.running = True
+    fake.halted = False
+    loaded = server.symbols_load(source=str(nm), base="400000")
+    assert loaded["status"] == "ok" and loaded["pending"] is True, loaded
+    # the table is held at once
+    assert server.symbols_find(name="_main")["symbols_total"] == 1
+    armed = server.breakpoint_at(ref="_main")
+    assert armed["status"] == "ok" and armed["state"] == "pending", armed
+    watched = server.watch_add(ref="g_rate", mode="change", length=4, fmt="u32")
+    assert watched["status"] == "ok" and watched["state"] == "pending", watched
+    cleared = server.breakpoint_clear(ref="_old")
+    assert cleared["status"] == "ok" and cleared["pending_disarm"] == ["BP 00A7:2000"], cleared
+    st = server.status()
+    assert st["pending"] == {"arm": ["_main", "g_rate"], "disarm": 1,
+                             "symbols_load": True}, st
+    assert fake.rows == [{"index": "00", "entry": "BP 00A7:2000"}], (
+        "nothing touched the debugger yet")
+    # THE STOP: everything pending is applied first, then the stop is read.
+    fake.running = False
+    fake.halted = True
+    stop = server.resume()
+    assert stop["halted"] is True, stop
+    applied = stop["applied_on_stop"]
+    assert applied["symbols_loaded"] is True and fake.loads == 1, applied
+    assert applied["armed"] == ["_main", "g_rate"], applied
+    assert applied["disarmed"] == ["BP 00A7:2000"], applied
+    entries = [r["entry"] for r in fake.rows]
+    assert "BP 00A7:1000" in entries and "BP 00A7:2000" not in entries, entries
+    assert any(e.startswith("BPPM 00AF:0017A6EC") for e in entries), entries
+    assert server.status()["pending"] == {"arm": [], "disarm": 0, "symbols_load": False}
+    # NOTHING PENDING: the next stop says nothing about it.
+    assert "applied_on_stop" not in server.resume()
+
+
+# ---------------------------------------------- last_stop where it helps (T3)
+
+def test_status_and_a_running_refusal_carry_the_last_stop(tmp_path: Path) -> None:
+    """A reader refused because the guest runs, and saying only that, leaves the caller not
+    knowing where the machine is or since when. `status` carries `last_stop` (null before any
+    stop), every such refusal carries it too and names the readers that DO answer while
+    running, and `registers(from_last_stop=True)` hands the last stop's registers marked
+    stale, never by default."""
+    fake = _names(tmp_path)
+    park = server.status()["last_stop"]          # the machine is found at the debugger
+    assert park["stop_seq"] == 1 and park["at"] == "00A7:00000000", park
+    fake.halted = True
+    server.resume()
+    fake.running = True
+    st = server.status()
+    assert st["last_stop"]["stop_seq"] == 2 and st["last_stop"]["at"] == "00A7:00000000", st
+    refused = server.registers()
+    assert refused["status"] == "INVALID", refused
+    assert refused["last_stop"]["stop_seq"] == 2, refused
+    assert "log" in refused["answers_while_running"], refused
+    old = server.registers(from_last_stop=True)
+    assert old["status"] == "ok" and old["stale"] is True and old["registers"]["CS"] == "00A7", old
+    assert old["last_stop"]["stop_seq"] == 2
+    dstate.STATE.last_stop.clear()
+    assert server.registers(from_last_stop=True)["status"] == "INVALID"
+
+
+def test_memdump_on_a_running_guest_is_refused_before_the_session_is_asked(
+        tmp_path: Path) -> None:
+    """`memdump` is one of the readers the running-guest contract refuses: a dump command
+    typed at a console that is not listening lands at the next stop, unread. So it refuses
+    `not_stopped` with `last_stop`, the way `find` does, before the session is handed
+    anything."""
+    fake = _names(tmp_path)
+    server.status()                              # the park, on record
+    fake.running = True
+    got = server.memdump(ref="0000:0400", length=16, dest=str(tmp_path / "d.bin"))
+    assert got["status"] == "INVALID" and got["code"] == "not_stopped", got
+    assert got["last_stop"]["stop_seq"] == 1, got
+    assert "log" in got["answers_while_running"], got
+    assert getattr(fake, "memdump_calls", []) == [], "the session was asked to dump"
+    assert not (tmp_path / "d.bin").exists()
+
+
+def test_resume_on_a_running_guest_is_refused_before_any_other_check(
+        tmp_path: Path) -> None:
+    """An `ok` from a `resume` that found the guest already running cannot be told from one
+    that released it, so it is refused `not_stopped` like every other tool that needs the
+    machine stopped. It comes before the check that needs the machine (a headless session with
+    no stopper would be refused for that, which is not the real reason); a value wrong with no
+    machine at all, a negative `seconds`, is refused before the gate."""
+    # A WINDOWED SESSION passes the stopper check, so this is where an F5 would go out and
+    # answer `ok` with `halted: false`.
+    fake = _names(tmp_path, watched=True)
+    server.status()                              # the park, on record
+    fake.running = True
+    with mock.patch.object(fake, "resume", side_effect=AssertionError("F5 was sent")):
+        got = server.resume()
+    assert got["status"] == "INVALID" and got["code"] == "not_stopped", got
+    assert got["last_stop"]["stop_seq"] == 1, got
+    assert "log" in got["answers_while_running"], got
+    # AND THE ORDER: headless and nothing armed is still `not_stopped`; a negative bound is
+    # wrong whatever the machine does, so it is refused first.
+    fake = _names(tmp_path, watched=False)
+    fake.running = True
+    with mock.patch.object(fake, "resume", side_effect=AssertionError("F5 was sent")):
+        got = server.resume()
+        bound = server.resume(seconds=-1)
+    assert got["status"] == "INVALID" and got["code"] == "not_stopped", got
+    assert bound["code"] == "bad_argument" and "negative" in bound["message"], bound
+    # A bad display argument is judged earlier still, with no machine, as every argument is.
+    assert server.resume(e9="sometimes")["code"] == "bad_argument"
+
+
+def test_stop_keeps_the_envelope_on_both_branches(tmp_path: Path) -> None:
+    """Every reply opens with `summary` and closes with `session`, on both branches of `stop`:
+    the one that interrupts a windowed guest, which adds `stopped_at` to a reply already
+    built, and the one that finds the machine at rest."""
+    fake = _names(tmp_path, watched=True)
+    server.status()                              # the park, on record
+    fake.running = True
+    got = server.stop()
+    assert got["status"] == "ok" and got["interrupted"] is True, got
+    assert got["stopped_at"] == "00A7:00000000", got
+    keys = list(got)
+    assert keys[0] == "summary" and keys[-1] == "session", keys
+    again = server.stop()                        # the machine is at rest now
+    assert again["interrupted"] is False, again
+    keys = list(again)
+    assert keys[0] == "summary" and keys[-1] == "session", keys
+
+
+def test_a_stop_nobody_read_is_counted_by_status_alone_and_said_once(
+        tmp_path: Path) -> None:
+    """A caller driving an unwatched run with `status` and `captures` only must learn
+    that the guest has stopped: the first contact finds the prompt in the drain, counts
+    the stop THEN, records it, and its reply says `stopped_on_its_own`; the next reply does
+    not repeat it. Measured on a real guest: with the count read before the peek, `status`
+    kept naming the previous stop and only `registers` moved it."""
+    fake = _names(tmp_path)
+    before = server.status()["last_stop"]["stop_seq"]    # the park, on record
+    fake.running = True                                  # released
+    fake.eip = "00000146"
+    fake.stop_unread = True                              # the breakpoint fired, unread
+    st = server.status()
+    assert st["last_stop"]["stop_seq"] == before + 1, st
+    assert st["last_stop"]["at"] == "00A7:00000146", st
+    assert st["stopped_on_its_own"]["stop_seq"] == before + 1, st
+    assert "stopped_on_its_own" not in server.status()   # said once, by the contact that found it
+
+
+def test_a_stop_that_came_on_its_own_still_applies_the_queue_at_the_next_contact(
+        tmp_path: Path) -> None:
+    """A breakpoint fires while the caller is waiting on the log or sending a key, so the
+    stop is nobody's reply. The next tool that finds the machine at the debugger (here
+    `status`, passively) applies what was pending and says so, so a declaration made while
+    the guest ran is never left waiting for a stop TOOL to be called."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("_main", 0x1000, kind="T")])
+    fake.running = True
+    assert server.breakpoint_at(ref="_main")["state"] == "pending"
+    assert server.status()["pending"]["arm"] == ["_main"]
+    fake.running = False                                 # a breakpoint fired meanwhile
+    st = server.status()
+    assert st["applied_on_stop"]["armed"] == ["_main"], st
+    assert [r["entry"] for r in fake.rows] == ["BP 00A7:1000"]
+    assert "applied_on_stop" not in server.status()      # said once, by the reply that did it
+    # AND THE STOP ITSELF IS ON RECORD: `last_stop` is the stop the machine is in, not the
+    # one before (measured: it stayed on the previous stop while `registers`
+    # read the new address).
+    assert st["last_stop"]["stop_seq"] == 1 and st["last_stop"]["at"] == "00A7:00000000", st
+    fake.running = True
+    fake.eip = "00001234"
+    fake.running = False                                 # a second stop on its own
+    assert server.status()["last_stop"]["stop_seq"] == 2
+    assert server.status()["last_stop"]["at"] == "00A7:00001234"
+    assert server.status()["last_stop"]["stop_seq"] == 2      # observed once, not per call
+    assert server.registers(from_last_stop=True)["registers"]["EIP"] == "00001234"
+
+
+def test_the_queue_covers_interrupts_and_change_watches_and_says_what_it_could_not_apply(
+        tmp_path: Path) -> None:
+    """The other kinds the queue carries: an interrupt and a change-watch cleared while the
+    guest runs are removed at the stop; a declaration cleared before the stop is simply not
+    armed; and an arm the stop cannot resolve (the table changed meanwhile) is reported
+    under `still_pending` and stays queued rather than vanishing."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d"),
+                                     dsym.Symbol("_gone", 0x3000, kind="T"),
+                                     dsym.Symbol("_late", 0x4000, kind="T")])
+    server.breakpoint_interrupt(number=0x21, ah=0x4B)
+    server.watch_add(ref="g_rate", mode="change", length=4, fmt="u32")
+    fake.halted = True
+    server.resume()
+    fake.running = True
+    fake.halted = False
+    assert server.breakpoint_clear(ref="BPINT 21 AH=4B")["pending_disarm"] == ["BPINT 21 AH=4B"]
+    wc = server.watch_clear(ref="g_rate")
+    assert wc["pending_disarm"] and wc["pending_disarm"][0].startswith("BPPM 00AF:0017A6EC"), wc
+    assert server.breakpoint_at(ref="_gone")["state"] == "pending"
+    assert server.breakpoint_at(ref="_late")["state"] == "pending"
+    assert server.breakpoint_clear(ref="_gone")["declarations_cleared"] == 1   # before the stop
+    dstate.STATE.install_table([dsym.Symbol("g_rate", 0x17A6EC, kind="d")])   # `_late` vanished
+    fake.running = False
+    fake.halted = True
+    stop = server.resume()
+    applied = stop["applied_on_stop"]
+    assert applied["disarmed"][0] == "BPINT 21 AH=4B", applied
+    assert applied["disarmed"][1].startswith("BPPM 00AF:0017A6EC"), applied
+    assert applied["armed"] == [] and any("arm _late" in s for s in applied["still_pending"])
+    assert fake.rows == [], fake.rows
+    assert server.status()["pending"]["arm"] == ["_late"]
+
+
+def test_the_states_a_listing_still_gives_when_nothing_is_held(tmp_path: Path) -> None:
+    """The branches a live list reaches when the debugger holds nothing: an interrupt
+    declaration whose row is gone, an orphan raw breakpoint that is not held, and a
+    breakpoint that cannot be armed for a reason that is NOT the guest running (a
+    real-mode table with no flat base), which stays `unarmed` with the reason."""
+    fake = _names(tmp_path)
+    dstate.STATE.session_origin = "s2"
+    server.breakpoint_interrupt(number=0x21)         # this session's: gone once its row is
+    fake.rows.clear()
+    dstate.STATE.store.add(dec.Declaration("breakpoint", "address", "00A7:0300"))  # type: ignore[union-attr]
+    rows = {b["ref"]: b for b in server.breakpoint_list()["breakpoints"]}
+    assert rows["BPINT 21"]["state"] == "gone" and rows["00A7:0300"]["state"] == "orphan", rows
+    real = _names(tmp_path, symbols=[dsym.Symbol("_main", 0x1000, kind="T")], mode="Real",
+                  base=-1)
+    got = server.breakpoint_at(ref="_main")
+    assert got["state"] == "unarmable" and "FLAT base" in got["why"], got
+    assert real.rows == []
+
+
+def test_the_running_guest_contract_holds_at_its_edges(tmp_path: Path) -> None:
+    """The fresh-eyes findings on the contract, each pinned: a pending load re-arms the
+    declarations it resolves; a clear of a ref that was itself pending queues no phantom
+    disarm; a reload that armed a symbol twice clears BOTH rows; the lists show a queued
+    ref as `pending` and do not call a queued row `foreign`; an interrupt declared while
+    running is pending too; a reader refused by symbol carries `last_stop`; and `close`
+    takes the running state with it."""
+    nm = tmp_path / "one.nm"
+    nm.write_text("00001000 T _main\n", encoding="utf-8")
+    fake = _names(tmp_path)
+    server.breakpoint_at(ref="_main")                    # unresolved: no table yet
+    fake.halted = True
+    server.resume()
+    fake.running = True
+    fake.halted = False
+    assert server.symbols_load(source=str(nm), base="400000")["pending"] is True
+    assert server.breakpoint_at(ref="00A7:0100")["state"] == "pending"
+    assert server.breakpoint_clear(ref="00A7:0100")["pending_disarm"] == []   # never armed
+    assert server.breakpoint_interrupt(number=0x21)["state"] == "pending"
+    assert server.breakpoint_at(ref="00A7:0200")["state"] == "pending"
+    lst = server.breakpoint_list()
+    states = {b["ref"]: b["state"] for b in lst["breakpoints"]}
+    assert states["00A7:0200"] == "pending" and states["BPINT 21"] == "pending", states
+    refused = server.read_memory(ref="_main")
+    assert refused["status"] == "INVALID" and refused["last_stop"]["stop_seq"] == 2, refused
+    fake.running = False
+    fake.halted = True
+    stop = server.resume()
+    applied = stop["applied_on_stop"]
+    assert applied["symbols_loaded"] is True and "_main" in applied["armed"], applied
+    assert "BPINT 21" in applied["armed"] and "00A7:0200" in applied["armed"], applied
+    entries = [r["entry"] for r in fake.rows]
+    assert "BP 00A7:1000" in entries and "BPINT 21" in entries and "BP 00A7:0200" in entries
+    # A RELOAD MOVES `_main`: two rows armed for one ref, and a clear takes both.
+    nm.write_text("00001200 T _main\n", encoding="utf-8")
+    server.symbols_load(source=str(nm), base="400000")
+    entries = [r["entry"] for r in fake.rows]
+    assert "BP 00A7:1000" in entries and "BP 00A7:1200" in entries, entries
+    cleared = server.breakpoint_clear(ref="_main")
+    assert sorted(cleared["disarmed"]) == ["BP 00A7:1000", "BP 00A7:1200"], cleared
+    assert server.breakpoint_list()["foreign"] == []
+    # A QUEUED DISARM'S ROW IS NOT FOREIGN while it waits.
+    fake.running = True
+    assert server.breakpoint_clear(ref="00A7:0200")["pending_disarm"] == ["BP 00A7:0200"]
+    assert server.breakpoint_list()["foreign"] == []
+    fake.running = False
+    # CLOSE TAKES THE STATE WITH IT.
+    server.close()
+    assert server.status()["last_stop"] is None
+    assert server.status()["pending"] == {"arm": [], "disarm": 0, "symbols_load": False}
+
+
+def test_perform_checks_every_op_before_running_any(tmp_path: Path) -> None:
+    """MEASURED on a real guest: `[send_keys, close, status]` SENT the key and then
+    refused at step 1 because `close` is not a step. A refusal for the vocabulary comes
+    before anything runs."""
+    fake = _names(tmp_path, watched=True)
+    out = server.perform(steps=[{"op": "send_keys", "keys": ["a"]}, {"op": "close"},
+                                {"op": "status"}])
+    assert out["status"] == "INVALID" and out["failed_at"] == 1, out
+    assert out["completed"] == 0 and out["ran"] == [], out
+    assert fake.keys_sent == [] if hasattr(fake, "keys_sent") else True
+
+
+def test_send_keys_names_a_stop_that_landed_during_the_wait_not_still_running(
+        tmp_path: Path) -> None:
+    """Measured: A key posted by serial just before a breakpoint fired: the
+    wait's expiry said "the guest wrote NOTHING ... The emulator is still running" -- the
+    PROCESS -- and blamed the program, while the debugger had held the machine for seconds
+    and the next `send_keys` refused for exactly that. The miss names the stop the machine
+    is in, says where the key went, and carries `last_stop` so the caller can act on it."""
+    fake = _names(tmp_path, watched=False, input_port=5555)
+    fake.running = True                      # a RUNNING guest, as a key is sent to
+    fake.input_effect = None
+    fake.stops_during_wait = True
+    got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a", seconds=5))
+    assert got["status"] == "INVALID" and got["route"] == "serial", got
+    assert got["posted"] == 1 and fake.scancodes_sent == [bytes([0x1E, 0x9E])], got
+    assert got["effect"]["checked"] is True and got["effect"]["seen"] is False, got["effect"]
+    assert got["effect"]["stopped_during_wait"] is True, got["effect"]
+    assert "STOPPED at the debugger during the wait at 00A7:00000000" in got["message"], got
+    assert "next resume" in got["message"] and "still running" not in got["message"], got["message"]
+    assert "guest's log's to say" in got["message"], got["message"]   # never "the key sits in..."
+    assert got["effect"]["waited_s"] == 0.4 and got["effect"]["lines_on_disk"] == 0, got["effect"]
+    assert got["last_stop"]["at"] == "00A7:00000000", got["last_stop"]
+    assert fake.survey_calls == 1, "the stop is surveyed ONCE, by this reply"
+    # THE NEXT KEY IS REFUSED AS STOPPED, in the same words: the two replies agree.
+    nxt = cast(dict[str, Any], server.send_keys(keys=["a"]))
+    assert nxt["status"] == "INVALID" and "STOPPED at the debugger" in nxt["message"], nxt
+    assert len(fake.scancodes_sent) == 1, "a refused key must not have sent bytes"
+
+
+def test_input_to_a_machine_stopped_at_the_debugger_is_refused_before_the_post(
+        tmp_path: Path) -> None:
+    """A key or a click to a machine parked at the debugger is never a delivery: the
+    serial route refused it, the window route posted it and, with no `expect`, answered
+    `ok` about an event the guest could not take. Both routes refuse before posting,
+    with or without `expect`, naming the stop and `resume` as the way forward."""
+    fake = _names(tmp_path, watched=True)          # stopped, as a fresh session is
+    fake.input_effect = None
+    calls: list[Callable[[], dict[str, Any]]] = [
+        lambda: server.send_keys(keys=["a"]),
+        lambda: server.send_keys(keys=["a"], expect="key_cue_a", seconds=2),
+        lambda: server.send_mouse(button="left")]
+    for call in calls:
+        got = call()
+        assert got["status"] == "INVALID" and "STOPPED at the debugger" in got["message"], got
+        assert "`resume` first" in got["message"] and "00A7:0000" in got["message"]
+        # A STOPPED machine is the opposite of the running one `NotStopped` names, so the
+        # refusal is a plain INVALID: the running-guest envelope's `answers_while_running`
+        # would tell a caller which tools answer while the guest RUNS, about a guest that
+        # is stopped.
+        assert "answers_while_running" not in got, got
+    assert fake.input_calls == [], "nothing was posted to a stopped machine"
+    assert "posted" not in got
+
+
+def test_a_stop_whose_survey_refused_is_not_named_with_the_previous_stops_address(
+        tmp_path: Path) -> None:
+    """A cut pane at survey time leaves the record on the PREVIOUS stop, and the reply used to
+    print that stop's address and attribution as this wait's (an audit found it): a
+    confident wrong answer of the right shape. The reply says the position could not be read
+    yet, and carries no `last_stop`, rather than the stale one."""
+    fake = _names(tmp_path, watched=False, input_port=5555)
+    assert cast(dict[str, Any], server.status())["last_stop"]["at"] == "00A7:00000000"
+    fake.running = True
+    fake.input_effect = None
+    fake.stops_during_wait = True
+    fake.registers_raises = True                   # the survey of the NEW stop refuses
+    got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a", seconds=2))
+    assert got["status"] == "INVALID" and got["effect"]["stopped_during_wait"] is True, got
+    assert "00A7:00000000" not in got["message"], got["message"]
+    assert "position not readable yet" in got["message"], got["message"]
+    assert got["last_stop"] is None, got["last_stop"]
+
+
+def test_drive_names_a_stop_that_landed_during_its_verify(tmp_path: Path) -> None:
+    """`drive`'s VERIFY on a running guest is the same wait; a stop during it is the stop's
+    miss, named with `last_stop`, and not "the guest did not do what was expected" (auditor,
+    the wording removed from `send_keys` survived here)."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True                            # the act is sent to a RUNNING guest
+    fake.input_effect = None
+    fake.stops_during_wait = True
+    got = cast(dict[str, Any], server.drive(act=[{"op": "send_keys", "keys": ["a"]}],
+                                            expect="key_cue_a", seconds=1))
+    assert got["status"] == "INVALID", got
+    assert got["verify"]["stopped_during_wait"] is True, got["verify"]
+    assert "STOPPED at the debugger during the wait at 00A7:00000000" in got["message"], got
+    assert "did not do what was expected" not in got["message"], got["message"]
+    assert got["last_stop"]["at"] == "00A7:00000000", got["last_stop"]
+
+
+# ------------------------------------------------------- the progress line on a bounded wait
+
+
+def test_the_sdk_injects_the_context_into_the_waiting_tools_and_hides_it(
+        tmp_path: Path) -> None:
+    """`ctx` is found by its type through the wrapper, is not an argument the client can
+    pass, and stays out of the summary; the tools with no wait take none."""
+    for name in ("run_to", "log_wait", "perform", "drive", "send_keys", "send_mouse", "resume",
+                 "start", "close"):
+        tool = server.mcp._tool_manager.get_tool(name)
+        assert tool is not None and tool.context_kwarg == "ctx", name
+        assert "ctx" not in tool.parameters.get("properties", {}), name
+    for name in ("step", "registers", "status"):
+        tool = server.mcp._tool_manager.get_tool(name)
+        assert tool is not None and tool.context_kwarg is None, name
+    assert server._progress(None) is ds.no_progress
+
+
+def test_the_progress_bridge_reaches_the_context_from_a_worker_thread() -> None:
+    """The SDK runs a synchronous tool in a worker thread and `report_progress` is a
+    coroutine on the event loop; the bridge is what carries one to the other."""
+    import anyio
+
+    got: list[tuple[float, float | None, str | None]] = []
+
+    class _Ctx:
+        async def report_progress(self, progress: float, total: float | None = None,
+                                  message: str | None = None) -> None:
+            got.append((progress, total, message))
+
+    async def main() -> None:
+        report = server._progress(_Ctx())  # type: ignore[arg-type]
+        await anyio.to_thread.run_sync(lambda: report(3.0, 9.0, "tick"))
+
+    anyio.run(main)
+    assert got == [(3.0, 9.0, "tick")]
+
+
+def test_the_sequences_wait_for_a_stop_reports_its_progress(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The tail of `perform` waits for a stop after a step left the machine running; that
+    wait is bounded and says where it is, like every other."""
+    fake = _names(tmp_path)
+    fake.halted = False
+    fake.where_raises = True                    # running, and it stays running
+    monkeypatch.setattr(fake, "_read", lambda timeout: "", raising=False)
+    monkeypatch.setattr(ds, "PROGRESS_EVERY_S", 0.0)
+    ticks: list[str] = []
+    out = sequence.run_steps(fake, [{"op": "resume"}], 0.3, server._step_ops(),  # type: ignore[arg-type]
+                             lambda p, t, m: ticks.append(m))
+    assert out.get("still_running") is True, out
+    assert ticks and ticks[0].startswith("waiting for the machine to stop: ")
+
+
+def test_the_sequences_wait_for_a_stop_listens_for_the_prompt_and_types_nothing(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The wait between a step that left the machine running and the next console step
+    must not POLL by typing `BPLIST` and reading the position: that queues keystrokes for
+    the stop, and paces a progress tick by the console's timeout on a quiet machine (up to
+    six seconds instead of the one every other wait keeps). It listens for the debugger's
+    prompt on the terminal the way `run_to` does. The proof is a `where()` that REFUSES
+    throughout (a typed poll would read the machine as running) beside a prompt on the
+    terminal: the passive wait hears it and answers `stopped`; with nothing on the terminal
+    it answers `running` at the bound (the control), ticking every PROGRESS_EVERY_S."""
+    fake = _names(tmp_path)
+    fake.halted = False
+    fake.where_raises = True
+    monkeypatch.setattr(fake, "_read", lambda timeout: ds.PROMPT, raising=False)
+    monkeypatch.setattr(fake, "_screen", "", raising=False)
+    monkeypatch.setattr(fake, "alive", lambda: True)
+    marked: list[bool] = []
+    monkeypatch.setattr(fake, "_mark_stopped", lambda: marked.append(True), raising=False)
+    assert sequence._wait_for_stop(fake, 1.0) == "stopped"  # type: ignore[arg-type]
+    assert marked == [True], "the stop heard on the terminal is marked before a reader consumes it"
+
+    def read_nothing(timeout: float) -> str:
+        time.sleep(timeout)
+        return ""
+
+    monkeypatch.setattr(fake, "_read", read_nothing, raising=False)
+    monkeypatch.setattr(ds, "PROGRESS_EVERY_S", 0.0)
+    ticks: list[str] = []
+    assert sequence._wait_for_stop(fake, 0.6, lambda p, t, m: ticks.append(m)) == "running"  # type: ignore[arg-type]
+    assert ticks and ticks[0].startswith("waiting for the machine to stop: "), ticks
+    # A GONE emulator is still told apart from a running one.
+    monkeypatch.setattr(fake, "alive", lambda: False)
+    assert sequence._wait_for_stop(fake, 0.3) == "gone"  # type: ignore[arg-type]
+
+
+def test_a_step_carrying_ctx_is_refused_before_it_runs(tmp_path: Path) -> None:
+    """`ctx` is the SDK's; a step that names it would hand a stray value to the progress bridge,
+    which would blow up at the first tick, an escape the wrapper does not translate."""
+    _names(tmp_path)
+    out = server.perform(steps=[{"op": "status"}, {"op": "resume", "ctx": "bogus"}])
+    assert out["status"] == "INVALID" and out["failed_at"] == 1, out
+    assert "ctx" in out["message"] and out["completed"] == 0, "seen up front: nothing ran"
+
+
+def test_the_verify_of_drive_forwards_the_progress_to_the_wait() -> None:
+    class _Waits:
+        log_wait = _log_wait_as_guest
+
+        def e9_wait(self, pattern: str, seconds: float, mark: int = 0,
+                    progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+            progress(1.0, seconds, "tick")
+            return {"line": "x", "already": False, "lines_total": 1, "lines_before": 0,
+                    "arrived_during": 1, "waited_s": 1.0, "lines_examined": 1, "since_mark": 0}
+
+    ticks: list[str] = []
+    out = sequence._verify_after_wait(_Waits(), "x", 3.0, 0,  # type: ignore[arg-type]
+                                      lambda p, t, m: ticks.append(m))
+    assert ticks == ["tick"] and out["seen"] is True
+
+
+def test_perform_carries_the_clients_context_to_its_wait(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """End to end through the registered tool, from the worker thread the SDK uses."""
+    import anyio
+
+    got: list[str] = []
+
+    class _Ctx:
+        async def report_progress(self, progress: float, total: float | None = None,
+                                  message: str | None = None) -> None:
+            got.append(str(message))
+
+    fake = _names(tmp_path)
+    fake.halted = False
+    fake.where_raises = True
+    monkeypatch.setattr(ds, "PROGRESS_EVERY_S", 0.0)
+
+    async def main() -> None:
+        await anyio.to_thread.run_sync(
+            lambda: server.perform(steps=[{"op": "resume"}], wait=0.3, ctx=_Ctx()))
+
+    anyio.run(main)
+    assert got and got[0].startswith("waiting for the machine to stop")
+
+
+def test_send_keys_hands_its_progress_to_the_wait_for_the_reaction() -> None:
+    """The wait for `expect` after a posted key is the longest wait this server makes in
+    ordinary use, and it reports like every other bounded wait."""
+    class _Route:
+        launch = SimpleNamespace(watched=True, input_port=None)
+
+        def e9_mark(self) -> int:
+            return 0
+
+        def at_debugger(self) -> bool:
+            return False
+
+        def send_input(self, mode: str, args: list[str], keep_focus: bool) -> dict[str, str]:
+            return {"posted": "1", "activated": "true", "attempts": "1", "restored": "kept",
+                    "window": "7"}
+
+        log_wait = _log_wait_as_guest
+
+        def e9_wait(self, pattern: str, seconds: float, mark: int = 0,
+                    progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+            progress(1.0, seconds, "tick")
+            return {"line": "READY", "already": False, "lines_total": 1, "lines_before": 0,
+                    "arrived_during": 1, "waited_s": 1.0, "lines_examined": 1, "since_mark": 0}
+
+    ticks: list[str] = []
+    out = inputs.send_keys(_Route(), ["enter"], None, "READY", 2.0, "keep",  # type: ignore[arg-type]
+                           lambda p, t, m: ticks.append(m))
+    assert ticks == ["tick"] and out["effect"]["seen"] is True
+
+
+def test_two_refs_on_one_address_do_not_share_a_change_watch_in_silence(
+        tmp_path: Path) -> None:
+    """Two declarations resolving to one seg:off would share ONE BPPM row, and clearing
+    either would disarm the other without a word. One watchpoint is one declaration: the
+    second is refused naming the first."""
+    _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
+    first = server.watch_add(ref="g_rate", mode="change", length=4)
+    assert first["status"] == "ok" and first["armed"] is True
+    second = server.watch_add(ref="00AF:0017A6EC", mode="change", length=4)
+    assert second["status"] == "INVALID" and "already armed under 'g_rate'" in str(
+        second["message"])
+    assert [d.ref for d in arming.current_store().declarations()] == ["g_rate"]
+
+
+def test_an_aliased_change_watch_declared_while_running_stays_pending_and_says_why(
+        tmp_path: Path) -> None:
+    """The alias refusal holds while the guest runs (the last stop's machine resolves the
+    range) and on the pending path: a change watch queued for a range that ANOTHER ref
+    armed before the stop came is not armed at the stop, and the account names the ref."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
+    first = server.watch_add(ref="g_rate", mode="change", length=4)
+    assert first["armed"] is True
+    fake.running = True
+    fake.halted = False
+    second = server.watch_add(ref="00AF:0017A6EC", mode="change", length=4)
+    assert second["status"] == "INVALID" and "already armed under 'g_rate'" in str(
+        second["message"])
+    # Queued BEFORE the alias existed, aliased by the time the stop drains the queue.
+    server.watch_clear(ref="g_rate")
+    dstate.STATE.armed.clear()
+    queued = server.watch_add(ref="00AF:0017A6EC", mode="change", length=4)
+    assert queued["status"] == "ok" and queued["state"] == "pending", queued
+    dstate.STATE.armed[("watch", "g_rate")] = [
+        {"kind": "watch", "seg": 0xAF, "off": 0x17A6EC, "entry": "BPPM 00AF:0017A6EC"}]
+    fake.running = False
+    fake.halted = True
+    stop = server.resume()
+    still = stop["applied_on_stop"]["still_pending"]
+    assert len(still) == 1 and "already armed under 'g_rate'" in still[0], still
+
+
+def test_the_front_door_table_names_exactly_the_tools_the_server_registers() -> None:
+    """The README's tool table is the one copy of the roster a stranger reads, and it is
+    kept by hand: a tool added to the server and left out of it, or a row kept after a
+    tool was retired, is silent either way. The table is read as the set of backticked
+    names in its first column and compared with the MCP layer's own registry, so the gate
+    goes red when a name is missing AND when one is extra; a name listed twice is a row
+    the reader meets twice and is refused too."""
+    readme = (Path(__file__).parents[1] / "README.md").read_text()
+    head = "| tool | what it does |"
+    assert head in readme, "the front door has no tool table headed by tool/what it does"
+    rows = readme.split(head, 1)[1].split("\n\n", 1)[0].splitlines()[1:]
+    listed: list[str] = []
+    for row in rows:
+        cells = row.split("|")
+        assert len(cells) >= 3, f"not a table row: {row!r}"
+        listed += re.findall(r"`([a-z_]+)`", cells[1])
+    assert listed, "the table names no tool at all, so this is not a verdict"
+    twice = sorted({name for name in listed if listed.count(name) > 1})
+    assert not twice, f"named in more than one row: {twice}"
+    registered = set(server.registered_tools())
+    assert set(listed) == registered, (
+        f"missing from the table: {sorted(registered - set(listed))}; "
+        f"in the table but not registered: {sorted(set(listed) - registered)}"
+    )
+
+
+def test_every_registered_tool_is_named_in_the_instructions() -> None:
+    """The `instructions` string is the one channel a session receives at connection, and a
+    tool registered but not named there is one the session never learns exists. Asked of
+    the MCP layer, never of a list kept beside it."""
+    text = server.mcp.instructions or ""
+    missing = sorted(t for t in server.registered_tools()
+                     if f"`{t}`" not in text and f"`{t}(" not in text)
+    assert not missing, f"registered tools the instructions never name: {missing}"
+
+
+def test_perform_checks_every_steps_arguments_before_any_step_runs(tmp_path: Path) -> None:
+    """The contract says a bad step refuses before anything runs, and the up-front pass
+    checked the op NAMES only: a `resume` ran, an irreversible act, before the next
+    step's misspelt argument was seen. Every step is bound against its tool's signature
+    first, and `ctx` is refused there too."""
+    fake = _names(tmp_path)
+    fake.halted = False
+    out = server.perform(steps=[{"op": "resume"}, {"op": "status", "bogus": 1}], wait=1.0)
+    assert out["status"] == "INVALID" and "bad arguments" in out["message"], out
+    assert out["completed"] == 0 and out["ran"] == [] and out["failed_at"] == 1
+    assert fake.stop_count == 0, "the resume never went out"
+    out = server.perform(steps=[{"op": "resume"}, {"op": "status", "ctx": 1}], wait=1.0)
+    assert out["status"] == "INVALID" and "`ctx`" in out["message"] and out["completed"] == 0
+
+
+def test_two_pending_declarations_on_one_address_arm_one_row_at_the_stop(tmp_path: Path) -> None:
+    """The drain read the debugger's list ONCE before its loop and never refreshed it, so
+    two refs resolving to one address (a store from before the one-row rule holds them)
+    both passed the 'already held' check and the second `BP` stacked a second row. The
+    list learns each row as it is armed."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("foo", 0x100, kind="T"),
+                                     dsym.Symbol("bar", 0x100, kind="T")])
+    fake.halted = True
+    server.resume()                                   # stop 1, recorded
+    store = dstate.STATE.store
+    assert store is not None
+    for name in ("foo", "bar"):
+        store.add(dec.Declaration("breakpoint", "symbol", name, origin=dstate.STATE.session_origin))
+        dstate.STATE.queue_arm(name)
+    fake.running = True
+    fake.running = False                              # the machine ran and stopped again
+    fake.halted = True
+    stop = server.resume()
+    assert stop["applied_on_stop"]["armed"] == ["foo", "bar"]
+    assert [r["entry"] for r in fake.rows].count("BP 00A7:0100") == 1, fake.rows
+
+
+def test_one_breakpoint_row_is_one_declaration_and_an_old_store_is_attributed_whole(
+        tmp_path: Path) -> None:
+    """ONE ROW, ONE DECLARATION. A second declaration resolving to an address another
+    breakpoint declaration already holds (a name and the SEG:OFF it sits at, or two names
+    on one address) would be stored over the same row, so clearing either would send the
+    removal and leave the other declared over a row the debugger no longer has. It is
+    refused naming the holder. A store from before the rule can still hold two: the
+    stop's attribution then names every declaration at the address instead of the first
+    in silence."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("foo", 0x100, kind="T"),
+                                     dsym.Symbol("bar", 0x100, kind="T")])
+    assert server.breakpoint_at(ref="foo")["armed"] is True
+    second = server.breakpoint_at(ref="00A7:0100")
+    assert second["status"] == "INVALID" and "'foo'" in second["message"], second
+    third = server.breakpoint_at(ref="bar")
+    assert third["status"] == "INVALID" and "'foo'" in third["message"], third
+    assert [d.ref for d in dstate.STATE.store.declarations()] == ["foo"]  # type: ignore[union-attr]
+    assert server.breakpoint_at(ref="foo")["already_stored"] is True, "a re-declaration adopts"
+    # THE OLD STORE: both declarations already there, the stop at their address.
+    dstate.STATE.store.add(dec.Declaration("breakpoint", "symbol", "bar",  # type: ignore[union-attr]
+                                           origin=dstate.STATE.session_origin))
+    fake.eip = "00000100"
+    fake.halted = True
+    stop = server.resume()
+    who = stop["attribution"]
+    assert who["attributed"] is True and who["ref"] == "foo"
+    assert who["refs"] == ["foo", "bar"] and "2 declarations" in who["note"]
+
+
+def test_watch_add_refuses_an_ambiguous_name_and_stores_nothing(tmp_path: Path) -> None:
+    """`breakpoint_at` refuses a name that matches several symbols before storing it;
+    `watch_add` stored it and then, in change mode, read `seg` off a resolution that has
+    none, escaping as a KeyError with no session block. Both modes refuse naming the
+    count, with nothing stored, as the breakpoint does."""
+    _names(tmp_path, symbols=[dsym.Symbol("dup", 0x100, kind="T"),
+                              dsym.Symbol("dup", 0x200, kind="T")])
+    for mode in ("change", "show"):
+        out = server.watch_add(ref="dup", mode=mode, length=4)
+        assert out["status"] == "INVALID" and "names 2 symbols" in out["message"], out
+    assert dstate.STATE.store.declarations() == []  # type: ignore[union-attr]
+
+
+def test_a_declaring_reply_names_its_state_in_the_lists_own_words(tmp_path: Path) -> None:
+    """An armed `breakpoint_at`/`watch_add` carried no `state` at all, and the state a
+    declaration could not arm in was spelt `unarmed` here and `unarmable` in the lists:
+    one word per concept, and a caller reading `state` finds one on every reply."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("foo", 0x100, kind="T"),
+                                     dsym.Symbol("var", 0x200, kind="D")])
+    assert server.breakpoint_at(ref="foo")["state"] == "armed"
+    assert server.watch_add(ref="var", mode="change", length=4)["state"] == "armed"
+    assert server.watch_add(ref="var", mode="change", length=4)["state"] == "armed"
+    failing = _names(tmp_path, symbols=[dsym.Symbol("bar", 0x300, kind="T")], arm_fails=True)
+    got = server.breakpoint_at(ref="bar")
+    assert got["armed"] is False and got["state"] == "unarmable", got
+    del failing, fake
+
+
+def test_capture_frame_replies_with_the_source_it_read_and_the_frame_asked(
+        tmp_path: Path) -> None:
+    """The docstring promised `source` and `at`; the reply carried `at_frame` and no
+    source, so a caller could not tell which capture the still came out of when the
+    default (the largest) was taken."""
+    install()
+    got = server.capture_frame(at=3, dest=str(tmp_path / "f.png"))
+    assert got["at"] == 3 and got["source"] == "/caps/run_001.avi", got
+    assert "at_frame" not in got
+    own = tmp_path / "run_000.avi"
+    own.write_bytes(b"RIFF")
+    named = server.capture_frame(at=3, dest=str(tmp_path / "g.png"), source=str(own))
+    assert named["source"] == str(own)
+
+
+def test_close_says_how_the_session_ended() -> None:
+    """An exit code and a reap flag are not a word for the ENDING, and the reply names it:
+    `quit` (the emulator took the signal and left on its own), `killed`
+    (SIGKILL after it ignored the first signal, which every session under a pty does),
+    `died` (it had already exited when `close` was called), `none`. Read off the session
+    after the close, like `reap_failed`."""
+    class Ended(FakeSession):
+        def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
+            self.ended_how = "killed"
+            self._alive = False
+            return -9
+
+    dstate.STATE.session = Ended()  # type: ignore[assignment]
+    got = cast(dict[str, Any], server.close())
+    assert got["how"] == "killed" and got["exit_code"] == -9
+    assert got["summary"] == "close: killed, exit code -9"
+    assert cast(dict[str, Any], server.close())["how"] == "none"
+
+    class Died(FakeSession):
+        def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
+            self.ended_how = "died"
+            self._alive = False
+            return 1
+
+    dstate.STATE.session = Died()  # type: ignore[assignment]
+    died = cast(dict[str, Any], server.close())
+    assert died["how"] == "died" and died["exit_code"] == 1
+    assert died["summary"] == "close: died, exit code 1"
+
+
+def test_write_puts_bytes_at_a_name_or_an_address_and_reads_them_back(tmp_path: Path) -> None:
+    """`write`: bytes to a symbol or a `SEG:OFF`, read back off the data view, `verified`
+    saying whether what memory holds is what was sent, and the
+    session altered from then on. A write into ROM is taken and changes nothing, which the
+    readback says under `ok`; a running machine, an odd or empty hex string and an unknown
+    name are refused with nothing sent."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("var", 0x200, kind="D")])
+    got = cast(dict[str, Any], server.write(ref="var", data_hex="deadbeef"))
+    assert got["status"] == "ok" and got["written"] == 4 and got["verified"] is True, got
+    assert got["readback"] == "deadbeef" and got["segment"] == 0xAF and got["offset"] == 0x200
+    assert got["summary"] == "write var: 4 bytes, verified True"
+    assert fake.mem[(0xAF, 0x200)] == b"\xde\xad\xbe\xef"
+    raw = cast(dict[str, Any], server.write(ref="0040:0100", data_hex="12"))
+    assert raw["status"] == "ok" and fake.mem[(0x40, 0x100)] == b"\x12"
+    # EMPTY SAYS "is empty" AND MALFORMED SAYS "whole number of hex bytes": two different mistakes
+    # with two sentences, since this server grew ONE hex parser instead of two. Paired, not
+    # either-or: an `or` here would stay green if the two sentences were folded into one.
+    for bad, says in (("", "is empty"), ("abc", "whole number of hex bytes"),
+                      ("zz", "whole number of hex bytes")):
+        out = cast(dict[str, Any], server.write(ref="var", data_hex=bad))
+        assert out["status"] == "INVALID" and says in out["message"], (bad, out)
+    # AND WHITESPACE BETWEEN THE BYTES IS ACCEPTED, which it always was here (`bytes.fromhex`
+    # ignores it by documented design) while the scanner's own copy of the rule refused it.
+    spaced = cast(dict[str, Any], server.write(ref="0040:0100", data_hex="34 56"))
+    assert spaced["status"] == "ok" and fake.mem[(0x40, 0x100)] == b"\x34\x56", spaced
+    unknown = cast(dict[str, Any], server.write(ref="nope", data_hex="00"))
+    assert unknown["status"] == "INVALID" and "not a symbol" in unknown["message"]
+    fake.running = True
+    running = cast(dict[str, Any], server.write(ref="0040:0100", data_hex="12"))
+    assert running["status"] == "INVALID" and "running" in running["message"], running
+    assert list(fake.mem) == [(0xAF, 0x200), (0x40, 0x100)], "nothing more was written"
+    plain = install()
+    plain.rom = True                              # a memory-mapped register answering 0
+    port = cast(dict[str, Any], server.write(ref="0040:0100", data_hex="99"))
+    assert port["status"] == "ok" and port["verified"] is False and port["readback"] == "00"
+    assert port["session"]["altered"] is True
+
+
+def test_a_stop_reads_only_what_the_guest_wrote_since_the_previous_stop(tmp_path: Path) -> None:
+    """Every stop carried the E9 block and read the whole log from byte zero to build it,
+    even with `e9='none'`, the default: quadratic in the session, the cost `e9_wait` had
+    already left behind. With no filter the default path reads what is new and keeps a
+    running total; the counts agree with a whole read, and `since` shows exactly the new
+    lines. A filter, or a mode that shows history, still reads the log whole."""
+    fake = _names(tmp_path)
+    fake.halted = True
+    fake.log = [f"line{i}" for i in range(10)]
+    first = server.resume()
+    assert first["e9"]["lines_total"] == 10 and first["e9"]["unfiltered"] == 10
+    assert fake.full_reads == 0 and fake.incremental_reads == 1
+    fake.log += ["line10", "line11"]
+    second = server.resume(e9="since")
+    assert second["e9"]["lines"] == ["line10", "line11"] and second["e9"]["lines_total"] == 12
+    assert fake.full_reads == 0 and fake.incremental_reads == 2
+    third = server.resume()
+    assert third["e9"]["lines_total"] == 12 and fake.incremental_reads == 3
+    filtered = server.resume(e9="since", e9_filter="line1")
+    assert filtered["e9"]["lines_total"] == 3 and fake.full_reads == 1
+    whole = server.resume(e9="all")
+    assert whole["e9"]["shown"] == 12 and fake.full_reads == 2
+    quiet = server.resume(e9_filter="line1")
+    assert quiet["e9"]["shown"] == 0 and quiet["e9"]["lines_total"] == 3 and fake.full_reads == 3
+    # BACK TO THE INCREMENTAL PATH AFTER A WHOLE READ, WITH THE LOG GROWN IN BETWEEN: the
+    # whole read leaves the mark at the end of what it read, so the next default stop
+    # shows exactly the lines written since, neither the old tail again nor a gap.
+    fake.log += ["line12", "line13", "line14"]
+    again = server.resume(e9="since")
+    assert again["e9"]["lines"] == ["line12", "line13", "line14"]
+    assert again["e9"]["lines_total"] == 15
+    assert fake.full_reads == 3 and fake.incremental_reads == 4
+    fake.log = None
+    assert server.resume(e9_filter="line1")["e9"]["available"] is False
+    assert server.resume()["e9"]["available"] is False
+
+
+def test_start_leaves_the_park_at_the_debugger_recorded_as_stop_one(tmp_path: Path) -> None:
+    """`start` records the park at the debugger as the session's first stop and THEN cleared
+    the running state, which took the record it had just made: right after `start` the
+    server held no last stop, so a `breakpoint_at` declared before any other contact read
+    no machine mode and compared addresses without their real-mode aliases. The clearing
+    comes first; the record survives it."""
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+
+    class Booted(NamesFake):
+        argv = ["dosbox-x", "-conf", "g.conf"]
+
+        def wait_ready(self, timeout: float = 30.0, progress: Any = None) -> float:
+            return 0.5
+
+    with mock.patch("dosbox_x_server.ds.Session", lambda _l: Booted(conf=conf)):
+        out = cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path), seconds=30))
+    assert out["status"] == "ok", out
+    recorded = dstate.STATE.as_of()
+    assert recorded is not None and recorded["stop_seq"] == 1, recorded
+    assert dstate.STATE.last_machine() is not None
+
+
+def test_stop_brings_a_windowed_guest_back_through_the_menu_and_refuses_headless(
+        tmp_path: Path) -> None:
+    """The one way back into the debugger of a running guest is the emulator's own Debug
+    menu, which only a windowed session has. A running windowed guest comes back with the
+    full stop reply, `how: menu`
+    and the seconds it took; an already-stopped one says so with `last_stop`; a headless
+    session is refused naming what ends its run instead."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True
+    out = cast(dict[str, Any], server.stop())
+    assert out["status"] == "ok" and out["interrupted"] is True and out["how"] == "menu", out
+    assert fake.break_ins == 1 and fake.running is False
+    assert "registers" in out and out["stopped_at"] == "00A7:00000000"
+    assert out["summary"] == "stop: menu, at 00A7:00000000 after 0.12s"
+    again = cast(dict[str, Any], server.stop())
+    assert again["interrupted"] is False and again["last_stop"]["stop_seq"] >= 1
+    assert fake.break_ins == 1
+    headless = _names(tmp_path, watched=False)
+    headless.running = True
+    refused = cast(dict[str, Any], server.stop())
+    assert refused["status"] == "INVALID" and "headless" in refused["message"], refused
+    assert headless.running is True
+
+
+def test_a_headless_resume_with_nothing_to_stop_it_is_refused_unless_meant(
+        tmp_path: Path) -> None:
+    """A headless session has no way back once it runs (no window, no `stop`, and the
+    debugger hotkey does not break in on macOS), so a `resume` with nothing declared that
+    can stop the machine is refused BEFORE the F5, like a bad `e9` argument is, unless
+    `until_close=True` says the run is meant to end at the bound or at `close`. A declared
+    stopper, or a windowed session, is not refused."""
+    fake = _names(tmp_path, watched=False)
+    refused = cast(dict[str, Any], server.resume())
+    assert refused["status"] == "INVALID" and "nothing declared can stop" in refused["message"]
+    assert fake.stop_count == 0 and fake.running is False, "the F5 went out anyway"
+    meant = cast(dict[str, Any], server.resume(until_close=True))
+    assert meant["status"] == "ok" and meant["halted"] is False
+    fake.running = False
+    server.breakpoint_interrupt(number=0x21)
+    armed = cast(dict[str, Any], server.resume())
+    assert armed["status"] == "ok"
+    _names(tmp_path, watched=True)                 # a windowed session has `stop`
+    assert cast(dict[str, Any], server.resume())["status"] == "ok"
+
+
+def test_an_interrupt_breakpoint_from_another_session_does_not_count_as_a_stopper(
+        tmp_path: Path) -> None:
+    """An interrupt breakpoint is never re-armed across sessions and lists as `gone`, yet
+    the stopper check counted it: on a conf whose store kept two from an earlier run, a
+    headless `resume` with nothing armed went out unrefused. Only an interrupt this
+    session declared can stop the machine."""
+    fake = _names(tmp_path, watched=False)
+    dstate.STATE.session_origin = "this-session"
+    st = dstate.STATE.store
+    assert st is not None
+    st.add(dec.Declaration("interrupt", "address", "BPINT 21", origin="an-earlier-session"))
+    assert arming.something_can_stop_it() is False
+    refused = cast(dict[str, Any], server.resume())
+    assert refused["status"] == "INVALID" and fake.stop_count == 0
+    server.breakpoint_interrupt(number=0x21)          # this session's own: armed
+    assert arming.something_can_stop_it() is True
+
+
+# ------------------------------------------------- the pre-flight: values, not only shapes
+
+def test_a_bad_value_in_a_later_step_runs_nothing_and_every_refusal_is_listed(
+        tmp_path: Path) -> None:
+    """A batch is checked WHOLE before its first step runs, with the same checks each tool
+    runs on its own: a key name no route knows, a pattern that does not compile. Nothing
+    is posted, and the reply lists every refused step so a caller fixes the batch once.
+    Measured on a real guest: the first key went in and the program reacted before the
+    second step's unknown name was seen."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True
+    out = cast(dict[str, Any], server.perform(steps=[
+        {"op": "send_keys", "keys": ["b"]},
+        {"op": "send_keys", "keys": ["not_a_real_key_xyz"]},
+        {"op": "log", "pattern": "(", "channel": "guest"}], wait=0.5))
+    assert out["status"] == "INVALID" and out["code"] == "bad_argument", out
+    assert out["ran"] == [] and out["completed"] == 0 and out["failed_at"] == 1, out
+    assert fake.input_calls == [], "a key was posted before the batch was checked"
+    refused = cast(list[dict[str, Any]], out["errors"])
+    assert [e["step"] for e in refused] == [1, 2], refused
+    assert "not_a_real_key_xyz" in refused[0]["message"], refused[0]
+    assert "pattern" in refused[1]["message"], refused[1]
+
+
+def test_send_keys_refuses_an_unknown_name_before_the_window_is_touched(
+        tmp_path: Path) -> None:
+    """The same check, on the tool itself: an unknown key name is refused by the server
+    before the helper is asked to take the focus and post, so the refusal costs no focus
+    switch and reads the same whichever route would have answered."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True
+    out = cast(dict[str, Any], server.send_keys(keys=["a", "not_a_real_key_xyz"]))
+    assert out["status"] == "INVALID" and out["code"] == "bad_argument", out
+    assert "not_a_real_key_xyz" in out["message"], out
+    assert fake.input_calls == [], "the helper was asked to post an unknown name"
+
+
+def test_the_modifier_vocabulary_is_judged_per_route_and_equals_the_helpers() -> None:
+    """The window route's helper takes the command key and the serial route cannot (a DOS
+    keyboard has none), so the modifier check knows the route; the union the window route
+    accepts is the helper's own table, read out of `keypost.swift`, and the serial set is
+    the scan table's, so a modifier that posts on one route is refused on the other only
+    for the reason the reply names."""
+    source = Path(str(server.__file__)).with_name("keypost.swift").read_text(encoding="utf-8")
+    table = source.split("let MODIFIERS", 1)[1].split("= [", 1)[1].split("]", 1)[0]
+    helper = set(re.findall(r'"([a-z]+)":', table))
+    assert helper == set(inputs.SCAN_MODIFIERS) | set(inputs.WINDOW_ONLY_MODIFIERS), helper
+    inputs.check_keys(["a"], ["cmd", "shift"])                    # window: fine
+    with pytest.raises(ds.Invalid, match="no command key"):
+        inputs.check_keys(["a"], ["cmd"], serial=True)
+    with pytest.raises(ds.Invalid, match="unknown modifier 'hyper'"):
+        inputs.check_keys(["a"], ["hyper"])
+    with pytest.raises(ds.Invalid, match="unknown key name 'bogus'"):
+        inputs.check_keys(["bogus"], None)
+
+
+@pytest.mark.parametrize(("op", "bad", "good"), [
+    ("send_mouse", {"button": "middle"}, {"button": "left"}),
+    ("log", {"pattern": "(", "channel": "guest", "limit": 5}, {"pattern": "x", "channel": "guest"}),
+    ("log", {"pattern": "x", "channel": "guest", "limit": 0},
+     {"pattern": "x", "channel": "guest", "limit": 1}),
+    ("log", {"pattern": "x", "channel": "process"}, {"pattern": "x", "channel": "all"}),
+    ("log_wait", {"pattern": "x", "channel": "guest", "seconds": 0},
+     {"pattern": "x", "channel": "emulator", "seconds": 3}),
+    ("resume", {"e9": "sometimes"}, {"e9": "all"}),
+    ("step", {"mode": "sideways"}, {"mode": "into", "count": 2}),
+    ("run_to", {"ref": "ZZZZ:", "seconds": 5}, {"ref": "00A7:0100", "control": "00A7:0200"}),
+    ("breakpoint_at", {"ref": "_main", "by": "guess"}, {"ref": "_main"}),
+    ("breakpoint_interrupt", {"number": 0x100}, {"number": 0x21, "ah": 0x4C}),
+    ("watch_add", {"ref": "_g", "mode": "show", "length": 2, "fmt": "u32"},
+     {"ref": "_g", "mode": "change", "length": 4}),
+    ("read_memory", {"ref": "00A7:zz"}, {"ref": "00A7:0100"}),
+    ("memdump", {"ref": "_g", "length": 0, "dest": "/x/d.bin"},
+     {"ref": "_g", "length": 8, "dest": "/x/d.bin"}),
+    ("memdump", {"ref": "_g", "length": 8, "dest": "d.bin"},
+     {"ref": "_g", "length": 8, "dest": "/x/d.bin"}),
+    ("write", {"ref": "_g", "data_hex": "abc"}, {"ref": "_g", "data_hex": "abcd"}),
+    ("set_register", {"name": "xyz", "value": 1}, {"name": "ax", "value": 1}),
+    ("set_register", {"name": "ax", "value": "1"}, {"name": "ax", "value": 0x1234}),
+    ("symbols_load", {"source": "/x/m.map", "base": "1", "section_bases": {"1": "1"}},
+     {"source": "/x/m.map", "base": "1"}),
+    ("symbols_load", {"source": "/x/m.map", "base": 4096},
+     {"source": "/x/m.map", "base": "0x1000"}),
+    ("symbols_load", {"source": "m.map"}, {"source": "/x/m.map"}),
+    ("symbols_load", {"source": "/x/m.map", "types": "~/t"},
+     {"source": "/x/m.map", "types": "/x/t"}),
+    ("capture_frame", {"at": -1, "dest": "/x/s.png"}, {"at": 3, "dest": "/x/s.png"}),
+    ("capture_frame", {"at": 3, "dest": "/x/s.png", "source": "c.avi"},
+     {"at": 3, "dest": "/x/s.png", "source": "/x/c.avi"}),
+])
+def test_every_registry_entry_refuses_its_bad_value_and_passes_its_good_one(
+        op: str, bad: dict[str, Any], good: dict[str, Any]) -> None:
+    """One bad value and one good one per registry entry, so a check that stopped judging
+    (an entry pointing at a function that accepts everything) is seen: the bad value must
+    raise the tool's own refusal and the good one must pass in silence."""
+    with pytest.raises(ds.Invalid):
+        checks.preflight(op, bad, serial=False)
+    checks.preflight(op, good, serial=False)
+    checks.preflight("status", {}, serial=False)        # no entry: nothing to judge
+
+
+def test_wait_ready_and_close_report_their_progress() -> None:
+    """The boot and the close are the waits the owner watches longest, and they painted
+    nothing. The control: a prompt that is already there, and a process already gone, report
+    nothing."""
+    import time
+
+    class _Booting:
+        def __init__(self, prompt_after: float) -> None:
+            self.at = time.monotonic() + prompt_after
+            self._screen = ""
+            self.proc = SimpleNamespace(poll=lambda: None)
+
+        def _read(self, timeout: float) -> str:
+            time.sleep(timeout)
+            if time.monotonic() >= self.at:
+                self._screen += ds.PROMPT
+            return ""
+
+        def _mark_stopped(self) -> None:
+            pass
+
+    ticks: list[str] = []
+    numbers: list[tuple[float, float]] = []
+
+    def record(p: float, t: float, m: str) -> None:
+        ticks.append(m)
+        numbers.append((p, t))
+
+    ds.Session.wait_ready(_Booting(2.2), 5.0, record)  # type: ignore[arg-type]
+    assert ticks and "waiting for the debugger prompt" in ticks[0], ticks
+    assert all(t == 5.0 and 0 < p < t for p, t in numbers), numbers
+    control: list[str] = []
+    ds.Session.wait_ready(_Booting(0.0), 5.0, lambda p, t, m: control.append(m))  # type: ignore[arg-type]
+    assert control == []
+
+    class _SlowExit:
+        def __init__(self, after: float) -> None:
+            self.gone_at = time.monotonic() + after
+
+        def wait(self, timeout: float | None = None) -> int:
+            time.sleep(min(timeout or 0.0, 0.1))
+            if time.monotonic() < self.gone_at:
+                raise subprocess.TimeoutExpired("dosbox-x", timeout or 0)
+            return 0
+
+    ticks = []
+    assert ds.wait_exit(_SlowExit(2.2), 5.0, lambda p, t, m: ticks.append(m), "close: x") == 0  # type: ignore[arg-type]
+    assert ticks and ticks[0].startswith("close: x, 1s of 5"), ticks
+    assert ds.wait_exit(_SlowExit(9.0), 0.3, lambda p, t, m: None, "close: x") is None  # type: ignore[arg-type]
+
+
+def test_read_memory_length_is_bounded_and_resume_takes_the_siblings_bound(
+        tmp_path: Path) -> None:
+    """Two rows of the symmetry audit: `read_memory(length)` answers `hex` and refuses a
+    length the data view cannot hold; `resume(seconds)` waits for a stop the way
+    `run_to` listens, and leaves the machine running when the bound expires."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")], ds_="00AF")
+    for bad in (0, ds.DATA_VIEW_BYTES + 1):
+        out = cast(dict[str, Any], server.read_memory(ref="g_rate", length=bad))
+        assert out["status"] == "INVALID" and "memdump" in out["message"], out
+    out = cast(dict[str, Any], server.resume(seconds=-1))
+    assert out["status"] == "INVALID" and "negative" in out["message"], out
+    fake.launch.watched = True                   # a windowed session needs no stopper
+    def read_nothing(timeout: float) -> str:
+        time.sleep(timeout)
+        return ""
+
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setattr(fake, "_read", read_nothing, raising=False)
+    monkeypatch.setattr(fake, "_screen", "", raising=False)
+    monkeypatch.setattr(fake, "alive", lambda: True)
+    ticks: list[str] = []
+    monkeypatch.setattr(server, "_progress", lambda ctx: (lambda p, t, m: ticks.append(m)))
+    try:
+        out = cast(dict[str, Any], server.resume(seconds=1.3))
+    finally:
+        monkeypatch.undo()
+    assert out["status"] == "ok" and out["halted"] is False, out
+    assert out["waited_s"] >= 1.2 and "STILL RUNNING" in out["note"], out
+    assert ticks and ticks[0].startswith("run_to resume:"), ticks
+
+
+def test_resume_with_a_bound_comes_back_with_the_stop_when_the_prompt_lands(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The prompt arrives inside the bound: the reply is the full stop; and a prompt seen
+    with the machine not at rest when asked is said as such, the machine still running."""
+    fake = _names(tmp_path)
+    fake.launch.watched = True
+    monkeypatch.setattr(fake, "_read", lambda timeout: ds.PROMPT, raising=False)
+    monkeypatch.setattr(fake, "_screen", "", raising=False)
+    monkeypatch.setattr(fake, "alive", lambda: True)
+    monkeypatch.setattr(fake, "_mark_stopped", lambda: None, raising=False)
+    out = cast(dict[str, Any], server.resume(seconds=2.0))
+    assert out["status"] == "ok" and out["halted"] is True and out["stopped_at"], out
+    fake.where_raises = True
+    out = cast(dict[str, Any], server.resume(seconds=2.0))
+    assert out["status"] == "ok" and out["halted"] is False, out
+    assert "not at rest" in out["note"], out
+
+
+def test_perform_refuses_a_run_to_step_without_a_control_before_the_list_runs(
+        tmp_path: Path) -> None:
+    """A list is checked WHOLE before its first step: a `run_to` with no control (required by
+    its signature) or an empty one is found here, not five steps in, and nothing was sent."""
+    fake = _names(tmp_path)
+    out = cast(dict[str, Any], server.perform(steps=[{"op": "status"},
+                                                     {"op": "run_to", "ref": "0000:0000"}]))
+    assert out["status"] == "INVALID" and "'control'" in str(out.get("errors")), out
+    empty = cast(dict[str, Any], server.perform(steps=[
+        {"op": "status"}, {"op": "run_to", "ref": "0000:0000", "control": ""}]))
+    assert empty["status"] == "INVALID" and "no control" in str(empty.get("errors")), empty
+    assert out.get("ran") in (None, []) and fake.runto_calls == [], out
+
+
+# ------------------------------------------------------ find and the scan family
+
+_MEMFIND = Path(__file__).resolve().parent / "fixtures" / "memfind"
+
+
+def _tail(name: str) -> str:
+    text = (_MEMFIND / f"{name}.txt").read_text(encoding="utf-8")
+    assert text.strip(), f"fixture {name} is empty, so this case would examine nothing"
+    return text
+
+
+def test_find_through_the_tool_searches_the_dump_and_reports_the_sibling_shape() -> None:
+    """The double's dump is all zeros, so a zero pattern hits at every offset and a
+    non-zero one nowhere: both counts are known from the double, not reasoned."""
+    s = install()
+    got = server.find(ref="0749:00000010", length=4, data_hex="0000")
+    assert got["status"] == "ok", got
+    assert got["hits"] == ["0749:00000010", "0749:00000011", "0749:00000012"]
+    assert got["hits_total"] == 3 and got["truncated"] is False
+    assert s.memdump_calls == [(0x0749, 0x10, 4)]
+    assert got["summary"] == "find 0749:00000010: 3 hits of 0000 in 4 bytes"
+    none = server.find(ref="0749:00000010", length=4, data_hex="ff")
+    assert none["status"] == "ok" and none["hits_total"] == 0 and none["hits"] == []
+    bad = server.find(ref="0749:00000010", length=4, data_hex="abc")
+    assert bad["status"] == "INVALID" and bad["code"] == "bad_argument", bad
+
+
+def test_scan_start_through_the_tool_reports_the_opened_instance() -> None:
+    install(screen=_tail("memfind_opened_0400"))
+    got = server.scan_start(ref="0000:00000400", length=256)
+    assert got["status"] == "ok", got
+    assert got["candidates"] == 256 and got["width"] == "byte" and got["linear"] == "0x00000400"
+    assert got["summary"] == "scan_start 0000:00000400: 256 byte candidates"
+
+
+def test_scan_filter_through_the_tool_reports_a_finished_scan_and_says_so() -> None:
+    install(screen=_tail("mems_finished"))
+    got = server.scan_filter(operator="!", value=0)
+    assert got["status"] == "ok", got
+    assert got["survivors"] == 0 and got["closed"] is True and got["hits"] == []
+    assert got["summary"] == "scan_filter ! 0: 0 survivors, scan closed"
+
+
+def test_scan_clear_through_the_tool_reports_both_outcomes() -> None:
+    install(screen=_tail("memfind_cancelled"))
+    got = server.scan_clear()
+    assert got["status"] == "ok" and got["cleared"] is True, got
+    assert got["summary"] == "scan_clear: cleared"
+    install(screen=_tail("memfind_cancel_none"))
+    none = server.scan_clear()
+    assert none["status"] == "ok" and none["cleared"] is False, none
+    assert none["summary"] == "scan_clear: nothing was open"
+
+
+def test_run_to_summary_spells_a_control_that_never_counted_as_a_count_not_a_prefix(
+        tmp_path: Path) -> None:
+    """`control fired 0x` reads as a hex prefix with nothing after it, which is what a
+    target reached before the control's first frame produces: the count is a number, so
+    the summary spells it as one."""
+    fake = _names(tmp_path)
+    fake.runto_running = False
+    fake.control_hits = 0
+    got = cast(dict[str, Any], server.run_to(ref="0000:0010", control="0000:0020", seconds=1))
+    assert got["status"] == "ok" and got["arrived"] is True, got
+    assert got["summary"] == "run_to 0000:0010: arrived, control counted 0", got["summary"]
+
+
+def test_perform_checks_a_symbols_find_step_before_any_step_runs(tmp_path: Path) -> None:
+    """`symbols_find` had no entry in the preflight registry, so a list carrying one with a
+    `limit` past the ceiling, or with no question at all, pressed the keys of the steps
+    before it and refused only when its own step ran (the audit of the pointer watches
+    found it). The checks the tool runs on its own arguments run over the list first, so
+    `ran` is empty and nothing was posted."""
+    fake = _names(tmp_path, watched=True, symbols=[dsym.Symbol("_main", 0x100, kind="T")])
+    fake.running = True
+    fake.where_raises = True
+    fake.input_effect = None
+    for bad in ({"op": "symbols_find", "name": "_m", "limit": 51},
+                {"op": "symbols_find", "name": "_m", "limit": 0},
+                {"op": "symbols_find", "name": "", "limit": 5},
+                {"op": "symbols_find"},
+                {"op": "symbols_find", "name": "_m", "linear": "100"},
+                # UNTYPED VALUES, as a step delivers them: a string limit is a refusal,
+                # never a TypeError out of the comparison (the auditor's input).
+                {"op": "symbols_find", "name": "_m", "limit": "5"},
+                {"op": "symbols_find", "name": "_m", "limit": True}):
+        out = server.perform(steps=[{"op": "send_keys", "keys": ["a"]}, bad], wait=1.0)
+        assert out["status"] == "INVALID" and out["ran"] == [], (bad, out)
+        assert out["errors"][0]["step"] == 1 and out["errors"][0]["op"] == "symbols_find", out
+    assert fake.input_calls == [], "a refused list must not have posted a key"
+    # What only its step can judge still refuses THERE: a name absent from the table is
+    # not a preflight refusal, and the step before it runs.
+    fake.running = False
+    fake.halted = True
+    out = server.perform(steps=[{"op": "status"}, {"op": "symbols_find", "name": "_m", "limit": 5}])
+    assert out["status"] == "ok" and out["completed"] == 2, out
+
+
+@pytest.mark.parametrize("bad", [
+    {"op": "read_memory", "ref": "0000:0000", "length": 129},
+    {"op": "read_memory", "ref": "0000:0000", "length": 0},
+    {"op": "write", "ref": "0000:0000", "data_hex": "00" * 129},
+    {"op": "watch_add", "ref": "0000:0000", "mode": "show", "length": 129},
+    {"op": "watch_add", "ref": "0000:0000", "mode": "show", "fmt": "u8[129]"},
+    {"op": "watch_add", "ref": "0000:0000", "mode": "show", "fmt": "u16[65]"},
+])
+def test_perform_checks_the_data_view_ceilings_before_any_step_runs(
+        tmp_path: Path, bad: dict[str, Any]) -> None:
+    """`read_memory`'s length, `write`'s bytes and a show watch's width are each bounded by
+    the data view, and the bounds live in the registry the whole-list check reads, so a list
+    with the bad value at step 1 is refused whole with `ran` empty, like any other value."""
+    _names(tmp_path)
+    out = server.perform(steps=[{"op": "status"}, bad])
+    assert out["status"] == "INVALID" and out["ran"] == [], (bad, out)
+    assert out["errors"][0]["step"] == 1 and out["errors"][0]["op"] == bad["op"], out
+
+
+def test_the_data_view_ceilings_pass_at_the_maximum_on_both_paths(tmp_path: Path) -> None:
+    """THE BOUNDARY, on the registry itself: the maximum passes, one past it does not, and
+    so does the synchronous call, which reads the same registry."""
+    _names(tmp_path)
+    checks.preflight("read_memory", {"ref": "0000:0000", "length": 128}, serial=False)
+    checks.preflight("write", {"ref": "0000:0000", "data_hex": "00" * 128}, serial=False)
+    checks.preflight("watch_add", {"ref": "0000:0000", "mode": "show", "length": 128},
+                     serial=False)
+    checks.preflight("watch_add", {"ref": "0000:0000", "mode": "show", "fmt": "u16[64]"},
+                     serial=False)
+    # A change watch arms a trap and reads nothing at a stop: the view's reach is not its bound.
+    checks.preflight("watch_add", {"ref": "0000:0000", "mode": "change", "length": 129},
+                     serial=False)
+    assert server.read_memory(ref="0000:0000", length=129)["code"] == "bad_argument"
+    assert server.write(ref="0000:0000", data_hex="00" * 129)["code"] == "bad_argument"
+
+
+def test_drives_lines_ceiling_is_logs_ceiling_and_not_a_second_constant(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`drive` capped `lines` with a constant of its own that happened to equal `log`'s
+    `LOG_LIMIT_MAX` (the audit of #69 found the copy): two numbers for one ceiling drift.
+    With the one ceiling moved, `drive` follows it, refusing one past it and taking it."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True
+    fake.where_raises = True
+    monkeypatch.setattr(ds, "LOG_LIMIT_MAX", 7)
+    key = {"op": "send_keys", "keys": ["a"]}
+    over = cast(dict[str, Any], server.drive(act=[key], limit=8))
+    assert over["status"] == "INVALID" and "between 1 and 7" in over["message"], over
+    assert fake.input_calls == [], "a refused drive must not have acted"
+    at = cast(dict[str, Any], server.drive(act=[key], limit=7))
+    assert at["status"] == "ok", at
+
+
+def test_an_address_ref_has_one_spelling_and_a_clear_takes_any_of_them(tmp_path: Path) -> None:
+    """A `SEG:OFF` is one address in many spellings (case, padding), so it is stored in
+    ONE, the reply carries it, a
+    re-declaration in another is adopted, and a clear matches any of them."""
+    fake = _names(tmp_path)
+    out = server.breakpoint_at(ref="00a7:100")
+    assert out["status"] == "ok" and out["ref"] == "00a7:100", out
+    assert server.breakpoint_at(ref="00A7:0100")["already_stored"] is True
+    cleared = server.breakpoint_clear(ref="0A7:00000100")
+    assert cleared["declarations_cleared"] == 1, cleared
+    assert not any(r["entry"].startswith("BP ") for r in fake.rows), fake.rows
+    assert server.watch_add(ref="00AF:0100", mode="change", length=4)["ref"] == "00AF:0100"
+    assert server.watch_clear(ref="00af:100")["declarations_cleared"] == 1
+
+
+def test_a_second_load_with_a_narrower_pattern_keeps_what_the_first_one_placed(
+        tmp_path: Path) -> None:
+    """The debugger's `LV` APPENDS, and `loaded` says so, so a server table REPLACED by
+    every load contradicts it: after a second `symbols_load` with a disjoint `pattern`,
+    `symbols_find` answers 0 matches for a symbol of the first load, `run_to` on it is
+    `unknown_ref`, and a breakpoint armed on it is listed `unresolved` with the debugger's
+    real row stranded in `foreign`, impossible to clear by name.
+
+    Loading in narrow batches is the reasonable thing to do with thousands of symbols, so
+    the two halves are aligned the way the debugger already behaves: the table ACCUMULATES.
+    """
+    install(mode="Pr32")
+    src = _source(tmp_path)
+    first = cast(dict[str, Any], server.symbols_load(source=src, pattern="_engine_create"))
+    assert first["kept"] == 1, first
+    second = cast(dict[str, Any], server.symbols_load(source=src, pattern="_main"))
+    assert second["kept"] == 1, second
+    assert second["table_mode"] == "accumulated", second
+    assert second["table_total"] == 2, second
+    got = cast(dict[str, Any], server.symbols_find(name="_engine_create"))
+    assert got["status"] == "ok", got
+    assert got["symbols_total"] == 1, (
+        "the first load's symbol is gone from the table the second load left behind")
+
+
+def test_a_types_name_the_table_lacks_is_refused_before_anything_is_written(
+        tmp_path: Path) -> None:
+    """A REFUSAL MAY NOT ALSO CORRUPT STATE, which is this module's one rule and the reason
+    the debugger is written to before the table is. The `types` check sat AFTER both, so a
+    single typo refused the call with the debugger's list already grown by `LV` and this
+    side's table already replaced: the caller was told it failed and the session had moved.
+    """
+    s = install(mode="Pr32")
+    src = _source(tmp_path)
+    first = cast(dict[str, Any], server.symbols_load(source=src, pattern="_engine_create"))
+    assert first["table_total"] == 1, first
+    loaded_before = list(s.loaded)
+    types_file = tmp_path / "rechipd.types"
+    types_file.write_text("_no_such_symbol: u32\n", encoding="utf-8")
+    bad = cast(dict[str, Any], server.symbols_load(source=src, pattern="_main",
+                                                   types=str(types_file)))
+    assert bad["status"] == "INVALID", bad
+    assert "types are named for symbols the table lacks" in bad["message"], bad
+    assert s.loaded == loaded_before, "the debugger's list grew on a call that refused"
+    still = cast(dict[str, Any], server.symbols_find(name="_engine_create"))
+    assert still["symbols_total"] == 1, still
+    gone = cast(dict[str, Any], server.symbols_find(name="_main"))
+    assert gone["symbols_total"] == 0, "the refused load's symbols landed in the table anyway"
+
+
+def test_perform_a_step_missing_a_value_or_carrying_the_wrong_type_is_refused_not_crashed(
+        tmp_path: Path) -> None:
+    """The whole list is judged before its first step runs, and that judgement covers a
+    value left out (`watch_add` without `length`) and a value of the wrong type (`length`
+    as a string) the same way it covers a bad name: a refusal naming the argument, never
+    a TypeError out of the checker."""
+    _names(tmp_path)
+    out = server.perform(steps=[{"op": "step", "count": 1, "mode": "over"},
+                                {"op": "watch_add", "ref": "F000:C9B0", "mode": "show"}])
+    assert out["status"] == "INVALID" and out["code"] == "bad_argument", out
+    assert "length" in out["message"], out["message"]
+    typed = server.perform(steps=[{"op": "step", "count": 1, "mode": "over"},
+                                  {"op": "read_memory", "ref": "F000:C9B0", "length": "8"}])
+    assert typed["status"] == "INVALID" and typed["code"] == "bad_argument", typed
+    assert "step 1 ('read_memory') length is an integer; got '8'" in typed["message"], typed
+    assert "not supported" not in typed["message"]
+
+
+def test_an_invalid_summary_is_cut_at_a_word_and_says_so() -> None:
+    """The summary is one line a person reads without the JSON, so a long refusal is cut
+    there: at a word, with a mark that says the rest is in `message`, never mid-word."""
+    message = "a RELATIVE path is not a place: " + "give the dump an absolute path " * 6
+    line = server._summary("memdump", {}, {"status": "INVALID", "code": "bad_argument",
+                                           "message": message})
+    head = "memdump: INVALID (bad_argument), "
+    assert line.startswith(head), line
+    shown = line.removeprefix(head)
+    assert shown.endswith("...") and len(shown) <= 124, shown
+    kept = shown.removesuffix("...")
+    assert message.startswith(kept) and message[len(kept)] == " ", "cut at a word, never inside one"
+    short = server._summary("x", {}, {"status": "INVALID", "code": "c", "message": "short"})
+    assert short == "x: INVALID (c), short"
+
+
+def test_every_step_check_takes_what_its_tool_takes_with_the_same_defaults() -> None:
+    """A check is called with a STEP's arguments, which are the tool's: a value the tool
+    defaults and the check requires is a TypeError out of the checker, and a default the
+    two spell differently judges a call the tool would never make."""
+    ops = server._step_ops()
+    for op, check in checks.BY_OP.items():
+        fn = ops.get(op) or getattr(server, op)      # a tool that is not a batch step
+        tool = {n: p for n, p in inspect.signature(fn).parameters.items() if n != "ctx"}
+        for name, param in inspect.signature(check).parameters.items():
+            if param.kind is param.VAR_KEYWORD or name == "serial":
+                continue
+            assert name in tool, f"{op}: the check takes `{name}`, which the tool does not"
+            if param.default is param.empty:
+                assert tool[name].default is param.empty, (
+                    f"{op}: the tool defaults `{name}` and the check requires it")
+            elif tool[name].default is not param.empty:
+                assert tool[name].default == param.default, (
+                    f"{op}: `{name}` defaults to {tool[name].default!r} in the tool and "
+                    f"{param.default!r} in the check")
+
+
+def test_watch_add_judges_the_mode_before_the_size(tmp_path: Path) -> None:
+    """A bogus `mode` with no `fmt` and no `length` was refused for the size, and the mode
+    surfaced only on the second call: the mode is a word of the vocabulary and is judged
+    first, in the tool and in a batch step alike."""
+    _names(tmp_path)
+    got = server.watch_add(ref="00AF:0100", mode="bogus")
+    assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+    assert "a watch needs a mode" in got["message"], got["message"]
+    step = server.perform(steps=[{"op": "watch_add", "ref": "00AF:0100", "mode": "bogus"}])
+    assert step["code"] == "bad_argument" and "a watch needs a mode" in step["message"], step
+
+
+def test_a_breakpoint_left_armed_by_run_to_counts_as_a_stopper(tmp_path: Path) -> None:
+    """`run_to` that stopped elsewhere leaves its target armed in the debugger with no
+    declaration behind it, and `resume` must not refuse to run a machine that row could
+    stop: the debugger's own list at the last stop is what says what is armed."""
+    fake = _names(tmp_path, watched=False)
+    assert arming.something_can_stop_it() is False
+    # THE ROW IS THE DEBUGGER'S: it sits in the list the next stop's survey reads, and in
+    # the last stop's snapshot the server keeps for a running machine.
+    fake.rows.append({"index": "00", "entry": "BP 00A7:5EA30"})
+    dstate.STATE.last_stop["held"] = list(fake.rows)
+    assert arming.something_can_stop_it() is True
+    resumed = cast(dict[str, Any], server.resume())
+    assert resumed["status"] == "ok", resumed
+
+
+def test_start_with_an_input_port_keeps_session_as_the_last_key(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The stub's whereabouts were appended after the envelope was built, so a reader
+    taking the last key as the session block read `input_port` instead."""
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch, input_port=5555)
+    assert got["status"] == "ok" and got["input_port"] == 5555 and "stub" in got, got
+    assert list(got)[-1] == "session", f"the reply ends in {list(got)[-1]!r}, not `session`"
+
+
+def test_a_machine_independent_argument_is_refused_before_the_session_gate() -> None:
+    """A segment past sixteen bits, a channel outside the vocabulary and a hex pattern that
+    is not hex are as wrong with no session as with one, so they are refused cold as
+    `bad_argument`; a ref the table has to resolve still answers `no_session` (the control)."""
+    dstate.STATE.session = None
+    calls: tuple[Callable[[], Any], ...] = (
+                 lambda: server.breakpoint_at(ref="12345:0010"),
+                 lambda: server.log(channel="bogus", pattern="x"),
+                 lambda: server.find(ref="12345:0010", length=4, data_hex="00"),
+                 lambda: server.watch_add(ref="F000:0000", mode="bogus", length=2),
+                 lambda: server.scan_start(ref="12345:0010", length=4))
+    for call in calls:
+        got = cast(dict[str, Any], call())
+        assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+    control = cast(dict[str, Any], server.read_memory(ref="F000:0000", length=8))
+    assert control["code"] == "no_session", control
+    keys = cast(dict[str, Any], server.send_keys(keys=["a"]))
+    assert keys["code"] == "no_session", "the key route is the session's own fact"
+
+
+def _typed_into(s: FakeSession, monkeypatch: pytest.MonkeyPatch) -> list[str]:
+    """What reaches the terminal through `command`, recorded; each answer is a bare prompt."""
+    typed: list[str] = []
+
+    def command(text: str, **_: object) -> str:
+        typed.append(text)
+        return "I-> _"
+
+    monkeypatch.setattr(s, "command", command)
+    return typed
+
+
+@pytest.mark.parametrize(("command", "tool"), [
+    ("VRT", "`run_for(frames=1)`"), ("vrt", "`run_for(frames=1)`"), (" RUNWATCH", "`resume`"),
+    ("INT 21", "`resume`"), ("int 10", "`resume`")])
+def test_debug_refuses_a_typed_command_that_lets_the_guest_run(
+        command: str, tool: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Refused before anything reaches the terminal, naming the tool that releases the machine
+    and reports the stop."""
+    typed = _typed_into(install(), monkeypatch)
+    got = cast(dict[str, Any], server.debug(command=command))
+    assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+    assert tool in got["message"], got["message"]
+    assert typed == [], "a refused command reached the terminal"
+
+
+@pytest.mark.parametrize("command", ["BPLIST", "INTT 21", "TIMERIRQ", "INTVEC x.txt", "VRTX",
+                                     "BPINT 21", "BPLIST INT", "HEAVYLOG", "LOGX"])
+def test_debug_passes_a_command_that_keeps_the_machine_at_the_debugger(
+        command: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The control: the classifier reads the FIRST WORD, anchored, so `INTT` (which enters the
+    handler and stays at the debugger), a longer word starting with a releasing one, and a
+    releasing word further along the line all go through; so does `HEAVYLOG`, which toggles a
+    ring of the CPU log and does not release the guest."""
+    typed = _typed_into(install(), monkeypatch)
+    got = cast(dict[str, Any], server.debug(command=command))
+    assert got["status"] == "ok", got
+    assert typed == [command]
+
+
+@pytest.mark.parametrize("command", ["BPLIST\rVRT", "BPLIST\nVRT", "\x1b[15~", "BPLIST\x1b[15~",
+                                     "BPLIST\tx"])
+def test_debug_refuses_a_command_carrying_a_control_character(
+        command: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The classifier reads the first word, and the whole string reaches the terminal: a line
+    break would type a second command after it, and an escape is a key (`\x1b[15~` is the run
+    key itself). `debug` is one command of printable text."""
+    typed = _typed_into(install(), monkeypatch)
+    got = cast(dict[str, Any], server.debug(command=command))
+    assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+    assert typed == [], "a refused command reached the terminal"
+
+
+def test_debug_refuses_a_command_that_is_not_text() -> None:
+    """The schema refuses it from a client; a direct call or a probe's replayed arguments
+    reach the check, which answers `bad_argument` rather than raising."""
+    install()
+    got = cast(dict[str, Any], server.debug(command=cast(Any, 5)))
+    assert got["code"] == "bad_argument", got
+
+
+def test_debug_refuses_a_typed_release_with_no_session() -> None:
+    """The command's text alone decides, so the refusal comes before the session gate."""
+    dstate.STATE.session = None
+    got = cast(dict[str, Any], server.debug(command="VRT"))
+    assert got["code"] == "bad_argument", got
+    control = cast(dict[str, Any], server.debug(command="BPLIST"))
+    assert control["code"] == "no_session", control
+
+
+def test_every_tool_has_a_pre_gate_check_or_is_named_as_judged_by_the_machine() -> None:
+    """An absent entry and a forgotten one look identical, so the tools deliberately without
+    a check are named, and the two sets together are the registry: no more, no less."""
+    registered = {t.name for t in server.mcp._tool_manager.list_tools()}
+    assert registered == set(checks.BY_OP) | checks.MACHINE_JUDGES, (
+        sorted(registered ^ (set(checks.BY_OP) | checks.MACHINE_JUDGES)))
+
+
+def test_the_instructions_say_a_wrong_type_is_the_schemas_refusal() -> None:
+    assert "wrong TYPE" in (server.mcp.instructions or ""), "the sentence is missing"
+
+
+@pytest.mark.parametrize(("ah", "refusal"), [
+    (None, None),                                  # an explicit null is the `| None` it declares
+    (2, None),
+    ("2", "ah is "),                               # anything else is judged as the scalar
+    (True, "ah is "),                              # and a bool is never a number
+])
+def test_a_step_takes_null_for_an_optional_scalar_and_judges_anything_else(
+    ah: Any, refusal: str | None,
+) -> None:
+    """`breakpoint_interrupt`'s `ah` is `int | None`: a step may pass it null explicitly,
+    which the schema of the tool itself accepts, and any other value is judged as an int."""
+    said = sequence._wrong_type(server.breakpoint_interrupt, {"number": 0x21, "ah": ah})
+    assert (said is None) if refusal is None else (said or "").startswith(refusal), said
+
+
+def test_start_hands_the_callers_flags_to_a_headless_launch(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """At the tool: `flags` and `break_on_int3` reach the launch of a HEADLESS session, where
+    there is no window for `window_flags` to place."""
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    seen: list[ds.Launch] = []
+
+    class Recorder:
+        def __init__(self, launch: ds.Launch) -> None:
+            seen.append(launch)
+            self.reap_failed = ""
+
+        def wait_ready(self, **_: Any) -> float:
+            raise ds.Invalid("session_broken", "recorded, not started")
+
+        def close(self, **_: Any) -> None:
+            pass
+
+    monkeypatch.setattr(shutil, "which", lambda _: "/bin/true")
+    monkeypatch.setattr(ds, "Session", Recorder)
+    dstate.STATE.session = None
+    got = cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path), seconds=30,
+                                            flags=["-set", "cpu cycles=fixed 3000"],
+                                            break_on_int3=True))
+    assert got["code"] == "session_broken", got
+    argv = ds.build_argv(seen[0])
+    assert argv[argv.index("cpu cycles=fixed 3000") - 1] == "-set", argv
+    assert argv[argv.index("dos break on int3=true") - 1] == "-set", argv
+
+
+@pytest.mark.parametrize("spelled", ["0x1000", "1000", "0X1000"])
+def test_symbols_load_takes_its_base_as_hex_text(tmp_path: Path, spelled: str) -> None:
+    """A caller holds a load address in hex, so the base is hex text and no conversion is left
+    to the caller."""
+    install()
+    src = tmp_path / "speedf.map"
+    src.write_text(TLINK_TEXT, encoding="utf-8")
+    got = cast(dict[str, Any], server.symbols_load(source=str(src), base=spelled))
+    assert got["status"] == "ok", got
+    assert got["base"] == 0x1000, got
+
+
+@pytest.mark.parametrize("bad", [4096, "-1000", "10_00", "0xZZ", ""])
+def test_symbols_load_refuses_a_base_that_is_not_hex_text(tmp_path: Path, bad: object) -> None:
+    """An integer is refused, not coerced: a caller passing one has done the conversion this
+    argument exists to take away."""
+    install()
+    src = tmp_path / "speedf.map"
+    src.write_text(TLINK_TEXT, encoding="utf-8")
+    got = cast(dict[str, Any], server.symbols_load(source=str(src), base=bad))
+    assert got["code"] == "bad_argument" and "base" in got["message"], got
+
+
+def test_section_bases_are_hex_text_too(tmp_path: Path) -> None:
+    """The sectioned form: a base per section index, each hex text; an integer
+    value is refused naming the section."""
+    install()
+    src = tmp_path / "flat.map"
+    src.write_text(TLINK32_TEXT, encoding="utf-8")
+    got = cast(dict[str, Any], server.symbols_load(
+        source=str(src), section_bases={"1": "0x401000", "2": "423000"}))
+    assert got["status"] == "ok" and got["kept"] == 2, got
+    bad = cast(dict[str, Any], server.symbols_load(
+        source=str(src), section_bases={"1": 0x401000}))
+    assert bad["code"] == "bad_argument" and "section_bases" in bad["message"], bad
+
+
+def test_every_tool_names_its_summary_and_declares_both_hints() -> None:
+    """`tool()` takes `summary=` (required) and `idempotent=`: every tool
+    the MCP layer serves has its own line in `dosbox_summaries`, and its annotations carry
+    BOTH hints as booleans, so a client never reads an absent hint as a guess."""
+    served = server.registered_tools()
+    assert served and set(served) <= set(server._SUMMARIES), sorted(
+        set(served) - set(server._SUMMARIES))
+    for t in server.mcp._tool_manager.list_tools():
+        hints = t.annotations
+        assert hints is not None, t.name
+        assert isinstance(hints.read_only_hint, bool), t.name
+        assert hints.idempotent_hint is False, t.name
+
+
+def test_a_stop_reply_carries_its_own_number(tmp_path: Path) -> None:
+    """Every stop names the number the server gave it, `stop_seq`: what a batch with
+    `summaries` counts by, and the same number `last_stop.stop_seq` names afterwards."""
+    _names(tmp_path)
+    got = cast(dict[str, Any], server.step(mode="over"))
+    assert got["stop_seq"] == dstate.STATE.last_stop["seq"], got
+    again = cast(dict[str, Any], server.step(mode="over"))
+    assert again["stop_seq"] == got["stop_seq"] + 1, again
+
+
+def test_perform_with_summaries_cuts_every_step_but_the_last_and_counts_the_stops(
+        tmp_path: Path) -> None:
+    """`summaries=True`: compact rows for every step but the one
+    that matters, both files holding all of them, and the stops counted by the server."""
+    _names(tmp_path)
+    out = cast(dict[str, Any], server.perform(
+        steps=[{"op": "step", "count": 1, "mode": "over"},
+               {"op": "step", "count": 1, "mode": "over"}, {"op": "registers"}],
+        summaries=True))
+    assert out["status"] == "ok" and out["steps_total"] == 3 and out["truncated"] is False, out
+    first, second, last = out["ran"]
+    assert {"summary", "status", "stop_seq", "attribution"} <= set(first["reply"]), first
+    assert set(first["reply"]) <= {"summary", "status", "stop_seq", "attribution",
+                                   "stopped_on_its_own"}, first
+    assert "registers" not in second["reply"] and "registers" in last["reply"], out["ran"]
+    assert out["summary"] == "perform: 3 of 3 steps", out["summary"]
+    rows = Path(out["ran_path"]).read_text(encoding="ascii").splitlines()
+    replies = Path(out["replies_path"]).read_text(encoding="ascii").splitlines()
+    assert len(rows) == len(replies) == 3, (rows, replies)
+    assert json.loads(replies[0])["reply"]["registers"], replies[0]
+    stops = out["stops"]
+    assert stops["stop_seq_last"] == dstate.STATE.last_stop["seq"], stops
+    assert stops["unaccounted"] == 0 and stops["surveyed"] >= 2, stops
+    assert stops["surveyed"] == stops["stop_seq_last"] - stops["stop_seq_first"] + 1, stops
+    assert stops["by_how"] == {"unattributed": stops["surveyed"]}, stops
+    plain = cast(dict[str, Any], server.perform(steps=[{"op": "registers"}]))
+    assert "steps_total" not in plain and "registers" in plain["ran"][0]["reply"], plain
+
+
+def test_perform_with_summaries_shows_the_first_rows_and_says_it_cut(tmp_path: Path) -> None:
+    """Past `ROWS_SHOWN` the reply shows the first rows and the kept step, `truncated` says so,
+    and the files still hold every step."""
+    _names(tmp_path)
+    n = dstate.ROWS_SHOWN + 3
+    out = cast(dict[str, Any], server.perform(steps=[{"op": "registers"}] * n, summaries=True))
+    assert out["steps_total"] == n and out["truncated"] is True, out
+    assert len(out["ran"]) == dstate.ROWS_SHOWN + 1 and out["ran"][-1]["step"] == n - 1, out
+    assert len(Path(out["ran_path"]).read_text(encoding="ascii").splitlines()) == n
+
+
+def test_summaries_is_a_yes_or_a_no(tmp_path: Path) -> None:
+    _names(tmp_path)
+    calls: list[Callable[[], Any]] = [
+        lambda: server.perform(steps=[{"op": "registers"}], summaries="yes"),
+        lambda: server.drive(act=[{"op": "registers"}], summaries=1)]
+    for call in calls:
+        got = cast(dict[str, Any], call())
+        assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+        assert "summaries is true or false" in got["message"], got["message"]
+
+
+# The register pane's paging mark, as the debugger paints it straight after EBP's value.
+# Real mode is the reset screen (`test_dosbox_x_debug.REAL_PANE`); the PAGE line is ReChip's,
+# a DJGPP client stopped by `BPINT 31 AH=02`, copied from that run's `debug("CPU")` screen.
+_NOPG_LINE = "ECX=00000000  EBP=00000000NOPG  IOPL0  CPL0\r\n"
+_PAGE_LINE = "ECX=000000A7  EBP=002B8690PAGEPSE IOPL3  CPL3\r\n"
+
+
+def test_the_paging_mark_is_read_off_the_pane_and_absent_is_not_off() -> None:
+    assert ds.parse_paging(_NOPG_LINE) is False
+    assert ds.parse_paging(_PAGE_LINE) is True
+    assert ds.parse_paging(_NOPG_LINE + _PAGE_LINE) is True       # the newest pane wins
+    assert ds.parse_paging("Output: PAGE fault, NOPG here too") is None
+
+
+@pytest.mark.parametrize(("mode", "paging", "want"), [
+    ("Real", False, "real"), ("Real", None, "real"), ("Pr32", True, "paged"),
+    ("Pr16", False, "protected"), ("Pr32", False, "protected"), ("Pr32", None, None)])
+def test_status_names_the_cpu_mode_of_the_stop_it_is_in(
+        tmp_path: Path, mode: str, paging: bool | None, want: str | None) -> None:
+    """`real`, `protected` or `paged`, from the pane's mode word and its PAGE/NOPG mark; a
+    protected pane with no mark is not guessed: null, with why."""
+    fake = _names(tmp_path, mode=mode)
+    server.registers()                          # a contact that finds the park and records it
+    dstate.STATE.last_stop["paging"] = paging
+    got = cast(dict[str, Any], server.status())
+    assert got["cpu_mode"] == want, got
+    assert ("cpu_mode_why" in got) is (want is None), got
+    assert got["pc"] == dstate.STATE.last_stop["at"], got
+    fake.running = True
+    running_now = cast(dict[str, Any], server.status())
+    assert running_now["pc"] is None and running_now["cpu_mode"] is None, running_now
+    assert "running" in running_now["cpu_mode_why"], running_now
+
+
+def test_status_counts_the_declarations_as_the_lists_list_them(tmp_path: Path) -> None:
+    """`declarations` counts this server's own declarations per family, in any state, and each
+    count equals the rows its `_list` tool returns: interrupts are breakpoints there too."""
+    _names(tmp_path, mode="Real", cs="0749", ds_="0749")
+    assert server.status()["declarations"] == {"breakpoints": 0, "watches": 0}
+    server.breakpoint_at(ref="0749:0010")
+    server.breakpoint_interrupt(number=0x21)
+    server.watch_add(ref="0749:0020", mode="show", length=2)
+    got = cast(dict[str, Any], server.status())["declarations"]
+    assert got == {"breakpoints": len(server.breakpoint_list()["breakpoints"]),
+                   "watches": len(server.watch_list()["watches"])} == {
+                       "breakpoints": 2, "watches": 1}, got
+
+
+def test_status_with_no_session_adds_no_machine_facts() -> None:
+    dstate.STATE.session = None
+    got = cast(dict[str, Any], server.status())
+    assert got["session"] is None and not {"pc", "cpu_mode", "declarations"} & set(got), got
+
+
+def test_status_does_not_name_a_stop_it_could_not_read_as_the_one_it_is_in(
+        tmp_path: Path) -> None:
+    """The guest stopped again and the survey of that stop was cut: the record still holds the
+    PREVIOUS stop, so `pc` and `cpu_mode` are null with why, never the old stop's values given
+    as the current one's."""
+    fake = _names(tmp_path, mode="Real")
+    server.registers()                              # the park, recorded
+    before = dict(dstate.STATE.last_stop)
+    fake._running = True                            # it ran on...
+    fake.stop_unread = True                         # ...and stopped where nobody has looked
+    fake.registers_raises = True                    # ...and that stop's pane comes back cut
+    got = cast(dict[str, Any], server.status())
+    assert dstate.STATE.last_stop["seq"] == before["seq"], "the cut stop was recorded"
+    assert got["pc"] is None and got["cpu_mode"] is None, got
+    assert "not readable" in got["cpu_mode_why"], got
+
+
+def test_status_counts_the_declarations_on_a_running_machine_too(tmp_path: Path) -> None:
+    fake = _names(tmp_path, mode="Real", cs="0749", ds_="0749")
+    server.breakpoint_at(ref="0749:0010")
+    fake.running = True
+    got = cast(dict[str, Any], server.status())
+    assert got["pc"] is None and got["declarations"] == {"breakpoints": 1, "watches": 0}, got
+
+
+def test_the_stop_count_survives_a_session_buried_mid_batch() -> None:
+    """A bound that expires mid-list buries the session and clears the stop record, so the
+    server's counter reads 0 afterwards: the count still covers every stop the replies carry,
+    rather than coming back empty beside rows that show them."""
+    dstate.STATE.last_stop.clear()
+    ran = [{"op": "resume", "reply": {"summary": "s", "status": "ok", "stop_seq": n,
+                                      "attribution": {"attributed": False}}}
+           for n in (6, 7, 8)]
+    got = sequence.account_of(ran, True, keep_last=False, since=5)["stops"]
+    assert got == {"stop_seq_first": 6, "stop_seq_last": 8, "surveyed": 3,
+                   "by_how": {"unattributed": 3}, "unaccounted": 0}, got
+
+
+def test_a_batch_writes_both_files_or_neither_and_remakes_a_vanished_scratch(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    rows = [{"step": 0, "op": "status", "reply": {"summary": "s", "status": "ok"}}]
+    monkeypatch.setattr(dstate.STATE, "scratch", tmp_path / "gone")   # the OS cleaned it away
+    made = sequence._files(rows, rows)
+    assert made["ran_path"] and Path(made["replies_path"]).exists(), made
+    real = sequence._write_jsonl
+    calls: list[Path] = []
+
+    def second_fails(path: Path, r: list[dict[str, Any]]) -> str:
+        calls.append(path)
+        out = real(path, r)
+        if len(calls) == 2:
+            raise OSError("disk full half way")
+        return out
+
+    monkeypatch.setattr(sequence, "_write_jsonl", second_fails)
+    failed = sequence._files(rows, rows)
+    assert failed["ran_path"] is None and "files_why" in failed, failed
+    assert not any(p.exists() for p in calls), [p for p in calls if p.exists()]
+
+
+def test_a_bare_step_is_one_step_into_and_find_takes_the_pattern_first(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The default and the order are the contract a caller relies on without naming them: a
+    bare `step()` reaches the session as ONE step INTO, and `find` and `step` take their
+    arguments in the published order."""
+    fake = _names(tmp_path)
+    asked: list[dict[str, Any]] = []
+    real = fake.step
+
+    def recording(**kw: Any) -> dict[str, object]:
+        asked.append(kw)
+        return real(**kw)
+
+    monkeypatch.setattr(fake, "step", recording)
+    server.step()
+    assert asked == [{"mode": "into", "count": 1}], asked
+
+    def order(fn: Callable[..., Any]) -> list[str]:
+        return [p for p in inspect.signature(fn).parameters if p != "ctx"]
+
+    assert order(server.find)[:3] == ["data_hex", "ref", "length"], order(server.find)
+    assert order(server.step)[:2] == ["count", "mode"], order(server.step)
+
+
+def test_drive_hands_summaries_to_its_act(tmp_path: Path) -> None:
+    _names(tmp_path)
+    got = cast(dict[str, Any], server.drive(act=[{"op": "registers"}, {"op": "registers"}],
+                                             summaries=True))
+    act = got["act"]
+    assert act["steps_total"] == 2 and act["ran_path"] and "stops" in act, act
+    assert set(act["ran"][0]["reply"]) <= {"summary", "status", "stop_seq", "attribution",
+                                           "stopped_on_its_own"}, act["ran"][0]
+
+
+@pytest.mark.parametrize("bad_step", [
+    {"op": "symbols_find", "linear": "56DFZZ"},
+    {"op": "symbols_load", "source": "x.map", "section_bases": {"1": 4096}}])
+def test_a_list_refuses_a_bad_hex_address_before_its_first_step_runs(
+        tmp_path: Path, bad_step: dict[str, Any]) -> None:
+    """The hex text of `linear` and of `section_bases` is judged with the rest of the list,
+    before anything runs, like every other value a step carries."""
+    _names(tmp_path)
+    got = cast(dict[str, Any], server.perform(steps=[{"op": "registers"}, bad_step]))
+    assert got["status"] == "INVALID" and got["ran"] == [], got
+    assert [e["step"] for e in got["errors"]] == [1], got["errors"]
+
+
+def test_every_tool_is_summarised_by_its_own_line() -> None:
+    for name in server.registered_tools():
+        assert server._SUMMARIES[name].__name__ == name, (name, server._SUMMARIES[name])
+
+
+def test_a_recorded_stop_keeps_the_paging_mark_its_survey_read(tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    fake.paging = True  # type: ignore[attr-defined]   # what a paged stop survey leaves
+    server.step(mode="over")
+    assert dstate.STATE.last_stop["paging"] is True

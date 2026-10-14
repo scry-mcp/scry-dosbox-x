@@ -1,0 +1,30 @@
+{
+ "task": {
+  "id": "D19",
+  "prompt": "This session is headless and nothing is declared that could stop the guest. Let it run until the session's bound or a close, and come back at once.",
+  "tool": "resume",
+  "args": {
+   "until_close": true
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D19: {\"tool\": \"resume\", \"args\": {\"until_close\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D19: {\"tool\": \"resume\", \"args\": {\"until_close\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D19: {\"tool\": \"resume\", \"args\": {\"until_close\": true}}"
+   ],
+   "right": true
+  }
+ ]
+}

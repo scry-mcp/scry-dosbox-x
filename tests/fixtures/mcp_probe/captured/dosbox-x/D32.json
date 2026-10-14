@@ -1,0 +1,31 @@
+{
+ "task": {
+  "id": "D32",
+  "prompt": "Look up the symbols whose names start with _snd_, at most 15 of them.",
+  "tool": "symbols_find",
+  "args": {
+   "name": "_snd_",
+   "limit": 15
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D32: {\"tool\": \"symbols_find\", \"args\": {\"name\": \"_snd_\", \"limit\": 15}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D32: {\"tool\": \"symbols_find\", \"args\": {\"name\": \"_snd_\", \"limit\": 15}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D32: {\"tool\": \"symbols_find\", \"args\": {\"name\": \"_snd_\", \"limit\": 15}}"
+   ],
+   "right": true
+  }
+ ]
+}

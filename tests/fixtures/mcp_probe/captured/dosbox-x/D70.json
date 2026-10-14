@@ -1,0 +1,30 @@
+{
+ "task": {
+  "id": "D70",
+  "prompt": "The guest is stopped in mode 13h. Save what is on the screen as a picture to /tmp/frame.png.",
+  "tool": "screen_view",
+  "args": {
+   "dest": "/tmp/frame.png"
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

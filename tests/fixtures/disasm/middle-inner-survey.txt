@@ -1,0 +1,46 @@
+B_P_L_I_S_T__ooooRegister OverviewoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooEAX=12345600  ESI=000001C3  DS=0814   ES=0814   FS=0000   GS=0000   SS=0814 Real
+EBX=00000000  EDI=0000FFFE  CS=0814   EIP=00000167  C0 Z1 S0 O0 A0 P1 D0 I1 T0
+ECX=12445678  EBP=0000FFECNOPG  IOPL3  CPL0
+EDX=00000814  ESP=0000FFECcc=1587RUN
+ST0=00000.00  ST1=00000.00  ST2=00000.00  ST3=00000.00pfi=0.908500000
+ST4=00000.00  ST5=00000.00  ST6=00000.00  ST7=00000.00
+ooooData view (segmented)ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo0000:00000000 60 CA 00 F0 0E 00 70 00 0E 00 70 00 0E 00 70 00  `.....p...p...p.
+0000:00000010 0E 00 70 00 54 FF 00 F0 60 CA 00 F0 60 CA 00 F0  ..p.T...`...`...
+0000:00000020 A5 FE 00 F0 87 E9 00 F0 55 FF 00 F0 80 CE 00 F0  ........U.......
+0000:00000030 80 CE 00 F0 80 CE 00 F0 E0 CC 00 F0 0E 00 70 00  ..............p.
+0000:00000040 EE 00 00 C0 20 CB 00 F0 40 CB 00 F0 60 CF 00 F0  .... ...@...`...
+0000:00000050 80 CB 00 F0 A0 CB 00 F0 C0 CF 00 F0 C0 CB 00 F0  ................
+0000:00000060 00 CD 00 F0 60 CC 00 F0 E0 CB 00 F0 C0 D1 00 F0  ....`...........
+0000:00000070 00 CC 00 F0 58 C9 00 F0 02 00 94 FC E9 05 00 C0  ....X...........
+ooooCode Overviewooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo0814:00000156 E81200call 0000016B ($+12)
+0814:00000159 E80200call 0000015E ($+2)
+0814:0000015C C9leave
+0814:0000015D CBretf
+0814:0000015E 55push bp
+0814:0000015F 89E5mov  bp,sp
+0814:00000161 BEAE01mov  si,01AE
+0814:00000164 E80400call 0000016B ($+4)
+0814:00000167 CD03int  03
+0814:00000169 5Dpop  bp
+0814:0000016A C3ret
+ooooOutputoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo01. BPINT 03
+Breakpoint list:
+-------------------------------------------------------------------------
+00. BP 0814:014F
+01. BPINT 03
+DEBUG: Breakpoint deletion success.
+Breakpoint list:
+-------------------------------------------------------------------------
+00. BPINT 03
+Bochs port E9h: CODE . enter middle
+Bochs port E9h: CODE . enter inner
+Breakpoint list:
+-------------------------------------------------------------------------
+00. BPINT 03
+Breakpoint list:
+-------------------------------------------------------------------------
+00. BPINT 03
+Breakpoint list:
+-------------------------------------------------------------------------
+00. BPINT 03
+I-> _

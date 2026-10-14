@@ -1,0 +1,38 @@
+{
+ "task": {
+  "id": "D09",
+  "prompt": "Read 24 bytes of memory at 1A2B:0040.",
+  "tool": "read_memory",
+  "args": {
+   "ref": {
+    "any_of": [
+     "1A2B:0040",
+     "1a2b:0040",
+     "1A2B:40",
+     "1a2b:40"
+    ]
+   },
+   "length": 24
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D09: {\"tool\": \"read_memory\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 24}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D09: {\"tool\": \"read_memory\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 24}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D09: {\"tool\": \"read_memory\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 24}}"
+   ],
+   "right": true
+  }
+ ]
+}

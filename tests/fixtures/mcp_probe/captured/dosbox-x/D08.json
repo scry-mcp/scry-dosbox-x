@@ -1,0 +1,30 @@
+{
+ "task": {
+  "id": "D08",
+  "prompt": "The guest is running. Give me the registers as they were at the last stop.",
+  "tool": "registers",
+  "args": {
+   "from_last_stop": true
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D08: {\"tool\": \"registers\", \"args\": {\"from_last_stop\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D08: {\"tool\": \"registers\", \"args\": {\"from_last_stop\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D08: {\"tool\": \"registers\", \"args\": {\"from_last_stop\": true}}"
+   ],
+   "right": true
+  }
+ ]
+}

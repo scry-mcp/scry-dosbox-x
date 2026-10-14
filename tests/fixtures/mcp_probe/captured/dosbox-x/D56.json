@@ -1,0 +1,64 @@
+{
+ "task": {
+  "id": "D56",
+  "prompt": "In one round trip: run to _game_tick counting the control declared at _vbl_handler, then read 16 bytes at _score. Wait at most 40 seconds for each stop between steps, and cut each step's account to its summary.",
+  "tool": "perform",
+  "args": {
+   "steps": {
+    "any_of": [
+     [
+      {
+       "op": "run_to",
+       "ref": "_game_tick",
+       "control": "_vbl_handler"
+      },
+      {
+       "op": "read_memory",
+       "ref": "_score",
+       "length": 16
+      }
+     ],
+     [
+      {
+       "op": "run_to",
+       "ref": "_game_tick",
+       "control": "_vbl_handler",
+       "seconds": 40
+      },
+      {
+       "op": "read_memory",
+       "ref": "_score",
+       "length": 16
+      }
+     ]
+    ]
+   },
+   "wait": 40,
+   "summaries": true
+  },
+  "grammar": [
+   "run_to",
+   "read_memory"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D56: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_to\", \"ref\": \"_game_tick\", \"control\": \"_vbl_handler\", \"seconds\": 40}, {\"op\": \"read_memory\", \"ref\": \"_score\", \"length\": 16}], \"wait\": 40, \"summaries\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D56: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_to\", \"ref\": \"_game_tick\", \"control\": \"_vbl_handler\", \"seconds\": 40}, {\"op\": \"read_memory\", \"ref\": \"_score\", \"length\": 16}], \"wait\": 40, \"summaries\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D56: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_to\", \"ref\": \"_game_tick\", \"control\": \"_vbl_handler\", \"seconds\": 50}, {\"op\": \"read_memory\", \"ref\": \"_score\", \"length\": 16}], \"wait\": 40, \"summaries\": true}}"
+   ],
+   "right": false
+  }
+ ]
+}

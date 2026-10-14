@@ -1,0 +1,31 @@
+{
+ "task": {
+  "id": "D24",
+  "prompt": "Save the running machine as the state level3, waiting up to 90 seconds.",
+  "tool": "state_save",
+  "args": {
+   "name": "level3",
+   "seconds": 90
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D24: {\"tool\": \"state_save\", \"args\": {\"name\": \"level3\", \"seconds\": 90}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D24: {\"tool\": \"state_save\", \"args\": {\"name\": \"level3\", \"seconds\": 90}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D24: {\"tool\": \"state_save\", \"args\": {\"name\": \"level3\", \"seconds\": 90}}"
+   ],
+   "right": true
+  }
+ ]
+}

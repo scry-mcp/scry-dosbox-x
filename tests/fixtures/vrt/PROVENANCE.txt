@@ -1,0 +1,16 @@
+Terminal text of the debugger's `VRT` and of the survey that followed it, captured from live
+DOSBox-X sessions (the Homebrew build) by a script driving this server in process: a `VRT` typed
+at the console, then a `registers` survey, every `Session._read` chunk recorded after the ANSI
+strip and joined per call. Nothing here is authored: the doubles in `test_dosbox_x_run_for.py`
+replay these files.
+
+probe-survey-0 .. probe-survey-3   the `BPLIST` nudge's repaint at four consecutive retrace stops
+                                   of the package's probe guest (probe.conf), in its settle loop
+probe-vrt-1 .. probe-vrt-3         what the terminal printed for each `VRT` between them: the echo,
+                                   `(Running)`, the prompt, and the digits the pane changed, with
+                                   no label on them
+probe-vrt-cut-by-bp-0108           a `VRT` typed with a code breakpoint armed on the loop's next
+probe-survey-cut-by-bp-0108        instruction: the breakpoint stopped it first
+rechip-survey-4, rechip-vrt-5,     ReChip (DJGPP, protected mode): a stop in a BIOS handler, then a
+rechip-survey-5                    `VRT` whose own repaint carried the whole pane because the mode
+                                   changed (Real to Pr32), and the survey after it

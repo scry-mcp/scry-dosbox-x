@@ -1,0 +1,75 @@
+What the debugger's CPU log (`LOG`, `LOGS`, `LOGL`, `LOGC`) and the terminal around it produced
+on live DOSBox-X sessions, captured on 2026-10-01 with `dosbox-x --version` 2026.08.31 (the
+Homebrew build, heavy debug), headless, every session started with
+`flags=["-set", "cpu core=normal"]` unless a name says `dynamic` (`cpu core=dynamic`). A script
+drove this server in process: each `LOG` command typed at a stop as `trace` types it (its count
+in hex, one more than the instructions it executes), the stop heard by the prompt, every
+`Session._read` chunk of that wait recorded after the ANSI strip and joined (`*-delta.txt`), the
+`BPLIST` survey before and after it (`*-survey-*.txt`), and the `LOGCPU.TXT` the debugger wrote
+(`*.trace`), moved out of the working directory at once. Nothing here is authored: the tests
+replay these files, and where a test needs a case no capture holds it changes one field of one of
+them and says which.
+
+<bench>-<shape>-64.trace   64 instructions in each shape (65 lines, the last the stop), the stop
+                           read off the pane after each run:
+  probe-settle-*           the package's probe guest (probe.conf), at its settle `loop`, 0814:0106;
+                           each stopped at 0814:0106
+  speedf-*                 Speed Fight (TMP/dosbox-mcp.conf, program ..\exes\speedf.exe), at
+                           COMPOSE_FRAME, 15A3:0000, real mode, map loaded at segment 0892; each
+                           stopped at 15A3:003C
+  rechip-*                 ReChip (build/mcp.conf, RECHIPD.EXE D:\MIDI\MONKEY.MID -a), at
+                           _engine_pos, 00A7:0005E9C0, Pr32 paged, RECHIPD.SYM based off CS, each
+                           from its own _engine_pos stop: normal stopped at 00A7:0003D451, short at
+                           00A7:00060D71, long at 00A7:001604C0, cs_ip at 00A7:00028DCF
+speedf-compose-cs_ip-500.trace   500 instructions from COMPOSE_FRAME, `LOGC 1F5`
+probe-start-long-200.trace       200 instructions from `start` (0814:010B), `LOGL C9`
+
+The doubles' scenarios, each a survey before, the command's delta, the trace, a survey after:
+  probe-settle-cs_ip-16    `LOGC 11` at the settle loop; `cc=` 192333 -> 192349
+  probe-settle-normal-16   `LOG 11` right after it; `cc=` 192349 -> 192365
+  probe-dynamic-cs_ip-16   `LOGC 11` on the dynamic core at the settle loop; `cc=` 238 -> 238
+  probe-cut-*              a breakpoint at 0814:0108, then `LOGC 186A1` from ECX 1582: the stop at
+                           0108 with the log open (`probe-cut-open.trace`, copied while open; no
+                           `created` in its delta), then `LOGC 0`, which closed it executing
+                           nothing and left the same bytes; `cc=` 192365 -> 197871 -> 197871
+  probe-start-normal-200   `LOG C9` from `start`; `cc=` 19663481 -> 19663681
+  rechip-engine-cs_ip-200  `LOGC C9` from _engine_pos; `cc=` 1963039200 -> 1963039400; the
+                           `GDT` and `LDT` listings read off the session's logfile at that stop
+                           (`rechip-gdt-listing.txt`, `rechip-ldt-listing.txt`). The join's double
+                           answers `CPU` from `../machine/rechip-CPU.log.txt`, the same program in
+                           the same mode at another stop: only the mode it states is read
+rechip-engine.sym          the rows of that build's `build/RECHIPD.SYM` that place the window: for
+                           each address, the nearest symbol at or below it and its two neighbours,
+                           section names (`.text` and the like) left out as `symbols_load` leaves
+                           them out; copied as `nm` printed them
+
+Then in the order the tool makes them since, the log moved out BEFORE `LOGC 0`, on the probe
+guest with `BPINT 21` armed:
+  probe-post-*             `LOGC 186A1` from the park at the reset vector: the BIOS's power-on
+                           self test closed the log (`cpu log LOGCPU.TXT stopped` in the log) after
+                           3 lines, and the machine ran on to an INT 21 at F000:DAC6; `cc=` 0 ->
+                           318. `LOGC 0` then wrote a fresh empty file (`probe-post-close.trace`)
+  probe-int-at-*           `LOGC 186A1` started on that INT 21: one line, the INT, counted by
+                           `cc=` (318 -> 319) and not executed, the stop at the same place; the
+                           close wrote no file
+  probe-int-mid-*          a step past it, `BPINT 21` armed again, `LOGC 186A1`: 7 lines, the last
+                           the next INT 21 at 0814:0108, `cc=` 320 -> 327; the close wrote no file
+
+Three more, from live sessions of the same build on the same day that drove this server's own
+`trace` on the probe guest:
+  probe-on-bp-cs_ip.trace  `trace(100000, cs_ip)` started on an armed code breakpoint at 0814:0108:
+                           one line, that address, nothing executed, `OTHER_STOP` attributed to it
+  probe-post-logfile.txt   the session's logfile lines `trace(16, cs_ip, seconds=5)` from the reset
+                           park produced: the log started, then closed by the power-on self test
+  probe-count-logfile.txt  the session's logfile lines `trace(16, cs_ip)` produced at the settle
+                           loop, a log that ran out at its count
+
+And one from a live session of the same build on 2026-10-02 that drove `Session.log_cpu` in process
+on a copy of the probe guest whose working directory was set to mode 0555 at the settle loop:
+  probe-unwritable-*       `LOGC 11` typed there: the delta, ending at the prompt with `LOGC 11`
+                           still on the input line, the guest never released and no LOGCPU.TXT
+                           made; and the session's logfile lines it wrote, `Starting log`,
+                           `Logfile couldn't be created.` and `command not recognized`. Every
+                           command typed after it in that session wrote those three lines again,
+                           and `BPLIST` printed no list. The survey before it is
+                           `probe-settle-survey-before.txt`'s, the same stop on the same build

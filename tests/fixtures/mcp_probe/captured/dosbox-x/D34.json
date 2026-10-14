@@ -1,0 +1,39 @@
+{
+ "task": {
+  "id": "D34",
+  "prompt": "Which symbol is the linear address 0x11F000 inside?",
+  "tool": "symbols_find",
+  "args": {
+   "linear": {
+    "any_of": [
+     "0x11F000",
+     "11F000",
+     "0x11f000",
+     "11f000",
+     "0x0011F000",
+     "0011F000"
+    ]
+   }
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"0x11F000\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"0x11F000\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D34: {\"tool\": \"symbols_find\", \"args\": {\"linear\": \"0x11F000\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D53",
+  "prompt": "Show the newest lines DOSBox-X's own process wrote to its stdout, the debugger's terminal.",
+  "expect": "CANNOT",
+  "about": "log"
+ },
+ "runs": [
+  {
+   "lines": [
+    "D53: CANNOT read debugger terminal (log refuses channel \"process\" by name)"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D53: CANNOT log tool refuses to read the emulator process/stdout channel"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D53: CANNOT log tool refuses process channel by name"
+   ],
+   "right": true
+  }
+ ]
+}

@@ -1,0 +1,58 @@
+{
+ "task": {
+  "id": "D50",
+  "prompt": "In one round trip: step into 2 instructions, then read the registers. Wait at most 15 seconds for a stop between steps.",
+  "tool": "perform",
+  "args": {
+   "steps": {
+    "any_of": [
+     [
+      {
+       "op": "step",
+       "mode": "into",
+       "count": 2
+      },
+      {
+       "op": "registers"
+      }
+     ],
+     [
+      {
+       "op": "step",
+       "count": 2
+      },
+      {
+       "op": "registers"
+      }
+     ]
+    ]
+   },
+   "wait": 15
+  },
+  "grammar": [
+   "step",
+   "into",
+   "registers"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2}, {\"op\": \"registers\"}], \"wait\": 15}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2, \"mode\": \"into\"}, {\"op\": \"registers\"}], \"wait\": 15}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D50: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"step\", \"count\": 2, \"mode\": \"into\"}, {\"op\": \"registers\"}], \"wait\": 15}}"
+   ],
+   "right": true
+  }
+ ]
+}

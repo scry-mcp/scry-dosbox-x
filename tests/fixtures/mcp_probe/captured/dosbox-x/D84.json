@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D84",
+  "prompt": "The guest is stopped inside some routine. Which routines called it, and from where?",
+  "tool": "call_stack",
+  "args": {}
+ },
+ "runs": [
+  {
+   "lines": [
+    "D84: {\"tool\": \"call_stack\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D84: {\"tool\": \"call_stack\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D84: {\"tool\": \"call_stack\", \"args\": {}}"
+   ],
+   "right": true
+  }
+ ]
+}

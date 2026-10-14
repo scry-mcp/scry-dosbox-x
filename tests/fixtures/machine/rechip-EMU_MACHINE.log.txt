@@ -1,0 +1,2 @@
+Emulator machine:
+Machine: VGA S3 Trio

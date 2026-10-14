@@ -1,0 +1,29 @@
+# GATES THIS PACKAGE HAS THAT THE COMMIT PATH DOES NOT RUN, and WHY.
+#
+# A gate nobody declares is a gate nobody knows is not running. This file is the list, and
+# the reason beside each entry is the point of it: "manual" with no reason is
+# indistinguishable from "forgotten".
+#
+# Format: one gate per line, `<command>  --  <reason>`. Lines starting `#` are prose.
+
+uv run python mapsweep.py --manifest tests/real-maps.json --root <where those repositories live>  --  It reads the author's OWN symbol material -- linker maps and one `nm` listing -- living OUTSIDE this repository and deliberately not versioned in it: they are that person's material and this package is published. On the commit path it would therefore be INVALID in every clone but one, and a gate that is almost always invalid is a gate people learn to ignore. What a clone CAN check is `tests/test_dosbox_x_fixtures.py`, which reads the artefacts this package generated itself.
+
+# WHAT THE SWEEP CAN AND CANNOT SAY, written here rather than assumed:
+#   It can say a count MOVED. That is what it is for, and it fires in BOTH directions --
+#   a count that ROSE against an unchanged file means the reader has begun reading
+#   something that is not a symbol, which is the quieter half.
+#   It CANNOT say a count is CORRECT. The first time a project's row is written,
+#   whatever the reader says becomes the expectation, so a reader that was already wrong
+#   stays wrong and the sweep goes on agreeing with it. Closing that is reading the map,
+#   by a person, once -- exactly as blessing any golden is.
+#
+# RECHIPD IS THE ONE ROW EXPECTED TO MOVE. It is `nm` over a binary under active
+# development, so it disagrees after real work in that project and is re-blessed
+# deliberately. The other rows are the opposite: they describe programs that are
+# finished, so a disagreement there is a finding about this reader.
+#
+# NO COUNT OF THE ROWS IS WRITTEN HERE, and that is the correction rather than an
+# omission. This file and the sweep's own docstring both said FIVE while the manifest
+# held seven, and both said "the four Borland maps" over six of them -- a figure in a
+# durable text expires by itself and nobody re-reads it to notice. The sweep PRINTS the
+# denominator on every run (`N of M project(s)`), which cannot go stale.

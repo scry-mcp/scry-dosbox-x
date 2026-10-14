@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D68",
+  "prompt": "The guest is stopped. Show me the colour of entry 300 of the VGA's DAC.",
+  "expect": "CANNOT",
+  "about": "palette"
+ },
+ "runs": [
+  {
+   "lines": [
+    "D68: CANNOT palette entry index must be 0-255"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D68: CANNOT entry 300 out of range (0-255)"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D68: CANNOT entry 300 is beyond DAC range 0-255"
+   ],
+   "right": true
+  }
+ ]
+}

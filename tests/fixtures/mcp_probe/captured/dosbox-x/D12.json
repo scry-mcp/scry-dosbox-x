@@ -1,0 +1,40 @@
+{
+ "task": {
+  "id": "D12",
+  "prompt": "This program has no map. Open a value search over the 8192 bytes from 2000:0000, in 16-bit cells.",
+  "tool": "scan_start",
+  "args": {
+   "ref": {
+    "any_of": [
+     "2000:0000",
+     "2000:0"
+    ]
+   },
+   "length": 8192,
+   "width": "word"
+  },
+  "grammar": [
+   "word"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D12: {\"tool\": \"scan_start\", \"args\": {\"ref\": \"2000:0000\", \"length\": 8192, \"width\": \"word\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D12: {\"tool\": \"scan_start\", \"args\": {\"ref\": \"2000:0000\", \"length\": 8192, \"width\": \"word\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D12: {\"tool\": \"scan_start\", \"args\": {\"ref\": \"2000:0000\", \"length\": 8192, \"width\": \"word\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

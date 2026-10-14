@@ -1,0 +1,31 @@
+{
+ "task": {
+  "id": "D83",
+  "prompt": "The guest is stopped. There is a call somewhere in the 20 bytes at 1A2B:0040; which address does it go to?",
+  "tool": "disassemble",
+  "args": {
+   "ref": "1A2B:0040",
+   "length": 20
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D83: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D83: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D83: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 20}}"
+   ],
+   "right": true
+  }
+ ]
+}

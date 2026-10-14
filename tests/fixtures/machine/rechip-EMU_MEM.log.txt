@@ -1,0 +1,6 @@
+Emulator memory:
+A20 gate:                    ON
+CPU address bits:            36
+CPU address mask:            0xfffffffff
+CPU address mask current:    0xfffffffff
+Memory reported size:        536870912 bytes

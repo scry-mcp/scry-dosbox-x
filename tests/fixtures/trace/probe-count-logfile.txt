@@ -1,0 +1,2 @@
+DEBUG: Starting log
+DEBUG: cpu log LOGCPU.TXT created

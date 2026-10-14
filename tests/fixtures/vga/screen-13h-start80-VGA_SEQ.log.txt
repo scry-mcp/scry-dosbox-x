@@ -1,0 +1,2 @@
+VGA Sequencer info: index=01h
+reset=03h clockmode=01h map_mask=0fh charmapsel=00h memmode=0eh

@@ -1,0 +1,36 @@
+{
+ "task": {
+  "id": "D59",
+  "prompt": "Advance the guest by 12 frames of the display and stop there, within 20 seconds, then give me its last 5 E9 lines that match ^TICK.",
+  "tool": "run_for",
+  "args": {
+   "frames": 12,
+   "seconds": 20,
+   "e9": "lines:5",
+   "e9_filter": "^TICK"
+  },
+  "allow": [
+   "e9_stamp"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20, \"e9\": \"lines:5\", \"e9_filter\": \"^TICK\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20, \"e9\": \"lines:5\", \"e9_filter\": \"^TICK\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20, \"e9\": \"lines:5\", \"e9_filter\": \"^TICK\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

@@ -1,0 +1,27 @@
+{
+ "task": {
+  "id": "D40",
+  "prompt": "List every watch declaration and its state.",
+  "tool": "watch_list"
+ },
+ "runs": [
+  {
+   "lines": [
+    "D40: {\"tool\": \"watch_list\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D40: {\"tool\": \"watch_list\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D40: {\"tool\": \"watch_list\", \"args\": {}}"
+   ],
+   "right": true
+  }
+ ]
+}

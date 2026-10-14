@@ -1,0 +1,85 @@
+{
+ "task": {
+  "id": "D57",
+  "prompt": "Press enter on the running guest, then check that a new E9 line matching ^MENU arrives within 12 seconds, and show me the last 20 E9 lines that match MENU. Cut each step's account to its summary.",
+  "tool": "drive",
+  "args": {
+   "any_of": [
+    {
+     "act": [
+      {
+       "op": "send_keys",
+       "keys": [
+        "enter"
+       ]
+      }
+     ],
+     "expect": "^MENU",
+     "seconds": 12,
+     "pattern": "MENU",
+     "limit": 20,
+     "summaries": true
+    },
+    {
+     "act": [
+      {
+       "op": "send_keys",
+       "keys": [
+        "enter"
+       ],
+       "expect": "^MENU",
+       "seconds": 12
+      }
+     ],
+     "pattern": "MENU",
+     "limit": 20,
+     "summaries": true
+    },
+    {
+     "act": [
+      {
+       "op": "send_keys",
+       "keys": [
+        "enter"
+       ],
+       "expect": "^MENU",
+       "seconds": 12
+      }
+     ],
+     "expect": "^MENU",
+     "seconds": 12,
+     "pattern": "MENU",
+     "limit": 20,
+     "summaries": true
+    }
+   ]
+  },
+  "allow": [
+   "wait"
+  ],
+  "grammar": [
+   "send_keys",
+   "enter"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D57: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU\", \"limit\": 20, \"summaries\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D57: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU\", \"limit\": 20, \"summaries\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D57: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"], \"expect\": \"^MENU\"}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU\", \"limit\": 20, \"wait\": 18, \"summaries\": true}}"
+   ],
+   "right": false
+  }
+ ]
+}

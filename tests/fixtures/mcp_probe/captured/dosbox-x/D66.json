@@ -1,0 +1,31 @@
+{
+ "task": {
+  "id": "D66",
+  "prompt": "The guest is stopped. Show me the colours the VGA's DAC holds for entries 4, 5 and 6, and only those.",
+  "tool": "palette",
+  "args": {
+   "first": 4,
+   "count": 3
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D66: {\"tool\": \"palette\", \"args\": {\"first\": 4, \"count\": 3}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D66: {\"tool\": \"palette\", \"args\": {\"first\": 4, \"count\": 3}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D66: {\"tool\": \"palette\", \"args\": {\"first\": 4, \"count\": 3}}"
+   ],
+   "right": true
+  }
+ ]
+}

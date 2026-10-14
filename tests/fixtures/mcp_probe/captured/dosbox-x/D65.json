@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D65",
+  "prompt": "Show me which interrupt vectors have changed since the moment the session was started.",
+  "expect": "CANNOT",
+  "about": "interrupt_vectors"
+ },
+ "runs": [
+  {
+   "lines": [
+    "D65: CANNOT - interrupt_vectors shows current state only, not changes since session start"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D65: CANNOT no vector comparison tool exists"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D65: CANNOT interrupt_vectors returns current state only, no baseline comparison"
+   ],
+   "right": true
+  }
+ ]
+}

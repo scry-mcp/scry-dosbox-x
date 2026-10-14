@@ -1,0 +1,7 @@
+
+007E: sel:0000 off:00
+007F: sel:0000 off:00
+Breakpoint list:
+-------------------------------------------------------------------------
+DEBUG: Interrupt vector table written to MCPIVT.TXT.
+I-> _

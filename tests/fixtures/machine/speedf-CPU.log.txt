@@ -1,0 +1,6 @@
+cr0:00000010 cr2:00000000 cr3:00000000  cpl=0
+eflags:00007202 [vm=0 iopl=3 nt=1]
+GDT base=000252A0 limit=0000000F
+IDT base=00000000 limit=000003FF
+TR selector=0000, base=00000000 limit=00000000*1
+LDT selector=0000, base=00000000 limit=00000000*1

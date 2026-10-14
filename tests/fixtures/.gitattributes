@@ -1,0 +1,12 @@
+# THESE FILES ARE EVIDENCE, SO GIT MAY NOT EDIT THEM.
+#
+# A Borland linker writes CRLF, and this directory's whole purpose is to hold artefacts
+# EXACTLY as the toolchain that made them emitted them. Git's line-ending normalisation
+# would rewrite `MAPDEMO.MAP` to LF on the way in -- silently, and with a warning nobody
+# re-reads -- at which point the committed fixture is no longer the file the recipe
+# beside it produces, and `build.sh`'s byte-identical re-make stops being true.
+#
+# `-text` says: never convert, in either direction. It is applied to the whole directory
+# rather than to the one file that shows the symptom today, because the next fixture will
+# come from the next DOS toolchain and will have the same property.
+* -text

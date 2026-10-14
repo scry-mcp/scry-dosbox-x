@@ -1,0 +1,21 @@
+DOS kernel memory blocks:
+Seg      Size (bytes)     What
+0070           16         DOS_IHSEG
+0071          800         DOS_INFOBLOCK_SEG
+00a3         1376         DOS_SDA_SEG
+00f9           64         DOS_CONDRV_SEG
+00fd          256         DOS_CDA_SEG
+010d           64         dos.tables.tempdta
+0111           64         dos.tables.fcbdelete
+0115        11520         SFT secondary table
+03e5          192         dos.tables.dbcs
+03f1           32         dos.tables.filenamechar
+03f3          400         dos.tables.collatingseq
+040c           64         Fake FCB SFT
+0410          864         dos.tables.dpb
+0446           48         External device command packet
+0449           96         Fake disk buffer head
+044f           16         driver.sys.data.list
+0450            0         DOS_MEM_START
+c400           16         xms_callback
+c401           16         i33loc

@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D62",
+  "prompt": "The guest is stopped. Tell me what the DOS machine is right now: which memory blocks each resident program owns and where, the device drivers, and the XMS and EMS handles.",
+  "tool": "machine_map",
+  "args": {}
+ },
+ "runs": [
+  {
+   "lines": [
+    "D62: {\"tool\": \"machine_map\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D62: {\"tool\": \"machine_map\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D62: {\"tool\": \"machine_map\", \"args\": {}}"
+   ],
+   "right": true
+  }
+ ]
+}

@@ -1,0 +1,3 @@
+DEBUG: MEMFIND Memory search is not active.
+DEBUG: No active search instances to list from.
+I-> _

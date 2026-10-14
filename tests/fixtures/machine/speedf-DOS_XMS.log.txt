@@ -1,0 +1,3 @@
+XMS memory handles:
+Handle Status Location Size (bytes)
+     1 ALLOC  0x00110000 15663104

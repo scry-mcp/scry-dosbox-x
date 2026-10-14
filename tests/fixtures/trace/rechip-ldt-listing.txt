@@ -1,0 +1,257 @@
+LDT Base:000D1786 Limit:000003FF
+0004: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+000C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0014: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+001C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0024: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+002C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0034: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+003C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0044: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+004C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0054: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+005C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0064: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+006C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0074: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+007C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0084: b:00008960 type: 1A parbg
+      l:0000FFFF dpl : 3  10000
+008C: b:00008960 type: 12 parbg
+      l:0000FFFF dpl : 3  10010
+0094: b:00008860 type: 12 parbg
+      l:0000FFFF dpl : 3  10000
+009C: b:000083C0 type: 12 parbg
+      l:0000FFFF dpl : 3  10000
+00A4: b:00400000 type: 1B parbg
+      l:044BFFFF dpl : 3  10011
+00AC: b:00400000 type: 13 parbg
+      l:044BFFFF dpl : 3  10011
+00B4: b:00400000 type: 13 parbg
+      l:044BFFFF dpl : 3  10011
+00BC: b:00000000 type: 12 parbg
+      l:0010FFFF dpl : 3  10011
+00C4: b:00035010 type: 12 parbg
+      l:00000FFF dpl : 3  10000
+00CC: b:E0000000 type: 12 parbg
+      l:007FFFFF dpl : 3  10011
+00D4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+00DC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+00E4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+00EC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+00F4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+00FC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0104: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+010C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0114: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+011C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0124: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+012C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0134: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+013C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0144: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+014C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0154: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+015C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0164: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+016C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0174: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+017C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0184: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+018C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0194: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+019C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+01A4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+01AC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+01B4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+01BC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+01C4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+01CC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+01D4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+01DC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+01E4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+01EC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+01F4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+01FC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0204: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+020C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0214: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+021C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0224: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+022C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0234: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+023C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0244: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+024C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0254: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+025C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0264: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+026C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0274: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+027C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0284: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+028C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0294: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+029C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+02A4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+02AC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+02B4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+02BC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+02C4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+02CC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+02D4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+02DC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+02E4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+02EC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+02F4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+02FC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0304: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+030C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0314: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+031C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0324: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+032C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0334: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+033C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0344: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+034C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0354: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+035C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0364: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+036C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0374: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+037C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0384: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+038C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0394: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+039C: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+03A4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+03AC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+03B4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+03BC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+03C4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+03CC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+03D4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+03DC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+03E4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+03EC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+03F4: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+03FC: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000

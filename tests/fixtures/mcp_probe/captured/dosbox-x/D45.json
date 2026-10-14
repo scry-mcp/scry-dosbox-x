@@ -1,0 +1,36 @@
+{
+ "task": {
+  "id": "D45",
+  "prompt": "Click the left mouse button where the host pointer is now.",
+  "tool": "send_mouse",
+  "args": {
+   "button": "left"
+  },
+  "allow": [
+   "focus"
+  ],
+  "grammar": [
+   "left"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

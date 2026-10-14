@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D80",
+  "prompt": "The guest is stopped. Show me the last 100 instructions it executed before reaching this stop.",
+  "expect": "CANNOT",
+  "about": "trace"
+ },
+ "runs": [
+  {
+   "lines": [
+    "D80: CANNOT trace executes forward and cannot show instructions executed before the current stop"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D80: CANNOT: trace tool executes forward only; no tool shows CPU trace history before the current stop"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D80: CANNOT no tool retrieves or traces executed instructions backward"
+   ],
+   "right": true
+  }
+ ]
+}

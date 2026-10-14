@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D54",
+  "prompt": "The guest runs in a HEADLESS session with nothing declared that could stop it: bring it back to the debugger right now.",
+  "expect": "CANNOT",
+  "about": "stop"
+ },
+ "runs": [
+  {
+   "lines": [
+    "D54: CANNOT stop headless guest (stop tool only works on windowed sessions)"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D54: CANNOT stop requires a windowed session but the guest runs headless with no declared stoppers"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D54: CANNOT stop tool requires windowed session"
+   ],
+   "right": true
+  }
+ ]
+}

@@ -1,0 +1,30 @@
+{
+ "task": {
+  "id": "D88",
+  "prompt": "Write every note I have left on this program to /tmp/game.comments.tsv so I can commit it with the map.",
+  "tool": "comment_save",
+  "args": {
+   "dest": "/tmp/game.comments.tsv"
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D88: {\"tool\": \"comment_save\", \"args\": {\"dest\": \"/tmp/game.comments.tsv\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D88: {\"tool\": \"comment_save\", \"args\": {\"dest\": \"/tmp/game.comments.tsv\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D88: {\"tool\": \"comment_save\", \"args\": {\"dest\": \"/tmp/game.comments.tsv\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

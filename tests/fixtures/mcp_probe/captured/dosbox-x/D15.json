@@ -1,0 +1,27 @@
+{
+ "task": {
+  "id": "D15",
+  "prompt": "Cancel the debugger's open value scan.",
+  "tool": "scan_clear"
+ },
+ "runs": [
+  {
+   "lines": [
+    "D15: {\"tool\": \"scan_clear\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D15: {\"tool\": \"scan_clear\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D15: {\"tool\": \"scan_clear\", \"args\": {}}"
+   ],
+   "right": true
+  }
+ ]
+}

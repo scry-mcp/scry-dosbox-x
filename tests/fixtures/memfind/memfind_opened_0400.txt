@@ -1,0 +1,5 @@
+DEBUG: Memory search instance cancelled.
+DEBUG: Created memory search instance.
+DEBUG: 1 byte specified.
+DEBUG: RAM search from 0000:0400 (lin 00000400) with range: 000100
+I-> _

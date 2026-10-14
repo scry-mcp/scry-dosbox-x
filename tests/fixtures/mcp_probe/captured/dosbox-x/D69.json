@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D69",
+  "prompt": "The guest is stopped in a DOS text mode. What text is on the screen right now, and where is the cursor?",
+  "tool": "screen_view",
+  "args": {}
+ },
+ "runs": [
+  {
+   "lines": [
+    "D69: {\"tool\": \"screen_view\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D69: {\"tool\": \"screen_view\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D69: {\"tool\": \"screen_view\", \"args\": {}}"
+   ],
+   "right": true
+  }
+ ]
+}

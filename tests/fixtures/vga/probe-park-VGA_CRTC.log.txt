@@ -1,0 +1,6 @@
+VGA CRTC info: index=00h readonly=0
+htotal=00h hdend=00h strhb=00h endhb=00h strrt=00h endrt=00h
+vtotal=00h overflow=00h prerwscn=00h maxscnl=00h offset=00h
+curs-st=00h curs-en=00h start-addr=0000h curs-loc=0000h
+strvrt=00h endvrt=00h vdend=00h underline=00h modectrl=00h
+strvhb=00h endvhb=00h linecomp=00h

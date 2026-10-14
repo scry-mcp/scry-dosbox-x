@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D60",
+  "prompt": "Run the guest until the display's own absolute frame counter reads 5000.",
+  "expect": "CANNOT",
+  "about": "run_for"
+ },
+ "runs": [
+  {
+   "lines": [
+    "D60: CANNOT run until absolute frame counter (run_for only supports relative frames)"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D60: CANNOT run_for only supports relative frame counts from the current position, not absolute frame counter targets"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D60: CANNOT no conditional breakpoint on frame counter value"
+   ],
+   "right": true
+  }
+ ]
+}

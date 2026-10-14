@@ -1,0 +1,15 @@
+MCB Seg  Size (bytes)  PSP Seg (notes)  Filename
+Conventional memory:
+   0450         10992     0008 (DOS)    
+   0700          2464     0701          COMMAND
+   (data addr 071B:061E is 1982 bytes past this MCB)
+   079B           720     0701          COMMAND
+   07C9          1168     0814          INJECT
+   0813           624     0814          INJECT
+   083B          1104     0882          SPEEDF
+   0881        620496     0882          SPEEDF
+   9FFF  END OF CHAIN
+Upper memory:
+   9FFF        180224     0008 (DOS)    SC      
+   CC00        147440     0000 (free)   
+   F000  END OF CHAIN

@@ -1,0 +1,2 @@
+XMS memory handles:
+Handle Status Location Size (bytes)

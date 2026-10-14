@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D72",
+  "prompt": "The guest is stopped. Give me one number for what is on screen now, so I can tell later whether anything changed.",
+  "tool": "screen_signature",
+  "args": {}
+ },
+ "runs": [
+  {
+   "lines": [
+    "D72: {\"tool\": \"screen_signature\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D72: {\"tool\": \"screen_signature\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D72: {\"tool\": \"screen_signature\", \"args\": {}}"
+   ],
+   "right": true
+  }
+ ]
+}

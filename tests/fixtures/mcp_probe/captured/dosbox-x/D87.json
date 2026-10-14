@@ -1,0 +1,30 @@
+{
+ "task": {
+  "id": "D87",
+  "prompt": "The guest is stopped. Remove the note I left at 0814:010B.",
+  "tool": "comment_delete",
+  "args": {
+   "ref": "0814:010B"
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D87: {\"tool\": \"comment_delete\", \"args\": {\"ref\": \"0814:010B\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D87: {\"tool\": \"comment_delete\", \"args\": {\"ref\": \"0814:010B\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D87: {\"tool\": \"comment_delete\", \"args\": {\"ref\": \"0814:010B\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

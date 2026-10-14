@@ -1,0 +1,30 @@
+{
+ "task": {
+  "id": "D76",
+  "prompt": "The guest is stopped. Execute exactly 5000 instructions with the debugger's CPU log on, and keep the log in the session's captures directory.",
+  "tool": "trace",
+  "args": {
+   "instructions": 5000
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D76: {\"tool\": \"trace\", \"args\": {\"instructions\": 5000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D76: {\"tool\": \"trace\", \"args\": {\"instructions\": 5000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D76: {\"tool\": \"trace\", \"args\": {\"instructions\": 5000, \"shape\": \"normal\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

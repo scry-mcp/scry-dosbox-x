@@ -1,0 +1,35 @@
+{
+ "task": {
+  "id": "D30",
+  "prompt": "Load the nm output /opt/game/game.sym of a DJGPP program, measuring its base off the DS selector, and type its symbols with the file /opt/game/game.types.",
+  "tool": "symbols_load",
+  "args": {
+   "source": "/opt/game/game.sym",
+   "base_from": "DS",
+   "types": "/opt/game/game.types"
+  },
+  "grammar": [
+   "DS"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D30: {\"tool\": \"symbols_load\", \"args\": {\"source\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D30: {\"tool\": \"symbols_load\", \"args\": {\"source\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D30: {\"tool\": \"symbols_load\", \"args\": {\"source\": \"/opt/game/game.sym\", \"base_from\": \"DS\", \"types\": \"/opt/game/game.types\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

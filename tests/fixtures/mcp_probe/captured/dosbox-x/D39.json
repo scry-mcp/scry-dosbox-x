@@ -1,0 +1,35 @@
+{
+ "task": {
+  "id": "D39",
+  "prompt": "At every stop, read the 10 bytes at 1A2B:0300 as a 10-character string, forcing 1A2B:0300 to be taken as an address.",
+  "tool": "watch_add",
+  "args": {
+   "ref": {
+    "any_of": [
+     "1A2B:0300",
+     "1a2b:0300",
+     "1A2B:300",
+     "1a2b:300"
+    ]
+   },
+   "mode": "show",
+   "fmt": "char[10]",
+   "by": "address"
+  },
+  "allow": [
+   "length"
+  ],
+  "grammar": [
+   "show",
+   "address"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

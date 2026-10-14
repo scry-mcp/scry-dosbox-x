@@ -1,0 +1,7 @@
+{"tasks": [
+  {"id": "D1", "prompt": "Step INTO the next 3 instructions, entering any call.",
+   "tool": "step", "args": {"mode": "into", "count": 3}, "allow": ["e9", "e9_filter", "e9_stamp"],
+   "grammar": ["into"]},
+  {"id": "D2", "prompt": "Step the guest BACKWARDS by 3 instructions, undoing what they did.",
+   "expect": "CANNOT", "about": "step"}
+]}

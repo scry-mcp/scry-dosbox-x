@@ -1,0 +1,35 @@
+{
+ "task": {
+  "id": "D78",
+  "prompt": "The guest is stopped. Trace 800 instructions in the shape that also records each one's emulated time and CR0, into /tmp/full.trace.",
+  "tool": "trace",
+  "args": {
+   "instructions": 800,
+   "shape": "long",
+   "dest": "/tmp/full.trace"
+  },
+  "grammar": [
+   "long"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D78: {\"tool\": \"trace\", \"args\": {\"instructions\": 800, \"shape\": \"long\", \"dest\": \"/tmp/full.trace\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

@@ -1,0 +1,31 @@
+{
+ "task": {
+  "id": "D26",
+  "prompt": "Take one still of the running screen and move it to /tmp/mcp-probe-dos.png, waiting up to 20 seconds.",
+  "tool": "snapshot",
+  "args": {
+   "dest": "/tmp/mcp-probe-dos.png",
+   "seconds": 20
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/mcp-probe-dos.png\", \"seconds\": 20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/mcp-probe-dos.png\", \"seconds\": 20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D26: {\"tool\": \"snapshot\", \"args\": {\"dest\": \"/tmp/mcp-probe-dos.png\", \"seconds\": 20}}"
+   ],
+   "right": true
+  }
+ ]
+}

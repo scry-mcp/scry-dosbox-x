@@ -1,0 +1,8 @@
+VGA mode info:
+mode=M_TEXT vref=70.087Hz href=31468.880Hz chrclk=3146888.000Hz dotclk=28322000.000Hz
+disp-start=50h real-start=50h retrace=0 scanlen=40 cursor-start=a0h
+line-compare=1023 chained=0 compat-chain4=1 pel-pan=0 hline-skip=0
+byte-skip=0 addr-shift=1 rd-mode=0 wr-mode=0 rdmap-sel=0
+col-dont-care=15 color-compare=0 data-rotate=0 raster-op=00h
+fbmsk=ffffffff fmmsk=ffff fnmmsk=ffff0000 fsr=0 fnesr=ffffffff fesr=0 feasr=0
+complexity-flags=0x4=oddeven|

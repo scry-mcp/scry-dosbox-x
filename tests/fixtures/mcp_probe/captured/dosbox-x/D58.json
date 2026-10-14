@@ -1,0 +1,33 @@
+{
+ "task": {
+  "id": "D58",
+  "prompt": "Keep only the scanned cells whose value changed since the scan was opened.",
+  "tool": "scan_filter",
+  "args": {
+   "operator": "!"
+  },
+  "grammar": [
+   "!"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D58: {\"tool\": \"scan_filter\", \"args\": {\"operator\": \"!\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D58: {\"tool\": \"scan_filter\", \"args\": {\"operator\": \"!\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D58: {\"tool\": \"scan_filter\", \"args\": {\"operator\": \"!\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

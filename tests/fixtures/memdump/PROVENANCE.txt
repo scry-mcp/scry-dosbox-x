@@ -1,0 +1,12 @@
+What `memdump` wrote on the package's probe guest (`probe.conf`, `cwd` its `tests/guest`),
+captured from a live DOSBox-X session (the Homebrew build, `dosbox-x --version` 2026.08.31)
+through this server's own tool, after `run_for(frames=2)` stopped it at 0814:00000106, Real,
+before the dump learned to read past a segment's 64 KiB. Nothing here is authored: the doubles
+in `test_dosbox_x_dump.py` place these bytes in their memory image.
+
+probe-0814-0000.bin          `memdump(ref="0814:0000", length=32)`: PROBE's PSP, linear 0x8140
+probe-1813-0000.bin          `memdump(ref="1813:0000", length=32)`: linear 0x18130, the bytes
+                             that really follow 0814:FFFF
+probe-0814-FFF0-wrapped.bin  `memdump(ref="0814:FFF0", length=32)` as the debugger answered it in
+                             one command: its first 16 bytes are 1813:0000's, its last 16 are
+                             0814:0000's, the segment's start read again past offset 0xFFFF

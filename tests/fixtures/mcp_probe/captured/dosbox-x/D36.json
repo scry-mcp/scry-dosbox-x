@@ -1,0 +1,27 @@
+{
+ "task": {
+  "id": "D36",
+  "prompt": "List every breakpoint declaration and its state.",
+  "tool": "breakpoint_list"
+ },
+ "runs": [
+  {
+   "lines": [
+    "D36: {\"tool\": \"breakpoint_list\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D36: {\"tool\": \"breakpoint_list\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D36: {\"tool\": \"breakpoint_list\", \"args\": {}}"
+   ],
+   "right": true
+  }
+ ]
+}

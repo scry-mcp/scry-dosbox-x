@@ -1,0 +1,43 @@
+{
+ "task": {
+  "id": "D43",
+  "prompt": "Type ctrl+s to the running guest, prove the program took it by an E9 line matching SAVED OK within 6 seconds, and leave the emulator window in front afterwards.",
+  "tool": "send_keys",
+  "args": {
+   "keys": [
+    "s"
+   ],
+   "modifiers": [
+    "ctrl"
+   ],
+   "expect": "SAVED OK",
+   "seconds": 6,
+   "focus": "keep"
+  },
+  "grammar": [
+   "s",
+   "ctrl",
+   "keep"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D43: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"s\"], \"modifiers\": [\"ctrl\"], \"expect\": \"SAVED OK\", \"seconds\": 6, \"focus\": \"keep\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D43: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"s\"], \"modifiers\": [\"ctrl\"], \"expect\": \"SAVED OK\", \"seconds\": 6, \"focus\": \"keep\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D43: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"s\"], \"modifiers\": [\"ctrl\"], \"expect\": \"SAVED OK\", \"seconds\": 6}}"
+   ],
+   "right": false
+  }
+ ]
+}

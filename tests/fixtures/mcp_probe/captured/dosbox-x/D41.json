@@ -1,0 +1,27 @@
+{
+ "task": {
+  "id": "D41",
+  "prompt": "Clear every watch declaration.",
+  "tool": "watch_clear"
+ },
+ "runs": [
+  {
+   "lines": [
+    "D41: {\"tool\": \"watch_clear\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D41: {\"tool\": \"watch_clear\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D41: {\"tool\": \"watch_clear\", \"args\": {}}"
+   ],
+   "right": true
+  }
+ ]
+}

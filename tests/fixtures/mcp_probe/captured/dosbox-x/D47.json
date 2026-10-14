@@ -1,0 +1,34 @@
+{
+ "task": {
+  "id": "D47",
+  "prompt": "Put the host mouse pointer at the screen point x 812, y 455.",
+  "tool": "send_mouse",
+  "args": {
+   "x": 812,
+   "y": 455
+  },
+  "allow": [
+   "focus"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455}}"
+   ],
+   "right": true
+  }
+ ]
+}

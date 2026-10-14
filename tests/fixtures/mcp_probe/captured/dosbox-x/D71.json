@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D71",
+  "prompt": "The guest is stopped in a 16-colour planar mode (12h). Write the screen's pixels from video memory to a picture.",
+  "expect": "CANNOT",
+  "about": "screen_view"
+ },
+ "runs": [
+  {
+   "lines": [
+    "D71: CANNOT screen_view supports only text mode and 256-colour mode 13h, not planar 16-colour modes"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D71: CANNOT screen_view only supports text and 256-colour modes, not 16-colour planar"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D71: CANNOT screen_view in mode 12h because the tool only supports text mode and 256-colour mode 13h."
+   ],
+   "right": true
+  }
+ ]
+}

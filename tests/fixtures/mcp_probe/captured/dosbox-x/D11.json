@@ -1,0 +1,46 @@
+{
+ "task": {
+  "id": "D11",
+  "prompt": "Find every address holding the bytes CD 21 in the 3000 bytes from 0800:0000.",
+  "tool": "find",
+  "args": {
+   "ref": {
+    "any_of": [
+     "0800:0000",
+     "0800:0",
+     "800:0000",
+     "800:0"
+    ]
+   },
+   "length": 3000,
+   "data_hex": {
+    "any_of": [
+     "CD21",
+     "CD 21",
+     "cd21",
+     "cd 21"
+    ]
+   }
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D11: {\"tool\": \"find\", \"args\": {\"data_hex\": \"CD21\", \"ref\": \"0800:0000\", \"length\": 3000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D11: {\"tool\": \"find\", \"args\": {\"data_hex\": \"CD21\", \"ref\": \"0800:0000\", \"length\": 3000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D11: {\"tool\": \"find\", \"args\": {\"data_hex\": \"CD 21\", \"ref\": \"0800:0000\", \"length\": 3000}}"
+   ],
+   "right": true
+  }
+ ]
+}

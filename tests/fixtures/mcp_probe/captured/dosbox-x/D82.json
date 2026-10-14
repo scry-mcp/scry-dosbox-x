@@ -1,0 +1,31 @@
+{
+ "task": {
+  "id": "D82",
+  "prompt": "The guest is stopped and its symbol table is loaded. Show me the first 48 bytes of the routine draw_sprite as instructions.",
+  "tool": "disassemble",
+  "args": {
+   "ref": "draw_sprite",
+   "length": 48
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D82: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 48}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D82: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 48}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D82: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\", \"length\": 48}}"
+   ],
+   "right": true
+  }
+ ]
+}

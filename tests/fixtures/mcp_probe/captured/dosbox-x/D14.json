@@ -1,0 +1,33 @@
+{
+ "task": {
+  "id": "D14",
+  "prompt": "Keep only the scanned cells whose value grew since the scan was opened.",
+  "tool": "scan_filter",
+  "args": {
+   "operator": ">"
+  },
+  "grammar": [
+   ">"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D14: {\"tool\": \"scan_filter\", \"args\": {\"operator\": \">\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D14: {\"tool\": \"scan_filter\", \"args\": {\"operator\": \">\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D14: {\"tool\": \"scan_filter\", \"args\": {\"operator\": \">\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

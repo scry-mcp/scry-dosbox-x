@@ -1,0 +1,30 @@
+{
+ "task": {
+  "id": "D16",
+  "prompt": "Send the raw debugger command TIMERIRQ and show me what the screen produced.",
+  "tool": "debug",
+  "args": {
+   "command": "TIMERIRQ"
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D16: {\"tool\": \"debug\", \"args\": {\"command\": \"TIMERIRQ\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D16: {\"tool\": \"debug\", \"args\": {\"command\": \"TIMERIRQ\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D16: {\"tool\": \"debug\", \"args\": {\"command\": \"TIMERIRQ\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

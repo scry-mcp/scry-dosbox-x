@@ -1,0 +1,14 @@
+00000100 T start
+00000104 T known
+0000013a T park
+00000140 T outer
+0000014f T middle
+0000015e T inner
+0000016b T emit
+00000175 D word_v
+00000179 D dword_v
+0000017d D ptr_outer
+0000017f D ptr_middle
+00000183 D s_outer
+00000198 D s_middle
+000001ae D s_inner

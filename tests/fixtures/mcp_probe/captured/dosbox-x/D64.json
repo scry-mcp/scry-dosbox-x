@@ -1,0 +1,30 @@
+{
+ "task": {
+  "id": "D64",
+  "prompt": "The guest is stopped. Which handler does interrupt 0x1C point at, and in whose memory block does it lie?",
+  "tool": "interrupt_vectors",
+  "args": {
+   "number": 28
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": 28}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": 28}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D64: {\"tool\": \"interrupt_vectors\", \"args\": {\"number\": 28}}"
+   ],
+   "right": true
+  }
+ ]
+}

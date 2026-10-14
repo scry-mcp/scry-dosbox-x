@@ -1,0 +1,46 @@
+B_P_L_I_S_T__ooooRegister OverviewoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooEAX=00000000  ESI=0048D908  DS=00AF   ES=00AF   FS=00AF   GS=00BF   SS=00AF Pr32
+EBX=00000000  EDI=00000000  CS=00A7   EIP=0005E9C0  C0 Z0 S0 O0 A0 P0 D0 I1 T0
+ECX=FFFFFFFF  EBP=002B86C8PAGEPSE IOPL3  CPL3
+EDX=00000000  ESP=002B609Ccc=1963039200RUN
+ST0=00000.00  ST1=00000.00  ST2=-0002.29  ST3=00000.40pfi=6216.235044226
+ST4=00000.20  ST5=00000.00  ST6=00050.00  ST7=00000.00
+ooooData view (segmented)ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo00AF:0005C6F0 55 89 E5 57 56 53 83 EC 4C 8B 75 08 8B 86 B0 19  U..WVS..L.u.....
+00AF:0005C700 00 00 85 C0 0F 84 D6 00 00 00 8B 86 C0 19 00 00  ................
+00AF:0005C710 85 C0 74 10 89 04 24 31 FF E8 C2 12 0F 00 89 BE  ..t...$1........
+00AF:0005C720 C0 19 00 00 C7 45 E0 C0 FC 04 00 BB 0B 39 05 00  .....E.......9..
+00AF:0005C730 89 5C 24 04 8B 45 0C 89 04 24 E8 C1 E9 0E 00 85  .\$..E...$......
+00AF:0005C740 C0 89 C7 0F 84 7F 02 00 00 89 45 DC 8D 45 DC 89  ..........E..E..
+00AF:0005C750 04 24 E8 99 D3 FF FF 89 3C 24 89 C3 E8 4F E2 0E  .$......<$...O..
+ LIN=0045C6F0 PHY=001CF6F0
+ooooCode Overviewooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo00A7:0005E9C0 55push ebp
+00A7:0005E9C1 89E5mov  ebp,esp
+00A7:0005E9C3 8B4508mov  eax,[ebp+0008]
+00A7:0005E9C6 5Dpop  ebp
+00A7:0005E9C7 8B80B81A0000mov  eax,[eax+00001AB8]
+00A7:0005E9CD C3ret
+00A7:0005E9CE 6690nop
+00A7:0005E9D0 55push ebp
+00A7:0005E9D1 89E5mov  ebp,esp
+00A7:0005E9D3 8B4508mov  eax,[ebp+0008]
+00A7:0005E9D6 5Dpop  ebp
+ooooOutputoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo03BC: b:00000000 type: 00 parbg
+l:00000000 dpl : 0  00000
+03C4: b:00000000 type: 00 parbg
+l:00000000 dpl : 0  00000
+03CC: b:00000000 type: 00 parbg
+l:00000000 dpl : 0  00000
+03D4: b:00000000 type: 00 parbg
+l:00000000 dpl : 0  00000
+03DC: b:00000000 type: 00 parbg
+l:00000000 dpl : 0  00000
+03E4: b:00000000 type: 00 parbg
+l:00000000 dpl : 0  00000
+03EC: b:00000000 type: 00 parbg
+l:00000000 dpl : 0  00000
+03F4: b:00000000 type: 00 parbg
+l:00000000 dpl : 0  00000
+03FC: b:00000000 type: 00 parbg
+l:00000000 dpl : 0  00000
+Breakpoint list:
+-------------------------------------------------------------------------
+I-> _

@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D90",
+  "prompt": "Show my notes inline on the disassembly of draw_sprite, each beside the instruction it is on.",
+  "expect": "CANNOT",
+  "about": "comment_list"
+ },
+ "runs": [
+  {
+   "lines": [
+    "D90: CANNOT disassembly with inline comments requires separately loading comments and merging them with disassembly output"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D90: CANNOT disassemble does not merge inline comments; comments are tracked separately from code listings"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D90: CANNOT comments require post-processing to display inline with disassembly, not a single tool call"
+   ],
+   "right": true
+  }
+ ]
+}

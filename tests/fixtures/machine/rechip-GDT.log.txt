@@ -1,0 +1,35 @@
+GDT Base:000D16FE Limit:00000087
+0000: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0008: b:000D16FE type: 12 parbg
+      l:00000087 dpl : 0  10000
+0010: b:000D1B86 type: 12 parbg
+      l:000007FF dpl : 0  10000
+0018: b:000CC5B0 type: 1A parbg
+      l:0000FFFF dpl : 0  10000
+0020: b:000D12E0 type: 12 parbg
+      l:0000FFFF dpl : 0  10010
+0028: b:000CC5B0 type: 1A parbg
+      l:0000FFFF dpl : 3  10000
+0030: b:000D12E0 type: 12 parbg
+      l:0000FFFF dpl : 3  10010
+0038: b:00000000 type: 12 parbg
+      l:FFFFFFFF dpl : 3  10011
+0040: b:00000400 type: 12 parbg
+      l:0000FFFF dpl : 3  10000
+0048: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0050: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0058: b:00000000 type: 00 parbg
+      l:00000000 dpl : 0  00000
+0060: b:000D377A type: 0B parbg
+      l:000000F1 dpl : 0  10010
+0068: b:000D3688 type: 09 parbg
+      l:000000F1 dpl : 3  10010
+0070: b:000D4E8C type: 09 parbg
+      l:000000F1 dpl : 3  10010
+0078: b:000D1786 type: 02 parbg
+      l:000003FF dpl : 0  10010
+0080: b:00000018 type: 0C parbg
+      l:000011FC dpl : 3  10000
