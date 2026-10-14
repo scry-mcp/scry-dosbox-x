@@ -20,8 +20,9 @@ the summary with the cells it never reached, and exits with the signal's code.
 
 Sections A-C, F and H-N run on the package's own guests and need nothing. D and E run Speed
 Fight and Line UP on their copies on the bench (`bench_programs`, filled and checked by
-`python -m scry_core.live_bench`), each BLOCKED whole, as K's Speed Fight cells are, naming the
-file, when a copy is absent or off its pin. What a run takes from the environment:
+`python -m scry_core.live_bench`, the bench's `identity.json` saying what each label stands
+for), each BLOCKED whole, as K's Speed Fight cells are, naming the file, when the identity is
+incomplete or a copy is absent or off its pin. What a run takes from the environment:
 
     DOSBOX_X_LIVE_BENCH           the bench's root (`~/.local/share/scry-bench/dosbox-x` unset)
     DOSBOX_X_LIVE_WINDOW_FLAGS    G: the placement flags of a watched window, one token per

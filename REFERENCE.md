@@ -1525,12 +1525,17 @@ Without it that case skips: where a window goes is not this package's decision.
 package owns, `tests/guest/dpmi.c`, a DJGPP program built into the committed `dpmi.exe` and
 its `nm` table `dpmi.sym`, under the DPMI host DOSBox-X provides. The real-mode cases and the
 matrix's program sections run Speed Fight and Line UP from a bench: copies of each program, its
-map, the data it opens and its project's own run conf, pinned by hash in
-`tests/live/bench.json`, under `DOSBOX_X_LIVE_BENCH` (`~/.local/share/scry-bench/dosbox-x` when
-unset). `uv run python -m scry_core.live_bench fill --server dosbox-x --manifest tests/live/bench.json
---from <source_repo>=<checkout>` copies them from their checkouts and `check --server dosbox-x
---manifest tests/live/bench.json` says whether they still match; the session conf is derived from the pinned run conf at run time, and a case
-whose copies are absent or wrong is skipped, or its cells BLOCKED, naming the file.
+map, the data it opens and its project's own run conf, under `DOSBOX_X_LIVE_BENCH`
+(`~/.local/share/scry-bench/dosbox-x` when unset), pinned by hash in the bench's own
+`bench.json`, with an `identity.json` beside it that says which files, launch line, memory-block
+name and E9 line each program's label stands for (its keys: `IDENTITY_KEYS` in
+`tests/live/bench_programs.py`). Neither is tracked, because both name the
+programs; the tracked live code names only the labels. `uv run python -m scry_core.live_bench
+fill --server dosbox-x --manifest <bench>/bench.json --from <source_repo>=<checkout>` copies them
+from their checkouts and `check --server dosbox-x --manifest <bench>/bench.json` says whether
+they still match; the session conf is derived from the pinned run conf at run time, and a case
+whose identity is incomplete or whose copies are absent or wrong is skipped, or its cells
+BLOCKED, naming what is wrong.
 
 **Around those cases sits a matrix**, `tests/live/dosbox_x_live_matrix.py`, run as a script
 rather than collected: every tool in every machine state, at every argument edge, across the

@@ -39,8 +39,6 @@ from matrix_programs import (
 )
 from matrix_screen import judge_program, program_cells
 
-SF_E9 = b"Speed Fight VESA starting"
-
 D_CELLS = cells(
     ("D the program carries its E9 channel", "known: an `info` build writes `[INF]` lines"),
     ("D the load segment from DOS MCBS", "known: the program's MCB, its PSP + 0x10"),
@@ -84,9 +82,10 @@ def section_d() -> None:
         M.block_rest(why)
         return
     exe, mapf = bp.SPEEDF.root / bp.SPEEDF.exe, bp.SPEEDF.root / bp.SPEEDF.map
-    e9 = carries(exe, SF_E9)
+    e9 = carries(exe, bp.SPEEDF.e9_line.encode("latin-1"))
     if e9:
-        M.judge("D the program carries its E9 channel", True, f"{SF_E9!r} in {exe.name}")
+        M.judge("D the program carries its E9 channel", True,
+                f"{bp.SPEEDF.e9_line!r} in {exe.name}")
     else:
         M.block("D the program carries its E9 channel", "prod build, no E9")
     got = speedf_main_loop()
@@ -145,9 +144,9 @@ def speedf_main_loop(wait: float = 30, exempt: str = "", **kw: Any) -> dict[str,
     mapf = bp.SPEEDF.root / bp.SPEEDF.map
     boot(conf=bp.session_conf(bp.SPEEDF, Path(M.fresh("-conf"))), cwd=bp.SPEEDF.root,
          program=bp.SPEEDF.launch, input_port=free_port(), **kw)
-    exec_of("SPEEDF")
+    exec_of(bp.SPEEDF.process)
     cs = program_stop()
-    psp = mcb_psp("SPEEDF")
+    psp = mcb_psp(bp.SPEEDF.process)
     load = psp + 0x10
     loaded = M.call(server.symbols_load, source=str(mapf), base=f"{load * 16:X}")
     found = M.call(server.symbols_find, name="COMPOSE_FRAME")
@@ -162,7 +161,7 @@ def _machine(psp: int, mapf: Path) -> tuple[bool, str]:
     the paragraph below it, and DOS gave it the free memory, so it covers the PSP and every
     segment the map declares rather than equalling them."""
     r = M.call(server.machine_map)
-    rows = [b for b in r.get("mcbs") or [] if b.get("filename") == "SPEEDF"
+    rows = [b for b in r.get("mcbs") or [] if b.get("filename") == bp.SPEEDF.process
             and hexint(b.get("psp_seg")) == psp and hexint(b.get("mcb_seg")) == psp - 1]
     need = PSP_BYTES + image_end(mapf)
     return (ok(r) and len(rows) == 1 and int(rows[0]["size_bytes"]) >= need,
@@ -178,7 +177,7 @@ def _vectors() -> None:
     named = [((rows.get(n, {}).get("symbol") or {}).get("name"),
               (rows.get(n, {}).get("symbol") or {}).get("delta")) for n in (0x08, 0x09)]
     M.judge("D INT 08 and INT 09 lie in the SPEEDF block, named NEW_IRQ_VIDEO and NEW_KEY_PC",
-            ok(r) and hooked == ["SPEEDF", "SPEEDF"]
+            ok(r) and hooked == [bp.SPEEDF.process] * 2
             and named == [("NEW_IRQ_VIDEO", 0), ("NEW_KEY_PC", 0)], f"{hooked} {named}")
     tick = (rows.get(0x1C, {}).get("mcbs") or {}).get("filename")
     M.judge("D INT 1C lies in the INJECT block", ok(r) and tick == "INJECT",

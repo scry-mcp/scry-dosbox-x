@@ -34,7 +34,7 @@ from matrix_programs import (
     stub_cell,
 )
 
-LU_E9 = b"LineUp: startup OK"
+STARTUP_CELL = "E log_wait finds the line the game logs at start"
 
 KEY_CELLS = ("E a key through the serial stub reaches the game's INT 9",
              "E Tab is a coin: Credits: N on E9",
@@ -49,7 +49,7 @@ E_CELLS = cells(
     ("E run_to with the game's timer as control runs for a bound and rests on it",
      "REFERENCE.md, Advancing the machine: at the bound the machine rests on the control"),
     ("E the stub announces the serial route", "REFERENCE.md, Input and the screen"),
-    ("E log_wait LineUp: startup OK", "known: the game logs `LineUp: startup OK` at start"),
+    (STARTUP_CELL, "known: the game logs its identity's `e9` line at start"),
     (KEY_CELLS[0], "measured; known: the game owns INT 9 and reads its own key table"),
     (KEY_CELLS[1], "measured; known: an `info` build logs `Credits: N` on a coin"),
     (KEY_CELLS[2], "REFERENCE.md, Reading and writing; known: `Credits: N` gives the value"),
@@ -71,9 +71,10 @@ def section_e() -> None:
         M.block_rest(why)
         return
     exe, mapf = bp.LINEUP.root / bp.LINEUP.exe, bp.LINEUP.root / bp.LINEUP.map
-    e9 = carries(exe, LU_E9)
+    e9 = carries(exe, bp.LINEUP.e9_line.encode("latin-1"))
     if e9:
-        M.judge("E the program carries its E9 channel", True, f"{LU_E9!r} in {exe.name}")
+        M.judge("E the program carries its E9 channel", True,
+                f"{bp.LINEUP.e9_line!r} in {exe.name}")
     else:
         M.block("E the program carries its E9 channel", "prod build, no E9")
     boot(conf=bp.session_conf(bp.LINEUP, Path(M.fresh("-conf"))), cwd=bp.LINEUP.root,
@@ -82,9 +83,9 @@ def section_e() -> None:
     r = M.call(server.symbols_load, source=str(mapf), base="0")
     judged("E symbols_load refuses a map with no publics", reply=r,
            holds=refused(r, "bad_argument") and "Publics by" in str(r.get("message")))
-    exec_of("LINEUP")
+    exec_of(bp.LINEUP.process)
     program_stop()
-    psp = mcb_psp("LINEUP")
+    psp = mcb_psp(bp.LINEUP.process)
     data = psp + 0x10 + (segment_start(mapf, "_DATA") >> 4)
     timer = program_timer(psp)
     r = run_for(timer, 8)
@@ -93,10 +94,11 @@ def section_e() -> None:
            and int((r.get("control") or {}).get("hits") or 0) > 0)
     stub = stub_cell("E the stub announces the serial route")
     if e9:
-        r = M.call(server.log_wait, pattern="LineUp: startup OK", channel="guest", seconds=5)
-        judged("E log_wait LineUp: startup OK", reply=r, holds=ok(r))
+        r = M.call(server.log_wait, pattern=re.escape(bp.LINEUP.e9_line), channel="guest",
+                   seconds=5)
+        judged(STARTUP_CELL, reply=r, holds=ok(r))
     else:
-        M.block("E log_wait LineUp: startup OK", "prod build, no E9")
+        M.block(STARTUP_CELL, "prod build, no E9")
     control = slow_control(psp) or timer
     if stub and e9:
         M.block(MOVES_CELL, "the key route exists, so this section judges the key path instead")

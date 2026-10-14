@@ -18,6 +18,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
+import bench_programs as bp
 from matrix_common import (
     GUEST,
     M,
@@ -305,7 +306,7 @@ def speedf_comments(mapf: Path, base: str) -> None:
             M.block(label, f"the map names COMPOSE_FRAME {n} time(s) at {sorted(places)}, not "
                            "the two lines at one place the copy moves: no rebuild to load")
         return
-    moved = Path(tempfile.mkdtemp(prefix="dosbox-x-matrix-")) / "SPEEDF.MAP"
+    moved = Path(tempfile.mkdtemp(prefix="dosbox-x-matrix-")) / Path(bp.SPEEDF.map).name
     moved.write_text(shifted, encoding="latin-1")
     here = must(M.call(server.symbols_find, name="COMPOSE_FRAME"), "COMPOSE_FRAME")
     linear = int(here["symbols"][0]["linear"])
