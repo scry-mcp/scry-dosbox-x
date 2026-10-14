@@ -535,9 +535,10 @@ BY_OP: dict[str, Check] = {
 }
 
 #: TOOLS DELIBERATELY WITHOUT AN ENTRY, named so an absent entry and a forgotten one cannot
-#: look alike. They take no argument (`build_check`, `status`, `close`, `stop`, `scan_clear`,
-#: `state_list`, `breakpoint_list`, `watch_list`, `captures`, `machine_map`,
-#: `screen_signature`, `call_stack`, `comment_list`); or a flag every value of which is valid
+#: look alike. They take only a path their body judges first (`build_check`'s `binary`), or no
+#: argument at all (`status`, `close`, `stop`, `scan_clear`, `state_list`, `breakpoint_list`,
+#: `watch_list`, `captures`, `machine_map`, `screen_signature`, `call_stack`,
+#: `comment_list`); or a flag every value of which is valid
 #: (`registers`); or a `ref` that matches only against the declarations the session's store
 #: holds (`breakpoint_clear`, `watch_clear`).
 MACHINE_JUDGES = frozenset({

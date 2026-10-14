@@ -28,7 +28,8 @@ INVENTORY = frozenset({
     ("start", "state_dir"), ("memdump", "dest"), ("trace", "dest"), ("snapshot", "dest"),
     ("palette", "dest"), ("screen_view", "dest"), ("capture_frame", "dest"),
     ("capture_frame", "source"), ("symbols_load", "source"), ("symbols_load", "types"),
-    ("comment_save", "dest"), ("comment_load", "source"),
+    ("comment_save", "dest"), ("comment_load", "source"), ("start", "binary"),
+    ("build_check", "binary"),
 })
 
 
@@ -143,7 +144,7 @@ def _start_stubbed(**kw: Any) -> dict[str, Any]:
     """`start` as far as it goes before a process: the emulator is never spawned."""
     def build(launch: ds.Launch) -> Any:
         raise ds.Invalid("session_broken", "not starting anything")
-    with mock.patch("dosbox_x_server.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
+    with mock.patch("dosbox_binary.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
          mock.patch("dosbox_x_server.ds.Session", build):
         reply: Any = server.start(**kw)
     return cast(dict[str, Any], reply)
@@ -166,6 +167,7 @@ def _base(tool: str, tmp_path: Path) -> dict[str, Any]:
         "symbols_load": {"source": str(sym), "types": str(sym)},
         "comment_save": {"dest": str(tmp_path / "c.tsv")},
         "comment_load": {"source": str(tmp_path / "c.tsv")},
+        "build_check": {},
     }
     return table[tool]
 
@@ -323,9 +325,27 @@ def test_start_judges_a_path_before_a_live_session_or_the_binary(tmp_path: Path)
     _refused(got, "bad_argument", "cwd='~/x'")
     assert cast(object, dstate.STATE.session) is live
     dstate.STATE.session = None
-    with mock.patch("dosbox_x_server.shutil.which", lambda _n: None):
+    with mock.patch("dosbox_binary.shutil.which", lambda _n: None):
         got = cast(dict[str, Any], server.start(conf="rel.conf", cwd="/", seconds=60))
     _refused(got, "bad_argument", "conf='rel.conf'")
+
+
+def test_start_judges_the_binary_s_shape_before_a_live_or_expired_session(
+        tmp_path: Path) -> None:
+    """`binary` is a path like the others: a relative one is the refusal whatever the session
+    is, and an expired session is neither closed nor its symbols forgotten for it."""
+    live = install()
+    got = cast(dict[str, Any], server.start(conf="/x.conf", cwd="/", seconds=60,
+                                            binary="rel/dosbox-x"))
+    _refused(got, "bad_argument", "binary='rel/dosbox-x'")
+    assert cast(object, dstate.STATE.session) is live
+    expired = install(alive=False)
+    closed: list[bool] = []
+    expired.close = lambda **_k: closed.append(True)   # type: ignore[method-assign]
+    got = cast(dict[str, Any], server.start(conf="/x.conf", cwd="/", seconds=60,
+                                            binary="~/dosbox-x"))
+    _refused(got, "bad_argument", "binary='~/dosbox-x'")
+    assert closed == [] and cast(object, dstate.STATE.session) is expired
 
 
 def test_a_start_refused_for_another_reason_creates_no_directory(tmp_path: Path) -> None:

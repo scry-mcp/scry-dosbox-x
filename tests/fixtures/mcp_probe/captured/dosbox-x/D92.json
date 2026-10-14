@@ -1,0 +1,36 @@
+{
+ "task": {
+  "id": "D92",
+  "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 1200 seconds, nobody watching, running the emulator I built at /opt/dbx-dev/src/dosbox-x instead of the installed one.",
+  "tool": "start",
+  "args": {
+   "conf": "/opt/dosfury/fury.conf",
+   "cwd": "/opt/dosfury",
+   "seconds": 1200,
+   "binary": "/opt/dbx-dev/src/dosbox-x"
+  },
+  "allow": [
+   "mode"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

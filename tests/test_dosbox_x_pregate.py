@@ -199,7 +199,7 @@ def test_a_start_plan_is_judged_whole_before_anything_starts(tmp_path: Path) -> 
         booted.append(launch)
         raise ds.Invalid("session_broken", "not starting anything")
     kw: dict[str, Any] = {"conf": str(conf), "cwd": str(tmp_path), "seconds": 60}
-    with mock.patch("dosbox_x_server.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
+    with mock.patch("dosbox_binary.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
          mock.patch("dosbox_x_server.ds.Session", boot):
         _refused(server.start(**kw, plan=[{"op": "nope"}]), "bad_argument", "nope")
         _refused(server.start(**kw, plan=[{"op": "registers"}], plan_wait=-1), "bad_argument",

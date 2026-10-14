@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 import time
 from collections import Counter
 from collections.abc import Callable
@@ -219,9 +220,13 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
     own behind."""
     path = target(session, dest)
     ds.console_listening(session, "a trace")
-    binary = ds.build_binary()
+    # THE SESSION'S OWN BUILD, never the PATH's: with the binary ladder they can differ. `which`
+    # keeps an absolute one as it is and finds a hand-built `Launch`'s bare name on the PATH.
+    binary = shutil.which(session.launch.binary)
     if binary is None:
-        raise ds.Invalid("host_failed", f"no `{ds.Launch.binary}` on PATH to read the build from")
+        raise ds.Invalid("host_failed",
+            f"the session's emulator `{session.launch.binary}` is not an executable file any "
+            f"more, so its build cannot be read")
     if not ds.heavy_debug(binary):
         raise ds.Invalid("no_channel",
             f"`{binary}` was built without the debugger's CPU log (only a heavy-debug build "

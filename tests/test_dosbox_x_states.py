@@ -305,7 +305,7 @@ def test_click_menu_finds_the_item_by_name_and_names_what_stopped_it(
     System Events is asked; a host without the grant is told where it is given."""
     fake = ClickFake(tmp_path)
     monkeypatch.setattr(ds, "accessibility_trusted", lambda: True)
-    monkeypatch.setattr(ds, "other_emulators", lambda own: [])   # alone on the host here
+    monkeypatch.setattr(ds, "other_emulators", lambda own, binary: [])   # alone on the host here
     monkeypatch.setattr(subprocess, "Popen", _popen("Save state\n"))
     took = ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state")
     assert took >= 0
@@ -398,14 +398,14 @@ def test_click_menu_refuses_while_another_emulator_is_alive_naming_it(
     another `dosbox-x` alive is refused, naming the pids, and nothing is sent."""
     fake = ClickFake(tmp_path)
     monkeypatch.setattr(ds, "accessibility_trusted", lambda: True)
-    monkeypatch.setattr(ds, "other_emulators", lambda own: [1984, 2001])
+    monkeypatch.setattr(ds, "other_emulators", lambda own, binary: [1984, 2001])
     calls: list[Any] = []
     monkeypatch.setattr(subprocess, "Popen", lambda *a, **k: calls.append(a))
     with pytest.raises(ds.Invalid, match="1984") as exc:
         ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state")
     assert exc.value.code == "host_failed" and "2001" in str(exc.value)
     assert calls == [], "nothing was sent to System Events"
-    monkeypatch.setattr(ds, "other_emulators", lambda own: [])
+    monkeypatch.setattr(ds, "other_emulators", lambda own, binary: [])
     monkeypatch.setattr(subprocess, "Popen", _popen("Save state\n"))
     assert ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state") >= 0
 
@@ -420,12 +420,24 @@ def test_other_emulators_reads_ps_by_binary_name_and_leaves_its_own_pid_out(
                "  777 python server.py dosbox-x\n"
                " 2001 /usr/local/bin/dosbox-x\n")
     monkeypatch.setattr(subprocess, "run", _ran(listing))
-    assert ds.other_emulators(4242) == [1984, 2001]
-    assert ds.other_emulators(1) == [1984, 2001, 4242]
+    assert ds.other_emulators(4242, "dosbox-x") == [1984, 2001]
+    assert ds.other_emulators(1, "/opt/homebrew/bin/dosbox-x") == [1984, 2001, 4242]
     monkeypatch.setattr(subprocess, "run", _ran("", returncode=1))
     with pytest.raises(ds.Invalid, match="ps") as exc:
-        ds.other_emulators(4242)
+        ds.other_emulators(4242, "dosbox-x")
     assert exc.value.code == "host_failed", "a listing that failed is not an empty listing"
+
+
+def test_other_emulators_sees_a_neighbour_running_the_session_s_own_build(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A session started with `binary` naming a build under another name: a second emulator of
+    that build is a neighbour too, and one of another name still is not."""
+    listing = ("  PID ARGS\n"
+               " 4242 /opt/dbx/dosbox-x-dev -conf a.conf\n"
+               " 1984 /opt/dbx/dosbox-x-dev -conf b.conf\n"
+               " 2001 /opt/other/emu -conf c.conf\n")
+    monkeypatch.setattr(subprocess, "run", _ran(listing))
+    assert ds.other_emulators(4242, "/opt/dbx/dosbox-x-dev") == [1984]
 
 
 def test_state_list_keeps_the_working_slot_apart_from_the_named_states(tmp_path: Path) -> None:
@@ -546,7 +558,7 @@ def test_click_menu_reports_its_progress_while_system_events_walks_the_menus(
     looking for, on the fleet's cadence, until the script answers."""
     fake = ClickFake(tmp_path)
     monkeypatch.setattr(ds, "accessibility_trusted", lambda: True)
-    monkeypatch.setattr(ds, "other_emulators", lambda own: [])
+    monkeypatch.setattr(ds, "other_emulators", lambda own, binary: [])
     monkeypatch.setattr(ds, "PROGRESS_EVERY_S", 0.05)
     monkeypatch.setattr(subprocess, "Popen", _popen("Save state\n", polls=6))
     ticks: list[tuple[float, float, str]] = []

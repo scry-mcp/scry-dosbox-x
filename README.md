@@ -71,8 +71,10 @@ this.
 
 ## Two minutes to a first answer
 
-You need `dosbox-x` on your `PATH` built with the debugger (most distribution builds
-are; `dosbox-x -helpdebug` listing `-break-start` is the tell) and Python 3.11 or newer.
+You need a DOSBox-X built with the debugger (most distribution builds are;
+`dosbox-x -helpdebug` listing `-break-start` is the tell): the `dosbox-x` on your `PATH`,
+or another build named by `DOSBOX_X_BINARY` or by `start`'s `binary`. And Python 3.11 or
+newer.
 The debugger wants a terminal, and the server provides one itself. Sending input through
 the window additionally needs `swiftc` and macOS Accessibility trust; the serial route
 needs neither. Absence of any of these is named by the tool that needs it, never worked

@@ -72,6 +72,7 @@ from scry_core.reply_contract import Invalid as Invalid
 # into one namespace, so a bare top-level `symbols` here would bind to whichever package
 # imported one first, and a reverse-engineering pack is the kind of project that grows a
 # `symbols.py` of its own.
+import dosbox_binary as binaries
 import dosbox_paths as paths
 import dosbox_symbols as symbols
 
@@ -744,7 +745,9 @@ class Launch:
     capture_video: bool = False
     captures_dir: Path | None = None
     logfile: Path | None = None
-    binary: str = "dosbox-x"
+    # THE EMULATOR, the absolute path `start` resolved (`dosbox_binary`); the bare name is the
+    # default a hand-built `Launch` runs, the PATH's.
+    binary: str = binaries.EMULATOR_NAME
     # THE SERIAL INPUT ROUTE: a TCP port the emulator's COM1 listens on (`serial1=nullmodem`),
     # which the resident stub in `guest/INJECT.COM` drains into the integration device's
     # keyboard injection register. Set, the session connects to it at start and `send_keys`
@@ -1130,11 +1133,6 @@ def collect(source: Path, dest: Path, what: str) -> Path:
 # typing `LOG` to find out (a command the debugger does not know poisons its input line).
 HEAVY_DEBUG_MARK = b"LOGS/LOGL/LOGC [num]"
 _heavy_debug_seen: dict[tuple[str, int, int], bool] = {}
-
-
-def build_binary() -> str | None:
-    """The emulator binary a session would start, as the PATH finds it now."""
-    return shutil.which(Launch.binary)
 
 
 def heavy_debug(binary: str) -> bool:
@@ -1634,10 +1632,12 @@ STATE_META = {"version": "DOSBox-X_Version", "program": "Program_Name",
               "time_stamp": "Time_Stamp"}
 
 
-def other_emulators(own_pid: int) -> list[int]:
-    """The pids of every other `dosbox-x` on this host, read off `ps` the fleet's way: the
-    binary's BASENAME required on the line, so a helper whose arguments merely name the
-    emulator is not one. A listing that failed is a refusal, never an empty answer."""
+def other_emulators(own_pid: int, binary: str) -> list[int]:
+    """The pids of every other emulator on this host, read off `ps` the fleet's way: the
+    BASENAME required on the line, the PATH's name or that of `binary`, the session's own build,
+    so a helper whose arguments merely name the emulator is not one. A listing that failed is a
+    refusal, never an empty answer."""
+    names = {binaries.EMULATOR_NAME, os.path.basename(binary)}
     got = subprocess.run(["ps", "-Ao", "pid,args"], capture_output=True, text=True,
                          check=False, env={**os.environ, "LC_ALL": "C"})
     if got.returncode != 0:
@@ -1649,7 +1649,7 @@ def other_emulators(own_pid: int) -> list[int]:
         parts = line.split(None, 2)
         if len(parts) < 2 or not parts[0].isdigit():
             continue
-        if parts[1].rsplit("/", 1)[-1] == Launch.binary and int(parts[0]) != own_pid:
+        if parts[1].rsplit("/", 1)[-1] in names and int(parts[0]) != own_pid:
             pids.append(int(parts[0]))
     return sorted(pids)
 
@@ -4371,7 +4371,7 @@ class Session:
         # the same spot of one display, System Events activating the wrong instance of
         # one bundle). Until the route is proven process-exact, a second emulator alive
         # refuses the click, by name, and nothing is sent.
-        if others := other_emulators(self.proc.pid):
+        if others := other_emulators(self.proc.pid, self.launch.binary):
             raise Invalid("host_failed",
                 f"another dosbox-x is alive on this host (pid {', '.join(map(str, others))}) "
                           f"and a menu click by pid has been measured landing in the wrong "

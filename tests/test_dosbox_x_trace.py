@@ -42,17 +42,6 @@ def cap(name: str) -> str:
     return (TRACE / f"{name}.txt").read_text()
 
 
-@pytest.fixture(autouse=True)
-def heavy_build(tmp_path_factory: pytest.TempPathFactory,
-                monkeypatch: pytest.MonkeyPatch) -> Path:
-    """A build that carries the CPU log, whatever is installed on the host running the suite:
-    the seam is the binary `trace` finds on the PATH."""
-    binary = tmp_path_factory.mktemp("bin") / "dosbox-x"
-    binary.write_bytes(b"\x00help\x00" + ds.HEAVY_DEBUG_MARK + b"\x00")
-    monkeypatch.setattr(ds, "build_binary", lambda: str(binary))
-    return binary
-
-
 class Tracer(Debugger):
     """The debugger's side of a `LOG` command: each one typed takes the next scripted answer,
     the captured log it leaves in the working directory (None: the file is left as it is) and
@@ -61,12 +50,19 @@ class Tracer(Debugger):
 
     def __init__(self, panes: list[str], cwd: Path,
                  logs: list[tuple[str | None, str | None]], *,
-                 captures_dir: Path | None = None, running: bool = False) -> None:
+                 captures_dir: Path | None = None, running: bool = False,
+                 binary: Path | None = None) -> None:
         super().__init__(panes)
         self.logs = list(logs)
         self.running = running
+        # THE SESSION'S OWN BUILD is what `trace` reads, so a case's session carries one that
+        # has the CPU log, whatever is installed on the host running the suite.
+        if binary is None:
+            binary = cwd.parent / "heavy-dosbox-x"
+            binary.write_bytes(b"\x00help\x00" + ds.HEAVY_DEBUG_MARK + b"\x00")
+            binary.chmod(0o755)
         self.launch = SimpleNamespace(logfile=None, watched=False, input_port=None, cwd=cwd,
-                                      captures_dir=captures_dir)
+                                      captures_dir=captures_dir, binary=str(binary))
 
     def _write(self, data: bytes) -> None:
         super()._write(data)
@@ -635,10 +631,34 @@ def test_a_build_without_the_cpu_log_is_refused_before_anything_is_typed(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     plain = tmp_path / "plain"
     plain.write_bytes(b"\x00help\x00LOG? no\x00")
-    monkeypatch.setattr(ds, "build_binary", lambda: str(plain))
-    dbg = settle(tmp_path)
+    plain.chmod(0o755)
+    dbg = settle(tmp_path, binary=plain)
     got = cast(dict[str, Any], server.trace(instructions=16, dest=str(tmp_path / "h.trace")))
     refused_quietly(dbg, got, "no_channel", "heavy_debug")
+
+
+def test_a_hand_built_launch_s_bare_name_is_found_on_the_path(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A `Launch` built without `start` carries the bare name; `trace` reads the build the PATH
+    gives it, as the session itself was spawned."""
+    heavy = tmp_path / "bin" / "dosbox-x"
+    heavy.parent.mkdir()
+    heavy.write_bytes(b"\x00help\x00" + ds.HEAVY_DEBUG_MARK + b"\x00")
+    heavy.chmod(0o755)
+    monkeypatch.setenv("PATH", str(heavy.parent))
+    dbg = settle(tmp_path, binary=Path("dosbox-x"))
+    got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
+                                            dest=str(tmp_path / "b.trace")))
+    assert got["status"] == "ok", got
+    assert dbg.launch.binary == "dosbox-x"
+
+
+def test_a_session_build_that_is_gone_is_refused_before_anything_is_typed(
+        tmp_path: Path) -> None:
+    gone = tmp_path / "gone" / "dosbox-x"
+    dbg = settle(tmp_path, binary=gone)
+    got = cast(dict[str, Any], server.trace(instructions=16, dest=str(tmp_path / "g.trace")))
+    refused_quietly(dbg, got, "host_failed", "not an executable file")
 
 
 def test_a_log_already_in_the_working_directory_is_refused_never_read_or_deleted(

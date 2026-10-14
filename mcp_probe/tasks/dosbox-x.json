@@ -202,5 +202,7 @@
   {"id": "D87", "prompt": "The guest is stopped. Remove the note I left at 0814:010B.", "tool": "comment_delete", "args": {"ref": "0814:010B"}},
   {"id": "D88", "prompt": "Write every note I have left on this program to /tmp/game.comments.tsv so I can commit it with the map.", "tool": "comment_save", "args": {"dest": "/tmp/game.comments.tsv"}},
   {"id": "D89", "prompt": "The guest is stopped. Bring in the notes the project keeps in /tmp/game.comments.tsv.", "tool": "comment_load", "args": {"source": "/tmp/game.comments.tsv"}},
-  {"id": "D90", "prompt": "Show my notes inline on the disassembly of draw_sprite, each beside the instruction it is on.", "expect": "CANNOT", "about": "comment_list"}
+  {"id": "D90", "prompt": "Show my notes inline on the disassembly of draw_sprite, each beside the instruction it is on.", "expect": "CANNOT", "about": "comment_list"},
+  {"id": "D91", "prompt": "Before I start anything: does the DOSBox-X I built at /opt/dbx-dev/src/dosbox-x carry the debugger? Ask about that build, not the installed one.", "tool": "build_check", "args": {"binary": "/opt/dbx-dev/src/dosbox-x"}},
+  {"id": "D92", "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 1200 seconds, nobody watching, running the emulator I built at /opt/dbx-dev/src/dosbox-x instead of the installed one.", "tool": "start", "args": {"conf": "/opt/dosfury/fury.conf", "cwd": "/opt/dosfury", "seconds": 1200, "binary": "/opt/dbx-dev/src/dosbox-x"}, "allow": ["mode"]}
 ]}

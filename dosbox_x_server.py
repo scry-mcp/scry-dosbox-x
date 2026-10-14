@@ -77,7 +77,6 @@ from __future__ import annotations
 import functools
 import inspect
 import json
-import shutil
 import subprocess
 import sys
 import threading
@@ -111,6 +110,7 @@ sys.path.append(str(Path(__file__).resolve().parent))
 from scry_core import strict_arguments as strict  # noqa: E402
 
 import dosbox_arming as arming  # noqa: E402
+import dosbox_binary as binaries  # noqa: E402
 import dosbox_captures as caps  # noqa: E402
 import dosbox_checks as checks  # noqa: E402
 import dosbox_code as code  # noqa: E402
@@ -379,14 +379,20 @@ def _live() -> ds.Session:
 # ------------------------------------------------------------------- session: the build
 
 @tool("Check the build", summary=one_line.build_check, read_only=True)
-def build_check() -> dict[str, Any]:
-    """Whether this server's PRECONDITIONS hold: the `dosbox-x` binary is on the PATH and
-    that build carries the DEBUGGER. Run it BEFORE `start`; it REFUSES while a session is
-    live (answering means starting a second emulator). Reply: `binary`, `debugger`,
-    `heavy_debug` (the build carries the debugger's CPU log, which `trace` needs), and
-    INVALID naming the precondition that fails; `heavy_debug: false` is an answer, and it is
-    `trace` that refuses such a build. It is about the build, never about a reading.
+def build_check(binary: str = "") -> dict[str, Any]:
+    """Whether this server's PRECONDITIONS hold: a DOSBox-X binary resolves and that build
+    carries the DEBUGGER. Run it BEFORE `start`; it REFUSES while a session is live
+    (answering means starting a second emulator). `binary`: the absolute path of the build to
+    ask about; omitted, the `DOSBOX_X_BINARY` variable, else the PATH's `dosbox-x`, as `start`
+    resolves it; a named build that does not resolve is refused, never replaced. Reply:
+    `binary` (the absolute path), `binary_origin` (`argument`, `DOSBOX_X_BINARY` or `PATH`),
+    `version` (the build's first line, or `{available: false, why}`), `debugger`,
+    `heavy_debug` (the build carries the debugger's CPU log, which `trace` needs), and INVALID
+    naming the precondition that fails; `heavy_debug: false` is an answer, and it is `trace`
+    that refuses such a build. It is about the build, never about a reading.
     """
+    if binary:          # the shape first, as every path's, whatever the session is
+        paths.absolute("binary", binary)
     if STATE.session is not None and STATE.session.alive():
         raise ds.Invalid("session_live",
             "a session is live, and answering this means starting a SECOND emulator "
@@ -395,12 +401,11 @@ def build_check() -> dict[str, Any]:
             "the neighbour. What this examines is a property of the BUILD and does not "
             "change while a session is up. `close` first, or read the answer you "
             "already have")
-    binary = shutil.which(ds.Launch.binary)
-    if binary is None:
-        raise ds.Invalid("host_failed", f"no `{ds.Launch.binary}` on PATH: nothing here can work")
+    resolved = binaries.resolve(binary)
     try:
         got = subprocess.run(
-            [binary, "-helpdebug"], capture_output=True, text=True, check=False,
+            [resolved.path, "-helpdebug"], capture_output=True, text=True, check=False,
+            stdin=subprocess.DEVNULL,
             # WHAT PROTECTS THIS CALL IS THE TIMEOUT, AND NOTHING ELSE. No headless
             # setting is passed (`-set "sdl videodriver=dummy"` is a session's, and
             # headless is the application's setting, never an environment variable), and
@@ -411,20 +416,20 @@ def build_check() -> dict[str, Any]:
             timeout=20)
     except subprocess.TimeoutExpired:
         raise ds.Invalid("host_failed",
-            f"`{binary} -helpdebug` did not return in 20 s. On this emulator an "
+            f"`{resolved.path} -helpdebug` did not return in 20 s. On this emulator an "
             f"option it does not recognise does not fail, it hangs, so that is what "
             f"a build without this option looks like") from None
     text = got.stdout + got.stderr
     has_debugger = "-break-start" in text
     if not has_debugger:
         raise ds.Invalid("host_failed",
-            f"`{binary}` does not list `-break-start`, so it was built without the "
+            f"`{resolved.path}` does not list `-break-start`, so it was built without the "
             f"debugger. The readers of the machine (`registers`, `read_memory`, `memdump`, "
             f"`step`, `debug`), the breakpoints, the watches and the symbol placement all "
             f"need it; the guest's log (`log`, `log_wait`), the captures and the serial-route "
             f"keys do not")
-    return st.reply(binary=binary, debugger=True, heavy_debug=ds.heavy_debug(binary),
-                    tools=registered_tools())
+    return st.reply(**binaries.facts(resolved), debugger=True,
+                    heavy_debug=ds.heavy_debug(resolved.path), tools=registered_tools())
 
 
 # ---------------------------------------------------------- session: start, status, close
@@ -437,12 +442,12 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
           captures_dir: str | None = None,
           plan: list[dict[str, Any]] | None = None,
           plan_wait: float = 30.0, input_port: int | None = None,
-          state_dir: str | None = None,
+          state_dir: str | None = None, binary: str = "",
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Open ONE live DOSBox-X session from your conf and park it at the debugger, stopped
     and ready. Refuses while a session is live (one machine per server).
 
-    Every path is absolute (`~` is not expanded, a relative path is refused): `cwd`, the
+    Every path is absolute, `~` unexpanded: `cwd`, the
     emulator's working directory, there; `conf`; `logfile`, its directory there; `captures_dir`
     and `state_dir`, created with their parents. `seconds` is a REQUIRED hard
     bound, at most 4 hours: a backstop, `close` is the act. `mode`: `headless` (no window) or
@@ -455,16 +460,18 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
     `exit`); `capture_video` records it for `captures`. `plan`: operations run on the fresh
     session with `perform`'s rules, `plan_wait` bounding each wait. `input_port`: COM1 as a TCP
     socket for `send_keys`, the conf's autoexec running the reply's `stub` first. `state_dir`:
-    what `state_save` writes to (`save` under `cwd`).
+    what `state_save` writes to (`save` under `cwd`). `binary`: the build to run;
+    omitted, `DOSBOX_X_BINARY`, else the PATH's `dosbox-x`.
 
-    Reply: `mode`, `ready_after_s`, `argv`, plus `stub` and `input_port` on the serial route,
-    and `rearm_refused` (why) when this build's stored raw breakpoints could not be re-armed;
-    with `plan`, the sequence account with the start facts under `start`. Every reply carries
-    `session` (see `status`).
+    Reply: `mode`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, plus `stub`
+    and `input_port` on the serial route, and `rearm_refused` (why) when this build's stored
+    raw breakpoints could not be re-armed; with `plan`, the sequence account, holding the start
+    facts under `start`. Every reply carries `session` (see `status`).
 
-    Refused before anything starts: a path not absolute, a missing conf, `cwd` or `logfile`
-    directory, `seconds` out of range, `shared` without `window_flags` or `headless` with
-    them, a glued or shredded `-set`, `capture_video` without `program`, a busy port.
+    Refused before anything starts: a path not absolute, an unresolved binary, a missing
+    conf, `cwd` or `logfile` directory, `seconds` out of range, `shared` without
+    `window_flags` or `headless` with them, a glued or shredded `-set`, `capture_video`
+    without `program`, a busy port.
 
     Reference: REFERENCE.md, The session.
     """
@@ -476,6 +483,8 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
                      if captures_dir is not None else None)
     logfile_path = paths.absolute("logfile", logfile) if logfile is not None else None
     state_path = paths.absolute("state_dir", state_dir) if state_dir is not None else None
+    if binary:
+        paths.absolute("binary", binary)
     if STATE.session is not None:
         if STATE.session.alive():
             raise ds.Invalid("session_live", "a session is already live. `close` it first: two "
@@ -498,8 +507,7 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
     STATE.forget_symbols()
     if mode not in ("headless", "shared"):
         raise ds.Invalid("bad_argument", f"unknown mode {mode!r}: it is `headless` or `shared`")
-    if shutil.which(ds.Launch.binary) is None:
-        raise ds.Invalid("host_failed", f"no `{ds.Launch.binary}` on PATH")
+    resolved = binaries.resolve(binary)
 
     cwd_path = paths.resolved("cwd", cwd_given)
     launch = ds.Launch(
@@ -514,6 +522,7 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
         logfile=logfile_path,
         input_port=input_port,
         state_dir=state_path if state_path is not None else cwd_path / "save",
+        binary=resolved.path,
     )
     ds.validate(launch)
     # KEY AND VALIDATE THE DECLARATION STORE BEFORE THE EMULATOR BOOTS. Its constructor
@@ -530,6 +539,7 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
     for name, made in (("captures_dir", launch.captures_dir), ("state_dir", launch.state_dir)):
         if made is not None:
             paths.make_directory(name, made)
+    binary_facts = binaries.facts(resolved)
     session = ds.Session(launch)
     try:
         ready = session.wait_ready(progress=_progress(ctx))
@@ -579,7 +589,8 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
     # wheel install puts it wherever the package landed, which nobody should guess.
     serial: dict[str, Any] = ({"stub": str(Path(__file__).with_name("guest") / "INJECT.COM"),
                                "input_port": input_port} if input_port is not None else {})
-    started = st.reply(mode=mode, ready_after_s=ready, argv=session.argv, **serial, **rearm)
+    started = st.reply(mode=mode, ready_after_s=ready, argv=session.argv, **binary_facts, **serial,
+                       **rearm)
     if not plan:
         return started
     # A PLAN RUNS ON THE FRESH SESSION (decision 2), through the SAME executor `perform`

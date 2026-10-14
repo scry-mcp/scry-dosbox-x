@@ -62,8 +62,8 @@ def _effect(effect: dict[str, Any], none: str) -> str:
 # ------------------------------------------------------------------------------ session
 
 def build_check(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"build_check: {reply.get('binary')}, debugger {reply.get('debugger')}, heavy_debug "
-            f"{reply.get('heavy_debug')}")
+    return (f"build_check: {reply.get('binary')} ({reply.get('binary_origin')}), debugger "
+            f"{reply.get('debugger')}, heavy_debug {reply.get('heavy_debug')}")
 
 
 def start(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -72,8 +72,9 @@ def start(args: dict[str, Any], reply: dict[str, Any]) -> str:
     plan = ""
     if reply.get("ran") is not None:
         plan = f", then {reply.get('completed')} of {len(args.get('plan') or [])} steps"
-    return (f"start {Path(str(args.get('conf', ''))).name}: {facts.get('mode')}, debugger "
-            f"answered after {facts.get('ready_after_s')}s{plan}")
+    return (f"start {Path(str(args.get('conf', ''))).name}: {facts.get('mode')} on "
+            f"{facts.get('binary')} ({facts.get('binary_origin')}), debugger answered after "
+            f"{facts.get('ready_after_s')}s{plan}")
 
 
 def status(args: dict[str, Any], reply: dict[str, Any]) -> str:

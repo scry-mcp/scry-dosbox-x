@@ -1313,7 +1313,7 @@ def _launch_of(**kw: Any) -> ds.Launch:
         seen.append(launch)
         raise ds.Invalid("session_broken", "not starting anything: this case wants the Launch only")
 
-    with mock.patch("dosbox_x_server.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
+    with mock.patch("dosbox_binary.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
          mock.patch("dosbox_x_server.ds.Session", build):
         server.start(**kw)
     assert seen, "`start` never reached the Launch"
@@ -1345,7 +1345,7 @@ def test_start_refuses_a_tilde_in_every_path_and_builds_nothing(
     kw: dict[str, Any] = {"conf": str(conf), "cwd": str(tmp_path), "seconds": 30,
                           arg: "~/x"}
     built: list[ds.Launch] = []
-    with mock.patch("dosbox_x_server.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
+    with mock.patch("dosbox_binary.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
          mock.patch("dosbox_x_server.ds.Session", built.append):
         got = cast(dict[str, Any], server.start(**kw))
     assert got["code"] == "bad_argument" and f"{arg}='~/x'" in got["message"], got
@@ -2081,10 +2081,10 @@ def test_build_check_is_invalid_and_not_ok_when_there_is_no_binary() -> None:
     THE PATH IS PATCHED, NOT THE ANSWER: `shutil.which` is what decides, so that is
     what the double stands in for, and the real body runs.
     """
-    with mock.patch("dosbox_x_server.shutil.which", lambda _n: None):
+    with mock.patch("dosbox_binary.shutil.which", lambda _n: None):
         got = cast(dict[str, Any], server.build_check())
     assert got["status"] == "INVALID", got
-    assert "nothing here can work" in str(got["message"])
+    assert "no DOSBox-X binary resolves" in str(got["message"])
     assert got.get("binary") is None, "an INVALID reply may not carry a binary"
 
 
@@ -2092,7 +2092,7 @@ def test_build_check_is_invalid_when_the_build_has_no_debugger() -> None:
     """The precondition it exists for. A build without the debugger starts fine and
     then hangs `start` until its timeout, so a `build_check` that could not tell them
     apart would send a caller looking at their config."""
-    with (mock.patch("dosbox_x_server.shutil.which", lambda _n: "/usr/bin/dosbox-x"),
+    with (mock.patch("dosbox_binary.shutil.which", lambda _n: "/usr/bin/dosbox-x"),
           mock.patch("dosbox_x_server.subprocess.run",
                      lambda *_a, **_k: SimpleNamespace(stdout="usage: ...", stderr=""))):
         got = cast(dict[str, Any], server.build_check())
@@ -2106,7 +2106,7 @@ def test_build_check_says_ok_and_names_the_surface_on_a_good_build(tmp_path: Pat
     carrying the help line a heavy-debug build compiles, and one without it says false."""
     binary = tmp_path / "dosbox-x"
     binary.write_bytes(b"\x00" + ds.HEAVY_DEBUG_MARK + b"\x00")
-    with (mock.patch("dosbox_x_server.shutil.which", lambda _n: str(binary)),
+    with (mock.patch("dosbox_binary.shutil.which", lambda _n: str(binary)),
           mock.patch("dosbox_x_server.subprocess.run",
                      lambda *_a, **_k: SimpleNamespace(stdout="-break-start\n",
                                                        stderr=""))):
@@ -2146,7 +2146,7 @@ def test_build_check_refuses_to_start_a_second_emulator_beside_a_live_one() -> N
         spawned.append(list(cmd))
         return SimpleNamespace(stdout="-break-start\n", stderr="")
 
-    with (mock.patch("dosbox_x_server.shutil.which", lambda _n: "/usr/bin/dosbox-x"),
+    with (mock.patch("dosbox_binary.shutil.which", lambda _n: "/usr/bin/dosbox-x"),
           mock.patch("dosbox_x_server.subprocess.run", watched)):
         got = cast(dict[str, Any], server.build_check())
     assert got["status"] == "INVALID", got
@@ -4080,7 +4080,7 @@ def test_start_with_a_plan_runs_it_on_the_fresh_session(tmp_path: Path) -> None:
 
 
 def _start_on_a_booted_fake(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
-                            **kw: Any) -> dict[str, Any]:
+                            which: bool = True, **kw: Any) -> dict[str, Any]:
     """`start` driven whole without an emulator: the session is faked at the seam `start`
     builds it through, and the boot is answered as ready at once."""
     conf = tmp_path / "g.conf"
@@ -4092,10 +4092,71 @@ def _start_on_a_booted_fake(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
         def wait_ready(self, timeout: float = 30.0, progress: Any = None) -> float:
             return 0.5
 
-    monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
+    if which:
+        monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
     with mock.patch("dosbox_x_server.ds.Session", lambda _l: Booted(conf=conf)):
         return cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path), seconds=60,
                                                  **kw))
+
+
+def test_start_launches_the_binary_it_resolved_and_says_which(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The ladder's answer is the emulator the session runs, and the reply names it: the path,
+    the rung it came from and the build's own version line, never a choice made in silence."""
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    mine = tmp_path / "dev" / "dosbox-x"
+    mine.parent.mkdir()
+    mine.write_text('#!/bin/sh\necho "DOSBox-X version dev" >&2; exit 1\n', encoding="utf-8")
+    mine.chmod(0o755)
+    launched: list[ds.Launch] = []
+
+    class Booted(NamesFake):
+        argv = [str(mine), "-conf", "g.conf"]
+
+        def wait_ready(self, timeout: float = 30.0, progress: Any = None) -> float:
+            return 0.5
+
+    def session(launch: ds.Launch) -> Booted:
+        launched.append(launch)
+        return Booted(conf=conf)
+
+    monkeypatch.setenv("PATH", str(tmp_path / "empty"))
+    with mock.patch("dosbox_x_server.ds.Session", session):
+        got = cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path), seconds=60,
+                                                binary=str(mine)))
+    assert got["status"] == "ok", got
+    assert [launch.binary for launch in launched] == [str(mine)]
+    assert (got["binary"], got["binary_origin"], got["version"]) == (
+        str(mine), "argument", "DOSBox-X version dev"), got
+
+
+def test_start_with_no_rung_resolving_is_refused_before_anything_starts(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    monkeypatch.setenv("PATH", str(tmp_path / "empty"))
+    spawned: list[object] = []
+    with mock.patch("dosbox_x_server.ds.Session", lambda launch: spawned.append(launch)):
+        got = cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path), seconds=60))
+    assert got["status"] == "INVALID" and got["code"] == "host_failed", got
+    assert "DOSBOX_X_BINARY held nothing" in got["message"] and spawned == []
+
+
+def test_start_from_the_path_with_a_plan_says_which_build_under_start(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The PATH rung through the tool itself, and the plan's account carrying the three fields
+    under `start` with the rest of the start facts."""
+    on_path = tmp_path / "bin" / "dosbox-x"
+    on_path.parent.mkdir()
+    on_path.write_text('#!/bin/sh\necho "DOSBox-X version path" >&2; exit 1\n', encoding="utf-8")
+    on_path.chmod(0o755)
+    monkeypatch.setenv("PATH", str(on_path.parent))
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch, plan=[{"op": "status"}], plan_wait=0,
+                                  which=False)
+    assert got["status"] == "ok", got
+    assert (got["start"]["binary"], got["start"]["binary_origin"], got["start"]["version"]) == (
+        str(on_path), "PATH", "DOSBox-X version path"), got
 
 
 def test_start_with_a_plan_keeps_session_as_the_last_key(tmp_path: Path,

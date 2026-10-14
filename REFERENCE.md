@@ -66,6 +66,16 @@ refused the same way, by `trace` and `interrupt_vectors` as well. And a dump tha
 the debugger wrote takes its own file away, whichever failure it was, so the next call is not
 refused over it.
 
+**Which DOSBox-X runs is resolved once per `start` and per `build_check`, and said.** The
+ladder is the `binary` argument (an absolute path), else the `DOSBOX_X_BINARY` variable, else
+the `dosbox-x` the PATH finds, and the first rung holding a value is the one taken. A relative
+value is `bad_argument`; one naming no executable file is `host_failed`, naming what all three
+rungs held, and is never passed over for the next, because a caller who named a build and got
+another would be measuring the wrong emulator. Both replies carry `binary` (absolute),
+`binary_origin` (`argument`, `DOSBOX_X_BINARY` or `PATH`) and `version`: the first non-blank
+line `-version` prints, or `{"available": false, "why": ...}` when it printed nothing, did not
+return in 5 s or could not run. Either way the call goes on.
+
 **`build_check` answers about the build, and refuses while a session is live.** It asks the
 question a failure asks first, about the thing that matters: not whether there is a binary
 but whether this build carries the DEBUGGER (`-helpdebug` listing `-break-start`), which the
@@ -82,7 +92,7 @@ console to see whether it answers. `false` is an answer, not a refusal: `trace` 
 such a build.
 
 **Every path you give is absolute, and nothing expands `~`.** `start`'s `cwd`, `conf`,
-`logfile`, `captures_dir` and `state_dir`, `memdump`'s, `trace`'s, `snapshot`'s, `palette`'s,
+`logfile`, `captures_dir`, `state_dir` and `binary`, `build_check`'s `binary`, `memdump`'s, `trace`'s, `snapshot`'s, `palette`'s,
 `screen_view`'s and `capture_frame`'s `dest`, `capture_frame`'s `source`, and
 `symbols_load`'s `source` and `types` go through one judge. A relative path is refused because
 it would be judged against one directory and used in another: this server's own working
@@ -1433,6 +1443,8 @@ added to one file.
   the lock over the one machine, the seam that turns the schema's own refusal into the
   envelope, the session's lifecycle (`start`, `status`, `close`, `build_check`) and the
   readers and advances that are one console call each.
+- **`dosbox_binary.py`**: which DOSBox-X `start` and `build_check` run, by the ladder *The
+  session* sets out, and the build's own version line.
 - **`dosbox_state.py`**: what the server holds between calls (the session, the symbol table,
   the declaration store, the last stop, what waits for the next one) and the envelope every
   reply carries.
