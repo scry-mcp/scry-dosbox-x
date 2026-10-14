@@ -1433,7 +1433,7 @@ NM_TEXT = ("0016df20 T _main\n"
 
 
 def _source(tmp_path: Path, text: str = NM_TEXT) -> str:
-    p = tmp_path / "rechipd.sym"
+    p = tmp_path / "djgpp32.sym"
     p.write_text(text, encoding="utf-8")
     return str(p)
 
@@ -1545,7 +1545,7 @@ def test_a_source_that_is_not_a_symbol_list_is_refused_by_name(tmp_path: Path) -
     src = _source(tmp_path, "make: *** No rule to make target 'all'.  Stop.\n")
     got = cast(dict[str, Any], server.symbols_load(source=src))
     assert got["status"] == "INVALID", got
-    assert "rechipd.sym" in got["message"], got
+    assert "djgpp32.sym" in got["message"], got
     assert "session" in got, got
 
 
@@ -1599,7 +1599,7 @@ def test_an_overlay_symbol_reaches_the_caller_flagged_and_counted(tmp_path: Path
     DPMI selector that does not exist there, which is the tool's own documented refusal.
     """
     install()
-    src = tmp_path / "speedf.map"
+    src = tmp_path / "real16.map"
     src.write_text(TLINK_TEXT, encoding="utf-8")
     got = cast(dict[str, Any], server.symbols_load(source=str(src), base="1000"))
     assert got["status"] == "ok", got
@@ -6552,7 +6552,7 @@ def test_a_types_name_the_table_lacks_is_refused_before_anything_is_written(
     first = cast(dict[str, Any], server.symbols_load(source=src, pattern="_engine_create"))
     assert first["table_total"] == 1, first
     loaded_before = list(s.loaded)
-    types_file = tmp_path / "rechipd.types"
+    types_file = tmp_path / "dos-djgpp32.types"
     types_file.write_text("_no_such_symbol: u32\n", encoding="utf-8")
     bad = cast(dict[str, Any], server.symbols_load(source=src, pattern="_main",
                                                    types=str(types_file)))
@@ -6809,7 +6809,7 @@ def test_symbols_load_takes_its_base_as_hex_text(tmp_path: Path, spelled: str) -
     """A caller holds a load address in hex, so the base is hex text and no conversion is left
     to the caller."""
     install()
-    src = tmp_path / "speedf.map"
+    src = tmp_path / "real16.map"
     src.write_text(TLINK_TEXT, encoding="utf-8")
     got = cast(dict[str, Any], server.symbols_load(source=str(src), base=spelled))
     assert got["status"] == "ok", got
@@ -6821,7 +6821,7 @@ def test_symbols_load_refuses_a_base_that_is_not_hex_text(tmp_path: Path, bad: o
     """An integer is refused, not coerced: a caller passing one has done the conversion this
     argument exists to take away."""
     install()
-    src = tmp_path / "speedf.map"
+    src = tmp_path / "real16.map"
     src.write_text(TLINK_TEXT, encoding="utf-8")
     got = cast(dict[str, Any], server.symbols_load(source=str(src), base=bad))
     assert got["code"] == "bad_argument" and "base" in got["message"], got
@@ -6917,7 +6917,7 @@ def test_summaries_is_a_yes_or_a_no(tmp_path: Path) -> None:
 
 
 # The register pane's paging mark, as the debugger paints it straight after EBP's value.
-# Real mode is the reset screen (`test_dosbox_x_debug.REAL_PANE`); the PAGE line is ReChip's,
+# Real mode is the reset screen (`test_dosbox_x_debug.REAL_PANE`); the PAGE line is dos-djgpp32's,
 # a DJGPP client stopped by `BPINT 31 AH=02`, copied from that run's `debug("CPU")` screen.
 _NOPG_LINE = "ECX=00000000  EBP=00000000NOPG  IOPL0  CPL0\r\n"
 _PAGE_LINE = "ECX=000000A7  EBP=002B8690PAGEPSE IOPL3  CPL3\r\n"

@@ -1,7 +1,7 @@
 """Re-runnable entry-route measurement cases for the DOSBox-X debugger.
 
 The protected-mode route runs on the package's DPMI guest (`dpmi_guest`, a DJGPP program
-under the DPMI host DOSBox-X provides); the real-mode route runs Speed Fight's copy on the bench
+under the DPMI host DOSBox-X provides); the real-mode route runs dos-real16's copy on the bench
 (`bench_programs`), whose Borland map has publics, and SKIPS naming the file when a copy is
 absent or off its pin. The walk's ceiling is DOSBOX_X_WALK_MAX: a count of interrupt stops
 before the program's own code is reached, whose default fits both programs.
@@ -106,9 +106,9 @@ def test_djgpp_entry_reaches_the_client_and_symbols_place() -> None:
 
 #: Why the real-mode program cannot run here, naming the file, or empty; and the mark that skips
 #: a case on it.
-REAL_WHY_NOT = bp.missing(bp.SPEEDF)
+REAL_WHY_NOT = bp.missing(bp.DOS_REAL16)
 REAL_PROGRAM = pytest.mark.skipif(bool(REAL_WHY_NOT), reason=REAL_WHY_NOT)
-#: Where the walk catches Speed Fight's own repeating INT 21: it reads its WAD in packets before
+#: Where the walk catches dos-real16's own repeating INT 21: it reads its WAD in packets before
 #: anything else, and that is this routine. A repin of the copy can move it, and the resolution
 #: the entry case asserts names where it went.
 REAL_LOOP = "XMS_CARGAR_WAD"
@@ -119,7 +119,7 @@ REAL_VARIABLE = "TOTALTIME"
 
 def real_address(load_seg: int, name: str) -> str:
     """`name`'s `SEG:OFF` with the program loaded at `load_seg`, from its map."""
-    frame, offset, _marked = bp.public(bp.SPEEDF, name)
+    frame, offset, _marked = bp.public(bp.DOS_REAL16, name)
     return f"{load_seg + frame:04X}:{offset:04X}"
 
 
@@ -132,9 +132,9 @@ def reach_realmode(into: Path, logfile: str | None = None) -> tuple[int, int, in
 
     `logfile` is passed to `start` for a case that reads the guest's E9 channel; without it
     every E9 block answers `available: False`."""
-    frame = bp.public(bp.SPEEDF, REAL_LOOP)[0]
-    r = server.start(conf=str(bp.session_conf(bp.SPEEDF, into)), cwd=str(bp.SPEEDF.root),
-                     seconds=SESSION_SECONDS, logfile=logfile, program=bp.SPEEDF.launch)
+    frame = bp.public(bp.DOS_REAL16, REAL_LOOP)[0]
+    r = server.start(conf=str(bp.session_conf(bp.DOS_REAL16, into)), cwd=str(bp.DOS_REAL16.root),
+                     seconds=SESSION_SECONDS, logfile=logfile, program=bp.DOS_REAL16.launch)
     assert r["status"] == "ok", r
     assert server.breakpoint_interrupt(number=0x21)["status"] == "ok"
     first_nonbios: str | None = None
@@ -165,8 +165,8 @@ def reach_realmode(into: Path, logfile: str | None = None) -> tuple[int, int, in
     prog_cs, prog_eip = caught
     load_seg = prog_cs - frame
     assert load_seg >= 0, f"frame {frame:#x} exceeds the program CS {prog_cs:#x}"
-    load = cast(dict[str, Any], server.symbols_load(source=str(bp.SPEEDF.root / bp.SPEEDF.map),
-                                                    base=f"{load_seg * 16:X}"))
+    mapf = bp.DOS_REAL16.root / bp.DOS_REAL16.map
+    load = cast(dict[str, Any], server.symbols_load(source=str(mapf), base=f"{load_seg * 16:X}"))
     assert load["status"] == "ok", load
     return load_seg, prog_cs, prog_eip
 

@@ -110,15 +110,15 @@ def no_log_left(cwd: Path) -> bool:
 
 # ------------------------------------------------------------------------------- the parse
 
-SHAPE_FILES = [(bench, shape) for bench in ("probe-settle", "speedf", "rechip")
+SHAPE_FILES = [(bench, shape) for bench in ("probe-settle", "dos-real16", "dos-djgpp32")
                for shape in tracing.SHAPES]
 #: Where each bench's 64-instruction captures stopped, read off the pane after each (the
 #: PROVENANCE's run): the last line of the log is that instruction, in the shape's spelling.
 STOPPED_AT = {"probe-settle": {s: ("0814", "00000106") for s in tracing.SHAPES} | {
                   "short": ("0814", "0106")},
-              "speedf": {s: ("15A3", "0000003C") for s in tracing.SHAPES} | {
+              "dos-real16": {s: ("15A3", "0000003C") for s in tracing.SHAPES} | {
                   "short": ("15A3", "003C")},
-              "rechip": {"normal": ("00A7", "0003D451"), "short": ("00A7", "60D71"),
+              "dos-djgpp32": {"normal": ("00A7", "0003D451"), "short": ("00A7", "60D71"),
                          "long": ("00A7", "001604C0"), "cs_ip": ("00A7", "00028DCF")}}
 
 
@@ -133,8 +133,8 @@ def test_every_captured_shape_parses_whole_with_the_stop_as_its_last_line(
 
 def test_a_long_line_says_its_own_mode_and_the_others_do_not() -> None:
     real = tracing.parse(TRACE / "probe-settle-long-64.trace", "long")
-    paged = tracing.parse(TRACE / "rechip-long-64.trace", "long")
-    other = tracing.parse(TRACE / "rechip-normal-64.trace", "normal")
+    paged = tracing.parse(TRACE / "dos-djgpp32-long-64.trace", "long")
+    other = tracing.parse(TRACE / "dos-djgpp32-normal-64.trace", "normal")
     assert {flat for _cs, _eip, flat in real.executed} == {True}
     assert {flat for _cs, _eip, flat in paged.executed} == {False}
     assert {flat for _cs, _eip, flat in other.executed} == {None}
@@ -147,7 +147,7 @@ def test_a_line_another_shape_wrote_is_refused_naming_its_number(
     does not match, and the refusal quotes it rather than reading a column."""
     other = {"normal": "short", "short": "long", "long": "normal", "cs_ip": "normal"}[shape]
     path = tmp_path / "x.trace"
-    shutil.copyfile(TRACE / f"rechip-{other}-64.trace", path)
+    shutil.copyfile(TRACE / f"dos-djgpp32-{other}-64.trace", path)
     with pytest.raises(ds.Invalid, match=r"line 1 of .* is not a `" + shape):
         tracing.parse(path, shape)
 
@@ -163,10 +163,10 @@ def test_a_line_cut_short_is_refused_where_it_is(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize(("name", "cycles"), [
     ("probe-settle-survey-before", 192333), ("probe-settle-survey-after", 192349),
-    ("probe-dynamic-survey-before", 238), ("rechip-engine-survey-before", 1963039200),
-    ("rechip-engine-survey-after", 1963039400)])
+    ("probe-dynamic-survey-before", 238), ("dos-djgpp32-engine-survey-before", 1963039200),
+    ("dos-djgpp32-engine-survey-after", 1963039400)])
 def test_the_pane_counter_is_read_off_a_survey(name: str, cycles: int) -> None:
-    """`rechip-engine-survey-after` is the repaint that glued other text over `ESP=`: the
+    """`dos-djgpp32-engine-survey-after` is the repaint that glued other text over `ESP=`: the
     counter is anchored on its tail, the run state after it."""
     assert ds.parse_pane_cycles(cap(name)) == cycles
 
@@ -415,11 +415,12 @@ def test_a_pending_retrace_is_left_by_a_count_and_taken_by_an_unexplained_stop(
 
 
 def test_addresses_count_the_distinct_executed_places(tmp_path: Path) -> None:
-    live(Tracer([cap("rechip-engine-survey-before"), cap("rechip-engine-survey-after")],
-                cwd_of(tmp_path), [("rechip-engine-cs_ip-200", "rechip-engine-cs_ip-200-delta")]))
+    live(Tracer([cap("dos-djgpp32-engine-survey-before"), cap("dos-djgpp32-engine-survey-after")],
+                cwd_of(tmp_path),
+                [("dos-djgpp32-engine-cs_ip-200", "dos-djgpp32-engine-cs_ip-200-delta")]))
     got = cast(dict[str, Any], server.trace(instructions=200, shape="cs_ip",
                                             dest=str(tmp_path / "x.trace")))
-    lines = (TRACE / "rechip-engine-cs_ip-200.trace").read_bytes().splitlines()
+    lines = (TRACE / "dos-djgpp32-engine-cs_ip-200.trace").read_bytes().splitlines()
     assert got["status"] == "ok" and got["trace"]["instructions"] == 200, got
     assert got["trace"]["addresses"] == len(set(lines[:-1])) > 1, got["trace"]
 
@@ -723,8 +724,9 @@ PROBE_BASE = 0x814 * 16
 #: The probe's own arithmetic over 200 instructions from `start` on a tick whose last digit does
 #: not carry: one `emit` of the 28-character tick string, five of `bump`, the rest in `start`.
 PROBE_START_200 = {"start": 51, "emit": 144, "bump": 5}
-#: The ReChip client's code selector: its LDT descriptor's base is where `RECHIPD.SYM` is placed.
-RECHIP_BASE = 0x400000
+#: The dos-djgpp32 client's code selector: its LDT descriptor's base is where `DJGPP32.SYM` is
+#: placed.
+DOS_DJGPP32_BASE = 0x400000
 
 
 def load(table: str, base: int) -> None:
@@ -747,10 +749,10 @@ def table_walk(linear: int) -> dict[str, Any] | None:
 
 class Listings:
     """A session that answers the debugger's listings from captures: `GDT` and `LDT` read at
-    the ReChip window's stop, and the `CPU` listing of the same program in the same mode from
+    the dos-djgpp32 window's stop, and the `CPU` listing of the same program in the same mode from
     the machine fixtures; with no logfile it has none to read."""
 
-    def __init__(self, logfile: Path | None, cpu: str = "rechip-CPU",
+    def __init__(self, logfile: Path | None, cpu: str = "dos-djgpp32-CPU",
                  refuse: bool = False) -> None:
         self.launch = SimpleNamespace(logfile=logfile)
         self.asked: list[str] = []
@@ -762,7 +764,8 @@ class Listings:
         if self.refuse:
             raise ds.Invalid("unexpected_answer", f"`{command}` brought no prompt back")
         return {"CPU": (MACHINE / f"{self.cpu}.log.txt").read_text(encoding="latin-1"),
-                "GDT": cap("rechip-gdt-listing"), "LDT": cap("rechip-ldt-listing")}[command]
+                "GDT": cap("dos-djgpp32-gdt-listing"),
+                "LDT": cap("dos-djgpp32-ldt-listing")}[command]
 
 
 def stopped_in(mode: str) -> None:
@@ -816,7 +819,7 @@ def test_without_a_logfile_the_protected_lines_get_no_linear_and_the_note_says_w
 
 
 def test_a_cs_that_names_no_code_descriptor_of_its_privilege_gets_no_linear() -> None:
-    """The probe's real-mode segment read as a selector against ReChip's tables: no LDT row
+    """The probe's real-mode segment read as a selector against dos-djgpp32's tables: no LDT row
     0814 qualifies, so no line is given an address it might not have."""
     load(str(GUEST / "probe.sym"), PROBE_BASE)
     stopped_in("Pr32")
@@ -830,17 +833,17 @@ def test_a_cs_that_names_no_code_descriptor_of_its_privilege_gets_no_linear() ->
     assert any("no present code descriptor" in n for n in notes), notes
 
 
-def test_the_rechip_window_is_placed_through_the_ldt_base_not_the_raw_offset() -> None:
-    load(str(TRACE / "rechip-engine.sym"), RECHIP_BASE)
+def test_the_dos_djgpp32_window_is_placed_through_the_ldt_base_not_the_raw_offset() -> None:
+    load(str(TRACE / "dos-djgpp32-engine.sym"), DOS_DJGPP32_BASE)
     stopped_in("Pr32")
     notes: list[str] = []
-    parsed = tracing.parse(TRACE / "rechip-engine-cs_ip-200.trace", "cs_ip")
+    parsed = tracing.parse(TRACE / "dos-djgpp32-engine-cs_ip-200.trace", "cs_ip")
     got = tracing.join(cast(ds.Session, Listings(Path("guest.log"))), parsed, False, notes)
     engine = next(r for r in got.symbols if r["symbol"] == "_engine_pos")
-    assert engine["first"] == engine["linear"] == f"{RECHIP_BASE + 0x5E9C0:08X}", engine
+    assert engine["first"] == engine["linear"] == f"{DOS_DJGPP32_BASE + 0x5E9C0:08X}", engine
     for row in got.rows:
         linear = int(row["linear"], 16)
-        assert linear == RECHIP_BASE + int(row["addr"].split(":")[1], 16)
+        assert linear == DOS_DJGPP32_BASE + int(row["addr"].split(":")[1], 16)
         expected = table_walk(linear)
         span = placement.symbol_span()
         if span is not None and span[0] <= linear <= span[1] and expected is not None:
@@ -864,7 +867,7 @@ def test_no_table_loaded_names_no_routine_and_says_so() -> None:
 
 
 class ListingTracer(Tracer):
-    """The ReChip window's double, answering the descriptor listings as `Listings` does, or
+    """The dos-djgpp32 window's double, answering the descriptor listings as `Listings` does, or
     refusing them when `refuse` is set."""
 
     refuse = False
@@ -876,23 +879,24 @@ class ListingTracer(Tracer):
         raise ds.Invalid("no_channel", "the guest's log is not what this case reads")
 
     def selector(self, reg: str) -> dict[str, int]:
-        """The real reader over the captured ReChip `SELINFO` screen."""
+        """The real reader over the captured dos-djgpp32 `SELINFO` screen."""
         screen = SimpleNamespace(command=lambda _text: SELINFO_SCREEN, alive=lambda: True)
         return ds.Session.selector(cast(ds.Session, screen), reg)
 
 
 def test_the_reply_shows_sixty_four_routines_and_counts_the_rest(tmp_path: Path) -> None:
-    """A table with a symbol at every address the ReChip window executed: one routine each,
+    """A table with a symbol at every address the dos-djgpp32 window executed: one routine each,
     the first sixty-four in the reply and every address in the set file."""
-    dbg = live(ListingTracer([cap("rechip-engine-survey-before"),
-                              cap("rechip-engine-survey-after")], cwd_of(tmp_path),
-                             [("rechip-engine-cs_ip-200", "rechip-engine-cs_ip-200-delta")]))
+    dbg = live(ListingTracer([cap("dos-djgpp32-engine-survey-before"),
+                              cap("dos-djgpp32-engine-survey-after")], cwd_of(tmp_path),
+                             [("dos-djgpp32-engine-cs_ip-200",
+                               "dos-djgpp32-engine-cs_ip-200-delta")]))
     dbg.launch.logfile = tmp_path / "guest.log"
-    lines = (TRACE / "rechip-engine-cs_ip-200.trace").read_text().splitlines()
+    lines = (TRACE / "dos-djgpp32-engine-cs_ip-200.trace").read_text().splitlines()
     offsets = sorted({int(x.split(":")[1], 16) for x in lines[:-1]})
     dstate.STATE.section_bases.clear()
     dstate.STATE.install_table([sym.Symbol(f"_at_{o:x}", o) for o in offsets])
-    dstate.STATE.base.update(base=RECHIP_BASE)
+    dstate.STATE.base.update(base=DOS_DJGPP32_BASE)
     got = cast(dict[str, Any], server.trace(instructions=200, shape="cs_ip",
                                             dest=str(tmp_path / "t.trace")))
     found = got["trace"]
@@ -909,9 +913,9 @@ def test_the_bisection_answers_what_the_table_walk_answers(tmp_path: Path) -> No
     load(str(GUEST / "probe.sym"), PROBE_BASE)
     for linear in range(PROBE_BASE + 0xF0, PROBE_BASE + 0x160):
         assert placement.nearest_symbol(linear) == table_walk(linear), hex(linear)
-    load(str(TRACE / "rechip-engine.sym"), RECHIP_BASE)
-    for line in (TRACE / "rechip-engine-cs_ip-200.trace").read_text().splitlines():
-        linear = RECHIP_BASE + int(line.split(":")[1], 16)
+    load(str(TRACE / "dos-djgpp32-engine.sym"), DOS_DJGPP32_BASE)
+    for line in (TRACE / "dos-djgpp32-engine-cs_ip-200.trace").read_text().splitlines():
+        linear = DOS_DJGPP32_BASE + int(line.split(":")[1], 16)
         assert placement.nearest_symbol(linear) == table_walk(linear), line
     tie = tmp_path / "tie.sym"
     tie.write_text("0000010b T start\n0000010b T alias\n00000137 T emit\n")
@@ -925,10 +929,10 @@ def test_the_bisection_answers_what_the_table_walk_answers(tmp_path: Path) -> No
 
 
 def test_a_selector_qualifies_only_as_present_code_of_its_own_privilege() -> None:
-    """ReChip's LDT at the window's stop: 00A7 is code at privilege 3, asked at 3; 00A4 is the
+    """dos-djgpp32's LDT at the window's stop: 00A7 is code at privilege 3, asked at 3; 00A4 is the
     same descriptor asked at privilege 0; 00AF is the client's data segment at 3. Only the first
     is an address."""
-    load(str(TRACE / "rechip-engine.sym"), RECHIP_BASE)
+    load(str(TRACE / "dos-djgpp32-engine.sym"), DOS_DJGPP32_BASE)
     stopped_in("Pr32")
     parsed = tracing.Parsed(executed=Counter({("00A7", "0005E9C0", None): 1,
                                               ("00A4", "0005E9C0", None): 1,
@@ -937,7 +941,7 @@ def test_a_selector_qualifies_only_as_present_code_of_its_own_privilege() -> Non
     session = Listings(Path("guest.log"))
     got = tracing.join(cast(ds.Session, session), parsed, False, notes)
     placed = {r["addr"]: r.get("linear") for r in got.rows}
-    assert placed == {"00A7:0005E9C0": f"{RECHIP_BASE + 0x5E9C0:08X}", "00A4:0005E9C0": None,
+    assert placed == {"00A7:0005E9C0": f"{DOS_DJGPP32_BASE + 0x5E9C0:08X}", "00A4:0005E9C0": None,
                       "00AF:0005E9C0": None}, placed
     assert session.asked == ["CPU", "GDT", "LDT"], "one read of the tables per window"
     assert any(tracing.NO_LINEAR in n for n in notes), notes
@@ -969,7 +973,7 @@ def test_a_routine_spans_from_its_lowest_to_its_highest_address_whatever_ran_fir
 
 
 def test_a_gdt_selector_is_placed_through_the_gdt_at_its_own_privilege() -> None:
-    """The DPMI host's code selectors in ReChip's GDT: 0018 at privilege 0, and 002B, which
+    """The DPMI host's code selectors in dos-djgpp32's GDT: 0018 at privilege 0, and 002B, which
     names 0028 asked at privilege 3; 0008 is a data descriptor."""
     stopped_in("Pr32")
     parsed = tracing.Parsed(executed=Counter({("0018", "00000010", None): 1,
@@ -999,9 +1003,10 @@ def test_a_window_armed_protected_and_stopped_real_reads_no_selector() -> None:
 def test_tables_that_cannot_be_read_leave_a_note_and_the_trace_whole(tmp_path: Path) -> None:
     """A descriptor listing that fails after the log has moved costs the join, never the
     proved trace or where its file went."""
-    dbg = live(ListingTracer([cap("rechip-engine-survey-before"),
-                              cap("rechip-engine-survey-after")], cwd_of(tmp_path),
-                             [("rechip-engine-cs_ip-200", "rechip-engine-cs_ip-200-delta")]))
+    dbg = live(ListingTracer([cap("dos-djgpp32-engine-survey-before"),
+                              cap("dos-djgpp32-engine-survey-after")], cwd_of(tmp_path),
+                             [("dos-djgpp32-engine-cs_ip-200",
+                               "dos-djgpp32-engine-cs_ip-200-delta")]))
     dbg.launch.logfile = tmp_path / "guest.log"
     dbg.refuse = True
     dest = tmp_path / "r.trace"
@@ -1413,7 +1418,7 @@ def test_a_long_line_in_virtual_8086_mode_is_flat_under_protection(tmp_path: Pat
     """CR0's protection bit stays set in virtual-8086 mode, so `VM:1` alone makes the line's
     address its paragraph: a captured protected line with that one flag turned on, since no
     capture ran in that mode."""
-    lines = (TRACE / "rechip-long-64.trace").read_bytes().splitlines(keepends=True)
+    lines = (TRACE / "dos-djgpp32-long-64.trace").read_bytes().splitlines(keepends=True)
     v86, n = re.subn(rb" VM:0 ", b" VM:1 ", lines[0])
     assert n == 1
     path = tmp_path / "v.trace"
@@ -1423,7 +1428,7 @@ def test_a_long_line_in_virtual_8086_mode_is_flat_under_protection(tmp_path: Pat
 
 
 def test_a_window_mixing_flat_and_protected_lines_reads_the_selectors_for_the_protected() -> None:
-    load(str(TRACE / "rechip-engine.sym"), RECHIP_BASE)
+    load(str(TRACE / "dos-djgpp32-engine.sym"), DOS_DJGPP32_BASE)
     stopped_in("Pr32")
     parsed = tracing.Parsed(executed=Counter({("0814", "0000010B", True): 1,
                                               ("00A7", "0005E9C0", False): 1}))
@@ -1431,23 +1436,23 @@ def test_a_window_mixing_flat_and_protected_lines_reads_the_selectors_for_the_pr
     got = tracing.join(cast(ds.Session, Listings(Path("guest.log"))), parsed, False, notes)
     placed = {r["addr"]: r.get("linear") for r in got.rows}
     assert placed == {"0814:0000010B": "0000824B",
-                      "00A7:0005E9C0": f"{RECHIP_BASE + 0x5E9C0:08X}"}, placed
+                      "00A7:0005E9C0": f"{DOS_DJGPP32_BASE + 0x5E9C0:08X}"}, placed
     assert not any(tracing.NO_LINEAR in n for n in notes), "a flat line was looked up as a selector"
 
 
 def test_a_long_line_that_says_protected_wins_over_real_window_ends() -> None:
-    load(str(TRACE / "rechip-engine.sym"), RECHIP_BASE)
+    load(str(TRACE / "dos-djgpp32-engine.sym"), DOS_DJGPP32_BASE)
     stopped_in("Real")
     parsed = tracing.Parsed(executed=Counter({("00A7", "0005E9C0", False): 1}))
     got = tracing.join(cast(ds.Session, Listings(Path("guest.log"))), parsed, True, [])
-    assert got.rows[0].get("linear") == f"{RECHIP_BASE + 0x5E9C0:08X}", got.rows
+    assert got.rows[0].get("linear") == f"{DOS_DJGPP32_BASE + 0x5E9C0:08X}", got.rows
 
 
 def patch_ldt(monkeypatch: pytest.MonkeyPatch, **changed: Any) -> None:
-    """ReChip's captured LDT, read as `machine.read` would, with the client's code descriptor
+    """dos-djgpp32's captured LDT, read as `machine.read` would, with the client's code descriptor
     (00A4) changed in the named fields: no capture holds a conforming or a not-present code
     segment."""
-    rows = machine.parse_descriptors(cap("rechip-ldt-listing"), "LDT")
+    rows = machine.parse_descriptors(cap("dos-djgpp32-ldt-listing"), "LDT")
     code = next(r for r in rows if r["selector"] == "00A4")
     code.update(changed)
     monkeypatch.setattr(machine, "read", lambda _session, _what: SimpleNamespace(
@@ -1467,7 +1472,7 @@ def linear_of_00a7() -> str | None:
 def test_every_code_type_at_its_own_privilege_qualifies(
         code_type: str, monkeypatch: pytest.MonkeyPatch) -> None:
     patch_ldt(monkeypatch, type=code_type)
-    assert linear_of_00a7() == f"{RECHIP_BASE + 0x5E9C0:08X}"
+    assert linear_of_00a7() == f"{DOS_DJGPP32_BASE + 0x5E9C0:08X}"
 
 
 @pytest.mark.parametrize("data_type", ["10", "17"])

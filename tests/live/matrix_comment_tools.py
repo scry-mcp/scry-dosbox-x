@@ -1,5 +1,5 @@
 """Section N of the live matrix: the five comment tools on the probe guest, and the cells sections
-D and F call for Speed Fight (a comment by symbol follows a rebuilt map, a raw one keeps its
+D and F call for dos-real16 (a comment by symbol follows a rebuilt map, a raw one keeps its
 batch) and the DPMI guest (one place through three spellings in protected mode).
 
 The known answers are the probe's own (`probe.sym` at 8140 puts `start` at 0000824B) and the
@@ -68,7 +68,7 @@ N_CELLS = cells(
      "REFERENCE.md, Declarations: the store is the conf's, on disk"),
 )
 
-SPEEDF_COMMENT_CELLS = (
+DOS_REAL16_COMMENT_CELLS = (
     ("D a comment by COMPOSE_FRAME follows the symbol to the rebuilt map",
      "REFERENCE.md, Declarations: a symbol follows a rebuild; known: the map copy moves "
      "COMPOSE_FRAME by 10h"),
@@ -290,12 +290,12 @@ def _running() -> None:
 _MAP_LINE = re.compile(r"^( [0-9A-F]{4}:)([0-9A-F]{5})(\s+COMPOSE_FRAME)$", re.MULTILINE)
 
 
-def speedf_comments(mapf: Path, base: str) -> None:
+def dos_real16_comments(mapf: Path, base: str) -> None:
     """A copy of the map with COMPOSE_FRAME 10h later stands in for a rebuild: the map itself is
     never written. Loaded, the symbol comment moves with it, and a raw comment at the place
     the symbol now reaches stays resolved: the real map's batch that described it is still held,
     and one session runs one program; the real map loaded again brings the symbol back."""
-    labels = [c[0] for c in SPEEDF_COMMENT_CELLS]
+    labels = [c[0] for c in DOS_REAL16_COMMENT_CELLS]
     text = mapf.read_text(encoding="latin-1")
     # Its two lines, by name and by value, at one place: both move, or there is no rebuild.
     places = {m.group(1) + m.group(2) for m in _MAP_LINE.finditer(text)}
@@ -306,7 +306,7 @@ def speedf_comments(mapf: Path, base: str) -> None:
             M.block(label, f"the map names COMPOSE_FRAME {n} time(s) at {sorted(places)}, not "
                            "the two lines at one place the copy moves: no rebuild to load")
         return
-    moved = Path(tempfile.mkdtemp(prefix="dosbox-x-matrix-")) / Path(bp.SPEEDF.map).name
+    moved = Path(tempfile.mkdtemp(prefix="dosbox-x-matrix-")) / Path(bp.DOS_REAL16.map).name
     moved.write_text(shifted, encoding="latin-1")
     here = must(M.call(server.symbols_find, name="COMPOSE_FRAME"), "COMPOSE_FRAME")
     linear = int(here["symbols"][0]["linear"])
@@ -316,7 +316,7 @@ def speedf_comments(mapf: Path, base: str) -> None:
     taken = _taken(mine, {linear, after})
     if taken:
         for label in labels:
-            M.block(label, f"Speed Fight's store already comments these places: {taken}")
+            M.block(label, f"dos-real16's store already comments these places: {taken}")
         return
     try:
         must(M.call(server.comment_add, ref="COMPOSE_FRAME", text="builds the frame"), "by name")

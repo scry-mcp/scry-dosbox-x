@@ -232,10 +232,10 @@ def test_the_code_pane_agrees_with_capstone_on_the_probe() -> None:
 
 
 def test_a_32_bit_pane_agrees_decoded_32_bit_and_not_16() -> None:
-    """ReChip's `_engine_pos` in `Pr32`, from the committed trace capture, its bytes the pane's
+    """dos-djgpp32's `_engine_pos` in `Pr32`, from the committed trace capture, its bytes the pane's
     own (every line printed all of them). Decoded 16-bit the same bytes disagree: the width is
     what the control is checking, not a formality."""
-    pane = code.pane_lines(text(TRACE / "rechip-engine-survey-before.txt"))
+    pane = code.pane_lines(text(TRACE / "dos-djgpp32-engine-survey-before.txt"))
     assert all(p.data for p in pane), "a cut line: the bytes are not all there"
     data = b"".join(cast(bytes, p.data) for p in pane)
     wide = control.compare(pane, "00A7", disasm.decode(data, pane[0].offset, 32))
@@ -273,7 +273,7 @@ def test_the_control_sees_an_operand_that_differs(pane: str, why: str) -> None:
 
 
 def test_a_direct_far_call_agrees_though_the_two_spell_its_pointer_apart() -> None:
-    """Speed Fight's `call 0895:0006` (9A 06 00 95 08) as its pane printed it in the live matrix:
+    """dos-real16's `call 0895:0006` (9A 06 00 95 08) as its pane printed it in the live matrix:
     capstone's `lcall 0x895, 6` is the same pointer; the same line with the offset changed is
     not."""
     insns = disasm.decode(bytes.fromhex("9A06009508"), 0xE, 16)
@@ -437,7 +437,7 @@ def test_a_length_out_of_its_range_is_refused_with_no_machine(length: object) ->
 
 
 def pr32_machine(logfile: Path | None = None) -> CodeMachine:
-    """ReChip's registers at its `_engine_pos` stop (the committed trace capture's pane); the
+    """dos-djgpp32's registers at its `_engine_pos` stop (the committed trace capture's pane); the
     `SELINFO` answers are the captured CS line's, DS's with the big digit changed where a case
     says so."""
     regs = {"EAX": "00000000", "ESI": "0048D908", "DS": "00AF", "ES": "00AF", "FS": "00AF",
@@ -448,7 +448,7 @@ def pr32_machine(logfile: Path | None = None) -> CodeMachine:
                "DS": {"base": 0x400000, "limit": 0x2CFFFF, "type": 0x13, "big": 1},
                "GS": {"base": 0x8240, "limit": 0xFFFF, "type": 0x13, "big": 0}}
     s = CodeMachine(regs, mode="Pr32", selectors=selinfo, logfile=logfile, memory=0x500000)
-    pane = code.pane_lines(text(TRACE / "rechip-engine-survey-before.txt"))
+    pane = code.pane_lines(text(TRACE / "dos-djgpp32-engine-survey-before.txt"))
     data = b"".join(cast(bytes, p.data) for p in pane)
     s.mem[0x400000 + 0x5E9C0:0x400000 + 0x5E9C0 + len(data)] = data
     install()
@@ -660,7 +660,7 @@ class StoppedCode(CodeMachine):
 
     def read_bytes(self, seg: int, off: int, n: int, mode: str | None = None) -> bytes:
         """The data view's reach as measured live: from an address inside a row it painted
-        112 bytes, not 128 (ReChip, 00A7:6230F, the live matrix's section F)."""
+        112 bytes, not 128 (dos-djgpp32, 00A7:6230F, the live matrix's section F)."""
         self.d_reads.append((seg, off, n))
         if off > 0xFFFF:
             raise ds.Invalid("bad_argument", f"an offset is 0x0 to 0xFFFF; got 0x{off:X}")
@@ -786,11 +786,11 @@ def test_the_stop_names_its_routine_in_real_mode_and_asks_nothing_for_it() -> No
 
 
 def test_in_protected_mode_the_stop_asks_selinfo_only_with_a_table() -> None:
-    """ReChip's `_engine_pos` stop from the committed trace capture: one `SELINFO CS` with a
+    """dos-djgpp32's `_engine_pos` stop from the committed trace capture: one `SELINFO CS` with a
     table loaded, none without."""
     s = pr32_machine()
     where = {"cs": "00A7", "eip": "0005E9C0", "mode": "Pr32"}
-    screen = text(TRACE / "rechip-engine-survey-before.txt")
+    screen = text(TRACE / "dos-djgpp32-engine-survey-before.txt")
     bare = code.stop_instruction(cast(ds.Session, s), where, s.registers(), screen)["instruction"]
     assert (bare["text"], bare["code_bits"], bare["symbol"]) == ("push ebp", 32, None)
     assert s.asked_selinfo == []

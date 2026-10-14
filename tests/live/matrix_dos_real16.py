@@ -1,12 +1,12 @@
-"""Section D of the live matrix: Speed Fight, TASM real mode, a Borland map with publics."""
+"""Section D of the live matrix: dos-real16, TASM real mode, a Borland map with publics."""
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
 
 import bench_programs as bp
-from matrix_code import SPEEDF_CODE_CELLS, speedf_code
-from matrix_comment_tools import SPEEDF_COMMENT_CELLS, speedf_comments
+from matrix_code import DOS_REAL16_CODE_CELLS, dos_real16_code
+from matrix_comment_tools import DOS_REAL16_COMMENT_CELLS, dos_real16_comments
 from matrix_common import (
     M,
     boot,
@@ -42,11 +42,11 @@ from matrix_screen import judge_program, program_cells
 D_CELLS = cells(
     ("D the program carries its E9 channel", "known: an `info` build writes `[INF]` lines"),
     ("D the load segment from DOS MCBS", "known: the program's MCB, its PSP + 0x10"),
-    ("D symbols_load SPEEDF.MAP at that base", "REFERENCE.md, Names for addresses: real mode"),
+    ("D symbols_load REAL16.MAP at that base", "REFERENCE.md, Names for addresses: real mode"),
     ("D symbols_find COMPOSE_FRAME", "known: the map's publics carry it"),
-    ("D machine_map holds the SPEEDF block at the load segment, covering the map's image",
+    ("D machine_map holds the REAL16 block at the load segment, covering the map's image",
      "machine_map docstring; known: DOS gives the program all free memory"),
-    ("D INT 08 and INT 09 lie in the SPEEDF block, named NEW_IRQ_VIDEO and NEW_KEY_PC",
+    ("D INT 08 and INT 09 lie in the REAL16 block, named NEW_IRQ_VIDEO and NEW_KEY_PC",
      "interrupt_vectors docstring; known: the map's publics, the handlers the game installs"),
     ("D INT 1C lies in the INJECT block", "known: the serial stub hooks the timer tick"),
     ("D trace on the conf's dynamic core is refused naming the core",
@@ -54,8 +54,8 @@ D_CELLS = cells(
     ("D log_wait Entering main loop", "known: the game logs `Entering main loop` at start"),
     ("D breakpoint_at COMPOSE_FRAME fires three frames",
      "known: COMPOSE_FRAME runs every frame; REFERENCE.md, What a stop returns: attribution"),
-    *SPEEDF_CODE_CELLS,
-    *SPEEDF_COMMENT_CELLS,
+    *DOS_REAL16_CODE_CELLS,
+    *DOS_REAL16_COMMENT_CELLS,
     ("D COMPOSE_FRAME hits over ten retraces, quoted",
      "measured, never required to equal the retraces: the game's pace is its own"),
     ("D run_for frames=10 lands ten retraces in the program",
@@ -76,32 +76,32 @@ RETRACES_QUOTED = 10
 FRAMES_FOR_A_CHANGE = 120
 
 
-@M.section("D", "Speed Fight: real mode, a Borland map with publics", D_CELLS)
+@M.section("D", "dos-real16: real mode, a Borland map with publics", D_CELLS)
 def section_d() -> None:
-    if why := bp.missing(bp.SPEEDF):
+    if why := bp.missing(bp.DOS_REAL16):
         M.block_rest(why)
         return
-    exe, mapf = bp.SPEEDF.root / bp.SPEEDF.exe, bp.SPEEDF.root / bp.SPEEDF.map
-    e9 = carries(exe, bp.SPEEDF.e9_line.encode("latin-1"))
+    exe, mapf = bp.DOS_REAL16.root / bp.DOS_REAL16.exe, bp.DOS_REAL16.root / bp.DOS_REAL16.map
+    e9 = carries(exe, bp.DOS_REAL16.e9_line.encode("latin-1"))
     if e9:
         M.judge("D the program carries its E9 channel", True,
-                f"{bp.SPEEDF.e9_line!r} in {exe.name}")
+                f"{bp.DOS_REAL16.e9_line!r} in {exe.name}")
     else:
         M.block("D the program carries its E9 channel", "prod build, no E9")
-    got = speedf_main_loop()
+    got = dos_real16_main_loop()
     cs, psp, load = got["cs"], got["psp"], got["load"]
     code_paras = segment_start(mapf, "_DATA") >> 4
     M.judge("D the load segment from DOS MCBS", load <= cs < load + code_paras,
             f"PSP {psp:04X}, load {load:04X}, the program's first INT 21h from {cs:04X}, "
             f"its code {code_paras:04X} paragraphs by the map")
     r = got["loaded"]
-    judged("D symbols_load SPEEDF.MAP at that base", reply=r,
+    judged("D symbols_load REAL16.MAP at that base", reply=r,
            holds=ok(r) and int(r.get("kept") or 0) > 0)
     r = got["found"]
     found = [s for s in r.get("symbols") or [] if s.get("name") == "COMPOSE_FRAME"]
     judged("D symbols_find COMPOSE_FRAME", reply=r, holds=ok(r) and len(found) == 1)
     M.setup()
-    guarded("D machine_map holds the SPEEDF block at the load segment, covering the map's image",
+    guarded("D machine_map holds the REAL16 block at the load segment, covering the map's image",
             lambda: _machine(psp, mapf))
     _vectors()
     refused_on_the_dynamic_core("D trace on the conf's dynamic core is refused naming the core")
@@ -119,8 +119,8 @@ def section_d() -> None:
                 and (s.get("attribution") or {}).get("ref") == "COMPOSE_FRAME" for s in stops),
             "; ".join(said(s, 60) for s in stops))
     must(M.call(server.breakpoint_clear), "clearing COMPOSE_FRAME")
-    speedf_code()
-    speedf_comments(mapf, f"{load * 16:X}")
+    dos_real16_code()
+    dos_real16_comments(mapf, f"{load * 16:X}")
     M.setup()
     _retraces(load)
     judge_program("D", "M_LIN15")
@@ -135,18 +135,18 @@ def section_d() -> None:
     judged("D close", reply=r, holds=ok(r) and r.get("closed") is True)
 
 
-def speedf_main_loop(wait: float = 30, exempt: str = "", **kw: Any) -> dict[str, Any]:
+def dos_real16_main_loop(wait: float = 30, exempt: str = "", **kw: Any) -> dict[str, Any]:
     """Booted, the program found through DOS (its EXEC, its first INT 21h, its block in the MCB
     chain), its map loaded at the load segment, and stopped at ATRCT_RUN in the main loop:
     COMPOSE_FRAME already runs during the start-up, so its stops alone say nothing about where
     the program is, and ATRCT_RUN is the attract cycle the main loop enters. The replies and the
     segments, for the caller to judge."""
-    mapf = bp.SPEEDF.root / bp.SPEEDF.map
-    boot(conf=bp.session_conf(bp.SPEEDF, Path(M.fresh("-conf"))), cwd=bp.SPEEDF.root,
-         program=bp.SPEEDF.launch, input_port=free_port(), **kw)
-    exec_of(bp.SPEEDF.process)
+    mapf = bp.DOS_REAL16.root / bp.DOS_REAL16.map
+    boot(conf=bp.session_conf(bp.DOS_REAL16, Path(M.fresh("-conf"))), cwd=bp.DOS_REAL16.root,
+         program=bp.DOS_REAL16.launch, input_port=free_port(), **kw)
+    exec_of(bp.DOS_REAL16.process)
     cs = program_stop()
-    psp = mcb_psp(bp.SPEEDF.process)
+    psp = mcb_psp(bp.DOS_REAL16.process)
     load = psp + 0x10
     loaded = M.call(server.symbols_load, source=str(mapf), base=f"{load * 16:X}")
     found = M.call(server.symbols_find, name="COMPOSE_FRAME")
@@ -161,7 +161,7 @@ def _machine(psp: int, mapf: Path) -> tuple[bool, str]:
     the paragraph below it, and DOS gave it the free memory, so it covers the PSP and every
     segment the map declares rather than equalling them."""
     r = M.call(server.machine_map)
-    rows = [b for b in r.get("mcbs") or [] if b.get("filename") == bp.SPEEDF.process
+    rows = [b for b in r.get("mcbs") or [] if b.get("filename") == bp.DOS_REAL16.process
             and hexint(b.get("psp_seg")) == psp and hexint(b.get("mcb_seg")) == psp - 1]
     need = PSP_BYTES + image_end(mapf)
     return (ok(r) and len(rows) == 1 and int(rows[0]["size_bytes"]) >= need,
@@ -176,8 +176,8 @@ def _vectors() -> None:
     hooked = [(rows.get(n, {}).get("mcbs") or {}).get("filename") for n in (0x08, 0x09)]
     named = [((rows.get(n, {}).get("symbol") or {}).get("name"),
               (rows.get(n, {}).get("symbol") or {}).get("delta")) for n in (0x08, 0x09)]
-    M.judge("D INT 08 and INT 09 lie in the SPEEDF block, named NEW_IRQ_VIDEO and NEW_KEY_PC",
-            ok(r) and hooked == [bp.SPEEDF.process] * 2
+    M.judge("D INT 08 and INT 09 lie in the REAL16 block, named NEW_IRQ_VIDEO and NEW_KEY_PC",
+            ok(r) and hooked == [bp.DOS_REAL16.process] * 2
             and named == [("NEW_IRQ_VIDEO", 0), ("NEW_KEY_PC", 0)], f"{hooked} {named}")
     tick = (rows.get(0x1C, {}).get("mcbs") or {}).get("filename")
     M.judge("D INT 1C lies in the INJECT block", ok(r) and tick == "INJECT",

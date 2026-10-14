@@ -50,7 +50,7 @@ MODE = {P: ds.REAL_MODE, Q: "Pr32", W: "Pr32", V: "Pr32", R: "Pr32"}
 
 
 class _Sessions:
-    """One conf and its store across sessions, each parked in real mode as ReChip's is, the
+    """One conf and its store across sessions, each parked in real mode as dos-djgpp32's is, the
     map loaded at the protected-mode stop that follows."""
 
     def __init__(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

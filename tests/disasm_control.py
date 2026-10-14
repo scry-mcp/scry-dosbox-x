@@ -9,7 +9,7 @@ size; capstone always prints it). The pane's own annotations are dropped first: 
 `($-n)`, `(no jmp)`, `(down)`, `(up)` and the `ds:[015A]=3030` note of what an operand holds now.
 
 The synonyms and the exceptions were captured, not authored: each is a disagreement met on a real
-pane (the package's guests, Speed Fight, ReChip), kept with the opcode it was met on and judged
+pane (the package's guests, dos-real16, dos-djgpp32), kept with the opcode it was met on and judged
 against the Intel SDM. A synonym is one instruction spelled two ways; an exception is a line the
 pane gets wrong about x86 and is not compared.
 """
@@ -72,18 +72,18 @@ def _group(byte: int, reg: int) -> Callable[[bytes], bool]:
 
 SYNONYMS = (
     Synonym(_first(0x72), "jc", "jb", "72 20 in the code guest's data, read as code"),
-    Synonym(_first(0x73), "jnc", "jae", "73 0D in ReChip's INT 31h wrapper"),
+    Synonym(_first(0x73), "jnc", "jae", "73 0D in dos-djgpp32's INT 31h wrapper"),
     Synonym(_first(0xAC), "lodsb", "lodsb", "AC in the code guest's and the probe's emit",
             implicit=True),
     Synonym(_first(0x6E), "outsb", "outsb", "6E in the code guest's strings", implicit=True),
     Synonym(_first(0x6F), "outsw", "outsw", "6F in the code guest's strings", implicit=True),
     Synonym(_first(0x6D), "insw", "insw", "6D in the code guest's strings", implicit=True),
-    Synonym(_first(0x9A), "call", "lcall", "9A 06 00 95 08 in Speed Fight's _START: the pane "
+    Synonym(_first(0x9A), "call", "lcall", "9A 06 00 95 08 in dos-real16's _START: the pane "
             "prints `call 0895:0006`, capstone `lcall 0x895, 6`", pointer=True),
     Synonym(_group(0xFF, 3), "call", "lcall", "FF 1E, the code guest's far call through a "
             "pointer: the pane prints `call far word`, the word being the pointer's offset half",
             sizes=False),
-    Synonym(_first(0x8E), "mov", "mov", "8E C0 in ReChip's 32-bit code: MOV Sreg, r/m16, the "
+    Synonym(_first(0x8E), "mov", "mov", "8E C0 in dos-djgpp32's 32-bit code: MOV Sreg, r/m16, the "
             "pane naming the 16-bit register and capstone its 32-bit name",
             registers=(("ax", "eax"), ("bx", "ebx"), ("cx", "ecx"), ("dx", "edx"),
                        ("si", "esi"), ("di", "edi"), ("bp", "ebp"), ("sp", "esp"))),

@@ -1,4 +1,4 @@
-"""Section E of the live matrix: Line UP, TASM real mode, a map with a segment table and no
+"""Section E of the live matrix: dos-real16-alt, TASM real mode, a map with a segment table and no
 publics, so its memory is found by a scan with no map."""
 from __future__ import annotations
 
@@ -65,27 +65,28 @@ E_CELLS = cells(
 SCAN_WINDOW = 0x400
 
 
-@M.section("E", "Line UP: real mode, a map with no publics, a scan with no map", E_CELLS)
+@M.section("E", "dos-real16-alt: real mode, a map with no publics, a scan with no map", E_CELLS)
 def section_e() -> None:
-    if why := bp.missing(bp.LINEUP):
+    if why := bp.missing(bp.DOS_REAL16_ALT):
         M.block_rest(why)
         return
-    exe, mapf = bp.LINEUP.root / bp.LINEUP.exe, bp.LINEUP.root / bp.LINEUP.map
-    e9 = carries(exe, bp.LINEUP.e9_line.encode("latin-1"))
+    program = bp.DOS_REAL16_ALT
+    exe, mapf = program.root / program.exe, program.root / program.map
+    e9 = carries(exe, bp.DOS_REAL16_ALT.e9_line.encode("latin-1"))
     if e9:
         M.judge("E the program carries its E9 channel", True,
-                f"{bp.LINEUP.e9_line!r} in {exe.name}")
+                f"{bp.DOS_REAL16_ALT.e9_line!r} in {exe.name}")
     else:
         M.block("E the program carries its E9 channel", "prod build, no E9")
-    boot(conf=bp.session_conf(bp.LINEUP, Path(M.fresh("-conf"))), cwd=bp.LINEUP.root,
-         program=bp.LINEUP.launch, input_port=free_port())
+    boot(conf=bp.session_conf(program, Path(M.fresh("-conf"))), cwd=program.root,
+         program=bp.DOS_REAL16_ALT.launch, input_port=free_port())
     M.setup()
     r = M.call(server.symbols_load, source=str(mapf), base="0")
     judged("E symbols_load refuses a map with no publics", reply=r,
            holds=refused(r, "bad_argument") and "Publics by" in str(r.get("message")))
-    exec_of(bp.LINEUP.process)
+    exec_of(bp.DOS_REAL16_ALT.process)
     program_stop()
-    psp = mcb_psp(bp.LINEUP.process)
+    psp = mcb_psp(bp.DOS_REAL16_ALT.process)
     data = psp + 0x10 + (segment_start(mapf, "_DATA") >> 4)
     timer = program_timer(psp)
     r = run_for(timer, 8)
@@ -94,7 +95,7 @@ def section_e() -> None:
            and int((r.get("control") or {}).get("hits") or 0) > 0)
     stub = stub_cell("E the stub announces the serial route")
     if e9:
-        r = M.call(server.log_wait, pattern=re.escape(bp.LINEUP.e9_line), channel="guest",
+        r = M.call(server.log_wait, pattern=re.escape(bp.DOS_REAL16_ALT.e9_line), channel="guest",
                    seconds=5)
         judged(STARTUP_CELL, reply=r, holds=ok(r))
     else:

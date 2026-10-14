@@ -52,7 +52,7 @@ def probe_table(extra: list[tuple[str, int]] | None = None) -> None:
 
 class Protected(FakeSession):
     """A stop in a 32-bit protected-mode program whose CS and DS are the selectors the captured
-    `SELINFO` screen describes (base 00400000, limit 0023FFFF), as on ReChip."""
+    `SELINFO` screen describes (base 00400000, limit 0023FFFF), as on dos-djgpp32."""
 
     def __init__(self) -> None:
         super().__init__(mode="Pr32")
@@ -683,7 +683,7 @@ def test_a_file_row_whose_selector_this_stop_does_not_describe_waits_for_one_tha
 
 class _ParkedInRealMode(_Booted):
     """`start` parks at the debugger in real mode, before a DOS extender switches the program
-    to protected mode, as on ReChip."""
+    to protected mode, as on dos-djgpp32."""
 
     def __init__(self, **kw: Any) -> None:
         super().__init__(mode=ds.REAL_MODE, **kw)
@@ -691,7 +691,7 @@ class _ParkedInRealMode(_Booted):
 
 def test_a_file_loaded_at_the_real_mode_park_is_placed_after_the_protected_mode_symbols_load(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """ReChip's order: `start` parks in real mode, the comment file loads there (its
+    """dos-djgpp32's order: `start` parks in real mode, the comment file loads there (its
     protected-mode row waits), the program switches mode, and only then can `symbols_load` read
     the selector's base. A row placed before any map was placed against the conf alone, and the
     map that arrives is what it never had, not another build: it is placed, not stale. The

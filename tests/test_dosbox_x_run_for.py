@@ -184,9 +184,10 @@ def test_a_pane_clock_that_did_not_move_is_no_progress() -> None:
 
 
 def test_a_protected_mode_frame_reads_its_position_off_the_survey() -> None:
-    """ReChip: the survey after the retrace names the DPMI client's selector and a 32-bit
+    """dos-djgpp32: the survey after the retrace names the DPMI client's selector and a 32-bit
     offset, and the stop reply carries them as the debugger printed them."""
-    live(Retraces([cap("rechip-survey-4"), cap("rechip-survey-5")], [cap("rechip-vrt-5")]))
+    live(Retraces([cap("dos-djgpp32-survey-4"), cap("dos-djgpp32-survey-5")],
+                  [cap("dos-djgpp32-vrt-5")]))
     got = cast(dict[str, Any], server.run_for(frames=1))
     assert got["status"] == "ok", got
     assert got["stopped_at"] == {"cs": "00A7", "eip": "000BAA28", "mode": "Pr32"}, got

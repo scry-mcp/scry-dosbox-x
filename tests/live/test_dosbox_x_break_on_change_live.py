@@ -6,7 +6,7 @@ place break-on-change gets an honest LIVE proof: Phase 1 measured BPPM firing on
 host rather than the program under DJGPP, so protected-mode break-on-change carries a caveat
 instead of a live firing test, and real mode is where it is proven.
 
-It runs Speed Fight's copy on the bench, sharing `reach_realmode`, and watches the BIOS timer
+It runs dos-real16's copy on the bench, sharing `reach_realmode`, and watches the BIOS timer
 tick at 0040:006C: it advances 18.2 times a second in real mode whatever the program is doing,
 so a change-watch on it fires within a frame, which is what proves the MECHANISM (BPM stops on
 a write). The program's own variables need not move while it is still loading.

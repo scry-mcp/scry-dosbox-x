@@ -9,19 +9,21 @@ in hex, one more than the instructions it executes), the stop heard by the promp
 (`*.trace`), moved out of the working directory at once. Nothing here is authored: the tests
 replay these files, and where a test needs a case no capture holds it changes one field of one of
 them and says which.
+Program and board names were then replaced by neutral labels by a single mechanical substitution
+that preserves every field width; nothing else was edited.
 
 <bench>-<shape>-64.trace   64 instructions in each shape (65 lines, the last the stop), the stop
                            read off the pane after each run:
   probe-settle-*           the package's probe guest (probe.conf), at its settle `loop`, 0814:0106;
                            each stopped at 0814:0106
-  speedf-*                 Speed Fight (TMP/dosbox-mcp.conf, program ..\exes\speedf.exe), at
+  dos-real16-*                 dos-real16 (TMP/dosbox-mcp.conf, program ..\exes\real16.exe), at
                            COMPOSE_FRAME, 15A3:0000, real mode, map loaded at segment 0892; each
                            stopped at 15A3:003C
-  rechip-*                 ReChip (build/mcp.conf, RECHIPD.EXE D:\MIDI\MONKEY.MID -a), at
-                           _engine_pos, 00A7:0005E9C0, Pr32 paged, RECHIPD.SYM based off CS, each
+  dos-djgpp32-*                 dos-djgpp32 (build/mcp.conf, DJGPP32.EXE D:\MIDI\TUNE00.MID -a), at
+                           _engine_pos, 00A7:0005E9C0, Pr32 paged, DJGPP32.SYM based off CS, each
                            from its own _engine_pos stop: normal stopped at 00A7:0003D451, short at
                            00A7:00060D71, long at 00A7:001604C0, cs_ip at 00A7:00028DCF
-speedf-compose-cs_ip-500.trace   500 instructions from COMPOSE_FRAME, `LOGC 1F5`
+dos-real16-compose-cs_ip-500.trace   500 instructions from COMPOSE_FRAME, `LOGC 1F5`
 probe-start-long-200.trace       200 instructions from `start` (0814:010B), `LOGL C9`
 
 The doubles' scenarios, each a survey before, the command's delta, the trace, a survey after:
@@ -33,12 +35,12 @@ The doubles' scenarios, each a survey before, the command's delta, the trace, a 
                            `created` in its delta), then `LOGC 0`, which closed it executing
                            nothing and left the same bytes; `cc=` 192365 -> 197871 -> 197871
   probe-start-normal-200   `LOG C9` from `start`; `cc=` 19663481 -> 19663681
-  rechip-engine-cs_ip-200  `LOGC C9` from _engine_pos; `cc=` 1963039200 -> 1963039400; the
+  dos-djgpp32-engine-cs_ip-200  `LOGC C9` from _engine_pos; `cc=` 1963039200 -> 1963039400; the
                            `GDT` and `LDT` listings read off the session's logfile at that stop
-                           (`rechip-gdt-listing.txt`, `rechip-ldt-listing.txt`). The join's double
-                           answers `CPU` from `../machine/rechip-CPU.log.txt`, the same program in
+                           (`dos-djgpp32-gdt-listing.txt`, `dos-djgpp32-ldt-listing.txt`). The join's double
+                           answers `CPU` from `../machine/dos-djgpp32-CPU.log.txt`, the same program in
                            the same mode at another stop: only the mode it states is read
-rechip-engine.sym          the rows of that build's `build/RECHIPD.SYM` that place the window: for
+dos-djgpp32-engine.sym          the rows of that build's `build/DJGPP32.SYM` that place the window: for
                            each address, the nearest symbol at or below it and its two neighbours,
                            section names (`.text` and the like) left out as `symbols_load` leaves
                            them out; copied as `nm` printed them

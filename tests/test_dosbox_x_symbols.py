@@ -12,7 +12,7 @@ are wrong, which is the whole failure mode here: there was no specification to b
 ABOUT until the file was opened.
 
 `NM_FRAGMENT` is likewise CAPTURED and not written: every line is copied verbatim out of
-`i586-pc-msdosdjgpp-nm build/RECHIPD.EXE` on the binary this was built against. It is
+`i586-pc-msdosdjgpp-nm build/DJGPP32.EXE` on the binary this was built against. It is
 not a tidy sample -- it carries a real 21-character name, a real three-way collision
 from the graphics library, real duplicate section symbols and a real compiler label --
 because those are the cases that decide the design, and a hand-written fixture is where
@@ -661,7 +661,7 @@ def test_a_linked_program_loses_no_symbol_to_the_unplaceable_filter() -> None:
 
 # --------------------------------------------------- Borland TLINK / TASM (real mode)
 
-# CAPTURED VERBATIM from a real TLINK map (`SPEEDF.MAP`, 680 lines, 294 publics), CRLF
+# CAPTURED VERBATIM from a real TLINK map (`REAL16.MAP`, 680 lines, 294 publics), CRLF
 # and all. Every property this parser turns on is in here and none of it was invented:
 # the segment table whose rows ALSO open with a `seg:off` pair, the FIVE-digit offset,
 # the optional `idle` flag, the two identical publics sections, and the trailer.
@@ -743,7 +743,7 @@ def test_two_different_symbols_sharing_a_name_still_survive_as_two() -> None:
 
 def test_a_borland_map_with_no_publics_says_so_instead_of_blaming_the_file() -> None:
     """The two nothings, told apart. MEASURED on two real maps from the same toolchain:
-    `SPEEDF.MAP` carries 294 publics and `LINEUP.MAP` carries none, and before this both
+    `REAL16.MAP` carries 294 publics and `R16ALT.MAP` carries none, and before this both
     were refused with "no symbol lines were recognised in that text" -- which tells the
     reader their file is not a symbol list, when what is true is that this LINK printed
     no publics."""
@@ -994,7 +994,7 @@ def test_an_overlay_symbol_is_placed_and_the_flag_travels_with_it() -> None:
 
     TLINK writes it beside a public living in an overlay it has NOT made resident, so
     that address holds whatever is swapped in when you look. Placing such a symbol is
-    right -- a large part of a real map such as `SPEEDF.MAP` carries the flag, and losing
+    right -- a large part of a real map such as `REAL16.MAP` carries the flag, and losing
     that much of a table is the worse failure of the two -- but placing it
     with NOTHING SAID is a name pointing at a conditional address, indistinguishable in
     the reply from one that does not move.
@@ -1031,7 +1031,7 @@ def test_the_overlay_symbols_are_counted_and_do_not_break_the_accounting() -> No
 
     `overlay_idle` is a SUBSET of `kept`, not a bucket beside it. Added to `check()`'s
     sum it double-counts, so a Borland map carrying a single overlay symbol is rejected
-    as an accounting failure -- which is the whole of `SPEEDF.MAP`, 82 times over.
+    as an accounting failure -- which is the whole of `REAL16.MAP`, 82 times over.
     Both halves are asserted together because that is what pins a SUBSET rather than a
     number: the count is right AND the partition is untouched.
     """

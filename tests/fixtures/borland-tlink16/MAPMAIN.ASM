@@ -10,7 +10,7 @@
 ; docstring said it marks "a public that lives in an overlay TLINK has not made
 ; resident".  MEASURED on this map, that is backwards: `MAP_OVERLAID_ONE` and
 ; `MAP_OVERLAID_TWO`, the two publics of the overlaid module, come back with NO mark,
-; while the three RESIDENT ones are all flagged.  And measured on the real SpeedFight
+; while the three RESIDENT ones are all flagged.  And measured on the real dos-real16
 ; map, which has ZERO overlay segments (`:OVY` and `STUBSEG` both absent) and 82 flagged
 ; symbols, the explanation cannot be about overlays at all -- that file has none.  Two
 ; publics in ONE segment there, `ATRCT_CHECK_END` and `ATRCT_CICLO_INSERT`, differ in

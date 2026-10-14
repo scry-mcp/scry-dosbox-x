@@ -1524,7 +1524,7 @@ Without it that case skips: where a window goes is not this package's decision.
 **The live tiers need no other project.** The protected-mode cases run on a second guest the
 package owns, `tests/guest/dpmi.c`, a DJGPP program built into the committed `dpmi.exe` and
 its `nm` table `dpmi.sym`, under the DPMI host DOSBox-X provides. The real-mode cases and the
-matrix's program sections run Speed Fight and Line UP from a bench: copies of each program, its
+matrix's program sections run dos-real16 and dos-real16-alt from a bench: copies of each program, its
 map, the data it opens and its project's own run conf, under `DOSBOX_X_LIVE_BENCH`
 (`~/.local/share/scry-bench/dosbox-x` when unset), pinned by hash in the bench's own
 `bench.json`, with an `identity.json` beside it that says which files, launch line, memory-block

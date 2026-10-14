@@ -2,7 +2,7 @@
 carries the registers, the watches EVALUATED, the attribution, and the E9 summary, and the
 E9 lines are off by default with a count.
 
-The real-mode case runs Speed Fight's copy on the bench, as the other real-mode live files do;
+The real-mode case runs dos-real16's copy on the bench, as the other real-mode live files do;
 the DJGPP case runs on the package's DPMI guest. It SHARES `reach_realmode` and `reach_djgpp` so it
 cannot drift on how each program is reached.
 

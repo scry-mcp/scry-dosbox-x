@@ -1,7 +1,7 @@
 """The name layer against a REAL real-mode program: breakpoints and watches by name, the
 store cross-referenced with the debugger, and the marked-public note.
 
-It runs Speed Fight's copy on the bench, as the entry-route file does, and SKIPS naming the
+It runs dos-real16's copy on the bench, as the entry-route file does, and SKIPS naming the
 file when a copy is absent or off its pin. The reach helper and the map's names are shared
 from that file rather than copied, so the two cannot drift on how the program's own loop is
 found.

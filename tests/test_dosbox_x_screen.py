@@ -36,8 +36,9 @@ import dosbox_state as dstate
 import dosbox_x_server as server
 
 VGA = Path(__file__).parent / "fixtures" / "vga"
-BENCHES = ("probe-park", "probe-booted", "speedf", "rechip-startup", "rechip-ui", "screen-text",
-           "screen-start80", "screen-dac01", "screen-13h", "screen-13h-start80", "screen-12h")
+BENCHES = ("probe-park", "probe-booted", "dos-real16", "dos-djgpp32-startup", "dos-djgpp32-ui",
+           "screen-text", "screen-start80", "screen-dac01", "screen-13h", "screen-13h-start80",
+           "screen-12h")
 
 
 def vga(bench: str, command: str) -> str:
@@ -72,10 +73,10 @@ def test_the_words_are_the_debuggers_and_the_values_the_text_it_printed() -> Non
     assert crtc["index"] == "0fh" and crtc["start_addr"] == "0000h" and crtc["maxscnl"] == "4fh"
     dac = parsed("probe-booted", "VGA DAC")
     assert dac["bits"] == "6" and dac["pel_mask"] == "ffh" and dac["pel_index"] == "00h"
-    draw = parsed("speedf", "VGA DRAW")
+    draw = parsed("dos-real16", "VGA DRAW")
     assert (draw["width"], draw["height"], draw["bpp"]) == ("640", "480", "15")
     assert parsed("screen-12h", "VGA MODE")["mode"] == "M_EGA"
-    assert parsed("rechip-ui", "VGA MODE")["mode"] == "M_LIN8"
+    assert parsed("dos-djgpp32-ui", "VGA MODE")["mode"] == "M_LIN8"
 
 
 def test_the_attribute_controllers_palette_is_its_sixteen_registers() -> None:
@@ -197,7 +198,7 @@ def test_the_13h_window_is_the_guests_diagonal_ramp() -> None:
 
 
 @pytest.mark.parametrize(("bench", "want"), [
-    ("probe-booted", "text"), ("screen-text", "text"), ("rechip-startup", "text"),
+    ("probe-booted", "text"), ("screen-text", "text"), ("dos-djgpp32-startup", "text"),
     ("screen-13h", "indices"), ("screen-13h-start80", "indices")])
 def test_text_and_the_chained_256_colour_mode_are_read(bench: str, want: str) -> None:
     assert screen.source_of(parsed(bench, "VGA MODE")) == want
@@ -205,8 +206,8 @@ def test_text_and_the_chained_256_colour_mode_are_read(bench: str, want: str) ->
 
 @pytest.mark.parametrize(("bench", "old", "new", "word", "why"), [
     ("screen-12h", None, None, "M_EGA", "planar"),
-    ("speedf", None, None, "M_LIN15", "linear-frame-buffer"),
-    ("rechip-ui", None, None, "M_LIN8", "linear-frame-buffer"),
+    ("dos-real16", None, None, "M_LIN15", "linear-frame-buffer"),
+    ("dos-djgpp32-ui", None, None, "M_LIN8", "linear-frame-buffer"),
     ("probe-park", None, None, "M_ERROR", "no video mode is set"),
     ("screen-13h", "chained=1", "chained=0", "M_VGA", "unchained"),
     ("screen-12h", "mode=M_EGA", "mode=M_LIN4", "M_LIN4", "planar"),
@@ -531,7 +532,7 @@ def test_machine_map_carries_the_vga_section_read_last(tmp_path: Path) -> None:
 
 
 def test_machine_map_in_protected_mode_reads_the_vga_after_the_page_runs(tmp_path: Path) -> None:
-    r = mapped("rechip", tmp_path)
+    r = mapped("dos-djgpp32", tmp_path)
     assert r["_asked"][-8] == "PAGING" and r["vga"]["mode"]["mode"] == "M_TEXT"
 
 
@@ -569,7 +570,7 @@ def test_the_listing_reader_fixture_names_every_vga_capture() -> None:
     """The machine tests' bench reader serves the `VGA` listings from this directory, under the
     stop each machine bench was captured at."""
     assert listing("probe-booted", "VGA MODE") == vga("probe-booted", "VGA MODE")
-    assert listing("rechip", "VGA MODE") == vga("rechip-startup", "VGA MODE")
+    assert listing("dos-djgpp32", "VGA MODE") == vga("dos-djgpp32-startup", "VGA MODE")
     assert listing("probe-reset", "VGA DAC") == vga("probe-park", "VGA DAC")
 
 
@@ -598,7 +599,7 @@ def shape_of(bench_name: str, **edits: tuple[str, str]) -> screen.Geometry:
 
 @pytest.mark.parametrize(("bench_name", "linear", "cursor"), [
     ("probe-booted", 0xB8000, [0, 4]), ("screen-text", 0xB8000, [0, 2]),
-    ("screen-start80", 0xB80A0, [0, 1]), ("rechip-startup", 0xB8000, [0, 14])])
+    ("screen-start80", 0xB80A0, [0, 1]), ("dos-djgpp32-startup", 0xB8000, [0, 14])])
 def test_a_text_screen_is_80_by_25_where_the_start_address_puts_it(
         bench_name: str, linear: int, cursor: list[int]) -> None:
     """Columns are the draw state's blocks; rows its 400 scan lines over its `addrline-total`;
@@ -712,7 +713,7 @@ def machine_tables(cpu_mode: str = "paged", v86: bool = False,
     for name, parse in (("gdt", lambda t: machine.parse_descriptors(t, "GDT")),
                         ("ldt", lambda t: machine.parse_descriptors(t, "LDT")),
                         ("paging", machine.parse_paging)):
-        text = listing("rechip", name.upper())
+        text = listing("dos-djgpp32", name.upper())
         if name in edits:
             old, new = edits[name]
             assert old in text
@@ -735,8 +736,8 @@ def test_a_virtual_8086_task_reads_through_the_paragraph_where_the_pages_allow()
 
 
 def test_paged_protected_mode_reads_through_the_lowest_gdt_segment_covering_the_page() -> None:
-    """ReChip at its DPMI client's first stop: GDT 0038 is base 0 and covers the whole space, and
-    the page tables map B8000 to itself."""
+    """dos-djgpp32 at its DPMI client's first stop: GDT 0038 is base 0 and covers the whole
+    space, and the page tables map B8000 to itself."""
     assert screen.selector_for(0xB8000, 4000, machine_tables()) == (0x38, 0xB8000)
 
 
@@ -823,7 +824,8 @@ def test_no_covering_segment_at_all_is_refused() -> None:
 PAGES = {"probe-booted": "probe-booted-page.bin", "probe-mono": "probe-mono-page.bin",
          "screen-text": "screen-text-page.bin",
          "screen-start80": "screen-start80-page.bin",
-         "rechip-startup": "rechip-startup-page.bin", "screen-13h": "screen-13h-a000.bin.gz",
+         "dos-djgpp32-startup": "dos-djgpp32-startup-page.bin",
+         "screen-13h": "screen-13h-a000.bin.gz",
          "screen-13h-start80": "screen-13h-start80-a000.bin.gz"}
 
 
@@ -837,8 +839,8 @@ def test_the_text_is_what_the_screen_shows() -> None:
     assert rows[:5] == ['Z:\\>mount c "."', "Drive C is mounted as local directory ./",
                         "Z:\\>c:", "C:\\>PROBE.COM", ""]
     assert screen.text_rows(page("screen-start80"), 80, 25)[0] == "SECOND ROW"
-    rechip = screen.text_rows(page("rechip-startup"), 80, 25)
-    assert rechip[13] == "C:\\>RECHIPD.EXE D:\\MIDI\\MONKEY.MID -a"
+    dos_djgpp32 = screen.text_rows(page("dos-djgpp32-startup"), 80, 25)
+    assert dos_djgpp32[13] == "C:\\>DJGPP32.EXE D:\\MIDI\\TUNE00.MID -a"
 
 
 def test_control_bytes_are_the_glyphs_the_pc_draws_for_them() -> None:
@@ -863,7 +865,7 @@ class ScreenBench(Bench):
     video memory there (`fixtures/vga/`), and the cpu's own listings of the machine bench that
     stopped there (`fixtures/machine/`), the screen guest sharing the booted probe's machine."""
 
-    MACHINE = {"rechip-startup": "rechip", "speedf": "speedf"}
+    MACHINE = {"dos-djgpp32-startup": "dos-djgpp32", "dos-real16": "dos-real16"}
 
     def __init__(self, name: str, logfile: Path | None) -> None:
         super().__init__(name, logfile)
@@ -910,10 +912,10 @@ def test_screen_view_reads_the_page_from_where_the_display_starts(tmp_path: Path
 
 
 def test_screen_view_reads_a_paged_guests_text_through_its_gdt(tmp_path: Path) -> None:
-    s = screen_bench("rechip-startup", tmp_path)
+    s = screen_bench("dos-djgpp32-startup", tmp_path)
     r = cast(dict[str, Any], server.screen_view())
     assert r["status"] == "ok", r
-    assert r["text"][13] == "C:\\>RECHIPD.EXE D:\\MIDI\\MONKEY.MID -a" and r["cursor"] == [0, 14]
+    assert r["text"][13] == "C:\\>DJGPP32.EXE D:\\MIDI\\TUNE00.MID -a" and r["cursor"] == [0, 14]
     assert s.asked[-4:] == ["CPU", "GDT", "LDT", "PAGING"]
     assert s.dumps == [(0x38, 0xB8000, 4000)]
 
@@ -939,7 +941,7 @@ def test_screen_view_writes_the_256_colour_screen_as_its_indices(
 
 
 @pytest.mark.parametrize(("bench_name", "word"), [
-    ("screen-12h", "M_EGA"), ("speedf", "M_LIN15"), ("rechip-ui", "M_LIN8"),
+    ("screen-12h", "M_EGA"), ("dos-real16", "M_LIN15"), ("dos-djgpp32-ui", "M_LIN8"),
     ("probe-park", "M_ERROR")])
 def test_screen_view_and_signature_refuse_a_mode_they_do_not_read_after_one_listing(
         tmp_path: Path, bench_name: str, word: str) -> None:
@@ -1109,7 +1111,7 @@ class Frames(Retraces):
     screen's bytes are those captured at `stops[k]` (the last one held), the `CPU` listing that
     stop's machine bench's."""
 
-    MACHINE = {"probe-park": "probe-reset", "rechip-startup": "rechip"}
+    MACHINE = {"probe-park": "probe-reset", "dos-djgpp32-startup": "dos-djgpp32"}
 
     def __init__(self, stops: list[str], vrts: int, logfile: Path) -> None:
         super().__init__([cap_vrt("probe-survey-0")] * (vrts + 2),
@@ -1245,7 +1247,7 @@ def test_a_screen_resized_under_the_same_mode_word_is_placed_again(tmp_path: Pat
 
 
 def test_protected_mode_frames_read_the_tables_once(tmp_path: Path) -> None:
-    dbg = waiting(["rechip-startup"], 2, tmp_path)
+    dbg = waiting(["dos-djgpp32-startup"], 2, tmp_path)
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5))
     assert r["code"] == "wait_expired", r
     assert dbg.asked.count("GDT") == 1 and len(dbg.dumps) >= 2
@@ -1363,11 +1365,11 @@ def test_screen_wait_refuses_an_argument_before_anything_is_typed(
 
 def test_a_cpu_mode_change_under_the_same_text_screen_reads_the_tables_again(
         tmp_path: Path) -> None:
-    """From the booted probe (real mode) one retrace lands at ReChip's DPMI client (paged, the
+    """From the booted probe (real mode) one retrace lands at dos-djgpp32's DPMI client (paged, the
     shell's text page unchanged in mode): the page is then read through GDT 0038, not through
     the paragraph the real-mode frame used."""
-    dbg = waiting(["probe-booted", "rechip-startup"], 1, tmp_path)
-    r = cast(dict[str, Any], server.screen_wait(text="RECHIPD.EXE", seconds=10))
+    dbg = waiting(["probe-booted", "dos-djgpp32-startup"], 1, tmp_path)
+    r = cast(dict[str, Any], server.screen_wait(text="DJGPP32.EXE", seconds=10))
     assert r["status"] == "ok" and r["point"] == [4, 13], r
     assert dbg.dumps == [(0xB800, 0, 4000), (0x38, 0xB8000, 4000)]
     assert dbg.asked.count("VGA CRTC") == 1 and "GDT" in dbg.asked
@@ -1466,15 +1468,16 @@ def test_an_expired_wait_counts_the_frames_that_were_not_text(tmp_path: Path) ->
 
 
 class V86AfterRetrace(EditedAfterRetrace):
-    """ReChip's DPMI client's stop, whose `CPU` says after the first retrace that the cpu runs a
-    virtual-8086 task (`vm=1`, an edited capture): still paged, so the cpu mode is unchanged."""
+    """dos-djgpp32's DPMI client's stop, whose `CPU` says after the first retrace that the cpu
+    runs a virtual-8086 task (`vm=1`, an edited capture): still paged, so the cpu mode is
+    unchanged."""
 
     EDITS = {"CPU": ("[vm=0 ", "[vm=1 ")}
 
 
 def test_a_virtual_8086_task_entered_under_the_same_cpu_mode_reads_through_the_paragraph(
         tmp_path: Path) -> None:
-    dbg = waiting(["rechip-startup"], 1, tmp_path, V86AfterRetrace)
+    dbg = waiting(["dos-djgpp32-startup"], 1, tmp_path, V86AfterRetrace)
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5))
     assert r["code"] == "wait_expired", r
     assert dbg.dumps == [(0x38, 0xB8000, 4000), (0xB800, 0, 4000)]

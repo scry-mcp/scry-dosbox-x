@@ -218,7 +218,7 @@ def stop_reply(session: ds.Session, e9: str = "none", e9_filter: str = ".",
     # ONE SURVEY for where AND registers (decision 35: a round trip costs most of a second): they
     # read the same stopped screen, so taking two was one avoidable console round trip a stop.
     # ONE repaint for the three things a stop reads: where, registers and the list the
-    # watches check against. Measured on SpeedFight before this: four `BPLIST` round trips
+    # watches check against. Measured on dos-real16 before this: four `BPLIST` round trips
     # per stop, two of them for the same screen.
     arming.apply_pending(session)      # what the running guest kept the console from; the reply
     where, registers, held = session.stop_survey()   # carries the account via `st.reply`

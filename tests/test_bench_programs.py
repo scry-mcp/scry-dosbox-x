@@ -60,7 +60,7 @@ def test_a_session_conf_runs_the_stub_before_the_path_and_launches_nothing(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
 ) -> None:
     bp = _programs(monkeypatch, tmp_path)
-    out = bp.session_conf(bp.SPEEDF, tmp_path / "scratch")
+    out = bp.session_conf(bp.DOS_REAL16, tmp_path / "scratch")
     assert out.parent == tmp_path / "scratch"
     assert out.read_text().split("[autoexec]\n")[1] == (
         f'mount c "."\nmount g "{bp.STUB_DIR}"\nG:\\INJECT.COM\nset PATH=C:\\UTILS\nc:\n'
@@ -83,7 +83,7 @@ def test_a_run_conf_not_of_the_expected_shape_is_refused(
     conf = tmp_path / "bench/real/SCRIPTS/dosbox-run.conf"
     conf.write_text(RUN_CONF.replace(old, new, 1))
     with pytest.raises(RuntimeError, match=what):
-        bp.session_conf(bp.SPEEDF, tmp_path / "scratch")
+        bp.session_conf(bp.DOS_REAL16, tmp_path / "scratch")
 
 
 def test_a_public_is_read_off_the_map_with_its_mark(
@@ -94,10 +94,10 @@ def test_a_public_is_read_off_the_map_with_its_mark(
     mapf.parent.mkdir(parents=True)
     mapf.write_text("  Address         Publics by Name\n\n 0DB5:00E25 idle  ACTIVEIMAN\n"
                     " 0D11:00000       COMPOSE_FRAME\n")
-    assert bp.public(bp.SPEEDF, "ACTIVEIMAN") == (0xDB5, 0xE25, True)
-    assert bp.public(bp.SPEEDF, "COMPOSE_FRAME") == (0xD11, 0, False)
+    assert bp.public(bp.DOS_REAL16, "ACTIVEIMAN") == (0xDB5, 0xE25, True)
+    assert bp.public(bp.DOS_REAL16, "COMPOSE_FRAME") == (0xD11, 0, False)
     with pytest.raises(RuntimeError, match="no public NOPE"):
-        bp.public(bp.SPEEDF, "NOPE")
+        bp.public(bp.DOS_REAL16, "NOPE")
 
 
 def test_a_program_off_its_pins_is_a_reason(
@@ -108,7 +108,7 @@ def test_a_program_off_its_pins_is_a_reason(
     (tmp_path / "bench/bench.json").write_text(
         '[{"path": "real/EXES/REAL.EXE", "sha256": "", "source_repo": "s", '
         '"source_path": "EXES/REAL.EXE", "source_commit": ""}]')
-    assert bp.missing(bp.SPEEDF).startswith("bench MISSING real/EXES/REAL.EXE")
+    assert bp.missing(bp.DOS_REAL16).startswith("bench MISSING real/EXES/REAL.EXE")
 
 
 def test_every_value_naming_a_program_comes_from_the_benchs_identity(
@@ -117,11 +117,11 @@ def test_every_value_naming_a_program_comes_from_the_benchs_identity(
     """The tracked code names a program by its label; its directory, build, launch line, memory
     block and E9 line are the identity's."""
     bp = _programs(monkeypatch, tmp_path)
-    held = (bp.SPEEDF.root, bp.SPEEDF.exe, bp.SPEEDF.map, bp.SPEEDF.launch, bp.SPEEDF.process,
-            bp.SPEEDF.e9_line)
+    p = bp.DOS_REAL16
+    held = (p.root, p.exe, p.map, p.launch, p.process, p.e9_line)
     assert held == (tmp_path / "bench/real", "EXES/REAL.EXE", "EXES/REAL.MAP",
                     "..\\exes\\real.exe", "REAL", "real: up")
-    assert bp.LINEUP.root == tmp_path / "bench/alt"
+    assert bp.DOS_REAL16_ALT.root == tmp_path / "bench/alt"
 
 
 @pytest.mark.parametrize(("identity", "why"), [
@@ -153,8 +153,8 @@ def test_an_identity_that_cannot_name_a_program_blocks_it_with_the_remedy(
     """A missing file, a missing key and a wrong type each make the program a reason naming what
     to write where, and no value it would run on is a guess."""
     bp = _programs(monkeypatch, tmp_path, identity)
-    assert re.match(why, bp.missing(bp.SPEEDF)), bp.missing(bp.SPEEDF)
-    assert (bp.SPEEDF.exe, bp.SPEEDF.launch, bp.SPEEDF.process) == ("", "", "")
+    assert re.match(why, bp.missing(bp.DOS_REAL16)), bp.missing(bp.DOS_REAL16)
+    assert (bp.DOS_REAL16.exe, bp.DOS_REAL16.launch, bp.DOS_REAL16.process) == ("", "", "")
 
 
 def test_a_bench_with_no_manifest_says_it_is_kept_only_there(
@@ -165,7 +165,7 @@ def test_a_bench_with_no_manifest_says_it_is_kept_only_there(
     held = {**IDENTITY, "dos-real16": {**IDENTITY["dos-real16"], "process": "REALPROG",
                                        "e9_line": "r\u00e9al: up"}}
     bp = _programs(monkeypatch, tmp_path, held)
-    assert bp.missing(bp.SPEEDF).startswith(
+    assert bp.missing(bp.DOS_REAL16).startswith(
         f"bench manifest ABSENT: {tmp_path / 'bench/bench.json'} pins every copy and is kept "
         "only in the bench")
 
@@ -193,19 +193,19 @@ def test_a_file_the_program_opens_that_the_manifest_does_not_pin_is_a_reason(
     bp = _programs(monkeypatch, tmp_path)
     every = ("real/EXES/REAL.EXE", "real/EXES/REAL.MAP", "real/SCRIPTS/dosbox-run.conf")
     _pinned(tmp_path, tuple(f for f in every if f != left_out))
-    assert bp.missing(bp.SPEEDF) == (
+    assert bp.missing(bp.DOS_REAL16) == (
         f"program dos-real16 opens {left_out}, which {bp.BENCH_MANIFEST} does not pin: pin it "
         "there, or name a file it pins")
     bp._reasons.clear()
     _pinned(tmp_path, every)
-    assert bp.missing(bp.SPEEDF) == ""
+    assert bp.missing(bp.DOS_REAL16) == ""
 
 
 def test_the_alt_program_opens_its_clock_conf_too(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
 ) -> None:
     bp = _programs(monkeypatch, tmp_path)
-    assert bp.opened(bp.LINEUP) == ["alt/EXES/ALT.EXE", "alt/EXES/ALT.MAP",
+    assert bp.opened(bp.DOS_REAL16_ALT) == ["alt/EXES/ALT.EXE", "alt/EXES/ALT.MAP",
                                     "alt/SCRIPTS/dosbox-x-run.conf",
                                     "alt/SCRIPTS/dosbox-x-gold.conf"]
 
@@ -215,7 +215,7 @@ def test_every_key_is_required(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, 
     held = {lb: dict(v) for lb, v in IDENTITY.items()}
     del held["dos-real16"][key]
     bp = _programs(monkeypatch, tmp_path, held)
-    assert bp.missing(bp.SPEEDF) == (
+    assert bp.missing(bp.DOS_REAL16) == (
         f"identity dos-real16.{key} is None, not a non-empty string: set it in "
         f"{tmp_path / 'bench/identity.json'}")
 
@@ -231,7 +231,7 @@ def test_a_label_or_key_the_code_does_not_declare_is_its_mistake_on_every_host(
         bp.value("dos-real16", "e9")
 
 
-LINEUP_RUN = """[cpu]
+DOS_REAL16_ALT_RUN = """[cpu]
 core     = dynamic
 cycles   = max
 [autoexec]
@@ -243,10 +243,10 @@ exit
 """
 
 
-def _lineup(bp: ModuleType, tmp_path: Path, gold: str) -> None:
+def _dos_real16_alt(bp: ModuleType, tmp_path: Path, gold: str) -> None:
     scripts = tmp_path / "bench/alt/SCRIPTS"
     scripts.mkdir(parents=True)
-    (scripts / "dosbox-x-run.conf").write_text(LINEUP_RUN)
+    (scripts / "dosbox-x-run.conf").write_text(DOS_REAL16_ALT_RUN)
     (scripts / "dosbox-x-gold.conf").write_text(gold)
 
 
@@ -256,8 +256,8 @@ def test_line_up_takes_its_fixed_clock_from_its_gold_conf(
     """Its run conf plays at `cycles = max`; a session asks questions whose answer is the guest's
     clock, so it takes the gold conf's fixed one, as its project's own session conf does."""
     bp = _programs(monkeypatch, tmp_path)
-    _lineup(bp, tmp_path, "[cpu]\ncycles   = fixed 50000\n")
-    text = bp.session_conf(bp.LINEUP, tmp_path / "scratch").read_text()
+    _dos_real16_alt(bp, tmp_path, "[cpu]\ncycles   = fixed 50000\n")
+    text = bp.session_conf(bp.DOS_REAL16_ALT, tmp_path / "scratch").read_text()
     assert "cycles   = fixed 50000" in text and "max" not in text
     assert "EXES\\ALT.EXE" not in text and "\nexit" not in text
 
@@ -268,6 +268,6 @@ def test_a_clock_conf_without_one_fixed_cycles_line_is_refused(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, gold: str,
 ) -> None:
     bp = _programs(monkeypatch, tmp_path)
-    _lineup(bp, tmp_path, gold)
+    _dos_real16_alt(bp, tmp_path, gold)
     with pytest.raises(RuntimeError, match="one fixed `cycles` line"):
-        bp.session_conf(bp.LINEUP, tmp_path / "scratch")
+        bp.session_conf(bp.DOS_REAL16_ALT, tmp_path / "scratch")

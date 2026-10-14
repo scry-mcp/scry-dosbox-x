@@ -134,11 +134,11 @@ class Program:
 
 
 # real mode, built by TASM, a Borland map with publics
-SPEEDF = Program("dos-real16", "SCRIPTS/dosbox-run.conf")
+DOS_REAL16 = Program("dos-real16", "SCRIPTS/dosbox-run.conf")
 # real mode, a map with a segment table and no publics. Its run conf plays at `cycles = max`, and
 # its project's own session conf takes the fixed clock its goldens are judged at instead: a
 # session asks questions whose answer is the guest's clock.
-LINEUP = Program("dos-real16-alt", "SCRIPTS/dosbox-x-run.conf",
+DOS_REAL16_ALT = Program("dos-real16-alt", "SCRIPTS/dosbox-x-run.conf",
                  clock_conf="SCRIPTS/dosbox-x-gold.conf")
 
 

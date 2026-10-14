@@ -4,21 +4,23 @@ this server in process: each `<bench>-<COMMAND>.log.txt` is the logfile's bytes 
 it had before the command to its end once the prompt was back, the pager (where the listing
 paged) answered with `Q`. Nothing here is authored: the parsers in `dosbox_machine.py` are
 written against these files and the doubles in `test_dosbox_x_machine.py` replay them.
+Program and board names were then replaced by neutral labels by a single mechanical substitution
+that preserves every field width; nothing else was edited.
 
 probe-reset-*      the package's probe guest (`probe.conf`, `cwd` its `tests/guest`), at the park
                    `start` leaves, before DOS booted; cpu_mode real. The DOS listings answer the
                    debugger's own refusal sentence.
 probe-booted-*     the same guest after `run_for(frames=1)`, stopped at 0814:00000106, Real:
                    PROBE resident under COMMAND.COM.
-speedf-*           Speed Fight (`TMP/dosbox-mcp.conf`, `program="..\exes\speedf.exe"`, the serial
+dos-real16-*           dos-real16 (`TMP/dosbox-mcp.conf`, `program="..\exes\real16.exe"`, the serial
                    route), stopped at its `ATRCT_RUN` breakpoint, 08B7:00000017, Real. The conf
                    runs no EMS (its `DOS EMS` refusal names EMS, not the kernel), and the MCB chain
                    carries the debugger's data-address note between two blocks.
-rechip-*           ReChip (`build/mcp.conf`, `program="RECHIPD.EXE D:\MIDI\MONKEY.MID -a"`),
+dos-djgpp32-*           dos-djgpp32 (`build/mcp.conf`, `program="DJGPP32.EXE D:\MIDI\TUNE00.MID -a"`),
                    stopped at `BPINT 31 AH=02`, 00A7:0015A694, Pr32 with paging on: the GDT, LDT
                    and PAGING listings, CWSDPMI's XMS handle.
 <bench>-INTVEC.txt the file `INTVEC MCPIVT.TXT` wrote into the emulator's working directory at the
-                   same stop, moved out at once. On ReChip it equals the `IDT` listing row for
+                   same stop, moved out at once. On dos-djgpp32 it equals the `IDT` listing row for
                    row; on the booted probe its first 32 vectors equal the bytes at 0000:0000.
 
 probe-booted-DOS_KERN.screen.txt   the terminal text of `DOS KERN` (after the ANSI strip): the

@@ -176,14 +176,14 @@ def test_two_confs_do_not_see_each_others_declarations(tmp_path: Path) -> None:
     """Decision 24: keyed by conf identity over one file. A symbol from another binary
     would arm at a plausible and wrong address, so the two lists never mix."""
     path = tmp_path / "declarations.json"
-    a = dec.DeclarationStore("rechip.conf", path=path)
-    b = dec.DeclarationStore("speedf.conf", path=path)
+    a = dec.DeclarationStore("dos-djgpp32.conf", path=path)
+    b = dec.DeclarationStore("dos-real16.conf", path=path)
     a.add(dec.Declaration("breakpoint", "symbol", "_uicue_apply"))
     b.add(dec.Declaration("breakpoint", "symbol", "ATRCT_RUN"))
     # each sees only its own, whether read live or rebuilt from the shared file.
     assert [d.ref for d in a.declarations()] == ["_uicue_apply"]
     assert [d.ref for d in b.declarations()] == ["ATRCT_RUN"]
-    a_reloaded = dec.DeclarationStore("rechip.conf", path=path)
+    a_reloaded = dec.DeclarationStore("dos-djgpp32.conf", path=path)
     assert [d.ref for d in a_reloaded.declarations()] == ["_uicue_apply"]
 
 

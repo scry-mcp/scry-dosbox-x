@@ -4,7 +4,7 @@ The debugger reads byte `x` of a dump at its `GetAddress(seg, off + x)` (upstrea
 `src/debug/debug.cpp`), which masks the offset to sixteen bits on a 16-bit segment and gives no
 address past a protected-mode limit. `Debugger` below is that rule over a memory image, with the
 probe guest's own bytes (`fixtures/memdump/`, captured live) placed where they were read; the
-descriptor tables are ReChip's captured listings (`fixtures/machine/rechip-GDT`, `-LDT`).
+descriptor tables are dos-djgpp32's captured listings (`fixtures/machine/dos-djgpp32-GDT`, `-LDT`).
 """
 from __future__ import annotations
 
@@ -347,7 +347,7 @@ def test_find_inside_one_segment_keeps_the_callers_segment(tmp_path: Path) -> No
 
 
 def protected(tmp_path: Path, logfile: bool = True) -> Bench:
-    s = Bench("rechip", tmp_path / "x.log" if logfile else None)
+    s = Bench("dos-djgpp32", tmp_path / "x.log" if logfile else None)
     s.mode = "Pr32"
     s.launch.cwd = tmp_path / "cwd"          # a dest beside it is outside it, as a caller's is
     s.launch.cwd.mkdir(exist_ok=True)

@@ -30,9 +30,9 @@ def cap(name: str) -> str:
 
 
 #: Where a bench's `VGA` listings were captured (`fixtures/vga/`): the probe's park is the reset
-#: stop and ReChip's start-up stop is the one its machine listings were taken at; Speed Fight's
+#: stop and dos-djgpp32's start-up stop is the one its machine listings were taken at; dos-real16's
 #: were taken later in its run, the same program in the same mode.
-VGA_BENCH = {"probe-reset": "probe-park", "rechip": "rechip-startup"}
+VGA_BENCH = {"probe-reset": "probe-park", "dos-djgpp32": "dos-djgpp32-startup"}
 
 
 def listing(bench: str, command: str) -> str:
@@ -58,22 +58,22 @@ def test_the_mcb_chain_keeps_every_block_with_its_heading_and_drops_the_chain_en
 
 
 def test_a_free_block_keeps_its_stale_name_and_its_zero_psp_says_it_is_free() -> None:
-    rows = machine.parse_mcbs(listing("rechip", "DOS MCBS"))
+    rows = machine.parse_mcbs(listing("dos-djgpp32", "DOS MCBS"))
     stale = [r for r in rows if r["mcb_seg"] == "3500"]
     assert stale == [{"memory": "conventional", "mcb_seg": "3500", "size_bytes": 61440,
-                      "psp_seg": "0000", "notes": "free", "filename": "RECHIPD"}]
+                      "psp_seg": "0000", "notes": "free", "filename": "DJGPP32"}]
     assert [r["filename"] for r in rows if r["mcb_seg"] == "CC4A"] == ["CWSDPMI"]
 
 
 def test_the_debuggers_data_address_note_is_not_a_block() -> None:
-    """Speed Fight's chain carries `(data addr ... past this MCB)` between two blocks: it
+    """dos-real16's chain carries `(data addr ... past this MCB)` between two blocks: it
     describes the debugger's own data view, and the chain around it is read whole."""
-    text = listing("speedf", "DOS MCBS")
+    text = listing("dos-real16", "DOS MCBS")
     assert "(data addr" in text
     rows = machine.parse_mcbs(text)
     assert [r["mcb_seg"] for r in rows] == ["0450", "0700", "079B", "07C9", "0813", "083B",
                                             "0881", "9FFF", "CC00"]
-    assert rows[6]["filename"] == "SPEEDF" and rows[6]["psp_seg"] == "0882"
+    assert rows[6]["filename"] == "REAL16" and rows[6]["psp_seg"] == "0882"
 
 
 def test_a_line_no_shape_matches_makes_the_whole_section_unreadable() -> None:
@@ -169,7 +169,7 @@ def test_with_the_umbs_linked_each_chain_walks_from_its_own_first_block() -> Non
                                                                ("upper", "CC00")]
 
 
-@pytest.mark.parametrize("bench", ["probe-booted", "speedf", "rechip"])
+@pytest.mark.parametrize("bench", ["probe-booted", "dos-real16", "dos-djgpp32"])
 def test_every_dos_and_bios_listing_parses_on_every_bench_that_has_it(bench: str) -> None:
     devs = machine.parse_devs(listing(bench, "DOS DEVS"))
     assert devs[0] == {"header": "0071:0048", "attr": "8004", "strat": "0000", "intr": "0000",
@@ -188,13 +188,13 @@ def test_every_dos_and_bios_listing_parses_on_every_bench_that_has_it(bench: str
 
 
 def test_xms_handles_and_a_listing_with_a_header_and_no_row() -> None:
-    assert machine.parse_xms(listing("rechip", "DOS XMS")) == [
+    assert machine.parse_xms(listing("dos-djgpp32", "DOS XMS")) == [
         {"handle": 1, "status": "ALLOC", "location": "0x00174000", "size_bytes": 535347200}]
     assert machine.parse_xms(listing("probe-booted", "DOS XMS")) == []
 
 
 def test_ems_handles_carry_their_hex_size_as_bytes_and_the_pages_their_frame() -> None:
-    handles, pages = machine.parse_ems(listing("rechip", "DOS EMS"))
+    handles, pages = machine.parse_ems(listing("dos-djgpp32", "DOS EMS"))
     assert handles == [{"handle": 0, "address": "00110000", "size_bytes": 0x60000, "name": ""},
                        {"handle": 1, "address": "00170000", "size_bytes": 0x4000, "name": ""}]
     assert pages[0] == {"handle": "--", "page": "0/", "start": "000e0000", "end": "000e3fff"}
@@ -202,13 +202,13 @@ def test_ems_handles_carry_their_hex_size_as_bytes_and_the_pages_their_frame() -
 
 
 def test_emu_mem_takes_the_debuggers_words_and_keeps_the_unit() -> None:
-    assert machine.parse_emu_mem(listing("rechip", "EMU MEM")) == {
+    assert machine.parse_emu_mem(listing("dos-djgpp32", "EMU MEM")) == {
         "a20_gate": "ON", "cpu_address_bits": 36, "cpu_address_mask": "0xfffffffff",
         "cpu_address_mask_current": "0xfffffffff", "memory_reported_size_bytes": 536870912}
 
 
 def test_the_cpu_listing_in_protected_mode() -> None:
-    cpu = machine.parse_cpu(listing("rechip", "CPU"))
+    cpu = machine.parse_cpu(listing("dos-djgpp32", "CPU"))
     assert cpu == {
         "cr0": "80000011", "cr2": "FFFFFFFF", "cr3": "00034000", "cpl": 3,
         "eflags": "00003206", "vm": 0, "iopl": 3, "nt": 0,
@@ -223,11 +223,11 @@ def test_the_cpu_listing_in_protected_mode() -> None:
 
 
 def test_descriptor_tables_drop_their_empty_slots_and_keep_the_selector_symbols_use() -> None:
-    gdt = machine.parse_descriptors(listing("rechip", "GDT"), "GDT")
+    gdt = machine.parse_descriptors(listing("dos-djgpp32", "GDT"), "GDT")
     assert gdt[0] == {"selector": "0008", "base": "000D16FE", "limit": "00000087", "type": "12",
                       "dpl": 0, "p": 1, "a": 0, "r": 0, "b": 0, "g": 0}
     assert all(r["selector"] not in ("0000", "0048", "0050", "0058") for r in gdt)
-    ldt = machine.parse_descriptors(listing("rechip", "LDT"), "LDT")
+    ldt = machine.parse_descriptors(listing("dos-djgpp32", "LDT"), "LDT")
     code = [r for r in ldt if r["selector"] == "00A4"]
     assert code == [{"selector": "00A4", "base": "00400000", "limit": "002BFFFF", "type": "1B",
                      "dpl": 3, "p": 1, "a": 0, "r": 0, "b": 1, "g": 1}]
@@ -240,7 +240,7 @@ def test_the_page_runs_expand_back_to_every_page_the_debugger_listed(edit: bool)
     """Lossless: each run, expanded page by page, gives back the listing's pages in order with
     their flags, `d` and `a`. Every captured page carries the same flags, so one edited copy
     gives a page different flags and nothing else."""
-    text = listing("rechip", "PAGING")
+    text = listing("dos-djgpp32", "PAGING")
     if edit:
         lines = text.split("\n")
         lines[100] = lines[100].replace("flags [uw]", "flags [u-]")
@@ -267,7 +267,7 @@ def test_the_debuggers_refusal_before_dos_booted_is_a_refusal_not_a_listing() ->
         text = listing("probe-reset", command)
         assert machine.refusal(text) == text.strip()
         assert "DOS kernel is inactive" in text
-    assert machine.refusal(listing("speedf", "DOS EMS")) == \
+    assert machine.refusal(listing("dos-real16", "DOS EMS")) == \
         "Cannot enumerate EMS memory while EMS is inactive."
     assert machine.refusal(listing("probe-booted", "DOS MCBS")) is None
 
@@ -452,7 +452,7 @@ def test_real_mode_reads_the_dos_machine_and_leaves_the_descriptor_tables_absent
 
 def test_paged_protected_mode_adds_the_descriptor_tables_and_the_page_runs(
         tmp_path: Path) -> None:
-    r = mapped("rechip", tmp_path)
+    r = mapped("dos-djgpp32", tmp_path)
     assert r["cpu_mode"] == "paged"
     assert r["_asked"][-3:] == ["GDT", "LDT", "PAGING"]
     assert any(d["selector"] == "00A4" and d["base"] == "00400000" for d in r["ldt"])
@@ -528,8 +528,9 @@ def mapped_with(s: Bench) -> dict[str, Any]:
 
 def test_protected_mode_without_paging_reads_the_tables_and_not_the_pages(
         tmp_path: Path) -> None:
-    """ReChip's `CPU` listing with cr0's paging bit cleared (an edited capture)."""
-    r = mapped_with(Edited("rechip", tmp_path / "x.log", "CPU", "cr0:80000011", "cr0:00000011"))
+    """dos-djgpp32's `CPU` listing with cr0's paging bit cleared (an edited capture)."""
+    r = mapped_with(Edited("dos-djgpp32", tmp_path / "x.log", "CPU", "cr0:80000011",
+                           "cr0:00000011"))
     assert r["cpu_mode"] == "protected" and "gdt" in r and "ldt" in r and "paging" not in r
     assert r["_asked"][-2:] == ["GDT", "LDT"]
     assert "`paging` is absent: paging is off" in r["coverage_note"]
@@ -537,7 +538,7 @@ def test_protected_mode_without_paging_reads_the_tables_and_not_the_pages(
 
 def test_an_unreadable_cpu_listing_reads_no_table_and_says_the_mode_is_unknown(
         tmp_path: Path) -> None:
-    r = mapped_with(Edited("rechip", tmp_path / "x.log", "CPU", "cpl=3", "cpl=?"))
+    r = mapped_with(Edited("dos-djgpp32", tmp_path / "x.log", "CPU", "cpl=3", "cpl=?"))
     assert r["cpu_mode"] is None and "cpu" not in r and "gdt" not in r
     assert r["_asked"][-1] == "CPU"
     assert "`cpu` is absent" in r["coverage_note"] and "mode is unknown" in r["coverage_note"]
@@ -578,19 +579,19 @@ def test_perform_runs_machine_map_as_a_step(tmp_path: Path) -> None:
 @pytest.mark.parametrize(("parse", "name", "old", "new"), [
     (machine.parse_devs, "probe-booted-DOS_DEVS", "Header    Attr", "Header   Attr"),
     (machine.parse_kern, "probe-booted-DOS_KERN", "0070           16", "0070  sixteen"),
-    (machine.parse_xms, "rechip-DOS_XMS", "     1 ALLOC  0x", "     1 ALLOC  "),
-    (machine.parse_ems, "rechip-DOS_EMS", "(type Mixed) handles:", "handles:"),
-    (machine.parse_ems, "rechip-DOS_EMS", "--        0/", "--        x/"),
+    (machine.parse_xms, "dos-djgpp32-DOS_XMS", "     1 ALLOC  0x", "     1 ALLOC  "),
+    (machine.parse_ems, "dos-djgpp32-DOS_EMS", "(type Mixed) handles:", "handles:"),
+    (machine.parse_ems, "dos-djgpp32-DOS_EMS", "--        0/", "--        x/"),
     (machine.parse_callbacks, "probe-booted-CALLBACKS", "--------------\n", ""),
     (machine.parse_emu_machine, "probe-booted-EMU_MACHINE", "Machine: ", "Machine "),
-    (machine.parse_cpu, "rechip-CPU", "*1\n", "*1\nan eighth line\n"),
-    (lambda t: machine.parse_descriptors(t, "GDT"), "rechip-GDT", "GDT Base:", "GDT base:"),
-    (lambda t: machine.parse_descriptors(t, "GDT"), "rechip-GDT", "0008: b:", "0008: B:"),
-    (lambda t: machine.parse_descriptors(t, "GDT"), "rechip-GDT", "dpl : 0  10000",
+    (machine.parse_cpu, "dos-djgpp32-CPU", "*1\n", "*1\nan eighth line\n"),
+    (lambda t: machine.parse_descriptors(t, "GDT"), "dos-djgpp32-GDT", "GDT Base:", "GDT base:"),
+    (lambda t: machine.parse_descriptors(t, "GDT"), "dos-djgpp32-GDT", "0008: b:", "0008: B:"),
+    (lambda t: machine.parse_descriptors(t, "GDT"), "dos-djgpp32-GDT", "dpl : 0  10000",
      "dpl : 0  1000x"),
-    (lambda t: machine.parse_descriptors(t, "GDT"), "rechip-GDT",
+    (lambda t: machine.parse_descriptors(t, "GDT"), "dos-djgpp32-GDT",
      "\n      l:000011FC dpl : 3  10000\n", "\n"),
-    (machine.parse_paging, "rechip-PAGING", "page 00000xxx", "page 00000yyy"),
+    (machine.parse_paging, "dos-djgpp32-PAGING", "page 00000xxx", "page 00000yyy"),
 ])
 def test_every_parser_refuses_a_listing_whose_shape_moved(
         parse: Any, name: str, old: str, new: str) -> None:
@@ -626,7 +627,7 @@ def vectors_file(bench: str) -> str:
     return cap(f"{bench}-INTVEC.txt")
 
 
-@pytest.mark.parametrize("bench", ["probe-reset", "probe-booted", "speedf", "rechip"])
+@pytest.mark.parametrize("bench", ["probe-reset", "probe-booted", "dos-real16", "dos-djgpp32"])
 def test_the_intvec_file_parses_to_every_vector_in_order(bench: str) -> None:
     rows = machine.parse_intvec(vectors_file(bench))
     assert [r["number"] for r in rows] == list(range(256))
@@ -685,39 +686,40 @@ def test_real_mode_vectors_land_in_the_bios_block_that_holds_them(tmp_path: Path
     assert not (tmp_path / ds.INTVEC_FILE).exists(), "the server's own file is removed"
 
 
-# Speed Fight's two handlers as its own Borland map places them (SPEEDF.MAP publics
+# dos-real16's two handlers as its own Borland map places them (REAL16.MAP publics
 # `0366:000CB NEW_IRQ_VIDEO` and `0366:00095 NEW_KEY_PC`, offsets from the image start), at the
 # load base matrix section D derives (PSP 0882 + 0x10 paragraphs).
-SPEEDF_BASE = 0x8920
-SPEEDF_PUBLICS = (("NEW_KEY_PC", 0x3660 + 0x95), ("NEW_IRQ_VIDEO", 0x3660 + 0xCB))
+DOS_REAL16_BASE = 0x8920
+DOS_REAL16_PUBLICS = (("NEW_KEY_PC", 0x3660 + 0x95), ("NEW_IRQ_VIDEO", 0x3660 + 0xCB))
 
 
 def test_a_program_hooking_the_timer_and_the_keyboard_holds_them_by_name(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    r = vectors_of(IntvecBench("speedf", tmp_path / "x.log", tmp_path))
+    r = vectors_of(IntvecBench("dos-real16", tmp_path / "x.log", tmp_path))
     rows = {v["number"]: v for v in r["vectors"]}
     for n in (0x08, 0x09):
-        assert rows[n]["mcbs"]["filename"] == "SPEEDF" and "symbol" not in rows[n]
+        assert rows[n]["mcbs"]["filename"] == "REAL16" and "symbol" not in rows[n]
     assert rows[0x1C]["mcbs"]["filename"] == "INJECT"
-    install_speedf_table(monkeypatch)
-    r = vectors_of(IntvecBench("speedf", tmp_path / "x.log", tmp_path))
+    install_dos_real16_table(monkeypatch)
+    r = vectors_of(IntvecBench("dos-real16", tmp_path / "x.log", tmp_path))
     rows = {v["number"]: v for v in r["vectors"]}
     assert (rows[0x08]["symbol"]["name"], rows[0x08]["symbol"]["delta"]) == ("NEW_IRQ_VIDEO", 0)
     assert (rows[0x09]["symbol"]["name"], rows[0x09]["symbol"]["delta"]) == ("NEW_KEY_PC", 0)
     assert "symbol" not in rows[0x21], "below the table's lowest symbol names nothing"
 
 
-def install_speedf_table(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Speed Fight's two publics as the table `symbols_load` would hold them, flat, at its base;
+def install_dos_real16_table(monkeypatch: pytest.MonkeyPatch) -> None:
+    """dos-real16's two publics as the table `symbols_load` would hold them, flat, at its base;
     `clean_session` forgets them after the case."""
-    dstate.STATE.install_table([sym.Symbol(n, off) for n, off in SPEEDF_PUBLICS])
-    monkeypatch.setitem(dstate.STATE.base, "base", SPEEDF_BASE)
+    dstate.STATE.install_table([sym.Symbol(n, off) for n, off in DOS_REAL16_PUBLICS])
+    monkeypatch.setitem(dstate.STATE.base, "base", DOS_REAL16_BASE)
 
 
 def test_protected_mode_vectors_go_through_the_descriptor_and_the_pages(tmp_path: Path) -> None:
-    """ReChip under CWSDPMI: INT 08's selector names a GDT descriptor whose page maps to itself,
-    inside the CWSDPMI block; INT 21's names the privilege-3 descriptor with the same base."""
-    r = vectors_of(IntvecBench("rechip", tmp_path / "x.log", tmp_path))
+    """dos-djgpp32 under CWSDPMI: INT 08's selector names a GDT descriptor whose page maps to
+    itself, inside the CWSDPMI block; INT 21's names the privilege-3 descriptor with the same
+    base."""
+    r = vectors_of(IntvecBench("dos-djgpp32", tmp_path / "x.log", tmp_path))
     assert r["cpu_mode"] == "paged"
     rows = {v["number"]: v for v in r["vectors"]}
     assert rows[0x08]["linear"] == "000CFFF0" and rows[0x08]["mcbs"]["filename"] == "CWSDPMI"
@@ -817,15 +819,15 @@ def test_a_file_written_without_the_debuggers_word_is_refused_and_removed(
 
 
 def test_a_linear_address_goes_through_the_page_run_that_maps_it() -> None:
-    """ReChip's program pages are not mapped to themselves: linear 00401000 is the first page of
-    a run whose physical start is 00174000."""
-    runs = machine.parse_paging(listing("rechip", "PAGING"))
+    """dos-djgpp32's program pages are not mapped to themselves: linear 00401000 is the first
+    page of a run whose physical start is 00174000."""
+    runs = machine.parse_paging(listing("dos-djgpp32", "PAGING"))
     assert machine.physical_address(0x00401234, runs) == 0x00174234
     assert machine.physical_address(0xFFFFF000, runs) is None
 
 
 def test_a_run_maps_its_own_first_and_last_byte_and_neither_neighbour() -> None:
-    runs = machine.parse_paging(listing("rechip", "PAGING"))
+    runs = machine.parse_paging(listing("dos-djgpp32", "PAGING"))
     assert runs
     for run in runs:
         start, end, phy = int(run["start"], 16), int(run["end"], 16), int(run["phy"], 16)
@@ -855,14 +857,14 @@ def test_a_sectioned_table_with_no_symbol_below_a_vector_names_nothing_and_answe
                                 sym.Symbol("high", 0x900, section=2)])
     monkeypatch.setitem(dstate.STATE.section_bases, 1, 0x0000)
     monkeypatch.setitem(dstate.STATE.section_bases, 2, 0xC000)
-    r = vectors_of(IntvecBench("speedf", tmp_path / "x.log", tmp_path))
+    r = vectors_of(IntvecBench("dos-real16", tmp_path / "x.log", tmp_path))
     assert r["status"] == "ok", r
     rows = {v["number"]: v for v in r["vectors"]}
     assert "symbol" not in rows[0x08] and rows[0x08]["linear"] == "0000C04B"
 
 
 class PagesUnread(IntvecBench):
-    """ReChip with one line of its `PAGING` listing edited, so the section is absent."""
+    """dos-djgpp32 with one line of its `PAGING` listing edited, so the section is absent."""
 
     def listing(self, command: str) -> str:
         text = super().listing(command)
@@ -871,7 +873,7 @@ class PagesUnread(IntvecBench):
 
 def test_paged_with_the_page_listing_absent_says_so_instead_of_blaming_the_pages(
         tmp_path: Path) -> None:
-    r = vectors_of(PagesUnread("rechip", tmp_path / "x.log", tmp_path))
+    r = vectors_of(PagesUnread("dos-djgpp32", tmp_path / "x.log", tmp_path))
     assert r["status"] == "ok" and r["counts"]["held"] == 0
     note = r["coverage_note"]
     assert "`paging` is absent" in note and "no page run maps" not in note
@@ -879,10 +881,10 @@ def test_paged_with_the_page_listing_absent_says_so_instead_of_blaming_the_pages
 
 def test_the_one_line_says_a_free_block_is_free_and_a_table_with_no_chain_read_says_so() -> None:
     free = {"memory": "conventional", "mcb_seg": "3500", "size_bytes": 61440, "psp_seg": "0000",
-            "notes": "free", "filename": "RECHIPD"}
+            "notes": "free", "filename": "DJGPP32"}
     line = one_line.interrupt_vectors({"number": 8}, {"vectors": [
         {"number": 8, "addr": "3600:0000", "mcbs": free}]})
-    assert line == "interrupt_vectors INT 08: 3600:0000, mcbs 3500 RECHIPD (free)"
+    assert line == "interrupt_vectors INT 08: 3600:0000, mcbs 3500 DJGPP32 (free)"
     region = {"start": "000f0000", "end": "000f8daf", "status": "FREE", "what": ""}
     region_line = one_line.interrupt_vectors({"number": 1}, {"vectors": [
         {"number": 1, "addr": "F000:0100", "bios_mem": region}]})
@@ -903,7 +905,7 @@ class Breaks(IntvecBench):
 
 
 class Unmapped(IntvecBench):
-    """ReChip's table with INT 60 pointed through the program's LDT code selector at the
+    """dos-djgpp32's table with INT 60 pointed through the program's LDT code selector at the
     page just below the program's first mapped one."""
 
     def command(self, text: str, **_: object) -> str:
@@ -919,7 +921,7 @@ class Unmapped(IntvecBench):
 
 def test_a_handler_on_a_page_no_run_maps_has_no_holder_and_the_note_says_why(
         tmp_path: Path) -> None:
-    r = vectors_of(Unmapped("rechip", tmp_path / "x.log", tmp_path))
+    r = vectors_of(Unmapped("dos-djgpp32", tmp_path / "x.log", tmp_path))
     rows = {v["number"]: v for v in r["vectors"]}
     assert rows[0x60]["linear"] == "00400000"
     assert not {"mcbs", "kern", "bios_mem"} & set(rows[0x60]), rows[0x60]
@@ -948,7 +950,7 @@ class Rewritten(IntvecBench):
 
 def test_a_selector_naming_no_descriptor_leaves_that_vector_unplaced_and_says_why(
         tmp_path: Path) -> None:
-    r = vectors_of(Rewritten("rechip", tmp_path / "x.log", tmp_path,
+    r = vectors_of(Rewritten("dos-djgpp32", tmp_path / "x.log", tmp_path,
                              "INT 60:  002B:3BA0", "INT 60:  0100:3BA0"))
     rows = {v["number"]: v for v in r["vectors"]}
     assert set(rows[0x60]) == {"number", "addr"} and "linear" in rows[0x61]
@@ -973,8 +975,8 @@ def test_the_servers_own_file_is_removed_when_the_command_fails_after_writing_it
 
 
 def test_a_selector_is_looked_up_in_its_own_table_or_named_as_missing() -> None:
-    found = {"gdt": machine.parse_descriptors(listing("rechip", "GDT"), "GDT"),
-             "ldt": machine.parse_descriptors(listing("rechip", "LDT"), "LDT")}
+    found = {"gdt": machine.parse_descriptors(listing("dos-djgpp32", "GDT"), "GDT"),
+             "ldt": machine.parse_descriptors(listing("dos-djgpp32", "LDT"), "LDT")}
     assert machine.vector_linear("00A7:1234", "paged", found) == (0x00401234, "")
     assert machine.vector_linear("002B:3AA4", "paged", found) == (0x000CC5B0 + 0x3AA4, "")
     lin, why = machine.vector_linear("0100:0000", "paged", found)
@@ -1003,8 +1005,8 @@ def test_a_holder_covers_its_own_bytes_and_not_one_more(
 
 def test_the_counts_say_how_many_vectors_are_held_and_named(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    install_speedf_table(monkeypatch)
-    r = vectors_of(IntvecBench("speedf", tmp_path / "x.log", tmp_path))
+    install_dos_real16_table(monkeypatch)
+    r = vectors_of(IntvecBench("dos-real16", tmp_path / "x.log", tmp_path))
     held = sum(1 for v in r["vectors"] if {"mcbs", "kern", "bios_mem"} & set(v))
     named = sum(1 for v in r["vectors"] if "symbol" in v)
     assert r["counts"] == {"vectors": 256, "held": held, "named": named} and named == 2
@@ -1021,7 +1023,7 @@ def test_a_table_whose_mcb_chain_was_not_read_counts_no_program_block(tmp_path: 
 
 def test_the_table_one_line_counts_program_blocks_and_not_free_ones() -> None:
     program = {"mcb_seg": "0813", "psp_seg": "0814", "filename": "PROBE"}
-    free = {"mcb_seg": "3500", "psp_seg": "0000", "notes": "free", "filename": "RECHIPD"}
+    free = {"mcb_seg": "3500", "psp_seg": "0000", "notes": "free", "filename": "DJGPP32"}
     line = one_line.interrupt_vectors({}, {
         "vectors": [{"number": 8, "linear": "00008200", "mcbs": program},
                     {"number": 9, "linear": "00035100", "mcbs": free},
@@ -1031,7 +1033,7 @@ def test_the_table_one_line_counts_program_blocks_and_not_free_ones() -> None:
 
 
 class ProtectedNoPaging(IntvecBench):
-    """ReChip with its `CPU` listing's paging bit cleared (an edited capture)."""
+    """dos-djgpp32 with its `CPU` listing's paging bit cleared (an edited capture)."""
 
     def listing(self, command: str) -> str:
         text = super().listing(command)
@@ -1045,7 +1047,7 @@ def test_protected_mode_without_paging_places_a_handler_at_its_linear_address(
         tmp_path: Path) -> None:
     """INT 08's descriptor puts its handler at linear 000CFFF0, inside the CWSDPMI block; with
     paging off the linear address is the physical one."""
-    r = vectors_of(ProtectedNoPaging("rechip", tmp_path / "x.log", tmp_path))
+    r = vectors_of(ProtectedNoPaging("dos-djgpp32", tmp_path / "x.log", tmp_path))
     assert r["cpu_mode"] == "protected" and "paging" not in r["sources"]
     rows = {v["number"]: v for v in r["vectors"]}
     assert rows[0x08]["linear"] == "000CFFF0" and rows[0x08]["mcbs"]["filename"] == "CWSDPMI"
@@ -1054,7 +1056,7 @@ def test_protected_mode_without_paging_places_a_handler_at_its_linear_address(
 @pytest.mark.parametrize("paging", [False, True], ids=["protected", "paged"])
 def test_without_a_logfile_in_protected_mode_the_note_says_no_linear_and_why(
         tmp_path: Path, paging: bool) -> None:
-    s = IntvecBench("rechip", None, tmp_path)
+    s = IntvecBench("dos-djgpp32", None, tmp_path)
     s.paging = paging  # type: ignore[attr-defined]
     install()
     dstate.STATE.session = cast(ds.Session, s)
@@ -1071,7 +1073,7 @@ def test_without_a_logfile_in_protected_mode_the_note_says_no_linear_and_why(
 
 
 class CpuUnknown(IntvecBench):
-    """ReChip with its `CPU` listing's cr0 edited to no known shape, so the mode is unknown."""
+    """dos-djgpp32 with its `CPU` listing's cr0 edited to no known shape, so the mode is unknown."""
 
     def listing(self, command: str) -> str:
         text = super().listing(command)
@@ -1082,9 +1084,9 @@ class CpuUnknown(IntvecBench):
 
 
 @pytest.mark.parametrize(("make", "number", "unplaced"), [
-    (lambda p: PagesUnread("rechip", p / "x.log", p), 0x08, 256),
-    (lambda p: CpuUnknown("rechip", p / "x.log", p), 0x08, 256),
-    (lambda p: Rewritten("rechip", p / "x.log", p, "INT 60:  002B:3BA0", "INT 60:  0100:3BA0"),
+    (lambda p: PagesUnread("dos-djgpp32", p / "x.log", p), 0x08, 256),
+    (lambda p: CpuUnknown("dos-djgpp32", p / "x.log", p), 0x08, 256),
+    (lambda p: Rewritten("dos-djgpp32", p / "x.log", p, "INT 60:  002B:3BA0", "INT 60:  0100:3BA0"),
      0x60, 1),
 ], ids=["paged_with_no_page_runs", "mode_unknown", "a_selector_with_no_descriptor"])
 def test_with_the_chain_read_a_vector_not_placed_gives_no_program_block_count(
@@ -1099,7 +1101,7 @@ def test_with_the_chain_read_a_vector_not_placed_gives_no_program_block_count(
     [row] = one["vectors"]
     assert one["summary"] == (f"interrupt_vectors INT {number:02X}: {row['addr']}, not placed "
                               f"(see `coverage_note`)"), one["summary"]
-    whole = vectors_of(IntvecBench("rechip", tmp_path / "x.log", tmp_path))
+    whole = vectors_of(IntvecBench("dos-djgpp32", tmp_path / "x.log", tmp_path))
     assert whole["summary"] == ("interrupt_vectors: 256 vectors, 256 in program blocks "
                                 "(CWSDPMI 256)"), "the same bench with every listing read counts"
 

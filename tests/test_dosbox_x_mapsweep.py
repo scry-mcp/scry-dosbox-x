@@ -17,7 +17,7 @@ gate, and its expected numbers live in the manifest rather than here.
 THE MANIFEST IS THE ORACLE, and that is the design.  A sweep that merely PRINTS what it
 read is an instrument nobody re-reads; one that carries what each project is expected to
 hold goes RED when reality and the expectation part company, in either direction.  That
-is what makes "SPEEDF: 294 publics, 82 of them idle, 0 unreadable" a control rather than
+is what makes "REAL16: 294 publics, 82 of them idle, 0 unreadable" a control rather than
 a number somebody once wrote down.
 """
 
@@ -67,7 +67,7 @@ MAP_WITH_A_BAD_ROW = SMALL_MAP.replace(
     " 0459:00123       ACTIVE_CLS\r\n",
     " 0459:1FFFF       ACTIVE_CLS\r\n")
 
-# A Borland map that carries NO `Publics by ...` section at all -- which is LineUp's
+# A Borland map that carries NO `Publics by ...` section at all -- which is dos-real16-alt's
 # state, measured, and a fact about the LINK rather than about this reader.
 NO_PUBLICS_MAP = (
     "\r\n"
@@ -209,7 +209,7 @@ def test_the_rows_it_could_not_place_are_quoted_and_not_merely_counted(
 # ------------------------------------------------------------------- refusal, both ways
 
 def test_a_project_expected_to_be_refused_is_green_when_it_is(tmp_path: Path) -> None:
-    """LineUp's case, and why the sweep may not simply go red on a refusal.
+    """dos-real16-alt's case, and why the sweep may not simply go red on a refusal.
 
     A map with no `Publics by` section is a statement about that project's LINK, is
     already recorded as its own card, and is expected to stay that way until that project

@@ -1,5 +1,5 @@
 """Section M of the live matrix: the code tools (`disassemble`, the instruction a stop carries,
-`call_stack`), on the package's two guests, and the program cells D and F call for Speed Fight
+`call_stack`), on the package's two guests, and the program cells D and F call for dos-real16
 and the DPMI guest.
 
 The known answers are the guests' own: the code guest's bytes are `code.com` and its routines
@@ -49,8 +49,8 @@ GUEST_BASE = "8140"
 CODE_GUEST_CODE = 0x75
 #: How many panes a walk takes at most: eleven lines each, far past any routine judged here.
 PANE_WALK_MAX = 40
-#: How many publics the Speed Fight rule tries before it is a FAIL rather than a search.
-SPEEDF_PUBLICS_TRIED = 40
+#: How many publics the dos-real16 rule tries before it is a FAIL rather than a search.
+DOS_REAL16_PUBLICS_TRIED = 40
 
 M_CELLS = cells(
     ("M the code guest's code decodes on every boundary its listing places",
@@ -94,7 +94,7 @@ M_CELLS = cells(
 )
 
 #: The program cells, declared in their sections.
-SPEEDF_CODE_CELLS = (
+DOS_REAL16_CODE_CELLS = (
     ("D the first routine calling another public, disassembled, agrees with the pane",
      "REFERENCE.md, Reading and writing: the pane is the control"),
     ("D its call carries the callee's name, the pane calling the same offset",
@@ -343,14 +343,14 @@ def _debugger_names() -> dict[str, int]:
     return {k: v for k, v in out.items() if k not in clash}
 
 
-def speedf_code() -> None:
+def dos_real16_code() -> None:
     """The first public, by address, whose code up to the next public (at most 1024 bytes) holds
     a direct call to another public; disassembled and held to the pane."""
-    labels = [c[0] for c in SPEEDF_CODE_CELLS]
+    labels = [c[0] for c in DOS_REAL16_CODE_CELLS]
     table = sorted(dstate.STATE.table, key=lambda s: s.offset)
     publics = {s.name for s in table}
     chosen: tuple[str, dict[str, Any], dict[str, Any]] | None = None
-    for this, after in list(zip(table, table[1:], strict=False))[:SPEEDF_PUBLICS_TRIED]:
+    for this, after in list(zip(table, table[1:], strict=False))[:DOS_REAL16_PUBLICS_TRIED]:
         length = min(after.offset - this.offset, code.LENGTH_MAX)
         if length <= 0:
             continue
@@ -364,7 +364,8 @@ def speedf_code() -> None:
             break
     if chosen is None:
         for label in labels:
-            M.judge(label, False, f"no public of the first {SPEEDF_PUBLICS_TRIED} calls another")
+            M.judge(label, False,
+                    f"no public of the first {DOS_REAL16_PUBLICS_TRIED} calls another")
         return
     name, r, call = chosen
     v = against_the_pane(r, {})

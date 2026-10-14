@@ -1,5 +1,5 @@
 """Section K of the live matrix: `trace`, the debugger's CPU log counted in instructions, on the
-package's probe guest, and the routines it names on Speed Fight and the DPMI guest.
+package's probe guest, and the routines it names on dos-real16 and the DPMI guest.
 
 The known answers are the guest's own arithmetic: at its settle loop `loop` takes one off ECX per
 instruction it executes, so a trace of n instructions there leaves ECX n lower, at one address;
@@ -32,8 +32,8 @@ from matrix_common import (
     said,
     server,
 )
+from matrix_dos_real16 import dos_real16_main_loop
 from matrix_dpmi import dpmi_client
-from matrix_speedf import speedf_main_loop
 
 import dosbox_trace as tracing
 
@@ -54,7 +54,7 @@ START = 0x10B
 START_200 = {"start": 51, "emit": 144, "bump": 5}
 #: Each program's start-up on the normal core, to its first stop in the program, with room to
 #: spare: the normal core runs it far slower than the dynamic one its conf names.
-SPEEDF_BOOT_S = 110
+DOS_REAL16_BOOT_S = 110
 DPMI_BOOT_S = 100
 BOOT_EXEMPT = "a program's start-up on the normal core can outlast the matrix's ceiling"
 #: How many `_tick` windows the DPMI guest is given to produce one its join places whole: a window
@@ -65,8 +65,8 @@ DPMI_WINDOWS = 3
 #: code, since its loop calls the BIOS through the DPMI host soon after, and a window that runs
 #: into the host's real-mode stretch places no line at all.
 DPMI_WINDOW = 16
-SPEEDF_CELLS = ("K Speed Fight, normal core: COMPOSE_FRAME's row starts at its own linear, 500 "
-                "executed", "K Speed Fight: the same window in long is placed whole")
+DOS_REAL16_CELLS = ("K dos-real16, normal core: COMPOSE_FRAME's row starts at its own linear, 500 "
+                "executed", "K dos-real16: the same window in long is placed whole")
 DPMI_CELLS = ("K the DPMI guest, normal core: _tick's row starts at its own linear, "
               "through a selector base that is not zero",
               "K the DPMI guest: the same window in long is placed whole")
@@ -106,8 +106,8 @@ K_CELLS = cells(
      "trace docstring: empty dest needs a captures directory"),
     ("K the start window joins to start 51, emit 144, bump 5",
      "trace docstring: symbols; known: the probe's own arithmetic over its listing's labels"),
-    (SPEEDF_CELLS[0], "trace docstring: symbols; known: the map's COMPOSE_FRAME"),
-    (SPEEDF_CELLS[1], "REFERENCE.md, Advancing the machine: a long line says its own mode"),
+    (DOS_REAL16_CELLS[0], "trace docstring: symbols; known: the map's COMPOSE_FRAME"),
+    (DOS_REAL16_CELLS[1], "REFERENCE.md, Advancing the machine: a long line says its own mode"),
     (DPMI_CELLS[0], "REFERENCE.md, Advancing the machine: through selector CS"),
     (DPMI_CELLS[1], "REFERENCE.md, Advancing the machine: a long line says its own mode"),
 )
@@ -158,7 +158,7 @@ def section_k() -> None:
     must(M.call(server.close), "closing the normal-core session")
     M.setup()
     _dynamic()
-    _speedf()
+    _dos_real16()
     _dpmi()
 
 
@@ -288,26 +288,26 @@ def _judge_rest(labels: tuple[str, ...], judged_ones: set[str], exc: Exception) 
             M.judge(label, False, f"the bench stopped first: {type(exc).__name__}: {exc}")
 
 
-def _speedf() -> None:
-    if not _bench_ready(bp.SPEEDF, SPEEDF_CELLS):
+def _dos_real16() -> None:
+    if not _bench_ready(bp.DOS_REAL16, DOS_REAL16_CELLS):
         return
     done: set[str] = set()
     try:
-        speedf_main_loop(wait=SPEEDF_BOOT_S, exempt=BOOT_EXEMPT, flags=NORMAL_CORE_FLAGS)
+        dos_real16_main_loop(wait=DOS_REAL16_BOOT_S, exempt=BOOT_EXEMPT, flags=NORMAL_CORE_FLAGS)
         own = _linear_of("COMPOSE_FRAME")
         r = _window("COMPOSE_FRAME", 500, "cs_ip")
         row = _row(r, "COMPOSE_FRAME")
-        M.judge(SPEEDF_CELLS[0], ok(r) and (r.get("trace") or {}).get("instructions") == 500
+        M.judge(DOS_REAL16_CELLS[0], ok(r) and (r.get("trace") or {}).get("instructions") == 500
                 and row.get("first") == own, f"COMPOSE_FRAME at {own}: {row}; {said(r, 80)}")
-        done.add(SPEEDF_CELLS[0])
+        done.add(DOS_REAL16_CELLS[0])
         r = _window("COMPOSE_FRAME", 500, "long")
         row = _row(r, "COMPOSE_FRAME")
-        M.judge(SPEEDF_CELLS[1], ok(r) and row.get("first") == own
+        M.judge(DOS_REAL16_CELLS[1], ok(r) and row.get("first") == own
                 and tracing.NO_LINEAR not in str((r.get("trace") or {}).get("note")),
                 f"{row}; {said(r, 80)}")
-        done.add(SPEEDF_CELLS[1])
+        done.add(DOS_REAL16_CELLS[1])
     except Exception as exc:  # noqa: BLE001 -- the other bench still runs; this one says why
-        _judge_rest(SPEEDF_CELLS, done, exc)
+        _judge_rest(DOS_REAL16_CELLS, done, exc)
     finally:
         M.call(server.breakpoint_clear)
         M.call(server.close)

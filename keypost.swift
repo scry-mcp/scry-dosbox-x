@@ -138,7 +138,7 @@ let previous = NSWorkspace.shared.frontmostApplication      // to hand focus bac
 // prompt an autonomous session could not answer. Both were measured landing the cue key.
 //
 // THE WINDOW IS LOOKED UP FRESH EVERY TIME, and the result is READ BACK rather than believed.
-// An app that changes video mode (ReChip going from text to VESA on a song load) can recreate
+// An app that changes video mode (dos-djgpp32 going from text to VESA on a song load) can recreate
 // its SDL window, so a handle kept from earlier raises a window that no longer exists; and the
 // `AXUIElementSetAttributeValue` result says the REQUEST was accepted, not that the app is now
 // in front. So: ask for the app's windows now, raise the focused one (or the first), set

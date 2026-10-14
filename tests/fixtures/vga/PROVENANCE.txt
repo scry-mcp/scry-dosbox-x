@@ -5,18 +5,20 @@ video memory beside them, captured from live DOSBox-X sessions (the Homebrew bui
 its end once the prompt was back; `VGA DACPAL` pages, and its pager was answered with `Q`.
 Nothing here is authored, and the one file edited says so below: the parsers and decoders in
 `dosbox_screen.py` are written against these files, and the tests replay them.
+Program and board names were then replaced by neutral labels by a single mechanical substitution
+that preserves every field width; nothing else was edited.
 
 probe-park-*          the package's probe guest (`probe.conf`, `cwd` its `tests/guest`) at the
                       park `start` leaves, F000:0000FFF0, real mode: before the BIOS set a video
                       mode, so `mode=M_ERROR`, the DAC all zero and the draw state empty.
 probe-booted-*        the same guest after `run_for(frames=1)`, 0814:00000106, real mode, text.
-speedf-*              Speed Fight (`TMP/dosbox-mcp.conf`, `program="..\exes\speedf.exe"`, the
+dos-real16-*              dos-real16 (`TMP/dosbox-mcp.conf`, `program="..\exes\real16.exe"`, the
                       serial route) after `run_for(frames=300)`, 15A3:0000002D, real mode:
                       `M_LIN15`, 640 x 480.
-rechip-startup-*      ReChip (`build/mcp.conf`, `program="RECHIPD.EXE D:\MIDI\MONKEY.MID -a"`)
+dos-djgpp32-startup-*      dos-djgpp32 (`build/mcp.conf`, `program="DJGPP32.EXE D:\MIDI\TUNE00.MID -a"`)
                       stopped at `BPINT 31 AH=02`, 00A7:0015A694, Pr32 with paging on: the DOS
                       shell's text page, before the program sets its own mode.
-rechip-ui-*           the same session after `run_for(frames=100)`, 00A7:0007FF93, Pr32:
+dos-djgpp32-ui-*           the same session after `run_for(frames=100)`, 00A7:0007FF93, Pr32:
                       `M_LIN8`, 1024 x 768, the program's own screen.
 screen-*              the screen guest (`screen.conf`, `program="SCREEN.COM"`,
                       `break_on_int3=True`, `capture_video=True`) at its six `int 3` stops,
@@ -36,7 +38,7 @@ THE VIDEO MEMORY, each the bytes `memdump` collected at the same stop (`MEMDUMPB
 probe-booted-page.bin        4000 bytes from B800:0000.
 screen-text-page.bin         4000 bytes from B800:0000.
 screen-start80-page.bin      4000 bytes from B800:00A0, where the display starts at that stop.
-rechip-startup-page.bin      4000 bytes from 0038:000B8000 (GDT 0038, base 0), equal in its first
+dos-djgpp32-startup-page.bin      4000 bytes from 0038:000B8000 (GDT 0038, base 0), equal in its first
                              128 bytes to the debugger's `DP B8000` at that stop. EDITED: rows 10
                              and 11 held the absolute path of a directory on the capturing host
                              and are spaces here.
