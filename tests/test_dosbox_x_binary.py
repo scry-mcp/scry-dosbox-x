@@ -83,6 +83,14 @@ def test_a_wrong_first_rung_is_refused_never_passed_over(
         binaries.resolve("")
 
 
+def test_a_dangling_link_is_no_such_file_not_a_missing_exec_bit(
+        tmp_path: Path, on_path: Path) -> None:
+    link = tmp_path / "dosbox-x"
+    link.symlink_to(tmp_path / "gone")
+    with pytest.raises(Invalid, match=r"\(no such file\)"):
+        binaries.resolve(str(link))
+
+
 def test_a_wrong_argument_does_not_fall_through_to_the_variable(
         tmp_path: Path, on_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(binaries.VARIABLE, str(build(tmp_path / "var")))
@@ -163,6 +171,18 @@ def test_build_check_on_a_build_with_no_version_still_answers(tmp_path: Path) ->
     mine = build(tmp_path, version="exit 1")
     got = cast(dict[str, Any], server.build_check(binary=str(mine)))
     assert got["status"] == "ok" and got["version"]["available"] is False, got
+
+
+def test_a_relative_path_entry_through_a_link_names_the_file_which_found(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    target = tmp_path / "real" / "deep"
+    target.mkdir(parents=True)
+    build(tmp_path / "real" / "bin")
+    (tmp_path / "link").symlink_to(target)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("PATH", "link/../bin")
+    got = binaries.resolve("")
+    assert Path(got.path).resolve() == (tmp_path / "real" / "bin" / "dosbox-x").resolve(), got
 
 
 def test_the_path_rung_answers_an_absolute_path(tmp_path: Path,

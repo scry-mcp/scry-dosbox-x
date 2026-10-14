@@ -57,14 +57,15 @@ def resolve(binary: str) -> Resolved:
             f"{on_path or f'no `{EMULATOR_NAME}`'}. The first rung holding a value is the one "
             f"taken, and it has to name an executable file")
     # THE PATH `which` APPROVED, unchanged: `abspath` collapses `..` by spelling, so through a
-    # symlinked directory it would name another file. Only a relative PATH entry needs it.
-    return Resolved(found if os.path.isabs(found) else os.path.abspath(found), origin)
+    # symlinked directory it would name another file. A relative PATH entry is joined, not
+    # normalised, for the same reason.
+    return Resolved(found if os.path.isabs(found) else os.path.join(os.getcwd(), found), origin)
 
 
 def why_not(path: str) -> str:
     """Why a named path is no executable file, in the words its owner looks for: a file that is
     there without its exec bit is not missing."""
-    if not os.path.lexists(path):
+    if not os.path.exists(path):        # a dangling link included: nothing there to run
         return "no such file"
     if os.path.isdir(path):
         return "a directory"
