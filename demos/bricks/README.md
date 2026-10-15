@@ -19,10 +19,10 @@ that boots it. The build recipe is in the header of `bricks.asm`.
 WINDOW_APP=/path/to/your/placement-helper uv run python demos/bricks/demo.py
 ```
 
-The demo always opens a window: the mouse and the saved states reach the emulator only through
-it, and it drives the window with the host's input route (on macOS, `swiftc` and Accessibility
-trust, as this repository's README says). Each key, mouse event and menu click takes the focus
-for a moment, so run it when you can leave the machine alone until it finishes.
+The demo always opens a window: the Debug menu's stop and the saved states reach the emulator
+only through its menu, clicked by name (on macOS, with Accessibility trust, as this repository's
+README says). Each menu click takes the focus for a moment; the keys and the mouse go in inside
+the guest and take nothing.
 
 Where that window goes is your machine's to say, so the demo asks the placement helper named by
 `WINDOW_APP`: `<helper> dosbox` prints the emulator's window flags, one argument a line, for a
@@ -45,7 +45,7 @@ server that did not start).
 
 To play it yourself, run it from this directory: `cd demos/bricks && dosbox-x -conf
 bricks.conf`. The arrows move the paddle and SPACE serves the ball; press M to hand the paddle to
-the mouse, then click in the window so it captures the pointer. ESC returns to DOS.
+the mouse, which then centres it under the pointer. ESC returns to DOS.
 
 ## The prompt
 
@@ -58,10 +58,10 @@ Give this to an MCP client with this server connected:
 > `score` in view at every stop. Run to the first brick and the second: which row and column, and
 > what is the score? Read `score` by name and show me the screen. Then clear the breakpoint, run
 > three frames and tell me where the ball is. Let the game run, press the right arrow three times
-> and show me the game took them, stop it and read `paddle_x`. Let it run again, put the pointer
-> on the window's centre and click once so the emulator captures the mouse, press M to hand the
-> paddle to the mouse, move it sideways and show me the game saw it, then press M again to take
-> the paddle back. Stop and read `paddle_x`: the mouse should have moved it right. Let it run,
+> and show me the game took them, stop it and read `paddle_x`. Let it run again, press M to hand
+> the paddle to the mouse, put the pointer on pixel 240, 100 and show me the game saw it, then
+> press M again to take the paddle back. Stop and read `paddle_x`: the paddle should be centred
+> under the pointer. Let it run,
 > save a state, press the left arrow, load the state back, stop, and show me `paddle_x` is where
 > it was saved. Let it run, press SPACE to serve the ball waiting on the paddle, clear the watch
 > and close.
@@ -113,6 +113,9 @@ DOSBox-X `<volatile>`.
   "binary": "<volatile>",
   "binary_origin": "<volatile>",
   "version": "<volatile>",
+  "stub": "./guest/INJECT.COM",
+  "input_port": "<volatile>",
+  "background": false,
   "stopped_on_its_own": {
     "stop_seq": 1,
     "at": "F000:0000FFF0",
@@ -127,7 +130,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": false,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -143,7 +146,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**2. `resume`**: OK ready: the program's own int 3 at 0814:0119: loaded at 0814
+**2. `resume`**: OK ready: the program's own int 3 at 08A2:0119: loaded at 08A2
 
 <details><summary>call and reply</summary>
 
@@ -155,21 +158,21 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "resume: halted at 0814:00000119",
+  "summary": "resume: halted at 08A2:00000119",
   "status": "ok",
   "registers": {
-    "EAX": "00000E0A",
-    "ESI": "000005A2",
-    "DS": "0814",
+    "EAX": "D05B0E0A",
+    "ESI": "000005B2",
+    "DS": "08A2",
     "ES": "A000",
     "FS": "0000",
     "GS": "0000",
-    "SS": "0814",
+    "SS": "08A2",
     "EBX": "0000000F",
     "EDI": "0000BC1E",
-    "CS": "0814",
+    "CS": "08A2",
     "EIP": "00000119",
-    "ECX": "00000004",
+    "ECX": "005B0004",
     "EBP": "0000091C",
     "EDX": "00000000",
     "ESP": "0000FFFE"
@@ -177,19 +180,19 @@ DOSBox-X `<volatile>`.
   "watches": [],
   "attribution": {
     "attributed": false,
-    "at": "0814:0119",
+    "at": "08A2:0119",
     "why": "the stop address matches no declared code breakpoint. The debugger keeps no hit flag, and a memory watch stops at the WRITING instruction rather than the watched address, so which declaration fired cannot be derived from the stop"
   },
   "e9": {
-    "lines_total": 1,
-    "unfiltered": 1,
+    "lines_total": 2,
+    "unfiltered": 2,
     "filter": ".",
     "shown": 0,
     "how": "pass e9='all', e9='lines:N', e9='since' or e9='seconds:N' (with e9_stamp=<regex capturing the seconds>), with e9_filter=<pattern>, to include the lines"
   },
   "stop_seq": 2,
   "instruction": {
-    "at": "0814:00000119",
+    "at": "08A2:00000119",
     "bytes": "CD03",
     "text": "int 3",
     "flow": "call",
@@ -200,7 +203,7 @@ DOSBox-X `<volatile>`.
   },
   "halted": true,
   "stopped_at": {
-    "cs": "0814",
+    "cs": "08A2",
     "eip": "00000119",
     "mode": "Real"
   },
@@ -212,7 +215,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": false,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -228,22 +231,22 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**3. `symbols_load`**: OK symbols: 64 symbols placed at base 0x8140
+**3. `symbols_load`**: OK symbols: 65 symbols placed at base 0x8a20
 
 <details><summary>call and reply</summary>
 
 ```json
 {
   "source": "./demos/bricks/bricks.sym",
-  "base": "8140"
+  "base": "8a20"
 }
 ```
 
 ```json
 {
-  "summary": "symbols_load: 64 loaded of 64 parsed, base 33088",
+  "summary": "symbols_load: 65 loaded of 65 parsed, base 35360",
   "status": "ok",
-  "base": 33088,
+  "base": 35360,
   "limit": -1,
   "descriptor": -1,
   "declarations": {
@@ -256,8 +259,8 @@ DOSBox-X `<volatile>`.
   },
   "pending": false,
   "base_from": "caller",
-  "parsed": 64,
-  "kept": 64,
+  "parsed": 65,
+  "kept": 65,
   "excluded_sections": 0,
   "excluded_pattern": 0,
   "excluded_unplaceable": 0,
@@ -269,16 +272,16 @@ DOSBox-X `<volatile>`.
   "unreadable": 0,
   "overlay_idle": 0,
   "table_mode": "replaced",
-  "table_total": 64,
-  "loaded": 64,
-  "bytes": 1282,
+  "table_total": 65,
+  "loaded": 65,
+  "bytes": 1302,
   "symbols_typed": 0,
   "session": {
     "pid": "<volatile>",
     "alive": true,
     "altered": false,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -307,29 +310,29 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "disassemble brick_hit: 14 lines at 0814:000002C8, 16-bit",
+  "summary": "disassemble brick_hit: 14 lines at 08A2:000002C8, 16-bit",
   "status": "ok",
   "ref": "brick_hit",
-  "segment": 2068,
+  "segment": 2210,
   "offset": 712,
   "length": 32,
   "code_bits": 16,
   "code_bits_from": "real mode",
   "lines": [
-    "0814:000002C8 88DF                 mov bh, bl",
-    "0814:000002CA 88C3                 mov bl, al",
-    "0814:000002CC E81FFF               call 0x1ee",
-    "0814:000002CF C6841A0600           mov byte ptr [si + 0x61a], 0",
-    "0814:000002D4 FE0E1906             dec byte ptr [0x619]",
-    "0814:000002D8 53                   push bx",
-    "0814:000002D9 30C0                 xor al, al",
-    "0814:000002DB E81BFF               call 0x1f9",
-    "0814:000002DE 5B                   pop bx",
-    "0814:000002DF B006                 mov al, 6",
-    "0814:000002E1 28D8                 sub al, bl",
-    "0814:000002E3 B40A                 mov ah, 0xa",
-    "0814:000002E5 F6E4                 mul ah",
-    "0814:000002E7 01060506             add word ptr [0x605], ax"
+    "08A2:000002C8 88DF                 mov bh, bl",
+    "08A2:000002CA 88C3                 mov bl, al",
+    "08A2:000002CC E81FFF               call 0x1ee",
+    "08A2:000002CF C6842C0600           mov byte ptr [si + 0x62c], 0",
+    "08A2:000002D4 FE0E2B06             dec byte ptr [0x62b]",
+    "08A2:000002D8 53                   push bx",
+    "08A2:000002D9 30C0                 xor al, al",
+    "08A2:000002DB E81BFF               call 0x1f9",
+    "08A2:000002DE 5B                   pop bx",
+    "08A2:000002DF B006                 mov al, 6",
+    "08A2:000002E1 28D8                 sub al, bl",
+    "08A2:000002E3 B40A                 mov ah, 0xa",
+    "08A2:000002E5 F6E4                 mul ah",
+    "08A2:000002E7 01061506             add word ptr [0x615], ax"
   ],
   "flow": [
     "sequential",
@@ -354,19 +357,19 @@ DOSBox-X `<volatile>`.
       "operand": "0x1ee",
       "offset": "0x1ee",
       "kind": "target",
-      "segment": "0814",
-      "linear": "0000832E",
+      "segment": "08A2",
+      "linear": "00008C0E",
       "symbol": "brick_index",
       "delta": 0
     },
     {
       "line": 4,
-      "operand": "byte ptr [0x619]",
-      "offset": "0x619",
+      "operand": "byte ptr [0x62b]",
+      "offset": "0x62b",
       "kind": "memory",
-      "segment": "0814",
+      "segment": "08A2",
       "register": "DS",
-      "linear": "00008759",
+      "linear": "0000904B",
       "symbol": "bricks_left",
       "delta": 0
     },
@@ -375,19 +378,19 @@ DOSBox-X `<volatile>`.
       "operand": "0x1f9",
       "offset": "0x1f9",
       "kind": "target",
-      "segment": "0814",
-      "linear": "00008339",
+      "segment": "08A2",
+      "linear": "00008C19",
       "symbol": "brick_rect",
       "delta": 0
     },
     {
       "line": 13,
-      "operand": "word ptr [0x605]",
-      "offset": "0x605",
+      "operand": "word ptr [0x615]",
+      "offset": "0x615",
       "kind": "memory",
-      "segment": "0814",
+      "segment": "08A2",
       "register": "DS",
-      "linear": "00008745",
+      "linear": "00009035",
       "symbol": "score",
       "delta": 0
     }
@@ -397,7 +400,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": false,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -413,7 +416,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**5. `breakpoint_at`**: OK break: breakpoint BP 0814:02C8
+**5. `breakpoint_at`**: OK break: breakpoint BP 08A2:02C8
 
 <details><summary>call and reply</summary>
 
@@ -433,7 +436,7 @@ DOSBox-X `<volatile>`.
   "already_stored": false,
   "armed": true,
   "state": "armed",
-  "entry": "BP 0814:02C8",
+  "entry": "BP 08A2:02C8",
   "marked": false,
   "note": null,
   "session": {
@@ -441,7 +444,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -487,7 +490,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -515,21 +518,21 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "resume: halted at 0814:000002C8",
+  "summary": "resume: halted at 08A2:000002C8",
   "status": "ok",
   "registers": {
-    "EAX": "00000005",
+    "EAX": "D05B0005",
     "ESI": "00000039",
-    "DS": "0814",
+    "DS": "08A2",
     "ES": "A000",
     "FS": "0000",
     "GS": "0000",
-    "SS": "0814",
+    "SS": "08A2",
     "EBX": "00000707",
     "EDI": "000064E4",
-    "CS": "0814",
+    "CS": "08A2",
     "EIP": "000002C8",
-    "ECX": "00000020",
+    "ECX": "005B0020",
     "EBP": "0000091C",
     "EDX": "00000000",
     "ESP": "0000FFFA"
@@ -550,18 +553,18 @@ DOSBox-X `<volatile>`.
     "attributed": true,
     "ref": "brick_hit",
     "by": "symbol",
-    "at": "0814:02C8"
+    "at": "08A2:02C8"
   },
   "e9": {
-    "lines_total": 1,
-    "unfiltered": 1,
+    "lines_total": 2,
+    "unfiltered": 2,
     "filter": ".",
     "shown": 0,
     "how": "pass e9='all', e9='lines:N', e9='since' or e9='seconds:N' (with e9_stamp=<regex capturing the seconds>), with e9_filter=<pattern>, to include the lines"
   },
   "stop_seq": 3,
   "instruction": {
-    "at": "0814:000002C8",
+    "at": "08A2:000002C8",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -572,7 +575,7 @@ DOSBox-X `<volatile>`.
   },
   "halted": true,
   "stopped_at": {
-    "cs": "0814",
+    "cs": "08A2",
     "eip": "000002C8",
     "mode": "Real"
   },
@@ -584,7 +587,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -612,21 +615,21 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "resume: halted at 0814:000002C8",
+  "summary": "resume: halted at 08A2:000002C8",
   "status": "ok",
   "registers": {
-    "EAX": "00000005",
+    "EAX": "D05B0005",
     "ESI": "00000038",
-    "DS": "0814",
+    "DS": "08A2",
     "ES": "A000",
     "FS": "0000",
     "GS": "0000",
-    "SS": "0814",
+    "SS": "08A2",
     "EBX": "00000606",
     "EDI": "000064C2",
-    "CS": "0814",
+    "CS": "08A2",
     "EIP": "000002C8",
-    "ECX": "00000020",
+    "ECX": "005B0020",
     "EBP": "0000091C",
     "EDX": "00000000",
     "ESP": "0000FFFA"
@@ -647,18 +650,18 @@ DOSBox-X `<volatile>`.
     "attributed": true,
     "ref": "brick_hit",
     "by": "symbol",
-    "at": "0814:02C8"
+    "at": "08A2:02C8"
   },
   "e9": {
-    "lines_total": 2,
-    "unfiltered": 2,
+    "lines_total": 3,
+    "unfiltered": 3,
     "filter": ".",
     "shown": 0,
     "how": "pass e9='all', e9='lines:N', e9='since' or e9='seconds:N' (with e9_stamp=<regex capturing the seconds>), with e9_filter=<pattern>, to include the lines"
   },
   "stop_seq": 4,
   "instruction": {
-    "at": "0814:000002C8",
+    "at": "08A2:000002C8",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -669,7 +672,7 @@ DOSBox-X `<volatile>`.
   },
   "halted": true,
   "stopped_at": {
-    "cs": "0814",
+    "cs": "08A2",
     "eip": "000002C8",
     "mode": "Real"
   },
@@ -682,7 +685,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -711,29 +714,29 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "read_memory score: 8 rows at 0814:0605",
+  "summary": "read_memory score: 8 rows at 08A2:0615",
   "status": "ok",
   "ref": "score",
-  "segment": 2068,
-  "offset": 1541,
+  "segment": 2210,
+  "offset": 1557,
   "length": 2,
   "hex": "0a00",
   "rows": [
-    "0814:00000605 0A 00 03 01 00 01 00 00 B0 00 C0 00 4E 00 FE FF  ............N...",
-    "0814:00000615 FE FF 8C 00 3B 01 01 01 01 01 01 01 01 01 01 01  ....;...........",
-    "0814:00000625 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01  ................",
-    "0814:00000635 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01  ................",
-    "0814:00000645 01 01 01 01 01 01 01 01 01 01 01 01 01 01 00 01  ................",
-    "0814:00000655 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................",
-    "0814:00000665 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................",
-    "0814:00000675 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................"
+    "08A2:00000615 0A 00 03 01 00 01 00 40 01 00 B0 00 C0 00 4E 00  .......@......N.",
+    "08A2:00000625 FE FF FE FF 8C 00 3B 01 01 01 01 01 01 01 01 01  ......;.........",
+    "08A2:00000635 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01  ................",
+    "08A2:00000645 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01  ................",
+    "08A2:00000655 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01  ................",
+    "08A2:00000665 00 01 01 00 00 00 00 00 00 00 00 00 00 00 00 00  ................",
+    "08A2:00000675 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................",
+    "08A2:00000685 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................"
   ],
   "session": {
     "pid": "<volatile>",
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -780,7 +783,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -810,7 +813,7 @@ DOSBox-X `<volatile>`.
   "status": "ok",
   "declarations_cleared": 1,
   "disarmed": [
-    "BP 0814:02C8"
+    "BP 08A2:02C8"
   ],
   "pending_disarm": [],
   "note": null,
@@ -819,7 +822,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -865,8 +868,8 @@ DOSBox-X `<volatile>`.
   ],
   "attribution": "<volatile>",
   "e9": {
-    "lines_total": 3,
-    "unfiltered": 3,
+    "lines_total": 4,
+    "unfiltered": 4,
     "filter": ".",
     "shown": 0,
     "how": "pass e9='all', e9='lines:N', e9='since' or e9='seconds:N' (with e9_stamp=<regex capturing the seconds>), with e9_filter=<pattern>, to include the lines"
@@ -876,8 +879,8 @@ DOSBox-X `<volatile>`.
   "verdict": "ELAPSED",
   "polls": 3,
   "running": false,
-  "emulated_before_s": 2.0022685,
-  "emulated_after_s": 2.0317815,
+  "emulated_before_s": 2.0022686000000003,
+  "emulated_after_s": 2.0317819999999998,
   "frame_before": null,
   "frame_after": null,
   "cycles": null,
@@ -889,7 +892,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -918,29 +921,29 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "read_memory ball_x: 8 rows at 0814:060F",
+  "summary": "read_memory ball_x: 8 rows at 08A2:0621",
   "status": "ok",
   "ref": "ball_x",
-  "segment": 2068,
-  "offset": 1551,
+  "segment": 2210,
+  "offset": 1569,
   "length": 8,
   "hex": "bc005200feff0200",
   "rows": [
-    "0814:0000060F BC 00 52 00 FE FF 02 00 8E 00 3A 01 01 01 01 01  ..R.......:.....",
-    "0814:0000061F 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01  ................",
-    "0814:0000062F 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01  ................",
-    "0814:0000063F 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01  ................",
-    "0814:0000064F 01 01 01 00 00 01 01 00 00 00 00 00 00 00 00 00  ................",
-    "0814:0000065F 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................",
-    "0814:0000066F 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................",
-    "0814:0000067F 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................"
+    "08A2:00000621 BC 00 52 00 FE FF 02 00 8E 00 3A 01 01 01 01 01  ..R.......:.....",
+    "08A2:00000631 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01  ................",
+    "08A2:00000641 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01  ................",
+    "08A2:00000651 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01  ................",
+    "08A2:00000661 01 01 01 00 00 01 01 00 00 00 00 00 00 00 00 00  ................",
+    "08A2:00000671 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................",
+    "08A2:00000681 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................",
+    "08A2:00000691 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................"
   ],
   "session": {
     "pid": "<volatile>",
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -978,7 +981,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -1039,20 +1042,16 @@ DOSBox-X `<volatile>`.
       {
         "op": "send_keys",
         "reply": {
-          "summary": "send_keys (window): effect seen",
+          "summary": "send_keys (guest): effect seen",
           "status": "ok",
           "keys": [
             "right"
           ],
           "modifiers": [],
-          "note": "the emulator window was brought to the front to receive the keys and focus was handed back; over a stream that switch is visible",
-          "route": "window",
+          "route": "guest",
           "posted": 1,
-          "activated": true,
-          "attempts": 1,
-          "restored": "<volatile>",
-          "restore": "<volatile>",
-          "window": "<volatile>",
+          "bytes": 4,
+          "ticks": 4,
           "effect": {
             "checked": true,
             "seen": true,
@@ -1068,7 +1067,7 @@ DOSBox-X `<volatile>`.
             "alive": true,
             "altered": true,
             "conf": "./demos/bricks/bricks.conf",
-            "conf_digest": "d12a46dbc0f69f42",
+            "conf_digest": "6a91a7cd8d6ac7c3",
             "conf_changed_on_disk": false,
             "watched": true,
             "seconds_bound": 900,
@@ -1084,20 +1083,16 @@ DOSBox-X `<volatile>`.
       {
         "op": "send_keys",
         "reply": {
-          "summary": "send_keys (window): effect seen",
+          "summary": "send_keys (guest): effect seen",
           "status": "ok",
           "keys": [
             "right"
           ],
           "modifiers": [],
-          "note": "the emulator window was brought to the front to receive the keys and focus was handed back; over a stream that switch is visible",
-          "route": "window",
+          "route": "guest",
           "posted": 1,
-          "activated": true,
-          "attempts": 1,
-          "restored": "<volatile>",
-          "restore": "<volatile>",
-          "window": "<volatile>",
+          "bytes": 4,
+          "ticks": 4,
           "effect": {
             "checked": true,
             "seen": true,
@@ -1113,7 +1108,7 @@ DOSBox-X `<volatile>`.
             "alive": true,
             "altered": true,
             "conf": "./demos/bricks/bricks.conf",
-            "conf_digest": "d12a46dbc0f69f42",
+            "conf_digest": "6a91a7cd8d6ac7c3",
             "conf_changed_on_disk": false,
             "watched": true,
             "seconds_bound": 900,
@@ -1129,20 +1124,16 @@ DOSBox-X `<volatile>`.
       {
         "op": "send_keys",
         "reply": {
-          "summary": "send_keys (window): effect seen",
+          "summary": "send_keys (guest): effect seen",
           "status": "ok",
           "keys": [
             "right"
           ],
           "modifiers": [],
-          "note": "the emulator window was brought to the front to receive the keys and focus was handed back; over a stream that switch is visible",
-          "route": "window",
+          "route": "guest",
           "posted": 1,
-          "activated": true,
-          "attempts": 1,
-          "restored": "<volatile>",
-          "restore": "<volatile>",
-          "window": "<volatile>",
+          "bytes": 4,
+          "ticks": 4,
           "effect": {
             "checked": true,
             "seen": true,
@@ -1158,7 +1149,7 @@ DOSBox-X `<volatile>`.
             "alive": true,
             "altered": true,
             "conf": "./demos/bricks/bricks.conf",
-            "conf_digest": "d12a46dbc0f69f42",
+            "conf_digest": "6a91a7cd8d6ac7c3",
             "conf_changed_on_disk": false,
             "watched": true,
             "seconds_bound": 900,
@@ -1201,7 +1192,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -1239,13 +1230,14 @@ DOSBox-X `<volatile>`.
   "running": false,
   "how": "menu",
   "waited_s": "<volatile>",
+  "focus": "returned",
   "stopped_at": "<volatile>",
   "session": {
     "pid": "<volatile>",
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -1274,11 +1266,11 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "read_memory paddle_x: 8 rows at 0814:060D",
+  "summary": "read_memory paddle_x: 8 rows at 08A2:061F",
   "status": "ok",
   "ref": "paddle_x",
-  "segment": 2068,
-  "offset": 1549,
+  "segment": 2210,
+  "offset": 1567,
   "length": 2,
   "hex": "a400",
   "rows": "<volatile>",
@@ -1287,7 +1279,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -1325,7 +1317,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -1341,101 +1333,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**19. `send_mouse`**: OK centre: the pointer on the window's centre
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "place": "center"
-}
-```
-
-```json
-{
-  "summary": "send_mouse (window): posted, unverified",
-  "status": "ok",
-  "place": "center",
-  "route": "window",
-  "posted": 1,
-  "activated": true,
-  "attempts": 1,
-  "restored": "<volatile>",
-  "restore": "<volatile>",
-  "window": "<volatile>",
-  "effect": {
-    "checked": false,
-    "why": "no `expect` was given, so `posted` says the host event went out and NOT that the guest received it; pass expect=<E9 pattern> to confirm the program's own reaction"
-  },
-  "session": {
-    "pid": "<volatile>",
-    "alive": true,
-    "altered": true,
-    "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
-    "conf_changed_on_disk": false,
-    "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
-    "terminal_bytes_dropped": 0,
-    "drain_alive": true,
-    "drain_ended": "",
-    "captures": "off",
-    "state_dir": "./tmp/demos/bricks/bricks-states"
-  }
-}
-```
-
-</details>
-
-**20. `send_mouse`**: OK capture: a click, which the emulator takes to capture the mouse
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "button": "left"
-}
-```
-
-```json
-{
-  "summary": "send_mouse (window): posted, unverified",
-  "status": "ok",
-  "button": "left",
-  "route": "window",
-  "posted": 1,
-  "activated": true,
-  "attempts": 1,
-  "restored": "<volatile>",
-  "restore": "<volatile>",
-  "window": "<volatile>",
-  "effect": {
-    "checked": false,
-    "why": "no `expect` was given, so `posted` says the host event went out and NOT that the guest received it; pass expect=<E9 pattern> to confirm the program's own reaction"
-  },
-  "session": {
-    "pid": "<volatile>",
-    "alive": true,
-    "altered": true,
-    "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
-    "conf_changed_on_disk": false,
-    "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
-    "terminal_bytes_dropped": 0,
-    "drain_alive": true,
-    "drain_ended": "",
-    "captures": "off",
-    "state_dir": "./tmp/demos/bricks/bricks-states"
-  }
-}
-```
-
-</details>
-
-**21. `send_keys`**: OK mouse on: M handed the paddle to the mouse: the game logged MOUSE ON
+**19. `send_keys`**: OK mouse on: M handed the paddle to the mouse: the game logged MOUSE ON
 
 <details><summary>call and reply</summary>
 
@@ -1445,27 +1343,22 @@ DOSBox-X `<volatile>`.
     "m"
   ],
   "expect": "MOUSE ON$",
-  "seconds": 10,
-  "focus": "keep"
+  "seconds": 10
 }
 ```
 
 ```json
 {
-  "summary": "send_keys (window): effect seen",
+  "summary": "send_keys (guest): effect seen",
   "status": "ok",
   "keys": [
     "m"
   ],
   "modifiers": [],
-  "note": "the emulator window was brought to the front to receive the keys and stays there (focus='keep')",
-  "route": "window",
+  "route": "guest",
   "posted": 1,
-  "activated": true,
-  "attempts": 1,
-  "restored": "<volatile>",
-  "restore": "<volatile>",
-  "window": "<volatile>",
+  "bytes": 2,
+  "ticks": 2,
   "effect": {
     "checked": true,
     "seen": true,
@@ -1481,7 +1374,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -1497,14 +1390,14 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**22. `send_mouse`**: OK mouse: the game read the motion and logged MOUSE
+**20. `send_mouse`**: OK mouse: the pointer read back at pixel 240,100 and the game logged MOUSE
 
 <details><summary>call and reply</summary>
 
 ```json
 {
-  "dx": 60,
-  "dy": 0,
+  "x": 240,
+  "y": 100,
   "expect": "MOUSE$",
   "seconds": 10
 }
@@ -1512,17 +1405,31 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "send_mouse (window): effect seen",
+  "summary": "send_mouse: pointer at 240,100; effect seen",
   "status": "ok",
-  "dx": 60,
-  "dy": 0,
-  "route": "window",
-  "posted": 1,
-  "activated": true,
-  "attempts": 1,
-  "restored": "<volatile>",
-  "restore": "<volatile>",
-  "window": "<volatile>",
+  "x": 240,
+  "y": 100,
+  "units": "screen",
+  "button": null,
+  "action": null,
+  "route": "guest",
+  "pointer": {
+    "screen": {
+      "x": 240,
+      "y": 100,
+      "width": 320,
+      "height": 200
+    },
+    "mouse": {
+      "x": 480,
+      "y": 100,
+      "max_x": 639,
+      "max_y": 199
+    },
+    "buttons": [],
+    "mode": "0x13"
+  },
+  "arrived": true,
   "effect": {
     "checked": true,
     "seen": true,
@@ -1538,7 +1445,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -1554,7 +1461,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**23. `send_keys`**: OK mouse off: M took the paddle back, so the host's pointer moves nothing from here on
+**21. `send_keys`**: OK mouse off: M took the paddle back, so the pointer moves nothing from here on
 
 <details><summary>call and reply</summary>
 
@@ -1570,20 +1477,16 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "send_keys (window): effect seen",
+  "summary": "send_keys (guest): effect seen",
   "status": "ok",
   "keys": [
     "m"
   ],
   "modifiers": [],
-  "note": "the emulator window was brought to the front to receive the keys and focus was handed back; over a stream that switch is visible",
-  "route": "window",
+  "route": "guest",
   "posted": 1,
-  "activated": true,
-  "attempts": 1,
-  "restored": "<volatile>",
-  "restore": "<volatile>",
-  "window": "<volatile>",
+  "bytes": 2,
+  "ticks": 2,
   "effect": {
     "checked": true,
     "seen": true,
@@ -1599,7 +1502,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -1615,7 +1518,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**24. `stop`**: OK mark: stopped through the Debug menu
+**22. `stop`**: OK mark: stopped through the Debug menu
 
 <details><summary>call and reply</summary>
 
@@ -1637,13 +1540,14 @@ DOSBox-X `<volatile>`.
   "running": false,
   "how": "menu",
   "waited_s": "<volatile>",
+  "focus": "returned",
   "stopped_at": "<volatile>",
   "session": {
     "pid": "<volatile>",
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -1659,7 +1563,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**25. `read_memory`**: OK before save: the mouse moved the paddle right of where the keys left it
+**23. `read_memory`**: OK before save: the paddle at x 220, centred under the pointer at pixel 240
 
 <details><summary>call and reply</summary>
 
@@ -1672,20 +1576,20 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "read_memory paddle_x: 8 rows at 0814:060D",
+  "summary": "read_memory paddle_x: 8 rows at 08A2:061F",
   "status": "ok",
   "ref": "paddle_x",
-  "segment": 2068,
-  "offset": 1549,
+  "segment": 2210,
+  "offset": 1567,
   "length": 2,
-  "hex": "<volatile>",
+  "hex": "dc00",
   "rows": "<volatile>",
   "session": {
     "pid": "<volatile>",
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -1701,7 +1605,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**26. `resume`**: OK on again: the game runs
+**24. `resume`**: OK on again: the game runs
 
 <details><summary>call and reply</summary>
 
@@ -1723,7 +1627,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -1739,7 +1643,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**27. `state_save`**: OK save: state saved in slot 1
+**25. `state_save`**: OK save: state saved in slot 1
 
 <details><summary>call and reply</summary>
 
@@ -1764,13 +1668,14 @@ DOSBox-X `<volatile>`.
   "time_stamp": "<volatile>",
   "saved_line": "<volatile>",
   "click_s": "<volatile>",
+  "focus": "returned",
   "waited_s": "<volatile>",
   "session": {
     "pid": "<volatile>",
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -1786,7 +1691,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**28. `send_keys`**: OK left: the left arrow moved the paddle after the save
+**26. `send_keys`**: OK left: the left arrow moved the paddle after the save
 
 <details><summary>call and reply</summary>
 
@@ -1802,20 +1707,16 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "send_keys (window): effect seen",
+  "summary": "send_keys (guest): effect seen",
   "status": "ok",
   "keys": [
     "left"
   ],
   "modifiers": [],
-  "note": "the emulator window was brought to the front to receive the keys and focus was handed back; over a stream that switch is visible",
-  "route": "window",
+  "route": "guest",
   "posted": 1,
-  "activated": true,
-  "attempts": 1,
-  "restored": "<volatile>",
-  "restore": "<volatile>",
-  "window": "<volatile>",
+  "bytes": 4,
+  "ticks": 4,
   "effect": {
     "checked": true,
     "seen": true,
@@ -1831,7 +1732,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -1847,7 +1748,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**29. `state_load`**: OK load: state loaded from slot 1
+**27. `state_load`**: OK load: state loaded from slot 1
 
 <details><summary>call and reply</summary>
 
@@ -1871,6 +1772,7 @@ DOSBox-X `<volatile>`.
   "time_stamp": "<volatile>",
   "loaded_line": "<volatile>",
   "click_s": "<volatile>",
+  "focus": "returned",
   "waited_s": "<volatile>",
   "verified": "not checked: the machine keeps running after a load; `stop` it and read what it holds",
   "session": {
@@ -1878,7 +1780,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -1894,7 +1796,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**30. `stop`**: OK halt: stopped through the Debug menu
+**28. `stop`**: OK halt: stopped through the Debug menu
 
 <details><summary>call and reply</summary>
 
@@ -1916,13 +1818,14 @@ DOSBox-X `<volatile>`.
   "running": false,
   "how": "menu",
   "waited_s": "<volatile>",
+  "focus": "returned",
   "stopped_at": "<volatile>",
   "session": {
     "pid": "<volatile>",
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -1938,7 +1841,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**31. `read_memory`**: OK restored: the paddle is back where the state was saved: the load undid the left arrow
+**29. `read_memory`**: OK restored: the paddle is back where the state was saved: the load undid the left arrow
 
 <details><summary>call and reply</summary>
 
@@ -1951,20 +1854,20 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "read_memory paddle_x: 8 rows at 0814:060D",
+  "summary": "read_memory paddle_x: 8 rows at 08A2:061F",
   "status": "ok",
   "ref": "paddle_x",
-  "segment": 2068,
-  "offset": 1549,
+  "segment": 2210,
+  "offset": 1567,
   "length": 2,
-  "hex": "<volatile>",
+  "hex": "dc00",
   "rows": "<volatile>",
   "session": {
     "pid": "<volatile>",
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -1980,7 +1883,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**32. `resume`**: OK play on: the game runs
+**30. `resume`**: OK play on: the game runs
 
 <details><summary>call and reply</summary>
 
@@ -2002,7 +1905,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -2018,7 +1921,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**33. `send_keys`**: OK serve: SPACE served the ball that was waiting on the paddle
+**31. `send_keys`**: OK serve: SPACE served the ball that was waiting on the paddle
 
 <details><summary>call and reply</summary>
 
@@ -2034,20 +1937,16 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "send_keys (window): effect seen",
+  "summary": "send_keys (guest): effect seen",
   "status": "ok",
   "keys": [
     "space"
   ],
   "modifiers": [],
-  "note": "the emulator window was brought to the front to receive the keys and focus was handed back; over a stream that switch is visible",
-  "route": "window",
+  "route": "guest",
   "posted": 1,
-  "activated": true,
-  "attempts": 1,
-  "restored": "<volatile>",
-  "restore": "<volatile>",
-  "window": "<volatile>",
+  "bytes": 2,
+  "ticks": 2,
   "effect": {
     "checked": true,
     "seen": true,
@@ -2063,7 +1962,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -2079,7 +1978,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**34. `watch_clear`**: OK unwatch: watch cleared
+**32. `watch_clear`**: OK unwatch: watch cleared
 
 <details><summary>call and reply</summary>
 
@@ -2100,7 +1999,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,
@@ -2116,7 +2015,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**35. `close`**: OK close: closed: quit
+**33. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 
@@ -2137,7 +2036,7 @@ DOSBox-X `<volatile>`.
     "alive": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
-    "conf_digest": "d12a46dbc0f69f42",
+    "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
     "seconds_bound": 900,

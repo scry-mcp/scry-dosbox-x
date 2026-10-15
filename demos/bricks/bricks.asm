@@ -11,9 +11,10 @@
 ; mouse, it plays itself (the paddle follows the ball), so a machine nobody touches still has a
 ; game in it. That first input takes control and puts the paddle back in the middle, so what the
 ; player does next does not depend on where the ball happened to be. Left and right arrows move
-; the paddle eight pixels; the mouse moves it by its own count while M has handed it the paddle
-; (M again takes it back), so neither a pointer crossing the window nor the click that brings the
-; window to the front moves anything. With a player the ball waits on the paddle until SPACE, after the first input
+; the paddle eight pixels; while M has handed it the mouse (M again takes it back) the paddle
+; centres itself under the pointer, read as a POSITION (INT 33h AX=03h) rather than as motion, so a
+; caller that puts the pointer at a pixel puts the paddle there, and a pointer moving while the
+; game has the keyboard moves nothing. With a player the ball waits on the paddle until SPACE, after the first input
 ; and after every life lost, so a game nobody is playing at that moment stays exactly where it
 ; was. ESC returns to DOS. Three lives; a game over goes back to playing itself.
 ;
@@ -472,21 +473,24 @@ read_input:
         call    e9_line
 .mouse: cmp     byte [have_mouse], 0
         je      .done
-        mov     ax, 0x000B              ; motion since the last call, in mickeys, read every
-        int     0x33                    ; frame so what came before M is dropped
+        mov     ax, 0x0003              ; the pointer's position, read every frame so a move
+        int     0x33                    ; made before M is taken as where it starts
         cmp     byte [mouse_on], 0
+        je      .seen
+        cmp     cx, [pointer_x]
         je      .done
-        or      cx, cx
-        jz      .done
+        mov     [pointer_x], cx
         push    cx
         call    take_control
-        pop     cx
-        mov     ax, [paddle_x]
-        add     ax, cx
+        pop     ax
+        shr     ax, 1                   ; mode 13h: the driver counts 640 across 320 pixels
+        sub     ax, PADDLE_W / 2
         call    clamp_paddle
         mov     [paddle_x], ax
         mov     si, msg_mouse
         call    e9_line
+        ret
+.seen:  mov     [pointer_x], cx
 .done:  ret
 
 ; The first input ends the self-play and starts the player from the middle.
@@ -506,8 +510,9 @@ mouse_init:
         cmp     ax, 0xFFFF              ; a driver answers FFFF, nothing else does
         jne     .none
         mov     byte [have_mouse], 1
-        mov     ax, 0x000B              ; empty the motion counters
+        mov     ax, 0x0003              ; where the pointer starts
         int     0x33
+        mov     [pointer_x], cx
 .none:  ret
 
 ; --- the screen's colours -----------------------------------------------------------------
@@ -646,6 +651,7 @@ auto:           db 0
 quit:           db 0
 have_mouse:     db 0
 mouse_on:       db 0
+pointer_x:      dw 0                    ; the driver's x at the last frame
 held:           db 0
 paddle_x:       dw 0
 ball_x:         dw 0

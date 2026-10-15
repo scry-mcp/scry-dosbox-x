@@ -4,9 +4,9 @@ prompt asks an MCP client to make, each answer checked. `--help` says how to run
 It walks a debugger through a game: the first stop inside the program, its symbols placed from
 the segment DOS loaded it at, a breakpoint on the routine every falling brick goes through, the
 score read by name, the paddle moved by the keyboard and by the mouse, and a state saved and
-loaded. The session is always windowed: the mouse and the saved states reach the emulator only
-through its window, so a run opens one, and the keys, the mouse and the menu clicks take the
-focus for a moment each.
+loaded. The session is always windowed: the Debug menu's stop and the saved states reach the
+emulator only through its window, so a run opens one, and each menu click takes the focus for a
+moment. The keys and the mouse go in inside the guest and take nothing.
 
 Where the window goes is the host's to say, never this demo's: it asks the placement helper named
 by `WINDOW_APP`, `<helper> dosbox` for a run nobody watches
@@ -42,7 +42,9 @@ FIRST_ROW, FIRST_COL, FIRST_POINTS = 5, 7, 10
 SECOND_BRICK = (5, 6)
 #: Where three retraces after the second brick leave the ball: x, y, dx, dy.
 BALL_AFTER = (188, 82, -2, 2)
-PADDLE_HOME, PADDLE_STEP, RIGHTS = 140, 8, 3
+PADDLE_HOME, PADDLE_STEP, RIGHTS, PADDLE_W = 140, 8, 3, 40
+#: Where the demo puts the pointer, in screen pixels: the paddle centres itself under it.
+MOUSE_AT = (240, 100)
 WAIT_S = 60
 
 
@@ -196,12 +198,22 @@ def seen(what: str) -> Any:
 
 
 def moved(reply: Reply, run: Run) -> str:
-    keyed = word(run.replies["paddle"])
-    # More than one step to the right, so the left arrow that follows can never be clamped into
-    # a no-op that leaves the paddle where the save put it.
-    expect(word(reply) > keyed + PADDLE_STEP,
-           f"the paddle is at {word(reply)}: the mouse did not move it right of {keyed}")
-    return "the mouse moved the paddle right of where the keys left it"
+    want = MOUSE_AT[0] - PADDLE_W // 2
+    # Right of where the keys left it by more than a step, so the left arrow that follows can
+    # never be clamped into a no-op that leaves the paddle where the save put it.
+    expect(want > word(run.replies["paddle"]) + PADDLE_STEP, "MOUSE_AT is too far left")
+    expect(word(reply) == want, f"the paddle is at {word(reply)}, not centred under the "
+                                f"pointer at {want}")
+    return f"the paddle at x {want}, centred under the pointer at pixel {MOUSE_AT[0]}"
+
+
+def pointed(reply: Reply, run: Run) -> str:
+    screen = reply["pointer"]["screen"]
+    expect(reply["arrived"] is True and (screen["x"], screen["y"]) == MOUSE_AT,
+           f"the pointer read back at {screen}, not {MOUSE_AT}")
+    expect(reply["effect"]["seen"] is True, f"effect {reply['effect']}")
+    return (f"the pointer read back at pixel {MOUSE_AT[0]},{MOUSE_AT[1]} and the game logged "
+            f"MOUSE")
 
 
 def restored(reply: Reply, run: Run) -> str:
@@ -219,9 +231,9 @@ MENU_STOP = {key: "the stop lands wherever the game is when the menu is clicked"
 INPUT_TIMING = {key: "it depends on when the host delivered the input"
                 for key in ("lines_before", "seen_before_waiting", "lines_total", "written",
                             "since_mark")}
-#: A paddle position the mouse decided, which the host's pointer speed scales.
-MOUSE_PLACED = {key: "the mouse placed the paddle, by an amount the host's pointer decides"
-                for key in ("hex", "rows")}
+#: The data view around the paddle, which holds the frame counter a menu's stop catches anywhere.
+MOUSE_PLACED = {"rows": "the data view around the paddle holds the frame counter, which the "
+                        "menu's stop catches at any frame"}
 
 STEPS = [
     Step("start", "start", boot, started, options=frozenset({"binary"}),
@@ -254,18 +266,14 @@ STEPS = [
          volatile={"rows": "the data view around the paddle holds the frame counter, which "
                            "the menu's stop catches at any frame"}),
     Step("again", "resume", {}, lambda reply, run: "the game runs"),
-    Step("centre", "send_mouse", {"place": "center"},
-         lambda reply, run: "the pointer on the window's centre"),
-    Step("capture", "send_mouse", {"button": "left"},
-         lambda reply, run: "a click, which the emulator takes to capture the mouse"),
-    Step("mouse on", "send_keys", {"keys": ["m"], "expect": "MOUSE ON$", "seconds": 10,
-                                   "focus": "keep"},
+    Step("mouse on", "send_keys", {"keys": ["m"], "expect": "MOUSE ON$", "seconds": 10},
          seen("M handed the paddle to the mouse: the game logged MOUSE ON"),
          volatile=INPUT_TIMING),
-    Step("mouse", "send_mouse", {"dx": 60, "dy": 0, "expect": "MOUSE$", "seconds": 10},
-         seen("the game read the motion and logged MOUSE"), volatile=INPUT_TIMING),
+    Step("mouse", "send_mouse", {"x": MOUSE_AT[0], "y": MOUSE_AT[1], "expect": "MOUSE$",
+                                 "seconds": 10},
+         pointed, volatile=INPUT_TIMING),
     Step("mouse off", "send_keys", {"keys": ["m"], "expect": "MOUSE OFF$", "seconds": 10},
-         seen("M took the paddle back, so the host's pointer moves nothing from here on"),
+         seen("M took the paddle back, so the pointer moves nothing from here on"),
          volatile=INPUT_TIMING),
     Step("mark", "stop", {}, stopped, volatile=MENU_STOP),
     Step("before save", "read_memory", {"ref": "paddle_x", "length": 2}, moved,
@@ -305,13 +313,13 @@ DEMO = Demo(
               "time_stamp": "the wall-clock time a state was saved at",
               "window": "where the host put the emulator's window",
               "binary": "where the host installed DOSBox-X",
+              "input_port": "the free port the host picked for the input route",
               "binary_origin": "how the host's DOSBox-X was found",
               "version": "the host's DOSBox-X build",
               "screen_delta": "the debugger's repaint, a positional tail the server says to "
                               "read a stop from and never a value",
               "screen_chars": "the length of that repaint", "clipped": "whether it was cut",
-              "restored": "whether the focus went back, which depends on what was in front",
-              "restore": "how the focus went back, which depends on what was in front"})
+              })
 
 
 def isolated_store() -> None:
