@@ -20,6 +20,8 @@ from itertools import count
 from pathlib import Path
 from typing import Any
 
+from scry_core import live_pool
+
 EXIT_PASSED, EXIT_FAILED, EXIT_INVALID = 0, 1, 3
 
 #: How long one call may be allowed to wait for the guest. A call whose own bound is longer is
@@ -60,6 +62,9 @@ class Section:
     # WHERE IN THE RUN, beside the letter order: a section that has to open the run or close it
     # (the focus gate's control and verdict, which span every other section) says so here.
     place: int = 1
+    # A SECTION THAT TAKES THE FOCUS BY DESIGN runs alone in the run's own process, never in a
+    # pool beside other jobs, which would then be judged on its window.
+    alone: bool = False
 
 
 def _waits(kw: dict[str, Any], params: dict[str, inspect.Parameter]) -> Iterator[tuple[str, Any]]:
@@ -89,6 +94,8 @@ class Ledger:
         self.tally = {"OK": 0, "FAIL": 0, "BLOCKED": 0}
         self.failed: list[str] = []
         self.blocked_why: list[tuple[str, str]] = []
+        #: The detail of every cell that is not OK, for the summary a pooled run declares.
+        self.reasons: dict[str, str] = {}
         self.kept: list[Path] = []
         #: What a FAIL keeps: the conf and the log of the session live when it failed.
         self.session_files: Callable[[], tuple[Path | None, Path | None]] = lambda: (None, None)
@@ -101,11 +108,14 @@ class Ledger:
     # ------------------------------------------------------------------ declaring
 
     def section(self, letter: str, title: str, cells: list[Cell], needs: str = "",
-                place: int = 1) -> Callable[[Callable[[], None]], Callable[[], None]]:
+                place: int = 1, alone: bool = False
+                ) -> Callable[[Callable[[], None]], Callable[[], None]]:
         """Register a section with the cells it will judge, before anything runs. `place` 0 runs
-        it before every section of place 1, 2 after them; within a place, by letter."""
+        it before every section of place 1, 2 after them; within a place, by letter. `alone`:
+        it takes the focus by design, so a pooled run keeps it out of the pool."""
         def register(fn: Callable[[], None]) -> Callable[[], None]:
-            self.sections.append(Section(letter, title, cells, fn, needs, place=place))
+            self.sections.append(Section(letter, title, cells, fn, needs, place=place,
+                                         alone=alone))
             return fn
         return register
 
@@ -175,15 +185,22 @@ class Ledger:
     def _count(self, label: str, verdict: str, detail: str) -> None:
         if self.current is None:
             raise RuntimeError(f"cell {label!r} judged outside any section")
+        self._tally(label, verdict, detail)
+        if verdict == "FAIL":
+            self._keep(label)
+        self._flush(label, verdict)
+
+    def _tally(self, label: str, verdict: str, detail: str) -> None:
+        assert self.current is not None
         _row(verdict, label, detail)
         self.current.judged[label] = verdict
         self.tally[verdict] += 1
+        if verdict != "OK":
+            self.reasons[label] = detail
         if verdict == "FAIL":
             self.failed.append(label)
-            self._keep(label)
         elif verdict == "BLOCKED":
             self.blocked_why.append((label, detail))
-        self._flush(label, verdict)
 
     def _rest(self) -> list[str]:
         if self.current is None:
@@ -266,10 +283,17 @@ class Ledger:
             self._count(label, "FAIL", "never reached: the section ended without judging it")
 
     def run(self, sections: list[str], env: dict[str, str], teardown: Callable[[], None],
-            isolate: Callable[[str], None]) -> int:
+            isolate: Callable[[str], None],
+            pool: Callable[[list[Section]], live_pool.PoolResult] | None = None,
+            summary: Path | None = None) -> int:
         """Run the sections asked for, in letter order, and answer the exit code; `sections`
         empty is all of them. The summary is printed however the run ends, an interruption
-        included, with the cells it never reached counted BLOCKED."""
+        included, with the cells it never reached counted BLOCKED.
+
+        `pool` runs the place-1 sections that are not `alone` as jobs of their own and answers
+        their merged result, which is counted here as if they had run in this process; the
+        `alone` ones follow in this process. `summary` is where a run that is one of those jobs
+        declares what it judged, however it ends."""
         chosen = sorted((s for s in self.sections if not sections or s.letter in sections),
                         key=lambda s: (s.place, s.letter))
         labels = [c.label for s in self.sections for c in s.cells]
@@ -281,8 +305,17 @@ class Ledger:
             print(f"INVALID: the plan names these cells twice: {twice}", flush=True)
             return EXIT_INVALID
         began = time.monotonic()
+        pooled = ([s for s in chosen if s.place == 1 and not s.alone] if pool is not None
+                  else [])
+        if len({s.letter for s in pooled}) < 2:
+            pooled = []          # one job is no pool: it runs here, its rows live
+        invalid = ""
         try:
             for sec in chosen:
+                if pooled and sec is pooled[0]:
+                    invalid = self._adopt(pooled, pool(pooled))  # type: ignore[misc]
+                if sec in pooled:
+                    continue
                 print(f"\n== [{sec.letter}] {sec.title}", flush=True)
                 self.current = sec
                 try:
@@ -296,12 +329,51 @@ class Ledger:
                 self.block_rest("the run was interrupted before this cell")
             self._flush("(interrupted)", "setup")
             self._summary(planned, time.monotonic() - began)
+            if summary is not None:
+                self._declare(summary, chosen, time.monotonic() - began)
+        if invalid:
+            print(f"==> LIVE MATRIX INVALID: {invalid}")
+            return EXIT_INVALID
         run = self.tally["OK"] + self.tally["FAIL"]
         if run == 0:
             print("==> LIVE MATRIX INVALID: no cell ran, so there is no verdict")
             return EXIT_INVALID
         print("==> LIVE MATRIX " + ("FAILED" if self.failed else "PASSED"))
         return EXIT_FAILED if self.failed else EXIT_PASSED
+
+    def _adopt(self, pooled: list[Section], result: live_pool.PoolResult) -> str:
+        """The pooled sections' cells counted as judged here, in plan order, and their jobs'
+        transcripts appended to this run's; answers why the merge is INVALID, or empty."""
+        for sec in pooled:
+            print(f"\n== [{sec.letter}] {sec.title} (pooled)", flush=True)
+            self.current = sec
+            for c in sec.cells:
+                self._tally(c.label, result.outcomes[c.label], result.reasons.get(c.label, ""))
+        for r in result.results:
+            # A JOB'S EXIT CODE THAT ITS SUMMARY DOES NOT EXPLAIN is a failure of its own: a
+            # cell judged under a label nobody planned, or twice, fails the child by that name
+            # and never reaches the summary, which may declare only the planned labels. 1 is a
+            # FAIL and 3 a run with nothing judged; anything else is a child that did not end
+            # by itself.
+            declared_fail = any(v == "FAIL" for v in r.outcomes().values())
+            if (r.rc == 1 and not declared_fail) or r.rc not in (0, 1, 3, None):
+                self._tally(f"JOB {r.job.name} EXITED {r.rc}, WHICH ITS SUMMARY DOES NOT "
+                            "EXPLAIN", "FAIL", str(r.log))
+        with self.transcript.open("a", encoding="utf-8") as out:
+            for r in result.results:
+                if r.summary is not None and Path(r.summary.transcript).is_file():
+                    out.write(Path(r.summary.transcript).read_text(encoding="utf-8"))
+        return result.invalid
+
+    def _declare(self, path: Path, chosen: list[Section], elapsed: float) -> None:
+        """This run's cells as one job of a pooled run declares them (`live_pool`)."""
+        outcomes: dict[str, live_pool.Outcome] = {}
+        for sec in chosen:
+            for c in sec.cells:
+                outcomes[c.label] = sec.judged.get(c.label, "BLOCKED")  # type: ignore[assignment]
+        reasons = {k: v for k, v in self.reasons.items() if k in outcomes}
+        live_pool.write_summary(path, live_pool.Summary(
+            tuple(outcomes), outcomes, reasons, str(self.transcript), round(elapsed, 3)))
 
     def _summary(self, planned: int, elapsed: float) -> None:
         """The recap above the verdict: every BLOCKED reason and every FAIL again, so the tail

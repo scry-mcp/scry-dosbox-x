@@ -24,6 +24,7 @@ from typing import Any, cast
 PKG = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PKG))
 
+from live_private import guest_dir  # noqa: E402
 from matrix_ledger import Cell, Ledger  # noqa: E402
 from scry_core import reply_contract as contract  # noqa: E402
 
@@ -36,7 +37,7 @@ __all__ = ["ds", "server"]
 M = Ledger()
 ENV = dict(os.environ)
 
-GUEST = PKG / "tests" / "guest"
+GUEST = guest_dir()
 PROBE_CONF = GUEST / "probe.conf"
 
 #: Every session's bound: a backstop, `close` ends each one long before it.

@@ -26,7 +26,7 @@ dependencies = [
     "capstone>=5.0.9,<6",
     # What the Scry servers share (the reply contract, the probe, the live bench), pinned by
     # its release tag so a build reads exactly the core it was tested against.
-    "scry-core @ git+https://github.com/scry-mcp/scry-core@v0.4.0",
+    "scry-core @ git+https://github.com/scry-mcp/scry-core@v0.5.1",
 ]
 
 [dependency-groups]
@@ -76,7 +76,8 @@ testpaths = ["tests"]
 # A TIER THAT LAUNCHES EMULATORS MAY NOT BE REACHED BY ACCIDENT: a stranger running `pytest` from
 # a clone would otherwise launch an emulator per case. Opting in is explicit (`pytest -m live`),
 # and a command-line `-m` beats this one.
-markers = ["live: drives a REAL emulator; deselected by default, opt in with `-m live`"]
+markers = ["live: drives a REAL emulator; deselected by default, opt in with `-m live`",
+           "windowed: opens a window or clicks the emulator's menu, so a pooled live run keeps it out of the pool"]
 # `--cov` IS HERE SO EVERY `pytest` JUDGES THE FLOOR: without the flag pytest-cov registers no
 # plugin, and a bare run exits 0 having measured nothing. A partial run goes red on the floor by
 # construction, because the floor is the whole repository's: pass `--no-cov` for one of those.

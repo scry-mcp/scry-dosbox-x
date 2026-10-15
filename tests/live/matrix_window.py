@@ -167,7 +167,7 @@ def _dpmi() -> None:
 
 
 @M.section("G", "the windowed tools, on the probe guest and on the DPMI guest", G_CELLS,
-           FLAGS_VAR)
+           FLAGS_VAR, alone=True)
 def section_g() -> None:
     print("  a window opens on the display the placement flags name, and each menu click "
           "takes the focus for a moment", flush=True)

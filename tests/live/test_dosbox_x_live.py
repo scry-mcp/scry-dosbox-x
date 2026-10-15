@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import cast
 
 import pytest
+from live_private import guest_dir
 
 import dosbox_session as ds
 
@@ -36,7 +37,7 @@ import dosbox_session as ds
 # and EMITS instrumentation, which `resume`, `e9`, `e9_wait`, `step`-on-a-running-
 # machine and the bound cases all rest on. `tests/guest/` holds 144 bytes that do
 # exactly that and nothing else.
-_OWN = Path(__file__).resolve().parent.parent / "guest"
+_OWN = guest_dir()
 
 
 def _override(name: str, default: str) -> str:

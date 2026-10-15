@@ -204,6 +204,7 @@ def test_start_headless_reaches_the_debugger_and_declares_what_it_launched() -> 
     assert state["drain_alive"] is True, "the terminal reader never started"
 
 
+@pytest.mark.windowed
 @pytest.mark.skipif(not WINDOW_FLAGS,
                     reason="set DOSBOX_X_LIVE_WINDOW_FLAGS (one argv token per line, "
                            "as `place-window dosbox` prints them) to exercise the "
@@ -239,6 +240,7 @@ def test_start_shared_keeps_the_callers_flags_and_adds_no_dummy_driver() -> None
     assert regs["registers"]["CS"] == "F000"
 
 
+@pytest.mark.windowed
 @pytest.mark.skipif(not WINDOW_FLAGS,
                     reason="set DOSBOX_X_LIVE_WINDOW_FLAGS (one argv token per line, "
                            "as `place-window dosbox` prints them) to exercise stop")
@@ -1470,6 +1472,7 @@ def test_write_lands_in_ram_and_is_read_back_and_a_write_into_rom_is_refused() -
     assert cast(dict[str, Any], server.status())["session"]["alive"] is True
 
 
+@pytest.mark.windowed
 @pytest.mark.skipif(not WINDOW_FLAGS,
                     reason="set DOSBOX_X_LIVE_WINDOW_FLAGS (one argv token per line, "
                            "as `place-window dosbox` prints them) to exercise the menu")

@@ -26,6 +26,7 @@ RUN = ROOT / "tmp" / "demos" / "bricks"
 TIMEOUT_S = 1800
 
 
+@pytest.mark.windowed
 @pytest.mark.skipif(not os.environ.get("WINDOW_APP"),
                     reason="set WINDOW_APP to a placement helper: the demo opens a window")
 def test_the_bricks_demo_passes_and_matches_its_readme() -> None:

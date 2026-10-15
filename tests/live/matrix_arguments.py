@@ -20,6 +20,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
+import live_private
 from matrix_common import (
     GUEST,
     PROBE_CONF,
@@ -171,8 +172,10 @@ def start_through_the_schema(**arguments: object) -> dict[str, object]:
 def _start_refusals() -> None:
     """With no session yet, so each refusal is the path's and never `session_live`; a start
     that came up instead of refusing is closed at once, so the next cell judges its own call."""
-    home = Path.home()
-    beside = GUEST.relative_to(home) if GUEST.is_relative_to(home) else None
+    # THE PACKAGE'S OWN GUESTS, never a pooled job's copy, which lives outside the home: the
+    # refusal is of the spelling, so the directory must exist for the cell to mean anything.
+    home, own = Path.home(), live_private.REPO / "tests" / "guest"
+    beside = own.relative_to(home) if own.is_relative_to(home) else None
     tilde = f"~/{beside}" if beside is not None else "~/x"
     r = M.call(server.start, conf=str(PROBE_CONF), cwd=tilde, seconds=60)
     _close_if_up(r)

@@ -3,9 +3,9 @@ started, and the marks it writes on E9, each one written by `dpmi.c` itself. Sha
 and the pytest live files; runs nothing at import."""
 from __future__ import annotations
 
-from pathlib import Path
+from live_private import guest_dir
 
-GUEST = Path(__file__).resolve().parents[1] / "guest"
+GUEST = guest_dir()
 CONF = GUEST / "dpmi.conf"
 EXE = GUEST / "dpmi.exe"
 SYM = GUEST / "dpmi.sym"

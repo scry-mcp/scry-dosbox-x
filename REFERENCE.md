@@ -1556,6 +1556,14 @@ tail of the session live at the time. It exits 0 with no FAIL, 1 with one, 3 whe
 invalid (no cell ran among them). What each word means, the variables it reads and the command
 are in its own docstring.
 
+**Both tiers run their parts side by side.** The matrix runs each section letter, and
+`tests/live/run_live_pytest.py` each live test, as a process of its own, as many at once as
+`DOSBOX_X_LIVE_JOBS` says (unset, half the host's CPUs; `1`, one after another in one process),
+merged from the summaries they declare through `scry_core.live_pool`. What takes the focus by
+design (section G, the focus gate's O, the `windowed` tests) runs alone. Each part works on
+copies of its own of the guests and the bench, because the debugger writes its files under
+fixed names into the emulator's working directory (`tests/live/live_private.py`).
+
 `bench.py` needs the same two things, and it takes them as FLAGS: `--conf` and `--cwd`,
 beside the `--json`, `--reps` and `--song` its parser already had. It measures YOUR
 program, so it has no default to fall back on and refuses without them, naming the
