@@ -11,8 +11,7 @@
  *   - loops once per vertical retrace: `tick` bumps `g_ticks`, the counter a watch reads, and
  *     every TICK_EVERY ticks a `TICK  .` line says the input loop is up;
  *   - reads the keyboard through the BIOS's extended services (the plain ones drop F11), so a
- *     key reaches it by either route (a host key event to the window, or the serial stub's scan
- *     bytes through the 8042): every key is announced (`key down <NAME>`), `a` is answered by
+ *     key reaches it through the 8042 the input stub writes: every key is announced (`key down <NAME>`), `a` is answered by
  *     `key_cue_a=<ticks>`, F11 by nothing else, and alt+x asks before it quits (`right` then
  *     `enter` leaves);
  *   - reads the mouse through INT 33h and announces a button press with its position.

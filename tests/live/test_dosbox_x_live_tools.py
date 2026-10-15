@@ -1486,8 +1486,13 @@ def test_states_are_saved_by_menu_listed_with_their_metadata_and_loaded_into_a_r
         f"the process running pytest is not trusted for Accessibility, so System Events "
         f"cannot drive the emulator's menu: grant it in {ds.ACCESSIBILITY_SETTING}")
     state_dir = tmp_path / "states"
-    start_ok(seconds=120, mode="shared", window_flags=WINDOW_FLAGS,
-             logfile=str(tmp_path / "e9.log"), state_dir=str(state_dir))
+    # THE PROGRAM BY `program`, so `start` loads the input stub before it: the snapshot below is
+    # the stub's command.
+    started = cast(dict[str, Any], server.start(
+        conf=str(conf_that_does_not_exit(tmp_path)), cwd=CWD, seconds=120, mode="shared",
+        window_flags=WINDOW_FLAGS, program=GUEST_PROGRAM, logfile=str(tmp_path / "e9.log"),
+        state_dir=str(state_dir)))
+    assert started["status"] == "ok", started
     empty = cast(dict[str, Any], server.state_list())
     assert empty["status"] == "ok" and empty["states"] == [], empty
     assert empty["session"]["state_dir"] == str(state_dir)

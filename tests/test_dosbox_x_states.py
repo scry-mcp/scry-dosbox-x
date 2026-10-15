@@ -8,7 +8,9 @@ an empty Debug menu, `close` at exit code 1). A state is a ZIP naming its `Progr
 `state_save(name)`, `state_load(name)` and `state_list`."""
 from __future__ import annotations
 
+import dataclasses
 import subprocess
+import sys
 import zipfile
 from pathlib import Path
 from typing import Any, cast
@@ -48,6 +50,8 @@ class MenuFake:
         self.parked, self.saves, self.loads, self.fails = parked, saves, loads, fails
         self.lines: list[str] = ["Active save slot: 1 [Empty]"]
         self.clicks: list[tuple[str, str]] = []
+        self.menu_focus = ""
+        self.next_focus = "returned"         # what the double's click says it did to the focus
         self.altered = False
         self.proc = type("P", (), {"pid": 4242})()
 
@@ -92,6 +96,7 @@ class MenuFake:
             self.lines.append("Loading state from slot: 1")
             if self.loads:
                 self.lines.append("[03:58:26]: Loaded. (Slot 1)")
+        self.menu_focus = self.next_focus
         return 12.3
 
 
@@ -125,8 +130,10 @@ def test_the_launch_turns_the_remark_dialog_off_and_names_the_save_directory(
 def test_state_save_clicks_the_menu_waits_for_saved_and_keeps_the_state_under_its_name(
         tmp_path: Path) -> None:
     fake = MenuFake(tmp_path / "save")
+    fake.next_focus = "lost"
     out = ds.Session.state_save(as_session(fake), "boot", 5.0)
     assert fake.clicks == [("Capture", "Save state")]
+    assert out["focus"] == "lost", "the reply says what the click did to the focus"
     assert out["name"] == "boot" and out["slot"] == 1
     assert Path(str(out["path"])) == tmp_path / "save" / "boot.sav"
     assert (tmp_path / "save" / "boot.sav").is_file(), "the slot file was copied under the name"
@@ -258,6 +265,7 @@ class ClickFake:
         self.proc = type("P", (), {"pid": 4242})()
         self.parked = parked
         self.clicks: list[tuple[str, str]] = []
+        self.menu_focus = ""
 
     def at_debugger(self) -> bool:
         return self.parked
@@ -306,9 +314,28 @@ def test_click_menu_finds_the_item_by_name_and_names_what_stopped_it(
     fake = ClickFake(tmp_path)
     monkeypatch.setattr(ds, "accessibility_trusted", lambda: True)
     monkeypatch.setattr(ds, "other_emulators", lambda own, binary: [])   # alone on the host here
-    monkeypatch.setattr(subprocess, "Popen", _popen("Save state\n"))
+    monkeypatch.setattr(subprocess, "Popen", _popen("Save state|returned\n"))
     took = ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state")
-    assert took >= 0
+    assert took >= 0 and fake.menu_focus == "returned"
+    monkeypatch.setattr(subprocess, "Popen", _popen("Save state|lost\n"))
+    ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state")
+    assert fake.menu_focus == "lost", "an app that could not be put back is said"
+    sent: list[list[str]] = []
+
+    def recording(argv: list[str], **_k: Any) -> Any:
+        sent.append(argv)
+        return _Osascript("no Capture > Save state item|returned\n")
+    monkeypatch.setattr(subprocess, "Popen", recording)
+    with pytest.raises(ds.Invalid, match="no Capture > Save state item"):
+        ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state")
+    assert fake.menu_focus == "returned", "a click that found no item still handed it back"
+    script = sent[-1][2]
+    assert sent[-1][:2] == ["osascript", "-e"] and "unix id is 4242" in script
+    assert 'name of mi is "Capture"' in script and 'starts with "Save state"' in script
+    assert 'set answer to "Save state"' in script and '"|returned"' in script
+    monkeypatch.setattr(subprocess, "Popen", _popen("Save state\n"))
+    with pytest.raises(ds.Invalid, match="could not be clicked"):
+        ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state")
     monkeypatch.setattr(subprocess, "Popen", _popen("no Capture > Save state item\n"))
     with pytest.raises(ds.Invalid, match="could not be clicked") as exc:
         ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state")
@@ -406,7 +433,7 @@ def test_click_menu_refuses_while_another_emulator_is_alive_naming_it(
     assert exc.value.code == "host_failed" and "2001" in str(exc.value)
     assert calls == [], "nothing was sent to System Events"
     monkeypatch.setattr(ds, "other_emulators", lambda own, binary: [])
-    monkeypatch.setattr(subprocess, "Popen", _popen("Save state\n"))
+    monkeypatch.setattr(subprocess, "Popen", _popen("Save state|returned\n"))
     assert ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state") >= 0
 
 
@@ -458,8 +485,8 @@ def test_state_list_keeps_the_working_slot_apart_from_the_named_states(tmp_path:
 # ------------------------------------------------------------------ the screenshot
 
 class ShotFake(MenuFake):
-    """The screenshot's seams: the click writes `<captures_dir>/<conf>_NNN.png` when the
-    machine runs (measured: parked, the emulator defers the file until it runs again)."""
+    """The screenshot's seam: the stub's `S` command writes `<captures_dir>/<conf>_NNN.png`,
+    on a running machine only (parked, the stub never reaches its tick)."""
 
     def __init__(self, state_dir: Path, **kw: Any) -> None:
         super().__init__(state_dir, **kw)
@@ -468,30 +495,28 @@ class ShotFake(MenuFake):
                                 captures_dir=state_dir.parent / "caps",
                                 logfile=self.launch.logfile)
         self.shots = 0
+        self.sent: list[list[bytes]] = []
+        self.writes = True                   # False: the stub took the command, nothing came
+        self.stub_protocol = "2"
 
-    def click_menu(self, menu: str, item: str,
-                   progress: ds.Progress = ds.no_progress) -> float:
-        if item == "Take screenshot":
-            if not self.launch.watched:
-                raise ds.Invalid("no_channel", "this session is headless: there is no window")
-            self.clicks.append((menu, item))
-            if not self.parked:
-                assert self.launch.captures_dir is not None
-                self.launch.captures_dir.mkdir(exist_ok=True)
-                shot = self.launch.captures_dir / f"g_{self.shots:03d}.png"
-                shot.write_bytes(b"\x89PNG" + bytes(20))
-                self.shots += 1
-            return 4.5
-        return super().click_menu(menu, item, progress)
+    def send_commands(self, commands: list[bytes]) -> int:
+        self.sent.append(list(commands))
+        if commands == [ds.SCREENSHOT_COMMAND] and self.writes and not self.parked:
+            assert self.launch.captures_dir is not None
+            self.launch.captures_dir.mkdir(exist_ok=True)
+            shot = self.launch.captures_dir / f"g_{self.shots:03d}.png"
+            shot.write_bytes(b"\x89PNG" + bytes(20))
+            self.shots += 1
+        return 1
 
 
-def test_snapshot_clicks_the_menu_and_hands_back_the_new_png_or_moves_it_to_dest(
+def test_snapshot_sends_the_stub_s_command_and_hands_back_the_new_png_or_moves_it_to_dest(
         tmp_path: Path) -> None:
-    fake = ShotFake(tmp_path / "save")
+    fake = ShotFake(tmp_path / "save", watched=False)      # headless: no window is needed
     out = ds.Session.snapshot(as_session(fake), None, 5.0)
-    assert fake.clicks == [("Capture", "Take screenshot")]
+    assert fake.sent == [[b"S"]]
     assert Path(str(out["path"])) == tmp_path / "caps" / "g_000.png" and out["bytes"] == 24
-    assert out["click_s"] == 4.5 and cast(float, out["waited_s"]) >= 0
+    assert out["route"] == "guest" and cast(float, out["waited_s"]) >= 0
     dest = tmp_path / "shot.png"
     again = ds.Session.snapshot(as_session(fake), dest, 5.0)
     assert again["path"] == str(dest) and dest.is_file()
@@ -518,18 +543,16 @@ def test_a_snapshot_that_cannot_be_moved_is_host_failed_naming_where_the_png_is(
     assert not (shut / "s.png").exists()
 
 
-def test_snapshot_refuses_parked_headless_and_a_click_that_produced_no_file(tmp_path: Path) -> None:
-    """MEASURED: parked at the debugger the click is taken and the file appears only when
-    the machine runs again, so it is refused there; and a click with no new PNG behind it
-    within the bound is a wait that expired, naming the directory watched."""
+def test_snapshot_refuses_parked_and_a_command_that_produced_no_file(tmp_path: Path) -> None:
+    """Parked at the debugger the stub never reaches its tick, so it is refused there with
+    nothing sent; and a command with no new PNG behind it within the bound is a wait that
+    expired, naming the directory watched."""
     parked = ShotFake(tmp_path / "save", parked=True)
     with pytest.raises(ds.Invalid, match="RUNNING") as exc:
         ds.Session.snapshot(as_session(parked), None, 5.0)
-    assert exc.value.code == "not_running" and parked.clicks == []
-    with pytest.raises(ds.Invalid, match="headless"):
-        ds.Session.snapshot(as_session(ShotFake(tmp_path / "save", watched=False)), None, 5.0)
+    assert exc.value.code == "not_running" and parked.sent == [], "nothing is sent parked"
     silent = ShotFake(tmp_path / "save")
-    silent.click_menu = lambda menu, item, progress=None: 4.5  # type: ignore[method-assign]
+    silent.writes = False
     with pytest.raises(ds.Invalid, match="no new PNG") as exc:
         ds.Session.snapshot(as_session(silent), None, 0.3)
     assert exc.value.code == "wait_expired" and str(tmp_path / "caps") in str(exc.value)
@@ -545,8 +568,13 @@ def test_the_snapshot_tool_carries_the_envelope_and_is_named_like_the_siblings(
     fake.snapshot = through_the_real_one  # type: ignore[attr-defined]
     dstate.STATE.session = fake  # type: ignore[assignment]
     out = cast(dict[str, Any], server.snapshot())
-    assert out["status"] == "ok"
+    assert out["status"] == "ok" and out["route"] == "guest"
     assert out["summary"] == f"snapshot: {out['bytes']} bytes at {out['path']}"
+    fake.stub_protocol = ""                         # a guest that never announced the stub
+    fake.launch = dataclasses.replace(fake.launch, logfile=tmp_path / "e9.log")
+    fake.e9_since_mark = lambda mark: []  # type: ignore[attr-defined]
+    refused = cast(dict[str, Any], server.snapshot())
+    assert refused["status"] == "INVALID" and refused["code"] == "no_channel", refused
     assert "snapshot" in server.registered_tools()
     assert "snapshot" in server._ANSWERS_WHILE_RUNNING
 
@@ -560,10 +588,23 @@ def test_click_menu_reports_its_progress_while_system_events_walks_the_menus(
     monkeypatch.setattr(ds, "accessibility_trusted", lambda: True)
     monkeypatch.setattr(ds, "other_emulators", lambda own, binary: [])
     monkeypatch.setattr(ds, "PROGRESS_EVERY_S", 0.05)
-    monkeypatch.setattr(subprocess, "Popen", _popen("Save state\n", polls=6))
+    monkeypatch.setattr(subprocess, "Popen", _popen("Save state|returned\n", polls=6))
     ticks: list[tuple[float, float, str]] = []
     took = ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state",
                                  lambda p, t, m: ticks.append((p, t, m)))
     assert took >= 0.5 and len(ticks) >= 2, ticks
     assert all(t == ds.MENU_CLICK_TIMEOUT_S for _, t, _ in ticks)
     assert "Capture > Save state" in ticks[-1][2] and "System Events" in ticks[-1][2]
+
+
+@pytest.mark.skipif(sys.platform != "darwin", reason="System Events is macOS's")
+def test_the_focus_hand_back_runs_against_system_events_and_reads_back_the_front_app() -> None:
+    """The block that hands the focus back, run for real with no menu clicked: the app in front
+    is put back in front, so it answers `returned`. It once read the front app inside the `if`,
+    which parses as one comparison and failed at run time on every click."""
+    script = ('tell application "System Events"\n'
+              '  set prev to unix id of first process whose frontmost is true\n'
+              '  set answer to "probe"' + ds.MENU_FOCUS_BLOCK + "\nend tell")
+    run = subprocess.run(["osascript", "-e", script], capture_output=True, text=True,
+                         timeout=30, check=False)
+    assert run.returncode == 0 and run.stdout.strip() == "probe|returned", run

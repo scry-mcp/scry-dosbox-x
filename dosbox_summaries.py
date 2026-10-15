@@ -369,7 +369,12 @@ def send_keys(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def send_mouse(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"send_mouse ({reply.get('route')}): "
+    pointer = _block(reply, "pointer")
+    screen, mouse = pointer.get("screen"), pointer.get("mouse")
+    at = (f"{screen['x']},{screen['y']}" if isinstance(screen, dict) else
+          f"{mouse['x']},{mouse['y']} (driver)" if isinstance(mouse, dict) else "unread")
+    arrived = "" if reply.get("arrived", True) else ", NOT where asked"
+    return (f"send_mouse: pointer at {at}{arrived}; "
             f"{_effect(_block(reply, 'effect'), 'posted, unverified')}")
 
 

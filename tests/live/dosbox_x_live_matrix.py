@@ -18,7 +18,7 @@ Exit 0 with no FAIL, 1 with any, 3 when the run is invalid (no cell ran, an unkn
 letter, a cell planned twice), 2 for an argument (it takes none). Interrupted, it still prints
 the summary with the cells it never reached, and exits with the signal's code.
 
-Sections A-C, F and H-N run on the package's own guests and need nothing. D and E run
+Sections A-C, F, H-N and P run on the package's own guests and need nothing. D and E run
 dos-real16 and dos-real16-alt on their copies on the bench (`bench_programs`, filled and checked by
 `python -m scry_core.live_bench`, the bench's `identity.json` saying what each label stands
 for), each BLOCKED whole, as K's dos-real16 cells are, naming the file, when the identity is
@@ -40,6 +40,8 @@ import matrix_comment_tools  # noqa: F401 -- registers section N
 import matrix_dos_real16  # noqa: F401 -- registers section D
 import matrix_dos_real16_alt  # noqa: F401 -- registers section E
 import matrix_dpmi  # noqa: F401 -- registers section F
+import matrix_focus  # noqa: F401 -- registers section O, which opens and closes the run
+import matrix_mouse  # noqa: F401 -- registers section P
 import matrix_probe  # noqa: F401 -- registers sections A to C, H and I
 import matrix_screen  # noqa: F401 -- registers section J
 import matrix_trace  # noqa: F401 -- registers section K

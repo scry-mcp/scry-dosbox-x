@@ -22,8 +22,8 @@ import dosbox_x_server as server
 #: menu, the capture directory, the state directory. Everything else it does is a console
 #: command, and on a running guest a console command lands at the next stop, unread.
 NO_CONSOLE = {"alive", "state", "at_debugger", "log", "log_wait", "e9", "e9_mark",
-              "e9_lines", "e9_new_since", "e9_since_mark", "e9_wait", "send_input",
-              "send_scancodes", "break_in", "click_menu", "state_save", "state_load",
+              "e9_lines", "e9_new_since", "e9_since_mark", "e9_wait", "send_commands",
+              "break_in", "click_menu", "state_save", "state_load",
               "state_list", "snapshot", "captures", "frame"}
 
 
@@ -58,8 +58,14 @@ class RunningGuest:
                  **_: object) -> dict[str, object]:
         return {"line": "x", "already": True}
 
-    def send_input(self, mode: str, args: list[str], **_: object) -> dict[str, str]:
-        return {"trusted": "true", "activated": "true", "posted": "1", "restored": "true"}
+    stub_protocol = "2"
+
+    def send_commands(self, commands: list[bytes]) -> int:
+        return sum(len(c) for c in commands)
+
+    menu_focus = "returned"   # what the real click says once it has handed the focus back
+
+    menu_focus = "returned"   # what the real click says once it has handed the focus back
 
     def break_in(self, seconds: float = 5.0, progress: object = None) -> float:
         self.stopped = True

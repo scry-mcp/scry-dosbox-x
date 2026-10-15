@@ -138,7 +138,7 @@ _WITHOUT_SESSION: dict[str, tuple[Callable[[dict[str, Any]], bool], str]] = {
     "start": (lambda r: ok(r) and alive(r), "start docstring: opens one session, parked"),
 }
 
-_WINDOWED = ("state_save", "state_load", "snapshot", "send_mouse", "stop")
+_WINDOWED = ("state_save", "state_load", "snapshot", "stop")
 _NEEDS_STOP = ("registers", "read_memory", "disassemble", "call_stack", "memdump", "find",
                "scan_start",
                "scan_filter", "scan_clear", "debug", "set_register", "write", "step", "run_to",
@@ -199,7 +199,7 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "watch_add": {"ref": "0040:006C", "mode": "show", "length": 4},
         "watch_clear": {"ref": "0040:006C"},
         "send_keys": {"keys": ["a"]},
-        "send_mouse": {"place": "center"},
+        "send_mouse": {"button": "left"},
         "capture_frame": {"at": 0, "dest": M.fresh(".png")},
         "perform": {"steps": [{"op": "status"}]},
         "drive": {"act": [{"op": "status"}]},
@@ -322,9 +322,10 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                        "watch_list docstring"),
         "watch_clear": (lambda r: ok(r) and r.get("declarations_cleared") == 1,
                         "watch_clear docstring"),
-        "send_keys": (lambda r: refused(r, "not_running", "no_channel"),
-                      "send_keys docstring: refused stopped, and headless with no port"),
-        "send_mouse": (lambda r: refused(r), "send_mouse docstring: needs a shared session"),
+        "send_keys": (lambda r: refused(r, "not_running"),
+                      "send_keys docstring: refused on a machine stopped at the debugger"),
+        "send_mouse": (lambda r: refused(r, "not_running"),
+                       "send_mouse docstring: refused on a machine stopped at the debugger"),
         "captures": (lambda r: refused(r), "captures docstring: needs capture_video"),
         "capture_frame": (lambda r: refused(r), "capture_frame docstring: needs capture_video"),
         "perform": (lambda r: ok(r) and r.get("completed") == 1, "perform docstring"),
@@ -389,7 +390,9 @@ def _running(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
         "comment_save": (lambda r: ok(r) and Path(str(r.get("dest"))).is_file(),
                          "comment_save docstring: answers on a running guest"),
         "send_keys": (lambda r: refused(r, "no_channel"),
-                      "send_keys docstring: headless with no input_port; no_channel route"),
+                      "send_keys docstring: no stub announced, so nothing would receive it"),
+        "send_mouse": (lambda r: refused(r, "no_channel"),
+                       "send_mouse docstring: no stub announced, so nothing would receive it"),
         "perform": (lambda r: ok(r) and r.get("completed") == 1, "perform docstring"),
         "drive": (lambda r: ok(r) and (r.get("verify") or {}).get("checked") is False,
                   "drive docstring: `checked: false` when no expect was given"),
@@ -558,8 +561,9 @@ B_CELLS = cells(
     ("B breakpoint_interrupt number=0xFF", "an interrupt vector is one byte"),
     ("B breakpoint_interrupt number=0x100", "an interrupt vector is one byte"),
     ("B breakpoint_interrupt ah=0x100", "AH is one byte"),
-    ("B send_mouse dx=2001", "send_mouse docstring: at most 2000 px, refused before the window"),
-    ("B send_mouse dx=2**31", "send_mouse docstring: at most 2000 px"),
+    ("B send_mouse x=32767", "send_mouse docstring: a driver coordinate is 16-bit signed"),
+    ("B send_mouse x=32768", "send_mouse docstring: a driver coordinate is 16-bit signed"),
+    ("B send_mouse x=2**31", "send_mouse docstring: a driver coordinate is 16-bit signed"),
     ("B perform wait=600", REF_DOC + "Sequences: wait is a bound; its top is RUN_TO_MAX's"),
     ("B perform wait=600.5", REF_DOC + "Sequences: a wait that is not a bound"),
     ("B perform wait=-1", REF_DOC + "Sequences: a wait that is not a bound"),
@@ -625,9 +629,11 @@ def _b_serial() -> None:
     boot(conf=conf_with_stub(PROBE_CONF, "PROBE.COM"), input_port=free_port())
     into_dos()
     release_running()
+    must(M.call(server.log_wait, pattern=r"STUB  \. inject device=present", channel="guest",
+                seconds=30), "the stub's announce")
     M.setup()
     r = M.call(server.send_keys, keys=["a"] * 64)
-    judged("B send_keys 64 keys", reply=r, holds=ok(r) and r.get("route") == "serial"
+    judged("B send_keys 64 keys", reply=r, holds=ok(r) and r.get("route") == "guest"
             and r.get("posted") == 64)
     r = M.call(server.send_keys, keys=["a"] * 65)
     judged("B send_keys 65 keys", reply=r, holds=_bad(r))
@@ -771,8 +777,12 @@ def section_b() -> None:
     judged("B breakpoint_interrupt number=0x100", reply=r, holds=_bad(r))
     r = M.call(server.breakpoint_interrupt, number=0x21, ah=0x100)
     judged("B breakpoint_interrupt ah=0x100", reply=r, holds=_bad(r))
-    for dx, label in ((2001, "B send_mouse dx=2001"), (HUGE, "B send_mouse dx=2**31")):
-        r = M.call(server.send_mouse, dx=dx, dy=0)
+    # THE TOP passes the argument check and meets the machine (stopped here); one past it and
+    # the overflow are refused before anything is asked of it.
+    r = M.call(server.send_mouse, x=32767, y=0, units="mouse")
+    judged("B send_mouse x=32767", reply=r, holds=refused(r, "not_running"))
+    for x, label in ((32768, "B send_mouse x=32768"), (HUGE, "B send_mouse x=2**31")):
+        r = M.call(server.send_mouse, x=x, y=0, units="mouse")
         judged(label, reply=r, holds=_bad(r))
     r = M.call(server.perform, exempt="no step of it waits", steps=[{"op": "status"}],
                wait=600)

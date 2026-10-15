@@ -1,28 +1,19 @@
-"""Phase 5, the driver's ACT half against a REAL guest: send_keys puts a key into a running
-program and the program acts on it; send_mouse posts a click. This is R1's missing piece --
-the CUE A demo the whole plan is measured against -- proved end to end through the MCP tools.
-
-THE ROUTE IS A HOST EVENT TO THE FRONTMOST WINDOW, so these need a WINDOWED (shared) session
-and macOS Accessibility trust for the process running pytest. They SKIP without the window
-flags, and they will FAIL (not skip) if the host process is not Accessibility-trusted -- that
-is the honest signal that the route is unavailable here, not a false pass.
-
-They also STEAL FOCUS for about a second each (the window is brought frontmost and handed
-back), so they are not for a machine someone is using at that moment.
+"""The input route against a REAL guest: send_keys puts a key into a running program and the
+program acts on it, and send_mouse puts the guest's pointer somewhere and clicks there, the
+program reporting where. All of it HEADLESS: the route is inside the guest, so these open no
+window, take no focus and never touch the host's pointer.
 
 They run on the package's DPMI guest (`dpmi_guest`), whose marks `dpmi.c` writes itself: the
-cue key's answer, every key's arrival, a button press with the pointer, and a periodic line once
-its INPUT LOOP is up, which every case waits for before its first key or click (the boot line is
-written in the program's first instant, and a key posted before the loop reads input is
-swallowed without a trace). The conf runs the package's serial stub, so the serial-route case
-needs no window.
+cue key's answer, every key's arrival, a button press with the driver's position, and a periodic
+line once its INPUT LOOP is up, which every case waits for before its first key or click (the
+boot line is written in the program's first instant, and a key posted before the loop reads
+input is swallowed without a trace). The conf runs the package's stub, and `start` loads its own
+before the program too, so every case also proves the second copy stays out.
 
-  DOSBOX_X_LIVE_WINDOW_FLAGS   `place-window dosbox`, one token per line; gates the window cases
   DOSBOX_X_WALK_MAX            ceiling on the resume-walk to the client (see the entry routes)
 """
 from __future__ import annotations
 
-import os
 import re
 from pathlib import Path
 from typing import Any, cast
@@ -31,39 +22,29 @@ import dpmi_guest as guest
 import pytest
 from _live_teardown import no_session_left_behind  # noqa: F401  (registers the autouse teardown)
 
-import dosbox_session as ds
 import dosbox_x_server as server
 
 pytestmark = pytest.mark.live
 
-FLAGS = [ln for ln in os.environ.get("DOSBOX_X_LIVE_WINDOW_FLAGS", "").splitlines() if ln.strip()]
-#: The window route needs a placed window; the serial route runs without one.
-WINDOWED = pytest.mark.skipif(not FLAGS, reason="set DOSBOX_X_LIVE_WINDOW_FLAGS for the window "
-                                                "route")
 KEY_MARK, ARRIVAL_MARK, MOUSE_MARK = guest.KEY_MARK, guest.ARRIVAL_MARK, guest.MOUSE_MARK
 BOOT_MARK, SETTLED_MARK = guest.BOOT_MARK, guest.SETTLED_MARK
-SERIAL_PORT = 5555        # the port the serial-route case asks the emulator's COM1 to listen on
-NUDGE_PX = 100            # the host delta the mouse case sends along X
-NUDGE_MIN_MOVED = 25      # the guest must have moved at least this far along X for it
-RECENTRE_JITTER = 8       # pixels of Y drift the capture's re-centring is allowed to leave
-LEAK_DENOMINATOR = 5      # Y may move at most a fifth of what X moved (no axis leak)
 LOOK_LINES = 400          # the drive case's look, wide enough to hold a short act's lines
-CAPTURE_CLICKS_MAX = 3    # clicks allowed before one reaches the guest (the first captures)
+#: Two driver positions on the 8-unit cell a text mode keeps, so either mode lands them exactly.
+CLICKS = ((200, 96), (400, 160))
 BOOT_WAIT_S = 60
 SETTLED_WAIT_S = 90
 
 
-def _start_windowed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
-                    seconds: int = 180) -> Path:
-    """ONE windowed session on the DPMI build, the store isolated, the log in tmp_path.
-    The three input cases share this boot exactly, which is why it is one function: the
-    duplication gate caught it written out three times."""
+def _start(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, seconds: int = 180) -> Path:
+    """ONE headless session on the DPMI build, the store isolated, the log in tmp_path, the
+    guest released to run until `close`. Every input case shares this boot exactly."""
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
     log = tmp_path / "guest.log"
     r = cast(dict[str, Any], server.start(
-        conf=str(guest.CONF), cwd=str(guest.GUEST), seconds=seconds, mode="shared",
-        window_flags=FLAGS, logfile=str(log), program=guest.PROGRAM))
+        conf=str(guest.CONF), cwd=str(guest.GUEST), seconds=seconds, logfile=str(log),
+        program=guest.PROGRAM))
     assert r["status"] == "ok", r
+    assert "cpu integration device=true" in r["argv"], r["argv"]
     return log
 
 
@@ -79,17 +60,13 @@ def _input_loop_live() -> None:
     assert settled["status"] == "ok", settled
 
 
-@WINDOWED
 def test_send_keys_reaches_the_running_guest_and_it_acts(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """R1's CUE A half: launch the guest in a WINDOW, let it run, send the cue key, and confirm
-    the PROGRAM acted on it -- the E9 mark the app writes only from that key's handler. The
-    key goes to a RUNNING guest (no breakpoint), which is the route AUTOTYPE and the console
-    cannot serve. `posted` and the focus fields come back; `activated` proves the window was
-    brought forward."""
-    _start_windowed(tmp_path, monkeypatch)
-    # let the guest boot and reach its input loop; the window is up and frontmost-able.
-    server.resume()
+    """R1's CUE A half: let the guest run, send the cue key, and confirm the PROGRAM acted on
+    it -- the E9 mark the app writes only from that key's handler. The key goes to a RUNNING
+    guest (no breakpoint), which is the route AUTOTYPE and the console cannot serve."""
+    _start(tmp_path, monkeypatch)
+    server.resume(until_close=True)
     _input_loop_live()
 
     # THE KEY, to the running guest, WITH ITS EXPECTATION: `a` is the guest's cue key and the
@@ -99,7 +76,7 @@ def test_send_keys_reaches_the_running_guest_and_it_acts(
     assert sent["status"] == "ok", (
         f"the guest did not act on the key ({KEY_MARK} never logged): the host event did not "
         f"reach the running program. {sent.get('message')}")
-    assert sent["posted"] == 1 and sent["activated"] is True, sent
+    assert sent["posted"] == 1 and sent["route"] == "guest", sent
     assert sent["effect"]["seen"] is True and re.search(KEY_MARK, sent["effect"]["line"]), sent
 
     # THE CONTROL, through the same route on the same run, and it is the MARK that it pins:
@@ -118,7 +95,6 @@ def test_send_keys_reaches_the_running_guest_and_it_acts(
     assert arrived["status"] == "ok" and arrived["effect"]["seen"] is True, arrived
 
 
-@WINDOWED
 def test_a_sequence_sends_a_verified_key_to_the_running_guest(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """R1 as ONE `perform`: resume the fresh session, wait for the program to be up, send
@@ -126,11 +102,11 @@ def test_a_sequence_sends_a_verified_key_to_the_running_guest(
     running and every later step is a running-OK op, so the sequence runs to the end without
     a stop -- and the key step's reply carries the program's own reaction. This is the
     `[resume, send_keys]` shape the contract tier models with a double; here it is real."""
-    _start_windowed(tmp_path, monkeypatch)
+    _start(tmp_path, monkeypatch)
     # THE SAME "INPUT LOOP IS LIVE" WAIT AS THE OTHER CASES, spelled as sequence steps: the
     # boot line, then the settled mark.
     steps: list[dict[str, Any]] = [
-        {"op": "resume"},
+        {"op": "resume", "until_close": True},
         {"op": "log_wait", "pattern": BOOT_MARK, "channel": "guest", "seconds": BOOT_WAIT_S},
         {"op": "log_wait", "pattern": SETTLED_MARK, "channel": "guest",
          "seconds": SETTLED_WAIT_S}]
@@ -148,14 +124,13 @@ def test_a_sequence_sends_a_verified_key_to_the_running_guest(
     assert out.get("still_running") is True or out["ran"][0]["reply"].get("halted"), out
 
 
-@WINDOWED
 def test_drive_looks_acts_and_verifies_in_one_call(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The loop an autonomous session runs: ONE `drive` sends the cue key, verifies the
     program's reaction from a mark taken before the act, and hands back what the guest wrote
     since -- the cue line among them, and nothing from before the mark."""
-    _start_windowed(tmp_path, monkeypatch)
-    server.resume()
+    _start(tmp_path, monkeypatch)
+    server.resume(until_close=True)
     _input_loop_live()
     out = cast(dict[str, Any], server.drive(
         act=[{"op": "send_keys", "keys": ["a"]}], expect=KEY_MARK, seconds=30,
@@ -174,92 +149,44 @@ def test_drive_looks_acts_and_verifies_in_one_call(
         "the look reached before the mark"
 
 
-def test_the_serial_route_sends_a_verified_key_with_no_window_at_all(
+def test_the_stub_announces_itself_once_and_ignored_keys_arrive(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """THE HEADLESS ROUTE, end to end: a session started with `input_port` on a conf whose
-    autoexec runs the shipped stub, no window, no focus, no Accessibility grant. The stub
-    announces the device answered, the cue key goes down the socket, and the program ACTS
-    (its own cue line, from a mark taken before the send); the control is a key the program
-    ignores, whose ARRIVAL line is seen while the cue's is not. The reply says which route
-    answered, and the mouse is refused on it rather than sent nowhere."""
-    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
-    r = cast(dict[str, Any], server.start(
-        conf=str(guest.CONF), cwd=str(guest.GUEST), seconds=180, mode="headless",
-        logfile=str(tmp_path / "guest.log"), input_port=SERIAL_PORT, program=guest.PROGRAM))
-    assert r["status"] == "ok", r
-    assert "cpu integration device=true" in r["argv"], r["argv"]
-    server.resume(until_close=True)      # headless and nothing armed: the log is the way back
+    """The conf runs the stub and `start` loads its own before the program: the first announces
+    the device and its protocol, the second says it is already resident, and a key the program
+    ignores still ARRIVES (its arrival line) while the cue's line does not, so "did not react"
+    means "took it and did nothing"."""
+    _start(tmp_path, monkeypatch)
+    server.resume(until_close=True)
     stub = cast(dict[str, Any], server.log_wait(channel="guest", pattern="STUB  . inject device=",
                                                 seconds=60))
-    assert stub["status"] == "ok" and "device=present" in stub["line"], stub
+    assert stub["status"] == "ok" and "device=present proto=2" in stub["line"], stub
+    twice = cast(dict[str, Any], server.log_wait(channel="guest",
+                                                 pattern="STUB  . inject already resident",
+                                                 seconds=30))
+    assert twice["status"] == "ok", twice
     _input_loop_live()
-    sent = cast(dict[str, Any], server.send_keys(keys=["a"], expect=KEY_MARK, seconds=15))
-    assert sent["status"] == "ok" and sent["route"] == "serial", sent
-    assert sent["effect"]["seen"] is True and re.search(KEY_MARK, sent["effect"]["line"]), sent
-    assert sent["ticks"] == 2 and "activated" not in sent, sent
     ignored = cast(dict[str, Any], server.send_keys(keys=["f11"], expect=ARRIVAL_MARK,
                                                     seconds=10))
     assert ignored["status"] == "ok" and ignored["effect"]["seen"] is True, ignored
     missed = cast(dict[str, Any], server.send_keys(keys=["f11"], expect=KEY_MARK, seconds=3))
     assert missed["status"] == "INVALID" and "did not react" in missed["message"], missed
-    mouse = cast(dict[str, Any], server.send_mouse(button="left"))
-    assert mouse["status"] == "INVALID" and "KEYS only" in mouse["message"], mouse
 
 
-@WINDOWED
-def test_send_mouse_captures_clicks_and_moves_the_guest_pointer(
+def test_send_mouse_puts_the_pointer_where_asked_and_the_program_clicks_there(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """THE MOUSE, END TO END, as the guest sees it. The pointer is placed at the window's
-    centre, the first click CAPTURES the mouse (the emulator swallows it, which the tool
-    reports as a miss and nothing else), the next click ARRIVES with the guest's own
-    coordinates, and a relative nudge moves the guest pointer along the axis nudged and no
-    other. The focus is KEPT throughout: a captured mouse is released the moment the window
-    loses it, which is what turned every click into a swallowed capture attempt before."""
-    _start_windowed(tmp_path, monkeypatch)
-    server.resume()
-    # THE PROGRAM'S INPUT LOOP MUST BE UP before the first click, not just its boot line: a
-    # capture attempted while the guest is still installing its drivers does not stick, and
-    # the click that should have arrived afterwards is swallowed as a fresh capture.
+    """THE MOUSE, END TO END, as the guest sees it: the pointer set at a driver position and a
+    click there, which the program announces with the position the driver gave IT. Two places,
+    so a pointer that did not move cannot pass, and the reply's read-back agrees with the
+    program's own line each time."""
+    _start(tmp_path, monkeypatch)
+    server.resume(until_close=True)
     _input_loop_live()
-    # THE WINDOW'S CENTRE, as the window server reports it: placing the pointer there keeps
-    # the capture's re-centring warp from moving the guest's pointer.
-    placed = cast(dict[str, Any], server.send_mouse(place="center"))
-    assert placed["status"] == "ok" and placed["restore"] == "kept", placed
-    assert placed["window"] is not None and placed["window"][2] > 0, placed
-    # THE CAPTURING CLICK IS THE EMULATOR'S, not the program's, and it is reported as a miss;
-    # the click the guest sees is the next one -- or the one after, when the window server
-    # delivered the first before the capture took. So: click until the guest logs one,
-    # within a small bound, and the miss count is part of the record rather than a failure.
-    first: dict[str, Any] = {}
-    misses = 0
-    for _ in range(CAPTURE_CLICKS_MAX):
-        first = cast(dict[str, Any], server.send_mouse(button="left", expect=MOUSE_MARK,
-                                                       seconds=3))
-        assert first["posted"] == 1, first
-        if first["status"] == "ok":
-            break
-        misses += 1
-    assert first["status"] == "ok" and first["effect"]["seen"] is True, (
-        f"no click reached the guest in {CAPTURE_CLICKS_MAX} attempts: {first}")
-    assert misses >= 1, "the capturing click was not swallowed: is autolock off in the conf?"
-    gx, gy = _guest_xy(first["effect"]["line"])
-    nudged = cast(dict[str, Any], server.send_mouse(dx=NUDGE_PX, dy=0))
-    assert nudged["status"] == "ok" and nudged["restore"] == "kept", nudged
-    second = cast(dict[str, Any], server.send_mouse(button="left", expect=MOUSE_MARK,
-                                                    seconds=5))
-    assert second["status"] == "ok", second
-    nx, ny = _guest_xy(second["effect"]["line"])
-    # X grown by a real amount (the guest's driver scales a delta as it likes, so the shape
-    # is asserted and not the figure), Y within the few pixels the capture's re-centring can
-    # leave, AND no axis leak: a nudge that moved Y by more than a small share of what it
-    # moved X is the fight between warps and deltas this route was measured to have once.
-    moved_x, moved_y = nx - gx, abs(ny - gy)
-    assert moved_x >= NUDGE_MIN_MOVED and moved_y <= RECENTRE_JITTER, (
-        f"a nudge along X moved the guest pointer from ({gx},{gy}) to ({nx},{ny}); the "
-        f"expected shape is X grown and Y untouched")
-    assert moved_y * LEAK_DENOMINATOR <= moved_x, (
-        f"the nudge leaked into Y: X moved {moved_x}, Y moved {moved_y}")
-    assert isinstance(ds.Launch.binary, str)       # a touch of the module, keeps the import used
+    for x, y in CLICKS:
+        got = cast(dict[str, Any], server.send_mouse(x=x, y=y, units="mouse", button="left",
+                                                     expect=MOUSE_MARK, seconds=10))
+        assert got["status"] == "ok" and got["arrived"] is True, got
+        assert got["pointer"]["mouse"]["x"] == x and got["pointer"]["mouse"]["y"] == y, got
+        assert _guest_xy(got["effect"]["line"]) == (x, y), got["effect"]
 
 
 def _guest_xy(line: str) -> tuple[int, int]:

@@ -117,8 +117,7 @@ class FakeSession:
         that fires before a process exists."""
         return 0.0
 
-    def send_input(self, mode: str, args: list[str]) -> dict[str, str]:
-        return {"trusted": "true", "activated": "true", "posted": "1", "restored": "true"}
+    menu_focus = "returned"   # what the real click says once it has handed the focus back
 
     def break_in(self, seconds: float = 5.0,
                  progress: ds.Progress = ds.no_progress) -> float:
@@ -283,8 +282,10 @@ class FakeSession:
     def e9_mark(self) -> int:
         return 0
 
-    def send_scancodes(self, data: bytes) -> int:
-        return len(data)
+    stub_protocol = "2"   # the guest announced the stub: `require_stub` reads no log
+
+    def send_commands(self, commands: list[bytes]) -> int:
+        return sum(len(c) for c in commands)
 
     def e9_since_mark(self, mark: int) -> list[str]:
         return ["Bochs port E9h: [+ 0.000] BOOT  . start"]
@@ -2706,11 +2707,16 @@ class NamesFake:
         self.registers_raises = False        # True models a cut pane: registers() refuses
         self.altered = False                 # _live() reads this when burying a dead session
         self.dies_on_resume = False          # True: alive at perform start, dead after resume
-        self.input_calls: list[tuple[str, list[str]]] = []   # what send_input was asked
-        self.input_refusal: str | None = None    # the helper's refusal before posting, if any
+        self.commands_sent: list[list[bytes]] = []   # every send_commands call, whole
         self.break_ins = 0                       # how many times the menu route was taken
-        self.input_focus: list[bool] = []                    # keep_focus per call
-        self.input_facts: dict[str, str] | None = None       # override send_input's reply
+        # THE STUB'S VIEW OF THE DRIVER, as the real one reports it: a pointer, its buttons,
+        # the range the driver maps it into and the BIOS mode (text 80x25 by default).
+        self.stub_protocol = "2"
+        self.pointer = (320, 96)
+        self.buttons = 0
+        self.mouse_max = (639, 199)
+        self.video_mode = 3
+        self.pointer_snaps = 1                   # a text mode places the pointer on its cell
         self.input_effect: str | None = None      # a log line the guest writes on a post
         self.after_effect: list[str] = []         # what it writes after that, for a LOOK
         self.resume_effect: list[str] = []        # what it writes during a resume
@@ -2721,8 +2727,6 @@ class NamesFake:
         self.wait_raises: Exception | None = None  # e9_wait refuses with THIS (a gone emulator)
         self.stops_during_wait = False       # a breakpoint fires while e9_wait is looking
         self.runto_calls: list[tuple[int, int, float]] = []   # the seg:off run_to was given
-        # send_keys/send_mouse need a windowed session; default watched so the name-layer
-        # cases that pre-date input still build one, and a case can pass watched=False.
         self.launch = ds.Launch(conf=conf or Path("/x.conf"), cwd=Path("/"), seconds=60,
                                 watched=watched, input_port=input_port)
 
@@ -2750,12 +2754,39 @@ class NamesFake:
     def state(self) -> dict[str, object]:
         return {"alive": True, "altered": False}
 
-    def send_scancodes(self, data: bytes) -> int:
-        self.scancodes_sent.append(bytes(data))
-        if self.input_effect is not None and self.log is not None:
+    def report_line(self) -> str:
+        x, y = self.pointer
+        return (f"Bochs port E9h: STUB  . mouse x={x} y={y} buttons={self.buttons} "
+                f"max={self.mouse_max[0]},{self.mouse_max[1]} mode={self.video_mode} "
+                f"screen=720x400")
+
+    def send_commands(self, commands: list[bytes]) -> int:
+        """The stub of the real guest, carried out on this double's own state: `K` is a scan
+        byte, `B` a button, `M` the pointer placed (snapped to `pointer_snaps`, as a text
+        mode does), `R` the report line. THE GUEST REACTS to a post that is not only a report,
+        when the test says so, by writing `input_effect` and then `after_effect`."""
+        self.commands_sent.append(list(commands))
+        keys = b"".join(c[1:] for c in commands if c[:1] == b"K")
+        if keys:
+            self.scancodes_sent.append(keys)
+        for c in commands:
+            if c[:1] == b"B":
+                bit = 1 << (c[1] & 0x7F)
+                self.buttons = self.buttons | bit if c[1] & 0x80 else self.buttons & ~bit
+            elif c[:1] == b"M":
+                snap = self.pointer_snaps
+                x, y = int.from_bytes(c[1:3], "little"), int.from_bytes(c[3:5], "little")
+                self.pointer = (min(x, self.mouse_max[0]) // snap * snap,
+                                min(y, self.mouse_max[1]) // snap * snap)
+            elif c[:1] == b"R" and self.log is not None:
+                self.log.append(self.report_line())
+        acted = any(c[:1] != b"R" for c in commands)
+        if acted and self.input_effect is not None and self.log is not None:
             self.log.append(self.input_effect)
             self.log.extend(self.after_effect)
-        return len(data)
+        return sum(len(c) for c in commands)
+
+    menu_focus = "returned"   # what the real click says once it has handed the focus back
 
     def break_in(self, seconds: float = 5.0,
                  progress: ds.Progress = ds.no_progress) -> float:
@@ -2766,28 +2797,6 @@ class NamesFake:
         self.break_ins += 1
         self.running = False
         return 0.12
-
-    def send_input(self, mode: str, args: list[str], *,
-                   keep_focus: bool = False) -> dict[str, str]:
-        if self.input_refusal is not None:      # the helper refused before any event went out
-            raise ds.Invalid("bad_argument", self.input_refusal)
-        self.input_calls.append((mode, list(args)))
-        self.input_focus.append(keep_focus)
-        # THE GUEST REACTS, when the test says so: the post lands a line in the log, which
-        # is what a real program acting on the key does (a cue token, say), and then
-        # whatever else it writes afterwards (`after_effect`), which a LOOK must see.
-        if self.input_effect is not None and self.log is not None:
-            self.log.append(self.input_effect)
-            self.log.extend(self.after_effect)
-        if self.input_facts is not None:
-            return self.input_facts
-        # THE HELPER COUNTS EVENTS, NOT ARGUMENTS: `keys` carries the modifier word first,
-        # which is not a key, so `posted` is the names after it -- as the real helper counts.
-        # And a call that KEEPS the focus answers `kept`, never `true`: the real helper cannot
-        # say it put the previous app back when it was asked not to.
-        posted = len(args) - 1 if mode == "keys" else 1
-        return {"trusted": "true", "activated": "true", "posted": str(posted),
-                "window": "2088,68,1280,960", "restored": "kept" if keep_focus else "true"}
 
     def e9_mark(self) -> int:
         if self.log is None:
@@ -3207,140 +3216,172 @@ def test_perform_refuses_an_unknown_or_deferred_op(
     assert shapeless["failed_at"] == 0, shapeless
 
 
-def test_send_keys_and_send_mouse_refuse_a_headless_session(tmp_path: Path) -> None:
-    """The driver's ACT half needs a WINDOW: a host input event reaches the guest through the
-    emulator's on-screen surface, so a headless session is refused, named, before anything is
-    posted into a void that would report success."""
-    _names(tmp_path, watched=False)
-    calls: list[Callable[[], dict[str, Any]]] = [
-        lambda: server.send_keys(keys=["a"]),
-        lambda: server.send_mouse(button="left")]
-    for call in calls:
-        got = call()
-        assert got["status"] == "INVALID" and "windowed session" in got["message"], got
+def _guest(tmp_path: Path) -> Any:
+    """A running guest whose session has a logfile, as the mouse reads its pointer back
+    through it and the stub's announce is read off it."""
+    fake = _names(tmp_path, watched=False)
+    fake.launch = dataclasses.replace(fake.launch, logfile=Path("/e9.log"))
+    fake.running = True
+    return fake
 
 
-def test_send_keys_dispatches_the_names_and_modifiers_and_reports_focus(
-        tmp_path: Path) -> None:
-    """A windowed session posts the keys through send_input, joining the modifiers with '+',
-    and the reply carries the focus borrow/return so a window stealing focus is announced."""
-    fake = _names(tmp_path, watched=True)
-    fake.running = True                      # input goes to a RUNNING guest
-    # TWO modifiers, so the '+' JOIN is actually exercised (one would pass any separator).
+def test_input_reaches_a_headless_session_and_the_mouse_needs_the_log(tmp_path: Path) -> None:
+    """Every input goes into the guest, so a headless session takes keys and clicks like a
+    windowed one; the mouse reads its pointer back off the E9 log, so a session without one
+    is refused before anything is sent."""
+    fake = _guest(tmp_path)
+    assert cast(dict[str, Any], server.send_keys(keys=["a"]))["route"] == "guest"
+    assert cast(dict[str, Any], server.send_mouse(button="left"))["route"] == "guest"
+    fake.launch = ds.Launch(conf=Path("/x.conf"), cwd=Path("/"), seconds=60, logfile=None)
+    sent = len(fake.commands_sent)
+    nolog = cast(dict[str, Any], server.send_mouse(button="left"))
+    assert nolog["status"] == "INVALID" and nolog["code"] == "no_channel", nolog
+    assert "logfile" in nolog["message"] and len(fake.commands_sent) == sent
+
+
+def test_send_keys_composes_the_scan_bytes_as_key_commands(tmp_path: Path) -> None:
+    """The keys go down as one `K` command per scan byte, the modifiers' makes first and their
+    breaks last; the reply counts what went and names the route, and a list given as a bare
+    string is refused rather than splatted into characters."""
+    fake = _names(tmp_path, watched=False)
+    fake.running = True
     got = cast(dict[str, Any], server.send_keys(keys=["a", "enter"],
                                                 modifiers=["ctrl", "shift"]))
-    assert got["status"] == "ok" and got["keys"] == ["a", "enter"]
-    assert got["posted"] == 2 and got["activated"] is True and got["restored"] is True
-    assert fake.input_calls == [("keys", ["ctrl+shift", "a", "enter"])], fake.input_calls
-    # no modifiers -> the helper's "-" sentinel; empty keys refused.
-    server.send_keys(keys=["b"])
-    assert fake.input_calls[-1] == ("keys", ["-", "b"]), fake.input_calls
+    assert got["status"] == "ok" and got["keys"] == ["a", "enter"], got
+    assert got["modifiers"] == ["ctrl", "shift"]
+    want = bytes([0x1D, 0x2A, 0x1E, 0x9E, 0x1C, 0x9C, 0xAA, 0x9D])
+    assert fake.commands_sent == [[b"K" + bytes([b]) for b in want]], fake.commands_sent
+    assert (got["route"], got["posted"], got["bytes"], got["ticks"]) == ("guest", 2, 8, 8)
+    assert "activated" not in got and "restored" not in got and "focus" not in got, got
     empty = cast(dict[str, Any], server.send_keys(keys=[]))
     assert empty["status"] == "INVALID" and "at least one key" in empty["message"]
-    # A BARE STRING is refused, not splatted into characters (the transport passes JSON).
     astr = cast(dict[str, Any], server.send_keys(keys=cast(Any, "enter")))
     assert astr["status"] == "INVALID" and "not a string" in astr["message"]
-    # the false-mapping half: a helper that did not activate is reported as such, and the
-    # attempts the window server took ride through as a number.
-    fake.input_calls.clear()
-    fake.input_facts = {"trusted": "true", "activated": "false", "attempts": "4",
-                        "posted": "1", "restored": "false"}
-    off = cast(dict[str, Any], server.send_keys(keys=["c"]))
-    assert off["activated"] is False and off["restored"] is False and off["attempts"] == 4
-    assert off["restore"] == "failed"
-    # the third answer of the hand-back: nothing to hand it back to is not a failure.
-    fake.input_facts = {"trusted": "true", "activated": "true", "attempts": "1",
-                        "posted": "1", "restored": "skipped"}
-    skipped = cast(dict[str, Any], server.send_keys(keys=["c"]))
-    assert skipped["restored"] is False and skipped["restore"] == "skipped"
+    assert len(fake.commands_sent) == 1, "a refused call must not have sent anything"
 
 
-def test_send_mouse_takes_one_of_three_shapes(tmp_path: Path) -> None:
-    """A `button` click, an `x`/`y` pointer placement, or a `dx`/`dy` guest motion: exactly
-    one per call, never two, never none, never half of one. The mouse KEEPS the focus by
-    default (a captured mouse is released when the window loses it), and `send_keys` hands
-    it back by default; both take `focus` explicitly."""
-    fake = _names(tmp_path, watched=True)
-    fake.running = True                      # input goes to a RUNNING guest
-    click = cast(dict[str, Any], server.send_mouse(button="left"))
-    assert click["status"] == "ok" and fake.input_calls[-1] == ("click", ["left"])
-    assert fake.input_focus == [True], "the mouse keeps the focus unless told otherwise"
-    # the focus-announce fields come through for a click, not only for send_keys -- and a
-    # kept focus is `restored: False` (nothing was put back) with `restore: "kept"`.
-    assert click["posted"] == 1 and click["activated"] is True
-    assert click["restored"] is False and click["restore"] == "kept", click
-    assert click["window"] == [2088, 68, 1280, 960]
-    right = cast(dict[str, Any], server.send_mouse(button="right", focus="return"))
-    assert right["status"] == "ok" and fake.input_calls[-1] == ("click", ["right"])
-    assert right["restored"] is True and right["restore"] == "done"
-    assert fake.input_focus == [True, False]
-    move = cast(dict[str, Any], server.send_mouse(x=100, y=200))
-    assert move["status"] == "ok" and fake.input_calls[-1] == ("move", ["100", "200"])
-    assert "caveat" in move
-    centre = cast(dict[str, Any], server.send_mouse(place="center"))
-    assert centre["status"] == "ok" and fake.input_calls[-1] == ("move", ["center"])
-    nudge = cast(dict[str, Any], server.send_mouse(dx=-30, dy=0))
-    assert nudge["status"] == "ok" and fake.input_calls[-1] == ("nudge", ["-30", "0"])
-    assert nudge["dx"] == -30 and nudge["dy"] == 0
-    bad_calls: list[Callable[[], dict[str, Any]]] = [
-        lambda: server.send_mouse(button="left", x=1, y=2),
-        lambda: server.send_mouse(x=1, y=2, dx=3, dy=4),
-        lambda: server.send_mouse(place="center", dx=1, dy=1),
-        lambda: server.send_mouse()]
-    for bad_call in bad_calls:
-        got = bad_call()
-        assert got["status"] == "INVALID" and "name ONE event" in got["message"], got
-    # WHOLE NUMBERS ONLY, refused here rather than by the helper after the focus was taken:
-    # a perform step hands values over untyped.
-    posted_before = len(fake.input_calls)
-    bad_nums: list[Callable[[], dict[str, Any]]] = [
-        lambda: server.send_mouse(dx=cast(Any, 1.5), dy=0),
-        lambda: server.send_mouse(x=cast(Any, "12"), y=3),
-        lambda: server.send_mouse(dx=cast(Any, True), dy=0)]
-    for bad_num in bad_nums:
-        got = bad_num()
-        assert got["status"] == "INVALID" and "whole number" in got["message"], got
-    assert len(fake.input_calls) == posted_before, "a refused number must not have posted"
-    # THE BOUND IS THE SERVER'S TOO, not only the native helper's. A nudge past the cap
-    # that reaches the host comes back as `host_failed` with the helper's exit code, while
-    # `send_keys` refuses an unknown key name before touching anything: two neighbouring
-    # tools validating in different layers, for no reason a caller can see.
-    posted_before = len(fake.input_calls)
-    over_calls: list[Callable[[], dict[str, Any]]] = [
-        lambda: server.send_mouse(dx=inputs.MAX_NUDGE_PX + 1, dy=0),
-        lambda: server.send_mouse(dx=0, dy=-(inputs.MAX_NUDGE_PX + 1))]
-    for over in over_calls:
-        got = over()
-        assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
-        assert str(inputs.MAX_NUDGE_PX) in got["message"], got
-    assert len(fake.input_calls) == posted_before, "a refused nudge must not have posted"
-    edge = cast(dict[str, Any], server.send_mouse(dx=inputs.MAX_NUDGE_PX, dy=0))
-    assert edge["status"] == "ok", "the cap itself is allowed, one past it is not"
-    notcentre = cast(dict[str, Any], server.send_mouse(place="corner"))
-    assert notcentre["status"] == "INVALID" and "'center'" in notcentre["message"]
-    xonly = cast(dict[str, Any], server.send_mouse(x=100))     # y missing
-    assert xonly["status"] == "INVALID" and "BOTH `x` and `y`" in xonly["message"]
-    dxonly = cast(dict[str, Any], server.send_mouse(dx=5))
-    assert dxonly["status"] == "INVALID" and "BOTH `dx` and `dy`" in dxonly["message"]
-    bad = cast(dict[str, Any], server.send_mouse(button="middle"))
-    assert bad["status"] == "INVALID" and "left" in bad["message"]
-    badfocus = cast(dict[str, Any], server.send_mouse(button="left", focus="steal"))
-    assert badfocus["status"] == "INVALID" and "focus is" in badfocus["message"]
-    # keys: the default hands the focus back, and `keep` is honoured and announced.
-    fake.input_focus.clear()
-    server.send_keys(keys=["a"])
-    kept = cast(dict[str, Any], server.send_keys(keys=["a"], focus="keep"))
-    assert fake.input_focus == [False, True] and "stays there" in kept["note"]
-    # every answer of the hand-back has its word, and a helper that said nothing is `unknown`.
-    for fact, word in (("kept", "kept"), ("lost", "lost"), ("skipped", "skipped"),
-                       ("false", "failed"), (None, "unknown")):
-        facts = {"trusted": "true", "activated": "true", "attempts": "1", "posted": "1"}
-        if fact is not None:
-            facts["restored"] = fact
-        fake.input_facts = facts
-        got = cast(dict[str, Any], server.send_mouse(button="left"))
-        assert got["restore"] == word and got["restored"] is False, (fact, got)
-        assert got["window"] is None
+def test_send_mouse_moves_presses_and_reads_the_pointer_back(tmp_path: Path) -> None:
+    """A move (`x`, `y`), a button, or a move then a button, in one call: the pointer is read
+    before (to map the screen's units onto the driver's range) and after (to prove where it
+    went), and the reply carries the read-back in both units."""
+    fake = _guest(tmp_path)
+    fake.video_mode, fake.mouse_max = 0x13, (639, 199)
+    moved = cast(dict[str, Any], server.send_mouse(x=100, y=50))
+    assert moved["status"] == "ok" and moved["route"] == "guest", moved
+    # 320 x 200 pixels over a 640 x 200 driver range: x doubles, y stays.
+    assert fake.commands_sent == [[b"R"], [b"M" + (200).to_bytes(2, "little")
+                                          + (50).to_bytes(2, "little")], [b"R"]]
+    assert moved["arrived"] is True and "asked" not in moved
+    assert moved["pointer"]["screen"] == {"x": 100, "y": 50, "width": 320, "height": 200}
+    assert moved["pointer"]["mouse"] == {"x": 200, "y": 50, "max_x": 639, "max_y": 199}
+    assert moved["pointer"]["mode"] == "0x13" and moved["pointer"]["buttons"] == []
+    fake.commands_sent.clear()
+    both = cast(dict[str, Any], server.send_mouse(x=0, y=0, button="right"))
+    assert fake.commands_sent[1] == [b"M\x00\x00\x00\x00", b"B\x81", b"B\x01"], fake.commands_sent
+    assert both["button"] == "right" and both["action"] == "click"
+    fake.commands_sent.clear()
+    held = cast(dict[str, Any], server.send_mouse(button="left", action="down"))
+    assert fake.commands_sent[1] == [b"B\x80"] and held["pointer"]["buttons"] == ["left"]
+    server.send_mouse(button="left", action="up")
+    assert fake.commands_sent[-2] == [b"B\x00"] and fake.buttons == 0
+    server.send_mouse(button="middle", action="double")
+    assert fake.commands_sent[-2] == [b"B\x82", b"B\x02", b"B\x82", b"B\x02"]
+    raw = cast(dict[str, Any], server.send_mouse(x=639, y=199, units="mouse"))
+    assert raw["status"] == "ok" and raw["pointer"]["mouse"]["x"] == 639, raw
+    assert raw["pointer"]["screen"]["x"] == 319
+
+
+def test_a_move_the_driver_placed_elsewhere_is_said_never_rounded_away(tmp_path: Path) -> None:
+    """A text mode puts the pointer on its cell and a program's own range clamps it: the
+    read-back is what the reply reports, `arrived` false and `asked` beside it."""
+    fake = _guest(tmp_path)
+    fake.pointer_snaps = 8
+    exact = cast(dict[str, Any], server.send_mouse(x=10, y=3))         # cell (10, 3)
+    assert exact["arrived"] is True and exact["pointer"]["screen"]["x"] == 10, exact
+    off = cast(dict[str, Any], server.send_mouse(x=21, y=3, units="mouse"))
+    assert off["status"] == "ok" and off["arrived"] is False, off
+    assert off["asked"] == {"x": 21, "y": 3} and off["pointer"]["mouse"]["x"] == 16, off
+
+
+def test_send_mouse_refuses_before_anything_is_sent(tmp_path: Path) -> None:
+    """Every refusal arrives before a byte goes down: the shape, the numbers, the vocabularies,
+    a target off the screen, a mode whose units this server does not map."""
+    fake = _guest(tmp_path)
+    cases: list[tuple[Callable[[], dict[str, Any]], str]] = [
+        (lambda: server.send_mouse(), "name a move"),
+        (lambda: server.send_mouse(x=1), "BOTH `x` and `y`"),
+        (lambda: server.send_mouse(x=cast(Any, 1.5), y=0), "whole number"),
+        (lambda: server.send_mouse(x=cast(Any, True), y=0), "whole number"),
+        (lambda: server.send_mouse(x=-1, y=0), "whole number"),
+        (lambda: server.send_mouse(x=inputs.MAX_COORD + 1, y=0, units="mouse"), "to 32767"),
+        (lambda: server.send_mouse(x=0, y=2**31, units="mouse"), "to 32767"),
+        (lambda: server.send_mouse(button="wheel"), "mouse button is one of"),
+        (lambda: server.send_mouse(button="left", action="triple"), "`action` is one of"),
+        (lambda: server.send_mouse(x=1, y=1, action="down"), "acts on a `button`"),
+        (lambda: server.send_mouse(x=1, y=1, units="pixels"), "`units` is 'screen'"),
+    ]
+    for call, words in cases:
+        got = call()
+        assert got["status"] == "INVALID" and words in got["message"], (words, got)
+    assert fake.commands_sent == [], "a refused call must not have sent anything"
+    # the screen's own bounds, read from the stub: refused after the report, before the move
+    off = cast(dict[str, Any], server.send_mouse(x=80, y=0))            # text 80 x 25
+    assert off["status"] == "INVALID" and "outside the screen, 80 x 25" in off["message"], off
+    raw = cast(dict[str, Any], server.send_mouse(x=640, y=0, units="mouse"))
+    assert raw["status"] == "INVALID" and "outside the driver's range" in raw["message"], raw
+    fake.video_mode = 0x101                                            # a VESA mode
+    vesa = cast(dict[str, Any], server.send_mouse(x=1, y=1))
+    assert vesa["status"] == "INVALID" and "units='mouse'" in vesa["message"], vesa
+    assert all(cmds == [b"R"] for cmds in fake.commands_sent), fake.commands_sent
+    ok = cast(dict[str, Any], server.send_mouse(x=1, y=1, units="mouse"))
+    assert ok["status"] == "ok" and ok["pointer"]["screen"] is None, ok
+    # THE TOP of the argument passes it and meets the driver's own range instead.
+    top = cast(dict[str, Any], server.send_mouse(x=inputs.MAX_COORD, y=0, units="mouse"))
+    assert "outside the driver's range" in top["message"], top
+
+
+def test_a_stub_that_never_reports_is_named_and_a_malformed_report_refused(
+        tmp_path: Path) -> None:
+    """The pointer's read-back is the stub's line: a stub that stopped reading the port is the
+    instrument broken (`host_failed`), never a pointer that did not move; and a report in
+    another shape is refused rather than half-read."""
+    fake = _guest(tmp_path)
+    fake.log = None                        # the report never arrives
+    fake.launch = dataclasses.replace(fake.launch, logfile=Path("/e9.log"))
+
+    def silent(pattern: str, seconds: float, mark: int = 0, **_: object) -> dict[str, object]:
+        raise ds.E9Expired("no line matched")
+    fake.e9_wait = silent
+    fake.e9_mark = lambda: 0
+    got = cast(dict[str, Any], server.send_mouse(button="left"))
+    assert got["status"] == "INVALID" and got["code"] == "host_failed", got
+    assert "did not report the pointer" in got["message"], got
+    with pytest.raises(ds.Invalid, match="not in its shape"):
+        inputs.parse_report("STUB  . mouse x=1 y=2")
+
+
+def test_the_stub_must_have_announced_its_protocol_before_anything_is_sent(
+        tmp_path: Path) -> None:
+    """An older stub reads every byte as a scan code, so a mouse command would type
+    keystrokes: the announce is read off the log once, and an absent, deviceless or older
+    stub is refused naming the fix. Found once, it is not searched for again."""
+    fake = _guest(tmp_path)
+    fake.stub_protocol = ""
+    fake.log = ["Bochs port E9h: BOOT  . start"]
+    none = cast(dict[str, Any], server.send_keys(keys=["a"]))
+    assert none["status"] == "INVALID" and "INJECT.COM" in none["message"], none
+    fake.log.append("Bochs port E9h: STUB  . inject device=absent")
+    absent = cast(dict[str, Any], server.send_keys(keys=["a"]))
+    assert "integration device=true" in absent["message"], absent
+    fake.log.append("Bochs port E9h: STUB  . inject device=present")
+    old = cast(dict[str, Any], server.send_mouse(button="left"))
+    assert "protocol 1" in old["message"] and "older INJECT.COM" in old["message"], old
+    assert fake.commands_sent == []
+    fake.log.append("Bochs port E9h: STUB  . inject device=present proto=2")
+    assert cast(dict[str, Any], server.send_keys(keys=["a"]))["status"] == "ok"
+    assert fake.stub_protocol == "2"
+    fake.log.clear()
+    assert cast(dict[str, Any], server.send_keys(keys=["a"]))["status"] == "ok"
 
 
 E9_KEY_ACT = "Bochs port E9h: [+  66.628] ACT   . key_cue_a=0 b=-1 on=0"
@@ -3365,7 +3406,8 @@ def test_send_keys_with_an_expectation_confirms_the_guest_reacted(tmp_path: Path
                              "line": E9_KEY_ACT, "seen_before_waiting": True,
                              "lines_before": 0, "waited_s": 0.0, "lines_total": 1}, got["effect"]
     assert "already" not in got["effect"]
-    assert fake.wait_calls == [("key_cue_a", 5, 1)], fake.wait_calls   # mark = 1 line, pre-post
+    # the mark is 1 line, taken before the post
+    assert fake.wait_calls == [(inputs.program_reaction("key_cue_a"), 5, 1)], fake.wait_calls
     # THE DEFAULT BOUND is a named constant, passed through when `seconds` is omitted.
     server.send_keys(keys=["a"], expect="key_cue_a")
     assert fake.wait_calls[-1][1] == inputs.EFFECT_WAIT_DEFAULT_S
@@ -3384,10 +3426,11 @@ def test_send_keys_reports_a_swallowed_key_as_a_miss_not_a_success(tmp_path: Pat
     got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a", seconds=2))
     assert got["status"] == "INVALID", got
     assert "did not react" in got["message"] and "key_cue_a" in got["message"], got["message"]
-    assert got["posted"] == 1 and got["activated"] is True, got     # the post is still reported
+    assert got["posted"] == 1 and got["route"] == "guest", got     # the post is still reported
     assert got["effect"]["checked"] is True and got["effect"]["seen"] is False, got["effect"]
-    assert fake.wait_calls == [("key_cue_a", 2, 2)], fake.wait_calls   # from PAST the stale line
-    assert fake.input_calls == [("keys", ["-", "a"])]
+    # from PAST the stale line
+    assert fake.wait_calls == [(inputs.program_reaction("key_cue_a"), 2, 2)], fake.wait_calls
+    assert fake.scancodes_sent == [bytes([0x1E, 0x9E])]
 
 
 def test_send_keys_an_instrument_that_broke_is_not_reported_as_a_miss(
@@ -3420,7 +3463,7 @@ def test_send_keys_without_an_expectation_says_it_did_not_verify(tmp_path: Path)
     assert fake.wait_calls == []
     orphan = cast(dict[str, Any], server.send_keys(keys=["a"], seconds=5))
     assert orphan["status"] == "INVALID" and "silently ignored" in orphan["message"], orphan
-    assert len(fake.input_calls) == 1, "the refused call must not have posted"
+    assert len(fake.commands_sent) == 1, "the refused call must not have posted"
 
 
 def test_send_keys_expectation_that_cannot_be_checked_is_refused_before_the_post(
@@ -3428,7 +3471,7 @@ def test_send_keys_expectation_that_cannot_be_checked_is_refused_before_the_post
     """A post cannot be taken back, so everything that would make the verification
     impossible is refused BEFORE it: no logfile (no channel to see a reaction in), a
     pattern that is empty or not a regex, a wait that is not a bound or not a number (a
-    `perform` step hands values over untyped). `input_calls` stays empty -- the key was NOT
+    `perform` step hands values over untyped). `commands_sent` stays empty -- the key was NOT
     sent and then reported unverifiable."""
     fake = _names(tmp_path, watched=True)
     fake.running = True                      # input goes to a RUNNING guest
@@ -3450,35 +3493,26 @@ def test_send_keys_expectation_that_cannot_be_checked_is_refused_before_the_post
     nonstr = cast(dict[str, Any], server.perform(steps=[
         {"op": "send_keys", "keys": ["a"], "expect": 5}]))
     assert nonstr["status"] == "INVALID" and "expect is a string" in nonstr["message"], nonstr
-    assert fake.input_calls == [], "a refused verification must not have posted anything"
+    assert fake.commands_sent == [], "a refused verification must not have posted anything"
 
 
 def test_send_mouse_takes_the_same_expectation(tmp_path: Path) -> None:
     """The mouse half verifies through the same path: a click OR a move with `expect` is
-    confirmed or reported missed exactly as a key is."""
-    fake = _names(tmp_path, watched=True)
-    fake.running = True                      # input goes to a RUNNING guest
+    confirmed or reported missed exactly as a key is, and a miss still carries the
+    pointer's read-back."""
+    fake = _guest(tmp_path)
     fake.input_effect = "Bochs port E9h: [+   1.000] UI    . ask via CLICK on button 0"
     hit = cast(dict[str, Any], server.send_mouse(button="left", expect="via CLICK"))
     assert hit["status"] == "ok" and hit["effect"]["seen"] is True, hit
     moved = cast(dict[str, Any], server.send_mouse(x=10, y=20, expect="via CLICK"))
     assert moved["status"] == "ok" and moved["effect"]["seen"] is True, moved
-    assert fake.input_calls[-1] == ("move", ["10", "20"])
+    assert fake.commands_sent[-2] == [b"M" + (80).to_bytes(2, "little")
+                                      + (160).to_bytes(2, "little")]
     fake.input_effect = None
     miss = cast(dict[str, Any], server.send_mouse(button="left", expect="via CLICK",
                                                   seconds=1))
     assert miss["status"] == "INVALID" and miss["effect"]["seen"] is False, miss
-    assert miss["posted"] == 1
-    # THE HELPER'S REFUSAL BEFORE POSTING (the pointer outside the window) carries the
-    # same fields as a miss, `posted` at zero: a bare reason left a caller reading
-    # `posted` with a KeyError, and the docstring promising the post reported.
-    fake.input_refusal = ("keypost click failed (exit 7): the host pointer is outside the "
-                          "emulator's window; nothing was posted")
-    for refused in (server.send_mouse(button="left", expect="via CLICK", seconds=1),
-                    server.send_mouse(button="left")):
-        assert refused["status"] == "INVALID" and "nothing was posted" in refused["message"]
-        assert refused["posted"] == 0 and refused["route"] == "window", refused
-        assert refused["effect"]["seen"] is False and refused["activated"] is False
+    assert miss["pointer"]["mouse"]["x"] == 80 and miss["route"] == "guest", miss
 
 
 def test_perform_stops_at_a_send_keys_step_whose_expectation_missed(tmp_path: Path) -> None:
@@ -3541,67 +3575,35 @@ def test_scan_sequence_composes_set1_makes_and_breaks_in_order() -> None:
         inputs.scan_sequence(["a"], "cmd")
 
 
-def test_send_keys_takes_the_serial_route_when_the_session_has_a_port(
+def test_send_keys_refuses_a_stopped_machine_and_the_cap_and_a_miss_blames_no_window(
         tmp_path: Path) -> None:
-    """A session started with `input_port` sends keys down the socket: headless is fine, the
-    reply says `route: serial` with the byte and tick counts and no window facts, `expect`
-    verifies the same way, and the mouse is refused on a HEADLESS serial session rather than
-    sent nowhere, naming the remedy for that session. A session without a port keeps the
-    window route and its window requirement; one with a port AND a window sends keys down
-    the socket and clicks through the window."""
-    fake = _names(tmp_path, watched=False, input_port=5555)
-    fake.running = True                       # a RUNNING guest, as a key is sent to
+    """A stopped machine is refused, not fed bytes that would land at the next resume; a long
+    text goes in several calls; and a miss names the program, not a focus it never needed."""
+    fake = _names(tmp_path, watched=False)
+    fake.running = True
     fake.input_effect = E9_KEY_ACT
     got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a"))
-    assert got["status"] == "ok" and got["route"] == "serial", got
-    assert got["posted"] == 1 and got["bytes"] == 2 and got["ticks"] == 2, got
-    assert "activated" not in got and "focus" not in got, got
-    assert got["effect"]["seen"] is True, got["effect"]
-    assert fake.scancodes_sent == [bytes([0x1E, 0x9E])] and fake.input_calls == []
+    assert got["status"] == "ok" and got["effect"]["seen"] is True, got
     shifted = cast(dict[str, Any], server.send_keys(keys=["b"], modifiers=["shift"]))
     assert fake.scancodes_sent[-1] == bytes([0x2A, 0x30, 0xB0, 0xAA]) and shifted["ticks"] == 4
-    mouse = cast(dict[str, Any], server.send_mouse(button="left"))
-    assert mouse["status"] == "INVALID" and "mode='shared'" in mouse["message"], mouse
-    assert len(fake.scancodes_sent) == 2, "a refused mouse must not have sent bytes"
-    # A STOPPED MACHINE IS REFUSED, not fed bytes that would land at the next resume.
     fake.running = False
     stopped = cast(dict[str, Any], server.send_keys(keys=["a"]))
     assert stopped["status"] == "INVALID" and "STOPPED at the debugger" in stopped["message"]
-    assert len(fake.scancodes_sent) == 2
-    # THE CAP, on either route: a long text goes in several calls.
     fake.running = True
     capped = cast(dict[str, Any], server.send_keys(keys=["a"] * 65))
     assert capped["status"] == "INVALID" and "at most 64" in capped["message"], capped
     assert len(fake.scancodes_sent) == 2
-    # A MISS on the serial route does not blame a window it never had.
     fake.input_effect = None
     miss = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a", seconds=1))
     assert miss["status"] == "INVALID" and "focus" not in miss["message"], miss["message"]
-    windowed = _names(tmp_path, watched=True)
-    windowed.running = True                  # input goes to a RUNNING guest
-    win = cast(dict[str, Any], server.send_keys(keys=["a"]))
-    assert win["route"] == "window" and windowed.scancodes_sent == []
-    both = _names(tmp_path, watched=True, input_port=5555)
-    both.running = True
-    assert cast(dict[str, Any], server.send_keys(keys=["a"]))["route"] == "serial"
-    click = cast(dict[str, Any], server.send_mouse(button="left"))
-    assert click["status"] == "ok" and click["route"] == "window", click
-    assert both.input_calls == [("click", ["left"])] and len(both.scancodes_sent) == 1
 
 
-def test_the_two_input_routes_share_one_key_vocabulary() -> None:
-    """A caller says the same key name whichever route answers: the names the window
-    route's helper knows (parsed out of `keypost.swift`, the file the helper is compiled
-    from) and the names the serial route's set-1 table knows are the SAME set, so a key that
-    works on one route cannot be refused on the other."""
-    source = Path(str(server.__file__)).with_name("keypost.swift").read_text(encoding="utf-8")
-    # the declaration's own type reads `[String: CGKeyCode]`, so the table starts at `= [`
-    table = source.split("let KEYCODES", 1)[1].split("= [", 1)[1].split("]", 1)[0]
-    helper_names = set(re.findall(r'"([a-z0-9]+)":\s*\d+', table))
-    assert helper_names, "the helper's table could not be read out of keypost.swift"
-    assert helper_names == set(inputs.SCAN_SET1), (
-        f"only in the helper: {sorted(helper_names - set(inputs.SCAN_SET1))}; only in the "
-        f"serial table: {sorted(set(inputs.SCAN_SET1) - helper_names)}")
+def test_the_key_vocabulary_is_the_scan_table_s() -> None:
+    """One table names every key the route can send, and every entry composes a make and a
+    break: an extended key carries its E0 prefix on both."""
+    for name, code in inputs.SCAN_SET1.items():
+        seq = inputs.scan_sequence([name], "-")
+        assert seq == bytes(code) + bytes(code[:-1]) + bytes([code[-1] | 0x80]), name
 
 
 def test_the_shipped_stub_matches_its_source(tmp_path: Path) -> None:
@@ -3636,7 +3638,8 @@ def test_drive_marks_acts_verifies_and_looks_from_the_mark(tmp_path: Path) -> No
     assert out["status"] == "ok", out
     assert out["act"]["completed"] == 1 and out["act"]["failed_at"] is None, out["act"]
     assert out["verify"]["seen"] is True and "on=1" in out["verify"]["line"], out["verify"]
-    assert fake.wait_calls[-1] == ("key_cue_a", 5.0, 2), fake.wait_calls   # from the mark
+    # from the mark
+    assert fake.wait_calls[-1] == (inputs.program_reaction("key_cue_a"), 5.0, 2), fake.wait_calls
     e9 = out["looked"]["e9"]
     assert e9["available"] is True and e9["since_mark"] == 2, e9
     assert e9["written"] == 1 and e9["lines_total"] == 1 and e9["lines"] == [fake.input_effect]
@@ -3683,7 +3686,7 @@ def test_drive_reports_a_miss_a_failed_act_and_refuses_what_it_cannot_do(
     # EVERY REFUSAL COMES BEFORE THE ACT MOVES ANYTHING: each of these carries a step that
     # would post a key, and none of them posts. An unknown op among the steps is refused up
     # front too, where `perform` would have run the steps before it.
-    posted, waited = len(fake.input_calls), len(fake.wait_calls)
+    posted, waited = len(fake.commands_sent), len(fake.wait_calls)
     key = {"op": "send_keys", "keys": ["a"]}
     refusals: list[Callable[[], dict[str, Any]]] = [
         lambda: server.drive(act=[]),
@@ -3700,7 +3703,7 @@ def test_drive_reports_a_miss_a_failed_act_and_refuses_what_it_cannot_do(
     fake.log = None
     nolog = cast(dict[str, Any], server.drive(act=[key]))
     assert nolog["status"] == "INVALID" and "logfile" in nolog["message"]
-    assert (len(fake.input_calls), len(fake.wait_calls)) == (posted, waited), (
+    assert (len(fake.commands_sent), len(fake.wait_calls)) == (posted, waited), (
         "a refused drive must not have acted or waited")
     # `perform` refuses the same non-bound `wait`.
     assert cast(dict[str, Any], server.perform(steps=[{"op": "status"}], wait=-1))["status"] \
@@ -5572,7 +5575,7 @@ def test_send_keys_names_a_stop_that_landed_during_the_wait_not_still_running(
     fake.input_effect = None
     fake.stops_during_wait = True
     got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a", seconds=5))
-    assert got["status"] == "INVALID" and got["route"] == "serial", got
+    assert got["status"] == "INVALID" and got["route"] == "guest", got
     assert got["posted"] == 1 and fake.scancodes_sent == [bytes([0x1E, 0x9E])], got
     assert got["effect"]["checked"] is True and got["effect"]["seen"] is False, got["effect"]
     assert got["effect"]["stopped_during_wait"] is True, got["effect"]
@@ -5591,10 +5594,11 @@ def test_send_keys_names_a_stop_that_landed_during_the_wait_not_still_running(
 def test_input_to_a_machine_stopped_at_the_debugger_is_refused_before_the_post(
         tmp_path: Path) -> None:
     """A key or a click to a machine parked at the debugger is never a delivery: the
-    serial route refused it, the window route posted it and, with no `expect`, answered
-    `ok` about an event the guest could not take. Both routes refuse before posting,
-    with or without `expect`, naming the stop and `resume` as the way forward."""
-    fake = _names(tmp_path, watched=True)          # stopped, as a fresh session is
+    bytes would sit in the serial buffer and land at the next resume. Keys and clicks are
+    refused before posting, with or without `expect`, naming the stop and `resume` as the
+    way forward."""
+    fake = _guest(tmp_path)
+    fake.running = False                           # stopped, as a fresh session is
     fake.input_effect = None
     calls: list[Callable[[], dict[str, Any]]] = [
         lambda: server.send_keys(keys=["a"]),
@@ -5609,7 +5613,7 @@ def test_input_to_a_machine_stopped_at_the_debugger_is_refused_before_the_post(
         # would tell a caller which tools answer while the guest RUNS, about a guest that
         # is stopped.
         assert "answers_while_running" not in got, got
-    assert fake.input_calls == [], "nothing was posted to a stopped machine"
+    assert fake.commands_sent == [], "nothing was posted to a stopped machine"
     assert "posted" not in got
 
 
@@ -5792,7 +5796,8 @@ def test_send_keys_hands_its_progress_to_the_wait_for_the_reaction() -> None:
     """The wait for `expect` after a posted key is the longest wait this server makes in
     ordinary use, and it reports like every other bounded wait."""
     class _Route:
-        launch = SimpleNamespace(watched=True, input_port=None)
+        launch = SimpleNamespace(watched=False, input_port=5555, logfile=None)
+        stub_protocol = "2"
 
         def e9_mark(self) -> int:
             return 0
@@ -5800,9 +5805,8 @@ def test_send_keys_hands_its_progress_to_the_wait_for_the_reaction() -> None:
         def at_debugger(self) -> bool:
             return False
 
-        def send_input(self, mode: str, args: list[str], keep_focus: bool) -> dict[str, str]:
-            return {"posted": "1", "activated": "true", "attempts": "1", "restored": "kept",
-                    "window": "7"}
+        def send_commands(self, commands: list[bytes]) -> int:
+            return sum(len(c) for c in commands)
 
         log_wait = _log_wait_as_guest
 
@@ -5813,7 +5817,7 @@ def test_send_keys_hands_its_progress_to_the_wait_for_the_reaction() -> None:
                     "arrived_during": 1, "waited_s": 1.0, "lines_examined": 1, "since_mark": 0}
 
     ticks: list[str] = []
-    out = inputs.send_keys(_Route(), ["enter"], None, "READY", 2.0, "keep",  # type: ignore[arg-type]
+    out = inputs.send_keys(_Route(), ["enter"], None, "READY", 2.0,  # type: ignore[arg-type]
                            lambda p, t, m: ticks.append(m))
     assert ticks == ["tick"] and out["effect"]["seen"] is True
 
@@ -6141,8 +6145,10 @@ def test_stop_brings_a_windowed_guest_back_through_the_menu_and_refuses_headless
     session is refused naming what ends its run instead."""
     fake = _names(tmp_path, watched=True)
     fake.running = True
+    fake.menu_focus = "lost"
     out = cast(dict[str, Any], server.stop())
     assert out["status"] == "ok" and out["interrupted"] is True and out["how"] == "menu", out
+    assert out["focus"] == "lost", "the reply says what the menu click did to the focus"
     assert fake.break_ins == 1 and fake.running is False
     assert "registers" in out and out["stopped_at"] == "00A7:00000000"
     assert out["summary"] == "stop: menu, at 00A7:00000000 after 0.12s"
@@ -6212,7 +6218,7 @@ def test_a_bad_value_in_a_later_step_runs_nothing_and_every_refusal_is_listed(
         {"op": "log", "pattern": "(", "channel": "guest"}], wait=0.5))
     assert out["status"] == "INVALID" and out["code"] == "bad_argument", out
     assert out["ran"] == [] and out["completed"] == 0 and out["failed_at"] == 1, out
-    assert fake.input_calls == [], "a key was posted before the batch was checked"
+    assert fake.commands_sent == [], "a key was posted before the batch was checked"
     refused = cast(list[dict[str, Any]], out["errors"])
     assert [e["step"] for e in refused] == [1, 2], refused
     assert "not_a_real_key_xyz" in refused[0]["message"], refused[0]
@@ -6229,22 +6235,15 @@ def test_send_keys_refuses_an_unknown_name_before_the_window_is_touched(
     out = cast(dict[str, Any], server.send_keys(keys=["a", "not_a_real_key_xyz"]))
     assert out["status"] == "INVALID" and out["code"] == "bad_argument", out
     assert "not_a_real_key_xyz" in out["message"], out
-    assert fake.input_calls == [], "the helper was asked to post an unknown name"
+    assert fake.commands_sent == [], "an unknown name was sent"
 
 
-def test_the_modifier_vocabulary_is_judged_per_route_and_equals_the_helpers() -> None:
-    """The window route's helper takes the command key and the serial route cannot (a DOS
-    keyboard has none), so the modifier check knows the route; the union the window route
-    accepts is the helper's own table, read out of `keypost.swift`, and the serial set is
-    the scan table's, so a modifier that posts on one route is refused on the other only
-    for the reason the reply names."""
-    source = Path(str(server.__file__)).with_name("keypost.swift").read_text(encoding="utf-8")
-    table = source.split("let MODIFIERS", 1)[1].split("= [", 1)[1].split("]", 1)[0]
-    helper = set(re.findall(r'"([a-z]+)":', table))
-    assert helper == set(inputs.SCAN_MODIFIERS) | set(inputs.WINDOW_ONLY_MODIFIERS), helper
-    inputs.check_keys(["a"], ["cmd", "shift"])                    # window: fine
+def test_the_modifier_vocabulary_is_the_dos_keyboard_s() -> None:
+    """The modifiers are the ones a DOS keyboard has, judged before anything is sent: the
+    command key is refused by name, an unknown one with the list."""
+    inputs.check_keys(["a"], ["shift", "CTRL", "alt", "option", "control"])
     with pytest.raises(ds.Invalid, match="no command key"):
-        inputs.check_keys(["a"], ["cmd"], serial=True)
+        inputs.check_keys(["a"], ["cmd"])
     with pytest.raises(ds.Invalid, match="unknown modifier 'hyper'"):
         inputs.check_keys(["a"], ["hyper"])
     with pytest.raises(ds.Invalid, match="unknown key name 'bogus'"):
@@ -6252,7 +6251,10 @@ def test_the_modifier_vocabulary_is_judged_per_route_and_equals_the_helpers() ->
 
 
 @pytest.mark.parametrize(("op", "bad", "good"), [
-    ("send_mouse", {"button": "middle"}, {"button": "left"}),
+    ("send_mouse", {"button": "wheel"}, {"button": "middle"}),
+    ("send_mouse", {"x": 3}, {"x": 3, "y": 4}),
+    ("send_mouse", {"button": "left", "action": "hold"}, {"button": "left", "action": "down"}),
+    ("send_mouse", {"x": 3, "y": 4, "units": "px"}, {"x": 3, "y": 4, "units": "mouse"}),
     ("log", {"pattern": "(", "channel": "guest", "limit": 5}, {"pattern": "x", "channel": "guest"}),
     ("log", {"pattern": "x", "channel": "guest", "limit": 0},
      {"pattern": "x", "channel": "guest", "limit": 1}),
@@ -6291,9 +6293,9 @@ def test_every_registry_entry_refuses_its_bad_value_and_passes_its_good_one(
     (an entry pointing at a function that accepts everything) is seen: the bad value must
     raise the tool's own refusal and the good one must pass in silence."""
     with pytest.raises(ds.Invalid):
-        checks.preflight(op, bad, serial=False)
-    checks.preflight(op, good, serial=False)
-    checks.preflight("status", {}, serial=False)        # no entry: nothing to judge
+        checks.preflight(op, bad)
+    checks.preflight(op, good)
+    checks.preflight("status", {})        # no entry: nothing to judge
 
 
 def test_wait_ready_and_close_report_their_progress() -> None:
@@ -6499,7 +6501,7 @@ def test_perform_checks_a_symbols_find_step_before_any_step_runs(tmp_path: Path)
         out = server.perform(steps=[{"op": "send_keys", "keys": ["a"]}, bad], wait=1.0)
         assert out["status"] == "INVALID" and out["ran"] == [], (bad, out)
         assert out["errors"][0]["step"] == 1 and out["errors"][0]["op"] == "symbols_find", out
-    assert fake.input_calls == [], "a refused list must not have posted a key"
+    assert fake.commands_sent == [], "a refused list must not have posted a key"
     # What only its step can judge still refuses THERE: a name absent from the table is
     # not a preflight refusal, and the step before it runs.
     fake.running = False
@@ -6531,15 +6533,12 @@ def test_the_data_view_ceilings_pass_at_the_maximum_on_both_paths(tmp_path: Path
     """THE BOUNDARY, on the registry itself: the maximum passes, one past it does not, and
     so does the synchronous call, which reads the same registry."""
     _names(tmp_path)
-    checks.preflight("read_memory", {"ref": "0000:0000", "length": 128}, serial=False)
-    checks.preflight("write", {"ref": "0000:0000", "data_hex": "00" * 128}, serial=False)
-    checks.preflight("watch_add", {"ref": "0000:0000", "mode": "show", "length": 128},
-                     serial=False)
-    checks.preflight("watch_add", {"ref": "0000:0000", "mode": "show", "fmt": "u16[64]"},
-                     serial=False)
+    checks.preflight("read_memory", {"ref": "0000:0000", "length": 128})
+    checks.preflight("write", {"ref": "0000:0000", "data_hex": "00" * 128})
+    checks.preflight("watch_add", {"ref": "0000:0000", "mode": "show", "length": 128})
+    checks.preflight("watch_add", {"ref": "0000:0000", "mode": "show", "fmt": "u16[64]"})
     # A change watch arms a trap and reads nothing at a stop: the view's reach is not its bound.
-    checks.preflight("watch_add", {"ref": "0000:0000", "mode": "change", "length": 129},
-                     serial=False)
+    checks.preflight("watch_add", {"ref": "0000:0000", "mode": "change", "length": 129})
     assert server.read_memory(ref="0000:0000", length=129)["code"] == "bad_argument"
     assert server.write(ref="0000:0000", data_hex="00" * 129)["code"] == "bad_argument"
 
@@ -6556,7 +6555,7 @@ def test_drives_lines_ceiling_is_logs_ceiling_and_not_a_second_constant(
     key = {"op": "send_keys", "keys": ["a"]}
     over = cast(dict[str, Any], server.drive(act=[key], limit=8))
     assert over["status"] == "INVALID" and "between 1 and 7" in over["message"], over
-    assert fake.input_calls == [], "a refused drive must not have acted"
+    assert fake.commands_sent == [], "a refused drive must not have acted"
     at = cast(dict[str, Any], server.drive(act=[key], limit=7))
     assert at["status"] == "ok", at
 

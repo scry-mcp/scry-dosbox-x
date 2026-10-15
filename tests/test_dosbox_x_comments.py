@@ -867,7 +867,7 @@ def test_a_bad_ref_or_text_is_bad_argument_with_no_session(call: Any) -> None:
 
 
 def _performing() -> None:
-    install().launch.input_port = None          # the window route: `perform` asks which
+    install().launch.input_port = None          # no input socket: `perform` asks before any step
 
 
 def test_a_perform_list_with_a_bad_comment_step_is_refused_whole() -> None:

@@ -1,10 +1,16 @@
-"""The INPUT routes: a keystroke or a mouse event to the running guest, and the proof it landed.
+"""The INPUT route: keys, mouse buttons and the pointer, carried INTO the guest, and the proof
+each one landed.
 
-Two routes carry keys: the serial socket to the resident stub (`guest/INJECT.COM`, scan
-bytes one per timer tick, no window) and a host event to the emulator's window (brought
-frontmost through Accessibility). The mouse has the window route only. Whichever route
-posts, the proof is the same: a regex over the guest's E9 log that only the program's
-reaction writes, waited for from a mark taken BEFORE the post (`_post_and_verify`).
+One route, and no host event in it: the session's input port is COM1 as a TCP socket, and the
+resident stub in `guest/INJECT.COM` takes one framed command per timer tick off it and carries it
+out inside the machine (a scan byte into the 8042, a button into the integration device, the
+pointer through INT 33h), so no host event is involved. The stub's own header holds the
+protocol.
+
+Two proofs, kept apart. The POINTER is read back: every `send_mouse` asks the stub to report
+where the driver's pointer is, before and after, so a move that did not arrive is a miss and not
+a success. The PROGRAM's reaction is `expect`, a regex over the guest's E9 log that only the
+program writes, waited for from a mark taken before the post (`_post_and_verify`).
 
 `send_keys` and `send_mouse` have their bodies here; their contracts stay with the
 registrations in `dosbox_x_server`.
@@ -12,34 +18,20 @@ registrations in `dosbox_x_server`.
 
 from __future__ import annotations
 
+import re
+from dataclasses import dataclass
 from typing import Any, cast
+
+from scry_core.reply_contract import Code
 
 import dosbox_running as running
 import dosbox_session as ds
 import dosbox_state as st
 from dosbox_state import STATE
 
-
-def _require_window(session: ds.Session, tool: str) -> None:
-    """The driver's ACT half needs a WINDOW -- on the window route. A host key or mouse
-    event reaches the guest only through the emulator's on-screen surface, so a headless
-    (`videodriver=dummy`) session has nothing to receive it. Refused here, named, rather
-    than posting into a void that reports success. Start the session `mode="shared"` to
-    drive input into it, or with `input_port` for the serial route, which needs no window."""
-    if session.launch.input_port is not None:
-        return
-    if not session.launch.watched:
-        raise ds.Invalid("no_channel",
-            f"{tool} needs a windowed session: a host input event reaches the guest through "
-            f"the emulator's on-screen window, and a headless session has none. Start with "
-            f"mode='shared' (and the placement flags), or with input_port= for the serial "
-            f"route, to send input")
-
-
-# SCAN CODE SET 1 MAKE CODES, by the mapper-style names `send_keys` takes (the same names the
-# window route's helper knows, so a caller says the same thing on either route). An extended
-# key carries the E0 prefix; the break code of a byte is the byte with bit 7 set, and the
-# stub injects whatever it is handed, one byte per tick, so the sequence is composed HERE.
+# SCAN CODE SET 1 MAKE CODES, by the mapper-style names `send_keys` takes. An extended key
+# carries the E0 prefix; the break code of a byte is the byte with bit 7 set, and the stub
+# injects whatever it is handed, one byte per tick, so the sequence is composed HERE.
 SCAN_SET1: dict[str, tuple[int, ...]] = {
     "escape": (0x01,), "esc": (0x01,),
     "1": (0x02,), "2": (0x03,), "3": (0x04,), "4": (0x05,), "5": (0x06,), "6": (0x07,),
@@ -62,7 +54,7 @@ SCAN_SET1: dict[str, tuple[int, ...]] = {
     "down": (0xE0, 0x50), "pagedown": (0xE0, 0x51), "insert": (0xE0, 0x52),
     "delete": (0xE0, 0x53),
 }
-MAX_KEYS_PER_CALL = 64    # the same cap the window route's helper carries, for the same cost
+MAX_KEYS_PER_CALL = 64    # each scan byte costs a timer tick under the session's lock
 SCAN_MODIFIERS: dict[str, tuple[int, ...]] = {
     "shift": (0x2A,), "ctrl": (0x1D,), "control": (0x1D,), "alt": (0x38,), "option": (0x38,),
 }
@@ -77,7 +69,7 @@ def scan_sequence(keys: list[str], mods: str) -> bytes:
     if mods != "-":
         for m in mods.split("+"):
             if m.lower() not in SCAN_MODIFIERS:
-                raise ds.Invalid("bad_argument", f"the serial route knows the modifiers "
+                raise ds.Invalid("bad_argument", f"the modifiers are "
                                  f"{sorted(SCAN_MODIFIERS)}; got {m!r} (a DOS keyboard has "
                                  f"no command key)")
             held.append(SCAN_MODIFIERS[m.lower()])
@@ -88,7 +80,7 @@ def scan_sequence(keys: list[str], mods: str) -> bytes:
         key_code = SCAN_SET1.get(name.lower())
         if key_code is None:
             raise ds.Invalid("bad_argument",
-                f"unknown key name {name!r} for the serial route; the names "
+                f"unknown key name {name!r}; the names "
                              f"are {sorted(SCAN_SET1)}")
         out.extend(key_code)
         out.extend(key_code[:-1] + (key_code[-1] | 0x80,))
@@ -96,6 +88,171 @@ def scan_sequence(keys: list[str], mods: str) -> bytes:
         out.extend(code[:-1] + (code[-1] | 0x80,))
     return bytes(out)
 
+
+
+# THE STUB'S PROTOCOL, the opcodes `guest/inject.asm` reads (its header is the contract).
+OP_KEY, OP_BUTTON, OP_MOVE, OP_REPORT = b"K", b"B", b"M", b"R"
+STUB_PROTOCOL = "2"
+STUB_ANNOUNCE = re.compile(r"STUB  \. inject device=(\w+)(?: proto=(\d+))?")
+REPORT_LINE = re.compile(
+    r"STUB  \. mouse x=(\d+) y=(\d+) buttons=(\d+) max=(\d+),(\d+) mode=(\d+) "
+    r"screen=(\d+)x(\d+)")
+REPORT_WAIT_S = 5.0     # a report is two ticks away; this bounds a stub that never answers
+
+BUTTONS = {"left": 0, "right": 1, "middle": 2}
+MAX_COORD = 0x7FFF      # INT 33h takes a coordinate in a signed 16-bit register
+ACTIONS = ("click", "double", "down", "up")
+UNITS = ("screen", "mouse")
+
+# THE SCREEN'S OWN UNITS PER BIOS MODE, the ones `screen_view` answers in: character cells for a
+# text mode, pixels for a graphics one. The display's drawn size is not it (a 200-line mode is
+# drawn scan-doubled to 400, a text mode at 720 wide), so the mode decides, and a mode outside
+# this table is refused rather than guessed: `units="mouse"` reaches it in the driver's own
+# coordinates. A text mode's columns are its mode's; its rows are the font's (25 or 50 under one
+# mode byte), read off the driver's range, which spans eight units a row.
+TEXT_COLUMNS = {0x00: 40, 0x01: 40, 0x02: 80, 0x03: 80, 0x07: 80}
+DRIVER_UNITS_PER_ROW = 8
+SCREEN_UNITS: dict[int, tuple[int, int]] = {
+    0x04: (320, 200), 0x05: (320, 200), 0x0D: (320, 200), 0x13: (320, 200),
+    0x06: (640, 200), 0x0E: (640, 200),
+    0x0F: (640, 350), 0x10: (640, 350),
+    0x11: (640, 480), 0x12: (640, 480),
+}
+
+
+@dataclass(frozen=True)
+class Report:
+    """What the stub says about the driver's pointer: its position and button bits, the range
+    the driver maps it into, the BIOS mode and the drawn display."""
+    x: int
+    y: int
+    buttons: int
+    max_x: int
+    max_y: int
+    mode: int
+    drawn: tuple[int, int]
+
+    def units(self) -> tuple[int, int] | None:
+        if self.mode in TEXT_COLUMNS:
+            return TEXT_COLUMNS[self.mode], (self.max_y + 1) // DRIVER_UNITS_PER_ROW
+        return SCREEN_UNITS.get(self.mode)
+
+
+def parse_report(line: str) -> Report:
+    m = REPORT_LINE.search(line)
+    if m is None:
+        raise ds.Invalid("host_failed", f"the stub's report is not in its shape: {line!r}")
+    x, y, b, mx, my, mode, w, h = (int(g) for g in m.groups())
+    return Report(x, y, b, mx, my, mode, (w, h))
+
+
+def to_driver(unit: int, size: int, top: int) -> int:
+    """A screen unit to the driver's coordinate: the driver spans `0..top` over `size` units."""
+    return unit * (top + 1) // size
+
+
+def to_screen(coord: int, size: int, top: int) -> int:
+    return coord * size // (top + 1)
+
+
+def key_commands(seq: bytes) -> list[bytes]:
+    return [OP_KEY + bytes([b]) for b in seq]
+
+
+def button_commands(button: str, action: str) -> list[bytes]:
+    """The press and release bytes an action is; a double click is two clicks, a tick apart
+    each, which is what a DOS program timing its own double click sees."""
+    press, release = bytes([0x80 | BUTTONS[button]]), bytes([BUTTONS[button]])
+    one = {"down": [press], "up": [release], "click": [press, release]}
+    steps = one["click"] * 2 if action == "double" else one[action]
+    return [OP_BUTTON + b for b in steps]
+
+
+def move_command(x: int, y: int) -> bytes:
+    return OP_MOVE + x.to_bytes(2, "little") + y.to_bytes(2, "little")
+
+
+def require_stub(session: ds.Session) -> None:
+    """The stub has to be resident and speak this protocol before anything is sent: an older
+    stub reads every byte as a scan code, so a mouse command would arrive as keystrokes. Read
+    off the log when the session has one; without a log there is nothing to read it from, and
+    the keys go out on the conf's word."""
+    if session.launch.logfile is None or session.stub_protocol == STUB_PROTOCOL:
+        return
+    announce = [STUB_ANNOUNCE.search(line) for line in session.e9_since_mark(0)]
+    found = [m for m in announce if m is not None]
+    if not found:
+        raise ds.Invalid("no_channel",
+            "the guest has not announced the input stub (`STUB  . inject` on E9), so nothing "
+            "would receive the input: the conf's [autoexec] runs it before the program, "
+            f"`mount g \"{ds.GUEST_DIR}\"` then `G:\\INJECT.COM`, or `start(program=...)` "
+            "loads it by itself")
+    device, proto = found[-1].groups()
+    if device != "present":
+        raise ds.Invalid("no_channel",
+            "the stub found no integration device (`device=absent`), so it left memory: the "
+            "session needs `integration device=true`, which `start` sets with an input port")
+    if proto != STUB_PROTOCOL:
+        raise ds.Invalid("no_channel",
+            f"the resident stub speaks protocol {proto or '1'} and this server protocol "
+            f"{STUB_PROTOCOL}: the conf mounts an older INJECT.COM. Mount this package's "
+            f"`{ds.GUEST_DIR}`")
+    session.stub_protocol = proto
+
+
+class Delivered(ds.Invalid):
+    """A failure AFTER the commands went into the guest: what went in rides with it, so the
+    reply says so and a caller does not send them twice."""
+
+    def __init__(self, code: Code, message: str, fields: dict[str, Any]) -> None:
+        super().__init__(code, message)
+        self.fields = fields
+
+
+# THE STUB WRITES ON THE SAME CHANNEL THE PROGRAM DOES, and its read-back lands after the mark a
+# reaction is waited from: a pattern its line matches would be served as the program reacting.
+# Spelled without a space and under its own flags, so a caller's verbose or case-blind pattern
+# cannot change what it excludes.
+STUB_LINE = r"(?-i:STUB[ ]{2}\.[ ])"
+_GLOBAL_FLAGS = re.compile(r"^(?:\(\?[aiLmsux]+\))+")
+
+
+def program_reaction(expect: str) -> str:
+    """`expect`, matched on the program's lines only, never on one the stub wrote. The leading
+    global flag groups stay in front, where Python requires them; under verbose mode the
+    caller's pattern ends on a line of its own, so a trailing comment closes there."""
+    flags = _GLOBAL_FLAGS.match(expect)
+    head = flags.group(0) if flags else ""
+    body = expect[len(head):] + ("\n" if "x" in head else "")
+    return rf"{head}^(?!.*{STUB_LINE})(?=.*?(?:{body}))"
+
+
+def _refuse_stopped(session: ds.Session, what: str) -> None:
+    # A STOPPED MACHINE CANNOT TAKE INPUT: the bytes would sit in the emulator's buffer and
+    # land, unannounced, at the next resume. Refused before posting, naming the stop. PASSIVE,
+    # and not `where()`: on a running guest the nudge is swallowed and its collect stays open
+    # for its whole timeout, and that window is exactly where a stop's prompt was consumed
+    # unrecorded.
+    if session.at_debugger():
+        running.observe_stop(session)
+        _, where = STATE.stop_named(session)
+        # A PLAIN `Invalid`, not `NotStopped`: that class names a machine that is NOT stopped,
+        # and its envelope would list the tools that answer while the guest runs.
+        raise ds.Invalid("not_running",
+            f"the machine is STOPPED at the debugger{where}, so {what} sent now would sit in "
+            f"the serial buffer and land at the next resume. `resume` first, then send")
+
+
+def _report(session: ds.Session) -> Report:
+    mark = session.e9_mark()
+    session.send_commands([OP_REPORT])
+    try:
+        got = session.e9_wait(REPORT_LINE.pattern, REPORT_WAIT_S, mark=mark)
+    except ds.E9Expired:
+        raise ds.Invalid("host_failed",
+            f"the stub did not report the pointer within {REPORT_WAIT_S}s: it is not reading "
+            "the port (a guest that masked the timer, or a stub that is gone)") from None
+    return parse_report(str(got["line"]))
 
 def effect_seen(expect: str, reaction: dict[str, object]) -> dict[str, Any]:
     """The verified-and-seen block a post or an act hands back, ONE shape for `send_keys`,
@@ -114,208 +271,92 @@ def effect_seen(expect: str, reaction: dict[str, object]) -> dict[str, Any]:
 EFFECT_WAIT_DEFAULT_S = 10.0    # how long a verified post waits for the guest's reaction
 
 
-def _post_and_verify(session: ds.Session, mode: str, args: list[str],
-                     expect: str | None, seconds: float | None, focus: str, *,
-                     progress: ds.Progress = ds.no_progress, **fields: Any) -> dict[str, Any]:
-    """Post one input event and say whether the GUEST REACTED -- the two-channel half of
-    the driver's ACT, shared by `send_keys` and `send_mouse`.
 
-    A HOST EVENT THAT WAS POSTED IS NOT A KEY THAT WAS DELIVERED. Measured on a real
-    session: a modal popup captured the cue key after a song load while this tool reported
-    the post as a success -- a false green of exactly the shape this package is written
-    against. So with `expect` (a regex over the guest's E9 log) the sequence is: MARK the
-    log, post, then wait for a NEW line matching it. A line already on disk before the mark
-    is history and is never served as the reaction. A miss is INVALID, saying the guest did
-    not react, and it still carries `posted`/`activated`, because a swallowed key is a
-    different fact from a key that was never sent.
+def _post_and_verify(session: ds.Session, kind: str, post: Any, expect: str | None,
+                     seconds: float | None, *, progress: ds.Progress = ds.no_progress,
+                     **fields: Any) -> dict[str, Any]:
+    """Post one input and say whether the PROGRAM REACTED, the half `send_keys` and
+    `send_mouse` share. `post()` sends the commands and returns the reply's own fields.
 
-    WHAT THE MARK CANNOT BRACKET, said rather than implied. The helper borrows the focus
-    for a moment between the mark and the post, and the emulator flushes the log in its
-    own time (measured on one boot: the file grows in line- or burst-sized steps, never a
-    page at once, so a line the guest wrote before the mark is on disk at the mark to within
-    the emulator's own flush). A line the guest writes INSIDE that window -- a key it was
-    still digesting from an earlier post, a timer it logs on -- is after the mark and is
-    served. `seen_before_waiting` and `waited_s` ride in `effect` so a caller can see a
-    reaction that was there the instant the post returned, which is the shape of that case.
+    A COMMAND THAT WENT DOWN THE SOCKET IS NOT AN INPUT THE PROGRAM TOOK: a modal popup can
+    capture a key while the post reads as a success. So with `expect` (a regex over the
+    guest's E9 log) the sequence is: MARK the log, post, then wait for a NEW line matching it.
+    A line already on disk before the mark is history and is never served as the reaction,
+    and neither is a line the stub wrote (`program_reaction`). A miss is INVALID, saying the
+    program did not react, and it still carries what was posted, because a swallowed key is a
+    different fact from a key never sent. A line the guest writes between the mark and the post
+    (a key still being digested, a timer it logs on) is after the mark and is served;
+    `seen_before_waiting` and `waited_s` show that shape.
 
-    ONLY THE EXPIRED BOUND IS THE PROGRAM'S MISS. The wait refuses for four things after
-    it starts looking: `E9Expired` is the observation that nothing matched; `E9Stopped` is
-    the machine at the debugger, reached while the wait looked (a breakpoint armed before
-    the post fired after it; a machine already stopped is refused before the post, on both
-    routes) -- reported as a miss that names the stop and where the key went, with
-    `effect.stopped_during_wait` and `last_stop`, never as "the program swallowed it";
-    a GONE emulator or a SHRUNK log is the instrument breaking, and comes back
-    `effect.checked: False` with the wait's own words leading the reason.
+    ONLY THE EXPIRED BOUND IS THE PROGRAM'S MISS. `E9Expired` is the observation that nothing
+    matched; `E9Stopped` is the machine reaching the debugger while the wait looked (a
+    breakpoint armed before the post fired after it), reported with `last_stop` and never as
+    "the program swallowed it"; a gone emulator or a shrunk log is the instrument breaking, and
+    comes back `effect.checked: False` with the wait's own words leading the reason.
 
-    WITHOUT `expect` NOTHING IS VERIFIED, and the reply says so in `effect` rather than
-    letting `posted` read as delivered. A guest that writes no instrumentation has no channel
-    this can confirm through; that limit is stated, not papered over with a frame diff this
-    server cannot take on a running guest (the emulator's screenshot is a mapper action).
-
-    EVERYTHING THAT WOULD MAKE THE VERIFICATION IMPOSSIBLE IS REFUSED BEFORE THE POST -- no
-    logfile, a pattern that is empty or not a regex, a wait that is not a bound, `seconds`
-    with nothing to bound -- because a post cannot be taken back, and a key sent and then
-    declared unverifiable is the failure with the post already spent. What this cannot
-    exclude is the helper itself failing mid-post; that comes back as the helper's own
-    refusal, `posted` unknown.
+    WITHOUT `expect` NOTHING ABOUT THE PROGRAM IS VERIFIED, and the reply says so in `effect`.
+    Everything that would make the verification impossible is refused BEFORE the post, because
+    a post cannot be taken back.
     """
-    # WHICH ROUTE: keys take the serial route whenever the session has one; the mouse
-    # takes the window route whenever the session has a window, because the serial route
-    # carries keys only today. A headless session with a port and a mouse request has no
-    # route at all, and the refusal names the remedy that fits THAT session.
-    has_port = session.launch.input_port is not None
-    serial = has_port and (mode == "keys" or not session.launch.watched)
+    try:
+        return _verify(session, kind, post, expect, seconds, progress, fields)
+    except Delivered as e:
+        return st.reply(status="INVALID", code=e.code, **fields, **e.fields, delivered=True,
+                        effect={"checked": False, "why": "the read-back failed after the "
+                                                      "commands went in"},
+                        message=f"the {kind} went into the guest, and then {e}")
 
-    def post_serial() -> dict[str, Any]:
-        # THE SERIAL ROUTE: the scan sequence goes down the socket and the guest's resident
-        # stub injects one byte per timer tick. No window, no focus, no Accessibility: the
-        # host facts of the window route do not exist here, and `route` says which route
-        # answered so a caller never reads their absence as a refusal.
-        if mode != "keys":
-            raise ds.Invalid("no_channel",
-                "the serial input route carries KEYS only today, and this "
-                             "session has no window for a click or a pointer motion: start "
-                             "it in mode='shared' (with the placement flags) as well")
-        seq = scan_sequence(args[1:], args[0])
-        sent = session.send_scancodes(seq)
-        return dict(fields, route="serial", posted=len(args) - 1, bytes=sent, ticks=len(seq))
 
-    def refused_before_posting(exc: ds.Invalid) -> dict[str, Any]:
-        # THE HELPER REFUSED BEFORE ANY EVENT WENT OUT (the pointer outside the window,
-        # say): a different fact from a posted event the guest ignored, and the reply
-        # says so with the same fields a miss carries, `posted` at zero.
-        return st.reply(**exc.reply(
-            route="window", posted=0, activated=False, attempts=0,
-            effect={"checked": False, "seen": False,
-                    "why": "nothing was posted, so there is no reaction to wait for"},
-            **fields))
-
-    def post_host_event() -> dict[str, Any]:
-        if serial:
-            return post_serial()
-        # `activated` is READ BACK by the helper (AX frontmost, and the window server's own
-        # topmost window), not the activation request's result; `attempts` says how many
-        # rounds the window server took. A helper that never got the window in front refuses
-        # (exit 6) and posts nothing, which arrives here as the helper's own Invalid.
-        # `restore` keeps the helper's answers apart: `done`/`failed` are AX's read-back of
-        # the hand-back; `kept`/`lost` the read-back of a call asked to keep the focus;
-        # `skipped` means there was nothing to hand it back to; a fact that never arrived is
-        # `unknown`, never a verdict. `restored` is the plain bool: was the previous app put
-        # back by THIS call (so False on a deliberate keep). `window` is the emulator's front
-        # window per the window server, which a caller placing the pointer wants.
-        facts = session.send_input(mode, args, keep_focus=(focus == "keep"))
-        restored = facts.get("restored", "unknown")
-        window = facts.get("window", "none")
-        return dict(fields, route="window", posted=int(facts.get("posted", 0)),
-                    activated=facts.get("activated") == "true",
-                    attempts=int(facts.get("attempts", 0)),
-                    restored=restored == "true",
-                    restore={"true": "done", "false": "failed", "kept": "kept", "lost": "lost",
-                             "skipped": "skipped"}.get(restored, "unknown"),
-                    window=None if window == "none" else [int(v) for v in window.split(",")])
-
-    check_focus(focus)
-    # A STOPPED MACHINE CANNOT TAKE INPUT, on either route: on the serial route the bytes
-    # would sit in the emulator's buffer and land, unannounced, at the next resume; on
-    # the window route the event went to the window while the debugger held the machine
-    # and whether the emulator kept it was not something this server could see, so the
-    # post was reported and the reply read `ok` with no `expect`. Refused before posting,
-    # naming the stop. PASSIVE, and not `where()`: on a running guest the nudge is
-    # swallowed and its collect stays open for its whole timeout, and that window is
-    # exactly where a stop's prompt was consumed unrecorded.
-    if session.at_debugger():
-        running.observe_stop(session)
-        stop, where = STATE.stop_named(session)
-        # A PLAIN `Invalid`, not `NotStopped`: that class names a machine that is NOT
-        # stopped, and the tool layer answers it with the running-guest envelope, whose
-        # `answers_while_running` would tell the caller which tools answer while the
-        # guest runs, about a guest that is stopped.
-        raise ds.Invalid("not_running",
-            f"the machine is STOPPED at the debugger{where}, so a {mode} "
-                            f"event sent now could not be taken by the guest: on the serial "
-                            f"route it would sit in the buffer and land at the next resume, "
-                            f"on the window route it would go to a window whose machine the "
-                            f"debugger holds. `resume` first, then send")
+def _verify(session: ds.Session, kind: str, post: Any, expect: str | None,
+            seconds: float | None, progress: ds.Progress,
+            fields: dict[str, Any]) -> dict[str, Any]:
     if expect is None:
-        try:
-            host = post_host_event()
-        except ds.Invalid as exc:
-            return refused_before_posting(exc)
-        return st.reply(**host, effect={
+        return st.reply(**fields, **post(), effect={
             "checked": False,
-            "why": "no `expect` was given, so `posted` says the host event went out and "
-                   "NOT that the guest received it; pass expect=<E9 pattern> to confirm the "
-                   "program's own reaction"})
+            "why": "no `expect` was given, so the reply says what went into the guest and NOT "
+                   "that the program took it; pass expect=<E9 pattern> to confirm its reaction"})
     wait_s = EFFECT_WAIT_DEFAULT_S if seconds is None else seconds
     try:
         mark = session.e9_mark()          # refuses a session with no logfile: no channel
     except ds.Invalid as e:
         raise ds.Invalid("bad_argument", f"`expect` cannot be checked: {e}. Refused before posting "
                          f"anything, because a post cannot be taken back") from None
+    host = dict(fields, **post())
     try:
-        host = post_host_event()
-    except ds.Invalid as exc:
-        return refused_before_posting(exc)
-    try:
-        reaction = session.e9_wait(expect, wait_s, mark=mark, progress=progress)
+        reaction = session.e9_wait(program_reaction(expect), wait_s, mark=mark,
+                                   progress=progress)
     except ds.E9Stopped as e:
-        # THE MACHINE IS AT THE DEBUGGER, so no reaction could arrive and the program is not
-        # to blame: it STOPPED while the wait looked (a breakpoint armed before the post
-        # fired after it; a machine already stopped was refused before the post). The stop
-        # is surveyed once here and named when its position could be read.
         running.observe_stop(session)
         stop, where = STATE.stop_named(session)
         effect = {"checked": True, "seen": False, "expected": expect,
                   "stopped_during_wait": True, "waited_s": e.waited_s,
                   "lines_on_disk": e.arrived, "why": str(e)}
-        # WHETHER THE KEY LANDED BEFORE THE STOP IS THE GUEST'S LOG'S TO SAY, not this
-        # reply's: a key can go in, its own reaction produce the wrap that fires the
-        # stopper, and the log carry the lines, while a reply claiming the key is still in
-        # the buffer would be wrong. What is known is where an undelivered key waits.
-        landing = ("whether the stub delivered the key before the stop is the guest's log's "
-                   "to say (`e9` since the post); a key not delivered waits in the serial "
-                   "buffer and lands at the next resume"
-                   if host.get("route") == "serial" else
-                   "the event went to the window while the debugger holds the machine; "
-                   "whether the guest took it before the stop is its log's to say (`e9` "
-                   "since the post)")
+        # WHETHER THE INPUT LANDED BEFORE THE STOP IS THE GUEST'S LOG'S TO SAY: a key can go
+        # in, its own reaction produce the wrap that fires the stopper, and the log carry the
+        # lines. What is known is where an undelivered command waits.
         return st.reply(status="INVALID", code="wait_stopped", **host, last_stop=stop,
                       effect=effect,
-                      message=f"the {mode} event was posted ({host['posted']}) and the machine "
-                             f"STOPPED at the debugger during the wait{where}, so no line "
-                             f"matching {expect!r} could arrive: a stopped guest writes "
-                             f"nothing. This MISS is the stop's, not the program's; {landing}")
+                      message=f"the {kind} went into the guest and the machine STOPPED at the "
+                             f"debugger during the wait{where}, so no line matching {expect!r} "
+                             f"could arrive: a stopped guest writes nothing. This MISS is the "
+                             f"stop's, not the program's; whether the stub delivered it before "
+                             f"the stop is the guest's log's to say (`e9` since the post), and "
+                             f"a command not delivered waits in the serial buffer for the next "
+                             f"resume")
     except ds.E9Expired as e:
-        cause = ("The program may have swallowed it (a modal, a loading state)"
-                 if host.get("route") == "serial" else
-                 "The program may have swallowed it (a modal, a loading state) or the "
-                 "window may not have had the focus at the post")
         return st.reply(status="INVALID", code="wait_expired", **host,
                       effect={"checked": True, "seen": False, "expected": expect,
                               "why": str(e)},
-                      message=f"the {mode} event was posted ({host['posted']}) but the guest "
-                             f"did not react: no new line matching {expect!r} within "
-                             f"{wait_s}s of the post returning. {cause}; either way this "
-                             f"is a MISS, not a delivery. {e}")
+                      message=f"the {kind} went into the guest but the program did not react: "
+                             f"no new line matching {expect!r} within {wait_s}s of the post. "
+                             f"It may have swallowed it (a modal, a loading state); either way "
+                             f"this is a MISS, not a delivery. {e}")
     except ds.Invalid as e:
         return st.reply(status="INVALID", code=e.code, **host,
                       effect={"checked": False, "expected": expect, "why": str(e)},
-                      message=f"the {mode} event was posted ({host['posted']}) and its effect "
-                             f"could NOT be verified: {e}")
+                      message=f"the {kind} went into the guest and its effect could NOT be "
+                             f"verified: {e}")
     return st.reply(**host, effect=effect_seen(expect, reaction))
-
-
-# THE MODIFIERS THE WINDOW ROUTE'S HELPER KNOWS BEYOND THE DOS KEYBOARD'S: a host key event
-# can carry the command key; a scan sequence down the serial line cannot.
-WINDOW_ONLY_MODIFIERS = ("cmd", "command")
-
-
-def check_focus(focus: str) -> None:
-    if focus not in ("return", "keep"):
-        raise ds.Invalid("bad_argument",
-            f"focus is 'return' (hand the focus back afterwards) or 'keep' "
-                         f"(leave the emulator in front, which a captured mouse needs); "
-                         f"got {focus!r}")
 
 
 def check_expectation(expect: str | None, seconds: float | None) -> None:
@@ -336,6 +377,7 @@ def check_expectation(expect: str | None, seconds: float | None) -> None:
                          f"{expect!r}. An empty pattern matches every line, so it would "
                          f"take the first unrelated trace as the reaction")
     ds.compiled(expect)
+    ds.compiled(program_reaction(expect))
     wait_s = EFFECT_WAIT_DEFAULT_S if seconds is None else seconds
     if isinstance(cast(object, wait_s), bool) or not isinstance(cast(object, wait_s),
                                                                   int | float):
@@ -347,18 +389,11 @@ def check_expectation(expect: str | None, seconds: float | None) -> None:
 
 
 def check_keys(keys: list[str], modifiers: list[str] | None, expect: str | None = None,
-               seconds: float | None = None, focus: str = "return", *,
-               serial: bool = False) -> None:
-    """Everything `send_keys` refuses before touching a route, with the names judged against
-    the ONE vocabulary both routes share (the window helper's table is held equal to the
-    serial table by a test), so an unknown name costs no focus switch and reads the same
-    whichever route would have answered."""
+               seconds: float | None = None) -> None:
+    """Everything `send_keys` refuses before anything is sent."""
     # A STRING IS NOT A LIST OF NAMES. Over the transport `keys` arrives as raw JSON, so
     # `"keys": "enter"` reaches here as a str; `*keys` would then splat it into e,n,t,e,r --
-    # five wrong keys. Refused rather than mis-sent (the failure this route most easily hides).
-    # `cast(object, ...)`: the annotation is list[str], but the transport hands `keys` over as
-    # raw JSON, so a caller's `"keys": "enter"` really does arrive as a str at runtime -- the
-    # cast is what lets the honest runtime guard past the type checker.
+    # five wrong keys. `cast(object, ...)` lets the honest runtime guard past the type checker.
     if isinstance(cast(object, keys), str):
         raise ds.Invalid("bad_argument",
             "keys is a LIST of names (['enter']), not a string ('enter'): a "
@@ -366,10 +401,8 @@ def check_keys(keys: list[str], modifiers: list[str] | None, expect: str | None 
     if not keys:
         raise ds.Invalid("bad_argument", "send_keys needs at least one key name")
     if len(keys) > MAX_KEYS_PER_CALL:
-        # THE COST IS WALL TIME UNDER THE SERVER'S LOCK: on the window route the helper
-        # posts each key with its own pauses, on the serial route every scan byte waits a
-        # timer tick, so a long text is many seconds during which `status` and `e9` cannot
-        # be asked. The helper caps at the same number; a longer text goes in several calls.
+        # THE COST IS WALL TIME UNDER THE SERVER'S LOCK: every scan byte waits a timer tick, so
+        # a long text is many seconds during which `status` and `e9` cannot be asked.
         raise ds.Invalid("bad_argument",
             f"at most {MAX_KEYS_PER_CALL} key names per call (got {len(keys)}): "
                          f"each key costs wall time under the session's lock; send a longer "
@@ -379,103 +412,128 @@ def check_keys(keys: list[str], modifiers: list[str] | None, expect: str | None 
             raise ds.Invalid("bad_argument",
                 f"unknown key name {name!r}; the names are {sorted(SCAN_SET1)}")
     for m in modifiers or []:
-        known = m.lower() in SCAN_MODIFIERS or (
-            not serial and m.lower() in WINDOW_ONLY_MODIFIERS)
-        if not known:
-            allowed = sorted(SCAN_MODIFIERS) + ([] if serial else list(WINDOW_ONLY_MODIFIERS))
-            why = " (a DOS keyboard has no command key)" if serial else ""
+        if not isinstance(cast(object, m), str) or m.lower() not in SCAN_MODIFIERS:
             raise ds.Invalid("bad_argument",
-                f"unknown modifier {m!r}; the modifiers are {allowed}{why}")
-    check_focus(focus)
+                f"unknown modifier {m!r}; the modifiers are {sorted(SCAN_MODIFIERS)} (a DOS "
+                f"keyboard has no command key)")
     check_expectation(expect, seconds)
 
 
-# THE NUDGE'S CEILING, and it is `keypost.swift`'s `MAX_NUDGE_PX`. It is stated on BOTH
-# sides on purpose: the helper enforces it because it emits one delta event per point and a
-# runaway call would run for ever, and this side enforces it so the refusal arrives as
-# `bad_argument` BEFORE the window is touched, the layer `send_keys` already validates an
-# unknown key name in. Two tools of one server refusing in different layers, one with the native
-# helper's exit code, is an unevenness the caller feels. `tests/test_dosbox_x_nudge_
-# bound.py` holds the two equal, and holds the COMPARISON equal too: the same number with an
-# off-by-one in either guard would pass an equality check and still disagree.
-MAX_NUDGE_PX = 2000
-
-
-def check_mouse(button: str | None, x: int | None, y: int | None, dx: int | None,
-                dy: int | None, place: str | None, expect: str | None = None,
-                seconds: float | None = None, focus: str = "keep") -> None:
-    """Everything `send_mouse` refuses before touching the window: ONE event shape, whole
-    numbers (a `perform` step hands values over untyped, and the helper refuses a float or
-    a bool only after the focus has been taken), the button and place vocabularies."""
-    shapes = [button is not None, place is not None, x is not None or y is not None,
-              dx is not None or dy is not None]
-    if sum(shapes) != 1:
+def check_mouse(x: int | None, y: int | None, button: str | None, action: str = "click",
+                units: str = "screen", expect: str | None = None,
+                seconds: float | None = None) -> None:
+    """Everything `send_mouse` refuses before anything is sent: a move, a button or both,
+    whole non-negative numbers (a `perform` step hands values over untyped), the vocabularies."""
+    if x is None and y is None and button is None:
         raise ds.Invalid("bad_argument",
-            "name ONE event: a `button` to click, `place='center'`, `x` and `y` "
-                         "to place the host pointer, or `dx` and `dy` to move the guest's "
-                         "pointer")
-    for name, value in (("x", x), ("y", y), ("dx", dx), ("dy", dy)):
+            "name a move (`x` and `y`), a `button`, or both (the move goes first)")
+    if (x is None) != (y is None):
+        raise ds.Invalid("bad_argument", "a move needs BOTH `x` and `y`")
+    for name, value in (("x", x), ("y", y)):
         if value is not None and (isinstance(cast(object, value), bool)
-                                  or not isinstance(cast(object, value), int)):
+                                  or not isinstance(cast(object, value), int)
+                                  or not 0 <= value <= MAX_COORD):
             raise ds.Invalid("bad_argument",
-                f"`{name}` is a whole number of screen points; got {value!r}")
-    if button is not None and button not in ("left", "right"):
-        raise ds.Invalid("bad_argument", f"a mouse button is 'left' or 'right'; got {button!r}")
-    if place is not None and place != "center":
+                f"`{name}` is a whole number from 0 to {MAX_COORD}, in `units`; got {value!r}")
+    if button is not None and button not in BUTTONS:
         raise ds.Invalid("bad_argument",
-            f"`place` is 'center' (the emulator window's middle); got "
-                         f"{place!r}")
-    if (x is not None or y is not None) and (x is None or y is None):
-        raise ds.Invalid("bad_argument", "placing the pointer needs BOTH `x` and `y`")
-    if (dx is not None or dy is not None) and (dx is None or dy is None):
+            f"a mouse button is one of {sorted(BUTTONS)}; got {button!r}")
+    if action not in ACTIONS:
+        raise ds.Invalid("bad_argument", f"`action` is one of {list(ACTIONS)}; got {action!r}")
+    if action != "click" and button is None:
+        raise ds.Invalid("bad_argument", f"`action={action!r}` acts on a `button`; name one")
+    if units not in UNITS:
         raise ds.Invalid("bad_argument",
-            "relative motion needs BOTH `dx` and `dy` (0 is fine for either)")
-    for name, value in (("dx", dx), ("dy", dy)):
-        if value is not None and abs(value) > MAX_NUDGE_PX:
-            raise ds.Invalid("bad_argument",
-                f"`{name}`={value} is past the {MAX_NUDGE_PX} px a single nudge carries: the "
-                "motion goes out as one delta event per point, so the run is bounded. Split "
-                "it across calls. Nothing was posted and the window was not touched")
-    check_focus(focus)
+            f"`units` is 'screen' (cells in a text mode, pixels in a graphics one, as "
+            f"`screen_view` counts them) or 'mouse' (the driver's own coordinates); got {units!r}")
     check_expectation(expect, seconds)
 
 
 def send_keys(session: ds.Session, keys: list[str], modifiers: list[str] | None,
-              expect: str | None, seconds: float | None, focus: str,
+              expect: str | None, seconds: float | None,
               progress: ds.Progress = ds.no_progress) -> dict[str, Any]:
     """The body of the `send_keys` tool."""
-    _require_window(session, "send_keys")
-    check_keys(keys, modifiers, expect, seconds, focus,
-               serial=session.launch.input_port is not None)
-    mods = "+".join(modifiers) if modifiers else "-"
-    if session.launch.input_port is not None:
-        note = "the keys went down the serial socket to the guest's resident stub; no window"
-    else:
-        note = "the emulator window was brought to the front to receive the keys" + (
-            " and stays there (focus='keep')" if focus == "keep" else
-            " and focus was handed back; over a stream that switch is visible")
-    return _post_and_verify(session, "keys", [mods, *keys], expect, seconds, focus,
-                            progress=progress, keys=keys, modifiers=modifiers or [], note=note)
+    check_keys(keys, modifiers, expect, seconds)
+    _refuse_stopped(session, "a key")
+    require_stub(session)
+    seq = scan_sequence(keys, "+".join(modifiers) if modifiers else "-")
+
+    def post() -> dict[str, Any]:
+        session.send_commands(key_commands(seq))
+        return {"route": "guest", "posted": len(keys), "bytes": len(seq), "ticks": len(seq)}
+    return _post_and_verify(session, "key", post, expect, seconds, progress=progress,
+                            keys=keys, modifiers=modifiers or [])
 
 
-def send_mouse(session: ds.Session, button: str | None, x: int | None, y: int | None,
-               dx: int | None, dy: int | None, place: str | None, expect: str | None,
-               seconds: float | None, focus: str,
+def _target(report: Report, x: int, y: int, units: str) -> tuple[int, int]:
+    """Where the driver's pointer has to go for (`x`, `y`) in `units`, refused off the screen."""
+    if units == "mouse":
+        if x > report.max_x or y > report.max_y:
+            raise ds.Invalid("bad_argument",
+                f"({x}, {y}) is outside the driver's range 0..{report.max_x}, "
+                f"0..{report.max_y}; nothing was sent")
+        return x, y
+    size = report.units()
+    if size is None:
+        raise ds.Invalid("bad_argument",
+            f"the guest is in BIOS mode {report.mode:#04x}, whose screen units this server does "
+            f"not map (a VESA or custom mode); pass `units='mouse'` with the driver's own "
+            f"coordinates (range 0..{report.max_x}, 0..{report.max_y}). Nothing was sent")
+    if x >= size[0] or y >= size[1]:
+        raise ds.Invalid("bad_argument",
+            f"({x}, {y}) is outside the screen, {size[0]} x {size[1]} in mode "
+            f"{report.mode:#04x}; nothing was sent")
+    return to_driver(x, size[0], report.max_x), to_driver(y, size[1], report.max_y)
+
+
+def _pointer(report: Report) -> dict[str, Any]:
+    size = report.units()
+    screen = None if size is None else {
+        "x": to_screen(report.x, size[0], report.max_x),
+        "y": to_screen(report.y, size[1], report.max_y),
+        "width": size[0], "height": size[1]}
+    return {"screen": screen, "mouse": {"x": report.x, "y": report.y,
+                                        "max_x": report.max_x, "max_y": report.max_y},
+            "buttons": [name for name, bit in BUTTONS.items() if report.buttons >> bit & 1],
+            "mode": f"{report.mode:#04x}"}
+
+
+def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | None,
+               action: str, units: str, expect: str | None, seconds: float | None,
                progress: ds.Progress = ds.no_progress) -> dict[str, Any]:
-    """The body of the `send_mouse` tool."""
-    _require_window(session, "send_mouse")
-    check_mouse(button, x, y, dx, dy, place, expect, seconds, focus)
-    if button is not None:
-        return _post_and_verify(session, "click", [button], expect, seconds, focus,
-                                progress=progress, button=button)
-    if place is not None:
-        return _post_and_verify(session, "move", ["center"], expect, seconds, focus,
-                                progress=progress, place=place)
-    if x is not None or y is not None:
-        return _post_and_verify(
-            session, "move", [str(x), str(y)], expect, seconds, focus, progress=progress,
-            x=x, y=y,
-            caveat="this placed the HOST pointer; the guest's pointer moves only through "
-                   "`dx`/`dy` while the emulator has captured the mouse")
-    return _post_and_verify(session, "nudge", [str(dx), str(dy)], expect, seconds, focus,
-                            progress=progress, dx=dx, dy=dy)
+    """The body of the `send_mouse` tool: read where the pointer is, move it, press, read it
+    back. The read-back needs the log, so a session without one is refused before anything."""
+    check_mouse(x, y, button, action, units, expect, seconds)
+    if session.launch.logfile is None:
+        raise ds.Invalid("no_channel",
+            "send_mouse reads the pointer back off the guest's E9 log, and this session was "
+            "started without a logfile: start it with logfile= to use the mouse")
+    _refuse_stopped(session, "a mouse event")
+    require_stub(session)
+    before = _report(session)
+    target = None if x is None or y is None else _target(before, x, y, units)
+
+    def post() -> dict[str, Any]:
+        commands = [] if target is None else [move_command(*target)]
+        commands += [] if button is None else button_commands(button, action)
+        try:
+            session.send_commands(commands)
+            after = _report(session)
+        except ds.E9Stopped as e:
+            running.observe_stop(session)
+            raise Delivered(e.code, str(e), {"route": "guest"}) from None
+        except ds.Invalid as e:
+            # SOME OF IT MAY HAVE GONE IN: the socket can die between two commands, and the
+            # read-back runs after all of them.
+            raise Delivered(e.code, str(e), {"route": "guest"}) from None
+        landed = target is None or (after.x, after.y) == target
+        fields: dict[str, Any] = {"route": "guest", "pointer": _pointer(after),
+                                  "arrived": landed}
+        if target is not None and not landed:
+            # THE DRIVER PLACED IT ELSEWHERE: a text mode snaps to its cell, a program's own
+            # range (INT 33h AX=07h/08h) clamps. Said, never rounded away.
+            fields["asked"] = {"x": target[0], "y": target[1]}
+        return fields
+    return _post_and_verify(session, "mouse event", post, expect, seconds, progress=progress,
+                            x=x, y=y, units=units, button=button,
+                            action=action if button is not None else None)

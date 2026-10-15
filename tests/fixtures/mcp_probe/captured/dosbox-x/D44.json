@@ -1,34 +1,29 @@
 {
  "task": {
   "id": "D44",
-  "prompt": "Put the host mouse pointer at the middle of the emulator's front window.",
+  "prompt": "Put the guest's mouse pointer on the pixel at column 160, row 100 of the screen.",
   "tool": "send_mouse",
   "args": {
-   "place": "center"
-  },
-  "allow": [
-   "focus"
-  ],
-  "grammar": [
-   "center"
-  ]
+   "x": 160,
+   "y": 100
+  }
  },
  "runs": [
   {
    "lines": [
-    "D44: {\"tool\": \"send_mouse\", \"args\": {\"place\": \"center\"}}"
+    "D44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D44: {\"tool\": \"send_mouse\", \"args\": {\"place\": \"center\"}}"
+    "D44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100, \"units\": \"screen\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D44: {\"tool\": \"send_mouse\", \"args\": {\"place\": \"center\"}}"
+    "D44: {\"tool\": \"send_mouse\", \"args\": {\"x\": 160, \"y\": 100}}"
    ],
    "right": true
   }

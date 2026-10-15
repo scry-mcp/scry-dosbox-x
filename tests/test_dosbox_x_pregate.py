@@ -108,8 +108,6 @@ def test_a_value_wrong_with_no_machine_is_bad_argument_not_no_session(
     ("watch_add", {"ref": "[g_p]", "mode": "show", "length": 4}),
     ("breakpoint_at", {"ref": "g_p"}),
     ("send_keys", {"keys": ["a"]}),
-    # a modifier only the window route has: the session's route is judged past the gate
-    ("send_keys", {"keys": ["a"], "modifiers": ["cmd"]}),
     ("find", {"ref": "1000:0000", "data_hex": "00", "length": 1}),
 ])
 def test_the_edge_of_each_rule_reaches_the_gate(tool: str, kw: dict[str, Any]) -> None:

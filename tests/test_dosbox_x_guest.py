@@ -44,7 +44,7 @@ COM = GUEST / "probe.com"
 #: Every NASM guest this package owns, with the size its binary has: the probe the live tier runs,
 #: the screen guest whose stops are the screen tools' known answers, and the code guest whose
 #: frames and bytes are the code tools'.
-GUESTS = {"probe": 144, "screen": 212, "code": 195}
+GUESTS = {"probe": 144, "screen": 212, "code": 195, "mouse": 331}
 
 
 def _declared_strings(asm: Path = ASM) -> list[bytes]:
@@ -229,25 +229,3 @@ def test_the_live_interlock_is_declared_in_the_package() -> None:
         "this package does not deselect the live tier by itself, so a clone runs an emulator "
         "per case")
     assert any(m.startswith("live:") for m in section.get("markers", [])), section
-
-
-def test_keypost_swift_parses() -> None:
-    """`keypost.swift` never reaches the offline suite otherwise: every send_keys/send_mouse
-    unit test mocks the compile away, so a syntax error in the helper would leave the whole
-    non-live battery green. This is the cheap half of that gap closed -- `swiftc -parse` on any
-    dev host with the toolchain, skipped where there is none. It does NOT verify the KEYCODE
-    map (that a name maps to the right virtual key), which needs the window server and stays a
-    live-only boundary: the live send_keys case exercises only `a`, so every other keycode is
-    proved by inspection against Apple's Events.h, not by a test."""
-    import shutil
-    import subprocess
-    from pathlib import Path
-
-    if shutil.which("swiftc") is None:
-        import pytest
-        pytest.skip("no swiftc on this host")
-    src = Path(__file__).resolve().parents[1] / "keypost.swift"
-    assert src.is_file(), src
-    got = subprocess.run(["swiftc", "-parse", str(src)], capture_output=True, text=True,
-                         check=False, timeout=120)
-    assert got.returncode == 0, f"keypost.swift does not parse:\n{got.stderr}"

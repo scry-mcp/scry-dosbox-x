@@ -42,7 +42,6 @@ from __future__ import annotations
 import contextlib
 import hashlib
 import os
-import platform
 import pty
 import re
 import select
@@ -50,7 +49,6 @@ import shutil
 import signal
 import socket
 import subprocess
-import tempfile
 import termios
 import threading
 import time
@@ -748,61 +746,16 @@ class Launch:
     # THE EMULATOR, the absolute path `start` resolved (`dosbox_binary`); the bare name is the
     # default a hand-built `Launch` runs, the PATH's.
     binary: str = binaries.EMULATOR_NAME
-    # THE SERIAL INPUT ROUTE: a TCP port the emulator's COM1 listens on (`serial1=nullmodem`),
-    # which the resident stub in `guest/INJECT.COM` drains into the integration device's
-    # keyboard injection register. Set, the session connects to it at start and `send_keys`
-    # goes through the socket instead of a host event: no window, no focus, no
-    # Accessibility grant. The conf's own autoexec has to run the stub before the program.
+    # THE INPUT ROUTE: a TCP port the emulator's COM1 listens on (`serial1=nullmodem`), which
+    # the resident stub in `guest/INJECT.COM` reads its commands from. The session connects to
+    # it at start; `start` picks a free one when the caller names none. The conf's autoexec
+    # runs the stub before its program, or `program` has it loaded first.
     input_port: int | None = None
+    # WHETHER THE LAUNCH STAYS BEHIND the owner's front app (`judge_background`).
+    background: bool = True
     # WHERE THE SAVE STATES LIVE: the slot directory the build's `-savedir` option names. None
     # leaves the emulator's default, `save/` under its working directory (measured).
     state_dir: Path | None = None
-
-
-# THE CONTRACT VERSION `keypost.swift` PRINTS AS ITS FIRST FACT. Bumped together with it
-# whenever a fact's meaning or an exit code changes; `send_input` rebuilds a binary that
-# speaks another one before trusting a single field.
-KEYPOST_CONTRACT = "3"
-
-
-def _keypost_binary(force: bool = False) -> Path:
-    """The compiled `keypost` helper, built once into a per-user cache and reused; rebuilt
-    when the source is newer, or on `force` (a binary that answered with the wrong contract
-    version). Into XDG_CACHE_HOME (default ~/.cache), NOT the agent's private directory, so a
-    published copy of this package works in anyone's clone. A missing Swift toolchain is an
-    `Invalid` -- the driver simply cannot act on this host, said plainly.
-    """
-    src = Path(__file__).with_name("keypost.swift")
-    if not src.is_file():
-        raise Invalid("host_failed",
-            f"the keypost source {src} is missing; the driver cannot send input")
-    cache = Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / "dosbox-x"
-    binary = cache / f"keypost-{platform.machine()}"
-    if not force and binary.exists() and binary.stat().st_mtime >= src.stat().st_mtime:
-        return binary
-    cache.mkdir(parents=True, exist_ok=True)
-    if shutil.which("swiftc") is None:
-        raise Invalid("host_failed",
-            "no `swiftc` on PATH: keystrokes and mouse need the Swift toolchain, "
-                      "which this host does not have")
-    # COMPILE TO A TEMP PATH, then os.replace on success. swiftc writes its output directly,
-    # so a timed-out or failed build to the FINAL path would leave a truncated binary with a
-    # fresh mtime -- which the reuse guard above would then serve forever, until the source
-    # is edited. The temp file is cleaned on any failure, and the final binary only ever
-    # appears whole.
-    fd, tmp = tempfile.mkstemp(dir=cache, suffix=".build")
-    os.close(fd)
-    try:
-        build = subprocess.run(["swiftc", "-O", "-o", tmp, str(src)],
-                               capture_output=True, text=True, check=False, timeout=120)
-        if build.returncode != 0:
-            raise Invalid("host_failed", f"keypost failed to compile: {build.stderr.strip()[:400]}")
-        os.chmod(tmp, 0o755)
-        os.replace(tmp, binary)
-    except BaseException:
-        Path(tmp).unlink(missing_ok=True)
-        raise
-    return binary
 
 
 def _digest(path: Path) -> str:
@@ -1359,12 +1312,15 @@ def build_argv(launch: Launch) -> list[str]:
     if launch.logfile is not None:
         argv += ["-set", f"log logfile={launch.logfile}"]
     if launch.input_port is not None:
-        # THE SERIAL ROUTE'S TWO SWITCHES, as `-set` overrides so the caller's conf need not
+        # THE INPUT ROUTE'S TWO SWITCHES, as `-set` overrides so the caller's conf need not
         # carry them: the integration device lives in the `[cpu]` section (upstream's own
         # Windows notes say so; under `[dosbox]` it is silently ignored -- measured), and
-        # COM1 becomes a listening TCP socket. The stub itself is the conf's to run.
+        # COM1 becomes a listening TCP socket. TRANSPARENT, because otherwise the nullmodem reads
+        # a 0xFF from the socket as the escape of its own line-status protocol, and a pointer
+        # coordinate holding that byte would arrive changed. The stub is the conf's to run, or
+        # `program`'s.
         argv += ["-set", "cpu integration device=true",
-                 "-set", f"serial serial1=nullmodem port:{launch.input_port}"]
+                 "-set", f"serial serial1=nullmodem port:{launch.input_port} transparent:1"]
     if launch.captures_dir is not None:
         argv += ["-set", f"dosbox captures={launch.captures_dir}"]
     # THE CALLER'S FLAGS COME AFTER EVERY `-set` OF OUR OWN, so one of the same key wins.
@@ -1383,12 +1339,59 @@ def build_argv(launch: Launch) -> list[str]:
         # run-and-exit; `captures()` says this when nothing appears, because the
         # symptom is an empty directory and the cause is three files away.
         cmd = f"DX-CAPTURE /V {launch.program}" if launch.capture_video else launch.program
+        if launch.input_port is not None:
+            # THE STUB GOES IN FIRST, by the same `-c` route: these run in order after the
+            # conf's autoexec, so the program this launches finds it resident. A conf that runs
+            # its own program from the autoexec never reaches here and carries the stub line.
+            argv += ["-c", f'mount {STUB_DRIVE} "{GUEST_DIR}"', "-c", f"{STUB_DRIVE}:\\INJECT.COM"]
         argv += ["-c", cmd]
     return argv
 
 
+# THE STUB'S HOME, shipped beside this module, and the drive a `program` session mounts it on:
+# a letter late in the alphabet, so it does not take one a conf is likely to mount.
+GUEST_DIR = Path(__file__).resolve().with_name("guest")
+STUB_DRIVE = "Y"
 INPUT_CONNECT_S = 8.0     # how long a session waits for the emulator's serial socket to listen
-SCAN_BYTE_GAP_S = 0.06    # the pause between scan bytes: just over one 18.2 Hz timer tick
+SCREENSHOT_COMMAND = b"S"   # the stub's opcode for the device's capture trigger (guest/inject.asm)
+COMMAND_GAP_S = 0.06    # the pause between stub commands: just over one 18.2 Hz timer tick
+
+
+# THE BACKGROUND LAUNCH. macOS makes a newly launched app with a window the frontmost one, so a
+# shared start would take the owner's focus; SDL3 reads this hint before `SDL_Init` and keeps the
+# app behind, and it reaches SDL3 through the sdl2-compat layer this build links (measured: a
+# shared window behind never once frontmost, the same window without it in front at once).
+BACKGROUND_VAR = "SDL_MAC_BACKGROUND_APP"
+
+
+def judge_background(background: bool | None, watched: bool) -> bool:
+    """Whether the emulator is launched behind: `background` when given, else behind for a
+    session nobody watches and in front for a shared one."""
+    return not watched if background is None else background
+
+
+def launch_environment(background: bool) -> dict[str, str]:
+    """The environment the emulator is spawned with: this server's, the terminal the debugger
+    draws in, and the background hint set or REMOVED, never inherited, so a server started with
+    the hint in its own environment cannot launch a `background=False` session behind."""
+    spawned = dict(os.environ, TERM="xterm-256color", LINES="50", COLUMNS="132")
+    if background:
+        spawned[BACKGROUND_VAR] = "1"
+    else:
+        spawned.pop(BACKGROUND_VAR, None)
+    return spawned
+
+
+def free_port() -> int:
+    """A port nothing listens on right now, for a session whose caller named none: the
+    kernel's own pick, released at once. Something else can take it before the emulator binds
+    it, and `require_port_free` and the connect then refuse rather than reach a stranger."""
+    probe = socket.socket()
+    try:
+        probe.bind(("127.0.0.1", 0))
+        return int(probe.getsockname()[1])
+    finally:
+        probe.close()
 
 
 def require_port_free(port: int) -> None:
@@ -1583,35 +1586,56 @@ BREAK_IN_MENU = "Debug"
 # save-state actions live in different menus and are found the same way, by NAME. The
 # item is matched by PREFIX because the emulator appends the mapper's shortcut to the
 # label (`Save state [F12+S]`), and a shortcut is a binding, not the name. MEASURED: one
-# click costs 12-15 s of System Events walking this emulator's menus.
+# click costs 12-15 s of System Events walking this emulator's menus. A menu is clicked only in
+# front, so the script remembers who was there and hands the focus back after the click, or
+# after a click that found no item, and READS BACK who is in front: `<answer>|returned` when it
+# is that app again, `<answer>|lost` when it is not. `<answer>` is the item, or the refusal.
+# THE HAND-BACK, its own block so a test can run it against System Events without clicking a
+# menu: the front app is read into a variable first, because `... whose frontmost is true is
+# prev` parses as one comparison and fails at run time.
+MENU_FOCUS_BLOCK = '''
+  try
+    set frontmost of (first process whose unix id is prev) to true
+    delay 0.1
+  end try
+  set nowFront to unix id of first process whose frontmost is true
+  if nowFront is prev then
+    return answer & "|returned"
+  end if
+  return answer & "|lost"'''
 MENU_CLICK_SCRIPT = '''
 tell application "System Events"
+  set prev to unix id of first process whose frontmost is true
   set p to first process whose unix id is %d
   set frontmost of p to true
   delay 0.3
+  set answer to "no %s > %s item"
   repeat with mi in menu bar items of menu bar 1 of p
 if name of mi is "%s" then
   repeat with anItem in menu items of menu 1 of mi
     if name of anItem starts with "%s" then
       click anItem
-      return "%s"
+      set answer to "%s"
+      exit repeat
     end if
   end repeat
 end if
   end repeat
-  return "no %s > %s item"
+  delay 0.2%s
 end tell'''
+def menu_click_script(pid: int, menu: str, item: str) -> str:
+    """The AppleScript that clicks `menu > item` in the emulator `pid` and hands the focus back."""
+    return MENU_CLICK_SCRIPT % (pid, menu, item, menu, item, item, MENU_FOCUS_BLOCK)
+
+
 # THE SAVE-STATE MENU, measured on the build in `MEASUREMENTS.md`: the three items sit
 # under `Capture` beside the screenshot, and the emulator logs each action's outcome on
 # its own channel of the logfile, which is the acknowledgement the tools wait for.
 MENU_CLICK_TIMEOUT_S = 45.0
+MENU_FOCUS = ("returned", "lost")   # the script's read-back of the hand-back, its last word
 STATE_MENU = "Capture"
 STATE_SAVE_ITEM = "Save state"
 STATE_LOAD_ITEM = "Load state"
-# The still screenshot lives in the same menu. MEASURED: clicked with the machine RUNNING
-# it writes `<captures>/<conf>_NNN.png` within a second; clicked with the machine parked at
-# the debugger it writes nothing until the machine runs again, so the tool refuses parked.
-SNAPSHOT_ITEM = "Take screenshot"
 SNAPSHOT_WAIT_S = 10.0
 STATE_SAVED_LINE = re.compile(r"Saved\. \(Slot (\d+)\)")
 STATE_LOADED_LINE = re.compile(r"Loaded\. \(Slot (\d+)\)")
@@ -1848,9 +1872,11 @@ class Session:
         self.launch = launch
         self.conf_digest = _digest(launch.conf)
         self.altered = False
-        # WHO HAD THE FOCUS before the first input call that KEPT it on the emulator, so a
-        # later returning call can give it back (see `send_input`). None until a keep.
-        self._focus_owner: int | None = None
+        # THE STUB'S PROTOCOL once the guest announced it (`dosbox_inputs.require_stub`), so
+        # the log is searched for the announce once per session, not once per key.
+        self.stub_protocol = ""
+        # The last menu click's hand-back of the focus: `returned` or `lost` (`click_menu`).
+        self.menu_focus = ""
         self.started_at = time.monotonic()
         self._screen = ""
         self._at_debugger = False   # set by the prompt, cleared by a run key
@@ -1909,9 +1935,7 @@ class Session:
             self.argv = build_argv(launch)
             self.proc = subprocess.Popen(
                 self.argv, cwd=str(launch.cwd), stdin=slave, stdout=slave,
-                stderr=slave,
-                env=dict(os.environ, TERM="xterm-256color", LINES="50",
-                         COLUMNS="132"),
+                stderr=slave, env=launch_environment(launch.background),
                 start_new_session=True, close_fds=True)
             # STARTED HERE AND NOT LAZILY ON THE FIRST READ: the window this closes
             # is the one between the child being born and the first question, which
@@ -4376,7 +4400,7 @@ class Session:
                 f"another dosbox-x is alive on this host (pid {', '.join(map(str, others))}) "
                           f"and a menu click by pid has been measured landing in the wrong "
                           f"emulator: `{menu} > {item}` is not sent. Close the other one first")
-        script = MENU_CLICK_SCRIPT % (self.proc.pid, menu, item, item, menu, item)
+        script = menu_click_script(self.proc.pid, menu, item)
         began = time.monotonic()
         proc = subprocess.Popen(["osascript", "-e", script], stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE, text=True)
@@ -4396,7 +4420,11 @@ class Session:
                          "walking the emulator's menus")
             time.sleep(0.1)
         out, err = proc.communicate()
-        if proc.returncode != 0 or out.strip() != item:
+        clicked, _, focus = out.strip().rpartition("|")
+        if focus in MENU_FOCUS:
+            # WHAT THE CLICK DID TO THE OWNER'S FOCUS, whether or not it found the item.
+            self.menu_focus = focus
+        if proc.returncode != 0 or clicked != item or focus not in MENU_FOCUS:
             raise Invalid("host_failed",
                 f"the emulator's `{menu} > {item}` could not be clicked: "
                           f"{err.strip() or out.strip() or 'no answer'}. A "
@@ -4502,7 +4530,8 @@ class Session:
         meta = state_meta(dest)
         return {"name": name, "slot": slot, "path": str(dest), "bytes": meta["bytes"],
                 **{k: meta.get(k, "") for k in STATE_META},
-                "saved_line": line, "click_s": took, "waited_s": waited}
+                "saved_line": line, "click_s": took, "focus": self.menu_focus,
+                "waited_s": waited}
 
     def state_load(self, name: str, seconds: float = STATE_WAIT_S,
                    progress: Progress = no_progress) -> dict[str, object]:
@@ -4540,33 +4569,31 @@ class Session:
                                                     "Loaded.")
         return {"name": name, "slot": slot, "path": str(source),
                 **{k: meta.get(k, "") for k in STATE_META},
-                "loaded_line": line, "click_s": took, "waited_s": waited,
+                "loaded_line": line, "click_s": took, "focus": self.menu_focus,
+                "waited_s": waited,
                 "verified": "not checked: the machine keeps running after a load; `stop` "
                             "it and read what it holds"}
 
     def snapshot(self, dest: Path | None = None, seconds: float = SNAPSHOT_WAIT_S,
                  progress: Progress = no_progress) -> dict[str, object]:
-        """One still of the RUNNING screen through the emulator's own `Capture > Take
-        screenshot` menu item, confirmed by the NEW `.png` it writes under the captures
-        directory (`captures_dir` given to `start`, or the emulator's `capture/` under its
-        working directory), and moved to `dest` when one is given (absolute, not there
-        yet). REFUSED with the machine parked: measured, the click
-        is taken there and the file appears only once the machine runs again."""
+        """One still of the RUNNING screen, taken INSIDE the guest: the input stub's `S`
+        command writes the integration device's capture trigger, and the emulator writes the
+        `.png` under the captures directory (`captures_dir` given to `start`, or `capture/`
+        under its working directory), with no window and no menu. Confirmed by the NEW file,
+        and moved to `dest` when one is given (absolute, not there yet). REFUSED with the
+        machine parked: the stub takes its commands on the timer tick, which a machine
+        stopped at the debugger never reaches. The caller has checked the stub is resident."""
         check_wait_bound(seconds)
         folder = (self.launch.captures_dir if self.launch.captures_dir is not None
                   else self.launch.cwd / "capture")
         target = None if dest is None else paths.fresh_dest("dest", dest)
-        if not self.launch.watched:
-            raise Invalid("no_channel",
-                "this session is headless: there is no window, so no menu bar to take a "
-                          "screenshot through")
         if self.at_debugger():
             raise Invalid("not_running",
-                "a screenshot is taken of a RUNNING machine only: measured, parked at the "
-                          "debugger the click is taken and the file appears only when the "
-                          "machine runs again. `resume`, then snapshot")
+                "a screenshot is taken of a RUNNING machine only: the stub takes its commands "
+                          "on the timer tick, which a machine parked at the debugger never "
+                          "reaches. `resume`, then snapshot")
         before = set(folder.glob("*.png")) if folder.is_dir() else set()
-        took = self.click_menu(STATE_MENU, SNAPSHOT_ITEM, progress)
+        self.send_commands([SCREENSHOT_COMMAND])
         began = time.monotonic()
         while True:
             new = sorted((set(folder.glob("*.png")) if folder.is_dir() else set()) - before)
@@ -4578,11 +4605,11 @@ class Session:
                     break
             if time.monotonic() - began >= seconds:
                 raise Invalid("wait_expired",
-                    f"no new PNG appeared under {folder} within {seconds:g} s of the click")
+                    f"no new PNG appeared under {folder} within {seconds:g} s of the command")
             time.sleep(0.1)
         if target is not None:
             path = collect(path, target, "screenshot")
-        return {"path": str(path), "bytes": path.stat().st_size, "click_s": took,
+        return {"route": "guest", "path": str(path), "bytes": path.stat().st_size,
                 "waited_s": round(time.monotonic() - began, 2)}
 
     def state_list(self) -> dict[str, object]:
@@ -4597,94 +4624,32 @@ class Session:
         return {"state_dir": str(state_dir), "states": named,
                 "working_slot": slots[-1] if slots else None}
 
-    def send_input(self, mode: str, args: list[str], *,
-                   keep_focus: bool = False) -> dict[str, str]:
-        """Post keystrokes or a mouse event to THIS session's emulator window, through the
-        native `keypost` helper (the driver's ACT half). Returns the helper's parsed
-        `key=value` facts (`keypost`, `trusted`, `activated`, `attempts`, `ax_frontmost`,
-        `top_window_pid`, `posted`, `restored`); a non-zero exit becomes an `Invalid`
-        carrying the helper's own `error=` line, with the diagnostic facts inside its text.
-
-        THE HELPER NAMES ITS CONTRACT (`keypost=<n>`), and a binary speaking another version
-        is REBUILT once and re-run rather than believed. The cache is keyed by mtime, and an
-        edit landing while a build runs (or a cache copied with its mtimes) serves an old
-        binary to new Python, whose facts would then be read under the new meaning --
-        `activated` as a read-back that never happened.
-
-        `keep_focus` leaves the emulator in front afterwards (`restored=kept`) instead of
-        handing the focus back: the emulator releases a captured mouse the moment its
-        window loses focus, so mouse work needs the window to keep it. THE SESSION REMEMBERS
-        WHO HAD THE FOCUS before the first keep (the helper's `previous_pid=` fact) and hands
-        it to a later returning call as `--return-to`: by then the emulator is already in
-        front, so that call's own "previous app" is the emulator and there would otherwise be
-        nobody to give the focus back to. Forgotten once a return succeeds.
-
-        IT NEEDS A WINDOW. Posting a host key event to a headless (`videodriver=dummy`)
-        session reaches nothing -- there is no surface to focus -- so the SERVER refuses a
-        headless session before calling here; this method does not re-check, because the
-        window is the caller's precondition and `watched` is where it is known.
-
-        THE HELPER IS COMPILED ONCE into a per-user cache (XDG_CACHE_HOME) and reused, so a
-        clone does not depend on a path only its author has. A missing Swift toolchain is an
-        `Invalid`, not a crash.
-        """
-        return_to = [] if keep_focus or self._focus_owner is None else \
-            ["--return-to", str(self._focus_owner)]
-        for rebuilt in (False, True):
-            binary = _keypost_binary(force=rebuilt)
-            argv = [str(binary), *(["--keep-focus"] if keep_focus else []), *return_to,
-                    str(self.proc.pid), mode, *args]
-            try:
-                got = subprocess.run(argv, capture_output=True, text=True, check=False,
-                                     timeout=30)
-            except subprocess.TimeoutExpired:
-                raise Invalid("host_failed", f"keypost did not return in 30 s for {mode}") from None
-            facts = dict(
-                line.split("=", 1) for line in got.stdout.splitlines() if "=" in line)
-            if facts.get("keypost") == KEYPOST_CONTRACT:
-                break
-            if rebuilt:
-                raise Invalid("host_failed",
-                    f"the keypost helper speaks contract {facts.get('keypost')!r} "
-                              f"after a rebuild, and this server expects {KEYPOST_CONTRACT}: "
-                              f"the source and the Python disagree, nothing was trusted")
-        if got.returncode != 0:
-            err = next((ln[len("error="):] for ln in got.stderr.splitlines()
-                        if ln.startswith("error=")), got.stderr.strip() or "unknown failure")
-            raise Invalid("host_failed", f"keypost {mode} failed (exit {got.returncode}): {err}")
-        if keep_focus and "previous_pid" in facts and self._focus_owner is None:
-            self._focus_owner = int(facts["previous_pid"])
-        elif not keep_focus and facts.get("restored") == "true":
-            self._focus_owner = None
-        return facts
-
-    def send_scancodes(self, data: bytes) -> int:
-        """The serial input route's post: the scan bytes go down the socket the session
-        connected at start, and the guest's resident stub injects them one per timer tick.
-        Returns how many bytes went. A session started without `input_port` has no socket
-        and says so; a socket the emulator closed (its bound expired) is reported as the
-        route being gone, not as a delivery."""
+    def send_commands(self, commands: list[bytes]) -> int:
+        """The input route's post: each framed command goes down the socket the session
+        connected at start, and the guest's resident stub carries out one per timer tick.
+        Returns how many bytes went. A socket the emulator closed (its bound expired) is
+        reported as the route being gone, not as a delivery."""
         if self._input is None:
-            raise Invalid("no_channel", "this session has no serial input route: start it with "
-                          "input_port= (and a conf whose autoexec runs the stub) to use it")
-        if not data:
+            raise Invalid("no_channel", "this session has no input route: its socket was "
+                          "never connected")
+        if not commands:
             raise Invalid("bad_argument", "nothing to send")
-        # ONE BYTE PER TICK, PACED FROM HERE AS WELL AS QUEUED THERE. The stub drains one byte
-        # per timer tick because the emulated 8042 holds one; a whole sequence written in one
-        # burst overran the guest's UART before the stub's FIFO was on (the emulator logged
-        # `Overrun RX:1` and the key never came). The FIFO queues a burst now, and the gap
-        # below keeps the socket's arrivals under the tick rate regardless, so neither half
-        # has to be right alone.
+        # ONE COMMAND PER TICK, PACED FROM HERE AS WELL AS QUEUED THERE. The stub carries out
+        # one command per timer tick because the emulated 8042 holds one byte; a whole
+        # sequence written in one burst once overran the guest's UART (the emulator logged
+        # `Overrun RX:1` and the key never came). The stub's FIFO queues a burst, and the gap
+        # below keeps the arrivals under the tick rate regardless, so neither half has to be
+        # right alone. A command's own bytes go together: five fit the FIFO whole.
         try:
-            for i, byte in enumerate(data):
+            for i, command in enumerate(commands):
                 if i:
-                    time.sleep(SCAN_BYTE_GAP_S)
-                self._input.sendall(bytes([byte]))
+                    time.sleep(COMMAND_GAP_S)
+                self._input.sendall(command)
         except OSError as e:
             raise Invalid("session_broken",
-                f"the serial input socket is gone ({e}): the emulator closed its "
-                          f"end, so nothing more was delivered") from None
-        return len(data)
+                f"the input socket is gone ({e}): the emulator closed its end, so "
+                          f"nothing more was delivered") from None
+        return sum(len(c) for c in commands)
 
     # ------------------------------------------------------------------ closing
 

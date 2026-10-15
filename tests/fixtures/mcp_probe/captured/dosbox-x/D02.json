@@ -20,13 +20,13 @@
  "runs": [
   {
    "lines": [
-    "D02: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 5400, \"mode\": \"headless\", \"program\": \"FURY.EXE\", \"capture_video\": true, \"captures_dir\": \"/opt/dosfury/caps\", \"logfile\": \"/opt/dosfury/e9.log\", \"input_port\": 5823}}"
+    "D02: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 5400, \"program\": \"FURY.EXE\", \"capture_video\": true, \"captures_dir\": \"/opt/dosfury/caps\", \"logfile\": \"/opt/dosfury/e9.log\", \"input_port\": 5823}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D02: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 5400, \"program\": \"FURY.EXE\", \"logfile\": \"/opt/dosfury/e9.log\", \"capture_video\": true, \"captures_dir\": \"/opt/dosfury/caps\", \"input_port\": 5823}}"
+    "D02: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 5400, \"program\": \"FURY.EXE\", \"capture_video\": true, \"captures_dir\": \"/opt/dosfury/caps\", \"logfile\": \"/opt/dosfury/e9.log\", \"input_port\": 5823}}"
    ],
    "right": true
   },

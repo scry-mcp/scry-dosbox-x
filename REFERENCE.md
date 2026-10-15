@@ -19,6 +19,13 @@ flags rather than inventing a geometry. Pass them as **separate tokens**
 (`["-set", "sdl display=1"]`, not one string): a `-set` pair arriving glued is an
 argument DOSBox-X does not recognise, and it hangs on those rather than refusing them.
 
+**`background` decides whether the launch takes the owner's focus**, through SDL3's
+`SDL_MAC_BACKGROUND_APP` (which reaches SDL3 through the sdl2-compat layer DOSBox-X links):
+`true` launches behind, `false` in front; omitted, a headless start goes behind and a shared
+one in front. The hint is set or removed in the spawned environment, never inherited from
+the server's, and the reply's `background` says what the process was told. A window launched
+behind is still drawn where the placement flags put it.
+
 `seconds` is a **hard bound and required**: a DOSBox-X nobody reads freezes under its
 terminal, so every session carries a ceiling on its life, and `status` says how much of it is
 spent. It is a backstop, not a plan: `close` is the act that ends a session.
@@ -130,7 +137,7 @@ after this server's defaults, so a `-set` the caller passes for the same key win
 (`["-set", "cpu cycles=fixed 2500"]`), one token per `-set` value as for `window_flags`. What
 a named argument sets is not theirs to retune: `-time-limit` is `seconds`, `sdl videodriver`
 is `mode`, `log logfile` is `logfile`, and so on for the conf, the break at start, the save
-directory, the program, the int 3 key, the serial route and the captures. Such a flag is
+directory, the program, the int 3 key, the input route and the captures. Such a flag is
 refused naming its argument, because after ours it would quietly undo that argument.
 
 **`break_on_int3=True` makes the guest's own `int 3` a stop.** It sets the emulator's `[dos]
@@ -193,8 +200,7 @@ value wider than its register or negative, a scan's length in whole cells, a sea
 a declaration's ref in the shape its family takes (a breakpoint is never declared through a
 pointer, `[g_p]` included), a watch's length, a key name, `resume`'s `seconds`, a wait's
 bound, and every step of a `perform`, `drive` or `start(plan=)` list (its op, its argument
-names and values). A key is judged as the window route takes it, and a modifier only the
-window has waits for the session's route, whose fact it is.
+names and values).
 
 **A read that found nothing says which kind of nothing.** "No line matched" is an answer and
 comes back as an empty list. "There is no log to match against" is `INVALID`. A caller that
@@ -1095,7 +1101,7 @@ Every tool but `build_check`, `start`, `close`, `perform` and `drive` is a step,
 server's own registry. A `resume` ends the console-driven part of a sequence. After it, what
 answers on a RUNNING guest runs at once: the one table a running-guest refusal lists in
 `answers_while_running` (`status`, the log, `symbols_find`, the input, the captures, the
-states and the snapshot by menu, `stop`, the declarations, `comment_list` and `comment_save`),
+states by menu, the snapshot, `stop`, the declarations, `comment_list` and `comment_save`),
 the four it adds for a caller
 outside a list (`registers(from_last_stop=True)`, `perform`, `drive`, `close`) apart. A
 declaration there answers `pending` while the guest runs and is armed at the next stop, as the
@@ -1163,66 +1169,44 @@ look: the still needs a recording and `ffmpeg`, and `capture_frame` offers it on
 
 ## Input and the screen
 
-The reading half of this server works headless. The ACTING half cannot: the only route that
-reaches a program already running under DOSBox-X on macOS is a host key or mouse event
-delivered to the emulator's window WHILE IT IS FRONTMOST. AUTOTYPE is host-timed and cannot
-bracket a debugger stop, the console has no key command, the integration device's injection
-registers are driven by guest code, and a host control pipe is upstream issue #4601, still
-open. So `send_keys` and `send_mouse` need:
+Every input goes in INSIDE the machine, and nothing about the host is touched: no window
+comes to the front, the host pointer never moves, no Accessibility grant is asked for, and
+the window's scale changes nothing the guest sees. The emulator's COM1 is a TCP socket
+(`serial1=nullmodem port:N transparent:1`; `start`'s `input_port`, 1024 to 65535, or a free
+port when it is omitted; transparent, so a byte 0xFF is data) and DOSBox-X's
+integration device is switched on (`integration device=true`), both as `-set` overrides the
+conf need not carry; the session connects before the guest runs an instruction. A tiny
+resident stub, `guest/INJECT.COM` (its source is beside it, and its header is the protocol),
+takes ONE command off the socket on every timer tick and carries it out in the guest: a scan
+byte into the emulated 8042, a mouse button into the device's button register, the pointer
+placed with INT 33h, a report of where the pointer is, a screenshot through the device's
+capture trigger. One command per tick is the 8042's own pace (the stub's header says why).
 
-- a **windowed** session (`mode="shared"` with placement flags): a headless one has no
-  surface to receive the event and is refused, named;
-- the **Swift toolchain** (`swiftc`), because the poster is a small native helper compiled
-  once into your cache directory; a host without it is told so;
-- **Accessibility trust** for the process posting the event, the same one-time macOS grant
-  every synthetic-input tool needs. Untrusted, the helper refuses rather than posting into
-  a void.
+What the conf owes this route is ONE line: its autoexec runs the stub before the program
+(mount the package's `guest/` directory, or copy the COM next to the program). A session
+started with `program` needs none: `start` loads the stub with two `-c` commands of its own
+ahead of the program's (why a conf that runs its own program needs the line is under *The
+session*, `program`). A conf that runs the stub AND a `program` session end with one copy: the
+second says `STUB  . inject already resident` and leaves. The stub says `STUB  . inject
+device=present proto=2` on the E9 when the device answered, and exits saying `absent` when
+it did not; the first input reads that line off the log and refuses (`no_channel`, naming
+the fix) when it is missing, when the device is absent, or when the stub speaks another
+protocol, because an older stub reads every byte as a scan code and a mouse command would
+arrive as keystrokes. A session with no `logfile` has no line to read: keys go out on the
+conf's word, and the mouse, which reads its pointer back through the log, is refused. A conf
+that configures `serial1` itself loses it to the route. A port something else already listens on is refused before the
+emulator exists (the keys would otherwise reach a stranger and read as delivered).
 
-Each call brings the emulator window to the front and posts, at most 64 keys a call on either
-route, the cost of one helper run bounding the batch. `send_keys` then hands the
-focus back by default and `send_mouse` keeps it (the mouse paragraph below says why); both
-take `focus="return"` or `"keep"`. The borrow is announced in the reply (`activated`,
-`restored`, and `restore` as `done`, `failed`, `kept`, `lost`, `skipped` when there was
-nothing to hand back, or `unknown` when the helper said nothing), because a window stealing
-focus without a word is an interruption; over a remote stream the switch is visible. A call
-that keeps the focus remembers who had it, and the next call that returns gives it back to
-that app rather than finding the emulator already in front and nobody to return to.
-**`activated` is read back, not believed**: the helper looks the emulator's window up fresh
-every time (an app that changes video mode can recreate it), raises it, and then asks the
-window server who owns the topmost on-screen window, retrying a few rounds (`attempts`)
-because the window server takes its time. An emulator that never reads as frontmost is a
-refusal with nothing posted, since a key sent to an unfocused window is dropped in silence.
-The workspace's own "frontmost application" is deliberately not the instrument: a
-command-line helper has no run loop, so that value stays frozen at whatever was in front
-when the helper started. Activation itself goes through the Accessibility API and not
-through the workspace's `activate`: from a command-line helper the latter reports success
-and delivers nothing, while AX frontmost plus a post to the pid lands the key, and AX needs
-only the Accessibility grant the event post already requires, so there is no second
-permission an autonomous session could not answer.
+**Keys.** `send_keys` composes scan code set 1 on the host, makes, breaks and the E0 prefix
+of an extended key, with `modifiers` (`shift`, `ctrl`, `alt`) held across the keys; a DOS
+keyboard has no command key, and `cmd` is refused by name. At most 64 keys a call: every
+scan byte waits a timer tick under the session's lock. The reply says `route: "guest"` with
+`posted` (keys), `bytes` and `ticks` (scan bytes). A key sent to a machine stopped at the
+debugger is refused, because the bytes would land, unannounced, at the next resume.
 
-**Or no window at all: the serial route.** Start the session with `input_port=N` and the
-emulator's COM1 becomes a TCP socket on that port, the integration device is switched on
-(both as `-set` overrides the conf need not carry), the session connects before the guest
-runs, and `send_keys` sends scan bytes down the socket to a tiny resident stub,
-`guest/INJECT.COM` (its source is beside it), which writes each one into DOSBox-X's own
-keyboard injection register on every timer tick. Headless, no focus borrowed, no
-Accessibility grant, one byte per tick. What the conf owes this route is ONE line: its
-autoexec runs the stub before the program (mount the package's `guest/` directory, or copy
-the COM next to the program); the stub says `STUB  . inject device=present` on the E9 when
-the device answered, and exits saying `absent` when it did not. The reply's `route` says
-which route answered, so a caller never mistakes the absence of the window facts for a
-refusal. Keys only, today: a click or a pointer motion still needs the window route, and a
-session started with a port AND a window sends keys down the socket and clicks through the
-window. A port something else already listens on is refused before the emulator exists (the
-keys would otherwise reach a stranger and read as delivered); a key sent to a machine
-stopped at the debugger is refused too, because the bytes would land, unannounced, at the
-next resume. The two routes share one key vocabulary, and a test holds them equal. It is the
-channel the emulator's maintainer suggests in issue #4601 while a first-class control
-interface does not exist.
-
-**A posted event is not a delivered key, and `expect` is how you tell them apart.** A modal
-popup can capture the cue key while the post succeeds. So give `expect` a pattern over the
-guest's E9 log that only the program's REACTION writes, and the tool marks the log before
+**An input that went in is not one the program took, and `expect` is how you tell them
+apart.** A modal popup can capture the cue key while the post succeeds. So give `expect` a
+pattern over the guest's E9 log that only the program's REACTION writes, and the tool marks the log before
 the post, posts, and waits up to `seconds` for a NEW matching line. `effect.seen: true` with
 the line means the program acted; a miss is INVALID, still reporting the post, because a
 swallowed key and a key never sent are different facts. The pattern is matched against what
@@ -1236,45 +1220,53 @@ resume. Whether the key landed BEFORE the stop is the guest's log's to say, not 
 (a key can go in and its own reaction produce the stop), so `log` since the post is the
 judge, and the reply says how many lines were on disk while it looked (`lines_on_disk`,
 `waited_s`), the emulator flushing its log in its own time. A machine already at the
-debugger BEFORE the post is refused on both routes, serial and window alike: a key posted to
-a stopped machine waits where nothing measures it, and the window route cannot say what the
-window did with the event. A reaction the guest logged just before the stop is still found:
+debugger BEFORE the post is refused: a key posted to a stopped machine waits where nothing
+measures it. A reaction the guest logged just before the stop is still found:
 every refusal from inside the wait takes one last look at the log first. An emulator that
 died or a log that shrank underneath the wait come back as `effect.checked: false` with the
 wait's own words, never as "the program swallowed it". Without `expect` the reply says
-`effect.checked: false` in so many words: the host half is known, the guest half is not, and
+`effect.checked: false` in so many words: what went in is known, what the program did is not, and
 `seconds` with no `expect` is refused rather than ignored. A program that writes no
 instrumentation gives this nothing to confirm against, and that limit is stated rather than
-papered over. What the mark cannot bracket is the helper's own focus dance between the mark
-and the post, nor the post itself (the serial route sends one byte per tick): a line the
+papered over. What the mark cannot bracket is the post itself (one command per tick): a line the
 guest writes in that window is served, with `effect.seen_before_waiting: true` and
 `waited_s: 0.0` as the tell, and `lines_before` says how many lines the guest wrote between
 the mark and the reaction. The field is not called `already`: that reads as "it had happened
 before the key was sent", and it would say so about reactions stamped after their posts.
 
-Timing is coarse: a host event lands "now". For a key that must arrive at a precise guest
-instant, stop there first (`run_to`, a change-watch), send, then `resume`: the debugger
-provides the WHEN and the host event provides the key.
+Timing is coarse: an input lands "now", a tick at a time. For a key that must arrive at a
+precise guest instant, stop there first (`run_to`, a change-watch), send, then `resume`: the
+debugger provides the WHEN and the stub provides the key.
 
-**The mouse is the harder half.** `send_mouse` takes ONE of four shapes per call: a `button`
-click at the host pointer's spot, `place="center"` to put the host pointer at the middle of
-the emulator's front window, `x`/`y` to place it at a screen point (a visible act), or
-`dx`/`dy` for relative motion in the guest, at most 2000 px on each axis per call
-(`MAX_NUDGE_PX`), since the motion goes out as one delta event per point. "Click at this
-spot" is two calls, place and then click: a `button` beside `x`/`y` is refused rather than
-doing half of it, and every one of these refusals comes before the window is touched. A
-click reaches the guest only through the host's own event routing (posted to the window under
-the pointer, never to the process), so a click lands
-where the host pointer IS. Motion reaches the guest only while the emulator has CAPTURED the
-mouse: with `autolock` on, the first click inside the window captures and is itself
-swallowed (the tool reports that miss honestly), and every later click and delta arrives;
-with it off, clicks arrive and motion never does. A captured mouse is released the moment
-the window loses focus, so `send_mouse` KEEPS the focus by default (`focus="keep"`, and
-`restore: "kept"` says so) while `send_keys` hands it back (`focus="return"`); either tool
-takes the other policy explicitly. The capture re-centres the hidden pointer, so place the
-pointer at the window's centre before the capturing click or the guest's pointer inherits
-that jump. How far a delta moves the guest's pointer is the guest's own driver's business:
-nudge, then read the program's coordinates back.
+**The mouse: a position, set and read back.** `send_mouse` takes a move (`x`, `y`), a
+`button` (`left`, `right`, `middle`) with an `action` (`click`, `double`, `down`, `up`), or
+both, the move first. Coordinates are in `units`: `screen` by default, the units
+`screen_view` counts in (character cells in a text mode, pixels in a graphics one), or
+`mouse`, the DOS driver's own coordinates. Every call asks the stub where the pointer is
+BEFORE (the driver's range and the BIOS mode, which turn screen units into the driver's) and
+AFTER (where it went), and the reply carries the read-back: `pointer.screen` with `x`, `y`,
+`width` and `height`, `pointer.mouse` with the driver's `x`, `y`, `max_x`, `max_y`, the
+buttons held, the mode. `arrived` says the read-back is where the call asked; when it is not,
+`asked` beside it says where it was asked, in the driver's coordinates, because a text mode
+places the pointer on its cell and a
+program's own range (INT 33h AX=07h/08h) clamps it, and the reply reports the guest's answer
+rather than rounding it away.
+
+Why the pointer is SET rather than moved: the device's motion registers feed DOSBox-X's
+relative motion, which the driver scales by its mickey ratio and sensitivity, so one delta
+lands at a different guest distance per mode and per axis. INT 33h AX=04h puts the driver's
+pointer where it is asked. `screen` units know the standard BIOS modes (text, as many cells as
+the driver's range holds at eight units a cell, so 80 by 25 or 80 by 50; 320x200, 640x200,
+640x350, 640x480); in any other mode (VESA, a custom one) they are refused
+naming the mode, and `units="mouse"` reaches it in the driver's coordinates. A target off
+the screen or outside the driver's range is refused before anything is sent, as is a session
+without a `logfile` (the read-back goes through it). A double click is two clicks a tick
+apart, which is what a DOS program timing its own double click sees; a drag is `down`, a
+move, `up`. What the route does NOT reach: a mouse driver loaded inside the guest, a program
+reading the PS/2 port directly, and a program that reads the driver's motion counters (INT
+33h AX=0Bh): setting the pointer produces no motion, and DOSBox-X counts motion only while the
+host mouse is captured. The stub's own report line is never served as the program's reaction
+to `expect`.
 
 **Capturing what the screen shows: both halves, and they are not symmetric.** Start the
 session with `capture_video=True`, a `program` for the recorder to wrap, and a `captures_dir`
@@ -1282,11 +1274,12 @@ to write into. Then:
 
 - **The video** is DOSBox-X's own doing (`DX-CAPTURE /V`) and needs no keypress. `captures`
   hands back the files with their frame counts.
-- **A still** is an **extraction** from that video, via `capture_frame`. The emulator's own
-  screenshot is a mapper action with no non-interactive trigger at all, so there is no other
-  headless route: a still requires the capture to have been recording, and it requires
-  `ffmpeg`, whose absence the tool names rather than working around. `snapshot` is the
-  windowed alternative, one click on the emulator's own menu.
+- **A still** of the running screen is `snapshot`: the stub writes the integration device's
+  capture trigger and the emulator writes the PNG, on any session with a `logfile`, headless
+  included (its command is a scan code to an older stub, so the log's announce has to say
+  which stub is resident). A still
+  out of a recording is an **extraction** from the video, via `capture_frame`, which needs
+  `ffmpeg`, whose absence the tool names rather than working around.
 
 Two capture files is the normal case, not a fault: the recording restarts when the guest
 changes video mode, so a program that boots in text and then goes graphical leaves a small
@@ -1394,7 +1387,10 @@ were.
 ## Saved states
 
 `state_save` and `state_load` go through the emulator's own `Capture` menu, which only a
-windowed session has, and each is confirmed by the line the emulator logs (`Saved. (Slot N)`,
+windowed session has, and they are the tools here that take the owner's focus, with `stop`'s
+menu break-in: a menu is clicked only in front. Each click remembers the app that was in front
+and hands the focus back to it, and the reply's `focus` says `returned`, or `lost` when that
+app could not be put back. Each is confirmed by the line the emulator logs (`Saved. (Slot N)`,
 `Loaded.`), so a session needs a `logfile` for them. The machine must be RUNNING for both: a
 state saved while parked at the debugger kills the debugger when it is loaded back, and a
 load taken while parked leaves the debugger dead, so the pattern is `resume`, `state_load`,

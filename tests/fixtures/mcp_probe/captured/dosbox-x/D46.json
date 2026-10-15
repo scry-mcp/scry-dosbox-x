@@ -1,35 +1,37 @@
 {
  "task": {
   "id": "D46",
-  "prompt": "Move the guest's mouse 40 pixels right and 25 pixels up, prove it with an E9 line matching ^MOUSE within 5 seconds, and hand the focus back afterwards.",
+  "prompt": "Double-click the right mouse button at screen pixel 40, 25 and prove it with an E9 line matching ^MOUSE within 5 seconds.",
   "tool": "send_mouse",
   "args": {
-   "dx": 40,
-   "dy": -25,
+   "x": 40,
+   "y": 25,
+   "button": "right",
+   "action": "double",
    "expect": "^MOUSE",
-   "seconds": 5,
-   "focus": "return"
+   "seconds": 5
   },
   "grammar": [
-   "return"
+   "right",
+   "double"
   ]
  },
  "runs": [
   {
    "lines": [
-    "D46: {\"tool\": \"send_mouse\", \"args\": {\"dx\": 40, \"dy\": -25, \"expect\": \"^MOUSE\", \"seconds\": 5, \"focus\": \"return\"}}"
+    "D46: {\"tool\": \"send_mouse\", \"args\": {\"x\": 40, \"y\": 25, \"button\": \"right\", \"action\": \"double\", \"expect\": \"^MOUSE\", \"seconds\": 5}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D46: {\"tool\": \"send_mouse\", \"args\": {\"dx\": 40, \"dy\": -25, \"expect\": \"^MOUSE\", \"seconds\": 5, \"focus\": \"return\"}}"
+    "D46: {\"tool\": \"send_mouse\", \"args\": {\"x\": 40, \"y\": 25, \"units\": \"screen\", \"button\": \"right\", \"action\": \"double\", \"expect\": \"^MOUSE\", \"seconds\": 5}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D46: {\"tool\": \"send_mouse\", \"args\": {\"dx\": 40, \"dy\": -25, \"expect\": \"^MOUSE\", \"seconds\": 5, \"focus\": \"return\"}}"
+    "D46: {\"tool\": \"send_mouse\", \"args\": {\"x\": 40, \"y\": 25, \"button\": \"right\", \"action\": \"double\", \"expect\": \"^MOUSE\", \"seconds\": 5}}"
    ],
    "right": true
   }

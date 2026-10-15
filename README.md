@@ -53,11 +53,12 @@ this.
 - **Trace what it executes.** `trace` runs the machine a counted number of instructions with
   the debugger's CPU log on, hands the log over as a file, each count proved against the
   counter the debugger's register pane keeps, and says which routines ran.
-- **Press its keys and prove it.** `send_keys` and `send_mouse` reach the running guest
-  through its window, and `send_keys` headless too, through a serial socket and a tiny
-  resident stub. Give
-  `expect`, a pattern only the program's reaction writes, and the reply says whether the
-  program acted. A swallowed key is reported as a miss, never as success.
+- **Press its keys, move its mouse, and prove it.** `send_keys` and `send_mouse` go in
+  INSIDE the machine, through a serial socket and a tiny resident stub: no window comes to
+  the front and your own pointer never moves, so it runs beside you while you work. The
+  mouse is placed at a screen pixel and read back. Give `expect`, a pattern only the
+  program's reaction writes, and the reply says whether the program acted. A swallowed key
+  is reported as a miss, never as success.
 - **One call per turn, not one per step.** `perform` runs a list of operations and stops
   at the first failure with the whole account; `start(plan=...)` does it on a fresh
   session; `drive` is LOOK, ACT, VERIFY in a single round trip, with what the guest wrote
@@ -75,10 +76,8 @@ You need a DOSBox-X built with the debugger (most distribution builds are;
 `dosbox-x -helpdebug` listing `-break-start` is the tell): the `dosbox-x` on your `PATH`,
 or another build named by `DOSBOX_X_BINARY` or by `start`'s `binary`. And Python 3.11 or
 newer.
-The debugger wants a terminal, and the server provides one itself. Sending input through
-the window additionally needs `swiftc` and macOS Accessibility trust; the serial route
-needs neither. Absence of any of these is named by the tool that needs it, never worked
-around.
+The debugger wants a terminal, and the server provides one itself. Absence of any of these
+is named by the tool that needs it, never worked around.
 
 ```sh
 pip install .
@@ -173,17 +172,15 @@ That is what `expect` is for.
 
 ```
 send_keys(keys=["a"], expect="key_cue_a", seconds=5)
-   -> {"route": "window", "posted": 1, "activated": true, "attempts": 1,
-       "restored": true, "restore": "done", "window": [x, y, w, h],
+   -> {"route": "guest", "posted": 1, "bytes": 2, "ticks": 2,
        "effect": {"checked": true, "seen": true, "expected": "key_cue_a",
                   "line": "[+ 12.407] key_cue_a ...", "seen_before_waiting": false,
                   "lines_before": 2, "waited_s": 0.3, "lines_total": 1}}
 ```
 
-A modal dialog that swallowed the key comes back `INVALID` with `posted: true` and
-`effect.seen: false`: the host half happened, the guest half did not, and the two are
-never confused. The window route borrows focus for the post and hands it back by default;
-`send_mouse` keeps it, because a captured mouse is released when the window loses focus.
+A modal dialog that swallowed the key comes back `INVALID` with `posted: 1` and
+`effect.seen: false`: the key went in, the program did not take it, and the two are never
+confused.
 
 ### Drive: look, act, verify, in one round trip
 
@@ -209,10 +206,10 @@ cut to the last `limit`, in `log`'s words. A failed step stops the act and comes
 so does a miss. An act that ended with the machine stopped at the debugger carries the
 enriched stop in `act.stopped`.
 
-### Headless input: the serial route
+### The input route: a conf line, then keys and the mouse
 
-No window, no focus, no Accessibility grant. The conf owes it one line, its autoexec
-running the shipped stub before the program:
+The conf's autoexec runs the shipped stub before its program (a session started with
+`program` needs no line: `start` loads the stub first):
 
 ```
 [autoexec]
@@ -223,19 +220,19 @@ APP.EXE
 
 ```
 start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj",
-      seconds=600, logfile="/path/to/proj/build/e9.log", input_port=7777)
-   -> {..., "input_port": 7777, "stub": "/path/to/scry-dosbox-x/guest/INJECT.COM"}
+      seconds=600, logfile="/path/to/proj/build/e9.log")
+   -> {..., "input_port": 50432, "stub": "/path/to/scry-dosbox-x/guest/INJECT.COM"}
 resume(until_close=True)
-log_wait(pattern="STUB  . inject device=present", channel="guest", seconds=20)
-send_keys(keys=["a"], expect="key_cue_a")
-   -> {"route": "serial", "posted": 1, "bytes": "1e9e", "ticks": 2,
+send_mouse(x=160, y=100, button="left", expect="clicked")
+   -> {"route": "guest", "arrived": true,
+       "pointer": {"screen": {"x": 160, "y": 100, "width": 320, "height": 200},
+                   "mouse": {"x": 320, "y": 100, "max_x": 639, "max_y": 199},
+                   "buttons": [], "mode": "0x13"},
        "effect": {"checked": true, "seen": true, ...}}
 ```
 
-The port is checked free before the emulator exists, the socket is connected before the
-guest runs an instruction, and the bytes go one per timer tick so the guest's UART never
-overruns. Keys only: a click or a pointer motion still needs the window, and a session
-started with both a port and a window uses each route for its own kind of event.
+`x` and `y` are the screen's own units, as `screen_view` counts them (pixels here, mode
+13h); the reply reads the pointer back, so a move that did not arrive says so.
 
 ### A real-mode program: TLINK map, load segment, run to a symbol
 
@@ -298,7 +295,7 @@ project and carries no default that points anywhere in particular.
 
 | tool | what it does |
 |---|---|
-| `start` | opens a session and stops it at the debugger, ready to be asked things; `flags` carries the emulator's own options in either mode, and `break_on_int3` makes the guest's own `int 3` a stop |
+| `start` | opens a session and stops it at the debugger, ready to be asked things, behind your own windows unless you ask otherwise; `flags` carries the emulator's own options in either mode, and `break_on_int3` makes the guest's own `int 3` a stop |
 | `status` | is it up, how much of its bound is SPENT, and whether it has been written to; where it is stopped, in which cpu mode, and how many declarations it holds; a stop the guest reached on its own that no tool has seen yet is recorded here and said in `stopped_on_its_own` |
 | `close` | ends it deliberately, and says how: `quit` on the first signal, which is the normal ending because `start` turns the emulator's quit warning off; `killed` only when the signal was ignored |
 | `build_check` | what the server can see of its own preconditions, `heavy_debug` among them: whether the build carries the CPU log `trace` needs |
@@ -337,11 +334,11 @@ project and carries no default that points anywhere in particular.
 | `log_wait` | WHEN a line of a channel happened: it answers at once if it already has, and waits if it has not |
 | `perform` | a LIST of the server's own operations, checked WHOLE before the first step runs (every refused step listed, nothing run) and then run in order, stopping at the first failure; `summaries=True` cuts every step but the last to its summary line, writes them all to two files and counts the stops |
 | `drive` | LOOK, ACT, VERIFY in one call: mark the log, run input steps, wait for the expected reaction, hand back what the guest wrote since; `summaries=True` as in `perform` |
-| `send_keys` | keystrokes to the RUNNING guest, verified against the program's own reaction with `expect` |
-| `send_mouse` | a click, a pointer placement or relative motion to the running guest, verified the same way |
+| `send_keys` | keystrokes into the RUNNING guest, verified against the program's own reaction with `expect` |
+| `send_mouse` | the guest's pointer placed at a screen pixel and read back, and its buttons clicked, double-clicked or held, verified the same way |
 | `captures` | the video captures this session recorded, and what is in them |
 | `capture_frame` | one still image out of a capture, returning its path. Always a **PNG**, whatever `dest` is called; a `dest` already there is refused, never deleted |
-| `snapshot` | one still of the RUNNING screen through the emulator's own `Capture > Take screenshot` menu item (a windowed session, one click), confirmed by the new `.png` under the captures directory and moved to `dest` when given; refused parked at the debugger, where the click is taken and the file appears only when the machine runs again. `capture_frame` is the still out of a video capture and needs no window |
+| `snapshot` | one still of the RUNNING screen, taken inside the guest on any session, confirmed by the new `.png` under the captures directory and moved to `dest` when given |
 | `screen_signature` | one number for what is on screen (CRC-32 over the mode, the size, every byte the screen is drawn from and the DAC), to compare instead of reading it; the modes `screen_view` reads. Needs a session started with `logfile` |
 | `palette` | `(first=0, count=0, dest="")`: the 256 colours of the VGA's DAC at this stop, as `#rrggbb` and as the six-bit `rgb` the debugger prints; with `dest`, also an indexed PNG of them, one square per entry. Needs a session started with `logfile` |
 | `screen_view` | `(dest="")`: what the screen shows at this stop, read from video memory: a text mode as its rows of text with the cursor, the chained 256-colour mode (13h's) as an indexed PNG at `dest`; any other mode is refused naming `capture_frame`. Needs a session started with `logfile` |

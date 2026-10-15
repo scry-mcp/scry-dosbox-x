@@ -57,6 +57,9 @@ class Section:
     run: Callable[[], None]
     needs: str = ""              # the environment variable without which the section cannot run
     judged: dict[str, str] = field(default_factory=dict)
+    # WHERE IN THE RUN, beside the letter order: a section that has to open the run or close it
+    # (the focus gate's control and verdict, which span every other section) says so here.
+    place: int = 1
 
 
 def _waits(kw: dict[str, Any], params: dict[str, inspect.Parameter]) -> Iterator[tuple[str, Any]]:
@@ -97,11 +100,12 @@ class Ledger:
 
     # ------------------------------------------------------------------ declaring
 
-    def section(self, letter: str, title: str, cells: list[Cell],
-                needs: str = "") -> Callable[[Callable[[], None]], Callable[[], None]]:
-        """Register a section with the cells it will judge, before anything runs."""
+    def section(self, letter: str, title: str, cells: list[Cell], needs: str = "",
+                place: int = 1) -> Callable[[Callable[[], None]], Callable[[], None]]:
+        """Register a section with the cells it will judge, before anything runs. `place` 0 runs
+        it before every section of place 1, 2 after them; within a place, by letter."""
         def register(fn: Callable[[], None]) -> Callable[[], None]:
-            self.sections.append(Section(letter, title, cells, fn, needs))
+            self.sections.append(Section(letter, title, cells, fn, needs, place=place))
             return fn
         return register
 
@@ -267,7 +271,7 @@ class Ledger:
         empty is all of them. The summary is printed however the run ends, an interruption
         included, with the cells it never reached counted BLOCKED."""
         chosen = sorted((s for s in self.sections if not sections or s.letter in sections),
-                        key=lambda s: s.letter)
+                        key=lambda s: (s.place, s.letter))
         labels = [c.label for s in self.sections for c in s.cells]
         twice = sorted({x for x in labels if labels.count(x) > 1})
         planned = sum(len(s.cells) for s in chosen)

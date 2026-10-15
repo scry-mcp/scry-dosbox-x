@@ -25,13 +25,13 @@ paragraph recorded a block that did not survive a re-measurement.  Writing one n
 keyboard: `autosave=<interval> <slot>` in the config writes it on a timer, and MEASURED
 through THIS server (its pseudo-terminal, its break at start, then a `resume`) the file
 appears under the working directory's `save/`, with the debugger's own `Saved.` in the
-output.  Loading one is a MAPPER action, which is a HOST key, and the window route
-already posts host keys with modifiers; that half is not measured yet and needs a shared
-session.  What the earlier paragraph got wrong: `-loadstate` is not an option this build
-has, so "it did not return" was an unknown option hanging, which every unknown option
-does; and `forceloadstate` is an override for a version or program mismatch on load, not
-a trigger.  The state tools (`state_save`, `state_load`, `state_list`) take the window
-route: the emulator's own menu, clicked by name.
+output.  Loading one is a MAPPER action, which is a HOST key delivered to a window in
+front, and this server posts no host keys: that half is not measured.  What the earlier
+paragraph got wrong: `-loadstate` is not an option this build has, so "it did not return"
+was an unknown option hanging, which every unknown option does; and `forceloadstate` is an
+override for a version or program mismatch on load, not a trigger.  The state tools
+(`state_save`, `state_load`) go through the emulator's own menu, clicked by name in a
+window; `state_list` reads the directory.
 
 AND A SECOND ONE, FOUND WHILE BUILDING THE STEPPING TOOLS: `RUNWATCH` SHIPS NO TOOL
 EITHER, and the measurement is why.  The debugger has it (`debug_running = true;
@@ -201,9 +201,9 @@ mcp = Envelope(
         '`breakpoint_list`, `breakpoint_clear`, `breakpoint_interrupt`, `watch_add`,\n'
         '`watch_list`, `watch_clear`. States: `state_save`, `state_load` (by menu, windowed),\n'
         '`state_list`. Names: `symbols_load`, `symbols_find`. Comments: `comment_add`,\n'
-        '`comment_list`, `comment_delete`, `comment_save`, `comment_load`. Input: `send_keys`,\n'
-        '`send_mouse`, `drive`. Captures: `captures`, `capture_frame`, `snapshot` (by menu,\n'
-        'windowed). Sequences: `perform`.\n\n'
+        '`comment_list`, `comment_delete`, `comment_save`, `comment_load`. Input, in-guest:\n'
+        '`send_keys`, `send_mouse`, `drive`. Captures: `captures`, `capture_frame`,\n'
+        '`snapshot`. Sequences: `perform`.\n\n'
         'A SESSION. `build_check` answers about the BUILD, never a reading, and REFUSES while a\n'
         'session is live. `start` parks the guest STOPPED at the debugger; `resume` lets it\n'
         'run. The readers need it STOPPED and refuse otherwise, naming `last_stop` and what\n'
@@ -426,8 +426,8 @@ def build_check(binary: str = "") -> dict[str, Any]:
             f"`{resolved.path}` does not list `-break-start`, so it was built without the "
             f"debugger. The readers of the machine (`registers`, `read_memory`, `memdump`, "
             f"`step`, `debug`), the breakpoints, the watches and the symbol placement all "
-            f"need it; the guest's log (`log`, `log_wait`), the captures and the serial-route "
-            f"keys do not")
+            f"need it; the guest's log (`log`, `log_wait`), the captures and the "
+            f"in-guest input do not")
     return st.reply(**binaries.facts(resolved), debugger=True,
                     heavy_debug=ds.heavy_debug(resolved.path), tools=registered_tools())
 
@@ -442,36 +442,35 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
           captures_dir: str | None = None,
           plan: list[dict[str, Any]] | None = None,
           plan_wait: float = 30.0, input_port: int | None = None,
-          state_dir: str | None = None, binary: str = "",
+          state_dir: str | None = None, binary: str = "", background: bool | None = None,
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Open ONE live DOSBox-X session from your conf and park it at the debugger, stopped
-    and ready. Refuses while a session is live (one machine per server).
+    """Open ONE live DOSBox-X session from your conf, parked at the debugger, stopped and
+    ready. Refuses while a session is live.
 
-    Every path is absolute, `~` unexpanded: `cwd`, the
-    emulator's working directory, there; `conf`; `logfile`, its directory there; `captures_dir`
-    and `state_dir`, created with their parents. `seconds` is a REQUIRED hard
-    bound, at most 4 hours: a backstop, `close` is the act. `mode`: `headless` (no window) or
-    `shared` (watched; `window_flags` places the window). Both `window_flags` and `flags` (the
-    emulator's own options, either mode, after this server's defaults) are argv tokens where a
-    `-set` value is ONE token with its spaces: `["-set", "sdl display=1"]`, never split further.
-    `break_on_int3`: the guest's own `int 3` stops at the
-    debugger. `logfile`: the guest's E9 channel, without which `log`, `log_wait`, `expect` and
-    `drive` have none. `program` runs with `-c` AFTER the conf's autoexec (which must not
-    `exit`); `capture_video` records it for `captures`. `plan`: operations run on the fresh
-    session with `perform`'s rules, `plan_wait` bounding each wait. `input_port`: COM1 as a TCP
-    socket for `send_keys`, the conf's autoexec running the reply's `stub` first. `state_dir`:
-    what `state_save` writes to (`save` under `cwd`). `binary`: the build to run;
-    omitted, `DOSBOX_X_BINARY`, else the PATH's `dosbox-x`.
+    Every path is absolute, `~` unexpanded: `cwd`, the emulator's working directory, there;
+    `conf`; `logfile`, its directory there; `captures_dir` and `state_dir`, created with their
+    parents. `seconds`: a REQUIRED hard bound, at most 4 hours; `close` is the act. `mode`:
+    `headless` (no window) or `shared` (watched; `window_flags` places the window).
+    `window_flags` and `flags` (the emulator's own options, after this server's defaults) are
+    argv tokens, a `-set` value ONE token with its spaces: `["-set", "sdl display=1"]`.
+    `break_on_int3`: the guest's `int 3` stops at the debugger. `logfile`: the guest's E9
+    channel, without which `log`, `log_wait`, `expect` and `drive` have none. `program` runs
+    with `-c` AFTER the conf's autoexec (which must not `exit`); `capture_video` records it.
+    `plan`: operations run on the fresh session with `perform`'s rules, `plan_wait` bounding
+    each wait. `input_port`: COM1's TCP port for the input (free when omitted); the conf's
+    autoexec runs the reply's `stub` first, or `program` loads it. `state_dir`: what
+    `state_save` writes to (`save` under `cwd`). `binary`: the build to run; omitted,
+    `DOSBOX_X_BINARY`, else the PATH's `dosbox-x`. `background`: `true` behind, your focus
+    kept; `false` in front; omitted, by `mode`.
 
-    Reply: `mode`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, plus `stub`
-    and `input_port` on the serial route, and `rearm_refused` (why) when this build's stored
-    raw breakpoints could not be re-armed; with `plan`, the sequence account, holding the start
-    facts under `start`. Every reply carries `session` (see `status`).
+    Reply: `mode`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `stub`,
+    `input_port`, `background`, and `rearm_refused` (why) when stored raw breakpoints could
+    not be re-armed; with `plan`, the sequence account, the start facts under `start`.
 
     Refused before anything starts: a path not absolute, an unresolved binary, a missing
     conf, `cwd` or `logfile` directory, `seconds` out of range, `shared` without
     `window_flags` or `headless` with them, a glued or shredded `-set`, `capture_video`
-    without `program`, a busy port.
+    without `program`, an `input_port` outside 1024-65535 or busy.
 
     Reference: REFERENCE.md, The session.
     """
@@ -520,9 +519,12 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
         capture_video=capture_video,
         captures_dir=captures_path,
         logfile=logfile_path,
-        input_port=input_port,
+        # EVERY SESSION HAS THE INPUT ROUTE: input reaches the guest through that socket alone,
+        # so a session started without a port could take no key and no click at all.
+        input_port=input_port if input_port is not None else ds.free_port(),
         state_dir=state_path if state_path is not None else cwd_path / "save",
         binary=resolved.path,
+        background=ds.judge_background(background, mode == "shared"),
     )
     ds.validate(launch)
     # KEY AND VALIDATE THE DECLARATION STORE BEFORE THE EMULATOR BOOTS. Its constructor
@@ -585,11 +587,11 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
     STATE.clear_running_state()
     rearm = arming.arm_at_start(session)   # before the park's survey, so the first stop lists them
     running.observe_stop(session)     # the park at the debugger is the session's first stop
-    # WHERE THE STUB IS, said in the reply: the conf's autoexec has to run it, and a
-    # wheel install puts it wherever the package landed, which nobody should guess.
-    serial: dict[str, Any] = ({"stub": str(Path(__file__).with_name("guest") / "INJECT.COM"),
-                               "input_port": input_port} if input_port is not None else {})
-    started = st.reply(mode=mode, ready_after_s=ready, argv=session.argv, **binary_facts, **serial,
+    # WHERE THE STUB IS, said in the reply: a conf's autoexec that runs its own program has to
+    # run the stub first, and a wheel install puts it wherever the package landed.
+    started = st.reply(mode=mode, ready_after_s=ready, argv=session.argv, **binary_facts,
+                       stub=str(ds.GUEST_DIR / "INJECT.COM"), input_port=launch.input_port,
+                       background=launch.background,
                        **rearm)
     if not plan:
         return started
@@ -1138,7 +1140,8 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     about the stop: `symbols_load` accumulates its batches, so a name missing after several
     loads is one none of them carried.
 
-    Reply: `interrupted` (`true` with the full stop reply, `how: "menu"` and `waited_s`;
+    Reply: `interrupted` (`true` with the full stop reply, `how: "menu"`, `waited_s` and
+    `focus` (as `state_save`'s);
     `false` when the machine was already stopped, with `last_stop` and a `note`).
     """
     session = _live()
@@ -1148,7 +1151,7 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
                         note="the machine was already stopped", last_stop=STATE.as_of())
     waited = session.break_in(progress=_progress(ctx))
     reply = running.stop_reply(session, interrupted=True, running=False, how="menu",
-                               waited_s=waited)
+                               waited_s=waited, focus=session.menu_focus)
     return st.extend(reply, stopped_at=STATE.last_stop.get("at"))
 
 
@@ -1364,6 +1367,7 @@ def state_save(name: str, seconds: float = ds.STATE_WAIT_S,
 
     Reply: `name`, `slot`, `path`, `bytes`, `version`, `program`, `machine`,
     `memory_size`, `time_stamp` (the state's own members), `saved_line`, `click_s`,
+    `focus` (`returned`: the app in front before the click is in front again; `lost`),
     `waited_s`.
     """
     return st.answer(_live().state_save(name, seconds, _progress(ctx)))
@@ -1381,9 +1385,9 @@ def state_load(name: str, seconds: float = ds.STATE_WAIT_S,
     was not read afterwards, because it keeps running.
 
     Reply: `name`, `slot`, `path`, the state's own members, `loaded_line`, `click_s`,
-    `waited_s`, `verified`. Like every menu click here, REFUSED while another `dosbox-x`
-    is alive on the host, naming it: a click by pid has been measured landing in the
-    wrong emulator.
+    `focus` (as `state_save`'s), `waited_s`, `verified`. Like every menu click here, REFUSED
+    while another `dosbox-x` is alive on the host, naming it: a click by pid has been
+    measured landing in the wrong emulator.
     """
     return st.answer(_live().state_load(name, seconds, _progress(ctx)))
 
@@ -1391,20 +1395,25 @@ def state_load(name: str, seconds: float = ds.STATE_WAIT_S,
 @tool("Take a screenshot", summary=one_line.snapshot)
 def snapshot(dest: str = "", seconds: float = ds.SNAPSHOT_WAIT_S,
              ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """One still of the RUNNING screen, through the emulator's own `Capture > Take
-    screenshot` menu item (a WINDOWED session, one 12-15 s click), confirmed by the new
-    `.png` under the captures directory (`captures_dir`, or the emulator's `capture/` under
-    `cwd`) within `seconds`, and moved to `dest` when given (absolute, its directory there,
-    not there yet).
-    REFUSED with the machine parked at the debugger: measured, the click is taken and the
-    file appears only when the machine runs again. `capture_frame` is a still out of a video
-    capture and needs no window. Refused while another `dosbox-x` is alive, like every menu click.
+    """One still of the RUNNING screen, taken inside the guest through the input stub (no
+    window, no menu, any session), confirmed by the new `.png` under the captures directory
+    (`captures_dir`, or `capture/` under `cwd`) within `seconds`, and moved to `dest` when
+    given (absolute, its directory there, not there yet).
+    REFUSED with the machine parked at the debugger (the stub takes commands on the timer
+    tick), on a session with no `logfile` (the command is the Delete key's scan code to an
+    older stub, and only the log says which is resident), and on a guest whose log shows no
+    stub, as `send_keys` is.
 
-    Reports its progress while System Events walks the menus.
-
-    Reply: `path`, `bytes`, `click_s`, `waited_s`.
+    Reply: `route: "guest"`, `path`, `bytes`, `waited_s`.
     """
     session = _live()
+    if session.launch.logfile is None:
+        # `S` IS ALSO THE DELETE KEY'S SCAN CODE: an older stub would press it, and with no log
+        # there is no announce to tell the two apart.
+        raise ds.Invalid("no_channel",
+            "snapshot needs the guest's E9 log to see which stub is resident (its command is "
+            "a scan code to an older one): start the session with logfile=")
+    inputs.require_stub(session)
     return st.answer(session.snapshot(paths.absolute("dest", dest) if dest else None, seconds,
                                       _progress(ctx)))
 
@@ -1927,71 +1936,62 @@ def watch_clear(ref: str = "") -> dict[str, Any]:
 @tool("Send keystrokes", summary=one_line.send_keys)
 def send_keys(keys: list[str], modifiers: list[str] | None = None,
               expect: str | None = None, seconds: float | None = None,
-              focus: str = "return", ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Send KEYSTROKES to the RUNNING guest and, with `expect`, PROVE the program took them.
-    The wait for the reaction reports its progress.
+              ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
+    """Send KEYSTROKES into the RUNNING guest, inside the machine, and, with `expect`, PROVE
+    the program took them. The wait for the reaction reports its progress.
 
     Arguments: `keys`, key names (`a`, `1`, `enter`, `esc`, `space`, `up`, `f1`..`f12`,
-    punctuation names), at most 64 per call; `modifiers` (`shift`, `ctrl`, `alt`, `cmd`), held
-    across them; `expect`, a regex over the guest's E9 log that only the program's REACTION writes,
-    waited for up to `seconds` (default 10); `focus` on the window route: `return` (default) hands
-    the focus back, `keep` leaves the emulator in front.
+    punctuation names), at most 64 per call; `modifiers` (`shift`, `ctrl`, `alt`), held across
+    them; `expect`, a regex over the guest's E9 log that only the program's REACTION writes,
+    waited for up to `seconds` (default 10).
 
-    Refused before posting: an unknown key name; `seconds` without `expect`; a machine stopped at
-    the debugger (the keys would land at the next resume); a headless session with no
-    `input_port`; a refusal of the host helper (INVALID, `posted: 0`). The window route needs
-    `swiftc` and Accessibility trust, named when missing.
+    Refused before anything is sent: an unknown key or modifier name; `seconds` without
+    `expect`; a machine stopped at the debugger (the keys would land at the next resume); a
+    guest whose log shows no stub announce, or an older stub (`no_channel`, naming the conf
+    line); with no `logfile` there is no announce to read and the keys go out.
 
-    Reply: `route` (`serial`: through the port `start` opened, adding `posted`, `bytes`, `ticks`;
-    `window`: a host key event, adding `posted`, `activated`, `attempts`, `restored`, `restore`,
-    `window`) and `effect`: `seen` with `line`, `waited_s`, `seen_before_waiting`,
-    `lines_before`, `lines_total`, or `checked: false` with no `expect`. A miss is INVALID with
-    the post still reported; a stop that lands DURING the wait is reported with `last_stop`.
-    Timing is "now": for a precise guest instant, `run_to` it, send, then `resume`.
+    Reply: `route: "guest"`, `posted`, `bytes`, `ticks`, and `effect`: `seen` with `line`,
+    `waited_s`, `seen_before_waiting`, `lines_before`, `lines_total`, or `checked: false` with
+    no `expect`. A miss is INVALID with the post still reported; a stop that lands DURING the
+    wait is reported with `last_stop`. Timing is "now": for a precise guest instant, `run_to`
+    it, send, then `resume`.
 
     Reference: REFERENCE.md, Input and the screen.
     """
-    return inputs.send_keys(_live(), keys, modifiers, expect, seconds, focus, _progress(ctx))
+    return inputs.send_keys(_live(), keys, modifiers, expect, seconds, _progress(ctx))
 
 
 @tool("Send mouse input", summary=one_line.send_mouse)
-def send_mouse(button: str | None = None, x: int | None = None, y: int | None = None,
-               dx: int | None = None, dy: int | None = None, place: str | None = None,
-               expect: str | None = None, seconds: float | None = None,
-               focus: str = "keep", ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Send a MOUSE event to the running guest through its window, one shape per call
-    (the wait for `expect` reports its progress),
-    verified with `expect` and `seconds` exactly as `send_keys` is.
+def send_mouse(x: int | None = None, y: int | None = None, button: str | None = None,
+               action: str = "click", units: str = "screen", expect: str | None = None,
+               seconds: float | None = None,
+               ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
+    """Move the guest's MOUSE POINTER and press its buttons, inside the machine, and read the
+    pointer back. With `expect`, PROVE the program reacted, as `send_keys` does.
 
-    ONE SHAPE PER CALL, and "click at this spot" is TWO of them: moving the pointer and
-    pressing it are separate events here, so `send_mouse(button="left", x=5, y=5)` is
-    refused rather than doing half of it. Place first (`x`/`y` or `place="center"`), then
-    click. Said here because the refusal arrives after the attempt otherwise, and the shape
-    is not guessable from the argument list.
+    `x`, `y`: where the pointer goes, both or neither, in `units`: `screen` (default), the
+    screen's own units as `screen_view` counts them (character cells in a text mode, pixels in
+    a graphics one; the standard BIOS modes), or `mouse`, the DOS driver's own coordinates (for
+    a VESA or custom mode). `button`: `left`, `right` or `middle`; `action`: `click` (default),
+    `double` (two clicks a tick apart), `down` or `up` (a drag is `down`, a move, `up`). A move
+    and a button in one call: the move goes first.
 
-    `button` (`left`/`right`): a click at the HOST pointer's current spot, refused if that
-    spot is outside the emulator's window. `place="center"`: put the host pointer at the
-    middle of the emulator's front window. `x`, `y`: put it at that screen point (a visible
-    act on the host). `dx`, `dy`: RELATIVE motion in the guest (positive `dx` is right, positive
-    `dy` DOWN), as a run of small delta
-    events, at most 2000 px per call, refused here before the window is touched (as
-    `send_keys` refuses an unknown key name) rather than by the native helper afterwards.
+    Refused before anything is sent: no move and no button, half a move, a negative or
+    non-integer coordinate, a target off the screen or outside the driver's range, `screen`
+    units in a mode this server does not map, an unknown button, action or units, a session
+    with no `logfile` (the read-back goes through it), a stopped machine, no stub.
 
-    What was measured and decides how to use it: a click lands where the HOST pointer is;
-    motion reaches the guest only while the emulator has CAPTURED the mouse (with
-    `autolock`, the first click inside the window captures and is itself swallowed, which
-    the reply reports as a miss), and the capture is released when the window loses focus,
-    so `focus` defaults to `keep` here (`return` hands it back). Place the pointer at the
-    centre before the capturing click, then nudge and read the program's own coordinates back
-    from its log.
+    Reply: `route: "guest"`, `pointer` read back after the call (`screen` with `x`, `y`,
+    `width`, `height`, or null in an unmapped mode; `mouse` with the driver's `x`, `y`,
+    `max_x`, `max_y`; `buttons` held; `mode`), `arrived` (the read-back is where it was asked;
+    when it is not, `asked` says where in the driver's coordinates: a text mode snaps to its
+    cell, a program's own range clamps), the arguments, `effect`. A read-back that fails after
+    the commands went in is INVALID with `delivered: true`, so nothing is sent twice.
 
-    Reply: `route: "window"`, `posted`, `activated`, `attempts`, `restored`, `restore`,
-    `window` (`[x, y, w, h]`, so `x`/`y` can be aimed at a real place), the shape's own
-    fields, `effect`. Needs a `shared` session, `swiftc` and Accessibility trust; refused on
-    the serial-only route and on a machine stopped at the debugger.
+    Reference: REFERENCE.md, Input and the screen.
     """
-    return inputs.send_mouse(_live(), button, x, y, dx, dy, place, expect, seconds,
-                             focus, _progress(ctx))
+    return inputs.send_mouse(_live(), x, y, button, action, units, expect, seconds,
+                             _progress(ctx))
 
 
 # ----------------------------------------------------------------------- the captures

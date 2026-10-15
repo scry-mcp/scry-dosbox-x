@@ -1,0 +1,35 @@
+{
+ "task": {
+  "id": "D93",
+  "prompt": "Hold the left mouse button down on the guest so a drag can follow.",
+  "tool": "send_mouse",
+  "args": {
+   "button": "left",
+   "action": "down"
+  },
+  "grammar": [
+   "left",
+   "down"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D93: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\", \"action\": \"down\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D93: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\", \"action\": \"down\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D93: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\", \"action\": \"down\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

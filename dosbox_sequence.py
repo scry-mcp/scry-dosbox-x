@@ -132,7 +132,7 @@ def _wrong_type(fn: Any, args: dict[str, Any]) -> str | None:
     return None
 
 
-def preflight(steps: list[dict[str, Any]], ops: Ops, *, serial: bool) -> list[dict[str, Any]]:
+def preflight(steps: list[dict[str, Any]], ops: Ops) -> list[dict[str, Any]]:
     """EVERY STEP IS CHECKED BEFORE ANY STEP RUNS, its op, its argument NAMES and its argument
     VALUES, and every refusal is collected rather than the first one returned: a list whose
     third step is not a step, names an argument its tool does not take, or carries a value
@@ -173,7 +173,7 @@ def preflight(steps: list[dict[str, Any]], ops: Ops, *, serial: bool) -> list[di
             refused.append({"step": i, "op": op, "code": "bad_argument", "message": wrong})
             continue
         try:
-            checks.preflight(op, args, serial=serial)
+            checks.preflight(op, args)
         except ds.Invalid as e:
             refused.append({"step": i, "op": op, "code": e.code, "message": str(e)})
         except (TypeError, AttributeError, ValueError) as e:
@@ -329,7 +329,7 @@ def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
     """
     validate_summaries(summaries)
     since = int(STATE.last_stop.get("seq", 0))     # the stops this call numbers come after it
-    refused = preflight(steps, ops, serial=session.launch.input_port is not None)
+    refused = preflight(steps, ops)
     if refused:
         first = refused[0]
         return st.reply(status="INVALID", code="bad_argument", ran=[], completed=0,
@@ -516,7 +516,8 @@ def _verify_after_wait(session: ds.Session, expect: str, wait_s: float, mark: in
                        progress: ds.Progress = ds.no_progress) -> dict[str, Any]:
     """The VERIFY on a running guest: wait up to `wait_s` for a new line since the mark."""
     try:
-        reaction = session.e9_wait(expect, wait_s, mark=mark, progress=progress)
+        reaction = session.e9_wait(inputs.program_reaction(expect), wait_s, mark=mark,
+                                   progress=progress)
     except ds.E9Stopped as e:
         guest.observe_stop(session)
         return {"checked": True, "seen": False, "expected": expect,
@@ -537,7 +538,8 @@ def _verify_at_a_stop(session: ds.Session, expect: str, mark: int) -> dict[str, 
         since = session.e9_since_mark(mark)
     except ds.Invalid as e:
         return {"checked": False, "expected": expect, "why": str(e), "code": e.code}
-    hits = [ln for ln in since if ds.compiled(expect).search(ln)]
+    reaction = ds.compiled(inputs.program_reaction(expect))
+    hits = [ln for ln in since if reaction.search(ln)]
     if not hits:
         return {"checked": True, "seen": False, "expected": expect,
                 "why": f"no line matching {expect!r} since the mark, and the machine is "

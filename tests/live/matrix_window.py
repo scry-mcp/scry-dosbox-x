@@ -1,12 +1,15 @@
-"""Section G of the live matrix: the tools that need a window (the menu, the mouse, the saved
-states, the screenshot) and the video capture, on the probe guest and on the DPMI guest. It opens
-windows where the placement flags say, and the mouse takes the focus while it runs; the section
-prints a line saying so before it starts."""
+"""Section G of the live matrix: the tools that need a window (the menu, the saved states, the
+screenshot) and the video capture, on the probe guest and on the DPMI guest, and the mouse at two
+window sizes, which must change nothing the guest reads. It opens windows where the placement
+flags say, and each menu click takes the focus for a moment; the section prints a line saying so
+before it starts."""
 from __future__ import annotations
 
+import time
 from pathlib import Path
 
 import dpmi_guest as guest
+import matrix_focus as focus
 from matrix_common import (
     ENV,
     GUEST,
@@ -46,8 +49,10 @@ G_CELLS = cells(
     ("G capture_frame refuses a % in dest", "capture_frame docstring"),
     ("G capture_frame refuses a dest that exists", "capture_frame docstring"),
     ("G capture_frame refuses a frame past the end", "capture_frame docstring"),
-    ("G send_mouse place=center", "send_mouse docstring: the window route"),
-    ("G send_mouse dx=2000", "send_mouse docstring: the ceiling of one call's motion"),
+    ("G in a window, cell 40,12 arrives at the driver's 320,96",
+     "send_mouse docstring: inside the guest, so a window changes nothing"),
+    ("G at a 1280x800 window the same cell arrives at the same driver coordinates",
+     "REFERENCE.md, Input and the screen: the window's scale changes nothing the guest sees"),
     (DPMI_CELLS[0], "snapshot docstring; the image is kept for the QA"),
     (DPMI_CELLS[1], "send_mouse docstring; known: the program logs `mouse btn=`"),
     (DPMI_CELLS[2], "stop docstring"),
@@ -97,7 +102,8 @@ def _probe() -> None:
     must(M.call(server.resume), "releasing the probe")
     shot = M.fresh(".png")
     r = M.call(server.snapshot, dest=shot, seconds=30)
-    judged("G snapshot while running", reply=r, holds=ok(r) and Path(shot).is_file())
+    judged("G snapshot while running", reply=r,
+           holds=ok(r) and Path(shot).is_file() and Path(shot).read_bytes()[:8] == PNG_MAGIC)
     r = M.call(server.captures)
     listed = r.get("captures") or []
     judged("G captures lists the recording", reply=r,
@@ -113,10 +119,31 @@ def _probe() -> None:
     judged("G capture_frame refuses a dest that exists", reply=r, holds=refused(r))
     r = M.call(server.capture_frame, at=10_000_000, dest=M.fresh(".png"))
     judged("G capture_frame refuses a frame past the end", reply=r, holds=refused(r))
-    r = M.call(server.send_mouse, place="center")
-    judged("G send_mouse place=center", reply=r, holds=ok(r) and r.get("route") == "window")
-    r = M.call(server.send_mouse, dx=2000, dy=0)
-    judged("G send_mouse dx=2000", reply=r, holds=ok(r))
+    r = M.call(server.send_mouse, x=40, y=12)
+    judged("G in a window, cell 40,12 arrives at the driver's 320,96", reply=r,
+           holds=_landed(r))
+    close_whatever()
+
+
+def _landed(r: dict[str, object]) -> bool:
+    pointer = r.get("pointer")
+    mouse = pointer.get("mouse") if isinstance(pointer, dict) else None
+    return (ok(r) and r.get("arrived") is True and isinstance(mouse, dict)
+            and (mouse.get("x"), mouse.get("y")) == (320, 96))
+
+
+def _scaled() -> None:
+    """The probe guest again, its window drawn at twice the size: the pointer is set inside the
+    guest, so the same cell lands on the same driver coordinates."""
+    conf = conf_without_launch(PROBE_CONF, "PROBE.COM")
+    flags = [*_flags(), "-set", "sdl output=opengl", "-set", "sdl windowresolution=1280x800"]
+    boot(conf=conf, cwd=GUEST, mode="shared", window_flags=flags, program="PROBE.COM")
+    must(M.call(server.resume), "releasing the probe")
+    must(M.call(server.log_wait, pattern="PROBE", channel="guest", seconds=30),
+         "the probe's first line")
+    r = M.call(server.send_mouse, x=40, y=12)
+    judged("G at a 1280x800 window the same cell arrives at the same driver coordinates",
+           reply=r, holds=_landed(r))
     close_whatever()
 
 
@@ -130,10 +157,6 @@ def _dpmi() -> None:
     r = M.call(server.snapshot, dest=shot, seconds=30)
     judged(DPMI_CELLS[0], reply=r, holds=ok(r) and Path(shot).is_file())
     KEEP.append(shot)
-    M.call(server.send_mouse, place="center")
-    # With `autolock`, the first click inside the window captures the mouse and may itself be
-    # swallowed (REFERENCE.md, Input and the screen); the judged click is the second.
-    M.call(server.send_mouse, button="left")
     r = M.call(server.send_mouse, button="left", expect=guest.MOUSE_MARK, seconds=10)
     judged(DPMI_CELLS[1], reply=r, holds=ok(r) and (r.get("effect") or {}).get("seen") is True)
     r = M.call(server.stop)
@@ -146,8 +169,16 @@ def _dpmi() -> None:
 @M.section("G", "the windowed tools, on the probe guest and on the DPMI guest", G_CELLS,
            FLAGS_VAR)
 def section_g() -> None:
-    print("  a window opens on the display the placement flags name, and send_mouse takes "
-          "the focus while it runs", flush=True)
-    _probe()
-    _dpmi()
+    print("  a window opens on the display the placement flags name, and each menu click "
+          "takes the focus for a moment", flush=True)
+    began = int(time.time() * 1000)
+    try:
+        _probe()
+        _scaled()
+        _dpmi()
+    finally:
+        # THE ONE STRETCH THE FOCUS GATE EXCLUDES: these tools click the menu, in front. Its end
+        # is stamped once the window is closed, so an abort here does not leave it open outside.
+        close_whatever()
+        focus.EXCLUDED.append((began, int(time.time() * 1000)))
     print(f"  kept for the QA: {' '.join(KEEP)}", flush=True)

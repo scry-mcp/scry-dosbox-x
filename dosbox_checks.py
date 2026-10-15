@@ -155,16 +155,14 @@ def show_watch_width(mode: str, width: int) -> None:
 
 
 def _send_keys(keys: list[str], modifiers: list[str] | None = None, expect: str | None = None,
-               seconds: float | None = None, focus: str = "return", *, serial: bool = False,
-               **_: Any) -> None:
-    inputs.check_keys(keys, modifiers, expect, seconds, focus, serial=serial)
+               seconds: float | None = None, **_: Any) -> None:
+    inputs.check_keys(keys, modifiers, expect, seconds)
 
 
-def _send_mouse(button: str | None = None, x: int | None = None, y: int | None = None,
-                dx: int | None = None, dy: int | None = None, place: str | None = None,
-                expect: str | None = None, seconds: float | None = None, focus: str = "keep",
-                **_: Any) -> None:
-    inputs.check_mouse(button, x, y, dx, dy, place, expect, seconds, focus)
+def _send_mouse(x: int | None = None, y: int | None = None, button: str | None = None,
+                action: str = "click", units: str = "screen", expect: str | None = None,
+                seconds: float | None = None, **_: Any) -> None:
+    inputs.check_mouse(x, y, button, action, units, expect, seconds)
 
 
 def _log(pattern: str, channel: str, limit: int = 40, **_: Any) -> None:
@@ -360,14 +358,12 @@ STEP_OPS: Callable[[], dict[str, Callable[..., Any]]] | None = None
 
 def steps_whole(name: str, steps: object) -> None:
     """A list of the server's operations judged whole, every step's op, argument names and
-    values, before the first one runs; every refusal is listed, as the sequence lists them.
-    The input route is the session's fact, so a key step is judged here as the window route
-    takes it and again, on the session's own route, once the session answers."""
+    values, before the first one runs; every refusal is listed, as the sequence lists them."""
     if not isinstance(steps, list):
         raise ds.Invalid("bad_argument",
             f"{name} is a LIST of steps ({{'op': <name>, ...}}); got {steps!r}")
     assert STEP_OPS is not None, "the server registers its step vocabulary at import"
-    refused = sequence.preflight(steps, STEP_OPS(), serial=False)
+    refused = sequence.preflight(steps, STEP_OPS())
     if refused:
         first = refused[0]
         raise ds.Invalid("bad_argument",
@@ -552,9 +548,7 @@ def check(tool: str, /, **given: Any) -> None:
     """The machine-independent half of one tool's checks, asked BEFORE the server asks for
     the session: a value as wrong with no session as with one is refused without booting
     a machine to hear it. A tool in `MACHINE_JUDGES` passes straight through; a name this
-    registry has never heard of is a programmer's error here, raised as such. `send_keys` is
-    judged here as the window route takes it, the route with every modifier, and again past
-    the gate on the route the session has, which is the session's own fact."""
+    registry has never heard of is a programmer's error here, raised as such."""
     if tool not in BY_OP and tool not in MACHINE_JUDGES:
         raise AssertionError(f"no such tool for a pre-gate check: {tool!r}")
     judge = BY_OP.get(tool)
@@ -568,14 +562,11 @@ def probe_check(tool: str, given: dict[str, Any], effective: dict[str, Any]) -> 
     check(tool, **given)
 
 
-def preflight(op: str, args: dict[str, Any], *, serial: bool) -> None:
+def preflight(op: str, args: dict[str, Any]) -> None:
     """Run the operation's value checks on a step's arguments, raising the refusal the
     synchronous tool would have raised. Called by the sequence over every step before the
     first one runs."""
     check = BY_OP.get(op)
     if check is None:
         return
-    if op == "send_keys":
-        check(serial=serial, **args)
-    else:
-        check(**args)
+    check(**args)

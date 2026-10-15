@@ -142,7 +142,7 @@ def test_the_serial_route_is_two_set_overrides_and_a_port_in_range(conf: Path) -
     refused before any process exists. Without a port the argv carries neither."""
     argv = ds.build_argv(launch(conf, input_port=5555))
     assert argv[argv.index("cpu integration device=true") - 1] == "-set"
-    assert argv[argv.index("serial serial1=nullmodem port:5555") - 1] == "-set"
+    assert argv[argv.index("serial serial1=nullmodem port:5555 transparent:1") - 1] == "-set"
     plain = ds.build_argv(launch(conf))
     assert not any("integration device" in a or "nullmodem" in a for a in plain)
     ds.validate(launch(conf, input_port=5555))
@@ -168,19 +168,20 @@ def test_the_serial_socket_connects_when_the_emulator_listens_and_refuses_otherw
         try:
             fake = SimpleNamespace(_input=client)
             began = time.monotonic()
-            assert ds.Session.send_scancodes(fake, bytes([0x1E, 0x9E])) == 2  # type: ignore[arg-type]
-            # PACED: the second byte leaves a tick after the first, so the two arrive apart.
-            assert time.monotonic() - began >= ds.SCAN_BYTE_GAP_S
+            commands = [b"K\x1e", b"M\x10\x00\x20\x00", b"R"]
+            assert ds.Session.send_commands(fake, commands) == 8  # type: ignore[arg-type]
+            # PACED: each command leaves a tick after the one before, so they arrive apart.
+            assert time.monotonic() - began >= 2 * ds.COMMAND_GAP_S
             got = b""
-            while len(got) < 2:
-                got += peer.recv(2)
-            assert got == bytes([0x1E, 0x9E])
+            while len(got) < 8:
+                got += peer.recv(8)
+            assert got == b"".join(commands)
             with pytest.raises(ds.Invalid, match="nothing to send"):
-                ds.Session.send_scancodes(fake, b"")  # type: ignore[arg-type]
+                ds.Session.send_commands(fake, [])  # type: ignore[arg-type]
             peer.close()
             client.close()
             with pytest.raises(ds.Invalid, match="socket is gone"):
-                ds.Session.send_scancodes(fake, b"\x1e")  # type: ignore[arg-type]
+                ds.Session.send_commands(fake, [b"K\x1e"])  # type: ignore[arg-type]
         finally:
             peer.close()
     finally:
@@ -189,8 +190,8 @@ def test_the_serial_socket_connects_when_the_emulator_listens_and_refuses_otherw
     with pytest.raises(ds.Invalid, match=f"port {dead} did not accept"):
         ds._connect_input(dead, 0.5)
     no_route = SimpleNamespace(_input=None)
-    with pytest.raises(ds.Invalid, match="no serial input route"):
-        ds.Session.send_scancodes(no_route, b"\x1e")  # type: ignore[arg-type]
+    with pytest.raises(ds.Invalid, match="no input route"):
+        ds.Session.send_commands(no_route, [b"K\x1e"])  # type: ignore[arg-type]
 
 
 def test_a_port_something_else_holds_is_refused_before_the_emulator_exists() -> None:
@@ -2154,165 +2155,6 @@ def test_read_bytes_returns_the_exact_n_bytes_at_the_address() -> None:
         ds.Session.read_bytes(fake, 0x749, 0, 200)  # type: ignore[arg-type]
     with pytest.raises(ds.Invalid, match="positive length"):
         ds.Session.read_bytes(fake, 0x749, 0, 0)  # type: ignore[arg-type]
-
-
-# ------------------------------------------------------ the input helper (Phase 5, ACT)
-
-def test_keypost_binary_compiles_once_and_reuses(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The native `keypost` helper is built once into a per-user cache (XDG_CACHE_HOME, not
-    the agent's private dir, so a published copy works anywhere) and reused while the source
-    is unchanged. Proven WITHOUT a Swift toolchain by mocking the compile: the first call
-    compiles, a second with a fresh binary does not."""
-    monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path / "cache"))
-    monkeypatch.setattr(shutil, "which", lambda _n: "/usr/bin/swiftc")
-    builds = {"n": 0}
-
-    def fake_compile(argv: list[str], **_k: object) -> SimpleNamespace:
-        builds["n"] += 1
-        Path(argv[argv.index("-o") + 1]).write_bytes(b"binary")   # the "compiled" helper
-        return SimpleNamespace(returncode=0, stderr="")
-    monkeypatch.setattr(subprocess, "run", fake_compile)
-    first = ds._keypost_binary()
-    assert first.exists() and builds["n"] == 1
-    # UNDER XDG_CACHE_HOME, not the real home: the publishability point, and without this the
-    # test could silently write into the developer's own ~/.cache.
-    assert str(first).startswith(str(tmp_path / "cache")), first
-    second = ds._keypost_binary()                 # unchanged source -> reuse, no rebuild
-    assert second == first and builds["n"] == 1
-    # REBUILD WHEN THE SOURCE IS NEWER: age the binary to the epoch, well before the real
-    # source's mtime, and it recompiles.
-    import os as _os
-    _os.utime(first, (0, 0))
-    third = ds._keypost_binary()
-    assert third == first and builds["n"] == 2
-
-
-def test_keypost_binary_refuses_a_host_without_the_toolchain_or_source(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """No `swiftc` is an Invalid, not a crash: the driver simply cannot act on this host, said
-    plainly. A compile failure is likewise a named Invalid carrying swiftc's own message."""
-    monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path / "cache"))
-    monkeypatch.setattr(shutil, "which", lambda _n: None)
-    with pytest.raises(ds.Invalid, match="no `swiftc`"):
-        ds._keypost_binary()
-    monkeypatch.setattr(shutil, "which", lambda _n: "/usr/bin/swiftc")
-    monkeypatch.setattr(subprocess, "run",
-                        lambda *_a, **_k: SimpleNamespace(returncode=1, stderr="boom.swift:1"))
-    with pytest.raises(ds.Invalid, match="failed to compile"):
-        ds._keypost_binary()
-    # THE "OR SOURCE" HALF the name promises: a missing keypost.swift is a named refusal.
-    # Point the module's __file__ at an empty dir so `with_name("keypost.swift")` misses.
-    monkeypatch.setattr(ds, "__file__", str(tmp_path / "nowhere" / "x.py"))
-    with pytest.raises(ds.Invalid, match="is missing"):
-        ds._keypost_binary()
-
-
-def test_send_input_parses_the_helper_facts_and_names_a_failure(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """`send_input` runs the helper against this session's pid and returns its parsed
-    `key=value` facts; a non-zero exit becomes an Invalid carrying the helper's own `error=`
-    line, not a bare exit code. Driven with the binary and subprocess mocked -- no emulator,
-    no window -- because the parse and the refusal are what this method owns."""
-    builds: list[bool] = []
-
-    def binary(force: bool = False) -> Path:
-        builds.append(force)
-        return Path("/x/keypost")
-    monkeypatch.setattr(ds, "_keypost_binary", binary)
-    fake = SimpleNamespace(proc=SimpleNamespace(pid=4321), _focus_owner=None)
-    stamp = f"keypost={ds.KEYPOST_CONTRACT}\n"
-
-    monkeypatch.setattr(subprocess, "run", lambda *_a, **_k: SimpleNamespace(
-        returncode=0, stdout=stamp + "trusted=true\nactivated=true\nattempts=1\n"
-                             "ax_frontmost=true\ntop_window_pid=4321\nposted=2\n"
-                             "restored=skipped\n",
-        stderr=""))
-    facts = ds.Session.send_input(fake, "keys", ["-", "a", "b"])  # type: ignore[arg-type]
-    assert facts == {"keypost": ds.KEYPOST_CONTRACT, "trusted": "true", "activated": "true",
-                     "attempts": "1", "ax_frontmost": "true", "top_window_pid": "4321",
-                     "posted": "2", "restored": "skipped"}
-    assert builds == [False], "a binary speaking the right contract is used as found"
-
-    # THE FOCUS POLICY IS AN ARGV TOKEN, before the pid, only when asked for.
-    seen: list[list[str]] = []
-
-    def record(argv: list[str], **_k: object) -> object:
-        seen.append(list(argv))
-        return SimpleNamespace(returncode=0, stdout=stamp + "posted=1\nrestored=kept\n",
-                               stderr="")
-    monkeypatch.setattr(subprocess, "run", record)
-    fake._focus_owner = None
-    ds.Session.send_input(fake, "click", ["left"], keep_focus=True)  # type: ignore[arg-type]
-    ds.Session.send_input(fake, "click", ["left"])  # type: ignore[arg-type]
-    assert seen[0][1:4] == ["--keep-focus", "4321", "click"], seen[0]
-    assert seen[1][1:3] == ["4321", "click"] and "--keep-focus" not in seen[1], seen[1]
-
-    # THE SESSION REMEMBERS WHO HAD THE FOCUS before the first keep (the helper's
-    # `previous_pid=`), hands it to the next returning call as `--return-to`, and forgets it
-    # once that return succeeded -- so a keep followed by a return gives the caller's app back.
-    answers2 = iter([
-        SimpleNamespace(returncode=0, stdout=stamp + "posted=1\nprevious_pid=777\n"
-                                                    "restored=kept\n", stderr=""),
-        SimpleNamespace(returncode=0, stdout=stamp + "posted=1\nrestored=kept\n", stderr=""),
-        SimpleNamespace(returncode=0, stdout=stamp + "posted=1\nrestored=true\n", stderr=""),
-        SimpleNamespace(returncode=0, stdout=stamp + "posted=1\nrestored=skipped\n", stderr="")])
-    seen.clear()
-
-    def record2(argv: list[str], **_k: object) -> object:
-        seen.append(list(argv))
-        return next(answers2)
-    monkeypatch.setattr(subprocess, "run", record2)
-    ds.Session.send_input(fake, "click", ["left"], keep_focus=True)  # type: ignore[arg-type]
-    assert fake._focus_owner == 777
-    ds.Session.send_input(fake, "nudge", ["5", "0"], keep_focus=True)  # type: ignore[arg-type]
-    assert fake._focus_owner == 777 and "--return-to" not in seen[1]   # a keep never returns
-    ds.Session.send_input(fake, "keys", ["-", "a"])  # type: ignore[arg-type]
-    assert seen[2][1:3] == ["--return-to", "777"], seen[2]
-    assert fake._focus_owner is None, "a successful return forgets the owner"
-    ds.Session.send_input(fake, "keys", ["-", "a"])  # type: ignore[arg-type]
-    assert "--return-to" not in seen[3]
-
-    # A BINARY SPEAKING ANOTHER CONTRACT (a stale cache) is rebuilt ONCE and re-run; if the
-    # rebuilt one still disagrees, nothing is trusted.
-    builds.clear()
-    answers = iter([SimpleNamespace(returncode=0, stdout="trusted=true\nposted=1\n", stderr=""),
-                    SimpleNamespace(returncode=0, stdout=stamp + "posted=1\n", stderr="")])
-    monkeypatch.setattr(subprocess, "run", lambda *_a, **_k: next(answers))
-    facts = ds.Session.send_input(fake, "keys", ["-", "a"])  # type: ignore[arg-type]
-    assert facts["keypost"] == ds.KEYPOST_CONTRACT and builds == [False, True], builds
-    monkeypatch.setattr(subprocess, "run", lambda *_a, **_k: SimpleNamespace(
-        returncode=0, stdout="keypost=1\nposted=1\n", stderr=""))
-    with pytest.raises(ds.Invalid, match="speaks contract '1' after a rebuild"):
-        ds.Session.send_input(fake, "keys", ["-", "a"])  # type: ignore[arg-type]
-
-    monkeypatch.setattr(subprocess, "run", lambda *_a, **_k: SimpleNamespace(
-        returncode=3, stdout=stamp + "trusted=false\n",
-        stderr="LOG: some noise\nerror=not Accessibility-trusted\n"))
-    with pytest.raises(ds.Invalid) as exc:
-        ds.Session.send_input(fake, "keys", ["-", "a"])  # type: ignore[arg-type]
-    # the PAYLOAD after `error=`, not the prefix and not the LOG noise before it.
-    assert "not Accessibility-trusted" in str(exc.value)
-    assert "error=" not in str(exc.value) and "some noise" not in str(exc.value)
-
-    def timeout(*_a: object, **_k: object) -> object:
-        raise subprocess.TimeoutExpired(cmd="keypost", timeout=30)
-    monkeypatch.setattr(subprocess, "run", timeout)
-    with pytest.raises(ds.Invalid, match="did not return in 30"):
-        ds.Session.send_input(fake, "click", ["left"])  # type: ignore[arg-type]
-
-    # THE FOCUS REFUSAL (exit 6): the helper read the emulator back as never frontmost and
-    # posted nothing. It arrives as an Invalid carrying that sentence, so the tool cannot
-    # report a post that did not happen.
-    monkeypatch.setattr(subprocess, "run", lambda *_a, **_k: SimpleNamespace(
-        returncode=6, stdout=stamp + "trusted=true\nactivated=false\nattempts=4\n"
-                             "ax_frontmost=true\ntop_window_pid=812\n",
-        stderr="error=the emulator never read as frontmost after 4 attempts (AX frontmost "
-               "true, top window owned by pid 812); nothing was posted, because a key sent "
-               "to a window without the focus is dropped in silence\n"))
-    with pytest.raises(ds.Invalid, match="never read as frontmost") as focus:
-        ds.Session.send_input(fake, "keys", ["-", "a"])  # type: ignore[arg-type]
-    assert "exit 6" in str(focus.value)
 
 
 def test_a_survey_that_saw_no_pane_names_a_dead_reader_before_blaming_the_machine() -> None:
