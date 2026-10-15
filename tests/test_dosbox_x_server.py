@@ -4097,7 +4097,12 @@ def _start_on_a_booted_fake(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 
     if which:
         monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
-    with mock.patch("dosbox_x_server.ds.Session", lambda _l: Booted(conf=conf)):
+    def booted(launch: ds.Launch) -> Booted:
+        fake = Booted(conf=conf)
+        fake.launch.input_port = launch.input_port    # the session's own, as a real one keeps
+        return fake
+
+    with mock.patch("dosbox_x_server.ds.Session", booted):
         return cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path), seconds=60,
                                                  **kw))
 

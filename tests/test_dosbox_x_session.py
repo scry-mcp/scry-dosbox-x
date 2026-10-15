@@ -35,6 +35,14 @@ import dosbox_session as ds
 # --------------------------------------------------------------------- fixtures
 
 
+
+def _free_port() -> int:
+    """A port nothing holds right now, for a case that names one."""
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        return int(probe.getsockname()[1])
+
+
 @pytest.fixture
 def conf(tmp_path: Path) -> Path:
     p = tmp_path / "guest.conf"
@@ -138,33 +146,36 @@ def test_capture_wraps_the_program_and_plain_does_not(conf: Path) -> None:
 def test_the_serial_route_is_two_set_overrides_and_a_port_in_range(conf: Path) -> None:
     """`input_port` puts the two switches the route needs on the argv as `-set` overrides --
     the integration device in the `[cpu]` section, where it is honoured, and COM1 as a
-    listening nullmodem on that port -- and a port outside the unprivileged range is
+    nullmodem dialling the session on that port -- and a port outside the unprivileged range is
     refused before any process exists. Without a port the argv carries neither."""
     argv = ds.build_argv(launch(conf, input_port=5555))
     assert argv[argv.index("cpu integration device=true") - 1] == "-set"
-    assert argv[argv.index("serial serial1=nullmodem port:5555 transparent:1") - 1] == "-set"
+    assert argv[argv.index("serial serial1=nullmodem server:127.0.0.1 port:5555 transparent:1")
+                - 1] == "-set"
     plain = ds.build_argv(launch(conf))
     assert not any("integration device" in a or "nullmodem" in a for a in plain)
     ds.validate(launch(conf, input_port=5555))
-    for bad in (80, 0, 70000):
+    for bad in (80, 70000, -1):
         with pytest.raises(ds.Invalid, match="between 1024 and 65535"):
             ds.validate(launch(conf, input_port=bad))
 
 
-def test_the_serial_socket_connects_when_the_emulator_listens_and_refuses_otherwise(
+def test_the_serial_socket_is_the_emulators_dial_and_a_dial_that_never_comes_is_refused(
         ) -> None:
-    """`_connect_input` retries until the port accepts, so a socket that opens a moment
-    after the emulator starts is reached; a port nobody listens on is a refusal naming the
-    port within the bound, never a session with a route that does not exist. And
-    `send_scancodes` sends what it is given, refuses an empty send, and reports a socket
-    the other end closed as the route being GONE rather than as a delivery."""
-    server_sock = socket.socket()
-    server_sock.bind(("127.0.0.1", 0))
-    server_sock.listen(1)
-    port = server_sock.getsockname()[1]
+    """`_accept_input` takes the emulator's dial on the session's listener, so a dial that
+    comes a moment after the emulator starts is reached, and closes the listener; no dial
+    within the bound is a refusal naming the port, never a session with a route that does not
+    exist. And `send_commands` sends what it is given, refuses an empty send, and reports a
+    socket the other end closed as the route being GONE rather than as a delivery."""
+    listener = ds.listen_input(_free_port())
+    port = listener.getsockname()[1]
+    emulator = socket.socket()
+    threading.Timer(0.2, lambda: emulator.connect(("127.0.0.1", port))).start()
     try:
-        client = ds._connect_input(port, 3.0)
-        peer, _ = server_sock.accept()
+        client = ds._accept_input(listener, 3.0, lambda: None)
+        peer = emulator
+        with pytest.raises(OSError):
+            listener.accept()            # closed once the dial was taken
         try:
             fake = SimpleNamespace(_input=client)
             began = time.monotonic()
@@ -185,36 +196,42 @@ def test_the_serial_socket_connects_when_the_emulator_listens_and_refuses_otherw
         finally:
             peer.close()
     finally:
-        server_sock.close()
-    dead = port    # the listener is closed now, so nothing accepts there
-    with pytest.raises(ds.Invalid, match=f"port {dead} did not accept"):
-        ds._connect_input(dead, 0.5)
+        listener.close()
+    silent = ds.listen_input(_free_port())
+    quiet = silent.getsockname()[1]
+    with pytest.raises(ds.Invalid, match=f"never dialled the serial input port {quiet} within"):
+        ds._accept_input(silent, 0.5, lambda: None)
     no_route = SimpleNamespace(_input=None)
     with pytest.raises(ds.Invalid, match="no input route"):
         ds.Session.send_commands(no_route, [b"K\x1e"])  # type: ignore[arg-type]
 
 
 def test_a_port_something_else_holds_is_refused_before_the_emulator_exists() -> None:
-    """A stranger listening on the chosen port would receive every key and the reply would
-    say delivered: the bind probe refuses such a port, and a free one passes."""
+    """A port another process listens on cannot be the session's: refused naming it, and once
+    free it is listened on, and held, so nothing else can take it."""
     holder = socket.socket()
     holder.bind(("127.0.0.1", 0))
     holder.listen(1)
     port = holder.getsockname()[1]
     try:
         with pytest.raises(ds.Invalid, match=f"input_port {port} is already in use"):
-            ds.require_port_free(port)
+            ds.listen_input(port)
     finally:
         holder.close()
-    ds.require_port_free(port)      # free again: nothing raised
+    held = ds.listen_input(port)      # free again: listened on
+    try:
+        with pytest.raises(OSError):
+            socket.socket().bind(("127.0.0.1", port))
+    finally:
+        held.close()
 
 
-def test_a_refused_serial_connect_kills_the_child_it_spawned(
+def test_a_dial_that_never_comes_kills_the_child_it_spawned(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """THE ARM THAT MATTERS: the socket is connected inside the constructor's `try`, so a
-    connect that fails after the emulator was spawned must kill that emulator and re-raise,
-    never leave one running behind a refusal. The child, the connect and the signal are
-    doubled; the drain thread is real and is joined before the pty is closed."""
+    """THE ARM THAT MATTERS: the emulator's dial is accepted inside the constructor's `try`,
+    so one that never comes must kill that emulator and re-raise, never leave one running
+    behind a refusal, and let the port go. The child and the signal are doubled; the drain
+    thread is real and is joined before the pty is closed."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
 
@@ -235,14 +252,11 @@ def test_a_refused_serial_connect_kills_the_child_it_spawned(
     signalled: list[int] = []
     monkeypatch.setattr(subprocess, "Popen", lambda *_a, **_k: child)
     monkeypatch.setattr(ds.Session, "_signal_group", lambda self, sig: signalled.append(sig))
-    monkeypatch.setattr(ds, "require_port_free", lambda port: None)
-
-    def refuse(port: int, seconds: float) -> socket.socket:
-        raise ds.Invalid("session_broken",
-            f"the emulator's serial socket on port {port} did not accept")
-    monkeypatch.setattr(ds, "_connect_input", refuse)
-    with pytest.raises(ds.Invalid, match="did not accept"):
-        ds.Session(ds.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=5555))
+    monkeypatch.setattr(ds, "INPUT_CONNECT_S", 0.3)    # the double never dials
+    port = _free_port()
+    with pytest.raises(ds.Invalid, match="never dialled"):
+        ds.Session(ds.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=port))
+    ds.listen_input(port).close()      # the session let its listener go
     assert signalled == [signal.SIGKILL] and child.waited == 1, (signalled, child.waited)
 
 
@@ -2517,3 +2531,95 @@ def test_the_paging_mark_is_the_stop_surveys_and_a_later_survey_does_not_move_it
     with contextlib.suppress(ds.Invalid):     # a cut pane may refuse; the mark must not move
         session._survey()
     assert session.paging is True, "a later survey moved the stop's paging mark"
+
+
+def test_a_stranger_that_takes_the_port_after_the_check_never_receives_the_input(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """MEASURED LIVE: a port picked free and taken by another process before the emulator was
+    up left the emulator listening beside it and the session connected to the OTHER process,
+    so every key went to it while the replies said delivered. Here the stranger tries to take
+    the port the moment the emulator is spawned, and the emulator double dials the port the
+    session gave it: the session's socket must be the emulator's, never the stranger's."""
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    port = _free_port()
+    stranger: list[socket.socket] = []
+    dialled: list[socket.socket] = []
+
+    class Child:
+        pid = 4242
+
+        def poll(self) -> None:
+            return None
+
+        def wait(self, timeout: float | None = None) -> int:
+            return 0
+
+    def spawn(*_a: object, **_k: object) -> Child:
+        s = socket.socket()
+        with contextlib.suppress(OSError):
+            s.bind(("127.0.0.1", port))
+            s.listen(1)
+            s.settimeout(0.5)
+            stranger.append(s)
+        emulator = socket.socket()
+        with contextlib.suppress(OSError):
+            emulator.connect(("127.0.0.1", port))
+        dialled.append(emulator)
+        return Child()
+
+    monkeypatch.setattr(subprocess, "Popen", spawn)
+    monkeypatch.setattr(ds.Session, "_signal_group", lambda self, sig: None)
+    monkeypatch.setattr(ds, "INPUT_CONNECT_S", 2.0)
+    try:
+        ses = ds.Session(ds.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=port))
+    except ds.Invalid:
+        ses = None
+    try:
+        for s in stranger:
+            with pytest.raises(OSError):
+                s.accept()            # the stranger was handed nothing
+        assert ses is not None and ses._input is not None
+        assert ses._input.getpeername() == dialled[0].getsockname(), "not the emulator's socket"
+    finally:
+        for s in stranger + dialled:
+            s.close()
+        if ses is not None:
+            ses._stop.set()
+            if ses._input is not None:
+                ses._input.close()
+
+
+def test_an_emulator_that_exits_before_it_dials_is_said_at_once() -> None:
+    listener = ds.listen_input(0)
+    began = time.monotonic()
+    with pytest.raises(ds.Invalid, match=r"exited \(code 3\) before it dialled"):
+        ds._accept_input(listener, 30.0, lambda: 3)
+    assert time.monotonic() - began < 2.0, "it waited out the bound for a dead emulator"
+
+
+def test_port_0_is_the_kernels_pick_held_from_the_moment_it_is_picked(conf: Path) -> None:
+    listener = ds.listen_input(0)
+    try:
+        port = listener.getsockname()[1]
+        assert 1024 <= port <= 65535
+        with pytest.raises(OSError):
+            socket.socket().bind(("127.0.0.1", port))
+    finally:
+        listener.close()
+    ds.validate(launch(conf, input_port=0))
+
+
+def test_a_spawn_that_fails_lets_the_port_go(tmp_path: Path,
+                                            monkeypatch: pytest.MonkeyPatch) -> None:
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    port = _free_port()
+
+    def refuse(*_a: object, **_k: object) -> None:
+        raise OSError("no such emulator")
+    monkeypatch.setattr(subprocess, "Popen", refuse)
+    with pytest.raises(OSError) as held:
+        ds.Session(ds.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=port))
+    ds.listen_input(port).close()      # free again while the exception is still held
+    assert held.value is not None

@@ -521,7 +521,7 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
         logfile=logfile_path,
         # EVERY SESSION HAS THE INPUT ROUTE: input reaches the guest through that socket alone,
         # so a session started without a port could take no key and no click at all.
-        input_port=input_port if input_port is not None else ds.free_port(),
+        input_port=input_port if input_port is not None else 0,
         state_dir=state_path if state_path is not None else cwd_path / "save",
         binary=resolved.path,
         background=ds.judge_background(background, mode == "shared"),
@@ -590,7 +590,7 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
     # WHERE THE STUB IS, said in the reply: a conf's autoexec that runs its own program has to
     # run the stub first, and a wheel install puts it wherever the package landed.
     started = st.reply(mode=mode, ready_after_s=ready, argv=session.argv, **binary_facts,
-                       stub=str(ds.GUEST_DIR / "INJECT.COM"), input_port=launch.input_port,
+                       stub=str(ds.GUEST_DIR / "INJECT.COM"), input_port=session.launch.input_port,
                        background=launch.background,
                        **rearm)
     if not plan:

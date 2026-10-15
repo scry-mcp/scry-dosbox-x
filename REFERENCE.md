@@ -1171,11 +1171,12 @@ look: the still needs a recording and `ffmpeg`, and `capture_frame` offers it on
 
 Every input goes in INSIDE the machine, and nothing about the host is touched: no window
 comes to the front, the host pointer never moves, no Accessibility grant is asked for, and
-the window's scale changes nothing the guest sees. The emulator's COM1 is a TCP socket
-(`serial1=nullmodem port:N transparent:1`; `start`'s `input_port`, 1024 to 65535, or a free
-port when it is omitted; transparent, so a byte 0xFF is data) and DOSBox-X's
-integration device is switched on (`integration device=true`), both as `-set` overrides the
-conf need not carry; the session connects before the guest runs an instruction. A tiny
+the window's scale changes nothing the guest sees. The emulator's COM1 is a TCP client of a
+port the session listens on (`serial1=nullmodem server:127.0.0.1 port:N transparent:1`;
+`start`'s `input_port`, 1024 to 65535, or a free port when it is omitted; transparent, so a
+byte 0xFF is data) and DOSBox-X's integration device is switched on (`integration
+device=true`), both as `-set` overrides the conf need not carry; the emulator dials before the
+guest runs an instruction. A tiny
 resident stub, `guest/INJECT.COM` (its source is beside it, and its header is the protocol),
 takes ONE command off the socket on every timer tick and carries it out in the guest: a scan
 byte into the emulated 8042, a mouse button into the device's button register, the pointer
@@ -1194,8 +1195,9 @@ the fix) when it is missing, when the device is absent, or when the stub speaks 
 protocol, because an older stub reads every byte as a scan code and a mouse command would
 arrive as keystrokes. A session with no `logfile` has no line to read: keys go out on the
 conf's word, and the mouse, which reads its pointer back through the log, is refused. A conf
-that configures `serial1` itself loses it to the route. A port something else already listens on is refused before the
-emulator exists (the keys would otherwise reach a stranger and read as delivered).
+that configures `serial1` itself loses it to the route. The session listens on the port before
+the emulator exists and holds it, so nothing can take it between the pick and the emulator's
+dial; a port something else already holds is refused before the emulator exists.
 
 **Keys.** `send_keys` composes scan code set 1 on the host, makes, breaks and the E0 prefix
 of an extended key, with `modifiers` (`shift`, `ctrl`, `alt`) held across the keys; a DOS

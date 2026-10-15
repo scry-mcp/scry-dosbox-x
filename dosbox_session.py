@@ -54,7 +54,7 @@ import threading
 import time
 import zipfile
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -746,9 +746,10 @@ class Launch:
     # THE EMULATOR, the absolute path `start` resolved (`dosbox_binary`); the bare name is the
     # default a hand-built `Launch` runs, the PATH's.
     binary: str = binaries.EMULATOR_NAME
-    # THE INPUT ROUTE: a TCP port the emulator's COM1 listens on (`serial1=nullmodem`), which
-    # the resident stub in `guest/INJECT.COM` reads its commands from. The session connects to
-    # it at start; `start` picks a free one when the caller names none. The conf's autoexec
+    # THE INPUT ROUTE: a TCP port the session listens on and the emulator's COM1 dials
+    # (`serial1=nullmodem server:`), which the resident stub in `guest/INJECT.COM` reads its
+    # commands from; 0 has the session's listener take a free one, which the session's
+    # `launch` then carries. The conf's autoexec
     # runs the stub before its program, or `program` has it loaded first.
     input_port: int | None = None
     # WHETHER THE LAUNCH STAYS BEHIND the owner's front app (`judge_background`).
@@ -1315,12 +1316,13 @@ def build_argv(launch: Launch) -> list[str]:
         # THE INPUT ROUTE'S TWO SWITCHES, as `-set` overrides so the caller's conf need not
         # carry them: the integration device lives in the `[cpu]` section (upstream's own
         # Windows notes say so; under `[dosbox]` it is silently ignored -- measured), and
-        # COM1 becomes a listening TCP socket. TRANSPARENT, because otherwise the nullmodem reads
-        # a 0xFF from the socket as the escape of its own line-status protocol, and a pointer
-        # coordinate holding that byte would arrive changed. The stub is the conf's to run, or
-        # `program`'s.
+        # COM1 becomes a TCP client of the session's own listener. TRANSPARENT, because
+        # otherwise the nullmodem reads a 0xFF from the socket as the escape of its own
+        # line-status protocol, and a pointer coordinate holding that byte would arrive changed.
+        # The stub is the conf's to run, or `program`'s.
         argv += ["-set", "cpu integration device=true",
-                 "-set", f"serial serial1=nullmodem port:{launch.input_port} transparent:1"]
+                 "-set", f"serial serial1=nullmodem server:{INPUT_HOST} port:{launch.input_port} "
+                         "transparent:1"]
     if launch.captures_dir is not None:
         argv += ["-set", f"dosbox captures={launch.captures_dir}"]
     # THE CALLER'S FLAGS COME AFTER EVERY `-set` OF OUR OWN, so one of the same key wins.
@@ -1352,7 +1354,9 @@ def build_argv(launch: Launch) -> list[str]:
 # a letter late in the alphabet, so it does not take one a conf is likely to mount.
 GUEST_DIR = Path(__file__).resolve().with_name("guest")
 STUB_DRIVE = "Y"
-INPUT_CONNECT_S = 8.0     # how long a session waits for the emulator's serial socket to listen
+INPUT_CONNECT_S = 8.0     # how long a session waits for the emulator's serial port to dial it
+ACCEPT_SLICE_S = 0.1      # how often that wait looks up to see whether the emulator still runs
+INPUT_HOST = "127.0.0.1"
 SCREENSHOT_COMMAND = b"S"   # the stub's opcode for the device's capture trigger (guest/inject.asm)
 COMMAND_GAP_S = 0.06    # the pause between stub commands: just over one 18.2 Hz timer tick
 
@@ -1382,56 +1386,64 @@ def launch_environment(background: bool) -> dict[str, str]:
     return spawned
 
 
-def free_port() -> int:
-    """A port nothing listens on right now, for a session whose caller named none: the
-    kernel's own pick, released at once. Something else can take it before the emulator binds
-    it, and `require_port_free` and the connect then refuse rather than reach a stranger."""
-    probe = socket.socket()
+def listen_input(port: int) -> socket.socket:
+    """The session's end of the serial input route, LISTENING before the emulator exists, so
+    the port is held from here on and the emulator dials it; 0 takes the kernel's pick, held
+    from the moment it is picked. The other way round, with the
+    emulator listening, was measured losing: a process that took the port between the
+    server's check and the emulator's bind was left listening beside it, and the session's
+    connect reached THAT process, every key reported delivered to a stranger. Held here, the
+    port cannot be taken; already taken, it is refused before anything is spawned."""
+    sock = socket.socket()
     try:
-        probe.bind(("127.0.0.1", 0))
-        return int(probe.getsockname()[1])
-    finally:
-        probe.close()
-
-
-def require_port_free(port: int) -> None:
-    """Refuse a serial input port something else already listens on, BEFORE the emulator
-    is spawned. The emulator's own bind would fail and it would carry on without a
-    listener, while the session's connect would reach the OTHER process and every send
-    would be reported delivered -- to a stranger. A bind probe answers the question the
-    only way that cannot be fooled by who is listening."""
-    probe = socket.socket()
-    try:
-        probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        probe.bind(("127.0.0.1", port))
+        # EXCLUSIVE where the platform has the word for it (Windows), and on POSIX the
+        # TIME_WAIT of a port an earlier session used is not "in use".
+        exclusive = getattr(socket, "SO_EXCLUSIVEADDRUSE", None)
+        sock.setsockopt(socket.SOL_SOCKET, exclusive or socket.SO_REUSEADDR, 1)
+        sock.bind((INPUT_HOST, port))
+        sock.listen(1)
     except OSError as e:
-        raise Invalid("host_failed", f"input_port {port} is already in use on this host ({e}): the "
-                      f"emulator could not listen there, and the session would connect to "
-                      f"whatever does. Pick another port") from None
-    finally:
-        probe.close()
+        sock.close()
+        if not port:
+            raise Invalid("host_failed", f"the kernel would not hand out a free port for the "
+                          f"input route ({e})") from None
+        raise Invalid("host_failed", f"input_port {port} is already in use on this host ({e}): "
+                      f"the session cannot listen there for the emulator. Pick another port, "
+                      f"or omit it") from None
+    return sock
 
 
-def _connect_input(port: int, seconds: float) -> socket.socket:
-    """The host end of the serial input route, retried until the emulator listens or the
-    bound expires. A refusal here is raised INTO `Session.__init__`'s `except BaseException`,
-    which kills the child it has just spawned: a session on this route with no socket is not
-    a session with a degraded feature, it is one whose guest will block the moment its stub
-    polls the port."""
+def _accept_input(listener: socket.socket, seconds: float,
+                  exited: Callable[[], int | None]) -> socket.socket:
+    """The emulator's dial, accepted within the bound, then the listener closed; `exited` is
+    the child's exit code once it has one, so an emulator that dies before it dials is said at
+    once and not after the whole bound. The first connection is taken as the emulator's: the
+    port is the kernel's pick, so a stranger would have to dial it inside the emulator's start.
+    A refusal here is raised INTO `Session.__init__`'s `except BaseException`, which kills the
+    child it has just spawned: a session on this route with no socket is one whose guest will
+    block the moment its stub polls the port."""
+    port = listener.getsockname()[1]
     deadline = time.monotonic() + seconds
-    last: OSError | None = None
-    while time.monotonic() < deadline:
-        try:
-            sock = socket.create_connection(("127.0.0.1", port), timeout=2.0)
-            sock.setblocking(True)
-            return sock
-        except OSError as e:
-            last = e
-            time.sleep(0.2)
-    raise Invalid("session_broken",
-        f"the emulator's serial socket on port {port} did not accept a connection "
-                  f"within {seconds}s ({last}): the serial input route cannot be used, and a "
-                  f"guest polling that port with no client would block the emulator")
+    listener.settimeout(ACCEPT_SLICE_S)
+    try:
+        while True:
+            try:
+                sock, _ = listener.accept()
+                break
+            except TimeoutError:
+                if (code := exited()) is not None:
+                    raise Invalid("session_broken",
+                        f"the emulator exited (code {code}) before it dialled the serial input "
+                        f"port {port}") from None
+                if time.monotonic() >= deadline:
+                    raise Invalid("session_broken",
+                        f"the emulator never dialled the serial input port {port} within "
+                        f"{seconds}s: the serial input route cannot be used, and a guest "
+                        f"polling that port with no client would block the emulator") from None
+    finally:
+        listener.close()
+    sock.setblocking(True)
+    return sock
 
 
 # WHAT A NAMED ARGUMENT OWNS, so `flags` cannot retune it: the options this server passes,
@@ -1565,9 +1577,9 @@ def validate(launch: Launch) -> None:
             "capture_video needs a program to capture: DX-CAPTURE wraps a "
                       "PROGRAM and stops when it exits, so without one the flag "
                       "would be accepted and quietly do nothing")
-    if launch.input_port is not None and not 1024 <= launch.input_port <= 65535:
+    if launch.input_port and not 1024 <= launch.input_port <= 65535:
         raise Invalid("bad_argument",
-            f"input_port is a TCP port the emulator's COM1 will listen on, between "
+            f"input_port is the TCP port the emulator's COM1 dials, between "
                       f"1024 and 65535; got {launch.input_port}")
 
 
@@ -1925,9 +1937,16 @@ class Session:
         # terminal and handing it to the child can raise, and on any of them the
         # object is never bound to anything: nothing could ever reach `close()` to
         # reclaim the descriptors.
-        if launch.input_port is not None:
-            require_port_free(launch.input_port)      # before any process exists
-        self._master, slave = pty.openpty()
+        listener = (listen_input(launch.input_port) if launch.input_port is not None
+                    else None)                        # before any process exists
+        if listener is not None:
+            launch = self.launch = replace(launch, input_port=listener.getsockname()[1])
+        try:
+            self._master, slave = pty.openpty()
+        except BaseException:
+            if listener is not None:
+                listener.close()
+            raise
         try:
             attrs = termios.tcgetattr(slave)
             attrs[3] &= ~(termios.ECHO | termios.ECHONL | termios.ECHOE | termios.ECHOK)
@@ -1943,15 +1962,16 @@ class Session:
             self._drainer = threading.Thread(target=self._drain, name="dosbox-drain",
                                              daemon=True)
             self._drainer.start()
-            # THE INPUT SOCKET IS CONNECTED NOW, before the guest runs a single instruction
-            # (`-break-start` holds it at reset): the nullmodem server listens from the
-            # emulator's init, and a guest polling a serial port with no client BLOCKS the
-            # emulator ("Nullmodem: block on polling", its own log line), so connecting
-            # after the stub is up would be connecting to a machine that has stopped.
+            # THE INPUT SOCKET IS ACCEPTED NOW, before the guest runs a single instruction
+            # (`-break-start` holds it at reset): the nullmodem dials from the emulator's
+            # init, and a guest polling a serial port with no peer BLOCKS the emulator
+            # ("Nullmodem: block on polling", its own log line).
             self._input: socket.socket | None = None
-            if launch.input_port is not None:
-                self._input = _connect_input(launch.input_port, INPUT_CONNECT_S)
+            if listener is not None:
+                self._input = _accept_input(listener, INPUT_CONNECT_S, self.proc.poll)
         except BaseException:
+            if listener is not None:
+                listener.close()
             # THE CHILD IS KILLED HERE, and this arm is why. Before the drain thread
             # existed, `Popen` was the LAST statement in this block, so nothing could
             # raise once a process existed. Now two statements follow it, and both can
@@ -1969,7 +1989,7 @@ class Session:
                     proc.wait(timeout=5)
             self._stop.set()
             # THE DRAIN THREAD IS JOINED BEFORE THE DESCRIPTOR IS CLOSED, as `close()` does
-            # and for its reason: besides an interrupt, a refused serial connect arrives
+            # and for its reason: besides an interrupt, a dial that never came arrives
             # here seconds later with the thread selecting on `_master`. Closing under it
             # leaves it reading a number the kernel is free to hand to the next session's
             # pty.
