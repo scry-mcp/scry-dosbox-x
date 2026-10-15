@@ -12,8 +12,8 @@ THE FIGURES ARE NOT KEPT: a measurement lives in the commit that took it, and a 
 one is taken when a decision needs it.  This paragraph once carried a headline figure of
 its own: the pseudo-terminal round trip measured before
 this server existed, which under-priced a real question by more than an order of
-magnitude, because every tool going through the debugger console waits `settle`
-seconds of quiet by construction.
+magnitude, because every tool going through the debugger console waits for the end of its
+reply by construction.
 
 WHAT IT DELIBERATELY DOES NOT DO.  A golden, or any byte-for-byte comparison, stays
 in a batch run: a batch reaches an EXACT frame, identical across runs, and a live
@@ -1168,9 +1168,8 @@ def step(count: int = 1, mode: str = "into",
     `stalled` (steps that did not change position: a swallowed keystroke), and the stop's
     `instruction`, `registers`, `watches`, `attribution` and `e9`, the log summary as in `resume`:
     `e9` is `none` (default), `all` (the whole log), `lines:N` (the last N), `since` (every line
-    since the previous stop) or `seconds:N` (needs `e9_stamp`), filtered by `e9_filter`. About a
-    second and a half per
-    step; for a longer run use `run_to`.
+    since the previous stop) or `seconds:N` (needs `e9_stamp`), filtered by `e9_filter`. A
+    settle per step; for a longer run use `run_to`.
     """
     session = _live()
     out = session.step(mode=mode, count=count)

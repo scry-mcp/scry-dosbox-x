@@ -289,7 +289,8 @@ class Debugger(RealPositionReaders):
         ds.Session._release(cast(ds.Session, self), data)
         self.keys.append(data)
 
-    def _collect(self, settle: float = 0.0, timeout: float = 0.0) -> str:
+    def _collect(self, settle: float = 0.0, timeout: float = 0.0,
+                 early: bool = False) -> str:
         return self.deltas.pop(0) if self.deltas else ""
 
     def _read(self, seconds: float = 0.0) -> str:
@@ -2147,12 +2148,12 @@ def test_a_dropped_read_mid_run_still_names_the_steps_taken() -> None:
     calls = {"n": 0}
     real_collect = dbg._collect
 
-    def flaky(settle: float = 0.0, timeout: float = 0.0) -> str:
+    def flaky(settle: float = 0.0, timeout: float = 0.0, early: bool = False) -> str:
         calls["n"] += 1
         if calls["n"] == 3:
             raise ds.Invalid("unexpected_answer",
                 "the terminal buffer overflowed and 4096 bytes were lost")
-        return real_collect(settle, timeout)
+        return real_collect(settle, timeout, early)
 
     dbg._collect = flaky                                  # type: ignore[method-assign]
     with pytest.raises(ds.Invalid) as caught:
@@ -2292,6 +2293,7 @@ class Wire(RealPositionReaders):
         self.keys: list[bytes] = []
         self.sent: list[str] = []
         self._peek_carry = ""     # `command()` folds the drained leftover into it
+        self._raw_tail, self._raw_reads = "", 0    # what the real `_read` keeps for `_collect`
 
     # THE REAL KEY ROUND TRIP, which the real `command` types through.
     _keys = ds.Session._keys
@@ -2317,8 +2319,8 @@ class Wire(RealPositionReaders):
 
     # THE POINT OF THIS CLASS: the real one, not a stub. Everything else here exists to
     # give it something to poll.
-    def _collect(self, settle: float, timeout: float) -> str:
-        return ds.Session._collect(cast(ds.Session, self), settle, timeout)
+    def _collect(self, settle: float, timeout: float, early: bool = False) -> str:
+        return ds.Session._collect(cast(ds.Session, self), settle, timeout, early)
 
 
 def wired(script: list[str], panes: list[str] | None = None,
@@ -2350,6 +2352,10 @@ def test_a_leftover_of_the_previous_command_is_not_read_as_this_ones_reply() -> 
     assert wire.keys == [b"BPLIST\r"], "the drain never types anything"
 
 
+# What `Session.resume` waits for the stop's repaint, as it passes `_collect`.
+RESUME_SETTLE_S = 1.0
+
+
 def test_a_prompt_that_arrives_after_the_settle_is_not_seen_and_halted_reads_false() -> None:
     """THE LIMIT `halted` INHERITS FROM `_collect`, executed rather than described.
 
@@ -2363,10 +2369,11 @@ def test_a_prompt_that_arrives_after_the_settle_is_not_seen_and_halted_reads_fal
     a caller who believes the machine is running. Whoever changes the window will turn
     this red, and that is the point -- the message says what moved.
     """
-    # One byte, then silence for longer than the settle, and the prompt after it. At a
-    # 0.1 s slice the settle closes on the tenth empty poll, so index 15 is a machine
-    # that stopped about half a second too late to be seen.
-    script = ["COMMAND.COM\r\n"] + [""] * 14 + [ds.PROMPT + " _"]
+    # One byte, then silence for longer than `resume`'s settle, and the prompt after it: the
+    # settle closes on the poll that fills it, so five polls past that is a machine that
+    # stopped too late to be seen, whatever the collect's slice.
+    script = ["COMMAND.COM\r\n"] + [""] * (round(RESUME_SETTLE_S / ds.COLLECT_SLICE_S) + 5) + [
+        ds.PROMPT + " _"]
     got = wired(script, panes=[pane_with([], cs="0814", eip="00000112")])
     assert got["halted"] is False, got
     assert got["stopped_at"] is None, got

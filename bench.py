@@ -218,11 +218,11 @@ def reach_the_state(conf: Path, cwd: Path) -> dict[str, float]:
 def per_question(conf: Path, cwd: Path) -> dict[str, object]:
     """What each tool costs against a session already stopped where you want it.
 
-    THE SETTLE IS SWEPT, and that is the difference between a measurement of this
-    emulator and a measurement of a constant this package chose. `command()` breaks
-    only after `settle` seconds of QUIET, so most of a console question's cost is that
-    parameter rather than the machine. Publishing the default alone invites the reader
-    to attribute all of it to DOSBox-X.
+    THE GRACE IS SWEPT, and that is the difference between a measurement of this
+    emulator and a measurement of a constant this package chose. A console reply that ends
+    in the debugger's last words breaks after `REPLY_GRACE_S` of QUIET, so part of a console
+    question's cost is that parameter rather than the machine. Publishing the default alone
+    invites the reader to attribute all of it to DOSBox-X.
     """
     log = Path("/tmp/dosbox-bench-q.log")
     if log.exists():
@@ -242,19 +242,19 @@ def per_question(conf: Path, cwd: Path) -> dict[str, object]:
         out["debug"] = bench("debug", lambda: s.command("BPLIST"), 7,
                              lambda r: bool(str(r).strip()))
 
-        # THE SWEEP: the same call at three settles, so a reader can see how much of
-        # the figure is ours. Each still checks it got a real pane back.
-        def at_settle(st: float) -> Callable[[], dict[str, str]]:
-            """The default argument is bound HERE and not in a lambda's parameter list:
-            a late-bound closure over the loop variable would time the LAST settle
-            three times and report it under three different labels."""
-            return lambda: ds.parse_registers(s.command(ds.NUDGE, settle=st))
-
+        # THE SWEEP: the same call at three graces, so a reader can see how much of the
+        # figure is ours. Each still checks it got a real pane back.
         sweep: dict[str, object] = {}
-        for settle in (0.6, 0.3, 0.1):
-            sweep[str(settle)] = bench(f"registers@settle={settle}",
-                                       at_settle(settle), 5, nonempty)
-        out["settle_sweep"] = sweep
+        default = ds.REPLY_GRACE_S
+        try:
+            for grace in (0.6, 0.3, default):
+                ds.REPLY_GRACE_S = grace
+                sweep[str(grace)] = bench(f"registers@grace={grace}",
+                                          lambda: ds.parse_registers(s.command(ds.NUDGE)),
+                                          5, nonempty)
+        finally:
+            ds.REPLY_GRACE_S = default
+        out["grace_sweep"] = sweep
 
         s.resume()
         deadline = time.perf_counter() + 60

@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import contextlib
 import inspect
+import json
 import os
 import shutil
 import signal
@@ -1278,6 +1279,7 @@ class FakeDrain:
         self.dropped = 0
         self._pending = ""
         self._screen = ""
+        self._raw_tail, self._raw_reads = "", 0
         self._eof = threading.Event()
         self._left = list(chunks)
         self._take: Callable[[], bytes] = self._next_chunk
@@ -2623,3 +2625,85 @@ def test_a_spawn_that_fails_lets_the_port_go(tmp_path: Path,
         ds.Session(ds.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=port))
     ds.listen_input(port).close()      # free again while the exception is still held
     assert held.value is not None
+
+
+RECORDED = json.loads((Path(__file__).parent / "fixtures" / "console_replies" / "recorded.json")
+                      .read_text(encoding="utf-8"))
+
+
+def _replaying(chunks: list[tuple[float, str]]) -> ds.Session:
+    """A session whose terminal hands back `chunks`, each once its offset has passed since the
+    first read: the real `_read` and `_collect` over bytes a real debugger wrote."""
+    ses = ds.Session.__new__(ds.Session)
+    ses._eof, ses.dropped = threading.Event(), 0
+    ses._pending, ses._raw_tail, ses._screen, ses._raw_reads = "", "", "", 0
+    left, began = list(chunks), [0.0]
+
+    def take() -> bytes:
+        now = time.monotonic()
+        if not began[0]:
+            began[0] = now
+        due = [c for c in left if now - began[0] >= c[0]]
+        for c in due:
+            left.remove(c)
+        return "".join(raw for _, raw in due).encode("latin-1")
+    ses._take = take  # type: ignore[method-assign]
+    return ses
+
+
+def _recorded(name: str) -> list[tuple[float, str]]:
+    """A recorded reply, its first piece moved to arrive at once: when the debugger answered
+    is not what these cases are about."""
+    chunks = [(c["after_s"], c["raw"]) for c in RECORDED[name]["chunks"]]
+    return [(at - chunks[0][0], raw) for at, raw in chunks]
+
+
+def _collected(chunks: list[tuple[float, str]], settle: float = ds.SETTLE_S) -> tuple[str, float]:
+    ses = _replaying(chunks)
+    began = time.monotonic()
+    got = ses._collect(settle, ds.REPLY_TIMEOUT_S, early=True)
+    return got, time.monotonic() - began
+
+
+def test_a_reply_ending_in_the_empty_input_line_is_whole_after_the_grace_not_the_settle(
+        ) -> None:
+    chunks = _recorded("prompt")
+    got, took = _collected(chunks)
+    assert got == ds.ANSI.sub("", "".join(raw for _, raw in chunks))
+    assert ds.REPLY_GRACE_S <= took < ds.REPLY_GRACE_S + 0.25, took
+
+
+def test_a_piece_inside_the_grace_after_the_ending_is_still_this_replys() -> None:
+    [(_, raw)] = _recorded("prompt")
+    inside, _ = _collected([(0.0, raw), (ds.REPLY_GRACE_S / 2 + ds.COLLECT_SLICE_S, "tail")])
+    assert inside.endswith("tail"), "the grace closed before a piece that arrived inside it"
+    after, _ = _collected([(0.0, raw), (ds.REPLY_GRACE_S + 0.3, "tail")])
+    assert not after.endswith("tail"), "the reply did not end at its terminator plus the grace"
+
+
+def test_a_paged_listing_is_not_ended_by_its_input_line_which_still_holds_the_command(
+        ) -> None:
+    """A listing that pages draws the input line still holding the command, then the pager's
+    line: cut there and the rest late, the collect still waits for the pager."""
+    [(_, raw)] = _recorded("paged")
+    cut = raw.index("Paged content")
+    assert "I-> " in raw[:cut] and ds.REPLY_END.search(raw[:cut]) is None
+    got, _ = _collected([(0.0, raw[:cut]), (ds.REPLY_GRACE_S + 0.15, raw[cut:])])
+    assert "Paged content: Hit ENTER to continue" in got
+
+
+def test_a_reply_with_no_debugger_ending_keeps_the_settle() -> None:
+    chunks = _recorded("running")
+    assert ds.REPLY_END.search("".join(raw for _, raw in chunks)) is None
+    got, took = _collected(chunks, settle=0.3)
+    assert got and took >= chunks[-1][0] + 0.3, took
+
+
+def test_only_a_commands_reply_ends_early() -> None:
+    """`resume` and `step` collect a stop's repaint with a settle of their own, which no
+    recording measured ending early: their collect waits it out."""
+    [(_, raw)] = _recorded("prompt")
+    ses = _replaying([(0.0, raw)])
+    began = time.monotonic()
+    ses._collect(0.4, ds.REPLY_TIMEOUT_S)
+    assert time.monotonic() - began >= 0.4

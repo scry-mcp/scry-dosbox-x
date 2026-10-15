@@ -142,9 +142,26 @@ PAGER_MARK = "Paged content: Hit ENTER to continue"
 PAGER_EXIT = b"Q"
 
 # HOW LONG A CONSOLE REPLY IS GIVEN (`Session.command`): quiet for `SETTLE_S` once something
-# has arrived ends it, and `REPLY_TIMEOUT_S` bounds it whatever arrives.
+# has arrived ends it, or for `REPLY_GRACE_S` when it ends in the debugger's own last words, and
+# `REPLY_TIMEOUT_S` bounds it whatever arrives.
 SETTLE_S = 0.6
 REPLY_TIMEOUT_S = 6.0
+# THE DEBUGGER'S OWN LAST WORDS: it closes the repaint that answers a command by redrawing its
+# input line EMPTY (`I-> `, the cursor mark, erase to the end of the line, the cursor placed, the
+# attributes reset), or by its pager's line when a listing pages; a listing that pages draws the
+# input line still holding the command, which is why only the empty one counts. Nothing follows
+# either until the next command, so a reply that ends in one is whole after `REPLY_GRACE_S` of
+# quiet, a margin over the gaps between the pieces of one reply; anything else (a command typed
+# at a running guest) keeps the settle.
+REPLY_GRACE_S = 0.15
+_ATTRS = r"(?:\x1b\[[0-9;]*m)*"
+REPLY_END = re.compile(
+    r"(?:I-> _?\x1b\[K(?:\x1b\[\d+;\d+H|\r\x1b\[\d+d)\x1b\(B\x1b\[m" + _ATTRS
+    + r"|Paged content: Hit ENTER to continue, Q to exit paging\x1b\[K(?:\x1b\[\d+;\d+H)?"
+    r"\x1b\(B\x1b\[m" + _ATTRS + r"(?:\x1b\[\d+;\d+H)?)\Z")
+# How the collect slices its wait, and how much raw terminal it keeps to look for that end.
+COLLECT_SLICE_S = 0.05
+RAW_TAIL_KEEP = 512
 
 # A live line of the guest's Bochs 0xE9 instrumentation, as DOSBox-X logs it.
 E9_LINE = re.compile(r"^Bochs port E9h: ")
@@ -359,10 +376,9 @@ LOG_COMMAND = re.compile(rb"(?:" + "|".join(LOG_WORDS).encode() + rb") [0-9A-F]+
 # Every step is a keystroke and then a repaint that has to be READ BACK, because a
 # step over a `CALL` is implemented as run-until-it-returns and a call that does not
 # return leaves the machine RUNNING with the remaining keystrokes going nowhere. So
-# the position is re-established after each one, which costs a settle: MEASURED at
-# roughly a second and a half per step on this build. Sixty-four is about a minute and
-# a half, which is the most a single question should ever cost; past that the caller
-# wants `run_to`, which pays the settle once.
+# the position is re-established after each one, which costs a settle per step; the cap
+# bounds what a single question costs, and past it the caller wants `run_to`, which pays
+# the settle once.
 STEP_MAX = 64
 
 # ONE ROW OF THE DEBUGGER'S DATA VIEW, matched by its SHAPE and not by which pane it
@@ -1900,6 +1916,8 @@ class Session:
         self.pane_cycles: int | None = None       # `cc=` of the same survey
         self._peek_carry = ""       # the tail of the last passive peek, for a split prompt
         self._pending = ""      # an escape or character split across two reads
+        self._raw_tail = ""     # the last raw terminal bytes read, escapes kept (`REPLY_END`)
+        self._raw_reads = 0     # how many reads brought raw bytes, escapes alone included
 
         # What the drain thread fills and `_read` empties. `dropped` is not
         # bookkeeping: the buffer is bounded, so a session left alone for long enough
@@ -2104,6 +2122,9 @@ class Session:
             # No head, or one that has grown past PENDING_MAX and is not an escape
             # this debugger is going to finish. Give it up as text.
             self._pending = ""
+        if raw:
+            self._raw_tail = (self._raw_tail + raw)[-RAW_TAIL_KEEP:]
+            self._raw_reads += 1
         text = ANSI.sub("", raw)
         self._screen = (self._screen + text)[-SCREEN_KEEP:]
         return text
@@ -2262,7 +2283,7 @@ class Session:
                 self._mark_stopped()
             self._peek_carry = stale[-STOP_CARRY:]
         self._write(data)
-        reply = self._collect(settle, timeout)
+        reply = self._collect(settle, timeout, early=True)
         # THE PROMPT IS COUNTED WHEREVER IT IS READ. A command typed at a RUNNING guest is
         # swallowed, but its collect window stays open for up to `timeout`, and a breakpoint
         # that fires inside it prints the prompt INTO this reply -- with no register pane, so
@@ -2329,19 +2350,24 @@ class Session:
             raise Invalid("no_channel", f"no log at {logfile}: the emulator has not "
                           f"written it, so `{command}` left nothing to read") from None
 
-    def _collect(self, settle: float, timeout: float) -> str:
+    def _collect(self, settle: float, timeout: float, early: bool = False) -> str:
+        """What arrives until it has been quiet for `settle`, once something has arrived;
+        `timeout` bounds it whatever arrives. `early`, the reply to a command: it is whole
+        after `REPLY_GRACE_S` of quiet once it ends in the debugger's last words (`REPLY_END`).
+        Quiet is counted from the last bytes of any kind, escapes alone included."""
         got = ""
         deadline = time.monotonic() + timeout
-        quiet_since: float | None = None
+        last_s, reads = 0.0, self._raw_reads
         while time.monotonic() < deadline:
-            chunk = self._read(0.1)
+            chunk = self._read(COLLECT_SLICE_S)
+            if chunk or self._raw_reads != reads:
+                reads, last_s = self._raw_reads, time.monotonic()
             if chunk:
                 got += chunk
-                quiet_since = None
             elif got:                      # only ONCE something has arrived
-                if quiet_since is None:
-                    quiet_since = time.monotonic()
-                elif time.monotonic() - quiet_since >= settle:
+                ended = early and REPLY_END.search(self._raw_tail) is not None
+                if time.monotonic() - last_s >= (min(settle, REPLY_GRACE_S) if ended
+                                                 else settle):
                     break
         return got
 
@@ -2830,8 +2856,7 @@ class Session:
         replying here would have this method claim a position it just failed to read.
         The refusal carries the irreversible part.
 
-        THE COST, measured rather than promised: about a second and a half per step,
-        which is the settle on the repaint that proves it landed. `STEP_MAX` bounds one
+        THE COST: a settle per step, on the repaint that proves it landed. `STEP_MAX` bounds one
         call at 64 for that reason alone -- for anything longer the question is `run_to`,
         which pays the settle once however far the machine travels.
         """
