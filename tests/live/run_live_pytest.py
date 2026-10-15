@@ -98,7 +98,8 @@ def _leave(signum: int, _frame: object) -> None:
 
 
 def main() -> int:
-    for sig in (signal.SIGTERM, signal.SIGHUP):
+    # SIGHUP is POSIX's; Windows has SIGTERM alone.
+    for sig in (signal.SIGTERM, getattr(signal, "SIGHUP", signal.SIGTERM)):
         signal.signal(sig, _leave)
     if sys.argv[1:]:
         print(f"usage: {sys.argv[0]} (no arguments; see the docstring for the variables)",
