@@ -4341,10 +4341,12 @@ class Session:
                 with contextlib.suppress(Invalid):
                     self.resume()
             if e.code == "no_channel":
+                why = str(e).rstrip(".")
                 raise Invalid("no_channel",
-                    f"{verb} goes down the debugger channel, and {e} The saved states need "
-                              f"that channel and a build carrying {verb}: the Optimiza/dosbox-x "
-                              f"fork has both (REFERENCE.md, Saved states)") from None
+                              f"{verb} goes down the debugger channel, and {why}. The saved "
+                              f"states need that channel and a build carrying {verb}: the "
+                              f"Optimiza/dosbox-x fork has both (REFERENCE.md, Saved states)"
+                              ) from None
             raise
         waited = round(time.monotonic() - began, 2)
         running = not self.resume()["halted"] if paused else False

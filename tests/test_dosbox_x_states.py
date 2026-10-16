@@ -428,10 +428,13 @@ def test_a_path_of_two_lines_is_refused_before_the_break_in(tmp_path: Path) -> N
 def test_a_missing_channel_names_the_fork_and_alters_nothing(tmp_path: Path) -> None:
     fake = StateFake(tmp_path / "save")
     write_state(tmp_path / "save" / "boot.sav")
-    fake.control.raises = ds.Invalid("no_channel", "the emulator never dialled the channel.")
+    # The channel's own wording, which ends without a full stop.
+    fake.control.raises = ds.Invalid("no_channel", "the emulator never dialled the debugger "
+                                     "channel, so a running guest cannot be reached")
     with pytest.raises(ds.Invalid) as exc:
         ds.Session.state_load(as_session(fake), "boot", 5.0)
     assert exc.value.code == "no_channel" and "Optimiza/dosbox-x" in str(exc.value)
+    assert "cannot be reached. The saved states" in str(exc.value), "one sentence each"
     assert fake.altered is False
     fake.control.raises = None
     fake.control.carries = False
