@@ -117,23 +117,14 @@ class FakeSession:
         that fires before a process exists."""
         return 0.0
 
-    menu_focus = "returned"   # what the real click says once it has handed the focus back
+    def break_in(self, seconds: float = 5.0) -> float:
+        raise ds.Invalid("no_channel", "the emulator never dialled the debugger channel")
 
-    def break_in(self, seconds: float = 5.0,
-                 progress: ds.Progress = ds.no_progress) -> float:
-        raise ds.Invalid("no_channel", "this session is headless: there is no window")
+    def state_save(self, name: str, seconds: float = 20.0) -> dict[str, object]:
+        raise ds.Invalid("no_channel", "this DOSBox-X has no `SAVESTATE` debugger command")
 
-    def click_menu(self, menu: str, item: str,
-                   progress: ds.Progress = ds.no_progress) -> float:
-        raise ds.Invalid("no_channel", "this session is headless: there is no window")
-
-    def state_save(self, name: str, seconds: float = 20.0,
-                   progress: ds.Progress = ds.no_progress) -> dict[str, object]:
-        raise ds.Invalid("no_channel", "this session is headless: there is no window")
-
-    def state_load(self, name: str, seconds: float = 20.0,
-                   progress: ds.Progress = ds.no_progress) -> dict[str, object]:
-        raise ds.Invalid("no_channel", "this session is headless: there is no window")
+    def state_load(self, name: str, seconds: float = 20.0) -> dict[str, object]:
+        raise ds.Invalid("no_channel", "this DOSBox-X has no `LOADSTATE` debugger command")
 
     def state_list(self) -> dict[str, object]:
         return {"state_dir": "/x/save", "states": [], "working_slot": None}
@@ -2786,14 +2777,9 @@ class NamesFake:
             self.log.extend(self.after_effect)
         return sum(len(c) for c in commands)
 
-    menu_focus = "returned"   # what the real click says once it has handed the focus back
-
-    def break_in(self, seconds: float = 5.0,
-                 progress: ds.Progress = ds.no_progress) -> float:
-        """The menu route of the real one: refused headless, otherwise the machine is at
-        the debugger a moment later, which the running flag's setter counts as a stop."""
-        if not self.launch.watched:
-            raise ds.Invalid("no_channel", "this session is headless: there is no window")
+    def break_in(self, seconds: float = 5.0) -> float:
+        """The channel route of the real one, headless or windowed: the machine is at the
+        debugger a moment later, which the running flag's setter counts as a stop."""
         self.break_ins += 1
         self.running = False
         return 0.12
@@ -5361,11 +5347,9 @@ def test_resume_on_a_running_guest_is_refused_before_any_other_check(
         tmp_path: Path) -> None:
     """An `ok` from a `resume` that found the guest already running cannot be told from one
     that released it, so it is refused `not_stopped` like every other tool that needs the
-    machine stopped. It comes before the check that needs the machine (a headless session with
-    no stopper would be refused for that, which is not the real reason); a value wrong with no
-    machine at all, a negative `seconds`, is refused before the gate."""
-    # A WINDOWED SESSION passes the stopper check, so this is where an F5 would go out and
-    # answer `ok` with `halted: false`.
+    machine stopped. A value wrong with no machine at all, a negative `seconds`, is refused
+    before the gate."""
+    # Without the gate this is where an F5 would go out and answer `ok` with `halted: false`.
     fake = _names(tmp_path, watched=True)
     server.status()                              # the park, on record
     fake.running = True
@@ -6141,67 +6125,44 @@ def test_start_leaves_the_park_at_the_debugger_recorded_as_stop_one(tmp_path: Pa
     assert dstate.STATE.last_machine() is not None
 
 
-def test_stop_brings_a_windowed_guest_back_through_the_menu_and_refuses_headless(
-        tmp_path: Path) -> None:
-    """The one way back into the debugger of a running guest is the emulator's own Debug
-    menu, which only a windowed session has. A running windowed guest comes back with the
-    full stop reply, `how: menu`
-    and the seconds it took; an already-stopped one says so with `last_stop`; a headless
-    session is refused naming what ends its run instead."""
-    fake = _names(tmp_path, watched=True)
+@pytest.mark.parametrize("watched", [False, True])
+def test_stop_brings_a_running_guest_back_headless_or_windowed(tmp_path: Path,
+                                                               watched: bool) -> None:
+    """`stop` breaks in through the debugger channel, which every session has: a running
+    guest comes back with the full stop reply, `how: break` and the seconds it took, headless
+    or windowed; an already-stopped one says so with `last_stop`."""
+    fake = _names(tmp_path, watched=watched)
     fake.running = True
-    fake.menu_focus = "lost"
     out = cast(dict[str, Any], server.stop())
-    assert out["status"] == "ok" and out["interrupted"] is True and out["how"] == "menu", out
-    assert out["focus"] == "lost", "the reply says what the menu click did to the focus"
+    assert out["status"] == "ok" and out["interrupted"] is True and out["how"] == "break", out
+    assert "focus" not in out, "nothing is clicked, so there is no focus to report"
     assert fake.break_ins == 1 and fake.running is False
     assert "registers" in out and out["stopped_at"] == "00A7:00000000"
-    assert out["summary"] == "stop: menu, at 00A7:00000000 after 0.12s"
+    assert out["summary"] == "stop: break, at 00A7:00000000 after 0.12s"
     again = cast(dict[str, Any], server.stop())
     assert again["interrupted"] is False and again["last_stop"]["stop_seq"] >= 1
     assert fake.break_ins == 1
-    headless = _names(tmp_path, watched=False)
-    headless.running = True
-    refused = cast(dict[str, Any], server.stop())
-    assert refused["status"] == "INVALID" and "headless" in refused["message"], refused
-    assert headless.running is True
 
 
-def test_a_headless_resume_with_nothing_to_stop_it_is_refused_unless_meant(
-        tmp_path: Path) -> None:
-    """A headless session has no way back once it runs (no window, no `stop`, and the
-    debugger hotkey does not break in on macOS), so a `resume` with nothing declared that
-    can stop the machine is refused BEFORE the F5, like a bad `e9` argument is, unless
-    `until_close=True` says the run is meant to end at the bound or at `close`. A declared
-    stopper, or a windowed session, is not refused."""
-    fake = _names(tmp_path, watched=False)
-    refused = cast(dict[str, Any], server.resume())
-    assert refused["status"] == "INVALID" and "nothing declared can stop" in refused["message"]
-    assert fake.stop_count == 0 and fake.running is False, "the F5 went out anyway"
-    meant = cast(dict[str, Any], server.resume(until_close=True))
-    assert meant["status"] == "ok" and meant["halted"] is False
-    fake.running = False
-    server.breakpoint_interrupt(number=0x21)
-    armed = cast(dict[str, Any], server.resume())
-    assert armed["status"] == "ok"
-    _names(tmp_path, watched=True)                 # a windowed session has `stop`
-    assert cast(dict[str, Any], server.resume())["status"] == "ok"
+def test_a_headless_resume_with_nothing_declared_is_released(tmp_path: Path) -> None:
+    """With `stop` reaching a headless guest there is always a way back, so a `resume` needs
+    no stopper declared first: it goes out and leaves the machine running."""
+    _names(tmp_path, watched=False)
+    released = cast(dict[str, Any], server.resume())
+    assert released["status"] == "ok" and released["halted"] is False, released
 
 
 def test_an_interrupt_breakpoint_from_another_session_does_not_count_as_a_stopper(
         tmp_path: Path) -> None:
     """An interrupt breakpoint is never re-armed across sessions and lists as `gone`, yet
-    the stopper check counted it: on a conf whose store kept two from an earlier run, a
-    headless `resume` with nothing armed went out unrefused. Only an interrupt this
-    session declared can stop the machine."""
-    fake = _names(tmp_path, watched=False)
+    the stopper check (which decides whether a `perform` ending on a running step waits for
+    a stop) counted it. Only an interrupt this session declared can stop the machine."""
+    _names(tmp_path, watched=False)
     dstate.STATE.session_origin = "this-session"
     st = dstate.STATE.store
     assert st is not None
     st.add(dec.Declaration("interrupt", "address", "BPINT 21", origin="an-earlier-session"))
     assert arming.something_can_stop_it() is False
-    refused = cast(dict[str, Any], server.resume())
-    assert refused["status"] == "INVALID" and fake.stop_count == 0
     server.breakpoint_interrupt(number=0x21)          # this session's own: armed
     assert arming.something_can_stop_it() is True
 

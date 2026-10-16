@@ -224,7 +224,7 @@ def _screen_guest() -> None:
     sigs: dict[str, Any] = {}
     for stop in SCREEN_STOPS:
         M.setup()
-        r = M.call(server.resume, until_close=True, seconds=30)
+        r = M.call(server.resume, seconds=30)
         at = r.get("stopped_at") or {}
         here = f"{at.get('cs')}:{at.get('eip')}"
         if ok(r) and r.get("halted") is True and read_bytes(here, 2) == INT3:

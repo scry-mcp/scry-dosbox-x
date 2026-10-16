@@ -4,9 +4,9 @@ prompt asks an MCP client to make, each answer checked. `--help` says how to run
 It walks a debugger through a game: the first stop inside the program, its symbols placed from
 the segment DOS loaded it at, a breakpoint on the routine every falling brick goes through, the
 score read by name, the paddle moved by the keyboard and by the mouse, and a state saved and
-loaded. The session is always windowed: the Debug menu's stop and the saved states reach the
-emulator only through its window, so a run opens one, and each menu click takes the focus for a
-moment. The keys and the mouse go in inside the guest and take nothing.
+loaded. The session is windowed so the game can be watched, and nothing in it needs the window:
+`stop` and the saved states go down the debugger channel, the keys and the mouse in inside the
+guest. The saved states need a DOSBox-X that carries SAVESTATE and LOADSTATE (the fork).
 
 Where the window goes is the host's to say, never this demo's: it asks the placement helper named
 by `WINDOW_APP`, `<helper> dosbox` for a run nobody watches
@@ -181,7 +181,7 @@ def keys_taken(reply: Reply, run: Run) -> str:
 
 def stopped(reply: Reply, run: Run) -> str:
     expect(reply["interrupted"] is True, f"interrupted {reply['interrupted']}")
-    return "stopped through the Debug menu"
+    return "stopped through the debugger channel"
 
 
 def paddle(reply: Reply, run: Run) -> str:
@@ -222,8 +222,8 @@ def restored(reply: Reply, run: Run) -> str:
     return "the paddle is back where the state was saved: the load undid the left arrow"
 
 
-#: Values a stop through the Debug menu shows, which land wherever the game is when it is clicked.
-MENU_STOP = {key: "the stop lands wherever the game is when the menu is clicked"
+#: Values a `stop` shows, which land wherever the game is when the break arrives.
+BREAK_STOP = {key: "the stop lands wherever the game is when the break arrives"
              for key in ("summary", "registers", "instruction", "stopped_at", "attribution",
                          "watches", "e9")}
 #: Counts an input step reports that depend on when the host delivered the input, not on what
@@ -231,9 +231,9 @@ MENU_STOP = {key: "the stop lands wherever the game is when the menu is clicked"
 INPUT_TIMING = {key: "it depends on when the host delivered the input"
                 for key in ("lines_before", "seen_before_waiting", "lines_total", "written",
                             "since_mark")}
-#: The data view around the paddle, which holds the frame counter a menu's stop catches anywhere.
-MOUSE_PLACED = {"rows": "the data view around the paddle holds the frame counter, which the "
-                        "menu's stop catches at any frame"}
+#: The data view around the paddle, which holds the frame counter a `stop` catches anywhere.
+MOUSE_PLACED = {"rows": "the data view around the paddle holds the frame counter, which a "
+                        "`stop` catches at any frame"}
 
 STEPS = [
     Step("start", "start", boot, started, options=frozenset({"binary"}),
@@ -261,10 +261,10 @@ STEPS = [
     Step("keys", "drive", {"act": [{"op": "send_keys", "keys": ["right"], "expect": "KEY R",
                                     "seconds": 10}] * RIGHTS,
                            "pattern": "KEY|PLAYER"}, keys_taken, volatile=INPUT_TIMING),
-    Step("pause", "stop", {}, stopped, volatile=MENU_STOP),
+    Step("pause", "stop", {}, stopped, volatile=BREAK_STOP),
     Step("paddle", "read_memory", {"ref": "paddle_x", "length": 2}, paddle,
          volatile={"rows": "the data view around the paddle holds the frame counter, which "
-                           "the menu's stop catches at any frame"}),
+                           "a `stop` catches at any frame"}),
     Step("again", "resume", {}, lambda reply, run: "the game runs"),
     Step("mouse on", "send_keys", {"keys": ["m"], "expect": "MOUSE ON$", "seconds": 10},
          seen("M handed the paddle to the mouse: the game logged MOUSE ON"),
@@ -275,22 +275,20 @@ STEPS = [
     Step("mouse off", "send_keys", {"keys": ["m"], "expect": "MOUSE OFF$", "seconds": 10},
          seen("M took the paddle back, so the pointer moves nothing from here on"),
          volatile=INPUT_TIMING),
-    Step("mark", "stop", {}, stopped, volatile=MENU_STOP),
+    Step("mark", "stop", {}, stopped, volatile=BREAK_STOP),
     Step("before save", "read_memory", {"ref": "paddle_x", "length": 2}, moved,
          volatile=MOUSE_PLACED),
     Step("on again", "resume", {}, lambda reply, run: "the game runs"),
     Step("save", "state_save", {"name": "bricks"},
-         lambda reply, run: f"state saved in slot {reply['slot']}",
+         lambda reply, run: f"state saved as {Path(str(reply['path'])).name}",
          volatile={"summary": "it carries the state's size and time", "bytes": "the state is "
-                   "compressed, so its size follows the frame it was taken at",
-                   "saved_line": "the emulator stamps it with the wall clock"}),
+                   "compressed, so its size follows the frame it was taken at"}),
     Step("left", "send_keys", {"keys": ["left"], "expect": "KEY L$", "seconds": 10},
          seen("the left arrow moved the paddle after the save"), volatile=INPUT_TIMING),
     Step("load", "state_load", {"name": "bricks"},
-         lambda reply, run: f"state loaded from slot {reply['slot']}",
-         volatile={"summary": "it carries how long the load took",
-                   "loaded_line": "the emulator stamps it with the wall clock"}),
-    Step("halt", "stop", {}, stopped, volatile=MENU_STOP),
+         lambda reply, run: f"state loaded from {Path(str(reply['path'])).name}",
+         volatile={"summary": "it carries how long the load took"}),
+    Step("halt", "stop", {}, stopped, volatile=BREAK_STOP),
     Step("restored", "read_memory", {"ref": "paddle_x", "length": 2}, restored,
          volatile=MOUSE_PLACED),
     Step("play on", "resume", {}, lambda reply, run: "the game runs"),
@@ -309,7 +307,7 @@ DEMO = Demo(
     volatile={"argv": "the emulator's command line, which carries the host's window placement",
               "seconds_elapsed": "wall-clock time since the session started",
               "waited_s": "wall-clock time a wait took", "ready_after_s": "wall-clock time "
-              "the debugger took to answer", "click_s": "wall-clock time a menu click took",
+              "the debugger took to answer",
               "time_stamp": "the wall-clock time a state was saved at",
               "window": "where the host put the emulator's window",
               "binary": "where the host installed DOSBox-X",

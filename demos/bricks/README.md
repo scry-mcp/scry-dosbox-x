@@ -19,10 +19,10 @@ that boots it. The build recipe is in the header of `bricks.asm`.
 WINDOW_APP=/path/to/your/placement-helper uv run python demos/bricks/demo.py
 ```
 
-The demo always opens a window: the Debug menu's stop and the saved states reach the emulator
-only through its menu, clicked by name (on macOS, with Accessibility trust, as this repository's
-README says). Each menu click takes the focus for a moment; the keys and the mouse go in inside
-the guest and take nothing.
+The demo opens a window so the game can be watched; nothing in it needs the window: `stop` and
+the saved states go down the debugger channel, and the keys and the mouse go in inside the
+guest. The saved states need a DOSBox-X that carries SAVESTATE and LOADSTATE (this repository's
+README says which), named with `DOSBOX_X_BINARY`.
 
 Where that window goes is your machine's to say, so the demo asks the placement helper named by
 `WINDOW_APP`: `<helper> dosbox` prints the emulator's window flags, one argument a line, for a
@@ -1208,7 +1208,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**16. `stop`**: OK pause: stopped through the Debug menu
+**16. `stop`**: OK pause: stopped through the debugger channel
 
 <details><summary>call and reply</summary>
 
@@ -1228,9 +1228,8 @@ DOSBox-X `<volatile>`.
   "instruction": "<volatile>",
   "interrupted": true,
   "running": false,
-  "how": "menu",
+  "how": "break",
   "waited_s": "<volatile>",
-  "focus": "returned",
   "stopped_at": "<volatile>",
   "session": {
     "pid": "<volatile>",
@@ -1518,7 +1517,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**22. `stop`**: OK mark: stopped through the Debug menu
+**22. `stop`**: OK mark: stopped through the debugger channel
 
 <details><summary>call and reply</summary>
 
@@ -1538,9 +1537,8 @@ DOSBox-X `<volatile>`.
   "instruction": "<volatile>",
   "interrupted": true,
   "running": false,
-  "how": "menu",
+  "how": "break",
   "waited_s": "<volatile>",
-  "focus": "returned",
   "stopped_at": "<volatile>",
   "session": {
     "pid": "<volatile>",
@@ -1643,7 +1641,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**25. `state_save`**: OK save: state saved in slot 1
+**25. `state_save`**: OK save: state saved as bricks.sav
 
 <details><summary>call and reply</summary>
 
@@ -1658,7 +1656,6 @@ DOSBox-X `<volatile>`.
   "summary": "<volatile>",
   "status": "ok",
   "name": "bricks",
-  "slot": 1,
   "path": "./tmp/demos/bricks/bricks-states/bricks.sav",
   "bytes": "<volatile>",
   "version": "<volatile>",
@@ -1666,9 +1663,8 @@ DOSBox-X `<volatile>`.
   "machine": "MCH_VGA",
   "memory_size": "4096",
   "time_stamp": "<volatile>",
-  "saved_line": "<volatile>",
-  "click_s": "<volatile>",
-  "focus": "returned",
+  "paused": true,
+  "running": true,
   "waited_s": "<volatile>",
   "session": {
     "pid": "<volatile>",
@@ -1748,7 +1744,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**27. `state_load`**: OK load: state loaded from slot 1
+**27. `state_load`**: OK load: state loaded from bricks.sav
 
 <details><summary>call and reply</summary>
 
@@ -1763,18 +1759,15 @@ DOSBox-X `<volatile>`.
   "summary": "<volatile>",
   "status": "ok",
   "name": "bricks",
-  "slot": 1,
   "path": "./tmp/demos/bricks/bricks-states/bricks.sav",
   "version": "<volatile>",
   "program": "BRICKS",
   "machine": "MCH_VGA",
   "memory_size": "4096",
   "time_stamp": "<volatile>",
-  "loaded_line": "<volatile>",
-  "click_s": "<volatile>",
-  "focus": "returned",
+  "paused": true,
+  "running": true,
   "waited_s": "<volatile>",
-  "verified": "not checked: the machine keeps running after a load; `stop` it and read what it holds",
   "session": {
     "pid": "<volatile>",
     "alive": true,
@@ -1796,7 +1789,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**28. `stop`**: OK halt: stopped through the Debug menu
+**28. `stop`**: OK halt: stopped through the debugger channel
 
 <details><summary>call and reply</summary>
 
@@ -1816,9 +1809,8 @@ DOSBox-X `<volatile>`.
   "instruction": "<volatile>",
   "interrupted": true,
   "running": false,
-  "how": "menu",
+  "how": "break",
   "waited_s": "<volatile>",
-  "focus": "returned",
   "stopped_at": "<volatile>",
   "session": {
     "pid": "<volatile>",

@@ -1,16 +1,12 @@
-"""Save states through the emulator's own menu, and what the emulator does with them:
-`Capture > Save state` writes `<state_dir>/<slot>.sav` and logs `Saved. (Slot N)`
-stopped or running, but ONLY with `saveremark=false` (the default opens a remark dialog that
-replaces the window and blocks); `Capture > Load state` logs `Loaded. (Slot N)` with the machine
-RUNNING, and with the machine parked at the debugger it leaves the debugger dead (no `Loaded.`,
-an empty Debug menu, `close` at exit code 1). A state is a ZIP naming its `Program_Name`,
-`Machine_Type`, `Memory_Size`, `Time_Stamp` and `DOSBox-X_Version`. The tools are
-`state_save(name)`, `state_load(name)` and `state_list`."""
+"""Save states through the debugger's own commands, `SAVESTATE <file>` and `LOADSTATE <file>`
+over the debugger channel (a DOSBox-X that carries them: the Optimiza/dosbox-x fork). They need
+the debugger stopped, so a running guest is stopped for them and released again. A state is a
+ZIP naming its `Program_Name`, `Machine_Type`, `Memory_Size`, `Time_Stamp` and
+`DOSBox-X_Version`. The tools are `state_save(name)`, `state_load(name)` and `state_list`."""
 from __future__ import annotations
 
 import dataclasses
-import subprocess
-import sys
+import time
 import zipfile
 from pathlib import Path
 from typing import Any, cast
@@ -35,28 +31,70 @@ def write_state(path: Path, **meta: str) -> Path:
     return path
 
 
-class MenuFake:
-    """The seams `state_save`/`state_load` rest on: the launch, whether the machine is
-    parked, the log read since a mark, and the menu click. The click WRITES what the real
-    emulator logs (`Saved.` / `Loaded.`) and, for a save, the slot file, so the wait sees
-    exactly what a real session shows it."""
+class Channel:
+    """The emulator's end of the debugger channel as the fork answers the two commands: a
+    save writes the file, a load reads it; `carries=False` answers as a build without them."""
 
-    def __init__(self, state_dir: Path, *, watched: bool = True, logfile: bool = True,
-                 parked: bool = False, saves: bool = True, loads: bool = True,
-                 fails: bool = False) -> None:
-        self.launch = ds.Launch(conf=state_dir.parent / "g.conf", cwd=state_dir.parent, seconds=60,
-                                watched=watched, state_dir=state_dir,
-                                logfile=(state_dir.parent / "e9.log") if logfile else None)
-        self.parked, self.saves, self.loads, self.fails = parked, saves, loads, fails
-        self.lines: list[str] = ["Active save slot: 1 [Empty]"]
-        self.clicks: list[tuple[str, str]] = []
-        self.menu_focus = ""
-        self.next_focus = "returned"         # what the double's click says it did to the focus
+    def __init__(self, session: StateFake, carries: bool = True) -> None:
+        self.session, self.carries = session, carries
+        self.sent: list[str] = []
+        self.refuse = ""                     # a refusal of the fork's own, when set
+        self.partial = False                 # a failed save leaves a half-written file
+        self.raises: ds.Invalid | None = None
+
+    def request(self, command: str, seconds: float = 5.0) -> tuple[bool, list[str]]:
+        self.sent.append(command)
+        assert self.session.parked, "a state command was sent with the guest running"
+        verb, _, path = command.removeprefix("EXEC ").partition(" ")
+        if self.raises is not None:
+            raise self.raises
+        if not self.carries:
+            return False, ["*** Debugger command not recognized"]
+        if self.refuse:
+            if self.partial:
+                Path(path).write_bytes(b"PK half")
+            return False, [f"DEBUG: {verb} {self.refuse}", "*** Debugger command not recognized"]
+        if verb == "SAVESTATE":
+            write_state(Path(path))
+            return True, [f"DEBUG: Saved {path}"]
+        return True, [f"DEBUG: Loaded {path}"]
+
+
+class StateFake:
+    """The seams `state_save`/`state_load` rest on: the launch, whether the machine is parked,
+    the break-in and the release, and the channel. The helpers are the REAL ones."""
+
+    def __init__(self, state_dir: Path, *, parked: bool = True, carries: bool = True,
+                 watched: bool = False) -> None:
+        self.launch = ds.Launch(conf=state_dir.parent / "g.conf", cwd=state_dir.parent,
+                                seconds=60, watched=watched, state_dir=state_dir)
+        self.parked = parked
+        self.control = Channel(self, carries)
+        self.moves: list[str] = []
         self.altered = False
-        self.proc = type("P", (), {"pid": 4242})()
+        self.stop_count = 0
+        self.halts_on_release = False
+        self.release_s = 0.0
+        self.release_raises: ds.Invalid | None = None
+        self.break_raises: ds.Invalid | None = None
 
     def at_debugger(self) -> bool:
         return self.parked
+
+    def break_in(self, seconds: float = 5.0) -> float:
+        if self.break_raises is not None:
+            raise self.break_raises
+        self.moves.append("break")
+        self.parked = True
+        return 0.05
+
+    def resume(self) -> dict[str, object]:
+        self.moves.append("resume")
+        time.sleep(self.release_s)
+        if self.release_raises is not None:
+            raise self.release_raises
+        self.parked = self.halts_on_release
+        return {"halted": self.halts_on_release}
 
     def alive(self) -> bool:
         return True
@@ -64,43 +102,14 @@ class MenuFake:
     def state(self) -> dict[str, object]:
         return {"alive": True, "altered": self.altered}
 
-    # The two helpers under test are the REAL ones: only the seams are doubled.
     _state_dir = ds.Session._state_dir
-    _await_state_line = ds.Session._await_state_line
-    _log_tail_from = ds.Session._log_tail_from
+    _state_command = ds.Session._state_command
     state_save = ds.Session.state_save
     state_load = ds.Session.state_load
     state_list = ds.Session.state_list
 
-    def e9_mark(self) -> int:
-        return len(self.lines)
 
-    def _e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
-        assert channel == "emulator"
-        return list(self.lines[offset:]), len(self.lines)
-
-    def click_menu(self, menu: str, item: str,
-                   progress: ds.Progress = ds.no_progress) -> float:
-        if not self.launch.watched:      # the real one refuses a headless session first
-            raise ds.Invalid("no_channel", "this session is headless: there is no window")
-        self.clicks.append((menu, item))
-        if item == "Save state":
-            self.lines.append("Saving state to slot: 1")
-            if self.fails:
-                self.lines.append("SAVE_FAILED")
-            elif self.saves:
-                assert self.launch.state_dir is not None
-                write_state(self.launch.state_dir / "1.sav")
-                self.lines.append("[03:58:10]: Saved. (Slot 1)")
-        elif item == "Load state":
-            self.lines.append("Loading state from slot: 1")
-            if self.loads:
-                self.lines.append("[03:58:26]: Loaded. (Slot 1)")
-        self.menu_focus = self.next_focus
-        return 12.3
-
-
-def as_session(fake: MenuFake) -> ds.Session:
+def as_session(fake: StateFake) -> ds.Session:
     return cast(ds.Session, fake)
 
 
@@ -116,8 +125,8 @@ def clean_session() -> Any:
 def test_the_launch_turns_the_remark_dialog_off_and_names_the_save_directory(
         tmp_path: Path) -> None:
     """MEASURED: with `saveremark` at its default a save opens a dialog that takes the window
-    away and writes nothing, stopped or running. So every session turns it off, and the
-    slot directory is the caller's `state_dir`, passed as the option the build documents."""
+    away and writes nothing. So every session turns it off, and the slot directory is the
+    caller's `state_dir`, passed as the option the build documents."""
     argv = ds.build_argv(ds.Launch(conf=tmp_path / "g.conf", cwd=tmp_path, seconds=60,
                                    state_dir=tmp_path / "states"))
     assert argv[argv.index("-savedir") + 1] == str(tmp_path / "states")
@@ -127,101 +136,90 @@ def test_the_launch_turns_the_remark_dialog_off_and_names_the_save_directory(
     assert "-savedir" not in plain and "dosbox saveremark=false" in plain
 
 
-def test_state_save_clicks_the_menu_waits_for_saved_and_keeps_the_state_under_its_name(
-        tmp_path: Path) -> None:
-    fake = MenuFake(tmp_path / "save")
-    fake.next_focus = "lost"
+def test_state_save_sends_savestate_of_the_named_file_and_reads_it_back(tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "save")
     out = ds.Session.state_save(as_session(fake), "boot", 5.0)
-    assert fake.clicks == [("Capture", "Save state")]
-    assert out["focus"] == "lost", "the reply says what the click did to the focus"
-    assert out["name"] == "boot" and out["slot"] == 1
-    assert Path(str(out["path"])) == tmp_path / "save" / "boot.sav"
-    assert (tmp_path / "save" / "boot.sav").is_file(), "the slot file was copied under the name"
+    dest = tmp_path / "save" / "boot.sav"
+    assert fake.control.sent == [f"EXEC SAVESTATE {dest}"]
+    assert out["name"] == "boot" and Path(str(out["path"])) == dest and dest.is_file()
     assert out["program"] == "PROBE" and out["time_stamp"] == "2026-09-10 03:58"
     assert out["machine"] == "svga_s3" and out["memory_size"] == "16"
     assert out["version"] == "DOSBox-X 2026.08.02 (SDL2)" and cast(int, out["bytes"]) > 0
-    assert str(out["saved_line"]).endswith("Saved. (Slot 1)")
+    assert out["paused"] is False and fake.moves == [], "a parked machine is left parked"
     assert fake.altered is False, "saving alters nothing"
-    # NEVER OVERWRITES: a name already taken is a refusal, not a silent replacement.
     with pytest.raises(ds.Invalid, match="already exists"):
         ds.Session.state_save(as_session(fake), "boot", 5.0)
     with pytest.raises(ds.Invalid, match="letters, digits"):
         ds.Session.state_save(as_session(fake), "a b", 5.0)
+    assert len(fake.control.sent) == 1, "a refused save sends nothing"
+
+
+def test_a_running_guest_is_stopped_for_the_command_and_released_again(tmp_path: Path) -> None:
+    """The commands need the debugger stopped (a load replaces the timer's tick handlers, and
+    the channel is served from one while the guest runs), so the session breaks in, sends,
+    and releases: the machine is left as it was found, and `paused` says it was stopped."""
+    fake = StateFake(tmp_path / "save", parked=False)
+    out = ds.Session.state_save(as_session(fake), "boot", 5.0)
+    assert out["paused"] is True and fake.moves == ["break", "resume"] and fake.parked is False
+    loaded = ds.Session.state_load(as_session(fake), "boot", 5.0)
+    assert loaded["paused"] is True and fake.moves[2:] == ["break", "resume"]
+    fake.control.refuse = "failed: x (the log says why)"
+    with pytest.raises(ds.Invalid):
+        ds.Session.state_load(as_session(fake), "boot", 5.0)
+    assert fake.moves[4:] == ["break", "resume"], "released again even when the load is refused"
 
 
 def test_a_dangling_link_named_like_the_state_is_refused_and_nothing_written_through(
         tmp_path: Path) -> None:
-    """The slot file is copied to `<state_dir>/<name>.sav`; a dangling link there is a file
-    there, or the copy would land wherever it points."""
-    fake = MenuFake(tmp_path / "save")
+    """A dangling link at `<state_dir>/<name>.sav` is a file there, or the save would land
+    wherever it points."""
+    fake = StateFake(tmp_path / "save")
     target = tmp_path / "elsewhere" / "theirs.sav"
     (tmp_path / "save").mkdir(exist_ok=True)
     (tmp_path / "save" / "boot.sav").symlink_to(target)
     with pytest.raises(ds.Invalid, match="already exists"):
         ds.Session.state_save(as_session(fake), "boot", 5.0)
-    assert fake.clicks == [] and not target.exists()
+    assert fake.control.sent == [] and not target.exists()
 
 
-def test_snapshot_refuses_a_dangling_link_dest_and_clicks_nothing(tmp_path: Path) -> None:
-    fake = ShotFake(tmp_path / "save")
-    link = tmp_path / "shot.png"
-    link.symlink_to(tmp_path / "nowhere" / "x.png")
-    with pytest.raises(ds.Invalid, match="already exists"):
-        ds.Session.snapshot(as_session(fake), link, 5.0)
-    assert fake.clicks == [] and link.is_symlink()
+def test_a_build_without_the_commands_is_no_channel_naming_the_fork(tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "save", carries=False)
+    with pytest.raises(ds.Invalid) as exc:
+        ds.Session.state_save(as_session(fake), "boot", 5.0)
+    assert exc.value.code == "no_channel" and "Optimiza/dosbox-x" in str(exc.value)
+    write_state(tmp_path / "save" / "boot.sav")
+    with pytest.raises(ds.Invalid) as exc:
+        ds.Session.state_load(as_session(fake), "boot", 5.0)
+    assert exc.value.code == "no_channel"
 
 
-def test_state_save_refuses_headless_no_logfile_and_a_save_the_emulator_never_confirmed(
-        tmp_path: Path) -> None:
-    """And a PARKED machine: measured, the file is written there and loading it back kills
-    the debugger, so the save is refused before the click with that reason."""
-    parked = MenuFake(tmp_path / "save", parked=True)
-    with pytest.raises(ds.Invalid, match="RUNNING") as exc:
-        ds.Session.state_save(as_session(parked), "x", 5.0)
-    assert exc.value.code == "not_running" and parked.clicks == []
-    with pytest.raises(ds.Invalid, match="headless"):
-        ds.Session.state_save(as_session(MenuFake(tmp_path / "save", watched=False)), "x", 5.0)
-    with pytest.raises(ds.Invalid, match="logfile"):
-        ds.Session.state_save(as_session(MenuFake(tmp_path / "save", logfile=False)), "x", 5.0)
-    silent = MenuFake(tmp_path / "save", saves=False)
-    with pytest.raises(ds.Invalid, match="Saved") as exc:
-        ds.Session.state_save(as_session(silent), "x", 0.2)
-    assert exc.value.code == "wait_expired"
-    # MEASURED: a save directory the emulator cannot write is answered with SAVE_FAILED,
-    # which ends the wait at once as a refusal that names the directory.
-    failing = MenuFake(tmp_path / "save", fails=True)
-    with pytest.raises(ds.Invalid, match="SAVE_FAILED") as exc:
-        ds.Session.state_save(as_session(failing), "x", 5.0)
-    assert exc.value.code == "unexpected_answer" and str(tmp_path / "save") in str(exc.value)
+def test_a_refusal_of_the_fork_s_own_is_unexpected_answer_saying_why(tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "save")
+    write_state(tmp_path / "save" / "boot.sav")
+    for refusal in ("failed: x (the log says why)", "requires the debugger to be stopped",
+                    "slot must be 1 to 100"):
+        fake.control.refuse = refusal
+        with pytest.raises(ds.Invalid) as exc:
+            ds.Session.state_load(as_session(fake), "boot", 5.0)
+        assert exc.value.code == "unexpected_answer" and refusal in str(exc.value)
 
 
-def test_state_load_needs_the_machine_running_and_a_named_state_and_marks_altered(
-        tmp_path: Path) -> None:
-    """MEASURED: a load with the machine parked at the debugger leaves the debugger dead.
-    The named state is copied into the working slot BEFORE the click, so what the
-    emulator loads is what the caller named."""
-    fake = MenuFake(tmp_path / "save")
-    write_state(tmp_path / "save" / "boot.sav", Time_Stamp="2026-09-09 20:53")
-    write_state(tmp_path / "save" / "1.sav")           # the slot holds something else
+def test_state_load_needs_a_named_state_and_marks_altered(tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "save")
+    source = write_state(tmp_path / "save" / "boot.sav", Time_Stamp="2026-09-09 20:53")
     out = ds.Session.state_load(as_session(fake), "boot", 5.0)
-    assert fake.clicks == [("Capture", "Load state")]
-    assert out["name"] == "boot" and out["slot"] == 1
-    assert str(out["loaded_line"]).endswith("Loaded. (Slot 1)")
-    assert out["time_stamp"] == "2026-09-09 20:53", "the slot file is the named one now"
+    assert fake.control.sent == [f"EXEC LOADSTATE {source}"]
+    assert out["name"] == "boot" and out["time_stamp"] == "2026-09-09 20:53"
+    assert out["paused"] is False and fake.parked is True, "a parked machine stays parked"
     assert fake.altered is True
-    assert "not checked" in str(out["verified"]), "the machine keeps running; nothing reads it"
     with pytest.raises(ds.Invalid, match="no state named") as exc:
         ds.Session.state_load(as_session(fake), "nope", 5.0)
-    assert exc.value.code == "unknown_ref"
-    parked = MenuFake(tmp_path / "save", parked=True)
-    with pytest.raises(ds.Invalid, match="RUNNING") as exc:
-        ds.Session.state_load(as_session(parked), "boot", 5.0)
-    assert exc.value.code == "not_running" and parked.clicks == [], "refused before the click"
+    assert exc.value.code == "unknown_ref" and len(fake.control.sent) == 1
 
 
 def test_state_list_reads_every_state_with_its_metadata_and_needs_no_window(
         tmp_path: Path) -> None:
-    fake = MenuFake(tmp_path / "save", watched=False, logfile=False)
+    fake = StateFake(tmp_path / "save")
     assert ds.Session.state_list(as_session(fake)) == {"state_dir": str(tmp_path / "save"),
                                                         "states": [], "working_slot": None}
     write_state(tmp_path / "save" / "boot.sav")
@@ -237,241 +235,28 @@ def test_state_list_reads_every_state_with_its_metadata_and_needs_no_window(
 
 
 def test_the_tools_carry_the_envelope_and_the_summaries_name_the_state(tmp_path: Path) -> None:
-    fake = MenuFake(tmp_path / "save")
+    fake = StateFake(tmp_path / "save", parked=False)
     dstate.STATE.session = fake  # type: ignore[assignment]
     saved = cast(dict[str, Any], server.state_save(name="boot"))
     assert saved["status"] == "ok" and saved["session"]["altered"] is False
-    assert saved["summary"] == (f"state_save boot: slot 1, {saved['bytes']} bytes, "
+    assert saved["summary"] == (f"state_save boot: {saved['bytes']} bytes, "
                                 "PROBE 2026-09-10 03:58")
     listed = cast(dict[str, Any], server.state_list())
     assert listed["summary"] == "state_list: 1 states in " + str(tmp_path / "save")
     loaded = cast(dict[str, Any], server.state_load(name="boot"))
     assert loaded["status"] == "ok" and loaded["session"]["altered"] is True
-    assert loaded["summary"] == "state_load boot: slot 1, Loaded. after 12.3s"
+    assert loaded["summary"] == f"state_load boot: loaded in {loaded['waited_s']}s"
     for name in ("state_save", "state_load", "state_list"):
         assert name in server.registered_tools()
     assert "state_list" in server._ANSWERS_WHILE_RUNNING
     assert "state_load" in server._ANSWERS_WHILE_RUNNING
 
 
-# ------------------------------------------------------------ the menu click itself
-
-class ClickFake:
-    """A session with a window and a pid, for the REAL `click_menu` and `break_in`."""
-
-    def __init__(self, tmp_path: Path, *, watched: bool = True, parked: bool = False) -> None:
-        self.launch = ds.Launch(conf=tmp_path / "g.conf", cwd=tmp_path, seconds=60,
-                                watched=watched)
-        self.proc = type("P", (), {"pid": 4242})()
-        self.parked = parked
-        self.clicks: list[tuple[str, str]] = []
-        self.menu_focus = ""
-
-    def at_debugger(self) -> bool:
-        return self.parked
-
-    def click_menu(self, menu: str, item: str,
-                   progress: ds.Progress = ds.no_progress) -> float:
-        self.clicks.append((menu, item))
-        return 0.5
-
-
-def _ran(stdout: str, returncode: int = 0) -> Any:
-    def run(*_a: Any, **_k: Any) -> Any:
-        return type("R", (), {"stdout": stdout, "stderr": "", "returncode": returncode})()
-    return run
-
-
-class _Osascript:
-    """A `Popen` double for the menu click: alive for `polls` polls, then done with `stdout`."""
-
-    def __init__(self, stdout: str, polls: int = 0, returncode: int = 0) -> None:
-        self.stdout_text, self.polls, self.returncode = stdout, polls, returncode
-        self.killed = False
-
-    def poll(self) -> int | None:
-        if self.polls > 0:
-            self.polls -= 1
-            return None
-        return self.returncode
-
-    def communicate(self) -> tuple[str, str]:
-        return self.stdout_text, ""
-
-    def kill(self) -> None:
-        self.killed = True
-
-
-def _popen(stdout: str, polls: int = 0, returncode: int = 0) -> Any:
-    return lambda *_a, **_k: _Osascript(stdout, polls, returncode)
-
-
-def test_click_menu_finds_the_item_by_name_and_names_what_stopped_it(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """The script names the menu and the item; the answer is the item's own name, and
-    anything else is the emulator's refusal quoted. A headless session is refused before
-    System Events is asked; a host without the grant is told where it is given."""
-    fake = ClickFake(tmp_path)
-    monkeypatch.setattr(ds, "accessibility_trusted", lambda: True)
-    monkeypatch.setattr(ds, "other_emulators", lambda own, binary: [])   # alone on the host here
-    monkeypatch.setattr(subprocess, "Popen", _popen("Save state|returned\n"))
-    took = ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state")
-    assert took >= 0 and fake.menu_focus == "returned"
-    monkeypatch.setattr(subprocess, "Popen", _popen("Save state|lost\n"))
-    ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state")
-    assert fake.menu_focus == "lost", "an app that could not be put back is said"
-    sent: list[list[str]] = []
-
-    def recording(argv: list[str], **_k: Any) -> Any:
-        sent.append(argv)
-        return _Osascript("no Capture > Save state item|returned\n")
-    monkeypatch.setattr(subprocess, "Popen", recording)
-    with pytest.raises(ds.Invalid, match="no Capture > Save state item"):
-        ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state")
-    assert fake.menu_focus == "returned", "a click that found no item still handed it back"
-    script = sent[-1][2]
-    assert sent[-1][:2] == ["osascript", "-e"] and "unix id is 4242" in script
-    assert 'name of mi is "Capture"' in script and 'starts with "Save state"' in script
-    assert 'set answer to "Save state"' in script and '"|returned"' in script
-    monkeypatch.setattr(subprocess, "Popen", _popen("Save state\n"))
-    with pytest.raises(ds.Invalid, match="could not be clicked"):
-        ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state")
-    monkeypatch.setattr(subprocess, "Popen", _popen("no Capture > Save state item\n"))
-    with pytest.raises(ds.Invalid, match="could not be clicked") as exc:
-        ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state")
-    assert exc.value.code == "host_failed" and "no Capture > Save state item" in str(exc.value)
-
-    monkeypatch.setattr(ds, "MENU_CLICK_TIMEOUT_S", 0.25)
-    monkeypatch.setattr(subprocess, "Popen", _popen("never\n", polls=10_000))
-    with pytest.raises(ds.Invalid, match="did not answer") as exc:
-        ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state")
-    assert exc.value.code == "host_failed"
-    monkeypatch.setattr(ds, "accessibility_trusted", lambda: False)
-    with pytest.raises(ds.Invalid, match="Accessibility") as exc:
-        ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state")
-    assert exc.value.code == "host_failed"
-    headless = ClickFake(tmp_path, watched=False)
-    calls: list[Any] = []
-    monkeypatch.setattr(subprocess, "Popen", lambda *a, **k: calls.append(a))
-    with pytest.raises(ds.Invalid, match="headless") as exc:
-        ds.Session.click_menu(cast(ds.Session, headless), "Capture", "Save state")
-    assert exc.value.code == "no_channel" and calls == [], "refused before System Events"
-
-
-def test_break_in_clicks_the_debug_item_and_waits_for_the_prompt(tmp_path: Path) -> None:
-    parked = ClickFake(tmp_path, parked=True)
-    assert ds.Session.break_in(cast(ds.Session, parked), seconds=1.0) >= 0
-    assert parked.clicks == [(ds.BREAK_IN_MENU, ds.BREAK_IN_ITEM)]
-    running = ClickFake(tmp_path, parked=False)
-    with pytest.raises(ds.Invalid, match="did not appear") as exc:
-        ds.Session.break_in(cast(ds.Session, running), seconds=0.1)
-    assert exc.value.code == "unexpected_answer"
-
-
-def test_the_log_tail_and_the_default_save_directory_and_the_refusals_without_a_logfile(
-        tmp_path: Path) -> None:
-    """The unterminated last line is read raw (a `Loaded.` sat there while a wait of
-    complete lines expired, measured); no logfile and an unreadable one read as nothing;
-    the default save directory is `save` under the cwd; and the waits refuse without a
-    logfile rather than watching nothing."""
-    fake = MenuFake(tmp_path / "save")
-    log = fake.launch.logfile
-    assert log is not None
-    log.write_text("first line\n[04:28:33]: Loaded. (Slot 1)")
-    assert ds.Session._log_tail_from(cast(ds.Session, fake), 0) == ["[04:28:33]: Loaded. (Slot 1)"]
-    assert ds.Session._log_tail_from(cast(ds.Session, fake), len("first line\n") + 200) == []
-    log.unlink()
-    log.mkdir()          # a directory where the file should be: open() refuses, read as nothing
-    assert ds.Session._log_tail_from(cast(ds.Session, fake), 0) == []
-    nolog = MenuFake(tmp_path / "save", logfile=False)
-    assert ds.Session._log_tail_from(cast(ds.Session, nolog), 0) == []
-    with pytest.raises(ds.Invalid, match="logfile") as exc:
-        ds.Session._await_state_line(cast(ds.Session, nolog), ds.STATE_SAVED_LINE, 0, 1.0, "x")
-    assert exc.value.code == "no_channel"
-    write_state(tmp_path / "save" / "boot.sav")
-    with pytest.raises(ds.Invalid, match="logfile"):
-        ds.Session.state_load(as_session(nolog), "boot", 5.0)
-    bare = MenuFake(tmp_path / "save", watched=False, logfile=False)
-    bare.launch = ds.Launch(conf=tmp_path / "g.conf", cwd=tmp_path, seconds=60)
-    assert ds.Session.state_list(as_session(bare))["state_dir"] == str(tmp_path / "save")
-
-
-def test_a_saved_line_with_no_slot_file_behind_it_is_refused_naming_the_directory(
-        tmp_path: Path) -> None:
-    """The emulator wrote into a directory this session does not read (a `state_dir` it did
-    not take, say): the acknowledgement is there and the file is not, and that is said."""
-    fake = MenuFake(tmp_path / "save")
-    real_click = fake.click_menu
-
-    def click_without_a_file(menu: str, item: str,
-                             progress: ds.Progress = ds.no_progress) -> float:
-        took = real_click(menu, item, progress)
-        (tmp_path / "save" / "1.sav").unlink()
-        return took
-    fake.click_menu = click_without_a_file  # type: ignore[method-assign]
-    with pytest.raises(ds.Invalid, match="is not there") as exc:
-        ds.Session.state_save(as_session(fake), "x", 5.0)
-    assert exc.value.code == "unexpected_answer" and str(tmp_path / "save") in str(exc.value)
-
-
-# ------------------------------------------ one emulator at a time for a menu click
-
-def test_click_menu_refuses_while_another_emulator_is_alive_naming_it(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """MEASURED with two servers up at once: three `Capture > Take screenshot` clicks sent
-    by pid to one emulator produced three PNGs in the OTHER session's guest (the two
-    windows sat on the same spot of the same display, and System Events activated the
-    wrong instance of one bundle). Until the route is proven process-exact, a click with
-    another `dosbox-x` alive is refused, naming the pids, and nothing is sent."""
-    fake = ClickFake(tmp_path)
-    monkeypatch.setattr(ds, "accessibility_trusted", lambda: True)
-    monkeypatch.setattr(ds, "other_emulators", lambda own, binary: [1984, 2001])
-    calls: list[Any] = []
-    monkeypatch.setattr(subprocess, "Popen", lambda *a, **k: calls.append(a))
-    with pytest.raises(ds.Invalid, match="1984") as exc:
-        ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state")
-    assert exc.value.code == "host_failed" and "2001" in str(exc.value)
-    assert calls == [], "nothing was sent to System Events"
-    monkeypatch.setattr(ds, "other_emulators", lambda own, binary: [])
-    monkeypatch.setattr(subprocess, "Popen", _popen("Save state|returned\n"))
-    assert ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state") >= 0
-
-
-def test_other_emulators_reads_ps_by_binary_name_and_leaves_its_own_pid_out(
-        monkeypatch: pytest.MonkeyPatch) -> None:
-    """The listing is `ps` read by `awk` requiring the binary's basename on the line, the
-    fleet's form: a helper process whose ARGUMENTS name the binary is not an emulator."""
-    listing = ("  PID ARGS\n"
-               " 4242 /opt/homebrew/bin/dosbox-x -conf a.conf\n"
-               " 1984 dosbox-x -conf b.conf\n"
-               "  777 python server.py dosbox-x\n"
-               " 2001 /usr/local/bin/dosbox-x\n")
-    monkeypatch.setattr(subprocess, "run", _ran(listing))
-    assert ds.other_emulators(4242, "dosbox-x") == [1984, 2001]
-    assert ds.other_emulators(1, "/opt/homebrew/bin/dosbox-x") == [1984, 2001, 4242]
-    monkeypatch.setattr(subprocess, "run", _ran("", returncode=1))
-    with pytest.raises(ds.Invalid, match="ps") as exc:
-        ds.other_emulators(4242, "dosbox-x")
-    assert exc.value.code == "host_failed", "a listing that failed is not an empty listing"
-
-
-def test_other_emulators_sees_a_neighbour_running_the_session_s_own_build(
-        monkeypatch: pytest.MonkeyPatch) -> None:
-    """A session started with `binary` naming a build under another name: a second emulator of
-    that build is a neighbour too, and one of another name still is not."""
-    listing = ("  PID ARGS\n"
-               " 4242 /opt/dbx/dosbox-x-dev -conf a.conf\n"
-               " 1984 /opt/dbx/dosbox-x-dev -conf b.conf\n"
-               " 2001 /opt/other/emu -conf c.conf\n")
-    monkeypatch.setattr(subprocess, "run", _ran(listing))
-    assert ds.other_emulators(4242, "/opt/dbx/dosbox-x-dev") == [1984]
-
-
 def test_state_list_keeps_the_working_slot_apart_from_the_named_states(tmp_path: Path) -> None:
     """Counting the emulator's own slot file as a state reports one state too many: it sits
     in `states` beside the copy under the name. The numbered slot is the working file and is
     reported as such, once; `states` holds the names."""
-    fake = MenuFake(tmp_path / "save", watched=False, logfile=False)
+    fake = StateFake(tmp_path / "save")
     write_state(tmp_path / "save" / "boot.sav")
     write_state(tmp_path / "save" / "1.sav", Program_Name="OTHER")
     out = ds.Session.state_list(as_session(fake))
@@ -484,16 +269,16 @@ def test_state_list_keeps_the_working_slot_apart_from_the_named_states(tmp_path:
 
 # ------------------------------------------------------------------ the screenshot
 
-class ShotFake(MenuFake):
+class ShotFake(StateFake):
     """The screenshot's seam: the stub's `S` command writes `<captures_dir>/<conf>_NNN.png`,
     on a running machine only (parked, the stub never reaches its tick)."""
 
     def __init__(self, state_dir: Path, **kw: Any) -> None:
-        super().__init__(state_dir, **kw)
+        super().__init__(state_dir, **{"parked": False, **kw})
         self.launch = ds.Launch(conf=state_dir.parent / "g.conf", cwd=state_dir.parent,
                                 seconds=60, watched=self.launch.watched,
                                 captures_dir=state_dir.parent / "caps",
-                                logfile=self.launch.logfile)
+                                logfile=state_dir.parent / "e9.log")
         self.shots = 0
         self.sent: list[list[bytes]] = []
         self.writes = True                   # False: the stub took the command, nothing came
@@ -508,6 +293,15 @@ class ShotFake(MenuFake):
             shot.write_bytes(b"\x89PNG" + bytes(20))
             self.shots += 1
         return 1
+
+
+def test_snapshot_refuses_a_dangling_link_dest_and_sends_nothing(tmp_path: Path) -> None:
+    fake = ShotFake(tmp_path / "save")
+    link = tmp_path / "shot.png"
+    link.symlink_to(tmp_path / "nowhere" / "x.png")
+    with pytest.raises(ds.Invalid, match="already exists"):
+        ds.Session.snapshot(as_session(fake), link, 5.0)
+    assert fake.sent == [] and link.is_symlink()
 
 
 def test_snapshot_sends_the_stub_s_command_and_hands_back_the_new_png_or_moves_it_to_dest(
@@ -579,32 +373,80 @@ def test_the_snapshot_tool_carries_the_envelope_and_is_named_like_the_siblings(
     assert "snapshot" in server._ANSWERS_WHILE_RUNNING
 
 
-def test_click_menu_reports_its_progress_while_system_events_walks_the_menus(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """A menu click that paints nothing while it walks the menus makes a slow click and a
-    hung one look the same. The click polls the script and reports the seconds and what it is
-    looking for, on the fleet's cadence, until the script answers."""
-    fake = ClickFake(tmp_path)
-    monkeypatch.setattr(ds, "accessibility_trusted", lambda: True)
-    monkeypatch.setattr(ds, "other_emulators", lambda own, binary: [])
-    monkeypatch.setattr(ds, "PROGRESS_EVERY_S", 0.05)
-    monkeypatch.setattr(subprocess, "Popen", _popen("Save state|returned\n", polls=6))
-    ticks: list[tuple[float, float, str]] = []
-    took = ds.Session.click_menu(cast(ds.Session, fake), "Capture", "Save state",
-                                 lambda p, t, m: ticks.append((p, t, m)))
-    assert took >= 0.5 and len(ticks) >= 2, ticks
-    assert all(t == ds.MENU_CLICK_TIMEOUT_S for _, t, _ in ticks)
-    assert "Capture > Save state" in ticks[-1][2] and "System Events" in ticks[-1][2]
+def test_a_save_that_failed_leaves_no_file_holding_the_name(tmp_path: Path) -> None:
+    """The emulator removes the target and writes in place, so a failure part-way leaves a
+    broken file; the session removes it, or the name is refused for ever after."""
+    fake = StateFake(tmp_path / "save")
+    fake.control.refuse, fake.control.partial = "failed: x (the log says why)", True
+    with pytest.raises(ds.Invalid):
+        ds.Session.state_save(as_session(fake), "boot", 5.0)
+    assert not (tmp_path / "save" / "boot.sav").exists()
+    fake.control.refuse = ""
+    assert ds.Session.state_save(as_session(fake), "boot", 5.0)["name"] == "boot"
 
 
-@pytest.mark.skipif(sys.platform != "darwin", reason="System Events is macOS's")
-def test_the_focus_hand_back_runs_against_system_events_and_reads_back_the_front_app() -> None:
-    """The block that hands the focus back, run for real with no menu clicked: the app in front
-    is put back in front, so it answers `returned`. It once read the front app inside the `if`,
-    which parses as one comparison and failed at run time on every click."""
-    script = ('tell application "System Events"\n'
-              '  set prev to unix id of first process whose frontmost is true\n'
-              '  set answer to "probe"' + ds.MENU_FOCUS_BLOCK + "\nend tell")
-    run = subprocess.run(["osascript", "-e", script], capture_output=True, text=True,
-                         timeout=30, check=False)
-    assert run.returncode == 0 and run.stdout.strip() == "probe|returned", run
+def test_waited_s_is_the_command_alone_not_the_release(tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "save", parked=False)
+    fake.release_s = 0.3
+    out = ds.Session.state_save(as_session(fake), "boot", 5.0)
+    assert out["paused"] is True and cast(float, out["waited_s"]) < 0.3
+
+
+def test_running_says_whether_the_released_guest_runs(tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "save", parked=False)
+    assert ds.Session.state_save(as_session(fake), "a", 5.0)["running"] is True
+    fake.parked, fake.halts_on_release = False, True
+    assert ds.Session.state_save(as_session(fake), "b", 5.0)["running"] is False
+    parked = StateFake(tmp_path / "other")
+    assert ds.Session.state_save(as_session(parked), "c", 5.0)["running"] is False
+
+
+def test_a_release_that_fails_does_not_hide_the_command_s_own_failure(tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "save", parked=False)
+    fake.control.raises = ds.Invalid("host_failed", "the reply never ended")
+    fake.release_raises = ds.Invalid("session_broken", "the emulator is gone")
+    with pytest.raises(ds.Invalid) as exc:
+        ds.Session.state_save(as_session(fake), "boot", 5.0)
+    assert exc.value.code == "host_failed" and fake.moves == ["break", "resume"]
+
+
+def test_a_break_in_that_fails_sends_nothing_and_releases_nothing(tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "save", parked=False)
+    fake.break_raises = ds.Invalid("unexpected_answer", "no prompt")
+    with pytest.raises(ds.Invalid):
+        ds.Session.state_save(as_session(fake), "boot", 5.0)
+    assert fake.control.sent == [] and fake.moves == []
+
+
+def test_a_path_of_two_lines_is_refused_before_the_break_in(tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "sa\nve", parked=False)
+    with pytest.raises(ds.Invalid) as exc:
+        ds.Session.state_save(as_session(fake), "boot", 5.0)
+    assert exc.value.code == "bad_argument" and fake.moves == [] and fake.control.sent == []
+
+
+def test_a_missing_channel_names_the_fork_and_alters_nothing(tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "save")
+    write_state(tmp_path / "save" / "boot.sav")
+    fake.control.raises = ds.Invalid("no_channel", "the emulator never dialled the channel.")
+    with pytest.raises(ds.Invalid) as exc:
+        ds.Session.state_load(as_session(fake), "boot", 5.0)
+    assert exc.value.code == "no_channel" and "Optimiza/dosbox-x" in str(exc.value)
+    assert fake.altered is False
+    fake.control.raises = None
+    fake.control.carries = False
+    with pytest.raises(ds.Invalid):
+        ds.Session.state_load(as_session(fake), "boot", 5.0)
+    assert fake.altered is False
+
+
+def test_a_parked_load_is_a_stop_of_its_own(tmp_path: Path) -> None:
+    """The record of the stop before describes a machine the load replaced: the count moves,
+    so the next reader surveys again instead of naming the old position."""
+    fake = StateFake(tmp_path / "save")
+    write_state(tmp_path / "save" / "boot.sav")
+    ds.Session.state_load(as_session(fake), "boot", 5.0)
+    assert fake.stop_count == 1
+    running = StateFake(tmp_path / "save", parked=False)
+    ds.Session.state_load(as_session(running), "boot", 5.0)
+    assert running.stop_count == 0, "a released guest's next stop is counted when it comes"

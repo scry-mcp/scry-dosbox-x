@@ -166,7 +166,7 @@ def section_m() -> None:
 def _code_guest() -> None:
     boot(conf=CODE_CONF, break_on_int3=True)
     M.setup()
-    first = must(M.call(server.resume, until_close=True, seconds=30), "the first int 3")
+    first = must(M.call(server.resume, seconds=30), "the first int 3")
     _first_stop(first)
     flat = M.call(server.call_stack)
     M.judge("M call_stack at the frameless int 3 lists the stop alone and why",
@@ -209,7 +209,7 @@ def _code_guest() -> None:
     M.judge("M call_stack at middle's first byte reads outer off SP, via entry",
             ok(entry) and rows[:2] == [("middle", "stop"), ("outer", "entry")], str(rows))
     must(M.call(server.breakpoint_clear), "clearing middle")
-    inner = M.call(server.resume, until_close=True, seconds=30)
+    inner = M.call(server.resume, seconds=30)
     _inner_stack()
     pic = inner.get("instruction") or {}
     M.judge("M the int 3 in inner names inner and its delta",

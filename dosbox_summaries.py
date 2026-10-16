@@ -179,7 +179,7 @@ def resume(args: dict[str, Any], reply: dict[str, Any]) -> str:
 def stop(args: dict[str, Any], reply: dict[str, Any]) -> str:
     if not reply.get("interrupted"):
         return "stop: already stopped"
-    return f"stop: menu, at {reply.get('stopped_at')} after {reply.get('waited_s')}s"
+    return f"stop: {reply.get('how')}, at {reply.get('stopped_at')} after {reply.get('waited_s')}s"
 
 
 def step(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -217,13 +217,12 @@ def run_to(args: dict[str, Any], reply: dict[str, Any]) -> str:
 # ------------------------------------------------------------------------ the states
 
 def state_save(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"state_save {reply.get('name')}: slot {reply.get('slot')}, {reply.get('bytes')} "
-            f"bytes, {reply.get('program')} {reply.get('time_stamp')}")
+    return (f"state_save {reply.get('name')}: {reply.get('bytes')} bytes, "
+            f"{reply.get('program')} {reply.get('time_stamp')}")
 
 
 def state_load(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"state_load {reply.get('name')}: slot {reply.get('slot')}, Loaded. after "
-            f"{reply.get('click_s')}s")
+    return f"state_load {reply.get('name')}: loaded in {reply.get('waited_s')}s"
 
 
 def state_list(args: dict[str, Any], reply: dict[str, Any]) -> str:

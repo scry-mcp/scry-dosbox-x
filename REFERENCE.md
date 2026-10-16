@@ -36,8 +36,7 @@ operations run on the fresh session with `perform`'s vocabulary and rules, `plan
 bounding each wait for a stop, and its account replaces the plain reply, with the start
 facts under `start`. `state_dir` is where `state_save` writes and `state_list` reads (`save`
 under `cwd` when omitted), and every session turns the emulator's save remark dialog off,
-which is what lets a state be saved by menu at all: the dialog would otherwise wait for a
-click nobody sends.
+which would otherwise wait for a click nobody sends.
 
 **Two parameters govern the tools that READ what they set up**, and neither is optional if
 you want them. The rule is what is written, because a count of "which tools" goes stale:
@@ -497,8 +496,8 @@ address to start from.
 **A comment is a declaration that stops nothing.** `comment_add` puts a line of text on a
 place, by symbol or by `SEG:OFF`, in the same store and under the same conf as the breakpoints,
 with the same `created_at` and `origin`; it is never armed (the debugger has no comment of its
-own), never counted in `status`'s `declarations`, never a stopper a headless `resume` could
-wait for, and neither broom touches it. The place is the LINEAR address: a symbol's is the one
+own), never counted in `status`'s `declarations`, never a stopper a `resume` could wait for,
+and neither broom touches it. The place is the LINEAR address: a symbol's is the one
 `symbols_find` gives, a `SEG:OFF` is read in the mode the machine is in (a paragraph in real
 mode, the selector's base in protected mode, its offset held to the selector's limit), so a
 comment meant to survive a mode switch is made by symbol. One comment per place: a second
@@ -609,7 +608,7 @@ one of `frames` and `milliseconds` is above zero.
 **A `VRT` a breakpoint cuts stays armed in the debugger**, and the next release stops at the next
 retrace. So an `OTHER_STOP` says `retrace_pending: true`, and the first stop a later `resume` or
 `run_to` makes that no declaration explains carries `retrace_pending: true` in its `attribution`,
-with a `why` naming that retrace as the likeliest cause; a step, a menu `stop` or a `run_to` that
+with a `why` naming that retrace as the likeliest cause; a step, a `stop` or a `run_to` that
 arrived is its caller's own stop and leaves it armed. Two limits the `note` states when they
 apply: on a dynamic core a code breakpoint armed after its code already ran under a retrace run
 can fail to cut the frames after it, while `run_to` and `resume` honour it, so an `ELAPSED` with
@@ -659,7 +658,7 @@ kept, because they are not what ran; so is an empty log, and a close that does n
 stops the machine at its count, and the next trace refuses while that file sits in the working
 directory, and once it is gone closes the log before opening its own. One the machine closed
 during the wait never reaches its count: the reply has `closed: true` when the logfile says so,
-and then only a declared breakpoint, a windowed `stop` or `close` ends the run. `closed: false`
+and then only a declared breakpoint, `stop` or `close` ends the run. `closed: false`
 says no such close was seen, which promises no stop: without a `logfile` the two cannot be told
 apart, and the reply says so.
 
@@ -691,7 +690,7 @@ those without one last; one the host refuses part-way is removed and `note` says
 linear is eight upper-case hex digits. With no table loaded nothing is named and `note` says so.
 
 **The waits are bounds**: `run_to`'s, `run_for`'s and `trace`'s `seconds` is more than zero and at
-most 600 (`RUN_TO_MAX`), the ceiling `log_wait`, the menu tools and the `expect` waits share. A wait
+most 600 (`RUN_TO_MAX`), the ceiling `log_wait`, the state tools and the `expect` waits share. A wait
 holds the server's lock for its whole duration, so every other tool, `status` included, is
 unanswerable until it ends; the ceiling is what stops one abandoned question from wedging a
 session. Two waits are not held to it: `resume`'s `seconds` and `start`'s `plan_wait`.
@@ -702,12 +701,18 @@ when it is already back, and the reply is then the full stop; `false` when it ru
 the bound expires comes back with `halted: false`, `waited_s` and a `note` saying it is still
 running, and leaves it running; the default `0` comes back at once, and a negative one is
 refused, as is a malformed `e9` argument, both before any session is asked for. A guest
-already running is then refused `not_stopped` before the stopper check, because an F5 there
-does nothing and an `ok` would read like a release. A HEADLESS `resume` with nothing declared that can
-stop the machine (a code or interrupt breakpoint, a change-watch) is refused before the F5
-unless `until_close=True` says the run is meant to end at the session's bound or at `close`: a
-headless session has no `stop` to bring it back. A windowed one is not refused, since `stop`
-does.
+already running is then refused `not_stopped`, because an F5 there
+does nothing and an `ok` would read like a release. Nothing has to be declared before a
+`resume`: `stop` brings a running guest back, headless or windowed.
+
+**`stop` breaks in through the debugger channel**, upstream's `mcp_server`: every session listens
+on a local port the kernel picks and passes it as `-set "dosbox mcp_server=<port>"`, the emulator
+dials it at start, and `stop` sends `BREAK` down it. The emulator polls the channel from a timer
+tick, so it answers while the guest runs, and the debugger's prompt on the terminal is what says
+the machine is back (`waited_s`). No window, no menu and no focus are involved, so `stop` works
+on a headless session as on a windowed one. A build without the channel (one that predates it
+upstream, or one built without the debugger) never dials, and `stop` is then `no_channel`, naming it; the
+`-set` key is the session's own, so a caller's `flags` may not carry it.
 
 **The outcome is read from `arrived` and `running`, never from `bound_expired` alone.** That
 flag is the wait's own measurement, whether the loop gave up on the clock, and it is on every
@@ -1101,7 +1106,7 @@ Every tool but `build_check`, `start`, `close`, `perform` and `drive` is a step,
 server's own registry. A `resume` ends the console-driven part of a sequence. After it, what
 answers on a RUNNING guest runs at once: the one table a running-guest refusal lists in
 `answers_while_running` (`status`, the log, `symbols_find`, the input, the captures, the
-states by menu, the snapshot, `stop`, the declarations, `comment_list` and `comment_save`),
+saved states, the snapshot, `stop`, the declarations, `comment_list` and `comment_save`),
 the four it adds for a caller
 outside a list (`registers(from_last_stop=True)`, `perform`, `drive`, `close`) apart. A
 declaration there answers `pending` while the guest runs and is armed at the next stop, as the
@@ -1388,21 +1393,25 @@ were.
 
 ## Saved states
 
-`state_save` and `state_load` go through the emulator's own `Capture` menu, which only a
-windowed session has, and they are the tools here that take the owner's focus, with `stop`'s
-menu break-in: a menu is clicked only in front. Each click remembers the app that was in front
-and hands the focus back to it, and the reply's `focus` says `returned`, or `lost` when that
-app could not be put back. Each is confirmed by the line the emulator logs (`Saved. (Slot N)`,
-`Loaded.`), so a session needs a `logfile` for them. The machine must be RUNNING for both: a
-state saved while parked at the debugger kills the debugger when it is loaded back, and a
-load taken while parked leaves the debugger dead, so the pattern is `resume`, `state_load`,
-`stop`. The slot file is kept under the session's `state_dir` as `<name>.sav` and read back for
-what it says about itself; `state_list` reads every state's ZIP members (version, program,
-machine, memory size, stamp) without loading, needs no window, and answers while the guest
-runs. A save never overwrites and alters nothing; a load marks the session altered, because
-it replaces the machine. A name is letters, digits, `_` and `-`, starting with a letter or a
-digit, at most 64 of them, and not digits only: the emulator's own slot files are `<n>.sav`
-in the same directory, and `state_load` copies the named file onto slot 1's.
+`state_save` and `state_load` are the debugger's own commands, `SAVESTATE <file>` and
+`LOADSTATE <file>`, sent down the debugger channel `stop` uses: no window, no menu, no dialog
+and no focus taken, headless or windowed, and the reply says whether the emulator acted. Those
+two commands are proposed upstream and carried until then by the `scry` branch of the
+Optimiza/dosbox-x fork; a build without them answers an unknown command, and both tools say so
+as `no_channel`, naming the fork. They need the debugger STOPPED: while the guest runs, the
+channel is served from a timer tick handler, and loading a state there would replace the tick
+handlers the timer is walking. So a running guest is stopped for the command (`stop`'s `BREAK`)
+and released again, and the reply's `paused` says it happened; a parked one stays parked, at the
+loaded machine's position after a load. The command is the confirmation: a refusal of its own
+(a state of another DOSBox-X version, program, memory size or machine type is refused, never
+asked about) is `unexpected_answer` quoting it, and the emulator's log says why. The state is
+`<name>.sav` under the session's `state_dir`, written there directly and read back for what it
+says about itself; `state_list` reads every state's ZIP members (version, program, machine,
+memory size, stamp) without loading, needs no window, and answers while the guest runs. A save
+never overwrites and alters nothing; a load marks the session altered, because it replaces the
+machine. A name is letters, digits, `_` and `-`, starting with a letter or a digit, at most 64
+of them, and not digits only: the emulator's own slot files are `<n>.sav` in the same
+directory.
 
 ## The console
 
@@ -1559,8 +1568,8 @@ are in its own docstring.
 **Both tiers run their parts side by side.** The matrix runs each section letter, and
 `tests/live/run_live_pytest.py` each live test, as a process of its own, as many at once as
 `DOSBOX_X_LIVE_JOBS` says (unset, half the host's CPUs; `1`, one after another in one process),
-merged from the summaries they declare through `scry_core.live_pool`. What takes the focus by
-design (section G, the focus gate's O, the `windowed` tests) runs alone. Each part works on
+merged from the summaries they declare through `scry_core.live_pool`. What opens a window
+(section G, the focus gate's O, the `windowed` tests) runs alone. Each part works on
 copies of its own of the guests and the bench, because the debugger writes its files under
 fixed names into the emulator's working directory (`tests/live/live_private.py`).
 

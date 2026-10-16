@@ -43,11 +43,11 @@ DEFERRED_OPS: set[str] = set()
 
 
 #: THE TOOLS THAT ANSWER ON A RUNNING GUEST, the one table of them: they read a file or the
-#: log, post host input, work the window's menu, or queue a declaration as `pending` for the
-#: next stop, and none types at the debugger's console. Everything else needs a stopped
-#: machine, so a sequence WAITS for the next stop before dispatching one. The membership is
-#: proven tool by tool against a running session, not trusted to this list; `symbols_load` is
-#: out because without a `base` it measures one off the machine.
+#: log, post input into the guest, go down the debugger channel, or queue a declaration as
+#: `pending` for the next stop, and none types at the debugger's console. Everything else
+#: needs a stopped machine, so a sequence WAITS for the next stop before dispatching one. The
+#: membership is proven tool by tool against a running session, not trusted to this list;
+#: `symbols_load` is out because without a `base` it measures one off the machine.
 RUNNING_OK_OPS = frozenset({
     "status", "log", "log_wait", "symbols_find", "comment_list", "comment_save",
     "breakpoint_at", "breakpoint_interrupt", "breakpoint_list", "breakpoint_clear",

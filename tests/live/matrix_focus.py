@@ -7,9 +7,9 @@ verdict is taken in: one shared start forced in front, which the watch must see 
 one behind, which it must not; a watch that cannot see the first clears nothing, so without the
 control the verdict is BLOCKED, as it is when too little ran or the watch could not sample:
 never green, and never counted as the server's FAIL. Judged by process name, so another
-DOSBox-X in front would count. Section G clicks the emulator's menu, which is clicked in front
-by design: its stretch is excluded by name, and only there. The control's front start takes the
-owner's focus for a few seconds: a run with this section is announced.
+DOSBox-X in front would count. Nothing is excluded: no tool clicks a menu any more, and section
+G's windows open behind. The control's front start takes the owner's focus for a few seconds: a
+run with this section is announced.
 """
 from __future__ import annotations
 
@@ -43,15 +43,13 @@ O_CONTROL = cells(
      "start docstring: `background`, true behind"),
 )
 O_VERDICT = cells(
-    ("O no DOSBox-X came to the front while the sections ran, outside section G's menu clicks",
+    ("O no DOSBox-X came to the front while the sections ran",
      "REFERENCE.md, Input and the screen: nothing about the host is touched"),
 )
 
-#: The watch the control started, its start of the judged window, and the stretches a section
-#: takes the focus by design (`excluded`), appended by that section.
+#: The watch the control started, and its start of the judged window.
 WATCH: list[focus_watch.FocusWatch] = []
 SINCE: list[int] = []
-EXCLUDED: list[tuple[int, int]] = []
 
 
 def _now_ms() -> int:
@@ -67,7 +65,7 @@ def _hold(background: bool) -> tuple[int, int]:
     began = _now_ms()
     boot(conf=conf_without_launch(PROBE_CONF, "PROBE.COM"), cwd=GUEST, mode="shared",
          window_flags=_flags(), program="PROBE.COM", background=background)
-    must(M.call(server.resume, until_close=True), "releasing the probe")
+    must(M.call(server.resume), "releasing the probe")
     time.sleep(HOLD_S)
     close_whatever()
     return began, _now_ms()
@@ -103,18 +101,16 @@ def section_o_verdict() -> None:
         M.block_rest(f"the control did not hold, so the watch clears nothing; record {watch.path}")
         return
     end = _now_ms()
-    judged = (end - SINCE[0]) - sum(min(b, end) - max(a, SINCE[0]) for a, b in EXCLUDED
-                                    if b > SINCE[0] and a < end)
+    judged = end - SINCE[0]
     if judged < MIN_JUDGED_MS:
-        # TOO LITTLE RAN OUTSIDE THE EXCLUDED STRETCH (O alone, or G and O): no verdict to give.
-        M.block_rest(f"{judged} ms ran outside the excluded menu clicks, too little to judge; "
+        # TOO LITTLE RAN between the control and the verdict (O alone): no verdict to give.
+        M.block_rest(f"{judged} ms ran after the control, too little to judge; "
                      f"record {watch.path}")
         return
-    v = focus_watch.judge(watch.samples, NAMES, start_ms=SINCE[0], end_ms=end,
-                          exclude=EXCLUDED)
+    v = focus_watch.judge(watch.samples, NAMES, start_ms=SINCE[0], end_ms=end)
     if v.status == "INVALID":
         # THE INSTRUMENT, not the server: a sample it could not take, or a stretch unsampled.
         M.block_rest(f"the watch cannot judge the run: {v.reason}; record {watch.path}")
         return
     M.judge(label, v.status == "CLEAN",
-            f"{v.status}: {v.reason}; {len(EXCLUDED)} stretch(es) excluded; record {watch.path}")
+            f"{v.status}: {v.reason}; record {watch.path}")

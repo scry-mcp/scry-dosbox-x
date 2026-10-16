@@ -24,6 +24,9 @@ dos-real16 and dos-real16-alt on their copies on the bench (`bench_programs`, fi
 for), each BLOCKED whole, as K's dos-real16 cells are, naming the file, when the identity is
 incomplete or a copy is absent or off its pin. What a run takes from the environment:
 
+    DOSBOX_X_BINARY               the emulator the sessions run (the PATH's `dosbox-x` unset);
+                                  the state cells need one that carries SAVESTATE and
+                                  LOADSTATE, the Optimiza/dosbox-x fork's build
     DOSBOX_X_LIVE_BENCH           the bench's root (`~/.local/share/scry-bench/dosbox-x` unset)
     DOSBOX_X_LIVE_WINDOW_FLAGS    G: the placement flags of a watched window, one token per
                                   line
@@ -32,8 +35,8 @@ incomplete or a copy is absent or off its pin. What a run takes from the environ
                                   (`scry_core.live_pool`); unset, half the host's CPUs; `1`,
                                   every section in this process, one after another
 
-A run with more than one job runs the sections that take the focus by design (G, and O, which
-opens and closes the run) in this process, the rest as jobs; each job's log and summary are in
+A run with more than one job runs the sections that open a window (G, and O, which opens and
+closes the run) in this process, the rest as jobs; each job's log and summary are in
 the directory printed as `jobs:`, and its transcript is appended to this run's.
 """
 from __future__ import annotations

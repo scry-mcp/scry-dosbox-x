@@ -1,7 +1,7 @@
 {
  "task": {
   "id": "D21",
-  "prompt": "The windowed guest is running: bring it back to the debugger.",
+  "prompt": "The headless guest is running: bring it back to the debugger.",
   "tool": "stop"
  },
  "runs": [

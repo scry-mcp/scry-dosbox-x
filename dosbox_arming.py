@@ -317,7 +317,7 @@ def attribute_stop(session: ds.Session, *, where: dict[str, str],
     `retrace_may_stop` is a stop reached by a release that ran on (`resume`, a `run_to` that did
     not arrive, a stop found on its own): a retrace `run_for` left armed is the likeliest cause
     of such a stop when no declaration explains it, so it is named and forgotten there. Any other
-    stop (a step, a menu break-in, an arrival) is its caller's own and leaves it armed.
+    stop (a step, a `stop`, an arrival) is its caller's own and leaves it armed.
     """
     stop = (int(where["cs"], 16), int(where["eip"], 16))
     mode = where["mode"]

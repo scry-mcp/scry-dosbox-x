@@ -137,7 +137,7 @@ def a_running_guest_that_has_logged(tmp_path: Path, seconds: int = 120,
     a channel to measure against."""
     log = tmp_path / "guest.log"
     start_ok(seconds=seconds, logfile=str(log))
-    server.resume(until_close=True)
+    server.resume()
     assert wait_for(lambda: log.exists() and ds.count_e9(
         log.read_text(encoding="utf-8", errors="replace")) >= lines), \
         "the guest emitted no instrumentation: this window measured nothing, INVALID"
@@ -240,38 +240,19 @@ def test_start_shared_keeps_the_callers_flags_and_adds_no_dummy_driver() -> None
     assert regs["registers"]["CS"] == "F000"
 
 
-@pytest.mark.windowed
-@pytest.mark.skipif(not WINDOW_FLAGS,
-                    reason="set DOSBOX_X_LIVE_WINDOW_FLAGS (one argv token per line, "
-                           "as `place-window dosbox` prints them) to exercise stop")
-def test_stop_brings_a_running_windowed_guest_back_through_the_menu() -> None:
-    """The one way back into the debugger of a running guest on macOS, measured: the
-    emulator's Debug menu item, clicked by name. Released with `until_close` (nothing
-    armed can stop the probe), the guest runs; `stop` brings it back and surveys the stop,
-    and a second `stop` says it was already stopped.
-
-    THE HOST REQUIREMENT IS CHECKED BEFORE ANY EMULATOR EXISTS: the menu is driven through
-    System Events, which macOS allows a process only with the Accessibility grant, and a
-    host without it would fail this case on a refusal that reads like a missing menu."""
-    assert ds.accessibility_trusted(), (
-        f"the process running pytest is not trusted for Accessibility, so System Events "
-        f"cannot drive the emulator's menu: grant it in {ds.ACCESSIBILITY_SETTING}")
-    start_ok(seconds=60, mode="shared", window_flags=WINDOW_FLAGS)
-    released = cast(dict[str, Any], server.resume(until_close=True))
+def test_stop_brings_a_running_headless_guest_back_through_the_debugger_channel() -> None:
+    """`stop` sends BREAK down the emulator's own debugger channel: a headless guest released
+    with nothing armed runs, `stop` brings it back and surveys the stop, and a second `stop`
+    says it was already stopped. The release is checked running first, so a `stop` that
+    found the machine parked could not pass for one that broke in."""
+    start_ok(seconds=60)
+    released = cast(dict[str, Any], server.resume())
     assert released["status"] == "ok" and released["halted"] is False, released
     back = cast(dict[str, Any], server.stop())
-    assert back["status"] == "ok" and back["interrupted"] is True and back["how"] == "menu", back
+    assert back["status"] == "ok" and back["interrupted"] is True and back["how"] == "break", back
     assert "registers" in back and cast(float, back["waited_s"]) >= 0
     again = cast(dict[str, Any], server.stop())
     assert again["interrupted"] is False
-
-
-def test_stop_on_a_headless_session_is_refused_naming_what_ends_its_run() -> None:
-    start_ok(seconds=30)
-    released = cast(dict[str, Any], server.resume(until_close=True))
-    assert released["halted"] is False
-    refused = cast(dict[str, Any], server.stop())
-    assert refused["status"] == "INVALID" and "headless" in refused["message"], refused
 
 
 # ------------------------------------------------------------------- what it is
@@ -327,7 +308,7 @@ def test_break_on_int3_stops_the_guests_own_int3_and_only_with_the_key(key: bool
     server.set_register(name="eip", value=off)
     here = cast(dict[str, Any], server.registers())["registers"]
     assert (int(here["CS"], 16), int(here["EIP"], 16)) == (seg, off), here
-    ran = cast(dict[str, Any], server.resume(until_close=True, seconds=10))
+    ran = cast(dict[str, Any], server.resume(seconds=10))
     if key:
         assert ran["halted"] is True, ran
         assert ran["stopped_at"]["cs"] == f"{seg:04X}", ran
@@ -459,7 +440,7 @@ def test_debug_hands_back_a_delta_and_says_whether_it_kept_all_of_it() -> None:
         # slice-length defect fails, and it can only be made on this branch.
         assert chars == len(delta), (
             f"screen_chars {chars} is not the length of an unclipped delta ({len(delta)})")
-    resumed = cast(dict[str, Any], server.resume(until_close=True))
+    resumed = cast(dict[str, Any], server.resume())
     assert resumed["clipped"] is (
         cast(int, resumed["screen_chars"]) > SMALL_CAP), resumed["screen_chars"]
 
@@ -546,11 +527,9 @@ def test_resume_lets_the_guest_advance() -> None:
     produces, and the two must AGREE.
     """
     start_ok(seconds=90)
-    reply = cast(dict[str, Any], server.resume(until_close=True))
+    reply = cast(dict[str, Any], server.resume())
     assert reply["status"] == "ok", reply
-    # `until_close` IS THE HONEST DECLARATION for this run: headless, nothing armed, the
-    # guest read through its log until the bound or `close`. A bare `resume` here is
-    # refused, because that machine has no way back, and the refusal is right.
+    # Headless with nothing armed: the guest is read through its log until `close`.
     ran = str(reply["screen_delta"])
     assert any(m in ran for m in ("COMMAND.COM", "EMS page frame", "XMS:")), ran[-400:]
     assert reply["halted"] is False, reply
@@ -617,7 +596,7 @@ def test_captures_and_a_still_come_out_of_a_real_recording(tmp_path: Path) -> No
         program=GUEST_PROGRAM,
         capture_video=True, captures_dir=str(caps)))
     assert reply["status"] == "ok", reply
-    server.resume(until_close=True)
+    server.resume()
 
     def enough() -> bool:
         files = sorted(caps.glob("*.avi"), key=lambda f: f.stat().st_size)
@@ -727,7 +706,7 @@ def test_closing_a_running_session_does_not_wait_out_a_signal_it_ignores() -> No
     property any contract test has access to.
     """
     start_ok(seconds=90)
-    resumed = cast(dict[str, Any], server.resume(until_close=True))
+    resumed = cast(dict[str, Any], server.resume())
     # IT MUST REALLY HAVE RUN, or this measures the stopped path under the running
     # path's name and passes for the wrong reason. Since #382 `resume` answers that
     # itself, and the independent evidence stays beside it: a tool's own reading is not
@@ -950,7 +929,7 @@ def test_stepping_a_running_machine_refuses_instead_of_pressing_keys_at_nobody(
     tool never touched, and only a real emulator is silent in that particular way.
     """
     start_ok(seconds=60)
-    server.resume(until_close=True)
+    server.resume()
     reply = cast(dict[str, Any], server.step(mode="over", count=1))
     assert reply["status"] == "INVALID", reply
     # THE CODE FIRST, because it is the declared half of the refusal and `message` is the
@@ -1472,56 +1451,55 @@ def test_write_lands_in_ram_and_is_read_back_and_a_write_into_rom_is_refused() -
     assert cast(dict[str, Any], server.status())["session"]["alive"] is True
 
 
-@pytest.mark.windowed
-@pytest.mark.skipif(not WINDOW_FLAGS,
-                    reason="set DOSBOX_X_LIVE_WINDOW_FLAGS (one argv token per line, "
-                           "as `place-window dosbox` prints them) to exercise the menu")
-def test_states_are_saved_by_menu_listed_with_their_metadata_and_loaded_into_a_running_guest(
-        tmp_path: Path) -> None:
-    """MEASURED on this build: `Capture > Save state` writes the slot file and logs
-    `Saved. (Slot N)` with the remark dialog off; `Capture > Load state` logs `Loaded.`
-    within a second with the machine RUNNING and a state SAVED running (a load taken
-    parked, or of a state saved parked, kills the debugger, which is why both tools
-    refuse parked); and the state ZIP names its program and stamp. The
-    load here is of a state THIS session wrote; a state from an earlier session is the
-    same file and the same slot, and is not measured separately."""
-    assert ds.accessibility_trusted(), (
-        f"the process running pytest is not trusted for Accessibility, so System Events "
-        f"cannot drive the emulator's menu: grant it in {ds.ACCESSIBILITY_SETTING}")
+#: A byte of the BIOS data area's inter-application block (0040:00F0), free for a test to own.
+_MARK_AT = "0000:000004F0"
+
+
+def _byte_at(ref: str) -> str:
+    reply = cast(dict[str, Any], server.read_memory(ref=ref, length=1))
+    assert reply["status"] == "ok", reply
+    return str(reply["hex"]).upper()
+
+
+def test_states_round_trip_headless_through_the_debugger_commands(tmp_path: Path) -> None:
+    """A state saved and loaded with no window, by the debugger's own SAVESTATE and LOADSTATE
+    (a build that carries them: `DOSBOX_X_BINARY` the fork's; any other is BLOCKED here, by
+    its own refusal). The known answer is a byte: written AA, saved, written 55 (the control,
+    read back as 55), loaded, read back AA. Parked, the machine stays parked; running, it is
+    stopped for the command and released again (`paused`), and `stop` still reaches it."""
     state_dir = tmp_path / "states"
-    # THE PROGRAM BY `program`, so `start` loads the input stub before it: the snapshot below is
-    # the stub's command.
     started = cast(dict[str, Any], server.start(
-        conf=str(conf_that_does_not_exit(tmp_path)), cwd=CWD, seconds=120, mode="shared",
-        window_flags=WINDOW_FLAGS, program=GUEST_PROGRAM, logfile=str(tmp_path / "e9.log"),
-        state_dir=str(state_dir)))
+        conf=str(conf_that_does_not_exit(tmp_path)), cwd=CWD, seconds=120,
+        program=GUEST_PROGRAM, logfile=str(tmp_path / "e9.log"), state_dir=str(state_dir)))
     assert started["status"] == "ok", started
     empty = cast(dict[str, Any], server.state_list())
     assert empty["status"] == "ok" and empty["states"] == [], empty
-    assert empty["session"]["state_dir"] == str(state_dir)
-    parked = cast(dict[str, Any], server.state_load(name="live"))
-    assert parked["status"] == "INVALID" and parked["code"] == "unknown_ref", parked
-    parked_save = cast(dict[str, Any], server.state_save(name="live"))
-    assert parked_save["status"] == "INVALID" and parked_save["code"] == "not_running"
-    released = cast(dict[str, Any], server.resume(until_close=True))
-    assert released["halted"] is False, released
+    missing = cast(dict[str, Any], server.state_load(name="live"))
+    assert missing["status"] == "INVALID" and missing["code"] == "unknown_ref", missing
+    assert server.write(ref=_MARK_AT, data_hex="AA")["verified"] is True
     saved = cast(dict[str, Any], server.state_save(name="live"))
-    assert saved["status"] == "ok", saved
-    assert saved["slot"] == 1 and Path(str(saved["path"])) == state_dir / "live.sav"
+    if saved.get("code") == "no_channel":
+        pytest.skip(f"this DOSBox-X carries no SAVESTATE: {saved['message']}")
+    assert saved["status"] == "ok" and saved["paused"] is False, saved
+    assert Path(str(saved["path"])) == state_dir / "live.sav"
     assert saved["program"] and saved["time_stamp"] and saved["version"].startswith("DOSBox-X")
-    assert saved["session"]["altered"] is False
-    listed = cast(dict[str, Any], server.state_list())
-    names = sorted(str(s["name"]) for s in cast(list[dict[str, Any]], listed["states"]))
-    assert names == ["live"], listed
-    assert cast(dict[str, Any], listed["working_slot"])["name"] == "1", listed
+    assert server.write(ref=_MARK_AT, data_hex="55")["verified"] is True
+    assert _byte_at(_MARK_AT) == "55", "the control: the byte changed after the save"
     loaded = cast(dict[str, Any], server.state_load(name="live"))
-    assert loaded["status"] == "ok", loaded
-    # THE SCREENSHOT, by the same menu, of the running machine: a new PNG under the
-    # captures directory, moved to `dest`.
+    assert loaded["status"] == "ok" and loaded["paused"] is False, loaded
+    assert loaded["session"]["altered"] is True
+    assert _byte_at(_MARK_AT) == "AA", "the load brought the saved machine back"
+    released = cast(dict[str, Any], server.resume())
+    assert released["halted"] is False, released
+    running = cast(dict[str, Any], server.state_save(name="running"))
+    assert running["status"] == "ok" and running["paused"] is True, running
+    again = cast(dict[str, Any], server.state_load(name="running"))
+    assert again["status"] == "ok" and again["paused"] is True, again
     shot = cast(dict[str, Any], server.snapshot(dest=str(tmp_path / "shot.png")))
     assert shot["status"] == "ok" and (tmp_path / "shot.png").stat().st_size > 0, shot
-    assert str(loaded["loaded_line"]).endswith("Loaded. (Slot 1)")
-    assert loaded["session"]["altered"] is True
+    listed = cast(dict[str, Any], server.state_list())
+    names = sorted(str(s["name"]) for s in cast(list[dict[str, Any]], listed["states"]))
+    assert names == ["live", "running"], listed
     back = cast(dict[str, Any], server.stop())
     assert back["status"] == "ok" and back["interrupted"] is True, back
 

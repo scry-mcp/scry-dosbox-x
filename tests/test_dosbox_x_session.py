@@ -2350,38 +2350,6 @@ def test_the_stop_surveys_e9_reader_refuses_a_log_that_is_not_there_yet(tmp_path
     assert len(lines) == 1 and offset > 0
 
 
-def test_break_in_refuses_a_headless_session_before_asking_the_menu(tmp_path: Path) -> None:
-    """The menu route needs a window: a headless session is refused by what it lacks,
-    without System Events being asked at all."""
-    s = ds.Session.__new__(ds.Session)
-    s.launch = SimpleNamespace(watched=False)  # type: ignore[assignment]
-    with pytest.raises(ds.Invalid, match="headless"):
-        ds.Session.break_in(s)
-
-
-def test_break_in_refuses_an_untrusted_host_naming_the_setting_before_the_menu(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """System Events drives the menu only for a process trusted for Accessibility, and a
-    host without that trust answers the click with a refusal that reads like a missing
-    menu. So the trust is asked FIRST, through the same System Events, and the refusal
-    names the setting that grants it; the menu script is never run on such a host."""
-    scripts: list[str] = []
-
-    def run(argv: list[str], **kw: Any) -> SimpleNamespace:
-        scripts.append(argv[-1])
-        return SimpleNamespace(returncode=0, stdout="false\n", stderr="")
-
-    monkeypatch.setattr(subprocess, "run", run)
-    s = ds.Session.__new__(ds.Session)
-    s.launch = SimpleNamespace(watched=True)  # type: ignore[assignment]
-    s.proc = SimpleNamespace(pid=4242)  # type: ignore[assignment]
-    with pytest.raises(ds.Invalid) as got:
-        ds.Session.break_in(s)
-    assert len(scripts) == 1 and "UI elements enabled" in scripts[0], scripts
-    assert got.value.code == "host_failed"
-    assert ds.ACCESSIBILITY_SETTING in str(got.value)
-
-
 def test_the_launch_turns_the_quit_warning_off_so_close_is_a_quit(conf: Path) -> None:
     """With a program loaded, the emulator answers a SIGTERM by asking whether to quit
     anyway, and a session nobody is watching then sits behind that question until the

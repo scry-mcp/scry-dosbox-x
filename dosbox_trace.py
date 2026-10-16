@@ -267,7 +267,7 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
             raise ds.Invalid("wait_expired",
                 f"the machine closed the debugger's log before its count ran out (the logfile "
                 f"says `{MACHINE_CLOSED_LINE}`; {MACHINE_CLOSES}) and runs on, so the count "
-                f"will not stop it: a declared breakpoint still can, windowed `stop` can, and "
+                f"will not stop it: a declared breakpoint still can, `stop` can, and "
                 f"`close` ends it. {where} is yours to move, and its lines are not what ran",
                 running=True, trace={"path": str(where), "closed": True})
         seen = ("the session's logfile does not say it happened" if logfile is not None else

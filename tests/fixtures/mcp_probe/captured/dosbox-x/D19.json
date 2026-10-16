@@ -1,28 +1,25 @@
 {
  "task": {
   "id": "D19",
-  "prompt": "This session is headless and nothing is declared that could stop the guest. Let it run until the session's bound or a close, and come back at once.",
-  "tool": "resume",
-  "args": {
-   "until_close": true
-  }
+  "prompt": "This session is headless and nothing is declared that could stop the guest. Let it run and come back at once; it will be stopped later.",
+  "tool": "resume"
  },
  "runs": [
   {
    "lines": [
-    "D19: {\"tool\": \"resume\", \"args\": {\"until_close\": true}}"
+    "D19: {\"tool\": \"resume\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D19: {\"tool\": \"resume\", \"args\": {\"until_close\": true}}"
+    "D19: {\"tool\": \"resume\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D19: {\"tool\": \"resume\", \"args\": {\"until_close\": true}}"
+    "D19: {\"tool\": \"resume\", \"args\": {}}"
    ],
    "right": true
   }

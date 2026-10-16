@@ -138,7 +138,7 @@ _WITHOUT_SESSION: dict[str, tuple[Callable[[dict[str, Any]], bool], str]] = {
     "start": (lambda r: ok(r) and alive(r), "start docstring: opens one session, parked"),
 }
 
-_WINDOWED = ("state_save", "state_load", "snapshot", "stop")
+_WINDOWED = ("snapshot",)
 _NEEDS_STOP = ("registers", "read_memory", "disassemble", "call_stack", "memdump", "find",
                "scan_start",
                "scan_filter", "scan_clear", "debug", "set_register", "write", "step", "run_to",
@@ -188,8 +188,10 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "run_to": {"ref": NEVER_RUNS_TARGET, "seconds": 3, "control": control},
         "run_for": {"frames": 1},
         "trace": {"instructions": 16, "shape": "cs_ip", "dest": M.fresh(".trace"), "seconds": 30},
-        "state_save": {"name": "matrix_a", "seconds": 10},
-        "state_load": {"name": PLACED_STATE, "seconds": 10},
+        "state_save": {"name": f"matrix_a_{state}", "seconds": 10},
+        # the stopped cells save before they load; the running ones meet the load first, and
+        # load the state the stopped cells saved
+        "state_load": {"name": "matrix_a_stopped", "seconds": 10},
         "snapshot": {"dest": M.fresh(".png"), "seconds": 10},
         "breakpoint_interrupt": {"number": 0x21, "ah": 0x4C},
         "symbols_load": {"source": str(FIXTURE_MAP), "base": "8000"},
@@ -295,9 +297,11 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                   and (r.get("trace") or {}).get("instructions") == 16
                   and Path(str((r.get("trace") or {}).get("path"))).is_file(),
                   "trace docstring: `instructions` executed, the log in a file"),
-        "state_save": (lambda r: refused(r), "state_save docstring: windowed, running"),
-        "state_load": (lambda r: refused(r) and r.get("code") != "unknown_ref",
-                       "state_load docstring: refused parked, a state of that name present"),
+        "state_save": (lambda r: ok(r) and r.get("paused") is False,
+                       "state_save docstring: by SAVESTATE, a parked machine stays parked"),
+        "state_load": (lambda r: ok(r) and r.get("paused") is False
+                       and (r.get("session") or {}).get("altered") is True,
+                       "state_load docstring: by LOADSTATE, the state the stopped cells saved"),
         "snapshot": (lambda r: refused(r), "snapshot docstring: refused parked, windowed"),
         "state_list": (lambda r: ok(r) and isinstance(r.get("states"), list),
                        "state_list docstring: needs no window"),
@@ -361,6 +365,8 @@ def _running(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
     d: dict[str, tuple[Callable[[dict[str, Any]], bool], str]] = {
         "build_check": (lambda r: refused(r, "session_live"), "build_check docstring"),
         "start": (lambda r: refused(r, "session_live"), "start docstring"),
+        "stop": (lambda r: ok(r) and r.get("interrupted") is True and r.get("how") == "break",
+                 "stop docstring: BREAK down the debugger channel, headless too"),
         "status": (lambda r: ok(r) and alive(r) and r.get("cpu_mode") is None
                    and bool(r.get("cpu_mode_why")),
                    "status docstring: cpu_mode null with cpu_mode_why while it runs"),
@@ -368,6 +374,10 @@ def _running(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
         "log_wait": (lambda r: ok(r) and "PROBE" in str(r.get("line")),
                      "log_wait docstring; known: probe.asm writes `PROBE . tick`"),
         "state_list": (lambda r: ok(r), "state_list docstring: answers while running"),
+        "state_save": (lambda r: ok(r) and r.get("paused") is True,
+                       "state_save docstring: a running guest is stopped for it and released"),
+        "state_load": (lambda r: ok(r) and r.get("paused") is True,
+                       "state_load docstring: a running guest is stopped for it and released"),
         "breakpoint_interrupt": (lambda r: ok(r) and r.get("state") == "pending",
                                  "breakpoint_interrupt docstring: stored pending"),
         "symbols_load": (lambda r: ok(r) and r.get("pending") is True,
@@ -426,21 +436,8 @@ def _a_cells() -> list[Cell]:
     return out
 
 
-#: A state name placed in the session's save directory before `state_load` is asked for it on a
-#: headless session, so the refusal met is the one about the machine, not the missing name.
-PLACED_STATE = "matrix_placed"
-
-
-def _place_state() -> None:
-    state_dir = (M.call(server.status).get("session") or {}).get("state_dir")
-    if state_dir:
-        (Path(str(state_dir)) / f"{PLACED_STATE}.sav").write_bytes(b"")
-
-
 def _a_one(tool: str, state: str) -> dict[str, Any]:
     predicate, _ = _expect(tool, state)
-    if tool == "state_load" and state in ("stopped", "running"):
-        _place_state()
     r = M.call(getattr(server, tool), **_args(tool, state))
     note_spawn()
     M.judge(_a_label(tool, state), predicate(r), said(r))
@@ -487,11 +484,14 @@ def section_a() -> None:
     _a_one("resume", "stopped")
     _a_one("log_wait", "running")        # first: it is what proves the guest runs
     for tool in TOOLS:
-        if tool not in ("log_wait", "close"):
+        if tool not in ("log_wait", "close", "stop"):
             _a_one(tool, "running")
     r = M.call(server.registers, from_last_stop=True)
     M.judge("A running registers(from_last_stop)",
             ok(r) and r.get("stale") is True and r.get("last_stop") is not None, said(r))
+    _a_one("stop", "running")            # last of the running cells: it parks the machine
+    M.setup()
+    must(M.call(server.resume), "releasing the probe again for the running close")
     _a_one("close", "running")
     for tool in TOOLS:
         if tool != "start":

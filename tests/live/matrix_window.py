@@ -1,15 +1,13 @@
-"""Section G of the live matrix: the tools that need a window (the menu, the saved states, the
-screenshot) and the video capture, on the probe guest and on the DPMI guest, and the mouse at two
+"""Section G of the live matrix: the tools on a WINDOWED session (stop, the saved states, the
+screenshot, the video capture), on the probe guest and on the DPMI guest, and the mouse at two
 window sizes, which must change nothing the guest reads. It opens windows where the placement
-flags say, and each menu click takes the focus for a moment; the section prints a line saying so
-before it starts."""
+flags say, launched BEHIND (`background=True`): nothing here clicks a menu or takes the focus,
+and section O judges this stretch like any other."""
 from __future__ import annotations
 
-import time
 from pathlib import Path
 
 import dpmi_guest as guest
-import matrix_focus as focus
 from matrix_common import (
     ENV,
     GUEST,
@@ -37,12 +35,12 @@ DPMI_CELLS = ("G the DPMI guest: snapshot", "G the DPMI guest: a click reaches t
               "G the DPMI guest: quit by keys and close")
 
 G_CELLS = cells(
-    ("G stop brings a running guest back", "stop docstring: the menu, `interrupted: true`"),
+    ("G stop brings a running guest back", "stop docstring: BREAK, `interrupted: true`"),
     ("G declared while running applies at stop", "REFERENCE.md, Advancing: applied_on_stop"),
     ("G state_save while running", "state_save docstring"),
     ("G state_list lists it", "state_list docstring"),
     ("G state_load while running", "state_load docstring"),
-    ("G stop after the load", "state_load docstring: resume, state_load, stop"),
+    ("G stop after the load", "state_load docstring: a running guest is released again"),
     ("G snapshot while running", "snapshot docstring"),
     ("G captures lists the recording", "captures docstring"),
     ("G capture_frame writes a PNG", "capture_frame docstring"),
@@ -71,7 +69,8 @@ def _probe() -> None:
     conf = conf_without_launch(PROBE_CONF, "PROBE.COM")
     caps = Path(M.fresh("-captures"))
     caps.mkdir()
-    boot(conf=conf, cwd=GUEST, mode="shared", window_flags=_flags(), program="PROBE.COM",
+    boot(conf=conf, cwd=GUEST, mode="shared", window_flags=_flags(), background=True,
+         program="PROBE.COM",
          capture_video=True, captures_dir=str(caps))
     must(M.call(server.resume), "releasing the probe")
     must(M.call(server.log_wait, pattern="PROBE", channel="guest", seconds=30),
@@ -79,7 +78,7 @@ def _probe() -> None:
     M.setup()
     r = M.call(server.stop)
     judged("G stop brings a running guest back", reply=r,
-           holds=ok(r) and r.get("interrupted") is True and r.get("how") == "menu")
+           holds=ok(r) and r.get("interrupted") is True and r.get("how") == "break")
     must(M.call(server.resume), "releasing the probe")
     pend = M.call(server.breakpoint_at, ref="0000:0009")
     r = M.call(server.stop)
@@ -137,7 +136,8 @@ def _scaled() -> None:
     guest, so the same cell lands on the same driver coordinates."""
     conf = conf_without_launch(PROBE_CONF, "PROBE.COM")
     flags = [*_flags(), "-set", "sdl output=opengl", "-set", "sdl windowresolution=1280x800"]
-    boot(conf=conf, cwd=GUEST, mode="shared", window_flags=flags, program="PROBE.COM")
+    boot(conf=conf, cwd=GUEST, mode="shared", window_flags=flags, background=True,
+         program="PROBE.COM")
     must(M.call(server.resume), "releasing the probe")
     must(M.call(server.log_wait, pattern="PROBE", channel="guest", seconds=30),
          "the probe's first line")
@@ -148,7 +148,7 @@ def _scaled() -> None:
 
 
 def _dpmi() -> None:
-    dpmi_boot(mode="shared", window_flags=_flags())
+    dpmi_boot(mode="shared", window_flags=_flags(), background=True)
     release_running(NEVER_RUNS_STOPPER)
     must(M.call(server.log_wait, pattern=guest.SETTLED_MARK, channel="guest", seconds=30),
          "the guest's first TICK line")
@@ -169,16 +169,11 @@ def _dpmi() -> None:
 @M.section("G", "the windowed tools, on the probe guest and on the DPMI guest", G_CELLS,
            FLAGS_VAR, alone=True)
 def section_g() -> None:
-    print("  a window opens on the display the placement flags name, and each menu click "
-          "takes the focus for a moment", flush=True)
-    began = int(time.time() * 1000)
+    print("  windows open behind, on the display the placement flags name", flush=True)
     try:
         _probe()
         _scaled()
         _dpmi()
     finally:
-        # THE ONE STRETCH THE FOCUS GATE EXCLUDES: these tools click the menu, in front. Its end
-        # is stamped once the window is closed, so an abort here does not leave it open outside.
         close_whatever()
-        focus.EXCLUDED.append((began, int(time.time() * 1000)))
     print(f"  kept for the QA: {' '.join(KEEP)}", flush=True)

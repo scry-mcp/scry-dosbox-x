@@ -30,8 +30,9 @@ front, and this server posts no host keys: that half is not measured.  What the 
 paragraph got wrong: `-loadstate` is not an option this build has, so "it did not return"
 was an unknown option hanging, which every unknown option does; and `forceloadstate` is an
 override for a version or program mismatch on load, not a trigger.  The state tools
-(`state_save`, `state_load`) go through the emulator's own menu, clicked by name in a
-window; `state_list` reads the directory.
+(`state_save`, `state_load`) are the debugger's own SAVESTATE and LOADSTATE, sent down the
+debugger channel, which a build of the Optimiza/dosbox-x fork carries and loads as well as
+saves; `state_list` reads the directory.
 
 AND A SECOND ONE, FOUND WHILE BUILDING THE STEPPING TOOLS: `RUNWATCH` SHIPS NO TOOL
 EITHER, and the measurement is why.  The debugger has it (`debug_running = true;
@@ -199,9 +200,10 @@ mcp = Envelope(
         'Write: `set_register`, `write`. Advance: `run_to`, `run_for`, `trace`, `screen_wait`,\n'
         '`step`, `resume`, `stop`. Declarations, kept per conf: `breakpoint_at`,\n'
         '`breakpoint_list`, `breakpoint_clear`, `breakpoint_interrupt`, `watch_add`,\n'
-        '`watch_list`, `watch_clear`. States: `state_save`, `state_load` (by menu, windowed),\n'
-        '`state_list`. Names: `symbols_load`, `symbols_find`. Comments: `comment_add`,\n'
-        '`comment_list`, `comment_delete`, `comment_save`, `comment_load`. Input, in-guest:\n'
+        '`watch_list`, `watch_clear`. States: `state_save`, `state_load` (by SAVESTATE and\n'
+        'LOADSTATE, a build that carries them), `state_list`. Names: `symbols_load`,\n'
+        '`symbols_find`. Comments: `comment_add`, `comment_list`, `comment_delete`,\n'
+        '`comment_save`, `comment_load`. Input, in-guest:\n'
         '`send_keys`, `send_mouse`, `drive`. Captures: `captures`, `capture_frame`,\n'
         '`snapshot`. Sequences: `perform`.\n\n'
         'A SESSION. `build_check` answers about the BUILD, never a reading, and REFUSES while a\n'
@@ -209,8 +211,8 @@ mcp = Envelope(
         'run. The readers need it STOPPED and refuse otherwise, naming `last_stop` and what\n'
         'answers; a running guest is reached through `log`, `log_wait`, `send_keys` and\n'
         '`send_mouse`, and stops at a breakpoint armed BEFORE the release\n'
-        '(`breakpoint_interrupt` 0x21 real mode, 0x31 ah=2 DJGPP) or, WINDOWED only, at `stop`;\n'
-        'a headless `resume` with no stopper needs `until_close=True`. What you declare while\n'
+        '(`breakpoint_interrupt` 0x21 real mode, 0x31 ah=2 DJGPP) or at `stop`, headless or\n'
+        'windowed. What you declare while\n'
         'it runs is `pending` until the next stop. After `symbols_load`, a `ref` is a symbol or\n'
         'a `SEG:OFF`. A sequence is ONE call: `perform`, or `drive` for an input and its check.\n'
         'FOR A VALUE use `registers`, `read_memory`, `memdump` or `log`; `debug` is the last\n'
@@ -1052,7 +1054,7 @@ def write(ref: str, data_hex: str) -> dict[str, Any]:
 
 @tool("Resume the machine", summary=one_line.resume)
 def resume(e9: str = "none", e9_filter: str = ".",
-           e9_stamp: str | None = None, until_close: bool = False, seconds: float = 0.0,
+           e9_stamp: str | None = None, seconds: float = 0.0,
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Let the machine run (F5, sent once), and SAY whether it actually left the debugger.
     With `seconds` it then waits that long for a stop, listening for the debugger's prompt as
@@ -1060,13 +1062,10 @@ def resume(e9: str = "none", e9_filter: str = ".",
     with `halted: false`, `waited_s` and a `note` when the bound expires, LEAVING IT RUNNING
     (`seconds` is not held to `run_to`'s ceiling); without it (the
     default) it comes back at once. Needs the machine stopped: a guest already running is refused
-    `not_stopped` before the stopper check, since an F5 there does nothing and an
+    `not_stopped`, since an F5 there does nothing and an
     `ok` would read like a release.
 
-    Refused: a HEADLESS `resume` with nothing declared that can stop the machine (a code or
-    interrupt breakpoint, a change-watch), unless `until_close=True` says the run is meant to end
-    at the session's bound or at `close`; a headless session has no way back. A windowed session
-    is not refused: `stop` brings it back.
+    Nothing has to be declared first: `stop` brings a running guest back, headless or windowed.
 
     Reply: `halted` -- `true` means the machine is back at the debugger already, `false` that it
     is running (a gone emulator reads the same: `session.alive` tells them apart). When halted the
@@ -1086,14 +1085,6 @@ def resume(e9: str = "none", e9_filter: str = ".",
     # does nothing, and an `ok` for it reads exactly like the release of a stopped machine.
     if not session.at_debugger():
         raise ds.NotStopped("the guest is already running, so there is nothing to resume")
-    if (not session.launch.watched and not until_close
-            and not arming.something_can_stop_it()):
-        raise ds.Invalid("bad_argument",
-            "nothing declared can stop this machine once it runs (no code or "
-                         "interrupt breakpoint, no change-watch), and a headless session has "
-                         "no `stop`: the run would end only at the session's bound or at "
-                         "`close`. Declare a stopper first, or pass until_close=True to say "
-                         "that is the run you want")
     out = session.resume()
     base = dict(halted=out["halted"], stopped_at=out["stopped_at"],
                 **st.delta(cast(str, out["screen"]), 2000))
@@ -1121,11 +1112,10 @@ def resume(e9: str = "none", e9_filter: str = ".",
 
 @tool("Stop the running machine", summary=one_line.stop)
 def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Bring a RUNNING guest back to the debugger and survey the stop. Only a WINDOWED session
-    (`mode="shared"`) can: the emulator's own menu bar item (Debug > Start DOSBox-X Debugger)
-    is clicked by name through System Events, the one way back measured on macOS, where the
-    debugger hotkey does not break in. A headless session is INVALID here, naming what ends
-    its run instead.
+    """Bring a RUNNING guest back to the debugger and survey the stop, headless or windowed
+    alike: the session sends `BREAK` down the emulator's own debugger channel (upstream's
+    `mcp_server`), which reaches the debugger while the guest runs, with no window, no menu and
+    nothing taken from whoever is using the screen.
 
     THE MACHINE STOPS WHEREVER IT IS, and that is not always in the program: a DJGPP guest
     spends part of every frame in real-mode BIOS handlers (`F000:xxxx`), and a stop landing
@@ -1140,18 +1130,18 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     about the stop: `symbols_load` accumulates its batches, so a name missing after several
     loads is one none of them carried.
 
-    Reply: `interrupted` (`true` with the full stop reply, `how: "menu"`, `waited_s` and
-    `focus` (as `state_save`'s);
-    `false` when the machine was already stopped, with `last_stop` and a `note`).
+    Reply: `interrupted` (`true` with the full stop reply, `how: "break"` and `waited_s`, the
+    seconds from the request to the debugger's prompt; `false` when the machine was already
+    stopped, with `last_stop` and a `note`).
     """
     session = _live()
     if session.at_debugger():
         running.observe_stop(session)
         return st.reply(interrupted=False, running=False,
                         note="the machine was already stopped", last_stop=STATE.as_of())
-    waited = session.break_in(progress=_progress(ctx))
-    reply = running.stop_reply(session, interrupted=True, running=False, how="menu",
-                               waited_s=waited, focus=session.menu_focus)
+    waited = session.break_in()
+    reply = running.stop_reply(session, interrupted=True, running=False, how="break",
+                               waited_s=waited)
     return st.extend(reply, stopped_at=STATE.last_stop.get("at"))
 
 
@@ -1351,44 +1341,35 @@ def screen_wait(text: str, seconds: float = 30.0,
 
 
 @tool("Save the machine state", summary=one_line.state_save)
-def state_save(name: str, seconds: float = ds.STATE_WAIT_S,
-               ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Save the machine under `name`, through the emulator's own menu (`Capture > Save
-    state`, clicked by name through System Events, so a WINDOWED session), confirmed by
-    the `Saved. (Slot N)` line the emulator logs (so a session with `logfile`), and kept as
-    `<state_dir>/<name>.sav`: the working slot is copied under the name, and the file is read
-    back for what it says about itself. The machine must be RUNNING: a state saved with
-    it parked at the debugger cannot be loaded back without killing the debugger
-    (measured), so the save is refused there and the shape is `resume`, save. Never
-    overwrites. Saving alters nothing. A menu click costs seconds of System Events on this
-    emulator; `seconds` bounds the wait for the `Saved.` line. `name`: letters, digits, `_`,
-    `-`, a letter or digit first, at most 64, not digits only (the emulator's slot files).
+def state_save(name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, Any]:
+    """Save the machine under `name` as `<state_dir>/<name>.sav`, by the debugger's own
+    `SAVESTATE` sent down the debugger channel: no window, no menu, no focus taken, headless
+    or windowed. Needs a DOSBox-X that carries the command (the Optimiza/dosbox-x fork); any
+    other build is refused `no_channel`, naming it. The command needs the debugger stopped, so
+    a RUNNING guest is stopped for it and released again (`paused: true`); a parked one stays
+    parked. The file is read back for what it says about itself. Never overwrites. Saving
+    alters nothing. `seconds` bounds the command's reply. `name`: letters, digits, `_`, `-`, a
+    letter or digit first, at most 64, not digits only (the emulator's slot files).
 
-    Reply: `name`, `slot`, `path`, `bytes`, `version`, `program`, `machine`,
-    `memory_size`, `time_stamp` (the state's own members), `saved_line`, `click_s`,
-    `focus` (`returned`: the app in front before the click is in front again; `lost`),
-    `waited_s`.
+    Reply: `name`, `path`, `bytes`, `version`, `program`, `machine`, `memory_size`,
+    `time_stamp` (the state's own members), `paused`, `running` (whether the guest runs after
+    the call), `waited_s` (the command alone).
     """
-    return st.answer(_live().state_save(name, seconds, _progress(ctx)))
+    return st.answer(_live().state_save(name, seconds))
 
 
 @tool("Load a machine state", summary=one_line.state_load)
-def state_load(name: str, seconds: float = ds.STATE_WAIT_S,
-               ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Load the state `name` into the RUNNING machine: the named file is copied into the
-    working slot, `Capture > Load state` is clicked (a WINDOWED session), and the
-    `Loaded. (Slot N)` line is awaited (a session with `logfile`). REFUSED with the machine
-    parked at the debugger: MEASURED, a load taken there leaves the debugger dead. The
-    pattern is `resume`, `state_load`, `stop`. `seconds` bounds the wait for the line. It
-    REPLACES the machine, so the session is altered from here on; `verified` says the machine
-    was not read afterwards, because it keeps running.
+def state_load(name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, Any]:
+    """Load the state `name` from `<state_dir>/<name>.sav`, by the debugger's own `LOADSTATE`
+    sent down the debugger channel, as `state_save` saves (same build, no window). A RUNNING
+    guest is stopped for it and released again (`paused: true`), now running the loaded
+    machine; a parked one stays parked, at the loaded machine's position. A state of another
+    DOSBox-X version, program, memory size or machine type is refused, never asked about. It
+    REPLACES the machine, so the session is altered from here on.
 
-    Reply: `name`, `slot`, `path`, the state's own members, `loaded_line`, `click_s`,
-    `focus` (as `state_save`'s), `waited_s`, `verified`. Like every menu click here, REFUSED
-    while another `dosbox-x` is alive on the host, naming it: a click by pid has been
-    measured landing in the wrong emulator.
+    Reply: `name`, `path`, the state's own members, `paused`, `running`, `waited_s`.
     """
-    return st.answer(_live().state_load(name, seconds, _progress(ctx)))
+    return st.answer(_live().state_load(name, seconds))
 
 
 @tool("Take a screenshot", summary=one_line.snapshot)

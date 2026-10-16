@@ -2,10 +2,10 @@
 the transcript a fresh run writes is compared line for line with the block `--update-readme`
 wrote, and the picture with `screen.png`.
 
-The demo opens a WINDOW (the mouse and the saved states need one) and asks the placement helper
-named by `WINDOW_APP` where it goes, so this SKIPS without one, as the tier's other window cases
-skip without their flags: where a window goes is not this package's decision. It takes the focus
-for a moment at each key, mouse event and menu click.
+The demo opens a WINDOW, to be watched, and asks the placement helper named by `WINDOW_APP`
+where it goes, so this SKIPS without one, as the tier's other window cases skip without their
+flags: where a window goes is not this package's decision. Its saved states need the fork's
+build (`DOSBOX_X_BINARY`).
 """
 from __future__ import annotations
 

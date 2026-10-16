@@ -76,8 +76,13 @@ You need a DOSBox-X built with the debugger (most distribution builds are;
 `dosbox-x -helpdebug` listing `-break-start` is the tell): the `dosbox-x` on your `PATH`,
 or another build named by `DOSBOX_X_BINARY` or by `start`'s `binary`. And Python 3.11 or
 newer.
-The debugger wants a terminal, and the server provides one itself. Absence of any of these
-is named by the tool that needs it, never worked around.
+The debugger wants a terminal, and the server provides one itself. `stop` reaches a running
+guest through the debugger's control channel (`mcp_server`), which a current DOSBox-X has.
+The saved states (`state_save`, `state_load`) need two debugger commands, `SAVESTATE` and
+`LOADSTATE`, that are proposed upstream and not in a release yet: until they are, build the
+`scry` branch of [Optimiza/dosbox-x](https://github.com/Optimiza/dosbox-x) (`./autogen.sh &&
+./configure --enable-debug=heavy --enable-sdl2 && make`) and name it with `DOSBOX_X_BINARY`.
+Absence of any of these is named by the tool that needs it, never worked around.
 
 ```sh
 pip install .
@@ -92,7 +97,7 @@ Then, from the client:
 build_check()
 start(conf="/path/to/proj/dev.conf", cwd="/path/to/proj",
       seconds=600, logfile="/path/to/proj/build/e9.log")
-resume(until_close=True)      -> {"halted": false, ...}       the guest is running
+resume()                      -> {"halted": false, ...}       the guest is running
 log_wait(pattern="BOOT", channel="guest", seconds=20)
                               -> {"already": true, "line": "[+  0.412] BOOT  . start",
                                   "waited_s": 0.0, "lines_total": 1, ...}
@@ -222,7 +227,7 @@ APP.EXE
 start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj",
       seconds=600, logfile="/path/to/proj/build/e9.log")
    -> {..., "input_port": 50432, "stub": "/path/to/scry-dosbox-x/guest/INJECT.COM"}
-resume(until_close=True)
+resume()
 send_mouse(x=160, y=100, button="left", expect="clicked")
    -> {"route": "guest", "arrived": true,
        "pointer": {"screen": {"x": 160, "y": 100, "width": 320, "height": 200},
@@ -276,7 +281,7 @@ the mode without a stamp is refused before the machine moves.
 start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj",
       seconds=120, logfile="/path/to/proj/build/e9.log",
       capture_video=True, program="APP.EXE", captures_dir="/path/to/proj/build/captures")
-resume(until_close=True)
+resume()
 log_wait(pattern="READY", channel="guest", seconds=30)     -> {"already": false, "waited_s": 2.1, "line": "...", ...}
 captures()                               -> {"captures": [{"path": ".../app_000.avi", "frames": 143, ...}]}
 capture_frame(at=140, dest="/path/to/proj/build/captures/ready.png")
@@ -316,11 +321,11 @@ project and carries no default that points anywhere in particular.
 | `watch_list` | the watch declarations and their state |
 | `watch_clear` | one watch by ref, or all; never touches breakpoints |
 | `step` | `(count=1, mode="into")`: one instruction at a time, into or over, with every step READ BACK rather than counted out |
-| `run_to` | run until a SYMBOL or a `SEG:OFF`, and say where it really stopped: arrived, stopped elsewhere, or still running; the `control` is REQUIRED (a second `ref` known to be hot), so a bound that expires is a measurement and not a silence; it reports its progress while it waits, as do `run_for`, `trace`, `log_wait`, `perform`'s wait for a stop, `drive`, the wait for `expect` in `send_keys` and `send_mouse`, `start` waiting for the debugger prompt, `close` waiting for the emulator to leave, and every menu click (`stop`, `state_save`, `state_load`, `snapshot`) while System Events walks the emulator's menus |
+| `run_to` | run until a SYMBOL or a `SEG:OFF`, and say where it really stopped: arrived, stopped elsewhere, or still running; the `control` is REQUIRED (a second `ref` known to be hot), so a bound that expires is a measurement and not a silence; it reports its progress while it waits, as do `run_for`, `trace`, `log_wait`, `perform`'s wait for a stop, `drive`, the wait for `expect` in `send_keys` and `send_mouse`, `start` waiting for the debugger prompt, `close` waiting for the emulator to leave |
 | `run_for` | `(frames=N)` or `(milliseconds=N)`: run for N frames of the display, one vertical retrace each, or retrace by retrace until the emulated clock has risen N ms, and stop there with the full stop reply; `verdict` says whether the run ran its course (`ELAPSED`), a declared breakpoint stopped it first (`OTHER_STOP`, saying the retrace it leaves pending), or the bound expired (`TIMEOUT`), and the pane's emulated clock says how far it went |
 | `trace` | `(instructions=N, shape="normal", dest="")`: run N instructions with the debugger's CPU log on, one line each (`normal`, `short`, `long` or `cs_ip`), and stop with the full stop reply, the log moved to `dest` or to the next `trace-<n>.trace` in the captures directory; the count is proved against the pane's `cc=` counter, which only the normal core keeps in step, and `verdict` is `ELAPSED` or `OTHER_STOP` as for `run_for`; the executed addresses are joined to the loaded symbols, the routines in `symbols` (the lowest-addressed ones, `symbols_total` counting them all) and every address in a set file beside the log |
-| `resume` | lets the machine run, and says whether it actually left the debugger: `halted` plus, when it did stop again, `stopped_at`; with `seconds` it waits that long for a stop, listening for the prompt as `run_to` does, and leaves the machine running when the bound expires; a headless session with nothing declared that can stop the machine is refused before the F5 unless `until_close=True`, because it has no way back |
-| `stop` | brings a RUNNING guest back to the debugger and surveys the stop, through the emulator's own Debug menu (clicked by name through System Events), which only a windowed session has: headless is refused naming what ends its run instead. Driving the menu needs the Accessibility grant for the process running the server, asked of System Events before the click; without it the refusal is `host_failed` and names the setting |
+| `resume` | lets the machine run, and says whether it actually left the debugger: `halted` plus, when it did stop again, `stopped_at`; with `seconds` it waits that long for a stop, listening for the prompt as `run_to` does, and leaves the machine running when the bound expires; nothing has to be declared first, since `stop` brings it back |
+| `stop` | brings a RUNNING guest back to the debugger and surveys the stop, headless or windowed, by sending `BREAK` down the emulator's own debugger channel (upstream's `mcp_server`, which the session sets to a port of its own): no window, no menu, no focus taken |
 | `registers` | the register pane, as a mapping |
 | `disassemble` | code at an address as instructions, decoded on the host in the segment's own width, each line's `flow`, and with symbols loaded the direct targets and memory operands named (`resolved`) |
 | `call_stack` | the callers of the routine the stop is in, a heuristic: the frame chain walked, each return kept only where a call instruction ends at it, and why the walk ended |
@@ -343,8 +348,8 @@ project and carries no default that points anywhere in particular.
 | `palette` | `(first=0, count=0, dest="")`: the 256 colours of the VGA's DAC at this stop, as `#rrggbb` and as the six-bit `rgb` the debugger prints; with `dest`, also an indexed PNG of them, one square per entry. Needs a session started with `logfile` |
 | `screen_view` | `(dest="")`: what the screen shows at this stop, read from video memory: a text mode as its rows of text with the cursor, the chained 256-colour mode (13h's) as an indexed PNG at `dest`; any other mode is refused naming `capture_frame`. Needs a session started with `logfile` |
 | `screen_wait` | `(text, seconds=30)`: runs the machine retrace by retrace until `text` is inside one row of the text screen, and stops there with the stop's registers and attribution; a string already on screen is answered at once (`already`), the machine not moved; a frame that is not text is no match. Needs a session started with `logfile` |
-| `state_save` | the machine under a NAME, through the emulator's own `Capture > Save state` menu item (a windowed session) and confirmed by the `Saved. (Slot N)` line it logs (a session with `logfile`); the slot file is kept as `<state_dir>/<name>.sav` and read back for what it says about itself. The machine must be RUNNING (a state saved parked at the debugger kills the debugger when loaded back); never overwrites; alters nothing |
-| `state_load` | the named state into the RUNNING machine: copied into the working slot, `Capture > Load state` clicked, `Loaded.` awaited. REFUSED with the machine parked at the debugger, because a load taken there leaves the debugger dead; the pattern is `resume`, `state_load`, `stop`. Marks the session altered |
+| `state_save` | the machine under a NAME, as `<state_dir>/<name>.sav`, by the debugger's own `SAVESTATE` sent down the debugger channel: no window, no menu, no focus taken. A running guest is stopped for it and released again (`paused`); the file is read back for what it says about itself. Never overwrites; alters nothing. Needs a DOSBox-X that carries the command (see Saved states below) |
+| `state_load` | the named state, by the debugger's own `LOADSTATE`, as `state_save` saves; a running guest is stopped for it and released again, a parked one stays parked at the loaded position. A state of another DOSBox-X version, program, memory size or machine type is refused, never asked about. Marks the session altered |
 | `state_list` | every state under the session's `state_dir` with the members its ZIP carries (version, program, machine, memory size, stamp), read without loading; no window needed, works while the guest runs |
 | `debug` | one command to the debugger console |
 

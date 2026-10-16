@@ -71,6 +71,7 @@ from scry_core.reply_contract import Invalid as Invalid
 # imported one first, and a reverse-engineering pack is the kind of project that grows a
 # `symbols.py` of its own.
 import dosbox_binary as binaries
+import dosbox_control as control
 import dosbox_paths as paths
 import dosbox_symbols as symbols
 
@@ -770,9 +771,13 @@ class Launch:
     input_port: int | None = None
     # WHETHER THE LAUNCH STAYS BEHIND the owner's front app (`judge_background`).
     background: bool = True
-    # WHERE THE SAVE STATES LIVE: the slot directory the build's `-savedir` option names. None
-    # leaves the emulator's default, `save/` under its working directory (measured).
+    # WHERE THE SAVE STATES LIVE: the slot directory the build's `-savedir` option names, and
+    # the directory the state tools write `<name>.sav` into. None: `save/` under `cwd`, the
+    # emulator's own default (measured), which the session names to the commands in full.
     state_dir: Path | None = None
+    # THE DEBUGGER CHANNEL'S PORT (`dosbox_control`), the session's own listener's, set by the
+    # session and never by a caller: it is how a running guest is broken in on.
+    control_port: int | None = None
 
 
 def _digest(path: Path) -> str:
@@ -1312,9 +1317,9 @@ def build_argv(launch: Launch) -> list[str]:
     # THE REMARK DIALOG IS OFF IN EVERY SESSION, for the same reason and in the same place:
     # measured, with `saveremark` at its default a `Save state` opens a dialog asking for
     # a remark, the dialog takes the SDL window with it (no window, no menu bar, the
-    # process spinning) and nothing is written, stopped or running alike. Off, the same
-    # click writes the slot file and logs `Saved. (Slot N)`. Before the caller's flags, so
-    # a later `-set` wins. The slot directory is the caller's when they named one.
+    # process spinning) and nothing is written, stopped or running alike. Before the
+    # caller's flags, so a later `-set` wins. The slot directory is the caller's when they
+    # named one.
     argv += ["-set", "dosbox saveremark=false"]
     if launch.state_dir is not None:
         argv += ["-savedir", str(launch.state_dir)]
@@ -1341,6 +1346,8 @@ def build_argv(launch: Launch) -> list[str]:
                          "transparent:1"]
     if launch.captures_dir is not None:
         argv += ["-set", f"dosbox captures={launch.captures_dir}"]
+    if launch.control_port is not None:
+        argv += ["-set", f"dosbox mcp_server={launch.control_port}"]
     # THE CALLER'S FLAGS COME AFTER EVERY `-set` OF OUR OWN, so one of the same key wins.
     argv += launch.flags
     if launch.program:
@@ -1371,8 +1378,7 @@ def build_argv(launch: Launch) -> list[str]:
 GUEST_DIR = Path(__file__).resolve().with_name("guest")
 STUB_DRIVE = "Y"
 INPUT_CONNECT_S = 8.0     # how long a session waits for the emulator's serial port to dial it
-ACCEPT_SLICE_S = 0.1      # how often that wait looks up to see whether the emulator still runs
-INPUT_HOST = "127.0.0.1"
+INPUT_HOST = control.LOCAL_HOST
 SCREENSHOT_COMMAND = b"S"   # the stub's opcode for the device's capture trigger (guest/inject.asm)
 COMMAND_GAP_S = 0.06    # the pause between stub commands: just over one 18.2 Hz timer tick
 
@@ -1403,63 +1409,41 @@ def launch_environment(background: bool) -> dict[str, str]:
 
 
 def listen_input(port: int) -> socket.socket:
-    """The session's end of the serial input route, LISTENING before the emulator exists, so
-    the port is held from here on and the emulator dials it; 0 takes the kernel's pick, held
-    from the moment it is picked. The other way round, with the
-    emulator listening, was measured losing: a process that took the port between the
-    server's check and the emulator's bind was left listening beside it, and the session's
-    connect reached THAT process, every key reported delivered to a stranger. Held here, the
-    port cannot be taken; already taken, it is refused before anything is spawned."""
-    sock = socket.socket()
+    """The session's end of the serial input route, LISTENING before the emulator exists
+    (`dosbox_control.listen_local`, which says why that way round): 0 takes the kernel's pick;
+    a port already taken is refused before anything is spawned."""
     try:
-        # EXCLUSIVE where the platform has the word for it (Windows), and on POSIX the
-        # TIME_WAIT of a port an earlier session used is not "in use".
-        exclusive = getattr(socket, "SO_EXCLUSIVEADDRUSE", None)
-        sock.setsockopt(socket.SOL_SOCKET, exclusive or socket.SO_REUSEADDR, 1)
-        sock.bind((INPUT_HOST, port))
-        sock.listen(1)
+        return control.listen_local(port)
     except OSError as e:
-        sock.close()
         if not port:
             raise Invalid("host_failed", f"the kernel would not hand out a free port for the "
                           f"input route ({e})") from None
         raise Invalid("host_failed", f"input_port {port} is already in use on this host ({e}): "
                       f"the session cannot listen there for the emulator. Pick another port, "
                       f"or omit it") from None
-    return sock
 
 
 def _accept_input(listener: socket.socket, seconds: float,
                   exited: Callable[[], int | None]) -> socket.socket:
-    """The emulator's dial, accepted within the bound, then the listener closed; `exited` is
-    the child's exit code once it has one, so an emulator that dies before it dials is said at
-    once and not after the whole bound. The first connection is taken as the emulator's: the
-    port is the kernel's pick, so a stranger would have to dial it inside the emulator's start.
-    A refusal here is raised INTO `Session.__init__`'s `except BaseException`, which kills the
-    child it has just spawned: a session on this route with no socket is one whose guest will
-    block the moment its stub polls the port."""
+    """The emulator's dial on the input route, accepted within the bound, then the listener
+    closed. A refusal here is raised INTO `Session.__init__`'s `except BaseException`, which
+    kills the child it has just spawned: a session on this route with no socket is one whose
+    guest will block the moment its stub polls the port."""
     port = listener.getsockname()[1]
-    deadline = time.monotonic() + seconds
-    listener.settimeout(ACCEPT_SLICE_S)
     try:
-        while True:
-            try:
-                sock, _ = listener.accept()
-                break
-            except TimeoutError:
-                if (code := exited()) is not None:
-                    raise Invalid("session_broken",
-                        f"the emulator exited (code {code}) before it dialled the serial input "
-                        f"port {port}") from None
-                if time.monotonic() >= deadline:
-                    raise Invalid("session_broken",
-                        f"the emulator never dialled the serial input port {port} within "
-                        f"{seconds}s: the serial input route cannot be used, and a guest "
-                        f"polling that port with no client would block the emulator") from None
+        got = control.await_dial(listener, seconds, exited)
     finally:
         listener.close()
-    sock.setblocking(True)
-    return sock
+    if isinstance(got, int):
+        raise Invalid("session_broken",
+            f"the emulator exited (code {got}) before it dialled the serial input port {port}")
+    if got is None:
+        raise Invalid("session_broken",
+            f"the emulator never dialled the serial input port {port} within {seconds}s: the "
+                      f"serial input route cannot be used, and a guest polling that port with no "
+                      f"client would block the emulator")
+    got.setblocking(True)
+    return got
 
 
 # WHAT A NAMED ARGUMENT OWNS, so `flags` cannot retune it: the options this server passes,
@@ -1469,6 +1453,21 @@ OWNED_OPTIONS = {"-conf": "conf", "-time-limit": "seconds", "-break-start": "sta
 OWNED_SETS = {"sdl videodriver": "mode", "dos break on int3": "break_on_int3",
               "log logfile": "logfile", "serial serial1": "input_port",
               "cpu integration device": "input_port", "dosbox captures": "captures_dir"}
+# THE `-set` KEYS THE SESSION ITSELF OWNS, with no argument behind them: a caller's value would
+# point the debugger channel somewhere the session is not listening.
+SESSION_SETS = {"dosbox mcp_server"}
+
+
+def _set_key(token: str) -> str:
+    """The `section key` a `-set` token names, however the value is joined to it: DOSBox-X
+    takes `section key=value` and also `section key value`, so the key is the longest owned
+    one the words start with, else the words before an `=`."""
+    words = token.split("=", 1)[0].lower().split()
+    for n in range(len(words), 1, -1):
+        key = " ".join(words[:n])
+        if key in OWNED_SETS or key in SESSION_SETS:
+            return key
+    return " ".join(words)
 
 
 def check_flags(name: str, flags: list[str]) -> None:
@@ -1499,8 +1498,12 @@ def check_flags(name: str, flags: list[str]) -> None:
         if name == "flags":
             owner = OWNED_OPTIONS.get(flag)
             if flag == "-set":
-                key = " ".join(str(flags[i + 1]).split("=", 1)[0].lower().split())
+                key = _set_key(str(flags[i + 1]))
                 owner = OWNED_SETS.get(key)
+                if key in SESSION_SETS:
+                    raise Invalid("bad_argument",
+                        f"flags: the `-set` at {i} sets `{key}`, which every session sets "
+                        f"to its own debugger channel; it is not the caller's to change")
             if owner is not None:
                 raise Invalid("bad_argument",
                     f"flags: {flag!r} at {i} sets what `{owner}` owns. Placed after this "
@@ -1599,80 +1602,15 @@ def validate(launch: Launch) -> None:
                       f"1024 and 65535; got {launch.input_port}")
 
 
-# THE ONE WAY BACK INTO THE DEBUGGER OF A RUNNING WINDOWED GUEST, measured: the menu item,
-# clicked by NAME through System Events, on the process this session spawned.
-BREAK_IN_ITEM = "Start DOSBox-X Debugger"
-# Driving another application's menu is UI scripting, which macOS grants per process in
-# ONE place. A host without the grant answers the click with a refusal that reads like a
-# missing menu, so the grant is asked about first, through the same System Events, and the
-# refusal names where it is given.
-ACCESSIBILITY_SETTING = "System Settings > Privacy & Security > Accessibility"
-ACCESSIBILITY_PROBE = 'tell application "System Events" to UI elements enabled'
-BREAK_IN_WAIT_S = 5.0
-BREAK_IN_MENU = "Debug"
-# ONE SCRIPT FOR EVERY MENU ITEM THIS SERVER CLICKS: the debugger's break-in and the two
-# save-state actions live in different menus and are found the same way, by NAME. The
-# item is matched by PREFIX because the emulator appends the mapper's shortcut to the
-# label (`Save state [F12+S]`), and a shortcut is a binding, not the name. MEASURED: one
-# click costs 12-15 s of System Events walking this emulator's menus. A menu is clicked only in
-# front, so the script remembers who was there and hands the focus back after the click, or
-# after a click that found no item, and READS BACK who is in front: `<answer>|returned` when it
-# is that app again, `<answer>|lost` when it is not. `<answer>` is the item, or the refusal.
-# THE HAND-BACK, its own block so a test can run it against System Events without clicking a
-# menu: the front app is read into a variable first, because `... whose frontmost is true is
-# prev` parses as one comparison and fails at run time.
-MENU_FOCUS_BLOCK = '''
-  try
-    set frontmost of (first process whose unix id is prev) to true
-    delay 0.1
-  end try
-  set nowFront to unix id of first process whose frontmost is true
-  if nowFront is prev then
-    return answer & "|returned"
-  end if
-  return answer & "|lost"'''
-MENU_CLICK_SCRIPT = '''
-tell application "System Events"
-  set prev to unix id of first process whose frontmost is true
-  set p to first process whose unix id is %d
-  set frontmost of p to true
-  delay 0.3
-  set answer to "no %s > %s item"
-  repeat with mi in menu bar items of menu bar 1 of p
-if name of mi is "%s" then
-  repeat with anItem in menu items of menu 1 of mi
-    if name of anItem starts with "%s" then
-      click anItem
-      set answer to "%s"
-      exit repeat
-    end if
-  end repeat
-end if
-  end repeat
-  delay 0.2%s
-end tell'''
-def menu_click_script(pid: int, menu: str, item: str) -> str:
-    """The AppleScript that clicks `menu > item` in the emulator `pid` and hands the focus back."""
-    return MENU_CLICK_SCRIPT % (pid, menu, item, menu, item, item, MENU_FOCUS_BLOCK)
-
-
-# THE SAVE-STATE MENU, measured on the build in `MEASUREMENTS.md`: the three items sit
-# under `Capture` beside the screenshot, and the emulator logs each action's outcome on
-# its own channel of the logfile, which is the acknowledgement the tools wait for.
-MENU_CLICK_TIMEOUT_S = 45.0
-MENU_FOCUS = ("returned", "lost")   # the script's read-back of the hand-back, its last word
-STATE_MENU = "Capture"
-STATE_SAVE_ITEM = "Save state"
-STATE_LOAD_ITEM = "Load state"
+BREAK_IN_WAIT_S = 5.0     # from BREAK on the channel to the debugger's prompt on the terminal
 SNAPSHOT_WAIT_S = 10.0
-STATE_SAVED_LINE = re.compile(r"Saved\. \(Slot (\d+)\)")
-STATE_LOADED_LINE = re.compile(r"Loaded\. \(Slot (\d+)\)")
-# What the emulator logs instead when the action fails, measured: `-savedir` naming a
-# directory that does not exist gets `SAVE_FAILED`, and the emulator creates nothing.
-STATE_FAILED_LINE = re.compile(r"(SAVE|LOAD)_FAILED")
-# MEASURED on the live probe: a load logged `Loaded.` 35 s after the save, most of it
-# the menu click and the emulator applying the state, so the bound is generous.
-STATE_WAIT_S = 60.0
+# A STATE IS SAVED AND LOADED BY THE DEBUGGER'S OWN COMMANDS, `SAVESTATE <file>` and
+# `LOADSTATE <file>` over the debugger channel, which only a DOSBox-X carrying them has (the
+# Optimiza/dosbox-x fork, proposed upstream): no window, no menu, no dialog, and the reply
+# says whether it acted. They need the debugger stopped, because loading a state replaces the
+# timer's tick handlers and the channel is served from one while the guest runs. The bound is
+# the command's reply: a state of a large machine is written for a second or two.
+STATE_WAIT_S = 30.0
 # A STATE'S NAME is a file name under the state directory, so it is held whole (`fullmatch`: a
 # `$` would let a trailing newline through) and to a length a file system takes everywhere.
 STATE_NAME_MAX = 64
@@ -1684,28 +1622,6 @@ STATE_META = {"version": "DOSBox-X_Version", "program": "Program_Name",
               "time_stamp": "Time_Stamp"}
 
 
-def other_emulators(own_pid: int, binary: str) -> list[int]:
-    """The pids of every other emulator on this host, read off `ps` the fleet's way: the
-    BASENAME required on the line, the PATH's name or that of `binary`, the session's own build,
-    so a helper whose arguments merely name the emulator is not one. A listing that failed is a
-    refusal, never an empty answer."""
-    names = {binaries.EMULATOR_NAME, os.path.basename(binary)}
-    got = subprocess.run(["ps", "-Ao", "pid,args"], capture_output=True, text=True,
-                         check=False, env={**os.environ, "LC_ALL": "C"})
-    if got.returncode != 0:
-        raise Invalid("host_failed",
-            f"`ps -Ao pid,args` failed (rc={got.returncode}): {got.stderr.strip()}. Whether "
-                      "another emulator is alive could not be read, so no menu is clicked")
-    pids: list[int] = []
-    for line in got.stdout.splitlines()[1:]:
-        parts = line.split(None, 2)
-        if len(parts) < 2 or not parts[0].isdigit():
-            continue
-        if parts[1].rsplit("/", 1)[-1] in names and int(parts[0]) != own_pid:
-            pids.append(int(parts[0]))
-    return sorted(pids)
-
-
 def check_state_name(name: object) -> None:
     if not isinstance(name, str) or not STATE_NAME.fullmatch(name):
         raise Invalid("bad_argument",
@@ -1713,8 +1629,8 @@ def check_state_name(name: object) -> None:
                       f"digit, at most {STATE_NAME_MAX} of them; got {name!r}. It becomes a "
                       f"file name under the state directory")
     if name.isdigit():
-        # The emulator's own slot files are `<n>.sav` in the same directory: `state_load`
-        # copies the named file onto slot 1's, so `1` would be a copy of a file onto itself.
+        # The emulator's own slot files are `<n>.sav` in the same directory, and a state
+        # named `1` would be its working slot's file, written by the slot as well as by name.
         raise Invalid("bad_argument",
             f"a state name of digits only, {name!r}, is the emulator's own slot file name "
             f"(`{name}.sav`): add a letter")
@@ -1837,20 +1753,6 @@ def check_frame_args(at: int, dest: Path) -> None:
                       f"somewhere else")
 
 
-def accessibility_trusted() -> bool:
-    """Whether THIS process may drive another application's UI through System Events,
-    asked of System Events itself so the answer is about the same route `break_in` takes.
-    A host that does not answer is a refusal, not a `False`: the two need different fixes."""
-    try:
-        got = subprocess.run(["osascript", "-e", ACCESSIBILITY_PROBE], capture_output=True,
-                             text=True, check=False, timeout=15)
-    except subprocess.TimeoutExpired:
-        raise Invalid("host_failed",
-                      "System Events did not answer in 15 s when asked whether this "
-                      "process is trusted for Accessibility") from None
-    return got.returncode == 0 and got.stdout.strip() == "true"
-
-
 def _still_armed(exc: Invalid, target: str, began: float, ctl: str | None = None) -> Invalid:
     """The refusal that CARRIES the irreversible part: a trap byte is in the guest and the row is
     still armed -- and so is the control, when one was armed, since a caller who clears only the
@@ -1903,8 +1805,6 @@ class Session:
         # THE STUB'S PROTOCOL once the guest announced it (`dosbox_inputs.require_stub`), so
         # the log is searched for the announce once per session, not once per key.
         self.stub_protocol = ""
-        # The last menu click's hand-back of the focus: `returned` or `lost` (`click_menu`).
-        self.menu_focus = ""
         self.started_at = time.monotonic()
         self._screen = ""
         self._at_debugger = False   # set by the prompt, cleared by a run key
@@ -1960,10 +1860,14 @@ class Session:
         if listener is not None:
             launch = self.launch = replace(launch, input_port=listener.getsockname()[1])
         try:
+            self.control = control.ControlChannel(lambda: self.proc.poll())
+            launch = self.launch = replace(launch, control_port=self.control.port)
             self._master, slave = pty.openpty()
         except BaseException:
             if listener is not None:
                 listener.close()
+            if getattr(self, "control", None) is not None:
+                self.control.close()
             raise
         try:
             attrs = termios.tcgetattr(slave)
@@ -1990,6 +1894,7 @@ class Session:
         except BaseException:
             if listener is not None:
                 listener.close()
+            self.control.close()
             # THE CHILD IS KILLED HERE, and this arm is why. Before the drain thread
             # existed, `Popen` was the LAST statement in this block, so nothing could
             # raise once a process existed. Now two statements follow it, and both can
@@ -2882,7 +2787,7 @@ class Session:
                 "step is a KEYSTROKE (F10/F11) to the debugger's window, and a keystroke to "
                 "a running guest is swallowed with no error anywhere, so stepping now would "
                 "report a machine it never touched. Nothing was sent. Bring it back with "
-                "`stop` (a windowed session) or a breakpoint armed before it ran (the "
+                "`stop` or a breakpoint armed before it ran (the "
                 "position could not be read, which is how a running machine is known here)"
             ) from None
         after, completed, running = before, 0, False
@@ -4391,203 +4296,107 @@ class Session:
 
     # ------------------------------------------------------------------ input to the guest
 
-    def break_in(self, seconds: float = BREAK_IN_WAIT_S,
-                 progress: Progress = no_progress) -> float:
-        """Bring a RUNNING guest back to the debugger through the emulator's own menu bar
-        (Debug > Start DOSBox-X Debugger), and wait for its prompt: the seconds it took.
-
-        MEASURED on this build: the debugger hotkey does not break in on macOS (the
-        emulator's own tracker records it), the menu item does, and only a WINDOWED
-        session has a menu bar, so a headless session is refused here by what it lacks and
-        not by a guess. The item is found by its NAME through System Events, never by its
-        position: a menu that moves keeps working, a renamed item refuses out loud.
-        """
-        if not self.launch.watched:
-            raise Invalid("no_channel",
-                "this session is headless: there is no window, so no menu bar to "
-                          "break the guest in through, and the debugger hotkey does not "
-                          "work on macOS. A headless run ends at a breakpoint armed before "
-                          "the resume, at the session's bound, or at `close`")
-        self.click_menu(BREAK_IN_MENU, BREAK_IN_ITEM, progress)
+    def break_in(self, seconds: float = BREAK_IN_WAIT_S) -> float:
+        """Bring a RUNNING guest back to the debugger through its control channel's `BREAK`
+        (`dosbox_control`), headless or windowed alike, and wait for its prompt: the seconds
+        it took. No window, no menu and no focus: the request is the debugger hotkey sent
+        over a socket, polled by the emulator's own timer while the guest runs."""
+        ok, lines = self.control.request("BREAK")
+        if not ok:
+            raise Invalid("unexpected_answer",
+                f"the debugger channel refused BREAK: {' / '.join(lines) or 'no reason given'}")
         began = time.monotonic()
         while time.monotonic() - began < seconds:
             if self.at_debugger():
                 return round(time.monotonic() - began, 2)
             time.sleep(0.05)
         raise Invalid("unexpected_answer",
-            f"the Debug menu item was clicked and the debugger's prompt did not "
+            f"the debugger channel accepted BREAK and the debugger's prompt did not "
                       f"appear within {seconds} s: the guest may still be running")
-
-    def click_menu(self, menu: str, item: str, progress: Progress = no_progress) -> float:
-        """Click `menu > item` of THIS session's emulator by name through System Events,
-        and return the seconds it took. Reports its progress while System Events walks
-        the menus (12-15 s on this emulator, measured): a click that says nothing for that
-        long and a hung one look the same from the terminal. The window and the Accessibility
-        grant are checked first, naming what is missing; the click's own refusal is reported in the
-        emulator's words. What the click DID is the caller's to verify, by the
-        acknowledgement the emulator gives for that item."""
-        if not self.launch.watched:
-            raise Invalid("no_channel",
-                "this session is headless: there is no window, so no menu bar to "
-                          f"reach `{menu} > {item}` through")
-        if not accessibility_trusted():
-            raise Invalid("host_failed",
-                f"System Events cannot drive the emulator's menu: the process running "
-                          f"this server is not trusted for Accessibility. Grant it in "
-                          f"{ACCESSIBILITY_SETTING} and start the server again")
-        # ONE EMULATOR AT A TIME, measured: with two `dosbox-x` up, three clicks sent by
-        # pid to one of them took three screenshots in the OTHER one (the two windows on
-        # the same spot of one display, System Events activating the wrong instance of
-        # one bundle). Until the route is proven process-exact, a second emulator alive
-        # refuses the click, by name, and nothing is sent.
-        if others := other_emulators(self.proc.pid, self.launch.binary):
-            raise Invalid("host_failed",
-                f"another dosbox-x is alive on this host (pid {', '.join(map(str, others))}) "
-                          f"and a menu click by pid has been measured landing in the wrong "
-                          f"emulator: `{menu} > {item}` is not sent. Close the other one first")
-        script = menu_click_script(self.proc.pid, menu, item)
-        began = time.monotonic()
-        proc = subprocess.Popen(["osascript", "-e", script], stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE, text=True)
-        next_tick = began + PROGRESS_EVERY_S
-        while proc.poll() is None:
-            now = time.monotonic()
-            if now - began >= MENU_CLICK_TIMEOUT_S:
-                proc.kill()
-                proc.communicate()
-                raise Invalid("host_failed",
-                    f"System Events did not answer in {MENU_CLICK_TIMEOUT_S:g} s while "
-                              f"looking for the emulator's {menu} menu")
-            if now >= next_tick:
-                next_tick = now + PROGRESS_EVERY_S
-                progress(now - began, MENU_CLICK_TIMEOUT_S,
-                         f"clicking {menu} > {item}: {now - began:.0f}s, System Events is "
-                         "walking the emulator's menus")
-            time.sleep(0.1)
-        out, err = proc.communicate()
-        clicked, _, focus = out.strip().rpartition("|")
-        if focus in MENU_FOCUS:
-            # WHAT THE CLICK DID TO THE OWNER'S FOCUS, whether or not it found the item.
-            self.menu_focus = focus
-        if proc.returncode != 0 or clicked != item or focus not in MENU_FOCUS:
-            raise Invalid("host_failed",
-                f"the emulator's `{menu} > {item}` could not be clicked: "
-                          f"{err.strip() or out.strip() or 'no answer'}. A "
-                          f"refusal from System Events is an Accessibility trust the "
-                          f"server's process does not have")
-        return round(time.monotonic() - began, 2)
-
-    # ---------------------------------------------------------------- save states
 
     def _state_dir(self) -> Path:
         if self.launch.state_dir is None:
             return self.launch.cwd / "save"
         return self.launch.state_dir
 
-    def _log_tail_from(self, offset: int) -> list[str]:
-        """Whatever the logfile holds past byte `offset` that is not yet a complete line."""
-        log = self.launch.logfile
-        if log is None or not log.exists():
-            return []
-        try:
-            with open(log, "rb") as fh:
-                fh.seek(offset)
-                rest = fh.read()
-        except OSError:
-            return []
-        tail = rest.rsplit(b"\n", 1)[-1]
-        return [tail.decode("utf-8", errors="replace")] if tail.strip() else []
-
-    def _await_state_line(self, rx: re.Pattern[str], mark: int, seconds: float,
-                          what: str) -> tuple[str, int, float]:
-        """The emulator's own acknowledgement of a state action, read off the emulator
-        channel from `mark`: the line, the slot it names, the seconds it took. NOT
-        `log_wait`: that one refuses while the machine is parked, and a save is
-        acknowledged with the machine parked."""
-        if self.launch.logfile is None:
-            raise Invalid("no_channel",
-                f"this session was started without a logfile, and `{what}` is confirmed by "
-                          "the line the emulator logs for it: start with `logfile`")
+    def _state_command(self, verb: str, path: Path, seconds: float) -> dict[str, object]:
+        """`SAVESTATE` or `LOADSTATE` of `path` over the debugger channel, with the debugger
+        stopped as the commands need it: a RUNNING guest is broken in on first and released
+        again after, so the machine is left the way it was found. The reply's part:
+        `paused` (it had to be stopped), `running` (it runs after the call: false for a
+        parked one, and for a released one that halted again at once) and `waited_s` (the
+        command alone, not the break-in or the release)."""
+        if "\n" in str(path) or "\r" in str(path):
+            raise Invalid("bad_argument", f"a state path is one line; got {str(path)!r}")
+        paused = not self.at_debugger()
+        if paused:
+            self.break_in()
         began = time.monotonic()
-        offset = mark
-        while True:
-            fresh, offset = self._e9_since(offset, "emulator")
-            # THE LAST LINE MAY HAVE NO NEWLINE YET: the emulator logs the acknowledgement
-            # and then nothing else for as long as nobody acts, so a reader of COMPLETE
-            # lines would wait out its whole bound on a line already on disk. Measured on
-            # the live probe: `Loaded. (Slot 1)` sat in the file while the wait expired.
-            # The unterminated tail is read raw from the offset, for this one question.
-            fresh = [*fresh, *self._log_tail_from(offset)]
-            for line in fresh:
-                if (m := rx.search(line)) is not None:
-                    return line.strip(), int(m.group(1)), round(time.monotonic() - began, 2)
-                if STATE_FAILED_LINE.search(line):
-                    raise Invalid("unexpected_answer",
-                        f"the emulator answered the click with {line.strip()!r} instead of "
-                                  f"`{what}`: the state directory ({self._state_dir()}) may "
-                                  "not be writable, or the state may not fit this machine")
-            if time.monotonic() - began >= seconds:
-                raise Invalid("wait_expired",
-                    f"the emulator did not log `{what}` within {seconds:g} s of the click: "
-                              f"the action was asked for and never acknowledged")
-            time.sleep(0.1)
+        try:
+            ok, lines = self.control.request(f"EXEC {verb} {path}", seconds)
+        except Invalid as e:
+            if paused and self.at_debugger():
+                # THE RELEASE IS BEST EFFORT HERE: the request's own refusal is the answer,
+                # and one from the release would hide it.
+                with contextlib.suppress(Invalid):
+                    self.resume()
+            if e.code == "no_channel":
+                raise Invalid("no_channel",
+                    f"{verb} goes down the debugger channel, and {e} The saved states need "
+                              f"that channel and a build carrying {verb}: the Optimiza/dosbox-x "
+                              f"fork has both (REFERENCE.md, Saved states)") from None
+            raise
+        waited = round(time.monotonic() - began, 2)
+        running = not self.resume()["halted"] if paused else False
+        if ok:
+            return {"paused": paused, "running": running, "waited_s": waited}
+        said = " / ".join(line.strip() for line in lines if line.strip())
+        if not any(line.startswith(f"DEBUG: {verb}") for line in lines):
+            raise Invalid("no_channel",
+                f"this DOSBox-X has no `{verb}` debugger command ({said or 'no answer'}): "
+                          f"saved states need a build that carries it, the Optimiza/dosbox-x "
+                          f"fork (REFERENCE.md, Saved states)")
+        raise Invalid("unexpected_answer",
+            f"the emulator refused {verb} of {path}: {said}. Its log says why (a state of "
+                      f"another DOSBox-X version, program, memory size or machine type is "
+                      f"refused rather than asked about)")
 
-    def state_save(self, name: str, seconds: float = STATE_WAIT_S,
-                   progress: Progress = no_progress) -> dict[str, object]:
-        """Save the RUNNING machine under `name`: `Capture > Save state` by menu, the
-        emulator's `Saved. (Slot N)` awaited, the slot file COPIED to `<state_dir>/<name>.sav`
-        and read back for its own metadata. Never overwrites. Saving alters nothing.
-
-        REFUSED with the machine parked at the debugger, and the reason is the LOAD: the
-        file is written fine there (measured), but loading it, into a running machine or
-        not, logs `Loading state` and nothing more until the next menu click, and leaves
-        the debugger dead (its menu empty, the console mute, exit code 1 at close). A
-        state saved with the machine running loads back in a fraction of a second. So the
-        one shape that works is the only one offered: `resume`, save, and later
-        `resume`, load, `stop`."""
+    def state_save(self, name: str, seconds: float = STATE_WAIT_S) -> dict[str, object]:
+        """Save the machine under `name` as `<state_dir>/<name>.sav`, by the debugger's own
+        `SAVESTATE` (`_state_command`), and read the file back for what it says about
+        itself. Running or parked, headless or windowed. Never overwrites, and a save that
+        failed leaves no file behind: the emulator removes the old one and writes the new one
+        in place, so a failure part-way would otherwise hold the name with a broken state.
+        Saving alters nothing."""
         check_state_name(name)
         check_wait_bound(seconds)
         state_dir = self._state_dir()
         dest = state_dir / f"{name}.sav"
-        if paths.taken(dest):         # a dangling link too: the copy would write through it
+        if paths.taken(dest):         # a dangling link too: the save would write through it
             raise Invalid("bad_argument",
                 f"a state named {name!r} already exists at {dest}: pick another name, "
                           "this never overwrites")
-        if self.launch.logfile is None:
-            raise Invalid("no_channel",
-                "this session was started without a logfile, and a save is confirmed by "
-                          "the `Saved.` line the emulator logs: start with `logfile`")
-        if self.at_debugger():
-            raise Invalid("not_running",
-                "a state is saved from a RUNNING machine only: measured, a state saved "
-                          "with the machine parked at the debugger cannot be loaded back "
-                          "without leaving the debugger dead. `resume`, then save")
-        mark = self.e9_mark()
-        took = self.click_menu(STATE_MENU, STATE_SAVE_ITEM, progress)
-        line, slot, waited = self._await_state_line(STATE_SAVED_LINE, mark, seconds, "Saved.")
-        source = state_dir / f"{slot}.sav"
-        if not source.is_file():
+        state_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            outcome = self._state_command("SAVESTATE", dest, seconds)
+        except Invalid:
+            dest.unlink(missing_ok=True)       # it was not there before this call
+            raise
+        if not dest.is_file():
             raise Invalid("unexpected_answer",
-                f"the emulator logged {line!r} and {source} is not there: the save "
-                          f"directory this session reads ({state_dir}) is not the one the "
-                          "emulator wrote to")
-        shutil.copyfile(source, dest)
+                f"the emulator answered SAVESTATE and {dest} is not there")
         meta = state_meta(dest)
-        return {"name": name, "slot": slot, "path": str(dest), "bytes": meta["bytes"],
-                **{k: meta.get(k, "") for k in STATE_META},
-                "saved_line": line, "click_s": took, "focus": self.menu_focus,
-                "waited_s": waited}
+        return {"name": name, "path": str(dest), "bytes": meta["bytes"],
+                **{k: meta.get(k, "") for k in STATE_META}, **outcome}
 
-    def state_load(self, name: str, seconds: float = STATE_WAIT_S,
-                   progress: Progress = no_progress) -> dict[str, object]:
-        """Load the state `name` into the RUNNING machine: the named file is copied into the
-        working slot, `Capture > Load state` is clicked, and `Loaded. (Slot N)` awaited.
-        REFUSED with the machine parked at the debugger: MEASURED, a load taken there
-        logs `Loading state` and nothing more, the debugger stops answering, its menu
-        empties, and the emulator exits 1 at close. The same death follows a load of a
-        state that was SAVED parked, which is why `state_save` refuses parked too. The
-        pattern is `resume`, this, then `stop`. It REPLACES the machine, so the session
-        is altered from here on."""
+    def state_load(self, name: str, seconds: float = STATE_WAIT_S) -> dict[str, object]:
+        """Load the state `name` from `<state_dir>/<name>.sav` by the debugger's own
+        `LOADSTATE`. Running or parked: a running guest is stopped for it and released again,
+        a parked one stays parked, at the loaded machine's position, which counts as a stop
+        of its own: the record of the stop before describes a machine that is gone. It
+        REPLACES the machine, so the session is altered from here on, and after any refusal
+        but a missing channel too, since a load refused part-way may have replaced some of
+        it."""
         check_state_name(name)
         check_wait_bound(seconds)
         state_dir = self._state_dir()
@@ -4595,29 +4404,18 @@ class Session:
         if not source.is_file():
             raise Invalid("unknown_ref",
                 f"no state named {name!r} under {state_dir}: `state_list` says what is there")
-        if self.at_debugger():
-            raise Invalid("not_running",
-                "a state loads into a RUNNING machine only: measured, a load with the "
-                          "machine parked at the debugger leaves the debugger dead. "
-                          "`resume`, then load, then `stop`")
-        if self.launch.logfile is None:
-            raise Invalid("no_channel",
-                "this session was started without a logfile, and a load is confirmed by "
-                          "the `Loaded.` line the emulator logs: start with `logfile`")
         meta = state_meta(source)
-        slot_file = state_dir / "1.sav"
-        shutil.copyfile(source, slot_file)
-        mark = self.e9_mark()
+        try:
+            outcome = self._state_command("LOADSTATE", source, seconds)
+        except Invalid as e:
+            if e.code not in ("no_channel", "bad_argument"):
+                self.altered = True
+            raise
         self.altered = True
-        took = self.click_menu(STATE_MENU, STATE_LOAD_ITEM, progress)
-        line, slot, waited = self._await_state_line(STATE_LOADED_LINE, mark, seconds,
-                                                    "Loaded.")
-        return {"name": name, "slot": slot, "path": str(source),
-                **{k: meta.get(k, "") for k in STATE_META},
-                "loaded_line": line, "click_s": took, "focus": self.menu_focus,
-                "waited_s": waited,
-                "verified": "not checked: the machine keeps running after a load; `stop` "
-                            "it and read what it holds"}
+        if not outcome["paused"]:
+            self.stop_count += 1
+        return {"name": name, "path": str(source),
+                **{k: meta.get(k, "") for k in STATE_META}, **outcome}
 
     def snapshot(self, dest: Path | None = None, seconds: float = SNAPSHOT_WAIT_S,
                  progress: Progress = no_progress) -> dict[str, object]:
@@ -4767,6 +4565,9 @@ class Session:
                 with contextlib.suppress(OSError):
                     sock.close()
                 self._input = None
+            channel = getattr(self, "control", None)
+            if channel is not None:
+                channel.close()
             # THE THREAD IS STOPPED BEFORE THE DESCRIPTOR IS CLOSED, and the order is
             # the whole point: closing first leaves it selecting on a number the
             # kernel is free to hand to the next file this process opens.

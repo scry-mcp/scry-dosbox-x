@@ -18,12 +18,13 @@ import dosbox_state as dstate
 import dosbox_symbols as dsym
 import dosbox_x_server as server
 
-#: What a session does WITHOUT the debugger's console: the log file, the window's input, the
-#: menu, the capture directory, the state directory. Everything else it does is a console
-#: command, and on a running guest a console command lands at the next stop, unread.
+#: What a session does WITHOUT the debugger's console: the log file, the guest's input,
+#: the debugger channel, the capture directory, the state directory. Everything else it
+#: does is a console command, and on a running guest a console command lands at the next
+#: stop, unread.
 NO_CONSOLE = {"alive", "state", "at_debugger", "log", "log_wait", "e9", "e9_mark",
               "e9_lines", "e9_new_since", "e9_since_mark", "e9_wait", "send_commands",
-              "break_in", "click_menu", "state_save", "state_load",
+              "break_in", "state_save", "state_load",
               "state_list", "snapshot", "captures", "frame"}
 
 
@@ -63,10 +64,6 @@ class RunningGuest:
     def send_commands(self, commands: list[bytes]) -> int:
         return sum(len(c) for c in commands)
 
-    menu_focus = "returned"   # what the real click says once it has handed the focus back
-
-    menu_focus = "returned"   # what the real click says once it has handed the focus back
-
     def break_in(self, seconds: float = 5.0, progress: object = None) -> float:
         self.stopped = True
         return 0.0
@@ -101,7 +98,7 @@ class RunningGuest:
     def e9_lines(self) -> list[str]:
         return []
 
-    # AT A STOP (after `stop`'s menu break-in) the survey answers, like the real one.
+    # AT A STOP (after `stop`'s break-in) the survey answers, like the real one.
     def where(self) -> dict[str, str]:
         if not self.stopped:
             self.asked.append("where")

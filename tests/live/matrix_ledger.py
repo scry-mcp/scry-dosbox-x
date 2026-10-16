@@ -62,8 +62,8 @@ class Section:
     # WHERE IN THE RUN, beside the letter order: a section that has to open the run or close it
     # (the focus gate's control and verdict, which span every other section) says so here.
     place: int = 1
-    # A SECTION THAT TAKES THE FOCUS BY DESIGN runs alone in the run's own process, never in a
-    # pool beside other jobs, which would then be judged on its window.
+    # A SECTION THAT OPENS A WINDOW runs alone in the run's own process, never in a pool
+    # beside other jobs, which would then be judged on its window.
     alone: bool = False
 
 

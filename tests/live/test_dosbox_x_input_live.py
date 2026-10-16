@@ -66,7 +66,7 @@ def test_send_keys_reaches_the_running_guest_and_it_acts(
     it -- the E9 mark the app writes only from that key's handler. The key goes to a RUNNING
     guest (no breakpoint), which is the route AUTOTYPE and the console cannot serve."""
     _start(tmp_path, monkeypatch)
-    server.resume(until_close=True)
+    server.resume()
     _input_loop_live()
 
     # THE KEY, to the running guest, WITH ITS EXPECTATION: `a` is the guest's cue key and the
@@ -106,7 +106,7 @@ def test_a_sequence_sends_a_verified_key_to_the_running_guest(
     # THE SAME "INPUT LOOP IS LIVE" WAIT AS THE OTHER CASES, spelled as sequence steps: the
     # boot line, then the settled mark.
     steps: list[dict[str, Any]] = [
-        {"op": "resume", "until_close": True},
+        {"op": "resume"},
         {"op": "log_wait", "pattern": BOOT_MARK, "channel": "guest", "seconds": BOOT_WAIT_S},
         {"op": "log_wait", "pattern": SETTLED_MARK, "channel": "guest",
          "seconds": SETTLED_WAIT_S}]
@@ -130,7 +130,7 @@ def test_drive_looks_acts_and_verifies_in_one_call(
     program's reaction from a mark taken before the act, and hands back what the guest wrote
     since -- the cue line among them, and nothing from before the mark."""
     _start(tmp_path, monkeypatch)
-    server.resume(until_close=True)
+    server.resume()
     _input_loop_live()
     out = cast(dict[str, Any], server.drive(
         act=[{"op": "send_keys", "keys": ["a"]}], expect=KEY_MARK, seconds=30,
@@ -156,7 +156,7 @@ def test_the_stub_announces_itself_once_and_ignored_keys_arrive(
     ignores still ARRIVES (its arrival line) while the cue's line does not, so "did not react"
     means "took it and did nothing"."""
     _start(tmp_path, monkeypatch)
-    server.resume(until_close=True)
+    server.resume()
     stub = cast(dict[str, Any], server.log_wait(channel="guest", pattern="STUB  . inject device=",
                                                 seconds=60))
     assert stub["status"] == "ok" and "device=present proto=2" in stub["line"], stub
@@ -179,7 +179,7 @@ def test_send_mouse_puts_the_pointer_where_asked_and_the_program_clicks_there(
     so a pointer that did not move cannot pass, and the reply's read-back agrees with the
     program's own line each time."""
     _start(tmp_path, monkeypatch)
-    server.resume(until_close=True)
+    server.resume()
     _input_loop_live()
     for x, y in CLICKS:
         got = cast(dict[str, Any], server.send_mouse(x=x, y=y, units="mouse", button="left",

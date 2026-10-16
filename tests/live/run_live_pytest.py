@@ -1,9 +1,13 @@
 """The live pytest tier through `scry_core.live_pool`: every live test that opens no window runs
 as a job of its own, at most `DOSBOX_X_LIVE_JOBS` at once (unset, half the host's CPUs), and the
-`windowed` ones after them, together and one after another, because a window or a menu click
-takes the focus and would judge its neighbours.
+`windowed` ones after them, together and one after another, because a window that opens in
+front takes the focus and would judge its neighbours.
 
     timeout 3600 uv run python tests/live/run_live_pytest.py      # from the clone's root
+
+The emulator is `DOSBOX_X_BINARY`'s, else the PATH's `dosbox-x`; the saved-state case needs one
+that carries SAVESTATE and LOADSTATE (the Optimiza/dosbox-x fork's build) and is BLOCKED by any
+other, by that build's own refusal.
 
 Each job is pytest run in its own process on its tests, which records every test's outcome by
 node id (passed OK, failed or errored FAIL, skipped BLOCKED with the reason) and declares them
