@@ -1,15 +1,16 @@
-"""Section O of the live matrix: whether DOSBox-X came to the front during the run, sampled from
-outside it (`scry_core.focus_watch`) for its whole length.
+"""Section O of the live matrix: whether DOSBox-X came to the front, or any display's Space
+moved, during the run, sampled from outside it (`scry_core.focus_watch`) for its whole length.
 
 It is two sections under one letter: the CONTROL opens the run and the VERDICT closes it, so the
 watch the control starts samples every section between. The control, in the same harness the
 verdict is taken in: one shared start forced in front, which the watch must see in front, and
-one behind, which it must not; a watch that cannot see the first clears nothing, so without the
-control the verdict is BLOCKED, as it is when too little ran or the watch could not sample:
+one behind, which it must not, and the owner's Space moved and put back on purpose, which it
+must see move; a watch that does not hold all three clears nothing, so without
+the control the verdict is BLOCKED, as it is when too little ran or the watch could not sample:
 never green, and never counted as the server's FAIL. Judged by process name, so another
 DOSBox-X in front would count. Nothing is excluded: no tool clicks a menu any more, and section
-G's windows open behind. The control's front start takes the owner's focus for a few seconds: a
-run with this section is announced.
+G's windows open behind. The control's front start takes the owner's focus for a few seconds
+and its Space control moves the owner's Space and back: a run with this section is announced.
 """
 from __future__ import annotations
 
@@ -33,17 +34,19 @@ from scry_core import focus_watch
 FLAGS_VAR = "DOSBOX_X_LIVE_WINDOW_FLAGS"
 NAMES = {"dosbox-x"}
 HOLD_S = 4.0
-#: Shorter than this outside the exclusions, a judged window says too little to be a verdict.
+#: Shorter than this, a judged window says too little to be a verdict.
 MIN_JUDGED_MS = 60_000
 
 O_CONTROL = cells(
     ("O the control: a shared start forced in front is seen in front",
      "known: macOS brings a newly launched app with a window to the front"),
     ("O the control: a shared start behind is never in front",
-     "start docstring: `background`, true behind"),
+     "start docstring: `background`, true behind; and it moves no Space"),
+    ("O the control: a Space moved on purpose is seen moved",
+     "scry_core.focus_watch: SPACE_CHANGED"),
 )
 O_VERDICT = cells(
-    ("O no DOSBox-X came to the front while the sections ran",
+    ("O no DOSBox-X came to the front and no Space moved while the sections ran",
      "REFERENCE.md, Input and the screen: nothing about the host is touched"),
 )
 
@@ -83,10 +86,19 @@ def section_o_control() -> None:
     M.judge("O the control: a shared start forced in front is seen in front",
             seen.status == "TOOK_FOCUS", seen.reason)
     clean = focus_watch.judge(watch.samples, NAMES, start_ms=behind[0], end_ms=behind[1])
-    M.judge("O the control: a shared start behind is never in front",
-            clean.status == "CLEAN", clean.reason)
-    if seen.status == "TOOK_FOCUS" and clean.status == "CLEAN":
-        SINCE.append(behind[1])
+    if clean.status == "SPACE_CHANGED":
+        # A Space move names nobody (the verdict below says why), here as there.
+        M.block("O the control: a shared start behind is never in front", clean.reason)
+    else:
+        M.judge("O the control: a shared start behind is never in front",
+                clean.status == "CLEAN", clean.reason)
+    began, ended, why = focus_watch.move_space()
+    moved = focus_watch.judge(watch.samples, NAMES, start_ms=began, end_ms=ended)
+    held = moved.status == "SPACE_CHANGED" and not why
+    M.judge("O the control: a Space moved on purpose is seen moved", held,
+            f"{why}; {moved.reason}" if why else moved.reason)
+    if seen.status == "TOOK_FOCUS" and clean.status == "CLEAN" and held:
+        SINCE.append(ended)
 
 
 @M.section("O", "the focus gate's verdict, closing the run", O_VERDICT, FLAGS_VAR, place=2)
@@ -111,6 +123,12 @@ def section_o_verdict() -> None:
     if v.status == "INVALID":
         # THE INSTRUMENT, not the server: a sample it could not take, or a stretch unsampled.
         M.block_rest(f"the watch cannot judge the run: {v.reason}; record {watch.path}")
+        return
+    if v.status == "SPACE_CHANGED":
+        # A SPACE MOVE NAMES NOBODY: the owner may have made it. Never green, never the
+        # server's FAIL on that alone: the record is there to read.
+        M.block_rest(f"a Space moved and nothing names who moved it: {v.reason}; "
+                     f"record {watch.path}")
         return
     M.judge(label, v.status == "CLEAN",
             f"{v.status}: {v.reason}; record {watch.path}")
