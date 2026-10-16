@@ -1,0 +1,45 @@
+{
+ "task": {
+  "id": "D96",
+  "prompt": "The guest is stopped. I only need its page runs and its GDT, nothing else of the machine map.",
+  "tool": "machine_map",
+  "args": {
+   "sections": {
+    "any_of": [
+     [
+      "paging",
+      "gdt"
+     ],
+     [
+      "gdt",
+      "paging"
+     ]
+    ]
+   }
+  },
+  "grammar": [
+   "paging",
+   "gdt"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D96: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"paging\", \"gdt\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D96: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"gdt\", \"paging\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D96: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"paging\", \"gdt\"]}}"
+   ],
+   "right": true
+  }
+ ]
+}

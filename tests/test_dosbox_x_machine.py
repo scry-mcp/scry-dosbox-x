@@ -6,6 +6,7 @@ Where a case changes a capture (one line edited, a screen cut at a line), it say
 """
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 from types import SimpleNamespace
@@ -22,6 +23,9 @@ import dosbox_symbols as sym
 import dosbox_x_server as server
 
 MACHINE = Path(__file__).parent / "fixtures" / "machine"
+
+#: Every section a map can read, for the cases that judge the whole map.
+EVERY = list(machine.SECTION_NAMES)
 
 
 def cap(name: str) -> str:
@@ -429,7 +433,7 @@ def mapped(bench: str, tmp_path: Path) -> dict[str, Any]:
     s = Bench(bench, tmp_path / "x.log")
     install()
     dstate.STATE.session = cast(ds.Session, s)
-    reply = cast(dict[str, Any], server.machine_map())
+    reply = cast(dict[str, Any], server.machine_map(sections=EVERY))
     reply["_asked"] = dos_listings(s.asked)
     return reply
 
@@ -521,7 +525,7 @@ class Edited(Bench):
 def mapped_with(s: Bench) -> dict[str, Any]:
     install()
     dstate.STATE.session = cast(ds.Session, s)
-    reply = cast(dict[str, Any], server.machine_map())
+    reply = cast(dict[str, Any], server.machine_map(sections=EVERY))
     reply["_asked"] = dos_listings(s.asked)
     return reply
 
@@ -1106,3 +1110,121 @@ def test_with_the_chain_read_a_vector_not_placed_gives_no_program_block_count(
                                 "(CWSDPMI 256)"), "the same bench with every listing read counts"
 
 
+
+
+# ------------------------------------------------------------------ narrowing the map
+
+
+def asked_for(bench: str, tmp_path: Path, **kw: Any) -> dict[str, Any]:
+    s = Bench(bench, tmp_path / "x.log")
+    install()
+    dstate.STATE.session = cast(ds.Session, s)
+    reply = cast(dict[str, Any], server.machine_map(**kw))
+    reply["_asked"] = s.asked
+    return reply
+
+
+def test_the_default_map_reads_the_dos_sections_and_names_the_rest_it_left_out(
+        tmp_path: Path) -> None:
+    r = asked_for("probe-booted", tmp_path)
+    assert r["status"] == "ok" and r["cpu_mode"] == "real"
+    assert r["_asked"] == ["DOS MCBS", "DOS DEVS", "DOS KERN", "DOS XMS", "DOS EMS", "EMU MEM",
+                           "EMU MACHINE", "CPU"]
+    for left in ("bios_mem", "callbacks", "vga"):
+        assert left not in r and left not in r["counts"] and left not in r["sources"]
+    # Real mode has no paging and no descriptor tables, so none is offered as left out.
+    assert r["omitted"] == ["bios_mem", "callbacks", "vga"]
+    assert "sections=" in r["how"] and "dest=" in r["how"]
+
+
+def test_a_paged_default_also_names_the_page_runs_it_left_out(tmp_path: Path) -> None:
+    r = asked_for("dos-djgpp32", tmp_path)
+    assert r["cpu_mode"] == "paged" and "gdt" in r and "ldt" in r and "paging" not in r
+    assert r["omitted"] == ["bios_mem", "callbacks", "paging", "vga"]
+    assert "PAGING" not in r["_asked"]
+
+
+def test_sections_reads_only_the_ones_named_and_the_cpu_for_the_mode(tmp_path: Path) -> None:
+    r = asked_for("dos-djgpp32", tmp_path, sections=["paging", "ems_pages"])
+    assert r["_asked"] == ["DOS EMS", "CPU", "PAGING"]
+    assert "paging" in r and "ems_pages" in r
+    assert "ems" not in r and "cpu" not in r and "mcbs" not in r
+    assert set(r["sources"]) == {"paging", "ems_pages"} and set(r["counts"]) == set(r["sources"])
+    assert "devs" in r["omitted"] and "paging" not in r["omitted"]
+
+
+def test_every_section_named_leaves_nothing_out(tmp_path: Path) -> None:
+    r = asked_for("probe-booted", tmp_path, sections=list(machine.SECTION_NAMES))
+    assert "omitted" not in r and "how" not in r
+    assert r["bios_mem"] and r["callbacks"] and r["vga"]
+
+
+@pytest.mark.parametrize("sections, said", [([], "a list naming at least one section"),
+                                            (["mcbs", "nope"], "'nope', none of them a section")])
+def test_a_bad_section_list_is_refused_before_any_listing(
+        tmp_path: Path, sections: list[str], said: str) -> None:
+    r = asked_for("probe-booted", tmp_path, sections=sections)
+    assert r["status"] == "INVALID" and r["code"] == "bad_argument" and said in r["message"]
+    assert r["_asked"] == []
+
+
+def test_dest_writes_every_section_asked_whole_where_the_reply_is_cut(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(ds, "LOG_LIMIT_MAX", 5)
+    dest = tmp_path / "map.json"
+    r = asked_for("dos-djgpp32", tmp_path, sections=["paging"], dest=str(dest))
+    assert r["status"] == "ok" and r["path"] == str(dest) and r["truncated"] is True
+    assert len(r["paging"]) == 5
+    whole = json.loads(dest.read_text())
+    assert len(whole["paging"]) == r["counts"]["paging"] > 5
+    assert whole["cpu_mode"] == "paged" and whole["sources"] == r["sources"]
+
+
+def test_a_cut_reply_without_dest_says_how_to_have_it_whole(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(ds, "LOG_LIMIT_MAX", 5)
+    r = asked_for("dos-djgpp32", tmp_path, sections=["paging"])
+    # Sections were left out too, so `how` names both ways, `dest` among them.
+    assert r["truncated"] is True and "path" not in r and r["how"] == machine.MAP_HOW
+    whole = asked_for("dos-djgpp32", tmp_path, sections=EVERY)
+    assert "omitted" not in whole and whole["how"] == machine.MAP_CUT_HOW
+
+
+def test_the_one_line_says_how_many_sections_a_default_map_left_out(tmp_path: Path) -> None:
+    assert asked_for("probe-booted", tmp_path)["summary"].endswith(
+        ", left out: bios_mem, callbacks, vga (see `omitted`)")
+    assert "left out" not in asked_for("probe-booted", tmp_path, sections=EVERY)["summary"]
+
+
+def test_a_dest_the_host_cannot_write_is_host_failed_and_leaves_no_file(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    dest = tmp_path / "map.json"
+    real = Path.open
+
+    def refusing(self: Path, mode: str = "r", *a: Any, **k: Any) -> Any:
+        if self == dest and "x" in mode:
+            fh = real(self, mode, *a, **k)
+
+            class Full:
+                def __enter__(self) -> Full:
+                    return self
+
+                def __exit__(self, *_: object) -> None:
+                    fh.close()
+
+                def write(self, _text: str) -> int:
+                    raise OSError(28, "No space left on device")
+            return Full()
+        return real(self, mode, *a, **k)
+    monkeypatch.setattr(Path, "open", refusing)
+    r = asked_for("probe-booted", tmp_path, dest=str(dest))
+    assert r["status"] == "INVALID" and r["code"] == "host_failed", r
+    assert not dest.exists()
+
+
+def test_a_dest_already_there_is_refused_before_any_listing(tmp_path: Path) -> None:
+    taken = tmp_path / "map.json"
+    taken.write_text("{}")
+    r = asked_for("probe-booted", tmp_path, dest=str(taken))
+    assert r["status"] == "INVALID" and r["code"] == "bad_argument" and r["_asked"] == []
+    assert taken.read_text() == "{}"

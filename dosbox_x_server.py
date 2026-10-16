@@ -108,6 +108,7 @@ from pydantic import ValidationError
 # depends on -- the same silent-wrong-import hazard, installed by the fix for it.
 sys.path.append(str(Path(__file__).resolve().parent))
 
+from scry_core import narrowing  # noqa: E402
 from scry_core import strict_arguments as strict  # noqa: E402
 
 import dosbox_arming as arming  # noqa: E402
@@ -940,7 +941,8 @@ def scan_start(ref: str, length: int, width: str = "byte") -> dict[str, Any]:
 
 
 @tool("Filter the value scan", summary=one_line.scan_filter)
-def scan_filter(operator: str = "=", value: int | None = None) -> dict[str, Any]:
+def scan_filter(operator: str = "=", value: int | None = None,
+                limit: int = finder.HITS_DEFAULT) -> dict[str, Any]:
     """Keep the scan's cells whose current content satisfies `operator` (`=`, `!`, `>`,
     `>=`, `<`, `<=`) against `value`; with no `value`, against what each cell held when
     `scan_start` opened the scan: `!` alone keeps the cells that CHANGED since then, `=`
@@ -953,7 +955,8 @@ def scan_filter(operator: str = "=", value: int | None = None) -> dict[str, Any]
     own count, `null` with `iterations_why` for a scan `debug` touched), `closed` (a
     step that leaves NO survivor closes the scan, which is what the debugger does), `hits`
     (each survivor's `address`, `linear` and current `value`), `hits_total` and
-    `truncated`: above 400 survivors `hits` is empty and `truncated` true, so filter again.
+    `truncated`: above `limit` survivors (1 to 400, default 40) `hits` is empty and
+    `truncated` true, so filter again, with a larger `limit` if need be.
 
     THE COMMAND LINE IS LEFT CLEAN even when the answer cannot be read. The debugger eats a
     command character by character while a paged-content prompt waits, one page per
@@ -964,7 +967,7 @@ def scan_filter(operator: str = "=", value: int | None = None) -> dict[str, Any]
     """
     session = _live()
     _console_listening(session, "a search")
-    return st.reply(**finder.scan_filter(session, operator, value))
+    return st.reply(**finder.scan_filter(session, operator, value, limit))
 
 
 @tool("Close the value scan", summary=one_line.scan_clear)
@@ -1054,7 +1057,7 @@ def write(ref: str, data_hex: str) -> dict[str, Any]:
 
 @tool("Resume the machine", summary=one_line.resume)
 def resume(e9: str = "none", e9_filter: str = ".",
-           e9_stamp: str | None = None, seconds: float = 0.0,
+           e9_stamp: str | None = None, seconds: float = 0.0, detail: bool = False,
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Let the machine run (F5, sent once), and SAY whether it actually left the debugger.
     With `seconds` it then waits that long for a stop, listening for the debugger's prompt as
@@ -1074,9 +1077,9 @@ def resume(e9: str = "none", e9_filter: str = ".",
     `delta`; null with `instruction_why` when it could not be read), `registers`, `watches`,
     `attribution` (which declaration produced this stop) and `e9`, the log summary, OFF by default:
     `"all"`, `"lines:N"`, `"since"` (since the previous stop) or `"seconds:N"` (needs `e9_stamp`, a
-    regex with ONE group capturing each line's own time), filtered by `e9_filter`. `screen_delta`
-    is the debugger's repaint for the F5, a POSITIONAL tail capped at its last 2000 characters
-    (`clipped`): read a stop there, never a value.
+    regex with ONE group capturing each line's own time), filtered by `e9_filter`. With
+    `detail=True`, `screen_delta`: the debugger's repaint for the F5, a POSITIONAL tail capped at
+    its last 2000 characters (`clipped`), never a value; without it `omitted` names it.
 
     Reference: REFERENCE.md, Advancing the machine.
     """
@@ -1087,7 +1090,7 @@ def resume(e9: str = "none", e9_filter: str = ".",
         raise ds.NotStopped("the guest is already running, so there is nothing to resume")
     out = session.resume()
     base = dict(halted=out["halted"], stopped_at=out["stopped_at"],
-                **st.delta(cast(str, out["screen"]), 2000))
+                **st.delta_if_asked(cast(str, out["screen"]), 2000, detail))
     if not out["halted"] and seconds > 0:
         began = time.monotonic()
         expired, _saw_at = ds.Session._await_stop(session, began, began + seconds, "resume",
@@ -1412,7 +1415,8 @@ def state_list() -> dict[str, Any]:
 
 
 @tool("Arm an interrupt breakpoint", summary=one_line.breakpoint_interrupt)
-def breakpoint_interrupt(number: int, ah: int | None = None) -> dict[str, Any]:
+def breakpoint_interrupt(number: int, ah: int | None = None,
+                         detail: bool = False) -> dict[str, Any]:
     """Break on an interrupt, optionally on one `ah` function: `BPINT <number> [<ah>]`.
 
     `number` and `ah` are the debugger's HEX values given as integers: pass `0x21` (33) for
@@ -1424,11 +1428,12 @@ def breakpoint_interrupt(number: int, ah: int | None = None) -> dict[str, Any]:
 
     Reply: `ref`, the exact string `breakpoint_clear` takes for it (`BPINT 21`,
     `BPINT 21 AH=4B`: the debugger's own row spelling, hex, `AH=` included when `ah` was
-    given), `stored`, `already_stored`, `entry`, and the acknowledgement
-    `screen_delta` (capped, with `screen_chars`/`clipped`). While the guest runs it is
-    stored `pending` and armed at the next stop.
+    given), `stored`, `already_stored`, `entry`; with `detail=True` the acknowledgement's
+    `screen_delta` (capped, with `screen_chars`/`clipped`), else `omitted` names them: a
+    fresh arm only, since a pending or already armed one typed nothing. While the
+    guest runs it is stored `pending` and armed at the next stop.
     """
-    return arming.breakpoint_interrupt(_live(), number, ah)
+    return arming.breakpoint_interrupt(_live(), number, ah, detail)
 
 
 # --------------------------------------------------------------- names for addresses
@@ -1608,40 +1613,54 @@ def comment_load(source: str) -> dict[str, Any]:
 
 # ---------------------------------------------------------------------- the DOS machine
 
-@tool("Map the DOS machine", summary=one_line.machine_map, read_only=True)
-def machine_map() -> dict[str, Any]:
+@tool("Map the DOS machine", summary=one_line.machine_map)
+def machine_map(sections: list[str] | None = None, dest: str = "") -> dict[str, Any]:
     """WHAT THE DOS MACHINE IS AT THIS STOP, one section per debugger listing, read live off the
-    session's logfile (the screen loses a listing's columns): it needs the machine STOPPED and a
-    session started with `logfile`, and costs a console round trip per listing.
+    session's logfile: it needs the machine STOPPED and a session started with `logfile`, and
+    costs a console round trip per listing.
 
-    Refused: no `logfile`, or none written yet (`no_channel`); a running guest (`not_stopped`);
-    no prompt after a listing, or a console left holding text (`unexpected_answer`: `close`
-    the session); a logfile that shrank under the read (`session_broken`).
+    `sections` names the ones to read; left out, the DOS machine and the cpu: `mcbs`, `devs`,
+    `kern`, `xms`, `ems`, `ems_pages`, `emu_mem`, `machine`, `cpu`, and in protected mode `gdt`
+    and `ldt`. The rest are read only when named: `bios_mem`, `callbacks`, `vga`, `paging`.
+    `dest` (absolute, not there yet) writes every section read WHOLE as JSON (`path`).
 
-    Reply: `cpu_mode` (`real`, `protected`, `paged`, off the `CPU` listing's cr0; null when
-    that listing is unreadable), then each section: `mcbs` (`memory`, `mcb_seg`, `size_bytes`,
-    `psp_seg`, `notes` `DOS`/`free` where printed, `filename` verbatim), `devs` (`header`,
-    `attr`, `strat`, `intr`, `name`), `kern` (`seg`, `size_bytes`, `what`), `xms` (`handle`,
-    `status`, `location`, `size_bytes`), `ems` (`handle`, `address`, `size_bytes`, `name`),
-    `ems_pages` (`handle`, `page`, `start`, `end`), `bios_mem` (`start`, `end`, `status`,
-    `what`), `callbacks` (`number`, `desc`), `emu_mem`, `machine`, `cpu` (control registers,
-    flags, and the `gdt`, `idt`, `tr`, `ldt` registers); in protected mode `gdt` and `ldt`
-    (`selector`, `base`, `limit`, `type`, `dpl`, `p`, `a`, `r`, `b`, `g`), and with paging on
-    `paging` (runs: `start`, `end`, `phy`, `flags`, `d`, `a`); and `vga`, the VGA's state:
-    `mode`, `crtc`, `seq`, `gc`, `ac`, `dac`, `draw`, one per `VGA` listing, each its own
-    `key=value` words (`-` as `_`) with the text printed. Hex is the debugger's text. A
-    section the debugger refused, printed nothing for, or printed a line no known shape
-    matches is ABSENT, and `coverage_note` quotes why; a heading with no row is an empty list,
-    except `mcbs`, absent when a chain lists no block, does not walk block to block by the
-    sizes, or stops before `END OF CHAIN`. `counts` (full lengths), `truncated` (any list
-    cut at 400 rows), `sources` (each section's command). Writes nothing.
+    Refused: an empty or unknown `sections`, or a `dest` already there (`bad_argument`, before
+    anything is typed); no `logfile` (`no_channel`); a running guest (`not_stopped`); no prompt
+    after a listing (`unexpected_answer`: `close` the session); a logfile that shrank
+    (`session_broken`).
+
+    Reply: `cpu_mode` (`real`, `protected`, `paged`; null when the `CPU` listing is
+    unreadable), then each section read: `mcbs` (`memory`, `mcb_seg`, `size_bytes`, `psp_seg`,
+    `notes`, `filename`), `devs` (`header`, `attr`, `strat`, `intr`, `name`), `kern` (`seg`,
+    `size_bytes`, `what`), `xms` (`handle`, `status`, `location`, `size_bytes`), `ems`
+    (`handle`, `address`, `size_bytes`, `name`), `ems_pages` (`handle`, `page`, `start`, `end`),
+    `bios_mem` (`start`, `end`, `status`, `what`), `callbacks` (`number`, `desc`), `emu_mem`,
+    `machine`, `cpu` (control registers, flags, `gdt`, `idt`, `tr`, `ldt`); `gdt`/`ldt`
+    (`selector`, `base`, `limit`, `type`, `dpl`, `p`, `a`, `r`, `b`, `g`); `paging` (runs:
+    `start`, `end`, `phy`, `flags`, `d`, `a`); `vga` (`mode`, `crtc`, `seq`, `gc`, `ac`, `dac`,
+    `draw`). A section the debugger refused or printed nothing known for is ABSENT and
+    `coverage_note` says why. `counts` (full lengths), `truncated` (a list cut at 400 rows),
+    `sources`; `omitted` (sections this mode has that were not read) with `how`. Writes nothing
+    to the guest.
 
     Reference: REFERENCE.md, Reading and writing.
     """
+    chosen = narrowing.sections(sections, machine.SECTION_NAMES, machine.DEFAULT_SECTIONS)
+    target = paths.fresh_dest("dest", dest) if dest else None
     session = _live()
     _console_listening(session, "a listing")
-    reply = machine.machine_map(session)
-    machine.add_section(reply, "vga", *screen.vga_section(session))
+    whole = machine.machine_map(session, chosen)
+    if "vga" in chosen:
+        machine.add_section(whole, "vga", *screen.vga_section(session))
+    reply = machine.cut_lists(whole)
+    if target is not None:
+        text = json.dumps(whole, indent=1).encode()
+        reply["path"] = str(paths.write_new(target, text, "the map"))
+    left = [n for n in machine.sections_of(whole["cpu_mode"]) if n not in chosen]
+    if left:
+        reply.update(narrowing.omission(left, machine.MAP_HOW))
+    elif reply["truncated"] and target is None:
+        reply["how"] = machine.MAP_CUT_HOW
     return st.reply(**reply)
 
 

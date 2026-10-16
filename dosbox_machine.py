@@ -495,18 +495,49 @@ def add_section(reply: dict[str, Any], name: str, value: Any, sources: list[str]
     reply["sources"][name] = sources
 
 
-def machine_map(session: ds.Session) -> dict[str, Any]:
-    """`read`, then the reply: `cpu_mode`, the sections, each list cut at the server's list
-    ceiling with `counts` (its full length) and `truncated`, `sources` and `coverage_note`."""
-    reading = read(session)
-    ceiling = ds.LOG_LIMIT_MAX
-    counts = {name: len(v) for name, v in reading.found.items() if isinstance(v, list)}
-    return {"cpu_mode": reading.mode,
-            **{name: (v[:ceiling] if name in counts else v) for name, v in reading.found.items()},
-            "counts": counts,
-            "truncated": any(n > ceiling for n in counts.values()),
-            "sources": reading.sources,
+#: Every section `machine_map` can answer, in reply order; `vga` is `dosbox_screen`'s, read last.
+SECTION_NAMES: tuple[str, ...] = (
+    *(n for s in EVERY_MODE for n in s.names), *(n for s in DESCRIPTOR_TABLES for n in s.names),
+    *PAGE_TABLE.names, "vga")
+#: What a map answers when it is asked for no section: the DOS machine, the cpu and, in protected
+#: mode, the descriptor tables. Left out: the BIOS's blocks and callbacks, the VGA's registers and
+#: the page runs, which together are most of a whole map and are seldom the question.
+DEFAULT_SECTIONS = frozenset({"mcbs", "devs", "kern", "xms", "ems", "ems_pages", "emu_mem",
+                              "machine", "cpu", "gdt", "ldt"})
+
+
+#: How a short map asks for the rest: the sections it left out, or every row of a cut list.
+MAP_HOW = ("sections=[...] names the sections to read; dest=<absolute path> writes every section "
+           "read whole")
+MAP_CUT_HOW = "dest=<absolute path> writes every row of every section read"
+
+
+def sections_of(mode: str | None) -> list[str]:
+    """The sections a machine in `mode` has: no descriptor table in real mode or when the mode
+    is unknown, and page runs only with paging on."""
+    absent = {"gdt", "ldt", "paging"} if mode in (None, "real") else (
+        set() if mode == "paged" else {"paging"})
+    return [n for n in SECTION_NAMES if n not in absent]
+
+
+def machine_map(session: ds.Session, chosen: list[str]) -> dict[str, Any]:
+    """`read` of the `chosen` sections (and `CPU`, which says the mode), then the reply:
+    `cpu_mode`, the sections, `counts` (each list's full length), `sources` and `coverage_note`.
+    `vga` is the caller's to add. Lists are WHOLE here: cutting them is the reply's business."""
+    reading = read(session, frozenset(chosen))
+    found = {n: v for n, v in reading.found.items() if n in chosen}
+    return {"cpu_mode": reading.mode, **found,
+            "counts": {n: len(v) for n, v in found.items() if isinstance(v, list)},
+            "sources": {n: v for n, v in reading.sources.items() if n in chosen},
             "coverage_note": ". ".join(reading.notes)}
+
+
+def cut_lists(whole: dict[str, Any]) -> dict[str, Any]:
+    """`whole` with each list cut at the server's list ceiling, and `truncated` saying whether
+    any was."""
+    ceiling = ds.LOG_LIMIT_MAX
+    return {**{n: (v[:ceiling] if n in whole["counts"] else v) for n, v in whole.items()},
+            "truncated": any(n > ceiling for n in whole["counts"].values())}
 
 
 # ------------------------------------------------------------------ the interrupt vectors

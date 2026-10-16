@@ -3,12 +3,15 @@
   "id": "D62",
   "prompt": "The guest is stopped. Tell me what the DOS machine is right now: which memory blocks each resident program owns and where, the device drivers, and the XMS and EMS handles.",
   "tool": "machine_map",
-  "args": {}
+  "args": {},
+  "allow": [
+   "sections"
+  ]
  },
  "runs": [
   {
    "lines": [
-    "D62: {\"tool\": \"machine_map\", \"args\": {}}"
+    "D62: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"mcbs\", \"devs\", \"xms\", \"ems\"]}}"
    ],
    "right": true
   },
@@ -20,7 +23,7 @@
   },
   {
    "lines": [
-    "D62: {\"tool\": \"machine_map\", \"args\": {}}"
+    "D62: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"mcbs\", \"devs\", \"xms\", \"ems\"]}}"
    ],
    "right": true
   }

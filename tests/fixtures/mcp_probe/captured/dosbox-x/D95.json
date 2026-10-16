@@ -1,0 +1,34 @@
+{
+ "task": {
+  "id": "D95",
+  "prompt": "Keep only the scanned cells that now hold the value 7, and list up to 200 of the survivors with their values.",
+  "tool": "scan_filter",
+  "args": {
+   "value": 7,
+   "limit": 200
+  },
+  "allow": [
+   "operator"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D95: {\"tool\": \"scan_filter\", \"args\": {\"operator\": \"=\", \"value\": 7, \"limit\": 200}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D95: {\"tool\": \"scan_filter\", \"args\": {\"operator\": \"=\", \"value\": 7, \"limit\": 200}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D95: {\"tool\": \"scan_filter\", \"args\": {\"value\": 7, \"limit\": 200}}"
+   ],
+   "right": true
+  }
+ ]
+}

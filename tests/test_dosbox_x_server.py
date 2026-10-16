@@ -934,8 +934,13 @@ def test_the_success_path_of_each_reader_returns_a_result(tmp_path: Path) -> Non
     got = server.read_memory(ref=f"{seg:04X}:{off:08X}")
     assert got["status"] == "ok"
     assert got["rows"] == [row], got
-    assert "INT 21" in server.breakpoint_interrupt(number=0x21)["screen_delta"]
-    assert server.resume()["status"] == "ok"
+    assert "INT 21" in server.breakpoint_interrupt(number=0x21, detail=True)["screen_delta"]
+    short = server.breakpoint_interrupt(number=0x10)
+    assert "screen_delta" not in short and "screen_chars" not in short, short
+    assert short["omitted"] == list(dstate.REPAINT_FIELDS) and short["how"] == dstate.REPAINT_HOW
+    resumed = server.resume()
+    assert resumed["status"] == "ok" and "screen_delta" not in resumed, resumed
+    assert resumed["omitted"] == list(dstate.REPAINT_FIELDS) and "detail=True" in resumed["how"]
 
 
 def test_a_reader_that_got_an_empty_screen_says_so(tmp_path: Path) -> None:
@@ -3910,7 +3915,7 @@ def test_every_tool_declares_a_title_and_the_readers_a_read_only_hint() -> None:
     # declarations: that write is the declaring call's, not the reader's (owner's call).
     assert read_only == {"status", "log", "log_wait", "registers", "read_memory", "find",
                          "disassemble", "call_stack",
-                         "symbols_find", "machine_map",
+                         "symbols_find",
                          "breakpoint_list", "watch_list", "captures", "build_check",
                          "state_list", "comment_list"}, read_only
 

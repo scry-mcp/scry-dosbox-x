@@ -241,7 +241,7 @@ def _scan() -> tuple[bool, str]:
         M.call(server.scan_clear)
         raise RuntimeError(f"TOTALTIME kept {value} over {FRAMES_FOR_A_CHANGE} frames")
     moved = M.call(server.scan_filter, operator="!")
-    last = M.call(server.scan_filter, operator="=", value=value)
+    last = M.call(server.scan_filter, operator="=", value=value, limit=400)
     lin = [hexint(h.get("linear")) for h in last.get("hits") or []]
     M.call(server.scan_clear)
     return (off % 2 == 1 and ok(opened) and ok(first) and ok(moved) and ok(last)

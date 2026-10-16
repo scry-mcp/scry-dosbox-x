@@ -2424,13 +2424,14 @@ def test_the_tool_hands_both_fields_on_and_takes_nothing_away() -> None:
                    deltas=[RESUME_HALTED])
     dstate.STATE.session = cast(ds.Session, dbg)
     try:
-        got = cast(dict[str, Any], server.resume())
+        got = cast(dict[str, Any], server.resume(detail=True))
     finally:
         dstate.STATE.session = None
     assert got["status"] == "ok", got
     assert got["halted"] is True, got
     assert got["stopped_at"] == {"cs": "0814", "eip": "00000112", "mode": "Real"}
     assert got["screen_delta"] == RESUME_HALTED, got
+    assert "omitted" not in got and "how" not in got
     # decision 13: the halt now also carries the registers, the (empty) watch list, the
     # attribution and the E9 summary -- none of which displaced the base fields above.
     assert got["registers"] and got["watches"] == [] and "attributed" in got["attribution"]

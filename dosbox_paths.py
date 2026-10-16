@@ -80,6 +80,27 @@ def fresh_dest(name: str, value: str | Path) -> Path:
     return path
 
 
+def write_new(path: Path, data: bytes, what: str) -> Path:
+    """`data` to `path`, created here and nowhere else: a file that appeared since `fresh_dest`
+    judged it is refused, never overwritten, and a write that fails takes the file away rather
+    than leaving a short one where the caller will look."""
+    try:
+        out = path.open("xb")
+    except FileExistsError:
+        raise Invalid("bad_argument",
+            f"{path} appeared while {what} was read. This will not overwrite it: name a path "
+            f"that is not there yet") from None
+    except OSError as e:
+        raise Invalid("host_failed", f"cannot write {what} to {path}: {e!r}") from None
+    try:
+        with out:
+            out.write(data)
+    except OSError as e:
+        path.unlink(missing_ok=True)
+        raise Invalid("host_failed", f"cannot write {what} to {path}: {e!r}") from None
+    return path
+
+
 def resolved(name: str, path: Path) -> Path:
     """`path` with its links resolved, or the refusal. A loop names no file, and `resolve`
     either raises on one or, not being strict, hands the link back unresolved: both refused."""

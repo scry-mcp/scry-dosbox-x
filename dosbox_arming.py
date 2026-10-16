@@ -598,7 +598,8 @@ def something_can_stop_it() -> bool:
                for d in _armable_declarations())
 
 
-def breakpoint_interrupt(session: ds.Session, number: int, ah: int | None) -> dict[str, Any]:
+def breakpoint_interrupt(session: ds.Session, number: int, ah: int | None,
+                         detail: bool = False) -> dict[str, Any]:
     """The body of the `breakpoint_interrupt` tool."""
     want = ds.interrupt_row(number, ah)
     decl = declare("interrupt", "address", want)
@@ -610,7 +611,7 @@ def breakpoint_interrupt(session: ds.Session, number: int, ah: int | None) -> di
         is_new = cast(bool, placement.to_invalid(lambda: current_store().add(decl)))
         return st.reply(ref=want, stored=True, already_stored=not is_new, armed=True,
                       entry=want, note="this interrupt breakpoint was already armed")
-    delta = st.delta(session.breakpoint_interrupt(number, ah), 2000)
+    delta = st.delta_if_asked(session.breakpoint_interrupt(number, ah), 2000, detail)
     is_new = cast(bool, placement.to_invalid(lambda: current_store().add(decl)))
     num, ah = ds.parse_interrupt_row(want)
     STATE.note_armed(want, {"kind": "int", "num": num, "ah": ah, "entry": want})

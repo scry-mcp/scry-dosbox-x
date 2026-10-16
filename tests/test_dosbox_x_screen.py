@@ -40,6 +40,9 @@ BENCHES = ("probe-park", "probe-booted", "dos-real16", "dos-djgpp32-startup", "d
            "screen-text", "screen-start80", "screen-dac01", "screen-13h", "screen-13h-start80",
            "screen-12h")
 
+#: Every section a map can read, for the cases that judge the whole map.
+EVERY = list(machine.SECTION_NAMES)
+
 
 def vga(bench: str, command: str) -> str:
     return (VGA / f"{bench}-{command.replace(' ', '_')}.log.txt").read_bytes().decode("latin-1")
@@ -515,7 +518,7 @@ def mapped(name: str, tmp_path: Path) -> dict[str, Any]:
     s = Bench(name, tmp_path / "x.log")
     install()
     dstate.STATE.session = cast(ds.Session, s)
-    reply = cast(dict[str, Any], server.machine_map())
+    reply = cast(dict[str, Any], server.machine_map(sections=EVERY))
     reply["_asked"] = s.asked
     return reply
 
@@ -546,7 +549,7 @@ def test_a_vga_listing_in_another_shape_makes_the_section_absent_quoting_it(
                                  if command == "VGA GC" else plain(command))
     install()
     dstate.STATE.session = cast(ds.Session, s)
-    r = cast(dict[str, Any], server.machine_map())
+    r = cast(dict[str, Any], server.machine_map(sections=EVERY))
     assert r["status"] == "ok" and "vga" not in r and "vga" not in r["sources"]
     assert r["coverage_note"].startswith("read from the debugger's own listings")
     assert ". `vga` is absent: `VGA GC` printed a line no known shape matches" \
@@ -561,7 +564,7 @@ def test_a_vga_listing_that_printed_nothing_makes_the_section_absent(tmp_path: P
     s.listing = lambda command: "" if command == "VGA MODE" else plain(command)  # type: ignore[method-assign]
     install()
     dstate.STATE.session = cast(ds.Session, s)
-    r = cast(dict[str, Any], server.machine_map())
+    r = cast(dict[str, Any], server.machine_map(sections=EVERY))
     assert "vga" not in r and "`vga` is absent: `VGA MODE` printed nothing" in r["coverage_note"]
     assert "VGA CRTC" not in s.asked
 

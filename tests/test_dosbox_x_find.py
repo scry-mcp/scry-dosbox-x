@@ -143,16 +143,15 @@ def test_scan_filter_refuses_a_listing_whose_rows_do_not_add_up() -> None:
     # 0x100 survivors are what the machine said; the two captured pages hold 22 rows, so
     # the whole-listing check must REFUSE rather than hand back a partial table.
     with pytest.raises(ds.Invalid, match="a whole listing"):
-        finder.scan_filter(s, "=", 0)
+        finder.scan_filter(s, "=", 0, finder.HITS_MAX)
     # The last ENTER is the refusal clearing the command line: a refusal that leaves it
     # dirty costs the whole session.
     assert s.sent == ["MEMS =0", "MEMFIND L", "", ""]
 
 
-def test_scan_filter_hands_back_a_whole_listing_when_the_rows_match_the_count() -> None:
-    """The captured page and the captured end carry 22 rows between them, so the count
-    the debugger reports is rewritten to 22 in both places it prints it and the listing
-    is then whole: first row, last row, every row keyed once."""
+def twenty_two() -> Any:
+    """The captured page and the captured end carry 22 rows between them, so the count the
+    debugger reports is rewritten to 22 in both places it prints it."""
     s = session([("MEMS =0", "mems_matches"), ("MEMFIND L", "memfind_list_page"),
                  ("", "memfind_list_last")])
     orig: Callable[..., str] = s.command
@@ -161,11 +160,47 @@ def test_scan_filter_hands_back_a_whole_listing_when_the_rows_match_the_count() 
         return orig(text).replace("(000100) matches", "(000016) matches").replace(
             "instance: 000100", "instance: 000016")
     s.command = command
+    return s
+
+
+def test_scan_filter_hands_back_a_whole_listing_when_the_rows_match_the_count() -> None:
+    """The captured page and the captured end carry 22 rows between them, so the count
+    the debugger reports is rewritten to 22 in both places it prints it and the listing
+    is then whole: first row, last row, every row keyed once."""
+    s = twenty_two()
     got = finder.scan_filter(s, "=", 0)
     assert got["survivors"] == 22 and got["closed"] is False and got["iterations"] == 1
     assert len(got["hits"]) == 22
     assert got["hits"][0] == {"address": "0000:00000400", "linear": "0x00000400", "value": 0}
     assert got["hits"][-1]["address"] == "0000:000004FF"
+
+
+def test_scan_filter_lists_no_more_survivors_than_its_limit_and_says_so() -> None:
+    """256 survivors against the default limit: the count comes back, the listing is never
+    typed, and `truncated` says the hits are not all of them."""
+    s = session([("MEMS =0", "mems_matches")])
+    got = finder.scan_filter(s, "=", 0)
+    assert got["survivors"] == got["hits_total"] == 256 > finder.HITS_DEFAULT
+    assert got["hits"] == [] and got["truncated"] is True
+    assert s.sent == ["MEMS =0"]
+
+
+@pytest.mark.parametrize("limit", [0, finder.HITS_MAX + 1, True, 2.5])
+def test_scan_filter_refuses_a_limit_outside_its_range_before_typing(limit: object) -> None:
+    s = session([])
+    with pytest.raises(ds.Invalid, match="is outside 1..400"):
+        finder.scan_filter(s, "=", 0, cast(int, limit))
+    assert s.sent == []
+
+
+@pytest.mark.parametrize("limit, listed", [(22, True), (21, False)])
+def test_scan_filter_lists_exactly_at_its_limit_and_cuts_one_above(limit: int,
+                                                                   listed: bool) -> None:
+    """22 survivors: a limit of 22 lists them, a limit of 21 types no listing at all."""
+    s = twenty_two()
+    got = finder.scan_filter(s, "=", 0, limit)
+    assert len(got["hits"]) == (22 if listed else 0) and got["truncated"] is not listed
+    assert ("MEMFIND L" in s.sent) is listed
 
 
 def test_scan_filter_reports_a_finished_scan_as_closed_with_no_survivors() -> None:
@@ -206,7 +241,7 @@ def test_scan_filter_does_not_list_above_the_cap(monkeypatch: pytest.MonkeyPatch
     `truncated: true`, the words `find` uses for the same idea; `listed` is gone."""
     monkeypatch.setattr(finder, "HITS_MAX", 0xFF)
     s = session([("MEMS =0", "mems_matches")])
-    got = finder.scan_filter(s, "=", 0)
+    got = finder.scan_filter(s, "=", 0, 0xFF)
     assert got["survivors"] == 0x100 and got["hits"] == [], got
     assert got["hits_total"] == 0x100 and got["truncated"] is True, got
     assert "listed" not in got, got

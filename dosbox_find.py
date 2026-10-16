@@ -34,7 +34,7 @@ import dosbox_session as ds
 from dosbox_state import STATE
 
 # The ceiling on the rows a reply lists: `find` keeps its highest 400 hits (the end of the
-# range a caller hunting a table's tail wants), a scan above it lists none (`truncated`).
+# range a caller hunting a table's tail wants), and a scan's `limit` may be raised to it.
 HITS_MAX = 400
 # The lines the debugger prints, verbatim from debug.cpp. `%06X` fields are hex.
 SCAN_CREATED = "Created memory search instance."
@@ -237,9 +237,18 @@ def check_scan_range(length: int, width: str) -> None:
             f"{length % size} byte(s) would be no cell")
 
 
-def check_filter(operator: str, value: int | None) -> None:
-    """A filter as the debugger takes it, judged with no machine: one of its operators, and a
-    value that is absent or a whole number of zero or more (it compares unsigned)."""
+#: How many survivors a filter lists unless asked for more: while a scan narrows, the count is
+#: the answer, and a listing costs a page of console per screenful.
+HITS_DEFAULT = 40
+
+
+def check_filter(operator: str, value: int | None, limit: int = HITS_DEFAULT) -> None:
+    """A filter as the debugger takes it, judged with no machine: one of its operators, a
+    value that is absent or a whole number of zero or more (it compares unsigned), and a
+    `limit` of survivors to list, 1 to `HITS_MAX`."""
+    if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= HITS_MAX:
+        raise ds.Invalid("bad_argument", f"limit={limit!r} is outside 1..{HITS_MAX}, how many "
+                         f"survivors a filter lists; above {HITS_MAX}, filter again")
     if operator not in OPERATORS:
         raise ds.Invalid("bad_argument", f"operator={operator!r} is not one of {OPERATORS}")
     if value is not None and (isinstance(value, bool) or not isinstance(value, int)
@@ -316,12 +325,13 @@ def _listing(session: ds.Session, survivors: int) -> list[dict[str, Any]]:
         f"the end of the listing within {survivors // SCAN_PAGE_ROWS + 2} pages")
 
 
-def scan_filter(session: ds.Session, operator: str, value: int | None) -> dict[str, Any]:
+def scan_filter(session: ds.Session, operator: str, value: int | None,
+                limit: int = HITS_DEFAULT) -> dict[str, Any]:
     """Keep the cells whose current content satisfies `operator` against `value`, or, with
     no value, against what each cell held when the scan was opened (measured: a cell changed
     once and then left alone keeps passing `!` filter after filter, and written back to its
     opening value it stops). The survivors are listed with their current values when at
-    most `HITS_MAX` remain, else cut whole (`truncated`); a step that leaves none CLOSES the
+    most `limit` remain, else cut whole (`truncated`); a step that leaves none CLOSES the
     instance, which is what the debugger does, and the reply says so.
 
     `iterations` is the debugger's own count, printed on every filter but the closing one,
@@ -329,7 +339,7 @@ def scan_filter(session: ds.Session, operator: str, value: int | None) -> dict[s
     and answers it plus one there, or `null` with why when no count it can stand behind is
     held (the scan was opened, filtered or ended through `debug`, or the debugger said none
     was open)."""
-    check_filter(operator, value)
+    check_filter(operator, value, limit)
     cell = STATE.scan_cell_bytes
     if value is not None and cell is not None and value >= 1 << (8 * cell):
         raise ds.Invalid("bad_argument",
@@ -357,7 +367,7 @@ def scan_filter(session: ds.Session, operator: str, value: int | None) -> dict[s
     survivors = int(summary.group(1), 16)
     iterations = int(summary.group(2), 16)
     STATE.scan_iterations = iterations
-    listed = survivors <= HITS_MAX
+    listed = survivors <= limit
     return {"operator": operator, "value": value, "survivors": survivors,
             "iterations": iterations, "closed": False,
             "hits": _listing(session, survivors) if listed else [],

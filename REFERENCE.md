@@ -216,12 +216,20 @@ with the answer in it. Every count a reader takes has a ceiling as well as a flo
 400 lines, `symbols_find` at 50 names): a limit with no top is the haystack with a number on
 it, and the answer above the ceiling is a narrower pattern or name.
 
-The tools whose answer has no shape the server can know (`debug`, `resume`,
-`breakpoint_interrupt`) cap their raw screen text and SAY so: `screen_chars` is how much the
-screen produced and `clipped` is whether what came back is all of it. No command this
-debugger has reaches the cap on a stopped machine, so `clipped` is a headroom declaration
-rather than a live hazard; a caller quoting a delta without reading it would still be quoting
-a sample as a result the day one does clip.
+`debug` answers in the debugger's raw screen text; `resume` and `breakpoint_interrupt` answer
+in parsed fields and add the repaint only with `detail=True` (and only `breakpoint_interrupt`'s
+fresh arm types anything to repaint). Wherever a repaint comes back it is capped and SAYS so:
+`screen_chars` is how much the screen produced and `clipped` is whether what came back is all
+of it. No command this debugger has reaches the cap on a stopped machine, so `clipped` is a
+headroom declaration rather than a live hazard; a caller quoting a delta without reading it
+would still be quoting a sample as a result the day one does clip.
+
+**A reply that answers less than everything says so.** Where the whole answer is larger than
+the question usually asked (`machine_map`'s sections, the repaints above), the default reply
+answers that question and carries `omitted`, the names it left out, and `how`, the argument
+that brings them; a reply that left nothing out carries neither, except a `machine_map` whose
+lists were cut, whose `how` says how to have every row. `how` in a `stop` or `close` reply is
+another word: how that stop or end came about.
 
 ## Names for addresses
 
@@ -886,8 +894,9 @@ debugger and turned with a bare ENTER because a command typed while a page waits
 one keystroke per page. With no `value`, a filter compares each cell with what it held when
 the scan OPENED, not at the previous filter: `!` keeps the cells that changed since then,
 `=` those that did not, and a cell changed once and left alone keeps passing `!`. Every
-filter reply says `hits_total` and `truncated` (above 400 survivors `hits` is empty, where
-`find` keeps its highest 400), and `iterations`, which the debugger prints on every filter but the one that
+filter reply says `hits_total` and `truncated`: above `limit` survivors, 40 unless asked
+for up to 400, `hits` is empty and the listing is never typed (`find` keeps its highest
+400 instead), and `iterations`, which the debugger prints on every filter but the one that
 closes the scan; there the server answers its own count, or `null` with why when `debug`
 touched the scan.
 
@@ -935,8 +944,13 @@ ends at a zero or non-rising saved BP, a frame past the stack segment, a return 
 (not listed), a return outside the loaded table (listed, then the end), or its bound, and
 `ended_why` says which. Its reads are the data view's, each `D` reused while it covers the next.
 
-**`machine_map` is the machine as the debugger lists it, read off the logfile.** Each section
-is one debugger command and keeps its listing's words: `DOS MCBS` gives `mcbs`, `DOS DEVS`
+**`machine_map` is the machine as the debugger lists it, read off the logfile.** By default it
+reads the DOS machine and the cpu (`mcbs`, `devs`, `kern`, `xms`, `ems`, `ems_pages`,
+`emu_mem`, `machine`, `cpu`, and `gdt`/`ldt` in protected mode), and leaves `bios_mem`,
+`callbacks`, `vga` and `paging` unread, naming those this mode has in `omitted`. `sections`
+names the ones to read instead, and only those listings are typed, plus `CPU`, which says the
+mode; `dest` writes every section read whole, lists uncut, as JSON. Each
+section is one debugger command and keeps its listing's words: `DOS MCBS` gives `mcbs`, `DOS DEVS`
 `devs`, `DOS KERN` `kern`, `DOS XMS` `xms`, `DOS EMS` `ems` and `ems_pages`, `BIOS MEM`
 `bios_mem`, `CALLBACKS` `callbacks`, `EMU MEM` `emu_mem`, `EMU MACHINE` `machine` and `CPU`
 `cpu`, each field named by its column. The rows come from the session's logfile and never
@@ -1123,9 +1137,9 @@ declared it returns at once, still running, and says why. `wait` runs from 0, wh
 waits, to 600 (`RUN_TO_MAX`), and `drive` takes the same `wait`.
 
 A `resume` inside a sequence drains what the console steps before it left in the terminal as
-the key goes out, so their prompt does not read as the resume's halt. What the drain does
-NOT change is the listing you will see in the resume's `screen_delta`: the F5's own repaint
-carries the debugger's Output pane, which replays the last console output, so a
+the key goes out, so their prompt does not read as the resume's halt. What the drain does NOT
+change is the listing you will see in the resume's `screen_delta` (`detail=True`): the F5's own
+repaint carries the debugger's Output pane, which replays the last console output, so a
 `breakpoint_list` typed before the key shows up in it as "Breakpoint list:" however long the
 machine sat quiet. That is the pane, not a leak, and it is why `screen_delta` is a POSITIONAL
 tail capped at its last 2000 characters, `clipped` saying when (a running guest painting its

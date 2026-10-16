@@ -136,7 +136,7 @@ def _moves(control: str, data: int) -> None:
             M.call(server.scan_clear)
             continue
         run_for(control, 4)
-        second = M.call(server.scan_filter, operator="!")
+        second = M.call(server.scan_filter, operator="!", limit=400)
         hits = second.get("hits") or []
         M.judge(MOVES_CELL, ok(opened) and ok(second) and 1 <= len(hits) <= 400,
                 f"window {data:04X}:{start:04X}, {first.get('survivors')} then "
@@ -177,7 +177,7 @@ def _coin(control: str, data: int) -> None:
         return
     value = int(credits.group(1))
     moved = M.call(server.scan_filter, operator="!")
-    kept = M.call(server.scan_filter, operator="=", value=value)
+    kept = M.call(server.scan_filter, operator="=", value=value, limit=400)
     hits = kept.get("hits") or []
     M.judge(KEY_CELLS[2], ok(opened) and ok(moved) and ok(kept) and 1 <= len(hits) <= 400,
             f"value {value}: {said(kept, 80)}")

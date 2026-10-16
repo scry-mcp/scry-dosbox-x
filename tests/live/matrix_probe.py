@@ -528,8 +528,10 @@ B_CELLS = cells(
     ("B memdump dest in the emulator's cwd", "memdump docstring: a dest inside that directory"),
     ("B find length=400 of zeros", "find docstring; known: the region's own dump"),
     ("B find length=401 of zeros", "find docstring: at most 400 hits, the highest kept"),
-    ("B scan 400 survivors listed", REF_DOC + "Reading and writing: above 400 `hits` is empty"),
-    ("B scan 401 survivors cut", REF_DOC + "Reading and writing: above 400 `hits` is empty"),
+    ("B scan 400 survivors listed", REF_DOC + "Reading and writing: `limit` 400 is the ceiling"),
+    ("B scan 401 survivors cut", REF_DOC + "Reading and writing: `limit` 400 is the ceiling"),
+    ("B scan 40 survivors listed by default", "scan_filter docstring: `limit` defaults to 40"),
+    ("B scan 41 survivors cut by default", "scan_filter docstring: `limit` defaults to 40"),
     ("B scan_start width=nibble", "scan_start docstring: byte, word or dword"),
     ("B scan_filter operator=~", "scan_filter docstring: the six operators"),
     ("B step count=64", "the ceiling dosbox_session.STEP_MAX declares, REFERENCE's Advancing "
@@ -611,7 +613,7 @@ def _b_scan() -> None:
     for n in (400, 401):
         M.call(server.scan_clear)
         opened = M.call(server.scan_start, ref=f"{SCRATCH}:1000", length=n)
-        r = M.call(server.scan_filter, operator="=")
+        r = M.call(server.scan_filter, operator="=", limit=400)
         if n == 400:
             good = (ok(opened) and ok(r) and r.get("survivors") == 400
                     and len(r.get("hits") or []) == 400 and r.get("truncated") is False)
@@ -620,6 +622,15 @@ def _b_scan() -> None:
                     and r.get("hits") == [] and r.get("truncated") is True)
         label = "B scan 400 survivors listed" if n == 400 else "B scan 401 survivors cut"
         M.judge(label, good, said(r))
+    for n in (40, 41):
+        M.call(server.scan_clear)
+        opened = M.call(server.scan_start, ref=f"{SCRATCH}:1000", length=n)
+        r = M.call(server.scan_filter, operator="=")
+        listed = n <= 40
+        M.judge(f"B scan {n} survivors {'listed' if listed else 'cut'} by default",
+                ok(opened) and ok(r) and r.get("survivors") == n
+                and len(r.get("hits") or []) == (n if listed else 0)
+                and r.get("truncated") is (not listed), said(r))
     M.call(server.scan_clear)
 
 

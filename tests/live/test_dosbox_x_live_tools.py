@@ -65,6 +65,7 @@ from test_dosbox_x_live import (  # noqa: E402
 )
 
 import dosbox_code as code
+import dosbox_machine as machine
 import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_x_server as server
@@ -440,7 +441,7 @@ def test_debug_hands_back_a_delta_and_says_whether_it_kept_all_of_it() -> None:
         # slice-length defect fails, and it can only be made on this branch.
         assert chars == len(delta), (
             f"screen_chars {chars} is not the length of an unclipped delta ({len(delta)})")
-    resumed = cast(dict[str, Any], server.resume())
+    resumed = cast(dict[str, Any], server.resume(detail=True))
     assert resumed["clipped"] is (
         cast(int, resumed["screen_chars"]) > SMALL_CAP), resumed["screen_chars"]
 
@@ -512,7 +513,7 @@ def test_breakpoint_interrupt_arms_the_interrupt_it_was_given_and_not_another() 
     cheerfully. What is asserted is the interrupt NAMED BACK.
     """
     start_ok(seconds=60)
-    reply = cast(dict[str, Any], server.breakpoint_interrupt(number=0x21, ah=0x4C))
+    reply = cast(dict[str, Any], server.breakpoint_interrupt(number=0x21, ah=0x4C, detail=True))
     assert reply["status"] == "ok", reply
     assert "INT 21 AH=4C" in str(reply["screen_delta"]), reply["screen_delta"][-400:]
 
@@ -527,7 +528,7 @@ def test_resume_lets_the_guest_advance() -> None:
     produces, and the two must AGREE.
     """
     start_ok(seconds=90)
-    reply = cast(dict[str, Any], server.resume())
+    reply = cast(dict[str, Any], server.resume(detail=True))
     assert reply["status"] == "ok", reply
     # Headless with nothing armed: the guest is read through its log until `close`.
     ran = str(reply["screen_delta"])
@@ -706,7 +707,7 @@ def test_closing_a_running_session_does_not_wait_out_a_signal_it_ignores() -> No
     property any contract test has access to.
     """
     start_ok(seconds=90)
-    resumed = cast(dict[str, Any], server.resume())
+    resumed = cast(dict[str, Any], server.resume(detail=True))
     # IT MUST REALLY HAVE RUN, or this measures the stopped path under the running
     # path's name and passes for the wrong reason. Since #382 `resume` answers that
     # itself, and the independent evidence stays beside it: a tool's own reading is not
@@ -1075,14 +1076,14 @@ def test_machine_map_is_honest_before_dos_and_finds_the_guest_after(tmp_path: Pa
     real, and the console still answers a command after the paged listings (`Q` left the
     input line empty)."""
     start_ok(seconds=180, logfile=str(tmp_path / "guest.log"))
-    park = cast(dict[str, Any], server.machine_map())
+    park = cast(dict[str, Any], server.machine_map(sections=list(machine.SECTION_NAMES)))
     assert park["status"] == "ok" and "mcbs" not in park, park
     assert "DOS kernel is inactive" in park["coverage_note"], park["coverage_note"]
     assert park["cpu"]["cr0"] and park["bios_mem"], park
     program = Path(GUEST_PROGRAM).stem.upper()
     for _ in range(BOOT_SLICES_MAX):
         assert server.run_for(frames=BOOT_SLICE_FRAMES)["verdict"] == "ELAPSED"
-        booted = cast(dict[str, Any], server.machine_map())
+        booted = cast(dict[str, Any], server.machine_map(sections=list(machine.SECTION_NAMES)))
         assert booted["status"] == "ok", booted
         if program in {b["filename"] for b in booted.get("mcbs", [])}:
             break
@@ -1542,7 +1543,7 @@ def test_scan_narrows_to_every_zero_cell_and_closes_once() -> None:
     assert opened["candidates"] == 256 and opened["cell_bytes"] == 1, opened
     again = cast(dict[str, Any], server.scan_start(ref="0000:00000400", length=16))
     assert again["status"] == "INVALID" and "one is open" in again["message"], again
-    kept = cast(dict[str, Any], server.scan_filter(operator="=", value=0))
+    kept = cast(dict[str, Any], server.scan_filter(operator="=", value=0, limit=400))
     assert kept["status"] == "ok", kept
     assert kept["survivors"] == 256 and kept["closed"] is False, kept
     assert len(kept["hits"]) == 256, kept["summary"]

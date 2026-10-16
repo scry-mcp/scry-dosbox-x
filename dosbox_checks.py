@@ -26,6 +26,7 @@ import re
 from collections.abc import Callable
 from typing import Any
 
+from scry_core import narrowing
 from scry_core import value_format as vf
 
 import dosbox_code as code
@@ -33,6 +34,7 @@ import dosbox_comment_file as cf
 import dosbox_declarations as dec
 import dosbox_find as finder
 import dosbox_inputs as inputs
+import dosbox_machine as machine
 import dosbox_paths as paths
 import dosbox_placement as placement
 import dosbox_running as running
@@ -333,8 +335,16 @@ def _scan_start(ref: str, length: int, width: str = "byte", **_: Any) -> None:
     finder.check_scan_range(length, width)
 
 
-def _scan_filter(operator: str = "=", value: int | None = None, **_: Any) -> None:
-    finder.check_filter(operator, value)
+def _scan_filter(operator: str = "=", value: int | None = None, **rest: Any) -> None:
+    # The default is read at the call: importing `dosbox_find` reaches this module (through
+    # `dosbox_dump`), so its names are not there yet while this one is being defined.
+    finder.check_filter(operator, value, rest.get("limit", finder.HITS_DEFAULT))
+
+
+def _machine_map(sections: list[str] | None = None, dest: str = "", **_: Any) -> None:
+    narrowing.sections(sections, machine.SECTION_NAMES, machine.DEFAULT_SECTIONS)
+    if dest:
+        paths.fresh_dest("dest", dest)
 
 
 def _state(name: str, seconds: float = ds.STATE_WAIT_S, **_: Any) -> None:
@@ -528,19 +538,20 @@ BY_OP: dict[str, Check] = {
     "state_load": _state, "perform": _perform, "drive": _drive, "start": _start,
     "comment_add": _comment_add, "comment_delete": _comment_delete,
     "comment_save": _comment_save, "comment_load": _comment_load,
+    "machine_map": _machine_map,
 }
 
 #: TOOLS DELIBERATELY WITHOUT AN ENTRY, named so an absent entry and a forgotten one cannot
 #: look alike. They take only a path their body judges first (`build_check`'s `binary`), or no
 #: argument at all (`status`, `close`, `stop`, `scan_clear`, `state_list`, `breakpoint_list`,
-#: `watch_list`, `captures`, `machine_map`, `screen_signature`, `call_stack`,
+#: `watch_list`, `captures`, `screen_signature`, `call_stack`,
 #: `comment_list`); or a flag every value of which is valid
 #: (`registers`); or a `ref` that matches only against the declarations the session's store
 #: holds (`breakpoint_clear`, `watch_clear`).
 MACHINE_JUDGES = frozenset({
     "build_check", "status", "close", "stop", "registers", "scan_clear", "state_list",
     "breakpoint_list", "breakpoint_clear", "watch_list", "watch_clear", "captures",
-    "machine_map", "screen_signature", "call_stack", "comment_list",
+    "screen_signature", "call_stack", "comment_list",
 })
 
 

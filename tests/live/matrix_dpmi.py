@@ -123,7 +123,7 @@ def _machine(client_cs: str, base: object) -> None:
     LDT row at `CS` with the privilege level cleared (the listing prints selectors with the
     indicator set), and that row's base is the one `symbols_load` measured; a variable the
     guest keeps lies in exactly one of the page runs, which names its physical page."""
-    r = M.call(server.machine_map)
+    r = M.call(server.machine_map, sections=["ldt", "paging"])
     selector = f"{(hexint(client_cs) or 0) & 0xFFFC:04X}"
     rows = [d for d in r.get("ldt") or [] if d.get("selector") == selector]
     M.judge("F machine_map's LDT holds CS's descriptor at the base symbols_load measured",

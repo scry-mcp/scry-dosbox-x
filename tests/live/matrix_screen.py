@@ -180,7 +180,7 @@ def _probe() -> None:
     judged("J the console takes a command after VGA DACPAL", reply=r,
            holds=ok(r) and "not recognized" not in str(r.get("screen_delta"))
            and ds.BPLIST_HEADER in str(r.get("screen_delta")))
-    r = M.call(server.machine_map)
+    r = M.call(server.machine_map, sections=["vga"])
     vga = r.get("vga") or {}
     judged("J machine_map's vga once booted: M_TEXT, the seven listings named", reply=r,
            holds=ok(r) and (vga.get("mode") or {}).get("mode") == "M_TEXT"
@@ -241,7 +241,8 @@ def _screen_guest() -> None:
                    == (256, 256) and path.is_file()
                    and image.get("sha256") == hashlib.sha256(path.read_bytes()).hexdigest())
         if stop in ("13h", "12h"):
-            modes[stop] = (M.call(server.machine_map).get("vga") or {}).get("mode") or {}
+            vga = M.call(server.machine_map, sections=["vga"]).get("vga") or {}
+            modes[stop] = vga.get("mode") or {}
         if stop in ("text", "dac01"):
             sigs[stop] = M.call(server.screen_signature).get("signature")
         _screen_cells(stop)
@@ -330,7 +331,7 @@ def program_cells(letter: str, word: str) -> list[tuple[str, str]]:
 
 def judge_program(letter: str, word: str) -> None:
     """The machine stopped inside the section's program, drawing in `word`."""
-    r = M.call(server.machine_map)
+    r = M.call(server.machine_map, sections=["vga"])
     mode = ((r.get("vga") or {}).get("mode") or {}).get("mode")
     judged(f"{letter} machine_map's vga says {word}", reply=r, holds=ok(r) and mode == word)
     r = M.call(server.palette)

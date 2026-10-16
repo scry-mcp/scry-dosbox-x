@@ -148,7 +148,8 @@ def scan_start(args: dict[str, Any], reply: dict[str, Any]) -> str:
 def scan_filter(args: dict[str, Any], reply: dict[str, Any]) -> str:
     what = f"{args.get('operator', '=')} {args.get('value')}"
     return f"scan_filter {what}: {reply.get('survivors')} survivors" + (
-        ", scan closed" if reply.get("closed") else "")
+        ", scan closed" if reply.get("closed") else "") + (
+        ", not listed (over `limit`)" if reply.get("truncated") else "")
 
 
 def scan_clear(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -253,8 +254,10 @@ def machine_map(args: dict[str, Any], reply: dict[str, Any]) -> str:
     # how much there is.
     shape = ", ".join(f"{n} {part}" for part, n in _block(reply, "counts").items() if n)
     cut = ", some sections cut (see `counts`)" if reply.get("truncated") else ""
+    left = reply.get("omitted") or []
+    out = f", left out: {', '.join(left)} (see `omitted`)" if left else ""
     return (f"machine_map ({reply.get('cpu_mode') or 'mode unread'}): "
-            f"{shape or 'no list section read'}{cut}")
+            f"{shape or 'no list section with rows'}{cut}{out}")
 
 
 def interrupt_vectors(args: dict[str, Any], reply: dict[str, Any]) -> str:

@@ -182,21 +182,4 @@ def dump_range(session: ds.Session, seg: int, off: int, length: int, dest: Path,
     with tempfile.TemporaryDirectory(prefix="dosbox-dump-") as scratch:
         parts = [session.memdump(s, o, n, Path(scratch) / f"{i}.bin").read_bytes()
                  for i, (s, o, n) in enumerate(windows)]
-    data = b"".join(parts)
-    try:
-        out = dest.open("xb")
-    except FileExistsError:
-        raise ds.Invalid("bad_argument",
-            f"{dest} appeared while the dump was read. This will not overwrite it: name a "
-            f"path that is not there yet") from None
-    except OSError as exc:
-        raise ds.Invalid("host_failed", f"cannot write the dump to {dest}: {exc!r}") from None
-    # The file is this call's from the exclusive create on, so a write that fails takes it
-    # away again rather than leaving a short dump where the caller will look.
-    try:
-        with out:
-            out.write(data)
-    except OSError as exc:
-        dest.unlink(missing_ok=True)
-        raise ds.Invalid("host_failed", f"cannot write the dump to {dest}: {exc!r}") from None
-    return Dump(dest, True)
+    return Dump(paths.write_new(dest, b"".join(parts), "the dump"), True)

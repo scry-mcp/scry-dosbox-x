@@ -1,0 +1,30 @@
+{
+ "task": {
+  "id": "D98",
+  "prompt": "Let the guest run and come back at once, and include the debugger's own repaint of the screen in the answer.",
+  "tool": "resume",
+  "args": {
+   "detail": true
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D98: {\"tool\": \"resume\", \"args\": {\"detail\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D98: {\"tool\": \"resume\", \"args\": {\"detail\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D98: {\"tool\": \"resume\", \"args\": {\"detail\": true}}"
+   ],
+   "right": true
+  }
+ ]
+}

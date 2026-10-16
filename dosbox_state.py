@@ -25,6 +25,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
+from scry_core import narrowing
 from scry_core import reply_contract as contract
 
 import dosbox_declarations as dec
@@ -422,3 +423,16 @@ def delta(out: str, keep: int) -> dict[str, Any]:
                          f"screen while reporting itself clipped")
     return {"screen_delta": out[-keep:], "screen_chars": len(out),
             "clipped": len(out) > keep}
+
+
+#: What `delta` adds to a reply, which a reply without the repaint names as left out.
+REPAINT_FIELDS = ("screen_delta", "screen_chars", "clipped")
+#: How a reply without the debugger's repaint asks for it.
+REPAINT_HOW = "detail=True adds the debugger's repaint for this command"
+
+
+def delta_if_asked(out: str, keep: int, detail: bool) -> dict[str, Any]:
+    """`delta` with `detail`; without it, the note that the repaint was left out. A tool whose
+    answer is parsed off the screen gives the raw text only when asked: the parsed fields are
+    the answer, and the repaint is most of the reply's size."""
+    return delta(out, keep) if detail else narrowing.omission(list(REPAINT_FIELDS), REPAINT_HOW)
