@@ -118,6 +118,7 @@ def section_q() -> None:
     M.judge(Q_CELLS[1].label, ok(series) and bool(hand) and new == hand
             and new_s1["image_tokens"] == 0,
             f"changes at {new} (hand {hand}); cost {new_s1}; {track.get('summary')}")
-    M.judge(Q_CELLS[2].label, new_s1["calls"] < hand_s1["calls"],
+    # Cheaper only counts when the new way answered: a refused series is one call too.
+    M.judge(Q_CELLS[2].label, ok(series) and ok(track) and new_s1["calls"] < hand_s1["calls"],
             f"hand {hand_s1}, new {new_s1}")
     M.call(server.close)

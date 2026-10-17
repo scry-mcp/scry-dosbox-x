@@ -51,12 +51,13 @@ def test_the_screen_guests_capture_becomes_a_series_every_file_tool_reads(
     frames = sorted((tmp_path / "series").glob("f*.png"))
     same = _ok(server.image_diff(a=str(frames[0]), b=str(frames[0])))
     assert same["differing_pixels"] == 0 and same["bbox"] is None
-    pair = cast(dict[str, Any], server.series_diff(a=manifest, b=manifest))
-    moving = series["distinct"] > 1
-    assert (pair.get("identical") == count) if moving else pair["code"] == "control_silent"
-    track = cast(dict[str, Any], server.region_track(manifest=manifest))
-    assert (track.get("transitions_total", 0) >= 1) if moving else (
-        track["code"] == "control_silent")
+    # The guest moves the display start while it records, so the series changes: a series that
+    # came out uniform is a capture that missed it, never a pass by the other branch.
+    assert series["distinct"] > 1, series
+    pair = _ok(server.series_diff(a=manifest, b=manifest))
+    assert pair["identical"] == count, pair
+    track = _ok(server.region_track(manifest=manifest))
+    assert track["transitions_total"] >= 1, track
     sums = tmp_path / "goldens.sha256"
     sums.write_text("".join(f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n"
                             for p in frames))

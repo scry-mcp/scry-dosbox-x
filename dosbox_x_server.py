@@ -78,7 +78,6 @@ from __future__ import annotations
 import functools
 import inspect
 import json
-import re
 import subprocess
 import sys
 import threading
@@ -110,7 +109,6 @@ from pydantic import ValidationError
 sys.path.append(str(Path(__file__).resolve().parent))
 
 from scry_core import media_tools, narrowing, picture  # noqa: E402
-from scry_core import series as core_series  # noqa: E402
 from scry_core import strict_arguments as strict  # noqa: E402
 
 import dosbox_arming as arming  # noqa: E402
@@ -120,6 +118,7 @@ import dosbox_checks as checks  # noqa: E402
 import dosbox_code as code  # noqa: E402
 import dosbox_comments as comments  # noqa: E402
 import dosbox_declarations as dec  # noqa: E402
+import dosbox_docs as docs  # noqa: E402
 import dosbox_dump as dumping  # noqa: E402
 import dosbox_find as finder  # noqa: E402
 import dosbox_inputs as inputs  # noqa: E402
@@ -211,8 +210,8 @@ mcp = Envelope(
         '`symbols_find`. Comments: `comment_add`, `comment_list`, `comment_delete`,\n'
         '`comment_save`, `comment_load`. Input, in-guest:\n'
         '`send_keys`, `send_mouse`, `drive`. Captures: `captures`, `capture_frame`,\n'
-        '`series_capture`, `snapshot`. Files: `image_diff`, `series_diff`, `region_track`,\n'
-        '`golden_check`. Sequences: `perform`.\n\n'
+        '`series_capture`, `snapshot`. Files, any state: `image_diff`, `series_diff`,\n'
+        '`region_track`, `golden_check`. Sequences: `perform`.\n\n'
         'A SESSION. `build_check` answers about the BUILD, never a reading, and REFUSES while a\n'
         'session is live. `start` parks the guest STOPPED at the debugger; `resume` lets it\n'
         'run. The readers need it STOPPED and refuse otherwise, naming `last_stop` and what\n'
@@ -334,31 +333,12 @@ def tool(
             args.pop("ctx", None)
             return {"summary": _summary(fn.__name__, args, reply), **reply}
 
-        wrapped.__doc__ = _filled(fn.__name__, fn.__doc__ or "")
+        wrapped.__doc__ = docs.filled(fn.__name__, fn.__doc__ or "")
         return mcp.tool(title=title,
                         annotations=ToolAnnotations(read_only_hint=read_only,
                                                     idempotent_hint=idempotent))(wrapped)
 
     return register
-
-
-#: WHAT A TOOL'S DOCSTRING STATES THAT THE CODE ALREADY KNOWS, filled at registration: the
-#: picture's two sentences are scry-core's, from the code that attaches the picture, and a
-#: number is the constant that enforces it, never typed into the text.
-_DOC_VALUES = {"PICTURE": picture.DESCRIBED, "PICTURE_ARGS": picture.ARGUMENTS,
-               "SERIES_MAX": str(core_series.SERIES_MAX)}
-_PLACEHOLDER = re.compile(r"\{[A-Z_]+\}")
-
-
-def _filled(name: str, doc: str) -> str:
-    """`doc` with every `{NAME}` of `_DOC_VALUES` filled, or a failure at import naming what is
-    left: a placeholder that reaches a client reads as a word, not as a missing number."""
-    for key, value in _DOC_VALUES.items():
-        doc = doc.replace("{" + key + "}", value)
-    left = _PLACEHOLDER.findall(doc)
-    if left:
-        raise TypeError(f"{name}'s docstring names {left}, which nothing fills")
-    return doc
 
 
 def _progress(ctx: Context[Any, Any] | None) -> ds.Progress:
@@ -1831,8 +1811,8 @@ def series_capture(frames: list[int] | None = None, first: int | None = None,
     ascending) or `first`, `last` and `step`, at most {SERIES_MAX}. `source`: an absolute path
     of a capture, default the largest. `crop` `[x, y, width, height]` in the capture's pixels,
     default the whole frame. `dest`: a new absolute directory, kept after `close`; else one in
-    the session's scratch, gone at `close` (`kept_after_close` says which). A `%` in either
-    path is refused (ffmpeg would read it as a template).
+    the session's scratch, gone at `close` (`kept_after_close` says which). A `%` in `dest` is
+    refused (ffmpeg would read it as a template).
 
     Reply: `manifest` (its path), `count`, `first`, `last`, `distinct` (signatures over the
     crop), `frames_asked`, `kept_after_close`, `frame_source` (`avi`), `source`, `crop`.

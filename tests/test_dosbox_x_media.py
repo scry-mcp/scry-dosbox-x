@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import dosbox_media as media  # noqa: E402
 import dosbox_session as ds  # noqa: E402
+import dosbox_state as dstate  # noqa: E402
 import dosbox_x_server as server  # noqa: E402
 
 needs_ffmpeg = pytest.mark.skipif(shutil.which("ffmpeg") is None,
@@ -104,6 +105,10 @@ def test_the_frame_size_is_the_avis_own_header(tmp_path: Path) -> None:
         media.avi_size(tmp_path / "x.avi")
     with pytest.raises(ds.Invalid, match="cannot be read"):
         media.avi_size(tmp_path / "absent.avi")
+    # A writer that leaves the size to the stream header: a 0x0 frame would judge every crop
+    # off it and echo `[0, 0, 0, 0]` beside frames of the real size.
+    with pytest.raises(ds.Invalid, match="declares a 0x200 frame"):
+        media.avi_size(_header(tmp_path, 0, 200))
 
 
 def _stub(monkeypatch: pytest.MonkeyPatch, writes: int, rc: int = 0,
@@ -197,6 +202,45 @@ def test_a_frame_past_the_real_end_is_refused_by_name(tmp_path: Path) -> None:
         media.series_capture(_Captures(avi, 2 * FRAMES), tmp_path / "s", [10, 11, 13], None,  # type: ignore[arg-type]
                              None, 1, None, "", None)
     assert e.value.code == "bad_argument"
+
+
+@needs_ffmpeg
+def test_the_avi_s_frames_are_numbered_from_zero(tmp_path: Path) -> None:
+    """Frame 0 is the capture's first, the one ffmpeg extracts with no selection at all; frame
+    11 its last of 12, and frame 12 one past the end."""
+    avi = _avi(tmp_path)
+    out = media.series_capture(_Captures(avi, FRAMES), tmp_path / "s", [0, 11], None, None,  # type: ignore[arg-type]
+                               1, None, "", None)
+    first = tmp_path / "first.png"
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(avi), "-frames:v", "1", "-f",
+                    "image2", "-c:v", "png", "-pix_fmt", "rgb24", str(first)],
+                   check=True, timeout=60)
+    kept = png.decode((Path(out["manifest"]).parent / "f000000.png").read_bytes())
+    assert kept.pixels == raster.rgb(png.decode(first.read_bytes()))
+    with pytest.raises(ds.Invalid, match="holds 1 of the 2 frames asked: frame 12 is past"):
+        media.series_capture(_Captures(avi, FRAMES), tmp_path / "t", [11, 12], None, None,  # type: ignore[arg-type]
+                             1, None, "", None)
+
+
+@needs_ffmpeg
+def test_series_capture_answers_through_this_server_with_its_paths_where_they_were_named(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The registered tool, not the module function: `dest` keeps the series past `close`,
+    `source` names the capture read, and the reply wears this server's envelope."""
+    avi = _avi(tmp_path)
+    other = tmp_path / "other.avi"
+    shutil.copy(avi, other)
+    session = _Captures(avi, FRAMES)
+    session.captures = lambda: [{"path": str(avi), "frames": FRAMES},  # type: ignore[method-assign]
+                                {"path": str(other), "frames": FRAMES}]
+    monkeypatch.setattr(server, "_live", lambda: session)
+    monkeypatch.setattr(dstate.STATE, "session_scratch", lambda: tmp_path / "scratch")
+    dest = tmp_path / "kept"
+    r = cast(dict[str, Any], server.series_capture(first=0, last=1, crop=[0, 0, 8, 4],
+                                                   dest=str(dest), source=str(avi)))
+    assert r["status"] == "ok" and "session" in r, r
+    assert r["kept_after_close"] is True and Path(r["manifest"]).parent == dest, r
+    assert r["source"] == str(avi) and r["crop"] == [0, 0, 8, 4] and r["count"] == 2, r
 
 
 def test_a_media_file_tool_answers_in_this_server_s_envelope(tmp_path: Path) -> None:

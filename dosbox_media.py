@@ -67,6 +67,9 @@ def avi_size(path: Path) -> tuple[int, int]:
         raise ds.Invalid("bad_argument", f"source: {path} has no AVI main header (`avih`) in "
                          f"its first {AVIH_WITHIN} bytes, so its frame size is unknown")
     width, height = struct.unpack_from("<II", body, AVIH_WIDTH_DWORD * 4)
+    if not (width and height):
+        raise ds.Invalid("bad_argument", f"source: {path}'s main header (`avih`) declares a "
+                         f"{width}x{height} frame, so its frame size is unknown")
     return width, height
 
 

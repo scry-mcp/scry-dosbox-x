@@ -27,6 +27,7 @@ from test_dosbox_x_server import clean_session, install  # noqa: F401
 
 import dosbox_arming as arming
 import dosbox_checks as checks
+import dosbox_docs as docs
 import dosbox_machine as machine
 import dosbox_paths as paths
 import dosbox_retrace as retrace
@@ -1105,6 +1106,21 @@ def test_a_cropped_signature_is_the_crops_and_one_off_the_screen_is_refused(
     assert off["code"] == "bad_argument" and "leaves the screen (characters)" in off["message"]
 
 
+def test_a_cropped_text_signature_is_its_definition_counted_by_hand(tmp_path: Path) -> None:
+    """`scry-sig/1` over the crop's own size and its cells row by row, seven bytes a cell
+    (the byte, then the foreground and background RGB), built here from the definition: a crop
+    of two rows off the corner, so an x/y or a width/height swap hashes other cells."""
+    install()
+    dstate.STATE.session = cast(ds.Session, ScreenBench("probe-booted", tmp_path / "x.log"))
+    ac = screen.parse_listing(vga("probe-booted", "VGA AC"), screen.TITLES["VGA AC"])
+    dac = screen.parse_dacpal(vga("probe-booted", "VGA DACPAL"))
+    cells = screen.text_cells(page("probe-booted"), ac, dac)
+    x, y, w, h = 2, 1, 3, 2
+    rows = b"".join(cells[7 * (80 * r + x):7 * (80 * r + x + w)] for r in range(y, y + h))
+    want = hashlib.blake2b(b"scry-sig/1|text|3x2|" + rows, digest_size=8).hexdigest()
+    assert server.screen_signature(crop=[x, y, w, h])["signature"] == want
+
+
 def test_the_screen_tools_refuse_a_dac_not_in_its_six_bit_mode(tmp_path: Path) -> None:
     """The 13h capture's `VGA DAC` with `bits=8` (an edited capture): the PLTE and the fold are
     widened from six bits, so neither is written."""
@@ -1669,7 +1685,7 @@ def test_a_dac_entry_a_pixel_shows_moves_the_256_colour_signature(tmp_path: Path
 
 def test_a_description_placeholder_nothing_fills_fails_at_registration() -> None:
     with pytest.raises(TypeError, match=r"names \['\{NOPE\}'\], which nothing fills"):
-        server._filled("t", "a {PICTURE} and a {NOPE}")
+        docs.filled("t", "a {PICTURE} and a {NOPE}")
     assert "{" not in "".join(t.description or "" for t in server.mcp._tool_manager.list_tools()
                               if t.name in ("palette", "screen_view", "series_capture"))
 
