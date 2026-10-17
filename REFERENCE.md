@@ -1521,10 +1521,13 @@ added to one file.
 
 - **`dosbox_summaries.py`**: the one line each tool's reply opens with, one function per tool,
   and the line a refusal gets instead.
-- **`dosbox_x_server.py`**: the registrations, the `summary` each tool is registered with,
-  the lock over the one machine, the seam that turns the schema's own refusal into the
-  envelope, the session's lifecycle (`start`, `status`, `close`, `build_check`) and the
-  readers and advances that are one console call each.
+- **`dosbox_x_server.py`**: the tools, each registered with its `summary`: the session's
+  lifecycle (`start`, `status`, `close`, `build_check`) and the readers and advances that are
+  one console call each.
+- **`dosbox_mcp.py`**: the MCP boundary every tool is wrapped in: the server object and its
+  `instructions`, the lock over the one machine, the decorator that registers a tool and closes
+  its reply (`summary` first, `session` last, composed after the body), the reply a call the
+  schema refused gets, and the progress line of a bounded wait.
 - **`dosbox_binary.py`**: which DOSBox-X `start` and `build_check` run, by the ladder *The
   session* sets out, and the build's own version line.
 - **`dosbox_state.py`**: what the server holds between calls (the session, the symbol table,

@@ -13,6 +13,7 @@ from typing import Any, cast
 
 import pytest
 
+import dosbox_mcp
 import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_x_server as server
@@ -247,9 +248,9 @@ def test_the_tools_carry_the_envelope_and_the_summaries_name_the_state(tmp_path:
     assert loaded["status"] == "ok" and loaded["session"]["altered"] is True
     assert loaded["summary"] == f"state_load boot: loaded in {loaded['waited_s']}s"
     for name in ("state_save", "state_load", "state_list"):
-        assert name in server.registered_tools()
-    assert "state_list" in server._ANSWERS_WHILE_RUNNING
-    assert "state_load" in server._ANSWERS_WHILE_RUNNING
+        assert name in dosbox_mcp.registered_tools()
+    assert "state_list" in dosbox_mcp._ANSWERS_WHILE_RUNNING
+    assert "state_load" in dosbox_mcp._ANSWERS_WHILE_RUNNING
 
 
 def test_state_list_keeps_the_working_slot_apart_from_the_named_states(tmp_path: Path) -> None:
@@ -369,8 +370,8 @@ def test_the_snapshot_tool_carries_the_envelope_and_is_named_like_the_siblings(
     fake.e9_since_mark = lambda mark: []  # type: ignore[attr-defined]
     refused = cast(dict[str, Any], server.snapshot())
     assert refused["status"] == "INVALID" and refused["code"] == "no_channel", refused
-    assert "snapshot" in server.registered_tools()
-    assert "snapshot" in server._ANSWERS_WHILE_RUNNING
+    assert "snapshot" in dosbox_mcp.registered_tools()
+    assert "snapshot" in dosbox_mcp._ANSWERS_WHILE_RUNNING
 
 
 def test_a_save_that_failed_leaves_no_file_holding_the_name(tmp_path: Path) -> None:

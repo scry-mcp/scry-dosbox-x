@@ -311,3 +311,31 @@ def status_facts(session: ds.Session | None) -> dict[str, Any]:
         families["watches" if decl.kind == "watch" else "breakpoints"] += 1
     facts["declarations"] = families
     return facts
+
+
+def live() -> ds.Session:
+    """The session, or INVALID. A session found DEAD is closed and cleared here.
+
+    Leaving a corpse installed is what made `status` keep reporting it and made the
+    next `start` leak its terminal rather than reclaim it.
+    """
+    buried = ""
+    if STATE.session is not None and not STATE.session.alive():
+        # WHAT IS BEING BURIED IS SAID IN THE REFUSAL, and it has to be said HERE
+        # because `st.reply` cannot: once the global is cleared there is nothing left to
+        # ask, so `session` comes back null. Every reply carries `altered`, the INVALID
+        # ones too (the server's docstring), and a caller who wrote to a machine that then
+        # hit its bound would otherwise get an INVALID with no trace that anything had
+        # been forced.
+        if STATE.session.altered:
+            buried = (" The session that has gone HAD been written to, so anything "
+                      "measured on it was a measurement of a forced state.")
+        STATE.session.close()
+        STATE.session = None
+        STATE.forget_symbols()
+        STATE.clear_running_state()
+    if STATE.session is None:
+        raise ds.Invalid("no_session", "there is no live session. `start` one first; a reply from "
+                         "a dead session would be a reading of nothing." + buried)
+    drain_if_stopped(STATE.session)
+    return STATE.session

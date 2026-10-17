@@ -20,6 +20,7 @@ from pydantic import TypeAdapter, ValidationError
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
+import dosbox_mcp  # noqa: E402
 import dosbox_state as st  # noqa: E402
 import dosbox_x_server as s  # noqa: E402
 
@@ -150,14 +151,14 @@ def test_every_tool_that_takes_ctx_still_accepts_a_valid_call() -> None:
 # ------------------------------------------ the refusal waits for the machine like any call
 #
 # Building the refusal is a write to what the machine's calls share, so it waits for the
-# machine like any call (`Envelope._refused` says why).
+# machine like any call (`dosbox_mcp.refusal` says why).
 
 _WRONG_TYPE = ("read_memory", {"ref": "F000:0000", "length": "dieciseis"})
 
 
 class _AnotherCall:
-    """A second thread holding `_LOCK` as a tool body does, until `release`. Another THREAD is
-    the point: `_LOCK` is an `RLock`, so a hold taken on this one would prove nothing about a
+    """A second thread holding `LOCK` as a tool body does, until `release`. Another THREAD is
+    the point: `LOCK` is an `RLock`, so a hold taken on this one would prove nothing about a
     second call."""
 
     def __init__(self) -> None:
@@ -168,7 +169,7 @@ class _AnotherCall:
         assert self._taken.wait(5.0), "the lock was never taken, so nothing below measures"
 
     def _hold(self) -> None:
-        with s._LOCK:
+        with dosbox_mcp.LOCK:
             self._taken.set()
             self._release.wait(5.0)
             self.released_at = monotonic()
@@ -194,9 +195,9 @@ def test_a_schema_refusal_waits_while_another_call_holds_the_machine() -> None:
 
 
 def test_the_event_loop_keeps_turning_while_a_refusal_waits() -> None:
-    """AND THE WAIT IS NOT A PLAIN `with _LOCK:` IN THE COROUTINE, which deadlocks
-    (`Envelope.call_tool` says why): the loop still turning while the refusal is pending is
-    what shows the wait is elsewhere."""
+    """AND THE WAIT IS NOT A PLAIN `with LOCK:` IN THE COROUTINE, which deadlocks
+    (`scry_core.envelope.Envelope.call_tool` says why): the loop still turning while the
+    refusal is pending is what shows the wait is elsewhere."""
     other = _AnotherCall()
     turns: list[float] = []
 
@@ -216,13 +217,13 @@ def test_the_event_loop_keeps_turning_while_a_refusal_waits() -> None:
 
 
 def _free_elsewhere() -> bool:
-    """Whether another thread could take `_LOCK` right now."""
+    """Whether another thread could take `LOCK` right now."""
     got: list[bool] = []
 
     def attempt() -> None:
-        took = s._LOCK.acquire(blocking=False)
+        took = dosbox_mcp.LOCK.acquire(blocking=False)
         if took:
-            s._LOCK.release()
+            dosbox_mcp.LOCK.release()
         got.append(took)
 
     probe = Thread(target=attempt, daemon=True)
@@ -234,7 +235,7 @@ def _free_elsewhere() -> bool:
 def test_the_refusal_reply_is_built_while_the_machine_is_held(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """WAITING FOR THE LOCK IS NOT HOLDING IT: a refusal that took and let go of `_LOCK` before
+    """WAITING FOR THE LOCK IS NOT HOLDING IT: a refusal that took and let go of `LOCK` before
     building its reply passes both cases above, so this one looks at the moment `st.reply`
     runs, which is the write."""
     held: list[bool] = []

@@ -920,7 +920,7 @@ def test_the_tools_hand_the_sessions_own_answer_back_whole(
     # enrich pane is deliberate: a regression to two separate surveys starves the second pop
     # and reddens this, so this provisioning is itself the guard on the fold.
     enrich = [pane_with([], cs="F000", eip="0000FFF0")]
-    # THE FIRST CONTACT RECORDS THE PARK: every tool's `_live()` surveys a machine found at
+    # THE FIRST CONTACT RECORDS THE PARK: every tool's `live()` surveys a machine found at
     # the debugger once, for `last_stop` (the running-guest contract), so the three console
     # tools pay ONE pane before their own reads. Exact on purpose, like the enrich pane.
     park = [pane_with([])]

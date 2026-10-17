@@ -21,6 +21,7 @@ import pytest
 from scry_core import media_tools
 from scry_core import reply_contract as contract
 
+import dosbox_mcp
 import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_x_server as server
@@ -72,7 +73,7 @@ _ARGS: dict[str, dict[str, Any]] = {
 
 
 def _tools() -> list[str]:
-    names = server.registered_tools()
+    names = dosbox_mcp.registered_tools()
     assert len(names) > 20, "the walk found almost no tools, so it examined nothing"
     return names
 

@@ -325,7 +325,7 @@ def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
     running-OK op may follow immediately; before any CONSOLE op the sequence WAITS for the
     next stop (bounded by `wait`), because a console op sent to a running guest is swallowed.
     A console op reached with the machine still running after that wait is a FAILURE naming
-    the boundary, not a call dispatched into the void. The caller owns the `_live()` call and
+    the boundary, not a call dispatched into the void. The caller owns the `live()` call and
     hands the session in, so the "needs a session" gate sees the TOOL, not this helper.
 
     With `summaries`, `ran` is the compact account `account_of` builds.

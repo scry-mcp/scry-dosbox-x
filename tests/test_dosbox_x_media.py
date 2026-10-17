@@ -233,7 +233,7 @@ def test_series_capture_answers_through_this_server_with_its_paths_where_they_we
     session = _Captures(avi, FRAMES)
     session.captures = lambda: [{"path": str(avi), "frames": FRAMES},  # type: ignore[method-assign]
                                 {"path": str(other), "frames": FRAMES}]
-    monkeypatch.setattr(server, "_live", lambda: session)
+    monkeypatch.setattr(server, "live", lambda: session)
     monkeypatch.setattr(dstate.STATE, "session_scratch", lambda: tmp_path / "scratch")
     dest = tmp_path / "kept"
     r = cast(dict[str, Any], server.series_capture(first=0, last=1, crop=[0, 0, 8, 4],

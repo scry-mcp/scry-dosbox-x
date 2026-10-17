@@ -12,6 +12,7 @@ import pytest
 from test_dosbox_x_server import NM_TEXT, _names, clean_session  # noqa: F401
 
 import dosbox_declarations as dec
+import dosbox_mcp
 import dosbox_sequence as sequence
 import dosbox_session as ds
 import dosbox_state as dstate
@@ -195,10 +196,10 @@ def _args(tmp_path: Path) -> dict[str, dict[str, Any]]:
 
 
 def test_every_step_tool_has_arguments_here(tmp_path: Path) -> None:
-    assert set(_args(tmp_path)) == set(server.registered_tools()) - NOT_STEPS
+    assert set(_args(tmp_path)) == set(dosbox_mcp.registered_tools()) - NOT_STEPS
 
 
-@pytest.mark.parametrize("tool", sorted(set(server.registered_tools()) - NOT_STEPS))
+@pytest.mark.parametrize("tool", sorted(set(dosbox_mcp.registered_tools()) - NOT_STEPS))
 def test_the_table_holds_exactly_what_answers_on_a_running_guest(
         tool: str, tmp_path: Path) -> None:
     _running(tmp_path)
@@ -220,7 +221,7 @@ def test_no_tool_of_the_table_types_at_a_running_guests_console(
 def test_answers_while_running_is_the_table_and_the_four_that_answer_outside_a_list() -> None:
     table = [*sorted(sequence.RUNNING_OK_OPS), "registers(from_last_stop=True)", "perform",
              "drive", "close"]
-    assert table == server._ANSWERS_WHILE_RUNNING
+    assert table == dosbox_mcp._ANSWERS_WHILE_RUNNING
 
 
 def test_every_tool_the_instructions_send_to_a_running_guest_is_in_the_table() -> None:
@@ -235,7 +236,7 @@ def test_every_tool_the_instructions_send_to_a_running_guest_is_in_the_table() -
 
 
 def test_perform_takes_every_registered_tool_but_the_five() -> None:
-    assert set(server._step_ops()) == set(server.registered_tools()) - NOT_STEPS
+    assert set(server._step_ops()) == set(dosbox_mcp.registered_tools()) - NOT_STEPS
 
 
 def test_a_stop_step_ends_the_run(tmp_path: Path) -> None:

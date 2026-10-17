@@ -119,7 +119,7 @@ class State:
         # between no longer knows the old name, and re-resolving it would leave the row
         # armed forever. Cleared by `start`.
         self.armed: dict[tuple[str, str], list[dict[str, Any]]] = {}
-        # THE ACCOUNT OF A QUEUE DRAINED BY `_live()`, handed to the next reply built and
+        # THE ACCOUNT OF A QUEUE DRAINED BY `live()`, handed to the next reply built and
         # then forgotten: the tool that found the machine stopped is the one whose reply
         # says what was applied, whatever that tool was.
         self.applied_last: dict[str, Any] = {}
@@ -381,8 +381,13 @@ def reply(status: str = "ok", **fields: Any) -> dict[str, Any]:
     if STATE.found_stop_last and "stopped_on_its_own" not in out:
         out["stopped_on_its_own"] = dict(STATE.found_stop_last)
     STATE.found_stop_last = {}
-    out["session"] = STATE.session.state() if STATE.session is not None else None
+    out["session"] = session_block()
     return contract.check_envelope(out)
+
+
+def session_block() -> dict[str, Any] | None:
+    """The `session` block every reply closes with, read off the session as it is now."""
+    return STATE.session.state() if STATE.session is not None else None
 
 
 def extend(built: dict[str, Any], **fields: Any) -> dict[str, Any]:

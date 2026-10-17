@@ -76,23 +76,15 @@ window flags all come from the caller, so the same server serves every DOS proje
 from __future__ import annotations
 
 import functools
-import inspect
 import json
 import subprocess
 import sys
-import threading
 import time
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
 
-import anyio.from_thread
-import anyio.to_thread
-from mcp.server import MCPServer
 from mcp.server.mcpserver import Context
-from mcp.server.mcpserver.exceptions import ToolError
-from mcp.types import CallToolResult, TextContent, ToolAnnotations
-from pydantic import ValidationError
 
 # THE FILE IS NOT CALLED `server.py`, and that is not fussiness. `scry-mame` installs a
 # top-level `server` module, and in an environment that holds both packages (or one
@@ -108,7 +100,7 @@ from pydantic import ValidationError
 # depends on -- the same silent-wrong-import hazard, installed by the fix for it.
 sys.path.append(str(Path(__file__).resolve().parent))
 
-from scry_core import media_tools, narrowing, picture  # noqa: E402
+from scry_core import media_tools, narrowing  # noqa: E402
 from scry_core import strict_arguments as strict  # noqa: E402
 
 import dosbox_arming as arming  # noqa: E402
@@ -118,7 +110,6 @@ import dosbox_checks as checks  # noqa: E402
 import dosbox_code as code  # noqa: E402
 import dosbox_comments as comments  # noqa: E402
 import dosbox_declarations as dec  # noqa: E402
-import dosbox_docs as docs  # noqa: E402
 import dosbox_dump as dumping  # noqa: E402
 import dosbox_find as finder  # noqa: E402
 import dosbox_inputs as inputs  # noqa: E402
@@ -134,256 +125,10 @@ import dosbox_session as ds  # noqa: E402
 import dosbox_state as st  # noqa: E402
 import dosbox_summaries as one_line  # noqa: E402
 import dosbox_trace as tracing  # noqa: E402
+from dosbox_mcp import LOCK, progress_of, registered_tools, tool  # noqa: E402
+from dosbox_mcp import mcp as mcp  # noqa: E402  (the probe and the clients read `server.mcp`)
+from dosbox_running import live  # noqa: E402
 from dosbox_state import STATE  # noqa: E402
-
-# THE NAME IT REPORTS MUST BE THE NAME IT IS INSTALLED AS, which is also what
-# namespaces its tools. It is `dosbox-x` and not `dosbox`: DOSBox and DOSBox-X are
-# different emulators, and the debugger, the config properties and most of this
-# surface are the X's, so the short name would promise what this does not do.
-# THE SERVER'S OWN `instructions` (below, on `mcp`) are the documented channel for what a
-# client should know first, delivered by the protocol rather than pasted by a hook.
-
-
-class Envelope(MCPServer):
-    """ONE SEAM FOR THE SCHEMA'S REFUSAL. The SDK validates every call against the tool's
-    schema before the tool runs, and its refusal is its own error text, outside the reply
-    shape every tool here promises. Nothing is validated twice: the refusal is caught here,
-    once, and given the envelope (`summary`, `status`, `code`, `message`, `session`) so a
-    caller reads one shape. Any other error keeps the SDK's path: a defect in a tool body is
-    never dressed as a refusal."""
-
-    async def call_tool(self, name: str, arguments: dict[str, Any],
-                        context: Context[Any, Any] | None = None) -> Any:
-        try:
-            # THE PICTURE is attached here, beside the JSON, from the file its body names
-            # (`scry_core.picture.attached`), so a tool body and a test deal in a plain dict.
-            return picture.attached(await super().call_tool(name, arguments, context))
-        except ToolError as e:
-            cause = strict.refused_by_schema(e)
-            if cause is None:
-                raise
-            # OFF THE EVENT LOOP, AND THAT IS NOT A PREFERENCE. See `_refused` for the lock;
-            # what forces the worker thread is that a plain `with _LOCK:` here DEADLOCKS. Every
-            # tool body is synchronous, so the SDK runs it on a worker thread and that thread
-            # is what holds the lock; a bounded wait reports progress from there through
-            # `_progress`, which needs the event loop (`anyio.from_thread.run`). A loop parked
-            # in `_LOCK.acquire()` never runs that callback, so the worker never finishes and
-            # never lets go, and the loop never gets the lock. Both sides wait for ever.
-            return await anyio.to_thread.run_sync(self._refused, name, arguments, cause)
-
-    @staticmethod
-    def _refused(name: str, arguments: dict[str, Any], cause: ValidationError) -> Any:
-        """The refusal's reply, built over the ONE machine like every other reply.
-
-        THE SEAM SITS OUTSIDE `tool()`'s WRAPPER and so outside the `_LOCK` that wrapper
-        holds, and `st.reply` is not a read: it hands over and CLEARS `applied_last` (what a
-        stop applied of the declarations queued while the guest ran) and `found_stop_last`
-        (a stop the guest reached on its own). Unlocked, a call the schema refused could take
-        either account away from the call that was building the reply meant to carry it,
-        and that stop would be reported to nobody.
-
-        NOTHING ON THIS PATH CAN ALREADY HOLD THE LOCK: the schema refuses BEFORE the tool
-        body runs, so this call never reached the wrapper that takes it, and no tool here
-        dispatches through `call_tool`. `_LOCK` being an `RLock` is not what makes this safe.
-        """
-        with _LOCK:
-            reply = st.reply(status="INVALID", code="bad_argument",
-                             message=strict.schema_refusal(cause))
-            body = {"summary": _summary(name, arguments, reply), **reply}
-        text = TextContent(type="text", text=json.dumps(body, indent=2))
-        return CallToolResult(content=[text], structured_content=body)
-
-
-mcp = Envelope(
-    "dosbox-x",
-    instructions=(
-        'A live DOS machine in DOSBox-X.\n\n'
-        'TOOLS. Session: `build_check`, `start`, `status`, `close`. Read: `registers`,\n'
-        '`read_memory`, `disassemble`, `call_stack`, `memdump`, `find`, `log`, `log_wait`,\n'
-        '`machine_map`, `interrupt_vectors`, `palette`, `screen_view`, `screen_signature`,\n'
-        '`debug`. Scan (by value, with no map): `scan_start`, `scan_filter`, `scan_clear`.\n'
-        'Write: `set_register`, `write`. Advance: `run_to`, `run_for`, `trace`, `screen_wait`,\n'
-        '`step`, `resume`, `stop`. Declarations, kept per conf: `breakpoint_at`,\n'
-        '`breakpoint_list`, `breakpoint_clear`, `breakpoint_interrupt`, `watch_add`,\n'
-        '`watch_list`, `watch_clear`. States: `state_save`, `state_load`, `state_list`.\n'
-        'Names: `symbols_load`,\n'
-        '`symbols_find`. Comments: `comment_add`, `comment_list`, `comment_delete`,\n'
-        '`comment_save`, `comment_load`. Input, in-guest:\n'
-        '`send_keys`, `send_mouse`, `drive`. Captures: `captures`, `capture_frame`,\n'
-        '`series_capture`, `snapshot`. Files, any state: `image_diff`, `series_diff`,\n'
-        '`region_track`, `golden_check`. Sequences: `perform`.\n\n'
-        'A SESSION. `build_check` answers about the BUILD, never a reading, and REFUSES while a\n'
-        'session is live. `start` parks the guest STOPPED at the debugger; `resume` lets it\n'
-        'run. The readers need it STOPPED and refuse otherwise, naming `last_stop` and what\n'
-        'answers; a running guest is reached through `log`, `log_wait`, `send_keys` and\n'
-        '`send_mouse`, and stops at a breakpoint armed BEFORE the release\n'
-        '(`breakpoint_interrupt` 0x21 real mode, 0x31 ah=2 DJGPP) or at `stop`, headless or\n'
-        'windowed. What you declare while\n'
-        'it runs is `pending` until the next stop. After `symbols_load`, a `ref` is a symbol or\n'
-        'a `SEG:OFF`. A sequence is ONE call: `perform`, or `drive` for an input and its check.\n'
-        'FOR A VALUE use `registers`, `read_memory`, `memdump` or `log`; `debug` is the last\n'
-        'resort.\n\n'
-        'EVERY REPLY carries `summary`, `status` (`ok`, or `INVALID` with `code` and `message`)\n'
-        'and `session` (`altered`: has anything here written to the machine?). An argument of\n'
-        "the wrong TYPE is the schema's `bad_argument`.\n\n"
-        'Reference: REFERENCE.md.'
-    ),
-)
-
-# ONE machine, one session. The lock serialises the tools rather than letting two
-# questions interleave on a terminal that has no notion of them being separate. The
-# session itself, and everything held beside it, is `STATE` (`dosbox_state`).
-_LOCK = threading.RLock()
-
-#: What a refusal for a running guest names as answering: the sequence's table, and four
-#: that answer it outside a list (the last stop's registers, the two that run steps, the
-#: session's end).
-_ANSWERS_WHILE_RUNNING = [*sorted(sequence.RUNNING_OK_OPS), "registers(from_last_stop=True)",
-                          "perform", "drive", "close"]
-
-
-def registered_tools() -> list[str]:
-    """The names the MCP layer will actually serve, ASKED OF THE MCP LAYER.
-
-    It reads the server's own registry rather than a list this module keeps beside
-    it. MEASURED: `mcp.tool()` returns the function unchanged, so deleting the
-    registration leaves every ordinary test green while the server exposes NOTHING --
-    and a parallel list maintained here is populated on the way past whether or not
-    the registration happened, so asserting against it caught that defect not at
-    all. A second source of truth for "what exists" cannot gate the first.
-
-    It reaches through a private attribute, deliberately: there is no synchronous
-    public accessor, and a test pins this so a library change fails loudly here
-    instead of silently emptying the surface.
-    """
-    return sorted(t.name for t in mcp._tool_manager.list_tools())
-
-
-#: Each registered tool's summary, filled by `tool` as it registers them.
-_SUMMARIES: dict[str, one_line.Summary] = {}
-
-
-def _summary(name: str, args: dict[str, Any], reply: dict[str, Any]) -> str:
-    """The one line the MCP client shows for a call (`dosbox_summaries`): the envelope's for a
-    reply that is not `ok`, the tool's own otherwise."""
-    if reply.get("status") != "ok":
-        return one_line.refusal(name, reply)
-    return _SUMMARIES[name](args, reply)
-
-
-def tool(
-    title: str, *, summary: one_line.Summary, read_only: bool = False, idempotent: bool = False
-) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-    """Register an MCP tool, serialise it over the one machine, and put the one-line
-    `summary` first in its reply: `summary` is the tool's own line (`dosbox_summaries`),
-    REQUIRED, so a tool registered without one fails at import.
-
-    `title` is what the client shows for the tool, and `read_only` becomes the protocol's
-    `readOnlyHint`: a reader declares it so a client may run readers in parallel, which is
-    honest here because every tool takes the lock anyway. Anything that advances the
-    machine, writes to it, changes what the server holds (`symbols_load`, a declaration)
-    or writes a FILE (`memdump`, `capture_frame`) is not read-only. ONE CAVEAT, decided
-    by the owner: the first contact after a stop applies what was DECLARED while the
-    guest ran (`running.drain_if_stopped`), so a reader can be the call that arms a breakpoint.
-    That write belongs to the declaring call, which was not read-only and said
-    `pending`; the reader only delivers it, and its reply says so in `applied_on_stop`.
-
-    `idempotent` becomes `idempotentHint`, a STRONGER claim than read-only: calling it again
-    changes nothing AND answers the same. Every tool here reads a machine that moves or a file
-    that may change, so none declares it; declared wrongly it would invite a
-    client to repeat a call whose answer had moved underneath it, so it stays false unless
-    the tool's own data cannot change.
-
-    A tool that takes a `ctx` (the protocol's `Context`, for the progress line of a bounded
-    wait) gets it from the SDK, and it is kept out of the summary's arguments. The summary
-    reads the arguments the call RAN with, defaults applied.
-
-    ONLY `Invalid` is translated. Widening this to `Exception` would turn every
-    genuine bug -- an `AttributeError`, a bad regex, a timeout -- into "I examined
-    nothing", which is a broken instrument reporting itself as a clean one: exactly
-    the failure this module is written against. The escapes are handled where they
-    happen instead.
-    """
-
-    def register(fn: Callable[..., Any]) -> Callable[..., Any]:
-        signature = inspect.signature(fn)
-        _SUMMARIES[fn.__name__] = summary
-
-        @functools.wraps(fn)
-        def wrapped(*a: Any, **k: Any) -> Any:
-            given = dict(signature.bind_partial(*a, **k).arguments)
-            given.pop("ctx", None)
-            with _LOCK:
-                try:
-                    # WHAT THE MACHINE IS NOT NEEDED FOR IS JUDGED FIRST: a refusal a caller
-                    # can see without a session.
-                    checks.check(fn.__name__, **given)
-                    reply = fn(*a, **k)
-                except ds.NotStopped as e:
-                    # THE GUEST RUNS AND THIS READER CANNOT ANSWER: say where the machine
-                    # was last seen and which readers do answer now, so the caller can
-                    # decide without provoking a stop (the running-guest contract).
-                    reply = st.reply(**e.reply(last_stop=STATE.as_of(),
-                                               answers_while_running=_ANSWERS_WHILE_RUNNING))
-                except ds.Invalid as e:
-                    reply = st.reply(**e.reply())
-            bound = signature.bind_partial(*a, **k)
-            bound.apply_defaults()               # a summary reads what the call RAN with
-            args = dict(bound.arguments)
-            args.pop("ctx", None)
-            return {"summary": _summary(fn.__name__, args, reply), **reply}
-
-        wrapped.__doc__ = docs.filled(fn.__name__, fn.__doc__ or "")
-        return mcp.tool(title=title,
-                        annotations=ToolAnnotations(read_only_hint=read_only,
-                                                    idempotent_hint=idempotent))(wrapped)
-
-    return register
-
-
-def _progress(ctx: Context[Any, Any] | None) -> ds.Progress:
-    """The progress line of a bounded wait, bridged from the worker thread the SDK runs a
-    synchronous tool in to the request's `Context` on the event loop. With no context (a
-    direct call, a test, a step inside `perform`) nothing is painted and nothing is
-    reported."""
-    if ctx is None:
-        return ds.no_progress
-
-    def report(progress: float, total: float, message: str) -> None:
-        anyio.from_thread.run(ctx.report_progress, progress, total, message)
-
-    return report
-
-
-def _live() -> ds.Session:
-    """The session, or INVALID. A session found DEAD is closed and cleared here.
-
-    Leaving a corpse installed is what made `status` keep reporting it and made the
-    next `start` leak its terminal rather than reclaim it.
-    """
-    buried = ""
-    if STATE.session is not None and not STATE.session.alive():
-        # WHAT IS BEING BURIED IS SAID IN THE REFUSAL, and it has to be said HERE
-        # because `st.reply` cannot: once the global is cleared there is nothing left to
-        # ask, so `session` comes back null. This module's own docstring promises that
-        # every reply carries `altered`, "the INVALID ones too" -- and MEASURED, this
-        # was the one path where it did not. A caller who wrote to a machine that then
-        # hit its bound got an INVALID with no trace that anything had been forced,
-        # which is exactly the reply the docstring calls the worst one to hand over
-        # without it.
-        if STATE.session.altered:
-            buried = (" The session that has gone HAD been written to, so anything "
-                      "measured on it was a measurement of a forced state.")
-        STATE.session.close()
-        STATE.session = None
-        STATE.forget_symbols()
-        STATE.clear_running_state()
-    if STATE.session is None:
-        raise ds.Invalid("no_session", "there is no live session. `start` one first; a reply from "
-                         "a dead session would be a reading of nothing." + buried)
-    running.drain_if_stopped(STATE.session)
-    return STATE.session
-
 
 # ------------------------------------------------------------------- session: the build
 
@@ -553,7 +298,7 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
     binary_facts = binaries.facts(resolved)
     session = ds.Session(launch)
     try:
-        ready = session.wait_ready(progress=_progress(ctx))
+        ready = session.wait_ready(progress=progress_of(ctx))
     except ds.Invalid as e:
         # IT IS CLOSED BEFORE THE REFUSAL GOES OUT. Assigning first and waiting after
         # left a real emulator running behind an INVALID reply, with nothing in the
@@ -576,14 +321,14 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
         # `wait_ready` raising with the child still running is exactly the case where
         # SIGKILL can fail to reap, so this arm is where a stray emulator is most
         # likely and least visible.
-        session.close(progress=_progress(ctx))
+        session.close(progress=progress_of(ctx))
         if session.reap_failed:
             raise ds.Invalid("session_broken", f"{e} -- and worse, {session.reap_failed}, so an "
                              f"emulator may still be running. Check for a stray "
                              f"`dosbox-x` before starting again") from None
         raise
     except BaseException:
-        session.close(progress=_progress(ctx))
+        session.close(progress=progress_of(ctx))
         raise
     STATE.session = session
     # The store was built and validated above, before the emulator started; it becomes the
@@ -652,7 +397,7 @@ def status() -> dict[str, Any]:
                     **running.status_facts(STATE.session))
 
 
-@tool("Close the session", summary=one_line.close)
+@tool("Close the session", summary=one_line.close, session_before=True)
 def close(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """End the session deliberately rather than waiting for its bound. Reports its progress
     while the emulator takes its time to leave.
@@ -671,7 +416,7 @@ def close(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     if STATE.session is None:
         return st.reply(closed=False, how="none", note="there was no session")
     was = STATE.session.state()
-    rc = STATE.session.close(progress=_progress(ctx))
+    rc = STATE.session.close(progress=progress_of(ctx))
     # READ AFTER THE CLOSE, because that is when it can be set, and it is reported
     # BESIDE `exit_code` rather than inside `session` because it is a fact about the
     # CLOSING and not about the state being described.
@@ -717,7 +462,7 @@ def log(pattern: str, channel: str, limit: int = 40, labels: bool = False) -> di
     pattern that does not compile; a channel that is not one of the three; the session is
     gone. For "when did X happen, and wait if it has not" use `log_wait`.
     """
-    lines, total = _live().log(pattern, limit, channel)
+    lines, total = live().log(pattern, limit, channel)
     reply: dict[str, Any] = dict(pattern=pattern, channel=channel, lines_total=total,
                                  truncated=total > len(lines), lines=lines)
     if labels:
@@ -758,9 +503,9 @@ def log_wait(pattern: str, channel: str, seconds: float = 30.0,
     then. `expect` on `send_keys`/`drive` is this same wait on the guest channel, from a
     mark taken before the act.
     """
-    session = _live()
+    session = live()
     try:
-        got = session.log_wait(pattern, seconds, channel, progress=_progress(ctx))
+        got = session.log_wait(pattern, seconds, channel, progress=progress_of(ctx))
         return st.answer({**got, "channel": channel})
     except ds.E9Stopped as e:
         running.observe_stop(session)          # the stop the wait found is recorded and named
@@ -783,13 +528,13 @@ def registers(from_last_stop: bool = False) -> dict[str, Any]:
     `stale: true` with `last_stop`, never as the current value; INVALID before any stop.
     """
     if from_last_stop:
-        _live()
+        live()
         if not STATE.last_stop:
             raise ds.Invalid("no_stop", "no stop yet in this session, so there are no last-stop "
                              "registers to hand back")
         return st.reply(registers=dict(STATE.last_stop["registers"]), stale=True,
                         last_stop=STATE.as_of())
-    return st.reply(registers=_live().registers())
+    return st.reply(registers=live().registers())
 
 
 @tool("Read memory", summary=one_line.read_memory, read_only=True)
@@ -807,7 +552,7 @@ def read_memory(ref: str, length: int = 16) -> dict[str, Any]:
     address asked for is among the rows returned, so a cut repaint is refused rather than
     handed back shifted. An absent or ambiguous symbol is refused.
     """
-    session = _live()                 # `length` is judged by the registry, before the call
+    session = live()                 # `length` is judged by the registry, before the call
     seg, off = placement.read_target(ref, "DS", session)
     rows = session.read_memory(seg, off)
     return st.reply(ref=ref, segment=seg, offset=off, length=length,
@@ -843,7 +588,7 @@ def disassemble(ref: str, length: int = 16) -> dict[str, Any]:
 
     Reference: REFERENCE.md, Reading and writing.
     """
-    return st.reply(ref=ref, **code.disassemble(_live(), ref, length))
+    return st.reply(ref=ref, **code.disassemble(live(), ref, length))
 
 
 @tool("Guess the call stack", summary=one_line.call_stack, read_only=True)
@@ -870,7 +615,7 @@ def call_stack() -> dict[str, Any]:
 
     Reference: REFERENCE.md, Reading and writing.
     """
-    return st.reply(**code.call_stack(_live()))
+    return st.reply(**code.call_stack(live()))
 
 
 @tool("Dump memory to a file", summary=one_line.memdump)
@@ -890,7 +635,7 @@ def memdump(ref: str, length: int, dest: str) -> dict[str, Any]:
     and a 16-bit segment, a range past its limit, or a selector with no descriptor is refused.
     Inside 0 to 0xFFFF the limit is not judged and the debugger reads zeros past it.
     """
-    session = _live()
+    session = live()
     _console_listening(session, "a dump")
     seg, off = placement.read_target(ref, "DS", session)
     dumped = dumping.dump_range(session, seg, off, length, paths.absolute("dest", dest))
@@ -920,7 +665,7 @@ def find(data_hex: str, ref: str, length: int) -> dict[str, Any]:
     # `no_session` through the other. Whether the bytes are hex is as true with no machine as
     # with one; where `ref` POINTS is not, and that still waits below.
     pattern = finder.check_pattern(data_hex)
-    session = _live()
+    session = live()
     _console_listening(session, "a search")
     seg, off = placement.read_target(ref, "DS", session)
     return st.reply(ref=ref, **finder.find(session, seg, off, length, pattern))
@@ -940,7 +685,7 @@ def scan_start(ref: str, length: int, width: str = "byte") -> dict[str, Any]:
     Needs the machine stopped. Reply: `segment`, `offset`, `length`, `width`, `cell_bytes`,
     `linear`, `candidates`.
     """
-    session = _live()
+    session = live()
     _console_listening(session, "a search")
     seg, off = placement.read_target(ref, "DS", session)
     return st.reply(ref=ref, **finder.scan_start(session, seg, off, length, width))
@@ -971,7 +716,7 @@ def scan_filter(operator: str = "=", value: int | None = None,
     instead of running until `close`. So a listing turns its last page, and an
     `unexpected_answer` clears the line before it refuses, saying so in `line_recovered`.
     """
-    session = _live()
+    session = live()
     _console_listening(session, "a search")
     return st.reply(**finder.scan_filter(session, operator, value, limit))
 
@@ -982,7 +727,7 @@ def scan_clear() -> dict[str, Any]:
     Needs the machine stopped. Reply: `cleared`. An answer this cannot read clears the
     debugger's command line before refusing (`line_recovered`): see `scan_filter`.
     """
-    session = _live()
+    session = live()
     _console_listening(session, "a search")
     return st.reply(**finder.scan_clear(session))
 
@@ -1002,7 +747,7 @@ def debug(command: str) -> dict[str, Any]:
     naming the tool that does it and reports the stop, and a command carrying a control
     character.
     """
-    session = _live()
+    session = live()
     _console_listening(session, repr(command))
     # A SCAN COMMAND TYPED HERE moves the debugger's own count past the one `scan_filter` keeps,
     # and may open a scan at another width, so both are dropped rather than answered stale.
@@ -1032,7 +777,7 @@ def set_register(name: str, value: int) -> dict[str, Any]:
     equals what was sent; false is not always a failure: a register the debugger masks is
     doing its job). INVALID when no pane, or a pane without that register, came back to read.
     """
-    out = _live().set_register(name, value)
+    out = live().set_register(name, value)
     return st.answer({"value": value, **out})
 
 
@@ -1053,7 +798,7 @@ def write(ref: str, data_hex: str) -> dict[str, Any]:
     measured on this build, `SM` into ROM ends the emulator instead of writing.
     """
     data = checks.write_data(data_hex)        # parsed once; the bytes travel, not the text
-    session = _live()
+    session = live()
     seg, off = placement.read_target(ref, "DS", session)
     out = session.write_memory(seg, off, data)
     return st.answer({"ref": ref, "segment": seg, "offset": off, **out})
@@ -1089,7 +834,7 @@ def resume(e9: str = "none", e9_filter: str = ".",
 
     Reference: REFERENCE.md, Advancing the machine.
     """
-    session = _live()
+    session = live()
     # A GUEST ALREADY RUNNING IS REFUSED BEFORE ANY CHECK THAT NEEDS THE MACHINE: an F5 there
     # does nothing, and an `ok` for it reads exactly like the release of a stopped machine.
     if not session.at_debugger():
@@ -1100,7 +845,7 @@ def resume(e9: str = "none", e9_filter: str = ".",
     if not out["halted"] and seconds > 0:
         began = time.monotonic()
         expired, _saw_at = ds.Session._await_stop(session, began, began + seconds, "resume",
-                                                  _progress(ctx))
+                                                  progress_of(ctx))
         base["waited_s"] = round(time.monotonic() - began, 3)
         if not expired:
             try:
@@ -1143,7 +888,7 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     seconds from the request to the debugger's prompt; `false` when the machine was already
     stopped, with `last_stop` and a `note`).
     """
-    session = _live()
+    session = live()
     if session.at_debugger():
         running.observe_stop(session)
         return st.reply(interrupted=False, running=False,
@@ -1170,7 +915,7 @@ def step(count: int = 1, mode: str = "into",
     since the previous stop) or `seconds:N` (needs `e9_stamp`), filtered by `e9_filter`. A
     settle per step; for a longer run use `run_to`.
     """
-    session = _live()
+    session = live()
     out = session.step(mode=mode, count=count)
     # A step that STOPPED carries the full stop reply; one that ran away (a CALL that never
     # returned) left the machine running, and a running machine has nothing to read.
@@ -1207,7 +952,7 @@ def run_to(ref: str, control: str, seconds: float = 30.0,
 
     Reference: REFERENCE.md, Advancing the machine.
     """
-    session = _live()
+    session = live()
     # ONE SURVEY for the resolution (decision 35): a symbol needs the mode and the CS
     # selector, and reading them as two round trips before the run's own third was two
     # avoidable console trips per `run_to` by name. A raw SEG:OFF reads nothing here.
@@ -1217,7 +962,7 @@ def run_to(ref: str, control: str, seconds: float = 30.0,
     mode_regs = None if machine is None else (machine[0]["mode"], machine[1])
     seg, off = placement.read_target(ref, "CS", session, machine=mode_regs)
     ctl = placement.read_target(control, "CS", session, machine=mode_regs)
-    out = session.run_to(seg, off, seconds, ctl, _progress(ctx))
+    out = session.run_to(seg, off, seconds, ctl, progress_of(ctx))
     out["ref"] = ref            # `target` is the session's own spelling, kept as it came
     # THE CONTROL'S VERDICT (decision 12 of the emulator roadmap): a bound that ran out with
     # the control armed and NEVER fired is not a non-arrival, it is a run that proved
@@ -1266,9 +1011,9 @@ def run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
 
     Reference: REFERENCE.md, Advancing the machine.
     """
-    session = _live()
+    session = live()
     _console_listening(session, "a `VRT`")
-    return retrace.run_for(session, frames, milliseconds, seconds, _progress(ctx), e9, e9_filter,
+    return retrace.run_for(session, frames, milliseconds, seconds, progress_of(ctx), e9, e9_filter,
                            e9_stamp)
 
 
@@ -1306,9 +1051,9 @@ def trace(instructions: int, shape: str = "normal", dest: str = "", seconds: flo
 
     Reference: REFERENCE.md, Advancing the machine.
     """
-    session = _live()
+    session = live()
     return tracing.trace(session, instructions, shape,
-                         paths.absolute("dest", dest) if dest else None, seconds, _progress(ctx))
+                         paths.absolute("dest", dest) if dest else None, seconds, progress_of(ctx))
 
 
 @tool("Run until text is on screen", summary=one_line.screen_wait)
@@ -1344,9 +1089,9 @@ def screen_wait(text: str, seconds: float = 30.0,
 
     Reference: REFERENCE.md, Input and the screen.
     """
-    session = _live()
+    session = live()
     _console_listening(session, "a listing")
-    return retrace.screen_wait(session, text, seconds, _progress(ctx))
+    return retrace.screen_wait(session, text, seconds, progress_of(ctx))
 
 
 @tool("Save the machine state", summary=one_line.state_save)
@@ -1364,7 +1109,7 @@ def state_save(name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, Any]:
     `time_stamp` (the state's own members), `paused`, `running` (whether the guest runs after
     the call), `waited_s` (the command alone).
     """
-    return st.answer(_live().state_save(name, seconds))
+    return st.answer(live().state_save(name, seconds))
 
 
 @tool("Load a machine state", summary=one_line.state_load)
@@ -1378,7 +1123,7 @@ def state_load(name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, Any]:
 
     Reply: `name`, `path`, the state's own members, `paused`, `running`, `waited_s`.
     """
-    return st.answer(_live().state_load(name, seconds))
+    return st.answer(live().state_load(name, seconds))
 
 
 @tool("Take a screenshot", summary=one_line.snapshot)
@@ -1395,7 +1140,7 @@ def snapshot(dest: str = "", seconds: float = ds.SNAPSHOT_WAIT_S,
 
     Reply: `route: "guest"`, `path`, `bytes`, `waited_s`.
     """
-    session = _live()
+    session = live()
     if session.launch.logfile is None:
         # `S` IS ALSO THE DELETE KEY'S SCAN CODE: an older stub would press it, and with no log
         # there is no announce to tell the two apart.
@@ -1404,7 +1149,7 @@ def snapshot(dest: str = "", seconds: float = ds.SNAPSHOT_WAIT_S,
             "a scan code to an older one): start the session with logfile=")
     inputs.require_stub(session)
     return st.answer(session.snapshot(paths.absolute("dest", dest) if dest else None, seconds,
-                                      _progress(ctx)))
+                                      progress_of(ctx)))
 
 
 @tool("List the saved states", summary=one_line.state_list, read_only=True)
@@ -1417,7 +1162,7 @@ def state_list() -> dict[str, Any]:
 
     Reply: `state_dir`, `states`, `working_slot`.
     """
-    return st.answer(_live().state_list())
+    return st.answer(live().state_list())
 
 
 @tool("Arm an interrupt breakpoint", summary=one_line.breakpoint_interrupt)
@@ -1439,7 +1184,7 @@ def breakpoint_interrupt(number: int, ah: int | None = None,
     fresh arm only, since a pending or already armed one typed nothing. While the
     guest runs it is stored `pending` and armed at the next stop.
     """
-    return arming.breakpoint_interrupt(_live(), number, ah, detail)
+    return arming.breakpoint_interrupt(live(), number, ah, detail)
 
 
 # --------------------------------------------------------------- names for addresses
@@ -1481,7 +1226,7 @@ def symbols_load(source: str, base: str | None = None, base_from: str = "CS",
 
     Reference: REFERENCE.md, Names for addresses.
     """
-    session = _live()
+    session = live()
     src = paths.input_file("source", source, "symbol file")
     typed = placement.read_types(types) if types is not None else {}
     return placement.load(session, source, src,
@@ -1512,11 +1257,11 @@ def symbols_find(name: str | None = None, offset: int | None = None,
     """
     # THE SESSION IS ASKED FOR FIRST, and this was the one read tool that never did. The
     # table is forgotten when the session OBJECT changes, and the burial of a session that
-    # died on its bound happens inside `_live()` -- which nothing here called. So a table
+    # died on its bound happens inside `live()` -- which nothing here called. So a table
     # outlived the program it was measured on, and this answered `ok` with a linear address
     # for a process that was gone; whether you got that or a refusal depended on whether
     # you happened to call another tool first.
-    _live()
+    live()
     return placement.find(name, offset, section, linear, limit)
 
 
@@ -1542,7 +1287,7 @@ def comment_add(ref: str, text: str) -> dict[str, Any]:
 
     Reference: REFERENCE.md, Declarations.
     """
-    return comments.comment_add(_live(), ref, text)
+    return comments.comment_add(live(), ref, text)
 
 
 @tool("List the comments", summary=one_line.comment_list, read_only=True)
@@ -1560,7 +1305,7 @@ def comment_list() -> dict[str, Any]:
 
     Reference: REFERENCE.md, Declarations.
     """
-    return comments.comment_list(_live())
+    return comments.comment_list(live())
 
 
 @tool("Delete a comment", summary=one_line.comment_delete)
@@ -1575,7 +1320,7 @@ def comment_delete(ref: str) -> dict[str, Any]:
 
     Reference: REFERENCE.md, Declarations.
     """
-    return comments.comment_delete(_live(), ref)
+    return comments.comment_delete(live(), ref)
 
 
 @tool("Save the comments to a file", summary=one_line.comment_save)
@@ -1594,7 +1339,7 @@ def comment_save(dest: str) -> dict[str, Any]:
 
     Reference: REFERENCE.md, Declarations.
     """
-    return comments.comment_save(_live(), dest)
+    return comments.comment_save(live(), dest)
 
 
 @tool("Load comments from a file", summary=one_line.comment_load)
@@ -1614,7 +1359,7 @@ def comment_load(source: str) -> dict[str, Any]:
 
     Reference: REFERENCE.md, Declarations.
     """
-    return comments.comment_load(_live(), source)
+    return comments.comment_load(live(), source)
 
 
 # ---------------------------------------------------------------------- the DOS machine
@@ -1653,7 +1398,7 @@ def machine_map(sections: list[str] | None = None, dest: str = "") -> dict[str, 
     """
     chosen = narrowing.sections(sections, machine.SECTION_NAMES, machine.DEFAULT_SECTIONS)
     target = paths.fresh_dest("dest", dest) if dest else None
-    session = _live()
+    session = live()
     _console_listening(session, "a listing")
     whole = machine.machine_map(session, chosen)
     if "vga" in chosen:
@@ -1698,7 +1443,7 @@ def interrupt_vectors(number: int | None = None) -> dict[str, Any]:
 
     Reference: REFERENCE.md, Reading and writing.
     """
-    session = _live()
+    session = live()
     _console_listening(session, "`INTVEC`")
     return st.reply(**machine.interrupt_vectors(session, number))
 
@@ -1731,7 +1476,7 @@ def palette(first: int = 0, count: int = 0, scale: int = 0, dest: str = "") -> d
 
     Reference: REFERENCE.md, Media files.
     """
-    session = _live()
+    session = live()
     _console_listening(session, "a listing")
     return st.reply(**screen.palette(session, first, count, scale,
                                      paths.absolute("dest", dest) if dest else None,
@@ -1766,7 +1511,7 @@ def screen_view(crop: list[int] | None = None, scale: int = 0,
 
     Reference: REFERENCE.md, Media files.
     """
-    session = _live()
+    session = live()
     _console_listening(session, "a listing")
     return st.reply(**screen.screen_view(session, crop, scale,
                                          paths.absolute("dest", dest) if dest else None,
@@ -1794,7 +1539,7 @@ def screen_signature(crop: list[int] | None = None) -> dict[str, Any]:
 
     Reference: REFERENCE.md, Media files.
     """
-    session = _live()
+    session = live()
     _console_listening(session, "a listing")
     return st.reply(**screen.screen_signature(session, crop))
 
@@ -1823,7 +1568,7 @@ def series_capture(frames: list[int] | None = None, first: int | None = None,
 
     Reference: REFERENCE.md, Media files.
     """
-    session = _live()
+    session = live()
     return st.reply(**media.series_capture(session, STATE.session_scratch(), frames, first,
                                            last, step, crop, dest, source))
 
@@ -1875,7 +1620,7 @@ def breakpoint_at(ref: str, by: str = "auto") -> dict[str, Any]:
     with `why`), `marked` and `note` when the symbol carries the linker's mark (a fact, not a
     refusal: whether such an address fires is an open question).
     """
-    return arming.breakpoint_at(_live(), ref, by)
+    return arming.breakpoint_at(live(), ref, by)
 
 
 @tool("List the breakpoint declarations", summary=one_line.breakpoint_list, read_only=True)
@@ -1903,7 +1648,7 @@ def breakpoint_list() -> dict[str, Any]:
     and never touches a watch; `watch_clear` is the other, and the two together empty the
     store.
     """
-    return arming.breakpoint_list(_live())
+    return arming.breakpoint_list(live())
 
 
 @tool("Clear breakpoint declarations", summary=one_line.breakpoint_clear)
@@ -1920,7 +1665,7 @@ def breakpoint_clear(ref: str = "") -> dict[str, Any]:
     breakpoint declaration is INVALID, naming the refs the store holds; an empty `ref` on an
     empty store is `ok` with 0.
     """
-    return arming.breakpoint_clear(_live(), ref or None)
+    return arming.breakpoint_clear(live(), ref or None)
 
 
 @tool("Declare a watch", summary=one_line.watch_add)
@@ -1955,7 +1700,7 @@ def watch_add(ref: str, mode: str, length: int = 0, fmt: str = "auto",
 
     Reference: REFERENCE.md, Declarations.
     """
-    return arming.watch_add(_live(), ref, mode, length, fmt, by)
+    return arming.watch_add(live(), ref, mode, length, fmt, by)
 
 
 @tool("List the watch declarations", summary=one_line.watch_list, read_only=True)
@@ -1973,7 +1718,7 @@ def watch_list() -> dict[str, Any]:
     this family's broom; `breakpoint_clear` never touches a watch, and the two together
     empty the store.
     """
-    return arming.watch_list(_live())
+    return arming.watch_list(live())
 
 
 @tool("Clear watch declarations", summary=one_line.watch_clear)
@@ -1989,7 +1734,7 @@ def watch_clear(ref: str = "") -> dict[str, Any]:
     declaration is INVALID, naming the refs the store holds; an empty `ref` on an empty store
     is `ok` with 0.
     """
-    return arming.watch_clear(_live(), ref or None)
+    return arming.watch_clear(live(), ref or None)
 
 
 # ------------------------------------------------------------ input to a running guest
@@ -2019,7 +1764,7 @@ def send_keys(keys: list[str], modifiers: list[str] | None = None,
 
     Reference: REFERENCE.md, Input and the screen.
     """
-    return inputs.send_keys(_live(), keys, modifiers, expect, seconds, _progress(ctx))
+    return inputs.send_keys(live(), keys, modifiers, expect, seconds, progress_of(ctx))
 
 
 @tool("Send mouse input", summary=one_line.send_mouse)
@@ -2051,8 +1796,8 @@ def send_mouse(x: int | None = None, y: int | None = None, button: str | None = 
 
     Reference: REFERENCE.md, Input and the screen.
     """
-    return inputs.send_mouse(_live(), x, y, button, action, units, expect, seconds,
-                             _progress(ctx))
+    return inputs.send_mouse(live(), x, y, button, action, units, expect, seconds,
+                             progress_of(ctx))
 
 
 # ----------------------------------------------------------------------- the captures
@@ -2068,7 +1813,7 @@ def captures() -> dict[str, Any]:
     An empty list on a conf whose autoexec exits before `program` runs is explained in the
     reply. Works on a running guest.
     """
-    return caps.captures(_live())
+    return caps.captures(live())
 
 
 @tool("Extract a frame to a file", summary=one_line.capture_frame)
@@ -2081,7 +1826,7 @@ def capture_frame(at: int, dest: str, source: str | None = None) -> dict[str, An
     and so is a `dest` already there: it is never deleted or overwritten; a frame past the
     end is refused rather than a frameless file handed back.
     """
-    session = _live()
+    session = live()
     return caps.capture_frame(session, at, paths.absolute("dest", dest),
                               paths.input_file("source", source, "capture")
                               if source is not None else None)
@@ -2138,7 +1883,7 @@ def perform(steps: list[dict[str, Any]], wait: float = 30.0, summaries: bool = F
 
     Reference: REFERENCE.md, Sequences in one call.
     """
-    return sequence.run_steps(_live(), steps, wait, _step_ops(), _progress(ctx), summaries)
+    return sequence.run_steps(live(), steps, wait, _step_ops(), progress_of(ctx), summaries)
 
 
 @tool("Look, act, verify", summary=one_line.drive)
@@ -2176,8 +1921,8 @@ def drive(act: list[dict[str, Any]], expect: str | None = None,
     was sent": that word beside `seen: false` would read as a contradiction rather than as
     "the check ran and found nothing".
     """
-    return sequence.drive(_live(), _step_ops(), act, expect, seconds, pattern, limit, wait,
-                          _progress(ctx), summaries)
+    return sequence.drive(live(), _step_ops(), act, expect, seconds, pattern, limit, wait,
+                          progress_of(ctx), summaries)
 
 
 strict.strict_arguments(mcp)
@@ -2189,7 +1934,7 @@ def main() -> None:
     finally:
         # UNDER THE LOCK, because a worker thread may still be inside a tool holding
         # the terminal this is about to close.
-        with _LOCK:
+        with LOCK:
             if STATE.session is not None:
                 STATE.session.close()
                 STATE.session = None

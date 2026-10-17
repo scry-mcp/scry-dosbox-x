@@ -37,6 +37,7 @@ import dosbox_arming as arming
 import dosbox_checks as checks
 import dosbox_declarations as dec
 import dosbox_inputs as inputs
+import dosbox_mcp
 import dosbox_placement as placement
 import dosbox_running as running
 import dosbox_sequence as sequence
@@ -114,7 +115,7 @@ class FakeSession:
 
     def wait_ready(self, timeout: float = 30.0, progress: Any = None) -> float:
         """Found MISSING the moment the drift check stopped looking only for the
-        literal spelling `_live().name`. `start` calls it, and no contract case had
+        literal spelling `live().name`. `start` calls it, and no contract case had
         ever reached it against this double because every `start` case tests a refusal
         that fires before a process exists."""
         return 0.0
@@ -449,7 +450,7 @@ def test_a_cap_of_zero_would_lie_and_is_refused() -> None:
 
 
 def test_a_dead_session_that_had_been_written_to_says_so_in_its_refusal() -> None:
-    """`_live()` clears the global before raising, so `_reply` can no longer describe
+    """`live()` clears the global before raising, so `_reply` can no longer describe
     what it just buried and `session` comes back null. The module docstring promises
     every reply carries `altered`, "the INVALID ones too"; this is the one path where
     the field cannot exist, so the REASON carries it instead.
@@ -748,7 +749,7 @@ def test_every_tool_has_a_live_case_naming_it() -> None:
     called: set[str] = set()
     for path in sorted(live.glob("test_*.py")):
         called |= _tools_called_in_tests(path.read_text(encoding="utf-8"))
-    missing = sorted(set(server.registered_tools()) - called)
+    missing = sorted(set(dosbox_mcp.registered_tools()) - called)
     assert not missing, (
         f"these tools have no live case that CALLS them through the server: "
         f"{missing}. A tool with no live case is a tool whose green means nothing -- "
@@ -774,7 +775,7 @@ def test_every_tool_this_server_promises_is_actually_registered() -> None:
                 "screen_wait", "trace", "comment_add", "comment_list", "comment_delete",
                 "comment_save", "comment_load", "series_capture",
                 "image_diff", "series_diff", "region_track", "golden_check"}
-    got = server.registered_tools()
+    got = dosbox_mcp.registered_tools()
     assert set(got) == expected
     # NOT a length check against `expected`: `registered_tools()` reads a dict keyed
     # by name, so a duplicate cannot exist and that assertion described a state the
@@ -819,7 +820,7 @@ def test_a_second_session_is_refused_while_the_first_is_alive(tmp_path: Path) ->
 
 
 def live_callers() -> set[str]:
-    """The tools that CALL `_live()`, asked of the source rather than remembered.
+    """The tools that CALL `live()`, asked of the source rather than remembered.
 
     A list here is a list that falls behind the surface, which is what happened: it
     named ten of the sixteen, under a docstring reading "THE POPULATION, not a sample
@@ -827,19 +828,19 @@ def live_callers() -> set[str]:
     exactly the direction that kind of list fails in.
 
     IT PARSES, it does not search, for the same reason
-    `test_every_tool_has_a_live_case_naming_it` does: `"_live()" in text` is satisfied
+    `test_every_tool_has_a_live_case_naming_it` does: `"live()" in text` is satisfied
     by a comment.
     """
     tree = ast.parse(Path(str(server.__file__)).read_text(encoding="utf-8"))
     return {node.name for node in tree.body
             if isinstance(node, ast.FunctionDef)
             and any(isinstance(sub, ast.Call) and isinstance(sub.func, ast.Name)
-                    and sub.func.id == "_live" for sub in ast.walk(node))}
+                    and sub.func.id == "live" for sub in ast.walk(node))}
 
 
 def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         tmp_path: Path) -> None:
-    """THE POPULATION, DERIVED. Each of these calls `_live()`, and a tool that stopped
+    """THE POPULATION, DERIVED. Each of these calls `live()`, and a tool that stopped
     doing so would answer from a corpse.
 
     THE ARGUMENTS CANNOT BE DERIVED -- a parser cannot invent a valid `segment` -- so
@@ -901,10 +902,14 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         "comment_save": lambda: server.comment_save(dest="/tmp/x.comments.tsv"),
         "comment_load": lambda: server.comment_load(source=str(nm)),
     }
-    missing = sorted(live_callers() - set(calls))
+    callers = live_callers()
+    assert len(callers) > len(calls) // 2, (
+        f"the derived population found {sorted(callers)}: an AST search that matches nothing "
+        f"makes the check below pass whatever the tools are")
+    missing = sorted(callers - set(calls))
     assert not missing, (
         f"these tools ask for a live session and are not exercised here: {missing}. "
-        f"A tool that stopped calling `_live()` would answer from a corpse and nothing "
+        f"A tool that stopped calling `live()` would answer from a corpse and nothing "
         f"would say so")
     for name, call in calls.items():
         got = call()
@@ -1093,11 +1098,11 @@ def test_the_double_has_not_drifted_from_what_it_stands_in_for(tmp_path: Path) -
     # with what `Session` actually has. Three derivations have now been tried and the
     # first two each failed in one direction:
     #
-    #   `_live()\.(\w+)` by TEXT      -- saw 10, missed 5, and any `sess = _live()`
+    #   `live()\.(\w+)` by TEXT      -- saw 10, missed 5, and any `sess = live()`
     #                                    refactor blinded it completely.
     #   any `.name` by TEXT           -- read comments and docstrings, and made
     #                                    `subprocess.run` into a phantom requirement.
-    #   `_live()` usage by AST        -- precise about the source of the call and
+    #   `live()` usage by AST        -- precise about the source of the call and
     #                                    therefore NARROWER than the regex it replaced:
     #                                    MEASURED, it covered 10 where the regex had
     #                                    covered 14, so deleting `wait_ready` from the
@@ -1185,7 +1190,7 @@ def test_invalid_is_surfaced_and_not_swallowed(monkeypatch: pytest.MonkeyPatch) 
     # for the test, since an unknown name there is a programmer's error by design.
     monkeypatch.setattr(checks, "MACHINE_JUDGES", checks.MACHINE_JUDGES | {"boom_invalid"})
 
-    @server.tool("Boom invalid", summary=lambda args, reply: "boom_invalid: ok")
+    @dosbox_mcp.tool("Boom invalid", summary=lambda args, reply: "boom_invalid: ok")
     def boom_invalid() -> dict[str, object]:
         raise ds.Invalid("unexpected_answer", "I examined nothing")
 
@@ -1196,7 +1201,7 @@ def test_invalid_is_surfaced_and_not_swallowed(monkeypatch: pytest.MonkeyPatch) 
         # The throwaway registration LEAVES the live surface, or every later assertion
         # about that surface (the roster in the instructions) is order-dependent.
         server.mcp._tool_manager._tools.pop("boom_invalid", None)
-        server._SUMMARIES.pop("boom_invalid", None)
+        dosbox_mcp._SUMMARIES.pop("boom_invalid", None)
 
 
 def test_a_real_bug_is_not_dressed_up_as_invalid(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -1209,7 +1214,7 @@ def test_a_real_bug_is_not_dressed_up_as_invalid(monkeypatch: pytest.MonkeyPatch
     # for the test, since an unknown name there is a programmer's error by design.
     monkeypatch.setattr(checks, "MACHINE_JUDGES", checks.MACHINE_JUDGES | {"boom_bug"})
 
-    @server.tool("Boom bug", summary=lambda args, reply: "boom_bug: ok")
+    @dosbox_mcp.tool("Boom bug", summary=lambda args, reply: "boom_bug: ok")
     def boom_bug() -> dict[str, object]:
         raise AttributeError("a real defect")
 
@@ -1218,7 +1223,7 @@ def test_a_real_bug_is_not_dressed_up_as_invalid(monkeypatch: pytest.MonkeyPatch
             boom_bug()
     finally:
         server.mcp._tool_manager._tools.pop("boom_bug", None)
-        server._SUMMARIES.pop("boom_bug", None)
+        dosbox_mcp._SUMMARIES.pop("boom_bug", None)
 
 
 def test_both_halves_of_the_capture_come_back(tmp_path: Path) -> None:
@@ -1802,8 +1807,8 @@ def test_a_session_that_died_on_its_bound_takes_the_table_with_it(
     """THE MOST DANGEROUS OF THE THREE CLEARING SITES, and the one no test reached.
 
     `_forget_symbols` runs when the session OBJECT changes. A session that expires on
-    its own bound changes no object: it is buried inside `_live()`, and `symbols_find`
-    did not call `_live()` at all -- so it answered `ok` with a linear address for a
+    its own bound changes no object: it is buried inside `live()`, and `symbols_find`
+    did not call `live()` at all -- so it answered `ok` with a linear address for a
     program that was gone, and whether the caller got that or a refusal depended on
     whether they happened to call another tool first.
     """
@@ -2008,7 +2013,7 @@ def test_a_source_that_cannot_be_read_is_a_refusal_and_not_a_traceback(
 
 
 def test_memdump_forwards_the_address_the_caller_asked_for(tmp_path: Path) -> None:
-    """`_live().memdump(0, 0, length, ...)` passed every case: the double ignored the
+    """`live().memdump(0, 0, length, ...)` passed every case: the double ignored the
     segment and the offset, so nothing could tell a tool that forwards its caller's
     address from one that dumps low memory and reports `ok`."""
     fake = install()
@@ -2025,7 +2030,7 @@ def test_memdump_forwards_the_address_the_caller_asked_for(tmp_path: Path) -> No
 
 
 def test_set_register_writes_the_value_it_was_given() -> None:
-    """`_live().set_register(name, 0)` was green: the only case asserted `altered` and
+    """`live().set_register(name, 0)` was green: the only case asserted `altered` and
     the session block, never the mapping that comes back, so the VALUE was unwatched."""
     fake = install()
     got = cast(dict[str, Any], server.set_register(name="EAX", value=0xDEADBEEF))
@@ -2706,7 +2711,7 @@ class NamesFake:
         self.where_refusals = 0              # >0: refuse where() this many times, then stop
         self.alive_flag = True               # False models an emulator that has died
         self.registers_raises = False        # True models a cut pane: registers() refuses
-        self.altered = False                 # _live() reads this when burying a dead session
+        self.altered = False                 # live() reads this when burying a dead session
         self.dies_on_resume = False          # True: alive at perform start, dead after resume
         self.commands_sent: list[list[bytes]] = []   # every send_commands call, whole
         self.break_ins = 0                       # how many times the menu route was taken
@@ -5669,7 +5674,7 @@ def test_the_sdk_injects_the_context_into_the_waiting_tools_and_hides_it(
     for name in ("step", "registers", "status"):
         tool = server.mcp._tool_manager.get_tool(name)
         assert tool is not None and tool.context_kwarg is None, name
-    assert server._progress(None) is ds.no_progress
+    assert dosbox_mcp.progress_of(None) is ds.no_progress
 
 
 def test_the_progress_bridge_reaches_the_context_from_a_worker_thread() -> None:
@@ -5685,7 +5690,7 @@ def test_the_progress_bridge_reaches_the_context_from_a_worker_thread() -> None:
             got.append((progress, total, message))
 
     async def main() -> None:
-        report = server._progress(_Ctx())  # type: ignore[arg-type]
+        report = dosbox_mcp.progress_of(_Ctx())  # type: ignore[arg-type]
         await anyio.to_thread.run_sync(lambda: report(3.0, 9.0, "tick"))
 
     anyio.run(main)
@@ -5883,7 +5888,7 @@ def test_the_front_door_table_names_exactly_the_tools_the_server_registers() -> 
     assert listed, "the table names no tool at all, so this is not a verdict"
     twice = sorted({name for name in listed if listed.count(name) > 1})
     assert not twice, f"named in more than one row: {twice}"
-    registered = set(server.registered_tools())
+    registered = set(dosbox_mcp.registered_tools())
     assert set(listed) == registered, (
         f"missing from the table: {sorted(registered - set(listed))}; "
         f"in the table but not registered: {sorted(set(listed) - registered)}"
@@ -5895,7 +5900,7 @@ def test_every_registered_tool_is_named_in_the_instructions() -> None:
     tool registered but not named there is one the session never learns exists. Asked of
     the MCP layer, never of a list kept beside it."""
     text = server.mcp.instructions or ""
-    missing = sorted(t for t in server.registered_tools()
+    missing = sorted(t for t in dosbox_mcp.registered_tools()
                      if f"`{t}`" not in text and f"`{t}(" not in text)
     assert not missing, f"registered tools the instructions never name: {missing}"
 
@@ -6348,7 +6353,7 @@ def test_read_memory_length_is_bounded_and_resume_takes_the_siblings_bound(
     monkeypatch.setattr(fake, "_screen", "", raising=False)
     monkeypatch.setattr(fake, "alive", lambda: True)
     ticks: list[str] = []
-    monkeypatch.setattr(server, "_progress", lambda ctx: (lambda p, t, m: ticks.append(m)))
+    monkeypatch.setattr(server, "progress_of", lambda ctx: (lambda p, t, m: ticks.append(m)))
     try:
         out = cast(dict[str, Any], server.resume(seconds=1.3))
     finally:
@@ -6625,7 +6630,7 @@ def test_an_invalid_summary_is_cut_at_a_word_and_says_so() -> None:
     """The summary is one line a person reads without the JSON, so a long refusal is cut
     there: at a word, with a mark that says the rest is in `message`, never mid-word."""
     message = "a RELATIVE path is not a place: " + "give the dump an absolute path " * 6
-    line = server._summary("memdump", {}, {"status": "INVALID", "code": "bad_argument",
+    line = dosbox_mcp._summary("memdump", {}, {"status": "INVALID", "code": "bad_argument",
                                            "message": message})
     head = "memdump: INVALID (bad_argument), "
     assert line.startswith(head), line
@@ -6633,7 +6638,7 @@ def test_an_invalid_summary_is_cut_at_a_word_and_says_so() -> None:
     assert shown.endswith("...") and len(shown) <= 124, shown
     kept = shown.removesuffix("...")
     assert message.startswith(kept) and message[len(kept)] == " ", "cut at a word, never inside one"
-    short = server._summary("x", {}, {"status": "INVALID", "code": "c", "message": "short"})
+    short = dosbox_mcp._summary("x", {}, {"status": "INVALID", "code": "c", "message": "short"})
     assert short == "x: INVALID (c), short"
 
 
@@ -6883,9 +6888,9 @@ def test_every_tool_names_its_summary_and_declares_both_hints() -> None:
     """`tool()` takes `summary=` (required) and `idempotent=`: every tool
     the MCP layer serves has its own line in `dosbox_summaries`, and its annotations carry
     BOTH hints as booleans, so a client never reads an absent hint as a guess."""
-    served = server.registered_tools()
-    assert served and set(served) <= set(server._SUMMARIES), sorted(
-        set(served) - set(server._SUMMARIES))
+    served = dosbox_mcp.registered_tools()
+    assert served and set(served) <= set(dosbox_mcp._SUMMARIES), sorted(
+        set(served) - set(dosbox_mcp._SUMMARIES))
     for t in server.mcp._tool_manager.list_tools():
         hints = t.annotations
         assert hints is not None, t.name
@@ -7118,11 +7123,11 @@ def test_a_list_refuses_a_bad_hex_address_before_its_first_step_runs(
 def test_every_tool_is_summarised_by_its_own_line() -> None:
     """Each line is the tool's own: this server's function of its name, or, for a media file
     tool, scry-core's line of that tool."""
-    for name in server.registered_tools():
+    for name in dosbox_mcp.registered_tools():
         if name in media_tools.TOOLS:
-            assert server._SUMMARIES[name] is media_tools.TOOLS[name].summary, name
+            assert dosbox_mcp._SUMMARIES[name] is media_tools.TOOLS[name].summary, name
         else:
-            assert server._SUMMARIES[name].__name__ == name, (name, server._SUMMARIES[name])
+            assert dosbox_mcp._SUMMARIES[name].__name__ == name, (name, dosbox_mcp._SUMMARIES[name])
 
 
 def test_a_recorded_stop_keeps_the_paging_mark_its_survey_read(tmp_path: Path) -> None:

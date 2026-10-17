@@ -51,6 +51,8 @@ from matrix_common import (
 )
 from matrix_ledger import Cell
 
+import dosbox_mcp
+
 PROBE_COM = GUEST / "probe.com"
 #: A Borland real-mode map this package builds and commits: symbols to load on a guest that has
 #: none of its own. The name looked up is one the file declares.
@@ -123,7 +125,7 @@ def into_probe() -> Probe:
 # is the only variable, and every reply's session block has to agree with the machine.
 
 STATES = ("none", "stopped", "running", "closed")
-TOOLS = list(server.registered_tools())
+TOOLS = list(dosbox_mcp.registered_tools())
 SCRATCH = f"{SCRATCH_SEG:04X}"
 REF_DOC = "REFERENCE.md, "
 

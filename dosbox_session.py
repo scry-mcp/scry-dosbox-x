@@ -2696,9 +2696,9 @@ class Session:
         marker, and an emulator that has gone produces the same absence. What tells
         those apart is `alive` -- but it lives in the reply's `session` block, so it is
         there only while there IS a session to report. An emulator already found dead is
-        buried by the server's `_live`, which then REFUSES, and that reply carries
+        buried by the server's `live`, which then REFUSES, and that reply carries
         `session: null` and therefore no `alive` at all; there it is the refusal's own
-        text that says so, exactly as `_live` already does for `altered`.
+        text that says so, exactly as `live` already does for `altered`.
 
         THIS PARAGRAPH USED TO END "and every reply carries it", which is a checkable
         claim and was false on the one path it nominates: with no live session this tool

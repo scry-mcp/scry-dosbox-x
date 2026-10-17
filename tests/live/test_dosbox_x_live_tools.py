@@ -6,7 +6,7 @@ server actually publishes -- the population comes from the MCP registry and is g
 `test_every_tool_has_a_live_case_naming_it`, so the invariant is quoted here rather than
 a count, which expires on its own the next time a tool is added. Until this file
 existed NOT ONE live case went through them: the reply envelope, the `Invalid` to
-`INVALID` translation, `_live()`'s handling of a session that has gone, and the
+`INVALID` translation, `live()`'s handling of a session that has gone, and the
 `_SESSION` global's whole life cycle had been seen only against a fake.
 
 THE EVIDENCE THAT THE GAP WAS REAL, and it is not a hypothetical. `memdump` shipped
@@ -159,7 +159,7 @@ def test_build_check_answers_about_this_build_and_names_the_whole_surface() -> N
     assert reply["status"] == "ok", reply
     assert reply["debugger"] is True
     assert Path(str(reply["binary"])).is_file()
-    # THE LIST IS SPELLED OUT rather than compared with `server.registered_tools()`,
+    # THE LIST IS SPELLED OUT rather than compared with `dosbox_mcp.registered_tools()`,
     # which is what `build_check` reads: that comparison would be the registry agreeing
     # with itself. Its twin lives in the contract file's
     # `test_every_tool_this_server_promises_is_actually_registered`, and NOTHING ties
