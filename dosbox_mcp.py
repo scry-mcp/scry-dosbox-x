@@ -46,6 +46,9 @@ def refusal(name: str, arguments: dict[str, Any], cause: ValidationError) -> dic
     dispatches through `call_tool`. `LOCK` being an `RLock` is not what makes this safe.
     """
     with LOCK:
+        # A REFUSAL WHOSE CALL WAS CANCELLED while it queued answers nobody, so it spends no
+        # one-time account (a cancelled call's record, a stop's accounts).
+        cancel.check()
         reply = st.reply(status="INVALID", code="bad_argument",
                          message=strict.schema_refusal(cause))
         body = _finished(name, arguments, reply)
@@ -284,7 +287,9 @@ def tool(
                 except BaseException as e:
                     # A CANCELLED CALL ends as it declared and answers nothing: the request is
                     # gone, so the record waits for the next reply. Anything else is not ours.
-                    if cancel.is_cancellation(e):
+                    # Only the OUTERMOST call ends: a step of a `perform` cancelled is the
+                    # sequence's cancel, ended as the sequence declared.
+                    if cancel.is_cancellation(e) and _nested[0] == 1:
                         _end_cancelled(fn.__name__, on_cancel or "none", began)
                     raise
                 finally:

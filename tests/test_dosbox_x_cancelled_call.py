@@ -267,3 +267,33 @@ def test_a_kill_that_could_not_reap_is_not_called_closed(
     with pytest.raises(asyncio.CancelledError):
         waiting_tool["kill"]()
     assert st.STATE.cancelled is not None and st.STATE.cancelled.left == "unknown"
+
+
+def test_a_schema_refusal_whose_call_was_cancelled_spends_no_account(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    from pydantic import BaseModel, ValidationError
+
+    class _M(BaseModel):
+        n: int
+    try:
+        _M(n="x")  # type: ignore[arg-type]
+    except ValidationError as e:
+        cause = e
+    install()
+    st.STATE.cancelled = cancel.Cancelled("run_for", 1.0, "stopped")
+    st.STATE.applied_last["armed"] = ["F000:0100"]
+    _cancel_at(monkeypatch, 1)
+    with pytest.raises(asyncio.CancelledError):
+        dosbox_mcp.refusal("read_memory", {"ref": 5}, cause)
+    assert st.STATE.cancelled is not None and st.STATE.applied_last, "an account was spent"
+
+
+def test_a_step_of_a_sequence_cancelled_is_the_sequences_cancel_alone(
+        monkeypatch: pytest.MonkeyPatch, waiting_tool: dict[str, Any]) -> None:
+    install()
+    _running().at = True
+    _cancel_at(monkeypatch, 3)                 # perform's entry, the step's entry, its wait
+    with pytest.raises(asyncio.CancelledError):
+        server.perform(steps=[{"op": "wait_none"}], wait=0.0)
+    out = server.status()
+    assert out["cancelled"]["tool"] == "perform" and "earlier" not in out["cancelled"], out
