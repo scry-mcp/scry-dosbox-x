@@ -234,6 +234,29 @@ that brings them; a reply that left nothing out carries neither, except a `machi
 lists were cut, whose `how` says how to have every row. `how` in a `stop` or `close` reply is
 another word: how that stop or end came about.
 
+### A long wait, and a cancelled call
+
+A wait that can run for seconds reports its progress about once a second, as MCP progress
+notifications a client paints in the call's row: the frames or milliseconds done of those
+asked, a count it is waiting on, or the seconds of the bound when time is all there is. A step
+of `perform` or `drive` reports through the sequence's own line,
+`perform step 2 of 5 (run_for): ...`, so the line never goes back.
+
+A call the client cancels ends at once, the way its own bound would have ended it, and answers
+nothing: the protocol sends no response to a cancelled request. The next reply, whatever tool it
+is, says once what that call left: in `cancelled` (`tool`, `after_s`, `left`, one of `stopped`,
+`running`, `closed` or `unknown`, and `earlier`, the cancelled calls before it that no reply
+reported) and in its summary, `after a cancelled run_for (stopped): ...`. A call cancelled while
+it waited for another to finish did nothing, and leaves no record. Each tool declares its end:
+
+| End | What the cancel leaves | Tools |
+|---|---|---|
+| `stop` | the guest back at the debugger by `BREAK`, as `stop` does, or a stop it had already reached recorded as its own; a `run_to` removes the breakpoints it armed | `stop`, `run_to`, `run_for`, `trace`, `screen_wait`, `perform` |
+| `kill` | the emulator closed; a close cancelled half-way still finishes | `start`, `close` |
+| `none` | the guest as the call found it | `log_wait`, `resume`, `snapshot`, `send_keys`, `send_mouse`, `drive` |
+
+Any other tool that meets a cancel ends `none`.
+
 ## Names for addresses
 
 The debugger *does* have a symbol facility (`IV` names an address, `SV` saves the list, `LV`

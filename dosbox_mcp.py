@@ -84,7 +84,7 @@ mcp = envelope.Envelope(
         '(`breakpoint_interrupt` 0x21 real mode, 0x31 ah=2 DJGPP) or at `stop`, headless or\n'
         'windowed. What you declare while\n'
         'it runs is `pending` until the next stop. After `symbols_load`, a `ref` is a symbol or\n'
-        'a `SEG:OFF`. A sequence is ONE call: `perform`, or `drive` for an input and its check.\n'
+        'a `SEG:OFF`. A cancel ends a call as its bound would; the next reply says `cancelled`.\n'
         'FOR A VALUE use `registers`, `read_memory`, `memdump` or `log`; `debug` is the last\n'
         'resort.\n\n'
         'EVERY REPLY carries `summary`, `status` (`ok`, or `INVALID` with `code` and `message`)\n'
