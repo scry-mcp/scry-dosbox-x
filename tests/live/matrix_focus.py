@@ -33,9 +33,6 @@ from scry_core import focus_watch
 
 FLAGS_VAR = "DOSBOX_X_LIVE_WINDOW_FLAGS"
 NAMES = {"dosbox-x"}
-HOLD_S = 4.0
-#: Shorter than this, a judged window says too little to be a verdict.
-MIN_JUDGED_MS = 60_000
 
 O_CONTROL = cells(
     ("O the control: a shared start forced in front is seen in front",
@@ -55,23 +52,19 @@ WATCH: list[focus_watch.FocusWatch] = []
 SINCE: list[int] = []
 
 
-def _now_ms() -> int:
-    return int(time.time() * 1000)
-
-
 def _flags() -> list[str]:
     return [ln for ln in ENV.get(FLAGS_VAR, "").splitlines() if ln.strip()]
 
 
 def _hold(background: bool) -> tuple[int, int]:
     """One shared probe start, launched as asked, held, closed: its window, in ms."""
-    began = _now_ms()
+    began = focus_watch.now_ms()
     boot(conf=conf_without_launch(PROBE_CONF, "PROBE.COM"), cwd=GUEST, mode="shared",
          window_flags=_flags(), program="PROBE.COM", background=background)
     must(M.call(server.resume), "releasing the probe")
-    time.sleep(HOLD_S)
+    time.sleep(focus_watch.HOLD_S)
     close_whatever()
-    return began, _now_ms()
+    return began, focus_watch.now_ms()
 
 
 @M.section("O", "the focus gate's control, opening the run", O_CONTROL, FLAGS_VAR, place=0)
@@ -81,54 +74,24 @@ def section_o_control() -> None:
     watch.__enter__()
     WATCH.append(watch)
     print(f"  focus watch: {tsv}", flush=True)
-    front, behind = _hold(background=False), _hold(background=True)
-    seen = focus_watch.judge(watch.samples, NAMES, start_ms=front[0], end_ms=front[1])
-    M.judge("O the control: a shared start forced in front is seen in front",
-            seen.status == "TOOK_FOCUS", seen.reason)
-    clean = focus_watch.judge(watch.samples, NAMES, start_ms=behind[0], end_ms=behind[1])
-    if clean.status == "SPACE_CHANGED":
-        # A Space move names nobody (the verdict below says why), here as there.
-        M.block("O the control: a shared start behind is never in front", clean.reason)
-    else:
-        M.judge("O the control: a shared start behind is never in front",
-                clean.status == "CLEAN", clean.reason)
-    began, ended, why = focus_watch.move_space()
-    moved = focus_watch.judge(watch.samples, NAMES, start_ms=began, end_ms=ended)
-    held = moved.status == "SPACE_CHANGED" and not why
-    M.judge("O the control: a Space moved on purpose is seen moved", held,
-            f"{why}; {moved.reason}" if why else moved.reason)
-    if seen.status == "TOOK_FOCUS" and clean.status == "CLEAN" and held:
-        SINCE.append(ended)
+    c = focus_watch.control(watch, NAMES, _hold)
+    for spec, judged in zip(O_CONTROL, (c.front, c.behind, c.space), strict=True):
+        if judged.status == "BLOCKED":
+            M.block(spec.label, judged.reason)
+        else:
+            M.judge(spec.label, judged.status == "PASS", judged.reason)
+    if c.since is not None:
+        SINCE.append(c.since)
 
 
 @M.section("O", "the focus gate's verdict, closing the run", O_VERDICT, FLAGS_VAR, place=2)
 def section_o_verdict() -> None:
-    label = O_VERDICT[0].label
     if not WATCH:
         M.block_rest("the control never started the watch")
         return
-    watch = WATCH.pop()
-    watch.__exit__(None, None, None)
-    if not SINCE:
-        M.block_rest(f"the control did not hold, so the watch clears nothing; record {watch.path}")
-        return
-    end = _now_ms()
-    judged = end - SINCE[0]
-    if judged < MIN_JUDGED_MS:
-        # TOO LITTLE RAN between the control and the verdict (O alone): no verdict to give.
-        M.block_rest(f"{judged} ms ran after the control, too little to judge; "
-                     f"record {watch.path}")
-        return
-    v = focus_watch.judge(watch.samples, NAMES, start_ms=SINCE[0], end_ms=end)
-    if v.status == "INVALID":
-        # THE INSTRUMENT, not the server: a sample it could not take, or a stretch unsampled.
-        M.block_rest(f"the watch cannot judge the run: {v.reason}; record {watch.path}")
-        return
-    if v.status == "SPACE_CHANGED":
-        # A SPACE MOVE NAMES NOBODY: the owner may have made it. Never green, never the
-        # server's FAIL on that alone: the record is there to read.
-        M.block_rest(f"a Space moved and nothing names who moved it: {v.reason}; "
-                     f"record {watch.path}")
-        return
-    M.judge(label, v.status == "CLEAN",
-            f"{v.status}: {v.reason}; record {watch.path}")
+    v = focus_watch.verdict(WATCH.pop(), NAMES, SINCE[0] if SINCE else None,
+                            focus_watch.now_ms())
+    if v.status == "BLOCKED":
+        M.block_rest(v.reason)
+    else:
+        M.judge(O_VERDICT[0].label, v.status == "PASS", v.reason)
