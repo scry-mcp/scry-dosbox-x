@@ -18,6 +18,7 @@ record's date is only honest against the machine it dates.
 
 from __future__ import annotations
 
+import atexit
 import os
 import shutil
 import tempfile
@@ -351,6 +352,16 @@ class State:
 
 
 STATE = State()
+
+
+@atexit.register
+def _remove_scratch() -> None:
+    """THE PROCESS'S SCRATCH GOES WITH THE PROCESS: the batches' directory lives as long as the
+    server does, and a session never closed (its client gone) has nobody else to take its
+    pictures away."""
+    for folder in (STATE.session_dir, STATE.scratch):
+        if folder is not None:
+            shutil.rmtree(folder, ignore_errors=True)
 
 
 # ------------------------------------------------------------------------- the envelope

@@ -12,6 +12,7 @@ the test AGREED WITH THE BUG and the suite could not tell "the guard fired" from
 from __future__ import annotations
 
 import ast
+import atexit
 import dataclasses
 import inspect
 import itertools
@@ -402,6 +403,7 @@ def clean_session() -> Any:
 
 
 _STORE_TMP = tempfile.mkdtemp(prefix="dosbox-x-server-test-")
+atexit.register(shutil.rmtree, _STORE_TMP, ignore_errors=True)
 _INSTALL_SEQ = itertools.count()
 
 
