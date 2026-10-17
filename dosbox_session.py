@@ -58,6 +58,10 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
+from scry_core import cancel
+from scry_core.progress import PROGRESS_EVERY_S as PROGRESS_EVERY_S
+from scry_core.progress import Progress as Progress
+from scry_core.progress import no_progress as no_progress
 from scry_core.reply_contract import Invalid as Invalid
 
 # The var-list ENCODING lives next door, in a module with no emulator in it, so a
@@ -568,16 +572,12 @@ RUN_TO_MAX = 10 * 60
 # guest's own instrumentation and coarse enough that a ten-minute wait is six thousand
 # reads rather than a spin.
 E9_POLL = 0.1
-# A BOUNDED WAIT REPORTS PROGRESS WITH A MESSAGE, through a callback the server hands in:
-# this module knows nothing of the protocol's `Context`, and a test hands in a list. The
-# arguments are the protocol's own (`progress`, `total`, `message`); the ticks are a second
-# apart, which is what a person watching the line can read.
-Progress = Callable[[float, float, str], None]
-PROGRESS_EVERY_S = 1.0
-
-
-def no_progress(progress: float, total: float, message: str) -> None:
-    """The callback of a call with no client to paint for (a test, a direct call)."""
+#: How much of the newest line a waiting `log_wait` shows in its progress line.
+LAST_LINE_SHOWN = 40
+# A BOUNDED WAIT REPORTS PROGRESS WITH A MESSAGE, through a callback the server hands in, and
+# polls for its call's cancellation at every turn: the vocabulary is `scry_core.progress`'s and
+# `scry_core.cancel`'s, the same on every Scry server, so this module knows nothing of the
+# protocol's `Context` and a test hands in a list.
 
 # `_screen` is trimmed to this. A session held open for an investigation accumulates
 # megabytes of repaints, and every append copied the whole buffer; `command()` no
@@ -645,6 +645,7 @@ def wait_exit(proc: subprocess.Popen[Any], seconds: float, progress: Progress,
     t0 = time.monotonic()
     next_tick = t0 + PROGRESS_EVERY_S
     while True:
+        cancel.check()
         # SLICES OF THE REAL `wait`, not a `poll` loop: `wait` is what reaps the child, and
         # what the doubles of `close` speak.
         try:
@@ -656,7 +657,7 @@ def wait_exit(proc: subprocess.Popen[Any], seconds: float, progress: Progress,
             return None
         if now >= next_tick:
             next_tick = now + PROGRESS_EVERY_S
-            progress(now - t0, seconds, f"{what}, {now - t0:.0f}s of {seconds:g}")
+            progress(now - t0, None, f"{what}, {now - t0:.0f}s of {seconds:g}s")
 
 
 # THE REFUSAL is `scry_core.reply_contract.Invalid` (a code of the
@@ -2073,6 +2074,7 @@ class Session:
         seen = ""
         next_tick = t0 + PROGRESS_EVERY_S
         while time.monotonic() - t0 < timeout:
+            cancel.check()
             seen += self._read(0.2)
             if PROMPT in self._screen:
                 self._mark_stopped()    # born stopped: the prompt answered
@@ -2080,8 +2082,8 @@ class Session:
             now = time.monotonic()
             if now >= next_tick:
                 next_tick = now + PROGRESS_EVERY_S
-                progress(now - t0, timeout,
-                         f"start: waiting for the debugger prompt, {now - t0:.0f}s of {timeout:g}")
+                progress(now - t0, None, f"start: waiting for the debugger prompt, "
+                                         f"{now - t0:.0f}s of {timeout:g}s")
             rc = self.proc.poll()
             if rc is not None:
                 raise Invalid("session_broken",
@@ -3024,49 +3026,54 @@ class Session:
         # THE CONTROL LOOP: released, waited for, read; a stop AT the control is counted and
         # the machine let go again, anything else ends the run. Without a control it is one
         # pass, which is what this method always was.
-        while True:
-            self._write(RUN_KEY)
-            expired, saw_at = Session._await_stop(self, began, deadline, target, progress)
-            if expired:
-                break
-            try:
-                at = self.where()
-            except NotStopped:
-                if not self.alive():
-                    raise
-                # THE ANNOUNCED STOP THAT IS NOT ONE: handled below, as the running outcome
-                # whose `bound_expired` is False.
-                break
-            except Invalid as exc:
-                # THE OTHER TWO WAYS `where()` REFUSES, caught with something attached. It
-                # has three (the machine is not stopped, the pane names no CPU mode, and a
-                # CUT repaint carries no `CS`/`EIP`) and only the first is `NotStopped`.
-                # Letting the other two escape whole would leave `run_to` with no
-                # `waited_s`, no `bound_expired`, and NO WORD about the breakpoint now
-                # sitting armed in a machine this call has already written to, where it
-                # will stop the next `resume` at an address nobody recorded.
-                #
-                # IT STILL REFUSES, and that is the point rather than an accident. A pane
-                # naming no CPU mode is NOT a running machine, and reporting it as one is
-                # the exact defect
-                # `test_a_partial_pane_is_refused_rather_than_called_a_running_machine`
-                # exists to pin: every clause of "the bound expired with the machine still
-                # running" was false for it. So the reading stays refused and the refusal
-                # CARRIES the irreversible part, which is the same shape `step` takes.
-                raise _still_armed(exc, target, began, ctl) from None
-            # THE TARGET IS ASKED FIRST. A stop that is the target is an arrival whatever else
-            # it is; only a stop that is NOT the target can be a control hit to run past.
-            if control is None or Session._stopped_at(at, seg, off):
-                break
-            if not Session._stopped_at(at, control[0], control[1]):
-                break
-            control_hits += 1
-            if time.monotonic() >= deadline:
-                # AT REST ON THE CONTROL WITH NO BOUND LEFT: reported as a stop elsewhere,
-                # and the bound DID run out, whatever the last wait saw.
-                expired = True
-                break
-            at = None
+        try:
+            while True:
+                self._write(RUN_KEY)
+                expired, saw_at = Session._await_stop(self, began, deadline, target, progress)
+                if expired:
+                    break
+                try:
+                    at = self.where()
+                except NotStopped:
+                    if not self.alive():
+                        raise
+                    # THE ANNOUNCED STOP THAT IS NOT ONE: handled below, as the running outcome
+                    # whose `bound_expired` is False.
+                    break
+                except Invalid as exc:
+                    # THE OTHER TWO WAYS `where()` REFUSES, caught with something attached. It
+                    # has three (the machine is not stopped, the pane names no CPU mode, and a
+                    # CUT repaint carries no `CS`/`EIP`) and only the first is `NotStopped`.
+                    # Letting the other two escape whole would leave `run_to` with no
+                    # `waited_s`, no `bound_expired`, and NO WORD about the breakpoint now
+                    # sitting armed in a machine this call has already written to, where it
+                    # will stop the next `resume` at an address nobody recorded.
+                    #
+                    # IT STILL REFUSES, and that is the point rather than an accident. A pane
+                    # naming no CPU mode is NOT a running machine, and reporting it as one is
+                    # the exact defect
+                    # `test_a_partial_pane_is_refused_rather_than_called_a_running_machine`
+                    # exists to pin: every clause of "the bound expired with the machine still
+                    # running" was false for it. So the reading stays refused and the refusal
+                    # CARRIES the irreversible part, which is the same shape `step` takes.
+                    raise _still_armed(exc, target, began, ctl) from None
+                # THE TARGET IS ASKED FIRST. A stop that is the target is an arrival whatever else
+                # it is; only a stop that is NOT the target can be a control hit to run past.
+                if control is None or Session._stopped_at(at, seg, off):
+                    break
+                if not Session._stopped_at(at, control[0], control[1]):
+                    break
+                control_hits += 1
+                if time.monotonic() >= deadline:
+                    # AT REST ON THE CONTROL WITH NO BOUND LEFT: reported as a stop elsewhere,
+                    # and the bound DID run out, whatever the last wait saw.
+                    expired = True
+                    break
+                at = None
+        except BaseException as e:
+            if cancel.is_cancellation(e):
+                Session._abandon_run(self, [target] + ([ctl] if ctl is not None else []))
+            raise
         if at is None:
             # THE WAIT GAVE UP (or the announcement was not a stop): the position is read
             # AFTER the loop, because the machine can be found at rest however the loop
@@ -3171,11 +3178,11 @@ class Session:
         carry = ""
         next_tick = began + PROGRESS_EVERY_S
         while (now := time.monotonic()) < deadline:
+            cancel.check()
             if now >= next_tick:
                 next_tick = now + PROGRESS_EVERY_S
-                progress(now - began, deadline - began,
-                         f"{label or f'run_to {target}'}: {now - began:.0f}s of "
-                         f"{deadline - began:g}s")
+                progress(now - began, None, f"{label or f'run_to {target}'}: running "
+                                            f"{now - began:.0f}s of {deadline - began:g}s")
             # THE DEATH IS CHECKED IN THE LOOP, the fix `e9_wait` already carries and
             # this one did not. Without it a session that died the instant the machine
             # was released burned the WHOLE bound -- up to RUN_TO_MAX, ten minutes --
@@ -3233,6 +3240,17 @@ class Session:
         if ctl is None:
             return None
         return {"at": ctl, "hits": hits, "removed": removed}
+
+    def _abandon_run(self, own: list[str]) -> None:
+        """A RUN CANCELLED IN FLIGHT LEAVES NOTHING ARMED: it has no reply to say what it left,
+        so the guest is brought back with `BREAK` and the breakpoints it armed are removed,
+        shielded, as a run stopped elsewhere removes its control. A terminal that cannot answer
+        leaves them, and the stop end then reads the machine as it finds it."""
+        with cancel.shielded(), contextlib.suppress(Invalid, OSError):
+            if not self.at_debugger():
+                self.break_in()
+            for spelled in own:
+                Session._remove_own_breakpoint(self, spelled)
 
     def _remove_own_breakpoint(self, spelled: str) -> tuple[bool, str]:
         """Remove a breakpoint THIS call armed, on a stopped machine: `(removed, note)`.
@@ -3684,12 +3702,15 @@ class Session:
             return found(hits, True, lines.index(hits[0]))
         deadline = began + seconds
         next_tick = began + PROGRESS_EVERY_S
+        newest = ""
         while (now := time.monotonic()) < deadline:
+            cancel.check()
             if now >= next_tick:
                 next_tick = now + PROGRESS_EVERY_S
-                progress(now - began, seconds,
+                progress(now - began, None,
                          f"log_wait {channel} /{pattern}/: {now - began:.0f}s of "
-                         f"{seconds:g}s, {total - len(lines)} lines arrived")
+                         f"{seconds:g}s, {total - len(lines)} lines arrived"
+                         + (f", last: {newest[:LAST_LINE_SHOWN]}" if newest else ""))
             # A STOPPED GUEST WRITES NOTHING, so a wait on one cannot end well and its
             # expiry would blame the program. MEASURED: a breakpoint
             # from another session parked the guest mid-plan and this sat out 40 s to say
@@ -3725,6 +3746,7 @@ class Session:
             time.sleep(E9_POLL)
             fresh, offset = self._e9_since(offset, channel)
             total += len(fresh)
+            newest = fresh[-1].strip() if fresh else newest
             seen = [ln for ln in fresh if rx.search(ln)]
             if seen:
                 return found(seen, False, total - len(fresh) + fresh.index(seen[0]))
@@ -4441,6 +4463,7 @@ class Session:
         self.send_commands([SCREENSHOT_COMMAND])
         began = time.monotonic()
         while True:
+            cancel.check()
             new = sorted((set(folder.glob("*.png")) if folder.is_dir() else set()) - before)
             if new:
                 path = new[-1]
@@ -4502,7 +4525,22 @@ class Session:
         return self.proc.poll() is None
 
     def close(self, grace: float = 8.0, progress: Progress = no_progress) -> int | None:
-        """End the session and leave nothing behind.
+        """End the session and leave nothing behind (`_close`), EVEN WHEN THE CALL IS CANCELLED
+        HALF-WAY: the cancel lands in the wait for the exit, and an emulator signalled but never
+        waited on is the one thing a cancel must not leave, so the close runs again, shielded and
+        silent, and the cancellation goes on unwinding once it has."""
+        try:
+            return self._close(grace, progress)
+        except BaseException as e:
+            if not cancel.is_cancellation(e):
+                raise
+            with cancel.shielded():
+                self._close(grace)
+            raise
+
+    def _close(self, grace: float = 8.0, progress: Progress = no_progress) -> int | None:
+        """End the session and leave nothing behind; a second call finishes what an interrupted
+        one began, and never closes the terminal twice.
 
         A live session outlives the turn, which is the one hazard a batch launcher
         does not have. The bound is the backstop and this is the deliberate act; both
@@ -4527,9 +4565,11 @@ class Session:
         """
         try:
             if self.proc.poll() is not None:
-                self.ended_how = "died"
+                # A process that left on this close's own SIGTERM quit; one found gone, died.
+                self.ended_how = "quit" if getattr(self, "_termed", False) else "died"
             else:
                 self._signal_group(signal.SIGTERM)
+                self._termed = True
                 if wait_exit(self.proc, TERM_GRACE, progress,
                              "close: waiting for the emulator to leave on SIGTERM") is not None:
                     self.ended_how = "quit"
@@ -4589,7 +4629,8 @@ class Session:
                                     f"{DRAIN_JOIN_SECS} s; the terminal descriptor was "
                                     f"left open on purpose rather than recycled under "
                                     f"a live reader")
-            else:
+            elif not getattr(self, "_master_closed", False):
+                self._master_closed = True
                 with contextlib.suppress(OSError):
                     os.close(self._master)
         # None, not -1: `subprocess` encodes a signal death as a NEGATIVE number, so

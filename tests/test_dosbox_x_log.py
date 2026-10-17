@@ -98,3 +98,21 @@ def test_perform_knows_the_pair_under_its_new_names() -> None:
     import dosbox_checks as checks
     assert {"log", "log_wait"} <= set(checks.BY_OP)
     assert not {"e9", "e9_wait"} & set(checks.BY_OP)
+
+
+def test_a_log_wait_whose_call_is_cancelled_stops_waiting(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import asyncio
+    import time
+
+    from scry_core import cancel
+
+    def check() -> None:
+        raise asyncio.CancelledError
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+    monkeypatch.setattr(cancel, "check", check)
+    began = time.monotonic()
+    with pytest.raises(asyncio.CancelledError):
+        LogSession(log).log_wait("NEVER_THERE", seconds=5, channel="guest")
+    assert time.monotonic() - began < 1.0

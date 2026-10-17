@@ -27,7 +27,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
-from scry_core import narrowing
+from scry_core import cancel, narrowing
 from scry_core import reply_contract as contract
 
 import dosbox_declarations as dec
@@ -126,6 +126,9 @@ class State:
         # The stop the guest reached on its own that the latest contact found, handed to
         # that contact's reply as `stopped_on_its_own` and then forgotten.
         self.found_stop_last: dict[str, Any] = {}
+        # A CALL THE CLIENT CANCELLED has no reply of its own, so what it left rides on the next
+        # reply that closes, whatever tool that is, and is then forgotten (`take_cancelled`).
+        self.cancelled: cancel.Cancelled | None = None
         # How many instrumentation lines the log held at the LAST stop, so `e9='since'`
         # can show only what the guest logged between then and now. Session-lived, reset
         # on `start`.
@@ -155,6 +158,11 @@ class State:
         # A CPU LOG A `trace` LEFT OPEN: its bound expired with the log running, so the next
         # trace closes it before opening its own (`dosbox_trace`).
         self.log_open = False
+
+    def take_cancelled(self) -> cancel.Cancelled | None:
+        """The record a cancelled call left, handed once to the next reply that closes."""
+        record, self.cancelled = self.cancelled, None
+        return record
 
     def session_scratch(self) -> Path:
         """The session's scratch, made on first use (`session_dir` says when it goes)."""

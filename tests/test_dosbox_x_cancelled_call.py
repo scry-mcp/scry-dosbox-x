@@ -1,0 +1,269 @@
+"""A CALL THE CLIENT CANCELLED: the tool ends at once as it declared (`on_cancel`), and the next
+reply, the outermost one, whatever tool it is, says once what the cancelled call left, since the
+cancelled one answers nothing. The cancellation itself is the poll every bounded wait makes
+(`scry_core.cancel.check`), raised here at the poll a case chooses.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import pathlib
+import sys
+from collections.abc import Iterator
+from typing import Any
+
+import pytest
+from scry_core import cancel
+from scry_core import progress as mprogress
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+
+from test_dosbox_x_server import FakeSession, clean_session, install  # noqa: E402,F401
+
+import dosbox_checks as checks  # noqa: E402
+import dosbox_mcp  # noqa: E402
+import dosbox_retrace as retrace  # noqa: E402
+import dosbox_state as st  # noqa: E402
+import dosbox_x_server as server  # noqa: E402
+
+
+class _Running(FakeSession):
+    """A guest that runs until a `BREAK` brings it back to the debugger."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.at = False
+        self.breaks = 0
+
+    def at_debugger(self) -> bool:
+        return self.at
+
+    def break_in(self, seconds: float = 5.0) -> float:
+        self.breaks += 1
+        self.at = True
+        return 0.1
+
+
+def _cancel_at(monkeypatch: pytest.MonkeyPatch, poll: int) -> None:
+    """The call is cancelled at its `poll`-th poll, counting the one on entry; the calls after
+    it are other requests, which nobody cancelled."""
+    polls = [0]
+
+    def check() -> None:
+        if cancel.shielding():
+            return
+        polls[0] += 1
+        if polls[0] == poll:
+            raise asyncio.CancelledError
+    monkeypatch.setattr(cancel, "check", check)
+
+
+@pytest.fixture
+def waiting_tool(monkeypatch: pytest.MonkeyPatch) -> Iterator[dict[str, Any]]:
+    """Tools whose body waits on a `Ticker` for a minute, one per declared end."""
+    monkeypatch.setattr(checks, "check", lambda name, **given: None)
+    made: dict[str, Any] = {}
+    for end in cancel.ON_CANCEL:
+        def body(ctx: Any = None) -> dict[str, Any]:
+            clock = mprogress.Ticker(60.0, mprogress.no_progress)
+            while not clock.expired():
+                pass
+            return st.reply()
+        body.__name__ = body.__qualname__ = f"wait_{end}"
+        made[end] = dosbox_mcp.tool(f"wait {end}", summary=lambda a, r: "waited",
+                                    on_cancel=end)(body)
+    yield made
+    for end in cancel.ON_CANCEL:
+        server.mcp._tool_manager._tools.pop(f"wait_{end}", None)
+        dosbox_mcp._SUMMARIES.pop(f"wait_{end}", None)
+
+
+def _running() -> _Running:
+    ses = _Running()
+    st.STATE.session = ses  # type: ignore[assignment]
+    return ses
+
+
+def test_a_cancelled_wait_that_ends_stopped_breaks_in_and_the_next_reply_says_so(
+        monkeypatch: pytest.MonkeyPatch, waiting_tool: dict[str, Any]) -> None:
+    install()
+    ses = _running()
+    _cancel_at(monkeypatch, 3)
+    with pytest.raises(asyncio.CancelledError):
+        waiting_tool["stop"]()
+    assert ses.breaks == 1 and ses.at is True
+    out = server.status()
+    assert out["cancelled"]["tool"] == "wait_stop" and out["cancelled"]["left"] == "stopped", out
+    assert out["summary"].startswith("after a cancelled wait_stop (stopped): "), out["summary"]
+    assert list(out)[-1] == "session" and list(out)[-2] == "cancelled", list(out)
+    assert "cancelled" not in server.status(), "the record rode on a second reply"
+
+
+def test_a_cancelled_wait_that_ends_as_it_was_leaves_the_guest_running(
+        monkeypatch: pytest.MonkeyPatch, waiting_tool: dict[str, Any]) -> None:
+    install()
+    ses = _running()
+    _cancel_at(monkeypatch, 2)
+    with pytest.raises(asyncio.CancelledError):
+        waiting_tool["none"]()
+    assert ses.breaks == 0
+    assert st.STATE.cancelled is not None and st.STATE.cancelled.left == "running"
+
+
+def test_a_cancelled_wait_that_ends_killed_closes_the_session(
+        monkeypatch: pytest.MonkeyPatch, waiting_tool: dict[str, Any]) -> None:
+    ses = install()
+    _cancel_at(monkeypatch, 2)
+    with pytest.raises(asyncio.CancelledError):
+        waiting_tool["kill"]()
+    assert ses.closed == 1 and st.STATE.session is None
+    assert st.STATE.cancelled is not None and st.STATE.cancelled.left == "closed"
+
+
+def test_only_the_outer_reply_of_a_sequence_carries_the_record(
+        monkeypatch: pytest.MonkeyPatch, waiting_tool: dict[str, Any]) -> None:
+    install()
+    _running().at = True
+    _cancel_at(monkeypatch, 2)
+    with pytest.raises(asyncio.CancelledError):
+        waiting_tool["none"]()
+    out = server.perform(steps=[{"op": "registers"}], wait=0.0)
+    assert out.get("cancelled", {}).get("tool") == "wait_none", list(out)
+    assert all("cancelled" not in (r.get("reply") or {}) for r in out.get("ran", [])), out
+
+
+def test_a_call_cancelled_while_it_waited_for_the_lock_touches_nothing(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    ses = install()
+    _cancel_at(monkeypatch, 1)
+    with pytest.raises(asyncio.CancelledError):
+        server.write(ref="F000:0000", data_hex="aa")
+    assert ses.altered is False
+
+
+def test_a_retrace_out_when_the_call_is_cancelled_is_left_pending(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    ses = _running()
+
+    def retrace_cancelled(*a: Any, **k: Any) -> tuple[bool, float]:
+        raise asyncio.CancelledError
+    monkeypatch.setattr(ses, "retrace", retrace_cancelled, raising=False)
+    st.STATE.retrace_pending = False
+    with pytest.raises(asyncio.CancelledError):
+        retrace._advance(ses, 0.0, 10.0, mprogress.no_progress)  # type: ignore[arg-type]
+    assert st.STATE.retrace_pending is True
+
+
+def test_a_tool_that_waits_and_declares_no_end_is_refused_at_registration() -> None:
+    def waits(ctx: Any = None) -> dict[str, Any]:
+        return {"status": "ok"}
+    with pytest.raises(TypeError, match="on_cancel"):
+        dosbox_mcp.tool("waits", summary=lambda a, r: "")(waits)
+
+
+@pytest.mark.parametrize("end", ["stop", "kill"])
+def test_a_call_cancelled_in_the_queue_applies_no_end_and_keeps_no_record(
+        monkeypatch: pytest.MonkeyPatch, waiting_tool: dict[str, Any], end: str) -> None:
+    """Cancelled before its body ran, the call did nothing, so it has nothing to end: a queued
+    `start` that closed the session it never touched would be the worst of it."""
+    install()
+    ses = _running()
+    _cancel_at(monkeypatch, 1)
+    with pytest.raises(asyncio.CancelledError):
+        waiting_tool[end]()
+    assert ses.breaks == 0 and ses.closed == 0 and st.STATE.session is not None
+    assert st.STATE.cancelled is None
+
+
+def test_a_second_cancel_keeps_the_name_of_the_first_no_reply_reported(
+        monkeypatch: pytest.MonkeyPatch, waiting_tool: dict[str, Any]) -> None:
+    install()
+    _running()
+    for _ in range(2):
+        _cancel_at(monkeypatch, 2)
+        with pytest.raises(asyncio.CancelledError):
+            waiting_tool["none"]()
+    out = server.status()
+    assert out["cancelled"]["earlier"] == ["wait_none"], out["cancelled"]
+
+
+def test_the_stop_end_hands_the_next_reply_what_the_stop_applied(
+        monkeypatch: pytest.MonkeyPatch, waiting_tool: dict[str, Any]) -> None:
+    """A declaration made while the guest ran is applied at the stop the end makes; the stop's
+    own reply goes to nobody, so the account rides on the next one."""
+    import dosbox_running as running
+    install()
+    _running()
+
+    def stop_reply(session: Any, **fields: Any) -> dict[str, Any]:
+        st.STATE.applied_last["armed"] = ["F000:0100"]
+        return st.reply(**fields)
+    monkeypatch.setattr(running, "stop_reply", stop_reply)
+    _cancel_at(monkeypatch, 2)
+    with pytest.raises(asyncio.CancelledError):
+        waiting_tool["stop"]()
+    assert server.status().get("applied_on_stop") == {"armed": ["F000:0100"]}
+
+
+def test_a_stop_of_its_own_the_call_had_reached_is_recorded_as_its_own(
+        monkeypatch: pytest.MonkeyPatch, waiting_tool: dict[str, Any]) -> None:
+    """Cancelled with the guest already at a stop nobody has read (its own retrace, its own
+    breakpoint), the end records it as the call's, as the call's bound would have."""
+    import dosbox_running as running
+    install()
+    ses = _running()
+    ses.at = True
+    ses.stop_count = 7  # type: ignore[attr-defined]
+    st.STATE.last_stop["stop_count"] = 6
+    recorded: list[bool] = []
+
+    def stop_or_base(*a: Any, **k: Any) -> dict[str, Any]:
+        recorded.append(True)
+        return {}
+    monkeypatch.setattr(running, "stop_or_base", stop_or_base)
+    _cancel_at(monkeypatch, 2)
+    with pytest.raises(asyncio.CancelledError):
+        waiting_tool["stop"]()
+    assert recorded == [True] and ses.breaks == 0
+
+
+def test_a_retrace_already_heard_when_the_call_is_cancelled_is_not_left_pending(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    ses = _running()
+    ses.at = True
+
+    def retrace_cancelled(*a: Any, **k: Any) -> tuple[bool, float]:
+        raise asyncio.CancelledError
+    monkeypatch.setattr(ses, "retrace", retrace_cancelled, raising=False)
+    st.STATE.retrace_pending = True
+    with pytest.raises(asyncio.CancelledError):
+        retrace._advance(ses, 0.0, 10.0, mprogress.no_progress)  # type: ignore[arg-type]
+    assert st.STATE.retrace_pending is False
+
+
+def test_an_end_that_breaks_on_the_way_still_records_and_still_unwinds(
+        monkeypatch: pytest.MonkeyPatch, waiting_tool: dict[str, Any]) -> None:
+    install()
+    ses = _running()
+
+    def broken(seconds: float = 5.0) -> float:
+        raise OSError("the pty went away")
+    monkeypatch.setattr(ses, "break_in", broken)
+    _cancel_at(monkeypatch, 2)
+    with pytest.raises(asyncio.CancelledError):
+        waiting_tool["stop"]()
+    assert st.STATE.cancelled is not None and st.STATE.cancelled.left == "unknown"
+
+
+def test_a_kill_that_could_not_reap_is_not_called_closed(
+        monkeypatch: pytest.MonkeyPatch, waiting_tool: dict[str, Any]) -> None:
+    ses = install()
+
+    def close(*a: Any, **k: Any) -> None:
+        ses.closed += 1
+        ses.reap_failed = "SIGKILL was sent and the process had not been reaped"
+    monkeypatch.setattr(ses, "close", close)
+    _cancel_at(monkeypatch, 2)
+    with pytest.raises(asyncio.CancelledError):
+        waiting_tool["kill"]()
+    assert st.STATE.cancelled is not None and st.STATE.cancelled.left == "unknown"

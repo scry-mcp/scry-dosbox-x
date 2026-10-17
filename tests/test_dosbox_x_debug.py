@@ -2668,12 +2668,14 @@ def test_e9_wait_reports_its_progress_while_it_waits(tmp_path: Path,
     log = tmp_path / "guest.log"
     log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
     monkeypatch.setattr(ds, "PROGRESS_EVERY_S", 0.0)
-    ticks: list[tuple[float, float, str]] = []
+    ticks: list[tuple[float, float | None, str]] = []
     with pytest.raises(ds.E9Expired):
         LogSession(log).e9_wait("never", seconds=0.25,
                                 progress=lambda p, t, m: ticks.append((p, t, m)))
     assert ticks, "the wait reported nothing"
-    assert all(t == 0.25 and m.startswith("log_wait guest /never/") for _p, t, m in ticks)
+    # A wait measured in time has no total: a bar filling towards the bound reads as progress
+    # towards failure.
+    assert all(t is None and m.startswith("log_wait guest /never/") for _p, t, m in ticks)
     assert ticks[-1][0] > 0 and "0 lines arrived" in ticks[-1][2]
     # A wait answered from what the log already holds reports nothing: there was no wait.
     ticks.clear()
@@ -2710,3 +2712,39 @@ def test_run_to_hands_its_progress_to_the_stop_wait(monkeypatch: pytest.MonkeyPa
     out = run_to(dbg, 0xF000, 0xFFF0, seconds=0.3,
                  progress=lambda p, t, m: ticks.append(m))
     assert out.get("running") is True and ticks and ticks[0].startswith("run_to F000:FFF0")
+
+
+def test_run_to_cancelled_in_flight_is_brought_back_and_takes_its_breakpoints_with_it(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """Cancelled while it waits, the run has no reply to say what it left armed, so it leaves
+    nothing: the guest is brought back with `BREAK` and both breakpoints it armed are removed,
+    or the caller's next `resume` stops at a place nobody named."""
+    import asyncio
+
+    from scry_core import cancel
+
+    class Cancelled(Debugger):
+        stopped = False
+        breaks = 0
+
+        def at_debugger(self) -> bool:
+            return self.stopped
+
+        def break_in(self, seconds: float = 5.0) -> float:
+            self.breaks += 1
+            self.stopped = True
+            return 0.0
+
+    def check() -> None:
+        if not cancel.shielding():
+            raise asyncio.CancelledError
+    both = pane_with(["00. BP F000:FFF0", "01. BP F000:E05B"])
+    control_only = pane_with(["00. BP F000:E05B"])
+    dbg = Cancelled([pane_with([]), both,                 # the mode, the arming read back
+                     both, control_only,                  # target BPDEL, read back
+                     control_only, pane_with([])])        # control BPDEL, read back
+    monkeypatch.setattr(cancel, "check", check)
+    with pytest.raises(asyncio.CancelledError):
+        run_to(dbg, 0xF000, 0xFFF0, seconds=5, control=(0xF000, 0xE05B))
+    assert dbg.breaks == 1, "the run was left in flight"
+    assert dbg.sent.count("BPDEL 00") == 2, dbg.sent

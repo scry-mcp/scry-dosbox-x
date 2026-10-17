@@ -1,6 +1,6 @@
 """THE MCP BOUNDARY of the DOSBox-X server: the protocol's server object and its `instructions`,
 the one lock over the one machine, the summary every reply opens with, the decorator that
-registers a tool, and the progress line of a bounded wait. `dosbox_x_server.py` holds the tools;
+registers a tool, and the end of a cancelled call. `dosbox_x_server.py` holds the tools;
 what a tool is wrapped in, which is the same for every one of them, is here.
 
 THE SCHEMA'S REFUSAL AND THE PICTURE are `scry_core.envelope`'s, the same on every Scry server;
@@ -12,18 +12,18 @@ from __future__ import annotations
 import functools
 import inspect
 import threading
+import time
 from collections.abc import Callable
 from typing import Any
 
-import anyio.from_thread
-from mcp.server.mcpserver import Context
 from mcp.types import ToolAnnotations
 from pydantic import ValidationError
-from scry_core import envelope
+from scry_core import cancel, envelope
 from scry_core import strict_arguments as strict
 
 import dosbox_checks as checks
 import dosbox_docs as docs
+import dosbox_running as running
 import dosbox_sequence as sequence
 import dosbox_session as ds
 import dosbox_state as st
@@ -99,6 +99,9 @@ mcp = envelope.Envelope(
 # questions interleave on a terminal that has no notion of them being separate. The
 # session itself, and everything held beside it, is `STATE` (`dosbox_state`).
 LOCK = threading.RLock()
+# HOW DEEP THE CALLS INSIDE THE LOCK ARE NESTED, read and written only while holding it: a
+# `perform` calls its steps through their tools, and only the outermost reply is the caller's.
+_nested = [0]
 
 #: What a refusal for a running guest names as answering: the sequence's table, and four
 #: that answer it outside a list (the last stop's registers, the two that run steps, the
@@ -137,7 +140,7 @@ def _summary(name: str, args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def _finished(name: str, args: dict[str, Any], reply: dict[str, Any],
-              session_before: bool = False) -> dict[str, Any]:
+              session_before: bool = False, outer: bool = True) -> dict[str, Any]:
     """The reply a caller reads, closed in ONE place for every path (the decorator's and the
     schema's refusal): `summary` first, the tool's own fields, `session` last.
 
@@ -148,12 +151,66 @@ def _finished(name: str, args: dict[str, Any], reply: dict[str, Any],
     body = {k: v for k, v in reply.items() if k != "session"}
     kept = reply.get("session") if session_before else None
     session = kept if kept is not None else st.session_block()
-    return {"summary": _summary(name, args, reply), **body, "session": session}
+    summary = _summary(name, args, reply)
+    # Only the OUTER call's reply carries it: a step of a `perform` is not the reply a caller reads.
+    if outer and (record := STATE.take_cancelled()) is not None:
+        # WHAT A CANCELLED CALL LEFT, said first by the next reply: the cancelled call had none.
+        return {"summary": record.summary(summary), **body, "cancelled": record.note(),
+                "session": session}
+    return {"summary": summary, **body, "session": session}
+
+
+def _end_cancelled(name: str, on_cancel: cancel.OnCancel, began: float) -> None:
+    """THE END A CANCELLED CALL DECLARED, applied at once: the end its own bound would have given
+    it, under the shield so that end's own waits run to completion. `stop` for a tool that comes
+    back STOPPED (`BREAK` and the stop recorded, as the `stop` tool does; a guest already at the
+    debugger is left so), `kill` for one whose failure path ends the emulator, `none` for one that
+    leaves the machine as it was. What it left is recorded for the next reply."""
+    left: cancel.Left | None = None
+    ses = STATE.session
+    with cancel.shielded():
+        try:
+            if on_cancel == "kill" and ses is not None:
+                ses.close()
+                if getattr(ses, "reap_failed", None):
+                    left = "unknown"
+                STATE.session = None
+                STATE.forget_symbols()
+                STATE.clear_running_state()
+            elif on_cancel == "stop" and ses is not None and ses.alive():
+                _keep_accounts(_stop_of_its_own(ses))
+        except (ds.Invalid, OSError):
+            left = "unknown"
+        if left is None:
+            ses = STATE.session
+            left = ("closed" if ses is None or not ses.alive()
+                    else "stopped" if ses.at_debugger() else "running")
+    STATE.cancelled = cancel.recorded(STATE.cancelled, name, time.monotonic() - began, left)
+
+
+def _stop_of_its_own(ses: ds.Session) -> dict[str, Any]:
+    """The `stop` end's stop, its reply: a running guest is brought back with `BREAK`, as the
+    `stop` tool does, and one already at a stop nobody has read (the call's own retrace or
+    breakpoint) has that stop recorded as the call's, as its bound's refusal records it."""
+    if not ses.at_debugger():
+        ses.break_in()
+        return running.stop_reply(ses, interrupted=True, how="break")
+    if getattr(ses, "stop_count", None) != STATE.last_stop.get("stop_count"):
+        return running.stop_or_base(ses, True, "none", ".", None, {})
+    return {}
+
+
+def _keep_accounts(stopped: dict[str, Any]) -> None:
+    """THE ACCOUNTS A STOP DELIVERED GO BACK FOR THE NEXT REPLY: the stop's own reply goes to
+    nobody, and what it applied or found is said once, by whichever reply comes next."""
+    STATE.applied_last.update(stopped.get("applied_on_stop") or {})
+    if stopped.get("stopped_on_its_own"):
+        STATE.found_stop_last = dict(stopped["stopped_on_its_own"])
 
 
 def tool(
     title: str, *, summary: one_line.Summary, read_only: bool = False, idempotent: bool = False,
-    session_before: bool = False,
+    session_before: bool = False, on_cancel: cancel.OnCancel | None = None,
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Register an MCP tool, serialise it over the one machine, and put the one-line
     `summary` first in its reply: `summary` is the tool's own line (`dosbox_summaries`),
@@ -178,6 +235,11 @@ def tool(
     `session_before` keeps the `session` block the body built instead of composing it after
     (`_finished`): only `close`, whose block is the state BEFORE the kill.
 
+    `on_cancel` is how the tool ends when the client cancels its call (`_end_cancelled`), and a
+    tool that takes a `ctx`, which is every tool that waits and reports its progress, must
+    declare it or fails at import. Any other tool can still meet a cancel in a wait of its own,
+    and ends `none`, the machine left as it was.
+
     A tool that takes a `ctx` (the protocol's `Context`, for the progress line of a bounded
     wait) gets it from the SDK, and it is kept out of the summary's arguments. The summary
     reads the arguments the call RAN with, defaults applied.
@@ -191,6 +253,9 @@ def tool(
 
     def register(fn: Callable[..., Any]) -> Callable[..., Any]:
         signature = inspect.signature(fn)
+        if "ctx" in signature.parameters and on_cancel is None:
+            raise TypeError(f"{fn.__name__} waits and reports its progress, so it declares "
+                            "how a cancel ends it (`on_cancel`)")
         _SUMMARIES[fn.__name__] = summary
 
         @functools.wraps(fn)
@@ -198,6 +263,11 @@ def tool(
             given = dict(signature.bind_partial(*a, **k).arguments)
             given.pop("ctx", None)
             with LOCK:
+                # A CALL CANCELLED WHILE IT WAITED FOR THE LOCK did nothing, so it has no end
+                # to apply and nothing to record.
+                cancel.check()
+                began = time.monotonic()
+                _nested[0] += 1
                 try:
                     # WHAT THE MACHINE IS NOT NEEDED FOR IS JUDGED FIRST: a refusal a caller
                     # can see without a session.
@@ -211,12 +281,21 @@ def tool(
                                                answers_while_running=_ANSWERS_WHILE_RUNNING))
                 except ds.Invalid as e:
                     reply = st.reply(**e.reply())
+                except BaseException as e:
+                    # A CANCELLED CALL ends as it declared and answers nothing: the request is
+                    # gone, so the record waits for the next reply. Anything else is not ours.
+                    if cancel.is_cancellation(e):
+                        _end_cancelled(fn.__name__, on_cancel or "none", began)
+                    raise
+                finally:
+                    _nested[0] -= 1
                 bound = signature.bind_partial(*a, **k)
                 bound.apply_defaults()               # a summary reads what the call RAN with
                 args = dict(bound.arguments)
                 args.pop("ctx", None)
                 # Under the lock: the `session` block is read off the one machine's state.
-                return _finished(fn.__name__, args, reply, session_before)
+                return _finished(fn.__name__, args, reply, session_before,
+                                 outer=_nested[0] == 0)
 
         wrapped.__doc__ = docs.filled(fn.__name__, fn.__doc__ or "")
         return mcp.tool(title=title,
@@ -224,17 +303,3 @@ def tool(
                                                     idempotent_hint=idempotent))(wrapped)
 
     return register
-
-
-def progress_of(ctx: Context[Any, Any] | None) -> ds.Progress:
-    """The progress line of a bounded wait, bridged from the worker thread the SDK runs a
-    synchronous tool in to the request's `Context` on the event loop. With no context (a
-    direct call, a test, a step inside `perform`) nothing is painted and nothing is
-    reported."""
-    if ctx is None:
-        return ds.no_progress
-
-    def report(progress: float, total: float, message: str) -> None:
-        anyio.from_thread.run(ctx.report_progress, progress, total, message)
-
-    return report

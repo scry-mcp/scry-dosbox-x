@@ -529,7 +529,7 @@ def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
     fake = SimpleNamespace(
         proc=NeverDies(), reap_failed="", drain_ended="", _drainer=None,
         _master=-1, _stop=threading.Event(), _signal_group=sent.append)
-    rc = ds.Session.close(fake, grace=0)  # type: ignore[arg-type]
+    rc = ds.Session._close(fake, grace=0)  # type: ignore[arg-type]
     assert rc is None, "a child that was never reaped has no exit code"
     assert fake.reap_failed.startswith("SIGKILL was sent"), (
         f"the session reported nothing about a child it could not reap: "
@@ -574,7 +574,7 @@ def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
     ok = SimpleNamespace(
         proc=proc, reap_failed="", drain_ended="", _drainer=None,
         _master=-1, _stop=threading.Event(), _signal_group=ok_sent.append)
-    assert ds.Session.close(ok) == -9  # type: ignore[arg-type]
+    assert ds.Session._close(ok) == -9  # type: ignore[arg-type]
     assert ok_sent == [signal.SIGTERM, signal.SIGKILL], ok_sent
     assert proc.stretches == 2, "the control never reached the SIGKILL wait"
     assert ok.reap_failed == "", (
@@ -2251,6 +2251,26 @@ def test_close_records_which_ending_it_got() -> None:
     s = bare([None, 0], 1)
     s.close()
     assert s.ended_how == "killed" and s.reap_failed == ""
+
+    # CANCELLED HALF-WAY, the close still ends: the cleanup a cancel asked for is this one.
+    import asyncio
+
+    from scry_core import cancel
+    closed: list[int] = []
+    raised = [False]
+
+    def check() -> None:
+        if not cancel.shielding() and not raised[0]:
+            raised[0] = True
+            raise asyncio.CancelledError
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(cancel, "check", check)
+        mp.setattr(os, "close", closed.append)
+        s = bare([None, 0], 0)
+        s._master = 99
+        with pytest.raises(asyncio.CancelledError):
+            s.close()
+    assert raised == [True] and s.ended_how == "quit" and closed == [99], (s.ended_how, closed)
 
 
 def _writer(memory: dict[str, bytes]) -> tuple[ds.Session, list[str]]:

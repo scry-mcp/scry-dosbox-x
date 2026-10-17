@@ -11,6 +11,9 @@ from __future__ import annotations
 import time
 from typing import Any
 
+from scry_core import cancel
+from scry_core import progress as mprogress
+
 import dosbox_arming as arming
 import dosbox_running as running
 import dosbox_screen as screen
@@ -47,23 +50,31 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
     timed = milliseconds > 0
     began = time.monotonic()
     deadline = began + seconds
-    tick = _throttled(progress)
+    # THE LINE IS THE RUN'S, frames or emulated milliseconds done of those asked; each retrace's
+    # own wait reports nothing and still polls for the call's cancellation.
+    clock = mprogress.Ticker(seconds, progress)
+    asked = f"{milliseconds} ms" if timed else f"{frames} frame{'s' * (frames != 1)}"
     cuttable = arming.declares_code_breakpoint()
     polls = 0
     verdict = "ELAPSED"
     last = before                             # the clock at the last stop that painted one
     stalled_at: float | None = None
     while not (frames and polls >= frames):
+        clock.expired()                       # the call's cancellation, and the line's clock
         if time.monotonic() >= deadline:
             verdict = "TIMEOUT"
             break
-        if _advance(session, began, deadline, tick):
+        if _advance(session, began, deadline, ds.no_progress):
             return st.reply(verdict="TIMEOUT", running=True, polls=polls,
                             **_clock(before, None), **_counts(), retrace_pending=True,
                             note=f"the bound expired with a `VRT` out, so the machine is still "
                                  f"running; {PENDING_NOTE}",
                             waited_s=round(time.monotonic() - began, 1))
         polls += 1
+        if frames:
+            clock.report(polls, frames, "run_for {asked}: frame {done} of {frames}, "
+                         "{elapsed:.0f}s of {bound:g}s", asked=asked, done=polls, frames=frames,
+                         bound=seconds)
         if not (timed or (cuttable and polls < frames)):
             continue                          # the stop reply surveys the last frame
         try:
@@ -80,6 +91,9 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
             stalled_at = now
             break
         last = now
+        clock.report(now - before, milliseconds, "run_for {asked}: {done:.0f} ms of {asked} "
+                     "emulated, {elapsed:.0f}s of {bound:g}s", asked=asked, done=now - before,
+                     bound=seconds)
         if round(now - before, PANE_CLOCK_DECIMALS) >= milliseconds:
             break
     fields: dict[str, Any] = {"verdict": verdict, "polls": polls, "running": False}
@@ -123,7 +137,14 @@ def _advance(session: ds.Session, began: float, deadline: float, tick: ds.Progre
     """One retrace, the step both waits take each frame: `VRT` released and its stop heard by the
     prompt. True when the bound expired with it out: the debugger still holds it, and the next
     release meets it (`STATE.retrace_pending`); a stop that answered it spends any earlier one."""
-    expired, _ = session.retrace(began, deadline, tick)
+    try:
+        expired, _ = session.retrace(began, deadline, tick)
+    except BaseException as e:
+        # A CANCELLED WAIT leaves its `VRT` out, as an expired one does, unless its stop was
+        # already heard: the next release meets it.
+        if cancel.is_cancellation(e):
+            STATE.retrace_pending = not _heard(session)
+        raise
     STATE.retrace_pending = expired
     return expired
 
@@ -143,19 +164,6 @@ def _cut(session: ds.Session, where: dict[str, str] | None = None,
         return None
     STATE.retrace_pending = True
     return attribution
-
-
-def _throttled(progress: ds.Progress) -> ds.Progress:
-    """`progress` at most once per `PROGRESS_EVERY_S`: each frame's wait counts from the run's
-    own start, so past that interval every frame would report."""
-    last = [0.0]
-
-    def tick(done: float, total: float, message: str) -> None:
-        now = time.monotonic()
-        if now - last[0] >= ds.PROGRESS_EVERY_S:
-            last[0] = now
-            progress(done, total, message)
-    return tick
 
 
 def _clock(before: float | None, after: float | None) -> dict[str, Any]:
@@ -188,15 +196,16 @@ def screen_wait(session: ds.Session, text: str, seconds: float,
     last = rows
     began = time.monotonic()
     deadline = began + seconds
-    tick = _throttled(progress)
+    clock = mprogress.Ticker(seconds, progress)
     cuttable = arming.declares_code_breakpoint()
     polls = 0
     while hit is None:
         seen = {} if last is None else {"text": last}
+        clock.expired()                       # the call's cancellation, and the line's clock
         if time.monotonic() >= deadline:
             raise _expired(session, text, seconds, polls, f"{not_text} of {examined}", seen,
                            out=False)
-        if _advance(session, began, deadline, tick):
+        if _advance(session, began, deadline, ds.no_progress):
             raise _expired(session, text, seconds, polls, f"{not_text} of {examined}", seen,
                            out=True)
         polls += 1
@@ -217,6 +226,9 @@ def screen_wait(session: ds.Session, text: str, seconds: float,
             raise ds.Invalid(e.code, f"{e}; the wait had stopped the machine at retrace {polls}",
                              **{**e.fields, "polls": polls, **_ended_at(session)}) from None
         examined += 1
+        clock.tick("screen_wait {text!r}: retrace {polls}, {mode}, {elapsed:.0f}s of {bound:g}s",
+                   text=text, polls=polls, mode="a text mode" if rows is not None else
+                   "not a text mode", bound=seconds)
         if rows is None:
             not_text += 1
             continue
@@ -240,6 +252,16 @@ def _stop_reply(session: ds.Session, base: dict[str, Any]) -> dict[str, Any]:
 #: delivered (a stop the guest reached on its own, declarations applied on it), which would
 #: otherwise be spent on a reply nobody sees.
 ENDED_KEYS = ("stop_seq", "enrichment", "stopped_on_its_own", "applied_on_stop")
+
+
+def _heard(session: ds.Session) -> bool:
+    """Whether the guest is at the debugger, read under the shield while a cancel unwinds; a
+    terminal that cannot answer is taken as not heard, which leaves the retrace pending."""
+    with cancel.shielded():
+        try:
+            return session.at_debugger()
+        except (ds.Invalid, OSError):
+            return False
 
 
 def _ended_at(session: ds.Session) -> dict[str, Any]:

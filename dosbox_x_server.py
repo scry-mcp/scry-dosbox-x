@@ -102,6 +102,7 @@ sys.path.append(str(Path(__file__).resolve().parent))
 
 from scry_core import media_tools, narrowing  # noqa: E402
 from scry_core import strict_arguments as strict  # noqa: E402
+from scry_core.progress import bridge  # noqa: E402
 
 import dosbox_arming as arming  # noqa: E402
 import dosbox_binary as binaries  # noqa: E402
@@ -125,7 +126,7 @@ import dosbox_session as ds  # noqa: E402
 import dosbox_state as st  # noqa: E402
 import dosbox_summaries as one_line  # noqa: E402
 import dosbox_trace as tracing  # noqa: E402
-from dosbox_mcp import LOCK, progress_of, registered_tools, tool  # noqa: E402
+from dosbox_mcp import LOCK, registered_tools, tool  # noqa: E402
 from dosbox_mcp import mcp as mcp  # noqa: E402  (the probe and the clients read `server.mcp`)
 from dosbox_running import live  # noqa: E402
 from dosbox_state import STATE  # noqa: E402
@@ -188,7 +189,7 @@ def build_check(binary: str = "") -> dict[str, Any]:
 
 # ---------------------------------------------------------- session: start, status, close
 
-@tool("Start a DOSBox-X session", summary=one_line.start)
+@tool("Start a DOSBox-X session", summary=one_line.start, on_cancel="kill")
 def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
           window_flags: list[str] | None = None, flags: list[str] | None = None,
           break_on_int3: bool = False, program: str | None = None,
@@ -298,7 +299,7 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
     binary_facts = binaries.facts(resolved)
     session = ds.Session(launch)
     try:
-        ready = session.wait_ready(progress=progress_of(ctx))
+        ready = session.wait_ready(progress=bridge(ctx))
     except ds.Invalid as e:
         # IT IS CLOSED BEFORE THE REFUSAL GOES OUT. Assigning first and waiting after
         # left a real emulator running behind an INVALID reply, with nothing in the
@@ -321,14 +322,14 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
         # `wait_ready` raising with the child still running is exactly the case where
         # SIGKILL can fail to reap, so this arm is where a stray emulator is most
         # likely and least visible.
-        session.close(progress=progress_of(ctx))
+        session.close(progress=bridge(ctx))
         if session.reap_failed:
             raise ds.Invalid("session_broken", f"{e} -- and worse, {session.reap_failed}, so an "
                              f"emulator may still be running. Check for a stray "
                              f"`dosbox-x` before starting again") from None
         raise
     except BaseException:
-        session.close(progress=progress_of(ctx))
+        session.close(progress=bridge(ctx))
         raise
     STATE.session = session
     # The store was built and validated above, before the emulator started; it becomes the
@@ -397,7 +398,7 @@ def status() -> dict[str, Any]:
                     **running.status_facts(STATE.session))
 
 
-@tool("Close the session", summary=one_line.close, session_before=True)
+@tool("Close the session", summary=one_line.close, session_before=True, on_cancel="kill")
 def close(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """End the session deliberately rather than waiting for its bound. Reports its progress
     while the emulator takes its time to leave.
@@ -416,7 +417,7 @@ def close(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     if STATE.session is None:
         return st.reply(closed=False, how="none", note="there was no session")
     was = STATE.session.state()
-    rc = STATE.session.close(progress=progress_of(ctx))
+    rc = STATE.session.close(progress=bridge(ctx))
     # READ AFTER THE CLOSE, because that is when it can be set, and it is reported
     # BESIDE `exit_code` rather than inside `session` because it is a fact about the
     # CLOSING and not about the state being described.
@@ -470,7 +471,7 @@ def log(pattern: str, channel: str, limit: int = 40, labels: bool = False) -> di
     return st.reply(**reply)
 
 
-@tool("Wait for a log line", summary=one_line.log_wait, read_only=True)
+@tool("Wait for a log line", summary=one_line.log_wait, read_only=True, on_cancel="none")
 def log_wait(pattern: str, channel: str, seconds: float = 30.0,
              ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """WHEN a line of `channel` matching `pattern` was logged: at once if it already was,
@@ -505,7 +506,7 @@ def log_wait(pattern: str, channel: str, seconds: float = 30.0,
     """
     session = live()
     try:
-        got = session.log_wait(pattern, seconds, channel, progress=progress_of(ctx))
+        got = session.log_wait(pattern, seconds, channel, progress=bridge(ctx))
         return st.answer({**got, "channel": channel})
     except ds.E9Stopped as e:
         running.observe_stop(session)          # the stop the wait found is recorded and named
@@ -806,7 +807,7 @@ def write(ref: str, data_hex: str) -> dict[str, Any]:
 
 # ------------------------------------------------------------- advancing the machine
 
-@tool("Resume the machine", summary=one_line.resume)
+@tool("Resume the machine", summary=one_line.resume, on_cancel="none")
 def resume(e9: str = "none", e9_filter: str = ".",
            e9_stamp: str | None = None, seconds: float = 0.0, detail: bool = False,
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
@@ -845,7 +846,7 @@ def resume(e9: str = "none", e9_filter: str = ".",
     if not out["halted"] and seconds > 0:
         began = time.monotonic()
         expired, _saw_at = ds.Session._await_stop(session, began, began + seconds, "resume",
-                                                  progress_of(ctx))
+                                                  bridge(ctx), label="resume")
         base["waited_s"] = round(time.monotonic() - began, 3)
         if not expired:
             try:
@@ -864,7 +865,7 @@ def resume(e9: str = "none", e9_filter: str = ".",
                                 retrace_may_stop=True)
 
 
-@tool("Stop the running machine", summary=one_line.stop)
+@tool("Stop the running machine", summary=one_line.stop, on_cancel="stop")
 def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Bring a RUNNING guest back to the debugger and survey the stop, headless or windowed
     alike: the session sends `BREAK` down the emulator's own debugger channel (upstream's
@@ -923,7 +924,7 @@ def step(count: int = 1, mode: str = "into",
                          cast(dict[str, Any], out))
 
 
-@tool("Run to a place", summary=one_line.run_to)
+@tool("Run to a place", summary=one_line.run_to, on_cancel="stop")
 def run_to(ref: str, control: str, seconds: float = 30.0,
            e9: str = "none", e9_filter: str = ".",
            e9_stamp: str | None = None,
@@ -962,7 +963,7 @@ def run_to(ref: str, control: str, seconds: float = 30.0,
     mode_regs = None if machine is None else (machine[0]["mode"], machine[1])
     seg, off = placement.read_target(ref, "CS", session, machine=mode_regs)
     ctl = placement.read_target(control, "CS", session, machine=mode_regs)
-    out = session.run_to(seg, off, seconds, ctl, progress_of(ctx))
+    out = session.run_to(seg, off, seconds, ctl, bridge(ctx))
     out["ref"] = ref            # `target` is the session's own spelling, kept as it came
     # THE CONTROL'S VERDICT (decision 12 of the emulator roadmap): a bound that ran out with
     # the control armed and NEVER fired is not a non-arrival, it is a run that proved
@@ -981,7 +982,7 @@ def run_to(ref: str, control: str, seconds: float = 30.0,
                          cast(dict[str, Any], out), retrace_may_stop=not out.get("arrived"))
 
 
-@tool("Run for frames or emulated time", summary=one_line.run_for)
+@tool("Run for frames or emulated time", summary=one_line.run_for, on_cancel="stop")
 def run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
             e9: str = "none", e9_filter: str = ".", e9_stamp: str | None = None,
             ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
@@ -1013,11 +1014,11 @@ def run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
     """
     session = live()
     _console_listening(session, "a `VRT`")
-    return retrace.run_for(session, frames, milliseconds, seconds, progress_of(ctx), e9, e9_filter,
+    return retrace.run_for(session, frames, milliseconds, seconds, bridge(ctx), e9, e9_filter,
                            e9_stamp)
 
 
-@tool("Trace instructions to a file", summary=one_line.trace)
+@tool("Trace instructions to a file", summary=one_line.trace, on_cancel="stop")
 def trace(instructions: int, shape: str = "normal", dest: str = "", seconds: float = 60.0,
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run the machine `instructions` instructions with the debugger's CPU log on (its `LOG`
@@ -1053,10 +1054,10 @@ def trace(instructions: int, shape: str = "normal", dest: str = "", seconds: flo
     """
     session = live()
     return tracing.trace(session, instructions, shape,
-                         paths.absolute("dest", dest) if dest else None, seconds, progress_of(ctx))
+                         paths.absolute("dest", dest) if dest else None, seconds, bridge(ctx))
 
 
-@tool("Run until text is on screen", summary=one_line.screen_wait)
+@tool("Run until text is on screen", summary=one_line.screen_wait, on_cancel="stop")
 def screen_wait(text: str, seconds: float = 30.0,
                 ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run the machine retrace by retrace until `text` is on the TEXT screen, and stop there.
@@ -1091,7 +1092,7 @@ def screen_wait(text: str, seconds: float = 30.0,
     """
     session = live()
     _console_listening(session, "a listing")
-    return retrace.screen_wait(session, text, seconds, progress_of(ctx))
+    return retrace.screen_wait(session, text, seconds, bridge(ctx))
 
 
 @tool("Save the machine state", summary=one_line.state_save)
@@ -1126,7 +1127,7 @@ def state_load(name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, Any]:
     return st.answer(live().state_load(name, seconds))
 
 
-@tool("Take a screenshot", summary=one_line.snapshot)
+@tool("Take a screenshot", summary=one_line.snapshot, on_cancel="none")
 def snapshot(dest: str = "", seconds: float = ds.SNAPSHOT_WAIT_S,
              ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """One still of the RUNNING screen, taken inside the guest through the input stub (no
@@ -1149,7 +1150,7 @@ def snapshot(dest: str = "", seconds: float = ds.SNAPSHOT_WAIT_S,
             "a scan code to an older one): start the session with logfile=")
     inputs.require_stub(session)
     return st.answer(session.snapshot(paths.absolute("dest", dest) if dest else None, seconds,
-                                      progress_of(ctx)))
+                                      bridge(ctx)))
 
 
 @tool("List the saved states", summary=one_line.state_list, read_only=True)
@@ -1739,7 +1740,7 @@ def watch_clear(ref: str = "") -> dict[str, Any]:
 
 # ------------------------------------------------------------ input to a running guest
 
-@tool("Send keystrokes", summary=one_line.send_keys)
+@tool("Send keystrokes", summary=one_line.send_keys, on_cancel="none")
 def send_keys(keys: list[str], modifiers: list[str] | None = None,
               expect: str | None = None, seconds: float | None = None,
               ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
@@ -1764,10 +1765,10 @@ def send_keys(keys: list[str], modifiers: list[str] | None = None,
 
     Reference: REFERENCE.md, Input and the screen.
     """
-    return inputs.send_keys(live(), keys, modifiers, expect, seconds, progress_of(ctx))
+    return inputs.send_keys(live(), keys, modifiers, expect, seconds, bridge(ctx))
 
 
-@tool("Send mouse input", summary=one_line.send_mouse)
+@tool("Send mouse input", summary=one_line.send_mouse, on_cancel="none")
 def send_mouse(x: int | None = None, y: int | None = None, button: str | None = None,
                action: str = "click", units: str = "screen", expect: str | None = None,
                seconds: float | None = None,
@@ -1797,7 +1798,7 @@ def send_mouse(x: int | None = None, y: int | None = None, button: str | None = 
     Reference: REFERENCE.md, Input and the screen.
     """
     return inputs.send_mouse(live(), x, y, button, action, units, expect, seconds,
-                             progress_of(ctx))
+                             bridge(ctx))
 
 
 # ----------------------------------------------------------------------- the captures
@@ -1842,14 +1843,17 @@ def _step_ops() -> dict[str, Callable[..., dict[str, Any]]]:
     """Op name -> the wrapped tool it dispatches to: every tool the MCP layer serves but
     `NOT_STEPS`, read off the registry at call time, so a step is a tool by construction and
     a new tool is a step without a second list to forget."""
+    # The module's own binding first, so a step dispatches to whatever this module calls the tool
+    # now; the registration's function for a tool registered elsewhere.
     here = globals()
-    return {name: here[name] for name in registered_tools() if name not in NOT_STEPS}
+    return {t.name: here.get(t.name, t.fn) for t in mcp._tool_manager.list_tools()
+            if t.name not in NOT_STEPS}
 
 
 checks.STEP_OPS = _step_ops
 
 
-@tool("Run a sequence of steps", summary=one_line.perform)
+@tool("Run a sequence of steps", summary=one_line.perform, on_cancel="stop")
 def perform(steps: list[dict[str, Any]], wait: float = 30.0, summaries: bool = False,
             ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run a LIST of the server's own operations in order on the open session, in ONE round
@@ -1883,10 +1887,10 @@ def perform(steps: list[dict[str, Any]], wait: float = 30.0, summaries: bool = F
 
     Reference: REFERENCE.md, Sequences in one call.
     """
-    return sequence.run_steps(live(), steps, wait, _step_ops(), progress_of(ctx), summaries)
+    return sequence.run_steps(live(), steps, wait, _step_ops(), bridge(ctx), summaries)
 
 
-@tool("Look, act, verify", summary=one_line.drive)
+@tool("Look, act, verify", summary=one_line.drive, on_cancel="none")
 def drive(act: list[dict[str, Any]], expect: str | None = None,
           seconds: float | None = None, pattern: str = ".", limit: int = 40,
           wait: float = 30.0, summaries: bool = False,
@@ -1922,7 +1926,7 @@ def drive(act: list[dict[str, Any]], expect: str | None = None,
     "the check ran and found nothing".
     """
     return sequence.drive(live(), _step_ops(), act, expect, seconds, pattern, limit, wait,
-                          progress_of(ctx), summaries)
+                          bridge(ctx), summaries)
 
 
 strict.strict_arguments(mcp)

@@ -393,6 +393,7 @@ def clean_session() -> Any:
     dstate.STATE.last_stop.clear()
     dstate.STATE.clear_running_state()
     dstate.STATE.forget_symbols()
+    dstate.STATE.cancelled = None
     yield
     dstate.STATE.session = None
     dstate.STATE.store = None
@@ -401,6 +402,7 @@ def clean_session() -> Any:
     dstate.STATE.last_stop.clear()          # nor date the next one's answers by its stops
     dstate.STATE.clear_running_state()      # nor leave it a queue to drain
     dstate.STATE.forget_symbols()
+    dstate.STATE.cancelled = None           # nor a cancelled call's record for its first reply
 
 
 _STORE_TMP = tempfile.mkdtemp(prefix="dosbox-x-server-test-")
@@ -5674,27 +5676,6 @@ def test_the_sdk_injects_the_context_into_the_waiting_tools_and_hides_it(
     for name in ("step", "registers", "status"):
         tool = server.mcp._tool_manager.get_tool(name)
         assert tool is not None and tool.context_kwarg is None, name
-    assert dosbox_mcp.progress_of(None) is ds.no_progress
-
-
-def test_the_progress_bridge_reaches_the_context_from_a_worker_thread() -> None:
-    """The SDK runs a synchronous tool in a worker thread and `report_progress` is a
-    coroutine on the event loop; the bridge is what carries one to the other."""
-    import anyio
-
-    got: list[tuple[float, float | None, str | None]] = []
-
-    class _Ctx:
-        async def report_progress(self, progress: float, total: float | None = None,
-                                  message: str | None = None) -> None:
-            got.append((progress, total, message))
-
-    async def main() -> None:
-        report = dosbox_mcp.progress_of(_Ctx())  # type: ignore[arg-type]
-        await anyio.to_thread.run_sync(lambda: report(3.0, 9.0, "tick"))
-
-    anyio.run(main)
-    assert got == [(3.0, 9.0, "tick")]
 
 
 def test_the_sequences_wait_for_a_stop_reports_its_progress(
@@ -6303,15 +6284,17 @@ def test_wait_ready_and_close_report_their_progress() -> None:
             pass
 
     ticks: list[str] = []
-    numbers: list[tuple[float, float]] = []
+    numbers: list[tuple[float, float | None]] = []
 
-    def record(p: float, t: float, m: str) -> None:
+    def record(p: float, t: float | None, m: str) -> None:
         ticks.append(m)
         numbers.append((p, t))
 
     ds.Session.wait_ready(_Booting(2.2), 5.0, record)  # type: ignore[arg-type]
     assert ticks and "waiting for the debugger prompt" in ticks[0], ticks
-    assert all(t == 5.0 and 0 < p < t for p, t in numbers), numbers
+    # Measured in time, so no total: a bar filling towards the bound reads as progress towards
+    # failure.
+    assert all(t is None and 0 < p < 5.0 for p, t in numbers), numbers
     control: list[str] = []
     ds.Session.wait_ready(_Booting(0.0), 5.0, lambda p, t, m: control.append(m))  # type: ignore[arg-type]
     assert control == []
@@ -6353,14 +6336,14 @@ def test_read_memory_length_is_bounded_and_resume_takes_the_siblings_bound(
     monkeypatch.setattr(fake, "_screen", "", raising=False)
     monkeypatch.setattr(fake, "alive", lambda: True)
     ticks: list[str] = []
-    monkeypatch.setattr(server, "progress_of", lambda ctx: (lambda p, t, m: ticks.append(m)))
+    monkeypatch.setattr(server, "bridge", lambda ctx: (lambda p, t, m: ticks.append(m)))
     try:
         out = cast(dict[str, Any], server.resume(seconds=1.3))
     finally:
         monkeypatch.undo()
     assert out["status"] == "ok" and out["halted"] is False, out
     assert out["waited_s"] >= 1.2 and "STILL RUNNING" in out["note"], out
-    assert ticks and ticks[0].startswith("run_to resume:"), ticks
+    assert ticks and ticks[0].startswith("resume: running "), ticks
 
 
 def test_resume_with_a_bound_comes_back_with_the_stop_when_the_prompt_lands(
@@ -7135,3 +7118,26 @@ def test_a_recorded_stop_keeps_the_paging_mark_its_survey_read(tmp_path: Path) -
     fake.paging = True  # type: ignore[attr-defined]   # what a paged stop survey leaves
     server.step(mode="over")
     assert dstate.STATE.last_stop["paging"] is True
+
+
+def test_a_boot_whose_call_is_cancelled_stops_waiting_for_the_prompt(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    import asyncio
+    import time
+
+    from scry_core import cancel
+
+    class _Never:
+        _screen = ""
+        proc = SimpleNamespace(poll=lambda: None)
+
+        def _read(self, timeout: float) -> str:
+            return ""
+
+    def check() -> None:
+        raise asyncio.CancelledError
+    monkeypatch.setattr(cancel, "check", check)
+    began = time.monotonic()
+    with pytest.raises(asyncio.CancelledError):
+        ds.Session.wait_ready(_Never(), 5.0)  # type: ignore[arg-type]
+    assert time.monotonic() - began < 1.0

@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from scry_core import media_tools
+from scry_core import progress as mprogress
 from scry_core import reply_contract as contract
 
 import dosbox_arming as arming
@@ -316,7 +317,7 @@ def account_of(ran: list[dict[str, Any]], summaries: bool, keep_last: bool, sinc
 
 def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
               ops: Ops, progress: ds.Progress = ds.no_progress,
-              summaries: bool = False) -> dict[str, Any]:
+              summaries: bool = False, name: str = "perform") -> dict[str, Any]:
     """Execute steps in order, STOPPING at the first failure with a full account (decision
     3). Returns `ran` (each step and its reply), `failed` (the step that stopped it, or
     None), `completed`, and the machine state. A step is `{"op": <name>, ...args}`.
@@ -346,6 +347,7 @@ def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
     released_last = False     # the LAST step is the one that let the machine run
     trap_of_run_to = False    # a `run_to` that ran off leaves its own breakpoint armed
     came_to_rest = False      # the LAST step found the released machine stopped
+    began = time.monotonic()           # the line of the list rises from here
     for i, step in enumerate(steps):
         if not isinstance(step, dict) or "op" not in step:
             return st.reply(status="INVALID", code="bad_argument",
@@ -387,7 +389,9 @@ def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
                                      f"sent (it would be swallowed). A breakpoint or watch "
                                      f"has to stop it first")
             running = False
-        reply = ops[op](**args)      # its arguments were bound up front, before any step ran
+        # A STEP HAS NO REQUEST OF ITS OWN: its progress goes out on the list's line.
+        with mprogress.within(progress, f"{name} step {i + 1} of {len(steps)} ({op})", began):
+            reply = ops[op](**args)  # its arguments were bound up front, before any step ran
         if reply.get("status") != "ok":
             # DECISION 3: stop here. `ran` holds only the steps that SUCCEEDED; the one that
             # stopped the sequence is `failed`, and the machine state rides in `session` --
@@ -582,7 +586,7 @@ def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str 
     except ds.Invalid as e:
         raise ds.Invalid("no_channel",
             f"drive needs a session started with a logfile: {e}") from None
-    ran = run_steps(session, act, wait, ops, progress, summaries)
+    ran = run_steps(session, act, wait, ops, progress, summaries, name="drive")
     account = {k: v for k, v in ran.items() if k not in ("status", "session")}
     account.setdefault("failed", None)     # always there, so a reader need not probe for it
     if ran.get("status") != "ok":

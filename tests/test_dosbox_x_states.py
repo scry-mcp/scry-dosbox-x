@@ -454,3 +454,20 @@ def test_a_parked_load_is_a_stop_of_its_own(tmp_path: Path) -> None:
     running = StateFake(tmp_path / "save", parked=False)
     ds.Session.state_load(as_session(running), "boot", 5.0)
     assert running.stop_count == 0, "a released guest's next stop is counted when it comes"
+
+
+def test_a_snapshot_whose_call_is_cancelled_stops_waiting_for_the_picture(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import asyncio
+
+    from scry_core import cancel
+
+    def check() -> None:
+        raise asyncio.CancelledError
+    fake = ShotFake(tmp_path / "save", watched=False)
+    fake.writes = False                                   # the picture never comes
+    monkeypatch.setattr(cancel, "check", check)
+    began = time.monotonic()
+    with pytest.raises(asyncio.CancelledError):
+        ds.Session.snapshot(as_session(fake), None, 5.0)
+    assert time.monotonic() - began < 1.0, "the wait ran on to its bound"
