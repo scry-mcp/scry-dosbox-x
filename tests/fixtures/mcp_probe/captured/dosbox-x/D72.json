@@ -1,7 +1,7 @@
 {
  "task": {
   "id": "D72",
-  "prompt": "The guest is stopped. Give me one number for what is on screen now, so I can tell later whether anything changed.",
+  "prompt": "The guest is stopped. Give me a signature of what is on screen now, so I can tell later whether anything changed.",
   "tool": "screen_signature",
   "args": {}
  },

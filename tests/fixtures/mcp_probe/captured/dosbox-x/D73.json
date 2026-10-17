@@ -1,26 +1,33 @@
 {
  "task": {
   "id": "D73",
-  "prompt": "The guest is stopped. Give me one number for the top-left quarter of the screen only, ignoring the rest.",
-  "expect": "CANNOT",
-  "about": "screen_signature"
+  "prompt": "The guest is stopped in mode 13h, 320 by 200. Give me a signature of the top-left quarter of the screen only, ignoring the rest.",
+  "tool": "screen_signature",
+  "args": {
+   "crop": [
+    0,
+    0,
+    160,
+    100
+   ]
+  }
  },
  "runs": [
   {
    "lines": [
-    "D73: CANNOT screen_signature computes a CRC over the entire screen and supports no partial-screen options"
+    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D73: CANNOT screen_signature cannot compute partial screen regions"
+    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D73: CANNOT screen_signature for partial screen because the tool computes one signature for the entire screen."
+    "D73: {\"tool\": \"screen_signature\", \"args\": {\"crop\": [0, 0, 160, 100]}}"
    ],
    "right": true
   }

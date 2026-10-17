@@ -26,7 +26,7 @@ import re
 from collections.abc import Callable
 from typing import Any
 
-from scry_core import narrowing
+from scry_core import judges, media_tools, narrowing, picture
 from scry_core import value_format as vf
 
 import dosbox_code as code
@@ -35,6 +35,7 @@ import dosbox_declarations as dec
 import dosbox_find as finder
 import dosbox_inputs as inputs
 import dosbox_machine as machine
+import dosbox_media as media
 import dosbox_paths as paths
 import dosbox_placement as placement
 import dosbox_running as running
@@ -443,7 +444,8 @@ def _snapshot(dest: str = "", seconds: float = ds.SNAPSHOT_WAIT_S, **_: Any) -> 
     ds.check_wait_bound(seconds)
 
 
-def _palette(first: int = 0, count: int = 0, dest: str = "", **_: Any) -> None:
+def _palette(first: int = 0, count: int = 0, scale: int = 0, dest: str = "",
+             **_: Any) -> None:
     entries = screen.DAC_ENTRIES
     for name, value, top in (("first", first, entries - 1), ("count", count, entries)):
         if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= top:
@@ -453,11 +455,21 @@ def _palette(first: int = 0, count: int = 0, dest: str = "", **_: Any) -> None:
         raise ds.Invalid("bad_argument",
             f"first={first} and count={count} reach entry {first + count - 1}: the DAC holds "
             f"entries 0 to {entries - 1}")
+    picture.check_scale(scale)
     optional_path("dest", dest)
 
 
-def _screen_view(dest: str = "", **_: Any) -> None:
+def _screen_view(crop: list[int] | None = None, scale: int = 0, dest: str = "",
+                 **_: Any) -> None:
+    if crop is not None:
+        judges.rect("crop", crop)
+    picture.check_scale(scale)
     optional_path("dest", dest)
+
+
+def _screen_signature(crop: list[int] | None = None, **_: Any) -> None:
+    if crop is not None:
+        judges.rect("crop", crop)
 
 
 #: The longest text a wait looks for: a row of the widest text mode.
@@ -534,6 +546,9 @@ BY_OP: dict[str, Check] = {
     "capture_frame": _capture_frame, "find": _find, "scan_start": _scan_start,
     "debug": _debug, "interrupt_vectors": _interrupt_vectors,
     "palette": _palette, "screen_view": _screen_view, "screen_wait": _screen_wait,
+    "screen_signature": _screen_signature, "series_capture": media.check_series_capture,
+    # The media file tools' judges are scry-core's, beside their bodies.
+    **{name: media_tools.TOOLS[name].check for name in media_tools.IMAGE_TOOLS},
     "snapshot": _snapshot, "scan_filter": _scan_filter, "state_save": _state,
     "state_load": _state, "perform": _perform, "drive": _drive, "start": _start,
     "comment_add": _comment_add, "comment_delete": _comment_delete,
@@ -544,14 +559,14 @@ BY_OP: dict[str, Check] = {
 #: TOOLS DELIBERATELY WITHOUT AN ENTRY, named so an absent entry and a forgotten one cannot
 #: look alike. They take only a path their body judges first (`build_check`'s `binary`), or no
 #: argument at all (`status`, `close`, `stop`, `scan_clear`, `state_list`, `breakpoint_list`,
-#: `watch_list`, `captures`, `screen_signature`, `call_stack`,
+#: `watch_list`, `captures`, `call_stack`,
 #: `comment_list`); or a flag every value of which is valid
 #: (`registers`); or a `ref` that matches only against the declarations the session's store
 #: holds (`breakpoint_clear`, `watch_clear`).
 MACHINE_JUDGES = frozenset({
     "build_check", "status", "close", "stop", "registers", "scan_clear", "state_list",
     "breakpoint_list", "breakpoint_clear", "watch_list", "watch_clear", "captures",
-    "screen_signature", "call_stack", "comment_list",
+    "call_stack", "comment_list",
 })
 
 

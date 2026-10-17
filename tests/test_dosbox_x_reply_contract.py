@@ -18,6 +18,7 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
+from scry_core import media_tools
 from scry_core import reply_contract as contract
 
 import dosbox_session as ds
@@ -30,6 +31,11 @@ SOURCES = sorted(p for p in PACKAGE.glob("*.py") if p.name != "mapsweep.py")
 
 # The arguments a tool needs to be CALLED at all; the gate refuses before any is judged.
 _ARGS: dict[str, dict[str, Any]] = {
+    "series_capture": {"frames": [0]},
+    "image_diff": {"a": "/nonexistent/a.png", "b": "/nonexistent/b.png"},
+    "series_diff": {"a": "/nonexistent/a.json", "b": "/nonexistent/b.json"},
+    "region_track": {"manifest": "/nonexistent/m.json"},
+    "golden_check": {"manifest": "/nonexistent/m.json", "checksums": "/nonexistent/g.sha256"},
     "start": {"conf": "/nonexistent.conf", "cwd": "/", "seconds": 10, "mode": "nope"},
     "log": {"pattern": ".", "channel": "guest"},
     "log_wait": {"pattern": ".", "channel": "guest", "seconds": 0.01},
@@ -83,7 +89,9 @@ def test_every_tool_answers_the_contract_with_no_machine(
     if name in ("status", "close"):
         assert reply["status"] == "ok" and "code" not in reply and "message" not in reply, reply
         return
-    expected = {"start": "bad_argument", "build_check": "host_failed"}.get(name, "no_session")
+    # A media file tool needs no machine: it refuses the missing file it was handed.
+    expected = {"start": "bad_argument", "build_check": "host_failed",
+                **dict.fromkeys(media_tools.IMAGE_TOOLS, "bad_argument")}.get(name, "no_session")
     contract.check_refusal(name, reply, expected)
 
 

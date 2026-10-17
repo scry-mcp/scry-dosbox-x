@@ -389,26 +389,41 @@ def palette(args: dict[str, Any], reply: dict[str, Any]) -> str:
     colors = reply.get("colors") or []
     which = (f"entry {first} {colors[0]}" if count == 1 and colors
              else f"entries {first} to {first + count - 1}")
-    image = reply.get("image")
-    picture = f", picture to {image.get('path')}" if isinstance(image, dict) else ""
-    return f"palette: {which} of {reply.get('entries')}{picture}"
+    return f"palette: {which} of {reply.get('entries')}; {_picture(reply)}"
+
+
+def _picture(reply: dict[str, Any]) -> str:
+    """The picture's half of a view's line: its size, its scale and whether it is attached."""
+    image = reply.get("image") or {}
+    shown = "inline" if image.get("inline") else "not inlined"
+    return f"{image.get('width')}x{image.get('height')} PNG x{image.get('scale')}, {shown}"
+
+
+def _region(reply: dict[str, Any]) -> str:
+    """The rectangle a reply read, as `w x h at [x, y]`."""
+    crop = reply.get("crop")
+    if not (isinstance(crop, list) and len(crop) == 4):
+        return "the screen"
+    x, y, w, h = crop
+    return f"{w} x {h} at [{x}, {y}]"
 
 
 def screen_view(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    size = f"{reply.get('width')} x {reply.get('height')}"
-    image = reply.get("image")
-    if isinstance(image, dict):
-        return f"screen_view {reply.get('mode')}: {size} pixels to {image.get('path')}"
+    if isinstance(reply.get("image"), dict):
+        return f"screen_view {reply.get('mode')}: {_region(reply)} pixels; {_picture(reply)}"
     cursor = reply.get("cursor")
     at = f", cursor at {cursor[0]},{cursor[1]}" if isinstance(cursor, list) else ""
-    return f"screen_view {reply.get('mode')}: {size} text{at}"
+    return f"screen_view {reply.get('mode')}: {_region(reply)} text{at}"
 
 
 def screen_signature(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    sig = reply.get("signature")
-    number = f"{sig:#010x}" if isinstance(sig, int) else str(sig)
-    return (f"screen_signature {reply.get('mode')} {reply.get('width')} x "
-            f"{reply.get('height')}: {number}")
+    return f"screen_signature {reply.get('mode')} {_region(reply)}: {reply.get('signature')}"
+
+
+def series_capture(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    return (f"series_capture: {reply.get('count')} AVI frames {reply.get('first')}.."
+            f"{reply.get('last')}, {reply.get('distinct')} distinct, manifest "
+            f"{reply.get('manifest')}")
 
 
 def screen_wait(args: dict[str, Any], reply: dict[str, Any]) -> str:

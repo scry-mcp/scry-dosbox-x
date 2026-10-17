@@ -78,6 +78,7 @@ from __future__ import annotations
 import functools
 import inspect
 import json
+import re
 import subprocess
 import sys
 import threading
@@ -108,7 +109,8 @@ from pydantic import ValidationError
 # depends on -- the same silent-wrong-import hazard, installed by the fix for it.
 sys.path.append(str(Path(__file__).resolve().parent))
 
-from scry_core import narrowing  # noqa: E402
+from scry_core import media_tools, narrowing, picture  # noqa: E402
+from scry_core import series as core_series  # noqa: E402
 from scry_core import strict_arguments as strict  # noqa: E402
 
 import dosbox_arming as arming  # noqa: E402
@@ -122,6 +124,7 @@ import dosbox_dump as dumping  # noqa: E402
 import dosbox_find as finder  # noqa: E402
 import dosbox_inputs as inputs  # noqa: E402
 import dosbox_machine as machine  # noqa: E402
+import dosbox_media as media  # noqa: E402
 import dosbox_paths as paths  # noqa: E402
 import dosbox_placement as placement  # noqa: E402
 import dosbox_retrace as retrace  # noqa: E402
@@ -153,7 +156,9 @@ class Envelope(MCPServer):
     async def call_tool(self, name: str, arguments: dict[str, Any],
                         context: Context[Any, Any] | None = None) -> Any:
         try:
-            return await super().call_tool(name, arguments, context)
+            # THE PICTURE is attached here, beside the JSON, from the file its body names
+            # (`scry_core.picture.attached`), so a tool body and a test deal in a plain dict.
+            return picture.attached(await super().call_tool(name, arguments, context))
         except ToolError as e:
             cause = strict.refused_by_schema(e)
             if cause is None:
@@ -201,12 +206,13 @@ mcp = Envelope(
         'Write: `set_register`, `write`. Advance: `run_to`, `run_for`, `trace`, `screen_wait`,\n'
         '`step`, `resume`, `stop`. Declarations, kept per conf: `breakpoint_at`,\n'
         '`breakpoint_list`, `breakpoint_clear`, `breakpoint_interrupt`, `watch_add`,\n'
-        '`watch_list`, `watch_clear`. States: `state_save`, `state_load` (by SAVESTATE and\n'
-        'LOADSTATE, a build that carries them), `state_list`. Names: `symbols_load`,\n'
+        '`watch_list`, `watch_clear`. States: `state_save`, `state_load`, `state_list`.\n'
+        'Names: `symbols_load`,\n'
         '`symbols_find`. Comments: `comment_add`, `comment_list`, `comment_delete`,\n'
         '`comment_save`, `comment_load`. Input, in-guest:\n'
         '`send_keys`, `send_mouse`, `drive`. Captures: `captures`, `capture_frame`,\n'
-        '`snapshot`. Sequences: `perform`.\n\n'
+        '`series_capture`, `snapshot`. Files: `image_diff`, `series_diff`, `region_track`,\n'
+        '`golden_check`. Sequences: `perform`.\n\n'
         'A SESSION. `build_check` answers about the BUILD, never a reading, and REFUSES while a\n'
         'session is live. `start` parks the guest STOPPED at the debugger; `resume` lets it\n'
         'run. The readers need it STOPPED and refuse otherwise, naming `last_stop` and what\n'
@@ -328,11 +334,31 @@ def tool(
             args.pop("ctx", None)
             return {"summary": _summary(fn.__name__, args, reply), **reply}
 
+        wrapped.__doc__ = _filled(fn.__name__, fn.__doc__ or "")
         return mcp.tool(title=title,
                         annotations=ToolAnnotations(read_only_hint=read_only,
                                                     idempotent_hint=idempotent))(wrapped)
 
     return register
+
+
+#: WHAT A TOOL'S DOCSTRING STATES THAT THE CODE ALREADY KNOWS, filled at registration: the
+#: picture's two sentences are scry-core's, from the code that attaches the picture, and a
+#: number is the constant that enforces it, never typed into the text.
+_DOC_VALUES = {"PICTURE": picture.DESCRIBED, "PICTURE_ARGS": picture.ARGUMENTS,
+               "SERIES_MAX": str(core_series.SERIES_MAX)}
+_PLACEHOLDER = re.compile(r"\{[A-Z_]+\}")
+
+
+def _filled(name: str, doc: str) -> str:
+    """`doc` with every `{NAME}` of `_DOC_VALUES` filled, or a failure at import naming what is
+    left: a placeholder that reaches a client reads as a word, not as a missing number."""
+    for key, value in _DOC_VALUES.items():
+        doc = doc.replace("{" + key + "}", value)
+    left = _PLACEHOLDER.findall(doc)
+    if left:
+        raise TypeError(f"{name}'s docstring names {left}, which nothing fills")
+    return doc
 
 
 def _progress(ctx: Context[Any, Any] | None) -> ds.Progress:
@@ -1700,91 +1726,147 @@ def interrupt_vectors(number: int | None = None) -> dict[str, Any]:
 # ------------------------------------------------------------------------ the screen
 
 @tool("Read the palette", summary=one_line.palette)
-def palette(first: int = 0, count: int = 0, dest: str = "") -> dict[str, Any]:
+def palette(first: int = 0, count: int = 0, scale: int = 0, dest: str = "") -> dict[str, Any]:
     """THE 256 COLOURS OF THE VGA'S DAC AS THEY ARE AT THIS STOP, read off the debugger's
-    `VGA DAC` and `VGA DACPAL` listings in the session's logfile: it needs the machine STOPPED
-    and a session started with `logfile`, and costs a console round trip per listing and one
-    more for `VGA DACPAL`'s pager.
+    `VGA DAC` and `VGA DACPAL` listings in the session's logfile, with their swatch attached:
+    it needs the machine STOPPED and a session started with `logfile`, and costs a console
+    round trip per listing and one more for `VGA DACPAL`'s pager.
 
     The DAC holds entries 0 to 255 and nothing past them. `first` (0 to 255) and `count` (1 to
     256, 0 for every entry from `first`) choose the entries returned, `first + count` at most
-    256. `dest`, an absolute path not there yet in a directory that is, also writes them as an
-    indexed PNG: one square per
-    entry, sixteen a row, each pixel the entry's index into the DAC, the PLTE the colours.
+    256. The swatch is one square per entry, sixteen a row, an indexed PNG whose every pixel is
+    the entry's index into the DAC. {PICTURE}. {PICTURE_ARGS}.
 
     Reply: `entries` (256), `first`, `count` (how many came back), `colors` (`#rrggbb`, each
     six-bit component widened as the emulator renders it, its two top bits repeated below),
-    `rgb` (each entry as `VGA DACPAL` printed it, three six-bit components in hex), `bits` (6)
-    and `pel_mask` as `VGA DAC` printed it, and with `dest` `image` (`path`, `sha256`,
-    `width`, `height`, `indexed`).
+    `rgb` (each entry as `VGA DACPAL` printed it, three six-bit components in hex), `bits` (6),
+    `pel_mask` as `VGA DAC` printed it, and `image`.
 
-    Refused: an entry the DAC does not have (`first` 256 or more, `first + count` past 256) or
-    a relative `dest` (`bad_argument`, before anything is typed); a `dest` already there or
-    with no directory (`bad_argument`); no `logfile` (`no_channel`); a running guest
-    (`not_stopped`); a DAC not in its six-bit mode, or a listing in a shape this was not
-    written against (`unexpected_answer`).
+    Refused: an entry the DAC does not have (`first` 256 or more, `first + count` past 256), a
+    `scale` out of range or a relative `dest` (`bad_argument`, before anything is typed); a
+    `dest` already there or with no directory (`bad_argument`); no `logfile` (`no_channel`); a
+    running guest (`not_stopped`); a DAC not in its six-bit mode, or a listing in a shape this
+    was not written against (`unexpected_answer`); a picture the disk could not take whole
+    (`host_failed`, leaving no file).
 
-    Reference: REFERENCE.md, Input and the screen.
+    Reference: REFERENCE.md, Media files.
     """
     session = _live()
     _console_listening(session, "a listing")
-    return st.reply(**screen.palette(session, first, count,
-                                     paths.absolute("dest", dest) if dest else None))
+    return st.reply(**screen.palette(session, first, count, scale,
+                                     paths.absolute("dest", dest) if dest else None,
+                                     STATE.session_scratch()))
 
 
 @tool("Read the screen", summary=one_line.screen_view)
-def screen_view(dest: str = "") -> dict[str, Any]:
+def screen_view(crop: list[int] | None = None, scale: int = 0,
+                dest: str = "") -> dict[str, Any]:
     """WHAT THE SCREEN SHOWS AT THIS STOP, read from video memory where the VGA listings say it
     lies: needs the machine STOPPED and a session started with `logfile`. A text mode comes back
-    as text; the chained 256-colour mode (13h's) as an indexed PNG at `dest`, an absolute path
-    not there yet, each pixel the palette index the guest wrote, the PLTE the
-    DAC. In protected mode the bytes are read through a data segment of the GDT or LDT that
-    covers them, with paging on only where they map to themselves.
+    as text; the chained 256-colour mode (13h's) as the picture, attached: an indexed PNG of
+    the indices the guest wrote, the PLTE the DAC. {PICTURE}.
+    {PICTURE_ARGS}; a text mode takes neither. `crop` `[x, y, width, height]`, in characters
+    or pixels. In protected mode the bytes are read through a data segment of the GDT or LDT
+    that covers them, with paging on only where they map to themselves.
 
     Reply: `mode` (`VGA MODE`'s word), `source` (`text` or `indices`), `width` and `height` (in
-    characters or pixels), `display_start` (as `VGA MODE` printed it); in text, `text` (one
-    string a row, as code page 437 draws it, trailing spaces dropped) and `cursor` (`[column,
-    row]`, null when hidden or off the screen); in 256 colours, `image` (`path`, `sha256`,
-    `width`, `height`, `indexed`).
+    characters or pixels), `crop` (the rectangle read), `display_start` (as `VGA MODE` printed
+    it); in text, `text` (one string a row of the crop, as code page 437 draws it, trailing
+    spaces dropped) and `cursor` (`[column, row]` in the crop, null when hidden or outside it);
+    in 256 colours, `image`.
 
-    Refused: a relative `dest` (`bad_argument`, before anything is typed); `dest` in a text mode,
-    none in 256 colours, one already there or with no directory, or a dump file left in the
-    emulator's working directory (`bad_argument`); any other mode, planar, linear-frame-buffer
-    or none set, naming it and `capture_frame` (`no_channel`); a layout this does not decode
-    (split, panning, a logical row wider than the screen), a screen past its window, or one no
-    segment or page reaches as itself (`no_channel`); no `logfile` (`no_channel`); a running
-    guest (`not_stopped`); a DAC not in its six-bit mode, or a listing in another shape
-    (`unexpected_answer`).
+    Refused: a relative `dest`, a `scale` out of range or a misshapen `crop` (`bad_argument`,
+    before anything is typed); `dest` or `scale` in a text mode, a `crop` off the screen, a
+    `dest` already there or with no directory, or a dump file left in the emulator's working
+    directory (`bad_argument`); any other mode, planar, linear-frame-buffer or none set, naming
+    it and `capture_frame`; a layout this does not decode (split, panning, a row wider than the
+    screen), a screen past its window, or one no segment or page reaches as itself; no `logfile`
+    (each `no_channel`); a running guest (`not_stopped`); a DAC not six-bit, or a listing in
+    another shape (`unexpected_answer`); a picture the disk could not take whole (`host_failed`).
 
-    Reference: REFERENCE.md, Input and the screen.
+    Reference: REFERENCE.md, Media files.
     """
     session = _live()
     _console_listening(session, "a listing")
-    return st.reply(**screen.screen_view(session,
-                                         paths.absolute("dest", dest) if dest else None))
+    return st.reply(**screen.screen_view(session, crop, scale,
+                                         paths.absolute("dest", dest) if dest else None,
+                                         STATE.session_scratch()))
 
 
-@tool("Fold the screen into a number", summary=one_line.screen_signature)
-def screen_signature() -> dict[str, Any]:
-    """ONE NUMBER FOR WHAT IS ON SCREEN, to compare instead of reading it: CRC-32 over the mode,
-    the size, every byte the screen is drawn from (characters and their attributes, or pixels)
-    and the 256 DAC entries, so a changed character, colour attribute or palette entry is a
-    changed number; the cursor and the Attribute Controller's palette registers are not folded.
-    It reads what `screen_view` reads, in the same modes, and the DAC; needs the machine STOPPED
-    and a session started with `logfile`.
+@tool("Sign the screen", summary=one_line.screen_signature, read_only=True)
+def screen_signature(crop: list[int] | None = None) -> dict[str, Any]:
+    """One hex string for what is on screen, or on `crop` of it, so "is it the same screen" is
+    answered by comparing two strings and no picture crosses the conversation. It is the
+    `scry-sig/1` signature a series row carries over the same crop: in a text mode each cell is
+    its code page 437 byte and the colours its attribute resolves to through the Attribute
+    Controller and the DAC; in 256 colours each pixel is its DAC colour. So a palette change is
+    a new signature, and the cursor is not part of it. `crop` `[x, y, width, height]`, in
+    characters or pixels. It reads what `screen_view` reads, in the same modes; needs the
+    machine STOPPED and a session started with `logfile`.
 
-    Reply: `signature` (an integer), `width`, `height`, `source`, `mode`.
+    Reply: `signature` (16 hex characters), `kind` (`text` or `pixel`), `width` and `height`
+    (the screen's), `crop` (the rectangle hashed), `source`, `mode`.
 
-    Refused as `screen_view` is, `dest` aside: another mode, naming it and `capture_frame`, or a
-    screen it cannot place (`no_channel`); no `logfile` (`no_channel`); a running guest
-    (`not_stopped`); a DAC not in its six-bit mode or a listing in another shape
-    (`unexpected_answer`).
+    Refused as `screen_view` is, `dest` and `scale` aside: a `crop` off the screen
+    (`bad_argument`); another mode, naming it and `capture_frame`, or a screen it cannot place
+    (`no_channel`); no `logfile` (`no_channel`); a running guest (`not_stopped`); a DAC not in
+    its six-bit mode or a listing in another shape (`unexpected_answer`).
 
-    Reference: REFERENCE.md, Input and the screen.
+    Reference: REFERENCE.md, Media files.
     """
     session = _live()
     _console_listening(session, "a listing")
-    return st.reply(**screen.screen_signature(session))
+    return st.reply(**screen.screen_signature(session, crop))
+
+
+@tool("Capture a series of frames", summary=one_line.series_capture)
+def series_capture(frames: list[int] | None = None, first: int | None = None,
+                   last: int | None = None, step: int = 1, crop: list[int] | None = None,
+                   dest: str = "", source: str | None = None) -> dict[str, Any]:
+    """FRAMES OUT OF THE SESSION'S VIDEO CAPTURE, as PNGs and one manifest: the series
+    `series_diff`, `region_track` and `golden_check` read, with no picture in the reply. Needs
+    `ffmpeg` (named when missing) and a session started with `capture_video`.
+
+    The frames are the AVI's own, numbered from 0, NOT emulated frames: `frames` (a list,
+    ascending) or `first`, `last` and `step`, at most {SERIES_MAX}. `source`: an absolute path
+    of a capture, default the largest. `crop` `[x, y, width, height]` in the capture's pixels,
+    default the whole frame. `dest`: a new absolute directory, kept after `close`; else one in
+    the session's scratch, gone at `close` (`kept_after_close` says which). A `%` in either
+    path is refused (ffmpeg would read it as a template).
+
+    Reply: `manifest` (its path), `count`, `first`, `last`, `distinct` (signatures over the
+    crop), `frames_asked`, `kept_after_close`, `frame_source` (`avi`), `source`, `crop`.
+    It answers on a running guest too: it reads the file. Refused: a frame past the capture's
+    end, a crop off its frames, a `dest` already there (`bad_argument`); a session with no
+    `captures_dir` or no `capture_video` (`no_channel`), or no capture written yet
+    (`unexpected_answer`); no `ffmpeg`, or ffmpeg failing (`host_failed`).
+
+    Reference: REFERENCE.md, Media files.
+    """
+    session = _live()
+    return st.reply(**media.series_capture(session, STATE.session_scratch(), frames, first,
+                                           last, step, crop, dest, source))
+
+
+# THE MEDIA FILE TOOLS are scry-core's, body and description, each registered through this
+# server's own `tool` so its reply wears this envelope; bound here by name so a step and a direct
+# call find them as they find every other tool.
+def _media_tool(title: str, **kw: Any) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    """`tool` for a scry-core body, which answers bare fields: the body's answer is made a reply
+    (`status` and `session`) as this server's own bodies make theirs."""
+    def register(body: Callable[..., Any]) -> Callable[..., Any]:
+        @functools.wraps(body)
+        def answered(*a: Any, **k: Any) -> dict[str, Any]:
+            return st.reply(**body(*a, **k))
+        return tool(title, **kw)(answered)
+    return register
+
+
+_MEDIA = media_tools.register(_media_tool, media_tools.IMAGE_TOOLS)
+image_diff = _MEDIA["image_diff"]
+series_diff = _MEDIA["series_diff"]
+region_track = _MEDIA["region_track"]
+golden_check = _MEDIA["golden_check"]
 
 
 # --------------------------------------------------- declarations: breakpoints, watches

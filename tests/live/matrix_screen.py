@@ -71,7 +71,7 @@ J_CELLS = cells(
     ("J screen_wait on a running guest is refused", "screen_wait docstring: not_stopped"),
     ("J screen_view once booted: C:\\>PROBE.COM on its row, the cursor under it",
      "screen_view docstring; known: the autoexec's four lines, the cursor on the fifth row"),
-    ("J screen_signature is one number for the probe's still page, a retrace apart",
+    ("J screen_signature is one string for the probe's still page, a retrace apart",
      "screen_signature docstring; known: the probe writes to port E9, never to the screen"),
     ("J screen_view with a dest in a text mode is refused", "screen_view docstring"),
     ("J screen_view and screen_signature on a running guest are refused",
@@ -81,8 +81,11 @@ J_CELLS = cells(
      "known: screen.asm step 1 prints two lines through DOS"),
     ("J the start-address stop shows the page from its second row",
      "known: screen.asm step 2 sets the CRTC start to 80"),
-    ("J screen_signature moves with the DAC write alone",
-     "screen_signature docstring: the DAC folded; known: step 3 changes entry 1 only"),
+    ("J screen_signature moves when the page shown moves, and holds through a DAC write no "
+     "cell shows",
+     "screen_signature docstring: each cell in the colour it is shown in; known: step 2 moves "
+     "the start and puts it back after its stop, step 3 changes entry 1, which no cell of "
+     "DOS's attribute 07 draws"),
     ("J the 13h picture's pixel (x, y) is (x + y) & FF through the guest's DAC",
      "known: screen.asm step 4; REFERENCE.md, Input and the screen: the widening"),
     ("J the 13h picture equals the emulator's own capture of that frame, pixel for pixel",
@@ -157,8 +160,8 @@ def _probe() -> None:
     one = M.call(server.screen_signature)
     must(M.call(server.run_for, frames=1), "one more retrace on the probe")
     two = M.call(server.screen_signature)
-    M.judge("J screen_signature is one number for the probe's still page, a retrace apart",
-            ok(one) and ok(two) and isinstance(one.get("signature"), int)
+    M.judge("J screen_signature is one string for the probe's still page, a retrace apart",
+            ok(one) and ok(two) and isinstance(one.get("signature"), str)
             and one.get("signature") == two.get("signature"),
             f"{one.get('signature')} then {two.get('signature')}")
     r = M.call(server.screen_view, dest=M.fresh(".png"))
@@ -233,7 +236,7 @@ def _screen_guest() -> None:
             dacs[stop] = M.call(server.palette).get("rgb") or []
         if stop == "13h":
             dest = M.fresh(".png")
-            pic = M.call(server.palette, dest=dest)
+            pic = M.call(server.palette, scale=1, dest=dest)
             image = pic.get("image") or {}
             path = Path(dest)
             judged("J palette's picture of the whole DAC is 256 x 256, its sha256 the file's",
@@ -243,7 +246,7 @@ def _screen_guest() -> None:
         if stop in ("13h", "12h"):
             vga = M.call(server.machine_map, sections=["vga"]).get("vga") or {}
             modes[stop] = vga.get("mode") or {}
-        if stop in ("text", "dac01"):
+        if stop in ("text", "start80", "dac01"):
             sigs[stop] = M.call(server.screen_signature).get("signature")
         _screen_cells(stop)
     M.judge("J the screen guest stops at its own int 3, six times",
@@ -255,9 +258,10 @@ def _screen_guest() -> None:
             f"changed {changed}, entry 1 {before[1:2]} -> {after[1:2]}")
     M.judge("J in 13h the DAC is the guest's ramp, entry by entry", dacs.get("13h") == _ramp(),
             f"first entries {dacs.get('13h', [])[:4]}")
-    M.judge("J screen_signature moves with the DAC write alone",
-            isinstance(sigs.get("text"), int) and isinstance(sigs.get("dac01"), int)
-            and sigs["text"] != sigs["dac01"], f"{sigs}")
+    M.judge("J screen_signature moves when the page shown moves, and holds through a DAC write "
+            "no cell shows",
+            all(isinstance(sigs.get(k), str) for k in ("text", "start80", "dac01"))
+            and sigs["text"] != sigs["start80"] and sigs["dac01"] == sigs["text"], f"{sigs}")
     m13, m12 = modes.get("13h", {}), modes.get("12h", {})
     M.judge("J machine_map's vga names M_VGA chained in 13h and M_EGA in 12h",
             (m13.get("mode"), m13.get("chained"), m12.get("mode")) == ("M_VGA", "1", "M_EGA"),
@@ -280,7 +284,7 @@ def _screen_cells(stop: str) -> None:
                and r.get("display_start") == "50h")
     elif stop in ("13h", "13h-start80"):
         dest = M.fresh(".png")
-        r = M.call(server.screen_view, dest=dest)
+        r = M.call(server.screen_view, scale=1, dest=dest)
         got = _rgb24(dest) if ok(r) else b""
         shift = 0 if stop == "13h" else 1
         label = ("J the 13h picture's pixel (x, y) is (x + y) & FF through the guest's DAC"

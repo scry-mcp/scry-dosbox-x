@@ -29,7 +29,8 @@ INVENTORY = frozenset({
     ("palette", "dest"), ("screen_view", "dest"), ("capture_frame", "dest"),
     ("capture_frame", "source"), ("symbols_load", "source"), ("symbols_load", "types"),
     ("comment_save", "dest"), ("comment_load", "source"), ("start", "binary"),
-    ("build_check", "binary"), ("machine_map", "dest"),
+    ("build_check", "binary"), ("machine_map", "dest"), ("series_capture", "dest"),
+    ("series_capture", "source"),
 })
 
 
@@ -169,6 +170,8 @@ def _base(tool: str, tmp_path: Path) -> dict[str, Any]:
         "comment_load": {"source": str(tmp_path / "c.tsv")},
         "build_check": {},
         "machine_map": {"dest": str(tmp_path / "m.json")},
+        "series_capture": {"frames": [0], "dest": str(tmp_path / "series"),
+                           "source": str(tmp_path / "c.avi")},
     }
     return table[tool]
 

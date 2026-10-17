@@ -57,6 +57,7 @@ import matrix_dos_real16  # noqa: F401 -- registers section D
 import matrix_dos_real16_alt  # noqa: F401 -- registers section E
 import matrix_dpmi  # noqa: F401 -- registers section F
 import matrix_focus  # noqa: F401 -- registers section O, which opens and closes the run
+import matrix_media  # noqa: F401 -- registers section Q
 import matrix_mouse  # noqa: F401 -- registers section P
 import matrix_probe  # noqa: F401 -- registers sections A to C, H and I
 import matrix_screen  # noqa: F401 -- registers section J

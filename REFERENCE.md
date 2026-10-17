@@ -99,8 +99,11 @@ such a build.
 
 **Every path you give is absolute, and nothing expands `~`.** `start`'s `cwd`, `conf`,
 `logfile`, `captures_dir`, `state_dir` and `binary`, `build_check`'s `binary`, `memdump`'s, `trace`'s, `snapshot`'s, `palette`'s,
-`screen_view`'s and `capture_frame`'s `dest`, `capture_frame`'s `source`, and
-`symbols_load`'s `source` and `types` go through one judge. A relative path is refused because
+`screen_view`'s, `capture_frame`'s and `series_capture`'s `dest`, `capture_frame`'s and
+`series_capture`'s `source`, and
+`symbols_load`'s `source` and `types` go through one judge; the media file tools' paths
+(`a`, `b`, `manifest`, `ref`, `dir`, `checksums`) through scry-core's, which refuses a
+relative path the same way. A relative path is refused because
 it would be judged against one directory and used in another: this server's own working
 directory is wherever the client launched it, the emulator's is `cwd`, and a path that names
 one file to the judge and another to the writer is checked against the wrong file. A path
@@ -1337,10 +1340,10 @@ logfile like `machine_map`'s listings, so it needs a `logfile` and a stopped mac
 nothing. `rgb` is each entry as printed, three six-bit components; `colors` widens each to
 eight bits by repeating its two top bits below (`2a` is `aa`, `3f` is `ff`), which is how the
 emulator renders them: a plain shift leaves the brightest entry short of white. A DAC in any
-other width is refused rather than widened by a rule written for six bits. With `dest`
-the entries go to an indexed PNG whose pixels are the entries' own indices into the DAC,
-sixteen squares a row, so the index is the data and the colour a view of it; `dest` is absolute,
-in a directory that exists, and never written over.
+other width is refused rather than widened by a rule written for six bits. The entries are
+always drawn too, as an indexed PNG whose pixels are the entries' own indices into the DAC,
+sixteen squares a row, so the index is the data and the colour a view of it, and the picture is
+attached (*Media files*); `dest` is absolute, in a directory that exists, and never written over.
 
 **`screen_view` reads the screen from video memory, where the `VGA` listings say it lies.** `VGA
 MODE` says which mode it is, and only two families are read: a text mode, decoded to its characters,
@@ -1360,7 +1363,9 @@ their glyphs (`01` is `☺`) and `00` as a space, with trailing blanks dropped; 
 `[column, row]` from the start, null when hidden or off the screen. The 256-colour picture is an
 indexed PNG whose pixels are the bytes the guest wrote and whose PLTE is the DAC, widened as
 `palette` widens it, so each pixel, doubled each way as the emulator renders 13h, equals the
-emulator's own capture of that frame.
+emulator's own capture of that frame; it is attached, enlarged as *Media files* says. A `crop`
+reads part of the screen in its own units: characters in a text mode (the rows cut to it and
+the cursor counted from its corner, null outside it), pixels in 256 colours.
 
 **In protected mode the screen is read through a data segment that covers it.** A linear
 address is only the screen if it maps to it, so the bytes are dumped through the lowest present
@@ -1371,11 +1376,15 @@ reads the four listings that place the screen (`VGA MODE` first), `CPU` (and in 
 `GDT` and `LDT`, and `PAGING` with paging on), one dump, and in 256 colours `VGA DAC` and
 `VGA DACPAL`, a console round trip each.
 
-**`screen_signature` is one number for the same screen**: CRC-32 over the mode word, the size,
-every byte the screen is drawn from (characters with their attributes, or pixels) and the 256
-DAC entries, so a palette fade changes it as surely as a character does; the cursor is not
-folded. It reads what `screen_view` reads in either family, the DAC included, and refuses what
-it refuses.
+**`screen_signature` is one string for the same screen**, or for a `crop` of it, by the
+definition in *Media files*: each cell in the colour it is shown in. A text cell is its code
+page 437 byte and the colours its attribute resolves to: the attribute's nibble picks an
+Attribute Controller palette register (`VGA AC`), whose value, with `color-select` above it as
+`mode_control` bit 7 says, picks the DAC entry; with blink on, the background's fourth bit
+blinks and is not a colour. A 256-colour pixel is its DAC colour. So a palette fade changes it
+as surely as a character does, two screens that look the same have one signature, and the
+cursor is not part of it. It reads what `screen_view` reads in either family and, in both,
+the DAC, with `VGA AC` in a text mode; it refuses what `screen_view` refuses.
 
 **`screen_wait` runs the machine until a string is on the text screen, and stops there.** It
 is `run_for`'s retrace (`VRT`, the stop heard by the prompt) with the screen read at each stop:
@@ -1404,6 +1413,58 @@ survey comes back cut is not recorded, and the reply carries `enrichment` (`avai
 and why) instead, a find keeping its `point` and `line`. A wait whose bound passed before its
 first `VRT` typed nothing, so the record, and a retrace an earlier run left armed, stay as they
 were.
+
+## Media files
+
+The tools that answer about pictures follow one order, so a reply is the cheapest thing that
+answers the question: a signature or a number first ("is it the same screen" is two strings
+compared, never two pictures sent); the full picture last, and only from a tool whose purpose
+is to show (`screen_view` in 256 colours, `palette`); and a reply that answers with numbers
+names what it compared, over which region, and its path. Every tool that signs or compares the
+screen or a series takes a `crop`, `[x, y, width, height]` inside the picture: one that leaves
+it is refused with the picture's size, never padded, since a padded crop compares pixels
+nobody drew.
+
+**The signature** (`screen_signature`, every row of a series) is BLAKE2b with an 8-byte digest,
+16 lowercase hex characters, over `scry-sig/1|<kind>|<w>x<h>|` (the crop's size) and the crop's
+cells row by row: `pixel` cells as RGB, `text` cells as their byte and the two colours above.
+
+**The picture attached.** A view answers with ONE PNG, written to the session's scratch (or to
+`dest`: `close` deletes the scratch, so a picture meant to outlive the session takes one),
+named in the reply's `image` (`path`, `sha256`, `bytes`, `width`, `height`, `scale`, `indexed`,
+`inline`) and attached after the JSON, read back from the file and hashed again, when the model
+can see it as it is. Past a side of 1568 px, or past 1568 tiles of 28 px, the API resamples a
+picture, and a resampled picture of pixel art is a plausible wrong one; such a picture is
+written and not attached, `not_inlined` says why, and the caller asks for a `crop` or a smaller
+`scale`. Inside the ceiling a picture is enlarged by an integer factor, nearest neighbour, so
+each pixel is a square of one colour (`scale=0`, the default, is the largest factor up to 8
+that fits: a 320x200 screen comes out 1280x800). Anthropic's own guidance is to send an image
+already inside the model's limits so nothing is resampled on the way, to crop or zoom for fine
+detail, not to go below about 960x540 for screen work, and to start at 1280x720
+(Anthropic, *Best practices for computer and browser use*; the limits and the cost of an
+image, `ceil(w/28) x ceil(h/28)` tokens, are in Anthropic's API documentation, *Vision*); an integer enlargement
+also makes pixel art more legible to a vision model, since smaller patches relative to the
+content raise its accuracy
+([Wang et al., *Scaling Laws in Patchification*, arXiv:2502.03738](https://arxiv.org/abs/2502.03738)).
+
+**`series_capture`** turns frames of the session's video capture into PNGs beside one
+`scry-series/1` manifest (`server`, `source`, `crop`, a row per frame `{frame, path, sha256,
+bytes, signature}`). DOS has no frame counter a stop can read, so the frames are the AVI's own,
+numbered from 0 by the file's index, and the reply says so (`frame_source`). One ffmpeg pass
+keeps them: a `select` over the frame numbers, a `crop` filter judged against the size the
+AVI's header declares, RGB rows with no prediction, and each PNG read back for its signature and
+hash. With `dest` the series outlives `close`; without it, it lives in the scratch and goes
+with it.
+
+**The file tools** (`image_diff`, `series_diff`, `region_track`, `golden_check`) read files and
+touch no machine, so they answer with the guest running or with none, and their body and text
+come from scry-core, the package this server pins; `region_track` writes one file, the whole
+track as JSON, beside the manifest. Every series and golden comparison carries its control,
+because a result that cannot come out the other way is no result: a series whose frames never
+change says nothing about another (`control_silent` naming it), two series with no frame in
+common compare nothing, a region whose measure never moves was missed, and goldens whose names
+meet no file examined nothing. Reading a manifest hashes every file it lists, so a frame changed
+since it was written is refused rather than trusted.
 
 ## Saved states
 
@@ -1482,6 +1543,7 @@ added to one file.
 - **`dosbox_inputs.py`**: the two routes a key takes and the one the mouse takes, and the
   proof the guest reacted; `send_keys` and `send_mouse`.
 - **`dosbox_captures.py`**: the video the emulator recorded, and a still out of it.
+- **`dosbox_media.py`**: `series_capture`, frames out of a video capture as a series.
 - **`dosbox_find.py`**: the exact byte search and the debugger's own scanner.
 - **`dosbox_disasm.py`**: x86 decoded on the host by capstone, the one module that imports it:
   bytes, an address and a code size in, each instruction's text, `flow` and direct operands out.

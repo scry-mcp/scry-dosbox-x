@@ -185,6 +185,12 @@ def _args(tmp_path: Path) -> dict[str, dict[str, Any]]:
         "comment_add": {"ref": "0000:0400", "text": "x"}, "comment_list": {},
         "comment_delete": {"ref": "0000:0400"}, "comment_save": {"dest": str(tmp_path / "c.tsv")},
         "comment_load": {"source": str(tmp_path / "c.tsv")},
+        "series_capture": {"frames": [0]},
+        "image_diff": {"a": "/nonexistent/a.png", "b": "/nonexistent/b.png"},
+        "series_diff": {"a": "/nonexistent/a.json", "b": "/nonexistent/b.json"},
+        "region_track": {"manifest": "/nonexistent/m.json"},
+        "golden_check": {"manifest": "/nonexistent/m.json",
+                         "checksums": "/nonexistent/g.sha256"},
     }
 
 

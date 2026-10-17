@@ -30,6 +30,7 @@ from typing import Any, cast
 from unittest import mock
 
 import pytest
+from scry_core import media_tools
 
 import dosbox_arming as arming
 import dosbox_checks as checks
@@ -769,7 +770,8 @@ def test_every_tool_this_server_promises_is_actually_registered() -> None:
                 "send_keys", "send_mouse", "drive", "stop", "machine_map",
                 "interrupt_vectors", "palette", "screen_view", "screen_signature",
                 "screen_wait", "trace", "comment_add", "comment_list", "comment_delete",
-                "comment_save", "comment_load"}
+                "comment_save", "comment_load", "series_capture",
+                "image_diff", "series_diff", "region_track", "golden_check"}
     got = server.registered_tools()
     assert set(got) == expected
     # NOT a length check against `expected`: `registered_tools()` reads a dict keyed
@@ -853,6 +855,7 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         "write": lambda: server.write(ref="0040:0100", data_hex="00"),
         "breakpoint_interrupt": lambda: server.breakpoint_interrupt(number=0x21),
         "resume": server.resume, "stop": server.stop,
+        "series_capture": lambda: server.series_capture(frames=[0]),
         "read_memory": lambda: server.read_memory(ref="0000:00000000"),
         "memdump": lambda: server.memdump(ref="0000:00000000", length=8, dest="/tmp/x"),
         "find": lambda: server.find(ref="0000:00000000", length=8, data_hex="00"),
@@ -3917,7 +3920,9 @@ def test_every_tool_declares_a_title_and_the_readers_a_read_only_hint() -> None:
                          "disassemble", "call_stack",
                          "symbols_find",
                          "breakpoint_list", "watch_list", "captures", "build_check",
-                         "state_list", "comment_list"}, read_only
+                         "state_list", "comment_list",
+                         "screen_signature",
+                         "image_diff", "series_diff", "golden_check"}, read_only
 
 
 def test_perform_run_to_that_ran_off_arms_the_boundary_and_the_tail(
@@ -7109,8 +7114,13 @@ def test_a_list_refuses_a_bad_hex_address_before_its_first_step_runs(
 
 
 def test_every_tool_is_summarised_by_its_own_line() -> None:
+    """Each line is the tool's own: this server's function of its name, or, for a media file
+    tool, scry-core's line of that tool."""
     for name in server.registered_tools():
-        assert server._SUMMARIES[name].__name__ == name, (name, server._SUMMARIES[name])
+        if name in media_tools.TOOLS:
+            assert server._SUMMARIES[name] is media_tools.TOOLS[name].summary, name
+        else:
+            assert server._SUMMARIES[name].__name__ == name, (name, server._SUMMARIES[name])
 
 
 def test_a_recorded_stop_keeps_the_paging_mark_its_survey_read(tmp_path: Path) -> None:

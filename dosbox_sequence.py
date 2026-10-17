@@ -21,6 +21,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
 
+from scry_core import media_tools
 from scry_core import reply_contract as contract
 
 import dosbox_arming as arming
@@ -52,8 +53,10 @@ RUNNING_OK_OPS = frozenset({
     "status", "log", "log_wait", "symbols_find", "comment_list", "comment_save",
     "breakpoint_at", "breakpoint_interrupt", "breakpoint_list", "breakpoint_clear",
     "watch_add", "watch_list", "watch_clear",
-    "captures", "capture_frame", "send_keys", "send_mouse",
-    "state_save", "state_load", "state_list", "snapshot", "stop"})
+    "captures", "capture_frame", "series_capture", "send_keys", "send_mouse",
+    "state_save", "state_load", "state_list", "snapshot", "stop",
+    # the media file tools read files, never the machine
+    *media_tools.IMAGE_TOOLS})
 
 
 def _leaves_running(op: str, reply: dict[str, Any]) -> bool:

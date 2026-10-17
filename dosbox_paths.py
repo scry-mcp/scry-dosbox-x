@@ -1,4 +1,5 @@
-"""The one judge of a path a caller gives this server.
+"""The one judge of a path a caller gives this server's own tools (the media file tools,
+scry-core's, judge theirs with scry-core's, to the same rule).
 
 EVERY PATH ARGUMENT IS ABSOLUTE, AND NOTHING HERE EXPANDS `~`. A relative path is judged
 against one directory and used in another: this server's own working directory is wherever

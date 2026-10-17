@@ -174,7 +174,8 @@ def test_build_check_answers_about_this_build_and_names_the_whole_surface() -> N
         "breakpoint_clear", "watch_add", "watch_list", "watch_clear", "state_save",
         "state_load", "state_list", "snapshot", "captures", "capture_frame", "build_check",
         "symbols_load", "symbols_find", "send_keys", "send_mouse", "perform", "drive",
-        "comment_add", "comment_list", "comment_delete", "comment_save", "comment_load"}
+        "comment_add", "comment_list", "comment_delete", "comment_save", "comment_load",
+        "series_capture", "image_diff", "series_diff", "region_track", "golden_check"}
     # NO SESSION, so the envelope must say so rather than omitting the key: a caller
     # distinguishing "no session" from "the field is missing" cannot do it if the two
     # print the same thing.

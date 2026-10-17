@@ -7,10 +7,10 @@ changes a capture (one word edited), it says so.
 """
 from __future__ import annotations
 
-import dataclasses
 import gzip
 import hashlib
 import os
+import re
 import struct
 import time
 import zlib
@@ -19,6 +19,7 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
+from scry_core import png
 from test_dosbox_x_machine import Bench, Logfile, listing
 from test_dosbox_x_run_for import Retraces
 from test_dosbox_x_run_for import cap as cap_vrt
@@ -28,7 +29,6 @@ import dosbox_arming as arming
 import dosbox_checks as checks
 import dosbox_machine as machine
 import dosbox_paths as paths
-import dosbox_png as png
 import dosbox_retrace as retrace
 import dosbox_screen as screen
 import dosbox_session as ds
@@ -268,9 +268,11 @@ def decode_png(data: bytes) -> tuple[int, int, bytes, list[tuple[int, int, int]]
 
 
 def test_the_png_holds_the_indices_and_the_palette_it_was_given() -> None:
+    """scry-core's codec, read back by this file's own reader: the indices the guest wrote and
+    the DAC as the PLTE."""
     pixels = window("screen-13h-a000.bin.gz")
     pal = [screen.rgb8(e) for e in screen.parse_dacpal(vga("screen-13h", "VGA DACPAL"))]
-    w, h, got, plte, trns = decode_png(png.indexed(320, 200, pixels, pal))
+    w, h, got, plte, trns = decode_png(png.encode(png.Raster(320, 200, pixels, tuple(pal))))
     assert (w, h, got, plte, trns) == (320, 200, pixels, pal, b"")
 
 
@@ -282,40 +284,7 @@ def test_the_png_refuses_what_a_viewer_could_not_draw(
     """A raster short or long of its size, an empty or oversized palette, and an index (a pixel
     or the transparent one) past the palette's entries."""
     with pytest.raises(ValueError):
-        png.indexed(w, h, pixels, [(0, 0, 0)] * entries, clear=clear)
-
-
-def test_a_picture_is_never_written_over_and_a_failed_write_leaves_nothing(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    there = tmp_path / "there.png"
-    there.write_bytes(b"mine")
-    with pytest.raises(ds.Invalid) as got:
-        png.write(there, 1, 1, b"new")
-    assert got.value.code == "bad_argument" and there.read_bytes() == b"mine"
-    real_open = Path.open
-
-    class Full:
-        def __init__(self, f: Any) -> None:
-            self.f = f
-
-        def __enter__(self) -> Full:
-            return self
-
-        def __exit__(self, *exc: object) -> None:
-            self.f.close()
-
-        def write(self, data: bytes) -> int:
-            raise OSError(28, "No space left on device")
-
-    def full_open(self: Path, mode: str = "r", *a: Any, **k: Any) -> Any:
-        return Full(real_open(self, mode, *a, **k))
-
-    monkeypatch.setattr(Path, "open", full_open)
-    dest = tmp_path / "half.png"
-    with pytest.raises(ds.Invalid) as got:
-        png.write(dest, 1, 1, b"data")
-    assert got.value.code == "bad_argument" and "No space left" in str(got.value)
-    assert not dest.exists()
+        png.encode(png.Raster(w, h, pixels, ((0, 0, 0),) * entries), clear)
 
 
 # ------------------------------------------------------------------ the palette tool
@@ -335,17 +304,23 @@ def test_palette_answers_the_whole_dac_off_two_listings(tmp_path: Path) -> None:
     assert r["status"] == "ok", r
     assert (r["entries"], r["first"], r["count"]) == (256, 0, 256)
     assert r["rgb"][:2] == ["000000", "00002a"] and r["colors"][:2] == ["#000000", "#0000aa"]
-    assert r["bits"] == 6 and r["pel_mask"] == "ffh" and "image" not in r
+    assert r["bits"] == 6 and r["pel_mask"] == "ffh"
     assert s.asked == ["VGA DAC", "VGA DACPAL"]
     assert r["session"]["altered"] is False
-    assert r["summary"] == "palette: entries 0 to 255 of 256"
+    # THE SWATCH IS ALWAYS DRAWN, into the session's scratch when no `dest` is named, and
+    # attached: 256 squares of 16 px enlarged x4 is 1024 a side, inside the inline ceiling.
+    image = r["image"]
+    assert Path(image["path"]).parent.parent == dstate.STATE.session_dir
+    assert (image["width"], image["height"], image["scale"], image["inline"]) == (
+        1024, 1024, 4, True)
+    assert r["summary"] == "palette: entries 0 to 255 of 256; 1024x1024 PNG x4, inline"
 
 
 def test_palette_returns_the_entries_asked_for(tmp_path: Path) -> None:
     bench("screen-dac01", tmp_path)
     one = cast(dict[str, Any], server.palette(first=1, count=1))
     assert one["count"] == 1 and one["rgb"] == ["3f0000"] and one["colors"] == ["#ff0000"]
-    assert one["summary"] == "palette: entry 1 #ff0000 of 256"
+    assert one["summary"].startswith("palette: entry 1 #ff0000 of 256; ")
     ramp = screen.parse_dacpal(vga("screen-13h", "VGA DACPAL"))
     bench("screen-13h", tmp_path)
     tail = cast(dict[str, Any], server.palette(first=250))
@@ -362,12 +337,12 @@ def test_the_palette_picture_is_one_square_per_entry_indexed_by_the_entry(
         tmp_path: Path, first: int, count: int) -> None:
     bench("screen-13h", tmp_path)
     dest = tmp_path / "pal.png"
-    r = cast(dict[str, Any], server.palette(first=first, count=count, dest=str(dest)))
+    r = cast(dict[str, Any], server.palette(first=first, count=count, scale=1, dest=str(dest)))
     assert r["status"] == "ok", r
     image = r["image"]
     data = dest.read_bytes()
     assert image["sha256"] == hashlib.sha256(data).hexdigest() and image["indexed"] is True
-    assert image["path"] == str(dest) and r["summary"].endswith(f", picture to {dest}")
+    assert image["path"] == str(dest) and image["scale"] == 1
     w, h, pixels, plte, trns = decode_png(data)
     assert (w, h) == (image["width"], image["height"])
     assert w == min(count, 16) * 16 and h == -(-count // 16) * 16
@@ -904,7 +879,21 @@ def test_screen_view_reads_a_text_screen_in_real_mode(tmp_path: Path) -> None:
     assert r["display_start"] == "0h" and "image" not in r
     assert s.asked == ["VGA MODE", "VGA CRTC", "VGA GC", "VGA DRAW", "CPU"]
     assert s.dumps == [(0xB800, 0, 4000)] and r["session"]["altered"] is False
-    assert r["summary"] == "screen_view M_TEXT: 80 x 25 text, cursor at 0,4"
+    assert r["crop"] == [0, 0, 80, 25]
+    assert r["summary"] == "screen_view M_TEXT: 80 x 25 at [0, 0] text, cursor at 0,4"
+
+
+def test_a_text_crop_is_in_characters_and_the_cursor_is_counted_from_it(
+        tmp_path: Path) -> None:
+    screen_bench("probe-booted", tmp_path)
+    r = cast(dict[str, Any], server.screen_view(crop=[0, 3, 4, 2]))
+    assert r["text"] == ["C:\\>", ""] and r["cursor"] == [0, 1] and r["crop"] == [0, 3, 4, 2]
+    screen_bench("probe-booted", tmp_path)
+    outside = cast(dict[str, Any], server.screen_view(crop=[10, 0, 4, 2]))
+    assert outside["cursor"] is None
+    screen_bench("probe-booted", tmp_path)
+    off = cast(dict[str, Any], server.screen_view(crop=[78, 0, 4, 1]))
+    assert off["code"] == "bad_argument" and "characters" in off["message"]
 
 
 def test_screen_view_reads_the_page_from_where_the_display_starts(tmp_path: Path) -> None:
@@ -931,7 +920,7 @@ def test_screen_view_writes_the_256_colour_screen_as_its_indices(
     at; the PLTE is the DAC the guest set, widened."""
     s = screen_bench(bench_name, tmp_path)
     dest = tmp_path / "screen.png"
-    r = cast(dict[str, Any], server.screen_view(dest=str(dest)))
+    r = cast(dict[str, Any], server.screen_view(scale=1, dest=str(dest)))
     assert r["status"] == "ok", r
     assert (r["source"], r["width"], r["height"]) == ("indices", 320, 200)
     w, h, pixels, plte, trns = decode_png(dest.read_bytes())
@@ -940,7 +929,28 @@ def test_screen_view_writes_the_256_colour_screen_as_its_indices(
     assert plte == [screen.rgb8(e) for e in screen.parse_dacpal(vga(bench_name, "VGA DACPAL"))]
     assert r["image"]["sha256"] == hashlib.sha256(dest.read_bytes()).hexdigest()
     assert s.dumps == [dump] and s.asked[-2:] == ["VGA DAC", "VGA DACPAL"]
-    assert r["summary"] == f"screen_view M_VGA: 320 x 200 pixels to {dest}"
+    assert r["image"]["inline"] is True and r["image"]["scale"] == 1
+    assert r["summary"] == ("screen_view M_VGA: 320 x 200 at [0, 0] pixels; 320x200 PNG x1, "
+                            "inline")
+
+
+def test_the_256_colour_screen_is_attached_enlarged_and_a_crop_is_the_zoom(
+        tmp_path: Path) -> None:
+    """With no `dest` the picture goes to the session's scratch; the default scale is the
+    largest that fits the inline ceiling (320x200 at x4 is 1280x800), and a crop is enlarged
+    as far as it fits."""
+    screen_bench("screen-13h", tmp_path)
+    whole = cast(dict[str, Any], server.screen_view())
+    image = whole["image"]
+    assert (image["width"], image["height"], image["scale"], image["inline"]) == (
+        1280, 800, 4, True)
+    assert Path(image["path"]).parent.parent == dstate.STATE.session_dir
+    screen_bench("screen-13h", tmp_path)
+    part = cast(dict[str, Any], server.screen_view(crop=[8, 8, 16, 8]))
+    w, h, pixels, _, _ = decode_png(Path(part["image"]["path"]).read_bytes())
+    k = part["image"]["scale"]
+    assert (w, h, k) == (16 * 8, 8 * 8, 8), "a small crop enlarged all the way"
+    assert pixels[0] == (8 + 8) & 0xFF and pixels[k] == (9 + 8) & 0xFF
 
 
 @pytest.mark.parametrize(("bench_name", "word"), [
@@ -955,19 +965,20 @@ def test_screen_view_and_signature_refuse_a_mode_they_do_not_read_after_one_list
     assert s.asked == ["VGA MODE", "VGA MODE"] and s.dumps == []
 
 
-def test_screen_view_refuses_a_dest_in_text_and_none_in_256_colours(tmp_path: Path) -> None:
+def test_screen_view_refuses_a_dest_or_a_scale_in_text_and_a_dest_already_there(
+        tmp_path: Path) -> None:
     s = screen_bench("probe-booted", tmp_path)
-    r = cast(dict[str, Any], server.screen_view(dest=str(tmp_path / "t.png")))
-    assert r["status"] == "INVALID" and r["code"] == "bad_argument" and "text mode" in r["message"]
-    assert s.asked == ["VGA MODE"] and s.dumps == []
+    for kw in ({"dest": str(tmp_path / "t.png")}, {"scale": 2}):
+        r = cast(dict[str, Any], server.screen_view(**kw))
+        assert r["status"] == "INVALID" and r["code"] == "bad_argument", r
+        assert "text mode" in r["message"]
+    assert s.asked == ["VGA MODE", "VGA MODE"] and s.dumps == []
     s = screen_bench("screen-13h", tmp_path)
-    r = cast(dict[str, Any], server.screen_view())
-    assert r["status"] == "INVALID" and r["code"] == "bad_argument" and "`dest`" in r["message"]
     there = tmp_path / "there.png"
     there.write_bytes(b"mine")
     r = cast(dict[str, Any], server.screen_view(dest=str(there)))
     assert r["code"] == "bad_argument" and there.read_bytes() == b"mine" and s.dumps == []
-    assert s.asked == ["VGA MODE", "VGA MODE"]
+    assert s.asked == ["VGA MODE"]
 
 
 @pytest.mark.parametrize("dest", ["screen.png", "/tmp/a\x00b.png", 3])
@@ -1020,38 +1031,78 @@ def signature_of(s: ScreenBench) -> dict[str, Any]:
     return cast(dict[str, Any], server.screen_signature())
 
 
-def test_the_signature_is_the_same_number_for_the_same_screen(tmp_path: Path) -> None:
+def test_the_signature_is_the_same_string_for_the_same_screen(tmp_path: Path) -> None:
     first = ScreenBench("probe-booted", tmp_path / "x.log")
     one = signature_of(first)
     assert first.asked == ["VGA MODE", "VGA CRTC", "VGA GC", "VGA DRAW", "CPU", "VGA DAC",
-                           "VGA DACPAL"]
+                           "VGA DACPAL", "VGA AC"]
     two = signature_of(ScreenBench("probe-booted", tmp_path / "x.log"))
-    assert one["status"] == "ok" and isinstance(one["signature"], int), one
+    assert one["status"] == "ok" and re.fullmatch(r"[0-9a-f]{16}", one["signature"]), one
     assert one["signature"] == two["signature"]
-    assert (one["source"], one["mode"], one["width"], one["height"]) == ("text", "M_TEXT", 80, 25)
-    assert one["summary"] == f"screen_signature M_TEXT 80 x 25: {one['signature']:#010x}"
+    assert (one["source"], one["mode"], one["width"], one["height"], one["kind"],
+            one["crop"]) == ("text", "M_TEXT", 80, 25, "text", [0, 0, 80, 25])
+    assert one["summary"] == f"screen_signature M_TEXT 80 x 25 at [0, 0]: {one['signature']}"
+
+
+def test_a_text_cell_is_its_byte_and_the_colours_its_attribute_resolves_to() -> None:
+    """Counted by hand on the booted screen: cell 0 is `Z` (0x5a) in attribute 07, whose
+    foreground is the Attribute Controller's register 7 (07), DAC entry 7, `2a2a2a`, widened to
+    170; its background register 0, entry 0, black."""
+    ac = screen.parse_listing(vga("probe-booted", "VGA AC"), screen.TITLES["VGA AC"])
+    dac = screen.parse_dacpal(vga("probe-booted", "VGA DACPAL"))
+    cells = screen.text_cells(page("probe-booted"), ac, dac)
+    assert cells[:7] == bytes([0x5A, 170, 170, 170, 0, 0, 0])
+    assert len(cells) == 80 * 25 * 7
+
+
+def test_the_attribute_controller_decides_the_colour_of_a_cell() -> None:
+    """A synthetic Attribute Controller: register 1 holds 0x3e; with `mode_control` bit 7 the
+    low four bits (0x0e) take `color-select`'s bits 0-1 (01) above them, 0x1e; `color-select`'s
+    bits 2-3 (10) put 0x80 on top, 0x9e. With blink (bit 3) the background's fourth bit blinks."""
+    dac = [f"{i % 64:02x}0000" for i in range(256)]
+    regs = ["00", "3e"] + ["00"] * 14
+    plain = {"palette": regs, "mode_control": "00h", "color_select": "00h"}
+    assert screen.text_cells(bytes([0x41, 0x01]), plain, dac)[1:4] == bytes(
+        screen.rgb8(dac[0x3E]))
+    selected = {"palette": regs, "mode_control": "80h", "color_select": "09h"}
+    assert screen.text_cells(bytes([0x41, 0x01]), selected, dac)[1:4] == bytes(
+        screen.rgb8(dac[0x9E]))
+    blink = {"palette": regs, "mode_control": "08h", "color_select": "00h"}
+    assert screen.text_cells(bytes([0x41, 0x90]), blink, dac)[4:7] == bytes(
+        screen.rgb8(dac[0x3E])), "background 9 blinks: register 1 shows"
+    assert screen.text_cells(bytes([0x41, 0x90]), plain, dac)[4:7] == bytes(
+        screen.rgb8(dac[0x00])), "background 9 without blink: register 9 (00)"
 
 
 @pytest.mark.parametrize(("byte", "edit"), [
-    (0, None), (1, None), (None, ("VGA DACPAL", "00002a", "00002b")),
-    (None, ("VGA DACPAL", "f8: 000000 000000 000000 000000-000000 000000 000000 000000",
-            "f8: 000000 000000 000000 000000-000000 000000 000000 000001"))])
-def test_a_changed_character_attribute_or_dac_entry_is_a_changed_number(
+    (0, None), (1, None), (None, ("VGA DACPAL", "2a2a00 2a2a2a", "2a2a00 2a2a2b"))])
+def test_a_changed_character_attribute_or_shown_colour_is_a_changed_string(
         tmp_path: Path, byte: int | None, edit: tuple[str, str, str] | None) -> None:
-    """The first cell's character (byte 0) and attribute (byte 1), and DAC entry 1 (edits of the
-    captures), each move the number."""
+    """The first cell's character (byte 0) and attribute (byte 1), and DAC entry 7, the colour
+    every cell of the booted screen is drawn in, each move the signature."""
     plain = signature_of(ScreenBench("probe-booted", tmp_path / "x.log"))["signature"]
     moved = signature_of(Edited("probe-booted", tmp_path / "x.log", byte, edit))["signature"]
     assert moved != plain
 
 
-def test_the_signature_folds_the_mode_and_the_size_as_well_as_the_bytes() -> None:
-    shape = shape_of("probe-booted")
-    data, dac = page("probe-booted"), ["000000"] * 256
-    plain = screen.signature(shape, data, dac)
-    for other in (dataclasses.replace(shape, word="M_TEXT2"),
-                  dataclasses.replace(shape, width=40, height=50)):
-        assert screen.signature(other, data, dac) != plain
+def test_a_dac_entry_no_cell_shows_leaves_the_string_as_it_is(tmp_path: Path) -> None:
+    """Two screens that look the same have one signature: entry 1 is drawn by no cell of the
+    booted screen (every cell is attribute 07)."""
+    plain = signature_of(ScreenBench("probe-booted", tmp_path / "x.log"))["signature"]
+    edit = ("VGA DACPAL", "000000 00002a", "000000 00002b")
+    assert signature_of(Edited("probe-booted", tmp_path / "x.log", None, edit))[
+        "signature"] == plain
+
+
+def test_a_cropped_signature_is_the_crops_and_one_off_the_screen_is_refused(
+        tmp_path: Path) -> None:
+    install()
+    dstate.STATE.session = cast(ds.Session, ScreenBench("probe-booted", tmp_path / "x.log"))
+    whole = server.screen_signature()
+    part = server.screen_signature(crop=[0, 0, 10, 1])
+    assert part["crop"] == [0, 0, 10, 1] and part["signature"] != whole["signature"]
+    off = server.screen_signature(crop=[75, 0, 6, 1])
+    assert off["code"] == "bad_argument" and "leaves the screen (characters)" in off["message"]
 
 
 def test_the_screen_tools_refuse_a_dac_not_in_its_six_bit_mode(tmp_path: Path) -> None:
@@ -1544,3 +1595,86 @@ def test_a_refused_wait_whose_stop_survey_comes_back_cut_says_so_and_records_not
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5))
     assert r["code"] == "wait_expired" and r["polls"] == 1 and "stop_seq" not in r, r
     assert r["enrichment"]["available"] is False and dstate.STATE.last_stop["seq"] == before
+
+
+def test_the_picture_reaches_the_client_attached_beside_the_json(tmp_path: Path) -> None:
+    """Through the MCP layer: the 256-colour screen comes back as the JSON and, after it, the
+    PNG itself, the file the body names, hashed again."""
+    import asyncio
+    import base64
+
+    from mcp.types import CallToolResult, ImageContent
+    screen_bench("screen-13h", tmp_path)
+    res = asyncio.run(server.mcp.call_tool("screen_view", {}))
+    assert isinstance(res, CallToolResult) and isinstance(res.structured_content, dict)
+    shown = res.content[-1]
+    assert isinstance(shown, ImageContent) and shown.mime_type == "image/png"
+    image = res.structured_content["image"]
+    assert hashlib.sha256(base64.b64decode(shown.data)).hexdigest() == image["sha256"]
+    screen_bench("probe-booted", tmp_path)
+    text = asyncio.run(server.mcp.call_tool("screen_view", {}))
+    assert all(not isinstance(c, ImageContent) for c in text.content), "text has no picture"
+
+
+def test_the_sessions_scratch_goes_with_the_session(tmp_path: Path) -> None:
+    screen_bench("screen-13h", tmp_path)
+    image = Path(cast(dict[str, Any], server.screen_view())["image"]["path"])
+    scratch = dstate.STATE.session_dir
+    assert scratch is not None and image.is_file() and image.is_relative_to(scratch)
+    dstate.STATE.clear_running_state()
+    assert not scratch.exists() and dstate.STATE.session_dir is None
+
+
+def test_a_dest_whose_write_fails_part_way_leaves_nothing(tmp_path: Path,
+                                                          monkeypatch: pytest.MonkeyPatch) -> None:
+    """The picture is written to a file created new and taken away again when the write fails
+    part-way (a full disk), so no half picture is left where the caller will look."""
+    screen_bench("screen-13h", tmp_path)
+    real_open: Any = Path.open
+    dest = tmp_path / "half.png"
+
+    class Full:
+        def __init__(self, f: Any) -> None:
+            self.f = f
+
+        def __enter__(self) -> Any:
+            return self
+
+        def __exit__(self, *exc: object) -> None:
+            self.f.close()
+
+        def write(self, data: bytes) -> int:
+            raise OSError(28, "No space left on device")
+
+    def full_open(self: Path, mode: str = "r", *a: Any, **k: Any) -> Any:
+        f = real_open(self, mode, *a, **k)
+        return Full(f) if self == dest else f
+    monkeypatch.setattr(Path, "open", full_open)
+    r = cast(dict[str, Any], server.screen_view(dest=str(dest)))
+    assert r["code"] == "host_failed" and "No space left" in r["message"], r
+    assert not dest.exists()
+
+
+def test_a_dac_entry_a_pixel_shows_moves_the_256_colour_signature(tmp_path: Path) -> None:
+    """The 13h ramp draws every entry, so a fade of entry 0x40 alone is a new signature."""
+    plain = signature_of(ScreenBench("screen-13h", tmp_path / "x.log"))["signature"]
+    row = vga("screen-13h", "VGA DACPAL").splitlines()
+    line = next(x for x in row if x.startswith("40:"))
+    first = line.split()[1]
+    other = f"{(int(first[:2], 16) ^ 1):02x}{first[2:]}"
+    edit = ("VGA DACPAL", line, line.replace(first, other, 1))
+    moved = signature_of(Edited("screen-13h", tmp_path / "x.log", None, edit))["signature"]
+    assert moved != plain
+
+
+def test_a_description_placeholder_nothing_fills_fails_at_registration() -> None:
+    with pytest.raises(TypeError, match=r"names \['\{NOPE\}'\], which nothing fills"):
+        server._filled("t", "a {PICTURE} and a {NOPE}")
+    assert "{" not in "".join(t.description or "" for t in server.mcp._tool_manager.list_tools()
+                              if t.name in ("palette", "screen_view", "series_capture"))
+
+
+def test_an_attribute_controller_listing_of_another_shape_is_an_unexpected_answer() -> None:
+    with pytest.raises(ds.Invalid, match="`VGA AC` lacks a word") as e:
+        screen.text_cells(bytes([0x41, 0x07]), {"palette": ["00"] * 16}, ["000000"] * 256)
+    assert e.value.code == "unexpected_answer"

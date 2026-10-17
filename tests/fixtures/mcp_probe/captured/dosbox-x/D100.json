@@ -1,0 +1,30 @@
+{
+ "task": {
+  "id": "D100",
+  "prompt": "The guest is stopped. Show me the swatch of all 256 DAC colours at their natural size, with no enlargement.",
+  "tool": "palette",
+  "args": {
+   "scale": 1
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D100: {\"tool\": \"palette\", \"args\": {\"scale\": 1}}"
+   ],
+   "right": true
+  }
+ ]
+}

@@ -1,0 +1,39 @@
+{
+ "task": {
+  "id": "D102",
+  "prompt": "Make a series of frames 100 to 160 of the session's video capture, every 4th frame, only the region at x 0, y 0, 320 by 20, into the new directory /tmp/dx-series.",
+  "tool": "series_capture",
+  "args": {
+   "first": 100,
+   "last": 160,
+   "step": 4,
+   "crop": [
+    0,
+    0,
+    320,
+    20
+   ],
+   "dest": "/tmp/dx-series"
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D102: {\"tool\": \"series_capture\", \"args\": {\"first\": 100, \"last\": 160, \"step\": 4, \"crop\": [0, 0, 320, 20], \"dest\": \"/tmp/dx-series\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D102: {\"tool\": \"series_capture\", \"args\": {\"first\": 100, \"last\": 160, \"step\": 4, \"crop\": [0, 0, 320, 20], \"dest\": \"/tmp/dx-series\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D102: {\"tool\": \"series_capture\", \"args\": {\"first\": 100, \"last\": 160, \"step\": 4, \"crop\": [0, 0, 320, 20], \"dest\": \"/tmp/dx-series\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

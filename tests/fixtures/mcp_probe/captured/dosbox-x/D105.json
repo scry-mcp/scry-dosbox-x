@@ -1,0 +1,37 @@
+{
+ "task": {
+  "id": "D105",
+  "prompt": "Compare the pictures /tmp/a/before.png and /tmp/b/after.png, which are not the same size, over the rectangle at x 0, y 0, 200 by 150 they share.",
+  "tool": "image_diff",
+  "args": {
+   "a": "/tmp/a/before.png",
+   "b": "/tmp/b/after.png",
+   "crop": [
+    0,
+    0,
+    200,
+    150
+   ]
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D105: {\"tool\": \"image_diff\", \"args\": {\"a\": \"/tmp/a/before.png\", \"b\": \"/tmp/b/after.png\", \"crop\": [0, 0, 200, 150]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D105: {\"tool\": \"image_diff\", \"args\": {\"a\": \"/tmp/a/before.png\", \"b\": \"/tmp/b/after.png\", \"crop\": [0, 0, 200, 150]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D105: {\"tool\": \"image_diff\", \"args\": {\"a\": \"/tmp/a/before.png\", \"b\": \"/tmp/b/after.png\", \"crop\": [0, 0, 200, 150]}}"
+   ],
+   "right": true
+  }
+ ]
+}

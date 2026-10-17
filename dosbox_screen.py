@@ -20,14 +20,14 @@ import dataclasses
 import math
 import re
 import tempfile
-import zlib
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
 
+from scry_core import judges, picture, png, raster
+
 import dosbox_machine as machine
 import dosbox_paths as paths
-import dosbox_png as png
 import dosbox_session as ds
 
 #: The listings that describe the VGA, in the order they are read: the section key, the
@@ -217,10 +217,11 @@ SWATCH_PX = 16
 SWATCHES_PER_ROW = 16
 
 
-def swatches(first: int, count: int, dac: list[str]) -> tuple[int, int, bytes]:
+def swatches(first: int, count: int, dac: list[str]) -> tuple[png.Raster, int | None]:
     """`palette`'s picture of entries `first` to `first + count - 1`: one square per entry,
-    sixteen a row, each pixel the entry's index into the whole DAC. A square past the last
-    entry of a short last row is an index the reply did not return, drawn transparent."""
+    sixteen a row, each pixel the entry's index into the whole DAC; and the index drawn
+    transparent, for the squares past the last entry of a short last row, which stand for an
+    index the reply did not return (None when the last row is full)."""
     cols, rows = min(count, SWATCHES_PER_ROW), math.ceil(count / SWATCHES_PER_ROW)
     short = cols * rows > count
     filler = first + count if first + count < DAC_ENTRIES else first - 1
@@ -230,9 +231,8 @@ def swatches(first: int, count: int, dac: list[str]) -> tuple[int, int, bytes]:
         for x in range(width):
             k = (y // SWATCH_PX) * SWATCHES_PER_ROW + x // SWATCH_PX
             out.append(first + k if k < count else filler)
-    data = png.indexed(width, height, bytes(out), [rgb8(e) for e in dac],
-                       clear=filler if short else None)
-    return width, height, data
+    return (png.Raster(width, height, bytes(out), tuple(rgb8(e) for e in dac)),
+            filler if short else None)
 
 
 def read_dac(session: ds.Session) -> tuple[dict[str, Any], list[str]]:
@@ -246,21 +246,28 @@ def read_dac(session: ds.Session) -> tuple[dict[str, Any], list[str]]:
     return dac, list(_read(session, DACPAL, parse_dacpal))
 
 
-def palette(session: ds.Session, first: int, count: int, dest: Path | None) -> dict[str, Any]:
-    """The body of `palette`: the DAC's width, mask and entries, and with `dest` their
-    picture. `count` 0 is every entry from `first`."""
+def palette(session: ds.Session, first: int, count: int, scale: int, dest: Path | None,
+            scratch: Path) -> dict[str, Any]:
+    """The body of `palette`: the DAC's width, mask and entries, and their picture, written to
+    `dest` or the session's scratch and attached. `count` 0 is every entry from `first`."""
+    picture.check_scale(scale)
     if dest is not None:
         paths.fresh_dest("dest", dest)
     dac, entries = read_dac(session)
     count = count or DAC_ENTRIES - first
     chosen = entries[first:first + count]
-    reply: dict[str, Any] = {"entries": len(entries), "first": first, "count": len(chosen),
-                             "colors": [color(e) for e in chosen], "rgb": chosen,
-                             "bits": DAC_BITS, "pel_mask": dac.get("pel_mask")}
-    if dest is not None:
-        width, height, data = swatches(first, count, entries)
-        reply["image"] = png.write(dest, width, height, data)
-    return reply
+    swatch, clear = swatches(first, count, entries)
+    return {"entries": len(entries), "first": first, "count": len(chosen),
+            "colors": [color(e) for e in chosen], "rgb": chosen,
+            "bits": DAC_BITS, "pel_mask": dac.get("pel_mask"),
+            "image": picture.publish(swatch, scale, dest, scratch, "palette", record_nothing,
+                                     clear=clear)}
+
+
+def record_nothing(path: Path) -> None:
+    """The `Record` a picture here is published with: `captures` lists the emulator's own
+    recordings only, so a picture written to the session's scratch or to `dest` is recorded
+    nowhere else."""
 
 
 # ------------------------------------------------------------------ where the screen is
@@ -458,51 +465,102 @@ def read_screen(session: ds.Session, shape: Geometry) -> bytes:
     return dump(session, seg, off, shape.length)
 
 
-def signature(shape: Geometry, data: bytes, dac: list[str]) -> int:
-    """One number for what is on screen: the mode word, the size, every byte the picture is
-    drawn from (characters and attributes, or pixels) and the 256 DAC entries, folded by CRC-32,
-    so a changed character, colour attribute or palette entry is a changed number. The cursor
-    is not folded, nor the Attribute Controller's own palette registers."""
-    head = f"{shape.word}|{shape.width}|{shape.height}|".encode()
-    return zlib.crc32(head + data + bytes.fromhex("".join(dac)))
+def dac_colours(dac: list[str]) -> list[bytes]:
+    """Each DAC entry as the RGB bytes the emulator renders it in."""
+    return [bytes(rgb8(e)) for e in dac]
 
 
-def screen_view(session: ds.Session, dest: Path | None) -> dict[str, Any]:
-    """The body of `screen_view`: the text a text mode shows, or the 256-colour picture as an
-    indexed PNG at `dest`. What `dest` must be is judged on the mode alone, before the other
-    listings are typed."""
+def text_cells(page: bytes, ac: dict[str, Any], dac: list[str]) -> bytes:
+    """Each character cell of a text page as `scry_core.raster` hashes it: its code page 437
+    byte, then the RGB of its foreground and of its background as the VGA resolves them. An
+    attribute's nibble picks an Attribute Controller palette register; with `mode_control` bit
+    7 the register's low four bits take `color-select`'s bits 0-1 above them, else its six bits
+    stand; `color-select`'s bits 2-3 are the top two; the DAC entry there is the colour. With
+    `mode_control` bit 3 (blink) the background has three bits and the fourth blinks."""
+    try:
+        regs = [int(r, 16) for r in ac["palette"]]
+        mode_control, select = hex_word(ac["mode_control"]), hex_word(ac["color_select"])
+    except (KeyError, ValueError) as e:
+        raise ds.Invalid("unexpected_answer", f"`VGA AC` lacks a word a text cell's colour is "
+                         f"resolved by, or prints it in another shape: {e}") from None
+    blink = bool(mode_control & 0x08)
+
+    def index(nibble: int) -> int:
+        reg = regs[nibble]
+        low = ((select & 0x03) << 4 | reg & 0x0F) if mode_control & 0x80 else reg & 0x3F
+        return (select & 0x0C) << 4 | low
+
+    lut = dac_colours(dac)
+    out = bytearray()
+    for i in range(0, len(page), UNIT_BYTES[TEXT]):
+        char, attr = page[i], page[i + 1]
+        back = (attr >> 4) & (0x07 if blink else 0x0F)
+        out += bytes([char]) + lut[index(attr & 0x0F)] + lut[index(back)]
+    return bytes(out)
+
+
+def _crop(crop: Sequence[int] | None, shape: Geometry) -> list[int]:
+    """`crop` on the screen, in its own units (characters or pixels), judged inside it."""
+    unit = "characters" if shape.source == TEXT else "pixels"
+    return list(raster.inside(crop, shape.width, shape.height, f"the screen ({unit})"))
+
+
+def screen_view(session: ds.Session, crop: Sequence[int] | None, scale: int, dest: Path | None,
+                scratch: Path) -> dict[str, Any]:
+    """The body of `screen_view`: the text a text mode shows, or the 256-colour picture,
+    written to `dest` or the scratch and attached; `crop` in characters or pixels. What `dest`
+    and `scale` may be is judged on the mode alone, before the other listings are typed."""
+    picture.check_scale(scale)
+    if crop is not None:
+        judges.rect("crop", crop)
     mode = _vga(session, COMMAND_OF["mode"])
     source = source_of(mode)
-    if source == TEXT and dest is not None:
+    if source == TEXT and (dest is not None or scale):
         raise ds.Invalid("bad_argument", f"the screen is in `{mode.get('mode')}`, a text mode, "
-                         f"which has no picture to write: leave `dest` out to read its text")
-    if source == INDICES and dest is None:
-        raise ds.Invalid("bad_argument", f"the screen is in `{mode.get('mode')}`, the "
-                         f"256-colour mode: its picture needs `dest`, an absolute path not "
-                         f"there yet")
+                         f"which has no picture to write or scale: leave `dest` and `scale` out "
+                         f"to read its text")
     if dest is not None:
         paths.fresh_dest("dest", dest)
     listings = {"mode": mode, **{key: _vga(session, COMMAND_OF[key]) for key in SHAPE_KEYS[1:]}}
     shape = geometry(listings)
+    area = _crop(crop, shape)
     data = read_screen(session, shape)
     reply = shape.head()
+    reply["crop"] = area
+    x0, y0, w, h = area
     if shape.source == TEXT:
-        reply.update(text=text_rows(data, shape.width, shape.height), cursor=shape.cursor)
+        rows = text_rows(data, shape.width, shape.height)
+        cursor = shape.cursor
+        reply.update(text=[row[x0:x0 + w].rstrip(" ") for row in rows[y0:y0 + h]],
+                     cursor=[cursor[0] - x0, cursor[1] - y0] if cursor is not None
+                     and x0 <= cursor[0] < x0 + w and y0 <= cursor[1] < y0 + h else None)
     else:
-        assert dest is not None
         _, dac = read_dac(session)
-        image = png.indexed(shape.width, shape.height, data, [rgb8(e) for e in dac])
-        reply["image"] = png.write(dest, shape.width, shape.height, image)
+        whole = png.Raster(shape.width, shape.height, data, tuple(rgb8(e) for e in dac))
+        reply["image"] = picture.publish(raster.cropped(whole, area), scale, dest, scratch,
+                                         "screen", record_nothing)
     reply["display_start"] = shape.display_start
     return reply
 
 
-def screen_signature(session: ds.Session) -> dict[str, Any]:
-    """The body of `screen_signature`."""
+def screen_signature(session: ds.Session, crop: Sequence[int] | None) -> dict[str, Any]:
+    """The body of `screen_signature`: `scry_core.raster`'s signature of the screen, or of
+    `crop` of it, a text cell resolved through the Attribute Controller and the DAC
+    (`text_cells`), a pixel through the DAC."""
+    if crop is not None:
+        judges.rect("crop", crop)
     shape = geometry(read_listings(session))
+    area = _crop(crop, shape)
     data = read_screen(session, shape)
     _, dac = read_dac(session)
-    return {"signature": signature(shape, data, dac), **shape.head()}
+    kind: raster.Kind
+    if shape.source == TEXT:
+        cells, kind = text_cells(data, _vga(session, COMMAND_OF["ac"]), dac), "text"
+    else:
+        lut = dac_colours(dac)
+        cells, kind = b"".join(lut[i] for i in data), "pixel"
+    return {"signature": raster.signature(kind, shape.width, shape.height, cells, area),
+            "kind": kind, **shape.head(), "crop": area}
 
 
 class TextWatch:

@@ -146,7 +146,15 @@ _NEEDS_STOP = ("registers", "read_memory", "disassemble", "call_stack", "memdump
                "resume", "machine_map", "interrupt_vectors", "palette", "screen_view",
                "screen_signature", "screen_wait", "comment_add", "comment_delete",
                "comment_load")
-_NO_CAPTURE = ("captures", "capture_frame")
+_NO_CAPTURE = ("captures", "capture_frame", "series_capture")
+#: The media file tools read files and no machine, so they answer in every state alike; each is
+#: asked about files that are not there, which its judge refuses by name.
+MEDIA_ABSENT: dict[str, dict[str, Any]] = {
+    "image_diff": {"a": "/nonexistent/a.png", "b": "/nonexistent/b.png"},
+    "series_diff": {"a": "/nonexistent/a.json", "b": "/nonexistent/b.json"},
+    "region_track": {"manifest": "/nonexistent/m.json"},
+    "golden_check": {"manifest": "/nonexistent/m.json", "checksums": "/nonexistent/g.sha256"},
+}
 
 
 class Ctx:
@@ -203,6 +211,8 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "send_keys": {"keys": ["a"]},
         "send_mouse": {"button": "left"},
         "capture_frame": {"at": 0, "dest": M.fresh(".png")},
+        "series_capture": {"first": 0, "last": 1},
+        **MEDIA_ABSENT,
         "perform": {"steps": [{"op": "status"}]},
         "drive": {"act": [{"op": "status"}]},
         "comment_add": {"ref": COMMENT_REF, "text": "matrix A"},
@@ -271,9 +281,9 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
         "screen_view": (lambda r: ok(r) and r.get("source") == "text"
                         and "C:\\>PROBE.COM" in (r.get("text") or []),
                         "screen_view docstring; known: the autoexec launches PROBE.COM"),
-        "screen_signature": (lambda r: ok(r) and isinstance(r.get("signature"), int)
-                             and r.get("source") == "text",
-                             "screen_signature docstring: an integer, the text family"),
+        "screen_signature": (lambda r: ok(r) and len(str(r.get("signature"))) == 16
+                             and r.get("kind") == "text",
+                             "screen_signature docstring: 16 hex characters, the text family"),
         "screen_wait": (lambda r: ok(r) and r.get("already") is True and r.get("polls") == 0,
                         "screen_wait docstring: already on screen, the machine not moved"),
         "palette": (lambda r: ok(r) and r.get("entries") == 256
@@ -332,6 +342,8 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                        "send_mouse docstring: refused on a machine stopped at the debugger"),
         "captures": (lambda r: refused(r), "captures docstring: needs capture_video"),
         "capture_frame": (lambda r: refused(r), "capture_frame docstring: needs capture_video"),
+        "series_capture": (lambda r: refused(r, "no_channel"),
+                           "series_capture docstring: needs captures_dir and capture_video"),
         "perform": (lambda r: ok(r) and r.get("completed") == 1, "perform docstring"),
         "drive": (lambda r: ok(r) and (r.get("verify") or {}).get("checked") is False,
                   "drive docstring: `checked: false` when no expect was given"),
@@ -413,6 +425,11 @@ def _running(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
 
 
 def _expect(tool: str, state: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
+    if tool in MEDIA_ABSENT:
+        live = state in ("stopped", "running")
+        return ((lambda r: refused(r, "bad_argument") and "is not a file" in str(r.get("message"))
+                 and (alive(r) if live else no_session(r))),
+                f"{tool} docstring: reads files, in any state; a missing one refused by name")
     if state in ("none", "closed"):
         if tool in _WITHOUT_SESSION:
             return _WITHOUT_SESSION[tool]
@@ -456,7 +473,7 @@ _STOPPED_ORDER = [
     "breakpoint_interrupt", "symbols_load", "symbols_find", "comment_add", "comment_list",
     "comment_save", "comment_load", "comment_delete", "breakpoint_at", "breakpoint_list",
     "breakpoint_clear", "watch_add", "watch_list", "watch_clear", "send_keys", "send_mouse",
-    "captures", "capture_frame", "perform", "drive"]
+    "captures", "capture_frame", "series_capture", *MEDIA_ABSENT, "perform", "drive"]
 
 
 @M.section("A", "every tool in every machine state, on the probe guest", _a_cells())

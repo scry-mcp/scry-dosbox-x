@@ -1,0 +1,31 @@
+{
+ "task": {
+  "id": "D109",
+  "prompt": "Check the frames of the series /tmp/run1/manifest.json against the goldens listed in /tmp/goldens.sha256.",
+  "tool": "golden_check",
+  "args": {
+   "manifest": "/tmp/run1/manifest.json",
+   "checksums": "/tmp/goldens.sha256"
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D109: {\"tool\": \"golden_check\", \"args\": {\"manifest\": \"/tmp/run1/manifest.json\", \"checksums\": \"/tmp/goldens.sha256\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D109: {\"tool\": \"golden_check\", \"args\": {\"manifest\": \"/tmp/run1/manifest.json\", \"checksums\": \"/tmp/goldens.sha256\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D109: {\"tool\": \"golden_check\", \"args\": {\"manifest\": \"/tmp/run1/manifest.json\", \"checksums\": \"/tmp/goldens.sha256\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

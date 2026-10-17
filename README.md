@@ -37,10 +37,14 @@ this.
   mapping and the VGA's state as its own listings print it. `interrupt_vectors` says which handler every
   interrupt vector points at, and whose memory it lies in.
 - **Read the screen without a window.** `screen_view` gives the screen at this stop as the
-  text it holds or, in the 256-colour mode, as a picture of palette indices;
-  `screen_signature` folds it into one number to compare instead of reading it; `screen_wait`
-  runs the machine until a string appears on the text screen, and stops there; `palette`
-  gives the 256 colours of the VGA's DAC, as a table and optionally as a picture.
+  text it holds or, in the 256-colour mode, as a picture the model sees, attached;
+  `screen_signature` answers "is it the same screen" with one string instead of a picture;
+  `screen_wait` runs the machine until a string appears on the text screen, and stops there;
+  `palette` gives the 256 colours of the VGA's DAC, as a table and as a picture.
+- **Frames and pictures as numbers.** `series_capture` turns frames of the session's video
+  capture into PNGs and a manifest; `image_diff`, `series_diff`, `region_track` and
+  `golden_check` answer about PNGs and series with numbers, the three that compare a series
+  or goldens refusing a result their own control could not have contradicted.
 - **Stop where you mean to.** Run to a symbol and be told whether you arrived, stopped
   somewhere else, or are still running. Break on an interrupt, or on the program's own
   `int 3`. Break when a variable
@@ -344,9 +348,14 @@ project and carries no default that points anywhere in particular.
 | `captures` | the video captures this session recorded, and what is in them |
 | `capture_frame` | one still image out of a capture, returning its path. Always a **PNG**, whatever `dest` is called; a `dest` already there is refused, never deleted |
 | `snapshot` | one still of the RUNNING screen, taken inside the guest on any session, confirmed by the new `.png` under the captures directory and moved to `dest` when given |
-| `screen_signature` | one number for what is on screen (CRC-32 over the mode, the size, every byte the screen is drawn from and the DAC), to compare instead of reading it; the modes `screen_view` reads. Needs a session started with `logfile` |
-| `palette` | `(first=0, count=0, dest="")`: the 256 colours of the VGA's DAC at this stop, as `#rrggbb` and as the six-bit `rgb` the debugger prints; with `dest`, also an indexed PNG of them, one square per entry. Needs a session started with `logfile` |
-| `screen_view` | `(dest="")`: what the screen shows at this stop, read from video memory: a text mode as its rows of text with the cursor, the chained 256-colour mode (13h's) as an indexed PNG at `dest`; any other mode is refused naming `capture_frame`. Needs a session started with `logfile` |
+| `screen_signature` | `(crop=None)`: one string for what is on screen or on a crop of it, each cell or pixel in the colour it is shown in, to compare instead of reading it; the modes `screen_view` reads. Needs a session started with `logfile` |
+| `palette` | `(first=0, count=0, scale=0, dest="")`: the 256 colours of the VGA's DAC at this stop, as `#rrggbb` and as the six-bit `rgb` the debugger prints, and their swatch, an indexed PNG of one square per entry, attached. Needs a session started with `logfile` |
+| `screen_view` | `(crop=None, scale=0, dest="")`: what the screen shows at this stop, read from video memory: a text mode as its rows of text with the cursor, the chained 256-colour mode (13h's) as an indexed PNG, attached; any other mode is refused naming `capture_frame`. Needs a session started with `logfile` |
+| `series_capture` | frames of the session's video capture, by the AVI's own numbering, as PNGs and one manifest, no picture in the reply. Needs `ffmpeg` |
+| `image_diff` | two PNGs compared pixel by pixel, with a crop, a shift and a tolerance: how many differ and where |
+| `series_diff` | two series compared frame by frame, after checking each can tell its frames apart |
+| `region_track` | the frames where a region of a series changes, by signature, changed pixels or a match against a reference |
+| `golden_check` | a series or a directory of PNGs against goldens written by `shasum -a 256` |
 | `screen_wait` | `(text, seconds=30)`: runs the machine retrace by retrace until `text` is inside one row of the text screen, and stops there with the stop's registers and attribution; a string already on screen is answered at once (`already`), the machine not moved; a frame that is not text is no match. Needs a session started with `logfile` |
 | `state_save` | the machine under a NAME, as `<state_dir>/<name>.sav`, by the debugger's own `SAVESTATE` sent down the debugger channel: no window, no menu, no focus taken. A running guest is stopped for it and released again (`paused`); the file is read back for what it says about itself. Never overwrites; alters nothing. Needs a DOSBox-X that carries the command (see Saved states below) |
 | `state_load` | the named state, by the debugger's own `LOADSTATE`, as `state_save` saves; a running guest is stopped for it and released again, a parked one stays parked at the loaded position. A state of another DOSBox-X version, program, memory size or machine type is refused, never asked about. Marks the session altered |

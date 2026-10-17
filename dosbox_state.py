@@ -19,6 +19,7 @@ record's date is only honest against the machine it dates.
 from __future__ import annotations
 
 import os
+import shutil
 import tempfile
 import time
 from datetime import UTC, datetime
@@ -133,6 +134,10 @@ class State:
         # the files are numbered per call by `batches`, so two calls never share one.
         self.scratch: Path | None = None
         self.batches = 0
+        # THE SESSION'S SCRATCH: where a picture or a series goes when the call names no
+        # `dest`, made on first use and removed with the session (`clear_running_state`). A
+        # path a reply places there is gone at `close`; a `dest` is what outlives the session.
+        self.session_dir: Path | None = None
         # THE OPEN SCAN'S LAST `iterations`, as the debugger printed it: its closing line
         # prints none, so the closing reply is this plus one. None when no scan this server
         # opened or filtered is open.
@@ -149,6 +154,12 @@ class State:
         # A CPU LOG A `trace` LEFT OPEN: its bound expired with the log running, so the next
         # trace closes it before opening its own (`dosbox_trace`).
         self.log_open = False
+
+    def session_scratch(self) -> Path:
+        """The session's scratch, made on first use (`session_dir` says when it goes)."""
+        if self.session_dir is None:
+            self.session_dir = Path(tempfile.mkdtemp(prefix="dosbox-x-session-"))
+        return self.session_dir
 
     def batch_scratch(self) -> Path:
         """The directory a batch's files go to: this server's own, never the caller's `cwd`,
@@ -277,10 +288,10 @@ class State:
     # ----------------------------------------------------------- the session's turnover
 
     def clear_running_state(self) -> None:
-        """What a session's end takes with it: the last stop, the queue, the armed rows and
-        any account not yet handed to a reply. Called by `start`, `close` and the burial of
-        a dead session, so `status` never dates an answer by a stop of a session that is
-        gone."""
+        """What a session's end takes with it: the last stop, the queue, the armed rows, any
+        account not yet handed to a reply, and the session's scratch with its files. Called by
+        `start`, `close` and the burial of a dead session, so `status` never dates an answer by
+        a stop of a session that is gone."""
         self.last_stop.clear()
         self.pending.update(arm=[], disarm=[], load=None, dirty=False, drained_seq=-1)
         self.armed.clear()
@@ -291,6 +302,9 @@ class State:
         self.scan_cell_bytes = None
         self.retrace_pending = False              # and so does its armed retrace
         self.log_open = False                     # and its CPU log
+        if self.session_dir is not None:          # and the pictures and series it made
+            shutil.rmtree(self.session_dir, ignore_errors=True)
+            self.session_dir = None
 
     def install_table(self, symbols: list[sym.Symbol], accumulate: bool = False) -> None:
         """THE ONE WAY A TABLE ARRIVES, so the index by name can never describe a
