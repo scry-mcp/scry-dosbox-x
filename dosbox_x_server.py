@@ -1969,6 +1969,9 @@ def _end_signalled(code: int) -> None:
             if STATE.session is not None:
                 STATE.session.close()
                 STATE.session = None
+        except Exception as e:  # noqa: BLE001 -- said, then the end goes on: it must leave
+            print(f"dosbox-x server: the session could not be closed on the way out ({e!r})",
+                  file=sys.stderr, flush=True)
         finally:
             if took:
                 LOCK.release()

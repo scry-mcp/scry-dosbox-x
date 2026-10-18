@@ -102,8 +102,11 @@ def test_the_signalled_end_waits_for_a_held_lock_only_so_long(
     assert time.monotonic() - began < 3.0 and ses.closed == 1
 
 
-def test_a_close_that_fails_still_leaves(monkeypatch: pytest.MonkeyPatch,
-                                         ending: dict[str, Any]) -> None:
+def test_a_close_that_fails_is_said_and_the_end_still_removes_the_scratch_and_leaves(
+        monkeypatch: pytest.MonkeyPatch, ending: dict[str, Any],
+        capfd: pytest.CaptureFixture[str]) -> None:
     monkeypatch.setattr(dstate.STATE, "session", _Live(raises=True))
     server._exit_on(signal.SIGTERM, None)
-    assert ending["left"].wait(5.0) and ending["exits"][0][0] == 128 + signal.SIGTERM
+    assert ending["left"].wait(5.0)
+    assert ending["exits"] == [(128 + signal.SIGTERM, 1)], ending["exits"]
+    assert "could not be closed on the way out" in capfd.readouterr().err
