@@ -1870,10 +1870,9 @@ def perform_export(path: str, overwrite: bool = False) -> dict[str, Any]:
     Kept: what moved the machine, as steps, and the reads that are checks (`read_memory`,
     `registers`, `screen_signature`, `golden_check`), each holding to what its reply said
     (`recorded`). Dropped, each named with why: a refused call, any other read, a write only to
-    the host. Cut, named: the first call no replay can place (made while the guest ran, ended
-    with no reply, a refusal after the guest moved, past {RECORD_MAX} calls): with no frame count
-    to stand in for a run, a `resume`, `stop` or `screen_wait` that ran and came back stopped, and
-    a key or a mouse move sent into the running guest, are cuts.
+    the host. Cut, named: the first call no replay can place (a release, or a `stop` or
+    `screen_wait` that ran the guest and came back stopped, whose run ends where no replay
+    reaches; no reply; a refusal after the guest moved; past {RECORD_MAX} calls).
 
     `path` absolute or `~`-led, ending `.json`; refused if it is there unless `overwrite`.
 

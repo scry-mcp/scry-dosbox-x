@@ -1,8 +1,8 @@
 """From an investigation to a bench, on bricks: a headless session at a fixed cycle count
 exported with `perform_export`, replayed twice by the runner with no model (both hold), and
-replayed once more with one recorded value edited (it diverges at that step and field). Keys go
-into a RUNNING guest at a wall-clock moment, which no count of frames places, so the export cuts
-at them: the steps before them are the bench."""
+replayed once more with one recorded value edited (it diverges at that step and field). The
+`resume` releases the guest, whose run ends wherever a stop finds it, which no replayed advance
+reaches, so the export cuts at the release: the steps before it are the bench."""
 from __future__ import annotations
 
 import json
@@ -48,7 +48,7 @@ def test_a_bricks_session_replays_twice_and_an_edited_one_diverges(tmp_path: Pat
         server.close()
     assert exported["status"] == "ok", exported.get("summary")
     assert exported["steps"] >= 1 and exported["checks"] == 2, exported
-    assert exported["cut"] is not None and exported["cut"]["op"] == "send_keys", exported["cut"]
+    assert exported["cut"] is not None and exported["cut"]["op"] == "resume", exported["cut"]
     for n in (1, 2):
         played = _replay(document, tmp_path / f"replay-{n}" / "t.md")
         assert played.returncode == 0, (n, played.stdout[-600:], played.stderr[-300:])

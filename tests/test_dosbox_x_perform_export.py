@@ -60,7 +60,7 @@ def test_the_machine_around_a_call_is_the_sessions_stop_count_and_never_a_frame(
     ses = install()
     ses.stop_count = 4  # type: ignore[attr-defined]
     got = dosbox_mcp._machine()
-    assert got == recording.Machine(running=False, frame=None, seq=4)
+    assert got == recording.Machine(running=False, seq=4)
     ses.alive = lambda: False  # type: ignore[method-assign]
     assert dosbox_mcp._machine().known is False, "a session that died is unreadable, not still"
 

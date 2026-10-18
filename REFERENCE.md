@@ -1252,7 +1252,7 @@ What the export keeps is what moved the machine and what was checked:
 | `golden_check` | a check of `matched`, `differing`, `missing` and `extra` |
 | any other read, `snapshot`, `capture_frame`, `series_capture`, `memdump`, `comment_*`, the scan, `machine_map`, `interrupt_vectors`, `palette`, `screen_view` | dropped, named in the reply with why; one that moved the guest is kept as a step |
 | a call the server refused | dropped, named; one that moved the guest first ends the document |
-| a `resume`, `stop` or `screen_wait` that ran the guest and came back stopped (at a breakpoint or a found text included), a release, a key or a mouse move sent into the running guest, a call made while it ran, one that ended with no reply | the end of the document: the reply's `cut` names it and why. DOSBox-X counts no frames a session can read, so no count of frames can stand in for a run |
+| a release (a `resume`), a `stop` or `screen_wait` that ran the guest and came back stopped (at a breakpoint or a found text included), one that ended with no reply | the end of the document: the reply's `cut` names it and why. Whatever ends such a run stops the guest at a place no replayed advance reaches, and every stop after it inherits the shift |
 
 `perform` and `drive` are recorded as their steps, and the steps of a `start`'s `plan` after the
 start. A step's check is `"recorded": {<field>: <value>}` inside it, and `perform` holds the

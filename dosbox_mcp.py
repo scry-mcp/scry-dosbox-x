@@ -217,15 +217,14 @@ def _machine() -> recording.Machine:
     """The machine around a recorded call: whether the guest runs, and how many times the
     session has come back to the prompt, which every stop moves the moment the prompt shows (a
     parked `state_load` included, before any survey records it), so a call is judged by what it
-    did and not by a record that catches up later. A session that died is unreadable. DOSBox-X
-    counts no frames a session can read, so `frame` is None: a run cuts an export there."""
+    did and not by a record that catches up later. A session that died is unreadable."""
     ses = STATE.session
     if ses is None:
-        return recording.Machine(running=False, frame=None, seq=None)
+        return recording.Machine(running=False, seq=None)
     if not ses.alive():
         return recording.UNREAD
     running = not ses.at_debugger()
-    return recording.Machine(running=running, frame=None, seq=getattr(ses, "stop_count", None))
+    return recording.Machine(running=running, seq=getattr(ses, "stop_count", None))
 
 
 #: The session's recording: what `perform_export` writes (REFERENCE.md, From an investigation to
