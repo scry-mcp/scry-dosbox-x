@@ -50,12 +50,20 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
     timed = milliseconds > 0
     began = time.monotonic()
     deadline = began + seconds
-    # THE LINE IS THE RUN'S, frames or emulated milliseconds done of those asked; each retrace's
-    # own wait reports nothing and still polls for the call's cancellation.
+    # THE LINE IS THE RUN'S, frames or emulated milliseconds done of those asked. A retrace's own
+    # wait reports only when that retrace is slow to come, on wall time, through the same line,
+    # so a frame that never comes still says the run is alive; it polls for the cancel either way.
     clock = mprogress.Ticker(seconds, progress)
     asked = f"{milliseconds} ms" if timed else f"{frames} frame{'s' * (frames != 1)}"
-    cuttable = arming.declares_code_breakpoint()
     polls = 0
+
+    def report_slow_retrace(_elapsed: float, _total: float | None, _message: str) -> None:
+        clock.expired()                       # the run's clock read now, not at the frame's start
+        done = "" if timed else f"frame {polls} of {frames}, "
+        clock.tick("run_for {asked}: {done}waiting for its retrace, {elapsed:.0f}s of {bound:g}s",
+                   asked=asked, done=done, bound=seconds)
+
+    cuttable = arming.declares_code_breakpoint()
     verdict = "ELAPSED"
     last = before                             # the clock at the last stop that painted one
     stalled_at: float | None = None
@@ -64,7 +72,7 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
         if time.monotonic() >= deadline:
             verdict = "TIMEOUT"
             break
-        if _advance(session, began, deadline, ds.no_progress):
+        if _advance(session, began, deadline, report_slow_retrace):
             return st.reply(verdict="TIMEOUT", running=True, polls=polls,
                             **_clock(before, None), **_counts(), retrace_pending=True,
                             note=f"the bound expired with a `VRT` out, so the machine is still "

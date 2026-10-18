@@ -3,12 +3,14 @@ the emulator speaks: it dials the session's port and answers one `REQ` per line.
 
 from __future__ import annotations
 
+import asyncio
 import socket
 import threading
 import time
 from collections.abc import Callable, Iterable
 
 import pytest
+from scry_core import cancel
 from scry_core.reply_contract import Invalid
 
 import dosbox_control as control
@@ -304,3 +306,14 @@ def test_close_closes_the_channel() -> None:
     s.control = channel  # type: ignore[assignment]
     s.close()
     assert channel.closed and s.ended_how == "died"
+
+
+def test_break_in_polls_for_the_cancel_while_it_waits_for_the_prompt(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    def cancelled() -> None:
+        raise asyncio.CancelledError
+    monkeypatch.setattr(cancel, "check", cancelled)
+    began = time.monotonic()
+    with pytest.raises(asyncio.CancelledError):
+        ds.Session.break_in(_session(ok=True, parks=False), seconds=5.0)
+    assert time.monotonic() - began < 1.0

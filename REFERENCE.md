@@ -244,15 +244,24 @@ of `perform` or `drive` reports through the sequence's own line,
 
 A call the client cancels ends at the next poll of its wait, the way its own bound would have
 ended it, and answers nothing: the protocol sends no response to a cancelled request. A tool
-with no wait of its own (a read, a single console command) runs to its end first. The next reply, whatever tool it
+with no wait of its own (a read, a single console command) runs to its end first. `state_save` and
+`state_load` wait on the emulator's answer and end at its next poll as their bound would: a guest
+they stopped is released, a save leaves no file, a load counts the session altered. The next reply, whatever tool it
 is, says once what that call left (a step of a sequence is the sequence's cancel): in `cancelled` (`tool`, `after_s`, `left`, one of `stopped`,
 `running`, `closed` or `unknown`, and `earlier`, the cancelled calls before it that no reply
 reported) and in its summary, `after a cancelled run_for (stopped): ...`. A call cancelled while
-it waited for another to finish did nothing, and leaves no record. Each tool declares its end:
+it waited for another to finish did nothing, and leaves no record.
+
+A call that had finished its work when the cancel arrived is recorded the same way, with no
+end applied, and what its reply carried (a stop it found, what a stop applied) is said by the
+next reply instead. A cancel that arrives after the server's last look, while the reply is on
+its way, is not seen.
+
+Each tool declares its end:
 
 | End | What the cancel leaves | Tools |
 |---|---|---|
-| `stop` | the guest back at the debugger by `BREAK`, as `stop` does, or a stop it had already reached recorded as its own; a `run_to` removes the breakpoints it armed | `stop`, `run_to`, `run_for`, `trace`, `screen_wait`, `perform` |
+| `stop` | the guest back at the debugger by `BREAK`, as `stop` does, or a stop it had already reached recorded as its own; a `run_to` removes the breakpoints it armed; a CPU log still open (a `trace`'s) is moved aside to `trace-cancelled-<n>.trace` in the working directory and closed | `stop`, `run_to`, `run_for`, `trace`, `screen_wait`, `perform` |
 | `kill` | the emulator closed; a close cancelled half-way still finishes | `start`, `close` |
 | `none` | the guest as the call found it | `log_wait`, `resume`, `snapshot`, `send_keys`, `send_mouse`, `drive` |
 

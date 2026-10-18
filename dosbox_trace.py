@@ -16,6 +16,7 @@ addresses written beside it, one JSON line each.
 """
 from __future__ import annotations
 
+import itertools
 import json
 import os
 import re
@@ -542,6 +543,21 @@ def _close_log(session: ds.Session, places: list[Path], what: str, **extra: Any)
             **extra)
     STATE.log_open = False
     return _remove_fresh(places)
+
+
+def close_log_left_open(session: ds.Session) -> None:
+    """A CPU log a cancelled call left open, closed by its `stop` end with the guest at the
+    debugger, so the next trace starts on a closed log. What it wrote is moved aside first, to
+    the first free `trace-cancelled-<n>.trace` in the working directory: on a log the machine
+    already closed, `LOGC 0` opens a fresh file over its name."""
+    cwd = session.launch.cwd
+    places = log_places(cwd)
+    source = _written(places)
+    if source is not None:
+        aside = next(cwd / f"trace-cancelled-{n}.trace" for n in itertools.count(1)
+                     if not paths.taken(cwd / f"trace-cancelled-{n}.trace"))
+        ds.collect(source, aside, "trace")
+    _close_log(session, places, "the CPU log a cancelled call left open")
 
 
 def _remove_fresh(places: list[Path]) -> bool:

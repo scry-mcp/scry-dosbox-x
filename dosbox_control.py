@@ -111,6 +111,10 @@ def parse_reply(buf: bytes, rid: str) -> tuple[bool, list[str], bytes] | None:
     return verdict == "OK", lines, rest
 
 
+def _no_poll() -> None:
+    """A request with nothing to poll while it waits."""
+
+
 class ControlChannel:
     """One session's end of the debugger channel: a listener for the session's life, a
     connection from the first request on, one request in flight at a time."""
@@ -153,10 +157,13 @@ class ControlChannel:
         return Invalid("session_broken", f"the debugger channel dropped ({why}); the emulator "
                        f"redials within a second, and the next request takes that connection")
 
-    def request(self, command: str, seconds: float = REPLY_S) -> tuple[bool, list[str]]:
+    def request(self, command: str, seconds: float = REPLY_S,
+                poll: Callable[[], None] = _no_poll) -> tuple[bool, list[str]]:
         """Send `PING`, `BREAK` or `EXEC <cmd>` and return `(ok, lines)` as the debugger
         answered them. A reply that does not end within `seconds` is `host_failed`: the
-        request may or may not have acted, and saying which would be a guess."""
+        request may or may not have acted, and saying which would be a guess. `poll` runs at
+        each slice of the wait (a long command's caller passes `cancel.check`); a reply left
+        unread by it is dropped by the next request's (`parse_reply`)."""
         if not command.strip() or "\n" in command or "\r" in command:
             raise Invalid("bad_argument", f"a channel request is one non-empty line; got "
                           f"{command!r}")
@@ -169,6 +176,7 @@ class ControlChannel:
             raise self._dropped(str(e)) from None
         deadline = time.monotonic() + seconds
         while (got := parse_reply(self._buf, rid)) is None:
+            poll()
             if time.monotonic() >= deadline:
                 raise Invalid("host_failed",
                     f"the debugger channel did not finish its reply to {command.split()[0]} "

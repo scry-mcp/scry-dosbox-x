@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import pathlib
 import sys
+import time
 from collections.abc import Iterator
 from typing import Any
 
@@ -34,6 +35,7 @@ class _Running(FakeSession):
         super().__init__()
         self.at = False
         self.breaks = 0
+        self.stop_count: int | None = None     # no counter unless a case gives it one
 
     def at_debugger(self) -> bool:
         return self.at
@@ -76,6 +78,7 @@ def waiting_tool(monkeypatch: pytest.MonkeyPatch) -> Iterator[dict[str, Any]]:
     for end in cancel.ON_CANCEL:
         server.mcp._tool_manager._tools.pop(f"wait_{end}", None)
         dosbox_mcp._SUMMARIES.pop(f"wait_{end}", None)
+        dosbox_mcp.BOUNDARY.declared_ends.pop(f"wait_{end}", None)
 
 
 def _running() -> _Running:
@@ -213,7 +216,7 @@ def test_a_stop_of_its_own_the_call_had_reached_is_recorded_as_its_own(
     install()
     ses = _running()
     ses.at = True
-    ses.stop_count = 7  # type: ignore[attr-defined]
+    ses.stop_count = 7
     st.STATE.last_stop["stop_count"] = 6
     recorded: list[bool] = []
 
@@ -297,3 +300,83 @@ def test_a_step_of_a_sequence_cancelled_is_the_sequences_cancel_alone(
         server.perform(steps=[{"op": "wait_none"}], wait=0.0)
     out = server.status()
     assert out["cancelled"]["tool"] == "perform" and "earlier" not in out["cancelled"], out
+
+
+def test_a_call_cancelled_as_its_body_returned_is_recorded_and_its_accounts_wait(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """`st.reply` hands over a stop's accounts as the body builds its reply; a cancel that came as
+    the body returned means nobody reads it, so the accounts go back for the next reply, and the
+    call is recorded with no end applied."""
+    install()
+    ses = _running()
+    ses.at = True
+    st.STATE.found_stop_last = {"stop_seq": 7, "at": "F000:0000", "attribution": {}}
+    st.STATE.applied_last.update({"armed": ["F000:0010"]})
+    _cancel_at(monkeypatch, 2)               # the poll after the body, not the entry's
+    with pytest.raises(asyncio.CancelledError):
+        server.status()
+    out = server.status()
+    assert out["cancelled"]["tool"] == "status" and out["cancelled"]["left"] == "stopped", out
+    assert out["stopped_on_its_own"]["stop_seq"] == 7, out
+    assert out["applied_on_stop"] == {"armed": ["F000:0010"]}, out
+    assert ses.breaks == 0
+
+
+def test_a_cancelled_trace_ends_stopped_with_its_log_closed_and_the_file_kept(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path,
+        waiting_tool: dict[str, Any]) -> None:
+    """A trace cancelled mid-run leaves the debugger's CPU log open; the `stop` end moves what it
+    wrote aside (`LOGC 0` on a log the machine already closed opens a fresh one over the name) and
+    closes it, before the stop is recorded: the close is a release and a return of its own, and
+    recorded after it the next contact would find a stop nobody made."""
+    import dosbox_trace as trace
+    install()
+    ses = _running()
+    ses.launch.cwd = tmp_path
+    ses.stop_count = 1
+    st.STATE.last_stop["stop_count"] = 1
+    written = trace.log_places(tmp_path)[0]
+    written.write_text("one line the trace had written\n")
+    typed: list[tuple[str, int]] = []
+
+    def log_cpu(word: str, count: int, began: float, deadline: float,
+                progress: Any = None) -> tuple[bool, float]:
+        typed.append((word, count))
+        written.write_text("")                 # a fresh log over the name, as the close opens
+        ses.stop_count = (ses.stop_count or 0) + 1   # released and back at the prompt
+        return False, 0.0
+    monkeypatch.setattr(ses, "log_cpu", log_cpu)
+    st.STATE.log_open = True
+    _cancel_at(monkeypatch, 2)
+    with pytest.raises(asyncio.CancelledError):
+        waiting_tool["stop"]()
+    assert ses.breaks == 1 and typed == [("LOGC", 0)], typed
+    assert st.STATE.log_open is False
+    kept = sorted(tmp_path.glob("trace-cancelled-*.trace"))
+    assert [k.read_text() for k in kept] == ["one line the trace had written\n"], kept
+    assert not written.exists(), "the empty log the close opened was left behind"
+    out = server.status()
+    assert out["cancelled"]["left"] == "stopped", out
+    assert "stopped_on_its_own" not in out, "the close was reported as a stop of its own"
+
+
+def test_a_frame_whose_retrace_never_comes_still_reports_progress(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The line of a run by frames moves with each frame; while one frame's retrace does not
+    come, the retrace's own wait still says the run is alive, on wall time, through it."""
+    ses = install()
+    ses.pane_clock_ms = 1000.0  # type: ignore[attr-defined]
+    lines: list[tuple[float, float | None, str]] = []
+
+    def stuck(began: float, deadline: float, progress: Any = None) -> tuple[bool, float]:
+        for second in (1, 2, 3):               # the retrace's own wait, once a report period
+            time.sleep(mprogress.PROGRESS_EVERY_S * 1.1)
+            progress(float(second), None, f"run_for: the next retrace: running {second}s")
+        raise asyncio.CancelledError           # the caller gave up on it
+    monkeypatch.setattr(ses, "retrace", stuck)
+    monkeypatch.setattr(mprogress, "PROGRESS_EVERY_S", 0.2)   # short, never zero: it is judged
+    with pytest.raises(asyncio.CancelledError):
+        retrace.run_for(ses, 5, 0, 30.0,  # type: ignore[arg-type]
+                        lambda p, t, m: lines.append((p, t, m)), "none", "", None)
+    waiting = [m for _p, _t, m in lines if "frame 0 of 5" in m and "waiting for its retrace" in m]
+    assert len(waiting) >= 2, lines           # it goes on saying so, on the wall clock

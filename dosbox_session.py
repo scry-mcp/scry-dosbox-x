@@ -4329,6 +4329,7 @@ class Session:
                 f"the debugger channel refused BREAK: {' / '.join(lines) or 'no reason given'}")
         began = time.monotonic()
         while time.monotonic() - began < seconds:
+            cancel.check()
             if self.at_debugger():
                 return round(time.monotonic() - began, 2)
             time.sleep(0.05)
@@ -4351,18 +4352,21 @@ class Session:
         if "\n" in str(path) or "\r" in str(path):
             raise Invalid("bad_argument", f"a state path is one line; got {str(path)!r}")
         paused = not self.at_debugger()
-        if paused:
-            self.break_in()
         began = time.monotonic()
         try:
-            ok, lines = self.control.request(f"EXEC {verb} {path}", seconds)
-        except Invalid as e:
-            if paused and self.at_debugger():
-                # THE RELEASE IS BEST EFFORT HERE: the request's own refusal is the answer,
-                # and one from the release would hide it.
-                with contextlib.suppress(Invalid):
-                    self.resume()
-            if e.code == "no_channel":
+            if paused:
+                self.break_in()
+                began = time.monotonic()
+            ok, lines = self.control.request(f"EXEC {verb} {path}", seconds, poll=cancel.check)
+        except BaseException as e:
+            # A COMMAND THAT ENDS EARLY, refused or cancelled (its waits poll, the break-in's
+            # included), releases the guest it stopped, as its bound would. Best effort: the
+            # command's own refusal is the answer, and one from the release would hide it.
+            if paused and (isinstance(e, Invalid) or cancel.is_cancellation(e)):
+                with cancel.shielded(), contextlib.suppress(Invalid):
+                    if self.at_debugger():
+                        self.resume()
+            if isinstance(e, Invalid) and e.code == "no_channel":
                 why = str(e).rstrip(".")
                 raise Invalid("no_channel",
                               f"{verb} goes down the debugger channel, and {why}. The saved "
@@ -4403,7 +4407,7 @@ class Session:
         state_dir.mkdir(parents=True, exist_ok=True)
         try:
             outcome = self._state_command("SAVESTATE", dest, seconds)
-        except Invalid:
+        except BaseException:                  # a refusal, a cancel or a defect alike
             dest.unlink(missing_ok=True)       # it was not there before this call
             raise
         if not dest.is_file():
@@ -4434,6 +4438,9 @@ class Session:
         except Invalid as e:
             if e.code not in ("no_channel", "bad_argument"):
                 self.altered = True
+            raise
+        except BaseException:                  # cancelled part-way: some of it may be loaded
+            self.altered = True
             raise
         self.altered = True
         if not outcome["paused"]:

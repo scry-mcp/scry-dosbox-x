@@ -26,6 +26,7 @@ import dosbox_sequence as sequence
 import dosbox_session as ds
 import dosbox_state as st
 import dosbox_summaries as one_line
+import dosbox_trace as trace
 from dosbox_state import STATE
 
 
@@ -131,9 +132,10 @@ def _end_cancelled(name: str, on_cancel: cancel.OnCancel) -> tuple[cancel.Left, 
     """THE END A CANCELLED CALL DECLARED, applied at once: the end its own bound would have given
     it, under the shield so that end's own waits run to completion. `stop` for a tool that comes
     back STOPPED (`BREAK` and the stop recorded, as the `stop` tool does; a guest already at the
-    debugger is left so), `kill` for one whose failure path ends the emulator, `none` for one that
-    leaves the machine as it was. Returned: what it left; the accounts its stop delivered are
-    already back for the next reply (`_keep_accounts`)."""
+    debugger is left so; a CPU log still open closed first), `kill` for one whose failure path
+    ends the emulator, `none` for one that leaves the machine as it was. Returned: what it
+    left; the accounts its stop delivered are already back for the next reply
+    (`_keep_accounts`)."""
     left: cancel.Left | None = None
     ses = STATE.session
     with cancel.shielded():
@@ -146,6 +148,13 @@ def _end_cancelled(name: str, on_cancel: cancel.OnCancel) -> tuple[cancel.Left, 
                 STATE.forget_symbols()
                 STATE.clear_running_state()
             elif on_cancel == "stop" and ses is not None and ses.alive():
+                if STATE.log_open:
+                    # CLOSED BEFORE THE STOP IS RECORDED: the close is a release and a return to
+                    # the prompt of its own, which recorded after it the next contact would find
+                    # as a stop nobody made.
+                    if not ses.at_debugger():
+                        ses.break_in()
+                    trace.close_log_left_open(ses)
                 _keep_accounts(_stop_of_its_own(ses))
         except (ds.Invalid, OSError):
             left = "unknown"
@@ -168,12 +177,13 @@ def _stop_of_its_own(ses: ds.Session) -> dict[str, Any]:
     return {}
 
 
-def _keep_accounts(stopped: dict[str, Any]) -> None:
-    """THE ACCOUNTS A STOP DELIVERED GO BACK FOR THE NEXT REPLY: the stop's own reply goes to
-    nobody, and what it applied or found is said once, by whichever reply comes next."""
-    STATE.applied_last.update(stopped.get("applied_on_stop") or {})
-    if stopped.get("stopped_on_its_own"):
-        STATE.found_stop_last = dict(stopped["stopped_on_its_own"])
+def _keep_accounts(reply: dict[str, Any]) -> None:
+    """THE ACCOUNTS A REPLY CARRIED GO BACK FOR THE NEXT ONE: the reply goes to nobody (the
+    `stop` end's stop, or a call cancelled as its body returned), and what it applied or found
+    is said once, by whichever reply comes next."""
+    STATE.applied_last.update(reply.get("applied_on_stop") or {})
+    if reply.get("stopped_on_its_own"):
+        STATE.found_stop_last = dict(reply["stopped_on_its_own"])
 
 
 def _invoke(fn: Callable[..., Any], signature: inspect.Signature, a: tuple[Any, ...],
@@ -207,7 +217,7 @@ def _keep_cancelled(record: cancel.Cancelled) -> None:
 BOUNDARY = boundary.Boundary(
     mcp, LOCK, invoke=_invoke, end=_end_cancelled, line=_summary,
     session_block=st.session_block, take_cancelled=STATE.take_cancelled,
-    keep_cancelled=_keep_cancelled, doc=docs.filled)
+    keep_cancelled=_keep_cancelled, doc=docs.filled, give_back=_keep_accounts)
 
 
 def tool(

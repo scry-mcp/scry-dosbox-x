@@ -5,6 +5,7 @@ ZIP naming its `Program_Name`, `Machine_Type`, `Memory_Size`, `Time_Stamp` and
 `DOSBox-X_Version`. The tools are `state_save(name)`, `state_load(name)` and `state_list`."""
 from __future__ import annotations
 
+import asyncio
 import dataclasses
 import time
 import zipfile
@@ -12,6 +13,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
+from scry_core import cancel
 
 import dosbox_mcp
 import dosbox_session as ds
@@ -43,9 +45,12 @@ class Channel:
         self.partial = False                 # a failed save leaves a half-written file
         self.raises: ds.Invalid | None = None
 
-    def request(self, command: str, seconds: float = 5.0) -> tuple[bool, list[str]]:
+    def request(self, command: str, seconds: float = 5.0,
+                poll: Any = None) -> tuple[bool, list[str]]:
         self.sent.append(command)
         assert self.session.parked, "a state command was sent with the guest running"
+        if poll is not None:
+            poll()                           # the wait for the reply polls, as the real one
         verb, _, path = command.removeprefix("EXEC ").partition(" ")
         if self.raises is not None:
             raise self.raises
@@ -471,3 +476,45 @@ def test_a_snapshot_whose_call_is_cancelled_stops_waiting_for_the_picture(
     with pytest.raises(asyncio.CancelledError):
         ds.Session.snapshot(as_session(fake), None, 5.0)
     assert time.monotonic() - began < 1.0, "the wait ran on to its bound"
+
+
+def _cancelled() -> None:
+    raise asyncio.CancelledError
+
+
+def test_a_save_cancelled_in_its_wait_ends_as_its_bound_would(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The wait for the emulator's answer polls for the cancel: a guest stopped for the command
+    is released again, and the save leaves no file behind, as a save that ran out of time."""
+    fake = StateFake(tmp_path / "save", parked=False)
+    monkeypatch.setattr(cancel, "check", _cancelled)
+    with pytest.raises(asyncio.CancelledError):
+        ds.Session.state_save(as_session(fake), "boot", 5.0)
+    assert fake.moves == ["break", "resume"] and fake.parked is False
+    assert not (tmp_path / "save" / "boot.sav").exists()
+
+
+def test_a_load_cancelled_in_its_wait_is_released_and_counts_as_altered(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "save", parked=False)
+    write_state(tmp_path / "save" / "boot.sav")
+    monkeypatch.setattr(cancel, "check", _cancelled)
+    with pytest.raises(asyncio.CancelledError):
+        ds.Session.state_load(as_session(fake), "boot", 5.0)
+    assert fake.moves == ["break", "resume"] and fake.altered is True
+
+
+def test_a_state_command_cancelled_while_it_breaks_in_releases_the_guest(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The break-in's own wait polls for the cancel: a guest the command stopped is released
+    again even when the cancel lands there, before anything was sent."""
+    fake = StateFake(tmp_path / "save", parked=False)
+
+    def break_in(seconds: float = 5.0) -> float:
+        fake.moves.append("break")
+        fake.parked = True                     # BREAK taken, then the wait met the cancel
+        raise asyncio.CancelledError
+    monkeypatch.setattr(fake, "break_in", break_in)
+    with pytest.raises(asyncio.CancelledError):
+        ds.Session.state_save(as_session(fake), "boot", 5.0)
+    assert fake.moves == ["break", "resume"] and fake.control.sent == []
