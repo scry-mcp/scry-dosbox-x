@@ -16,7 +16,7 @@ from collections.abc import Callable
 from typing import Any
 
 from pydantic import ValidationError
-from scry_core import boundary, cancel, envelope
+from scry_core import boundary, cancel, envelope, recording
 from scry_core import strict_arguments as strict
 
 import dosbox_checks as checks
@@ -67,7 +67,7 @@ mcp = envelope.Envelope(
         '`comment_save`, `comment_load`. Input, in-guest:\n'
         '`send_keys`, `send_mouse`, `drive`. Captures: `captures`, `capture_frame`,\n'
         '`series_capture`, `snapshot`. Files, any state: `image_diff`, `series_diff`,\n'
-        '`region_track`, `golden_check`. Sequences: `perform`.\n\n'
+        '`region_track`, `golden_check`. Sequences: `perform`, `perform_export`.\n\n'
         'A SESSION. `build_check` answers about the BUILD, never a reading, and REFUSES while a\n'
         'session is live. `start` parks the guest STOPPED at the debugger; `resume` lets it\n'
         'run. The readers need it STOPPED and refuse otherwise, naming `last_stop` and what\n'
@@ -77,8 +77,7 @@ mcp = envelope.Envelope(
         'windowed. What you declare while\n'
         'it runs is `pending` until the next stop. After `symbols_load`, a `ref` is a symbol or\n'
         'a `SEG:OFF`. A cancel ends a call as its bound would; the next reply says `cancelled`.\n'
-        'FOR A VALUE use `registers`, `read_memory`, `memdump` or `log`; `debug` is the last\n'
-        'resort.\n\n'
+        'FOR A VALUE: `registers`, `read_memory`, `memdump`, `log`; `debug` last.\n\n'
         'EVERY REPLY carries `summary`, `status` (`ok`, or `INVALID` with `code` and `message`)\n'
         'and `session` (`altered`: has anything here written to the machine?). An argument of\n'
         "the wrong TYPE is the schema's `bad_argument`.\n\n"
@@ -92,11 +91,11 @@ mcp = envelope.Envelope(
 # session itself, and everything held beside it, is `STATE` (`dosbox_state`).
 LOCK = threading.RLock()
 
-#: What a refusal for a running guest names as answering: the sequence's table, and four
+#: What a refusal for a running guest names as answering: the sequence's table, and five
 #: that answer it outside a list (the last stop's registers, the two that run steps, the
-#: session's end).
+#: export of the session, the session's end).
 _ANSWERS_WHILE_RUNNING = [*sorted(sequence.RUNNING_OK_OPS), "registers(from_last_stop=True)",
-                          "perform", "drive", "close"]
+                          "perform", "drive", "perform_export", "close"]
 
 
 def registered_tools() -> list[str]:
@@ -214,15 +213,37 @@ def _keep_cancelled(record: cancel.Cancelled) -> None:
     STATE.cancelled = record
 
 
+def _machine() -> recording.Machine:
+    """The machine around a recorded call: whether the guest runs, and how many times the
+    session has come back to the prompt, which every stop moves the moment the prompt shows (a
+    parked `state_load` included, before any survey records it), so a call is judged by what it
+    did and not by a record that catches up later. A session that died is unreadable. DOSBox-X
+    counts no frames a session can read, so `frame` is None: a run cuts an export there."""
+    ses = STATE.session
+    if ses is None:
+        return recording.Machine(running=False, frame=None, seq=None)
+    if not ses.alive():
+        return recording.UNREAD
+    running = not ses.at_debugger()
+    return recording.Machine(running=running, frame=None, seq=getattr(ses, "stop_count", None))
+
+
+#: The session's recording: what `perform_export` writes (REFERENCE.md, From an investigation to
+#: a bench). `start`'s `plan` runs steps of a sequence, recorded after the start.
+RECORDER = recording.Recorder("dosbox-x", _machine, stop_fields=("registers",),
+                              outside=frozenset({"close", "build_check"}), plan="plan")
+
 BOUNDARY = boundary.Boundary(
     mcp, LOCK, invoke=_invoke, end=_end_cancelled, line=_summary,
     session_block=st.session_block, take_cancelled=STATE.take_cancelled,
-    keep_cancelled=_keep_cancelled, doc=docs.filled, give_back=_keep_accounts)
+    keep_cancelled=_keep_cancelled, doc=docs.filled, give_back=_keep_accounts,
+    recorder=RECORDER)
 
 
 def tool(
     title: str, *, summary: one_line.Summary, read_only: bool = False, idempotent: bool = False,
     session_before: bool = False, on_cancel: cancel.OnCancel | None = None,
+    replay: recording.ExportAs | None = None,
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Register an MCP tool, serialise it over the one machine, and put the one-line
     `summary` first in its reply: `summary` is the tool's own line (`dosbox_summaries`),
@@ -248,11 +269,14 @@ def tool(
     the kill. `on_cancel` is how the tool ends when the client cancels its call
     (`_end_cancelled`); the rest of the contract, the `ctx` rule included, is
     `scry_core.boundary.Boundary.tool`'s, and which errors become replies is `_invoke`'s.
+    `replay` is what its calls become in an exported session (`scry_core.recording`; REFERENCE.md,
+    From an investigation to a bench).
     """
 
     def register(fn: Callable[..., Any]) -> Callable[..., Any]:
         wrapped = BOUNDARY.tool(title, read_only=read_only, idempotent=idempotent,
-                                session_before=session_before, on_cancel=on_cancel)(fn)
+                                session_before=session_before, on_cancel=on_cancel,
+                                replay=replay)(fn)
         _SUMMARIES[fn.__name__] = summary
         return wrapped
 

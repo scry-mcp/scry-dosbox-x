@@ -562,11 +562,12 @@ BY_OP: dict[str, Check] = {
 #: `watch_list`, `captures`, `call_stack`,
 #: `comment_list`); or a flag every value of which is valid
 #: (`registers`); or a `ref` that matches only against the declarations the session's store
-#: holds (`breakpoint_clear`, `watch_clear`).
+#: holds (`breakpoint_clear`, `watch_clear`); or a path the export judges itself before it reads
+#: anything (`perform_export`).
 MACHINE_JUDGES = frozenset({
     "build_check", "status", "close", "stop", "registers", "scan_clear", "state_list",
     "breakpoint_list", "breakpoint_clear", "watch_list", "watch_clear", "captures",
-    "call_stack", "comment_list",
+    "call_stack", "comment_list", "perform_export",
 })
 
 

@@ -770,7 +770,7 @@ def test_every_tool_this_server_promises_is_actually_registered() -> None:
                 "captures", "capture_frame", "build_check",
                 "symbols_load", "symbols_find", "step", "run_to", "run_for", "log_wait",
                 "breakpoint_at", "breakpoint_list", "breakpoint_clear",
-                "watch_add", "watch_list", "watch_clear", "perform",
+                "watch_add", "watch_list", "watch_clear", "perform", "perform_export",
                 "state_save", "state_load", "state_list", "snapshot",
                 "send_keys", "send_mouse", "drive", "stop", "machine_map",
                 "interrupt_vectors", "palette", "screen_view", "screen_signature",

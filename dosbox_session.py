@@ -4364,6 +4364,8 @@ class Session:
             # command's own refusal is the answer, and one from the release would hide it.
             if paused and (isinstance(e, Invalid) or cancel.is_cancellation(e)):
                 with cancel.shielded(), contextlib.suppress(Invalid):
+                    if cancel.is_cancellation(e) and not self.at_debugger():
+                        self.break_in()        # a BREAK sent lands; wait for it, then release
                     if self.at_debugger():
                         self.resume()
             if isinstance(e, Invalid) and e.code == "no_channel":
@@ -4433,14 +4435,17 @@ class Session:
             raise Invalid("unknown_ref",
                 f"no state named {name!r} under {state_dir}: `state_list` says what is there")
         meta = state_meta(source)
+        parked = self.at_debugger()
         try:
             outcome = self._state_command("LOADSTATE", source, seconds)
-        except Invalid as e:
-            if e.code not in ("no_channel", "bad_argument"):
+        except BaseException as e:
+            # CUT SHORT AFTER IT WAS SENT, refused or cancelled: some of it may be loaded, so the
+            # session is altered and, parked, the stop record before it may describe a machine
+            # that is gone, as a load that answered does.
+            if not (isinstance(e, Invalid) and e.code in ("no_channel", "bad_argument")):
                 self.altered = True
-            raise
-        except BaseException:                  # cancelled part-way: some of it may be loaded
-            self.altered = True
+                if parked:
+                    self.stop_count += 1
             raise
         self.altered = True
         if not outcome["paused"]:

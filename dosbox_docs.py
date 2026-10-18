@@ -5,11 +5,13 @@ from __future__ import annotations
 
 import re
 
-from scry_core import picture
+from scry_core import picture, recording
 from scry_core import series as core_series
 
 VALUES = {"PICTURE": picture.DESCRIBED, "PICTURE_ARGS": picture.ARGUMENTS,
-          "SERIES_MAX": str(core_series.SERIES_MAX)}
+          "SERIES_MAX": str(core_series.SERIES_MAX),
+          "DROPPED_SHOWN": str(recording.DROPPED_SHOWN),
+          "RECORD_MAX": str(recording.RECORD_MAX)}
 _PLACEHOLDER = re.compile(r"\{[A-Z_]+\}")
 
 

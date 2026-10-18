@@ -153,8 +153,8 @@ def _running(tmp_path: Path) -> RunningGuest:
     dstate.STATE.session = fake  # type: ignore[assignment]
     return fake
 
-#: The tools that are not steps: the session's own life, and the two sequence tools.
-NOT_STEPS = {"build_check", "start", "close", "perform", "drive"}
+#: The tools that are not steps: the session's own life, the two sequence tools, the export.
+NOT_STEPS = {"build_check", "start", "close", "perform", "drive", "perform_export"}
 
 
 def _args(tmp_path: Path) -> dict[str, dict[str, Any]]:
@@ -218,9 +218,9 @@ def test_no_tool_of_the_table_types_at_a_running_guests_console(
     assert fake.asked == [], (tool, fake.asked)
 
 
-def test_answers_while_running_is_the_table_and_the_four_that_answer_outside_a_list() -> None:
+def test_answers_while_running_is_the_table_and_the_five_that_answer_outside_a_list() -> None:
     table = [*sorted(sequence.RUNNING_OK_OPS), "registers(from_last_stop=True)", "perform",
-             "drive", "close"]
+             "drive", "perform_export", "close"]
     assert table == dosbox_mcp._ANSWERS_WHILE_RUNNING
 
 
@@ -235,7 +235,7 @@ def test_every_tool_the_instructions_send_to_a_running_guest_is_in_the_table() -
     assert named <= sequence.RUNNING_OK_OPS
 
 
-def test_perform_takes_every_registered_tool_but_the_five() -> None:
+def test_perform_takes_every_registered_tool_but_the_lifecycle() -> None:
     assert set(server._step_ops()) == set(dosbox_mcp.registered_tools()) - NOT_STEPS
 
 

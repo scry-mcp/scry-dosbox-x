@@ -21,7 +21,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
 
-from scry_core import media_tools
+from scry_core import media_tools, recording
 from scry_core import progress as mprogress
 from scry_core import reply_contract as contract
 
@@ -154,7 +154,10 @@ def preflight(steps: list[dict[str, Any]], ops: Ops) -> list[dict[str, Any]]:
             continue
         if op in DEFERRED_OPS:
             continue
-        args = {k: v for k, v in step.items() if k != "op"}
+        args = recording.step_arguments(step)
+        if (why := recording.refuse_recorded(step)) is not None:
+            refused.append({"step": i, "op": op, "code": "bad_argument", "message": why})
+            continue
         # `ctx` is the SDK's, injected when the client calls a tool, never an argument a
         # step may carry: a stray value would reach the progress bridge as a context.
         if "ctx" in args:
@@ -355,7 +358,7 @@ def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
                           completed=len(ran), failed_at=i,
                           message=f"step {i} is not a {{'op': <name>, ...}} object: {step!r}")
         op = str(step["op"])
-        args = {k: v for k, v in step.items() if k != "op"}
+        args = recording.step_arguments(step)
         if op in DEFERRED_OPS:
             return st.reply(status="INVALID", code="bad_argument",
                           **account_of(ran, summaries, keep_last=False, since=since),
@@ -401,6 +404,14 @@ def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
                                        also=[reply]),
                           completed=len(ran), failed_at=i, failed={"op": op, "reply": reply},
                           message=f"step {i} ({op!r}) failed: {reply.get('message')}")
+        if (apart := recording.diverged(step.get(recording.RECORDED) or {}, reply)) is not None:
+            # A REPLAY THAT LEFT THE SESSION IT REPLAYS stops where it left, where a desync is
+            # cheapest to read: every step after it would only compound it.
+            message, fields = recording.divergence(i, op, reply, apart)
+            return st.reply(status="INVALID", code="diverged",
+                          **account_of(ran, summaries, keep_last=False, since=since,
+                                       also=[reply]),
+                          completed=len(ran), **fields, message=message)
         ran.append({"op": op, "reply": reply})
         # A RUNNING-OK OP DOES NOT RELEASE THE MACHINE, and whether it stopped it is the
         # SESSION's to say, never the op's name: `_leaves_running` would answer False for a

@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D115",
+  "prompt": "Export only the last ten calls of this session as a replay document.",
+  "expect": "CANNOT",
+  "about": "perform_export"
+ },
+ "runs": [
+  {
+   "lines": [
+    "D115: CANNOT `perform_export` writes the whole session since `start`; it has no option to export only the last ten calls."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D115: CANNOT `perform_export` always writes the whole session since `start`; no option limits it to the last ten calls."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D115: CANNOT perform_export writes the whole session since start; it has no option to export only the last ten calls."
+   ],
+   "right": true
+  }
+ ]
+}

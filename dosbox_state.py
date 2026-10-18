@@ -54,6 +54,9 @@ class State:
 
     def __init__(self) -> None:
         self.session: ds.Session | None = None
+        #: The session `start` launched and has not published yet (it waits for it, holding the
+        #: lock): what an end by signal reaches when the lock is not let go of in time.
+        self.starting: ds.Session | None = None
 
         # The symbol table the last `symbols_load` parsed, and the descriptor it was placed
         # against. They are held HERE rather than in the session because the full

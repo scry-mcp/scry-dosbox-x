@@ -518,3 +518,33 @@ def test_a_state_command_cancelled_while_it_breaks_in_releases_the_guest(
     with pytest.raises(asyncio.CancelledError):
         ds.Session.state_save(as_session(fake), "boot", 5.0)
     assert fake.moves == ["break", "resume"] and fake.control.sent == []
+
+
+def test_a_state_command_cancelled_before_its_break_in_landed_still_releases_the_guest(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """BREAK taken and the cancel met before the prompt shows: the command finishes the break-in
+    under the shield, then releases the guest it stopped, so the guest is left as found."""
+    fake = StateFake(tmp_path / "save", parked=False)
+
+    def break_in(seconds: float = 5.0) -> float:
+        fake.moves.append("break")
+        if cancel.shielding():
+            fake.parked = True                 # the prompt, waited for this time
+            return 0.01
+        raise asyncio.CancelledError           # BREAK taken, the prompt not shown yet
+    monkeypatch.setattr(fake, "break_in", break_in)
+    with pytest.raises(asyncio.CancelledError):
+        ds.Session.state_save(as_session(fake), "boot", 5.0)
+    assert fake.moves[-1] == "resume" and fake.parked is False, fake.moves
+
+
+def test_a_parked_load_cancelled_after_it_was_sent_counts_the_machine_as_replaced(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The emulator may have loaded it, so the stop record before it may describe a machine
+    that is gone: the load counts as a stop, as a load that answered does."""
+    fake = StateFake(tmp_path / "save", parked=True)
+    write_state(tmp_path / "save" / "boot.sav")
+    monkeypatch.setattr(cancel, "check", _cancelled)
+    with pytest.raises(asyncio.CancelledError):
+        ds.Session.state_load(as_session(fake), "boot", 5.0)
+    assert fake.stop_count == 1 and fake.altered is True

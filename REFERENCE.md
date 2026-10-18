@@ -246,7 +246,8 @@ A call the client cancels ends at the next poll of its wait, the way its own bou
 ended it, and answers nothing: the protocol sends no response to a cancelled request. A tool
 with no wait of its own (a read, a single console command) runs to its end first. `state_save` and
 `state_load` wait on the emulator's answer and end at its next poll as their bound would: a guest
-they stopped is released, a save leaves no file, a load counts the session altered. The next reply, whatever tool it
+they stopped is released, a save removes its file (one the emulator finishes after the cancel
+can still appear, as after a save its bound ended), a load counts the session altered. The next reply, whatever tool it
 is, says once what that call left (a step of a sequence is the sequence's cancel): in `cancelled` (`tool`, `after_s`, `left`, one of `stopped`,
 `running`, `closed` or `unknown`, and `earlier`, the cancelled calls before it that no reply
 reported) and in its summary, `after a cancelled run_for (stopped): ...`. A call cancelled while
@@ -1152,13 +1153,15 @@ symbol name against the table loaded by then (`symbols_load` may be an earlier s
 same list), a file an earlier step writes, and anything that needs the machine. `debug` is a
 step like any other tool, and the last resort inside a list as outside one.
 
-Every tool but `build_check`, `start`, `close`, `perform` and `drive` is a step, read off the
+Every tool but `build_check`, `start`, `close`, `perform`, `drive` and `perform_export` is a
+step, read off the
 server's own registry. A `resume` ends the console-driven part of a sequence. After it, what
 answers on a RUNNING guest runs at once: the one table a running-guest refusal lists in
 `answers_while_running` (`status`, the log, `symbols_find`, the input, the captures, the
 saved states, the snapshot, `stop`, the declarations, `comment_list` and `comment_save`),
-the four it adds for a caller
-outside a list (`registers(from_last_stop=True)`, `perform`, `drive`, `close`) apart. A
+the five it adds for a caller
+outside a list (`registers(from_last_stop=True)`, `perform`, `drive`, `perform_export`, `close`)
+apart. A
 declaration there answers `pending` while the guest runs and is armed at the next stop, as the
 same call made outside a sequence does, instead of waiting for a stop first; a `stop` brings
 the machine back, and whether a step stopped it is the session's to say, never the step's
@@ -1221,6 +1224,50 @@ hands it over. A verification that read from the top of the log would find the c
 fired ten seconds ago, and a look taken before the act would be the previous act's: the one
 mark, taken before anything moves, is what makes both honest. A screen is not part of the
 look: the still needs a recording and `ffmpeg`, and `capture_frame` offers it on its own.
+
+## From an investigation to a bench
+
+Every session is recorded from the `start` that succeeds, and cleared by the next one; `close`
+keeps it. `perform_export(path)` writes it as `perform`'s own document, and the runner plays it
+back with no model, from this repository:
+
+```sh
+uv run python -m scry_core.replay <document> [--binary PATH] [--transcript PATH]
+```
+
+It exits 0 when every step held, 1 when a step diverged or failed, 2 on a usage error, and 3 when
+nothing was demonstrated (a document that is not one, a start the server refused, a saved state
+it loads and the server lacks, a server that did not start); the whole transcript goes to
+`tmp/replays/<document stem>/transcript.md`. A replay is deterministic on a conf with a fixed
+cycle count (`cycles=fixed <n>`); under `cycles=max` the guest's own clock follows the host's.
+
+What the export keeps is what moved the machine and what was checked:
+
+| A call of | Becomes |
+|---|---|
+| a tool that changes the machine or what the next call acts on (`write`, `set_register`, `run_to`, `run_for`, `step`, `trace`, `state_save`, `state_load`, `symbols_load`, `debug`, a declaration...) | a step; one that left the guest at a new stop holds to its `registers` |
+| `read_memory` | a check of `hex` |
+| `registers` | a check of `registers` |
+| `screen_signature` | a check of `signature` |
+| `golden_check` | a check of `matched`, `differing`, `missing` and `extra` |
+| any other read, `snapshot`, `capture_frame`, `series_capture`, `memdump`, `comment_*`, the scan, `machine_map`, `interrupt_vectors`, `palette`, `screen_view` | dropped, named in the reply with why; one that moved the guest is kept as a step |
+| a call the server refused | dropped, named; one that moved the guest first ends the document |
+| a `resume`, `stop` or `screen_wait` that ran the guest and came back stopped (at a breakpoint or a found text included), a release, a key or a mouse move sent into the running guest, a call made while it ran, one that ended with no reply | the end of the document: the reply's `cut` names it and why. DOSBox-X counts no frames a session can read, so no count of frames can stand in for a run |
+
+`perform` and `drive` are recorded as their steps, and the steps of a `start`'s `plan` after the
+start. A step's check is `"recorded": {<field>: <value>}` inside it, and `perform` holds the
+step's own reply to it: a mismatch is INVALID `diverged` at that step, with `field`, `recorded`
+and `got`, the list stopping there. The document's `needs.states` lists the saved states it loads
+and does not save, which the runner checks against `state_list` before it plays anything. The
+document carries the `start`'s arguments as given, host paths included; `--binary` replaces the
+emulator's.
+
+What a replay cannot hold to, it says at the step rather than passing over it. The `start` re-arms
+the declarations it finds stored for the conf, as any start does, which are where the session
+left them, not where it began; a file a step wrote by name (a saved state, a `trace` with a
+`dest`) is there on the next replay and the step refuses it, so a session meant for a bench keeps
+its states in a directory of its own and leaves `dest` empty; and a `golden_check` holds to files
+the replay does not write when the calls that wrote them were dropped.
 
 ## Input and the screen
 

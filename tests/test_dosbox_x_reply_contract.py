@@ -64,6 +64,7 @@ _ARGS: dict[str, dict[str, Any]] = {
     "state_save": {"name": "x"},
     "state_load": {"name": "x"},
     "perform": {"steps": [{"op": "status"}]},
+    "perform_export": {"path": "/nonexistent/session.json"},
     "drive": {"act": [{"op": "status"}], "pattern": "."},
     "comment_add": {"ref": "x", "text": "t"},
     "comment_delete": {"ref": "x"},
@@ -92,6 +93,7 @@ def test_every_tool_answers_the_contract_with_no_machine(
         return
     # A media file tool needs no machine: it refuses the missing file it was handed.
     expected = {"start": "bad_argument", "build_check": "host_failed",
+                "perform_export": "bad_argument",
                 **dict.fromkeys(media_tools.IMAGE_TOOLS, "bad_argument")}.get(name, "no_session")
     contract.check_refusal(name, reply, expected)
 

@@ -442,6 +442,12 @@ def capture_frame(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 # ---------------------------------------------------------------------- the sequences
 
+def perform_export(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    cut = f", cut at call {reply['cut']['call']}" if reply.get("cut") else ""
+    return (f"perform_export: {reply['steps']} steps, {reply['checks']} checks, "
+            f"{reply['dropped_total']} dropped{cut} to {reply['path']}")
+
+
 def perform(args: dict[str, Any], reply: dict[str, Any]) -> str:
     steps = reply.get("steps_total", len(args.get("steps") or []))
     return f"perform: {reply.get('completed')} of {steps} steps"

@@ -1,0 +1,30 @@
+{
+ "task": {
+  "id": "D111",
+  "prompt": "Write what this session has done so far as a replay document to /tmp/bench/bricks.json.",
+  "tool": "perform_export",
+  "args": {
+   "path": "/tmp/bench/bricks.json"
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D111: {\"tool\": \"perform_export\", \"args\": {\"path\": \"/tmp/bench/bricks.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D111: {\"tool\": \"perform_export\", \"args\": {\"path\": \"/tmp/bench/bricks.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D111: {\"tool\": \"perform_export\", \"args\": {\"path\": \"/tmp/bench/bricks.json\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

@@ -110,3 +110,29 @@ def test_a_close_that_fails_is_said_and_the_end_still_removes_the_scratch_and_le
     assert ending["left"].wait(5.0)
     assert ending["exits"] == [(128 + signal.SIGTERM, 1)], ending["exits"]
     assert "could not be closed on the way out" in capfd.readouterr().err
+
+
+def test_a_signal_while_start_waits_for_its_emulator_ends_that_emulator(
+        monkeypatch: pytest.MonkeyPatch, ending: dict[str, Any]) -> None:
+    """`start` holds the lock while the emulator it launched comes up, and publishes the session
+    only once it has: the end reaches the one still starting too, or it outlives the server."""
+    starting = _Live()
+    monkeypatch.setattr(dstate.STATE, "session", None)
+    monkeypatch.setattr(dstate.STATE, "starting", starting)
+    monkeypatch.setattr(server, "LOCK_WAIT_S", 0.2)
+    held, release = threading.Event(), threading.Event()
+
+    def hold() -> None:
+        with dosbox_mcp.LOCK:
+            held.set()
+            release.wait(10.0)
+    holder = threading.Thread(target=hold)
+    holder.start()
+    held.wait(5.0)
+    try:
+        server._exit_on(signal.SIGTERM, None)
+        assert ending["left"].wait(5.0)
+    finally:
+        release.set()
+        holder.join()
+    assert starting.closed == 1

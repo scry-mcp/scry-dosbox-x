@@ -343,6 +343,7 @@ project and carries no default that points anywhere in particular.
 | `log_wait` | WHEN a line of a channel happened: it answers at once if it already has, and waits if it has not |
 | `perform` | a LIST of the server's own operations, checked WHOLE before the first step runs (every refused step listed, nothing run) and then run in order, stopping at the first failure; `summaries=True` cuts every step but the last to its summary line, writes them all to two files and counts the stops |
 | `drive` | LOOK, ACT, VERIFY in one call: mark the log, run input steps, wait for the expected reaction, hand back what the guest wrote since; `summaries=True` as in `perform` |
+| `perform_export` | the session since its `start`, written as `perform`'s own document: what moved the machine as steps, the checking reads holding to what they answered, every drop and the first call no replay can place named; `uv run python -m scry_core.replay <file>`, from this repository, plays it back with no model |
 | `send_keys` | keystrokes into the RUNNING guest, verified against the program's own reaction with `expect` |
 | `send_mouse` | the guest's pointer placed at a screen pixel and read back, and its buttons clicked, double-clicked or held, verified the same way |
 | `captures` | the video captures this session recorded, and what is in them |

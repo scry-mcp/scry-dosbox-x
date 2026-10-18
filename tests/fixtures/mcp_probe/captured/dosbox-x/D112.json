@@ -1,0 +1,31 @@
+{
+ "task": {
+  "id": "D112",
+  "prompt": "Export this session as a replay to /tmp/bench/bricks.json, replacing the document already there.",
+  "tool": "perform_export",
+  "args": {
+   "path": "/tmp/bench/bricks.json",
+   "overwrite": true
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D112: {\"tool\": \"perform_export\", \"args\": {\"path\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D112: {\"tool\": \"perform_export\", \"args\": {\"path\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D112: {\"tool\": \"perform_export\", \"args\": {\"path\": \"/tmp/bench/bricks.json\", \"overwrite\": true}}"
+   ],
+   "right": true
+  }
+ ]
+}
