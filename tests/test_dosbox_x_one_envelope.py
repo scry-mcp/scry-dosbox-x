@@ -55,13 +55,13 @@ def test_the_decorator_puts_session_last_and_composes_it_after_the_body(late_too
 
 def test_a_schema_refusal_is_closed_by_the_same_composer(monkeypatch: pytest.MonkeyPatch) -> None:
     seen: list[str] = []
-    real = dosbox_mcp._finished
+    real = dosbox_mcp.BOUNDARY.finished
 
     def spy(name: str, *a: Any, **k: Any) -> dict[str, Any]:
         seen.append(name)
         return real(name, *a, **k)
 
-    monkeypatch.setattr(dosbox_mcp, "_finished", spy)
+    monkeypatch.setattr(dosbox_mcp.BOUNDARY, "finished", spy)
     install().altered = True
     res = asyncio.run(s.mcp.call_tool("read_memory", {"ref": "F000:0000", "length": "x"}))
     out = json.loads("".join(c.text for c in res.content if getattr(c, "text", None)))
@@ -82,13 +82,13 @@ def test_the_block_is_composed_under_the_lock_over_the_one_machine(
     """Composed outside it, a call that has just let go of the machine reads `STATE.session`
     while another call clears it."""
     held: list[bool] = []
-    real = dosbox_mcp._finished
+    real = dosbox_mcp.BOUNDARY.finished
 
     def spy(*a: Any, **k: Any) -> dict[str, Any]:
         held.append(dosbox_mcp.LOCK._is_owned())  # type: ignore[attr-defined]
         return real(*a, **k)
 
-    monkeypatch.setattr(dosbox_mcp, "_finished", spy)
+    monkeypatch.setattr(dosbox_mcp.BOUNDARY, "finished", spy)
     install()
     s.status()
     assert held == [True], held

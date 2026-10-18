@@ -1549,9 +1549,10 @@ added to one file.
   lifecycle (`start`, `status`, `close`, `build_check`) and the readers and advances that are
   one console call each.
 - **`dosbox_mcp.py`**: the MCP boundary every tool is wrapped in: the server object and its
-  `instructions`, the lock over the one machine, the decorator that registers a tool and closes
-  its reply (`summary` first, `session` last, composed after the body), the reply a call the
-  schema refused gets, and the progress line of a bounded wait.
+  `instructions`, the lock over the one machine, the decorator that registers a tool, and this
+  server's hooks into `scry_core.boundary` (how a body is called and which errors are answers,
+  how a cancelled call ends, the reply a call the schema refused gets); the core closes every
+  reply (`summary` first, `session` last, composed after the body).
 - **`dosbox_binary.py`**: which DOSBox-X `start` and `build_check` run, by the ladder *The
   session* sets out, and the build's own version line.
 - **`dosbox_state.py`**: what the server holds between calls (the session, the symbol table,
