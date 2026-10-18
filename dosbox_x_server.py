@@ -1870,15 +1870,17 @@ def perform_export(path: str, overwrite: bool = False) -> dict[str, Any]:
     Kept: what moved the machine, as steps, and the reads that are checks (`read_memory`,
     `registers`, `screen_signature`, `golden_check`), each holding to what its reply said
     (`recorded`). Dropped, each named with why: a refused call, any other read, a write only to
-    the host. Cut, named: the first call no replay can place (a release, or a `stop` or
-    `screen_wait` that ran the guest and came back stopped, whose run ends where no replay
-    reaches; no reply; a refusal after the guest moved; past {RECORD_MAX} calls).
+    the host. Cut, named: the first call no replay can place (a release, a `stop` or
+    `screen_wait` that ran the guest and came back stopped, or a wall-clock bound that ended a
+    run, whose run ends where no replay reaches; no reply; a refusal after the guest moved; past
+    {RECORD_MAX} calls).
 
     `path` absolute or `~`-led, ending `.json`; refused if it is there unless `overwrite`.
 
     Reply: `path`, `steps`, `checks`, `dropped` (the last {DROPPED_SHOWN}, each `call`, `op`,
     `why`) and `dropped_total`, `cut` (`call`, `op`, `why`, or null) and `replay`, the runner's
-    command line. `no_recording` before a `start` succeeded, or after one was cancelled.
+    command line. `no_recording` before a `start` succeeded, after one was cancelled, or
+    when no recorded call is a step a replay could take.
 
     Reference: REFERENCE.md, From an investigation to a bench.
     """

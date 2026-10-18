@@ -1252,7 +1252,7 @@ What the export keeps is what moved the machine and what was checked:
 | `golden_check` | a check of `matched`, `differing`, `missing` and `extra` |
 | any other read, `snapshot`, `capture_frame`, `series_capture`, `memdump`, `comment_*`, the scan, `machine_map`, `interrupt_vectors`, `palette`, `screen_view` | dropped, named in the reply with why; one that moved the guest is kept as a step |
 | a call the server refused | dropped, named; one that moved the guest first ends the document |
-| a release (a `resume`), a `stop` or `screen_wait` that ran the guest and came back stopped (at a breakpoint or a found text included), one that ended with no reply | the end of the document: the reply's `cut` names it and why. Whatever ends such a run stops the guest at a place no replayed advance reaches, and every stop after it inherits the shift |
+| a release (a `resume`), a `stop` or `screen_wait` that ran the guest and came back stopped (at a breakpoint or a found text included), a call whose wall-clock bound ended it (`TIMEOUT`), one that ended with no reply | the end of the document: the reply's `cut` names it and why. Whatever ends such a run stops the guest at a place no replayed advance reaches, and every stop after it inherits the shift |
 
 `perform` and `drive` are recorded as their steps, and the steps of a `start`'s `plan` after the
 start. A step's check is `"recorded": {<field>: <value>}` inside it, and `perform` holds the
@@ -1266,8 +1266,9 @@ What a replay cannot hold to, it says at the step rather than passing over it. T
 the declarations it finds stored for the conf, as any start does, which are where the session
 left them, not where it began; a file a step wrote by name (a saved state, a `trace` with a
 `dest`) is there on the next replay and the step refuses it, so a session meant for a bench keeps
-its states in a directory of its own and leaves `dest` empty; and a `golden_check` holds to files
-the replay does not write when the calls that wrote them were dropped.
+its states in a directory of its own and leaves `dest` empty. A `golden_check` over files a dropped
+call wrote (a `snapshot`, a `series_capture` and its manifest) is dropped too: the replay would
+not write them, so it would hold to the session's own.
 
 ## Input and the screen
 
