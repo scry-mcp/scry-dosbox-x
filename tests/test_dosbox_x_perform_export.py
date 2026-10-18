@@ -96,12 +96,33 @@ DECLARED = {
                      "comment_save", "comment_load", "machine_map", "interrupt_vectors",
                      "palette", "screen_view", "image_diff", "series_diff", "region_track"),
                     "drop"),
+    # The readers dropped by default, named so a reader that turns into a step is seen.
+    **dict.fromkeys(("breakpoint_list", "build_check", "call_stack", "captures", "comment_list",
+                     "disassemble", "find", "log", "log_wait", "state_list", "status",
+                     "symbols_find", "watch_list"), "drop"),
 }
 
 
 def test_each_tool_is_exported_as_it_is_declared_and_the_rest_as_steps_or_dropped_reads() -> None:
     declared = dosbox_mcp.RECORDER.declared
     for tool, kind in declared.items():
-        want = DECLARED.get(tool, "drop" if kind.read_only else "step")
+        want = DECLARED.get(tool, "step")
         assert kind.export_as == want, (tool, kind.export_as, want)
     assert set(DECLARED) <= set(declared), sorted(set(DECLARED) - set(declared))
+
+
+@pytest.mark.parametrize("conf", ["relative.conf", "absolute"])
+def test_a_start_refused_over_the_live_session_keeps_its_recording(
+        tmp_path: pathlib.Path, recorder: recording.Recorder, conf: str) -> None:
+    """Refused while the session is live, whether by the session or by an argument judged
+    before it: the start touched nothing, and the recording stays the live session's."""
+    install()
+    server.write(ref="F000:0000", data_hex="aa")
+    given = tmp_path / "x.conf"
+    given.write_text("")
+    refused = server.start(conf=conf if conf != "absolute" else str(given), cwd=str(tmp_path),
+                           seconds=30)
+    assert refused["status"] == "INVALID" and refused["session"]["alive"] is True, refused
+    rec = recorder.recording
+    assert rec is not None and rec.start == {"conf": "/x.conf"}
+    assert [c.op for c in rec.calls] == ["write"]

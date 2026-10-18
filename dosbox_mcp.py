@@ -229,7 +229,10 @@ def _machine() -> recording.Machine:
 
 #: The session's recording: what `perform_export` writes (REFERENCE.md, From an investigation to
 #: a bench). `start`'s `plan` runs steps of a sequence, recorded after the start.
-RECORDER = recording.Recorder("dosbox-x", _machine, stop_fields=("registers",),
+# `live` is what `start` refuses over: a start refused there touched nothing.
+RECORDER = recording.Recorder("dosbox-x", _machine,
+                              lambda: STATE.session is not None and STATE.session.alive(),
+                              stop_fields=("registers",),
                               outside=frozenset({"close", "build_check"}), plan="plan")
 
 BOUNDARY = boundary.Boundary(

@@ -60,5 +60,5 @@ def test_a_bricks_session_replays_twice_and_an_edited_one_diverges(tmp_path: Pat
     edited.write_text(json.dumps(doc))
     played = _replay(edited, tmp_path / "edited" / "t.md")
     assert played.returncode == 1, played.stdout[-600:]
-    assert f"diverged at step {at} " in played.stdout
+    assert f"diverged at step {at + 1} of " in played.stdout
     assert f": {field} recorded 'edited'" in played.stdout

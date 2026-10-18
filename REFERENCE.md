@@ -1245,7 +1245,7 @@ What the export keeps is what moved the machine and what was checked:
 
 | A call of | Becomes |
 |---|---|
-| a tool that changes the machine or what the next call acts on (`write`, `set_register`, `run_to`, `run_for`, `step`, `trace`, `state_save`, `state_load`, `symbols_load`, `debug`, a declaration...) | a step; one that left the guest at a new stop holds to its `registers` |
+| a tool that changes the machine or what the next call acts on (`write`, `set_register`, `run_to`, `run_for`, `step`, `trace`, `state_save`, `state_load`, `symbols_load`, `debug`, a declaration...) | a step; one that left the guest at a new stop holds to the `registers` its reply carries (a `state_load` answers none, so it holds to nothing) |
 | `read_memory` | a check of `hex` |
 | `registers` | a check of `registers` |
 | `screen_signature` | a check of `signature` |
