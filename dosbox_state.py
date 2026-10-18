@@ -363,7 +363,7 @@ STATE = State()
 
 
 @atexit.register
-def _remove_scratch() -> None:
+def remove_scratch() -> None:
     """THE PROCESS'S SCRATCH GOES WITH THE PROCESS: the batches' directory lives as long as the
     server does, and a session never closed (its client gone) has nobody else to take its
     pictures away."""

@@ -77,8 +77,11 @@ from __future__ import annotations
 
 import functools
 import json
+import os
+import signal
 import subprocess
 import sys
+import threading
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -1932,7 +1935,51 @@ def drive(act: list[dict[str, Any]], expect: str | None = None,
 strict.strict_arguments(mcp)
 
 
+#: The signals that end a server whose client went away abruptly (a SIGTERM, the SIGHUP of a
+#: terminal that closed, a Ctrl-C). Their default action would end the server with its `finally`
+#: unrun, and DOSBox-X, in a process session of its own, would outlive it.
+EXIT_SIGNALS: tuple[signal.Signals, ...] = tuple(
+    getattr(signal, name) for name in ("SIGTERM", "SIGHUP", "SIGINT") if hasattr(signal, name))
+#: How long a signalled end waits for a tool to let go of the machine before it closes the
+#: emulator without it: the process is going either way, and the emulator must not outlive it.
+LOCK_WAIT_S = 10.0
+#: How the signalled end leaves once the session and the scratch are gone: at once, because the
+#: transport's reader thread is still blocked on a stdin nobody closed, and the interpreter would
+#: wait for it for ever.
+_leave = os._exit
+
+
+def _exit_on(signum: int, _frame: object) -> None:
+    """A signal from `EXIT_SIGNALS`: the end runs on a thread of its own, never as an exception
+    in whatever frame the event loop was in (a task group would wrap it, and the end would be
+    missed), and the signals after it are ignored, so a second one cannot cut it short."""
+    for sig in EXIT_SIGNALS:
+        signal.signal(sig, signal.SIG_IGN)
+    threading.Thread(target=_end_signalled, args=(128 + signum,), name="signalled-end",
+                     daemon=True).start()
+
+
+def _end_signalled(code: int) -> None:
+    """The session closed (under the lock, or past `LOCK_WAIT_S` without it), the process's
+    scratch removed as the normal exit's `atexit` would, and the process left, whatever failed
+    on the way."""
+    try:
+        took = LOCK.acquire(timeout=LOCK_WAIT_S)
+        try:
+            if STATE.session is not None:
+                STATE.session.close()
+                STATE.session = None
+        finally:
+            if took:
+                LOCK.release()
+        st.remove_scratch()
+    finally:
+        _leave(code)
+
+
 def main() -> None:
+    for sig in EXIT_SIGNALS:
+        signal.signal(sig, _exit_on)
     try:
         mcp.run()
     finally:
