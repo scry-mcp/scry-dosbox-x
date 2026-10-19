@@ -5,9 +5,11 @@ from __future__ import annotations
 
 from scry_core import docs, picture, recording, series
 
+import dosbox_sequence as sequence
+
 DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES,
           "DROPPED_SHOWN": str(recording.DROPPED_SHOWN),
-          "RECORD_MAX": str(recording.RECORD_MAX)}
+          "RECORD_MAX": str(sequence.RECORD_MAX)}
 
 
 def filled(name: str, doc: str) -> str:

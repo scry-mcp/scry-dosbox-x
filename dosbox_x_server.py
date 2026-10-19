@@ -1837,20 +1837,15 @@ def capture_frame(at: int, dest: str, source: str | None = None) -> dict[str, An
 
 # ---------------------------------------------------------------------- the sequence
 
-#: The tools that are not steps: the session's own life, the two that run steps, and the export
-#: of the session they belong to.
-NOT_STEPS = frozenset({"build_check", "start", "close", "perform", "drive", "perform_export"})
-
-
 def _step_ops() -> dict[str, Callable[..., dict[str, Any]]]:
     """Op name -> the wrapped tool it dispatches to: every tool the MCP layer serves but
-    `NOT_STEPS`, read off the registry at call time, so a step is a tool by construction and
+    `checks.NOT_STEPS`, read off the registry at call time, so a step is a tool by construction and
     a new tool is a step without a second list to forget."""
     # The module's own binding first, so a step dispatches to whatever this module calls the tool
     # now; the registration's function for a tool registered elsewhere.
     here = globals()
     return {t.name: here.get(t.name, t.fn) for t in mcp._tool_manager.list_tools()
-            if t.name not in NOT_STEPS}
+            if t.name not in checks.NOT_STEPS}
 
 
 checks.STEP_OPS = _step_ops
@@ -1865,11 +1860,12 @@ def perform_export(path: str, overwrite: bool = False) -> dict[str, Any]:
 
     Kept: what moved the machine, as steps, and the reads that are checks (`read_memory`,
     `registers`, `screen_signature`, `golden_check`), each holding to what its reply said
-    (`recorded`). Dropped, each named with why: a refused call, any other read, a write only to
-    the host. Cut, named: the first call no replay can place (a release, a `stop` or
-    `screen_wait` that ran the guest and came back stopped, or a wall-clock bound that ended a
-    run, whose run ends where no replay reaches; no reply; a refusal after the guest moved; past
-    {RECORD_MAX} calls).
+    (`recorded`). Dropped, each named with why: a refused call, any other read, a call that
+    changes nothing in the emulated machine. Cut, named: the first call no replay can place (a
+    release, a `stop` or `screen_wait` that ran the guest and came back stopped, or a wall-clock
+    bound that ended a run, whose run ends where no replay reaches; no reply; a refusal after the
+    guest moved; a guest found elsewhere than the call before left it; a step that wrote a file
+    the session named; past {RECORD_MAX} calls kept).
 
     `path` absolute or `~`-led, ending `.json`; refused if it is there unless `overwrite`.
 
@@ -1893,16 +1889,16 @@ def perform(steps: list[dict[str, Any]], wait: float = 30.0, summaries: bool = F
     `build_check`, `start`, `close`, `perform`, `drive` and `perform_export` is a step, `debug`
     included. A `resume` (or a `run_to`, `run_for` or `step` that comes back running)
     ends the console-driven part: after it the steps a running-guest refusal lists in
-    `answers_while_running` run at once (a `stop` ends the run), and before any other
-    (`registers`, `symbols_load` among them) the sequence WAITS up to `wait` seconds for the
-    machine to stop; `wait=0` never waits. A
+    `answers_while_running` run at once (a `stop` ends the run), and before any other the
+    sequence WAITS up to `wait` seconds for the machine to stop; `wait=0` never waits. A
     `send_keys`/`send_mouse` step whose own `expect` misses stops the sequence.
     `summaries=True` keeps a long list readable: each step but the last that ran becomes a
     compact row (`summary`, `status`, a stop's `stop_seq` and `attribution`); `ran` shows the
     first 24, `ran_path` and `replies_path` hold all, and `stops` counts the stops.
 
     A step's `recorded`, `{field: value}`, is what its reply must hold (a replay,
-    `perform_export`): else INVALID `diverged` there, with `field`, `recorded` and `got`.
+    `perform_export`): else INVALID `diverged` there, with `field`, `recorded` and `got`; `held`
+    counts the steps that held.
 
     Refused before the first step runs: the WHOLE list is checked (ops, argument names and
     VALUES, through each tool's own checks), and the reply is INVALID with `errors` listing EVERY
@@ -1910,8 +1906,8 @@ def perform(steps: list[dict[str, Any]], wait: float = 30.0, summaries: bool = F
     symbol against the table loaded by then, a file an earlier step writes, the machine's mode)
     refuses at that step.
 
-    Reply: `ran` (each step's `op` and full `reply`), `completed`; on a failure INVALID with
-    `failed_at` and `failed`; and when the list ends with the machine released, the tail:
+    Reply: `ran` (each step's `op` and full `reply`), `completed`, `held`; on a failure INVALID
+    with `failed_at` and `failed`; and when the list ends with the machine released, the tail:
     `stopped` (the stop it was heading for, or the one its last step met), or
     `still_running`/`gone` with a note (with nothing declared that can stop it, it returns at
     once). `start(plan=...)` runs the same list on a fresh session.

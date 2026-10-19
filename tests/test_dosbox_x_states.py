@@ -82,7 +82,7 @@ class StateFake:
         self.stop_count = 0
         self.halts_on_release = False
         self.release_s = 0.0
-        self.release_raises: ds.Invalid | None = None
+        self.release_raises: BaseException | None = None
         self.break_raises: ds.Invalid | None = None
 
     def at_debugger(self) -> bool:
@@ -249,7 +249,7 @@ def test_the_tools_carry_the_envelope_and_the_summaries_name_the_state(tmp_path:
     assert saved["summary"] == (f"state_save boot: {saved['bytes']} bytes, "
                                 "PROBE 2026-09-10 03:58")
     listed = cast(dict[str, Any], server.state_list())
-    assert listed["summary"] == "state_list: 1 states in " + str(tmp_path / "save")
+    assert listed["summary"] == "state_list: 1 state in " + str(tmp_path / "save")
     loaded = cast(dict[str, Any], server.state_load(name="boot"))
     assert loaded["status"] == "ok" and loaded["session"]["altered"] is True
     assert loaded["summary"] == f"state_load boot: loaded in {loaded['waited_s']}s"
@@ -549,3 +549,34 @@ def test_a_parked_load_cancelled_after_it_was_sent_counts_the_machine_as_replace
     with pytest.raises(asyncio.CancelledError):
         ds.Session.state_load(as_session(fake), "boot", 5.0)
     assert fake.stop_count == 1 and fake.altered is True
+
+
+def test_a_load_cancelled_before_anything_was_sent_leaves_the_session_unaltered(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The cancel met in the break-in, before `LOADSTATE` went down the channel: nothing was
+    loaded, so nothing was replaced, and the guest it stopped is released as found."""
+    fake = StateFake(tmp_path / "save", parked=False)
+    write_state(tmp_path / "save" / "boot.sav")
+
+    def break_in(seconds: float = 5.0) -> float:
+        fake.moves.append("break")
+        fake.parked = True
+        raise asyncio.CancelledError
+    monkeypatch.setattr(fake, "break_in", break_in)
+    with pytest.raises(asyncio.CancelledError):
+        ds.Session.state_load(as_session(fake), "boot", 5.0)
+    assert fake.control.sent == [] and fake.altered is False and fake.stop_count == 0
+    assert fake.moves == ["break", "resume"]
+
+
+def test_a_release_that_fails_on_the_host_keeps_the_cancellation(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A cancelled command releases the guest it stopped, best effort: an `OSError` from that
+    release (the channel gone under it) is not the call's answer, so the cancellation goes on
+    unwinding and the end reads what the machine was left as."""
+    fake = StateFake(tmp_path / "save", parked=False)
+    fake.release_raises = OSError("the channel went away")
+    monkeypatch.setattr(cancel, "check", _cancelled)
+    with pytest.raises(asyncio.CancelledError):
+        ds.Session.state_save(as_session(fake), "boot", 5.0)
+    assert fake.moves == ["break", "resume"]

@@ -295,6 +295,7 @@ def test_close_closes_the_channel() -> None:
     import threading
     from types import SimpleNamespace
     s = ds.Session.__new__(ds.Session)
+    s._closing, s._closed = threading.Lock(), False   # what `__init__` gives a close
     s.proc = SimpleNamespace(poll=lambda: 0, wait=lambda timeout=None: 0,  # type: ignore[assignment]
                              pid=1, returncode=0)
     s._signal_group = lambda sig: None  # type: ignore[method-assign]

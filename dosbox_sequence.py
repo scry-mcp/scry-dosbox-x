@@ -46,6 +46,10 @@ Ops = dict[str, Callable[..., dict[str, Any]]]
 DEFERRED_OPS: set[str] = set()
 
 
+#: The most calls one recording keeps, this server's bound (`scry_core.recording.Recorder`):
+#: `perform` takes a list of any length, so the bound is the recording's own.
+RECORD_MAX = 5000
+
 #: THE TOOLS THAT ANSWER ON A RUNNING GUEST, the one table of them: they read a file or the
 #: log, post input into the guest, go down the debugger channel, or queue a declaration as
 #: `pending` for the next stop, and none types at the debugger's console. Everything else
@@ -325,7 +329,18 @@ def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
               summaries: bool = False, name: str = "perform") -> dict[str, Any]:
     """Execute steps in order, STOPPING at the first failure with a full account (decision
     3). Returns `ran` (each step and its reply), `failed` (the step that stopped it, or
-    None), `completed`, and the machine state. A step is `{"op": <name>, ...args}`.
+    None), `completed`, `held` (the steps whose `recorded` answer this run matched), and the
+    machine state. A step is `{"op": <name>, ...args}`.
+    """
+    held = [0]
+    reply = _run_steps(session, steps, wait, ops, progress, summaries, name, held)
+    return {**reply, "held": held[0]}
+
+
+def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, ops: Ops,
+               progress: ds.Progress, summaries: bool, name: str, held: list[int]
+               ) -> dict[str, Any]:
+    """`run_steps`' body, counting into `held`.
 
     DECISION 37, the resume boundary: after a step that leaves the machine RUNNING, only a
     running-OK op may follow immediately; before any CONSOLE op the sequence WAITS for the
@@ -414,6 +429,7 @@ def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
                           **account_of(ran, summaries, keep_last=False, since=since,
                                        also=[reply]),
                           completed=len(ran), **fields, message=message)
+        held[0] += bool(step.get(recording.RECORDED))
         ran.append({"op": op, "reply": reply})
         # A RUNNING-OK OP DOES NOT RELEASE THE MACHINE, and whether it stopped it is the
         # SESSION's to say, never the op's name: `_leaves_running` would answer False for a

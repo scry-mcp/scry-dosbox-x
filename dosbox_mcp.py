@@ -19,6 +19,7 @@ from pydantic import ValidationError
 from scry_core import boundary, cancel, envelope, recording
 from scry_core import strict_arguments as strict
 
+import dosbox_arming as arming
 import dosbox_checks as checks
 import dosbox_docs as docs
 import dosbox_running as running
@@ -95,7 +96,7 @@ LOCK = threading.RLock()
 #: that answer it outside a list (the last stop's registers, the two that run steps, the
 #: export of the session, the session's end).
 _ANSWERS_WHILE_RUNNING = [*sorted(sequence.RUNNING_OK_OPS), "registers(from_last_stop=True)",
-                          "perform", "drive", "perform_export", "close"]
+                          *sorted(checks.NOT_STEPS - {"start", "build_check"})]
 
 
 def registered_tools() -> list[str]:
@@ -115,27 +116,16 @@ def registered_tools() -> list[str]:
     return sorted(t.name for t in mcp._tool_manager.list_tools())
 
 
-#: Each registered tool's summary, filled by `tool` as it registers them.
-_SUMMARIES: dict[str, one_line.Summary] = {}
-
-
-def _summary(name: str, args: dict[str, Any], reply: dict[str, Any]) -> str:
-    """The one line the MCP client shows for a call (`dosbox_summaries`): the envelope's for a
-    reply that is not `ok`, the tool's own otherwise."""
-    if reply.get("status") != "ok":
-        return one_line.refusal(name, reply)
-    return _SUMMARIES[name](args, reply)
-
-
-def _end_cancelled(name: str, on_cancel: cancel.OnCancel) -> tuple[cancel.Left, object]:
+def _end_cancelled(name: str, on_cancel: cancel.OnCancel
+                   ) -> tuple[cancel.Left, dict[str, Any] | None]:
     """THE END A CANCELLED CALL DECLARED, applied at once: the end its own bound would have given
     it, under the shield so that end's own waits run to completion. `stop` for a tool that comes
     back STOPPED (`BREAK` and the stop recorded, as the `stop` tool does; a guest already at the
     debugger is left so; a CPU log still open closed first), `kill` for one whose failure path
     ends the emulator, `none` for one that leaves the machine as it was. Returned: what it
-    left; the accounts its stop delivered are already back for the next reply
-    (`_keep_accounts`)."""
+    left, and its stop's reply, whose accounts go back for the next reply (`_keep_accounts`)."""
     left: cancel.Left | None = None
+    stopped: dict[str, Any] | None = None
     ses = STATE.session
     with cancel.shielded():
         try:
@@ -154,14 +144,14 @@ def _end_cancelled(name: str, on_cancel: cancel.OnCancel) -> tuple[cancel.Left, 
                     if not ses.at_debugger():
                         ses.break_in()
                     trace.close_log_left_open(ses)
-                _keep_accounts(_stop_of_its_own(ses))
+                stopped = _stop_of_its_own(ses)
         except (ds.Invalid, OSError):
             left = "unknown"
         if left is None:
             ses = STATE.session
             left = ("closed" if ses is None or not ses.alive()
                     else "stopped" if ses.at_debugger() else "running")
-    return left, None
+    return left, stopped or None
 
 
 def _stop_of_its_own(ses: ds.Session) -> dict[str, Any]:
@@ -180,24 +170,24 @@ def _keep_accounts(reply: dict[str, Any]) -> None:
     """THE ACCOUNTS A REPLY CARRIED GO BACK FOR THE NEXT ONE: the reply goes to nobody (the
     `stop` end's stop, or a call cancelled as its body returned), and what it applied or found
     is said once, by whichever reply comes next."""
-    STATE.applied_last.update(reply.get("applied_on_stop") or {})
+    if reply.get("applied_on_stop"):
+        arming.merge_applied(reply["applied_on_stop"])
     if reply.get("stopped_on_its_own"):
         STATE.found_stop_last = dict(reply["stopped_on_its_own"])
 
 
-def _invoke(fn: Callable[..., Any], signature: inspect.Signature, a: tuple[Any, ...],
-            k: dict[str, Any]) -> dict[str, Any]:
+def _invoke(fn: Callable[..., Any], called: inspect.BoundArguments) -> dict[str, Any]:
     """The body called once what needs no machine is judged, and only `NotStopped` and
     `Invalid` translated into replies. Widening this to `Exception` would turn every genuine
     bug (an `AttributeError`, a bad regex, a timeout) into "I examined nothing", a broken
     instrument reporting itself as a clean one; the escapes are handled where they happen."""
-    given = dict(signature.bind_partial(*a, **k).arguments)
+    given = dict(called.arguments)
     given.pop("ctx", None)
     try:
         # WHAT THE MACHINE IS NOT NEEDED FOR IS JUDGED FIRST: a refusal a caller can see
         # without a session.
         checks.check(fn.__name__, **given)
-        reply: dict[str, Any] = fn(*a, **k)
+        reply: dict[str, Any] = fn(*called.args, **called.kwargs)
         return reply
     except ds.NotStopped as e:
         # THE GUEST RUNS AND THIS READER CANNOT ANSWER: say where the machine was last seen and
@@ -223,20 +213,42 @@ def _machine() -> recording.Machine:
         return recording.Machine(running=False, seq=None)
     if not ses.alive():
         return recording.UNREAD
-    running = not ses.at_debugger()
-    return recording.Machine(running=running, seq=getattr(ses, "stop_count", None))
+    # THE FLAG, NEVER THE PEEK: a peek after a releasing step of a sequence would consume the
+    # prompt the step's own wait listens for (`Session.parked`).
+    return recording.Machine(running=not ses.parked, seq=getattr(ses, "stop_count", None))
 
 
 #: The session's recording: what `perform_export` writes (REFERENCE.md, From an investigation to
 #: a bench). `start`'s `plan` runs steps of a sequence, recorded after the start.
 # `live` is what `start` refuses over: a start refused there touched nothing.
-RECORDER = recording.Recorder("dosbox-x", _machine,
-                              lambda: STATE.session is not None and STATE.session.alive(),
-                              stop_fields=("registers",),
-                              outside=frozenset({"close", "build_check"}), plan="plan")
+#: Each kind of declaration a `start` re-arms, by the tool that lists it and the field its rows
+#: are under (an interrupt is a breakpoint's row).
+_LISTS = {"breakpoint": ("breakpoint_list", "breakpoints"),
+          "interrupt": ("breakpoint_list", "breakpoints"), "watch": ("watch_list", "watches")}
 
+
+def _declared() -> dict[str, list[str]]:
+    """The declarations the store holds, by `ref`, under the tool that lists each kind: what a
+    `start` re-arms, so a replay can be held to the same."""
+    held: dict[str, list[str]] = {tool: [] for tool, _ in _LISTS.values()}
+    for d in arming.current_store().declarations():
+        if d.kind in _LISTS:
+            held[_LISTS[d.kind][0]].append(d.ref)
+    return held
+
+
+RECORDER = recording.Recorder("dosbox-x", "dosbox_x_server.py", sequence.RECORD_MAX, _machine,
+                              lambda: STATE.session is not None and STATE.session.alive(),
+                              declarations=_declared, lists=dict(_LISTS.values()),
+                              stop_fields=("registers",),
+                              outside=checks.NOT_STEPS - checks.SEQUENCES - {"start"},
+                              sequences=checks.SEQUENCES, start_tool="start",
+                              states=("state_save", "state_load", "name"), plan="plan")
+
+# THE HOOKS ARE BOUND HERE, ONCE, AT IMPORT: a test that replaces one patches the name the hook
+# calls through (`STATE`, `running`), never the hook itself, which the boundary already holds.
 BOUNDARY = boundary.Boundary(
-    mcp, LOCK, invoke=_invoke, end=_end_cancelled, line=_summary,
+    mcp, LOCK, invoke=_invoke, end=_end_cancelled, refusal_line=one_line.refusal,
     session_block=st.session_block, take_cancelled=STATE.take_cancelled,
     keep_cancelled=_keep_cancelled, doc=docs.filled, give_back=_keep_accounts,
     recorder=RECORDER)
@@ -275,11 +287,5 @@ def tool(
     From an investigation to a bench).
     """
 
-    def register(fn: Callable[..., Any]) -> Callable[..., Any]:
-        wrapped = BOUNDARY.tool(title, read_only=read_only, idempotent=idempotent,
-                                session_before=session_before, on_cancel=on_cancel,
-                                replay=replay)(fn)
-        _SUMMARIES[fn.__name__] = summary
-        return wrapped
-
-    return register
+    return BOUNDARY.tool(title, summary=summary, read_only=read_only, idempotent=idempotent,
+                         session_before=session_before, on_cancel=on_cancel, replay=replay)

@@ -207,9 +207,12 @@ DOSBox-X `<volatile>`.
     "eip": "00000119",
     "mode": "Real"
   },
-  "screen_delta": "<volatile>",
-  "screen_chars": "<volatile>",
-  "clipped": "<volatile>",
+  "omitted": [
+    "screen_delta",
+    "screen_chars",
+    "clipped"
+  ],
+  "how": "detail=True adds the debugger's repaint for this command",
   "session": {
     "pid": "<volatile>",
     "alive": true,
@@ -579,9 +582,12 @@ DOSBox-X `<volatile>`.
     "eip": "000002C8",
     "mode": "Real"
   },
-  "screen_delta": "<volatile>",
-  "screen_chars": "<volatile>",
-  "clipped": "<volatile>",
+  "omitted": [
+    "screen_delta",
+    "screen_chars",
+    "clipped"
+  ],
+  "how": "detail=True adds the debugger's repaint for this command",
   "session": {
     "pid": "<volatile>",
     "alive": true,
@@ -676,9 +682,12 @@ DOSBox-X `<volatile>`.
     "eip": "000002C8",
     "mode": "Real"
   },
-  "screen_delta": "<volatile>",
-  "screen_chars": "<volatile>",
-  "clipped": "<volatile>",
+  "omitted": [
+    "screen_delta",
+    "screen_chars",
+    "clipped"
+  ],
+  "how": "detail=True adds the debugger's repaint for this command",
   "waited_s": "<volatile>",
   "session": {
     "pid": "<volatile>",
@@ -764,18 +773,27 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "screen_view M_VGA: 320 x 200 pixels to ./tmp/demos/bricks/screen.png",
+  "summary": "screen_view M_VGA: 320x200 at [0, 0] pixels; 1280x800 PNG x4, inline",
   "status": "ok",
   "mode": "M_VGA",
   "source": "indices",
   "width": 320,
   "height": 200,
+  "crop": [
+    0,
+    0,
+    320,
+    200
+  ],
   "image": {
     "path": "./tmp/demos/bricks/screen.png",
-    "sha256": "85c1cca673f86d5d30ea143ff46e6fd999b2a40ab2a3dc7caedcf6d6c0574124",
-    "width": 320,
-    "height": 200,
-    "indexed": true
+    "bytes": 5608,
+    "sha256": "64126aceb88896f082fe44ad8e0b33f4e873fe46e5db8a5ea2d152b6488b0df6",
+    "width": 1280,
+    "height": 800,
+    "scale": 4,
+    "indexed": true,
+    "inline": true
   },
   "display_start": "0h",
   "session": {
@@ -796,6 +814,8 @@ DOSBox-X `<volatile>`.
   }
 }
 ```
+
+Also attached: image/png.
 
 </details>
 
@@ -973,9 +993,12 @@ DOSBox-X `<volatile>`.
   "status": "ok",
   "halted": false,
   "stopped_at": null,
-  "screen_delta": "<volatile>",
-  "screen_chars": "<volatile>",
-  "clipped": "<volatile>",
+  "omitted": [
+    "screen_delta",
+    "screen_chars",
+    "clipped"
+  ],
+  "how": "detail=True adds the debugger's repaint for this command",
   "session": {
     "pid": "<volatile>",
     "alive": true,
@@ -1165,6 +1188,7 @@ DOSBox-X `<volatile>`.
     ],
     "completed": 3,
     "failed_at": null,
+    "held": 0,
     "failed": null
   },
   "verify": {
@@ -1308,9 +1332,12 @@ DOSBox-X `<volatile>`.
   "status": "ok",
   "halted": false,
   "stopped_at": null,
-  "screen_delta": "<volatile>",
-  "screen_chars": "<volatile>",
-  "clipped": "<volatile>",
+  "omitted": [
+    "screen_delta",
+    "screen_chars",
+    "clipped"
+  ],
+  "how": "detail=True adds the debugger's repaint for this command",
   "session": {
     "pid": "<volatile>",
     "alive": true,
@@ -1617,9 +1644,12 @@ DOSBox-X `<volatile>`.
   "status": "ok",
   "halted": false,
   "stopped_at": null,
-  "screen_delta": "<volatile>",
-  "screen_chars": "<volatile>",
-  "clipped": "<volatile>",
+  "omitted": [
+    "screen_delta",
+    "screen_chars",
+    "clipped"
+  ],
+  "how": "detail=True adds the debugger's repaint for this command",
   "session": {
     "pid": "<volatile>",
     "alive": true,
@@ -1889,9 +1919,12 @@ DOSBox-X `<volatile>`.
   "status": "ok",
   "halted": false,
   "stopped_at": null,
-  "screen_delta": "<volatile>",
-  "screen_chars": "<volatile>",
-  "clipped": "<volatile>",
+  "omitted": [
+    "screen_delta",
+    "screen_chars",
+    "clipped"
+  ],
+  "how": "detail=True adds the debugger's repaint for this command",
   "session": {
     "pid": "<volatile>",
     "alive": true,

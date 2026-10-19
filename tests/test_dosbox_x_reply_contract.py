@@ -110,6 +110,10 @@ class _Running:
     def alive(self) -> bool:
         return True
 
+    @property
+    def parked(self) -> bool:
+        return self.at_debugger()
+
     def at_debugger(self) -> bool:
         return False
 

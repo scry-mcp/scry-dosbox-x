@@ -41,7 +41,7 @@ def late_tool(monkeypatch: pytest.MonkeyPatch) -> Iterator[Any]:
         late_body)
     yield registered
     s.mcp._tool_manager._tools.pop("late_body", None)
-    dosbox_mcp._SUMMARIES.pop("late_body", None)
+    dosbox_mcp.BOUNDARY.summaries.pop("late_body", None)
 
 
 def test_the_decorator_puts_session_last_and_composes_it_after_the_body(late_tool: Any) -> None:

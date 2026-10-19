@@ -227,6 +227,10 @@ class RealPositionReaders:
     def read_bytes(self, seg: int, off: int, n: int, mode: str | None = None) -> bytes:
         return ds.Session.read_bytes(cast(ds.Session, self), seg, off, n, mode)
 
+    @property
+    def parked(self) -> bool:
+        return self.at_debugger()
+
     def at_debugger(self) -> bool:
         return True                  # a scripted console: it answers, so it is stopped
 
@@ -1158,6 +1162,10 @@ class LogSession:
 
     def alive(self) -> bool:
         return self._alive
+
+    @property
+    def parked(self) -> bool:
+        return self.at_debugger()
 
     def at_debugger(self) -> bool:
         return False            # a guest that is running, the wait's ordinary case
@@ -2448,6 +2456,10 @@ class StoppedLogSession(LogSession):
         super().__init__(log)
         self._parked = at_debugger
 
+    @property
+    def parked(self) -> bool:
+        return self.at_debugger()
+
     def at_debugger(self) -> bool:
         return self._parked
 
@@ -2522,6 +2534,10 @@ class Console(Wire):
     def alive(self) -> bool:
         return True
 
+    @property
+    def parked(self) -> bool:
+        return self.at_debugger()
+
     def at_debugger(self) -> bool:
         return ds.Session.at_debugger(cast(ds.Session, self))
 
@@ -2573,6 +2589,10 @@ class LateStopLogSession(LogSession):
         super().__init__(log)
         self.asked = 0
         self.running_answers = running_answers
+
+    @property
+    def parked(self) -> bool:
+        return self.at_debugger()
 
     def at_debugger(self) -> bool:
         self.asked += 1
@@ -2626,10 +2646,10 @@ class StopsAfterWriting(LogSession):
 
     def __init__(self, log: Path, *, line: str) -> None:
         super().__init__(log)
-        self.line, self.polls, self.parked = line, 0, False
+        self.line, self.polls, self.parks = line, 0, False
 
     def at_debugger(self) -> bool:
-        return self.parked
+        return self.parks
 
     def _e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
         self.polls += 1
@@ -2637,7 +2657,7 @@ class StopsAfterWriting(LogSession):
         if self.polls == 2:                 # the first is the "already" look; this is the loop's
             with self.launch.logfile.open("a", encoding="utf-8") as f:
                 f.write(self.line + "\n")
-            self.parked = True
+            self.parks = True
         return got
 
 
@@ -2727,6 +2747,10 @@ def test_run_to_cancelled_in_flight_is_brought_back_and_takes_its_breakpoints_wi
     class Cancelled(Debugger):
         stopped = False
         breaks = 0
+
+        @property
+        def parked(self) -> bool:
+            return self.at_debugger()
 
         def at_debugger(self) -> bool:
             return self.stopped

@@ -166,6 +166,10 @@ class FakeSession:
     def registers(self) -> dict[str, str]:
         return {"EAX": "00001234"}
 
+    @property
+    def parked(self) -> bool:
+        return self.at_debugger()
+
     def at_debugger(self) -> bool:
         return True
 
@@ -1207,7 +1211,7 @@ def test_invalid_is_surfaced_and_not_swallowed(monkeypatch: pytest.MonkeyPatch) 
         # The throwaway registration LEAVES the live surface, or every later assertion
         # about that surface (the roster in the instructions) is order-dependent.
         server.mcp._tool_manager._tools.pop("boom_invalid", None)
-        dosbox_mcp._SUMMARIES.pop("boom_invalid", None)
+        dosbox_mcp.BOUNDARY.summaries.pop("boom_invalid", None)
 
 
 def test_a_real_bug_is_not_dressed_up_as_invalid(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -1229,7 +1233,7 @@ def test_a_real_bug_is_not_dressed_up_as_invalid(monkeypatch: pytest.MonkeyPatch
             boom_bug()
     finally:
         server.mcp._tool_manager._tools.pop("boom_bug", None)
-        dosbox_mcp._SUMMARIES.pop("boom_bug", None)
+        dosbox_mcp.BOUNDARY.summaries.pop("boom_bug", None)
 
 
 def test_both_halves_of_the_capture_come_back(tmp_path: Path) -> None:
@@ -2887,6 +2891,10 @@ class NamesFake:
         if self._running and not value:
             self.stop_count += 1            # the machine came to rest: a stop, like the real one
         self._running = value
+
+    @property
+    def parked(self) -> bool:
+        return self.at_debugger()
 
     def at_debugger(self) -> bool:
         # A STOP NOBODY HAS READ YET: the real peek finds the prompt in the drain and counts
@@ -5813,6 +5821,10 @@ def test_send_keys_hands_its_progress_to_the_wait_for_the_reaction() -> None:
         def e9_mark(self) -> int:
             return 0
 
+        @property
+        def parked(self) -> bool:
+            return self.at_debugger()
+
         def at_debugger(self) -> bool:
             return False
 
@@ -6637,7 +6649,7 @@ def test_an_invalid_summary_is_cut_at_a_word_and_says_so() -> None:
     """The summary is one line a person reads without the JSON, so a long refusal is cut
     there: at a word, with a mark that says the rest is in `message`, never mid-word."""
     message = "a RELATIVE path is not a place: " + "give the dump an absolute path " * 6
-    line = dosbox_mcp._summary("memdump", {}, {"status": "INVALID", "code": "bad_argument",
+    line = dosbox_mcp.BOUNDARY.line("memdump", {}, {"status": "INVALID", "code": "bad_argument",
                                            "message": message})
     head = "memdump: INVALID (bad_argument), "
     assert line.startswith(head), line
@@ -6645,7 +6657,8 @@ def test_an_invalid_summary_is_cut_at_a_word_and_says_so() -> None:
     assert shown.endswith("...") and len(shown) <= 124, shown
     kept = shown.removesuffix("...")
     assert message.startswith(kept) and message[len(kept)] == " ", "cut at a word, never inside one"
-    short = dosbox_mcp._summary("x", {}, {"status": "INVALID", "code": "c", "message": "short"})
+    short = dosbox_mcp.BOUNDARY.line("x", {},
+                                     {"status": "INVALID", "code": "c", "message": "short"})
     assert short == "x: INVALID (c), short"
 
 
@@ -6896,8 +6909,8 @@ def test_every_tool_names_its_summary_and_declares_both_hints() -> None:
     the MCP layer serves has its own line in `dosbox_summaries`, and its annotations carry
     BOTH hints as booleans, so a client never reads an absent hint as a guess."""
     served = dosbox_mcp.registered_tools()
-    assert served and set(served) <= set(dosbox_mcp._SUMMARIES), sorted(
-        set(served) - set(dosbox_mcp._SUMMARIES))
+    assert served and set(served) <= set(dosbox_mcp.BOUNDARY.summaries), sorted(
+        set(served) - set(dosbox_mcp.BOUNDARY.summaries))
     for t in server.mcp._tool_manager.list_tools():
         hints = t.annotations
         assert hints is not None, t.name
@@ -7130,11 +7143,12 @@ def test_a_list_refuses_a_bad_hex_address_before_its_first_step_runs(
 def test_every_tool_is_summarised_by_its_own_line() -> None:
     """Each line is the tool's own: this server's function of its name, or, for a media file
     tool, scry-core's line of that tool."""
+    lines = dosbox_mcp.BOUNDARY.summaries
     for name in dosbox_mcp.registered_tools():
         if name in media_tools.TOOLS:
-            assert dosbox_mcp._SUMMARIES[name] is media_tools.TOOLS[name].summary, name
+            assert lines[name] is media_tools.TOOLS[name].summary, name
         else:
-            assert dosbox_mcp._SUMMARIES[name].__name__ == name, (name, dosbox_mcp._SUMMARIES[name])
+            assert lines[name].__name__ == name, (name, lines[name])
 
 
 def test_a_recorded_stop_keeps_the_paging_mark_its_survey_read(tmp_path: Path) -> None:

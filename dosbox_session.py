@@ -657,6 +657,12 @@ class Session:
         # which a session under a pty always needs), `died` (already gone when `close` was
         # called), `none` (not closed yet).
         self.ended_how = "none"
+        # ONE CLOSE AT A TIME, AND ONE THAT FINISHED WHOLE IS NOT RUN AGAIN: the server's own
+        # end and a signalled one that waited out the tool lock can both reach this session from
+        # two threads, and a second `_close` would signal the group and close the master again.
+        self._closing = threading.Lock()
+        self._closed = False
+        self.state_sent = False   # whether the last state command went down the channel
         # Set only when SIGKILL was sent and the child had still not been reaped.
         #
         # IT IS NOT IN `state()`, because a copy there would be inert. It can
@@ -857,6 +863,13 @@ class Session:
         if not self._at_debugger:
             self.stop_count += 1
         self._at_debugger = True
+
+    @property
+    def parked(self) -> bool:
+        """Whether the machine was parked at the debugger when this session last read the
+        terminal: the flag alone, with no peek, for a caller that must not consume a prompt a
+        wait is about to listen for (the recording's read around each call)."""
+        return self._at_debugger
 
     def at_debugger(self) -> bool:
         """Whether the machine is parked at the debugger, answered WITHOUT a console round
@@ -3168,17 +3181,23 @@ class Session:
             raise Invalid("bad_argument", f"a state path is one line; got {str(path)!r}")
         paused = not self.at_debugger()
         began = time.monotonic()
+        # WHETHER THE COMMAND WENT DOWN THE CHANNEL, which a load cut short reads: one cancelled
+        # in the break-in sent nothing and replaced nothing.
+        self.state_sent = False
         try:
             if paused:
                 self.break_in()
                 began = time.monotonic()
+            self.state_sent = True
             ok, lines = self.control.request(f"EXEC {verb} {path}", seconds, poll=cancel.check)
         except BaseException as e:
             # A COMMAND THAT ENDS EARLY, refused or cancelled (its waits poll, the break-in's
             # included), releases the guest it stopped, as its bound would. Best effort: the
-            # command's own refusal is the answer, and one from the release would hide it.
+            # command's own refusal or the cancellation is the answer, and one from the release
+            # (a refusal, or the host's channel gone under it) would hide it; the end reads what
+            # the machine was left as.
             if paused and (isinstance(e, Invalid) or cancel.is_cancellation(e)):
-                with cancel.shielded(), contextlib.suppress(Invalid):
+                with cancel.shielded(), contextlib.suppress(Invalid, OSError):
                     if cancel.is_cancellation(e) and not self.at_debugger():
                         self.break_in()        # a BREAK sent lands; wait for it, then release
                     if self.at_debugger():
@@ -3256,8 +3275,9 @@ class Session:
         except BaseException as e:
             # CUT SHORT AFTER IT WAS SENT, refused or cancelled: some of it may be loaded, so the
             # session is altered and, parked, the stop record before it may describe a machine
-            # that is gone, as a load that answered does.
-            if not (isinstance(e, Invalid) and e.code in ("no_channel", "bad_argument")):
+            # that is gone, as a load that answered does. Cut short before, it replaced nothing.
+            if self.state_sent and not (isinstance(e, Invalid)
+                                        and e.code in ("no_channel", "bad_argument")):
                 self.altered = True
                 if parked:
                     self.stop_count += 1
@@ -3356,14 +3376,22 @@ class Session:
         HALF-WAY: the cancel lands in the wait for the exit, and an emulator signalled but never
         waited on is the one thing a cancel must not leave, so the close runs again, shielded and
         silent, and the cancellation goes on unwinding once it has."""
-        try:
-            return self._close(grace, progress)
-        except BaseException as e:
-            if not cancel.is_cancellation(e):
+        with self._closing:
+            if self._closed:
+                return self.proc.returncode
+            try:
+                code = self._close(grace, progress)
+            except BaseException as e:
+                if not cancel.is_cancellation(e):
+                    raise
+                with cancel.shielded():
+                    self._close(grace)
+                self._closed = True
                 raise
-            with cancel.shielded():
-                self._close(grace)
-            raise
+            # FINAL ONLY WHEN NOTHING WAS LEFT BEHIND: an emulator SIGKILLed and not yet reaped
+            # is one a later close can still reap.
+            self._closed = not self.reap_failed
+            return code
 
     def _close(self, grace: float = 8.0, progress: Progress = no_progress) -> int | None:
         """End the session and leave nothing behind; a second call finishes what an interrupted

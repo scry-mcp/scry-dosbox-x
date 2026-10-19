@@ -257,13 +257,13 @@ end applied, and what its reply carried (a stop it found, what a stop applied) i
 next reply instead. A cancel that arrives after the server's last look, while the reply is on
 its way, is not seen.
 
-Each tool declares its end:
+Every tool ends one of three ways, and one that declares no end ends `none`:
 
 | End | What the cancel leaves | Tools |
 |---|---|---|
-| `stop` | the guest back at the debugger by `BREAK`, as `stop` does, or a stop it had already reached recorded as its own; a `run_to` removes the breakpoints it armed; a CPU log still open (a `trace`'s) is moved aside to `trace-cancelled-<n>.trace` in the working directory and closed | `stop`, `run_to`, `run_for`, `trace`, `screen_wait`, `perform` |
+| `stop` | the guest back at the debugger by `BREAK`, as `stop` does, or a stop it had already reached recorded as its own; a `run_to` removes the breakpoints it armed; a CPU log still open (a `trace`'s) is moved aside to `trace-cancelled-<n>.trace` in the session's captures directory (the working directory when there is none to write in) and closed | `stop`, `run_to`, `run_for`, `trace`, `screen_wait`, `perform` |
 | `kill` | the emulator closed; a close cancelled half-way still finishes | `start`, `close` |
-| `none` | the guest as the call found it | `log_wait`, `resume`, `snapshot`, `send_keys`, `send_mouse`, `drive` |
+| `none` | the guest as the call found it | `build_check`, `status`, `log`, `log_wait`, `registers`, `read_memory`, `disassemble`, `call_stack`, `memdump`, `find`, `scan_start`, `scan_filter`, `scan_clear`, `debug`, `set_register`, `write`, `resume`, `step`, `state_save`, `state_load`, `snapshot`, `state_list`, `breakpoint_interrupt`, `symbols_load`, `symbols_find`, `comment_add`, `comment_list`, `comment_delete`, `comment_save`, `comment_load`, `machine_map`, `interrupt_vectors`, `palette`, `screen_view`, `screen_signature`, `series_capture`, `image_diff`, `series_diff`, `region_track`, `golden_check`, `breakpoint_at`, `breakpoint_list`, `breakpoint_clear`, `watch_add`, `watch_list`, `watch_clear`, `send_keys`, `send_mouse`, `captures`, `capture_frame`, `perform_export`, `drive` |
 
 Any other tool that meets a cancel ends `none`.
 
@@ -1159,7 +1159,7 @@ answers on a RUNNING guest runs at once: the one table a running-guest refusal l
 `answers_while_running` (`status`, the log, `symbols_find`, the input, the captures, the
 saved states, the snapshot, `stop`, the declarations, `comment_list` and `comment_save`),
 the five it adds for a caller
-outside a list (`registers(from_last_stop=True)`, `perform`, `drive`, `perform_export`, `close`)
+outside a list (`registers(from_last_stop=True)`, `close`, `drive`, `perform`, `perform_export`)
 apart. A
 declaration there answers `pending` while the guest runs and is armed at the next stop, as the
 same call made outside a sequence does, instead of waiting for a stop first; a `stop` brings
@@ -1234,17 +1234,21 @@ back with no model, from this repository:
 uv run python -m scry_core.replay <document> [--binary PATH] [--transcript PATH]
 ```
 
-It exits 0 when every step held, 1 when a step diverged or failed, 2 on a usage error, and 3 when
-nothing was demonstrated (a document that is not one, a start the server refused, a saved state
-it loads and the server lacks, a server that did not start); the whole transcript goes to
-`tmp/replays/<document stem>/transcript.md`. A replay is deterministic on a conf with a fixed
+It exits 0 when every step held, 1 when a step diverged or failed in the server's own words (or
+`perform`'s `held`, the steps it held to their `recorded` answer, is not the document's count), 2
+on a usage error, and 3 when nothing was demonstrated: a document that is not one or holds no
+step with a `recorded` answer, a start the server refused, a saved state it loads and the server
+lacks, declarations the replay's store holds unlike the recorded start's, and a server that
+broke (did not start, died or timed out mid-call, answered an error result, refused the list
+whole). The whole transcript goes to `tmp/replays/<document stem>/transcript.md`. A replay is deterministic on a conf with a fixed
 cycle count (`cycles=fixed <n>`); under `cycles=max` the guest's own clock follows the host's.
 
 What the export keeps is what moved the machine and what was checked:
 
 | A call of | Becomes |
 |---|---|
-| a tool that changes the machine or what the next call acts on (`write`, `set_register`, `run_to`, `run_for`, `step`, `trace`, `state_save`, `state_load`, `symbols_load`, `debug`, a declaration...) | a step; one that left the guest at a new stop holds to the `registers` its reply carries (a `state_load` answers none, so it holds to nothing) |
+| a tool that changes the machine or what the next call acts on (`write`, `set_register`, `run_to`, `run_for`, `step`, `trace`, `state_save`, `state_load`, `symbols_load`, a declaration...) | a step; one that left the guest at a new stop holds to the `registers` its reply carries (a `state_load` answers none, so it holds to nothing) |
+| a `debug` line | a step whose answer is never held to: what a typed command printed is the console's; one that moved the guest holds to its stop like any advance |
 | `read_memory` | a check of `hex` |
 | `registers` | a check of `registers` |
 | `screen_signature` | a check of `signature` |
@@ -1252,20 +1256,27 @@ What the export keeps is what moved the machine and what was checked:
 | any other read, `snapshot`, `capture_frame`, `series_capture`, `memdump`, `comment_*`, the scan, `machine_map`, `interrupt_vectors`, `palette`, `screen_view` | dropped, named in the reply with why; one that moved the guest is kept as a step |
 | a call the server refused | dropped, named; one that moved the guest first ends the document |
 | a release (a `resume`), a `stop` or `screen_wait` that ran the guest and came back stopped (at a breakpoint or a found text included), a call whose wall-clock bound ended it (`TIMEOUT`), one that ended with no reply | the end of the document: the reply's `cut` names it and why. Whatever ends such a run stops the guest at a place no replayed advance reaches, and every stop after it inherits the shift |
+| a call that found the guest elsewhere than the call before it left it | the end of the document, named: the motion happened outside every recorded call |
+| a kept step that wrote a file the session named (`dest`) | the end of the document, named: a replay finds the file there and the step refuses it |
 
 `perform` and `drive` are recorded as their steps, and the steps of a `start`'s `plan` after the
 start. A step's check is `"recorded": {<field>: <value>}` inside it, and `perform` holds the
 step's own reply to it: a mismatch is INVALID `diverged` at that step, with `field`, `recorded`
-and `got`, the list stopping there. The document's `needs.states` lists the saved states it loads
-and does not save, which the runner checks against `state_list` before it plays anything. The
+and `got`, the list stopping there. A caller keys on `failed_at`, which a failed step and a
+diverged one both carry; the code says which (the machine differs, not the step). `held` counts
+the steps that matched. The document names the server's entry file (`entry`, here
+`dosbox_x_server.py`). Its `needs.states` lists the saved states it loads and does not save,
+which the runner checks against `state_list` before it plays anything; `needs.declarations` the
+breakpoints, interrupts and watches the store held as the recorded `start` began, which the
+runner holds the replay's `breakpoint_list` and `watch_list` to. A recording keeps at most 5000
+calls, counted over the calls the export keeps, past which the export says it is cut there. The
 document carries the `start`'s arguments as given, host paths included; `--binary` replaces the
 emulator's.
 
 What a replay cannot hold to, it says at the step rather than passing over it. The `start` re-arms
-the declarations it finds stored for the conf, as any start does, which are where the session
-left them, not where it began; a file a step wrote by name (a saved state, a `trace` with a
-`dest`) is there on the next replay and the step refuses it, so a session meant for a bench keeps
-its states in a directory of its own and leaves `dest` empty. A `golden_check` over files a dropped
+the declarations it finds stored for the conf, as any start does, which is why the runner checks
+them first. A session meant for a bench keeps its states in a directory of its own and leaves
+`dest` empty. A `golden_check` over files a dropped
 call wrote (a `snapshot`, a `series_capture` and its manifest) is dropped too: the replay would
 not write them, so it would hold to the session's own.
 

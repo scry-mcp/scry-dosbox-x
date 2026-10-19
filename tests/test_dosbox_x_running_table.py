@@ -48,6 +48,10 @@ class RunningGuest:
     def alive(self) -> bool:
         return True
 
+    @property
+    def parked(self) -> bool:
+        return self.at_debugger()
+
     def at_debugger(self) -> bool:
         return self.stopped
 
@@ -220,8 +224,8 @@ def test_no_tool_of_the_table_types_at_a_running_guests_console(
 
 
 def test_answers_while_running_is_the_table_and_the_five_that_answer_outside_a_list() -> None:
-    table = [*sorted(sequence.RUNNING_OK_OPS), "registers(from_last_stop=True)", "perform",
-             "drive", "perform_export", "close"]
+    table = [*sorted(sequence.RUNNING_OK_OPS), "registers(from_last_stop=True)", "close",
+             "drive", "perform", "perform_export"]
     assert table == dosbox_mcp._ANSWERS_WHILE_RUNNING
 
 

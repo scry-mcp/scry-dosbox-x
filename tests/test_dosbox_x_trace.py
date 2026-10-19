@@ -76,6 +76,10 @@ class Tracer(Debugger):
             if delta is not None:
                 self.reads.append(cap(delta))
 
+    @property
+    def parked(self) -> bool:
+        return self.at_debugger()
+
     def at_debugger(self) -> bool:
         return not self.running
 
@@ -211,7 +215,7 @@ def test_sixteen_instructions_ask_seventeen_lines_in_hex_and_come_back_elapsed(
     assert no_log_left(dbg.launch.cwd), "the log stayed in the working directory"
     assert got["registers"] and "attribution" in got and "stop_seq" in got and "e9" in got
     assert got["session"]["altered"] is False, "advancing is not writing"
-    assert got["summary"].startswith("trace 16 cs_ip: ELAPSED, 16 executed at 1 addresses")
+    assert got["summary"].startswith("trace 16 cs_ip: ELAPSED, 16 executed at 1 address")
 
 
 def test_the_default_shape_is_the_familys_bare_command(tmp_path: Path) -> None:

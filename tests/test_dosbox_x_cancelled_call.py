@@ -37,6 +37,10 @@ class _Running(FakeSession):
         self.breaks = 0
         self.stop_count: int | None = None     # no counter unless a case gives it one
 
+    @property
+    def parked(self) -> bool:
+        return self.at_debugger()
+
     def at_debugger(self) -> bool:
         return self.at
 
@@ -77,7 +81,7 @@ def waiting_tool(monkeypatch: pytest.MonkeyPatch) -> Iterator[dict[str, Any]]:
     yield made
     for end in cancel.ON_CANCEL:
         server.mcp._tool_manager._tools.pop(f"wait_{end}", None)
-        dosbox_mcp._SUMMARIES.pop(f"wait_{end}", None)
+        dosbox_mcp.BOUNDARY.summaries.pop(f"wait_{end}", None)
         dosbox_mcp.BOUNDARY.declared_ends.pop(f"wait_{end}", None)
 
 
@@ -322,17 +326,23 @@ def test_a_call_cancelled_as_its_body_returned_is_recorded_and_its_accounts_wait
     assert ses.breaks == 0
 
 
+@pytest.mark.parametrize("captures", [True, False], ids=["captures-dir", "none"])
 def test_a_cancelled_trace_ends_stopped_with_its_log_closed_and_the_file_kept(
         monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path,
-        waiting_tool: dict[str, Any]) -> None:
+        waiting_tool: dict[str, Any], captures: bool) -> None:
     """A trace cancelled mid-run leaves the debugger's CPU log open; the `stop` end moves what it
     wrote aside (`LOGC 0` on a log the machine already closed opens a fresh one over the name) and
     closes it, before the stop is recorded: the close is a release and a return of its own, and
-    recorded after it the next contact would find a stop nobody made."""
+    recorded after it the next contact would find a stop nobody made. What it wrote goes where a
+    trace with no `dest` goes, the session's captures directory, and to the working directory
+    only for a session started with none."""
     import dosbox_trace as trace
     install()
     ses = _running()
     ses.launch.cwd = tmp_path
+    home = tmp_path / "caps" if captures else tmp_path
+    home.mkdir(exist_ok=True)
+    ses.launch.captures_dir = home if captures else None
     ses.stop_count = 1
     st.STATE.last_stop["stop_count"] = 1
     written = trace.log_places(tmp_path)[0]
@@ -352,7 +362,7 @@ def test_a_cancelled_trace_ends_stopped_with_its_log_closed_and_the_file_kept(
         waiting_tool["stop"]()
     assert ses.breaks == 1 and typed == [("LOGC", 0)], typed
     assert st.STATE.log_open is False
-    kept = sorted(tmp_path.glob("trace-cancelled-*.trace"))
+    kept = sorted(home.glob("trace-cancelled-*.trace"))
     assert [k.read_text() for k in kept] == ["one line the trace had written\n"], kept
     assert not written.exists(), "the empty log the close opened was left behind"
     out = server.status()
@@ -380,3 +390,19 @@ def test_a_frame_whose_retrace_never_comes_still_reports_progress(
                         lambda p, t, m: lines.append((p, t, m)), "none", "", None)
     waiting = [m for _p, _t, m in lines if "frame 0 of 5" in m and "waiting for its retrace" in m]
     assert len(waiting) >= 2, lines           # it goes on saying so, on the wall clock
+
+
+def test_accounts_given_back_one_after_another_accumulate_as_a_stops_do() -> None:
+    """A cancelled `perform` gives back each answered step's account and then its end's stop:
+    the next reply says all of them, as one stop's drains are joined (`arming.merge_applied`)."""
+    import dosbox_mcp
+    import dosbox_state as dstate
+
+    dstate.STATE.applied_last.clear()
+    dosbox_mcp._keep_accounts({"applied_on_stop": {"armed": ["A"], "disarmed": [],
+                                                   "symbols_loaded": True}})
+    dosbox_mcp._keep_accounts({"applied_on_stop": {"armed": ["B"], "disarmed": ["C"],
+                                                   "symbols_loaded": False}})
+    assert dstate.STATE.applied_last == {"armed": ["A", "B"], "disarmed": ["C"],
+                                         "symbols_loaded": True}
+    dstate.STATE.applied_last.clear()

@@ -561,19 +561,25 @@ BY_OP: dict[str, Check] = {
     "machine_map": _machine_map,
 }
 
+#: The two tools whose steps ARE the calls: a list, and one act with its expectation.
+SEQUENCES = frozenset({"perform", "drive"})
+#: THE TOOLS THAT ARE NO STEP OF A SEQUENCE, named once: the session's own life (`build_check`,
+#: `start`, `close`), the sequences themselves, and the export of the session a list belongs to.
+#: What a list may not call, what the recording keeps out, what answers while the guest runs and
+#: the pre-gate's no-entry set below are each read off it.
+NOT_STEPS = SEQUENCES | {"build_check", "start", "close", "perform_export"}
+
 #: TOOLS DELIBERATELY WITHOUT AN ENTRY, named so an absent entry and a forgotten one cannot
-#: look alike. They take only a path their body judges first (`build_check`'s `binary`), or no
-#: argument at all (`status`, `close`, `stop`, `scan_clear`, `state_list`, `breakpoint_list`,
-#: `watch_list`, `captures`, `call_stack`,
-#: `comment_list`); or a flag every value of which is valid
-#: (`registers`); or a `ref` that matches only against the declarations the session's store
-#: holds (`breakpoint_clear`, `watch_clear`); or a path the export judges itself before it reads
-#: anything (`perform_export`).
+#: look alike. They take no argument at all (`status`, `stop`, `scan_clear`, `state_list`,
+#: `breakpoint_list`, `watch_list`, `captures`, `call_stack`, `comment_list`); or a flag every
+#: value of which is valid (`registers`); or a `ref` that matches only against the declarations
+#: the session's store holds (`breakpoint_clear`, `watch_clear`); or they are no step and have
+#: no half here (`build_check`'s binary and `perform_export`'s path, judged by their bodies
+#: first; `close`).
 MACHINE_JUDGES = frozenset({
-    "build_check", "status", "close", "stop", "registers", "scan_clear", "state_list",
-    "breakpoint_list", "breakpoint_clear", "watch_list", "watch_clear", "captures",
-    "call_stack", "comment_list", "perform_export",
-})
+    "status", "stop", "registers", "scan_clear", "state_list", "breakpoint_list",
+    "breakpoint_clear", "watch_list", "watch_clear", "captures", "call_stack", "comment_list",
+}) | (NOT_STEPS - BY_OP.keys())
 
 
 def check(tool: str, /, **given: Any) -> None:

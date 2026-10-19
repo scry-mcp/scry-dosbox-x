@@ -58,6 +58,10 @@ class Retraces(Debugger):
         time.sleep(self.delay_s if chunk else seconds)   # an empty poll waits its slice
         return chunk
 
+    @property
+    def parked(self) -> bool:
+        return self.at_debugger()
+
     def at_debugger(self) -> bool:
         return not self.running
 

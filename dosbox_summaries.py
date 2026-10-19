@@ -21,11 +21,21 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from scry_core import prose
+
 #: A tool's summary: the call's arguments (defaults applied) and its reply, to one line.
 Summary = Callable[[dict[str, Any], dict[str, Any]], str]
 
 # Where a refusal's prose is cut for the line: the whole of it is in `message`.
 REFUSAL_CHARS_SHOWN = 120
+
+
+def _said(n: object, noun: str, plural: str | None = None) -> str:
+    """A count beside its noun in the number it has (`scry_core.prose.counted`); a count a reply
+    did not carry is shown as it came, with the plural."""
+    if isinstance(n, int) and not isinstance(n, bool):
+        return prose.counted(n, noun, plural)
+    return f"{n} {plural or noun + 's'}"
 
 
 def clipped(text: str, limit: int = REFUSAL_CHARS_SHOWN) -> str:
@@ -71,7 +81,7 @@ def start(args: dict[str, Any], reply: dict[str, Any]) -> str:
     facts = _block(reply, "start") or reply
     plan = ""
     if reply.get("ran") is not None:
-        plan = f", then {reply.get('completed')} of {len(args.get('plan') or [])} steps"
+        plan = f", then {reply.get('completed')} of {_said(len(args.get('plan') or []), 'step')}"
     return (f"start {Path(str(args.get('conf', ''))).name}: {facts.get('mode')} on "
             f"{facts.get('binary')} ({facts.get('binary_origin')}), debugger answered after "
             f"{facts.get('ready_after_s')}s{plan}")
@@ -96,7 +106,7 @@ def close(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 def log(args: dict[str, Any], reply: dict[str, Any]) -> str:
     return (f"log {args.get('channel', '')} /{args.get('pattern', '')}/: "
-            f"{len(reply.get('lines') or [])} of {reply.get('lines_total')} lines")
+            f"{len(reply.get('lines') or [])} of {_said(reply.get('lines_total'), 'line')}")
 
 
 def log_wait(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -108,36 +118,38 @@ def log_wait(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 def registers(args: dict[str, Any], reply: dict[str, Any]) -> str:
     stale = " (last stop)" if reply.get("stale") else ""
-    return f"registers{stale}: {len(_block(reply, 'registers'))} registers"
+    return f"registers{stale}: {_said(len(_block(reply, 'registers')), 'register')}"
 
 
 def read_memory(args: dict[str, Any], reply: dict[str, Any]) -> str:
     seg, off = reply.get("segment"), reply.get("offset")
     at = f"{seg:04X}:{off:04X}" if isinstance(seg, int) and isinstance(off, int) else "?"
-    return f"read_memory {args.get('ref', '')}: {len(reply.get('rows') or [])} rows at {at}"
+    rows = _said(len(reply.get("rows") or []), "row")
+    return f"read_memory {args.get('ref', '')}: {rows} at {at}"
 
 
 def disassemble(args: dict[str, Any], reply: dict[str, Any]) -> str:
     seg, off = reply.get("segment"), reply.get("offset")
     at = f"{seg:04X}:{off:08X}" if isinstance(seg, int) and isinstance(off, int) else "?"
-    return (f"disassemble {args.get('ref', '')}: {len(reply.get('lines') or [])} lines at {at}, "
-            f"{reply.get('code_bits')}-bit")
+    lines = _said(len(reply.get("lines") or []), "line")
+    return f"disassemble {args.get('ref', '')}: {lines} at {at}, {reply.get('code_bits')}-bit"
 
 
 def call_stack(args: dict[str, Any], reply: dict[str, Any]) -> str:
     calls = reply.get("calls") or []
     first = calls[0] if calls and isinstance(calls[0], dict) else {}
-    return (f"call_stack: {len(calls)} calls, innermost "
+    return (f"call_stack: {_said(len(calls), 'call')}, innermost "
             f"{first.get('symbol') or first.get('addr', '?')}, heuristic")
 
 
 def memdump(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return f"memdump {args.get('ref', '')}: {reply.get('bytes')} bytes to {reply.get('path')}"
+    dumped = _said(reply.get("bytes"), "byte")
+    return f"memdump {args.get('ref', '')}: {dumped} to {reply.get('path')}"
 
 
 def find(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"find {args.get('ref', '')}: {reply.get('hits_total')} hits of "
-            f"{args.get('data_hex')} in {reply.get('length')} bytes")
+    return (f"find {args.get('ref', '')}: {_said(reply.get('hits_total'), 'hit')} of "
+            f"{args.get('data_hex')} in {_said(reply.get('length'), 'byte')}")
 
 
 def scan_start(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -147,7 +159,7 @@ def scan_start(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 def scan_filter(args: dict[str, Any], reply: dict[str, Any]) -> str:
     what = f"{args.get('operator', '=')} {args.get('value')}"
-    return f"scan_filter {what}: {reply.get('survivors')} survivors" + (
+    return f"scan_filter {what}: {_said(reply.get('survivors'), 'survivor')}" + (
         ", scan closed" if reply.get("closed") else "") + (
         ", not listed (over `limit`)" if reply.get("truncated") else "")
 
@@ -157,7 +169,7 @@ def scan_clear(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def debug(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return f"debug {args.get('command', '')!r}: {reply.get('screen_chars')} chars"
+    return f"debug {args.get('command', '')!r}: {_said(reply.get('screen_chars'), 'char')}"
 
 
 def set_register(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -166,7 +178,7 @@ def set_register(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def write(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"write {args.get('ref', '')}: {reply.get('written')} bytes, verified "
+    return (f"write {args.get('ref', '')}: {_said(reply.get('written'), 'byte')}, verified "
             f"{reply.get('verified')}")
 
 
@@ -191,14 +203,15 @@ def step(args: dict[str, Any], reply: dict[str, Any]) -> str:
 def run_for(args: dict[str, Any], reply: dict[str, Any]) -> str:
     where = "running" if reply.get("running") else f"at {_at(reply.get('stopped_at'))}"
     asked = (f"{args.get('milliseconds')} ms" if args.get("milliseconds")
-             else f"{args.get('frames')} frames")
-    return f"run_for {asked}: {reply.get('verdict')}, {reply.get('polls')} polls, {where}"
+             else f"{_said(args.get('frames'), 'frame')}")
+    return f"run_for {asked}: {reply.get('verdict')}, {_said(reply.get('polls'), 'poll')}, {where}"
 
 
 def trace(args: dict[str, Any], reply: dict[str, Any]) -> str:
     found = _block(reply, "trace")
+    places = _said(found.get("addresses"), "address", "addresses")
     return (f"trace {args.get('instructions')} {args.get('shape')}: {reply.get('verdict')}, "
-            f"{found.get('instructions')} executed at {found.get('addresses')} addresses, at "
+            f"{found.get('instructions')} executed at {places}, at "
             f"{_at(reply.get('stopped_at'))}, to {found.get('path')}")
 
 
@@ -218,7 +231,7 @@ def run_to(args: dict[str, Any], reply: dict[str, Any]) -> str:
 # ------------------------------------------------------------------------ the states
 
 def state_save(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"state_save {reply.get('name')}: {reply.get('bytes')} bytes, "
+    return (f"state_save {reply.get('name')}: {_said(reply.get('bytes'), 'byte')}, "
             f"{reply.get('program')} {reply.get('time_stamp')}")
 
 
@@ -227,11 +240,12 @@ def state_load(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def state_list(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return f"state_list: {len(reply.get('states') or [])} states in {reply.get('state_dir')}"
+    states = _said(len(reply.get("states") or []), "state")
+    return f"state_list: {states} in {reply.get('state_dir')}"
 
 
 def snapshot(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return f"snapshot: {reply.get('bytes')} bytes at {reply.get('path')}"
+    return f"snapshot: {_said(reply.get('bytes'), 'byte')} at {reply.get('path')}"
 
 
 # ---------------------------------------------------------------- names for addresses
@@ -243,7 +257,7 @@ def symbols_load(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 def symbols_find(args: dict[str, Any], reply: dict[str, Any]) -> str:
     if "symbols_total" in reply:    # the by-name question answers a list
-        return f"symbols_find {reply.get('query')}: {reply.get('symbols_total')} symbols"
+        return f"symbols_find {reply.get('query')}: {_said(reply.get('symbols_total'), 'symbol')}"
     return f"symbols_find {reply.get('query')}: {reply.get('name')} at {reply.get('linear')}"
 
 
@@ -276,12 +290,12 @@ def interrupt_vectors(args: dict[str, Any], reply: dict[str, Any]) -> str:
                      if isinstance(row.get(s), dict)),
                     "not placed (see `coverage_note`)" if not_placed else "held by no block read")
         return f"interrupt_vectors INT {row.get('number', 0):02X}: {row.get('addr')}, {held}"
+    vectors = _said(len(rows), "vector")
     if "mcbs" not in sources:
-        return (f"interrupt_vectors: {len(rows)} vectors, no MCB chain read to count program "
-                f"blocks in")
+        return f"interrupt_vectors: {vectors}, no MCB chain read to count program blocks in"
     if not_placed:
-        return (f"interrupt_vectors: {len(rows)} vectors, {len(not_placed)} not placed, so no "
-                f"program block is counted")
+        return (f"interrupt_vectors: {vectors}, {len(not_placed)} not placed, so no program "
+                "block is counted")
     programs: dict[str, int] = {}
     for row in rows:
         block = row.get("mcbs")
@@ -289,7 +303,7 @@ def interrupt_vectors(args: dict[str, Any], reply: dict[str, Any]) -> str:
             name = str(block.get("filename"))
             programs[name] = programs.get(name, 0) + 1
     named = ", ".join(f"{n} {k}" for n, k in programs.items())
-    return (f"interrupt_vectors: {len(rows)} vectors, {sum(programs.values())} in program blocks"
+    return (f"interrupt_vectors: {vectors}, {sum(programs.values())} in program blocks"
             + (f" ({named})" if named else ""))
 
 
@@ -381,7 +395,7 @@ def send_mouse(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def captures(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return f"captures: {len(reply.get('captures') or [])} files"
+    return f"captures: {_said(len(reply.get('captures') or []), 'file')}"
 
 
 def palette(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -436,7 +450,7 @@ def screen_wait(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def capture_frame(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"capture_frame {args.get('at')}: {reply.get('bytes')} bytes to "
+    return (f"capture_frame {args.get('at')}: {_said(reply.get('bytes'), 'byte')} to "
             f"{reply.get('path')}")
 
 
@@ -444,13 +458,13 @@ def capture_frame(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 def perform_export(args: dict[str, Any], reply: dict[str, Any]) -> str:
     cut = f", cut at call {reply['cut']['call']}" if reply.get("cut") else ""
-    return (f"perform_export: {reply['steps']} steps, {reply['checks']} checks, "
+    return (f"perform_export: {_said(reply['steps'], 'step')}, {_said(reply['checks'], 'check')}, "
             f"{reply['dropped_total']} dropped{cut} to {reply['path']}")
 
 
 def perform(args: dict[str, Any], reply: dict[str, Any]) -> str:
     steps = reply.get("steps_total", len(args.get("steps") or []))
-    return f"perform: {reply.get('completed')} of {steps} steps"
+    return f"perform: {reply.get('completed')} of {_said(steps, 'step')}"
 
 
 def drive(args: dict[str, Any], reply: dict[str, Any]) -> str:

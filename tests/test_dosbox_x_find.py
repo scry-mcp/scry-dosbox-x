@@ -464,6 +464,10 @@ def test_a_raw_scan_command_drops_the_count(tmp_path: Any, command: str) -> None
         def alive(self) -> bool:
             return True
 
+        @property
+        def parked(self) -> bool:
+            return self.at_debugger()
+
         def at_debugger(self) -> bool:
             return True
 

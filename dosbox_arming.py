@@ -543,15 +543,24 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
     # ACCUMULATED, NOT REPLACED: `live()` may have drained part of the queue a moment
     # before a stop tool drains the rest, and the reply must carry BOTH accounts as one
     # (measured: a drain in `live()` followed by the stop's own lost the first's disarms).
+    merge_applied(out)
+    return out
+
+
+def merge_applied(account: dict[str, Any]) -> None:
+    """One drain's account joined into `STATE.applied_last`: the lists accumulate, a load of
+    symbols is kept once any drain made one, and what is still pending is the latest word."""
     merged = STATE.applied_last
     for key in ("disarmed", "armed"):
-        merged[key] = list(merged.get(key, [])) + list(out[key])
-    merged["symbols_loaded"] = bool(merged.get("symbols_loaded")) or bool(out["symbols_loaded"])
-    if "still_pending" in out:
-        merged["still_pending"] = list(out["still_pending"])
+        if key in account:
+            merged[key] = list(merged.get(key, [])) + list(account[key])
+    if "symbols_loaded" in account:
+        merged["symbols_loaded"] = (bool(merged.get("symbols_loaded"))
+                                    or bool(account["symbols_loaded"]))
+    if "still_pending" in account:
+        merged["still_pending"] = list(account["still_pending"])
     else:
         merged.pop("still_pending", None)
-    return out
 
 
 def _armable_declarations() -> list[dec.Declaration]:

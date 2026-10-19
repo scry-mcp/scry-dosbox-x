@@ -51,7 +51,7 @@ def test_a_session_on_the_double_is_exported_as_steps_checks_and_named_drops(
     assert [step["op"] for step in doc["steps"]] == ["write", "registers"]
     assert doc["steps"][1]["recorded"] == {"registers": regs["registers"]}
     assert out["checks"] == 1 and [d["op"] for d in out["dropped"]] == ["status", "comment_add"]
-    assert out["summary"].startswith("perform_export: 2 steps, 1 checks, 2 dropped to ")
+    assert out["summary"].startswith("perform_export: 2 steps, 1 check, 2 dropped to ")
 
 
 def test_the_machine_around_a_call_is_the_sessions_stop_count_and_never_a_frame() -> None:
@@ -69,8 +69,16 @@ def test_a_stop_the_session_counted_before_its_record_moves_no_later_call(
         tmp_path: pathlib.Path, recorder: recording.Recorder) -> None:
     ses = install()
     ses.stop_count = 1  # type: ignore[attr-defined]
+    sent = ses.command
+
+    def counted(text: str, **kw: object) -> str:
+        # INSIDE a call, as a parked `state_load` counts its stop: counted, not surveyed. A count
+        # that moved between two calls would be motion outside the recording, a cut.
+        ses.stop_count = 2  # type: ignore[attr-defined]
+        return sent(text, **kw)
+    ses.command = counted  # type: ignore[method-assign]
     server.write(ref="F000:0000", data_hex="aa")
-    ses.stop_count = 2  # type: ignore[attr-defined]  # a parked state_load: counted, not surveyed
+    ses.command = sent  # type: ignore[method-assign]
     server.status()
     server.comment_add(ref="F000:0000", text="after")
     out = server.perform_export(path=str(tmp_path / "s.json"))
@@ -126,3 +134,41 @@ def test_a_start_refused_over_the_live_session_keeps_its_recording(
     rec = recorder.recording
     assert rec is not None and rec.start == {"conf": "/x.conf"}
     assert [c.op for c in rec.calls] == ["write"]
+
+
+def test_a_start_with_a_plan_is_exported_and_its_document_replays_on_the_same_double(
+        tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """THE PLAN THROUGH THE BOUNDARY, END TO END: `start(plan=)` runs its steps as a sequence's,
+    the recording keeps them after the start (whose own arguments drop `plan`), and the document
+    plays back through this server's `perform`, every `recorded` step held."""
+    from test_dosbox_x_server import _start_on_a_booted_fake
+
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch, plan_wait=0,
+                                  plan=[{"op": "write", "ref": "F000:0000", "data_hex": "aa"},
+                                        {"op": "registers"}])
+    assert got["status"] == "ok", got
+    server.read_memory(ref="F000:0000", length=1)
+    out = server.perform_export(path=str(tmp_path / "s.json"))
+    assert out["status"] == "ok" and out["cut"] is None, out
+    doc = json.loads((tmp_path / "s.json").read_text())
+    assert "plan" not in doc["start"] and doc["entry"] == "dosbox_x_server.py"
+    assert [step["op"] for step in doc["steps"]] == ["write", "registers", "read_memory"]
+    played = server.perform(steps=doc["steps"])
+    assert played["status"] == "ok", played
+    assert played["held"] == sum(bool(s.get(recording.RECORDED)) for s in doc["steps"]) == 2
+
+
+def test_the_declarations_the_recorder_reads_are_the_refs_the_list_tools_answer() -> None:
+    """THE REPLAY'S PRECONDITION: the runner holds the replayed store, read through each list tool
+    the recorder names, to what `_declared` read at the recorded start, so the two readings are one
+    for every kind a `start` re-arms."""
+    install()
+    assert server.breakpoint_at(ref="F000:0010")["status"] == "ok"
+    assert server.breakpoint_interrupt(number=0x21)["status"] == "ok"
+    assert server.watch_add(ref="F000:0020", mode="show", length=2)["status"] == "ok"
+    declared = dosbox_mcp._declared()
+    assert set(declared) == set(dosbox_mcp.RECORDER.lists) <= set(dosbox_mcp.registered_tools())
+    for tool, key in dosbox_mcp.RECORDER.lists.items():
+        listed = getattr(server, tool)()[key]
+        assert sorted(r["ref"] for r in listed) == sorted(declared[tool]), tool
+    assert sum(len(refs) for refs in declared.values()) == 3

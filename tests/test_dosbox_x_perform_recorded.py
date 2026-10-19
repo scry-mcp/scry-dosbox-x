@@ -8,6 +8,8 @@ import pathlib
 import sys
 from typing import Any
 
+from scry_core import demo, replay
+
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from test_dosbox_x_server import clean_session, install  # noqa: E402,F401
@@ -24,6 +26,7 @@ def test_a_step_that_holds_to_what_was_recorded_runs_as_any_step() -> None:
     regs = server.registers()["registers"]
     out = server.perform(steps=[_regs({"registers": regs}), _regs({"registers": regs})])
     assert out["status"] == "ok" and out["completed"] == 2, out
+    assert out["held"] == 2, "each step held to its recorded answer is counted"
 
 
 def test_a_step_that_does_not_hold_stops_the_list_as_diverged() -> None:
@@ -37,11 +40,25 @@ def test_a_step_that_does_not_hold_stops_the_list_as_diverged() -> None:
     assert out["field"] == "registers" and out["got"] == regs
     assert out["failed"]["op"] == "registers" and out["failed"]["reply"]["registers"] == regs
     assert "step 1 ('registers') diverged" in out["message"]
+    assert out["held"] == 1, "the step before the divergence held, the diverged one did not"
+
+
+def test_the_replay_runner_reads_this_servers_own_diverged_reply(tmp_path: pathlib.Path) -> None:
+    """The contract between this server's `perform` and the runner (`scry_core.replay`): the
+    reply a diverged step gives is the one the runner names the step and the field from, never
+    an exit 3 for a reply it cannot read."""
+    install()
+    regs = server.registers()["registers"]
+    steps = [_regs({"registers": regs}), _regs({"registers": {**regs, "EAX": "DEADBEEF"}})]
+    out = server.perform(steps=steps)
+    said = replay._failed(steps)(out, demo.Run(dir=tmp_path))
+    assert said.startswith("diverged at step 2 of 2 (registers): registers recorded "), said
 
 
 def test_recorded_never_reaches_the_tool() -> None:
     install()
-    assert server.perform(steps=[_regs({})])["status"] == "ok"
+    out = server.perform(steps=[_regs({})])
+    assert out["status"] == "ok" and out["held"] == 0, "an empty `recorded` holds to nothing"
 
 
 def test_a_recorded_that_is_not_a_mapping_is_refused_before_any_step_runs() -> None:

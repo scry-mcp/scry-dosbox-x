@@ -2239,6 +2239,7 @@ def test_close_records_which_ending_it_got() -> None:
 
     def bare(poll_answers: list[int | None], wait_raises: int) -> ds.Session:
         s = ds.Session.__new__(ds.Session)
+        s._closing, s._closed = threading.Lock(), False   # what `__init__` gives a close
         polls: list[int | None] = list(poll_answers)
         # `wait_raises` counts STRETCHES that expire, not calls: `close` waits in slices
         # so it can paint its progress, so the double raises for that many stretches of

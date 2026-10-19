@@ -551,14 +551,17 @@ def _close_log(session: ds.Session, places: list[Path], what: str, **extra: Any)
 def close_log_left_open(session: ds.Session) -> None:
     """A CPU log a cancelled call left open, closed by its `stop` end with the guest at the
     debugger, so the next trace starts on a closed log. What it wrote is moved aside first, to
-    the first free `trace-cancelled-<n>.trace` in the working directory: on a log the machine
-    already closed, `LOGC 0` opens a fresh file over its name."""
+    the first free `trace-cancelled-<n>.trace` where a trace with no `dest` goes, the session's
+    captures directory (the working directory for a session started with none): on a log the
+    machine already closed, `LOGC 0` opens a fresh file over its name."""
     cwd = session.launch.cwd
+    captures = session.launch.captures_dir
+    home = captures if captures is not None and captures.is_dir() else cwd
     places = log_places(cwd)
     source = _written(places)
     if source is not None:
-        aside = next(cwd / f"trace-cancelled-{n}.trace" for n in itertools.count(1)
-                     if not paths.taken(cwd / f"trace-cancelled-{n}.trace"))
+        aside = next(home / f"trace-cancelled-{n}.trace" for n in itertools.count(1)
+                     if not paths.taken(home / f"trace-cancelled-{n}.trace"))
         dcollect.collect(source, aside, "trace")
     _close_log(session, places, "the CPU log a cancelled call left open")
 

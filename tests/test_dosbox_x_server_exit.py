@@ -136,3 +136,63 @@ def test_a_signal_while_start_waits_for_its_emulator_ends_that_emulator(
         release.set()
         holder.join()
     assert starting.closed == 1
+
+
+def test_the_servers_end_and_a_signalled_one_close_the_session_once(
+        monkeypatch: pytest.MonkeyPatch, ending: dict[str, Any]) -> None:
+    """The client closes stdin, so `main`'s end closes the session under the lock; a SIGTERM
+    after it waits `LOCK_WAIT_S` for that lock and reaches the same session from a second thread.
+    The session's own close runs its body once: a second would signal the group and close the
+    master again."""
+    import dosbox_session as ds
+
+    bodies: list[float] = []
+
+    def slow_close(self: ds.Session, grace: float = 8.0, progress: Any = None) -> int:
+        bodies.append(time.monotonic())
+        time.sleep(0.5)
+        return 0
+
+    ses = ds.Session.__new__(ds.Session)
+    # What `__init__` gives every session for its close, without launching an emulator.
+    ses._closing, ses._closed, ses.reap_failed = threading.Lock(), False, ""
+    ses.proc = type("Proc", (), {"returncode": 0})()
+    monkeypatch.setattr(ds.Session, "_close", slow_close)
+    monkeypatch.setattr(dstate.STATE, "session", ses)
+    monkeypatch.setattr(server, "LOCK_WAIT_S", 0.2)
+    # THE SIGNAL LANDS ONCE `main`'s END HOLDS THE LOCK AND IS CLOSING: earlier, the signalled
+    # end would take the lock first and `main` would find no session left.
+    later = threading.Timer(0.1, server._end_signalled, args=(128 + signal.SIGTERM,))
+    monkeypatch.setattr(server.mcp, "run", later.start)
+    try:
+        server.main()
+    finally:
+        # JOINED EVEN ON A FAILURE: the fixture restores the real `_leave` on teardown, and a
+        # signalled end still running then would end the test process itself.
+        later.join()
+        ending["left"].wait(5.0)
+    assert ending["left"].wait(5.0), "the signalled end never left"
+    assert len(bodies) == 1, f"{len(bodies)} closes of one session"
+
+
+def test_a_close_whose_reap_failed_is_finished_by_the_next_one(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """Only a close that left nothing behind is final: one whose SIGKILLed emulator was not
+    reaped in time says so (`reap_failed`), and a later close tries again."""
+    import dosbox_session as ds
+
+    bodies: list[int] = []
+
+    def close_once_unreaped(self: ds.Session, grace: float = 8.0, progress: Any = None) -> int:
+        bodies.append(1)
+        self.reap_failed = "not reaped" if len(bodies) == 1 else ""
+        return 0
+
+    ses = ds.Session.__new__(ds.Session)
+    ses._closing, ses._closed, ses.reap_failed = threading.Lock(), False, ""
+    ses.proc = type("Proc", (), {"returncode": 0})()
+    monkeypatch.setattr(ds.Session, "_close", close_once_unreaped)
+    ses.close()
+    ses.close()
+    ses.close()
+    assert len(bodies) == 2, bodies
