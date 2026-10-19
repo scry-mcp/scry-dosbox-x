@@ -75,8 +75,8 @@ def test_log_wait_on_the_emulator_channel_finds_an_emulator_line(tmp_path: Path)
     assert got["line"] == EMU_LINE_2 and got["already"] is True and got["lines_before"] == 0
     got = LogSession(log).log_wait("CONFIG", seconds=2, channel="all")
     assert got["line"] == f"[emulator] {EMU_LINE_2}" and got["lines_before"] == 1
-    with pytest.raises(ds.E9Expired):
-        LogSession(log).log_wait("CONFIG", seconds=0.2, channel="guest")
+    missed = LogSession(log).log_wait("CONFIG", seconds=0.2, channel="guest")
+    assert missed["verdict"] == "TIMEOUT" and missed["arrived_during"] == 0, missed
     # `e9_wait` is the guest channel's wait, the one `expect` and `drive` rest on.
     assert LogSession(log).e9_wait("BOOT", seconds=1)["line"] == E9_BOOT
 

@@ -22,6 +22,7 @@ import re
 from dataclasses import dataclass
 from typing import Any, cast
 
+from scry_core import reply_contract as contract
 from scry_core.reply_contract import Code
 
 import dosbox_launch as dlaunch
@@ -248,24 +249,31 @@ def _refuse_stopped(session: ds.Session, what: str) -> None:
 def _report(session: ds.Session) -> Report:
     mark = session.e9_mark()
     session.send_commands([OP_REPORT])
-    try:
-        got = session.e9_wait(REPORT_LINE.pattern, REPORT_WAIT_S, mark=mark)
-    except ds.E9Expired:
+    got = session.e9_wait(REPORT_LINE.pattern, REPORT_WAIT_S, mark=mark)
+    if got["verdict"] != contract.TARGET:
         raise ds.Invalid("host_failed",
             f"the stub did not report the pointer within {REPORT_WAIT_S}s: it is not reading "
-            "the port (a guest that masked the timer, or a stub that is gone)") from None
+            "the port (a guest that masked the timer, or a stub that is gone)")
     return parse_report(str(got["line"]))
 
-def effect_seen(expect: str, reaction: dict[str, object]) -> dict[str, Any]:
-    """The verified-and-seen block a post or an act hands back, ONE shape for `send_keys`,
-    `send_mouse` and `drive`. `seen_before_waiting` is what `e9_wait`'s `already` means from
-    a mark: the reaction was in the log when the wait first looked -- which, with the mark
-    taken BEFORE the post, includes a reaction the guest wrote WHILE the key was going in.
-    It is not named `already`: that reads as "it had happened before the post", and a run
-    whose every reaction is stamped after its post would carry it on each.
+def verify_block(expect: str, reaction: dict[str, object]) -> dict[str, Any]:
+    """The `verify` block a post or an act hands back, ONE shape for `send_keys`,
+    `send_mouse` and `drive`: the wait's `verdict`, `TARGET` with the line or `TIMEOUT` with
+    what arrived while it waited. `seen_before_waiting` is what `e9_wait`'s `already` means
+    from a mark: the reaction was in the log when the wait first looked -- which, with the
+    mark taken BEFORE the post, includes a reaction the guest wrote WHILE the key was going
+    in. It is not named `already`: that reads as "it had happened before the post".
     `lines_before` is how many lines the guest wrote between the mark and the reaction."""
-    return {"checked": True, "seen": True, "expected": expect, "line": reaction["line"],
-            "seen_before_waiting": reaction["already"],
+    if reaction["verdict"] != contract.TARGET:
+        return {"checked": True, "seen": False, "expected": expect,
+                "verdict": reaction["verdict"], "waited_s": reaction["waited_s"],
+                "arrived_during": reaction["arrived_during"],
+                "lines_examined": reaction["lines_examined"],
+                "note": f"the program did not react: {reaction['note']}. It may have "
+                        f"swallowed the input (a modal, a loading state); either way this is "
+                        f"a MISS, not a delivery"}
+    return {"checked": True, "seen": True, "expected": expect, "verdict": contract.TARGET,
+            "line": reaction["line"], "seen_before_waiting": reaction["already"],
             "lines_before": reaction["lines_before"],
             "waited_s": reaction["waited_s"], "lines_total": reaction["lines_total"]}
 
@@ -284,19 +292,19 @@ def _post_and_verify(session: ds.Session, kind: str, post: Any, expect: str | No
     capture a key while the post reads as a success. So with `expect` (a regex over the
     guest's E9 log) the sequence is: MARK the log, post, then wait for a NEW line matching it.
     A line already on disk before the mark is history and is never served as the reaction,
-    and neither is a line the stub wrote (`program_reaction`). A miss is INVALID, saying the
-    program did not react, and it still carries what was posted, because a swallowed key is a
+    and neither is a line the stub wrote (`program_reaction`). A miss is the wait's `TIMEOUT`,
+    saying the program did not react, beside what was posted, because a swallowed key is a
     different fact from a key never sent. A line the guest writes between the mark and the post
     (a key still being digested, a timer it logs on) is after the mark and is served;
     `seen_before_waiting` and `waited_s` show that shape.
 
-    ONLY THE EXPIRED BOUND IS THE PROGRAM'S MISS. `E9Expired` is the observation that nothing
+    ONLY THE EXPIRED BOUND IS THE PROGRAM'S MISS. `TIMEOUT` is the observation that nothing
     matched; `E9Stopped` is the machine reaching the debugger while the wait looked (a
     breakpoint armed before the post fired after it), reported with `last_stop` and never as
-    "the program swallowed it"; a gone emulator or a shrunk log is the instrument breaking, and
-    comes back `effect.checked: False` with the wait's own words leading the reason.
+    "the program swallowed it"; a gone emulator is the instrument breaking, and comes back
+    `verify.checked: False` with the wait's own words leading the reason.
 
-    WITHOUT `expect` NOTHING ABOUT THE PROGRAM IS VERIFIED, and the reply says so in `effect`.
+    WITHOUT `expect` NOTHING ABOUT THE PROGRAM IS VERIFIED, and the reply says so in `verify`.
     Everything that would make the verification impossible is refused BEFORE the post, because
     a post cannot be taken back.
     """
@@ -304,7 +312,7 @@ def _post_and_verify(session: ds.Session, kind: str, post: Any, expect: str | No
         return _verify(session, kind, post, expect, seconds, progress, fields)
     except Delivered as e:
         return st.reply(status="INVALID", code=e.code, **fields, **e.fields, delivered=True,
-                        effect={"checked": False, "why": "the read-back failed after the "
+                        verify={"checked": False, "why": "the read-back failed after the "
                                                       "commands went in"},
                         message=f"the {kind} went into the guest, and then {e}")
 
@@ -313,7 +321,7 @@ def _verify(session: ds.Session, kind: str, post: Any, expect: str | None,
             seconds: float | None, progress: ds.Progress,
             fields: dict[str, Any]) -> dict[str, Any]:
     if expect is None:
-        return st.reply(**fields, **post(), effect={
+        return st.reply(**fields, **post(), verify={
             "checked": False,
             "why": "no `expect` was given, so the reply says what went into the guest and NOT "
                    "that the program took it; pass expect=<E9 pattern> to confirm its reaction"})
@@ -330,14 +338,14 @@ def _verify(session: ds.Session, kind: str, post: Any, expect: str | None,
     except ds.E9Stopped as e:
         running.observe_stop(session)
         stop, where = STATE.stop_named(session)
-        effect = {"checked": True, "seen": False, "expected": expect,
-                  "stopped_during_wait": True, "waited_s": e.waited_s,
-                  "lines_on_disk": e.arrived, "why": str(e)}
+        checked = {"checked": True, "seen": False, "expected": expect,
+                   "stopped_during_wait": True, "waited_s": e.waited_s,
+                   "lines_on_disk": e.arrived, "why": str(e)}
         # WHETHER THE INPUT LANDED BEFORE THE STOP IS THE GUEST'S LOG'S TO SAY: a key can go
         # in, its own reaction produce the wrap that fires the stopper, and the log carry the
         # lines. What is known is where an undelivered command waits.
         return st.reply(status="INVALID", code="wait_stopped", **host, last_stop=stop,
-                      effect=effect,
+                      verify=checked,
                       message=f"the {kind} went into the guest and the machine STOPPED at the "
                              f"debugger during the wait{where}, so no line matching {expect!r} "
                              f"could arrive: a stopped guest writes nothing. This MISS is the "
@@ -345,20 +353,12 @@ def _verify(session: ds.Session, kind: str, post: Any, expect: str | None,
                              f"the stop is the guest's log's to say (`e9` since the post), and "
                              f"a command not delivered waits in the serial buffer for the next "
                              f"resume")
-    except ds.E9Expired as e:
-        return st.reply(status="INVALID", code="wait_expired", **host,
-                      effect={"checked": True, "seen": False, "expected": expect,
-                              "why": str(e)},
-                      message=f"the {kind} went into the guest but the program did not react: "
-                             f"no new line matching {expect!r} within {wait_s}s of the post. "
-                             f"It may have swallowed it (a modal, a loading state); either way "
-                             f"this is a MISS, not a delivery. {e}")
     except ds.Invalid as e:
         return st.reply(status="INVALID", code=e.code, **host,
-                      effect={"checked": False, "expected": expect, "why": str(e)},
+                      verify={"checked": False, "expected": expect, "why": str(e)},
                       message=f"the {kind} went into the guest and its effect could NOT be "
                              f"verified: {e}")
-    return st.reply(**host, effect=effect_seen(expect, reaction))
+    return st.reply(**host, verify=verify_block(expect, reaction))
 
 
 def check_expectation(expect: str | None, seconds: float | None) -> None:

@@ -63,7 +63,7 @@ class RunningGuest:
 
     def log_wait(self, pattern: str, seconds: float, channel: str,
                  **_: object) -> dict[str, object]:
-        return {"line": "x", "already": True}
+        return {"verdict": "TARGET", "line": "x", "already": True}
 
     stub_protocol = "2"
 

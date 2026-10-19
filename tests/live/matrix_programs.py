@@ -153,7 +153,7 @@ def key_reaches_int9(key: str) -> bool:
     breakpoint is cleared; not stopped, the machine is left running for the caller to close."""
     must(M.call(server.breakpoint_interrupt, number=0x09), "arming INT 9")
     r = M.call(server.resume)
-    if not (ok(r) and r.get("halted") is False):
+    if not (ok(r) and "stop_seq" not in r):
         raise RuntimeError(f"the machine did not run: {said(r)}")
     must(M.call(server.send_keys, keys=[key]), f"posting {key}")
     deadline = time.monotonic() + KEY_ARRIVAL_S

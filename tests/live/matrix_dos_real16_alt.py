@@ -91,7 +91,7 @@ def section_e() -> None:
     timer = program_timer(psp)
     r = run_for(timer, 8)
     judged("E run_to with the game's timer as control runs for a bound and rests on it",
-           reply=r, holds=ok(r) and r.get("arrived") is False and r.get("running") is False
+           reply=r, holds=ok(r) and r.get("verdict") == "OTHER_STOP"
            and int((r.get("control") or {}).get("hits") or 0) > 0)
     stub = stub_cell("E the stub announces the serial route")
     if e9:

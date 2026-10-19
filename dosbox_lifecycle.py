@@ -7,6 +7,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
+from scry_core import reply_contract as contract
+
 import dosbox_arming as arming
 import dosbox_binary as binaries
 import dosbox_declarations as dec
@@ -46,9 +48,9 @@ def start(conf: str, cwd: str, seconds: int, mode: str, window_flags: list[str] 
         # leaked one descriptor per cycle in a process designed to be long-lived, and
         # restarting after a bound expires is the normal way to use this.
         #
-        # AND THIS ONE CANNOT REPORT `reap_failed`, deliberately. It is reached only
+        # AND THIS ONE CANNOT REPORT A REAP FAILURE, deliberately. It is reached only
         # under `not alive()`, so `close()` takes its dead branch, the signals never
-        # run and the field is never set: a consumer here would be unreachable.
+        # run and `reap_failed` is never set: a consumer here would be unreachable.
         STATE.session.close()
         STATE.session = None
     # A NEW SESSION IS A NEW PROCESS AT A NEW BASE, so the previous one's table may not
@@ -105,11 +107,11 @@ def start(conf: str, cwd: str, seconds: int, mode: str, window_flags: list[str] 
         # different message that named neither problem.
         #
         # FOUR OF THE SIX `close()` SITES CAN TAKE THE LIVE BRANCH, and two of them
-        # report `reap_failed`: this one and the `close` tool. The other two drop it
-        # deliberately and the reasons differ -- the `except BaseException` arm below
-        # is already carrying an escaping exception with nowhere to put a second
-        # message, and `main()`'s `finally` runs at process exit where there is no
-        # reply left to write to. It is set inside `close()`'s `if self.proc.poll() is
+        # report a reap failure: this one, and the `close` tool in its `exit_code`. The
+        # other two drop it deliberately and the reasons differ -- the `except
+        # BaseException` arm below is already carrying an escaping exception with nowhere
+        # to put a second message, and `main()`'s `finally` runs at process exit where
+        # there is no reply left to write to. It is set inside `close()`'s `if self.proc.poll() is
         # None:` block, so it can only be produced by closing a session that is ALIVE: a
         # consumer on the DEAD branch, where `poll()` is non-None and the signals never run,
         # would read a field that closing an already-exited session leaves empty.
@@ -161,21 +163,20 @@ def start(conf: str, cwd: str, seconds: int, mode: str, window_flags: list[str] 
 def close(progress: ds.Progress) -> dict[str, Any]:
     """The body of the `close` tool."""
     if STATE.session is None:
-        return st.reply(closed=False, how="none", note="there was no session")
+        return st.reply(closed=False, ended_by="none", note="there was no session")
     was = STATE.session.state()
     rc = STATE.session.close(progress=progress)
-    # READ AFTER THE CLOSE, because that is when it can be set, and it is reported
-    # BESIDE `exit_code` rather than inside `session` because it is a fact about the
-    # CLOSING and not about the state being described.
-    #
-    # NOT IN `state()`: `was` is captured before `close()` runs, every other call site
-    # discards the session immediately afterwards, and no path sets it mid-session, so a
-    # child SIGKILLed and never reaped would come back as `exit_code: null` with
-    # `reap_failed: ""`, the exact reply the field exists to prevent.
+    # READ AFTER THE CLOSE, because that is when it can be set: a child SIGKILLed and never
+    # reaped has no exit code, and `exit_code` says why in its place (an emulator may still
+    # be on the machine). Not in `state()`: `was` is captured before `close()` runs.
     unreaped = STATE.session.reap_failed
-    how = STATE.session.ended_how
+    ended_by = STATE.session.ended_how
     STATE.session = None
     STATE.forget_symbols()
     STATE.clear_running_state()
-    return {"status": "ok", "closed": True, "how": how, "exit_code": rc,
-            "reap_failed": unreaped, "session": was}
+    exit_code = contract.or_unavailable(
+        None if unreaped else rc,
+        f"the emulator was SIGKILLed and not reaped ({unreaped}): it may still be on the "
+        f"machine" if unreaped else "the emulator's exit code could not be read")
+    return {"status": "ok", "closed": True, "ended_by": ended_by, "exit_code": exit_code,
+            "session": was}

@@ -40,6 +40,7 @@ from pathlib import Path
 from typing import Any
 
 from scry_core import avi, cancel, live_host
+from scry_core import reply_contract as contract
 from scry_core.progress import PROGRESS_EVERY_S as PROGRESS_EVERY_S
 from scry_core.progress import Progress as Progress
 from scry_core.progress import no_progress as no_progress
@@ -277,14 +278,6 @@ SYM_SAVE_NAME = "SYMSBK.BIN"
 # an afternoon by one call.
 RUN_TO_MAX = 10 * 60
 
-# How often `e9_wait` re-reads the log while waiting. It is a POLL and not a watch,
-# because the log is appended to by a process this does not own and there is no portable
-# way to be woken by that. A tenth of a second is far finer than any question asked of a
-# guest's own instrumentation and coarse enough that a ten-minute wait is six thousand
-# reads rather than a spin.
-E9_POLL = 0.1
-#: How much of the newest line a waiting `log_wait` shows in its progress line.
-LAST_LINE_SHOWN = 40
 # A BOUNDED WAIT REPORTS PROGRESS WITH A MESSAGE, through a callback the server hands in, and
 # polls for its call's cancellation at every turn: the vocabulary is `scry_core.progress`'s and
 # `scry_core.cancel`'s, the same on every Scry server, so this module knows nothing of the
@@ -387,9 +380,8 @@ class NotStopped(Invalid):
     pane at all, a pane that names no CPU mode, and a partial pane carrying no CS/EIP.
     Catching the base class turned the last two into a confident diagnosis of a cause
     that had not been observed. MEASURED: a STOPPED machine whose pane carried no mode
-    token was reported by `run_to` as "the bound expired with the machine still running,
-    and the breakpoint is STILL ARMED -- it cannot be removed while the debugger is not
-    listening", every clause of which was false.
+    token would be reported by `run_to` as a machine still running, with its breakpoint
+    armed and unremovable, every clause of which is false.
 
     This package's thesis is that an INVALID says what it examined. A handler that
     widens one refusal into three inverts it, in the reply a caller reasons hardest
@@ -401,15 +393,14 @@ class NotStopped(Invalid):
 
 
 def _wait_stopped(pattern: str, arrived: int, waited_s: float,
-                  bound: float | None = None) -> Invalid:
-    """The refusal a wait gives for a machine at the debugger, the loop's and the expiry's in
-    one shape, so the two cannot drift: a stopped guest writes nothing, the wait cannot end,
-    and "still running" there would be about the process. The count is what was ON
-    DISK, said as such: the emulator flushes its log in its own time, so a line the guest
-    wrote before the stop can reach the file after this refusal (three lines stamped before
-    the stop, read by `e9` afterwards, counted 0 here)."""
-    when = (f"the bound of {bound}s expired and the machine is stopped at the debugger"
-            if bound is not None else "the machine is stopped at the debugger")
+                  at_bound: bool = False) -> Invalid:
+    """The one refusal a wait gives for a machine at the debugger, found by a poll or as the
+    bound ran out: a stopped guest writes nothing, the wait cannot end, and "still running"
+    there would be about the process. The count is what was ON DISK, said as such: the
+    emulator flushes its log in its own time, so a line the guest wrote before the stop can
+    reach the file after this refusal."""
+    when = ("the bound expired and the machine is stopped at the debugger"
+            if at_bound else "the machine is stopped at the debugger")
     return E9Stopped(
         f"{when}, so a wait for {pattern!r} cannot end: a stopped guest writes nothing. "
         f"{arrived} line(s) were on disk from the wait's start to this refusal, none "
@@ -419,8 +410,9 @@ def _wait_stopped(pattern: str, arrived: int, waited_s: float,
 
 class E9Stopped(Invalid):
     """A wait that cannot end because the machine is at the DEBUGGER: a stopped guest writes
-    nothing. Its own type because the server answers it differently from `E9Expired` -- the
-    stop is named, with where the posted key went -- and from a broken instrument.
+    nothing. Its own type because the server answers it differently from a bound that ran out
+    (a `TIMEOUT`) -- the stop is named, with where the posted key went -- and from a broken
+    instrument.
     `waited_s` is how long it looked before refusing and `arrived` how many lines were on
     disk in that time, so the reply can carry both as fields and not only as prose."""
 
@@ -428,23 +420,6 @@ class E9Stopped(Invalid):
         super().__init__("wait_stopped", message)
         self.waited_s = waited_s
         self.arrived = arrived
-
-
-class E9Expired(Invalid):
-    """`e9_wait` watched the whole bound, the channel was there, and nothing matched.
-
-    A SEPARATE TYPE for the same reason `NotStopped` is one: a caller that turns a wait
-    into a verdict ("the guest did not react to the key") must act on THIS cause and not
-    on the other causes. `e9_wait` refuses for four things after it starts looking -- the
-    bound expired, the machine STOPPED at the debugger (`E9Stopped`), the emulator is
-    GONE, the log SHRUNK underneath -- and only the first two are observations about the
-    guest. The other two are the instrument breaking, and a
-    handler catching the base class turned a dead emulator into "the program swallowed
-    the key", with the truth appended at the end of the sentence.
-    """
-
-    def __init__(self, message: str) -> None:
-        super().__init__("wait_expired", message)
 
 
 def avi_facts(data: bytes) -> dict[str, object]:
@@ -1717,35 +1692,22 @@ class Session:
         caller never asked to keep it. Each hit costs a position read, a console round trip,
         so a control that fires a few times a run is the right one.
 
-        Three outcomes, and they are kept apart because conflating any two of them
-        hands back a confident wrong answer:
+        Three verdicts, and they are kept apart because conflating any two of them hands
+        back a confident wrong answer:
 
-          arrived            it stopped at the address that was asked for.
-          stopped elsewhere  it stopped, at something else -- another breakpoint got
-                             there first, which is ordinary and is NOT an arrival.
-          still running      it did not come to rest at the debugger. The machine is
-                             running, which means no other tool here can answer
-                             anything until it stops.
-
-        THE OUTCOME IS READ FROM `arrived` AND `running`, NEVER FROM `bound_expired`
-        ALONE. That flag is the WAIT's measurement -- did the loop give up on the clock
-        -- and it is on EVERY return, including the arrival and the stop elsewhere,
-        because the position is read AFTER the loop gives up and the machine can be
-        found at rest however the loop ended. `bound_expired` SPLITS the still-running
-        outcome, which has two causes that want different next moves: either the clock
-        ran out with nothing happening, or the debugger announced a stop, the wait left
-        early, and the nudge that followed came back cut. One note for both would
-        contradict itself inside one reply: "the bound expired" beside a `waited_s`
-        of nothing.
+          TARGET      it stopped at the address that was asked for.
+          OTHER_STOP  it stopped at something else: another breakpoint got there first,
+                      which is ordinary and is NOT an arrival.
+          TIMEOUT     the bound ran out: the run is INTERRUPTED (`break_in`) and surveyed
+                      where it stands, or it rested on its own control as the bound ran out.
 
         THE STOP IS HEARD BY THE PROMPT, NOT ONLY BY A REGISTER REPAINT. This debugger
         repaints only the cells that changed, so a machine that stops again redraws its
         code pane while `EAX=` and the rest stay put and are never sent: the prompt
         agrees with the machine on every stop, the pane on about half of them. A wait
         listening to the pane alone reports a machine that stopped within milliseconds
-        after the FULL bound as `bound_expired: true` beside `running: false` and a
-        concrete `stopped_at`: a timeout, by the flag, for a machine that sat at the
-        debugger throughout.
+        only after the FULL bound: a timeout for a machine that sat at the debugger
+        throughout.
 
         THE WAIT CONSULTS THE EMULATOR AND SCANS ONLY WHAT IS NEW, as `e9_wait` does. A
         session that dies the instant the machine is released would otherwise burn the
@@ -1764,14 +1726,10 @@ class Session:
         persistent, so a `run_to` that left it behind would silently stop the NEXT
         `resume` at an address the caller had finished with. It is removed by looking
         its index up again rather than reusing the one from arming: `BPDEL` renumbers.
-        WHEN IT DID NOT ARRIVE THE BREAKPOINT STAYS, and the reason differs by path,
-        which an earlier version of this paragraph got wrong by giving only one. On the
-        TIMED-OUT path the machine is running and will not take the command. On the
-        STOPPED-ELSEWHERE path it would take it perfectly well: the breakpoint is kept
-        DELIBERATELY, because the caller has not reached what they asked for and
-        removing it would take away the thing they are still waiting on. Either way the
-        reply says the breakpoint is still armed rather than claiming a cleanup that did
-        not happen.
+        WHEN IT DID NOT ARRIVE THE BREAKPOINT STAYS, DELIBERATELY: the caller has not
+        reached what they asked for, and removing it would take away the thing they are
+        still waiting on. The reply says it is still armed rather than claiming a cleanup
+        that did not happen.
 
         THE ONE TRAP THIS CANNOT CLOSE, MEASURED HERE AND DOCUMENTED NOWHERE: A CODE
         BREAKPOINT IN ROM IS ACKNOWLEDGED AND NEVER FIRES. `BP F000:E05B` and
@@ -1831,11 +1789,9 @@ class Session:
         # goes out and stays marked whatever happens next. The debugger arms a code
         # breakpoint by putting a trap byte in memory -- this module's own non-arrival
         # note says so -- and `run_to` leaves that byte in place on two of its three
-        # outcomes. Until now only `set_register` set this flag, so a caller could take
-        # a `read_memory` over a watched address and read the trap as program bytes
-        # under a header stating the session had not been written to. A measurement on
-        # a forced state is not a measurement of the program, and that is the whole
-        # reason this flag exists.
+        # outcomes, so a `read_memory` over a watched address reads the trap as program
+        # bytes. A measurement on a forced state is not a measurement of the program, and
+        # that is the whole reason this flag exists.
         self.altered = True
         self.command(f"BP {target}")
         if ctl is not None:
@@ -1849,23 +1805,24 @@ class Session:
                     f"Resuming now would run the machine with nothing to stop it, and the "
                     f"reply would blame the address rather than the arming")
         # THE TERMINAL IS DRAINED BEFORE THE MACHINE IS RELEASED -- by `_write` itself, for
-        # every run key (`_release`) -- and without it the wait was decided by text that
-        # arrived BEFORE it started: the read-back above leaves a whole register pane in the
-        # buffer, so the first `_read` after F5 saw an `EIP=` and broke out instantly.
-        # MEASURED, a ten-minute `run_to` returned "the bound expired" after a quarter of a
-        # second. The drain sat on this line alone until `resume` was found to need it too.
+        # every run key (`_release`) -- or the wait is decided by text that arrived BEFORE it
+        # started: the read-back above leaves a whole register pane in the buffer, and the
+        # first `_read` after F5 would see an `EIP=` and break out at once.
         began = time.monotonic()
         deadline = began + seconds
         control_hits = 0
         at: dict[str, str] | None = None
-        expired, saw_at = True, 0.0
+        expired, interrupted = True, False
+        release = True
         # THE CONTROL LOOP: released, waited for, read; a stop AT the control is counted and
         # the machine let go again, anything else ends the run. Without a control it is one
-        # pass, which is what this method always was.
+        # pass: the tool always passes one, and the session's own cases drive the bare pass.
         try:
             while True:
-                self._write(RUN_KEY)
-                expired, saw_at = Session.await_stop(self, began, deadline, target, progress)
+                if release:
+                    self._write(RUN_KEY)
+                release = True
+                expired, _saw_at = Session.await_stop(self, began, deadline, target, progress)
                 if expired:
                     break
                 try:
@@ -1873,15 +1830,16 @@ class Session:
                 except NotStopped:
                     if not self.alive():
                         raise
-                    # THE ANNOUNCED STOP THAT IS NOT ONE: handled below, as the running outcome
-                    # whose `bound_expired` is False.
-                    break
+                    # THE ANNOUNCED STOP THAT IS NOT ONE: the machine still runs, so the wait
+                    # listens on for the rest of its bound, sending nothing.
+                    release = False
+                    continue
                 except Invalid as exc:
                     # THE OTHER TWO WAYS `where()` REFUSES, caught with something attached. It
                     # has three (the machine is not stopped, the pane names no CPU mode, and a
                     # CUT repaint carries no `CS`/`EIP`) and only the first is `NotStopped`.
                     # Letting the other two escape whole would leave `run_to` with no
-                    # `waited_s`, no `bound_expired`, and NO WORD about the breakpoint now
+                    # `waited_s`, no verdict, and NO WORD about the breakpoint now
                     # sitting armed in a machine this call has already written to, where it
                     # will stop the next `resume` at an address nobody recorded.
                     #
@@ -1889,8 +1847,8 @@ class Session:
                     # naming no CPU mode is NOT a running machine, and reporting it as one is
                     # the exact defect
                     # `test_a_partial_pane_is_refused_rather_than_called_a_running_machine`
-                    # exists to pin: every clause of "the bound expired with the machine still
-                    # running" was false for it. So the reading stays refused and the refusal
+                    # exists to pin: every clause of "the machine is still running" was false
+                    # for it. So the reading stays refused and the refusal
                     # CARRIES the irreversible part, which is the same shape `step` takes.
                     raise _still_armed(exc, target, began, ctl) from None
                 # THE TARGET IS ASKED FIRST. A stop that is the target is an arrival whatever else
@@ -1906,44 +1864,27 @@ class Session:
                     expired = True
                     break
                 at = None
+            read_after_bound = at is None
+            if at is None:
+                # THE BOUND RAN OUT: the position is read AFTER the loop, because the machine
+                # can be found at rest however the loop ended; still running, it is
+                # INTERRUPTED here, so the run hands the machine back stopped as every bounded
+                # run does. Inside the cancel's reach: a cancel during the interrupt leaves
+                # nothing armed either.
+                try:
+                    try:
+                        at = self.where()
+                    except NotStopped:
+                        if not self.alive():
+                            raise
+                        interrupted = Session.stop_at_bound(self)
+                        at = self.where()
+                except Invalid as exc:
+                    raise _still_armed(exc, target, began, ctl) from None
         except BaseException as e:
             if cancel.is_cancellation(e):
                 Session._abandon_run(self, [target] + ([ctl] if ctl is not None else []))
             raise
-        if at is None:
-            # THE WAIT GAVE UP (or the announcement was not a stop): the position is read
-            # AFTER the loop, because the machine can be found at rest however the loop
-            # ended, and `bound_expired` reports the wait rather than the machine.
-            try:
-                at = self.where()
-            except NotStopped:
-                if not self.alive():
-                    raise
-                # WHICH OF THE THREE IT WAS. The early one is reached the moment the
-                # debugger announces a stop (prompt or repaint) and the nudge afterwards
-                # comes back cut; "the bound expired" on that path would sit beside a
-                # `waited_s` of nothing, a reply contradicting itself in one object.
-                why = ("the bound expired with the machine still running"
-                       if expired else
-                       f"the debugger announced a stop after {saw_at}s but the machine "
-                       f"was not stopped at the debugger when it was asked, so this is "
-                       f"NOT an expired bound")
-                still = (f" and so is the control at {ctl}, which fired {control_hits}x"
-                         if ctl is not None else "")
-                return {"target": target, "arrived": False, "running": True,
-                        "stopped_at": None, "waited_s": round(time.monotonic() - began, 3),
-                        "bound_expired": expired,
-                        "breakpoint_removed": False,
-                        "control": Session._control_block(ctl, control_hits, removed=False),
-                        "note": f"{why}, and "
-                                f"the breakpoint at {target} is STILL ARMED{still} -- it "
-                                f"cannot be removed while the debugger is not listening. "
-                                f"Every other tool here will refuse until it stops. If "
-                                f"{target} is in ROM (a BIOS or option-ROM segment such as "
-                                f"F000), that is why: MEASURED, a code breakpoint in ROM is "
-                                f"acknowledged, appears in BPLIST, and never fires"}
-            except Invalid as exc:
-                raise _still_armed(exc, target, began, ctl) from None
         # ARRIVAL IS THE SAME PLACE, NOT THE SAME SPELLING. In real mode many seg:off pairs
         # alias one physical byte, and the CPU stops with the PROGRAM'S CS:IP while the
         # breakpoint was armed at whatever paragraph the caller (or the symbol layer, which
@@ -1952,6 +1893,8 @@ class Session:
         # offset directly, because the breakpoint was armed at the live selector.
         arrived = Session._stopped_at(at, seg, off)
         on_control = control is not None and Session._stopped_at(at, control[0], control[1])
+        if on_control and read_after_bound and not interrupted:
+            control_hits += 1          # found resting on the control after the bound: it fired
         removed, cleanup = False, ""
         if arrived:
             removed, cleanup = Session._remove_own_breakpoint(self, target)
@@ -1961,35 +1904,32 @@ class Session:
             # behind it would stop the caller's next `resume` at a place they never named.
             control_removed, control_cleanup = Session._remove_own_breakpoint(self, ctl)
             cleanup += control_cleanup
-        # `bound_expired` IS ON EVERY RETURN, not only the one that needed it, and it
-        # carries the MEASUREMENT on both. A field that appears on one branch is a
-        # field a caller must first discover the shape of the reply to read, and this
-        # class's own doubles are the evidence: two of them drifted from the field sets
-        # they stand in for.
-        #
-        # IT IS `expired` AND NOT `False`, which is a correction found by breaking it: the
-        # bound CAN expire and the machine still be found at the target, because the
-        # arrival is read AFTER the loop gives up. Hardcoding False there reported a
-        # bound that demonstrably ran out as one that did not, and made the case
-        # asserting it unfalsifiable.
-        return {"target": target, "arrived": arrived, "running": False,
+        # THE VERDICT IS WHAT ENDED THE RUN, read off the stop and not off the wait: the bound
+        # CAN expire and the machine still be found at the target, because the arrival is read
+        # AFTER the loop gives up. The bound is a TIMEOUT when this call interrupted the run
+        # or it rests on its own control; a stop nobody here made is another's.
+        if arrived:
+            verdict, why = contract.TARGET, ""
+        elif interrupted or (expired and on_control):
+            verdict = contract.TIMEOUT
+            why = (f"the {seconds:g} s bound ran out and the run was interrupted at "
+                   f"{at['cs']}:{at['eip']}" if interrupted else
+                   f"it came to rest ON the control {ctl} (its hit number {control_hits}) when "
+                   f"the bound ran out")
+        else:
+            verdict = contract.OTHER_STOP
+            why = f"it stopped at {at['cs']}:{at['eip']}: something else got there first"
+        rom = (f" If {target} is in ROM (a BIOS or option-ROM segment such as F000), that is "
+               f"why: a code breakpoint in ROM is acknowledged, appears in BPLIST, and never "
+               f"fires" if interrupted else "")
+        return {"verdict": verdict, "target": target,
                 "stopped_at": at, "waited_s": round(time.monotonic() - began, 3),
-                "bound_expired": expired,
                 "breakpoint_removed": removed,
                 "control": Session._control_block(ctl, control_hits,
                                                   removed=control_removed),
                 "note": cleanup.strip() if arrived else
-                        (f"it came to rest ON the control {ctl} (its hit number "
-                         f"{control_hits}) when the bound ran out, and not at {target}"
-                         if on_control else
-                         f"it stopped at {at['cs']}:{at['eip']} and not at {target}: "
-                         f"something else got there first") +
-                        f". The breakpoint at {target} is still armed"
-                        + (f". The wait ran its full {seconds}s bound before this "
-                           f"stop was read, which is what `bound_expired` reports: "
-                           f"the machine is at rest, whatever the flag looks like"
-                           if expired else "")
-                        + cleanup}
+                        f"{why}, and not at {target}. The breakpoint at {target} is still "
+                        f"armed for the next release{rom}" + cleanup}
 
     def await_stop(self, began: float, deadline: float, target: str,
                     progress: Progress = no_progress, label: str = "") -> tuple[bool, float]:
@@ -2518,6 +2458,15 @@ class Session:
 
     # ------------------------------------------------------------------ input to the guest
 
+    def stop_at_bound(self) -> bool:
+        """A run whose bound ran out, handed back STOPPED: interrupted with `break_in` where it
+        stands, unless it came to rest on its own between the wait giving up and this call,
+        when a `BREAK` would reach an idle debugger. True when it interrupted."""
+        if self.at_debugger():
+            return False
+        self.break_in()
+        return True
+
     def break_in(self, seconds: float = BREAK_IN_WAIT_S) -> float:
         """Bring a RUNNING guest back to the debugger through its control channel's `BREAK`
         (`dosbox_control`), headless or windowed alike, and wait for its prompt: the seconds
@@ -2533,9 +2482,10 @@ class Session:
             if self.at_debugger():
                 return round(time.monotonic() - began, 2)
             time.sleep(0.05)
-        raise Invalid("unexpected_answer",
+        raise Invalid("not_settled",
             f"the debugger channel accepted BREAK and the debugger's prompt did not "
-                      f"appear within {seconds} s: the guest may still be running")
+                      f"appear within {seconds} s: the guest may still be running. Asking "
+                      f"`stop` again is allowed; if it fails as well, `close` then `start`")
 
     def _state_dir(self) -> Path:
         return saved_states._state_dir(self)

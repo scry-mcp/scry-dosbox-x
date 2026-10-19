@@ -66,7 +66,7 @@ J_CELLS = cells(
     ("J screen_wait from the park finds PROBE.COM after a retrace or more, on its row",
      "screen_wait docstring; known: the autoexec echoes the launch line once DOS has booted"),
     ("J screen_wait for a string never printed expires with its polls and the last page",
-     "screen_wait docstring: wait_expired with polls and text"),
+     "screen_wait docstring: TIMEOUT with polls and text"),
     ("J screen_wait with an empty text is refused before anything is typed",
      "screen_wait docstring: 1 to 132 characters"),
     ("J screen_wait on a running guest is refused", "screen_wait docstring: not_stopped"),
@@ -173,10 +173,8 @@ def _probe() -> None:
            holds=refused(r, "bad_argument"))
     r = M.call(server.screen_wait, text="NO GUEST PRINTS THIS", seconds=3)
     judged("J screen_wait for a string never printed expires with its polls and the last page",
-           reply=r, holds=refused(r, "wait_expired") and int(r.get("polls") or 0) >= 1
-           and "C:\\>PROBE.COM" in (r.get("text") or []))
-    if r.get("running"):
-        M.call(server.status)                 # the retrace still out stops it: record that stop
+           reply=r, holds=ok(r) and r.get("verdict") == "TIMEOUT"
+           and int(r.get("polls") or 0) >= 1 and "C:\\>PROBE.COM" in (r.get("text") or []))
     r = M.call(server.palette, first=1, count=1)
     judged("J palette once booted: entry 1 is the BIOS's 00 00 2A, #0000aa", reply=r,
            holds=ok(r) and r.get("rgb") == ["00002a"] and r.get("colors") == ["#0000aa"])
@@ -231,7 +229,7 @@ def _screen_guest() -> None:
         r = M.call(server.resume, seconds=30)
         at = r.get("stopped_at") or {}
         here = f"{at.get('cs')}:{at.get('eip')}"
-        if ok(r) and r.get("halted") is True and read_bytes(here, 2) == INT3:
+        if ok(r) and "stop_seq" in r and read_bytes(here, 2) == INT3:
             landed.append(stop)
         if stop in ("start80", "dac01", "13h"):
             dacs[stop] = M.call(server.palette).get("rgb") or []

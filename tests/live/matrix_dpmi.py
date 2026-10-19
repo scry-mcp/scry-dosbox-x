@@ -185,7 +185,7 @@ def section_f() -> None:
     r, loaded = dpmi_client()
     client_cs = str((r.get("stopped_at") or {}).get("cs") or "")
     judged("F INT 31h AH=02h stops inside the DPMI client", reply=r,
-           holds=ok(r) and r.get("halted") is True
+           holds=ok(r) and "stop_seq" in r
            and str((r.get("stopped_at") or {}).get("mode", "")).startswith("Pr"))
     stub = stub_cell("F the stub announces the serial route")
     r = M.call(server.screen_view)
@@ -211,7 +211,7 @@ def section_f() -> None:
     w = M.call(server.watch_add, ref="_g_ticks", mode="show", length=4, fmt="u32")
     r = M.call(server.resume, seconds=30)
     judged("F breakpoint_at _tick fires", reply=r,
-           holds=ok(b) and ok(r) and r.get("halted") is True
+           holds=ok(b) and ok(r) and "stop_seq" in r
            and (r.get("attribution") or {}).get("attributed") is True
            and (r.get("attribution") or {}).get("ref") == "_tick")
     pic = r.get("instruction") or {}
@@ -247,7 +247,7 @@ def section_f() -> None:
     M.setup()
     r = M.call(server.send_keys, keys=["a"], expect=guest.KEY_MARK, seconds=15)
     judged("F send_keys a is answered by key_cue_a", reply=r,
-           holds=ok(r) and (r.get("effect") or {}).get("seen") is True)
+           holds=ok(r) and (r.get("verify") or {}).get("seen") is True)
     r = M.call(server.perform, steps=[
         {"op": "send_keys", "keys": ["a"], "expect": guest.KEY_MARK, "seconds": 15},
         {"op": "log", "pattern": guest.KEY_MARK, "channel": "guest", "limit": 5}], wait=0)

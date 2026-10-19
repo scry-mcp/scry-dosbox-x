@@ -63,7 +63,7 @@ class Retraces(Debugger):
         return self.at_debugger()
 
     def at_debugger(self) -> bool:
-        return not self.running
+        return not self.running and self._at_debugger
 
     def command(self, text: str, **k: object) -> str:
         if text == ds.NUDGE:
@@ -101,7 +101,7 @@ def test_three_frames_land_three_retraces_with_the_whole_stop_reply() -> None:
     assert got["status"] == "ok", got
     assert got["verdict"] == "ELAPSED" and got["polls"] == 3, got
     assert dbg.keys == [ds.RETRACE_COMMAND] * 3, "one VRT per frame, typed as a release"
-    assert got["running"] is False and got["stopped_at"]["eip"] == "00000106", got
+    assert got["stopped_at"]["eip"] == "00000106", got
     # The pane's clock, read off the surveys before and after: milliseconds, as seconds.
     assert got["emulated_before_s"] == pytest.approx(0.005708)
     assert got["emulated_after_s"] == pytest.approx(0.0485122)
@@ -157,14 +157,18 @@ def test_the_next_unattributed_stop_is_named_as_the_pending_retrace_and_forgets_
     assert dstate.STATE.retrace_pending is False
 
 
-def test_a_bound_that_expires_while_a_retrace_is_out_leaves_it_running() -> None:
-    """Headless, nothing can interrupt the machine, so the reply says it runs, as `run_to`'s
-    still-running outcome does; the retrace it waits for is pending and will stop it."""
-    live(Retraces([cap("probe-survey-0")], [cap("probe-vrt-1")], lag=40))
+def test_a_bound_that_expires_while_a_retrace_is_out_interrupts_the_run() -> None:
+    """THE BOUND INTERRUPTS: a `VRT` still out when the bound runs out leaves the machine
+    running, so it is brought back with `BREAK` and surveyed where it stands, a TIMEOUT
+    with the stop's reply; the retrace stays armed in the debugger and the next release
+    meets it."""
+    dbg = live(Retraces([cap("probe-survey-0"), cap("probe-survey-1"), cap("probe-survey-1")],
+                        [cap("probe-vrt-1")], lag=40))
     got = cast(dict[str, Any], server.run_for(frames=3, seconds=0.3))
     assert got["status"] == "ok", got
-    assert got["verdict"] == "TIMEOUT" and got["running"] is True and got["polls"] == 0, got
-    assert "registers" not in got, "a running machine has no stop to survey"
+    assert got["verdict"] == "TIMEOUT" and got["polls"] == 0, got
+    assert "BREAK" in dbg.sent, dbg.sent
+    assert got["registers"] and "stop_seq" in got, "interrupted, the stop is surveyed"
     assert got["retrace_pending"] is True and dstate.STATE.retrace_pending is True
 
 
@@ -175,7 +179,7 @@ def test_a_bound_reached_between_frames_is_a_timeout_at_rest() -> None:
                   [cap("probe-vrt-1"), cap("probe-vrt-2")], delay_s=0.15))
     got = cast(dict[str, Any], server.run_for(frames=3, seconds=0.2))
     assert got["status"] == "ok", got
-    assert got["verdict"] == "TIMEOUT" and got["running"] is False and got["polls"] == 2, got
+    assert got["verdict"] == "TIMEOUT" and got["polls"] == 2, got
     assert got["registers"], "stopped between frames: the stop reply is there"
     assert "retrace_pending" not in got
 
@@ -218,21 +222,25 @@ def test_a_running_guest_is_refused_and_nothing_is_typed() -> None:
 
 
 def test_a_sequence_reads_whether_run_for_left_the_machine_running() -> None:
-    assert _leaves_running("run_for", {"running": True}) is True
-    assert _leaves_running("run_for", {"running": False}) is False
+    """Off the step's own reply: a release that came back with a stop, surveyed or cut, left
+    the machine stopped; one with none left it running."""
+    assert _leaves_running("run_for", {"verdict": "ELAPSED"}) is True
+    assert _leaves_running("run_for", {"verdict": "TIMEOUT", "stop_seq": 3}) is False
+    assert _leaves_running("run_for", {"enrichment": {"available": False, "why": "cut"}}) is False
+    assert _leaves_running("registers", {}) is False
 
 
-def test_perform_waits_for_the_stop_a_timed_out_run_for_left_running() -> None:
-    """The retrace that was out when the bound expired arrives while the sequence waits
-    before its next console step, which then reads a stopped machine."""
+def test_perform_goes_on_at_once_after_a_run_for_its_bound_interrupted() -> None:
+    """A timed-out `run_for` hands the machine back stopped, so the sequence's next console
+    step runs at once, with no wait for the retrace still armed in the debugger."""
     live(Retraces([cap("probe-survey-0"), cap("probe-survey-1"), cap("probe-survey-1"),
-                   cap("probe-survey-1")], [cap("probe-vrt-1")], lag=2))
+                   cap("probe-survey-1")], [cap("probe-vrt-1")], lag=40))
     dbg = cast(Retraces, dstate.STATE.session)
     got = cast(dict[str, Any], server.perform(steps=[
         {"op": "run_for", "frames": 1, "seconds": 0.3}, {"op": "registers"}], wait=5))
     assert got["status"] == "ok", got
     assert got["completed"] == 2, got
-    assert dbg.reads == [], "the retrace's stop was not waited for before the next step"
+    assert "BREAK" in dbg.sent and dstate.STATE.retrace_pending is True, dbg.sent
 
 
 def test_a_declared_code_breakpoint_carries_the_dynamic_core_limit() -> None:
@@ -254,7 +262,7 @@ def test_a_resume_that_stops_where_nothing_is_declared_names_the_pending_retrace
     live(Retraces([cap("probe-survey-1")] * 3, [], deltas=[RESUME_HALTED]))
     dstate.STATE.retrace_pending = True
     got = cast(dict[str, Any], server.resume())
-    assert got["halted"] is True, got
+    assert "stop_seq" in got, got
     assert got["attribution"].get("retrace_pending") is True, got["attribution"]
     assert dstate.STATE.retrace_pending is False
 

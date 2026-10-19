@@ -30,11 +30,10 @@ window, and writing `RUNWATCH` a second time does NOT turn it off, so the sessio
 A tool with no way back leaves the caller holding a wedged session and a terminal nobody can
 read, which is worse than not having it.  Anyone picking this up again needs to find the OFF
 switch FIRST.  The tools that do ship stop the machine deliberately (`run_to`), step it
-one instruction at a time (`step`), or arm a watch and leave it stopped (`watch`).  Two
-of those always hand the debugger back able to answer; `run_to`, `run_for` and `trace` each have
-ONE outcome that does not -- a bound that expires leaves the machine running, which the reply
-says in as many words.  The difference from `RUNWATCH` is that the state is REPORTED and the
-session is still usable, not that it cannot happen.
+one instruction at a time (`step`), or arm a watch and leave it stopped (`watch`). `run_to`,
+`run_for`, `trace` and `screen_wait` interrupt at their bound and always hand the debugger back;
+`resume`'s bound leaves the machine running, and its reply says so.  The difference from
+`RUNWATCH` is that the state is REPORTED and the session is still usable.
 
 HONESTY, wired into the contract rather than into a prompt:
 
@@ -270,16 +269,14 @@ def close(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """End the session deliberately rather than waiting for its bound. Reports its progress
     while the emulator takes its time to leave.
 
-    Reply: `closed`, `how` (`quit`: the emulator left on the first signal, which is what a
-    session launched here does, program loaded or not, because `start` turns the quit
+    Reply: `closed`, `ended_by` (`quit`: the emulator left on the first signal, which is what
+    a session launched here does, program loaded or not, because `start` turns the quit
     warning off; `killed`: it ignored the signal, a conf that puts the warning back or a
     guest wedged, and SIGKILL ended it; `died`: it had already exited when this was called;
-    `none`: nothing to close), `exit_code`, and `reap_failed`,
-    which QUALIFIES the others: when it is non-empty the emulator was SIGKILLed and not yet
-    reaped, so `exit_code` is `null` because there is nothing to read, not because it ended
-    cleanly -- report the string, an emulator may still be on the machine. `session`
-    describes the state as it was BEFORE closing, so its `pid` is the process this call
-    ended.
+    `none`: nothing to close), `exit_code` (an integer, or unavailable with its `why`:
+    SIGKILLed and still not reaped, an emulator may still be on the machine, or not read).
+    `session` describes the state as it was BEFORE closing, so its `pid` is the process this
+    call ended.
     """
     return lifecycle.close(bridge(ctx))
 
@@ -330,22 +327,17 @@ def log_wait(pattern: str, channel: str, seconds: float = 30.0,
     that went past before you asked is still found. Works on a running guest (the usual
     case: a guest writing traces is a guest that runs).
 
-    Reply: `channel`, `line` (the FIRST match; `log` is the tool for the newest), `already`
-    (it had happened before this call: history, not something you were present for),
-    `waited_s` (0.0 when already), `lines_before` (lines of the channel between the start
-    of the log and the match), `lines_total`, `arrived_during`, `lines_examined`.
-
-    INVALID: no `logfile` on the session; a pattern that does not compile; `seconds` out of
-    (0, {WAIT_MAX_S}]; a channel that is not one of the three; the machine is STOPPED at the
-    debugger (refused at once, naming it, with `last_stop`: a stopped guest writes nothing, so the
-    wait could not end; a stop that lands DURING the wait is reported the same way, by the
-    poll that sees it or by the expiry, never as "still running"; what the log already
-    holds is still answered first); the emulator went away or the log SHRANK during the
-    wait; or the bound EXPIRED -- never an empty answer, and the message says how many
-    lines of the channel arrived during the wait and how many the log holds, so "nothing
-    matched" and "no channel" read differently. A log that does not exist YET, or has no
-    instrumentation yet, is NOT refused: that is the ordinary state right after `resume`,
-    and it is reported in the expiry instead.
+    Reply: `verdict` `TARGET`, `channel`, `line` (the FIRST match; `log` is the tool for the
+    newest), `already` (it was in the log before this call: history, not something you were
+    present for), `waited_s` (0.0 when already), `lines_before`, `lines_total`,
+    `arrived_during`, `lines_examined`; when the bound ran out, `verdict` `TIMEOUT` with
+    `arrived_during`, `lines_examined`, `waited_s` and a `note` (the guest still runs).
+    `status: INVALID`: `wait_stopped` when the machine is STOPPED and the log does not already
+    hold the line (a stopped guest writes nothing; the refusal names `last_stop`, and a stop
+    that lands DURING the wait is reported the same way after one last read of the log),
+    `session_broken` when the emulator went away. No `logfile`, a bad `seconds` (outside
+    (0, {WAIT_MAX_S}]), an unusable regex or an unknown channel is refused. A log that does
+    not exist YET is not refused: that is the ordinary state right after `resume`.
 
     The moment it hands back is for choosing an address to `run_to` or `watch` on the NEXT
     run: the guest is usually still running when this returns, and the console tools refuse
@@ -658,20 +650,18 @@ def write(ref: str, data_hex: str) -> dict[str, Any]:
 def resume(e9: str = "none", e9_filter: str = ".",
            e9_stamp: str | None = None, seconds: float = 0.0, detail: bool = False,
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Let the machine run (F5, sent once), and SAY whether it actually left the debugger.
-    With `seconds` it then waits that long for a stop, listening for the debugger's prompt as
-    `run_to` does and reporting its progress, and comes back with the full stop when one lands or
-    with `halted: false`, `waited_s` and a `note` when the bound expires, LEAVING IT RUNNING
-    (`seconds` is not held to `run_to`'s ceiling); without it (the
-    default) it comes back at once. Needs the machine stopped: a guest already running is refused
-    `not_stopped`, since an F5 there does nothing and an
-    `ok` would read like a release.
+    """Let the machine run (F5, sent once). With `seconds` at zero (the default) it comes back
+    at once, no verdict; with a bound it waits up to `seconds` for a stop, listening for the
+    debugger's prompt as `run_to` does and reporting its progress: `verdict` `OTHER_STOP` with
+    the full stop when one lands, or `TIMEOUT` with `waited_s` and a `note`, LEAVING IT RUNNING
+    (unlike `run_to`, which interrupts at its bound; `seconds` is not held to `run_to`'s
+    ceiling). Needs the machine stopped: a guest already running is refused `not_stopped`,
+    since an F5 there does nothing and an `ok` would read like a release.
 
     Nothing has to be declared first: `stop` brings a running guest back, headless or windowed.
 
-    Reply: `halted` -- `true` means the machine is back at the debugger already, `false` that it
-    is running (a gone emulator reads the same: `session.alive` tells them apart). When halted the
-    reply is the full stop: `stopped_at` (`cs`, `eip`, `mode`), `instruction` (the instruction
+    Reply: a reply that stopped (an F5 that never left the debugger is a stop too) is the full
+    stop: `stopped_at` (`cs`, `eip`, `mode`), `instruction` (the instruction
     there: `at`, `bytes`, `text`, `flow`, `code_bits`, `bytes_from`, the nearest `symbol` and
     `delta`; null with `instruction_why` when it could not be read), `registers`, `watches`,
     `attribution` (which declaration produced this stop) and `e9`, the log summary, OFF by default:
@@ -705,9 +695,11 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     about the stop: `symbols_load` accumulates its batches, so a name missing after several
     loads is one none of them carried.
 
-    Reply: `interrupted` (`true` with the full stop reply, `how: "break"` and `waited_s`, the
+    Reply: `interrupted` (`true` with the full stop reply, `via: "break"` and `waited_s`, the
     seconds from the request to the debugger's prompt; `false` when the machine was already
-    stopped, with `last_stop` and a `note`).
+    stopped, with `last_stop` and a `note`). A `BREAK` whose prompt never comes is
+    `not_settled`: asking again is allowed, and if `stop` fails as well, `close` then
+    `start`.
     """
     session = live()
     if session.at_debugger():
@@ -715,13 +707,12 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
         # THE STOP IT IS IN, or none: after a survey that could not be read the record is the
         # previous stop's, and naming it would be a confident wrong answer.
         current = STATE.as_of_current(session)
-        return st.reply(interrupted=False, running=False, last_stop=current,
+        return st.reply(interrupted=False, last_stop=current,
                         note="the machine was already stopped" + (
                             "" if current is not None else ", its position not readable yet "
                             "(a cut pane; the next contact retries)"))
     waited = session.break_in()
-    reply = running.stop_reply(session, interrupted=True, running=False, how="break",
-                               waited_s=waited)
+    reply = running.stop_reply(session, interrupted=True, via="break", waited_s=waited)
     return st.extend(reply, stopped_at=STATE.last_stop.get("at"))
 
 
@@ -760,21 +751,24 @@ def run_to(ref: str, control: str, seconds: float = 30.0,
     `ref` is a symbol name from the loaded table or a raw `SEG:OFF` in hex (the colon is the
     tell); the server derives the debugger's address from the machine's own mode, arms a
     `BP`, verifies it by reading the list back, releases the machine and waits up to
-    `seconds`. `control` is REQUIRED: a second `ref` known to be HOT, armed beside the target and
-    counted every time it fires, so a bound that expires with ZERO control hits is INVALID rather
-    than "it did not arrive". Pick one that fires a few times a run: each hit costs a round trip.
+    `seconds`, INTERRUPTING the run at its bound. `control` is REQUIRED, this run's own (the
+    session keeps no declared control): a second `ref` known to be HOT, armed
+    beside the target and counted every time it fires, so a bound that expires with ZERO
+    control hits is INVALID rather than "it did not arrive". Pick one that fires a few times a
+    run: each hit costs a round trip.
 
     Refused before the machine moves: no control (the schema requires one, and an empty one is
     none), an absent or ambiguous name, a machine not stopped.
 
-    Reply -- read the outcome from `arrived` and `running`, never from `bound_expired`
-    alone: `arrived: true` (the breakpoint it armed is removed, `breakpoint_removed`);
-    `arrived: false, running: false` with `stopped_at` elsewhere (another breakpoint got there
-    first; the target stays armed for your next `resume`); or `running: true` (it did not come to
-    rest; the breakpoint stays armed and no console tool answers until it stops).
-    `bound_expired`, `waited_s`, `target`, `control` (`at`, `hits`, `removed`), and a
-    `note` explaining a non-arrival. A stop carries `instruction`, `registers`, `watches`,
-    `attribution` and `e9` (same `e9`/`e9_filter`/`e9_stamp` as `resume`).
+    Reply: `verdict` (`TARGET`, the breakpoint it armed removed, `target_disarmed`;
+    `OTHER_STOP`, another breakpoint got there first; `TIMEOUT`, the bound ran out and the run
+    was interrupted where it stood: on both the target stays armed for your next release),
+    `waited_s`, `target`, `control_hits`, `controls` (`ref`, `at`, `hits_in_run`, `removed`), a
+    `note` explaining a non-arrival, and the stop: `stopped_at`, `instruction`, `registers`,
+    `watches`, `attribution` and `e9` (same `e9`/`e9_filter`/`e9_stamp` as `resume`). INVALID
+    carries no `verdict`: `control_silent` (a TIMEOUT with no control hit) or
+    `cut_by_other_stop` (another stop before the control fired), each with the stop surveyed;
+    `not_settled` when the interrupt found no prompt.
 
     Reference: REFERENCE.md, Advancing the machine.
     """
@@ -804,7 +798,8 @@ def run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
     `stopped_at`, `waited_s`, and the stop's `instruction`, `registers`, `watches`, `attribution`
     and `e9`. `retrace_pending: true`: the debugger still holds a retrace stop, which the next
     release meets. `note`: what the reply cannot prove (a declared breakpoint or watch, an unread
-    clock). A `TIMEOUT` with a `VRT` still out comes back `running: true`, with no stop fields.
+    clock). A `TIMEOUT` with a `VRT` still out is interrupted where it stands, its retrace left
+    pending.
     INVALID `no_progress` when the clock did not move (over the run by frames, at any frame by
     milliseconds); `unexpected_answer` when a timed run finds no clock to start from, before
     anything runs. Advancing is not altering.
@@ -836,17 +831,16 @@ def trace(instructions: int, shape: str = "normal", dest: str = "", seconds: flo
     per instruction: a mismatch is `no_channel`, the file kept (a dynamic core logs at block
     boundaries: `start(flags=["-set", "cpu core=normal"])` to trace).
 
-    Reply: `verdict`, `ELAPSED` (all ran; the file holds one line more, the stop) or
-    `OTHER_STOP` (a declared stopper or pending retrace first, `attribution`);
+    Reply: `verdict`, `ELAPSED` (all ran; the file holds one line more, the stop),
+    `OTHER_STOP` (a declared stopper or pending retrace first, `attribution`) or `TIMEOUT` (the
+    bound ran out: the run interrupted where it stood, and what ran up to there collected);
     `stopped_at`, `waited_s`, the stop's `instruction`, `registers`, `watches`, `attribution`,
     `e9`, `stop_seq`; `trace`: `path`, `bytes`, `shape`, `instructions` (executed), `addresses`
     (distinct), `unplaced` (no symbol places them), `set_path` (a JSON line per address),
     `symbols` (per routine, the first 64), `symbols_total`, `symbols_truncated`, `note` for
-    what it cannot prove. `wait_expired`, `running: true`,
-    `trace` of `path` and `closed`: `true`, the `logfile` saw the machine close the log, so no
-    count stops it; `false`, no such close was seen, which promises no stop; the next trace
-    closes it once that file is moved.
-    `readback_refused`: the log closed early, is empty, or would not close; `host_failed`: the
+    what it cannot prove.
+    `readback_refused`: the log closed early (the machine closed it before the trace stopped,
+    so its lines are not what ran), is empty, or would not close; `host_failed`: the
     debugger was refused its file (`close`). Advancing is not altering.
 
     Reference: REFERENCE.md, Advancing the machine.
@@ -872,20 +866,20 @@ def screen_wait(text: str, seconds: float = 30.0,
     `CPU`, one dump), so for a string far ahead `run_for` first. A frame not in a text mode is
     no match.
 
-    Reply: `already`, `waited_s`, `polls` (the retraces run), `point` (`[column, row]` where the
-    text begins), `line` (that row); when it ran, the stop's `instruction`, `registers`,
-    `watches`, `attribution`, `e9` and `stop_seq` (or `enrichment` unavailable, its survey cut),
-    and a `note` when a declared watch or interrupt breakpoint could have made a stop it took for a
-    retrace.
+    Reply: `verdict` `TARGET` with `already`, `waited_s`, `polls` (the retraces run), `point`
+    (`[column, row]` where the text begins), `line` (that row); when it ran, the stop's
+    `instruction`, `registers`, `watches`, `attribution`, `e9` and `stop_seq` (or `enrichment`
+    unavailable, its survey cut), and a `note` when a declared watch or interrupt breakpoint
+    could have made a stop it took for a retrace. The bound: `verdict` `TIMEOUT` with `polls`,
+    `text` (the rows of the last text page read, absent when none was), `retrace_pending`, a
+    `note` and the stop it ended at (a `VRT` still out is interrupted where it stands).
 
     Refused: a bad `text` or `seconds` (`bad_argument`, before anything is typed); a declared
     code breakpoint stopping the machine first (`wait_stopped`, with its `attribution`,
-    `stop_seq`, `polls`, `retrace_pending`, `text`); the bound (`wait_expired`, with `polls`,
-    `text` as the rows of the last text page read, absent when none was, `retrace_pending`,
-    `stop_seq` when it stopped at a retrace, and `running`, true when a `VRT` is still out); a
-    screen it cannot read, as `screen_view` refuses it, with `polls` and `stop_seq` after a
-    retrace; where `stop_seq` is due and the stop's survey came back cut, `enrichment`
-    unavailable instead; no `logfile` (`no_channel`); a running guest (`not_stopped`).
+    `stop_seq`, `polls`, `retrace_pending`, `text`); a screen it cannot read, as `screen_view`
+    refuses it, with `polls` and `stop_seq` after a retrace; where `stop_seq` is due and the
+    stop's survey came back cut, `enrichment` unavailable instead; no `logfile`
+    (`no_channel`); a running guest (`not_stopped`).
 
     Reference: REFERENCE.md, Input and the screen.
     """
@@ -1616,10 +1610,11 @@ def send_keys(keys: list[str], modifiers: list[str] | None = None,
     guest whose log shows no stub announce, or an older stub (`no_channel`, naming the conf
     line); with no `logfile` there is no announce to read and the keys go out.
 
-    Reply: `route: "guest"`, `posted`, `bytes`, `ticks`, and `effect`: `seen` with `line`,
-    `waited_s`, `seen_before_waiting`, `lines_before`, `lines_total`, or `checked: false` with
-    no `expect`. A miss is INVALID with the post still reported; a stop that lands DURING the
-    wait is reported with `last_stop`. Timing is "now": for a precise guest instant, `run_to`
+    Reply: `route: "guest"`, `posted`, `bytes`, `ticks`, and `verify`: `verdict` `TARGET`
+    with `seen`, `line`, `waited_s`, `seen_before_waiting`, `lines_before`, `lines_total`, or
+    `TIMEOUT` (a miss, the program did not react) with `arrived_during` and a `note`; or
+    `checked: false` with no `expect`. A stop that lands DURING the wait is INVALID
+    (`wait_stopped`) with `last_stop`. Timing is "now": for a precise guest instant, `run_to`
     it, send, then `resume`.
 
     Reference: REFERENCE.md, Input and the screen.
@@ -1655,7 +1650,8 @@ def send_mouse(x: int | None = None, y: int | None = None, button: str | None = 
     `width`, `height`, or null in an unmapped mode; `mouse` with the driver's `x`, `y`,
     `max_x`, `max_y`; `buttons` held; `mode`), `arrived` (the read-back is where it was asked;
     when it is not, `asked` says where in the driver's coordinates: a text mode snaps to its
-    cell, a program's own range clamps), the arguments, `effect`; with a `target`, `target`,
+    cell, a program's own range clamps), the arguments, `verify` as `send_keys`'; with a
+    `target`, `target`,
     `screen` and `identified_at_stop`, the stop that `map_find` read. A read-back that fails after
     the commands went in is INVALID with `delivered: true`, so nothing is sent twice.
 
@@ -1753,11 +1749,11 @@ def perform(steps: list[dict[str, Any]], wait: float = 30.0, summaries: bool = F
 
     Arguments: `steps`, each `{"op": <tool name>, ...its arguments}`; every tool but
     `build_check`, `start`, `close`, `perform`, `drive` and `perform_export` is a step, `debug`
-    included. A `resume` (or a `run_to`, `run_for` or `step` that comes back running)
-    ends the console-driven part: after it the steps a running-guest refusal lists in
-    `answers_while_running` run at once (a `stop` ends the run), and before any other the
-    sequence WAITS up to `wait` seconds for the machine to stop; `wait=0` never waits. A
-    `send_keys`/`send_mouse` step whose own `expect` misses stops the sequence.
+    included. A `resume` (or a `step` that comes back running) ends the console-driven part:
+    after it the steps `answers_while_running` lists run at once (a `stop` ends the run), and
+    before any other the sequence WAITS up to `wait` seconds for the machine to stop;
+    `wait=0` never waits. A `send_keys`/`send_mouse` step whose own `expect` misses ends the
+    list, `verdict` `TIMEOUT`.
     `summaries=True` keeps a long list readable: each step but the last that ran becomes a
     compact row (`summary`, `status`, a stop's `stop_seq` and `attribution`); `ran` shows the
     first 24, `ran_path` and `replies_path` hold all, and `stops` counts the stops.
@@ -1772,11 +1768,11 @@ def perform(steps: list[dict[str, Any]], wait: float = 30.0, summaries: bool = F
     symbol against the table loaded by then, a file an earlier step writes, the machine's mode)
     refuses at that step.
 
-    Reply: `ran` (each step's `op` and full `reply`), `completed`, `held`; on a failure INVALID
-    with `failed_at` and `failed`; and when the list ends with the machine released, the tail:
-    `stopped` (the stop it was heading for, or the one its last step met), or
-    `still_running`/`gone` with a note (with nothing declared that can stop it, it returns at
-    once). `start(plan=...)` runs the same list on a fresh session.
+    Reply: `ran` (each step's `op` and full `reply`), `completed`, `held`; a step's refusal is
+    INVALID (`step_failed`) with `failed_at` and `failed`; once it waited, `verdict`: `TARGET`
+    (a list ending running adds `stopped`, the stop it was heading for) or `TIMEOUT` (the steps
+    after the wait unsent, a `note`); with no wait, `not_stopped` before a console step, or
+    `still_running`; a gone emulator is `session_broken`. `start(plan=...)` runs one too.
 
     Reference: REFERENCE.md, Sequences in one call.
     """
@@ -1804,20 +1800,18 @@ def drive(act: list[dict[str, Any]], expect: str | None = None,
     it run; `summaries=True` (off by default) as in `perform`.
     Needs a session with `logfile`.
 
-    Reply: `act` (`ran`, `completed`, `failed`, and `stopped` when the act ended at a stop,
-    as in `perform`), `verify` (`checked`, `seen`, `line`,
-    `seen_before_waiting`, `lines_before`, `waited_s`, `lines_total`; `checked: false` with
-    `why` when no `expect` was given), and
-    `looked.e9` (`written`, `lines_total`, `truncated`, `lines`, `since_mark`, `pattern`). INVALID
-    with the same `act` and `looked` when a step failed (`failed_at`, `failed`), when the
-    expectation was not met (`verify.seen: false`), or when it could not be checked
-    (`verify.checked: false`). No screen in the look: a still is `capture_frame`.
+    Reply: `act` (`ran`, `completed`, `failed`, `perform`'s tail), `verify` (`checked`;
+    `verdict` `TARGET` with `seen`, `line`, `seen_before_waiting`, `lines_before`, `waited_s`,
+    `lines_total`, or `TIMEOUT`, the expectation not met, with `arrived_during` and a `note`;
+    `checked: false` with `why` when no `expect` was given; `available: false` when
+    `act.verdict` is `TIMEOUT`), and `looked.e9` (`written`, `lines_total`, `truncated`,
+    `lines`, `since_mark`, `pattern`). INVALID with the same `act`, `verify` and `looked` when a
+    step failed (`step_failed`), when a stopped machine lacks the line (`wait_stopped`), or when
+    the check could not run (`verify.checked: false`). No screen in the look: a still is
+    `capture_frame`.
 
-    THE TWO VERIFY FIELDS MEAN DIFFERENT THINGS. `checked` is
-    whether an `expect` was given and a check ran at all; `seen` is whether the expected line
-    arrived. Neither is `verified`, which everywhere else means "the readback equals what
-    was sent": that word beside `seen: false` would read as a contradiction rather than as
-    "the check ran and found nothing".
+    `checked` is whether a check ran at all, `seen` whether the line arrived; neither is
+    `verified`, which everywhere else means a readback equal to what was sent.
     """
     return sequence.drive(live(), _step_ops(), act, expect, seconds, pattern, limit, wait,
                           bridge(ctx), summaries)

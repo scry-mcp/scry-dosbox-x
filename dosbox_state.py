@@ -158,12 +158,12 @@ class State:
         # opened is open.
         self.scan_cell_bytes: int | None = None
         # A RETRACE STOP STILL ARMED IN THE DEBUGGER: a `VRT` that a breakpoint stopped first
-        # (or one still out when `run_for`'s bound expired) stops the next release at the next
-        # retrace. Kept by `run_for` frame by frame; consumed by the first stop a release that
+        # (or one still out when `run_for`'s bound interrupted it) stops the next release at the
+        # next retrace. Kept by `run_for` frame by frame; consumed by the first stop a release that
         # ran on makes that no declaration explains (`dosbox_arming.attribute_stop`).
         self.retrace_pending = False
-        # A CPU LOG A `trace` LEFT OPEN: its bound expired with the log running, so the next
-        # trace closes it before opening its own (`dosbox_trace`).
+        # A CPU LOG A `trace` LEFT OPEN: an interrupt at its bound found no prompt, or a cancel
+        # left it, so the next trace closes it before opening its own (`dosbox_trace`).
         self.log_open = False
 
     def take_cancelled(self) -> cancel.Cancelled | None:
@@ -420,7 +420,7 @@ def answer(fields: dict[str, object]) -> dict[str, Any]:
 
     It exists so the three debugging tools cannot quietly reshape what the session
     concluded. Each of those answers is a set of fields that only mean anything
-    together -- `completed` beside `running`, `arrived` beside `breakpoint_removed` --
+    together -- `completed` beside `running`, a `verdict` beside `breakpoint_removed` --
     and a tool that picked fields out by hand is a second place for that set to be
     decided, which is where one of them goes missing.
 

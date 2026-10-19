@@ -160,7 +160,7 @@ def _stop_of_its_own(ses: ds.Session) -> dict[str, Any]:
     breakpoint) has that stop recorded as the call's, as its bound's refusal records it."""
     if not ses.at_debugger():
         ses.break_in()
-        return running.stop_reply(ses, interrupted=True, how="break")
+        return running.stop_reply(ses, interrupted=True, via="break")
     if getattr(ses, "stop_count", None) != STATE.last_stop.get("stop_count"):
         return running.stop_or_base(ses, True, "none", ".", None, {})
     return {}

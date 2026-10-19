@@ -67,15 +67,31 @@ def answers_running(op: str, args: dict[str, Any]) -> bool:
     return op in RUNNING_OK_OPS or (op == "registers" and args.get("from_last_stop") is True)
 
 
+#: The steps that release the machine, each of which comes back with the stop it ended on, or
+#: running when it ended on none.
+_RELEASES = frozenset({"resume", "run_to", "run_for", "step"})
+
+
+#: The steps whose wait is for something to SEE, a line or a text: their TIMEOUT is the list's
+#: premise failing. A run's TIMEOUT hands the machine back stopped and surveyed, and the list
+#: goes on from there.
+_WAITS_TO_SEE = frozenset({"log_wait", "screen_wait"})
+
+
+def _missed(op: str, reply: dict[str, Any]) -> bool:
+    """Whether a step's own wait for what it was to see ran out: a `log_wait` or `screen_wait`
+    TIMEOUT, or the `expect` of an input step."""
+    checked = reply.get("verify")
+    return ((op in _WAITS_TO_SEE and reply.get("verdict") == contract.TIMEOUT)
+            or (isinstance(checked, dict) and checked.get("verdict") == contract.TIMEOUT))
+
+
 def _leaves_running(op: str, reply: dict[str, Any]) -> bool:
-    """Whether a step left the machine running, read from its OWN reply, not assumed:
-    `resume` that did not halt, `run_to`, `run_for` or `step` that came back running. A console
-    step and a reader leave the machine as they found it (stopped), so they answer False."""
-    if op == "resume":
-        return not bool(reply.get("halted"))
-    if op in ("run_to", "run_for", "step"):
-        return bool(reply.get("running"))
-    return False
+    """Whether a step left the machine running, read from its OWN reply, not assumed: a
+    release that came back with no stop, surveyed (`stop_seq`) or cut (`enrichment`). A
+    console step and a reader leave the machine as they found it (stopped), so they answer
+    False."""
+    return op in _RELEASES and "stop_seq" not in reply and "enrichment" not in reply
 
 
 def _wait_for_stop(session: ds.Session, seconds: float,
@@ -367,8 +383,8 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
     ran: list[dict[str, Any]] = []
     running = False
     released_last = False     # the LAST step is the one that let the machine run
-    trap_of_run_to = False    # a `run_to` that ran off leaves its own breakpoint armed
     came_to_rest = False      # the LAST step found the released machine stopped
+    waited = False            # a wait for a stop was asked for and made: the list earns a verdict
     began = time.monotonic()           # the line of the list rises from here
     for i, step in enumerate(steps):
         if not isinstance(step, dict) or "op" not in step:
@@ -396,13 +412,19 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
                               message=f"the emulator is GONE (its bound expired or it "
                                      f"crashed) before the console step {op!r} could run")
             if state == "running":
-                return st.reply(status="INVALID", code="not_stopped",
-                              **account_of(ran, summaries, keep_last=True, since=since),
-                              completed=len(ran), failed_at=i,
-                              message=f"the machine was still running {wait}s after the "
-                                     f"previous step, so the console step {op!r} cannot be "
-                                     f"sent (it would be swallowed). A breakpoint or watch "
-                                     f"has to stop it first")
+                why = (f"the machine was still running {wait:g}s after the previous step, so "
+                       f"the console step {op!r} cannot be sent (it would be swallowed). A "
+                       f"breakpoint or watch has to stop it first")
+                if not wait:
+                    # NO WAIT WAS ASKED, so nothing ran out: the step could not be sent at all.
+                    return st.reply(status="INVALID", code="not_stopped",
+                                  **account_of(ran, summaries, keep_last=True, since=since),
+                                  completed=len(ran), failed_at=i, message=why)
+                # THE WAIT RAN OUT: a verdict, and the list ends here with what it completed.
+                return st.reply(**account_of(ran, summaries, keep_last=True, since=since),
+                                completed=len(ran), failed_at=None, verdict=contract.TIMEOUT,
+                                note=f"{why}; it and the steps after it were not sent")
+            waited = waited or wait > 0
             running = False
         # A STEP HAS NO REQUEST OF ITS OWN: its progress goes out on the list's line.
         with mprogress.within(progress, f"{name} step {i + 1} of {len(steps)} ({op})", began):
@@ -426,6 +448,14 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
                           completed=len(ran), **fields, message=message)
         held[0] += bool(step.get(recording.RECORDED))
         ran.append({"op": op, "reply": reply})
+        if _missed(op, reply):
+            # A STEP'S OWN WAIT FOR WHAT IT WAS TO SEE RAN OUT: what the rest of the list was
+            # built on did not happen, so it ends here with the verdict, as a wait of the
+            # list's own does.
+            return st.reply(**account_of(ran, summaries, keep_last=True, since=since),
+                            completed=len(ran), failed_at=None, verdict=contract.TIMEOUT,
+                            note=f"step {i} ({op!r}) waited for what it was to see and it did "
+                                 f"not come; the steps after it were not sent")
         # A RUNNING-OK OP DOES NOT RELEASE THE MACHINE, and whether it stopped it is the
         # SESSION's to say, never the op's name: `_leaves_running` would answer False for a
         # `send_keys` after a `resume` and send the next console step into a running guest,
@@ -434,7 +464,6 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
             came_to_rest = False
             running = _leaves_running(op, reply)
             released_last = running
-            trap_of_run_to = running and op == "run_to"
         else:
             came_to_rest = running and session.at_debugger()
             running = running and not came_to_rest
@@ -448,7 +477,7 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
         final = {"still_running": True,
                  "note": "wait=0: the sequence ended with the machine running and no stop "
                          "was waited for"}
-    elif (running and not released_last and not trap_of_run_to
+    elif (running and not released_last
           and not arming.something_can_stop_it()):
         # THE LAST STEP WAS A RUNNING-GUEST OP AND NOTHING DECLARED CAN STOP THE MACHINE,
         # so a wait cannot end: a list that ends in `e9` after a `resume`, with the
@@ -479,16 +508,23 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
             final = {"stopped": _recorded_stop(session, recorded)}
     elif running:
         state = _wait_for_stop(session, wait, progress)
+        if state == "gone":
+            return st.reply(status="INVALID", code="session_broken",
+                            **account_of(ran, summaries, keep_last=True, since=since),
+                            completed=len(ran), failed_at=None,
+                            message="the sequence ended with the machine running and the "
+                                    "emulator is now GONE (its bound expired or it crashed)")
+        waited = True
         if state == "stopped":
             final = {"stopped": _final_stop(session)}
-        elif state == "gone":
-            final = {"gone": True,
-                     "note": "the sequence ended with the machine running and the emulator "
-                             "is now GONE (its bound expired or it crashed)"}
         else:
-            final = {"still_running": True,
+            final = {"verdict": contract.TIMEOUT,
                      "note": f"the sequence ended with the machine running and it did not "
-                             f"stop within {wait}s"}
+                             f"stop within {wait:g}s"}
+    # A LIST THAT WAITED FOR A STOP EARNS A VERDICT, `TARGET` when every wait it made ended at
+    # one; a list that waited for none carries none.
+    if waited and "verdict" not in final and "still_running" not in final:
+        final = {"verdict": contract.TARGET, **final}
     stopped = final.get("stopped")
     return st.reply(**account_of(ran, summaries, keep_last=True, since=since,
                                  also=[stopped] if isinstance(stopped, dict) else None),
@@ -543,12 +579,9 @@ def _verify_after_wait(session: ds.Session, expect: str, wait_s: float, mark: in
         return {"checked": True, "seen": False, "expected": expect,
                 "stopped_during_wait": True, "waited_s": e.waited_s,
                 "lines_on_disk": e.arrived, "why": str(e)}
-    except ds.E9Expired as e:
-        return {"checked": True, "seen": False, "expected": expect,
-                "why": f"no new line matching {expect!r} within {wait_s}s. {e}"}
     except ds.Invalid as e:
         return {"checked": False, "expected": expect, "why": str(e), "code": e.code}
-    return inputs.effect_seen(expect, reaction)
+    return inputs.verify_block(expect, reaction)
 
 
 def _verify_at_a_stop(session: ds.Session, expect: str, mark: int) -> dict[str, Any]:
@@ -562,12 +595,13 @@ def _verify_at_a_stop(session: ds.Session, expect: str, mark: int) -> dict[str, 
     hits = [ln for ln in since if reaction.search(ln)]
     if not hits:
         return {"checked": True, "seen": False, "expected": expect,
+                "waited_s": 0.0, "lines_on_disk": len(since),
                 "why": f"no line matching {expect!r} since the mark, and the machine is "
                        f"STOPPED at the debugger, so nothing more will be written until it "
                        f"is resumed: waiting would not change the answer"}
-    return inputs.effect_seen(expect, {"line": hits[0], "already": True,
-                                 "lines_before": since.index(hits[0]), "waited_s": 0.0,
-                                 "lines_total": len(hits)})
+    return inputs.verify_block(expect, {"verdict": contract.TARGET, "line": hits[0],
+                                    "already": True, "lines_before": since.index(hits[0]),
+                                    "waited_s": 0.0, "lines_total": len(hits)})
 
 
 def _look(session: ds.Session, mark: int, pattern: str, limit: int) -> dict[str, Any]:
@@ -611,7 +645,12 @@ def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str 
     checked: dict[str, Any] = {"checked": False,
                                 "why": "no `expect` given; the act's own steps carried "
                                        "whatever verification they asked for"}
-    if expect is not None:
+    if expect is not None and account.get("verdict") == contract.TIMEOUT:
+        # THE ACT DID NOT COME TO REST: its own wait ran out, so what it was meant to cause
+        # cannot be asked of the guest yet.
+        checked = contract.unavailable("the act's own wait ran out (`act.verdict` TIMEOUT), so "
+                                       "its effect was not checked")
+    elif expect is not None:
         # A GUEST STOPPED AT THE DEBUGGER CANNOT WRITE A LINE. When the act ended at a stop
         # (its tail found one, or no step ever let the machine run), waiting `seconds` for
         # the expectation would burn the bound on a machine that cannot act and then blame
@@ -621,7 +660,7 @@ def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str 
         # about the state, because the executor starts every sequence assuming a stopped
         # machine; the session's own flag answers with no console round trip (a command typed
         # at a running guest's console waits out its whole timeout and lands at the next stop).
-        if "still_running" in ran or "gone" in ran:
+        if "still_running" in ran:
             ended_running = True
         elif "stopped" in ran:
             ended_running = False
@@ -629,19 +668,17 @@ def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str 
             ended_running = not session.at_debugger()
         checked = (_verify_after_wait(session, expect, wait_s, mark, progress)
                    if ended_running else _verify_at_a_stop(session, expect, mark))
-        if checked.get("seen") is False:
-            if checked.get("stopped_during_wait"):
-                stop, where = STATE.stop_named(session)
-                return st.reply(status="INVALID", code="wait_stopped", act=account,
-                              verify=checked, last_stop=stop,
-                              looked=_look(session, mark, pattern, limit),
-                              message=f"the act ran and the machine STOPPED at the debugger "
-                                     f"during the wait{where}, so the guest could not do what "
-                                     f"was expected: {checked['why']}")
-            return st.reply(status="INVALID", code="wait_expired", act=account, verify=checked,
+        if checked.get("seen") is False and "verdict" not in checked:
+            # A STOPPED MACHINE LACKS THE LINE, found during the wait or before it: the guest
+            # could not write it, so this is the stop's, never the program's miss.
+            stop, where = STATE.stop_named(session)
+            when = " during the wait" if checked.get("stopped_during_wait") else ""
+            return st.reply(status="INVALID", code="wait_stopped", act=account,
+                          verify=checked, last_stop=stop,
                           looked=_look(session, mark, pattern, limit),
-                          message=f"the act ran but the guest did not do what was expected: "
-                                 f"{checked['why']}")
+                          message=f"the act ran and the machine is STOPPED at the debugger"
+                                 f"{when}{where}, so the guest could not do what was "
+                                 f"expected: {checked['why']}")
         if not checked.get("checked"):
             # The verify's own refusal names the cause; the act ran, so the reply keeps it.
             code: contract.Code = checked.get("code", "unexpected_answer")

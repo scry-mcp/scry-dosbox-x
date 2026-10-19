@@ -52,7 +52,7 @@ def _cost(since: int) -> dict[str, int]:
 def _to_stop(name: str) -> None:
     """Resume the screen guest to its next `int 3`."""
     r = M.call(server.resume, seconds=30)
-    if not (ok(r) and r.get("halted") is True):
+    if not (ok(r) and "stop_seq" in r):
         raise RuntimeError(f"the screen guest did not stop at its {name} step: {r}")
 
 

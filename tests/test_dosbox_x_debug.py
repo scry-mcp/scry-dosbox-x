@@ -38,6 +38,7 @@ breakpoint listing and a listing that never happened look identical apart from a
 
 from __future__ import annotations
 
+import re
 import threading
 import time
 from pathlib import Path
@@ -45,6 +46,8 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
+from scry_core import log_wait as core_wait
+from scry_core import progress as mprogress
 from test_dosbox_x_server import returned_key_sets
 
 import dosbox_console as dcons
@@ -232,7 +235,9 @@ class RealPositionReaders:
         return self.at_debugger()
 
     def at_debugger(self) -> bool:
-        return True                  # a scripted console: it answers, so it is stopped
+        # A scripted console answers, so it is stopped, unless a position read found no pane
+        # behind a heard prompt (the real `where` clears the flag then).
+        return self._at_debugger
 
     _at_debugger = True
     stop_count = 1
@@ -303,6 +308,13 @@ class Debugger(RealPositionReaders):
 
     def alive(self) -> bool:
         return self._alive
+
+    def break_in(self, seconds: float = ds.BREAK_IN_WAIT_S) -> float:
+        """The channel's `BREAK`, recorded among what was sent: the debugger is back a moment
+        later, and the next position read takes the next repaint off the queue."""
+        self.sent.append("BREAK")
+        self._at_debugger = True
+        return 0.1
 
     # THE POSITION READERS ARE THE REAL ONES (`RealPositionReaders`), the same choice
     # `FakeSession.read_memory` and `.selector` make next door, for the same reason.
@@ -556,7 +568,7 @@ def test_run_to_arrives_and_removes_the_breakpoint_it_created() -> None:
                     armed,                       # look the index up again
                     pane_with([])])              # gone
     got = run_to(dbg, 0xF000, 0xFFF0)
-    assert got["arrived"] is True
+    assert got["verdict"] == "TARGET"
     assert got["breakpoint_removed"] is True
     assert got["note"] == ""
     assert "BP F000:FFF0" in dbg.sent and "BPDEL 00" in dbg.sent
@@ -573,13 +585,13 @@ def test_run_to_in_real_mode_arrives_at_an_aliased_seg_off() -> None:
                     pane_with([], cs="1080", eip="00000010"),   # the same byte, spelt by the CPU
                     armed, pane_with([])])
     got = run_to(dbg, 0x1000, 0x0810)
-    assert got["arrived"] is True, got
+    assert got["verdict"] == "TARGET", got
     assert got["breakpoint_removed"] is True, got
     # THE CONTROL: a different byte is still "elsewhere", whatever its spelling.
     dbg = Debugger([pane_with([]), armed,
                     pane_with([], cs="1080", eip="00000011")])
     got = run_to(dbg, 0x1000, 0x0810)
-    assert got["arrived"] is False and "still armed" in str(got["note"]).lower(), got
+    assert got["verdict"] == "OTHER_STOP" and "still armed" in str(got["note"]).lower(), got
 
 
 def test_run_to_looks_the_index_up_again_rather_than_reusing_it() -> None:
@@ -622,23 +634,25 @@ def test_stopping_somewhere_else_is_not_an_arrival() -> None:
                     pane_with(["00. BP F000:FFF0"]),
                     pane_with([], cs="F000", eip="0000E05B")])
     got = run_to(dbg, 0xF000, 0xFFF0)
-    assert got["arrived"] is False
+    assert got["verdict"] == "OTHER_STOP"
     assert got["breakpoint_removed"] is False
     assert "0000E05B" in str(got["note"]) and "still armed" in str(got["note"])
     assert not any(s.startswith("BPDEL") for s in dbg.sent)
 
 
-def test_a_bound_that_expires_says_the_machine_is_still_running() -> None:
-    """And that the breakpoint is STILL ARMED, necessarily: it cannot be removed while
-    the debugger is not listening. Claiming a cleanup that could not have happened is
-    the sort of tidy-looking lie this package refuses."""
-    dbg = Debugger([pane_with([]), pane_with(["00. BP F000:FFF0"]), ""])
+def test_a_bound_that_expires_interrupts_the_run_and_keeps_the_target_armed() -> None:
+    """THE BOUND INTERRUPTS: a run still going when its bound runs out is brought back with
+    `BREAK` and surveyed where it stands, a TIMEOUT, so the caller never inherits a machine
+    no reader can answer for. The target stays armed, deliberately: the caller has not
+    reached it, and the reply says so rather than claiming a cleanup."""
+    dbg = Debugger([pane_with([]), pane_with(["00. BP F000:FFF0"]), "",
+                    pane_with([], cs="0837", eip="0000004C")])
     got = run_to(dbg, 0xF000, 0xFFF0)
-    assert got["arrived"] is False
-    assert got["running"] is True
-    assert got["stopped_at"] is None
+    assert got["verdict"] == "TIMEOUT", got
+    assert "BREAK" in dbg.sent, dbg.sent
+    assert got["stopped_at"] == {"cs": "0837", "eip": "0000004C", "mode": "Real"}, got
     assert got["breakpoint_removed"] is False
-    assert "STILL ARMED" in str(got["note"])
+    assert "interrupted" in str(got["note"]) and "still armed" in str(got["note"]), got
 
 
 CONTROL_HIT = "0000E05B"
@@ -661,7 +675,7 @@ def test_run_to_with_a_control_counts_its_hits_and_releases_the_machine_again() 
                    # each release eats one read (the drain), then the wait hears the prompt
                    reads=["", prompt, "", prompt, "", prompt])
     got = run_to(dbg, 0xF000, 0xFFF0, seconds=5, control=(0xF000, 0xE05B))
-    assert got["arrived"] is True, got
+    assert got["verdict"] == "TARGET", got
     assert got["control"] == {"at": "F000:E05B", "hits": 2, "removed": True}, got
     assert got["breakpoint_removed"] is True
     assert dbg.keys.count(ds.RUN_KEY) == 3, "released once per control hit, plus the first"
@@ -670,23 +684,24 @@ def test_run_to_with_a_control_counts_its_hits_and_releases_the_machine_again() 
 
 def test_run_to_with_a_control_that_never_fires_reports_zero_hits_and_both_armed() -> None:
     """The silence decision 12 exists for: neither fired within the bound. The session
-    reports the account (`hits: 0`, still running, both armed) and the server turns it
-    into INVALID; a single reply saying "it did not arrive" would be the wrong verdict."""
+    interrupts the run and reports the account (`hits: 0`, the control removed, the target
+    armed) and the server turns it into INVALID; a single reply saying "it did not arrive"
+    would be the wrong verdict."""
     both = pane_with(["00. BP F000:FFF0", "01. BP F000:E05B"])
-    dbg = Debugger([pane_with([]), both, ""])
+    dbg = Debugger([pane_with([]), both, "", pane_with([], cs="0837", eip="0000004C"),
+                    both, pane_with(["00. BP F000:FFF0"])])
     got = run_to(dbg, 0xF000, 0xFFF0, control=(0xF000, 0xE05B))
-    assert got["running"] is True and got["arrived"] is False
-    assert got["control"] == {"at": "F000:E05B", "hits": 0, "removed": False}, got
-    assert "F000:E05B" in str(got["note"]) and "STILL ARMED" in str(got["note"])
+    assert got["verdict"] == "TIMEOUT", got
+    assert got["control"] == {"at": "F000:E05B", "hits": 0, "removed": True}, got
+    assert "F000:FFF0 is still armed" in str(got["note"]), got["note"]
 
 
-def test_run_to_whose_control_eats_the_whole_bound_reports_the_bound_expired(
+def test_run_to_whose_control_eats_the_whole_bound_is_a_timeout(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """The control fires, the clock is spent by the time the position is read, and the
-    machine sits at rest ON the control: that is a stop elsewhere (the target did not fire),
-    the control is counted and removed, and `bound_expired` is TRUE, because the bound ran
-    out whatever the last wait saw. Before this was pinned the loop left `expired` at what the
-    last `await_stop` returned, False, so a run that used its whole budget said it had not.
+    machine sits at rest ON the control: the target did not fire, the control is counted and
+    removed, and the verdict is TIMEOUT, because the bound ran out whatever the last wait saw,
+    and nothing was interrupted.
     The clock is a counter, one second per call, so the deadline passes between the stop
     being heard and the position being read."""
     import itertools
@@ -700,8 +715,8 @@ def test_run_to_whose_control_eats_the_whole_bound_reports_the_bound_expired(
                     control_only_at_01, pane_with(["00. BP F000:FFF0"])],   # control BPDEL
                    reads=["", dcons.PROMPT + " _"])
     got = run_to(dbg, 0xF000, 0xFFF0, seconds=2.5, control=(0xF000, 0xE05B))
-    assert got["arrived"] is False and got["running"] is False, got
-    assert got["bound_expired"] is True, got
+    assert got["verdict"] == "TIMEOUT", got
+    assert "BREAK" not in dbg.sent, "at rest on the control: nothing to interrupt"
     assert got["control"] == {"at": "F000:E05B", "hits": 1, "removed": True}, got
     assert "BPDEL 01" in dbg.sent and dbg.keys.count(ds.RUN_KEY) == 1, dbg.sent
     assert "still armed" in str(got["note"]), got["note"]   # the TARGET stays, on purpose
@@ -729,7 +744,7 @@ def test_run_to_reports_a_control_it_could_not_remove_beside_a_sound_arrival() -
                     control_only, control_only],           # control: BPDEL 00, STILL there
                    reads=["", dcons.PROMPT + " _"])
     got = run_to(dbg, 0xF000, 0xFFF0, seconds=5, control=(0xF000, 0xE05B))
-    assert got["arrived"] is True and got["breakpoint_removed"] is True, got
+    assert got["verdict"] == "TARGET" and got["breakpoint_removed"] is True, got
     assert got["control"] == {"at": "F000:E05B", "hits": 0, "removed": False}, got
     assert "F000:E05B is STILL in the" in str(got["note"]), got["note"]
 
@@ -741,7 +756,7 @@ def test_run_to_without_a_control_says_so_with_one_key_and_not_by_omission() -> 
     dbg = Debugger([pane_with([]), armed, pane_with([], cs="F000", eip=ARRIVED), armed,
                     pane_with([])])
     got = run_to(dbg, 0xF000, 0xFFF0)
-    assert got["control"] is None and got["arrived"] is True
+    assert got["control"] is None and got["verdict"] == "TARGET"
 
 
 def test_run_to_refuses_a_control_on_the_target_itself() -> None:
@@ -761,7 +776,7 @@ def test_run_to_refuses_a_control_on_the_target_itself() -> None:
                    pane_with(["00. BP 00A8:0010"], mode="Pr32"), pane_with([], mode="Pr32")],
                   reads=["", dcons.PROMPT + " _"])
     got = run_to(pr, 0x00A7, 0x0010, seconds=5, control=(0x00A8, 0x0010))
-    assert got["arrived"] is True, got
+    assert got["verdict"] == "TARGET", got
     assert got["control"] == {"at": "00A8:0010", "hits": 0, "removed": True}, got
 
 
@@ -790,7 +805,7 @@ def test_a_protected_mode_target_may_be_wider_than_sixteen_bits() -> None:
                     pane_with([f"00. BP 00A7:{wide}"], mode="Pr32"),
                     pane_with([], mode="Pr32")])
     got = run_to(dbg, 0x00A7, 0x16DF20)
-    assert got["arrived"] is True, got
+    assert got["verdict"] == "TARGET", got
     assert f"BP 00A7:{wide}" in dbg.sent, dbg.sent
 
 
@@ -897,10 +912,14 @@ def test_each_tool_refuses_with_no_session_and_still_carries_the_envelope(
 # `returned_key_sets` reads EACH return separately and `test_each_double_returns_...`
 # holds every branch of a method to one set, so taking the first is safe and is checked
 # next door rather than assumed here.
-TOOL_FIELDS = {
-    name: set(returned_key_sets(getattr(ds.Session, name))[0])
-    for name in ("log_wait", "step", "run_to")
-}
+TOOL_FIELDS = {"step": set(returned_key_sets(ds.Session.step)[0]),
+               # the wait's TARGET, the branch this case drives: its TIMEOUT carries no line
+               "log_wait": next(set(keys) for keys in returned_key_sets(ds.Session.log_wait)
+                                if "line" in keys)}
+# `run_to` SPEAKS THE SHARED WORDS, so its session's account is mapped and not handed on: the
+# set is the tool's own, every one of which comes from that account.
+TOOL_FIELDS["run_to"] = {"verdict", "target", "ref", "stopped_at", "waited_s",
+                         "target_disarmed", "control_hits", "controls", "note"}
 
 
 @pytest.mark.parametrize("tool", sorted(TOOL_FIELDS))
@@ -1071,8 +1090,7 @@ def test_a_partial_pane_is_refused_rather_than_called_a_running_machine() -> Non
     """`where()` REFUSES FOR THREE REASONS AND ONLY ONE MEANS "RUNNING".
 
     A machine that is stopped, whose pane came back but named no CPU mode, was reported
-    by `run_to` as "the bound expired with the machine still running, and the breakpoint
-    is STILL ARMED -- it cannot be removed while the debugger is not listening". Every
+    by `run_to` as a machine still running, its breakpoint armed and unremovable. Every
     clause of that was false. Catching the base class widened one observed cause into
     three unobserved ones, in the reply a caller reasons hardest about.
     """
@@ -1104,7 +1122,7 @@ def test_an_arrival_reports_the_time_it_actually_waited() -> None:
                    # instantly. The second is what arrives after F5.
                    reads=["", pane_with([], cs="F000", eip="0000FFF0")])
     got = run_to(dbg, 0xF000, 0xFFF0, seconds=30)
-    assert got["arrived"] is True, got
+    assert got["verdict"] == "TARGET", got
     assert cast(float, got["waited_s"]) < 5.0, got
 
 
@@ -1116,7 +1134,7 @@ def test_the_right_offset_in_the_wrong_segment_is_not_an_arrival() -> None:
     dbg = Debugger([pane_with([]), pane_with(["00. BP F000:FFF0"]),
                     pane_with([], cs="0087", eip="0000FFF0")])
     got = run_to(dbg, 0xF000, 0xFFF0)
-    assert got["arrived"] is False, got
+    assert got["verdict"] == "OTHER_STOP", got
     assert "0087" in str(got["note"]), got
 
 
@@ -1132,7 +1150,7 @@ def test_a_breakpoint_that_survives_bpdel_is_reported_as_still_there() -> None:
                     pane_with([], cs="F000", eip="0000FFF0"),
                     armed, armed])          # still listed after BPDEL
     got = run_to(dbg, 0xF000, 0xFFF0)
-    assert got["arrived"] is True, got
+    assert got["verdict"] == "TARGET", got
     assert got["breakpoint_removed"] is False, got
     assert "STILL in the debugger's list" in str(got["note"]), got
 
@@ -1214,12 +1232,13 @@ def test_a_wait_from_a_mark_does_not_answer_with_what_was_written_before_it(
     s = LogSession(log)
     mark = s.e9_mark()
     assert mark == log.stat().st_size          # a BYTE position, not a line index
-    # THE EXPIRY IS ITS OWN TYPE, and its count names the region it examined: with a mark
-    # it is "since the mark", never "in the log altogether", which would be false by
-    # exactly the lines before it.
-    with pytest.raises(ds.E9Expired, match=r"0 since the mark at byte \d+") as expired:
-        s.e9_wait("info_open", seconds=0.3, mark=mark)
-    assert "altogether" not in str(expired.value)
+    # THE EXPIRY IS A TIMEOUT, and its count names the region it examined: with a mark it
+    # is "since the mark", never "in the log altogether", which would be false by exactly
+    # the lines before it.
+    expired = s.e9_wait("info_open", seconds=0.3, mark=mark)
+    assert expired["verdict"] == "TIMEOUT", expired
+    assert re.search(r"0 since the mark at byte \d+", str(expired["note"])), expired
+    assert "altogether" not in str(expired["note"])
     assert s.e9_wait("info_open", seconds=0.3)["already"] is True    # the control
     # A line written AFTER the mark is the answer, and it is the first one after the mark,
     # not the earlier one: the stale line stays invisible to a marked wait.
@@ -1247,8 +1266,7 @@ def test_a_mark_inside_a_half_written_line_does_not_serve_that_line_as_new(
     mark = s.e9_mark()
     with log.open("a", encoding="utf-8") as fh:
         fh.write("_a=0 b=-1 on=0\n")                             # the tail of the old line
-    with pytest.raises(ds.E9Expired):
-        s.e9_wait("key_cue_a", seconds=0.3, mark=mark)
+    assert s.e9_wait("key_cue_a", seconds=0.3, mark=mark)["verdict"] == "TIMEOUT"
     whole = "Bochs port E9h: [+   2.000] ACT   . key_cue_a=1 b=-1 on=1"
     with log.open("a", encoding="utf-8") as fh:
         fh.write(f"{whole}\n")
@@ -1313,12 +1331,13 @@ def test_a_bound_that_expires_is_invalid_and_says_what_it_examined(
         tmp_path: Path) -> None:
     """NOT AN EMPTY ANSWER. A caller who asked "wait for X" and got "no lines" cannot
     tell "X did not happen in this window" from "there was nothing to match against",
-    and this package refuses to print the same thing for both. The refusal names the
+    and this package refuses to print the same thing for both. The TIMEOUT's note names the
     channel, the count and the duration, so the reader can see it really watched."""
     log = tmp_path / "guest.log"
     log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
-    with pytest.raises(ds.Invalid, match="a bound that|expired"):
-        LogSession(log).e9_wait("never_going_to_appear", seconds=0.4)
+    got = LogSession(log).e9_wait("never_going_to_appear", seconds=0.4)
+    assert got["verdict"] == "TIMEOUT" and "a bound that expired" in str(got["note"]), got
+    assert got["lines_examined"] == 1 and got["arrived_during"] == 0, got
 
 
 def test_only_a_session_with_no_channel_at_all_is_refused_outright() -> None:
@@ -1389,26 +1408,25 @@ def test_a_line_still_being_written_is_not_reported_and_is_not_lost(
     assert got["already"] is False, got
 
 
-def test_a_log_that_shrinks_underneath_the_wait_is_named(tmp_path: Path) -> None:
-    """Truncation or rotation makes every byte offset meaningless, and both ways of
-    carrying on are wrong: keeping the offset sees nothing more, resetting it reports
-    old lines as new. It is rare and nameable, so it is named rather than absorbed --
-    which is what the old version did, aborting the wait with a message claiming the
-    build emits no instrumentation at all."""
+def test_a_log_rewritten_underneath_the_wait_is_read_from_its_start(tmp_path: Path) -> None:
+    """A log rewritten SHORTER than the wait's offset describes a file that no longer exists,
+    so the wait reads the new one from its start: a line written to it after the rewrite is
+    found, where keeping the offset would see nothing more for the rest of the bound."""
     log = tmp_path / "guest.log"
     log.write_text(f"{E9_BOOT}\n" * 40, encoding="utf-8")
+    fresh = "Bochs port E9h: [+   1.000] UI    . info_open base=FRESH"
 
-    def truncate_later() -> None:
+    def rewrite_later() -> None:
         time.sleep(0.3)
-        log.write_text("", encoding="utf-8")
+        log.write_text(f"{fresh}\n", encoding="utf-8")
 
-    writer = threading.Thread(target=truncate_later)
+    writer = threading.Thread(target=rewrite_later)
     writer.start()
     try:
-        with pytest.raises(ds.Invalid, match="SHRUNK"):
-            LogSession(log).e9_wait("never_appears", seconds=30)
+        got = LogSession(log).e9_wait("info_open", seconds=5)
     finally:
         writer.join()
+    assert got["verdict"] == "TARGET" and got["line"] == fresh, got
 
 
 def test_a_session_that_dies_mid_wait_says_so_without_burning_the_bound(
@@ -1451,8 +1469,8 @@ def test_the_count_of_what_arrived_during_the_wait_is_not_the_logs_total(
     # truncation bug that a round number would hide.
     log.write_text(f"{E9_BOOT}\n" * 41, encoding="utf-8")
     began = time.monotonic()
-    with pytest.raises(ds.Invalid, match=r"\b0 instrumentation line\(s\) arrived DURING"):
-        LogSession(log).e9_wait("never_appears", seconds=0.4)
+    got = LogSession(log).e9_wait("never_appears", seconds=0.4)
+    assert re.search(r"\b0 instrumentation line\(s\) arrived DURING", str(got["note"])), got
     # AND THE BOUND IS HONOURED, which nothing checked: `deadline = began + seconds * 2`
     # left the whole tier green, in a method whose own refusal justifies its ceiling by
     # "this would sit on a line that is never going to arrive, holding the lock".
@@ -1672,33 +1690,20 @@ def test_a_dead_session_is_noticed_in_the_wait_and_not_after_the_whole_bound() -
         f"`alive()` was asked {dbg.alive_calls} times: the check is not in the loop")
 
 
-def test_a_wait_that_ended_early_does_not_report_an_expired_bound() -> None:
-    """The reply must not contradict itself in one object.
-
-    A 600s bound, a repaint appearing at once and the nudge afterwards coming back with
-    no register pane produce a reply carrying `waited_s: 0.0` beside a note reading
-    "the bound expired with the machine still running": every clause of the note about a
-    wait that never happened.
-    """
-    # A repaint arrives on the first read, so the loop leaves at once; the nudge that
-    # follows finds nothing, which is `NotStopped`.
-    dbg = Debugger([pane_with([]), pane_with(["00. BP F000:E05B"]), ""],
-                   # THE FIRST ENTRY IS EATEN BY THE DRAIN. `run_to` calls `_read(0.0)`
-                   # before releasing the machine, so a queue with one element leaves the
-                   # wait reading nothing -- which is how the first version of this case
-                   # span its whole 600s bound instead of asserting anything.
+def test_an_announced_stop_that_is_not_one_keeps_the_run_going_to_its_bound() -> None:
+    """A repaint arrives at once and the nudge after it finds no register pane: the
+    machine still runs, so the wait LISTENS ON for the rest of its bound, sending nothing
+    (no second release), and only the bound interrupts it. Ending there instead would
+    hand back a TIMEOUT for a run given no time at all."""
+    dbg = Debugger([pane_with([]), pane_with(["00. BP F000:E05B"]), "", "",
+                    pane_with([], cs="0837", eip="0000004C")],
+                   # THE FIRST ENTRY IS EATEN BY THE DRAIN: `run_to` calls `_read(0.0)`
+                   # before releasing the machine.
                    reads=["", "EAX=00000001 EIP=0000FFF0\r\n"])
-    got = run_to(dbg, 0xF000, 0xE05B, seconds=600.0)
-    assert got["arrived"] is False and got["running"] is True
-    assert got["bound_expired"] is False, got
-    assert "NOT an expired bound" in str(got["note"]), got["note"]
-    assert "the bound expired" not in str(got["note"]), got["note"]
-    # AND `waited_s` IS THE MEASUREMENT, which is the other half of the contradiction
-    # this case is named for and was asserted by nothing. The row that pins it anchors
-    # on the ARRIVAL return, so echoing the caller's 600 back here was green.
-    assert cast(float, got["waited_s"]) < 5.0, (
-        f"waited_s is {got['waited_s']} against a 600s bound the wait left at once: "
-        f"that is the argument echoed back, not an elapsed time")
+    got = run_to(dbg, 0xF000, 0xE05B, seconds=0.5)
+    assert got["verdict"] == "TIMEOUT", got
+    assert dbg.keys.count(ds.RUN_KEY) == 1, "released once: the announcement sent nothing"
+    assert cast(float, got["waited_s"]) >= 0.5, got
 
 
 def test_a_stop_announced_only_by_the_prompt_is_seen_by_the_wait() -> None:
@@ -1710,9 +1715,8 @@ def test_a_stop_announced_only_by_the_prompt_is_seen_by_the_wait() -> None:
     machine 12/12, the pane 6/12. `run_to`'s wait was the pane reading. MEASURED over the
     MCP transport on a real-mode guest with an INT 21 breakpoint armed beside the
     target: the machine stopped within milliseconds and the reply came back after the
-    FULL 60 s bound, `bound_expired: true` beside `running: false` and a concrete
-    `stopped_at` -- a timeout, by the flag, for a machine that had been sitting at the
-    debugger the whole time.
+    FULL 60 s bound: a timeout for a machine that had been sitting at the debugger the whole
+    time.
     """
     dbg = Debugger([pane_with([]), pane_with(["00. BP F000:E05B"]),
                     pane_with([], cs="0837", eip="0000004C")],
@@ -1721,8 +1725,7 @@ def test_a_stop_announced_only_by_the_prompt_is_seen_by_the_wait() -> None:
                    # the prompt, with no register label anywhere in it.
                    reads=["", "0837:004C  CD21  int 21  " + dcons.PROMPT + " _"])
     got = run_to(dbg, 0xF000, 0xE05B, seconds=2.0)
-    assert got["arrived"] is False and got["running"] is False, got
-    assert got["bound_expired"] is False, got
+    assert got["verdict"] == "OTHER_STOP", got
     assert cast(float, got["waited_s"]) < 1.0, (
         f"waited_s is {got['waited_s']}: the wait sat out its bound over a stop that "
         f"was announced on its first read")
@@ -1740,32 +1743,30 @@ def test_a_prompt_split_across_two_reads_is_still_heard() -> None:
                     pane_with([], cs="0837", eip="0000004C")],
                    reads=["", noise + dcons.PROMPT[:-1], dcons.PROMPT[-1:] + " _"])
     got = run_to(dbg, 0xF000, 0xE05B, seconds=2.0)
-    assert got["running"] is False and got["arrived"] is False, got
-    assert got["bound_expired"] is False, got
+    assert got["verdict"] == "OTHER_STOP", got
     assert cast(float, got["waited_s"]) < 1.0, got
 
 
-def test_a_stop_elsewhere_read_after_the_bound_says_the_wait_ran_out() -> None:
-    """The reply the fresh session flagged, kept honest rather than made impossible: a
-    stop the wait never heard is still found at rest afterwards, and then the flag and
-    the note have to say the same thing -- the wait ran out, the machine did not."""
+def test_a_stop_elsewhere_read_after_the_bound_is_another_stop_not_a_timeout() -> None:
+    """A stop the wait never heard is still found at rest afterwards: the bound ran out,
+    the machine did not, and nobody here stopped it, so it is OTHER_STOP and nothing was
+    interrupted."""
     dbg = Debugger([pane_with([]), pane_with(["00. BP F000:E05B"]),
                     pane_with([], cs="0837", eip="0000004C")])
     got = run_to(dbg, 0xF000, 0xE05B, seconds=0.05)
-    assert got["running"] is False and got["arrived"] is False, got
-    assert got["bound_expired"] is True, got
-    assert "ran its full 0.05s bound" in str(got["note"]), got["note"]
+    assert got["verdict"] == "OTHER_STOP", got
+    assert "BREAK" not in dbg.sent, dbg.sent
     assert "something else got there first" in str(got["note"]), got["note"]
 
 
-def test_a_bound_that_really_expired_still_says_so() -> None:
-    """THE GREEN BESIDE THE RED. Without it the case above passes over a `note` that
-    never says "expired" for any input, which would replace one wrong answer with
-    another."""
-    dbg = Debugger([pane_with([]), pane_with(["00. BP F000:E05B"]), ""])
+def test_a_bound_that_really_expired_is_a_timeout() -> None:
+    """THE GREEN BESIDE THE RED: the same bound with the machine still running is the
+    TIMEOUT, so the case above cannot pass over a verdict that never changes."""
+    dbg = Debugger([pane_with([]), pane_with(["00. BP F000:E05B"]), "",
+                    pane_with([], cs="0837", eip="0000004C")])
     got = run_to(dbg, 0xF000, 0xE05B, seconds=0.05)
-    assert got["bound_expired"] is True, got
-    assert "the bound expired with the machine still running" in str(got["note"])
+    assert got["verdict"] == "TIMEOUT", got
+    assert "the 0.05 s bound ran out and the run was interrupted" in str(got["note"])
 
 
 def test_the_wait_scans_the_new_text_and_not_the_whole_terminal_again() -> None:
@@ -1781,7 +1782,7 @@ def test_the_wait_scans_the_new_text_and_not_the_whole_terminal_again() -> None:
     the loop looks at does NOT GROW with how long it has been waiting.
     """
     chunk = "EAX=00000000 EBX=00000000\r\n" * 20
-    dbg = Debugger([pane_with([]), pane_with(["00. BP F000:E05B"]), ""],
+    dbg = Debugger([pane_with([]), pane_with(["00. BP F000:E05B"]), "", pane_with([])],
                    reads=[""] + [chunk] * 200)      # the first is eaten by the drain
     seen_lengths: list[int] = []
     real = dcons.parse_registers
@@ -1833,12 +1834,12 @@ def test_a_register_split_across_two_reads_is_still_found() -> None:
                     pane_with([], eip="0000E05B")],
                    reads=["", noise + "EIP=", "0000E05B more\r\n"])
     got = run_to(dbg, 0xF000, 0xE05B, seconds=5.0)
-    assert got["arrived"] is True, got
-    # `bound_expired` IS THE DISCRIMINATING ASSERTION, not `arrived`. With no carry the
-    # loop sits out its bound and `where()` then pops a pane showing the machine AT the
-    # target, so `arrived` comes out True either way. Deleting this line as redundant
-    # would turn the row that names this case into a blind spot.
-    assert got["bound_expired"] is False, got
+    assert got["verdict"] == "TARGET", got
+    # `waited_s` IS THE DISCRIMINATING ASSERTION, not the verdict. With no carry the loop
+    # sits out its bound and `where()` then pops a pane showing the machine AT the target,
+    # so the verdict comes out TARGET either way. Deleting this line as redundant would
+    # turn the row that names this case into a blind spot.
+    assert cast(float, got["waited_s"]) < 1.0, got
 
 
 def test_an_address_is_never_composed_out_of_two_repaints() -> None:
@@ -2021,12 +2022,12 @@ def test_a_line_written_in_the_tail_of_the_window_is_not_lost_to_the_clock(
 def test_an_expired_bound_with_nothing_matching_is_still_a_refusal(
         tmp_path: Path) -> None:
     """THE OTHER GREEN'S RED, for the expiry path: a final read that ANSWERED whatever
-    it found would turn every expired bound into a reply."""
+    it found would turn every expired bound into a match."""
     log = tmp_path / "guest.log"
     log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
-    with pytest.raises(ds.Invalid, match="nothing matched"):
-        LateLog(log, line="Bochs port E9h: [+   3.000] UI    . nothing",
-                burn=0.4).e9_wait("audio", seconds=0.25)
+    got = LateLog(log, line="Bochs port E9h: [+   3.000] UI    . nothing",
+                  burn=0.4).e9_wait("audio", seconds=0.25)
+    assert got["verdict"] == "TIMEOUT" and "nothing matched" in str(got["note"]), got
 
 
 # ------------------------- what the LATER adversarial review found in the fix
@@ -2437,7 +2438,8 @@ def test_the_tool_hands_both_fields_on_and_takes_nothing_away() -> None:
     finally:
         dstate.STATE.session = None
     assert got["status"] == "ok", got
-    assert got["halted"] is True, got
+    assert "verdict" not in got, "a resume that waited for nothing carries none"
+    assert got["stop_seq"] >= 1, got
     assert got["stopped_at"] == {"cs": "0814", "eip": "00000112", "mode": "Real"}
     assert got["screen_delta"] == RESUME_HALTED, got
     assert "omitted" not in got and "how" not in got
@@ -2480,8 +2482,7 @@ def test_a_wait_on_a_machine_stopped_at_the_debugger_refuses_at_once(tmp_path: P
     assert time.monotonic() - began < 1.0, "it sat out the bound on a stopped machine"
     assert parked.e9_wait("BOOT", seconds=30)["already"] is True
     running = StoppedLogSession(log, at_debugger=False)
-    with pytest.raises(ds.Invalid, match="a bound that|expired"):
-        running.e9_wait("never_going_to_appear", seconds=0.3)
+    assert running.e9_wait("never_going_to_appear", seconds=0.3)["verdict"] == "TIMEOUT"
 
 
 def test_a_waited_answer_says_how_many_lines_sat_before_the_match(tmp_path: Path) -> None:
@@ -2609,14 +2610,14 @@ def test_an_expiry_consults_the_debugger_before_saying_still_running(
     the same shape with the machine really still running, which keeps the old words."""
     log = tmp_path / "guest.log"
     log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
-    monkeypatch.setattr(ds, "E9_POLL", 0.3)
+    monkeypatch.setattr(core_wait, "POLL_S", 0.3)
     late = LateStopLogSession(log, running_answers=1)
-    with pytest.raises(ds.E9Stopped, match="expired.*stopped at the debugger"):
+    with pytest.raises(ds.E9Stopped, match="stopped at the debugger"):
         late.e9_wait("never_going_to_appear", seconds=0.2)
     assert late.asked == 2, late.asked
     still = LateStopLogSession(log, running_answers=99)
-    with pytest.raises(ds.E9Expired, match="still running"):
-        still.e9_wait("never_going_to_appear", seconds=0.2)
+    got = still.e9_wait("never_going_to_appear", seconds=0.2)
+    assert got["verdict"] == "TIMEOUT" and "still running" in str(got["note"]), got
     assert still.asked == 2, still.asked
 
 
@@ -2688,11 +2689,10 @@ def test_e9_wait_reports_its_progress_while_it_waits(tmp_path: Path,
     wait reports one: the seconds spent of the bound and what is being waited for."""
     log = tmp_path / "guest.log"
     log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
-    monkeypatch.setattr(ds, "PROGRESS_EVERY_S", 0.0)
+    monkeypatch.setattr(mprogress, "PROGRESS_EVERY_S", 0.0)
     ticks: list[tuple[float, float | None, str]] = []
-    with pytest.raises(ds.E9Expired):
-        LogSession(log).e9_wait("never", seconds=0.25,
-                                progress=lambda p, t, m: ticks.append((p, t, m)))
+    LogSession(log).e9_wait("never", seconds=0.25,
+                            progress=lambda p, t, m: ticks.append((p, t, m)))
     assert ticks, "the wait reported nothing"
     # A wait measured in time has no total: a bar filling towards the bound reads as progress
     # towards failure.
@@ -2729,10 +2729,11 @@ def test_run_to_hands_its_progress_to_the_stop_wait(monkeypatch: pytest.MonkeyPa
     inside `run_to` is what this pins."""
     monkeypatch.setattr(ds, "PROGRESS_EVERY_S", 0.0)
     ticks: list[str] = []
-    dbg = Debugger([pane_with([]), pane_with(["00. BP F000:FFF0"]), ""])
+    dbg = Debugger([pane_with([]), pane_with(["00. BP F000:FFF0"]), "",
+                    pane_with([], cs="0837", eip="0000004C")])
     out = run_to(dbg, 0xF000, 0xFFF0, seconds=0.3,
                  progress=lambda p, t, m: ticks.append(m))
-    assert out.get("running") is True and ticks and ticks[0].startswith("run_to F000:FFF0")
+    assert out.get("verdict") == "TIMEOUT" and ticks and ticks[0].startswith("run_to F000:FFF0")
 
 
 def test_run_to_cancelled_in_flight_is_brought_back_and_takes_its_breakpoints_with_it(
@@ -2772,4 +2773,67 @@ def test_run_to_cancelled_in_flight_is_brought_back_and_takes_its_breakpoints_wi
     with pytest.raises(asyncio.CancelledError):
         run_to(dbg, 0xF000, 0xFFF0, seconds=5, control=(0xF000, 0xE05B))
     assert dbg.breaks == 1, "the run was left in flight"
+    assert dbg.sent.count("BPDEL 00") == 2, dbg.sent
+
+
+class PromptInTheNudge(Debugger):
+    """A machine that comes to rest between the wait giving up and the position read: the
+    first nudge after the bound reads the stop's prompt and no pane, as a stop landing inside
+    a typed command's own read does, and the next nudge reads the pane."""
+
+    def command(self, text: str, **k: object) -> str:
+        out = super().command(text, **k)
+        if text == ds.NUDGE and out == "" and not self._at_debugger:
+            self._at_debugger = True             # the prompt went past inside the read
+        return out
+
+
+def test_a_run_that_came_to_rest_after_the_bound_is_not_interrupted() -> None:
+    """THE INTERRUPT IS GUARDED: a run found at rest after its bound is another's stop, so no
+    `BREAK` reaches an idle debugger and the verdict is OTHER_STOP, never a TIMEOUT claimed for a
+    stop nobody here made."""
+    dbg = PromptInTheNudge([pane_with([]), pane_with(["00. BP F000:E05B"]), "",
+                            pane_with([], cs="0837", eip="0000004C")])
+    got = run_to(dbg, 0xF000, 0xE05B, seconds=0.05)
+    assert got["verdict"] == "OTHER_STOP" and "BREAK" not in dbg.sent, (got, dbg.sent)
+
+
+def test_a_rest_on_the_control_found_after_the_bound_counts_as_its_hit() -> None:
+    """A control the machine is found resting on after the bound FIRED, so the run is a
+    TIMEOUT with one hit, never `control_silent` with the stop sitting on the control."""
+    both = pane_with(["00. BP F000:FFF0", "01. BP F000:E05B"])
+    dbg = PromptInTheNudge([pane_with([]), both, "",
+                            pane_with([], cs="F000", eip=CONTROL_HIT),
+                            both, pane_with(["00. BP F000:FFF0"])])
+    got = run_to(dbg, 0xF000, 0xFFF0, seconds=0.05, control=(0xF000, 0xE05B))
+    assert got["verdict"] == "TIMEOUT" and got["control"] == {
+        "at": "F000:E05B", "hits": 1, "removed": True}, got
+
+
+def test_a_cancel_during_the_interrupt_at_the_bound_takes_the_breakpoints_with_it(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The interrupt at the bound is inside the run's cancel handling: a cancel arriving while
+    `BREAK` waits for its prompt removes the breakpoints the run armed, as a cancel in flight
+    does."""
+    import asyncio
+
+    class CancelledAtTheBound(Debugger):
+        breaks = 0
+
+        def break_in(self, seconds: float = 5.0) -> float:
+            self.breaks += 1
+            if self.breaks == 1:
+                raise asyncio.CancelledError
+            self._at_debugger = True
+            return 0.0
+
+    both = pane_with(["00. BP F000:FFF0", "01. BP F000:E05B"])
+    control_only = pane_with(["00. BP F000:E05B"])
+    dbg = CancelledAtTheBound([pane_with([]), both, "",          # running at the bound
+                               both, control_only, control_only, pane_with([])])
+    from scry_core import cancel
+    monkeypatch.setattr(cancel, "is_cancellation",
+                        lambda e: isinstance(e, asyncio.CancelledError))
+    with pytest.raises(asyncio.CancelledError):
+        run_to(dbg, 0xF000, 0xFFF0, seconds=0.05, control=(0xF000, 0xE05B))
     assert dbg.sent.count("BPDEL 00") == 2, dbg.sent

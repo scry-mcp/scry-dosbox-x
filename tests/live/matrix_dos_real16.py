@@ -114,7 +114,7 @@ def section_d() -> None:
     stops = [M.call(server.resume, seconds=30) for _ in range(3)]
     M.judge("D breakpoint_at COMPOSE_FRAME fires three frames",
             ok(b) and b.get("state") == "armed" and all(
-                ok(s) and s.get("halted") is True
+                ok(s) and "stop_seq" in s
                 and (s.get("attribution") or {}).get("attributed") is True
                 and (s.get("attribution") or {}).get("ref") == "COMPOSE_FRAME" for s in stops),
             "; ".join(said(s, 60) for s in stops))

@@ -7,6 +7,8 @@ from __future__ import annotations
 import time
 from typing import Any, cast
 
+from scry_core import reply_contract as contract
+
 import dosbox_placement as placement
 import dosbox_running as running
 import dosbox_session as ds
@@ -16,34 +18,46 @@ from dosbox_running import live
 
 def resume(e9: str, e9_filter: str, e9_stamp: str | None, seconds: float, detail: bool,
            progress: ds.Progress) -> dict[str, Any]:
-    """The body of the `resume` tool."""
+    """The body of the `resume` tool. With a bound it waits for a stop: `OTHER_STOP` with the
+    stop's survey, or `TIMEOUT` with the machine LEFT RUNNING; with none it waits for nothing
+    and carries no verdict, though an F5 that never left the debugger is still a stop."""
     session = live()
     # A GUEST ALREADY RUNNING IS REFUSED BEFORE ANY CHECK THAT NEEDS THE MACHINE: an F5 there
     # does nothing, and an `ok` for it reads exactly like the release of a stopped machine.
     if not session.at_debugger():
         raise ds.NotStopped("the guest is already running, so there is nothing to resume")
     out = session.resume()
-    base = dict(halted=out["halted"], stopped_at=out["stopped_at"],
-                **st.delta_if_asked(cast(str, out["screen"]), 2000, detail))
-    if not out["halted"] and seconds > 0:
+    halted = bool(out["halted"])
+    stopped_at = out["stopped_at"]
+    base: dict[str, Any] = st.delta_if_asked(cast(str, out["screen"]), 2000, detail)
+    if seconds > 0:
         began = time.monotonic()
-        expired, _saw_at = ds.Session.await_stop(session, began, began + seconds, "resume",
-                                                  progress, label="resume")
-        base["waited_s"] = round(time.monotonic() - began, 3)
-        if not expired:
+        while not halted:
+            expired, _saw_at = ds.Session.await_stop(session, began, began + seconds,
+                                                      "resume", progress, label="resume")
+            if expired:
+                break
+            # AN ANNOUNCED STOP IS READ BACK: a machine not at rest when asked still runs, so
+            # the wait listens on for the rest of its bound. A pane cut another way is a stop
+            # whose position could not be read, said by the stop reply's own enrichment.
             try:
-                base["stopped_at"] = session.where()
-                base["halted"] = True
+                stopped_at = session.where()
+                halted = True
             except ds.NotStopped:
-                base["note"] = ("the debugger announced a stop and the machine was not at rest "
-                                "when asked: it is RUNNING")
-        else:
+                continue
+            except ds.Invalid:
+                stopped_at, halted = None, True
+        base["waited_s"] = round(time.monotonic() - began, 3)
+        if not halted:
             base["note"] = (f"no stop within {seconds:g} s; the machine is STILL RUNNING, and "
                             "the console tools refuse until it stops")
+        base = {"verdict": contract.OTHER_STOP if halted else contract.TIMEOUT, **base}
+    if halted and stopped_at is not None:
+        base["stopped_at"] = stopped_at
     # A HALT IS A STOP, so it carries the full stop reply: registers, the
     # watches evaluated, the attribution and the E9 summary. A machine still running has
     # nothing to read, so it comes back with just the base.
-    return running.stop_or_base(session, bool(base["halted"]), e9, e9_filter, e9_stamp, base,
+    return running.stop_or_base(session, halted, e9, e9_filter, e9_stamp, base,
                                 retrace_may_stop=True)
 
 
@@ -60,20 +74,33 @@ def run_to(ref: str, control: str, seconds: float, e9: str, e9_filter: str,
     mode_regs = None if machine is None else (machine[0]["mode"], machine[1])
     seg, off = placement.read_target(ref, "CS", session, machine=mode_regs)
     ctl = placement.read_target(control, "CS", session, machine=mode_regs)
-    out = session.run_to(seg, off, seconds, ctl, progress)
-    out["ref"] = ref            # `target` is the session's own spelling, kept as it came
-    # THE CONTROL'S VERDICT: a bound that ran out with
-    # the control armed and NEVER fired is not a non-arrival, it is a run that proved
-    # nothing, and it says so as INVALID with the account attached.
-    hits = out.get("control")
-    if out.get("running") and isinstance(hits, dict) and not hits["hits"]:
-        return st.reply(status="INVALID", code="control_silent",
-                      message=f"the control {control} never fired within {seconds}s, so {ref} "
-                             f"not firing means nothing. Check that the control really is hot "
-                             f"on this screen; both breakpoints are still armed",
-                      **cast(dict[str, Any], out))
-    # ARRIVED or stopped ELSEWHERE both mean the machine is stopped, so both carry the full
-    # stop reply; a bound that expired left it running and there is nothing to read.
+    out = cast(dict[str, Any], session.run_to(seg, off, seconds, ctl, progress))
+    armed = out.pop("control")
+    hits = int(armed["hits"])
+    verdict = out.pop("verdict")
+    # `target` is the session's own spelling of the place, `ref` the caller's.
+    fields: dict[str, Any] = {
+        "verdict": verdict, "target": out["target"], "ref": ref,
+        "stopped_at": out["stopped_at"], "waited_s": out["waited_s"],
+        "target_disarmed": out["breakpoint_removed"], "control_hits": hits,
+        "controls": [{"ref": control, "at": armed["at"], "hits_in_run": hits,
+                      "removed": armed["removed"]}],
+        "note": out["note"]}
+    # A RUN THAT MEASURED NOTHING ABOUT ITS CONTROL proves nothing about its target: the bound
+    # ran out with the control never fired, or another stop ended the run before it could
+    # fire. Both are refused, with the stop the run left surveyed beside the refusal.
+    if verdict != contract.TARGET and not hits:
+        code: contract.Code = ("control_silent" if verdict == contract.TIMEOUT
+                               else "cut_by_other_stop")
+        message = (f"the control {control} never fired within {seconds:g} s, so {ref} not "
+                   f"firing means nothing. Check that the control really is hot on this "
+                   f"screen; the target is still armed" if code == "control_silent" else
+                   f"another stop ended the run before the control {control} fired, so "
+                   f"nothing was measured about {ref}; the target is still armed")
+        refused = {k: v for k, v in fields.items() if k != "verdict"}
+        return running.stop_or_base(session, True, e9, e9_filter, e9_stamp,
+                                    {"status": "INVALID", "code": code, "message": message,
+                                     **refused}, retrace_may_stop=True)
     # An arrival is the stop `run_to` made; a stop elsewhere may be a retrace `run_for` left.
-    return running.stop_or_base(session, not out.get("running"), e9, e9_filter, e9_stamp,
-                         cast(dict[str, Any], out), retrace_may_stop=not out.get("arrived"))
+    return running.stop_or_base(session, True, e9, e9_filter, e9_stamp, fields,
+                                retrace_may_stop=verdict != contract.TARGET)

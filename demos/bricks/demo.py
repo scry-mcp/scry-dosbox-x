@@ -201,7 +201,7 @@ def paddle(reply: Reply, run: Run) -> str:
 
 def seen(what: str) -> Any:
     def check(reply: Reply, run: Run) -> str:
-        expect(reply["effect"]["seen"] is True, f"effect {reply['effect']}")
+        expect(reply["verify"]["seen"] is True, f"verify {reply['verify']}")
         return what
     return check
 
@@ -220,7 +220,7 @@ def pointed(reply: Reply, run: Run) -> str:
     screen = reply["pointer"]["screen"]
     expect(reply["arrived"] is True and (screen["x"], screen["y"]) == MOUSE_AT,
            f"the pointer read back at {screen}, not {MOUSE_AT}")
-    expect(reply["effect"]["seen"] is True, f"effect {reply['effect']}")
+    expect(reply["verify"]["seen"] is True, f"verify {reply['verify']}")
     return (f"the pointer read back at pixel {MOUSE_AT[0]},{MOUSE_AT[1]} and the game logged "
             f"MOUSE")
 
@@ -304,7 +304,7 @@ STEPS = [
     Step("serve", "send_keys", {"keys": ["space"], "expect": "SERVE$", "seconds": 10},
          seen("SPACE served the ball that was waiting on the paddle"), volatile=INPUT_TIMING),
     Step("unwatch", "watch_clear", {}, lambda reply, run: "watch cleared"),
-    Step("close", "close", {}, lambda reply, run: f"closed: {reply['how']}"),
+    Step("close", "close", {}, lambda reply, run: f"closed: {reply['ended_by']}"),
 ]
 
 

@@ -12,8 +12,6 @@ window from a routine's breakpoint starts at that routine's own linear address.
 """
 from __future__ import annotations
 
-import shutil
-import time
 from pathlib import Path
 from typing import Any
 
@@ -44,8 +42,6 @@ SETTLE_LOOP = 0x106
 AFTER_LOOP = 0x108
 #: Instructions each shape's known answer executes; each of the four takes this much ECX.
 PER_SHAPE = 64
-#: How long a cell waits for the machine to stop at a log's count after an expired bound.
-STOP_WAIT_S = 120.0
 #: The wait every trace here declares: under the matrix's own ceiling, and far above what the
 #: probe's few thousand instructions take.
 TRACE_S = 30
@@ -91,13 +87,9 @@ K_CELLS = cells(
     ("K a breakpoint cuts a trace: OTHER_STOP, the instructions equal to ECX",
      "trace docstring: OTHER_STOP; known: the loop ends when ECX reaches zero"),
     ("K after the cut the next trace is whole", "REFERENCE.md, Advancing the machine: the cut"),
-    ("K a bound that expires: wait_expired, running, the log named",
-     "trace docstring: wait_expired with running"),
-    ("K the machine stops at the log's count, the log whole, and status records it",
-     "REFERENCE.md, Advancing the machine: the expiry"),
-    ("K the next trace is refused while the log sits in the working directory",
-     "trace docstring: a LOGCPU.TXT already there is refused"),
-    ("K once the log is moved the next trace closes it and runs whole",
+    ("K a bound that runs out interrupts the trace: TIMEOUT, what ran collected, the log closed",
+     "trace docstring: TIMEOUT, the run interrupted where it stood"),
+    ("K the next trace after an interrupted one runs whole",
      "REFERENCE.md, Advancing the machine: the expiry"),
     ("K a running guest is refused not_stopped", "trace docstring: needs the machine stopped"),
     ("K the dynamic core: no_channel naming the core, the log kept at dest",
@@ -348,41 +340,20 @@ def _dpmi() -> None:
 
 
 def _expiry() -> None:
-    """The bound expires with the log running: the reply names it, the machine stops at the
-    count on its own, and the next trace waits for the file to leave the guest's directory."""
-    moved = Path(M.fresh(".trace"))
-    try:
-        r = M.call(server.trace, instructions=tracing.INSTRUCTIONS_MAX, shape="cs_ip",
-                   dest=M.fresh(".trace"), seconds=1)
-        log = Path(str((r.get("trace") or {}).get("path")))
-        judged("K a bound that expires: wait_expired, running, the log named", reply=r,
-               holds=refused(r, "wait_expired") and r.get("running") is True
-               and log.parent == GUEST)
-        deadline = time.monotonic() + STOP_WAIT_S
-        s: dict[str, Any] = {}
-        while time.monotonic() < deadline:
-            s = M.call(server.status)
-            if s.get("cpu_mode") is not None:
-                break
-            time.sleep(1)
-        lines = tracing.count_lines(log) if log.is_file() else None
-        M.judge("K the machine stops at the log's count, the log whole, and status records it",
-                ok(s) and s.get("cpu_mode") == "real"
-                and lines == tracing.INSTRUCTIONS_MAX + 1, f"{lines} lines; {said(s)}")
-        r = M.call(server.trace, instructions=16, dest=M.fresh(".trace"), seconds=TRACE_S)
-        judged("K the next trace is refused while the log sits in the working directory",
-               reply=r, holds=refused(r, "bad_argument") and "already sitting" in str(
-                   r.get("message")))
-    finally:
-        for p in tracing.log_places(GUEST):
-            if p.exists():
-                shutil.move(str(p), str(moved))
-        moved.unlink(missing_ok=True)
+    """The bound runs out with the log running: the run is interrupted where it stands, what
+    ran is collected as a TIMEOUT, the log closed and nothing left in the guest's directory, so
+    the next trace runs whole."""
+    r = M.call(server.trace, instructions=tracing.INSTRUCTIONS_MAX, shape="cs_ip",
+               dest=M.fresh(".trace"), seconds=1)
+    judged("K a bound that runs out interrupts the trace: TIMEOUT, what ran collected, the log "
+           "closed", reply=r,
+           holds=ok(r) and r.get("verdict") == "TIMEOUT"
+           and int((r.get("trace") or {}).get("instructions") or 0) > 0 and _no_log_left())
     M.setup()
     dest = M.fresh(".trace")
     r = M.call(server.trace, instructions=16, shape="cs_ip", dest=dest, seconds=TRACE_S)
     lines = len(Path(dest).read_bytes().splitlines()) if Path(dest).is_file() else None
-    judged("K once the log is moved the next trace closes it and runs whole", reply=r,
+    judged("K the next trace after an interrupted one runs whole", reply=r,
            holds=ok(r) and r.get("verdict") == "ELAPSED" and lines == 17 and _no_log_left())
 
 

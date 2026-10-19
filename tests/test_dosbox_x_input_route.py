@@ -69,11 +69,11 @@ def test_the_stub_s_own_report_is_never_the_program_s_reaction(tmp_path: Path) -
     for pattern in ("buttons=1", r"x=\d+", "STUB", "(?i)mouse"):
         got = cast(dict[str, Any], server.send_mouse(button="left", action="down",
                                                      expect=pattern, seconds=0.5))
-        assert got["status"] == "INVALID" and got["code"] == "wait_expired", (pattern, got)
+        assert got["status"] == "ok" and got["verify"]["verdict"] == "TIMEOUT", (pattern, got)
     fake.input_effect = "Bochs port E9h: UI    . mouse down x=1"
     seen = cast(dict[str, Any], server.send_mouse(button="left", action="up",
                                                   expect="(?i)MOUSE DOWN", seconds=1))
-    assert seen["status"] == "ok" and "UI" in seen["effect"]["line"], seen
+    assert seen["status"] == "ok" and "UI" in seen["verify"]["line"], seen
 
 
 def test_commands_that_went_in_are_said_when_the_read_back_fails(tmp_path: Path) -> None:
@@ -87,7 +87,8 @@ def test_commands_that_went_in_are_said_when_the_read_back_fails(tmp_path: Path)
                              **kw: Any) -> dict[str, object]:
         calls["n"] += 1
         if calls["n"] == 2:
-            raise ds.E9Expired("no line matched")
+            return {"verdict": "TIMEOUT", "arrived_during": 0, "lines_examined": 0,
+                    "waited_s": seconds, "since_mark": mark, "note": "no line matched"}
         return cast(dict[str, object], real_wait(pattern, seconds, mark=mark, **kw))
     fake.e9_wait = second_report_silent
     got = cast(dict[str, Any], server.send_mouse(x=10, y=5, button="left"))
@@ -204,7 +205,8 @@ def test_a_first_report_that_fails_delivered_nothing(tmp_path: Path) -> None:
     fake = _guest(tmp_path)
 
     def silent(pattern: str, seconds: float, mark: int = 0, **_: Any) -> dict[str, object]:
-        raise ds.E9Expired("no line matched")
+        return {"verdict": "TIMEOUT", "arrived_during": 0, "lines_examined": 0,
+                    "waited_s": seconds, "since_mark": mark, "note": "no line matched"}
     fake.e9_wait = silent
     got = cast(dict[str, Any], server.send_mouse(button="left"))
     assert got["status"] == "INVALID" and "delivered" not in got, got

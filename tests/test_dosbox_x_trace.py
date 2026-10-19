@@ -81,7 +81,7 @@ class Tracer(Debugger):
         return self.at_debugger()
 
     def at_debugger(self) -> bool:
-        return not self.running
+        return not self.running and self._at_debugger
 
     def log_cpu(self, word: str, count: int, began: float, deadline: float,
                 progress: ds.Progress = ds.no_progress) -> tuple[bool, float]:
@@ -277,35 +277,22 @@ def test_a_close_that_does_not_answer_names_the_moved_log_as_maybe_open(
     assert "`close` ends the emulator" in got["message"] and dstate.STATE.log_open is True
 
 
-def test_an_expired_bound_leaves_the_log_running_and_the_next_trace_closes_it(
+def test_a_bound_that_runs_out_interrupts_the_trace_and_collects_what_ran(
         tmp_path: Path) -> None:
-    """No headless stopper calls a log back: the bound says so and hands the file over. The
-    next trace refuses while the file sits in the working directory, and once it is gone closes
-    the log before opening its own; on a log already closed that close writes an empty file,
-    which is the call's own and is removed."""
-    cwd = cwd_of(tmp_path)
-    # The expired call reads the first survey; the trace after the close reads the same pane
-    # again (the machine sat at the same stop), then its own stop.
-    dbg = live(Tracer([cap("probe-settle-survey-before"), cap("probe-settle-survey-before"),
-                       cap("probe-settle-survey-after")], cwd,
-                      [("probe-settle-cs_ip-16", None),
-                       ("probe-post-close", "probe-post-close-delta"),
-                       ("probe-settle-cs_ip-16", "probe-settle-cs_ip-16-delta")]))
-    got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
-                                            dest=str(tmp_path / "x.trace"), seconds=0.3))
-    assert got["status"] == "INVALID" and got["code"] == "wait_expired", got
-    assert got["running"] is True and got["trace"]["closed"] is False, got
-    assert got["trace"]["path"] == str(cwd / tracing.LOG_FILE) and dstate.STATE.log_open
-    again = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
-                                              dest=str(tmp_path / "y.trace")))
-    assert again["code"] == "bad_argument" and "already sitting at" in again["message"], again
-    assert dbg.keys == [b"LOGC 11\r"], "the refusal typed something"
-    shutil.move(str(cwd / tracing.LOG_FILE), str(tmp_path / "moved.trace"))
-    done = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
-                                             dest=str(tmp_path / "z.trace")))
-    assert done["status"] == "ok", done
-    assert dbg.keys == [b"LOGC 11\r", b"LOGC 0\r", b"LOGC 11\r"]
-    assert not log_open() and no_log_left(cwd)
+    """THE BOUND INTERRUPTS: the stop the count waits for never comes, so at the bound the
+    machine is brought back with `BREAK` where it stands, and what the log holds up to there is
+    collected as a stop that cut it would be (moved, closed, counted against `cc=`): a TIMEOUT,
+    the log closed and nothing left in the working directory."""
+    dbg = live(Tracer([cap("probe-int-mid-survey-before"),
+                       cap("probe-int-mid-survey-after-close")], cwd_of(tmp_path),
+                      [("probe-int-mid-cs_ip", None),
+                       (None, "probe-int-mid-close-delta")]))
+    got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",
+                                            dest=str(tmp_path / "t.trace"), seconds=0.3))
+    assert got["status"] == "ok" and got["verdict"] == "TIMEOUT", got
+    assert "BREAK" in dbg.sent and got["trace"]["instructions"] == 6, got
+    assert dbg.keys == [b"LOGC 186A1\r", b"LOGC 0\r"] and no_log_left(dbg.launch.cwd)
+    assert not log_open()
 
 
 def test_the_running_check_comes_before_the_leftover(tmp_path: Path) -> None:
@@ -530,15 +517,15 @@ def test_the_description_states_the_bound_the_check_holds() -> None:
 
 
 @pytest.mark.parametrize("where", ["description", "REFERENCE.md"])
-def test_closed_false_is_described_as_no_close_seen_never_as_a_stop_to_come(where: str) -> None:
-    """From the reset park with no `logfile` the reply says `closed: false` and the machine
-    never stops, so the texts may not promise the count's stop."""
+def test_the_texts_say_the_bound_interrupts_the_trace(where: str) -> None:
+    """A trace whose stop never comes is interrupted at its bound, so the texts may not
+    promise a count that runs on, nor a log left open for the next trace."""
     package = Path(__file__).parents[1]
     text = str(server.trace.__doc__) if where == "description" else (package / where).read_text()
     flat = " ".join(text.split())
-    assert "no such close was seen" in flat
+    assert "interrupted where it stood" in flat
     for promise in ("runs to its count and stops there", "so the log runs on to its count",
-                    "leaves a log running to its count"):
+                    "leaves a log running to its count", "no such close was seen"):
         assert promise not in flat, promise
 
 
@@ -1203,30 +1190,18 @@ def expired_with_logfile(tmp_path: Path, earlier: str, appends: str) -> dict[str
                                              dest=str(tmp_path / "p.trace"), seconds=0.3))
 
 
-def test_an_expiry_after_the_machine_closed_the_log_says_its_count_will_not_stop_it(
-        tmp_path: Path) -> None:
-    got = expired_with_logfile(tmp_path, "an earlier line\n", "probe-post-logfile")
-    assert got["status"] == "INVALID" and got["code"] == "wait_expired", got
-    assert got["running"] is True and got["trace"]["closed"] is True, got
-    assert "the count will not stop it" in got["message"] and not log_open(), got["message"]
-
-
-def test_a_count_running_and_an_earlier_close_are_not_this_logs_close(tmp_path: Path) -> None:
-    """The logfile is read from where it ended when the trace began: a close written before is
-    another run's, and the lines a log writes when it starts and ends at its count are not the
-    machine closing it."""
-    got = expired_with_logfile(tmp_path, cap("probe-post-logfile"), "probe-count-logfile")
-    assert got["code"] == "wait_expired" and got["trace"]["closed"] is False, got
-    assert "does not say it happened" in got["message"] and log_open(), got["message"]
-
-
-def test_an_expiry_with_no_logfile_says_it_cannot_tell(tmp_path: Path) -> None:
-    live(Tracer([cap("probe-post-survey-before")], cwd_of(tmp_path),
-                [("probe-post-cs_ip", None)]))
+def test_a_log_the_machine_closed_before_the_bound_is_not_what_ran(tmp_path: Path) -> None:
+    """From the reset park the BIOS closes the debugger's log before its count: the bound
+    interrupts the run, and the collect finds the log already closed, so its lines are not what
+    ran and the trace is refused, with the stop it ended at."""
+    dbg = live(Tracer([cap("probe-post-survey-before"), cap("probe-post-survey-after-close")],
+                      cwd_of(tmp_path),
+                      [("probe-post-cs_ip", None),
+                       ("probe-post-close", "probe-post-close-delta")]))
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
-                                            dest=str(tmp_path / "q.trace"), seconds=0.3))
-    assert got["code"] == "wait_expired" and got["trace"]["closed"] is False, got
-    assert "cannot be told apart" in got["message"] and log_open(), got["message"]
+                                            dest=str(tmp_path / "p.trace"), seconds=0.3))
+    assert got["code"] == "readback_refused" and "BREAK" in dbg.sent, got
+    assert "are not what ran" in got["message"] and "stop_seq" in got, got
 
 
 def test_the_logfile_is_read_in_chunks_and_a_line_across_two_is_found(
@@ -1235,14 +1210,14 @@ def test_the_logfile_is_read_in_chunks_and_a_line_across_two_is_found(
     with them is."""
     monkeypatch.setattr(tracing, "READ_CHUNK_BYTES", 7)
     logfile = tmp_path / "guest.log"
-    logfile.write_text("x\nBochs port E9h: " + tracing.MACHINE_CLOSED_LINE + "\n")
-    assert not tracing._logfile_says(logfile, 2, tracing.MACHINE_CLOSED_LINE)
-    logfile.write_text("x\n" + cap("probe-post-logfile"))
-    assert tracing._logfile_says(logfile, 2, tracing.MACHINE_CLOSED_LINE)
+    logfile.write_text("x\nBochs port E9h: " + tracing.NOT_CREATED_LINE + "\n")
+    assert not tracing._logfile_says(logfile, 2, tracing.NOT_CREATED_LINE)
+    logfile.write_text("x\n" + tracing.NOT_CREATED_LINE + "\n")
+    assert tracing._logfile_says(logfile, 2, tracing.NOT_CREATED_LINE)
 
 
 def test_a_logfile_the_host_cannot_read_says_nothing(tmp_path: Path) -> None:
-    assert not tracing._logfile_says(tmp_path, 0, tracing.MACHINE_CLOSED_LINE), \
+    assert not tracing._logfile_says(tmp_path, 0, tracing.NOT_CREATED_LINE), \
         "a directory read as a logfile"
 
 
@@ -1250,18 +1225,18 @@ def test_the_line_is_found_across_every_split_of_a_chunk(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Down to a chunk of one byte, so the carry has to hold all but the line's last byte."""
     logfile = tmp_path / "guest.log"
-    logfile.write_text("x\n" + tracing.MACHINE_CLOSED_LINE + "\n")
-    for size in range(1, len(tracing.MACHINE_CLOSED_LINE) + 3):
+    logfile.write_text("x\n" + tracing.NOT_CREATED_LINE + "\n")
+    for size in range(1, len(tracing.NOT_CREATED_LINE) + 3):
         monkeypatch.setattr(tracing, "READ_CHUNK_BYTES", size)
-        assert tracing._logfile_says(logfile, 0, tracing.MACHINE_CLOSED_LINE), size
+        assert tracing._logfile_says(logfile, 0, tracing.NOT_CREATED_LINE), size
 
 
 def test_a_line_that_begins_at_the_mark_is_at_a_line_start(tmp_path: Path) -> None:
     """The mark is where the logfile ended at the release, which is a line's start."""
     earlier = "an earlier line\n"
     logfile = tmp_path / "guest.log"
-    logfile.write_text(earlier + tracing.MACHINE_CLOSED_LINE + "\n")
-    assert tracing._logfile_says(logfile, len(earlier), tracing.MACHINE_CLOSED_LINE)
+    logfile.write_text(earlier + tracing.NOT_CREATED_LINE + "\n")
+    assert tracing._logfile_says(logfile, len(earlier), tracing.NOT_CREATED_LINE)
 
 
 class ReadSizes(type(Path())):  # type: ignore[misc]
@@ -1287,7 +1262,7 @@ def test_the_logfile_is_read_a_chunk_at_a_time(
     logfile = ReadSizes(tmp_path / "guest.log")
     logfile.write_text("x\n" * 40)
     ReadSizes.asked = []
-    assert not tracing._logfile_says(logfile, 0, tracing.MACHINE_CLOSED_LINE)
+    assert not tracing._logfile_says(logfile, 0, tracing.NOT_CREATED_LINE)
     assert ReadSizes.asked and set(ReadSizes.asked) == {5}, ReadSizes.asked
 
 
@@ -1523,3 +1498,18 @@ def test_a_binary_rebuilt_at_the_same_size_is_read_again(tmp_path: Path) -> None
     binary.write_bytes(b"xx" + b"-" * len(binaries.HEAVY_DEBUG_MARK) + b"yy")
     os.utime(binary, ns=(first, first + 1_000_000_000))
     assert binaries.heavy_debug(str(binary)) is False
+
+
+def test_an_interrupt_that_found_no_prompt_names_the_log_left_open(tmp_path: Path) -> None:
+    """The bound's `BREAK` whose prompt never came is `not_settled`, and the debugger's log is
+    still open: the refusal names its path and what the next trace does about it."""
+    class Unsettled(Tracer):
+        def break_in(self, seconds: float = 5.0) -> float:
+            raise ds.Invalid("not_settled", "the prompt did not appear")
+
+    live(Unsettled([cap("probe-int-mid-survey-before")], cwd_of(tmp_path),
+                   [("probe-int-mid-cs_ip", None)]))
+    got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",
+                                            dest=str(tmp_path / "u.trace"), seconds=0.3))
+    assert got["code"] == "not_settled" and got["trace"]["closed"] is False, got
+    assert "still open" in got["message"] and log_open(), got["message"]

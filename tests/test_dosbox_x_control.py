@@ -207,7 +207,7 @@ def test_break_in_sends_break_and_waits_for_the_prompt() -> None:
 def test_break_in_says_when_the_prompt_never_comes() -> None:
     with pytest.raises(Invalid) as e:
         ds.Session.break_in(_session(ok=True, parks=False), seconds=0.1)
-    assert e.value.code == "unexpected_answer" and "still be running" in str(e.value)
+    assert e.value.code == "not_settled" and "still be running" in str(e.value)
 
 
 def test_break_in_says_when_the_channel_refuses() -> None:

@@ -250,6 +250,9 @@ class FakeSession:
     def breakpoint_interrupt(self, number: int, ah: int | None = None) -> str:
         return f"DEBUG: Set interrupt breakpoint at INT {number:02X}"
 
+    def stop_at_bound(self) -> bool:
+        return False             # this stub never runs, so a bound finds it at rest
+
     def resume(self) -> dict[str, object]:
         # THE REAL FIELD SET, and a CONSTANT rather than a reading, which is honest
         # here in a way a computed answer would not be: this double stands in for the
@@ -279,11 +282,12 @@ class FakeSession:
         # `length` defect `read_memory` was built to remove, reproduced in the stand-in
         # for a tool that got it right. A constant is honest here where the argument is
         # not: it is visibly not a measurement.
-        return {"target": f"{seg:04X}:{off:04X}", "arrived": True, "running": False,
+        return {"verdict": "TARGET", "target": f"{seg:04X}:{off:04X}",
                 "stopped_at": {"cs": f"{seg:04X}", "eip": f"{off:08X}",
                                "mode": "Real"},
-                "waited_s": 0.25, "bound_expired": False,
-                "breakpoint_removed": True, "note": "", "control": None}
+                "waited_s": 0.25, "breakpoint_removed": True, "note": "",
+                "control": None if control is None else
+                {"at": f"{control[0]:04X}:{control[1]:04X}", "hits": 0, "removed": True}}
 
     def watch(self, segment: int, offset: int) -> dict[str, object]:
         return {"command": "BPM 0040:006C", "mode": "Real",
@@ -315,8 +319,9 @@ class FakeSession:
         # under a comment claiming each of these "returns the field set its tool
         # promises".
         dlogs.check_channel(channel)
-        return {"line": "Bochs port E9h: [+ 0.000] BOOT  . start", "already": True,
-                "lines_total": 1, "lines_before": 0, "arrived_during": 0, "waited_s": 0.0,
+        return {"verdict": "TARGET", "line": "Bochs port E9h: [+ 0.000] BOOT  . start",
+                "already": True, "lines_total": 1, "lines_before": 0, "arrived_during": 0,
+                "waited_s": 0.0,
                 "lines_examined": 1, "since_mark": 0}
 
     def e9(self, pattern: str, limit: int) -> tuple[list[str], int]:
@@ -496,14 +501,10 @@ def test_a_dead_session_that_had_been_written_to_says_so_in_its_refusal() -> Non
 def test_a_close_that_could_not_reap_the_child_says_so_in_its_reply() -> None:
     """The field REACHING A CALLER, which is a different claim from it being set.
 
-    It was set inside `close()` and read nowhere: `close`'s reply captures the session
-    state BEFORE closing, and every call site discards the session immediately
-    afterwards, so a SIGKILLed-but-unreaped child came back as `exit_code: null` with
-    nothing beside it -- the exact reply the field exists to prevent. MEASURED on the
-    real server, twice: once as the original defect, and once again after it was
-    "fixed", because blanking the new read left the whole battery green.
-
-    So this asserts the REPLY, not the object.
+    `close`'s reply captures the session state BEFORE closing, and every call site
+    discards the session immediately afterwards, so the reap failure is read after the
+    close and said where the exit code would be: unavailable, with why. So this asserts
+    the REPLY, not the object.
     """
     class Unreapable(FakeSession):
         def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
@@ -513,14 +514,15 @@ def test_a_close_that_could_not_reap_the_child_says_so_in_its_reply() -> None:
 
     dstate.STATE.session = Unreapable()  # type: ignore[assignment]
     got = cast(dict[str, Any], server.close())
-    assert got["exit_code"] is None
-    assert str(got["reap_failed"]).startswith("SIGKILL was sent"), got
+    assert got["exit_code"]["available"] is False, got
+    assert "SIGKILL was sent" in got["exit_code"]["why"], got
+    assert "may still be on the machine" in got["summary"], got["summary"]
 
-    # THE CONTROL: an ordinary close reports an empty string, so the assertion above is
-    # about an unreaped child and not about the key merely existing.
+    # THE CONTROL: an ordinary close reports its exit code, so the assertion above is
+    # about an unreaped child and not about the field's shape.
     dstate.STATE.session = FakeSession()  # type: ignore[assignment]
     clean = cast(dict[str, Any], server.close())
-    assert clean["exit_code"] == 0 and clean["reap_failed"] == "", clean
+    assert clean["exit_code"] == 0 and "reap_failed" not in clean, clean
 
 
 def test_a_start_that_left_an_unreapable_emulator_says_so(tmp_path: Path) -> None:
@@ -2340,11 +2342,17 @@ def test_each_double_returns_the_field_set_the_real_method_returns() -> None:
         # MEASURED: all four methods return an IDENTICAL key set on every branch today,
         # so this is a real invariant and not a convenience.
         for i, real in enumerate(branches):
+            # A VERDICT IS WHAT TELLS TWO SHAPES APART: a wait's `TIMEOUT` carries what arrived
+            # while it waited and no line, and its `verdict` says so, so the caller reads the
+            # word rather than discovering the shape.
+            if "verdict" in real and "verdict" in branches[0]:
+                continue
             assert real == branches[0], (
                 f"`{name}` return #{i} carries a different field set from its first: "
                 f"missing {sorted(branches[0] - real)}, extra {sorted(real - branches[0])}"
                 f". A caller cannot be asked to discover the reply's shape per branch")
-        assert double[0] == branches[0], (
+        # A wait's double answers its TARGET: one of the real branches, named by the verdict.
+        assert double[0] in branches if "verdict" in double[0] else double[0] == branches[0], (
             f"the `{name}` double and the real method disagree. Missing from the "
             f"double: {sorted(branches[0] - double[0])}. Invented by it: "
             f"{sorted(double[0] - branches[0])}")
@@ -2754,6 +2762,7 @@ class NamesFake:
         self.halted = False
         self.step_running = False
         self.runto_running = False
+        self.runto_elsewhere = False         # a stop of another's ends the run first
         self.control_hits = 0
         self.rows: list[dict[str, str]] = []
         self.bp_calls = 0                    # how many times the list was READ (a round trip each)
@@ -2851,6 +2860,9 @@ class NamesFake:
         self.running = False
         return 0.12
 
+    def stop_at_bound(self) -> bool:
+        return ds.Session.stop_at_bound(cast(ds.Session, self))
+
     def e9_mark(self) -> int:
         if self.log is None:
             raise ds.Invalid("no_channel", "this session was started without a logfile")
@@ -2865,6 +2877,8 @@ class NamesFake:
         if self.log is None:
             raise ds.Invalid("no_channel", "this session was started without a logfile")
         self.incremental_reads += 1
+        if offset > len(self.log):
+            offset = 0                       # rewritten shorter: read from its start, as the real
         return list(self.log[offset:]), len(self.log)
 
     log_wait = _log_wait_as_guest
@@ -2879,9 +2893,9 @@ class NamesFake:
             raise ds.E9Stopped(f"the machine is stopped at the debugger, so a wait for "
                                f"{pattern!r} cannot end: a stopped guest writes nothing",
                                waited_s=0.4, arrived=0)
-        # THE REAL METHOD'S OWN REFUSALS, in its own types: a bad pattern and a bad bound
-        # are `Invalid` (not a raw re.error), and an expired bound is `E9Expired`, which is
-        # the one type the server may read as a miss.
+        # THE REAL METHOD'S OWN ANSWERS: a bad pattern and a bad bound are `Invalid` (not a
+        # raw re.error), and an expired bound is the `TIMEOUT` verdict, which is the one
+        # answer the server may read as a miss.
         rx = dlogs.compiled(pattern)
         if not 0 < seconds <= ds.RUN_TO_MAX:
             raise ds.Invalid("bad_argument", f"a wait of {seconds} is not a bound")
@@ -2889,10 +2903,12 @@ class NamesFake:
             raise ds.Invalid("no_channel", "this session was started without a logfile")
         hits = [ln for ln in self.log[mark:] if rx.search(ln)]
         if not hits:
-            raise ds.E9Expired(f"nothing matched {pattern!r} in {seconds}s")
+            return {"verdict": "TIMEOUT", "arrived_during": 0,
+                    "lines_examined": len(self.log) - mark, "waited_s": seconds,
+                    "since_mark": mark, "note": f"nothing matched {pattern!r} in {seconds}s"}
         # The effect line was appended by `send_input` BEFORE this wait began, so the
         # honest answer is the real method's: it was ALREADY there on the first read.
-        return {"line": hits[0], "already": True, "lines_total": len(hits),
+        return {"verdict": "TARGET", "line": hits[0], "already": True, "lines_total": len(hits),
                 "lines_before": self.log[mark:].index(hits[0]), "arrived_during": 0,
                 "waited_s": 0.0, "lines_examined": len(self.log) - mark,
                 "since_mark": mark}
@@ -3009,11 +3025,15 @@ class NamesFake:
         self.last_control = control
         ctl = (None if control is None else
                {"at": f"{control[0]:04X}:{control[1]:04X}", "hits": self.control_hits,
-                "removed": not self.runto_running})
-        return {"target": f"{segment:04X}:{offset:04X}",     # the session's own spelling
-                "running": self.runto_running, "arrived": not self.runto_running,
+                "removed": True})
+        # `runto_running` models a bound that ran out: the real one interrupts the run there,
+        # so the machine comes back stopped with a TIMEOUT; `runto_elsewhere` a stop of another's.
+        verdict = ("TIMEOUT" if self.runto_running else
+                   "OTHER_STOP" if self.runto_elsewhere else "TARGET")
+        return {"verdict": verdict, "target": f"{segment:04X}:{offset:04X}",
                 "stopped_at": {"cs": self.cs, "eip": self.eip, "mode": self.mode},
-                "breakpoint_removed": not self.runto_running, "control": ctl}
+                "waited_s": 0.0, "breakpoint_removed": verdict == "TARGET", "control": ctl,
+                "note": "" if verdict == "TARGET" else f"{verdict.lower()}: not at the target"}
 
     def command(self, text: str, **_k: object) -> str:
         if text.startswith("BPDEL "):
@@ -3396,7 +3416,8 @@ def test_a_stub_that_never_reports_is_named_and_a_malformed_report_refused(
     fake.launch = dataclasses.replace(fake.launch, logfile=Path("/e9.log"))
 
     def silent(pattern: str, seconds: float, mark: int = 0, **_: object) -> dict[str, object]:
-        raise ds.E9Expired("no line matched")
+        return {"verdict": "TIMEOUT", "arrived_during": 0, "lines_examined": 0,
+                    "waited_s": seconds, "since_mark": mark, "note": "no line matched"}
     fake.e9_wait = silent
     fake.e9_mark = lambda: 0
     got = cast(dict[str, Any], server.send_mouse(button="left"))
@@ -3448,10 +3469,11 @@ def test_send_keys_with_an_expectation_confirms_the_guest_reacted(tmp_path: Path
     # `seen_before_waiting`, not `already`: the reaction was written AFTER the post (the
     # fake appends it on send) and was there when the wait first looked from the mark, and
     # `lines_before` says nothing sat between the mark and it (measured).
-    assert got["effect"] == {"checked": True, "seen": True, "expected": "key_cue_a",
-                             "line": E9_KEY_ACT, "seen_before_waiting": True,
-                             "lines_before": 0, "waited_s": 0.0, "lines_total": 1}, got["effect"]
-    assert "already" not in got["effect"]
+    assert got["verify"] == {"checked": True, "seen": True, "expected": "key_cue_a",
+                             "verdict": "TARGET", "line": E9_KEY_ACT,
+                             "seen_before_waiting": True, "lines_before": 0, "waited_s": 0.0,
+                             "lines_total": 1}, got["verify"]
+    assert "already" not in got["verify"] and "effect" not in got
     # the mark is 1 line, taken before the post
     assert fake.wait_calls == [(inputs.program_reaction("key_cue_a"), 5, 1)], fake.wait_calls
     # THE DEFAULT BOUND is a named constant, passed through when `seconds` is omitted.
@@ -3462,18 +3484,19 @@ def test_send_keys_with_an_expectation_confirms_the_guest_reacted(tmp_path: Path
 def test_send_keys_reports_a_swallowed_key_as_a_miss_not_a_success(tmp_path: Path) -> None:
     """THE FALSE SUCCESS THIS EXISTS TO REFUSE. The guest swallows the key (a modal had the
     focus) and writes nothing, AND an earlier line already matches the pattern -- the cue
-    fired at some point before this post. The reply is INVALID, says the guest did not
-    react, still reports the post that happened (a miss is not 'nothing was sent'), and the
-    stale line is NOT served as the reaction: the wait was asked from the mark, past it."""
+    fired at some point before this post. The wait's verdict is TIMEOUT, its note says the
+    guest did not react, the reply still reports the post that happened (a miss is not
+    'nothing was sent'), and the stale line is NOT served as the reaction: the wait was asked
+    from the mark, past it."""
     fake = _names(tmp_path, watched=True)
     fake.running = True                      # input goes to a RUNNING guest
     fake.log = ["Bochs port E9h: [+   0.000] BOOT  . start", E9_KEY_ACT]   # a STALE match
     fake.input_effect = None                                              # the guest is silent
     got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a", seconds=2))
-    assert got["status"] == "INVALID", got
-    assert "did not react" in got["message"] and "key_cue_a" in got["message"], got["message"]
+    assert got["status"] == "ok" and got["verify"]["verdict"] == "TIMEOUT", got
+    assert "did not react" in got["verify"]["note"], got["verify"]
     assert got["posted"] == 1 and got["route"] == "guest", got     # the post is still reported
-    assert got["effect"]["checked"] is True and got["effect"]["seen"] is False, got["effect"]
+    assert got["verify"]["checked"] is True and got["verify"]["seen"] is False, got["verify"]
     # from PAST the stale line
     assert fake.wait_calls == [(inputs.program_reaction("key_cue_a"), 2, 2)], fake.wait_calls
     assert fake.scancodes_sent == [bytes([0x1E, 0x9E])]
@@ -3491,7 +3514,7 @@ def test_send_keys_an_instrument_that_broke_is_not_reported_as_a_miss(
     fake.wait_raises = ds.Invalid("session_broken", "the emulator is GONE, 0.2s into a 10.0s wait")
     got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a"))
     assert got["status"] == "INVALID" and got["posted"] == 1, got
-    assert got["effect"] == {"checked": False, "expected": "key_cue_a",
+    assert got["verify"] == {"checked": False, "expected": "key_cue_a",
                              "why": "the emulator is GONE, 0.2s into a 10.0s wait"}, got
     assert "could NOT be verified" in got["message"] and "GONE" in got["message"], got["message"]
     assert "did not react" not in got["message"], got["message"]
@@ -3499,13 +3522,13 @@ def test_send_keys_an_instrument_that_broke_is_not_reported_as_a_miss(
 
 def test_send_keys_without_an_expectation_says_it_did_not_verify(tmp_path: Path) -> None:
     """No `expect`, no verification -- and the reply SAYS so instead of letting `posted`
-    read as delivered. `effect.checked` is False with the reason, so a caller cannot take
+    read as delivered. `verify.checked` is False with the reason, so a caller cannot take
     the ok for a landing. And `seconds` with nothing to bound is REFUSED, not ignored."""
     fake = _names(tmp_path, watched=True)
     fake.running = True                      # input goes to a RUNNING guest
     got = cast(dict[str, Any], server.send_keys(keys=["a"]))
     assert got["status"] == "ok" and got["posted"] == 1, got
-    assert got["effect"]["checked"] is False and "expect" in got["effect"]["why"], got
+    assert got["verify"]["checked"] is False and "expect" in got["verify"]["why"], got
     assert fake.wait_calls == []
     orphan = cast(dict[str, Any], server.send_keys(keys=["a"], seconds=5))
     assert orphan["status"] == "INVALID" and "silently ignored" in orphan["message"], orphan
@@ -3549,29 +3572,31 @@ def test_send_mouse_takes_the_same_expectation(tmp_path: Path) -> None:
     fake = _guest(tmp_path)
     fake.input_effect = "Bochs port E9h: [+   1.000] UI    . ask via CLICK on button 0"
     hit = cast(dict[str, Any], server.send_mouse(button="left", expect="via CLICK"))
-    assert hit["status"] == "ok" and hit["effect"]["seen"] is True, hit
+    assert hit["status"] == "ok" and hit["verify"]["seen"] is True, hit
     moved = cast(dict[str, Any], server.send_mouse(x=10, y=20, expect="via CLICK"))
-    assert moved["status"] == "ok" and moved["effect"]["seen"] is True, moved
+    assert moved["status"] == "ok" and moved["verify"]["seen"] is True, moved
     assert fake.commands_sent[-2] == [b"M" + (80).to_bytes(2, "little")
                                       + (160).to_bytes(2, "little")]
     fake.input_effect = None
     miss = cast(dict[str, Any], server.send_mouse(button="left", expect="via CLICK",
                                                   seconds=1))
-    assert miss["status"] == "INVALID" and miss["effect"]["seen"] is False, miss
+    assert miss["status"] == "ok" and miss["verify"]["verdict"] == "TIMEOUT", miss
     assert miss["pointer"]["mouse"]["x"] == 80 and miss["route"] == "guest", miss
 
 
 def test_perform_stops_at_a_send_keys_step_whose_expectation_missed(tmp_path: Path) -> None:
-    """Decision 3 meets the driver: a sequence whose key was swallowed STOPS there, naming
-    the step, rather than carrying on as if the program had taken the key."""
+    """Decision 3 meets the driver: a sequence whose key was swallowed ENDS there with the
+    wait's TIMEOUT, naming the step, rather than carrying on as if the program had taken the
+    key; the step is in `ran`, with its post and its miss."""
     fake = _names(tmp_path, watched=True)
     fake.running = True                      # input goes to a RUNNING guest
     out = cast(dict[str, Any], server.perform(steps=[
         {"op": "send_keys", "keys": ["a"], "expect": "key_cue_a", "seconds": 1},
         {"op": "status"}]))
-    assert out["status"] == "INVALID" and out["failed_at"] == 0, out
-    assert out["failed"]["op"] == "send_keys" and out["failed"]["reply"]["posted"] == 1
-    assert out["ran"] == []
+    assert out["status"] == "ok" and out["verdict"] == "TIMEOUT", out
+    assert out["completed"] == 1 and "step 0 ('send_keys')" in out["note"], out
+    assert out["ran"][0]["reply"]["posted"] == 1, out["ran"][0]
+    assert "status" not in [r["op"] for r in out["ran"]], "the steps after it were not sent"
 
 
 def test_run_to_takes_a_symbol_or_an_address_like_the_readers_do(tmp_path: Path) -> None:
@@ -3584,7 +3609,7 @@ def test_run_to_takes_a_symbol_or_an_address_like_the_readers_do(tmp_path: Path)
                                      dsym.Symbol("twice", 0x20, kind="t")])
     by_name = cast(dict[str, Any],
                    server.run_to(ref="_uicue_apply", control="0000:0020", seconds=5))
-    assert by_name["status"] == "ok" and by_name["arrived"] is True, by_name
+    assert by_name["status"] == "ok" and by_name["verdict"] == "TARGET", by_name
     assert fake.runto_calls == [(0xA7, 0x3D5E0, 5)], fake.runto_calls   # CS, the symbol's offset
     # `target` is the SESSION'S spelling, handed back untouched (a second spelling beside
     # the note that quotes the first is two names for one address).
@@ -3629,7 +3654,7 @@ def test_send_keys_refuses_a_stopped_machine_and_the_cap_and_a_miss_blames_no_wi
     fake.running = True
     fake.input_effect = E9_KEY_ACT
     got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a"))
-    assert got["status"] == "ok" and got["effect"]["seen"] is True, got
+    assert got["status"] == "ok" and got["verify"]["seen"] is True, got
     shifted = cast(dict[str, Any], server.send_keys(keys=["b"], modifiers=["shift"]))
     assert fake.scancodes_sent[-1] == bytes([0x2A, 0x30, 0xB0, 0xAA]) and shifted["ticks"] == 4
     fake.running = False
@@ -3641,7 +3666,8 @@ def test_send_keys_refuses_a_stopped_machine_and_the_cap_and_a_miss_blames_no_wi
     assert len(fake.scancodes_sent) == 2
     fake.input_effect = None
     miss = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a", seconds=1))
-    assert miss["status"] == "INVALID" and "focus" not in miss["message"], miss["message"]
+    assert miss["verify"]["verdict"] == "TIMEOUT", miss
+    assert "focus" not in miss["verify"]["note"], miss["verify"]["note"]
 
 
 def test_the_key_vocabulary_is_the_scan_table_s() -> None:
@@ -3717,8 +3743,9 @@ def test_drive_marks_acts_verifies_and_looks_from_the_mark(tmp_path: Path) -> No
 
 def test_drive_reports_a_miss_a_failed_act_and_refuses_what_it_cannot_do(
         tmp_path: Path) -> None:
-    """A guest that did not do what was expected is INVALID with the account of what ran
-    and the look beside it; a step that failed stops the act before any verification; and
+    """A guest that did not do what was expected is the verify's TIMEOUT, with the account of
+    what ran and the look beside it; a step whose own expect missed ends the act, and the
+    overall expect is then not waited for (`verify` unavailable); and
     everything the call cannot honour -- no logfile, an empty act, a bad look or bound,
     seconds with no expect -- is refused before the act moves anything."""
     fake = _names(tmp_path, watched=True)
@@ -3727,16 +3754,15 @@ def test_drive_reports_a_miss_a_failed_act_and_refuses_what_it_cannot_do(
     fake.input_effect = None
     miss = cast(dict[str, Any], server.drive(act=[{"op": "send_keys", "keys": ["a"]}],
                                               expect="key_cue_a", seconds=1))
-    assert miss["status"] == "INVALID" and "did not do what was expected" in miss["message"]
+    assert miss["status"] == "ok" and miss["verify"]["verdict"] == "TIMEOUT", miss
     assert miss["act"]["completed"] == 1 and miss["verify"]["seen"] is False, miss
     assert miss["looked"]["e9"]["written"] == 0
-    failed = cast(dict[str, Any], server.drive(
+    cut = cast(dict[str, Any], server.drive(
         act=[{"op": "send_keys", "keys": ["a"], "expect": "never", "seconds": 1},
              {"op": "status"}], expect="key_cue_a"))
-    assert failed["status"] == "INVALID" and "stopped at step 0" in failed["message"], failed
-    assert "verify" not in failed and failed["act"]["failed"]["op"] == "send_keys"
-    assert len(fake.wait_calls) == 2, "the overall expect must not be waited for after a failure"
-    assert failed["act"]["failed"]["op"] == "send_keys"
+    assert cut["status"] == "ok" and cut["act"]["verdict"] == "TIMEOUT", cut
+    assert cut["act"]["completed"] == 1 and cut["verify"]["available"] is False, cut
+    assert len(fake.wait_calls) == 2, "the overall expect must not be waited for after a cut act"
     # EVERY REFUSAL COMES BEFORE THE ACT MOVES ANYTHING: each of these carries a step that
     # would post a key, and none of them posts. An unknown op among the steps is refused up
     # front too, where `perform` would have run the steps before it.
@@ -3830,7 +3856,7 @@ def test_perform_a_running_ok_step_leaves_the_machine_as_it_found_it(tmp_path: P
         {"op": "send_keys", "keys": ["a"], "expect": "key_cue_a"},
         {"op": "status"}], wait=5.0))
     assert out["status"] == "ok" and out["completed"] == 3, out
-    assert out["ran"][1]["reply"]["effect"]["seen"] is True, out["ran"][1]
+    assert out["ran"][1]["reply"]["verify"]["seen"] is True, out["ran"][1]
     assert "stopped" in out and "registers" in out["stopped"], out
     # the boundary half: a console op after a running-OK op still waits, and says so.
     fake.where_refusals = 0
@@ -3839,26 +3865,30 @@ def test_perform_a_running_ok_step_leaves_the_machine_as_it_found_it(tmp_path: P
     released.clear()                  # at rest again for the next list's resume
     held = cast(dict[str, Any], server.perform(steps=[
         {"op": "resume"}, {"op": "status"}, {"op": "registers"}], wait=0.5))
-    assert held["status"] == "INVALID" and held["failed_at"] == 2, held
-    assert "still running" in held["message"], held["message"]
+    assert held["status"] == "ok" and held["verdict"] == "TIMEOUT", held
+    assert held["completed"] == 2 and "still running" in held["note"], held
 
 
 def test_perform_waits_for_a_stop_before_a_console_step_after_a_resume(
         tmp_path: Path) -> None:
     """Decision 37: a `resume` that leaves the machine running ends the console-driven part.
     A running-OK op (`status`) may follow at once; a CONSOLE op (`registers`) makes the
-    sequence WAIT for the next stop first. The fake stays running, so the console step is
-    refused naming the boundary rather than dispatched into the void."""
+    sequence WAIT for the next stop first. The fake stays running, so the wait runs out: the
+    list ends there with a TIMEOUT naming the boundary, the console step never dispatched into
+    the void; with no wait asked the step is refused `not_stopped`."""
     fake = _names(tmp_path)
     fake.halted = False                 # resume leaves it running
     fake.where_raises = True            # ...and the running machine refuses where()
     # a running-OK op after resume is fine (it does not touch the console)
     ok = server.perform(steps=[{"op": "resume"}, {"op": "status"}], wait=0.5)
     assert ok["status"] == "ok", ok
-    # a console op after resume, with the machine never stopping, is refused (decision 37)
+    # a console op after resume, with the machine never stopping, ends the list (decision 37)
     blocked = server.perform(steps=[{"op": "resume"}, {"op": "registers"}], wait=0.5)
-    assert blocked["status"] == "INVALID" and "still running" in blocked["message"], blocked
-    assert blocked["failed_at"] == 1, blocked
+    assert blocked["status"] == "ok" and blocked["verdict"] == "TIMEOUT", blocked
+    assert "still running" in blocked["note"] and blocked["completed"] == 1, blocked
+    unasked = server.perform(steps=[{"op": "resume"}, {"op": "registers"}], wait=0)
+    assert unasked["status"] == "INVALID" and unasked["code"] == "not_stopped", unasked
+    assert unasked["failed_at"] == 1, unasked
 
 
 def test_perform_tail_waits_for_the_stop_and_returns_the_enriched_reply(
@@ -3886,7 +3916,8 @@ def test_perform_tail_says_so_if_the_machine_never_stops(tmp_path: Path) -> None
     fake.where_raises = True            # never stops
     out = server.perform(steps=[{"op": "resume"}], wait=0.5)
     assert out["status"] == "ok", out
-    assert out.get("still_running") is True and "did not stop" in out["note"], out
+    assert out["verdict"] == "TIMEOUT" and "did not stop" in out["note"], out
+    assert "still_running" not in out, "no boolean restates the verdict"
 
 
 def test_perform_console_step_after_resume_runs_once_the_machine_stops(
@@ -3906,22 +3937,32 @@ def test_perform_console_step_after_resume_runs_once_the_machine_stops(
 
 def test_run_to_with_a_cold_control_and_an_expired_bound_is_invalid(tmp_path: Path) -> None:
     """Decision 12 of the emulator roadmap: with a control armed, a bound that ran out and a
-    control that NEVER fired proves nothing about the target, so the reply is INVALID with
-    the account attached, never a plain non-arrival. A control that DID fire keeps the
-    ordinary running reply, because then the silence is a measurement."""
+    control that NEVER fired proves nothing about the target, so the reply is INVALID
+    (`control_silent`) with the account and the interrupted stop's survey attached, and no
+    verdict. A control that DID fire keeps the TIMEOUT, because then the silence is a
+    measurement. A stop of another's before the control fired is `cut_by_other_stop`."""
     fake = _names(tmp_path)
     fake.runto_running = True
-    fake.where_raises = True
     cold = cast(dict[str, Any], server.run_to(ref="0000:0010", control="0000:0020", seconds=1))
-    assert cold["status"] == "INVALID", cold
+    assert cold["status"] == "INVALID" and cold["code"] == "control_silent", cold
+    assert "verdict" not in cold, cold
     assert "never fired" in cold["message"] and "0000:0020" in cold["message"], cold
-    assert cold["control"] == {"at": "0000:0020", "hits": 0, "removed": False}, cold
+    assert cold["control_hits"] == 0 and cold["controls"] == [
+        {"ref": "0000:0020", "at": "0000:0020", "hits_in_run": 0, "removed": True}], cold
+    assert "stop_seq" in cold, "the interrupted stop is surveyed beside the refusal"
     assert cold["summary"].startswith("run_to: INVALID"), cold["summary"]
     assert fake.runto_calls[-1][:2] == (0, 0x10), fake.runto_calls
     fake.control_hits = 7
     hot = cast(dict[str, Any], server.run_to(ref="0000:0010", control="0000:0020", seconds=1))
-    assert hot["status"] == "ok" and hot["running"] is True, hot
-    assert hot["summary"] == "run_to 0000:0010: still running, control counted 7", hot["summary"]
+    assert hot["status"] == "ok" and hot["verdict"] == "TIMEOUT", hot
+    assert hot["summary"] == "run_to 0000:0010: TIMEOUT at 00A7:00000000, control counted 7", (
+        hot["summary"])
+    fake.runto_running, fake.runto_elsewhere, fake.control_hits = False, True, 0
+    cut = cast(dict[str, Any], server.run_to(ref="0000:0010", control="0000:0020", seconds=1))
+    assert cut["status"] == "INVALID" and cut["code"] == "cut_by_other_stop", cut
+    fake.control_hits = 2
+    elsewhere = cast(dict[str, Any], server.run_to(ref="0000:0010", control="0000:0020"))
+    assert elsewhere["status"] == "ok" and elsewhere["verdict"] == "OTHER_STOP", elsewhere
     # And WITHOUT a control the run is refused before the machine moves: one row per
     # address means a stop at the target could not be told from the target itself.
     calls = len(fake.runto_calls)
@@ -3941,11 +3982,12 @@ def test_run_to_resolves_a_symbolic_control_and_perform_passes_one_through(
     got = cast(dict[str, Any], server.run_to(ref="00A7:00000010", control="_hot", seconds=1))
     assert got["status"] == "ok", got
     assert fake.last_control == (0xA7, 0x3D5E0), fake.last_control   # CS, the symbol's offset
-    assert got["control"] == {"at": "00A7:3D5E0", "hits": 2, "removed": True}, got
+    assert got["control_hits"] == 2 and got["controls"] == [
+        {"ref": "_hot", "at": "00A7:3D5E0", "hits_in_run": 2, "removed": True}], got
     out = cast(dict[str, Any], server.perform(
         steps=[{"op": "run_to", "ref": "00A7:00000010", "control": "_hot", "seconds": 1}]))
     assert out["status"] == "ok" and out["completed"] == 1, out
-    assert out["ran"][0]["reply"]["control"]["hits"] == 2, out["ran"][0]
+    assert out["ran"][0]["reply"]["control_hits"] == 2, out["ran"][0]
 
 
 def test_every_reply_opens_with_a_summary_and_closes_with_the_session(tmp_path: Path) -> None:
@@ -3985,30 +4027,18 @@ def test_every_tool_declares_a_title_and_the_readers_a_read_only_hint() -> None:
                          "image_diff", "series_diff", "golden_check"}, read_only
 
 
-def test_perform_run_to_that_ran_off_arms_the_boundary_and_the_tail(
-        tmp_path: Path) -> None:
-    """`_leaves_running` covers `run_to`/`step`, not just `resume`: a `run_to` that came back
-    RUNNING (bound expired without arrival) arms the same resume boundary. Here it leaves the
-    machine running and the tail waits for the stop, returning the enriched reply -- proving
-    the boundary is armed by run_to, not only by resume."""
+def test_perform_after_a_run_to_that_timed_out_needs_no_tail(tmp_path: Path) -> None:
+    """A `run_to` whose bound ran out hands the machine back STOPPED, interrupted where it
+    stood, so the list neither waits at its tail nor at the boundary before the next console
+    step: the release steps that leave the machine running are `resume`, a `step` that ran
+    away and a `run_for` cut short of its stop."""
     fake = _names(tmp_path)
-    fake.runto_running = True           # run_to bound expired: still running
-    fake.where_refusals = 1             # then it stops
-    fake.control_hits = 1          # the control fired: a run that ran off is a measurement
-    out = server.perform(steps=[{"op": "run_to", "ref": "0000:0000", "control": "0000:0020"}],
-                         wait=2.0)
-    assert out["status"] == "ok", out
-    assert "stopped" in out, out        # the tail waited and enriched
-    # and a CONSOLE op after a ran-off run_to that never stops is refused at the boundary.
-    fake2 = _names(tmp_path)
-    fake2.runto_running = True
-    fake2.control_hits = 1               # the control fired: the run-off is a measurement
-    fake2.where_raises = True           # never stops
-    blocked = server.perform(
-        steps=[{"op": "run_to", "ref": "0000:0000", "control": "0000:0020"}, {"op": "registers"}],
-        wait=0.5)
-    assert blocked["status"] == "INVALID" and "still running" in blocked["message"], blocked
-    assert blocked["failed_at"] == 1, blocked
+    fake.runto_running = True           # run_to bound expired: interrupted, stopped
+    fake.control_hits = 1          # the control fired: the TIMEOUT is a measurement
+    out = server.perform(steps=[{"op": "run_to", "ref": "0000:0000", "control": "0000:0020"},
+                                {"op": "registers"}], wait=2.0)
+    assert out["status"] == "ok" and out["completed"] == 2, out
+    assert "stopped" not in out and "still_running" not in out, out
 
 
 def test_perform_reports_a_gone_emulator_as_gone_not_still_running(
@@ -4023,8 +4053,8 @@ def test_perform_reports_a_gone_emulator_as_gone_not_still_running(
     fake.where_raises = True
     fake.dies_on_resume = True          # alive when perform starts, dead after the resume
     out = server.perform(steps=[{"op": "resume"}], wait=0.5)
-    assert out["status"] == "ok" and out.get("gone") is True, out
-    assert "GONE" in out["note"], out
+    assert out["status"] == "INVALID" and out["code"] == "session_broken", out
+    assert "GONE" in out["message"], out
     # BOUNDARY: a console op after a running step, emulator gone -> refused naming GONE.
     fake2 = _names(tmp_path)
     fake2.halted = False
@@ -4813,29 +4843,31 @@ def test_resume_enriches_a_halt_and_leaves_a_running_machine_bare(tmp_path: Path
                            watch_mode="show"))
     fake.halted = True
     out = cast(dict[str, Any], server.resume())
-    assert out["halted"] is True and out["watches"][0]["value"] == 60
+    assert "stop_seq" in out and out["watches"][0]["value"] == 60
     assert out["e9"]["lines_total"] == 2
     fake.halted = False
     bare = cast(dict[str, Any], server.resume())
-    assert bare["halted"] is False and "watches" not in bare and "e9" not in bare
+    assert "stop_seq" not in bare and "watches" not in bare and "e9" not in bare
+    assert "verdict" not in bare, "a resume that waited for nothing carries none"
 
 
 def test_step_and_run_to_enrich_a_stop_but_not_a_still_running_machine(
         tmp_path: Path) -> None:
-    """step and run_to carry the full stop reply when they STOPPED, and only the base answer
-    when the machine ran on (a CALL that never returned; a bound that expired) -- a running
-    machine has nothing to read."""
+    """step carries the full stop reply when it STOPPED, and only the base answer when the
+    machine ran on (a CALL that never returned) -- a running machine has nothing to read; a
+    `run_to` always stops, its bound interrupting the run, so it always carries one."""
     fake = _names(tmp_path)
     stopped_step = cast(dict[str, Any], server.step(mode="over"))
     assert "registers" in stopped_step and "e9" in stopped_step
     fake.step_running = True
     ran = cast(dict[str, Any], server.step(mode="over"))
     assert ran["running"] is True and "registers" not in ran and "e9" not in ran
+    fake.step_running = False
     stopped_run = cast(dict[str, Any], server.run_to(ref="0000:0010", control="0000:0020"))
-    assert stopped_run["arrived"] is True and "watches" in stopped_run
-    fake.runto_running = True
+    assert stopped_run["verdict"] == "TARGET" and "watches" in stopped_run
+    fake.runto_running, fake.control_hits = True, 1
     timed = cast(dict[str, Any], server.run_to(ref="0000:0010", control="0000:0020"))
-    assert timed["running"] is True and "watches" not in timed
+    assert timed["verdict"] == "TIMEOUT" and "watches" in timed
 
 
 def test_evaluate_watches_skips_a_breakpoint_and_reports_why_and_unreadable(
@@ -4904,7 +4936,7 @@ def test_a_halt_whose_position_is_unreadable_keeps_the_halt(
         raise ds.Invalid("unexpected_answer", "the register pane came back cut")
     monkeypatch.setattr(fake, "where", cut)
     out = cast(dict[str, Any], server.resume())
-    assert out["status"] == "ok" and out["halted"] is True
+    assert out["status"] == "ok" and "stop_seq" not in out
     assert out["enrichment"]["available"] is False and "cut" in out["enrichment"]["why"]
     assert "registers" not in out
 
@@ -5215,12 +5247,12 @@ def test_perform_does_not_wait_for_a_stop_when_the_last_step_was_a_running_guest
     fake.running = False
     began = time.monotonic()
     tail = server.perform(steps=[{"op": "resume"}], wait=0.6)
-    assert tail.get("still_running") is True and time.monotonic() - began >= 0.5, tail
+    assert tail.get("verdict") == "TIMEOUT" and time.monotonic() - began >= 0.5, tail
     fake.running = False
     server.breakpoint_at(ref="00A7:0100")
     began = time.monotonic()
     armed = server.perform(steps=[{"op": "resume"}, {"op": "status"}], wait=0.6)
-    assert armed.get("still_running") is True and time.monotonic() - began >= 0.5, armed
+    assert armed.get("verdict") == "TIMEOUT" and time.monotonic() - began >= 0.5, armed
     # `wait=0` NEVER waits, breakpoint or not, and says so.
     fake.running = False
     began = time.monotonic()
@@ -5238,17 +5270,7 @@ def test_perform_does_not_wait_for_a_stop_when_the_last_step_was_a_running_guest
     began = time.monotonic()
     stale = server.perform(steps=[{"op": "resume"}, {"op": "status"}], wait=5.0)
     assert stale.get("still_running") is True and time.monotonic() - began < 2.0, stale
-    # A `run_to` that ran off leaves ITS OWN breakpoint armed, so the tail waits for it.
-    fake.running = False
-    server.breakpoint_clear()
-    fake.runto_running = True
-    fake.control_hits = 1                # the control fired: the run-off is a measurement
-    fake.running = False
-    began = time.monotonic()
-    ran_off = server.perform(steps=[{"op": "run_to", "ref": "0000:0000", "control": "0000:0020"},
-                                    {"op": "status"}],
-                             wait=0.6)
-    assert ran_off.get("still_running") is True and time.monotonic() - began >= 0.5, ran_off
+
 
 
 # --------------------------------------------------------- an orphan says so
@@ -5311,7 +5333,7 @@ def test_a_stop_reads_the_breakpoint_list_once_and_shares_it(tmp_path: Path) -> 
     fake.halted = True                   # the resume stops again at once
     fake.bp_calls = fake.survey_calls = 0
     got = server.resume()
-    assert got["halted"] is True and got["watches"][0]["state"] == "evaluated", got
+    assert "stop_seq" in got and got["watches"][0]["state"] == "evaluated", got
     assert fake.survey_calls == 1, fake.survey_calls
     assert fake.bp_calls == 0, f"the stop re-read the list {fake.bp_calls} time(s)"
 
@@ -5331,7 +5353,7 @@ def test_the_lists_answer_from_the_store_and_the_last_stop_while_the_guest_runs(
     server.watch_add(ref="g_rate", mode="show", length=4, fmt="u32")
     fake.halted = True
     stop = server.resume()                       # the survey of this stop is remembered
-    assert stop["halted"] is True
+    assert "stop_seq" in stop
     stopped = server.breakpoint_list()
     assert stopped["debugger_read"] is True and stopped["breakpoints"][0]["state"] == "armed"
     # THE GUEST RUNS: the console refuses, the lists do not.
@@ -5391,7 +5413,7 @@ def test_what_is_asked_while_the_guest_runs_is_applied_at_the_next_stop(
     fake.running = False
     fake.halted = True
     stop = server.resume()
-    assert stop["halted"] is True, stop
+    assert "stop_seq" in stop, stop
     applied = stop["applied_on_stop"]
     assert applied["symbols_loaded"] is True and fake.loads == 1, applied
     assert applied["armed"] == ["_main", "g_rate"], applied
@@ -5671,12 +5693,12 @@ def test_send_keys_names_a_stop_that_landed_during_the_wait_not_still_running(
     got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a", seconds=5))
     assert got["status"] == "INVALID" and got["route"] == "guest", got
     assert got["posted"] == 1 and fake.scancodes_sent == [bytes([0x1E, 0x9E])], got
-    assert got["effect"]["checked"] is True and got["effect"]["seen"] is False, got["effect"]
-    assert got["effect"]["stopped_during_wait"] is True, got["effect"]
+    assert got["verify"]["checked"] is True and got["verify"]["seen"] is False, got["verify"]
+    assert got["verify"]["stopped_during_wait"] is True, got["verify"]
     assert "STOPPED at the debugger during the wait at 00A7:00000000" in got["message"], got
     assert "next resume" in got["message"] and "still running" not in got["message"], got["message"]
     assert "guest's log's to say" in got["message"], got["message"]   # never "the key sits in..."
-    assert got["effect"]["waited_s"] == 0.4 and got["effect"]["lines_on_disk"] == 0, got["effect"]
+    assert got["verify"]["waited_s"] == 0.4 and got["verify"]["lines_on_disk"] == 0, got["verify"]
     assert got["last_stop"]["at"] == "00A7:00000000", got["last_stop"]
     assert fake.survey_calls == 1, "the stop is surveyed ONCE, by this reply"
     # THE NEXT KEY IS REFUSED AS STOPPED, in the same words: the two replies agree.
@@ -5724,7 +5746,7 @@ def test_a_stop_whose_survey_refused_is_not_named_with_the_previous_stops_addres
     fake.stops_during_wait = True
     fake.registers_raises = True                   # the survey of the NEW stop refuses
     got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a", seconds=2))
-    assert got["status"] == "INVALID" and got["effect"]["stopped_during_wait"] is True, got
+    assert got["status"] == "INVALID" and got["verify"]["stopped_during_wait"] is True, got
     assert "00A7:00000000" not in got["message"], got["message"]
     assert "position not readable yet" in got["message"], got["message"]
     assert got["last_stop"] is None, got["last_stop"]
@@ -5743,7 +5765,7 @@ def test_drive_names_a_stop_that_landed_during_its_verify(tmp_path: Path) -> Non
     assert got["status"] == "INVALID", got
     assert got["verify"]["stopped_during_wait"] is True, got["verify"]
     assert "STOPPED at the debugger during the wait at 00A7:00000000" in got["message"], got
-    assert "did not do what was expected" not in got["message"], got["message"]
+    assert "not do what was expected" in got["message"], got["message"]
     assert got["last_stop"]["at"] == "00A7:00000000", got["last_stop"]
 
 
@@ -5776,7 +5798,7 @@ def test_the_sequences_wait_for_a_stop_reports_its_progress(
     ticks: list[str] = []
     out = sequence.run_steps(fake, [{"op": "resume"}], 0.3, server._step_ops(),  # type: ignore[arg-type]
                              lambda p, t, m: ticks.append(m))
-    assert out.get("still_running") is True, out
+    assert out.get("verdict") == "TIMEOUT", out
     assert ticks and ticks[0].startswith("waiting for the machine to stop: ")
 
 
@@ -5831,7 +5853,8 @@ def test_the_verify_of_drive_forwards_the_progress_to_the_wait() -> None:
         def e9_wait(self, pattern: str, seconds: float, mark: int = 0,
                     progress: ds.Progress = ds.no_progress) -> dict[str, object]:
             progress(1.0, seconds, "tick")
-            return {"line": "x", "already": False, "lines_total": 1, "lines_before": 0,
+            return {"verdict": "TARGET", "line": "x", "already": False, "lines_total": 1,
+                    "lines_before": 0,
                     "arrived_during": 1, "waited_s": 1.0, "lines_examined": 1, "since_mark": 0}
 
     ticks: list[str] = []
@@ -5890,13 +5913,14 @@ def test_send_keys_hands_its_progress_to_the_wait_for_the_reaction() -> None:
         def e9_wait(self, pattern: str, seconds: float, mark: int = 0,
                     progress: ds.Progress = ds.no_progress) -> dict[str, object]:
             progress(1.0, seconds, "tick")
-            return {"line": "READY", "already": False, "lines_total": 1, "lines_before": 0,
+            return {"verdict": "TARGET", "line": "READY", "already": False, "lines_total": 1,
+                    "lines_before": 0,
                     "arrived_during": 1, "waited_s": 1.0, "lines_examined": 1, "since_mark": 0}
 
     ticks: list[str] = []
     out = inputs.send_keys(_Route(), ["enter"], None, "READY", 2.0,  # type: ignore[arg-type]
                            lambda p, t, m: ticks.append(m))
-    assert ticks == ["tick"] and out["effect"]["seen"] is True
+    assert ticks == ["tick"] and out["verify"]["seen"] is True
 
 
 def test_two_refs_on_one_address_do_not_share_a_change_watch_in_silence(
@@ -6086,11 +6110,11 @@ def test_capture_frame_replies_with_the_source_it_read_and_the_frame_asked(
 
 
 def test_close_says_how_the_session_ended() -> None:
-    """An exit code and a reap flag are not a word for the ENDING, and the reply names it:
+    """An exit code is not a word for the ENDING, and the reply names it in `ended_by`:
     `quit` (the emulator took the signal and left on its own), `killed`
     (SIGKILL after it ignored the first signal, which every session under a pty does),
     `died` (it had already exited when `close` was called), `none`. Read off the session
-    after the close, like `reap_failed`."""
+    after the close."""
     class Ended(FakeSession):
         def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
             self.ended_how = "killed"
@@ -6099,9 +6123,9 @@ def test_close_says_how_the_session_ended() -> None:
 
     dstate.STATE.session = Ended()  # type: ignore[assignment]
     got = cast(dict[str, Any], server.close())
-    assert got["how"] == "killed" and got["exit_code"] == -9
+    assert got["ended_by"] == "killed" and got["exit_code"] == -9 and "how" not in got
     assert got["summary"] == "close: killed, exit code -9"
-    assert cast(dict[str, Any], server.close())["how"] == "none"
+    assert cast(dict[str, Any], server.close())["ended_by"] == "none"
 
     class Died(FakeSession):
         def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
@@ -6111,7 +6135,7 @@ def test_close_says_how_the_session_ended() -> None:
 
     dstate.STATE.session = Died()  # type: ignore[assignment]
     died = cast(dict[str, Any], server.close())
-    assert died["how"] == "died" and died["exit_code"] == 1
+    assert died["ended_by"] == "died" and died["exit_code"] == 1
     assert died["summary"] == "close: died, exit code 1"
 
 
@@ -6217,12 +6241,13 @@ def test_start_leaves_the_park_at_the_debugger_recorded_as_stop_one(tmp_path: Pa
 def test_stop_brings_a_running_guest_back_headless_or_windowed(tmp_path: Path,
                                                                watched: bool) -> None:
     """`stop` breaks in through the debugger channel, which every session has: a running
-    guest comes back with the full stop reply, `how: break` and the seconds it took, headless
+    guest comes back with the full stop reply, `via: break` and the seconds it took, headless
     or windowed; an already-stopped one says so with `last_stop`."""
     fake = _names(tmp_path, watched=watched)
     fake.running = True
     out = cast(dict[str, Any], server.stop())
-    assert out["status"] == "ok" and out["interrupted"] is True and out["how"] == "break", out
+    assert out["status"] == "ok" and out["interrupted"] is True and out["via"] == "break", out
+    assert "how" not in out and "running" not in out, out
     assert "focus" not in out, "nothing is clicked, so there is no focus to report"
     assert fake.break_ins == 1 and fake.running is False
     assert "registers" in out and out["stopped_at"] == "00A7:00000000"
@@ -6237,7 +6262,7 @@ def test_a_headless_resume_with_nothing_declared_is_released(tmp_path: Path) -> 
     no stopper declared first: it goes out and leaves the machine running."""
     _names(tmp_path, watched=False)
     released = cast(dict[str, Any], server.resume())
-    assert released["status"] == "ok" and released["halted"] is False, released
+    assert released["status"] == "ok" and "stop_seq" not in released, released
 
 
 def test_an_interrupt_breakpoint_from_another_session_does_not_count_as_a_stopper(
@@ -6431,7 +6456,7 @@ def test_read_memory_length_is_bounded_and_resume_takes_the_siblings_bound(
         out = cast(dict[str, Any], server.resume(seconds=1.3))
     finally:
         monkeypatch.undo()
-    assert out["status"] == "ok" and out["halted"] is False, out
+    assert out["status"] == "ok" and out["verdict"] == "TIMEOUT", out
     assert out["waited_s"] >= 1.2 and "STILL RUNNING" in out["note"], out
     assert ticks and ticks[0].startswith("resume: running "), ticks
 
@@ -6447,11 +6472,12 @@ def test_resume_with_a_bound_comes_back_with_the_stop_when_the_prompt_lands(
     monkeypatch.setattr(fake, "alive", lambda: True)
     monkeypatch.setattr(fake, "_mark_stopped", lambda: None, raising=False)
     out = cast(dict[str, Any], server.resume(seconds=2.0))
-    assert out["status"] == "ok" and out["halted"] is True and out["stopped_at"], out
+    assert out["status"] == "ok" and out["verdict"] == "OTHER_STOP" and out["stopped_at"], out
+    # A PROMPT SEEN WITH THE MACHINE NOT AT REST is no stop: the wait listens on to its bound.
     fake.where_raises = True
-    out = cast(dict[str, Any], server.resume(seconds=2.0))
-    assert out["status"] == "ok" and out["halted"] is False, out
-    assert "not at rest" in out["note"], out
+    out = cast(dict[str, Any], server.resume(seconds=0.5))
+    assert out["status"] == "ok" and out["verdict"] == "TIMEOUT", out
+    assert out["waited_s"] >= 0.5 and "STILL RUNNING" in out["note"], out
 
 
 def test_perform_refuses_a_run_to_step_without_a_control_before_the_list_runs(
@@ -6531,8 +6557,9 @@ def test_run_to_summary_spells_a_control_that_never_counted_as_a_count_not_a_pre
     fake.runto_running = False
     fake.control_hits = 0
     got = cast(dict[str, Any], server.run_to(ref="0000:0010", control="0000:0020", seconds=1))
-    assert got["status"] == "ok" and got["arrived"] is True, got
-    assert got["summary"] == "run_to 0000:0010: arrived, control counted 0", got["summary"]
+    assert got["status"] == "ok" and got["verdict"] == "TARGET", got
+    assert got["summary"] == "run_to 0000:0010: TARGET at 00A7:00000000, control counted 0", (
+        got["summary"])
 
 
 def test_perform_checks_a_symbols_find_step_before_any_step_runs(tmp_path: Path) -> None:
@@ -7236,3 +7263,81 @@ def test_a_boot_whose_call_is_cancelled_stops_waiting_for_the_prompt(
     with pytest.raises(asyncio.CancelledError):
         ds.Session.wait_ready(_Never(), 5.0)  # type: ignore[arg-type]
     assert time.monotonic() - began < 1.0
+
+
+def test_a_wait_step_that_ran_out_ends_the_list_and_a_run_that_did_goes_on(
+        tmp_path: Path) -> None:
+    """A `log_wait` whose line never came is the list's premise failing: the list ends there,
+    TIMEOUT, the steps after it unsent. A run whose bound ran out hands the machine back
+    stopped and surveyed, so the list goes on from there."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True
+    out = cast(dict[str, Any], server.perform(steps=[
+        {"op": "log_wait", "pattern": "NEVER", "channel": "guest", "seconds": 1},
+        {"op": "status"}]))
+    assert out["status"] == "ok" and out["verdict"] == "TIMEOUT", out
+    assert out["completed"] == 1 and "step 0 ('log_wait')" in out["note"], out
+    fake.running = False
+    fake.runto_running, fake.control_hits = True, 1
+    ran = cast(dict[str, Any], server.perform(steps=[
+        {"op": "run_to", "ref": "0000:0010", "control": "0000:0020"}, {"op": "status"}]))
+    assert ran["status"] == "ok" and ran["completed"] == 2 and "verdict" not in ran, ran
+
+
+def test_a_list_that_waited_mid_way_and_ends_running_carries_no_target(
+        tmp_path: Path) -> None:
+    """`TARGET` says every wait ended at a stop; a list that waited mid-way and then ended
+    with the machine running, with nothing to wait for, is `still_running` and no verdict."""
+    fake = _names(tmp_path)
+    fake.halted = False
+    fake.where_refusals = 2                     # the first resume's stop lands a moment later
+    released, calls = fake.resume, [0]
+
+    def resume() -> dict[str, object]:
+        calls[0] += 1
+        fake.running = calls[0] == 2            # the second one runs on, nothing to stop it
+        return released()
+
+    fake.resume = resume  # type: ignore[method-assign]
+    out = cast(dict[str, Any], server.perform(
+        steps=[{"op": "resume"}, {"op": "registers"}, {"op": "resume"}, {"op": "status"}],
+        wait=2.0))
+    assert out["status"] == "ok" and out.get("still_running") is True, out
+    assert "verdict" not in out, out
+
+
+def test_a_log_rewritten_between_two_stops_is_counted_from_its_start(tmp_path: Path) -> None:
+    """The stop's E9 block keeps a running total of the lines since the session began; a log
+    rewritten shorter between two stops is read from its start, and the total restarts with it
+    rather than adding the new lines to a count of a file that no longer exists."""
+    fake = _names(tmp_path)
+    fake.halted = True
+    fake.log = [f"line{i}" for i in range(10)]
+    assert server.resume()["e9"]["lines_total"] == 10
+    fake.log = ["fresh0", "fresh1"]
+    again = server.resume(e9="since")
+    assert again["e9"]["lines_total"] == 2 and again["e9"]["lines"] == ["fresh0", "fresh1"], (
+        again["e9"])
+
+
+def test_a_bounded_resume_whose_f5_never_left_is_a_stop_with_its_verdict(
+        tmp_path: Path) -> None:
+    """A caller who gave `seconds` reads a verdict whatever came: an F5 that never left the
+    debugger is that stop, OTHER_STOP, not a stop with no word."""
+    fake = _names(tmp_path)
+    fake.halted = True
+    got = cast(dict[str, Any], server.resume(seconds=5))
+    assert got["verdict"] == "OTHER_STOP" and "stop_seq" in got, got
+
+
+def test_drive_says_its_check_was_not_made_when_the_act_ran_out(tmp_path: Path) -> None:
+    """An act whose own expect missed ends there and the overall `expect` is not checked: the
+    summary says so, never "no expectation" for a call that passed one."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True
+    fake.input_effect = None
+    got = cast(dict[str, Any], server.drive(
+        act=[{"op": "send_keys", "keys": ["a"], "expect": "never", "seconds": 1}],
+        expect="key_cue_a"))
+    assert got["verify"]["available"] is False, got
+    assert got["summary"] == "drive: effect not checked", got["summary"]

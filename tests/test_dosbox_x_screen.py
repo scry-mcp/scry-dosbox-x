@@ -1280,12 +1280,13 @@ def test_a_string_already_on_screen_is_answered_without_moving_the_machine(
 
 def test_each_frame_reads_where_the_page_lies_and_the_cursor_listing_once(
         tmp_path: Path) -> None:
-    """Three retraces on the booted probe's still page, the fourth `VRT` never answered: each
-    frame costs `VGA MODE`, `VGA DRAW`, `VGA GC`, `CPU` and a dump; `VGA CRTC` comes once."""
+    """Three retraces on the booted probe's still page, the fourth `VRT` never answered and so
+    interrupted at the bound: each frame costs `VGA MODE`, `VGA DRAW`, `VGA GC`, `CPU` and a
+    dump; `VGA CRTC` comes once."""
     dbg = waiting(["probe-booted"], 3, tmp_path)
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5))
-    assert r["status"] == "INVALID" and r["code"] == "wait_expired", r
-    assert r["polls"] == 3 and r["running"] is True and len(dbg.dumps) == 4
+    assert r["status"] == "ok" and r["verdict"] == "TIMEOUT", r
+    assert r["polls"] == 3 and "BREAK" in dbg.sent and len(dbg.dumps) == 4, r
     assert dbg.asked.count("VGA CRTC") == 1
     for each in ("VGA MODE", "VGA DRAW", "VGA GC", "CPU"):
         assert dbg.asked.count(each) == len(dbg.dumps), each
@@ -1345,7 +1346,7 @@ class Resized(EditedAfterRetrace):
 def test_a_screen_resized_under_the_same_mode_word_is_placed_again(tmp_path: Path) -> None:
     dbg = waiting(["probe-booted"], 1, tmp_path, Resized)
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5))
-    assert r["code"] == "wait_expired", r
+    assert r["verdict"] == "TIMEOUT", r
     assert dbg.asked.count("VGA CRTC") == 1 and [d[2] for d in dbg.dumps][:2] == [4000, 8000]
     assert len(r["text"]) == 50
 
@@ -1353,7 +1354,7 @@ def test_a_screen_resized_under_the_same_mode_word_is_placed_again(tmp_path: Pat
 def test_protected_mode_frames_read_the_tables_once(tmp_path: Path) -> None:
     dbg = waiting(["dos-djgpp32-startup"], 2, tmp_path)
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5))
-    assert r["code"] == "wait_expired", r
+    assert r["verdict"] == "TIMEOUT", r
     assert dbg.asked.count("GDT") == 1 and len(dbg.dumps) >= 2
     assert set(dbg.dumps) == {(0x38, 0xB8000, 4000)}
 
@@ -1394,8 +1395,8 @@ def test_an_expiry_before_any_retrace_types_nothing_and_leaves_the_stop(tmp_path
     dstate.STATE.retrace_pending = True
     before = dstate.STATE.last_stop["seq"]
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=1e-9))
-    assert r["code"] == "wait_expired" and r["polls"] == 0 and dbg.keys == [], r
-    assert r["running"] is False and r["retrace_pending"] is True and "stop_seq" not in r
+    assert r["verdict"] == "TIMEOUT" and r["polls"] == 0 and dbg.keys == [], r
+    assert "BREAK" not in dbg.sent and r["retrace_pending"] is True and "stop_seq" not in r
     assert dstate.STATE.retrace_pending is True and dstate.STATE.last_stop["seq"] == before
     assert r["text"][3] == "C:\\>PROBE.COM"
 
@@ -1409,7 +1410,7 @@ def test_a_short_bound_still_reaches_the_first_frame_and_records_the_stop_it_exp
     dbg = costly(["probe-booted"], 3, tmp_path, ahead, 1.0)
     before = dstate.STATE.last_stop["seq"]
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5))
-    assert r["code"] == "wait_expired" and r["polls"] == 1 and r["running"] is False, r
+    assert r["verdict"] == "TIMEOUT" and r["polls"] == 1 and "BREAK" not in dbg.sent, r
     assert r["retrace_pending"] is False and dbg.keys == [ds.RETRACE_COMMAND]
     assert r["stop_seq"] == dstate.STATE.last_stop["seq"] == before + 1
     doc = " ".join((server.screen_wait.__doc__ or "").split())
@@ -1428,11 +1429,12 @@ def test_screen_wait_on_a_running_guest_is_refused_not_stopped(tmp_path: Path) -
 def test_an_expired_wait_says_what_it_examined(tmp_path: Path) -> None:
     dbg = waiting(["probe-park", "probe-park", "probe-booted"], 3, tmp_path)
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=1.0))
-    assert r["status"] == "INVALID" and r["code"] == "wait_expired", r
-    # A `VRT` still out at the bound is typed and unanswered: `running`, and one key past polls.
-    assert len(dbg.keys) == r["polls"] + int(r["running"]) and r["polls"] >= 2
-    assert r["retrace_pending"] is r["running"]
-    assert "were not in a text mode" in r["message"]
+    assert r["status"] == "ok" and r["verdict"] == "TIMEOUT", r
+    # A `VRT` still out at the bound is typed and unanswered: interrupted, one key past polls.
+    out = "BREAK" in dbg.sent
+    assert len(dbg.keys) == r["polls"] + int(out) and r["polls"] >= 2
+    assert r["retrace_pending"] is out
+    assert "were not in a text mode" in r["note"]
     assert r["text"][3] == "C:\\>PROBE.COM"
 
 
@@ -1542,14 +1544,14 @@ APPLIED: dict[str, Any] = {"armed": ["0814:0108"]}
 ACCOUNTS = {"stopped_on_its_own": ON_ITS_OWN, "applied_on_stop": APPLIED}
 
 
-@pytest.mark.parametrize("end", ["wait_expired", "wait_stopped", "no_channel"])
-def test_a_wait_refused_at_a_stop_carries_what_that_stops_reply_delivered(
+@pytest.mark.parametrize("end", ["TIMEOUT", "wait_stopped", "no_channel"])
+def test_a_wait_ended_at_a_stop_carries_what_that_stops_reply_delivered(
         tmp_path: Path, ahead: list[float], end: str) -> None:
-    """The stop reply that records where a refused wait stopped is also the first reply built
-    since the contact that found a stop the guest reached on its own, or applied declarations
-    on one: the refusal carries those accounts, rather than spending them on a reply nobody
-    sees. Ended by the bound, by a breakpoint, and by a frame the reader refuses."""
-    if end == "wait_expired":
+    """The stop reply that records where a wait ended is also the first reply built since the
+    contact that found a stop the guest reached on its own, or applied declarations on one:
+    the reply carries those accounts, rather than spending them on a reply nobody sees. Ended
+    by the bound, by a breakpoint, and by a frame the reader refuses."""
+    if end == "TIMEOUT":
         costly(["probe-booted"], 3, tmp_path, ahead, 1.0)
     elif end == "wait_stopped":
         cut_by_breakpoint(tmp_path)
@@ -1558,17 +1560,17 @@ def test_a_wait_refused_at_a_stop_carries_what_that_stops_reply_delivered(
     dstate.STATE.found_stop_last = dict(ON_ITS_OWN)
     dstate.STATE.applied_last.update(APPLIED)
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5))
-    assert r["code"] == end and r["polls"] == 1 and "stop_seq" in r, r
+    assert r.get("code", r.get("verdict")) == end and r["polls"] == 1 and "stop_seq" in r, r
     assert {k: r.get(k) for k in ACCOUNTS} == ACCOUNTS
 
 
 def test_an_expired_wait_counts_the_frames_that_were_not_text(tmp_path: Path) -> None:
     """The park, the park again after one retrace, the booted text page after the second, and a
-    third `VRT` never answered: two of the three frames examined were not text."""
-    waiting(["probe-park", "probe-park", "probe-booted"], 2, tmp_path)
+    third `VRT` never answered, interrupted: two of the three frames examined were not text."""
+    dbg = waiting(["probe-park", "probe-park", "probe-booted"], 2, tmp_path)
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=1.0))
-    assert r["code"] == "wait_expired" and r["polls"] == 2 and r["running"] is True, r
-    assert "; 2 of 3 frames examined were not in a text mode" in r["message"]
+    assert r["verdict"] == "TIMEOUT" and r["polls"] == 2 and "BREAK" in dbg.sent, r
+    assert "; 2 of 3 frames examined were not in a text mode" in r["note"]
 
 
 class V86AfterRetrace(EditedAfterRetrace):
@@ -1583,7 +1585,7 @@ def test_a_virtual_8086_task_entered_under_the_same_cpu_mode_reads_through_the_p
         tmp_path: Path) -> None:
     dbg = waiting(["dos-djgpp32-startup"], 1, tmp_path, V86AfterRetrace)
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5))
-    assert r["code"] == "wait_expired", r
+    assert r["verdict"] == "TIMEOUT", r
     assert dbg.dumps == [(0x38, 0xB8000, 4000), (0xB800, 0, 4000)]
 
 
@@ -1607,8 +1609,8 @@ def test_the_screen_wait_description_names_every_key_its_replies_carry(
     replies.append(cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=5)))
     costly(["probe-booted"], 3, tmp_path, ahead, 1.0)
     replies.append(cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5)))
-    assert [r.get("code", r["status"]) for r in replies] == ["ok", "ok", "wait_stopped",
-                                                               "wait_expired"], replies
+    assert [r.get("code", r.get("verdict")) for r in replies] == [
+        "TARGET", "TARGET", "wait_stopped", "TIMEOUT"], replies
     doc = server.screen_wait.__doc__ or ""
     unnamed = sorted({k for r in replies for k in r} - ENVELOPE
                      - {k for r in replies for k in r if f"`{k}`" in doc})
@@ -1637,13 +1639,13 @@ def test_a_refusal_about_the_console_mid_wait_is_passed_on_and_nothing_more_is_t
 
 def test_a_refused_wait_whose_stop_survey_comes_back_cut_says_so_and_records_nothing(
         tmp_path: Path, ahead: list[float]) -> None:
-    """Expired at a retrace of its own, the stop reply's survey repainting nothing: no stop is
-    recorded, so no `stop_seq`; `enrichment` says why."""
+    """Ended by the bound at a retrace of its own, the stop reply's survey repainting nothing:
+    no stop is recorded, so no `stop_seq`; `enrichment` says why."""
     dbg = costly(["probe-booted"], 3, tmp_path, ahead, 1.0)
     dbg.panes = ["", *[cap_vrt("probe-survey-0")] * 3]
     before = dstate.STATE.last_stop["seq"]
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5))
-    assert r["code"] == "wait_expired" and r["polls"] == 1 and "stop_seq" not in r, r
+    assert r["verdict"] == "TIMEOUT" and r["polls"] == 1 and "stop_seq" not in r, r
     assert r["enrichment"]["available"] is False and dstate.STATE.last_stop["seq"] == before
 
 

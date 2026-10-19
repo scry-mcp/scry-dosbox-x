@@ -5,9 +5,8 @@ session method's body, and `Session` delegates to it."""
 
 from __future__ import annotations
 
-import time
-
-from scry_core import cancel
+from scry_core import log_wait as core_wait
+from scry_core import reply_contract as contract
 from scry_core.progress import Progress, no_progress
 from scry_core.reply_contract import Invalid
 
@@ -81,57 +80,15 @@ def _e9_text(ses: ds.Session) -> str:
 
 
 def _e9_since(ses: ds.Session, offset: int, channel: str = "guest") -> tuple[list[str], int]:
-    """The COMPLETE lines of `channel` after byte `offset`, and the new offset.
-
-    THREE DEFECTS DIE WITH THIS, and they were all one defect: the wait used to
-    re-read the whole file and index it by LINE NUMBER.
-
-    A HALF-WRITTEN LINE STOPS BEING A LINE. A log written through ordinary stdio
-    ends MID-LINE between flushes -- that is the steady state while a writer is
-    producing, not a rare race -- and `splitlines()` hands that fragment back as an
-    element. `E9_LINE` matches it, because it only anchors the prefix. So the
-    fragment CONSUMED A LINE INDEX, and when the rest of the line arrived the count
-    did not grow: the completed line was never tested again. MEASURED, the caller
-    got "a bound that expired" for a line that was sitting in the file, and `e9` on
-    the same file found it. The mirror was as bad: when the fragment did match, it
-    was returned as the guest's trace with its payload missing. Cutting at the last
-    newline means a line is only ever seen whole, once.
-
-    AND IT IS WHY THE COST IS BOUNDED. Re-reading the whole file every tenth of a
-    second was MEASURED on a log of a few megabytes: gigabytes read and over a minute
-    of CPU inside a ten-minute wait, with the server's lock held, growing
-    quadratically as the log grows under it. Reading only what is new is the same
-    answer for the size of the new part.
-
-    A LOG THAT HAS SHRUNK IS REFUSED rather than resynchronised. Truncation or
-    rotation makes every byte offset meaningless, and the two ways to carry on are
-    both wrong: keeping the offset silently stops seeing anything, and resetting it
-    re-reports old lines as new. It is rare and it is nameable, so it is named.
-    """
+    """The COMPLETE lines of `channel` after byte `offset`, and the new offset: the log read
+    whole lines at a time (`scry_core.log_wait.lines_since`), so a line half-written between
+    two flushes is seen once and whole, and a read costs what is new rather than the whole
+    log again. A log not there yet is nothing yet, which is what a wait is for, and a log
+    rewritten shorter than the offset is read from its start."""
     log = ses.launch.logfile
     assert log is not None            # the caller refuses a session without one
-    if not log.exists():
-        # NOT AN ERROR HERE. The guest may not have written yet, which is exactly
-        # what a wait is for; `e9` refuses on this and this deliberately does not.
-        return [], offset
-    size = log.stat().st_size
-    if size < offset:
-        raise Invalid("session_broken",
-            f"{log} has SHRUNK from {offset} bytes to {size} while this was "
-            f"waiting: it was truncated or rotated underneath. Every offset into "
-            f"it is now meaningless, and both ways of carrying on are wrong -- "
-            f"keeping it sees nothing more, resetting it reports old lines as new")
-    with log.open("rb") as fh:
-        fh.seek(offset)
-        chunk = fh.read()
-    cut = chunk.rfind(b"\n") + 1
-    if cut == 0:
-        return [], offset
-    # DECODED ONLY UP TO A NEWLINE, which is also what keeps a multi-byte character
-    # from being split across two reads: `\n` is a byte boundary in UTF-8, so the
-    # consumed prefix is always whole characters.
-    text = chunk[:cut].decode("utf-8", errors="replace")
-    return (dlogs.channel_lines(text.splitlines(), channel), offset + cut)
+    lines, offset = core_wait.lines_since(log, offset)
+    return dlogs.channel_lines(lines, channel), offset
 
 
 def e9_new_since(ses: ds.Session, offset: int) -> tuple[list[str], int]:
@@ -196,179 +153,67 @@ def e9_wait(ses: ds.Session, pattern: str, seconds: float, mark: int = 0,
 
 def log_wait(ses: ds.Session, pattern: str, seconds: float, channel: str, mark: int = 0,
              progress: Progress = no_progress) -> dict[str, object]:
-    """WHEN a line of `channel` matching `pattern` happened -- whether it already has,
-    or not yet.
-    While it waits it reports the seconds spent, and the lines that arrived, through
-    `progress`.
+    """WHEN a line of `channel` matching `pattern` happened, whether it already has or not yet
+    (`scry_core.log_wait`): `verdict` `TARGET` with the line, or `TIMEOUT` with what arrived
+    while it waited. A machine STOPPED at the debugger writes nothing, so a wait on one is
+    refused (`E9Stopped`), and so is an emulator that went away.
 
-    `mark` is the byte position the search starts from (`e9_mark`): with it, "already"
-    means "written since the mark", and everything before the mark is invisible. That
-    is the difference between "the cue has fired at some point" and "the cue fired in
-    response to the key just posted", and it is the whole of what `send_keys`'
-    verification rests on.
+    `mark` is the byte position the search starts from (`e9_mark`): with it, "already" means
+    "written since the mark", which is the difference between "the cue has fired at some
+    point" and "the cue fired in response to the key just posted".
 
-    BOTH SEMANTICS, IN ONE TOOL, and that is the whole design rather than a
-    convenience. Between launching the emulator and asking, the thing you are
-    waiting for may ALREADY have gone past; a tool that only waits would then sit
-    out its whole bound and report that it never happened, which is false and
-    expensive. So this looks at what the log already holds FIRST, and only waits if
-    it has to. `already` says which of the two answers you got, because they mean
-    different things: one is history, the other is something you were present for.
+    WHICH OCCURRENCE: the FIRST. The question this answers is "when did it happen";
+    `lines_total` says how many there were, and `e9` is the tool for the recent state.
 
-    WHICH OCCURRENCE: the FIRST. The question this answers is "when did it happen",
-    and for a line that fired more than once the first time is the answer;
-    `lines_total` says how many there were, so a caller who wanted the latest knows
-    there is one. (`e9` is the tool for the recent state -- it keeps the newest.)
-
-    A BOUND THAT EXPIRES IS INVALID, never an empty answer, and the message says
-    what was examined: how long it watched, how many instrumentation lines went by,
-    and that the channel was there. A caller who asked "wait for X" and got "no
-    lines" cannot tell "X did not happen in this window" from "there was nothing to
-    match against", and this package refuses to print the same thing for both.
-
-    WHAT YOU CAN DO WITH THE MOMENT, and it is narrower than it looks. A guest
-    writing traces is a guest that is RUNNING, so ordinarily the machine is still
-    running when this returns from a wait, and this debugger's console does not
-    accept commands then -- which every reader here demonstrates by refusing. So you
-    ordinarily cannot arm a breakpoint at the moment this hands you, and you must
-    ASK rather than assume: a breakpoint armed earlier can fire between the line
-    being written and the poll that reads it, and this reply carries no `running`
-    field. The reason is the CONSOLE and not dosbox-x #4026, which is about breaking
-    in with a host keypress -- a different path, and one `breakpoint_interrupt`
-    records as MEASURED working. What the moment is for: choosing an address to arm
-    on the NEXT run, before the machine is released.
+    WHAT YOU CAN DO WITH THE MOMENT is narrower than it looks: a guest writing traces is a
+    guest that is RUNNING, so the console does not accept commands when this returns. What
+    the moment is for: choosing an address to arm on the NEXT run, before the machine is
+    released.
     """
     ds.check_wait_bound(seconds)
     rx = dlogs.compiled(pattern)
     dlogs.check_channel(channel)
     kind = "instrumentation" if channel == "guest" else channel
-    # THE ONLY REFUSAL THAT SURVIVES THE WAIT, and `e9`'s other two deliberately do
-    # not. A session with no logfile has no channel and waiting cannot create one.
-    # But a log that does not EXIST yet, and a log with no instrumentation IN it,
-    # are the ordinary state of a guest that has just been resumed -- and `e9`
-    # refuses on both. Lifting all three would make this tool unable to wait for the
-    # guest's FIRST trace: MEASURED, `start` then `resume` then `e9_wait("BOOT")`
-    # refuses at once against its bound, for a line that arrives a fraction of a
-    # second later, while `_e9_text`'s own message names that very case ("the guest
-    # has not reached its first trace yet"). The two states are reported in the
-    # expiry instead, where they are an ANSWER about the window.
+    # THE ONLY REFUSAL BEFORE THE WAIT. A log that does not EXIST yet, or holds no
+    # instrumentation yet, is the ordinary state of a guest just resumed, and waiting for its
+    # FIRST trace is what this is for; a session with no logfile has no channel to wait on.
     if ses.launch.logfile is None:
         raise Invalid("no_channel",
             "this session was started without a logfile, so there is no "
                       "instrumentation channel to wait on, and waiting cannot "
                       "bring one into existence")
-    began = time.monotonic()
-    lines, offset = ses._e9_since(mark, channel)
-    total = len(lines)
+    offset = mark
 
-    # EVERY COUNT IS "SINCE THE MARK", and the field says so by its name. With the
-    # default mark the examined region is the whole log; with a mark it is what was
-    # written after it, and a field called `lines_in_log` then lied by exactly the
-    # lines before the mark. `since_mark` rides along so a reader can tell which.
-    def found(hit: list[str], already: bool, before: int) -> dict[str, object]:
-        # `lines_before` is how many lines sit between the mark and the match: a
-        # reaction that landed AFTER a post (the mark is taken before it) shows as such,
-        # which `already` alone cannot say -- from a mark, `already` means "there when
-        # the wait first looked", history or not.
-        return {"line": hit[0], "already": already, "lines_total": len(hit),
-                "lines_before": before, "arrived_during": total - len(lines),
-                "waited_s": 0.0 if already else round(time.monotonic() - began, 3),
-                "lines_examined": total, "since_mark": mark}
+    def fresh() -> list[str]:
+        nonlocal offset
+        lines, offset = ses._e9_since(offset, channel)
+        return lines
 
-    def last_look() -> dict[str, object] | None:
-        """ONE LAST READ BEFORE ANY REFUSAL FROM INSIDE THE WAIT, the same for all three
-        (gone, stopped, expired): the loop checks the condition FIRST and reads LAST, so a
-        line written after the final read and before the condition was never looked for
-        -- the canonical case being a guest's EXIT trace, written on its way out, and for
-        a stop the reaction logged just before the breakpoint on its handler fired."""
-        nonlocal offset, total
-        fresh, offset = ses._e9_since(offset, channel)
-        total += len(fresh)
-        hit = [ln for ln in fresh if rx.search(ln)]
-        return found(hit, False, total - len(fresh) + fresh.index(hit[0])) if hit else None
-
-    hits = [ln for ln in lines if rx.search(ln)]
-    if hits:
-        return found(hits, True, lines.index(hits[0]))
-    deadline = began + seconds
-    next_tick = began + ds.PROGRESS_EVERY_S
-    newest = ""
-    while (now := time.monotonic()) < deadline:
-        cancel.check()
-        if now >= next_tick:
-            next_tick = now + ds.PROGRESS_EVERY_S
-            progress(now - began, None,
-                     f"log_wait {channel} /{pattern}/: {now - began:.0f}s of "
-                     f"{seconds:g}s, {total - len(lines)} lines arrived"
-                     + (f", last: {newest[:ds.LAST_LINE_SHOWN]}" if newest else ""))
-        # A STOPPED GUEST WRITES NOTHING, so a wait on one cannot end well and its
-        # expiry would blame the program. MEASURED: a breakpoint
-        # from another session parked the guest mid-plan and this sat out 40 s to say
-        # "the emulator is still running". Asked every poll, because a breakpoint can
-        # fire during the wait too; the answer is passive (no console round trip).
-        if ses.at_debugger():
-            if (late := last_look()) is not None:
-                return late
-            raise ds._wait_stopped(pattern, total - len(lines),
-                                round(time.monotonic() - began, 3))
-        # THE DEATH IS CHECKED IN THE LOOP, not once in the message at the end.
-        # Consulted only while composing the refusal, a session that died at the
-        # start would burn the WHOLE bound, with the server's lock held so `status`
-        # could not be asked, before saying so, and then advise asking again with a
-        # longer bound, which is the one thing that cannot help a dead emulator.
-        if not ses.alive():
-            # ONE LAST READ BEFORE REFUSING, and the refusal's own next sentence is
-            # why it must happen: nothing more WILL be written, so this is the last
-            # chance to read what already was. The loop checks `alive()` FIRST and
-            # reads LAST, so a line written after the final read and before the
-            # death was never looked for at all -- and that is the canonical case,
-            # waiting for a guest's exit trace. MEASURED against a double whose
-            # guest writes its trace on the way out: the line was sitting unread in
-            # the log at the instant of refusal, and `e9` on the same log found it.
-            if (late := last_look()) is not None:
-                return late
-            raise Invalid("session_broken",
-                f"the emulator is GONE, {round(time.monotonic() - began, 1)}s into "
-                f"a {seconds}s wait for {pattern!r}, and a final read of the log "
-                f"after it died found nothing matching either. Nothing more will "
-                f"be written, so a longer bound would not help: this needs a new "
-                f"session, not a bigger number")
-        time.sleep(ds.E9_POLL)
-        fresh, offset = ses._e9_since(offset, channel)
-        total += len(fresh)
-        newest = fresh[-1].strip() if fresh else newest
-        seen = [ln for ln in fresh if rx.search(ln)]
-        if seen:
-            return found(seen, False, total - len(fresh) + fresh.index(seen[0]))
-    # AND ONE LAST READ HERE TOO, for the same reason on the other path: the loop
-    # leaves on the CLOCK, so whatever the guest wrote between the final poll and
-    # the deadline -- up to a whole `E9_POLL` -- had never been looked for. The
-    # window is small and the answer it holds is exactly the one being waited for.
-    if (late := last_look()) is not None:
-        return late
-    # THE COUNT IS THE ONE THAT ANSWERS THE QUESTION BEING ASKED. The log's TOTAL under
-    # the words "went past" would make a wait during which NOTHING happened, on a log
-    # carrying five thousand earlier traces, say "5000 instrumentation line(s) went
-    # past", which anyone diagnosing a silent guest reads as a live channel. The two
-    # numbers are different facts and both are given, and the second one is named for
-    # the region it counts, since with a mark the examined region is not the log.
-    during = total - len(lines)
-    # THE EXPIRY ASKS TOO. The loop asks at every poll, so a stop it sees refuses at once;
-    # a stop that lands after the last poll and before the clock would otherwise reach
-    # a refusal saying "The emulator is still running" (the PROCESS) while the debugger
-    # held the machine. Passive, like the loop's.
-    if ses.at_debugger():
-        raise ds._wait_stopped(pattern, during, round(time.monotonic() - began, 3), seconds)
+    got = core_wait.wait(rx, fresh, seconds=seconds, stopped=ses.at_debugger,
+                         alive=ses.alive, progress=progress,
+                         label=f"log_wait {channel} /{pattern}/")
+    if isinstance(got, core_wait.Found):
+        return {"verdict": contract.TARGET, "line": got.line, "already": got.already,
+                "lines_total": got.lines_total, "lines_before": got.lines_before,
+                "arrived_during": got.arrived_during, "waited_s": got.waited_s,
+                "lines_examined": got.lines_examined, "since_mark": mark}
+    if got.how == "STOPPED":
+        raise ds._wait_stopped(pattern, got.arrived_during, got.waited_s, got.at_bound)
+    if got.how == "GONE":
+        raise Invalid("session_broken",
+            f"the emulator is GONE, {got.waited_s}s into a {seconds}s wait for {pattern!r}, "
+            f"and a final read of the log after it died found nothing matching either. "
+            f"Nothing more will be written, so this needs a new session, not a bigger number")
     region = "in the log altogether" if mark == 0 else f"since the mark at byte {mark}"
-    # HOISTED OUT OF THE f-STRING because a line break inside a replacement field is
-    # 3.12 syntax and this package targets 3.11 -- `ruff` caught it, `mypy` did not.
-    silent = ("" if during else
+    silent = ("" if got.arrived_during else
               " The guest wrote NOTHING at all in this window, so the question may "
               "be whether it is still emitting rather than what it emitted.")
-    raise ds.E9Expired(
-        f"nothing matched {pattern!r} in {round(time.monotonic() - began, 1)}s. "
-        f"{during} {kind} line(s) arrived DURING the wait ({total} "
-        f"{region}), so this is a bound that expired and not 'there was "
-        f"nothing to match against'.{silent} The emulator is still running. Asking "
-        f"again with a longer bound is a different question from asking whether "
-        f"the line ever appears")
+    # THE BOUND RAN OUT AND THE WAIT ANSWERED: a verdict, not a refusal. The machine still
+    # runs, and the caller decides whether to wait longer.
+    return {"verdict": contract.TIMEOUT, "arrived_during": got.arrived_during,
+            "lines_examined": got.lines_examined, "waited_s": got.waited_s,
+            "since_mark": mark,
+            "note": f"nothing matched {pattern!r} in {got.waited_s}s: {got.arrived_during} "
+                    f"{kind} line(s) arrived DURING the wait ({got.lines_examined} {region}), "
+                    f"so this is a bound that expired and not 'there was nothing to match "
+                    f"against'.{silent} The emulator is still running"}

@@ -28,6 +28,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, TypeVar
 
+from scry_core import reply_contract as contract
+
 import dosbox_binary as binaries
 import dosbox_collect as dcollect
 import dosbox_console as dcons
@@ -70,10 +72,6 @@ CODE_TYPES = range(0x18, 0x20)
 LINEAR_MASK = 0xFFFFFFFF
 #: The words a note carries when a line was given no linear address.
 NO_LINEAR = "no linear address"
-#: The line the debugger writes to the session's logfile when the machine closes its log under it
-#: (a BIOS power-on self test does); a log that ends at its count or at `LOGC 0` writes
-#: `... created` instead.
-MACHINE_CLOSED_LINE = f"DEBUG: cpu log {LOG_FILE} stopped"
 #: The line the debugger writes to the session's logfile when it cannot create its log. It then
 #: runs nothing and answers `command not recognized`, which leaves that command on its input line
 #: (REFERENCE.md, The console).
@@ -253,7 +251,6 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
             "the pane painted no `cc=` on the survey before the trace, so the count it proves "
             "itself against cannot be read; nothing was run")
     asked = instructions + 1
-    logfile = session.launch.logfile
     says = _logfile_reader(session)
     began = time.monotonic()
     # THE LOG IS OPEN FROM THE RELEASE UNTIL SOMETHING PROVES IT CLOSED: its count running out, a
@@ -263,34 +260,24 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
     STATE.log_open = True
     expired, saw_at = session.log_cpu(SHAPES[shape], asked, began, began + seconds, progress)
     if expired:
-        # No headless stopper calls a log back before its count. The debugger opens its log by
-        # the first spelling; the second is only ever somebody's leftover.
-        where = places[0]
-        if says(MACHINE_CLOSED_LINE):
-            STATE.log_open = False
-            raise ds.Invalid("wait_expired",
-                f"the machine closed the debugger's log before its count ran out (the logfile "
-                f"says `{MACHINE_CLOSED_LINE}`; {MACHINE_CLOSES}) and runs on, so the count "
-                f"will not stop it: a declared breakpoint still can, `stop` can, and "
-                f"`close` ends it. {where} is yours to move, and its lines are not what ran",
-                running=True, trace={"path": str(where), "closed": True})
-        seen = ("the session's logfile does not say it happened" if logfile is not None else
-                "with no `logfile`, where the debugger would say so, the two cannot be told "
-                "apart here")
-        raise ds.Invalid("wait_expired",
-            f"the trace did not stop within {seconds:g} s, so the machine is still running. A "
-            f"log that runs to its count stops the machine there (`status` then records the "
-            f"stop) and the next trace closes it; one the machine closed first ({MACHINE_CLOSES}, "
-            f"so a trace from the reset park meets it) never reaches its count, and {seen}. "
-            f"{where} is yours to move",
-            running=True, trace={"path": str(where), "closed": False})
+        # THE BOUND INTERRUPTS: the machine is brought back where it stands, and what the log
+        # holds up to there is collected as a stop that cut it would be, a TIMEOUT. A log the
+        # machine closed first is not what ran, and the collect refuses it as such.
+        try:
+            ds.Session.stop_at_bound(session)
+        except ds.Invalid as e:
+            raise ds.Invalid(e.code,
+                f"{e}. The debugger's log is still open at {places[0]}: the next trace refuses "
+                f"while that file sits there, and once it is moved closes the log before "
+                f"opening its own", trace={"path": str(places[0]), "closed": False}) from None
+        saw_at = round(time.monotonic() - began, 1)
     return _collected(session, shape, asked, path, places, before, saw_at,
-                      armed_at["mode"] == dcons.REAL_MODE, says)
+                      armed_at["mode"] == dcons.REAL_MODE, says, interrupted=expired)
 
 
 def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: list[Path],
                before: int, saw_at: float, armed_real: bool,
-               says: Callable[[str], bool]) -> dict[str, Any]:
+               says: Callable[[str], bool], *, interrupted: bool = False) -> dict[str, Any]:
     """The machine is stopped: the log moved, closed if a stop cut it, and its count proved."""
     source = _written(places)
     if source is None:
@@ -354,7 +341,9 @@ def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: 
         "symbols_truncated": len(coverage.symbols) > SYMBOLS_SHOWN}
     if notes:
         found["note"] = "; ".join(notes)
-    return st.extend(reply, verdict="ELAPSED" if ran_out else "OTHER_STOP",
+    verdict = (contract.ELAPSED if ran_out else
+               contract.TIMEOUT if interrupted else contract.OTHER_STOP)
+    return st.extend(reply, verdict=verdict,
                      stopped_at=stop["stopped_at"],
                      waited_s=saw_at, trace=found)
 

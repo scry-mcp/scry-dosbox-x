@@ -2,8 +2,8 @@
 
 The name-layer and stop-reply files each start a session AND populate the store, so both
 have to clear `_STORE` as well as `_SESSION` between cases -- and both surface a stray
-emulator, because `close` reports `reap_failed` when a SIGKILLed child was not reaped and
-swallowing it would leave one running with nothing said. Written once here rather than in
+emulator, because `close` reports `exit_code` unavailable when a SIGKILLed child was not
+reaped and swallowing it would leave one running with nothing said. Written once here rather than in
 each file: it was the same twenty lines twice, which is the duplication this fleet gates.
 
 The store-using files IMPORT `no_session_left_behind` from here, which registers it as their
@@ -55,9 +55,9 @@ def _drop() -> None:
         stray = _kill_if_still_there(proc)
     if stray:
         raise AssertionError(stray)
-    if reply.get("reap_failed"):
-        raise AssertionError(f"an emulator may still be running after close: "
-                             f"{reply['reap_failed']}")
+    code = reply.get("exit_code")
+    if isinstance(code, dict):
+        raise AssertionError(f"an emulator may still be running after close: {code.get('why')}")
 
 
 def _kill_if_still_there(proc: subprocess.Popen[bytes]) -> str:

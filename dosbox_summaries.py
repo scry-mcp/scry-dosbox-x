@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 from scry_core import prose, screen_map
+from scry_core import reply_contract as contract
 
 #: A tool's summary: the call's arguments (defaults applied) and its reply, to one line.
 Summary = Callable[[dict[str, Any], dict[str, Any]], str]
@@ -51,10 +52,12 @@ def _block(reply: dict[str, Any], key: str) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
-def _effect(effect: dict[str, Any], none: str) -> str:
+def _effect(verify: dict[str, Any], none: str) -> str:
     """What an input's check found: seen, not seen, or `none` when no check ran."""
-    return ("effect seen" if effect.get("seen") else
-            "effect not seen" if effect.get("checked") else none)
+    return ("effect not checked" if verify.get("available") is False else
+            "effect seen" if verify.get("seen") else
+            f"effect not seen ({verify['verdict']})" if "verdict" in verify else
+            "effect not seen" if verify.get("checked") else none)
 
 
 # ------------------------------------------------------------------------------ session
@@ -87,8 +90,10 @@ def status(args: dict[str, Any], reply: dict[str, Any]) -> str:
 def close(args: dict[str, Any], reply: dict[str, Any]) -> str:
     if not reply.get("closed"):
         return f"close: {reply.get('note')}"
-    reap = f", reap failed: {reply.get('reap_failed')}" if reply.get("reap_failed") else ""
-    return f"close: {reply.get('how')}, exit code {reply.get('exit_code')}{reap}"
+    code = reply.get("exit_code")
+    said = (f"exit code {code}" if not isinstance(code, dict)
+            else f"no exit code: {code.get('why')}")
+    return f"close: {reply.get('ended_by')}, {said}"
 
 
 # ------------------------------------------------------------------------ the guest's log
@@ -99,8 +104,12 @@ def log(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def log_wait(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    head = f"log_wait {args.get('channel', '')} /{args.get('pattern', '')}/"
+    if reply.get("verdict") == contract.TIMEOUT:
+        return (f"{head}: TIMEOUT after {reply.get('waited_s')}s, "
+                f"{_said(reply.get('arrived_during'), 'line')} arrived")
     when = "already in the log" if reply.get("already") else f"after {reply.get('waited_s')}s"
-    return f"log_wait {args.get('channel', '')} /{args.get('pattern', '')}/: matched {when}"
+    return f"{head}: matched {when}"
 
 
 # ------------------------------------------------------------- reading and writing
@@ -174,14 +183,16 @@ def write(args: dict[str, Any], reply: dict[str, Any]) -> str:
 # ------------------------------------------------------------ advancing the machine
 
 def resume(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    halted = reply.get("halted")
-    return f"resume: {'halted at ' + _at(reply.get('stopped_at')) if halted else 'running'}"
+    verdict = f"{reply['verdict']}, " if "verdict" in reply else ""
+    where = (f"stopped at {_at(reply.get('stopped_at'))}" if "stopped_at" in reply
+             else "running")
+    return f"resume: {verdict}{where}"
 
 
 def stop(args: dict[str, Any], reply: dict[str, Any]) -> str:
     if not reply.get("interrupted"):
         return "stop: already stopped"
-    return f"stop: {reply.get('how')}, at {reply.get('stopped_at')} after {reply.get('waited_s')}s"
+    return f"stop: {reply.get('via')}, at {reply.get('stopped_at')} after {reply.get('waited_s')}s"
 
 
 def step(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -190,7 +201,7 @@ def step(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def run_for(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    where = "running" if reply.get("running") else f"at {_at(reply.get('stopped_at'))}"
+    where = f"at {_at(reply.get('stopped_at'))}"
     asked = (f"{args.get('milliseconds')} ms" if args.get("milliseconds")
              else f"{_said(args.get('frames'), 'frame')}")
     return f"run_for {asked}: {reply.get('verdict')}, {_said(reply.get('polls'), 'poll')}, {where}"
@@ -206,15 +217,10 @@ def trace(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 def run_to(args: dict[str, Any], reply: dict[str, Any]) -> str:
     ref = args.get("ref", "")
-    if reply.get("arrived"):
-        out = f"run_to {ref}: arrived"
-    elif reply.get("running"):
-        out = f"run_to {ref}: still running"
-    else:
-        out = f"run_to {ref}: stopped at {_at(reply.get('stopped_at'))}"
-    control = _block(reply, "control")
+    out = f"run_to {ref}: {reply.get('verdict', 'refused')} at {_at(reply.get('stopped_at'))}"
     # A COUNT, never `Nx`: `0x` reads as a hex prefix with nothing after it.
-    return out + (f", control counted {control.get('hits')}" if control else "")
+    return out + (f", control counted {reply['control_hits']}" if "control_hits" in reply
+                  else "")
 
 
 # ------------------------------------------------------------------------ the states
@@ -370,7 +376,7 @@ def watch_clear(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 def send_keys(args: dict[str, Any], reply: dict[str, Any]) -> str:
     return (f"send_keys ({reply.get('route')}): "
-            f"{_effect(_block(reply, 'effect'), 'posted, unverified')}")
+            f"{_effect(_block(reply, 'verify'), 'posted, unverified')}")
 
 
 def send_mouse(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -380,7 +386,7 @@ def send_mouse(args: dict[str, Any], reply: dict[str, Any]) -> str:
           f"{mouse['x']},{mouse['y']} (driver)" if isinstance(mouse, dict) else "unread")
     arrived = "" if reply.get("arrived", True) else ", NOT where asked"
     return (f"send_mouse: pointer at {at}{arrived}; "
-            f"{_effect(_block(reply, 'effect'), 'posted, unverified')}")
+            f"{_effect(_block(reply, 'verify'), 'posted, unverified')}")
 
 
 def captures(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -439,6 +445,9 @@ def series_capture(args: dict[str, Any], reply: dict[str, Any]) -> str:
 def screen_wait(args: dict[str, Any], reply: dict[str, Any]) -> str:
     point = reply.get("point")
     at = f"{point[0]},{point[1]}" if isinstance(point, list) else "?"
+    if reply.get("verdict") == contract.TIMEOUT:
+        return (f"screen_wait {args.get('text')!r}: TIMEOUT after {reply.get('polls')} "
+                f"retrace(s)")
     if reply.get("already"):
         return f"screen_wait {args.get('text')!r}: already on screen at {at}"
     return (f"screen_wait {args.get('text')!r}: found at {at} after {reply.get('polls')} "
@@ -469,9 +478,7 @@ def perform(args: dict[str, Any], reply: dict[str, Any]) -> str:
         return f"{done}, stopped" + (f" (stop {seq})" if seq is not None else "")
     if reply.get("still_running"):
         return f"{done}, still running"
-    if reply.get("gone"):
-        return f"{done}, the emulator gone"
-    return done
+    return f"{done}, {reply['verdict']}" if "verdict" in reply else done
 
 
 def drive(args: dict[str, Any], reply: dict[str, Any]) -> str:

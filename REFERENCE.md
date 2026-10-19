@@ -182,11 +182,11 @@ directory` when it was given no `captures_dir`) and `state_dir` (where
 
 **A refusal is one contract, and a class holds it.** `status` is `ok` or `INVALID`; an
 INVALID carries `code`, one word from a fixed table (`no_session`, `not_stopped`,
-`not_running`, `bad_argument`, `unknown_ref`, `no_channel`, `wait_stopped`, `wait_expired`,
+`not_running`, `bad_argument`, `unknown_ref`, `no_channel`, `wait_stopped`,
 `control_silent`, `session_broken`, `host_failed`, `step_failed`...), and `message`, the
 prose, flat beside whatever context the refusal has (`last_stop`, `posted`, `route`,
-`failed_at`). The table and the class live in `scry_core.reply_contract`; `NotStopped`, `E9Stopped`
-and `E9Expired` fix their code in the constructor, so a site cannot raise one under another
+`failed_at`). The table and the class live in `scry_core.reply_contract`; `NotStopped` and
+`E9Stopped` fix their code in the constructor, so a site cannot raise one under another
 word, and a code outside the table, an empty message or a retired spelling (`reason`) is
 refused where it is written, as a programmer's error, so a malformed refusal never reaches a
 caller looking like a verdict. Rows and sub-objects keep their own `why` beside their
@@ -232,8 +232,23 @@ would still be quoting a sample as a result the day one does clip.
 the question usually asked (`machine_map`'s sections, the repaints above), the default reply
 answers that question and carries `omitted`, the names it left out, and `how`, the argument
 that brings them; a reply that left nothing out carries neither, except a `machine_map` whose
-lists were cut, whose `how` says how to have every row. `how` in a `stop` or `close` reply is
-another word: how that stop or end came about.
+lists were cut, whose `how` says how to have every row.
+
+**How a stop came about and how a session ended are words of their own**: `via` in a `stop`
+reply (`break`), `ended_by` in a `close` reply (`quit`, `killed`, `died`, `none`), beside
+`exit_code`, an integer or unavailable with its `why` (SIGKILLed and still not reaped, an
+emulator may still be on the machine).
+
+**One rule for every wait.** A wait answers a `verdict` with `status: ok`: `TARGET` when what it
+waited for came, `TIMEOUT` when its bound ran out, `OTHER_STOP` when a stop it did not ask for
+ended it (and `ELAPSED` when a run by time ran its course). The bound INTERRUPTS a run
+(`run_to`, `run_for`, `trace`, `screen_wait`: the machine is brought back with `BREAK` where it
+stands and surveyed there) and LEAVES running a wait that only listens (`resume`, `log_wait`,
+the `expect` of `send_keys`, `send_mouse` and `drive`, `perform`'s wait for a stop). A wait
+nobody asked for (`resume` with `seconds` 0, `perform` with `wait` 0) carries none, and no
+boolean restates a verdict. What could not finish still refuses: `wait_stopped`, a stopped guest
+that cannot write the line waited for; `not_settled`, a `BREAK` whose prompt never came;
+`session_broken`, an emulator gone.
 
 ### A long wait, and a cancelled call
 
@@ -607,24 +622,30 @@ the settle on the repaint that proves it landed. So `count` is 1 to 64 (`STEP_MA
 bound and not a safety one: past it the question is `run_to`, which pays the settle once.
 
 `run_to` takes a symbol or a `SEG:OFF` (`ref`, the one spelling the whole surface uses), arms
-a breakpoint there, resumes, and separates three outcomes that are easy to conflate: it
-**arrived** (the same linear byte in real mode, whatever paragraph spelt it, since the CPU
-stops with the program's own CS:IP); it stopped **somewhere else** (another breakpoint got
-there first, which is ordinary and is not an arrival); or the bound expired and the machine
-is **still running**. It removes the breakpoint it created once it has arrived (`BP` is
+a breakpoint there, resumes, and separates three verdicts that are easy to conflate: `TARGET`
+(the same linear byte in real mode, whatever paragraph spelt it, since the CPU stops with the
+program's own CS:IP); `OTHER_STOP` (another breakpoint got there first, which is ordinary and
+is not an arrival); or `TIMEOUT`, the bound ran out: the run interrupted where it stood, with
+`BREAK` down the debugger channel, or found resting on its own control, so the machine always
+comes back stopped and surveyed.
+It removes the breakpoint it created once it has arrived (`target_disarmed`; `BP` is
 persistent, so a leftover would silently stop the next `resume`), and it looks the index up
-again to do it, because `BPDEL` renumbers.
+again to do it, because `BPDEL` renumbers; on the other two the target stays armed for the next
+release, on purpose.
 
 **A `control` turns a silence into a measurement.** `run_to(ref=..., control=...)` arms a
 second breakpoint at a place known to be HOT, releases the machine again each time it fires,
-and reports `control: {at, hits, removed}`. A bound that expires with ZERO hits is then
-INVALID rather than "it did not arrive": neither breakpoint fired, so nothing was proved
-about the target, which is exactly the shape of the ROM breakpoint below. The control is
-removed on every stopped outcome, since nobody asked to keep it, and each hit costs a
+and reports `control_hits` and `controls` (each `ref`, `at`, `hits_in_run`, `removed`). A
+TIMEOUT with ZERO hits is then INVALID `control_silent` rather than "it did not arrive":
+neither breakpoint fired, so nothing was proved about the target, which is exactly the shape
+of the ROM breakpoint below; another stop before the control fired is `cut_by_other_stop`,
+since nothing about the control was measured. Both carry the stop surveyed and no `verdict`.
+The control is removed on every outcome, since nobody asked to keep it, and each hit costs a
 position read (a console round trip), so a control that fires a few times a run is the right
-one. The control is REQUIRED (the schema refuses a call without one, and an empty one is
-none): a cold target beside a hot control fires the control and never
-the target, and with the roles swapped the target arrives, which is the difference between a
+one. The control is REQUIRED, and names this run's own: the session keeps no declared
+control. The schema refuses a call without one,
+and an empty one is none: a cold target beside a hot control fires the control and never the
+target, and with the roles swapped the target arrives, which is the difference between a
 measurement and a silence.
 
 **`run_for(frames=N)` advances by frames of the display, and a frame is one vertical
@@ -661,8 +682,8 @@ can fail to cut the frames after it, while `run_to` and `resume` honour it, so a
 one declared does not prove its address was not reached; and a change-watch or an interrupt
 breakpoint cannot be told from a retrace (there is no hit flag), so its stop counts as a frame.
 A `TIMEOUT` reached between frames is at rest and surveyed; one that expires while a `VRT` is out
-leaves the machine RUNNING with the retrace pending, as `run_to`'s still-running outcome leaves
-it: `log_wait` or the next console tool meets it at the retrace.
+is interrupted where it stands and surveyed there, the retrace left pending
+(`retrace_pending: true`): the next release meets it.
 
 **`trace(instructions=N)` runs the machine N instructions with the debugger's CPU log on, and
 the log is the instrument.** The `LOG` family writes one line per instruction with the state
@@ -699,14 +720,10 @@ address, or on an interrupt breakpoint's INT, stops there again with nothing exe
 from the reset park meets it), and the debugger then writes `cpu log LOGCPU.TXT stopped` to the
 session's `logfile`. With a stop after that, the trace is refused `readback_refused`, the lines
 kept, because they are not what ran; so is an empty log, and a close that does not answer
-(`closed: false`, the log possibly still open at its path). The bound expiring answers
-`wait_expired` with `running: true` and a `trace` of `path` and `closed`. A log still running
-stops the machine at its count, and the next trace refuses while that file sits in the working
-directory, and once it is gone closes the log before opening its own. One the machine closed
-during the wait never reaches its count: the reply has `closed: true` when the logfile says so,
-and then only a declared breakpoint, `stop` or `close` ends the run. `closed: false`
-says no such close was seen, which promises no stop: without a `logfile` the two cannot be told
-apart, and the reply says so.
+(`closed: false`, the log possibly still open at its path). A bound that runs out is a
+`TIMEOUT`: the run interrupted where it stood, and what the log holds up to there collected as
+a stop that cut it would be (moved, closed, counted against `cc=`); a log the machine closed
+first is refused as above, its lines not what ran.
 
 **A trace says which routines ran.** Every executed address is given a linear address where
 its mode allows one and, inside the loaded table's span, the nearest symbol at or below it: the
@@ -741,11 +758,11 @@ holds the server's lock for its whole duration, so every other tool, `status` in
 unanswerable until it ends; the ceiling is what stops one abandoned question from wedging a
 session. Two waits are not held to it: `resume`'s `seconds` and `start`'s `plan_wait`.
 
-**`resume` sends F5 once and says whether the machine left the debugger**: `halted` is `true`
-when it is already back, and the reply is then the full stop; `false` when it runs. With
-`seconds` it waits that long for a stop, listening for the prompt as `run_to` does, and when
-the bound expires comes back with `halted: false`, `waited_s` and a `note` saying it is still
-running, and leaves it running; the default `0` comes back at once, and a negative one is
+**`resume` sends F5 once**, and an F5 that never left the debugger comes back as the full stop.
+With `seconds` it waits that long for a stop, listening for the prompt as `run_to` does: a stop
+is `OTHER_STOP` with the full stop reply, and a bound that runs out is `TIMEOUT` with
+`waited_s` and a `note` saying it is still running, LEAVING it running; the default `0` comes
+back at once with no verdict, and a negative one is
 refused, as is a malformed `e9` argument, both before any session is asked for. A guest
 already running is then refused `not_stopped`, because an F5 there
 does nothing and an `ok` would read like a release. Nothing has to be declared before a
@@ -760,22 +777,16 @@ on a headless session as on a windowed one. A build without the channel (one tha
 upstream, or one built without the debugger) never dials, and `stop` is then `no_channel`, naming it; the
 `-set` key is the session's own, so a caller's `flags` may not carry it.
 
-**The outcome is read from `arrived` and `running`, never from `bound_expired` alone.** That
-flag is the wait's own measurement, whether the loop gave up on the clock, and it is on every
-reply rather than on the one branch that needed it: the position is read after the loop
-ends, so a machine can be found at rest, at the target or elsewhere, with the flag true.
-Where it earns its place is splitting the still-running outcome, which has two causes that
-want different next moves: the clock ran out with nothing happening, or the debugger
-announced a stop, the loop left early, and the nudge that followed came back cut. One note
-for both would contradict itself in one object: "the bound expired" beside a `waited_s` of
-nothing.
+**An announced stop is read back before it counts.** The debugger announcing a stop (the
+prompt, or a register repaint) ends the wait only once the position read after it finds the
+machine at rest; a nudge that comes back cut means it still runs, and the wait listens on for
+the rest of its bound, sending nothing.
 
 **The wait hears a stop by the prompt, not only by a register repaint.** The debugger is an
 ncurses screen that repaints only the cells that changed, so a machine that stops again
 redraws its code pane while the register labels stay put and are never sent. A wait that
 listens to the pane alone sits out its whole bound over a machine that stopped within
-milliseconds; the wait returns on the prompt, and a stop elsewhere that did outlast the
-bound says so in its note.
+milliseconds; the wait returns on the prompt.
 
 **The wait consults the emulator, and scans only what is new.** Without the first, a session
 that died the instant the machine was released burns the whole bound with the server's lock
@@ -1064,11 +1075,15 @@ costs exactly the length of the bound. So `log_wait` reads what the log already 
 waits only if it must; `already` tells you which of the two answers you got, because one is
 history and the other is something you were present for.
 
-It returns the **first** match (the question is "when did it happen"; `lines_total` says how many
-there were, so a caller who wanted the latest knows to use `log`, which keeps the newest).
-`waited_s` is measured, and is `0.0` exactly when it had already happened.
+It returns the **first** match, `verdict` `TARGET` (the question is "when did it happen";
+`lines_total` says how many there were, so a caller who wanted the latest knows to use `log`,
+which keeps the newest). `waited_s` is measured, and is `0.0` exactly when it had already
+happened. The engine is `scry_core.log_wait`: the log read whole lines at a time from a mark,
+so a line half-written between two flushes is seen once and whole, and a log rewritten shorter
+than the mark is read from its start, at the cost that a line from before the rewrite can be
+served again as new.
 
-**Each refusal takes one last read of the log first.** The loop asks whether the emulator is
+**Every ending takes one last read of the log first.** The loop asks whether the emulator is
 still there BEFORE it reads and leaves on the deadline AFTER it, so a line written in either
 of those gaps (between the final poll and the death, or between the final poll and the
 clock) would otherwise never be looked for at all. That is the canonical wait: for a guest's
@@ -1078,7 +1093,7 @@ clock) would otherwise never be looked for at all. That is the canonical wait: f
 no logfile has no channel and waiting cannot create one, but a log that does not exist YET
 and a log with no instrumentation IN it are the ordinary state of a guest that has just been
 resumed. Refusing on all three makes the tool unable to wait for the guest's **first** trace.
-Those two states are reported in the expiry instead, where they are an answer about the
+Those two states are reported in the `TIMEOUT` instead, where they are an answer about the
 window.
 
 **A wait on a machine stopped at the debugger ends at once**, refused with the position: a
@@ -1096,12 +1111,12 @@ guest, nothing counts it, and every passive look afterwards finds an empty termi
 prompt is counted wherever it is read, and the pre-check is the passive one, which also stops
 costing every key the settle of a nudge nobody answers.
 
-**A bound that expires is INVALID, never an empty answer**, and the refusal names what it
-examined: how many instrumentation lines arrived DURING the wait, how many are in the log
-altogether, and for how long it watched. Those first two are different facts, and reporting
-the second under the first's name makes a wait in which nothing happened, on a log carrying
-thousands of earlier traces, say that thousands of lines went past, which anyone diagnosing
-a silent guest reads as a live channel.
+**A bound that expires is a `TIMEOUT`, never an empty answer**, and its `note` names what it
+examined: how many instrumentation lines arrived DURING the wait (`arrived_during`), how many it
+examined altogether (`lines_examined`), and for how long it watched. Those first two are
+different facts, and reporting the second under the first's name makes a wait in which nothing
+happened, on a log carrying thousands of earlier traces, say that thousands of lines went past,
+which anyone diagnosing a silent guest reads as a live channel.
 
 **It reads only what is NEW, from a byte offset, and only whole lines.** A log written
 through ordinary stdio ends mid-line between flushes, the steady state while a writer is
@@ -1173,8 +1188,11 @@ carries the enriched stop it was heading for, and so it does when the last step 
 `stop`, or a breakpoint that fired while a declaration or a key went in); if it ends in a
 running-guest step with the guest still running, the tail waits only while something declared
 can still produce a stop (a breakpoint, an interrupt, a change-watch), and with nothing
-declared it returns at once, still running, and says why. `wait` runs from 0, which never
-waits, to 600 (`RUN_TO_MAX`), and `drive` takes the same `wait`.
+declared it returns at once, still running, and says why. A list that waited for a stop
+answers its `verdict`: `TARGET` when every wait ended at one, `TIMEOUT` when one ran out, the
+steps after it unsent; with `wait` 0 a console step after a release is refused `not_stopped`,
+and an emulator gone during a wait is `session_broken`. `wait` runs from 0, which never waits,
+to 600 (`RUN_TO_MAX`), and `drive` takes the same `wait`.
 
 A `resume` inside a sequence drains what the console steps before it left in the terminal as
 the key goes out, so their prompt does not read as the resume's halt. What the drain does NOT
@@ -1210,20 +1228,21 @@ the same switch for its act. The reason is size: a run of stops each carrying it
 watches and log crosses what a client keeps in line, and a count assembled by hand from
 summary lines is the number that comes out wrong.
 
-**The loop: `drive`.** An autonomous session steps a program the way a browser is driven:
-look, act, verify, and go again. `drive(act=[...], expect=..., pattern=..., limit=N)` is that
-loop's one turn. The E9 log is MARKED before the first step; the steps run exactly as
-`perform` runs them (each `send_keys`/`send_mouse` with its own `expect` if it has one); with
-`expect` the call then waits for a NEW matching line from the mark, so the act as a whole is
-verified and a miss comes back INVALID with the account of what ran (and when the act ended
-with the machine stopped at the debugger, the log is read once instead of waited on, because
-a stopped guest cannot write); and `looked.e9` is what the guest wrote since the mark,
-matching `pattern` and cut to the last `limit`, with the counts that say what was cut
-(`lines_total`, `truncated`), in `log`'s own words. An act
-that ended at a stop carries the enriched stop reply in `act.stopped`, as `perform`'s tail
-hands it over. A verification that read from the top of the log would find the cue that
-fired ten seconds ago, and a look taken before the act would be the previous act's: the one
-mark, taken before anything moves, is what makes both honest. A screen is not part of the
+**The loop: `drive`.** An autonomous session steps a program the way a browser is driven: look,
+act, verify, and go again. `drive(act=[...], expect=..., pattern=..., limit=N)` is that loop's
+one turn. The E9 log is MARKED before the first step; the steps run exactly as `perform` runs
+them (each `send_keys`/`send_mouse` with its own `expect` if it has one); with `expect` the call
+then waits for a NEW matching line from the mark, so the act as a whole is verified,
+`verify.verdict` `TARGET` or `TIMEOUT` beside the account of what ran (when the act ended with
+the machine stopped at the debugger, the log is read once instead of waited on, because a
+stopped guest cannot write, and a line not there is `wait_stopped`; when the act's own wait ran
+out, `act.verdict` `TIMEOUT`, the check is not made and `verify` is unavailable); and
+`looked.e9` is what the guest wrote since the mark, matching `pattern` and cut to the last
+`limit`, with the counts that say what was cut (`lines_total`, `truncated`), in `log`'s own
+words. An act that ended at a stop carries the enriched stop reply in `act.stopped`, as
+`perform`'s tail hands it over. A verification that read from the top of the log would find the
+cue that fired ten seconds ago, and a look taken before the act would be the previous act's: the
+one mark, taken before anything moves, is what makes both honest. A screen is not part of the
 look: the still needs a recording and `ffmpeg`, and `capture_frame` offers it on its own.
 
 ## From an investigation to a bench
@@ -1321,35 +1340,35 @@ scan byte waits a timer tick under the session's lock. The reply says `route: "g
 `posted` (keys), `bytes` and `ticks` (scan bytes). A key sent to a machine stopped at the
 debugger is refused, because the bytes would land, unannounced, at the next resume.
 
-**An input that went in is not one the program took, and `expect` is how you tell them
-apart.** A modal popup can capture the cue key while the post succeeds. So give `expect` a
-pattern over the guest's E9 log that only the program's REACTION writes, and the tool marks the log before
-the post, posts, and waits up to `seconds` for a NEW matching line. `effect.seen: true` with
-the line means the program acted; a miss is INVALID, still reporting the post, because a
-swallowed key and a key never sent are different facts. The pattern is matched against what
-the program LITERALLY writes, so read its log once before choosing one: a program that logs
-`key down x mods=4` for alt+x and `key down SPACE` for the space bar is telling you the case
-it uses. Only an expired wait is the program's miss. A machine that STOPPED at the debugger
-while the wait looked is a miss too, but one that names the stop
-(`effect.stopped_during_wait`, `last_stop` with the address and the declaration it is
-attributed to) and where an undelivered key waits: the serial buffer, landing at the next
-resume. Whether the key landed BEFORE the stop is the guest's log's to say, not the reply's
-(a key can go in and its own reaction produce the stop), so `log` since the post is the
-judge, and the reply says how many lines were on disk while it looked (`lines_on_disk`,
-`waited_s`), the emulator flushing its log in its own time. A machine already at the
-debugger BEFORE the post is refused: a key posted to a stopped machine waits where nothing
-measures it. A reaction the guest logged just before the stop is still found:
-every refusal from inside the wait takes one last look at the log first. An emulator that
-died or a log that shrank underneath the wait come back as `effect.checked: false` with the
-wait's own words, never as "the program swallowed it". Without `expect` the reply says
-`effect.checked: false` in so many words: what went in is known, what the program did is not, and
-`seconds` with no `expect` is refused rather than ignored. A program that writes no
-instrumentation gives this nothing to confirm against, and that limit is stated rather than
-papered over. What the mark cannot bracket is the post itself (one command per tick): a line the
-guest writes in that window is served, with `effect.seen_before_waiting: true` and
-`waited_s: 0.0` as the tell, and `lines_before` says how many lines the guest wrote between
-the mark and the reaction. The field is not called `already`: that reads as "it had happened
-before the key was sent", and it would say so about reactions stamped after their posts.
+**An input that went in is not one the program took, and `expect` is how you tell them apart.**
+A modal popup can capture the cue key while the post succeeds. So give `expect` a pattern over
+the guest's E9 log that only the program's REACTION writes, and the tool marks the log before
+the post, posts, and waits up to `seconds` for a NEW matching line: `verify` carries the wait's
+`verdict`, `TARGET` with `seen: true` and the line when the program acted, `TIMEOUT` when it did
+not, still beside the post, because a swallowed key and a key never sent are different facts. In
+a `perform` or a `drive` act such a miss ends the list there. The pattern is matched against
+what the program LITERALLY writes, so read its log once before choosing one: a program that logs
+`key down x mods=4` for alt+x and `key down SPACE` for the space bar is telling you the case it
+uses. Only an expired wait is the program's miss. A machine that STOPPED at the debugger while
+the wait looked is refused `wait_stopped`, naming the stop (`verify.stopped_during_wait`,
+`last_stop` with the address and the declaration it is attributed to) and where an undelivered
+key waits: the serial buffer, landing at the next resume. Whether the key landed BEFORE the stop
+is the guest's log's to say, not the reply's (a key can go in and its own reaction produce the
+stop), so `log` since the post is the judge, and the reply says how many lines were on disk
+while it looked (`lines_on_disk`, `waited_s`), the emulator flushing its log in its own time. A
+machine already at the debugger BEFORE the post is refused: a key posted to a stopped machine
+waits where nothing measures it. A reaction the guest logged just before the stop is still
+found: every ending of the wait takes one last look at the log first. An emulator that died
+comes back as `verify.checked: false` with the wait's own words, never as "the program swallowed
+it". Without `expect` the reply says `verify.checked: false` in so many words: what went in is
+known, what the program did is not, and `seconds` with no `expect` is refused rather than
+ignored. A program that writes no instrumentation gives this nothing to confirm against, and
+that limit is stated rather than papered over. What the mark cannot bracket is the post itself
+(one command per tick): a line the guest writes in that window is served, with
+`verify.seen_before_waiting: true` and `waited_s: 0.0` as the tell, and `lines_before` says how
+many lines the guest wrote between the mark and the reaction. The field is not called `already`:
+that reads as "it had happened before the key was sent", and it would say so about reactions
+stamped after their posts.
 
 Timing is coarse: an input lands "now", a tick at a time. For a key that must arrive at a
 precise guest instant, stop there first (`run_to`, a change-watch), send, then `resume`: the
@@ -1499,8 +1518,9 @@ bound still reaches the first frame, and it is read before each retrace, so a fr
 the stop reply under way when it passes are finished. A declared code breakpoint that stops the
 machine first ends the wait `wait_stopped`, its retrace left pending as `run_for` leaves it; a
 change-watch or an interrupt breakpoint cannot be told from a retrace, and a `note` says so. The
-bound ends it `wait_expired`, with the rows of the last text page read and `running: true` when
-a `VRT` is still out; a frame laid out in a way the reader refuses ends it with that
+bound ends it `TIMEOUT`, with the rows of the last text page read, a `VRT` still out interrupted
+where it stands; a found text is `TARGET`; a frame laid out in a way the reader refuses ends it
+with that
 `no_channel`. Whichever way it ends at a stop of its own (found, cut, expired at a retrace,
 refused), it records that stop as every stop tool does, and carries its `stop_seq`; a stop whose
 survey comes back cut is not recorded, and the reply carries `enrichment` (`available: false`

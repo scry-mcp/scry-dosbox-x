@@ -326,12 +326,11 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
         "stop": (lambda r: ok(r) and r.get("interrupted") is False,
                  "stop docstring: `false` when already stopped"),
         "step": (lambda r: ok(r) and r.get("completed") == 1, "step docstring: completed"),
-        "run_to": (lambda r: ok(r) and r.get("arrived") is False and r.get("running") is False
-                   and (r.get("control") or {}).get("hits", 0) > 0,
+        "run_to": (lambda r: ok(r) and r.get("verdict") == "OTHER_STOP"
+                   and int(r.get("control_hits") or 0) > 0,
                    REF_DOC + "Advancing the machine: a control turns a silence into a "
                    "measurement"),
-        "run_for": (lambda r: ok(r) and r.get("verdict") == "ELAPSED" and r.get("polls") == 1
-                    and r.get("running") is False,
+        "run_for": (lambda r: ok(r) and r.get("verdict") == "ELAPSED" and r.get("polls") == 1,
                     REF_DOC + "Advancing the machine: a frame is one vertical retrace"),
         "trace": (lambda r: ok(r) and r.get("verdict") == "ELAPSED"
                   and (r.get("trace") or {}).get("instructions") == 16
@@ -375,7 +374,7 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
         "series_capture": (lambda r: refused(r, "no_channel"),
                            "series_capture docstring: needs captures_dir and capture_video"),
         **_SEQUENCES,
-        "resume": (lambda r: ok(r) and r.get("halted") is False,
+        "resume": (lambda r: ok(r) and "stop_seq" not in r,
                    "resume docstring: a stopper declared, it runs"),
         "comment_add": (lambda r: ok(r) and (r.get("comment") or {}).get("state") == "resolved",
                         "comment_add docstring: a real-mode SEG:OFF placed by arithmetic"),
@@ -814,7 +813,7 @@ def section_b() -> None:
     judged("B log_wait seconds=0", reply=r, holds=_bad(r))
     r = M.call(server.run_to, exempt="the probe's own loop runs at every instruction",
                ref=p.at(p.spin), seconds=600, control=NEVER_RUNS_CONTROL)
-    judged("B run_to seconds=600 arrives", reply=r, holds=ok(r) and r.get("arrived") is True)
+    judged("B run_to seconds=600 arrives", reply=r, holds=ok(r) and r.get("verdict") == "TARGET")
     r = M.call(server.run_to, exempt="refused before any wait",
                ref=p.at(p.spin), seconds=600.5, control=NEVER_RUNS_CONTROL)
     judged("B run_to seconds=600.5", reply=r, holds=_bad(r))
@@ -919,7 +918,7 @@ C_CELLS = cells(
     ("C drive refuses when a step fails", "drive docstring: INVALID when a step failed"),
     ("C drive sees a new probe line", "drive docstring; known: the probe logs every few s"),
     ("C log_wait answers history at once", REF_DOC + "The log: already, waited_s 0.0"),
-    ("C log_wait expiry is INVALID", REF_DOC + "The log: a bound that expires"),
+    ("C log_wait expiry is a TIMEOUT", REF_DOC + "The log: a bound that expires"),
     ("C declared while running applies at the next stop",
      REF_DOC + "Advancing: what is asked while running is applied at the next stop"),
     ("C a change watch on the counter stops the probe",
@@ -1001,7 +1000,7 @@ def _c_declarations(p: Probe) -> None:
     listed = M.call(server.breakpoint_list)
     left = [str(f) for f in listed.get("foreign") or []]
     judged("C run_to arrives in the probe and removes its breakpoint", reply=r,
-            holds=ok(r) and r.get("arrived") is True and r.get("breakpoint_removed") is True
+            holds=ok(r) and r.get("verdict") == "TARGET" and r.get("target_disarmed") is True
             and hexint((r.get("stopped_at") or {}).get("eip")) == p.emit and ok(listed)
             and not any(f"{p.emit:04X}" in f and f"{p.seg:04X}" in f for f in left))
 
@@ -1013,13 +1012,13 @@ def _c_stops(p: Probe) -> None:
     watches = r.get("watches") or []
     value = str(watches[0].get("value")) if watches else ""
     judged("C a show watch rides the stop with the counter's digits", reply=r,
-            holds=ok(w) and ok(b) and ok(r) and r.get("halted") is True
+            holds=ok(w) and ok(b) and ok(r) and "stop_seq" in r
             and len(value.strip("'\"")) == 5 and value.strip("'\"").isdigit())
     r = M.call(server.resume, seconds=10, e9="since", e9_filter="PROBE")
     e9 = r.get("e9") or {}
     lines = e9.get("lines") or []
     judged("C the stop's e9 since the previous stop", reply=r,
-            holds=ok(r) and r.get("halted") is True and bool(lines)
+            holds=ok(r) and "stop_seq" in r and bool(lines)
             and all("PROBE" in str(x) for x in lines))
     r = M.call(server.perform, steps=[{"op": "status"}, {"op": "resume"}], wait=10)
     judged("C perform ending in resume carries the stop", reply=r,
@@ -1063,7 +1062,8 @@ def _c_running() -> None:
     judged("C log_wait answers history at once", reply=r,
             holds=ok(r) and r.get("already") is True and r.get("waited_s") == 0.0)
     r = M.call(server.log_wait, pattern="MATRIX_NEVER_LOGGED", channel="guest", seconds=3)
-    judged("C log_wait expiry is INVALID", reply=r, holds=refused(r, "wait_expired"))
+    judged("C log_wait expiry is a TIMEOUT", reply=r,
+           holds=ok(r) and r.get("verdict") == "TIMEOUT")
 
 
 def _c_pending(p: Probe) -> None:
@@ -1094,7 +1094,7 @@ def _c_pending(p: Probe) -> None:
     r = M.call(server.resume, seconds=10)
     at = r.get("stopped_at") or {}
     judged("C a change watch on the counter stops the probe", reply=r,
-            holds=ok(w) and w.get("armed") is True and ok(r) and r.get("halted") is True
+            holds=ok(w) and w.get("armed") is True and ok(r) and "stop_seq" in r
             and str(at.get("cs")) == f"{p.seg:04X}")
     M.call(server.watch_clear)
     M.setup()
@@ -1210,7 +1210,7 @@ def section_h() -> None:
     r = M.call(server.run_for, frames=3)
     judged("H run_for frames=3 lands three retraces", reply=r,
            holds=ok(r) and r.get("verdict") == "ELAPSED" and r.get("polls") == 3
-           and r.get("running") is False and (clock_moved(r) or 0) > 0)
+           and (clock_moved(r) or 0) > 0)
     r = M.call(server.run_for, frames=2)
     moved = clock_moved(r)
     M.judge("H run_for frames=2 moves the pane clock two 70 Hz periods",
@@ -1248,14 +1248,14 @@ def section_h() -> None:
     must(M.call(server.breakpoint_at, ref=NEVER_RUNS_STOPPER), "arming a stopper that never fires")
     r = M.call(server.resume, seconds=5)
     M.judge("H the next release stops at the pending retrace, named",
-            ok(r) and r.get("halted") is True
+            ok(r) and "stop_seq" in r
             and (r.get("attribution") or {}).get("retrace_pending") is True, said(r))
     r = M.call(server.debug, command="VRT")
     judged("H debug VRT is refused naming run_for", reply=r,
            holds=refused(r, "bad_argument") and "run_for" in str(r.get("message")))
     s = M.call(server.status)
     r = M.call(server.resume) if s.get("cpu_mode") is not None else s
-    if s.get("cpu_mode") is not None and not (ok(r) and r.get("halted") is False):
+    if s.get("cpu_mode") is not None and not (ok(r) and "stop_seq" not in r):
         M.block("H a running guest is refused", f"the machine did not run: {said(r)}")
     else:
         r = M.call(server.run_for, frames=1)

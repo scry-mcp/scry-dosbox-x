@@ -129,10 +129,13 @@ def e9_summary(session: ds.Session, mode: str, e9_filter: str,
     # behind. With no filter, `none` and `since` need only the lines since the previous
     # stop and a running total; a filter, or a mode that shows history, reads it whole.
     if mode in ("none", "since") and e9_filter == ".":
+        mark = int(STATE.e9_mark.get("offset", 0))
         try:
-            fresh_all, offset = session.e9_new_since(int(STATE.e9_mark.get("offset", 0)))
+            fresh_all, offset = session.e9_new_since(mark)
         except ds.Invalid as exc:
             return {"available": False, "why": str(exc)}
+        if offset < mark:
+            STATE.e9_mark["count"] = 0       # rewritten shorter: read from its start, counted so
         STATE.e9_mark["offset"] = offset
         unfiltered = int(STATE.e9_mark["count"]) + len(fresh_all)
         block: dict[str, Any] = {"lines_total": unfiltered, "unfiltered": unfiltered,
@@ -269,8 +272,8 @@ def stop_or_base(session: ds.Session, stopped: bool, e9: str, e9_filter: str,
                   e9_stamp: str | None, base: dict[str, Any], *,
                   retrace_may_stop: bool = False) -> dict[str, Any]:
     """The enriched stop reply when the machine STOPPED, else just the tool's base answer.
-    A halt whose POSITION cannot be read (a cut pane leaves `where` refusing, which `resume`
-    itself reports as `halted` with `stopped_at` None) is not discarded: the halt is a real
+    A halt whose POSITION cannot be read (a cut pane leaves `where` refusing, which `resume`'s
+    read-back meets as a stop with no position) is not discarded: the halt is a real
     observation, so the base fields stand and the enrichment is marked unavailable with why,
     rather than the whole reply becoming INVALID for a read that could not be made."""
     if not stopped:

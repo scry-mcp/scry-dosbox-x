@@ -258,7 +258,7 @@ def resume_until(found: Callable[[dict[str, Any]], bool], what: str, limit: int,
     resume that does not come back stopped ends the walk, named."""
     for _ in range(limit):
         r = M.call(server.resume, seconds=seconds)
-        regs = r.get("registers") if ok(r) and r.get("halted") else None
+        regs = r.get("registers") if ok(r) and "stop_seq" in r else None
         if not isinstance(regs, dict):
             raise RuntimeError(f"{what}: the machine did not stop: {said(r)}")
         if found(regs):
@@ -287,7 +287,7 @@ def release_running(stopper: str = NEVER_RUNS_STOPPER) -> None:
     """Let the guest run headless with something declared that can stop it and never will."""
     must(M.call(server.breakpoint_at, ref=stopper), "arming the stopper")
     r = M.call(server.resume)
-    if not (ok(r) and r.get("halted") is False):
+    if not (ok(r) and "stop_seq" not in r):
         raise RuntimeError(f"the machine did not run: {said(r)}")
 
 

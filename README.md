@@ -46,9 +46,9 @@ this.
   `golden_check` answer about PNGs and series with numbers, the three that compare a series
   or goldens refusing a result their own control could not have contradicted.
 - **Stop where you mean to.** Run to a symbol and be told whether you arrived, stopped
-  somewhere else, or are still running. Break on an interrupt, or on the program's own
-  `int 3`. Break when a variable
-  changes. Step one instruction at a time with every step read back. Every stop returns
+  somewhere else, or ran out of time, the run then stopped where it stood. Break on an
+  interrupt, or on the program's own `int 3`. Break when a variable changes. Step one
+  instruction at a time with every step read back. Every stop returns
   where it is, the instruction it stopped on with its nearest symbol, the registers, the
   watches you declared, which declaration produced it, and an optional summary of the log.
 - **Advance it by frames, or by emulated time.** `run_for` runs the machine for a number of
@@ -100,9 +100,10 @@ Then, from the client:
 build_check()
 start(conf="/path/to/proj/dev.conf", cwd="/path/to/proj",
       seconds=600, logfile="/path/to/proj/build/e9.log")
-resume()                      -> {"halted": false, ...}       the guest is running
+resume()                      -> {"status": "ok", ...}        the guest is running
 log_wait(pattern="BOOT", channel="guest", seconds=20)
-                              -> {"already": true, "line": "[+  0.412] BOOT  . start",
+                              -> {"verdict": "TARGET", "already": true,
+                                  "line": "[+  0.412] BOOT  . start",
                                   "waited_s": 0.0, "lines_total": 1, ...}
 log(pattern="PERF", channel="guest", limit=5)   -> the last five PERF lines, filtered in the server
 close()
@@ -137,7 +138,7 @@ guest stopped INSIDE the program, which an interrupt breakpoint gives you.
 start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj",
       seconds=600, logfile="/path/to/proj/build/e9.log")
 breakpoint_interrupt(number=0x21)
-resume()                      -> {"halted": true, "stopped_at": {"cs": "00AF", ...}}
+resume(seconds=30)            -> {"verdict": "OTHER_STOP", "stopped_at": {"cs": "00AF", ...}}
 symbols_load(source="/path/to/proj/build/APP.SYM")
                               -> {"parsed": 9652, "kept": 7238, "loaded": 7238, "base_from": "CS", ...}
 breakpoint_at(ref="_engine_set_rate")
@@ -181,14 +182,15 @@ That is what `expect` is for.
 ```
 send_keys(keys=["a"], expect="key_cue_a", seconds=5)
    -> {"route": "guest", "posted": 1, "bytes": 2, "ticks": 2,
-       "effect": {"checked": true, "seen": true, "expected": "key_cue_a",
-                  "line": "[+ 12.407] key_cue_a ...", "seen_before_waiting": false,
-                  "lines_before": 2, "waited_s": 0.3, "lines_total": 1}}
+       "verify": {"checked": true, "seen": true, "expected": "key_cue_a",
+                  "verdict": "TARGET", "line": "[+ 12.407] key_cue_a ...",
+                  "seen_before_waiting": false, "lines_before": 2, "waited_s": 0.3,
+                  "lines_total": 1}}
 ```
 
-A modal dialog that swallowed the key comes back `INVALID` with `posted: 1` and
-`effect.seen: false`: the key went in, the program did not take it, and the two are never
-confused.
+A modal dialog that swallowed the key comes back with `posted: 1` and `verify.verdict:
+"TIMEOUT"`, `seen: false`: the key went in, the program did not take it, and the two are
+never confused.
 
 ### Drive: look, act, verify, in one round trip
 
@@ -199,8 +201,9 @@ drive(act=[{"op": "send_keys", "keys": ["a"], "expect": "key_cue_a"},
    -> {"status": "ok",
        "act": {"ran": [{"op": "send_keys", "reply": {...}}, {"op": "send_keys", "reply": {...}}],
                "completed": 2, "failed": null},
-       "verify": {"checked": true, "seen": true, "line": "...", "seen_before_waiting": false,
-                  "lines_before": 5, "waited_s": 0.4, "lines_total": 1},
+       "verify": {"checked": true, "seen": true, "verdict": "TARGET", "line": "...",
+                  "seen_before_waiting": false, "lines_before": 5, "waited_s": 0.4,
+                  "lines_total": 1},
        "looked": {"e9": {"available": true, "since_mark": 1240, "written": 37,
                          "lines_total": 25, "truncated": true,
                          "lines": [...the 20 most recent matching lines...],
@@ -210,9 +213,10 @@ drive(act=[{"op": "send_keys", "keys": ["a"], "expect": "key_cue_a"},
 The log is marked once, before the first step. The steps run as `perform` runs them, each
 `send_keys` verifying its own `expect`; then the call waits for the act's overall effect
 from that same mark; then `looked.e9` is what the guest wrote since, matching `pattern` and
-cut to the last `limit`, in `log`'s words. A failed step stops the act and comes back `INVALID` with the account;
-so does a miss. An act that ended with the machine stopped at the debugger carries the
-enriched stop in `act.stopped`.
+cut to the last `limit`, in `log`'s words. A failed step stops the act and comes back `INVALID`
+with the account; a miss is the verify's `TIMEOUT`, and a step's own miss ends the act there.
+An act that ended with the machine stopped at the debugger carries the enriched stop in
+`act.stopped`.
 
 ### The input route: a conf line, then keys and the mouse
 
@@ -236,7 +240,7 @@ send_mouse(x=160, y=100, button="left", expect="clicked")
        "pointer": {"screen": {"x": 160, "y": 100, "width": 320, "height": 200},
                    "mouse": {"x": 320, "y": 100, "max_x": 639, "max_y": 199},
                    "buttons": [], "mode": "0x13"},
-       "effect": {"checked": true, "seen": true, ...}}
+       "verify": {"checked": true, "seen": true, "verdict": "TARGET", ...}}
 ```
 
 `x` and `y` are the screen's own units, as `screen_view` counts them (pixels here, mode
@@ -254,8 +258,8 @@ resume()  ... until stopped_at.cs is the program's own segment (the loader's is 
 symbols_load(source="/path/to/proj/build/APP.MAP", base="7DF0")    # (0x0837 - 0x0058) * 16, as hex text
    -> {"parsed": 307, "loaded": 307, "overlay_idle": 80, "unreadable": 0, "base_from": "caller", ...}
 run_to(ref="ATTRACT_RUN", control="MAIN_LOOP", seconds=60)
-   -> {"arrived": true, "stopped_at": {"cs": "0837", "eip": "00000599", "mode": "Real"},
-       "breakpoint_removed": true, "bound_expired": false, "control": {...}, ...}
+   -> {"verdict": "TARGET", "stopped_at": {"cs": "0837", "eip": "00000599", "mode": "Real"},
+       "target_disarmed": true, "control_hits": 3, "controls": [...], ...}
 ```
 
 In real mode the same byte has many spellings (`07DF:0599` and `0837:0041` are one
@@ -285,7 +289,8 @@ start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj",
       seconds=120, logfile="/path/to/proj/build/e9.log",
       capture_video=True, program="APP.EXE", captures_dir="/path/to/proj/build/captures")
 resume()
-log_wait(pattern="READY", channel="guest", seconds=30)     -> {"already": false, "waited_s": 2.1, "line": "...", ...}
+log_wait(pattern="READY", channel="guest", seconds=30)
+                                         -> {"verdict": "TARGET", "already": false, "waited_s": 2.1, ...}
 captures()                               -> {"captures": [{"path": ".../app_000.avi", "frames": 143, ...}]}
 capture_frame(at=140, dest="/path/to/proj/build/captures/ready.png")
 ```
@@ -305,7 +310,7 @@ project and carries no default that points anywhere in particular.
 |---|---|
 | `start` | opens a session and stops it at the debugger, ready to be asked things, behind your own windows unless you ask otherwise; `flags` carries the emulator's own options in either mode, and `break_on_int3` makes the guest's own `int 3` a stop |
 | `status` | is it up, how much of its bound is SPENT, and whether it has been written to; where it is stopped, in which cpu mode, and how many declarations it holds; a stop the guest reached on its own that no tool has seen yet is recorded here and said in `stopped_on_its_own` |
-| `close` | ends it deliberately, and says how: `quit` on the first signal, which is the normal ending because `start` turns the emulator's quit warning off; `killed` only when the signal was ignored |
+| `close` | ends it deliberately, and says how in `ended_by`: `quit` on the first signal, which is the normal ending because `start` turns the emulator's quit warning off; `killed` only when the signal was ignored |
 | `build_check` | what the server can see of its own preconditions, `heavy_debug` among them: whether the build carries the CPU log `trace` needs |
 | `symbols_load` | a toolchain's TEXT symbol list into the debugger, so addresses carry names |
 | `symbols_find` | look one up: by name, or by where you have stopped (`linear` as hex text) |
@@ -325,10 +330,10 @@ project and carries no default that points anywhere in particular.
 | `watch_list` | the watch declarations and their state |
 | `watch_clear` | one watch by ref, or all; never touches breakpoints |
 | `step` | `(count=1, mode="into")`: one instruction at a time, into or over, with every step READ BACK rather than counted out |
-| `run_to` | run until a SYMBOL or a `SEG:OFF`, and say where it really stopped: arrived, stopped elsewhere, or still running; the `control` is REQUIRED (a second `ref` known to be hot), so a bound that expires is a measurement and not a silence; it reports its progress while it waits, as do `run_for`, `trace`, `log_wait`, `perform`'s wait for a stop, `drive`, the wait for `expect` in `send_keys` and `send_mouse`, `start` waiting for the debugger prompt, `close` waiting for the emulator to leave |
+| `run_to` | run until a SYMBOL or a `SEG:OFF`, and say where it really stopped: `TARGET`, `OTHER_STOP`, or `TIMEOUT` with the run interrupted at its bound; the `control` is REQUIRED (a second `ref` known to be hot), so a bound that expires is a measurement and not a silence; it reports its progress while it waits, as do `run_for`, `trace`, `log_wait`, `perform`'s wait for a stop, `drive`, the wait for `expect` in `send_keys` and `send_mouse`, `start` waiting for the debugger prompt, `close` waiting for the emulator to leave |
 | `run_for` | `(frames=N)` or `(milliseconds=N)`: run for N frames of the display, one vertical retrace each, or retrace by retrace until the emulated clock has risen N ms, and stop there with the full stop reply; `verdict` says whether the run ran its course (`ELAPSED`), a declared breakpoint stopped it first (`OTHER_STOP`, saying the retrace it leaves pending), or the bound expired (`TIMEOUT`), and the pane's emulated clock says how far it went |
-| `trace` | `(instructions=N, shape="normal", dest="")`: run N instructions with the debugger's CPU log on, one line each (`normal`, `short`, `long` or `cs_ip`), and stop with the full stop reply, the log moved to `dest` or to the next `trace-<n>.trace` in the captures directory; the count is proved against the pane's `cc=` counter, which only the normal core keeps in step, and `verdict` is `ELAPSED` or `OTHER_STOP` as for `run_for`; the executed addresses are joined to the loaded symbols, the routines in `symbols` (the lowest-addressed ones, `symbols_total` counting them all) and every address in a set file beside the log |
-| `resume` | lets the machine run, and says whether it actually left the debugger: `halted` plus, when it did stop again, `stopped_at`; with `seconds` it waits that long for a stop, listening for the prompt as `run_to` does, and leaves the machine running when the bound expires; nothing has to be declared first, since `stop` brings it back; `detail=True` adds the debugger's repaint |
+| `trace` | `(instructions=N, shape="normal", dest="")`: run N instructions with the debugger's CPU log on, one line each (`normal`, `short`, `long` or `cs_ip`), and stop with the full stop reply, the log moved to `dest` or to the next `trace-<n>.trace` in the captures directory; the count is proved against the pane's `cc=` counter, which only the normal core keeps in step, and `verdict` is `ELAPSED`, `OTHER_STOP` or `TIMEOUT` as for `run_for`; the executed addresses are joined to the loaded symbols, the routines in `symbols` (the lowest-addressed ones, `symbols_total` counting them all) and every address in a set file beside the log |
+| `resume` | lets the machine run; an F5 that never left the debugger comes back as the stop; with `seconds` it waits that long for a stop, listening for the prompt as `run_to` does: `OTHER_STOP` with the stop, or `TIMEOUT` leaving the machine running; nothing has to be declared first, since `stop` brings it back; `detail=True` adds the debugger's repaint |
 | `stop` | brings a RUNNING guest back to the debugger and surveys the stop, headless or windowed, by sending `BREAK` down the emulator's own debugger channel (upstream's `mcp_server`, which the session sets to a port of its own): no window, no menu, no focus taken |
 | `registers` | the register pane, as a mapping |
 | `disassemble` | code at an address as instructions, decoded on the host in the segment's own width, each line's `flow`, and with symbols loaded the direct targets and memory operands named (`resolved`) |

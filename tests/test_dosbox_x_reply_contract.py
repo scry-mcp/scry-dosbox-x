@@ -4,7 +4,7 @@ A contract test and not a grep, because a grep reads the source text rather than
 a caller actually receives. This one walks every tool this server registers through the two
 gates every tool crosses (no machine, a running machine) and fixes the envelope those gates
 produce; the class that holds the contract is `scry_core.reply_contract.Invalid`, and the exception
-family here (`NotStopped`, `E9Stopped`, `E9Expired`) carries
+family here (`NotStopped`, `E9Stopped`) carries
 its code in the constructor so a site cannot raise one under the wrong word.
 
 Every case here was written to go RED against the server before the contract existed.
@@ -152,7 +152,6 @@ def test_the_exception_family_carries_its_code_in_the_constructor() -> None:
     """A site that raises `NotStopped` cannot put it under another word."""
     assert ds.NotStopped("x").code == "not_stopped"
     assert ds.E9Stopped("x", waited_s=1.0, arrived=0).code == "wait_stopped"
-    assert ds.E9Expired("x").code == "wait_expired"
     assert isinstance(ds.NotStopped("x"), contract.Invalid)
     with pytest.raises(TypeError, match="not a code"):
         contract.Invalid("nonsense", "x")  # type: ignore[arg-type]

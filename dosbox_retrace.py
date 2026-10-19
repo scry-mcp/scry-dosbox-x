@@ -13,6 +13,7 @@ from typing import Any
 
 from scry_core import cancel
 from scry_core import progress as mprogress
+from scry_core import reply_contract as contract
 
 import dosbox_arming as arming
 import dosbox_machine as machine
@@ -66,20 +67,21 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
                    asked=asked, done=done, bound=seconds)
 
     cuttable = arming.declares_code_breakpoint()
-    verdict = "ELAPSED"
+    verdict = contract.ELAPSED
     last = before                             # the clock at the last stop that painted one
     stalled_at: float | None = None
     while not (frames and polls >= frames):
         clock.expired()                       # the call's cancellation, and the line's clock
         if time.monotonic() >= deadline:
-            verdict = "TIMEOUT"
+            verdict = contract.TIMEOUT
             break
         if _advance(session, began, deadline, report_slow_retrace):
-            return st.reply(verdict="TIMEOUT", running=True, polls=polls,
-                            **_clock(before, None), **_counts(), retrace_pending=True,
-                            note=f"the bound expired with a `VRT` out, so the machine is still "
-                                 f"running; {PENDING_NOTE}",
-                            waited_s=round(time.monotonic() - began, 1))
+            # THE BOUND INTERRUPTS: a `VRT` still out leaves the machine running, so it is
+            # brought back where it stands and surveyed there, as every bounded run hands the
+            # machine back stopped. The `VRT` stays armed, and the next release meets it.
+            ds.Session.stop_at_bound(session)
+            verdict = contract.TIMEOUT
+            break
         polls += 1
         if frames:
             clock.report(polls, frames, "run_for {asked}: frame {done} of {frames}, "
@@ -92,7 +94,7 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
         except ds.Invalid:
             continue                          # a cut repaint: the next frame's survey reads it
         if cuttable and _cut(session, where, registers) is not None:
-            verdict = "OTHER_STOP"
+            verdict = contract.OTHER_STOP
             break
         now = session.pane_clock_ms
         if not timed or now is None or last is None or before is None:
@@ -106,26 +108,27 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
                      bound=seconds)
         if round(now - before, PANE_CLOCK_DECIMALS) >= milliseconds:
             break
-    fields: dict[str, Any] = {"verdict": verdict, "polls": polls, "running": False}
+    fields: dict[str, Any] = {"verdict": verdict, "polls": polls}
     try:
         reply = running.stop_reply(session, e9, e9_filter, e9_stamp, **fields)
         stopped_at: dict[str, str] | None = dict(STATE.last_stop["where"])
     except ds.Invalid as exc:                 # a cut pane: the account stands without the stop
         reply = st.reply(enrichment={"available": False, "why": str(exc)}, **fields)
         stopped_at = None
-    if verdict == "ELAPSED" and (reply.get("attribution") or {}).get("attributed"):
+    if verdict == contract.ELAPSED and (reply.get("attribution") or {}).get("attributed"):
         STATE.retrace_pending = True          # the last frame, cut: named by its own survey
-        verdict = "OTHER_STOP"
+        verdict = contract.OTHER_STOP
     after = session.pane_clock_ms if stopped_at else (last if timed else None)
     extra: dict[str, Any] = {**_clock(before, after), **_counts(), "stopped_at": stopped_at,
                              "waited_s": round(time.monotonic() - began, 1)}
     unread = before is None or (stopped_at is not None and after is None)
-    notes = [note for note, holds in ((PENDING_NOTE, verdict == "OTHER_STOP"),
+    pending = STATE.retrace_pending           # every cut and every interrupt leaves it armed
+    notes = [note for note, holds in ((PENDING_NOTE, pending),
                                       (UNCUT_NOTE, cuttable),
                                       (UNTOLD_NOTE, arming.declares_untold_stopper()),
                                       ("the pane painted no `pfi=`, so the clock is null", unread))
              if holds]
-    if verdict == "OTHER_STOP":
+    if pending:
         extra["retrace_pending"] = True
     if notes:
         extra["note"] = "; ".join(notes)
@@ -194,15 +197,16 @@ def screen_wait(session: ds.Session, text: str, seconds: float,
     way when it passes are finished. Already there: answered at once, the machine not moved.
     Found: the stop reply, the find kept when its survey comes back cut. A frame in a mode that
     is not text is examined as no match. A declared code breakpoint that cuts a frame ends the
-    wait `wait_stopped`; the bound, `wait_expired` (`_expired`); a frame laid out in a way the
-    reader refuses, that `no_channel`. Each that ends at a stop of its own records it, as every
+    wait `wait_stopped`; the bound, a `TIMEOUT` at a stop (`_expired`); a frame laid out in a way
+    the reader refuses, that `no_channel`. Each that ends at a stop of its own records it, as every
     stop tool does."""
     watch = TextWatch(session)
     rows = watch.rows()
     examined, not_text = 1, int(rows is None)
     hit = None if rows is None else find_text(rows, text)
     if hit is not None:
-        return st.reply(already=True, waited_s=0.0, polls=0, point=hit[0], line=hit[1])
+        return st.reply(verdict=contract.TARGET, already=True, waited_s=0.0, polls=0,
+                        point=hit[0], line=hit[1])
     last = rows
     began = time.monotonic()
     deadline = began + seconds
@@ -213,11 +217,11 @@ def screen_wait(session: ds.Session, text: str, seconds: float,
         seen = {} if last is None else {"text": last}
         clock.expired()                       # the call's cancellation, and the line's clock
         if time.monotonic() >= deadline:
-            raise _expired(session, text, seconds, polls, f"{not_text} of {examined}", seen,
-                           out=False)
+            return _expired(session, text, seconds, polls, f"{not_text} of {examined}", seen,
+                            out=False, began=began)
         if _advance(session, began, deadline, ds.no_progress):
-            raise _expired(session, text, seconds, polls, f"{not_text} of {examined}", seen,
-                           out=True)
+            return _expired(session, text, seconds, polls, f"{not_text} of {examined}", seen,
+                            out=True, began=began)
         polls += 1
         cut = _cut(session) if cuttable else None
         if cut is not None:
@@ -244,7 +248,8 @@ def screen_wait(session: ds.Session, text: str, seconds: float,
             continue
         last = rows
         hit = find_text(rows, text)
-    found: dict[str, Any] = {"already": False, "waited_s": round(time.monotonic() - began, 1),
+    found: dict[str, Any] = {"verdict": contract.TARGET, "already": False,
+                             "waited_s": round(time.monotonic() - began, 1),
                              "polls": polls, "point": hit[0], "line": hit[1]}
     if arming.declares_untold_stopper():
         found["note"] = UNTOLD_NOTE
@@ -282,20 +287,24 @@ def _ended_at(session: ds.Session) -> dict[str, Any]:
 
 
 def _expired(session: ds.Session, text: str, seconds: float, polls: int, not_text: str,
-             seen: dict[str, Any], *, out: bool) -> ds.Invalid:
-    """`screen_wait`'s bound, as the refusal it raises. With a `VRT` still `out` the machine runs
-    and nothing can be read. Stopped at a retrace of its own, that stop is recorded so the next
-    call does not take it for one the guest reached on its own; stopped before any, nothing was
-    typed, and the record and a pending retrace stay as they were."""
-    fields: dict[str, Any] = {"polls": polls, **seen, "running": out}
-    if polls and not out:
-        fields.update(_ended_at(session))
-    fields["retrace_pending"] = STATE.retrace_pending
+             seen: dict[str, Any], *, out: bool, began: float) -> dict[str, Any]:
+    """`screen_wait`'s bound, a `TIMEOUT` at a stop: with a `VRT` still `out` the machine is
+    interrupted where it stands, and the retrace stays armed for the next release; stopped at a
+    retrace of its own, that stop is surveyed. Stopped before any, nothing was typed and the
+    reply carries no stop."""
+    if out:
+        out = ds.Session.stop_at_bound(session)
     skipped = "" if not_text.startswith("0 ") else (
         f"; {not_text} frames examined were not in a text mode")
-    return ds.Invalid("wait_expired",
-        f"`{text}` was not on the text screen in {polls} retrace(s) within {seconds:g} s{skipped}"
-        + (f"; {PENDING_NOTE}, so the machine is still running" if out else ""), **fields)
+    base: dict[str, Any] = {
+        "verdict": contract.TIMEOUT, "polls": polls, **seen,
+        "retrace_pending": STATE.retrace_pending,
+        "waited_s": round(time.monotonic() - began, 1),
+        "note": f"`{text}` was not on the text screen in {polls} retrace(s) within "
+                f"{seconds:g} s{skipped}" + (f"; {PENDING_NOTE}" if out else "")}
+    if not (polls or out):
+        return st.reply(**base)
+    return _stop_reply(session, base)
 
 
 class TextWatch:
