@@ -109,7 +109,7 @@ def test_whitespace_between_the_bytes_is_accepted(good: str, want: bytes) -> Non
 
 def test_scan_start_reads_the_opened_line_past_an_earlier_refusal() -> None:
     s = session([("MEMFIND 0000:400 100 B", "memfind_opened_0400")])
-    got = finder.scan_start(s, 0, 0x400, 0x100, "byte")
+    got = finder.scan_start(s, 0, 0x400, 0x100, 1)
     assert got == {"seg_off": "0000:00000400", "length": 0x100,
                    "cell_bytes": 1, "addr": "0x00000400", "hits_total": 0x100}
 
@@ -117,20 +117,20 @@ def test_scan_start_reads_the_opened_line_past_an_earlier_refusal() -> None:
 def test_scan_start_refuses_when_the_debugger_already_holds_one() -> None:
     s = session([("MEMFIND 0000:400 100 B", "memfind_already_active")])
     with pytest.raises(ds.Invalid, match="one is open"):
-        finder.scan_start(s, 0, 0x400, 0x100, "byte")
+        finder.scan_start(s, 0, 0x400, 0x100, 1)
 
 
 def test_scan_start_refuses_the_range_the_debugger_refused() -> None:
     s = session([("MEMFIND F000:E000 100 B", "memfind_range_exceeds")])
     with pytest.raises(ds.Invalid, match="past the memory"):
-        finder.scan_start(s, 0xF000, 0xE000, 0x100, "byte")
+        finder.scan_start(s, 0xF000, 0xE000, 0x100, 1)
 
 
-@pytest.mark.parametrize("length,width", [(0, "byte"), (0x1000000, "byte"), (16, "qword")])
-def test_scan_start_refuses_its_own_arguments_before_typing(length: int, width: str) -> None:
+@pytest.mark.parametrize("length,cell_bytes", [(0, 1), (0x1000000, 1), (16, 8), (16, True)])
+def test_scan_start_refuses_its_own_arguments_before_typing(length: int, cell_bytes: int) -> None:
     s = session([])
     with pytest.raises(ds.Invalid):
-        finder.scan_start(s, 0, 0, length, width)
+        finder.scan_start(s, 0, 0, length, cell_bytes)
     assert s.sent == []
 
 
@@ -300,7 +300,7 @@ def test_a_close_with_no_count_held_says_so_rather_than_guessing(no_scan_count: 
 def test_scan_start_and_scan_clear_reset_the_count(no_scan_count: None) -> None:
     dstate.STATE.scan_iterations = 7                    # an earlier scan's count
     finder.scan_start(session([("MEMFIND 0000:400 100 B", "memfind_opened_0400")]),
-                      0, 0x400, 0x100, "byte")
+                      0, 0x400, 0x100, 1)
     got = finder.scan_filter(session([("MEMS !0", "mems_finished")]), "!", 0)
     assert got["iterations"] == 1, got                  # the first filter closed it
     dstate.STATE.scan_iterations = 7
@@ -332,12 +332,12 @@ def test_scan_clear_refuses_an_answer_it_cannot_read() -> None:
 
 def test_scan_start_reads_past_two_stacked_stale_lines_and_checks_the_echoed_range() -> None:
     s = session([("MEMFIND 0000:0 FFFFFF B", "memfind_opened")])
-    got = finder.scan_start(s, 0, 0, 0xFFFFFF, "byte")
+    got = finder.scan_start(s, 0, 0, 0xFFFFFF, 1)
     assert got["hits_total"] == 0xFFFFFF and got["addr"] == "0x00000000"
     short = session([("MEMFIND 0000:0 FFFFFE B", "memfind_opened"),
                      ("", "memfind_cancelled")])
     with pytest.raises(ds.Invalid, match="the range asked for"):
-        finder.scan_start(short, 0, 0, 0xFFFFFE, "byte")
+        finder.scan_start(short, 0, 0, 0xFFFFFE, 1)
     assert short.sent == ["MEMFIND 0000:0 FFFFFE B", ""]
 
 
@@ -352,7 +352,7 @@ def test_scan_start_accepts_an_offset_wider_than_sixteen_bits() -> None:
         return orig(text).replace("0000:0400 (lin 00000400) with range: 000100",
                                   "0023:16DF20 (lin 0016DF20) with range: 000100")
     s.command = command
-    got = finder.scan_start(s, 0x23, 0x16DF20, 0x100, "byte")
+    got = finder.scan_start(s, 0x23, 0x16DF20, 0x100, 1)
     assert got["addr"] == "0x0016df20" and got["hits_total"] == 0x100
 
 
@@ -501,13 +501,12 @@ def test_a_clear_with_nothing_open_drops_the_count_too(no_scan_count: None, fixt
     assert dstate.STATE.scan_iterations is None
 
 
-@pytest.mark.parametrize(("width", "letter", "top"), [
-    ("byte", "B", 0xFF), ("word", "W", 0xFFFF), ("dword", "D", 0xFFFFFFFF)])
+@pytest.mark.parametrize(("size", "letter", "top"), [
+    (1, "B", 0xFF), (2, "W", 0xFFFF), (4, "D", 0xFFFFFFFF)])
 def test_a_scan_opened_at_a_width_takes_a_value_of_exactly_that_many_bytes(
-        width: str, letter: str, top: int) -> None:
+        size: int, letter: str, top: int) -> None:
     """The opening line names its cell (upstream `debug.cpp` at the pinned tag prints `1 byte`,
     `2 bytes` or `4 bytes specified.`); the captured byte opening is rewritten to the width."""
-    size = {"byte": 1, "word": 2, "dword": 4}[width]
     said = "1 byte" if size == 1 else f"{size} bytes"
     s = session([(f"MEMFIND 0000:400 100 {letter}", "memfind_opened_0400"),
                  (f"MEMS ={top:X}", "mems_finished")])
@@ -516,7 +515,7 @@ def test_a_scan_opened_at_a_width_takes_a_value_of_exactly_that_many_bytes(
     def command(text: str, **_: object) -> str:
         return orig(text).replace("1 byte specified", f"{said} specified")
     s.command = command
-    assert finder.scan_start(s, 0, 0x400, 0x100, width)["cell_bytes"] == size
+    assert finder.scan_start(s, 0, 0x400, 0x100, size)["cell_bytes"] == size
     with pytest.raises(ds.Invalid, match="wider than"):
         finder.scan_filter(s, "=", top + 1)
     assert finder.scan_filter(s, "=", top)["closed"] is True

@@ -481,16 +481,16 @@ def comment_save(session: ds.Session, dest: str) -> dict[str, Any]:
                     dropped_total=len(dropped), truncated=truncated, **note)
 
 
-def comment_load(session: ds.Session, source: str) -> dict[str, Any]:
+def comment_load(session: ds.Session, given: str) -> dict[str, Any]:
     """The body of the `comment_load` tool."""
     store = arming.current_store()
     ds.console_listening(session, "comments, whose raw addresses are read in the mode of a stop")
-    path = paths.input_file("source", source, "comment file")
+    path = paths.input_file("path", given, "comment file")
     try:
         raw = path.read_bytes()
     except OSError as e:
-        raise ds.Invalid("bad_argument", f"source: {path} cannot be read: {e}") from None
-    rows = _rows_of(raw, "source", path)
+        raise ds.Invalid("bad_argument", f"path: {path} cannot be read: {e}") from None
+    rows = _rows_of(raw, "path", path)
     places = _Places(session)
     incoming: list[tuple[dec.Declaration, dict[str, Any]]] = []
     line_of: dict[str, int] = {}
@@ -500,7 +500,7 @@ def comment_load(session: ds.Session, source: str) -> dict[str, Any]:
         decl = _new(places, by, canonical, r.text, created_at=r.created_at)
         if (first := line_of.setdefault(decl.ref, r.line)) != r.line:
             raise ds.Invalid("bad_argument",
-                f"source: {path}:{r.line} spells line {first}'s {decl.ref} again: one comment "
+                f"path: {path}:{r.line} spells line {first}'s {decl.ref} again: one comment "
                 "per ref, so nothing was loaded")
         incoming.append((decl, places.of(decl)))
     held = _placed_comments(places, store)

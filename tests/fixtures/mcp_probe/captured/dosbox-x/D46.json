@@ -25,7 +25,7 @@
   },
   {
    "lines": [
-    "D46: {\"tool\": \"send_mouse\", \"args\": {\"x\": 40, \"y\": 25, \"units\": \"screen\", \"button\": \"right\", \"action\": \"double\", \"expect\": \"^MOUSE\", \"seconds\": 5}}"
+    "D46: {\"tool\": \"send_mouse\", \"args\": {\"x\": 40, \"y\": 25, \"button\": \"right\", \"action\": \"double\", \"expect\": \"^MOUSE\", \"seconds\": 5}}"
    ],
    "right": true
   },

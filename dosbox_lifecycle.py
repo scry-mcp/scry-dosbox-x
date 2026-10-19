@@ -22,21 +22,21 @@ import dosbox_state as st
 from dosbox_state import STATE
 
 
-def start(conf: str, cwd: str, seconds: int, mode: str, window_flags: list[str] | None,
-          flags: list[str] | None, break_on_int3: bool, program: str | None,
-          logfile: str | None, capture_video: bool, captures_dir: str | None,
-          plan: list[dict[str, Any]] | None, plan_wait: float, input_port: int | None,
-          state_dir: str | None, binary: str, background: bool | None,
+def start(conf: str, cwd: str, session_seconds: int, shared: bool,
+          window_flags: list[str] | None, flags: list[str] | None, break_on_int3: bool,
+          program: str, logfile: str, capture_video: bool, captures_dir: str,
+          plan: list[dict[str, Any]] | None, settle_seconds: float, input_port: int,
+          state_dir: str, binary: str, background: bool | None,
           progress: ds.Progress, ops: Callable[[], sequence.Ops]) -> dict[str, Any]:
-    """The body of the `start` tool; `ops` is the server's step vocabulary, for a `plan`."""
+    """The body of the `start` tool; `ops` is the server's step vocabulary, for a `plan`. An
+    optional text left empty is not given."""
     # THE PATHS FIRST: a path as wrong with a session live as with none is refused before
     # anything here acts (an expired session closed, the symbol table forgotten).
     cwd_given = paths.absolute("cwd", cwd)
     conf_path = paths.absolute("conf", conf)
-    captures_path = (paths.absolute("captures_dir", captures_dir)
-                     if captures_dir is not None else None)
-    logfile_path = paths.absolute("logfile", logfile) if logfile is not None else None
-    state_path = paths.absolute("state_dir", state_dir) if state_dir is not None else None
+    captures_path = paths.absolute("captures_dir", captures_dir) if captures_dir else None
+    logfile_path = paths.absolute("logfile", logfile) if logfile else None
+    state_path = paths.absolute("state_dir", state_dir) if state_dir else None
     if binary:
         paths.absolute("binary", binary)
     if STATE.session is not None:
@@ -58,27 +58,25 @@ def start(conf: str, cwd: str, seconds: int, mode: str, window_flags: list[str] 
     # above, because `start` is reached with no session at all far more often than with
     # an expired one, and that is precisely the path a stale table would ride through.
     STATE.forget_symbols()
-    if mode not in ("headless", "shared"):
-        raise ds.Invalid("bad_argument", f"unknown mode {mode!r}: it is `headless` or `shared`")
     resolved = binaries.resolve(binary)
 
     cwd_path = paths.resolved("cwd", cwd_given)
     launch = dlaunch.Launch(
-        conf=conf_path, cwd=cwd_path, seconds=seconds,
-        watched=(mode == "shared"),
+        conf=conf_path, cwd=cwd_path, seconds=session_seconds,
+        watched=shared,
         window_flags=list(window_flags or []),
         flags=list(flags or []),
         break_on_int3=break_on_int3,
-        program=program,
+        program=program or None,
         capture_video=capture_video,
         captures_dir=captures_path,
         logfile=logfile_path,
         # EVERY SESSION HAS THE INPUT ROUTE: input reaches the guest through that socket alone,
         # so a session started without a port could take no key and no click at all.
-        input_port=input_port if input_port is not None else 0,
+        input_port=input_port,
         state_dir=state_path if state_path is not None else cwd_path / "save",
         binary=resolved.path,
-        background=dlaunch.judge_background(background, mode == "shared"),
+        background=dlaunch.judge_background(background, shared),
     )
     dlaunch.validate(launch)
     # KEY AND VALIDATE THE DECLARATION STORE BEFORE THE EMULATOR BOOTS. Its constructor
@@ -144,7 +142,7 @@ def start(conf: str, cwd: str, seconds: int, mode: str, window_flags: list[str] 
     running.observe_stop(session)     # the park at the debugger is the session's first stop
     # WHERE THE STUB IS, said in the reply: a conf's autoexec that runs its own program has to
     # run the stub first, and a wheel install puts it wherever the package landed.
-    started = st.reply(mode=mode, ready_after_s=ready, argv=session.argv, **binary_facts,
+    started = st.reply(shared=shared, ready_after_s=ready, argv=session.argv, **binary_facts,
                        stub=str(dlaunch.GUEST_DIR / "INJECT.COM"),
                        input_port=contract.or_unavailable(session.launch.input_port,
                                                           "no input route was opened"),
@@ -156,7 +154,7 @@ def start(conf: str, cwd: str, seconds: int, mode: str, window_flags: list[str] 
     # uses, so the two moments cannot drift. The started-reply is folded in under `start`
     # so a caller sees BOTH that the session came up and what the plan did; a plan that
     # fails leaves the session open at wherever it stopped, exactly as `perform` does.
-    ran = sequence.run_steps(session, plan, plan_wait, ops(), prechecked=True)
+    ran = sequence.run_steps(session, plan, settle_seconds, ops(), prechecked=True)
     return st.extend(ran, start={k: v for k, v in started.items()
                                  if k not in ("status", "session")})
 

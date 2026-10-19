@@ -11,7 +11,7 @@
  "runs": [
   {
    "lines": [
-    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90.0}}"
+    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
    ],
    "right": true
   },

@@ -6,8 +6,8 @@
   "args": {
    "conf": "/opt/dosfury/fury.conf",
    "cwd": "/opt/dosfury",
-   "seconds": 900,
-   "mode": "shared",
+   "session_seconds": 900,
+   "shared": true,
    "window_flags": [
     "-set",
     "sdl display=0"
@@ -18,7 +18,7 @@
      "op": "registers"
     }
    ],
-   "plan_wait": 12
+   "settle_seconds": 12
   },
   "grammar": [
    "shared",
@@ -29,19 +29,19 @@
  "runs": [
   {
    "lines": [
-    "D03: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 900, \"mode\": \"shared\", \"window_flags\": [\"-set\", \"sdl display=0\"], \"state_dir\": \"/opt/dosfury/states\", \"plan\": [{\"op\": \"registers\"}], \"plan_wait\": 12}}"
+    "D03: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"window_flags\": [\"-set\", \"sdl display=0\"], \"state_dir\": \"/opt/dosfury/states\", \"plan\": [{\"op\": \"registers\"}], \"settle_seconds\": 12}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D03: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 900, \"mode\": \"shared\", \"window_flags\": [\"-set\", \"sdl display=0\"], \"state_dir\": \"/opt/dosfury/states\", \"plan\": [{\"op\": \"registers\"}], \"plan_wait\": 12}}"
+    "D03: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"window_flags\": [\"-set\", \"sdl display=0\"], \"state_dir\": \"/opt/dosfury/states\", \"plan\": [{\"op\": \"registers\"}], \"settle_seconds\": 12}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D03: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 900, \"mode\": \"shared\", \"window_flags\": [\"-set\", \"sdl display=0\"], \"state_dir\": \"/opt/dosfury/states\", \"plan\": [{\"op\": \"registers\"}], \"plan_wait\": 12}}"
+    "D03: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"window_flags\": [\"-set\", \"sdl display=0\"], \"state_dir\": \"/opt/dosfury/states\", \"plan\": [{\"op\": \"registers\"}], \"settle_seconds\": 12}}"
    ],
    "right": true
   }

@@ -1,0 +1,30 @@
+{
+ "task": {
+  "id": "D123",
+  "prompt": "Clear every breakpoint this session has declared, whatever it is.",
+  "tool": "breakpoint_clear",
+  "args": {
+   "all": true
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D123: {\"tool\": \"breakpoint_clear\", \"args\": {\"all\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D123: {\"tool\": \"breakpoint_clear\", \"args\": {\"all\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D123: {\"tool\": \"breakpoint_clear\", \"args\": {\"all\": true}}"
+   ],
+   "right": true
+  }
+ ]
+}

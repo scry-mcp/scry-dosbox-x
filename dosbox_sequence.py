@@ -401,8 +401,8 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
     final: dict[str, Any] = {}
     if running and wait == 0:
         final = {"still_running": True,
-                 "note": "wait=0: the sequence ended with the machine running and no stop "
-                         "was waited for"}
+                 "note": "settle_seconds=0: the sequence ended with the machine running and "
+                         "no stop was waited for"}
     elif (running and not released_last
           and not arming.something_can_stop_it()):
         # THE LAST STEP WAS A RUNNING-GUEST OP AND NOTHING DECLARED CAN STOP THE MACHINE,
@@ -496,7 +496,7 @@ def validate_wait(wait: float) -> None:
     if isinstance(cast(object, wait), bool) or not isinstance(cast(object, wait), int | float) \
             or not 0 <= wait <= ds.RUN_TO_MAX:
         raise ds.Invalid("bad_argument",
-            f"wait is a bound from 0 (never wait) to {ds.RUN_TO_MAX} seconds; "
+            f"settle_seconds is a bound from 0 (never wait) to {ds.RUN_TO_MAX} seconds; "
                          f"got {wait!r}")
 
 

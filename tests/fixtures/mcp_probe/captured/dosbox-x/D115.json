@@ -8,19 +8,19 @@
  "runs": [
   {
    "lines": [
-    "D115: CANNOT `perform_export` writes the whole session since `start`; it has no option to export only the last ten calls."
+    "D115: CANNOT The export takes the whole session's recorded calls and has no option to keep only the last ten."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT `perform_export` always writes the whole session since `start`; no option limits it to the last ten calls."
+    "D115: CANNOT `perform_export` writes the whole session, up to 5000 calls, and has no option to keep only the last ten."
    ],
    "right": true
   },
   {
    "lines": [
-    "D115: CANNOT perform_export writes the whole session since start; it has no option to export only the last ten calls."
+    "D115: CANNOT perform_export writes the whole session since start, and no argument limits it to the last calls."
    ],
    "right": true
   }

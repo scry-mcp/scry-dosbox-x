@@ -69,7 +69,7 @@ def test_a_state_wait_out_of_bounds_is_judged_with_no_session() -> None:
     ("resume", {"e9": "bogus"}, "e9"),
     ("perform", {"steps": [{"op": "nope"}]}, "nope"),
     ("perform", {"steps": [{"op": "read_memory", "ref": "00A7:zz"}]}, "00A7:zz"),
-    ("perform", {"steps": [{"op": "registers"}], "wait": -1}, "wait"),
+    ("perform", {"steps": [{"op": "registers"}], "settle_seconds": -1}, "settle_seconds"),
     ("perform", {"steps": [{"op": "registers"}], "summaries": "yes"}, "summaries"),
     ("drive", {"act": [], "limit": 0}, "act"),
     ("drive", {"act": [{"op": "send_keys", "keys": ["a"]}], "limit": 0}, "limit"),
@@ -78,7 +78,7 @@ def test_a_state_wait_out_of_bounds_is_judged_with_no_session() -> None:
     ("set_register", {"name": "ax", "value": 0x10000}, "16"),
     ("set_register", {"name": "eax", "value": 1 << 32}, "32"),
     ("set_register", {"name": "cs", "value": -1}, "negative"),
-    ("scan_start", {"ref": "0000:0400", "length": 3, "width": "word"}, "whole number"),
+    ("scan_start", {"ref": "0000:0400", "length": 3, "cell_bytes": 2}, "whole number"),
     ("run_to", {"ref": "0000:0100", "control": ""}, "control"),
     ("breakpoint_at", {"ref": "[g_p]", "by": "pointer"}, "auto, symbol or address"),
     ("breakpoint_at", {"ref": "[g_p]"}, "not declared through a pointer"),
@@ -101,7 +101,7 @@ def test_a_value_wrong_with_no_machine_is_bad_argument_not_no_session(
     ("set_register", {"name": "ax", "value": 0xFFFF}),
     ("set_register", {"name": "eax", "value": 0xFFFFFFFF}),
     ("set_register", {"name": "cs", "value": 0}),
-    ("scan_start", {"ref": "0000:0400", "length": 4, "width": "word"}),
+    ("scan_start", {"ref": "0000:0400", "length": 4, "cell_bytes": 2}),
     ("scan_filter", {"operator": "!"}),
     ("resume", {"seconds": 0}),
     ("perform", {"steps": [{"op": "registers"}]}),
@@ -142,16 +142,16 @@ def test_run_to_without_a_control_is_refused_by_the_schema() -> None:
     _refused(reply, "bad_argument", "refused by the schema", "control")
 
 
-def test_an_empty_ref_clears_every_declaration_of_the_family(tmp_path: Path) -> None:
+def test_all_clears_every_declaration_of_the_family(tmp_path: Path) -> None:
     syms = [dsym.Symbol("_uicue_apply", 0x3D5E0, kind="T")]
     _names(tmp_path, symbols=syms)
     server.breakpoint_at(ref="_uicue_apply")
     server.breakpoint_interrupt(number=0x21)
     server.watch_add(ref="00AF:0100", mode="change", length=4)
     server.watch_add(ref="00AF:0200", mode="show", length=4)
-    cleared = cast(dict[str, Any], server.breakpoint_clear(ref=""))
+    cleared = cast(dict[str, Any], server.breakpoint_clear(all=True))
     assert cleared["status"] == "ok" and cleared["declarations_cleared"] == 2, cleared
-    gone = cast(dict[str, Any], server.watch_clear(ref=""))
+    gone = cast(dict[str, Any], server.watch_clear(all=True))
     assert gone["status"] == "ok" and gone["declarations_cleared"] == 2, gone
     assert dstate.STATE.store is not None and dstate.STATE.store.declarations() == []
 
@@ -198,12 +198,12 @@ def test_a_start_plan_is_judged_whole_before_anything_starts(tmp_path: Path) -> 
     def boot(launch: dlaunch.Launch) -> Any:
         booted.append(launch)
         raise ds.Invalid("session_broken", "not starting anything")
-    kw: dict[str, Any] = {"conf": str(conf), "cwd": str(tmp_path), "seconds": 60}
+    kw: dict[str, Any] = {"conf": str(conf), "cwd": str(tmp_path), "session_seconds": 60}
     with mock.patch("scry_core.binaries.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
          mock.patch("dosbox_x_server.ds.Session", boot):
         _refused(server.start(**kw, plan=[{"op": "nope"}]), "bad_argument", "nope")
-        _refused(server.start(**kw, plan=[{"op": "registers"}], plan_wait=-1), "bad_argument",
-                 "wait")
+        _refused(server.start(**kw, plan=[{"op": "registers"}], settle_seconds=-1), "bad_argument",
+                 "settle_seconds")
         assert booted == [] and not (tmp_path / "save").exists()
         # the control: a plan of the rule reaches the boot
         _refused(server.start(**kw, plan=[{"op": "registers"}]), "session_broken")

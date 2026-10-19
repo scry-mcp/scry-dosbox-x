@@ -99,7 +99,7 @@ Then, from the client:
 ```
 build_check()
 start(conf="/path/to/proj/dev.conf", cwd="/path/to/proj",
-      seconds=600, logfile="/path/to/proj/build/e9.log")
+      session_seconds=600, logfile="/path/to/proj/build/e9.log")
 resume()                      -> {"status": "ok", ...}        the guest is running
 log_wait(pattern="BOOT", channel="guest", seconds=20)
                               -> {"verdict": "TARGET", "already": true,
@@ -136,10 +136,10 @@ guest stopped INSIDE the program, which an interrupt breakpoint gives you.
 
 ```
 start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj",
-      seconds=600, logfile="/path/to/proj/build/e9.log")
+      session_seconds=600, logfile="/path/to/proj/build/e9.log")
 breakpoint_interrupt(number=0x21)
 resume(seconds=30)            -> {"verdict": "OTHER_STOP", "pc": "00AF:0017A6EC", ...}
-symbols_load(source="/path/to/proj/build/APP.SYM")
+symbols_load(path="/path/to/proj/build/APP.SYM")
                               -> {"parsed": 9652, "kept": 7238, "loaded": 7238, "base_from": "CS", ...}
 breakpoint_at(ref="_engine_set_rate")
                               -> {"stored": true, "armed": true, "entry": "BP 00AF:0017A6EC", ...}
@@ -158,10 +158,10 @@ many there were in all).
 
 ```
 start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj",
-      seconds=600, logfile="/path/to/proj/build/e9.log",
+      session_seconds=600, logfile="/path/to/proj/build/e9.log",
       plan=[{"op": "breakpoint_interrupt", "number": 33},
             {"op": "resume"},
-            {"op": "symbols_load", "source": "/path/to/proj/build/APP.SYM"},
+            {"op": "symbols_load", "path": "/path/to/proj/build/APP.SYM"},
             {"op": "breakpoint_at", "ref": "_engine_set_rate"},
             {"op": "watch_add", "ref": "_g_eng_rate", "mode": "show", "length": 4, "fmt": "u32"},
             {"op": "breakpoint_clear", "ref": "BPINT 21"},
@@ -170,7 +170,7 @@ start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj",
 
 `plan` runs those steps on the fresh session and stops at the first failure with the
 steps that ran, their replies, and the machine's state. A `resume` in the middle ends the
-console part: before the next console step the sequence waits, bounded by `plan_wait`,
+console part: before the next console step the sequence waits, bounded by `settle_seconds`,
 for the stop a breakpoint produces. The declarations persist on disk keyed by the conf, so
 the next session's plan can be shorter: they re-arm on `symbols_load`.
 
@@ -233,7 +233,7 @@ APP.EXE
 
 ```
 start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj",
-      seconds=600, logfile="/path/to/proj/build/e9.log")
+      session_seconds=600, logfile="/path/to/proj/build/e9.log")
    -> {..., "input_port": 50432, "stub": "/path/to/scry-dosbox-x/guest/INJECT.COM"}
 resume()
 send_mouse(x=160, y=100, button="left", expect="clicked")
@@ -253,10 +253,10 @@ A 16-bit Borland program is loaded at a paragraph decided at run time, and its m
 offsets from a frame. Reach the program's own code first, then place the map.
 
 ```
-start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj", seconds=300)
+start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj", session_seconds=300)
 breakpoint_interrupt(number=0x21)
 resume()  ... until the segment of `pc` is the program's own (the loader's is different)
-symbols_load(source="/path/to/proj/build/APP.MAP", base="7DF0")    # (0x0837 - 0x0058) * 16, as hex text
+symbols_load(path="/path/to/proj/build/APP.MAP", base="7DF0")    # (0x0837 - 0x0058) * 16, as hex text
    -> {"parsed": 307, "loaded": 307, "overlay_idle": 80, "unreadable": 0, "base_from": "caller", ...}
 run_to(ref="ATTRACT_RUN", control="MAIN_LOOP", seconds=60)
    -> {"verdict": "TARGET", "pc": "0837:00000599", "cpu_mode": "real",
@@ -287,13 +287,13 @@ the mode without a stamp is refused before the machine moves.
 
 ```
 start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj",
-      seconds=120, logfile="/path/to/proj/build/e9.log",
+      session_seconds=120, logfile="/path/to/proj/build/e9.log",
       capture_video=True, program="APP.EXE", captures_dir="/path/to/proj/build/captures")
 resume()
 log_wait(pattern="READY", channel="guest", seconds=30)
                                          -> {"verdict": "TARGET", "already": false, "waited_s": 2.1, ...}
 captures()                               -> {"captures": [{"path": ".../app_000.avi", "avi_frames": 143, ...}]}
-capture_frame(at=140, dest="/path/to/proj/build/captures/ready.png")
+capture_frame(frame=140, dest="/path/to/proj/build/captures/ready.png")
 ```
 
 The video is DOSBox-X's own recording and needs no keypress; the still is an extraction

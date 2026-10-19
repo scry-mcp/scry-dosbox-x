@@ -8,19 +8,19 @@
  "runs": [
   {
    "lines": [
-    "D53: CANNOT read debugger terminal (log refuses channel \"process\" by name)"
+    "D53: CANNOT The log tool refuses the `process` channel by name, so DOSBox-X's stdout cannot be read through this server."
    ],
    "right": true
   },
   {
    "lines": [
-    "D53: CANNOT log tool refuses to read the emulator process/stdout channel"
+    "D53: CANNOT The `log` tool refuses the `process` channel by name, so the emulator's stdout cannot be read."
    ],
    "right": true
   },
   {
    "lines": [
-    "D53: CANNOT log tool refuses process channel by name"
+    "D53: CANNOT The log tool refuses the process channel by name, and no other tool reads DOSBox-X's stdout."
    ],
    "right": true
   }

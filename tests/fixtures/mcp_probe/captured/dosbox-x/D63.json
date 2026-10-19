@@ -8,19 +8,19 @@
  "runs": [
   {
    "lines": [
-    "D63: CANNOT - machine_map requires machine stopped; guest is running"
+    "D63: CANNOT machine_map and every other memory listing need the machine stopped, so a running guest cannot be read here."
    ],
    "right": true
   },
   {
    "lines": [
-    "D63: CANNOT machine_map requires machine stopped"
+    "D63: CANNOT `machine_map` needs the machine stopped and refuses a running guest."
    ],
    "right": true
   },
   {
    "lines": [
-    "D63: CANNOT machine_map requires the machine stopped"
+    "D63: CANNOT The machine map and the MCB listings need the guest stopped, and no tool reads memory control blocks from a running guest without stopping it."
    ],
    "right": true
   }

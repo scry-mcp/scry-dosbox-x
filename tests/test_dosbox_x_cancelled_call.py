@@ -134,7 +134,7 @@ def test_only_the_outer_reply_of_a_sequence_carries_the_record(
     _cancel_at(monkeypatch, 2)
     with pytest.raises(asyncio.CancelledError):
         waiting_tool["none"]()
-    out = server.perform(steps=[{"op": "registers"}], wait=0.0)
+    out = server.perform(steps=[{"op": "registers"}], settle_seconds=0.0)
     assert out.get("cancelled", {}).get("tool") == "wait_none", list(out)
     assert all("cancelled" not in (r.get("reply") or {}) for r in out.get("ran", [])), out
 
@@ -301,7 +301,7 @@ def test_a_step_of_a_sequence_cancelled_is_the_sequences_cancel_alone(
     _running().at = True
     _cancel_at(monkeypatch, 3)                 # perform's entry, the step's entry, its wait
     with pytest.raises(asyncio.CancelledError):
-        server.perform(steps=[{"op": "wait_none"}], wait=0.0)
+        server.perform(steps=[{"op": "wait_none"}], settle_seconds=0.0)
     out = server.status()
     assert out["cancelled"]["tool"] == "perform" and "earlier" not in out["cancelled"], out
 

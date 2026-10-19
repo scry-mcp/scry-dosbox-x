@@ -6,13 +6,13 @@ Read the section for the family you are about to lean on.
 
 ## The session
 
-`mode` is explicit and there is no detection behind it:
+`shared` is explicit and there is no detection behind it:
 
-- **`headless`**: no window can open at all. This uses DOSBox-X's own
+- **headless** (`shared` false, the default): no window can open at all. This uses DOSBox-X's own
   `videodriver=dummy` setting, not the `SDL_VIDEODRIVER` environment variable and not
   `-silent` (which also hides the window but exits after `AUTOEXEC.BAT`, so it cannot
   host a session). Audio still works.
-- **`shared`**: somebody is watching, and you pass the window placement flags in.
+- **`shared: true`**: somebody is watching, and you pass the window placement flags in.
 
 The server never computes where a window goes, and refuses a `shared` session without
 flags rather than inventing a geometry. Pass them as **separate tokens**
@@ -26,13 +26,13 @@ one in front. The hint is set or removed in the spawned environment, never inher
 the server's, and the reply's `background` says what the process was told. A window launched
 behind is still drawn where the placement flags put it.
 
-`seconds` is a **hard bound and required**: a DOSBox-X nobody reads freezes under its
+`session_seconds` is a **hard bound and required**: a DOSBox-X nobody reads freezes under its
 terminal, so every session carries a ceiling on its life, and `status` says how much of it is
 spent. It is a backstop, not a plan: `close` is the act that ends a session.
 
 **What else `start` takes.** `program` runs with `-c` AFTER the conf's autoexec, so that
 autoexec must not `exit` or the program never runs. `plan` is a list of the server's own
-operations run on the fresh session with `perform`'s vocabulary and rules, `plan_wait`
+operations run on the fresh session with `perform`'s vocabulary and rules, `settle_seconds`
 bounding each wait for a stop, and its account replaces the plain reply, with the start
 facts under `start`. `state_dir` is where `state_save` writes and `state_list` reads (`save`
 under `cwd` when omitted), and every session turns the emulator's save remark dialog off,
@@ -101,8 +101,9 @@ such a build.
 **Every path you give is absolute or starts with `~`, which is expanded.** `start`'s `cwd`, `conf`,
 `logfile`, `captures_dir`, `state_dir` and `binary`, `build_check`'s `binary`, `memdump`'s, `trace`'s, `snapshot`'s, `palette`'s,
 `screen_view`'s, `capture_frame`'s and `series_capture`'s `dest`, `capture_frame`'s and
-`series_capture`'s `source`, `symbols_load`'s `source` and `types`, and the media file tools'
-paths (`a`, `b`, `manifest`, `ref`, `dir`, `checksums`) go through one judge, scry-core's. A
+`series_capture`'s `capture_path`, `symbols_load`'s `path` and `types`, `comment_load`'s and
+the map files' `path`, and the media file tools' paths (`a`, `b`, `manifest`, `ref`, `dir`,
+`checksums`) go through one judge, scry-core's. An optional path left empty is not given. A
 relative path is refused because it would be judged against one directory and used in another:
 this server's own working directory is wherever the client launched it, the emulator's is `cwd`,
 and a path that names one file to the judge and another to the writer is checked against the
@@ -125,7 +126,7 @@ names, and one that loops names none and is refused), then creates `captures_dir
 Any other file already at `logfile` is overwritten, since the emulator opens its log afresh:
 `start` cannot know which files the conf's `autoexec` runs, so a log named after one of the
 guest's own (a program beside the conf) replaces it. A `types` file is UTF-8, refused naming
-where it is not (a byte-order mark an editor wrote first is dropped); a map `source` is read
+where it is not (a byte-order mark an editor wrote first is dropped); a symbol map is read
 leniently, because a DOS toolchain's map may carry code page 437 bytes in a path or a comment,
 and its parser counts the lines it could not read.
 
@@ -137,8 +138,8 @@ there is no window to place.
 **The emulator's own options go in `flags`, in either mode.** They are argv tokens placed
 after this server's defaults, so a `-set` the caller passes for the same key wins
 (`["-set", "cpu cycles=fixed 2500"]`), one token per `-set` value as for `window_flags`. What
-a named argument sets is not theirs to retune: `-time-limit` is `seconds`, `sdl videodriver`
-is `mode`, `log logfile` is `logfile`, and so on for the conf, the break at start, the save
+a named argument sets is not theirs to retune: `-time-limit` is `session_seconds`,
+`sdl videodriver` is `shared`, `log logfile` is `logfile`, and so on for the conf, the break at start, the save
 directory, the program, the int 3 key, the input route and the captures. Such a flag is
 refused naming its argument, because after ours it would quietly undo that argument.
 
@@ -247,7 +248,7 @@ ended it (and `ELAPSED` when a run by time ran its course). The bound INTERRUPTS
 (`run_to`, `run_for`, `trace`, `screen_wait`: the machine is brought back with `BREAK` where it
 stands and surveyed there) and LEAVES running a wait that only listens (`resume`, `log_wait`,
 the `expect` of `send_keys`, `send_mouse` and `drive`, `perform`'s wait for a stop). A wait
-nobody asked for (`resume` with `seconds` 0, `perform` with `wait` 0) carries none, and no
+nobody asked for (`resume` with `seconds` 0, `perform` with `settle_seconds` 0) carries none, and no
 boolean restates a verdict. What could not finish still refuses: `wait_stopped`, a stopped guest
 that cannot write the line waited for; `not_settled`, a `BREAK` whose prompt never came;
 `session_broken`, an emulator gone.
@@ -500,9 +501,9 @@ reply says why in `rearm_refused`. One declared over another build is kept but n
 it re-resolves against nothing, and re-armed blind on a relinked program it lands wherever the
 linker put something else, so it is listed `stale` with its `origin` and `created_at`, and
 declaring it again adopts it. A symbol re-resolves whichever session declared it; that is what
-it is for. `breakpoint_clear()` with an empty `ref` (its default) remains the broom for the
-breakpoints of a store you do not recognise, and `watch_clear()` is the other broom (a `null`
-`ref` is the schema's refusal): each sweeps its own family,
+it is for. `breakpoint_clear(all=True)` remains the broom for the breakpoints of a store you
+do not recognise, and `watch_clear(all=True)` is the other broom (an empty `ref` with no
+`all` clears nothing and is refused, as is a `ref` beside `all`): each sweeps its own family,
 never the other's, and the two together empty the store. A
 declaration written by a store from before origins were kept is listed `orphan`, with the
 `ref` that clears it, and a show watch among them is still evaluated at every stop until it
@@ -586,7 +587,7 @@ mode cannot place). Comments a rebuild or a load brought to one place are all ke
 reaches the one whose ref it spells.
 
 **The comment file** is how a project keeps its comments: `comment_save(dest=)` writes them,
-`comment_load(source=)` reads them, both absolute paths, and the convention is
+`comment_load(path=)` reads them, both absolute paths, and the convention is
 `<symbol file stem>.comments.tsv` beside the symbol file. Line 1 is exactly
 `# comments v1: ref<TAB>cpu<TAB>created_at<TAB>text`; every other line is those four fields, the
 text last and the rest of the line, so nothing is quoted or escaped; rows are sorted, so
@@ -758,7 +759,8 @@ is named and `note` says so.
 most 600 (`RUN_TO_MAX`), the ceiling `log_wait`, the state tools and the `expect` waits share. A wait
 holds the server's lock for its whole duration, so every other tool, `status` included, is
 unanswerable until it ends; the ceiling is what stops one abandoned question from wedging a
-session. Two waits are not held to it: `resume`'s `seconds` and `start`'s `plan_wait`.
+session. `resume`'s `seconds` and the `settle_seconds` of `start`, `perform` and `drive` are
+held to it too, and take 0 as well, which never waits.
 
 **`resume` sends F5 once**, and an F5 that never left the debugger comes back as the full stop.
 With `seconds` it waits that long for a stop, listening for the prompt as `run_to` does: a stop
@@ -951,7 +953,8 @@ because there is no default range to search. It dumps
 the range by `memdump`'s route into a scratch file of the call's own and searches it exactly,
 because the debugger has no pattern search; the scanner family (`scan_start`, `scan_filter`,
 `scan_clear`) is the debugger's own `MEMFIND`/`MEMS`, one scan at a time (a `length` of whole
-cells of its `width`, and a filter `value` no wider than the cell of a scan `scan_start`
+cells of `cell_bytes`, 1, 2 or 4, and a filter `value`, an integer or a `0x` hex string, no
+wider than the cell of a scan `scan_start`
 opened, both refused
 before the debugger is asked), paged by the
 debugger and turned with a bare ENTER because a command typed while a page waits is eaten
@@ -1205,9 +1208,9 @@ running-guest step with the guest still running, the tail waits only while somet
 can still produce a stop (a breakpoint, an interrupt, a change-watch), and with nothing
 declared it returns at once, still running, and says why. A list that waited for a stop
 answers its `verdict`: `TARGET` when every wait ended at one, `TIMEOUT` when one ran out, the
-steps after it unsent; with `wait` 0 a console step after a release is refused `not_stopped`,
-and an emulator gone during a wait is `session_broken`. `wait` runs from 0, which never waits,
-to 600 (`RUN_TO_MAX`), and `drive` takes the same `wait`.
+steps after it unsent; with `settle_seconds` 0 a console step after a release is refused
+`not_stopped`, and an emulator gone during a wait is `session_broken`. `settle_seconds` runs
+from 0, which never waits, to 600 (`RUN_TO_MAX`), and `drive` takes the same.
 
 A `resume` inside a sequence drains what the console steps before it left in the terminal as
 the key goes out, so their prompt does not read as the resume's halt. What the drain does NOT
@@ -1324,7 +1327,7 @@ Every input goes in INSIDE the machine, and nothing about the host is touched: n
 comes to the front, the host pointer never moves, no Accessibility grant is asked for, and
 the window's scale changes nothing the guest sees. The emulator's COM1 is a TCP client of a
 port the session listens on (`serial1=nullmodem server:127.0.0.1 port:N transparent:1`;
-`start`'s `input_port`, 1024 to 65535, or a free port when it is omitted; transparent, so a
+`start`'s `input_port`, 1024 to 65535, or `0` (the default) for a free one; transparent, so a
 byte 0xFF is data) and DOSBox-X's integration device is switched on (`integration
 device=true`), both as `-set` overrides the conf need not carry; the emulator dials before the
 guest runs an instruction. A tiny

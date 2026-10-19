@@ -24,7 +24,7 @@ from scry_core.reply_contract import Invalid
 #: the registered tools' arguments of these names to its list, so a new one under one of these
 #: names meets the rule or fails there; a path argument under a new name is added here first.
 PATH_PARAMETERS = frozenset({"cwd", "conf", "logfile", "captures_dir", "state_dir", "dest",
-                             "source", "types", "binary"})
+                             "path", "capture_path", "types", "binary"})
 
 
 def absolute(name: str, value: object) -> Path:

@@ -75,7 +75,8 @@ def start(args: dict[str, Any], reply: dict[str, Any]) -> str:
     if reply.get("ran") is not None:
         planned = _said(len(args.get("plan") or []), "step")
         plan = f", then {reply.get('steps_completed')} of {planned}"
-    return (f"start {Path(str(args.get('conf', ''))).name}: {facts.get('mode')} on "
+    watched = "shared" if facts.get("shared") else "headless"
+    return (f"start {Path(str(args.get('conf', ''))).name}: {watched} on "
             f"{facts.get('binary')} ({facts.get('binary_origin')}), debugger answered after "
             f"{facts.get('ready_after_s')}s{plan}")
 

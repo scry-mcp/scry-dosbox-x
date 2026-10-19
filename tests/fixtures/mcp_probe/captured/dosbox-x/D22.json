@@ -20,19 +20,19 @@
  "runs": [
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\", \"e9\": \"since\"}}"
+    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"e9\": \"since\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\", \"e9\": \"since\"}}"
+    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"e9\": \"since\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\", \"e9\": \"since\"}}"
+    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"e9\": \"since\"}}"
    ],
    "right": true
   }

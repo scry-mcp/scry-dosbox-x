@@ -8,19 +8,19 @@
  "runs": [
   {
    "lines": [
-    "D80: CANNOT trace executes forward and cannot show instructions executed before the current stop"
+    "D80: CANNOT The server only runs forward and keeps no history of executed instructions, so the last 100 before this stop cannot be listed."
    ],
    "right": true
   },
   {
    "lines": [
-    "D80: CANNOT: trace tool executes forward only; no tool shows CPU trace history before the current stop"
+    "D80: CANNOT Tracing only runs forward, and no tool keeps a history of instructions already executed."
    ],
    "right": true
   },
   {
    "lines": [
-    "D80: CANNOT no tool retrieves or traces executed instructions backward"
+    "D80: CANNOT No tool lists instructions already executed; trace only runs the machine forward from the stop."
    ],
    "right": true
   }

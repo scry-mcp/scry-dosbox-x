@@ -131,8 +131,8 @@ def test_perform_refuses_a_misshapen_map_step_before_any_step_runs(tmp_path: Pat
 @pytest.mark.parametrize(("kw", "said"), [
     ({"target": "prompt", "x": 1, "y": 1}, "not both"),
     ({"target": "prompt", "units": "mouse"}, "the screen's units"),
-    ({"target": ""}, "a control's name"),
-], ids=["a target and a place", "a target in mouse units", "an empty target"])
+    ({"target": ""}, "name a move"),
+], ids=["a target and a place", "a target in mouse units", "an empty target is none"])
 def test_a_target_is_refused_before_anything_is_sent(kw: dict[str, Any], said: str) -> None:
     r = cast(dict[str, Any], server.send_mouse(**kw))
     assert r["status"] == "INVALID" and r["code"] == "bad_argument" and said in r["message"]

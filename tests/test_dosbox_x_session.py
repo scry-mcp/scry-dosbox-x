@@ -591,7 +591,7 @@ def test_a_still_whose_destination_already_exists_is_refused_before_ffmpeg_runs(
     """The caller's file is NEVER deleted. Unlinking `dest` before asking ffmpeg for the
     frame turns a frame past the end of the capture (ffmpeg writes nothing, exit code
     zero) into a lost file with the reply INVALID about the frame:
-    `capture_frame(at=9999, dest="README.md")` would be a delete. A `dest` that is
+    `capture_frame(frame=9999, dest="README.md")` would be a delete. A `dest` that is
     already there is refused, saying so, before ffmpeg is asked anything, and the bytes
     at `dest` are the caller's afterwards, whatever they were.
     """
@@ -2508,7 +2508,8 @@ def test_placement_flags_on_a_headless_session_are_refused_not_dropped(conf: Pat
     ["-savedir", "/tmp/states"], ["-c", "GAME.EXE"]])
 def test_flags_may_not_retune_what_a_named_argument_owns(conf: Path, flags: list[str]) -> None:
     """`flags` carries the emulator's own options, never one this server sets from a named
-    argument: the bound (`seconds`), the conf, the break at start, headless (`mode`), the log,
+    argument: the bound (`session_seconds`), the conf, the break at start, headless (`shared`),
+    the log,
     the int 3 key, the serial route and the captures. Placed after ours, such a flag would
     quietly undo the argument it shadows (a `-time-limit 0` is no bound at all), so it is
     refused, naming the argument that owns it."""

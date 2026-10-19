@@ -13,7 +13,7 @@
  "runs": [
   {
    "lines": [
-    "D45: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\", \"action\": \"click\"}}"
+    "D45: {\"tool\": \"send_mouse\", \"args\": {\"button\": \"left\"}}"
    ],
    "right": true
   },

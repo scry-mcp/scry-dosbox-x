@@ -13,19 +13,19 @@
  "runs": [
   {
    "lines": [
-    "D20: {\"tool\":\"resume\",\"args\":{\"seconds\":25,\"e9\":\"seconds:12\",\"e9_stamp\":\"t=([0-9]+)s\",\"e9_filter\":\"^FRAME\"}}"
+    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25, \"e9\": \"seconds:12\", \"e9_filter\": \"^FRAME\", \"e9_stamp\": \"t=([0-9]+)s\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25, \"e9\": \"seconds:12\", \"e9_stamp\": \"t=([0-9]+)s\", \"e9_filter\": \"^FRAME\"}}"
+    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25, \"e9\": \"seconds:12\", \"e9_filter\": \"^FRAME\", \"e9_stamp\": \"t=([0-9]+)s\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25, \"e9\": \"seconds:12\", \"e9_stamp\": \"t=([0-9]+)s\", \"e9_filter\": \"^FRAME\"}}"
+    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25, \"e9\": \"seconds:12\", \"e9_filter\": \"^FRAME\", \"e9_stamp\": \"t=([0-9]+)s\"}}"
    ],
    "right": true
   }

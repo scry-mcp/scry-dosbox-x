@@ -118,12 +118,32 @@ def _comment_delete(ref: object, **_: Any) -> None:
     comment_ref(ref)
 
 
+#: The widest number this debugger holds: its registers and addresses are 32-bit.
+NUMBER_BITS = 32
+
+
+def number(name: str, value: object) -> int:
+    """`value` as the integer it is or spells in hex (`scry_core.judges.number`), at most
+    `NUMBER_BITS` wide; the tool's own range is judged after, on the integer."""
+    return judges.number(name, value, NUMBER_BITS, "this debugger")
+
+
+def clear_scope(ref: str = "", all: bool = False, **_: Any) -> None:
+    """A clear names what it clears: one `ref`, or `all=True` for every one, never both and
+    never neither (an empty `ref` clearing everything was one slip from a wiped store)."""
+    if isinstance(all, bool) and all and ref:
+        raise ds.Invalid("bad_argument", f"ref={ref!r} and all=True: name one, or clear all")
+    if not all and not ref:
+        raise ds.Invalid("bad_argument",
+                         "an empty ref clears nothing: name one, or `all=True` to clear every one")
+
+
 def _comment_save(dest: object, **_: Any) -> None:
     paths.absolute("dest", dest)
 
 
-def _comment_load(source: object, **_: Any) -> None:
-    paths.absolute("source", source)
+def _comment_load(path: object, **_: Any) -> None:
+    paths.absolute("path", path)
 
 
 # THE DATA VIEW'S REACH bounds three values a caller passes, and each bound lives here: a bound
@@ -161,15 +181,16 @@ def show_watch_width(mode: str, width: int) -> None:
             f"'unreadable' at every stop. Use memdump for a region, or a smaller length")
 
 
-def _send_keys(keys: list[str], modifiers: list[str] | None = None, expect: str | None = None,
+def _send_keys(keys: list[str], modifiers: list[str] | None = None, expect: str = "",
                seconds: float | None = None, **_: Any) -> None:
-    inputs.check_keys(keys, modifiers, expect, seconds)
+    inputs.check_keys(keys, modifiers, expect or None, seconds)
 
 
-def _send_mouse(x: int | None = None, y: int | None = None, button: str | None = None,
-                action: str = "click", units: str = "screen", expect: str | None = None,
-                seconds: float | None = None, target: str | None = None, **_: Any) -> None:
-    inputs.check_mouse(x, y, button, action, units, expect, seconds, target)
+def _send_mouse(x: int | None = None, y: int | None = None, button: str = "",
+                action: str = "click", units: str = "screen", expect: str = "",
+                seconds: float | None = None, target: str = "", **_: Any) -> None:
+    inputs.check_mouse(x, y, button or None, action, units, expect or None, seconds,
+                       target or None)
 
 
 def _map_load(path: str = "", **_: Any) -> None:
@@ -196,9 +217,9 @@ def _log_wait(pattern: str, channel: str, seconds: float = 30.0, **_: Any) -> No
     dlogs.check_channel(channel)
 
 
-def _display(e9: str = "none", e9_filter: str = ".", e9_stamp: str | None = None,
+def _display(e9: str = "none", e9_filter: str = ".", e9_stamp: str = "",
              **_: Any) -> None:
-    running.e9_validate(e9, e9_filter, e9_stamp)
+    running.e9_validate(e9, e9_filter, e9_stamp or None)
 
 
 def _step(count: int = 1, mode: str = "into", **rest: Any) -> None:
@@ -319,24 +340,22 @@ def _write(ref: str, data_hex: str, **_: Any) -> None:
     write_data(data_hex)
 
 
-def _set_register(name: str, value: int, **_: Any) -> None:
+def _set_register(name: str, value: object, **_: Any) -> None:
     key = ds.check_register_name(name)
-    if isinstance(value, bool) or not isinstance(value, int):
-        raise ds.Invalid("bad_argument", f"a register value is an integer; got {value!r}")
-    ds.check_register_value(key, value)
+    ds.check_register_value(key, number("value", value))
 
 
-def _symbols_load(source: str, base: str | None = None,
-                  section_bases: dict[str, str] | None = None, types: str | None = None,
+def _symbols_load(path: str, base: str = "",
+                  section_bases: dict[str, str] | None = None, types: str = "",
                   **_: Any) -> None:
-    paths.absolute("source", source)
-    if types is not None:
+    paths.absolute("path", path)
+    if types:
         paths.absolute("types", types)
-    if base is not None and section_bases is not None:
+    if base and section_bases is not None:
         raise ds.Invalid("bad_argument",
             "`base` and `section_bases` are the two kinds of table, flat and "
                          "sectioned; give the one the map is, never both")
-    if base is not None:
+    if base:
         placement.hex_arg("base", base)
     if section_bases is not None:
         placement.hex_bases(section_bases)
@@ -347,15 +366,16 @@ def _find(ref: str, data_hex: str, length: int, **_: Any) -> None:
     finder.check_find_length(length, finder.check_pattern(data_hex))
 
 
-def _scan_start(ref: str, length: int, width: str = "byte", **_: Any) -> None:
+def _scan_start(ref: str, length: int, cell_bytes: int = 1, **_: Any) -> None:
     address_shape(ref)
-    finder.check_scan_range(length, width)
+    finder.check_scan_range(length, cell_bytes)
 
 
-def _scan_filter(operator: str = "=", value: int | None = None, **rest: Any) -> None:
+def _scan_filter(operator: str = "=", value: object = None, **rest: Any) -> None:
     # The default is read at the call: importing `dosbox_find` reaches this module (through
     # `dosbox_dump`), so its names are not there yet while this one is being defined.
-    finder.check_filter(operator, value, rest.get("limit", finder.HITS_DEFAULT))
+    finder.check_filter(operator, None if value is None else number("value", value),
+                        rest.get("limit", finder.HITS_DEFAULT))
 
 
 def _machine_map(sections: list[str] | None = None, dest: str = "", **_: Any) -> None:
@@ -376,6 +396,9 @@ def _resume(seconds: float = 0.0, **rest: Any) -> None:
             f"seconds={seconds!r} is not a finite number of seconds; 0 is no bound")
     if seconds < 0:
         raise ds.Invalid("bad_argument", f"seconds={seconds!r} is negative; 0 is no bound")
+    if seconds > ds.RUN_TO_MAX:
+        raise ds.Invalid("bad_argument", f"seconds={seconds!r} is past the {ds.RUN_TO_MAX} s "
+                                         "a run waits at most; 0 is no bound")
     _display(**rest)
 
 
@@ -404,25 +427,25 @@ def steps_whole(name: str, steps: object) -> None:
             ran=[], steps_completed=0, failed_at=first["step"], failed=first, errors=refused)
 
 
-def _perform(steps: list[dict[str, Any]], wait: float = 30.0, summaries: bool = False,
-             **_: Any) -> None:
-    sequence.validate_wait(wait)
+def _perform(steps: list[dict[str, Any]], settle_seconds: float = 30.0,
+             summaries: bool = False, **_: Any) -> None:
+    sequence.validate_wait(settle_seconds)
     sequence.validate_summaries(summaries)
     steps_whole("steps", steps)
 
 
-def _start(plan: list[dict[str, Any]] | None = None, plan_wait: float = 30.0,
+def _start(plan: list[dict[str, Any]] | None = None, settle_seconds: float = 30.0,
            **_: Any) -> None:
     """`start` judges its paths and its launch itself, before anything starts; its plan is a
     list like `perform`'s, refused whole before the emulator boots rather than after it."""
     if plan:
-        sequence.validate_wait(plan_wait)
+        sequence.validate_wait(settle_seconds)
         steps_whole("plan", plan)
 
 
-def _drive(act: list[dict[str, Any]], expect: str | None = None, seconds: float | None = None,
-           pattern: str = ".", limit: int = 40, wait: float = 30.0, summaries: bool = False,
-           **_: Any) -> None:
+def _drive(act: list[dict[str, Any]], expect: str = "", seconds: float | None = None,
+           pattern: str = ".", limit: int = 40, settle_seconds: float = 30.0,
+           summaries: bool = False, **_: Any) -> None:
     sequence.validate_summaries(summaries)
     if not isinstance(act, list) or not act:
         raise ds.Invalid("bad_argument",
@@ -436,28 +459,25 @@ def _drive(act: list[dict[str, Any]], expect: str | None = None, seconds: float 
             or not 0 < limit <= dlogs.LOG_LIMIT_MAX):
         raise ds.Invalid("bad_argument",
             f"limit is between 1 and {dlogs.LOG_LIMIT_MAX}; got {limit!r}")
-    if expect is not None:
-        if not isinstance(expect, str) or not expect:
-            raise ds.Invalid("bad_argument",
-                "expect is a non-empty regular expression over the E9 log")
+    if expect:
         dlogs.compiled(expect)
     wait_s = inputs.EFFECT_WAIT_DEFAULT_S if seconds is None else seconds
     if isinstance(wait_s, bool) or not isinstance(wait_s, int | float) \
             or not 0 < wait_s <= ds.RUN_TO_MAX:
         raise ds.Invalid("bad_argument",
             f"seconds is a bound between 0 and {ds.RUN_TO_MAX}; got {seconds!r}")
-    if expect is None and seconds is not None:
+    if not expect and seconds is not None:
         raise ds.Invalid("bad_argument",
             "`seconds` bounds the wait for `expect`, and there is no `expect`: it would be "
             "silently ignored")
-    sequence.validate_wait(wait)
+    sequence.validate_wait(settle_seconds)
     steps_whole("act", act)
 
 
-def _capture_frame(at: int, dest: str, source: str | None = None, **_: Any) -> None:
-    ds.check_frame_args(at, paths.absolute("dest", dest))
-    if source is not None:
-        paths.absolute("source", source)
+def _capture_frame(frame: int, dest: str, capture_path: str = "", **_: Any) -> None:
+    ds.check_frame_args(frame, paths.absolute("dest", dest))
+    if capture_path:
+        paths.absolute("capture_path", capture_path)
 
 
 def _snapshot(dest: str = "", seconds: float = ds.SNAPSHOT_WAIT_S, **_: Any) -> None:
@@ -465,9 +485,10 @@ def _snapshot(dest: str = "", seconds: float = ds.SNAPSHOT_WAIT_S, **_: Any) -> 
     ds.check_wait_bound(seconds)
 
 
-def _palette(first: int = 0, count: int = 0, scale: int = 0, dest: str = "",
+def _palette(first: object = 0, count: int = 0, scale: int = 0, dest: str = "",
              **_: Any) -> None:
     entries = vgadac.DAC_ENTRIES
+    first = number("first", first)
     for name, value, top in (("first", first, entries - 1), ("count", count, entries)):
         if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= top:
             raise ds.Invalid("bad_argument", f"{name}={value!r} is not a whole number from 0 to "
@@ -515,9 +536,9 @@ def _screen_wait(text: object, seconds: float = 30.0, **_: Any) -> None:
     ds.check_wait_bound(seconds)
 
 
-def _symbols_find(name: str | None = None, offset: int | None = None,
-                  linear: str | None = None, limit: int = 10, **_: Any) -> None:
-    placement.check_find_args(name, offset, linear, limit)
+def _symbols_find(name: str = "", offset: int | None = None,
+                  linear: str = "", limit: int = 10, **_: Any) -> None:
+    placement.check_find_args(name or None, offset, linear or None, limit)
 
 
 # THE CONSOLE COMMANDS THAT LET THE GUEST RUN, by their first word. A run key goes through
@@ -574,6 +595,7 @@ BY_OP: dict[str, Check] = {
     "state_load": _state, "perform": _perform, "drive": _drive, "start": _start,
     "comment_add": _comment_add, "comment_delete": _comment_delete,
     "comment_save": _comment_save, "comment_load": _comment_load,
+    "breakpoint_clear": clear_scope, "watch_clear": clear_scope,
     "machine_map": _machine_map,
     "map_load": _map_load, "map_save": _map_save, "map_add": _map_add,
 }
@@ -589,13 +611,12 @@ NOT_STEPS = SEQUENCES | {"build_check", "start", "close", "perform_export"}
 #: TOOLS DELIBERATELY WITHOUT AN ENTRY, named so an absent entry and a forgotten one cannot look
 #: alike. They take no argument at all (`status`, `stop`, `scan_clear`, `state_list`,
 #: `breakpoint_list`, `watch_list`, `captures`, `call_stack`, `comment_list`, `map_find`); or a
-#: flag every value of which is valid (`registers`); or a `ref` that matches only against the
-#: declarations the session's store holds (`breakpoint_clear`, `watch_clear`); or they are no step
+#: flag every value of which is valid (`registers`); or they are no step
 #: and have no half here (`build_check`'s binary and `perform_export`'s path, judged by their
 #: bodies first; `close`).
 MACHINE_JUDGES = frozenset({
     "status", "stop", "registers", "scan_clear", "state_list", "breakpoint_list",
-    "breakpoint_clear", "watch_list", "watch_clear", "captures", "call_stack", "comment_list",
+    "watch_list", "captures", "call_stack", "comment_list",
     "map_find",
 }) | (NOT_STEPS - BY_OP.keys())
 

@@ -6,8 +6,8 @@
   "args": {
    "conf": "/opt/dosfury/fury.conf",
    "cwd": "/opt/dosfury",
-   "seconds": 900,
-   "mode": "shared",
+   "session_seconds": 900,
+   "shared": true,
    "window_flags": [
     "-set",
     "sdl display=1"
@@ -23,19 +23,19 @@
  "runs": [
   {
    "lines": [
-    "D94: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 900, \"mode\": \"shared\", \"window_flags\": [\"-set\", \"sdl display=1\"], \"background\": true}}"
+    "D94: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"window_flags\": [\"-set\", \"sdl display=1\"], \"background\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D94: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 900, \"mode\": \"shared\", \"window_flags\": [\"-set\", \"sdl display=1\"], \"background\": true}}"
+    "D94: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"window_flags\": [\"-set\", \"sdl display=1\"], \"background\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D94: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 900, \"mode\": \"shared\", \"window_flags\": [\"-set\", \"sdl display=1\"], \"background\": true}}"
+    "D94: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"window_flags\": [\"-set\", \"sdl display=1\"], \"background\": true}}"
    ],
    "right": true
   }

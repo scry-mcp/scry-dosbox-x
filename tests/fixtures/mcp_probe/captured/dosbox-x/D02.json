@@ -6,7 +6,7 @@
   "args": {
    "conf": "/opt/dosfury/fury.conf",
    "cwd": "/opt/dosfury",
-   "seconds": 5400,
+   "session_seconds": 5400,
    "program": "FURY.EXE",
    "capture_video": true,
    "captures_dir": "/opt/dosfury/caps",
@@ -14,25 +14,25 @@
    "input_port": 5823
   },
   "allow": [
-   "mode"
+   "shared"
   ]
  },
  "runs": [
   {
    "lines": [
-    "D02: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 5400, \"program\": \"FURY.EXE\", \"capture_video\": true, \"captures_dir\": \"/opt/dosfury/caps\", \"logfile\": \"/opt/dosfury/e9.log\", \"input_port\": 5823}}"
+    "D02: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 5400, \"program\": \"FURY.EXE\", \"capture_video\": true, \"captures_dir\": \"/opt/dosfury/caps\", \"logfile\": \"/opt/dosfury/e9.log\", \"input_port\": 5823}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D02: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 5400, \"program\": \"FURY.EXE\", \"capture_video\": true, \"captures_dir\": \"/opt/dosfury/caps\", \"logfile\": \"/opt/dosfury/e9.log\", \"input_port\": 5823}}"
+    "D02: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 5400, \"program\": \"FURY.EXE\", \"capture_video\": true, \"captures_dir\": \"/opt/dosfury/caps\", \"logfile\": \"/opt/dosfury/e9.log\", \"input_port\": 5823}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D02: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 5400, \"program\": \"FURY.EXE\", \"capture_video\": true, \"captures_dir\": \"/opt/dosfury/caps\", \"logfile\": \"/opt/dosfury/e9.log\", \"input_port\": 5823}}"
+    "D02: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 5400, \"program\": \"FURY.EXE\", \"capture_video\": true, \"captures_dir\": \"/opt/dosfury/caps\", \"logfile\": \"/opt/dosfury/e9.log\", \"input_port\": 5823}}"
    ],
    "right": true
   }

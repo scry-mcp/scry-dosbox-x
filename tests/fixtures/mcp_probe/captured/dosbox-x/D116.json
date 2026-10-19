@@ -11,7 +11,7 @@
  "runs": [
   {
    "lines": [
-    "D116: {\"tool\":\"screen_view\",\"args\":{\"dest\":\"/tmp/quiet.png\",\"attach\":false}}"
+    "D116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
    ],
    "right": true
   },

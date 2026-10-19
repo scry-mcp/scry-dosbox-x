@@ -8,19 +8,19 @@
  "runs": [
   {
    "lines": [
-    "D52: CANNOT step instruction backward (step tool only advances guest)"
+    "D52: CANNOT The debugger offers no reverse execution, so the machine cannot step backwards to undo instructions."
    ],
    "right": true
   },
   {
    "lines": [
-    "D52: CANNOT step does not support backward instruction execution"
+    "D52: CANNOT There is no reverse-step tool; `step` only advances the guest forward."
    ],
    "right": true
   },
   {
    "lines": [
-    "D52: CANNOT step tool has no backward mode"
+    "D52: CANNOT No tool steps the guest backwards; step and trace only run forward."
    ],
    "right": true
   }

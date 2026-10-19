@@ -10,7 +10,7 @@
  "runs": [
   {
    "lines": [
-    "D118: {\"tool\":\"map_load\",\"args\":{\"path\":\"/tmp/maps/bricks.scry-map.json\"}}"
+    "D118: {\"tool\": \"map_load\", \"args\": {\"path\": \"/tmp/maps/bricks.scry-map.json\"}}"
    ],
    "right": true
   },

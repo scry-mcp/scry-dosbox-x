@@ -62,10 +62,10 @@ def test_a_shared_start_goes_in_front_unless_told_otherwise(tmp_path: Path,
                                                            monkeypatch: pytest.MonkeyPatch) -> None:
     from test_dosbox_x_server import _start_on_a_booted_fake
     flags = ["-set", "sdl display=1"]
-    shared = _start_on_a_booted_fake(tmp_path, monkeypatch, mode="shared", window_flags=flags)
+    shared = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True, window_flags=flags)
     assert shared["status"] == "ok" and shared["background"] is False, shared
     server.close()
-    behind = _start_on_a_booted_fake(tmp_path, monkeypatch, mode="shared", window_flags=flags,
+    behind = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True, window_flags=flags,
                                      background=True)
     assert behind["status"] == "ok" and behind["background"] is True, behind
     server.close()

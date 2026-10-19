@@ -237,7 +237,7 @@ def test_perform_goes_on_at_once_after_a_run_for_its_bound_interrupted() -> None
                    cap("probe-survey-1")], [cap("probe-vrt-1")], lag=40))
     dbg = cast(Retraces, dstate.STATE.session)
     got = cast(dict[str, Any], server.perform(steps=[
-        {"op": "run_for", "frames": 1, "seconds": 0.3}, {"op": "registers"}], wait=5))
+        {"op": "run_for", "frames": 1, "seconds": 0.3}, {"op": "registers"}], settle_seconds=5))
     assert got["status"] == "ok", got
     assert got["steps_completed"] == 2, got
     assert "BREAK" in dbg.sent and dstate.STATE.retrace_pending is True, dbg.sent

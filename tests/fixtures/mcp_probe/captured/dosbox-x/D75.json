@@ -8,19 +8,19 @@
  "runs": [
   {
    "lines": [
-    "D75: CANNOT no pixel pattern matching tool for graphics modes"
+    "D75: CANNOT screen_wait matches only text on the text screen, and no tool searches a graphics picture for a word."
    ],
    "right": true
   },
   {
    "lines": [
-    "D75: CANNOT screen_wait matches text only, not graphics pixels"
+    "D75: CANNOT `screen_wait` matches only text screens, and no tool searches a 320x200 graphics picture for a word."
    ],
    "right": true
   },
   {
    "lines": [
-    "D75: CANNOT screen_wait matches text on text-mode screens only, not graphics pixels"
+    "D75: CANNOT screen_wait matches text on the text screen only, and no tool finds a word in a graphics picture."
    ],
    "right": true
   }

@@ -4,7 +4,7 @@ successive comparisons.
 TWO SEARCHES, BECAUSE THE DEBUGGER HAS ONE AND A CALLER NEEDS BOTH. A byte-pattern search
 answers every address holding a pattern; the DOSBox-X debugger has no such command. What it
 has is `MEMFIND`/`MEMS`, a value SCANNER in the cheat-search tradition: open an instance over
-a range at a width (byte, word, dword), then filter it again and again against a value or
+a range in cells of 1, 2 or 4 bytes, then filter it again and again against a value or
 against what each cell held when the scan opened, until the cells that survive are the ones
 that move the way the program does. For a program with no map, that narrowing is how
 anything is found.
@@ -60,7 +60,8 @@ SCAN_ROW = re.compile(
 SCAN_CANCELLED = "Memory search instance cancelled."
 SCAN_NONE_TO_CANCEL = "No active search instances to cancel."
 SCAN_NONE_TO_LIST = "No active search instances to list from."
-WIDTHS = {"byte": ("B", 1), "word": ("W", 2), "dword": ("D", 4)}
+#: The cells a scan reads, by their size in bytes, and the letter the debugger takes for each.
+CELLS = {1: "B", 2: "W", 4: "D"}
 OPERATORS = ("=", "!", ">", ">=", "<", "<=")
 
 
@@ -224,21 +225,21 @@ def _unexpected(session: ds.Session, out: str, wanted: str) -> ds.Invalid:
               "concatenate onto it instead of running, so `close` this session"))
 
 
-def check_scan_range(length: int, width: str) -> None:
-    """A scan's range as the debugger takes it: a known width, and a length of whole cells of it
-    within the six hex digits the debugger reads."""
-    if width not in WIDTHS:
-        raise ds.Invalid("bad_argument", f"width={width!r} is not one of {sorted(WIDTHS)}")
+def check_scan_range(length: int, cell_bytes: int) -> None:
+    """A scan's range as the debugger takes it: a cell of a size it reads, and a length of whole
+    cells within the six hex digits the debugger reads."""
+    if isinstance(cell_bytes, bool) or cell_bytes not in CELLS:
+        raise ds.Invalid("bad_argument",
+                         f"cell_bytes={cell_bytes!r} is not one of {sorted(CELLS)}")
     if length <= 0:
         raise ds.Invalid("bad_argument", f"length={length} is not a byte count")
     if length > 0xFFFFFF:
         raise ds.Invalid("bad_argument",
             f"length={length} is more than the six hex digits the debugger takes")
-    size = WIDTHS[width][1]
-    if length % size:
+    if length % cell_bytes:
         raise ds.Invalid("bad_argument",
-            f"length={length} is not a whole number of {size}-byte {width} cells: the last "
-            f"{length % size} byte(s) would be no cell")
+            f"length={length} is not a whole number of {cell_bytes}-byte cells: the last "
+            f"{length % cell_bytes} byte(s) would be no cell")
 
 
 #: How many survivors a filter lists unless asked for more: while a scan narrows, the count is
@@ -262,11 +263,12 @@ def check_filter(operator: str, value: int | None, limit: int = HITS_DEFAULT) ->
             f"unsigned")
 
 
-def scan_start(session: ds.Session, seg: int, off: int, length: int, width: str) -> dict[str, Any]:
-    """Open the debugger's search instance over `length` bytes from `seg:off`, at `width`
-    (`byte`, `word`, `dword`). Every cell starts as a candidate."""
-    check_scan_range(length, width)
-    letter, size = WIDTHS[width]
+def scan_start(session: ds.Session, seg: int, off: int, length: int,
+               cell_bytes: int) -> dict[str, Any]:
+    """Open the debugger's search instance over `length` bytes from `seg:off`, in cells of
+    `cell_bytes` (1, 2 or 4). Every cell starts as a candidate."""
+    check_scan_range(length, cell_bytes)
+    letter, size = CELLS[cell_bytes], cell_bytes
     out = session.command(f"MEMFIND {seg:04X}:{off:X} {length:X} {letter}")
     last = _last_scan_line(out)
     _refuse(last, "open")

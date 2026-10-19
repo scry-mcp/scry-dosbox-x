@@ -22,7 +22,7 @@
  "runs": [
   {
    "lines": [
-    "D67: {\"tool\": \"palette\", \"args\": {\"first\": 0, \"count\": 0, \"dest\": \"/tmp/dac.png\"}}"
+    "D67: {\"tool\": \"palette\", \"args\": {\"dest\": \"/tmp/dac.png\"}}"
    ],
    "right": true
   },

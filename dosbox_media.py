@@ -36,14 +36,14 @@ FRAME_SOURCE = "avi"
 
 def check_series_capture(frames: list[int] | None = None, first: int | None = None,
                          last: int | None = None, step: int = 1, crop: list[int] | None = None,
-                         dest: str = "", source: str | None = None, **_: Any) -> None:
+                         dest: str = "", capture_path: str = "", **_: Any) -> None:
     """`series_capture`'s machine-independent half: the frames, the crop's shape, and the two
     paths absolute, with no `%` (ffmpeg's image2 muxer reads one as a numbering template)."""
     series.frame_list(frames, first, last, step)
     if crop is not None:
         judges.rect("crop", crop)
-    if source:
-        paths.absolute("source", source)
+    if capture_path:
+        paths.absolute("capture_path", capture_path)
     if dest:
         path = paths.absolute("dest", dest)
         if "%" in str(path):
@@ -60,24 +60,24 @@ def select_expression(wanted: list[int]) -> str:
 
 def series_capture(session: ds.Session, scratch: Path, frames: list[int] | None,
                    first: int | None, last: int | None, step: int, crop: list[int] | None,
-                   dest: str, source: str | None) -> dict[str, Any]:
+                   dest: str, capture_path: str) -> dict[str, Any]:
     """The body of the `series_capture` tool."""
-    check_series_capture(frames, first, last, step, crop, dest, source)
+    check_series_capture(frames, first, last, step, crop, dest, capture_path)
     if shutil.which("ffmpeg") is None:
         raise ds.Invalid("host_failed", "a series is extracted from the capture with `ffmpeg`, "
                          "and there is none on PATH")
     wanted = series.frame_list(frames, first, last, step)
     # A FRAME PAST THE END is told by ffmpeg, which reads the file's frames.
-    src = (paths.input_file("source", source, "capture") if source
+    src = (paths.input_file("capture_path", capture_path, "capture") if capture_path
            else Path(str(session.captures()[-1]["path"])))
-    width, height = avi.size("source", src)
+    width, height = avi.size("capture_path", src)
     area = raster.inside(crop, width, height, f"the capture's {width}x{height} frames")
     folder = fresh.directory(paths.fresh_dest("dest", dest) if dest else None,
                              scratch / "series", lambda n: f"series-{n}", "the series")
     with fresh.taken_back(folder):
         _extract(src, folder, wanted, area if crop is not None else None)
         reply = series.write_manifest(folder, "dosbox-x", FRAME_SOURCE, crop, wanted)
-    return {**reply, **series.tail(len(wanted), bool(dest), FRAME_SOURCE), "source": str(src),
+    return {**reply, **series.tail(len(wanted), bool(dest), FRAME_SOURCE), "capture_path": str(src),
             "crop": list(area)}
 
 

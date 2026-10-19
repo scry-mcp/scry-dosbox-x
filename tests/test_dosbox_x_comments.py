@@ -232,8 +232,8 @@ def test_the_two_brooms_leave_comments_and_the_two_lists_show_none() -> None:
     ok(server.watch_add(ref="cnt", mode="show", length=2))
     assert [b["ref"] for b in ok(server.breakpoint_list())["breakpoints"]] == ["emit"]
     assert [w["ref"] for w in ok(server.watch_list())["watches"]] == ["cnt"]
-    ok(server.breakpoint_clear())
-    ok(server.watch_clear())
+    ok(server.breakpoint_clear(all=True))
+    ok(server.watch_clear(all=True))
     assert [c["ref"] for c in ok(server.comment_list())["comments"]] == ["start"]
 
 
@@ -386,7 +386,7 @@ def test_a_running_guest_lists_and_saves_but_add_delete_and_load_refuse(tmp_path
     assert "machine runs" in pm[0]["why"]
     ok(server.comment_save(dest=str(tmp_path / "c.tsv")))
     for got in (server.comment_add(ref="start", text="x"), server.comment_delete(ref="0814:010B"),
-                server.comment_load(source=str(tmp_path / "c.tsv"))):
+                server.comment_load(path=str(tmp_path / "c.tsv"))):
         refused(got, "not_stopped")
     assert fake.asked == []
 
@@ -479,7 +479,7 @@ def test_load_adds_replaces_keeps_and_reports_each(tmp_path: Path) -> None:
     ok(server.comment_add(ref="emit", text="same"))
     ok(server.comment_add(ref="bump", text="only the store"))
     src = _file(tmp_path, ("0824:000B", "new text"), ("emit", "same"), ("cnt", "added"))
-    got = ok(server.comment_load(source=str(src)))
+    got = ok(server.comment_load(path=str(src)))
     assert (got["parsed"], got["added"], got["replaced_total"], got["unchanged"],
             got["comments_total"], got["truncated"]) == (3, 1, 1, 1, 4, False)
     assert [(r["ref"], r["text"]) for r in got["replaced_comments"]] == [("start", "old text")]
@@ -496,7 +496,7 @@ def test_a_file_naming_one_place_twice_loads_both_and_says_a_save_will_refuse_th
     install()
     probe_table()
     src = _file(tmp_path, ("start", "a"), ("0814:010B", "b"), ("emit", "c"))
-    got = ok(server.comment_load(source=str(src)))
+    got = ok(server.comment_load(path=str(src)))
     assert (got["added"], got["comments_total"]) == (3, 3)
     assert "'0814:010B' and 'start'" in got["note"] and "comment_save" in got["note"]
     rows = ok(server.comment_list())["comments"]
@@ -511,7 +511,7 @@ def test_a_file_row_reaches_the_comment_its_ref_spells_before_an_alias_reaches_i
     probe_table()
     ok(server.comment_add(ref="start", text="held"))
     src = _file(tmp_path, ("0824:000B", "alias"), ("start", "held"))
-    got = ok(server.comment_load(source=str(src)))
+    got = ok(server.comment_load(path=str(src)))
     assert (got["added"], got["replaced_total"], got["unchanged"]) == (1, 0, 1)
     held = {c.ref: c.text for c in cast(dec.DeclarationStore, dstate.STATE.store).comments()}
     assert held == {"start": "held", "0824:000B": "alias"}
@@ -525,7 +525,7 @@ def test_a_file_spelling_one_address_twice_loads_nothing_and_names_both_lines(
     src = tmp_path / "in.tsv"
     src.write_text(cf.HEADER + f"\n0814:010B\t\t{STAMP}\ta\n0814:10b\t\t{STAMP}\tb\n",
                    encoding="utf-8")
-    message = refused(server.comment_load(source=str(src)), "bad_argument")
+    message = refused(server.comment_load(path=str(src)), "bad_argument")
     assert f"{src}:3" in message and "line 2" in message
     assert ok(server.comment_list())["comments_total"] == 0
 
@@ -535,7 +535,7 @@ def test_two_file_rows_at_a_held_place_replace_it_once_and_add_the_other(
     probe_table()
     ok(server.comment_add(ref="0814:010B", text="held"))
     src = _file(tmp_path, ("0824:000B", "first"), ("start", "second"))
-    got = ok(server.comment_load(source=str(src)))
+    got = ok(server.comment_load(path=str(src)))
     assert (got["replaced_total"], got["added"]) == (1, 1)
     held = {c.ref: c.text for c in cast(dec.DeclarationStore, dstate.STATE.store).comments()}
     assert held == {"0814:010B": "first", "start": "second"}
@@ -546,10 +546,10 @@ def test_a_file_the_format_refuses_loads_nothing_and_names_the_line(tmp_path: Pa
     src = tmp_path / "bad.tsv"
     src.write_text(cf.HEADER + f"\nstart\t\t{STAMP}\tok\nemit\t:cpu\t{STAMP}\tno\n",
                    encoding="utf-8")
-    assert f"{src}:3" in refused(server.comment_load(source=str(src)), "bad_argument")
+    assert f"{src}:3" in refused(server.comment_load(path=str(src)), "bad_argument")
     lone_cr = tmp_path / "cr.tsv"
     lone_cr.write_bytes(cf.HEADER.encode() + b"\nstart\t\t" + STAMP.encode() + b"\ta\rb\n")
-    assert "carriage return" in refused(server.comment_load(source=str(lone_cr)), "bad_argument")
+    assert "carriage return" in refused(server.comment_load(path=str(lone_cr)), "bad_argument")
     assert ok(server.comment_list())["comments_total"] == 0
 
 
@@ -576,7 +576,7 @@ def test_a_file_row_this_stop_cannot_place_loads_unarmable_and_named(
         install_store()
     else:
         install()
-    got = ok(server.comment_load(source=str(_file(tmp_path, (fine, "fine"), (ref, "past")))))
+    got = ok(server.comment_load(path=str(_file(tmp_path, (fine, "fine"), (ref, "past")))))
     held = dec.canonical_ref(ref, "address")
     assert got["added"] == 2 and held in got["note"]
     rows = _rows_by_ref()
@@ -598,7 +598,7 @@ def test_a_protected_mode_save_loads_at_the_real_mode_park_and_is_placed_back(
     saved, again = tmp_path / "pm.tsv", tmp_path / "again.tsv"
     ok(server.comment_save(dest=str(saved)))
     install()
-    got = ok(server.comment_load(source=str(saved)))
+    got = ok(server.comment_load(path=str(saved)))
     assert got["added"] == 1 and "00A7:45F80" in got["note"]
     assert _rows_by_ref()["00A7:45F80"]["state"] == "unarmable"
     ok(server.comment_save(dest=str(again)))
@@ -618,7 +618,7 @@ def test_a_real_mode_save_loads_at_a_protected_mode_stop_and_is_placed_back(
     ok(server.comment_save(dest=str(saved)))
     dstate.STATE.session = Protected()  # type: ignore[assignment]
     install_store()
-    got = ok(server.comment_load(source=str(saved)))
+    got = ok(server.comment_load(path=str(saved)))
     assert got["added"] == 1 and "0000:0084" in got["note"]
     assert "null selector" in _rows_by_ref()["0000:0084"]["why"]
     dstate.STATE.session = FakeSession()  # type: ignore[assignment]
@@ -632,7 +632,7 @@ def test_a_stale_comment_with_the_files_text_is_brought_to_this_build(tmp_path: 
     store = cast(dec.DeclarationStore, dstate.STATE.store)
     store.apply(adds=[comment("0814:010B", "same", fingerprint="then",
                               conf_fingerprint="then")])
-    got = ok(server.comment_load(source=str(_file(tmp_path, ("0814:010B", "same")))))
+    got = ok(server.comment_load(path=str(_file(tmp_path, ("0814:010B", "same")))))
     assert (got["unchanged"], got["added"], got["replaced_total"]) == (1, 0, 0)
     (row,) = ok(server.comment_list())["comments"]
     assert row["state"] == "resolved" and row["created_at"] == STAMP
@@ -653,7 +653,7 @@ def test_a_stale_row_with_the_files_text_loaded_where_it_waits_is_brought_to_thi
     dstate.STATE.conf_fingerprint = "now"
     store = cast(dec.DeclarationStore, dstate.STATE.store)
     store.apply(adds=[comment(ref, "same", fingerprint="then", conf_fingerprint="then")])
-    got = ok(server.comment_load(source=str(_file(tmp_path, (ref, "same")))))
+    got = ok(server.comment_load(path=str(_file(tmp_path, (ref, "same")))))
     assert (got["unchanged"], got["added"], got["replaced_total"]) == (1, 0, 0)
     dstate.STATE.session = there()  # type: ignore[assignment]
     row = _rows_by_ref()[ref]
@@ -670,7 +670,7 @@ def test_a_file_row_whose_selector_this_stop_does_not_describe_waits_for_one_tha
     monkeypatch.setattr(machine, "read", lambda *_a, **_k: SimpleNamespace(found=tables,
                                                                            notes=[]))
     pr32_machine(tmp_path / "x.log")
-    got = ok(server.comment_load(source=str(_file(
+    got = ok(server.comment_load(path=str(_file(
         tmp_path, ("0097:0010", "nowhere"), ("0097:00010000", "past a paragraph")))))
     assert got["added"] == 2 and "0097:0010" in got["note"]
     rows = _rows_by_ref()
@@ -706,10 +706,10 @@ def test_a_file_loaded_at_the_real_mode_park_is_placed_after_the_protected_mode_
     cast(dec.DeclarationStore, dstate.STATE.store).apply(adds=[comment(
         "00A7:2000", "over another map",
         fingerprint=build_of(conf, other.read_text(encoding="utf-8")))])
-    loaded = ok(server.comment_load(source=str(_file(tmp_path, ("00A7:00045F80", "pm")))))
+    loaded = ok(server.comment_load(path=str(_file(tmp_path, ("00A7:00045F80", "pm")))))
     assert loaded["added"] == 1 and "00A7:45F80" in loaded["note"]
     booted.mode = "Pr32"
-    ok(server.symbols_load(source=str(mapf), base="400000"))
+    ok(server.symbols_load(path=str(mapf), base="400000"))
     rows = _rows_by_ref()
     assert (rows["00A7:45F80"]["state"], rows["00A7:45F80"].get("addr")) == (
         "resolved", "0x00445f80"), rows["00A7:45F80"]
@@ -744,13 +744,13 @@ def test_a_row_placed_before_the_map_in_an_earlier_session_is_stale_over_a_relin
         ok(server.comment_add(ref=ref, text="at the park"))
     else:
         ref, mode = "00A7:62310", "Pr32"
-        ok(server.comment_load(source=str(_file(tmp_path, ("00A7:00062310", "at the park")))))
+        ok(server.comment_load(path=str(_file(tmp_path, ("00A7:00062310", "at the park")))))
     booted.mode = "Pr32"
-    ok(server.symbols_load(source=str(mapf), base="400000"))
+    ok(server.symbols_load(path=str(mapf), base="400000"))
     ok(server.comment_add(ref="00A7:2000", text="after the map"))
     booted = _a_new_session(tmp_path, monkeypatch)
     booted.mode = "Pr32"
-    ok(server.symbols_load(source=str(other if relinked else mapf), base="400000"))
+    ok(server.symbols_load(path=str(other if relinked else mapf), base="400000"))
     after_map = _rows_by_ref()["00A7:2000"]
     booted.mode = mode
     park = _rows_by_ref()[ref]
@@ -768,10 +768,10 @@ def test_a_row_placed_before_the_map_is_placed_over_a_second_map_of_the_same_ses
     other.write_text("00001000 T _start\n0016dd90 T _main\n", encoding="utf-8")
     got, booted = _start_over_a_store(tmp_path, monkeypatch, {}, double=_ParkedInRealMode)
     ok(got)
-    ok(server.comment_load(source=str(_file(tmp_path, ("00A7:00062310", "at the park")))))
+    ok(server.comment_load(path=str(_file(tmp_path, ("00A7:00062310", "at the park")))))
     booted.mode = "Pr32"
-    ok(server.symbols_load(source=str(mapf), base="400000"))
-    ok(server.symbols_load(source=str(other), base="400000"))
+    ok(server.symbols_load(path=str(mapf), base="400000"))
+    ok(server.symbols_load(path=str(other), base="400000"))
     assert _rows_by_ref()["00A7:62310"]["state"] == "resolved"
 
 
@@ -783,11 +783,11 @@ def test_a_row_another_session_left_before_any_map_is_not_taken_into_this_sessio
     mapf.write_text("00001000 T _start\n0016dd80 T _main\n", encoding="utf-8")
     got, booted = _start_over_a_store(tmp_path, monkeypatch, {}, double=_ParkedInRealMode)
     ok(got)
-    ok(server.comment_load(source=str(_file(tmp_path, ("00A7:00062310", "no map here")))))
+    ok(server.comment_load(path=str(_file(tmp_path, ("00A7:00062310", "no map here")))))
     booted = _a_new_session(tmp_path, monkeypatch)
     booted.mode = "Pr32"
     assert _rows_by_ref()["00A7:62310"]["state"] == "resolved"
-    ok(server.symbols_load(source=str(mapf), base="400000"))
+    ok(server.symbols_load(path=str(mapf), base="400000"))
     assert _rows_by_ref()["00A7:62310"]["state"] == "stale"
 
 
@@ -799,14 +799,14 @@ def test_a_store_that_cannot_take_the_maps_build_is_host_failed_and_held_in_memo
     mapf.write_text("00001000 T _start\n0016dd80 T _main\n", encoding="utf-8")
     got, booted = _start_over_a_store(tmp_path, monkeypatch, {}, double=_ParkedInRealMode)
     ok(got)
-    ok(server.comment_load(source=str(_file(tmp_path, ("00A7:00062310", "at the park")))))
+    ok(server.comment_load(path=str(_file(tmp_path, ("00A7:00062310", "at the park")))))
     store = cast(dec.DeclarationStore, dstate.STATE.store)
 
     def fails() -> None:
         raise OSError("read-only")
     monkeypatch.setattr(store, "_persist", fails)
     booted.mode = "Pr32"
-    got = server.symbols_load(source=str(mapf), base="400000")
+    got = server.symbols_load(path=str(mapf), base="400000")
     assert "symbols are loaded" in refused(got, "host_failed") and got["held_in_memory"] is True
     assert dstate.STATE.table
     assert _rows_by_ref()["00A7:62310"]["state"] == "resolved"
@@ -818,13 +818,13 @@ def test_a_park_row_this_stop_cannot_place_leaves_the_map_loaded_and_the_row_as_
     mapf.write_text("00001000 T _start\n0016dd80 T _main\n", encoding="utf-8")
     got, booted = _start_over_a_store(tmp_path, monkeypatch, {}, double=_ParkedInRealMode)
     ok(got)
-    ok(server.comment_load(source=str(_file(tmp_path, ("00A7:00062310", "at the park")))))
+    ok(server.comment_load(path=str(_file(tmp_path, ("00A7:00062310", "at the park")))))
 
     def unreadable(*_: Any) -> dict[str, Any]:
         raise ds.Invalid("unexpected_answer", "a descriptor this stop cannot read")
     monkeypatch.setattr(comments._Places, "where", unreadable)
     booted.mode = "Pr32"
-    ok(server.symbols_load(source=str(mapf), base="400000"))
+    ok(server.symbols_load(path=str(mapf), base="400000"))
     (row,) = cast(dec.DeclarationStore, dstate.STATE.store).comments()
     assert row.fingerprint == dstate.STATE.conf_fingerprint and dstate.STATE.table
 
@@ -840,14 +840,14 @@ def test_save_then_load_into_a_fresh_store_then_save_is_byte_identical(tmp_path:
         ok(server.comment_delete(ref=ref))
     install()
     probe_table()
-    assert ok(server.comment_load(source=str(first)))["added"] == 3
+    assert ok(server.comment_load(path=str(first)))["added"] == 3
     ok(server.comment_save(dest=str(second)))
     assert first.read_bytes() == second.read_bytes()
 
 
 @pytest.mark.parametrize("source", ["in.tsv", "./in.tsv"])
 def test_a_source_that_is_not_absolute_is_refused_without_a_session(source: str) -> None:
-    refused(server.comment_load(source=source), "bad_argument")
+    refused(server.comment_load(path=source), "bad_argument")
 
 
 # ------------------------------------------------------ judged before the session gate
@@ -911,7 +911,7 @@ def test_each_description_names_every_key_its_replies_carry(tmp_path: Path) -> N
     replies["comment_save"].append(ok(server.comment_save(dest=str(dest))))
     replies["comment_delete"].append(ok(server.comment_delete(ref="nowhere")))
     src = _file(tmp_path, ("start", "c"), ("emit", "d"))
-    replies["comment_load"].append(ok(server.comment_load(source=str(src))))
+    replies["comment_load"].append(ok(server.comment_load(path=str(src))))
     envelope = {"summary", "status", "session"}
     rows: set[str] = set()
     for tool, got in replies.items():
@@ -950,7 +950,7 @@ def test_each_reply_opens_with_its_one_line(tmp_path: Path) -> None:
         f"comment_save: 2 comments to {dest}"
     assert ok(server.comment_delete(ref="start"))["summary"] == \
         "comment_delete start: 0x0000824b deleted"
-    assert ok(server.comment_load(source=str(dest)))["summary"] == \
+    assert ok(server.comment_load(path=str(dest)))["summary"] == \
         "comment_load: 2 read, 1 added, 0 replaced"
 
 
@@ -968,7 +968,7 @@ def test_save_refuses_two_comments_at_one_place_and_writes_nothing(tmp_path: Pat
     ok(server.comment_save(dest=str(dest)))
     install()
     probe_table()
-    assert ok(server.comment_load(source=str(dest)))["added"] == 1
+    assert ok(server.comment_load(path=str(dest)))["added"] == 1
 
 
 def test_a_temporary_the_host_refuses_is_host_failed_and_leaves_nothing(
@@ -1050,10 +1050,10 @@ def test_a_file_saved_before_symbols_load_loads_after_it(tmp_path: Path) -> None
     dest = tmp_path / "c.tsv"
     assert ok(server.comment_save(dest=str(dest)))["comments_total"] == 2
     probe_table()
-    assert ok(server.comment_load(source=str(dest)))["unchanged"] == 2
+    assert ok(server.comment_load(path=str(dest)))["unchanged"] == 2
     install()
     probe_table()
-    got = ok(server.comment_load(source=str(dest)))
+    got = ok(server.comment_load(path=str(dest)))
     assert (got["added"], got["comments_total"]) == (2, 2)
 
 
@@ -1072,7 +1072,7 @@ def test_a_file_saved_on_a_running_protected_mode_guest_loads_at_the_next_stop(
     dstate.STATE.session = Protected()  # type: ignore[assignment]
     install_store()
     probe_table([("pmsym", 0x401000 - PROBE_BASE)])
-    got = ok(server.comment_load(source=str(dest)))
+    got = ok(server.comment_load(path=str(dest)))
     assert (got["added"], got["comments_total"]) == (2, 2)
     assert "'00A7:1000' and 'pmsym'" in got["note"]
 
@@ -1117,7 +1117,7 @@ def test_a_load_that_changes_nothing_writes_nothing(tmp_path: Path,
     empty = tmp_path / "empty.tsv"
     empty.write_text(cf.HEADER + "\n", encoding="utf-8")
     for src in (empty, _file(tmp_path, ("start", "entry"))):
-        got = ok(server.comment_load(source=str(src)))
+        got = ok(server.comment_load(path=str(src)))
         assert got["added"] + got["replaced_total"] == 0
     assert writes == []
 
@@ -1132,6 +1132,6 @@ def test_a_held_address_in_another_spelling_is_reached_by_its_own_ref(tmp_path: 
     store.apply(adds=[comment("38:B8000", "short")])
     got = ok(server.comment_add(ref="0038:000B8000", text="full"))
     assert [r["text"] for r in got["replaced_comments"]] == ["short"]
-    loaded = ok(server.comment_load(source=str(_file(tmp_path, ("0038:B8000", "file")))))
+    loaded = ok(server.comment_load(path=str(_file(tmp_path, ("0038:B8000", "file")))))
     assert (loaded["replaced_total"], loaded["added"]) == (1, 0)
     assert [(c.ref, c.text) for c in store.comments()] == [("38:B8000", "file")]

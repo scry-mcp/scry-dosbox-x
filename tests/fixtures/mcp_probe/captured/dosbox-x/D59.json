@@ -16,9 +16,9 @@
  "runs": [
   {
    "lines": [
-    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20, \"e9\": \"lines:5\", \"e9_filter\": \"^TICK\"}}"
+    "D59: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 12, \"seconds\": 20}, {\"op\": \"log\", \"channel\": \"guest\", \"pattern\": \"^TICK\", \"limit\": 5}]}}"
    ],
-   "right": true
+   "right": false
   },
   {
    "lines": [

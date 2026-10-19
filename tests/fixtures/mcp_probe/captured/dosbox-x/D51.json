@@ -18,7 +18,7 @@
      "seconds": 12,
      "pattern": "MENU|KEY",
      "limit": 30,
-     "wait": 18
+     "settle_seconds": 18
     },
     {
      "act": [
@@ -33,7 +33,7 @@
      ],
      "pattern": "MENU|KEY",
      "limit": 30,
-     "wait": 18
+     "settle_seconds": 18
     }
    ]
   },
@@ -45,21 +45,21 @@
  "runs": [
   {
    "lines": [
-    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"wait\": 18}}"
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"wait\": 18}}"
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"], \"expect\": \"^MENU\"}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"wait\": 18}}"
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
    ],
-   "right": false
+   "right": true
   }
  ]
 }

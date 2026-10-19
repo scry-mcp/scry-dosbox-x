@@ -8,19 +8,19 @@
  "runs": [
   {
    "lines": [
-    "D60: CANNOT run until absolute frame counter (run_for only supports relative frames)"
+    "D60: CANNOT The DOS machine keeps no frame counter the server can read, and run_for counts retraces only from where the call starts."
    ],
    "right": true
   },
   {
    "lines": [
-    "D60: CANNOT run_for only supports relative frame counts from the current position, not absolute frame counter targets"
+    "D60: CANNOT A DOS machine keeps no frame counter, and `run_for` counts frames only from where the call starts."
    ],
    "right": true
   },
   {
    "lines": [
-    "D60: CANNOT no conditional breakpoint on frame counter value"
+    "D60: CANNOT DOS keeps no absolute frame counter, run_for counts retraces from the call's start, and no tool reads an absolute frame count."
    ],
    "right": true
   }

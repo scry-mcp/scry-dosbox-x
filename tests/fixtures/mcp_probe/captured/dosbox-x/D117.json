@@ -12,7 +12,7 @@
  "runs": [
   {
    "lines": [
-    "D117: {\"tool\":\"golden_check\",\"args\":{\"dir\":\"/tmp/shots\",\"checksums\":\"/tmp/shots.sha256\",\"limit\":5}}"
+    "D117: {\"tool\": \"golden_check\", \"args\": {\"dir\": \"/tmp/shots\", \"checksums\": \"/tmp/shots.sha256\", \"limit\": 5}}"
    ],
    "right": true
   },

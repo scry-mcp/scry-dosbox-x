@@ -276,11 +276,11 @@ def accept_input(listener: socket.socket, seconds: float,
 
 # WHAT A NAMED ARGUMENT OWNS, so `flags` cannot retune it: the options this server passes,
 # and the `-set` keys it derives from an argument, each with the argument that sets it.
-OWNED_OPTIONS = {"-conf": "conf", "-time-limit": "seconds", "-break-start": "start",
+OWNED_OPTIONS = {"-conf": "conf", "-time-limit": "session_seconds", "-break-start": "start",
                  "-savedir": "state_dir", "-c": "program"}
 
 
-OWNED_SETS = {"sdl videodriver": "mode", "dos break on int3": "break_on_int3",
+OWNED_SETS = {"sdl videodriver": "shared", "dos break on int3": "break_on_int3",
               "log logfile": "logfile", "serial serial1": "input_port",
               "cpu integration device": "input_port", "dosbox captures": "captures_dir"}
 

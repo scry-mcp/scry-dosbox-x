@@ -186,7 +186,7 @@ def test_a_class_on_the_pointer_type_is_the_siblings_and_changes_nothing_here(
     fake = _pointing(tmp_path)
     plain = server.watch_add(ref="_g_engine->sync_delta", mode="show")
     assert plain["status"] == "ok", plain
-    server.watch_clear()
+    server.watch_clear(all=True)
     dstate.STATE.symbol_types.update(
         {"_G_ENGINE": "ptr32@DATA{rate:u32,sync_delta:i16,flags:u8}"})
     typed = server.watch_add(ref="_g_engine->sync_delta", mode="show")

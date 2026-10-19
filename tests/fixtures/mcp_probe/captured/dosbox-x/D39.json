@@ -30,6 +30,18 @@
     "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
    ],
    "right": true
+  },
+  {
+   "lines": [
+    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+   ],
+   "right": true
   }
  ]
 }

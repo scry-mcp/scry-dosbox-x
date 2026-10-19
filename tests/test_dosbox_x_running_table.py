@@ -182,16 +182,17 @@ def _args(tmp_path: Path) -> dict[str, dict[str, Any]]:
         "trace": {"instructions": 1, "dest": str(tmp_path / "t.log")}, "screen_wait": {"text": "A"},
         "state_save": {"name": "boot"}, "state_load": {"name": "boot"}, "snapshot": {},
         "state_list": {}, "breakpoint_interrupt": {"number": 0x21},
-        "symbols_load": {"source": str(source)}, "symbols_find": {"name": "x"},
+        "symbols_load": {"path": str(source)}, "symbols_find": {"name": "x"},
         "machine_map": {}, "interrupt_vectors": {}, "palette": {}, "screen_view": {},
         "screen_signature": {}, "breakpoint_at": {"ref": "0000:0400"}, "breakpoint_list": {},
-        "breakpoint_clear": {}, "watch_add": {"ref": "0000:0400", "mode": "change", "length": 2},
-        "watch_list": {}, "watch_clear": {}, "send_keys": {"keys": ["a"]},
+        "breakpoint_clear": {"all": True},
+        "watch_add": {"ref": "0000:0400", "mode": "change", "length": 2},
+        "watch_list": {}, "watch_clear": {"all": True}, "send_keys": {"keys": ["a"]},
         "send_mouse": {"button": "left"}, "captures": {},
-        "capture_frame": {"at": 0, "dest": str(tmp_path / "f.png")},
+        "capture_frame": {"frame": 0, "dest": str(tmp_path / "f.png")},
         "comment_add": {"ref": "0000:0400", "text": "x"}, "comment_list": {},
         "comment_delete": {"ref": "0000:0400"}, "comment_save": {"dest": str(tmp_path / "c.tsv")},
-        "comment_load": {"source": str(tmp_path / "c.tsv")},
+        "comment_load": {"path": str(tmp_path / "c.tsv")},
         "series_capture": {"frames": [0]},
         "image_diff": {"a": "/nonexistent/a.png", "b": "/nonexistent/b.png"},
         "series_diff": {"a": "/nonexistent/a.json", "b": "/nonexistent/b.json"},
@@ -290,7 +291,7 @@ def test_a_declaration_after_a_release_answers_pending(tmp_path: Path) -> None:
 
     fake.resume = _resume  # type: ignore[method-assign]
     got = server.perform(steps=[{"op": "resume"}, {"op": "breakpoint_at", "ref": "0000:0400"}],
-                         wait=0)
+                         settle_seconds=0)
     assert got["status"] == "ok", got
     reply = got["ran"][1]["reply"]
     assert reply["state"] == "pending" and reply["armed"] is False, reply
@@ -312,7 +313,7 @@ def test_the_last_stops_registers_answer_in_a_list_without_waiting_for_a_stop(
 
     fake.resume = _resume  # type: ignore[method-assign]
     got = server.perform(steps=[{"op": "resume"},
-                                {"op": "registers", "from_last_stop": True}], wait=0)
+                                {"op": "registers", "from_last_stop": True}], settle_seconds=0)
     assert got["status"] == "ok" and got["ran"][1]["reply"]["regs"], got
     assert fake.running
 
@@ -384,7 +385,7 @@ def test_a_queued_declaration_is_not_a_stopper_the_tail_waits_for(tmp_path: Path
     fake.where_raises = True
     began = time.monotonic()
     got = server.perform(steps=[{"op": "resume"}, {"op": "breakpoint_at", "ref": "0000:0400"}],
-                         wait=3)
+                         settle_seconds=3)
     assert time.monotonic() - began < 2.0, got
     assert got.get("still_running") is True and "nothing declared" in got["note"], got
 
@@ -427,7 +428,7 @@ def test_clearing_one_family_keeps_the_queued_arm_of_the_other_at_the_same_ref(
     assert c["status"] == "ok" and c["declarations_cleared"] == 1, c
     assert dstate.STATE.pending["arm"] == ["0814:0100"], dstate.STATE.pending
     gone = server.watch_clear if cleared == "breakpoint" else server.breakpoint_clear
-    gone(ref="")                     # the other family cleared too: nothing left to arm
+    gone(all=True)                   # the other family cleared too: nothing left to arm
     assert dstate.STATE.pending["arm"] == [], dstate.STATE.pending
 
 

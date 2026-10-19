@@ -23,7 +23,7 @@
   },
   {
    "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"seconds\": 50, \"control\": \"_vsync\", \"e9\": \"lines:6\"}}"
+    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50, \"e9\": \"lines:6\"}}"
    ],
    "right": true
   },

@@ -111,16 +111,17 @@ def boot(run: Run) -> dict[str, Any]:
     (run.dir / "bricks-e9.log").unlink(missing_ok=True)
     states = run.dir / "bricks-states"
     shutil.rmtree(states, ignore_errors=True)
-    # `mode` "shared" is the server's windowed mode; the demo's own --shared only decides
-    # where the window goes.
-    return {"conf": HERE / "bricks.conf", "cwd": HERE, "seconds": 900, "mode": "shared",
+    # `shared` is the server's windowed session; the demo's own --shared only decides where the
+    # window goes.
+    return {"conf": HERE / "bricks.conf", "cwd": HERE, "session_seconds": 900, "shared": True,
             "window_flags": placement(bool(run.options.get("shared")))[0],
             "break_on_int3": True, "logfile": run.dir / "bricks-e9.log",
             "state_dir": states}
 
 
 def started(reply: Reply, run: Run) -> str:
-    return f"{reply['mode']} DOSBox-X, parked at the debugger before DOS boots"
+    watched = "shared" if reply["shared"] else "headless"
+    return f"{watched} DOSBox-X, parked at the debugger before DOS boots"
 
 
 def at_ready(reply: Reply, run: Run) -> str:
@@ -132,7 +133,7 @@ def at_ready(reply: Reply, run: Run) -> str:
 def symbols(run: Run) -> dict[str, Any]:
     """The table is offsets from the program's segment, so its base is that segment * 16."""
     cs = int(str(run.replies["ready"]["pc"]).split(":")[0], 16)
-    return {"source": HERE / "bricks.sym", "base": f"{cs * 16:x}"}
+    return {"path": HERE / "bricks.sym", "base": f"{cs * 16:x}"}
 
 
 def loaded(reply: Reply, run: Run) -> str:
@@ -260,7 +261,7 @@ STEPS = [
          at_brick(*SECOND_BRICK, FIRST_POINTS, "second")),
     Step("score", "read_memory", {"ref": "score", "length": 2}, score_is(FIRST_POINTS)),
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png"}, pictured),
-    Step("unbreak", "breakpoint_clear", {}, lambda reply, run: "breakpoint cleared"),
+    Step("unbreak", "breakpoint_clear", {"all": True}, lambda reply, run: "breakpoint cleared"),
     Step("frames", "run_for", {"frames": 3, "seconds": WAIT_S}, frames,
          volatile={key: "a retrace stop lands at any instruction of the game's retrace poll"
                    for key in ("summary", "regs", "instruction", "pc",
@@ -303,7 +304,7 @@ STEPS = [
     Step("play on", "resume", {}, lambda reply, run: "the game runs"),
     Step("serve", "send_keys", {"keys": ["space"], "expect": "SERVE$", "seconds": 10},
          seen("SPACE served the ball that was waiting on the paddle"), volatile=INPUT_TIMING),
-    Step("unwatch", "watch_clear", {}, lambda reply, run: "watch cleared"),
+    Step("unwatch", "watch_clear", {"all": True}, lambda reply, run: "watch cleared"),
     Step("close", "close", {}, lambda reply, run: f"closed: {reply['ended_by']}"),
 ]
 

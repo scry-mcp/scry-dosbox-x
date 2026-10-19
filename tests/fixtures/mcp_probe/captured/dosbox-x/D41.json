@@ -2,24 +2,27 @@
  "task": {
   "id": "D41",
   "prompt": "Clear every watch declaration.",
-  "tool": "watch_clear"
+  "tool": "watch_clear",
+  "args": {
+   "all": true
+  }
  },
  "runs": [
   {
    "lines": [
-    "D41: {\"tool\": \"watch_clear\", \"args\": {}}"
+    "D41: {\"tool\": \"watch_clear\", \"args\": {\"all\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D41: {\"tool\": \"watch_clear\", \"args\": {}}"
+    "D41: {\"tool\": \"watch_clear\", \"args\": {\"all\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D41: {\"tool\": \"watch_clear\", \"args\": {}}"
+    "D41: {\"tool\": \"watch_clear\", \"args\": {\"all\": true}}"
    ],
    "right": true
   }

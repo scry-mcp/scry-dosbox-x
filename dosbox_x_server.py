@@ -85,7 +85,7 @@ from mcp.server.mcpserver import Context
 # depends on -- the same silent-wrong-import hazard, installed by the fix for it.
 sys.path.append(str(Path(__file__).resolve().parent))
 
-from scry_core import fresh, media_tools, narrowing, recording, screen_map  # noqa: E402
+from scry_core import fresh, judges, media_tools, narrowing, recording, screen_map  # noqa: E402
 from scry_core import strict_arguments as strict  # noqa: E402
 from scry_core.progress import bridge  # noqa: E402
 
@@ -179,48 +179,47 @@ def build_check(binary: str = "") -> dict[str, Any]:
 # ---------------------------------------------------------- session: start, status, close
 
 @tool("Start a DOSBox-X session", summary=one_line.start, on_cancel="kill")
-def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
+def start(conf: str, cwd: str, session_seconds: int, shared: bool = False,
           window_flags: list[str] | None = None, flags: list[str] | None = None,
-          break_on_int3: bool = False, program: str | None = None,
-          logfile: str | None = None, capture_video: bool = False,
-          captures_dir: str | None = None,
-          plan: list[dict[str, Any]] | None = None,
-          plan_wait: float = 30.0, input_port: int | None = None,
-          state_dir: str | None = None, binary: str = "", background: bool | None = None,
+          break_on_int3: bool = False, program: str = "", logfile: str = "",
+          capture_video: bool = False, captures_dir: str = "",
+          plan: list[dict[str, Any]] | None = None, settle_seconds: float = 30.0,
+          input_port: int = 0, state_dir: str = "", binary: str = "",
+          background: bool | None = None,
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Open ONE live DOSBox-X session from your conf, parked at the debugger, stopped and
     ready. Refuses while a session is live.
 
     Every path is absolute or `~`-led: `cwd`, the emulator's working directory, there;
     `conf`; `logfile`, its directory there; `captures_dir` and `state_dir`, created with their
-    parents. `seconds`: a REQUIRED hard bound, at most 4 hours; `close` is the act. `mode`:
-    `headless` (no window) or `shared` (watched; `window_flags` places the window).
+    parents. `session_seconds`: the session's REQUIRED lifetime, at most 4 hours; `close` is the
+    act. `shared`: watched, in a window `window_flags` places; false, headless.
     `window_flags` and `flags` (the emulator's own options, after this server's defaults) are
     argv tokens, a `-set` value ONE token with its spaces: `["-set", "sdl display=1"]`.
     `break_on_int3`: the guest's `int 3` stops at the debugger. `logfile`: the guest's E9
     channel, without which `log`, `log_wait`, `expect` and `drive` have none. `program` runs
     with `-c` AFTER the conf's autoexec (which must not `exit`); `capture_video` records it.
-    `plan`: operations run on the fresh session with `perform`'s rules, `plan_wait` bounding
-    each wait. `input_port`: COM1's TCP port for the input (free when omitted); the conf's
+    `plan`: operations run on the fresh session with `perform`'s rules, `settle_seconds`
+    bounding each wait. `input_port`: COM1's TCP port for the input (`0`: a free one); the conf's
     autoexec runs the reply's `stub` first, or `program` loads it. `state_dir`: what
     `state_save` writes to (`save` under `cwd`). `binary`: the build to run; omitted,
     `DOSBOX_X_BINARY`, else the PATH's `dosbox-x`. `background`: `true` behind, your focus
-    kept; `false` in front; omitted, by `mode`.
+    kept; `false` in front; omitted, by `shared`.
 
-    Reply: `mode`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `stub`,
+    Reply: `shared`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `stub`,
     `input_port`, `background`, and `rearm_refused` (why) when stored raw breakpoints could
     not be re-armed; with `plan`, the sequence account, the start facts under `start`.
 
     Refused before anything starts: a path not absolute, an unresolved binary, a missing
-    conf, `cwd` or `logfile` directory, `seconds` out of range, `shared` without
-    `window_flags` or `headless` with them, a glued or shredded `-set`, `capture_video`
+    conf, `cwd` or `logfile` directory, `session_seconds` out of range, `shared` without
+    `window_flags` or headless with them, a glued or shredded `-set`, `capture_video`
     without `program`, an `input_port` outside 1024-65535 or busy.
 
     Reference: REFERENCE.md, The session.
     """
-    return lifecycle.start(conf, cwd, seconds, mode, window_flags, flags, break_on_int3,
-                           program, logfile, capture_video, captures_dir, plan,
-                           plan_wait, input_port, state_dir, binary, background,
+    return lifecycle.start(conf, cwd, session_seconds, shared, window_flags, flags,
+                           break_on_int3, program, logfile, capture_video, captures_dir, plan,
+                           settle_seconds, input_port, state_dir, binary, background,
                            bridge(ctx), _step_ops)
 
 
@@ -514,35 +513,35 @@ def find(data_hex: str, ref: str, length: int) -> dict[str, Any]:
 
 
 @tool("Open a value scan", summary=one_line.scan_start, replay="drop")
-def scan_start(ref: str, length: int, width: str = "byte") -> dict[str, Any]:
-    """Open the debugger's value scanner (`MEMFIND`) over `length` bytes from `ref`, at
-    `width` (`byte`, `word` or `dword`, little-endian cells): every cell is a candidate
+def scan_start(ref: str, length: int, cell_bytes: int = 1) -> dict[str, Any]:
+    """Open the debugger's value scanner (`MEMFIND`) over `length` bytes from `ref`, in cells
+    of `cell_bytes` (1, 2 or 4, little-endian): every cell is a candidate
     until `scan_filter` narrows them. The debugger holds ONE scan at a time, so a scan
     already open is refused in its words: `scan_clear` it, or keep filtering it.
 
     This is the cheat-search loop for a program with no map: open the scan, play, filter
     by what the value must have done (`=` a known value, `!` with no value for "changed
     since the scan opened"), until the survivors are the cells that move the way the
-    program does. `length` is a whole number of cells of `width`.
+    program does. `length` is a whole number of cells.
     Needs the machine stopped. Reply: `seg_off`, `length`, `cell_bytes`, `addr` (the linear
     address the scan opened at), `hits_total` (every cell is a candidate).
     """
     session = live()
     ds.console_listening(session, "a search")
     seg, off = placement.read_target(ref, "DS", session)
-    return st.reply(ref=ref, **finder.scan_start(session, seg, off, length, width))
+    return st.reply(ref=ref, **finder.scan_start(session, seg, off, length, cell_bytes))
 
 
 @tool("Filter the value scan", summary=one_line.scan_filter, replay="drop")
-def scan_filter(operator: str = "=", value: int | None = None,
+def scan_filter(operator: str = "=", value: judges.NumberArg | None = None,
                 limit: int = finder.HITS_DEFAULT) -> dict[str, Any]:
     """Keep the scan's cells whose current content satisfies `operator` (`=`, `!`, `>`,
     `>=`, `<`, `<=`) against `value`; with no `value`, against what each cell held when
     `scan_start` opened the scan: `!` alone keeps the cells that CHANGED since then, `=`
     alone those that did not, `>` alone those that grew. The debugger's `MEMS`.
 
-    A `value` wider than the cell of a scan `scan_start` opened is refused before `MEMS` is
-    typed.
+    `value` is an integer or a `0x` hex string; one wider than the cell of a scan
+    `scan_start` opened is refused before `MEMS` is typed.
     Needs the machine stopped and a scan open. Reply: `operator`, `value`,
     `iterations` (the filters so far, this one included; on the closing reply the server's
     own count, unavailable for a scan `debug` touched), `closed` (a
@@ -560,7 +559,8 @@ def scan_filter(operator: str = "=", value: int | None = None,
     """
     session = live()
     ds.console_listening(session, "a search")
-    return st.reply(**finder.scan_filter(session, operator, value, limit))
+    number = None if value is None else checks.number("value", value)
+    return st.reply(**finder.scan_filter(session, operator, number, limit))
 
 
 @tool("Close the value scan", summary=one_line.scan_clear, replay="drop")
@@ -605,11 +605,11 @@ def debug(command: str) -> dict[str, Any]:
 
 
 @tool("Force a register", summary=one_line.set_register)
-def set_register(name: str, value: int) -> dict[str, Any]:
+def set_register(name: str, value: judges.NumberArg) -> dict[str, Any]:
     """Write one register, READ IT BACK off the pane, and mark the session `altered` for
-    good: every later reading is of a forced state, and the flag on every reply is how a
-    reader three questions later knows. `name` is a register the debugger's `SR` takes
-    (`eax`, `ax`, `ip`, ...); `value` is an integer within the register's width, refused
+    good: every later reading is of a forced state, and the flag on every reply is how a reader
+    three questions later knows. `name` is a register the debugger's `SR` takes (`eax`, `ax`,
+    `ip`, ...); `value` is an integer or a `0x` hex string within the register's width, refused
     before anything is sent when negative or wider. Needs the machine stopped.
 
     Reply: `regs` (the pane after the write), `value` (what was sent), `readback` (the
@@ -619,8 +619,9 @@ def set_register(name: str, value: int) -> dict[str, Any]:
     equals what was sent; false is not always a failure: a register the debugger masks is
     doing its job). INVALID when no pane, or a pane without that register, came back to read.
     """
-    out = live().set_register(name, value)
-    return st.answer({"value": value, **out})
+    number = checks.number("value", value)
+    out = live().set_register(name, number)
+    return st.answer({"value": number, **out})
 
 
 @tool("Write memory", summary=one_line.write)
@@ -650,14 +651,14 @@ def write(ref: str, data_hex: str) -> dict[str, Any]:
 
 @tool("Resume the machine", summary=one_line.resume, on_cancel="none", replay="wall")
 def resume(e9: str = "none", e9_filter: str = ".",
-           e9_stamp: str | None = None, seconds: float = 0.0, detail: bool = False,
+           e9_stamp: str = "", seconds: float = 0.0, detail: bool = False,
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Let the machine run (F5, sent once). With `seconds` at zero (the default) it comes back
     at once, no verdict; with a bound it waits up to `seconds` for a stop, listening for the
     debugger's prompt as `run_to` does and reporting its progress: `verdict` `OTHER_STOP` with
     the full stop when one lands, or `TIMEOUT` with `waited_s` and a `note`, LEAVING IT RUNNING
-    (unlike `run_to`, which interrupts at its bound; `seconds` is not held to `run_to`'s
-    ceiling). Needs the machine stopped: a guest already running is refused `not_stopped`,
+    (unlike `run_to`, which interrupts at its bound); `seconds` is 0 or a bound up to
+    {WAIT_MAX_S}. Needs the machine stopped: a guest already running is refused `not_stopped`,
     since an F5 there does nothing and an `ok` would read like a release.
 
     Nothing has to be declared first: `stop` brings a running guest back, headless or windowed.
@@ -671,7 +672,7 @@ def resume(e9: str = "none", e9_filter: str = ".",
 
     Reference: REFERENCE.md, Advancing the machine.
     """
-    return advance.resume(e9, e9_filter, e9_stamp, seconds, detail, bridge(ctx))
+    return advance.resume(e9, e9_filter, e9_stamp or None, seconds, detail, bridge(ctx))
 
 
 @tool("Stop the running machine", summary=one_line.stop, on_cancel="stop", replay="wall")
@@ -717,7 +718,7 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
 @tool("Step instructions", summary=one_line.step)
 def step(count: int = 1, mode: str = "into",
          e9: str = "none", e9_filter: str = ".",
-         e9_stamp: str | None = None) -> dict[str, Any]:
+         e9_stamp: str = "") -> dict[str, Any]:
     """`count` instructions, one at a time, `mode` `into` (F11, the default) or
     `over` (F10), each step READ BACK. Needs the machine stopped.
 
@@ -739,13 +740,13 @@ def step(count: int = 1, mode: str = "into",
     # A step that STOPPED carries the full stop reply; one that ran away (a CALL that never
     # returned) left the machine running, which `session.running` says, and a running machine
     # has nothing to read.
-    return running.stop_or_base(session, not ran_away, e9, e9_filter, e9_stamp, out)
+    return running.stop_or_base(session, not ran_away, e9, e9_filter, e9_stamp or None, out)
 
 
 @tool("Run to a place", summary=one_line.run_to, on_cancel="stop")
 def run_to(ref: str, control: str, seconds: float = 30.0,
            e9: str = "none", e9_filter: str = ".",
-           e9_stamp: str | None = None,
+           e9_stamp: str = "",
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run until a SYMBOL or a `SEG:OFF`, and say where it really stopped. Reports its
     progress while it waits.
@@ -774,12 +775,12 @@ def run_to(ref: str, control: str, seconds: float = 30.0,
 
     Reference: REFERENCE.md, Advancing the machine.
     """
-    return advance.run_to(ref, control, seconds, e9, e9_filter, e9_stamp, bridge(ctx))
+    return advance.run_to(ref, control, seconds, e9, e9_filter, e9_stamp or None, bridge(ctx))
 
 
 @tool("Run for frames or emulated time", summary=one_line.run_for, on_cancel="stop")
 def run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
-            e9: str = "none", e9_filter: str = ".", e9_stamp: str | None = None,
+            e9: str = "none", e9_filter: str = ".", e9_stamp: str = "",
             ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run the machine for `frames` frames of the display, one vertical retrace each (the
     debugger's `VRT`), or for `milliseconds` of its emulated time, and come back STOPPED with
@@ -809,7 +810,7 @@ def run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
     session = live()
     ds.console_listening(session, "a `VRT`")
     return retrace.run_for(session, frames, milliseconds, seconds, bridge(ctx), e9, e9_filter,
-                           e9_stamp)
+                           e9_stamp or None)
 
 
 @tool("Trace instructions to a file", summary=one_line.trace, on_cancel="stop")
@@ -983,9 +984,9 @@ def breakpoint_interrupt(number: int, ah: int | None = None,
 # --------------------------------------------------------------- names for addresses
 
 @tool("Load a symbol table", summary=one_line.symbols_load)
-def symbols_load(source: str, base: str | None = None, base_from: str = "CS",
-                 pattern: str | None = None, keep_noise: bool = False,
-                 section_bases: dict[str, str] | None = None, types: str | None = None,
+def symbols_load(path: str, base: str = "", base_from: str = "CS",
+                 pattern: str = "", keep_noise: bool = False,
+                 section_bases: dict[str, str] | None = None, types: str = "",
                  ) -> dict[str, Any]:
     """Load a toolchain's TEXT symbol list into the debugger and the server, so every other tool
     takes NAMES. Wants the machine stopped INSIDE the program whose symbols these are (a breakpoint
@@ -993,7 +994,7 @@ def symbols_load(source: str, base: str | None = None, base_from: str = "CS",
     while the guest RUNS: the table answers at once and the debugger's list loads at the next stop
     (`pending: true`).
 
-    Arguments: `source`, a file (an absolute path): `nm` output, a GNU `ld` map, a
+    Arguments: `path`, a file (an absolute path): `nm` output, a GNU `ld` map, a
     Borland TLINK/TASM map, or an Open Watcom map. A FLAT list (`nm`, GNU, real-mode Borland) takes
     `base`: measured by default off the selector named by `base_from` (default `CS`, right under
     DPMI), REQUIRED in real mode as HEX TEXT, `load_segment * 16` (segment 0x0800 is `"8000"`).
@@ -1020,20 +1021,20 @@ def symbols_load(source: str, base: str | None = None, base_from: str = "CS",
     Reference: REFERENCE.md, Names for addresses.
     """
     session = live()
-    src = paths.input_file("source", source, "symbol file")
-    typed = placement.read_types(types) if types is not None else {}
-    return placement.load(session, source, src,
-                          None if base is None else placement.hex_arg("base", base),
-                          base_from, pattern, keep_noise,
+    src = paths.input_file("path", path, "symbol file")
+    typed = placement.read_types(types) if types else {}
+    return placement.load(session, path, src,
+                          placement.hex_arg("base", base) if base else None,
+                          base_from, pattern or None, keep_noise,
                           None if section_bases is None else placement.hex_bases(section_bases),
                           rearm_declarations=arming.rearm_declarations,
                           take_the_map=comments.park_rows_take_the_map, types=typed)
 
 
 @tool("Find a symbol", summary=one_line.symbols_find, read_only=True)
-def symbols_find(name: str | None = None, offset: int | None = None,
+def symbols_find(name: str = "", offset: int | None = None,
                  section: int | None = None,
-                 linear: str | None = None, limit: int = 10) -> dict[str, Any]:
+                 linear: str = "", limit: int = 10) -> dict[str, Any]:
     """Look a symbol up in the FULL table `symbols_load` parsed (untruncated names).
 
     `name`: exact match, else prefix matches, up to `limit` (`truncated` says if it
@@ -1053,7 +1054,7 @@ def symbols_find(name: str | None = None, offset: int | None = None,
     # inside `live()`: without the call a table would outlive the program it was measured on,
     # and answer `ok` with a linear address for a process that is gone.
     live()
-    return placement.find(name, offset, section, linear, limit)
+    return placement.find(name or None, offset, section, linear or None, limit)
 
 
 # ------------------------------------------------------------------------------- comments
@@ -1135,8 +1136,8 @@ def comment_save(dest: str) -> dict[str, Any]:
 
 
 @tool("Load comments from a file", summary=one_line.comment_load, replay="drop")
-def comment_load(source: str) -> dict[str, Any]:
-    """Read a comment file (an absolute `source`) into this conf's comments, all or nothing: the
+def comment_load(path: str) -> dict[str, Any]:
+    """Read a comment file (an absolute `path`) into this conf's comments, all or nothing: the
     file is parsed and every row placed first, and a row the format refuses or one address in
     two spellings refuses the whole file (`bad_argument`). Then the file wins: a place the store
     does not comment is added, one with another text replaced, one with the same text unchanged
@@ -1152,7 +1153,7 @@ def comment_load(source: str) -> dict[str, Any]:
 
     Reference: REFERENCE.md, Declarations.
     """
-    return comments.comment_load(live(), source)
+    return comments.comment_load(live(), path)
 
 
 # ---------------------------------------------------------------------- the DOS machine
@@ -1247,13 +1248,15 @@ def interrupt_vectors(number: int | None = None) -> dict[str, Any]:
 # ------------------------------------------------------------------------ the screen
 
 @tool("Read the palette", summary=one_line.palette, replay="drop")
-def palette(first: int = 0, count: int = 0, scale: int = 0, dest: str = "") -> dict[str, Any]:
+def palette(first: judges.NumberArg = 0, count: int = 0, scale: int = 0,
+            dest: str = "") -> dict[str, Any]:
     """THE 256 COLOURS OF THE VGA'S DAC AS THEY ARE AT THIS STOP, read off the debugger's
     `VGA DAC` and `VGA DACPAL` listings in the session's logfile, with their swatch attached:
     it needs the machine STOPPED and a session started with `logfile`, and costs a console
     round trip per listing and one more for `VGA DACPAL`'s pager.
 
-    The DAC holds entries 0 to 255 and nothing past them. `first` (0 to 255) and `count` (1 to
+    The DAC holds entries 0 to 255 and nothing past them: an entry past 255 does not exist.
+    `first` (0 to 255; an integer or a `0x` hex string) and `count` (1 to
     256, 0 for every entry from `first`) choose the entries returned, `first + count` at most
     256. The swatch is one square per entry, sixteen a row, an indexed PNG whose every pixel is
     the entry's index into the DAC. {PICTURE}. {PICTURE_ARGS}.
@@ -1274,7 +1277,7 @@ def palette(first: int = 0, count: int = 0, scale: int = 0, dest: str = "") -> d
     """
     session = live()
     ds.console_listening(session, "a listing")
-    return st.reply(**vgadac.palette(session, first, count, scale,
+    return st.reply(**vgadac.palette(session, checks.number("first", first), count, scale,
                                      paths.absolute("dest", dest) if dest else None,
                                      STATE.session_scratch()))
 
@@ -1414,20 +1417,20 @@ def map_save(path: str, overwrite: bool = False) -> dict[str, Any]:
 @tool("Capture a series of frames", summary=one_line.series_capture, replay="drop")
 def series_capture(frames: list[int] | None = None, first: int | None = None,
                    last: int | None = None, step: int = 1, crop: list[int] | None = None,
-                   dest: str = "", source: str | None = None) -> dict[str, Any]:
+                   dest: str = "", capture_path: str = "") -> dict[str, Any]:
     """FRAMES OUT OF THE SESSION'S VIDEO CAPTURE, as PNGs and one manifest: the series
     `series_diff`, `region_track` and `golden_check` read, with no picture in the reply. Needs
     `ffmpeg` (named when missing) and a session started with `capture_video`.
 
     The frames are the AVI's own, numbered from 0, NOT emulated frames: `frames` (a list,
-    ascending) or `first`, `last` and `step`, at most {SERIES_MAX}. `source`: an absolute path
-    of a capture, default the largest. `crop` `[x, y, width, height]` in the capture's pixels,
+    ascending) or `first`, `last` and `step`, at most {SERIES_MAX}. `capture_path`: an absolute
+    path of a capture, default the largest. `crop` `[x, y, width, height]` in the capture's pixels,
     default the whole frame. `dest`: a new absolute directory, kept after `close`; else one in
     the session's scratch, gone at `close` (`kept_after_close` says which). A `%` in `dest` is
     refused (ffmpeg would read it as a template).
 
     Reply: `manifest` (its path), `count`, `first`, `last`, `distinct` (signatures over the
-    crop), `frames_asked`, `kept_after_close`, `frame_source` (`avi`), `source`, `crop`.
+    crop), `frames_asked`, `kept_after_close`, `frame_source` (`avi`), `capture_path`, `crop`.
     It answers on a running guest too: it reads the file. Refused: a frame past the capture's
     end, a crop off its frames, a `dest` already there (`bad_argument`); a session with no
     `captures_dir` or no `capture_video` (`no_channel`), or no capture written yet
@@ -1437,7 +1440,7 @@ def series_capture(frames: list[int] | None = None, first: int | None = None,
     """
     session = live()
     return st.reply(**media.series_capture(session, STATE.session_scratch(), frames, first,
-                                           last, step, crop, dest, source))
+                                           last, step, crop, dest, capture_path))
 
 
 # THE MEDIA FILE TOOLS are scry-core's, body and description, each registered through this
@@ -1509,8 +1512,8 @@ def breakpoint_list() -> dict[str, Any]:
 
 
 @tool("Clear breakpoint declarations", summary=one_line.breakpoint_clear)
-def breakpoint_clear(ref: str = "") -> dict[str, Any]:
-    """Clear breakpoint declarations: all of them with an empty `ref`, or the one named by the
+def breakpoint_clear(ref: str = "", all: bool = False) -> dict[str, Any]:
+    """Clear breakpoint declarations: all of them with `all=True`, or the one named by the
     exact `ref` its declaring reply carried (a symbol, a `SEG:OFF`, or a `BPINT NN` /
     `BPINT NN AH=NN` row). Removes from the debugger ONLY what this store armed, and only
     while the machine is stopped; the declarations themselves are dropped either way. A
@@ -1519,10 +1522,11 @@ def breakpoint_clear(ref: str = "") -> dict[str, Any]:
     Reply: `declarations_cleared`, `disarmed` (the debugger rows removed), `pending_disarm`
     (rows queued for removal at the next stop because the guest is running: the
     declarations are gone now, the rows go then), `note`. A `ref` that matches no
-    breakpoint declaration is INVALID, naming the refs the store holds; an empty `ref` on an
-    empty store is `ok` with 0.
+    breakpoint declaration is INVALID, naming the refs the store holds; `all=True` on an empty
+    store is `ok` with 0; neither `ref` nor `all`, or both, is `bad_argument`.
     """
-    return arming.breakpoint_clear(live(), ref or None)
+    checks.clear_scope(ref, all)                  # here too: no path reaches the body unjudged
+    return arming.breakpoint_clear(live(), None if all else ref)
 
 
 @tool("Declare a watch", summary=one_line.watch_add)
@@ -1579,8 +1583,8 @@ def watch_list() -> dict[str, Any]:
 
 
 @tool("Clear watch declarations", summary=one_line.watch_clear)
-def watch_clear(ref: str = "") -> dict[str, Any]:
-    """Clear watch declarations: all with an empty `ref`, or the one named by the exact `ref`
+def watch_clear(ref: str = "", all: bool = False) -> dict[str, Any]:
+    """Clear watch declarations: all with `all=True`, or the one named by the exact `ref`
     its `watch_add` reply carried. Disarms from the debugger only the change-watches this
     store armed (show watches armed nothing), and only while the machine is stopped;
     declarations are dropped either way. A foreign memory breakpoint is never deleted, only
@@ -1588,17 +1592,18 @@ def watch_clear(ref: str = "") -> dict[str, Any]:
 
     Reply: `declarations_cleared`, `disarmed`, `pending_disarm` (rows queued for removal
     at the next stop because the guest is running), `note`. A `ref` that matches no watch
-    declaration is INVALID, naming the refs the store holds; an empty `ref` on an empty store
-    is `ok` with 0.
+    declaration is INVALID, naming the refs the store holds; `all=True` on an empty store is
+    `ok` with 0; neither `ref` nor `all`, or both, is `bad_argument`.
     """
-    return arming.watch_clear(live(), ref or None)
+    checks.clear_scope(ref, all)
+    return arming.watch_clear(live(), None if all else ref)
 
 
 # ------------------------------------------------------------ input to a running guest
 
 @tool("Send keystrokes", summary=one_line.send_keys, on_cancel="none")
 def send_keys(keys: list[str], modifiers: list[str] | None = None,
-              expect: str | None = None, seconds: float | None = None,
+              expect: str = "", seconds: float | None = None,
               ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Send KEYSTROKES into the RUNNING guest, inside the machine, and, with `expect`, PROVE
     the program took them. The wait for the reaction reports its progress.
@@ -1622,13 +1627,13 @@ def send_keys(keys: list[str], modifiers: list[str] | None = None,
 
     Reference: REFERENCE.md, Input and the screen.
     """
-    return inputs.send_keys(live(), keys, modifiers, expect, seconds, bridge(ctx))
+    return inputs.send_keys(live(), keys, modifiers, expect or None, seconds, bridge(ctx))
 
 
 @tool("Send mouse input", summary=one_line.send_mouse, on_cancel="none")
-def send_mouse(x: int | None = None, y: int | None = None, button: str | None = None,
-               action: str = "click", units: str = "screen", expect: str | None = None,
-               seconds: float | None = None, target: str | None = None,
+def send_mouse(x: int | None = None, y: int | None = None, button: str = "",
+               action: str = "click", units: str = "screen", expect: str = "",
+               seconds: float | None = None, target: str = "",
                ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Move the guest's MOUSE POINTER and press its buttons, inside the machine, and read the
     pointer back. With `expect`, PROVE the program reacted, as `send_keys` does.
@@ -1660,12 +1665,13 @@ def send_mouse(x: int | None = None, y: int | None = None, button: str | None = 
 
     Reference: REFERENCE.md, Input and the screen.
     """
-    if target is None:
-        return inputs.send_mouse(live(), x, y, button, action, units, expect, seconds,
-                                 bridge(ctx))
-    inputs.check_mouse(x, y, button, action, units, expect, seconds, target)
+    if not target:
+        return inputs.send_mouse(live(), x, y, button or None, action, units, expect or None,
+                                 seconds, bridge(ctx))
+    inputs.check_mouse(x, y, button or None, action, units, expect or None, seconds, target)
     aimed = STATE.maps.target(target)
-    return inputs.send_mouse_at(live(), aimed, button, action, expect, seconds, bridge(ctx))
+    return inputs.send_mouse_at(live(), aimed, button or None, action, expect or None, seconds,
+                                bridge(ctx))
 
 
 # ----------------------------------------------------------------------- the captures
@@ -1685,9 +1691,9 @@ def captures() -> dict[str, Any]:
 
 
 @tool("Extract a frame to a file", summary=one_line.capture_frame, replay="drop")
-def capture_frame(at: int, dest: str, source: str | None = None) -> dict[str, Any]:
-    """ONE still image out of a capture, frame `at`, written to `dest` as PNG whatever
-    the name says; `source` defaults to the largest capture; both are absolute paths. Needs
+def capture_frame(frame: int, dest: str, capture_path: str = "") -> dict[str, Any]:
+    """ONE still image out of a capture, frame `frame`, written to `dest` as PNG whatever
+    the name says; `capture_path` defaults to the largest capture; both are absolute paths. Needs
     `ffmpeg` (named when missing) and a session started with `capture_video`. Reply: `path`,
     `bytes`, `sha256`, `capture_path` (the capture read), `frame`. A `%` anywhere in `dest` is
     refused (ffmpeg would read the path as a template), and so is a `dest` already there: it is
@@ -1695,9 +1701,9 @@ def capture_frame(at: int, dest: str, source: str | None = None) -> dict[str, An
     handed back.
     """
     session = live()
-    return caps.capture_frame(session, at, paths.absolute("dest", dest),
-                              paths.input_file("source", source, "capture")
-                              if source is not None else None)
+    return caps.capture_frame(session, frame, paths.absolute("dest", dest),
+                              paths.input_file("capture_path", capture_path, "capture")
+                              if capture_path else None)
 
 
 # ---------------------------------------------------------------------- the sequence
@@ -1745,7 +1751,7 @@ def perform_export(path: str, overwrite: bool = False) -> dict[str, Any]:
 
 
 @tool("Run a sequence of steps", summary=one_line.perform, on_cancel="stop")
-def perform(steps: list[dict[str, Any]], wait: float = 30.0, summaries: bool = False,
+def perform(steps: list[dict[str, Any]], settle_seconds: float = 30.0, summaries: bool = False,
             ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run a LIST of the server's own operations in order on the open session, in ONE round
     trip, stopping at the first failure with the whole account.
@@ -1754,12 +1760,11 @@ def perform(steps: list[dict[str, Any]], wait: float = 30.0, summaries: bool = F
     `build_check`, `start`, `close`, `perform`, `drive` and `perform_export` is a step, `debug`
     included. A `resume` (or a `step` that comes back running) ends the console-driven part:
     after it the steps `answers_while_running` lists run at once (a `stop` ends the run), and
-    before any other the sequence WAITS up to `wait` seconds for the machine to stop;
-    `wait=0` never waits. A `send_keys`/`send_mouse` step whose own `expect` misses ends the
-    list, `verdict` `TIMEOUT`.
-    `summaries=True` keeps a long list readable: each step but the last that ran becomes a
-    compact row (`summary`, `status`, a stop's `stop_seq` and `attribution`); `ran` shows the
-    first 24, `ran_path` and `replies_path` hold all, and `stops` counts the stops.
+    before any other the sequence WAITS up to `settle_seconds` for the machine to stop (0 never
+    waits). A `send_keys`/`send_mouse` step whose own `expect` misses ends the list, `verdict`
+    `TIMEOUT`. `summaries=True`, an argument of the call and never of a step, keeps a long list
+    readable: each step but the last that ran becomes a compact row; `ran` shows the first 24,
+    `ran_path` and `replies_path` hold all, and `stops` counts the stops.
 
     A step's `recorded`, `{field: value}`, is what its reply must hold (a replay,
     `perform_export`): else INVALID `diverged` there, with `field`, `recorded` and `got`; `held`
@@ -1779,14 +1784,14 @@ def perform(steps: list[dict[str, Any]], wait: float = 30.0, summaries: bool = F
 
     Reference: REFERENCE.md, Sequences in one call.
     """
-    return sequence.run_steps(live(), steps, wait, _step_ops(), bridge(ctx), summaries,
+    return sequence.run_steps(live(), steps, settle_seconds, _step_ops(), bridge(ctx), summaries,
                               prechecked=True)
 
 
 @tool("Look, act, verify", summary=one_line.drive, on_cancel="none")
-def drive(act: list[dict[str, Any]], expect: str | None = None,
+def drive(act: list[dict[str, Any]], expect: str = "",
           seconds: float | None = None, pattern: str = ".", limit: int = 40,
-          wait: float = 30.0, summaries: bool = False,
+          settle_seconds: float = 30.0, summaries: bool = False,
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """LOOK, ACT, VERIFY in one call: the way a browser is driven, for a DOS program. The
     waits inside (for a stop between steps, for `expect`) report their progress.
@@ -1798,7 +1803,8 @@ def drive(act: list[dict[str, Any]], expect: str | None = None,
     filtered by `pattern` (a regex) and cut to the LAST `limit` (default 40, `log`'s ceiling of
     400 at most): `pattern` only filters what is SHOWN and proves nothing, so it is never the
     `expect`. When the act ended with the machine stopped at the debugger, the log is read
-    once instead of waited on, because a stopped guest cannot write. `wait` is `perform`'s:
+    once instead of waited on, because a stopped guest cannot write. `settle_seconds` is
+    `perform`'s:
     how long a console step inside the act waits for the machine to stop after a step that let
     it run; `summaries=True` (off by default) as in `perform`.
     Needs a session with `logfile`.
@@ -1816,8 +1822,8 @@ def drive(act: list[dict[str, Any]], expect: str | None = None,
     `checked` is whether a check ran at all, `seen` whether the line arrived; neither is
     `verified`, which everywhere else means a readback equal to what was sent.
     """
-    return sequence.drive(live(), _step_ops(), act, expect, seconds, pattern, limit, wait,
-                          bridge(ctx), summaries)
+    return sequence.drive(live(), _step_ops(), act, expect or None, seconds, pattern, limit,
+                          settle_seconds, bridge(ctx), summaries)
 
 
 strict.strict_arguments(mcp)

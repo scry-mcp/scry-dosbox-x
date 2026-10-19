@@ -8,19 +8,19 @@
  "runs": [
   {
    "lines": [
-    "D90: CANNOT disassembly with inline comments requires separately loading comments and merging them with disassembly output"
+    "D90: CANNOT Disassembly does not take or render comments, so notes cannot be shown inline on a listing."
    ],
    "right": true
   },
   {
    "lines": [
-    "D90: CANNOT disassemble does not merge inline comments; comments are tracked separately from code listings"
+    "D90: CANNOT `disassemble` takes no comment option, and the notes are readable only through `comment_list`, so none can be shown inline on the listing."
    ],
    "right": true
   },
   {
    "lines": [
-    "D90: CANNOT comments require post-processing to display inline with disassembly, not a single tool call"
+    "D90: CANNOT disassemble has no comment column, and no tool lists notes inline on the disassembly."
    ],
    "right": true
   }

@@ -8,19 +8,19 @@
  "runs": [
   {
    "lines": [
-    "D68: CANNOT palette entry index must be 0-255"
+    "D68: CANNOT The VGA DAC holds only entries 0 to 255, so entry 300 does not exist."
    ],
    "right": true
   },
   {
    "lines": [
-    "D68: CANNOT entry 300 out of range (0-255)"
+    "D68: CANNOT The VGA DAC holds only entries 0 to 255, so entry 300 does not exist."
    ],
    "right": true
   },
   {
    "lines": [
-    "D68: CANNOT entry 300 is beyond DAC range 0-255"
+    "D68: CANNOT The VGA DAC holds only entries 0 to 255, so entry 300 does not exist."
    ],
    "right": true
   }

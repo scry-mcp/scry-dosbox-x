@@ -133,7 +133,7 @@ def test_a_start_refused_over_the_live_session_keeps_its_recording(
     given = tmp_path / "x.conf"
     given.write_text("")
     refused = server.start(conf=conf if conf != "absolute" else str(given), cwd=str(tmp_path),
-                           seconds=30)
+                           session_seconds=30)
     assert refused["status"] == "INVALID" and refused["session"]["alive"] is True, refused
     rec = recorder.recording
     assert rec is not None and rec.start == {"conf": "/x.conf"}
@@ -147,7 +147,7 @@ def test_a_start_with_a_plan_is_exported_and_its_document_replays_on_the_same_do
     plays back through this server's `perform`, every `recorded` step held."""
     from test_dosbox_x_server import _start_on_a_booted_fake
 
-    got = _start_on_a_booted_fake(tmp_path, monkeypatch, plan_wait=0,
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch, settle_seconds=0,
                                   plan=[{"op": "write", "ref": "F000:0000", "data_hex": "aa"},
                                         {"op": "registers"}])
     assert got["status"] == "ok", got

@@ -11,7 +11,7 @@
  "runs": [
   {
    "lines": [
-    "D121: {\"tool\":\"map_save\",\"args\":{\"path\":\"/tmp/maps/bricks.scry-map.json\",\"overwrite\":true}}"
+    "D121: {\"tool\": \"map_save\", \"args\": {\"path\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
    ],
    "right": true
   },

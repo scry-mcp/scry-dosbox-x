@@ -6,29 +6,29 @@
   "args": {
    "conf": "/opt/dosfury/fury.conf",
    "cwd": "/opt/dosfury",
-   "seconds": 1200,
+   "session_seconds": 1200,
    "binary": "/opt/dbx-dev/src/dosbox-x"
   },
   "allow": [
-   "mode"
+   "shared"
   ]
  },
  "runs": [
   {
    "lines": [
-    "D92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "D92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "D92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+    "D92: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 1200, \"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true
   }

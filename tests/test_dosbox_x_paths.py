@@ -29,10 +29,11 @@ INVENTORY = frozenset({
     ("start", "cwd"), ("start", "conf"), ("start", "logfile"), ("start", "captures_dir"),
     ("start", "state_dir"), ("memdump", "dest"), ("trace", "dest"), ("snapshot", "dest"),
     ("palette", "dest"), ("screen_view", "dest"), ("capture_frame", "dest"),
-    ("capture_frame", "source"), ("symbols_load", "source"), ("symbols_load", "types"),
-    ("comment_save", "dest"), ("comment_load", "source"), ("start", "binary"),
+    ("capture_frame", "capture_path"), ("symbols_load", "path"), ("symbols_load", "types"),
+    ("comment_save", "dest"), ("comment_load", "path"), ("start", "binary"),
     ("build_check", "binary"), ("machine_map", "dest"), ("series_capture", "dest"),
-    ("series_capture", "source"),
+    ("series_capture", "capture_path"), ("map_load", "path"), ("map_save", "path"),
+    ("perform_export", "path"),
 })
 
 
@@ -159,21 +160,24 @@ def _base(tool: str, tmp_path: Path) -> dict[str, Any]:
     sym = tmp_path / "g.sym"
     sym.write_text("0000:0000 x\n")
     table: dict[str, dict[str, Any]] = {
-        "start": {"conf": str(conf), "cwd": str(tmp_path), "seconds": 60},
+        "start": {"conf": str(conf), "cwd": str(tmp_path), "session_seconds": 60},
         "memdump": {"ref": "0000:0000", "length": 16, "dest": str(tmp_path / "d.bin")},
         "trace": {"instructions": 16, "dest": str(tmp_path / "t.trace")},
         "snapshot": {"dest": str(tmp_path / "s.png")},
         "palette": {"dest": str(tmp_path / "p.png")},
         "screen_view": {"dest": str(tmp_path / "v.png")},
-        "capture_frame": {"at": 0, "dest": str(tmp_path / "f.png"),
-                          "source": str(tmp_path / "c.avi")},
-        "symbols_load": {"source": str(sym), "types": str(sym)},
+        "capture_frame": {"frame": 0, "dest": str(tmp_path / "f.png"),
+                          "capture_path": str(tmp_path / "c.avi")},
+        "symbols_load": {"path": str(sym), "types": str(sym)},
         "comment_save": {"dest": str(tmp_path / "c.tsv")},
-        "comment_load": {"source": str(tmp_path / "c.tsv")},
+        "comment_load": {"path": str(tmp_path / "c.tsv")},
         "build_check": {},
         "machine_map": {"dest": str(tmp_path / "m.json")},
+        "map_load": {"path": str(tmp_path / "m.scry-map.json")},
+        "map_save": {"path": str(tmp_path / "m.scry-map.json")},
+        "perform_export": {"path": str(tmp_path / "p.json")},
         "series_capture": {"frames": [0], "dest": str(tmp_path / "series"),
-                           "source": str(tmp_path / "c.avi")},
+                           "capture_path": str(tmp_path / "c.avi")},
     }
     return table[tool]
 
@@ -285,7 +289,8 @@ def test_a_directory_start_names_is_created_with_its_parents(tmp_path: Path, arg
 
 
 def test_start_takes_no_savedir_argument() -> None:
-    res = asyncio.run(server.mcp.call_tool("start", {"conf": "/x.conf", "cwd": "/", "seconds": 60,
+    res = asyncio.run(server.mcp.call_tool("start", {"conf": "/x.conf", "cwd": "/",
+                                                    "session_seconds": 60,
                                                     "savedir": "/tmp/states"}))
     reply = json.loads("".join(c.text for c in res.content if getattr(c, "text", None)))
     _refused(reply, "bad_argument", "savedir")
@@ -327,12 +332,12 @@ def test_start_judges_a_path_before_a_live_session_or_the_binary(tmp_path: Path)
     """A path as wrong with a session live as with none, and with no emulator installed: the
     path is the refusal, and nothing of the live session is touched."""
     live = install()
-    got = cast(dict[str, Any], server.start(conf="/x.conf", cwd="rel/x", seconds=60))
+    got = cast(dict[str, Any], server.start(conf="/x.conf", cwd="rel/x", session_seconds=60))
     _refused(got, "bad_argument", "cwd='rel/x'")
     assert cast(object, dstate.STATE.session) is live
     dstate.STATE.session = None
     with mock.patch("scry_core.binaries.shutil.which", lambda _n: None):
-        got = cast(dict[str, Any], server.start(conf="rel.conf", cwd="/", seconds=60))
+        got = cast(dict[str, Any], server.start(conf="rel.conf", cwd="/", session_seconds=60))
     _refused(got, "bad_argument", "conf='rel.conf'")
 
 
@@ -341,14 +346,14 @@ def test_start_judges_the_binary_s_shape_before_a_live_or_expired_session(
     """`binary` is a path like the others: a relative one is the refusal whatever the session
     is, and an expired session is neither closed nor its symbols forgotten for it."""
     live = install()
-    got = cast(dict[str, Any], server.start(conf="/x.conf", cwd="/", seconds=60,
+    got = cast(dict[str, Any], server.start(conf="/x.conf", cwd="/", session_seconds=60,
                                             binary="rel/dosbox-x"))
     _refused(got, "bad_argument", "binary='rel/dosbox-x'")
     assert cast(object, dstate.STATE.session) is live
     expired = install(alive=False)
     closed: list[bool] = []
     expired.close = lambda **_k: closed.append(True)   # type: ignore[method-assign]
-    got = cast(dict[str, Any], server.start(conf="/x.conf", cwd="/", seconds=60,
+    got = cast(dict[str, Any], server.start(conf="/x.conf", cwd="/", session_seconds=60,
                                             binary="bin/dosbox-x"))
     _refused(got, "bad_argument", "binary='bin/dosbox-x'")
     assert closed == [] and cast(object, dstate.STATE.session) is expired
@@ -357,7 +362,8 @@ def test_start_judges_the_binary_s_shape_before_a_live_or_expired_session(
 def test_a_start_refused_for_another_reason_creates_no_directory(tmp_path: Path) -> None:
     kw = _base("start", tmp_path)
     made = tmp_path / "caps"
-    _refused(_start_stubbed(**{**kw, "seconds": 0, "captures_dir": str(made)}), "bad_argument")
+    _refused(_start_stubbed(**{**kw, "session_seconds": 0, "captures_dir": str(made)}),
+             "bad_argument")
     _refused(_start_stubbed(**{**kw, "logfile": str(made), "captures_dir": str(made)}),
              "bad_argument", "logfile", "captures_dir")
     _refused(_start_stubbed(**{**kw, "logfile": str(made), "state_dir": str(made)}),
@@ -376,12 +382,11 @@ def test_a_directory_already_there_is_taken_and_the_default_state_dir_is_made(
 
 
 @pytest.mark.parametrize("arg", ["logfile", "captures_dir", "state_dir"])
-def test_an_empty_optional_path_of_start_is_refused_not_taken_for_none(
-        tmp_path: Path, arg: str) -> None:
-    """An argument whose absence is its default (none) is refused when given empty; a `dest`
-    whose default is the empty string takes it as none (the next case)."""
-    _refused(_start_stubbed(**{**_base("start", tmp_path), arg: ""}), "bad_argument",
-             f"{arg} is empty")
+def test_an_empty_optional_path_of_start_is_taken_for_none(tmp_path: Path, arg: str) -> None:
+    """Every optional text's default is the empty string, and empty is not given: `start`
+    goes on as if the path were left out, as a `dest` does (the next case)."""
+    _refused(_start_stubbed(**{**_base("start", tmp_path), arg: ""}), "session_broken",
+             "not starting anything")
 
 
 def test_an_empty_dest_means_none_where_that_is_its_default() -> None:
@@ -400,11 +405,11 @@ def test_a_map_with_a_code_page_byte_loads_and_one_the_host_will_not_read_is_ref
     nm = tmp_path / "cp437.nm"
     nm.write_bytes(b"0016dd80 T _main\n0016dd90 T _caf\x82\n")
     _names(tmp_path)
-    got = cast(dict[str, Any], server.symbols_load(source=str(nm), base="400000"))
+    got = cast(dict[str, Any], server.symbols_load(path=str(nm), base="400000"))
     assert got["status"] == "ok" and got["kept"] >= 1, got
     nm.chmod(0)
     try:
-        got = cast(dict[str, Any], server.symbols_load(source=str(nm), base="400000"))
+        got = cast(dict[str, Any], server.symbols_load(path=str(nm), base="400000"))
     finally:
         nm.chmod(0o644)
     _refused(got, "bad_argument", "cannot read")
@@ -412,6 +417,6 @@ def test_a_map_with_a_code_page_byte_loads_and_one_the_host_will_not_read_is_ref
 
 def test_a_capture_source_that_is_not_there_is_refused_naming_it(tmp_path: Path) -> None:
     install()
-    got = server.capture_frame(at=1, dest=str(tmp_path / "f.png"),
-                               source=str(tmp_path / "absent.avi"))
+    got = server.capture_frame(frame=1, dest=str(tmp_path / "f.png"),
+                               capture_path=str(tmp_path / "absent.avi"))
     _refused(got, "bad_argument", "no capture at", str(tmp_path / "absent.avi"))

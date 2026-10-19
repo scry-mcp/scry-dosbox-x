@@ -29,7 +29,7 @@
  "runs": [
   {
    "lines": [
-    "D119: {\"tool\":\"map_add\",\"args\":{\"screen\":\"title\",\"match\":[[0,0,40,1]],\"controls\":[{\"name\":\"play\",\"rect\":[10,12,20,1]}]}}"
+    "D119: {\"tool\": \"map_add\", \"args\": {\"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
    ],
    "right": true
   },

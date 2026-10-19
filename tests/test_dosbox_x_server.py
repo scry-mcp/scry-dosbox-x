@@ -12,6 +12,7 @@ the test AGREED WITH THE BUG and the suite could not tell "the guard fired" from
 from __future__ import annotations
 
 import ast
+import asyncio
 import atexit
 import dataclasses
 import inspect
@@ -578,7 +579,7 @@ def test_a_start_that_left_an_unreapable_emulator_says_so(tmp_path: Path) -> Non
 
     with mock.patch("dosbox_x_server.ds.Session", build):
         got = cast(dict[str, Any], server.start(
-            conf=str(conf), cwd=str(tmp_path), seconds=30))
+            conf=str(conf), cwd=str(tmp_path), session_seconds=30))
     assert got["status"] == "INVALID"
     assert "the debugger never appeared" in str(got["message"]), got
     assert "may still be running" in str(got["message"]), got
@@ -598,7 +599,7 @@ def test_a_start_that_left_an_unreapable_emulator_says_so(tmp_path: Path) -> Non
 
     with mock.patch("dosbox_x_server.ds.Session", lambda _l: Reaped()):
         ok = cast(dict[str, Any], server.start(
-            conf=str(conf), cwd=str(tmp_path), seconds=30))
+            conf=str(conf), cwd=str(tmp_path), session_seconds=30))
     assert "the debugger never appeared" in str(ok["message"])
     assert "may still be running" not in str(ok["message"]), ok
 
@@ -811,35 +812,23 @@ def test_every_tool_this_server_promises_is_actually_registered() -> None:
 
 # ------------------------------------------------------------------- the refusals
 
-def test_an_unknown_mode_is_refused_by_name(tmp_path: Path) -> None:
-    conf = tmp_path / "g.conf"
-    conf.write_text("[sdl]\n", encoding="utf-8")
-    got = server.start(conf=str(conf), cwd=str(tmp_path), seconds=30, mode="quick")
-    assert got["status"] == "INVALID"
-    assert "quick" in got["message"]
-
-
-def test_quick_is_absent_on_purpose_and_refused_for_that_reason(tmp_path: Path) -> None:
-    """The reason is asserted, not just the status.
-
-    Without that, this passed on a host with no `dosbox-x`: accepting `quick` would
-    fall through to the PATH refusal and the test would stay green. Worse, on a host
-    WITH the binary it would fall through to a real launch and spawn an emulator from
-    a contract test -- the hazard the session tests were restructured to remove,
-    intact one layer up.
-    """
-    conf = tmp_path / "g.conf"
-    conf.write_text("[sdl]\n", encoding="utf-8")
-    got = server.start(conf=str(conf), cwd=str(tmp_path), seconds=1, mode="quick")
-    assert got["status"] == "INVALID"
-    assert "quick" in got["message"] and "headless" in got["message"]
+@pytest.mark.parametrize("old", [{"mode": "headless"}, {"seconds": 60}, {"plan_wait": 5}])
+def test_starts_old_words_are_refused_by_name(old: dict[str, Any]) -> None:
+    """`mode`, `seconds` and `plan_wait` are `shared`, `session_seconds` and `settle_seconds`:
+    the old word is the schema's refusal naming it, never a call that ran on a default (and
+    never a launch: the refusal comes before the binary is looked for)."""
+    res = asyncio.run(server.mcp.call_tool("start", {"conf": "/x.conf", "cwd": "/",
+                                                    "session_seconds": 60, **old}))
+    reply = json.loads("".join(c.text for c in res.content if getattr(c, "text", None)))
+    assert reply["code"] == "bad_argument" and next(iter(old)) in reply["message"], reply
 
 
 def test_a_second_session_is_refused_while_the_first_is_alive(tmp_path: Path) -> None:
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     install(alive=True)
-    got = server.start(conf=str(conf), cwd=str(tmp_path), seconds=30)
+    got = server.start(
+            conf=str(conf), cwd=str(tmp_path), session_seconds=30)
     assert got["status"] == "INVALID"
     assert "already live" in got["message"]
 
@@ -893,7 +882,7 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         "scan_filter": lambda: server.scan_filter(operator="=", value=0),
         "scan_clear": server.scan_clear,
         "captures": server.captures,
-        "capture_frame": lambda: server.capture_frame(at=0, dest="/tmp/x.png"),
+        "capture_frame": lambda: server.capture_frame(frame=0, dest="/tmp/x.png"),
         "log_wait": lambda: server.log_wait(channel="guest", pattern="x", seconds=1.0),
         "run_to": lambda: server.run_to(ref="0000:0000", control="0000:0020", seconds=1.0),
         "run_for": lambda: server.run_for(frames=1),
@@ -908,17 +897,17 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         "screen_view": server.screen_view,
         "screen_signature": server.screen_signature,
         "screen_wait": lambda: server.screen_wait(text="C:"),
-        "symbols_load": lambda: server.symbols_load(source=str(nm), base="10000"),
+        "symbols_load": lambda: server.symbols_load(path=str(nm), base="10000"),
         "state_save": lambda: server.state_save(name="x"),
         "state_load": lambda: server.state_load(name="x"),
         "state_list": server.state_list,
         "snapshot": server.snapshot,
         "breakpoint_at": lambda: server.breakpoint_at(ref="_main"),
         "breakpoint_list": server.breakpoint_list,
-        "breakpoint_clear": lambda: server.breakpoint_clear(ref=None),
+        "breakpoint_clear": lambda: server.breakpoint_clear(all=True),
         "watch_add": lambda: server.watch_add(ref="_main", mode="change", length=4),
         "watch_list": server.watch_list,
-        "watch_clear": lambda: server.watch_clear(ref=None),
+        "watch_clear": lambda: server.watch_clear(all=True),
         "perform": lambda: server.perform(steps=[{"op": "registers"}]),
         "send_keys": lambda: server.send_keys(keys=["a"]),
         "send_mouse": lambda: server.send_mouse(button="left"),
@@ -927,7 +916,7 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         "comment_list": server.comment_list,
         "comment_delete": lambda: server.comment_delete(ref="_main"),
         "comment_save": lambda: server.comment_save(dest="/tmp/x.comments.tsv"),
-        "comment_load": lambda: server.comment_load(source=str(nm)),
+        "comment_load": lambda: server.comment_load(path=str(nm)),
     }
     callers = live_callers()
     assert len(callers) > len(calls) // 2, (
@@ -1273,7 +1262,7 @@ def test_both_halves_of_the_capture_come_back(tmp_path: Path) -> None:
         "largest last: the default source for a still depends on that order")
 
     dest = tmp_path / "shot" / "frame.png"
-    shot = server.capture_frame(at=1400, dest=str(dest))
+    shot = server.capture_frame(frame=1400, dest=str(dest))
     assert shot["status"] == "ok"
     assert Path(shot["path"]) == dest and shot["bytes"] > 0
     assert shot["frame"] == 1400 and len(shot["sha256"]) == 64, shot
@@ -1364,7 +1353,7 @@ def test_start_takes_every_path_as_written(tmp_path: Path) -> None:
     assertion over one of them would leave the others free to regress."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
-    launch = _launch_of(conf=str(conf), cwd=str(tmp_path), seconds=30,
+    launch = _launch_of(conf=str(conf), cwd=str(tmp_path), session_seconds=30,
                         captures_dir=str(tmp_path / "caps"), logfile=str(tmp_path / "e9.log"),
                         state_dir=str(tmp_path / "states"))
     assert launch.conf == conf and launch.cwd == tmp_path.resolve()
@@ -1385,7 +1374,7 @@ def test_start_expands_a_tilde_in_every_path_and_makes_nothing_at_a_literal_one(
     monkeypatch.setenv("USERPROFILE", str(tmp_path))
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
-    kw: dict[str, Any] = {"conf": str(conf), "cwd": str(tmp_path), "seconds": 30,
+    kw: dict[str, Any] = {"conf": str(conf), "cwd": str(tmp_path), "session_seconds": 30,
                           arg: f"~/{under_home}" if under_home else "~"}
     built: list[dlaunch.Launch] = []
 
@@ -1406,7 +1395,7 @@ def test_the_two_optional_paths_stay_absent_when_the_caller_omits_them(tmp_path:
     reading a directory, both `ok`)."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
-    launch = _launch_of(conf=str(conf), cwd=str(tmp_path), seconds=30)
+    launch = _launch_of(conf=str(conf), cwd=str(tmp_path), session_seconds=30)
     assert launch.captures_dir is None and launch.logfile is None
     assert launch.state_dir == tmp_path.resolve() / "save"
 
@@ -1441,7 +1430,7 @@ def test_capture_frame_expands_a_tilde_in_either_path(
         return dest
     fake.frame = frame  # type: ignore[method-assign,assignment]
     for kw in ({"dest": "~/shot.png"},
-               {"dest": str(tmp_path / "shot2.png"), "source": "~/run.avi"}):
+               {"dest": str(tmp_path / "shot2.png"), "capture_path": "~/run.avi"}):
         assert cast(dict[str, Any], server.capture_frame(5, **kw))["status"] == "ok"
     assert [a[1] for a in seen] == [tmp_path / "shot.png", tmp_path / "shot2.png"], seen
     assert seen[1][2] == tmp_path / "run.avi" and not (tmp_path / "~").exists()
@@ -1469,7 +1458,7 @@ def test_a_tilde_user_or_a_nul_is_a_refusal_and_not_a_traceback(
         tmp_path: Path, bad: str) -> None:
     """`tool()` translates only `Invalid`, so both spellings are refused cleanly, through three
     tools, each reply carrying its session block."""
-    got = cast(dict[str, Any], server.start(conf=bad, cwd=str(tmp_path), seconds=30))
+    got = cast(dict[str, Any], server.start(conf=bad, cwd=str(tmp_path), session_seconds=30))
     assert got["code"] == "bad_argument" and "session" in got, got
     install()
     got = cast(dict[str, Any], server.memdump(ref="0000:00000400", length=16, dest=bad))
@@ -1505,7 +1494,7 @@ def test_the_base_is_measured_off_the_machine_and_not_assumed(tmp_path: Path) ->
     a caller can check the base against.
     """
     install(mode="Pr32")
-    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path)))
+    got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path)))
     assert got["status"] == "ok", got
     assert got["base"] == MEASURED_BASE, got
     assert got["limit"] == 0x0023FFFF, got
@@ -1522,7 +1511,7 @@ def test_the_base_is_read_from_this_commands_echo_and_not_the_first_on_screen(
     number.
     """
     install(mode="Pr32")
-    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path),
+    got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path),
                                                    base_from="DS"))
     assert got["base"] == MEASURED_BASE, got
     assert got["base"] != 0x00008240, "it answered with the stack selector's base"
@@ -1533,7 +1522,7 @@ def test_an_explicit_base_reports_no_limit_rather_than_inventing_one(
     """The limit is what lets a caller check the base is really this program's, so a
     fabricated one would hand their own assumption back as evidence for itself."""
     install()
-    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path),
+    got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path),
                                                    base="100000"))
     assert got["base"] == 0x00100000, got
     assert got["limit"] == -1, got
@@ -1543,7 +1532,7 @@ def test_an_explicit_base_reports_no_limit_rather_than_inventing_one(
 def test_every_parsed_symbol_is_accounted_for_in_the_reply(tmp_path: Path) -> None:
     """The counts are what a caller reads INSTEAD of the names, so they must sum."""
     install(mode="Pr32")
-    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path)))
+    got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path)))
     assert got["parsed"] == 4, got
     assert (got["kept"] + got["excluded_sections"] + got["excluded_pattern"]
             + got["unencodable_total"]) == got["parsed"], got
@@ -1564,7 +1553,7 @@ def test_the_accounting_still_sums_when_the_unencodable_list_is_truncated(
     """
     install(mode="Pr32")
     text = "".join(f"0000{i:04x} T _caf\u00e9{i}\n" for i in range(12)) + "00009999 T _ok\n"
-    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path, text)))
+    got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path, text)))
     assert got["parsed"] == 13, got
     assert got["unencodable_total"] == 12, got
     assert len(got["unencodable"]) == 8, "the list is capped, which is the point"
@@ -1582,9 +1571,9 @@ def test_loaded_is_read_back_out_of_the_debugger_and_lv_appends(
     """
     install(mode="Pr32")
     src = _source(tmp_path)
-    first = cast(dict[str, Any], server.symbols_load(source=src))
+    first = cast(dict[str, Any], server.symbols_load(path=src))
     assert first["loaded"] == first["kept"] == 3, first
-    second = cast(dict[str, Any], server.symbols_load(source=src))
+    second = cast(dict[str, Any], server.symbols_load(path=src))
     assert second["kept"] == 3, second
     assert second["loaded"] == 6, second
 
@@ -1594,14 +1583,14 @@ def test_the_bytes_that_went_in_carry_the_measured_linear_address(
     """End to end through the server: `nm`'s 0x16DF20 plus the machine's 0x400000 is
     the 0x56DF20 the live debugger was measured holding for `_main`."""
     s = install(mode="Pr32")
-    server.symbols_load(source=_source(tmp_path))
+    server.symbols_load(path=_source(tmp_path))
     assert ("_main", 0x0056DF20) in s.loaded, s.loaded
 
 
 def test_a_source_that_is_not_a_symbol_list_is_refused_by_name(tmp_path: Path) -> None:
     install()
     src = _source(tmp_path, "make: *** No rule to make target 'all'.  Stop.\n")
-    got = cast(dict[str, Any], server.symbols_load(source=src))
+    got = cast(dict[str, Any], server.symbols_load(path=src))
     assert got["status"] == "INVALID", got
     assert "djgpp32.sym" in got["message"], got
     assert "session" in got, got
@@ -1613,7 +1602,7 @@ def test_a_register_this_debugger_does_not_report_is_refused_not_sent(
     descriptor rather than an error -- measured on `SELINFO AF` -- which reads exactly
     like a real selector based at 0."""
     install(mode="Pr32")
-    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path),
+    got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path),
                                                    base_from="AX"))
     assert got["status"] == "INVALID", got
     assert "ZEROED" in got["message"], got
@@ -1621,7 +1610,7 @@ def test_a_register_this_debugger_does_not_report_is_refused_not_sent(
 
 def test_a_pattern_narrows_by_the_full_name(tmp_path: Path) -> None:
     install(mode="Pr32")
-    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path),
+    got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path),
                                                    pattern="^_engine"))
     assert got["kept"] == 2, got
     assert got["excluded_pattern"] == 1, got   # `_main`; `.text` is a section
@@ -1659,7 +1648,7 @@ def test_an_overlay_symbol_reaches_the_caller_flagged_and_counted(tmp_path: Path
     install()
     src = tmp_path / "real16.map"
     src.write_text(TLINK_TEXT, encoding="utf-8")
-    got = cast(dict[str, Any], server.symbols_load(source=str(src), base="1000"))
+    got = cast(dict[str, Any], server.symbols_load(path=str(src), base="1000"))
     assert got["status"] == "ok", got
     assert got["kept"] == 2, got
     assert got["overlay_idle"] == 1, got
@@ -1685,7 +1674,7 @@ def test_an_nm_table_is_reported_with_no_overlay_symbols(tmp_path: Path) -> None
     would be this server inventing one. Without it, a hardcoded 1 passes the case
     above."""
     install(mode="Pr32")
-    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path)))
+    got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path)))
     assert got["overlay_idle"] == 0, got
     found = cast(dict[str, Any], server.symbols_find(name="_main"))
     assert found["symbols"][0]["idle"] is False, found
@@ -1731,7 +1720,7 @@ def test_a_32_bit_map_reaches_the_caller_through_the_tool(tmp_path: Path) -> Non
     src = tmp_path / "flat.map"
     src.write_text(TLINK32_TEXT, encoding="utf-8")
     got = cast(dict[str, Any], server.symbols_load(
-        source=str(src), section_bases={"1": "0x401000", "2": "0x423000"}))
+        path=str(src), section_bases={"1": "0x401000", "2": "0x423000"}))
     assert got["status"] == "ok", got
     assert got["kept"] == 2 and got["unreadable"] == 0, got
     assert got["overlay_idle"] == 0, got
@@ -1757,7 +1746,7 @@ def test_a_sectioned_map_refuses_a_section_the_caller_did_not_position(
     # escape, which is the whole reason `Invalid` exists as its own type -- so the
     # assertion is on the reply, not on an exception.
     got = cast(dict[str, Any], server.symbols_load(
-        source=str(src), section_bases={"1": "0x401000"}))
+        path=str(src), section_bases={"1": "0x401000"}))
     assert got["status"] != "ok", got
     assert "section 2" in str(got["message"]), got["message"]
     assert "_table" in str(got["message"]), got["message"]
@@ -1775,12 +1764,12 @@ def test_section_bases_keys_arrive_as_json_strings_and_are_read_as_numbers(
     src = tmp_path / "flat.map"
     src.write_text(TLINK32_TEXT, encoding="utf-8")
     got = cast(dict[str, Any], server.symbols_load(
-        source=str(src), section_bases={"0x1": "0x401000", "2": "0x423000"}))
+        path=str(src), section_bases={"0x1": "0x401000", "2": "0x423000"}))
     assert got["kept"] == 2, got
     # AND A KEY THAT IS NOT A NUMBER IS REFUSED rather than silently dropped, because a
     # dropped key is a section that then reads as unpositioned.
     bad = cast(dict[str, Any], server.symbols_load(
-        source=str(src), section_bases={"_TEXT": "0x401000"}))
+        path=str(src), section_bases={"_TEXT": "0x401000"}))
     assert bad["status"] != "ok", bad
     assert "section indices" in str(bad["message"]), bad["message"]
 
@@ -1798,7 +1787,7 @@ def test_find_answers_with_both_addresses(tmp_path: Path) -> None:
     """The offset is what the toolchain printed and the linear is what the debugger
     shows; quoting one makes the reader do the arithmetic this tool got right once."""
     install(mode="Pr32")
-    server.symbols_load(source=_source(tmp_path))
+    server.symbols_load(path=_source(tmp_path))
     got = cast(dict[str, Any], server.symbols_find(name="_main"))
     assert got["status"] == "ok", got
     assert got["symbols"][0]["offset"] == 0x0016DF20, got
@@ -1807,7 +1796,7 @@ def test_find_answers_with_both_addresses(tmp_path: Path) -> None:
 
 def test_find_by_linear_takes_the_base_back_off(tmp_path: Path) -> None:
     install(mode="Pr32")
-    server.symbols_load(source=_source(tmp_path))
+    server.symbols_load(path=_source(tmp_path))
     got = cast(dict[str, Any], server.symbols_find(linear="0056DF24"))
     assert got["name"] == "_main", got
     assert got["delta"] == 4, got
@@ -1818,7 +1807,7 @@ def test_find_by_linear_takes_hex_text_and_refuses_a_number(tmp_path: Path) -> N
     refused naming the argument, never read as hex digits or coerced, and so is text that is
     not a hex address."""
     install(mode="Pr32")
-    server.symbols_load(source=_source(tmp_path))
+    server.symbols_load(path=_source(tmp_path))
     prefixed = cast(dict[str, Any], server.symbols_find(linear="0x56DF24"))
     assert prefixed["name"] == "_main" and prefixed["delta"] == 4, prefixed
     for bad in (0x0056DF24, "56DFZZ", "-56DF24"):
@@ -1829,7 +1818,7 @@ def test_find_by_linear_takes_hex_text_and_refuses_a_number(tmp_path: Path) -> N
 
 def test_find_wants_exactly_one_question(tmp_path: Path) -> None:
     install()
-    server.symbols_load(source=_source(tmp_path))
+    server.symbols_load(path=_source(tmp_path))
     both = cast(dict[str, Any], server.symbols_find(name="_main", linear="1"))
     assert both["status"] == "INVALID", both
     neither = cast(dict[str, Any], server.symbols_find())
@@ -1845,7 +1834,7 @@ def test_the_table_is_forgotten_when_the_session_goes(tmp_path: Path) -> None:
     refusal, because a refusal is visible.
     """
     install(mode="Pr32")
-    server.symbols_load(source=_source(tmp_path))
+    server.symbols_load(path=_source(tmp_path))
     assert cast(dict[str, Any], server.symbols_find(name="_main"))["status"] == "ok"
     server.close()
     got = cast(dict[str, Any], server.symbols_find(name="_main"))
@@ -1864,7 +1853,7 @@ def test_a_session_that_died_on_its_bound_takes_the_table_with_it(
     whether they happened to call another tool first.
     """
     s = install()
-    server.symbols_load(source=_source(tmp_path))
+    server.symbols_load(path=_source(tmp_path))
     s._alive = False                      # what a bound expiring looks like from here
     got = cast(dict[str, Any], server.symbols_find(linear="0056DF24"))
     assert got["status"] == "INVALID", got
@@ -1883,10 +1872,10 @@ def test_a_new_session_does_not_inherit_the_previous_ones_table(
     does not leave the previous program's base behind.
     """
     s = install(mode="Pr32")
-    server.symbols_load(source=_source(tmp_path))
+    server.symbols_load(path=_source(tmp_path))
     assert dstate.STATE.table, "precondition: a table is installed"
     s._alive = False                    # the previous session's bound has expired
-    server.start(conf=str(tmp_path / "nope.conf"), cwd=str(tmp_path), seconds=30)
+    server.start(conf=str(tmp_path / "nope.conf"), cwd=str(tmp_path), session_seconds=30)
     assert dstate.STATE.table == [], (
         "a new session inherited the previous one's table, so `symbols_find` would add "
         "a dead program's base to its offsets")
@@ -1898,9 +1887,9 @@ def test_a_start_refused_because_a_session_is_live_keeps_the_table(
     a `start` refused because the machine is still up has changed nothing, and the
     table still describes the program that is still running."""
     install(mode="Pr32")
-    server.symbols_load(source=_source(tmp_path))
+    server.symbols_load(path=_source(tmp_path))
     got = cast(dict[str, Any], server.start(conf=str(tmp_path / "x.conf"),
-                                            cwd=str(tmp_path), seconds=30))
+                                            cwd=str(tmp_path), session_seconds=30))
     assert got["status"] == "INVALID" and "already live" in got["message"], got
     assert cast(dict[str, Any],
                 server.symbols_find(name="_main"))["status"] == "ok"
@@ -1942,14 +1931,14 @@ def test_a_real_mode_map_with_no_base_is_refused_before_selinfo_is_asked(
     s = RealModeProgram()
     s.asked = []
     dstate.STATE.session = s                                # type: ignore[assignment]
-    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path)))
+    got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path)))
     assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
     assert "real mode" in got["message"].lower() and "`base`" in got["message"], got
     assert "* 16" in got["message"], got
     assert s.asked == [], "SELINFO was asked in real mode"
     pr16 = FakeSession(mode="Pr16")
     dstate.STATE.session = pr16                             # type: ignore[assignment]
-    measured = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path)))
+    measured = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path)))
     assert measured["status"] == "ok" and measured["base"] == MEASURED_BASE, measured
 
 
@@ -1979,14 +1968,14 @@ def test_an_absent_descriptor_is_refused_rather_than_placed_at_base_zero(
 
     s = Unset()
     dstate.STATE.session = s                                # type: ignore[assignment]
-    got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path)))
+    got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path)))
     assert got["status"] == "INVALID", got
     assert "no present descriptor" in got["message"], got
     assert "raw offset" in got["message"], got
 
     # AND THE CONTROL: an explicit base still goes through on that same machine, so the
     # refusal is about the DESCRIPTOR and not a helper that refuses everything.
-    ok = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path),
+    ok = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path),
                                                   base="F0000"))
     assert ok["status"] == "ok", ok
     assert ("_main", 0x000F0000 + 0x0016DF20) in s.loaded, s.loaded
@@ -1996,7 +1985,7 @@ def test_an_empty_name_is_a_listing_and_not_a_lookup(tmp_path: Path) -> None:
     """`startswith("")` is true of every symbol, so an empty name matched all of them
     under `status: ok` -- honest arithmetic, and not the question anybody asked."""
     install()
-    server.symbols_load(source=_source(tmp_path))
+    server.symbols_load(path=_source(tmp_path))
     got = cast(dict[str, Any], server.symbols_find(name=""))
     assert got["status"] == "INVALID", got
 
@@ -2012,7 +2001,7 @@ def test_a_failed_load_does_not_replace_a_table_that_was_working(
     `symbols_find`, answering out of a table the debugger does not hold.
     """
     s = install(mode="Pr32")
-    server.symbols_load(source=_source(tmp_path))
+    server.symbols_load(path=_source(tmp_path))
     good = cast(dict[str, Any], server.symbols_find(name="_main"))["symbols"][0]
 
     def refuse(data: bytes) -> list[tuple[str, int]]:
@@ -2020,7 +2009,7 @@ def test_a_failed_load_does_not_replace_a_table_that_was_working(
 
     s.load_symbols = refuse                     # type: ignore[method-assign]
     other = _source(tmp_path, "00001000 T _somebody_elses_main\n")
-    bad = cast(dict[str, Any], server.symbols_load(source=other))
+    bad = cast(dict[str, Any], server.symbols_load(path=other))
     assert bad["status"] == "INVALID", bad
     still = cast(dict[str, Any], server.symbols_find(name="_main"))
     assert still["status"] == "ok", still
@@ -2032,9 +2021,9 @@ def test_the_descriptor_type_is_reported_so_a_caller_can_see_what_was_read(
     """`1B` is a 32-bit code segment and `13` is data; an explicit base reports `-1`
     because there was no descriptor to read at all."""
     install(mode="Pr32")
-    measured = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path)))
+    measured = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path)))
     assert measured["descriptor"] == 0x1B, measured
-    given = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path),
+    given = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path),
                                                      base="1000"))
     assert given["descriptor"] == -1, given
 
@@ -2044,14 +2033,14 @@ def test_a_source_that_cannot_be_read_is_a_refusal_and_not_a_traceback(
     """`tool()` translates only `Invalid`, and a mistyped path is this tool's likeliest first
     call: it is refused naming the file it did not find, with the session block."""
     install()
-    got = cast(dict[str, Any], server.symbols_load(source=str(tmp_path / "nope.sym")))
+    got = cast(dict[str, Any], server.symbols_load(path=str(tmp_path / "nope.sym")))
     assert got["status"] == "INVALID", got
     assert "no symbol file at" in got["message"], got
     assert "session" in got, got
 
     # A DIRECTORY is the other spelling of the same mistake, and it raises a different
     # OSError subclass -- so it is here rather than assumed to be covered.
-    d = cast(dict[str, Any], server.symbols_load(source=str(tmp_path)))
+    d = cast(dict[str, Any], server.symbols_load(path=str(tmp_path)))
     assert d["status"] == "INVALID", d
 
 
@@ -2260,7 +2249,7 @@ def test_a_bad_pattern_is_a_refusal_and_not_a_traceback(tmp_path: Path) -> None:
     install(alive=True)
     src = tmp_path / "s.nm"
     src.write_text("00001000 T _main\n00002000 T _next\n", encoding="utf-8")
-    got = cast(dict[str, Any], server.symbols_load(source=str(src), base="10000",
+    got = cast(dict[str, Any], server.symbols_load(path=str(src), base="10000",
                                                    pattern="(unclosed"))
     assert got["status"] == "INVALID", got
     assert "not a usable pattern" in str(got["message"])
@@ -2275,7 +2264,7 @@ def test_a_bad_pattern_is_a_refusal_and_not_a_traceback(tmp_path: Path) -> None:
         f"{got['message']}")
     # THE GREEN BESIDE IT: a pattern that compiles still works, or this passes over a
     # `plan` that refuses every pattern.
-    ok = cast(dict[str, Any], server.symbols_load(source=str(src), base="10000",
+    ok = cast(dict[str, Any], server.symbols_load(path=str(src), base="10000",
                                                   pattern="^_ma"))
     assert ok["status"] == "ok", ok
 
@@ -2542,7 +2531,7 @@ def test_the_caller_is_told_about_every_bucket_the_plan_carries(tmp_path: Path) 
     src = tmp_path / "prog.sym"
     src.write_text(NM_FRAGMENT, encoding="utf-8")
     reply = cast(dict[str, Any], server.symbols_load(
-        source=str(src), base="0", pattern="^_(keepme|map_demo)"))
+        path=str(src), base="0", pattern="^_(keepme|map_demo)"))
     assert reply["status"] == "ok", reply
     plan = dsym.plan(dsym.parse(NM_FRAGMENT)[0], pattern="^_(keepme|map_demo)",
                      unreadable=0)
@@ -2595,7 +2584,7 @@ def test_the_caller_is_told_about_every_bucket_the_plan_carries(tmp_path: Path) 
     # Reading the SAME file twice under different `pattern`s moves the buckets by
     # different amounts, so a fixed swap has to survive BOTH vectors to stay invisible.
     other = cast(dict[str, Any], server.symbols_load(
-        source=str(src), base="0", pattern="^_dropme"))
+        path=str(src), base="0", pattern="^_dropme"))
     plan2 = dsym.plan(dsym.parse(NM_FRAGMENT)[0], pattern="^_dropme", unreadable=0)
     for field_name, key in carries.items():
         assert other[key] == getattr(plan2, field_name), (
@@ -2624,7 +2613,7 @@ def test_a_sectioned_table_answers_a_linear_address_without_being_told_the_secti
     install()
     src = tmp_path / "flat.map"
     src.write_text(TLINK32_TEXT, encoding="utf-8")
-    server.symbols_load(source=str(src),
+    server.symbols_load(path=str(src),
                         section_bases={"1": "0x401000", "2": "0x423000"})
     # 0x4010F0 is 12 bytes past `_main`, which is section 1 offset 0xE4.
     got = cast(dict[str, Any], server.symbols_find(linear="4010F0"))
@@ -2645,7 +2634,7 @@ def test_an_offset_alone_is_refused_on_a_sectioned_table(tmp_path: Path) -> None
     install()
     src = tmp_path / "flat.map"
     src.write_text(TLINK32_TEXT, encoding="utf-8")
-    server.symbols_load(source=str(src),
+    server.symbols_load(path=str(src),
                         section_bases={"1": "0x401000", "2": "0x423000"})
     got = cast(dict[str, Any], server.symbols_find(offset=0xE4))
     assert got["status"] != "ok", got
@@ -2664,7 +2653,7 @@ def test_an_address_below_every_section_is_refused_rather_than_folded(
     install()
     src = tmp_path / "flat.map"
     src.write_text(TLINK32_TEXT, encoding="utf-8")
-    server.symbols_load(source=str(src),
+    server.symbols_load(path=str(src),
                         section_bases={"1": "0x401000", "2": "0x423000"})
     got = cast(dict[str, Any], server.symbols_find(linear="0x1000"))
     assert got["status"] != "ok", got
@@ -2679,7 +2668,7 @@ def test_a_flat_table_refuses_a_question_about_a_section_it_does_not_have(
     install()
     src = tmp_path / "prog.sym"
     src.write_text(NM_FRAGMENT, encoding="utf-8")
-    server.symbols_load(source=str(src), base="0")
+    server.symbols_load(path=str(src), base="0")
     got = cast(dict[str, Any], server.symbols_find(offset=0x1c350, section=2))
     assert got["status"] != "ok", got
     assert "loaded FLAT" in str(got["message"]), got["message"]
@@ -2696,7 +2685,7 @@ def test_nothing_below_the_asked_offset_names_the_section_it_looked_in(
     install()
     src = tmp_path / "flat.map"
     src.write_text(TLINK32_TEXT, encoding="utf-8")
-    server.symbols_load(source=str(src),
+    server.symbols_load(path=str(src),
                         section_bases={"1": "0x401000", "2": "0x423000"})
     got = cast(dict[str, Any], server.symbols_find(offset=0x10, section=1))
     assert got["status"] != "ok", got
@@ -3248,7 +3237,7 @@ def test_an_interrupt_breakpoint_is_stored_listed_cleared_and_not_double_armed(
     fake.rows.append({"index": "09", "entry": "BPINT 10"})
     assert "BPINT 10" in server.breakpoint_list()["foreign"]
     # CLEAR removes the declaration and disarms the row it owns, leaving the foreign one.
-    cleared = server.breakpoint_clear()
+    cleared = server.breakpoint_clear(all=True)
     assert cleared["declarations_cleared"] == 1 and cleared["disarmed"] == ["BPINT 21"]
     assert [r["entry"] for r in fake.rows] == ["BPINT 10"]
     assert dstate.STATE.store.declarations() == []   # type: ignore[union-attr]
@@ -3558,8 +3547,6 @@ def test_send_keys_expectation_that_cannot_be_checked_is_refused_before_the_post
     fake.log = []
     badrx = cast(dict[str, Any], server.send_keys(keys=["a"], expect="(unclosed"))
     assert badrx["status"] == "INVALID" and "pattern" in badrx["message"].lower(), badrx
-    empty = cast(dict[str, Any], server.send_keys(keys=["a"], expect=""))
-    assert empty["status"] == "INVALID" and "every line" in empty["message"], empty
     nobound = cast(dict[str, Any], server.send_keys(keys=["a"], expect="x", seconds=0))
     assert nobound["status"] == "INVALID" and "bound" in nobound["message"], nobound
     # UNTYPED VALUES, as a perform step delivers them: a TypeError out of the comparison or
@@ -3571,6 +3558,8 @@ def test_send_keys_expectation_that_cannot_be_checked_is_refused_before_the_post
         {"op": "send_keys", "keys": ["a"], "expect": 5}]))
     assert nonstr["status"] == "INVALID" and "expect is a string" in nonstr["message"], nonstr
     assert fake.commands_sent == [], "a refused verification must not have posted anything"
+    empty = cast(dict[str, Any], server.send_keys(keys=["a"], expect=""))
+    assert empty["status"] == "ok" and "unverified" in empty["summary"], "empty is not given"
 
 
 def test_send_mouse_takes_the_same_expectation(tmp_path: Path) -> None:
@@ -3783,8 +3772,7 @@ def test_drive_reports_a_miss_a_failed_act_and_refuses_what_it_cannot_do(
         lambda: server.drive(act=[key], pattern="("),
         lambda: server.drive(act=[key], limit=0),
         lambda: server.drive(act=[key], seconds=3),
-        lambda: server.drive(act=[key], expect=""),
-        lambda: server.drive(act=[key], wait=-1),      # 0 is "never wait"; below it is not a bound
+        lambda: server.drive(act=[key], settle_seconds=-1),   # 0 never waits; below is no bound
         lambda: server.drive(act=[key, {"op": "warp_core"}]),
         lambda: server.drive(act=[key, "not a step"])]
     for refusal in refusals:
@@ -3796,8 +3784,14 @@ def test_drive_reports_a_miss_a_failed_act_and_refuses_what_it_cannot_do(
     assert (len(fake.commands_sent), len(fake.wait_calls)) == (posted, waited), (
         "a refused drive must not have acted or waited")
     # `perform` refuses the same non-bound `wait`.
-    assert cast(dict[str, Any], server.perform(steps=[{"op": "status"}], wait=-1))["status"] \
+    assert cast(dict[str, Any], server.perform(steps=[{"op": "status"}],
+                                               settle_seconds=-1))["status"] \
         == "INVALID"
+    # AN EMPTY `expect` IS NO EXPECT, as everywhere an optional text is empty: the act runs and
+    # nothing is verified, which the reply says.
+    fake.log = []
+    unchecked = cast(dict[str, Any], server.drive(act=[key], expect=""))
+    assert unchecked["status"] == "ok" and unchecked["verify"]["checked"] is False, unchecked
 
 
 def test_drive_carries_the_verify_refusals_own_code_when_the_instrument_broke(
@@ -3864,7 +3858,7 @@ def test_perform_a_running_ok_step_leaves_the_machine_as_it_found_it(tmp_path: P
     out = cast(dict[str, Any], server.perform(steps=[
         {"op": "resume"},
         {"op": "send_keys", "keys": ["a"], "expect": "key_cue_a"},
-        {"op": "status"}], wait=5.0))
+        {"op": "status"}], settle_seconds=5.0))
     assert out["status"] == "ok" and out["steps_completed"] == 3, out
     assert out["ran"][1]["reply"]["verify"]["seen"] is True, out["ran"][1]
     assert "stopped" in out and "regs" in out["stopped"], out
@@ -3874,7 +3868,7 @@ def test_perform_a_running_ok_step_leaves_the_machine_as_it_found_it(tmp_path: P
     fake.registers_raises = True
     released.clear()                  # at rest again for the next list's resume
     held = cast(dict[str, Any], server.perform(steps=[
-        {"op": "resume"}, {"op": "status"}, {"op": "registers"}], wait=0.5))
+        {"op": "resume"}, {"op": "status"}, {"op": "registers"}], settle_seconds=0.5))
     assert held["status"] == "ok" and held["verdict"] == "TIMEOUT", held
     assert held["steps_completed"] == 2 and "still running" in held["note"], held
 
@@ -3890,13 +3884,13 @@ def test_perform_waits_for_a_stop_before_a_console_step_after_a_resume(
     fake.halted = False                 # resume leaves it running
     fake.where_raises = True            # ...and the running machine refuses where()
     # a running-OK op after resume is fine (it does not touch the console)
-    ok = server.perform(steps=[{"op": "resume"}, {"op": "status"}], wait=0.5)
+    ok = server.perform(steps=[{"op": "resume"}, {"op": "status"}], settle_seconds=0.5)
     assert ok["status"] == "ok", ok
     # a console op after resume, with the machine never stopping, ends the list (decision 37)
-    blocked = server.perform(steps=[{"op": "resume"}, {"op": "registers"}], wait=0.5)
+    blocked = server.perform(steps=[{"op": "resume"}, {"op": "registers"}], settle_seconds=0.5)
     assert blocked["status"] == "ok" and blocked["verdict"] == "TIMEOUT", blocked
     assert "still running" in blocked["note"] and blocked["steps_completed"] == 1, blocked
-    unasked = server.perform(steps=[{"op": "resume"}, {"op": "registers"}], wait=0)
+    unasked = server.perform(steps=[{"op": "resume"}, {"op": "registers"}], settle_seconds=0)
     assert unasked["status"] == "INVALID" and unasked["code"] == "not_stopped", unasked
     assert unasked["failed_at"] == 1, unasked
 
@@ -3911,7 +3905,7 @@ def test_perform_tail_waits_for_the_stop_and_returns_the_enriched_reply(
     fake = _names(tmp_path)
     fake.halted = False                 # resume leaves it running
     fake.where_refusals = 2             # ...then the machine stops (a breakpoint fires)
-    out = server.perform(steps=[{"op": "resume"}], wait=2.0)
+    out = server.perform(steps=[{"op": "resume"}], settle_seconds=2.0)
     assert out["status"] == "ok", out
     assert "stopped" in out and "base" not in out["stopped"], out
     stop = out["stopped"]
@@ -3924,7 +3918,7 @@ def test_perform_tail_says_so_if_the_machine_never_stops(tmp_path: Path) -> None
     fake = _names(tmp_path)
     fake.halted = False
     fake.where_raises = True            # never stops
-    out = server.perform(steps=[{"op": "resume"}], wait=0.5)
+    out = server.perform(steps=[{"op": "resume"}], settle_seconds=0.5)
     assert out["status"] == "ok", out
     assert out["verdict"] == "TIMEOUT" and "did not stop" in out["note"], out
     assert "still_running" not in out, "no boolean restates the verdict"
@@ -3940,7 +3934,7 @@ def test_perform_console_step_after_resume_runs_once_the_machine_stops(
     fake = _names(tmp_path)
     fake.halted = False                 # resume leaves it running
     fake.where_refusals = 2             # ...then the machine stops
-    out = server.perform(steps=[{"op": "resume"}, {"op": "registers"}], wait=2.0)
+    out = server.perform(steps=[{"op": "resume"}, {"op": "registers"}], settle_seconds=2.0)
     assert out["status"] == "ok", out
     assert [r["op"] for r in out["ran"]] == ["resume", "registers"], out
 
@@ -4046,7 +4040,7 @@ def test_perform_after_a_run_to_that_timed_out_needs_no_tail(tmp_path: Path) -> 
     fake.runto_running = True           # run_to bound expired: interrupted, stopped
     fake.control_hits = 1          # the control fired: the TIMEOUT is a measurement
     out = server.perform(steps=[{"op": "run_to", "ref": "0000:0000", "control": "0000:0020"},
-                                {"op": "registers"}], wait=2.0)
+                                {"op": "registers"}], settle_seconds=2.0)
     assert out["status"] == "ok" and out["steps_completed"] == 2, out
     assert "stopped" not in out and "still_running" not in out, out
 
@@ -4062,7 +4056,7 @@ def test_perform_reports_a_gone_emulator_as_gone_not_still_running(
     fake.halted = False
     fake.where_raises = True
     fake.dies_on_resume = True          # alive when perform starts, dead after the resume
-    out = server.perform(steps=[{"op": "resume"}], wait=0.5)
+    out = server.perform(steps=[{"op": "resume"}], settle_seconds=0.5)
     assert out["status"] == "INVALID" and out["code"] == "session_broken", out
     assert "GONE" in out["message"], out
     # BOUNDARY: a console op after a running step, emulator gone -> refused naming GONE.
@@ -4070,7 +4064,7 @@ def test_perform_reports_a_gone_emulator_as_gone_not_still_running(
     fake2.halted = False
     fake2.where_raises = True
     fake2.dies_on_resume = True
-    blocked = server.perform(steps=[{"op": "resume"}, {"op": "registers"}], wait=0.5)
+    blocked = server.perform(steps=[{"op": "resume"}, {"op": "registers"}], settle_seconds=0.5)
     assert blocked["status"] == "INVALID" and "GONE" in blocked["message"], blocked
 
 
@@ -4098,7 +4092,7 @@ def test_perform_tail_keeps_the_account_when_the_final_enrichment_refuses(
     fake.halted = False                 # resume leaves running
     fake.where_refusals = 1             # the wait succeeds on the next poll
     fake.registers_raises = True        # _stop_reply reads registers and it refuses (cut pane)
-    out = server.perform(steps=[{"op": "resume"}], wait=2.0)
+    out = server.perform(steps=[{"op": "resume"}], settle_seconds=2.0)
     assert out["status"] == "ok", out   # the sequence account survives
     assert out["steps_completed"] == 1 and [r["op"] for r in out["ran"]] == ["resume"], out
     assert out["stopped"]["enrichment"]["available"] is False, out
@@ -4125,12 +4119,12 @@ def test_start_with_a_plan_runs_it_on_the_fresh_session_and_folds_the_boot_in(
 
     with mock.patch("dosbox_x_server.ds.Session", build):
         out = cast(dict[str, Any], server.start(
-            conf=str(conf), cwd=str(tmp_path), seconds=30,
+            conf=str(conf), cwd=str(tmp_path), session_seconds=30,
             plan=[{"op": "registers"}]))
     assert out["status"] == "ok", out
     assert [r["op"] for r in out["ran"]] == ["registers"], out
     # THE BOOT IS FOLDED IN under `start`, stripped of status/session.
-    assert out["start"]["mode"] == "headless" and "argv" in out["start"], out
+    assert out["start"]["shared"] is False and "argv" in out["start"], out
     assert "status" not in out["start"] and "session" not in out["start"], out
 
     # A plan that FAILS AT A STEP leaves the session OPEN (start does not close it): a symbol
@@ -4139,7 +4133,7 @@ def test_start_with_a_plan_runs_it_on_the_fresh_session_and_folds_the_boot_in(
     dstate.STATE.session = None
     with mock.patch("dosbox_x_server.ds.Session", build):
         failed = cast(dict[str, Any], server.start(
-            conf=str(conf), cwd=str(tmp_path), seconds=30,
+            conf=str(conf), cwd=str(tmp_path), session_seconds=30,
             plan=[{"op": "watch_add", "ref": "no_such", "mode": "show"}]))
     assert failed["status"] == "INVALID" and failed["failed_at"] == 0, failed
     # annotated `object` so mypy does not narrow `dstate.STATE.session` here and then call the
@@ -4150,7 +4144,7 @@ def test_start_with_a_plan_runs_it_on_the_fresh_session_and_folds_the_boot_in(
     dstate.STATE.session = None
     with mock.patch("dosbox_x_server.ds.Session", build):
         plain = cast(dict[str, Any], server.start(
-            conf=str(conf), cwd=str(tmp_path), seconds=30))
+            conf=str(conf), cwd=str(tmp_path), session_seconds=30))
     assert plain["status"] == "ok" and "ran" not in plain and "start" not in plain, plain
 
 
@@ -4199,7 +4193,8 @@ def _start_on_a_booted_fake(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
         return fake
 
     with mock.patch("dosbox_x_server.ds.Session", booted):
-        return cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path), seconds=60,
+        return cast(dict[str, Any], server.start(
+            conf=str(conf), cwd=str(tmp_path), session_seconds=60,
                                                  **kw))
 
 
@@ -4227,7 +4222,8 @@ def test_start_launches_the_binary_it_resolved_and_says_which(
 
     monkeypatch.setenv("PATH", str(tmp_path / "empty"))
     with mock.patch("dosbox_x_server.ds.Session", session):
-        got = cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path), seconds=60,
+        got = cast(dict[str, Any], server.start(
+            conf=str(conf), cwd=str(tmp_path), session_seconds=60,
                                                 binary=str(mine)))
     assert got["status"] == "ok", got
     assert [launch.binary for launch in launched] == [str(mine)]
@@ -4242,7 +4238,8 @@ def test_start_with_no_rung_resolving_is_refused_before_anything_starts(
     monkeypatch.setenv("PATH", str(tmp_path / "empty"))
     spawned: list[object] = []
     with mock.patch("dosbox_x_server.ds.Session", lambda launch: spawned.append(launch)):
-        got = cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path), seconds=60))
+        got = cast(dict[str, Any], server.start(
+            conf=str(conf), cwd=str(tmp_path), session_seconds=60))
     assert got["status"] == "INVALID" and got["code"] == "host_failed", got
     assert "DOSBOX_X_BINARY held nothing" in got["message"] and spawned == []
 
@@ -4256,7 +4253,7 @@ def test_start_from_the_path_with_a_plan_says_which_build_under_start(
     on_path.write_text('#!/bin/sh\necho "DOSBox-X version path" >&2; exit 1\n', encoding="utf-8")
     on_path.chmod(0o755)
     monkeypatch.setenv("PATH", str(on_path.parent))
-    got = _start_on_a_booted_fake(tmp_path, monkeypatch, plan=[{"op": "status"}], plan_wait=0,
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch, plan=[{"op": "status"}], settle_seconds=0,
                                   which=False)
     assert got["status"] == "ok", got
     assert (got["start"]["binary"], got["start"]["binary_origin"], got["start"]["version"]) == (
@@ -4270,7 +4267,7 @@ def test_start_with_a_plan_keeps_session_as_the_last_key(tmp_path: Path,
     session block read the start facts instead. Found by a repository's session driving
     the server. The session is faked at the seam `start` builds it through, so the plan
     path runs whole without an emulator."""
-    got = _start_on_a_booted_fake(tmp_path, monkeypatch, plan=[{"op": "status"}], plan_wait=0)
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch, plan=[{"op": "status"}], settle_seconds=0)
     assert got["status"] == "ok" and "start" in got, got
     assert list(got)[-1] == "session", f"the reply ends in {list(got)[-1]!r}, not `session`"
 
@@ -4284,7 +4281,7 @@ def test_breakpoint_clear_by_ref_takes_the_family_without_touching_watches(
     server.breakpoint_at(ref="_uicue_apply")
     server.breakpoint_interrupt(number=0x21)
     server.watch_add(ref="00AF:0100", mode="change", length=4)
-    cleared = server.breakpoint_clear()
+    cleared = server.breakpoint_clear(all=True)
     assert cleared["declarations_cleared"] == 2                  # bp + interrupt, not watch
     kinds = sorted(d.kind for d in dstate.STATE.store.declarations())  # type: ignore[union-attr]
     assert kinds == ["watch"], kinds
@@ -4327,7 +4324,7 @@ def test_breakpoint_clear_disarms_only_its_own_and_leaves_the_foreign(
     fake = _names(tmp_path, symbols=[dsym.Symbol("_main", 0x16DD80, kind="T")])
     server.breakpoint_at(ref="_main")
     fake.rows.append({"index": "09", "entry": "BP F000:E05B"})    # foreign
-    got = server.breakpoint_clear()
+    got = server.breakpoint_clear(all=True)
     assert got["declarations_cleared"] == 1
     assert got["disarmed"] == ["BP 00A7:16DD80"]
     assert {r["entry"] for r in fake.rows} == {"BP F000:E05B"}    # the foreign one stays
@@ -4343,7 +4340,7 @@ def test_symbols_load_rearms_a_declaration_at_its_new_address(tmp_path: Path) ->
     # declare while unresolved (no table yet loaded through symbols_load)
     server.breakpoint_at(ref="_main")
     assert fake.rows == [], "nothing to arm against before a table is loaded"
-    got = server.symbols_load(source=str(nm), base="400000")
+    got = server.symbols_load(path=str(nm), base="400000")
     assert got["status"] == "ok"
     assert got["declarations"]["rearmed"] == 1
     assert any(r["entry"] == "BP 00A7:16DD80" for r in fake.rows)
@@ -4447,7 +4444,7 @@ def test_watch_clear_disarms_change_and_leaves_read_alone(tmp_path: Path) -> Non
     _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
     server.watch_add(ref="g_rate", mode="show", length=4, fmt="u32")     # arms nothing
     server.watch_add(ref="0040:006C", mode="change", length=4)          # arms a BPPM row
-    got = server.watch_clear()
+    got = server.watch_clear(all=True)
     assert got["declarations_cleared"] == 2
     assert got["disarmed"], "the change-watch's entry should have been removed"
     assert dstate.STATE.store.declarations() == []   # type: ignore[union-attr]
@@ -4459,7 +4456,7 @@ def test_rearm_counts_unresolved_and_ambiguous(tmp_path: Path) -> None:
     _names(tmp_path)
     server.breakpoint_at(ref="_main")          # will resolve once loaded
     server.breakpoint_at(ref="_gone")          # stays unresolved
-    got = server.symbols_load(source=str(nm), base="400000")
+    got = server.symbols_load(path=str(nm), base="400000")
     assert got["declarations"]["unresolved"] == 1
     assert got["declarations"]["rearmed"] == 1
 
@@ -4517,7 +4514,7 @@ def test_watch_clear_reports_disarmed_only_after_reading_the_removal_back(
     fake = _names(tmp_path)
     server.watch_add(ref="0040:006C", mode="change", length=4)     # arms a BPPM row
     monkeypatch.setattr(fake, "command", lambda *_a, **_k: "")    # BPDEL is a no-op now
-    got = server.watch_clear()
+    got = server.watch_clear(all=True)
     assert got["declarations_cleared"] == 1
     assert got["disarmed"] == [], "the watch was NOT gone from the list, so not disarmed"
 
@@ -4540,7 +4537,8 @@ def test_start_refuses_a_corrupt_declaration_file_before_launching(
         raise AssertionError("ds.Session must not be built when the store is corrupt")
     monkeypatch.setattr(ds, "Session", no_session)
     dstate.STATE.session = None
-    got = cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path), seconds=1))
+    got = cast(dict[str, Any], server.start(
+            conf=str(conf), cwd=str(tmp_path), session_seconds=1))
     assert got["status"] == "INVALID" and "not a mapping" in got["message"]
     assert dstate.STATE.session is None, "no session may be left behind by a refused start"
 
@@ -4597,7 +4595,7 @@ def test_watch_flows_in_real_mode_arm_list_and_clear(tmp_path: Path) -> None:
     lst = cast(dict[str, Any], server.watch_list())
     assert lst["watches"][0]["state"] == "armed"
     assert str(lst["watches"][0]["entry"]).startswith("BPMEM ")
-    cl = cast(dict[str, Any], server.watch_clear())
+    cl = cast(dict[str, Any], server.watch_clear(all=True))
     assert cl["disarmed"]
     assert cast(dict[str, Any], server.watch_list())["watches"] == []
 
@@ -4653,7 +4651,7 @@ def test_watch_clear_skips_an_unresolvable_change_and_still_clears_the_store(
     assert st is not None
     st.add(dec.Declaration("watch", "symbol", "gone", width=4, fmt="u32",
                            watch_mode="change"))
-    got = cast(dict[str, Any], server.watch_clear())
+    got = cast(dict[str, Any], server.watch_clear(all=True))
     assert got["declarations_cleared"] == 1 and got["disarmed"] == []
 
 
@@ -5057,10 +5055,10 @@ def test_clearing_a_ref_that_matches_nothing_is_refused_naming_what_there_is(
     assert "BPINT 21 AH=4B" in wrong["message"], wrong["message"]
     assert server.breakpoint_list()["breakpoints"][0]["state"] == "armed"
     assert server.watch_clear(ref="_nope")["status"] == "INVALID"
-    server.breakpoint_clear()
-    empty = server.breakpoint_clear()
+    server.breakpoint_clear(all=True)
+    empty = server.breakpoint_clear(all=True)
     assert empty["status"] == "ok" and empty["declarations_cleared"] == 0, empty
-    assert server.watch_clear()["status"] == "ok"
+    assert server.watch_clear(all=True)["status"] == "ok"
 
 
 # ------------------------------------------- stale raw addresses across sessions
@@ -5084,7 +5082,7 @@ def test_symbols_load_leaves_another_builds_raw_address_stale_and_names_what_it_
     fake.rows.clear()
     dstate.STATE.session_origin = "s2"
     dstate.STATE.conf_fingerprint = dlaunch.fingerprint(fake.launch.conf)
-    got = server.symbols_load(source=str(nm), base="400000")
+    got = server.symbols_load(path=str(nm), base="400000")
     assert got["declarations"]["rearmed"] == 1, got["declarations"]
     assert got["declarations"]["rearmed_refs"] == ["_main"], got["declarations"]
     assert got["declarations"]["stale"] == ["00A7:5C6F0"], got["declarations"]
@@ -5131,7 +5129,8 @@ def _start_over_a_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
     booted = double(conf=conf)
     monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
     with mock.patch("dosbox_x_server.ds.Session", lambda _l: booted):
-        got = cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path), seconds=60))
+        got = cast(dict[str, Any], server.start(
+            conf=str(conf), cwd=str(tmp_path), session_seconds=60))
     return got, booted
 
 
@@ -5208,15 +5207,15 @@ def test_a_relative_path_is_refused_and_an_absolute_one_names_the_file_it_looked
     nm.write_text("0016dd80 T _main\n", encoding="utf-8")
     fake = _names(tmp_path)
     fake.launch = dataclasses.replace(fake.launch, cwd=tmp_path)
-    rel = server.symbols_load(source="one.nm", base="400000")
+    rel = server.symbols_load(path="one.nm", base="400000")
     assert rel["code"] == "bad_argument" and "relative" in rel["message"], rel
-    got = server.symbols_load(source=str(nm), base="400000")
+    got = server.symbols_load(path=str(nm), base="400000")
     assert got["status"] == "ok", got
-    missing = server.symbols_load(source=str(tmp_path / "nope.nm"), base="400000")
+    missing = server.symbols_load(path=str(tmp_path / "nope.nm"), base="400000")
     assert missing["status"] == "INVALID" and str(tmp_path / "nope.nm") in missing["message"], (
         missing)
     dstate.STATE.session = None
-    rel = server.start(conf="x.conf", cwd="rel/dir", seconds=30)
+    rel = server.start(conf="x.conf", cwd="rel/dir", session_seconds=30)
     assert rel["status"] == "INVALID", rel
     assert "cwd='rel/dir' must be an absolute path" in rel["message"], rel
 
@@ -5251,35 +5250,35 @@ def test_perform_does_not_wait_for_a_stop_when_the_last_step_was_a_running_guest
 
     fake.resume, fake.run_to = _resume, _run_to  # type: ignore[method-assign]
     began = time.monotonic()
-    out = server.perform(steps=[{"op": "resume"}, {"op": "status"}], wait=5.0)
+    out = server.perform(steps=[{"op": "resume"}, {"op": "status"}], settle_seconds=5.0)
     assert out["status"] == "ok" and out.get("still_running") is True, out
     assert time.monotonic() - began < 2.0, "the tail waited for a stop nobody asked for"
     assert "no stop was waited for" in out["note"], out
     fake.running = False
     began = time.monotonic()
-    tail = server.perform(steps=[{"op": "resume"}], wait=0.6)
+    tail = server.perform(steps=[{"op": "resume"}], settle_seconds=0.6)
     assert tail.get("verdict") == "TIMEOUT" and time.monotonic() - began >= 0.5, tail
     fake.running = False
     server.breakpoint_at(ref="00A7:0100")
     began = time.monotonic()
-    armed = server.perform(steps=[{"op": "resume"}, {"op": "status"}], wait=0.6)
+    armed = server.perform(steps=[{"op": "resume"}, {"op": "status"}], settle_seconds=0.6)
     assert armed.get("verdict") == "TIMEOUT" and time.monotonic() - began >= 0.5, armed
-    # `wait=0` NEVER waits, breakpoint or not, and says so.
+    # `settle_seconds=0` NEVER waits, breakpoint or not, and says so.
     fake.running = False
     began = time.monotonic()
-    zero = server.perform(steps=[{"op": "resume"}, {"op": "status"}], wait=0)
+    zero = server.perform(steps=[{"op": "resume"}, {"op": "status"}], settle_seconds=0)
     assert zero.get("still_running") is True and time.monotonic() - began < 0.5, zero
-    assert "wait=0" in zero["note"], zero
+    assert "settle_seconds=0" in zero["note"], zero
     # A STALE raw address (another build's, never re-armed) cannot stop it: no wait.
     fake.running = False
-    server.breakpoint_clear()
+    server.breakpoint_clear(all=True)
     dstate.STATE.session_origin = "s2"
     dstate.STATE.conf_fingerprint = "fp-now"
     dstate.STATE.store.add(dec.Declaration("breakpoint", "address", "00A7:0200",  # type: ignore[union-attr]
                                       origin="s1", fingerprint="fp-old"))
     fake.running = False
     began = time.monotonic()
-    stale = server.perform(steps=[{"op": "resume"}, {"op": "status"}], wait=5.0)
+    stale = server.perform(steps=[{"op": "resume"}, {"op": "status"}], settle_seconds=5.0)
     assert stale.get("still_running") is True and time.monotonic() - began < 2.0, stale
 
 
@@ -5326,9 +5325,9 @@ def test_a_declaration_from_a_store_that_kept_no_origin_is_listed_as_an_orphan(
     armed = next(w for w in wl["watches"] if w["ref"] == "00A7:0200")
     assert armed["state"] == "armed" and armed["orphan"] is True and wl["foreign"] == [], wl
     fake.rows.clear()
-    assert server.breakpoint_clear()["declarations_cleared"] == 4      # the watches stay
+    assert server.breakpoint_clear(all=True)["declarations_cleared"] == 4      # the watches stay
     assert sorted(w["ref"] for w in server.watch_list()["watches"]) == ["00A7:0200", "g_rate"]
-    assert server.watch_clear()["declarations_cleared"] == 2
+    assert server.watch_clear(all=True)["declarations_cleared"] == 2
     assert fake.rows == []
 
 
@@ -5405,7 +5404,7 @@ def test_what_is_asked_while_the_guest_runs_is_applied_at_the_next_stop(
     assert [r["entry"] for r in fake.rows] == ["BP 00A7:2000"]
     fake.running = True
     fake.halted = False
-    loaded = server.symbols_load(source=str(nm), base="400000")
+    loaded = server.symbols_load(path=str(nm), base="400000")
     assert loaded["status"] == "ok" and loaded["pending"] is True, loaded
     # the table is held at once
     assert server.symbols_find(name="_main")["symbols_total"] == 1
@@ -5641,7 +5640,7 @@ def test_the_running_guest_contract_holds_at_its_edges(tmp_path: Path) -> None:
     server.resume()
     fake.running = True
     fake.halted = False
-    assert server.symbols_load(source=str(nm), base="400000")["pending"] is True
+    assert server.symbols_load(path=str(nm), base="400000")["pending"] is True
     assert server.breakpoint_at(ref="00A7:0100")["state"] == "pending"
     assert server.breakpoint_clear(ref="00A7:0100")["pending_disarm"] == []   # never armed
     assert server.breakpoint_interrupt(number=0x21)["state"] == "pending"
@@ -5661,7 +5660,7 @@ def test_the_running_guest_contract_holds_at_its_edges(tmp_path: Path) -> None:
     assert "BP 00A7:1000" in entries and "BPINT 21" in entries and "BP 00A7:0200" in entries
     # A RELOAD MOVES `_main`: two rows armed for one ref, and a clear takes both.
     nm.write_text("00001200 T _main\n", encoding="utf-8")
-    server.symbols_load(source=str(nm), base="400000")
+    server.symbols_load(path=str(nm), base="400000")
     entries = [r["entry"] for r in fake.rows]
     assert "BP 00A7:1000" in entries and "BP 00A7:1200" in entries, entries
     cleared = server.breakpoint_clear(ref="_main")
@@ -5893,7 +5892,7 @@ def test_perform_carries_the_clients_context_to_its_wait(
 
     async def main() -> None:
         await anyio.to_thread.run_sync(
-            lambda: server.perform(steps=[{"op": "resume"}], wait=0.3, ctx=_Ctx()))
+            lambda: server.perform(steps=[{"op": "resume"}], settle_seconds=0.3, ctx=_Ctx()))
 
     anyio.run(main)
     assert got and got[0].startswith("waiting for the machine to stop")
@@ -6018,11 +6017,11 @@ def test_perform_checks_every_steps_arguments_before_any_step_runs(tmp_path: Pat
     first, and `ctx` is refused there too."""
     fake = _names(tmp_path)
     fake.halted = False
-    out = server.perform(steps=[{"op": "resume"}, {"op": "status", "bogus": 1}], wait=1.0)
+    out = server.perform(steps=[{"op": "resume"}, {"op": "status", "bogus": 1}], settle_seconds=1.0)
     assert out["status"] == "INVALID" and "bad arguments" in out["message"], out
     assert out["steps_completed"] == 0 and out["ran"] == [] and out["failed_at"] == 1
     assert fake.stop_count == 0, "the resume never went out"
-    out = server.perform(steps=[{"op": "resume"}, {"op": "status", "ctx": 1}], wait=1.0)
+    out = server.perform(steps=[{"op": "resume"}, {"op": "status", "ctx": 1}], settle_seconds=1.0)
     assert out["status"] == "INVALID" and "`ctx`" in out["message"] and out["steps_completed"] == 0
 
 
@@ -6111,12 +6110,12 @@ def test_capture_frame_replies_with_the_source_it_read_and_the_frame_asked(
     source, so a caller could not tell which capture the still came out of when the
     default (the largest) was taken."""
     install()
-    got = server.capture_frame(at=3, dest=str(tmp_path / "f.png"))
+    got = server.capture_frame(frame=3, dest=str(tmp_path / "f.png"))
     assert got["frame"] == 3 and got["capture_path"] == "/caps/run_001.avi", got
     assert "at_frame" not in got
     own = tmp_path / "run_000.avi"
     own.write_bytes(b"RIFF")
-    named = server.capture_frame(at=3, dest=str(tmp_path / "g.png"), source=str(own))
+    named = server.capture_frame(frame=3, dest=str(tmp_path / "g.png"), capture_path=str(own))
     assert named["capture_path"] == str(own)
 
 
@@ -6241,7 +6240,8 @@ def test_start_leaves_the_park_at_the_debugger_recorded_as_stop_one(tmp_path: Pa
             return 0.5
 
     with mock.patch("dosbox_x_server.ds.Session", lambda _l: Booted(conf=conf)):
-        out = cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path), seconds=30))
+        out = cast(dict[str, Any], server.start(
+            conf=str(conf), cwd=str(tmp_path), session_seconds=30))
     assert out["status"] == "ok", out
     recorded = dstate.STATE.as_of()
     assert recorded is not None and recorded["stop_seq"] == 1, recorded
@@ -6305,7 +6305,7 @@ def test_a_bad_value_in_a_later_step_runs_nothing_and_every_refusal_is_listed(
     out = cast(dict[str, Any], server.perform(steps=[
         {"op": "send_keys", "keys": ["b"]},
         {"op": "send_keys", "keys": ["not_a_real_key_xyz"]},
-        {"op": "log", "pattern": "(", "channel": "guest"}], wait=0.5))
+        {"op": "log", "pattern": "(", "channel": "guest"}], settle_seconds=0.5))
     assert out["status"] == "INVALID" and out["code"] == "bad_argument", out
     assert out["ran"] == [] and out["steps_completed"] == 0 and out["failed_at"] == 1, out
     assert fake.commands_sent == [], "a key was posted before the batch was checked"
@@ -6366,16 +6366,16 @@ def test_the_modifier_vocabulary_is_the_dos_keyboard_s() -> None:
     ("write", {"ref": "_g", "data_hex": "abc"}, {"ref": "_g", "data_hex": "abcd"}),
     ("set_register", {"name": "xyz", "value": 1}, {"name": "ax", "value": 1}),
     ("set_register", {"name": "ax", "value": "1"}, {"name": "ax", "value": 0x1234}),
-    ("symbols_load", {"source": "/x/m.map", "base": "1", "section_bases": {"1": "1"}},
-     {"source": "/x/m.map", "base": "1"}),
-    ("symbols_load", {"source": "/x/m.map", "base": 4096},
-     {"source": "/x/m.map", "base": "0x1000"}),
-    ("symbols_load", {"source": "m.map"}, {"source": "/x/m.map"}),
-    ("symbols_load", {"source": "/x/m.map", "types": "t"},
-     {"source": "/x/m.map", "types": "/x/t"}),
-    ("capture_frame", {"at": -1, "dest": "/x/s.png"}, {"at": 3, "dest": "/x/s.png"}),
-    ("capture_frame", {"at": 3, "dest": "/x/s.png", "source": "c.avi"},
-     {"at": 3, "dest": "/x/s.png", "source": "/x/c.avi"}),
+    ("symbols_load", {"path": "/x/m.map", "base": "1", "section_bases": {"1": "1"}},
+     {"path": "/x/m.map", "base": "1"}),
+    ("symbols_load", {"path": "/x/m.map", "base": 4096},
+     {"path": "/x/m.map", "base": "0x1000"}),
+    ("symbols_load", {"path": "m.map"}, {"path": "/x/m.map"}),
+    ("symbols_load", {"path": "/x/m.map", "types": "t"},
+     {"path": "/x/m.map", "types": "/x/t"}),
+    ("capture_frame", {"frame": -1, "dest": "/x/s.png"}, {"frame": 3, "dest": "/x/s.png"}),
+    ("capture_frame", {"frame": 3, "dest": "/x/s.png", "capture_path": "c.avi"},
+     {"frame": 3, "dest": "/x/s.png", "capture_path": "/x/c.avi"}),
 ])
 def test_every_registry_entry_refuses_its_bad_value_and_passes_its_good_one(
         op: str, bad: dict[str, Any], good: dict[str, Any]) -> None:
@@ -6452,6 +6452,8 @@ def test_read_memory_length_is_bounded_and_resume_takes_the_siblings_bound(
         assert out["status"] == "INVALID" and "memdump" in out["message"], out
     out = cast(dict[str, Any], server.resume(seconds=-1))
     assert out["status"] == "INVALID" and "negative" in out["message"], out
+    past = cast(dict[str, Any], server.resume(seconds=ds.RUN_TO_MAX + 1))
+    assert past["code"] == "bad_argument" and f"past the {ds.RUN_TO_MAX} s" in past["message"]
     fake.launch.watched = True                   # a windowed session needs no stopper
     def read_nothing(timeout: float) -> str:
         time.sleep(timeout)
@@ -6592,7 +6594,7 @@ def test_perform_checks_a_symbols_find_step_before_any_step_runs(tmp_path: Path)
                 # never a TypeError out of the comparison (the auditor's input).
                 {"op": "symbols_find", "name": "_m", "limit": "5"},
                 {"op": "symbols_find", "name": "_m", "limit": True}):
-        out = server.perform(steps=[{"op": "send_keys", "keys": ["a"]}, bad], wait=1.0)
+        out = server.perform(steps=[{"op": "send_keys", "keys": ["a"]}, bad], settle_seconds=1.0)
         assert out["status"] == "INVALID" and out["ran"] == [], (bad, out)
         assert out["errors"][0]["step"] == 1 and out["errors"][0]["op"] == "symbols_find", out
     assert fake.commands_sent == [], "a refused list must not have posted a key"
@@ -6682,9 +6684,9 @@ def test_a_second_load_with_a_narrower_pattern_keeps_what_the_first_one_placed(
     """
     install(mode="Pr32")
     src = _source(tmp_path)
-    first = cast(dict[str, Any], server.symbols_load(source=src, pattern="_engine_create"))
+    first = cast(dict[str, Any], server.symbols_load(path=src, pattern="_engine_create"))
     assert first["kept"] == 1, first
-    second = cast(dict[str, Any], server.symbols_load(source=src, pattern="_main"))
+    second = cast(dict[str, Any], server.symbols_load(path=src, pattern="_main"))
     assert second["kept"] == 1, second
     assert second["table_mode"] == "accumulated", second
     assert second["table_total"] == 2, second
@@ -6703,12 +6705,12 @@ def test_a_types_name_the_table_lacks_is_refused_before_anything_is_written(
     """
     s = install(mode="Pr32")
     src = _source(tmp_path)
-    first = cast(dict[str, Any], server.symbols_load(source=src, pattern="_engine_create"))
+    first = cast(dict[str, Any], server.symbols_load(path=src, pattern="_engine_create"))
     assert first["table_total"] == 1, first
     loaded_before = list(s.loaded)
     types_file = tmp_path / "dos-djgpp32.types"
     types_file.write_text("_no_such_symbol: u32\n", encoding="utf-8")
-    bad = cast(dict[str, Any], server.symbols_load(source=src, pattern="_main",
+    bad = cast(dict[str, Any], server.symbols_load(path=src, pattern="_main",
                                                    types=str(types_file)))
     assert bad["status"] == "INVALID", bad
     assert "types are named for symbols the table lacks" in bad["message"], bad
@@ -6950,7 +6952,8 @@ def test_start_hands_the_callers_flags_to_a_headless_launch(
     monkeypatch.setattr(shutil, "which", lambda _: "/bin/true")
     monkeypatch.setattr(ds, "Session", Recorder)
     dstate.STATE.session = None
-    got = cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path), seconds=30,
+    got = cast(dict[str, Any], server.start(
+            conf=str(conf), cwd=str(tmp_path), session_seconds=30,
                                             flags=["-set", "cpu cycles=fixed 3000"],
                                             break_on_int3=True))
     assert got["code"] == "session_broken", got
@@ -6966,7 +6969,7 @@ def test_symbols_load_takes_its_base_as_hex_text(tmp_path: Path, spelled: str) -
     install()
     src = tmp_path / "real16.map"
     src.write_text(TLINK_TEXT, encoding="utf-8")
-    got = cast(dict[str, Any], server.symbols_load(source=str(src), base=spelled))
+    got = cast(dict[str, Any], server.symbols_load(path=str(src), base=spelled))
     assert got["status"] == "ok", got
     assert got["base"] == 0x1000, got
 
@@ -6978,7 +6981,7 @@ def test_symbols_load_refuses_a_base_that_is_not_hex_text(tmp_path: Path, bad: o
     install()
     src = tmp_path / "real16.map"
     src.write_text(TLINK_TEXT, encoding="utf-8")
-    got = cast(dict[str, Any], server.symbols_load(source=str(src), base=bad))
+    got = cast(dict[str, Any], server.symbols_load(path=str(src), base=bad))
     assert got["code"] == "bad_argument" and "base" in got["message"], got
 
 
@@ -6989,10 +6992,10 @@ def test_section_bases_are_hex_text_too(tmp_path: Path) -> None:
     src = tmp_path / "flat.map"
     src.write_text(TLINK32_TEXT, encoding="utf-8")
     got = cast(dict[str, Any], server.symbols_load(
-        source=str(src), section_bases={"1": "0x401000", "2": "423000"}))
+        path=str(src), section_bases={"1": "0x401000", "2": "423000"}))
     assert got["status"] == "ok" and got["kept"] == 2, got
     bad = cast(dict[str, Any], server.symbols_load(
-        source=str(src), section_bases={"1": 0x401000}))
+        path=str(src), section_bases={"1": 0x401000}))
     assert bad["code"] == "bad_argument" and "section_bases" in bad["message"], bad
 
 
@@ -7222,7 +7225,7 @@ def test_drive_hands_summaries_to_its_act(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize("bad_step", [
     {"op": "symbols_find", "linear": "56DFZZ"},
-    {"op": "symbols_load", "source": "x.map", "section_bases": {"1": 4096}}])
+    {"op": "symbols_load", "path": "x.map", "section_bases": {"1": 4096}}])
 def test_a_list_refuses_a_bad_hex_address_before_its_first_step_runs(
         tmp_path: Path, bad_step: dict[str, Any]) -> None:
     """The hex text of `linear` and of `section_bases` is judged with the rest of the list,
@@ -7313,7 +7316,7 @@ def test_a_list_that_waited_mid_way_and_ends_running_carries_no_target(
     fake.resume = resume  # type: ignore[method-assign]
     out = cast(dict[str, Any], server.perform(
         steps=[{"op": "resume"}, {"op": "registers"}, {"op": "resume"}, {"op": "status"}],
-        wait=2.0))
+        settle_seconds=2.0))
     assert out["status"] == "ok" and out.get("still_running") is True, out
     assert "verdict" not in out, out
 
@@ -7362,7 +7365,7 @@ def test_drive_says_its_act_ended_after_its_last_step_when_the_emulator_went(
     _names(tmp_path, watched=True)
     server.breakpoint_interrupt(number=0x21)            # something declared: the tail waits
     monkeypatch.setattr(sequence, "_wait_for_stop", lambda *a, **k: "gone")
-    got = cast(dict[str, Any], server.drive(act=[{"op": "resume"}], wait=1))
+    got = cast(dict[str, Any], server.drive(act=[{"op": "resume"}], settle_seconds=1))
     assert got.get("code") == "step_failed", {k: got[k] for k in ("summary", "status")}
     assert "GONE" in got["message"] and "available" not in got["message"], got
     assert "after its last step" in got["message"], got["message"]
@@ -7389,3 +7392,38 @@ def test_a_stop_whose_survey_came_back_cut_names_no_mode_off_the_stop_before(
     got = cast(dict[str, Any], server.resume())
     assert got["pc"] == f"{fake.cs}:{fake.eip}", got
     assert got["cpu_mode"]["available"] is False, got
+
+
+@pytest.mark.parametrize(("shared", "said"), [(False, "headless"), (True, "shared")])
+def test_starts_line_names_how_the_session_is_watched(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, shared: bool, said: str) -> None:
+    kw: dict[str, Any] = {"shared": True, "window_flags": ["-set", "sdl display=1"]} if shared \
+        else {}
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch, **kw)
+    assert got["status"] == "ok" and got["summary"].startswith(f"start g.conf: {said} on "), got
+
+
+@pytest.mark.parametrize("tool", ["breakpoint_clear", "watch_clear"])
+@pytest.mark.parametrize("kw", [{}, {"ref": ""}, {"ref": "x", "all": True}])
+def test_a_clear_names_what_it_clears_even_past_the_pre_gate(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, tool: str, kw: dict[str, Any]) -> None:
+    """Neither a `ref` nor `all`, or both, is refused: by the pre-gate, and by the tool itself,
+    so no path to the body can take an empty `ref` for "every declaration"."""
+    _names(tmp_path)
+    server.watch_add(ref="00AF:0100", mode="change", length=4)
+    server.breakpoint_interrupt(number=0x21)
+    refused = cast(dict[str, Any], getattr(server, tool)(**kw))
+    assert refused["code"] == "bad_argument", refused
+    monkeypatch.setattr(checks, "check", lambda *a, **k: None)          # no pre-gate
+    past = cast(dict[str, Any], getattr(server, tool)(**kw))
+    assert past["code"] == "bad_argument", past
+    assert dstate.STATE.store is not None and len(dstate.STATE.store.declarations()) == 2
+
+
+def test_a_number_a_caller_spells_in_hex_reaches_the_tool_as_the_integer(tmp_path: Path) -> None:
+    fake = install()
+    got = cast(dict[str, Any], server.set_register(name="EAX", value="0xDEADBEEF"))
+    assert got["value"] == 0xDEADBEEF and got["regs"]["EAX"] == "DEADBEEF", got
+    assert cast(dict[str, Any], server.set_register(name="EAX", value=""))["code"] == \
+        "bad_argument"
+    del fake

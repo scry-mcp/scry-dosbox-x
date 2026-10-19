@@ -8,7 +8,7 @@
  "runs": [
   {
    "lines": [
-    "D120: {\"tool\":\"map_find\",\"args\":{}}"
+    "D120: {\"tool\": \"map_find\", \"args\": {}}"
    ],
    "right": true
   },

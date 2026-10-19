@@ -373,11 +373,6 @@ def check_expectation(expect: str | None, seconds: float | None) -> None:
                              "`expect` there is no reaction to wait for: it would be "
                              "silently ignored. Give an `expect` pattern, or drop `seconds`")
         return
-    if not isinstance(cast(object, expect), str) or not expect:
-        raise ds.Invalid("bad_argument",
-            f"`expect` is a non-empty regular expression over the E9 log; got "
-                         f"{expect!r}. An empty pattern matches every line, so it would "
-                         f"take the first unrelated trace as the reaction")
     dlogs.compiled(expect)
     dlogs.compiled(program_reaction(expect))
     wait_s = EFFECT_WAIT_DEFAULT_S if seconds is None else seconds

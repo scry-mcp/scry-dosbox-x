@@ -61,11 +61,11 @@ def test_each_frame_of_a_series_is_the_frame_the_avi_holds_at_that_number(tmp_pa
     avi = _avi(tmp_path)
     scratch = tmp_path / "scratch"
     out = media.series_capture(_Captures(avi, FRAMES), scratch, [2, 5, 9], None, None,  # type: ignore[arg-type]
-                               1, None, "", None)
+                               1, None, "", "")
     manifest = Path(out["manifest"])
     assert manifest.parent == scratch / "series" / "series-1" and out["kept_after_close"] is False
     assert (out["count"], out["first"], out["last"], out["distinct"]) == (3, 2, 9, 3)
-    assert out["frame_source"] == "avi" and out["source"] == str(avi)
+    assert out["frame_source"] == "avi" and out["capture_path"] == str(avi)
     assert out["crop"] == [0, 0, W, H]
     for frame in (2, 5, 9):
         kept = png.decode((manifest.parent / f"f{frame:06d}.png").read_bytes())
@@ -99,16 +99,16 @@ def _header(tmp_path: Path, width: int = W, height: int = H) -> Path:
 
 
 def test_the_frame_size_is_the_avis_own_header(tmp_path: Path) -> None:
-    assert avi.size("source", _header(tmp_path, 320, 200)) == (320, 200)
+    assert avi.size("capture_path", _header(tmp_path, 320, 200)) == (320, 200)
     (tmp_path / "x.avi").write_bytes(b"not an avi at all")
     with pytest.raises(ds.Invalid, match="no AVI main header"):
-        avi.size("source", tmp_path / "x.avi")
+        avi.size("capture_path", tmp_path / "x.avi")
     with pytest.raises(ds.Invalid, match="cannot be read"):
-        avi.size("source", tmp_path / "absent.avi")
+        avi.size("capture_path", tmp_path / "absent.avi")
     # A writer that leaves the size to the stream header: a 0x0 frame would judge every crop
     # off it and echo `[0, 0, 0, 0]` beside frames of the real size.
     with pytest.raises(ds.Invalid, match="declares a 0x200 frame"):
-        avi.size("source", _header(tmp_path, 0, 200))
+        avi.size("capture_path", _header(tmp_path, 0, 200))
 
 
 def _stub(monkeypatch: pytest.MonkeyPatch, writes: int, rc: int = 0,
@@ -142,7 +142,7 @@ def test_an_ffmpeg_that_failed_or_wrote_short_is_refused_and_leaves_nothing(
     dest = tmp_path / "kept"
     with pytest.raises(ds.Invalid, match=said) as e:
         media.series_capture(_Captures(_header(tmp_path), FRAMES), tmp_path / "s",  # type: ignore[arg-type]
-                             [1, 2, 3], None, None, 1, None, str(dest), None)
+                             [1, 2, 3], None, None, 1, None, str(dest), "")
     assert e.value.code == code and not dest.exists()
     assert ran[0][ran[0].index("-frames:v"):ran[0].index("-frames:v") + 2] == ["-frames:v", "3"]
     graph = ran[0][ran[0].index("-vf") + 1]
@@ -156,7 +156,7 @@ def test_what_ffmpeg_is_never_asked_about(tmp_path: Path, monkeypatch: pytest.Mo
     session = _Captures(head, FRAMES)
     with pytest.raises(ds.Invalid, match="leaves the capture's 64x48 frames"):
         media.series_capture(session, tmp_path / "s", [1], None, None, 1, [60, 0, 8, 8], "",  # type: ignore[arg-type]
-                             None)
+                             "")
     with pytest.raises(ds.Invalid, match="containing `%`"):
         media.check_series_capture(frames=[1], dest=str(tmp_path / "run%d"))
     assert ran == [], "every refusal above came before ffmpeg was run"
@@ -171,12 +171,12 @@ def test_a_second_series_in_the_scratch_takes_the_next_name(
     _stub(monkeypatch, 1)
     session = _Captures(_header(tmp_path), FRAMES)
     names = [Path(media.series_capture(session, tmp_path / "s", [1], None, None, 1, None, "",  # type: ignore[arg-type]
-                                       None)["manifest"]).parent.name for _ in range(2)]
+                                       "")["manifest"]).parent.name for _ in range(2)]
     assert names == ["series-1", "series-2"]
     (tmp_path / "there").mkdir()
     with pytest.raises(ds.Invalid, match="already exists"):
         media.series_capture(session, tmp_path / "s", [1], None, None, 1, None,  # type: ignore[arg-type]
-                             str(tmp_path / "there"), None)
+                             str(tmp_path / "there"), "")
 
 
 def test_a_dest_that_cannot_be_made_is_refused(tmp_path: Path,
@@ -188,7 +188,7 @@ def test_a_dest_that_cannot_be_made_is_refused(tmp_path: Path,
     monkeypatch.setattr(Path, "mkdir", denied)
     with pytest.raises(ds.Invalid, match="cannot be created: read-only") as e:
         media.series_capture(_Captures(_header(tmp_path), FRAMES), tmp_path / "s", [1], None,  # type: ignore[arg-type]
-                             None, 1, None, str(tmp_path / "kept"), None)
+                             None, 1, None, str(tmp_path / "kept"), "")
     assert e.value.code == "bad_argument"
 
 
@@ -200,7 +200,7 @@ def test_a_frame_past_the_real_end_is_refused_by_name(tmp_path: Path) -> None:
     assert avi.read_bytes().count(b"00dc") > FRAMES, "the tag count overstates, the control"
     with pytest.raises(ds.Invalid, match="holds 2 of the 3 frames asked: frame 13 is past") as e:
         media.series_capture(_Captures(avi, 2 * FRAMES), tmp_path / "s", [10, 11, 13], None,  # type: ignore[arg-type]
-                             None, 1, None, "", None)
+                             None, 1, None, "", "")
     assert e.value.code == "bad_argument"
 
 
@@ -210,7 +210,7 @@ def test_the_avi_s_frames_are_numbered_from_zero(tmp_path: Path) -> None:
     11 its last of 12, and frame 12 one past the end."""
     avi = _avi(tmp_path)
     out = media.series_capture(_Captures(avi, FRAMES), tmp_path / "s", [0, 11], None, None,  # type: ignore[arg-type]
-                               1, None, "", None)
+                               1, None, "", "")
     first = tmp_path / "first.png"
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(avi), "-frames:v", "1", "-f",
                     "image2", "-c:v", "png", "-pix_fmt", "rgb24", str(first)],
@@ -219,7 +219,7 @@ def test_the_avi_s_frames_are_numbered_from_zero(tmp_path: Path) -> None:
     assert kept.pixels == raster.rgb(png.decode(first.read_bytes()))
     with pytest.raises(ds.Invalid, match="holds 1 of the 2 frames asked: frame 12 is past"):
         media.series_capture(_Captures(avi, FRAMES), tmp_path / "t", [11, 12], None, None,  # type: ignore[arg-type]
-                             1, None, "", None)
+                             1, None, "", "")
 
 
 @needs_ffmpeg
@@ -237,10 +237,10 @@ def test_series_capture_answers_through_this_server_with_its_paths_where_they_we
     monkeypatch.setattr(dstate.STATE, "session_scratch", lambda: tmp_path / "scratch")
     dest = tmp_path / "kept"
     r = cast(dict[str, Any], server.series_capture(first=0, last=1, crop=[0, 0, 8, 4],
-                                                   dest=str(dest), source=str(avi)))
+                                                   dest=str(dest), capture_path=str(avi)))
     assert r["status"] == "ok" and "session" in r, r
     assert r["kept_after_close"] is True and Path(r["manifest"]).parent == dest, r
-    assert r["source"] == str(avi) and r["crop"] == [0, 0, 8, 4] and r["count"] == 2, r
+    assert r["capture_path"] == str(avi) and r["crop"] == [0, 0, 8, 4] and r["count"] == 2, r
 
 
 def test_a_media_file_tool_answers_in_this_server_s_envelope(tmp_path: Path) -> None:

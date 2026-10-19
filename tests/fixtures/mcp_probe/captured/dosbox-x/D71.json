@@ -8,19 +8,19 @@
  "runs": [
   {
    "lines": [
-    "D71: CANNOT screen_view supports only text mode and 256-colour mode 13h, not planar 16-colour modes"
+    "D71: CANNOT screen_view refuses planar modes such as 12h, and capture_frame needs a capture that is not in use here."
    ],
    "right": true
   },
   {
    "lines": [
-    "D71: CANNOT screen_view only supports text and 256-colour modes, not 16-colour planar"
+    "D71: CANNOT `screen_view` refuses planar modes such as 12h, and the planar read is only available through `capture_frame`."
    ],
    "right": true
   },
   {
    "lines": [
-    "D71: CANNOT screen_view in mode 12h because the tool only supports text mode and 256-colour mode 13h."
+    "D71: CANNOT screen_view refuses planar mode 12h and no tool decodes planar video memory; capture_frame would need a session started with capture_video, which this session lacks."
    ],
    "right": true
   }

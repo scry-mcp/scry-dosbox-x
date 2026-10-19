@@ -8,19 +8,19 @@
  "runs": [
   {
    "lines": [
-    "D65: CANNOT - interrupt_vectors shows current state only, not changes since session start"
+    "D65: CANNOT No baseline of the interrupt vectors is kept from session start, so changes since then cannot be reported."
    ],
    "right": true
   },
   {
    "lines": [
-    "D65: CANNOT no vector comparison tool exists"
+    "D65: CANNOT No tool diffs the interrupt vectors against their state at session start."
    ],
    "right": true
   },
   {
    "lines": [
-    "D65: CANNOT interrupt_vectors returns current state only, no baseline comparison"
+    "D65: CANNOT No tool records interrupt vector changes over time; interrupt_vectors reports only the table as it stands at a stop."
    ],
    "right": true
   }

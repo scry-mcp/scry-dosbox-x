@@ -4,25 +4,25 @@
   "prompt": "The guest is stopped. Bring in the notes the project keeps in /tmp/game.comments.tsv.",
   "tool": "comment_load",
   "args": {
-   "source": "/tmp/game.comments.tsv"
+   "path": "/tmp/game.comments.tsv"
   }
  },
  "runs": [
   {
    "lines": [
-    "D89: {\"tool\": \"comment_load\", \"args\": {\"source\": \"/tmp/game.comments.tsv\"}}"
+    "D89: {\"tool\": \"comment_load\", \"args\": {\"path\": \"/tmp/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D89: {\"tool\": \"comment_load\", \"args\": {\"source\": \"/tmp/game.comments.tsv\"}}"
+    "D89: {\"tool\": \"comment_load\", \"args\": {\"path\": \"/tmp/game.comments.tsv\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D89: {\"tool\": \"comment_load\", \"args\": {\"source\": \"/tmp/game.comments.tsv\"}}"
+    "D89: {\"tool\": \"comment_load\", \"args\": {\"path\": \"/tmp/game.comments.tsv\"}}"
    ],
    "right": true
   }
