@@ -25,6 +25,8 @@ import tempfile
 from pathlib import Path
 from typing import Any, NamedTuple
 
+from scry_core import fresh
+
 import dosbox_machine as machine
 import dosbox_paths as paths
 import dosbox_session as ds
@@ -182,4 +184,5 @@ def dump_range(session: ds.Session, seg: int, off: int, length: int, dest: Path,
     with tempfile.TemporaryDirectory(prefix="dosbox-dump-") as scratch:
         parts = [session.memdump(s, o, n, Path(scratch) / f"{i}.bin").read_bytes()
                  for i, (s, o, n) in enumerate(windows)]
-    return Dump(paths.write_new(dest, b"".join(parts), "the dump"), True)
+    fresh.create(dest, b"".join(parts), "the dump", named_by_caller=True)
+    return Dump(dest, True)

@@ -1,10 +1,11 @@
-"""Every path a caller gives this server, judged by one rule: absolute, `~` not expanded, the
-shape before the session gate and the filesystem at the call (`dosbox_paths`)."""
+"""Every path a caller gives this server, judged by one rule: absolute or `~`-led, `~` expanded,
+the shape before the session gate and the filesystem at the call (`dosbox_paths`)."""
 from __future__ import annotations
 
 import asyncio
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Any, cast
 from unittest import mock
@@ -44,9 +45,15 @@ def _refused(reply: Any, code: str, *words: str) -> None:
 # ------------------------------------------------------------------ the judge itself
 
 
+#: Windows builds a `~user` path beside the home without asking whether that user exists.
+NTPATH = "ntpath expands any ~user"
+
+
 @pytest.mark.parametrize(("value", "words"), [
-    ("~/x.bin", "`~`"), ("~", "`~`"), ("~user/x", "`~`"),
-    ("rel/x.bin", "relative"), ("x.bin", "relative"), ("./x", "relative"),
+    pytest.param("~no-such-user-here/x", "home directory this host cannot find",
+                 marks=pytest.mark.skipif(sys.platform == "win32", reason=NTPATH)),
+    ("rel/x.bin", "absolute path or start with `~`"), ("x.bin", "absolute path or"),
+    ("./x", "absolute path or"),
     ("", "empty"), ("/a\x00b", "NUL"), ("/a\udc80b", "surrogate"), (None, "not a path"),
 ])
 def test_a_path_that_is_not_absolute_is_refused_naming_the_argument(
@@ -56,18 +63,12 @@ def test_a_path_that_is_not_absolute_is_refused_naming_the_argument(
     assert e.value.code == "bad_argument" and "dest" in str(e.value) and words in str(e.value)
 
 
-def test_the_tilde_refusal_writes_the_home_directory_out() -> None:
-    with pytest.raises(ds.Invalid, match=str(Path.home())):
-        paths.absolute("cwd", "~/proj")
-
-
-def test_the_tilde_refusal_stands_when_no_home_can_be_named(
-        monkeypatch: pytest.MonkeyPatch) -> None:
-    def no_home() -> Path:
-        raise RuntimeError("Could not determine home directory.")
-    monkeypatch.setattr(Path, "home", staticmethod(no_home))
-    with pytest.raises(ds.Invalid, match="home directory, spelled in full"):
-        paths.absolute("cwd", "~/proj")
+def test_a_tilde_path_is_expanded_as_a_person_means_it(monkeypatch: pytest.MonkeyPatch,
+                                                       tmp_path: Path) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))
+    assert paths.absolute("cwd", "~/proj") == tmp_path / "proj"
+    assert paths.absolute("cwd", "~") == tmp_path
 
 
 def test_an_absolute_path_is_taken_as_written() -> None:
@@ -177,8 +178,8 @@ def _base(tool: str, tmp_path: Path) -> dict[str, Any]:
 
 
 @pytest.mark.parametrize(("tool", "arg"), sorted(INVENTORY))
-@pytest.mark.parametrize("spelled", ["~/x", "rel/x"])
-def test_every_path_argument_refuses_tilde_and_relative_with_no_session(
+@pytest.mark.parametrize("spelled", ["rel/x", "x"])
+def test_every_path_argument_refuses_a_relative_one_with_no_session(
         tool: str, arg: str, spelled: str, tmp_path: Path) -> None:
     kw = {**_base(tool, tmp_path), arg: spelled}
     reply = _start_stubbed(**kw) if tool == "start" else getattr(server, tool)(**kw)
@@ -325,8 +326,8 @@ def test_start_judges_a_path_before_a_live_session_or_the_binary(tmp_path: Path)
     """A path as wrong with a session live as with none, and with no emulator installed: the
     path is the refusal, and nothing of the live session is touched."""
     live = install()
-    got = cast(dict[str, Any], server.start(conf="/x.conf", cwd="~/x", seconds=60))
-    _refused(got, "bad_argument", "cwd='~/x'")
+    got = cast(dict[str, Any], server.start(conf="/x.conf", cwd="rel/x", seconds=60))
+    _refused(got, "bad_argument", "cwd='rel/x'")
     assert cast(object, dstate.STATE.session) is live
     dstate.STATE.session = None
     with mock.patch("dosbox_binary.shutil.which", lambda _n: None):
@@ -347,8 +348,8 @@ def test_start_judges_the_binary_s_shape_before_a_live_or_expired_session(
     closed: list[bool] = []
     expired.close = lambda **_k: closed.append(True)   # type: ignore[method-assign]
     got = cast(dict[str, Any], server.start(conf="/x.conf", cwd="/", seconds=60,
-                                            binary="~/dosbox-x"))
-    _refused(got, "bad_argument", "binary='~/dosbox-x'")
+                                            binary="bin/dosbox-x"))
+    _refused(got, "bad_argument", "binary='bin/dosbox-x'")
     assert closed == [] and cast(object, dstate.STATE.session) is expired
 
 

@@ -58,7 +58,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
-from scry_core import cancel
+from scry_core import avi, cancel
 from scry_core.progress import PROGRESS_EVERY_S as PROGRESS_EVERY_S
 from scry_core.progress import Progress as Progress
 from scry_core.progress import no_progress as no_progress
@@ -1279,21 +1279,20 @@ def avi_facts(data: bytes) -> dict[str, object]:
     """What is IN a capture, not merely how big it is.
 
     A recording that captured nothing and one that captured a whole session are both
-    files of a plausible size, so the size has never been the evidence. `00dc` is the
-    AVI chunk id for a compressed video frame and `idx1` is the index, which is
-    written when the recording STOPS -- so a capture without one is not corrupt, it is
-    still in progress.
+    files of a plausible size, so the size has never been the evidence. `idx1` is the
+    index, which is written when the recording STOPS -- so a capture without one is not
+    corrupt, it is still in progress.
     """
     return {
         "bytes": len(data),
         "riff_avi": data[:4] == b"RIFF" and data[8:12] == b"AVI ",
-        "frames": data.count(b"00dc"),
+        "frames": avi.count(data),       # `scry_core.avi` says which count and why
         # `complete` is INFORMATION, not a usability verdict: MEASURED, ffmpeg
         # extracts a frame from an unindexed capture perfectly well. What it says is
         # that the recording was FINALISED -- which happens when the recorded program
         # exits or the emulator exits cleanly, and NOT when the session is closed
         # underneath it.
-        "complete": b"idx1" in data,
+        "complete": avi.finished(data),
     }
 
 

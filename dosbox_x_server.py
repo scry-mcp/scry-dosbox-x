@@ -65,9 +65,9 @@ HONESTY, wired into the contract rather than into a prompt:
   too, which is where an earlier version dropped it.  An INVALID answer is the one a
   caller reasons hardest about, and it is the worst one to hand over with no trace
   that the machine had been written to.
-- A PATH A CALLER GIVES IT IS ABSOLUTE, judged by one module (`dosbox_paths`): `~` is
-  refused and never expanded, a relative path is refused, and the refusal names the
-  argument.
+- A PATH A CALLER GIVES IT IS ABSOLUTE OR `~`-LED, judged by scry-core's one judge
+  (through `dosbox_paths`): `~` is expanded, a relative path is refused, and the refusal
+  names the argument.
 
 The server knows no project: the conf, the working directory, the program and the
 window flags all come from the caller, so the same server serves every DOS project.
@@ -75,7 +75,6 @@ window flags all come from the caller, so the same server serves every DOS proje
 
 from __future__ import annotations
 
-import functools
 import json
 import os
 import signal
@@ -103,7 +102,7 @@ from mcp.server.mcpserver import Context
 # depends on -- the same silent-wrong-import hazard, installed by the fix for it.
 sys.path.append(str(Path(__file__).resolve().parent))
 
-from scry_core import media_tools, narrowing, recording  # noqa: E402
+from scry_core import fresh, media_tools, narrowing, recording  # noqa: E402
 from scry_core import strict_arguments as strict  # noqa: E402
 from scry_core.progress import bridge  # noqa: E402
 
@@ -205,7 +204,7 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
     """Open ONE live DOSBox-X session from your conf, parked at the debugger, stopped and
     ready. Refuses while a session is live.
 
-    Every path is absolute, `~` unexpanded: `cwd`, the emulator's working directory, there;
+    Every path is absolute or `~`-led: `cwd`, the emulator's working directory, there;
     `conf`; `logfile`, its directory there; `captures_dir` and `state_dir`, created with their
     parents. `seconds`: a REQUIRED hard bound, at most 4 hours; `close` is the act. `mode`:
     `headless` (no window) or `shared` (watched; `window_flags` places the window).
@@ -1336,7 +1335,7 @@ def comment_save(dest: str) -> dict[str, Any]:
     v1:` header, one sorted tab-separated row each; convention `<symbol file stem>.comments.tsv`
     beside the symbol file), whole or not at all. Answers on a running guest too.
 
-    Refused `bad_argument`, the path left as it is: relative or `~`, a link, a directory or any
+    Refused `bad_argument`, the path left as it is: relative, a link, a directory or any
     other non-regular file, a missing directory, an existing file that is not a comment file,
     the declaration store's own file; two comments at one place, which a file names once (named,
     so one can be deleted). A file the host will not let it write is `host_failed`.
@@ -1413,7 +1412,8 @@ def machine_map(sections: list[str] | None = None, dest: str = "") -> dict[str, 
     reply = machine.cut_lists(whole)
     if target is not None:
         text = json.dumps(whole, indent=1).encode()
-        reply["path"] = str(paths.write_new(target, text, "the map"))
+        fresh.create(target, text, "the map", named_by_caller=True)
+        reply["path"] = str(target)
     left = [n for n in machine.sections_of(whole["cpu_mode"]) if n not in chosen]
     if left:
         reply.update(narrowing.omission(left, machine.MAP_HOW))
@@ -1581,20 +1581,10 @@ def series_capture(frames: list[int] | None = None, first: int | None = None,
 
 
 # THE MEDIA FILE TOOLS are scry-core's, body and description, each registered through this
-# server's own `tool` so its reply wears this envelope; bound here by name so a step and a direct
-# call find them as they find every other tool.
-def _media_tool(title: str, **kw: Any) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-    """`tool` for a scry-core body, which answers bare fields: the body's answer is made a reply
-    (`status` and `session`) as this server's own bodies make theirs."""
-    def register(body: Callable[..., Any]) -> Callable[..., Any]:
-        @functools.wraps(body)
-        def answered(*a: Any, **k: Any) -> dict[str, Any]:
-            return st.reply(**body(*a, **k))
-        return tool(title, **kw)(answered)
-    return register
-
-
-_MEDIA = media_tools.register(_media_tool, media_tools.IMAGE_TOOLS)
+# server's own `tool`, its bare fields made a reply (`status` and `session`) as this server's own
+# bodies make theirs; bound here by name so a step and a direct call find them as they find
+# every other tool.
+_MEDIA = media_tools.register(tool, media_tools.IMAGE_TOOLS, lambda body: st.reply(**body))
 image_diff = _MEDIA["image_diff"]
 series_diff = _MEDIA["series_diff"]
 region_track = _MEDIA["region_track"]

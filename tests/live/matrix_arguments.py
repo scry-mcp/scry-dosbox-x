@@ -20,7 +20,6 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
-import live_private
 from matrix_common import (
     GUEST,
     PROBE_CONF,
@@ -39,6 +38,9 @@ from matrix_common import (
 import dosbox_paths as paths
 import dosbox_session as ds
 import dosbox_trace as tracing
+
+#: A `~user` no host has: the one `~` spelling the judge still refuses.
+UNKNOWN_HOME = "~no-such-user-matrix"
 
 #: The probe's own segment at its settle loop.
 PROBE_SEG = 0x0814
@@ -78,15 +80,15 @@ L_CELLS = cells(
     ("L a relative dangling LOGCPU.TXT is refused before LOG",
      "REFERENCE.md, The session: a dangling link is a file there"),
     (CONSOLE_CELL, "debug docstring: a refusal types nothing"),
-    ("L start with cwd from ~ is refused naming cwd, nothing started",
-     "start docstring: every path is absolute, `~` not expanded"),
+    ("L start with cwd from an unknown ~user is refused naming cwd, nothing started",
+     "start docstring: every path is absolute or `~`-led, `~` expanded"),
     ("L start with a relative conf is refused naming conf, nothing started",
      "start docstring: every path is absolute"),
     ("L start(savedir=) is refused by the schema", "start docstring: `state_dir`"),
     ("L status and state_list name state_dir, and no savedir",
      "status docstring: state_dir; state_list docstring"),
-    ("L every dest relative or from ~ is refused, nothing written",
-     "REFERENCE.md, The session: every path you give is absolute"),
+    ("L every dest relative or from an unknown ~user is refused, nothing written",
+     "REFERENCE.md, The session: every path you give is absolute or starts with `~`"),
     ("L a dest that is a dangling link is refused and nothing written through it",
      "REFERENCE.md, The session: nothing at a file a tool writes, a dangling link included"),
     ("L with no session, a value wrong with no machine answers bad_argument, never no_session",
@@ -172,15 +174,12 @@ def start_through_the_schema(**arguments: object) -> dict[str, object]:
 def _start_refusals() -> None:
     """With no session yet, so each refusal is the path's and never `session_live`; a start
     that came up instead of refusing is closed at once, so the next cell judges its own call."""
-    # THE PACKAGE'S OWN GUESTS, never a pooled job's copy, which lives outside the home: the
-    # refusal is of the spelling, so the directory must exist for the cell to mean anything.
-    home, own = Path.home(), live_private.REPO / "tests" / "guest"
-    beside = own.relative_to(home) if own.is_relative_to(home) else None
-    tilde = f"~/{beside}" if beside is not None else "~/x"
-    r = M.call(server.start, conf=str(PROBE_CONF), cwd=tilde, seconds=60)
+    # A `~` IS EXPANDED, so the refusal left to judge is a home this host cannot find.
+    r = M.call(server.start, conf=str(PROBE_CONF), cwd=f"{UNKNOWN_HOME}/x", seconds=60)
     _close_if_up(r)
-    M.judge("L start with cwd from ~ is refused naming cwd, nothing started",
+    M.judge("L start with cwd from an unknown ~user is refused naming cwd, nothing started",
             refused(r, "bad_argument") and "cwd=" in str(r.get("message"))
+            and "home directory this host cannot find" in str(r.get("message"))
             and r.get("session") is None, said(r))
     r = M.call(server.start, conf="probe.conf", cwd=str(GUEST), seconds=60)
     _close_if_up(r)
@@ -286,15 +285,14 @@ def _state_dir_named(state_dir: Path) -> None:
 
 
 def _dests() -> None:
-    home = Path.home()
     refusals: list[str] = []
-    for spelled in ("relative.out", "~/matrix-tilde.out"):
+    for spelled in ("relative.out", f"{UNKNOWN_HOME}/matrix-tilde.out"):
         for tool, kw in DEST_TOOLS:
             r = M.call(getattr(server, tool), **kw, dest=spelled)
             if not refused(r, "bad_argument") or f"dest='{spelled}'" not in str(r.get("message")):
                 refusals.append(f"{tool}({spelled}): {said(r, 60)}")
-    stray = [p for p in (GUEST / "relative.out", home / "matrix-tilde.out") if paths.taken(p)]
-    M.judge("L every dest relative or from ~ is refused, nothing written",
+    stray = [p for p in (GUEST / "relative.out",) if paths.taken(p)]
+    M.judge("L every dest relative or from an unknown ~user is refused, nothing written",
             not refusals and not stray, "; ".join(refusals + [str(p) for p in stray]) or "all")
     for p in stray:              # a regression wrote them; they are this cell's, not the tree's
         p.unlink()

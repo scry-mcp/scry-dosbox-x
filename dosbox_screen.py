@@ -260,14 +260,8 @@ def palette(session: ds.Session, first: int, count: int, scale: int, dest: Path 
     return {"entries": len(entries), "first": first, "count": len(chosen),
             "colors": [color(e) for e in chosen], "rgb": chosen,
             "bits": DAC_BITS, "pel_mask": dac.get("pel_mask"),
-            "image": picture.publish(swatch, scale, dest, scratch, "palette", record_nothing,
-                                     clear=clear)}
-
-
-def record_nothing(path: Path) -> None:
-    """The `Record` a picture here is published with: `captures` lists the emulator's own
-    recordings only, so a picture written to the session's scratch or to `dest` is recorded
-    nowhere else."""
+            # No recorder: `captures` lists the emulator's own recordings only.
+            "image": picture.publish(swatch, scale, dest, scratch, "palette", clear=clear)}
 
 
 # ------------------------------------------------------------------ where the screen is
@@ -538,7 +532,7 @@ def screen_view(session: ds.Session, crop: Sequence[int] | None, scale: int, des
         _, dac = read_dac(session)
         whole = png.Raster(shape.width, shape.height, data, tuple(rgb8(e) for e in dac))
         reply["image"] = picture.publish(raster.cropped(whole, area), scale, dest, scratch,
-                                         "screen", record_nothing)
+                                         "screen")
     reply["display_start"] = shape.display_start
     return reply
 

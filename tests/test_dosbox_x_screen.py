@@ -384,9 +384,13 @@ def test_perform_refuses_a_home_that_does_not_resolve_before_any_step_runs(
     assert s.asked == []
 
 
-def test_a_dest_from_home_is_refused_because_nothing_expands_it() -> None:
-    with pytest.raises(ds.Invalid, match="`~`"):
-        checks.check("palette", dest="~/pal.png")
+def test_a_dest_from_home_passes_the_gate_expanded(monkeypatch: pytest.MonkeyPatch,
+                                                   tmp_path: Path) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))
+    checks.check("palette", dest="~/pal.png")
+    with pytest.raises(ds.Invalid, match="must be an absolute path or start with `~`"):
+        checks.check("palette", dest="pal.png")
 
 
 def test_a_dest_under_a_directory_nobody_may_search_is_refused_not_raised(

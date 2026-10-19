@@ -458,7 +458,7 @@ def test_save_refuses_the_declaration_stores_own_file() -> None:
     assert path.read_bytes() == before
 
 
-@pytest.mark.parametrize("dest", ["c.tsv", "~/c.tsv", ""])
+@pytest.mark.parametrize("dest", ["c.tsv", "./c.tsv", ""])
 def test_a_dest_that_is_not_absolute_is_refused_without_a_session(dest: str) -> None:
     refused(server.comment_save(dest=dest), "bad_argument")
 
@@ -844,7 +844,7 @@ def test_save_then_load_into_a_fresh_store_then_save_is_byte_identical(tmp_path:
     assert first.read_bytes() == second.read_bytes()
 
 
-@pytest.mark.parametrize("source", ["in.tsv", "~/in.tsv"])
+@pytest.mark.parametrize("source", ["in.tsv", "./in.tsv"])
 def test_a_source_that_is_not_absolute_is_refused_without_a_session(source: str) -> None:
     refused(server.comment_load(source=source), "bad_argument")
 

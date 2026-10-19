@@ -56,7 +56,8 @@ N_CELLS = cells(
      "comment_add docstring: one printable line, at most 237 UTF-8 bytes"),
     ("N a bad ref is refused: [g]+2, start+2, 0x824B, 0814:01G0",
      "comment_add docstring: no pointer, no symbol+offset, no 0x number"),
-    ("N relative and ~ paths are refused for save and load", "every path here is absolute"),
+    ("N relative and unknown-~user paths are refused for save and load",
+     "every path here is absolute or `~`-led"),
     ("N save refuses the store's own file, a FIFO and a file that is not a comment file, "
      "leaving each as it was", "comment_save docstring"),
     ("N perform runs comment steps", "REFERENCE.md, Sequences in one call"),
@@ -217,9 +218,9 @@ def _refusals() -> None:
     got = [M.call(server.comment_add, ref=r, text="x") for r in refs]
     M.judge("N a bad ref is refused: [g]+2, start+2, 0x824B, 0814:01G0",
             all(refused(r, "bad_argument") for r in got), "; ".join(said(r, 40) for r in got))
-    got = [M.call(server.comment_save, dest=p) for p in ("c.tsv", "~/c.tsv")]
-    got += [M.call(server.comment_load, source=p) for p in ("c.tsv", "~/c.tsv")]
-    M.judge("N relative and ~ paths are refused for save and load",
+    got = [M.call(server.comment_save, dest=p) for p in ("c.tsv", "~no-such-user-matrix/c.tsv")]
+    got += [M.call(server.comment_load, source=p) for p in ("c.tsv", "~no-such-user-matrix/c.tsv")]
+    M.judge("N relative and unknown-~user paths are refused for save and load",
             all(refused(r, "bad_argument") for r in got), "; ".join(said(r, 40) for r in got))
     store = Path(str(must(M.call(server.comment_list), "the store's path")["path"]))
     fifo = Path(M.fresh(".fifo"))

@@ -9,6 +9,7 @@ guest establishes (`probe.asm`: a `.COM` at offset 0x100 that writes a stamped l
 """
 from __future__ import annotations
 
+import json
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -216,6 +217,7 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "series_capture": {"first": 0, "last": 1},
         **MEDIA_ABSENT,
         "perform": {"steps": [{"op": "status"}]},
+        "perform_export": {"path": M.fresh(".json")},
         "drive": {"act": [{"op": "status"}]},
         "comment_add": {"ref": COMMENT_REF, "text": "matrix A"},
         "comment_list": {},
@@ -236,6 +238,28 @@ def _header_only() -> str:
     path.write_text("# comments v1: ref\tcpu\tcreated_at\ttext\n", encoding="utf-8")
     return str(path)
 
+
+
+def _exported(r: dict[str, Any]) -> bool:
+    """A `perform_export` reply that wrote what it says: its file is `perform`'s own document,
+    holding the steps it counts."""
+    try:
+        doc = json.loads(Path(str(r.get("path"))).read_text())
+    except (OSError, ValueError):
+        return False
+    return (isinstance(r.get("steps"), int) and r["steps"] >= 1
+            and isinstance(doc, dict) and len(doc.get("steps") or []) == r["steps"])
+
+
+#: The sequences and the export answer alike stopped and running: a sequence waits for the
+#: stop its steps need, and the export reads the recording, not the machine.
+_SEQUENCES: dict[str, tuple[Callable[[dict[str, Any]], bool], str]] = {
+    "perform": (lambda r: ok(r) and r.get("completed") == 1, "perform docstring"),
+    "perform_export": (lambda r: ok(r) and _exported(r),
+                       "perform_export docstring: the session's recording, written"),
+    "drive": (lambda r: ok(r) and (r.get("verify") or {}).get("checked") is False,
+              "drive docstring: `checked: false` when no expect was given"),
+}
 
 def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
     """The expectation of each tool on a headless machine stopped inside the probe."""
@@ -346,9 +370,7 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
         "capture_frame": (lambda r: refused(r), "capture_frame docstring: needs capture_video"),
         "series_capture": (lambda r: refused(r, "no_channel"),
                            "series_capture docstring: needs captures_dir and capture_video"),
-        "perform": (lambda r: ok(r) and r.get("completed") == 1, "perform docstring"),
-        "drive": (lambda r: ok(r) and (r.get("verify") or {}).get("checked") is False,
-                  "drive docstring: `checked: false` when no expect was given"),
+        **_SEQUENCES,
         "resume": (lambda r: ok(r) and r.get("halted") is False,
                    "resume docstring: a stopper declared, it runs"),
         "comment_add": (lambda r: ok(r) and (r.get("comment") or {}).get("state") == "resolved",
@@ -417,9 +439,7 @@ def _running(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                       "send_keys docstring: no stub announced, so nothing would receive it"),
         "send_mouse": (lambda r: refused(r, "no_channel"),
                        "send_mouse docstring: no stub announced, so nothing would receive it"),
-        "perform": (lambda r: ok(r) and r.get("completed") == 1, "perform docstring"),
-        "drive": (lambda r: ok(r) and (r.get("verify") or {}).get("checked") is False,
-                  "drive docstring: `checked: false` when no expect was given"),
+        **_SEQUENCES,
         "close": (lambda r: ok(r) and r.get("closed") is True and r.get("how") == "quit",
                   "close docstring: `quit`, a session launched here leaves on the signal"),
     }
@@ -432,6 +452,14 @@ def _expect(tool: str, state: str) -> tuple[Callable[[dict[str, Any]], bool], st
         return ((lambda r: refused(r, "bad_argument") and "is not a file" in str(r.get("message"))
                  and (alive(r) if live else no_session(r))),
                 f"{tool} docstring: reads files, in any state; a missing one refused by name")
+    if tool == "perform_export" and state in ("none", "closed"):
+        # Before any `start` there is nothing recorded; a closed session's recording is still
+        # the last one, and it exports with no machine.
+        if state == "none":
+            return (lambda r: refused(r, "no_recording") and no_session(r),
+                    "perform_export docstring: `no_recording` before a `start` succeeded")
+        return (lambda r: ok(r) and _exported(r) and no_session(r),
+                "perform_export docstring: the last session's recording, no machine needed")
     if state in ("none", "closed"):
         if tool in _WITHOUT_SESSION:
             return _WITHOUT_SESSION[tool]
@@ -475,7 +503,8 @@ _STOPPED_ORDER = [
     "breakpoint_interrupt", "symbols_load", "symbols_find", "comment_add", "comment_list",
     "comment_save", "comment_load", "comment_delete", "breakpoint_at", "breakpoint_list",
     "breakpoint_clear", "watch_add", "watch_list", "watch_clear", "send_keys", "send_mouse",
-    "captures", "capture_frame", "series_capture", *MEDIA_ABSENT, "perform", "drive"]
+    "captures", "capture_frame", "series_capture", *MEDIA_ABSENT, "perform", "drive",
+    "perform_export"]
 
 
 @M.section("A", "every tool in every machine state, on the probe guest", _a_cells())
@@ -543,7 +572,7 @@ B_CELLS = cells(
      "set_register docstring: a 16-bit name is the low half of its 32-bit register"),
     ("B memdump 64 KiB", "memdump docstring: size checked for equality"),
     ("B memdump dest exists", "memdump docstring: refused rather than overwriting"),
-    ("B memdump dest ~nosuchuser", REF_DOC + "The session: nothing expands `~`"),
+    ("B memdump dest ~nosuchuser", REF_DOC + "The session: a `~user` this host does not know"),
     ("B memdump dest in the emulator's cwd", "memdump docstring: a dest inside that directory"),
     ("B find length=400 of zeros", "find docstring; known: the region's own dump"),
     ("B find length=401 of zeros", "find docstring: at most 400 hits, the highest kept"),
@@ -719,7 +748,8 @@ def section_b() -> None:
     r = M.call(server.memdump, ref=f"{SCRATCH}:0000", length=16,
                dest="~matrix_no_such_user/x.bin")
     judged("B memdump dest ~nosuchuser", reply=r,
-           holds=refused(r, "bad_argument") and "`~`" in str(r.get("message")))
+           holds=refused(r, "bad_argument")
+           and "home directory this host cannot find" in str(r.get("message")))
     inside = GUEST / "matrix-dump-inside-cwd.bin"
     r = M.call(server.memdump, ref=f"{SCRATCH}:0000", length=16, dest=str(inside))
     judged("B memdump dest in the emulator's cwd", reply=r,

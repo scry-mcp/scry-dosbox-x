@@ -97,18 +97,17 @@ the `LOG` family's help line only when the build is a heavy-debug one, never by 
 console to see whether it answers. `false` is an answer, not a refusal: `trace` is what refuses
 such a build.
 
-**Every path you give is absolute, and nothing expands `~`.** `start`'s `cwd`, `conf`,
+**Every path you give is absolute or starts with `~`, which is expanded.** `start`'s `cwd`, `conf`,
 `logfile`, `captures_dir`, `state_dir` and `binary`, `build_check`'s `binary`, `memdump`'s, `trace`'s, `snapshot`'s, `palette`'s,
 `screen_view`'s, `capture_frame`'s and `series_capture`'s `dest`, `capture_frame`'s and
-`series_capture`'s `source`, and
-`symbols_load`'s `source` and `types` go through one judge; the media file tools' paths
-(`a`, `b`, `manifest`, `ref`, `dir`, `checksums`) through scry-core's, which refuses a
-relative path the same way. A relative path is refused because
-it would be judged against one directory and used in another: this server's own working
-directory is wherever the client launched it, the emulator's is `cwd`, and a path that names
-one file to the judge and another to the writer is checked against the wrong file. A path
-starting with `~` is refused with the home directory written out in the message, because `~`
-is a shell's spelling and not a path. A NUL or a lone surrogate is refused the same way, and
+`series_capture`'s `source`, `symbols_load`'s `source` and `types`, and the media file tools'
+paths (`a`, `b`, `manifest`, `ref`, `dir`, `checksums`) go through one judge, scry-core's. A
+relative path is refused because it would be judged against one directory and used in another:
+this server's own working directory is wherever the client launched it, the emulator's is `cwd`,
+and a path that names one file to the judge and another to the writer is checked against the
+wrong file. `~` (and `~user`) is expanded as a shell would, because it is what a person types and
+no shell stands between a client and the argument; a `~user` this host does not know is refused.
+A NUL or a lone surrogate is refused the same way, and
 so is an empty path, except a `dest` whose default is empty, which means none.
 
 The SHAPE is judged before anything happens: before the session gate (refused with no machine

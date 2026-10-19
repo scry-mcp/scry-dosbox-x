@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
-from scry_core import png, raster
+from scry_core import avi, png, raster
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -90,7 +90,7 @@ def test_a_cropped_range_series_kept_in_its_dest(tmp_path: Path) -> None:
 
 
 def _header(tmp_path: Path, width: int = W, height: int = H) -> Path:
-    """An AVI's first chunks as far as the main header: all `avi_size` reads."""
+    """An AVI's first chunks as far as the main header: all `avi.size` reads."""
     avih = struct.pack("<14I", 100000, 0, 0, 0, FRAMES, 0, 1, 0, width, height, 0, 0, 0, 0)
     avi = tmp_path / "head.avi"
     avi.write_bytes(b"RIFF" + bytes(4) + b"AVI LIST" + bytes(4) + b"hdrlavih"
@@ -99,16 +99,16 @@ def _header(tmp_path: Path, width: int = W, height: int = H) -> Path:
 
 
 def test_the_frame_size_is_the_avis_own_header(tmp_path: Path) -> None:
-    assert media.avi_size(_header(tmp_path, 320, 200)) == (320, 200)
+    assert avi.size("source", _header(tmp_path, 320, 200)) == (320, 200)
     (tmp_path / "x.avi").write_bytes(b"not an avi at all")
     with pytest.raises(ds.Invalid, match="no AVI main header"):
-        media.avi_size(tmp_path / "x.avi")
+        avi.size("source", tmp_path / "x.avi")
     with pytest.raises(ds.Invalid, match="cannot be read"):
-        media.avi_size(tmp_path / "absent.avi")
+        avi.size("source", tmp_path / "absent.avi")
     # A writer that leaves the size to the stream header: a 0x0 frame would judge every crop
     # off it and echo `[0, 0, 0, 0]` beside frames of the real size.
     with pytest.raises(ds.Invalid, match="declares a 0x200 frame"):
-        media.avi_size(_header(tmp_path, 0, 200))
+        avi.size("source", _header(tmp_path, 0, 200))
 
 
 def _stub(monkeypatch: pytest.MonkeyPatch, writes: int, rc: int = 0,

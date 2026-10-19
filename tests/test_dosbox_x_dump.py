@@ -263,7 +263,10 @@ def test_a_dest_under_a_file_is_refused_before_anything_is_typed(tmp_path: Path)
     assert "is not a directory" in got["message"] and s.typed == []
 
 
-def test_a_dest_that_cannot_be_created_is_host_failed_and_leaves_no_piece(tmp_path: Path) -> None:
+def test_a_dest_that_cannot_be_created_is_the_callers_and_leaves_no_piece(
+        tmp_path: Path) -> None:
+    """The caller named the path, so a directory that will not take it is theirs to change
+    (`bad_argument`, scry-core's one rule for a file a caller names)."""
     s = debugger(tmp_path)
     shut = tmp_path / "shut"
     shut.mkdir()
@@ -272,7 +275,7 @@ def test_a_dest_that_cannot_be_created_is_host_failed_and_leaves_no_piece(tmp_pa
         got = dumped("0000:0000", 0x20000, shut / "x.bin")
     finally:
         shut.chmod(0o755)
-    assert got["status"] == "INVALID" and got["code"] == "host_failed", got
+    assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
     assert not (shut / "x.bin").exists() and list(s.launch.cwd.iterdir()) == []
 
 

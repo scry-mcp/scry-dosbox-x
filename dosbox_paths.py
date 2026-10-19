@@ -1,13 +1,11 @@
-"""The one judge of a path a caller gives this server's own tools (the media file tools,
-scry-core's, judge theirs with scry-core's, to the same rule).
+"""What this server asks of a path a caller gives it, around scry-core's one judge of a path
+(`scry_core.judges.absolute`), which the media file tools use too.
 
-EVERY PATH ARGUMENT IS ABSOLUTE, AND NOTHING HERE EXPANDS `~`. A relative path is judged
-against one directory and used in another: this server's own working directory is wherever
-the client launched it, the emulator's is the session's `cwd`, and a path that means one thing
-to the judge and another to the writer is checked against the wrong file. And `~` is a shell's
-spelling, not a path: `Path("~/x")` is a relative path whose first component is a directory
-named `~`, so the home directory is written out instead. Both are refused with the reason, so a
-caller learns the rule once.
+EVERY PATH ARGUMENT IS ABSOLUTE OR LED BY `~`, which is expanded. A relative path is judged
+against one directory and used in another: this server's own working directory is wherever the
+client launched it, the emulator's is the session's `cwd`, and a path that means one thing to the
+judge and another to the writer is checked against the wrong file. `~` is what a person types,
+and no shell stands between a client and this argument to expand it, so the judge does.
 
 THE SHAPE is judged before the session gate (a value as wrong with no machine as with one); THE
 FILESYSTEM at the call, on the filesystem of that moment, since an earlier step of a list may
@@ -19,6 +17,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from scry_core import judges
 from scry_core.reply_contract import Invalid
 
 #: The argument names that carry a path, on every tool that takes one. The inventory test holds
@@ -29,33 +28,9 @@ PATH_PARAMETERS = frozenset({"cwd", "conf", "logfile", "captures_dir", "state_di
 
 
 def absolute(name: str, value: object) -> Path:
-    """`value` as an absolute path, or the refusal naming `name` and why: not text, empty, a
-    NUL or a lone surrogate (no file name can hold either), `~`, or relative."""
-    if not isinstance(value, str):
-        raise Invalid("bad_argument", f"{name}={value!r} is not a path")
-    if not value:
-        raise Invalid("bad_argument", f"{name} is empty: it names an absolute path")
-    if "\x00" in value:
-        raise Invalid("bad_argument", f"{name}={value!r} carries a NUL, which no path holds")
-    try:
-        value.encode("utf-8")
-    except UnicodeEncodeError:
-        raise Invalid("bad_argument",
-            f"{name}={value!r} carries a lone surrogate, which no file name holds") from None
-    if value.startswith("~"):
-        try:
-            home = f"{Path.home()}/..."
-        except RuntimeError:          # no home this process can name; the rule stands anyway
-            home = "the home directory, spelled in full"
-        raise Invalid("bad_argument",
-            f"{name}={value!r} starts with `~`, which nothing here expands: write the home "
-            f"directory out ({home})")
-    path = Path(value)
-    if not path.is_absolute():
-        raise Invalid("bad_argument",
-            f"{name}={value!r} is relative: it would be judged against one directory and used "
-            f"in another. Every path here is absolute")
-    return path
+    """`value` as an absolute path, `~` expanded, or scry-core's refusal naming `name` and
+    why."""
+    return judges.absolute(name, value)
 
 
 def taken(path: Path) -> bool:
@@ -65,41 +40,9 @@ def taken(path: Path) -> bool:
 
 
 def fresh_dest(name: str, value: str | Path) -> Path:
-    """A file this tool is about to write: absolute, its directory there, nothing at it yet. A
-    path the filesystem cannot even look at is refused the same way, never raised."""
-    path = absolute(name, str(value))
-    try:
-        if taken(path):
-            raise Invalid("bad_argument",
-                f"{name}: {path} already exists. This will not overwrite it: name a path that "
-                f"is not there yet, or move that file aside and ask again")
-        if not path.parent.is_dir():
-            raise Invalid("bad_argument",
-                f"{name}: {path.parent} is not a directory, so {path.name} has nowhere to go")
-    except (OSError, ValueError) as e:
-        raise Invalid("bad_argument", f"{name}: {path} cannot be looked at: {e}") from None
-    return path
-
-
-def write_new(path: Path, data: bytes, what: str) -> Path:
-    """`data` to `path`, created here and nowhere else: a file that appeared since `fresh_dest`
-    judged it is refused, never overwritten, and a write that fails takes the file away rather
-    than leaving a short one where the caller will look."""
-    try:
-        out = path.open("xb")
-    except FileExistsError:
-        raise Invalid("bad_argument",
-            f"{path} appeared while {what} was read. This will not overwrite it: name a path "
-            f"that is not there yet") from None
-    except OSError as e:
-        raise Invalid("host_failed", f"cannot write {what} to {path}: {e!r}") from None
-    try:
-        with out:
-            out.write(data)
-    except OSError as e:
-        path.unlink(missing_ok=True)
-        raise Invalid("host_failed", f"cannot write {what} to {path}: {e!r}") from None
-    return path
+    """A file this tool is about to write: scry-core's `judges.fresh_file`, absolute or `~`-led,
+    its directory there, nothing at it yet, a dangling link included."""
+    return judges.fresh_file(name, str(value))
 
 
 def resolved(name: str, path: Path) -> Path:

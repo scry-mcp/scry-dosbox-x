@@ -595,13 +595,14 @@ def test_a_captures_directory_that_is_not_there_is_named(tmp_path: Path) -> None
     refused_quietly(dbg, got, "bad_argument", "is not there")
 
 
-def test_a_dest_from_the_home_directory_is_refused_before_anything_is_typed(
+def test_a_dest_from_the_home_directory_is_written_there(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("HOME", str(tmp_path))
-    dbg = settle(tmp_path)
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))
+    settle(tmp_path)
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip", dest="~/h.trace"))
-    refused_quietly(dbg, got, "bad_argument", "`~`")
-    assert not (tmp_path / "h.trace").exists()
+    assert got["status"] == "ok" and got["trace"]["path"] == str(tmp_path / "h.trace"), got
+    assert not (tmp_path / "~").exists()
 
 
 def test_a_set_file_already_there_is_refused_and_the_counter_skips_one(tmp_path: Path) -> None:

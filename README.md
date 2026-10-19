@@ -112,8 +112,8 @@ close()
 Your conf needs `bochs debug port e9 = true` for the log to exist at all. Everything about
 *your* project comes from you: the conf, the working directory, the program, where a
 window goes. The server knows no project and carries no default that points anywhere.
-Every path you give is absolute: `~` is not expanded and a relative path is refused, so write
-the home directory out (REFERENCE.md, The session, says why).
+Every path you give is absolute or starts with `~`, which is expanded; a relative path is
+refused (REFERENCE.md, The session, says why).
 
 ## Demos
 

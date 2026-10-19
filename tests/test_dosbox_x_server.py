@@ -1308,7 +1308,7 @@ def test_a_dump_refuses_rather_than_deleting_what_is_already_there(
     assert mine.read_bytes() == b"a file the caller cares about"
 
 
-# ------------------------------------------- a caller's path is absolute, `~` refused
+# ------------------------------------ a caller's path is absolute or `~`-led, `~` expanded
 
 def _launch_of(**kw: Any) -> ds.Launch:
     """Run `start` far enough to capture the `Launch` it built, and no further.
@@ -1342,23 +1342,32 @@ def test_start_takes_every_path_as_written(tmp_path: Path) -> None:
     assert launch.state_dir == tmp_path / "states"
 
 
-@pytest.mark.parametrize("arg", ["conf", "cwd", "captures_dir", "logfile", "state_dir"])
-def test_start_refuses_a_tilde_in_every_path_and_builds_nothing(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, arg: str) -> None:
-    """`Path("~/g.conf")` is a RELATIVE path whose first component is `~`: nothing here
-    expands it, so it is refused by name before any session is built, and nothing is made
-    at the literal `~` either."""
+@pytest.mark.parametrize(("arg", "under_home"), [
+    ("conf", "g.conf"), ("cwd", ""), ("captures_dir", "caps"), ("logfile", "e9.log"),
+    ("state_dir", "states")])
+def test_start_expands_a_tilde_in_every_path_and_makes_nothing_at_a_literal_one(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, arg: str, under_home: str) -> None:
+    """`Path("~/g.conf")` is a RELATIVE path whose first component is `~`: the judge expands
+    it, so the session is built on the home directory's path and nothing is made at a
+    literal `~`."""
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     kw: dict[str, Any] = {"conf": str(conf), "cwd": str(tmp_path), "seconds": 30,
-                          arg: "~/x"}
+                          arg: f"~/{under_home}" if under_home else "~"}
     built: list[ds.Launch] = []
+
+    def build(launch: ds.Launch) -> None:
+        built.append(launch)
+        raise ds.Invalid("host_failed", "built: the case ends here")
     with mock.patch("dosbox_binary.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
-         mock.patch("dosbox_x_server.ds.Session", built.append):
+         mock.patch("dosbox_x_server.ds.Session", build):
         got = cast(dict[str, Any], server.start(**kw))
-    assert got["code"] == "bad_argument" and f"{arg}='~/x'" in got["message"], got
-    assert built == [] and not (tmp_path / "~").exists()
+    assert "built: the case ends here" in got["message"], got
+    assert getattr(built[0], arg) == (tmp_path / under_home if under_home else tmp_path)
+    assert not (tmp_path / "~").exists()
 
 
 def test_the_two_optional_paths_stay_absent_when_the_caller_omits_them(tmp_path: Path) -> None:
@@ -1372,30 +1381,40 @@ def test_the_two_optional_paths_stay_absent_when_the_caller_omits_them(tmp_path:
     assert launch.state_dir == tmp_path.resolve() / "save"
 
 
-def test_memdump_refuses_a_tilde_dest_and_writes_nowhere(
+def test_memdump_expands_a_tilde_dest_and_makes_no_literal_one(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """`~/dump.bin` taken as written would put the bytes in a directory literally named `~`:
-    it is refused before any session is asked, and no `~` directory is made."""
+    the judge expands it, so the bytes land in the home directory and no `~` is made."""
     monkeypatch.chdir(tmp_path)
-    fake = install()
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))
+    install()
     got = cast(dict[str, Any],
                server.memdump(ref="0000:00000400", length=16, dest="~/dump.bin"))
-    assert got["code"] == "bad_argument" and "`~`" in got["message"], got
-    assert fake.memdump_calls == [] and not (tmp_path / "~").exists()
+    assert got["status"] == "ok", got
+    assert (tmp_path / "dump.bin").stat().st_size == 16 and not (tmp_path / "~").exists()
 
 
-def test_capture_frame_refuses_a_tilde_in_either_path(
+def test_capture_frame_expands_a_tilde_in_either_path(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """`dest` AND `source`, separately, because they are two arguments."""
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))
+    (tmp_path / "run.avi").write_bytes(b"RIFF")
     fake = install()
     seen: list[Any] = []
-    fake.frame = lambda *a, **k: seen.append(a)  # type: ignore[method-assign,assignment]
+
+    def frame(at: int, dest: Path, source: Path) -> Path:
+        seen.append((at, dest, source))
+        dest.write_bytes(b"png")
+        return dest
+    fake.frame = frame  # type: ignore[method-assign,assignment]
     for kw in ({"dest": "~/shot.png"},
-               {"dest": str(tmp_path / "shot.png"), "source": "~/run.avi"}):
-        got = cast(dict[str, Any], server.capture_frame(5, **kw))
-        assert got["code"] == "bad_argument" and "`~`" in got["message"], got
-    assert seen == [] and not (tmp_path / "~").exists()
+               {"dest": str(tmp_path / "shot2.png"), "source": "~/run.avi"}):
+        assert cast(dict[str, Any], server.capture_frame(5, **kw))["status"] == "ok"
+    assert [a[1] for a in seen] == [tmp_path / "shot.png", tmp_path / "shot2.png"], seen
+    assert seen[1][2] == tmp_path / "run.avi" and not (tmp_path / "~").exists()
 
 
 def test_an_omitted_capture_source_stays_absent_rather_than_becoming_a_path(
@@ -5089,7 +5108,8 @@ def test_a_relative_path_is_refused_and_an_absolute_one_names_the_file_it_looked
         missing)
     dstate.STATE.session = None
     rel = server.start(conf="x.conf", cwd="rel/dir", seconds=30)
-    assert rel["status"] == "INVALID" and "cwd='rel/dir' is relative" in rel["message"], rel
+    assert rel["status"] == "INVALID", rel
+    assert "cwd='rel/dir' must be an absolute path" in rel["message"], rel
 
 
 # ------------------------------- no wait at the end for a running-guest tail
@@ -6245,7 +6265,7 @@ def test_the_modifier_vocabulary_is_the_dos_keyboard_s() -> None:
     ("symbols_load", {"source": "/x/m.map", "base": 4096},
      {"source": "/x/m.map", "base": "0x1000"}),
     ("symbols_load", {"source": "m.map"}, {"source": "/x/m.map"}),
-    ("symbols_load", {"source": "/x/m.map", "types": "~/t"},
+    ("symbols_load", {"source": "/x/m.map", "types": "t"},
      {"source": "/x/m.map", "types": "/x/t"}),
     ("capture_frame", {"at": -1, "dest": "/x/s.png"}, {"at": 3, "dest": "/x/s.png"}),
     ("capture_frame", {"at": 3, "dest": "/x/s.png", "source": "c.avi"},

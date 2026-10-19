@@ -20,6 +20,7 @@ import os
 import shutil
 import signal
 import socket
+import struct
 import subprocess
 import threading
 import time
@@ -1126,15 +1127,35 @@ def test_only_the_names_this_debugger_sets_are_accepted() -> None:
 
 # ---------------------------------------------------------------- the capture
 
+AVI = Path(__file__).parent / "fixtures" / "avi"
+
+
 def fake_avi(frames: int, complete: bool = True) -> bytes:
-    """The SHAPE of a capture, assembled from the AVI chunk ids that decide the facts.
+    """The SHAPE of a capture, as the two real ones under `fixtures/avi` hold it.
 
     It is not a playable file and does not pretend to be: what `avi_facts` reads is
-    the RIFF header, the count of `00dc` video-frame chunks and whether the `idx1`
-    index has been written. Those are what a fixture has to reproduce.
+    the RIFF header, the main header's total (0 while recording, as measured), the `00dc`
+    frame chunks, and the `idx1` index, which names every frame again once it is written.
     """
-    body = b"RIFF" + b"\x00" * 4 + b"AVI " + b"00dc" * frames
-    return body + (b"idx1" if complete else b"")
+    avih = b"avih" + struct.pack("<I", 56) + struct.pack(
+        "<14I", 0, 0, 0, 0, frames if complete else 0, 0, 1, 0, 720, 400, 0, 0, 0, 0)
+    body = b"RIFF" + b"\x00" * 4 + b"AVI " + b"LIST" + b"\x00" * 8 + avih + b"00dc" * frames
+    return body + (b"idx1" + b"00dc" * frames if complete else b"")
+
+
+def test_a_finished_capture_counts_its_frames_from_its_header() -> None:
+    """The real 12-frame capture: its index names every frame again, so a count of the tag
+    would read 26."""
+    data = (AVI / "dosbox-x-zmbv-12.avi").read_bytes()
+    assert data.count(b"00dc") == 26
+    assert ds.avi_facts(data) == {"bytes": len(data), "riff_avi": True, "frames": 12,
+                                  "complete": True}
+
+
+def test_a_capture_still_recording_counts_its_frame_chunks() -> None:
+    data = (AVI / "dosbox-x-zmbv-running.avi").read_bytes()
+    assert ds.avi_facts(data) == {"bytes": len(data), "riff_avi": True, "frames": 9,
+                                  "complete": False}
 
 
 def test_a_capture_is_judged_by_what_is_in_it_and_not_by_its_size() -> None:
@@ -1150,7 +1171,8 @@ def test_a_capture_still_in_progress_is_marked_incomplete_and_not_corrupt() -> N
     """The index is written when the recording STOPS, so its absence is a state and
     not damage. A still cannot be extracted from one, which is why the difference has
     to reach the caller."""
-    assert ds.avi_facts(fake_avi(frames=40, complete=False))["complete"] is False
+    facts = ds.avi_facts(fake_avi(frames=40, complete=False))
+    assert facts["complete"] is False and facts["frames"] == 40
 
 
 def test_something_that_is_not_a_capture_is_not_called_one() -> None:

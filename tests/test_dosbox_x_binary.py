@@ -119,7 +119,7 @@ def test_a_directory_or_a_file_without_its_exec_bit_is_refused_saying_which(
         binaries.resolve(str(unrunnable))
 
 
-@pytest.mark.parametrize("given", ["dosbox-x", "bin/dosbox-x", "~/dosbox-x"])
+@pytest.mark.parametrize("given", ["dosbox-x", "bin/dosbox-x", "./dosbox-x"])
 def test_a_relative_path_is_refused_in_the_argument_and_in_the_variable(
         given: str, on_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     with pytest.raises(Invalid) as refused:

@@ -1,0 +1,8 @@
+Two video captures DOSBox-X wrote with `capture_video` (ZMBV), headless, on the fork's build.
+
+dosbox-x-zmbv-12.avi       a finished capture of a DOS prompt, 720x400: its main header
+                           (`avih`) declares 12 frames, ffprobe counts 12, and the `00dc` tag
+                           appears 26 times, because the index at its end names every frame again
+dosbox-x-zmbv-running.avi  the first 60194 bytes of the `screen` guest's capture (640x480), copied
+                           while the guest was still recording: its header declares 0 frames, it
+                           has no index yet, and nine frame chunks begin in it
