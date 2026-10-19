@@ -495,7 +495,7 @@ def add_section(reply: dict[str, Any], name: str, value: Any, sources: list[str]
     reply["sources"][name] = sources
 
 
-#: Every section `machine_map` can answer, in reply order; `vga` is `dosbox_screen`'s, read last.
+#: Every section `machine_map` can answer, in reply order; `vga` is `dosbox_vga`'s, read last.
 SECTION_NAMES: tuple[str, ...] = (
     *(n for s in EVERY_MODE for n in s.names), *(n for s in DESCRIPTOR_TABLES for n in s.names),
     *PAGE_TABLE.names, "vga")

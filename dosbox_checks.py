@@ -31,6 +31,7 @@ from scry_core import value_format as vf
 
 import dosbox_code as code
 import dosbox_comment_file as cf
+import dosbox_dac as vgadac
 import dosbox_declarations as dec
 import dosbox_find as finder
 import dosbox_inputs as inputs
@@ -446,7 +447,7 @@ def _snapshot(dest: str = "", seconds: float = ds.SNAPSHOT_WAIT_S, **_: Any) -> 
 
 def _palette(first: int = 0, count: int = 0, scale: int = 0, dest: str = "",
              **_: Any) -> None:
-    entries = screen.DAC_ENTRIES
+    entries = vgadac.DAC_ENTRIES
     for name, value, top in (("first", first, entries - 1), ("count", count, entries)):
         if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= top:
             raise ds.Invalid("bad_argument", f"{name}={value!r} is not a whole number from 0 to "

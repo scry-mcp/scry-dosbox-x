@@ -27,6 +27,7 @@ from test_dosbox_x_server import clean_session, install  # noqa: F401
 
 import dosbox_arming as arming
 import dosbox_checks as checks
+import dosbox_dac as vgadac
 import dosbox_docs as docs
 import dosbox_machine as machine
 import dosbox_paths as paths
@@ -34,6 +35,7 @@ import dosbox_retrace as retrace
 import dosbox_screen as screen
 import dosbox_session as ds
 import dosbox_state as dstate
+import dosbox_vga as dvga
 import dosbox_x_server as server
 
 VGA = Path(__file__).parent / "fixtures" / "vga"
@@ -50,7 +52,7 @@ def vga(bench: str, command: str) -> str:
 
 
 def parsed(bench: str, command: str) -> dict[str, Any]:
-    return screen.parse_listing(vga(bench, command), screen.TITLES[command])
+    return dvga.parse_listing(vga(bench, command), dvga.TITLES[command])
 
 
 def window(name: str) -> bytes:
@@ -62,8 +64,8 @@ def window(name: str) -> bytes:
 
 @pytest.mark.parametrize("bench", BENCHES)
 def test_every_vga_listing_parses_on_every_bench(bench: str) -> None:
-    for _, command, title in screen.VGA_LISTINGS:
-        got = screen.parse_listing(vga(bench, command), title)
+    for _, command, title in dvga.VGA_LISTINGS:
+        got = dvga.parse_listing(vga(bench, command), title)
         assert got, (bench, command)
         assert all(k == k.lower() and "-" not in k for k in got), got
 
@@ -107,22 +109,22 @@ def test_a_listing_whose_shape_moved_is_unreadable_naming_the_line(
     text = vga("probe-booted", command)
     assert old in text
     with pytest.raises(machine.Unreadable) as got:
-        screen.parse_listing(text.replace(old, new, 1), screen.TITLES[command])
+        dvga.parse_listing(text.replace(old, new, 1), dvga.TITLES[command])
     assert got.value.line.startswith(line), got.value.line
 
 
 def test_a_listing_with_its_title_and_no_word_is_unreadable() -> None:
     with pytest.raises(machine.Unreadable):
-        screen.parse_listing("VGA DAC info:\n", "VGA DAC info:")
+        dvga.parse_listing("VGA DAC info:\n", "VGA DAC info:")
 
 
 # ------------------------------------------------------------------ the DAC
 
 
 def test_dacpal_reads_all_256_entries_as_printed() -> None:
-    booted = screen.parse_dacpal(vga("probe-booted", "VGA DACPAL"))
+    booted = vgadac.parse_dacpal(vga("probe-booted", "VGA DACPAL"))
     assert len(booted) == 256 and booted[:4] == ["000000", "00002a", "002a00", "002a2a"]
-    assert screen.parse_dacpal(vga("probe-park", "VGA DACPAL")) == ["000000"] * 256
+    assert vgadac.parse_dacpal(vga("probe-park", "VGA DACPAL")) == ["000000"] * 256
 
 
 def test_the_guests_ramp_is_the_dac_the_debugger_lists() -> None:
@@ -130,12 +132,12 @@ def test_the_guests_ramp_is_the_dac_the_debugger_lists() -> None:
     listing is that arithmetic, entry by entry."""
     want = [f"{i & 0x3F:02x}{(i >> 1) & 0x3F:02x}{(i >> 2) & 0x3F:02x}"
             for i in range(256)]
-    assert screen.parse_dacpal(vga("screen-13h", "VGA DACPAL")) == want
+    assert vgadac.parse_dacpal(vga("screen-13h", "VGA DACPAL")) == want
 
 
 def test_one_dac_write_moves_one_entry() -> None:
-    before = screen.parse_dacpal(vga("screen-text", "VGA DACPAL"))
-    after = screen.parse_dacpal(vga("screen-dac01", "VGA DACPAL"))
+    before = vgadac.parse_dacpal(vga("screen-text", "VGA DACPAL"))
+    after = vgadac.parse_dacpal(vga("screen-dac01", "VGA DACPAL"))
     assert (before[1], after[1]) == ("00002a", "3f0000")
     assert [i for i in range(256) if before[i] != after[i]] == [1]
 
@@ -151,13 +153,13 @@ def test_a_dacpal_whose_shape_moved_is_unreadable(old: str, new: str) -> None:
     text = vga("probe-booted", "VGA DACPAL")
     assert old in text
     with pytest.raises(machine.Unreadable):
-        screen.parse_dacpal(text.replace(old, new, 1))
+        vgadac.parse_dacpal(text.replace(old, new, 1))
 
 
 def test_a_dacpal_missing_its_last_row_is_unreadable() -> None:
     text = vga("probe-booted", "VGA DACPAL")
     with pytest.raises(machine.Unreadable):
-        screen.parse_dacpal(text[:text.rindex("f8: ")])
+        vgadac.parse_dacpal(text[:text.rindex("f8: ")])
 
 
 def test_the_dacpal_pager_is_answered_with_q_alone_and_read_whole(tmp_path: Path) -> None:
@@ -185,7 +187,7 @@ def test_vga_mode_does_not_page_and_is_read_with_one_command(tmp_path: Path) -> 
 def test_a_six_bit_entry_widens_as_the_emulator_renders_it(entry: str, want: str) -> None:
     """Each component's two top bits repeated below: the rule that reproduced every pixel of the
     emulator's own capture of the screen guest (63 is 255, 42 is 170, 1 is 4)."""
-    assert screen.color(entry) == want
+    assert vgadac.color(entry) == want
 
 
 # ------------------------------------------------------------------ what the screen can be
@@ -205,7 +207,7 @@ def test_the_13h_window_is_the_guests_diagonal_ramp() -> None:
     ("probe-booted", "text"), ("screen-text", "text"), ("dos-djgpp32-startup", "text"),
     ("screen-13h", "indices"), ("screen-13h-start80", "indices")])
 def test_text_and_the_chained_256_colour_mode_are_read(bench: str, want: str) -> None:
-    assert screen.source_of(parsed(bench, "VGA MODE")) == want
+    assert dvga.source_of(parsed(bench, "VGA MODE")) == want
 
 
 @pytest.mark.parametrize(("bench", "old", "new", "word", "why"), [
@@ -226,7 +228,7 @@ def test_every_other_mode_is_refused_naming_its_word_and_the_capture_route(
         assert old in text
         text = text.replace(old, new, 1)
     with pytest.raises(ds.Invalid) as got:
-        screen.source_of(screen.parse_listing(text, "VGA mode info:"))
+        dvga.source_of(dvga.parse_listing(text, "VGA mode info:"))
     assert got.value.code == "no_channel"
     assert f"`{word}`" in str(got.value) and why in str(got.value)
     assert "capture_frame" in str(got.value) and "capture_video=True" in str(got.value)
@@ -272,7 +274,7 @@ def test_the_png_holds_the_indices_and_the_palette_it_was_given() -> None:
     """scry-core's codec, read back by this file's own reader: the indices the guest wrote and
     the DAC as the PLTE."""
     pixels = window("screen-13h-a000.bin.gz")
-    pal = [screen.rgb8(e) for e in screen.parse_dacpal(vga("screen-13h", "VGA DACPAL"))]
+    pal = [vgadac.rgb8(e) for e in vgadac.parse_dacpal(vga("screen-13h", "VGA DACPAL"))]
     w, h, got, plte, trns = decode_png(png.encode(png.Raster(320, 200, pixels, tuple(pal))))
     assert (w, h, got, plte, trns) == (320, 200, pixels, pal, b"")
 
@@ -322,12 +324,12 @@ def test_palette_returns_the_entries_asked_for(tmp_path: Path) -> None:
     one = cast(dict[str, Any], server.palette(first=1, count=1))
     assert one["count"] == 1 and one["rgb"] == ["3f0000"] and one["colors"] == ["#ff0000"]
     assert one["summary"].startswith("palette: entry 1 #ff0000 of 256; ")
-    ramp = screen.parse_dacpal(vga("screen-13h", "VGA DACPAL"))
+    ramp = vgadac.parse_dacpal(vga("screen-13h", "VGA DACPAL"))
     bench("screen-13h", tmp_path)
     tail = cast(dict[str, Any], server.palette(first=250))
     assert tail["count"] == 6 and tail["first"] == 250 and tail["rgb"] == ramp[250:]
     last = cast(dict[str, Any], server.palette(first=255, count=1))
-    assert last["rgb"] == [ramp[255]] and last["colors"] == [screen.color(ramp[255])]
+    assert last["rgb"] == [ramp[255]] and last["colors"] == [vgadac.color(ramp[255])]
     whole = cast(dict[str, Any], server.palette(first=0, count=256))
     assert whole["count"] == 256 and whole["rgb"] == ramp
 
@@ -347,8 +349,8 @@ def test_the_palette_picture_is_one_square_per_entry_indexed_by_the_entry(
     w, h, pixels, plte, trns = decode_png(data)
     assert (w, h) == (image["width"], image["height"])
     assert w == min(count, 16) * 16 and h == -(-count // 16) * 16
-    dac = screen.parse_dacpal(vga("screen-13h", "VGA DACPAL"))
-    assert plte == [screen.rgb8(e) for e in dac]
+    dac = vgadac.parse_dacpal(vga("screen-13h", "VGA DACPAL"))
+    assert plte == [vgadac.rgb8(e) for e in dac]
     squares = [pixels[y * w + x] for y in range(h) for x in range(w)]
     returned = [first + (y // 16) * 16 + x // 16 for y in range(h) for x in range(w)]
     short = [i for i, k in enumerate(returned) if k >= first + count]
@@ -565,19 +567,19 @@ def words_of(bench_name: str, **edits: tuple[str, str]) -> dict[str, dict[str, A
     """The four listings that place the screen at a capture, keyed as `geometry` takes them,
     with an edit per key where a case names one."""
     out = {}
-    for key in screen.SHAPE_KEYS:
-        command = screen.COMMAND_OF[key]
+    for key in dvga.SHAPE_KEYS:
+        command = dvga.COMMAND_OF[key]
         text = vga(bench_name, command)
         if key in edits:
             old, new = edits[key]
             assert old in text, (key, old)
             text = text.replace(old, new, 1)
-        out[key] = screen.parse_listing(text, screen.TITLES[command])
+        out[key] = dvga.parse_listing(text, dvga.TITLES[command])
     return out
 
 
-def shape_of(bench_name: str, **edits: tuple[str, str]) -> screen.Geometry:
-    return screen.geometry(words_of(bench_name, **edits))
+def shape_of(bench_name: str, **edits: tuple[str, str]) -> dvga.Geometry:
+    return dvga.geometry(words_of(bench_name, **edits))
 
 
 @pytest.mark.parametrize(("bench_name", "linear", "cursor"), [
@@ -665,8 +667,8 @@ def test_fifty_rows_of_forty_columns() -> None:
     80 x 25 assumed."""
     draw = vga("probe-booted", "VGA DRAW").replace("blocks=80", "blocks=40", 1).replace(
         "addrline-total=16", "addrline-total=8", 1)
-    got = screen.geometry({**words_of("probe-booted", mode=("scanlen=40", "scanlen=20")),
-                           "draw": screen.parse_listing(draw, screen.TITLES["VGA DRAW"])})
+    got = dvga.geometry({**words_of("probe-booted", mode=("scanlen=40", "scanlen=20")),
+                           "draw": dvga.parse_listing(draw, dvga.TITLES["VGA DRAW"])})
     assert (got.width, got.height, got.length) == (40, 50, 4000)
 
 
@@ -691,7 +693,7 @@ def test_a_hidden_cursor_is_null() -> None:
 
 
 def machine_tables(cpu_mode: str = "paged", v86: bool = False,
-                   **edits: tuple[str, str]) -> screen.Tables:
+                   **edits: tuple[str, str]) -> dvga.Tables:
     found: dict[str, Any] = {}
     for name, parse in (("gdt", lambda t: machine.parse_descriptors(t, "GDT")),
                         ("ldt", lambda t: machine.parse_descriptors(t, "LDT")),
@@ -702,33 +704,33 @@ def machine_tables(cpu_mode: str = "paged", v86: bool = False,
             assert old in text
             text = text.replace(old, new, 1)
         found[name] = parse(text)
-    return screen.Tables(cpu_mode, v86, found)
+    return dvga.Tables(cpu_mode, v86, found)
 
 
 def test_real_mode_reads_the_page_through_its_paragraph() -> None:
-    assert screen.selector_for(0xB80A0, 4000, screen.Tables("real", False, {})) == (0xB80A, 0)
+    assert dvga.selector_for(0xB80A0, 4000, dvga.Tables("real", False, {})) == (0xB80A, 0)
 
 
 def test_a_virtual_8086_task_reads_through_the_paragraph_where_the_pages_allow() -> None:
     """A V86 task's segments are paragraphs whatever cr0 says; the page check still applies."""
-    assert screen.selector_for(0xB8000, 4000, machine_tables(v86=True)) == (0xB800, 0)
+    assert dvga.selector_for(0xB8000, 4000, machine_tables(v86=True)) == (0xB800, 0)
     moved = machine_tables(v86=True, paging=("page 000B8xxx -> 00B8xxx",
                                              "page 000B8xxx -> 01B8xxx"))
     with pytest.raises(ds.Invalid):
-        screen.selector_for(0xB8000, 4000, moved)
+        dvga.selector_for(0xB8000, 4000, moved)
 
 
 def test_paged_protected_mode_reads_through_the_lowest_gdt_segment_covering_the_page() -> None:
     """dos-djgpp32 at its DPMI client's first stop: GDT 0038 is base 0 and covers the whole
     space, and the page tables map B8000 to itself."""
-    assert screen.selector_for(0xB8000, 4000, machine_tables()) == (0x38, 0xB8000)
+    assert dvga.selector_for(0xB8000, 4000, machine_tables()) == (0x38, 0xB8000)
 
 
 def test_the_lowest_covering_selector_is_chosen() -> None:
     """GDT 0030 edited to a flat data segment too: both cover, the lower wins."""
     found = machine_tables(gdt=("0030: b:000D12E0 type: 12 parbg\n      l:0000FFFF",
                                 "0030: b:00000000 type: 12 parbg\n      l:FFFFFFFF"))
-    assert screen.selector_for(0xB8000, 4000, found) == (0x30, 0xB8000)
+    assert dvga.selector_for(0xB8000, 4000, found) == (0x30, 0xB8000)
 
 
 def test_the_offset_is_counted_from_the_chosen_segments_base() -> None:
@@ -737,7 +739,7 @@ def test_the_offset_is_counted_from_the_chosen_segments_base() -> None:
     for base, off in (("000B0000", 0x8000), ("000B8000", 0)):
         found = machine_tables(gdt=("0030: b:000D12E0 type: 12 parbg",
                                     f"0030: b:{base} type: 12 parbg"))
-        assert screen.selector_for(0xB8000, 4000, found) == (0x30, off)
+        assert dvga.selector_for(0xB8000, 4000, found) == (0x30, off)
 
 
 @pytest.mark.parametrize(("old", "new", "gdt_kept"), [
@@ -758,7 +760,7 @@ def test_only_a_present_data_segment_whose_limit_reaches_the_last_byte_is_taken(
     being valid), not present, a limit
     ending exactly on the page's last byte, one byte short, and 64 KiB. Where 0038 no longer
     qualifies the LDT's flat segment answers."""
-    sel, off = screen.selector_for(0xB8000, 4000, machine_tables(gdt=(old, new)))
+    sel, off = dvga.selector_for(0xB8000, 4000, machine_tables(gdt=(old, new)))
     assert (sel == 0x38) is gdt_kept and off == 0xB8000
     if not gdt_kept:
         assert sel & 0x4
@@ -768,7 +770,7 @@ def test_a_page_mapped_elsewhere_is_not_read_as_the_screen() -> None:
     """The PAGING capture with B8000's page sent to another physical page (an edited capture)."""
     found = machine_tables(paging=("page 000B8xxx -> 00B8xxx", "page 000B8xxx -> 01B8xxx"))
     with pytest.raises(ds.Invalid) as got:
-        screen.selector_for(0xB8000, 4000, found)
+        dvga.selector_for(0xB8000, 4000, found)
     assert got.value.code == "no_channel" and "000B8000" in str(got.value)
 
 
@@ -776,9 +778,9 @@ def test_every_page_the_screen_spans_is_checked_from_a_start_inside_one() -> Non
     """A screen starting at B80A0 runs into page B9000; that page sent elsewhere (an edited
     capture) is refused, though the first page maps to itself."""
     found = machine_tables(paging=("page 000B9xxx -> 00B9xxx", "page 000B9xxx -> 01B9xxx"))
-    assert screen.selector_for(0xB8000, 4000, found) == (0x38, 0xB8000)
+    assert dvga.selector_for(0xB8000, 4000, found) == (0x38, 0xB8000)
     with pytest.raises(ds.Invalid) as got:
-        screen.selector_for(0xB80A0, 4000, found)
+        dvga.selector_for(0xB80A0, 4000, found)
     assert "000B9000" in str(got.value)
 
 
@@ -786,18 +788,18 @@ def test_paging_on_with_no_page_runs_read_is_refused() -> None:
     tables = machine_tables()
     del tables.found["paging"]
     with pytest.raises(ds.Invalid) as got:
-        screen.selector_for(0xB8000, 4000, tables)
+        dvga.selector_for(0xB8000, 4000, tables)
     assert got.value.code == "no_channel" and "`PAGING`" in str(got.value)
 
 
 def test_no_covering_segment_at_all_is_refused() -> None:
     with pytest.raises(ds.Invalid) as got:
-        screen.selector_for(0xB8000, 4000, screen.Tables("protected", False,
+        dvga.selector_for(0xB8000, 4000, dvga.Tables("protected", False,
                                                          {"gdt": [], "ldt": []}))
     assert got.value.code == "no_channel" and "000B8000" in str(got.value)
     assert "could not be read" not in str(got.value)
     with pytest.raises(ds.Invalid) as got:
-        screen.selector_for(0xB8000, 4000, screen.Tables("protected", False, {}))
+        dvga.selector_for(0xB8000, 4000, dvga.Tables("protected", False, {}))
     assert "`GDT` could not be read" in str(got.value)
 
 
@@ -931,7 +933,7 @@ def test_screen_view_writes_the_256_colour_screen_as_its_indices(
     w, h, pixels, plte, trns = decode_png(dest.read_bytes())
     ramp = bytes((x + y) & 0xFF for y in range(200) for x in range(320)) + bytes(320)
     assert (w, h, trns) == (320, 200, b"") and pixels == ramp[moved:moved + 64000]
-    assert plte == [screen.rgb8(e) for e in screen.parse_dacpal(vga(bench_name, "VGA DACPAL"))]
+    assert plte == [vgadac.rgb8(e) for e in vgadac.parse_dacpal(vga(bench_name, "VGA DACPAL"))]
     assert r["image"]["sha256"] == hashlib.sha256(dest.read_bytes()).hexdigest()
     assert s.dumps == [dump] and s.asked[-2:] == ["VGA DAC", "VGA DACPAL"]
     assert r["image"]["inline"] is True and r["image"]["scale"] == 1
@@ -1053,8 +1055,8 @@ def test_a_text_cell_is_its_byte_and_the_colours_its_attribute_resolves_to() -> 
     """Counted by hand on the booted screen: cell 0 is `Z` (0x5a) in attribute 07, whose
     foreground is the Attribute Controller's register 7 (07), DAC entry 7, `2a2a2a`, widened to
     170; its background register 0, entry 0, black."""
-    ac = screen.parse_listing(vga("probe-booted", "VGA AC"), screen.TITLES["VGA AC"])
-    dac = screen.parse_dacpal(vga("probe-booted", "VGA DACPAL"))
+    ac = dvga.parse_listing(vga("probe-booted", "VGA AC"), dvga.TITLES["VGA AC"])
+    dac = vgadac.parse_dacpal(vga("probe-booted", "VGA DACPAL"))
     cells = screen.text_cells(page("probe-booted"), ac, dac)
     assert cells[:7] == bytes([0x5A, 170, 170, 170, 0, 0, 0])
     assert len(cells) == 80 * 25 * 7
@@ -1068,15 +1070,15 @@ def test_the_attribute_controller_decides_the_colour_of_a_cell() -> None:
     regs = ["00", "3e"] + ["00"] * 14
     plain = {"palette": regs, "mode_control": "00h", "color_select": "00h"}
     assert screen.text_cells(bytes([0x41, 0x01]), plain, dac)[1:4] == bytes(
-        screen.rgb8(dac[0x3E]))
+        vgadac.rgb8(dac[0x3E]))
     selected = {"palette": regs, "mode_control": "80h", "color_select": "09h"}
     assert screen.text_cells(bytes([0x41, 0x01]), selected, dac)[1:4] == bytes(
-        screen.rgb8(dac[0x9E]))
+        vgadac.rgb8(dac[0x9E]))
     blink = {"palette": regs, "mode_control": "08h", "color_select": "00h"}
     assert screen.text_cells(bytes([0x41, 0x90]), blink, dac)[4:7] == bytes(
-        screen.rgb8(dac[0x3E])), "background 9 blinks: register 1 shows"
+        vgadac.rgb8(dac[0x3E])), "background 9 blinks: register 1 shows"
     assert screen.text_cells(bytes([0x41, 0x90]), plain, dac)[4:7] == bytes(
-        screen.rgb8(dac[0x00])), "background 9 without blink: register 9 (00)"
+        vgadac.rgb8(dac[0x00])), "background 9 without blink: register 9 (00)"
 
 
 @pytest.mark.parametrize(("byte", "edit"), [
@@ -1116,8 +1118,8 @@ def test_a_cropped_text_signature_is_its_definition_counted_by_hand(tmp_path: Pa
     of two rows off the corner, so an x/y or a width/height swap hashes other cells."""
     install()
     dstate.STATE.session = cast(ds.Session, ScreenBench("probe-booted", tmp_path / "x.log"))
-    ac = screen.parse_listing(vga("probe-booted", "VGA AC"), screen.TITLES["VGA AC"])
-    dac = screen.parse_dacpal(vga("probe-booted", "VGA DACPAL"))
+    ac = dvga.parse_listing(vga("probe-booted", "VGA AC"), dvga.TITLES["VGA AC"])
+    dac = vgadac.parse_dacpal(vga("probe-booted", "VGA DACPAL"))
     cells = screen.text_cells(page("probe-booted"), ac, dac)
     x, y, w, h = 2, 1, 3, 2
     rows = b"".join(cells[7 * (80 * r + x):7 * (80 * r + x + w)] for r in range(y, y + h))

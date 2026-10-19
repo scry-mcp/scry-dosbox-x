@@ -15,10 +15,12 @@ from scry_core import cancel
 from scry_core import progress as mprogress
 
 import dosbox_arming as arming
+import dosbox_machine as machine
 import dosbox_running as running
 import dosbox_screen as screen
 import dosbox_session as ds
 import dosbox_state as st
+import dosbox_vga as vga
 from dosbox_state import STATE
 
 CYCLES_WHY = ("the pane's `cc=` counts cycles only on the normal core, and which core runs is not "
@@ -195,10 +197,10 @@ def screen_wait(session: ds.Session, text: str, seconds: float,
     wait `wait_stopped`; the bound, `wait_expired` (`_expired`); a frame laid out in a way the
     reader refuses, that `no_channel`. Each that ends at a stop of its own records it, as every
     stop tool does."""
-    watch = screen.TextWatch(session)
+    watch = TextWatch(session)
     rows = watch.rows()
     examined, not_text = 1, int(rows is None)
-    hit = None if rows is None else screen.find_text(rows, text)
+    hit = None if rows is None else find_text(rows, text)
     if hit is not None:
         return st.reply(already=True, waited_s=0.0, polls=0, point=hit[0], line=hit[1])
     last = rows
@@ -241,7 +243,7 @@ def screen_wait(session: ds.Session, text: str, seconds: float,
             not_text += 1
             continue
         last = rows
-        hit = screen.find_text(rows, text)
+        hit = find_text(rows, text)
     found: dict[str, Any] = {"already": False, "waited_s": round(time.monotonic() - began, 1),
                              "polls": polls, "point": hit[0], "line": hit[1]}
     if arming.declares_untold_stopper():
@@ -294,3 +296,47 @@ def _expired(session: ds.Session, text: str, seconds: float, polls: int, not_tex
     return ds.Invalid("wait_expired",
         f"`{text}` was not on the text screen in {polls} retrace(s) within {seconds:g} s{skipped}"
         + (f"; {PENDING_NOTE}, so the machine is still running" if out else ""), **fields)
+
+
+class TextWatch:
+    """The text screen read stop after stop, at the cost a wait can pay each frame: `VGA MODE`
+    (the mode word and the display start), `VGA DRAW` (the size the screen renders), `VGA GC`
+    (where the page lies: the switch to the monochrome mode moves it to B0000 and leaves the
+    other two as they were), `CPU` (how it is reached), and one dump. `VGA CRTC` is read once,
+    as it places only the cursor, which a wait does not return; the descriptor tables are
+    re-read only when the cpu mode, or whether a virtual-8086 task runs, changes: a guest can
+    enter protected mode under an unchanged text screen."""
+
+    def __init__(self, session: ds.Session) -> None:
+        self.session = session
+        self.crtc: dict[str, Any] | None = None
+        self.cpu: tuple[str, bool] | None = None
+        self.tables: vga.Tables | None = None
+
+    def rows(self) -> list[str] | None:
+        """The rows the text screen shows now, or None when the screen is not in a text mode."""
+        mode = vga.listed(self.session, vga.COMMAND_OF["mode"])
+        if mode.get("mode") != "M_TEXT":
+            return None
+        draw, gc = (vga.listed(self.session, vga.COMMAND_OF[key]) for key in ("draw", "gc"))
+        if self.crtc is None:
+            self.crtc = vga.listed(self.session, vga.COMMAND_OF["crtc"])
+        shape = vga.geometry({"mode": mode, "crtc": self.crtc, "gc": gc, "draw": draw})
+        reading = machine.read(self.session, frozenset())
+        cpu = (str(reading.mode), vga.in_v86(reading))
+        if cpu != self.cpu or self.tables is None:
+            self.cpu = cpu
+            self.tables = vga.tables_from(reading) if reading.mode == "real" \
+                else vga.read_tables(self.session)
+        seg, off = vga.selector_for(shape.linear, shape.length, self.tables)
+        page = vga.dump(self.session, seg, off, shape.length)
+        return screen.text_rows(page, shape.width, shape.height)
+
+
+def find_text(rows: list[str], text: str) -> tuple[list[int], str] | None:
+    """Where `text` first appears inside one row: `[column, row]` and that row."""
+    for r, row in enumerate(rows):
+        c = row.find(text)
+        if c >= 0:
+            return [c, r], row
+    return None

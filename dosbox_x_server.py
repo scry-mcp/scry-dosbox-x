@@ -112,6 +112,7 @@ import dosbox_captures as caps  # noqa: E402
 import dosbox_checks as checks  # noqa: E402
 import dosbox_code as code  # noqa: E402
 import dosbox_comments as comments  # noqa: E402
+import dosbox_dac as vgadac  # noqa: E402
 import dosbox_declarations as dec  # noqa: E402
 import dosbox_dump as dumping  # noqa: E402
 import dosbox_find as finder  # noqa: E402
@@ -128,6 +129,7 @@ import dosbox_session as ds  # noqa: E402
 import dosbox_state as st  # noqa: E402
 import dosbox_summaries as one_line  # noqa: E402
 import dosbox_trace as tracing  # noqa: E402
+import dosbox_vga as vga  # noqa: E402
 from dosbox_mcp import LOCK, RECORDER, registered_tools, tool  # noqa: E402
 from dosbox_mcp import mcp as mcp  # noqa: E402  (the probe and the clients read `server.mcp`)
 from dosbox_running import live  # noqa: E402
@@ -1408,7 +1410,7 @@ def machine_map(sections: list[str] | None = None, dest: str = "") -> dict[str, 
     _console_listening(session, "a listing")
     whole = machine.machine_map(session, chosen)
     if "vga" in chosen:
-        machine.add_section(whole, "vga", *screen.vga_section(session))
+        machine.add_section(whole, "vga", *vga.vga_section(session))
     reply = machine.cut_lists(whole)
     if target is not None:
         text = json.dumps(whole, indent=1).encode()
@@ -1485,7 +1487,7 @@ def palette(first: int = 0, count: int = 0, scale: int = 0, dest: str = "") -> d
     """
     session = live()
     _console_listening(session, "a listing")
-    return st.reply(**screen.palette(session, first, count, scale,
+    return st.reply(**vgadac.palette(session, first, count, scale,
                                      paths.absolute("dest", dest) if dest else None,
                                      STATE.session_scratch()))
 

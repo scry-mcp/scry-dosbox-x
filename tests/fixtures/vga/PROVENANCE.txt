@@ -4,7 +4,7 @@ video memory beside them, captured from live DOSBox-X sessions (the Homebrew bui
 `<bench>-VGA_<SUB>.log.txt` is the logfile's bytes from the offset it had before the command to
 its end once the prompt was back; `VGA DACPAL` pages, and its pager was answered with `Q`.
 Nothing here is authored, and the one file edited says so below: the parsers and decoders in
-`dosbox_screen.py` are written against these files, and the tests replay them.
+`dosbox_vga.py`, `dosbox_dac.py` and `dosbox_screen.py` are written against these files, and the tests replay them.
 Program and board names were then replaced by neutral labels by a single mechanical substitution
 that preserves every field width; nothing else was edited.
 
