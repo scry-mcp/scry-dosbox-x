@@ -1584,7 +1584,7 @@ def series_capture(frames: list[int] | None = None, first: int | None = None,
 # server's own `tool`, its bare fields made a reply (`status` and `session`) as this server's own
 # bodies make theirs; bound here by name so a step and a direct call find them as they find
 # every other tool.
-_MEDIA = media_tools.register(tool, media_tools.IMAGE_TOOLS, lambda body: st.reply(**body))
+_MEDIA = media_tools.register(tool, media.MEDIA_TOOLS, lambda body: st.reply(**body))
 image_diff = _MEDIA["image_diff"]
 series_diff = _MEDIA["series_diff"]
 region_track = _MEDIA["region_track"]

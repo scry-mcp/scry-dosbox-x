@@ -251,3 +251,18 @@ def test_a_media_file_tool_answers_in_this_server_s_envelope(tmp_path: Path) -> 
     r = cast(dict[str, Any], server.image_diff(a=str(pic), b=str(pic)))
     assert r["status"] == "ok" and "session" in r, r
     assert r["summary"].startswith("image_diff: no pixel differs"), r["summary"]
+
+
+def test_the_media_tools_are_named_once_for_the_registration_the_sequences_and_the_gate() -> None:
+    """One constant read by the three places that need it, so a sound tool joining the
+    server joins all three or none."""
+    import dosbox_checks as checks
+    import dosbox_mcp
+    import dosbox_sequence as sequence
+    assert set(media.MEDIA_TOOLS) <= set(dosbox_mcp.registered_tools())
+    assert set(media.MEDIA_TOOLS) <= sequence.RUNNING_OK_OPS
+    assert set(media.MEDIA_TOOLS) <= set(checks.BY_OP)
+    root = Path(media.__file__).parent
+    spelled = [f.name for f in sorted(root.glob("*.py"))
+               if f.name != "dosbox_media.py" and "IMAGE_TOOLS" in f.read_text(encoding="utf-8")]
+    assert spelled == [], f"{spelled} name the tools a second time instead of MEDIA_TOOLS"

@@ -885,7 +885,7 @@ def test_screen_view_reads_a_text_screen_in_real_mode(tmp_path: Path) -> None:
     assert s.asked == ["VGA MODE", "VGA CRTC", "VGA GC", "VGA DRAW", "CPU"]
     assert s.dumps == [(0xB800, 0, 4000)] and r["session"]["altered"] is False
     assert r["crop"] == [0, 0, 80, 25]
-    assert r["summary"] == "screen_view M_TEXT: 80 x 25 at [0, 0] text, cursor at 0,4"
+    assert r["summary"] == "screen_view M_TEXT: 80x25 at [0, 0] text, cursor at 0,4"
 
 
 def test_a_text_crop_is_in_characters_and_the_cursor_is_counted_from_it(
@@ -935,7 +935,7 @@ def test_screen_view_writes_the_256_colour_screen_as_its_indices(
     assert r["image"]["sha256"] == hashlib.sha256(dest.read_bytes()).hexdigest()
     assert s.dumps == [dump] and s.asked[-2:] == ["VGA DAC", "VGA DACPAL"]
     assert r["image"]["inline"] is True and r["image"]["scale"] == 1
-    assert r["summary"] == ("screen_view M_VGA: 320 x 200 at [0, 0] pixels; 320x200 PNG x1, "
+    assert r["summary"] == ("screen_view M_VGA: 320x200 at [0, 0] pixels; 320x200 PNG x1, "
                             "inline")
 
 
@@ -1046,7 +1046,7 @@ def test_the_signature_is_the_same_string_for_the_same_screen(tmp_path: Path) ->
     assert one["signature"] == two["signature"]
     assert (one["source"], one["mode"], one["width"], one["height"], one["kind"],
             one["crop"]) == ("text", "M_TEXT", 80, 25, "text", [0, 0, 80, 25])
-    assert one["summary"] == f"screen_signature M_TEXT 80 x 25 at [0, 0]: {one['signature']}"
+    assert one["summary"] == f"screen_signature M_TEXT 80x25 at [0, 0]: {one['signature']}"
 
 
 def test_a_text_cell_is_its_byte_and_the_colours_its_attribute_resolves_to() -> None:

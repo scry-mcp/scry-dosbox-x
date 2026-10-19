@@ -400,12 +400,12 @@ def _picture(reply: dict[str, Any]) -> str:
 
 
 def _region(reply: dict[str, Any]) -> str:
-    """The rectangle a reply read, as `w x h at [x, y]`."""
+    """The rectangle a reply read, as `wxh at [x, y]`, the media tools' own spelling."""
     crop = reply.get("crop")
     if not (isinstance(crop, list) and len(crop) == 4):
         return "the screen"
     x, y, w, h = crop
-    return f"{w} x {h} at [{x}, {y}]"
+    return f"{w}x{h} at [{x}, {y}]"
 
 
 def screen_view(args: dict[str, Any], reply: dict[str, Any]) -> str:

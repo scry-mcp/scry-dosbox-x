@@ -21,13 +21,14 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
 
-from scry_core import media_tools, recording
 from scry_core import progress as mprogress
+from scry_core import recording
 from scry_core import reply_contract as contract
 
 import dosbox_arming as arming
 import dosbox_checks as checks
 import dosbox_inputs as inputs
+import dosbox_media as media
 import dosbox_running as guest
 import dosbox_session as ds
 import dosbox_state as st
@@ -57,7 +58,7 @@ RUNNING_OK_OPS = frozenset({
     "captures", "capture_frame", "series_capture", "send_keys", "send_mouse",
     "state_save", "state_load", "state_list", "snapshot", "stop",
     # the media file tools read files, never the machine
-    *media_tools.IMAGE_TOOLS})
+    *media.MEDIA_TOOLS})
 
 
 def _leaves_running(op: str, reply: dict[str, Any]) -> bool:

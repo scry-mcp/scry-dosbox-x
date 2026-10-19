@@ -21,13 +21,16 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from scry_core import avi, fresh, judges, raster, series
+from scry_core import avi, fresh, judges, media_tools, raster, series
 
 import dosbox_paths as paths
 import dosbox_session as ds
 
 #: How long the one ffmpeg pass may take: a thousand frames of a DOS screen, with room.
 SERIES_FFMPEG_SECS = 300
+#: The media file tools this server publishes, named once for its registration, its sequences and
+#: its pre-gate: the image layer's; the sound layer's join the day a session records a WAV.
+MEDIA_TOOLS = media_tools.IMAGE_TOOLS
 #: What a series' frame numbers count here: the capture file's own frames, from 0.
 FRAME_SOURCE = "avi"
 

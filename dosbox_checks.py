@@ -548,7 +548,7 @@ BY_OP: dict[str, Check] = {
     "palette": _palette, "screen_view": _screen_view, "screen_wait": _screen_wait,
     "screen_signature": _screen_signature, "series_capture": media.check_series_capture,
     # The media file tools' judges are scry-core's, beside their bodies.
-    **{name: media_tools.TOOLS[name].check for name in media_tools.IMAGE_TOOLS},
+    **{name: media_tools.TOOLS[name].check for name in media.MEDIA_TOOLS},
     "snapshot": _snapshot, "scan_filter": _scan_filter, "state_save": _state,
     "state_load": _state, "perform": _perform, "drive": _drive, "start": _start,
     "comment_add": _comment_add, "comment_delete": _comment_delete,
