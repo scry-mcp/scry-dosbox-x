@@ -100,6 +100,6 @@ omit = [".venv/*", "tests/live/*"]
 # THE FLOOR IS THE VENDOR'S: coverage.py's `fail_under`, judged by pytest-cov at the end of every
 # `--cov` run. The number is the total the run that fixed it measured, raised by hand from a run.
 # It counts lines EXECUTED, not asserted: what proves a test bites is having seen it red.
-fail_under = 93.68
+fail_under = 97.40
 precision = 2
 show_missing = true
