@@ -524,7 +524,7 @@ def test_a_row_this_session_takes_into_its_map_keeps_its_stamp_and_names_this_se
         run.step(step)
     before = run.state(P)
     got = ok(server.comment_load(source=str(_file(tmp_path, (P, "same text")))))
-    assert (got["unchanged_total"], got["added_total"], got["replaced_total"]) == (1, 0, 0)
+    assert (got["unchanged"], got["added"], got["replaced_total"]) == (1, 0, 0)
     after = run.state(P)
     assert after["created_at"] == before["created_at"]
     assert after["origin"] == dstate.STATE.session_origin
@@ -543,7 +543,7 @@ def test_a_protected_mode_save_loads_waiting_at_the_real_mode_park(tmp_path: Pat
     install_store()
     got = ok(server.comment_load(source=str(saved)))
     row = _rows_by_ref()["00A7:45F80"]
-    assert got["added_total"] == 1 and row["state"] == "unarmable" and "linear" not in row
+    assert got["added"] == 1 and row["state"] == "unarmable" and "addr" not in row
 
 
 @pytest.mark.parametrize("off", ["00010000", "FFFFFFFF"])
@@ -555,7 +555,7 @@ def test_one_past_ffff_and_the_formats_top_offset_wait_at_the_park_beside_a_plac
                                                   ("start", "s")))))
     ref = f"00A7:{int(off, 16):X}"
     rows = _rows_by_ref()
-    assert got["added_total"] == 2 and ref in got["note"]
+    assert got["added"] == 2 and ref in got["note"]
     assert rows[ref]["state"] == "unarmable" and rows["start"]["state"] == "resolved"
 
 
@@ -572,7 +572,7 @@ def test_a_waiting_row_is_deleted_at_the_park(tmp_path: Path) -> None:
     assert ok(server.comment_list())["comments_total"] == 0
 
 
-@pytest.mark.parametrize("ref, back", [("0000:0084", "00000084"), ("0003:0400", "00000430")])
+@pytest.mark.parametrize("ref, back", [("0000:0084", "0x00000084"), ("0003:0400", "0x00000430")])
 def test_a_real_mode_save_waits_at_a_protected_mode_stop_and_is_placed_back(
         tmp_path: Path, ref: str, back: str) -> None:
     """The interrupt table's segment and the last null selector (RPL 3)."""
@@ -584,10 +584,10 @@ def test_a_real_mode_save_waits_at_a_protected_mode_stop_and_is_placed_back(
     install_store()
     got = ok(server.comment_load(source=str(saved)))
     row = _rows_by_ref()[ref]
-    assert got["added_total"] == 1 and ref in got["note"]
+    assert got["added"] == 1 and ref in got["note"]
     assert row["state"] == "unarmable" and "null selector" in row["why"], row
     dstate.STATE.session = FakeSession()  # type: ignore[assignment]
-    assert (_rows_by_ref()[ref]["state"], _rows_by_ref()[ref]["linear"]) == ("resolved", back)
+    assert (_rows_by_ref()[ref]["state"], _rows_by_ref()[ref]["addr"]) == ("resolved", back)
 
 
 def test_a_segment_no_descriptor_holds_waits_beside_one_placed_at_a_protected_mode_stop(
@@ -597,7 +597,7 @@ def test_a_segment_no_descriptor_holds_waits_beside_one_placed_at_a_protected_mo
     got = ok(server.comment_load(source=str(_file(tmp_path, ("0814:010B", "real"),
                                                   ("00A7:00001000", "pm")))))
     rows = _rows_by_ref()
-    assert got["added_total"] == 2 and rows["00A7:1000"]["state"] == "resolved"
+    assert got["added"] == 2 and rows["00A7:1000"]["state"] == "resolved"
     assert rows["0814:010B"]["state"] == "unarmable"
 
 
@@ -685,7 +685,7 @@ def test_a_held_row_of_another_build_given_its_text_where_it_waits_or_not_is_bro
     run.step("start")
     run.booted.mode = held_in
     got = ok(server.comment_load(source=str(_file(tmp_path, (ref, "same")))))
-    assert got["unchanged_total"] == 1, got
+    assert got["unchanged"] == 1, got
     created = _rows_by_ref()[ref]["created_at"]
     run.step("map A")
     run.booted.mode = then

@@ -37,6 +37,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from scry_core import live_host
+from scry_core import reply_contract as contract
 from scry_core.reply_contract import Invalid
 
 import dosbox_binary as binaries
@@ -442,10 +443,31 @@ STATE_NAME = re.compile(rf"[A-Za-z0-9][A-Za-z0-9_-]{{0,{STATE_NAME_MAX - 1}}}")
 
 
 # The members of a state ZIP that identify it without loading it, measured off a real
-# one: the emulator's version, the program, the machine, the memory size, the stamp.
+# one: the emulator's version, the program, the machine, the memory size in megabytes (the
+# conf's `memsize`), and the local time it was saved at, as the emulator stamps it.
 STATE_META = {"version": "DOSBox-X_Version", "program": "Program_Name",
-              "machine": "Machine_Type", "memory_size": "Memory_Size",
-              "time_stamp": "Time_Stamp"}
+              "machine": "Machine_Type", "memory_mb": "Memory_Size",
+              "saved_at": "Time_Stamp"}
+
+
+#: A file in the state directory that is no state: said in its row, never refused.
+NOT_A_STATE = "not a save state: the file is not a ZIP the emulator wrote"
+
+
+def state_fields(meta: dict[str, object]) -> dict[str, object]:
+    """`STATE_META`'s fields of a read state as a reply carries them: each the member's text,
+    `memory_mb` a whole number, and a member the file lacks unavailable with its name."""
+    out: dict[str, object] = {}
+    for key, member in STATE_META.items():
+        value = meta.get(key)
+        if value is None:
+            out[key] = contract.unavailable(f"the state carries no `{member}`")
+        elif key == "memory_mb":
+            out[key] = int(str(value)) if str(value).isdigit() else contract.unavailable(
+                f"the state's `{member}` is {value!r}, not a count of megabytes")
+        else:
+            out[key] = value
+    return out
 
 
 def check_state_name(name: object) -> None:
@@ -468,12 +490,14 @@ def state_meta(path: Path) -> dict[str, object]:
     reading of a directory and a stray file in it is information."""
     out: dict[str, object] = {"name": path.stem, "path": str(path),
                               "bytes": path.stat().st_size}
+    read: dict[str, object] = {}
     try:
         with zipfile.ZipFile(path) as z:
             names = set(z.namelist())
-            for field, member in STATE_META.items():
+            for key, member in STATE_META.items():
                 if member in names:
-                    out[field] = z.read(member).decode("utf-8", errors="replace").strip()
+                    read[key] = z.read(member).decode("utf-8", errors="replace").strip()
     except zipfile.BadZipFile:
-        out["note"] = "not a save state: the file is not a ZIP the emulator wrote"
-    return out
+        out["note"] = NOT_A_STATE
+        return {**out, **{key: contract.unavailable(NOT_A_STATE) for key in STATE_META}}
+    return {**out, **state_fields(read)}

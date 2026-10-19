@@ -110,8 +110,8 @@ def test_whitespace_between_the_bytes_is_accepted(good: str, want: bytes) -> Non
 def test_scan_start_reads_the_opened_line_past_an_earlier_refusal() -> None:
     s = session([("MEMFIND 0000:400 100 B", "memfind_opened_0400")])
     got = finder.scan_start(s, 0, 0x400, 0x100, "byte")
-    assert got == {"segment": 0, "offset": 0x400, "length": 0x100, "width": "byte",
-                   "cell_bytes": 1, "linear": "0x00000400", "candidates": 0x100}
+    assert got == {"seg_off": "0000:00000400", "length": 0x100,
+                   "cell_bytes": 1, "addr": "0x00000400", "hits_total": 0x100}
 
 
 def test_scan_start_refuses_when_the_debugger_already_holds_one() -> None:
@@ -170,10 +170,10 @@ def test_scan_filter_hands_back_a_whole_listing_when_the_rows_match_the_count() 
     is then whole: first row, last row, every row keyed once."""
     s = twenty_two()
     got = finder.scan_filter(s, "=", 0)
-    assert got["survivors"] == 22 and got["closed"] is False and got["iterations"] == 1
+    assert got["hits_total"] == 22 and got["closed"] is False and got["iterations"] == 1
     assert len(got["hits"]) == 22
-    assert got["hits"][0] == {"address": "0000:00000400", "linear": "0x00000400", "value": 0}
-    assert got["hits"][-1]["address"] == "0000:000004FF"
+    assert got["hits"][0] == {"seg_off": "0000:00000400", "addr": "0x00000400", "value": 0}
+    assert got["hits"][-1]["seg_off"] == "0000:000004FF"
 
 
 def test_scan_filter_lists_no_more_survivors_than_its_limit_and_says_so() -> None:
@@ -181,7 +181,7 @@ def test_scan_filter_lists_no_more_survivors_than_its_limit_and_says_so() -> Non
     typed, and `truncated` says the hits are not all of them."""
     s = session([("MEMS =0", "mems_matches")])
     got = finder.scan_filter(s, "=", 0)
-    assert got["survivors"] == got["hits_total"] == 256 > finder.HITS_DEFAULT
+    assert got["hits_total"] == 256 > finder.HITS_DEFAULT
     assert got["hits"] == [] and got["truncated"] is True
     assert s.sent == ["MEMS =0"]
 
@@ -207,8 +207,8 @@ def test_scan_filter_lists_exactly_at_its_limit_and_cuts_one_above(limit: int,
 def test_scan_filter_reports_a_finished_scan_as_closed_with_no_survivors() -> None:
     s = session([("MEMS !0", "mems_finished")])
     got = finder.scan_filter(s, "!", 0)
-    assert {k: got[k] for k in ("operator", "value", "survivors", "closed", "hits")} == {
-        "operator": "!", "value": 0, "survivors": 0, "closed": True, "hits": []}, got
+    assert {k: got[k] for k in ("operator", "value", "hits_total", "closed", "hits")} == {
+        "operator": "!", "value": 0, "hits_total": 0, "closed": True, "hits": []}, got
 
 
 def test_scan_filter_refuses_a_value_wider_than_the_cells() -> None:
@@ -243,7 +243,7 @@ def test_scan_filter_does_not_list_above_the_cap(monkeypatch: pytest.MonkeyPatch
     monkeypatch.setattr(finder, "HITS_MAX", 0xFF)
     s = session([("MEMS =0", "mems_matches")])
     got = finder.scan_filter(s, "=", 0, 0xFF)
-    assert got["survivors"] == 0x100 and got["hits"] == [], got
+    assert got["hits_total"] == 0x100 and got["hits"] == [], got
     assert got["hits_total"] == 0x100 and got["truncated"] is True, got
     assert "listed" not in got, got
     assert s.sent == ["MEMS =0"]
@@ -272,7 +272,7 @@ def test_a_listed_reply_says_it_is_whole(no_scan_count: None) -> None:
                  ("", "memfind_list_last")])
     _listed_22(s)
     got = finder.scan_filter(s, "=", 0)
-    assert got["truncated"] is False and got["hits_total"] == got["survivors"] == 22, got
+    assert got["truncated"] is False and got["hits_total"] == 22, got
     assert len(got["hits"]) == 22 and "listed" not in got, got
 
 
@@ -333,7 +333,7 @@ def test_scan_clear_refuses_an_answer_it_cannot_read() -> None:
 def test_scan_start_reads_past_two_stacked_stale_lines_and_checks_the_echoed_range() -> None:
     s = session([("MEMFIND 0000:0 FFFFFF B", "memfind_opened")])
     got = finder.scan_start(s, 0, 0, 0xFFFFFF, "byte")
-    assert got["candidates"] == 0xFFFFFF and got["linear"] == "0x00000000"
+    assert got["hits_total"] == 0xFFFFFF and got["addr"] == "0x00000000"
     short = session([("MEMFIND 0000:0 FFFFFE B", "memfind_opened"),
                      ("", "memfind_cancelled")])
     with pytest.raises(ds.Invalid, match="the range asked for"):
@@ -353,7 +353,7 @@ def test_scan_start_accepts_an_offset_wider_than_sixteen_bits() -> None:
                                   "0023:16DF20 (lin 0016DF20) with range: 000100")
     s.command = command
     got = finder.scan_start(s, 0x23, 0x16DF20, 0x100, "byte")
-    assert got["linear"] == "0x0016df20" and got["candidates"] == 0x100
+    assert got["addr"] == "0x0016df20" and got["hits_total"] == 0x100
 
 
 def test_listing_rows_are_read_across_a_page_with_another_pane_spliced_in() -> None:
@@ -375,7 +375,7 @@ def test_listing_ignores_the_previous_listings_closing_line_and_rows_above_the_s
     answers = iter([fresh_summary, page])
     s.command = lambda text, **_: next(answers)
     got = finder.scan_filter(s, "=", 0)
-    assert got["survivors"] == 2 and [h["address"] for h in got["hits"]] == [
+    assert got["hits_total"] == 2 and [h["seg_off"] for h in got["hits"]] == [
         "0000:000004FE", "0000:000004FF"]
 
 
@@ -404,7 +404,7 @@ def test_a_listing_that_ends_with_a_page_still_waiting_turns_it_before_returning
 
     s.command = command
     got = finder.scan_filter(s, "=", 0)
-    assert got["survivors"] == 2, got
+    assert got["hits_total"] == 2, got
     assert typed[-1] == "", (
         f"the listing returned on {typed[-1]!r} with a page still waiting: the next command "
         "is what pays for it")
@@ -476,7 +476,7 @@ def test_a_raw_scan_command_drops_the_count(tmp_path: Any, command: str) -> None
             return "screen"
 
         def state(self) -> dict[str, object]:
-            return {"alive": True, "altered": False}
+            return {"alive": True, "running": False, "altered": False}
 
     dstate.STATE.session = Raw()  # type: ignore[assignment]
     dstate.STATE.scan_iterations = 4

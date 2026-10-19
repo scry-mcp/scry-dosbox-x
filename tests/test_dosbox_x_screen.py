@@ -494,7 +494,7 @@ def test_a_dacpal_in_another_shape_is_refused_quoting_its_line(tmp_path: Path) -
 def test_perform_runs_palette_and_checks_its_arguments_first(tmp_path: Path) -> None:
     s = bench("probe-booted", tmp_path)
     r = cast(dict[str, Any], server.perform(steps=[{"op": "palette", "count": 2}]))
-    assert r["status"] == "ok" and r["completed"] == 1, r
+    assert r["status"] == "ok" and r["steps_completed"] == 1, r
     s.asked.clear()
     bad = cast(dict[str, Any], server.perform(steps=[{"op": "palette"},
                                                      {"op": "palette", "first": 300}]))
@@ -890,7 +890,7 @@ def test_screen_view_reads_a_text_screen_in_real_mode(tmp_path: Path) -> None:
     s = screen_bench("probe-booted", tmp_path)
     r = cast(dict[str, Any], server.screen_view())
     assert r["status"] == "ok", r
-    assert (r["mode"], r["source"], r["width"], r["height"]) == ("M_TEXT", "text", 80, 25)
+    assert (r["vga_mode"], r["kind"], r["width"], r["height"]) == ("M_TEXT", "text", 80, 25)
     assert r["text"][3] == "C:\\>PROBE.COM" and r["cursor"] == [0, 4]
     assert r["display_start"] == "0h" and "image" not in r
     assert s.asked == ["VGA MODE", "VGA CRTC", "VGA GC", "VGA DRAW", "CPU"]
@@ -938,7 +938,7 @@ def test_screen_view_writes_the_256_colour_screen_as_its_indices(
     dest = tmp_path / "screen.png"
     r = cast(dict[str, Any], server.screen_view(scale=1, dest=str(dest)))
     assert r["status"] == "ok", r
-    assert (r["source"], r["width"], r["height"]) == ("indices", 320, 200)
+    assert (r["kind"], r["width"], r["height"]) == ("pixel", 320, 200)
     w, h, pixels, plte, trns = decode_png(dest.read_bytes())
     ramp = bytes((x + y) & 0xFF for y in range(200) for x in range(320)) + bytes(320)
     assert (w, h, trns) == (320, 200, b"") and pixels == ramp[moved:moved + 64000]
@@ -1074,8 +1074,8 @@ def test_the_signature_is_the_same_string_for_the_same_screen(tmp_path: Path) ->
     two = signature_of(ScreenBench("probe-booted", tmp_path / "x.log"))
     assert one["status"] == "ok" and re.fullmatch(r"[0-9a-f]{16}", one["signature"]), one
     assert one["signature"] == two["signature"]
-    assert (one["source"], one["mode"], one["width"], one["height"], one["kind"],
-            one["crop"]) == ("text", "M_TEXT", 80, 25, "text", [0, 0, 80, 25])
+    assert (one["vga_mode"], one["width"], one["height"], one["kind"],
+            one["crop"]) == ("M_TEXT", 80, 25, "text", [0, 0, 80, 25])
     assert one["summary"] == f"screen_signature M_TEXT 80x25 at [0, 0]: {one['signature']}"
 
 
@@ -1189,7 +1189,7 @@ def test_a_listing_that_printed_nothing_is_said_so(tmp_path: Path) -> None:
 
 def test_the_256_colour_signature_folds_the_pixels(tmp_path: Path) -> None:
     plain = signature_of(ScreenBench("screen-13h", tmp_path / "x.log"))
-    assert plain["status"] == "ok" and plain["source"] == "indices"
+    assert plain["status"] == "ok" and plain["kind"] == "pixel"
     moved = signature_of(Edited("screen-13h", tmp_path / "x.log", 64000 - 1))
     assert moved["signature"] != plain["signature"]
 
@@ -1198,7 +1198,7 @@ def test_perform_runs_the_screen_tools(tmp_path: Path) -> None:
     screen_bench("probe-booted", tmp_path)
     r = cast(dict[str, Any], server.perform(steps=[{"op": "screen_view"},
                                                    {"op": "screen_signature"}]))
-    assert r["status"] == "ok" and r["completed"] == 2, r
+    assert r["status"] == "ok" and r["steps_completed"] == 2, r
     s = screen_bench("probe-booted", tmp_path)
     bad = cast(dict[str, Any], server.perform(steps=[{"op": "screen_signature"},
                                                      {"op": "screen_view", "dest": "x.png"}]))
@@ -1263,7 +1263,7 @@ def test_a_string_that_appears_after_a_retrace_is_found_with_the_stop_reply(
     assert r["status"] == "ok", r
     assert r["already"] is False and r["polls"] == 1 and r["point"] == [4, 3], r
     assert r["line"] == "C:\\>PROBE.COM" and isinstance(r["waited_s"], float)
-    assert r["registers"] and "attribution" in r and "stop_seq" in r
+    assert r["regs"] and "attribution" in r and "stop_seq" in r
     assert dbg.keys == [ds.RETRACE_COMMAND] and dbg.dumps == [(0xB800, 0, 4000)]
     assert dbg.asked.count("VGA MODE") == 2 and dbg.asked.count("VGA CRTC") == 1
     assert r["summary"] == "screen_wait 'PROBE.COM': found at 4,3 after 1 retrace(s)"
@@ -1485,7 +1485,7 @@ def test_perform_runs_screen_wait_and_checks_it_first(tmp_path: Path) -> None:
     dbg = waiting(["probe-booted"], 0, tmp_path)
     r = cast(dict[str, Any], server.perform(steps=[
         {"op": "screen_wait", "text": "PROBE.COM", "seconds": 5}, {"op": "screen_signature"}]))
-    assert r["status"] == "ok" and r["completed"] == 2, r
+    assert r["status"] == "ok" and r["steps_completed"] == 2, r
     bad = cast(dict[str, Any], server.perform(steps=[{"op": "screen_signature"},
                                                      {"op": "screen_wait", "text": ""}]))
     assert bad["status"] == "INVALID" and [e["step"] for e in bad["errors"]] == [1], bad
@@ -1519,7 +1519,7 @@ def test_a_find_whose_stop_survey_comes_back_cut_keeps_the_find(tmp_path: Path) 
     dbg.panes = ["", *[cap_vrt("probe-survey-0")] * 3]
     r = cast(dict[str, Any], server.screen_wait(text="PROBE.COM", seconds=10))
     assert r["status"] == "ok" and r["point"] == [4, 3] and r["line"] == "C:\\>PROBE.COM", r
-    assert r["enrichment"]["available"] is False and "registers" not in r
+    assert r["enrichment"]["available"] is False and "regs" not in r
 
 
 class PannedAfterRetrace(EditedAfterRetrace):

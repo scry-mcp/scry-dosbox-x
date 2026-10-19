@@ -10,6 +10,7 @@ non-interactive trigger.
 
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 from typing import Any
 
@@ -27,4 +28,6 @@ def capture_frame(session: ds.Session, at: int, dest: Path, source: Path | None)
     the tool, `source` a file there."""
     read_from = source if source is not None else Path(str(session.captures()[-1]["path"]))
     path = session.frame(at, dest, read_from)
-    return st.reply(path=str(path), bytes=path.stat().st_size, source=str(read_from), at=at)
+    data = path.read_bytes()
+    return st.reply(path=str(path), bytes=len(data), sha256=hashlib.sha256(data).hexdigest(),
+                    capture_path=str(read_from), frame=at)

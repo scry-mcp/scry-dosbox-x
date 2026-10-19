@@ -243,11 +243,11 @@ def test_a_symbol_comment_is_placed_where_symbols_find_places_it() -> None:
     install()
     probe_table()
     got = ok(server.comment_add(ref="start", text="entry"))
-    found = ok(server.symbols_find(name="start"))["symbols"][0]["linear"]
-    assert got["comment"]["linear"] == f"{found:08X}" == "0000824B"
+    found = ok(server.symbols_find(name="start"))["symbols"][0]["addr"]
+    assert got["comment"]["addr"] == found == "0x0000824b"
     assert got["comment"]["state"] == "resolved" and "why" not in got["comment"]
-    assert (got["replaced_comments"], got["persistent"]) == ([], True)
-    assert got["path"] == str(cast(dec.DeclarationStore, dstate.STATE.store).path)
+    assert (got["replaced_comments"], got["declarations"]["persistent"]) == ([], True)
+    assert got["declarations"]["path"] == str(cast(dec.DeclarationStore, dstate.STATE.store).path)
     assert got["session"]["altered"] is False
 
 
@@ -267,19 +267,19 @@ def test_an_alias_of_a_commented_place_replaces_its_text_and_keeps_its_ref() -> 
 def test_a_raw_comment_is_stored_canonical_and_placed_by_real_mode_arithmetic() -> None:
     install()
     got = ok(server.comment_add(ref="814:106", text="the loop"))
-    assert (got["comment"]["ref"], got["comment"]["linear"]) == ("0814:0106", "00008246")
+    assert (got["comment"]["ref"], got["comment"]["addr"]) == ("0814:0106", "0x00008246")
 
 
 def test_a_symbol_with_no_table_or_absent_from_it_is_stored_unresolved() -> None:
     install()
     got = ok(server.comment_add(ref="start", text="entry"))
-    assert got["comment"]["state"] == "unresolved" and "linear" not in got["comment"]
+    assert got["comment"]["state"] == "unresolved" and "addr" not in got["comment"]
     assert "symbols_load" in got["note"]
     probe_table()
     gone = ok(server.comment_add(ref="nowhere", text="kept"))
     assert gone["comment"]["state"] == "unresolved" and "not a symbol" in gone["note"]
     listed = {c["ref"]: c for c in ok(server.comment_list())["comments"]}
-    assert listed["start"]["linear"] == "0000824B" and listed["start"]["state"] == "resolved"
+    assert listed["start"]["addr"] == "0x0000824b" and listed["start"]["state"] == "resolved"
 
 
 def test_an_ambiguous_symbol_is_refused_and_nothing_stored() -> None:
@@ -300,7 +300,7 @@ def test_a_protected_mode_address_is_placed_through_its_selectors_base() -> None
     dstate.STATE.session = Protected()  # type: ignore[assignment]
     install_store()
     got = ok(server.comment_add(ref="00A7:00001000", text="in the code"))
-    assert got["comment"]["linear"] == "00401000"
+    assert got["comment"]["addr"] == "0x00401000"
     alias = ok(server.comment_add(ref="00AF:1000", text="same byte through DS"))
     assert alias["comment"]["ref"] == "00A7:1000"
     assert "limit 23FFFF" in refused(server.comment_add(ref="00A7:00240000", text="x"),
@@ -317,7 +317,7 @@ def test_a_selector_whose_base_cannot_be_read_is_stored_by_its_ref_and_said_so()
     dstate.STATE.session = Protected()  # type: ignore[assignment]
     install_store()
     got = ok(server.comment_add(ref="0038:000B8000", text="the text page"))
-    assert got["comment"]["state"] == "unarmable" and "linear" not in got["comment"]
+    assert got["comment"]["state"] == "unarmable" and "addr" not in got["comment"]
     assert "logfile" in got["note"]
     same = ok(server.comment_add(ref="38:B8000", text="again"))
     assert [r["text"] for r in same["replaced_comments"]] == ["the text page"]
@@ -329,7 +329,7 @@ def test_comments_a_rebuild_brought_to_one_place_are_kept_and_reached_by_their_o
     store.apply(adds=[comment("0814:010B", "raw"), comment("start", "by name")])
     probe_table()
     rows = ok(server.comment_list())["comments"]
-    assert [r["linear"] for r in rows] == ["0000824B", "0000824B"]
+    assert [r["addr"] for r in rows] == ["0x0000824b", "0x0000824b"]
     gone = ok(server.comment_delete(ref="start"))
     assert gone["deleted"]["text"] == "by name"
     assert [c.ref for c in store.comments()] == ["0814:010B"]
@@ -340,7 +340,7 @@ def test_a_delete_reaches_by_place_and_a_miss_names_what_is_held() -> None:
     probe_table()
     ok(server.comment_add(ref="start", text="entry"))
     got = ok(server.comment_delete(ref="0824:000B"))
-    assert (got["deleted"]["ref"], got["persistent"]) == ("start", True)
+    assert (got["deleted"]["ref"], got["declarations"]["persistent"]) == ("start", True)
     ok(server.comment_add(ref="emit", text="out"))
     assert "'emit'" in refused(server.comment_delete(ref="start"), "unknown_ref")
 
@@ -352,7 +352,7 @@ def test_a_raw_comment_over_another_build_lists_stale_with_its_place() -> None:
     store.apply(adds=[comment("0814:010B", "old", fingerprint="then",
                               conf_fingerprint="then")])
     (row,) = ok(server.comment_list())["comments"]
-    assert (row["state"], row["linear"]) == ("stale", "0000824B") and "another build" in row["why"]
+    assert (row["state"], row["addr"]) == ("stale", "0x0000824b") and "another build" in row["why"]
 
 
 def test_a_store_that_cannot_be_written_is_host_failed_and_the_comment_still_listed(
@@ -378,8 +378,8 @@ def test_a_running_guest_lists_and_saves_but_add_delete_and_load_refuse(tmp_path
     store = cast(dec.DeclarationStore, dstate.STATE.store)
     store.apply(adds=[comment("0814:010B", "raw"), comment("00A7:00001000", "pm")])
     listed = ok(server.comment_list())
-    assert listed["running"] is True and listed["last_stop"]["stop_seq"] == 1
-    assert [r.get("linear") for r in listed["comments"]] == ["0000824B", "00001A70"]
+    assert listed["session"]["running"] is True and listed["last_stop"]["stop_seq"] == 1
+    assert [r.get("addr") for r in listed["comments"]] == ["0x0000824b", "0x00001a70"]
     dstate.STATE.last_stop["where"] = {"mode": "Pr32"}
     pm = ok(server.comment_list())["comments"]
     assert [r["state"] for r in pm] == ["unarmable", "unarmable"]
@@ -400,7 +400,7 @@ def test_save_writes_the_comment_file_sorted_whole(tmp_path: Path) -> None:
     ok(server.comment_add(ref="0814:0106", text="the loop"))
     dest = tmp_path / "probe.comments.tsv"
     got = ok(server.comment_save(dest=str(dest)))
-    assert (got["dest"], got["comments_total"], got["dropped_comments"], got["dropped_total"],
+    assert (got["path"], got["comments_total"], got["dropped_comments"], got["dropped_total"],
             got["truncated"]) == (str(dest), 2, [], 0, False)
     lines = dest.read_text(encoding="utf-8").split("\n")
     assert lines[0] == cf.HEADER and lines[-1] == ""
@@ -480,7 +480,7 @@ def test_load_adds_replaces_keeps_and_reports_each(tmp_path: Path) -> None:
     ok(server.comment_add(ref="bump", text="only the store"))
     src = _file(tmp_path, ("0824:000B", "new text"), ("emit", "same"), ("cnt", "added"))
     got = ok(server.comment_load(source=str(src)))
-    assert (got["parsed"], got["added_total"], got["replaced_total"], got["unchanged_total"],
+    assert (got["parsed"], got["added"], got["replaced_total"], got["unchanged"],
             got["comments_total"], got["truncated"]) == (3, 1, 1, 1, 4, False)
     assert [(r["ref"], r["text"]) for r in got["replaced_comments"]] == [("start", "old text")]
     held = {c["ref"]: c["text"] for c in ok(server.comment_list())["comments"]}
@@ -497,10 +497,10 @@ def test_a_file_naming_one_place_twice_loads_both_and_says_a_save_will_refuse_th
     probe_table()
     src = _file(tmp_path, ("start", "a"), ("0814:010B", "b"), ("emit", "c"))
     got = ok(server.comment_load(source=str(src)))
-    assert (got["added_total"], got["comments_total"]) == (3, 3)
+    assert (got["added"], got["comments_total"]) == (3, 3)
     assert "'0814:010B' and 'start'" in got["note"] and "comment_save" in got["note"]
     rows = ok(server.comment_list())["comments"]
-    assert sorted(r["linear"] for r in rows) == ["0000824B", "0000824B", "00008277"]
+    assert sorted(r["addr"] for r in rows) == ["0x0000824b", "0x0000824b", "0x00008277"]
 
 
 def test_a_file_row_reaches_the_comment_its_ref_spells_before_an_alias_reaches_it(
@@ -512,7 +512,7 @@ def test_a_file_row_reaches_the_comment_its_ref_spells_before_an_alias_reaches_i
     ok(server.comment_add(ref="start", text="held"))
     src = _file(tmp_path, ("0824:000B", "alias"), ("start", "held"))
     got = ok(server.comment_load(source=str(src)))
-    assert (got["added_total"], got["replaced_total"], got["unchanged_total"]) == (1, 0, 1)
+    assert (got["added"], got["replaced_total"], got["unchanged"]) == (1, 0, 1)
     held = {c.ref: c.text for c in cast(dec.DeclarationStore, dstate.STATE.store).comments()}
     assert held == {"start": "held", "0824:000B": "alias"}
 
@@ -536,7 +536,7 @@ def test_two_file_rows_at_a_held_place_replace_it_once_and_add_the_other(
     ok(server.comment_add(ref="0814:010B", text="held"))
     src = _file(tmp_path, ("0824:000B", "first"), ("start", "second"))
     got = ok(server.comment_load(source=str(src)))
-    assert (got["replaced_total"], got["added_total"]) == (1, 1)
+    assert (got["replaced_total"], got["added"]) == (1, 1)
     held = {c.ref: c.text for c in cast(dec.DeclarationStore, dstate.STATE.store).comments()}
     assert held == {"0814:010B": "first", "start": "second"}
 
@@ -578,10 +578,10 @@ def test_a_file_row_this_stop_cannot_place_loads_unarmable_and_named(
         install()
     got = ok(server.comment_load(source=str(_file(tmp_path, (fine, "fine"), (ref, "past")))))
     held = dec.canonical_ref(ref, "address")
-    assert got["added_total"] == 2 and held in got["note"]
+    assert got["added"] == 2 and held in got["note"]
     rows = _rows_by_ref()
     assert rows[dec.canonical_ref(fine, "address")]["state"] == "resolved"
-    assert rows[held]["state"] == "unarmable" and "linear" not in rows[held]
+    assert rows[held]["state"] == "unarmable" and "addr" not in rows[held]
     assert said in rows[held]["why"] and waits in rows[held]["why"]
     assert "mode holds" not in rows[held]["why"] + got["note"]
     assert said in refused(server.comment_add(ref=ref, text="x"), "bad_argument")
@@ -599,13 +599,13 @@ def test_a_protected_mode_save_loads_at_the_real_mode_park_and_is_placed_back(
     ok(server.comment_save(dest=str(saved)))
     install()
     got = ok(server.comment_load(source=str(saved)))
-    assert got["added_total"] == 1 and "00A7:45F80" in got["note"]
+    assert got["added"] == 1 and "00A7:45F80" in got["note"]
     assert _rows_by_ref()["00A7:45F80"]["state"] == "unarmable"
     ok(server.comment_save(dest=str(again)))
     assert again.read_bytes() == saved.read_bytes()
     dstate.STATE.session = Protected()  # type: ignore[assignment]
     row = _rows_by_ref()["00A7:45F80"]
-    assert (row["state"], row["linear"]) == ("resolved", "00445F80")
+    assert (row["state"], row["addr"]) == ("resolved", "0x00445f80")
 
 
 def test_a_real_mode_save_loads_at_a_protected_mode_stop_and_is_placed_back(
@@ -619,11 +619,11 @@ def test_a_real_mode_save_loads_at_a_protected_mode_stop_and_is_placed_back(
     dstate.STATE.session = Protected()  # type: ignore[assignment]
     install_store()
     got = ok(server.comment_load(source=str(saved)))
-    assert got["added_total"] == 1 and "0000:0084" in got["note"]
+    assert got["added"] == 1 and "0000:0084" in got["note"]
     assert "null selector" in _rows_by_ref()["0000:0084"]["why"]
     dstate.STATE.session = FakeSession()  # type: ignore[assignment]
     row = _rows_by_ref()["0000:0084"]
-    assert (row["state"], row["linear"]) == ("resolved", "00000084")
+    assert (row["state"], row["addr"]) == ("resolved", "0x00000084")
 
 
 def test_a_stale_comment_with_the_files_text_is_brought_to_this_build(tmp_path: Path) -> None:
@@ -633,7 +633,7 @@ def test_a_stale_comment_with_the_files_text_is_brought_to_this_build(tmp_path: 
     store.apply(adds=[comment("0814:010B", "same", fingerprint="then",
                               conf_fingerprint="then")])
     got = ok(server.comment_load(source=str(_file(tmp_path, ("0814:010B", "same")))))
-    assert (got["unchanged_total"], got["added_total"], got["replaced_total"]) == (1, 0, 0)
+    assert (got["unchanged"], got["added"], got["replaced_total"]) == (1, 0, 0)
     (row,) = ok(server.comment_list())["comments"]
     assert row["state"] == "resolved" and row["created_at"] == STAMP
 
@@ -654,7 +654,7 @@ def test_a_stale_row_with_the_files_text_loaded_where_it_waits_is_brought_to_thi
     store = cast(dec.DeclarationStore, dstate.STATE.store)
     store.apply(adds=[comment(ref, "same", fingerprint="then", conf_fingerprint="then")])
     got = ok(server.comment_load(source=str(_file(tmp_path, (ref, "same")))))
-    assert (got["unchanged_total"], got["added_total"], got["replaced_total"]) == (1, 0, 0)
+    assert (got["unchanged"], got["added"], got["replaced_total"]) == (1, 0, 0)
     dstate.STATE.session = there()  # type: ignore[assignment]
     row = _rows_by_ref()[ref]
     assert (row["state"], row["created_at"]) == ("resolved", STAMP), row
@@ -672,7 +672,7 @@ def test_a_file_row_whose_selector_this_stop_does_not_describe_waits_for_one_tha
     pr32_machine(tmp_path / "x.log")
     got = ok(server.comment_load(source=str(_file(
         tmp_path, ("0097:0010", "nowhere"), ("0097:00010000", "past a paragraph")))))
-    assert got["added_total"] == 2 and "0097:0010" in got["note"]
+    assert got["added"] == 2 and "0097:0010" in got["note"]
     rows = _rows_by_ref()
     row = rows["0097:0010"]
     assert row["state"] == "unarmable" and "names no descriptor" in row["why"], row
@@ -707,12 +707,12 @@ def test_a_file_loaded_at_the_real_mode_park_is_placed_after_the_protected_mode_
         "00A7:2000", "over another map",
         fingerprint=build_of(conf, other.read_text(encoding="utf-8")))])
     loaded = ok(server.comment_load(source=str(_file(tmp_path, ("00A7:00045F80", "pm")))))
-    assert loaded["added_total"] == 1 and "00A7:45F80" in loaded["note"]
+    assert loaded["added"] == 1 and "00A7:45F80" in loaded["note"]
     booted.mode = "Pr32"
     ok(server.symbols_load(source=str(mapf), base="400000"))
     rows = _rows_by_ref()
-    assert (rows["00A7:45F80"]["state"], rows["00A7:45F80"].get("linear")) == (
-        "resolved", "00445F80"), rows["00A7:45F80"]
+    assert (rows["00A7:45F80"]["state"], rows["00A7:45F80"].get("addr")) == (
+        "resolved", "0x00445f80"), rows["00A7:45F80"]
     assert rows["00A7:2000"]["state"] == "stale", rows["00A7:2000"]
 
 
@@ -840,7 +840,7 @@ def test_save_then_load_into_a_fresh_store_then_save_is_byte_identical(tmp_path:
         ok(server.comment_delete(ref=ref))
     install()
     probe_table()
-    assert ok(server.comment_load(source=str(first)))["added_total"] == 3
+    assert ok(server.comment_load(source=str(first)))["added"] == 3
     ok(server.comment_save(dest=str(second)))
     assert first.read_bytes() == second.read_bytes()
 
@@ -885,7 +885,7 @@ def test_perform_runs_comment_steps() -> None:
     _performing()
     got = ok(server.perform(steps=[{"op": "comment_add", "ref": "0814:0106", "text": "a"},
                                    {"op": "comment_list"}]))
-    assert got["completed"] == 2
+    assert got["steps_completed"] == 2
 
 
 # ------------------------------------------------------------ the descriptions name the keys
@@ -941,7 +941,7 @@ def test_each_reply_opens_with_its_one_line(tmp_path: Path) -> None:
     install()
     probe_table()
     assert ok(server.comment_add(ref="start", text="a"))["summary"] == \
-        "comment_add start: 0000824B, stored"
+        "comment_add start: 0x0000824b, stored"
     assert ok(server.comment_add(ref="nowhere", text="b"))["summary"] == \
         "comment_add nowhere: unresolved, stored"
     assert ok(server.comment_list())["summary"] == "comment_list: 2 comments"
@@ -949,7 +949,7 @@ def test_each_reply_opens_with_its_one_line(tmp_path: Path) -> None:
     assert ok(server.comment_save(dest=str(dest)))["summary"] == \
         f"comment_save: 2 comments to {dest}"
     assert ok(server.comment_delete(ref="start"))["summary"] == \
-        "comment_delete start: 0000824B deleted"
+        "comment_delete start: 0x0000824b deleted"
     assert ok(server.comment_load(source=str(dest)))["summary"] == \
         "comment_load: 2 read, 1 added, 0 replaced"
 
@@ -968,7 +968,7 @@ def test_save_refuses_two_comments_at_one_place_and_writes_nothing(tmp_path: Pat
     ok(server.comment_save(dest=str(dest)))
     install()
     probe_table()
-    assert ok(server.comment_load(source=str(dest)))["added_total"] == 1
+    assert ok(server.comment_load(source=str(dest)))["added"] == 1
 
 
 def test_a_temporary_the_host_refuses_is_host_failed_and_leaves_nothing(
@@ -1050,11 +1050,11 @@ def test_a_file_saved_before_symbols_load_loads_after_it(tmp_path: Path) -> None
     dest = tmp_path / "c.tsv"
     assert ok(server.comment_save(dest=str(dest)))["comments_total"] == 2
     probe_table()
-    assert ok(server.comment_load(source=str(dest)))["unchanged_total"] == 2
+    assert ok(server.comment_load(source=str(dest)))["unchanged"] == 2
     install()
     probe_table()
     got = ok(server.comment_load(source=str(dest)))
-    assert (got["added_total"], got["comments_total"]) == (2, 2)
+    assert (got["added"], got["comments_total"]) == (2, 2)
 
 
 def test_a_file_saved_on_a_running_protected_mode_guest_loads_at_the_next_stop(
@@ -1073,7 +1073,7 @@ def test_a_file_saved_on_a_running_protected_mode_guest_loads_at_the_next_stop(
     install_store()
     probe_table([("pmsym", 0x401000 - PROBE_BASE)])
     got = ok(server.comment_load(source=str(dest)))
-    assert (got["added_total"], got["comments_total"]) == (2, 2)
+    assert (got["added"], got["comments_total"]) == (2, 2)
     assert "'00A7:1000' and 'pmsym'" in got["note"]
 
 
@@ -1118,7 +1118,7 @@ def test_a_load_that_changes_nothing_writes_nothing(tmp_path: Path,
     empty.write_text(cf.HEADER + "\n", encoding="utf-8")
     for src in (empty, _file(tmp_path, ("start", "entry"))):
         got = ok(server.comment_load(source=str(src)))
-        assert got["added_total"] + got["replaced_total"] == 0
+        assert got["added"] + got["replaced_total"] == 0
     assert writes == []
 
 
@@ -1133,5 +1133,5 @@ def test_a_held_address_in_another_spelling_is_reached_by_its_own_ref(tmp_path: 
     got = ok(server.comment_add(ref="0038:000B8000", text="full"))
     assert [r["text"] for r in got["replaced_comments"]] == ["short"]
     loaded = ok(server.comment_load(source=str(_file(tmp_path, ("0038:B8000", "file")))))
-    assert (loaded["replaced_total"], loaded["added_total"]) == (1, 0)
+    assert (loaded["replaced_total"], loaded["added"]) == (1, 0)
     assert [(c.ref, c.text) for c in store.comments()] == [("38:B8000", "file")]

@@ -28,9 +28,8 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
     """`SAVESTATE` or `LOADSTATE` of `path` over the debugger channel, with the debugger
     stopped as the commands need it: a RUNNING guest is broken in on first and released
     again after, so the machine is left the way it was found. The reply's part:
-    `paused` (it had to be stopped), `running` (it runs after the call: false for a
-    parked one, and for a released one that halted again at once) and `waited_s` (the
-    command alone, not the break-in or the release)."""
+    `paused` (it had to be stopped) and `waited_s` (the command alone, not the break-in or
+    the release); whether it runs after the call is the session block's to say."""
     if "\n" in str(path) or "\r" in str(path):
         raise Invalid("bad_argument", f"a state path is one line; got {str(path)!r}")
     paused = not ses.at_debugger()
@@ -65,9 +64,10 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
                           ) from None
         raise
     waited = round(time.monotonic() - began, 2)
-    running = not ses.resume()["halted"] if paused else False
+    if paused:
+        ses.resume()                           # `session.running` says where it is left
     if ok:
-        return {"paused": paused, "running": running, "waited_s": waited}
+        return {"paused": paused, "waited_s": waited}
     said = " / ".join(line.strip() for line in lines if line.strip())
     if not any(line.startswith(f"DEBUG: {verb}") for line in lines):
         raise Invalid("no_channel",
@@ -106,7 +106,7 @@ def state_save(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
             f"the emulator answered SAVESTATE and {dest} is not there")
     meta = dlaunch.state_meta(dest)
     return {"name": name, "path": str(dest), "bytes": meta["bytes"],
-            **{k: meta.get(k, "") for k in dlaunch.STATE_META}, **outcome}
+            **{k: meta[k] for k in dlaunch.STATE_META}, **outcome}
 
 
 def state_load(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, object]:
@@ -142,7 +142,7 @@ def state_load(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
     if not outcome["paused"]:
         ses.stop_count += 1
     return {"name": name, "path": str(source),
-            **{k: meta.get(k, "") for k in dlaunch.STATE_META}, **outcome}
+            **{k: meta[k] for k in dlaunch.STATE_META}, **outcome}
 
 
 def state_list(ses: ds.Session) -> dict[str, object]:

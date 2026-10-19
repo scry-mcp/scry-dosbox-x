@@ -306,7 +306,7 @@ def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: 
         raise ds.Invalid("unexpected_answer",
             f"the stop the trace ended at could not be surveyed ({exc}), so its count cannot be "
             f"proved; the log is at {collected}", trace=kept) from None
-    stop = {"stop_seq": reply.get("stop_seq"), "stopped_at": dict(STATE.last_stop["where"])}
+    stop = {"stop_seq": reply.get("stop_seq"), "pc": reply["pc"], "cpu_mode": reply["cpu_mode"]}
     if closed_early:
         raise ds.Invalid("readback_refused",
             f"the machine closed the debugger's log before the trace stopped ({MACHINE_CLOSES}), "
@@ -340,14 +340,12 @@ def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: 
                                                      "`note` says why"),
         "symbols": coverage.symbols[:SYMBOLS_SHOWN],
         "symbols_total": len(coverage.symbols),
-        "symbols_truncated": len(coverage.symbols) > SYMBOLS_SHOWN}
+        "truncated": len(coverage.symbols) > SYMBOLS_SHOWN}
     if notes:
         found["note"] = "; ".join(notes)
     verdict = (contract.ELAPSED if ran_out else
                contract.TIMEOUT if interrupted else contract.OTHER_STOP)
-    return st.extend(reply, verdict=verdict,
-                     stopped_at=stop["stopped_at"],
-                     waited_s=saw_at, trace=found)
+    return st.extend(reply, verdict=verdict, waited_s=saw_at, trace=found)
 
 
 # --------------------------------------------------------------------------------- the join
@@ -380,10 +378,10 @@ def join(session: ds.Session, parsed: Parsed, armed_real: bool, notes: list[str]
         offset = int(eip, 16)
         base = int(cs, 16) * machine.PARAGRAPH_BYTES if flat_of[(cs, eip, line_flat)] \
             else bases.get(cs)
-        row: dict[str, Any] = {"addr": f"{cs}:{eip}"}
+        row: dict[str, Any] = {"seg_off": st.seg_off(int(cs, 16), offset)}
         if base is not None:
             linear = (base + offset) & LINEAR_MASK
-            row["linear"] = f"{linear:08X}"
+            row["addr"] = st.flat(linear)
             symbol = (placement.nearest_symbol(linear)
                       if span is not None and span[0] <= linear <= span[1] else None)
             if symbol is not None:
@@ -391,16 +389,16 @@ def join(session: ds.Session, parsed: Parsed, armed_real: bool, notes: list[str]
                 _count(routines, symbol, linear, count)
         row["count"] = count
         rows.append(row)
-    symbols = sorted(routines.values(), key=lambda r: (r["linear"], r["symbol"]))
+    symbols = sorted(routines.values(), key=lambda r: (r["addr"], r["symbol"]))
     for r in symbols:
-        r["first"], r["last"] = f"{r['first']:08X}", f"{r['last']:08X}"
+        r["first"], r["last"] = st.flat(r["first"]), st.flat(r["last"])
     return Coverage(rows, symbols)
 
 
 def _count(routines: dict[tuple[str, int], dict[str, Any]], symbol: dict[str, Any],
            linear: int, count: int) -> None:
-    key = (str(symbol["name"]), int(symbol["linear"]))
-    row = routines.setdefault(key, {"symbol": key[0], "linear": f"{key[1]:08X}", "addresses": 0,
+    key = (str(symbol["name"]), int(symbol["addr"], 16))
+    row = routines.setdefault(key, {"symbol": key[0], "addr": st.flat(key[1]), "addresses": 0,
                                     "instructions": 0, "first": linear, "last": linear})
     row["addresses"] += 1
     row["instructions"] += count
@@ -408,7 +406,7 @@ def _count(routines: dict[tuple[str, int], dict[str, Any]], symbol: dict[str, An
 
 
 def _set_order(row: dict[str, Any]) -> tuple[bool, str, str]:
-    return ("linear" not in row, str(row.get("linear", "")), str(row["addr"]))
+    return ("addr" not in row, str(row.get("addr", "")), str(row["seg_off"]))
 
 
 def _selector_bases(session: ds.Session, selectors: set[str],

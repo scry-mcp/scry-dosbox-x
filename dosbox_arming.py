@@ -332,7 +332,7 @@ def attribute_stop(session: ds.Session, *, where: dict[str, str],
     holders = _bp_holders(session, mode, stop, machine=machine)
     if holders:
         out: dict[str, Any] = {"attributed": True, "ref": holders[0].ref, "by": holders[0].by,
-                               "at": f"{stop[0]:04X}:{stop[1]:04X}"}
+                               "at": st.seg_off(*stop)}
         if len(holders) > 1:
             out["refs"] = [d.ref for d in holders]
             out["note"] = (f"{len(holders)} declarations resolve to this address (a store "
@@ -341,12 +341,12 @@ def attribute_stop(session: ds.Session, *, where: dict[str, str],
     if retrace_may_stop and STATE.retrace_pending:
         STATE.retrace_pending = False
         return {"attributed": False, "retrace_pending": True,
-                "at": f"{stop[0]:04X}:{stop[1]:04X}",
+                "at": st.seg_off(*stop),
                 "why": "the stop address matches no declared code breakpoint, and a `run_for` "
                        "had left a retrace stop armed, which stops the next release at the next "
                        "retrace: most likely this stop"}
     return {"attributed": False,
-            "at": f"{stop[0]:04X}:{stop[1]:04X}",
+            "at": st.seg_off(*stop),
             "why": "the stop address matches no declared code breakpoint. The debugger "
                    "keeps no hit flag, and a memory watch stops at the WRITING instruction "
                    "rather than the watched address, so which declaration fired cannot be "
@@ -365,8 +365,8 @@ def _follow(session: ds.Session, decl: dec.Declaration, seg: int, off: int,
         return None
     # A watch declared while the pointer was NULL armed nothing: the stop that finds the
     # pointer set arms it, and says it came from null.
-    where = {"from": f"{old['seg']:04X}:{old['off']:04X}" if old is not None else "null",
-             "to": f"{seg:04X}:{off:04X}"}
+    where = {"from": st.seg_off(old["seg"], old["off"]) if old is not None else "null",
+             "to": st.seg_off(seg, off)}
     # THE NEW ROW FIRST, the old one only once the new is held: a refusal then leaves the
     # watch armed where it was, the record true, and `why` beside `from`/`to`.
     try:

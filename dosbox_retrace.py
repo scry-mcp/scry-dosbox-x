@@ -120,8 +120,8 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
         verdict = contract.OTHER_STOP
     after = session.pane_clock_ms if stopped_at else (last if timed else None)
     extra: dict[str, Any] = {**_clock(before, after), **_counts(),
-                             "stopped_at": contract.or_unavailable(
-                                 stopped_at, "the stop's survey came back cut"),
+                             # A cut survey's reply has no position of its own to carry.
+                             **({} if stopped_at else running.position(None, None)),
                              "waited_s": round(time.monotonic() - began, 1)}
     pending = STATE.retrace_pending           # every cut and every interrupt leaves it armed
     notes = [note for note, holds in ((PENDING_NOTE, pending),

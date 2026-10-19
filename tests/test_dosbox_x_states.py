@@ -108,7 +108,7 @@ class StateFake:
         return True
 
     def state(self) -> dict[str, object]:
-        return {"alive": True, "altered": self.altered}
+        return {"alive": True, "running": not self.parked, "altered": self.altered}
 
     _state_dir = ds.Session._state_dir
     _state_command = ds.Session._state_command
@@ -150,8 +150,8 @@ def test_state_save_sends_savestate_of_the_named_file_and_reads_it_back(tmp_path
     dest = tmp_path / "save" / "boot.sav"
     assert fake.control.sent == [f"EXEC SAVESTATE {dest}"]
     assert out["name"] == "boot" and Path(str(out["path"])) == dest and dest.is_file()
-    assert out["program"] == "PROBE" and out["time_stamp"] == "2026-09-10 03:58"
-    assert out["machine"] == "svga_s3" and out["memory_size"] == "16"
+    assert out["program"] == "PROBE" and out["saved_at"] == "2026-09-10 03:58"
+    assert out["machine"] == "svga_s3" and out["memory_mb"] == 16
     assert out["version"] == "DOSBox-X 2026.08.02 (SDL2)" and cast(int, out["bytes"]) > 0
     assert out["paused"] is False and fake.moves == [], "a parked machine is left parked"
     assert fake.altered is False, "saving alters nothing"
@@ -218,7 +218,7 @@ def test_state_load_needs_a_named_state_and_marks_altered(tmp_path: Path) -> Non
     source = write_state(tmp_path / "save" / "boot.sav", Time_Stamp="2026-09-09 20:53")
     out = ds.Session.state_load(as_session(fake), "boot", 5.0)
     assert fake.control.sent == [f"EXEC LOADSTATE {source}"]
-    assert out["name"] == "boot" and out["time_stamp"] == "2026-09-09 20:53"
+    assert out["name"] == "boot" and out["saved_at"] == "2026-09-09 20:53"
     assert out["paused"] is False and fake.parked is True, "a parked machine stays parked"
     assert fake.altered is True
     with pytest.raises(ds.Invalid, match="no state named") as exc:
@@ -241,7 +241,8 @@ def test_state_list_reads_every_state_with_its_metadata_and_needs_no_window(
     by = {s["name"]: s for s in cast(list[dict[str, Any]], out["states"])}
     assert by["boot"]["program"] == "PROBE"
     assert cast(dict[str, Any], out["working_slot"])["program"] == "OTHER"
-    assert "not a save state" in str(by["junk"]["note"]) and "program" not in by["junk"]
+    assert "not a save state" in str(by["junk"]["note"])
+    assert cast(dict[str, Any], by["junk"]["program"])["available"] is False, by["junk"]
 
 
 def test_the_tools_carry_the_envelope_and_the_summaries_name_the_state(tmp_path: Path) -> None:
@@ -403,13 +404,18 @@ def test_waited_s_is_the_command_alone_not_the_release(tmp_path: Path) -> None:
     assert out["paused"] is True and cast(float, out["waited_s"]) < 0.3
 
 
-def test_running_says_whether_the_released_guest_runs(tmp_path: Path) -> None:
+def test_the_released_guest_is_the_session_blocks_to_say(tmp_path: Path) -> None:
+    """Whether the guest runs after a save is `session.running`, never a field of the save:
+    a running guest is released again, and one that halted on its release is parked."""
     fake = StateFake(tmp_path / "save", parked=False)
-    assert ds.Session.state_save(as_session(fake), "a", 5.0)["running"] is True
+    assert "running" not in ds.Session.state_save(as_session(fake), "a", 5.0)
+    assert fake.state()["running"] is True
     fake.parked, fake.halts_on_release = False, True
-    assert ds.Session.state_save(as_session(fake), "b", 5.0)["running"] is False
+    ds.Session.state_save(as_session(fake), "b", 5.0)
+    assert fake.state()["running"] is False
     parked = StateFake(tmp_path / "other")
-    assert ds.Session.state_save(as_session(parked), "c", 5.0)["running"] is False
+    ds.Session.state_save(as_session(parked), "c", 5.0)
+    assert parked.state()["running"] is False, "a parked guest stays parked"
 
 
 def test_a_release_that_fails_does_not_hide_the_command_s_own_failure(tmp_path: Path) -> None:

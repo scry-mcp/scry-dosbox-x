@@ -201,8 +201,8 @@ def test_xms_handles_and_a_listing_with_a_header_and_no_row() -> None:
 
 def test_ems_handles_carry_their_hex_size_as_bytes_and_the_pages_their_frame() -> None:
     handles, pages = machine.parse_ems(listing("dos-djgpp32", "DOS EMS"))
-    assert handles == [{"handle": 0, "address": "00110000", "size_bytes": 0x60000, "name": ""},
-                       {"handle": 1, "address": "00170000", "size_bytes": 0x4000, "name": ""}]
+    assert handles == [{"handle": 0, "addr": "0x00110000", "size_bytes": 0x60000, "name": ""},
+                       {"handle": 1, "addr": "0x00170000", "size_bytes": 0x4000, "name": ""}]
     assert pages[0] == {"handle": "--", "page": "0/", "start": "000e0000", "end": "000e3fff"}
     assert len(pages) == 4
 
@@ -597,7 +597,7 @@ def test_perform_runs_machine_map_as_a_step(tmp_path: Path) -> None:
     install()
     dstate.STATE.session = cast(ds.Session, s)
     r = cast(dict[str, Any], server.perform(steps=[{"op": "machine_map"}]))
-    assert r["status"] == "ok" and r["completed"] == 1, r
+    assert r["status"] == "ok" and r["steps_completed"] == 1, r
 
 
 @pytest.mark.parametrize(("parse", "name", "old", "new"), [
@@ -656,9 +656,9 @@ def test_the_intvec_file_parses_to_every_vector_in_order(bench: str) -> None:
     rows = machine.parse_intvec(vectors_file(bench))
     assert [r["number"] for r in rows] == list(range(256))
     if bench == "probe-reset":
-        assert {r["addr"] for r in rows} == {"0000:0000"}
+        assert {r["seg_off"] for r in rows} == {"0000:00000000"}
     else:
-        assert rows[0x21]["addr"] in ("F000:D100", "F000:D0A0", "002B:3AA4")
+        assert rows[0x21]["seg_off"] in ("F000:0000D100", "F000:0000D0A0", "002B:00003AA4")
 
 
 def test_an_intvec_file_that_is_not_the_whole_table_is_not_the_table() -> None:
@@ -704,7 +704,8 @@ def test_real_mode_vectors_land_in_the_bios_block_that_holds_them(tmp_path: Path
     r = vectors_of(IntvecBench("probe-booted", tmp_path / "x.log", tmp_path), number=0x21)
     assert r["status"] == "ok" and r["cpu_mode"] == "real"
     [row] = r["vectors"]
-    assert row["number"] == 0x21 and row["addr"] == "F000:D100" and row["linear"] == "000FD100"
+    assert row["number"] == 0x21 and row["seg_off"] == "F000:0000D100", row
+    assert row["addr"] == "0x000fd100", row
     assert row["bios_mem"]["what"] == "DOSBox callback area" and "mcbs" not in row
     assert r["counts"]["vectors"] == 256 and r["sources"]["vectors"] == ["INTVEC"]
     assert not (tmp_path / ds.INTVEC_FILE).exists(), "the server's own file is removed"
@@ -746,15 +747,15 @@ def test_protected_mode_vectors_go_through_the_descriptor_and_the_pages(tmp_path
     r = vectors_of(IntvecBench("dos-djgpp32", tmp_path / "x.log", tmp_path))
     assert r["cpu_mode"] == "paged"
     rows = {v["number"]: v for v in r["vectors"]}
-    assert rows[0x08]["linear"] == "000CFFF0" and rows[0x08]["mcbs"]["filename"] == "CWSDPMI"
-    assert rows[0x21]["linear"] == "000D0054" and rows[0x21]["mcbs"]["filename"] == "CWSDPMI"
+    assert rows[0x08]["addr"] == "0x000cfff0" and rows[0x08]["mcbs"]["filename"] == "CWSDPMI"
+    assert rows[0x21]["addr"] == "0x000d0054" and rows[0x21]["mcbs"]["filename"] == "CWSDPMI"
     assert set(r["sources"]) >= {"vectors", "gdt", "ldt", "paging", "mcbs"}
 
 
 def test_before_dos_booted_the_table_is_all_zero_and_nothing_is_placed(tmp_path: Path) -> None:
     r = vectors_of(IntvecBench("probe-reset", tmp_path / "x.log", tmp_path))
     assert r["status"] == "ok" and len(r["vectors"]) == 256
-    assert all(set(v) == {"number", "addr"} for v in r["vectors"])
+    assert all(set(v) == {"number", "seg_off"} for v in r["vectors"])
     assert "every vector is 0000:0000" in r["coverage_note"]
     assert "Cannot enumerate MCB list while DOS kernel is inactive." in r["coverage_note"]
 
@@ -767,9 +768,9 @@ def test_without_a_logfile_the_table_comes_back_and_no_vector_has_a_holder(
     dstate.STATE.remember_stop(cast(ds.Session, s), {"cs": "0814", "eip": "00000106",
                                                      "mode": "Real"}, {}, [], {"attributed": False})
     r = cast(dict[str, Any], server.interrupt_vectors(number=0x21))
-    assert r["status"] == "ok" and [v["addr"] for v in r["vectors"]] == ["F000:D100"]
-    assert r["cpu_mode"] == "real" and r["vectors"][0]["linear"] == "000FD100", r
-    assert r["summary"] == "interrupt_vectors INT 21: F000:D100, held by no block read"
+    assert r["status"] == "ok" and [v["seg_off"] for v in r["vectors"]] == ["F000:0000D100"]
+    assert r["cpu_mode"] == "real" and r["vectors"][0]["addr"] == "0x000fd100", r
+    assert r["summary"] == "interrupt_vectors INT 21: F000:0000D100, held by no block read"
     assert not any(k in r["vectors"][0] for k in ("mcbs", "kern", "bios_mem"))
     assert "logfile" in r["coverage_note"] and s.asked == []
 
@@ -825,7 +826,7 @@ def test_perform_checks_the_vector_number_before_any_step_runs(tmp_path: Path) -
     assert r["status"] == "INVALID" and s.asked == [] and s.typed == []
     r = cast(dict[str, Any], server.perform(steps=[{"op": "machine_map"},
                                                    {"op": "interrupt_vectors", "number": 8}]))
-    assert r["status"] == "ok" and r["completed"] == 2
+    assert r["status"] == "ok" and r["steps_completed"] == 2
 
 
 def test_a_running_guest_is_refused_before_intvec_is_typed(tmp_path: Path) -> None:
@@ -884,7 +885,7 @@ def test_a_sectioned_table_with_no_symbol_below_a_vector_names_nothing_and_answe
     r = vectors_of(IntvecBench("dos-real16", tmp_path / "x.log", tmp_path))
     assert r["status"] == "ok", r
     rows = {v["number"]: v for v in r["vectors"]}
-    assert "symbol" not in rows[0x08] and rows[0x08]["linear"] == "0000C04B"
+    assert "symbol" not in rows[0x08] and rows[0x08]["addr"] == "0x0000c04b"
 
 
 class PagesUnread(IntvecBench):
@@ -907,14 +908,14 @@ def test_the_one_line_says_a_free_block_is_free_and_a_table_with_no_chain_read_s
     free = {"memory": "conventional", "mcb_seg": "3500", "size_bytes": 61440, "psp_seg": "0000",
             "notes": "free", "filename": "DJGPP32"}
     line = one_line.interrupt_vectors({"number": 8}, {"vectors": [
-        {"number": 8, "addr": "3600:0000", "mcbs": free}]})
-    assert line == "interrupt_vectors INT 08: 3600:0000, mcbs 3500 DJGPP32 (free)"
+        {"number": 8, "seg_off": "3600:00000000", "mcbs": free}]})
+    assert line == "interrupt_vectors INT 08: 3600:00000000, mcbs 3500 DJGPP32 (free)"
     region = {"start": "000f0000", "end": "000f8daf", "status": "FREE", "what": ""}
     region_line = one_line.interrupt_vectors({"number": 1}, {"vectors": [
-        {"number": 1, "addr": "F000:0100", "bios_mem": region}]})
+        {"number": 1, "seg_off": "F000:00000100", "bios_mem": region}]})
     assert region_line.endswith("bios_mem 000f0000 FREE")
     unplaced = one_line.interrupt_vectors({"number": None}, {
-        "vectors": [{"number": n, "addr": "F000:0000"} for n in range(256)],
+        "vectors": [{"number": n, "seg_off": "F000:00000000"} for n in range(256)],
         "sources": {"vectors": ["INTVEC"]}})
     assert unplaced == ("interrupt_vectors: 256 vectors, no MCB chain read to count program "
                         "blocks in")
@@ -947,7 +948,7 @@ def test_a_handler_on_a_page_no_run_maps_has_no_holder_and_the_note_says_why(
         tmp_path: Path) -> None:
     r = vectors_of(Unmapped("dos-djgpp32", tmp_path / "x.log", tmp_path))
     rows = {v["number"]: v for v in r["vectors"]}
-    assert rows[0x60]["linear"] == "00400000"
+    assert rows[0x60]["addr"] == "0x00400000"
     assert not {"mcbs", "kern", "bios_mem"} & set(rows[0x60]), rows[0x60]
     assert rows[0x08]["mcbs"]["filename"] == "CWSDPMI"
     assert "no holder for 1 vector: no page run maps their linear address" in r["coverage_note"]
@@ -977,8 +978,8 @@ def test_a_selector_naming_no_descriptor_leaves_that_vector_unplaced_and_says_wh
     r = vectors_of(Rewritten("dos-djgpp32", tmp_path / "x.log", tmp_path,
                              "INT 60:  002B:3BA0", "INT 60:  0100:3BA0"))
     rows = {v["number"]: v for v in r["vectors"]}
-    assert set(rows[0x60]) == {"number", "addr"} and "linear" in rows[0x61]
-    assert ("no `linear` for 1 vector: their selector names no descriptor in `gdt`"
+    assert set(rows[0x60]) == {"number", "seg_off"} and "addr" in rows[0x61]
+    assert ("no `addr` for 1 vector: their selector names no descriptor in `gdt`"
             in r["coverage_note"]), r["coverage_note"]
 
 
@@ -1049,9 +1050,9 @@ def test_the_table_one_line_counts_program_blocks_and_not_free_ones() -> None:
     program = {"mcb_seg": "0813", "psp_seg": "0814", "filename": "PROBE"}
     free = {"mcb_seg": "3500", "psp_seg": "0000", "notes": "free", "filename": "DJGPP32"}
     line = one_line.interrupt_vectors({}, {
-        "vectors": [{"number": 8, "linear": "00008200", "mcbs": program},
-                    {"number": 9, "linear": "00035100", "mcbs": free},
-                    {"number": 10, "addr": "F000:0000", "linear": "000F0000"}],
+        "vectors": [{"number": 8, "addr": "0x00008200", "mcbs": program},
+                    {"number": 9, "addr": "0x00035100", "mcbs": free},
+                    {"number": 10, "seg_off": "F000:00000000", "addr": "0x000f0000"}],
         "sources": {"vectors": ["INTVEC"], "mcbs": ["DOS MCBS"]}})
     assert line == "interrupt_vectors: 3 vectors, 1 in program blocks (PROBE 1)"
 
@@ -1074,7 +1075,7 @@ def test_protected_mode_without_paging_places_a_handler_at_its_linear_address(
     r = vectors_of(ProtectedNoPaging("dos-djgpp32", tmp_path / "x.log", tmp_path))
     assert r["cpu_mode"] == "protected" and "paging" not in r["sources"]
     rows = {v["number"]: v for v in r["vectors"]}
-    assert rows[0x08]["linear"] == "000CFFF0" and rows[0x08]["mcbs"]["filename"] == "CWSDPMI"
+    assert rows[0x08]["addr"] == "0x000cfff0" and rows[0x08]["mcbs"]["filename"] == "CWSDPMI"
 
 
 def _vectors_with_no_logfile(tmp_path: Path, paging: bool | None) -> tuple[Any, dict[str, Any]]:
@@ -1094,11 +1095,12 @@ def test_without_a_logfile_in_protected_mode_the_note_says_no_linear_and_why(
         tmp_path: Path, paging: bool) -> None:
     s, r = _vectors_with_no_logfile(tmp_path, paging)
     assert r["status"] == "ok" and r["cpu_mode"] == ("paged" if paging else "protected"), r
-    assert set(r["vectors"][0]) == {"number", "addr"}
+    assert set(r["vectors"][0]) == {"number", "seg_off"}
     note = r["coverage_note"]
-    assert "no vector has a holder, a `linear` or a `symbol`" in note, note
+    assert "no vector has a holder, an `addr` or a `symbol`" in note, note
     assert "descriptor tables" in note and "is absent" not in note, note
-    assert r["summary"] == "interrupt_vectors INT 08: 0018:3A40, not placed (see `coverage_note`)"
+    assert r["summary"] == ("interrupt_vectors INT 08: 0018:00003A40, not placed "
+                            "(see `coverage_note`)")
     assert s.asked == []
 
 
@@ -1129,7 +1131,7 @@ def test_with_the_chain_read_a_vector_not_placed_gives_no_program_block_count(
                             f"program block is counted"), r["summary"]
     one = vectors_of(make(tmp_path), number=number)
     [row] = one["vectors"]
-    assert one["summary"] == (f"interrupt_vectors INT {number:02X}: {row['addr']}, not placed "
+    assert one["summary"] == (f"interrupt_vectors INT {number:02X}: {row['seg_off']}, not placed "
                               f"(see `coverage_note`)"), one["summary"]
     whole = vectors_of(IntvecBench("dos-djgpp32", tmp_path / "x.log", tmp_path))
     assert whole["summary"] == ("interrupt_vectors: 256 vectors, 256 in program blocks "

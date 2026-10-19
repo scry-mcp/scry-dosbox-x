@@ -138,7 +138,7 @@ guest stopped INSIDE the program, which an interrupt breakpoint gives you.
 start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj",
       seconds=600, logfile="/path/to/proj/build/e9.log")
 breakpoint_interrupt(number=0x21)
-resume(seconds=30)            -> {"verdict": "OTHER_STOP", "stopped_at": {"cs": "00AF", ...}}
+resume(seconds=30)            -> {"verdict": "OTHER_STOP", "pc": "00AF:0017A6EC", ...}
 symbols_load(source="/path/to/proj/build/APP.SYM")
                               -> {"parsed": 9652, "kept": 7238, "loaded": 7238, "base_from": "CS", ...}
 breakpoint_at(ref="_engine_set_rate")
@@ -148,7 +148,7 @@ breakpoint_clear(ref="BPINT 21")
 resume(e9="since", e9_filter="PERF|audio")
 ```
 
-The last reply is the stop itself: `stopped_at`, `registers`, `watches` with `_g_eng_rate`
+The last reply is the stop itself: `pc`, `cpu_mode`, `regs`, `watches` with `_g_eng_rate`
 already read as a `u32`, `attribution` naming `_engine_set_rate` as the declaration that
 fired, and `e9` holding the lines the guest wrote between the two stops that match your
 filter (`since_last_stop`, `shown`, `lines_total` for how many matched and `unfiltered` for how
@@ -200,19 +200,20 @@ drive(act=[{"op": "send_keys", "keys": ["a"], "expect": "key_cue_a"},
       expect="cue .* set", seconds=5, pattern="cue|PERF", limit=20)
    -> {"status": "ok",
        "act": {"ran": [{"op": "send_keys", "reply": {...}}, {"op": "send_keys", "reply": {...}}],
-               "completed": 2, "failed_at": {"available": false, "why": "no step failed"}},
+               "steps_completed": 2,
+               "failed_at": {"available": false, "why": "no step failed"}},
        "verify": {"checked": true, "seen": true, "verdict": "TARGET", "line": "...",
                   "seen_before_waiting": false, "lines_before": 5, "waited_s": 0.4,
                   "lines_total": 1},
-       "looked": {"e9": {"available": true, "since_mark": 1240, "written": 37,
-                         "lines_total": 25, "truncated": true,
-                         "lines": [...the 20 most recent matching lines...],
-                         "pattern": "cue|PERF"}}}
+       "looked": {"guest": {"available": true, "since_mark": 1240, "lines_written": 37,
+                            "lines_total": 25, "truncated": true,
+                            "lines": [...the 20 most recent matching lines...],
+                            "pattern": "cue|PERF"}}}
 ```
 
 The log is marked once, before the first step. The steps run as `perform` runs them, each
 `send_keys` verifying its own `expect`; then the call waits for the act's overall effect
-from that same mark; then `looked.e9` is what the guest wrote since, matching `pattern` and
+from that same mark; then `looked.guest` is what the guest wrote since, matching `pattern` and
 cut to the last `limit`, in `log`'s words. A failed step stops the act and comes back `INVALID`
 with the account; a miss is the verify's `TIMEOUT`, and a step's own miss ends the act there.
 An act that ended with the machine stopped at the debugger carries the enriched stop in
@@ -239,7 +240,7 @@ send_mouse(x=160, y=100, button="left", expect="clicked")
    -> {"route": "guest", "arrived": true,
        "pointer": {"screen": {"x": 160, "y": 100, "width": 320, "height": 200},
                    "mouse": {"x": 320, "y": 100, "max_x": 639, "max_y": 199},
-                   "buttons": [], "mode": "0x13"},
+                   "buttons": [], "vga_mode": "0x13"},
        "verify": {"checked": true, "seen": true, "verdict": "TARGET", ...}}
 ```
 
@@ -254,11 +255,11 @@ offsets from a frame. Reach the program's own code first, then place the map.
 ```
 start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj", seconds=300)
 breakpoint_interrupt(number=0x21)
-resume()  ... until stopped_at.cs is the program's own segment (the loader's is different)
+resume()  ... until the segment of `pc` is the program's own (the loader's is different)
 symbols_load(source="/path/to/proj/build/APP.MAP", base="7DF0")    # (0x0837 - 0x0058) * 16, as hex text
    -> {"parsed": 307, "loaded": 307, "overlay_idle": 80, "unreadable": 0, "base_from": "caller", ...}
 run_to(ref="ATTRACT_RUN", control="MAIN_LOOP", seconds=60)
-   -> {"verdict": "TARGET", "stopped_at": {"cs": "0837", "eip": "00000599", "mode": "Real"},
+   -> {"verdict": "TARGET", "pc": "0837:00000599", "cpu_mode": "real",
        "target_disarmed": true, "control_hits": 3, "controls": [...], ...}
 ```
 
@@ -291,7 +292,7 @@ start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj",
 resume()
 log_wait(pattern="READY", channel="guest", seconds=30)
                                          -> {"verdict": "TARGET", "already": false, "waited_s": 2.1, ...}
-captures()                               -> {"captures": [{"path": ".../app_000.avi", "frames": 143, ...}]}
+captures()                               -> {"captures": [{"path": ".../app_000.avi", "avi_frames": 143, ...}]}
 capture_frame(at=140, dest="/path/to/proj/build/captures/ready.png")
 ```
 
@@ -315,7 +316,7 @@ project and carries no default that points anywhere in particular.
 | `symbols_load` | a toolchain's TEXT symbol list into the debugger, so addresses carry names |
 | `symbols_find` | look one up: by name, or by where you have stopped (`linear` as hex text) |
 | `comment_add` | a comment on a place, by symbol (it follows the symbol through a rebuild) or by `SEG:OFF`; one per place, so another spelling of the same byte replaces its text |
-| `comment_list` | every comment with where it lands now (`linear`) and its state; answers on a running guest too |
+| `comment_list` | every comment with where it lands now (`addr`) and its state; answers on a running guest too |
 | `comment_delete` | one comment, by its ref or by any spelling of its place |
 | `comment_save` | every comment to a comment file (`dest`, absolute), the record a project versions beside its symbol file |
 | `comment_load` | a comment file into the store, all or nothing; where the two disagree, the file wins |
@@ -365,7 +366,7 @@ project and carries no default that points anywhere in particular.
 | `screen_wait` | `(text, seconds=30)`: runs the machine retrace by retrace until `text` is inside one row of the text screen, and stops there with the stop's registers and attribution; a string already on screen is answered at once (`already`), the machine not moved; a frame that is not text is no match. Needs a session started with `logfile` |
 | `state_save` | the machine under a NAME, as `<state_dir>/<name>.sav`, by the debugger's own `SAVESTATE` sent down the debugger channel: no window, no menu, no focus taken. A running guest is stopped for it and released again (`paused`); the file is read back for what it says about itself. Never overwrites; alters nothing. Needs a DOSBox-X that carries the command (see Saved states below) |
 | `state_load` | the named state, by the debugger's own `LOADSTATE`, as `state_save` saves; a running guest is stopped for it and released again, a parked one stays parked at the loaded position. A state of another DOSBox-X version, program, memory size or machine type is refused, never asked about. Marks the session altered |
-| `state_list` | every state under the session's `state_dir` with the members its ZIP carries (version, program, machine, memory size, stamp), read without loading; no window needed, works while the guest runs |
+| `state_list` | every state under the session's `state_dir` with the members its ZIP carries (`version`, `program`, `machine`, `memory_mb`, `saved_at`), read without loading; no window needed, works while the guest runs |
 | `debug` | one command to the debugger console |
 
 ## Going further

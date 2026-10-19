@@ -28,7 +28,7 @@ def resume(e9: str, e9_filter: str, e9_stamp: str | None, seconds: float, detail
         raise ds.NotStopped("the guest is already running, so there is nothing to resume")
     out = session.resume()
     halted = bool(out["halted"])
-    stopped_at = out["stopped_at"]
+    stopped_at = cast(dict[str, str] | None, out["stopped_at"])
     base: dict[str, Any] = st.delta_if_asked(cast(str, out["screen"]), 2000, detail)
     if seconds > 0:
         began = time.monotonic()
@@ -52,8 +52,10 @@ def resume(e9: str, e9_filter: str, e9_stamp: str | None, seconds: float, detail
             base["note"] = (f"no stop within {seconds:g} s; the machine is STILL RUNNING, and "
                             "the console tools refuse until it stops")
         base = {"verdict": contract.OTHER_STOP if halted else contract.TIMEOUT, **base}
-    if halted and stopped_at is not None:
-        base["stopped_at"] = stopped_at
+    if halted:
+        # NO PAGE/NOPG MARK HERE: `where()` reads none, and the one the session holds is the stop
+        # before's; the stop's own survey (`stop_reply`) replaces this with the mark it read.
+        base.update(running.position(stopped_at, None))
     # A HALT IS A STOP, so it carries the full stop reply: registers, the
     # watches evaluated, the attribution and the E9 summary. A machine still running has
     # nothing to read, so it comes back with just the base.
@@ -81,7 +83,8 @@ def run_to(ref: str, control: str, seconds: float, e9: str, e9_filter: str,
     # `target` is the session's own spelling of the place, `ref` the caller's.
     fields: dict[str, Any] = {
         "verdict": verdict, "target": out["target"], "ref": ref,
-        "stopped_at": out["stopped_at"], "waited_s": out["waited_s"],
+        **running.position(out["stopped_at"], None),      # the survey's mark replaces it
+        "waited_s": out["waited_s"],
         "target_disarmed": out["breakpoint_removed"], "control_hits": hits,
         "controls": [{"ref": control, "at": armed["at"], "hits_in_run": hits,
                       "removed": armed["removed"]}],

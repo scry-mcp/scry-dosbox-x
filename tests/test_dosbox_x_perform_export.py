@@ -49,7 +49,7 @@ def test_a_session_on_the_double_is_exported_as_steps_checks_and_named_drops(
     doc = json.loads((tmp_path / "s.json").read_text())
     assert doc["server"] == "dosbox-x" and doc["start"] == {"conf": "/x.conf"}
     assert [step["op"] for step in doc["steps"]] == ["write", "registers"]
-    assert doc["steps"][1]["recorded"] == {"registers": regs["registers"]}
+    assert doc["steps"][1]["recorded"] == {"regs": regs["regs"]}
     assert out["checks"] == 1 and [d["op"] for d in out["dropped"]] == ["status", "comment_add"]
     assert out["summary"].startswith("perform_export: 2 steps, 1 check, 2 dropped to ")
 
@@ -96,7 +96,7 @@ def test_the_export_and_the_lifecycle_are_never_recorded_and_never_a_step() -> N
 #: What each tool's calls become in an export, stated here a second time so a declaration that
 #: moves is seen: a check of fields, a run the wall clock ends, a drop, or (absent) a step.
 DECLARED = {
-    "read_memory": ("hex",), "registers": ("registers",), "screen_signature": ("signature",),
+    "read_memory": ("hex",), "registers": ("regs",), "screen_signature": ("signature",),
     "golden_check": ("matched", "differing_total", "missing_total", "extra_total", "differing",
                      "missing", "extra"),
     "resume": "wall", "stop": "wall", "screen_wait": "wall",

@@ -15,7 +15,14 @@ import dosbox_sequence as sequence
 import dosbox_session as ds
 import dosbox_trace as trace
 
+#: What every stop reply carries, named once for every tool that stops the machine.
+STOP_FIELDS = (
+    "the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `instruction`, `regs`, `watches`, "
+    "`attribution` and `e9`"
+)
+
 DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES,
+              "STOP_FIELDS": STOP_FIELDS,
               "DROPPED_SHOWN": str(recording.DROPPED_SHOWN),
               "RECORD_MAX": str(sequence.RECORD_MAX),
               "LOG_LIMIT_MAX": str(logs.LOG_LIMIT_MAX), "WAIT_MAX_S": f"{ds.RUN_TO_MAX:g}",

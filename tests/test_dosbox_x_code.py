@@ -384,8 +384,8 @@ def test_disassemble_lists_start_and_names_its_calls_and_its_counter() -> None:
     load_probe_symbols()
     r = cast(dict[str, Any], server.disassemble(ref="start", length=16))
     assert r["status"] == "ok", r
-    assert (r["segment"], r["offset"], r["code_bits"], r["code_bits_from"]) \
-        == (LOAD, 0x10B, 16, "real mode")
+    assert (r["seg_off"], r["code_bits"], r["code_bits_from"]) \
+        == (f"{LOAD:04X}:0000010B", 16, "real mode")
     assert r["lines"][0].startswith("0814:0000010B BE5601") and r["lines"][0].endswith(
         "mov si, 0x156")
     assert r["flow"][:3] == ["sequential", "call", "call"] and r["flow_source"] == "capstone"
@@ -393,8 +393,9 @@ def test_disassemble_lists_start_and_names_its_calls_and_its_counter() -> None:
     assert (named[(1, "target")]["symbol"], named[(1, "target")]["delta"]) == ("emit", 0)
     assert (named[(2, "target")]["symbol"], named[(2, "target")]["delta"]) == ("bump", 0)
     cnt = named[(3, "memory")]
-    assert (cnt["symbol"], cnt["delta"], cnt["register"], cnt["segment"], cnt["linear"]) \
-        == ("cnt", 1, "DS", "0814", "0000829A")
+    assert (cnt["symbol"], cnt["delta"], cnt["register"], cnt["addr"]) \
+        == ("cnt", 1, "DS", "0x0000829a")
+    assert cnt["seg_off"].startswith("0814:"), cnt
     assert r["summary"] == "disassemble start: 5 lines at 0814:0000010B, 16-bit"
 
 
@@ -602,7 +603,7 @@ def test_a_memory_operand_through_a_register_the_pane_did_not_show_is_unplaced()
     load_probe_symbols()
     r = cast(dict[str, Any], server.disassemble(ref="0814:0200", length=4))
     row = [x for x in r["resolved"] if x["kind"] == "memory"][0]
-    assert r["status"] == "ok" and "GS" in row["linear"]["why"], r
+    assert r["status"] == "ok" and "GS" in row["addr"]["why"], r
 
 
 def test_in_protected_mode_an_operand_is_placed_through_its_selectors_base() -> None:
@@ -621,10 +622,10 @@ def test_in_protected_mode_an_operand_is_placed_through_its_selectors_base() -> 
     insns = disasm.decode(bytes(s.mem[at:at + 12]), 0x5E9C0, 32)
     rows = code.resolve(segs, 0xA7, insns)
     memory = [x for x in rows if x["kind"] == "memory"][0]
-    assert (memory["symbol"], memory["delta"], memory["linear"], memory["register"]) \
-        == ("_g_eng_rate", 0, "00462340", "DS")
+    assert (memory["symbol"], memory["delta"], memory["addr"], memory["register"]) \
+        == ("_g_eng_rate", 0, "0x00462340", "DS")
     far = [x for x in rows if x["kind"] == "target"][0]
-    assert far["segment"] == "008F" and "logfile" in far["linear"]["why"], far
+    assert far["seg_off"].startswith("008F:") and "logfile" in far["addr"]["why"], far
 
 
 def test_a_screen_with_no_pane_has_no_lines() -> None:
@@ -635,7 +636,7 @@ def test_disassemble_is_a_step_of_perform_and_its_length_is_judged_with_the_list
     probe_machine()
     ran = cast(dict[str, Any], server.perform(steps=[
         {"op": "disassemble", "ref": "0814:010B", "length": 3}]))
-    assert ran["status"] == "ok" and ran["completed"] == 1, ran
+    assert ran["status"] == "ok" and ran["steps_completed"] == 1, ran
     refused = cast(dict[str, Any], server.perform(steps=[
         {"op": "registers"}, {"op": "disassemble", "ref": "0814:010B", "length": 0}]))
     assert refused["status"] == "INVALID" and refused["ran"] == [], refused
@@ -680,7 +681,7 @@ def picture(s: StoppedCode) -> dict[str, Any]:
 def test_a_stop_takes_its_instruction_off_the_pane_it_surveyed() -> None:
     s = StoppedCode("code-stop1")
     got = picture(s)["instruction"]
-    assert got == {"at": "0814:00000102", "bytes": "CD03", "text": "int 3", "flow": "call",
+    assert got == {"seg_off": "0814:00000102", "bytes": "CD03", "text": "int 3", "flow": "call",
                    "code_bits": 16, "bytes_from": "code pane",
                    "symbol": {"available": False, "why": "no symbol table is loaded"},
                    "delta": {"available": False, "why": "no symbol table is loaded"}}
@@ -691,7 +692,8 @@ def test_a_pane_moved_elsewhere_sends_the_stop_to_the_data_view() -> None:
     """The survey captured after `C 0000:0000` at the second stop: no line at CS:EIP."""
     s = StoppedCode("code-stop2", text(FIX / "code-survey-after-C-elsewhere.txt"))
     got = picture(s)["instruction"]
-    assert (got["at"], got["bytes"], got["bytes_from"]) == ("0814:00000167", "CD03", "data view")
+    assert (got["seg_off"], got["bytes"], got["bytes_from"]) == ("0814:00000167", "CD03",
+                                                                  "data view")
     assert s.d_reads == [(LOAD, 0x167, disasm.INSN_MAX)]
 
 
@@ -812,7 +814,7 @@ def test_every_stop_reply_carries_the_instruction_and_its_record_too() -> None:
     install()
     dstate.STATE.session = cast(ds.Session, s)
     reply = running.stop_reply(cast(ds.Session, s))
-    assert reply["instruction"]["at"] == "0814:00000102", reply
+    assert reply["instruction"]["seg_off"] == "0814:00000102", reply
     recorded = running.recorded_stop_reply(cast(ds.Session, s), {"stop_seq": 1})
     assert recorded["instruction"] == {**reply["instruction"]}
     assert recorded["instruction"] is not reply["instruction"], "the record is handed out"
@@ -838,13 +840,14 @@ def test_a_stop_found_on_its_own_after_a_replied_stop_carries_its_own_instructio
     s = StoppedCode("code-stop1")
     install()
     dstate.STATE.session = cast(ds.Session, s)
-    assert running.stop_reply(cast(ds.Session, s))["instruction"]["at"] == "0814:00000102"
+    assert running.stop_reply(cast(ds.Session, s))["instruction"]["seg_off"] == "0814:00000102"
     s.regs = json.loads((FIX / "code-stop2-registers.json").read_text(encoding="utf-8"))
     s.screen_text = text(FIX / "code-stop2-survey.txt")
     s.stop_count = 2
     running.observe_stop(cast(ds.Session, s))
     recorded = running.recorded_stop_reply(cast(ds.Session, s), {"stop_seq": 2})
-    assert recorded["instruction"]["at"] == "0814:00000167", recorded["instruction"]
+    assert recorded["instruction"]["seg_off"] == "0814:00000167", recorded["instruction"]
+    assert (recorded["pc"], recorded["cpu_mode"]) == ("0814:00000167", "real"), recorded
 
 
 def test_a_stop_whose_survey_was_cut_carries_no_instruction() -> None:
@@ -876,7 +879,7 @@ def walking(stop: str) -> StoppedCode:
 
 
 def rows(reply: dict[str, Any]) -> list[tuple[Any, ...]]:
-    return [(r["addr"], r["symbol"], r["via"]) for r in reply["calls"]]
+    return [(r["seg_off"], r["symbol"], r["via"]) for r in reply["calls"]]
 
 
 def test_three_frames_deep_the_walk_lists_the_routines_the_guest_entered() -> None:
@@ -914,7 +917,7 @@ def test_a_return_is_named_by_the_routine_its_call_is_in() -> None:
     byte: the caller is `known`, at the return's distance from it."""
     walking("code-stop2")
     last = cast(dict[str, Any], server.call_stack())["calls"][-1]
-    assert (last["symbol"], last["delta"], last["linear"]) == ("known", 0x13A - 0x104, "0000827A")
+    assert (last["symbol"], last["delta"], last["addr"]) == ("known", 0x13A - 0x104, "0x0000827a")
 
 
 @pytest.mark.parametrize(("eip", "esp", "why"), [
@@ -1044,12 +1047,12 @@ def test_a_return_outside_the_table_is_listed_and_ends_the_walk() -> None:
     dstate.STATE.install_table([s for s in dstate.STATE.table
                                 if s.name in ("outer", "middle", "inner")])
     r = cast(dict[str, Any], server.call_stack())
-    assert r["calls"][-1]["addr"] == "0814:0000013A"
+    assert r["calls"][-1]["seg_off"] == "0814:0000013A"
     assert r["calls"][-1]["symbol"]["available"] is False
     dstate.STATE.install_table([])
     bare = cast(dict[str, Any], server.call_stack())
     assert bare["summary"].startswith(f"call_stack: {len(bare['calls'])} calls, innermost "
-                                      f"{bare['calls'][0]['addr']},"), bare["summary"]
+                                      f"{bare['calls'][0]['seg_off']},"), bare["summary"]
     assert "outside the loaded symbol table" in r["ended_why"], r
 
 
@@ -1144,4 +1147,4 @@ def test_call_stack_is_a_step_of_perform_beside_disassemble() -> None:
     walking("code-stop2")
     r = cast(dict[str, Any], server.perform(steps=[
         {"op": "disassemble", "ref": "inner", "length": 8}, {"op": "call_stack"}]))
-    assert r["status"] == "ok" and r["completed"] == 2, r
+    assert r["status"] == "ok" and r["steps_completed"] == 2, r

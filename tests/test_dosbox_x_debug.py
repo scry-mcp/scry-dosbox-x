@@ -354,7 +354,7 @@ class Debugger(RealPositionReaders):
         return ds.Session.watch(cast(ds.Session, self), segment=segment, offset=offset)
 
     def state(self) -> dict[str, object]:
-        return {"alive": self._alive, "altered": self.altered}
+        return {"alive": self._alive, "running": False, "altered": self.altered}
 
 
 def step(dbg: Debugger, **kw: Any) -> dict[str, object]:
@@ -912,13 +912,16 @@ def test_each_tool_refuses_with_no_session_and_still_carries_the_envelope(
 # `returned_key_sets` reads EACH return separately and `test_each_double_returns_...`
 # holds every branch of a method to one set, so taking the first is safe and is checked
 # next door rather than assumed here.
-TOOL_FIELDS = {"step": set(returned_key_sets(ds.Session.step)[0]),
+# `step` names the session's count in the shared word, and leaves whether the machine runs to
+# the session block: the rest of its account is handed on.
+TOOL_FIELDS = {"step": set(returned_key_sets(ds.Session.step)[0]) - {"completed", "running"}
+               | {"instructions_completed"},
                # the wait's TARGET, the branch this case drives: its TIMEOUT carries no line
                "log_wait": next(set(keys) for keys in returned_key_sets(ds.Session.log_wait)
                                 if "line" in keys)}
 # `run_to` SPEAKS THE SHARED WORDS, so its session's account is mapped and not handed on: the
 # set is the tool's own, every one of which comes from that account.
-TOOL_FIELDS["run_to"] = {"verdict", "target", "ref", "stopped_at", "waited_s",
+TOOL_FIELDS["run_to"] = {"verdict", "target", "ref", "pc", "cpu_mode", "waited_s",
                          "target_disarmed", "control_hits", "controls", "note"}
 
 
@@ -1189,7 +1192,7 @@ class LogSession:
         return False            # a guest that is running, the wait's ordinary case
 
     def state(self) -> dict[str, object]:
-        return {"alive": self._alive, "altered": False}
+        return {"alive": self._alive, "running": False, "altered": False}
 
     def _e9_text(self) -> str:
         return ds.Session._e9_text(cast(ds.Session, self))
@@ -2440,12 +2443,12 @@ def test_the_tool_hands_both_fields_on_and_takes_nothing_away() -> None:
     assert got["status"] == "ok", got
     assert "verdict" not in got, "a resume that waited for nothing carries none"
     assert got["stop_seq"] >= 1, got
-    assert got["stopped_at"] == {"cs": "0814", "eip": "00000112", "mode": "Real"}
+    assert got["pc"] == "0814:00000112" and got["cpu_mode"] == "real"
     assert got["screen_delta"] == RESUME_HALTED, got
     assert "omitted" not in got and "how" not in got
     # decision 13: the halt now also carries the registers, the (empty) watch list, the
     # attribution and the E9 summary -- none of which displaced the base fields above.
-    assert got["registers"] and got["watches"] == [] and "attributed" in got["attribution"]
+    assert got["regs"] and got["watches"] == [] and "attributed" in got["attribution"]
     assert got["e9"]["available"] is False    # this fake owns no logfile
 
 

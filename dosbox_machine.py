@@ -31,6 +31,7 @@ import dosbox_logs as dlogs
 import dosbox_placement as placement
 import dosbox_running as running
 import dosbox_session as ds
+import dosbox_state as st
 
 
 class Unreadable(Exception):
@@ -226,8 +227,8 @@ def parse_ems(text: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         if in_pages:
             pages.append({"handle": m[1], "page": m[2], "start": m[3], "end": m[4]})
         else:
-            handles.append({"handle": int(m[1]), "address": m[2], "size_bytes": int(m[3], 16),
-                            "name": m[4]})
+            handles.append({"handle": int(m[1]), "addr": st.flat(int(m[2], 16)),
+                            "size_bytes": int(m[3], 16), "name": m[4]})
     return handles, pages
 
 
@@ -556,7 +557,8 @@ def parse_intvec(text: str) -> list[dict[str, Any]]:
     rows = _each(listing_lines(text), INTVEC_ROW)
     if [int(m[1], 16) for m in rows] != list(range(VECTOR_COUNT)):
         raise Unreadable(f"{len(rows)} rows, not vectors 00 to FF in order")
-    return [{"number": int(m[1], 16), "addr": f"{m[2]}:{m[3]}"} for m in rows]
+    return [{"number": int(m[1], 16), "seg_off": st.seg_off(int(m[2], 16), int(m[3], 16))}
+            for m in rows]
 
 
 #: The sections whose rows can hold a handler, asked in this order, and the ones a vector is
@@ -617,7 +619,7 @@ def vector_linear(addr: str, mode: str | None, found: dict[str, Any]) -> tuple[i
 
 
 def physical_address(linear: int, runs: list[dict[str, Any]]) -> int | None:
-    """`linear` through the page runs, or None when no run maps it."""
+    """A linear address through the page runs, or None when no run maps it."""
     for run in runs:
         start = int(run["start"], 16)
         if start <= linear <= int(run["end"], 16):
@@ -638,7 +640,7 @@ def holder(address: int, found: dict[str, Any]) -> tuple[str, dict[str, Any]] | 
 #: `cpu_mode` when the `CPU` listing could not be read or placed the mode nowhere.
 NO_MODE_WHY = "the `CPU` listing was unreadable, so the mode is not known"
 NO_LOGFILE_BLOCKS = "no vector has a holder: the blocks are"
-NO_LOGFILE_TABLES = ("no vector has a holder, a `linear` or a `symbol`: the blocks and the "
+NO_LOGFILE_TABLES = ("no vector has a holder, an `addr` or a `symbol`: the blocks and the "
                      "descriptor tables are")
 NO_LOGFILE_WHY = (" read off the session's logfile and this session was started without one "
                   "(`start` with `logfile`)")
@@ -648,7 +650,7 @@ def interrupt_vectors(session: ds.Session, number: int | None) -> dict[str, Any]
     """The table `INTVEC` writes, each vector with its handler's linear address, the row of the
     MCB chain, the kernel's blocks or the BIOS's that holds it, and the nearest symbol; one
     vector when `number` is given. Without a logfile there are no listings: no row has a
-    holder, in protected mode none has a `linear` or a `symbol` either (the descriptor tables
+    holder, in protected mode none has an `addr` or a `symbol` either (the descriptor tables
     are listings too), and the mode is the one `status` reports."""
     try:
         rows = parse_intvec(session.intvec())
@@ -665,7 +667,7 @@ def interrupt_vectors(session: ds.Session, number: int | None) -> dict[str, Any]
     else:
         reading = read(session, PLACEMENT_SECTIONS)
     reading.sources = {"vectors": ["INTVEC"], **reading.sources}
-    if all(r["addr"] == "0000:0000" for r in rows):
+    if all(r["seg_off"] == st.seg_off(0, 0) for r in rows):
         reading.notes.append("every vector is 0000:0000: nothing has filled the table yet")
     elif not tables_unread:
         reading.notes.extend(_place(rows, reading))
@@ -682,7 +684,7 @@ def _vectors(n: int) -> str:
 
 
 def _place(rows: list[dict[str, Any]], reading: Reading) -> list[str]:
-    """Each row's `linear`, the holder row and its `symbol`, in place; what could not be placed,
+    """Each row's `addr`, the holder row and its `symbol`, in place; what could not be placed,
     and why, comes back as notes."""
     without: dict[str, int] = {}
     unmapped = 0
@@ -696,11 +698,11 @@ def _place(rows: list[dict[str, Any]], reading: Reading) -> list[str]:
                      "and `paging` is absent")
     span = placement.symbol_span()
     for row in rows:
-        lin, why = vector_linear(row["addr"], reading.mode, found)
+        lin, why = vector_linear(row["seg_off"], reading.mode, found)
         if lin is None:
             without[why] = without.get(why, 0) + 1
             continue
-        row["linear"] = f"{lin:08X}"
+        row["addr"] = st.flat(lin)
         if holders:
             address = lin if pages is None else physical_address(lin, pages)
             if address is None:
@@ -711,7 +713,7 @@ def _place(rows: list[dict[str, Any]], reading: Reading) -> list[str]:
             symbol = placement.nearest_symbol(lin)
             if symbol is not None:
                 row["symbol"] = symbol
-    notes += [f"no `linear` for {_vectors(n)}: {why}" for why, n in without.items()]
+    notes += [f"no `addr` for {_vectors(n)}: {why}" for why, n in without.items()]
     if unmapped:
         notes.append(f"no holder for {_vectors(unmapped)}: no page run maps their linear "
                      f"address")

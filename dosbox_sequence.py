@@ -273,7 +273,7 @@ def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
               prechecked: bool = False) -> dict[str, Any]:
     """Execute steps in order, STOPPING at the first failure with a full account. Returns
     `ran` (each step and its reply), `failed` (the step that stopped it, absent when none did),
-    `completed`, `held` (the steps whose `recorded` answer this run matched), and the machine
+    `steps_completed`, `held` (the steps whose `recorded` answer this run matched), and the machine
     state. A step is `{"op": <name>, ...args}`. `prechecked` when the tool's pre-gate already
     judged the list whole (`dosbox_checks.steps_whole`), so it is judged once a call.
     """
@@ -301,7 +301,7 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
     refused = [] if prechecked else preflight(steps, ops)
     if refused:
         first = refused[0]
-        return st.reply(status="INVALID", code="bad_argument", ran=[], completed=0,
+        return st.reply(status="INVALID", code="bad_argument", ran=[], steps_completed=0,
                         failed_at=first["step"], failed=first, errors=refused,
                         message=refused_text(refused))
     ran: list[dict[str, Any]] = []
@@ -314,14 +314,14 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
         if not isinstance(step, dict) or "op" not in step:
             return st.reply(status="INVALID", code="bad_argument",
                           **account_of(ran, summaries, keep_last=False, since=since),
-                          completed=len(ran), failed_at=i,
+                          steps_completed=len(ran), failed_at=i,
                           message=f"step {i} is not a {{'op': <name>, ...}} object: {step!r}")
         op = str(step["op"])
         args = recording.step_arguments(step)
         if op not in ops:
             return st.reply(status="INVALID", code="bad_argument",
                           **account_of(ran, summaries, keep_last=False, since=since),
-                          completed=len(ran), failed_at=i,
+                          steps_completed=len(ran), failed_at=i,
                           message=f"{op!r} is not a step: the vocabulary is the server's own "
                                  f"operation names, {sorted(ops)}")
         # A CONSOLE OP NEEDS A STOPPED MACHINE. If the previous step left it
@@ -332,7 +332,7 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
             if state == "gone":
                 return st.reply(status="INVALID", code="session_broken",
                               **account_of(ran, summaries, keep_last=True, since=since),
-                              completed=len(ran), failed_at=i,
+                              steps_completed=len(ran), failed_at=i,
                               message=f"the emulator is GONE (its bound expired or it "
                                      f"crashed) before the console step {op!r} could run")
             if state == "running":
@@ -343,10 +343,10 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
                     # NO WAIT WAS ASKED, so nothing ran out: the step could not be sent at all.
                     return st.reply(status="INVALID", code="not_stopped",
                                   **account_of(ran, summaries, keep_last=True, since=since),
-                                  completed=len(ran), failed_at=i, message=why)
+                                  steps_completed=len(ran), failed_at=i, message=why)
                 # THE WAIT RAN OUT: a verdict, and the list ends here with what it completed.
                 return st.reply(**account_of(ran, summaries, keep_last=True, since=since),
-                                completed=len(ran), failed_at=_none_failed(),
+                                steps_completed=len(ran), failed_at=_none_failed(),
                                 verdict=contract.TIMEOUT,
                                 note=f"{why}; it and the steps after it were not sent")
             waited = waited or wait > 0
@@ -361,7 +361,7 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
             return st.reply(status="INVALID", code="step_failed",
                           **account_of(ran, summaries, keep_last=False, since=since,
                                        also=[reply]),
-                          completed=len(ran), failed_at=i, failed={"op": op, "reply": reply},
+                          steps_completed=len(ran), failed_at=i, failed={"op": op, "reply": reply},
                           message=f"step {i} ({op!r}) failed: {reply.get('message')}")
         if (apart := recording.diverged(step.get(recording.RECORDED) or {}, reply)) is not None:
             # A REPLAY THAT LEFT THE SESSION IT REPLAYS stops where it left, where a desync is
@@ -370,7 +370,7 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
             return st.reply(status="INVALID", code="diverged",
                           **account_of(ran, summaries, keep_last=False, since=since,
                                        also=[reply]),
-                          completed=len(ran), **fields, message=message)
+                          steps_completed=len(ran), **fields, message=message)
         held[0] += bool(step.get(recording.RECORDED))
         ran.append({"op": op, "reply": reply})
         if _missed(op, reply):
@@ -378,7 +378,8 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
             # built on did not happen, so it ends here with the verdict, as a wait of the
             # list's own does.
             return st.reply(**account_of(ran, summaries, keep_last=True, since=since),
-                            completed=len(ran), failed_at=_none_failed(), verdict=contract.TIMEOUT,
+                            steps_completed=len(ran), failed_at=_none_failed(),
+                            verdict=contract.TIMEOUT,
                             note=f"step {i} ({op!r}) waited for what it was to see and it did "
                                  f"not come; the steps after it were not sent")
         # A RUNNING-OK OP DOES NOT RELEASE THE MACHINE, and whether it stopped it is the
@@ -427,8 +428,9 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
         last = ran[-1]["reply"] if ran else {}
         if recorded is None:
             final = {"stopped": _final_stop(session)}
-        elif last.get("stop_seq") == recorded["stop_seq"] and "registers" in last:
-            final = {"stopped": {**recorded, **{k: last[k] for k in _ENRICHED if k in last}}}
+        elif last.get("stop_seq") == recorded["stop_seq"] and "regs" in last:
+            final = {"stopped": {**recorded, **guest.recorded_position(),
+                                 **{k: last[k] for k in _ENRICHED if k in last}}}
         else:
             final = {"stopped": _recorded_stop(session, recorded)}
     elif running:
@@ -436,7 +438,7 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
         if state == "gone":
             return st.reply(status="INVALID", code="session_broken",
                             **account_of(ran, summaries, keep_last=True, since=since),
-                            completed=len(ran), failed_at=_none_failed(),
+                            steps_completed=len(ran), failed_at=_none_failed(),
                             message="the sequence ended with the machine running and the "
                                     "emulator is now GONE (its bound expired or it crashed)")
         waited = True
@@ -453,7 +455,7 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
     stopped = final.get("stopped")
     return st.reply(**account_of(ran, summaries, keep_last=True, since=since,
                                  also=[stopped] if isinstance(stopped, dict) else None),
-                    completed=len(ran), failed_at=_none_failed(), **final)
+                    steps_completed=len(ran), failed_at=_none_failed(), **final)
 
 
 def _none_failed() -> dict[str, Any]:
@@ -462,7 +464,7 @@ def _none_failed() -> dict[str, Any]:
 
 
 #: What a stop's enriched reply adds to the record of it.
-_ENRICHED = ("registers", "watches", "e9", "instruction")
+_ENRICHED = ("regs", "watches", "e9", "instruction")
 
 
 def _recorded_stop(session: ds.Session, recorded: dict[str, Any]) -> dict[str, Any]:
@@ -479,7 +481,7 @@ def _final_stop(session: ds.Session) -> dict[str, Any]:
     `guest.stop_or_base` guards the same call: a cut pane at this final stop must not throw
     away the whole sequence account. `guest.stop_reply` reads `where`/`registers` AGAIN and
     either can refuse on a partial repaint, so a failure there marks the enrichment
-    unavailable while `ran`/`completed` stand. It takes the tool's own fields as **base; the
+    unavailable while `ran`/`steps_completed` stand. It takes the tool's own fields as **base; the
     tail adds none, so it is called with none: `base={}` would land a literal `base` field."""
     try:
         return guest.stop_reply(session)
@@ -541,10 +543,10 @@ def _look(session: ds.Session, mark: int, pattern: str, limit: int) -> dict[str,
     try:
         since = session.e9_since_mark(mark)
     except ds.Invalid as e:
-        return {"e9": {"available": False, "why": str(e)}}
+        return {"guest": {"available": False, "why": str(e)}}
     rx = dlogs.compiled(pattern)
     kept = [ln for ln in since if rx.search(ln)]
-    return {"e9": {"available": True, "since_mark": mark, "written": len(since),
+    return {"guest": {"available": True, "since_mark": mark, "lines_written": len(since),
                    "lines_total": len(kept), "truncated": len(kept) > limit,
                    "lines": kept[-limit:], "pattern": pattern}}
 

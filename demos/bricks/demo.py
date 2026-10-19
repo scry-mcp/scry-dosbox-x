@@ -57,7 +57,7 @@ def expect(holds: bool, why: str) -> None:
 
 
 def low_byte(reply: Reply, register: str) -> int:
-    return int(reply["registers"][register], 16) & 0xFF
+    return int(reply["regs"][register], 16) & 0xFF
 
 
 def word(reply: Reply) -> int:
@@ -125,13 +125,13 @@ def started(reply: Reply, run: Run) -> str:
 
 def at_ready(reply: Reply, run: Run) -> str:
     expect(reply["instruction"]["text"] == "int 3", f"stopped at {reply['instruction']}")
-    cs = reply["stopped_at"]["cs"]
-    return f"the program's own int 3 at {cs}:{reply['stopped_at']['eip'][-4:]}: loaded at {cs}"
+    cs, eip = str(reply["pc"]).split(":")
+    return f"the program's own int 3 at {cs}:{eip[-4:]}: loaded at {cs}"
 
 
 def symbols(run: Run) -> dict[str, Any]:
     """The table is offsets from the program's segment, so its base is that segment * 16."""
-    cs = int(run.replies["ready"]["stopped_at"]["cs"], 16)
+    cs = int(str(run.replies["ready"]["pc"]).split(":")[0], 16)
     return {"source": HERE / "bricks.sym", "base": f"{cs * 16:x}"}
 
 
@@ -165,7 +165,7 @@ def score_is(points: int) -> Any:
 
 def pictured(reply: Reply, run: Run) -> str:
     expect(Path(reply["image"]["path"]).is_file(), f"no picture at {reply['image']['path']}")
-    return f"mode {reply['mode']}, {reply['width']}x{reply['height']} by palette index"
+    return f"mode {reply['vga_mode']}, {reply['width']}x{reply['height']} by palette index"
 
 
 def frames(reply: Reply, run: Run) -> str:
@@ -183,7 +183,7 @@ def ball(reply: Reply, run: Run) -> str:
 
 
 def keys_taken(reply: Reply, run: Run) -> str:
-    lines = [ln.split(": ", 1)[-1] for ln in reply["looked"]["e9"]["lines"]]
+    lines = [ln.split(": ", 1)[-1] for ln in reply["looked"]["guest"]["lines"]]
     expect(lines.count("KEY R") == RIGHTS, f"the game logged {lines}")
     return f"the game logged {', '.join(lines)}"
 
@@ -233,12 +233,12 @@ def restored(reply: Reply, run: Run) -> str:
 
 #: Values a `stop` shows, which land wherever the game is when the break arrives.
 BREAK_STOP = {key: "the stop lands wherever the game is when the break arrives"
-             for key in ("summary", "registers", "instruction", "stopped_at", "attribution",
+             for key in ("summary", "regs", "instruction", "pc", "attribution",
                          "watches", "e9")}
 #: Counts an input step reports that depend on when the host delivered the input, not on what
 #: the game did with it.
 INPUT_TIMING = {key: "it depends on when the host delivered the input"
-                for key in ("lines_before", "seen_before_waiting", "lines_total", "written",
+                for key in ("lines_before", "seen_before_waiting", "lines_total", "lines_written",
                             "since_mark")}
 #: The data view around the paddle, which holds the frame counter a `stop` catches anywhere.
 MOUSE_PLACED = {"rows": "the data view around the paddle holds the frame counter, which a "
@@ -263,7 +263,7 @@ STEPS = [
     Step("unbreak", "breakpoint_clear", {}, lambda reply, run: "breakpoint cleared"),
     Step("frames", "run_for", {"frames": 3, "seconds": WAIT_S}, frames,
          volatile={key: "a retrace stop lands at any instruction of the game's retrace poll"
-                   for key in ("summary", "registers", "instruction", "stopped_at",
+                   for key in ("summary", "regs", "instruction", "pc",
                                "attribution")}),
     Step("ball", "read_memory", {"ref": "ball_x", "length": 8}, ball),
     Step("play", "resume", {}, lambda reply, run: "the game runs"),
@@ -314,10 +314,10 @@ DEMO = Demo(
     offers=frozenset({"shared"}), reads=frozenset({"shared"}), precheck=precheck,
     host_args={"window_flags": "where this host puts the window"},
     volatile={"argv": "the emulator's command line, which carries the host's window placement",
-              "seconds_elapsed": "wall-clock time since the session started",
+              "elapsed_s": "wall-clock time since the session started",
               "waited_s": "wall-clock time a wait took", "ready_after_s": "wall-clock time "
               "the debugger took to answer",
-              "time_stamp": "the wall-clock time a state was saved at",
+              "saved_at": "the wall-clock time a state was saved at",
               "window": "where the host put the emulator's window",
               "binary": "where the host installed DOSBox-X",
               "input_port": "the free port the host picked for the input route",

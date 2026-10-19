@@ -172,10 +172,11 @@ emulator's, to read instead of hunting it), `alive`, `running` (the guest runs, 
 own flag, with no console round trip), `altered`, `conf` and `conf_digest` (the
 config the session started from, and a digest of its content at start), `conf_changed_on_disk`
 (`true` when that file changed since, `false` when it did not or is gone, unavailable with why
-when it could not be read), `watched` (started to be looked at, so a window was placed), `seconds_bound` and
-`seconds_elapsed`, `terminal_bytes_dropped` (nonzero: a screen delta had a hole in it; it
+when it could not be read), `watched` (started to be looked at, so a window was placed), `bound_s` and
+`elapsed_s`, `terminal_bytes_dropped` (nonzero: a screen delta had a hole in it; it
 counts the emulator's terminal, never the guest's E9 stream, which is read off the log file),
-`drain_alive` and `drain_ended` (whether the terminal reader still runs, and why it stopped:
+`drain_alive` and `drain_ended` (whether the terminal reader still runs, and, present once it
+has stopped, why:
 a dead reader makes every later read return nothing while `alive` still says true),
 `captures` (`off`, or where a `capture_video` session records, `on, in the emulator's own
 directory` when it was given no `captures_dir`) and `state_dir` (where
@@ -565,7 +566,7 @@ mode, the selector's base in protected mode, its offset held to the selector's l
 comment meant to survive a mode switch is made by symbol. One comment per place: a second
 `comment_add` on the same byte, in any spelling, replaces the text and keeps the held row's
 `ref`, so a comment made by symbol keeps following the symbol. Its state is read when it is
-listed: `resolved` with its `linear`; `unresolved`, a name this table lacks, kept for the next
+listed: `resolved` with its `addr`; `unresolved`, a name this table lacks, kept for the next
 build; `ambiguous`; `stale`, a raw address not known to be this build's, still listed where it
 points. A raw comment is judged by the one batch that describes its address, as a raw breakpoint
 is: this build's while that batch is held unchanged, `stale` where a held batch describes the
@@ -603,7 +604,7 @@ is a row past its selector's limit, until a stop's descriptor reaches it, and ea
 names the stop it waits for (`comment_add` still refuses that address, since a call is answered
 at this stop). Where the store and the file disagree, the file wins and the store's old row
 comes back whole in `replaced_comments`; a row whose text the store already holds counts in
-`unchanged_total`, and when it was placed in another build it is brought to this one, its ref
+`unchanged`, and when it was placed in another build it is brought to this one, its ref
 and stamp kept, whether this stop lists it `stale` or cannot place it yet; rows only the store
 holds stay. A save replaces only a comment file, and names in `dropped_comments` what the
 replaced file held that the store does not.
@@ -614,9 +615,9 @@ replaced file held that the store does not.
 keystroke to a running guest is swallowed with no error anywhere) and it **re-establishes
 the position after every key** rather than sending `count` of them and reporting `count`.
 That is not caution: stepping OVER a `CALL` is run-until-it-returns, so a call that never
-returns leaves the machine running and the rest of the keystrokes go nowhere. `completed` is
-what happened; `running` says why it stopped short. `moved` is asked per step and `stalled`
-counts the ones that did not change position, because comparing only the endpoints answers
+returns leaves the machine running and the rest of the keystrokes go nowhere.
+`instructions_completed` is what happened; `session.running` says why it stopped short.
+`moved` is asked per step and `stalled` counts the ones that did not change position, because comparing only the endpoints answers
 wrong on a two-instruction loop (`L: nop` / `jmp L`): it comes back where it started, so two
 steps that both moved read as a swallowed key. About a second and a half per step, which is
 the settle on the repaint that proves it landed. So `count` is 1 to 64 (`STEP_MAX`), a cost
@@ -744,14 +745,14 @@ qualify gets no linear and `note` says so. A stop the pane names `VM86` (virtual
 no mode the survey reads, so a trace is refused at one before its log opens, and one that ends
 at one comes back `unexpected_answer` with the path of its log, that stop not surveyed. `long`
 places every line by its own mode. `symbols` has a row per routine
-(`symbol`, its own `linear`, `addresses`, `instructions`, and the lowest and highest address
+(`symbol`, its own `addr`, `addresses`, `instructions`, and the lowest and highest address
 executed inside as `first` and `last`), ascending; the reply carries the lowest-addressed rows,
-`symbols_total` counts them all and `symbols_truncated` says when some are left out. `unplaced`
+`symbols_total` counts them all and `truncated` says when some are left out. `unplaced`
 counts the executed addresses no symbol places. The set file beside the log
 (`<path>.set.jsonl`, refused like the log if it is already there) has one JSON line per executed
-address (`addr` as the log prints it, `linear`, `symbol`, `delta`, `count`), ascending by linear,
-those without one last; one the host refuses part-way is removed and `note` says so. Every
-linear is eight upper-case hex digits. With no table loaded nothing is named and `note` says so.
+address (`seg_off`, `addr`, `symbol`, `delta`, `count`), ascending by `addr`, those without one
+last; one the host refuses part-way is removed and `note` says so. With no table loaded nothing
+is named and `note` says so.
 
 **The waits are bounds**: `run_to`'s, `run_for`'s and `trace`'s `seconds` is more than zero and at
 most 600 (`RUN_TO_MAX`), the ceiling `log_wait`, the state tools and the `expect` waits share. A wait
@@ -815,16 +816,29 @@ essentially every interesting protected-mode address: a DJGPP `_main` sits well 
 exactly four. In real mode anything past `0xFFFF` addresses nothing, so that is refused
 instead of being accepted and never firing.
 
+**Addresses in a reply** are spelled two ways: a segmented one as `SSSS:OOOOOOOO`, the form
+every DOS ref takes (under its own key it is `seg_off`; a stop's `pc`, an attribution's `at` and
+a pointer's `at` and `target` are spelled so too), and a linear one as `addr`, `0x` and eight
+digits, so the same place is one string and compares as one. A row carries `addr` where the
+server already knows the linear address (a symbol, a scan hit, a placed operand); it is never
+bought with another console round trip. `linear` is an argument only (`symbols_find(linear=)`).
+One spelling stays the debugger's own: a breakpoint as `BPLIST` lists it (`run_to`'s `target`
+and its `controls[].at`, a breakpoint row's `entry`), because that is the string the server
+matches the list against.
+
 **What a stop returns.** Every stop (`resume`, `step`, `run_to`, `run_for`, `trace`, and the tail of a
-`perform`) carries its number `stop_seq` (the one `last_stop` names), where it stopped, the
-`instruction` it stopped on (decoded as `disassemble` decodes it, its bytes taken off the code
-pane the stop's own survey painted, which the debugger moves to CS:EIP whenever a stop lands
+`perform`) carries its number `stop_seq` (the one `last_stop` names), where it stopped (`pc`,
+`SSSS:OOOOOOOO`, the form every DOS ref takes, and `cpu_mode`: `real`, `protected` or `paged`,
+off the pane's mode word and its PAGE/NOPG mark), the `instruction` it stopped on (`seg_off`,
+`bytes`, `text`, `flow`, `code_bits`, `bytes_from` and the nearest `symbol` and `delta`; decoded
+as `disassemble` decodes it, its bytes taken off the code pane the stop's own survey painted, which the debugger moves to CS:EIP whenever a stop lands
 outside it, or off one `D` when the pane does not hold that line whole as one instruction (it
 decodes in its own width, which is not always the segment's), with its nearest symbol, which
 in protected mode costs one `SELINFO CS` and only with a table loaded; unavailable, with why,
-when no bytes could be read or they start no instruction), the registers,
-the show watches already evaluated (each with `state: "evaluated"`), an ATTRIBUTION to the declaration whose address it stopped
-at (or an honest cannot-say: the
+when no bytes could be read or they start no instruction), the registers (`regs`),
+the show watches already evaluated (each with `state: "evaluated"`), an `attribution` to the
+declaration whose address it stopped at (`attributed`, `ref`, `by`, `at`; or an honest
+cannot-say with `why`: the
 debugger keeps no hit flag, and a memory watch stops at the instruction that WROTE), and an
 E9 summary, `e9`, that is OFF by default with the count and how to turn it on, because the
 guest's log can blow up a conversation: `lines_total` lines matched the filter, `unfiltered`
@@ -844,8 +858,8 @@ The running-guest contract, in three parts:
 
 - **The lists answer from what the server holds.** `breakpoint_list` and `watch_list` on a
   running guest return the declarations with the state the last stop's survey saw, say
-  `debugger_read: false`, and date the answer with `last_stop` (the last stop's `stop_seq`, `at`,
-  `attribution`, `since_s`, and `clock`, the host's UTC time, to the second, at which the stop
+  `debugger_read: false`, and date the answer with `last_stop` (the last stop's `stop_seq`, `pc`,
+  `attribution`, `since_s`, and `wall_at`, the host's UTC time, to the second, at which the stop
   was recorded). Stopped, they read the debugger and say `debugger_read: true`.
   Before any stop, `last_stop` is unavailable and a symbol's state is `unarmable`.
 - **What is asked while running is applied at the next stop.** `breakpoint_at` and a
@@ -857,7 +871,7 @@ The running-guest contract, in three parts:
   `still_pending` for what could not be applied). A stop that happened on its own, during a
   wait or a key, is recorded by the first tool that finds the machine at the debugger,
   `status` and `captures` included: that reply says `stopped_on_its_own` (its `stop_seq`,
-  `at` and attribution), once, and carries the same `applied_on_stop` block when something
+  `pc` and attribution), once, and carries the same `applied_on_stop` block when something
   was pending. `status` counts what is pending.
 - **`last_stop`, wherever it helps.** `status` carries the last stop, and beside it `pc` and
   `cpu_mode` (`real`, `protected` or `paged`, from the register pane's mode word and its
@@ -871,7 +885,7 @@ The running-guest contract, in three parts:
   the guest runs (`registers`, `read_memory`, `memdump`, `step`, `debug`, and `resume` itself,
   whose F5 would do nothing there and whose `ok` would read like a release) carries it too, with
   `answers_while_running` naming the tools that do answer; `registers(from_last_stop=True)`
-  hands back the registers as they were at that stop, marked `stale`, never as a value.
+  hands back the registers as they were at that stop, marked `superseded`, never as a value.
 
 What it does not do: invent a stop, or serve cached memory as a current value. A stop still
 has to come from something armed before the guest was released, which is why the pending
@@ -969,7 +983,7 @@ in the segment its pointer names) and a memory operand with no base and no index
 the segment register it is read through (an override, else DS) at its value at this stop,
 because that register is what the CPU will use; a row outside the table's span has `symbol`
 unavailable, and one that could not be placed (a register the pane did not show, a selector
-with no descriptor) has `linear` unavailable, which says why. The pane is the control the decoder is tested against, line by line (address, length,
+with no descriptor) has `addr` unavailable, which says why. The pane is the control the decoder is tested against, line by line (address, length,
 bytes, mnemonic, and operand by operand the numbers and registers), and where the two differ
 only in spelling (`jc` for `jb`, the implicit operands of a string instruction, a size word, a
 loaded symbol in place of an operand) the tests record it with its opcode. Where the pane is
@@ -1048,7 +1062,7 @@ protected mode the IDT, whose entries are selector pairs. The server names that 
 and one already sitting there, a dangling link included, is refused and left alone, because
 it is somebody else's.
 `number` is an integer, 0 to 255, and narrows the reply to one vector (`bad_argument`
-outside, before anything is typed; `not_stopped` on a running guest). Each vector's `linear`
+outside, before anything is typed; `not_stopped` on a running guest). Each vector's `addr`
 is `segment*16+offset` in real mode, and in protected mode the base of the descriptor its
 selector names in `gdt` or `ldt` plus the offset; with paging on, the block that holds it is
 matched on the address that linear maps to through the page runs. The row of `mcbs`, `kern`
@@ -1059,7 +1073,7 @@ DOS fills it. A free block holds a vector under its stale name and its `notes`, 
 what a vector left pointing into freed memory looks like. `symbol` is given only between the
 loaded table's lowest and highest symbol, so past either end no name is invented; inside, the
 nearest symbol at or below comes with its `delta`. Without `logfile` the table comes back
-and no vector has a holder; in protected mode none has a `linear` or a `symbol` either,
+and no vector has a holder; in protected mode none has an `addr` or a `symbol` either,
 because the descriptor tables are listings too. `coverage_note` says why for every vector it
 could not place.
 
@@ -1240,7 +1254,7 @@ then waits for a NEW matching line from the mark, so the act as a whole is verif
 the machine stopped at the debugger, the log is read once instead of waited on, because a
 stopped guest cannot write, and a line not there is `wait_stopped`; when the act's own wait ran
 out, `act.verdict` `TIMEOUT`, the check is not made and `verify` is unavailable); and
-`looked.e9` is what the guest wrote since the mark, matching `pattern` and cut to the last
+`looked.guest` is what the guest wrote since the mark, matching `pattern` and cut to the last
 `limit`, with the counts that say what was cut (`lines_total`, `truncated`), in `log`'s own
 words. An act that ended at a stop carries the enriched stop reply in `act.stopped`, as
 `perform`'s tail hands it over. A verification that read from the top of the log would find the
@@ -1271,10 +1285,10 @@ What the export keeps is what moved the machine and what was checked:
 
 | A call of | Becomes |
 |---|---|
-| a tool that changes the machine or what the next call acts on (`write`, `set_register`, `run_to`, `run_for`, `step`, `trace`, `state_save`, `state_load`, `symbols_load`, a declaration...) | a step; one that left the guest at a new stop holds to the `registers` its reply carries (a `state_load` answers none, so it holds to nothing) |
+| a tool that changes the machine or what the next call acts on (`write`, `set_register`, `run_to`, `run_for`, `step`, `trace`, `state_save`, `state_load`, `symbols_load`, a declaration...) | a step; one that left the guest at a new stop holds to the `regs` its reply carries (a `state_load` answers none, so it holds to nothing) |
 | a `debug` line | a step whose answer is never held to: what a typed command printed is the console's; one that moved the guest holds to its stop like any advance |
 | `read_memory` | a check of `hex` |
-| `registers` | a check of `registers` |
+| `registers` | a check of `regs` |
 | `screen_signature` | a check of `signature` |
 | `golden_check` | a check of `matched`, `differing_total`, `missing_total`, `extra_total` and the `differing`, `missing` and `extra` lists |
 | any other read, `snapshot`, `capture_frame`, `series_capture`, `memdump`, `comment_*`, the scan, `machine_map`, `interrupt_vectors`, `palette`, `screen_view` | dropped, named in the reply with why; one that moved the guest is kept as a step |
@@ -1386,7 +1400,7 @@ a mapped screen (Screen maps). Every call asks the stub where the pointer is
 BEFORE (the driver's range and the BIOS mode, which turn screen units into the driver's) and
 AFTER (where it went), and the reply carries the read-back: `pointer.screen` with `x`, `y`,
 `width` and `height`, `pointer.mouse` with the driver's `x`, `y`, `max_x`, `max_y`, the
-buttons held, the mode. `arrived` says the read-back is where the call asked; when it is not,
+buttons held, the `vga_mode`. `arrived` says the read-back is where the call asked; when it is not,
 `asked` beside it says where it was asked, in the driver's coordinates, because a text mode
 places the pointer on its cell and a
 program's own range (INT 33h AX=07h/08h) clamps it, and the reply reports the guest's answer
@@ -1656,8 +1670,8 @@ one stays parked, at the loaded machine's position after a load. The command is 
 refusal of its own (a state of another DOSBox-X version, program, memory size or machine type is
 refused, never asked about) is `unexpected_answer` quoting it, and the emulator's log says why. The
 state is `<name>.sav` under the session's `state_dir`, written there directly and read back for
-what it says about itself; `state_list` reads every state's ZIP members (version, program, machine,
-memory size, stamp) without loading, needs no window, and answers while the guest runs. A save
+what it says about itself; `state_list` reads every state's ZIP members (`version`, `program`,
+`machine`, `memory_mb`, `saved_at`) without loading, needs no window, and answers while the guest runs. A save
 never overwrites and alters nothing; a load marks the session altered, because it replaces the
 machine. A name is letters, digits, `_` and `-`, starting with a letter or a digit, at most 64 of
 them, and not digits only: the emulator's own slot files are `<n>.sav` in the same directory.

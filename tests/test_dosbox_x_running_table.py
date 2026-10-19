@@ -56,7 +56,7 @@ class RunningGuest:
         return self.stopped
 
     def state(self) -> dict[str, object]:
-        return {"pid": 1, "alive": True, "altered": self.altered}
+        return {"pid": 1, "alive": True, "running": not self.stopped, "altered": self.altered}
 
     def log(self, pattern: str, limit: int, channel: str) -> tuple[list[str], int]:
         return [], 0
@@ -313,7 +313,7 @@ def test_the_last_stops_registers_answer_in_a_list_without_waiting_for_a_stop(
     fake.resume = _resume  # type: ignore[method-assign]
     got = server.perform(steps=[{"op": "resume"},
                                 {"op": "registers", "from_last_stop": True}], wait=0)
-    assert got["status"] == "ok" and got["ran"][1]["reply"]["registers"], got
+    assert got["status"] == "ok" and got["ran"][1]["reply"]["regs"], got
     assert fake.running
 
 
@@ -362,9 +362,9 @@ def test_a_stop_the_stop_step_surveyed_is_not_numbered_again(tmp_path: Path) -> 
     got = server.perform(steps=[{"op": "resume"}, {"op": "stop"}])
     assert got["status"] == "ok", got
     stop = got["ran"][1]["reply"]
-    for key in ("stop_seq", "registers", "watches", "e9"):
+    for key in ("stop_seq", "pc", "cpu_mode", "regs", "watches", "e9"):
         assert got["stopped"][key] == stop[key], (key, got["stopped"], stop)
-    picture = [k for k in ("instruction", "instruction_why") if k in stop]
+    picture = [k for k in ("instruction",) if k in stop]
     assert picture, f"the stop step's reply carries no instruction: {sorted(stop)}"
     assert all(got["stopped"][k] == stop[k] for k in picture), (got["stopped"], stop)
 
@@ -410,7 +410,7 @@ def test_a_stop_a_running_guest_step_met_ends_the_run_whatever_the_step(
                                     {"op": "send_keys", "keys": ["a"]}],
                              0.2, ops, lambda *_: None, False)
     assert got["status"] == "ok" and "still_running" not in got, got
-    assert "registers" in got["stopped"], got
+    assert "regs" in got["stopped"], got
 
 
 @pytest.mark.parametrize("cleared", ["breakpoint", "watch"])

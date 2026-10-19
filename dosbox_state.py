@@ -46,6 +46,18 @@ UNREAD_STOP_WHY = ("the stop the machine is in was not readable yet (a cut pane;
 ROWS_SHOWN = 24
 
 
+def seg_off(seg: int, off: int) -> str:
+    """ONE SPELLING FOR A SEGMENTED ADDRESS in every reply: `SSSS:OOOOOOOO`, the form every
+    DOS ref takes and the debugger itself prints."""
+    return f"{seg:04X}:{off:08X}"
+
+
+def flat(linear: int) -> str:
+    """ONE SPELLING FOR A LINEAR ADDRESS in every reply: `0x` and eight digits, so the same
+    place is one string and compares as one."""
+    return f"{linear:#010x}"
+
+
 def now() -> str:
     return datetime.now(UTC).isoformat(timespec="seconds")
 
@@ -212,10 +224,10 @@ class State:
         None when this session has not stopped yet."""
         if not self.last_stop:
             return None
-        return {"stop_seq": self.last_stop["seq"], "at": self.last_stop["at"],
+        return {"stop_seq": self.last_stop["seq"], "pc": self.last_stop["at"],
                 "attribution": self.last_stop["attribution"],
                 "since_s": round(time.monotonic() - float(self.last_stop["when"]), 1),
-                "clock": self.last_stop["clock"]}
+                "wall_at": self.last_stop["clock"]}
 
     def as_of_current(self, session: ds.Session) -> dict[str, Any] | None:
         """`as_of()` only when the record describes the stop the machine is IN. After a
@@ -249,7 +261,7 @@ class State:
                     ", its position not readable yet (a cut pane; the next contact retries)")
         who = stop.get("attribution") or {}
         by = f" ({who['ref']})" if who.get("attributed") else ""
-        return stop, f" at {stop['at']}{by}"
+        return stop, f" at {stop['pc']}{by}"
 
     def list_basis(self, session: ds.Session) -> tuple[list[dict[str, str]], bool,
                                                        tuple[str, dict[str, str]] | None]:

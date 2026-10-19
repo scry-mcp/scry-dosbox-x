@@ -206,14 +206,14 @@ def test_sixteen_instructions_ask_seventeen_lines_in_hex_and_come_back_elapsed(
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip", dest=str(dest)))
     assert got["status"] == "ok", got
     assert dbg.keys == [b"LOGC 11\r"], "one command, the count one more than executed, in hex"
-    assert got["verdict"] == "ELAPSED" and got["stopped_at"]["eip"] == "00000106", got
+    assert got["verdict"] == "ELAPSED" and got["pc"].endswith(":00000106"), got
     assert {k: got["trace"][k] for k in ("path", "bytes", "shape", "instructions",
                                          "addresses")} == {
         "path": str(dest), "bytes": dest.stat().st_size, "shape": "cs_ip",
         "instructions": 16, "addresses": 1}, got["trace"]
     assert dest.read_bytes() == (TRACE / "probe-settle-cs_ip-16.trace").read_bytes()
     assert no_log_left(dbg.launch.cwd), "the log stayed in the working directory"
-    assert got["registers"] and "attribution" in got and "stop_seq" in got and "e9" in got
+    assert got["regs"] and "attribution" in got and "stop_seq" in got and "e9" in got
     assert got["session"]["altered"] is False, "advancing is not writing"
     assert got["summary"].startswith("trace 16 cs_ip: ELAPSED, 16 executed at 1 address")
 
@@ -237,7 +237,7 @@ def test_a_dynamic_core_is_refused_by_its_counter_and_the_file_is_kept(tmp_path:
     assert "moved by 0 while the log says 16" in got["message"], got["message"]
     assert "cpu core=normal" in got["message"], got["message"]
     assert got["trace"]["path"] == str(dest) and dest.exists(), got
-    assert got["stop_seq"] and got["stopped_at"]["eip"] == "00000106", got
+    assert got["stop_seq"] and got["pc"].endswith(":00000106"), got
 
 
 def cut(tmp_path: Path, close: str | None = "probe-cut-close-delta") -> Tracer:
@@ -259,7 +259,7 @@ def test_a_breakpoint_that_cuts_the_trace_is_other_stop_and_the_log_is_closed_fi
     assert dbg.keys == [b"LOGC 186A1\r", b"LOGC 0\r"], "the open log closed before it moved"
     assert got["verdict"] == "OTHER_STOP" and got["attribution"]["ref"] == "0814:0108", got
     assert got["trace"]["instructions"] == 5506 and got["trace"]["addresses"] == 1, got["trace"]
-    assert got["stopped_at"]["eip"] == "00000108" and dest.exists() and no_log_left(
+    assert got["pc"].endswith(":00000108") and dest.exists() and no_log_left(
         dbg.launch.cwd)
     assert not log_open(), "a close that answered leaves no log to close"
 
@@ -352,7 +352,7 @@ def test_an_interrupt_breakpoint_counts_its_int_without_running_it(tmp_path: Pat
     assert got["status"] == "ok" and got["verdict"] == "OTHER_STOP", got
     assert got["trace"]["instructions"] == 6, got["trace"]
     assert tracing.AT_ITS_START not in got["trace"]["note"], got["trace"]
-    assert got["stopped_at"] == {"cs": "0814", "eip": "00000108", "mode": "Real"}, got
+    assert got["pc"] == "0814:00000108" and got["cpu_mode"] == "real", got
     assert dbg.keys == [b"LOGC 186A1\r", b"LOGC 0\r"] and no_log_left(dbg.launch.cwd)
 
 
@@ -729,7 +729,7 @@ def test_perform_checks_a_trace_step_with_the_list_and_runs_one(tmp_path: Path) 
     dest = tmp_path / "p.trace"
     got = cast(dict[str, Any], server.perform(steps=[
         {"op": "trace", "instructions": 16, "shape": "cs_ip", "dest": str(dest)}]))
-    assert got["status"] == "ok" and got["completed"] == 1, got
+    assert got["status"] == "ok" and got["steps_completed"] == 1, got
     assert got["ran"][0]["reply"]["trace"]["instructions"] == 16 and dest.exists()
 
 
@@ -802,15 +802,15 @@ def test_the_probe_start_window_joins_to_its_three_routines(tmp_path: Path) -> N
     assert got["status"] == "ok", got
     found = got["trace"]
     assert per_routine(found["symbols"]) == PROBE_START_200, found["symbols"]
-    assert [r["linear"] for r in found["symbols"]] == ["0000824B", "00008277", "00008281"]
-    assert found["symbols"][0]["first"] == "0000824B", "the routine's first address is its own"
+    assert [r["addr"] for r in found["symbols"]] == ["0x0000824b", "0x00008277", "0x00008281"]
+    assert found["symbols"][0]["first"] == "0x0000824b", "the routine's first address is its own"
     assert found["unplaced"] == 0 and found["symbols_total"] == 3, found
-    assert found["symbols_truncated"] is False and "note" not in found, found
+    assert found["truncated"] is False and "note" not in found, found
     rows = [json.loads(x) for x in Path(found["set_path"]).read_text().splitlines()]
     assert found["set_path"] == str(dest) + ".set.jsonl" and len(rows) == found["addresses"]
     assert sum(r["count"] for r in rows) == 200
-    assert [r["linear"] for r in rows] == sorted(r["linear"] for r in rows)
-    assert all(len(r["linear"]) == 8 and r["linear"] == r["linear"].upper() for r in rows)
+    assert [r["addr"] for r in rows] == sorted(r["addr"] for r in rows)
+    assert all(re.fullmatch(r"0x[0-9a-f]{8}", r["addr"]) for r in rows), rows[:2]
     assert {r["symbol"] for r in rows} == set(PROBE_START_200)
 
 
@@ -830,7 +830,7 @@ def test_without_a_logfile_the_protected_lines_get_no_linear_and_the_note_says_w
     got = tracing.join(cast(ds.Session, Listings(None)),
                        tracing.parse(TRACE / "probe-start-normal-200.trace", "normal"), True,
                        notes)
-    assert got.symbols == [] and all("linear" not in r for r in got.rows), got.rows[:2]
+    assert got.symbols == [] and all("addr" not in r for r in got.rows), got.rows[:2]
     assert any("`logfile`" in n for n in notes), notes
 
 
@@ -845,7 +845,7 @@ def test_a_cs_that_names_no_code_descriptor_of_its_privilege_gets_no_linear() ->
                        tracing.parse(TRACE / "probe-start-normal-200.trace", "normal"), False,
                        notes)
     assert session.asked == ["CPU", "GDT", "LDT"], session.asked
-    assert got.symbols == [] and all("linear" not in r for r in got.rows)
+    assert got.symbols == [] and all("addr" not in r for r in got.rows)
     assert any("no present code descriptor" in n for n in notes), notes
 
 
@@ -856,10 +856,10 @@ def test_the_dos_djgpp32_window_is_placed_through_the_ldt_base_not_the_raw_offse
     parsed = tracing.parse(TRACE / "dos-djgpp32-engine-cs_ip-200.trace", "cs_ip")
     got = tracing.join(cast(ds.Session, Listings(Path("guest.log"))), parsed, False, notes)
     engine = next(r for r in got.symbols if r["symbol"] == "_engine_pos")
-    assert engine["first"] == engine["linear"] == f"{DOS_DJGPP32_BASE + 0x5E9C0:08X}", engine
+    assert engine["first"] == engine["addr"] == f"{DOS_DJGPP32_BASE + 0x5E9C0:#010x}", engine
     for row in got.rows:
-        linear = int(row["linear"], 16)
-        assert linear == DOS_DJGPP32_BASE + int(row["addr"].split(":")[1], 16)
+        linear = int(row["addr"], 16)
+        assert linear == DOS_DJGPP32_BASE + int(row["seg_off"].split(":")[1], 16)
         expected = table_walk(linear)
         span = placement.symbol_span()
         if span is not None and span[0] <= linear <= span[1] and expected is not None:
@@ -878,7 +878,7 @@ def test_no_table_loaded_names_no_routine_and_says_so() -> None:
     got = tracing.join(cast(ds.Session, Listings(None)),
                        tracing.parse(TRACE / "probe-start-normal-200.trace", "normal"), True,
                        notes)
-    assert got.symbols == [] and all("symbol" not in r and "linear" in r for r in got.rows)
+    assert got.symbols == [] and all("symbol" not in r and "addr" in r for r in got.rows)
     assert any("no symbol table" in n for n in notes), notes
 
 
@@ -918,7 +918,7 @@ def test_the_reply_shows_sixty_four_routines_and_counts_the_rest(tmp_path: Path)
     found = got["trace"]
     assert got["status"] == "ok" and found["symbols_total"] == len(offsets), got
     assert len(found["symbols"]) == tracing.SYMBOLS_SHOWN < len(offsets), found["symbols_total"]
-    assert found["symbols_truncated"] is True and found["unplaced"] == 0, found
+    assert found["truncated"] is True and found["unplaced"] == 0, found
     assert len(Path(found["set_path"]).read_text().splitlines()) == len(offsets)
 
 
@@ -956,8 +956,8 @@ def test_a_selector_qualifies_only_as_present_code_of_its_own_privilege() -> Non
     notes: list[str] = []
     session = Listings(Path("guest.log"))
     got = tracing.join(cast(ds.Session, session), parsed, False, notes)
-    placed = {r["addr"]: r.get("linear") for r in got.rows}
-    assert placed == {"00A7:0005E9C0": f"{DOS_DJGPP32_BASE + 0x5E9C0:08X}", "00A4:0005E9C0": None,
+    placed = {r["seg_off"]: r.get("addr") for r in got.rows}
+    assert placed == {"00A7:0005E9C0": f"{DOS_DJGPP32_BASE + 0x5E9C0:#010x}", "00A4:0005E9C0": None,
                       "00AF:0005E9C0": None}, placed
     assert session.asked == ["CPU", "GDT", "LDT"], "one read of the tables per window"
     assert any(tracing.NO_LINEAR in n for n in notes), notes
@@ -984,8 +984,8 @@ def test_a_routine_spans_from_its_lowest_to_its_highest_address_whatever_ran_fir
     parsed = tracing.Parsed(executed=Counter({("0814", "00000120", None): 2,
                                               ("0814", "0000010B", None): 1}))
     got = tracing.join(cast(ds.Session, Listings(None)), parsed, True, [])
-    assert got.symbols == [{"symbol": "start", "linear": "0000824B", "addresses": 2,
-                            "instructions": 3, "first": "0000824B", "last": "00008260"}]
+    assert got.symbols == [{"symbol": "start", "addr": "0x0000824b", "addresses": 2,
+                            "instructions": 3, "first": "0x0000824b", "last": "0x00008260"}]
 
 
 def test_a_gdt_selector_is_placed_through_the_gdt_at_its_own_privilege() -> None:
@@ -997,8 +997,8 @@ def test_a_gdt_selector_is_placed_through_the_gdt_at_its_own_privilege() -> None
                                               ("0008", "00000030", None): 1}))
     dstate.STATE.forget_symbols()
     got = tracing.join(cast(ds.Session, Listings(Path("guest.log"))), parsed, False, [])
-    placed = {r["addr"]: r.get("linear") for r in got.rows}
-    assert placed == {"0018:00000010": "000CC5C0", "002B:00000020": "000CC5D0",
+    placed = {r["seg_off"]: r.get("addr") for r in got.rows}
+    assert placed == {"0018:00000010": "0x000cc5c0", "002B:00000020": "0x000cc5d0",
                       "0008:00000030": None}, placed
 
 
@@ -1012,7 +1012,7 @@ def test_a_window_armed_protected_and_stopped_real_reads_no_selector() -> None:
     got = tracing.join(cast(ds.Session, session),
                        tracing.parse(TRACE / "probe-start-normal-200.trace", "normal"), False,
                        notes)
-    assert session.asked == ["CPU"] and all("linear" not in r for r in got.rows), got.rows[:2]
+    assert session.asked == ["CPU"] and all("addr" not in r for r in got.rows), got.rows[:2]
     assert any(tracing.NO_LINEAR in n for n in notes), notes
 
 
@@ -1054,7 +1054,7 @@ def test_a_linear_address_wraps_at_thirty_two_bits() -> None:
     dstate.STATE.forget_symbols()
     parsed = tracing.Parsed(executed=Counter({("00A7", "FFC00010", None): 1}))
     got = tracing.join(cast(ds.Session, Listings(Path("guest.log"))), parsed, False, [])
-    assert got.rows[0]["linear"] == "00000010", got.rows
+    assert got.rows[0]["addr"] == "0x00000010", got.rows
 
 
 def test_two_routines_of_one_name_are_two_rows() -> None:
@@ -1070,9 +1070,9 @@ def test_two_routines_of_one_name_are_two_rows() -> None:
 
 
 def test_set_rows_without_a_linear_come_last() -> None:
-    rows = [{"addr": "00A7:00000002"}, {"addr": "0814:00000001", "linear": "00008141"},
-            {"addr": "00A7:00000001"}, {"addr": "0814:00000000", "linear": "00008140"}]
-    assert [r["addr"] for r in sorted(rows, key=tracing._set_order)] == [
+    rows = [{"seg_off": "00A7:00000002"}, {"seg_off": "0814:00000001", "addr": "0x00008141"},
+            {"seg_off": "00A7:00000001"}, {"seg_off": "0814:00000000", "addr": "0x00008140"}]
+    assert [r["seg_off"] for r in sorted(rows, key=tracing._set_order)] == [
         "0814:00000000", "0814:00000001", "00A7:00000001", "00A7:00000002"]
 
 
@@ -1438,9 +1438,9 @@ def test_a_window_mixing_flat_and_protected_lines_reads_the_selectors_for_the_pr
                                               ("00A7", "0005E9C0", False): 1}))
     notes: list[str] = []
     got = tracing.join(cast(ds.Session, Listings(Path("guest.log"))), parsed, False, notes)
-    placed = {r["addr"]: r.get("linear") for r in got.rows}
-    assert placed == {"0814:0000010B": "0000824B",
-                      "00A7:0005E9C0": f"{DOS_DJGPP32_BASE + 0x5E9C0:08X}"}, placed
+    placed = {r["seg_off"]: r.get("addr") for r in got.rows}
+    assert placed == {"0814:0000010B": "0x0000824b",
+                      "00A7:0005E9C0": f"{DOS_DJGPP32_BASE + 0x5E9C0:#010x}"}, placed
     assert not any(tracing.NO_LINEAR in n for n in notes), "a flat line was looked up as a selector"
 
 
@@ -1449,7 +1449,7 @@ def test_a_long_line_that_says_protected_wins_over_real_window_ends() -> None:
     stopped_in("Real")
     parsed = tracing.Parsed(executed=Counter({("00A7", "0005E9C0", False): 1}))
     got = tracing.join(cast(ds.Session, Listings(Path("guest.log"))), parsed, True, [])
-    assert got.rows[0].get("linear") == f"{DOS_DJGPP32_BASE + 0x5E9C0:08X}", got.rows
+    assert got.rows[0].get("addr") == f"{DOS_DJGPP32_BASE + 0x5E9C0:#010x}", got.rows
 
 
 def patch_ldt(monkeypatch: pytest.MonkeyPatch, **changed: Any) -> None:
@@ -1469,14 +1469,14 @@ def linear_of_00a7() -> str | None:
     dstate.STATE.forget_symbols()
     parsed = tracing.Parsed(executed=Counter({("00A7", "0005E9C0", None): 1}))
     got = tracing.join(cast(ds.Session, Listings(Path("guest.log"))), parsed, False, [])
-    return cast("str | None", got.rows[0].get("linear"))
+    return cast("str | None", got.rows[0].get("addr"))
 
 
 @pytest.mark.parametrize("code_type", ["18", "19", "1A", "1C", "1F"])
 def test_every_code_type_at_its_own_privilege_qualifies(
         code_type: str, monkeypatch: pytest.MonkeyPatch) -> None:
     patch_ldt(monkeypatch, type=code_type)
-    assert linear_of_00a7() == f"{DOS_DJGPP32_BASE + 0x5E9C0:08X}"
+    assert linear_of_00a7() == f"{DOS_DJGPP32_BASE + 0x5E9C0:#010x}"
 
 
 @pytest.mark.parametrize("data_type", ["10", "17"])

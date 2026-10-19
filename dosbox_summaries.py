@@ -43,8 +43,9 @@ def _said(n: object, noun: str, plural: str | None = None) -> str:
 
 
 
-def _at(stop: Any) -> str:
-    return f"{stop['cs']}:{stop['eip']}" if isinstance(stop, dict) and "cs" in stop else "?"
+def _at(pc: Any) -> str:
+    """A stop's `pc` as a summary paints it: `?` when it is unavailable."""
+    return pc if isinstance(pc, str) else "?"
 
 
 def _block(reply: dict[str, Any], key: str) -> dict[str, Any]:
@@ -72,7 +73,8 @@ def start(args: dict[str, Any], reply: dict[str, Any]) -> str:
     facts = _block(reply, "start") or reply
     plan = ""
     if reply.get("ran") is not None:
-        plan = f", then {reply.get('completed')} of {_said(len(args.get('plan') or []), 'step')}"
+        planned = _said(len(args.get("plan") or []), "step")
+        plan = f", then {reply.get('steps_completed')} of {planned}"
     return (f"start {Path(str(args.get('conf', ''))).name}: {facts.get('mode')} on "
             f"{facts.get('binary')} ({facts.get('binary_origin')}), debugger answered after "
             f"{facts.get('ready_after_s')}s{plan}")
@@ -90,7 +92,7 @@ def status(args: dict[str, Any], reply: dict[str, Any]) -> str:
         return "status: no session"
     state = ("gone" if not ses.get("alive")
              else "alive, running" if ses.get("running") else "alive, stopped")
-    return f"status: {state}, {ses.get('seconds_elapsed')}s of a {ses.get('seconds_bound')}s bound"
+    return f"status: {state}, {ses.get('elapsed_s')}s of a {ses.get('bound_s')}s bound"
 
 
 def close(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -121,20 +123,18 @@ def log_wait(args: dict[str, Any], reply: dict[str, Any]) -> str:
 # ------------------------------------------------------------- reading and writing
 
 def registers(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    stale = " (last stop)" if reply.get("stale") else ""
-    return f"registers{stale}: {_said(len(_block(reply, 'registers')), 'register')}"
+    old = " (last stop)" if reply.get("superseded") else ""
+    return f"registers{old}: {_said(len(_block(reply, 'regs')), 'register')}"
 
 
 def read_memory(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    seg, off = reply.get("segment"), reply.get("offset")
-    at = f"{seg:04X}:{off:04X}" if isinstance(seg, int) and isinstance(off, int) else "?"
+    at = _at(reply.get("seg_off"))
     rows = _said(len(reply.get("rows") or []), "row")
     return f"read_memory {args.get('ref', '')}: {rows} at {at}"
 
 
 def disassemble(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    seg, off = reply.get("segment"), reply.get("offset")
-    at = f"{seg:04X}:{off:08X}" if isinstance(seg, int) and isinstance(off, int) else "?"
+    at = _at(reply.get("seg_off"))
     lines = _said(len(reply.get("lines") or []), "line")
     return f"disassemble {args.get('ref', '')}: {lines} at {at}, {reply.get('code_bits')}-bit"
 
@@ -143,7 +143,7 @@ def call_stack(args: dict[str, Any], reply: dict[str, Any]) -> str:
     calls = reply.get("calls") or []
     first = calls[0] if calls and isinstance(calls[0], dict) else {}
     return (f"call_stack: {_said(len(calls), 'call')}, innermost "
-            f"{_word(first.get('symbol')) or first.get('addr', '?')}, heuristic")
+            f"{_word(first.get('symbol')) or first.get('seg_off', '?')}, heuristic")
 
 
 def memdump(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -157,13 +157,13 @@ def find(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def scan_start(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"scan_start {args.get('ref', '')}: {reply.get('candidates')} {reply.get('width')} "
-            f"candidates")
+    return (f"scan_start {args.get('ref', '')}: {reply.get('hits_total')} cells of "
+            f"{_said(reply.get('cell_bytes'), 'byte')}")
 
 
 def scan_filter(args: dict[str, Any], reply: dict[str, Any]) -> str:
     what = f"{args.get('operator', '=')} {args.get('value')}"
-    return f"scan_filter {what}: {_said(reply.get('survivors'), 'survivor')}" + (
+    return f"scan_filter {what}: {_said(reply.get('hits_total'), 'survivor')}" + (
         ", scan closed" if reply.get("closed") else "") + (
         ", not listed (over `limit`)" if reply.get("truncated") else "")
 
@@ -182,7 +182,7 @@ def set_register(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def write(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"write {args.get('ref', '')}: {_said(reply.get('written'), 'byte')}, verified "
+    return (f"write {args.get('ref', '')}: {_said(reply.get('bytes_written'), 'byte')}, verified "
             f"{reply.get('verified')}")
 
 
@@ -190,7 +190,7 @@ def write(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 def resume(args: dict[str, Any], reply: dict[str, Any]) -> str:
     verdict = f"{reply['verdict']}, " if "verdict" in reply else ""
-    where = (f"stopped at {_at(reply.get('stopped_at'))}" if "stopped_at" in reply
+    where = (f"stopped at {_at(reply.get('pc'))}" if "pc" in reply
              else "running")
     return f"resume: {verdict}{where}"
 
@@ -198,16 +198,21 @@ def resume(args: dict[str, Any], reply: dict[str, Any]) -> str:
 def stop(args: dict[str, Any], reply: dict[str, Any]) -> str:
     if not reply.get("interrupted"):
         return "stop: already stopped"
-    return f"stop: {reply.get('via')}, at {reply.get('stopped_at')} after {reply.get('waited_s')}s"
+    return f"stop: {reply.get('via')}, at {_at(reply.get('pc'))} after {reply.get('waited_s')}s"
 
 
 def step(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    where = "running" if reply.get("running") else f"at {_at(reply.get('after'))}"
-    return f"step {args.get('count', 1)}: {reply.get('completed')} done, {where}"
+    if "pc" in reply:
+        where = f"at {_at(reply['pc'])}"
+    elif _block(reply, "session").get("running"):
+        where = f"running from {_at(reply.get('after'))}"
+    else:
+        where = f"at {_at(reply.get('after'))}, its survey cut"
+    return f"step {args.get('count', 1)}: {reply.get('instructions_completed')} done, {where}"
 
 
 def run_for(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    where = f"at {_at(reply.get('stopped_at'))}"
+    where = f"at {_at(reply.get('pc'))}"
     asked = (f"{args.get('milliseconds')} ms" if args.get("milliseconds")
              else f"{_said(args.get('frames'), 'frame')}")
     return f"run_for {asked}: {reply.get('verdict')}, {_said(reply.get('polls'), 'poll')}, {where}"
@@ -218,12 +223,12 @@ def trace(args: dict[str, Any], reply: dict[str, Any]) -> str:
     places = _said(found.get("addresses"), "address", "addresses")
     return (f"trace {args.get('instructions')} {args.get('shape')}: {reply.get('verdict')}, "
             f"{found.get('instructions')} executed at {places}, at "
-            f"{_at(reply.get('stopped_at'))}, to {found.get('path')}")
+            f"{_at(reply.get('pc'))}, to {found.get('path')}")
 
 
 def run_to(args: dict[str, Any], reply: dict[str, Any]) -> str:
     ref = args.get("ref", "")
-    out = f"run_to {ref}: {reply.get('verdict', 'refused')} at {_at(reply.get('stopped_at'))}"
+    out = f"run_to {ref}: {reply.get('verdict', 'refused')} at {_at(reply.get('pc'))}"
     # A COUNT, never `Nx`: `0x` reads as a hex prefix with nothing after it.
     return out + (f", control counted {reply['control_hits']}" if "control_hits" in reply
                   else "")
@@ -233,7 +238,7 @@ def run_to(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 def state_save(args: dict[str, Any], reply: dict[str, Any]) -> str:
     return (f"state_save {reply.get('name')}: {_said(reply.get('bytes'), 'byte')}, "
-            f"{reply.get('program')} {reply.get('time_stamp')}")
+            f"{reply.get('program')} {reply.get('saved_at')}")
 
 
 def state_load(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -259,7 +264,7 @@ def symbols_load(args: dict[str, Any], reply: dict[str, Any]) -> str:
 def symbols_find(args: dict[str, Any], reply: dict[str, Any]) -> str:
     if "symbols_total" in reply:    # the by-name question answers a list
         return f"symbols_find {reply.get('query')}: {_said(reply.get('symbols_total'), 'symbol')}"
-    return f"symbols_find {reply.get('query')}: {reply.get('name')} at {reply.get('linear')}"
+    return f"symbols_find {reply.get('query')}: {reply.get('name')} at {reply.get('addr')}"
 
 
 # ------------------------------------------------------------------------ declarations
@@ -279,18 +284,18 @@ def interrupt_vectors(args: dict[str, Any], reply: dict[str, Any]) -> str:
     # ONE VECTOR: where it points and what holds it. THE TABLE: how many vectors lie in a
     # program's block, by the block's name, which is the hook question. A count is given only
     # when every vector was placed against the MCB chain (the only section with program
-    # blocks): a vector with no `linear`, or every one when paged with no page runs read, was
+    # blocks): a vector with no `addr`, or every one when paged with no page runs read, was
     # never matched, and counting it as in no block would be a guess.
     rows = [r for r in reply.get("vectors") or [] if isinstance(r, dict)]
     sources = _block(reply, "sources")
     runs_unread = reply.get("cpu_mode") == "paged" and "paging" not in sources
-    not_placed = [r for r in rows if runs_unread or "linear" not in r]
+    not_placed = [r for r in rows if runs_unread or "addr" not in r]
     if args.get("number") is not None and len(rows) == 1:
         row = rows[0]
         held = next((f"{s} {_named(row[s])}" for s in ("mcbs", "kern", "bios_mem")
                      if isinstance(row.get(s), dict)),
                     "not placed (see `coverage_note`)" if not_placed else "held by no block read")
-        return f"interrupt_vectors INT {row.get('number', 0):02X}: {row.get('addr')}, {held}"
+        return f"interrupt_vectors INT {row.get('number', 0):02X}: {row.get('seg_off')}, {held}"
     vectors = _said(len(rows), "vector")
     if "mcbs" not in sources:
         return f"interrupt_vectors: {vectors}, no MCB chain read to count program blocks in"
@@ -340,7 +345,7 @@ def _comment_place(row: object) -> str:
     """Where a comment row lands: its linear address, or its state when it has none now."""
     if not isinstance(row, dict):
         return "?"
-    return str(row.get("linear") or row.get("state"))
+    return str(row.get("addr") or row.get("state"))
 
 
 def comment_add(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -357,11 +362,11 @@ def comment_delete(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def comment_save(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return f"comment_save: {_said(reply.get('comments_total'), 'comment')} to {reply.get('dest')}"
+    return f"comment_save: {_said(reply.get('comments_total'), 'comment')} to {reply.get('path')}"
 
 
 def comment_load(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"comment_load: {reply.get('parsed')} read, {reply.get('added_total')} added, "
+    return (f"comment_load: {reply.get('parsed')} read, {reply.get('added')} added, "
             f"{reply.get('replaced_total')} replaced")
 
 
@@ -425,14 +430,14 @@ def _region(reply: dict[str, Any]) -> str:
 
 def screen_view(args: dict[str, Any], reply: dict[str, Any]) -> str:
     if isinstance(reply.get("image"), dict):
-        return f"screen_view {reply.get('mode')}: {_region(reply)} pixels; {_picture(reply)}"
+        return f"screen_view {reply.get('vga_mode')}: {_region(reply)} pixels; {_picture(reply)}"
     cursor = reply.get("cursor")
     at = f", cursor at {cursor[0]},{cursor[1]}" if isinstance(cursor, list) else ""
-    return f"screen_view {reply.get('mode')}: {_region(reply)} text{at}"
+    return f"screen_view {reply.get('vga_mode')}: {_region(reply)} text{at}"
 
 
 def screen_signature(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return f"screen_signature {reply.get('mode')} {_region(reply)}: {reply.get('signature')}"
+    return f"screen_signature {reply.get('vga_mode')} {_region(reply)}: {reply.get('signature')}"
 
 
 # The screen maps' four lines are scry-core's, alike on both servers.
@@ -461,7 +466,7 @@ def screen_wait(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def capture_frame(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"capture_frame {args.get('at')}: {_said(reply.get('bytes'), 'byte')} to "
+    return (f"capture_frame {reply.get('frame')}: {_said(reply.get('bytes'), 'byte')} to "
             f"{reply.get('path')}")
 
 
@@ -477,7 +482,7 @@ def perform(args: dict[str, Any], reply: dict[str, Any]) -> str:
     # THE COUNT AND THE TAIL ON THE LINE: under `summaries=True` a nested list's line is all
     # its caller keeps, and `ok` alone tells a list that ended stopped from one still running.
     steps = reply.get("steps_total", len(args.get("steps") or []))
-    done = f"perform: {reply.get('completed')} of {_said(steps, 'step')}"
+    done = f"perform: {reply.get('steps_completed')} of {_said(steps, 'step')}"
     stopped = reply.get("stopped")
     if isinstance(stopped, dict):
         seq = stopped.get("stop_seq")

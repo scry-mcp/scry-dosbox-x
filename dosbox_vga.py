@@ -207,9 +207,10 @@ class Geometry:
     cursor: list[int] | None
 
     def head(self) -> dict[str, Any]:
-        """The reply's account of the screen: its mode, what it is made of, its size."""
-        return {"mode": self.word, "source": self.source, "width": self.width,
-                "height": self.height}
+        """The reply's account of the screen: its VGA mode word, what it is made of (`kind`, the
+        signature's word: `text` cells or `pixel`s), its size."""
+        return {"vga_mode": self.word, "kind": "text" if self.source == TEXT else "pixel",
+                "width": self.width, "height": self.height}
 
 
 def geometry(listings: dict[str, dict[str, Any]]) -> Geometry:

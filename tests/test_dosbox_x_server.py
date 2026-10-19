@@ -151,9 +151,8 @@ class FakeSession:
                 "running": self._alive and bool(getattr(self, "running", False)),
                 "altered": self.altered,
                 "conf": "/x/g.conf", "conf_digest": "abc123", "conf_changed_on_disk": False,
-                "watched": False, "seconds_bound": 60, "seconds_elapsed": 1.0,
-                "terminal_bytes_dropped": 0, "drain_alive": True,
-                "drain_ended": "", "captures": "off",
+                "watched": False, "bound_s": 60, "elapsed_s": 1.0,
+                "terminal_bytes_dropped": 0, "drain_alive": True, "captures": "off",
                 "state_dir": "the emulator's own save/ under its working directory"}
 
     def command(self, text: str, **_: object) -> str:
@@ -247,7 +246,7 @@ class FakeSession:
     def set_register(self, name: str, value: int) -> dict[str, object]:
         self.altered = True
         got = "00000000" if self.masks else f"{value:08X}"
-        return {"registers": {"EAX": got}, "readback": got, "verified": got == f"{value:08X}"}
+        return {"regs": {"EAX": got}, "readback": got, "verified": got == f"{value:08X}"}
 
     def breakpoint_interrupt(self, number: int, ah: int | None = None) -> str:
         return f"DEBUG: Set interrupt breakpoint at INT {number:02X}"
@@ -349,9 +348,9 @@ class FakeSession:
         # Two files, largest LAST: the text-mode boot and then the real one. That
         # ordering is the contract `capture_frame`'s default rests on.
         return [{"path": "/caps/run_000.avi", "bytes": 107194, "riff_avi": True,
-                 "frames": 40, "complete": True},
+                 "avi_frames": 40, "complete": True},
                 {"path": "/caps/run_001.avi", "bytes": 19296742, "riff_avi": True,
-                 "frames": 5428, "complete": True}]
+                 "avi_frames": 5428, "complete": True}]
 
     def frame(self, at: int, dest: Path, source: Path | None = None) -> Path:
         dest.parent.mkdir(parents=True, exist_ok=True)
@@ -967,7 +966,7 @@ def test_the_success_path_of_each_reader_returns_a_result(tmp_path: Path) -> Non
     seg, off = 0x0749, 0
     row = f"{seg:04X}:{off:08X} " + " ".join(["00"] * 16) + "  " + "." * 16
     install(screen=f"some screen\r\n{row}\r\n")
-    assert server.registers()["registers"]["EAX"] == "00001234"
+    assert server.registers()["regs"]["EAX"] == "00001234"
     assert server.debug(command="BPLIST")["status"] == "ok"
     got = server.read_memory(ref=f"{seg:04X}:{off:08X}")
     assert got["status"] == "ok"
@@ -1060,8 +1059,8 @@ def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
                          window_flags=["-set", "sdl display=1"]))
     got = ds.Session.state(fake)  # type: ignore[arg-type]
     assert set(got) == {"pid", "alive", "running", "altered", "conf", "conf_digest",
-                        "conf_changed_on_disk", "watched", "seconds_bound",
-                        "seconds_elapsed", "terminal_bytes_dropped",
+                        "conf_changed_on_disk", "watched", "bound_s",
+                        "elapsed_s", "terminal_bytes_dropped",
                         "drain_alive", "drain_ended", "captures", "state_dir"}
     # WHETHER CAPTURES ARE ON is said here, at `start` and on every reply, and not only by
     # `captures` refusing: otherwise a caller has to probe `captures` to learn there are
@@ -1082,8 +1081,8 @@ def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
     assert got["altered"] is True
     assert got["watched"] is True
     assert got["conf"] == str(conf)
-    assert got["seconds_bound"] == 60
-    assert cast(float, got["seconds_elapsed"]) >= 3.0
+    assert got["bound_s"] == 60
+    assert cast(float, got["elapsed_s"]) >= 3.0
     # Reported rather than inferred: the terminal buffer is bounded, so a caller has
     # no other way to tell a screen it saw whole from one missing its oldest bytes.
     assert got["terminal_bytes_dropped"] == 4096
@@ -1270,14 +1269,14 @@ def test_both_halves_of_the_capture_come_back(tmp_path: Path) -> None:
     install()
     got = server.captures()
     assert got["status"] == "ok"
-    assert [c["frames"] for c in got["captures"]] == [40, 5428], (
+    assert [c["avi_frames"] for c in got["captures"]] == [40, 5428], (
         "largest last: the default source for a still depends on that order")
 
     dest = tmp_path / "shot" / "frame.png"
     shot = server.capture_frame(at=1400, dest=str(dest))
     assert shot["status"] == "ok"
     assert Path(shot["path"]) == dest and shot["bytes"] > 0
-    assert shot["at"] == 1400
+    assert shot["frame"] == 1400 and len(shot["sha256"]) == 64, shot
 
 
 def test_a_dump_of_the_wrong_size_is_not_the_dump_that_was_asked_for(
@@ -1547,7 +1546,7 @@ def test_every_parsed_symbol_is_accounted_for_in_the_reply(tmp_path: Path) -> No
     got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path)))
     assert got["parsed"] == 4, got
     assert (got["kept"] + got["excluded_sections"] + got["excluded_pattern"]
-            + got["unencodable_count"]) == got["parsed"], got
+            + got["unencodable_total"]) == got["parsed"], got
     assert got["excluded_sections"] == 1, got
     assert got["truncated_names"] == 1, got    # `_engine_load_midi` is 17 characters
 
@@ -1567,10 +1566,10 @@ def test_the_accounting_still_sums_when_the_unencodable_list_is_truncated(
     text = "".join(f"0000{i:04x} T _caf\u00e9{i}\n" for i in range(12)) + "00009999 T _ok\n"
     got = cast(dict[str, Any], server.symbols_load(source=_source(tmp_path, text)))
     assert got["parsed"] == 13, got
-    assert got["unencodable_count"] == 12, got
+    assert got["unencodable_total"] == 12, got
     assert len(got["unencodable"]) == 8, "the list is capped, which is the point"
     assert (got["kept"] + got["excluded_sections"] + got["excluded_pattern"]
-            + got["unencodable_count"]) == got["parsed"], got
+            + got["unencodable_total"]) == got["parsed"], got
 
 
 def test_loaded_is_read_back_out_of_the_debugger_and_lv_appends(
@@ -1667,7 +1666,7 @@ def test_an_overlay_symbol_reaches_the_caller_flagged_and_counted(tmp_path: Path
     # A SUBSET AND NOT A BUCKET: the counts above still partition `parsed`, so a caller
     # checking the accounting is not told a symbol went missing.
     assert (got["kept"] + got["excluded_sections"] + got["excluded_pattern"]
-            + got["excluded_unplaceable"] + got["unencodable_count"]
+            + got["excluded_unplaceable"] + got["unencodable_total"]
             == got["parsed"] == 2), got
 
     flagged = cast(dict[str, Any], server.symbols_find(name="ACTIVEIMAN"))
@@ -1743,7 +1742,7 @@ def test_a_32_bit_map_reaches_the_caller_through_the_tool(tmp_path: Path) -> Non
         one = found["symbols"][0]
         assert one["offset"] == 0x000000E4, one
         assert one["idle"] is False, one
-        at[name] = (one["section"], one["linear"])
+        at[name] = (one["section"], int(one["addr"], 16))
     assert at == {"_main": (1, 0x004010E4), "_table": (2, 0x004230E4)}, at
 
 
@@ -1803,7 +1802,7 @@ def test_find_answers_with_both_addresses(tmp_path: Path) -> None:
     got = cast(dict[str, Any], server.symbols_find(name="_main"))
     assert got["status"] == "ok", got
     assert got["symbols"][0]["offset"] == 0x0016DF20, got
-    assert got["symbols"][0]["linear"] == 0x0056DF20, got
+    assert got["symbols"][0]["addr"] == "0x0056df20", got
 
 
 def test_find_by_linear_takes_the_base_back_off(tmp_path: Path) -> None:
@@ -2086,7 +2085,7 @@ def test_set_register_writes_the_value_it_was_given() -> None:
     the session block, never the mapping that comes back, so the VALUE was unwatched."""
     fake = install()
     got = cast(dict[str, Any], server.set_register(name="EAX", value=0xDEADBEEF))
-    assert got["registers"]["EAX"] == "DEADBEEF", got["registers"]
+    assert got["regs"]["EAX"] == "DEADBEEF", got["regs"]
     # READ BACK: `readback` is what the pane says and `verified` whether it equals what
     # was sent; a register the debugger masks answers false under `status: ok` and
     # `altered` either way, rather than being refused.
@@ -2095,7 +2094,7 @@ def test_set_register_writes_the_value_it_was_given() -> None:
     # THE CONTROL: a different value has to produce a different answer, or this is
     # asserting a constant.
     again = cast(dict[str, Any], server.set_register(name="EAX", value=1))
-    assert again["registers"]["EAX"] == "00000001"
+    assert again["regs"]["EAX"] == "00000001"
     fake.masks = True
     masked = cast(dict[str, Any], server.set_register(name="EAX", value=0x10000))
     assert masked["status"] == "ok" and masked["verified"] is False
@@ -2608,7 +2607,7 @@ def test_the_caller_is_told_about_every_bucket_the_plan_carries(tmp_path: Path) 
     # unseen. What closes that is a third fixture, not a stronger assertion here.
     # AND `unencodable` REACHES THE CALLER ANYWAY, so the exception list cannot become a
     # hiding place: it goes out truncated to eight PLUS its own length.
-    assert "unencodable_count" in reply, sorted(reply)
+    assert "unencodable_total" in reply, sorted(reply)
 
 
 # ------------------------------------- asking a SECTIONED table where you have stopped
@@ -2826,7 +2825,7 @@ class NamesFake:
         pass
 
     def state(self) -> dict[str, object]:
-        return {"alive": True, "altered": False}
+        return {"alive": self.alive_flag, "running": self._running, "altered": False}
 
     def report_line(self) -> str:
         x, y = self.pointer
@@ -3009,7 +3008,7 @@ class NamesFake:
                      mode: str | None = None) -> dict[str, object]:
         self._console()
         self.mem[(seg, off)] = data
-        return {"written": len(data), "readback": data.hex(), "verified": True}
+        return {"bytes_written": len(data), "readback": data.hex(), "verified": True}
 
     def resume(self) -> dict[str, object]:
         if self.dies_on_resume:
@@ -3021,6 +3020,7 @@ class NamesFake:
                 "screen": "ooooOutputoooo\r\nI-> _"}
 
     def step(self, mode: str = "over", count: int = 1) -> dict[str, object]:
+        self.running = self.step_running          # a step that ran away leaves it running
         return {"running": self.step_running, "completed": count, "moved": True,
                 "stalled": 0, "before": {"cs": self.cs, "eip": self.eip, "mode": self.mode},
                 "after": {"cs": self.cs, "eip": self.eip, "mode": self.mode}}
@@ -3268,7 +3268,7 @@ def test_perform_runs_steps_in_order_and_stops_at_the_first_failure(
         {"op": "breakpoint_at", "ref": "_main"},        # must NOT run
     ])
     assert out["status"] == "INVALID" and out["failed_at"] == 1, out
-    assert out["completed"] == 1, out
+    assert out["steps_completed"] == 1, out
     assert [r["op"] for r in out["ran"]] == ["breakpoint_at"], out   # only the first SUCCEEDED
     assert out["failed"]["op"] == "breakpoint_at", out               # the second is here
     assert "names 2 symbols" in out["message"], out
@@ -3348,7 +3348,7 @@ def test_send_mouse_moves_presses_and_reads_the_pointer_back(tmp_path: Path) -> 
     assert moved["arrived"] is True and "asked" not in moved
     assert moved["pointer"]["screen"] == {"x": 100, "y": 50, "width": 320, "height": 200}
     assert moved["pointer"]["mouse"] == {"x": 200, "y": 50, "max_x": 639, "max_y": 199}
-    assert moved["pointer"]["mode"] == "0x13" and moved["pointer"]["buttons"] == []
+    assert moved["pointer"]["vga_mode"] == "0x13" and moved["pointer"]["buttons"] == []
     fake.commands_sent.clear()
     both = cast(dict[str, Any], server.send_mouse(x=0, y=0, button="right"))
     assert fake.commands_sent[1] == [b"M\x00\x00\x00\x00", b"B\x81", b"B\x01"], fake.commands_sent
@@ -3602,7 +3602,7 @@ def test_perform_stops_at_a_send_keys_step_whose_expectation_missed(tmp_path: Pa
         {"op": "send_keys", "keys": ["a"], "expect": "key_cue_a", "seconds": 1},
         {"op": "status"}]))
     assert out["status"] == "ok" and out["verdict"] == "TIMEOUT", out
-    assert out["completed"] == 1 and "step 0 ('send_keys')" in out["note"], out
+    assert out["steps_completed"] == 1 and "step 0 ('send_keys')" in out["note"], out
     assert out["ran"][0]["reply"]["posted"] == 1, out["ran"][0]
     assert "status" not in [r["op"] for r in out["ran"]], "the steps after it were not sent"
 
@@ -3724,13 +3724,15 @@ def test_drive_marks_acts_verifies_and_looks_from_the_mark(tmp_path: Path) -> No
         pattern="ACT", limit=10))
     assert out["status"] == "ok", out
     assert asked == [], "whether the guest runs is the session's flag, never a console command"
-    assert out["act"]["completed"] == 1 and out["act"]["failed_at"]["available"] is False
+    act = out["act"]
+    assert act["steps_completed"] == 1 and act["failed_at"]["available"] is False, act
     assert out["verify"]["seen"] is True and "on=1" in out["verify"]["line"], out["verify"]
     # from the mark
     assert fake.wait_calls[-1] == (inputs.program_reaction("key_cue_a"), 5.0, 2), fake.wait_calls
-    e9 = out["looked"]["e9"]
+    e9 = out["looked"]["guest"]
     assert e9["available"] is True and e9["since_mark"] == 2, e9
-    assert e9["written"] == 1 and e9["lines_total"] == 1 and e9["lines"] == [fake.input_effect]
+    assert e9["lines_written"] == e9["lines_total"] == 1, e9
+    assert e9["lines"] == [fake.input_effect], e9
     # THE CUT, THE FILTER AND THE COUNTS, each pinned by a fixture that separates them:
     # three lines land after the mark, one of which does not match `pattern`; `limit=1`
     # keeps the LAST matching one, `written` counts all three, `lines_total` the two.
@@ -3741,9 +3743,9 @@ def test_drive_marks_acts_verifies_and_looks_from_the_mark(tmp_path: Path) -> No
                          "Bochs port E9h: [+   7.200] PERF  . tick=8"]
     out = cast(dict[str, Any], server.drive(act=[{"op": "send_keys", "keys": ["b"]}],
                                              pattern="tick", limit=1))
-    e9 = out["looked"]["e9"]
+    e9 = out["looked"]["guest"]
     assert e9["since_mark"] == mark_before, e9
-    assert (e9["written"], e9["lines_total"], len(e9["lines"])) == (3, 2, 1), e9
+    assert (e9["lines_written"], e9["lines_total"], len(e9["lines"])) == (3, 2, 1), e9
     assert e9["lines"] == [fake.after_effect[1]] and e9["pattern"] == "tick", e9
     assert out["verify"]["checked"] is False and "no `expect`" in out["verify"]["why"]
     assert "failed" not in out["act"], out["act"]
@@ -3763,13 +3765,13 @@ def test_drive_reports_a_miss_a_failed_act_and_refuses_what_it_cannot_do(
     miss = cast(dict[str, Any], server.drive(act=[{"op": "send_keys", "keys": ["a"]}],
                                               expect="key_cue_a", seconds=1))
     assert miss["status"] == "ok" and miss["verify"]["verdict"] == "TIMEOUT", miss
-    assert miss["act"]["completed"] == 1 and miss["verify"]["seen"] is False, miss
-    assert miss["looked"]["e9"]["written"] == 0
+    assert miss["act"]["steps_completed"] == 1 and miss["verify"]["seen"] is False, miss
+    assert miss["looked"]["guest"]["lines_written"] == 0
     cut = cast(dict[str, Any], server.drive(
         act=[{"op": "send_keys", "keys": ["a"], "expect": "never", "seconds": 1},
              {"op": "status"}], expect="key_cue_a"))
     assert cut["status"] == "ok" and cut["act"]["verdict"] == "TIMEOUT", cut
-    assert cut["act"]["completed"] == 1 and cut["verify"]["available"] is False, cut
+    assert cut["act"]["steps_completed"] == 1 and cut["verify"]["available"] is False, cut
     assert len(fake.wait_calls) == 2, "the overall expect must not be waited for after a cut act"
     # EVERY REFUSAL COMES BEFORE THE ACT MOVES ANYTHING: each of these carries a step that
     # would post a key, and none of them posts. An unknown op among the steps is refused up
@@ -3863,9 +3865,9 @@ def test_perform_a_running_ok_step_leaves_the_machine_as_it_found_it(tmp_path: P
         {"op": "resume"},
         {"op": "send_keys", "keys": ["a"], "expect": "key_cue_a"},
         {"op": "status"}], wait=5.0))
-    assert out["status"] == "ok" and out["completed"] == 3, out
+    assert out["status"] == "ok" and out["steps_completed"] == 3, out
     assert out["ran"][1]["reply"]["verify"]["seen"] is True, out["ran"][1]
-    assert "stopped" in out and "registers" in out["stopped"], out
+    assert "stopped" in out and "regs" in out["stopped"], out
     # the boundary half: a console op after a running-OK op still waits, and says so.
     fake.where_refusals = 0
     fake.where_raises = True
@@ -3874,7 +3876,7 @@ def test_perform_a_running_ok_step_leaves_the_machine_as_it_found_it(tmp_path: P
     held = cast(dict[str, Any], server.perform(steps=[
         {"op": "resume"}, {"op": "status"}, {"op": "registers"}], wait=0.5))
     assert held["status"] == "ok" and held["verdict"] == "TIMEOUT", held
-    assert held["completed"] == 2 and "still running" in held["note"], held
+    assert held["steps_completed"] == 2 and "still running" in held["note"], held
 
 
 def test_perform_waits_for_a_stop_before_a_console_step_after_a_resume(
@@ -3893,7 +3895,7 @@ def test_perform_waits_for_a_stop_before_a_console_step_after_a_resume(
     # a console op after resume, with the machine never stopping, ends the list (decision 37)
     blocked = server.perform(steps=[{"op": "resume"}, {"op": "registers"}], wait=0.5)
     assert blocked["status"] == "ok" and blocked["verdict"] == "TIMEOUT", blocked
-    assert "still running" in blocked["note"] and blocked["completed"] == 1, blocked
+    assert "still running" in blocked["note"] and blocked["steps_completed"] == 1, blocked
     unasked = server.perform(steps=[{"op": "resume"}, {"op": "registers"}], wait=0)
     assert unasked["status"] == "INVALID" and unasked["code"] == "not_stopped", unasked
     assert unasked["failed_at"] == 1, unasked
@@ -3913,7 +3915,7 @@ def test_perform_tail_waits_for_the_stop_and_returns_the_enriched_reply(
     assert out["status"] == "ok", out
     assert "stopped" in out and "base" not in out["stopped"], out
     stop = out["stopped"]
-    assert "registers" in stop and "watches" in stop and "attribution" in stop, stop
+    assert "regs" in stop and "watches" in stop and "attribution" in stop, stop
 
 
 def test_perform_tail_says_so_if_the_machine_never_stops(tmp_path: Path) -> None:
@@ -3994,7 +3996,7 @@ def test_run_to_resolves_a_symbolic_control_and_perform_passes_one_through(
         {"ref": "_hot", "at": "00A7:3D5E0", "hits_in_run": 2, "removed": True}], got
     out = cast(dict[str, Any], server.perform(
         steps=[{"op": "run_to", "ref": "00A7:00000010", "control": "_hot", "seconds": 1}]))
-    assert out["status"] == "ok" and out["completed"] == 1, out
+    assert out["status"] == "ok" and out["steps_completed"] == 1, out
     assert out["ran"][0]["reply"]["control_hits"] == 2, out["ran"][0]
 
 
@@ -4045,7 +4047,7 @@ def test_perform_after_a_run_to_that_timed_out_needs_no_tail(tmp_path: Path) -> 
     fake.control_hits = 1          # the control fired: the TIMEOUT is a measurement
     out = server.perform(steps=[{"op": "run_to", "ref": "0000:0000", "control": "0000:0020"},
                                 {"op": "registers"}], wait=2.0)
-    assert out["status"] == "ok" and out["completed"] == 2, out
+    assert out["status"] == "ok" and out["steps_completed"] == 2, out
     assert "stopped" not in out and "still_running" not in out, out
 
 
@@ -4098,7 +4100,7 @@ def test_perform_tail_keeps_the_account_when_the_final_enrichment_refuses(
     fake.registers_raises = True        # _stop_reply reads registers and it refuses (cut pane)
     out = server.perform(steps=[{"op": "resume"}], wait=2.0)
     assert out["status"] == "ok", out   # the sequence account survives
-    assert out["completed"] == 1 and [r["op"] for r in out["ran"]] == ["resume"], out
+    assert out["steps_completed"] == 1 and [r["op"] for r in out["ran"]] == ["resume"], out
     assert out["stopped"]["enrichment"]["available"] is False, out
 
 
@@ -4172,7 +4174,7 @@ def test_start_with_a_plan_runs_it_on_the_fresh_session(tmp_path: Path) -> None:
     # exercise the executor path start(plan=) uses, without re-booting: call _run_steps the
     # way start does, then assert the fold-in shape start applies.
     ran = sequence.run_steps(fake, [{"op": "registers"}], 1.0, server._step_ops())  # type: ignore[arg-type]
-    assert ran["status"] == "ok" and ran["completed"] == 1
+    assert ran["status"] == "ok" and ran["steps_completed"] == 1
     assert ran["ran"][0]["op"] == "registers"
 
 
@@ -4662,11 +4664,11 @@ def test_read_memory_takes_a_symbol_or_a_seg_off_ref(tmp_path: Path) -> None:
     address. A protected-mode data symbol resolves against the live DS selector."""
     _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")], ds_="00AF")
     by_name = cast(dict[str, Any], server.read_memory(ref="g_rate", length=4))
-    assert by_name["status"] == "ok" and by_name["segment"] == 0xAF
+    assert by_name["status"] == "ok" and by_name["seg_off"].startswith("00AF:")
     assert by_name["hex"] == "00112233" and by_name["length"] == 4, by_name
-    assert by_name["offset"] == 0x17A6EC
+    assert by_name["seg_off"] == "00AF:0017A6EC", by_name
     by_addr = cast(dict[str, Any], server.read_memory(ref="00AF:0017A6EC", length=4))
-    assert (by_addr["segment"], by_addr["offset"]) == (0xAF, 0x17A6EC)
+    assert by_addr["seg_off"] == "00AF:0017A6EC", by_addr
 
 
 def test_read_memory_refuses_an_unlocatable_or_ambiguous_target(tmp_path: Path) -> None:
@@ -4760,7 +4762,7 @@ def test_stop_reply_carries_registers_watches_attribution_and_e9_off(tmp_path: P
                            watch_mode="show"))
     out = running.stop_reply(fake, halted=True)  # type: ignore[arg-type]
     assert out["status"] == "ok" and out["halted"] is True
-    assert out["registers"]["CS"] == "00A7" and out["registers"]["DS"] == "00AF"
+    assert out["regs"]["CS"] == "00A7" and out["regs"]["DS"] == "00AF"
     assert out["watches"][0]["value"] == 48000 and out["watches"][0]["state"] == "evaluated"
     assert out["attribution"]["attributed"] is False       # nothing declared at CS:EIP
     assert out["e9"]["lines_total"] == 3 and out["e9"]["shown"] == 0 and "how" in out["e9"]
@@ -4866,11 +4868,12 @@ def test_step_and_run_to_enrich_a_stop_but_not_a_still_running_machine(
     `run_to` always stops, its bound interrupting the run, so it always carries one."""
     fake = _names(tmp_path)
     stopped_step = cast(dict[str, Any], server.step(mode="over"))
-    assert "registers" in stopped_step and "e9" in stopped_step
+    assert "regs" in stopped_step and "e9" in stopped_step
     fake.step_running = True
     ran = cast(dict[str, Any], server.step(mode="over"))
-    assert ran["running"] is True and "registers" not in ran and "e9" not in ran
-    fake.step_running = False
+    assert ran["session"]["running"] is True and "running" not in ran, ran
+    assert "regs" not in ran and "e9" not in ran and "pc" not in ran, ran
+    fake.step_running, fake.running = False, False           # stopped again for the run
     stopped_run = cast(dict[str, Any], server.run_to(ref="0000:0010", control="0000:0020"))
     assert stopped_run["verdict"] == "TARGET" and "watches" in stopped_run
     fake.runto_running, fake.control_hits = True, 1
@@ -4946,7 +4949,7 @@ def test_a_halt_whose_position_is_unreadable_keeps_the_halt(
     out = cast(dict[str, Any], server.resume())
     assert out["status"] == "ok" and "stop_seq" not in out
     assert out["enrichment"]["available"] is False and "cut" in out["enrichment"]["why"]
-    assert "registers" not in out
+    assert "regs" not in out
 
 
 def test_a_read_watch_is_not_read_off_a_change_watchs_armed_trap(tmp_path: Path) -> None:
@@ -5374,7 +5377,7 @@ def test_the_lists_answer_from_the_store_and_the_last_stop_while_the_guest_runs(
     # stop 1 is the park the machine was found in at the first contact; the resume's halt
     # is stop 2, and that is what dates the answer.
     assert running["last_stop"]["stop_seq"] == 2, running
-    assert running["last_stop"]["at"] == "00A7:00000000", running
+    assert running["last_stop"]["pc"] == "00A7:00000000", running
     assert running["breakpoints"][0]["ref"] == "_main"
     assert running["breakpoints"][0]["state"] == "armed", running      # as of the last stop
     watches = server.watch_list()
@@ -5444,18 +5447,18 @@ def test_status_and_a_running_refusal_carry_the_last_stop(tmp_path: Path) -> Non
     stale, never by default."""
     fake = _names(tmp_path)
     park = server.status()["last_stop"]          # the machine is found at the debugger
-    assert park["stop_seq"] == 1 and park["at"] == "00A7:00000000", park
+    assert park["stop_seq"] == 1 and park["pc"] == "00A7:00000000", park
     fake.halted = True
     server.resume()
     fake.running = True
     st = server.status()
-    assert st["last_stop"]["stop_seq"] == 2 and st["last_stop"]["at"] == "00A7:00000000", st
+    assert st["last_stop"]["stop_seq"] == 2 and st["last_stop"]["pc"] == "00A7:00000000", st
     refused = server.registers()
     assert refused["status"] == "INVALID", refused
     assert refused["last_stop"]["stop_seq"] == 2, refused
     assert "log" in refused["answers_while_running"], refused
     old = server.registers(from_last_stop=True)
-    assert old["status"] == "ok" and old["stale"] is True and old["registers"]["CS"] == "00A7", old
+    assert old["status"] == "ok" and old["superseded"] is True and old["regs"]["CS"] == "00A7", old
     assert old["last_stop"]["stop_seq"] == 2
     dstate.STATE.last_stop.clear()
     assert server.registers(from_last_stop=True)["status"] == "INVALID"
@@ -5515,7 +5518,7 @@ def test_stop_keeps_the_envelope_on_both_branches(tmp_path: Path) -> None:
     fake.running = True
     got = server.stop()
     assert got["status"] == "ok" and got["interrupted"] is True, got
-    assert got["stopped_at"] == "00A7:00000000", got
+    assert got["pc"] == "00A7:00000000", got
     keys = list(got)
     assert keys[0] == "summary" and keys[-1] == "session", keys
     again = server.stop()                        # the machine is at rest now
@@ -5538,7 +5541,7 @@ def test_a_stop_nobody_read_is_counted_by_status_alone_and_said_once(
     fake.stop_unread = True                              # the breakpoint fired, unread
     st = server.status()
     assert st["last_stop"]["stop_seq"] == before + 1, st
-    assert st["last_stop"]["at"] == "00A7:00000146", st
+    assert st["last_stop"]["pc"] == "00A7:00000146", st
     assert st["stopped_on_its_own"]["stop_seq"] == before + 1, st
     assert "stopped_on_its_own" not in server.status()   # said once, by the contact that found it
 
@@ -5561,14 +5564,14 @@ def test_a_stop_that_came_on_its_own_still_applies_the_queue_at_the_next_contact
     # AND THE STOP ITSELF IS ON RECORD: `last_stop` is the stop the machine is in, not the
     # one before (measured: it stayed on the previous stop while `registers`
     # read the new address).
-    assert st["last_stop"]["stop_seq"] == 1 and st["last_stop"]["at"] == "00A7:00000000", st
+    assert st["last_stop"]["stop_seq"] == 1 and st["last_stop"]["pc"] == "00A7:00000000", st
     fake.running = True
     fake.eip = "00001234"
     fake.running = False                                 # a second stop on its own
     assert server.status()["last_stop"]["stop_seq"] == 2
-    assert server.status()["last_stop"]["at"] == "00A7:00001234"
+    assert server.status()["last_stop"]["pc"] == "00A7:00001234"
     assert server.status()["last_stop"]["stop_seq"] == 2      # observed once, not per call
-    assert server.registers(from_last_stop=True)["registers"]["EIP"] == "00001234"
+    assert server.registers(from_last_stop=True)["regs"]["EIP"] == "00001234"
 
 
 def test_the_queue_covers_interrupts_and_change_watches_and_says_what_it_could_not_apply(
@@ -5683,7 +5686,7 @@ def test_perform_checks_every_op_before_running_any(tmp_path: Path) -> None:
     out = server.perform(steps=[{"op": "send_keys", "keys": ["a"]}, {"op": "close"},
                                 {"op": "status"}])
     assert out["status"] == "INVALID" and out["failed_at"] == 1, out
-    assert out["completed"] == 0 and out["ran"] == [], out
+    assert out["steps_completed"] == 0 and out["ran"] == [], out
     assert fake.keys_sent == [] if hasattr(fake, "keys_sent") else True
 
 
@@ -5707,7 +5710,7 @@ def test_send_keys_names_a_stop_that_landed_during_the_wait_not_still_running(
     assert "next resume" in got["message"] and "still running" not in got["message"], got["message"]
     assert "guest's log's to say" in got["message"], got["message"]   # never "the key sits in..."
     assert got["verify"]["waited_s"] == 0.4 and got["verify"]["lines_on_disk"] == 0, got["verify"]
-    assert got["last_stop"]["at"] == "00A7:00000000", got["last_stop"]
+    assert got["last_stop"]["pc"] == "00A7:00000000", got["last_stop"]
     assert fake.survey_calls == 1, "the stop is surveyed ONCE, by this reply"
     # THE NEXT KEY IS REFUSED AS STOPPED, in the same words: the two replies agree.
     nxt = cast(dict[str, Any], server.send_keys(keys=["a"]))
@@ -5748,7 +5751,7 @@ def test_a_stop_whose_survey_refused_is_not_named_with_the_previous_stops_addres
     confident wrong answer of the right shape. The reply says the position could not be read
     yet, and carries no `last_stop`, rather than the stale one."""
     fake = _names(tmp_path, watched=False, input_port=5555)
-    assert cast(dict[str, Any], server.status())["last_stop"]["at"] == "00A7:00000000"
+    assert cast(dict[str, Any], server.status())["last_stop"]["pc"] == "00A7:00000000"
     fake.running = True
     fake.input_effect = None
     fake.stops_during_wait = True
@@ -5774,7 +5777,7 @@ def test_drive_names_a_stop_that_landed_during_its_verify(tmp_path: Path) -> Non
     assert got["verify"]["stopped_during_wait"] is True, got["verify"]
     assert "STOPPED at the debugger during the wait at 00A7:00000000" in got["message"], got
     assert "not do what was expected" in got["message"], got["message"]
-    assert got["last_stop"]["at"] == "00A7:00000000", got["last_stop"]
+    assert got["last_stop"]["pc"] == "00A7:00000000", got["last_stop"]
 
 
 # ------------------------------------------------------- the progress line on a bounded wait
@@ -5851,7 +5854,7 @@ def test_a_step_carrying_ctx_is_refused_before_it_runs(tmp_path: Path) -> None:
     _names(tmp_path)
     out = server.perform(steps=[{"op": "status"}, {"op": "resume", "ctx": "bogus"}])
     assert out["status"] == "INVALID" and out["failed_at"] == 1, out
-    assert "ctx" in out["message"] and out["completed"] == 0, "seen up front: nothing ran"
+    assert "ctx" in out["message"] and out["steps_completed"] == 0, "seen up front: nothing ran"
 
 
 def test_the_verify_of_drive_forwards_the_progress_to_the_wait() -> None:
@@ -6017,10 +6020,10 @@ def test_perform_checks_every_steps_arguments_before_any_step_runs(tmp_path: Pat
     fake.halted = False
     out = server.perform(steps=[{"op": "resume"}, {"op": "status", "bogus": 1}], wait=1.0)
     assert out["status"] == "INVALID" and "bad arguments" in out["message"], out
-    assert out["completed"] == 0 and out["ran"] == [] and out["failed_at"] == 1
+    assert out["steps_completed"] == 0 and out["ran"] == [] and out["failed_at"] == 1
     assert fake.stop_count == 0, "the resume never went out"
     out = server.perform(steps=[{"op": "resume"}, {"op": "status", "ctx": 1}], wait=1.0)
-    assert out["status"] == "INVALID" and "`ctx`" in out["message"] and out["completed"] == 0
+    assert out["status"] == "INVALID" and "`ctx`" in out["message"] and out["steps_completed"] == 0
 
 
 def test_two_pending_declarations_on_one_address_arm_one_row_at_the_stop(tmp_path: Path) -> None:
@@ -6109,12 +6112,12 @@ def test_capture_frame_replies_with_the_source_it_read_and_the_frame_asked(
     default (the largest) was taken."""
     install()
     got = server.capture_frame(at=3, dest=str(tmp_path / "f.png"))
-    assert got["at"] == 3 and got["source"] == "/caps/run_001.avi", got
+    assert got["frame"] == 3 and got["capture_path"] == "/caps/run_001.avi", got
     assert "at_frame" not in got
     own = tmp_path / "run_000.avi"
     own.write_bytes(b"RIFF")
     named = server.capture_frame(at=3, dest=str(tmp_path / "g.png"), source=str(own))
-    assert named["source"] == str(own)
+    assert named["capture_path"] == str(own)
 
 
 def test_close_says_how_the_session_ended() -> None:
@@ -6155,8 +6158,8 @@ def test_write_puts_bytes_at_a_name_or_an_address_and_reads_them_back(tmp_path: 
     name are refused with nothing sent."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("var", 0x200, kind="D")])
     got = cast(dict[str, Any], server.write(ref="var", data_hex="deadbeef"))
-    assert got["status"] == "ok" and got["written"] == 4 and got["verified"] is True, got
-    assert got["readback"] == "deadbeef" and got["segment"] == 0xAF and got["offset"] == 0x200
+    assert got["status"] == "ok" and got["bytes_written"] == 4 and got["verified"] is True, got
+    assert got["readback"] == "deadbeef" and got["seg_off"] == "00AF:00000200"
     assert got["summary"] == "write var: 4 bytes, verified True"
     assert fake.mem[(0xAF, 0x200)] == b"\xde\xad\xbe\xef"
     raw = cast(dict[str, Any], server.write(ref="0040:0100", data_hex="12"))
@@ -6258,7 +6261,7 @@ def test_stop_brings_a_running_guest_back_headless_or_windowed(tmp_path: Path,
     assert "how" not in out and "running" not in out, out
     assert "focus" not in out, "nothing is clicked, so there is no focus to report"
     assert fake.break_ins == 1 and fake.running is False
-    assert "registers" in out and out["stopped_at"] == "00A7:00000000"
+    assert "regs" in out and out["pc"] == "00A7:00000000"
     assert out["summary"] == "stop: break, at 00A7:00000000 after 0.12s"
     again = cast(dict[str, Any], server.stop())
     assert again["interrupted"] is False and again["last_stop"]["stop_seq"] >= 1
@@ -6304,7 +6307,7 @@ def test_a_bad_value_in_a_later_step_runs_nothing_and_every_refusal_is_listed(
         {"op": "send_keys", "keys": ["not_a_real_key_xyz"]},
         {"op": "log", "pattern": "(", "channel": "guest"}], wait=0.5))
     assert out["status"] == "INVALID" and out["code"] == "bad_argument", out
-    assert out["ran"] == [] and out["completed"] == 0 and out["failed_at"] == 1, out
+    assert out["ran"] == [] and out["steps_completed"] == 0 and out["failed_at"] == 1, out
     assert fake.commands_sent == [], "a key was posted before the batch was checked"
     refused = cast(list[dict[str, Any]], out["errors"])
     assert [e["step"] for e in refused] == [1, 2], refused
@@ -6480,7 +6483,7 @@ def test_resume_with_a_bound_comes_back_with_the_stop_when_the_prompt_lands(
     monkeypatch.setattr(fake, "alive", lambda: True)
     monkeypatch.setattr(fake, "_mark_stopped", lambda: None, raising=False)
     out = cast(dict[str, Any], server.resume(seconds=2.0))
-    assert out["status"] == "ok" and out["verdict"] == "OTHER_STOP" and out["stopped_at"], out
+    assert out["status"] == "ok" and out["verdict"] == "OTHER_STOP" and "pc" in out, out
     # A PROMPT SEEN WITH THE MACHINE NOT AT REST is no stop: the wait listens on to its bound.
     fake.where_raises = True
     out = cast(dict[str, Any], server.resume(seconds=0.5))
@@ -6533,15 +6536,15 @@ def test_scan_start_through_the_tool_reports_the_opened_instance() -> None:
     install(screen=_tail("memfind_opened_0400"))
     got = server.scan_start(ref="0000:00000400", length=256)
     assert got["status"] == "ok", got
-    assert got["candidates"] == 256 and got["width"] == "byte" and got["linear"] == "0x00000400"
-    assert got["summary"] == "scan_start 0000:00000400: 256 byte candidates"
+    assert got["hits_total"] == 256 and got["cell_bytes"] == 1 and got["addr"] == "0x00000400"
+    assert got["summary"] == "scan_start 0000:00000400: 256 cells of 1 byte"
 
 
 def test_scan_filter_through_the_tool_reports_a_finished_scan_and_says_so() -> None:
     install(screen=_tail("mems_finished"))
     got = server.scan_filter(operator="!", value=0)
     assert got["status"] == "ok", got
-    assert got["survivors"] == 0 and got["closed"] is True and got["hits"] == []
+    assert got["hits_total"] == 0 and got["closed"] is True and got["hits"] == []
     assert got["summary"] == "scan_filter ! 0: 0 survivors, scan closed"
 
 
@@ -6598,7 +6601,7 @@ def test_perform_checks_a_symbols_find_step_before_any_step_runs(tmp_path: Path)
     fake.running = False
     fake.halted = True
     out = server.perform(steps=[{"op": "status"}, {"op": "symbols_find", "name": "_m", "limit": 5}])
-    assert out["status"] == "ok" and out["completed"] == 2, out
+    assert out["status"] == "ok" and out["steps_completed"] == 2, out
 
 
 @pytest.mark.parametrize("bad", [
@@ -7031,19 +7034,19 @@ def test_perform_with_summaries_cuts_every_step_but_the_last_and_counts_the_stop
     assert {"summary", "status", "stop_seq", "attribution"} <= set(first["reply"]), first
     assert set(first["reply"]) <= {"summary", "status", "stop_seq", "attribution",
                                    "stopped_on_its_own"}, first
-    assert "registers" not in second["reply"] and "registers" in last["reply"], out["ran"]
+    assert "regs" not in second["reply"] and "regs" in last["reply"], out["ran"]
     assert out["summary"] == "perform: 3 of 3 steps", out["summary"]
     rows = Path(out["ran_path"]).read_text(encoding="ascii").splitlines()
     replies = Path(out["replies_path"]).read_text(encoding="ascii").splitlines()
     assert len(rows) == len(replies) == 3, (rows, replies)
-    assert json.loads(replies[0])["reply"]["registers"], replies[0]
+    assert json.loads(replies[0])["reply"]["regs"], replies[0]
     stops = out["stops"]
     assert stops["stop_seq_last"] == dstate.STATE.last_stop["seq"], stops
     assert stops["unaccounted"] == 0 and stops["surveyed"] >= 2, stops
     assert stops["surveyed"] == stops["stop_seq_last"] - stops["stop_seq_first"] + 1, stops
     assert stops["by_how"] == {"unattributed": stops["surveyed"]}, stops
     plain = cast(dict[str, Any], server.perform(steps=[{"op": "registers"}]))
-    assert "steps_total" not in plain and "registers" in plain["ran"][0]["reply"], plain
+    assert "steps_total" not in plain and "regs" in plain["ran"][0]["reply"], plain
 
 
 def test_perform_with_summaries_shows_the_first_rows_and_says_it_cut(tmp_path: Path) -> None:
@@ -7285,12 +7288,12 @@ def test_a_wait_step_that_ran_out_ends_the_list_and_a_run_that_did_goes_on(
         {"op": "log_wait", "pattern": "NEVER", "channel": "guest", "seconds": 1},
         {"op": "status"}]))
     assert out["status"] == "ok" and out["verdict"] == "TIMEOUT", out
-    assert out["completed"] == 1 and "step 0 ('log_wait')" in out["note"], out
+    assert out["steps_completed"] == 1 and "step 0 ('log_wait')" in out["note"], out
     fake.running = False
     fake.runto_running, fake.control_hits = True, 1
     ran = cast(dict[str, Any], server.perform(steps=[
         {"op": "run_to", "ref": "0000:0010", "control": "0000:0020"}, {"op": "status"}]))
-    assert ran["status"] == "ok" and ran["completed"] == 2 and "verdict" not in ran, ran
+    assert ran["status"] == "ok" and ran["steps_completed"] == 2 and "verdict" not in ran, ran
 
 
 def test_a_list_that_waited_mid_way_and_ends_running_carries_no_target(
@@ -7363,3 +7366,26 @@ def test_drive_says_its_act_ended_after_its_last_step_when_the_emulator_went(
     assert got.get("code") == "step_failed", {k: got[k] for k in ("summary", "status")}
     assert "GONE" in got["message"] and "available" not in got["message"], got
     assert "after its last step" in got["message"], got["message"]
+
+
+def test_a_step_whose_survey_came_back_cut_is_not_said_to_be_running(tmp_path: Path) -> None:
+    """A step that stopped but whose stop survey came back cut has no `pc` to name: its summary
+    says the position was not read, never that a parked machine runs."""
+    fake = _names(tmp_path)
+    fake.registers_raises = True
+    got = cast(dict[str, Any], server.step())
+    assert got["session"]["running"] is False and "enrichment" in got, got
+    assert "running" not in got["summary"], got["summary"]
+
+
+def test_a_stop_whose_survey_came_back_cut_names_no_mode_off_the_stop_before(
+        tmp_path: Path) -> None:
+    """The PAGE/NOPG mark is read off a stop's own survey: when that survey comes back cut, the
+    mark the session holds is the stop before's, and a mode built on it would be a guess."""
+    fake = _names(tmp_path, mode="Pr32")
+    fake.paging = True  # type: ignore[attr-defined]   # the previous stop's mark
+    fake.halted = True
+    fake.registers_raises = True
+    got = cast(dict[str, Any], server.resume())
+    assert got["pc"] == f"{fake.cs}:{fake.eip}", got
+    assert got["cpu_mode"]["available"] is False, got

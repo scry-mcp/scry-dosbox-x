@@ -231,4 +231,4 @@ def test_an_export_keeps_the_map_an_identification_was_made_against_and_replays_
     assert [d["op"] for d in out["dropped"]] == ["map_save"]
     dstate.STATE.maps = screen_map.Maps()
     played = _ok(server.perform(steps=steps))
-    assert played["completed"] == 3, played
+    assert played["steps_completed"] == 3, played

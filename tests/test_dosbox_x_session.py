@@ -1151,13 +1151,13 @@ def test_a_finished_capture_counts_its_frames_from_its_header() -> None:
     would read 26."""
     data = (AVI / "dosbox-x-zmbv-12.avi").read_bytes()
     assert data.count(b"00dc") == 26
-    assert ds.avi_facts(data) == {"bytes": len(data), "riff_avi": True, "frames": 12,
+    assert ds.avi_facts(data) == {"bytes": len(data), "riff_avi": True, "avi_frames": 12,
                                   "complete": True}
 
 
 def test_a_capture_still_recording_counts_its_frame_chunks() -> None:
     data = (AVI / "dosbox-x-zmbv-running.avi").read_bytes()
-    assert ds.avi_facts(data) == {"bytes": len(data), "riff_avi": True, "frames": 9,
+    assert ds.avi_facts(data) == {"bytes": len(data), "riff_avi": True, "avi_frames": 9,
                                   "complete": False}
 
 
@@ -1166,7 +1166,7 @@ def test_a_capture_is_judged_by_what_is_in_it_and_not_by_its_size() -> None:
     files of a plausible size."""
     facts = ds.avi_facts(fake_avi(frames=5428))
     assert facts["riff_avi"] is True
-    assert facts["frames"] == 5428
+    assert facts["avi_frames"] == 5428
     assert facts["complete"] is True
 
 
@@ -1175,14 +1175,14 @@ def test_a_capture_still_in_progress_is_marked_incomplete_and_not_corrupt() -> N
     not damage. A still cannot be extracted from one, which is why the difference has
     to reach the caller."""
     facts = ds.avi_facts(fake_avi(frames=40, complete=False))
-    assert facts["complete"] is False and facts["frames"] == 40
+    assert facts["complete"] is False and facts["avi_frames"] == 40
 
 
 def test_something_that_is_not_a_capture_is_not_called_one() -> None:
     """The green's red: `riff_avi` has to be capable of being false."""
     facts = ds.avi_facts(b"this is not a video at all")
     assert facts["riff_avi"] is False
-    assert facts["frames"] == 0
+    assert facts["avi_frames"] == 0
 
 
 def stopped(**over: object) -> Any:
@@ -1231,7 +1231,7 @@ def test_the_captures_come_back_largest_last(tmp_path: Path) -> None:
     (tmp_path / "a_001.avi").write_bytes(fake_avi(frames=5428))
     got = ds.Session.captures(
         stopped(captures_dir=tmp_path, capture_video=True))
-    assert [c["frames"] for c in got] == [40, 5428]
+    assert [c["avi_frames"] for c in got] == [40, 5428]
 
 
 def test_a_capture_that_has_not_grown_is_not_read_again(tmp_path: Path,
@@ -1250,10 +1250,10 @@ def test_a_capture_that_has_not_grown_is_not_read_again(tmp_path: Path,
     f = tmp_path / "a_000.avi"
     f.write_bytes(fake_avi(frames=40))
     fake = stopped(captures_dir=tmp_path, capture_video=True)
-    assert ds.Session.captures(fake)[0]["frames"] == 40 and len(reads) == 1
-    assert ds.Session.captures(fake)[0]["frames"] == 40 and len(reads) == 1
+    assert ds.Session.captures(fake)[0]["avi_frames"] == 40 and len(reads) == 1
+    assert ds.Session.captures(fake)[0]["avi_frames"] == 40 and len(reads) == 1
     f.write_bytes(fake_avi(frames=41))
-    assert ds.Session.captures(fake)[0]["frames"] == 41 and len(reads) == 2
+    assert ds.Session.captures(fake)[0]["avi_frames"] == 41 and len(reads) == 2
 
 
 def test_the_capture_cache_keeps_one_entry_per_file(tmp_path: Path,
@@ -1273,8 +1273,8 @@ def test_the_capture_cache_keeps_one_entry_per_file(tmp_path: Path,
     small.write_bytes(fake_avi(frames=40))
     big.write_bytes(fake_avi(frames=99))
     fake = stopped(captures_dir=tmp_path, capture_video=True)
-    assert [c["frames"] for c in ds.Session.captures(fake)] == [40, 99] and len(reads) == 2
-    assert [c["frames"] for c in ds.Session.captures(fake)] == [40, 99] and len(reads) == 2
+    assert [c["avi_frames"] for c in ds.Session.captures(fake)] == [40, 99] and len(reads) == 2
+    assert [c["avi_frames"] for c in ds.Session.captures(fake)] == [40, 99] and len(reads) == 2
     same_size = fake_avi(frames=40)
     assert len(same_size) == small.stat().st_size
     small.write_bytes(same_size)
@@ -2328,7 +2328,7 @@ def test_write_memory_sends_short_sm_lines_and_reads_the_range_back() -> None:
     assert sent == ["SM 0040:0100 000 001 002 003 004 005 006 007",
                     "SM 0040:0108 008 009 00A 00B 00C 00D 00E 00F",
                     "SM 0040:0110 010 011 012 013"], sent
-    assert out == {"written": 20, "readback": bytes(range(20)).hex(), "verified": True}
+    assert out == {"bytes_written": 20, "readback": bytes(range(20)).hex(), "verified": True}
     assert s.altered is True
     memory["held"] = bytes(20)                       # ROM: the bytes did not change
     out = ds.Session.write_memory(s, 0x40, 0x100, bytes(range(20)))

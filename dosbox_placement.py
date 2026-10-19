@@ -280,7 +280,7 @@ def _resolve_pointer(decl: dec.Declaration, reg: str, session: ds.Session,
     except ds.Invalid as e:
         return {"state": "unarmable", "why": str(e)}
     value = int.from_bytes(raw, "little")
-    info: dict[str, Any] = {"at": f"{seg:04X}:{off:04X}", "length": pw,
+    info: dict[str, Any] = {"at": st.seg_off(seg, off), "length": pw,
                             "value": f"{value:04X}", "offset": offset}
     if pr.field is not None:
         info["field"] = pr.field
@@ -293,7 +293,7 @@ def _resolve_pointer(decl: dec.Declaration, reg: str, session: ds.Session,
         return {"state": "unarmable", "pointer": info, "why": (
             f"the pointer plus the offset, {target:#x}, is outside what an offset can be "
             f"in {mode} mode")}
-    info["target"] = f"{seg:04X}:{target:04X}"
+    info["target"] = st.seg_off(seg, target)
     return {"state": "armable", "seg": seg, "off": target, "marked": False, "pointer": info,
             "field_fmt": field_fmt}
 
@@ -352,7 +352,7 @@ def _placed(s: sym.Symbol) -> dict[str, Any]:
     # `STATE.base["base"]` here regardless would answer with the `-1` sentinel for every
     # symbol of a sectioned load -- a number, plausible, and wrong.
     return {"name": s.name, "kind": s.kind, "offset": s.offset, "section": s.section,
-            "linear": linear_of(s), "idle": s.idle}
+            "addr": st.flat(linear_of(s)), "idle": s.idle}
 
 
 def linear_of(s: sym.Symbol) -> int:
@@ -541,7 +541,7 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
                   excluded_pattern=plan.excluded_pattern,
                   excluded_unplaceable=plan.excluded_unplaceable,
                   unencodable=plan.unencodable[:8],
-                  unencodable_count=len(plan.unencodable),
+                  unencodable_total=len(plan.unencodable),
                   truncated_names=plan.truncated_names,
                   disambiguated=plan.disambiguated,
                   # `renamed` is the one a caller actually wants and `truncated_names`
@@ -810,6 +810,6 @@ def symbol_span() -> tuple[int, int] | None:
     key = (STATE.table_generation, tuple(sorted(STATE.base.items())),
            tuple(sorted(STATE.section_bases.items())))
     if _span is None or _span[0] != key:
-        placed = [int(_placed(s)["linear"]) for s in STATE.table]
+        placed = [linear_of(s) for s in STATE.table]
         _span = (key, (min(placed), max(placed)))
     return _span[1]

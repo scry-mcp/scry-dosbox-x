@@ -200,7 +200,7 @@ def _row(decl: dec.Declaration, place: dict[str, Any]) -> dict[str, Any]:
         row["orphan"] = True
     row["text"] = decl.text
     if "linear" in place:
-        row["linear"] = f"{place['linear']:08X}"
+        row["addr"] = st.flat(place["linear"])
     row["state"] = place["state"]
     if "why" in place:
         row["why"] = place["why"]
@@ -353,8 +353,14 @@ def comment_add(session: ds.Session, ref: str, text: str) -> dict[str, Any]:
         place = places.of(new)
         _apply(store, replaces=[(old, new)])
         replaced.append(_row(old, old_place))
-    return st.reply(comment=_row(new, place), replaced_comments=replaced, persistent=True,
-                    path=str(store.path), **_note(place))
+    return st.reply(comment=_row(new, place), replaced_comments=replaced,
+                    **_store_fields(store), **_note(place))
+
+
+def _store_fields(store: dec.DeclarationStore) -> dict[str, Any]:
+    """The declaration store a comment call read or changed, in one block: `path` alone names a
+    file a tool wrote, so the store's own file sits one level down."""
+    return {"declarations": {"persistent": True, "path": str(store.path)}}
 
 
 def comment_list(session: ds.Session) -> dict[str, Any]:
@@ -363,10 +369,9 @@ def comment_list(session: ds.Session) -> dict[str, Any]:
     places = _Places(session)
     rows = [_row(d, p) for d, p in _placed_comments(places, store)]
     shown, truncated = _shown(rows)
-    running: dict[str, Any] = ({} if places.stopped else
-                               {"running": True, "last_stop": STATE.dated()})
+    running: dict[str, Any] = {} if places.stopped else {"last_stop": STATE.dated()}
     return st.reply(comments=shown, comments_total=len(rows), truncated=truncated,
-                    persistent=True, path=str(store.path), **running)
+                    **_store_fields(store), **running)
 
 
 def comment_delete(session: ds.Session, ref: str) -> dict[str, Any]:
@@ -385,8 +390,7 @@ def comment_delete(session: ds.Session, ref: str) -> dict[str, Any]:
             f"{refs[:st.ROWS_SHOWN] if refs else 'none'}")
     old, old_place = held
     _apply(store, removes=[old])
-    return st.reply(deleted=_row(old, old_place), persistent=True, path=str(store.path),
-                    **_note(old_place))
+    return st.reply(deleted=_row(old, old_place), **_store_fields(store), **_note(old_place))
 
 
 # ------------------------------------------------------------------------------- the file
@@ -473,7 +477,7 @@ def comment_save(session: ds.Session, dest: str) -> dict[str, Any]:
     shown, truncated = _shown(dropped)
     note = ({"note": f"{prose.counted(len(dropped), 'comment')} the replaced file held and this "
                      "store does not are gone from it: `dropped_comments`"} if dropped else {})
-    return st.reply(dest=str(path), comments_total=len(held), dropped_comments=shown,
+    return st.reply(path=str(path), comments_total=len(held), dropped_comments=shown,
                     dropped_total=len(dropped), truncated=truncated, **note)
 
 
@@ -544,8 +548,8 @@ def comment_load(session: ds.Session, source: str) -> dict[str, Any]:
                      "place once, so `comment_save` refuses them until `comment_delete` "
                      "leaves one at each")
     note = {"note": "; ".join(notes)} if notes else {}
-    return st.reply(source=str(path), parsed=len(rows), added_total=len(adds),
+    return st.reply(path=str(path), parsed=len(rows), added=len(adds),
                     replaced_comments=shown, replaced_total=len(replaced), truncated=truncated,
-                    unchanged_total=unchanged, comments_total=len(store.comments()),
-                    persistent=True, path=str(store.path), **note)
+                    unchanged=unchanged, comments_total=len(store.comments()),
+                    **_store_fields(store), **note)
 

@@ -25,6 +25,7 @@ on the logs (`dosbox_log_reader`), the video and its stills (`dosbox_frames`), t
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import os
 import pty
 import re
@@ -433,7 +434,7 @@ def avi_facts(data: bytes) -> dict[str, object]:
     return {
         "bytes": len(data),
         "riff_avi": data[:4] == b"RIFF" and data[8:12] == b"AVI ",
-        "frames": avi.count(data),       # `scry_core.avi` says which count and why
+        "avi_frames": avi.count(data),   # `scry_core.avi` says which count and why
         # `complete` is INFORMATION, not a usability verdict: MEASURED, ffmpeg
         # extracts a frame from an unindexed capture perfectly well. What it says is
         # that the recording was FINALISED -- which happens when the recorded program
@@ -1355,7 +1356,7 @@ class Session:
             values = " ".join(f"0{b:02X}" for b in chunk)
             self.command(f"SM {seg:04X}:{off + i:04X} {values}")
         back = self.read_bytes(seg, off, len(data), mode=mode)
-        return {"written": len(data), "readback": back.hex(), "verified": back == data}
+        return {"bytes_written": len(data), "readback": back.hex(), "verified": back == data}
 
     def set_register(self, name: str, value: int) -> dict[str, object]:
         """Write a register, READ IT BACK, and mark the session altered for good.
@@ -1384,7 +1385,7 @@ class Session:
                           f"write could not be read back. The session is marked altered "
                           f"anyway, because the attempt reached the machine")
         held = int(got, 16) & ((1 << bits) - 1)
-        return {"registers": regs, "readback": f"{held:0{bits // 4}X}", "verified": held == value}
+        return {"regs": regs, "readback": f"{held:0{bits // 4}X}", "verified": held == value}
 
     def breakpoint_interrupt(self, number: int, ah: int | None = None) -> str:
         """Break on an interrupt. The one way control comes BACK on this platform.
@@ -2531,7 +2532,9 @@ class Session:
             time.sleep(0.1)
         if target is not None:
             path = dcollect.collect(path, target, "screenshot")
-        return {"route": "guest", "path": str(path), "bytes": path.stat().st_size,
+        data = path.read_bytes()
+        return {"route": "guest", "path": str(path), "bytes": len(data),
+                "sha256": hashlib.sha256(data).hexdigest(),
                 "waited_s": round(time.monotonic() - began, 2)}
 
     def state_list(self) -> dict[str, object]:
@@ -2714,8 +2717,8 @@ class Session:
             "conf_digest": self.conf_digest,
             "conf_changed_on_disk": changed,
             "watched": self.launch.watched,
-            "seconds_bound": self.launch.seconds,
-            "seconds_elapsed": round(time.monotonic() - self.started_at, 1),
+            "bound_s": self.launch.seconds,
+            "elapsed_s": round(time.monotonic() - self.started_at, 1),
             # THE EMULATOR'S TERMINAL is what overflows -- ncurses repaints, SDL banners,
             # and the log when no `logfile` is set. The GUEST's own instrumentation is the
             # 0xE9 stream, which `e9()` reads off `launch.logfile` on disk and which this
@@ -2727,7 +2730,8 @@ class Session:
             # forever while `alive` still says true, so the session becomes a broken
             # instrument reporting itself as a quiet machine.
             "drain_alive": self._drainer is not None and self._drainer.is_alive(),
-            "drain_ended": self.drain_ended,
+            # WHY THE READER STOPPED, present only once it has: an empty reason is no datum.
+            **({"drain_ended": self.drain_ended} if self.drain_ended else {}),
             # WHETHER THIS SESSION RECORDS, said up front: without it the only way to learn
             # was to call `captures` and read the refusal.
             "captures": (str(self.launch.captures_dir) if self.launch.captures_dir is not None

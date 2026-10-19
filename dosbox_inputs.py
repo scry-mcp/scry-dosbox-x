@@ -514,7 +514,7 @@ def _pointer(report: Report) -> dict[str, Any]:
     return {"screen": screen, "mouse": {"x": report.x, "y": report.y,
                                         "max_x": report.max_x, "max_y": report.max_y},
             "buttons": [name for name, bit in BUTTONS.items() if report.buttons >> bit & 1],
-            "mode": f"{report.mode:#04x}"}
+            "vga_mode": f"{report.mode:#04x}"}
 
 
 def send_mouse_at(session: ds.Session, aimed: dict[str, Any], button: str | None, action: str,

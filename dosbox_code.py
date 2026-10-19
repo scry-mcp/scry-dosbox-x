@@ -29,6 +29,7 @@ import dosbox_dump as dumping
 import dosbox_machine as machine
 import dosbox_placement as placement
 import dosbox_session as ds
+import dosbox_state as st
 import dosbox_symbols as sym
 from dosbox_state import STATE
 
@@ -231,19 +232,19 @@ def resolve(segs: Segments, seg: int, insns: list[disasm.Insn]) -> list[dict[str
     for i, insn in enumerate(insns):
         for t in insn.targets:
             tseg = seg if t.far_segment is None else t.far_segment
-            rows.append(_placed(segs, span, {"line": i, "operand": t.operand,
-                                              "offset": f"{t.offset:#x}", "kind": "target",
-                                              "segment": f"{tseg:04X}"}, tseg, t.offset))
+            rows.append(_placed(segs, span, {"line": i, "operand": t.operand, "kind": "target",
+                                              "seg_off": st.seg_off(tseg, t.offset)},
+                                tseg, t.offset))
         for m in insn.memory:
             held = segs.registers.get(m.segment_register)
-            row = {"line": i, "operand": m.operand, "offset": f"{m.offset:#x}",
-                   "kind": "memory", "register": m.segment_register}
+            row = {"line": i, "operand": m.operand, "kind": "memory",
+                   "register": m.segment_register}
             if held is None:
                 gone = f"the register pane showed no {m.segment_register}, so the operand has " \
                        f"no segment"
-                rows.append(_named({**row, "segment": unavailable(gone)}, None, span, gone))
+                rows.append(_named({**row, "seg_off": unavailable(gone)}, None, span, gone))
                 continue
-            row["segment"] = held
+            row["seg_off"] = st.seg_off(int(held, 16), m.offset)
             rows.append(_placed(segs, span, row, int(held, 16), m.offset))
     return rows
 
@@ -256,17 +257,17 @@ OUTSIDE_SPAN_WHY = "outside the loaded table's span"
 
 def _named(row: dict[str, Any], linear: int | None, span: tuple[int, int] | None,
            unplaced: str = "its segment's base could not be read") -> dict[str, Any]:
-    """A row's `linear`, `symbol` and `delta`, each unavailable with its reason where it does
-    not apply: no linear address when `unplaced` says why, no symbol with no table loaded or
-    outside its span."""
+    """A row's `addr` (its linear address), `symbol` and `delta`, each unavailable with its
+    reason where it does not apply: no linear address when `unplaced` says why, no symbol with
+    no table loaded or outside its span."""
     if linear is None:
         gone = unavailable(unplaced)
-        row.update(linear=gone, symbol=gone, delta=gone)
+        row.update(addr=gone, symbol=gone, delta=gone)
         return row
     near = (placement.nearest_symbol(linear)
             if span is not None and span[0] <= linear <= span[1] else None)
     why = unavailable(NO_TABLE_WHY if span is None else OUTSIDE_SPAN_WHY)
-    row.update(linear=f"{linear:08X}", symbol=near["name"] if near else why,
+    row.update(addr=st.flat(linear), symbol=near["name"] if near else why,
                delta=near["delta"] if near else why)
     return row
 
@@ -287,7 +288,7 @@ def disassemble(session: ds.Session, ref: str, length: int) -> dict[str, Any]:
     bits, bits_from = segs.bits(seg)
     insns = disasm.decode(read_code(segs, seg, off, length, bits), off, bits, length)
     reply: dict[str, Any] = {
-        "segment": seg, "offset": off, "length": length, "code_bits": bits,
+        "seg_off": st.seg_off(seg, off), "length": length, "code_bits": bits,
         "code_bits_from": bits_from, "lines": [i.line(seg) for i in insns],
         "flow": [i.flow for i in insns], "flow_source": disasm.SOURCE}
     if STATE.table:
@@ -329,8 +330,9 @@ def stop_instruction(session: ds.Session, where: dict[str, str], registers: dict
         if not first or first[0].flow == disasm.UNKNOWN:
             return _no_instruction(at, raw)
         insn = first[0]
-    picture: dict[str, Any] = {"at": at, "bytes": insn.data.hex().upper(), "text": insn.text,
-                               "flow": insn.flow, "code_bits": bits, "bytes_from": source}
+    picture: dict[str, Any] = {"seg_off": at, "bytes": insn.data.hex().upper(),
+                               "text": insn.text, "flow": insn.flow, "code_bits": bits,
+                               "bytes_from": source}
     return {"instruction": {**picture, **_stop_symbol(segs, cs, eip)}}
 
 
@@ -438,7 +440,7 @@ class _Walk:
         call that ends a routine returns to the next one's first byte), `delta` the return's
         distance from that routine."""
         out: dict[str, Any] = {
-            "addr": f"{seg:04X}:{off:08X}", "via": via,
+            "seg_off": st.seg_off(seg, off), "via": via,
             "call": unavailable("the stop itself: no call leads to it") if call is None
             else call.text,
             "bp": unavailable("no frame was read beside it") if frame is None
@@ -451,7 +453,7 @@ class _Walk:
         if call is None:
             return _named(out, linear, self.span)
         site = _named({}, (base + call.offset) & 0xFFFFFFFF, self.span)
-        out.update(linear=f"{linear:08X}", symbol=site["symbol"],
+        out.update(addr=st.flat(linear), symbol=site["symbol"],
                    delta=site["delta"] if isinstance(site["symbol"], dict) else
                    site["delta"] + (off - call.offset))
         return out
@@ -498,8 +500,8 @@ class _Walk:
         return None
 
     def outside(self, row: dict[str, Any]) -> bool:
-        return self.span is not None and isinstance(row["linear"], str) \
-            and not self.span[0] <= int(row["linear"], 16) <= self.span[1]
+        return self.span is not None and isinstance(row["addr"], str) \
+            and not self.span[0] <= int(row["addr"], 16) <= self.span[1]
 
     def chain(self, calls: list[dict[str, Any]]) -> str:
         """The rows of the frame chain from BP, appended to `calls`; why the walk ended."""

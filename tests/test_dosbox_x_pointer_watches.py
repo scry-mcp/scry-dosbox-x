@@ -57,16 +57,16 @@ def test_a_pointer_watch_is_resolved_when_armed_and_the_reply_says_through_what(
     _pointing(tmp_path)
     out = server.watch_add(ref="[_g_engine]+0x4", mode="show", length=2, fmt="i16")
     assert out["status"] == "ok" and out["by"] == "pointer" and out["state"] == "resolved", out
-    assert out["pointer"] == {"at": "00AF:1000", "length": 4, "value": "200000", "offset": 4,
-                              "target": f"00AF:{HEAP + 4:04X}"}
+    assert out["pointer"] == {"at": "00AF:00001000", "length": 4, "value": "200000", "offset": 4,
+                              "target": f"00AF:{HEAP + 4:08X}"}
     out = server.watch_add(ref="_g_engine->sync_delta", mode="show")
     assert out["status"] == "ok", out
     assert out["fmt"] == "i16" and out["length"] == 2 and out["pointer"]["field"] == "sync_delta"
     listed = {w["ref"]: w for w in server.watch_list()["watches"]}
-    assert listed["_g_engine->sync_delta"]["pointer"]["target"] == f"00AF:{HEAP + 4:04X}"
+    assert listed["_g_engine->sync_delta"]["pointer"]["target"] == f"00AF:{HEAP + 4:08X}"
     # An explicit `SEG:OFF` as the base, and a real-mode machine reads a two-byte pointer.
     out = server.watch_add(ref="[00AF:1000]", mode="show", length=4)
-    assert out["status"] == "ok" and out["pointer"]["target"] == f"00AF:{HEAP:04X}", out
+    assert out["status"] == "ok" and out["pointer"]["target"] == f"00AF:{HEAP:08X}", out
 
 
 def test_a_pointer_watch_is_re_resolved_at_every_stop_and_a_change_watch_follows_it(
@@ -79,7 +79,7 @@ def test_a_pointer_watch_is_re_resolved_at_every_stop_and_a_change_watch_follows
     assert w["state"] == "armed" and "moved" not in w
     fake.mem[(DS, ENGINE)] = HEAP2.to_bytes(4, "little")       # the pointer moved
     (w,) = arming.evaluate_watches(fake)  # type: ignore[arg-type]
-    assert w["moved"] == {"from": f"00AF:{HEAP + 4:04X}", "to": f"00AF:{HEAP2 + 4:04X}"}, w
+    assert w["moved"] == {"from": f"00AF:{HEAP + 4:08X}", "to": f"00AF:{HEAP2 + 4:08X}"}, w
     assert w["pointer"]["value"] == "300000" and w["state"] == "armed"
     assert [r["entry"] for r in fake.rows] == [f"BPPM 00AF:{HEAP2 + 4:08X} (00)"], fake.rows
     rows = dstate.STATE.armed[("watch", "_g_engine->sync_delta")]
@@ -114,7 +114,7 @@ def test_a_null_pointer_is_a_state_at_the_stop_never_a_watch_at_zero(tmp_path: P
     assert w["state"] == "null_pointer"
     fake.mem[(DS, ENGINE)] = HEAP.to_bytes(4, "little")
     (w,) = arming.evaluate_watches(fake)  # type: ignore[arg-type]
-    assert w["state"] == "armed" and w["moved"] == {"from": "null", "to": f"00AF:{HEAP + 4:04X}"}, w
+    assert w["state"] == "armed" and w["moved"] == {"from": "null", "to": f"00AF:{HEAP + 4:08X}"}, w
     assert fake.rows[-1]["entry"].startswith(f"BPPM 00AF:{HEAP + 4:08X}")
 
 
@@ -150,7 +150,7 @@ def test_a_move_the_debugger_refuses_keeps_the_record_and_says_why(tmp_path: Pat
 
     setattr(fake, "watch", refuse)  # noqa: B010
     (w,) = arming.evaluate_watches(fake)  # type: ignore[arg-type]
-    assert w["moved"]["why"] and w["moved"]["to"] == f"00AF:{HEAP2 + 4:04X}", w
+    assert w["moved"]["why"] and w["moved"]["to"] == f"00AF:{HEAP2 + 4:08X}", w
     rows = dstate.STATE.armed[("watch", "_g_engine->sync_delta")]
     assert [(r["seg"], r["off"]) for r in rows] == [(DS, HEAP + 4)], "the record stayed"
     # AND THE OLD ROW IS STILL HELD BY THE DEBUGGER, and the state is judged there (the

@@ -240,7 +240,7 @@ def _declared() -> dict[str, list[str]]:
 RECORDER = recording.Recorder("dosbox-x", "dosbox_x_server.py", sequence.RECORD_MAX, _machine,
                               lambda: STATE.session is not None and STATE.session.alive(),
                               declarations=_declared, lists=dict(_LISTS.values()),
-                              stop_fields=("registers",),
+                              stop_fields=("regs",),
                               outside=checks.NOT_STEPS - checks.SEQUENCES - {"start"},
                               sequences=checks.SEQUENCES, start_tool="start",
                               states=("state_save", "state_load", "name"), plan="plan")

@@ -401,7 +401,7 @@ def steps_whole(name: str, steps: object) -> None:
     if refused:
         first = refused[0]
         raise ds.Invalid("bad_argument", sequence.refused_text(refused),
-            ran=[], completed=0, failed_at=first["step"], failed=first, errors=refused)
+            ran=[], steps_completed=0, failed_at=first["step"], failed=first, errors=refused)
 
 
 def _perform(steps: list[dict[str, Any]], wait: float = 30.0, summaries: bool = False,

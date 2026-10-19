@@ -34,6 +34,7 @@ from scry_core import reply_contract as contract
 import dosbox_console as dcons
 import dosbox_dump as dumping
 import dosbox_session as ds
+import dosbox_state as st
 from dosbox_state import STATE
 
 # The ceiling on the rows a reply lists: `find` keeps its highest 400 hits (the end of the
@@ -108,8 +109,8 @@ def find(session: ds.Session, seg: int, off: int, length: int, pattern: bytes) -
         at = data.find(pattern, at + 1)
     # THE SPAN EXAMINED RIDES ON THE REPLY, so a zero says over which bytes it is a zero.
     # The only range source here is the caller's own, so `source` is always `ref+length`.
-    return {"segment": seg, "offset": off, "length": length,
-            "span": {"from": f"{seg:04X}:{off:08X}", "length": length, "source": "ref+length"},
+    return {"seg_off": st.seg_off(seg, off), "length": length,
+            "span": {"from": st.seg_off(seg, off), "length": length, "source": "ref+length"},
             "hits": [_spelled(seg, o, dumped.real_past_ffff) for o in hits[-HITS_MAX:]],
             "hits_total": len(hits), "truncated": len(hits) > HITS_MAX}
 
@@ -119,7 +120,7 @@ def _spelled(seg: int, off: int, real_past_ffff: bool) -> str:
     masks it to sixteen bits), so a hit there is spelled from its own paragraph."""
     if real_past_ffff and off >= dumping.WINDOW_BYTES:
         seg, off = dumping.real_address(dumping.real_linear(seg, off))
-    return f"{seg:04X}:{off:08X}"
+    return st.seg_off(seg, off)
 
 
 # THE OUTPUT PANE IS A SCROLLBACK, NOT AN ANSWER. Every `command` delta is a repaint of the
@@ -278,9 +279,8 @@ def scan_start(session: ds.Session, seg: int, off: int, length: int, width: str)
             f"{int(opened.group(4), 16):#x}")
     STATE.scan_iterations = 0           # a scan this server opened: no filter yet
     STATE.scan_cell_bytes = size
-    return {"segment": seg, "offset": off, "length": length, "width": width,
-            "cell_bytes": size, "linear": f"{int(opened.group(3), 16):#010x}",
-            "candidates": length // size}
+    return {"seg_off": st.seg_off(seg, off), "length": length, "cell_bytes": size,
+            "addr": st.flat(int(opened.group(3), 16)), "hits_total": length // size}
 
 
 def _listing(session: ds.Session, survivors: int) -> list[dict[str, Any]]:
@@ -296,9 +296,8 @@ def _listing(session: ds.Session, survivors: int) -> list[dict[str, Any]]:
         out = out[summaries[-1].end():]
     for _ in range(survivors // SCAN_PAGE_ROWS + 2):
         for s, o, lin, v in SCAN_ROW.findall(out):
-            rows[f"{int(s, 16):04X}:{int(o, 16):08X}"] = {
-                "address": f"{int(s, 16):04X}:{int(o, 16):08X}",
-                "linear": f"{int(lin, 16):#010x}", "value": int(v, 16)}
+            at = st.seg_off(int(s, 16), int(o, 16))
+            rows[at] = {"seg_off": at, "addr": st.flat(int(lin, 16)), "value": int(v, 16)}
         closings = list(SCAN_LISTED.finditer(out))
         last_row = max((m.end() for m in SCAN_ROW.finditer(out)), default=-1)
         if closings and closings[-1].end() > last_row:
@@ -356,7 +355,7 @@ def scan_filter(session: ds.Session, operator: str, value: int | None,
         held, STATE.scan_iterations = STATE.scan_iterations, None
         STATE.scan_cell_bytes = None
         closing: dict[str, Any] = {
-            "operator": operator, "value": value, "survivors": 0,
+            "operator": operator, "value": value,
             "iterations": contract.unavailable(
                 "the debugger's closing line carries no count, and this server holds none it "
                 "can stand behind: the scan was opened, filtered or ended through `debug`")
@@ -370,8 +369,7 @@ def scan_filter(session: ds.Session, operator: str, value: int | None,
     iterations = int(summary.group(2), 16)
     STATE.scan_iterations = iterations
     listed = survivors <= limit
-    return {"operator": operator, "value": value, "survivors": survivors,
-            "iterations": iterations, "closed": False,
+    return {"operator": operator, "value": value, "iterations": iterations, "closed": False,
             "hits": _listing(session, survivors) if listed else [],
             "hits_total": survivors, "truncated": not listed}
 

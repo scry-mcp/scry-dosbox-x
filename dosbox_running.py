@@ -53,7 +53,7 @@ def observe_stop(session: ds.Session) -> None:
                    arming.attribute_stop(session, where=where, machine=machine,
                                          retrace_may_stop=True))
     # The account rides on THIS contact's reply, once.
-    STATE.found_stop_last = {"stop_seq": STATE.last_stop["seq"], "at": STATE.last_stop["at"],
+    STATE.found_stop_last = {"stop_seq": STATE.last_stop["seq"], "pc": STATE.last_stop["at"],
                              "attribution": dict(STATE.last_stop["attribution"])}
 
 
@@ -239,8 +239,9 @@ def stop_reply(session: ds.Session, e9: str = "none", e9_filter: str = ".",
     e9_block = _stop_e9(session, e9, e9_filter, e9_stamp, e9_how)
     # THE STOP'S NUMBER rides on its reply: it is what a batch with `summaries`
     # counts its stops by, and what `last_stop.stop_seq` later names.
-    return st.reply(registers=registers, watches=watches, attribution=attribution,
-                  e9=e9_block, stop_seq=STATE.last_stop["seq"], **picture, **base)
+    return st.reply(**{**base, **position(where, getattr(session, "paging", None))},
+                    regs=registers, watches=watches, attribution=attribution,
+                    e9=e9_block, stop_seq=STATE.last_stop["seq"], **picture)
 
 
 def recorded_stop_reply(session: ds.Session, recorded: dict[str, Any]) -> dict[str, Any]:
@@ -254,7 +255,8 @@ def recorded_stop_reply(session: ds.Session, recorded: dict[str, Any]) -> dict[s
     if "picture" not in stop:
         stop["picture"] = code.stop_instruction(session, dict(stop["where"]),
                                                 dict(stop["registers"]), session.survey_text)
-    return {**recorded, "registers": dict(stop["registers"]), "watches": watches,
+    return {**recorded, **recorded_position(), "regs": dict(stop["registers"]),
+            "watches": watches,
             "e9": _stop_e9(session, "none", "."), **copy.deepcopy(stop["picture"])}
 
 
@@ -300,6 +302,26 @@ def cpu_mode_of(mode: str, paging: bool | None) -> str | dict[str, Any]:
         f"it as real, protected or paged")
 
 
+#: Why a stop's position is unavailable: the survey that would place it came back cut.
+CUT_POSITION_WHY = "the stop's survey came back cut, so its position could not be read"
+
+
+def position(where: dict[str, str] | None, paging: bool | None) -> dict[str, Any]:
+    """Where a machine stopped, as every stop reply says it: `pc`, the `SSSS:OOOOOOOO` every
+    DOS ref takes, and `cpu_mode` (`cpu_mode_of`); both unavailable when no survey placed it."""
+    if where is None:
+        return {"pc": contract.unavailable(CUT_POSITION_WHY),
+                "cpu_mode": contract.unavailable(CUT_POSITION_WHY)}
+    return {"pc": f"{where['cs']}:{where['eip']}", "cpu_mode": cpu_mode_of(where["mode"], paging)}
+
+
+def recorded_position() -> dict[str, Any]:
+    """`position` of the stop the session last recorded, for a stop reply built off the record
+    rather than a survey of its own."""
+    stop = STATE.last_stop
+    return position(dict(stop["where"]), stop.get("paging"))
+
+
 def status_facts(session: ds.Session | None) -> dict[str, Any]:
     """What `status` adds about the MACHINE: `pc`, only when the stop the machine is IN was
     read, and `cpu_mode` of that stop, unavailable while it runs or when the pane could not
@@ -310,7 +332,7 @@ def status_facts(session: ds.Session | None) -> dict[str, Any]:
         return {}
     stopped = session.alive() and session.at_debugger()
     current = STATE.as_of_current(session) if stopped else None
-    facts: dict[str, Any] = {"pc": current["at"]} if current else {}
+    facts: dict[str, Any] = {"pc": current["pc"]} if current else {}
     if not stopped:
         facts["cpu_mode"] = contract.unavailable(
             "the guest is running (or gone): the mode is read off a stopped machine's "

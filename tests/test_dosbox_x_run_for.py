@@ -101,13 +101,13 @@ def test_three_frames_land_three_retraces_with_the_whole_stop_reply() -> None:
     assert got["status"] == "ok", got
     assert got["verdict"] == "ELAPSED" and got["polls"] == 3, got
     assert dbg.keys == [ds.RETRACE_COMMAND] * 3, "one VRT per frame, typed as a release"
-    assert got["stopped_at"]["eip"] == "00000106", got
+    assert got["pc"].endswith(":00000106"), got
     # The pane's clock, read off the surveys before and after: milliseconds, as seconds.
     assert got["emulated_before_s"] == pytest.approx(0.005708)
     assert got["emulated_after_s"] == pytest.approx(0.0485122)
     assert got["frame_before"]["available"] is False and got["frame_after"]["available"] is False
     assert "normal core" in got["cycles"]["why"], got
-    assert got["registers"] and "attribution" in got and "e9" in got and "stop_seq" in got
+    assert got["regs"] and "attribution" in got and "e9" in got and "stop_seq" in got
     assert got["session"]["altered"] is False, "advancing is not writing"
     assert got["summary"].startswith("run_for 3 frames: ELAPSED"), got["summary"]
 
@@ -168,7 +168,7 @@ def test_a_bound_that_expires_while_a_retrace_is_out_interrupts_the_run() -> Non
     assert got["status"] == "ok", got
     assert got["verdict"] == "TIMEOUT" and got["polls"] == 0, got
     assert "BREAK" in dbg.sent, dbg.sent
-    assert got["registers"] and "stop_seq" in got, "interrupted, the stop is surveyed"
+    assert got["regs"] and "stop_seq" in got, "interrupted, the stop is surveyed"
     assert got["retrace_pending"] is True and dstate.STATE.retrace_pending is True
 
 
@@ -180,7 +180,7 @@ def test_a_bound_reached_between_frames_is_a_timeout_at_rest() -> None:
     got = cast(dict[str, Any], server.run_for(frames=3, seconds=0.2))
     assert got["status"] == "ok", got
     assert got["verdict"] == "TIMEOUT" and got["polls"] == 2, got
-    assert got["registers"], "stopped between frames: the stop reply is there"
+    assert got["regs"], "stopped between frames: the stop reply is there"
     assert "retrace_pending" not in got
 
 
@@ -189,7 +189,7 @@ def test_a_pane_clock_that_did_not_move_is_no_progress() -> None:
     got = cast(dict[str, Any], server.run_for(frames=1))
     assert got["status"] == "INVALID" and got["code"] == "no_progress", got
     contract.check_refusal("run_for", got, "no_progress")
-    assert got["polls"] == 1 and got["registers"], "the account and the stop ride on it"
+    assert got["polls"] == 1 and got["regs"], "the account and the stop ride on it"
 
 
 def test_a_protected_mode_frame_reads_its_position_off_the_survey() -> None:
@@ -199,7 +199,7 @@ def test_a_protected_mode_frame_reads_its_position_off_the_survey() -> None:
                   [cap("dos-djgpp32-vrt-5")]))
     got = cast(dict[str, Any], server.run_for(frames=1))
     assert got["status"] == "ok", got
-    assert got["stopped_at"] == {"cs": "00A7", "eip": "000BAA28", "mode": "Pr32"}, got
+    assert got["pc"] == "00A7:000BAA28", got
 
 
 @pytest.mark.parametrize("args", [
@@ -239,7 +239,7 @@ def test_perform_goes_on_at_once_after_a_run_for_its_bound_interrupted() -> None
     got = cast(dict[str, Any], server.perform(steps=[
         {"op": "run_for", "frames": 1, "seconds": 0.3}, {"op": "registers"}], wait=5))
     assert got["status"] == "ok", got
-    assert got["completed"] == 2, got
+    assert got["steps_completed"] == 2, got
     assert "BREAK" in dbg.sent and dstate.STATE.retrace_pending is True, dbg.sent
 
 
