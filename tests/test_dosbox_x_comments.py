@@ -26,6 +26,7 @@ from test_dosbox_x_server import (  # noqa: F401
 import dosbox_arming as arming
 import dosbox_comment_file as cf
 import dosbox_comments as comments
+import dosbox_console as dcons
 import dosbox_declarations as dec
 import dosbox_machine as machine
 import dosbox_session as ds
@@ -686,7 +687,7 @@ class _ParkedInRealMode(_Booted):
     to protected mode, as on dos-djgpp32."""
 
     def __init__(self, **kw: Any) -> None:
-        super().__init__(mode=ds.REAL_MODE, **kw)
+        super().__init__(mode=dcons.REAL_MODE, **kw)
 
 
 def test_a_file_loaded_at_the_real_mode_park_is_placed_after_the_protected_mode_symbols_load(
@@ -739,7 +740,7 @@ def test_a_row_placed_before_the_map_in_an_earlier_session_is_stale_over_a_relin
     got, booted = _start_over_a_store(tmp_path, monkeypatch, {}, double=_ParkedInRealMode)
     ok(got)
     if park_row == "added":
-        ref, mode = "0814:0106", ds.REAL_MODE
+        ref, mode = "0814:0106", dcons.REAL_MODE
         ok(server.comment_add(ref=ref, text="at the park"))
     else:
         ref, mode = "00A7:62310", "Pr32"

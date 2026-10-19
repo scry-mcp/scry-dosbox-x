@@ -15,6 +15,8 @@ from typing import Any, cast
 import pytest
 from test_dosbox_x_server import FakeSession, clean_session, install  # noqa: F401
 
+import dosbox_console as dcons
+import dosbox_logs as dlogs
 import dosbox_machine as machine
 import dosbox_session as ds
 import dosbox_state as dstate
@@ -366,7 +368,7 @@ def test_no_prompt_back_is_not_a_listing_and_says_to_close(tmp_path: Path) -> No
     """The screen's first page, cut before its prompt (an edited capture): what the file holds
     is not known to be whole, and the pager may still be waiting."""
     paged = cap("probe-booted-DOS_KERN.screen.txt")
-    ses = Logfile(tmp_path, [paged[:paged.rindex(ds.PROMPT)]], [b""])
+    ses = Logfile(tmp_path, [paged[:paged.rindex(dcons.PROMPT)]], [b""])
     with pytest.raises(ds.Invalid) as got:
         ses.listing("DOS KERN")
     assert got.value.code == "unexpected_answer" and "close" in str(got.value)
@@ -393,9 +395,9 @@ def test_the_pager_and_the_input_line_are_read_at_the_last_prompt() -> None:
     """A marker an earlier listing left in the scrollback above a clean prompt is not this
     reply's pager (the paged capture, then the `Q` repaint after it)."""
     paged, rest = cap("probe-booted-DOS_KERN.screen.txt"), cap("probe-booted-DOS_KERN.q.txt")
-    assert ds.at_pager(paged) and not ds.at_pager(paged + rest)
-    assert ds.input_line(paged + rest) == "" and ds.input_line("no prompt") is None
-    assert ds.input_line(paged[:paged.rindex("^ Paged")]) == "DOS KERN"
+    assert dcons.at_pager(paged) and not dcons.at_pager(paged + rest)
+    assert dcons.input_line(paged + rest) == "" and dcons.input_line("no prompt") is None
+    assert dcons.input_line(paged[:paged.rindex("^ Paged")]) == "DOS KERN"
 
 
 # ------------------------------------------------------------------ the tool
@@ -477,7 +479,7 @@ def test_before_dos_booted_the_dos_sections_are_absent_quoting_the_debugger(
 
 def test_a_listing_cut_at_the_ceiling_says_so_and_counts_the_whole(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(ds, "LOG_LIMIT_MAX", 5)
+    monkeypatch.setattr(dlogs, "LOG_LIMIT_MAX", 5)
     r = mapped("probe-booted", tmp_path)
     assert r["truncated"] is True
     assert len(r["callbacks"]) == 5 and r["counts"]["callbacks"] > 5
@@ -487,7 +489,7 @@ def test_a_list_exactly_at_the_ceiling_is_whole(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     longest = max(len(machine.parse_callbacks(listing("probe-booted", "CALLBACKS"))),
                   len(machine.parse_bios_mem(listing("probe-booted", "BIOS MEM"))))
-    monkeypatch.setattr(ds, "LOG_LIMIT_MAX", longest)
+    monkeypatch.setattr(dlogs, "LOG_LIMIT_MAX", longest)
     r = mapped("probe-booted", tmp_path)
     assert r["truncated"] is False and max(r["counts"].values()) == longest
 
@@ -501,7 +503,7 @@ def test_the_map_one_line_gives_the_mode_and_every_non_empty_count(tmp_path: Pat
 
 def test_the_map_one_line_says_some_sections_were_cut(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(ds, "LOG_LIMIT_MAX", 5)
+    monkeypatch.setattr(dlogs, "LOG_LIMIT_MAX", 5)
     assert mapped("probe-booted", tmp_path)["summary"].endswith(
         ", some sections cut (see `counts`)")
 
@@ -1170,7 +1172,7 @@ def test_a_bad_section_list_is_refused_before_any_listing(
 
 def test_dest_writes_every_section_asked_whole_where_the_reply_is_cut(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(ds, "LOG_LIMIT_MAX", 5)
+    monkeypatch.setattr(dlogs, "LOG_LIMIT_MAX", 5)
     dest = tmp_path / "map.json"
     r = asked_for("dos-djgpp32", tmp_path, sections=["paging"], dest=str(dest))
     assert r["status"] == "ok" and r["path"] == str(dest) and r["truncated"] is True
@@ -1182,7 +1184,7 @@ def test_dest_writes_every_section_asked_whole_where_the_reply_is_cut(
 
 def test_a_cut_reply_without_dest_says_how_to_have_it_whole(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(ds, "LOG_LIMIT_MAX", 5)
+    monkeypatch.setattr(dlogs, "LOG_LIMIT_MAX", 5)
     r = asked_for("dos-djgpp32", tmp_path, sections=["paging"])
     # Sections were left out too, so `how` names both ways, `dest` among them.
     assert r["truncated"] is True and "path" not in r and r["how"] == machine.MAP_HOW

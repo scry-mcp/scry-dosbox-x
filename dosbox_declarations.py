@@ -53,7 +53,7 @@ KINDS = (*COUNTED_KINDS, "comment")
 # behind a pointer, and a stop at a moving address is one nobody can attribute).
 BY = ("symbol", "address", "pointer")
 # An interrupt declaration's ref IS the debugger's BPLIST row spelling, so it is validated
-# at the shape `dosbox_session.interrupt_row` produces and `parse_interrupt_row` reads. Its
+# at the shape `dosbox_console.interrupt_row` produces and `parse_interrupt_row` reads. Its
 # own regex, not imported from session: this module validates its own stored data and does
 # not depend on the session layer (session does not import this one).
 INTERRUPT_ROW = re.compile(r"^BPINT [0-9A-Fa-f]{2}(?: AH=[0-9A-Fa-f]{2})?$")

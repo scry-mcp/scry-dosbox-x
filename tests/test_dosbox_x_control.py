@@ -14,6 +14,7 @@ from scry_core import cancel
 from scry_core.reply_contract import Invalid
 
 import dosbox_control as control
+import dosbox_launch as dlaunch
 import dosbox_session as ds
 
 
@@ -157,12 +158,12 @@ def test_a_closed_channel_refuses_rather_than_listening_again() -> None:
 def test_the_launch_points_the_emulator_at_the_session_s_channel(tmp_path: object) -> None:
     from pathlib import Path
     root = Path(str(tmp_path))
-    launch = ds.Launch(conf=root / "g.conf", cwd=root, seconds=30, control_port=40123)
-    argv = ds.build_argv(launch)
+    launch = dlaunch.Launch(conf=root / "g.conf", cwd=root, seconds=30, control_port=40123)
+    argv = dlaunch.build_argv(launch)
     i = argv.index("dosbox mcp_server=40123")
     assert argv[i - 1] == "-set"
-    assert "dosbox mcp_server=40123" not in ds.build_argv(
-        ds.Launch(conf=root / "g.conf", cwd=root, seconds=30))
+    assert "dosbox mcp_server=40123" not in dlaunch.build_argv(
+        dlaunch.Launch(conf=root / "g.conf", cwd=root, seconds=30))
 
 
 @pytest.mark.parametrize("token", ["dosbox mcp_server=9", "dosbox mcp_server 9",
@@ -170,13 +171,13 @@ def test_the_launch_points_the_emulator_at_the_session_s_channel(tmp_path: objec
 def test_a_caller_s_flags_cannot_repoint_the_channel(token: str) -> None:
     """Every spelling DOSBox-X's `-set` takes, the value after `=` or after a space."""
     with pytest.raises(Invalid) as e:
-        ds.check_flags("flags", ["-set", token])
+        dlaunch.check_flags("flags", ["-set", token])
     assert e.value.code == "bad_argument" and "debugger channel" in str(e.value)
 
 
 def test_an_owned_key_is_found_with_its_value_after_a_space() -> None:
     with pytest.raises(Invalid) as e:
-        ds.check_flags("flags", ["-set", "dos break on int3 true"])
+        dlaunch.check_flags("flags", ["-set", "dos break on int3 true"])
     assert e.value.code == "bad_argument" and "break_on_int3" in str(e.value)
 
 
@@ -268,7 +269,7 @@ def test_a_spawn_that_fails_closes_the_channel_and_the_argv_named_its_port(
     monkeypatch.setattr(control, "ControlChannel", _Recording)
     monkeypatch.setattr(subprocess, "Popen", spawn)
     with pytest.raises(OSError, match="not spawned"):
-        ds.Session(ds.Launch(conf=root / "g.conf", cwd=root, seconds=30))
+        ds.Session(dlaunch.Launch(conf=root / "g.conf", cwd=root, seconds=30))
     assert [r.closed for r in _Recording.made] == [True]
     assert "dosbox mcp_server=40999" in seen[0]
 
@@ -286,7 +287,7 @@ def test_a_pty_that_cannot_be_opened_closes_the_channel(
     monkeypatch.setattr(control, "ControlChannel", _Recording)
     monkeypatch.setattr(pty, "openpty", no_pty)
     with pytest.raises(OSError, match="out of ptys"):
-        ds.Session(ds.Launch(conf=root / "g.conf", cwd=root, seconds=30))
+        ds.Session(dlaunch.Launch(conf=root / "g.conf", cwd=root, seconds=30))
     assert [r.closed for r in _Recording.made] == [True]
 
 

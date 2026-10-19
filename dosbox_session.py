@@ -14,33 +14,15 @@ TRUE.  The stronger defence is the one in `command()`, which hands back only the
 DELTA a command produced rather than a search over everything that ever arrived; echo
 off covers the window before ncurses owns the terminal.
 
-HEADLESS IS THE APPLICATION'S OWN SETTING, not an environment variable reached around
-it with.  `videodriver` is a DOSBox-X `[sdl]` config property whose own description
-reads "Forces a video driver (e.g. windib/windows, directx, x11, fbcon, dummy, etc)
-for the SDL library to use", so `-set "sdl videodriver=dummy"` is the sanctioned
-mechanism.  MEASURED: it alone yields `SDL: version 2.32.70, Video dummy, Audio
-coreaudio` -- note it keeps REAL AUDIO, which `-silent` does not, and `-silent` also
-exits after AUTOEXEC.BAT and so cannot host a session at all.
-
-EVERY LAUNCH IS BOUNDED, and that is not belt-and-braces.  MEASURED: DOSBox-X does
-NOT refuse an option it does not know -- `-loadstate 1` never returned at all.
-So a session handed a bad flag does not fail, it hangs, and the bound is what stands
-between that and an emulator running until the machine is rebooted.
-
-THE COMMAND-LINE VOCABULARY IS FIXED; THE VALUES IN IT ARE THE CALLER'S.  Caller strings
-land in argv: the flags, the program, the logfile, the captures and state directories.
-`validate` checks the conf, the cwd, the logfile's directory, the flags and the bound; `start`
-has judged every path absolute and created the two directories first; `program` is a DOS
-command line and is not inspected.  No shell is involved (`Popen`
-takes a list), so a caller string reaches the emulator as one argument and never as a
-command; that is the whole of the guarantee, said here because this is the paragraph a
-reviewer reads to decide exactly that question.
+THE SESSION IS ONE OBJECT AND ITS GRAMMARS ARE NOT: what a session is launched with, judged and
+built into a command line, is `dosbox_launch`'s; what the console prints, parsed, is
+`dosbox_console`'s; the log's channels and filters are `dosbox_logs`'s; and the files the emulator
+wrote, collected to where the caller asked, are `dosbox_collect`'s.
 """
 
 from __future__ import annotations
 
 import contextlib
-import hashlib
 import os
 import pty
 import re
@@ -52,9 +34,7 @@ import subprocess
 import termios
 import threading
 import time
-import zipfile
-from collections.abc import Callable
-from dataclasses import dataclass, field, replace
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -63,6 +43,13 @@ from scry_core.progress import PROGRESS_EVERY_S as PROGRESS_EVERY_S
 from scry_core.progress import Progress as Progress
 from scry_core.progress import no_progress as no_progress
 from scry_core.reply_contract import Invalid as Invalid
+
+import dosbox_collect as dcollect
+import dosbox_console as dcons
+import dosbox_control as control
+import dosbox_launch as dlaunch
+import dosbox_logs as dlogs
+import dosbox_paths as paths
 
 # The var-list ENCODING lives next door, in a module with no emulator in it, so a
 # golden can exist over the bytes without a machine. This file owns only the part that
@@ -74,35 +61,7 @@ from scry_core.reply_contract import Invalid as Invalid
 # into one namespace, so a bare top-level `symbols` here would bind to whichever package
 # imported one first, and a reverse-engineering pack is the kind of project that grows a
 # `symbols.py` of its own.
-import dosbox_binary as binaries
-import dosbox_control as control
-import dosbox_paths as paths
 import dosbox_symbols as symbols
-
-# Escape sequences an ncurses screen is made of. Stripped before anything is matched,
-# because a reply's text is interleaved with cursor addressing.
-#
-# IT IS DELIBERATELY WIDER THAN CSI: an unstripped OSC leaks its payload into the
-# buffer as ordinary text, and that buffer is what the prompt and the register pane
-# are searched for.
-ANSI = re.compile(
-    r"\x1b\[[0-9;?]*[ -/]*[@-~]"      # CSI, intermediates included
-    r"|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)"  # OSC, BEL- or ST-terminated
-    r"|\x1b[()][A-Z0-9]"              # charset selection
-    r"|\x1b[=>]")
-
-# An ESCAPE SEQUENCE can straddle two reads. Anything that looks like the start of one
-# is HELD BACK and prepended to the next read rather than being stripped as text --
-# otherwise its head lands in the buffer as literal junk and its tail as plain
-# characters.
-#
-# WHAT IT DOES NOT DO. `PARTIAL_TAIL.search('EAX=0000')` is None, so a plain-text split
-# mid-number is NOT held here: what saves such a value is `_collect` concatenating across
-# reads, which is a different function's accident. And a multi-byte character cannot be
-# held either: `_read`
-# decodes with `errors="replace"` BEFORE this is consulted, so a split UTF-8 sequence
-# is already a replacement character by then.
-PARTIAL_TAIL = re.compile(r"\x1b(?:\[[0-9;?]*[ -/]*|\][^\x07\x1b]*|[()])?$")
 
 # HOW LONG A HELD HEAD MAY GET before it is given up and emitted as text.
 #
@@ -126,102 +85,20 @@ PARTIAL_TAIL = re.compile(r"\x1b(?:\[[0-9;?]*[ -/]*|\][^\x07\x1b]*|[()])?$")
 # and prompt for the malformed kind.
 PENDING_MAX = 4 * 1024
 
-# The debugger's own prompt. Its appearance is how "the debugger is up" is known,
-# rather than a fixed sleep.
-#
-# IT HAS A SECOND READER AND THAT ONE IS LOAD-BEARING: `resume` uses it to tell a
-# machine that ran on from one that stopped again, because it is the only thing in
-# that delta which says the debugger has the keyboard back. The register pane does
-# NOT come back there -- ncurses repaints changed cells only, and the pane's labels do
-# not change -- so the reading that looks obvious is the one that fails. The twelve-run
-# measurement behind that is in `resume`'s own docstring, beside the numbers.
-PROMPT = "I->"
-
-# THE PAGER. A listing longer than the debugger's Output pane stops after a page with this
-# line under it and the command still on the input line, and from there every key is a key
-# the pager eats: a command typed at it can strand its tail on the input line, and from there
-# every later command concatenates onto it instead of running. `Q` alone, with no carriage
-# return (the debugger's own "Q to exit paging"), prints the rest of the listing at once and
-# empties the line, so it is the one key `Session.listing` sends there.
-PAGER_MARK = "Paged content: Hit ENTER to continue"
-PAGER_EXIT = b"Q"
 
 # HOW LONG A CONSOLE REPLY IS GIVEN (`Session.command`): quiet for `SETTLE_S` once something
 # has arrived ends it, or for `REPLY_GRACE_S` when it ends in the debugger's own last words, and
 # `REPLY_TIMEOUT_S` bounds it whatever arrives.
 SETTLE_S = 0.6
 REPLY_TIMEOUT_S = 6.0
-# THE DEBUGGER'S OWN LAST WORDS: it closes the repaint that answers a command by redrawing its
-# input line EMPTY (`I-> `, the cursor mark, erase to the end of the line, the cursor placed, the
-# attributes reset), or by its pager's line when a listing pages; a listing that pages draws the
-# input line still holding the command, which is why only the empty one counts. Nothing follows
-# either until the next command, so a reply that ends in one is whole after `REPLY_GRACE_S` of
-# quiet, a margin over the gaps between the pieces of one reply; anything else (a command typed
-# at a running guest) keeps the settle.
+# A reply that ends in the debugger's own last words (`dosbox_console.REPLY_END`) is whole after
+# `REPLY_GRACE_S` of quiet, a margin over the gaps between the pieces of one reply; anything else
+# (a command typed at a running guest) keeps the settle.
 REPLY_GRACE_S = 0.15
-_ATTRS = r"(?:\x1b\[[0-9;]*m)*"
-REPLY_END = re.compile(
-    r"(?:I-> _?\x1b\[K(?:\x1b\[\d+;\d+H|\r\x1b\[\d+d)\x1b\(B\x1b\[m" + _ATTRS
-    + r"|Paged content: Hit ENTER to continue, Q to exit paging\x1b\[K(?:\x1b\[\d+;\d+H)?"
-    r"\x1b\(B\x1b\[m" + _ATTRS + r"(?:\x1b\[\d+;\d+H)?)\Z")
 # How the collect slices its wait, and how much raw terminal it keeps to look for that end.
 COLLECT_SLICE_S = 0.05
 RAW_TAIL_KEEP = 512
 
-# A live line of the guest's Bochs 0xE9 instrumentation, as DOSBox-X logs it.
-E9_LINE = re.compile(r"^Bochs port E9h: ")
-# THE CHANNELS OF THE ONE LOG FILE. DOSBox-X writes the guest's E9 lines and its own log
-# lines (the categories its `log` section names) into the same file, so a channel is a
-# SELECTION of that file: `guest` (the E9 lines), `emulator` (every other line), `all` (the
-# file in order, each line tagged with its source). There is no `process` channel for the
-# emulator's stdout, because this emulator's stdout is the debugger's own terminal and
-# not a log.
-LOG_CHANNELS = ("guest", "emulator", "all")
-
-# The register pane.
-#
-# NO WORD BOUNDARY, and that is the whole lesson of this line. An ncurses pane is
-# painted as runs of cells and the debugger draws its frames with the DEC alternate
-# character set, which arrives here as ordinary letters -- so a register name abuts
-# the run in front of it. MEASURED against a live emulator, the screen carried
-# `...ooooooooooooEAX=00001234  ESI=00000000`, where `\b` finds no boundary between
-# `o` and `E`. The effect was silent and one-sided: every register whose name happened
-# to follow a space was read, and EAX -- the one a caller sets to prove the machine
-# answered -- was the one that never matched.
-#
-# The names are spelled out rather than built from character classes, longest first,
-# so a shorter name cannot win inside a longer one.
-_WIDE_NAMES = ("EAX", "EBX", "ECX", "EDX", "ESI", "EDI", "EBP", "ESP", "EIP")
-_SEGMENT_NAMES = ("CS", "DS", "ES", "FS", "GS", "SS")
-REGISTER_NAMES = _WIDE_NAMES + _SEGMENT_NAMES
-REGISTER = re.compile(f"({'|'.join(REGISTER_NAMES)})=([0-9A-F]+)")
-
-# How much of the previous read `run_to`'s wait carries forward, so a register that
-# arrives split across two reads is still matched.
-#
-# IT IS THE NAME PLUS ITS `=`, AND NOTHING MORE, which is smaller than it first looks
-# and is the whole of what must be carried. `REGISTER` is `(NAME)=([0-9A-F]+)` with a
-# `+` on the value, so the moment ONE hex digit has arrived the prefix matches on its
-# own: `EIP=0000E05` is a match, and the `B` landing in the next read costs nothing.
-# The only split that loses a match is one falling inside `NAME=` itself, and the
-# widest of those is the whole of it.
-#
-# THE FIRST VERSION WAS `... + 1 + 32` and its comment called it DERIVED while
-# describing "a value wider than any 32-bit register this debugger prints" -- a
-# hand-picked 32 wearing a derivation's clothes, and the term that would have gone
-# stale. An adversarial pass could not pin it at any width, for the reason above:
-# every fixture needing a carry wider than `NAME=` already matched without one.
-EIP_CARRY = max(len(n) for n in REGISTER_NAMES) + 1
-# The wait in `run_to` listens for TWO announcements of a stop, the prompt and a register
-# repaint, and its carry has to be wide enough that neither can straddle two reads.
-STOP_CARRY = max(EIP_CARRY, len(PROMPT))
-
-# What `SR` will accept as a register name. It is checked rather than trusted: `SR`
-# takes MULTIPLE pairs ("SR [reg] [value] - Set register value. Multiple pairs
-# allowed"), and `command()` appends a carriage return, so an unchecked name is a way
-# to run debugger commands the caller never named.
-_LOW_HALVES = frozenset({"ax", "bx", "cx", "dx", "si", "di", "bp", "sp", "ip"})
-SETTABLE = frozenset(n.lower() for n in REGISTER_NAMES) | _LOW_HALVES
 
 # WHERE EACH SETTABLE NAME IS READ BACK, and at what width in bits. The pane paints the 32-bit
 # general registers and the 16-bit segments and nothing else: a segment is read under its own
@@ -229,9 +106,9 @@ SETTABLE = frozenset(n.lower() for n in REGISTER_NAMES) | _LOW_HALVES
 # one letter longer (`EAX`), since the whole register also carries a high half the write never
 # touched.
 READBACK: dict[str, tuple[str, int]] = {
-    **{n.lower(): (n, 32) for n in _WIDE_NAMES},
-    **{n.lower(): (n, 16) for n in _SEGMENT_NAMES},
-    **{n: (f"E{n.upper()}", 16) for n in _LOW_HALVES},
+    **{n.lower(): (n, 32) for n in dcons.WIDE_NAMES},
+    **{n.lower(): (n, 16) for n in dcons.SEGMENT_NAMES},
+    **{n: (f"E{n.upper()}", 16) for n in dcons.LOW_HALVES},
 }
 
 # A command that is guaranteed to REPAINT and changes nothing. `registers()` needs
@@ -251,95 +128,6 @@ READBACK: dict[str, tuple[str, int]] = {
 # the trade this module refuses everywhere else.
 NUDGE = "BPLIST"
 
-# THE CPU MODE, AS A POSITIVE TOKEN IN EVERY DIRECTION.
-#
-# MEASURED, in one session walked from reset to a DJGPP client:
-#
-#   SS=0000 Real     at F000:FFF0, before anything has switched mode
-#   SS=008F Pr16     inside CWSDPMI's 16-bit stub
-#   SS=008F Pr32     in the 32-bit client
-#
-# WHY A POSITIVE TOKEN MATTERS HERE, and it is the whole reason this is a regex over
-# three alternatives rather than a test for the ABSENCE of `Pr`: a pane that did not
-# repaint, a machine that is running and an emulator that has gone all produce text
-# with no `Pr` in it. Read as an absence, every one of them answers "real mode" -- and
-# `watch` would then send `BPM` where the machine wanted `BPPM`, which the debugger
-# accepts and arms against a segment that does not exist. A missing token is INVALID
-# here, never a mode.
-REAL_MODE = "Real"
-CPU_MODES = (REAL_MODE, "Pr16", "Pr32")
-
-# IT IS ANCHORED ON THE `SS=` LINE, and that is not tidiness -- an unanchored version
-# was a live wrong answer. `Real` is an ordinary English word, the Output pane is a
-# scrolling LOG carrying DOSBox-X's own messages and the guest's E9 lines, and that
-# pane is painted BELOW the register pane. So a bare `\b(Real|Pr16|Pr32)\b` taking the
-# LAST match deliberately preferred the one region of the screen that can say anything
-# at all: a `Pr32` machine whose log happened to carry the word "Real" answered `Real`,
-# and `watch` then sent `BPM` where the machine wanted `BPPM` -- which this debugger
-# accepts and arms against a segment that does not exist.
-#
-# The token's place is fixed: it closes the `SS=` line of the register pane
-# (`SS=008F Pr32`). Anchoring there means only a register pane can supply it.
-CPU_MODE = re.compile(rf"SS=[0-9A-F]{{4}}\s+({'|'.join(CPU_MODES)})\b")
-
-# PAGING, THE OTHER HALF OF "WHAT MODE", read off the same pane: the debugger paints `PAGE`
-# or `NOPG` straight after EBP's value, with no space (`EBP=00000000NOPG  IOPL0  CPL0` in
-# real mode, `EBP=002B8690PAGEPSE IOPL3  CPL3` under a DJGPP client). Anchored on `EBP=`
-# for the reason `CPU_MODE` is anchored on `SS=`: both words can turn up in the log pane.
-PAGING = re.compile(r"EBP=[0-9A-F]{8}(PAGE|NOPG)")
-# THE PANE'S OWN EMULATED CLOCK, in milliseconds since the machine started: `pfi=` beside the FPU
-# row. Only a full repaint labels it; the delta a stop prints carries its changed digits bare, so
-# it is read off a survey and never off a stop's own delta.
-PANE_CLOCK = re.compile(r"pfi=([0-9]+\.[0-9]+)")
-# THE PANE'S INSTRUCTION COUNTER, `cc=` closing the ESP row before the run state (`RUN`, `HLT`).
-# Anchored on that TAIL and not on `ESP=`: a repaint can glue other text over the label before it
-# (`dpl : 3 10011    cc=1963039400RUN` under a DJGPP client). On the normal core the counter
-# moves by one per instruction executed; a dynamic core leaves it where it was.
-PANE_CYCLES = re.compile(r"cc=([0-9]+) *[A-Z]+\r?$", re.M)
-
-# ONE ROW OF THE DEBUGGER'S BREAKPOINT LIST, as `BPLIST` prints it:
-#
-#   00. BPMEM 0040:006C (00)
-#   01. BP F000:E05B
-#
-# The index is captured because `BPDEL` takes one, and the REST OF THE LINE is kept
-# whole rather than split into a kind and an address: the forms differ per breakpoint
-# type (`BPMEM` carries a trailing byte count, `BPINT` names an interrupt and an AH)
-# and this module needs to RECOGNISE an entry it created, not to model every shape the
-# debugger can print.
-#
-# IT IS NOT ANCHORED TO THE START OF A LINE, and it was -- the last of the three pane
-# patterns to learn what `REGISTER` and `DATA_ROW` each learned from a measured defect.
-# This debugger's repaints GLUE content to whatever precedes it with no newline (the
-# captures in the test file show `ooooOutputoooo...Breakpoint list:`), so a row arriving
-# as `----------------00. BP F000:FFF0` matched nothing. The bad direction is not the
-# refusal: it is `run_to`'s cleanup, which reads `removed = not any(...)` and would
-# report `breakpoint_removed: true` for a breakpoint still sitting in the machine.
-# `$` with `re.M` still anchors the END, and the two hex digits must be followed by a
-# dot AND whitespace, which is what keeps it off `pfi=0.992628993` and `92.464754300`.
-BREAKPOINT_ROW = re.compile(r"\s*([0-9A-F]{2})\.\s+(\S.*?)\s*$", re.M)
-
-# The header `BPLIST` prints above its list. The LAST one in a delta is the one that
-# belongs to the command just sent: this debugger's Output pane is a SCROLLING LOG, so
-# a repaint carries earlier listings and earlier acknowledgements along with the new
-# one. MEASURED -- a second `BPLIST` came back with two headers, and a `BPM` delta
-# carried the `DEBUG: Set breakpoint at F000:E05B` from a `BP` sent before it.
-#
-# That is why nothing here believes an acknowledgement. A breakpoint is confirmed by
-# READING THE LIST BACK, the same discipline `load_symbols` uses on the var list and
-# for the same reason: this emulator will happily reprint somebody else's success.
-BPLIST_HEADER = "Breakpoint list:"
-
-# The banner the debugger paints at the top of the register pane, and therefore the
-# only reliable mark of where one REPAINT ends and the next begins. `parse_last_pane`
-# rests on it, so it is measured rather than assumed:, three
-# consecutive surveys each carried exactly ONE occurrence, at the same offset, above
-# fifteen register hits in a fixed order.
-#
-# IT IS THE TEXT AND NOT THE BOX-DRAWING AROUND IT. The terminal renders the banner's
-# rule as runs of `o` (`ooooRegister Overviewoooo...`), whose length depends on the
-# window, so anchoring on those would be anchoring on a geometry.
-PANE_HEADER = "Register Overview"
 
 # The keys the debugger's own help names: "F5 - Run." and "F10/F11 - Step over /
 # trace into instruction." They go as terminal escape sequences with NO carriage
@@ -386,77 +174,6 @@ LOG_COMMAND = re.compile(rb"(?:" + "|".join(LOG_WORDS).encode() + rb") [0-9A-F]+
 # the settle once.
 STEP_MAX = 64
 
-# ONE ROW OF THE DEBUGGER'S DATA VIEW, matched by its SHAPE and not by which pane it
-# was found in.
-#
-# WHY BY SHAPE. The panes are separated by headers drawn in the DEC alternate
-# character set, which arrives here as runs of `o`, and anchoring on those would tie
-# the one reader that returns MEMORY to how this build decorates its frames. The shape
-# is unambiguous on its own: sixteen space-separated byte pairs after an address is
-# something only the data view emits. In particular it cannot match a CODE row, whose
-# bytes are run together (`F000:0000FFF0 EA5BE000F0          jmp  F000:E05B`), so the
-# first pair test fails on the missing space -- and the code overview sits on the same
-# screen, showing the same segment, in rows that begin identically.
-#
-# THERE IS NO `^`, AND ITS ABSENCE IS THE WHOLE LESSON OF THIS LINE, exactly as it is
-# for REGISTER above. An ncurses pane is painted as runs of cells, so the pane HEADER
-# abuts the first row with no newline between them and the screen carries
-# `ooooData view (segmented)oooo...ooooF000:0000E000 00 00 ...`. Anchored at line
-# start, that row does not match -- and it is the FIRST row, which is the one at the
-# address the caller asked about. MEASURED with the anchor in place: eight rows on
-# screen, SEVEN parsed, and the missing one was E000 for a caller who asked for E000.
-# The same defect as the register pattern's, in the same file, found by a test written
-# after that comment had already explained it.
-#
-# The ASCII gutter is OPTIONAL because it is not the evidence. It is bounded at 16 and
-# NO CHARACTER OF IT MAY BEGIN AN ADDRESS: without that, a row followed immediately by
-# the next one had its gutter swallow the next row's ADDRESS, so the scan resumed
-# mid-token and that row was lost entirely. `[^\r\n]` cannot prevent it, because the two
-# rows are on ONE line to begin with, which is the whole reason this pattern is not
-# anchored.
-#
-# THE LOOKAHEAD IS INSIDE THE REPETITION, AND THE FIRST ATTEMPT PUT IT OUTSIDE. That
-# version guarded only the gutter's FIRST character, so it worked for an EMPTY gutter
-# and for a FULL one and failed for every length between. MEASURED across all 17
-# lengths: 0 and 16 recovered both rows, 1 through 15 lost the second and produced the
-# INVALID that says "that is a reading of somewhere else" about a row present in the
-# string it had just parsed -- verbatim the failure the fix claimed to remove. Its test
-# and the check beside it were calibrated on length 0, so both were green: the axis moved
-# was the lookahead's PRESENCE and never the gutter's LENGTH.
-# The data view is eight rows of sixteen bytes on this build: the most `read_memory` can
-# hand back as `hex` from a row's start.
-DATA_VIEW_BYTES = 128
-_ROW_BYTES = re.compile(r"([0-9A-F]{4}):([0-9A-F]{4,8})((?: [0-9A-F]{2})+)")
-
-
-def bytes_of_rows(rows: list[str], off: int, length: int) -> str:
-    """`length` bytes from offset `off` out of the data-view `rows`, as hex, read off the
-    rows' own offsets and never by position: a row is `SEG:OFFSET` and sixteen bytes, so the
-    bytes are collected from the row that holds `off` onwards. INVALID when the rows do not
-    hold that many bytes from there."""
-    held: dict[int, int] = {}
-    for row in rows:
-        # The row's OWN offset and bytes, whatever their width: the data view prints eight
-        # hex digits and sixteen bytes on this build, and a row is read by what it says.
-        m = _ROW_BYTES.search(row)
-        if m is None:
-            continue
-        start = int(m.group(2), 16)
-        for i, byte in enumerate(m.group(3).split()):
-            held[start + i] = int(byte, 16)
-    out: list[str] = []
-    for a in range(off, off + length):
-        if a not in held:
-            raise Invalid("readback_refused",
-                f"the data view holds {len(out)} bytes from offset {off:#x}, not the "
-                f"{length} asked for: ask for fewer, or `memdump` the range")
-        out.append(f"{held[a]:02x}")
-    return "".join(out)
-
-
-DATA_ROW = re.compile(
-    r"([0-9A-F]{4}):([0-9A-F]{8})((?: [0-9A-F]{2}){16})"
-    r"(?:  ((?:(?![0-9A-F]{4}:[0-9A-F]{8})[^\r\n]){0,16}))?")
 
 # `MEMDUMPBIN [s]:[o] [len] [filename]` writes memory to a file in the debugger's working
 # directory. `MEMDUMP_NAME` is the build's DEFAULT name, collected for a build that takes no
@@ -552,10 +269,6 @@ SYM_ARG_MAX = 12
 SYM_LOAD_NAME = "SYMS.BIN"
 SYM_SAVE_NAME = "SYMSBK.BIN"
 
-# A bound so large it bounds nothing is the failure this exists to prevent, so there
-# is a ceiling as well as a floor. Four hours is far past any interactive session and
-# still finite.
-MAX_SECONDS = 4 * 60 * 60
 
 # THE CEILING ON ONE `run_to` WAIT, which is a different bound from the session's and
 # needs its own reason. The session's bound stops an abandoned emulator; this one stops
@@ -736,545 +449,6 @@ class E9Expired(Invalid):
         super().__init__("wait_expired", message)
 
 
-@dataclass
-class Launch:
-    """Everything a session needs to be reproducible, resolved by the CALLER.
-
-    Nothing here defaults to a path inside anyone's home directory. The conf, the
-    working directory and the window flags all come from outside, because this server
-    is meant to be published and a default that only works on its author's machine is
-    a private layout leaking into somebody else's install.
-    """
-
-    conf: Path
-    cwd: Path
-    seconds: int
-    watched: bool = False
-    window_flags: list[str] = field(default_factory=list)
-    # THE CALLER'S EMULATOR FLAGS (a `-set` of a fixed clock, the quit warning back), in any
-    # mode. Placement is `window_flags`; these are everything else, so a headless session
-    # carries them too.
-    flags: list[str] = field(default_factory=list)
-    # `[dos] break on int3`: a guest's own `int 3` stops at the debugger.
-    break_on_int3: bool = False
-    program: str | None = None
-    capture_video: bool = False
-    captures_dir: Path | None = None
-    logfile: Path | None = None
-    # THE EMULATOR, the absolute path `start` resolved (`dosbox_binary`); the bare name is the
-    # default a hand-built `Launch` runs, the PATH's.
-    binary: str = binaries.EMULATOR_NAME
-    # THE INPUT ROUTE: a TCP port the session listens on and the emulator's COM1 dials
-    # (`serial1=nullmodem server:`), which the resident stub in `guest/INJECT.COM` reads its
-    # commands from; 0 has the session's listener take a free one, which the session's
-    # `launch` then carries. The conf's autoexec
-    # runs the stub before its program, or `program` has it loaded first.
-    input_port: int | None = None
-    # WHETHER THE LAUNCH STAYS BEHIND the owner's front app (`judge_background`).
-    background: bool = True
-    # WHERE THE SAVE STATES LIVE: the slot directory the build's `-savedir` option names, and
-    # the directory the state tools write `<name>.sav` into. None: `save/` under `cwd`, the
-    # emulator's own default (measured), which the session names to the commands in full.
-    state_dir: Path | None = None
-    # THE DEBUGGER CHANNEL'S PORT (`dosbox_control`), the session's own listener's, set by the
-    # session and never by a caller: it is how a running guest is broken in on.
-    control_port: int | None = None
-
-
-def _digest(path: Path) -> str:
-    """A short content digest, so a session can say the conf changed under it."""
-    return hashlib.sha256(path.read_bytes()).hexdigest()[:16]
-
-
-def parse_registers(text: str) -> dict[str, str]:
-    """The register pane of a debugger screen, as a mapping.
-
-    Pure, so it can be held to a fixture rather than to a live emulator: what makes
-    a reading trustworthy is that the VALUE came back, and that is a property of the
-    text.
-
-    IT IS LAST-WINS PER REGISTER, INDEPENDENTLY, which is what `parse_last_pane` exists
-    to correct for anyone composing an ADDRESS out of two of them. This one keeps the
-    permissive behaviour on purpose: `registers()` hands the whole mapping back for a
-    human to read, and there the newest value of each is the useful answer.
-    """
-    return dict(REGISTER.findall(text))
-
-
-def _where_from(text: str) -> dict[str, str]:
-    """The position (cs, eip, mode) parsed from an already-surveyed screen -- `where()`'s
-    logic as a MODULE function, so a double that delegates `where`/`where_and_registers` to
-    the real Session needs no extra method to stand in for it. Splitting it as a METHOD
-    broke every such double at once (they had no `_where_from`); a free function reads
-    nothing off `self`, so nothing has to.
-    """
-    # THE LAST PANE, NOT THE WHOLE TEXT. `_survey`'s mapping is last-wins per register, so a
-    # delta holding an old whole pane above a cut one composes an address out of both and
-    # the `missing` check below cannot see it. `parse_last_pane` keeps only the newest
-    # repaint, so a cut one comes back SHORT and the refusal fires.
-    regs = parse_last_pane(text)
-    cpu = parse_mode(text)
-    if cpu is None:
-        raise Invalid("unexpected_answer",
-            f"the register pane came back but names no CPU mode (expected one of "
-            f"{', '.join(CPU_MODES)}). Without it an address is ambiguous: the same "
-            f"sixteen bits are a paragraph in real mode and a selector in protected mode")
-    # THE TWO REGISTERS THIS IS ABOUT ARE REQUIRED. A CUT delta can carry `EAX=` and a mode
-    # token and no `CS=`/`EIP=`; an empty eip handed on would die in `run_to` at
-    # `int('', 16)` with a traceback, the worst reply from the method whose job is saying
-    # where you are.
-    missing = [n for n in ("CS", "EIP") if not regs.get(n)]
-    if missing:
-        raise Invalid("unexpected_answer",
-            f"the register pane came back but carries no {' and no '.join(missing)}"
-            f" (it had: {sorted(regs)}). That is a partial repaint, not a position: an "
-            f"empty address would be passed on as if it were one")
-    return {"cs": regs["CS"], "eip": regs["EIP"], "mode": cpu}
-
-
-def parse_last_pane(text: str) -> dict[str, str]:
-    """The registers of the LAST repaint only, so an address cannot be composed of two.
-
-    `parse_registers` is `dict(findall(...))`, so every register is last-wins on its
-    own. A delta carrying an old whole pane above a CUT one therefore yields a mapping
-    that NEITHER repaint holds -- `CS` from the first and `EIP` from the second -- and
-    the pair looks perfectly well formed, so the `missing` check downstream cannot see
-    it. MEASURED on a fixture built from two panes: `where()` answered
-    `{'cs': '0087', 'eip': '00012345'}` for a machine no repaint ever showed there, and
-    `run_to` turned that into `arrived: True`.
-
-    IT IS ANCHORED ON THE PANE'S OWN HEADER, not on the rule "a pane cannot name the
-    same register twice" with a REPEAT as the start of the next repaint. That rule only
-    sees a boundary when the two fragments OVERLAP in register names, and it fails in
-    both directions:
-
-      * TWO DISJOINT FRAGMENTS MERGE SILENTLY. A stale tail from `EIP` onwards
-        (`EIP ECX EBP EDX ESP`) followed by a fresh head cut before `EIP`
-        (`EAX ... CS`) repeats nothing, so every register comes back with `EIP` from one
-        repaint and `CS` from the other, `missing` empty and `parse_mode` answering from
-        the fresh half: verbatim the wrong answer the paragraph above describes.
-      * AND IT REFUSES A COMPLETE PANE. The same stale tail followed by a WHOLE fresh
-        repaint resets at the fresh `EIP`, throwing away the fresh `CS` read moments
-        before, so `where()` refuses a delta whose last repaint was unambiguous.
-
-    THE HEADER IS A MEASURED MARKER, not an inference from names: every repaint this
-    debugger paints carries exactly one `Register Overview` banner, at the same offset,
-    with the register hits in a fixed order after it.
-
-    So the last banner is where the newest repaint starts. Two consequences, both
-    deliberately in the refusing direction:
-
-      * NO BANNER AT ALL means no complete repaint arrived in this delta, and `{}` is
-        returned rather than a mapping assembled from fragments.
-      * A REGISTER REPEATING AFTER THE LAST BANNER means a further, HEADERLESS fragment
-        is sitting on top of it, and there is no way to say which repaint each value
-        came from. `{}` again: a refusal beats a wrong answer of the right shape.
-    """
-    head = text.rfind(PANE_HEADER)
-    if head < 0:
-        return {}
-    pane: dict[str, str] = {}
-    for name, value in REGISTER.findall(text[head:]):
-        if name in pane:
-            return {}
-        pane[name] = value
-    return pane
-
-
-def offset_ceiling(mode: str) -> int:
-    """How wide an offset may be in a given CPU mode.
-
-    ONE function because BOTH `run_to` and `watch` need the rule and a copy of it in
-    each is a copy that can be fixed in one place only -- which is what happened: the
-    16-bit clamp was corrected on `run_to` and left standing on `watch`, so a watch on
-    a DJGPP static past 0xFFFF was refused outright while a breakpoint on one was not.
-
-    In protected mode an offset is 32 bits, and MEASURED, the debugger takes one:
-    `BP 0087:00012345` was accepted and listed as `BP 0087:12345`. In real mode
-    anything past 0xFFFF addresses nothing, and this debugger would accept it and then
-    never fire, which is the silent direction.
-
-    IT IS NAMED FOR WHAT IT RETURNS, a ceiling, and not for a flag such as `wide`
-    that would be True in REAL mode and then select the NARROW ceiling: a name saying
-    the opposite of what it holds, one line above the comparison it feeds.
-    """
-    return 0xFFFFFFFF if mode.startswith("Pr") else 0xFFFF
-
-
-def parse_pane_clock(text: str) -> float | None:
-    """The emulated milliseconds the last pane on the screen paints, None when none says."""
-    found = PANE_CLOCK.findall(text)
-    return float(found[-1]) if found else None
-
-
-def parse_pane_cycles(text: str) -> int | None:
-    """The `cc=` the last pane on the screen paints, None when none says."""
-    found = PANE_CYCLES.findall(text)
-    return int(found[-1]) if found else None
-
-
-def parse_paging(text: str) -> bool | None:
-    """Whether the pane says paging is on (`PAGE`) or off (`NOPG`), the last pane winning as
-    in `parse_mode`; None when no pane on the screen says either, which is not "off"."""
-    found = PAGING.findall(text)
-    return None if not found else found[-1] == "PAGE"
-
-
-def parse_mode(text: str) -> str | None:
-    """The CPU mode a debugger screen reports, or None if it does not report one.
-
-    None is an ANSWER ABOUT THE TEXT and not a mode: the caller decides what to do
-    with a screen that named none, and every caller here refuses. Returning "Real" for
-    a screen with no token would be the same wrong-answer-of-the-right-shape that
-    `selector` refuses when a real-mode descriptor reads as base 0.
-
-    THE LAST ONE WINS, because the pane scrolls: a delta can carry a repaint of an
-    earlier register pane above the current one, and the mode being asked about is the
-    one the machine is in NOW.
-
-    A LIMIT, said out loud, and HALF of it is now closed. This and `parse_registers` are
-    each last-wins over the same text, and nothing checks they came from the SAME
-    repaint. The half that WAS closed is the worse one: `parse_registers` is last-wins
-    PER REGISTER, so a delta could compose an address out of a `CS` from one repaint and
-    an `EIP` from another -- MEASURED, `where()` answered `{'cs': '0087', 'eip':
-    '00012345'}` for a machine no repaint ever showed there, and `run_to` turned it into
-    `arrived: True`. `parse_last_pane` is what `where()` reads now, so the address comes
-    from one repaint or the refusal fires.
-
-    WHAT IS STILL OPEN is the MODE against that address: this function is last-wins over
-    the whole text independently of which pane the registers came from, so a delta
-    holding an old real-mode pane below a newer protected one can still pair a mode with
-    an address from a different repaint. Both readers are anchored to the register pane,
-    so the window is narrow; it is not closed.
-    """
-    found = CPU_MODE.findall(text)
-    return found[-1] if found else None
-
-
-def parse_breakpoints(text: str) -> list[dict[str, str]]:
-    """The debugger's breakpoint list, from the LAST listing in the text.
-
-    `BPLIST` prints a header and then one indexed row per breakpoint. Taking the last
-    header is not tidiness: the Output pane is a scrolling log, so a delta routinely
-    holds an earlier listing as well, and reading from the FIRST one answers with the
-    breakpoints that existed before the command that was just sent -- which is exactly
-    the state a caller runs this to find out has changed.
-
-    An empty list is an honest answer: the debugger prints the header with no rows
-    when nothing is armed. A text with NO header at all returns empty too, and that is
-    why every caller here checks for the header itself rather than treating "no rows"
-    as "nothing armed": a pane that never repainted also has no rows.
-    """
-    at = text.rfind(BPLIST_HEADER)
-    if at < 0:
-        return []
-    return [{"index": i, "entry": e}
-            for i, e in BREAKPOINT_ROW.findall(text[at + len(BPLIST_HEADER):])]
-
-
-# The kind token and the seg:off of a breakpoint row, as NUMBERS. `BP F000:E05B`,
-# `BPMEM 0040:006C (00)`, `BPPM 00AF:00006024 (00)` all parse; `BPINT 21 AH=4C` does not,
-# because it names an interrupt and not an address, and has no seg:off to match.
-_BP_ROW_ADDR = re.compile(r"^(BP[A-Z]*)\s+([0-9A-Fa-f]+):([0-9A-Fa-f]+)")
-
-
-def interrupt_row(number: int, ah: int | None) -> str:
-    """The BPLIST row an interrupt breakpoint is listed as, in the debugger's own spelling.
-    CAPTURED with both forms armed at once (`00. BPINT 21`,
-    `01. BPINT 31 AH=00`): the AH half is ABSENT, not defaulted, when none was given. ONE
-    function because three places need the same string -- the arming read-back, the clear,
-    and the store's declaration -- and a spelling kept in three places drifts."""
-    return f"BPINT {number:02X}" + (f" AH={ah:02X}" if ah is not None else "")
-
-
-_INT_ROW = re.compile(r"^BPINT ([0-9A-Fa-f]{2})(?: AH=([0-9A-Fa-f]{2}))?$")
-
-
-def parse_interrupt_row(row: str) -> tuple[int, int | None]:
-    """The `(number, ah)` an interrupt row names, the inverse of `interrupt_row`. Refuses a
-    string that is not one of its spellings, so a corrupt stored ref fails as INVALID here
-    rather than reaching the console as a malformed `BPDEL`."""
-    m = _INT_ROW.match(row.strip())
-    if m is None:
-        raise Invalid("unexpected_answer",
-            f"{row!r} is not an interrupt breakpoint row (BPINT NN [AH=NN])")
-    return int(m.group(1), 16), (int(m.group(2), 16) if m.group(2) is not None else None)
-
-
-def bp_row_target(entry: str) -> tuple[str, int, int] | None:
-    """A BPLIST row's kept text as `(kind, seg, off)` by VALUE, or None if it holds no
-    seg:off.
-
-    RECOGNITION IS BY THE NUMBERS, NEVER BY A RECONSTRUCTED SPELLING, because the width
-    the debugger prints an offset at is not fixed: MEASURED, one watch address came back
-    as both `BPPM 00AF:6024` and `BPPM 00AF:00006024`, and a code offset accepted as
-    `BP 0087:00012345` listed as `BP 0087:12345`. So `f"BP {seg:04X}:{off:04X}"` compared
-    for equality against the row the debugger actually printed reports a breakpoint that
-    IS set as absent -- and then clears nothing and arms a duplicate. Parsing the fields
-    and comparing the integers is immune to which width it chose. The kind token is kept
-    so a code breakpoint (`BP`) is told from a memory watch (`BPMEM`/`BPPM`/`BPLM`) at the
-    same address, which is the one thing the number alone cannot say.
-    """
-    m = _BP_ROW_ADDR.match(entry.strip())
-    if m is None:
-        return None
-    return m.group(1), int(m.group(2), 16), int(m.group(3), 16)
-
-
-def _same_place(dest: Path, other: Path, *, inside: bool = True) -> bool:
-    """Is `dest` the same file as `other`, or inside it, ON THIS FILESYSTEM? With
-    `inside=False`, only the same file.
-
-    IT IS NOT `==` AND `in .parents`, which compare path STRINGS over an unnormalised
-    path. The hazard is a filesystem property -- whether `dest` is, or lies under, a place
-    the debugger writes -- and spellings that are the same file escaped it, each
-    reproducing the session-poisoning the guard exists to prevent:
-
-    * CASE, on a case-folding filesystem. `MemDump.bin` is not `memdump.bin` to `==`
-      and is the same file to APFS, which is the default on the platform every
-      measurement in this package was taken on. `_memdump_candidates` already reasons
-      about this in its own docstring and enumerates two spellings; the filesystem
-      accepts all 2^11.
-    * SYMLINKS. The working directory reached by two names gives two unequal paths.
-
-    `resolve()` settles links (a relative `dest` never reaches here: `dosbox_paths` refuses
-    it); the fold is compared
-    explicitly because `resolve()` does not canonicalise case on macOS. Over-refusing
-    (`cwd/memdump.bin/../d.bin`, which really resolves elsewhere) is not a risk here:
-    `resolve` normalises `..` before the comparison.
-    """
-    here, there = dest.resolve(), other.resolve()
-    if here == there or (inside and there in here.parents):
-        return True
-    # The fold, for a filesystem that has one. A separator is required after the
-    # prefix so `/a/memdump.bin2` is not read as living inside `/a/memdump.bin`.
-    low, prefix = str(here).casefold(), str(there).casefold()
-    return low == prefix or (inside and low.startswith(prefix + os.sep))
-
-
-def judge_collection(dest: Path, cwd: Path, written: list[Path], what: str) -> None:
-    """Where a file the DEBUGGER writes (`what`: a dump, a trace) may be moved to, judged before
-    the debugger is asked anything: not directly in the emulator's working directory, where the
-    debugger drops its own file and a collected one cannot be told from a leftover (a
-    subdirectory, a project's `TMP/`, carries no such hazard), and not, nor inside, any of the
-    `written` places the debugger writes: a dump collected into the place it is collected FROM
-    cannot be told from the leftover the next call refuses."""
-    if _same_place(dest.parent, cwd, inside=False):
-        raise Invalid("bad_argument",
-            f"{dest} is in {cwd}, the emulator's working directory, where the debugger writes "
-            f"its own {what} file: name a path outside it, or in a subdirectory of it")
-    for c in written:
-        if _same_place(dest, c):
-            raise Invalid("bad_argument",
-                f"{dest} is, or is inside, {c}, which is where the debugger writes its own "
-                f"file. Collecting a {what} into the place it is collected FROM cannot be told "
-                f"from the leftover this refuses")
-
-
-def refuse_leftover(written: list[Path], what: str) -> None:
-    """A file already sitting where the debugger writes is somebody's, never this call's: it is
-    REFUSED, never read or deleted, because the first of those places is the emulator's working
-    directory, which is somebody's project, and an unlink that failed would hand the leftover
-    back as this call's file. A dangling link is something there too: the debugger would write
-    through it, onto whatever it names."""
-    present = [c for c in written if paths.taken(c)]
-    if present:
-        raise Invalid("bad_argument",
-            f"a {what} file is already sitting at {[str(c) for c in present]}. It is not this "
-            f"{what} and this will not delete it: move it aside and ask again. The first of "
-            f"those paths is the emulator's working directory, which is somebody's project")
-
-
-def collect(source: Path, dest: Path, what: str) -> Path:
-    """The debugger's file moved from where it wrote it to `dest`. `os.replace` cannot cross
-    filesystems and `dest` is the caller's, so a move to another volume falls back to a copy and
-    an unlink rather than leaving by a bare OSError."""
-    try:
-        source.replace(dest)
-    except OSError as exc:
-        try:
-            shutil.copyfile(source, dest)
-            source.unlink()
-        except OSError as exc2:
-            # A copy cut short is this call's and would be refused as somebody's next time.
-            with contextlib.suppress(OSError):
-                dest.unlink()
-            raise Invalid("host_failed", f"the {what} was written to {source} and could not be "
-                          f"moved to {dest}: {exc!r}, then {exc2!r}") from None
-    return dest
-
-
-# THE HELP LINE THE DEBUGGER COMPILES ONLY UNDER `C_HEAVY_DEBUG`, beside the `LOG` family it
-# documents: a build that carries it has the CPU log. Read off the binary's bytes, never by
-# typing `LOG` to find out (a command the debugger does not know poisons its input line).
-HEAVY_DEBUG_MARK = b"LOGS/LOGL/LOGC [num]"
-_heavy_debug_seen: dict[tuple[str, int, int], bool] = {}
-
-
-def heavy_debug(binary: str) -> bool:
-    """Whether the build at `binary` carries the CPU log, cached per (real path, size, mtime) so
-    a rebuilt binary is read again."""
-    real = os.path.realpath(binary)
-    try:
-        st = os.stat(real)
-        key = (real, st.st_size, st.st_mtime_ns)
-        if key not in _heavy_debug_seen:
-            _heavy_debug_seen[key] = HEAVY_DEBUG_MARK in Path(real).read_bytes()
-    except OSError as exc:
-        raise Invalid("host_failed", f"{real} could not be read to see whether it carries the "
-                      f"CPU log: {exc!r}") from None
-    return _heavy_debug_seen[key]
-
-
-def parse_data_view(text: str) -> list[str]:
-    """The data-view rows of a debugger screen, in the order they were painted.
-
-    Pure, like `parse_registers` and for the same reason: what makes a reading
-    trustworthy is that the BYTES came back, and that is a property of the text.
-
-    IT EXISTS BECAUSE THE ALTERNATIVE IS A SLICE BY POSITION, and a slice takes the wrong
-    end: this debugger paints its Output log BELOW its Data view, so the screen's last
-    2000 characters are the emulator's boot chatter and what is thrown away is the
-    memory. MEASURED: `D F000:E000` produces a delta longer than that cap in which the
-    row for E000 is present, and the capped reply begins rows later. A tool answering
-    `ok` without containing its own answer.
-
-    IT SEARCHES RATHER THAN MATCHING WHOLE LINES, so what comes back is the row and not
-    the pane decoration around it. See `DATA_ROW` for why a row is not at the start of
-    its line, and for what anchoring there was measured to cost.
-
-    AND IT TAKES EVERY MATCH ON A LINE, NOT THE FIRST. The same repaint mechanism that
-    glues a pane header to the row after it glues ROWS to each other, so `.search` --
-    which returns one match per line -- silently dropped every row but the first
-    whenever two arrived without a newline between them. MEASURED on the pattern: two
-    complete rows, gutters and all, parsed to ONE, and asking for the second address
-    then produced an INVALID whose text asserted "that is a reading of somewhere else"
-    about a row sitting in the string it had just parsed.
-    """
-    return [m.group(0) for raw in text.splitlines()
-            for m in DATA_ROW.finditer(raw)]
-
-
-def compiled(pattern: str) -> re.Pattern[str]:
-    """A caller's pattern, or the refusal that says it is THEIRS and not the guest's.
-
-    ONE function because two readers take a pattern, and a message duplicated across
-    both is how they drift: the second copy gets reworded, the two refusals stop
-    agreeing, and nothing fails while they do it. The refusal has to say whose pattern
-    is at fault, so it is worth exactly one definition.
-    """
-    try:
-        return re.compile(pattern)
-    except re.error as e:
-        raise Invalid("bad_argument", f"that is not a usable pattern: {e}") from None
-
-
-def input_line(reply: str) -> str | None:
-    """What the debugger's input line holds at the LAST prompt of `reply`, its cursor
-    dropped: empty for a console ready to take a command, None when no prompt came back."""
-    at = reply.rfind(PROMPT)
-    if at < 0:
-        return None
-    return reply[at + len(PROMPT):].strip().removesuffix("_").strip()
-
-
-def at_pager(reply: str) -> bool:
-    """Whether `reply` ends at the pager: its marker under the LAST prompt, so a marker an
-    earlier listing left in the Output pane's scrollback is not taken for this one's."""
-    at = reply.rfind(PROMPT)
-    return at >= 0 and PAGER_MARK in reply[at:]
-
-
-def count_e9(text: str) -> int:
-    """How many instrumentation lines this log holds AT ALL, whatever the pattern.
-
-    It is what lets the two nothings be told apart. A log with instrumentation in it
-    and no line matching your pattern is an ANSWER; a log with none at all is a
-    statement about the build or about how far the guest has got, and reporting it as
-    an empty result is how a silent channel gets read as a clean one.
-    """
-    return sum(1 for ln in text.splitlines() if E9_LINE.match(ln))
-
-
-def fingerprint(conf: Path) -> str:
-    """The stamp of the conf, the build before any map: a batch's stamp hashes it in
-    (`dosbox_declarations.Build.stamp`)."""
-    return hashlib.sha256(conf.read_bytes() if conf.exists()
-                          else str(conf).encode()).hexdigest()[:16]
-
-
-def check_channel(channel: str) -> None:
-    if channel not in LOG_CHANNELS:
-        raise Invalid("bad_argument",
-                      f"channel is one of {LOG_CHANNELS}; got {channel!r}. There is no "
-                      "`process` channel: the emulator's stdout is the debugger's own "
-                      "terminal (`debug` reads it) and not a log")
-
-
-def channel_of(line: str) -> str:
-    """Which channel a line of the log belongs to: the guest's E9 prefix decides."""
-    return "guest" if E9_LINE.match(line) else "emulator"
-
-
-def channel_lines(lines: list[str], channel: str) -> list[str]:
-    """The lines of `channel`, in order; for `all`, every line tagged `[guest] ` or
-    `[emulator] ` so the reader knows the source of each without a second call."""
-    if channel == "all":
-        return [f"[{channel_of(ln)}] {ln}" for ln in lines]
-    return [ln for ln in lines if channel_of(ln) == channel]
-
-
-def label_counts(lines: list[str]) -> dict[str, int]:
-    """How many lines carry each LABEL, the guest's own first word: what a program
-    writes at the head of every trace (`BOOT`, `PERF`, `UI`) once the E9 prefix, a source
-    tag and a bracketed stamp (`[+   0.000]`) are stepped over. One glance says who is
-    talking; the `pattern` still selects."""
-    counts: dict[str, int] = {}
-    for ln in lines:
-        payload = E9_LINE.sub("", re.sub(r"^\[(guest|emulator)\] ", "", ln))
-        payload = re.sub(r"^\[[^\]]*\]\s*", "", payload)
-        words = payload.split()
-        if words:
-            counts[words[0]] = counts.get(words[0], 0) + 1
-    return counts
-
-
-def log_hits(text: str, pattern: str, channel: str) -> list[str]:
-    """EVERY matching line of `channel`, in order: the reader the server's own reductions
-    (the stop reply's E9 block) build on, which need the whole channel and carry no
-    caller's limit; `check_e9_limit` binds the caller-facing readers only."""
-    rx = compiled(pattern)
-    check_channel(channel)
-    return [ln for ln in channel_lines(text.splitlines(), channel) if rx.search(ln)]
-
-
-def filter_log(text: str, pattern: str, limit: int, channel: str) -> tuple[list[str], int]:
-    """(the newest `limit` matching lines of `channel`, HOW MANY matched in total): the
-    reader behind `log`, with `filter_e9` as its guest-channel spelling."""
-    check_e9_limit(limit)
-    hits = log_hits(text, pattern, channel)
-    return hits[-limit:], len(hits)
-
-
-def filter_e9(text: str, pattern: str, limit: int) -> tuple[list[str], int]:
-    """(the newest `limit` matching lines, HOW MANY matched in total).
-
-    THE TOTAL IS RETURNED SEPARATELY because the two are different answers and an
-    earlier version conflated them: it reported the length of the slice under the
-    name `matched`, so a caller asking "how many times did this fire" got the limit
-    back and could not tell a genuine 40 from a truncated 5000.
-
-    THE GUARD IS ON THE CHANNEL, not on the content: a line counts only when it IS an
-    instrumentation line, never when it merely quotes one. A build log naming
-    `src/loudness.c`, or a tool's report echoing a trace back, contains the words
-    without being the thing.
-
-    The tail is kept rather than the head, deliberately: the recent state is what a
-    question is about, and a head slice answers with the boot every time.
-    """
-    return filter_log(text, pattern, limit, "guest")
-
-
 def avi_facts(data: bytes) -> dict[str, object]:
     """What is IN a capture, not merely how big it is.
 
@@ -1296,310 +470,8 @@ def avi_facts(data: bytes) -> dict[str, object]:
     }
 
 
-def build_argv(launch: Launch) -> list[str]:
-    """The command line: our options with the caller's values, then the caller's own `flags`.
-
-    `validate` judges the values first (`program`, a DOS command line, and the two directories
-    `start` creates excepted), because
-    an argv token DOSBox-X does not recognise does not fail, it hangs; and `flags` may name no
-    option a named argument owns (`OWNED_OPTIONS`, `OWNED_SETS`), so a caller cannot undo one
-    argument through another.
-    """
-    argv = [launch.binary, "-conf", str(launch.conf),
-            "-time-limit", str(launch.seconds),
-            "-break-start", "-fastlaunch",
-            # NO QUIT-WARNING DIALOG: with a program loaded the emulator answers a TERM by
-            # asking whether to quit anyway, and a session nobody is watching then sits
-            # behind that question until the SIGKILL. The setting is `auto` by default and
-            # a conf does not carry it, so it goes here, BEFORE the caller's flags: a later
-            # `-set` wins, for the one caller who wants the dialog back.
-            "-set", "dosbox quit warning=false"]
-    # THE REMARK DIALOG IS OFF IN EVERY SESSION, for the same reason and in the same place:
-    # measured, with `saveremark` at its default a `Save state` opens a dialog asking for
-    # a remark, the dialog takes the SDL window with it (no window, no menu bar, the
-    # process spinning) and nothing is written, stopped or running alike. Before the
-    # caller's flags, so a later `-set` wins. The slot directory is the caller's when they
-    # named one.
-    argv += ["-set", "dosbox saveremark=false"]
-    if launch.state_dir is not None:
-        argv += ["-savedir", str(launch.state_dir)]
-    if not launch.watched:
-        # The application's own headless setting. See this module's docstring for why
-        # it is this and not SDL_VIDEODRIVER, and not -silent.
-        argv += ["-set", "sdl videodriver=dummy"]
-    else:
-        argv += launch.window_flags
-    if launch.break_on_int3:
-        argv += ["-set", "dos break on int3=true"]
-    if launch.logfile is not None:
-        argv += ["-set", f"log logfile={launch.logfile}"]
-    if launch.input_port is not None:
-        # THE INPUT ROUTE'S TWO SWITCHES, as `-set` overrides so the caller's conf need not
-        # carry them: the integration device lives in the `[cpu]` section (upstream's own
-        # Windows notes say so; under `[dosbox]` it is silently ignored -- measured), and
-        # COM1 becomes a TCP client of the session's own listener. TRANSPARENT, because
-        # otherwise the nullmodem reads a 0xFF from the socket as the escape of its own
-        # line-status protocol, and a pointer coordinate holding that byte would arrive changed.
-        # The stub is the conf's to run, or `program`'s.
-        argv += ["-set", "cpu integration device=true",
-                 "-set", f"serial serial1=nullmodem server:{INPUT_HOST} port:{launch.input_port} "
-                         "transparent:1"]
-    if launch.captures_dir is not None:
-        argv += ["-set", f"dosbox captures={launch.captures_dir}"]
-    if launch.control_port is not None:
-        argv += ["-set", f"dosbox mcp_server={launch.control_port}"]
-    # THE CALLER'S FLAGS COME AFTER EVERY `-set` OF OUR OWN, so one of the same key wins.
-    argv += launch.flags
-    if launch.program:
-        # DX-CAPTURE runs the program WITH video capture and stops when it exits,
-        # which is the only screen capture DOSBox-X offers with nobody at the
-        # keyboard: the still screenshot is a mapper action and needs a keypress.
-        #
-        # A CONSTRAINT ON THE CONF, MEASURED rather than assumed: `-c` runs AFTER the
-        # conf's `[autoexec]` section, so a conf whose autoexec ends in `exit` quits
-        # the emulator before this command is ever reached. Verified both ways --
-        # `-c "ECHO ran > C:\DASHC.TXT"` against such a conf leaves no file, and the
-        # same command with `-noautoexec` leaves none either, because then C: is not
-        # mounted. So `program` needs a conf that mounts what it needs and does NOT
-        # run-and-exit; `captures()` says this when nothing appears, because the
-        # symptom is an empty directory and the cause is three files away.
-        cmd = f"DX-CAPTURE /V {launch.program}" if launch.capture_video else launch.program
-        if launch.input_port is not None:
-            # THE STUB GOES IN FIRST, by the same `-c` route: these run in order after the
-            # conf's autoexec, so the program this launches finds it resident. A conf that runs
-            # its own program from the autoexec never reaches here and carries the stub line.
-            argv += ["-c", f'mount {STUB_DRIVE} "{GUEST_DIR}"', "-c", f"{STUB_DRIVE}:\\INJECT.COM"]
-        argv += ["-c", cmd]
-    return argv
-
-
-# THE STUB'S HOME, shipped beside this module, and the drive a `program` session mounts it on:
-# a letter late in the alphabet, so it does not take one a conf is likely to mount.
-GUEST_DIR = Path(__file__).resolve().with_name("guest")
-STUB_DRIVE = "Y"
-INPUT_CONNECT_S = 8.0     # how long a session waits for the emulator's serial port to dial it
-INPUT_HOST = control.LOCAL_HOST
 SCREENSHOT_COMMAND = b"S"   # the stub's opcode for the device's capture trigger (guest/inject.asm)
 COMMAND_GAP_S = 0.06    # the pause between stub commands: just over one 18.2 Hz timer tick
-
-
-# THE BACKGROUND LAUNCH. macOS makes a newly launched app with a window the frontmost one, so a
-# shared start would take the owner's focus; SDL3 reads this hint before `SDL_Init` and keeps the
-# app behind, and it reaches SDL3 through the sdl2-compat layer this build links (measured: a
-# shared window behind never once frontmost, the same window without it in front at once).
-BACKGROUND_VAR = "SDL_MAC_BACKGROUND_APP"
-
-
-def judge_background(background: bool | None, watched: bool) -> bool:
-    """Whether the emulator is launched behind: `background` when given, else behind for a
-    session nobody watches and in front for a shared one."""
-    return not watched if background is None else background
-
-
-def launch_environment(background: bool) -> dict[str, str]:
-    """The environment the emulator is spawned with: this server's, the terminal the debugger
-    draws in, and the background hint set or REMOVED, never inherited, so a server started with
-    the hint in its own environment cannot launch a `background=False` session behind."""
-    spawned = dict(os.environ, TERM="xterm-256color", LINES="50", COLUMNS="132")
-    if background:
-        spawned[BACKGROUND_VAR] = "1"
-    else:
-        spawned.pop(BACKGROUND_VAR, None)
-    return spawned
-
-
-def listen_input(port: int) -> socket.socket:
-    """The session's end of the serial input route, LISTENING before the emulator exists
-    (`dosbox_control.listen_local`, which says why that way round): 0 takes the kernel's pick;
-    a port already taken is refused before anything is spawned."""
-    try:
-        return control.listen_local(port)
-    except OSError as e:
-        if not port:
-            raise Invalid("host_failed", f"the kernel would not hand out a free port for the "
-                          f"input route ({e})") from None
-        raise Invalid("host_failed", f"input_port {port} is already in use on this host ({e}): "
-                      f"the session cannot listen there for the emulator. Pick another port, "
-                      f"or omit it") from None
-
-
-def _accept_input(listener: socket.socket, seconds: float,
-                  exited: Callable[[], int | None]) -> socket.socket:
-    """The emulator's dial on the input route, accepted within the bound, then the listener
-    closed. A refusal here is raised INTO `Session.__init__`'s `except BaseException`, which
-    kills the child it has just spawned: a session on this route with no socket is one whose
-    guest will block the moment its stub polls the port."""
-    port = listener.getsockname()[1]
-    try:
-        got = control.await_dial(listener, seconds, exited)
-    finally:
-        listener.close()
-    if isinstance(got, int):
-        raise Invalid("session_broken",
-            f"the emulator exited (code {got}) before it dialled the serial input port {port}")
-    if got is None:
-        raise Invalid("session_broken",
-            f"the emulator never dialled the serial input port {port} within {seconds}s: the "
-                      f"serial input route cannot be used, and a guest polling that port with no "
-                      f"client would block the emulator")
-    got.setblocking(True)
-    return got
-
-
-# WHAT A NAMED ARGUMENT OWNS, so `flags` cannot retune it: the options this server passes,
-# and the `-set` keys it derives from an argument, each with the argument that sets it.
-OWNED_OPTIONS = {"-conf": "conf", "-time-limit": "seconds", "-break-start": "start",
-                 "-savedir": "state_dir", "-c": "program"}
-OWNED_SETS = {"sdl videodriver": "mode", "dos break on int3": "break_on_int3",
-              "log logfile": "logfile", "serial serial1": "input_port",
-              "cpu integration device": "input_port", "dosbox captures": "captures_dir"}
-# THE `-set` KEYS THE SESSION ITSELF OWNS, with no argument behind them: a caller's value would
-# point the debugger channel somewhere the session is not listening.
-SESSION_SETS = {"dosbox mcp_server"}
-
-
-def _set_key(token: str) -> str:
-    """The `section key` a `-set` token names, however the value is joined to it: DOSBox-X
-    takes `section key=value` and also `section key value`, so the key is the longest owned
-    one the words start with, else the words before an `=`."""
-    words = token.split("=", 1)[0].lower().split()
-    for n in range(len(words), 1, -1):
-        key = " ".join(words[:n])
-        if key in OWNED_SETS or key in SESSION_SETS:
-            return key
-    return " ".join(words)
-
-
-def check_flags(name: str, flags: list[str]) -> None:
-    """Argv tokens a caller hands in, each a separate non-empty string, never a glued option
-    and value, and a `-set` never shredded. Both malformations fail SILENTLY in DOSBox-X."""
-    for i, flag in enumerate(flags):
-        if not isinstance(flag, str) or not flag:
-            raise Invalid("bad_argument",
-                f"{name} must be separate non-empty strings; got {flag!r}")
-        # AND THE GLUED PAIR, WHICH THE CHECK ABOVE CANNOT SEE: `['-set "sdl display=1"']` is
-        # a non-empty `str`. The rule is exact rather than a heuristic about quotes: an OPTION
-        # is one word, a VALUE may hold spaces. `-set` and `sdl display=1` are two tokens and
-        # both are fine; `-set sdl display=1` as one token is not an argument DOSBox-X
-        # recognises, and it HANGS on those rather than refusing them, so the only
-        # thing that would end that session is its own bound.
-        if flag.startswith("-") and flag.split() != [flag]:
-            raise Invalid("bad_argument",
-                f"{flag!r} is an option and a value GLUED into one token. "
-                          f"They are separate argv entries -- ['-set', 'sdl "
-                          f"display=1'], not ['-set \"sdl display=1\"'] -- because "
-                          f"DOSBox-X does not refuse an argument it cannot parse, it "
-                          f"hangs on it")
-        if flag == "-set" and (i + 1 >= len(flags) or " " not in str(flags[i + 1])):
-            raise Invalid("bad_argument",
-                f"{name}: the `-set` at {i} is not followed by one `section key=value` "
-                f"token (a space inside it). A shredded `-set` is ignored by DOSBox-X at "
-                f"rc 0, so the setting would silently not apply")
-        if name == "flags":
-            owner = OWNED_OPTIONS.get(flag)
-            if flag == "-set":
-                key = _set_key(str(flags[i + 1]))
-                owner = OWNED_SETS.get(key)
-                if key in SESSION_SETS:
-                    raise Invalid("bad_argument",
-                        f"flags: the `-set` at {i} sets `{key}`, which every session sets "
-                        f"to its own debugger channel; it is not the caller's to change")
-            if owner is not None:
-                raise Invalid("bad_argument",
-                    f"flags: {flag!r} at {i} sets what `{owner}` owns. Placed after this "
-                    f"server's own options it would quietly undo that argument, so set it "
-                    f"through `{owner}`")
-
-
-def _judge_files(launch: Launch) -> None:
-    """The launch's files on the filesystem: the conf there, the working directory there, the
-    logfile's directory there and the logfile neither a directory, nor the conf, nor one of the
-    directories `start` creates."""
-    if not launch.conf.is_file():
-        raise Invalid("bad_argument", f"conf: no conf at {launch.conf}: a session that cannot be "
-                      f"reproduced is refused before it exists")
-    if not launch.cwd.is_dir():
-        # It is guarded HERE for the same reason the conf is. A missing cwd makes
-        # `Popen` raise, and that raise lands after the pseudo-terminal has been
-        # opened -- two leaked descriptors on an object nothing can reach to close.
-        raise Invalid("bad_argument",
-            f"cwd: no working directory at {launch.cwd}: a DOSBox-X conf mounts "
-                      f"relative paths, so the directory is part of what makes the "
-                      f"session reproducible")
-    logfile = launch.logfile
-    if logfile is not None:
-        # A LINK IS JUDGED BY THE FILE IT NAMES, the one the emulator opens.
-        log = paths.resolved("logfile", logfile)
-        if not log.parent.is_dir() or log.is_dir():
-            # The emulator opens its log afresh and says nothing when it cannot: a log under a
-            # missing directory surfaced later as "no log", never as the path that was wrong.
-            named = f" (a link to {log})" if logfile.is_symlink() else ""
-            raise Invalid("bad_argument",
-                f"logfile: {logfile}{named} " + ("is a directory" if log.is_dir() else
-                                                 f"has no directory {log.parent}")
-                + ": the emulator would write its log nowhere and say nothing")
-        if log.exists() and log.samefile(launch.conf):
-            raise Invalid("bad_argument",
-                f"logfile: {logfile} is the conf {launch.conf}: the emulator opens its log "
-                f"afresh, so it would write the log over the conf this session boots from")
-    if launch.logfile is not None and launch.logfile in (launch.captures_dir, launch.state_dir):
-        raise Invalid("bad_argument",
-            f"logfile: {launch.logfile} is also the directory `start` creates for "
-            f"{'captures_dir' if launch.logfile == launch.captures_dir else 'state_dir'}")
-
-
-def validate(launch: Launch) -> None:
-    """Everything that makes a session refusable, decided BEFORE any process exists.
-
-    IT IS A FUNCTION OF ITS OWN AND NOT A FEW LINES INSIDE `Session.__init__`, and the
-    reason is a leak this cost before it was moved. While these guards lived in the
-    constructor, the only way to test them was to CONSTRUCT a session -- fine while
-    they hold, and a disaster the moment one is removed: the break that deletes a
-    guard makes the same test START a real emulator that nothing then closes.
-    MEASURED, and found by hand before any gate noticed: six emulators left running
-    on the machine, and the one from the missing-bound case carried `-time-limit 0`,
-    which is not a short bound but NO bound at all.
-
-    As a pure function it is testable without a process existing, so the break that
-    removes a guard makes a test FAIL rather than spawn.
-    """
-    try:
-        _judge_files(launch)
-    except (OSError, ValueError) as e:     # a stat refused (before 3.14 it raises, not answers)
-        raise Invalid("bad_argument",
-                      f"a path of this launch cannot be looked at: {e}") from None
-    if launch.watched and not launch.window_flags:
-        raise Invalid("bad_argument",
-            "a watched session needs its placement flags, and this server does "
-            "not compute them: they come from the caller, which is what keeps "
-            "one helper the single source of where a window goes. Inventing a "
-            "geometry here is how windows end up off-screen or on the display "
-            "nobody is looking at.")
-    if not launch.watched and launch.window_flags:
-        raise Invalid("bad_argument",
-            "`window_flags` place a WINDOW and a headless session has none, so they would "
-            "be dropped: an emulator flag (a `-set` of the clock, say) goes in `flags`, "
-            "which reaches the command line in either mode")
-    check_flags("window_flags", launch.window_flags)
-    check_flags("flags", launch.flags)
-    if launch.seconds <= 0:
-        raise Invalid("bad_argument", "a session without a bound is refused: DOSBox-X does not "
-                      "reject an option it does not know, it hangs, so the bound "
-                      "is the only thing that ends an abandoned session. Note that "
-                      "`-time-limit 0` is not a short bound, it is none at all")
-    if launch.seconds > MAX_SECONDS:
-        raise Invalid("bad_argument", f"{launch.seconds}s is not a bound, it is a formality: the "
-                      f"ceiling is {MAX_SECONDS}s. A limit large enough to outlast "
-                      f"the day protects nothing")
-    if launch.capture_video and not launch.program:
-        raise Invalid("bad_argument",
-            "capture_video needs a program to capture: DX-CAPTURE wraps a "
-                      "PROGRAM and stops when it exits, so without one the flag "
-                      "would be accepted and quietly do nothing")
-    if launch.input_port and not 1024 <= launch.input_port <= 65535:
-        raise Invalid("bad_argument",
-            f"input_port is the TCP port the emulator's COM1 dials, between "
-                      f"1024 and 65535; got {launch.input_port}")
 
 
 BREAK_IN_WAIT_S = 5.0     # from BREAK on the channel to the debugger's prompt on the terminal
@@ -1611,46 +483,6 @@ SNAPSHOT_WAIT_S = 10.0
 # timer's tick handlers and the channel is served from one while the guest runs. The bound is
 # the command's reply: a state of a large machine is written for a second or two.
 STATE_WAIT_S = 30.0
-# A STATE'S NAME is a file name under the state directory, so it is held whole (`fullmatch`: a
-# `$` would let a trailing newline through) and to a length a file system takes everywhere.
-STATE_NAME_MAX = 64
-STATE_NAME = re.compile(rf"[A-Za-z0-9][A-Za-z0-9_-]{{0,{STATE_NAME_MAX - 1}}}")
-# The members of a state ZIP that identify it without loading it, measured off a real
-# one: the emulator's version, the program, the machine, the memory size, the stamp.
-STATE_META = {"version": "DOSBox-X_Version", "program": "Program_Name",
-              "machine": "Machine_Type", "memory_size": "Memory_Size",
-              "time_stamp": "Time_Stamp"}
-
-
-def check_state_name(name: object) -> None:
-    if not isinstance(name, str) or not STATE_NAME.fullmatch(name):
-        raise Invalid("bad_argument",
-            f"a state name is letters, digits, `_` and `-`, starting with a letter or a "
-                      f"digit, at most {STATE_NAME_MAX} of them; got {name!r}. It becomes a "
-                      f"file name under the state directory")
-    if name.isdigit():
-        # The emulator's own slot files are `<n>.sav` in the same directory, and a state
-        # named `1` would be its working slot's file, written by the slot as well as by name.
-        raise Invalid("bad_argument",
-            f"a state name of digits only, {name!r}, is the emulator's own slot file name "
-            f"(`{name}.sav`): add a letter")
-
-
-def state_meta(path: Path) -> dict[str, object]:
-    """What a state file says about itself, read off the ZIP without loading it. A file
-    that is not a state ZIP gets a `note` rather than a refusal, because `state_list` is a
-    reading of a directory and a stray file in it is information."""
-    out: dict[str, object] = {"name": path.stem, "path": str(path),
-                              "bytes": path.stat().st_size}
-    try:
-        with zipfile.ZipFile(path) as z:
-            names = set(z.namelist())
-            for field, member in STATE_META.items():
-                if member in names:
-                    out[field] = z.read(member).decode("utf-8", errors="replace").strip()
-    except zipfile.BadZipFile:
-        out["note"] = "not a save state: the file is not a ZIP the emulator wrote"
-    return out
 
 
 # ------------------------------------------------------------------ argument checks
@@ -1659,30 +491,13 @@ def state_meta(path: Path) -> dict[str, object]:
 # WHOLE list before its first step: a batch enters through the same checks the synchronous
 # call makes, so a value that would be refused mid-list is refused before anything ran.
 
-# THE CEILING ON A LOG READ: a guard that calls the whole log "the haystack this exists to
-# stop carrying" and then takes `limit=1000000` has allowed the same haystack with a number
-# on it. Above this, narrow the pattern.
-LOG_LIMIT_MAX = 400
-
-
-def check_e9_limit(limit: int) -> None:
-    if limit <= 0:
-        raise Invalid("bad_argument",
-            "a limit of zero or less would return the whole log, which is "
-                      "the haystack this exists to stop carrying. Ask for a number "
-                      "of lines")
-    if limit > LOG_LIMIT_MAX:
-        raise Invalid("bad_argument",
-            f"limit={limit} is outside 1..{LOG_LIMIT_MAX}: above that the reply is the "
-                      f"haystack again. Narrow the pattern instead")
-
 
 def check_register_name(name: str) -> str:
     """The lower-case register `SR` takes, or the refusal naming the ones it does."""
     key = name.strip().lower()
-    if key not in SETTABLE:
+    if key not in dcons.SETTABLE:
         raise Invalid("bad_argument", f"{name!r} is not a register this debugger sets. One of: "
-                      f"{', '.join(sorted(SETTABLE))}")
+                      f"{', '.join(sorted(dcons.SETTABLE))}")
     return key
 
 
@@ -1797,10 +612,10 @@ class Session:
       reasons hardest about.
     """
 
-    def __init__(self, launch: Launch) -> None:
-        validate(launch)
+    def __init__(self, launch: dlaunch.Launch) -> None:
+        dlaunch.validate(launch)
         self.launch = launch
-        self.conf_digest = _digest(launch.conf)
+        self.conf_digest = dlaunch.digest(launch.conf)
         self.altered = False
         # THE STUB'S PROTOCOL once the guest announced it (`dosbox_inputs.require_stub`), so
         # the log is searched for the announce once per session, not once per key.
@@ -1855,7 +670,7 @@ class Session:
         # terminal and handing it to the child can raise, and on any of them the
         # object is never bound to anything: nothing could ever reach `close()` to
         # reclaim the descriptors.
-        listener = (listen_input(launch.input_port) if launch.input_port is not None
+        listener = (dlaunch.listen_input(launch.input_port) if launch.input_port is not None
                     else None)                        # before any process exists
         if listener is not None:
             launch = self.launch = replace(launch, input_port=listener.getsockname()[1])
@@ -1873,10 +688,10 @@ class Session:
             attrs = termios.tcgetattr(slave)
             attrs[3] &= ~(termios.ECHO | termios.ECHONL | termios.ECHOE | termios.ECHOK)
             termios.tcsetattr(slave, termios.TCSANOW, attrs)
-            self.argv = build_argv(launch)
+            self.argv = dlaunch.build_argv(launch)
             self.proc = subprocess.Popen(
                 self.argv, cwd=str(launch.cwd), stdin=slave, stdout=slave,
-                stderr=slave, env=launch_environment(launch.background),
+                stderr=slave, env=dlaunch.launch_environment(launch.background),
                 start_new_session=True, close_fds=True)
             # STARTED HERE AND NOT LAZILY ON THE FIRST READ: the window this closes
             # is the one between the child being born and the first question, which
@@ -1890,7 +705,8 @@ class Session:
             # ("Nullmodem: block on polling", its own log line).
             self._input: socket.socket | None = None
             if listener is not None:
-                self._input = _accept_input(listener, INPUT_CONNECT_S, self.proc.poll)
+                self._input = dlaunch.accept_input(listener, dlaunch.INPUT_CONNECT_S,
+                                                   self.proc.poll)
         except BaseException:
             if listener is not None:
                 listener.close()
@@ -1902,9 +718,9 @@ class Session:
             # thread")`, or the `KeyboardInterrupt`/`SystemExit` that `except
             # BaseException` is written for. Closing the master and re-raising without
             # touching `self.proc` would leave an emulator running under a bound of up
-            # to MAX_SECONDS with NO object anywhere able to reach `close()` -- which
-            # is exactly the six-left-running disaster `validate`'s docstring is about,
-            # arriving by a different door.
+            # to `dosbox_launch.MAX_SECONDS` with NO object anywhere able to reach `close()`
+            # -- which is exactly the six-left-running disaster `dosbox_launch.validate`'s
+            # docstring is about, arriving by a different door.
             with contextlib.suppress(Exception):
                 proc = getattr(self, "proc", None)
                 if proc is not None and proc.poll() is None:
@@ -2019,7 +835,7 @@ class Session:
                 f"during this read, so what came back has a hole in it and is not a "
                 f"reading. The buffer is drained now: ask again")
         raw = self._pending + out.decode("utf-8", errors="replace")
-        held = PARTIAL_TAIL.search(raw)
+        held = dcons.PARTIAL_TAIL.search(raw)
         if held and len(raw) - held.start() <= PENDING_MAX:
             self._pending = raw[held.start():]
             raw = raw[:held.start()]
@@ -2030,7 +846,7 @@ class Session:
         if raw:
             self._raw_tail = (self._raw_tail + raw)[-RAW_TAIL_KEEP:]
             self._raw_reads += 1
-        text = ANSI.sub("", raw)
+        text = dcons.ANSI.sub("", raw)
         self._screen = (self._screen + text)[-SCREEN_KEEP:]
         return text
 
@@ -2051,9 +867,9 @@ class Session:
         if not self._at_debugger:
             try:
                 seen = self._peek_carry + self._read(0.0)
-                if PROMPT in seen:
+                if dcons.PROMPT in seen:
                     self._mark_stopped()
-                self._peek_carry = seen[-STOP_CARRY:]   # a prompt split across two peeks
+                self._peek_carry = seen[-dcons.STOP_CARRY:]   # a prompt split across two peeks
             except Invalid:
                 pass          # a dropped-bytes reading; the flag stands as it was
         return self._at_debugger
@@ -2075,7 +891,7 @@ class Session:
         while time.monotonic() - t0 < timeout:
             cancel.check()
             seen += self._read(0.2)
-            if PROMPT in self._screen:
+            if dcons.PROMPT in self._screen:
                 self._mark_stopped()    # born stopped: the prompt answered
                 return round(time.monotonic() - t0, 3)
             now = time.monotonic()
@@ -2185,9 +1001,9 @@ class Session:
         # peek `at_debugger` makes), and discarded.
         with contextlib.suppress(Invalid):        # a dropped-bytes reading: nothing to keep
             stale = self._peek_carry + self._read(0.0)
-            if PROMPT in stale:
+            if dcons.PROMPT in stale:
                 self._mark_stopped()
-            self._peek_carry = stale[-STOP_CARRY:]
+            self._peek_carry = stale[-dcons.STOP_CARRY:]
         self._write(data)
         reply = self._collect(settle, timeout, early=True)
         # THE PROMPT IS COUNTED WHEREVER IT IS READ. A command typed at a RUNNING guest is
@@ -2200,9 +1016,9 @@ class Session:
         # Seeded from, and feeding, the passive peek's carry: a prompt split across the end
         # of this reply and the next read is found either way (an auditor's finding).
         seen = self._peek_carry + reply
-        if PROMPT in seen:
+        if dcons.PROMPT in seen:
             self._mark_stopped()
-        self._peek_carry = seen[-STOP_CARRY:]
+        self._peek_carry = seen[-dcons.STOP_CARRY:]
         return reply
 
     def listing(self, command: str) -> str:
@@ -2230,9 +1046,9 @@ class Session:
                 f"the listing's columns. `start` with `logfile`")
         begin = logfile.stat().st_size if logfile.exists() else 0
         reply = self.command(command)
-        if at_pager(reply):
-            reply = self._keys(PAGER_EXIT)
-        held = input_line(reply)
+        if dcons.at_pager(reply):
+            reply = self._keys(dcons.PAGER_EXIT)
+        held = dcons.input_line(reply)
         if held is None:
             raise Invalid("unexpected_answer",
                 f"no prompt came back for `{command}`, so what the logfile holds is not "
@@ -2271,7 +1087,7 @@ class Session:
             if chunk:
                 got += chunk
             elif got:                      # only ONCE something has arrived
-                ended = early and REPLY_END.search(self._raw_tail) is not None
+                ended = early and dcons.REPLY_END.search(self._raw_tail) is not None
                 if time.monotonic() - last_s >= (min(settle, REPLY_GRACE_S) if ended
                                                  else settle):
                     break
@@ -2295,7 +1111,7 @@ class Session:
         So the refusal lives here, once, rather than in each reader.
         """
         text = self.command(NUDGE)
-        found = parse_registers(text)
+        found = dcons.parse_registers(text)
         if not found:
             # THE MESSAGE NAMES WHAT WAS SEEN, not a cause. An empty parse has several
             # possible causes -- the machine is running, the pane did not repaint, the
@@ -2334,7 +1150,7 @@ class Session:
         into a descriptor table in protected mode, so an address quoted without it is
         not an address.
         """
-        at = _where_from(self._survey()[0])
+        at = dcons.where_from(self._survey()[0])
         self._mark_stopped()       # a position was read: the prompt answered
         return at
 
@@ -2345,19 +1161,19 @@ class Session:
         stop for a screen already in hand. A missing listing on
         that screen is refused the way `breakpoints()` refuses it."""
         text, regs = self._survey()
-        where = _where_from(text)
+        where = dcons.where_from(text)
         # THE PAGING MARK AND THE CLOCK ARE THIS REPAINT'S, like the position: set here, so a
         # later survey (the list read below, a pointer follow) cannot move them off the stop.
-        self.paging = parse_paging(text)
+        self.paging = dcons.parse_paging(text)
         self.survey_text = text
-        self.pane_clock_ms = parse_pane_clock(text)
-        self.pane_cycles = parse_pane_cycles(text)
-        if BPLIST_HEADER not in text:
+        self.pane_clock_ms = dcons.parse_pane_clock(text)
+        self.pane_cycles = dcons.parse_pane_cycles(text)
+        if dcons.BPLIST_HEADER not in text:
             # The pane came back whole and the listing did not (a cut repaint): one fresh
             # read of the list, which is what the stop paid before this method existed,
             # rather than refusing an enrichment the pane already supports.
             return where, regs, self.breakpoints()
-        return where, regs, parse_breakpoints(text)
+        return where, regs, dcons.parse_breakpoints(text)
 
     def where_and_registers(self) -> tuple[dict[str, str], dict[str, str]]:
         """Both readings off ONE survey, so a stop reply pays a single console round trip
@@ -2365,9 +1181,9 @@ class Session:
         round trip costs most of a second). `where` carries the same checks `where()` makes; the
         registers are the permissive last-wins mapping `registers()` hands back."""
         text, regs = self._survey()
-        self.pane_clock_ms = parse_pane_clock(text)
-        self.pane_cycles = parse_pane_cycles(text)
-        return _where_from(text), regs
+        self.pane_clock_ms = dcons.parse_pane_clock(text)
+        self.pane_cycles = dcons.parse_pane_cycles(text)
+        return dcons.where_from(text), regs
 
     def breakpoints(self) -> list[dict[str, str]]:
         """What the debugger currently holds, READ OFF IT rather than remembered.
@@ -2379,12 +1195,12 @@ class Session:
         one's success. A list has no such problem -- the entry is either in it or not.
         """
         text, _ = self._survey()
-        if BPLIST_HEADER not in text:
+        if dcons.BPLIST_HEADER not in text:
             raise Invalid("unexpected_answer",
-                f"`{NUDGE}` repainted a register pane but printed no {BPLIST_HEADER!r}. "
+                f"`{NUDGE}` repainted a register pane but printed no {dcons.BPLIST_HEADER!r}. "
                 f"An empty list and a listing that never happened both come back as no "
                 f"rows, and only one of them means nothing is armed")
-        return parse_breakpoints(text)
+        return dcons.parse_breakpoints(text)
 
     def read_memory(self, seg: int, off: int, mode: str | None = None) -> list[str]:
         """The data-view rows at an address, and INVALID unless THAT address is among
@@ -2407,18 +1223,18 @@ class Session:
         # 0xFFFF, which refuses EVERY 32-bit protected-mode address -- and every DJGPP
         # global is one (`_main` sits at 0x16DF20). `run_to` and `watch` both take the
         # ceiling from `offset_ceiling(mode)`; `read_memory` was the THIRD site nobody
-        # brought in, and `offset_ceiling`'s own docstring already named the family.
+        # brought in, and `dosbox_console.offset_ceiling`'s own docstring already named the family.
         # `where()` gives the mode AND refuses a running machine, before the `D` goes out.
         # A CACHED `mode` skips that survey (decision 35): a stop reply has just read the
         # machine once and passes the mode in, so N show watches do not re-survey it N
         # times. It is only ever passed when the machine is known stopped (the reply read
         # `where` to get here), so the running-machine guard it bypasses is already met.
-        top = offset_ceiling(mode if mode is not None else self.where()["mode"])
+        top = dcons.offset_ceiling(mode if mode is not None else self.where()["mode"])
         if not 0 <= off <= top:
             raise Invalid("bad_argument",
                 f"an offset is 0x0 to 0x{top:X} in this CPU mode; got 0x{off:X}."
                           f" In real mode an offset past 0xFFFF addresses nothing")
-        rows = parse_data_view(self.command(f"D {seg:04X}:{off:04X}"))
+        rows = dcons.parse_data_view(self.command(f"D {seg:04X}:{off:04X}"))
         if not rows:
             # NO CAUSE IS NAMED, per this class's own rule. An empty parse has several
             # of them -- the machine is running, the pane did not repaint, the
@@ -2468,13 +1284,13 @@ class Session:
         """
         if n <= 0:
             raise Invalid("bad_argument", f"a read needs a positive length; got {n}")
-        if n > DATA_VIEW_BYTES:
+        if n > dcons.DATA_VIEW_BYTES:
             raise Invalid("bad_argument",
-                f"read_bytes reads up to {DATA_VIEW_BYTES} bytes (the data view's reach); "
+                f"read_bytes reads up to {dcons.DATA_VIEW_BYTES} bytes (the data view's reach); "
                           f"{n} is a region -- use memdump")
         by_off: dict[int, int] = {}
         for r in self.read_memory(seg, off, mode=mode):
-            m = DATA_ROW.search(r)
+            m = dcons.DATA_ROW.search(r)
             if m is None:
                 continue
             base = int(m.group(2), 16)
@@ -2513,7 +1329,7 @@ class Session:
             raise Invalid("bad_argument", "a write needs at least one byte")
         check_segment(seg)
         mode = mode if mode is not None else self.where()["mode"]
-        top = offset_ceiling(mode)
+        top = dcons.offset_ceiling(mode)
         if not 0 <= off <= top:
             raise Invalid("bad_argument",
                 f"an offset is 0x0 to 0x{top:X} in this CPU mode; got 0x{off:X}")
@@ -2610,7 +1426,7 @@ class Session:
         # caller gave none. It is compared whole and not by prefix, because `BPINT 31`
         # is a prefix of `BPINT 31 AH=00` and matching loosely would report an arming
         # on ANY AH as the one that was asked for.
-        armed = interrupt_row(number, ah)
+        armed = dcons.interrupt_row(number, ah)
         if not any(row["entry"] == armed for row in self.breakpoints()):
             raise Invalid("readback_refused",
                 f"`{arg}` is not in the debugger's breakpoint list, so it "
@@ -2707,7 +1523,7 @@ class Session:
         """
         self._write(RUN_KEY)
         text = self._collect(settle=1.0, timeout=8.0)
-        halted = PROMPT in text
+        halted = dcons.PROMPT in text
         if halted:
             self._mark_stopped()
         stopped_at: dict[str, str] | None = None
@@ -2966,7 +1782,7 @@ class Session:
         # accepted and listed as `BP 0087:12345`, because its list prints a MINIMUM of
         # four hex digits rather than exactly four, which is why the `:04X` this
         # compares with still matches a wider one.
-        top = offset_ceiling(stopped["mode"])
+        top = dcons.offset_ceiling(stopped["mode"])
         if not 0 <= off <= top:
             raise Invalid("bad_argument",
                 f"an offset is 0x0 to 0x{top:X} in {stopped['mode']} mode; got "
@@ -3212,15 +2028,15 @@ class Session:
             # EITHER ANNOUNCEMENT ENDS THE WAIT. The prompt is the one a stop reliably
             # sends (see the docstring); the register repaint is kept because a first
             # stop after a fresh pane does resend it, and it costs one regex.
-            if PROMPT in fresh or parse_registers(fresh).get("EIP"):
-                if PROMPT in fresh:
+            if dcons.PROMPT in fresh or dcons.parse_registers(fresh).get("EIP"):
+                if dcons.PROMPT in fresh:
                     self._mark_stopped()   # heard here, before any reader consumes it
                 # THE MOMENT IS STAMPED HERE, where it happened, and not after `where()`
                 # has run (a NUDGE plus a collect, up to its own timeout): read there, a
                 # repaint seen at once is reported as arriving after the whole nudge, and
                 # the two `monotonic()` calls disagree inside one reply.
                 return False, round(time.monotonic() - began, 1)
-            carry = fresh[-STOP_CARRY:]
+            carry = fresh[-dcons.STOP_CARRY:]
         return True, 0.0
 
     @staticmethod
@@ -3310,7 +2126,7 @@ class Session:
         # docstring says must never land on a running machine.
         cpu = self.where()["mode"]
         check_segment(segment)
-        top = offset_ceiling(cpu)
+        top = dcons.offset_ceiling(cpu)
         if not 0 <= offset <= top:
             raise Invalid("bad_argument", f"an offset is 0x0 to 0x{top:X} in {cpu} mode; got "
                           f"0x{offset:X}")
@@ -3369,7 +2185,7 @@ class Session:
         """
         stopped = self.where()      # refuses a running machine BEFORE arming
         check_segment(seg)
-        top = offset_ceiling(stopped["mode"])
+        top = dcons.offset_ceiling(stopped["mode"])
         if not 0 <= off <= top:
             raise Invalid("bad_argument",
                 f"an offset is 0x0 to 0x{top:X} in {stopped['mode']} mode; got "
@@ -3380,7 +2196,7 @@ class Session:
         self.command(f"BP {target}")
         held = self.breakpoints()
         want = ("BP", seg, off)
-        listed = next((b for b in held if bp_row_target(b["entry"]) == want), None)
+        listed = next((b for b in held if dcons.bp_row_target(b["entry"]) == want), None)
         if listed is None:
             raise Invalid("readback_refused",
                 f"the debugger does not list a breakpoint at {target} after being told to "
@@ -3397,16 +2213,16 @@ class Session:
         is gone from the list read after the delete.
         """
         stopped = self.where()
-        top = offset_ceiling(stopped["mode"])
+        top = dcons.offset_ceiling(stopped["mode"])
         if not (0 <= seg <= 0xFFFF and 0 <= off <= top):
             raise Invalid("bad_argument", f"{seg:X}:{off:X} is not an address this mode can hold")
         want = ("BP", seg, off)
         target = f"BP {seg:04X}:{off:04X}"
-        mine = [b for b in self.breakpoints() if bp_row_target(b["entry"]) == want]
+        mine = [b for b in self.breakpoints() if dcons.bp_row_target(b["entry"]) == want]
         if not mine:
             return {"entry": target, "removed": False, "note": "no such breakpoint to remove"}
         self.command(f"BPDEL {mine[0]['index']}")
-        removed = not any(bp_row_target(b["entry"]) == want for b in self.breakpoints())
+        removed = not any(dcons.bp_row_target(b["entry"]) == want for b in self.breakpoints())
         return {"entry": mine[0]["entry"], "removed": removed}
 
     def clear_interrupt_breakpoint(self, number: int,
@@ -3424,7 +2240,7 @@ class Session:
         """
         check_interrupt(number, ah)
         self.where()                      # refuses a running machine before the console
-        want = interrupt_row(number, ah)
+        want = dcons.interrupt_row(number, ah)
         mine = [b for b in self.breakpoints() if b["entry"] == want]
         if not mine:
             return {"entry": want, "removed": False, "note": "no such breakpoint to remove"}
@@ -3445,7 +2261,7 @@ class Session:
         exists to enforce: a log with no instrumentation AT ALL is INVALID, and a log
         with instrumentation but nothing matching is an empty list, which is an answer.
         """
-        return filter_e9(self._e9_text(), pattern, limit)
+        return dlogs.filter_e9(self._e9_text(), pattern, limit)
 
     def e9_lines(self) -> list[str]:
         """EVERY line of the guest's instrumentation, in order, with `e9`'s guard on the
@@ -3454,16 +2270,16 @@ class Session:
         `log` refused the whole-log read this block needs (measured: `1 << 30` as the
         limit, refused as a haystack, and every stop's `e9` block came back
         `available: false`)."""
-        return log_hits(self._e9_text(), ".", "guest")
+        return dlogs.log_hits(self._e9_text(), ".", "guest")
 
     def log(self, pattern: str, limit: int, channel: str) -> tuple[list[str], int]:
         """The log's `channel`, filtered at the source: the guest's E9 lines with `e9`'s
         own guard (a file with no instrumentation is no channel), the emulator's own
         lines, or the whole file tagged."""
-        check_channel(channel)
+        dlogs.check_channel(channel)
         if channel == "guest":
-            return filter_e9(self._e9_text(), pattern, limit)
-        return filter_log(self._log_text(), pattern, limit, channel)
+            return dlogs.filter_e9(self._e9_text(), pattern, limit)
+        return dlogs.filter_log(self._log_text(), pattern, limit, channel)
 
     def _log_text(self) -> str:
         """The log file, or the refusal that says which nothing: no logfile on the
@@ -3486,7 +2302,7 @@ class Session:
         thesis in one method.
         """
         text = self._log_text()
-        if count_e9(text) == 0:
+        if dlogs.count_e9(text) == 0:
             raise Invalid("no_channel",
                 f"{self.launch.logfile} carries no instrumentation at all. That is "
                 f"not 'your pattern matched nothing', it is 'there is nothing to "
@@ -3545,7 +2361,7 @@ class Session:
         # from being split across two reads: `\n` is a byte boundary in UTF-8, so the
         # consumed prefix is always whole characters.
         text = chunk[:cut].decode("utf-8", errors="replace")
-        return (channel_lines(text.splitlines(), channel), offset + cut)
+        return (dlogs.channel_lines(text.splitlines(), channel), offset + cut)
 
     def e9_new_since(self, offset: int) -> tuple[list[str], int]:
         """The complete instrumentation lines after byte `offset` and the offset to read
@@ -3648,8 +2464,8 @@ class Session:
         on the NEXT run, before the machine is released.
         """
         check_wait_bound(seconds)
-        rx = compiled(pattern)
-        check_channel(channel)
+        rx = dlogs.compiled(pattern)
+        dlogs.check_channel(channel)
         kind = "instrumentation" if channel == "guest" else channel
         # THE ONLY REFUSAL THAT SURVIVES THE WAIT, and `e9`'s other two deliberately do
         # not. A session with no logfile has no channel and waiting cannot create one.
@@ -3804,8 +2620,8 @@ class Session:
         # poison the next call: the place (`judge_collection`), a leftover (`refuse_leftover`),
         # and `dest` itself (`paths.fresh_dest`: its directory there, nothing at it). The
         # helpers are shared with `trace`, which collects its log the same way.
-        judge_collection(dest, self.launch.cwd, candidates, "dump")
-        refuse_leftover(candidates, "dump")
+        dcollect.judge_collection(dest, self.launch.cwd, candidates, "dump")
+        dcollect.refuse_leftover(candidates, "dump")
         paths.fresh_dest("dest", dest)
         # EVERY REFUSAL FROM THE COMMAND ON TAKES THIS CALL'S FILE AWAY. `refuse_leftover` proved
         # no candidate was there before it, so one there now is the debugger's answer to it;
@@ -3830,7 +2646,7 @@ class Session:
                 raise Invalid("readback_refused",
                     f"asked the debugger for {length} bytes and {source} holds "
                               f"{got}. That is not the dump that was asked for")
-            return collect(source, dest, "dump")
+            return dcollect.collect(source, dest, "dump")
         except BaseException as exc:
             # A HOST ERROR TOO (the terminal broke after the debugger wrote): whatever escapes,
             # the file is this call's. One this cannot remove is named by the next call's
@@ -3864,7 +2680,7 @@ class Session:
         either spelling as `memdump` checks; one there after the command is this call's,
         removed whatever happens."""
         names = [self.launch.cwd / INTVEC_FILE, self.launch.cwd / INTVEC_FILE.lower()]
-        refuse_leftover(names, "vector table")
+        dcollect.refuse_leftover(names, "vector table")
         try:
             out = self.command(f"INTVEC {INTVEC_FILE}")
             written = next((p for p in names if p.exists()), None)
@@ -4397,7 +3213,7 @@ class Session:
         failed leaves no file behind: the emulator removes the old one and writes the new one
         in place, so a failure part-way would otherwise hold the name with a broken state.
         Saving alters nothing."""
-        check_state_name(name)
+        dlaunch.check_state_name(name)
         check_wait_bound(seconds)
         state_dir = self._state_dir()
         dest = state_dir / f"{name}.sav"
@@ -4414,9 +3230,9 @@ class Session:
         if not dest.is_file():
             raise Invalid("unexpected_answer",
                 f"the emulator answered SAVESTATE and {dest} is not there")
-        meta = state_meta(dest)
+        meta = dlaunch.state_meta(dest)
         return {"name": name, "path": str(dest), "bytes": meta["bytes"],
-                **{k: meta.get(k, "") for k in STATE_META}, **outcome}
+                **{k: meta.get(k, "") for k in dlaunch.STATE_META}, **outcome}
 
     def state_load(self, name: str, seconds: float = STATE_WAIT_S) -> dict[str, object]:
         """Load the state `name` from `<state_dir>/<name>.sav` by the debugger's own
@@ -4426,14 +3242,14 @@ class Session:
         REPLACES the machine, so the session is altered from here on, and after any refusal
         but a missing channel too, since a load refused part-way may have replaced some of
         it."""
-        check_state_name(name)
+        dlaunch.check_state_name(name)
         check_wait_bound(seconds)
         state_dir = self._state_dir()
         source = state_dir / f"{name}.sav"
         if not source.is_file():
             raise Invalid("unknown_ref",
                 f"no state named {name!r} under {state_dir}: `state_list` says what is there")
-        meta = state_meta(source)
+        meta = dlaunch.state_meta(source)
         parked = self.at_debugger()
         try:
             outcome = self._state_command("LOADSTATE", source, seconds)
@@ -4450,7 +3266,7 @@ class Session:
         if not outcome["paused"]:
             self.stop_count += 1
         return {"name": name, "path": str(source),
-                **{k: meta.get(k, "") for k in STATE_META}, **outcome}
+                **{k: meta.get(k, "") for k in dlaunch.STATE_META}, **outcome}
 
     def snapshot(self, dest: Path | None = None, seconds: float = SNAPSHOT_WAIT_S,
                  progress: Progress = no_progress) -> dict[str, object]:
@@ -4487,7 +3303,7 @@ class Session:
                     f"no new PNG appeared under {folder} within {seconds:g} s of the command")
             time.sleep(0.1)
         if target is not None:
-            path = collect(path, target, "screenshot")
+            path = dcollect.collect(path, target, "screenshot")
         return {"route": "guest", "path": str(path), "bytes": path.stat().st_size,
                 "waited_s": round(time.monotonic() - began, 2)}
 
@@ -4498,8 +3314,8 @@ class Session:
         files = sorted(state_dir.glob("*.sav")) if state_dir.is_dir() else []
         # THE WORKING SLOT IS NOT A NAMED STATE: the emulator's own numbered file sits
         # beside the copies, and listed among them it counts one state too many.
-        named = [state_meta(p) for p in files if not p.stem.isdigit()]
-        slots = [state_meta(p) for p in files if p.stem.isdigit()]
+        named = [dlaunch.state_meta(p) for p in files if not p.stem.isdigit()]
+        slots = [dlaunch.state_meta(p) for p in files if p.stem.isdigit()]
         return {"state_dir": str(state_dir), "states": named,
                 "working_slot": slots[-1] if slots else None}
 
@@ -4656,7 +3472,8 @@ class Session:
         """What every reply carries, `altered` included."""
         changed: bool | None = None
         with contextlib.suppress(OSError):
-            changed = self.launch.conf.is_file() and _digest(self.launch.conf) != self.conf_digest
+            changed = (self.launch.conf.is_file()
+                       and dlaunch.digest(self.launch.conf) != self.conf_digest)
         return {
             "pid": self.proc.pid,
             "alive": self.alive(),

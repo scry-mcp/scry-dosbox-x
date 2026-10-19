@@ -5,7 +5,7 @@ emulator dials it. The other way round, with the emulator listening, was measure
 process that took the port between the server's check and the emulator's bind was left listening
 beside it, and the session's connect reached THAT process. A port the kernel picks and the
 session holds from that moment cannot be taken in between. `listen_local` and `await_dial` are
-that shape, once; the serial input route (`dosbox_session.listen_input`) and the debugger channel
+that shape, once; the serial input route (`dosbox_launch.listen_input`) and the debugger channel
 word their own refusals around them.
 
 THE DEBUGGER CHANNEL is upstream's (`[dosbox] mcp_server=<port>`, off at 0): at start the emulator

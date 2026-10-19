@@ -31,6 +31,9 @@ from typing import Any, cast
 
 import pytest
 
+import dosbox_console as dcons
+import dosbox_launch as dlaunch
+import dosbox_logs as dlogs
 import dosbox_running as running
 import dosbox_session as ds
 
@@ -52,10 +55,10 @@ def conf(tmp_path: Path) -> Path:
     return p
 
 
-def launch(conf: Path, **over: object) -> ds.Launch:
+def launch(conf: Path, **over: object) -> dlaunch.Launch:
     base: dict[str, object] = {"conf": conf, "cwd": conf.parent, "seconds": 60}
     base.update(over)
-    return ds.Launch(**base)  # type: ignore[arg-type]
+    return dlaunch.Launch(**base)  # type: ignore[arg-type]
 
 
 def pair_at(argv: list[str], value: str) -> bool:
@@ -78,7 +81,7 @@ def test_the_launch_is_the_binary_the_conf_and_a_stop_at_the_debugger(conf: Path
     `-break-start` is what makes a session start stopped and askable; without it the
     guest runs away and every later tool is INVALID. It was asserted by nothing.
     """
-    argv = ds.build_argv(launch(conf))
+    argv = dlaunch.build_argv(launch(conf))
     assert argv[0] == "dosbox-x"
     assert argv[argv.index("-conf") + 1] == str(conf)
     assert "-break-start" in argv
@@ -93,7 +96,7 @@ def test_headless_uses_the_emulators_own_video_property(conf: Path) -> None:
     it. `-silent` also hides the window but EXITS after AUTOEXEC.BAT, which cannot
     host a session at all.
     """
-    argv = ds.build_argv(launch(conf))
+    argv = dlaunch.build_argv(launch(conf))
     assert pair_at(argv, "sdl videodriver=dummy")
     assert "-silent" not in argv
 
@@ -107,7 +110,7 @@ def test_a_watched_session_gets_no_dummy_driver_and_keeps_the_callers_flags(conf
     reversal is caught too: `-set` and its value are a pair, not a set.
     """
     flags = ["-set", "sdl display=1", "-set", "sdl windowposition=0,0"]
-    argv = ds.build_argv(launch(conf, watched=True, window_flags=flags))
+    argv = dlaunch.build_argv(launch(conf, watched=True, window_flags=flags))
     assert not pair_at(argv, "sdl videodriver=dummy")
     assert argv[-len(flags):] == flags
 
@@ -115,7 +118,7 @@ def test_a_watched_session_gets_no_dummy_driver_and_keeps_the_callers_flags(conf
 def test_every_launch_carries_its_bound(conf: Path) -> None:
     """DOSBox-X does not refuse an unknown option, it HANGS (measured). The bound is
     the only thing that ends an abandoned session."""
-    argv = ds.build_argv(launch(conf, seconds=45))
+    argv = dlaunch.build_argv(launch(conf, seconds=45))
     assert argv[argv.index("-time-limit") + 1] == "45"
 
 
@@ -125,23 +128,23 @@ def test_the_logfile_and_the_captures_directory_go_to_their_own_settings(conf: P
     nothing writes and `memdump` collects from a directory nothing fills, both
     silently."""
     log, cap = tmp_path / "g.log", tmp_path / "caps"
-    argv = ds.build_argv(launch(conf, logfile=log, captures_dir=cap))
+    argv = dlaunch.build_argv(launch(conf, logfile=log, captures_dir=cap))
     assert pair_at(argv, f"log logfile={log}")
     assert pair_at(argv, f"dosbox captures={cap}")
 
 
 def test_neither_setting_appears_when_it_was_not_asked_for(conf: Path) -> None:
     """The green beside the red above: the branches are conditional, not unconditional."""
-    argv = ds.build_argv(launch(conf))
+    argv = dlaunch.build_argv(launch(conf))
     assert not any(a.startswith(("log logfile=", "dosbox captures=")) for a in argv)
 
 
 def test_capture_wraps_the_program_and_plain_does_not(conf: Path) -> None:
     """DX-CAPTURE is the ONLY screen capture with nobody at the keyboard: the still
     screenshot is a mapper action and needs a key."""
-    plain = ds.build_argv(launch(conf, program="GAME.EXE"))
+    plain = dlaunch.build_argv(launch(conf, program="GAME.EXE"))
     assert plain[plain.index("-c") + 1] == "GAME.EXE"
-    shot = ds.build_argv(launch(conf, program="GAME.EXE", capture_video=True))
+    shot = dlaunch.build_argv(launch(conf, program="GAME.EXE", capture_video=True))
     assert shot[shot.index("-c") + 1] == "DX-CAPTURE /V GAME.EXE"
 
 
@@ -150,31 +153,31 @@ def test_the_serial_route_is_two_set_overrides_and_a_port_in_range(conf: Path) -
     the integration device in the `[cpu]` section, where it is honoured, and COM1 as a
     nullmodem dialling the session on that port -- and a port outside the unprivileged range is
     refused before any process exists. Without a port the argv carries neither."""
-    argv = ds.build_argv(launch(conf, input_port=5555))
+    argv = dlaunch.build_argv(launch(conf, input_port=5555))
     assert argv[argv.index("cpu integration device=true") - 1] == "-set"
     assert argv[argv.index("serial serial1=nullmodem server:127.0.0.1 port:5555 transparent:1")
                 - 1] == "-set"
-    plain = ds.build_argv(launch(conf))
+    plain = dlaunch.build_argv(launch(conf))
     assert not any("integration device" in a or "nullmodem" in a for a in plain)
-    ds.validate(launch(conf, input_port=5555))
+    dlaunch.validate(launch(conf, input_port=5555))
     for bad in (80, 70000, -1):
         with pytest.raises(ds.Invalid, match="between 1024 and 65535"):
-            ds.validate(launch(conf, input_port=bad))
+            dlaunch.validate(launch(conf, input_port=bad))
 
 
 def test_the_serial_socket_is_the_emulators_dial_and_a_dial_that_never_comes_is_refused(
         ) -> None:
-    """`_accept_input` takes the emulator's dial on the session's listener, so a dial that
+    """`accept_input` takes the emulator's dial on the session's listener, so a dial that
     comes a moment after the emulator starts is reached, and closes the listener; no dial
     within the bound is a refusal naming the port, never a session with a route that does not
     exist. And `send_commands` sends what it is given, refuses an empty send, and reports a
     socket the other end closed as the route being GONE rather than as a delivery."""
-    listener = ds.listen_input(_free_port())
+    listener = dlaunch.listen_input(_free_port())
     port = listener.getsockname()[1]
     emulator = socket.socket()
     threading.Timer(0.2, lambda: emulator.connect(("127.0.0.1", port))).start()
     try:
-        client = ds._accept_input(listener, 3.0, lambda: None)
+        client = dlaunch.accept_input(listener, 3.0, lambda: None)
         peer = emulator
         with pytest.raises(OSError):
             listener.accept()            # closed once the dial was taken
@@ -199,10 +202,10 @@ def test_the_serial_socket_is_the_emulators_dial_and_a_dial_that_never_comes_is_
             peer.close()
     finally:
         listener.close()
-    silent = ds.listen_input(_free_port())
+    silent = dlaunch.listen_input(_free_port())
     quiet = silent.getsockname()[1]
     with pytest.raises(ds.Invalid, match=f"never dialled the serial input port {quiet} within"):
-        ds._accept_input(silent, 0.5, lambda: None)
+        dlaunch.accept_input(silent, 0.5, lambda: None)
     no_route = SimpleNamespace(_input=None)
     with pytest.raises(ds.Invalid, match="no input route"):
         ds.Session.send_commands(no_route, [b"K\x1e"])  # type: ignore[arg-type]
@@ -217,10 +220,10 @@ def test_a_port_something_else_holds_is_refused_before_the_emulator_exists() -> 
     port = holder.getsockname()[1]
     try:
         with pytest.raises(ds.Invalid, match=f"input_port {port} is already in use"):
-            ds.listen_input(port)
+            dlaunch.listen_input(port)
     finally:
         holder.close()
-    held = ds.listen_input(port)      # free again: listened on
+    held = dlaunch.listen_input(port)      # free again: listened on
     try:
         with pytest.raises(OSError):
             socket.socket().bind(("127.0.0.1", port))
@@ -254,11 +257,11 @@ def test_a_dial_that_never_comes_kills_the_child_it_spawned(
     signalled: list[int] = []
     monkeypatch.setattr(subprocess, "Popen", lambda *_a, **_k: child)
     monkeypatch.setattr(ds.Session, "_signal_group", lambda self, sig: signalled.append(sig))
-    monkeypatch.setattr(ds, "INPUT_CONNECT_S", 0.3)    # the double never dials
+    monkeypatch.setattr(dlaunch, "INPUT_CONNECT_S", 0.3)    # the double never dials
     port = _free_port()
     with pytest.raises(ds.Invalid, match="never dialled"):
-        ds.Session(ds.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=port))
-    ds.listen_input(port).close()      # the session let its listener go
+        ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=port))
+    dlaunch.listen_input(port).close()      # the session let its listener go
     assert signalled == [signal.SIGKILL] and child.waited == 1, (signalled, child.waited)
 
 
@@ -272,7 +275,7 @@ def test_the_program_reaches_the_emulator_as_one_argv_element(conf: Path) -> Non
     emulator's own measurement an unrecognised flag does not fail, it hangs.
     """
     nasty = "X.EXE; -loadstate 1"
-    argv = ds.build_argv(launch(conf, program=nasty))
+    argv = dlaunch.build_argv(launch(conf, program=nasty))
     assert argv[argv.index("-c") + 1] == nasty
     assert argv.count("-c") == 1
 
@@ -289,14 +292,14 @@ def test_the_program_reaches_the_emulator_as_one_argv_element(conf: Path) -> Non
 def test_a_valid_launch_passes_validation_without_starting_anything(conf: Path) -> None:
     """The green beside every red below. Without it, `validate` could refuse
     EVERYTHING and the whole group would still pass."""
-    ds.validate(launch(conf))
-    ds.validate(launch(conf, watched=True, window_flags=["-set", "sdl x=1"]))
-    ds.validate(launch(conf, program="G.EXE", capture_video=True))
+    dlaunch.validate(launch(conf))
+    dlaunch.validate(launch(conf, watched=True, window_flags=["-set", "sdl x=1"]))
+    dlaunch.validate(launch(conf, program="G.EXE", capture_video=True))
 
 
 def test_a_session_that_cannot_be_reproduced_is_refused_before_it_exists(tmp_path: Path) -> None:
     with pytest.raises(ds.Invalid, match="no conf"):
-        ds.validate(ds.Launch(conf=tmp_path / "gone.conf", cwd=tmp_path, seconds=30))
+        dlaunch.validate(dlaunch.Launch(conf=tmp_path / "gone.conf", cwd=tmp_path, seconds=30))
 
 
 def test_a_missing_working_directory_is_refused_too(conf: Path, tmp_path: Path) -> None:
@@ -304,7 +307,7 @@ def test_a_missing_working_directory_is_refused_too(conf: Path, tmp_path: Path) 
     `Popen` raise AFTER the pseudo-terminal is open, leaking two descriptors on an
     object nothing can reach to close."""
     with pytest.raises(ds.Invalid, match="working directory"):
-        ds.validate(launch(conf, cwd=tmp_path / "nowhere"))
+        dlaunch.validate(launch(conf, cwd=tmp_path / "nowhere"))
 
 
 def test_a_watched_session_without_placement_flags_is_refused(conf: Path) -> None:
@@ -312,7 +315,7 @@ def test_a_watched_session_without_placement_flags_is_refused(conf: Path) -> Non
     the whole fleet, and inventing a geometry here is how a window ends up
     off-screen. Refusing is the honest alternative to a private default."""
     with pytest.raises(ds.Invalid, match="placement flags"):
-        ds.validate(launch(conf, watched=True))
+        dlaunch.validate(launch(conf, watched=True))
 
 
 def test_a_glued_placement_pair_is_refused(conf: Path) -> None:
@@ -327,15 +330,15 @@ def test_a_glued_placement_pair_is_refused(conf: Path) -> None:
     only arrangement in which either can fail for its own reason.
     """
     with pytest.raises(ds.Invalid, match="GLUED into one token"):
-        ds.validate(launch(conf, watched=True, window_flags=['-set "sdl display=1"']))
+        dlaunch.validate(launch(conf, watched=True, window_flags=['-set "sdl display=1"']))
     with pytest.raises(ds.Invalid, match="GLUED into one token"):
-        ds.validate(launch(conf, watched=True, window_flags=["-set sdl display=1"]))
+        dlaunch.validate(launch(conf, watched=True, window_flags=["-set sdl display=1"]))
 
 
 def test_an_empty_placement_flag_is_refused(conf: Path) -> None:
     """The OTHER malformation, which a single case would fold into its neighbour's."""
     with pytest.raises(ds.Invalid, match="separate non-empty strings"):
-        ds.validate(launch(conf, watched=True, window_flags=["-fullscreen", ""]))
+        dlaunch.validate(launch(conf, watched=True, window_flags=["-fullscreen", ""]))
 
 
 def test_a_value_holding_a_space_is_the_normal_case_and_passes(conf: Path) -> None:
@@ -343,7 +346,7 @@ def test_a_value_holding_a_space_is_the_normal_case_and_passes(conf: Path) -> No
     anything about quotes: `place-window` emits `-set` and `sdl display=1` as two argv
     tokens, and the second one HAS to be allowed to hold a space. A guard that refused
     every token with a space in it would reject the correct call."""
-    ds.validate(launch(conf, watched=True,
+    dlaunch.validate(launch(conf, watched=True,
                        window_flags=["-set", "sdl display=1", "-fullscreen"]))
 
 
@@ -352,22 +355,22 @@ def test_an_unbounded_session_is_refused(conf: Path) -> None:
     `-time-limit 0` as no limit."""
     for bad in (0, -1):
         with pytest.raises(ds.Invalid, match="without a bound"):
-            ds.validate(launch(conf, seconds=bad))
+            dlaunch.validate(launch(conf, seconds=bad))
 
 
 def test_a_bound_too_large_to_bound_anything_is_refused(conf: Path) -> None:
     """The ceiling, at its boundary: the value AT the limit passes and one past it
     does not. A test using a far-away number leaves the threshold free to move."""
-    ds.validate(launch(conf, seconds=ds.MAX_SECONDS))
+    dlaunch.validate(launch(conf, seconds=dlaunch.MAX_SECONDS))
     with pytest.raises(ds.Invalid, match="not a bound"):
-        ds.validate(launch(conf, seconds=ds.MAX_SECONDS + 1))
+        dlaunch.validate(launch(conf, seconds=dlaunch.MAX_SECONDS + 1))
 
 
 def test_capture_without_a_program_to_capture_is_refused(conf: Path) -> None:
     """DX-CAPTURE wraps a PROGRAM. Without one the flag was accepted and quietly did
     nothing, and the reply said ok."""
     with pytest.raises(ds.Invalid, match="needs a program"):
-        ds.validate(launch(conf, capture_video=True))
+        dlaunch.validate(launch(conf, capture_video=True))
 
 
 # ------------------------------------------------------------- the E9 channel
@@ -385,7 +388,7 @@ def test_only_an_instrumentation_line_can_match() -> None:
     other is a tool's report quoting a trace back. A filter matching on content alone
     returns three; the channel guard returns one.
     """
-    lines, total = ds.filter_e9(NOISE + LIVE + REPLAY, "loudness", 10)
+    lines, total = dlogs.filter_e9(NOISE + LIVE + REPLAY, "loudness", 10)
     assert total == 1
     assert lines == [LIVE.rstrip("\n")]
 
@@ -393,14 +396,14 @@ def test_only_an_instrumentation_line_can_match() -> None:
 def test_a_pattern_that_matches_nothing_is_an_answer() -> None:
     """Empty is an answer; INVALID is what "there was no channel" gets. A caller that
     cannot tell them apart reports a broken instrument as a clean result."""
-    assert ds.filter_e9(LIVE, "no-such-thing", 10) == ([], 0)
+    assert dlogs.filter_e9(LIVE, "no-such-thing", 10) == ([], 0)
 
 
 def test_the_total_is_what_matched_and_not_what_came_back() -> None:
     """The COUNT axis. Reporting the slice's length under the name `matched` meant a
     caller asking "how many times did this fire" got the limit back."""
     text = "".join(f"Bochs port E9h: [+ {i}.0] TICK n={i}\n" for i in range(10))
-    lines, total = ds.filter_e9(text, "TICK", 3)
+    lines, total = dlogs.filter_e9(text, "TICK", 3)
     assert total == 10
     assert len(lines) == 3
 
@@ -412,7 +415,7 @@ def test_the_limit_keeps_the_tail_and_not_the_head() -> None:
     slice answers every question with the boot.
     """
     text = "".join(f"Bochs port E9h: [+ {i}.0] TICK n={i}\n" for i in range(10))
-    lines, _ = ds.filter_e9(text, "TICK", 3)
+    lines, _ = dlogs.filter_e9(text, "TICK", 3)
     assert [ln.split("n=")[1] for ln in lines] == ["7", "8", "9"]
 
 
@@ -421,13 +424,13 @@ def test_a_limit_of_zero_or_less_is_refused() -> None:
     return the entire log: the haystack this exists to stop carrying."""
     for bad in (0, -1):
         with pytest.raises(ds.Invalid, match="haystack"):
-            ds.filter_e9(LIVE, "loudness", bad)
+            dlogs.filter_e9(LIVE, "loudness", bad)
     # AND A CEILING, because a guard whose own words call the whole log "the haystack
     # this exists to stop carrying" still lets `limit=1000000` carry it. The boundary:
     # the ceiling itself is taken, one past it is refused.
-    ds.filter_e9(LIVE, "loudness", ds.LOG_LIMIT_MAX)
-    with pytest.raises(ds.Invalid, match=f"1..{ds.LOG_LIMIT_MAX}"):
-        ds.filter_e9(LIVE, "loudness", ds.LOG_LIMIT_MAX + 1)
+    dlogs.filter_e9(LIVE, "loudness", dlogs.LOG_LIMIT_MAX)
+    with pytest.raises(ds.Invalid, match=f"1..{dlogs.LOG_LIMIT_MAX}"):
+        dlogs.filter_e9(LIVE, "loudness", dlogs.LOG_LIMIT_MAX + 1)
     # AND THE SERVER'S OWN REDUCTION IS NOT A CALLER: the stop reply's E9 block reads the
     # whole channel to cut `all`, `lines:N`, `since` and `seconds:N` from it, and it used
     # to ask `e9` for it with a limit of `1 << 30`, which the ceiling refuses (found by
@@ -435,10 +438,10 @@ def test_a_limit_of_zero_or_less_is_refused() -> None:
     # carried the check). `e9_lines` is the whole channel on the REAL session path, above
     # the ceiling, and `e9_summary` builds on it.
     many = "\n".join(f"Bochs port E9h: [+ {i:6.3f}] PERF  . n={i}"
-                     for i in range(ds.LOG_LIMIT_MAX + 5))
+                     for i in range(dlogs.LOG_LIMIT_MAX + 5))
     fake = SimpleNamespace(_e9_text=lambda: many)
     lines = ds.Session.e9_lines(fake)  # type: ignore[arg-type]
-    assert len(lines) == ds.LOG_LIMIT_MAX + 5
+    assert len(lines) == dlogs.LOG_LIMIT_MAX + 5
     src = inspect.getsource(running.e9_summary)
     assert "e9_lines()" in src and "1 << 30" not in src, src
 
@@ -448,7 +451,7 @@ def test_an_unusable_pattern_is_invalid_and_does_not_escape() -> None:
     which is not `Invalid`, so uncaught it reaches the caller as a traceback instead of
     the clean refusal this contract is built on."""
     with pytest.raises(ds.Invalid, match="not a usable pattern"):
-        ds.filter_e9(LIVE, "[", 10)
+        dlogs.filter_e9(LIVE, "[", 10)
 
 
 def test_the_two_nothings_are_counted_apart() -> None:
@@ -458,8 +461,8 @@ def test_the_two_nothings_are_counted_apart() -> None:
     The COUNT axis: the fixture holds TWO instrumentation lines, so a counter that
     only ever looks at the first line is caught. With one, it is not.
     """
-    assert ds.count_e9(NOISE + LIVE + REPLAY + LIVE2) == 2
-    assert ds.count_e9(NOISE + REPLAY) == 0
+    assert dlogs.count_e9(NOISE + LIVE + REPLAY + LIVE2) == 2
+    assert dlogs.count_e9(NOISE + REPLAY) == 0
 
 
 # -------------------------------------------------------------- the register pane
@@ -477,7 +480,7 @@ REAL_PANE = ("ooooooooooooooooooooooooooooooooooooooo"
 
 
 def test_a_register_name_that_abuts_the_pane_fill_is_still_read() -> None:
-    regs = ds.parse_registers(REAL_PANE)
+    regs = dcons.parse_registers(REAL_PANE)
     assert regs["EAX"] == "00001234"
     assert regs["EBX"] == "00004321"
     assert regs["EIP"] == "0000DAC6"
@@ -492,7 +495,7 @@ def test_the_newest_repaint_wins() -> None:
     """
     older = "EAX=00000001  EIP=00000010\n"
     newer = "EAX=000000FF  EIP=000000F0\n"
-    regs = ds.parse_registers(older + newer)
+    regs = dcons.parse_registers(older + newer)
     assert regs["EAX"] == "000000FF"
     assert regs["EIP"] == "000000F0"
 
@@ -500,7 +503,7 @@ def test_the_newest_repaint_wins() -> None:
 def test_a_screen_with_no_pane_parses_to_nothing() -> None:
     """So `registers()` can raise INVALID rather than hand back an empty mapping that
     reads like a machine with empty registers."""
-    assert ds.parse_registers("DEBUG: Set Register success.\nI-> _") == {}
+    assert dcons.parse_registers("DEBUG: Set Register success.\nI-> _") == {}
 
 
 def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
@@ -662,7 +665,7 @@ def test_a_destination_with_no_directory_is_a_refusal_not_a_traceback(
         return f"DEBUG: {ds.MEMDUMP_OK}."
 
     dumper = SimpleNamespace(
-        launch=ds.Launch(conf=conf, cwd=tmp_path, seconds=60),
+        launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60),
         command=writes_the_dump,
         _memdump_candidates=lambda: [tmp_path / ds.MEMDUMP_NAME])
     with pytest.raises(ds.Invalid, match="is not a directory"):
@@ -696,7 +699,7 @@ def test_the_dump_is_looked_for_in_the_working_directory_first(tmp_path: Path) -
     work = tmp_path / "work"
     work.mkdir()
     caps = tmp_path / "caps"
-    fake = SimpleNamespace(launch=ds.Launch(conf=conf, cwd=work, seconds=60,
+    fake = SimpleNamespace(launch=dlaunch.Launch(conf=conf, cwd=work, seconds=60,
                                             captures_dir=caps))
     got = ds.Session._memdump_candidates(fake)  # type: ignore[arg-type]
     assert got[0] == work / ds.MEMDUMP_FILE, (
@@ -711,7 +714,7 @@ def test_the_dump_is_looked_for_in_the_working_directory_first(tmp_path: Path) -
     # the configuration `memdump` is normally called in: it needs neither that
     # argument nor a capture, and a list that came back empty would make every dump
     # INVALID again.
-    bare = SimpleNamespace(launch=ds.Launch(conf=conf, cwd=work, seconds=60))
+    bare = SimpleNamespace(launch=dlaunch.Launch(conf=conf, cwd=work, seconds=60))
     assert ds.Session._memdump_candidates(bare)  # type: ignore[arg-type]
 
 
@@ -744,7 +747,7 @@ def test_a_data_row_that_abuts_the_pane_header_is_still_read() -> None:
     start: eight rows on screen, SEVEN parsed, and the missing one was E000 for a
     caller who had asked for E000. Losing any other row would be a degradation;
     losing this one makes the tool answer about somewhere else."""
-    rows = ds.parse_data_view(REAL_DATA_VIEW)
+    rows = dcons.parse_data_view(REAL_DATA_VIEW)
     assert rows[0].startswith("F000:0000E000"), rows
     assert rows[0].endswith("..............IB"), "the ASCII gutter was cut off"
     assert len(rows) == 2, rows
@@ -765,7 +768,7 @@ def test_a_code_row_is_not_a_data_row() -> None:
     two disassembly rows enter a `read_memory` reply. Naming the addresses that may
     come back cannot be satisfied that way.
     """
-    rows = ds.parse_data_view(REAL_DATA_VIEW)
+    rows = dcons.parse_data_view(REAL_DATA_VIEW)
     assert [r.split()[0] for r in rows] == ["F000:0000E000", "F000:0000E010"], rows
     assert not any("jmp" in r or "xor" in r for r in rows), rows
 
@@ -781,7 +784,7 @@ def test_two_rows_on_one_line_both_come_back() -> None:
     """
     glued = ("F000:0000E000" + " 00" * 16 + "  ................"
              "F000:0000E010" + " 11" * 16 + "  xxxxxxxxxxxxxxxx")
-    rows = ds.parse_data_view(glued)
+    rows = dcons.parse_data_view(glued)
     assert [r.split()[0] for r in rows] == ["F000:0000E000", "F000:0000E010"], rows
 
 
@@ -805,7 +808,7 @@ def test_a_gutter_cannot_swallow_the_address_of_the_row_behind_it(gutter: int) -
     """
     line = ("F000:0000E000" + " 00" * 16 + "  " + "." * gutter
             + "F000:0000E010" + " 11" * 16 + "  " + "." * 16)
-    rows = ds.parse_data_view(line)
+    rows = dcons.parse_data_view(line)
     assert [r.split()[0] for r in rows] == ["F000:0000E000", "F000:0000E010"], (
         f"gutter of {gutter}: {rows}")
     assert "F000:0000E010" not in rows[0], f"the gutter ate the next address: {rows[0]}"
@@ -821,7 +824,7 @@ def test_a_gutter_cannot_reach_into_the_row_below() -> None:
     """
     short = ("F000:0000E000" + " 00" * 16 + "  ab\r\n"
              "F000:0000E010" + " 11" * 16 + "  cd\r\n")
-    rows = ds.parse_data_view(short)
+    rows = dcons.parse_data_view(short)
     assert len(rows) == 2, rows
     assert "\n" not in rows[0] and "\r" not in rows[0], rows[0]
     assert rows[1].startswith("F000:0000E010")
@@ -848,7 +851,7 @@ def test_a_reading_of_somewhere_else_is_refused(tmp_path: Path) -> None:
     conf.write_text("[sdl]\n", encoding="utf-8")
     elsewhere = "F000:0000E040" + " 00" * 16 + "  ................"
     fake = SimpleNamespace(
-        launch=ds.Launch(conf=conf, cwd=tmp_path, seconds=60),
+        launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60),
         command=lambda _t, **_k: elsewhere,
         where=lambda: {"cs": "F000", "eip": "0000E000", "mode": "Real"},
         alive=lambda: True)
@@ -874,7 +877,7 @@ def test_read_memory_with_a_cached_mode_does_not_survey_for_it(tmp_path: Path) -
     def where_boom() -> dict[str, str]:
         raise ds.NotStopped("where() must not be called when the mode is cached")
     fake = SimpleNamespace(
-        launch=ds.Launch(conf=conf, cwd=tmp_path, seconds=60),
+        launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60),
         command=lambda _t, **_k: row, where=where_boom, alive=lambda: True)
     # read_bytes reaches self.read_memory; delegate it to the real method bound to this fake,
     # so the mode threads through the same path a show watch takes.
@@ -902,7 +905,7 @@ def test_read_memory_takes_a_32_bit_offset_in_protected_mode(tmp_path: Path) -> 
     row = "00A7:0016DF20" + " 8D" * 16 + "  ................"
 
     pr32 = SimpleNamespace(
-        launch=ds.Launch(conf=conf, cwd=tmp_path, seconds=60),
+        launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60),
         command=lambda _t, **_k: row,
         where=lambda: {"cs": "00A7", "eip": "0016DF20", "mode": "Pr32"},
         alive=lambda: True)
@@ -910,7 +913,7 @@ def test_read_memory_takes_a_32_bit_offset_in_protected_mode(tmp_path: Path) -> 
     assert ds.Session.read_memory(pr32, 0x00A7, 0x16DF20) == [row]  # type: ignore[arg-type]
 
     real = SimpleNamespace(
-        launch=ds.Launch(conf=conf, cwd=tmp_path, seconds=60),
+        launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60),
         command=lambda _t, **_k: row,
         where=lambda: {"cs": "F000", "eip": "0000FFF0", "mode": "Real"},
         alive=lambda: True)
@@ -936,7 +939,7 @@ def test_read_memory_hands_back_one_view_when_the_pane_repainted_twice(
     twice = "DEBUG: Set data overview to 00AF:179784\r\n" + "\r\n".join(rows) \
         + "\r\n" + "\r\n".join(rows) + "\r\nI-> _"
     fake = SimpleNamespace(
-        launch=ds.Launch(conf=conf, cwd=tmp_path, seconds=60),
+        launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60),
         command=lambda _t, **_k: twice,
         where=lambda: {"cs": "00A7", "eip": "0016DF20", "mode": "Pr32"},
         alive=lambda: True)
@@ -954,7 +957,7 @@ def test_the_gutter_stops_at_sixteen_characters() -> None:
     that is how many bytes the row holds.
     """
     long_gutter = "F000:0000E000" + " 00" * 16 + "  " + "x" * 40
-    rows = ds.parse_data_view(long_gutter)
+    rows = dcons.parse_data_view(long_gutter)
     assert len(rows) == 1, rows
     assert rows[0].endswith("x" * 16), rows[0]
     assert "x" * 17 not in rows[0], (
@@ -976,7 +979,7 @@ def test_a_dump_destination_inside_the_debuggers_own_place_is_refused(
         candidate.write_bytes(b"\xAB" * 16)
         return f"DEBUG: {ds.MEMDUMP_OK}."
 
-    d = SimpleNamespace(launch=ds.Launch(conf=conf, cwd=cwd, seconds=60),
+    d = SimpleNamespace(launch=dlaunch.Launch(conf=conf, cwd=cwd, seconds=60),
                         command=writes,
                         _memdump_candidates=lambda: [candidate])
     with pytest.raises(ds.Invalid, match="where the debugger writes its own file"):
@@ -993,7 +996,7 @@ def test_a_dump_destination_inside_the_debuggers_own_place_is_refused(
                            cwd / ds.MEMDUMP_NAME.upper() / "sub" / "d.bin")
     link = tmp_path / "link"
     link.symlink_to(cwd)
-    d2 = SimpleNamespace(launch=ds.Launch(conf=conf, cwd=link, seconds=60),
+    d2 = SimpleNamespace(launch=dlaunch.Launch(conf=conf, cwd=link, seconds=60),
                          command=writes,
                          _memdump_candidates=lambda: [link / ds.MEMDUMP_NAME])
     with pytest.raises(ds.Invalid, match="where the debugger writes"):
@@ -1022,7 +1025,7 @@ def test_a_dump_destination_inside_the_debuggers_own_place_is_refused(
         elsewhere.write_bytes(b"\xAB" * 16)
         return f"DEBUG: {ds.MEMDUMP_OK}."
 
-    d3 = SimpleNamespace(launch=ds.Launch(conf=conf, cwd=cwd, seconds=60),
+    d3 = SimpleNamespace(launch=dlaunch.Launch(conf=conf, cwd=cwd, seconds=60),
                          command=writes_elsewhere,
                          _memdump_candidates=lambda: [elsewhere])
     near = ds.Session.memdump(d3, 0, 0, 16, caps / (ds.MEMDUMP_NAME + "2"))  # type: ignore[arg-type]
@@ -1048,7 +1051,7 @@ def test_a_dump_destination_in_the_working_directory_is_refused_and_a_subdirecto
         candidate.write_bytes(b"\xCD" * 16)
         return f"DEBUG: {ds.MEMDUMP_OK}."
 
-    d = SimpleNamespace(launch=ds.Launch(conf=conf, cwd=cwd, seconds=60),
+    d = SimpleNamespace(launch=dlaunch.Launch(conf=conf, cwd=cwd, seconds=60),
                         command=writes, _memdump_candidates=lambda: [candidate])
     folded = Path(str(cwd).upper()) if (Path(str(cwd).upper())).exists() else cwd
     for dest in (cwd / "x.bin", folded / "y.bin"):
@@ -1088,7 +1091,7 @@ def test_a_dump_destination_that_already_exists_is_refused_before_the_debugger_i
         candidate.write_bytes(b"\xAB" * 16)
         return f"DEBUG: {ds.MEMDUMP_OK}."
 
-    d = SimpleNamespace(launch=ds.Launch(conf=conf, cwd=cwd, seconds=60),
+    d = SimpleNamespace(launch=dlaunch.Launch(conf=conf, cwd=cwd, seconds=60),
                         command=writes, _memdump_candidates=lambda: [candidate])
     mine = tmp_path / "data.bin"
     mine.write_bytes(b"the caller's data, not guest memory")
@@ -1113,16 +1116,16 @@ def test_a_dump_destination_that_already_exists_is_refused_before_the_debugger_i
 def test_a_screen_with_no_data_view_parses_to_nothing() -> None:
     """So `read_memory` can raise INVALID rather than hand back an empty list, which
     reads like an address holding nothing."""
-    assert ds.parse_data_view("DEBUG: Set Register success.\nI-> _") == []
-    assert ds.parse_data_view(REAL_PANE) == []
+    assert dcons.parse_data_view("DEBUG: Set Register success.\nI-> _") == []
+    assert dcons.parse_data_view(REAL_PANE) == []
 
 
 def test_only_the_names_this_debugger_sets_are_accepted() -> None:
     """`SR` takes MULTIPLE pairs and a carriage return is appended, so an unchecked
     name is a way to run debugger commands the caller never named."""
-    assert "ax" in ds.SETTABLE and "eax" in ds.SETTABLE
-    assert "ax 1\rBPINT 21" not in ds.SETTABLE
-    assert "eex" not in ds.SETTABLE
+    assert "ax" in dcons.SETTABLE and "eax" in dcons.SETTABLE
+    assert "ax 1\rBPINT 21" not in dcons.SETTABLE
+    assert "eex" not in dcons.SETTABLE
 
 
 # ---------------------------------------------------------------- the capture
@@ -1369,7 +1372,7 @@ def test_a_repaint_escape_survives_wherever_the_read_boundary_falls(
     read = reader(chunks)
     text = "".join(read() for _ in chunks)
     assert "\x1b" not in text, f"an escape survived into the reading: {text!r}"
-    rows = ds.parse_data_view(text)
+    rows = dcons.parse_data_view(text)
     assert len(rows) == 1, f"the row did not survive the boundary: {text!r}"
     assert rows[0] == MID_ROW, rows
 
@@ -1516,9 +1519,9 @@ def test_every_settable_name_has_the_pane_register_and_width_it_is_read_back_at(
     """ONE TABLE says where each name `SR` takes is read back, and it covers `SETTABLE`
     exactly: a name added to one and not the other would reach the machine and then refuse
     its own readback."""
-    assert set(ds.READBACK) == set(ds.SETTABLE)
+    assert set(ds.READBACK) == set(dcons.SETTABLE)
     for name, (pane, bits) in ds.READBACK.items():
-        assert pane in ds.REGISTER_NAMES, (name, pane)
+        assert pane in dcons.REGISTER_NAMES, (name, pane)
         assert bits in (16, 32), (name, bits)
     assert ds.READBACK["cs"] == ("CS", 16) and ds.READBACK["es"] == ("ES", 16)
     assert ds.READBACK["ax"] == ("EAX", 16) and ds.READBACK["ip"] == ("EIP", 16)
@@ -1642,7 +1645,7 @@ def _loader(tmp_path: Path, reply: Callable[[str], str] | None = None) -> Any:
     pane = "CS=0000  EIP=00000100  Real"
     return SimpleNamespace(launch=SimpleNamespace(cwd=tmp_path),
                            command=reply or default,
-                           _survey=lambda: (pane, ds.parse_registers(pane)),
+                           _survey=lambda: (pane, dcons.parse_registers(pane)),
                            alive=lambda: True,
                            _acked=ds.Session._acked)
 
@@ -2023,7 +2026,7 @@ def _bp_fake(tmp_path: Path, *, mode: str = "Pr32",
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     return SimpleNamespace(
-        launch=ds.Launch(conf=conf, cwd=tmp_path, seconds=60),
+        launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60),
         where=lambda: {"cs": "00A7", "eip": "0", "mode": mode},
         command=lambda _t, **_k: "",
         breakpoints=lambda: list(held or []),
@@ -2101,8 +2104,8 @@ def test_clear_interrupt_breakpoint_finds_the_row_by_text_and_reads_removal_back
     gone = ds.Session.clear_interrupt_breakpoint(other_ah, 0x31, 0x05)  # type: ignore[arg-type]
     assert gone["removed"] is False and "no such breakpoint" in str(gone["note"])
     assert other_sent == [], other_sent
-    assert ds.interrupt_row(0x21, None) == "BPINT 21"
-    assert ds.interrupt_row(0x31, 0) == "BPINT 31 AH=00"
+    assert dcons.interrupt_row(0x21, None) == "BPINT 21"
+    assert dcons.interrupt_row(0x31, 0) == "BPINT 31 AH=00"
 
 
 def test_clear_interrupt_breakpoint_removed_is_read_back_not_assumed(
@@ -2134,10 +2137,10 @@ def test_interrupt_row_round_trips_through_parse_and_parse_refuses_junk() -> Non
     a malformed BPDEL, and the `INT 21` spelling the docs once used is rejected."""
     for n in (0, 0x21, 0xFF):
         for ah in (None, 0, 0x4C, 0xFF):
-            assert ds.parse_interrupt_row(ds.interrupt_row(n, ah)) == (n, ah)
+            assert dcons.parse_interrupt_row(dcons.interrupt_row(n, ah)) == (n, ah)
     for junk in ("INT 21", "BPINT 211", "BPINT 21 AH=", "BP 00A7:0100", "BPINT ZZ", ""):
         with pytest.raises(ds.Invalid, match="interrupt breakpoint row"):
-            ds.parse_interrupt_row(junk)
+            dcons.parse_interrupt_row(junk)
 
 
 def test_bp_row_target_reads_seg_off_by_value_across_widths_and_kinds() -> None:
@@ -2145,14 +2148,14 @@ def test_bp_row_target_reads_seg_off_by_value_across_widths_and_kinds() -> None:
     them at, and its kind is kept so a code breakpoint is told from a watch at one address.
     A row with no seg:off (an interrupt) is None. The widths and the BPINT shapes here are
     CAPTURED from the debugger elsewhere in this suite, not invented."""
-    assert ds.bp_row_target("BP 0087:12345") == ("BP", 0x87, 0x12345)
-    assert ds.bp_row_target("BP 00A7:0100") == ("BP", 0xA7, 0x100)
-    assert ds.bp_row_target("BP 00A7:100") == ("BP", 0xA7, 0x100)      # minimal width
-    assert ds.bp_row_target("BPMEM 0040:006C (00)") == ("BPMEM", 0x40, 0x6C)
-    assert ds.bp_row_target("BPPM 00AF:00006024 (00)") == ("BPPM", 0xAF, 0x6024)
-    assert ds.bp_row_target("BPPM 00AF:6024") == ("BPPM", 0xAF, 0x6024)  # same, narrow
-    assert ds.bp_row_target("BPINT 21") is None
-    assert ds.bp_row_target("BPINT 31 AH=00") is None
+    assert dcons.bp_row_target("BP 0087:12345") == ("BP", 0x87, 0x12345)
+    assert dcons.bp_row_target("BP 00A7:0100") == ("BP", 0xA7, 0x100)
+    assert dcons.bp_row_target("BP 00A7:100") == ("BP", 0xA7, 0x100)      # minimal width
+    assert dcons.bp_row_target("BPMEM 0040:006C (00)") == ("BPMEM", 0x40, 0x6C)
+    assert dcons.bp_row_target("BPPM 00AF:00006024 (00)") == ("BPPM", 0xAF, 0x6024)
+    assert dcons.bp_row_target("BPPM 00AF:6024") == ("BPPM", 0xAF, 0x6024)  # same, narrow
+    assert dcons.bp_row_target("BPINT 21") is None
+    assert dcons.bp_row_target("BPINT 31 AH=00") is None
 
 
 def test_arm_and_clear_recognise_a_breakpoint_by_value_not_by_printed_width(
@@ -2398,9 +2401,9 @@ def test_the_launch_turns_the_quit_warning_off_so_close_is_a_quit(conf: Path) ->
     SIGKILL: `close` reports `killed` for a guest that was merely busy. The launcher already
     turns the warning off; the session does the same, before the caller's own flags so a
     caller who wants the dialog back can still say so."""
-    argv = ds.build_argv(launch(conf))
+    argv = dlaunch.build_argv(launch(conf))
     assert argv[argv.index("dosbox quit warning=false") - 1] == "-set"
-    watched = ds.build_argv(launch(conf, watched=True, window_flags=["-set", "sdl display=1"]))
+    watched = dlaunch.build_argv(launch(conf, watched=True, window_flags=["-set", "sdl display=1"]))
     assert watched.index("dosbox quit warning=false") < watched.index("sdl display=1")
 
 
@@ -2420,13 +2423,13 @@ def test_bytes_of_rows_reads_the_rows_by_their_own_offsets() -> None:
     """`read_memory(length)` hands back `hex` from the data view: the bytes are collected
     from the row that holds the offset onwards, across a row boundary, and a length the
     rows cannot serve is refused rather than padded. Over the captured view."""
-    rows = ds.parse_data_view(REAL_DATA_VIEW)
-    assert ds.bytes_of_rows(rows, 0xE000, 4) == "00000000"
-    assert ds.bytes_of_rows(rows, 0xE00E, 4) == "49424d20", "across the row boundary"
+    rows = dcons.parse_data_view(REAL_DATA_VIEW)
+    assert dcons.bytes_of_rows(rows, 0xE000, 4) == "00000000"
+    assert dcons.bytes_of_rows(rows, 0xE00E, 4) == "49424d20", "across the row boundary"
     with pytest.raises(ds.Invalid, match="holds"):
-        ds.bytes_of_rows(rows, 0xE000, 1000)
+        dcons.bytes_of_rows(rows, 0xE000, 1000)
     with pytest.raises(ds.Invalid, match="holds 0 bytes"):
-        ds.bytes_of_rows(rows, 0x1000, 1)
+        dcons.bytes_of_rows(rows, 0x1000, 1)
 
 
 def test_step_refuses_a_running_machine_in_its_own_words_not_a_register_reads(
@@ -2470,9 +2473,9 @@ def test_a_headless_caller_flag_reaches_argv(conf: Path) -> None:
     """A caller's `-set` (a fixed clock for a watchdog test) is an EMULATOR flag, not a
     placement one, so it travels under `flags` in either mode and reaches argv headless too."""
     clock = ["-set", "cpu cycles=fixed 3000"]
-    headless = ds.build_argv(launch(conf, flags=clock))
+    headless = dlaunch.build_argv(launch(conf, flags=clock))
     assert pair_at(headless, "cpu cycles=fixed 3000"), headless
-    watched = ds.build_argv(launch(conf, watched=True, window_flags=["-set", "sdl display=1"],
+    watched = dlaunch.build_argv(launch(conf, watched=True, window_flags=["-set", "sdl display=1"],
                                    flags=clock))
     assert pair_at(watched, "cpu cycles=fixed 3000"), watched
     # AFTER the server's own defaults, so a caller's `-set` of the same key wins.
@@ -2486,14 +2489,14 @@ def test_a_shredded_or_glued_set_is_refused(conf: Path, flags: list[str]) -> Non
     with a space in it), and DOSBox-X ignores the stray tokens at rc 0; a glued pair hangs it.
     Both are refused before a process exists."""
     with pytest.raises(ds.Invalid, match="bad_argument|-set"):
-        ds.validate(launch(conf, flags=flags))
+        dlaunch.validate(launch(conf, flags=flags))
 
 
 def test_placement_flags_on_a_headless_session_are_refused_not_dropped(conf: Path) -> None:
     """Placement flags on a headless session are refused, never dropped: there is no window to
     place, and an emulator flag belongs in `flags`. The refusal says both."""
     with pytest.raises(ds.Invalid, match="flags"):
-        ds.validate(launch(conf, window_flags=["-set", "cpu cycles=fixed 3000"]))
+        dlaunch.validate(launch(conf, window_flags=["-set", "cpu cycles=fixed 3000"]))
 
 
 @pytest.mark.parametrize("flags", [
@@ -2509,12 +2512,12 @@ def test_flags_may_not_retune_what_a_named_argument_owns(conf: Path, flags: list
     quietly undo the argument it shadows (a `-time-limit 0` is no bound at all), so it is
     refused, naming the argument that owns it."""
     with pytest.raises(ds.Invalid, match="owns"):
-        ds.validate(launch(conf, flags=flags))
+        dlaunch.validate(launch(conf, flags=flags))
 
 
 def test_flags_may_still_retune_the_defaults_no_argument_owns(conf: Path) -> None:
     """The quit warning and the clock are the caller's to set: nothing here names them."""
-    ds.validate(launch(conf, flags=["-set", "dosbox quit warning=true",
+    dlaunch.validate(launch(conf, flags=["-set", "dosbox quit warning=true",
                                     "-set", "cpu cycles=fixed 3000"]))
 
 
@@ -2529,7 +2532,7 @@ def test_the_paging_mark_is_the_stop_surveys_and_a_later_survey_does_not_move_it
     paged = (head + top +
              "EBX=00000000  EDI=00000000  CS=00A7   EIP=0015A694  C0 Z0 S0 O0 A0 P1 D0 I1 T0\r\n"
              "ECX=000000A7  EBP=002B8690PAGEPSE IOPL3  CPL3\r\n"
-             f"ooooOutputoooooooooooooooooooooooooooooooo{ds.BPLIST_HEADER}\r\n"
+             f"ooooOutputoooooooooooooooooooooooooooooooo{dcons.BPLIST_HEADER}\r\n"
              "-------------------------------------------------------------------------\r\n")
     cut = head + top
     screens = iter([paged, cut])
@@ -2582,9 +2585,9 @@ def test_a_stranger_that_takes_the_port_after_the_check_never_receives_the_input
 
     monkeypatch.setattr(subprocess, "Popen", spawn)
     monkeypatch.setattr(ds.Session, "_signal_group", lambda self, sig: None)
-    monkeypatch.setattr(ds, "INPUT_CONNECT_S", 2.0)
+    monkeypatch.setattr(dlaunch, "INPUT_CONNECT_S", 2.0)
     try:
-        ses = ds.Session(ds.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=port))
+        ses = ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=port))
     except ds.Invalid:
         ses = None
     try:
@@ -2603,15 +2606,15 @@ def test_a_stranger_that_takes_the_port_after_the_check_never_receives_the_input
 
 
 def test_an_emulator_that_exits_before_it_dials_is_said_at_once() -> None:
-    listener = ds.listen_input(0)
+    listener = dlaunch.listen_input(0)
     began = time.monotonic()
     with pytest.raises(ds.Invalid, match=r"exited \(code 3\) before it dialled"):
-        ds._accept_input(listener, 30.0, lambda: 3)
+        dlaunch.accept_input(listener, 30.0, lambda: 3)
     assert time.monotonic() - began < 2.0, "it waited out the bound for a dead emulator"
 
 
 def test_port_0_is_the_kernels_pick_held_from_the_moment_it_is_picked(conf: Path) -> None:
-    listener = ds.listen_input(0)
+    listener = dlaunch.listen_input(0)
     try:
         port = listener.getsockname()[1]
         assert 1024 <= port <= 65535
@@ -2619,7 +2622,7 @@ def test_port_0_is_the_kernels_pick_held_from_the_moment_it_is_picked(conf: Path
             socket.socket().bind(("127.0.0.1", port))
     finally:
         listener.close()
-    ds.validate(launch(conf, input_port=0))
+    dlaunch.validate(launch(conf, input_port=0))
 
 
 def test_a_spawn_that_fails_lets_the_port_go(tmp_path: Path,
@@ -2632,8 +2635,8 @@ def test_a_spawn_that_fails_lets_the_port_go(tmp_path: Path,
         raise OSError("no such emulator")
     monkeypatch.setattr(subprocess, "Popen", refuse)
     with pytest.raises(OSError) as held:
-        ds.Session(ds.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=port))
-    ds.listen_input(port).close()      # free again while the exception is still held
+        ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=port))
+    dlaunch.listen_input(port).close()      # free again while the exception is still held
     assert held.value is not None
 
 
@@ -2679,7 +2682,7 @@ def test_a_reply_ending_in_the_empty_input_line_is_whole_after_the_grace_not_the
         ) -> None:
     chunks = _recorded("prompt")
     got, took = _collected(chunks)
-    assert got == ds.ANSI.sub("", "".join(raw for _, raw in chunks))
+    assert got == dcons.ANSI.sub("", "".join(raw for _, raw in chunks))
     assert ds.REPLY_GRACE_S <= took < ds.REPLY_GRACE_S + 0.25, took
 
 
@@ -2697,14 +2700,14 @@ def test_a_paged_listing_is_not_ended_by_its_input_line_which_still_holds_the_co
     line: cut there and the rest late, the collect still waits for the pager."""
     [(_, raw)] = _recorded("paged")
     cut = raw.index("Paged content")
-    assert "I-> " in raw[:cut] and ds.REPLY_END.search(raw[:cut]) is None
+    assert "I-> " in raw[:cut] and dcons.REPLY_END.search(raw[:cut]) is None
     got, _ = _collected([(0.0, raw[:cut]), (ds.REPLY_GRACE_S + 0.15, raw[cut:])])
     assert "Paged content: Hit ENTER to continue" in got
 
 
 def test_a_reply_with_no_debugger_ending_keeps_the_settle() -> None:
     chunks = _recorded("running")
-    assert ds.REPLY_END.search("".join(raw for _, raw in chunks)) is None
+    assert dcons.REPLY_END.search("".join(raw for _, raw in chunks)) is None
     got, took = _collected(chunks, settle=0.3)
     assert got and took >= chunks[-1][0] + 0.3, took
 

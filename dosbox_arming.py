@@ -22,6 +22,7 @@ from scry_core import value_format as vf
 
 import dosbox_checks as checks
 import dosbox_code as code
+import dosbox_console as dcons
 import dosbox_declarations as dec
 import dosbox_dump as dumping
 import dosbox_placement as placement
@@ -66,14 +67,14 @@ class RawPlaces:
             seg, off = placement.parse_seg_off(ref)
             if self._segs is None and not self.session.at_debugger():
                 last = STATE.last_machine()
-                real = last is not None and last[0] == ds.REAL_MODE
-                return dumping.real_linear(seg, off) if real and off <= ds.offset_ceiling(
-                    ds.REAL_MODE) else None
+                real = last is not None and last[0] == dcons.REAL_MODE
+                return dumping.real_linear(seg, off) if real and off <= dcons.offset_ceiling(
+                    dcons.REAL_MODE) else None
             if self._segs is None:
                 self._segs = code.segments_at_stop(self.session)
             if self._segs.real:
                 return (dumping.real_linear(seg, off)
-                        if off <= ds.offset_ceiling(ds.REAL_MODE) else None)
+                        if off <= dcons.offset_ceiling(dcons.REAL_MODE) else None)
             base, limit = self._segs.base(seg), self._segs.limit(seg)
         except ds.Invalid:
             return None
@@ -168,7 +169,7 @@ def watch_held(held: list[dict[str, str]], seg: int, off: int) -> dict[str, str]
     breakpoint at the same address (`BP`) is deliberately not a match: the two are different
     kinds and `watch_clear` must not delete a code breakpoint."""
     for b in held:
-        t = ds.bp_row_target(b["entry"])
+        t = dcons.bp_row_target(b["entry"])
         if t is not None and t[0] in _WATCH_KINDS and (t[1], t[2]) == (seg, off):
             return b
     return None
@@ -384,7 +385,7 @@ def rearm_declarations(session: ds.Session) -> dict[str, Any]:
                              "unresolved": 0, "ambiguous": 0, "unarmable": 0}
     if STATE.store is None:
         return empty
-    held = {ds.bp_row_target(b["entry"]) for b in session.breakpoints()}
+    held = {dcons.bp_row_target(b["entry"]) for b in session.breakpoints()}
     out = dict(empty)
     places = RawPlaces(session)
     for decl in STATE.store.declarations():
@@ -497,7 +498,7 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
                 continue                     # cleared before the stop came, or re-armed by the load
             try:
                 if decl.kind == "interrupt":
-                    num, ah = ds.parse_interrupt_row(decl.ref)
+                    num, ah = dcons.parse_interrupt_row(decl.ref)
                     if not any(b["entry"] == decl.ref for b in held):
                         session.breakpoint_interrupt(num, ah)
                     STATE.note_armed(ref, {"kind": "int", "num": num, "ah": ah, "entry": decl.ref})
@@ -521,7 +522,7 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
                         raise ds.Invalid("unknown_ref", str(res.get("why", res["state"])))
                     want = ("BP", res["seg"], res["off"])
                     entry = f"BP {res['seg']:04X}:{res['off']:04X}"
-                    if not any(ds.bp_row_target(b["entry"]) == want for b in held):
+                    if not any(dcons.bp_row_target(b["entry"]) == want for b in held):
                         session.arm_code_breakpoint(res["seg"], res["off"])
                         # THE LIST LEARNS THE ROW: read once before the loop, it never saw
                         # what the loop armed, and a second ref on the same address stacked
@@ -601,7 +602,7 @@ def something_can_stop_it() -> bool:
 def breakpoint_interrupt(session: ds.Session, number: int, ah: int | None,
                          detail: bool = False) -> dict[str, Any]:
     """The body of the `breakpoint_interrupt` tool."""
-    want = ds.interrupt_row(number, ah)
+    want = dcons.interrupt_row(number, ah)
     decl = declare("interrupt", "address", want)
     if not session.at_debugger():
         is_new = cast(bool, placement.to_invalid(lambda: current_store().add(decl)))
@@ -613,7 +614,7 @@ def breakpoint_interrupt(session: ds.Session, number: int, ah: int | None,
                       entry=want, note="this interrupt breakpoint was already armed")
     delta = st.delta_if_asked(session.breakpoint_interrupt(number, ah), 2000, detail)
     is_new = cast(bool, placement.to_invalid(lambda: current_store().add(decl)))
-    num, ah = ds.parse_interrupt_row(want)
+    num, ah = dcons.parse_interrupt_row(want)
     STATE.note_armed(want, {"kind": "int", "num": num, "ah": ah, "entry": want})
     return st.reply(ref=want, stored=True, already_stored=not is_new, entry=want, **delta)
 
@@ -691,7 +692,7 @@ def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:
     try:
         placement._listening(session)     # a running console would take the list unread
         existing = next((b for b in session.breakpoints()
-                         if ds.bp_row_target(b["entry"]) == want), None)
+                         if dcons.bp_row_target(b["entry"]) == want), None)
         if existing is not None and moved:
             session.clear_code_breakpoint(res["seg"], res["off"])
             existing = None
@@ -770,7 +771,7 @@ def breakpoint_list(session: ds.Session) -> dict[str, Any]:
             mine.add(("BP", res["seg"], res["off"]))
         elif placement.is_stale(decl, places.judged(decl)) and not (
                 state == "armable"
-                and any(ds.bp_row_target(b["entry"]) == ("BP", res["seg"], res["off"])
+                and any(dcons.bp_row_target(b["entry"]) == ("BP", res["seg"], res["off"])
                         for b in held)):
             item["state"] = "orphan" if orphan(decl) else "stale"
             item["why"] = _ORPHAN_WHY if orphan(decl) else _STALE_WHY
@@ -778,7 +779,7 @@ def breakpoint_list(session: ds.Session) -> dict[str, Any]:
             want = ("BP", res["seg"], res["off"])
             item["entry"] = f"BP {res['seg']:04X}:{res['off']:04X}"
             item["marked"] = res["marked"]
-            if any(ds.bp_row_target(b["entry"]) == want for b in held):
+            if any(dcons.bp_row_target(b["entry"]) == want for b in held):
                 item["state"] = "armed"
                 mine.add(want)
             elif orphan(decl):
@@ -794,7 +795,7 @@ def breakpoint_list(session: ds.Session) -> dict[str, Any]:
     # A ROW A CLEAR HAS QUEUED FOR REMOVAL is not foreign while it waits for the stop.
     queued = {str(sp["entry"]) for sp in STATE.pending["disarm"]}
     foreign = [b["entry"] for b in held
-               if (t := ds.bp_row_target(b["entry"])) is not None
+               if (t := dcons.bp_row_target(b["entry"])) is not None
                and t[0] == "BP" and t not in mine and b["entry"] not in queued]
     # A BPINT row the store did not place is foreign too, matched by its whole text since
     # an interrupt row carries no seg:off for `bp_row_target` to read.
@@ -885,7 +886,7 @@ def breakpoint_clear(session: ds.Session, ref: str | None) -> dict[str, Any]:
                     pending_disarm.append(str(spec["entry"]))
         elif decl.kind == "interrupt":
             rows = STATE.armed.pop(("bp", decl.ref), [])
-            num, ah = ds.parse_interrupt_row(decl.ref)
+            num, ah = dcons.parse_interrupt_row(decl.ref)
             if not rows and not running:
                 rows = [{"kind": "int", "num": num, "ah": ah, "entry": decl.ref}]
             for spec in rows:
@@ -1092,7 +1093,7 @@ def watch_list(session: ds.Session) -> dict[str, Any]:
             item.pop("why", None)
     queued = {(sp["seg"], sp["off"]) for sp in STATE.pending["disarm"] if sp["kind"] == "watch"}
     foreign = [b["entry"] for b in held
-               if (t := ds.bp_row_target(b["entry"])) is not None
+               if (t := dcons.bp_row_target(b["entry"])) is not None
                and t[0] in _WATCH_KINDS and (t[1], t[2]) not in mine
                and (t[1], t[2]) not in queued]
     return st.reply(watches=out, foreign=foreign, debugger_read=read,

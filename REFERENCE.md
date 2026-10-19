@@ -1641,8 +1641,12 @@ added to one file.
   comment tools.
 - **`dosbox_comment_file.py`**: the comment file read and written: its header, its rules for a
   ref, a stamp and a text, and nothing that needs the machine.
-- **`dosbox_session.py`**, **`dosbox_symbols.py`**, **`dosbox_declarations.py`**: the
-  emulator's terminal, the symbol formats, the store.
+- **`dosbox_session.py`**: one live session and the emulator's terminal it drives.
+- **`dosbox_launch.py`**: what a session is launched with, judged, and the command line built from
+  it; **`dosbox_console.py`**: the console's grammar, the pane and the replies parsed;
+  **`dosbox_logs.py`**: the log's channels and filters; **`dosbox_collect.py`**: the files the
+  emulator wrote, collected to where they were asked for.
+- **`dosbox_symbols.py`**, **`dosbox_declarations.py`**: the symbol formats, the store.
 - **`scry_core.reply_contract`**, **`scry_core.value_format`**,
   **`scry_core.strict_arguments`**: the refusal contract, the watch value grammar and the strict
   schema, held once in the `scry-core` package both Scry servers pin.

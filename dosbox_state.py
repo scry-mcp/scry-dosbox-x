@@ -30,6 +30,7 @@ from typing import Any, cast
 from scry_core import cancel, narrowing
 from scry_core import reply_contract as contract
 
+import dosbox_console as dcons
 import dosbox_declarations as dec
 import dosbox_session as ds
 import dosbox_symbols as sym
@@ -278,10 +279,10 @@ class State:
         held = self.last_stop.get("held")
         if held is None:
             return
-        want = ds.bp_row_target(entry)
+        want = dcons.bp_row_target(entry)
         held[:] = [r for r in held
                    if not (r["entry"] == entry
-                           or (want is not None and ds.bp_row_target(r["entry"]) == want))]
+                           or (want is not None and dcons.bp_row_target(r["entry"]) == want))]
 
     def queue_arm(self, ref: str) -> dict[str, Any]:
         """Put a declaration on the arm queue and say so: the guest runs, the console cannot

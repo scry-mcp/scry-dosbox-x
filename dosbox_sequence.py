@@ -28,6 +28,7 @@ from scry_core import reply_contract as contract
 import dosbox_arming as arming
 import dosbox_checks as checks
 import dosbox_inputs as inputs
+import dosbox_logs as dlogs
 import dosbox_media as media
 import dosbox_running as guest
 import dosbox_session as ds
@@ -557,7 +558,7 @@ def _verify_at_a_stop(session: ds.Session, expect: str, mark: int) -> dict[str, 
         since = session.e9_since_mark(mark)
     except ds.Invalid as e:
         return {"checked": False, "expected": expect, "why": str(e), "code": e.code}
-    reaction = ds.compiled(inputs.program_reaction(expect))
+    reaction = dlogs.compiled(inputs.program_reaction(expect))
     hits = [ln for ln in since if reaction.search(ln)]
     if not hits:
         return {"checked": True, "seen": False, "expected": expect,
@@ -577,7 +578,7 @@ def _look(session: ds.Session, mark: int, pattern: str, limit: int) -> dict[str,
         since = session.e9_since_mark(mark)
     except ds.Invalid as e:
         return {"e9": {"available": False, "why": str(e)}}
-    rx = ds.compiled(pattern)
+    rx = dlogs.compiled(pattern)
     kept = [ln for ln in since if rx.search(ln)]
     return {"e9": {"available": True, "since_mark": mark, "written": len(since),
                    "lines_total": len(kept), "truncated": len(kept) > limit,

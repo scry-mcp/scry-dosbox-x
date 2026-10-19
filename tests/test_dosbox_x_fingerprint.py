@@ -17,7 +17,7 @@ from typing import Any
 from test_dosbox_x_server import _names, build_of, clean_session, install  # noqa: F401
 
 import dosbox_declarations as dec
-import dosbox_session as ds
+import dosbox_launch as dlaunch
 import dosbox_state as dstate
 import dosbox_x_server as server
 
@@ -34,10 +34,10 @@ def test_a_declaration_carries_the_fingerprint_it_was_made_against() -> None:
 def test_the_fingerprint_is_the_conf(tmp_path: Path) -> None:
     conf = tmp_path / "g.conf"
     conf.write_text("[autoexec]\nGAME.EXE\n")
-    one = ds.fingerprint(conf)
-    assert one == ds.fingerprint(conf) and len(one) == 16
+    one = dlaunch.fingerprint(conf)
+    assert one == dlaunch.fingerprint(conf) and len(one) == 16
     conf.write_text("[autoexec]\nGAME.EXE /x\n")
-    assert ds.fingerprint(conf) != one
+    assert dlaunch.fingerprint(conf) != one
 
 
 def test_symbols_load_re_arms_a_raw_address_over_the_same_map_and_leaves_it_over_another(
@@ -46,7 +46,7 @@ def test_symbols_load_re_arms_a_raw_address_over_the_same_map_and_leaves_it_over
     nm.write_text("00001000 T _start\n0016dd80 T _main\n", encoding="utf-8")
     fake = _names(tmp_path)
     conf = fake.launch.conf
-    dstate.STATE.conf_fingerprint = ds.fingerprint(conf)
+    dstate.STATE.conf_fingerprint = dlaunch.fingerprint(conf)
 
     def a_session(origin: str) -> dict[str, Any]:
         fake.rows.clear()

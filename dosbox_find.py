@@ -29,6 +29,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+import dosbox_console as dcons
 import dosbox_dump as dumping
 import dosbox_session as ds
 from dosbox_state import STATE
@@ -129,7 +130,7 @@ SCAN_LINES = (SCAN_OPENED, SCAN_MATCHES, SCAN_FINISHED, SCAN_RANGE,
               re.compile(re.escape(SCAN_NOT_ACTIVE)), re.compile(re.escape(SCAN_TOO_WIDE)),
               re.compile(re.escape(SCAN_CANCELLED)), re.compile(re.escape(SCAN_NONE_TO_CANCEL)),
               re.compile(re.escape(SCAN_NONE_TO_LIST)))
-# The listing is PAGED by the debugger (`ds.PAGER_MARK`), this many rows and then a prompt that
+# The listing is PAGED by the debugger (`dcons.PAGER_MARK`), this many rows and then a prompt that
 # any key continues (measured: a command typed while a page waited was eaten character by
 # character, one page per keystroke, and the rows in between never crossed the screen). Its
 # rows reach only the screen, so the pages are turned with a bare ENTER, one at a time, and
@@ -201,7 +202,7 @@ def _clear_line(session: ds.Session) -> bool:
             out = session.command("")
         except ds.Invalid:
             return False
-        if ds.PAGER_MARK not in out:
+        if dcons.PAGER_MARK not in out:
             return True
     return False
 
@@ -307,7 +308,7 @@ def _listing(session: ds.Session, survivors: int) -> list[dict[str, Any]]:
             # THE CLOSING COUNT IS NOT THE END OF THE PAGING. A delta can carry the count
             # AND a paged-content prompt still waiting behind it, and returning there leaves
             # that prompt to eat the front of the caller's next command.
-            if ds.PAGER_MARK in out[listed.end():] and not _clear_line(session):
+            if dcons.PAGER_MARK in out[listed.end():] and not _clear_line(session):
                 # A CLEAR THAT DID NOT CLEAR IS NOT A SUCCESS. Handing the rows back with
                 # the prompt still armed is the same defect, on the success path and silent:
                 # the caller's next command would be eaten and the session lost.
@@ -318,7 +319,7 @@ def _listing(session: ds.Session, survivors: int) -> list[dict[str, Any]]:
                     "`close` this session",
                     line_recovered=False, survivors=survivors, rows=len(rows))
             return list(rows.values())
-        if ds.PAGER_MARK not in out:
+        if dcons.PAGER_MARK not in out:
             raise _unexpected(session, out, "the listing's next page nor its end")
         out = session.command("")
     raise _unexpected(session, out,

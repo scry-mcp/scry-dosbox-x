@@ -15,6 +15,7 @@ from typing import Any, cast
 import pytest
 from scry_core import cancel
 
+import dosbox_launch as dlaunch
 import dosbox_mcp
 import dosbox_session as ds
 import dosbox_state as dstate
@@ -72,7 +73,7 @@ class StateFake:
 
     def __init__(self, state_dir: Path, *, parked: bool = True, carries: bool = True,
                  watched: bool = False) -> None:
-        self.launch = ds.Launch(conf=state_dir.parent / "g.conf", cwd=state_dir.parent,
+        self.launch = dlaunch.Launch(conf=state_dir.parent / "g.conf", cwd=state_dir.parent,
                                 seconds=60, watched=watched, state_dir=state_dir)
         self.parked = parked
         self.control = Channel(self, carries)
@@ -133,12 +134,12 @@ def test_the_launch_turns_the_remark_dialog_off_and_names_the_save_directory(
     """MEASURED: with `saveremark` at its default a save opens a dialog that takes the window
     away and writes nothing. So every session turns it off, and the slot directory is the
     caller's `state_dir`, passed as the option the build documents."""
-    argv = ds.build_argv(ds.Launch(conf=tmp_path / "g.conf", cwd=tmp_path, seconds=60,
+    argv = dlaunch.build_argv(dlaunch.Launch(conf=tmp_path / "g.conf", cwd=tmp_path, seconds=60,
                                    state_dir=tmp_path / "states"))
     assert argv[argv.index("-savedir") + 1] == str(tmp_path / "states")
     i = argv.index("dosbox saveremark=false")
     assert argv[i - 1] == "-set"
-    plain = ds.build_argv(ds.Launch(conf=tmp_path / "g.conf", cwd=tmp_path, seconds=60))
+    plain = dlaunch.build_argv(dlaunch.Launch(conf=tmp_path / "g.conf", cwd=tmp_path, seconds=60))
     assert "-savedir" not in plain and "dosbox saveremark=false" in plain
 
 
@@ -281,7 +282,7 @@ class ShotFake(StateFake):
 
     def __init__(self, state_dir: Path, **kw: Any) -> None:
         super().__init__(state_dir, **{"parked": False, **kw})
-        self.launch = ds.Launch(conf=state_dir.parent / "g.conf", cwd=state_dir.parent,
+        self.launch = dlaunch.Launch(conf=state_dir.parent / "g.conf", cwd=state_dir.parent,
                                 seconds=60, watched=self.launch.watched,
                                 captures_dir=state_dir.parent / "caps",
                                 logfile=state_dir.parent / "e9.log")

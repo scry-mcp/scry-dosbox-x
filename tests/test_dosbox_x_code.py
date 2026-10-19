@@ -21,6 +21,7 @@ import pytest
 from test_dosbox_x_server import FakeSession, clean_session, install  # noqa: F401
 
 import dosbox_code as code
+import dosbox_console as dcons
 import dosbox_disasm as disasm
 import dosbox_machine as machine
 import dosbox_running as running
@@ -348,7 +349,7 @@ class CodeMachine(FakeSession):
         return ds.Session._memdump_candidates(cast(ds.Session, self))
 
     def _base(self, seg: int) -> int:
-        return seg * 16 if self.mode == ds.REAL_MODE else self.selectors.get(
+        return seg * 16 if self.mode == dcons.REAL_MODE else self.selectors.get(
             next(r for r in ds.SELINFO_REGS if int(self.regs[r], 16) == seg), {}).get("base", 0)
 
     def memdump(self, seg: int, off: int, length: int, dest: Path) -> Path:
@@ -664,7 +665,7 @@ class StoppedCode(CodeMachine):
         self.d_reads.append((seg, off, n))
         if off > 0xFFFF:
             raise ds.Invalid("bad_argument", f"an offset is 0x0 to 0xFFFF; got 0x{off:X}")
-        if off % 16 and n > ds.DATA_VIEW_BYTES - 16:
+        if off % 16 and n > dcons.DATA_VIEW_BYTES - 16:
             raise ds.Invalid("unexpected_answer", f"the data view did not cover all {n} bytes")
         return bytes(self.mem[seg * 16 + off:seg * 16 + off + n])
 

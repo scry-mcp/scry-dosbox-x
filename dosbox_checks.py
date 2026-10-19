@@ -31,10 +31,13 @@ from scry_core import value_format as vf
 
 import dosbox_code as code
 import dosbox_comment_file as cf
+import dosbox_console as dcons
 import dosbox_dac as vgadac
 import dosbox_declarations as dec
 import dosbox_find as finder
 import dosbox_inputs as inputs
+import dosbox_launch as dlaunch
+import dosbox_logs as dlogs
 import dosbox_machine as machine
 import dosbox_media as media
 import dosbox_paths as paths
@@ -132,9 +135,9 @@ def write_data(value: str) -> bytes:
     tool that writes them never parses the text a second time. Up to the data view's reach,
     which is what the readback can cover in one read."""
     data = finder.hex_bytes("data_hex", value, verb="write")
-    if len(data) > ds.DATA_VIEW_BYTES:
+    if len(data) > dcons.DATA_VIEW_BYTES:
         raise ds.Invalid("bad_argument",
-            f"a write carries up to {ds.DATA_VIEW_BYTES} bytes, the data view's reach for the "
+            f"a write carries up to {dcons.DATA_VIEW_BYTES} bytes, the data view's reach for the "
             f"readback; {len(data)} is a region")
     return data
 
@@ -142,18 +145,18 @@ def write_data(value: str) -> bytes:
 def read_length(length: int) -> None:
     """`read_memory`'s span: 1 to the data view's reach. Its type is judged before this, by the
     tool's schema or by a sequence's signature check."""
-    if not 1 <= length <= ds.DATA_VIEW_BYTES:
+    if not 1 <= length <= dcons.DATA_VIEW_BYTES:
         raise ds.Invalid("bad_argument",
-            f"length={length!r} is not 1 to {ds.DATA_VIEW_BYTES}; above that the answer is "
+            f"length={length!r} is not 1 to {dcons.DATA_VIEW_BYTES}; above that the answer is "
             "`memdump`, which writes exactly the bytes asked for")
 
 
 def show_watch_width(mode: str, width: int) -> None:
     """A show watch reads its bytes off the data view at every stop, so it is at most
     the view's reach; wider, it would be stored only to report 'unreadable' at each stop."""
-    if mode == "show" and width > ds.DATA_VIEW_BYTES:
+    if mode == "show" and width > dcons.DATA_VIEW_BYTES:
         raise ds.Invalid("bad_argument",
-            f"a show watch reads up to {ds.DATA_VIEW_BYTES} bytes at a stop (the data "
+            f"a show watch reads up to {dcons.DATA_VIEW_BYTES} bytes at a stop (the data "
             f"view's reach); {width} is a region, and it would be stored only to report "
             f"'unreadable' at every stop. Use memdump for a region, or a smaller length")
 
@@ -170,15 +173,15 @@ def _send_mouse(x: int | None = None, y: int | None = None, button: str | None =
 
 
 def _log(pattern: str, channel: str, limit: int = 40, **_: Any) -> None:
-    ds.compiled(pattern)
-    ds.check_e9_limit(limit)
-    ds.check_channel(channel)
+    dlogs.compiled(pattern)
+    dlogs.check_e9_limit(limit)
+    dlogs.check_channel(channel)
 
 
 def _log_wait(pattern: str, channel: str, seconds: float = 30.0, **_: Any) -> None:
     ds.check_wait_bound(seconds)
-    ds.compiled(pattern)
-    ds.check_channel(channel)
+    dlogs.compiled(pattern)
+    dlogs.check_channel(channel)
 
 
 def _display(e9: str = "none", e9_filter: str = ".", e9_stamp: str | None = None,
@@ -350,7 +353,7 @@ def _machine_map(sections: list[str] | None = None, dest: str = "", **_: Any) ->
 
 
 def _state(name: str, seconds: float = ds.STATE_WAIT_S, **_: Any) -> None:
-    ds.check_state_name(name)
+    dlaunch.check_state_name(name)
     ds.check_wait_bound(seconds)
 
 
@@ -412,15 +415,16 @@ def _drive(act: list[dict[str, Any]], expect: str | None = None, seconds: float 
     if not isinstance(pattern, str) or not pattern:
         raise ds.Invalid("bad_argument",
             "pattern is a non-empty regular expression over the E9 log ('.' for everything)")
-    ds.compiled(pattern)
-    if isinstance(limit, bool) or not isinstance(limit, int) or not 0 < limit <= ds.LOG_LIMIT_MAX:
+    dlogs.compiled(pattern)
+    if (isinstance(limit, bool) or not isinstance(limit, int)
+            or not 0 < limit <= dlogs.LOG_LIMIT_MAX):
         raise ds.Invalid("bad_argument",
-            f"limit is between 1 and {ds.LOG_LIMIT_MAX}; got {limit!r}")
+            f"limit is between 1 and {dlogs.LOG_LIMIT_MAX}; got {limit!r}")
     if expect is not None:
         if not isinstance(expect, str) or not expect:
             raise ds.Invalid("bad_argument",
                 "expect is a non-empty regular expression over the E9 log")
-        ds.compiled(expect)
+        dlogs.compiled(expect)
     wait_s = inputs.EFFECT_WAIT_DEFAULT_S if seconds is None else seconds
     if isinstance(wait_s, bool) or not isinstance(wait_s, int | float) \
             or not 0 < wait_s <= ds.RUN_TO_MAX:

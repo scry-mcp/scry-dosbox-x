@@ -28,6 +28,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, TypeVar
 
+import dosbox_binary as binaries
+import dosbox_collect as dcollect
+import dosbox_console as dcons
 import dosbox_machine as machine
 import dosbox_paths as paths
 import dosbox_placement as placement
@@ -114,7 +117,7 @@ def target(session: ds.Session, dest: Path | None) -> Path:
     if dest is not None:
         path = paths.fresh_dest("dest", dest)
         cwd = session.launch.cwd
-        ds.judge_collection(path, cwd, log_places(cwd), "trace")
+        dcollect.judge_collection(path, cwd, log_places(cwd), "trace")
     else:
         # A NAME PICKED HERE IS NEVER ONE THE DEBUGGER WRITES, so the rule on where a caller's
         # name may point does not bind it: a captures directory that is the working directory
@@ -228,7 +231,7 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
         raise ds.Invalid("host_failed",
             f"the session's emulator `{session.launch.binary}` is not an executable file any "
             f"more, so its build cannot be read")
-    if not ds.heavy_debug(binary):
+    if not binaries.heavy_debug(binary):
         raise ds.Invalid("no_channel",
             f"`{binary}` was built without the debugger's CPU log (only a heavy-debug build "
             f"compiles the `LOG` family), so there is nothing to trace with; `build_check` says "
@@ -240,7 +243,7 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
             f"{cwd} is not writable, and the debugger opens its log there: nothing was typed. "
             f"`start` with a working directory the emulator can write")
     places = log_places(cwd)
-    ds.refuse_leftover(places, "trace")
+    dcollect.refuse_leftover(places, "trace")
     if STATE.log_open:
         _close_log(session, places, "the log an earlier trace left open")
     armed_at, _ = session.where_and_registers()
@@ -282,7 +285,7 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
             f"{where} is yours to move",
             running=True, trace={"path": str(where), "closed": False})
     return _collected(session, shape, asked, path, places, before, saw_at,
-                      armed_at["mode"] == ds.REAL_MODE, says)
+                      armed_at["mode"] == dcons.REAL_MODE, says)
 
 
 def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: list[Path],
@@ -303,7 +306,7 @@ def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: 
     # MOVED BEFORE THE CLOSE, because the close cannot tell an open log from a closed one: on a
     # log the machine already closed (a BIOS power-on self test closes it) `LOGC 0` opens a fresh
     # file over this name, and a file it creates in the working directory is how that shows.
-    collected = ds.collect(source, path, "trace")
+    collected = dcollect.collect(source, path, "trace")
     closed_early = False
     if not ran_out:
         closed_early = _close_log(session, places,
@@ -370,7 +373,7 @@ def join(session: ds.Session, parsed: Parsed, armed_real: bool, notes: list[str]
     """Each executed address as a linear one where its mode allows, and inside the loaded
     table's span the nearest symbol: a `long` line by its own mode, any other by the mode of the
     window's two ends (REFERENCE.md, Advancing the machine, says the rule and its limits)."""
-    stop_real = STATE.last_stop["where"]["mode"] == ds.REAL_MODE
+    stop_real = STATE.last_stop["where"]["mode"] == dcons.REAL_MODE
     window_flat = armed_real and stop_real
     flat_of = {a: (a[2] if a[2] is not None else window_flat) for a in parsed.executed}
     bases: dict[str, int | None] = {}
@@ -556,7 +559,7 @@ def close_log_left_open(session: ds.Session) -> None:
     if source is not None:
         aside = next(cwd / f"trace-cancelled-{n}.trace" for n in itertools.count(1)
                      if not paths.taken(cwd / f"trace-cancelled-{n}.trace"))
-        ds.collect(source, aside, "trace")
+        dcollect.collect(source, aside, "trace")
     _close_log(session, places, "the CPU log a cancelled call left open")
 
 

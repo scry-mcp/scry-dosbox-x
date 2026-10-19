@@ -44,6 +44,9 @@ from typing import Any, NoReturn
 
 sys.path.append(str(Path(__file__).resolve().parent))
 
+import dosbox_console as dcons  # noqa: E402
+import dosbox_launch as dlaunch  # noqa: E402
+import dosbox_logs as dlogs  # noqa: E402
 import dosbox_session as ds  # noqa: E402
 
 STAMP = re.compile(r"\[\+\s*([0-9]+\.[0-9]+)\]")
@@ -197,7 +200,7 @@ def reach_the_state(conf: Path, cwd: Path) -> dict[str, float]:
     if log.exists():
         log.unlink()
     t0 = time.perf_counter()
-    s = ds.Session(ds.Launch(conf=conf, cwd=cwd, seconds=180, logfile=log))
+    s = ds.Session(dlaunch.Launch(conf=conf, cwd=cwd, seconds=180, logfile=log))
     try:
         s.wait_ready()
         prompt = time.perf_counter() - t0
@@ -227,7 +230,7 @@ def per_question(conf: Path, cwd: Path) -> dict[str, object]:
     log = Path("/tmp/dosbox-bench-q.log")
     if log.exists():
         log.unlink()
-    s = ds.Session(ds.Launch(conf=conf, cwd=cwd, seconds=300, logfile=log))
+    s = ds.Session(dlaunch.Launch(conf=conf, cwd=cwd, seconds=300, logfile=log))
     out: dict[str, object] = {}
     try:
         ms, _ = timed(s.wait_ready)
@@ -250,7 +253,7 @@ def per_question(conf: Path, cwd: Path) -> dict[str, object]:
             for grace in (0.6, 0.3, default):
                 ds.REPLY_GRACE_S = grace
                 sweep[str(grace)] = bench(f"registers@grace={grace}",
-                                          lambda: ds.parse_registers(s.command(ds.NUDGE)),
+                                          lambda: dcons.parse_registers(s.command(ds.NUDGE)),
                                           5, nonempty)
         finally:
             ds.REPLY_GRACE_S = default
@@ -259,13 +262,13 @@ def per_question(conf: Path, cwd: Path) -> dict[str, object]:
         s.resume()
         deadline = time.perf_counter() + 60
         while time.perf_counter() < deadline:
-            if log.exists() and ds.count_e9(log.read_text(errors="replace")) > 5:
+            if log.exists() and dlogs.count_e9(log.read_text(errors="replace")) > 5:
                 break
             time.sleep(0.5)
         # `e9`'s COST IS A FUNCTION OF LOG SIZE: it reads the whole file and counts
         # every line. Publishing one figure without the size makes a property of a
         # six-line file read as a property of the tool.
-        e9_lines = ds.count_e9(log.read_text(errors="replace"))
+        e9_lines = dlogs.count_e9(log.read_text(errors="replace"))
         out["e9"] = bench("e9", lambda: s.log("Bochs", 10, "guest"), 15,
                           lambda r: bool(r[0]))
         out["e9_log_lines"] = e9_lines
@@ -300,7 +303,7 @@ def advance_rate(conf: Path, cwd: Path) -> dict[str, object]:
     log = Path("/tmp/dosbox-bench-rate.log")
     if log.exists():
         log.unlink()
-    s = ds.Session(ds.Launch(conf=conf, cwd=cwd, seconds=240, logfile=log))
+    s = ds.Session(dlaunch.Launch(conf=conf, cwd=cwd, seconds=240, logfile=log))
     try:
         s.wait_ready()
         s.resume()

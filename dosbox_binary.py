@@ -13,6 +13,7 @@ import os
 import shutil
 import subprocess
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from scry_core.reply_contract import Invalid
@@ -100,3 +101,27 @@ def facts(resolved: Resolved) -> dict[str, Any]:
     """The three fields `start` and `build_check` answer."""
     return {"binary": resolved.path, "binary_origin": resolved.origin,
             "version": version(resolved.path)}
+
+
+# THE HELP LINE THE DEBUGGER COMPILES ONLY UNDER `C_HEAVY_DEBUG`, beside the `LOG` family it
+# documents: a build that carries it has the CPU log. Read off the binary's bytes, never by
+# typing `LOG` to find out (a command the debugger does not know poisons its input line).
+HEAVY_DEBUG_MARK = b"LOGS/LOGL/LOGC [num]"
+
+
+_heavy_debug_seen: dict[tuple[str, int, int], bool] = {}
+
+
+def heavy_debug(binary: str) -> bool:
+    """Whether the build at `binary` carries the CPU log, cached per (real path, size, mtime) so
+    a rebuilt binary is read again."""
+    real = os.path.realpath(binary)
+    try:
+        st = os.stat(real)
+        key = (real, st.st_size, st.st_mtime_ns)
+        if key not in _heavy_debug_seen:
+            _heavy_debug_seen[key] = HEAVY_DEBUG_MARK in Path(real).read_bytes()
+    except OSError as exc:
+        raise Invalid("host_failed", f"{real} could not be read to see whether it carries the "
+                      f"CPU log: {exc!r}") from None
+    return _heavy_debug_seen[key]

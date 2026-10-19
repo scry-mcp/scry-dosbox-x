@@ -12,6 +12,7 @@ import pytest
 from test_dosbox_x_server import NM_TEXT, _names, clean_session  # noqa: F401
 
 import dosbox_declarations as dec
+import dosbox_launch as dlaunch
 import dosbox_mcp
 import dosbox_sequence as sequence
 import dosbox_session as ds
@@ -39,7 +40,7 @@ class RunningGuest:
         self.stop_count = 1
         self.reap_failed = ""
         self.ended_how = "none"
-        self.launch = ds.Launch(conf=tmp_path / "g.conf", cwd=tmp_path / "cwd", seconds=60,
+        self.launch = dlaunch.Launch(conf=tmp_path / "g.conf", cwd=tmp_path / "cwd", seconds=60,
                                 watched=True)
         self.stopped = False
         self.asked: list[str] = []           # every console method called while it ran

@@ -14,6 +14,7 @@ import pytest
 from test_dosbox_x_server import _names, clean_session, install  # noqa: F401
 
 import dosbox_find as finder
+import dosbox_launch as dlaunch
 import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_symbols as dsym
@@ -191,9 +192,9 @@ def test_a_start_plan_is_judged_whole_before_anything_starts(tmp_path: Path) -> 
     bad step answered after the boot left a running emulator and a state directory behind."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
-    booted: list[ds.Launch] = []
+    booted: list[dlaunch.Launch] = []
 
-    def boot(launch: ds.Launch) -> Any:
+    def boot(launch: dlaunch.Launch) -> Any:
         booted.append(launch)
         raise ds.Invalid("session_broken", "not starting anything")
     kw: dict[str, Any] = {"conf": str(conf), "cwd": str(tmp_path), "seconds": 60}

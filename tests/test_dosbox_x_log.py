@@ -18,6 +18,7 @@ import pytest
 from test_dosbox_x_debug import E9_BOOT, E9_HELP, LogSession
 from test_dosbox_x_server import clean_session, install  # noqa: F401  (the autouse teardown)
 
+import dosbox_logs as dlogs
 import dosbox_session as ds
 import dosbox_x_server as server
 
@@ -33,22 +34,22 @@ def test_the_old_tool_names_are_gone_and_the_pair_is_registered() -> None:
 
 def test_filter_log_selects_by_channel_and_tags_all() -> None:
     text = f"{EMU_LINE}\n{E9_BOOT}\n{EMU_LINE_2}\n{E9_HELP}\n"
-    assert ds.filter_log(text, ".", 40, "guest") == ([E9_BOOT, E9_HELP], 2)
-    assert ds.filter_log(text, ".", 40, "emulator") == ([EMU_LINE, EMU_LINE_2], 2)
-    assert ds.filter_log(text, ".", 40, "all") == (
+    assert dlogs.filter_log(text, ".", 40, "guest") == ([E9_BOOT, E9_HELP], 2)
+    assert dlogs.filter_log(text, ".", 40, "emulator") == ([EMU_LINE, EMU_LINE_2], 2)
+    assert dlogs.filter_log(text, ".", 40, "all") == (
         [f"[emulator] {EMU_LINE}", f"[guest] {E9_BOOT}", f"[emulator] {EMU_LINE_2}",
          f"[guest] {E9_HELP}"], 4)
-    assert ds.filter_log(text, "CONFIG", 40, "all") == ([f"[emulator] {EMU_LINE_2}"], 1)
-    assert ds.filter_e9(text, ".", 40) == ds.filter_log(text, ".", 40, "guest")
+    assert dlogs.filter_log(text, "CONFIG", 40, "all") == ([f"[emulator] {EMU_LINE_2}"], 1)
+    assert dlogs.filter_e9(text, ".", 40) == dlogs.filter_log(text, ".", 40, "guest")
     with pytest.raises(ds.Invalid, match="channel"):
-        ds.filter_log(text, ".", 40, "process")
+        dlogs.filter_log(text, ".", 40, "process")
 
 
 def test_label_counts_are_the_first_word_after_the_e9_prefix() -> None:
     lines = [E9_BOOT, E9_HELP, E9_BOOT]
-    counts = ds.label_counts(lines)
+    counts = dlogs.label_counts(lines)
     assert counts == {"BOOT": 2, "UI": 1}, "the label is the word after the stamp"
-    assert ds.label_counts([EMU_LINE]) == {"LOG:": 1}
+    assert dlogs.label_counts([EMU_LINE]) == {"LOG:": 1}
 
 
 def test_a_session_log_reads_each_channel_off_the_one_file(tmp_path: Path) -> None:

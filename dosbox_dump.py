@@ -27,6 +27,8 @@ from typing import Any, NamedTuple
 
 from scry_core import fresh
 
+import dosbox_collect as dcollect
+import dosbox_console as dcons
 import dosbox_machine as machine
 import dosbox_paths as paths
 import dosbox_session as ds
@@ -172,10 +174,10 @@ def dump_range(session: ds.Session, seg: int, off: int, length: int, dest: Path,
     # `dest` the way `Session.memdump` judges its own (the pieces go to a scratch directory,
     # so their checks never see it), and a leftover where the debugger writes.
     candidates = session._memdump_candidates()
-    ds.judge_collection(dest, session.launch.cwd, candidates, "dump")
-    ds.refuse_leftover(candidates, "dump")
+    dcollect.judge_collection(dest, session.launch.cwd, candidates, "dump")
+    dcollect.refuse_leftover(candidates, "dump")
     paths.fresh_dest("dest", dest)
-    if found is not None or session.where()["mode"] != ds.REAL_MODE:
+    if found is not None or session.where()["mode"] != dcons.REAL_MODE:
         judge_protected(session, seg, off, length, found)
         return Dump(session.memdump(seg, off, length, dest), False)
     windows = dump_windows(seg, off, length)

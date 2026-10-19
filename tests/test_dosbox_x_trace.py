@@ -24,7 +24,10 @@ from test_dosbox_x_run_for import live
 from test_dosbox_x_server import SELINFO_SCREEN, clean_session, install  # noqa: F401
 
 import dosbox_arming as arming
+import dosbox_binary as binaries
 import dosbox_checks as checks
+import dosbox_collect as dcollect
+import dosbox_console as dcons
 import dosbox_machine as machine
 import dosbox_placement as placement
 import dosbox_session as ds
@@ -59,7 +62,7 @@ class Tracer(Debugger):
         # has the CPU log, whatever is installed on the host running the suite.
         if binary is None:
             binary = cwd.parent / "heavy-dosbox-x"
-            binary.write_bytes(b"\x00help\x00" + ds.HEAVY_DEBUG_MARK + b"\x00")
+            binary.write_bytes(b"\x00help\x00" + binaries.HEAVY_DEBUG_MARK + b"\x00")
             binary.chmod(0o755)
         self.launch = SimpleNamespace(logfile=None, watched=False, input_port=None, cwd=cwd,
                                       captures_dir=captures_dir, binary=str(binary))
@@ -164,12 +167,12 @@ def test_a_line_cut_short_is_refused_where_it_is(tmp_path: Path) -> None:
 def test_the_pane_counter_is_read_off_a_survey(name: str, cycles: int) -> None:
     """`dos-djgpp32-engine-survey-after` is the repaint that glued other text over `ESP=`: the
     counter is anchored on its tail, the run state after it."""
-    assert ds.parse_pane_cycles(cap(name)) == cycles
+    assert dcons.parse_pane_cycles(cap(name)) == cycles
 
 
 def test_the_last_pane_on_the_screen_gives_the_counter() -> None:
     both = cap("probe-settle-survey-before") + cap("probe-settle-survey-after")
-    assert ds.parse_pane_cycles(both) == 192349
+    assert dcons.parse_pane_cycles(both) == 192349
 
 
 def test_the_counter_is_read_across_its_wrap() -> None:
@@ -187,7 +190,7 @@ def test_lines_are_counted_whole_a_last_one_unterminated_included(tmp_path: Path
 
 
 def test_a_screen_with_no_counter_reads_none() -> None:
-    assert ds.parse_pane_cycles(cap("probe-settle-cs_ip-16-delta")[:200]) is None
+    assert dcons.parse_pane_cycles(cap("probe-settle-cs_ip-16-delta")[:200]) is None
 
 
 # ------------------------------------------------------------------------------- the run
@@ -644,7 +647,7 @@ def test_a_hand_built_launch_s_bare_name_is_found_on_the_path(
     gives it, as the session itself was spawned."""
     heavy = tmp_path / "bin" / "dosbox-x"
     heavy.parent.mkdir()
-    heavy.write_bytes(b"\x00help\x00" + ds.HEAVY_DEBUG_MARK + b"\x00")
+    heavy.write_bytes(b"\x00help\x00" + binaries.HEAVY_DEBUG_MARK + b"\x00")
     heavy.chmod(0o755)
     monkeypatch.setenv("PATH", str(heavy.parent))
     dbg = settle(tmp_path, binary=Path("dosbox-x"))
@@ -713,10 +716,11 @@ def test_a_working_directory_the_emulator_cannot_write_is_refused_before_anythin
 
 def test_heavy_debug_reads_the_help_line_off_the_binary(tmp_path: Path) -> None:
     with_log = tmp_path / "a"
-    with_log.write_bytes(b"xx" + ds.HEAVY_DEBUG_MARK + b"yy")
+    with_log.write_bytes(b"xx" + binaries.HEAVY_DEBUG_MARK + b"yy")
     without = tmp_path / "b"
     without.write_bytes(b"xx LOGS yy")
-    assert ds.heavy_debug(str(with_log)) is True and ds.heavy_debug(str(without)) is False
+    assert binaries.heavy_debug(str(with_log)) is True
+    assert binaries.heavy_debug(str(without)) is False
 
 
 @pytest.mark.parametrize("command", ["LOG 10", "logs 10", "LOGL 1", "LOGC 0", " LOG"])
@@ -1121,7 +1125,7 @@ def test_a_cut_run_whose_move_fails_remembers_the_log_it_left_open(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     def refused(source: Path, dest: Path, what: str) -> Path:
         raise ds.Invalid("host_failed", f"the {what} at {source} could not be moved to {dest}")
-    monkeypatch.setattr(ds, "collect", refused)
+    monkeypatch.setattr(dcollect, "collect", refused)
     dbg = cut(tmp_path)
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",
                                             dest=str(tmp_path / "c.trace")))
@@ -1416,7 +1420,7 @@ def test_the_counter_is_read_across_its_wrap_by_the_call(tmp_path: Path) -> None
 def test_a_cut_run_that_counted_two_more_is_refused(tmp_path: Path) -> None:
     """The allowance is one, the INT an interrupt breakpoint counted and did not run: two more
     is a counter that does not follow the log."""
-    before = ds.parse_pane_cycles(cap("probe-cut-survey-before"))
+    before = dcons.parse_pane_cycles(cap("probe-cut-survey-before"))
     executed = tracing.count_lines(TRACE / "probe-cut-open.trace") - 1
     assert before is not None
     dbg = live(Tracer([cap("probe-cut-survey-before"),
@@ -1509,9 +1513,9 @@ def test_a_code_segment_not_present_does_not_qualify(monkeypatch: pytest.MonkeyP
 
 def test_a_binary_rebuilt_at_the_same_size_is_read_again(tmp_path: Path) -> None:
     binary = tmp_path / "dosbox-x"
-    binary.write_bytes(b"xx" + ds.HEAVY_DEBUG_MARK + b"yy")
-    assert ds.heavy_debug(str(binary)) is True
+    binary.write_bytes(b"xx" + binaries.HEAVY_DEBUG_MARK + b"yy")
+    assert binaries.heavy_debug(str(binary)) is True
     first = binary.stat().st_mtime_ns
-    binary.write_bytes(b"xx" + b"-" * len(ds.HEAVY_DEBUG_MARK) + b"yy")
+    binary.write_bytes(b"xx" + b"-" * len(binaries.HEAVY_DEBUG_MARK) + b"yy")
     os.utime(binary, ns=(first, first + 1_000_000_000))
-    assert ds.heavy_debug(str(binary)) is False
+    assert binaries.heavy_debug(str(binary)) is False

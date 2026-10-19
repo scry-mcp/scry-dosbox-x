@@ -24,6 +24,7 @@ from typing import Any, cast
 
 from scry_core import value_format as vf
 
+import dosbox_console as dcons
 import dosbox_declarations as dec
 import dosbox_paths as paths
 import dosbox_session as ds
@@ -288,7 +289,7 @@ def _resolve_pointer(decl: dec.Declaration, reg: str, session: ds.Session,
             f"the pointer at {info['at']} is null, so there is nothing to watch yet; the "
             f"declaration is kept and re-resolved at every stop")}
     target = value + offset
-    if not 0 <= target <= ds.offset_ceiling(mode):
+    if not 0 <= target <= dcons.offset_ceiling(mode):
         return {"state": "unarmable", "pointer": info, "why": (
             f"the pointer plus the offset, {target:#x}, is outside what an offset can be "
             f"in {mode} mode")}
@@ -441,7 +442,7 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
         # REAL MODE HAS NO DESCRIPTOR TO MEASURE, and the pane already says so: asked there,
         # this build's `SELINFO` prints no descriptor line at all inside a program, so the
         # refusal would be the parser's and name the wrong cause.
-        if base is None and session.where()["mode"] == ds.REAL_MODE:
+        if base is None and session.where()["mode"] == dcons.REAL_MODE:
             raise ds.Invalid("bad_argument",
                 "the machine is in real mode, where there is no descriptor to measure a base "
                 "from: pass `base` as hex text, the load segment * 16 (segment 0x0800 is "
@@ -613,7 +614,7 @@ def is_stale(decl: dec.Declaration, place_now: Callable[[], int | None]) -> bool
 def mode_word(cpu: str | None) -> str | None:
     """A stop's cpu mode as a raw row records it (`dec.CPU_MODES`), from the debugger's
     spelling (`Real`, `Pr16`, `Pr32`); None for a mode not known."""
-    if cpu == ds.REAL_MODE:
+    if cpu == dcons.REAL_MODE:
         return "real"
     return "protected" if cpu is not None and cpu.startswith("Pr") else None
 

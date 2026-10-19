@@ -9,6 +9,7 @@ from typing import Any
 
 import pytest
 
+import dosbox_launch as dlaunch
 import dosbox_session as ds
 import dosbox_x_server as server
 
@@ -17,15 +18,15 @@ import dosbox_x_server as server
     (None, False, True), (None, True, False), (True, True, True), (False, False, False)])
 def test_omitted_a_headless_start_goes_behind_and_a_shared_one_in_front(
         background: bool | None, watched: bool, behind: bool) -> None:
-    assert ds.judge_background(background, watched) is behind
+    assert dlaunch.judge_background(background, watched) is behind
 
 
 def test_the_hint_is_set_or_removed_never_inherited(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv(ds.BACKGROUND_VAR, "1")
-    assert ds.BACKGROUND_VAR not in ds.launch_environment(False)
-    monkeypatch.delenv(ds.BACKGROUND_VAR)
-    assert ds.launch_environment(True)[ds.BACKGROUND_VAR] == "1"
-    assert ds.launch_environment(True)["TERM"] == "xterm-256color"
+    monkeypatch.setenv(dlaunch.BACKGROUND_VAR, "1")
+    assert dlaunch.BACKGROUND_VAR not in dlaunch.launch_environment(False)
+    monkeypatch.delenv(dlaunch.BACKGROUND_VAR)
+    assert dlaunch.launch_environment(True)[dlaunch.BACKGROUND_VAR] == "1"
+    assert dlaunch.launch_environment(True)["TERM"] == "xterm-256color"
 
 
 def test_the_session_spawns_the_emulator_with_the_launch_s_answer(
@@ -40,10 +41,10 @@ def test_the_session_spawns_the_emulator_with_the_launch_s_answer(
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     for behind in (True, False):
-        launch = ds.Launch(conf=conf, cwd=tmp_path, seconds=60, background=behind)
+        launch = dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, background=behind)
         with pytest.raises(OSError, match="not spawned"):
             ds.Session(launch)
-        assert (seen[-1].get(ds.BACKGROUND_VAR) == "1") is behind, seen[-1]
+        assert (seen[-1].get(dlaunch.BACKGROUND_VAR) == "1") is behind, seen[-1]
 
 
 def test_start_says_what_the_process_was_told(tmp_path: Path,

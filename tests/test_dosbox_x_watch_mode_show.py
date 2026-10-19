@@ -14,6 +14,7 @@ from pathlib import Path
 import pytest
 
 import dosbox_checks as checks
+import dosbox_console as dcons
 import dosbox_declarations as dec
 import dosbox_session as ds
 import dosbox_x_server as server
@@ -64,7 +65,7 @@ def test_a_store_written_with_read_rows_loads_them_as_show_and_persists_show(
 
 
 def test_a_show_watch_is_bounded_by_the_data_view_and_a_change_watch_is_not() -> None:
-    wide = ds.DATA_VIEW_BYTES + 1
+    wide = dcons.DATA_VIEW_BYTES + 1
     with pytest.raises(ds.Invalid, match=f"{wide} is a region"):
         checks.show_watch_width("show", wide)
     checks.show_watch_width("change", wide)

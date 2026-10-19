@@ -14,6 +14,7 @@ import pytest
 from test_dosbox_x_dump import debugger
 from test_dosbox_x_server import clean_session, install  # noqa: F401
 
+import dosbox_launch as dlaunch
 import dosbox_paths as paths
 import dosbox_placement as placement
 import dosbox_session as ds
@@ -144,7 +145,7 @@ def test_a_text_file_that_is_not_utf8_is_refused_where_it_broke(tmp_path: Path) 
 
 def _start_stubbed(**kw: Any) -> dict[str, Any]:
     """`start` as far as it goes before a process: the emulator is never spawned."""
-    def build(launch: ds.Launch) -> Any:
+    def build(launch: dlaunch.Launch) -> Any:
         raise ds.Invalid("session_broken", "not starting anything")
     with mock.patch("dosbox_binary.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
          mock.patch("dosbox_x_server.ds.Session", build):
@@ -291,7 +292,7 @@ def test_start_takes_no_savedir_argument() -> None:
 
 
 def test_the_state_directory_is_state_dir_in_status_and_state_list(tmp_path: Path) -> None:
-    launch = ds.Launch(conf=tmp_path / "g.conf", cwd=tmp_path, seconds=60,
+    launch = dlaunch.Launch(conf=tmp_path / "g.conf", cwd=tmp_path, seconds=60,
                        state_dir=tmp_path / "states")
     bare = ds.Session.__new__(ds.Session)
     bare.launch = launch

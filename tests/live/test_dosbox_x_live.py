@@ -25,6 +25,8 @@ from typing import cast
 import pytest
 from live_private import guest_dir
 
+import dosbox_console as dcons
+import dosbox_launch as dlaunch
 import dosbox_session as ds
 
 # THE PACKAGE'S OWN GUEST IS THE DEFAULT, and pointing the tier at a project is the
@@ -115,7 +117,7 @@ pytestmark = [
 @pytest.fixture
 def session(tmp_path: Path) -> Iterator[ds.Session]:
     log = tmp_path / "guest.log"
-    s = ds.Session(ds.Launch(conf=Path(CONF), cwd=Path(CWD),
+    s = ds.Session(dlaunch.Launch(conf=Path(CONF), cwd=Path(CWD),
                              seconds=90, logfile=log))
     yield s
     s.close()
@@ -160,7 +162,7 @@ def test_a_breakpoint_gives_control_back(session: ds.Session) -> None:
     stopped = cast(dict[str, str], ran["stopped_at"])
     # AND THE ADDRESS IS COMPARED AGAINST AN INDEPENDENT READ, which is what the
     # comment above always claimed and what NO assertion here did. The line that stood
-    # here was `stopped_at["mode"] in ds.CPU_MODES`, and it CANNOT FAIL: `parse_mode`
+    # here was `stopped_at["mode"] in dcons.CPU_MODES`, and it CANNOT FAIL: `parse_mode`
     # only ever answers a member of that tuple, and `where()` refuses the `None`, so
     # it held whatever `resume` handed it -- a `stopped_at` replaced by a constant
     # passed this case green. A stopped machine does not move, so a FRESH pane has to
@@ -170,7 +172,7 @@ def test_a_breakpoint_gives_control_back(session: ds.Session) -> None:
         f"`resume` said the machine stopped at {stopped['cs']}:{stopped['eip']} and a "
         f"pane read straight afterwards says {again['CS']}:{again['EIP']}. The machine "
         f"cannot have moved, so one of the two is not a reading of it")
-    assert stopped["mode"] in ds.CPU_MODES, stopped
+    assert stopped["mode"] in dcons.CPU_MODES, stopped
     # (iii) and it takes a NEW command afterwards, carrying a NEW value.
     assert session.set_register("bx", 0x4321)["readback"] == "4321"
 
@@ -185,7 +187,7 @@ def test_the_instrumentation_channel_tells_the_two_nothings_apart(session: ds.Se
 
 
 def test_a_session_without_a_logfile_refuses_to_pretend(tmp_path: Path) -> None:
-    s = ds.Session(ds.Launch(conf=Path(CONF), cwd=Path(CWD), seconds=30))
+    s = ds.Session(dlaunch.Launch(conf=Path(CONF), cwd=Path(CWD), seconds=30))
     try:
         s.wait_ready()
         with pytest.raises(ds.Invalid, match="no (instrumentation|log) channel"):
@@ -202,7 +204,7 @@ def test_close_leaves_nothing_behind(tmp_path: Path) -> None:
     for leaving nothing behind. Nothing counts leaked emulators on this tier, so nothing
     else would have said so.
     """
-    s = ds.Session(ds.Launch(conf=Path(CONF), cwd=Path(CWD), seconds=60))
+    s = ds.Session(dlaunch.Launch(conf=Path(CONF), cwd=Path(CWD), seconds=60))
     try:
         s.wait_ready()
         assert s.alive()
@@ -266,7 +268,7 @@ def test_both_halves_of_the_capture_against_a_real_emulator(tmp_path: Path) -> N
     """
     caps = tmp_path / "caps"
     caps.mkdir()
-    s = ds.Session(ds.Launch(
+    s = ds.Session(dlaunch.Launch(
         conf=conf_that_does_not_exit(tmp_path), cwd=Path(CWD), seconds=60,
         program=GUEST_PROGRAM,
         capture_video=True, captures_dir=caps))
@@ -325,7 +327,7 @@ def test_a_dump_really_lands_and_carries_the_bytes_that_were_asked_for(
     a buffer of zeros, which is the whole point of looking at the content at all.
     """
     dest = tmp_path / "dump.bin"
-    s = ds.Session(ds.Launch(conf=Path(CONF), cwd=Path(CWD), seconds=90))
+    s = ds.Session(dlaunch.Launch(conf=Path(CONF), cwd=Path(CWD), seconds=90))
     try:
         s.wait_ready()
         # THE PRE-EXISTING FILE IS REFUSED, and it is asked here rather than assumed:
@@ -403,7 +405,7 @@ def test_the_machine_keeps_running_while_nobody_is_asking(tmp_path: Path) -> Non
     machine cannot fake a pass.
     """
     log = tmp_path / "guest.log"
-    s = ds.Session(ds.Launch(conf=Path(CONF), cwd=Path(CWD),
+    s = ds.Session(dlaunch.Launch(conf=Path(CONF), cwd=Path(CWD),
                              seconds=180, logfile=log))
     try:
         s.wait_ready()

@@ -25,6 +25,7 @@ import re
 from collections.abc import Callable
 from typing import Any, NamedTuple
 
+import dosbox_logs as dlogs
 import dosbox_placement as placement
 import dosbox_running as running
 import dosbox_session as ds
@@ -535,7 +536,7 @@ def machine_map(session: ds.Session, chosen: list[str]) -> dict[str, Any]:
 def cut_lists(whole: dict[str, Any]) -> dict[str, Any]:
     """`whole` with each list cut at the server's list ceiling, and `truncated` saying whether
     any was."""
-    ceiling = ds.LOG_LIMIT_MAX
+    ceiling = dlogs.LOG_LIMIT_MAX
     return {**{n: (v[:ceiling] if n in whole["counts"] else v) for n, v in whole.items()},
             "truncated": any(n > ceiling for n in whole["counts"].values())}
 

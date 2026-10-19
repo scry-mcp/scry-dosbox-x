@@ -47,6 +47,7 @@ from typing import Any, cast
 import pytest
 from test_dosbox_x_server import returned_key_sets
 
+import dosbox_console as dcons
 import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_x_server as server
@@ -190,7 +191,7 @@ def pane_with(rows: list[str], *, mode: str = "Real", cs: str = "F000",
         f"EAX=00000000  ESI=00000000  DS=0000   ES=0000   SS=0000 {mode}\r\n"
         f"EBX=00000000  EDI=00000000  CS={cs}   EIP={eip}  C0 Z0 S0 O0\r\n"
         "ooooOutputoooooooooooooooooooooooooooooooooooooooooooooooooooooo"
-        f"{ds.BPLIST_HEADER}\r\n"
+        f"{dcons.BPLIST_HEADER}\r\n"
         "-------------------------------------------------------------------------\r\n"
         + "".join(f"{r}\r\n" for r in rows) + "I-> _")
 
@@ -376,21 +377,21 @@ def test_the_mode_is_read_as_a_token_and_not_as_the_absence_of_another() -> None
     `watch` would then send `BPM` where the machine wanted `BPPM` -- which this
     debugger accepts without a word.
     """
-    assert ds.parse_mode(REAL_PANE) == "Real"
-    assert ds.parse_mode(PROT_PANE) == "Pr32"
-    assert ds.parse_mode("SS=008F Pr16\r\n") == "Pr16"
+    assert dcons.parse_mode(REAL_PANE) == "Real"
+    assert dcons.parse_mode(PROT_PANE) == "Pr32"
+    assert dcons.parse_mode("SS=008F Pr16\r\n") == "Pr16"
 
 
 def test_a_screen_that_names_no_mode_is_not_a_mode() -> None:
-    assert ds.parse_mode("") is None
-    assert ds.parse_mode("EAX=00000000  EIP=0000FFF0\r\n") is None
+    assert dcons.parse_mode("") is None
+    assert dcons.parse_mode("EAX=00000000  EIP=0000FFF0\r\n") is None
 
 
 def test_the_mode_is_the_last_one_because_the_pane_scrolls() -> None:
     """A delta can hold a repaint of an EARLIER screen above the current one, and the
     mode being asked about is the one the machine is in now. A program that has just
     entered protected mode leaves both tokens in one delta."""
-    assert ds.parse_mode(REAL_PANE + PROT_PANE) == "Pr32"
+    assert dcons.parse_mode(REAL_PANE + PROT_PANE) == "Pr32"
 
 
 def test_the_breakpoint_list_is_read_from_the_last_listing_in_the_delta() -> None:
@@ -423,13 +424,13 @@ def test_a_deleted_breakpoint_does_not_come_back_from_an_earlier_repaint() -> No
     """
     after_delete = (
         "ooooOutputoooooooooooooooooooooooooooooooooooooooooooooooooooooo"
-        f"{ds.BPLIST_HEADER}\r\n"
+        f"{dcons.BPLIST_HEADER}\r\n"
         "-------------------------------------------------------------------------\r\n"
         "00. BP 0814:010A\r\n"
         "DEBUG: Breakpoints deleted.\r\n"
         "EAX=00000000  ESI=00000000  DS=0000   ES=0000   SS=0000 Real\r\n"
         "EBX=00000000  EDI=00000000  CS=0814   EIP=0000010A  C0 Z0 S0 O0\r\n"
-        f"{ds.BPLIST_HEADER}\r\n"
+        f"{dcons.BPLIST_HEADER}\r\n"
         "-------------------------------------------------------------------------\r\n"
         "I-> _")
     assert breakpoints(Debugger([after_delete])) == []
@@ -440,7 +441,7 @@ def test_an_empty_listing_is_an_answer_and_a_missing_one_is_not() -> None:
     one says nothing is armed, the other says nothing was read."""
     assert breakpoints(Debugger([REAL_PANE])) == []
     with pytest.raises(ds.Invalid, match="printed no"):
-        breakpoints(Debugger([pane_with([]).replace(ds.BPLIST_HEADER, "")]))
+        breakpoints(Debugger([pane_with([]).replace(dcons.BPLIST_HEADER, "")]))
 
 
 # --------------------------------------------------------------------- where()
@@ -645,7 +646,7 @@ def test_run_to_with_a_control_counts_its_hits_and_releases_the_machine_again() 
     round trips out: two control stops, then the target, then two cleanups."""
     both = pane_with(["00. BP F000:FFF0", "01. BP F000:E05B"])
     control_only = pane_with(["00. BP F000:E05B"])
-    prompt = ds.PROMPT + " _"
+    prompt = dcons.PROMPT + " _"
     dbg = Debugger([pane_with([]),                                  # stopped, and the mode
                     both,                                           # the arming, read back
                     pane_with([], cs="F000", eip=CONTROL_HIT),      # stop 1: the control
@@ -693,7 +694,7 @@ def test_run_to_whose_control_eats_the_whole_bound_reports_the_bound_expired(
     dbg = Debugger([pane_with([]), both,
                     pane_with([], cs="F000", eip=CONTROL_HIT),   # the one stop: the control
                     control_only_at_01, pane_with(["00. BP F000:FFF0"])],   # control BPDEL
-                   reads=["", ds.PROMPT + " _"])
+                   reads=["", dcons.PROMPT + " _"])
     got = run_to(dbg, 0xF000, 0xFFF0, seconds=2.5, control=(0xF000, 0xE05B))
     assert got["arrived"] is False and got["running"] is False, got
     assert got["bound_expired"] is True, got
@@ -722,7 +723,7 @@ def test_run_to_reports_a_control_it_could_not_remove_beside_a_sound_arrival() -
                     pane_with([], cs="F000", eip=ARRIVED),
                     both, control_only,                    # target: BPDEL 00, read back: gone
                     control_only, control_only],           # control: BPDEL 00, STILL there
-                   reads=["", ds.PROMPT + " _"])
+                   reads=["", dcons.PROMPT + " _"])
     got = run_to(dbg, 0xF000, 0xFFF0, seconds=5, control=(0xF000, 0xE05B))
     assert got["arrived"] is True and got["breakpoint_removed"] is True, got
     assert got["control"] == {"at": "F000:E05B", "hits": 0, "removed": False}, got
@@ -754,7 +755,7 @@ def test_run_to_refuses_a_control_on_the_target_itself() -> None:
                    pane_with(["00. BP 00A7:0010", "01. BP 00A8:0010"], mode="Pr32"),
                    pane_with(["00. BP 00A8:0010"], mode="Pr32"),
                    pane_with(["00. BP 00A8:0010"], mode="Pr32"), pane_with([], mode="Pr32")],
-                  reads=["", ds.PROMPT + " _"])
+                  reads=["", dcons.PROMPT + " _"])
     got = run_to(pr, 0x00A7, 0x0010, seconds=5, control=(0x00A8, 0x0010))
     assert got["arrived"] is True, got
     assert got["control"] == {"at": "00A8:0010", "hits": 0, "removed": True}, got
@@ -975,8 +976,8 @@ def test_where_and_registers_surveys_once_and_matches_the_two_calls() -> None:
 
 
 def test_where_and_registers_refuses_a_cut_pane_like_where_does() -> None:
-    """It shares `_where_from`, so a pane with no CPU mode is refused on THIS call site too,
-    not only through `where()` -- a regression that stopped routing it through `_where_from`
+    """It shares `where_from`, so a pane with no CPU mode is refused on THIS call site too,
+    not only through `where()` -- a regression that stopped routing it through `where_from`
     would be caught here rather than sailing through with a half-read position."""
     no_mode = "ooooRegister OverviewooooEAX=00000001  ESI=00000000\r\nI-> _"
     with pytest.raises(ds.Invalid, match="no CPU mode"):
@@ -1046,7 +1047,7 @@ def test_the_mode_token_is_read_off_the_register_pane_and_not_out_of_the_log() -
     `watch` then sent `BPM` where the machine wanted `BPPM`.
     """
     noisy = PROT_PANE + "DEBUG: CPU switched to Real mode\r\nI-> _"
-    assert ds.parse_mode(noisy) == "Pr32"
+    assert dcons.parse_mode(noisy) == "Pr32"
     assert where(Debugger([noisy]))["mode"] == "Pr32"
 
 
@@ -1057,7 +1058,7 @@ def test_where_refuses_a_pane_that_carries_no_position() -> None:
     `int('', 16)`, a ValueError escaping as a traceback from the method whose entire job
     is saying where the machine is."""
     partial = ("EAX=00000000  SS=0000 Real\r\n"
-               "ooooOutputoooo" + ds.BPLIST_HEADER + "\r\nI-> _")
+               "ooooOutputoooo" + dcons.BPLIST_HEADER + "\r\nI-> _")
     with pytest.raises(ds.Invalid, match="no CS and no EIP"):
         where(Debugger([partial]))
 
@@ -1072,7 +1073,7 @@ def test_a_partial_pane_is_refused_rather_than_called_a_running_machine() -> Non
     three unobserved ones, in the reply a caller reasons hardest about.
     """
     modeless = ("EAX=00000000  CS=F000   EIP=0000FFF0\r\n"
-                "ooooOutputoooo" + ds.BPLIST_HEADER + "\r\nI-> _")
+                "ooooOutputoooo" + dcons.BPLIST_HEADER + "\r\nI-> _")
     dbg = Debugger([pane_with([]), pane_with(["00. BP F000:FFF0"]), modeless])
     with pytest.raises(ds.Invalid, match="names no CPU mode"):
         run_to(dbg, 0xF000, 0xFFF0)
@@ -1569,14 +1570,14 @@ def test_a_breakpoint_row_glued_to_the_text_before_it_is_still_a_row() -> None:
     direction is not the refusal: `run_to`'s cleanup reads `removed = not any(...)`,
     so an unreadable row is reported as `breakpoint_removed: true` for a breakpoint
     still sitting in the machine."""
-    glued = ("ooooOutputoooooooooooooo" + ds.BPLIST_HEADER + "\r\n"
+    glued = ("ooooOutputoooooooooooooo" + dcons.BPLIST_HEADER + "\r\n"
              "----------------00. BP F000:E05B\r\nI-> _")
-    got = ds.parse_breakpoints(glued)
+    got = dcons.parse_breakpoints(glued)
     assert [b["entry"] for b in got] == ["BP F000:E05B"]
     assert [b["index"] for b in got] == ["00"]
     # AND IT STILL DOES NOT EAT THE REGISTER PANE'S OWN NUMBERS, which is what the
     # `^` was doing the work of: these two appear in every real repaint.
-    assert ds.parse_breakpoints("pfi=0.992628993\r\n92.464754300\r\ncc=0RUN\r\n") == []
+    assert dcons.parse_breakpoints("pfi=0.992628993\r\n92.464754300\r\ncc=0RUN\r\n") == []
 
 
 def test_moved_is_asked_per_step_and_not_of_the_endpoints() -> None:
@@ -1710,7 +1711,7 @@ def test_a_stop_announced_only_by_the_prompt_is_seen_by_the_wait() -> None:
                    # The first read is eaten by the drain before the machine is released;
                    # the second is what a stop actually sends: a redrawn code pane and
                    # the prompt, with no register label anywhere in it.
-                   reads=["", "0837:004C  CD21  int 21  " + ds.PROMPT + " _"])
+                   reads=["", "0837:004C  CD21  int 21  " + dcons.PROMPT + " _"])
     got = run_to(dbg, 0xF000, 0xE05B, seconds=2.0)
     assert got["arrived"] is False and got["running"] is False, got
     assert got["bound_expired"] is False, got
@@ -1726,10 +1727,10 @@ def test_a_prompt_split_across_two_reads_is_still_heard() -> None:
     a register name shrinks -- and a passenger with no test is a term that can be deleted
     green. The split falls INSIDE the prompt, the only split that can lose it."""
     noise = "the code pane, redrawn, and nothing that looks like a register label "
-    assert len(noise) > ds.STOP_CARRY, "the fixture must be wider than the carry"
+    assert len(noise) > dcons.STOP_CARRY, "the fixture must be wider than the carry"
     dbg = Debugger([pane_with([]), pane_with(["00. BP F000:E05B"]),
                     pane_with([], cs="0837", eip="0000004C")],
-                   reads=["", noise + ds.PROMPT[:-1], ds.PROMPT[-1:] + " _"])
+                   reads=["", noise + dcons.PROMPT[:-1], dcons.PROMPT[-1:] + " _"])
     got = run_to(dbg, 0xF000, 0xE05B, seconds=2.0)
     assert got["running"] is False and got["arrived"] is False, got
     assert got["bound_expired"] is False, got
@@ -1775,23 +1776,23 @@ def test_the_wait_scans_the_new_text_and_not_the_whole_terminal_again() -> None:
     dbg = Debugger([pane_with([]), pane_with(["00. BP F000:E05B"]), ""],
                    reads=[""] + [chunk] * 200)      # the first is eaten by the drain
     seen_lengths: list[int] = []
-    real = ds.parse_registers
+    real = dcons.parse_registers
 
     def watched(text: str) -> dict[str, str]:
         seen_lengths.append(len(text))
         return real(text)
 
-    ds.parse_registers = watched
+    dcons.parse_registers = watched
     try:
         run_to(dbg, 0xF000, 0xE05B, seconds=0.3)
     finally:
-        ds.parse_registers = real
+        dcons.parse_registers = real
     assert len(seen_lengths) > 3, f"only {len(seen_lengths)} polls: nothing was measured"
     # `STOP_CARRY` is what the loop slices by; `EIP_CARRY` is only one of its terms. And
     # `watched` records nothing on a poll whose text carries the prompt: that check comes
     # first and short-circuits the parse, so a prompt-bearing `chunk` would leave
     # `seen_lengths` empty and the first assertion above would fire, not this one.
-    assert max(seen_lengths) <= len(chunk) + ds.STOP_CARRY, (
+    assert max(seen_lengths) <= len(chunk) + dcons.STOP_CARRY, (
         f"the loop scanned up to {max(seen_lengths)} characters for a "
         f"{len(chunk)}-character read: it is re-reading what it already read")
 
@@ -1819,7 +1820,7 @@ def test_a_register_split_across_two_reads_is_still_found() -> None:
     # therefore pins neither the carry's width nor its direction, which is how the
     # first repair of this case stayed green on both breaks.
     noise = "some entirely unremarkable terminal noise that goes on a while "
-    assert len(noise) > ds.EIP_CARRY, "the fixture must be wider than the carry"
+    assert len(noise) > dcons.EIP_CARRY, "the fixture must be wider than the carry"
     dbg = Debugger([pane_with([]), pane_with(["00. BP F000:E05B"]),
                     pane_with([], eip="0000E05B")],
                    reads=["", noise + "EIP=", "0000E05B more\r\n"])
@@ -1844,7 +1845,7 @@ def test_an_address_is_never_composed_out_of_two_repaints() -> None:
              "EAX=00000000  ESI=00000000  DS=0000   ES=0000   SS=0000 Pr32\r\n"
              "EBX=00000000  EDI=00000000  CS=0087   EIP=00099999  C0 Z0\r\n")
     cut = "EAX=00000005  EIP=00012345\r\n"
-    dbg = Debugger([whole + cut + "ooooOutputoooo" + ds.BPLIST_HEADER + "\r\nI-> _"])
+    dbg = Debugger([whole + cut + "ooooOutputoooo" + dcons.BPLIST_HEADER + "\r\nI-> _"])
     with pytest.raises(ds.Invalid, match="carries no CS"):
         where(dbg)
     # THE GREEN BESIDE IT: one whole pane still answers, or this passes over a `where()`
@@ -1859,8 +1860,8 @@ def test_the_last_pane_is_the_answer_when_a_delta_carries_two_whole_ones() -> No
     history and answering with it would be a stale address of the right shape."""
     old = pane_with([], mode="Pr32", cs="0087", eip="00001000")
     new = pane_with([], mode="Pr32", cs="0087", eip="00002000")
-    assert ds.parse_last_pane(old + new)["EIP"] == "00002000"
-    assert ds.parse_last_pane(old)["EIP"] == "00001000"
+    assert dcons.parse_last_pane(old + new)["EIP"] == "00002000"
+    assert dcons.parse_last_pane(old)["EIP"] == "00001000"
 
 
 def test_steps_already_taken_are_named_when_the_position_cannot_be_read() -> None:
@@ -1877,7 +1878,7 @@ def test_steps_already_taken_are_named_when_the_position_cannot_be_read() -> Non
     What is asserted is that the refusal CARRIES the irreversible part.
     """
     modeless = ("EAX=00000000  CS=F000   EIP=0000FFF4\r\n"
-                "ooooOutputoooo" + ds.BPLIST_HEADER + "\r\nI-> _")
+                "ooooOutputoooo" + dcons.BPLIST_HEADER + "\r\nI-> _")
     dbg = Debugger([pane_with([], eip="0000FFF0"),      # the `before`
                     pane_with([], eip="0000FFF1"),      # step 1
                     pane_with([], eip="0000FFF2"),      # step 2
@@ -2028,7 +2029,7 @@ def test_an_expired_bound_with_nothing_matching_is_still_a_refusal(
 # which is a MEASURED marker rather than an inference from names.
 
 # The banner every repaint carries, rendered the way this terminal draws it.
-BANNER = "oooo" + ds.PANE_HEADER + "oooooooooooooooooooo"
+BANNER = "oooo" + dcons.PANE_HEADER + "oooooooooooooooooooo"
 
 
 def pane_fragment(names: list[str], mode: str = "", **values: str) -> str:
@@ -2069,13 +2070,13 @@ def test_two_disjoint_fragments_never_compose_one_address() -> None:
     head = REAL_ORDER[:REAL_ORDER.index("EIP")]          # EAX ... CS
     stale = pane_fragment(tail, EIP="00012345")
     fresh = BANNER + pane_fragment(head, mode="Pr32", CS="0087", SS="008F")
-    got = ds.parse_last_pane(stale + fresh)
+    got = dcons.parse_last_pane(stale + fresh)
     assert got.get("CS") == "0087", got
     assert "EIP" not in got, (
         f"an EIP survived from a repaint the fresh banner is below: {got}. That is the "
         f"composed address this function exists to refuse")
     # AND THE CALLER REFUSES, which is the point: a short pane beats a false one.
-    dbg = Debugger([stale + fresh + "ooooOutputoooo" + ds.BPLIST_HEADER + "\r\nI-> _"])
+    dbg = Debugger([stale + fresh + "ooooOutputoooo" + dcons.BPLIST_HEADER + "\r\nI-> _"])
     with pytest.raises(ds.Invalid, match="carries no EIP"):
         where(dbg)
 
@@ -2092,7 +2093,7 @@ def test_a_whole_repaint_behind_a_stale_tail_is_still_read() -> None:
     stale = pane_fragment(REAL_ORDER[REAL_ORDER.index("EIP"):], EIP="00099999")
     fresh = BANNER + pane_fragment(REAL_ORDER, mode="Pr32", CS="0087",
                                    EIP="00012345", SS="008F")
-    got = ds.parse_last_pane(stale + fresh)
+    got = dcons.parse_last_pane(stale + fresh)
     assert len(got) == len(REAL_ORDER), got
     assert (got["CS"], got["EIP"]) == ("0087", "00012345"), got
 
@@ -2103,13 +2104,13 @@ def test_a_headerless_fragment_above_the_last_repaint_is_refused() -> None:
     pane, and nothing can say which repaint each value came from."""
     whole = BANNER + pane_fragment(REAL_ORDER, CS="0087", EIP="00012345", SS="008F")
     newer = pane_fragment(["EAX", "EIP"], EIP="0000DEAD")
-    assert ds.parse_last_pane(whole + newer) == {}
+    assert dcons.parse_last_pane(whole + newer) == {}
 
 
 def test_a_delta_with_no_banner_at_all_is_not_a_repaint() -> None:
     """No banner means no complete repaint arrived, and assembling one from fragments is
     the composition this refuses. `{}` rather than a plausible mapping."""
-    assert ds.parse_last_pane(pane_fragment(REAL_ORDER, CS="0087")) == {}
+    assert dcons.parse_last_pane(pane_fragment(REAL_ORDER, CS="0087")) == {}
 
 
 def test_a_refusal_mid_run_says_the_breakpoint_is_still_armed() -> None:
@@ -2126,7 +2127,7 @@ def test_a_refusal_mid_run_says_the_breakpoint_is_still_armed() -> None:
     refusal CARRIES the irreversible part.
     """
     modeless = ("EAX=00000000  CS=F000   EIP=0000FFF4\r\n"
-                "ooooOutputoooo" + ds.BPLIST_HEADER + "\r\nI-> _")
+                "ooooOutputoooo" + dcons.BPLIST_HEADER + "\r\nI-> _")
     dbg = Debugger([pane_with([]), pane_with(["00. BP F000:E05B"]), modeless],
                    reads=["", "EAX=1 EIP=0000E05B\r\n"])
     with pytest.raises(ds.Invalid) as caught:
@@ -2188,7 +2189,7 @@ def test_a_resume_that_left_the_machine_at_the_debugger_says_so() -> None:
     got = resume(dbg)
     assert got["halted"] is True, got
     assert got["stopped_at"] == {"cs": "0814", "eip": "00000112", "mode": "Real"}
-    assert not ds.parse_registers(RESUME_HALTED), (
+    assert not dcons.parse_registers(RESUME_HALTED), (
         "the fixture stopped being the one that discriminates: a delta the pane "
         "reading can answer cannot show that the pane reading is wrong")
 
@@ -2229,7 +2230,7 @@ def test_the_address_is_read_back_and_is_not_scavenged_off_the_delta() -> None:
     The address must be the one the READ-BACK produced, and it is a different value
     from anything in that delta.
     """
-    glued = ds.parse_registers(RESUME_HALTED_GLUED)
+    glued = dcons.parse_registers(RESUME_HALTED_GLUED)
     assert glued.get("CS") == "081401080100FF91C81440026", (
         f"the fixture no longer glues: {glued}")
     dbg = Debugger([pane_with([], cs="F000", eip="0000DAC6")],
@@ -2342,13 +2343,13 @@ def test_a_leftover_of_the_previous_command_is_not_read_as_this_ones_reply() -> 
     still holds BEFORE it types, and only what arrives after the keystroke is the reply.
     The script models exactly that: a stale listing already waiting, two empty polls while
     the debugger works, then the real (empty) listing."""
-    stale = ("ooooOutputoooo" + ds.BPLIST_HEADER + "\r\n-----\r\n00. BP 00A7:5D730\r\n"
-             + ds.PROMPT + " _")
-    fresh = ds.BPLIST_HEADER + "\r\n-----\r\n" + ds.PROMPT + " _"
+    stale = ("ooooOutputoooo" + dcons.BPLIST_HEADER + "\r\n-----\r\n00. BP 00A7:5D730\r\n"
+             + dcons.PROMPT + " _")
+    fresh = dcons.BPLIST_HEADER + "\r\n-----\r\n" + dcons.PROMPT + " _"
     wire = Wire([stale, "", "", fresh])
     delta = ds.Session.command(cast(ds.Session, wire), "BPLIST", settle=0.05, timeout=2.0)
     assert "00A7:5D730" not in delta, delta
-    assert ds.parse_breakpoints(delta) == [], delta
+    assert dcons.parse_breakpoints(delta) == [], delta
     assert wire.keys == [b"BPLIST\r"], "the drain never types anything"
 
 
@@ -2373,11 +2374,11 @@ def test_a_prompt_that_arrives_after_the_settle_is_not_seen_and_halted_reads_fal
     # settle closes on the poll that fills it, so five polls past that is a machine that
     # stopped too late to be seen, whatever the collect's slice.
     script = ["COMMAND.COM\r\n"] + [""] * (round(RESUME_SETTLE_S / ds.COLLECT_SLICE_S) + 5) + [
-        ds.PROMPT + " _"]
+        dcons.PROMPT + " _"]
     got = wired(script, panes=[pane_with([], cs="0814", eip="00000112")])
     assert got["halted"] is False, got
     assert got["stopped_at"] is None, got
-    assert ds.PROMPT not in cast(str, got["screen"]), (
+    assert dcons.PROMPT not in cast(str, got["screen"]), (
         "the prompt reached the delta after all, so this case is no longer about the "
         f"window closing early: {got['screen']!r}")
 
@@ -2389,7 +2390,7 @@ def test_the_same_prompt_inside_the_window_is_seen() -> None:
     never reads a prompt at all" are the same output. Same script shape, same double,
     prompt at the third poll instead of the sixteenth.
     """
-    script = ["COMMAND.COM\r\n", "", ds.PROMPT + " _"]
+    script = ["COMMAND.COM\r\n", "", dcons.PROMPT + " _"]
     got = wired(script, panes=[pane_with([], cs="0814", eip="00000112")])
     assert got["halted"] is True, got
     assert got["stopped_at"] == {"cs": "0814", "eip": "00000112", "mode": "Real"}
@@ -2542,7 +2543,7 @@ def test_a_stop_that_lands_inside_a_typed_commands_own_read_is_not_lost() -> Non
         con.where()
     assert con.at_debugger() is True, "the prompt went past inside `command` and was not counted"
     assert con.stop_count == 1, con.stop_count
-    assert not ds.parse_registers(RESUME_HALTED), (
+    assert not dcons.parse_registers(RESUME_HALTED), (
         "the fixture stopped discriminating: with a register pane `where()` would answer")
 
 
@@ -2553,8 +2554,8 @@ def test_a_release_forgets_the_prompt_a_passive_peek_carried() -> None:
     out of the carry alone and reported a running machine as stopped. A run key forgets the
     carry along with the flag: whatever was offered before it is about the stop being left.
     """
-    seen_stop = "0814:00000112 CD21int  21\r\n" + ds.PROMPT     # a chunk ending at the prompt
-    assert ds.PROMPT in seen_stop[-ds.STOP_CARRY:], "the fixture must fit the carry"
+    seen_stop = "0814:00000112 CD21int  21\r\n" + dcons.PROMPT     # a chunk ending at the prompt
+    assert dcons.PROMPT in seen_stop[-dcons.STOP_CARRY:], "the fixture must fit the carry"
     # After the F5 one line of guest output, then silence: the collect closes on its settle
     # instead of running to its whole timeout for a case that is about the carry.
     con = Console([seen_stop, "COMMAND.COM\r\n", "", "", ""])
@@ -2606,13 +2607,13 @@ def test_a_resume_reads_only_what_the_f5_produced_not_the_previous_ops_repaint()
     repaints unconsumed. The worse half: a console op's repaint ENDS with the debugger's
     prompt, so a machine the F5 let run read as `halted: true` off text painted before the
     key. The terminal is drained before the key goes out, as `run_to` always did."""
-    residue = "Breakpoint list:\r\n0814:0100 BP\r\n" + ds.PROMPT + " _"
+    residue = "Breakpoint list:\r\n0814:0100 BP\r\n" + dcons.PROMPT + " _"
     ran = wired(["COMMAND.COM\r\n", "", ""], residue=residue)
     assert ran["halted"] is False, ran
     assert "Breakpoint list:" not in cast(str, ran["screen"]), ran["screen"]
     # THE CONTROL: the same prompt arriving AFTER the key is still a halt, so the drain
     # took the residue and not the answer.
-    halted = wired(["", ds.PROMPT + " _"], panes=[pane_with([], cs="0814", eip="00000112")],
+    halted = wired(["", dcons.PROMPT + " _"], panes=[pane_with([], cs="0814", eip="00000112")],
                    residue=residue)
     assert halted["halted"] is True, halted
     assert "Breakpoint list:" not in cast(str, halted["screen"]), halted["screen"]

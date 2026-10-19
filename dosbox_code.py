@@ -21,6 +21,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, NamedTuple
 
+import dosbox_console as dcons
 import dosbox_disasm as disasm
 import dosbox_dump as dumping
 import dosbox_machine as machine
@@ -96,7 +97,7 @@ class Segments:
         self.session = session
         self.registers = registers
         self.mode = where["mode"]
-        self.real = self.mode == ds.REAL_MODE
+        self.real = self.mode == dcons.REAL_MODE
         self._selinfo: dict[str, dict[str, int]] = {}
         self._reading: machine.Reading | None = None
 
@@ -349,7 +350,7 @@ CALL_STACK_MAX = 16
 CALL_LONGEST, CALL_SHORTEST = 7, 2
 #: What one `D` is asked for: the view paints eight rows from the address's own row, so from an
 #: address inside a row it promises one row less.
-VIEW_READ = ds.DATA_VIEW_BYTES - 16
+VIEW_READ = dcons.DATA_VIEW_BYTES - 16
 
 
 class _Views:

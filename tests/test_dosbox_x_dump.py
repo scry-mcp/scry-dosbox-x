@@ -20,6 +20,7 @@ import pytest
 from test_dosbox_x_machine import Bench
 from test_dosbox_x_server import FakeSession, clean_session, install  # noqa: F401
 
+import dosbox_collect as dcollect
 import dosbox_dump as dumping
 import dosbox_find as finder
 import dosbox_machine as machine
@@ -600,9 +601,9 @@ def test_the_leftover_guard_sees_a_dangling_link(tmp_path: Path) -> None:
     link = tmp_path / "memdump.bin"
     link.symlink_to(tmp_path / "nowhere")
     with pytest.raises(ds.Invalid, match="already sitting at") as e:
-        ds.refuse_leftover([link], "dump")
+        dcollect.refuse_leftover([link], "dump")
     assert e.value.code == "bad_argument"
-    ds.refuse_leftover([tmp_path / "absent.bin"], "dump")   # the control: nothing there
+    dcollect.refuse_leftover([tmp_path / "absent.bin"], "dump")   # the control: nothing there
 
 
 def test_a_leftover_refuses_a_windowed_dump_before_anything_is_typed_or_surveyed(

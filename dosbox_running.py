@@ -17,6 +17,8 @@ from typing import Any, cast
 
 import dosbox_arming as arming
 import dosbox_code as code
+import dosbox_console as dcons
+import dosbox_logs as dlogs
 import dosbox_session as ds
 import dosbox_state as st
 from dosbox_state import STATE
@@ -88,16 +90,16 @@ def e9_validate(mode: str, e9_filter: str, e9_stamp: str | None = None) -> None:
             f"e9 is none | all | lines:N | since | seconds:N; got {mode!r}")
     if mode.startswith(("lines:", "seconds:")):
         _e9_count(mode)          # raises for a non-positive or non-integer N
-    ds.compiled(e9_filter)       # raises for a bad regex, naming it as the caller's
+    dlogs.compiled(e9_filter)       # raises for a bad regex, naming it as the caller's
     if e9_stamp is not None:
         if not isinstance(cast(object, e9_stamp), str) or not e9_stamp:
             raise ds.Invalid("bad_argument",
                 "e9_stamp is a regular expression with ONE group capturing the "
                              "line's time in seconds")
-        if ds.compiled(e9_stamp).groups != 1:
+        if dlogs.compiled(e9_stamp).groups != 1:
             raise ds.Invalid("bad_argument",
                 f"e9_stamp must capture the seconds in exactly ONE group; "
-                             f"{e9_stamp!r} has {ds.compiled(e9_stamp).groups}")
+                             f"{e9_stamp!r} has {dlogs.compiled(e9_stamp).groups}")
     if mode.startswith("seconds:") and e9_stamp is None:
         raise ds.Invalid("bad_argument",
             "a last-N-seconds window needs `e9_stamp`: a regex with one group "
@@ -120,7 +122,7 @@ def e9_summary(session: ds.Session, mode: str, e9_filter: str,
     NOT served and says why: the guest's E9 log carries no per-line timestamp this server has
     measured, so a time window cannot be cut honestly -- a limitation carried to QA.
     """
-    pat = ds.compiled(e9_filter)
+    pat = dlogs.compiled(e9_filter)
     # THE DEFAULT PATH READS ONLY WHAT IS NEW. Every stop carries this block, and the
     # whole log was read from byte zero and filtered at each of them, even with nothing
     # asked for (`none`): quadratic in the session, the shape `e9_wait` had already left
@@ -168,7 +170,7 @@ def e9_summary(session: ds.Session, mode: str, e9_filter: str,
         # THE WINDOW IS THE GUEST'S CLOCK, not the host's: "now" is the latest stamp any
         # line carries, and a line is in the window when its own stamp is within N of it.
         # A line without a stamp cannot be placed and is counted as such, never guessed.
-        stamp = ds.compiled(e9_stamp)
+        stamp = dlogs.compiled(e9_stamp)
         block.update(_last_seconds(every, filtered, stamp, _e9_count(mode)))
     return block
 
@@ -297,7 +299,7 @@ def status_facts(session: ds.Session | None) -> dict[str, Any]:
     else:
         mode = str(STATE.last_stop.get("where", {}).get("mode", ""))
         paging = STATE.last_stop.get("paging")
-        if mode == ds.REAL_MODE:
+        if mode == dcons.REAL_MODE:
             facts["cpu_mode"] = "real"
         elif mode.startswith("Pr") and paging is not None:
             facts["cpu_mode"] = "paged" if paging else "protected"

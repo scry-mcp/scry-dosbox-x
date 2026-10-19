@@ -13,6 +13,7 @@ import pytest
 from test_dosbox_x_server import _guest, _names
 
 import dosbox_inputs as inputs
+import dosbox_logs as dlogs
 import dosbox_session as ds
 import dosbox_x_server as server
 
@@ -129,7 +130,7 @@ STUB_REPORT = "Bochs port E9h: STUB  . mouse x=1 y=2 buttons=1 max=639,199 mode=
 ])
 def test_the_reaction_keeps_the_caller_s_pattern_and_never_takes_the_stub_s_line(
         pattern: str, program: str, hit: bool) -> None:
-    rx = ds.compiled(inputs.program_reaction(pattern))
+    rx = dlogs.compiled(inputs.program_reaction(pattern))
     assert bool(rx.search(program)) is hit, (pattern, program)
     assert rx.search(STUB_REPORT) is None, pattern
 

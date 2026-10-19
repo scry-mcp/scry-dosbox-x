@@ -65,6 +65,8 @@ from test_dosbox_x_live import (  # noqa: E402
 )
 
 import dosbox_code as code
+import dosbox_console as dcons
+import dosbox_logs as dlogs
 import dosbox_machine as machine
 import dosbox_session as ds
 import dosbox_state as dstate
@@ -139,7 +141,7 @@ def a_running_guest_that_has_logged(tmp_path: Path, seconds: int = 120,
     log = tmp_path / "guest.log"
     start_ok(seconds=seconds, logfile=str(log))
     server.resume()
-    assert wait_for(lambda: log.exists() and ds.count_e9(
+    assert wait_for(lambda: log.exists() and dlogs.count_e9(
         log.read_text(encoding="utf-8", errors="replace")) >= lines), \
         "the guest emitted no instrumentation: this window measured nothing, INVALID"
 
@@ -1059,7 +1061,7 @@ def test_run_to_arrives_at_a_real_address_and_takes_its_breakpoint_away() -> Non
     # answer red.
     server.debug(command="BP F000:E05B")
     left = cast(dict[str, Any], server.debug(command="BPLIST"))
-    held = [b["entry"] for b in ds.parse_breakpoints(str(left["screen_delta"]))]
+    held = [b["entry"] for b in dcons.parse_breakpoints(str(left["screen_delta"]))]
     assert "BP F000:E05B" in held, (
         f"the sentinel is not in the listing, so this read examined nothing and its "
         f"verdict about the removal is worth nothing: {held}")
@@ -1093,7 +1095,7 @@ def test_machine_map_is_honest_before_dos_and_finds_the_guest_after(tmp_path: Pa
     assert ("gdt" in booted) == (booted["cpu_mode"] != "real"), booted["coverage_note"]
     assert booted["counts"]["mcbs"] == len(booted["mcbs"]) and booted["sources"]["mcbs"]
     after = cast(dict[str, Any], server.debug(command="BPLIST"))
-    assert ds.BPLIST_HEADER in after["screen_delta"] \
+    assert dcons.BPLIST_HEADER in after["screen_delta"] \
         and "not recognized" not in after["screen_delta"], after["screen_delta"][-200:]
 
 
@@ -1113,7 +1115,7 @@ def test_palette_reads_the_dac_before_and_after_the_bios_sets_it(tmp_path: Path)
     assert one["rgb"] == ["00002a"] and one["colors"] == ["#0000aa"], one
     assert one["image"]["path"] == str(dest) and dest.stat().st_size > 0
     after = cast(dict[str, Any], server.debug(command="BPLIST"))
-    assert ds.BPLIST_HEADER in after["screen_delta"] \
+    assert dcons.BPLIST_HEADER in after["screen_delta"] \
         and "not recognized" not in after["screen_delta"], after["screen_delta"][-200:]
     bad = cast(dict[str, Any], server.palette(first=256))
     assert bad["status"] == "INVALID" and bad["code"] == "bad_argument", bad

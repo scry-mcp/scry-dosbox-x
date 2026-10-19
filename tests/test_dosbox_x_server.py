@@ -34,9 +34,13 @@ import pytest
 from scry_core import media_tools
 
 import dosbox_arming as arming
+import dosbox_binary as binaries
 import dosbox_checks as checks
+import dosbox_console as dcons
 import dosbox_declarations as dec
 import dosbox_inputs as inputs
+import dosbox_launch as dlaunch
+import dosbox_logs as dlogs
 import dosbox_mcp
 import dosbox_placement as placement
 import dosbox_running as running
@@ -213,7 +217,7 @@ class FakeSession:
 
     def clear_interrupt_breakpoint(self, number: int,
                                    ah: int | None = None) -> dict[str, object]:
-        return {"entry": ds.interrupt_row(number, ah), "removed": True}
+        return {"entry": dcons.interrupt_row(number, ah), "removed": True}
 
     masks = False       # a register the debugger masks: the pane answers something else
     rom = False         # memory the write cannot change: the readback says so
@@ -297,7 +301,7 @@ class FakeSession:
         # to drop both and invent `lines_scanned`, a name that has never existed --
         # under a comment claiming each of these "returns the field set its tool
         # promises".
-        ds.check_channel(channel)
+        dlogs.check_channel(channel)
         return {"line": "Bochs port E9h: [+ 0.000] BOOT  . start", "already": True,
                 "lines_total": 1, "lines_before": 0, "arrived_during": 0, "waited_s": 0.0,
                 "lines_examined": 1, "since_mark": 0}
@@ -311,7 +315,7 @@ class FakeSession:
         return ["one line"]
 
     def log(self, pattern: str, limit: int, channel: str) -> tuple[list[str], int]:
-        ds.check_channel(channel)
+        dlogs.check_channel(channel)
         self.log_calls.append((pattern, limit, channel))
         return ["one line"], 500
 
@@ -1027,10 +1031,10 @@ def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
     dead = threading.Thread(target=lambda: None)
     fake = SimpleNamespace(
         proc=SimpleNamespace(pid=4242),
-        alive=lambda: False, altered=True, conf_digest=ds._digest(conf),
+        alive=lambda: False, altered=True, conf_digest=dlaunch.digest(conf),
         started_at=time.monotonic() - 3.0, dropped=4096,
         _drainer=dead, drain_ended="reading the terminal failed: OSError()",
-        launch=ds.Launch(conf=conf, cwd=tmp_path, seconds=60, watched=True,
+        launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, watched=True,
                          window_flags=["-set", "sdl display=1"]))
     got = ds.Session.state(fake)  # type: ignore[arg-type]
     assert set(got) == {"pid", "alive", "altered", "conf", "conf_digest",
@@ -1041,10 +1045,10 @@ def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
     # `captures` refusing: otherwise a caller has to probe `captures` to learn there are
     # none.
     assert got["captures"] == "off"
-    fake.launch = ds.Launch(conf=conf, cwd=tmp_path, seconds=60, capture_video=True,
+    fake.launch = dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, capture_video=True,
                             program="X.EXE", captures_dir=tmp_path / "caps")
     assert ds.Session.state(fake)["captures"] == str(tmp_path / "caps")  # type: ignore[arg-type]
-    fake.launch = ds.Launch(conf=conf, cwd=tmp_path, seconds=60, capture_video=True,
+    fake.launch = dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, capture_video=True,
                             program="X.EXE")
     assert ds.Session.state(fake)["captures"] == "on, in the emulator's own directory"  # type: ignore[arg-type]
     # The pid is the emulator's OWN handle, so a caller ending a run by pid (or checking
@@ -1082,7 +1086,7 @@ def test_the_double_has_not_drifted_from_what_it_stands_in_for(tmp_path: Path) -
         alive=lambda: True, altered=False, conf_digest="x",
         started_at=time.monotonic(), dropped=0,
         _drainer=None, drain_ended="",
-        launch=ds.Launch(conf=conf, cwd=tmp_path, seconds=60))
+        launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60))
     real = ds.Session.state(fake)  # type: ignore[arg-type]
     assert set(FakeSession().state()) == set(real)
     # AND THE METHOD SURFACE, which this case's own name promised and did not check.
@@ -1264,7 +1268,7 @@ def test_a_dump_of_the_wrong_size_is_not_the_dump_that_was_asked_for(
     conf.write_text("[sdl]\n", encoding="utf-8")
     work = tmp_path / "work"
     work.mkdir()
-    launch = ds.Launch(conf=conf, cwd=work, seconds=60)
+    launch = dlaunch.Launch(conf=conf, cwd=work, seconds=60)
 
     def writes(nbytes: int) -> Callable[..., str]:
         def command(_text: str, **_k: object) -> str:
@@ -1300,7 +1304,7 @@ def test_a_dump_refuses_rather_than_deleting_what_is_already_there(
     mine = work / ds.MEMDUMP_NAME
     mine.write_bytes(b"a file the caller cares about")
     fake = SimpleNamespace(
-        launch=ds.Launch(conf=conf, cwd=work, seconds=60),
+        launch=dlaunch.Launch(conf=conf, cwd=work, seconds=60),
         command=lambda *_a, **_k: "this should never be reached")
     fake._memdump_candidates = lambda: ds.Session._memdump_candidates(fake)  # type: ignore[arg-type]
     with pytest.raises(ds.Invalid, match="already sitting at"):
@@ -1310,15 +1314,15 @@ def test_a_dump_refuses_rather_than_deleting_what_is_already_there(
 
 # ------------------------------------ a caller's path is absolute or `~`-led, `~` expanded
 
-def _launch_of(**kw: Any) -> ds.Launch:
+def _launch_of(**kw: Any) -> dlaunch.Launch:
     """Run `start` far enough to capture the `Launch` it built, and no further.
 
     `ds.Session` is replaced by a builder that records its argument and then refuses,
     so nothing is spawned and `start` returns INVALID. `shutil.which` is stubbed, so these
     cases need no DOSBox-X installed."""
-    seen: list[ds.Launch] = []
+    seen: list[dlaunch.Launch] = []
 
-    def build(launch: ds.Launch) -> Any:
+    def build(launch: dlaunch.Launch) -> Any:
         seen.append(launch)
         raise ds.Invalid("session_broken", "not starting anything: this case wants the Launch only")
 
@@ -1357,9 +1361,9 @@ def test_start_expands_a_tilde_in_every_path_and_makes_nothing_at_a_literal_one(
     conf.write_text("[sdl]\n", encoding="utf-8")
     kw: dict[str, Any] = {"conf": str(conf), "cwd": str(tmp_path), "seconds": 30,
                           arg: f"~/{under_home}" if under_home else "~"}
-    built: list[ds.Launch] = []
+    built: list[dlaunch.Launch] = []
 
-    def build(launch: ds.Launch) -> None:
+    def build(launch: dlaunch.Launch) -> None:
         built.append(launch)
         raise ds.Invalid("host_failed", "built: the case ends here")
     with mock.patch("dosbox_binary.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
@@ -2133,7 +2137,7 @@ def test_build_check_says_ok_and_names_the_surface_on_a_good_build(tmp_path: Pat
     `build_check` that raises unconditionally. The binary is a file of this case's own,
     carrying the help line a heavy-debug build compiles, and one without it says false."""
     binary = tmp_path / "dosbox-x"
-    binary.write_bytes(b"\x00" + ds.HEAVY_DEBUG_MARK + b"\x00")
+    binary.write_bytes(b"\x00" + binaries.HEAVY_DEBUG_MARK + b"\x00")
     with (mock.patch("dosbox_binary.shutil.which", lambda _n: str(binary)),
           mock.patch("dosbox_x_server.subprocess.run",
                      lambda *_a, **_k: SimpleNamespace(stdout="-break-start\n",
@@ -2225,7 +2229,7 @@ def test_a_bad_pattern_is_a_refusal_and_not_a_traceback(tmp_path: Path) -> None:
     End to end through the tool, that lets
     `re.PatternError: missing ), unterminated subpattern at position 0` come OUT of
     `symbols_load` -- no `status`, no `reason`, no session block. The reader that takes a
-    pattern is the layer that owes the guard, and `dosbox_session.compiled` carries it.
+    pattern is the layer that owes the guard, and `dosbox_logs.compiled` carries it.
     """
     install(alive=True)
     src = tmp_path / "s.nm"
@@ -2754,7 +2758,7 @@ class NamesFake:
         self.wait_raises: Exception | None = None  # e9_wait refuses with THIS (a gone emulator)
         self.stops_during_wait = False       # a breakpoint fires while e9_wait is looking
         self.runto_calls: list[tuple[int, int, float]] = []   # the seg:off run_to was given
-        self.launch = ds.Launch(conf=conf or Path("/x.conf"), cwd=Path("/"), seconds=60,
+        self.launch = dlaunch.Launch(conf=conf or Path("/x.conf"), cwd=Path("/"), seconds=60,
                                 watched=watched, input_port=input_port)
 
     def alive(self) -> bool:
@@ -2773,7 +2777,7 @@ class NamesFake:
         if self.where_raises or self.running:
             time.sleep(min(timeout, 0.05))
             return ""
-        return ds.PROMPT
+        return dcons.PROMPT
 
     def _mark_stopped(self) -> None:
         pass
@@ -2851,7 +2855,7 @@ class NamesFake:
         # THE REAL METHOD'S OWN REFUSALS, in its own types: a bad pattern and a bad bound
         # are `Invalid` (not a raw re.error), and an expired bound is `E9Expired`, which is
         # the one type the server may read as a miss.
-        rx = ds.compiled(pattern)
+        rx = dlogs.compiled(pattern)
         if not 0 < seconds <= ds.RUN_TO_MAX:
             raise ds.Invalid("bad_argument", f"a wait of {seconds} is not a bound")
         if self.log is None:
@@ -3008,14 +3012,14 @@ class NamesFake:
 
     def breakpoint_interrupt(self, number: int, ah: int | None = None) -> str:
         self._console()
-        entry = ds.interrupt_row(number, ah)
+        entry = dcons.interrupt_row(number, ah)
         self.rows.append({"index": f"{len(self.rows):02d}", "entry": entry})
         return f"DEBUG: Set interrupt breakpoint at INT {number:02X}"
 
     def clear_interrupt_breakpoint(self, number: int,
                                    ah: int | None = None) -> dict[str, object]:
         self._console()
-        entry = ds.interrupt_row(number, ah)
+        entry = dcons.interrupt_row(number, ah)
         before = len(self.rows)
         self.rows = [r for r in self.rows if r["entry"] != entry]
         return {"entry": entry, "removed": len(self.rows) < before}
@@ -3254,7 +3258,7 @@ def test_input_reaches_a_headless_session_and_the_mouse_needs_the_log(tmp_path: 
     fake = _guest(tmp_path)
     assert cast(dict[str, Any], server.send_keys(keys=["a"]))["route"] == "guest"
     assert cast(dict[str, Any], server.send_mouse(button="left"))["route"] == "guest"
-    fake.launch = ds.Launch(conf=Path("/x.conf"), cwd=Path("/"), seconds=60, logfile=None)
+    fake.launch = dlaunch.Launch(conf=Path("/x.conf"), cwd=Path("/"), seconds=60, logfile=None)
     sent = len(fake.commands_sent)
     nolog = cast(dict[str, Any], server.send_mouse(button="left"))
     assert nolog["status"] == "INVALID" and nolog["code"] == "no_channel", nolog
@@ -4121,7 +4125,7 @@ def _start_on_a_booted_fake(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 
     if which:
         monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
-    def booted(launch: ds.Launch) -> Booted:
+    def booted(launch: dlaunch.Launch) -> Booted:
         fake = Booted(conf=conf)
         fake.launch.input_port = launch.input_port    # the session's own, as a real one keeps
         return fake
@@ -4141,7 +4145,7 @@ def test_start_launches_the_binary_it_resolved_and_says_which(
     mine.parent.mkdir()
     mine.write_text('#!/bin/sh\necho "DOSBox-X version dev" >&2; exit 1\n', encoding="utf-8")
     mine.chmod(0o755)
-    launched: list[ds.Launch] = []
+    launched: list[dlaunch.Launch] = []
 
     class Booted(NamesFake):
         argv = [str(mine), "-conf", "g.conf"]
@@ -4149,7 +4153,7 @@ def test_start_launches_the_binary_it_resolved_and_says_which(
         def wait_ready(self, timeout: float = 30.0, progress: Any = None) -> float:
             return 0.5
 
-    def session(launch: ds.Launch) -> Booted:
+    def session(launch: dlaunch.Launch) -> Booted:
         launched.append(launch)
         return Booted(conf=conf)
 
@@ -4974,7 +4978,7 @@ def test_symbols_load_leaves_another_builds_raw_address_stale_and_names_what_it_
     # changes, and the map loaded below fingerprints a different build.
     fake.rows.clear()
     dstate.STATE.session_origin = "s2"
-    dstate.STATE.conf_fingerprint = ds.fingerprint(fake.launch.conf)
+    dstate.STATE.conf_fingerprint = dlaunch.fingerprint(fake.launch.conf)
     got = server.symbols_load(source=str(nm), base="400000")
     assert got["declarations"]["rearmed"] == 1, got["declarations"]
     assert got["declarations"]["rearmed_refs"] == ["_main"], got["declarations"]
@@ -5001,7 +5005,7 @@ class _Booted(NamesFake):
 
 def build_of(conf: Path, nm_text: str, base: int = 0x400000) -> str:
     """The stamp of the batch an `nm` map loaded at `base` makes over `conf`."""
-    return dec.Build.of(ds.fingerprint(conf), [(s.name, dsym.place(s, {dsym.FLAT: base}))
+    return dec.Build.of(dlaunch.fingerprint(conf), [(s.name, dsym.place(s, {dsym.FLAT: base}))
                                                for s in dsym.parse_nm(nm_text)]).stamp
 
 
@@ -5018,7 +5022,7 @@ def _start_over_a_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
     store = dec.DeclarationStore(str(conf.resolve()))
     for ref, fp in stamped.items():
         store.add(dec.Declaration("breakpoint", "address", ref, created_at="t0", origin="s1",
-                                  fingerprint=fp or ds.fingerprint(conf.resolve())))
+                                  fingerprint=fp or dlaunch.fingerprint(conf.resolve())))
     booted = double(conf=conf)
     monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
     with mock.patch("dosbox_x_server.ds.Session", lambda _l: booted):
@@ -5727,7 +5731,7 @@ def test_the_sequences_wait_for_a_stop_listens_for_the_prompt_and_types_nothing(
     fake = _names(tmp_path)
     fake.halted = False
     fake.where_raises = True
-    monkeypatch.setattr(fake, "_read", lambda timeout: ds.PROMPT, raising=False)
+    monkeypatch.setattr(fake, "_read", lambda timeout: dcons.PROMPT, raising=False)
     monkeypatch.setattr(fake, "_screen", "", raising=False)
     monkeypatch.setattr(fake, "alive", lambda: True)
     marked: list[bool] = []
@@ -6297,7 +6301,7 @@ def test_wait_ready_and_close_report_their_progress() -> None:
         def _read(self, timeout: float) -> str:
             time.sleep(timeout)
             if time.monotonic() >= self.at:
-                self._screen += ds.PROMPT
+                self._screen += dcons.PROMPT
             return ""
 
         def _mark_stopped(self) -> None:
@@ -6341,7 +6345,7 @@ def test_read_memory_length_is_bounded_and_resume_takes_the_siblings_bound(
     length the data view cannot hold; `resume(seconds)` waits for a stop the way
     `run_to` listens, and leaves the machine running when the bound expires."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")], ds_="00AF")
-    for bad in (0, ds.DATA_VIEW_BYTES + 1):
+    for bad in (0, dcons.DATA_VIEW_BYTES + 1):
         out = cast(dict[str, Any], server.read_memory(ref="g_rate", length=bad))
         assert out["status"] == "INVALID" and "memdump" in out["message"], out
     out = cast(dict[str, Any], server.resume(seconds=-1))
@@ -6372,7 +6376,7 @@ def test_resume_with_a_bound_comes_back_with_the_stop_when_the_prompt_lands(
     with the machine not at rest when asked is said as such, the machine still running."""
     fake = _names(tmp_path)
     fake.launch.watched = True
-    monkeypatch.setattr(fake, "_read", lambda timeout: ds.PROMPT, raising=False)
+    monkeypatch.setattr(fake, "_read", lambda timeout: dcons.PROMPT, raising=False)
     monkeypatch.setattr(fake, "_screen", "", raising=False)
     monkeypatch.setattr(fake, "alive", lambda: True)
     monkeypatch.setattr(fake, "_mark_stopped", lambda: None, raising=False)
@@ -6537,7 +6541,7 @@ def test_drives_lines_ceiling_is_logs_ceiling_and_not_a_second_constant(
     fake = _names(tmp_path, watched=True)
     fake.running = True
     fake.where_raises = True
-    monkeypatch.setattr(ds, "LOG_LIMIT_MAX", 7)
+    monkeypatch.setattr(dlogs, "LOG_LIMIT_MAX", 7)
     key = {"op": "send_keys", "keys": ["a"]}
     over = cast(dict[str, Any], server.drive(act=[key], limit=8))
     assert over["status"] == "INVALID" and "between 1 and 7" in over["message"], over
@@ -6825,10 +6829,10 @@ def test_start_hands_the_callers_flags_to_a_headless_launch(
     there is no window for `window_flags` to place."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
-    seen: list[ds.Launch] = []
+    seen: list[dlaunch.Launch] = []
 
     class Recorder:
-        def __init__(self, launch: ds.Launch) -> None:
+        def __init__(self, launch: dlaunch.Launch) -> None:
             seen.append(launch)
             self.reap_failed = ""
 
@@ -6845,7 +6849,7 @@ def test_start_hands_the_callers_flags_to_a_headless_launch(
                                             flags=["-set", "cpu cycles=fixed 3000"],
                                             break_on_int3=True))
     assert got["code"] == "session_broken", got
-    argv = ds.build_argv(seen[0])
+    argv = dlaunch.build_argv(seen[0])
     assert argv[argv.index("cpu cycles=fixed 3000") - 1] == "-set", argv
     assert argv[argv.index("dos break on int3=true") - 1] == "-set", argv
 
@@ -6970,10 +6974,10 @@ _PAGE_LINE = "ECX=000000A7  EBP=002B8690PAGEPSE IOPL3  CPL3\r\n"
 
 
 def test_the_paging_mark_is_read_off_the_pane_and_absent_is_not_off() -> None:
-    assert ds.parse_paging(_NOPG_LINE) is False
-    assert ds.parse_paging(_PAGE_LINE) is True
-    assert ds.parse_paging(_NOPG_LINE + _PAGE_LINE) is True       # the newest pane wins
-    assert ds.parse_paging("Output: PAGE fault, NOPG here too") is None
+    assert dcons.parse_paging(_NOPG_LINE) is False
+    assert dcons.parse_paging(_PAGE_LINE) is True
+    assert dcons.parse_paging(_NOPG_LINE + _PAGE_LINE) is True       # the newest pane wins
+    assert dcons.parse_paging("Output: PAGE fault, NOPG here too") is None
 
 
 @pytest.mark.parametrize(("mode", "paging", "want"), [

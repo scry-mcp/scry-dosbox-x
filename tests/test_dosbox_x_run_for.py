@@ -17,6 +17,7 @@ from test_dosbox_x_debug import RESUME_HALTED, Debugger
 from test_dosbox_x_server import clean_session, install  # noqa: F401  (the autouse teardown)
 
 import dosbox_arming as arming
+import dosbox_console as dcons
 import dosbox_retrace as retrace
 import dosbox_session as ds
 import dosbox_state as dstate
@@ -320,7 +321,7 @@ def test_a_session_s_end_forgets_its_armed_retrace() -> None:
 def test_an_interrupt_breakpoint_says_its_stop_counts_as_a_frame() -> None:
     live(three_frames())
     assert dstate.STATE.store is not None
-    dstate.STATE.store.add(arming.declare("interrupt", "address", ds.interrupt_row(0x21, None)))
+    dstate.STATE.store.add(arming.declare("interrupt", "address", dcons.interrupt_row(0x21, None)))
     got = cast(dict[str, Any], server.run_for(frames=3, seconds=2))
     assert retrace.UNTOLD_NOTE in got["note"], got
 

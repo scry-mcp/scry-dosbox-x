@@ -112,11 +112,14 @@ import dosbox_captures as caps  # noqa: E402
 import dosbox_checks as checks  # noqa: E402
 import dosbox_code as code  # noqa: E402
 import dosbox_comments as comments  # noqa: E402
+import dosbox_console as dcons  # noqa: E402
 import dosbox_dac as vgadac  # noqa: E402
 import dosbox_declarations as dec  # noqa: E402
 import dosbox_dump as dumping  # noqa: E402
 import dosbox_find as finder  # noqa: E402
 import dosbox_inputs as inputs  # noqa: E402
+import dosbox_launch as dlaunch  # noqa: E402
+import dosbox_logs as dlogs  # noqa: E402
 import dosbox_machine as machine  # noqa: E402
 import dosbox_media as media  # noqa: E402
 import dosbox_paths as paths  # noqa: E402
@@ -188,7 +191,7 @@ def build_check(binary: str = "") -> dict[str, Any]:
             f"need it; the guest's log (`log`, `log_wait`), the captures and the "
             f"in-guest input do not")
     return st.reply(**binaries.facts(resolved), debugger=True,
-                    heavy_debug=ds.heavy_debug(resolved.path), tools=registered_tools())
+                    heavy_debug=binaries.heavy_debug(resolved.path), tools=registered_tools())
 
 
 # ---------------------------------------------------------- session: start, status, close
@@ -268,7 +271,7 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
     resolved = binaries.resolve(binary)
 
     cwd_path = paths.resolved("cwd", cwd_given)
-    launch = ds.Launch(
+    launch = dlaunch.Launch(
         conf=conf_path, cwd=cwd_path, seconds=seconds,
         watched=(mode == "shared"),
         window_flags=list(window_flags or []),
@@ -283,9 +286,9 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
         input_port=input_port if input_port is not None else 0,
         state_dir=state_path if state_path is not None else cwd_path / "save",
         binary=resolved.path,
-        background=ds.judge_background(background, mode == "shared"),
+        background=dlaunch.judge_background(background, mode == "shared"),
     )
-    ds.validate(launch)
+    dlaunch.validate(launch)
     # KEY AND VALIDATE THE DECLARATION STORE BEFORE THE EMULATOR BOOTS. Its constructor
     # reads and parses the persisted file, and a corrupt or hand-edited one raises a
     # `DeclarationError` -- which, done after the session was up, escaped as a traceback
@@ -343,7 +346,7 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
     # live one only now the session is ready, so `STATE.store` is never set without a session.
     STATE.store = store
     STATE.session_origin = STATE.origin()
-    STATE.conf_fingerprint = ds.fingerprint(launch.conf)
+    STATE.conf_fingerprint = dlaunch.fingerprint(launch.conf)
     # THE RUNNING STATE IS CLEARED BEFORE THE FIRST STOP IS RECORDED, or the clearing
     # takes the record with it and the server holds no stop until the next contact.
     STATE.clear_running_state()
@@ -352,7 +355,8 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
     # WHERE THE STUB IS, said in the reply: a conf's autoexec that runs its own program has to
     # run the stub first, and a wheel install puts it wherever the package landed.
     started = st.reply(mode=mode, ready_after_s=ready, argv=session.argv, **binary_facts,
-                       stub=str(ds.GUEST_DIR / "INJECT.COM"), input_port=session.launch.input_port,
+                       stub=str(dlaunch.GUEST_DIR / "INJECT.COM"),
+                       input_port=session.launch.input_port,
                        background=launch.background,
                        **rearm)
     if not plan:
@@ -474,7 +478,7 @@ def log(pattern: str, channel: str, limit: int = 40, labels: bool = False) -> di
     reply: dict[str, Any] = dict(pattern=pattern, channel=channel, lines_total=total,
                                  truncated=total > len(lines), lines=lines)
     if labels:
-        reply["labels"] = ds.label_counts(lines)
+        reply["labels"] = dlogs.label_counts(lines)
     return st.reply(**reply)
 
 
@@ -564,7 +568,7 @@ def read_memory(ref: str, length: int = 16) -> dict[str, Any]:
     seg, off = placement.read_target(ref, "DS", session)
     rows = session.read_memory(seg, off)
     return st.reply(ref=ref, segment=seg, offset=off, length=length,
-                    hex=ds.bytes_of_rows(rows, off, length), rows=rows)
+                    hex=dcons.bytes_of_rows(rows, off, length), rows=rows)
 
 
 @tool("Disassemble code", summary=one_line.disassemble, read_only=True)

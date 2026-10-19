@@ -18,7 +18,6 @@ from matrix_common import (
     alive,
     boot,
     cells,
-    ds,
     judged,
     must,
     ok,
@@ -27,6 +26,8 @@ from matrix_common import (
     release_running,
     server,
 )
+
+import dosbox_console as dcons
 
 SCREEN_CONF = GUEST / "screen.conf"
 SCREEN_PROGRAM = "SCREEN.COM"
@@ -182,7 +183,7 @@ def _probe() -> None:
     r = M.call(server.debug, command="BPLIST")
     judged("J the console takes a command after VGA DACPAL", reply=r,
            holds=ok(r) and "not recognized" not in str(r.get("screen_delta"))
-           and ds.BPLIST_HEADER in str(r.get("screen_delta")))
+           and dcons.BPLIST_HEADER in str(r.get("screen_delta")))
     r = M.call(server.machine_map, sections=["vga"])
     vga = r.get("vga") or {}
     judged("J machine_map's vga once booted: M_TEXT, the seven listings named", reply=r,

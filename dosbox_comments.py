@@ -36,6 +36,7 @@ from typing import Any
 import dosbox_arming as arming
 import dosbox_code as code
 import dosbox_comment_file as cf
+import dosbox_console as dcons
 import dosbox_declarations as dec
 import dosbox_dump as dumping
 import dosbox_paths as paths
@@ -120,8 +121,8 @@ class _Places:
             return {"state": "unarmable", "why": (
                 "the machine has not stopped yet, so its mode is not known and a SEG:OFF cannot "
                 "be placed")}
-        if mode == ds.REAL_MODE:
-            if off > ds.offset_ceiling(mode):
+        if mode == dcons.REAL_MODE:
+            if off > dcons.offset_ceiling(mode):
                 why = f"{ref} has an offset past FFFF, the last a real-mode segment holds"
                 return {"state": "unarmable", "why": why, "refuse": why, "waits": (
                     _waits_for_a_selector(seg, off) if seg <= code.NULL_SELECTOR_MAX else
@@ -153,7 +154,7 @@ class _Places:
 def _waits_for_a_selector(seg: int, off: int) -> str:
     """The stop a raw row waits for when this protected-mode stop has no descriptor for its
     selector: a real-mode one reads the selector as a paragraph, up to offset FFFF."""
-    real = off <= ds.offset_ceiling(ds.REAL_MODE)
+    real = off <= dcons.offset_ceiling(dcons.REAL_MODE)
     if seg <= code.NULL_SELECTOR_MAX:
         return (f"kept for a real-mode stop, where {seg:04X} is a paragraph" if real else
                 "kept, though no stop places it: the null selector addresses nothing and a "

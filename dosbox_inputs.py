@@ -24,6 +24,8 @@ from typing import Any, cast
 
 from scry_core.reply_contract import Code
 
+import dosbox_launch as dlaunch
+import dosbox_logs as dlogs
 import dosbox_running as running
 import dosbox_session as ds
 import dosbox_state as st
@@ -185,7 +187,7 @@ def require_stub(session: ds.Session) -> None:
         raise ds.Invalid("no_channel",
             "the guest has not announced the input stub (`STUB  . inject` on E9), so nothing "
             "would receive the input: the conf's [autoexec] runs it before the program, "
-            f"`mount g \"{ds.GUEST_DIR}\"` then `G:\\INJECT.COM`, or `start(program=...)` "
+            f"`mount g \"{dlaunch.GUEST_DIR}\"` then `G:\\INJECT.COM`, or `start(program=...)` "
             "loads it by itself")
     device, proto = found[-1].groups()
     if device != "present":
@@ -196,7 +198,7 @@ def require_stub(session: ds.Session) -> None:
         raise ds.Invalid("no_channel",
             f"the resident stub speaks protocol {proto or '1'} and this server protocol "
             f"{STUB_PROTOCOL}: the conf mounts an older INJECT.COM. Mount this package's "
-            f"`{ds.GUEST_DIR}`")
+            f"`{dlaunch.GUEST_DIR}`")
     session.stub_protocol = proto
 
 
@@ -376,8 +378,8 @@ def check_expectation(expect: str | None, seconds: float | None) -> None:
             f"`expect` is a non-empty regular expression over the E9 log; got "
                          f"{expect!r}. An empty pattern matches every line, so it would "
                          f"take the first unrelated trace as the reaction")
-    ds.compiled(expect)
-    ds.compiled(program_reaction(expect))
+    dlogs.compiled(expect)
+    dlogs.compiled(program_reaction(expect))
     wait_s = EFFECT_WAIT_DEFAULT_S if seconds is None else seconds
     if isinstance(cast(object, wait_s), bool) or not isinstance(cast(object, wait_s),
                                                                   int | float):
