@@ -294,7 +294,7 @@ def test_a_close_with_no_count_held_says_so_rather_than_guessing(no_scan_count: 
     """A scan opened past the server (`debug("MEMFIND ...")`) leaves no count here: the
     closing reply says `iterations: null` and why, never a number made up."""
     got = finder.scan_filter(session([("MEMS !0", "mems_finished")]), "!", 0)
-    assert got["iterations"] is None and "iterations_why" in got, got
+    assert got["iterations"]["available"] is False, got
 
 
 def test_scan_start_and_scan_clear_reset_the_count(no_scan_count: None) -> None:
@@ -452,7 +452,7 @@ def test_a_scan_the_debugger_says_is_gone_leaves_no_count_to_add_to(no_scan_coun
     with pytest.raises(ds.Invalid, match="scan_start"):
         finder.scan_filter(session([("MEMS =12", "mems_not_active")]), "=", 0x12)
     got = finder.scan_filter(session([("MEMS !0", "mems_finished")]), "!", 0)
-    assert got["iterations"] is None and "iterations_why" in got, got
+    assert got["iterations"]["available"] is False, got
 
 
 @pytest.mark.parametrize("command", ["MEMS =0", "memfind 0000:400 10 B", "MEMFIND !"])

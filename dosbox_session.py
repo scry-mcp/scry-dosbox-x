@@ -1509,13 +1509,9 @@ class Session:
         marker, and an emulator that has gone produces the same absence. What tells
         those apart is `alive` -- but it lives in the reply's `session` block, so it is
         there only while there IS a session to report. An emulator already found dead is
-        buried by the server's `live`, which then REFUSES, and that reply carries
-        `session: null` and therefore no `alive` at all; there it is the refusal's own
-        text that says so, exactly as `live` already does for `altered`.
-
-        THIS PARAGRAPH USED TO END "and every reply carries it", which is a checkable
-        claim and was false on the one path it nominates: with no live session this tool
-        answers `{"status": "INVALID", "reason": ..., "session": null}`.
+        buried by the server's `live`, which then REFUSES, and that reply carries the
+        no-session block, whose `alive` is false; the refusal's own text says what was
+        buried, exactly as `live` already does for `altered`.
         """
         self._write(RUN_KEY)
         text = self._collect(settle=1.0, timeout=8.0)
@@ -2700,10 +2696,12 @@ class Session:
 
     def state(self) -> dict[str, object]:
         """What every reply carries, `altered` included."""
-        changed: bool | None = None
-        with contextlib.suppress(OSError):
+        changed: bool | dict[str, Any]
+        try:
             changed = (self.launch.conf.is_file()
                        and dlaunch.current_digest(self.launch.conf) != self.conf_digest)
+        except OSError as e:
+            changed = contract.unavailable(f"the conf could not be read: {e}")
         return {
             "pid": self.proc.pid,
             "alive": self.alive(),

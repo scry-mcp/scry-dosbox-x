@@ -400,10 +400,7 @@ def steps_whole(name: str, steps: object) -> None:
     refused = sequence.preflight(steps, STEP_OPS())
     if refused:
         first = refused[0]
-        raise ds.Invalid("bad_argument",
-            f"{len(refused)} step(s) refused before anything ran: "
-            + "; ".join(f"step {e['step']} ({e['op']!r}) {e['message']}" for e in refused)
-            + ". Nothing was run",
+        raise ds.Invalid("bad_argument", sequence.refused_text(refused),
             ran=[], completed=0, failed_at=first["step"], failed=first, errors=refused)
 
 

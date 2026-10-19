@@ -906,7 +906,7 @@ def test_a_text_crop_is_in_characters_and_the_cursor_is_counted_from_it(
     assert r["text"] == ["C:\\>", ""] and r["cursor"] == [0, 1] and r["crop"] == [0, 3, 4, 2]
     screen_bench("probe-booted", tmp_path)
     outside = cast(dict[str, Any], server.screen_view(crop=[10, 0, 4, 2]))
-    assert outside["cursor"] is None
+    assert outside["cursor"]["available"] is False
     screen_bench("probe-booted", tmp_path)
     off = cast(dict[str, Any], server.screen_view(crop=[78, 0, 4, 1]))
     assert off["code"] == "bad_argument" and "characters" in off["message"]

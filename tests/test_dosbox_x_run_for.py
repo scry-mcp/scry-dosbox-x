@@ -105,8 +105,8 @@ def test_three_frames_land_three_retraces_with_the_whole_stop_reply() -> None:
     # The pane's clock, read off the surveys before and after: milliseconds, as seconds.
     assert got["emulated_before_s"] == pytest.approx(0.005708)
     assert got["emulated_after_s"] == pytest.approx(0.0485122)
-    assert got["frame_before"] is None and got["frame_after"] is None
-    assert got["cycles"] is None and "normal core" in got["cycles_why"], got
+    assert got["frame_before"]["available"] is False and got["frame_after"]["available"] is False
+    assert "normal core" in got["cycles"]["why"], got
     assert got["registers"] and "attribution" in got and "e9" in got and "stop_seq" in got
     assert got["session"]["altered"] is False, "advancing is not writing"
     assert got["summary"].startswith("run_for 3 frames: ELAPSED"), got["summary"]

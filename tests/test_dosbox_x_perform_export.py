@@ -45,7 +45,7 @@ def test_a_session_on_the_double_is_exported_as_steps_checks_and_named_drops(
     server.status()
     server.comment_add(ref="F000:0000", text="the entry")
     out = server.perform_export(path=str(tmp_path / "s.json"))
-    assert out["status"] == "ok" and out["cut"] is None, out
+    assert out["status"] == "ok" and out["cut"]["available"] is False, out
     doc = json.loads((tmp_path / "s.json").read_text())
     assert doc["server"] == "dosbox-x" and doc["start"] == {"conf": "/x.conf"}
     assert [step["op"] for step in doc["steps"]] == ["write", "registers"]
@@ -153,7 +153,7 @@ def test_a_start_with_a_plan_is_exported_and_its_document_replays_on_the_same_do
     assert got["status"] == "ok", got
     server.read_memory(ref="F000:0000", length=1)
     out = server.perform_export(path=str(tmp_path / "s.json"))
-    assert out["status"] == "ok" and out["cut"] is None, out
+    assert out["status"] == "ok" and out["cut"]["available"] is False, out
     doc = json.loads((tmp_path / "s.json").read_text())
     assert "plan" not in doc["start"] and doc["entry"] == "dosbox_x_server.py"
     assert [step["op"] for step in doc["steps"]] == ["write", "registers", "read_memory"]

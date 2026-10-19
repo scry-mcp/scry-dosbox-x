@@ -146,7 +146,8 @@ def start(conf: str, cwd: str, seconds: int, mode: str, window_flags: list[str] 
     # run the stub first, and a wheel install puts it wherever the package landed.
     started = st.reply(mode=mode, ready_after_s=ready, argv=session.argv, **binary_facts,
                        stub=str(dlaunch.GUEST_DIR / "INJECT.COM"),
-                       input_port=session.launch.input_port,
+                       input_port=contract.or_unavailable(session.launch.input_port,
+                                                          "no input route was opened"),
                        background=launch.background,
                        **rearm)
     if not plan:

@@ -405,7 +405,8 @@ def test_without_a_table_there_is_nothing_resolved_and_outside_its_span_no_name(
     load_probe_symbols()
     named = cast(dict[str, Any], server.disassemble(ref="0814:0106", length=8))
     below = [row for row in named["resolved"] if row["kind"] == "target"]
-    assert below and all(row["symbol"] is None and row["delta"] is None for row in below), below
+    assert below and all(not row["symbol"]["available"] and not row["delta"]["available"]
+                         for row in below), below
 
 
 def test_an_operand_above_the_last_symbol_is_not_named_after_it() -> None:
@@ -418,7 +419,8 @@ def test_an_operand_above_the_last_symbol_is_not_named_after_it() -> None:
                                 ("start", "emit", "bump")])
     r = cast(dict[str, Any], server.disassemble(ref="start", length=16))
     rows = [row for row in r["resolved"] if row["kind"] == "memory"]
-    assert rows and all(row["symbol"] is None and row["delta"] is None for row in rows), rows
+    assert rows and all(not row["symbol"]["available"] and not row["delta"]["available"]
+                        for row in rows), rows
 
 
 def test_a_listing_past_the_end_of_a_16_bit_segment_is_refused_naming_what_fits() -> None:
@@ -434,7 +436,7 @@ def test_a_listing_past_the_end_of_a_16_bit_segment_is_refused_naming_what_fits(
 def test_a_length_out_of_its_range_is_refused_with_no_machine(length: object) -> None:
     tool: Any = server.disassemble
     r = cast(dict[str, Any], tool(ref="0814:0100", length=length))
-    assert r["status"] == "INVALID" and r["code"] == "bad_argument" and r["session"] is None, r
+    assert r["status"] == "INVALID" and r["code"] == "bad_argument" and not r["session"]["alive"], r
 
 
 def pr32_machine(logfile: Path | None = None) -> CodeMachine:
@@ -600,7 +602,7 @@ def test_a_memory_operand_through_a_register_the_pane_did_not_show_is_unplaced()
     load_probe_symbols()
     r = cast(dict[str, Any], server.disassemble(ref="0814:0200", length=4))
     row = [x for x in r["resolved"] if x["kind"] == "memory"][0]
-    assert r["status"] == "ok" and row["linear"] is None and "GS" in row["why"], r
+    assert r["status"] == "ok" and "GS" in row["linear"]["why"], r
 
 
 def test_in_protected_mode_an_operand_is_placed_through_its_selectors_base() -> None:
@@ -622,7 +624,7 @@ def test_in_protected_mode_an_operand_is_placed_through_its_selectors_base() -> 
     assert (memory["symbol"], memory["delta"], memory["linear"], memory["register"]) \
         == ("_g_eng_rate", 0, "00462340", "DS")
     far = [x for x in rows if x["kind"] == "target"][0]
-    assert far["segment"] == "008F" and far["linear"] is None and "logfile" in far["why"], far
+    assert far["segment"] == "008F" and "logfile" in far["linear"]["why"], far
 
 
 def test_a_screen_with_no_pane_has_no_lines() -> None:
@@ -679,7 +681,9 @@ def test_a_stop_takes_its_instruction_off_the_pane_it_surveyed() -> None:
     s = StoppedCode("code-stop1")
     got = picture(s)["instruction"]
     assert got == {"at": "0814:00000102", "bytes": "CD03", "text": "int 3", "flow": "call",
-                   "code_bits": 16, "bytes_from": "code pane", "symbol": None, "delta": None}
+                   "code_bits": 16, "bytes_from": "code pane",
+                   "symbol": {"available": False, "why": "no symbol table is loaded"},
+                   "delta": {"available": False, "why": "no symbol table is loaded"}}
     assert s.d_reads == [], "the pane held the line, and a `D` was read anyway"
 
 
@@ -714,7 +718,7 @@ def test_a_whole_pane_line_no_instruction_starts_is_read_again_and_still_starts_
     s = StoppedCode("code-stop1", screen)
     s.regs["EIP"] = "0000013C"
     got = picture(s)
-    assert got["instruction"] is None and "start no instruction" in got["instruction_why"]
+    assert "start no instruction" in got["instruction"]["why"], got
     assert s.d_reads == [(LOAD, 0x13C, disasm.INSN_MAX)]
 
 
@@ -756,7 +760,7 @@ def test_a_stop_with_no_bytes_to_read_says_why() -> None:
         raise ds.Invalid("unexpected_answer", "no data view came back")
     s.read_bytes = refused  # type: ignore[method-assign]
     got = picture(s)
-    assert got["instruction"] is None and "no data view came back" in got["instruction_why"]
+    assert "no data view came back" in got["instruction"]["why"], got
 
 
 def test_a_stop_on_a_byte_no_instruction_starts_with_says_so() -> None:
@@ -764,7 +768,7 @@ def test_a_stop_on_a_byte_no_instruction_starts_with_says_so() -> None:
     s = StoppedCode("code-stop2", text(FIX / "code-survey-after-C-elsewhere.txt"))
     s.regs["EIP"] = "0000013C"
     got = picture(s)
-    assert got["instruction"] is None and "start no instruction" in got["instruction_why"]
+    assert "start no instruction" in got["instruction"]["why"], got
 
 
 def test_a_pr16_stop_decodes_16_bit_from_the_panes_word() -> None:
@@ -793,7 +797,8 @@ def test_in_protected_mode_the_stop_asks_selinfo_only_with_a_table() -> None:
     where = {"cs": "00A7", "eip": "0005E9C0", "mode": "Pr32"}
     screen = text(TRACE / "dos-djgpp32-engine-survey-before.txt")
     bare = code.stop_instruction(cast(ds.Session, s), where, s.registers(), screen)["instruction"]
-    assert (bare["text"], bare["code_bits"], bare["symbol"]) == ("push ebp", 32, None)
+    assert (bare["text"], bare["code_bits"]) == ("push ebp", 32)
+    assert bare["symbol"] == {"available": False, "why": "no symbol table is loaded"}, bare
     assert s.asked_selinfo == []
     dstate.STATE.install_table([sym.Symbol("_engine_pos", 0x5E9C0),
                                 sym.Symbol("_engine_end", 0x5EA00)])
@@ -885,9 +890,11 @@ def test_three_frames_deep_the_walk_lists_the_routines_the_guest_entered() -> No
                        ("0814:0000015C", "middle", "bp_chain"),
                        ("0814:0000014D", "outer", "bp_chain"),
                        ("0814:0000013A", "known", "bp_chain")]
-    assert [c["call"] for c in r["calls"]] == [None, "call 0x15e", "lcall [0x17f]",
-                                               "call word ptr [0x17d]"]
-    assert [c["bp"] for c in r["calls"]] == [None, "FFEC", "FFF4", "FFFA"]
+    assert [c["call"] for c in r["calls"]][1:] == ["call 0x15e", "lcall [0x17f]",
+                                                   "call word ptr [0x17d]"]
+    assert r["calls"][0]["call"]["available"] is False, r["calls"][0]
+    assert [c["bp"] for c in r["calls"]][1:] == ["FFEC", "FFF4", "FFFA"]
+    assert r["calls"][0]["bp"]["available"] is False, r["calls"][0]
     assert "outermost" in r["ended_why"] and r["truncated"] is False
     assert r["summary"] == "call_stack: 4 calls, innermost inner, heuristic"
 
@@ -1037,7 +1044,12 @@ def test_a_return_outside_the_table_is_listed_and_ends_the_walk() -> None:
     dstate.STATE.install_table([s for s in dstate.STATE.table
                                 if s.name in ("outer", "middle", "inner")])
     r = cast(dict[str, Any], server.call_stack())
-    assert r["calls"][-1]["addr"] == "0814:0000013A" and r["calls"][-1]["symbol"] is None
+    assert r["calls"][-1]["addr"] == "0814:0000013A"
+    assert r["calls"][-1]["symbol"]["available"] is False
+    dstate.STATE.install_table([])
+    bare = cast(dict[str, Any], server.call_stack())
+    assert bare["summary"].startswith(f"call_stack: {len(bare['calls'])} calls, innermost "
+                                      f"{bare['calls'][0]['addr']},"), bare["summary"]
     assert "outside the loaded symbol table" in r["ended_why"], r
 
 
@@ -1051,7 +1063,8 @@ def test_an_entry_return_outside_the_table_is_listed_and_ends_the_walk() -> None
     dstate.STATE.install_table([x for x in dstate.STATE.table
                                 if x.name in ("outer", "middle", "inner")])
     r = cast(dict[str, Any], server.call_stack())
-    assert [c["via"] for c in r["calls"]] == ["stop", "entry"] and r["calls"][1]["symbol"] is None
+    assert [c["via"] for c in r["calls"]] == ["stop", "entry"]
+    assert r["calls"][1]["symbol"]["available"] is False
     assert "outside the loaded symbol table" in r["ended_why"], r
 
 

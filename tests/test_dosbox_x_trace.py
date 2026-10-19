@@ -509,7 +509,7 @@ def test_a_wrong_argument_is_refused_before_the_session_is_asked(
         kw: dict[str, Any], words: str) -> None:
     got = cast(dict[str, Any], server.trace(**kw))
     assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
-    assert words in got["message"] and got["session"] is None, got
+    assert words in got["message"] and not got["session"]["alive"], got
 
 
 def test_the_description_states_the_bound_the_check_holds() -> None:
@@ -1044,7 +1044,7 @@ def test_a_set_file_the_host_refuses_part_way_is_removed_and_said(
                 cwd_of(tmp_path), [("probe-start-normal-200", "probe-start-normal-200-delta")]))
     dest = tmp_path / "f.trace"
     got = cast(dict[str, Any], server.trace(instructions=200, dest=str(dest)))
-    assert got["status"] == "ok" and got["trace"]["set_path"] is None, got["trace"]
+    assert got["status"] == "ok" and got["trace"]["set_path"]["available"] is False, got["trace"]
     assert not Path(str(dest) + ".set.jsonl").exists() and dest.exists()
     assert "could not be written" in got["trace"]["note"], got["trace"]["note"]
 

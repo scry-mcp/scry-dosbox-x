@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 
 from scry_core import cancel
+from scry_core import reply_contract as contract
 from scry_core.reply_contract import Invalid
 
 import dosbox_launch as dlaunch
@@ -154,4 +155,5 @@ def state_list(ses: ds.Session) -> dict[str, object]:
     named = [dlaunch.state_meta(p) for p in files if not p.stem.isdigit()]
     slots = [dlaunch.state_meta(p) for p in files if p.stem.isdigit()]
     return {"state_dir": str(state_dir), "states": named,
-            "working_slot": slots[-1] if slots else None}
+            "working_slot": slots[-1] if slots else contract.unavailable(
+                "the emulator's own numbered slot has not been written")}

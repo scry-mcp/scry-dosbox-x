@@ -373,7 +373,7 @@ def test_a_store_that_cannot_be_written_is_host_failed_and_the_comment_still_lis
 
 def test_a_running_guest_lists_and_saves_but_add_delete_and_load_refuse(tmp_path: Path) -> None:
     fake = _running(tmp_path)
-    dstate.STATE.last_stop.update(seq=1, at="0814:0106", attribution={}, when=0.0, clock=None,
+    dstate.STATE.last_stop.update(seq=1, at="0814:0106", attribution={}, when=0.0, clock="c",
                                   held=[], where={"mode": "Real"}, registers={})
     store = cast(dec.DeclarationStore, dstate.STATE.store)
     store.apply(adds=[comment("0814:010B", "raw"), comment("00A7:00001000", "pm")])
@@ -424,7 +424,7 @@ def test_save_over_a_comment_file_names_what_it_drops_and_keeps_its_mode(tmp_pat
     os.chmod(dest, 0o600)
     ok(server.comment_add(ref="0814:010B", text="kept"))
     got = ok(server.comment_save(dest=str(dest)))
-    assert got["dropped_comments"] == [{"ref": "gone", "cpu": None}]
+    assert got["dropped_comments"] == [{"ref": "gone"}]
     assert got["dropped_total"] == 1 and "dropped_comments" in got["note"]
     assert stat.S_IMODE(dest.stat().st_mode) == 0o600
 
@@ -1036,7 +1036,7 @@ def test_a_comment_from_a_store_that_kept_no_origin_is_marked_orphan() -> None:
     dstate.STATE.session_origin = "this-session"
     cast(dec.DeclarationStore, dstate.STATE.store).apply(adds=[comment("0814:010B")])
     (row,) = ok(server.comment_list())["comments"]
-    assert row["orphan"] is True and row["origin"] is None
+    assert row["orphan"] is True and row["origin"]["available"] is False
 
 
 # ------------------------------------- a file a save wrote loads, whatever the machine's state
@@ -1065,7 +1065,7 @@ def test_a_file_saved_on_a_running_protected_mode_guest_loads_at_the_next_stop(
     probe_table([("pmsym", 0x401000 - PROBE_BASE)])
     cast(dec.DeclarationStore, dstate.STATE.store).apply(
         adds=[comment("00A7:00001000", "raw"), comment("pmsym", "by name")])
-    dstate.STATE.last_stop.update(seq=1, at="00A7:1000", attribution={}, when=0.0, clock=None,
+    dstate.STATE.last_stop.update(seq=1, at="00A7:1000", attribution={}, when=0.0, clock="c",
                                   held=[], where={"mode": "Pr32"}, registers={})
     dest = tmp_path / "c.tsv"
     assert ok(server.comment_save(dest=str(dest)))["comments_total"] == 2

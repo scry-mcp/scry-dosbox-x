@@ -229,8 +229,9 @@ def test_state_load_needs_a_named_state_and_marks_altered(tmp_path: Path) -> Non
 def test_state_list_reads_every_state_with_its_metadata_and_needs_no_window(
         tmp_path: Path) -> None:
     fake = StateFake(tmp_path / "save")
-    assert ds.Session.state_list(as_session(fake)) == {"state_dir": str(tmp_path / "save"),
-                                                        "states": [], "working_slot": None}
+    empty = ds.Session.state_list(as_session(fake))
+    assert (empty["state_dir"], empty["states"]) == (str(tmp_path / "save"), [])
+    assert cast(dict[str, Any], empty["working_slot"])["available"] is False, empty
     write_state(tmp_path / "save" / "boot.sav")
     write_state(tmp_path / "save" / "1.sav", Program_Name="OTHER")
     (tmp_path / "save" / "junk.sav").write_bytes(b"not a zip")
@@ -273,7 +274,8 @@ def test_state_list_keeps_the_working_slot_apart_from_the_named_states(tmp_path:
     slot = cast(dict[str, Any], out["working_slot"])
     assert slot["name"] == "1" and slot["program"] == "OTHER"
     (tmp_path / "save" / "1.sav").unlink()
-    assert ds.Session.state_list(as_session(fake))["working_slot"] is None
+    gone = ds.Session.state_list(as_session(fake))["working_slot"]
+    assert cast(dict[str, Any], gone)["available"] is False
 
 
 # ------------------------------------------------------------------ the screenshot

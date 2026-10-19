@@ -230,8 +230,8 @@ def status() -> dict[str, Any]:
     reported (`stopped_on_its_own`) and applies what was queued while the guest ran
     (`applied_on_stop`).
 
-    Reply: `session`, `null` when there is none (under `status: "ok"`: nothing running is an
-    answer). The same block rides on EVERY reply of every tool:
+    Reply: `session`, `alive: false` when there is none (under `status: "ok"`: nothing
+    running is an answer). The same block rides on EVERY reply of every tool:
 
       pid                     the emulator process's pid, to read instead of hunting it.
       alive                   the emulator process is up.
@@ -240,7 +240,7 @@ def status() -> dict[str, Any]:
                               forced state.
       conf                    the config the session was started from.
       conf_digest             a digest of that file's content AT START.
-      conf_changed_on_disk    the file changed since (`false` when GONE, `null` unreadable).
+      conf_changed_on_disk    the file changed since (`false` when GONE, unavailable unreadable).
       watched                 it was started to be looked at, so a window was placed.
       seconds_bound           the ceiling the session was given.
       seconds_elapsed         how much of that is spent.
@@ -251,16 +251,17 @@ def status() -> dict[str, Any]:
       state_dir               where `state_save` writes and `state_list` reads.
 
     And beside it: `last_stop` (`stop_seq`, `at`, `attribution`, `since_s`, `clock`; the park
-    after `start` is stop 1; null only with no session), `pending` (what was asked while the
+    after `start` is stop 1; unavailable only with no session), `pending` (what was asked while the
     guest ran: `arm` refs, a `disarm` count, `symbols_load`), and with a session `pc` and
-    `cpu_mode` (`real`, `protected`, `paged`) of the stop it is in, null with `cpu_mode_why`
-    while it runs, and `declarations`, this server's own counted (`breakpoints`, `watches`).
+    `cpu_mode` (`real`, `protected`, `paged`) of the stop it is in (`pc` absent and
+    `cpu_mode` unavailable while it runs), and `declarations`, this server's own counted
+    (`breakpoints`, `watches`).
 
     Reference: REFERENCE.md, What every reply carries.
     """
     if STATE.session is not None and STATE.session.alive():
         running.drain_if_stopped(STATE.session)   # `status` asks for no session, but uses one
-    return st.reply(last_stop=STATE.as_of(), pending=STATE.pending_summary(),
+    return st.reply(last_stop=STATE.dated(), pending=STATE.pending_summary(),
                     **running.status_facts(STATE.session))
 
 
@@ -373,7 +374,7 @@ def registers(from_last_stop: bool = False) -> dict[str, Any]:
             raise ds.Invalid("no_stop", "no stop yet in this session, so there are no last-stop "
                              "registers to hand back")
         return st.reply(registers=dict(STATE.last_stop["registers"]), stale=True,
-                        last_stop=STATE.as_of())
+                        last_stop=STATE.dated())
     return st.reply(registers=live().registers())
 
 
@@ -418,8 +419,8 @@ def disassemble(ref: str, length: int = 16) -> dict[str, Any]:
     the line's own or the far pointer's) and direct memory operand (`kind` `memory`,
     `register` the segment register it is read through and `segment` its value at this
     stop), each with `line`, `operand`, `offset` (`0x..`), `linear` (eight hex digits), and
-    the nearest `symbol` with `delta`, null outside the table's span; a row that could not be
-    placed has `linear` null too and `why`. A register-relative operand is not resolved.
+    the nearest `symbol` with `delta`, unavailable outside the table's span; a row that could
+    not be placed has `linear` unavailable too. A register-relative operand is not resolved.
 
     Refused: `length` outside 1..{DISASM_MAX}, and one that runs past the end of a 16-bit segment
     (IP wraps there), naming the most bytes from there; `memdump`'s refusals apply to the
@@ -446,12 +447,12 @@ def call_stack() -> dict[str, Any]:
     precedes (not listed), a return outside the loaded table (listed), or its bound.
 
     Reply: `heuristic` (always true), `code_bits`, `calls` (innermost first: `addr`
-    `SSSS:OOOOOOOO`, `linear`, `symbol` and `delta`, null outside the table's span, `via`,
-    `call` (the call instruction at the call site, null on row 0), `bp` (the frame it was read
-    beside, null on rows 0 and `entry`)), `truncated` (the bound was reached), `ended_why` (a
-    read that failed says so here). Refused when the register pane shows no SS, ESP or EBP. A
-    routine that keeps no frame pointer is invisible to it: its caller's caller is listed in
-    its place, or nothing.
+    `SSSS:OOOOOOOO`, `linear`, `symbol` and `delta`, unavailable outside the table's span,
+    `via`, `call` (the call instruction at the call site, unavailable on row 0), `bp` (the
+    frame it was read beside, unavailable on rows 0 and `entry`)), `truncated` (the bound was
+    reached), `ended_why` (a read that failed says so here). Refused when the register pane
+    shows no SS, ESP or EBP. A routine that keeps no frame pointer is invisible to it: its
+    caller's caller is listed in its place, or nothing.
 
     Reference: REFERENCE.md, Reading and writing.
     """
@@ -543,7 +544,7 @@ def scan_filter(operator: str = "=", value: int | None = None,
     typed.
     Needs the machine stopped and a scan open. Reply: `operator`, `value`, `survivors`,
     `iterations` (the filters so far, this one included; on the closing reply the server's
-    own count, `null` with `iterations_why` for a scan `debug` touched), `closed` (a
+    own count, unavailable for a scan `debug` touched), `closed` (a
     step that leaves NO survivor closes the scan, which is what the debugger does), `hits`
     (each survivor's `address`, `linear` and current `value`), `hits_total` and
     `truncated`: above `limit` survivors (1 to 400, default 40) `hits` is empty and
@@ -663,7 +664,7 @@ def resume(e9: str = "none", e9_filter: str = ".",
     Reply: a reply that stopped (an F5 that never left the debugger is a stop too) is the full
     stop: `stopped_at` (`cs`, `eip`, `mode`), `instruction` (the instruction
     there: `at`, `bytes`, `text`, `flow`, `code_bits`, `bytes_from`, the nearest `symbol` and
-    `delta`; null with `instruction_why` when it could not be read), `registers`, `watches`,
+    `delta`; unavailable with its `why` when it could not be read), `registers`, `watches`,
     `attribution` (which declaration produced this stop) and `e9`, the log summary, OFF by default:
     `"all"`, `"lines:N"`, `"since"` (since the previous stop) or `"seconds:N"` (needs `e9_stamp`, a
     regex with ONE group capturing each line's own time), filtered by `e9_filter`. With
@@ -707,7 +708,7 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
         # THE STOP IT IS IN, or none: after a survey that could not be read the record is the
         # previous stop's, and naming it would be a confident wrong answer.
         current = STATE.as_of_current(session)
-        return st.reply(interrupted=False, last_stop=current,
+        return st.reply(interrupted=False, last_stop=STATE.current_or_why(session),
                         note="the machine was already stopped" + (
                             "" if current is not None else ", its position not readable yet "
                             "(a cut pane; the next contact retries)"))
@@ -794,7 +795,7 @@ def run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
     `OTHER_STOP` (a declared code breakpoint stopped it first, named by `attribution`) or
     `TIMEOUT` (the bound expired); `polls`, the
     `VRT`s answered by a stop; `emulated_before_s` and `emulated_after_s`, the register pane's
-    emulated clock; `frame_before`, `frame_after` and `cycles`, null (`cycles_why`);
+    emulated clock; `frame_before`, `frame_after` and `cycles`, unavailable with why;
     `stopped_at`, `waited_s`, and the stop's `instruction`, `registers`, `watches`, `attribution`
     and `e9`. `retrace_pending: true`: the debugger still holds a retrace stop, which the next
     release meets. `note`: what the reply cannot prove (a declared breakpoint or watch, an unread
@@ -836,7 +837,8 @@ def trace(instructions: int, shape: str = "normal", dest: str = "", seconds: flo
     bound ran out: the run interrupted where it stood, and what ran up to there collected);
     `stopped_at`, `waited_s`, the stop's `instruction`, `registers`, `watches`, `attribution`,
     `e9`, `stop_seq`; `trace`: `path`, `bytes`, `shape`, `instructions` (executed), `addresses`
-    (distinct), `unplaced` (no symbol places them), `set_path` (a JSON line per address),
+    (distinct), `unplaced` (no symbol places them), `set_path` (a JSON line per address;
+    unavailable when it could not be written, said in `note`),
     `symbols` (per routine, the first 64), `symbols_total`, `symbols_truncated`, `note` for
     what it cannot prove.
     `readback_refused`: the log closed early (the machine closed it before the trace stopped,
@@ -1126,7 +1128,7 @@ def comment_save(dest: str) -> dict[str, Any]:
     the declaration store's own file; two comments at one place, which a file names once (named,
     so one can be deleted). A file the host will not let it write is `host_failed`.
 
-    Reply: `dest`, `comments_total`, `dropped_comments` (each `ref` and `cpu` of the replaced
+    Reply: `dest`, `comments_total`, `dropped_comments` (each `ref` of the replaced
     file that the store does not hold), `dropped_total`, `truncated`, `note`.
 
     Reference: REFERENCE.md, Declarations.
@@ -1172,7 +1174,7 @@ def machine_map(sections: list[str] | None = None, dest: str = "") -> dict[str, 
     after a listing (`unexpected_answer`: `close` the session); a logfile that shrank
     (`session_broken`).
 
-    Reply: `cpu_mode` (`real`, `protected`, `paged`; null when the `CPU` listing is
+    Reply: `cpu_mode` (`real`, `protected`, `paged`; unavailable when the `CPU` listing is
     unreadable), then each section read: `mcbs` (`memory`, `mcb_seg`, `size_bytes`, `psp_seg`,
     `notes`, `filename`), `devs` (`header`, `attr`, `strat`, `intr`, `name`), `kern` (`seg`,
     `size_bytes`, `what`), `xms` (`handle`, `status`, `location`, `size_bytes`), `ems`
@@ -1200,7 +1202,9 @@ def machine_map(sections: list[str] | None = None, dest: str = "") -> dict[str, 
         text = json.dumps(whole, indent=1).encode()
         fresh.create(target, text, "the map", named_by_caller=True)
         reply["path"] = str(target)
-    left = [n for n in machine.sections_of(whole["cpu_mode"]) if n not in chosen]
+    mode = whole["cpu_mode"]
+    left = [n for n in machine.sections_of(mode if isinstance(mode, str) else None)
+            if n not in chosen]
     if left:
         reply.update(narrowing.omission(left, machine.MAP_HOW))
     elif reply["truncated"] and target is None:
@@ -1290,8 +1294,8 @@ def screen_view(crop: list[int] | None = None, scale: int = 0,
     Reply: `mode` (`VGA MODE`'s word), `source` (`text` or `indices`), `width` and `height` (in
     characters or pixels), `crop` (the rectangle read), `display_start` (as `VGA MODE` printed
     it); in text, `text` (one string a row of the crop, as code page 437 draws it, trailing
-    spaces dropped) and `cursor` (`[column, row]` in the crop, null when hidden or outside it);
-    in 256 colours, `image`.
+    spaces dropped) and `cursor` (`[column, row]` in the crop, unavailable when hidden or
+    outside it); in 256 colours, `image`.
 
     Refused: a relative `dest`, a `scale` out of range or a misshapen `crop` (`bad_argument`,
     before anything is typed); `dest`, `scale` or `attach` in a text mode, a `crop` off the
@@ -1483,8 +1487,8 @@ def breakpoint_list() -> dict[str, Any]:
     own list. Answers on a RUNNING guest too: then the debugger cannot be asked, so the
     states are those of the last stop's survey, `debugger_read` is false and `last_stop` dates
     the answer by that stop (`stop_seq`, `at`, `attribution`, `since_s`); with no stop yet,
-    `last_stop` is null and a symbol's state is `unarmable`. Stopped: read live, `debugger_read`
-    true.
+    `last_stop` is unavailable and a symbol's state is `unarmable`. Stopped: read live,
+    `debugger_read` true.
 
     Reply: `breakpoints`, each with `ref` (the string that clears it), `by`, `created_at`,
     `origin` (the session that declared or last adopted it), `entry`, `state` -- `armed`
@@ -1647,7 +1651,7 @@ def send_mouse(x: int | None = None, y: int | None = None, button: str | None = 
     screen lacks (`unknown_ref`).
 
     Reply: `route: "guest"`, `pointer` read back after the call (`screen` with `x`, `y`,
-    `width`, `height`, or null in an unmapped mode; `mouse` with the driver's `x`, `y`,
+    `width`, `height`, or unavailable in an unmapped mode; `mouse` with the driver's `x`, `y`,
     `max_x`, `max_y`; `buttons` held; `mode`), `arrived` (the read-back is where it was asked;
     when it is not, `asked` says where in the driver's coordinates: a text mode snaps to its
     cell, a program's own range clamps), the arguments, `verify` as `send_keys`'; with a
@@ -1732,8 +1736,8 @@ def perform_export(path: str, overwrite: bool = False) -> dict[str, Any]:
     `path` absolute or `~`-led, ending `.json`; refused if it is there unless `overwrite`.
 
     Reply: `path`, `steps`, `checks`, `dropped` (the last {DROPPED_SHOWN}, each `call`, `op`,
-    `why`) and `dropped_total`, `cut` (`call`, `op`, `why`, or null) and `replay`, the runner's
-    command line. `no_recording` before a `start` succeeded, after one was cancelled, or
+    `why`) and `dropped_total`, `cut` (`call`, `op`, `why`, or unavailable) and `replay`, the
+    runner's command line. `no_recording` before a `start` succeeded, after one was cancelled, or
     when no recorded call is a step a replay could take.
 
     Reference: REFERENCE.md, From an investigation to a bench.
@@ -1800,15 +1804,15 @@ def drive(act: list[dict[str, Any]], expect: str | None = None,
     it run; `summaries=True` (off by default) as in `perform`.
     Needs a session with `logfile`.
 
-    Reply: `act` (`ran`, `completed`, `failed`, `perform`'s tail), `verify` (`checked`;
-    `verdict` `TARGET` with `seen`, `line`, `seen_before_waiting`, `lines_before`, `waited_s`,
-    `lines_total`, or `TIMEOUT`, the expectation not met, with `arrived_during` and a `note`;
-    `checked: false` with `why` when no `expect` was given; `available: false` when
-    `act.verdict` is `TIMEOUT`), and `looked.e9` (`written`, `lines_total`, `truncated`,
-    `lines`, `since_mark`, `pattern`). INVALID with the same `act`, `verify` and `looked` when a
-    step failed (`step_failed`), when a stopped machine lacks the line (`wait_stopped`), or when
-    the check could not run (`verify.checked: false`). No screen in the look: a still is
-    `capture_frame`.
+    Reply: `act` (`ran`, `completed`, `failed_at`, `failed` when a step did, `perform`'s tail),
+    `verify` (`checked`; `verdict` `TARGET` with `seen`, `line`, `seen_before_waiting`,
+    `lines_before`, `waited_s`, `lines_total`, or `TIMEOUT`, the expectation not met, with
+    `arrived_during` and a `note`; `checked: false` with `why` when no `expect` was given;
+    `available: false` when `act.verdict` is `TIMEOUT`), and `looked.e9` (`written`,
+    `lines_total`, `truncated`, `lines`, `since_mark`, `pattern`). INVALID with the same `act`,
+    `verify` and `looked` when a step failed (`step_failed`), when a stopped machine lacks the
+    line (`wait_stopped`), or when the check could not run (`verify.checked: false`). No screen
+    in the look: a still is `capture_frame`.
 
     `checked` is whether a check ran at all, `seen` whether the line arrived; neither is
     `verified`, which everywhere else means a readback equal to what was sent.

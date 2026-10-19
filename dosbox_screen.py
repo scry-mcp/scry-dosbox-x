@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from scry_core import judges, picture, png, raster, screen_map
+from scry_core.reply_contract import unavailable
 
 import dosbox_dac as vgadac
 import dosbox_paths as paths
@@ -99,7 +100,8 @@ def screen_view(session: ds.Session, crop: Sequence[int] | None, scale: int, des
         cursor = shape.cursor
         reply.update(text=[row[x0:x0 + w].rstrip(" ") for row in rows[y0:y0 + h]],
                      cursor=[cursor[0] - x0, cursor[1] - y0] if cursor is not None
-                     and x0 <= cursor[0] < x0 + w and y0 <= cursor[1] < y0 + h else None)
+                     and x0 <= cursor[0] < x0 + w and y0 <= cursor[1] < y0 + h else
+                     unavailable("the cursor is hidden or outside the crop"))
     else:
         _, dac = vgadac.read_dac(session)
         whole = png.Raster(shape.width, shape.height, data, tuple(vgadac.rgb8(e) for e in dac))

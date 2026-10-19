@@ -119,14 +119,14 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
         STATE.retrace_pending = True          # the last frame, cut: named by its own survey
         verdict = contract.OTHER_STOP
     after = session.pane_clock_ms if stopped_at else (last if timed else None)
-    extra: dict[str, Any] = {**_clock(before, after), **_counts(), "stopped_at": stopped_at,
+    extra: dict[str, Any] = {**_clock(before, after), **_counts(),
+                             "stopped_at": contract.or_unavailable(
+                                 stopped_at, "the stop's survey came back cut"),
                              "waited_s": round(time.monotonic() - began, 1)}
-    unread = before is None or (stopped_at is not None and after is None)
     pending = STATE.retrace_pending           # every cut and every interrupt leaves it armed
     notes = [note for note, holds in ((PENDING_NOTE, pending),
                                       (UNCUT_NOTE, cuttable),
-                                      (UNTOLD_NOTE, arming.declares_untold_stopper()),
-                                      ("the pane painted no `pfi=`, so the clock is null", unread))
+                                      (UNTOLD_NOTE, arming.declares_untold_stopper()))
              if holds]
     if pending:
         extra["retrace_pending"] = True
@@ -179,14 +179,25 @@ def _cut(session: ds.Session, where: dict[str, str] | None = None,
     return attribution
 
 
+#: Why a clock reading is not there, and why a DOS machine has no frame reading at all.
+NO_CLOCK_WHY = "the pane painted no `pfi=` on that survey"
+NO_FRAME_WHY = ("a DOS machine keeps no frame counter a server could read: `polls` counts the "
+                "retraces")
+
+
 def _clock(before: float | None, after: float | None) -> dict[str, Any]:
-    """The pane's emulated milliseconds as seconds; null where no survey painted `pfi=`."""
-    return {"emulated_before_s": None if before is None else before / 1000,
-            "emulated_after_s": None if after is None else after / 1000}
+    """The pane's emulated milliseconds as seconds, unavailable where no survey painted
+    `pfi=`."""
+    return {"emulated_before_s": contract.or_unavailable(
+                None if before is None else before / 1000, NO_CLOCK_WHY),
+            "emulated_after_s": contract.or_unavailable(
+                None if after is None else after / 1000, NO_CLOCK_WHY)}
 
 
 def _counts() -> dict[str, Any]:
-    return {"frame_before": None, "frame_after": None, "cycles": None, "cycles_why": CYCLES_WHY}
+    return {"frame_before": contract.unavailable(NO_FRAME_WHY),
+            "frame_after": contract.unavailable(NO_FRAME_WHY),
+            "cycles": contract.unavailable(CYCLES_WHY)}
 
 
 def screen_wait(session: ds.Session, text: str, seconds: float,

@@ -15,6 +15,8 @@ import copy
 import re
 from typing import Any, cast
 
+from scry_core import reply_contract as contract
+
 import dosbox_arming as arming
 import dosbox_code as code
 import dosbox_console as dcons
@@ -285,40 +287,44 @@ def stop_or_base(session: ds.Session, stopped: bool, e9: str, e9_filter: str,
         return st.reply(enrichment={"available": False, "why": str(e)}, **base)
 
 
+def cpu_mode_of(mode: str, paging: bool | None) -> str | dict[str, Any]:
+    """The cpu mode of a stop in `status`'s words, `real`, `protected` or `paged`, off the
+    pane's mode word and its paging mark; unavailable when the two do not place it."""
+    if mode == dcons.REAL_MODE:
+        return "real"
+    if mode.startswith("Pr") and paging is not None:
+        return "paged" if paging else "protected"
+    return contract.unavailable(
+        f"the pane named the mode {mode!r} and "
+        f"{'no PAGE/NOPG mark' if paging is None else 'a paging mark'}, which does not place "
+        f"it as real, protected or paged")
+
+
 def status_facts(session: ds.Session | None) -> dict[str, Any]:
-    """What `status` adds about the MACHINE: `pc` and
-    `cpu_mode` of the stop the machine is IN, null with `cpu_mode_why` while it runs or when
-    the pane could not place it; and `declarations`, this server's own declarations counted
-    per family in any state, which are records and so present on a running machine too. No
-    session: none of them."""
+    """What `status` adds about the MACHINE: `pc`, only when the stop the machine is IN was
+    read, and `cpu_mode` of that stop, unavailable while it runs or when the pane could not
+    place it; and `declarations`, this server's own declarations counted per family in any
+    state, which are records and so present on a running machine too. No session: none of
+    them."""
     if session is None:
         return {}
     stopped = session.alive() and session.at_debugger()
     current = STATE.as_of_current(session) if stopped else None
-    facts: dict[str, Any] = {"pc": current["at"] if current else None}
+    facts: dict[str, Any] = {"pc": current["at"]} if current else {}
     if not stopped:
-        facts.update(cpu_mode=None, cpu_mode_why=(
+        facts["cpu_mode"] = contract.unavailable(
             "the guest is running (or gone): the mode is read off a stopped machine's "
-            "register pane, and `last_stop` says where it was last seen"))
+            "register pane, and `last_stop` says where it was last seen")
     elif current is None:
         # THE RECORD IS NOT THIS STOP'S: its survey was cut, so the record still holds the
         # previous one, and naming that as the stop the machine is in would be a confident
         # wrong answer of the right shape.
-        facts.update(cpu_mode=None, cpu_mode_why=(
+        facts["cpu_mode"] = contract.unavailable(
             "the stop the machine is in was not readable yet (a cut pane; the next contact "
-            "retries), and `last_stop` is the one before it"))
+            "retries), and `last_stop` is the one before it")
     else:
-        mode = str(STATE.last_stop.get("where", {}).get("mode", ""))
-        paging = STATE.last_stop.get("paging")
-        if mode == dcons.REAL_MODE:
-            facts["cpu_mode"] = "real"
-        elif mode.startswith("Pr") and paging is not None:
-            facts["cpu_mode"] = "paged" if paging else "protected"
-        else:
-            facts.update(cpu_mode=None, cpu_mode_why=(
-                f"the pane named the mode {mode!r} and "
-                f"{'no PAGE/NOPG mark' if paging is None else 'a paging mark'}, which does "
-                f"not place it as real, protected or paged"))
+        facts["cpu_mode"] = cpu_mode_of(str(STATE.last_stop.get("where", {}).get("mode", "")),
+                                        STATE.last_stop.get("paging"))
     families = {"breakpoints": 0, "watches": 0}
     for decl in (STATE.store.declarations() if STATE.store is not None else []):
         families["watches" if decl.kind == "watch" else "breakpoints"] += 1
@@ -336,10 +342,10 @@ def live() -> ds.Session:
     if STATE.session is not None and not STATE.session.alive():
         # WHAT IS BEING BURIED IS SAID IN THE REFUSAL, and it has to be said HERE
         # because `st.reply` cannot: once the global is cleared there is nothing left to
-        # ask, so `session` comes back null. Every reply carries `altered`, the INVALID
-        # ones too (the server's docstring), and a caller who wrote to a machine that then
-        # hit its bound would otherwise get an INVALID with no trace that anything had
-        # been forced.
+        # ask, so `session` comes back as the no-session block. Every reply carries
+        # `altered`, the INVALID ones too (the server's docstring), and a caller who wrote
+        # to a machine that then hit its bound would otherwise get an INVALID with no trace
+        # that anything had been forced.
         if STATE.session.altered:
             buried = (" The session that has gone HAD been written to, so anything "
                       "measured on it was a measurement of a forced state.")

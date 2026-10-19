@@ -81,7 +81,8 @@ class RunningGuest:
     state_load = state_save
 
     def state_list(self) -> dict[str, object]:
-        return {"state_dir": "/x/save", "states": [], "working_slot": None}
+        return {"state_dir": "/x/save", "states": [],
+                "working_slot": {"available": False, "why": "no working slot"}}
 
     def snapshot(self, dest: Path | None = None, seconds: float = 10.0,
                  progress: object = None) -> dict[str, object]:

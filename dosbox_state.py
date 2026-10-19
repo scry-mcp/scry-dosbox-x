@@ -35,6 +35,12 @@ import dosbox_declarations as dec
 import dosbox_session as ds
 import dosbox_symbols as sym
 
+#: `last_stop` before the session's first stop, and the stop the machine is in while its survey
+#: is not readable yet (a cut pane: the record still holds the stop before it).
+NO_STOP_YET_WHY = "this session has not stopped yet"
+UNREAD_STOP_WHY = ("the stop the machine is in was not readable yet (a cut pane; the next "
+                   "contact retries)")
+
 # ROWS OF ONE TABLE A REPLY SHOWS: a batch with `summaries` shows this many of
 # its compact rows and names the files that hold every one.
 ROWS_SHOWN = 24
@@ -222,13 +228,25 @@ class State:
             return None
         return stop
 
-    def stop_named(self, session: ds.Session) -> tuple[dict[str, Any] | None, str]:
+    def dated(self) -> dict[str, Any]:
+        """`as_of()` as a reply carries it: unavailable before the session's first stop."""
+        stop = self.as_of()
+        return stop if stop is not None else contract.unavailable(NO_STOP_YET_WHY)
+
+    def current_or_why(self, session: ds.Session) -> dict[str, Any]:
+        """`as_of_current()` as a reply carries it: unavailable when the stop the machine is
+        in was not readable yet."""
+        stop = self.as_of_current(session)
+        return stop if stop is not None else contract.unavailable(UNREAD_STOP_WHY)
+
+    def stop_named(self, session: ds.Session) -> tuple[dict[str, Any], str]:
         """The stop the machine is in, for a reply that names it: the current record and
         the words for its address and attribution, or the honest gap when it could not be
         read."""
         stop = self.as_of_current(session)
         if stop is None:
-            return None, ", its position not readable yet (a cut pane; the next contact retries)"
+            return (contract.unavailable(UNREAD_STOP_WHY),
+                    ", its position not readable yet (a cut pane; the next contact retries)")
         who = stop.get("attribution") or {}
         by = f" ({who['ref']})" if who.get("attributed") else ""
         return stop, f" at {stop['at']}{by}"
@@ -388,6 +406,9 @@ def reply(status: str = "ok", **fields: Any) -> dict[str, Any]:
     spelling (`reason`) is a programmer's error here and never a reply."""
     out: dict[str, Any] = {"status": status}
     out.update(fields)
+    # A NOTE APPEARS ONLY WHEN SOMETHING IS SAID: a body that had nothing to say passes None.
+    if out.get("note", "") is None:
+        del out["note"]
     if STATE.applied_last and "applied_on_stop" not in out:
         out["applied_on_stop"] = dict(STATE.applied_last)
     STATE.applied_last.clear()
@@ -400,9 +421,14 @@ def reply(status: str = "ok", **fields: Any) -> dict[str, Any]:
     return contract.check_envelope(out)
 
 
-def session_block() -> dict[str, Any] | None:
-    """The `session` block every reply closes with, read off the session as it is now."""
-    return STATE.session.state() if STATE.session is not None else None
+#: The `session` block of a reply given with no session: nothing runs, nothing was written.
+NO_SESSION_BLOCK: dict[str, Any] = {"alive": False, "running": False, "altered": False}
+
+
+def session_block() -> dict[str, Any]:
+    """The `session` block every reply closes with, read off the session as it is now, and
+    the same three keys saying nothing runs when there is none."""
+    return STATE.session.state() if STATE.session is not None else dict(NO_SESSION_BLOCK)
 
 
 def extend(built: dict[str, Any], **fields: Any) -> dict[str, Any]:

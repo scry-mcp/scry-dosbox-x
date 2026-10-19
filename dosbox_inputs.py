@@ -23,7 +23,7 @@ from dataclasses import dataclass
 from typing import Any, cast
 
 from scry_core import reply_contract as contract
-from scry_core.reply_contract import Code
+from scry_core.reply_contract import Code, unavailable
 
 import dosbox_launch as dlaunch
 import dosbox_logs as dlogs
@@ -506,7 +506,8 @@ def _target(report: Report, x: int, y: int, units: str) -> tuple[int, int]:
 
 def _pointer(report: Report) -> dict[str, Any]:
     size = report.units()
-    screen = None if size is None else {
+    screen = unavailable("an unmapped mode: the screen's size in its own units is not known") \
+        if size is None else {
         "x": to_screen(report.x, size[0], report.max_x),
         "y": to_screen(report.y, size[1], report.max_y),
         "width": size[0], "height": size[1]}
@@ -586,6 +587,8 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
             # range (INT 33h AX=07h/08h) clamps. Said, never rounded away.
             fields["asked"] = {"x": target[0], "y": target[1]}
         return fields
+    # THE ARGUMENTS ECHOED ARE THOSE GIVEN: a move names its point, a press its button.
+    asked = {**({"x": x, "y": y} if x is not None and y is not None else {}), "units": units,
+             **({"button": button, "action": action} if button is not None else {})}
     return _post_and_verify(session, "mouse event", post, expect, seconds, progress=progress,
-                            x=x, y=y, units=units, button=button,
-                            action=action if button is not None else None)
+                            **asked)

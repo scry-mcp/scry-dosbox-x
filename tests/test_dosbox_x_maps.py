@@ -182,7 +182,7 @@ def test_a_target_names_the_stop_its_identification_was_read_at(
     cast(Any, s).stop_count = 99                              # a stop with no record of its own
     monkeypatch.setattr(s, "stop_survey", cut)
     _ok(server.map_find())
-    assert _ok(server.send_mouse(target="prompt"))["identified_at_stop"] is None
+    assert _ok(server.send_mouse(target="prompt"))["identified_at_stop"]["available"] is False
 
 
 @pytest.mark.parametrize(("mode", "said"), [

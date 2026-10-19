@@ -364,7 +364,7 @@ def comment_list(session: ds.Session) -> dict[str, Any]:
     rows = [_row(d, p) for d, p in _placed_comments(places, store)]
     shown, truncated = _shown(rows)
     running: dict[str, Any] = ({} if places.stopped else
-                               {"running": True, "last_stop": STATE.as_of()})
+                               {"running": True, "last_stop": STATE.dated()})
     return st.reply(comments=shown, comments_total=len(rows), truncated=truncated,
                     persistent=True, path=str(store.path), **running)
 
@@ -467,7 +467,7 @@ def comment_save(session: ds.Session, dest: str) -> dict[str, Any]:
     held = store.comments()
     text = cf.render([cf.Row(d.ref, "", d.created_at or "", d.text) for d in held])
     mine = {_own_ref(d) for d in held}
-    dropped = [{"ref": r.ref, "cpu": None} for r in before or []
+    dropped = [{"ref": r.ref} for r in before or []
                if _canonical_file_ref(r.ref) not in mine]
     fresh.replace(path, text.encode("utf-8"), "dest:", new_mode=NEW_FILE_MODE)
     shown, truncated = _shown(dropped)

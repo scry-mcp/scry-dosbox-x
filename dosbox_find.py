@@ -29,6 +29,8 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from scry_core import reply_contract as contract
+
 import dosbox_console as dcons
 import dosbox_dump as dumping
 import dosbox_session as ds
@@ -337,7 +339,7 @@ def scan_filter(session: ds.Session, operator: str, value: int | None,
 
     `iterations` is the debugger's own count, printed on every filter but the closing one,
     whose line carries none: the server keeps the last one it read (`STATE.scan_iterations`)
-    and answers it plus one there, or `null` with why when no count it can stand behind is
+    and answers it plus one there, or unavailable with why when no count it can stand behind is
     held (the scan was opened, filtered or ended through `debug`, or the debugger said none
     was open)."""
     check_filter(operator, value, limit)
@@ -355,12 +357,11 @@ def scan_filter(session: ds.Session, operator: str, value: int | None,
         STATE.scan_cell_bytes = None
         closing: dict[str, Any] = {
             "operator": operator, "value": value, "survivors": 0,
-            "iterations": None if held is None else held + 1, "closed": True,
-            "hits": [], "hits_total": 0, "truncated": False}
-        if held is None:
-            closing["iterations_why"] = (
+            "iterations": contract.unavailable(
                 "the debugger's closing line carries no count, and this server holds none it "
                 "can stand behind: the scan was opened, filtered or ended through `debug`")
+            if held is None else held + 1, "closed": True,
+            "hits": [], "hits_total": 0, "truncated": False}
         return closing
     summary = SCAN_MATCHES.search(last)
     if summary is None:

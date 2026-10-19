@@ -545,9 +545,27 @@ def test_protected_mode_without_paging_reads_the_tables_and_not_the_pages(
 def test_an_unreadable_cpu_listing_reads_no_table_and_says_the_mode_is_unknown(
         tmp_path: Path) -> None:
     r = mapped_with(Edited("dos-djgpp32", tmp_path / "x.log", "CPU", "cpl=3", "cpl=?"))
-    assert r["cpu_mode"] is None and "cpu" not in r and "gdt" not in r
+    assert r["cpu_mode"]["available"] is False and "cpu" not in r and "gdt" not in r
     assert r["_asked"][-1] == "CPU"
     assert "`cpu` is absent" in r["coverage_note"] and "mode is unknown" in r["coverage_note"]
+    assert r["summary"].startswith("machine_map (mode unread): "), r["summary"]
+
+
+def test_an_unknown_mode_omits_no_table_it_cannot_say_the_machine_has(tmp_path: Path) -> None:
+    """An unknown mode has no descriptor table to leave out, as real mode has none."""
+    install()
+    dstate.STATE.session = cast(ds.Session, CpuUnknown("dos-djgpp32", tmp_path / "x.log",
+                                                       tmp_path))
+    r = cast(dict[str, Any], server.machine_map(sections=["mcbs"]))
+    assert r["status"] == "ok" and not {"gdt", "ldt"} & set(r.get("omitted", [])), r
+
+
+def test_without_a_logfile_an_unknown_mode_reads_no_table_and_says_so(tmp_path: Path) -> None:
+    """A protected pane that painted no PAGE/NOPG mark leaves the mode unknown: the vectors are
+    answered with no holder, never a crash on the unknown mode."""
+    _, r = _vectors_with_no_logfile(tmp_path, None)
+    assert r["status"] == "ok" and r["cpu_mode"]["available"] is False, r
+    assert "no vector has a holder:" in r["coverage_note"], r["coverage_note"]
 
 
 def test_real_mode_says_why_each_table_is_absent(tmp_path: Path) -> None:
@@ -795,7 +813,7 @@ def test_no_file_after_intvec_is_refused(tmp_path: Path) -> None:
 @pytest.mark.parametrize("number", [256, -1])
 def test_a_number_outside_the_table_is_refused_before_the_machine(number: int) -> None:
     r = cast(dict[str, Any], server.interrupt_vectors(number=number))
-    assert r["status"] == "INVALID" and r["code"] == "bad_argument" and r["session"] is None
+    assert r["status"] == "INVALID" and r["code"] == "bad_argument" and not r["session"]["alive"]
 
 
 def test_perform_checks_the_vector_number_before_any_step_runs(tmp_path: Path) -> None:
@@ -1059,16 +1077,22 @@ def test_protected_mode_without_paging_places_a_handler_at_its_linear_address(
     assert rows[0x08]["linear"] == "000CFFF0" and rows[0x08]["mcbs"]["filename"] == "CWSDPMI"
 
 
-@pytest.mark.parametrize("paging", [False, True], ids=["protected", "paged"])
-def test_without_a_logfile_in_protected_mode_the_note_says_no_linear_and_why(
-        tmp_path: Path, paging: bool) -> None:
+def _vectors_with_no_logfile(tmp_path: Path, paging: bool | None) -> tuple[Any, dict[str, Any]]:
+    """`interrupt_vectors(0x08)` at a Pr32 stop of a session started with no logfile, its pane's
+    PAGE/NOPG mark `paging` (None: the pane painted none)."""
     s = IntvecBench("dos-djgpp32", None, tmp_path)
     s.paging = paging  # type: ignore[attr-defined]
     install()
     dstate.STATE.session = cast(ds.Session, s)
     dstate.STATE.remember_stop(cast(ds.Session, s), {"cs": "00A7", "eip": "00001234",
                                                      "mode": "Pr32"}, {}, [], {"attributed": False})
-    r = cast(dict[str, Any], server.interrupt_vectors(number=0x08))
+    return s, cast(dict[str, Any], server.interrupt_vectors(number=0x08))
+
+
+@pytest.mark.parametrize("paging", [False, True], ids=["protected", "paged"])
+def test_without_a_logfile_in_protected_mode_the_note_says_no_linear_and_why(
+        tmp_path: Path, paging: bool) -> None:
+    s, r = _vectors_with_no_logfile(tmp_path, paging)
     assert r["status"] == "ok" and r["cpu_mode"] == ("paged" if paging else "protected"), r
     assert set(r["vectors"][0]) == {"number", "addr"}
     note = r["coverage_note"]

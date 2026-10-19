@@ -166,12 +166,13 @@ caveat, decided on purpose: the first contact after a stop applies the declarati
 while the guest ran, so a reader can be the call that arms a breakpoint; that write belongs
 to the declaring call, which said `pending`, and the reader's reply says `applied_on_stop`.
 
-**The `session` block closes every reply**, `null` when there is no session: `pid` (the
+**The `session` block closes every reply**, `{alive: false, running: false, altered: false}`
+when there is no session, and with one: `pid` (the
 emulator's, to read instead of hunting it), `alive`, `running` (the guest runs, off the session's
 own flag, with no console round trip), `altered`, `conf` and `conf_digest` (the
 config the session started from, and a digest of its content at start), `conf_changed_on_disk`
-(`true` when that file changed since, `false` when it did not or is gone, `null` when it could
-not be read), `watched` (started to be looked at, so a window was placed), `seconds_bound` and
+(`true` when that file changed since, `false` when it did not or is gone, unavailable with why
+when it could not be read), `watched` (started to be looked at, so a window was placed), `seconds_bound` and
 `seconds_elapsed`, `terminal_bytes_dropped` (nonzero: a screen delta had a hole in it; it
 counts the emulator's terminal, never the guest's E9 stream, which is read off the log file),
 `drain_alive` and `drain_ended` (whether the terminal reader still runs, and why it stopped:
@@ -653,10 +654,10 @@ retrace.** Each is the debugger's `VRT` (run, then stop at the next retrace), se
 and heard by the prompt the way `run_to` hears its stop, so a frame costs the retrace and one
 read of the terminal, never a settle; the last comes back with the full stop reply. A DOS
 machine keeps no frame counter a server could read, so N counts retraces from wherever the call
-starts, and `frame_before` and `frame_after` are null. How far the machine went is the register
+starts, and `frame_before` and `frame_after` are unavailable, with why. How far the machine went is the register
 pane's own emulated clock, `pfi=` in milliseconds, read off the survey before the first frame and
 the stop reply's after the last (`emulated_before_s`, `emulated_after_s`); a clock that did not
-move over the run is `no_progress`. `cycles` is null with `cycles_why`: the pane's `cc=` counts cycles only on
+move over the run is `no_progress`. `cycles` is unavailable: the pane's `cc=` counts cycles only on
 the normal core, and which core runs is not something the server can read. The `verdict` is
 `ELAPSED` when the run ran its course, `OTHER_STOP` when a declared code breakpoint stopped the
 machine first (named by `attribution`), and `TIMEOUT` when the bound expired; `polls` counts the
@@ -820,8 +821,8 @@ instead of being accepted and never firing.
 pane the stop's own survey painted, which the debugger moves to CS:EIP whenever a stop lands
 outside it, or off one `D` when the pane does not hold that line whole as one instruction (it
 decodes in its own width, which is not always the segment's), with its nearest symbol, which
-in protected mode costs one `SELINFO CS` and only with a table loaded; null with
-`instruction_why` when no bytes could be read or they start no instruction), the registers,
+in protected mode costs one `SELINFO CS` and only with a table loaded; unavailable, with why,
+when no bytes could be read or they start no instruction), the registers,
 the show watches already evaluated (each with `state: "evaluated"`), an ATTRIBUTION to the declaration whose address it stopped
 at (or an honest cannot-say: the
 debugger keeps no hit flag, and a memory watch stops at the instruction that WROTE), and an
@@ -846,7 +847,7 @@ The running-guest contract, in three parts:
   `debugger_read: false`, and date the answer with `last_stop` (the last stop's `stop_seq`, `at`,
   `attribution`, `since_s`, and `clock`, the host's UTC time, to the second, at which the stop
   was recorded). Stopped, they read the debugger and say `debugger_read: true`.
-  Before any stop, `last_stop` is null and a symbol's state is `unarmable`.
+  Before any stop, `last_stop` is unavailable and a symbol's state is `unarmable`.
 - **What is asked while running is applied at the next stop.** `breakpoint_at` and a
   change-`watch_add` answer `state: pending`; `breakpoint_clear`/`watch_clear` drop the
   declaration now and queue the debugger's row (`pending_disarm`); `symbols_load` with an
@@ -860,7 +861,7 @@ The running-guest contract, in three parts:
   was pending. `status` counts what is pending.
 - **`last_stop`, wherever it helps.** `status` carries the last stop, and beside it `pc` and
   `cpu_mode` (`real`, `protected` or `paged`, from the register pane's mode word and its
-  `PAGE`/`NOPG` mark) of the stop the machine is IN, null with `cpu_mode_why` in three
+  `PAGE`/`NOPG` mark) of the stop the machine is IN, unavailable with why in three
   cases: while it runs (or is gone), since the pane is read off a stopped machine; when the
   stop it is in was not readable yet (a cut pane, and `last_stop` is then the one before it);
   and when the pane named a mode that does not place it as real, protected or paged.
@@ -946,7 +947,7 @@ the scan OPENED, not at the previous filter: `!` keeps the cells that changed si
 filter reply says `hits_total` and `truncated`: above `limit` survivors, 40 unless asked
 for up to 400, `hits` is empty and the listing is never typed (`find` keeps its highest
 400 instead), and `iterations`, which the debugger prints on every filter but the one that
-closes the scan; there the server answers its own count, or `null` with why when `debug`
+closes the scan; there the server answers its own count, or unavailable with why when `debug`
 touched the scan.
 
 **`disassemble` decodes on the host, because the debugger has no disassembly command.** Its
@@ -967,8 +968,8 @@ operand details say is DIRECT: a call or branch target (near, in the line's own 
 in the segment its pointer names) and a memory operand with no base and no index, placed under
 the segment register it is read through (an override, else DS) at its value at this stop,
 because that register is what the CPU will use; a row outside the table's span has `symbol`
-null, and one that could not be placed (a register the pane did not show, a selector with no
-descriptor) has `linear` null and says `why`. The pane is the control the decoder is tested against, line by line (address, length,
+unavailable, and one that could not be placed (a register the pane did not show, a selector
+with no descriptor) has `linear` unavailable, which says why. The pane is the control the decoder is tested against, line by line (address, length,
 bytes, mnemonic, and operand by operand the numbers and registers), and where the two differ
 only in spelling (`jc` for `jb`, the implicit operands of a string instruction, a size word, a
 loaded symbol in place of an operand) the tests record it with its opcode. Where the pane is
@@ -1220,8 +1221,10 @@ list that fails keeps every step before the failure compact and the failing repl
 `failed`. `ran` shows the first `ROWS_SHOWN` (24) rows and the kept step, with `steps_total`
 and `truncated`; every compact row goes to `ran_path` and every full reply to
 `replies_path`, JSON Lines in this server's own scratch directory (never the session's
-`cwd`), numbered per call, both or neither. `stops` is the server's count of the stops it
-numbered during the call: the range (`stop_seq_first`, `stop_seq_last`), how many the replies
+`cwd`), numbered per call, both or neither: a scratch that refuses them makes both paths
+unavailable with its reason, and the account beside them stands. `stops` is the server's
+count of the stops it numbered during the call: the range (`stop_seq_first`, `stop_seq_last`,
+unavailable when none was numbered), how many the replies
 `surveyed`, a count per attribution in `by_how` (`unattributed` for a stop no declaration
 accounts for), and `unaccounted`, the stops numbered that no reply surveyed. `drive` takes
 the same switch for its act. The reason is size: a run of stops each carrying its registers,
@@ -1283,8 +1286,8 @@ What the export keeps is what moved the machine and what was checked:
 `perform` and `drive` are recorded as their steps, and the steps of a `start`'s `plan` after the
 start. A step's check is `"recorded": {<field>: <value>}` inside it, and `perform` holds the
 step's own reply to it: a mismatch is INVALID `diverged` at that step, with `field`, `recorded`
-and `got`, the list stopping there. A caller keys on `failed_at`, which a failed step and a
-diverged one both carry; the code says which (the machine differs, not the step). `held` counts
+and `got`, the list stopping there. A caller keys on `failed_at`, the index a failed step and a
+diverged one both carry (unavailable, with why, on a list no step stopped); the code says which (the machine differs, not the step). `held` counts
 the steps that matched. The document names the server's entry file (`entry`, here
 `dosbox_x_server.py`). Its `needs.states` lists the saved states it loads and does not save,
 which the runner checks against `state_list` before it plays anything; `needs.declarations` the
@@ -1473,12 +1476,12 @@ select. A layout the bytes cannot be read straight from, a logical row wider tha
 split screen or panning, is refused rather than read wrong, and so is a screen that would run past
 its window. Text rows are the character bytes as code page 437 draws them, the control bytes as
 their glyphs (`01` is `☺`) and `00` as a space, with trailing blanks dropped; the cursor is
-`[column, row]` from the start, null when hidden or off the screen. The 256-colour picture is an
+`[column, row]` from the start, unavailable when hidden or off the screen. The 256-colour picture is an
 indexed PNG whose pixels are the bytes the guest wrote and whose PLTE is the DAC, widened as
 `palette` widens it, so each pixel, doubled each way as the emulator renders 13h, equals the
 emulator's own capture of that frame; it is attached unless `attach` is false, enlarged as *Media
 files* says. A `crop` reads part of the screen in its own units: characters in a text mode (the
-rows cut to it and the cursor counted from its corner, null outside it), pixels in 256 colours.
+rows cut to it and the cursor counted from its corner, unavailable outside it), pixels in 256 colours.
 
 **In protected mode the screen is read through a data segment that covers it.** A linear
 address is only the screen if it maps to it, so the bytes are dumped through the lowest present
@@ -1623,7 +1626,7 @@ unless `overwrite`, and so are two layers holding more screens than one map can.
 **A control is named against the identification it came from.** `send_mouse(target=)` moves the
 pointer to the centre of a control of the screen the latest `map_find` matched, in the screen's
 units, and the reply says which (`target`, `screen`, `identified_at_stop`, the stop `map_find`
-read at, or null when that stop's own record could not be made). The guest has to run for the
+read at, or unavailable when that stop's own record could not be made). The guest has to run for the
 pointer to move and a running guest cannot be read, so the click acts on the screen as it was
 last identified. What the stub reports while the guest runs is held to it before anything is
 sent: a guest showing a screen of another kind or size than the matched one is `needs_call`,

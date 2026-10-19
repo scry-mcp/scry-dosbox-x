@@ -44,7 +44,7 @@ def _said(n: object, noun: str, plural: str | None = None) -> str:
 
 
 def _at(stop: Any) -> str:
-    return f"{stop['cs']}:{stop['eip']}" if isinstance(stop, dict) else "?"
+    return f"{stop['cs']}:{stop['eip']}" if isinstance(stop, dict) and "cs" in stop else "?"
 
 
 def _block(reply: dict[str, Any], key: str) -> dict[str, Any]:
@@ -78,9 +78,15 @@ def start(args: dict[str, Any], reply: dict[str, Any]) -> str:
             f"{facts.get('ready_after_s')}s{plan}")
 
 
+def _word(value: Any) -> str:
+    """A field a summary names, or "" when it is unavailable: an unavailable datum is a dict,
+    and a dict is truthy, so it would be painted as its repr."""
+    return value if isinstance(value, str) else ""
+
+
 def status(args: dict[str, Any], reply: dict[str, Any]) -> str:
     ses = _block(reply, "session")
-    if not ses:
+    if "pid" not in ses:
         return "status: no session"
     state = ("gone" if not ses.get("alive")
              else "alive, running" if ses.get("running") else "alive, stopped")
@@ -137,7 +143,7 @@ def call_stack(args: dict[str, Any], reply: dict[str, Any]) -> str:
     calls = reply.get("calls") or []
     first = calls[0] if calls and isinstance(calls[0], dict) else {}
     return (f"call_stack: {_said(len(calls), 'call')}, innermost "
-            f"{first.get('symbol') or first.get('addr', '?')}, heuristic")
+            f"{_word(first.get('symbol')) or first.get('addr', '?')}, heuristic")
 
 
 def memdump(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -265,7 +271,7 @@ def machine_map(args: dict[str, Any], reply: dict[str, Any]) -> str:
     cut = ", some sections cut (see `counts`)" if reply.get("truncated") else ""
     left = reply.get("omitted") or []
     out = f", left out: {', '.join(left)} (see `omitted`)" if left else ""
-    return (f"machine_map ({reply.get('cpu_mode') or 'mode unread'}): "
+    return (f"machine_map ({_word(reply.get('cpu_mode')) or 'mode unread'}): "
             f"{shape or 'no list section with rows'}{cut}{out}")
 
 
@@ -382,7 +388,7 @@ def send_keys(args: dict[str, Any], reply: dict[str, Any]) -> str:
 def send_mouse(args: dict[str, Any], reply: dict[str, Any]) -> str:
     pointer = _block(reply, "pointer")
     screen, mouse = pointer.get("screen"), pointer.get("mouse")
-    at = (f"{screen['x']},{screen['y']}" if isinstance(screen, dict) else
+    at = (f"{screen['x']},{screen['y']}" if isinstance(screen, dict) and "x" in screen else
           f"{mouse['x']},{mouse['y']} (driver)" if isinstance(mouse, dict) else "unread")
     arrived = "" if reply.get("arrived", True) else ", NOT where asked"
     return (f"send_mouse: pointer at {at}{arrived}; "
@@ -462,7 +468,7 @@ def capture_frame(args: dict[str, Any], reply: dict[str, Any]) -> str:
 # ---------------------------------------------------------------------- the sequences
 
 def perform_export(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    cut = f", cut at call {reply['cut']['call']}" if reply.get("cut") else ""
+    cut = f", cut at call {reply['cut']['call']}" if "call" in reply.get("cut", {}) else ""
     return (f"perform_export: {_said(reply['steps'], 'step')}, {_said(reply['checks'], 'check')}, "
             f"{reply['dropped_total']} dropped{cut} to {reply['path']}")
 

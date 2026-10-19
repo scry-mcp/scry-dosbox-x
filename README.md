@@ -200,7 +200,7 @@ drive(act=[{"op": "send_keys", "keys": ["a"], "expect": "key_cue_a"},
       expect="cue .* set", seconds=5, pattern="cue|PERF", limit=20)
    -> {"status": "ok",
        "act": {"ran": [{"op": "send_keys", "reply": {...}}, {"op": "send_keys", "reply": {...}}],
-               "completed": 2, "failed": null},
+               "completed": 2, "failed_at": {"available": false, "why": "no step failed"}},
        "verify": {"checked": true, "seen": true, "verdict": "TARGET", "line": "...",
                   "seen_before_waiting": false, "lines_before": 5, "waited_s": 0.4,
                   "lines_total": 1},

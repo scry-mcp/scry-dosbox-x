@@ -21,6 +21,8 @@ import tempfile
 from pathlib import Path
 from typing import Any, NamedTuple
 
+from scry_core.reply_contract import unavailable
+
 import dosbox_console as dcons
 import dosbox_disasm as disasm
 import dosbox_dump as dumping
@@ -235,24 +237,37 @@ def resolve(segs: Segments, seg: int, insns: list[disasm.Insn]) -> list[dict[str
         for m in insn.memory:
             held = segs.registers.get(m.segment_register)
             row = {"line": i, "operand": m.operand, "offset": f"{m.offset:#x}",
-                   "kind": "memory", "segment": held, "register": m.segment_register}
+                   "kind": "memory", "register": m.segment_register}
             if held is None:
-                rows.append({**_named(row, None, span), "why": f"the register pane showed no "
-                             f"{m.segment_register}, so the operand has no segment"})
+                gone = f"the register pane showed no {m.segment_register}, so the operand has " \
+                       f"no segment"
+                rows.append(_named({**row, "segment": unavailable(gone)}, None, span, gone))
                 continue
+            row["segment"] = held
             rows.append(_placed(segs, span, row, int(held, 16), m.offset))
     return rows
 
 
-def _named(row: dict[str, Any], linear: int | None,
-           span: tuple[int, int] | None) -> dict[str, Any]:
-    """A row's `linear`, `symbol` and `delta`: null outside the loaded table's span, where the
-    nearest symbol below names memory the table does not describe."""
+#: Why a place has no symbol: no table is loaded, or it lies outside the table's span, where
+#: the nearest symbol below names memory the table does not describe.
+NO_TABLE_WHY = "no symbol table is loaded"
+OUTSIDE_SPAN_WHY = "outside the loaded table's span"
+
+
+def _named(row: dict[str, Any], linear: int | None, span: tuple[int, int] | None,
+           unplaced: str = "its segment's base could not be read") -> dict[str, Any]:
+    """A row's `linear`, `symbol` and `delta`, each unavailable with its reason where it does
+    not apply: no linear address when `unplaced` says why, no symbol with no table loaded or
+    outside its span."""
+    if linear is None:
+        gone = unavailable(unplaced)
+        row.update(linear=gone, symbol=gone, delta=gone)
+        return row
     near = (placement.nearest_symbol(linear)
-            if linear is not None and span is not None and span[0] <= linear <= span[1]
-            else None)
-    row.update(linear=None if linear is None else f"{linear:08X}",
-               symbol=near["name"] if near else None, delta=near["delta"] if near else None)
+            if span is not None and span[0] <= linear <= span[1] else None)
+    why = unavailable(NO_TABLE_WHY if span is None else OUTSIDE_SPAN_WHY)
+    row.update(linear=f"{linear:08X}", symbol=near["name"] if near else why,
+               delta=near["delta"] if near else why)
     return row
 
 
@@ -261,7 +276,7 @@ def _placed(segs: Segments, span: tuple[int, int] | None, row: dict[str, Any], s
     try:
         return _named(row, (segs.base(seg) + offset) & 0xFFFFFFFF, span)
     except ds.Invalid as e:
-        return {**_named(row, None, span), "why": str(e)}
+        return _named(row, None, span, str(e))
 
 
 def disassemble(session: ds.Session, ref: str, length: int) -> dict[str, Any]:
@@ -285,7 +300,7 @@ def disassemble(session: ds.Session, ref: str, length: int) -> dict[str, Any]:
 def stop_instruction(session: ds.Session, where: dict[str, str], registers: dict[str, str],
                      screen: str) -> dict[str, Any]:
     """The instruction a stop is on, for its reply: `instruction` with its bytes, text, flow and
-    nearest symbol, or `instruction` null and `instruction_why`. `screen` is that stop's own
+    nearest symbol, or `instruction` unavailable with its `why`. `screen` is that stop's own
     survey.
 
     The bytes come off the survey the stop already read when they can: the debugger moves its
@@ -309,7 +324,7 @@ def stop_instruction(session: ds.Session, where: dict[str, str], registers: dict
         try:
             raw = session.read_bytes(cs, eip, n, mode=segs.mode)
         except ds.Invalid as e:
-            return {"instruction": None, "instruction_why": f"no bytes at {at}: {e}"}
+            return {"instruction": unavailable(f"no bytes at {at}: {e}")}
         first = disasm.decode(raw, eip, bits)[:1]
         if not first or first[0].flow == disasm.UNKNOWN:
             return _no_instruction(at, raw)
@@ -320,25 +335,28 @@ def stop_instruction(session: ds.Session, where: dict[str, str], registers: dict
 
 
 def _no_instruction(at: str, data: bytes) -> dict[str, Any]:
-    return {"instruction": None, "instruction_why": (
+    return {"instruction": unavailable(
         f"the bytes at {at} ({data[:1].hex().upper()}...) start no instruction")}
 
 
 def _stop_symbol(segs: Segments, cs: int, eip: int) -> dict[str, Any]:
-    """`symbol` and `delta` of the stop's address, null with no table or outside its span; in
-    protected mode CS's base costs one `SELINFO CS`, asked only with a table loaded. A table
-    that cannot place its symbols names nothing here: the stop is still a stop."""
+    """`symbol` and `delta` of the stop's address, unavailable with no table or outside its
+    span; in protected mode CS's base costs one `SELINFO CS`, asked only with a table loaded.
+    A table that cannot place its symbols names nothing here: the stop is still a stop."""
     try:
         span = placement.symbol_span()
     except sym.BadSymbolText:
         span = None
     if span is None:
-        return {"symbol": None, "delta": None}
+        none = unavailable(NO_TABLE_WHY)
+        return {"symbol": none, "delta": none}
     try:
         linear: int | None = (segs.base(cs) + eip) & 0xFFFFFFFF
-    except ds.Invalid:
-        linear = None
-    named = _named({}, linear, span)
+    except ds.Invalid as e:
+        linear, unplaced = None, f"CS's base could not be read: {e}"
+    else:
+        unplaced = ""
+    named = _named({}, linear, span, unplaced or "unplaced")
     return {"symbol": named["symbol"], "delta": named["delta"]}
 
 
@@ -419,19 +437,22 @@ class _Walk:
         """A row at `seg:off`; for a return address, named by the routine its call is in (a
         call that ends a routine returns to the next one's first byte), `delta` the return's
         distance from that routine."""
-        out: dict[str, Any] = {"addr": f"{seg:04X}:{off:08X}", "via": via,
-                               "call": None if call is None else call.text,
-                               "bp": None if frame is None else f"{frame:0{self.slot * 2}X}"}
+        out: dict[str, Any] = {
+            "addr": f"{seg:04X}:{off:08X}", "via": via,
+            "call": unavailable("the stop itself: no call leads to it") if call is None
+            else call.text,
+            "bp": unavailable("no frame was read beside it") if frame is None
+            else f"{frame:0{self.slot * 2}X}"}
         try:
             base = self.segs.base(seg)
-        except ds.Invalid:
-            return _named(out, None, self.span)
+        except ds.Invalid as e:
+            return _named(out, None, self.span, f"the segment's base could not be read: {e}")
         linear = (base + off) & 0xFFFFFFFF
         if call is None:
             return _named(out, linear, self.span)
         site = _named({}, (base + call.offset) & 0xFFFFFFFF, self.span)
         out.update(linear=f"{linear:08X}", symbol=site["symbol"],
-                   delta=None if site["symbol"] is None else
+                   delta=site["delta"] if isinstance(site["symbol"], dict) else
                    site["delta"] + (off - call.offset))
         return out
 
@@ -477,7 +498,7 @@ class _Walk:
         return None
 
     def outside(self, row: dict[str, Any]) -> bool:
-        return self.span is not None and row["linear"] is not None \
+        return self.span is not None and isinstance(row["linear"], str) \
             and not self.span[0] <= int(row["linear"], 16) <= self.span[1]
 
     def chain(self, calls: list[dict[str, Any]]) -> str:

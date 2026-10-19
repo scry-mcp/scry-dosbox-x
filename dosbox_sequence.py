@@ -15,7 +15,6 @@ look.
 from __future__ import annotations
 
 import inspect
-import json
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -24,6 +23,7 @@ from typing import Any, cast
 from scry_core import progress as mprogress
 from scry_core import recording
 from scry_core import reply_contract as contract
+from scry_core import sequence_account as account
 
 import dosbox_arming as arming
 import dosbox_checks as checks
@@ -160,6 +160,16 @@ def _wrong_type(fn: Any, args: dict[str, Any]) -> str | None:
     return None
 
 
+def refused_text(refused: list[dict[str, Any]]) -> str:
+    """The message of a list refused before anything ran: every refusal, each by its step and
+    its op (a step that is no mapping has none to name, and its own message quotes it)."""
+    def one(e: dict[str, Any]) -> str:
+        op = f" ({e['op']!r})" if isinstance(e["op"], str) else ""
+        return f"step {e['step']}{op} {e['message']}"
+    return (f"{len(refused)} step(s) refused before anything ran: "
+            + "; ".join(one(e) for e in refused) + ". Nothing was run")
+
+
 def preflight(steps: list[dict[str, Any]], ops: Ops) -> list[dict[str, Any]]:
     """EVERY STEP IS CHECKED BEFORE ANY STEP RUNS, its op, its argument NAMES and its argument
     VALUES, and every refusal is collected rather than the first one returned: a list whose
@@ -172,7 +182,9 @@ def preflight(steps: list[dict[str, Any]], ops: Ops) -> list[dict[str, Any]]:
     for i, step in enumerate(steps):
         op = str(step.get("op")) if isinstance(step, dict) else None
         if op is None or op not in ops:
-            refused.append({"step": i, "op": op, "code": "bad_argument",
+            refused.append({"step": i,
+                            "op": contract.or_unavailable(op, "the step is no mapping"),
+                            "code": "bad_argument",
                             "message": f"is not a step ({step!r}): the vocabulary is the "
                                        f"server's own operation names, {sorted(ops)}"})
             continue
@@ -215,27 +227,10 @@ def preflight(steps: list[dict[str, Any]], ops: Ops) -> list[dict[str, Any]]:
 
 # ------------------------------------------------------------ a batch with `summaries`
 
-#: What a compact row keeps of a STOP besides its summary line: its number and what stopped
-#: it, spelled as the full reply spells them.
-_STOP_KEPT = ("stop_seq", "attribution")
-
-
 def validate_summaries(summaries: object) -> None:
     """`summaries` is a yes or a no, in the one sentence both batch tools use."""
     if not isinstance(summaries, bool):
         raise ds.Invalid("bad_argument", f"summaries is true or false; got {summaries!r}")
-
-
-def _is_stop(reply: dict[str, Any]) -> bool:
-    """Whether `reply` is a stop's: every one carries the number `stop_reply` gave it."""
-    return isinstance(reply.get("stop_seq"), int)
-
-
-def _stops_in(reply: dict[str, Any]) -> list[dict[str, Any]]:
-    """Every stop `reply` surveys: its own, and the one the guest reached on its own that
-    this contact found and recorded (`stopped_on_its_own`), which carries its number too."""
-    found = reply.get("stopped_on_its_own")
-    return [r for r in (reply, found) if isinstance(r, dict) and _is_stop(r)]
 
 
 def _how(stop: dict[str, Any]) -> str:
@@ -248,96 +243,28 @@ def _how(stop: dict[str, Any]) -> str:
     return "unattributed"
 
 
-def _brief(entry: dict[str, Any], step: int) -> dict[str, Any]:
-    """A step's COMPACT ROW: its index in the list, its op, and its reply cut to the line the
-    client paints and the verdict (`summary`, every tool's first field; `status`). A STOP
-    keeps what makes it one, `_STOP_KEPT`; its registers, watches and log stay in the full
-    reply."""
-    reply = entry["reply"]
-    cut = {"summary": reply.get("summary"), "status": reply.get("status")}
-    if _is_stop(reply):
-        cut.update({k: reply.get(k) for k in _STOP_KEPT})
-    if "stopped_on_its_own" in reply:
-        cut["stopped_on_its_own"] = reply["stopped_on_its_own"]
-    return {"step": step, "op": entry["op"], "reply": cut}
+#: THIS SERVER'S HALF OF THE ACCOUNT (`scry_core.sequence_account`): a stop's compact row keeps
+#: its number and what stopped it, spelled as the full reply spells them; its registers,
+#: watches and log stay in the full reply.
+SHAPE = account.Shape(kept=("stop_seq", "attribution"), how=_how)
 
 
-def _stops(replies: list[dict[str, Any]], first: int, last: int) -> dict[str, Any]:
-    """THE MACHINE'S COUNT OF THE STOPS it numbered from `first` to `last`, so no reader has to
-    assemble one: the range, the stops the replies surveyed in it, a count per `_how`, and
-    `unaccounted`, the stops numbered in the range that no reply surveyed (a stop a refusing
-    reader took is real, so it is reported and never refused). No stop numbered is `null` for
-    both ends."""
-    seen: dict[int, str] = {}
-    for reply in replies:
-        for stop in _stops_in(reply):
-            seq = int(stop["stop_seq"])
-            if first <= seq <= last:
-                seen[seq] = _how(stop)
-    by_how: dict[str, int] = {}
-    for how in seen.values():
-        by_how[how] = by_how.get(how, 0) + 1
-    numbered = last >= first
-    return {"stop_seq_first": first if numbered else None,
-            "stop_seq_last": last if numbered else None, "surveyed": len(seen),
-            "by_how": by_how, "unaccounted": last - first + 1 - len(seen) if numbered else 0}
-
-
-def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> str:
-    """`rows` as JSON Lines at `path`, one a line, ASCII by JSON's own escapes."""
-    path.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="ascii")
-    return str(path)
-
-
-def _files(rows: list[dict[str, Any]], replies: list[dict[str, Any]]) -> dict[str, Any]:
-    """The two files of a batch with summaries, numbered per call. They are written after every
-    step ran, so the machine has already moved: a scratch that refuses them costs the files,
-    said in `files_why`, and never the account beside them."""
-    try:
-        scratch = STATE.batch_scratch()
-    except OSError as e:
-        return {"ran_path": None, "replies_path": None, "files_why": str(e)}
+def _batch_stem() -> Path:
+    """Where a batch's two files go: this server's own scratch, numbered per call, never the
+    caller's `cwd`, which is the project."""
+    scratch = STATE.batch_scratch()
     STATE.batches += 1
-    stem = scratch / f"batch-{STATE.batches}"
-    pair = (stem.with_suffix(".ran.jsonl"), stem.with_suffix(".replies.jsonl"))
-    try:
-        return {"ran_path": _write_jsonl(pair[0], rows),
-                "replies_path": _write_jsonl(pair[1], replies)}
-    except OSError as e:
-        # THE PAIR OR NEITHER: a file the reply does not name is one nobody finds.
-        for path in pair:
-            path.unlink(missing_ok=True)
-        return {"ran_path": None, "replies_path": None, "files_why": str(e)}
+    return scratch / f"batch-{STATE.batches}"
 
 
 def account_of(ran: list[dict[str, Any]], summaries: bool, keep_last: bool, since: int,
                also: list[dict[str, Any]] | None = None) -> dict[str, Any]:
-    """`ran` as the reply carries it, and with `summaries` what the machine counted. Without
-    `summaries`, `ran` as it is, each step's full reply.
-
-    With `summaries`, every step is cut to its compact row (`_brief`) except, with
-    `keep_last`, the last one that ran, kept whole. A list that failed at a step keeps that
-    step whole under `failed`. `ran` shows the FIRST `ROWS_SHOWN` compact
-    rows and the kept step, with `steps_total` and `truncated`; every compact row goes to
-    `ran_path` and every full reply to `replies_path`. `stops` counts the stops the session
-    numbered since `since`, read off the steps' replies and `also`'s (the step that failed,
-    the stop the tail waited for). Why a batch needs it is REFERENCE's, Sequences in one
-    call."""
-    if not summaries:
-        return {"ran": ran}
-    rows = [_brief(r, i) for i, r in enumerate(ran)]
-    briefed = len(ran) - 1 if keep_last and ran else len(ran)
-    shown = rows[:min(briefed, st.ROWS_SHOWN)] + [{"step": i, **ran[i]}
-                                                   for i in range(briefed, len(ran))]
-    replies = [r["reply"] for r in ran] + (also or [])
-    # THE RANGE ENDS AT THE NEWEST STOP ANY REPLY CARRIES, or at the record's if that is newer:
-    # a session buried mid-list clears the record, and a range read off it alone would then
-    # hide the stops the rows above still show.
-    last = max([int(STATE.last_stop.get("seq", 0))]
-               + [int(s["stop_seq"]) for r in replies for s in _stops_in(r)])
-    return {"ran": shown, "steps_total": len(ran), "truncated": briefed > st.ROWS_SHOWN,
-            **_files(rows, [{"step": i, **r} for i, r in enumerate(ran)]),
-            "stops": _stops(replies, since + 1, last)}
+    """`ran` as the reply carries it, and with `summaries` what the machine counted
+    (`scry_core.sequence_account.account`); why a batch needs it is REFERENCE's, Sequences in
+    one call."""
+    return account.account(ran, summaries, keep_last, since,
+                           int(STATE.last_stop.get("seq", 0)), SHAPE, _batch_stem, also,
+                           rows_shown=st.ROWS_SHOWN)
 
 
 def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
@@ -345,7 +272,7 @@ def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
               summaries: bool = False, name: str = "perform",
               prechecked: bool = False) -> dict[str, Any]:
     """Execute steps in order, STOPPING at the first failure with a full account. Returns
-    `ran` (each step and its reply), `failed` (the step that stopped it, or None),
+    `ran` (each step and its reply), `failed` (the step that stopped it, absent when none did),
     `completed`, `held` (the steps whose `recorded` answer this run matched), and the machine
     state. A step is `{"op": <name>, ...args}`. `prechecked` when the tool's pre-gate already
     judged the list whole (`dosbox_checks.steps_whole`), so it is judged once a call.
@@ -376,10 +303,7 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
         first = refused[0]
         return st.reply(status="INVALID", code="bad_argument", ran=[], completed=0,
                         failed_at=first["step"], failed=first, errors=refused,
-                        message=f"{len(refused)} step(s) refused before anything ran: "
-                                + "; ".join(f"step {e['step']} ({e['op']!r}) {e['message']}"
-                                            for e in refused)
-                                + ". Nothing was run")
+                        message=refused_text(refused))
     ran: list[dict[str, Any]] = []
     running = False
     released_last = False     # the LAST step is the one that let the machine run
@@ -422,7 +346,8 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
                                   completed=len(ran), failed_at=i, message=why)
                 # THE WAIT RAN OUT: a verdict, and the list ends here with what it completed.
                 return st.reply(**account_of(ran, summaries, keep_last=True, since=since),
-                                completed=len(ran), failed_at=None, verdict=contract.TIMEOUT,
+                                completed=len(ran), failed_at=_none_failed(),
+                                verdict=contract.TIMEOUT,
                                 note=f"{why}; it and the steps after it were not sent")
             waited = waited or wait > 0
             running = False
@@ -453,7 +378,7 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
             # built on did not happen, so it ends here with the verdict, as a wait of the
             # list's own does.
             return st.reply(**account_of(ran, summaries, keep_last=True, since=since),
-                            completed=len(ran), failed_at=None, verdict=contract.TIMEOUT,
+                            completed=len(ran), failed_at=_none_failed(), verdict=contract.TIMEOUT,
                             note=f"step {i} ({op!r}) waited for what it was to see and it did "
                                  f"not come; the steps after it were not sent")
         # A RUNNING-OK OP DOES NOT RELEASE THE MACHINE, and whether it stopped it is the
@@ -511,7 +436,7 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
         if state == "gone":
             return st.reply(status="INVALID", code="session_broken",
                             **account_of(ran, summaries, keep_last=True, since=since),
-                            completed=len(ran), failed_at=None,
+                            completed=len(ran), failed_at=_none_failed(),
                             message="the sequence ended with the machine running and the "
                                     "emulator is now GONE (its bound expired or it crashed)")
         waited = True
@@ -528,11 +453,16 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
     stopped = final.get("stopped")
     return st.reply(**account_of(ran, summaries, keep_last=True, since=since,
                                  also=[stopped] if isinstance(stopped, dict) else None),
-                    completed=len(ran), failed_at=None, **final)
+                    completed=len(ran), failed_at=_none_failed(), **final)
+
+
+def _none_failed() -> dict[str, Any]:
+    """`failed_at` of a list no step of which failed."""
+    return contract.unavailable("no step failed")
 
 
 #: What a stop's enriched reply adds to the record of it.
-_ENRICHED = ("registers", "watches", "e9", "instruction", "instruction_why")
+_ENRICHED = ("registers", "watches", "e9", "instruction")
 
 
 def _recorded_stop(session: ds.Session, recorded: dict[str, Any]) -> dict[str, Any]:
@@ -619,6 +549,12 @@ def _look(session: ds.Session, mark: int, pattern: str, limit: int) -> dict[str,
                    "lines": kept[-limit:], "pattern": pattern}}
 
 
+def _where_stopped(failed_at: object) -> str:
+    """Where a refused act stopped: at its failing step, or after its last step when every step
+    ran and the tail's wait found the emulator gone (`failed_at` unavailable)."""
+    return f"at step {failed_at}" if isinstance(failed_at, int) else "after its last step"
+
+
 def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str | None,
           seconds: float | None, pattern: str, limit: int, wait: float,
           progress: ds.Progress = ds.no_progress, summaries: bool = False) -> dict[str, Any]:
@@ -636,10 +572,9 @@ def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str 
     ran = run_steps(session, act, wait, ops, progress, summaries, name="drive",
                     prechecked=True)
     account = {k: v for k, v in ran.items() if k not in ("status", "session")}
-    account.setdefault("failed", None)     # always there, so a reader need not probe for it
     if ran.get("status") != "ok":
         return st.reply(status="INVALID", code="step_failed", act=account,
-                      message=f"the act stopped at step {ran.get('failed_at')}: "
+                      message=f"the act stopped {_where_stopped(ran.get('failed_at'))}: "
                               f"{ran.get('message')}",
                       looked=_look(session, mark, pattern, limit))
     checked: dict[str, Any] = {"checked": False,

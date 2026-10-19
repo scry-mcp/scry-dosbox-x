@@ -336,7 +336,9 @@ def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: 
     found: dict[str, Any] = {
         **kept, "instructions": executed, "addresses": len(parsed.executed),
         "unplaced": sum(1 for r in rows if "symbol" not in r),
-        "set_path": written, "symbols": coverage.symbols[:SYMBOLS_SHOWN],
+        "set_path": contract.or_unavailable(written, "the set file could not be written: "
+                                                     "`note` says why"),
+        "symbols": coverage.symbols[:SYMBOLS_SHOWN],
         "symbols_total": len(coverage.symbols),
         "symbols_truncated": len(coverage.symbols) > SYMBOLS_SHOWN}
     if notes:

@@ -25,6 +25,8 @@ import re
 from collections.abc import Callable
 from typing import Any, NamedTuple
 
+from scry_core import reply_contract as contract
+
 import dosbox_logs as dlogs
 import dosbox_placement as placement
 import dosbox_running as running
@@ -527,7 +529,7 @@ def machine_map(session: ds.Session, chosen: list[str]) -> dict[str, Any]:
     `vga` is the caller's to add. Lists are WHOLE here: cutting them is the reply's business."""
     reading = read(session, frozenset(chosen))
     found = {n: v for n, v in reading.found.items() if n in chosen}
-    return {"cpu_mode": reading.mode, **found,
+    return {"cpu_mode": contract.or_unavailable(reading.mode, NO_MODE_WHY), **found,
             "counts": {n: len(v) for n, v in found.items() if isinstance(v, list)},
             "sources": {n: v for n, v in reading.sources.items() if n in chosen},
             "coverage_note": ". ".join(reading.notes)}
@@ -633,6 +635,8 @@ def holder(address: int, found: dict[str, Any]) -> tuple[str, dict[str, Any]] | 
     return None
 
 
+#: `cpu_mode` when the `CPU` listing could not be read or placed the mode nowhere.
+NO_MODE_WHY = "the `CPU` listing was unreadable, so the mode is not known"
 NO_LOGFILE_BLOCKS = "no vector has a holder: the blocks are"
 NO_LOGFILE_TABLES = ("no vector has a holder, a `linear` or a `symbol`: the blocks and the "
                      "descriptor tables are")
@@ -653,7 +657,8 @@ def interrupt_vectors(session: ds.Session, number: int | None) -> dict[str, Any]
             f"`INTVEC` wrote a file that is not the vector table: {e.line}") from None
     tables_unread = False
     if session.launch.logfile is None:
-        mode = running.status_facts(session).get("cpu_mode")
+        facts = running.status_facts(session).get("cpu_mode")
+        mode = facts if isinstance(facts, str) else None       # unavailable: the mode unknown
         tables_unread = mode in PROTECTED_MODES
         reading = Reading(mode=mode, notes=[
             (NO_LOGFILE_TABLES if tables_unread else NO_LOGFILE_BLOCKS) + NO_LOGFILE_WHY])
@@ -665,7 +670,7 @@ def interrupt_vectors(session: ds.Session, number: int | None) -> dict[str, Any]
     elif not tables_unread:
         reading.notes.extend(_place(rows, reading))
     chosen = [r for r in rows if number is None or r["number"] == number]
-    return {"cpu_mode": reading.mode, "vectors": chosen,
+    return {"cpu_mode": contract.or_unavailable(reading.mode, NO_MODE_WHY), "vectors": chosen,
             "counts": {"vectors": len(rows),
                        "held": sum(1 for r in rows if any(s in r for s in HOLDER_SECTIONS)),
                        "named": sum(1 for r in rows if "symbol" in r)},

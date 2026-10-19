@@ -32,6 +32,7 @@ from unittest import mock
 
 import pytest
 from scry_core import media_tools, screen_map
+from scry_core import sequence_account as account
 
 import dosbox_arming as arming
 import dosbox_binary as binaries
@@ -134,7 +135,8 @@ class FakeSession:
         raise ds.Invalid("no_channel", "this DOSBox-X has no `LOADSTATE` debugger command")
 
     def state_list(self) -> dict[str, object]:
-        return {"state_dir": "/x/save", "states": [], "working_slot": None}
+        return {"state_dir": "/x/save", "states": [],
+                "working_slot": {"available": False, "why": "no working slot"}}
 
     def snapshot(self, dest: Path | None = None, seconds: float = 10.0,
                  progress: ds.Progress = ds.no_progress) -> dict[str, object]:
@@ -1094,6 +1096,11 @@ def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
     # reason the digest is carried at all.
     conf.write_text("[sdl]\nchanged\n", encoding="utf-8")
     assert ds.Session.state(fake)["conf_changed_on_disk"] is True  # type: ignore[arg-type]
+    # A conf that cannot be read is said, never left a null nobody can tell from "unchanged".
+    with mock.patch.object(dlaunch, "current_digest", side_effect=PermissionError("denied")):
+        unread = cast(dict[str, Any], ds.Session.state(fake))  # type: ignore[arg-type]
+    assert unread["conf_changed_on_disk"] == {"available": False,
+                                              "why": "the conf could not be read: denied"}
 
 
 def test_the_double_has_not_drifted_from_what_it_stands_in_for(tmp_path: Path) -> None:
@@ -3152,7 +3159,7 @@ def test_breakpoint_at_a_symbol_arms_stores_and_says_when_it_is_marked(
     got = server.breakpoint_at(ref="_uicue_apply")
     assert got["status"] == "ok" and got["armed"] is True
     assert got["entry"] == "BP 00A7:3D5E0"
-    assert got["note"] is None
+    assert "note" not in got, "nothing to say: no note"
     assert [d.ref for d in dstate.STATE.store.declarations()] == ["_uicue_apply"]   # type: ignore[union-attr]
     marked = server.breakpoint_at(ref="ATRCT_RUN")
     assert marked["armed"] is True and marked["marked"] is True
@@ -3280,6 +3287,7 @@ def test_perform_refuses_an_unknown_op(tmp_path: Path) -> None:
     shapeless = server.perform(steps=["registers"])   # not an {op: ...} object
     assert shapeless["status"] == "INVALID" and "not a" in shapeless["message"]
     assert shapeless["failed_at"] == 0, shapeless
+    assert "available" not in shapeless["message"], "a reason, never a dict's repr"
 
 
 def _guest(tmp_path: Path) -> Any:
@@ -3400,7 +3408,7 @@ def test_send_mouse_refuses_before_anything_is_sent(tmp_path: Path) -> None:
     assert vesa["status"] == "INVALID" and "units='mouse'" in vesa["message"], vesa
     assert all(cmds == [b"R"] for cmds in fake.commands_sent), fake.commands_sent
     ok = cast(dict[str, Any], server.send_mouse(x=1, y=1, units="mouse"))
-    assert ok["status"] == "ok" and ok["pointer"]["screen"] is None, ok
+    assert ok["status"] == "ok" and ok["pointer"]["screen"]["available"] is False, ok
     # THE TOP of the argument passes it and meets the driver's own range instead.
     top = cast(dict[str, Any], server.send_mouse(x=inputs.MAX_COORD, y=0, units="mouse"))
     assert "outside the driver's range" in top["message"], top
@@ -3716,7 +3724,7 @@ def test_drive_marks_acts_verifies_and_looks_from_the_mark(tmp_path: Path) -> No
         pattern="ACT", limit=10))
     assert out["status"] == "ok", out
     assert asked == [], "whether the guest runs is the session's flag, never a console command"
-    assert out["act"]["completed"] == 1 and out["act"]["failed_at"] is None, out["act"]
+    assert out["act"]["completed"] == 1 and out["act"]["failed_at"]["available"] is False
     assert out["verify"]["seen"] is True and "on=1" in out["verify"]["line"], out["verify"]
     # from the mark
     assert fake.wait_calls[-1] == (inputs.program_reaction("key_cue_a"), 5.0, 2), fake.wait_calls
@@ -3738,7 +3746,7 @@ def test_drive_marks_acts_verifies_and_looks_from_the_mark(tmp_path: Path) -> No
     assert (e9["written"], e9["lines_total"], len(e9["lines"])) == (3, 2, 1), e9
     assert e9["lines"] == [fake.after_effect[1]] and e9["pattern"] == "tick", e9
     assert out["verify"]["checked"] is False and "no `expect`" in out["verify"]["why"]
-    assert out["act"]["failed"] is None
+    assert "failed" not in out["act"], out["act"]
 
 
 def test_drive_reports_a_miss_a_failed_act_and_refuses_what_it_cannot_do(
@@ -5000,7 +5008,7 @@ def test_stop_on_a_parked_machine_never_names_a_previous_stop(
         raise ds.Invalid("host_failed", "the pane was cut")
     monkeypatch.setattr(fake, "stop_survey", cut)
     got = cast(dict[str, Any], server.stop())
-    assert got["interrupted"] is False and got["last_stop"] is None, got
+    assert got["interrupted"] is False and got["last_stop"]["available"] is False, got
     assert "not readable yet" in got["note"]
 
 
@@ -5278,7 +5286,7 @@ def test_perform_does_not_wait_for_a_stop_when_the_last_step_was_a_running_guest
 def test_a_declaration_from_a_store_that_kept_no_origin_is_listed_as_an_orphan(
         tmp_path: Path) -> None:
     """MEASURED on a real guest: a show watch from an older store sat in every stop
-    reply with `origin: null` and nothing to tell it from this session's, and the breakpoint
+    reply with no origin and nothing to tell it from this session's, and the breakpoint
     broom left it. Both families list such a row as `orphan` with the ref that clears it,
     and each broom sweeps only its own family."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
@@ -5375,7 +5383,7 @@ def test_the_lists_answer_from_the_store_and_the_last_stop_while_the_guest_runs(
     # NEVER STOPPED: nothing to date the answer by, and the rows still come.
     dstate.STATE.last_stop.clear()
     fresh = server.breakpoint_list()
-    assert fresh["status"] == "ok" and fresh["last_stop"] is None, fresh
+    assert fresh["status"] == "ok" and fresh["last_stop"]["available"] is False, fresh
     assert fresh["breakpoints"][0]["state"] == "unarmable", fresh
 
 
@@ -5663,7 +5671,7 @@ def test_the_running_guest_contract_holds_at_its_edges(tmp_path: Path) -> None:
     fake.running = False
     # CLOSE TAKES THE STATE WITH IT.
     server.close()
-    assert server.status()["last_stop"] is None
+    assert server.status()["last_stop"]["available"] is False
     assert server.status()["pending"] == {"arm": [], "disarm": 0, "symbols_load": False}
 
 
@@ -5749,7 +5757,7 @@ def test_a_stop_whose_survey_refused_is_not_named_with_the_previous_stops_addres
     assert got["status"] == "INVALID" and got["verify"]["stopped_during_wait"] is True, got
     assert "00A7:00000000" not in got["message"], got["message"]
     assert "position not readable yet" in got["message"], got["message"]
-    assert got["last_stop"] is None, got["last_stop"]
+    assert got["last_stop"]["available"] is False, got["last_stop"]
 
 
 def test_drive_names_a_stop_that_landed_during_its_verify(tmp_path: Path) -> None:
@@ -7080,18 +7088,18 @@ def test_the_paging_mark_is_read_off_the_pane_and_absent_is_not_off() -> None:
 def test_status_names_the_cpu_mode_of_the_stop_it_is_in(
         tmp_path: Path, mode: str, paging: bool | None, want: str | None) -> None:
     """`real`, `protected` or `paged`, from the pane's mode word and its PAGE/NOPG mark; a
-    protected pane with no mark is not guessed: null, with why."""
+    protected pane with no mark is not guessed: unavailable, with why."""
     fake = _names(tmp_path, mode=mode)
     server.registers()                          # a contact that finds the park and records it
     dstate.STATE.last_stop["paging"] = paging
     got = cast(dict[str, Any], server.status())
-    assert got["cpu_mode"] == want, got
-    assert ("cpu_mode_why" in got) is (want is None), got
+    assert got["cpu_mode"] == want if want is not None else got["cpu_mode"]["available"] is False
+    assert "cpu_mode_why" not in got, got
     assert got["pc"] == dstate.STATE.last_stop["at"], got
     fake.running = True
     running_now = cast(dict[str, Any], server.status())
-    assert running_now["pc"] is None and running_now["cpu_mode"] is None, running_now
-    assert "running" in running_now["cpu_mode_why"], running_now
+    assert "pc" not in running_now and running_now["cpu_mode"]["available"] is False, running_now
+    assert "running" in running_now["cpu_mode"]["why"], running_now
 
 
 def test_status_counts_the_declarations_as_the_lists_list_them(tmp_path: Path) -> None:
@@ -7111,7 +7119,8 @@ def test_status_counts_the_declarations_as_the_lists_list_them(tmp_path: Path) -
 def test_status_with_no_session_adds_no_machine_facts() -> None:
     dstate.STATE.session = None
     got = cast(dict[str, Any], server.status())
-    assert got["session"] is None and not {"pc", "cpu_mode", "declarations"} & set(got), got
+    assert not got["session"]["alive"] and not {"pc", "cpu_mode", "declarations"} & set(got), got
+    assert got["summary"] == "status: no session", got["summary"]
 
 
 def test_status_does_not_name_a_stop_it_could_not_read_as_the_one_it_is_in(
@@ -7127,8 +7136,8 @@ def test_status_does_not_name_a_stop_it_could_not_read_as_the_one_it_is_in(
     fake.registers_raises = True                    # ...and that stop's pane comes back cut
     got = cast(dict[str, Any], server.status())
     assert dstate.STATE.last_stop["seq"] == before["seq"], "the cut stop was recorded"
-    assert got["pc"] is None and got["cpu_mode"] is None, got
-    assert "not readable" in got["cpu_mode_why"], got
+    assert "pc" not in got and got["cpu_mode"]["available"] is False, got
+    assert "not readable" in got["cpu_mode"]["why"], got
 
 
 def test_status_counts_the_declarations_on_a_running_machine_too(tmp_path: Path) -> None:
@@ -7136,7 +7145,7 @@ def test_status_counts_the_declarations_on_a_running_machine_too(tmp_path: Path)
     server.breakpoint_at(ref="0749:0010")
     fake.running = True
     got = cast(dict[str, Any], server.status())
-    assert got["pc"] is None and got["declarations"] == {"breakpoints": 1, "watches": 0}, got
+    assert "pc" not in got and got["declarations"] == {"breakpoints": 1, "watches": 0}, got
 
 
 def test_the_stop_count_survives_a_session_buried_mid_batch() -> None:
@@ -7156,9 +7165,9 @@ def test_a_batch_writes_both_files_or_neither_and_remakes_a_vanished_scratch(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     rows = [{"step": 0, "op": "status", "reply": {"summary": "s", "status": "ok"}}]
     monkeypatch.setattr(dstate.STATE, "scratch", tmp_path / "gone")   # the OS cleaned it away
-    made = sequence._files(rows, rows)
+    made = account.files(sequence._batch_stem, rows, rows)
     assert made["ran_path"] and Path(made["replies_path"]).exists(), made
-    real = sequence._write_jsonl
+    real = account.write_jsonl
     calls: list[Path] = []
 
     def second_fails(path: Path, r: list[dict[str, Any]]) -> str:
@@ -7168,9 +7177,9 @@ def test_a_batch_writes_both_files_or_neither_and_remakes_a_vanished_scratch(
             raise OSError("disk full half way")
         return out
 
-    monkeypatch.setattr(sequence, "_write_jsonl", second_fails)
-    failed = sequence._files(rows, rows)
-    assert failed["ran_path"] is None and "files_why" in failed, failed
+    monkeypatch.setattr(account, "write_jsonl", second_fails)
+    failed = account.files(sequence._batch_stem, rows, rows)
+    assert failed["ran_path"]["available"] is False and "disk full" in failed["ran_path"]["why"]
     assert not any(p.exists() for p in calls), [p for p in calls if p.exists()]
 
 
@@ -7341,3 +7350,16 @@ def test_drive_says_its_check_was_not_made_when_the_act_ran_out(tmp_path: Path) 
         expect="key_cue_a"))
     assert got["verify"]["available"] is False, got
     assert got["summary"] == "drive: effect not checked", got["summary"]
+
+
+def test_drive_says_its_act_ended_after_its_last_step_when_the_emulator_went(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """An act that ran every step and left the machine running, whose emulator was gone by the
+    tail's wait, failed at no step: the refusal says after which, never a dict's repr."""
+    _names(tmp_path, watched=True)
+    server.breakpoint_interrupt(number=0x21)            # something declared: the tail waits
+    monkeypatch.setattr(sequence, "_wait_for_stop", lambda *a, **k: "gone")
+    got = cast(dict[str, Any], server.drive(act=[{"op": "resume"}], wait=1))
+    assert got.get("code") == "step_failed", {k: got[k] for k in ("summary", "status")}
+    assert "GONE" in got["message"] and "available" not in got["message"], got
+    assert "after its last step" in got["message"], got["message"]

@@ -895,7 +895,7 @@ def test_each_tool_refuses_with_no_session_and_still_carries_the_envelope(
     reply = cast(dict[str, Any], call())
     assert reply["status"] == "INVALID"
     assert "no live session" in reply["message"]
-    assert "session" in reply and reply["session"] is None
+    assert reply["session"] == {"alive": False, "running": False, "altered": False}
 
 
 # What each tool PROMISES to hand back. Spelled out here so the assertion below is

@@ -193,7 +193,7 @@ def _invoke(fn: Callable[..., Any], called: inspect.BoundArguments) -> dict[str,
         # THE GUEST RUNS AND THIS READER CANNOT ANSWER: say where the machine was last seen and
         # which readers do answer now, so the caller can decide without provoking a stop (the
         # running-guest contract).
-        return st.reply(**e.reply(last_stop=STATE.as_of(),
+        return st.reply(**e.reply(last_stop=STATE.dated(),
                                   answers_while_running=_ANSWERS_WHILE_RUNNING))
     except ds.Invalid as e:
         return st.reply(**e.reply())

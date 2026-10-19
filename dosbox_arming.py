@@ -18,6 +18,7 @@ import dataclasses
 from collections.abc import Callable
 from typing import Any, cast
 
+from scry_core import reply_contract as contract
 from scry_core import value_format as vf
 
 import dosbox_checks as checks
@@ -127,8 +128,8 @@ _ORPHAN_WATCH_WHY = _ORPHAN_WHY + ". A show watch is still EVALUATED at every st
 
 def orphan(decl: dec.Declaration) -> bool:
     """A declaration with no origin recorded, in a session that HAS one: written by a store
-    from before origins were kept: such a show watch sits in every stop reply with
-    `origin: null` and nothing tells it from this session's. With
+    from before origins were kept: such a show watch sits in every stop reply with no origin
+    and nothing tells it from this session's. With
     no session origin at all (the contract harness never calls `start`) nothing is an
     orphan: there is no "this session's" to tell it from."""
     return decl.origin is None and STATE.session_origin is not None
@@ -138,8 +139,14 @@ def decl_row(decl: dec.Declaration) -> dict[str, Any]:
     """The fields every listed declaration carries: its ref, how it was declared, and
     when and by which session (`origin`), so a caller can tell this session's from what
     an earlier one left."""
-    return {"ref": decl.ref, "by": decl.by, "created_at": decl.created_at,
-            "origin": decl.origin}
+    return {"ref": decl.ref, "by": decl.by,
+            "created_at": contract.or_unavailable(decl.created_at, UNDATED_WHY),
+            "origin": contract.or_unavailable(decl.origin, NO_ORIGIN_WHY)}
+
+
+#: A listed declaration from a store that kept no date or no origin for it.
+UNDATED_WHY = "the store kept no date for it"
+NO_ORIGIN_WHY = "the store kept no origin for it: nobody's, clear it by its ref or declare it again"
 
 
 # The BPLIST kind tokens for a memory watch, told apart from a code breakpoint (`BP`) and
@@ -811,8 +818,8 @@ def breakpoint_list(session: ds.Session) -> dict[str, Any]:
     foreign += [b["entry"] for b in held
                 if b["entry"].startswith("BPINT ") and b["entry"] not in mine_int
                 and b["entry"] not in queued]
-    return st.reply(breakpoints=out, foreign=foreign, debugger_read=read,
-                  last_stop=None if read else STATE.as_of())
+    dated: dict[str, Any] = {} if read else {"last_stop": STATE.dated()}
+    return st.reply(breakpoints=out, foreign=foreign, debugger_read=read, **dated)
 
 
 def _require_a_match(store: dec.DeclarationStore, ref: str | None,
@@ -1033,7 +1040,7 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
             return st.reply(ref=ref, by=chosen, mode="change", fmt=fmt, length=width, stored=True,
                           already_stored=already, armed=True, state="armed",
                           entry=_watch_entry(res["seg"], res["off"], mode),
-                          caveat=_PR_WATCH_CAVEAT if mode.startswith("Pr") else None)
+                          **({"caveat": _PR_WATCH_CAVEAT} if mode.startswith("Pr") else {}))
         armed = session.watch(segment=res["seg"], offset=res["off"])
     except ds.Invalid as e:
         if isinstance(e, ds.NotStopped) or not session.at_debugger():
@@ -1042,12 +1049,12 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
                           **STATE.queue_arm(ref))
         return st.reply(ref=ref, by=chosen, mode="change", fmt=fmt, length=width, stored=True,
                       already_stored=already, armed=False, state="unarmable", why=str(e))
-    caveat = _PR_WATCH_CAVEAT if str(armed["mode"]).startswith("Pr") else None
+    caveat = {"caveat": _PR_WATCH_CAVEAT} if str(armed["mode"]).startswith("Pr") else {}
     STATE.note_armed(ref, {"kind": "watch", "seg": res["seg"], "off": res["off"],
                       "entry": str(armed["armed"])})
     return st.reply(ref=ref, by=chosen, mode="change", fmt=fmt, length=width, stored=True,
                     already_stored=already, armed=True, state="armed", command=armed["command"],
-                    entry=armed["armed"], caveat=caveat, **extra)
+                    entry=armed["armed"], **caveat, **extra)
 
 
 def watch_list(session: ds.Session) -> dict[str, Any]:
@@ -1105,8 +1112,8 @@ def watch_list(session: ds.Session) -> dict[str, Any]:
                if (t := dcons.bp_row_target(b["entry"])) is not None
                and t[0] in _WATCH_KINDS and (t[1], t[2]) not in mine
                and (t[1], t[2]) not in queued]
-    return st.reply(watches=out, foreign=foreign, debugger_read=read,
-                  last_stop=None if read else STATE.as_of())
+    dated: dict[str, Any] = {} if read else {"last_stop": STATE.dated()}
+    return st.reply(watches=out, foreign=foreign, debugger_read=read, **dated)
 
 
 def watch_clear(session: ds.Session, ref: str | None) -> dict[str, Any]:
