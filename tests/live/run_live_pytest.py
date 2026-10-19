@@ -6,7 +6,7 @@ front takes the focus and would judge its neighbours.
     timeout 3600 uv run python tests/live/run_live_pytest.py      # from the clone's root
 
 The emulator is `DOSBOX_X_BINARY`'s, else the PATH's `dosbox-x`; the saved-state case needs one
-that carries SAVESTATE and LOADSTATE (the Optimiza/dosbox-x fork's build) and is BLOCKED by any
+that carries SAVESTATE and LOADSTATE and is BLOCKED by any
 other, by that build's own refusal.
 
 Each job is pytest run in its own process on its tests, which records every test's outcome by

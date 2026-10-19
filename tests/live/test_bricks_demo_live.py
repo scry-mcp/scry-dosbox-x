@@ -4,8 +4,8 @@ wrote, and the picture with `screen.png`.
 
 The demo opens a WINDOW, to be watched, and asks the placement helper named by `WINDOW_APP`
 where it goes, so this SKIPS without one, as the tier's other window cases skip without their
-flags: where a window goes is not this package's decision. Its saved states need the fork's
-build (`DOSBOX_X_BINARY`).
+flags: where a window goes is not this package's decision. Its saved states need a
+build carrying SAVESTATE and LOADSTATE (`DOSBOX_X_BINARY`).
 """
 from __future__ import annotations
 

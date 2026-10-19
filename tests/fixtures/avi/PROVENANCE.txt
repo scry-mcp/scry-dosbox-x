@@ -1,4 +1,5 @@
-Two video captures DOSBox-X wrote with `capture_video` (ZMBV), headless, on the fork's build.
+Two video captures DOSBox-X wrote with `capture_video` (ZMBV), headless, on a build carrying
+the saved-state commands.
 
 dosbox-x-zmbv-12.avi       a finished capture of a DOS prompt, 720x400: its main header
                            (`avih`) declares 12 frames, ffprobe counts 12, and the `00dc` tag

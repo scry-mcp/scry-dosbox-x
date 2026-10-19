@@ -1468,7 +1468,7 @@ def _byte_at(ref: str) -> str:
 
 def test_states_round_trip_headless_through_the_debugger_commands(tmp_path: Path) -> None:
     """A state saved and loaded with no window, by the debugger's own SAVESTATE and LOADSTATE
-    (a build that carries them: `DOSBOX_X_BINARY` the fork's; any other is BLOCKED here, by
+    (a build that carries them: `DOSBOX_X_BINARY` names one; any other is BLOCKED here, by
     its own refusal). The known answer is a byte: written AA, saved, written 55 (the control,
     read back as 55), loaded, read back AA. Parked, the machine stays parked; running, it is
     stopped for the command and released again (`paused`), and `stop` still reaches it."""

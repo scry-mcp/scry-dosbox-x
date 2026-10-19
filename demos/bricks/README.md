@@ -21,8 +21,8 @@ WINDOW_APP=/path/to/your/placement-helper uv run python demos/bricks/demo.py
 
 The demo opens a window so the game can be watched; nothing in it needs the window: `stop` and
 the saved states go down the debugger channel, and the keys and the mouse go in inside the
-guest. The saved states need a DOSBox-X that carries SAVESTATE and LOADSTATE (this repository's
-README says which), named with `DOSBOX_X_BINARY`.
+guest. The saved states need a DOSBox-X that carries SAVESTATE and LOADSTATE (the repository's
+REFERENCE.md, *Saved states*), named with `DOSBOX_X_BINARY`.
 
 Where that window goes is your machine's to say, so the demo asks the placement helper named by
 `WINDOW_APP`: `<helper> dosbox` prints the emulator's window flags, one argument a line, for a

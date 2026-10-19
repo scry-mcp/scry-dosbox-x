@@ -83,9 +83,8 @@ newer.
 The debugger wants a terminal, and the server provides one itself. `stop` reaches a running
 guest through the debugger's control channel (`mcp_server`), which a current DOSBox-X has.
 The saved states (`state_save`, `state_load`) need two debugger commands, `SAVESTATE` and
-`LOADSTATE`, that are proposed upstream and not in a release yet: until they are, build the
-`scry` branch of [Optimiza/dosbox-x](https://github.com/Optimiza/dosbox-x) (`./autogen.sh &&
-./configure --enable-debug=heavy --enable-sdl2 && make`) and name it with `DOSBOX_X_BINARY`.
+`LOADSTATE`, that are not in a release yet (REFERENCE.md, *Saved states*): name a build that
+carries them with `DOSBOX_X_BINARY`.
 Absence of any of these is named by the tool that needs it, never worked around.
 
 ```sh

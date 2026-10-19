@@ -1,6 +1,6 @@
 """Save states through the debugger's own commands, `SAVESTATE <file>` and `LOADSTATE <file>`
-over the debugger channel (a DOSBox-X that carries them: the Optimiza/dosbox-x fork). They need
-the debugger stopped, so a running guest is stopped for them and released again. A state is a
+over the debugger channel (a DOSBox-X that carries them). They need the debugger stopped, so
+a running guest is stopped for them and released again. A state is a
 ZIP naming its `Program_Name`, `Machine_Type`, `Memory_Size`, `Time_Stamp` and
 `DOSBox-X_Version`. The tools are `state_save(name)`, `state_load(name)` and `state_list`."""
 from __future__ import annotations
@@ -36,13 +36,14 @@ def write_state(path: Path, **meta: str) -> Path:
 
 
 class Channel:
-    """The emulator's end of the debugger channel as the fork answers the two commands: a
-    save writes the file, a load reads it; `carries=False` answers as a build without them."""
+    """The emulator's end of the debugger channel as a build carrying the two commands answers
+    them: a save writes the file, a load reads it; `carries=False` answers as a build without
+    them."""
 
     def __init__(self, session: StateFake, carries: bool = True) -> None:
         self.session, self.carries = session, carries
         self.sent: list[str] = []
-        self.refuse = ""                     # a refusal of the fork's own, when set
+        self.refuse = ""                     # the emulator's own refusal, when set
         self.partial = False                 # a failed save leaves a half-written file
         self.raises: ds.Invalid | None = None
 
@@ -189,18 +190,19 @@ def test_a_dangling_link_named_like_the_state_is_refused_and_nothing_written_thr
     assert fake.control.sent == [] and not target.exists()
 
 
-def test_a_build_without_the_commands_is_no_channel_naming_the_fork(tmp_path: Path) -> None:
+def test_a_build_without_the_commands_is_no_channel_naming_the_command(tmp_path: Path) -> None:
     fake = StateFake(tmp_path / "save", carries=False)
     with pytest.raises(ds.Invalid) as exc:
         ds.Session.state_save(as_session(fake), "boot", 5.0)
-    assert exc.value.code == "no_channel" and "Optimiza/dosbox-x" in str(exc.value)
+    assert exc.value.code == "no_channel" and "`SAVESTATE` debugger command" in str(exc.value)
+    assert "REFERENCE.md, Saved states" in str(exc.value)
     write_state(tmp_path / "save" / "boot.sav")
     with pytest.raises(ds.Invalid) as exc:
         ds.Session.state_load(as_session(fake), "boot", 5.0)
     assert exc.value.code == "no_channel"
 
 
-def test_a_refusal_of_the_fork_s_own_is_unexpected_answer_saying_why(tmp_path: Path) -> None:
+def test_the_emulators_own_refusal_is_unexpected_answer_saying_why(tmp_path: Path) -> None:
     fake = StateFake(tmp_path / "save")
     write_state(tmp_path / "save" / "boot.sav")
     for refusal in ("failed: x (the log says why)", "requires the debugger to be stopped",
@@ -432,7 +434,7 @@ def test_a_path_of_two_lines_is_refused_before_the_break_in(tmp_path: Path) -> N
     assert exc.value.code == "bad_argument" and fake.moves == [] and fake.control.sent == []
 
 
-def test_a_missing_channel_names_the_fork_and_alters_nothing(tmp_path: Path) -> None:
+def test_a_missing_channel_names_the_command_and_alters_nothing(tmp_path: Path) -> None:
     fake = StateFake(tmp_path / "save")
     write_state(tmp_path / "save" / "boot.sav")
     # The channel's own wording, which ends without a full stop.
@@ -440,7 +442,8 @@ def test_a_missing_channel_names_the_fork_and_alters_nothing(tmp_path: Path) -> 
                                      "channel, so a running guest cannot be reached")
     with pytest.raises(ds.Invalid) as exc:
         ds.Session.state_load(as_session(fake), "boot", 5.0)
-    assert exc.value.code == "no_channel" and "Optimiza/dosbox-x" in str(exc.value)
+    assert exc.value.code == "no_channel" and "`LOADSTATE` debugger command" in str(exc.value)
+    assert "REFERENCE.md, Saved states" in str(exc.value)
     assert "cannot be reached. The saved states" in str(exc.value), "one sentence each"
     assert fake.altered is False
     fake.control.raises = None

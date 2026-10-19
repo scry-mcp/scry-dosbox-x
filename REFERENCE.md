@@ -1559,25 +1559,23 @@ since it was written is refused rather than trusted.
 
 ## Saved states
 
-`state_save` and `state_load` are the debugger's own commands, `SAVESTATE <file>` and
-`LOADSTATE <file>`, sent down the debugger channel `stop` uses: no window, no menu, no dialog
-and no focus taken, headless or windowed, and the reply says whether the emulator acted. Those
-two commands are proposed upstream and carried until then by the `scry` branch of the
-Optimiza/dosbox-x fork; a build without them answers an unknown command, and both tools say so
-as `no_channel`, naming the fork. They need the debugger STOPPED: while the guest runs, the
-channel is served from a timer tick handler, and loading a state there would replace the tick
-handlers the timer is walking. So a running guest is stopped for the command (`stop`'s `BREAK`)
-and released again, and the reply's `paused` says it happened; a parked one stays parked, at the
-loaded machine's position after a load. The command is the confirmation: a refusal of its own
-(a state of another DOSBox-X version, program, memory size or machine type is refused, never
-asked about) is `unexpected_answer` quoting it, and the emulator's log says why. The state is
-`<name>.sav` under the session's `state_dir`, written there directly and read back for what it
-says about itself; `state_list` reads every state's ZIP members (version, program, machine,
+`state_save` and `state_load` are the debugger's own commands, `SAVESTATE <file>` and `LOADSTATE
+<file>`, sent down the debugger channel `stop` uses: no window, no menu, no dialog and no focus
+taken, headless or windowed, and the reply says whether the emulator acted. Those two commands are
+proposed upstream and not in a release yet; a build without them answers an unknown command, and
+both tools say so as `no_channel`, naming the command the build lacks. They need the debugger
+STOPPED: while the guest runs, the channel is served from a timer tick handler, and loading a state
+there would replace the tick handlers the timer is walking. So a running guest is stopped for the
+command (`stop`'s `BREAK`) and released again, and the reply's `paused` says it happened; a parked
+one stays parked, at the loaded machine's position after a load. The command is the confirmation: a
+refusal of its own (a state of another DOSBox-X version, program, memory size or machine type is
+refused, never asked about) is `unexpected_answer` quoting it, and the emulator's log says why. The
+state is `<name>.sav` under the session's `state_dir`, written there directly and read back for
+what it says about itself; `state_list` reads every state's ZIP members (version, program, machine,
 memory size, stamp) without loading, needs no window, and answers while the guest runs. A save
 never overwrites and alters nothing; a load marks the session altered, because it replaces the
-machine. A name is letters, digits, `_` and `-`, starting with a letter or a digit, at most 64
-of them, and not digits only: the emulator's own slot files are `<n>.sav` in the same
-directory.
+machine. A name is letters, digits, `_` and `-`, starting with a letter or a digit, at most 64 of
+them, and not digits only: the emulator's own slot files are `<n>.sav` in the same directory.
 
 ## The console
 

@@ -6,7 +6,7 @@ the segment DOS loaded it at, a breakpoint on the routine every falling brick go
 score read by name, the paddle moved by the keyboard and by the mouse, and a state saved and
 loaded. The session is windowed so the game can be watched, and nothing in it needs the window:
 `stop` and the saved states go down the debugger channel, the keys and the mouse in inside the
-guest. The saved states need a DOSBox-X that carries SAVESTATE and LOADSTATE (the fork).
+guest. The saved states need a DOSBox-X that carries SAVESTATE and LOADSTATE.
 
 Where the window goes is the host's to say, never this demo's: it asks the placement helper named
 by `WINDOW_APP`, `<helper> dosbox` for a run nobody watches

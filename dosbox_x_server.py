@@ -31,8 +31,7 @@ paragraph got wrong: `-loadstate` is not an option this build has, so "it did no
 was an unknown option hanging, which every unknown option does; and `forceloadstate` is an
 override for a version or program mismatch on load, not a trigger.  The state tools
 (`state_save`, `state_load`) are the debugger's own SAVESTATE and LOADSTATE, sent down the
-debugger channel, which a build of the Optimiza/dosbox-x fork carries and loads as well as
-saves; `state_list` reads the directory.
+debugger channel to a build that carries both; `state_list` reads the directory.
 
 AND A SECOND ONE, FOUND WHILE BUILDING THE STEPPING TOOLS: `RUNWATCH` SHIPS NO TOOL
 EITHER, and the measurement is why.  The debugger has it (`debug_running = true;
@@ -1110,8 +1109,8 @@ def screen_wait(text: str, seconds: float = 30.0,
 def state_save(name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, Any]:
     """Save the machine under `name` as `<state_dir>/<name>.sav`, by the debugger's own
     `SAVESTATE` sent down the debugger channel: no window, no menu, no focus taken, headless
-    or windowed. Needs a DOSBox-X that carries the command (the Optimiza/dosbox-x fork); any
-    other build is refused `no_channel`, naming it. The command needs the debugger stopped, so
+    or windowed. Needs a DOSBox-X that carries the command; any other build is refused
+    `no_channel`, naming the command it lacks. The command needs the debugger stopped, so
     a RUNNING guest is stopped for it and released again (`paused: true`); a parked one stays
     parked. The file is read back for what it says about itself. Never overwrites. Saving
     alters nothing. `seconds` bounds the command's reply. `name`: letters, digits, `_`, `-`, a

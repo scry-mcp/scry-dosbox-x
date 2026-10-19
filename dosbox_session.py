@@ -477,9 +477,9 @@ COMMAND_GAP_S = 0.06    # the pause between stub commands: just over one 18.2 Hz
 BREAK_IN_WAIT_S = 5.0     # from BREAK on the channel to the debugger's prompt on the terminal
 SNAPSHOT_WAIT_S = 10.0
 # A STATE IS SAVED AND LOADED BY THE DEBUGGER'S OWN COMMANDS, `SAVESTATE <file>` and
-# `LOADSTATE <file>` over the debugger channel, which only a DOSBox-X carrying them has (the
-# Optimiza/dosbox-x fork, proposed upstream): no window, no menu, no dialog, and the reply
-# says whether it acted. They need the debugger stopped, because loading a state replaces the
+# `LOADSTATE <file>` over the debugger channel, which only a DOSBox-X carrying them has
+# (REFERENCE.md, Saved states): no window, no menu, no dialog, and the reply says whether it
+# acted. They need the debugger stopped, because loading a state replaces the
 # timer's tick handlers and the channel is served from one while the guest runs. The bound is
 # the command's reply: a state of a large machine is written for a second or two.
 STATE_WAIT_S = 30.0
@@ -3206,8 +3206,8 @@ class Session:
                 why = str(e).rstrip(".")
                 raise Invalid("no_channel",
                               f"{verb} goes down the debugger channel, and {why}. The saved "
-                              f"states need that channel and a build carrying {verb}: the "
-                              f"Optimiza/dosbox-x fork has both (REFERENCE.md, Saved states)"
+                              f"states need that channel and a build carrying the `{verb}` "
+                              f"debugger command (REFERENCE.md, Saved states)"
                               ) from None
             raise
         waited = round(time.monotonic() - began, 2)
@@ -3218,8 +3218,8 @@ class Session:
         if not any(line.startswith(f"DEBUG: {verb}") for line in lines):
             raise Invalid("no_channel",
                 f"this DOSBox-X has no `{verb}` debugger command ({said or 'no answer'}): "
-                          f"saved states need a build that carries it, the Optimiza/dosbox-x "
-                          f"fork (REFERENCE.md, Saved states)")
+                          f"saved states need a build that carries it (REFERENCE.md, Saved "
+                          f"states)")
         raise Invalid("unexpected_answer",
             f"the emulator refused {verb} of {path}: {said}. Its log says why (a state of "
                       f"another DOSBox-X version, program, memory size or machine type is "

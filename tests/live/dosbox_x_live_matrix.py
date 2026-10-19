@@ -26,7 +26,7 @@ incomplete or a copy is absent or off its pin. What a run takes from the environ
 
     DOSBOX_X_BINARY               the emulator the sessions run (the PATH's `dosbox-x` unset);
                                   the state cells need one that carries SAVESTATE and
-                                  LOADSTATE, the Optimiza/dosbox-x fork's build
+                                  LOADSTATE
     DOSBOX_X_LIVE_BENCH           the bench's root (`~/.local/share/scry-bench/dosbox-x` unset)
     DOSBOX_X_LIVE_WINDOW_FLAGS    G: the placement flags of a watched window, one token per
                                   line
