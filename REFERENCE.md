@@ -75,8 +75,9 @@ refused over it.
 **Which DOSBox-X runs is resolved once per `start` and per `build_check`, and said.** The
 ladder is the `binary` argument (an absolute path), else the `DOSBOX_X_BINARY` variable, else
 the `dosbox-x` the PATH finds, and the first rung holding a value is the one taken. A relative
-value is `bad_argument`; one naming no executable file is `host_failed`, naming what all three
-rungs held, and is never passed over for the next, because a caller who named a build and got
+value is `bad_argument`; one naming no executable file is refused naming what all three rungs
+held, `bad_argument` when it was the `binary` argument and `host_failed` when it was the host's
+variable or PATH, and is never passed over for the next, because a caller who named a build and got
 another would be measuring the wrong emulator. Both replies carry `binary` (absolute),
 `binary_origin` (`argument`, `DOSBOX_X_BINARY` or `PATH`) and `version`: the first non-blank
 line `-version` prints, or `{"available": false, "why": ...}` when it printed nothing, did not
@@ -166,7 +167,8 @@ while the guest ran, so a reader can be the call that arms a breakpoint; that wr
 to the declaring call, which said `pending`, and the reader's reply says `applied_on_stop`.
 
 **The `session` block closes every reply**, `null` when there is no session: `pid` (the
-emulator's, to read instead of hunting it), `alive`, `altered`, `conf` and `conf_digest` (the
+emulator's, to read instead of hunting it), `alive`, `running` (the guest runs, off the session's
+own flag, with no console round trip), `altered`, `conf` and `conf_digest` (the
 config the session started from, and a digest of its content at start), `conf_changed_on_disk`
 (`true` when that file changed since, `false` when it did not or is gone, `null` when it could
 not be read), `watched` (started to be looked at, so a window was placed), `seconds_bound` and
