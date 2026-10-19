@@ -12,7 +12,6 @@ from __future__ import annotations
 import contextlib
 import os
 import re
-import tempfile
 import time
 from collections.abc import Iterator
 from pathlib import Path
@@ -307,7 +306,7 @@ def dos_real16_comments(mapf: Path, base: str) -> None:
             M.block(label, f"the map names COMPOSE_FRAME {n} time(s) at {sorted(places)}, not "
                            "the two lines at one place the copy moves: no rebuild to load")
         return
-    moved = Path(tempfile.mkdtemp(prefix="dosbox-x-matrix-")) / Path(bp.DOS_REAL16.map).name
+    moved = M.tmp("dosbox-x-matrix-") / Path(bp.DOS_REAL16.map).name
     moved.write_text(shifted, encoding="latin-1")
     here = must(M.call(server.symbols_find, name="COMPOSE_FRAME"), "COMPOSE_FRAME")
     linear = int(here["symbols"][0]["linear"])

@@ -1746,6 +1746,13 @@ merged from the summaries they declare through `scry_core.live_pool`. What opens
 copies of its own of the guests and the bench, because the debugger writes its files under
 fixed names into the emulator's working directory (`tests/live/live_private.py`).
 
+**Both tiers refuse a host that cannot start DOSBox-X, and prove they left none running.**
+Before its first start a run launches the emulator once in a form that ends by itself; one that
+does not return is INVALID naming the host, and nothing else is launched. Every DOSBox-X a
+session starts is recorded where it is spawned, and at the end of the run one still alive is
+killed and FAILS the run by name. A green run removes its scratch, its jobs' with it; a red,
+INVALID or broken one keeps it and prints its path (`scry_core.live_host`).
+
 `bench.py` needs the same two things, and it takes them as FLAGS: `--conf` and `--cwd`,
 beside the `--json`, `--reps` and `--song` its parser already had. It measures YOUR
 program, so it has no default to fall back on and refuses without them, naming the

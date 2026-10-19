@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import inspect
 import json
+import os
 import shutil
 import tempfile
 import threading
@@ -20,7 +21,7 @@ from itertools import count
 from pathlib import Path
 from typing import Any
 
-from scry_core import live_pool
+from scry_core import live_host, live_pool
 
 EXIT_PASSED, EXIT_FAILED, EXIT_INVALID = 0, 1, 3
 
@@ -80,12 +81,22 @@ def _waits(kw: dict[str, Any], params: dict[str, inspect.Parameter]) -> Iterator
                         yield f"{lst}[{step.get('op')}].{arg}", step[arg]
 
 
+#: A run's scratch is named so, directly under the host's temporary directory.
+SCRATCH_PREFIX = "dosbox-x-live-matrix-"
+#: Where a run that is one job of another declares what it judged; set by that run, never by hand.
+SUMMARY_VAR = "DOSBOX_X_LIVE_SUMMARY"
+
+
 class Ledger:
     """Everything one run records. One instance per process. The transcript is JSON Lines, one
     record per call, tagged with the cell it fed and that cell's verdict."""
 
     def __init__(self) -> None:
-        self.scratch = Path(tempfile.mkdtemp(prefix="dosbox-x-live-matrix-"))
+        # NAMED HERE, MADE when the run first writes there: every file that imports the matrix,
+        # and an early exit of its `main`, would otherwise leave an empty one.
+        self.host = live_host.LiveRun.for_process(SCRATCH_PREFIX,
+                                                  job=bool(os.environ.get(SUMMARY_VAR)))
+        self.scratch = self.host.scratch
         self.transcript = self.scratch / "transcript.jsonl"
         self.evidence = self.scratch / "evidence"
         self.sections: list[Section] = []
@@ -101,9 +112,15 @@ class Ledger:
         self.session_files: Callable[[], tuple[Path | None, Path | None]] = lambda: (None, None)
         #: What ends a call that never returned: the emulator it is talking to.
         self.on_hang: Callable[[], None] = lambda: None
+        #: What closes the machine this process holds, the run's last word on it before the
+        #: proof that none of its emulators outlived it.
+        self.on_end: Callable[[], None] = lambda: None
         self._names = count(1)
         self._evidence_seq = count(1)
-        print(f"transcript: {self.transcript}", flush=True)
+
+    def made(self) -> Path:
+        """This run's scratch, made on its first use."""
+        return self.host.made()
 
     # ------------------------------------------------------------------ declaring
 
@@ -167,16 +184,33 @@ class Ledger:
                           f"the emulator was ended under it")
         return reply
 
+    def tmp(self, prefix: str) -> Path:
+        """A new directory of this run, under its scratch, so a green run removes it with the
+        rest (`_leave_scratch`)."""
+        return Path(tempfile.mkdtemp(prefix=prefix, dir=self.made()))
+
     def fresh(self, suffix: str) -> str:
         """An absolute path in this run's scratch that does not exist yet."""
-        return str(self.scratch / f"n{next(self._names)}{suffix}")
+        return str(self.made() / f"n{next(self._names)}{suffix}")
 
-    # ------------------------------------------------------------------ judging
+    # ------------------------------------------------------------------ the run on its host
+
+    def _close_run(self) -> None:
+        """The machine this process holds closed, every DOSBox-X the run launched proved gone,
+        and one still alive a failure of the run by name."""
+        if line := self.host.close(self.on_end):
+            print(line, flush=True)
+            self.failed.append(line.removeprefix("FAIL  "))
+            self.tally["FAIL"] += 1
+
+    def unfinished(self) -> None:
+        """The end of a run that never reached its verdict: closed, proved and kept."""
+        self.host.unfinished(self.on_end)
 
     def _flush(self, label: str, verdict: str) -> None:
         sec = self.current
         tag = f"[{sec.letter}] {sec.title}" if sec else "(none)"
-        with self.transcript.open("a", encoding="utf-8") as fh:
+        with (self.made() / self.transcript.name).open("a", encoding="utf-8") as fh:
             for rec in self.calls:
                 fh.write(json.dumps({"section": tag, "cell": label, "verdict": verdict, **rec},
                                     default=str) + "\n")
@@ -294,6 +328,7 @@ class Ledger:
         their merged result, which is counted here as if they had run in this process; the
         `alone` ones follow in this process. `summary` is where a run that is one of those jobs
         declares what it judged, however it ends."""
+        print(f"transcript: {self.transcript}", flush=True)
         chosen = sorted((s for s in self.sections if not sections or s.letter in sections),
                         key=lambda s: (s.place, s.letter))
         labels = [c.label for s in self.sections for c in s.cells]
@@ -302,7 +337,9 @@ class Ledger:
         print(f"PLANNED {planned} cells in {len(chosen)} sections "
               f"({', '.join(s.letter for s in chosen)})", flush=True)
         if twice:
-            print(f"INVALID: the plan names these cells twice: {twice}", flush=True)
+            self.unfinished()
+            print(f"==> LIVE MATRIX INVALID: the plan names these cells twice: {twice}",
+                  flush=True)
             return EXIT_INVALID
         began = time.monotonic()
         pooled = ([s for s in chosen if s.place == 1 and not s.alone] if pool is not None
@@ -331,10 +368,13 @@ class Ledger:
             self._summary(planned, time.monotonic() - began)
             if summary is not None:
                 self._declare(summary, chosen, time.monotonic() - began)
+        self._close_run()
+        self.host.finished = True
+        run = self.tally["OK"] + self.tally["FAIL"]
+        self.host.leave(kept=bool(invalid or run == 0 or self.failed))
         if invalid:
             print(f"==> LIVE MATRIX INVALID: {invalid}")
             return EXIT_INVALID
-        run = self.tally["OK"] + self.tally["FAIL"]
         if run == 0:
             print("==> LIVE MATRIX INVALID: no cell ran, so there is no verdict")
             return EXIT_INVALID
@@ -359,7 +399,7 @@ class Ledger:
             if (r.rc == 1 and not declared_fail) or r.rc not in (0, 1, 3, None):
                 self._tally(f"JOB {r.job.name} EXITED {r.rc}, WHICH ITS SUMMARY DOES NOT "
                             "EXPLAIN", "FAIL", str(r.log))
-        with self.transcript.open("a", encoding="utf-8") as out:
+        with (self.made() / self.transcript.name).open("a", encoding="utf-8") as out:
             for r in result.results:
                 if r.summary is not None and Path(r.summary.transcript).is_file():
                     out.write(Path(r.summary.transcript).read_text(encoding="utf-8"))

@@ -28,7 +28,10 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from scry_core import live_host
 from scry_core.demo import Demo, Reply, Run, Step, StepFailed, main
+
+import dosbox_binary  # isort: skip -- a module of the repository root, installed in its environment
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -90,10 +93,16 @@ def placement(shared: bool) -> tuple[list[str], str]:
 
 
 def precheck(run: Run) -> str:
+    """Why the demo cannot run: a relative `--binary`, nowhere to put the window, or a host
+    that cannot start DOSBox-X (`live_host.canary`). A binary that resolves to nothing is left
+    to `start`, which names the ladder."""
     binary = run.options.get("binary")
     if binary and not Path(binary).is_absolute():
         return f"the server takes absolute paths only: --binary {binary}"
-    return placement(bool(run.options.get("shared")))[1]
+    if why := placement(bool(run.options.get("shared")))[1]:
+        return why
+    argv = dosbox_binary.canary_for(binary or "")
+    return live_host.canary(argv) if argv else ""
 
 
 def boot(run: Run) -> dict[str, Any]:

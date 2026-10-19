@@ -64,13 +64,13 @@ import matrix_screen  # noqa: F401 -- registers section J
 import matrix_trace  # noqa: F401 -- registers section K
 import matrix_window  # noqa: F401 -- registers section G
 from matrix_common import ENV, M, close_whatever, isolate
-from matrix_ledger import EXIT_INVALID, Section
+from matrix_ledger import EXIT_INVALID, SUMMARY_VAR, Section
 from scry_core import live_pool
+
+import dosbox_binary  # isort: skip -- found through the path `matrix_common` sets
 
 SECTIONS_VAR = "DOSBOX_X_LIVE_SECTIONS"
 JOBS_VAR = "DOSBOX_X_LIVE_JOBS"
-# Where a run that is one job of another declares what it judged; set by that run, never by hand.
-SUMMARY_VAR = "DOSBOX_X_LIVE_SUMMARY"
 
 
 def _leave(signum: int, _frame: object) -> None:
@@ -97,7 +97,8 @@ def _pool(workers: int) -> Callable[[list[Section]], live_pool.PoolResult]:
         letters = sorted({s.letter for s in sections})
         jobs = [live_pool.Job(
                     letter, [sys.executable, str(Path(__file__).resolve())],
-                    env={SECTIONS_VAR: letter, JOBS_VAR: "1", live_private.PRIVATE_VAR: "1"},
+                    env={SECTIONS_VAR: letter, JOBS_VAR: "1", live_private.PRIVATE_VAR: "1",
+                         **M.host.job_env(letter)},
                     planned=tuple(c.label for s in sections if s.letter == letter
                                   for c in s.cells))
                 for letter in letters]
@@ -114,6 +115,16 @@ def _pool(workers: int) -> Callable[[list[Section]], live_pool.PoolResult]:
 def main() -> int:
     for sig in (signal.SIGTERM, signal.SIGHUP):
         signal.signal(sig, _leave)
+    # EVERY EXIT GOES THROUGH THE RUN'S END, a usage error and a signal included: the verdict's
+    # own path ends the run itself, any other closes its machine, proves its emulators gone and
+    # names what it kept.
+    try:
+        return _main()
+    finally:
+        M.unfinished()
+
+
+def _main() -> int:
     if sys.argv[1:]:
         print(f"usage: {sys.argv[0]} (no arguments; see the docstring for the variables)",
               file=sys.stderr)
@@ -131,6 +142,9 @@ def main() -> int:
               file=sys.stderr)
         return 2
     summary = ENV.get(SUMMARY_VAR, "")
+    if why := M.host.begin(dosbox_binary.canary_for(), "DOSBox-X"):
+        print(f"==> LIVE MATRIX INVALID: {why}", flush=True)
+        return EXIT_INVALID
     pool = _pool(workers) if workers > 1 and not summary else None
     if pool is None and not summary:
         print("jobs: 1, every section in this process", flush=True)

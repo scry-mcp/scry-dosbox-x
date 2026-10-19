@@ -26,7 +26,7 @@ dependencies = [
     "capstone>=5.0.9,<6",
     # What the Scry servers share (the reply contract, the probe, the live bench), pinned by
     # its release tag so a build reads exactly the core it was tested against.
-    "scry-core @ git+https://github.com/scry-mcp/scry-core@v0.21.0",
+    "scry-core @ git+https://github.com/scry-mcp/scry-core@v0.22.0",
 ]
 
 [dependency-groups]
@@ -91,7 +91,10 @@ branch = true
 parallel = true
 concurrency = ["multiprocessing", "thread"]
 source = ["."]
-omit = [".venv/*"]
+# The live tier runs against an emulator, never in the unit suite, which imports some of its files
+# for the bookkeeping they share (the runners' end, the bench): measured, those would weigh the
+# floor with sections only a live run executes.
+omit = [".venv/*", "tests/live/*"]
 
 [tool.coverage.report]
 # THE FLOOR IS THE VENDOR'S: coverage.py's `fail_under`, judged by pytest-cov at the end of every

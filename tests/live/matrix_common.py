@@ -16,7 +16,6 @@ import signal
 import socket
 import subprocess
 import sys
-import tempfile
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
@@ -178,7 +177,7 @@ def isolate(letter: str) -> None:
     """A declaration store of this section's own: declarations persist per conf and re-arm at
     every `start`, so without this a run would write into the owner's own store and inherit
     whatever another session left on the same conf."""
-    os.environ["XDG_STATE_HOME"] = tempfile.mkdtemp(prefix=f"dosbox-x-live-matrix-{letter}-")
+    os.environ["XDG_STATE_HOME"] = str(M.tmp(f"dosbox-x-live-matrix-{letter}-"))
 
 
 def session_files() -> tuple[Path | None, Path | None]:
@@ -231,6 +230,7 @@ def close_whatever() -> None:
 
 M.session_files = session_files
 M.on_hang = lambda: print(f"  (hang) killed emulator pid(s) {kill_spawned()}", flush=True)
+M.on_end = close_whatever
 atexit.register(close_whatever)
 
 

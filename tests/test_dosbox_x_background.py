@@ -69,3 +69,33 @@ def test_a_shared_start_goes_in_front_unless_told_otherwise(tmp_path: Path,
                                      background=True)
     assert behind["status"] == "ok" and behind["background"] is True, behind
     server.close()
+
+
+def test_a_live_runs_ledger_learns_the_emulator_the_session_spawned(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The run's proof that no emulator outlived it reads this ledger, written at the one place
+    the process is made, before anything after it can fail; outside a live run nothing is."""
+    from scry_core import live_host
+
+    class Spawned:
+        pid = 4321
+
+        def poll(self) -> int:
+            return 0
+
+    def no_thread(*_a: Any, **_k: Any) -> None:
+        raise RuntimeError("can't start new thread")
+    monkeypatch.setattr(subprocess, "Popen", lambda *_a, **_k: Spawned())
+    monkeypatch.setattr("threading.Thread", no_thread)
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    ledger = tmp_path / "emulators.tsv"
+    for named in (True, False):
+        if named:
+            monkeypatch.setenv(live_host.LEDGER_VAR, str(ledger))
+        else:
+            monkeypatch.delenv(live_host.LEDGER_VAR)
+            ledger.unlink()
+        with pytest.raises(RuntimeError, match="new thread"):
+            ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60))
+        assert (live_host.EmulatorLedger(ledger).recorded() == {4321: "dosbox-x"}) is named

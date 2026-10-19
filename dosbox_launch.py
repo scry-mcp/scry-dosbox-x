@@ -36,6 +36,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from scry_core import live_host
 from scry_core.reply_contract import Invalid
 
 import dosbox_binary as binaries
@@ -196,11 +197,9 @@ INPUT_CONNECT_S = 8.0     # how long a session waits for the emulator's serial p
 INPUT_HOST = control.LOCAL_HOST
 
 
-# THE BACKGROUND LAUNCH. macOS makes a newly launched app with a window the frontmost one, so a
-# shared start would take the owner's focus; SDL3 reads this hint before `SDL_Init` and keeps the
-# app behind, and it reaches SDL3 through the sdl2-compat layer this build links (measured: a
-# shared window behind never once frontmost, the same window without it in front at once).
-BACKGROUND_VAR = "SDL_MAC_BACKGROUND_APP"
+# THE BACKGROUND LAUNCH (`live_host.BACKGROUND_VAR` says why). It reaches SDL3 through the
+# sdl2-compat layer this build links: a shared window launched with it never comes to the front.
+BACKGROUND_VAR = live_host.BACKGROUND_VAR
 
 
 def judge_background(background: bool | None, watched: bool) -> bool:

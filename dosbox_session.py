@@ -38,7 +38,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
-from scry_core import avi, cancel
+from scry_core import avi, cancel, live_host
 from scry_core.progress import PROGRESS_EVERY_S as PROGRESS_EVERY_S
 from scry_core.progress import Progress as Progress
 from scry_core.progress import no_progress as no_progress
@@ -699,6 +699,8 @@ class Session:
                 self.argv, cwd=str(launch.cwd), stdin=slave, stdout=slave,
                 stderr=slave, env=dlaunch.launch_environment(launch.background),
                 start_new_session=True, close_fds=True)
+            if (ledger := live_host.EmulatorLedger.from_environment()) is not None:
+                ledger.record(self.proc.pid, self.argv[0])
             # STARTED HERE AND NOT LAZILY ON THE FIRST READ: the window this closes
             # is the one between the child being born and the first question, which
             # is exactly when the boot chatter fills the buffer.

@@ -29,6 +29,18 @@ PATH_RUNG = "PATH"
 VERSION_TIMEOUT_S = 5.0
 
 
+def canary_for(binary: str = "") -> list[str] | None:
+    """The DOSBox-X the ladder resolves for `binary`, in a form that initialises SDL as a
+    headless session does and ENDS BY ITSELF: the built-in conf, no window, `-exit` once its
+    autoexec (which runs nothing) is done (`scry_core.live_host.canary`). None when nothing
+    resolves: the session's own `start` refuses that, naming the ladder."""
+    try:
+        found = resolve(binary).path
+    except Invalid:
+        return None
+    return [found, "-defaultconf", "-fastlaunch", "-set", "sdl videodriver=dummy", "-exit"]
+
+
 @dataclass(frozen=True)
 class Resolved:
     path: str

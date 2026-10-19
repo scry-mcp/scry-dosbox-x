@@ -12,8 +12,11 @@ other, by that build's own refusal.
 Each job is pytest run in its own process on its tests, which records every test's outcome by
 node id (passed OK, failed or errored FAIL, skipped BLOCKED with the reason) and declares them
 as the job's summary. One line per job as it ends, then every test that did not pass and the
-count. Exit 0 with every test OK or BLOCKED, 1 with any FAIL, 3 when nothing was collected or
-the merge cannot be believed, 2 for an argument (it takes none) or a job count that is none.
+count. Before any of it, a canary refuses a host that cannot start DOSBox-X; after it, every
+DOSBox-X the tests launched (recorded in a ledger of the run's own, `scry_core.live_bench`) is
+proved gone, and one still alive is killed and FAILS the run. Exit 0 with every test OK or
+BLOCKED, 1 with any FAIL, 3 when nothing was collected, the host refused or the merge cannot be
+believed, 2 for an argument (it takes none) or a job count that is none.
 """
 from __future__ import annotations
 
@@ -21,14 +24,15 @@ import os
 import signal
 import subprocess
 import sys
-import tempfile
 import time
 from pathlib import Path
 from typing import Any
 
 import live_private  # isort: skip -- first: a pooled job's working copies (`live_private`)
 import pytest
-from scry_core import live_pool
+from scry_core import live_host, live_pool
+
+import dosbox_binary  # isort: skip -- a module of the repository root, installed in its environment
 
 ROOT = Path(__file__).resolve().parents[2]
 JOBS_VAR = "DOSBOX_X_LIVE_JOBS"
@@ -37,6 +41,7 @@ SUMMARY_VAR = "DOSBOX_X_LIVE_SUMMARY"
 NODES_VAR = "DOSBOX_X_LIVE_PYTEST_NODES"
 PYTEST_ARGS = ["-q", "--no-cov", "-p", "no:cacheprovider", "-m", "live"]
 EXIT_PASSED, EXIT_FAILED, EXIT_INVALID = 0, 1, 3
+SCRATCH_PREFIX = "dosbox-x-live-pytest-"
 
 
 class _Outcomes:
@@ -117,13 +122,28 @@ def main() -> int:
               file=sys.stderr)
         return 2
     workers = int(held) if held else live_pool.default_workers()
+    run = live_host.LiveRun.for_process(SCRATCH_PREFIX, job=False)
+    if why := run.begin(dosbox_binary.canary_for(), "DOSBox-X"):
+        print(f"==> LIVE PYTEST INVALID: {why}", flush=True)
+        return EXIT_INVALID
+    # EVERY EXIT GOES THROUGH THE RUN'S END: one that never reached its verdict (a collection
+    # that failed, an exception, a signal made an exit) still proves its emulators gone and keeps
+    # its logs, named.
+    try:
+        return _run(run, workers)
+    finally:
+        run.unfinished(lambda: None)
+
+
+def _run(run: live_host.LiveRun, workers: int) -> int:
     pooled, windowed = _collect("live and not windowed"), _collect("live and windowed")
     if pooled is None or windowed is None:
         return EXIT_INVALID
     if not pooled and not windowed:
-        print("INVALID: no live test was collected, so there is no verdict")
+        run.unfinished(lambda: None)
+        print("==> LIVE PYTEST INVALID: no live test was collected, so there is no verdict")
         return EXIT_INVALID
-    out = Path(tempfile.mkdtemp(prefix="dosbox-x-live-pytest-"))
+    out = run.made()
     print(f"jobs: {workers} at once, then {len(windowed)} windowed in turn; logs in {out}",
           flush=True)
 
@@ -151,7 +171,14 @@ def main() -> int:
     print(f"elapsed: {time.monotonic() - began:.0f} s")
     print(f"tests: {len(outcomes)}  OK {count['OK']}  FAIL {count['FAIL']}  "
           f"BLOCKED {count['BLOCKED']}")
-    if invalid := "; ".join(r.invalid for r in results if r.invalid):
+    invalid = "; ".join(r.invalid for r in results if r.invalid)
+    if line := run.close(lambda: None):
+        print(line, flush=True)
+        count["FAIL"] += 1
+    run.finished = True
+    # THE LOGS ARE THE EVIDENCE OF A RED RUN, kept and named; a green one leaves nothing.
+    run.leave(kept=bool(invalid or count["FAIL"]))
+    if invalid:
         print(f"==> LIVE PYTEST INVALID: {invalid}")
         return EXIT_INVALID
     print("==> LIVE PYTEST " + ("FAILED" if count["FAIL"] else "PASSED"))
