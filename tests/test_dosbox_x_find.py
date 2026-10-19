@@ -14,6 +14,7 @@ import pytest
 import dosbox_find as finder
 import dosbox_session as ds
 import dosbox_state as dstate
+import dosbox_x_server  # noqa: F401 -- imports the boundary the shape guard wraps
 
 FIX = Path(__file__).resolve().parent / "fixtures" / "memfind"
 

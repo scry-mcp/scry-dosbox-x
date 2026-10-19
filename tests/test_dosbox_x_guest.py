@@ -31,6 +31,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tomllib
 from pathlib import Path
 from typing import Any
@@ -163,6 +164,10 @@ def test_the_guest_symbols_are_its_global_labels(tmp_path: Path, name: str) -> N
 
 def _dpmi_guest() -> Any:
     """`tests/live/dpmi_guest.py`, the guest's marks and names as the live tier reads them."""
+    # ITS SIBLINGS ARE ITS IMPORTS (`live_private`), as the live tier runs it from `tests/live`:
+    # put there, not left to whichever file of a whole run put that directory on the path first.
+    if str(LIVE) not in sys.path:
+        sys.path.insert(0, str(LIVE))
     spec = importlib.util.spec_from_file_location("dpmi_guest", LIVE / "dpmi_guest.py")
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)

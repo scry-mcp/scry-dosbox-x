@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 import dosbox_comment_file as cf
+import dosbox_x_server  # noqa: F401 -- imports the envelope and the boundary the shape guard wraps
 
 KNOWN = Path(__file__).parent / "fixtures" / "comments" / "known.comments.tsv"
 STAMP = "2026-10-03T06:00:00+00:00"
