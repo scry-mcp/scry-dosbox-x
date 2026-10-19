@@ -1,0 +1,30 @@
+{
+ "task": {
+  "id": "D118",
+  "prompt": "Load the screen map /tmp/maps/bricks.scry-map.json.",
+  "tool": "map_load",
+  "args": {
+   "path": "/tmp/maps/bricks.scry-map.json"
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D118: {\"tool\":\"map_load\",\"args\":{\"path\":\"/tmp/maps/bricks.scry-map.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D118: {\"tool\": \"map_load\", \"args\": {\"path\": \"/tmp/maps/bricks.scry-map.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D118: {\"tool\": \"map_load\", \"args\": {\"path\": \"/tmp/maps/bricks.scry-map.json\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

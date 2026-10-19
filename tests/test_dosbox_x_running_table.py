@@ -197,6 +197,9 @@ def _args(tmp_path: Path) -> dict[str, dict[str, Any]]:
         "region_track": {"manifest": "/nonexistent/m.json"},
         "golden_check": {"manifest": "/nonexistent/m.json",
                          "checksums": "/nonexistent/g.sha256"},
+        "map_load": {"path": str(tmp_path / "none.scry-map.json")},
+        "map_save": {"path": str(tmp_path / "x.scry-map.json")},
+        "map_add": {"screen": "s", "match": [[0, 0, 1, 1]]}, "map_find": {},
     }
 
 
@@ -291,6 +294,39 @@ def test_a_declaration_after_a_release_answers_pending(tmp_path: Path) -> None:
     reply = got["ran"][1]["reply"]
     assert reply["state"] == "pending" and reply["armed"] is False, reply
     assert fake.running
+
+
+def test_the_last_stops_registers_answer_in_a_list_without_waiting_for_a_stop(
+        tmp_path: Path) -> None:
+    """`registers(from_last_stop=True)` is in the instructions' running table, and a list sends
+    it to a running guest at once, as a direct call answers."""
+    fake = _names(tmp_path, watched=True)
+    server.status()
+    server.registers()                       # a stop surveyed, so there is a last one
+    released = fake.resume
+
+    def _resume() -> dict[str, object]:
+        fake.running = True
+        return released()
+
+    fake.resume = _resume  # type: ignore[method-assign]
+    got = server.perform(steps=[{"op": "resume"},
+                                {"op": "registers", "from_last_stop": True}], wait=0)
+    assert got["status"] == "ok" and got["ran"][1]["reply"]["registers"], got
+    assert fake.running
+
+
+def test_a_live_emulator_refusing_during_the_wait_is_its_own_answer_never_gone(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    fake = _names(tmp_path, watched=True)
+
+    def overflow(*_a: Any, **_k: Any) -> Any:
+        raise ds.Invalid("unexpected_answer", "the terminal offered more than one read holds")
+    monkeypatch.setattr(ds.Session, "await_stop", overflow)
+    with pytest.raises(ds.Invalid, match="more than one read holds"):
+        sequence._wait_for_stop(fake, 1.0)  # type: ignore[arg-type]
+    fake.alive = lambda: False  # type: ignore[method-assign]
+    assert sequence._wait_for_stop(fake, 1.0) == "gone"  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize("ref", ["g_rate", "[g_rate]", "[0000:0400]"])
@@ -392,3 +428,20 @@ def test_clearing_one_family_keeps_the_queued_arm_of_the_other_at_the_same_ref(
     gone = server.watch_clear if cleared == "breakpoint" else server.breakpoint_clear
     gone(ref="")                     # the other family cleared too: nothing left to arm
     assert dstate.STATE.pending["arm"] == [], dstate.STATE.pending
+
+
+def test_a_list_is_judged_once_a_call(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The pre-gate judges the list whole before the machine; the run does not judge it again."""
+    _names(tmp_path)
+    calls: list[int] = []
+    real = sequence.preflight
+
+    def counted(*a: Any) -> Any:
+        calls.append(1)
+        return real(*a)
+    monkeypatch.setattr(sequence, "preflight", counted)
+    assert server.perform(steps=[{"op": "status"}])["status"] == "ok"
+    assert len(calls) == 1
+    calls.clear()
+    assert server.drive(act=[{"op": "status"}])["status"] == "ok"
+    assert len(calls) == 1

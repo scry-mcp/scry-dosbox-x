@@ -15,6 +15,7 @@ from test_dosbox_x_server import _guest, _names
 import dosbox_inputs as inputs
 import dosbox_logs as dlogs
 import dosbox_session as ds
+import dosbox_state as dstate
 import dosbox_x_server as server
 
 #: Captured off section P's live run: text mode 3, then mode 13h with the left button held.
@@ -188,6 +189,17 @@ def test_a_send_that_failed_part_way_says_some_of_it_may_have_gone_in(tmp_path: 
     assert got["code"] == "session_broken", got
 
 
+def test_keys_that_failed_part_way_say_some_of_them_may_have_gone_in(tmp_path: Path) -> None:
+    fake = _guest(tmp_path)
+
+    def dies(commands: list[bytes]) -> int:
+        raise ds.Invalid("session_broken", "the input socket is gone after 2 of 6 commands")
+    fake.send_commands = dies
+    got = cast(dict[str, Any], server.send_keys(keys=["a", "b", "c"]))
+    assert got["status"] == "INVALID" and got["delivered"] is True, got
+    assert got["code"] == "session_broken", got
+
+
 def test_a_first_report_that_fails_delivered_nothing(tmp_path: Path) -> None:
     fake = _guest(tmp_path)
 
@@ -211,3 +223,27 @@ def test_drive_at_a_stop_never_takes_the_stub_s_line_for_the_program_s() -> None
     assert stub_only["seen"] is False, stub_only
     program = sequence._verify_at_a_stop(cast(ds.Session, Since()), "clicked|buttons", 0)
     assert program["seen"] is True and "UI" in program["line"], program
+
+
+def test_a_target_is_held_to_the_screen_the_guest_shows_before_anything_is_sent(
+        tmp_path: Path) -> None:
+    """The guest double is in text mode 3, 80x25: a control of a 13h screen is refused with the
+    commands unsent, and one of an 80x25 text screen goes to its centre's cell."""
+    from scry_core import screen_map
+    fake = _guest(tmp_path)
+    maps = dstate.STATE.maps = screen_map.Maps()
+    court = screen_map.Control("court", (200, 80, 80, 40))
+    maps.found = screen_map.Found(screen_map.Screen("play", "pixel", (320, 200),
+                                                    (((0, 0, 8, 8), "0" * 16),), (court,)),
+                                  "file", 3)
+    sent = len(fake.commands_sent)
+    got = cast(dict[str, Any], server.send_mouse(target="court", button="left"))
+    assert got["code"] == "needs_call" and "a text 80x25 screen now" in got["message"], got
+    assert fake.commands_sent[sent:] == [[b"R"]], "the pointer asked about, nothing sent"
+    prompt = screen_map.Control("prompt", (0, 3, 4, 1))
+    maps.found = screen_map.Found(screen_map.Screen("dos", "text", (80, 25),
+                                                    (((0, 0, 8, 1), "0" * 16),), (prompt,)),
+                                  "file", 3)
+    got = cast(dict[str, Any], server.send_mouse(target="prompt"))
+    assert got["status"] == "ok" and got["identified_at_stop"] == 3, got
+    assert fake.commands_sent[-2] == [inputs.move_command(16, 24)]

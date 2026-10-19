@@ -24,12 +24,13 @@ import hashlib
 import json
 import os
 import re
-import tempfile
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from scry_core import fresh
 from scry_core import value_format as vf
+from scry_core.reply_contract import Invalid
 
 import dosbox_comment_file as cf
 import dosbox_symbols as sym
@@ -67,7 +68,7 @@ PENDING_STAMP = "pending"
 # and another in protected mode (a selector's base), so a row placed in one is judged and armed
 # only at a stop of that mode. None on a row no stop has placed yet.
 CPU_MODES = ("real", "protected")
-# A watch has TWO halves (the plan's decision 5): SHOW evaluates the bytes at
+# A watch has TWO halves: SHOW evaluates the bytes at
 # every stop and arms NOTHING, and BREAK-ON-CHANGE arms a memory-change breakpoint. A
 # single address may not be both -- see `add` -- because arming writes a trap byte that a
 # later read would return as program bytes.
@@ -82,7 +83,7 @@ def check_watch_mode(mode: str | None) -> None:
     caller who typed a mode that does not exist is told that, not that the width is missing."""
     if mode not in WATCH_MODES:
         raise DeclarationError(f"a watch needs a mode, one of {WATCH_MODES}; got {mode!r}")
-# A watch is N BYTES AT A NAME with a declared width and format (decision 25): a symbol
+# A watch is N BYTES AT A NAME with a declared width and format: a symbol
 # table gives addresses, not types, so there are no struct fields here.
 # A watch is BYTES AT A NAME read as a FORMAT: a scalar (N of them, `width` bytes), an
 # array (`u16[8]`), a string (`char[16]`) or a struct (`{x:i16,y:i16}`), the grammar of
@@ -450,7 +451,7 @@ class Resolved:
 
     `state` is `address` for a by-address declaration (nothing to resolve, the caller's
     address stands), `resolved` when a by-symbol declaration's name is in the current
-    table, and `unresolved` when it is not -- the vanished-symbol case decision 8 keeps.
+    table, and `unresolved` when it is not -- a vanished symbol is kept, never dropped.
     `offset` and `section` are the resolution and are `None` in the other two states.
 
     `matches` is HOW MANY symbols the name resolved to: 1 for the ordinary case, MORE when
@@ -504,7 +505,7 @@ class DeclarationStore:
     The file is a mapping from conf identity to a list of declarations, so opening a store
     for one conf reads the whole file but exposes only that conf's list; a write persists
     the whole file. Two stores over the same file and different identities cannot see each
-    other's declarations, which is decision 24: a symbol from another binary would arm at
+    other's declarations, on purpose: a symbol from another binary would arm at
     a plausible and wrong address.
 
     THE BATCHES THE ROWS NAME live beside them, under `BUILDS_KEY` and then the conf: one
@@ -603,18 +604,11 @@ class DeclarationStore:
             raw[BUILDS_KEY] = every
         else:
             raw.pop(BUILDS_KEY, None)
-        # WRITTEN THROUGH A TEMPORARY AND MOVED, so a crash mid-write cannot leave a
-        # half-written file that a later read would refuse: the declarations are meant to
-        # survive exactly the interruptions a plain truncate-then-write is most exposed to.
+        # WHOLE OR NOT AT ALL (`fresh.replace`): the declarations are meant to survive exactly
+        # the interruptions a plain truncate-then-write is most exposed to.
         self._path.parent.mkdir(parents=True, exist_ok=True)
-        fd, tmp = tempfile.mkstemp(dir=self._path.parent, suffix=".tmp")
-        try:
-            with os.fdopen(fd, "w", encoding="utf-8") as fh:
-                json.dump(raw, fh, indent=2, sort_keys=True)
-            os.replace(tmp, self._path)
-        except BaseException:
-            Path(tmp).unlink(missing_ok=True)
-            raise
+        fresh.replace(self._path, json.dumps(raw, indent=2, sort_keys=True).encode(),
+                      "the declarations file", named_by_caller=False)
 
     def _mine(self) -> list[Declaration]:
         return self._items
@@ -668,7 +662,7 @@ class DeclarationStore:
         mine[:] = updated
         try:
             self._persist()
-        except (OSError, DeclarationError) as e:
+        except (OSError, Invalid, DeclarationError) as e:
             raise StoreWriteError(f"the declaration file {self._path} could not be written: "
                                   f"{e}") from None
 
@@ -692,7 +686,7 @@ class DeclarationStore:
         the refusal, at the plan's QA.
 
         ONE conflict is still refused: for a watch, the SAME `ref` carrying the OTHER half
-        -- a `show` where a `change` already sits, or the reverse (decision 29):
+        -- a `show` where a `change` already sits, or the reverse:
         break-on-change arms a trap byte in that memory and a show watch reads those
         same bytes back, so one address that is both would report the trap as the value
         it exists to show, a wrong answer of exactly the right shape.
@@ -744,8 +738,8 @@ class DeclarationStore:
         """Drop declarations and return how many went.
 
         With no argument it clears EVERYTHING for this conf. `ref` clears every declaration
-        naming that symbol or address. `kind` clears one family, which is decision 10's
-        "clear breakpoints WITHOUT touching watches and the reverse". The two compose: a
+        naming that symbol or address. `kind` clears one family: breakpoints WITHOUT touching
+        watches, and the reverse. The two compose: a
         `ref` and a `kind` together clear only that ref within that family.
         """
         if kind is not None and kind not in KINDS:
@@ -766,7 +760,7 @@ class DeclarationStore:
         name->offset half, so the store's re-resolution (below) and the server's live
         resolver cannot disagree on what a name means. A by-address declaration needs no
         table and comes back `address`. A name absent from this build is `unresolved` and
-        kept (decision 8); a name defined more than once resolves to the LOWEST offset and
+        kept; a name defined more than once resolves to the LOWEST offset and
         reports `matches > 1`, so the arming tool can refuse an ambiguity the store still
         keeps. The chosen symbol's `idle` mark is carried through for the marked-public note.
         `index` is the table's `index_by_name`, so a caller resolving many names against
@@ -785,14 +779,14 @@ class DeclarationStore:
     def resolve(self, symbols: list[sym.Symbol]) -> list[Resolved]:
         """Re-point every declaration against a symbol table, keeping the vanished ones.
 
-        This serves decision 7 -- ten breakpoints and eight watches by name follow the
-        program across a rebuild -- as the machine-free half. It delegates to `resolve_name`,
+        Declarations by name follow the program across a rebuild, and this is the
+        machine-free half of that. It delegates to `resolve_name`,
         the single name->offset routine. NOTE it is NOT what the server calls on a
         `symbols_load`: the server re-resolves per declaration through `_resolve_ref`, which
         also shares `resolve_name`, so the two cannot disagree; this whole-list form is here
         for a caller that wants every declaration's resolution at once. A by-address
         declaration needs no table and comes back `address`; a name absent from this build is
-        `unresolved` and stays in the list (decision 8), never dropped.
+        `unresolved` and stays in the list, never dropped.
 
         AN AMBIGUOUS NAME -- one this build defines more than once -- resolves to the
         lowest offset and reports `matches > 1`, because refusing here would lose the

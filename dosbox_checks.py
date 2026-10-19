@@ -26,7 +26,7 @@ import re
 from collections.abc import Callable
 from typing import Any
 
-from scry_core import judges, media_tools, narrowing, picture
+from scry_core import judges, media_tools, narrowing, picture, screen_map
 from scry_core import value_format as vf
 
 import dosbox_code as code
@@ -168,8 +168,20 @@ def _send_keys(keys: list[str], modifiers: list[str] | None = None, expect: str 
 
 def _send_mouse(x: int | None = None, y: int | None = None, button: str | None = None,
                 action: str = "click", units: str = "screen", expect: str | None = None,
-                seconds: float | None = None, **_: Any) -> None:
-    inputs.check_mouse(x, y, button, action, units, expect, seconds)
+                seconds: float | None = None, target: str | None = None, **_: Any) -> None:
+    inputs.check_mouse(x, y, button, action, units, expect, seconds, target)
+
+
+def _map_load(path: str = "", **_: Any) -> None:
+    screen_map.check_path("path", path)
+
+
+def _map_add(screen: str = "", match: Any = None, controls: Any = None, **_: Any) -> None:
+    screen_map.check_add(screen, match, controls)
+
+
+def _map_save(path: str = "", overwrite: bool = False, **_: Any) -> None:
+    screen_map.check_save(path, overwrite)
 
 
 def _log(pattern: str, channel: str, limit: int = 40, **_: Any) -> None:
@@ -358,17 +370,24 @@ def _state(name: str, seconds: float = ds.STATE_WAIT_S, **_: Any) -> None:
 
 
 def _resume(seconds: float = 0.0, **rest: Any) -> None:
-    if isinstance(seconds, bool) or not isinstance(seconds, int | float) or math.isnan(seconds):
+    if (isinstance(seconds, bool) or not isinstance(seconds, int | float)
+            or not math.isfinite(seconds)):
         raise ds.Invalid("bad_argument",
-            f"seconds={seconds!r} is not a number of seconds; 0 is no bound")
+            f"seconds={seconds!r} is not a finite number of seconds; 0 is no bound")
     if seconds < 0:
         raise ds.Invalid("bad_argument", f"seconds={seconds!r} is negative; 0 is no bound")
     _display(**rest)
 
 
-#: The server's step vocabulary, handed in by the server once its tools exist: a list is judged
-#: against the tools a step dispatches to, which this module cannot import.
+#: The server's step vocabulary, handed in by the server once its tools exist (`take_step_ops`):
+#: a list is judged against the tools a step dispatches to, which this module cannot import.
 STEP_OPS: Callable[[], dict[str, Callable[..., Any]]] | None = None
+
+
+def take_step_ops(ops: Callable[[], dict[str, Callable[..., Any]]]) -> None:
+    """The server's step vocabulary, the one thing this module takes from it."""
+    global STEP_OPS
+    STEP_OPS = ops
 
 
 def steps_whole(name: str, steps: object) -> None:
@@ -559,6 +578,7 @@ BY_OP: dict[str, Check] = {
     "comment_add": _comment_add, "comment_delete": _comment_delete,
     "comment_save": _comment_save, "comment_load": _comment_load,
     "machine_map": _machine_map,
+    "map_load": _map_load, "map_save": _map_save, "map_add": _map_add,
 }
 
 #: The two tools whose steps ARE the calls: a list, and one act with its expectation.
@@ -569,16 +589,17 @@ SEQUENCES = frozenset({"perform", "drive"})
 #: the pre-gate's no-entry set below are each read off it.
 NOT_STEPS = SEQUENCES | {"build_check", "start", "close", "perform_export"}
 
-#: TOOLS DELIBERATELY WITHOUT AN ENTRY, named so an absent entry and a forgotten one cannot
-#: look alike. They take no argument at all (`status`, `stop`, `scan_clear`, `state_list`,
-#: `breakpoint_list`, `watch_list`, `captures`, `call_stack`, `comment_list`); or a flag every
-#: value of which is valid (`registers`); or a `ref` that matches only against the declarations
-#: the session's store holds (`breakpoint_clear`, `watch_clear`); or they are no step and have
-#: no half here (`build_check`'s binary and `perform_export`'s path, judged by their bodies
-#: first; `close`).
+#: TOOLS DELIBERATELY WITHOUT AN ENTRY, named so an absent entry and a forgotten one cannot look
+#: alike. They take no argument at all (`status`, `stop`, `scan_clear`, `state_list`,
+#: `breakpoint_list`, `watch_list`, `captures`, `call_stack`, `comment_list`, `map_find`); or a
+#: flag every value of which is valid (`registers`); or a `ref` that matches only against the
+#: declarations the session's store holds (`breakpoint_clear`, `watch_clear`); or they are no step
+#: and have no half here (`build_check`'s binary and `perform_export`'s path, judged by their
+#: bodies first; `close`).
 MACHINE_JUDGES = frozenset({
     "status", "stop", "registers", "scan_clear", "state_list", "breakpoint_list",
     "breakpoint_clear", "watch_list", "watch_clear", "captures", "call_stack", "comment_list",
+    "map_find",
 }) | (NOT_STEPS - BY_OP.keys())
 
 

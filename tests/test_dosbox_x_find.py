@@ -521,3 +521,13 @@ def test_a_scan_opened_at_a_width_takes_a_value_of_exactly_that_many_bytes(
         finder.scan_filter(s, "=", top + 1)
     assert finder.scan_filter(s, "=", top)["closed"] is True
     assert s.sent == [f"MEMFIND 0000:400 100 {letter}", f"MEMS ={top:X}"]
+
+
+@pytest.mark.parametrize("line", [finder.SCAN_ACTIVE, finder.SCAN_NOT_ACTIVE],
+                         ids=["one already open", "none open"])
+def test_a_scan_that_needs_another_call_first_says_needs_call(line: str) -> None:
+    """The shared table's `needs_call`: another call has to come first (`scan_clear`, or
+    `scan_start`), named in the message, where `bad_argument` would ask for another value."""
+    with pytest.raises(ds.Invalid) as e:
+        finder._refuse(line, "filter")
+    assert e.value.code == "needs_call" and "`scan_" in str(e.value)

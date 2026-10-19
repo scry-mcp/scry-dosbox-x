@@ -21,13 +21,15 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from scry_core import prose
+from scry_core import prose, screen_map
 
 #: A tool's summary: the call's arguments (defaults applied) and its reply, to one line.
 Summary = Callable[[dict[str, Any], dict[str, Any]], str]
 
-# Where a refusal's prose is cut for the line: the whole of it is in `message`.
-REFUSAL_CHARS_SHOWN = 120
+
+
+#: A refusal's line, and the cut of its prose, are scry-core's, alike on both servers.
+clipped, refusal = prose.clipped, prose.refusal
 
 
 def _said(n: object, noun: str, plural: str | None = None) -> str:
@@ -38,20 +40,6 @@ def _said(n: object, noun: str, plural: str | None = None) -> str:
     return f"{n} {plural or noun + 's'}"
 
 
-def clipped(text: str, limit: int = REFUSAL_CHARS_SHOWN) -> str:
-    """A long refusal cut for the summary line: at a word, with a mark saying the rest is in
-    `message`. A cut inside a word reads as a word that does not exist."""
-    if len(text) <= limit:
-        return text
-    cut = text.rfind(" ", 0, limit + 1)
-    return text[:cut if cut > 0 else limit] + "..."
-
-
-def refusal(name: str, reply: dict[str, Any]) -> str:
-    """Every tool's line for a reply that is not `ok`: the status, the code, and the prose cut
-    at a word."""
-    return (f"{name}: {reply.get('status')} ({reply.get('code')}), "
-            f"{clipped(str(reply.get('message', '')))}")
 
 
 def _at(stop: Any) -> str:
@@ -91,8 +79,9 @@ def status(args: dict[str, Any], reply: dict[str, Any]) -> str:
     ses = _block(reply, "session")
     if not ses:
         return "status: no session"
-    return (f"status: {'alive' if ses.get('alive') else 'gone'}, "
-            f"{ses.get('seconds_elapsed')}s of a {ses.get('seconds_bound')}s bound")
+    state = ("gone" if not ses.get("alive")
+             else "alive, running" if ses.get("running") else "alive, stopped")
+    return f"status: {state}, {ses.get('seconds_elapsed')}s of a {ses.get('seconds_bound')}s bound"
 
 
 def close(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -347,7 +336,7 @@ def comment_add(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def comment_list(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return f"comment_list: {reply.get('comments_total')} comment(s)"
+    return f"comment_list: {_said(reply.get('comments_total'), 'comment')}"
 
 
 def comment_delete(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -356,7 +345,7 @@ def comment_delete(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def comment_save(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return f"comment_save: {reply.get('comments_total')} comment(s) to {reply.get('dest')}"
+    return f"comment_save: {_said(reply.get('comments_total'), 'comment')} to {reply.get('dest')}"
 
 
 def comment_load(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -434,6 +423,13 @@ def screen_signature(args: dict[str, Any], reply: dict[str, Any]) -> str:
     return f"screen_signature {reply.get('mode')} {_region(reply)}: {reply.get('signature')}"
 
 
+# The screen maps' four lines are scry-core's, alike on both servers.
+map_load = screen_map.load_line
+map_add = screen_map.add_line
+map_find = screen_map.find_line
+map_save = screen_map.save_line
+
+
 def series_capture(args: dict[str, Any], reply: dict[str, Any]) -> str:
     return (f"series_capture: {reply.get('count')} AVI frames {reply.get('first')}.."
             f"{reply.get('last')}, {reply.get('distinct')} distinct, manifest "
@@ -463,8 +459,19 @@ def perform_export(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def perform(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    # THE COUNT AND THE TAIL ON THE LINE: under `summaries=True` a nested list's line is all
+    # its caller keeps, and `ok` alone tells a list that ended stopped from one still running.
     steps = reply.get("steps_total", len(args.get("steps") or []))
-    return f"perform: {reply.get('completed')} of {_said(steps, 'step')}"
+    done = f"perform: {reply.get('completed')} of {_said(steps, 'step')}"
+    stopped = reply.get("stopped")
+    if isinstance(stopped, dict):
+        seq = stopped.get("stop_seq")
+        return f"{done}, stopped" + (f" (stop {seq})" if seq is not None else "")
+    if reply.get("still_running"):
+        return f"{done}, still running"
+    if reply.get("gone"):
+        return f"{done}, the emulator gone"
+    return done
 
 
 def drive(args: dict[str, Any], reply: dict[str, Any]) -> str:

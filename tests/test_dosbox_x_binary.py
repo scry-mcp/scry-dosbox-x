@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
+from scry_core import binaries as core_binaries
 from scry_core.reply_contract import Invalid
 
 import dosbox_binary as binaries
@@ -145,7 +146,7 @@ def test_a_version_call_that_prints_nothing_is_unavailable(tmp_path: Path) -> No
 
 def test_a_version_call_that_hangs_is_unavailable_within_its_bound(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(binaries, "VERSION_TIMEOUT_S", 0.2)
+    monkeypatch.setattr(core_binaries, "VERSION_TIMEOUT_S", 0.2)
     got = binaries.version(str(build(tmp_path, version="exec sleep 5")))
     assert isinstance(got, dict) and got["available"] is False
     assert "did not return in 0.2 s" in got["why"], got

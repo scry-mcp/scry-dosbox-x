@@ -54,9 +54,9 @@
             "data_hex": {"any_of": ["9090", "90 90"]}}},
   {"id": "D19", "prompt": "This session is headless and nothing is declared that could stop the guest. Let it run and come back at once; it will be stopped later.",
    "tool": "resume"},
-  {"id": "D20", "prompt": "Let the guest run and wait up to 25 seconds for a stop. When it stops, give me the guest's E9 lines of the last 12 seconds, only those matching ^FRAME; each line's own time is the digits captured by the regex t=([0-9]+)ms.",
+  {"id": "D20", "prompt": "Let the guest run and wait up to 25 seconds for a stop. When it stops, give me the guest's E9 lines of the last 12 seconds, only those matching ^FRAME; each line's own time, in seconds, is the digits captured by the regex t=([0-9]+)s.",
    "tool": "resume",
-   "args": {"seconds": 25, "e9": "seconds:12", "e9_filter": "^FRAME", "e9_stamp": "t=([0-9]+)ms"}},
+   "args": {"seconds": 25, "e9": "seconds:12", "e9_filter": "^FRAME", "e9_stamp": "t=([0-9]+)s"}},
   {"id": "D21", "prompt": "The headless guest is running: bring it back to the debugger.", "tool": "stop"},
   {"id": "D22", "prompt": "Step into the next 4 instructions, following calls, and give me every E9 line the guest wrote since the previous stop.",
    "tool": "step", "args": {"mode": "into", "count": 4, "e9": "since"}, "allow": ["e9_filter", "e9_stamp"],
@@ -228,5 +228,12 @@
   {"id": "D112", "prompt": "Export this session as a replay to /tmp/bench/bricks.json, replacing the document already there.", "tool": "perform_export", "args": {"path": "/tmp/bench/bricks.json", "overwrite": true}},
   {"id": "D113", "prompt": "Save the session as a replay document named session.json in the bench folder of my home directory.", "tool": "perform_export", "args": {"path": "~/bench/session.json"}},
   {"id": "D114", "prompt": "In one call, read 2 bytes at 0100:0000 and have the call stop as diverged unless they read as hex 4f6b.", "tool": "perform", "args": {"steps": [{"op": "read_memory", "ref": "0100:0000", "length": 2, "recorded": {"hex": {"any_of": ["4f6b", "4F6B"]}}}]}, "allow": ["wait", "summaries"], "grammar": ["read_memory"]},
-  {"id": "D115", "prompt": "Export only the last ten calls of this session as a replay document.", "expect": "CANNOT", "about": "perform_export"}
+  {"id": "D115", "prompt": "Export only the last ten calls of this session as a replay document.", "expect": "CANNOT", "about": "perform_export"},
+  {"id": "D116", "prompt": "The guest is stopped in mode 13h. Save what is on the screen to /tmp/quiet.png, but do not attach the picture to your reply: I only need the file.", "tool": "screen_view", "args": {"dest": "/tmp/quiet.png", "attach": false}},
+  {"id": "D117", "prompt": "Check the PNGs in the directory /tmp/shots against the goldens listed in /tmp/shots.sha256, listing at most 5 names in each list.", "tool": "golden_check", "args": {"dir": "/tmp/shots", "checksums": "/tmp/shots.sha256", "limit": 5}},
+  {"id": "D118", "prompt": "Load the screen map /tmp/maps/bricks.scry-map.json.", "tool": "map_load", "args": {"path": "/tmp/maps/bricks.scry-map.json"}},
+  {"id": "D119", "prompt": "The guest is stopped on its title screen, a text mode. Map it as title, known by the row at column 0, row 0, 40 cells wide and 1 high, with a control named play at column 10, row 12, 20 cells wide and 1 high.", "tool": "map_add", "args": {"screen": "title", "match": [[0, 0, 40, 1]], "controls": [{"name": "play", "rect": [10, 12, 20, 1]}]}},
+  {"id": "D120", "prompt": "The guest is stopped. Which of the mapped screens is it showing right now?", "tool": "map_find", "args": {}},
+  {"id": "D121", "prompt": "Write this session's screen maps to /tmp/maps/bricks.scry-map.json, replacing the file that is there.", "tool": "map_save", "args": {"path": "/tmp/maps/bricks.scry-map.json", "overwrite": true}},
+  {"id": "D122", "prompt": "The guest is running. Left-click the control named serve on the screen the last identification matched.", "tool": "send_mouse", "args": {"target": "serve", "button": "left"}, "grammar": ["left"]}
 ]}

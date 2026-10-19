@@ -257,12 +257,11 @@ _TLINK_SECTION_ANY = re.compile(r"^[ \t]*[0-9A-Fa-f]{4}:[0-9A-Fa-f]{8}\b")
 # is the same `%04d:` pair, so an eleventh section prints `0011` meaning eleven while
 # everything here reads 0x11.
 #
-# IT USED TO BE HARMLESS BECAUSE THE INDEX NEVER LEFT THIS FILE: it was a JOIN KEY
-# between the publics and the section table, both parsed by the same rule, so the two
-# agreed on the wrong number and the address that came out was right. DECISION 36 DELETED
-# THAT: the index is stored on `Symbol.section` and becomes the key a CALLER must supply
-# in `section_bases`, and that caller reads the map's printed `%04d`. The two sides are no
-# longer parsed by the same rule -- one of them is a person.
+# IT IS NOT A PRIVATE JOIN KEY: were the index used only between the publics and the
+# section table, both parsed by the same rule, the two would agree on a wrong number and the
+# address would still come out right. But the index is stored on `Symbol.section` and is the
+# key a CALLER supplies in `section_bases`, reading the map's printed `%04d`. The two sides
+# are not parsed by the same rule -- one of them is a person.
 #
 # THE LOUD CASE is a map with ten or more sections: its tenth row prints `0010`, this
 # stores 16, and a caller's `{10: ...}` is refused naming a section 16 that appears
@@ -283,7 +282,7 @@ _TLINK_SECTION_ANY = re.compile(r"^[ \t]*[0-9A-Fa-f]{4}:[0-9A-Fa-f]{8}\b")
 #
 # WHAT THE SECTION TABLE IS FOR: not positioning. `_tlink_place` keeps
 # `(section, offset)` and `place` refuses a section the CALLER has not positioned, by
-# name (decision 36). The table is consulted for one thing only, and it is a yes-or-no:
+# name. The table is consulted for one thing only, and it is a yes-or-no:
 # whether this file HAS one, which is what tells a short row apart from an odd one.
 #
 # THE MARK IS `Idle`, WITH A CAPITAL I, as a real ILINK32 map writes it; a lowercase
@@ -823,9 +822,8 @@ class Anchored:
     """Where a section of a linker map BEGINS, and what a row of it looks like.
 
     A format DECLARES these two and gets the walk below; it does not write the walk.
-    That is the whole of decision 27's "minimum refactor": the readers around this
-    carry measured knowledge about particular linkers and are not touched, and the ONE
-    thing extracted is the part where a copy can be silently wrong.
+    The readers around this carry knowledge about particular linkers and stay their own; the
+    ONE thing shared is the part where a copy can be silently wrong.
     """
 
     # The line that opens the section. IT IS THE ANCHOR AND A ROW SHAPE IS NOT, which is
@@ -1095,8 +1093,8 @@ def parse_tlink(text: str, report: ParseReport | None = None) -> tuple[list[Symb
 
     THE BASES ARE THE CALLER'S, AND FOR A 32-BIT MAP THERE IS A TABLE OF THEM. A 32-bit
     map is NOT placed with `base = 0` on the idea that its section starts carry the image
-    base, and getting that wrong produces a refusal rather than a wrong answer (decision
-    36): `encode(p, base=0)` yields `{FLAT: 0}` and every sectioned symbol is then refused
+    base, and getting that wrong produces a refusal rather than a wrong answer:
+    `encode(p, base=0)` yields `{FLAT: 0}` and every sectioned symbol is then refused
     by name. Pass `section_bases`. Where a section sits is not in the file, whose `Start`
     column prints zeros, so it comes from the linked image, which this module does not read.
 
@@ -1157,9 +1155,7 @@ def parse_tlink(text: str, report: ParseReport | None = None) -> tuple[list[Symb
 def _tlink_place(row: str, sectioned: bool) -> tuple[str, int, int, bool] | None:
     """One publics row as (name, SECTION, offset inside it, mark), or None.
 
-    IT IS A FOUR-TUPLE AND THE OFFSET IS NOT "IN THE IMAGE" -- this line said
-    `(name, offset in the image, overlay flag)`, which was true before decision 36 and is
-    now wrong in the arity AND in what the second value means. A 32-bit row's offset is
+    IT IS A FOUR-TUPLE AND THE OFFSET IS NOT "IN THE IMAGE". A 32-bit row's offset is
     relative to its section and is placed later; only a real-mode row's is complete, and
     that one carries `FLAT`.
 
@@ -1211,7 +1207,7 @@ def _tlink_place(row: str, sectioned: bool) -> tuple[str, int, int, bool] | None
     m = _TLINK_ROW32.match(row)
     if m is None:
         return None
-    # THE SECTION IS KEPT, NOT RESOLVED HERE (decision 36). Looking the index up in the
+    # THE SECTION IS KEPT, NOT RESOLVED HERE. Looking the index up in the
     # map's own section table and returning `base + offset` fails on the real artefact:
     # an ILINK32 map's `Start` column is `section:offset` with every offset ZERO, so the
     # table reads `{1: 0, 2: 0, 3: 0}` and all three sections fold onto one address
@@ -1296,8 +1292,8 @@ def parse_watcom(text: str,
                  report: ParseReport | None = None) -> tuple[list[Symbol], int]:
     """The Memory Map of an Open Watcom link map: symbols, and what it could not read.
 
-    IT KEEPS `(section, offset)` AND PLACES NOTHING, which is decision 36 and is also
-    the only honest thing this format allows: a Watcom map carries NO flat address
+    IT KEEPS `(section, offset)` AND PLACES NOTHING, as every reader does, and here it is
+    also the only honest thing this format allows: a Watcom map carries NO flat address
     anywhere. Its section offsets OVERLAP -- sections 1 and 2 both start at 0 -- and
     under DOS/4GW those left-hand numbers are SELECTORS assigned at load time, not
     paragraphs, so `section * 16` would invent an address rather than read one. The
@@ -1596,7 +1592,7 @@ def resolve_bases(base: int | None,
                   section_bases: Mapping[int, int] | None) -> dict[int, int]:
     """The caller's answer to "where does this program live", as one table.
 
-    TWO WAYS IN, AND PASSING BOTH IS REFUSED (decision 26). A field that is sometimes a
+    TWO WAYS IN, AND PASSING BOTH IS REFUSED. A field that is sometimes a
     number and sometimes a table cannot be declared honestly in an MCP tool's schema,
     and a refusal makes the ambiguity IMPOSSIBLE rather than documented. Which of the
     two would have won is precisely the thing nobody would notice getting wrong.
@@ -1630,17 +1626,17 @@ def resolve_bases(base: int | None,
             "for a flat format, `section_bases` for a sectioned one. Defaulting to "
             "zero would name whatever occupies the bottom of the image")
     # KEYED ON `FLAT`, so a SECTIONED symbol handed a flat base is refused by `place`
-    # rather than placed at it. That refusal is the whole point of decision 36 and it
-    # only works because the sentinel is an index no map can print.
+    # rather than placed at it. That refusal is why readers place nothing, and it only works
+    # because the sentinel is an index no map can print.
     return {FLAT: base}
 
 
 def place(sym: Symbol, bases: Mapping[int, int]) -> int:
     """One symbol's LINEAR address, from its own section and the caller's table.
 
-    PLACEMENT HAPPENS ONCE, HERE, and never while reading. That is decision 36 in one
-    function: the reader keeps what the file said (`section`, `offset`) and this turns
-    it into an address when somebody supplies the missing half.
+    PLACEMENT HAPPENS ONCE, HERE, and never while reading: the reader keeps what the file
+    said (`section`, `offset`) and this turns it into an address when somebody supplies the
+    missing half.
 
     A SECTION THE TABLE DOES NOT POSITION IS REFUSED, never defaulted to zero. A base of
     0 puts that whole section's symbols on top of whatever is at the bottom of the
@@ -1789,12 +1785,10 @@ def find_by_offset(symbols: list[Symbol], offset: int,
     and a name alone cannot tell them apart -- this table has no sizes in it, which is
     a limit of `nm` output and is why the delta is returned instead of being judged.
 
-    `section` IS A FIX RATHER THAN AN ADDITION. Before decision 36 every producer folded
-    its offsets into ONE space, so comparing them across the whole list was sound. The
-    two sectioned readers broke that precondition and this function was not revisited:
-    with the sections OVERLAPPING -- and they do, `{1: 0, 2: 0, 3: 0}` on the real 32-bit
-    map -- an offset inside section 1 was answered with whichever symbol of ANY section
-    happened to sit highest below it.
+    `section` IS WHAT MAKES THE ANSWER SOUND. Offsets of different sections are different
+    addresses, and the sections OVERLAP (`{1: 0, 2: 0, 3: 0}` on a real 32-bit map), so an
+    offset compared across the whole list is answered with whichever symbol of ANY section
+    happens to sit highest below it.
 
     `[Symbol("_main", 0x10, section=1), Symbol("_dataend", 0x20, section=2)]`
     asked about 0x100 would answer `_dataend +0xE0` -- a symbol from a different selector,
@@ -1802,7 +1796,7 @@ def find_by_offset(symbols: list[Symbol], offset: int,
 
     THE DEFAULT IS THE FLAT CASE and not a convenience: a caller with a flat table has
     exactly one section and passing it would be ceremony, while a caller with a sectioned
-    table that forgets this argument now gets NOTHING back rather than the wrong symbol.
+    table that forgets this argument gets NOTHING back rather than the wrong symbol.
     A refusal instead of a confident wrong answer is this module's whole standard.
     """
     below = [s for s in symbols if s.section == section and s.offset <= offset]

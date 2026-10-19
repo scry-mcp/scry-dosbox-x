@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D120",
+  "prompt": "The guest is stopped. Which of the mapped screens is it showing right now?",
+  "tool": "map_find",
+  "args": {}
+ },
+ "runs": [
+  {
+   "lines": [
+    "D120: {\"tool\":\"map_find\",\"args\":{}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D120: {\"tool\": \"map_find\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D120: {\"tool\": \"map_find\", \"args\": {}}"
+   ],
+   "right": true
+  }
+ ]
+}

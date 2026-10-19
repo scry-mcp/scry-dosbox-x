@@ -423,12 +423,23 @@ def check_keys(keys: list[str], modifiers: list[str] | None, expect: str | None 
 
 def check_mouse(x: int | None, y: int | None, button: str | None, action: str = "click",
                 units: str = "screen", expect: str | None = None,
-                seconds: float | None = None) -> None:
-    """Everything `send_mouse` refuses before anything is sent: a move, a button or both,
-    whole non-negative numbers (a `perform` step hands values over untyped), the vocabularies."""
-    if x is None and y is None and button is None:
+                seconds: float | None = None, target: str | None = None) -> None:
+    """Everything `send_mouse` refuses before anything is sent: a move (`x` and `y`, or a
+    `target` control in the screen's units), a button or both, whole non-negative numbers (a
+    `perform` step hands values over untyped), the vocabularies."""
+    if target is not None:
+        if not isinstance(cast(object, target), str) or not target:
+            raise ds.Invalid("bad_argument", f"target is a control's name on the screen "
+                             f"`map_find` matched; got {target!r}")
+        if x is not None or y is not None:
+            raise ds.Invalid("bad_argument", "`target` names where the pointer goes: give it, "
+                             "or `x` and `y`, not both")
+        if units != "screen":
+            raise ds.Invalid("bad_argument", "a control's place is in the screen's units: "
+                             "`target` goes with units 'screen'")
+    if x is None and y is None and button is None and target is None:
         raise ds.Invalid("bad_argument",
-            "name a move (`x` and `y`), a `button`, or both (the move goes first)")
+            "name a move (`x` and `y`, or a `target`), a `button`, or both (the move goes first)")
     if (x is None) != (y is None):
         raise ds.Invalid("bad_argument", "a move needs BOTH `x` and `y`")
     for name, value in (("x", x), ("y", y)):
@@ -461,7 +472,12 @@ def send_keys(session: ds.Session, keys: list[str], modifiers: list[str] | None,
     seq = scan_sequence(keys, "+".join(modifiers) if modifiers else "-")
 
     def post() -> dict[str, Any]:
-        session.send_commands(key_commands(seq))
+        try:
+            session.send_commands(key_commands(seq))
+        except ds.Invalid as e:
+            # SOME OF IT MAY HAVE GONE IN: the socket can die between two commands, and a key
+            # that went in must not be sent again.
+            raise Delivered(e.code, str(e), {"route": "guest"}) from None
         return {"route": "guest", "posted": len(keys), "bytes": len(seq), "ticks": len(seq)}
     return _post_and_verify(session, "key", post, expect, seconds, progress=progress,
                             keys=keys, modifiers=modifiers or [])
@@ -500,11 +516,43 @@ def _pointer(report: Report) -> dict[str, Any]:
             "mode": f"{report.mode:#04x}"}
 
 
+def send_mouse_at(session: ds.Session, aimed: dict[str, Any], button: str | None, action: str,
+                  expect: str | None, seconds: float | None,
+                  progress: ds.Progress = ds.no_progress) -> dict[str, Any]:
+    """`send_mouse(target=)`: the pointer to the centre of the control `aimed` names, in the
+    screen's units, and the reply saying which control, on which screen, identified when."""
+    x, y = aimed["centre"]
+    reply = send_mouse(session, x, y, button, action, "screen", expect, seconds, progress, aimed)
+    return {**reply, "target": aimed["target"], "screen": aimed["screen"],
+            "identified_at_stop": aimed["identified_at_stop"]}
+
+
+def _still_the_screen(report: Report, aimed: dict[str, Any]) -> None:
+    """THE SCREEN AN IDENTIFICATION WAS OF, held to the one the guest shows now. A control's
+    centre is a place on one screen, and a guest that changed mode since `map_find` would take
+    it as a place on another: the same numbers, a text cell read as a pixel. Kind and size are
+    what the stub reports while the guest runs; what is drawn is not, so a screen of the same
+    mode that changed since is the caller's to catch with `map_find` at a stop."""
+    kind, (width, height) = aimed["kind"], aimed["size"]
+    units = report.units()
+    now = (None if units is None
+           else ("text" if report.mode in TEXT_COLUMNS else "pixel", units))
+    if now != (kind, (width, height)):
+        said = ("a mode this server does not map" if now is None
+                else f"a {now[0]} {now[1][0]}x{now[1][1]} screen")
+        raise ds.Invalid("needs_call", f"target={aimed['target']!r} is a control of "
+                         f"{aimed['screen']!r}, a {kind} {width}x{height} screen, and the guest "
+                         f"shows {said} now: `map_find` again at a stop")
+
+
 def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | None,
                action: str, units: str, expect: str | None, seconds: float | None,
-               progress: ds.Progress = ds.no_progress) -> dict[str, Any]:
+               progress: ds.Progress = ds.no_progress,
+               aimed: dict[str, Any] | None = None) -> dict[str, Any]:
     """The body of the `send_mouse` tool: read where the pointer is, move it, press, read it
-    back. The read-back needs the log, so a session without one is refused before anything."""
+    back. The read-back needs the log, so a session without one is refused before anything.
+    `aimed` is the control a `target` named (`screen_map.Maps.target`), whose screen the guest
+    must still show the kind and size of."""
     check_mouse(x, y, button, action, units, expect, seconds)
     if session.launch.logfile is None:
         raise ds.Invalid("no_channel",
@@ -513,6 +561,8 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
     _refuse_stopped(session, "a mouse event")
     require_stub(session)
     before = _report(session)
+    if aimed is not None:
+        _still_the_screen(before, aimed)
     target = None if x is None or y is None else _target(before, x, y, units)
 
     def post() -> dict[str, Any]:

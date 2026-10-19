@@ -184,8 +184,8 @@ def render_watch(raw: bytes, width: int, fmt: str) -> vf.Value:
 def evaluate_watches(session: ds.Session, *,
                       machine: tuple[str, dict[str, str]] | None = None,
                       held: list[dict[str, str]] | None = None) -> list[dict[str, Any]]:
-    """Every watch declaration, EVALUATED at this stop (decision 13). A show watch
-    is read and rendered -- it arms nothing, so its bytes are the program's (decision 29).
+    """Every watch declaration, EVALUATED at this stop. A show watch
+    is read and rendered -- it arms nothing, so its bytes are the program's.
     A break-on-change watch is NOT read: it armed a trap byte in that memory, and reading
     it would hand back the trap as the value it exists to report, so it is listed with its
     state and that reason instead. A watch that no longer resolves is listed with why, never
@@ -237,7 +237,7 @@ def evaluate_watches(session: ds.Session, *,
             out.append(item)
             continue
         # A show watch whose address is CURRENTLY armed as a memory watch (a change watch on
-        # the same bytes, however it was declared -- decision 29 forbids the pair by ref, but
+        # the same bytes, however it was declared -- the pair is refused by ref, but
         # two refs can alias one address) would read that watch's trap byte. Checked against
         # the live BPLIST, not the store, so it holds whatever the declaration said.
         if watch_held(held, seg, off) is not None:
@@ -248,7 +248,7 @@ def evaluate_watches(session: ds.Session, *,
             out.append(item)
             continue
         try:
-            # THE CACHED MODE (decision 35, part 2): a show watch's read_bytes would else
+            # THE CACHED MODE: a show watch's read_bytes would else
             # re-survey the machine for its offset ceiling -- N watches, N surveys of a
             # screen the stop already read. `machine[0]` is that mode; passed only when the
             # caller cached it, which the stop reply does.
@@ -303,8 +303,8 @@ def _bp_holders(session: ds.Session, mode: str, at: tuple[int, int], *, but: str
 def attribute_stop(session: ds.Session, *, where: dict[str, str],
                     machine: tuple[str, dict[str, str]] | None = None,
                     retrace_may_stop: bool = False) -> dict[str, Any]:
-    """WHICH declaration the stop is at, BY ADDRESS COMPARISON, or an honest cannot-say
-    (decision 13). A code breakpoint whose resolved address equals CS:EIP is named. Nothing
+    """WHICH declaration the stop is at, BY ADDRESS COMPARISON, or an honest cannot-say.
+    A code breakpoint whose resolved address equals CS:EIP is named. Nothing
     else is claimed: the debugger records no hit flag, and a memory watch stops at the
     instruction that WROTE, not at the watched address, so from a stop there is no
     arithmetic back to a watch declaration. Guessing one would be the confident wrong answer.
@@ -312,7 +312,7 @@ def attribute_stop(session: ds.Session, *, where: dict[str, str],
     one is named (`refs`), the first stays `ref`, and `note` says so, instead of the first
     in silence.
 
-    `where` and `machine` are read once by the caller (decision 35): attribution over M
+    `where` and `machine` are read once by the caller: attribution over M
     breakpoints would otherwise re-read the machine M times for a state fixed at this stop.
 
     `retrace_may_stop` is a stop reached by a release that ran on (`resume`, a `run_to` that did
@@ -377,7 +377,7 @@ def _follow(session: ds.Session, decl: dec.Declaration, seg: int, off: int,
 
 def rearm_declarations(session: ds.Session) -> dict[str, Any]:
     """Re-resolve every stored declaration against the just-loaded table and arm the code
-    ones that resolve and are not already held. Decision 7's re-arm: a breakpoint declared
+    ones that resolve and are not already held. The re-arm: a breakpoint declared
     by name is meant to survive a rebuild and re-place itself. It arms nothing for an
     unresolved or ambiguous name -- those are counted and reported, never guessed at.
     """
@@ -484,7 +484,7 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
     STATE.pending["disarm"][:] = kept_disarm
     kept_arm: list[str] = []
     if STATE.store is not None and STATE.pending["arm"]:
-        # ONE machine reading and ONE list read for every ref (decision 35), not one per
+        # ONE machine reading and ONE list read for every ref, not one per
         # ref: at a console round trip apiece, three refs cost seconds otherwise.
         try:
             where, regs = session.where_and_registers()
@@ -915,7 +915,7 @@ def breakpoint_clear(session: ds.Session, ref: str | None) -> dict[str, Any]:
                     pending_disarm.append(decl.ref)
     # Both families cleared here, so `kind` is not passed: a `ref` alone (or nothing)
     # takes breakpoints AND interrupts, and a caller wanting only one family clears by
-    # ref. Watches are a different tool (decision 10's "without touching watches").
+    # ref. Watches are a different tool, cleared without touching these.
     removed = (store.remove(ref=ref, kind="breakpoint")
                + store.remove(ref=ref, kind="interrupt"))
     _unqueue_cleared(store)
@@ -1006,7 +1006,7 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
                       already_stored=already, armed=False, state=res["state"],
                       why=res["why"], **extra)
     if mode == "show":
-        # A SHOW WATCH ARMS NOTHING (decision 29): a plain memory read at every stop, which
+        # A SHOW WATCH ARMS NOTHING: a plain memory read at every stop, which
         # Phase 4 delivers. The declaration is stored; whether the symbol resolves yet only
         # decides whether it can be READ, not whether it is kept. The state is its
         # resolution, spelled the same way `watch_list` spells it (dec 12: one word per

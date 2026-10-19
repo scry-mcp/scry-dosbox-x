@@ -58,30 +58,30 @@ mcp = envelope.Envelope(
         'TOOLS. Session: `build_check`, `start`, `status`, `close`. Read: `registers`,\n'
         '`read_memory`, `disassemble`, `call_stack`, `memdump`, `find`, `log`, `log_wait`,\n'
         '`machine_map`, `interrupt_vectors`, `palette`, `screen_view`, `screen_signature`,\n'
-        '`debug`. Scan (by value, with no map): `scan_start`, `scan_filter`, `scan_clear`.\n'
+        '`map_add`, `map_find`, `debug`. Scan (by value): `scan_start`, `scan_filter`,\n'
+        '`scan_clear`. '
         'Write: `set_register`, `write`. Advance: `run_to`, `run_for`, `trace`, `screen_wait`,\n'
         '`step`, `resume`, `stop`. Declarations, kept per conf: `breakpoint_at`,\n'
         '`breakpoint_list`, `breakpoint_clear`, `breakpoint_interrupt`, `watch_add`,\n'
         '`watch_list`, `watch_clear`. States: `state_save`, `state_load`, `state_list`.\n'
-        'Names: `symbols_load`,\n'
-        '`symbols_find`. Comments: `comment_add`, `comment_list`, `comment_delete`,\n'
-        '`comment_save`, `comment_load`. Input, in-guest:\n'
-        '`send_keys`, `send_mouse`, `drive`. Captures: `captures`, `capture_frame`,\n'
-        '`series_capture`, `snapshot`. Files, any state: `image_diff`, `series_diff`,\n'
-        '`region_track`, `golden_check`. Sequences: `perform`, `perform_export`.\n\n'
-        'A SESSION. `build_check` answers about the BUILD, never a reading, and REFUSES while a\n'
-        'session is live. `start` parks the guest STOPPED at the debugger; `resume` lets it\n'
+        'Names: `symbols_load`, `symbols_find`. Comments: `comment_add`, `comment_list`,\n'
+        '`comment_delete`, `comment_save`, `comment_load`. Input, in-guest: `send_keys`,\n'
+        '`send_mouse` (a mapped control by `target`), `drive`. Captures: `captures`,\n'
+        '`capture_frame`, `series_capture`, `snapshot`. Files, any state: `image_diff`,\n'
+        '`series_diff`, `region_track`, `golden_check`, `map_load`, `map_save`. Sequences:\n'
+        '`perform`, `perform_export`.\n\n'
+        'A SESSION. `build_check` answers about the BUILD and REFUSES while a session is live.\n'
+        '`start` parks the guest STOPPED at the debugger; `resume` lets it\n'
         'run. The readers need it STOPPED and refuse otherwise, naming `last_stop` and what\n'
         'answers; a running guest is reached through `log`, `log_wait`, `send_keys` and\n'
         '`send_mouse`, and stops at a breakpoint armed BEFORE the release\n'
-        '(`breakpoint_interrupt` 0x21 real mode, 0x31 ah=2 DJGPP) or at `stop`, headless or\n'
-        'windowed. What you declare while\n'
-        'it runs is `pending` until the next stop. After `symbols_load`, a `ref` is a symbol or\n'
-        'a `SEG:OFF`. A cancel ends a call as its bound would; the next reply says `cancelled`.\n'
+        '(`breakpoint_interrupt` 0x21 real mode, 0x31 ah=2 DJGPP) or at `stop`. What you\n'
+        'declare while it runs is `pending` until the next stop. After `symbols_load`, a `ref`\n'
+        'is a symbol or a `SEG:OFF`. A cancel ends a call as its bound would; the next reply\n'
+        'says `cancelled`.\n'
         'FOR A VALUE: `registers`, `read_memory`, `memdump`, `log`; `debug` last.\n\n'
         'EVERY REPLY carries `summary`, `status` (`ok`, or `INVALID` with `code` and `message`)\n'
-        'and `session` (`altered`: has anything here written to the machine?). An argument of\n'
-        "the wrong TYPE is the schema's `bad_argument`.\n\n"
+        "and `session` (`altered` after a write). A wrong TYPE is the schema's `bad_argument`.\n\n"
         'Reference: REFERENCE.md.'
     ),
     refusal=refusal,
@@ -113,7 +113,7 @@ def registered_tools() -> list[str]:
     public accessor, and a test pins this so a library change fails loudly here
     instead of silently emptying the surface.
     """
-    return sorted(t.name for t in mcp._tool_manager.list_tools())
+    return sorted(t.name for t in strict.registered(mcp))
 
 
 def _end_cancelled(name: str, on_cancel: cancel.OnCancel

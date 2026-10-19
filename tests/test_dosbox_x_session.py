@@ -2721,3 +2721,29 @@ def test_only_a_commands_reply_ends_early() -> None:
     began = time.monotonic()
     ses._collect(0.4, ds.REPLY_TIMEOUT_S)
     assert time.monotonic() - began >= 0.4
+
+
+def test_the_conf_is_hashed_again_only_when_it_moves(tmp_path: Path) -> None:
+    """Every reply says whether the conf changed; the hash is read again only when its size,
+    mtime or inode moved, so a list of steps does not read the whole file per step."""
+    import os
+
+    import dosbox_launch as dl
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n")
+    first = dl.current_digest(conf)
+    calls: list[Path] = []
+    real = dl.digest
+
+    def counted(path: Path) -> str:
+        calls.append(path)
+        return real(path)
+    dl_digest = dl.digest
+    try:
+        dl.digest = counted
+        assert [dl.current_digest(conf) for _ in range(3)] == [first] * 3 and calls == []
+        conf.write_text("[sdl]\nfullscreen=false\n")
+        os.utime(conf, ns=(1, 1))
+        assert dl.current_digest(conf) != first and calls == [conf]
+    finally:
+        dl.digest = dl_digest

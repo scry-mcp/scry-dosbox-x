@@ -7,17 +7,19 @@ TERMINAL, so a pipe is the wrong instrument and would fail for a reason that has
 nothing to do with the question.
 
 ECHO IS TURNED OFF BEFORE ANYTHING IS SPAWNED.  A terminal echoes by default, in the
-driver rather than in the child, so it echoes whether or not the child exists.
-MEASURED while this was being built: with no DOSBox-X running at all, a probe that
-looked for its own command words in the terminal's output scored three of five checks
-TRUE.  The stronger defence is the one in `command()`, which hands back only the
+driver rather than in the child, so it echoes whether or not the child exists: with no
+DOSBox-X running at all, a probe that looks for its own command words in the terminal's
+output finds them.  The stronger defence is the one in `command()`, which hands back only the
 DELTA a command produced rather than a search over everything that ever arrived; echo
 off covers the window before ncurses owns the terminal.
 
 THE SESSION IS ONE OBJECT AND ITS GRAMMARS ARE NOT: what a session is launched with, judged and
 built into a command line, is `dosbox_launch`'s; what the console prints, parsed, is
 `dosbox_console`'s; the log's channels and filters are `dosbox_logs`'s; and the files the emulator
-wrote, collected to where the caller asked, are `dosbox_collect`'s.
+wrote, collected to where the caller asked, are `dosbox_collect`'s. And four of its jobs live in
+modules of their own, `Session` delegating each method to its body there: reading and waiting
+on the logs (`dosbox_log_reader`), the video and its stills (`dosbox_frames`), the saved states
+(`dosbox_saved_states`) and the symbol file handed to the debugger (`dosbox_symbol_file`).
 """
 
 from __future__ import annotations
@@ -27,7 +29,6 @@ import os
 import pty
 import re
 import select
-import shutil
 import signal
 import socket
 import subprocess
@@ -48,7 +49,6 @@ import dosbox_collect as dcollect
 import dosbox_console as dcons
 import dosbox_control as control
 import dosbox_launch as dlaunch
-import dosbox_logs as dlogs
 import dosbox_paths as paths
 
 # The var-list ENCODING lives next door, in a module with no emulator in it, so a
@@ -61,7 +61,6 @@ import dosbox_paths as paths
 # into one namespace, so a bare top-level `symbols` here would bind to whichever package
 # imported one first, and a reverse-engineering pack is the kind of project that grows a
 # `symbols.py` of its own.
-import dosbox_symbols as symbols
 
 # HOW LONG A HELD HEAD MAY GET before it is given up and emitted as text.
 #
@@ -255,11 +254,10 @@ SYM_SAVE_ECHO = "Variable list save"
 SYM_LOAD_ECHO = "Variable list load"
 SYM_OK = ") : ok."
 
-# A `SV`/`LV` FILENAME IS CUT TO TWELVE CHARACTERS, SILENTLY, AND REPORTED `ok`.
-# MEASURED: `SV ABCDEFGHIJKLMNOPQRST.BIN` answered
-# `Variable list save (ABCDEFGHIJKL) : ok.` and wrote a 144,762-byte file named
-# `ABCDEFGHIJKL`, with no extension, into the emulator's working directory. An absolute
-# path fails the same way and at least says so: `/private/tmp/claude-501/...` echoed
+# A `SV`/`LV` FILENAME IS CUT TO TWELVE CHARACTERS, SILENTLY, AND REPORTED `ok`:
+# `SV ABCDEFGHIJKLMNOPQRST.BIN` answers `Variable list save (ABCDEFGHIJKL) : ok.` and writes
+# a file named `ABCDEFGHIJKL`, with no extension, into the emulator's working directory. An
+# absolute path is cut the same way and at least says so: `/private/tmp/...` echoes
 # `(/PRIVATE/TMP)` and `: failure.`
 #
 # So the names below are chosen to FIT, and the acknowledgement is compared against the
@@ -592,6 +590,14 @@ def check_segment(seg: int) -> None:
     """A real-mode segment, held to sixteen bits: one sentence for every tool that takes one."""
     if not 0 <= seg <= 0xFFFF:
         raise Invalid("bad_argument", f"a segment is 0x0000 to 0xFFFF; got {seg}")
+
+
+# THE SESSION'S SEAMS, each its own module of the methods' bodies, which `Session` delegates
+# to: imported after this module's names, which they reach through it.
+import dosbox_frames as frames  # noqa: E402
+import dosbox_log_reader as log_reader  # noqa: E402
+import dosbox_saved_states as saved_states  # noqa: E402
+import dosbox_symbol_file as symbol_file  # noqa: E402
 
 
 class Session:
@@ -1192,7 +1198,7 @@ class Session:
 
     def where_and_registers(self) -> tuple[dict[str, str], dict[str, str]]:
         """Both readings off ONE survey, so a stop reply pays a single console round trip
-        for where AND registers instead of two of the same screen (decision 35: a console
+        for where AND registers instead of two of the same screen (a console
         round trip costs most of a second). `where` carries the same checks `where()` makes; the
         registers are the permissive last-wins mapping `registers()` hands back."""
         text, regs = self._survey()
@@ -1234,13 +1240,13 @@ class Session:
         the wrong four rows.
         """
         check_segment(seg)
-        # THE OFFSET'S WIDTH IS THE CPU MODE'S, decision 38: the shipped clamp was a flat
+        # THE OFFSET'S WIDTH IS THE CPU MODE'S: the shipped clamp was a flat
         # 0xFFFF, which refuses EVERY 32-bit protected-mode address -- and every DJGPP
         # global is one (`_main` sits at 0x16DF20). `run_to` and `watch` both take the
         # ceiling from `offset_ceiling(mode)`; `read_memory` was the THIRD site nobody
         # brought in, and `dosbox_console.offset_ceiling`'s own docstring already named the family.
         # `where()` gives the mode AND refuses a running machine, before the `D` goes out.
-        # A CACHED `mode` skips that survey (decision 35): a stop reply has just read the
+        # A CACHED `mode` skips that survey: a stop reply has just read the
         # machine once and passes the mode in, so N show watches do not re-survey it N
         # times. It is only ever passed when the machine is known stopped (the reply read
         # `where` to get here), so the running-machine guard it bypasses is already met.
@@ -1455,7 +1461,7 @@ class Session:
         the prompt until `deadline`, `run_to`'s wait (`(expired, saw_at)`). No settle per frame:
         the prompt is the stop, so a frame costs the retrace and nothing typed after it."""
         self._write(RETRACE_COMMAND)
-        return Session._await_stop(self, began, deadline, "the next retrace", progress,
+        return Session.await_stop(self, began, deadline, "the next retrace", progress,
                                    label="run_for: the next retrace")
 
     def log_cpu(self, word: str, count: int, began: float, deadline: float,
@@ -1468,7 +1474,7 @@ class Session:
             raise ValueError(f"{word!r} is not a word of the LOG family")
         command = f"{word} {count:X}"
         self._write(command.encode() + b"\r")
-        return Session._await_stop(self, began, deadline, f"`{command}`", progress,
+        return Session.await_stop(self, began, deadline, f"`{command}`", progress,
                                    label=f"trace: `{command}`")
 
     def resume(self) -> dict[str, object]:
@@ -1859,7 +1865,7 @@ class Session:
         try:
             while True:
                 self._write(RUN_KEY)
-                expired, saw_at = Session._await_stop(self, began, deadline, target, progress)
+                expired, saw_at = Session.await_stop(self, began, deadline, target, progress)
                 if expired:
                     break
                 try:
@@ -1985,14 +1991,14 @@ class Session:
                            if expired else "")
                         + cleanup}
 
-    def _await_stop(self, began: float, deadline: float, target: str,
+    def await_stop(self, began: float, deadline: float, target: str,
                     progress: Progress = no_progress, label: str = "") -> tuple[bool, float]:
         """Listen for the debugger to announce a stop, until `deadline`: `(expired, saw_at)`,
         reporting the seconds spent through `progress` as it listens. `label` heads the
         progress line when the wait is not `run_to`'s (the sequence executor's wait for the
         next console step says what it waits for in its own words).
 
-        CALLED AS `Session._await_stop(self, ...)` from `run_to`, like the other three helpers
+        CALLED AS `Session.await_stop(self, ...)` from `run_to`, like the other three helpers
         below: the suite drives `run_to` through scripted doubles that are not `Session`s and
         carry only what the method reaches for, so a helper looked up on `self` is a helper
         the doubles do not have.
@@ -2266,352 +2272,39 @@ class Session:
     # ------------------------------------------------------------------ the log
 
     def e9(self, pattern: str, limit: int = 40) -> tuple[list[str], int]:
-        """The guest's own instrumentation, FILTERED at the source.
-
-        The whole point of a live session is that what crosses back is the answer and
-        not a haystack with the answer in it, so the filtering happens here and the
-        caller receives lines rather than a log.
-
-        It distinguishes the two kinds of nothing, which is the contract this module
-        exists to enforce: a log with no instrumentation AT ALL is INVALID, and a log
-        with instrumentation but nothing matching is an empty list, which is an answer.
-        """
-        return dlogs.filter_e9(self._e9_text(), pattern, limit)
+        return log_reader.e9(self, pattern, limit)
 
     def e9_lines(self) -> list[str]:
-        """EVERY line of the guest's instrumentation, in order, with `e9`'s guard on the
-        channel: what the stop reply's E9 block reduces from. It carries no `limit`
-        because the reduction is the server's, and the caller-facing ceiling on `e9` and
-        `log` refused the whole-log read this block needs (measured: `1 << 30` as the
-        limit, refused as a haystack, and every stop's `e9` block came back
-        `available: false`)."""
-        return dlogs.log_hits(self._e9_text(), ".", "guest")
+        return log_reader.e9_lines(self)
 
     def log(self, pattern: str, limit: int, channel: str) -> tuple[list[str], int]:
-        """The log's `channel`, filtered at the source: the guest's E9 lines with `e9`'s
-        own guard (a file with no instrumentation is no channel), the emulator's own
-        lines, or the whole file tagged."""
-        dlogs.check_channel(channel)
-        if channel == "guest":
-            return dlogs.filter_e9(self._e9_text(), pattern, limit)
-        return dlogs.filter_log(self._log_text(), pattern, limit, channel)
+        return log_reader.log(self, pattern, limit, channel)
 
     def _log_text(self) -> str:
-        """The log file, or the refusal that says which nothing: no logfile on the
-        session, or a file the emulator has not created yet."""
-        if self.launch.logfile is None:
-            raise Invalid("no_channel", "this session was started without a logfile, so there is "
-                          "no log channel to filter")
-        if not self.launch.logfile.exists():
-            raise Invalid("no_channel", f"no log at {self.launch.logfile}: the emulator has not "
-                          f"written anything yet, which is not the same as having "
-                          f"nothing to say")
-        return self.launch.logfile.read_text(encoding="utf-8", errors="replace")
+        return log_reader._log_text(self)
 
     def _e9_text(self) -> str:
-        """The instrumentation log, or the refusal that says WHICH nothing.
-
-        The three guards are `e9`'s, lifted so `e9_wait` cannot answer for reasons `e9`
-        refuses on. They are the difference between "your pattern matched
-        nothing" and "there was no channel to match against", which is this module's
-        thesis in one method.
-        """
-        text = self._log_text()
-        if dlogs.count_e9(text) == 0:
-            raise Invalid("no_channel",
-                f"{self.launch.logfile} carries no instrumentation at all. That is "
-                f"not 'your pattern matched nothing', it is 'there is nothing to "
-                f"match': either the guest has not reached its first trace yet, or "
-                f"this build does not emit any")
-        return text
+        return log_reader._e9_text(self)
 
     def _e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
-        """The COMPLETE lines of `channel` after byte `offset`, and the new offset.
-
-        THREE DEFECTS DIE WITH THIS, and they were all one defect: the wait used to
-        re-read the whole file and index it by LINE NUMBER.
-
-        A HALF-WRITTEN LINE STOPS BEING A LINE. A log written through ordinary stdio
-        ends MID-LINE between flushes -- that is the steady state while a writer is
-        producing, not a rare race -- and `splitlines()` hands that fragment back as an
-        element. `E9_LINE` matches it, because it only anchors the prefix. So the
-        fragment CONSUMED A LINE INDEX, and when the rest of the line arrived the count
-        did not grow: the completed line was never tested again. MEASURED, the caller
-        got "a bound that expired" for a line that was sitting in the file, and `e9` on
-        the same file found it. The mirror was as bad: when the fragment did match, it
-        was returned as the guest's trace with its payload missing. Cutting at the last
-        newline means a line is only ever seen whole, once.
-
-        AND IT IS WHY THE COST IS BOUNDED. Re-reading the whole file every tenth of a
-        second was MEASURED on a log of a few megabytes: gigabytes read and over a minute
-        of CPU inside a ten-minute wait, with the server's lock held, growing
-        quadratically as the log grows under it. Reading only what is new is the same
-        answer for the size of the new part.
-
-        A LOG THAT HAS SHRUNK IS REFUSED rather than resynchronised. Truncation or
-        rotation makes every byte offset meaningless, and the two ways to carry on are
-        both wrong: keeping the offset silently stops seeing anything, and resetting it
-        re-reports old lines as new. It is rare and it is nameable, so it is named.
-        """
-        log = self.launch.logfile
-        assert log is not None            # the caller refuses a session without one
-        if not log.exists():
-            # NOT AN ERROR HERE. The guest may not have written yet, which is exactly
-            # what a wait is for; `e9` refuses on this and this deliberately does not.
-            return [], offset
-        size = log.stat().st_size
-        if size < offset:
-            raise Invalid("session_broken",
-                f"{log} has SHRUNK from {offset} bytes to {size} while this was "
-                f"waiting: it was truncated or rotated underneath. Every offset into "
-                f"it is now meaningless, and both ways of carrying on are wrong -- "
-                f"keeping it sees nothing more, resetting it reports old lines as new")
-        with log.open("rb") as fh:
-            fh.seek(offset)
-            chunk = fh.read()
-        cut = chunk.rfind(b"\n") + 1
-        if cut == 0:
-            return [], offset
-        # DECODED ONLY UP TO A NEWLINE, which is also what keeps a multi-byte character
-        # from being split across two reads: `\n` is a byte boundary in UTF-8, so the
-        # consumed prefix is always whole characters.
-        text = chunk[:cut].decode("utf-8", errors="replace")
-        return (dlogs.channel_lines(text.splitlines(), channel), offset + cut)
+        return log_reader._e9_since(self, offset, channel)
 
     def e9_new_since(self, offset: int) -> tuple[list[str], int]:
-        """The complete instrumentation lines after byte `offset` and the offset to read
-        from next: the stop survey's reader, so a stop pays for what the guest wrote since
-        the previous one and not for the whole log again. It refuses what `e9` refuses: a
-        session with no logfile has no channel, and a log the guest has not created yet
-        cannot be looked at, which is not zero lines. The wait's reader keeps its own
-        reading of an absent log, because nothing yet is what a wait is for."""
-        if self.launch.logfile is None:
-            raise Invalid("no_channel",
-                "this session was started without a logfile, so there is no "
-                          "instrumentation channel to summarise")
-        if not self.launch.logfile.exists():
-            raise Invalid("no_channel",
-                f"no log at {self.launch.logfile}: the guest has not written "
-                          f"anything yet, which is not the same as having nothing to say")
-        return self._e9_since(offset)
+        return log_reader.e9_new_since(self, offset)
 
     def e9_since_mark(self, mark: int) -> list[str]:
-        """Every complete instrumentation line written after byte `mark`, in order: the
-        LOOK after an act. A session with no logfile has no channel; a log that has not
-        appeared yet answers nothing, which is an answer about the window. The count is
-        bounded by what the guest wrote, not by a limit here: the caller cuts."""
-        if self.launch.logfile is None:
-            raise Invalid("no_channel",
-                "this session was started without a logfile, so there is no "
-                          "instrumentation channel to look at")
-        lines, _ = self._e9_since(mark)
-        return lines
+        return log_reader.e9_since_mark(self, mark)
 
     def e9_mark(self) -> int:
-        """WHERE THE LOG ENDS RIGHT NOW, as a byte position `e9_wait(mark=)` starts from.
-
-        It is what turns "did the guest react to THIS event" into an answerable question:
-        a wait from the mark sees only what was written after it, so a line that matched
-        the pattern ten seconds ago is history and not the reaction. A log that does not
-        exist yet marks at 0, which is the same statement -- everything the guest will
-        write is after it. A session with no logfile has no channel to mark.
-
-        THE SIZE, NOT THE LAST NEWLINE, deliberately. A writer flushes mid-line, so the
-        mark can land inside a line; `_e9_since` then drops that line's tail as a fragment
-        that is not an instrumentation line, which is right -- a line BEGUN before the mark
-        belongs to before it. Finding the last newline would mean reading the whole file,
-        which on a multi-megabyte log is the cost `_e9_since` was written to avoid.
-        """
-        if self.launch.logfile is None:
-            raise Invalid("no_channel",
-                "this session was started without a logfile, so there is no "
-                          "instrumentation channel to mark a position in")
-        log = self.launch.logfile
-        return log.stat().st_size if log.exists() else 0
+        return log_reader.e9_mark(self)
 
     def e9_wait(self, pattern: str, seconds: float, mark: int = 0,
                 progress: Progress = no_progress) -> dict[str, object]:
-        """`log_wait` on the guest channel: the wait `expect` and `drive` rest on."""
-        return self.log_wait(pattern, seconds, "guest", mark, progress)
+        return log_reader.e9_wait(self, pattern, seconds, mark, progress)
 
     def log_wait(self, pattern: str, seconds: float, channel: str, mark: int = 0,
                  progress: Progress = no_progress) -> dict[str, object]:
-        """WHEN a line of `channel` matching `pattern` happened -- whether it already has,
-        or not yet.
-        While it waits it reports the seconds spent, and the lines that arrived, through
-        `progress`.
-
-        `mark` is the byte position the search starts from (`e9_mark`): with it, "already"
-        means "written since the mark", and everything before the mark is invisible. That
-        is the difference between "the cue has fired at some point" and "the cue fired in
-        response to the key just posted", and it is the whole of what `send_keys`'
-        verification rests on.
-
-        BOTH SEMANTICS, IN ONE TOOL, and that is the whole design rather than a
-        convenience. Between launching the emulator and asking, the thing you are
-        waiting for may ALREADY have gone past; a tool that only waits would then sit
-        out its whole bound and report that it never happened, which is false and
-        expensive. So this looks at what the log already holds FIRST, and only waits if
-        it has to. `already` says which of the two answers you got, because they mean
-        different things: one is history, the other is something you were present for.
-
-        WHICH OCCURRENCE: the FIRST. The question this answers is "when did it happen",
-        and for a line that fired more than once the first time is the answer;
-        `lines_total` says how many there were, so a caller who wanted the latest knows
-        there is one. (`e9` is the tool for the recent state -- it keeps the newest.)
-
-        A BOUND THAT EXPIRES IS INVALID, never an empty answer, and the message says
-        what was examined: how long it watched, how many instrumentation lines went by,
-        and that the channel was there. A caller who asked "wait for X" and got "no
-        lines" cannot tell "X did not happen in this window" from "there was nothing to
-        match against", and this package refuses to print the same thing for both.
-
-        WHAT YOU CAN DO WITH THE MOMENT, and it is narrower than it looks. A guest
-        writing traces is a guest that is RUNNING, so ordinarily the machine is still
-        running when this returns from a wait, and this debugger's console does not
-        accept commands then -- which every reader here demonstrates by refusing. So you
-        ordinarily cannot arm a breakpoint at the moment this hands you, and you must
-        ASK rather than assume: a breakpoint armed earlier can fire between the line
-        being written and the poll that reads it, and this reply carries no `running`
-        field. The reason is the CONSOLE and not dosbox-x #4026, which is about breaking
-        in with a host keypress -- a different path, and one `breakpoint_interrupt`
-        records as MEASURED working. What the moment is for: choosing an address to arm
-        on the NEXT run, before the machine is released.
-        """
-        check_wait_bound(seconds)
-        rx = dlogs.compiled(pattern)
-        dlogs.check_channel(channel)
-        kind = "instrumentation" if channel == "guest" else channel
-        # THE ONLY REFUSAL THAT SURVIVES THE WAIT, and `e9`'s other two deliberately do
-        # not. A session with no logfile has no channel and waiting cannot create one.
-        # But a log that does not EXIST yet, and a log with no instrumentation IN it,
-        # are the ordinary state of a guest that has just been resumed -- and `e9`
-        # refuses on both. Lifting all three would make this tool unable to wait for the
-        # guest's FIRST trace: MEASURED, `start` then `resume` then `e9_wait("BOOT")`
-        # refuses at once against its bound, for a line that arrives a fraction of a
-        # second later, while `_e9_text`'s own message names that very case ("the guest
-        # has not reached its first trace yet"). The two states are reported in the
-        # expiry instead, where they are an ANSWER about the window.
-        if self.launch.logfile is None:
-            raise Invalid("no_channel",
-                "this session was started without a logfile, so there is no "
-                          "instrumentation channel to wait on, and waiting cannot "
-                          "bring one into existence")
-        began = time.monotonic()
-        lines, offset = self._e9_since(mark, channel)
-        total = len(lines)
-
-        # EVERY COUNT IS "SINCE THE MARK", and the field says so by its name. With the
-        # default mark the examined region is the whole log; with a mark it is what was
-        # written after it, and a field called `lines_in_log` then lied by exactly the
-        # lines before the mark. `since_mark` rides along so a reader can tell which.
-        def found(hit: list[str], already: bool, before: int) -> dict[str, object]:
-            # `lines_before` is how many lines sit between the mark and the match: a
-            # reaction that landed AFTER a post (the mark is taken before it) shows as such,
-            # which `already` alone cannot say -- from a mark, `already` means "there when
-            # the wait first looked", history or not.
-            return {"line": hit[0], "already": already, "lines_total": len(hit),
-                    "lines_before": before, "arrived_during": total - len(lines),
-                    "waited_s": 0.0 if already else round(time.monotonic() - began, 3),
-                    "lines_examined": total, "since_mark": mark}
-
-        def last_look() -> dict[str, object] | None:
-            """ONE LAST READ BEFORE ANY REFUSAL FROM INSIDE THE WAIT, the same for all three
-            (gone, stopped, expired): the loop checks the condition FIRST and reads LAST, so a
-            line written after the final read and before the condition was never looked for
-            -- the canonical case being a guest's EXIT trace, written on its way out, and for
-            a stop the reaction logged just before the breakpoint on its handler fired."""
-            nonlocal offset, total
-            fresh, offset = self._e9_since(offset, channel)
-            total += len(fresh)
-            hit = [ln for ln in fresh if rx.search(ln)]
-            return found(hit, False, total - len(fresh) + fresh.index(hit[0])) if hit else None
-
-        hits = [ln for ln in lines if rx.search(ln)]
-        if hits:
-            return found(hits, True, lines.index(hits[0]))
-        deadline = began + seconds
-        next_tick = began + PROGRESS_EVERY_S
-        newest = ""
-        while (now := time.monotonic()) < deadline:
-            cancel.check()
-            if now >= next_tick:
-                next_tick = now + PROGRESS_EVERY_S
-                progress(now - began, None,
-                         f"log_wait {channel} /{pattern}/: {now - began:.0f}s of "
-                         f"{seconds:g}s, {total - len(lines)} lines arrived"
-                         + (f", last: {newest[:LAST_LINE_SHOWN]}" if newest else ""))
-            # A STOPPED GUEST WRITES NOTHING, so a wait on one cannot end well and its
-            # expiry would blame the program. MEASURED: a breakpoint
-            # from another session parked the guest mid-plan and this sat out 40 s to say
-            # "the emulator is still running". Asked every poll, because a breakpoint can
-            # fire during the wait too; the answer is passive (no console round trip).
-            if self.at_debugger():
-                if (late := last_look()) is not None:
-                    return late
-                raise _wait_stopped(pattern, total - len(lines),
-                                    round(time.monotonic() - began, 3))
-            # THE DEATH IS CHECKED IN THE LOOP, not once in the message at the end.
-            # Consulted only while composing the refusal, a session that died at the
-            # start would burn the WHOLE bound, with the server's lock held so `status`
-            # could not be asked, before saying so, and then advise asking again with a
-            # longer bound, which is the one thing that cannot help a dead emulator.
-            if not self.alive():
-                # ONE LAST READ BEFORE REFUSING, and the refusal's own next sentence is
-                # why it must happen: nothing more WILL be written, so this is the last
-                # chance to read what already was. The loop checks `alive()` FIRST and
-                # reads LAST, so a line written after the final read and before the
-                # death was never looked for at all -- and that is the canonical case,
-                # waiting for a guest's exit trace. MEASURED against a double whose
-                # guest writes its trace on the way out: the line was sitting unread in
-                # the log at the instant of refusal, and `e9` on the same log found it.
-                if (late := last_look()) is not None:
-                    return late
-                raise Invalid("session_broken",
-                    f"the emulator is GONE, {round(time.monotonic() - began, 1)}s into "
-                    f"a {seconds}s wait for {pattern!r}, and a final read of the log "
-                    f"after it died found nothing matching either. Nothing more will "
-                    f"be written, so a longer bound would not help: this needs a new "
-                    f"session, not a bigger number")
-            time.sleep(E9_POLL)
-            fresh, offset = self._e9_since(offset, channel)
-            total += len(fresh)
-            newest = fresh[-1].strip() if fresh else newest
-            seen = [ln for ln in fresh if rx.search(ln)]
-            if seen:
-                return found(seen, False, total - len(fresh) + fresh.index(seen[0]))
-        # AND ONE LAST READ HERE TOO, for the same reason on the other path: the loop
-        # leaves on the CLOCK, so whatever the guest wrote between the final poll and
-        # the deadline -- up to a whole `E9_POLL` -- had never been looked for. The
-        # window is small and the answer it holds is exactly the one being waited for.
-        if (late := last_look()) is not None:
-            return late
-        # THE COUNT IS THE ONE THAT ANSWERS THE QUESTION BEING ASKED. The log's TOTAL under
-        # the words "went past" would make a wait during which NOTHING happened, on a log
-        # carrying five thousand earlier traces, say "5000 instrumentation line(s) went
-        # past", which anyone diagnosing a silent guest reads as a live channel. The two
-        # numbers are different facts and both are given, and the second one is named for
-        # the region it counts, since with a mark the examined region is not the log.
-        during = total - len(lines)
-        # THE EXPIRY ASKS TOO. The loop asks at every poll, so a stop it sees refuses at once;
-        # a stop that lands after the last poll and before the clock would otherwise reach
-        # a refusal saying "The emulator is still running" (the PROCESS) while the debugger
-        # held the machine. Passive, like the loop's.
-        if self.at_debugger():
-            raise _wait_stopped(pattern, during, round(time.monotonic() - began, 3), seconds)
-        region = "in the log altogether" if mark == 0 else f"since the mark at byte {mark}"
-        # HOISTED OUT OF THE f-STRING because a line break inside a replacement field is
-        # 3.12 syntax and this package targets 3.11 -- `ruff` caught it, `mypy` did not.
-        silent = ("" if during else
-                  " The guest wrote NOTHING at all in this window, so the question may "
-                  "be whether it is still emitting rather than what it emitted.")
-        raise E9Expired(
-            f"nothing matched {pattern!r} in {round(time.monotonic() - began, 1)}s. "
-            f"{during} {kind} line(s) arrived DURING the wait ({total} "
-            f"{region}), so this is a bound that expired and not 'there was "
-            f"nothing to match against'.{silent} The emulator is still running. Asking "
-            f"again with a longer bound is a different question from asking whether "
-            f"the line ever appears")
+        return log_reader.log_wait(self, pattern, seconds, channel, mark, progress)
 
     def memdump(self, seg: int, off: int, length: int, dest: Path) -> Path:
         """Memory to a FILE, returning the path it ended up at.
@@ -2809,342 +2502,19 @@ class Session:
         return {"base": base, "limit": limit, "type": kind, "big": int(m.group(8))}
 
     def load_symbols(self, data: bytes) -> list[tuple[str, int]]:
-        """Put a var list into the debugger, and read back what it actually holds.
-
-        `data` is the encoded list; the FILE is this module's business, because the
-        debugger's filename argument survives only twelve characters and a caller's
-        path cannot be passed through.
-
-        IT VERIFIES BY READING THE LIST BACK, not by believing the `ok`. That is the
-        same emulator that answers `ok` for a filename it silently truncated, and the
-        round trip is the only thing that can say a record arrived with the name and
-        the address it was given.
-
-        THE COUNT COMES BACK AS A FLOOR AND NOT AN EQUALITY, because `LV` APPENDS:
-        measured, loading three names on top of two left five. A caller loading twice
-        gets both lists, and this returns everything the debugger holds rather than
-        pretending the last load is all of it.
-
-        The two files live in the emulator's WORKING DIRECTORY, which is somebody's
-        project, so an existing file of either name is a REFUSAL rather than something
-        to overwrite, and both are removed on the way out however this leaves.
-
-        AND IT REFUSES A CONSOLE THAT IS NOT LISTENING, before the FILE is written:
-        `LV` goes through the console, and one that is not listening swallows it
-        without a word. See the guard below for why that is read here rather than
-        inferred from the reply, and for what it does NOT claim.
-        """
-        for n in (SYM_LOAD_NAME, SYM_SAVE_NAME):
-            if len(n) > SYM_ARG_MAX:
-                raise Invalid("bad_argument",
-                    f"{n!r} is {len(n)} characters and the debugger keeps "
-                              f"{SYM_ARG_MAX}; it would write a different file and "
-                              f"report ok")
-        into = self.launch.cwd / SYM_LOAD_NAME
-        back = self.launch.cwd / SYM_SAVE_NAME
-        # A DANGLING link named `SYMS.BIN` is something there (`paths.taken`): `write_bytes`
-        # would create the file at the link's TARGET, anywhere on the filesystem, while the
-        # cleanup below unlinked only the link.
-        present = [p for p in (into, back) if paths.taken(p)]
-        if present:
-            raise Invalid("bad_argument",
-                f"{[str(p) for p in present]} already exists in the emulator's working "
-                f"directory, which is somebody's project. This will not overwrite it: "
-                f"move it aside and ask again")
-        # IS THE CONSOLE EVEN LISTENING? ASKED BEFORE THE FILE IS WRITTEN.
-        #
-        # `LV` goes through the console, and one that is not listening swallows it
-        # without a word -- which arrives here as `_acked` reporting an acknowledgement
-        # that never came. MEASURED: that refusal named a truncated filename, an older
-        # `ok` and a gone emulator, and the same reply's own data excluded all three
-        # (`SYMS.BIN` is 8 characters, it was the session's first load, `alive` was
-        # true). The caller was sent to look at filenames.
-        #
-        # THE PRECEDENT IS `step`, `run_to` AND `watch`, which all settle it first.
-        # This is NOT the one caller that does not ask: `read_memory`, `set_register`,
-        # `breakpoint_interrupt`, `memdump` and `selector` all type at the guest and
-        # diagnose afterwards. What is closed here is ONE ROW of that table. The rest
-        # are open, and two are worse than a bad message: `set_register` marks the
-        # session `altered` BEFORE sending, so a refused write on a running machine
-        # poisons that flag for the session's life.
-        #
-        # IT READS THE PANE AND NOT `where()`, which is the narrower half and the
-        # deliberate one: `where()` refuses for two further reasons -- no CPU mode
-        # token, a cut repaint with no CS/EIP -- and NEITHER stops a console taking
-        # commands. Borrowing it would refuse loads that would have worked, which is
-        # the widening `NotStopped`'s own docstring was written about.
-        #
-        # AND IT FAILS OPEN, WHICH IS THE PRICE OF THAT CHOICE AND IS DECLARED RATHER
-        # THAN DISCOVERED: `parse_registers` is unanchored, so ONE register token
-        # anywhere in the delta satisfies `_survey` -- `DS=0` inside a scrolling E9
-        # line is enough. `where()`'s own comment says the same thing about it. When it
-        # fails open the `LV` goes out to a deaf console and the caller lands back in
-        # `_acked`, which is why `_acked` still names a RUNNING machine among what it
-        # has seen. This guard narrows that window; it does not close it.
-        #
-        # AND IT GOES AFTER THE TWO CHECKS THAT NEED NOTHING FROM THE MACHINE, by
-        # `run_to`'s precedent: reading the machine costs a settle, and a caller whose
-        # working directory already holds `SYMS.BIN` should hear about that rather
-        # than wait for a repaint first. That order is held in BOTH directions by
-        # `test_a_running_machine_is_refused_before_a_byte_is_written` and by
-        # `test_a_file_already_there_is_named_before_the_machine_is_read`, so hoisting
-        # this above the two cheap checks goes red.
-        try:
-            self._survey()
-        except NotStopped as exc:
-            # WHICH CAUSE, ASKED RATHER THAN PICKED. `_survey` raises this for several
-            # -- the machine is running, the pane did not repaint, the emulator died --
-            # and its own comment forbids naming one as diagnosis. `alive()` is the
-            # question that separates them, and it is the idiom `selector`,
-            # `read_memory` and `_survey` itself already use.
-            #
-            # AND THE REMEDY HAS TO BE ONE THAT CAN BE CARRIED OUT from the state this
-            # is raised in. "Stop it first with a breakpoint" cannot: arming one goes
-            # through `self.command`, i.e. this same deaf console. And a host keypress
-            # is a different path entirely, which `e9_wait`'s docstring in the server
-            # explains. A refusal whose remedy cannot be carried out is the defect this
-            # whole guard exists to remove, one level up.
-            if not self.alive():
-                raise Invalid("session_broken",
-                    f"the emulator is GONE, so there is no console to take `LV` and "
-                    f"nothing to hold a symbol table. Start a session again. No file "
-                    f"was written. What the pane said: {exc}") from None
-            raise Invalid("unexpected_answer",
-                f"no register pane came back, so this console is not taking commands: "
-                f"`LV` would be swallowed without a word, and that arrives here as an "
-                f"acknowledgement that never came. The ordinary cause is a machine "
-                f"that is RUNNING. AND A BREAKPOINT CANNOT BE ARMED FROM HERE TO STOP "
-                f"IT: arming goes through this same console, so what stops the machine "
-                f"is a breakpoint armed BEFORE it was released, or a fresh session. "
-                f"No file was written. What the pane said: {exc}") from None
-        try:
-            try:
-                into.write_bytes(data)
-            except OSError as exc:
-                # `tool()` translates only `Invalid`, so without this an unwritable
-                # working directory escapes as a raw `PermissionError` with no session
-                # block.
-                raise Invalid("host_failed",
-                    f"could not write {into}: {exc!r}. The symbol file has "
-                              f"to go in the emulator's working directory, because "
-                              f"the debugger's filename argument survives only "
-                              f"{SYM_ARG_MAX} characters") from None
-            out = self.command(f"LV {SYM_LOAD_NAME}")
-            self._acked(out, SYM_LOAD_ECHO, SYM_LOAD_NAME)
-            out = self.command(f"SV {SYM_SAVE_NAME}")
-            self._acked(out, SYM_SAVE_ECHO, SYM_SAVE_NAME)
-            if not back.exists():
-                raise Invalid("unexpected_answer",
-                    f"the debugger reported saving {SYM_SAVE_NAME} and no such file "
-                    f"is in {self.launch.cwd}. Those disagree, so nothing here is a "
-                    f"reading of what it loaded")
-            try:
-                return symbols.decode(back.read_bytes())
-            except (symbols.BadSymbolText, OSError) as exc:
-                # `BadSymbolText` is NOT an `Invalid`, and its own docstring says it is
-                # a distinct type "so the MCP layer can translate it" -- which the
-                # server does for `parse`/`plan`/`encode` and not for this call. So the
-                # one place a MALFORMED file can arrive from the emulator was the one
-                # place it escaped as a traceback.
-                raise Invalid("host_failed", f"the debugger saved {SYM_SAVE_NAME} and it cannot be "
-                              f"read back: {exc}. That is not a reading of what it "
-                              f"loaded") from None
-        finally:
-            for p in (into, back):
-                # SUPPRESSED, and only here: an `OSError` out of the cleanup would
-                # REPLACE whatever the body raised, so a reasoned refusal about the
-                # debugger would be handed over as a `PermissionError` about a file.
-                with contextlib.suppress(OSError):
-                    p.unlink(missing_ok=True)
+        return symbol_file.load_symbols(self, data)
 
     @staticmethod
     def _acked(out: str, echo: str, name: str) -> None:
-        """The debugger said ok FOR THIS FILE, ON THIS CALL.
-
-        Searching the delta for `ok` alone is not enough and that is the first point of
-        this method: the filename is truncated at twelve characters without complaint,
-        so `ok` can be a true statement about a file the caller never named.
-
-        AND THE OCCURRENCE MATTERS AS MUCH AS THE NAME. `in` takes ANY occurrence in the
-        delta, and the debugger's Output pane is a scrolling log whose repaint carries
-        earlier replies along with it -- so on
-        a SECOND `load_symbols` over one session, the FIRST call's `... : ok.` is still
-        on screen and satisfies a check about a `LV` that has just answered `failure.`.
-        Loading twice is documented usage, because `LV` appends. So it reads the LAST
-        line that names this file, exactly as `selector` anchors with `rfind`: the
-        same hazard, solved the same way in this class.
-
-        It takes no `self`: nothing here touches the session, and the three `type:
-        ignore[arg-type]` its tests needed were the smell that said so.
-        """
-        head = f"{echo} ({name}"
-        at = out.rfind(head)
-        if at >= 0 and out[at:].startswith(head + SYM_OK):
-            return
-        raise Invalid("unexpected_answer",
-            f"the debugger did not acknowledge `{echo}` for {name!r} on this call. It "
-            f"truncates a filename to {SYM_ARG_MAX} characters and reports ok for "
-            f"whatever it used, so an acknowledgement naming anything else is not this "
-            f"one -- and an OLDER ok for this same name is not this one either. THE "
-            f"SHOWING BELOW IS WHAT DISCRIMINATES, and it is read rather than guessed "
-            f"at: EMPTY is the debugger saying nothing at all, which is what a gone "
-            f"emulator looks like from here, and the GUEST'S OWN INSTRUMENTATION "
-            f"scrolling past is a machine that is RUNNING, whose console takes no "
-            f"commands and swallowed this one without a word. Those three are what has "
-            f"been seen, not a closed list. What it showed: {out.strip()[-300:]!r}")
+        return symbol_file._acked(out, echo, name)
 
     # ------------------------------------------------------------------ capture
 
     def captures(self) -> list[dict[str, object]]:
-        """The capture files this session has produced, with what is IN them.
-
-        It reports the frame count and the index, not just the size, because a
-        capture that recorded nothing and one that recorded the whole session are
-        both files and both plausible sizes. The size alone has never been the
-        evidence.
-
-        TWO FILES IS THE NORMAL CASE, not a fault: DX-CAPTURE restarts its recording
-        when the guest changes video mode, so a program that boots in DOS text and
-        then goes graphical leaves a small first file and the real one after it. They
-        are returned largest last.
-        """
-        if self.launch.captures_dir is None:
-            raise Invalid("no_channel", "this session was started without a captures directory, so "
-                          "there is nowhere for a capture to have been written")
-        if not self.launch.capture_video:
-            raise Invalid("no_channel", "this session was not started with capture_video, so "
-                          "nothing was recording. That is not an empty capture, it "
-                          "is no capture")
-        out: list[dict[str, object]] = []
-        # THE FACTS OF A FILE THAT HAS NOT CHANGED ARE THE FACTS READ LAST TIME: this is
-        # the tool a caller polls while a recording runs, and reading every capture whole
-        # at each poll to count its frames is the cost. One entry per file, keyed by its
-        # size AND its modification time, so a file replaced by another of the same size
-        # is read again; the entries of files no longer listed leave with this rebuild.
-        fresh: dict[tuple[str, int, int], dict[str, object]] = {}
-        for f in sorted(self.launch.captures_dir.glob("*.avi"),
-                        key=lambda p: p.stat().st_size):
-            stat = f.stat()
-            key = (str(f), stat.st_size, stat.st_mtime_ns)
-            facts = self._avi_facts.get(key)
-            if facts is None:
-                facts = avi_facts(f.read_bytes())
-            fresh[key] = facts
-            out.append({"path": str(f), **facts})
-        self._avi_facts = fresh
-        if not out:
-            raise Invalid("unexpected_answer",
-                f"no capture appeared in {self.launch.captures_dir}. Two causes, and "
-                f"they need different answers: the recording stops when the captured "
-                f"PROGRAM exits, so a session still running may not have written one "
-                f"yet; OR the program never started, because `program` is passed with "
-                f"`-c`, which runs AFTER the conf's [autoexec] section -- a conf whose "
-                f"autoexec ends in `exit` quits before it is reached")
-        return out
+        return frames.captures(self)
 
     def frame(self, at: int, dest: Path, source: Path | None = None) -> Path:
-        """ONE still image out of the capture, at frame `at`.
-
-        WHY IT COMES FROM THE VIDEO AND NOT FROM THE EMULATOR. DOSBox-X's own
-        screenshot is a MAPPER action and needs a keypress, so there is no
-        non-interactive trigger for it; the video does have one. The still is
-        therefore an extraction, and it requires the capture to have been recording.
-
-        `ffmpeg` is an OPTIONAL dependency and its absence is said out loud rather
-        than worked around: a tool that quietly produces nothing is worse than one
-        that names what is missing.
-
-        IT ALWAYS WRITES A PNG, whatever `dest` is called, and the caller is told so
-        here because nothing in the reply says it. The encoder is forced rather than
-        inferred from the extension: see the argv below for what inferring it was
-        measured doing.
-        """
-        if shutil.which("ffmpeg") is None:
-            raise Invalid("host_failed", "a still is extracted from the capture with `ffmpeg`, and "
-                          "there is none on PATH. The video itself does not need it; "
-                          "only this does")
-        check_frame_args(at, dest)
-        paths.fresh_dest("dest", dest)
-        src = source or Path(str(self.captures()[-1]["path"]))
-        # A `%` ANYWHERE IN THE DESTINATION IS REFUSED. `-f image2` treats the WHOLE
-        # PATH as a printf template, so `shot%03d.png` makes ffmpeg write `shot001.png`
-        # and leave `dest` untouched -- after which this method refuses, blaming "a
-        # frame past the end" for an extraction that worked perfectly.
-        #
-        # IT IS `str(dest)` AND NOT `dest.name`: what ffmpeg opens is the EXPANDED
-        # path, so a `%` in a parent misplaces the still exactly as one in the name
-        # does, and the name alone covers the half a caller is least likely to write.
-        #
-        # THE OUTCOME DEPENDS ON WHETHER THE EXPANSION ALREADY EXISTS, and both halves
-        # were observed: with a literal `run%d/` directory there and `run1/` absent,
-        # ffmpeg fails with nothing written anywhere, and with
-        # it present it writes a perfectly good PNG there, at a path the caller never
-        # named and with no error. The second is the one worth refusing for, and it
-        # cannot be told from the first in advance.
-        #
-        # It is deliberately broader than the hazard: ffmpeg leaves a `%` with no valid
-        # conversion alone (`fifty%.png` is written as itself), so those are refused
-        # unnecessarily. That direction fails loudly and the other fails silently.
-        #
-        # `dest` is judged absent by `paths.fresh_dest` above, so whatever sits there
-        # after ffmpeg is this extraction and not a stale image: nothing is deleted to
-        # make that true.
-        try:
-            got = subprocess.run(
-                # THE FORMAT IS FORCED, and this is not tidiness: without it ffmpeg
-                # picks the encoder from `dest`'s EXTENSION, which is the caller's.
-                # MEASURED on ffmpeg 9.0.1 with this exact argv: asking for a frame
-                # PAST THE END of a real capture writes nothing for a `.png`
-                # destination but a 1307-byte FRAMELESS CONTAINER for an `.mp4` one,
-                # at exit code ZERO -- so every term of the guard below was false and
-                # `frame()` handed that container back as a still. With the format
-                # forced, the same request writes NO FILE and the guard fires.
-                #
-                # It also means this tool's promise ("ONE still image") no longer
-                # depends on the caller spelling the extension the way it meant.
-                ["ffmpeg", "-v", "error", "-y", "-i", str(src),
-                 "-vf", f"select='eq(n\\,{at})'", "-fps_mode", "passthrough",
-                 "-frames:v", "1", "-f", "image2", "-c:v", "png", str(dest)],
-                capture_output=True, text=True, check=False, timeout=FFMPEG_SECS)
-        except subprocess.TimeoutExpired:
-            # AS `Invalid`, NOT AS A TRACEBACK. `tool()` translates only `Invalid`, so
-            # this escaped raw while `build_check` catches the same exception twelve
-            # lines of comment deep for the same reason. Two of this module's contracts
-            # break at once when it escapes: the reply stops saying WHICH nothing it
-            # found, and it stops carrying the session's state at all.
-            raise Invalid("host_failed", f"`ffmpeg` did not return within {FFMPEG_SECS}s pulling "
-                          f"frame {at} from {src}. That is the tool hanging, not an "
-                          f"answer about the capture") from None
-        # THE EXIT CODE IS READ, and it was not. MEASURED on ffmpeg 7.x: a frame past
-        # the end of a capture writes NO file for a `.png` destination but a 261-byte
-        # frameless container for an `.mp4` one, so "a file exists and is non-empty" is
-        # not the same question as "ffmpeg succeeded". Only the size was asked.
-        if got.returncode != 0 or not dest.exists() or dest.stat().st_size == 0:
-            # THE TWO ARMS SAY DIFFERENT THINGS, because they ARE different things and
-            # merging them picks a cause. A non-zero exit code is ffmpeg reporting its
-            # own failure and the reason is in hand; an empty or absent output with a
-            # ZERO code is the frame-past-the-end shape, where the cause is a guess.
-            # This module's rule, stated in `wait_ready`: INVALID names what was seen.
-            said = (got.stdout + got.stderr).strip()[-300:]
-            if got.returncode != 0:
-                raise Invalid("host_failed",
-                    f"ffmpeg exited {got.returncode} extracting frame {at} "
-                              f"from {src} and said: {said!r}. Any file it left behind "
-                              f"is not a frame")
-            raise Invalid("host_failed",
-                f"ffmpeg exited 0 but no image came out of {src} at frame {at}. It "
-                f"said: {said!r}. The commonest cause is a frame past the end: "
-                f"`captures` reports how many there are. An unindexed capture is NOT "
-                f"the cause -- MEASURED, a frame comes out of one of those fine")
-        # AND THE BYTES ARE AN IMAGE. Forcing the format above should make this
-        # unreachable, which is exactly why it is cheap to assert: the failure it
-        # guards against was a well-formed file of the wrong KIND, and "a file exists
-        # and is not empty" could not tell the difference.
-        if dest.read_bytes()[:8] != b"\x89PNG\r\n\x1a\n":
-            raise Invalid("host_failed",
-                f"what ffmpeg left at {dest} is not a PNG, so it is not the "
-                          f"still that was asked for")
-        return dest
+        return frames.frame(self, at, dest, source)
 
     # ------------------------------------------------------------------ input to the guest
 
@@ -3168,127 +2538,16 @@ class Session:
                       f"appear within {seconds} s: the guest may still be running")
 
     def _state_dir(self) -> Path:
-        if self.launch.state_dir is None:
-            return self.launch.cwd / "save"
-        return self.launch.state_dir
+        return saved_states._state_dir(self)
 
     def _state_command(self, verb: str, path: Path, seconds: float) -> dict[str, object]:
-        """`SAVESTATE` or `LOADSTATE` of `path` over the debugger channel, with the debugger
-        stopped as the commands need it: a RUNNING guest is broken in on first and released
-        again after, so the machine is left the way it was found. The reply's part:
-        `paused` (it had to be stopped), `running` (it runs after the call: false for a
-        parked one, and for a released one that halted again at once) and `waited_s` (the
-        command alone, not the break-in or the release)."""
-        if "\n" in str(path) or "\r" in str(path):
-            raise Invalid("bad_argument", f"a state path is one line; got {str(path)!r}")
-        paused = not self.at_debugger()
-        began = time.monotonic()
-        # WHETHER THE COMMAND WENT DOWN THE CHANNEL, which a load cut short reads: one cancelled
-        # in the break-in sent nothing and replaced nothing.
-        self.state_sent = False
-        try:
-            if paused:
-                self.break_in()
-                began = time.monotonic()
-            self.state_sent = True
-            ok, lines = self.control.request(f"EXEC {verb} {path}", seconds, poll=cancel.check)
-        except BaseException as e:
-            # A COMMAND THAT ENDS EARLY, refused or cancelled (its waits poll, the break-in's
-            # included), releases the guest it stopped, as its bound would. Best effort: the
-            # command's own refusal or the cancellation is the answer, and one from the release
-            # (a refusal, or the host's channel gone under it) would hide it; the end reads what
-            # the machine was left as.
-            if paused and (isinstance(e, Invalid) or cancel.is_cancellation(e)):
-                with cancel.shielded(), contextlib.suppress(Invalid, OSError):
-                    if cancel.is_cancellation(e) and not self.at_debugger():
-                        self.break_in()        # a BREAK sent lands; wait for it, then release
-                    if self.at_debugger():
-                        self.resume()
-            if isinstance(e, Invalid) and e.code == "no_channel":
-                why = str(e).rstrip(".")
-                raise Invalid("no_channel",
-                              f"{verb} goes down the debugger channel, and {why}. The saved "
-                              f"states need that channel and a build carrying the `{verb}` "
-                              f"debugger command (REFERENCE.md, Saved states)"
-                              ) from None
-            raise
-        waited = round(time.monotonic() - began, 2)
-        running = not self.resume()["halted"] if paused else False
-        if ok:
-            return {"paused": paused, "running": running, "waited_s": waited}
-        said = " / ".join(line.strip() for line in lines if line.strip())
-        if not any(line.startswith(f"DEBUG: {verb}") for line in lines):
-            raise Invalid("no_channel",
-                f"this DOSBox-X has no `{verb}` debugger command ({said or 'no answer'}): "
-                          f"saved states need a build that carries it (REFERENCE.md, Saved "
-                          f"states)")
-        raise Invalid("unexpected_answer",
-            f"the emulator refused {verb} of {path}: {said}. Its log says why (a state of "
-                      f"another DOSBox-X version, program, memory size or machine type is "
-                      f"refused rather than asked about)")
+        return saved_states._state_command(self, verb, path, seconds)
 
     def state_save(self, name: str, seconds: float = STATE_WAIT_S) -> dict[str, object]:
-        """Save the machine under `name` as `<state_dir>/<name>.sav`, by the debugger's own
-        `SAVESTATE` (`_state_command`), and read the file back for what it says about
-        itself. Running or parked, headless or windowed. Never overwrites, and a save that
-        failed leaves no file behind: the emulator removes the old one and writes the new one
-        in place, so a failure part-way would otherwise hold the name with a broken state.
-        Saving alters nothing."""
-        dlaunch.check_state_name(name)
-        check_wait_bound(seconds)
-        state_dir = self._state_dir()
-        dest = state_dir / f"{name}.sav"
-        if paths.taken(dest):         # a dangling link too: the save would write through it
-            raise Invalid("bad_argument",
-                f"a state named {name!r} already exists at {dest}: pick another name, "
-                          "this never overwrites")
-        state_dir.mkdir(parents=True, exist_ok=True)
-        try:
-            outcome = self._state_command("SAVESTATE", dest, seconds)
-        except BaseException:                  # a refusal, a cancel or a defect alike
-            dest.unlink(missing_ok=True)       # it was not there before this call
-            raise
-        if not dest.is_file():
-            raise Invalid("unexpected_answer",
-                f"the emulator answered SAVESTATE and {dest} is not there")
-        meta = dlaunch.state_meta(dest)
-        return {"name": name, "path": str(dest), "bytes": meta["bytes"],
-                **{k: meta.get(k, "") for k in dlaunch.STATE_META}, **outcome}
+        return saved_states.state_save(self, name, seconds)
 
     def state_load(self, name: str, seconds: float = STATE_WAIT_S) -> dict[str, object]:
-        """Load the state `name` from `<state_dir>/<name>.sav` by the debugger's own
-        `LOADSTATE`. Running or parked: a running guest is stopped for it and released again,
-        a parked one stays parked, at the loaded machine's position, which counts as a stop
-        of its own: the record of the stop before describes a machine that is gone. It
-        REPLACES the machine, so the session is altered from here on, and after any refusal
-        but a missing channel too, since a load refused part-way may have replaced some of
-        it."""
-        dlaunch.check_state_name(name)
-        check_wait_bound(seconds)
-        state_dir = self._state_dir()
-        source = state_dir / f"{name}.sav"
-        if not source.is_file():
-            raise Invalid("unknown_ref",
-                f"no state named {name!r} under {state_dir}: `state_list` says what is there")
-        meta = dlaunch.state_meta(source)
-        parked = self.at_debugger()
-        try:
-            outcome = self._state_command("LOADSTATE", source, seconds)
-        except BaseException as e:
-            # CUT SHORT AFTER IT WAS SENT, refused or cancelled: some of it may be loaded, so the
-            # session is altered and, parked, the stop record before it may describe a machine
-            # that is gone, as a load that answered does. Cut short before, it replaced nothing.
-            if self.state_sent and not (isinstance(e, Invalid)
-                                        and e.code in ("no_channel", "bad_argument")):
-                self.altered = True
-                if parked:
-                    self.stop_count += 1
-            raise
-        self.altered = True
-        if not outcome["paused"]:
-            self.stop_count += 1
-        return {"name": name, "path": str(source),
-                **{k: meta.get(k, "") for k in dlaunch.STATE_META}, **outcome}
+        return saved_states.state_load(self, name, seconds)
 
     def snapshot(self, dest: Path | None = None, seconds: float = SNAPSHOT_WAIT_S,
                  progress: Progress = no_progress) -> dict[str, object]:
@@ -3330,16 +2589,7 @@ class Session:
                 "waited_s": round(time.monotonic() - began, 2)}
 
     def state_list(self) -> dict[str, object]:
-        """Every `.sav` under the state directory with what it says about itself. A reading
-        of a directory: no window, no console, works while the machine runs."""
-        state_dir = self._state_dir()
-        files = sorted(state_dir.glob("*.sav")) if state_dir.is_dir() else []
-        # THE WORKING SLOT IS NOT A NAMED STATE: the emulator's own numbered file sits
-        # beside the copies, and listed among them it counts one state too many.
-        named = [dlaunch.state_meta(p) for p in files if not p.stem.isdigit()]
-        slots = [dlaunch.state_meta(p) for p in files if p.stem.isdigit()]
-        return {"state_dir": str(state_dir), "states": named,
-                "working_slot": slots[-1] if slots else None}
+        return saved_states.state_list(self)
 
     def send_commands(self, commands: list[bytes]) -> int:
         """The input route's post: each framed command goes down the socket the session
@@ -3503,10 +2753,14 @@ class Session:
         changed: bool | None = None
         with contextlib.suppress(OSError):
             changed = (self.launch.conf.is_file()
-                       and dlaunch.digest(self.launch.conf) != self.conf_digest)
+                       and dlaunch.current_digest(self.launch.conf) != self.conf_digest)
         return {
             "pid": self.proc.pid,
             "alive": self.alive(),
+            # WHETHER THE GUEST RUNS, off the session's own flag: no console round trip on
+            # every reply. A stop nobody has contacted the machine since is found by the next
+            # call that does, which then says so.
+            "running": self.alive() and not self._at_debugger,
             "altered": self.altered,
             "conf": str(self.launch.conf),
             "conf_digest": self.conf_digest,
@@ -3514,13 +2768,11 @@ class Session:
             "watched": self.launch.watched,
             "seconds_bound": self.launch.seconds,
             "seconds_elapsed": round(time.monotonic() - self.started_at, 1),
-            # NOT `guest_bytes_dropped`, which is what this was called for a few hours
-            # and was a name that LIED in both directions. What overflows is the
-            # EMULATOR'S TERMINAL -- ncurses repaints, SDL banners, and the log when no
-            # `logfile` is set. The GUEST's own instrumentation is the 0xE9 stream,
-            # which `e9()` reads off `launch.logfile` on disk and which this counter
-            # cannot touch: a zero here never meant the guest's output was intact, and
-            # a nonzero never meant any of it was lost.
+            # THE EMULATOR'S TERMINAL is what overflows -- ncurses repaints, SDL banners,
+            # and the log when no `logfile` is set. The GUEST's own instrumentation is the
+            # 0xE9 stream, which `e9()` reads off `launch.logfile` on disk and which this
+            # counter cannot touch: a zero here never means the guest's output is intact,
+            # and a nonzero never means any of it was lost.
             "terminal_bytes_dropped": self.dropped,
             # WHETHER THE READER IS STILL ALIVE, which no other field answers. A
             # drainer killed by a transient error makes every later read return ""

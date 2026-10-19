@@ -29,9 +29,10 @@ from __future__ import annotations
 import dataclasses
 import os
 import stat
-import tempfile
 from pathlib import Path
 from typing import Any
+
+from scry_core import fresh, prose
 
 import dosbox_arming as arming
 import dosbox_code as code
@@ -45,6 +46,9 @@ import dosbox_session as ds
 import dosbox_state as st
 import dosbox_symbols as sym
 from dosbox_state import STATE
+
+#: A comment file made new is readable by everyone, whatever the server's umask.
+NEW_FILE_MODE = 0o644
 
 #: Why a raw comment is `stale`, by `dosbox_declarations.raw_staleness`'s answer.
 _STALE_WHY = {
@@ -428,23 +432,6 @@ def _rows_of(raw: bytes, name: str, path: Path) -> list[cf.Row]:
         raise ds.Invalid("bad_argument", f"{name}: {path} is not a comment file: {e}") from None
 
 
-def _write(path: Path, text: str) -> None:
-    """The file written whole or not at all: a temporary beside it, then moved over it. A new
-    file is 0644; one replaced keeps its mode."""
-    tmp: str | None = None
-    try:
-        mode = stat.S_IMODE(path.stat().st_mode) if path.exists() else 0o644
-        fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
-        with os.fdopen(fd, "wb") as fh:
-            fh.write(text.encode("utf-8"))
-        os.chmod(tmp, mode)
-        os.replace(tmp, path)
-    except OSError as e:
-        if tmp is not None:
-            Path(tmp).unlink(missing_ok=True)
-        raise ds.Invalid("host_failed", f"dest: {path} could not be written: {e}") from None
-
-
 def _canonical_file_ref(ref: str) -> str:
     return dec.canonical_ref(ref, placement.decide_by(ref))
 
@@ -482,10 +469,10 @@ def comment_save(session: ds.Session, dest: str) -> dict[str, Any]:
     mine = {_own_ref(d) for d in held}
     dropped = [{"ref": r.ref, "cpu": None} for r in before or []
                if _canonical_file_ref(r.ref) not in mine]
-    _write(path, text)
+    fresh.replace(path, text.encode("utf-8"), "dest:", new_mode=NEW_FILE_MODE)
     shown, truncated = _shown(dropped)
-    note = ({"note": f"{len(dropped)} comment(s) the replaced file held and this store does not "
-                     "are gone from it: `dropped_comments`"} if dropped else {})
+    note = ({"note": f"{prose.counted(len(dropped), 'comment')} the replaced file held and this "
+                     "store does not are gone from it: `dropped_comments`"} if dropped else {})
     return st.reply(dest=str(path), comments_total=len(held), dropped_comments=shown,
                     dropped_total=len(dropped), truncated=truncated, **note)
 
@@ -552,7 +539,7 @@ def comment_load(session: ds.Session, source: str) -> dict[str, Any]:
         notes.append(f"{len(waiting)} row(s) this stop cannot place are kept `unarmable`, "
                      f"each `why` naming the stop it waits for: {waiting[:st.ROWS_SHOWN]}")
     if sharing := _sharing([*held, *added]):
-        notes.append(f"{len(sharing)} comment(s) share a place with another, "
+        notes.append(f"{prose.counted(len(sharing), 'comment')} share a place with another, "
                      f"{sharing[0][0]!r} and {sharing[0][1]!r} first: a comment file names a "
                      "place once, so `comment_save` refuses them until `comment_delete` "
                      "leaves one at each")

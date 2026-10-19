@@ -9,7 +9,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from scry_core import judges, picture, png, raster
+from scry_core import judges, picture, png, raster, screen_map
 
 import dosbox_dac as vgadac
 import dosbox_paths as paths
@@ -69,19 +69,21 @@ def _crop(crop: Sequence[int] | None, shape: vga.Geometry) -> list[int]:
 
 
 def screen_view(session: ds.Session, crop: Sequence[int] | None, scale: int, dest: Path | None,
-                scratch: Path) -> dict[str, Any]:
+                scratch: Path, attach: bool = True) -> dict[str, Any]:
     """The body of `screen_view`: the text a text mode shows, or the 256-colour picture,
-    written to `dest` or the scratch and attached; `crop` in characters or pixels. What `dest`
-    and `scale` may be is judged on the mode alone, before the other listings are typed."""
+    written to `dest` or the scratch and attached unless `attach` is false; `crop` in characters
+    or pixels. What `dest`, `scale` and `attach` may be is judged on the mode alone, before the
+    other listings are typed."""
     picture.check_scale(scale)
+    picture.check_attach(attach)
     if crop is not None:
         judges.rect("crop", crop)
     mode = vga.listed(session, vga.COMMAND_OF["mode"])
     source = vga.source_of(mode)
-    if source == vga.TEXT and (dest is not None or scale):
+    if source == vga.TEXT and (dest is not None or scale or not attach):
         raise ds.Invalid("bad_argument", f"the screen is in `{mode.get('mode')}`, a text mode, "
-                         f"which has no picture to write or scale: leave `dest` and `scale` out "
-                         f"to read its text")
+                         f"which has no picture to write, scale or attach: leave `dest`, `scale` "
+                         f"and `attach` out to read its text")
     if dest is not None:
         paths.fresh_dest("dest", dest)
     listings = {"mode": mode, **{key: vga.listed(session, vga.COMMAND_OF[key])
@@ -102,7 +104,7 @@ def screen_view(session: ds.Session, crop: Sequence[int] | None, scale: int, des
         _, dac = vgadac.read_dac(session)
         whole = png.Raster(shape.width, shape.height, data, tuple(vgadac.rgb8(e) for e in dac))
         reply["image"] = picture.publish(raster.cropped(whole, area), scale, dest, scratch,
-                                         "screen")
+                                         "screen", attach=attach)
     reply["display_start"] = shape.display_start
     return reply
 
@@ -113,15 +115,24 @@ def screen_signature(session: ds.Session, crop: Sequence[int] | None) -> dict[st
     (`text_cells`), a pixel through the DAC."""
     if crop is not None:
         judges.rect("crop", crop)
-    shape = vga.geometry(vga.read_listings(session))
+    read, shape = grid(session)
     area = _crop(crop, shape)
+    return {"signature": raster.signature(read.kind, shape.width, shape.height, read.cells,
+                                          area),
+            "kind": read.kind, **shape.head(), "crop": area}
+
+
+def grid(session: ds.Session) -> tuple[screen_map.Grid, vga.Geometry]:
+    """ONE read of the screen as `scry_core.raster` signs it, and its shape: a text cell resolved
+    through the Attribute Controller and the DAC (`text_cells`), a pixel through the DAC. What
+    `screen_signature` hashes and what a screen map is matched against."""
+    shape = vga.geometry(vga.read_listings(session))
     data = vga.read_screen(session, shape)
     _, dac = vgadac.read_dac(session)
-    kind: raster.Kind
     if shape.source == vga.TEXT:
-        cells, kind = text_cells(data, vga.listed(session, vga.COMMAND_OF["ac"]), dac), "text"
-    else:
-        lut = vgadac.dac_colours(dac)
-        cells, kind = b"".join(lut[i] for i in data), "pixel"
-    return {"signature": raster.signature(kind, shape.width, shape.height, cells, area),
-            "kind": kind, **shape.head(), "crop": area}
+        return screen_map.Grid("text", shape.width, shape.height,
+                               text_cells(data, vga.listed(session, vga.COMMAND_OF["ac"]),
+                                          dac)), shape
+    lut = vgadac.dac_colours(dac)
+    return screen_map.Grid("pixel", shape.width, shape.height,
+                           b"".join(lut[i] for i in data)), shape

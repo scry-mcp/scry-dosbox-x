@@ -1,0 +1,31 @@
+{
+ "task": {
+  "id": "D116",
+  "prompt": "The guest is stopped in mode 13h. Save what is on the screen to /tmp/quiet.png, but do not attach the picture to your reply: I only need the file.",
+  "tool": "screen_view",
+  "args": {
+   "dest": "/tmp/quiet.png",
+   "attach": false
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D116: {\"tool\":\"screen_view\",\"args\":{\"dest\":\"/tmp/quiet.png\",\"attach\":false}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D116: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/quiet.png\", \"attach\": false}}"
+   ],
+   "right": true
+  }
+ ]
+}

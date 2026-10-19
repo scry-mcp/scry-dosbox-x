@@ -1,47 +1,34 @@
 """MCP server owning one live DOSBox-X session, so a question costs milliseconds.
 
-WHY AN MCP AND NOT A SCRIPT.  The expensive part was never the question, it was the
-state: each shell command is a fresh process, so the emulator died between one
-question and the next and every follow-up paid another boot.  MEASURED on a DOS audio
-application: a question run as a batch costs the better part of a minute, reaching the
-same state once on this path costs a couple of seconds, and from then on a question
-through the debugger console costs under a second and one that never touches the
-terminal (`log`, `status`) a fraction of a millisecond.
-
-THE FIGURES ARE NOT KEPT: a measurement lives in the commit that took it, and a fresh
-one is taken when a decision needs it.  This paragraph once carried a headline figure of
-its own: the pseudo-terminal round trip measured before
-this server existed, which under-priced a real question by more than an order of
-magnitude, because every tool going through the debugger console waits for the end of its
-reply by construction.
+WHY AN MCP AND NOT A SCRIPT.  The expensive part is never the question, it is the state:
+each shell command is a fresh process, so the emulator dies between one question and the
+next and every follow-up pays another boot.  Held open here, the state is reached once, a
+question through the debugger console costs its round trip, and one that never touches the
+terminal (`log`, `status`) costs nearly nothing.  What a question costs is measured when a
+decision needs it, and the measure lives in the commit that took it: every tool going
+through the console waits for the end of its reply by construction, which is why a bare
+pseudo-terminal round trip under-prices a real question.
 
 WHAT IT DELIBERATELY DOES NOT DO.  A golden, or any byte-for-byte comparison, stays
 in a batch run: a batch reaches an EXACT frame, identical across runs, and a live
 session sits wherever the last question left it.  That is not a gap to be closed
 later, it is the reason both exist.
 
-SAVE STATES, AND WHAT IS ACTUALLY KNOWN ABOUT THEM, because an earlier version of this
-paragraph recorded a block that did not survive a re-measurement.  Writing one needs no
-keyboard: `autosave=<interval> <slot>` in the config writes it on a timer, and MEASURED
-through THIS server (its pseudo-terminal, its break at start, then a `resume`) the file
-appears under the working directory's `save/`, with the debugger's own `Saved.` in the
-output.  Loading one is a MAPPER action, which is a HOST key delivered to a window in
-front, and this server posts no host keys: that half is not measured.  What the earlier
-paragraph got wrong: `-loadstate` is not an option this build has, so "it did not return"
-was an unknown option hanging, which every unknown option does; and `forceloadstate` is an
-override for a version or program mismatch on load, not a trigger.  The state tools
-(`state_save`, `state_load`) are the debugger's own SAVESTATE and LOADSTATE, sent down the
-debugger channel to a build that carries both; `state_list` reads the directory.
+SAVE STATES.  The state tools (`state_save`, `state_load`) are the debugger's own SAVESTATE
+and LOADSTATE, sent down the debugger channel to a build that carries both; `state_list`
+reads the directory.  The other ways in are no tools, each for its reason: a config's
+`autosave=<interval> <slot>` writes on a timer the caller does not choose; loading through
+the emulator is a MAPPER action, a HOST key to a window in front, and this server posts no
+host keys; `-loadstate` is not an option the build has (an unknown option starts the
+emulator, so it seems to hang); `forceloadstate` overrides a version or program mismatch on
+load, it triggers nothing.
 
-AND A SECOND ONE, FOUND WHILE BUILDING THE STEPPING TOOLS: `RUNWATCH` SHIPS NO TOOL
-EITHER, and the measurement is why.  The debugger has it (`debug_running = true;
-DEBUG_DrawScreen();` -- resume the machine while going on painting its state), and it
-is the obvious way to watch a program move.  MEASURED here it is a HOSE: it resumes and
-repaints without pause, **22,816 characters in a single settle window, clipped**, and
-writing `RUNWATCH` a second time did NOT turn it off -- the session that tried it had to
-be abandoned.  A tool with no way back leaves the caller holding a wedged session and a
-terminal nobody can read, which is worse than not having it, so it is recorded as a
-finding rather than delivered.  Anyone picking this up again needs to find the OFF
+`RUNWATCH` SHIPS NO TOOL.  The debugger has it (`debug_running = true; DEBUG_DrawScreen();`
+-- resume the machine while going on painting its state), and it is the obvious way to watch
+a program move, but it is a HOSE: it resumes and repaints without pause, far past a settle
+window, and writing `RUNWATCH` a second time does NOT turn it off, so the session is lost.
+A tool with no way back leaves the caller holding a wedged session and a terminal nobody can
+read, which is worse than not having it.  Anyone picking this up again needs to find the OFF
 switch FIRST.  The tools that do ship stop the machine deliberately (`run_to`), step it
 one instruction at a time (`step`), or arm a watch and leave it stopped (`watch`).  Two
 of those always hand the debugger back able to answer; `run_to`, `run_for` and `trace` each have
@@ -61,9 +48,8 @@ HONESTY, wired into the contract rather than into a prompt:
   "there is no instrumentation to match against" is INVALID, and a caller that cannot
   tell them apart reports a broken instrument as a clean result.
 - EVERY reply carries the session's state, `altered` included -- the INVALID ones
-  too, which is where an earlier version dropped it.  An INVALID answer is the one a
-  caller reasons hardest about, and it is the worst one to hand over with no trace
-  that the machine had been written to.
+  too.  An INVALID answer is the one a caller reasons hardest about, and it is the worst
+  one to hand over with no trace that the machine had been written to.
 - A PATH A CALLER GIVES IT IS ABSOLUTE OR `~`-LED, judged by scry-core's one judge
   (through `dosbox_paths`): `~` is expanded, a relative path is refused, and the refusal
   names the argument.
@@ -80,15 +66,14 @@ import signal
 import subprocess
 import sys
 import threading
-import time
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
 
 from mcp.server.mcpserver import Context
 
-# THE FILE IS NOT CALLED `server.py`, and that is not fussiness. `scry-mame` installs a
-# top-level `server` module, and in an environment that holds both packages (or one
+# THE FILE IS NOT CALLED `server.py`, and that is not fussiness. Another server may install
+# a top-level `server` module, and in an environment that holds both packages (or one
 # pytest process that imports both) `import server` binds to whichever was imported
 # first, silently, and a suite starts testing the wrong program while every case still
 # passes for the other one.
@@ -101,10 +86,11 @@ from mcp.server.mcpserver import Context
 # depends on -- the same silent-wrong-import hazard, installed by the fix for it.
 sys.path.append(str(Path(__file__).resolve().parent))
 
-from scry_core import fresh, media_tools, narrowing, recording  # noqa: E402
+from scry_core import fresh, media_tools, narrowing, recording, screen_map  # noqa: E402
 from scry_core import strict_arguments as strict  # noqa: E402
 from scry_core.progress import bridge  # noqa: E402
 
+import dosbox_advance as advance  # noqa: E402
 import dosbox_arming as arming  # noqa: E402
 import dosbox_binary as binaries  # noqa: E402
 import dosbox_captures as caps  # noqa: E402
@@ -113,11 +99,10 @@ import dosbox_code as code  # noqa: E402
 import dosbox_comments as comments  # noqa: E402
 import dosbox_console as dcons  # noqa: E402
 import dosbox_dac as vgadac  # noqa: E402
-import dosbox_declarations as dec  # noqa: E402
 import dosbox_dump as dumping  # noqa: E402
 import dosbox_find as finder  # noqa: E402
 import dosbox_inputs as inputs  # noqa: E402
-import dosbox_launch as dlaunch  # noqa: E402
+import dosbox_lifecycle as lifecycle  # noqa: E402
 import dosbox_logs as dlogs  # noqa: E402
 import dosbox_machine as machine  # noqa: E402
 import dosbox_media as media  # noqa: E402
@@ -155,13 +140,12 @@ def build_check(binary: str = "") -> dict[str, Any]:
     if binary:          # the shape first, as every path's, whatever the session is
         paths.absolute("binary", binary)
     if STATE.session is not None and STATE.session.alive():
+        # ANSWERING MEANS A SECOND EMULATOR from the same binary, which `start` refuses for
+        # the same reason: two emulators on one machine make every timing on it a measurement
+        # of the neighbour. The build does not change while a session is up.
         raise ds.Invalid("session_live",
-            "a session is live, and answering this means starting a SECOND emulator "
-            "from the same binary -- which `start` refuses for the same reason: two "
-            "emulators sharing one machine make every timing on it a measurement of "
-            "the neighbour. What this examines is a property of the BUILD and does not "
-            "change while a session is up. `close` first, or read the answer you "
-            "already have")
+            "a session is live, and this would start a second emulator: `close` first, or "
+            "use the answer this build already gave")
     resolved = binaries.resolve(binary)
     try:
         got = subprocess.run(
@@ -235,138 +219,10 @@ def start(conf: str, cwd: str, seconds: int, mode: str = "headless",
 
     Reference: REFERENCE.md, The session.
     """
-    # THE PATHS FIRST: a path as wrong with a session live as with none is refused before
-    # anything here acts (an expired session closed, the symbol table forgotten).
-    cwd_given = paths.absolute("cwd", cwd)
-    conf_path = paths.absolute("conf", conf)
-    captures_path = (paths.absolute("captures_dir", captures_dir)
-                     if captures_dir is not None else None)
-    logfile_path = paths.absolute("logfile", logfile) if logfile is not None else None
-    state_path = paths.absolute("state_dir", state_dir) if state_dir is not None else None
-    if binary:
-        paths.absolute("binary", binary)
-    if STATE.session is not None:
-        if STATE.session.alive():
-            raise ds.Invalid("session_live", "a session is already live. `close` it first: two "
-                             "emulators sharing one machine make every timing on it "
-                             "a measurement of the neighbour as much as of the guest")
-        # An EXPIRED session still owns its terminal. Dropping the object on the floor
-        # leaked one descriptor per cycle in a process designed to be long-lived, and
-        # restarting after a bound expires is the normal way to use this.
-        #
-        # AND THIS ONE CANNOT REPORT `reap_failed`, deliberately. It is reached only
-        # under `not alive()`, so `close()` takes its dead branch, the signals never
-        # run and the field is never set. Two earlier rounds put a consumer here and
-        # both were unreachable; the count further down is the accurate one.
-        STATE.session.close()
-        STATE.session = None
-    # A NEW SESSION IS A NEW PROCESS AT A NEW BASE, so the previous one's table may not
-    # survive into it. It is cleared here rather than only on the dead-session branch
-    # above, because `start` is reached with no session at all far more often than with
-    # an expired one, and that is precisely the path a stale table would ride through.
-    STATE.forget_symbols()
-    if mode not in ("headless", "shared"):
-        raise ds.Invalid("bad_argument", f"unknown mode {mode!r}: it is `headless` or `shared`")
-    resolved = binaries.resolve(binary)
-
-    cwd_path = paths.resolved("cwd", cwd_given)
-    launch = dlaunch.Launch(
-        conf=conf_path, cwd=cwd_path, seconds=seconds,
-        watched=(mode == "shared"),
-        window_flags=list(window_flags or []),
-        flags=list(flags or []),
-        break_on_int3=break_on_int3,
-        program=program,
-        capture_video=capture_video,
-        captures_dir=captures_path,
-        logfile=logfile_path,
-        # EVERY SESSION HAS THE INPUT ROUTE: input reaches the guest through that socket alone,
-        # so a session started without a port could take no key and no click at all.
-        input_port=input_port if input_port is not None else 0,
-        state_dir=state_path if state_path is not None else cwd_path / "save",
-        binary=resolved.path,
-        background=dlaunch.judge_background(background, mode == "shared"),
-    )
-    dlaunch.validate(launch)
-    # KEY AND VALIDATE THE DECLARATION STORE BEFORE THE EMULATOR BOOTS. Its constructor
-    # reads and parses the persisted file, and a corrupt or hand-edited one raises a
-    # `DeclarationError` -- which, done after the session was up, escaped as a traceback
-    # with the emulator running and no `session` block, and the next `start` then refused
-    # "already live". Built here it fails as a clean INVALID with nothing started to clean
-    # up. Keyed by the RESOLVED conf path so two spellings of one file are one identity and
-    # two guests are two; `STATE.store` itself is assigned only once the session is ready, below.
-    store = placement.to_invalid(lambda: dec.DeclarationStore(str(launch.conf.resolve())))
-    # EVERYTHING ELSE JUDGED, then the two directories this server writes into, with their
-    # parents: the emulator creates neither (a save into a missing state directory is logged as
-    # `SAVE_FAILED`, measured). A refusal past this point (a busy port) leaves them made.
-    for name, made in (("captures_dir", launch.captures_dir), ("state_dir", launch.state_dir)):
-        if made is not None:
-            paths.make_directory(name, made)
-    binary_facts = binaries.facts(resolved)
-    session = ds.Session(launch)
-    STATE.starting = session
-    try:
-        ready = session.wait_ready(progress=bridge(ctx))
-    except ds.Invalid as e:
-        # IT IS CLOSED BEFORE THE REFUSAL GOES OUT. Assigning first and waiting after
-        # left a real emulator running behind an INVALID reply, with nothing in the
-        # message telling the caller to close it and the next `start` refusing with a
-        # different message that named neither problem.
-        #
-        # FOUR OF THE SIX `close()` SITES CAN TAKE THE LIVE BRANCH, and two of them
-        # report `reap_failed`: this one and the `close` tool. The other two drop it
-        # deliberately and the reasons differ -- the `except BaseException` arm below
-        # is already carrying an escaping exception with nowhere to put a second
-        # message, and `main()`'s `finally` runs at process exit where there is no
-        # reply left to write to. Neither is "the only place", which two earlier
-        # counts here both got wrong in different ways. It is set inside `close()`'s
-        # `if self.proc.poll() is None:` block, so it can only be produced by closing a
-        # session that is ALIVE -- and the two consumers added for it earlier were both
-        # on the DEAD branch, where `poll()` is non-None and the signals never run.
-        # MEASURED: closing an already-exited session leaves the field empty, so four
-        # rounds of work on it could not fire in production. Those two are deleted.
-        #
-        # `wait_ready` raising with the child still running is exactly the case where
-        # SIGKILL can fail to reap, so this arm is where a stray emulator is most
-        # likely and least visible.
-        session.close(progress=bridge(ctx))
-        if session.reap_failed:
-            raise ds.Invalid("session_broken", f"{e} -- and worse, {session.reap_failed}, so an "
-                             f"emulator may still be running. Check for a stray "
-                             f"`dosbox-x` before starting again") from None
-        raise
-    except BaseException:
-        session.close(progress=bridge(ctx))
-        raise
-    finally:
-        STATE.starting = None
-    STATE.session = session
-    # The store was built and validated above, before the emulator started; it becomes the
-    # live one only now the session is ready, so `STATE.store` is never set without a session.
-    STATE.store = store
-    STATE.session_origin = STATE.origin()
-    STATE.conf_fingerprint = dlaunch.fingerprint(launch.conf)
-    # THE RUNNING STATE IS CLEARED BEFORE THE FIRST STOP IS RECORDED, or the clearing
-    # takes the record with it and the server holds no stop until the next contact.
-    STATE.clear_running_state()
-    rearm = arming.arm_at_start(session)   # before the park's survey, so the first stop lists them
-    running.observe_stop(session)     # the park at the debugger is the session's first stop
-    # WHERE THE STUB IS, said in the reply: a conf's autoexec that runs its own program has to
-    # run the stub first, and a wheel install puts it wherever the package landed.
-    started = st.reply(mode=mode, ready_after_s=ready, argv=session.argv, **binary_facts,
-                       stub=str(dlaunch.GUEST_DIR / "INJECT.COM"),
-                       input_port=session.launch.input_port,
-                       background=launch.background,
-                       **rearm)
-    if not plan:
-        return started
-    # A PLAN RUNS ON THE FRESH SESSION (decision 2), through the SAME executor `perform`
-    # uses, so the two moments cannot drift. The started-reply is folded in under `start`
-    # so a caller sees BOTH that the session came up and what the plan did; a plan that
-    # fails leaves the session open at wherever it stopped, exactly as `perform` does.
-    ran = sequence.run_steps(session, plan, plan_wait, _step_ops())
-    return st.extend(ran, start={k: v for k, v in started.items()
-                                 if k not in ("status", "session")})
+    return lifecycle.start(conf, cwd, seconds, mode, window_flags, flags, break_on_int3,
+                           program, logfile, capture_video, captures_dir, plan,
+                           plan_wait, input_port, state_dir, binary, background,
+                           bridge(ctx), _step_ops)
 
 
 @tool("Session status", summary=one_line.status, read_only=True)
@@ -380,6 +236,7 @@ def status() -> dict[str, Any]:
 
       pid                     the emulator process's pid, to read instead of hunting it.
       alive                   the emulator process is up.
+      running                 the guest runs; false parked at the debugger.
       altered                 something here WROTE to the guest: a later measurement is of a
                               forced state.
       conf                    the config the session was started from.
@@ -424,26 +281,7 @@ def close(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     describes the state as it was BEFORE closing, so its `pid` is the process this call
     ended.
     """
-    if STATE.session is None:
-        return st.reply(closed=False, how="none", note="there was no session")
-    was = STATE.session.state()
-    rc = STATE.session.close(progress=bridge(ctx))
-    # READ AFTER THE CLOSE, because that is when it can be set, and it is reported
-    # BESIDE `exit_code` rather than inside `session` because it is a fact about the
-    # CLOSING and not about the state being described.
-    #
-    # MEASURED: while it lived only in `state()`, this field was INERT. `was` is
-    # captured before `close()` runs, every other call site discards the session
-    # immediately afterwards, and no path sets it mid-session -- so a child that was
-    # SIGKILLed and never reaped came back as `exit_code: null` with `reap_failed: ""`,
-    # which is the exact reply the field was added to prevent.
-    unreaped = STATE.session.reap_failed
-    how = STATE.session.ended_how
-    STATE.session = None
-    STATE.forget_symbols()
-    STATE.clear_running_state()
-    return {"status": "ok", "closed": True, "how": how, "exit_code": rc,
-            "reap_failed": unreaped, "session": was}
+    return lifecycle.close(bridge(ctx))
 
 
 # ------------------------------------------------------------------ the guest's own log
@@ -469,7 +307,7 @@ def log(pattern: str, channel: str, limit: int = 40, labels: bool = False) -> di
 
     INVALID, with `code` and `message` saying which: no `logfile` on this session; the log
     does not exist yet; the guest channel holds no instrumentation at all; `limit` outside
-    1..400 (above that, narrow the pattern); a
+    1..{LOG_LIMIT_MAX} (above that, narrow the pattern); a
     pattern that does not compile; a channel that is not one of the three; the session is
     gone. For "when did X happen, and wait if it has not" use `log_wait`.
     """
@@ -498,8 +336,8 @@ def log_wait(pattern: str, channel: str, seconds: float = 30.0,
     of the log and the match), `lines_total`, `arrived_during`, `lines_examined`.
 
     INVALID: no `logfile` on the session; a pattern that does not compile; `seconds` out of
-    (0, 600]; a channel that is not one of the three; the machine is STOPPED at the debugger
-    (refused at once, naming it, with `last_stop`: a stopped guest writes nothing, so the
+    (0, {WAIT_MAX_S}]; a channel that is not one of the three; the machine is STOPPED at the
+    debugger (refused at once, naming it, with `last_stop`: a stopped guest writes nothing, so the
     wait could not end; a stop that lands DURING the wait is reported the same way, by the
     poll that sees it or by the expiry, never as "still running"; what the log already
     holds is still answered first); the emulator went away or the log SHRANK during the
@@ -527,7 +365,6 @@ def log_wait(pattern: str, channel: str, seconds: float = 30.0,
 
 # --------------------------------------------- readers of a STOPPED machine, and a write
 
-_console_listening = ds.console_listening
 
 
 @tool("Read the registers", summary=one_line.registers, read_only=True, replay=("registers",))
@@ -557,7 +394,7 @@ def read_memory(ref: str, length: int = 16) -> dict[str, Any]:
 
     Reply: `hex` (`length` bytes from the address), `length`, `rows` (the data view's rows
     of sixteen bytes, as many as the debugger's window showed), and the `segment`/`offset`
-    the ref resolved to. `length` is 1 to 128, and the rows have to hold it from the
+    the ref resolved to. `length` is 1 to {READ_MAX}, and the rows have to hold it from the
     address: a view that showed fewer bytes than asked is refused (`readback_refused`)
     naming what it held, and above the view the answer is `memdump`. INVALID unless the
     address asked for is among the rows returned, so a cut repaint is refused rather than
@@ -572,7 +409,7 @@ def read_memory(ref: str, length: int = 16) -> dict[str, Any]:
 
 @tool("Disassemble code", summary=one_line.disassemble, read_only=True)
 def disassemble(ref: str, length: int = 16) -> dict[str, Any]:
-    """Decode `length` bytes (1..1024) from `ref`, a symbol or a `SEG:OFF`, one x86
+    """Decode `length` bytes (1..{DISASM_MAX}) from `ref`, a symbol or a `SEG:OFF`, one x86
     instruction a line, on the host (capstone): the debugger has no disassembly command. The
     listing completes the instruction that straddles the end, so it may run a little past
     `length`, unless the segment ends first. Needs the machine stopped.
@@ -592,7 +429,7 @@ def disassemble(ref: str, length: int = 16) -> dict[str, Any]:
     the nearest `symbol` with `delta`, null outside the table's span; a row that could not be
     placed has `linear` null too and `why`. A register-relative operand is not resolved.
 
-    Refused: `length` outside 1..1024, and one that runs past the end of a 16-bit segment
+    Refused: `length` outside 1..{DISASM_MAX}, and one that runs past the end of a 16-bit segment
     (IP wraps there), naming the most bytes from there; `memdump`'s refusals apply to the
     bytes read (a leftover dump file, a protected-mode range past offset 0xFFFF without
     `logfile`).
@@ -647,7 +484,7 @@ def memdump(ref: str, length: int, dest: str) -> dict[str, Any]:
     Inside 0 to 0xFFFF the limit is not judged and the debugger reads zeros past it.
     """
     session = live()
-    _console_listening(session, "a dump")
+    ds.console_listening(session, "a dump")
     seg, off = placement.read_target(ref, "DS", session)
     dumped = dumping.dump_range(session, seg, off, length, paths.absolute("dest", dest))
     return st.reply(ref=ref, path=str(dumped.path), bytes=dumped.path.stat().st_size)
@@ -677,7 +514,7 @@ def find(data_hex: str, ref: str, length: int) -> dict[str, Any]:
     # with one; where `ref` POINTS is not, and that still waits below.
     pattern = finder.check_pattern(data_hex)
     session = live()
-    _console_listening(session, "a search")
+    ds.console_listening(session, "a search")
     seg, off = placement.read_target(ref, "DS", session)
     return st.reply(ref=ref, **finder.find(session, seg, off, length, pattern))
 
@@ -697,7 +534,7 @@ def scan_start(ref: str, length: int, width: str = "byte") -> dict[str, Any]:
     `linear`, `candidates`.
     """
     session = live()
-    _console_listening(session, "a search")
+    ds.console_listening(session, "a search")
     seg, off = placement.read_target(ref, "DS", session)
     return st.reply(ref=ref, **finder.scan_start(session, seg, off, length, width))
 
@@ -728,7 +565,7 @@ def scan_filter(operator: str = "=", value: int | None = None,
     `unexpected_answer` clears the line before it refuses, saying so in `line_recovered`.
     """
     session = live()
-    _console_listening(session, "a search")
+    ds.console_listening(session, "a search")
     return st.reply(**finder.scan_filter(session, operator, value, limit))
 
 
@@ -739,7 +576,7 @@ def scan_clear() -> dict[str, Any]:
     debugger's command line before refusing (`line_recovered`): see `scan_filter`.
     """
     session = live()
-    _console_listening(session, "a search")
+    ds.console_listening(session, "a search")
     return st.reply(**finder.scan_clear(session))
 
 
@@ -759,7 +596,7 @@ def debug(command: str) -> dict[str, Any]:
     character.
     """
     session = live()
-    _console_listening(session, repr(command))
+    ds.console_listening(session, repr(command))
     # A SCAN COMMAND TYPED HERE moves the debugger's own count past the one `scan_filter` keeps,
     # and may open a scan at another width, so both are dropped rather than answered stale.
     if command.strip().upper().startswith(("MEMS", "MEMFIND")):
@@ -845,34 +682,7 @@ def resume(e9: str = "none", e9_filter: str = ".",
 
     Reference: REFERENCE.md, Advancing the machine.
     """
-    session = live()
-    # A GUEST ALREADY RUNNING IS REFUSED BEFORE ANY CHECK THAT NEEDS THE MACHINE: an F5 there
-    # does nothing, and an `ok` for it reads exactly like the release of a stopped machine.
-    if not session.at_debugger():
-        raise ds.NotStopped("the guest is already running, so there is nothing to resume")
-    out = session.resume()
-    base = dict(halted=out["halted"], stopped_at=out["stopped_at"],
-                **st.delta_if_asked(cast(str, out["screen"]), 2000, detail))
-    if not out["halted"] and seconds > 0:
-        began = time.monotonic()
-        expired, _saw_at = ds.Session._await_stop(session, began, began + seconds, "resume",
-                                                  bridge(ctx), label="resume")
-        base["waited_s"] = round(time.monotonic() - began, 3)
-        if not expired:
-            try:
-                base["stopped_at"] = session.where()
-                base["halted"] = True
-            except ds.NotStopped:
-                base["note"] = ("the debugger announced a stop and the machine was not at rest "
-                                "when asked: it is RUNNING")
-        else:
-            base["note"] = (f"no stop within {seconds:g} s; the machine is STILL RUNNING, and "
-                            "the console tools refuse until it stops")
-    # A HALT IS A STOP, so it carries the full stop reply (decision 13): registers, the
-    # watches evaluated, the attribution and the E9 summary. A machine still running has
-    # nothing to read, so it comes back with just the base.
-    return running.stop_or_base(session, bool(base["halted"]), e9, e9_filter, e9_stamp, base,
-                                retrace_may_stop=True)
+    return advance.resume(e9, e9_filter, e9_stamp, seconds, detail, bridge(ctx))
 
 
 @tool("Stop the running machine", summary=one_line.stop, on_cancel="stop", replay="wall")
@@ -902,8 +712,13 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     session = live()
     if session.at_debugger():
         running.observe_stop(session)
-        return st.reply(interrupted=False, running=False,
-                        note="the machine was already stopped", last_stop=STATE.as_of())
+        # THE STOP IT IS IN, or none: after a survey that could not be read the record is the
+        # previous stop's, and naming it would be a confident wrong answer.
+        current = STATE.as_of_current(session)
+        return st.reply(interrupted=False, running=False, last_stop=current,
+                        note="the machine was already stopped" + (
+                            "" if current is not None else ", its position not readable yet "
+                            "(a cut pane; the next contact retries)"))
     waited = session.break_in()
     reply = running.stop_reply(session, interrupted=True, running=False, how="break",
                                waited_s=waited)
@@ -963,33 +778,7 @@ def run_to(ref: str, control: str, seconds: float = 30.0,
 
     Reference: REFERENCE.md, Advancing the machine.
     """
-    session = live()
-    # ONE SURVEY for the resolution (decision 35): a symbol needs the mode and the CS
-    # selector, and reading them as two round trips before the run's own third was two
-    # avoidable console trips per `run_to` by name. A raw SEG:OFF reads nothing here.
-    by_address = (placement.decide_by(ref) == "address"
-                  and placement.decide_by(control) == "address")
-    machine = None if by_address else session.where_and_registers()
-    mode_regs = None if machine is None else (machine[0]["mode"], machine[1])
-    seg, off = placement.read_target(ref, "CS", session, machine=mode_regs)
-    ctl = placement.read_target(control, "CS", session, machine=mode_regs)
-    out = session.run_to(seg, off, seconds, ctl, bridge(ctx))
-    out["ref"] = ref            # `target` is the session's own spelling, kept as it came
-    # THE CONTROL'S VERDICT (decision 12 of the emulator roadmap): a bound that ran out with
-    # the control armed and NEVER fired is not a non-arrival, it is a run that proved
-    # nothing, and it says so as INVALID with the account attached.
-    hits = out.get("control")
-    if out.get("running") and isinstance(hits, dict) and not hits["hits"]:
-        return st.reply(status="INVALID", code="control_silent",
-                      message=f"the control {control} never fired within {seconds}s, so {ref} "
-                             f"not firing means nothing. Check that the control really is hot "
-                             f"on this screen; both breakpoints are still armed",
-                      **cast(dict[str, Any], out))
-    # ARRIVED or stopped ELSEWHERE both mean the machine is stopped, so both carry the full
-    # stop reply; a bound that expired left it running and there is nothing to read.
-    # An arrival is the stop `run_to` made; a stop elsewhere may be a retrace `run_for` left.
-    return running.stop_or_base(session, not out.get("running"), e9, e9_filter, e9_stamp,
-                         cast(dict[str, Any], out), retrace_may_stop=not out.get("arrived"))
+    return advance.run_to(ref, control, seconds, e9, e9_filter, e9_stamp, bridge(ctx))
 
 
 @tool("Run for frames or emulated time", summary=one_line.run_for, on_cancel="stop")
@@ -1003,8 +792,8 @@ def run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
     Arguments: exactly one of `frames` and `milliseconds` above zero. By `milliseconds` it runs
     retrace by retrace until the register pane's emulated clock has risen at least that far, so
     it stops at the first retrace at or past the mark, surveying every frame to read it.
-    `seconds`: the wall-clock bound, (0, 600]. `e9`, `e9_filter`, `e9_stamp` as in `resume`.
-    Needs the machine stopped. A DOS machine keeps no frame counter, so `frames` counts
+    `seconds`: the wall-clock bound, (0, {WAIT_MAX_S}]. `e9`, `e9_filter`, `e9_stamp` as in
+    `resume`. Needs the machine stopped. A DOS machine keeps no frame counter, so `frames` counts
     retraces from where the call starts.
 
     Reply: `verdict`, `ELAPSED` (the run ran its course: every frame, or the clock at the mark),
@@ -1023,7 +812,7 @@ def run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
     Reference: REFERENCE.md, Advancing the machine.
     """
     session = live()
-    _console_listening(session, "a `VRT`")
+    ds.console_listening(session, "a `VRT`")
     return retrace.run_for(session, frames, milliseconds, seconds, bridge(ctx), e9, e9_filter,
                            e9_stamp)
 
@@ -1035,12 +824,12 @@ def trace(instructions: int, shape: str = "normal", dest: str = "", seconds: flo
     family), come back STOPPED with the log in a file and the full stop reply, and say which
     loaded symbols the executed addresses fall in.
 
-    Arguments: `instructions`, how many to EXECUTE, 1 to 3000000. `shape`: `normal` (`LOG`:
-    disassembly and registers), `short` (`LOGS`), `long` (`LOGL`: adds emulated time, VM and
+    Arguments: `instructions`, how many to EXECUTE, 1 to {INSTRUCTIONS_MAX}. `shape`: `normal`
+    (`LOG`: disassembly and registers), `short` (`LOGS`), `long` (`LOGL`: adds emulated time, VM and
     CR0) or `cs_ip` (`LOGC`: the address alone). `dest`: absolute, its directory there, the
     file not, not directly in the emulator's working directory; empty,
     the next free `trace-<n>.trace` in the session's captures directory. `seconds`: the
-    wall-clock bound, (0, 600]. Needs the machine stopped, a writable working directory and
+    wall-clock bound, (0, {WAIT_MAX_S}]. Needs the machine stopped, a writable working directory and
     `build_check`'s `heavy_debug`.
 
     The count is proved against the pane's `cc=` counter, which on the normal core moves one
@@ -1074,7 +863,7 @@ def screen_wait(text: str, seconds: float = 30.0,
     `text` (1 to 132 characters code page 437 draws, not ending in a blank) is matched
     literally, case-sensitive, inside ONE row of the screen as `screen_view` reads it, trailing
     blanks dropped: a string that wraps across rows is not found. `seconds`, the wall-clock
-    bound, (0, 600], counted from after the first read of the screen, so a short one still
+    bound, (0, {WAIT_MAX_S}], counted from after the first read of the screen, so a short one still
     reaches the first frame; a frame's read under way when it passes is finished. Needs the
     machine stopped and a session started with `logfile`; reports its progress while it waits.
 
@@ -1101,7 +890,7 @@ def screen_wait(text: str, seconds: float = 30.0,
     Reference: REFERENCE.md, Input and the screen.
     """
     session = live()
-    _console_listening(session, "a listing")
+    ds.console_listening(session, "a listing")
     return retrace.screen_wait(session, text, seconds, bridge(ctx))
 
 
@@ -1263,15 +1052,13 @@ def symbols_find(name: str | None = None, offset: int | None = None,
     Reply: by name, `query`, `symbols_total` (how many) and `symbols`, a list with `name`, `offset`,
     `linear`, `section`, `idle` (Borland's own mark on that row, always false for `nm`/GNU);
     by offset or linear, the nearest symbol's own fields and `delta`. INVALID with no table
-    loaded, or `limit` outside 1..50 on the `name` question (a prefix matching more is a
-    listing, not a lookup).
+    loaded, or `limit` outside 1..{SYMBOLS_LIMIT_MAX} on the `name` question (a prefix matching
+    more is a listing, not a lookup).
     """
-    # THE SESSION IS ASKED FOR FIRST, and this was the one read tool that never did. The
-    # table is forgotten when the session OBJECT changes, and the burial of a session that
-    # died on its bound happens inside `live()` -- which nothing here called. So a table
-    # outlived the program it was measured on, and this answered `ok` with a linear address
-    # for a process that was gone; whether you got that or a refusal depended on whether
-    # you happened to call another tool first.
+    # THE SESSION IS ASKED FOR FIRST, as every read tool asks. The table is forgotten when
+    # the session OBJECT changes, and the burial of a session that died on its bound happens
+    # inside `live()`: without the call a table would outlive the program it was measured on,
+    # and answer `ok` with a linear address for a process that is gone.
     live()
     return placement.find(name, offset, section, linear, limit)
 
@@ -1286,8 +1073,8 @@ def comment_add(ref: str, text: str) -> dict[str, Any]:
     text and keeps the held row's `ref`. Nothing is written to the machine.
 
     Arguments: `ref`, a symbol or a `SEG:OFF` (read in the mode the machine is in); `text`, one
-    printable line, no edge blanks, at most 237 UTF-8 bytes. Needs the machine STOPPED.
-    Refused `bad_argument` before anything is stored: an empty, blank or `#` ref, a pointer
+    printable line, no edge blanks, at most {COMMENT_BYTES_MAX} UTF-8 bytes. Needs the machine
+    STOPPED. Refused `bad_argument` before anything is stored: an empty, blank or `#` ref, a pointer
     (`[g]+2`), `symbol+offset`, a `0x` number, a malformed `SEG:OFF`, an offset past its
     segment's limit, a bad text; `ambiguous_ref`, a name this table defines twice.
 
@@ -1410,7 +1197,7 @@ def machine_map(sections: list[str] | None = None, dest: str = "") -> dict[str, 
     chosen = narrowing.sections(sections, machine.SECTION_NAMES, machine.DEFAULT_SECTIONS)
     target = paths.fresh_dest("dest", dest) if dest else None
     session = live()
-    _console_listening(session, "a listing")
+    ds.console_listening(session, "a listing")
     whole = machine.machine_map(session, chosen)
     if "vga" in chosen:
         machine.add_section(whole, "vga", *vga.vga_section(session))
@@ -1456,7 +1243,7 @@ def interrupt_vectors(number: int | None = None) -> dict[str, Any]:
     Reference: REFERENCE.md, Reading and writing.
     """
     session = live()
-    _console_listening(session, "`INTVEC`")
+    ds.console_listening(session, "`INTVEC`")
     return st.reply(**machine.interrupt_vectors(session, number))
 
 
@@ -1489,7 +1276,7 @@ def palette(first: int = 0, count: int = 0, scale: int = 0, dest: str = "") -> d
     Reference: REFERENCE.md, Media files.
     """
     session = live()
-    _console_listening(session, "a listing")
+    ds.console_listening(session, "a listing")
     return st.reply(**vgadac.palette(session, first, count, scale,
                                      paths.absolute("dest", dest) if dest else None,
                                      STATE.session_scratch()))
@@ -1497,14 +1284,14 @@ def palette(first: int = 0, count: int = 0, scale: int = 0, dest: str = "") -> d
 
 @tool("Read the screen", summary=one_line.screen_view, replay="drop")
 def screen_view(crop: list[int] | None = None, scale: int = 0,
-                dest: str = "") -> dict[str, Any]:
+                dest: str = "", attach: bool = True) -> dict[str, Any]:
     """WHAT THE SCREEN SHOWS AT THIS STOP, read from video memory where the VGA listings say it
     lies: needs the machine STOPPED and a session started with `logfile`. A text mode comes back
-    as text; the chained 256-colour mode (13h's) as the picture, attached: an indexed PNG of
+    as text; the chained 256-colour mode (13h's) as the picture: an indexed PNG of
     the indices the guest wrote, the PLTE the DAC. {PICTURE}.
-    {PICTURE_ARGS}; a text mode takes neither. `crop` `[x, y, width, height]`, in characters
-    or pixels. In protected mode the bytes are read through a data segment of the GDT or LDT
-    that covers them, with paging on only where they map to themselves.
+    {PICTURE_ARGS}; {PICTURE_ATTACH}; a text mode takes none of these. `crop`
+    `[x, y, width, height]`,
+    in characters or pixels. Protected mode reads through a covering GDT or LDT segment.
 
     Reply: `mode` (`VGA MODE`'s word), `source` (`text` or `indices`), `width` and `height` (in
     characters or pixels), `crop` (the rectangle read), `display_start` (as `VGA MODE` printed
@@ -1513,21 +1300,22 @@ def screen_view(crop: list[int] | None = None, scale: int = 0,
     in 256 colours, `image`.
 
     Refused: a relative `dest`, a `scale` out of range or a misshapen `crop` (`bad_argument`,
-    before anything is typed); `dest` or `scale` in a text mode, a `crop` off the screen, a
-    `dest` already there or with no directory, or a dump file left in the emulator's working
-    directory (`bad_argument`); any other mode, planar, linear-frame-buffer or none set, naming
-    it and `capture_frame`; a layout this does not decode (split, panning, a row wider than the
-    screen), a screen past its window, or one no segment or page reaches as itself; no `logfile`
-    (each `no_channel`); a running guest (`not_stopped`); a DAC not six-bit, or a listing in
-    another shape (`unexpected_answer`); a picture the disk could not take whole (`host_failed`).
+    before anything is typed); `dest`, `scale` or `attach` in a text mode, a `crop` off the
+    screen, a `dest` already there or with no directory, or a dump file left in the emulator's
+    working directory (`bad_argument`); any other mode, planar, linear-frame-buffer or none set,
+    naming it and `capture_frame`; a layout this does not decode (split, panning, a row wider
+    than the screen), a screen past its window, or one no segment or page reaches as itself; no
+    `logfile` (each `no_channel`); a running guest (`not_stopped`); a DAC not six-bit, or a
+    listing in another shape (`unexpected_answer`); a picture the disk could not take whole
+    (`host_failed`).
 
     Reference: REFERENCE.md, Media files.
     """
     session = live()
-    _console_listening(session, "a listing")
+    ds.console_listening(session, "a listing")
     return st.reply(**screen.screen_view(session, crop, scale,
                                          paths.absolute("dest", dest) if dest else None,
-                                         STATE.session_scratch()))
+                                         STATE.session_scratch(), attach))
 
 
 @tool("Sign the screen", summary=one_line.screen_signature, read_only=True, replay=("signature",))
@@ -1552,8 +1340,78 @@ def screen_signature(crop: list[int] | None = None) -> dict[str, Any]:
     Reference: REFERENCE.md, Media files.
     """
     session = live()
-    _console_listening(session, "a listing")
+    ds.console_listening(session, "a listing")
     return st.reply(**screen.screen_signature(session, crop))
+
+
+# ------------------------------------------------------------------- the screen maps
+
+def _map_read(session: ds.Session) -> screen_map.Read:
+    """The one screen read a map is matched against, `screen_signature`'s."""
+    return lambda: screen.grid(session)[0]
+
+
+@tool("Load a screen map", summary=one_line.map_load)
+def map_load(path: str) -> dict[str, Any]:
+    """{MAP_LOAD}.
+
+    Reference: REFERENCE.md, Screen maps.
+    """
+    return st.reply(**STATE.maps.load(path))
+
+
+@tool("Map the screen in front of you", summary=one_line.map_add)
+def map_add(screen: str, match: list[list[int]],
+            controls: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    """Map the screen the machine shows NOW as `screen` in the SESSION layer: one read signs each
+    `match` crop (`[x, y, width, height]`, 1..16, regions that stay still on that screen, never
+    a cursor or a moving sprite), and `controls` (`[{"name", "rect"}]`, a `rect` shaped as a
+    crop) name its controls, all in the screen's own units (cells in a text mode, pixels in 256
+    colours, as `screen_view` counts). A screen of the same name in the file is shadowed
+    (`shadows_file`). Needs the machine STOPPED and a session started with `logfile`; a `start`
+    empties the session layer.
+
+    Reply: `screen`, `kind`, `size`, `match` (each crop with its `signature`), `controls`,
+    `replaced`, `shadows_file`. Refused: a misshapen name, crop or control, a rectangle off the
+    screen (`bad_argument`); the modes `screen_view` refuses.
+
+    Reference: REFERENCE.md, Screen maps.
+    """
+    session = live()
+    ds.console_listening(session, "a listing")
+    return st.reply(**STATE.maps.add(screen, match, controls, _map_read(session)))
+
+
+@tool("Which mapped screen is this", summary=one_line.map_find, read_only=True,
+      replay=("matched", "screen"))
+def map_find() -> dict[str, Any]:
+    """WHICH MAPPED SCREEN the machine shows, from ONE screen read and no picture: the session
+    layer first, then the file's; a screen matches when its kind and size are the screen's and
+    every region's signature is. Needs the machine STOPPED and a session with `logfile`.
+
+    Reply: `matched`; matched, `screen`, `layer` (`session` or `file`), `kind`, `size`,
+    `controls` (each `name`, `rect`, `centre`), and `send_mouse(target=)` then acts on them; not
+    matched, `kind`, `size`, `screens_mapped`, `screens_tried` (of that kind and size). Refused:
+    no screen mapped (`needs_call`); the modes `screen_view` refuses.
+
+    Reference: REFERENCE.md, Screen maps.
+    """
+    session = live()
+    ds.console_listening(session, "a listing")
+    # The stop the read is of, or None when that stop's own record could not be made (a cut
+    # pane): a previous stop's number would date the identification wrong.
+    current = STATE.as_of_current(session)
+    return st.reply(**STATE.maps.find(_map_read(session),
+                                      None if current is None else current["stop_seq"]))
+
+
+@tool("Save the screen map", summary=one_line.map_save, replay="drop")
+def map_save(path: str, overwrite: bool = False) -> dict[str, Any]:
+    """{MAP_SAVE}.
+
+    Reference: REFERENCE.md, Screen maps.
+    """
+    return st.reply(**STATE.maps.save(path, overwrite))
 
 
 @tool("Capture a series of frames", summary=one_line.series_capture, replay="drop")
@@ -1772,7 +1630,7 @@ def send_keys(keys: list[str], modifiers: list[str] | None = None,
 @tool("Send mouse input", summary=one_line.send_mouse, on_cancel="none")
 def send_mouse(x: int | None = None, y: int | None = None, button: str | None = None,
                action: str = "click", units: str = "screen", expect: str | None = None,
-               seconds: float | None = None,
+               seconds: float | None = None, target: str | None = None,
                ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Move the guest's MOUSE POINTER and press its buttons, inside the machine, and read the
     pointer back. With `expect`, PROVE the program reacted, as `send_keys` does.
@@ -1780,26 +1638,35 @@ def send_mouse(x: int | None = None, y: int | None = None, button: str | None = 
     `x`, `y`: where the pointer goes, both or neither, in `units`: `screen` (default), the
     screen's own units as `screen_view` counts them (character cells in a text mode, pixels in
     a graphics one; the standard BIOS modes), or `mouse`, the DOS driver's own coordinates (for
-    a VESA or custom mode). `button`: `left`, `right` or `middle`; `action`: `click` (default),
-    `double` (two clicks a tick apart), `down` or `up` (a drag is `down`, a move, `up`). A move
-    and a button in one call: the move goes first.
+    a VESA or custom mode). `target`: instead of `x`, `y`, a control of the screen the latest
+    `map_find` matched, its centre in `screen` units. `button`: `left`, `right` or `middle`;
+    `action`: `click` (default), `double` (two clicks a tick apart), `down` or `up` (a drag is
+    `down`, a move, `up`). A move and a button in one call: the move goes first.
 
     Refused before anything is sent: no move and no button, half a move, a negative or
-    non-integer coordinate, a target off the screen or outside the driver's range, `screen`
+    non-integer coordinate, a place off the screen or outside the driver's range, `screen`
     units in a mode this server does not map, an unknown button, action or units, a session
-    with no `logfile` (the read-back goes through it), a stopped machine, no stub.
+    with no `logfile` (the read-back goes through it), a stopped machine, no stub. A `target`
+    beside `x`, `y` or `units="mouse"` (`bad_argument`); no `map_find` match since the start,
+    or a guest no longer showing that screen's kind and size (`needs_call`); a control that
+    screen lacks (`unknown_ref`).
 
     Reply: `route: "guest"`, `pointer` read back after the call (`screen` with `x`, `y`,
     `width`, `height`, or null in an unmapped mode; `mouse` with the driver's `x`, `y`,
     `max_x`, `max_y`; `buttons` held; `mode`), `arrived` (the read-back is where it was asked;
     when it is not, `asked` says where in the driver's coordinates: a text mode snaps to its
-    cell, a program's own range clamps), the arguments, `effect`. A read-back that fails after
+    cell, a program's own range clamps), the arguments, `effect`; with a `target`, `target`,
+    `screen` and `identified_at_stop`, the stop that `map_find` read. A read-back that fails after
     the commands went in is INVALID with `delivered: true`, so nothing is sent twice.
 
     Reference: REFERENCE.md, Input and the screen.
     """
-    return inputs.send_mouse(live(), x, y, button, action, units, expect, seconds,
-                             bridge(ctx))
+    if target is None:
+        return inputs.send_mouse(live(), x, y, button, action, units, expect, seconds,
+                                 bridge(ctx))
+    inputs.check_mouse(x, y, button, action, units, expect, seconds, target)
+    aimed = STATE.maps.target(target)
+    return inputs.send_mouse_at(live(), aimed, button, action, expect, seconds, bridge(ctx))
 
 
 # ----------------------------------------------------------------------- the captures
@@ -1843,11 +1710,11 @@ def _step_ops() -> dict[str, Callable[..., dict[str, Any]]]:
     # The module's own binding first, so a step dispatches to whatever this module calls the tool
     # now; the registration's function for a tool registered elsewhere.
     here = globals()
-    return {t.name: here.get(t.name, t.fn) for t in mcp._tool_manager.list_tools()
+    return {t.name: here.get(t.name, t.fn) for t in strict.registered(mcp)
             if t.name not in checks.NOT_STEPS}
 
 
-checks.STEP_OPS = _step_ops
+checks.take_step_ops(_step_ops)
 
 
 @tool("Export the session as a replay", summary=one_line.perform_export)
@@ -1913,7 +1780,8 @@ def perform(steps: list[dict[str, Any]], wait: float = 30.0, summaries: bool = F
 
     Reference: REFERENCE.md, Sequences in one call.
     """
-    return sequence.run_steps(live(), steps, wait, _step_ops(), bridge(ctx), summaries)
+    return sequence.run_steps(live(), steps, wait, _step_ops(), bridge(ctx), summaries,
+                              prechecked=True)
 
 
 @tool("Look, act, verify", summary=one_line.drive, on_cancel="none")

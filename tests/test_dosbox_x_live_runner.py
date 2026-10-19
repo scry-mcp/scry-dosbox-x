@@ -51,9 +51,21 @@ def _run(m: Any, summary: Path | None = None, pool: Any = None) -> int:
     return rc
 
 
+def _launched() -> None:
+    """What a job's session does at its spawn: one launch in the ledger the run named, of a
+    pid long gone, so the end check has something to examine and finds it not alive; outside
+    a run that named one, a session records nothing."""
+    if (ledger := live_host.EmulatorLedger.from_environment()) is not None:
+        ledger.record(99999999, "dosbox-x")
+
+
 def _pool(lm: ModuleType, outcomes: dict[str, str], invalid: str = "") -> Any:
     lp = lm.live_pool
-    return lambda _sections: lp.PoolResult([], invalid, outcomes, {})
+
+    def run(_sections: Any) -> Any:
+        _launched()
+        return lp.PoolResult([], invalid, outcomes, {})
+    return run
 
 
 def _out(capsys: pytest.CaptureFixture[str]) -> list[str]:
@@ -231,8 +243,10 @@ def rlp(monkeypatch: pytest.MonkeyPatch) -> ModuleType:
     monkeypatch.setattr(sys, "argv", ["run_live_pytest.py"])
     monkeypatch.delenv(module.JOBS_VAR, raising=False)
     lp = module.live_pool
-    monkeypatch.setattr(lp, "run_pool",
-                        lambda *_a, **_k: lp.PoolResult([], "", {"t.py::a": "OK"}, {}))
+    def run(*_a: Any, **_k: Any) -> Any:
+        _launched()
+        return lp.PoolResult([], "", {"t.py::a": "OK"}, {})
+    monkeypatch.setattr(lp, "run_pool", run)
     return module
 
 
@@ -324,3 +338,13 @@ def test_the_bricks_demo_refuses_a_host_that_cannot_start_dosbox_x(
     assert demo.precheck(demo.Run(dir=ROOT, options={})) == "dosbox-x did not return"
     monkeypatch.setattr(dosbox_binary, "canary_for", lambda _b="": None)
     assert demo.precheck(demo.Run(dir=ROOT, options={})) == ""
+
+
+def test_a_green_pytest_tier_that_launched_no_emulator_is_invalid(
+        rlp: ModuleType, monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    lp = rlp.live_pool
+    monkeypatch.setattr(lp, "run_pool",
+                        lambda *_a, **_k: lp.PoolResult([], "", {"t.py::a": "OK"}, {}))
+    assert rlp.main() != rlp.EXIT_PASSED
+    assert any("the ledger recorded no emulator launch" in line for line in _out(capsys))

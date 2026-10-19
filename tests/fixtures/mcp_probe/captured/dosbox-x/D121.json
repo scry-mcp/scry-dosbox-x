@@ -1,0 +1,31 @@
+{
+ "task": {
+  "id": "D121",
+  "prompt": "Write this session's screen maps to /tmp/maps/bricks.scry-map.json, replacing the file that is there.",
+  "tool": "map_save",
+  "args": {
+   "path": "/tmp/maps/bricks.scry-map.json",
+   "overwrite": true
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D121: {\"tool\":\"map_save\",\"args\":{\"path\":\"/tmp/maps/bricks.scry-map.json\",\"overwrite\":true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D121: {\"tool\": \"map_save\", \"args\": {\"path\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D121: {\"tool\": \"map_save\", \"args\": {\"path\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+   ],
+   "right": true
+  }
+ ]
+}

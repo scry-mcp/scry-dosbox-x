@@ -386,6 +386,15 @@ def test_perform_refuses_a_home_that_does_not_resolve_before_any_step_runs(
     assert s.asked == []
 
 
+def test_perform_refuses_an_attach_that_is_no_yes_or_no_before_any_step_runs(
+        tmp_path: Path) -> None:
+    s = bench("probe-booted", tmp_path)
+    r = cast(dict[str, Any], server.perform(steps=[
+        {"op": "palette"}, {"op": "screen_view", "attach": "no"}]))
+    assert r["status"] == "INVALID" and [e["step"] for e in r["errors"]] == [1], r
+    assert "attach is a boolean" in str(r["errors"]) and s.asked == []
+
+
 def test_a_dest_from_home_passes_the_gate_expanded(monkeypatch: pytest.MonkeyPatch,
                                                    tmp_path: Path) -> None:
     monkeypatch.setenv("HOME", str(tmp_path))
@@ -960,6 +969,25 @@ def test_the_256_colour_screen_is_attached_enlarged_and_a_crop_is_the_zoom(
     assert pixels[0] == (8 + 8) & 0xFF and pixels[k] == (9 + 8) & 0xFF
 
 
+def test_the_256_colour_screen_asked_not_to_attach_is_written_and_says_why(
+        tmp_path: Path) -> None:
+    screen_bench("screen-13h", tmp_path)
+    r = cast(dict[str, Any], server.screen_view(attach=False))
+    assert r["status"] == "ok", r
+    image = r["image"]
+    assert image["inline"] is False and image["not_inlined"] == "attach=false"
+    assert Path(image["path"]).is_file() and r["summary"].endswith("not inlined")
+
+
+def test_an_attach_that_is_no_yes_or_no_is_refused_before_anything_is_typed(
+        tmp_path: Path) -> None:
+    s = screen_bench("screen-13h", tmp_path)
+    with pytest.raises(ds.Invalid, match="attach is a boolean"):
+        screen.screen_view(cast(Any, dstate.STATE.session), None, 0, None, tmp_path,
+                           cast(Any, "no"))
+    assert s.asked == [] and s.dumps == []
+
+
 @pytest.mark.parametrize(("bench_name", "word"), [
     ("screen-12h", "M_EGA"), ("dos-real16", "M_LIN15"), ("dos-djgpp32-ui", "M_LIN8"),
     ("probe-park", "M_ERROR")])
@@ -975,11 +1003,11 @@ def test_screen_view_and_signature_refuse_a_mode_they_do_not_read_after_one_list
 def test_screen_view_refuses_a_dest_or_a_scale_in_text_and_a_dest_already_there(
         tmp_path: Path) -> None:
     s = screen_bench("probe-booted", tmp_path)
-    for kw in ({"dest": str(tmp_path / "t.png")}, {"scale": 2}):
+    for kw in ({"dest": str(tmp_path / "t.png")}, {"scale": 2}, {"attach": False}):
         r = cast(dict[str, Any], server.screen_view(**kw))
         assert r["status"] == "INVALID" and r["code"] == "bad_argument", r
-        assert "text mode" in r["message"]
-    assert s.asked == ["VGA MODE", "VGA MODE"] and s.dumps == []
+        assert "text mode" in r["message"] and f"`{next(iter(kw))}`" in r["message"]
+    assert s.asked == ["VGA MODE"] * 3 and s.dumps == []
     s = screen_bench("screen-13h", tmp_path)
     there = tmp_path / "there.png"
     there.write_bytes(b"mine")

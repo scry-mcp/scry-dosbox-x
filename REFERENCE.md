@@ -263,7 +263,7 @@ Every tool ends one of three ways, and one that declares no end ends `none`:
 |---|---|---|
 | `stop` | the guest back at the debugger by `BREAK`, as `stop` does, or a stop it had already reached recorded as its own; a `run_to` removes the breakpoints it armed; a CPU log still open (a `trace`'s) is moved aside to `trace-cancelled-<n>.trace` in the session's captures directory (the working directory when there is none to write in) and closed | `stop`, `run_to`, `run_for`, `trace`, `screen_wait`, `perform` |
 | `kill` | the emulator closed; a close cancelled half-way still finishes | `start`, `close` |
-| `none` | the guest as the call found it | `build_check`, `status`, `log`, `log_wait`, `registers`, `read_memory`, `disassemble`, `call_stack`, `memdump`, `find`, `scan_start`, `scan_filter`, `scan_clear`, `debug`, `set_register`, `write`, `resume`, `step`, `state_save`, `state_load`, `snapshot`, `state_list`, `breakpoint_interrupt`, `symbols_load`, `symbols_find`, `comment_add`, `comment_list`, `comment_delete`, `comment_save`, `comment_load`, `machine_map`, `interrupt_vectors`, `palette`, `screen_view`, `screen_signature`, `series_capture`, `image_diff`, `series_diff`, `region_track`, `golden_check`, `breakpoint_at`, `breakpoint_list`, `breakpoint_clear`, `watch_add`, `watch_list`, `watch_clear`, `send_keys`, `send_mouse`, `captures`, `capture_frame`, `perform_export`, `drive` |
+| `none` | the guest as the call found it | `build_check`, `status`, `log`, `log_wait`, `registers`, `read_memory`, `disassemble`, `call_stack`, `memdump`, `find`, `scan_start`, `scan_filter`, `scan_clear`, `debug`, `set_register`, `write`, `resume`, `step`, `state_save`, `state_load`, `snapshot`, `state_list`, `breakpoint_interrupt`, `symbols_load`, `symbols_find`, `comment_add`, `comment_list`, `comment_delete`, `comment_save`, `comment_load`, `machine_map`, `interrupt_vectors`, `palette`, `screen_view`, `screen_signature`, `map_load`, `map_add`, `map_find`, `map_save`, `series_capture`, `image_diff`, `series_diff`, `region_track`, `golden_check`, `breakpoint_at`, `breakpoint_list`, `breakpoint_clear`, `watch_add`, `watch_list`, `watch_clear`, `send_keys`, `send_mouse`, `captures`, `capture_frame`, `perform_export`, `drive` |
 
 Any other tool that meets a cancel ends `none`.
 
@@ -1252,7 +1252,7 @@ What the export keeps is what moved the machine and what was checked:
 | `read_memory` | a check of `hex` |
 | `registers` | a check of `registers` |
 | `screen_signature` | a check of `signature` |
-| `golden_check` | a check of `matched`, `differing`, `missing` and `extra` |
+| `golden_check` | a check of `matched`, `differing_total`, `missing_total`, `extra_total` and the `differing`, `missing` and `extra` lists |
 | any other read, `snapshot`, `capture_frame`, `series_capture`, `memdump`, `comment_*`, the scan, `machine_map`, `interrupt_vectors`, `palette`, `screen_view` | dropped, named in the reply with why; one that moved the guest is kept as a step |
 | a call the server refused | dropped, named; one that moved the guest first ends the document |
 | a release (a `resume`), a `stop` or `screen_wait` that ran the guest and came back stopped (at a breakpoint or a found text included), a call whose wall-clock bound ended it (`TIMEOUT`), one that ended with no reply | the end of the document: the reply's `cut` names it and why. Whatever ends such a run stops the guest at a place no replayed advance reaches, and every stop after it inherits the shift |
@@ -1357,7 +1357,8 @@ debugger provides the WHEN and the stub provides the key.
 `button` (`left`, `right`, `middle`) with an `action` (`click`, `double`, `down`, `up`), or
 both, the move first. Coordinates are in `units`: `screen` by default, the units
 `screen_view` counts in (character cells in a text mode, pixels in a graphics one), or
-`mouse`, the DOS driver's own coordinates. Every call asks the stub where the pointer is
+`mouse`, the DOS driver's own coordinates; in place of `x`, `y`, a `target` names a control of
+a mapped screen (Screen maps). Every call asks the stub where the pointer is
 BEFORE (the driver's range and the BIOS mode, which turn screen units into the driver's) and
 AFTER (where it went), and the reply carries the read-back: `pointer.screen` with `x`, `y`,
 `width` and `height`, `pointer.mouse` with the driver's `x`, `y`, `max_x`, `max_y`, the
@@ -1437,14 +1438,14 @@ sixteen squares a row, so the index is the data and the colour a view of it, and
 attached (*Media files*); `dest` is absolute, in a directory that exists, and never written over.
 
 **`screen_view` reads the screen from video memory, where the `VGA` listings say it lies.** `VGA
-MODE` says which mode it is, and only two families are read: a text mode, decoded to its characters,
-and the chained 256-colour mode (13h's), decoded to a picture of palette indices. Every other mode
-is refused `no_channel`, naming its word: in a planar or unchained mode the CPU window answers one
-plane per read and choosing the plane writes a Graphics Controller register; a linear frame buffer
-lies past what the debugger's segmented dump reaches in real mode; and the image of what was
-displayed in any of them is `capture_frame`. The shape comes from the listings' own words: a text
-screen's columns are the draw state's `blocks` and a 256-colour screen's its `width`, a row is the
-draw state's `addrline-total` of its scan lines (the CRTC's cell height, doubled when it
+MODE` says which mode it is, and only two families are read: a text mode, decoded to its
+characters, and the chained 256-colour mode (13h's), decoded to a picture of palette indices. Every
+other mode is refused `no_channel`, naming its word: in a planar or unchained mode the CPU window
+answers one plane per read and choosing the plane writes a Graphics Controller register; a linear
+frame buffer lies past what the debugger's segmented dump reaches in real mode; and the image of
+what was displayed in any of them is `capture_frame`. The shape comes from the listings' own words:
+a text screen's columns are the draw state's `blocks` and a 256-colour screen's its `width`, a row
+is the draw state's `addrline-total` of its scan lines (the CRTC's cell height, doubled when it
 double-scans, as INT 10h's 200-line text does), the display start goes to bytes by the mode's
 `addr-shift`, and the window (`B8000`, `B0000` or `A0000`) by the Graphics Controller's memory map
 select. A layout the bytes cannot be read straight from, a logical row wider than the screen, a
@@ -1454,9 +1455,9 @@ their glyphs (`01` is `☺`) and `00` as a space, with trailing blanks dropped; 
 `[column, row]` from the start, null when hidden or off the screen. The 256-colour picture is an
 indexed PNG whose pixels are the bytes the guest wrote and whose PLTE is the DAC, widened as
 `palette` widens it, so each pixel, doubled each way as the emulator renders 13h, equals the
-emulator's own capture of that frame; it is attached, enlarged as *Media files* says. A `crop`
-reads part of the screen in its own units: characters in a text mode (the rows cut to it and
-the cursor counted from its corner, null outside it), pixels in 256 colours.
+emulator's own capture of that frame; it is attached unless `attach` is false, enlarged as *Media
+files* says. A `crop` reads part of the screen in its own units: characters in a text mode (the
+rows cut to it and the cursor counted from its corner, null outside it), pixels in 256 colours.
 
 **In protected mode the screen is read through a data segment that covers it.** A linear
 address is only the screen if it maps to it, so the bytes are dumped through the lowest present
@@ -1521,22 +1522,25 @@ nobody drew.
 cells row by row: `pixel` cells as RGB, `text` cells as their byte and the two colours above.
 
 **The picture attached.** A view answers with ONE PNG, written to the session's scratch (or to
-`dest`: `close` deletes the scratch, so a picture meant to outlive the session takes one),
-named in the reply's `image` (`path`, `sha256`, `bytes`, `width`, `height`, `scale`, `indexed`,
-`inline`) and attached after the JSON, read back from the file and hashed again, when the model
-can see it as it is. Past a side of 1568 px, or past 1568 tiles of 28 px, the API resamples a
-picture, and a resampled picture of pixel art is a plausible wrong one; such a picture is
-written and not attached, `not_inlined` says why, and the caller asks for a `crop` or a smaller
-`scale`. Inside the ceiling a picture is enlarged by an integer factor, nearest neighbour, so
-each pixel is a square of one colour (`scale=0`, the default, is the largest factor up to 8
-that fits: a 320x200 screen comes out 1280x800). Anthropic's own guidance is to send an image
-already inside the model's limits so nothing is resampled on the way, to crop or zoom for fine
-detail, not to go below about 960x540 for screen work, and to start at 1280x720
-(Anthropic, *Best practices for computer and browser use*; the limits and the cost of an
-image, `ceil(w/28) x ceil(h/28)` tokens, are in Anthropic's API documentation, *Vision*); an integer enlargement
-also makes pixel art more legible to a vision model, since smaller patches relative to the
-content raise its accuracy
-([Wang et al., *Scaling Laws in Patchification*, arXiv:2502.03738](https://arxiv.org/abs/2502.03738)).
+`dest`: `close` deletes the scratch, so a picture meant to outlive the session takes one), named in
+the reply's `image` (`path`, `sha256`, `bytes`, `width`, `height`, `scale`, `indexed`, `border`,
+`inline`, `not_inlined`) and attached after the JSON, read back from the file and hashed again,
+when the model can see it as it is. Past a side of 1568 px, or past 1568 tiles of 28 px, the API
+resamples a picture, and a resampled picture of pixel art is a plausible wrong one; such a picture
+is written and not attached, `not_inlined` says why, and the caller asks for a `crop` or a smaller
+`scale`. `screen_view` can be asked not to attach (`attach` false: the file is written and named,
+`not_inlined: "attach=false"`), and a picture inside a sequence's step is never attached, since
+only a reply's own picture crosses: the step's own picture says `inline: false`, `not_inlined:
+"nested"`. `palette` takes no `attach`: it attaches within the ceiling as above. Inside the ceiling
+a picture is enlarged by an integer factor, nearest neighbour, so each pixel is a square of one
+colour (`scale=0`, the default, is the largest factor up to 8 that fits: a 320x200 screen comes out
+1280x800). Anthropic's own guidance is to send an image already inside the model's limits so
+nothing is resampled on the way, to crop or zoom for fine detail, not to go below about 960x540 for
+screen work, and to start at 1280x720 (Anthropic, *Best practices for computer and browser use*;
+the limits and the cost of an image, `ceil(w/28) x ceil(h/28)` tokens, are in Anthropic's API
+documentation, *Vision*); an integer enlargement also makes pixel art more legible to a vision
+model, since smaller patches relative to the content raise its accuracy ([Wang et al., *Scaling
+Laws in Patchification*, arXiv:2502.03738](https://arxiv.org/abs/2502.03738)).
 
 **`series_capture`** turns frames of the session's video capture into PNGs beside one
 `scry-series/1` manifest (`server`, `source`, `crop`, a row per frame `{frame, path, sha256,
@@ -1548,14 +1552,70 @@ hash. With `dest` the series outlives `close`; without it, it lives in the scrat
 with it.
 
 **The file tools** (`image_diff`, `series_diff`, `region_track`, `golden_check`) read files and
-touch no machine, so they answer with the guest running or with none, and their body and text
-come from scry-core, the package this server pins; `region_track` writes one file, the whole
-track as JSON, beside the manifest. Every series and golden comparison carries its control,
-because a result that cannot come out the other way is no result: a series whose frames never
-change says nothing about another (`control_silent` naming it), two series with no frame in
-common compare nothing, a region whose measure never moves was missed, and goldens whose names
-meet no file examined nothing. Reading a manifest hashes every file it lists, so a frame changed
-since it was written is refused rather than trusted.
+touch no machine, so they answer with the guest running or with none, and their body and text come
+from scry-core, the package this server pins; `region_track` writes one file, the whole track as
+JSON, beside the manifest. Every series and golden comparison carries its control, because a result
+that cannot come out the other way is no result: a series whose frames never change says nothing
+about another (`control_silent` naming it), two series with no frame in common compare nothing, a
+region whose measure never moves was missed, and goldens whose names meet no file examined nothing.
+Reading a manifest hashes every file it lists and signs each picture again, so a frame changed
+since it was written, or a row edited by hand, is refused rather than trusted. `golden_check` lists
+at most `limit` names in each of `differing`, `missing` and `extra` (40 unless asked, up to 1000),
+their whole counts beside them (`differing_total`, `missing_total`, `extra_total`), and a list it
+cut says so in `omitted` and `how`.
+
+## Screen maps
+
+A screen map names an application's screens and the controls on each, so a caller says "the
+play screen" and "the court" instead of a picture and a coordinate. It is a file,
+`<application>.scry-map.json`, kept in the application's own repository beside the program
+(`demos/bricks/bricks.scry-map.json` is bricks'), in the format `scry-map/1`:
+
+```json
+{"format": "scry-map/1", "application": "bricks",
+ "screens": [{"name": "play", "kind": "pixel", "size": [320, 200],
+              "match": [{"crop": [0, 0, 52, 8], "signature": "<16 hex>"}],
+              "controls": [{"name": "court", "rect": [200, 80, 80, 40]}]}]}
+```
+
+Everything is in the screen's own units, as `screen_view` counts them: cells in a text mode,
+pixels in 256 colours. A screen is known by the `scry-sig/1` signatures (`screen_signature`'s) of
+regions that stay still on it, never by the whole screen, whose signature a cursor, a ball or a
+colour the program animates changes from one stop to the next: bricks' map signs the words
+`SCORE` and `LIVES` of its header and none of their digits, because its border and court change
+colour every frame. A screen matches when its `kind` and `size` are the screen's and every
+region's signature is. Names are unique in the file and in their screen, every rectangle lies on
+its screen, and a file that breaks any of it is refused whole, naming the first fault.
+
+**Two layers, both kept by the server.** `map_load` reads a file into the FILE layer, replacing
+any loaded one; it lives as long as the server and a `start` keeps it. `map_add` maps the screen
+in front of the caller into the SESSION layer, signing each region off one read; a `start` empties
+that layer, since its screens were read off another run. `map_find` tries the session's screens
+first, then the file's, and reads the screen ONCE for all of them, kind and size compared before
+any signature. `map_save` writes the two layers as one file, the session winning, and that file
+becomes the file layer: the session's screens are `promoted`. A file already there is refused
+unless `overwrite`, and so are two layers holding more screens than one map can. `map_load` and
+`map_save` touch files only, so they answer while the guest runs and before any session;
+`map_add` and `map_find` need it stopped.
+
+**A control is named against the identification it came from.** `send_mouse(target=)` moves the
+pointer to the centre of a control of the screen the latest `map_find` matched, in the screen's
+units, and the reply says which (`target`, `screen`, `identified_at_stop`, the stop `map_find`
+read at, or null when that stop's own record could not be made). The guest has to run for the
+pointer to move and a running guest cannot be read, so the click acts on the screen as it was
+last identified. What the stub reports while the guest runs is held to it before anything is
+sent: a guest showing a screen of another kind or size than the matched one is `needs_call`,
+since the centre would land on the same numbers of another screen. What is drawn is not
+reported, so a screen of the same mode that changed since is yours to catch: `map_find` again
+after anything that may have changed it. With no screen matched by the latest `map_find` (none
+since the session started, a `map_load` since, or a find that matched nothing or failed) the
+call is `needs_call` too; a control the matched screen lacks is `unknown_ref`, naming its
+controls; `target` beside `x` and `y`, or in `mouse` units, is `bad_argument`.
+
+**In an export**, `map_load` and `map_add` are steps, so a replay knows the map an
+identification was made against; `map_find` is a check holding to what it matched (`matched`,
+`screen`); `map_save` is dropped, since a replay would find its file there. A `send_mouse` never
+reaches an export: it needs the guest running, and the export cuts at the release before it.
 
 ## Saved states
 
@@ -1650,7 +1710,13 @@ added to one file.
   comment tools.
 - **`dosbox_comment_file.py`**: the comment file read and written: its header, its rules for a
   ref, a stamp and a text, and nothing that needs the machine.
-- **`dosbox_session.py`**: one live session and the emulator's terminal it drives.
+- **`dosbox_session.py`**: one live session and the emulator's terminal it drives; four of its
+  jobs are bodies in modules of their own, the session delegating to each:
+  **`dosbox_log_reader.py`** (the logs read and waited on), **`dosbox_frames.py`** (the video and
+  its stills), **`dosbox_saved_states.py`** (the saved states), **`dosbox_symbol_file.py`** (the
+  symbol file handed to the debugger).
+- **`dosbox_lifecycle.py`**: the bodies of `start` and `close`, a session coming up and going down;
+  **`dosbox_advance.py`**: the bodies of `resume` and `run_to`, a run released and judged.
 - **`dosbox_launch.py`**: what a session is launched with, judged, and the command line built from
   it; **`dosbox_console.py`**: the console's grammar, the pane and the replies parsed;
   **`dosbox_logs.py`**: the log's channels and filters; **`dosbox_collect.py`**: the files the

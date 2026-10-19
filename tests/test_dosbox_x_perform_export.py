@@ -97,13 +97,17 @@ def test_the_export_and_the_lifecycle_are_never_recorded_and_never_a_step() -> N
 #: moves is seen: a check of fields, a run the wall clock ends, a drop, or (absent) a step.
 DECLARED = {
     "read_memory": ("hex",), "registers": ("registers",), "screen_signature": ("signature",),
-    "golden_check": ("matched", "differing", "missing", "extra"),
+    "golden_check": ("matched", "differing_total", "missing_total", "extra_total", "differing",
+                     "missing", "extra"),
     "resume": "wall", "stop": "wall", "screen_wait": "wall",
     **dict.fromkeys(("memdump", "scan_start", "scan_filter", "scan_clear", "snapshot",
                      "capture_frame", "series_capture", "comment_add", "comment_delete",
                      "comment_save", "comment_load", "machine_map", "interrupt_vectors",
-                     "palette", "screen_view", "image_diff", "series_diff", "region_track"),
+                     "palette", "screen_view", "image_diff", "series_diff", "region_track",
+                     "map_save"),
                     "drop"),
+    # A replay knows the map an identification was made against, and holds the find to it.
+    "map_find": ("matched", "screen"),
     # The readers dropped by default, named so a reader that turns into a step is seen.
     **dict.fromkeys(("breakpoint_list", "build_check", "call_stack", "captures", "comment_list",
                      "disassemble", "find", "log", "log_wait", "state_list", "status",

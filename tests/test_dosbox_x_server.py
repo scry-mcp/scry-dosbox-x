@@ -31,7 +31,7 @@ from typing import Any, cast
 from unittest import mock
 
 import pytest
-from scry_core import media_tools
+from scry_core import media_tools, screen_map
 
 import dosbox_arming as arming
 import dosbox_binary as binaries
@@ -145,7 +145,9 @@ class FakeSession:
         # deleted from the real `state()` with the suite still green. The COUNT is
         # deliberately not written here: a number in a comment goes false at the
         # next field, and the test derives it from the real `state()` instead.
-        return {"pid": 4242, "alive": self._alive, "altered": self.altered,
+        return {"pid": 4242, "alive": self._alive,
+                "running": self._alive and bool(getattr(self, "running", False)),
+                "altered": self.altered,
                 "conf": "/x/g.conf", "conf_digest": "abc123", "conf_changed_on_disk": False,
                 "watched": False, "seconds_bound": 60, "seconds_elapsed": 1.0,
                 "terminal_bytes_dropped": 0, "drain_alive": True,
@@ -154,6 +156,13 @@ class FakeSession:
 
     def command(self, text: str, **_: object) -> str:
         return self._screen
+
+    def await_stop(self, began: float, deadline: float, target: str,
+                   progress: ds.Progress = ds.no_progress, label: str = "") -> tuple[bool, float]:
+        # The server calls it on the class with the session (`ds.Session.await_stop`), so the
+        # real body runs over this double, as it does for every caller.
+        return ds.Session.await_stop(cast(ds.Session, self), began, deadline, target, progress,
+                                     label)
 
     def retrace(self, began: float, deadline: float,
                 progress: ds.Progress = ds.no_progress) -> tuple[bool, float]:
@@ -402,6 +411,7 @@ def clean_session() -> Any:
     dstate.STATE.clear_running_state()
     dstate.STATE.forget_symbols()
     dstate.STATE.cancelled = None
+    dstate.STATE.maps = screen_map.Maps()   # the server's, surviving a close by design
     yield
     dstate.STATE.session = None
     dstate.STATE.store = None
@@ -411,6 +421,7 @@ def clean_session() -> Any:
     dstate.STATE.clear_running_state()      # nor leave it a queue to drain
     dstate.STATE.forget_symbols()
     dstate.STATE.cancelled = None           # nor a cancelled call's record for its first reply
+    dstate.STATE.maps = screen_map.Maps()   # nor a map the next case did not load
 
 
 _STORE_TMP = tempfile.mkdtemp(prefix="dosbox-x-server-test-")
@@ -609,7 +620,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
     src.write_bytes(b"RIFF")
     fake = SimpleNamespace(captures=lambda: [{"path": str(src)}])
     with (mock.patch("dosbox_session.subprocess.run", hangs),
-          mock.patch("dosbox_session.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
+          mock.patch("dosbox_frames.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
           pytest.raises(ds.Invalid, match="did not return within")):
         ds.Session.frame(fake, 0, tmp_path / "out.png")  # type: ignore[arg-type]
 
@@ -627,7 +638,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
         return SimpleNamespace(stdout="", stderr="", returncode=0)
 
     with (mock.patch("dosbox_session.subprocess.run", writes),
-          mock.patch("dosbox_session.shutil.which", lambda _n: "/usr/bin/ffmpeg")):
+          mock.patch("dosbox_frames.shutil.which", lambda _n: "/usr/bin/ffmpeg")):
         got = ds.Session.frame(fake, 0, dest)  # type: ignore[arg-type]
     assert got == dest and dest.stat().st_size > 1000
     # THE FORMAT IS FORCED IN THE ARGV, which no test could see while every one of
@@ -648,7 +659,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
                                returncode=0)
 
     with (mock.patch("dosbox_session.subprocess.run", writes_nothing),
-          mock.patch("dosbox_session.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
+          mock.patch("dosbox_frames.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
           pytest.raises(ds.Invalid, match="ffmpeg exited 0 but no image")):
         ds.Session.frame(fake, 99999, tmp_path / "never.png")  # type: ignore[arg-type]
 
@@ -668,7 +679,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
     # output at exit 0 is the frame-past-the-end shape where the cause is a guess.
     # Merged, the message blamed "a frame past the end" for a conversion error.
     with (mock.patch("dosbox_session.subprocess.run", fails_but_writes),
-          mock.patch("dosbox_session.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
+          mock.patch("dosbox_frames.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
           pytest.raises(ds.Invalid, match="ffmpeg exited 1")):
         ds.Session.frame(fake, 5, bad)  # type: ignore[arg-type]
 
@@ -686,7 +697,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
         return SimpleNamespace(stdout="", stderr="", returncode=0)
 
     with (mock.patch("dosbox_session.subprocess.run", writes_a_container),
-          mock.patch("dosbox_session.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
+          mock.patch("dosbox_frames.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
           pytest.raises(ds.Invalid, match="is not a PNG")):
         ds.Session.frame(fake, 99999, container)  # type: ignore[arg-type]
 
@@ -784,7 +795,8 @@ def test_every_tool_this_server_promises_is_actually_registered() -> None:
                 "interrupt_vectors", "palette", "screen_view", "screen_signature",
                 "screen_wait", "trace", "comment_add", "comment_list", "comment_delete",
                 "comment_save", "comment_load", "series_capture",
-                "image_diff", "series_diff", "region_track", "golden_check"}
+                "image_diff", "series_diff", "region_track", "golden_check",
+                "map_load", "map_add", "map_find", "map_save"}
     got = dosbox_mcp.registered_tools()
     assert set(got) == expected
     # NOT a length check against `expected`: `registered_tools()` reads a dict keyed
@@ -869,6 +881,8 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         "breakpoint_interrupt": lambda: server.breakpoint_interrupt(number=0x21),
         "resume": server.resume, "stop": server.stop,
         "series_capture": lambda: server.series_capture(frames=[0]),
+        "map_add": lambda: server.map_add(screen="s", match=[[0, 0, 1, 1]]),
+        "map_find": server.map_find,
         "read_memory": lambda: server.read_memory(ref="0000:00000000"),
         "memdump": lambda: server.memdump(ref="0000:00000000", length=8, dest="/tmp/x"),
         "find": lambda: server.find(ref="0000:00000000", length=8, data_hex="00"),
@@ -1036,12 +1050,12 @@ def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
     fake = SimpleNamespace(
         proc=SimpleNamespace(pid=4242),
         alive=lambda: False, altered=True, conf_digest=dlaunch.digest(conf),
-        started_at=time.monotonic() - 3.0, dropped=4096,
+        started_at=time.monotonic() - 3.0, dropped=4096, _at_debugger=True,
         _drainer=dead, drain_ended="reading the terminal failed: OSError()",
         launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, watched=True,
                          window_flags=["-set", "sdl display=1"]))
     got = ds.Session.state(fake)  # type: ignore[arg-type]
-    assert set(got) == {"pid", "alive", "altered", "conf", "conf_digest",
+    assert set(got) == {"pid", "alive", "running", "altered", "conf", "conf_digest",
                         "conf_changed_on_disk", "watched", "seconds_bound",
                         "seconds_elapsed", "terminal_bytes_dropped",
                         "drain_alive", "drain_ended", "captures", "state_dir"}
@@ -1088,7 +1102,7 @@ def test_the_double_has_not_drifted_from_what_it_stands_in_for(tmp_path: Path) -
     fake = SimpleNamespace(
         proc=SimpleNamespace(pid=4242),
         alive=lambda: True, altered=False, conf_digest="x",
-        started_at=time.monotonic(), dropped=0,
+        started_at=time.monotonic(), dropped=0, _at_debugger=False,
         _drainer=None, drain_ended="",
         launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60))
     real = ds.Session.state(fake)  # type: ignore[arg-type]
@@ -1330,7 +1344,7 @@ def _launch_of(**kw: Any) -> dlaunch.Launch:
         seen.append(launch)
         raise ds.Invalid("session_broken", "not starting anything: this case wants the Launch only")
 
-    with mock.patch("dosbox_binary.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
+    with mock.patch("scry_core.binaries.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
          mock.patch("dosbox_x_server.ds.Session", build):
         server.start(**kw)
     assert seen, "`start` never reached the Launch"
@@ -1370,7 +1384,7 @@ def test_start_expands_a_tilde_in_every_path_and_makes_nothing_at_a_literal_one(
     def build(launch: dlaunch.Launch) -> None:
         built.append(launch)
         raise ds.Invalid("host_failed", "built: the case ends here")
-    with mock.patch("dosbox_binary.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
+    with mock.patch("scry_core.binaries.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
          mock.patch("dosbox_x_server.ds.Session", build):
         got = cast(dict[str, Any], server.start(**kw))
     assert "built: the case ends here" in got["message"], got
@@ -2117,7 +2131,7 @@ def test_build_check_is_invalid_and_not_ok_when_there_is_no_binary() -> None:
     THE PATH IS PATCHED, NOT THE ANSWER: `shutil.which` is what decides, so that is
     what the double stands in for, and the real body runs.
     """
-    with mock.patch("dosbox_binary.shutil.which", lambda _n: None):
+    with mock.patch("scry_core.binaries.shutil.which", lambda _n: None):
         got = cast(dict[str, Any], server.build_check())
     assert got["status"] == "INVALID", got
     assert "no DOSBox-X binary resolves" in str(got["message"])
@@ -2128,7 +2142,7 @@ def test_build_check_is_invalid_when_the_build_has_no_debugger() -> None:
     """The precondition it exists for. A build without the debugger starts fine and
     then hangs `start` until its timeout, so a `build_check` that could not tell them
     apart would send a caller looking at their config."""
-    with (mock.patch("dosbox_binary.shutil.which", lambda _n: "/usr/bin/dosbox-x"),
+    with (mock.patch("scry_core.binaries.shutil.which", lambda _n: "/usr/bin/dosbox-x"),
           mock.patch("dosbox_x_server.subprocess.run",
                      lambda *_a, **_k: SimpleNamespace(stdout="usage: ...", stderr=""))):
         got = cast(dict[str, Any], server.build_check())
@@ -2142,7 +2156,7 @@ def test_build_check_says_ok_and_names_the_surface_on_a_good_build(tmp_path: Pat
     carrying the help line a heavy-debug build compiles, and one without it says false."""
     binary = tmp_path / "dosbox-x"
     binary.write_bytes(b"\x00" + binaries.HEAVY_DEBUG_MARK + b"\x00")
-    with (mock.patch("dosbox_binary.shutil.which", lambda _n: str(binary)),
+    with (mock.patch("scry_core.binaries.shutil.which", lambda _n: str(binary)),
           mock.patch("dosbox_x_server.subprocess.run",
                      lambda *_a, **_k: SimpleNamespace(stdout="-break-start\n",
                                                        stderr=""))):
@@ -2182,11 +2196,11 @@ def test_build_check_refuses_to_start_a_second_emulator_beside_a_live_one() -> N
         spawned.append(list(cmd))
         return SimpleNamespace(stdout="-break-start\n", stderr="")
 
-    with (mock.patch("dosbox_binary.shutil.which", lambda _n: "/usr/bin/dosbox-x"),
+    with (mock.patch("scry_core.binaries.shutil.which", lambda _n: "/usr/bin/dosbox-x"),
           mock.patch("dosbox_x_server.subprocess.run", watched)):
         got = cast(dict[str, Any], server.build_check())
     assert got["status"] == "INVALID", got
-    assert "SECOND emulator" in str(got["message"])
+    assert "second emulator" in str(got["message"]) and "`close`" in str(got["message"])
     assert spawned == [], f"it started one anyway: {spawned}"
 
 
@@ -2373,6 +2387,15 @@ def returned_key_sets(fn: object) -> list[frozenset[str]]:
     callers guard against by asserting the result is non-empty rather than trusting it.
     """
     src = textwrap.dedent(inspect.getsource(cast(Any, fn)))
+    # A METHOD THAT DELEGATES (`return frames.frame(self, ...)`, a seam of the session) is read
+    # at the body it hands the call to, which is where its returns are.
+    body = ast.parse(src).body[0]
+    if (isinstance(body, ast.FunctionDef)
+            and isinstance(last := body.body[-1], ast.Return) and isinstance(last.value, ast.Call)
+            and isinstance(f := last.value.func, ast.Attribute) and isinstance(f.value, ast.Name)
+            and f.value.id in getattr(fn, "__globals__", {})
+            and inspect.ismodule(fn.__globals__[f.value.id])):  # type: ignore[attr-defined]
+        return returned_key_sets(getattr(fn.__globals__[f.value.id], f.attr))  # type: ignore[attr-defined]
     return [frozenset(k.value for k in node.value.keys
                       if isinstance(k, ast.Constant) and isinstance(k.value, str))
             for node in ast.walk(ast.parse(src))
@@ -3224,26 +3247,15 @@ def test_perform_runs_steps_in_order_and_stops_at_the_first_failure(
     assert "names 2 symbols" in out["message"], out
 
 
-def test_perform_refuses_an_unknown_or_deferred_op(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The vocabulary is the server's own op names (decision 34). An unknown op is refused
-    naming the vocabulary. NOTHING is deferred today (send_keys is built), so the deferred
-    MECHANISM is proven by injecting a fake deferred op: it is refused as not-yet-built,
-    naming the right index, with earlier steps run first -- the shape a future deferral needs.
-    """
+def test_perform_refuses_an_unknown_op(tmp_path: Path) -> None:
+    """The vocabulary is the server's own op names. An unknown op is refused naming the
+    vocabulary."""
     _names(tmp_path)
     unknown = server.perform(steps=[{"op": "warp_core"}])
     assert unknown["status"] == "INVALID" and "not a step" in unknown["message"]
-    # THE REFUSAL NAMES THE VOCABULARY (decision 34), not just "not a step": dropping the
-    # op list from the message would leave the weaker assertion green.
+    # THE REFUSAL NAMES THE VOCABULARY, not just "not a step": dropping the op list from the
+    # message would leave the weaker assertion green.
     assert "resume" in unknown["message"], unknown
-    # THE DEFERRED MECHANISM, with a fake deferral (send_keys is real now): a deferred op is
-    # refused as a LATER step, naming its index, and the steps before it run first.
-    monkeypatch.setattr(sequence, "DEFERRED_OPS", {"registers"})
-    deferred = server.perform(steps=[{"op": "status"}, {"op": "registers"}])
-    assert deferred["status"] == "INVALID" and "not built yet" in deferred["message"]
-    assert deferred["failed_at"] == 1 and [r["op"] for r in deferred["ran"]] == ["status"]
-    monkeypatch.undo()
     # A malformed step carries failed_at like every other failure, not a missing key.
     shapeless = server.perform(steps=["registers"])   # not an {op: ...} object
     assert shapeless["status"] == "INVALID" and "not a" in shapeless["message"]
@@ -3666,10 +3678,18 @@ def test_drive_marks_acts_verifies_and_looks_from_the_mark(tmp_path: Path) -> No
     fake.where_raises = True              # a RUNNING guest, as a key is sent to
     fake.log = ["Bochs port E9h: [+   0.000] BOOT  . start", E9_KEY_ACT]   # a STALE cue
     fake.input_effect = "Bochs port E9h: [+   9.000] ACT   . key_cue_a=1 b=-1 on=1"
+    asked: list[bool] = []
+    where = fake.where
+
+    def counted() -> Any:
+        asked.append(True)
+        return where()
+    fake.where = counted  # type: ignore[method-assign]
     out = cast(dict[str, Any], server.drive(
         act=[{"op": "send_keys", "keys": ["a"]}], expect="key_cue_a", seconds=5,
         pattern="ACT", limit=10))
     assert out["status"] == "ok", out
+    assert asked == [], "whether the guest runs is the session's flag, never a console command"
     assert out["act"]["completed"] == 1 and out["act"]["failed_at"] is None, out["act"]
     assert out["verify"]["seen"] is True and "on=1" in out["verify"]["line"], out["verify"]
     # from the mark
@@ -3961,7 +3981,7 @@ def test_every_tool_declares_a_title_and_the_readers_a_read_only_hint() -> None:
                          "symbols_find",
                          "breakpoint_list", "watch_list", "captures", "build_check",
                          "state_list", "comment_list",
-                         "screen_signature",
+                         "screen_signature", "map_find",
                          "image_diff", "series_diff", "golden_check"}, read_only
 
 
@@ -4916,6 +4936,40 @@ def test_since_is_filter_independent_across_stops(tmp_path: Path) -> None:
     fake.log += ["D new", "E err2"]
     b2 = running.e9_summary(fake, "since", ".")  # type: ignore[arg-type]
     assert b2["since_last_stop"] == 2 and b2["lines"] == ["D new", "E err2"]
+
+
+def test_a_stop_a_sequence_found_moves_the_since_mark_whole(tmp_path: Path) -> None:
+    """A stop recorded by the contact that found it (`recorded_stop_reply`) moves the offset AND
+    the count, or a later filtered `since` starts lines before the unfiltered one."""
+    fake = _names(tmp_path)
+    fake.log = ["L1", "L2"]
+    dstate.STATE.e9_mark.update(count=0, offset=0)
+    dstate.STATE.remember_stop(cast(ds.Session, fake), {"cs": "F000", "eip": "0000FFF0",
+                                                        "mode": "Real"}, {}, [],
+                               {"attributed": False})
+    dstate.STATE.last_stop["picture"] = {}
+    running.recorded_stop_reply(fake, {})  # type: ignore[arg-type]
+    assert fake.log is not None
+    fake.log += ["L3"]
+    plain = running.e9_summary(fake, "since", ".")  # type: ignore[arg-type]
+    filtered = running.e9_summary(fake, "since", "^L")  # type: ignore[arg-type]
+    assert plain["lines"] == filtered["lines"] == ["L3"], (plain, filtered)
+
+
+def test_stop_on_a_parked_machine_never_names_a_previous_stop(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    fake = _names(tmp_path)
+    dstate.STATE.remember_stop(cast(ds.Session, fake), {"cs": "F000", "eip": "0000FFF0",
+                                                        "mode": "Real"}, {}, [],
+                               {"attributed": False})
+    fake.stop_count = 99                          # a stop the record is not of
+
+    def cut(*_a: Any) -> Any:
+        raise ds.Invalid("host_failed", "the pane was cut")
+    monkeypatch.setattr(fake, "stop_survey", cut)
+    got = cast(dict[str, Any], server.stop())
+    assert got["interrupted"] is False and got["last_stop"] is None, got
+    assert "not readable yet" in got["note"]
 
 
 def test_a_read_watch_wider_than_128_bytes_is_refused_at_declaration(tmp_path: Path) -> None:
@@ -7142,11 +7196,14 @@ def test_a_list_refuses_a_bad_hex_address_before_its_first_step_runs(
 
 def test_every_tool_is_summarised_by_its_own_line() -> None:
     """Each line is the tool's own: this server's function of its name, or, for a media file
-    tool, scry-core's line of that tool."""
+    tool or a screen map tool, scry-core's line of that tool."""
+    from scry_core import screen_map
     lines = dosbox_mcp.BOUNDARY.summaries
     for name in dosbox_mcp.registered_tools():
         if name in media_tools.TOOLS:
             assert lines[name] is media_tools.TOOLS[name].summary, name
+        elif name.startswith("map_"):
+            assert lines[name] is getattr(screen_map, name.removeprefix("map_") + "_line"), name
         else:
             assert lines[name].__name__ == name, (name, lines[name])
 

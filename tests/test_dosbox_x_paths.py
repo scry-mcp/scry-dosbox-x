@@ -147,7 +147,7 @@ def _start_stubbed(**kw: Any) -> dict[str, Any]:
     """`start` as far as it goes before a process: the emulator is never spawned."""
     def build(launch: dlaunch.Launch) -> Any:
         raise ds.Invalid("session_broken", "not starting anything")
-    with mock.patch("dosbox_binary.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
+    with mock.patch("scry_core.binaries.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
          mock.patch("dosbox_x_server.ds.Session", build):
         reply: Any = server.start(**kw)
     return cast(dict[str, Any], reply)
@@ -331,7 +331,7 @@ def test_start_judges_a_path_before_a_live_session_or_the_binary(tmp_path: Path)
     _refused(got, "bad_argument", "cwd='rel/x'")
     assert cast(object, dstate.STATE.session) is live
     dstate.STATE.session = None
-    with mock.patch("dosbox_binary.shutil.which", lambda _n: None):
+    with mock.patch("scry_core.binaries.shutil.which", lambda _n: None):
         got = cast(dict[str, Any], server.start(conf="rel.conf", cwd="/", seconds=60))
     _refused(got, "bad_argument", "conf='rel.conf'")
 

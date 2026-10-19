@@ -944,10 +944,10 @@ def test_each_reply_opens_with_its_one_line(tmp_path: Path) -> None:
         "comment_add start: 0000824B, stored"
     assert ok(server.comment_add(ref="nowhere", text="b"))["summary"] == \
         "comment_add nowhere: unresolved, stored"
-    assert ok(server.comment_list())["summary"] == "comment_list: 2 comment(s)"
+    assert ok(server.comment_list())["summary"] == "comment_list: 2 comments"
     dest = tmp_path / "c.tsv"
     assert ok(server.comment_save(dest=str(dest)))["summary"] == \
-        f"comment_save: 2 comment(s) to {dest}"
+        f"comment_save: 2 comments to {dest}"
     assert ok(server.comment_delete(ref="start"))["summary"] == \
         "comment_delete start: 0000824B deleted"
     assert ok(server.comment_load(source=str(dest)))["summary"] == \
@@ -973,12 +973,12 @@ def test_save_refuses_two_comments_at_one_place_and_writes_nothing(tmp_path: Pat
 
 def test_a_temporary_the_host_refuses_is_host_failed_and_leaves_nothing(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    import tempfile
+    import os
 
     def refuses(*_: object, **__: object) -> None:
         raise PermissionError("read-only directory")
     install()
-    monkeypatch.setattr(tempfile, "mkstemp", refuses)
+    monkeypatch.setattr(os, "replace", refuses)
     assert "read-only" in refused(server.comment_save(dest=str(tmp_path / "c.tsv")),
                                   "host_failed")
     assert list(tmp_path.iterdir()) == []

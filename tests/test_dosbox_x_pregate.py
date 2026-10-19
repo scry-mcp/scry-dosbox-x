@@ -88,8 +88,9 @@ def test_a_state_wait_out_of_bounds_is_judged_with_no_session() -> None:
     ("send_keys", {"keys": ["bogus_key_name"]}, "unknown key name"),
     ("find", {"ref": "1000:0000", "data_hex": "00", "length": -5}, "-5"),
     ("find", {"ref": "1000:0000", "data_hex": "0000", "length": 1}, "shorter"),
-    ("resume", {"seconds": "5"}, "not a number"),
-    ("resume", {"seconds": math.nan}, "not a number"),
+    ("resume", {"seconds": "5"}, "not a finite number"),
+    ("resume", {"seconds": math.nan}, "not a finite number"),
+    ("resume", {"seconds": math.inf}, "not a finite number"),
 ])
 def test_a_value_wrong_with_no_machine_is_bad_argument_not_no_session(
         tool: str, kw: dict[str, Any], words: str) -> None:
@@ -198,7 +199,7 @@ def test_a_start_plan_is_judged_whole_before_anything_starts(tmp_path: Path) -> 
         booted.append(launch)
         raise ds.Invalid("session_broken", "not starting anything")
     kw: dict[str, Any] = {"conf": str(conf), "cwd": str(tmp_path), "seconds": 60}
-    with mock.patch("dosbox_binary.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
+    with mock.patch("scry_core.binaries.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
          mock.patch("dosbox_x_server.ds.Session", boot):
         _refused(server.start(**kw, plan=[{"op": "nope"}]), "bad_argument", "nope")
         _refused(server.start(**kw, plan=[{"op": "registers"}], plan_wait=-1), "bad_argument",

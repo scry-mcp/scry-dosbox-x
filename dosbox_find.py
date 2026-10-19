@@ -149,7 +149,7 @@ def _last_scan_line(out: str) -> str:
 
 def _refuse(line: str, what: str) -> None:
     if SCAN_ACTIVE in line:
-        raise ds.Invalid("bad_argument",
+        raise ds.Invalid("needs_call",
             "the debugger holds one search instance at a time and one is open: "
                          "`scan_clear` it first, or keep filtering it with `scan_filter`")
     if SCAN_BAD_SEGMENT in line:
@@ -159,11 +159,11 @@ def _refuse(line: str, what: str) -> None:
             f"the range runs past the memory the debugger addresses "
                          f"({int(m.group(1), 16)} bytes); nothing was opened. At the reset "
                          f"vector the BIOS segment is aliased high, so a `F000:` range is "
-                         f"refused there while `0000:0400` is not (measured)")
+                         f"refused there while `0000:0400` is not")
     if SCAN_NOT_ACTIVE in line:
         STATE.scan_iterations = None        # whatever was counted belongs to a scan now gone
         STATE.scan_cell_bytes = None
-        raise ds.Invalid("bad_argument",
+        raise ds.Invalid("needs_call",
             f"no search instance is open, so there is nothing to {what}: `scan_start` one")
     if SCAN_TOO_WIDE in line:
         raise ds.Invalid("bad_argument",

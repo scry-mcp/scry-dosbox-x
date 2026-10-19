@@ -99,6 +99,21 @@ def digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()[:16]
 
 
+_digests: dict[Path, tuple[tuple[int, int, int], str]] = {}
+
+
+def current_digest(path: Path) -> str:
+    """`digest`, read again only when the file's size, mtime or inode moved: every reply
+    carries whether the conf changed, and a hash per reply is a read of the whole file per
+    call, twice per call a list steps through."""
+    st = path.stat()
+    key = (st.st_size, st.st_mtime_ns, st.st_ino)
+    seen = _digests.get(path)
+    if seen is None or seen[0] != key:
+        seen = _digests[path] = (key, digest(path))
+    return seen[1]
+
+
 def fingerprint(conf: Path) -> str:
     """The stamp of the conf, the build before any map: a batch's stamp hashes it in
     (`dosbox_declarations.Build.stamp`)."""

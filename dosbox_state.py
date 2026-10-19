@@ -27,7 +27,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
-from scry_core import cancel, narrowing
+from scry_core import cancel, narrowing, screen_map
 from scry_core import reply_contract as contract
 
 import dosbox_console as dcons
@@ -85,7 +85,7 @@ class State:
 
         # THE DECLARATION STORE for the conf the current session was started from, or None
         # before a session exists. Unlike the symbol table, it PERSISTS ACROSS SESSIONS
-        # keyed by the conf's identity (decision 9), so it is re-KEYED on `start` rather
+        # keyed by the conf's identity, so it is re-KEYED on `start` rather
         # than forgotten: a breakpoint declared by name is meant to survive a close/start
         # and re-resolve itself.
         self.store: dec.DeclarationStore | None = None
@@ -102,6 +102,9 @@ class State:
         # (`dosbox_declarations.raw_staleness`). Dropped with the table.
         self.map_batches: list[dec.Build] = []
         self.start_seq = 0     # starts in this process, so two within one second differ
+        # THE SCREEN MAPS, for the life of the server: the file layer a `map_load` read stays
+        # across sessions, the session layer and the last identification go with a `start`.
+        self.maps = screen_map.Maps()
 
         # THE LAST STOP, as its one survey saw it: position, registers, the debugger's
         # list, the attribution, and when. It is what the server can still say about the

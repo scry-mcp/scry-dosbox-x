@@ -8,11 +8,13 @@ here rather than behind a live session, where a false green would cost a boot to
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import pytest
 
 import dosbox_declarations as dec
+import dosbox_session as ds
 import dosbox_symbols as sym
 
 
@@ -355,10 +357,11 @@ def test_a_failed_write_cleans_up_its_temporary(
     def boom(*_a: object, **_k: object) -> None:
         raise OSError("disk full")
 
-    monkeypatch.setattr(json, "dump", boom)
-    with pytest.raises(OSError, match="disk full"):
+    monkeypatch.setattr(os, "replace", boom)
+    with pytest.raises(ds.Invalid, match="disk full") as e:
         s.add(dec.Declaration("breakpoint", "symbol", "_uicue_apply"))
-    assert not list(tmp_path.glob("*.tmp")), "a temporary write file was left behind"
+    assert e.value.code == "host_failed", "the server chose the store's path"
+    assert not list(tmp_path.glob(".*.tmp")), "a temporary write file was left behind"
     # the last GOOD state is intact: the failed add did not corrupt the file.
     monkeypatch.undo()
     reloaded = dec.DeclarationStore("guest-a.conf", path=tmp_path / "declarations.json")

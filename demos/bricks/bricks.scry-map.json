@@ -1,0 +1,45 @@
+{
+ "format": "scry-map/1",
+ "application": "bricks",
+ "screens": [
+  {
+   "name": "play",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      0,
+      52,
+      8
+     ],
+     "signature": "f38d22147fd6e2bd"
+    },
+    {
+     "crop": [
+      216,
+      0,
+      40,
+      8
+     ],
+     "signature": "0381cf0659718f50"
+    }
+   ],
+   "controls": [
+    {
+     "name": "court",
+     "rect": [
+      200,
+      80,
+      80,
+      40
+     ]
+    }
+   ]
+  }
+ ]
+}

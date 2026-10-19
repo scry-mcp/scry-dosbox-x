@@ -110,7 +110,7 @@ def e9_validate(mode: str, e9_filter: str, e9_stamp: str | None = None) -> None:
 
 def e9_summary(session: ds.Session, mode: str, e9_filter: str,
                 e9_stamp: str | None = None, how: str = _E9_HOW) -> dict[str, Any]:
-    """The E9 block of a stop reply (decision 15): OFF by default, carrying the COUNT and
+    """The E9 block of a stop reply: OFF by default, carrying the COUNT and
     `how`, how to see the lines (how to turn them on, by default), because the volume can blow
     up context and off-with-no-word leaves doubt. The switch is `none` | `all` | `lines:N` |
     `since` | `seconds:N`, with a filter.
@@ -211,13 +211,13 @@ def _e9_count(mode: str) -> int:
 def stop_reply(session: ds.Session, e9: str = "none", e9_filter: str = ".",
                 e9_stamp: str | None = None, *, retrace_may_stop: bool = False,
                 e9_how: str = _E9_HOW, **base: Any) -> dict[str, Any]:
-    """What a stop ALWAYS returns (decision 13), on top of the tool's own fields in `base`:
+    """What a stop ALWAYS returns, on top of the tool's own fields in `base`:
     where it stopped and by which declaration (attribution by address, or an honest
     cannot-say), the watches already evaluated, the registers, and the E9 summary, whose `how`
     is `e9_how` (a tool that takes no `e9` names what reads the lines instead). `altered`
     rides in the standard `session` block `st.reply` adds, so it is carried the same way here.
     """
-    # ONE SURVEY for where AND registers (decision 35: a round trip costs most of a second): they
+    # ONE SURVEY for where AND registers (a round trip costs most of a second): they
     # read the same stopped screen, so taking two was one avoidable console round trip a stop.
     # ONE repaint for the three things a stop reads: where, registers and the list the
     # watches check against. Measured on dos-real16 before this: four `BPLIST` round trips
@@ -231,11 +231,7 @@ def stop_reply(session: ds.Session, e9: str = "none", e9_filter: str = ".",
     STATE.remember_stop(session, where, registers, held, attribution)
     picture = STATE.last_stop["picture"] = code.stop_instruction(session, where, registers,
                                                                  session.survey_text)
-    e9_block = e9_summary(session, e9, e9_filter, e9_stamp, e9_how)
-    # The since-last-stop mark is the UNFILTERED count, so the next `since` is independent of
-    # whichever filter this stop or that one used. Not updated when the log is unavailable.
-    if "unfiltered" in e9_block:
-        STATE.e9_mark["count"] = int(e9_block["unfiltered"])
+    e9_block = _stop_e9(session, e9, e9_filter, e9_stamp, e9_how)
     # THE STOP'S NUMBER rides on its reply: it is what a batch with `summaries`
     # counts its stops by, and what `last_stop.stop_seq` later names.
     return st.reply(registers=registers, watches=watches, attribution=attribution,
@@ -254,7 +250,19 @@ def recorded_stop_reply(session: ds.Session, recorded: dict[str, Any]) -> dict[s
         stop["picture"] = code.stop_instruction(session, dict(stop["where"]),
                                                 dict(stop["registers"]), session.survey_text)
     return {**recorded, "registers": dict(stop["registers"]), "watches": watches,
-            "e9": e9_summary(session, "none", "."), **copy.deepcopy(stop["picture"])}
+            "e9": _stop_e9(session, "none", "."), **copy.deepcopy(stop["picture"])}
+
+
+def _stop_e9(session: ds.Session, e9: str, e9_filter: str, e9_stamp: str | None = None,
+             how: str = _E9_HOW) -> dict[str, Any]:
+    """A stop's E9 block, and the since-last-stop mark moved to it: the offset and the count
+    move together, or the next `since` with a filter starts lines before the one without. The
+    mark is the UNFILTERED count, so the next `since` is independent of whichever filter this
+    stop or that one used; not moved when the log is unavailable."""
+    block = e9_summary(session, e9, e9_filter, e9_stamp, how)
+    if "unfiltered" in block:
+        STATE.e9_mark["count"] = int(block["unfiltered"])
+    return block
 
 
 def stop_or_base(session: ds.Session, stopped: bool, e9: str, e9_filter: str,

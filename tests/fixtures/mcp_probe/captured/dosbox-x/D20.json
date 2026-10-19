@@ -1,31 +1,31 @@
 {
  "task": {
   "id": "D20",
-  "prompt": "Let the guest run and wait up to 25 seconds for a stop. When it stops, give me the guest's E9 lines of the last 12 seconds, only those matching ^FRAME; each line's own time is the digits captured by the regex t=([0-9]+)ms.",
+  "prompt": "Let the guest run and wait up to 25 seconds for a stop. When it stops, give me the guest's E9 lines of the last 12 seconds, only those matching ^FRAME; each line's own time, in seconds, is the digits captured by the regex t=([0-9]+)s.",
   "tool": "resume",
   "args": {
    "seconds": 25,
    "e9": "seconds:12",
    "e9_filter": "^FRAME",
-   "e9_stamp": "t=([0-9]+)ms"
+   "e9_stamp": "t=([0-9]+)s"
   }
  },
  "runs": [
   {
    "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25, \"e9\": \"seconds:12\", \"e9_filter\": \"^FRAME\", \"e9_stamp\": \"t=([0-9]+)ms\"}}"
+    "D20: {\"tool\":\"resume\",\"args\":{\"seconds\":25,\"e9\":\"seconds:12\",\"e9_stamp\":\"t=([0-9]+)s\",\"e9_filter\":\"^FRAME\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25, \"e9\": \"seconds:12\", \"e9_filter\": \"^FRAME\", \"e9_stamp\": \"t=([0-9]+)ms\"}}"
+    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25, \"e9\": \"seconds:12\", \"e9_stamp\": \"t=([0-9]+)s\", \"e9_filter\": \"^FRAME\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25, \"e9\": \"seconds:12\", \"e9_stamp\": \"t=([0-9]+)ms\", \"e9_filter\": \"^FRAME\"}}"
+    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25, \"e9\": \"seconds:12\", \"e9_stamp\": \"t=([0-9]+)s\", \"e9_filter\": \"^FRAME\"}}"
    ],
    "right": true
   }

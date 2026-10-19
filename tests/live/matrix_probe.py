@@ -148,7 +148,7 @@ _NEEDS_STOP = ("registers", "read_memory", "disassemble", "call_stack", "memdump
                "run_for", "trace",
                "resume", "machine_map", "interrupt_vectors", "palette", "screen_view",
                "screen_signature", "screen_wait", "comment_add", "comment_delete",
-               "comment_load")
+               "comment_load", "map_add", "map_find")
 _NO_CAPTURE = ("captures", "capture_frame", "series_capture")
 #: The media file tools read files and no machine, so they answer in every state alike; each is
 #: asked about files that are not there, which its judge refuses by name.
@@ -224,6 +224,10 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "comment_delete": {"ref": COMMENT_REF},
         "comment_save": {"dest": M.fresh(".comments.tsv")},
         "comment_load": {"source": _header_only()},
+        "map_load": {"path": "/nonexistent/probe.scry-map.json"},
+        "map_add": {"screen": f"probe_{state}", "match": [[0, 0, 8, 1]]},
+        "map_find": {},
+        "map_save": {"path": M.fresh(f"-{state}.scry-map.json"), "overwrite": True},
     }
     return table[tool]
 
@@ -384,6 +388,12 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                          and r.get("added_total") == 0, "comment_load docstring"),
         "comment_delete": (lambda r: ok(r) and (r.get("deleted") or {}).get("ref") == COMMENT_REF,
                            "comment_delete docstring"),
+        "map_add": (lambda r: ok(r) and r.get("kind") == "text" and r.get("size") == [80, 25]
+                    and len(str((r.get("match") or [{}])[0].get("signature"))) == 16,
+                    "map_add docstring: one read signs each crop, in the screen's own units"),
+        "map_find": (lambda r: ok(r) and r.get("matched") is True
+                     and r.get("screen") == "probe_stopped" and r.get("layer") == "session",
+                     "map_find docstring: the screen just mapped, the session layer first"),
     }
     return d[tool]
 
@@ -452,6 +462,15 @@ def _expect(tool: str, state: str) -> tuple[Callable[[dict[str, Any]], bool], st
         return ((lambda r: refused(r, "bad_argument") and "is not a file" in str(r.get("message"))
                  and (alive(r) if live else no_session(r))),
                 f"{tool} docstring: reads files, in any state; a missing one refused by name")
+    if tool == "map_load":
+        return ((lambda r: refused(r, "bad_argument") and "no map file" in str(r.get("message"))),
+                "map_load docstring: any state; a file that is not there refused by name")
+    if tool == "map_save":
+        if state == "none":
+            return ((lambda r: refused(r, "needs_call") and no_session(r)),
+                    "map_save docstring: nothing mapped yet is `needs_call`")
+        return ((lambda r: ok(r) and Path(str(r.get("path"))).is_file()),
+                "map_save docstring: any state; the maps the server holds, written")
     if tool == "perform_export" and state in ("none", "closed"):
         # Before any `start` there is nothing recorded; a closed session's recording is still
         # the last one, and it exports with no machine.
@@ -498,6 +517,7 @@ _STOPPED_ORDER = [
     "disassemble", "call_stack", "memdump",
     "find", "scan_start", "scan_filter", "scan_clear", "debug", "machine_map",
     "interrupt_vectors", "palette", "screen_view", "screen_signature", "screen_wait",
+    "map_add", "map_find", "map_save", "map_load",
     "set_register", "write", "stop",
     "step", "run_to", "run_for", "trace", "state_save", "state_load", "snapshot", "state_list",
     "breakpoint_interrupt", "symbols_load", "symbols_find", "comment_add", "comment_list",

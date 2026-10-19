@@ -187,7 +187,22 @@ def test_send_mouse_puts_the_pointer_where_asked_and_the_program_clicks_there(
         assert got["status"] == "ok" and got["arrived"] is True, got
         assert got["pointer"]["mouse"]["x"] == x and got["pointer"]["mouse"]["y"] == y, got
         assert _guest_xy(got["effect"]["line"]) == (x, y), got["effect"]
+    # A CONTROL BY NAME IS HELD TO THE SCREEN THE STUB REPORTS: this program runs a VESA mode
+    # this server does not map, so a control of any mapped screen is refused before anything
+    # is sent, and the pointer stays where the last click left it.
+    from scry_core import screen_map
 
+    import dosbox_state as dstate
+    maps = dstate.STATE.maps = screen_map.Maps()
+    for kind, size in (("text", (80, 25)), ("pixel", (320, 200))):
+        maps.found = screen_map.Found(screen_map.Screen(
+            "s", kind, size, (((0, 0, 1, 1), "0" * 16),),
+            (screen_map.Control("c", (20, 10, 4, 2)),)), "file", None)
+        aimed = cast(dict[str, Any], server.send_mouse(target="c", button="left"))
+        assert aimed["code"] == "needs_call", aimed
+        assert "a mode this server does not map now" in aimed["message"], aimed
+    after = cast(dict[str, Any], server.send_mouse(x=0, y=0, units="mouse"))
+    assert after["status"] == "ok", after
 
 def _guest_xy(line: str) -> tuple[int, int]:
     m = re.search(r"x=(\d+) y=(\d+)", line)

@@ -1,0 +1,34 @@
+{
+ "task": {
+  "id": "D122",
+  "prompt": "The guest is running. Left-click the control named serve on the screen the last identification matched.",
+  "tool": "send_mouse",
+  "args": {
+   "target": "serve",
+   "button": "left"
+  },
+  "grammar": [
+   "left"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D122: {\"tool\":\"send_mouse\",\"args\":{\"target\":\"serve\",\"button\":\"left\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"button\": \"left\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"button\": \"left\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

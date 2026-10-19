@@ -1,7 +1,7 @@
 """The symbol PLACEMENT: a name or a raw `SEG:OFF` to the address the debugger wants.
 
 The caller says the SAME thing for a DJGPP protected-mode program and a 16-bit real-mode
-one (decision 17): a symbol name, or a raw address, and NOTHING about mode or selectors.
+one: a symbol name, or a raw address, and NOTHING about mode or selectors.
 The server does the dirty work below -- deciding which the ref is, resolving a name to an
 offset, and turning that offset into the seg:off the debugger's own command wants, which
 depends on the machine's mode and is exactly the number the plan exists to stop a caller
@@ -118,7 +118,7 @@ def target_for(offset: int, reg: str, session: ds.Session, *,
     """The seg:off to arm at a symbol OFFSET, derived from the machine's mode.
 
     `machine` is an optional cached `(mode, registers)` read ONCE by the caller. It exists
-    for the stop reply (decision 35): resolving N watches and M breakpoints there would
+    for the stop reply: resolving N watches and M breakpoints there would
     otherwise read `where` and `registers` N+M times, at a console round trip apiece, for a
     state that does not change across one stopped instant. Given it, this reads neither.
 
@@ -301,7 +301,7 @@ def _resolve_pointer(decl: dec.Declaration, reg: str, session: ds.Session,
 def read_target(ref: str, reg: str, session: ds.Session, *,
                  machine: tuple[str, dict[str, str]] | None = None) -> tuple[int, int]:
     """The seg:off a reader (`read_memory`, `memdump`) should read at, from a `ref`: a symbol
-    name or a raw `SEG:OFF` (decision 11). ONE spelling: a numeric segment/offset pair is
+    name or a raw `SEG:OFF`. ONE spelling: a numeric segment/offset pair is
     not a second way to say the same address.
 
     A read needs a concrete address NOW, so unlike a breakpoint it cannot keep an unresolved
@@ -520,7 +520,7 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
     STATE.section_bases.clear()
     if bases is not None:
         STATE.section_bases.update(bases)
-    # DECISION 7: re-resolve every stored declaration against the NEW table and re-arm the
+    # RE-RESOLVE every stored declaration against the NEW table and re-arm the
     # code ones that resolve. This is what makes a rebuild free -- relaunch, symbols_load
     # the new map, and the breakpoints follow the program to their new addresses without
     # being sent again. It runs here because this is the moment the map changed.
@@ -700,9 +700,8 @@ def find(name: str | None, offset: int | None, section: int | None,
     # subtraction is silently wrong rather than absent, and a wrong answer of the right
     # shape is the one thing worse than a refusal.
     # WHICH SECTION THE QUESTION IS ABOUT, because offsets in different sections are
-    # different addresses and this table can now hold both. Before decision 36 every
-    # producer folded into one space and the question did not arise; the two sectioned
-    # readers broke that, and an offset compared across sections answers with whichever
+    # different addresses and this table can hold both: an offset compared across sections
+    # answers with whichever
     # symbol of ANY section sat highest below it -- a symbol from another selector, with
     # a plausible delta and no error.
     if not STATE.section_bases:

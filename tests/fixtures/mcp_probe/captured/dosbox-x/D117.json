@@ -1,0 +1,32 @@
+{
+ "task": {
+  "id": "D117",
+  "prompt": "Check the PNGs in the directory /tmp/shots against the goldens listed in /tmp/shots.sha256, listing at most 5 names in each list.",
+  "tool": "golden_check",
+  "args": {
+   "dir": "/tmp/shots",
+   "checksums": "/tmp/shots.sha256",
+   "limit": 5
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D117: {\"tool\":\"golden_check\",\"args\":{\"dir\":\"/tmp/shots\",\"checksums\":\"/tmp/shots.sha256\",\"limit\":5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D117: {\"tool\": \"golden_check\", \"args\": {\"dir\": \"/tmp/shots\", \"checksums\": \"/tmp/shots.sha256\", \"limit\": 5}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D117: {\"tool\": \"golden_check\", \"args\": {\"dir\": \"/tmp/shots\", \"checksums\": \"/tmp/shots.sha256\", \"limit\": 5}}"
+   ],
+   "right": true
+  }
+ ]
+}

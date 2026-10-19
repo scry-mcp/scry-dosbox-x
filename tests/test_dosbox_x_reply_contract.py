@@ -33,6 +33,9 @@ SOURCES = sorted(p for p in PACKAGE.glob("*.py") if p.name != "mapsweep.py")
 # The arguments a tool needs to be CALLED at all; the gate refuses before any is judged.
 _ARGS: dict[str, dict[str, Any]] = {
     "series_capture": {"frames": [0]},
+    "map_load": {"path": "/nonexistent/x.scry-map.json"},
+    "map_save": {"path": "/nonexistent/x.scry-map.json"},
+    "map_add": {"screen": "s", "match": [[0, 0, 1, 1]]},
     "image_diff": {"a": "/nonexistent/a.png", "b": "/nonexistent/b.png"},
     "series_diff": {"a": "/nonexistent/a.json", "b": "/nonexistent/b.json"},
     "region_track": {"manifest": "/nonexistent/m.json"},
@@ -91,9 +94,11 @@ def test_every_tool_answers_the_contract_with_no_machine(
     if name in ("status", "close"):
         assert reply["status"] == "ok" and "code" not in reply and "message" not in reply, reply
         return
-    # A media file tool needs no machine: it refuses the missing file it was handed.
+    # A media file tool needs no machine: it refuses the missing file it was handed. A map's
+    # file tools need none either: a load refuses the missing file, a save the empty map.
     expected = {"start": "bad_argument", "build_check": "host_failed",
-                "perform_export": "bad_argument",
+                "perform_export": "bad_argument", "map_load": "bad_argument",
+                "map_save": "needs_call",
                 **dict.fromkeys(media_tools.IMAGE_TOOLS, "bad_argument")}.get(name, "no_session")
     contract.check_refusal(name, reply, expected)
 

@@ -686,7 +686,7 @@ def test_run_to_whose_control_eats_the_whole_bound_reports_the_bound_expired(
     machine sits at rest ON the control: that is a stop elsewhere (the target did not fire),
     the control is counted and removed, and `bound_expired` is TRUE, because the bound ran
     out whatever the last wait saw. Before this was pinned the loop left `expired` at what the
-    last `_await_stop` returned, False, so a run that used its whole budget said it had not.
+    last `await_stop` returned, False, so a run that used its whole budget said it had not.
     The clock is a counter, one second per call, so the deadline passes between the stop
     being heard and the position being read."""
     import itertools
@@ -2705,7 +2705,7 @@ def test_e9_wait_reports_its_progress_while_it_waits(tmp_path: Path,
 
 
 class _Listening:
-    """What `_await_stop` reaches for on a machine that never announces a stop."""
+    """What `await_stop` reaches for on a machine that never announces a stop."""
 
     def alive(self) -> bool:
         return True
@@ -2719,13 +2719,13 @@ def test_the_stop_wait_of_run_to_reports_its_progress(monkeypatch: pytest.Monkey
     monkeypatch.setattr(ds, "PROGRESS_EVERY_S", 0.0)
     ticks: list[str] = []
     began = time.monotonic()
-    expired, _saw = ds.Session._await_stop(cast(ds.Session, _Listening()), began, began + 0.3,
+    expired, _saw = ds.Session.await_stop(cast(ds.Session, _Listening()), began, began + 0.3,
                                            "0087:0234", lambda p, t, m: ticks.append(m))
     assert expired is True and ticks and ticks[0].startswith("run_to 0087:0234: ")
 
 
 def test_run_to_hands_its_progress_to_the_stop_wait(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Through the real `run_to`, not `_await_stop` alone: the forwarding at the one call site
+    """Through the real `run_to`, not `await_stop` alone: the forwarding at the one call site
     inside `run_to` is what this pins."""
     monkeypatch.setattr(ds, "PROGRESS_EVERY_S", 0.0)
     ticks: list[str] = []
