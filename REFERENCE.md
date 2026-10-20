@@ -28,7 +28,12 @@ behind is still drawn where the placement flags put it.
 
 `session_seconds` is a **hard bound and required**: a DOSBox-X nobody reads freezes under its
 terminal, so every session carries a ceiling on its life, and `status` says how much of it is
-spent. It is a backstop, not a plan: `close` is the act that ends a session.
+spent. It is a backstop, not a plan: `close` is the act that ends a session. The emulator gets it
+as its own `-time-limit`, which quits cleanly, but that counts emulated time, which a machine
+held at the debugger never advances. So a guardian beside the emulator (`scry_core.guardian`,
+named `scry-dosbox-x-guardian` in the host's process list) also keeps it on the host's clock,
+ending the emulator a few seconds past the bound if it is still there, and within one poll of
+this server dying, however it dies.
 
 **What else `start` takes.** `program` runs with `-c` AFTER the conf's autoexec, so that
 autoexec must not `exit` or the program never runs. `plan` is a list of the server's own
@@ -151,6 +156,30 @@ and DOS have started, there is no row and no vector, so a trap there faults inst
 stopping. And the first instruction
 after a `resume` runs unchecked, because the debugger does not stop where it already is: a
 trap written at the stop itself is stepped over, one instruction later it is caught.
+
+### The presence indicator
+
+**While a session holds the window, the window says so**: an orange edge on the inner sides of
+the picture, dim from `start` to `close`, bright while a call that drives the machine runs (one
+that can move the guest on or change what it holds: it lets the machine run or stops it, feeds
+it input, writes it or restores it, or may: `debug`), fading back to dim over a couple of seconds once the call
+ends, the guest running or held at the debugger. Once the session has moved the guest's mouse
+an orange arrow marks the guest's pointer too; a program driven by keys alone shows the edge
+only. So whoever sits at the host can tell whether to keep their hands off, and whether there
+is still a session to wait for. A machine left running by `resume` shows the dim edge: the
+indicator marks the calls, not the machine. `start(presence=False)` leaves it off.
+
+`start` and `status` say `presence`: `true` drawn, `false` asked off (or, in `status`, no
+session open), or unavailable with why: a session started without `shared` has no window to
+draw on, a build whose debugger channel has no `PRESENCE` command cannot draw it, a state that
+could not be delivered says so, and so does a session whose emulator has ended. A
+failure there never changes any other call's reply.
+
+**It is drawn by the emulator, never into the evidence.** The channel's `PRESENCE` command has
+DOSBox-X draw it into the scaled output just before a frame is shown, after the frame was handed
+to capture, so `snapshot`, `capture_frame` and `series_capture` never carry it, and
+`screen_view` and `screen_signature`, which read the VGA memory and the DAC, never see it. A
+recording of the window made from outside does show it.
 
 ## What every reply carries
 

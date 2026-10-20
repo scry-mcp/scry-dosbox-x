@@ -15,7 +15,9 @@ this.
 
 - **Hold a live machine open and answer from it.** `start` boots your conf headless (or
   in a window you place) and parks the guest at the debugger, ready. Registers, memory,
-  the guest's own log, a still frame: each one is a call.
+  the guest's own log, a still frame: each one is a call. While a session holds the window
+  an orange edge marks it, bright while a call drives the machine, never in the server's
+  own captures or screen reads (`presence=False` turns it off).
 - **Read the program's own account.** A guest that writes to the Bochs `0xE9` port has a
   log, and the server filters it for you: the last lines matching a pattern, WHEN a line
   happened (already, or wait for it), what was written since the last stop, or a window
@@ -91,7 +93,7 @@ Absence of any of these is named by the tool that needs it, never worked around.
 pip install .
 claude mcp add dosbox-x -s user -- scry-dosbox-x
 # or, from a checkout without installing:
-claude mcp add dosbox-x -s user -- uv run --directory /path/to/scry-dosbox-x python dosbox_x_server.py
+claude mcp add dosbox-x -s user -- uv run --directory /path/to/scry-dosbox-x scry-dosbox-x
 ```
 
 Then, from the client:

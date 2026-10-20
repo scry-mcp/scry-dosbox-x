@@ -67,9 +67,10 @@ import sys
 import threading
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, cast
+from typing import Annotated, Any, cast
 
 from mcp.server.mcpserver import Context
+from pydantic import Field
 
 # THE FILE IS NOT CALLED `server.py`, and that is not fussiness. Another server may install
 # a top-level `server` module, and in an environment that holds both packages (or one
@@ -85,7 +86,16 @@ from mcp.server.mcpserver import Context
 # depends on -- the same silent-wrong-import hazard, installed by the fix for it.
 sys.path.append(str(Path(__file__).resolve().parent))
 
-from scry_core import fresh, judges, media_tools, narrowing, recording, screen_map  # noqa: E402
+from scry_core import (  # noqa: E402
+    fresh,
+    judges,
+    media_tools,
+    narrowing,
+    process_name,
+    recording,
+    screen_map,
+)
+from scry_core import presence as scry_presence  # noqa: E402
 from scry_core import strict_arguments as strict  # noqa: E402
 from scry_core.progress import bridge  # noqa: E402
 
@@ -107,6 +117,7 @@ import dosbox_machine as machine  # noqa: E402
 import dosbox_media as media  # noqa: E402
 import dosbox_paths as paths  # noqa: E402
 import dosbox_placement as placement  # noqa: E402
+import dosbox_presence as dpresence  # noqa: E402
 import dosbox_retrace as retrace  # noqa: E402
 import dosbox_running as running  # noqa: E402
 import dosbox_screen as screen  # noqa: E402
@@ -186,6 +197,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool = False,
           plan: list[dict[str, Any]] | None = None, settle_seconds: float | None = None,
           input_port: int = 0, state_dir: str = "", binary: str = "",
           background: bool | None = None,
+          presence: Annotated[bool, Field(description=scry_presence.ARGUMENT)] = True,
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Open ONE live DOSBox-X session from your conf, parked at the debugger, stopped and
     ready. Refuses while a session is live.
@@ -207,8 +219,9 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool = False,
     `true` behind, your focus kept; `false` in front; omitted, by `shared`.
 
     Reply: `shared`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `stub`,
-    `input_port`, `background`, and `rearm_refused` (why) when stored raw breakpoints could
-    not be re-armed; with `plan`, the sequence account, the start facts under `start`.
+    `input_port`, `background`, `presence`, and `rearm_refused` (why) when stored raw
+    breakpoints could not be re-armed; with `plan`, the sequence account, the start facts
+    under `start`.
 
     Refused before anything starts: a path not absolute, an unresolved binary, a missing
     conf, `cwd` or `logfile` directory, `session_seconds` out of range, `shared` without
@@ -220,7 +233,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool = False,
     return lifecycle.start(conf, cwd, session_seconds, shared, window_flags, flags,
                            break_on_int3, program, logfile, capture_video, captures_dir, plan,
                            settle_seconds, input_port, state_dir, binary, background,
-                           bridge(ctx), _step_ops)
+                           presence, bridge(ctx), _step_ops)
 
 
 @tool("Session status", summary=one_line.status, read_only=True)
@@ -232,7 +245,7 @@ def status() -> dict[str, Any]:
     Reply: `session`, `alive: false` when there is none (under `status: "ok"`: nothing
     running is an answer). The same block rides on EVERY reply of every tool:
 
-      pid                     the emulator process's pid, to read instead of hunting it.
+      pid                     the emulator process's pid.
       alive                   the emulator process is up.
       running                 the guest runs; false parked at the debugger.
       altered                 something here WROTE to the guest: a later measurement is of a
@@ -251,10 +264,11 @@ def status() -> dict[str, Any]:
 
     At the top: `alive` and `running` again, `last_stop` (`stop_seq`, `pc`, `attribution`,
     `since_s`, `wall_at`; the park after `start` is stop 1; unavailable with no session or a cut
-    survey), `pending` (what was asked while the guest ran: `arm` refs, a `disarm` count,
-    `symbols_load`), and with a session the stop the machine is in: its `pc` (absent while it
-    runs) and `cpu_mode` (`real`, `protected`, `paged`; unavailable while it runs), and
-    `declarations`, this server's own counted (`breakpoints`, `watches`).
+    survey), `pending` (asked while the guest ran: `arm` refs, a `disarm` count,
+    `symbols_load`), `presence` (`true` drawn, `false` asked off, or why not), and with a
+    session its stop's `pc` (absent while it runs) and `cpu_mode` (`real`, `protected`,
+    `paged`; unavailable while it runs), and `declarations`, this server's own counted
+    (`breakpoints`, `watches`).
 
     Reference: REFERENCE.md, What every reply carries.
     """
@@ -262,7 +276,8 @@ def status() -> dict[str, Any]:
         running.drain_if_stopped(STATE.session)   # `status` asks for no session, but uses one
     block = st.session_block()
     return st.reply(alive=block["alive"], running=block["running"], last_stop=STATE.dated(),
-                    pending=STATE.pending_summary(), **running.status_facts(STATE.session))
+                    pending=STATE.pending_summary(), **running.status_facts(STATE.session),
+                    presence=lifecycle.presence_shown(STATE.session))
 
 
 @tool("Close the session", summary=one_line.close, session_before=True, on_cancel="kill")
@@ -1668,12 +1683,17 @@ def send_mouse(x: int | None = None, y: int | None = None, button: str = "",
     Reference: REFERENCE.md, Input and the screen.
     """
     if not target:
-        return inputs.send_mouse(live(), x, y, button or None, action, units, expect or None,
-                                 seconds, bridge(ctx))
-    inputs.check_mouse(x, y, button or None, action, units, expect or None, seconds, target)
-    aimed = STATE.maps.target(target)
-    return inputs.send_mouse_at(live(), aimed, button or None, action, expect or None, seconds,
-                                bridge(ctx))
+        moved = inputs.send_mouse(live(), x, y, button or None, action, units, expect or None,
+                                  seconds, bridge(ctx))
+    else:
+        inputs.check_mouse(x, y, button or None, action, units, expect or None, seconds, target)
+        aimed = STATE.maps.target(target)
+        moved = inputs.send_mouse_at(live(), aimed, button or None, action, expect or None,
+                                     seconds, bridge(ctx))
+    # Read off the state, not `live()`: a session that died after the move went in must not
+    # cost the caller the reply that says it was delivered.
+    dpresence.of(STATE.session).pointer_moved()
+    return moved
 
 
 # ----------------------------------------------------------------------- the captures
@@ -1875,6 +1895,7 @@ def _close_held_session() -> None:
 
 
 def main() -> None:
+    process_name.set_title(ds.PROCESS_NAME)
     for sig in EXIT_SIGNALS:
         signal.signal(sig, _exit_on)
     try:

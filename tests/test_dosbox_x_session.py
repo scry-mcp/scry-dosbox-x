@@ -2749,3 +2749,33 @@ def test_the_conf_is_hashed_again_only_when_it_moves(tmp_path: Path) -> None:
         assert dl.current_digest(conf) != first and calls == [conf]
     finally:
         dl.digest = dl_digest
+
+
+def test_the_session_spawns_a_named_guardian_with_its_wall_clock_bound(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from scry_core import guardian
+    seen: list[tuple[str, float]] = []
+
+    class Spawned:
+        pid = 12345
+
+        def poll(self) -> int | None:
+            return None
+
+    def spawn(*_a: Any, **_k: Any) -> Spawned:
+        return Spawned()
+
+    def guard(child: object, name: str, deadline: float = 0.0) -> None:
+        seen.append((name, deadline))
+        raise OSError("stop here")
+    monkeypatch.setattr(subprocess, "Popen", spawn)
+    # The setup's cleanup signals the fake child's group: never a real process's.
+    monkeypatch.setattr(ds.Session, "_signal_group", lambda *_a: None)
+    monkeypatch.setattr(guardian, "spawn", guard)
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    before = time.time()
+    with pytest.raises(OSError, match="stop here"):
+        ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=90))
+    assert seen and seen[0][0] == ds.GUARDIAN_NAME == "scry-dosbox-x-guardian"
+    assert before + 90 + ds.GUARDIAN_GRACE_S <= seen[0][1] <= time.time() + 90 + ds.GUARDIAN_GRACE_S

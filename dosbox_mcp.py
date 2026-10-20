@@ -16,12 +16,13 @@ from collections.abc import Callable
 from typing import Any
 
 from pydantic import ValidationError
-from scry_core import boundary, cancel, envelope, recording
+from scry_core import boundary, cancel, envelope, presence, recording
 from scry_core import strict_arguments as strict
 
 import dosbox_arming as arming
 import dosbox_checks as checks
 import dosbox_docs as docs
+import dosbox_presence as dpresence
 import dosbox_running as running
 import dosbox_sequence as sequence
 import dosbox_session as ds
@@ -279,13 +280,20 @@ RECORDER = recording.Recorder("dosbox-x", "dosbox_x_server.py", sequence.RECORD_
                               states=("state_save", "state_load", "name"), plan="plan",
                               plan_with=("settle_seconds",))
 
+def _session_presence() -> presence.Presence | None:
+    """The live session's presence writer, if it has one."""
+    return dpresence.of(STATE.session).held
+
+
 # THE HOOKS ARE BOUND HERE, ONCE, AT IMPORT: a test that replaces one patches the name the hook
 # calls through (`STATE`, `running`), never the hook itself, which the boundary already holds.
 BOUNDARY = boundary.Boundary(
     mcp, LOCK, invoke=_invoke, end=_end_cancelled, refusal_line=one_line.refusal,
     session_block=st.session_block, take_cancelled=STATE.take_cancelled,
     keep_cancelled=_keep_cancelled, doc=docs.filled, give_back=_keep_accounts,
-    recorder=RECORDER)
+    recorder=RECORDER,
+    # PRESENCE hears every outermost call, so the window lights while one drives the machine.
+    listener=presence.Slot(_session_presence))
 
 
 def tool(

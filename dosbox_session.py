@@ -39,7 +39,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
-from scry_core import avi, cancel, judges, live_host
+from scry_core import avi, cancel, guardian, judges, live_host
 from scry_core import reply_contract as contract
 from scry_core.progress import PROGRESS_EVERY_S as PROGRESS_EVERY_S
 from scry_core.progress import Progress as Progress
@@ -51,6 +51,15 @@ import dosbox_console as dcons
 import dosbox_control as control
 import dosbox_launch as dlaunch
 import dosbox_paths as paths
+import dosbox_presence as dpresence
+
+#: What this server and the guardian beside every emulator are called in the host's process list.
+PROCESS_NAME = "scry-dosbox-x"
+GUARDIAN_NAME = f"{PROCESS_NAME}-guardian"
+#: How far past the bound the guardian waits, so a running guest still ends on its own
+#: `-time-limit`, which quits cleanly and finishes the recording, and the guardian's kill is
+#: left to a machine that made no emulated time.
+GUARDIAN_GRACE_S = 10.0
 
 # The var-list ENCODING lives next door, in a module with no emulator in it, so a
 # golden can exist over the bytes without a machine. This file owns only the part that
@@ -446,7 +455,6 @@ def avi_facts(data: bytes) -> dict[str, object]:
 SCREENSHOT_COMMAND = b"S"   # the stub's opcode for the device's capture trigger (guest/inject.asm)
 COMMAND_GAP_S = 0.06    # the pause between stub commands: just over one 18.2 Hz timer tick
 
-
 BREAK_IN_WAIT_S = 5.0     # from BREAK on the channel to the debugger's prompt on the terminal
 SNAPSHOT_WAIT_S = 10.0
 # A STATE IS SAVED AND LOADED BY THE DEBUGGER'S OWN COMMANDS, `SAVESTATE <file>` and
@@ -593,6 +601,10 @@ class Session:
       reasons hardest about.
     """
 
+    #: The guardian beside the emulator (`scry_core.guardian`), set once it is spawned; why, in
+    #: REFERENCE.md, The session.
+    guard: subprocess.Popen[bytes] | None = None
+
     def __init__(self, launch: dlaunch.Launch) -> None:
         dlaunch.validate(launch)
         self.launch = launch
@@ -652,6 +664,8 @@ class Session:
         # `close` tool reads it off the object after closing and reports it beside
         # `exit_code`, which is the reply that would otherwise be a bare null.
         self.reap_failed = ""
+        # The presence of this session (`dosbox_presence`), set by `start`.
+        self.presence = dpresence.Shown()
 
         # THE WHOLE SETUP IS UNDER `finally`, because three calls between opening the
         # terminal and handing it to the child can raise, and on any of them the
@@ -682,6 +696,8 @@ class Session:
                 start_new_session=True, close_fds=True)
             if (ledger := live_host.EmulatorLedger.from_environment()) is not None:
                 ledger.record(self.proc.pid, self.argv[0])
+            self.guard = guardian.spawn(self.proc, GUARDIAN_NAME,
+                                        deadline=time.time() + launch.seconds + GUARDIAN_GRACE_S)
             # STARTED HERE AND NOT LAZILY ON THE FIRST READ: the window this closes
             # is the one between the child being born and the first question, which
             # is exactly when the boot chatter fills the buffer.
@@ -2598,9 +2614,9 @@ class Session:
 
         A live session outlives the turn, which is the one hazard a batch launcher
         does not have. The bound is the backstop and this is the deliberate act; both
-        exist because either alone leaves a case uncovered -- and note the backstop is
-        the one that survives this process being killed, since a `finally` does not
-        run on SIGKILL.
+        exist because either alone leaves a case uncovered -- and the backstop, kept by
+        the guardian, is the one that survives this process being killed, since a
+        `finally` does not run on SIGKILL.
 
         `grace` IS THE WAIT AFTER SIGKILL, FLOORED AT ONE SECOND, and SIGTERM gets
         `TERM_GRACE` of its own: with the quit warning off on every argv the ordinary session
@@ -2617,6 +2633,8 @@ class Session:
         The process GROUP is signalled, not just the child: `start_new_session` put
         it in its own, so anything it spawned would otherwise be missed.
         """
+        # The presence's writer stops first: the channel it sends on is about to go.
+        dpresence.of(self).close()
         try:
             if self.proc.poll() is not None:
                 # A process that left on this close's own SIGTERM quit; one found gone, died.
@@ -2687,6 +2705,10 @@ class Session:
                 self._master_closed = True
                 with contextlib.suppress(OSError):
                     os.close(self._master)
+            # The guardian stops only once the emulator is reaped: stopped earlier, a server
+            # dying in between would leave it unwatched.
+            if self.proc.poll() is not None:
+                guardian.stop(self.guard)
         # None, not -1: `subprocess` encodes a signal death as a NEGATIVE number, so
         # -1 is the genuine code for "killed by SIGHUP" and cannot double as "unknown".
         return self.proc.returncode

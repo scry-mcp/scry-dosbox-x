@@ -15,6 +15,7 @@ import dosbox_declarations as dec
 import dosbox_launch as dlaunch
 import dosbox_paths as paths
 import dosbox_placement as placement
+import dosbox_presence as dpresence
 import dosbox_running as running
 import dosbox_sequence as sequence
 import dosbox_session as ds
@@ -26,7 +27,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
           window_flags: list[str] | None, flags: list[str] | None, break_on_int3: bool,
           program: str, logfile: str, capture_video: bool, captures_dir: str,
           plan: list[dict[str, Any]] | None, settle_seconds: float | None, input_port: int,
-          state_dir: str, binary: str, background: bool | None,
+          state_dir: str, binary: str, background: bool | None, presence: bool,
           progress: ds.Progress, ops: Callable[[], sequence.Ops]) -> dict[str, Any]:
     """The body of the `start` tool; `ops` is the server's step vocabulary, for a `plan`. An
     optional text left empty is not given."""
@@ -141,13 +142,14 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     rearm = arming.arm_at_start(session)   # before the park's survey, so the first stop lists them
     running.observe_stop(session)     # the park at the debugger is the session's first stop
     STATE.found_stop_last = {}        # ...its own, and never a stop "on its own" beside it
+    session.presence = dpresence.open_shown(session, presence, shared)
     # WHERE THE STUB IS, said in the reply: a conf's autoexec that runs its own program has to
     # run the stub first, and a wheel install puts it wherever the package landed.
     started = st.reply(shared=shared, ready_after_s=ready, argv=session.argv, **binary_facts,
                        stub=str(dlaunch.GUEST_DIR / "INJECT.COM"),
                        input_port=contract.or_unavailable(session.launch.input_port,
                                                           "no input route was opened"),
-                       background=launch.background,
+                       background=launch.background, presence=dpresence.of(session).reply(),
                        **rearm)
     if not plan:
         return started
@@ -156,9 +158,27 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     # so a caller sees BOTH that the session came up and what the plan did; a plan that
     # fails leaves the session open at wherever it stopped, exactly as `perform` does.
     settle = sequence.SETTLE_DEFAULT_S if settle_seconds is None else settle_seconds
-    ran = sequence.run_steps(session, plan, settle, ops(), prechecked=True)
+    # A PLAN DRIVES THE MACHINE as `perform` does, so the window is lit while it runs.
+    lit = dpresence.of(session).held
+    if lit is not None:
+        lit.began("perform")
+    try:
+        ran = sequence.run_steps(session, plan, settle, ops(), prechecked=True)
+    finally:
+        if lit is not None:
+            lit.ended("perform")
     return st.extend(ran, start={k: v for k, v in started.items()
                                  if k not in ("status", "session")})
+
+
+def presence_shown(session: ds.Session | None) -> bool | dict[str, Any]:
+    """What `status` says of the presence: the session's, `false` with no session open, and
+    unavailable once its emulator has ended, whatever the last delivery said."""
+    if session is None:
+        return False
+    if not session.alive():
+        return contract.unavailable("the session's emulator has ended")
+    return dpresence.of(session).reply()
 
 
 def close(progress: ds.Progress) -> dict[str, Any]:

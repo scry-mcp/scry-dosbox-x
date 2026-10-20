@@ -8,6 +8,7 @@ import socket
 import threading
 import time
 from collections.abc import Callable, Iterable
+from typing import Any
 
 import pytest
 from scry_core import cancel
@@ -319,3 +320,26 @@ def test_break_in_polls_for_the_cancel_while_it_waits_for_the_prompt(
     with pytest.raises(asyncio.CancelledError):
         ds.Session.break_in(_session(ok=True, parks=False), seconds=5.0)
     assert time.monotonic() - began < 1.0
+
+
+def test_the_channel_takes_one_request_at_a_time_from_any_thread(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    channel = control.ControlChannel(lambda: None)
+    inside: list[int] = []
+    overlaps: list[int] = []
+
+    def slow(command: str, seconds: float, poll: Any) -> tuple[bool, list[str]]:
+        inside.append(1)
+        if len(inside) > 1:
+            overlaps.append(1)
+        time.sleep(0.05)
+        inside.pop()
+        return True, [command]
+    monkeypatch.setattr(channel, "_request", slow)
+    threads = [threading.Thread(target=channel.request, args=(f"PING {n}",)) for n in range(4)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    channel.close()
+    assert overlaps == []

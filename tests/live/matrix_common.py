@@ -240,13 +240,17 @@ def boot(conf: Path = PROBE_CONF, cwd: Path = GUEST, **kw: Any) -> dict[str, Any
     would be a statement about nothing."""
     kw.setdefault("logfile", M.fresh(".log"))
     kw.setdefault("state_dir", M.fresh("-save"))
+    # THE PRESENCE EDGE IS OFF in every start of the matrix but section R's, which asks for it
+    # by name: the matrix is a battery, and the edge is for the person watching a session.
+    kw.setdefault("presence", False)
     r = M.call(server.start, conf=str(conf), cwd=str(cwd), session_seconds=SESSION_S, **kw)
     note_spawn()
     return must(r, "start did not come up")
 
 
 def start_call(**kw: Any) -> dict[str, Any]:
-    """`start` as a cell calls it, its spawn recorded like `boot`'s."""
+    """`start` as a cell calls it, its spawn recorded like `boot`'s, the edge off as there."""
+    kw.setdefault("presence", False)
     r = M.call(server.start, **kw)
     note_spawn()
     return r

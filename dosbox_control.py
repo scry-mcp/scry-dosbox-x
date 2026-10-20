@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import contextlib
 import socket
+import threading
 import time
 from collections.abc import Callable
 
@@ -117,7 +118,8 @@ def _no_poll() -> None:
 
 class ControlChannel:
     """One session's end of the debugger channel: a listener for the session's life, a
-    connection from the first request on, one request in flight at a time."""
+    connection from the first request on, one request in flight at a time. A lock holds that,
+    since the tools and the presence's writer send on it from different threads."""
 
     def __init__(self, exited: Callable[[], int | None]) -> None:
         try:
@@ -129,6 +131,7 @@ class ControlChannel:
         self._exited = exited
         self._buf = b""
         self._next = 1
+        self._in_flight = threading.Lock()
         self.port: int = self._listener.getsockname()[1]
 
     def _connected(self) -> socket.socket:
@@ -167,6 +170,11 @@ class ControlChannel:
         if not command.strip() or "\n" in command or "\r" in command:
             raise Invalid("bad_argument", f"a channel request is one non-empty line; got "
                           f"{command!r}")
+        with self._in_flight:
+            return self._request(command, seconds, poll)
+
+    def _request(self, command: str, seconds: float,
+                 poll: Callable[[], None]) -> tuple[bool, list[str]]:
         conn = self._connected()
         rid = str(self._next)
         self._next += 1

@@ -28,8 +28,11 @@ incomplete or a copy is absent or off its pin. What a run takes from the environ
                                   the state cells need one that carries SAVESTATE and
                                   LOADSTATE
     DOSBOX_X_LIVE_BENCH           the bench's root (`~/.local/share/scry-bench/dosbox-x` unset)
-    DOSBOX_X_LIVE_WINDOW_FLAGS    G: the placement flags of a watched window, one token per
-                                  line
+    DOSBOX_X_LIVE_WINDOW_FLAGS    G and R: the placement flags of a watched window, one token
+                                  per line
+    DOSBOX_X_LEAK_BINARY          R: a scratch build that paints the presence rim where
+                                  capture reads, the red of the evidence cells (BLOCKED unset)
+    DOSBOX_X_STOCK_BINARY         R: a build whose channel has no PRESENCE (BLOCKED unset)
     DOSBOX_X_LIVE_SECTIONS        the letters to run (`ABC`), all of them when unset
     DOSBOX_X_LIVE_JOBS            how many sections run at once, each in a process of its own
                                   (`scry_core.live_pool`); unset, half the host's CPUs; `1`,
@@ -59,6 +62,7 @@ import matrix_dpmi  # noqa: F401 -- registers section F
 import matrix_focus  # noqa: F401 -- registers section O, which opens and closes the run
 import matrix_media  # noqa: F401 -- registers section Q
 import matrix_mouse  # noqa: F401 -- registers section P
+import matrix_presence  # noqa: F401 -- registers section R
 import matrix_probe  # noqa: F401 -- registers sections A to C, H and I
 import matrix_screen  # noqa: F401 -- registers section J
 import matrix_trace  # noqa: F401 -- registers section K
