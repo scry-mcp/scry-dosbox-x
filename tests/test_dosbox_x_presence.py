@@ -53,7 +53,7 @@ class _Session:
 
 
 def _shown(*answers: tuple[bool, list[str]], asked: bool = True,
-           shared: bool = True) -> tuple[dpresence.Shown, _Channel]:
+           shared: bool = True) -> tuple[presence.Shown, _Channel]:
     s = _Session(*answers)
     return dpresence.open_shown(s, asked, shared), s.control
 
@@ -66,7 +66,8 @@ def test_a_build_with_the_command_is_drawn_and_its_answer_kept() -> None:
     assert shown.reply() is True
     assert channel.sent[0].startswith("PRESENCE held rgb=")
     assert channel.sent[0].endswith(" pointer=0")
-    assert shown.adapter is not None and dpresence.frames(shown.adapter.answer) == 3
+    assert isinstance(shown.adapter, dpresence.ChannelAdapter)
+    assert dpresence.frames(shown.adapter.answer) == 3
     shown.close()
 
 
@@ -94,7 +95,7 @@ def test_status_says_false_with_no_session_and_unavailable_once_the_emulator_end
     assert lifecycle.presence_shown(None) is False
 
     class Ended:
-        presence = dpresence.Shown(refused=True)
+        presence = presence.Shown(refused=True)
 
         def alive(self) -> bool:
             return False
@@ -109,15 +110,22 @@ def test_a_stand_in_with_no_presence_reads_as_never_drawn() -> None:
 
 def test_the_first_mouse_move_turns_the_arrow_on_once() -> None:
     shown, channel = _shown(DRAWN, DRAWN, DRAWN)
-    shown.pointer_moved()
-    shown.pointer_moved()
+    dpresence.pointer_moved(shown)
+    dpresence.pointer_moved(shown)
     deadline = time.monotonic() + 5
     while len(channel.sent) < 2 and time.monotonic() < deadline:
         time.sleep(0.01)
     time.sleep(0.1)
     assert len(channel.sent) == 2 and channel.sent[1].endswith(" pointer=1"), channel.sent
     shown.close()
-    dpresence.Shown().pointer_moved()      # no presence: nothing to turn on
+    dpresence.pointer_moved(presence.Shown())      # no presence: nothing to turn on
+
+
+def test_an_output_the_emulator_cannot_draw_on_is_said_unavailable() -> None:
+    shown, _ = _shown((True, ["PRESENCE held frames=0 pointer=0 output=undrawable"]))
+    said = shown.reply()
+    assert isinstance(said, dict) and said["why"] == dpresence.NO_OUTPUT, said
+    assert shown.held is None
 
 
 def test_a_start_parked_before_its_first_frame_is_still_drawn_once_there_is_one() -> None:
@@ -143,9 +151,8 @@ def test_a_start_plan_lights_the_window_while_it_runs(monkeypatch: pytest.Monkey
         def show(self, state: presence.State) -> None:
             shown.append(state)
 
-    def lit(session: Any, asked: bool, shared: bool) -> dpresence.Shown:
-        held, refused = presence.Presence.open(Shows(), {"perform"})
-        return dpresence.Shown(held, refused)
+    def lit(session: Any, asked: bool, shared: bool) -> presence.Shown:
+        return presence.Presence.open(Shows(), ())
 
     import dosbox_sequence as sequence
     real = sequence.run_steps

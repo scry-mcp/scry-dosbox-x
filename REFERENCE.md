@@ -162,18 +162,21 @@ trap written at the stop itself is stepped over, one instruction later it is cau
 **While a session holds the window, the window says so**: an orange edge on the inner sides of
 the picture, dim from `start` to `close`, bright while a call that drives the machine runs (one
 that can move the guest on or change what it holds: it lets the machine run or stops it, feeds
-it input, writes it or restores it, or may: `debug`), fading back to dim over a couple of seconds once the call
-ends, the guest running or held at the debugger. Once the session has moved the guest's mouse
-an orange arrow marks the guest's pointer too; a program driven by keys alone shows the edge
-only. So whoever sits at the host can tell whether to keep their hands off, and whether there
-is still a session to wait for. A machine left running by `resume` shows the dim edge: the
-indicator marks the calls, not the machine. `start(presence=False)` leaves it off.
+it input, writes it or restores it; `debug` counts too, since any command may), fading back to
+dim over a couple of seconds once the call ends, the guest running or held at the debugger.
+Once the session has moved the guest's mouse an orange arrow marks the guest's pointer too; a
+program driven by keys alone shows the edge only. So whoever sits at the host can tell whether
+to keep their hands off, and whether there is still a session to wait for. A machine left
+running by `resume` shows the dim edge: the indicator marks the calls, not the machine.
+`start(presence=False)` leaves it off. The edge's width is a share of the picture DOSBox-X
+scales, so an output that stretches that picture for its aspect stretches the edge with it.
 
 `start` and `status` say `presence`: `true` drawn, `false` asked off (or, in `status`, no
 session open), or unavailable with why: a session started without `shared` has no window to
-draw on, a build whose debugger channel has no `PRESENCE` command cannot draw it, a state that
-could not be delivered says so, and so does a session whose emulator has ended. A
-failure there never changes any other call's reply.
+draw on, a build whose debugger channel has no `PRESENCE` command cannot draw it, nor can an
+8-bit output or the TrueType output while it shows text, a state that could not be delivered
+says so, and so does a session whose emulator has ended. A failure there never changes any
+other call's reply.
 
 **It is drawn by the emulator, never into the evidence.** The channel's `PRESENCE` command has
 DOSBox-X draw it into the scaled output just before a frame is shown, after the frame was handed

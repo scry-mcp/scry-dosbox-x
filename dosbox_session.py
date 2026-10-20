@@ -39,7 +39,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
-from scry_core import avi, cancel, guardian, judges, live_host
+from scry_core import avi, cancel, guardian, judges, live_host, presence
 from scry_core import reply_contract as contract
 from scry_core.progress import PROGRESS_EVERY_S as PROGRESS_EVERY_S
 from scry_core.progress import Progress as Progress
@@ -53,12 +53,14 @@ import dosbox_launch as dlaunch
 import dosbox_paths as paths
 import dosbox_presence as dpresence
 
-#: What this server and the guardian beside every emulator are called in the host's process list.
+#: What this server, and after it the guardian beside every emulator, are called in the host's
+#: process list.
 PROCESS_NAME = "scry-dosbox-x"
-GUARDIAN_NAME = f"{PROCESS_NAME}-guardian"
-#: How far past the bound the guardian waits, so a running guest still ends on its own
-#: `-time-limit`, which quits cleanly and finishes the recording, and the guardian's kill is
-#: left to a machine that made no emulated time.
+GUARDIAN_NAME = guardian.name_of(PROCESS_NAME)
+#: How far past the bound, on the host's clock from the spawn, the guardian waits: a guest
+#: released at once still ends on its own `-time-limit`, which quits cleanly and finishes the
+#: recording. `-time-limit` counts emulated time, so a session that spent its time parked reaches
+#: the guardian's kill first, as the bound on the host's clock says it should.
 GUARDIAN_GRACE_S = 10.0
 
 # The var-list ENCODING lives next door, in a module with no emulator in it, so a
@@ -665,7 +667,7 @@ class Session:
         # `exit_code`, which is the reply that would otherwise be a bare null.
         self.reap_failed = ""
         # The presence of this session (`dosbox_presence`), set by `start`.
-        self.presence = dpresence.Shown()
+        self.presence = presence.Shown()
 
         # THE WHOLE SETUP IS UNDER `finally`, because three calls between opening the
         # terminal and handing it to the child can raise, and on any of them the
@@ -696,7 +698,7 @@ class Session:
                 start_new_session=True, close_fds=True)
             if (ledger := live_host.EmulatorLedger.from_environment()) is not None:
                 ledger.record(self.proc.pid, self.argv[0])
-            self.guard = guardian.spawn(self.proc, GUARDIAN_NAME,
+            self.guard = guardian.spawn(self.proc, PROCESS_NAME,
                                         deadline=time.time() + launch.seconds + GUARDIAN_GRACE_S)
             # STARTED HERE AND NOT LAZILY ON THE FIRST READ: the window this closes
             # is the one between the child being born and the first question, which

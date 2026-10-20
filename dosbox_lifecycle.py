@@ -159,14 +159,8 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     # fails leaves the session open at wherever it stopped, exactly as `perform` does.
     settle = sequence.SETTLE_DEFAULT_S if settle_seconds is None else settle_seconds
     # A PLAN DRIVES THE MACHINE as `perform` does, so the window is lit while it runs.
-    lit = dpresence.of(session).held
-    if lit is not None:
-        lit.began("perform")
-    try:
+    with dpresence.of(session).driving():
         ran = sequence.run_steps(session, plan, settle, ops(), prechecked=True)
-    finally:
-        if lit is not None:
-            lit.ended("perform")
     return st.extend(ran, start={k: v for k, v in started.items()
                                  if k not in ("status", "session")})
 

@@ -1692,7 +1692,7 @@ def send_mouse(x: int | None = None, y: int | None = None, button: str = "",
                                      seconds, bridge(ctx))
     # Read off the state, not `live()`: a session that died after the move went in must not
     # cost the caller the reply that says it was delivered.
-    dpresence.of(STATE.session).pointer_moved()
+    dpresence.pointer_moved(dpresence.of(STATE.session))
     return moved
 
 

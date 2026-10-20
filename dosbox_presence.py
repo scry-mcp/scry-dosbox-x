@@ -12,8 +12,7 @@ session has moved the guest's mouse: a program driven by keys alone shows the ed
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Protocol
+from typing import Protocol
 
 from scry_core import presence
 from scry_core.reply_contract import unavailable
@@ -41,6 +40,9 @@ STILL_TOOLS = frozenset({
 
 #: What a build whose channel lacks the command is said to lack.
 NO_COMMAND = "this DOSBox-X's debugger channel has no PRESENCE command"
+#: What an output the emulator cannot draw on is said to be.
+NO_OUTPUT = ("this output cannot be drawn on (an 8-bit output, or the TrueType output while it "
+             "shows text)")
 #: What a session started without a window is said to lack.
 NO_WINDOW = "a session started without `shared` has no window to draw on"
 
@@ -84,57 +86,41 @@ class ChannelAdapter:
         if not ok:
             raise (presence.Unavailable(NO_COMMAND) if "unknown request command" in said
                    else RuntimeError(f"the debugger channel refused PRESENCE: {said}"))
-        # `output=none` is not refused: a session parked at its start has drawn no frame yet,
-        # and the overlay goes on the first one there is.
         self.answer = lines[0] if lines else ""
+        # `output=none` is not refused: a session parked at its start has drawn no frame yet,
+        # and the overlay goes on the first one there is. An output it can never draw on is.
+        if "output=undrawable" in self.answer.split():
+            raise presence.Unavailable(NO_OUTPUT)
 
 
-@dataclass
-class Shown:
-    """One session's presence: the writer when it is drawn, else what `start` answered about
-    it (`false` asked off, or why it could not be)."""
-
-    held: presence.Presence | None = None
-    refused: bool | dict[str, Any] = False
-    adapter: ChannelAdapter | None = field(default=None, repr=False)
-
-    def reply(self) -> bool | dict[str, Any]:
-        """What `start` and `status` say: `true` drawn, `false` asked off, or why not (the last
-        delivery's failure included)."""
-        return self.held.reply() if self.held is not None else self.refused
-
-    def pointer_moved(self) -> None:
-        """The session moved the guest's mouse: the arrow is drawn from now on."""
-        if self.held is None or self.adapter is None or self.adapter.pointer:
-            return
-        self.adapter.pointer = True
-        self.held.redeliver()
-
-    def close(self) -> None:
-        if self.held is not None:
-            self.held.close()
+def pointer_moved(shown: presence.Shown) -> None:
+    """The session moved the guest's mouse: the arrow is drawn from now on."""
+    adapter = shown.adapter
+    if shown.held is None or not isinstance(adapter, ChannelAdapter) or adapter.pointer:
+        return
+    adapter.pointer = True
+    shown.held.redeliver()
 
 
-NEVER_DRAWN = Shown()
+NEVER_DRAWN = presence.Shown()
 
 
-def of(session: object) -> Shown:
+def of(session: object) -> presence.Shown:
     """The presence of whatever holds the session's place: a stand-in for the session that
     carries none (the suite's doubles) reads as one never drawn."""
     shown = getattr(session, "presence", NEVER_DRAWN)
-    return shown if isinstance(shown, Shown) else NEVER_DRAWN
+    return shown if isinstance(shown, presence.Shown) else NEVER_DRAWN
 
 
-def open_shown(session: HasChannel, asked: bool, shared: bool) -> Shown:
+def open_shown(session: HasChannel, asked: bool, shared: bool) -> presence.Shown:
     """A session's presence, its first state delivered before `start` answers: unavailable with
-    why on a session with no window or on a build whose channel has no `PRESENCE`."""
+    why on a session with no window, on a build whose channel has no `PRESENCE`, or on an output
+    the emulator cannot draw on."""
     if not asked:
-        return Shown()
+        return presence.Shown()
     if not shared:
-        return Shown(refused=unavailable(NO_WINDOW))
-    adapter = ChannelAdapter(session)
-    held, refused = presence.Presence.open(adapter, DRIVING_TOOLS)
-    return Shown(held, refused, adapter)
+        return presence.Shown(refused=unavailable(NO_WINDOW))
+    return presence.Presence.open(ChannelAdapter(session), DRIVING_TOOLS)
 
 
 def frames(answer: str) -> int | None:

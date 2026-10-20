@@ -57,10 +57,6 @@ TO_13H, TO_LAST = 4, 2
 QUIET_S = 0.5
 #: How long each stretch of the spin is recorded with the edge in one state.
 STRETCH_S = 2.0
-#: How far from a side the edge may reach in a capture, and how much of the window the changed
-#: box must span: the edge's width with room for scaling, and the content but the title bar.
-EDGE_REACH = 2.5
-CONTENT_SPAN = 0.75
 #: The most of the window the arrow alone may span: a sprite, nothing like the edge's frame.
 ARROW_SPAN = 0.25
 E9_OPEN = ["-set", "dosbox bochs debug port e9=true"]
@@ -107,7 +103,7 @@ def _by_hand() -> Iterator[dpresence.ChannelAdapter]:
     session = STATE.session
     assert session is not None
     session.presence.close()
-    session.presence = dpresence.Shown()
+    session.presence = presence.Shown()
     time.sleep(QUIET_S)
     try:
         yield dpresence.ChannelAdapter(session)
@@ -313,11 +309,12 @@ def _arrow(label: str) -> None:
     time.sleep(presence.LOOK.fade_s + QUIET_S)
     after = _window("after-mouse")
     shown = dpresence.of(STATE.session)
-    answer = shown.adapter.answer if shown.adapter is not None else ""
+    adapter = shown.adapter if isinstance(shown.adapter, dpresence.ChannelAdapter) else None
+    answer = adapter.answer if adapter is not None else ""
     # THE CONTROL: the same screen with the arrow turned off. Whatever the guest drew of its own
     # for the move is in both captures, so what differs is the arrow alone.
-    if shown.adapter is not None and shown.held is not None:
-        shown.adapter.pointer = False
+    if adapter is not None and shown.held is not None:
+        adapter.pointer = False
         shown.held.redeliver()
     time.sleep(QUIET_S)
     hidden = _window("arrow-off")
@@ -331,7 +328,7 @@ def _arrow(label: str) -> None:
         else:
             M.judge(label, ok(moved) and "pointer=1" in answer and d.changed > 0
                     and max(d.span) < ARROW_SPAN
-                    and d.deepest > EDGE_REACH * presence.LOOK.edge,
+                    and d.deepest > window_capture.EDGE_REACH * presence.LOOK.edge,
                     f"{said(moved)}; emulator {answer!r}; {d.changed} pixels changed over "
                     f"{d.span[0]:.2f} x {d.span[1]:.2f} of the window, the deepest "
                     f"{d.deepest:.3f} of the box's shorter side in")
@@ -344,12 +341,4 @@ def _judge_window(label: str, off: window_capture.Image, on: window_capture.Imag
     except ValueError as e:
         M.block(label, f"the window changed between its two captures: {e}")
         return
-    reach = EDGE_REACH * presence.LOOK.edge
-    x0, y0, x1, y1 = d.box
-    perimeter = 2 * ((x1 - x0) + (y1 - y0))
-    M.judge(label, d.changed >= perimeter and min(d.span) >= CONTENT_SPAN and min(d.sides) > 0
-            and d.deepest <= reach and d.delta[0] > d.delta[1] > d.delta[2],
-            f"{d.changed} pixels changed (a frame of the box needs {perimeter}) over "
-            f"{d.span[0]:.2f} x {d.span[1]:.2f} of the window, by side {d.sides}, the deepest "
-            f"{d.deepest:.4f} of the box's shorter side in (bound {reach:.4f}), mean change "
-            f"{tuple(round(v, 1) for v in d.delta)}")
+    M.judge(label, *window_capture.edge_verdict(d))

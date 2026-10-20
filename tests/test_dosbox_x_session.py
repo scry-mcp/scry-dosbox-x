@@ -2777,5 +2777,6 @@ def test_the_session_spawns_a_named_guardian_with_its_wall_clock_bound(
     before = time.time()
     with pytest.raises(OSError, match="stop here"):
         ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=90))
-    assert seen and seen[0][0] == ds.GUARDIAN_NAME == "scry-dosbox-x-guardian"
+    assert seen and seen[0][0] == ds.PROCESS_NAME
+    assert ds.GUARDIAN_NAME == "scry-dosbox-x-guardian"
     assert before + 90 + ds.GUARDIAN_GRACE_S <= seen[0][1] <= time.time() + 90 + ds.GUARDIAN_GRACE_S
