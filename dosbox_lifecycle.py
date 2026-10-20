@@ -25,7 +25,7 @@ from dosbox_state import STATE
 def start(conf: str, cwd: str, session_seconds: int, shared: bool,
           window_flags: list[str] | None, flags: list[str] | None, break_on_int3: bool,
           program: str, logfile: str, capture_video: bool, captures_dir: str,
-          plan: list[dict[str, Any]] | None, settle_seconds: float, input_port: int,
+          plan: list[dict[str, Any]] | None, settle_seconds: float | None, input_port: int,
           state_dir: str, binary: str, background: bool | None,
           progress: ds.Progress, ops: Callable[[], sequence.Ops]) -> dict[str, Any]:
     """The body of the `start` tool; `ops` is the server's step vocabulary, for a `plan`. An
@@ -140,6 +140,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     STATE.clear_running_state()
     rearm = arming.arm_at_start(session)   # before the park's survey, so the first stop lists them
     running.observe_stop(session)     # the park at the debugger is the session's first stop
+    STATE.found_stop_last = {}        # ...its own, and never a stop "on its own" beside it
     # WHERE THE STUB IS, said in the reply: a conf's autoexec that runs its own program has to
     # run the stub first, and a wheel install puts it wherever the package landed.
     started = st.reply(shared=shared, ready_after_s=ready, argv=session.argv, **binary_facts,
@@ -154,7 +155,8 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     # uses, so the two moments cannot drift. The started-reply is folded in under `start`
     # so a caller sees BOTH that the session came up and what the plan did; a plan that
     # fails leaves the session open at wherever it stopped, exactly as `perform` does.
-    ran = sequence.run_steps(session, plan, settle_seconds, ops(), prechecked=True)
+    settle = sequence.SETTLE_DEFAULT_S if settle_seconds is None else settle_seconds
+    ran = sequence.run_steps(session, plan, settle, ops(), prechecked=True)
     return st.extend(ran, start={k: v for k, v in started.items()
                                  if k not in ("status", "session")})
 

@@ -417,9 +417,12 @@ def reply(status: str = "ok", **fields: Any) -> dict[str, Any]:
     contract's guard: an INVALID with no `code` of the table, no `message`, or a retired
     spelling (`reason`) is a programmer's error here and never a reply."""
     out: dict[str, Any] = {"status": status}
+    # A REFUSAL READS ITS CODE AND ITS MESSAGE FIRST, whatever account it carries after them.
+    out.update({k: fields.pop(k) for k in ("code", "message") if k in fields})
     out.update(fields)
-    # A NOTE APPEARS ONLY WHEN SOMETHING IS SAID: a body that had nothing to say passes None.
-    if out.get("note", "") is None:
+    # A NOTE APPEARS ONLY WHEN SOMETHING IS SAID: a body that had nothing to say passes None or
+    # an empty one.
+    if "note" in out and not out["note"]:
         del out["note"]
     if STATE.applied_last and "applied_on_stop" not in out:
         out["applied_on_stop"] = dict(STATE.applied_last)
@@ -467,6 +470,12 @@ def answer(fields: dict[str, object]) -> dict[str, Any]:
     is confined to this one line rather than repeated at three call sites.
     """
     return reply(**cast(dict[str, Any], fields))
+
+
+#: The tail of the console text `debug` hands back, and the shorter one `detail=True` adds to an
+#: advance or an interrupt arming, whose parsed fields are the answer.
+DEBUG_TEXT_KEEP = 4000
+DETAIL_TEXT_KEEP = 2000
 
 
 def delta(out: str, keep: int) -> dict[str, Any]:

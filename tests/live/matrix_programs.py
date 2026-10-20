@@ -84,7 +84,7 @@ def program_timer(load: int) -> str:
 
     if not hooked({}):
         resume_until(hooked, "the program hooking INT 8", 8)
-    must(M.call(server.watch_clear), "clearing the change watch")
+    must(M.call(server.watch_clear, all=True), "clearing the change watch")
     return found
 
 
@@ -102,11 +102,11 @@ def slow_control(load: int) -> str | None:
 
 def run_for(control: str, seconds: float) -> dict[str, Any]:
     """Let the machine run for `seconds` and come back stopped: `run_to` a byte nothing
-    executes with a handler of the program's as the control. The docstring allows a run whose
-    bound expired to come back still running; the callers read memory next, so that outcome
-    is refused here, named, rather than met as a reader's `not_stopped`."""
+    executes with a handler of the program's as the control. The bound interrupts the run, so it
+    always comes back stopped; the callers read memory next, so a reply that says otherwise is
+    refused here, named, rather than met as a reader's `not_stopped`."""
     r = M.call(server.run_to, ref=NEVER_RUNS_TARGET, seconds=seconds, control=control)
-    if not (ok(r) and r.get("running") is False):
+    if not (ok(r) and (r.get("session") or {}).get("running") is False):
         raise RuntimeError(f"the run for {seconds:g} s did not come back stopped: {said(r)}")
     return r
 
@@ -158,7 +158,7 @@ def key_reaches_int9(key: str) -> bool:
     must(M.call(server.send_keys, keys=[key]), f"posting {key}")
     deadline = time.monotonic() + KEY_ARRIVAL_S
     while time.monotonic() < deadline:
-        if M.call(server.status).get("cpu_mode") is not None:
+        if isinstance(M.call(server.status).get("cpu_mode"), str):
             must(M.call(server.breakpoint_clear, ref="BPINT 09"), "clearing INT 9")
             return True
         time.sleep(0.25)
@@ -183,7 +183,7 @@ def sym(name: str) -> tuple[int, int]:
     keeps the linear address's parity, which is what a word scan lines up on."""
     r = M.call(server.symbols_find, name=name)
     rows = [s for s in r.get("symbols") or [] if s.get("name") == name]
-    lin = hexint(rows[0].get("linear")) if ok(r) and rows else None
+    lin = hexint(rows[0].get("addr")) if ok(r) and rows else None
     if lin is None:
         raise RuntimeError(f"{name} is not in the table: {said(r)}")
     seg = (lin >> 4) - 0x100

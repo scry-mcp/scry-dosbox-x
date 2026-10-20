@@ -29,6 +29,7 @@ from matrix_common import (
     dump_to_file,
     hexint,
     must,
+    no_session,
     ok,
     refused,
     said,
@@ -51,6 +52,8 @@ PERFORM_CELL = "L perform runs find, debug and state_list as steps"
 LISTED_CELL = ("L a refusal on a running guest lists breakpoint_at, stop and close as "
                "answering")
 PENDING_CELL = "L a breakpoint_at step after a release answers pending, and the run stops"
+CLEAR_CELL = ("L all=True clears every breakpoint, and every watch; no ref, an empty ref and "
+              "both are refused")
 WINDOWS_CELL = ("L memdump 0000:0000 x 1 MiB holds in windows 1, 9, 12 and 15 what each "
                 "segment holds there, not window 0")
 #: Places in four windows of the megabyte whose bytes are not zero on the probe (the program
@@ -79,7 +82,7 @@ L_CELLS = cells(
      "REFERENCE.md, The session: a dangling link is a file there"),
     ("L a relative dangling LOGCPU.TXT is refused before LOG",
      "REFERENCE.md, The session: a dangling link is a file there"),
-    (CONSOLE_CELL, "debug docstring: a refusal types nothing"),
+    (CONSOLE_CELL, "debug docstring: refused `bad_argument` before anything is typed"),
     ("L start with cwd from an unknown ~user is refused naming cwd, nothing started",
      "start docstring: every path is absolute or `~`-led, `~` expanded"),
     ("L start with a relative conf is refused naming conf, nothing started",
@@ -93,17 +96,19 @@ L_CELLS = cells(
      "REFERENCE.md, The session: nothing at a file a tool writes, a dangling link included"),
     ("L with no session, a value wrong with no machine answers bad_argument, never no_session",
      "REFERENCE.md, What every reply carries: judged before the session gate"),
-    ("L an empty ref clears every breakpoint, and every watch",
-     "breakpoint_clear and watch_clear docstrings: an empty ref"),
-    (PERFORM_CELL, "perform docstring: every tool but five is a step"),
+    (CLEAR_CELL, "breakpoint_clear and watch_clear docstrings: all with `all=True`; neither `ref` "
+                 "nor `all`, or both, is `bad_argument`"),
+    (PERFORM_CELL, "perform docstring: every tool but `build_check`, `start`, `close`, "
+                   "`perform`, `drive` and `perform_export` is a step"),
     (LISTED_CELL, "REFERENCE.md, Sequences in one call: the one table"),
-    (PENDING_CELL, "perform docstring: a declaration after a release answers `pending`"),
+    (PENDING_CELL, "perform docstring: after a `resume` the steps `answers_while_running` lists "
+                   "run at once; breakpoint_at docstring: `pending` while the guest is running"),
 )
 #: Each wrong with no machine at all: a state name, a scan, a register, a bound, a list.
 NO_MACHINE_NEEDED: tuple[tuple[str, dict[str, Any]], ...] = (
     ("state_save", {"name": "abc\n", "seconds": 5}), ("state_load", {"name": "1", "seconds": 5}),
     ("state_save", {"name": "a" * 65, "seconds": 5}), ("scan_filter", {"operator": "?"}),
-    ("scan_start", {"ref": "0000:0400", "length": 3, "width": "word"}),
+    ("scan_start", {"ref": "0000:0400", "length": 3, "cell_bytes": 2}),
     ("set_register", {"name": "ax", "value": 0x10000}), ("resume", {"seconds": -1}),
     ("run_to", {"ref": "0000:0100", "control": ""}),
     ("breakpoint_at", {"ref": "[g_p]", "by": "pointer"}),
@@ -112,7 +117,7 @@ NO_MACHINE_NEEDED: tuple[tuple[str, dict[str, Any]], ...] = (
 DEST_TOOLS: tuple[tuple[str, dict[str, Any]], ...] = (
     ("memdump", {"ref": f"{PROBE_SEG:04X}:0000", "length": 0x10}),
     ("trace", {"instructions": 16, "shape": "cs_ip", "seconds": 30}),
-    ("palette", {}), ("screen_view", {}), ("snapshot", {}), ("capture_frame", {"at": 0}))
+    ("palette", {}), ("screen_view", {}), ("snapshot", {}), ("capture_frame", {"frame": 0}))
 
 
 @contextmanager
@@ -148,7 +153,7 @@ def section_l() -> None:
     state_dir = Path(M.fresh("-states"))
     boot(state_dir=str(state_dir))
     settle = must(M.call(server.run_for, frames=2), "into the settle loop")
-    if hexint((settle.get("stopped_at") or {}).get("cs")) != PROBE_SEG:
+    if hexint(str(settle.get("pc")).split(":")[0]) != PROBE_SEG:
         M.block_rest(f"run_for(frames=2) did not stop in the probe's segment: {said(settle)}")
         return
     M.setup()
@@ -175,23 +180,23 @@ def _start_refusals() -> None:
     """With no session yet, so each refusal is the path's and never `session_live`; a start
     that came up instead of refusing is closed at once, so the next cell judges its own call."""
     # A `~` IS EXPANDED, so the refusal left to judge is a home this host cannot find.
-    r = M.call(server.start, conf=str(PROBE_CONF), cwd=f"{UNKNOWN_HOME}/x", seconds=60)
+    r = M.call(server.start, conf=str(PROBE_CONF), cwd=f"{UNKNOWN_HOME}/x", session_seconds=60)
     _close_if_up(r)
     M.judge("L start with cwd from an unknown ~user is refused naming cwd, nothing started",
             refused(r, "bad_argument") and "cwd=" in str(r.get("message"))
             and "home directory this host cannot find" in str(r.get("message"))
-            and r.get("session") is None, said(r))
-    r = M.call(server.start, conf="probe.conf", cwd=str(GUEST), seconds=60)
+            and no_session(r), said(r))
+    r = M.call(server.start, conf="probe.conf", cwd=str(GUEST), session_seconds=60)
     _close_if_up(r)
     M.judge("L start with a relative conf is refused naming conf, nothing started",
             refused(r, "bad_argument") and "conf='probe.conf'" in str(r.get("message"))
-            and r.get("session") is None, said(r))
-    r = M.call(start_through_the_schema, conf=str(PROBE_CONF), cwd=str(GUEST), seconds=60,
-               savedir=M.fresh("-states"))
+            and no_session(r), said(r))
+    r = M.call(start_through_the_schema, conf=str(PROBE_CONF), cwd=str(GUEST),
+               session_seconds=60, savedir=M.fresh("-states"))
     _close_if_up(r)
     M.judge("L start(savedir=) is refused by the schema",
             refused(r, "bad_argument") and "savedir" in str(r.get("message"))
-            and r.get("session") is None, said(r))
+            and no_session(r), said(r))
 
 
 def _close_if_up(r: dict[str, Any]) -> None:
@@ -210,20 +215,28 @@ def _no_machine_needed() -> None:
 
 
 def _empty_ref_clears() -> None:
-    """Two breakpoint declarations and two watches, each family cleared whole by an empty ref,
-    the other left alone until its own broom."""
+    """Two breakpoint declarations and two watches, each family cleared whole by `all=True`, the
+    other left alone until its own broom; an empty ref, no scope at all and both are refused and
+    clear nothing."""
     cs = f"{PROBE_SEG:04X}"
     for r in (M.call(server.breakpoint_at, ref=f"{cs}:0108"),
               M.call(server.breakpoint_interrupt, number=0x60),
               M.call(server.watch_add, ref=f"{cs}:0100", mode="show", length=2),
               M.call(server.watch_add, ref=f"{cs}:0102", mode="show", length=2)):
         must(r, "declaring before the brooms")
-    bps = M.call(server.breakpoint_clear, ref="")
+    unscoped = [M.call(server.breakpoint_clear, ref=""), M.call(server.breakpoint_clear),
+                M.call(server.breakpoint_clear, ref="x", all=True),
+                M.call(server.watch_clear, ref=""), M.call(server.watch_clear),
+                M.call(server.watch_clear, ref="x", all=True)]
+    kept = M.call(server.watch_list)
+    bps = M.call(server.breakpoint_clear, all=True)
     left = M.call(server.watch_list)
-    ws = M.call(server.watch_clear, ref="")
+    ws = M.call(server.watch_clear, all=True)
     after = M.call(server.breakpoint_list)
-    M.judge("L an empty ref clears every breakpoint, and every watch",
-            ok(bps) and bps.get("declarations_cleared") == 2 and ok(ws)
+    M.judge(CLEAR_CELL,
+            all(refused(r, "bad_argument") for r in unscoped)
+            and len(kept.get("watches") or []) == 2
+            and ok(bps) and bps.get("declarations_cleared") == 2 and ok(ws)
             and ws.get("declarations_cleared") == 2 and len(left.get("watches") or []) == 2
             and ok(after) and not after.get("breakpoints"),
             f"{said(bps, 60)}; {said(ws, 60)}")
@@ -266,12 +279,13 @@ def _running_table() -> None:
         M.block_rest(f"the probe did not stop at .pause: {said(found)}")
         return
     r = M.call(server.perform, steps=[
-        {"op": "resume"}, {"op": "breakpoint_at", "ref": at(_probe_offset("start"))}], wait=10)
+        {"op": "resume"}, {"op": "breakpoint_at", "ref": at(_probe_offset("start"))}],
+        settle_seconds=10)
     ran = r.get("ran") or []
     declared = ran[1].get("reply") or {} if len(ran) > 1 else {}
     M.judge(PENDING_CELL, ok(r) and declared.get("state") == "pending"
             and bool(r.get("stopped")), said(r))
-    M.call(server.breakpoint_clear, ref="")
+    M.call(server.breakpoint_clear, all=True)
 
 
 def _state_dir_named(state_dir: Path) -> None:

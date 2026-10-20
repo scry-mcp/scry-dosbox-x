@@ -81,7 +81,7 @@ def section_e() -> None:
     boot(conf=bp.session_conf(program, Path(M.fresh("-conf"))), cwd=program.root,
          program=bp.DOS_REAL16_ALT.launch, input_port=free_port())
     M.setup()
-    r = M.call(server.symbols_load, source=str(mapf), base="0")
+    r = M.call(server.symbols_load, path=str(mapf), base="0")
     judged("E symbols_load refuses a map with no publics", reply=r,
            holds=refused(r, "bad_argument") and "Publics by" in str(r.get("message")))
     exec_of(bp.DOS_REAL16_ALT.process)
@@ -91,8 +91,8 @@ def section_e() -> None:
     timer = program_timer(psp)
     r = run_for(timer, 8)
     judged("E run_to with the game's timer as control runs for a bound and rests on it",
-           reply=r, holds=ok(r) and r.get("verdict") == "OTHER_STOP"
-           and int((r.get("control") or {}).get("hits") or 0) > 0)
+           reply=r, holds=ok(r) and r.get("verdict") == "TIMEOUT"
+           and int(r.get("control_hits") or 0) > 0)
     stub = stub_cell("E the stub announces the serial route")
     if e9:
         r = M.call(server.log_wait, pattern=re.escape(bp.DOS_REAL16_ALT.e9_line), channel="guest",
@@ -129,20 +129,20 @@ def _moves(control: str, data: int) -> None:
     across two runs of a few seconds, and one survivor read, written and read back."""
     for start in range(0, 0x10000, SCAN_WINDOW):
         opened = M.call(server.scan_start, ref=f"{data:04X}:{start:04X}", length=SCAN_WINDOW,
-                        width="word")
+                        cell_bytes=2)
         run_for(control, 4)
         first = M.call(server.scan_filter, operator="!")
-        if not ok(first) or not 1 <= int(first.get("survivors") or 0) <= 400:
+        if not ok(first) or not 1 <= int(first.get("hits_total") or 0) <= 400:
             M.call(server.scan_clear)
             continue
         run_for(control, 4)
         second = M.call(server.scan_filter, operator="!", limit=400)
         hits = second.get("hits") or []
         M.judge(MOVES_CELL, ok(opened) and ok(second) and 1 <= len(hits) <= 400,
-                f"window {data:04X}:{start:04X}, {first.get('survivors')} then "
-                f"{second.get('survivors')} survivors")
+                f"window {data:04X}:{start:04X}, {first.get('hits_total')} then "
+                f"{second.get('hits_total')} survivors")
         if hits:
-            _confirm(str(hits[0].get("address")), hexint(hits[0].get("value")) or 0)
+            _confirm(str(hits[0].get("seg_off")), hexint(hits[0].get("value")) or 0)
         else:
             M.block(SURVIVOR_CELL, "no survivor listed")
         return
@@ -153,7 +153,7 @@ def _moves(control: str, data: int) -> None:
 def _coin(control: str, data: int) -> None:
     """With the serial route alive: a coin (Tab), its `Credits: N` on E9, and a scan over the
     data segment narrowed by that value."""
-    opened = M.call(server.scan_start, ref=f"{data:04X}:0000", length=0x8000, width="word")
+    opened = M.call(server.scan_start, ref=f"{data:04X}:0000", length=0x8000, cell_bytes=2)
     try:
         reached = key_reaches_int9("tab")
     except RuntimeError as exc:
@@ -182,6 +182,6 @@ def _coin(control: str, data: int) -> None:
     M.judge(KEY_CELLS[2], ok(opened) and ok(moved) and ok(kept) and 1 <= len(hits) <= 400,
             f"value {value}: {said(kept, 80)}")
     if hits:
-        _confirm(str(hits[0].get("address")), value)
+        _confirm(str(hits[0].get("seg_off")), value)
     else:
         M.block(SURVIVOR_CELL, "no survivor to confirm")

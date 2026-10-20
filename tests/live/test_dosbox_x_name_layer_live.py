@@ -79,10 +79,10 @@ def test_the_name_layer_arms_lists_and_clears_against_a_real_program(
 
     # Clear removes the declarations AND disarms what the store placed: the two code
     # breakpoints and the interrupt, read back off the debugger's list.
-    bc = cast(dict[str, Any], server.breakpoint_clear())
+    bc = cast(dict[str, Any], server.breakpoint_clear(all=True))
     assert bc["declarations_cleared"] == 3 and len(bc["disarmed"]) == 3, bc
     assert "BPINT 21" in bc["disarmed"], bc
-    wc = cast(dict[str, Any], server.watch_clear())
+    wc = cast(dict[str, Any], server.watch_clear(all=True))
     assert wc["declarations_cleared"] == 1, wc
     after = cast(dict[str, Any], server.breakpoint_list())
     assert after["breakpoints"] == [], after

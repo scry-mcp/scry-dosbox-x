@@ -134,7 +134,8 @@ def against_the_pane(reply: dict[str, Any], names: dict[str, int]) -> control.Ve
     """`disassemble`'s listing, as the reply wrote it, against the pane walked over the same
     bytes; a line of the reply the walk never showed is a disagreement, so a short walk cannot
     pass for a whole one."""
-    seg, off, length = int(reply["segment"]), int(reply["offset"]), int(reply["length"])
+    seg_text, off_text = str(reply["seg_off"]).split(":")
+    seg, off, length = int(seg_text, 16), int(off_text, 16), int(reply["length"])
     said_lines = [_said(line, flow) for line, flow in
                   zip(reply.get("lines") or [], reply.get("flow") or [], strict=False)]
     pane = walk_pane(seg, off, off + length)
@@ -200,7 +201,7 @@ def _code_guest() -> None:
     M.judge("M the code guest's pane agrees with disassemble, FE /7 excepted",
             v.compared > 0 and not v.disagreements and v.excepted == ["0814:0000013C"],
             f"{v.compared} compared, excepted {v.excepted}, {v.disagreements[:2]}")
-    must(M.call(server.symbols_load, source=str(GUEST / "code.sym"), base=GUEST_BASE),
+    must(M.call(server.symbols_load, path=str(GUEST / "code.sym"), base=GUEST_BASE),
          "loading code.sym")
     must(M.call(server.breakpoint_at, ref="middle"), "arming middle")
     must(M.call(server.resume, seconds=30), "running to middle")
@@ -208,21 +209,20 @@ def _code_guest() -> None:
     rows = [(c.get("symbol"), c.get("via")) for c in entry.get("calls") or []]
     M.judge("M call_stack at middle's first byte reads outer off SP, via entry",
             ok(entry) and rows[:2] == [("middle", "stop"), ("outer", "entry")], str(rows))
-    must(M.call(server.breakpoint_clear), "clearing middle")
+    must(M.call(server.breakpoint_clear, all=True), "clearing middle")
     inner = M.call(server.resume, seconds=30)
     _inner_stack()
     pic = inner.get("instruction") or {}
     M.judge("M the int 3 in inner names inner and its delta",
-            ok(inner) and pic.get("at") == "0814:00000167" and pic.get("text") == "int 3"
+            ok(inner) and pic.get("seg_off") == "0814:00000167" and pic.get("text") == "int 3"
             and (pic.get("symbol"), pic.get("delta")) == ("inner", 0x167 - 0x15E), str(pic))
     must(M.call(server.debug, command="C 0000:0000"), "moving the pane away")
     parked = M.call(server.run_for, frames=1)
     pic = parked.get("instruction") or {}
-    at = parked.get("stopped_at") or {}
     M.judge("M after a C elsewhere, the next stop's instruction is still the park's jmp",
-            ok(parked) and pic.get("at") == f"{at.get('cs')}:{at.get('eip')}" == "0814:0000013A"
+            ok(parked) and pic.get("seg_off") == parked.get("pc") == "0814:0000013A"
             and pic.get("bytes") == "EBFE" and pic.get("symbol") == "park",
-            f"{pic.get('at')} {pic.get('bytes')} {pic.get('bytes_from')} {pic.get('symbol')}")
+            f"{pic.get('seg_off')} {pic.get('bytes')} {pic.get('bytes_from')} {pic.get('symbol')}")
     must(M.call(server.close), "closing the code guest")
 
 
@@ -239,20 +239,19 @@ def _inner_stack() -> None:
             f"{names}; E9 entered {entered}; {walked.get('ended_why')}")
     far = calls[2] if len(calls) > 2 else {}
     M.judge("M call_stack's far row is in the far pointer's segment and its call is the far one",
-            str(far.get("addr", "")).startswith(f"{LOAD}:")
+            str(far.get("seg_off", "")).startswith(f"{LOAD}:")
             and str(far.get("call", "")).startswith("lcall"), str(far))
     seq = M.call(server.perform, steps=[{"op": "disassemble", "ref": "inner", "length": 8},
                                         {"op": "call_stack"}])
     judged("M perform runs disassemble and call_stack as steps", reply=seq,
-           holds=ok(seq) and seq.get("completed") == 2)
+           holds=ok(seq) and seq.get("steps_completed") == 2)
 
 
 def _first_stop(stop: dict[str, Any]) -> None:
     pic = stop.get("instruction") or {}
-    at = stop.get("stopped_at") or {}
-    one = M.call(server.disassemble, ref=str(pic.get("at", f"{LOAD}:0102")), length=1)
+    one = M.call(server.disassemble, ref=str(pic.get("seg_off", f"{LOAD}:0102")), length=1)
     M.judge("M the first int 3's stop carries its instruction off the pane, as disassemble "
-            "reads it", ok(stop) and pic.get("at") == f"{at.get('cs')}:{at.get('eip')}"
+            "reads it", ok(stop) and pic.get("seg_off") == stop.get("pc")
             and pic.get("bytes_from") == "code pane"
             and [ln.split(None, 2)[-1] for ln in one.get("lines") or []] == [pic.get("text")],
             f"{pic} / {one.get('lines')}")
@@ -285,7 +284,7 @@ def _probe() -> None:
     must(M.call(server.run_for, frames=1), "a retrace into the probe's settle loop")
     bare = M.call(server.disassemble, ref=f"{LOAD}:010B", length=32)
     judged("M no resolved without a table", reply=bare, holds=ok(bare) and "resolved" not in bare)
-    must(M.call(server.symbols_load, source=str(GUEST / "probe.sym"), base=GUEST_BASE),
+    must(M.call(server.symbols_load, path=str(GUEST / "probe.sym"), base=GUEST_BASE),
          "loading probe.sym")
     r = M.call(server.disassemble, ref="start", length=32)
     v = against_the_pane(r, {}) if ok(r) else control.Verdict(0, [said(r)], [])
@@ -309,7 +308,7 @@ def _probe() -> None:
            holds=refused(past, "bad_argument") and "at most 8 bytes" in str(past.get("message")))
     seq = M.call(server.perform, steps=[{"op": "disassemble", "ref": "emit", "length": 8}])
     judged("M perform runs disassemble as a step", reply=seq,
-           holds=ok(seq) and seq.get("completed") == 1)
+           holds=ok(seq) and seq.get("steps_completed") == 1)
     release_running()
     M.setup()
     run = M.call(server.disassemble, ref="start", length=8)
@@ -357,7 +356,8 @@ def dos_real16_code() -> None:
         r = M.call(server.disassemble, ref=this.name, length=length)
         calls = [row for row in r.get("resolved") or []
                  if row.get("kind") == "target" and row.get("delta") == 0
-                 and row.get("symbol") in publics - {this.name}
+                 and isinstance(row.get("symbol"), str)
+                 and row["symbol"] in publics - {this.name}
                  and (r.get("flow") or [])[int(row["line"])] == "call"]
         if ok(r) and calls:
             chosen = (this.name, r, calls[0])
@@ -370,13 +370,14 @@ def dos_real16_code() -> None:
     name, r, call = chosen
     v = against_the_pane(r, {})
     M.judge(labels[0], v.compared > 0 and not v.disagreements,
-            f"{name} at {r['segment']:04X}:{r['offset']:04X}, {v.compared} compared, "
+            f"{name} at {r['seg_off']}, {v.compared} compared, "
             f"{v.disagreements[:2]}")
     at = int(r["lines"][int(call["line"])].split()[0].split(":")[1], 16)
-    pane = [p for p in walk_pane(int(r["segment"]), at, at + 1) if p.offset == at]
+    segment = int(str(r["seg_off"]).split(":")[0], 16)
+    pane = [p for p in walk_pane(segment, at, at + 1) if p.offset == at]
     shown = {int(n, 16) for n in re.findall(r"[0-9A-F]+", pane[0].text)} if pane else set()
     calls_there = bool(pane) and pane[0].text.startswith("call") \
-        and int(call["offset"], 16) in shown
+        and int(str(call["seg_off"]).split(":")[1], 16) in shown
     M.judge(labels[1], calls_there, f"{name} line {call['line']} calls {call['symbol']}; the "
             f"pane there: {pane[0].text if pane else 'not shown'}")
 
@@ -394,13 +395,13 @@ def dpmi_code() -> None:
             f"{len(wide)} lines with a 32-bit operand")
     # The code segment runs on past 64 KiB, so a listing ending just below FFFF has a last line
     # that straddles it: its bytes are held against one data-view read of the same span.
-    seg = r.get("segment")
+    seg = int(str(r["seg_off"]).split(":")[0], 16) if ok(r) else None
     near = M.call(server.disassemble, ref=f"{seg:04X}:0000FFF0", length=16) \
-        if isinstance(seg, int) else {}
+        if seg is not None else {}
     got = _bytes_of(near.get("lines") or []) if ok(near) else b""
     session = dstate.STATE.session
     seen = session.read_bytes(seg, 0xFFF0, len(got)) \
-        if got and isinstance(seg, int) and session is not None else b""
+        if got and seg is not None and session is not None else b""
     M.judge(DPMI_CODE_CELLS[1][0], ok(near) and "unknown" not in (near.get("flow") or [])
             and len(got) > 0x10 and got == seen,
             f"{(near.get('lines') or [said(near)])[-1:]}, {len(got)} bytes, "

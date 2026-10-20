@@ -61,8 +61,8 @@ def test_a_stop_carries_the_registers_watches_attribution_and_e9(
     # reach_realmode left INT 21 armed and the guest at its loop; the next resume stops
     # again, and THAT reply is the enriched one under test.
     out = cast(dict[str, Any], server.resume())
-    assert out["status"] == "ok" and out["halted"], out
-    assert isinstance(out.get("registers"), dict) and out["registers"], out
+    assert out["status"] == "ok" and "pc" in out, out
+    assert isinstance(out.get("regs"), dict) and out["regs"], out
 
     watched = {x["ref"]: x for x in out["watches"]}
     assert watch in watched, out
@@ -93,24 +93,25 @@ def test_a_djgpp_stop_returns_named_globals_together_with_the_e9_summary(
     stop it was heading for and hands back the enriched reply at it."""
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
     reach_djgpp(logfile=str(tmp_path / "guest.log"))
-    load = cast(dict[str, Any], server.symbols_load(source=str(guest.SYM)))
+    load = cast(dict[str, Any], server.symbols_load(path=str(guest.SYM)))
     assert load["status"] == "ok", load
     for name in guest.WATCHES:
         w = cast(dict[str, Any], server.watch_add(ref=name, mode="show", length=4, fmt="i32"))
-        assert w["status"] == "ok" and w["state"] == "resolved", w
+        assert w["status"] == "ok" and w["state"] == "evaluated", w
     bp = cast(dict[str, Any], server.breakpoint_at(ref=guest.STOP))
     assert bp["status"] == "ok" and bp["armed"] is True, bp
     gone = cast(dict[str, Any], server.breakpoint_clear(ref="BPINT 31 AH=00"))
     assert gone["status"] == "ok", gone
 
-    ran = cast(dict[str, Any], server.perform(steps=[{"op": "resume"}], wait=STOP_WAIT_S))
-    assert ran["status"] == "ok" and ran["failed_at"] is None, ran
+    ran = cast(dict[str, Any], server.perform(steps=[{"op": "resume"}],
+                                                settle_seconds=STOP_WAIT_S))
+    assert ran["status"] == "ok" and ran["failed_at"]["available"] is False, ran
     # The enriched reply sits on the resume's own reply when it halted at once, else in
     # `stopped`, written by the tail that waited for it.
     out = cast(dict[str, Any], ran.get("stopped") or ran["ran"][-1]["reply"])
     assert out.get("attribution", {}).get("attributed") is True, out
     assert out["attribution"]["ref"] == guest.STOP, out["attribution"]
-    assert isinstance(out["registers"], dict) and out["registers"], out
+    assert isinstance(out["regs"], dict) and out["regs"], out
     watched = {x["ref"]: x for x in out["watches"]}
     for name in guest.WATCHES:
         assert name in watched, out

@@ -31,7 +31,7 @@ def _replay(document: Path, transcript: Path) -> subprocess.CompletedProcess[str
 
 def test_a_bricks_session_replays_twice_and_an_edited_one_diverges(tmp_path: Path) -> None:
     started = cast(dict[str, Any], server.start(conf=str(BRICKS / "bricks.conf"),
-                                                cwd=str(BRICKS), seconds=300,
+                                                cwd=str(BRICKS), session_seconds=300,
                                                 logfile=str(tmp_path / "bricks-e9.log")))
     assert started["status"] == "ok", started.get("summary")
     try:
@@ -48,7 +48,7 @@ def test_a_bricks_session_replays_twice_and_an_edited_one_diverges(tmp_path: Pat
         server.close()
     assert exported["status"] == "ok", exported.get("summary")
     assert exported["steps"] >= 1 and exported["checks"] == 2, exported
-    assert exported["cut"] is not None and exported["cut"]["op"] == "resume", exported["cut"]
+    assert "op" in exported["cut"] and exported["cut"]["op"] == "resume", exported["cut"]
     for n in (1, 2):
         played = _replay(document, tmp_path / f"replay-{n}" / "t.md")
         assert played.returncode == 0, (n, played.stdout[-600:], played.stderr[-300:])

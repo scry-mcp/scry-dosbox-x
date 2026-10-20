@@ -27,9 +27,9 @@ EXIT_PASSED, EXIT_FAILED, EXIT_INVALID = 0, 1, 3
 
 #: How long one call may be allowed to wait for the guest. A call whose own bound is longer is
 #: never made: its cell is BLOCKED, because a matrix that waits out a hung channel measures the
-#: wait. The session's own bound (`start`'s `seconds`) is not a wait.
+#: wait. The session's own bound (`start`'s `session_seconds`) is not a wait.
 WAIT_CEILING_S = 30.0
-_WAIT_ARGS = ("seconds", "wait", "plan_wait")
+_WAIT_ARGS = ("seconds", "settle_seconds")
 _STEP_LISTS = ("steps", "act", "plan")
 
 #: What a call may take beyond the wait it declares before it counts as hung: a console round
@@ -152,8 +152,6 @@ class Ledger:
         signature.bind(**kw)
         bound = 0.0
         for arg, value in _waits(kw, dict(signature.parameters)):
-            if name == "start" and arg == "seconds":
-                continue
             if isinstance(value, int | float) and not isinstance(value, bool):
                 bound = max(bound, float(value))
                 if value > WAIT_CEILING_S and not exempt:

@@ -93,13 +93,13 @@ def section_q() -> None:
     # S1 over the capture the 13h steps wrote: the newest file, by its number.
     caps = M.call(server.captures).get("captures") or []
     last: dict[str, Any] = max(caps, key=lambda c: str(c.get("path")), default={})
-    count = min(int(last.get("frames") or 0), S1_FRAMES_MAX)
+    count = min(int(last.get("avi_frames") or 0), S1_FRAMES_MAX)
     source = str(last.get("path"))
     start = len(M.calls)
     pictures: list[bytes] = []
     for frame in range(count):
         dest = M.fresh(".png")
-        r = M.call(server.capture_frame, at=frame, dest=dest, source=source)
+        r = M.call(server.capture_frame, frame=frame, dest=dest, capture_path=source)
         if ok(r):
             pictures.append(raster.rgb(raster.cropped(png.decode(Path(dest).read_bytes()),
                                                       S1_CROP)))
@@ -108,7 +108,8 @@ def section_q() -> None:
     M.judge(Q_CELLS[0].label, count >= 3 and len(pictures) == count and bool(hand),
             f"{count} frames of {source}, changes at {hand}; cost {hand_s1}")
     start = len(M.calls)
-    series = M.call(server.series_capture, first=0, last=count - 1, crop=S1_CROP, source=source)
+    series = M.call(server.series_capture, first=0, last=count - 1, crop=S1_CROP,
+                  capture_path=source)
     track = (M.call(server.region_track, manifest=series["manifest"], measure="changed_pixels")
              if ok(series) else series)
     new = [f for f, _ in track.get("transitions", [])] if ok(track) else []

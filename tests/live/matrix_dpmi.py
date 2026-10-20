@@ -91,6 +91,12 @@ F_CELLS = cells(
 )
 
 
+def _cs_of(reply: dict[str, Any]) -> str:
+    """The code segment of a stop reply's `pc`, empty when the reply names no position."""
+    pc = reply.get("pc")
+    return pc.split(":")[0] if isinstance(pc, str) else ""
+
+
 def dpmi_boot(**kw: Any) -> None:
     boot(conf=guest.CONF, cwd=guest.GUEST, program=guest.PROGRAM, input_port=free_port(), **kw)
 
@@ -103,7 +109,7 @@ def dpmi_client(wait: float = 30, exempt: str = "",
     M.setup()
     must(M.call(server.breakpoint_interrupt, number=0x31, ah=0x02), "arming INT 31h AH=02h")
     stop = M.call(server.resume, exempt=exempt, seconds=wait)
-    return stop, M.call(server.symbols_load, source=str(guest.SYM), base_from="CS")
+    return stop, M.call(server.symbols_load, path=str(guest.SYM), base_from="CS")
 
 
 def dpmi_leave() -> tuple[bool, str, dict[str, Any]]:
@@ -132,7 +138,7 @@ def _machine(client_cs: str, base: object) -> None:
             f"CS {client_cs}: {rows}, symbols_load base {base}; {said(r, 60)}")
     found = M.call(server.symbols_find, name="_g_ticks")
     sym = [s for s in found.get("symbols") or [] if s.get("name") == "_g_ticks"]
-    lin = hexint(sym[0].get("linear")) if sym else None
+    lin = hexint(sym[0].get("addr")) if sym else None
     runs = [p for p in r.get("paging") or [] if lin is not None
             and (hexint(p.get("start")) or 0) <= lin <= (hexint(p.get("end")) or 0)]
     M.judge("F machine_map's page runs hold _g_ticks's linear address",
@@ -167,15 +173,16 @@ def _placed_retraces(program_cs: str) -> None:
     elsewhere (the DPMI host). A retrace lands wherever the cpu is, so no share is required;
     what is required is that every stop was surveyed and names a mode."""
     stops = [M.call(server.run_for, frames=1) for _ in range(RETRACES_PLACED)]
-    at = [s.get("stopped_at") or {} for s in stops]
-    program = sum(1 for a in at if a.get("cs") == program_cs)
-    bios = sum(1 for a in at if a.get("cs") == BIOS_SEGMENT)
+    at = [_cs_of(s) for s in stops]
+    program = sum(1 for cs in at if cs == program_cs)
+    bios = sum(1 for cs in at if cs == BIOS_SEGMENT)
     M.judge("F run_for stops ten times, each placed and surveyed",
             all(ok(s) and s.get("verdict") == "ELAPSED" and s.get("polls") == 1
-                and (clock_moved(s) or 0) > 0 and s.get("registers") and a.get("mode")
-                for s, a in zip(stops, at, strict=True)),
+                and (clock_moved(s) or 0) > 0 and s.get("regs")
+                and isinstance(s.get("cpu_mode"), str)
+                for s in stops),
             f"program {program}, BIOS {bios}, other {len(at) - program - bios}: "
-            + " ".join(f"{a.get('cs')}:{a.get('eip')}" for a in at))
+            + " ".join(str(s.get("pc")) for s in stops))
 
 
 @M.section("F", "the DPMI guest: DJGPP, protected mode, paged, nm symbols", F_CELLS)
@@ -183,15 +190,14 @@ def section_f() -> None:
     M.judge("F the program carries its E9 channel", carries(guest.EXE, guest.BOOT_MARK.encode()),
             f"{guest.BOOT_MARK!r} in {guest.EXE.name}")
     r, loaded = dpmi_client()
-    client_cs = str((r.get("stopped_at") or {}).get("cs") or "")
+    client_cs = _cs_of(r)
     judged("F INT 31h AH=02h stops inside the DPMI client", reply=r,
-           holds=ok(r) and "stop_seq" in r
-           and str((r.get("stopped_at") or {}).get("mode", "")).startswith("Pr"))
+           holds=ok(r) and "stop_seq" in r and r.get("cpu_mode") in ("protected", "paged"))
     stub = stub_cell("F the stub announces the serial route")
     r = M.call(server.screen_view)
     judged("F screen_view at the client's first stop reads the shell's page through a flat "
            "segment", reply=r, holds=ok(r) and guest.PROGRAM in "\n".join(r.get("text") or [])
-           and r.get("source") == "text")
+           and r.get("kind") == "text")
     r = M.call(server.screen_wait, text=guest.PROGRAM, seconds=10)
     judged("F screen_wait for the program's command line answers at once, already on screen",
            reply=r, holds=ok(r) and r.get("already") is True and r.get("polls") == 0
@@ -204,9 +210,9 @@ def section_f() -> None:
     r = M.call(server.interrupt_vectors, number=0x08)
     row = (r.get("vectors") or [{}])[0]
     M.judge("F INT 08 lies in the CWSDPMI block, through the GDT and the pages",
-            ok(r) and r.get("cpu_mode") == "paged" and str(row.get("addr")).startswith("0018:")
+            ok(r) and r.get("cpu_mode") == "paged" and str(row.get("seg_off")).startswith("0018:")
             and (row.get("mcbs") or {}).get("filename") == "CWSDPMI", str(row)[:160])
-    must(M.call(server.breakpoint_clear), "clearing INT 31h")
+    must(M.call(server.breakpoint_clear, all=True), "clearing INT 31h")
     b = M.call(server.breakpoint_at, ref="_tick")
     w = M.call(server.watch_add, ref="_g_ticks", mode="show", length=4, fmt="u32")
     r = M.call(server.resume, seconds=30)
@@ -229,7 +235,7 @@ def section_f() -> None:
     M.judge("F a show watch on _g_ticks rides the stop",
             ok(w) and any(x.get("ref") == "_g_ticks" and isinstance(x.get("value"), int)
                           for x in watches), str(watches)[:120])
-    must(M.call(server.breakpoint_clear), "clearing _tick")
+    must(M.call(server.breakpoint_clear, all=True), "clearing _tick")
     dpmi_code()
     dpmi_comments()
     refused_on_the_dynamic_core("F trace on the conf's dynamic core is refused naming the core")
@@ -250,15 +256,15 @@ def section_f() -> None:
            holds=ok(r) and (r.get("verify") or {}).get("seen") is True)
     r = M.call(server.perform, steps=[
         {"op": "send_keys", "keys": ["a"], "expect": guest.KEY_MARK, "seconds": 15},
-        {"op": "log", "pattern": guest.KEY_MARK, "channel": "guest", "limit": 5}], wait=0)
+        {"op": "log", "pattern": guest.KEY_MARK, "channel": "guest", "limit": 5}], settle_seconds=0)
     judged("F perform runs keys and a log read while it runs", reply=r,
-           holds=ok(r) and r.get("completed") == 2)
+           holds=ok(r) and r.get("steps_completed") == 2)
     r = M.call(server.drive, act=[{"op": "send_keys", "keys": ["a"]}], expect=guest.KEY_MARK,
                seconds=15, pattern="key")
     judged("F drive verifies the act from a mark", reply=r,
            holds=ok(r) and (r.get("verify") or {}).get("seen") is True
-           and bool(((r.get("looked") or {}).get("e9") or {}).get("lines")))
+           and bool(((r.get("looked") or {}).get("guest") or {}).get("lines")))
     holds, detail, closed = dpmi_leave()
     M.judge("F quit by keys: alt+x, right, enter", holds, detail)
     judged("F close after the guest left", reply=closed,
-           holds=ok(closed) and closed.get("how") in ("quit", "died"))
+           holds=ok(closed) and closed.get("ended_by") in ("quit", "died"))

@@ -253,6 +253,45 @@ boolean restates a verdict. What could not finish still refuses: `wait_stopped`,
 that cannot write the line waited for; `not_settled`, a `BREAK` whose prompt never came;
 `session_broken`, an emulator gone.
 
+**One spelling per concept, the Scry servers' own.** `ref` for how a place is named, `seconds`
+for how long a wait may take (a session's lifetime is `session_seconds`: a lifetime, not a
+wait), `count` for how many steps, `length` for how many bytes, `limit` for how many rows come
+back, `pattern` for a regex over a log, `<list>_total` for how many a list holds, listed or not
+(`hits_total` from `scan_start` on), `path` for the file a tool reads or writes and
+`<what>_path` for any other file a reply names (`capture_path`), `<what>_dir` for a directory,
+`bytes` for a byte count and `data_hex` for the bytes themselves. A count names what it counts:
+`bytes_written`, `lines_written`, `steps_completed` (a sequence's), `instructions_completed` (a
+`step`'s), `hits_in_run` (a control over one run). `note` is a reply's one string of prose,
+`why` a row's or a field's reason, and **a datum that could not be read is `{"available":
+false, "why": ...}` in the place its value would have taken: no reply carries a null.** A time
+is `_s`, a span a reader acts on (`waited_s`, `since_s`) to the tenth of a second; a wall-clock
+instant is `<event>_at` (`created_at`, `saved_at`, a stop's `wall_at`). A value is an integer
+or `0x` text, never decimal text.
+
+**Where a word here means something of its own**, each for its reason:
+
+- `pc` is `SSSS:OOOOOOOO` with `cpu_mode` beside it, and a row carries `seg_off` beside `addr`:
+  a DOS place is segmented, and the segment is half of what it means.
+- A stop carries `instruction`, the one decoded at the stop, and `attribution`, the
+  declaration matched by address: what the debugger shows, structured.
+- `vga_mode` is the VGA mode word, `bios_mode` the mouse driver's video mode, and a screen's
+  `kind` is `text` or `pixel`: a DOS screen is either.
+- `run_to` requires its `control`: this debugger keeps no control between runs.
+- `run_for` counts frames as vertical retraces, and `trace(instructions)` is a different fact
+  from `step(count)`: instructions run against steps taken.
+- `start` takes `shared` and the emulator's raw `window_flags`: the window is the emulator's.
+- `debug` answers `screen_delta` and `screen_chars`: the console is a repaint, not a reply.
+- `snapshot` refuses a machine parked at the debugger (the guest's own stub takes the
+  command), `state_save` and `state_load` take a running guest (stopped for them and released
+  again), and `scan_clear` needs the machine stopped.
+- A placed comment is `resolved` in `comment_list`: nothing is written into the machine for it.
+- A `disassemble` row's `kind` (`target`, `memory`) says what its operand names.
+- A verify's `seen_before_waiting`: the mark is taken before the input, so the line was there
+  when the wait first looked, not before the call.
+- A state's size is `memory_mb`: the state stores megabytes.
+- A breakpoint keeps the debugger's spelling (`target`, `controls[].at`, `entry`): it is the
+  string `BPLIST` is matched against.
+
 ### A long wait, and a cancelled call
 
 A wait that can run for seconds reports its progress about once a second, as MCP progress
@@ -631,10 +670,11 @@ program's own CS:IP); `OTHER_STOP` (another breakpoint got there first, which is
 is not an arrival); or `TIMEOUT`, the bound ran out: the run interrupted where it stood, with
 `BREAK` down the debugger channel, or found resting on its own control, so the machine always
 comes back stopped and surveyed.
-It removes the breakpoint it created once it has arrived (`target_disarmed`; `BP` is
-persistent, so a leftover would silently stop the next `resume`), and it looks the index up
-again to do it, because `BPDEL` renumbers; on the other two the target stays armed for the next
-release, on purpose.
+It removes the breakpoint it created on every outcome (`target_disarmed`, false only when the
+removal could not be confirmed; `BP` is persistent,
+so a leftover would silently stop the next `resume` at a place no declaration names), and it
+looks the index up again to do it, because `BPDEL` renumbers. A place to keep stopping at is
+declared with `breakpoint_at`.
 
 **A `control` turns a silence into a measurement.** `run_to(ref=..., control=...)` arms a
 second breakpoint at a place known to be HOT, releases the machine again each time it fires,
@@ -892,8 +932,9 @@ The running-guest contract, in three parts:
 What it does not do: invent a stop, or serve cached memory as a current value. A stop still
 has to come from something armed before the guest was released, which is why the pending
 queue is drained at the stop and not before. `resume`'s own pre-check reads what the
-debugger has armed as well as what the store declared, so the target breakpoint a `run_to`
-left armed after stopping elsewhere counts as something that can stop the machine.
+debugger has armed as well as what the store declared, so a row the store never declared (a
+`run_to` target whose removal could not be confirmed) counts as something that can stop the
+machine.
 
 **`RUNWATCH` ships no tool.** The debugger has it (resume the machine while going on painting
 its state) and it is the obvious way to watch a program move. It is a hose: it resumes and
@@ -1275,14 +1316,15 @@ back with no model, from this repository:
 uv run python -m scry_core.replay <document> [--binary PATH] [--transcript PATH]
 ```
 
-It exits 0 when every step held, 1 when a step diverged or failed in the server's own words (or
-`perform`'s `held`, the steps it held to their `recorded` answer, is not the document's count), 2
-on a usage error, and 3 when nothing was demonstrated: a document that is not one or holds no
-step with a `recorded` answer, a start the server refused, a saved state it loads and the server
-lacks, declarations the replay's store holds unlike the recorded start's, and a server that
-broke (did not start, died or timed out mid-call, answered an error result, refused the list
-whole). The whole transcript goes to `tmp/replays/<document stem>/transcript.md`. A replay is deterministic on a conf with a fixed
-cycle count (`cycles=fixed <n>`); under `cycles=max` the guest's own clock follows the host's.
+It exits as its `--help` prints: 0 when every step held, 1 when a step diverged or failed in the
+server's own words (or `perform`'s `held`, the steps it held to their `recorded` answer, is not
+the document's count), 2 on a usage error, and 3 when nothing was demonstrated: a document that
+is not one or holds no step with a `recorded` answer, a start the server refused, a saved state
+it loads and the server lacks, declarations the replay's store holds unlike the recorded
+start's, and a server that broke (did not start, died or timed out mid-call, answered an error
+result, refused the list whole). The whole transcript goes to `tmp/replays/<document
+stem>/transcript.md`. A replay is deterministic on a conf with a fixed cycle count
+(`cycles=fixed <n>`); under `cycles=max` the guest's own clock follows the host's.
 
 What the export keeps is what moved the machine and what was checked:
 
@@ -1403,7 +1445,7 @@ a mapped screen (Screen maps). Every call asks the stub where the pointer is
 BEFORE (the driver's range and the BIOS mode, which turn screen units into the driver's) and
 AFTER (where it went), and the reply carries the read-back: `pointer.screen` with `x`, `y`,
 `width` and `height`, `pointer.mouse` with the driver's `x`, `y`, `max_x`, `max_y`, the
-buttons held, the `vga_mode`. `arrived` says the read-back is where the call asked; when it is not,
+buttons held, the `bios_mode`. `arrived` says the read-back is where the call asked; when it is not,
 `asked` beside it says where it was asked, in the driver's coordinates, because a text mode
 places the pointer on its cell and a
 program's own range (INT 33h AX=07h/08h) clamps it, and the reply reports the guest's answer
@@ -1594,17 +1636,18 @@ hash. With `dest` the series outlives `close`; without it, it lives in the scrat
 with it.
 
 **The file tools** (`image_diff`, `series_diff`, `region_track`, `golden_check`) read files and
-touch no machine, so they answer with the guest running or with none, and their body and text come
-from scry-core, the package this server pins; `region_track` writes one file, the whole track as
-JSON, beside the manifest. Every series and golden comparison carries its control, because a result
-that cannot come out the other way is no result: a series whose frames never change says nothing
-about another (`control_silent` naming it), two series with no frame in common compare nothing, a
-region whose measure never moves was missed, and goldens whose names meet no file examined nothing.
-Reading a manifest hashes every file it lists and signs each picture again, so a frame changed
-since it was written, or a row edited by hand, is refused rather than trusted. `golden_check` lists
-at most `limit` names in each of `differing`, `missing` and `extra` (40 unless asked, up to 1000),
-their whole counts beside them (`differing_total`, `missing_total`, `extra_total`), and a list it
-cut says so in `omitted` and `how`.
+touch no machine, so they answer with the guest running or with none, and their body and text
+come from scry-core, the package this server pins; `region_track` writes one file, the whole
+track as JSON, beside the manifest. Every series and golden comparison carries its control,
+because a result that cannot come out the other way is no result: a series whose frames never
+change says nothing about another (`control_silent` naming it), two series with no frame in
+common compare nothing, a region whose measure never moves was missed, and goldens whose names
+meet no file examined nothing. Reading a manifest hashes every file it lists and signs each
+picture again, so a frame changed since it was written, or a row edited by hand, is refused
+rather than trusted. `golden_check` lists at most `limit` names in each of `differing`,
+`missing` and `extra` (the default and the ceiling are the ones `golden_check`'s description
+prints), their whole counts beside them (`differing_total`, `missing_total`, `extra_total`), and
+a list it cut says so in `omitted` and `how`.
 
 ## Screen maps
 

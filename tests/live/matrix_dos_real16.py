@@ -118,7 +118,7 @@ def section_d() -> None:
                 and (s.get("attribution") or {}).get("attributed") is True
                 and (s.get("attribution") or {}).get("ref") == "COMPOSE_FRAME" for s in stops),
             "; ".join(said(s, 60) for s in stops))
-    must(M.call(server.breakpoint_clear), "clearing COMPOSE_FRAME")
+    must(M.call(server.breakpoint_clear, all=True), "clearing COMPOSE_FRAME")
     dos_real16_code()
     dos_real16_comments(mapf, f"{load * 16:X}")
     M.setup()
@@ -148,11 +148,11 @@ def dos_real16_main_loop(wait: float = 30, exempt: str = "", **kw: Any) -> dict[
     cs = program_stop()
     psp = mcb_psp(bp.DOS_REAL16.process)
     load = psp + 0x10
-    loaded = M.call(server.symbols_load, source=str(mapf), base=f"{load * 16:X}")
+    loaded = M.call(server.symbols_load, path=str(mapf), base=f"{load * 16:X}")
     found = M.call(server.symbols_find, name="COMPOSE_FRAME")
     must(M.call(server.breakpoint_at, ref="ATRCT_RUN"), "arming ATRCT_RUN")
     must(M.call(server.resume, exempt=exempt, seconds=wait), "running to ATRCT_RUN")
-    must(M.call(server.breakpoint_clear), "clearing ATRCT_RUN")
+    must(M.call(server.breakpoint_clear, all=True), "clearing ATRCT_RUN")
     return {"cs": cs, "psp": psp, "load": load, "loaded": loaded, "found": found}
 
 
@@ -181,7 +181,7 @@ def _vectors() -> None:
             and named == [("NEW_IRQ_VIDEO", 0), ("NEW_KEY_PC", 0)], f"{hooked} {named}")
     tick = (rows.get(0x1C, {}).get("mcbs") or {}).get("filename")
     M.judge("D INT 1C lies in the INJECT block", ok(r) and tick == "INJECT",
-            f"INT 1C {rows.get(0x1C, {}).get('addr')} in {tick}")
+            f"INT 1C {rows.get(0x1C, {}).get('seg_off')} in {tick}")
 
 
 def _retraces(load: int) -> None:
@@ -206,7 +206,7 @@ def _retraces(load: int) -> None:
             retraces += 1
         else:
             break
-    must(M.call(server.breakpoint_clear), "clearing COMPOSE_FRAME")
+    must(M.call(server.breakpoint_clear, all=True), "clearing COMPOSE_FRAME")
     M.judge("D COMPOSE_FRAME hits over ten retraces, quoted",
             retraces == RETRACES_QUOTED and all(ok(x) for x in replies),
             f"COMPOSE_FRAME {hits} times over {retraces} retraces ({calls} calls)")
@@ -215,7 +215,7 @@ def _retraces(load: int) -> None:
     judged("D run_for frames=10 lands ten retraces in the program", reply=r,
            holds=ok(r) and r.get("verdict") == "ELAPSED" and r.get("polls") == 10
            and moved is not None and moved > 0
-           and (hexint((r.get("stopped_at") or {}).get("cs")) or 0) >= load)
+           and (hexint(str(r.get("pc")).split(":")[0]) or 0) >= load)
 
 
 def _scan() -> tuple[bool, str]:
@@ -226,7 +226,7 @@ def _scan() -> tuple[bool, str]:
     seg, off = sym("TOTALTIME")
     at = f"{seg:04X}:{off:04X}"
     opened = M.call(server.scan_start, ref=f"{seg:04X}:{off - 0x100:04X}", length=0x200,
-                    width="word")
+                    cell_bytes=2)
     first_value = read_word(at)
     first = M.call(server.scan_filter, operator="=", value=first_value)
     must(M.call(server.breakpoint_at, ref="COMPOSE_FRAME"), "arming COMPOSE_FRAME")
@@ -236,13 +236,13 @@ def _scan() -> tuple[bool, str]:
         value = read_word(at)
         if value != first_value:
             break
-    must(M.call(server.breakpoint_clear), "clearing COMPOSE_FRAME")
+    must(M.call(server.breakpoint_clear, all=True), "clearing COMPOSE_FRAME")
     if value == first_value:
         M.call(server.scan_clear)
         raise RuntimeError(f"TOTALTIME kept {value} over {FRAMES_FOR_A_CHANGE} frames")
     moved = M.call(server.scan_filter, operator="!")
     last = M.call(server.scan_filter, operator="=", value=value, limit=400)
-    lin = [hexint(h.get("linear")) for h in last.get("hits") or []]
+    lin = [hexint(h.get("addr")) for h in last.get("hits") or []]
     M.call(server.scan_clear)
     return (off % 2 == 1 and ok(opened) and ok(first) and ok(moved) and ok(last)
             and seg * 16 + off in lin,
@@ -272,5 +272,5 @@ def _coin() -> None:
     for _ in range(5):
         M.call(server.resume, seconds=10)
     after = read_word(f"{seg:04X}:{off:04X}")
-    must(M.call(server.breakpoint_clear), "clearing COMPOSE_FRAME")
+    must(M.call(server.breakpoint_clear, all=True), "clearing COMPOSE_FRAME")
     M.judge("D the coin adds to CREDITOS", after > before, f"CREDITOS {before} -> {after}")

@@ -205,7 +205,7 @@ def _probe() -> None:
             refused(view, "not_stopped") and refused(sig, "not_stopped") and alive(sig),
             f"{view.get('code')}, {sig.get('code')}")
     must(M.call(server.close), "closing the probe")
-    boot(logfile=None)
+    boot(logfile="")
     M.setup()
     r = M.call(server.palette)
     judged("J palette without a logfile is refused naming it", reply=r,
@@ -227,8 +227,7 @@ def _screen_guest() -> None:
     for stop in SCREEN_STOPS:
         M.setup()
         r = M.call(server.resume, seconds=30)
-        at = r.get("stopped_at") or {}
-        here = f"{at.get('cs')}:{at.get('eip')}"
+        here = str(r.get("pc"))
         if ok(r) and "stop_seq" in r and read_bytes(here, 2) == INT3:
             landed.append(stop)
         if stop in ("start80", "dac01", "13h"):
@@ -309,9 +308,10 @@ def _against_the_capture(picture: bytes) -> None:
     # THE NEWEST FILE, by its number: the recording restarts at every mode change and the reply
     # orders by size, so the largest is not always the one being written.
     last: dict[str, Any] = max(caps, key=lambda c: str(c.get("path")), default={})
-    frames = int(last.get("frames") or 0)
+    frames = int(last.get("avi_frames") or 0)
     dest = M.fresh(".png")
-    r = M.call(server.capture_frame, at=max(frames - 1, 0), dest=dest, source=last.get("path"))
+    r = M.call(server.capture_frame, frame=max(frames - 1, 0), dest=dest,
+               capture_path=str(last.get("path") or ""))
     frame = _rgb24(dest) if ok(r) else b""
     want = _doubled(picture, 320, 200)
     differing = sum(1 for i in range(0, min(len(frame), len(want)), 3)

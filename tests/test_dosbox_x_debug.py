@@ -589,9 +589,9 @@ def test_run_to_in_real_mode_arrives_at_an_aliased_seg_off() -> None:
     assert got["breakpoint_removed"] is True, got
     # THE CONTROL: a different byte is still "elsewhere", whatever its spelling.
     dbg = Debugger([pane_with([]), armed,
-                    pane_with([], cs="1080", eip="00000011")])
+                    pane_with([], cs="1080", eip="00000011"), armed, pane_with([])])
     got = run_to(dbg, 0x1000, 0x0810)
-    assert got["verdict"] == "OTHER_STOP" and "still armed" in str(got["note"]).lower(), got
+    assert got["verdict"] == "OTHER_STOP" and got["breakpoint_removed"] is True, got
 
 
 def test_run_to_looks_the_index_up_again_rather_than_reusing_it() -> None:
@@ -629,30 +629,33 @@ def test_it_was_never_armed_is_refused_rather_than_reported_as_never_arrived() -
 def test_stopping_somewhere_else_is_not_an_arrival() -> None:
     """Another breakpoint getting there first is ordinary, and reporting it as arrival
     would put the caller at an address they did not ask for while telling them they are
-    where they wanted to be."""
+    where they wanted to be. The target is removed all the same: a `BP` is persistent, and
+    one left behind would stop the next `resume` at a place no declaration names."""
     dbg = Debugger([pane_with([]),
                     pane_with(["00. BP F000:FFF0"]),
-                    pane_with([], cs="F000", eip="0000E05B")])
+                    pane_with([], cs="F000", eip="0000E05B"),
+                    pane_with(["00. BP F000:FFF0"]), pane_with([])])
     got = run_to(dbg, 0xF000, 0xFFF0)
     assert got["verdict"] == "OTHER_STOP"
-    assert got["breakpoint_removed"] is False
-    assert "0000E05B" in str(got["note"]) and "still armed" in str(got["note"])
-    assert not any(s.startswith("BPDEL") for s in dbg.sent)
+    assert got["breakpoint_removed"] is True
+    assert "0000E05B" in str(got["note"]) and "was removed" in str(got["note"]), got["note"]
+    assert "BPDEL 00" in dbg.sent, dbg.sent
 
 
-def test_a_bound_that_expires_interrupts_the_run_and_keeps_the_target_armed() -> None:
+def test_a_bound_that_expires_interrupts_the_run_and_disarms_the_target() -> None:
     """THE BOUND INTERRUPTS: a run still going when its bound runs out is brought back with
     `BREAK` and surveyed where it stands, a TIMEOUT, so the caller never inherits a machine
-    no reader can answer for. The target stays armed, deliberately: the caller has not
-    reached it, and the reply says so rather than claiming a cleanup."""
+    no reader can answer for. The target is removed on this outcome too, and the reply says
+    it was."""
     dbg = Debugger([pane_with([]), pane_with(["00. BP F000:FFF0"]), "",
-                    pane_with([], cs="0837", eip="0000004C")])
+                    pane_with([], cs="0837", eip="0000004C"),
+                    pane_with(["00. BP F000:FFF0"]), pane_with([])])
     got = run_to(dbg, 0xF000, 0xFFF0)
     assert got["verdict"] == "TIMEOUT", got
     assert "BREAK" in dbg.sent, dbg.sent
     assert got["stopped_at"] == {"cs": "0837", "eip": "0000004C", "mode": "Real"}, got
-    assert got["breakpoint_removed"] is False
-    assert "interrupted" in str(got["note"]) and "still armed" in str(got["note"]), got
+    assert got["breakpoint_removed"] is True
+    assert "interrupted" in str(got["note"]) and "was removed" in str(got["note"]), got
 
 
 CONTROL_HIT = "0000E05B"
@@ -682,18 +685,19 @@ def test_run_to_with_a_control_counts_its_hits_and_releases_the_machine_again() 
     assert dbg.sent.count("BPDEL 00") == 2, dbg.sent   # one per breakpoint, each renumbered to 00
 
 
-def test_run_to_with_a_control_that_never_fires_reports_zero_hits_and_both_armed() -> None:
+def test_run_to_with_a_control_that_never_fires_reports_zero_hits_and_neither_armed() -> None:
     """The silence decision 12 exists for: neither fired within the bound. The session
-    interrupts the run and reports the account (`hits: 0`, the control removed, the target
-    armed) and the server turns it into INVALID; a single reply saying "it did not arrive"
-    would be the wrong verdict."""
+    interrupts the run and reports the account (`hits: 0`, both removed) and the server turns
+    it into INVALID; a single reply saying "it did not arrive" would be the wrong verdict."""
     both = pane_with(["00. BP F000:FFF0", "01. BP F000:E05B"])
+    control_only = pane_with(["00. BP F000:E05B"])
     dbg = Debugger([pane_with([]), both, "", pane_with([], cs="0837", eip="0000004C"),
-                    both, pane_with(["00. BP F000:FFF0"])])
+                    both, control_only, control_only, pane_with([])])
     got = run_to(dbg, 0xF000, 0xFFF0, control=(0xF000, 0xE05B))
     assert got["verdict"] == "TIMEOUT", got
     assert got["control"] == {"at": "F000:E05B", "hits": 0, "removed": True}, got
-    assert "F000:FFF0 is still armed" in str(got["note"]), got["note"]
+    assert got["breakpoint_removed"] is True, got
+    assert "F000:FFF0 was removed" in str(got["note"]), got["note"]
 
 
 def test_run_to_whose_control_eats_the_whole_bound_is_a_timeout(
@@ -709,17 +713,18 @@ def test_run_to_whose_control_eats_the_whole_bound_is_a_timeout(
     tick = itertools.count(0.0, 1.0)
     monkeypatch.setattr(time, "monotonic", lambda: next(tick))   # the module `run_to` reads
     both = pane_with(["00. BP F000:FFF0", "01. BP F000:E05B"])
-    control_only_at_01 = pane_with(["00. BP F000:FFF0", "01. BP F000:E05B"])
+    control_only = pane_with(["00. BP F000:E05B"])
     dbg = Debugger([pane_with([]), both,
                     pane_with([], cs="F000", eip=CONTROL_HIT),   # the one stop: the control
-                    control_only_at_01, pane_with(["00. BP F000:FFF0"])],   # control BPDEL
+                    both, control_only,                          # target BPDEL, read back
+                    control_only, pane_with([])],                # control BPDEL, read back
                    reads=["", dcons.PROMPT + " _"])
     got = run_to(dbg, 0xF000, 0xFFF0, seconds=2.5, control=(0xF000, 0xE05B))
     assert got["verdict"] == "TIMEOUT", got
     assert "BREAK" not in dbg.sent, "at rest on the control: nothing to interrupt"
     assert got["control"] == {"at": "F000:E05B", "hits": 1, "removed": True}, got
-    assert "BPDEL 01" in dbg.sent and dbg.keys.count(ds.RUN_KEY) == 1, dbg.sent
-    assert "still armed" in str(got["note"]), got["note"]   # the TARGET stays, on purpose
+    assert dbg.sent.count("BPDEL 00") == 2 and dbg.keys.count(ds.RUN_KEY) == 1, dbg.sent
+    assert got["breakpoint_removed"] is True, got
     assert "ON the control F000:E05B (its hit number 1)" in str(got["note"]), got["note"]
     assert "something else" not in str(got["note"]), "a rest on the control is not a stranger"
 
@@ -756,7 +761,8 @@ def test_run_to_without_a_control_says_so_with_one_key_and_not_by_omission() -> 
     dbg = Debugger([pane_with([]), armed, pane_with([], cs="F000", eip=ARRIVED), armed,
                     pane_with([])])
     got = run_to(dbg, 0xF000, 0xFFF0)
-    assert got["control"] is None and got["verdict"] == "TARGET"
+    assert got["control"] == {"available": False, "why": "no control was named"}, got
+    assert got["verdict"] == "TARGET", got
 
 
 def test_run_to_refuses_a_control_on_the_target_itself() -> None:
@@ -922,7 +928,7 @@ TOOL_FIELDS = {"step": set(returned_key_sets(ds.Session.step)[0]) - {"completed"
 # `run_to` SPEAKS THE SHARED WORDS, so its session's account is mapped and not handed on: the
 # set is the tool's own, every one of which comes from that account.
 TOOL_FIELDS["run_to"] = {"verdict", "target", "ref", "pc", "cpu_mode", "waited_s",
-                         "target_disarmed", "control_hits", "controls", "note"}
+                         "target_disarmed", "control_hits", "controls"}
 
 
 @pytest.mark.parametrize("tool", sorted(TOOL_FIELDS))
@@ -1473,7 +1479,7 @@ def test_the_count_of_what_arrived_during_the_wait_is_not_the_logs_total(
     log.write_text(f"{E9_BOOT}\n" * 41, encoding="utf-8")
     began = time.monotonic()
     got = LogSession(log).e9_wait("never_appears", seconds=0.4)
-    assert re.search(r"\b0 instrumentation line\(s\) arrived DURING", str(got["note"])), got
+    assert re.search(r"\b0 lines arrived DURING", str(got["note"])), got
     # AND THE BOUND IS HONOURED, which nothing checked: `deadline = began + seconds * 2`
     # left the whole tier green, in a method whose own refusal justifies its ceiling by
     # "this would sit on a line that is never going to arrive, holding the lock".
@@ -2807,7 +2813,8 @@ def test_a_rest_on_the_control_found_after_the_bound_counts_as_its_hit() -> None
     both = pane_with(["00. BP F000:FFF0", "01. BP F000:E05B"])
     dbg = PromptInTheNudge([pane_with([]), both, "",
                             pane_with([], cs="F000", eip=CONTROL_HIT),
-                            both, pane_with(["00. BP F000:FFF0"])])
+                            both, pane_with(["00. BP F000:E05B"]),       # the target removed
+                            pane_with(["00. BP F000:E05B"]), pane_with([])])   # the control
     got = run_to(dbg, 0xF000, 0xFFF0, seconds=0.05, control=(0xF000, 0xE05B))
     assert got["verdict"] == "TIMEOUT" and got["control"] == {
         "at": "F000:E05B", "hits": 1, "removed": True}, got
@@ -2840,3 +2847,14 @@ def test_a_cancel_during_the_interrupt_at_the_bound_takes_the_breakpoints_with_i
     with pytest.raises(asyncio.CancelledError):
         run_to(dbg, 0xF000, 0xFFF0, seconds=0.05, control=(0xF000, 0xE05B))
     assert dbg.sent.count("BPDEL 00") == 2, dbg.sent
+
+
+def test_a_non_arrival_whose_control_cleanup_failed_says_both_in_sentences() -> None:
+    """The target removed and the control's removal unconfirmed: two sentences, each closed."""
+    both = pane_with(["00. BP F000:FFF0", "01. BP F000:E05B"])
+    control_only = pane_with(["00. BP F000:E05B"])
+    dbg = Debugger([pane_with([]), both, "", pane_with([], cs="0837", eip="0000004C"),
+                    both, control_only, control_only, control_only])     # BPDEL left it
+    got = run_to(dbg, 0xF000, 0xFFF0, control=(0xF000, 0xE05B))
+    assert "F000:FFF0 was removed. `BPDEL` was sent and F000:E05B is STILL" in str(got["note"]), (
+        got["note"])

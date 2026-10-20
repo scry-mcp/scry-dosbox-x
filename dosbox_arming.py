@@ -15,6 +15,7 @@ reads) stay with the registrations in `dosbox_x_server`.
 from __future__ import annotations
 
 import dataclasses
+import functools
 from collections.abc import Callable
 from typing import Any, cast
 
@@ -601,8 +602,8 @@ def something_can_stop_it() -> bool:
     """Whether anything can bring the running machine back to the debugger: a code or
     interrupt breakpoint, or a change-watch. Two sources, neither the console (which a
     running machine does not answer): the debugger's own list as it stood at the last
-    stop, which holds a row whoever armed it (a `run_to` target left armed after a stop
-    elsewhere has no declaration behind it), and the store, leaving out what is known NOT
+    stop, which holds a row whoever armed it (a `run_to` target whose removal could not be
+    confirmed has no declaration behind it), and the store, leaving out what is known NOT
     to be armed (a stale raw address, a symbol this build does not define). The remaining
     doubt errs on the side of waiting."""
     held = STATE.last_stop.get("held") or []
@@ -628,7 +629,8 @@ def breakpoint_interrupt(session: ds.Session, number: int, ah: int | None,
         is_new = cast(bool, placement.to_invalid(lambda: current_store().add(decl)))
         return st.reply(ref=want, stored=True, already_stored=not is_new, armed=True,
                       entry=want, note="this interrupt breakpoint was already armed")
-    delta = st.delta_if_asked(session.breakpoint_interrupt(number, ah), 2000, detail)
+    delta = st.delta_if_asked(session.breakpoint_interrupt(number, ah), st.DETAIL_TEXT_KEEP,
+                               detail)
     is_new = cast(bool, placement.to_invalid(lambda: current_store().add(decl)))
     num, ah = dcons.parse_interrupt_row(want)
     STATE.note_armed(want, {"kind": "int", "num": num, "ah": ah, "entry": want})
@@ -795,19 +797,12 @@ def breakpoint_list(session: ds.Session) -> dict[str, Any]:
             want = ("BP", res["seg"], res["off"])
             item["entry"] = f"BP {res['seg']:04X}:{res['off']:04X}"
             item["marked"] = res["marked"]
-            if any(dcons.bp_row_target(b["entry"]) == want for b in held):
-                item["state"] = "armed"
+            listed = any(dcons.bp_row_target(b["entry"]) == want for b in held)
+            if listed:
                 mine.add(want)
-            elif orphan(decl):
-                item["state"] = "orphan"
-                item["why"] = _ORPHAN_WHY
-            else:
-                item["state"] = "gone"
+            _held_state(item, decl, listed)
         out.append(item)
-    for item in out:
-        if item["ref"] in STATE.pending["arm"]:
-            item["state"] = "pending"
-            item.pop("why", None)
+    _pending_states(out)
     # A ROW A CLEAR HAS QUEUED FOR REMOVAL is not foreign while it waits for the stop.
     queued = {str(sp["entry"]) for sp in STATE.pending["disarm"]}
     foreign = [b["entry"] for b in held
@@ -886,40 +881,17 @@ def breakpoint_clear(session: ds.Session, ref: str | None) -> dict[str, Any]:
                     rows = [{"kind": "bp", "seg": res["seg"], "off": res["off"],
                              "entry": f"BP {res['seg']:04X}:{res['off']:04X}"}]
             for spec in rows:
-                if running:
-                    STATE.pending["disarm"].append(spec)
-                    STATE.pending["dirty"] = True
-                    pending_disarm.append(str(spec["entry"]))
-                    continue
-                try:
-                    gone = session.clear_code_breakpoint(spec["seg"], spec["off"])
-                    if gone["removed"]:
-                        disarmed.append(str(gone["entry"]))
-                        STATE.snapshot_forget(str(gone["entry"]))
-                except ds.Invalid:
-                    STATE.pending["disarm"].append(spec)
-                    STATE.pending["dirty"] = True
-                    pending_disarm.append(str(spec["entry"]))
+                _disarm_one(spec, str(spec["entry"]), running, disarmed, pending_disarm,
+                            functools.partial(session.clear_code_breakpoint, spec["seg"],
+                                              spec["off"]))
         elif decl.kind == "interrupt":
             rows = STATE.armed.pop(("bp", decl.ref), [])
             num, ah = dcons.parse_interrupt_row(decl.ref)
             if not rows and not running:
                 rows = [{"kind": "int", "num": num, "ah": ah, "entry": decl.ref}]
             for spec in rows:
-                if running:
-                    STATE.pending["disarm"].append(spec)
-                    STATE.pending["dirty"] = True
-                    pending_disarm.append(decl.ref)
-                    continue
-                try:
-                    gone = session.clear_interrupt_breakpoint(num, ah)
-                    if gone["removed"]:
-                        disarmed.append(str(gone["entry"]))
-                        STATE.snapshot_forget(str(gone["entry"]))
-                except ds.Invalid:
-                    STATE.pending["disarm"].append(spec)
-                    STATE.pending["dirty"] = True
-                    pending_disarm.append(decl.ref)
+                _disarm_one(spec, decl.ref, running, disarmed, pending_disarm,
+                            functools.partial(session.clear_interrupt_breakpoint, num, ah))
     # Both families cleared here, so `kind` is not passed: a `ref` alone (or nothing)
     # takes breakpoints AND interrupts, and a caller wanting only one family clears by
     # ref. Watches are a different tool, cleared without touching these.
@@ -1016,9 +988,10 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
         # A SHOW WATCH ARMS NOTHING: a plain memory read at every stop, which
         # Phase 4 delivers. The declaration is stored; whether the symbol resolves yet only
         # decides whether it can be READ, not whether it is kept. The state is its
-        # resolution, spelled the same way `watch_list` spells it (dec 12: one word per
-        # concept) -- `resolved` when it has an address, else the reason it has none.
-        state = "resolved" if res["state"] == "armable" else res["state"]
+        # resolution, spelled the same way `watch_list` and a stop's `watches` spell it (dec
+        # 12: one word per concept) -- `evaluated` when it has an address, else the reason it
+        # has none.
+        state = "evaluated" if res["state"] == "armable" else res["state"]
         return st.reply(ref=ref, by=chosen, mode="show", fmt=fmt, length=width, stored=True,
                       already_stored=already, armed=False, state=state, **extra)
     if res["state"] == "unresolved":
@@ -1085,7 +1058,7 @@ def watch_list(session: ds.Session) -> dict[str, Any]:
                 item["state"] = "orphan"
                 item["why"] = _ORPHAN_WATCH_WHY
             else:
-                item["state"] = "resolved"
+                item["state"] = "evaluated"
         else:
             seg, off = res["seg"], res["off"]
             item["entry"] = _watch_entry(seg, off, machine[0] if machine is not None
@@ -1094,19 +1067,12 @@ def watch_list(session: ds.Session) -> dict[str, Any]:
             # reconstructed spelling: the debugger's offset width is not fixed (one address
             # was listed as both `BPPM 00AF:6024` and `BPPM 00AF:00006024`), so an equality
             # or prefix test on the spelling reports an armed watch as gone.
-            if watch_held(held, seg, off):
-                item["state"] = "armed"
+            listed = watch_held(held, seg, off) is not None
+            if listed:
                 mine.add((seg, off))
-            elif orphan(decl):
-                item["state"] = "orphan"
-                item["why"] = _ORPHAN_WHY
-            else:
-                item["state"] = "gone"
+            _held_state(item, decl, listed)
         out.append(item)
-    for item in out:
-        if item["ref"] in STATE.pending["arm"]:
-            item["state"] = "pending"
-            item.pop("why", None)
+    _pending_states(out)
     queued = {(sp["seg"], sp["off"]) for sp in STATE.pending["disarm"] if sp["kind"] == "watch"}
     foreign = [b["entry"] for b in held
                if (t := dcons.bp_row_target(b["entry"])) is not None
@@ -1162,3 +1128,42 @@ def watch_clear(session: ds.Session, ref: str | None) -> dict[str, Any]:
     return st.reply(declarations_cleared=removed, disarmed=disarmed,
                   pending_disarm=pending_disarm,
                   note=_pending_note(running, pending_disarm))
+
+
+def _held_state(item: dict[str, Any], decl: dec.Declaration, held: bool) -> None:
+    """A placed row's state against the debugger's list: `armed` when it holds the row, else
+    `orphan` for a declaration nobody owns, else `gone`."""
+    if held:
+        item["state"] = "armed"
+    elif orphan(decl):
+        item["state"] = "orphan"
+        item["why"] = _ORPHAN_WHY
+    else:
+        item["state"] = "gone"
+
+
+def _pending_states(rows: list[dict[str, Any]]) -> None:
+    """A row asked to arm while the guest ran is `pending` whatever the list says now."""
+    for item in rows:
+        if item["ref"] in STATE.pending["arm"]:
+            item["state"] = "pending"
+            item.pop("why", None)
+
+
+def _disarm_one(spec: dict[str, Any], named: str, running: bool, disarmed: list[str],
+                pending_disarm: list[str], clear: Callable[[], dict[str, object]]) -> None:
+    """One armed row taken out of the debugger, or queued for the next stop: while the guest
+    runs, and when the removal refuses, since a row left in is one the next release meets."""
+    if not running:
+        try:
+            gone = clear()
+        except ds.Invalid:
+            pass
+        else:
+            if gone["removed"]:
+                disarmed.append(str(gone["entry"]))
+                STATE.snapshot_forget(str(gone["entry"]))
+            return
+    STATE.pending["disarm"].append(spec)
+    STATE.pending["dirty"] = True
+    pending_disarm.append(named)

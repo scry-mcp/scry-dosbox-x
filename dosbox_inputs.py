@@ -279,6 +279,12 @@ def verify_block(expect: str, reaction: dict[str, object]) -> dict[str, Any]:
 
 
 EFFECT_WAIT_DEFAULT_S = 10.0    # how long a verified post waits for the guest's reaction
+DRIVE_EXPECT_WAIT_S = 5.0       # the default bound on `drive`'s wait for `expect`
+
+
+def drive_wait_s(seconds: float | None) -> float:
+    """The bound `drive`'s wait for `expect` takes: `seconds`, or the default."""
+    return DRIVE_EXPECT_WAIT_S if seconds is None else seconds
 
 
 
@@ -509,7 +515,7 @@ def _pointer(report: Report) -> dict[str, Any]:
     return {"screen": screen, "mouse": {"x": report.x, "y": report.y,
                                         "max_x": report.max_x, "max_y": report.max_y},
             "buttons": [name for name, bit in BUTTONS.items() if report.buttons >> bit & 1],
-            "vga_mode": f"{report.mode:#04x}"}
+            "bios_mode": f"{report.mode:#04x}"}
 
 
 def send_mouse_at(session: ds.Session, aimed: dict[str, Any], button: str | None, action: str,

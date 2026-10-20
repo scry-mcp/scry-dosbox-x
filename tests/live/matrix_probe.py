@@ -135,9 +135,9 @@ _WITHOUT_SESSION: dict[str, tuple[Callable[[dict[str, Any]], bool], str]] = {
     "build_check": (lambda r: ok(r) and r.get("debugger") is True and no_session(r),
                     "build_check docstring: about the build, answers with no session"),
     "status": (lambda r: ok(r) and no_session(r),
-               "status docstring: `session` null when there is none, under status ok"),
-    "close": (lambda r: ok(r) and r.get("closed") is False and r.get("how") == "none",
-              "close docstring: `how` none, nothing to close"),
+               "status docstring: `alive: false` when there is none, under status ok"),
+    "close": (lambda r: ok(r) and r.get("closed") is False and r.get("ended_by") == "none",
+              "close docstring: `ended_by` none, nothing to close"),
     "start": (lambda r: ok(r) and alive(r), "start docstring: opens one session, parked"),
 }
 
@@ -174,7 +174,7 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "build_check": {}, "status": {}, "close": {}, "registers": {}, "scan_clear": {},
         "resume": {}, "stop": {}, "state_list": {}, "breakpoint_list": {}, "watch_list": {},
         "captures": {},
-        "start": {"conf": str(PROBE_CONF), "cwd": str(GUEST), "seconds": SESSION_S,
+        "start": {"conf": str(PROBE_CONF), "cwd": str(GUEST), "session_seconds": SESSION_S,
                   "logfile": M.fresh(".log"), "state_dir": M.fresh("-save")},
         "log": {"pattern": ".", "channel": "guest" if state == "running" else "emulator"},
         "log_wait": {"pattern": r"PROBE" if state == "running" else r"MATRIX_NEVER_LOGGED",
@@ -205,7 +205,7 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "state_load": {"name": "matrix_a_stopped", "seconds": 10},
         "snapshot": {"dest": M.fresh(".png"), "seconds": 10},
         "breakpoint_interrupt": {"number": 0x21, "ah": 0x4C},
-        "symbols_load": {"source": str(FIXTURE_MAP), "base": "8000"},
+        "symbols_load": {"path": str(FIXTURE_MAP), "base": "8000"},
         "symbols_find": {"name": FIXTURE_SYMBOL},
         "breakpoint_at": {"ref": "0000:0002"},
         "breakpoint_clear": {"ref": "0000:0002"},
@@ -213,7 +213,7 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "watch_clear": {"ref": "0040:006C"},
         "send_keys": {"keys": ["a"]},
         "send_mouse": {"button": "left"},
-        "capture_frame": {"at": 0, "dest": M.fresh(".png")},
+        "capture_frame": {"frame": 0, "dest": M.fresh(".png")},
         "series_capture": {"first": 0, "last": 1},
         **MEDIA_ABSENT,
         "perform": {"steps": [{"op": "status"}]},
@@ -223,7 +223,7 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "comment_list": {},
         "comment_delete": {"ref": COMMENT_REF},
         "comment_save": {"dest": M.fresh(".comments.tsv")},
-        "comment_load": {"source": _header_only()},
+        "comment_load": {"path": _header_only()},
         "map_load": {"path": "/nonexistent/probe.scry-map.json"},
         "map_add": {"screen": f"probe_{state}", "match": [[0, 0, 8, 1]]},
         "map_find": {},
@@ -258,12 +258,17 @@ def _exported(r: dict[str, Any]) -> bool:
 #: The sequences and the export answer alike stopped and running: a sequence waits for the
 #: stop its steps need, and the export reads the recording, not the machine.
 _SEQUENCES: dict[str, tuple[Callable[[dict[str, Any]], bool], str]] = {
-    "perform": (lambda r: ok(r) and r.get("completed") == 1, "perform docstring"),
+    "perform": (lambda r: ok(r) and r.get("steps_completed") == 1, "perform docstring"),
     "perform_export": (lambda r: ok(r) and _exported(r),
                        "perform_export docstring: the session's recording, written"),
     "drive": (lambda r: ok(r) and (r.get("verify") or {}).get("checked") is False,
               "drive docstring: `checked: false` when no expect was given"),
 }
+
+def _unavailable(datum: object) -> bool:
+    """A datum a reply could not read: `{available: false, why}`, the reason beside it."""
+    return isinstance(datum, dict) and datum.get("available") is False and bool(datum.get("why"))
+
 
 def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
     """The expectation of each tool on a headless machine stopped inside the probe."""
@@ -271,14 +276,15 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
     d: dict[str, tuple[Callable[[dict[str, Any]], bool], str]] = {
         "build_check": (lambda r: refused(r, "session_live"), "build_check docstring"),
         "start": (lambda r: refused(r, "session_live"), "start docstring: one machine"),
-        "status": (lambda r: ok(r) and live(r) and r.get("last_stop") is not None
+        "status": (lambda r: ok(r) and live(r) and "stop_seq" in (r.get("last_stop") or {})
                    and r.get("cpu_mode") in ("real", "protected", "paged"),
                    "status docstring: last_stop, cpu_mode of the stop it is in"),
         "log": (lambda r: ok(r) and isinstance(r.get("lines"), list),
                 "log docstring: an empty `lines` is an answer"),
-        "log_wait": (lambda r: refused(r, "wait_stopped") and r.get("last_stop") is not None,
+        "log_wait": (lambda r: refused(r, "wait_stopped")
+                     and "stop_seq" in (r.get("last_stop") or {}),
                      REF_DOC + "The log: a wait on a stopped machine ends at once"),
-        "registers": (lambda r: ok(r) and "CS" in (r.get("registers") or {}),
+        "registers": (lambda r: ok(r) and "CS" in (r.get("regs") or {}),
                       "registers docstring"),
         "read_memory": (lambda r: ok(r) and len(str(r.get("hex"))) == 8,
                         "read_memory docstring: `length` bytes as hex"),
@@ -293,9 +299,9 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
         "call_stack": (lambda r: ok(r) and r.get("heuristic") is True
                        and len(r.get("calls") or []) >= 1 and bool(r.get("ended_why")),
                        "call_stack docstring: row 0 the stop, heuristic, why it ended"),
-        "scan_start": (lambda r: ok(r) and r.get("candidates") == 16,
-                       "scan_start docstring: every cell a candidate (16 bytes, byte width)"),
-        "scan_filter": (lambda r: ok(r) and r.get("survivors") == 16,
+        "scan_start": (lambda r: ok(r) and r.get("hits_total") == 16,
+                       "scan_start docstring: every cell a candidate (16 bytes, one-byte cells)"),
+        "scan_filter": (lambda r: ok(r) and r.get("hits_total") == 16,
                         "scan_filter docstring: `=` alone keeps cells unchanged since the "
                         "open; the machine stayed stopped"),
         "scan_clear": (lambda r: ok(r) and r.get("cleared") is True, "scan_clear docstring"),
@@ -304,11 +310,11 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                         and "PROBE" in {b.get("filename") for b in r.get("mcbs") or []},
                         "machine_map docstring; known: PROBE resident, real mode"),
         "interrupt_vectors": (lambda r: ok(r) and len(r.get("vectors") or []) == 1
-                              and str((r.get("vectors") or [{}])[0].get("addr")).startswith(
+                              and str((r.get("vectors") or [{}])[0].get("seg_off")).startswith(
                                   "F000:"),
                               "interrupt_vectors docstring; known: DOS answers INT 21h from "
                               "the firmware segment"),
-        "screen_view": (lambda r: ok(r) and r.get("source") == "text"
+        "screen_view": (lambda r: ok(r) and r.get("kind") == "text"
                         and "C:\\>PROBE.COM" in (r.get("text") or []),
                         "screen_view docstring; known: the autoexec launches PROBE.COM"),
         "screen_signature": (lambda r: ok(r) and len(str(r.get("signature"))) == 16
@@ -325,8 +331,9 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                   "write docstring: readback, verified"),
         "stop": (lambda r: ok(r) and r.get("interrupted") is False,
                  "stop docstring: `false` when already stopped"),
-        "step": (lambda r: ok(r) and r.get("completed") == 1, "step docstring: completed"),
-        "run_to": (lambda r: ok(r) and r.get("verdict") == "OTHER_STOP"
+        "step": (lambda r: ok(r) and r.get("instructions_completed") == 1,
+                 "step docstring: instructions_completed"),
+        "run_to": (lambda r: ok(r) and r.get("verdict") == "TIMEOUT"
                    and int(r.get("control_hits") or 0) > 0,
                    REF_DOC + "Advancing the machine: a control turns a silence into a "
                    "measurement"),
@@ -358,8 +365,8 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                             "breakpoint_list docstring: stopped, read live"),
         "breakpoint_clear": (lambda r: ok(r) and r.get("declarations_cleared") == 1,
                              "breakpoint_clear docstring"),
-        "watch_add": (lambda r: ok(r) and r.get("state") == "resolved",
-                      "watch_add docstring: a show watch resolves"),
+        "watch_add": (lambda r: ok(r) and r.get("state") == "evaluated",
+                      "watch_add docstring: a show watch is evaluated"),
         "watch_list": (lambda r: ok(r) and any(w.get("ref") == "0040:006C"
                                                for w in r.get("watches") or []),
                        "watch_list docstring"),
@@ -381,10 +388,10 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
         "comment_list": (lambda r: ok(r) and any(c.get("ref") == COMMENT_REF
                                                  for c in r.get("comments") or []),
                          "comment_list docstring"),
-        "comment_save": (lambda r: ok(r) and Path(str(r.get("dest"))).is_file(),
+        "comment_save": (lambda r: ok(r) and Path(str(r.get("path"))).is_file(),
                          "comment_save docstring"),
         "comment_load": (lambda r: ok(r) and r.get("parsed") == 0
-                         and r.get("added_total") == 0, "comment_load docstring"),
+                         and r.get("added") == 0, "comment_load docstring"),
         "comment_delete": (lambda r: ok(r) and (r.get("deleted") or {}).get("ref") == COMMENT_REF,
                            "comment_delete docstring"),
         "map_add": (lambda r: ok(r) and r.get("kind") == "text" and r.get("size") == [80, 25]
@@ -410,11 +417,10 @@ def _running(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
     d: dict[str, tuple[Callable[[dict[str, Any]], bool], str]] = {
         "build_check": (lambda r: refused(r, "session_live"), "build_check docstring"),
         "start": (lambda r: refused(r, "session_live"), "start docstring"),
-        "stop": (lambda r: ok(r) and r.get("interrupted") is True and r.get("how") == "break",
+        "stop": (lambda r: ok(r) and r.get("interrupted") is True and r.get("via") == "break",
                  "stop docstring: BREAK down the debugger channel, headless too"),
-        "status": (lambda r: ok(r) and alive(r) and r.get("cpu_mode") is None
-                   and bool(r.get("cpu_mode_why")),
-                   "status docstring: cpu_mode null with cpu_mode_why while it runs"),
+        "status": (lambda r: ok(r) and alive(r) and _unavailable(r.get("cpu_mode")),
+                   "status docstring: cpu_mode unavailable, with its why, while it runs"),
         "log": (lambda r: ok(r) and bool(r.get("lines")), "log docstring: works running"),
         "log_wait": (lambda r: ok(r) and "PROBE" in str(r.get("line")),
                      "log_wait docstring; known: probe.asm writes `PROBE . tick`"),
@@ -440,16 +446,16 @@ def _running(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                        "watch_list docstring: running, debugger_read false"),
         "watch_clear": (lambda r: ok(r) and r.get("declarations_cleared") == 1,
                         "watch_clear docstring"),
-        "comment_list": (lambda r: ok(r) and r.get("running") is True,
+        "comment_list": (lambda r: ok(r) and (r.get("session") or {}).get("running") is True,
                          "comment_list docstring: answers on a running guest"),
-        "comment_save": (lambda r: ok(r) and Path(str(r.get("dest"))).is_file(),
+        "comment_save": (lambda r: ok(r) and Path(str(r.get("path"))).is_file(),
                          "comment_save docstring: answers on a running guest"),
         "send_keys": (lambda r: refused(r, "no_channel"),
                       "send_keys docstring: no stub announced, so nothing would receive it"),
         "send_mouse": (lambda r: refused(r, "no_channel"),
                        "send_mouse docstring: no stub announced, so nothing would receive it"),
         **_SEQUENCES,
-        "close": (lambda r: ok(r) and r.get("closed") is True and r.get("how") == "quit",
+        "close": (lambda r: ok(r) and r.get("closed") is True and r.get("ended_by") == "quit",
                   "close docstring: `quit`, a session launched here leaves on the signal"),
     }
     return d[tool]
@@ -496,7 +502,7 @@ def _a_cells() -> list[Cell]:
     out = [Cell(_a_label(t, s), _expect(t, s)[1]) for s in STATES for t in TOOLS
            if not (s == "stopped" and t == "close")]
     out.append(Cell("A running registers(from_last_stop)",
-                    "registers docstring: stale, marked, with last_stop"))
+                    "registers docstring: `superseded`, marked, with last_stop"))
     out.append(Cell("A stopped close", "close docstring: `quit` on a parked session"))
     return out
 
@@ -539,7 +545,7 @@ def section_a() -> None:
     into_dos()
     Ctx.probe = into_probe()
     regs = M.call(server.registers)
-    Ctx.eax = hexint((regs.get("registers") or {}).get("EAX")) or 0
+    Ctx.eax = hexint((regs.get("regs") or {}).get("EAX")) or 0
     M.setup()
     for tool in _STOPPED_ORDER:
         _a_one(tool, "stopped")
@@ -555,7 +561,8 @@ def section_a() -> None:
             _a_one(tool, "running")
     r = M.call(server.registers, from_last_stop=True)
     M.judge("A running registers(from_last_stop)",
-            ok(r) and r.get("stale") is True and r.get("last_stop") is not None, said(r))
+            ok(r) and r.get("superseded") is True
+            and "stop_seq" in (r.get("last_stop") or {}), said(r))
     _a_one("stop", "running")            # last of the running cells: it parks the machine
     M.setup()
     must(M.call(server.resume), "releasing the probe again for the running close")
@@ -565,7 +572,7 @@ def section_a() -> None:
             _a_one(tool, "closed")
     _a_one("start", "closed")
     r = M.call(server.close)
-    M.judge("A stopped close", ok(r) and r.get("closed") is True and r.get("how") == "quit",
+    M.judge("A stopped close", ok(r) and r.get("closed") is True and r.get("ended_by") == "quit",
             said(r))
 
 
@@ -599,10 +606,10 @@ B_CELLS = cells(
     ("B scan 401 survivors cut", REF_DOC + "Reading and writing: `limit` 400 is the ceiling"),
     ("B scan 40 survivors listed by default", "scan_filter docstring: `limit` defaults to 40"),
     ("B scan 41 survivors cut by default", "scan_filter docstring: `limit` defaults to 40"),
-    ("B scan_start width=nibble", "scan_start docstring: byte, word or dword"),
+    ("B scan_start cell_bytes=3", "scan_start docstring: `cell_bytes` 1, 2 or 4"),
     ("B scan_filter operator=~", "scan_filter docstring: the six operators"),
     ("B step count=64", "the ceiling dosbox_session.STEP_MAX declares, REFERENCE's Advancing "
-                        "quotes; step docstring: completed is what landed"),
+                        "quotes; step docstring: instructions_completed is what landed"),
     ("B step count=65", "the ceiling dosbox_session.STEP_MAX declares"),
     ("B step count=0", "step docstring: a count of instructions"),
     ("B step mode=sideways", "step docstring: into or over"),
@@ -620,7 +627,7 @@ B_CELLS = cells(
     ("B run_to seconds=0", "the bound dosbox_session.RUN_TO_MAX declares"),
     ("B run_to without a control", "run_to docstring: control is REQUIRED"),
     ("B run_to real-mode offset past FFFF", REF_DOC + "Advancing: refused in real mode"),
-    ("B resume seconds=-1", "resume's own refusal of a negative bound (dosbox_x_server.resume)"),
+    ("B resume seconds=-1", "resume docstring: `seconds` is 0 or a bound up to the ceiling"),
     ("B symbols_find limit=50", "symbols_find docstring: limit 1..50"),
     ("B symbols_find limit=51", "symbols_find docstring: limit 1..50"),
     ("B symbols_find limit=0", "symbols_find docstring: limit 1..50"),
@@ -633,18 +640,20 @@ B_CELLS = cells(
     ("B send_mouse x=32767", "send_mouse docstring: a driver coordinate is 16-bit signed"),
     ("B send_mouse x=32768", "send_mouse docstring: a driver coordinate is 16-bit signed"),
     ("B send_mouse x=2**31", "send_mouse docstring: a driver coordinate is 16-bit signed"),
-    ("B perform wait=600", REF_DOC + "Sequences: wait is a bound; its top is RUN_TO_MAX's"),
-    ("B perform wait=600.5", REF_DOC + "Sequences: a wait that is not a bound"),
-    ("B perform wait=-1", REF_DOC + "Sequences: a wait that is not a bound"),
+    ("B perform settle_seconds=600",
+     REF_DOC + "Sequences: settle_seconds is a bound; its top is RUN_TO_MAX's"),
+    ("B perform settle_seconds=600.5",
+     REF_DOC + "Sequences: a settle_seconds that is not a bound"),
+    ("B perform settle_seconds=-1", REF_DOC + "Sequences: a settle_seconds that is not a bound"),
     ("B drive limit=400", "drive docstring: log's ceiling of 400 at most"),
     ("B drive limit=401", "drive docstring: log's ceiling of 400 at most"),
     ("B send_keys 64 keys", "send_keys docstring: at most 64 per call"),
     ("B send_keys 65 keys", "send_keys docstring: at most 64 per call"),
     ("B send_keys unknown key", "send_keys docstring: an unknown key name"),
     ("B send_keys seconds without expect", "send_keys docstring: seconds without expect"),
-    ("B start seconds=14400", "start docstring: at most 4 hours"),
-    ("B start seconds=14401", "start docstring: at most 4 hours"),
-    ("B start seconds=0", "start docstring: seconds out of range"),
+    ("B start session_seconds=14400", "start docstring: at most 4 hours"),
+    ("B start session_seconds=14401", "start docstring: at most 4 hours"),
+    ("B start session_seconds=0", "start docstring: `session_seconds` out of range"),
 )
 
 
@@ -682,10 +691,10 @@ def _b_scan() -> None:
         opened = M.call(server.scan_start, ref=f"{SCRATCH}:1000", length=n)
         r = M.call(server.scan_filter, operator="=", limit=400)
         if n == 400:
-            good = (ok(opened) and ok(r) and r.get("survivors") == 400
+            good = (ok(opened) and ok(r) and r.get("hits_total") == 400
                     and len(r.get("hits") or []) == 400 and r.get("truncated") is False)
         else:
-            good = (ok(opened) and ok(r) and r.get("survivors") == 401
+            good = (ok(opened) and ok(r) and r.get("hits_total") == 401
                     and r.get("hits") == [] and r.get("truncated") is True)
         label = "B scan 400 survivors listed" if n == 400 else "B scan 401 survivors cut"
         M.judge(label, good, said(r))
@@ -695,7 +704,7 @@ def _b_scan() -> None:
         r = M.call(server.scan_filter, operator="=")
         listed = n <= 40
         M.judge(f"B scan {n} survivors {'listed' if listed else 'cut'} by default",
-                ok(opened) and ok(r) and r.get("survivors") == n
+                ok(opened) and ok(r) and r.get("hits_total") == n
                 and len(r.get("hits") or []) == (n if listed else 0)
                 and r.get("truncated") is (not listed), said(r))
     M.call(server.scan_clear)
@@ -746,7 +755,7 @@ def section_b() -> None:
     # CS IS WRITTEN WITH THE VALUE IT HOLDS: another would move the probe's code out from under
     # it. EAX is put back after the 16-bit cell, for the same reason.
     regs = must(M.call(server.registers), "the registers the set_register cells start from")
-    cs, eax = (int(str(regs["registers"][k]), 16) for k in ("CS", "EAX"))
+    cs, eax = (int(str(regs["regs"][k]), 16) for k in ("CS", "EAX"))
     r = M.call(server.set_register, name="cs", value=cs)
     judged("B set_register cs reads back under its own name", reply=r,
            holds=ok(r) and r.get("verified") is True and r.get("readback") == f"{cs:04X}")
@@ -754,7 +763,7 @@ def section_b() -> None:
     r = M.call(server.set_register, name="ax", value=0x1234)
     judged("B set_register ax is verified with the high half set", reply=r,
            holds=ok(r) and r.get("verified") is True and r.get("readback") == "1234"
-           and r.get("registers", {}).get("EAX") == "ABCD1234")
+           and r.get("regs", {}).get("EAX") == "ABCD1234")
     must(M.call(server.set_register, name="eax", value=eax), "EAX put back")
     r = M.call(server.memdump, ref=f"{SCRATCH}:0000", length=0x10000, dest=M.fresh(".bin"))
     judged("B memdump 64 KiB", reply=r, holds=ok(r) and r.get("bytes") == 0x10000
@@ -776,17 +785,17 @@ def section_b() -> None:
     inside.unlink(missing_ok=True)
     _b_find()
     _b_scan()
-    r = M.call(server.scan_start, ref=f"{SCRATCH}:0000", length=16, width="nibble")
-    judged("B scan_start width=nibble", reply=r, holds=_bad(r))
+    r = M.call(server.scan_start, ref=f"{SCRATCH}:0000", length=16, cell_bytes=3)
+    judged("B scan_start cell_bytes=3", reply=r, holds=_bad(r))
     M.call(server.scan_start, ref=f"{SCRATCH}:0000", length=16)
     r = M.call(server.scan_filter, operator="~")
     judged("B scan_filter operator=~", reply=r, holds=refused(r))
     M.call(server.scan_clear)
     M.setup()
     r = M.call(server.step, count=64)
-    done = r.get("completed")
+    done = r.get("instructions_completed")
     judged("B step count=64", reply=r, holds=ok(r) and isinstance(done, int)
-            and (done == 64 or (done < 64 and r.get("running") is True)))
+            and (done == 64 or (done < 64 and (r.get("session") or {}).get("running") is True)))
     for label, kw in (("B step count=65", {"count": 65}), ("B step count=0", {"count": 0}),
                       ("B step mode=sideways", {"mode": "sideways"})):
         r = M.call(server.step, **kw)
@@ -834,7 +843,7 @@ def section_b() -> None:
            holds=_bad(r) and (r.get("session") or {}).get("alive") is True)
     M.call(server.breakpoint_clear, ref="BPINT 08")
     M.setup()
-    M.call(server.symbols_load, source=str(FIXTURE_MAP), base="8000")
+    M.call(server.symbols_load, path=str(FIXTURE_MAP), base="8000")
     M.setup()
     for n, label, want in ((50, "B symbols_find limit=50", True),
                            (51, "B symbols_find limit=51", False),
@@ -845,7 +854,7 @@ def section_b() -> None:
                      (HUGE, "B watch_add show length=2**31")):
         r = M.call(server.watch_add, ref=f"{SCRATCH}:0000", mode="show", length=n)
         judged(label, reply=r, holds=ok(r) if n == 128 else refused(r))
-    M.call(server.watch_clear)
+    M.call(server.watch_clear, all=True)
     M.setup()
     r = M.call(server.breakpoint_interrupt, number=0xFF)
     judged("B breakpoint_interrupt number=0xFF", reply=r,
@@ -864,25 +873,26 @@ def section_b() -> None:
         r = M.call(server.send_mouse, x=x, y=0, units="mouse")
         judged(label, reply=r, holds=_bad(r))
     r = M.call(server.perform, exempt="no step of it waits", steps=[{"op": "status"}],
-               wait=600)
-    judged("B perform wait=600", reply=r, holds=ok(r) and r.get("completed") == 1)
+               settle_seconds=600)
+    judged("B perform settle_seconds=600", reply=r,
+           holds=ok(r) and r.get("steps_completed") == 1)
     r = M.call(server.perform, exempt="refused before any step",
-               steps=[{"op": "status"}], wait=600.5)
-    judged("B perform wait=600.5", reply=r, holds=_bad(r))
-    r = M.call(server.perform, steps=[{"op": "status"}], wait=-1)
-    judged("B perform wait=-1", reply=r, holds=_bad(r))
+               steps=[{"op": "status"}], settle_seconds=600.5)
+    judged("B perform settle_seconds=600.5", reply=r, holds=_bad(r))
+    r = M.call(server.perform, steps=[{"op": "status"}], settle_seconds=-1)
+    judged("B perform settle_seconds=-1", reply=r, holds=_bad(r))
     for n, label in ((400, "B drive limit=400"), (401, "B drive limit=401")):
         r = M.call(server.drive, act=[{"op": "status"}], limit=n)
         judged(label, reply=r, holds=ok(r) if n == 400 else _bad(r))
     _b_serial()
-    for n, label in ((14401, "B start seconds=14401"), (0, "B start seconds=0")):
-        r = start_call(conf=str(PROBE_CONF), cwd=str(GUEST), seconds=n,
-                   state_dir=M.fresh("-save"))
+    for n, label in ((14401, "B start session_seconds=14401"), (0, "B start session_seconds=0")):
+        r = start_call(conf=str(PROBE_CONF), cwd=str(GUEST),
+                       session_seconds=n, state_dir=M.fresh("-save"))
         judged(label, reply=r, holds=_bad(r) and no_session(r))
         close_whatever()
-    r = start_call(conf=str(PROBE_CONF), cwd=str(GUEST), seconds=14400,
-               state_dir=M.fresh("-save"))
-    judged("B start seconds=14400", reply=r, holds=ok(r) and alive(r))
+    r = start_call(conf=str(PROBE_CONF), cwd=str(GUEST),
+                   session_seconds=14400, state_dir=M.fresh("-save"))
+    judged("B start session_seconds=14400", reply=r, holds=ok(r) and alive(r))
 
 
 # ================================================================ C: across calls
@@ -964,12 +974,12 @@ def _c_scan() -> None:
     moved = M.call(server.scan_filter, operator="!")
     hits = moved.get("hits") or []
     judged("C scan ! keeps the one cell written", reply=moved,
-            holds=ok(moved) and moved.get("survivors") == 1 and len(hits) == 1
-            and hexint(hits[0].get("linear")) == SCRATCH_SEG * 16 + 0x2003
+            holds=ok(moved) and moved.get("hits_total") == 1 and len(hits) == 1
+            and hexint(hits[0].get("addr")) == SCRATCH_SEG * 16 + 0x2003
             and hexint(hits[0].get("value")) == 0xFF)
     closing = M.call(server.scan_filter, operator="=")
     judged("C scan closing = answers its own iterations", reply=closing,
-            holds=ok(closing) and closing.get("survivors") == 0 and closing.get("closed") is True
+            holds=ok(closing) and closing.get("hits_total") == 0 and closing.get("closed") is True
             and closing.get("iterations") == 2)
     r = M.call(server.scan_clear)
     judged("C scan_clear with nothing open", reply=r, holds=ok(r) and r.get("cleared") is False)
@@ -990,7 +1000,7 @@ def _c_declarations(p: Probe) -> None:
     r = M.call(server.status)
     judged("C status counts the declarations", reply=r,
             holds=ok(r) and (r.get("declarations") or {}).get("breakpoints") == 2)
-    M.call(server.breakpoint_clear)
+    M.call(server.breakpoint_clear, all=True)
     M.setup()
     r = M.call(server.run_to, ref=p.at(p.emit), seconds=10, control=p.at(p.spin))
     # The debugger's own list, through the tool that reads it back: an entry this store never
@@ -1001,7 +1011,7 @@ def _c_declarations(p: Probe) -> None:
     left = [str(f) for f in listed.get("foreign") or []]
     judged("C run_to arrives in the probe and removes its breakpoint", reply=r,
             holds=ok(r) and r.get("verdict") == "TARGET" and r.get("target_disarmed") is True
-            and hexint((r.get("stopped_at") or {}).get("eip")) == p.emit and ok(listed)
+            and hexint(str(r.get("pc")).split(":")[-1]) == p.emit and ok(listed)
             and not any(f"{p.emit:04X}" in f and f"{p.seg:04X}" in f for f in left))
 
 
@@ -1020,7 +1030,7 @@ def _c_stops(p: Probe) -> None:
     judged("C the stop's e9 since the previous stop", reply=r,
             holds=ok(r) and "stop_seq" in r and bool(lines)
             and all("PROBE" in str(x) for x in lines))
-    r = M.call(server.perform, steps=[{"op": "status"}, {"op": "resume"}], wait=10)
+    r = M.call(server.perform, steps=[{"op": "status"}, {"op": "resume"}], settle_seconds=10)
     judged("C perform ending in resume carries the stop", reply=r,
             holds=ok(r) and isinstance(r.get("stopped"), dict))
     r = M.call(server.perform, steps=[{"op": "status"}, {"op": "registers"}], summaries=True)
@@ -1035,8 +1045,8 @@ def _c_stops(p: Probe) -> None:
         errors = r.get("errors") or []
         judged(label, reply=r,
                 holds=refused(r) and r.get("ran") == [] and any(e.get("step") == 1 for e in errors))
-    M.call(server.watch_clear)
-    M.call(server.breakpoint_clear)
+    M.call(server.watch_clear, all=True)
+    M.call(server.breakpoint_clear, all=True)
     M.setup()
 
 
@@ -1070,7 +1080,7 @@ def _c_pending(p: Probe) -> None:
     """A stop the matrix can predict: a breakpoint on `.pause`, armed before the release,
     fires after the probe's next line. A breakpoint declared WHILE it runs is pending, and the first
     tool that finds the machine stopped applies it and says so."""
-    M.call(server.breakpoint_clear)
+    M.call(server.breakpoint_clear, all=True)
     M.call(server.breakpoint_at, ref=p.at(p.pause))
     M.call(server.resume)
     M.setup()
@@ -1089,14 +1099,13 @@ def _c_pending(p: Probe) -> None:
             holds=ok(pend) and pend.get("state") == "pending"
             and bool(found.get("stopped_on_its_own"))
             and "0000:0007" in [str(a) for a in armed])
-    M.call(server.breakpoint_clear)
+    M.call(server.breakpoint_clear, all=True)
     w = M.call(server.watch_add, ref=p.at(p.cnt + 4), mode="change", length=1, fmt="u8")
     r = M.call(server.resume, seconds=10)
-    at = r.get("stopped_at") or {}
     judged("C a change watch on the counter stops the probe", reply=r,
             holds=ok(w) and w.get("armed") is True and ok(r) and "stop_seq" in r
-            and str(at.get("cs")) == f"{p.seg:04X}")
-    M.call(server.watch_clear)
+            and str(r.get("pc")).split(":")[0] == f"{p.seg:04X}")
+    M.call(server.watch_clear, all=True)
     M.setup()
 
 
@@ -1128,8 +1137,8 @@ def _c_store() -> None:
 
 
 def _c_start() -> None:
-    r = start_call(conf=str(PROBE_CONF), cwd=str(GUEST), seconds=SESSION_S,
-               state_dir=M.fresh("-save"), plan=[{"op": "status"}, {"op": "registers"}])
+    r = start_call(conf=str(PROBE_CONF), cwd=str(GUEST), session_seconds=SESSION_S,
+                   state_dir=M.fresh("-save"), plan=[{"op": "status"}, {"op": "registers"}])
     judged("C start with a plan", reply=r, holds=ok(r) and isinstance(r.get("start"), dict)
             and len(r.get("ran") or []) == 2 and list(r)[-1] == "session")
     close_whatever()
@@ -1217,10 +1226,9 @@ def section_h() -> None:
             ok(r) and moved is not None
             and abs(moved - 2 / TEXT_MODE_HZ) <= 0.2 * 2 / TEXT_MODE_HZ,
             f"moved {moved} s; {said(r, 80)}")
-    at = r.get("stopped_at") or {}
     s = M.call(server.status)
-    M.judge("H status names the run_for stop", ok(s) and s.get("pc") == f"{at.get('cs')}:"
-            f"{at.get('eip')}", f"status pc {s.get('pc')}, run_for at {at}")
+    M.judge("H status names the run_for stop", ok(s) and s.get("pc") == r.get("pc"),
+            f"status pc {s.get('pc')}, run_for at {r.get('pc')}")
     r = M.call(server.run_for, milliseconds=TIMED_MS)
     moved = clock_moved(r)
     asked = TIMED_MS / 1000
@@ -1244,7 +1252,7 @@ def section_h() -> None:
     M.judge("H a breakpoint on the guest's loop ends it OTHER_STOP",
             ok(r) and r.get("verdict") == "OTHER_STOP" and r.get("retrace_pending") is True
             and (r.get("attribution") or {}).get("ref") in loops, said(r))
-    must(M.call(server.breakpoint_clear), "clearing the loops")
+    must(M.call(server.breakpoint_clear, all=True), "clearing the loops")
     must(M.call(server.breakpoint_at, ref=NEVER_RUNS_STOPPER), "arming a stopper that never fires")
     r = M.call(server.resume, seconds=5)
     M.judge("H the next release stops at the pending retrace, named",
@@ -1254,8 +1262,9 @@ def section_h() -> None:
     judged("H debug VRT is refused naming run_for", reply=r,
            holds=refused(r, "bad_argument") and "run_for" in str(r.get("message")))
     s = M.call(server.status)
-    r = M.call(server.resume) if s.get("cpu_mode") is not None else s
-    if s.get("cpu_mode") is not None and not (ok(r) and "stop_seq" not in r):
+    stopped = isinstance(s.get("cpu_mode"), str)
+    r = M.call(server.resume) if stopped else s
+    if stopped and not (ok(r) and "stop_seq" not in r):
         M.block("H a running guest is refused", f"the machine did not run: {said(r)}")
     else:
         r = M.call(server.run_for, frames=1)
@@ -1308,7 +1317,7 @@ def section_i() -> None:
     r = M.call(server.interrupt_vectors)
     judged("I interrupt_vectors at the park: every vector 0000:0000, the debugger's sentence "
            "quoted", reply=r,
-           holds=ok(r) and {v.get("addr") for v in r.get("vectors") or []} == {"0000:0000"}
+           holds=ok(r) and {v.get("seg_off") for v in r.get("vectors") or []} == {"0000:00000000"}
            and PARK_SENTENCE in str(r.get("coverage_note")))
     into_dos()
     into_probe()
@@ -1321,7 +1330,7 @@ def section_i() -> None:
     r = M.call(server.interrupt_vectors, number=0x21)
     row = (r.get("vectors") or [{}])[0]
     judged("I interrupt_vectors number=0x21: F000:D100 in the DOSBox callback area", reply=r,
-           holds=ok(r) and row.get("addr") == "F000:D100"
+           holds=ok(r) and row.get("seg_off") == "F000:0000D100"
            and (row.get("bios_mem") or {}).get("what") == "DOSBox callback area")
     r = M.call(server.interrupt_vectors)
     judged("I interrupt_vectors whole: 256 vectors, and the file is gone", reply=r,
@@ -1352,7 +1361,7 @@ def section_i() -> None:
     judged("I interrupt_vectors on a running guest is refused", reply=r,
            holds=refused(r, "not_stopped") and alive(r) and not (GUEST / ds.INTVEC_FILE).exists())
     close_whatever()
-    boot(logfile=None)
+    boot(logfile="")
     M.setup()
     r = M.call(server.machine_map)
     judged("I machine_map without a logfile is refused naming it", reply=r,

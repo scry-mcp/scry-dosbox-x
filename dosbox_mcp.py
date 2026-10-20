@@ -51,30 +51,78 @@ def refusal(name: str, arguments: dict[str, Any], cause: ValidationError) -> dic
 # surface are the X's, so the short name would promise what this does not do.
 # THE SERVER'S OWN `instructions` (below, on `mcp`) are the documented channel for what a
 # client should know first, delivered by the protocol rather than pasted by a hook.
+#: What a refusal for a running guest names as answering: the sequence's table, and five
+#: that answer it outside a list (the last stop's registers, the two that run steps, the
+#: export of the session, the session's end).
+_ANSWERS_WHILE_RUNNING = [*sorted(sequence.RUNNING_OK_OPS), "registers(from_last_stop=True)",
+                          *sorted(checks.NOT_STEPS - {"start", "build_check"})]
+
+
+#: THE TOOLS BY FAMILY, in the order the instructions list them: `(name, tools)`.
+#: The instructions' roster and their "answers while it runs" sentence are both rendered from
+#: it, so a family that answers whole is named once instead of tool by tool.
+_FAMILIES: list[tuple[str, list[str]]] = [
+    ("Session", ["build_check", "start", "status", "close"]),
+    ("Read", ["registers", "read_memory", "disassemble", "call_stack", "memdump", "find",
+                  "log", "log_wait", "machine_map", "interrupt_vectors", "palette",
+                  "screen_view", "screen_signature", "map_add", "map_find", "debug"]),
+    ("Scan", ["scan_start", "scan_filter", "scan_clear"]),
+    ("Write", ["set_register", "write"]),
+    ("Advance", ["run_to", "run_for", "trace", "screen_wait", "step", "resume", "stop"]),
+    ("Declarations", ["breakpoint_at", "breakpoint_list", "breakpoint_clear",
+                                         "breakpoint_interrupt", "watch_add", "watch_list",
+                                         "watch_clear"]),
+    ("States", ["state_save", "state_load", "state_list"]),
+    ("Names", ["symbols_load", "symbols_find"]),
+    ("Comments", ["comment_add", "comment_list", "comment_delete", "comment_save",
+                      "comment_load"]),
+    ("Input", ["send_keys", "send_mouse", "drive"]),
+    ("Captures", ["captures", "capture_frame", "series_capture", "snapshot"]),
+    ("Files", ["image_diff", "series_diff", "region_track", "golden_check",
+                              "map_load", "map_save"]),
+    ("Sequences", ["perform", "perform_export"]),
+]
+
+
+def _ticked(names: list[str]) -> str:
+    return ", ".join(f"`{n}`" for n in names)
+
+
+def _roster() -> str:
+    return " ".join(f"{name}: {_ticked(tools)}." for name, tools in _FAMILIES)
+
+
+def _answering() -> tuple[list[str], list[str]]:
+    """The families every member of which answers a running guest, and the other names that
+    do, in roster order with what no family holds last."""
+    running = set(_ANSWERS_WHILE_RUNNING)
+    whole = [name for name, tools in _FAMILIES if running >= set(tools)]
+    rest = [t for name, tools in _FAMILIES if name not in whole for t in tools if t in running]
+    held = {t for _, tools in _FAMILIES for t in tools}
+    return whole, rest + [t for t in _ANSWERS_WHILE_RUNNING if t not in held]
+
+
+def answering_named() -> set[str]:
+    """Every tool the running sentence covers, its whole families expanded."""
+    whole, rest = _answering()
+    return {t for name, tools in _FAMILIES if name in whole for t in tools} | set(rest)
+
+
+def running_sentence() -> str:
+    whole, rest = _answering()
+    return (f"these answer then: {', '.join(whole[:-1])} and {whole[-1]} whole, "
+            f"and {_ticked(rest)}.")
+
+
 mcp = envelope.Envelope(
     "dosbox-x",
     instructions=(
         'A live DOS machine in DOSBox-X.\n\n'
-        'TOOLS. Session: `build_check`, `start`, `status`, `close`. Read: `registers`,\n'
-        '`read_memory`, `disassemble`, `call_stack`, `memdump`, `find`, `log`, `log_wait`,\n'
-        '`machine_map`, `interrupt_vectors`, `palette`, `screen_view`, `screen_signature`,\n'
-        '`map_add`, `map_find`, `debug`. Scan (by value): `scan_start`, `scan_filter`,\n'
-        '`scan_clear`. '
-        'Write: `set_register`, `write`. Advance: `run_to`, `run_for`, `trace`, `screen_wait`,\n'
-        '`step`, `resume`, `stop`. Declarations, kept per conf: `breakpoint_at`,\n'
-        '`breakpoint_list`, `breakpoint_clear`, `breakpoint_interrupt`, `watch_add`,\n'
-        '`watch_list`, `watch_clear`. States: `state_save`, `state_load`, `state_list`.\n'
-        'Names: `symbols_load`, `symbols_find`. Comments: `comment_add`, `comment_list`,\n'
-        '`comment_delete`, `comment_save`, `comment_load`. Input, in-guest: `send_keys`,\n'
-        '`send_mouse` (a mapped control by `target`), `drive`. Captures: `captures`,\n'
-        '`capture_frame`, `series_capture`, `snapshot`. Files, any state: `image_diff`,\n'
-        '`series_diff`, `region_track`, `golden_check`, `map_load`, `map_save`. Sequences:\n'
-        '`perform`, `perform_export`.\n\n'
+        'TOOLS. ' + _roster() + '\n\n'
         'A SESSION. `build_check` answers about the BUILD and REFUSES while a session is live.\n'
-        '`start` parks the guest STOPPED at the debugger; `resume` lets it\n'
-        'run. The readers need it STOPPED and refuse otherwise, naming `last_stop` and what\n'
-        'answers; a running guest is reached through `log`, `log_wait`, `send_keys` and\n'
-        '`send_mouse`, and stops at a breakpoint armed BEFORE the release\n'
+        '`start` parks it STOPPED at the debugger; `resume` lets it RUN, and readers refuse\n'
+        '(`not_stopped`, naming `last_stop`); ' + running_sentence() + '\nIt stops at a '
+        'breakpoint armed BEFORE the release '
         '(`breakpoint_interrupt` 0x21 real mode, 0x31 ah=2 DJGPP) or at `stop`. What you\n'
         'declare while it runs is `pending` until the next stop. After `symbols_load`, a `ref`\n'
         'is a symbol or a `SEG:OFF`. A cancel ends a call as its bound would; the next reply\n'
@@ -91,12 +139,6 @@ mcp = envelope.Envelope(
 # questions interleave on a terminal that has no notion of them being separate. The
 # session itself, and everything held beside it, is `STATE` (`dosbox_state`).
 LOCK = threading.RLock()
-
-#: What a refusal for a running guest names as answering: the sequence's table, and five
-#: that answer it outside a list (the last stop's registers, the two that run steps, the
-#: export of the session, the session's end).
-_ANSWERS_WHILE_RUNNING = [*sorted(sequence.RUNNING_OK_OPS), "registers(from_last_stop=True)",
-                          *sorted(checks.NOT_STEPS - {"start", "build_check"})]
 
 
 def registered_tools() -> list[str]:
@@ -227,23 +269,15 @@ _LISTS = {"breakpoint": ("breakpoint_list", "breakpoints"),
           "interrupt": ("breakpoint_list", "breakpoints"), "watch": ("watch_list", "watches")}
 
 
-def _declared() -> dict[str, list[str]]:
-    """The declarations the store holds, by `ref`, under the tool that lists each kind: what a
-    `start` re-arms, so a replay can be held to the same."""
-    held: dict[str, list[str]] = {tool: [] for tool, _ in _LISTS.values()}
-    for d in arming.current_store().declarations():
-        if d.kind in _LISTS:
-            held[_LISTS[d.kind][0]].append(d.ref)
-    return held
-
-
 RECORDER = recording.Recorder("dosbox-x", "dosbox_x_server.py", sequence.RECORD_MAX, _machine,
                               lambda: STATE.session is not None and STATE.session.alive(),
-                              declarations=_declared, lists=dict(_LISTS.values()),
+                              declarations=lambda: arming.current_store().declarations(),
+                              kinds=_LISTS,
                               stop_fields=("regs",),
                               outside=checks.NOT_STEPS - checks.SEQUENCES - {"start"},
                               sequences=checks.SEQUENCES, start_tool="start",
-                              states=("state_save", "state_load", "name"), plan="plan")
+                              states=("state_save", "state_load", "name"), plan="plan",
+                              plan_with=("settle_seconds",))
 
 # THE HOOKS ARE BOUND HERE, ONCE, AT IMPORT: a test that replaces one patches the name the hook
 # calls through (`STATE`, `running`), never the hook itself, which the boundary already holds.
@@ -259,32 +293,17 @@ def tool(
     session_before: bool = False, on_cancel: cancel.OnCancel | None = None,
     replay: recording.ExportAs | None = None,
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-    """Register an MCP tool, serialise it over the one machine, and put the one-line
-    `summary` first in its reply: `summary` is the tool's own line (`dosbox_summaries`),
-    REQUIRED, so a tool registered without one fails at import.
+    """Register an MCP tool on this server's boundary (`scry_core.boundary.Boundary.tool`, the
+    contract), `summary` its line in `dosbox_summaries`; `on_cancel` ends at `_end_cancelled`,
+    and which errors become replies is `_invoke`'s.
 
-    `title` is what the client shows for the tool, and `read_only` becomes the protocol's
-    `readOnlyHint`: a reader declares it so a client may run readers in parallel, which is
-    honest here because every tool takes the lock anyway. Anything that advances the
-    machine, writes to it, changes what the server holds (`symbols_load`, a declaration)
-    or writes a FILE (`memdump`, `capture_frame`) is not read-only. ONE CAVEAT, decided
-    by the owner: the first contact after a stop applies what was DECLARED while the
-    guest ran (`running.drain_if_stopped`), so a reader can be the call that arms a breakpoint.
-    That write belongs to the declaring call, which was not read-only and said
-    `pending`; the reader only delivers it, and its reply says so in `applied_on_stop`.
-
-    `idempotent` becomes `idempotentHint`, a STRONGER claim than read-only: calling it again
-    changes nothing AND answers the same. Every tool here reads a machine that moves or a file
-    that may change, so none declares it; declared wrongly it would invite a
-    client to repeat a call whose answer had moved underneath it, so it stays false unless
-    the tool's own data cannot change.
-
-    `session_before` keeps the `session` block the body built: only `close`'s, the state BEFORE
-    the kill. `on_cancel` is how the tool ends when the client cancels its call
-    (`_end_cancelled`); the rest of the contract, the `ctx` rule included, is
-    `scry_core.boundary.Boundary.tool`'s, and which errors become replies is `_invoke`'s.
-    `replay` is what its calls become in an exported session (`scry_core.recording`; REFERENCE.md,
-    From an investigation to a bench).
+    A reader here also declares what changes what the server holds (`symbols_load`, a
+    declaration) as not read-only. ONE CAVEAT, decided by the owner: the first contact after a
+    stop applies what was DECLARED while the guest ran (`running.drain_if_stopped`), so a reader
+    can be the call that arms a breakpoint. That write belongs to the declaring call, which was
+    not read-only and said `pending`; the reader only delivers it, and its reply says so in
+    `applied_on_stop`. No tool here is idempotent: each reads a machine that moves or a file that
+    may change.
     """
 
     return BOUNDARY.tool(title, summary=summary, read_only=read_only, idempotent=idempotent,

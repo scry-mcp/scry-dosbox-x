@@ -48,6 +48,8 @@ import dosbox_paths as paths
 # is a ceiling as well as a floor. Four hours is far past any interactive session and
 # still finite.
 MAX_SECONDS = 4 * 60 * 60
+# THE PORTS COM1 MAY DIAL: past the privileged range, which an unprivileged emulator cannot bind.
+INPUT_PORT_MIN, INPUT_PORT_MAX = 1024, 65535
 
 
 @dataclass
@@ -428,10 +430,10 @@ def validate(launch: Launch) -> None:
             "capture_video needs a program to capture: DX-CAPTURE wraps a "
                       "PROGRAM and stops when it exits, so without one the flag "
                       "would be accepted and quietly do nothing")
-    if launch.input_port and not 1024 <= launch.input_port <= 65535:
+    if launch.input_port and not INPUT_PORT_MIN <= launch.input_port <= INPUT_PORT_MAX:
         raise Invalid("bad_argument",
             f"input_port is the TCP port the emulator's COM1 dials, between "
-                      f"1024 and 65535; got {launch.input_port}")
+                      f"{INPUT_PORT_MIN} and {INPUT_PORT_MAX}; got {launch.input_port}")
 
 
 # A STATE'S NAME is a file name under the state directory, so it is held whole (`fullmatch`: a

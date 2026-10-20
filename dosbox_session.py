@@ -25,7 +25,6 @@ on the logs (`dosbox_log_reader`), the video and its stills (`dosbox_frames`), t
 from __future__ import annotations
 
 import contextlib
-import hashlib
 import os
 import pty
 import re
@@ -40,7 +39,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
-from scry_core import avi, cancel, live_host
+from scry_core import avi, cancel, judges, live_host
 from scry_core import reply_contract as contract
 from scry_core.progress import PROGRESS_EVERY_S as PROGRESS_EVERY_S
 from scry_core.progress import Progress as Progress
@@ -1385,7 +1384,8 @@ class Session:
                           f"write could not be read back. The session is marked altered "
                           f"anyway, because the attempt reached the machine")
         held = int(got, 16) & ((1 << bits) - 1)
-        return {"regs": regs, "readback": f"{held:0{bits // 4}X}", "verified": held == value}
+        return {"register": key, "regs": regs, "readback": f"{held:0{bits // 4}X}",
+                "verified": held == value}
 
     def breakpoint_interrupt(self, number: int, ah: int | None = None) -> str:
         """Break on an interrupt. The one way control comes BACK on this platform.
@@ -1719,14 +1719,12 @@ class Session:
         and "it was never armed" are completely different findings that an unverified
         arming makes indistinguishable.
 
-        AND IT REMOVES THE BREAKPOINT IT CREATED, once it has arrived. A `BP` is
+        AND IT REMOVES THE BREAKPOINT IT CREATED, on every stopped outcome. A `BP` is
         persistent, so a `run_to` that left it behind would silently stop the NEXT
-        `resume` at an address the caller had finished with. It is removed by looking
+        `resume` at an address the caller never declared. It is removed by looking
         its index up again rather than reusing the one from arming: `BPDEL` renumbers.
-        WHEN IT DID NOT ARRIVE THE BREAKPOINT STAYS, DELIBERATELY: the caller has not
-        reached what they asked for, and removing it would take away the thing they are
-        still waiting on. The reply says it is still armed rather than claiming a cleanup
-        that did not happen.
+        A caller who still wants the place calls `run_to` again; one who wants it to stay
+        declares it with `breakpoint_at`.
 
         THE ONE TRAP THIS CANNOT CLOSE, MEASURED HERE AND DOCUMENTED NOWHERE: A CODE
         BREAKPOINT IN ROM IS ACKNOWLEDGED AND NEVER FIRES. `BP F000:E05B` and
@@ -1892,9 +1890,9 @@ class Session:
         on_control = control is not None and Session._stopped_at(at, control[0], control[1])
         if on_control and read_after_bound and not interrupted:
             control_hits += 1          # found resting on the control after the bound: it fired
-        removed, cleanup = False, ""
-        if arrived:
-            removed, cleanup = Session._remove_own_breakpoint(self, target)
+        # THE TARGET IS OURS ON EVERY STOPPED OUTCOME, like the control: a `BP` is persistent,
+        # and one left behind stops the caller's next `resume` at a place no declaration names.
+        removed, cleanup = Session._remove_own_breakpoint(self, target)
         control_removed = False
         if ctl is not None:
             # THE CONTROL IS OURS ON EVERY STOPPED OUTCOME: nobody asked to keep it, and left
@@ -1925,8 +1923,9 @@ class Session:
                 "control": Session._control_block(ctl, control_hits,
                                                   removed=control_removed),
                 "note": cleanup.strip() if arrived else
-                        f"{why}, and not at {target}. The breakpoint at {target} is still "
-                        f"armed for the next release{rom}" + cleanup}
+                        f"{why}, and not at {target}{rom}." + (
+                            cleanup if not removed else
+                            f" The breakpoint at {target} was removed.{cleanup}")}
 
     def await_stop(self, began: float, deadline: float, target: str,
                     progress: Progress = no_progress, label: str = "") -> tuple[bool, float]:
@@ -2006,12 +2005,13 @@ class Session:
         return int(at["cs"], 16) * 16 + int(at["eip"], 16) == seg * 16 + off
 
     @staticmethod
-    def _control_block(ctl: str | None, hits: int, *, removed: bool) -> dict[str, object] | None:
-        """The `control` field of a `run_to` reply: `null` when none was given, else where it
-        was armed, how many times it fired, and whether it was removed again. ONE key on every
-        reply, so a caller never has to discover the shape first."""
+    def _control_block(ctl: str | None, hits: int, *, removed: bool) -> dict[str, object]:
+        """The `control` field of a `run_to` reply: where it was armed, how many times it fired,
+        and whether it was removed again; unavailable on the bare pass the session's own cases
+        drive, since the tool always names one. ONE key on every reply, so a caller never has to
+        discover the shape first."""
         if ctl is None:
-            return None
+            return contract.unavailable("no control was named")
         return {"at": ctl, "hits": hits, "removed": removed}
 
     def _abandon_run(self, own: list[str]) -> None:
@@ -2053,7 +2053,7 @@ class Session:
                                f"debugger's list: it will stop the next `resume`.")
             return True, ""
         except Invalid as exc:
-            return False, (f" The arrival is sound; the cleanup could not be confirmed "
+            return False, (f" The stop is sound; the cleanup could not be confirmed "
                            f"({exc}). Assume the breakpoint at {spelled} is still armed.")
 
     def watch(self, segment: int, offset: int) -> dict[str, object]:
@@ -2532,9 +2532,7 @@ class Session:
             time.sleep(0.1)
         if target is not None:
             path = dcollect.collect(path, target, "screenshot")
-        data = path.read_bytes()
-        return {"route": "guest", "path": str(path), "bytes": len(data),
-                "sha256": hashlib.sha256(data).hexdigest(),
+        return {"route": "guest", **judges.file_facts(path),
                 "waited_s": round(time.monotonic() - began, 2)}
 
     def state_list(self) -> dict[str, object]:

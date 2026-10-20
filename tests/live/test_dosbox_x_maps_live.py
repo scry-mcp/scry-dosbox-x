@@ -32,7 +32,7 @@ def _ok(reply: Any) -> dict[str, Any]:
 
 def test_bricks_map_finds_the_play_screen_and_a_control_is_clicked_by_name(
         tmp_path: Path) -> None:
-    _ok(server.start(conf=str(BRICKS / "bricks.conf"), cwd=str(BRICKS), seconds=300,
+    _ok(server.start(conf=str(BRICKS / "bricks.conf"), cwd=str(BRICKS), session_seconds=300,
                      logfile=str(tmp_path / "bricks-e9.log")))
     try:
         loaded = _ok(server.map_load(path=str(MAP)))
@@ -62,7 +62,7 @@ def test_bricks_map_finds_the_play_screen_and_a_control_is_clicked_by_name(
         assert clicked["identified_at_stop"] == at
         pointer = clicked["pointer"]["screen"]
         assert [pointer["x"], pointer["y"]] == COURT_CENTRE and clicked["arrived"] is True
-        assert clicked["effect"]["seen"] is True, clicked["effect"]
+        assert clicked["verify"]["seen"] is True, clicked["verify"]
         # THE NEGATIVE, with its control first: stopped, the play screen still matches; one
         # pixel of the header's `S` changed in video memory (mode 13h, A000:0000, a byte a pixel,
         # 320 a row), and nothing the map holds is that screen any more.

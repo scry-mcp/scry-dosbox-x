@@ -45,20 +45,20 @@ def test_a_real_mode_change_watch_stops_the_machine_when_the_memory_changes(
     w = cast(dict[str, Any], server.watch_add(ref=WATCH, mode="change", length=2, fmt="u16"))
     assert w["status"] == "ok" and w["armed"] is True, w
     # REAL MODE: BPM, and no protected-mode caveat.
-    assert w.get("caveat") is None, w
+    assert "caveat" not in w, w
 
     # Clear the walk's interrupt breakpoint (reach_realmode left INT 21 armed), so the only
     # thing that can stop the next resume is the change-watch. breakpoint_clear takes the
     # interrupt family too now.
-    server.breakpoint_clear()
+    server.breakpoint_clear(all=True)
 
     out = cast(dict[str, Any], server.resume())
     assert out["status"] == "ok", out
-    assert out["halted"] is True, (
+    assert "pc" in out, (
         "a real-mode change-watch on memory that is changing did not stop the machine: "
-        f"{out.get('stopped_at')}")
-    assert out["stopped_at"]["mode"] == "Real", out
+        f"{out.get('session')}")
+    assert out["cpu_mode"] == "real", out
     # The stop is enriched (Phase 4): registers came back, and attribution is honest that a
     # memory watch cannot be traced from the stop to the declaration.
-    assert isinstance(out.get("registers"), dict) and out["registers"], out
+    assert isinstance(out.get("regs"), dict) and out["regs"], out
     assert out["attribution"]["attributed"] is False, out["attribution"]

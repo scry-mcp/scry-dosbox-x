@@ -255,7 +255,7 @@ def recorded_stop_reply(session: ds.Session, recorded: dict[str, Any]) -> dict[s
     if "picture" not in stop:
         stop["picture"] = code.stop_instruction(session, dict(stop["where"]),
                                                 dict(stop["registers"]), session.survey_text)
-    return {**recorded, **recorded_position(), "regs": dict(stop["registers"]),
+    return {**recorded_head(recorded), "regs": dict(stop["registers"]),
             "watches": watches,
             "e9": _stop_e9(session, "none", "."), **copy.deepcopy(stop["picture"])}
 
@@ -315,11 +315,11 @@ def position(where: dict[str, str] | None, paging: bool | None) -> dict[str, Any
     return {"pc": f"{where['cs']}:{where['eip']}", "cpu_mode": cpu_mode_of(where["mode"], paging)}
 
 
-def recorded_position() -> dict[str, Any]:
-    """`position` of the stop the session last recorded, for a stop reply built off the record
-    rather than a survey of its own."""
+def recorded_head(recorded: dict[str, Any]) -> dict[str, Any]:
+    """The head of a stop reply built off the record rather than a survey of its own: the
+    record as `STATE.as_of_current` names it, and the `position` of the stop it names."""
     stop = STATE.last_stop
-    return position(dict(stop["where"]), stop.get("paging"))
+    return {**recorded, **position(dict(stop["where"]), stop.get("paging"))}
 
 
 def status_facts(session: ds.Session | None) -> dict[str, Any]:

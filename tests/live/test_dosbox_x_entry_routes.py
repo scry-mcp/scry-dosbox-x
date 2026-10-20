@@ -59,7 +59,8 @@ def reach_djgpp(logfile: str | None = None) -> dict[str, int]:
     list BP-first, not by arming order, which is why clearing it by index once deleted a
     code breakpoint); the walk leaves it for the caller rather than clearing it here.
     """
-    r = server.start(conf=str(guest.CONF), cwd=str(guest.GUEST), seconds=SESSION_SECONDS,
+    r = server.start(conf=str(guest.CONF), cwd=str(guest.GUEST),
+                     session_seconds=SESSION_SECONDS,
                      logfile=logfile, program=guest.PROGRAM)
     assert r["status"] == "ok", r
     assert server.breakpoint_interrupt(number=0x31, ah=0x00)["status"] == "ok"
@@ -67,16 +68,18 @@ def reach_djgpp(logfile: str | None = None) -> dict[str, int]:
         res = cast(dict[str, Any], server.resume())
         assert res.get("status") == "ok", (
             f"the session went away at resume {i}: {res.get('message')}")
-        assert res.get("halted"), (
+        assert "pc" in res, (
             f"resume {i} did not halt: the DPMI walk needs the guest to keep issuing the "
             f"interrupt, and a guest that ran on has left the walk")
-        at = res.get("stopped_at") or {}
-        if at.get("mode") != "Pr32":       # the setup stub is Pr16; the client is Pr32
-            continue
+        # THE PANE'S OWN MODE WORD, asked of the session: the reply's `cpu_mode` says only
+        # `protected`, and the stub (Pr16) is told from the client (Pr32) by the width.
         try:
-            sel = cast(ds.Session, dstate.STATE.session).selector("CS")
+            held = cast(ds.Session, dstate.STATE.session)
+            if held.where().get("mode") != "Pr32":     # the setup stub is Pr16; the client is Pr32
+                continue
+            sel = held.selector("CS")
         except ds.Invalid:
-            continue                        # no present descriptor here; keep walking
+            continue                        # a cut pane, or no present descriptor; keep walking
         if sel["limit"] > STUB_LIMIT_MAX:   # a 16-bit stub selector cannot reach here
             return sel
     raise AssertionError(f"never reached the client's 32-bit code in {WALK_MAX} resumes")
@@ -87,7 +90,7 @@ def test_djgpp_entry_reaches_the_client_and_symbols_place() -> None:
     symbols off the running client and resolve a name. The arrival test itself lives in
     `reach_djgpp`; what this case adds is that the symbols PLACE against what it reached."""
     sel = reach_djgpp()
-    load = cast(dict[str, Any], server.symbols_load(source=str(guest.SYM)))
+    load = cast(dict[str, Any], server.symbols_load(path=str(guest.SYM)))
     assert load["status"] == "ok", load
     # symbols_load measures the base off the SAME descriptor the walk reached, so equality
     # is a consistency check, not the arrival proof -- the mode-and-limit gate above is.
@@ -134,7 +137,7 @@ def reach_realmode(into: Path, logfile: str | None = None) -> tuple[int, int, in
     every E9 block answers `available: False`."""
     frame = bp.public(bp.DOS_REAL16, REAL_LOOP)[0]
     r = server.start(conf=str(bp.session_conf(bp.DOS_REAL16, into)), cwd=str(bp.DOS_REAL16.root),
-                     seconds=SESSION_SECONDS, logfile=logfile, program=bp.DOS_REAL16.launch)
+                     session_seconds=SESSION_SECONDS, logfile=logfile, program=bp.DOS_REAL16.launch)
     assert r["status"] == "ok", r
     assert server.breakpoint_interrupt(number=0x21)["status"] == "ok"
     first_nonbios: str | None = None
@@ -144,13 +147,13 @@ def reach_realmode(into: Path, logfile: str | None = None) -> tuple[int, int, in
         res = cast(dict[str, Any], server.resume())
         assert res.get("status") == "ok", (
             f"the session went away mid-walk: {res.get('message')}")
-        at = res.get("stopped_at")
-        # A cut pane is `halted` with `stopped_at` None -- a real state. Do NOT let its CS
+        pc = res.get("pc")
+        # A cut pane is a stop whose `pc` is unavailable -- a real state. Do NOT let its CS
         # default to the BIOS segment (that would misfile it and desync the repeat check);
-        # skip it, and skip a guest that ran on.
-        if not res.get("halted") or not at:
+        # skip it, and skip a guest that ran on (it carries no `pc`).
+        if not isinstance(pc, str):
             continue
-        cs = at["cs"]
+        cs, eip = pc.split(":")
         seg = int(cs, 16)
         if seg != BIOS_SEG and first_nonbios is None:
             first_nonbios = cs             # the loader (COMMAND.COM), which EXECs the program
@@ -158,7 +161,7 @@ def reach_realmode(into: Path, logfile: str | None = None) -> tuple[int, int, in
         # a couple of consecutive calls. The first repeating non-BIOS, non-loader segment
         # is the program running its own code.
         if seg != BIOS_SEG and cs != first_nonbios and cs == prev:
-            caught = (seg, int(at["eip"], 16))
+            caught = (seg, int(eip, 16))
             break
         prev = cs if seg != BIOS_SEG else prev
     assert caught is not None, "never caught the program's own INT 21 loop"
@@ -166,7 +169,7 @@ def reach_realmode(into: Path, logfile: str | None = None) -> tuple[int, int, in
     load_seg = prog_cs - frame
     assert load_seg >= 0, f"frame {frame:#x} exceeds the program CS {prog_cs:#x}"
     mapf = bp.DOS_REAL16.root / bp.DOS_REAL16.map
-    load = cast(dict[str, Any], server.symbols_load(source=str(mapf), base=f"{load_seg * 16:X}"))
+    load = cast(dict[str, Any], server.symbols_load(path=str(mapf), base=f"{load_seg * 16:X}"))
     assert load["status"] == "ok", load
     return load_seg, prog_cs, prog_eip
 

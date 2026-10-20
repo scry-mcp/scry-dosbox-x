@@ -41,7 +41,8 @@ def _start(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, seconds: int = 180) 
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
     log = tmp_path / "guest.log"
     r = cast(dict[str, Any], server.start(
-        conf=str(guest.CONF), cwd=str(guest.GUEST), seconds=seconds, logfile=str(log),
+        conf=str(guest.CONF), cwd=str(guest.GUEST), session_seconds=seconds,
+        logfile=str(log),
         program=guest.PROGRAM))
     assert r["status"] == "ok", r
     assert "cpu integration device=true" in r["argv"], r["argv"]
@@ -77,7 +78,7 @@ def test_send_keys_reaches_the_running_guest_and_it_acts(
         f"the guest did not act on the key ({KEY_MARK} never logged): the host event did not "
         f"reach the running program. {sent.get('message')}")
     assert sent["posted"] == 1 and sent["route"] == "guest", sent
-    assert sent["effect"]["seen"] is True and re.search(KEY_MARK, sent["effect"]["line"]), sent
+    assert sent["verify"]["seen"] is True and re.search(KEY_MARK, sent["verify"]["line"]), sent
 
     # THE CONTROL, through the same route on the same run, and it is the MARK that it pins:
     # the cue line now sits in the log, so a key the program IGNORES (F11 is bound to
@@ -85,14 +86,15 @@ def test_send_keys_reaches_the_running_guest_and_it_acts(
     # would find the stale cue line and pass; only a wait from the mark misses. Without this
     # red beside the green, "verified" and "the verifier never looked" print the same thing.
     missed = cast(dict[str, Any], server.send_keys(keys=["f11"], expect=KEY_MARK, seconds=3))
-    assert missed["status"] == "INVALID" and "did not react" in missed["message"], missed
-    assert missed["posted"] == 1 and missed["effect"]["seen"] is False, missed
+    assert missed["status"] == "ok" and missed["verify"]["verdict"] == "TIMEOUT", missed
+    assert "did not react" in missed["verify"]["note"], missed
+    assert missed["posted"] == 1 and missed["verify"]["seen"] is False, missed
     # AND THE MISS IS THE PROGRAM'S, NOT THE ROUTE'S: when the guest announces every key it
     # receives (its `key down <NAME>` arrival line), the ignored key is shown to have
     # ARRIVED -- so "did not react" above means "took it and did nothing", which is the two
     # facts this tool exists to keep apart.
     arrived = cast(dict[str, Any], server.send_keys(keys=["f11"], expect=ARRIVAL_MARK, seconds=5))
-    assert arrived["status"] == "ok" and arrived["effect"]["seen"] is True, arrived
+    assert arrived["status"] == "ok" and arrived["verify"]["seen"] is True, arrived
 
 
 def test_a_sequence_sends_a_verified_key_to_the_running_guest(
@@ -114,14 +116,15 @@ def test_a_sequence_sends_a_verified_key_to_the_running_guest(
     steps += [
         {"op": "send_keys", "keys": ["a"], "expect": KEY_MARK, "seconds": 30},
         {"op": "log", "pattern": KEY_MARK, "channel": "guest"}]
-    out = cast(dict[str, Any], server.perform(steps=steps, wait=5.0))
-    assert out["status"] == "ok" and out["completed"] == len(steps), out
-    assert out["ran"][key_step]["reply"]["effect"]["seen"] is True, out["ran"][key_step]
-    # WHAT THE TAIL SAYS IS `resume`'S READING OF `halted`, not this case's subject: a boot
-    # repaint can read as a halt (the open card on resume's two-step boot), in which case
-    # the executor takes the machine as stopped and writes no tail. Either shape is
-    # accepted here; the four steps ran and the key was seen, which is what this proves.
-    assert out.get("still_running") is True or out["ran"][0]["reply"].get("halted"), out
+    out = cast(dict[str, Any], server.perform(steps=steps, settle_seconds=5.0))
+    assert out["status"] == "ok" and out["steps_completed"] == len(steps), out
+    assert out["ran"][key_step]["reply"]["verify"]["seen"] is True, out["ran"][key_step]
+    # WHAT THE TAIL SAYS IS `resume`'S READING OF A STOP (its reply carries `pc`), not this
+    # case's subject: a boot repaint can read as a halt (the open card on resume's two-step
+    # boot), in which case the executor takes the machine as stopped and writes no tail.
+    # Either shape is accepted here; the four steps ran and the key was seen, which is what
+    # this proves.
+    assert out.get("still_running") is True or "pc" in out["ran"][0]["reply"], out
 
 
 def test_drive_looks_acts_and_verifies_in_one_call(
@@ -138,13 +141,13 @@ def test_drive_looks_acts_and_verifies_in_one_call(
     assert out["status"] == "ok", out
     verify = out["verify"]
     assert verify["seen"] is True and re.search(KEY_MARK, verify["line"]), verify
-    e9 = out["looked"]["e9"]
-    assert e9["available"] is True and e9["written"] >= 1, e9
+    e9 = out["looked"]["guest"]
+    assert e9["available"] is True and e9["lines_written"] >= 1, e9
     assert any(re.search(KEY_MARK, ln) for ln in e9["lines"]), e9
     # THE CONTROL ON THE MARK, with the filter wide open: the boot line was written before
     # the mark, so a look that reached before it would carry it. `lines` is wide enough that
     # the cut cannot be what hides it (the boot line sits first, the cut keeps the last).
-    assert e9["written"] <= LOOK_LINES, "raise LOOK_LINES: the cut would hide the control"
+    assert e9["lines_written"] <= LOOK_LINES, "raise LOOK_LINES: the cut would hide the control"
     assert not any(re.search(BOOT_MARK, ln) for ln in e9["lines"]), \
         "the look reached before the mark"
 
@@ -167,9 +170,10 @@ def test_the_stub_announces_itself_once_and_ignored_keys_arrive(
     _input_loop_live()
     ignored = cast(dict[str, Any], server.send_keys(keys=["f11"], expect=ARRIVAL_MARK,
                                                     seconds=10))
-    assert ignored["status"] == "ok" and ignored["effect"]["seen"] is True, ignored
+    assert ignored["status"] == "ok" and ignored["verify"]["seen"] is True, ignored
     missed = cast(dict[str, Any], server.send_keys(keys=["f11"], expect=KEY_MARK, seconds=3))
-    assert missed["status"] == "INVALID" and "did not react" in missed["message"], missed
+    assert missed["status"] == "ok" and missed["verify"]["verdict"] == "TIMEOUT", missed
+    assert "did not react" in missed["verify"]["note"], missed
 
 
 def test_send_mouse_puts_the_pointer_where_asked_and_the_program_clicks_there(
@@ -186,7 +190,7 @@ def test_send_mouse_puts_the_pointer_where_asked_and_the_program_clicks_there(
                                                      expect=MOUSE_MARK, seconds=10))
         assert got["status"] == "ok" and got["arrived"] is True, got
         assert got["pointer"]["mouse"]["x"] == x and got["pointer"]["mouse"]["y"] == y, got
-        assert _guest_xy(got["effect"]["line"]) == (x, y), got["effect"]
+        assert _guest_xy(got["verify"]["line"]) == (x, y), got["verify"]
     # A CONTROL BY NAME IS HELD TO THE SCREEN THE STUB REPORTS: this program runs a VESA mode
     # this server does not map, so a control of any mapped screen is refused before anything
     # is sent, and the pointer stays where the last click left it.

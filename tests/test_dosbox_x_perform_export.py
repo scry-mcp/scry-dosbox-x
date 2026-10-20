@@ -156,6 +156,8 @@ def test_a_start_with_a_plan_is_exported_and_its_document_replays_on_the_same_do
     assert out["status"] == "ok" and out["cut"]["available"] is False, out
     doc = json.loads((tmp_path / "s.json").read_text())
     assert "plan" not in doc["start"] and doc["entry"] == "dosbox_x_server.py"
+    # ...nor the bound of the plan's waits: a `start` given it with no plan is refused.
+    assert "settle_seconds" not in doc["start"], doc["start"]
     assert [step["op"] for step in doc["steps"]] == ["write", "registers", "read_memory"]
     played = server.perform(steps=doc["steps"])
     assert played["status"] == "ok", played
@@ -170,7 +172,7 @@ def test_the_declarations_the_recorder_reads_are_the_refs_the_list_tools_answer(
     assert server.breakpoint_at(ref="F000:0010")["status"] == "ok"
     assert server.breakpoint_interrupt(number=0x21)["status"] == "ok"
     assert server.watch_add(ref="F000:0020", mode="show", length=2)["status"] == "ok"
-    declared = dosbox_mcp._declared()
+    declared = dosbox_mcp.RECORDER._stored()
     assert set(declared) == set(dosbox_mcp.RECORDER.lists) <= set(dosbox_mcp.registered_tools())
     for tool, key in dosbox_mcp.RECORDER.lists.items():
         listed = getattr(server, tool)()[key]

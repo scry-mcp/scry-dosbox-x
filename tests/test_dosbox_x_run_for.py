@@ -421,3 +421,41 @@ def test_a_timed_run_surveys_each_frame_once_and_the_stop_once() -> None:
                         [cap("probe-vrt-1"), cap("probe-vrt-2"), cap("probe-vrt-3")]))
     got = cast(dict[str, Any], server.run_for(milliseconds=30, seconds=2))
     assert dbg.sent.count(ds.NUDGE) == 1 + got["polls"] + 1, dbg.sent
+
+
+class LandsAtTheBound(Retraces):
+    """The race the bound can lose: the wait gives up with the `VRT` out, and its stop lands
+    before the interrupt looks, so nothing is interrupted and the retrace is spent."""
+
+    def retrace(self, began: float, deadline: float,
+                progress: ds.Progress = ds.no_progress) -> tuple[bool, float]:
+        self._at_debugger = True
+        return True, 0.0
+
+
+def test_a_retrace_that_lands_as_the_bound_expires_is_spent_not_pending() -> None:
+    dbg = live(LandsAtTheBound([cap("probe-survey-0"), cap("probe-survey-1")], []))
+    got = cast(dict[str, Any], server.run_for(frames=3, seconds=5))
+    assert got["verdict"] == "TIMEOUT" and "BREAK" not in dbg.sent, (got, dbg.sent)
+    assert "retrace_pending" not in got and dstate.STATE.retrace_pending is False, got
+
+
+class CutAtTheBound(Retraces):
+    """The race the bound can lose, the other way: a declared breakpoint, not the retrace, stops
+    the machine after the wait gave up, so the `VRT` is still armed."""
+
+    def retrace(self, began: float, deadline: float,
+                progress: ds.Progress = ds.no_progress) -> tuple[bool, float]:
+        super().retrace(began, deadline, progress)
+        return True, 0.0
+
+
+def test_a_breakpoint_that_lands_as_the_bound_expires_leaves_the_retrace_pending() -> None:
+    dbg = live(CutAtTheBound([cap("probe-survey-0"), cap("probe-survey-cut-by-bp-0108"),
+                              cap("probe-survey-cut-by-bp-0108")],
+                             [cap("probe-vrt-cut-by-bp-0108")]))
+    assert dstate.STATE.store is not None
+    dstate.STATE.store.add(arming.declare("breakpoint", "address", "0814:0108"))
+    got = cast(dict[str, Any], server.run_for(frames=3, seconds=5))
+    assert "BREAK" not in dbg.sent and got["verdict"] == "OTHER_STOP", (got, dbg.sent)
+    assert got["retrace_pending"] is True and dstate.STATE.retrace_pending is True, got

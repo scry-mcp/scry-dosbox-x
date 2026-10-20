@@ -282,7 +282,7 @@ def test_both_halves_of_the_capture_against_a_real_emulator(tmp_path: Path) -> N
         deadline = time.monotonic() + 90
         while time.monotonic() < deadline:
             files = sorted(caps.glob("*.avi"), key=lambda f: f.stat().st_size)
-            if files and cast(int, ds.avi_facts(files[-1].read_bytes())["frames"]) > 200:
+            if files and cast(int, ds.avi_facts(files[-1].read_bytes())["avi_frames"]) > 200:
                 break
             time.sleep(1.0)
     finally:
@@ -291,7 +291,7 @@ def test_both_halves_of_the_capture_against_a_real_emulator(tmp_path: Path) -> N
     got = ds.Session.captures(s)
     biggest = got[-1]
     assert biggest["riff_avi"] is True, got
-    assert cast(int, biggest["frames"]) > 100, got
+    assert cast(int, biggest["avi_frames"]) > 100, got
     # `complete` is NOT asserted, and its absence here is the finding: the program
     # under capture runs forever, so the recording is never finalised and the file
     # carries no index. MEASURED, that does not matter -- a frame comes out anyway,

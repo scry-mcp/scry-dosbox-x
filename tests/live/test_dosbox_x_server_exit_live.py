@@ -65,7 +65,7 @@ def test_the_emulator_ends_with_the_server(ended_by: str, code: int, tmp_path: P
         proc.stdin.write(b'{"jsonrpc":"2.0","method":"notifications/initialized"}\n')
         proc.stdin.flush()
         started = _rpc(proc, 2, "tools/call", {"name": "start", "arguments": {
-            "conf": str(BRICKS / "bricks.conf"), "cwd": str(BRICKS), "seconds": 120}})
+            "conf": str(BRICKS / "bricks.conf"), "cwd": str(BRICKS), "session_seconds": 120}})
         body = started["result"]["structuredContent"]
         assert body["status"] == "ok", body.get("summary")
         pid = body["session"]["pid"]

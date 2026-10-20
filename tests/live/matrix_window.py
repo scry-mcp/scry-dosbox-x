@@ -69,7 +69,7 @@ def _probe() -> None:
     conf = conf_without_launch(PROBE_CONF, "PROBE.COM")
     caps = Path(M.fresh("-captures"))
     caps.mkdir()
-    boot(conf=conf, cwd=GUEST, mode="shared", window_flags=_flags(), background=True,
+    boot(conf=conf, cwd=GUEST, shared=True, window_flags=_flags(), background=True,
          program="PROBE.COM",
          capture_video=True, captures_dir=str(caps))
     must(M.call(server.resume), "releasing the probe")
@@ -78,14 +78,14 @@ def _probe() -> None:
     M.setup()
     r = M.call(server.stop)
     judged("G stop brings a running guest back", reply=r,
-           holds=ok(r) and r.get("interrupted") is True and r.get("how") == "break")
+           holds=ok(r) and r.get("interrupted") is True and r.get("via") == "break")
     must(M.call(server.resume), "releasing the probe")
     pend = M.call(server.breakpoint_at, ref="0000:0009")
     r = M.call(server.stop)
     armed = [str(a) for a in (r.get("applied_on_stop") or {}).get("armed") or []]
     judged("G declared while running applies at stop", reply=r,
            holds=ok(pend) and pend.get("state") == "pending" and "0000:0009" in armed)
-    must(M.call(server.breakpoint_clear), "clearing 0000:0009")
+    must(M.call(server.breakpoint_clear, all=True), "clearing 0000:0009")
     must(M.call(server.resume), "releasing the probe")
     M.setup()
     r = M.call(server.state_save, name="matrix_g", seconds=30)
@@ -106,17 +106,17 @@ def _probe() -> None:
     r = M.call(server.captures)
     listed = r.get("captures") or []
     judged("G captures lists the recording", reply=r,
-           holds=ok(r) and bool(listed) and all(c.get("frames") is not None for c in listed))
+           holds=ok(r) and bool(listed) and all(c.get("avi_frames") is not None for c in listed))
     frame = M.fresh(".png")
-    r = M.call(server.capture_frame, at=0, dest=frame)
+    r = M.call(server.capture_frame, frame=0, dest=frame)
     judged("G capture_frame writes a PNG", reply=r,
            holds=ok(r) and Path(frame).is_file() and Path(frame).read_bytes()[:8] == PNG_MAGIC)
     KEEP.append(frame)
-    r = M.call(server.capture_frame, at=0, dest=M.fresh("-%03d.png"))
+    r = M.call(server.capture_frame, frame=0, dest=M.fresh("-%03d.png"))
     judged("G capture_frame refuses a % in dest", reply=r, holds=refused(r))
-    r = M.call(server.capture_frame, at=0, dest=frame)
+    r = M.call(server.capture_frame, frame=0, dest=frame)
     judged("G capture_frame refuses a dest that exists", reply=r, holds=refused(r))
-    r = M.call(server.capture_frame, at=10_000_000, dest=M.fresh(".png"))
+    r = M.call(server.capture_frame, frame=10_000_000, dest=M.fresh(".png"))
     judged("G capture_frame refuses a frame past the end", reply=r, holds=refused(r))
     r = M.call(server.send_mouse, x=40, y=12)
     judged("G in a window, cell 40,12 arrives at the driver's 320,96", reply=r,
@@ -136,7 +136,7 @@ def _scaled() -> None:
     guest, so the same cell lands on the same driver coordinates."""
     conf = conf_without_launch(PROBE_CONF, "PROBE.COM")
     flags = [*_flags(), "-set", "sdl output=opengl", "-set", "sdl windowresolution=1280x800"]
-    boot(conf=conf, cwd=GUEST, mode="shared", window_flags=flags, background=True,
+    boot(conf=conf, cwd=GUEST, shared=True, window_flags=flags, background=True,
          program="PROBE.COM")
     must(M.call(server.resume), "releasing the probe")
     must(M.call(server.log_wait, pattern="PROBE", channel="guest", seconds=30),
@@ -148,7 +148,7 @@ def _scaled() -> None:
 
 
 def _dpmi() -> None:
-    dpmi_boot(mode="shared", window_flags=_flags(), background=True)
+    dpmi_boot(shared=True, window_flags=_flags(), background=True)
     release_running(NEVER_RUNS_STOPPER)
     must(M.call(server.log_wait, pattern=guest.SETTLED_MARK, channel="guest", seconds=30),
          "the guest's first TICK line")
@@ -158,7 +158,7 @@ def _dpmi() -> None:
     judged(DPMI_CELLS[0], reply=r, holds=ok(r) and Path(shot).is_file())
     KEEP.append(shot)
     r = M.call(server.send_mouse, button="left", expect=guest.MOUSE_MARK, seconds=10)
-    judged(DPMI_CELLS[1], reply=r, holds=ok(r) and (r.get("effect") or {}).get("seen") is True)
+    judged(DPMI_CELLS[1], reply=r, holds=ok(r) and (r.get("verify") or {}).get("seen") is True)
     r = M.call(server.stop)
     judged(DPMI_CELLS[2], reply=r, holds=ok(r) and r.get("interrupted") is True)
     must(M.call(server.resume), "releasing the DPMI guest")

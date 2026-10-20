@@ -234,17 +234,6 @@ def test_answers_while_running_is_the_table_and_the_five_that_answer_outside_a_l
     assert table == dosbox_mcp._ANSWERS_WHILE_RUNNING
 
 
-def test_every_tool_the_instructions_send_to_a_running_guest_is_in_the_table() -> None:
-    """The instructions cannot carry the whole table under the client's cap, so they name the
-    few a caller needs first; each of those must be in it, or the instructions send a caller
-    to a tool that refuses."""
-    text = server.mcp.instructions or ""
-    said = text[text.index("a running guest is reached through"):text.index("What you")]
-    named = {"log", "log_wait", "send_keys", "send_mouse", "stop"}
-    assert all(f"`{n}`" in said for n in named), said
-    assert named <= sequence.RUNNING_OK_OPS
-
-
 def test_perform_takes_every_registered_tool_but_the_lifecycle() -> None:
     assert set(server._step_ops()) == set(dosbox_mcp.registered_tools()) - NOT_STEPS
 

@@ -42,16 +42,16 @@ def test_a_perform_sequence_runs_by_name_and_stops_where_it_was_headed(
     # the interrupt-clear this work added, and it is why the two pieces belong together: a
     # clean sequence to a code breakpoint needs the walk's interrupt gone.
     steps: list[dict[str, Any]] = [
-        {"op": "symbols_load", "source": str(guest.SYM)}]
+        {"op": "symbols_load", "path": str(guest.SYM)}]
     for name in guest.WATCHES:
         steps.append({"op": "watch_add", "ref": name, "mode": "show", "length": 4, "fmt": "i32"})
     steps.append({"op": "breakpoint_clear", "ref": "BPINT 31 AH=00"})   # the walk's interrupt
     steps.append({"op": "breakpoint_at", "ref": guest.STOP})
     steps.append({"op": "resume"})
 
-    out = cast(dict[str, Any], server.perform(steps=steps, wait=120.0))
+    out = cast(dict[str, Any], server.perform(steps=steps, settle_seconds=120.0))
     assert out["status"] == "ok", out
-    assert out["failed_at"] is None, out
+    assert out["failed_at"]["available"] is False, out
     assert [s["op"] for s in out["ran"]][-1] == "resume", out
 
     # THE STOP AT THE USER'S BREAKPOINT, whether the resume halted there itself or the tail

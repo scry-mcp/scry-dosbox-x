@@ -62,14 +62,14 @@ def cells(*pairs: tuple[str, str]) -> list[Cell]:
 
 
 def whole(r: dict[str, Any]) -> bool:
-    """The envelope every reply carries: `summary` first, `session` last and either null or a
+    """The envelope every reply carries: `summary` first, `session` last and always a
     block saying whether the emulator is alive, `status` one of the two words, and a refusal
     with a `code` from the published table and a `message`."""
     keys = list(r)
     if not keys or keys[0] != "summary" or keys[-1] != "session":
         return False
     ses = r["session"]
-    if ses is not None and not (isinstance(ses, dict) and isinstance(ses.get("alive"), bool)):
+    if not (isinstance(ses, dict) and isinstance(ses.get("alive"), bool)):
         return False
     if r.get("status") == "ok":
         return True
@@ -104,7 +104,7 @@ def alive(r: dict[str, Any]) -> bool:
 
 
 def no_session(r: dict[str, Any]) -> bool:
-    return "session" in r and r["session"] is None
+    return r.get("session") == {"alive": False, "running": False, "altered": False}
 
 
 def judged(label: str, *, reply: dict[str, Any], holds: bool) -> None:
@@ -240,7 +240,7 @@ def boot(conf: Path = PROBE_CONF, cwd: Path = GUEST, **kw: Any) -> dict[str, Any
     would be a statement about nothing."""
     kw.setdefault("logfile", M.fresh(".log"))
     kw.setdefault("state_dir", M.fresh("-save"))
-    r = M.call(server.start, conf=str(conf), cwd=str(cwd), seconds=SESSION_S, **kw)
+    r = M.call(server.start, conf=str(conf), cwd=str(cwd), session_seconds=SESSION_S, **kw)
     note_spawn()
     return must(r, "start did not come up")
 
@@ -258,7 +258,7 @@ def resume_until(found: Callable[[dict[str, Any]], bool], what: str, limit: int,
     resume that does not come back stopped ends the walk, named."""
     for _ in range(limit):
         r = M.call(server.resume, seconds=seconds)
-        regs = r.get("registers") if ok(r) and "stop_seq" in r else None
+        regs = r.get("regs") if ok(r) and "stop_seq" in r else None
         if not isinstance(regs, dict):
             raise RuntimeError(f"{what}: the machine did not stop: {said(r)}")
         if found(regs):

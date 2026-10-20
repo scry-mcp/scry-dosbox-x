@@ -118,7 +118,7 @@ def section_k() -> None:
     captures.mkdir()
     boot(flags=NORMAL_CORE_FLAGS, captures_dir=str(captures))
     settle = must(M.call(server.run_for, frames=2), "into the settle loop")
-    if hexint((settle.get("stopped_at") or {}).get("eip")) != SETTLE_LOOP:
+    if hexint(str(settle.get("pc")).split(":")[-1]) != SETTLE_LOOP:
         M.block_rest(f"run_for(frames=2) did not land on the settle loop: {said(settle)}")
         return
     M.setup()
@@ -132,7 +132,7 @@ def section_k() -> None:
     r = M.call(server.perform, steps=[{"op": "trace", "instructions": 16, "shape": "cs_ip",
                                        "dest": dest, "seconds": TRACE_S}])
     judged("K perform runs a trace step", reply=r,
-           holds=ok(r) and r.get("completed") == 1 and Path(dest).is_file())
+           holds=ok(r) and r.get("steps_completed") == 1 and Path(dest).is_file())
     one = M.call(server.trace, instructions=16, shape="cs_ip", seconds=TRACE_S)
     two = M.call(server.trace, instructions=16, shape="cs_ip", seconds=TRACE_S)
     paths = [str((x.get("trace") or {}).get("path")) for x in (one, two)]
@@ -160,7 +160,7 @@ def _no_log_left() -> bool:
 
 def _ecx() -> int:
     r = must(M.call(server.registers), "the registers")
-    return hexint((r.get("registers") or {}).get("ECX")) or 0
+    return hexint((r.get("regs") or {}).get("ECX")) or 0
 
 
 def _settle_shape(shape: str) -> None:
@@ -169,7 +169,7 @@ def _settle_shape(shape: str) -> None:
     dest = M.fresh(".trace")
     r = M.call(server.trace, instructions=PER_SHAPE, shape=shape, dest=dest, seconds=TRACE_S)
     found = r.get("trace") or {}
-    after = hexint((r.get("registers") or {}).get("ECX"))
+    after = hexint((r.get("regs") or {}).get("ECX"))
     lines = len(Path(dest).read_bytes().splitlines()) if Path(dest).is_file() else None
     M.judge(f"K {shape} at the settle loop: ECX {PER_SHAPE} lower, {PER_SHAPE} executed at one "
             f"address, {PER_SHAPE + 1} lines",
@@ -204,7 +204,7 @@ def _refusals() -> None:
 def _cut() -> None:
     """A breakpoint on the `dec bx` after the loop stops the trace when ECX runs out."""
     ecx = _ecx()
-    cs = (must(M.call(server.registers), "CS").get("registers") or {}).get("CS")
+    cs = (must(M.call(server.registers), "CS").get("regs") or {}).get("CS")
     ref = f"{cs}:{AFTER_LOOP:04X}"
     must(M.call(server.breakpoint_at, ref=ref), "arming the dec bx")
     M.setup()
@@ -227,8 +227,8 @@ def _cut() -> None:
 def _start_join() -> None:
     """From a breakpoint on `start` (cleared first), with the guest's own listing loaded at its
     segment: the three routines in the probe's proportions, nothing unplaced."""
-    cs = str((must(M.call(server.registers), "CS").get("registers") or {}).get("CS"))
-    must(M.call(server.symbols_load, source=str(GUEST / "probe.sym"),
+    cs = str((must(M.call(server.registers), "CS").get("regs") or {}).get("CS"))
+    must(M.call(server.symbols_load, path=str(GUEST / "probe.sym"),
                 base=f"{int(cs, 16) * 16:X}"), "loading probe.sym")
     r = _window(f"{cs}:{START:04X}", 200, "normal")
     found = r.get("trace") or {}
@@ -243,14 +243,14 @@ def _linear_of(name: str) -> str:
     rows = [s for s in r.get("symbols") or [] if s.get("name") == name]
     if len(rows) != 1:
         raise RuntimeError(f"{name} is not one symbol of the table: {said(r)}")
-    return f"{int(rows[0]['linear']):08X}"
+    return str(rows[0]["addr"])
 
 
 def _window(ref: str, instructions: int, shape: str) -> dict[str, Any]:
     """A trace from `ref`'s breakpoint, armed for the one stop and cleared before the trace."""
     must(M.call(server.breakpoint_at, ref=ref), f"arming {ref}")
     must(M.call(server.resume, seconds=TRACE_S), f"running to {ref}")
-    must(M.call(server.breakpoint_clear), f"clearing {ref}")
+    must(M.call(server.breakpoint_clear, all=True), f"clearing {ref}")
     M.setup()
     return M.call(server.trace, instructions=instructions, shape=shape, dest=M.fresh(".trace"),
                   seconds=TRACE_S)
@@ -301,7 +301,7 @@ def _dos_real16() -> None:
     except Exception as exc:  # noqa: BLE001 -- the other bench still runs; this one says why
         _judge_rest(DOS_REAL16_CELLS, done, exc)
     finally:
-        M.call(server.breakpoint_clear)
+        M.call(server.breakpoint_clear, all=True)
         M.call(server.close)
 
 
@@ -311,7 +311,7 @@ def _dpmi() -> None:
         stop, loaded = dpmi_client(wait=DPMI_BOOT_S, exempt=BOOT_EXEMPT, flags=NORMAL_CORE_FLAGS)
         must(stop, "the DPMI client's first INT 31h")
         base = must(loaded, "dpmi.sym off CS").get("base")
-        must(M.call(server.breakpoint_clear), "clearing INT 31h")
+        must(M.call(server.breakpoint_clear, all=True), "clearing INT 31h")
         own = _linear_of("_tick")
         seen: list[str] = []
         joined = False
@@ -335,7 +335,7 @@ def _dpmi() -> None:
     except Exception as exc:  # noqa: BLE001 -- a bench's failure is its own cells' verdict
         _judge_rest(DPMI_CELLS, done, exc)
     finally:
-        M.call(server.breakpoint_clear)
+        M.call(server.breakpoint_clear, all=True)
         M.call(server.close)
 
 

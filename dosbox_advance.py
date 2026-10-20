@@ -29,7 +29,7 @@ def resume(e9: str, e9_filter: str, e9_stamp: str | None, seconds: float, detail
     out = session.resume()
     halted = bool(out["halted"])
     stopped_at = cast(dict[str, str] | None, out["stopped_at"])
-    base: dict[str, Any] = st.delta_if_asked(cast(str, out["screen"]), 2000, detail)
+    base: dict[str, Any] = st.delta_if_asked(cast(str, out["screen"]), st.DETAIL_TEXT_KEEP, detail)
     if seconds > 0:
         began = time.monotonic()
         while not halted:
@@ -97,9 +97,9 @@ def run_to(ref: str, control: str, seconds: float, e9: str, e9_filter: str,
                                else "cut_by_other_stop")
         message = (f"the control {control} never fired within {seconds:g} s, so {ref} not "
                    f"firing means nothing. Check that the control really is hot on this "
-                   f"screen; the target is still armed" if code == "control_silent" else
+                   f"screen" if code == "control_silent" else
                    f"another stop ended the run before the control {control} fired, so "
-                   f"nothing was measured about {ref}; the target is still armed")
+                   f"nothing was measured about {ref}")
         refused = {k: v for k, v in fields.items() if k != "verdict"}
         return running.stop_or_base(session, True, e9, e9_filter, e9_stamp,
                                     {"status": "INVALID", "code": code, "message": message,

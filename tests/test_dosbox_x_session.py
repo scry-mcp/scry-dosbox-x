@@ -1504,8 +1504,9 @@ def test_a_16_bit_name_is_read_back_as_the_low_half_of_its_register() -> None:
     """`ax` is the low half of `EAX`, and the pane shows only `EAX`: the readback is that half,
     whatever the high half holds."""
     fake = _pane_after_sr({"EAX": "ABCD1234", "EIP": "00010100", "CS": "0050"})
-    got = ds.Session.set_register(fake, "ax", 0x1234)   # type: ignore[arg-type]
+    got = ds.Session.set_register(fake, " AX", 0x1234)   # type: ignore[arg-type]
     assert got["readback"] == "1234" and got["verified"] is True, got
+    assert got["register"] == "ax", got      # the name as `SR` takes it, not as it was asked
     ip = ds.Session.set_register(fake, "ip", 0x0100)   # type: ignore[arg-type]
     assert ip["readback"] == "0100" and ip["verified"] is True, ip
     # THE CONTROL: a low half that differs is not verified, whatever the high half holds.

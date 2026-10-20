@@ -32,14 +32,18 @@ from typing import Any, cast
 from unittest import mock
 
 import pytest
-from scry_core import media_tools, screen_map
+from scry_core import log_wait as core_wait
+from scry_core import media_tools, recording, screen_map
+from scry_core import reply_contract as contract
 from scry_core import sequence_account as account
+from scry_core import steps as step_judge
 
 import dosbox_arming as arming
 import dosbox_binary as binaries
 import dosbox_checks as checks
 import dosbox_console as dcons
 import dosbox_declarations as dec
+import dosbox_docs
 import dosbox_inputs as inputs
 import dosbox_launch as dlaunch
 import dosbox_logs as dlogs
@@ -247,7 +251,8 @@ class FakeSession:
     def set_register(self, name: str, value: int) -> dict[str, object]:
         self.altered = True
         got = "00000000" if self.masks else f"{value:08X}"
-        return {"regs": {"EAX": got}, "readback": got, "verified": got == f"{value:08X}"}
+        return {"register": name.strip().lower(), "regs": {"EAX": got}, "readback": got,
+                "verified": got == f"{value:08X}"}
 
     def breakpoint_interrupt(self, number: int, ah: int | None = None) -> str:
         return f"DEBUG: Set interrupt breakpoint at INT {number:02X}"
@@ -288,7 +293,7 @@ class FakeSession:
                 "stopped_at": {"cs": f"{seg:04X}", "eip": f"{off:08X}",
                                "mode": "Real"},
                 "waited_s": 0.25, "breakpoint_removed": True, "note": "",
-                "control": None if control is None else
+                "control": contract.unavailable("no control was named") if control is None else
                 {"at": f"{control[0]:04X}:{control[1]:04X}", "hits": 0, "removed": True}}
 
     def watch(self, segment: int, offset: int) -> dict[str, object]:
@@ -321,9 +326,9 @@ class FakeSession:
         # under a comment claiming each of these "returns the field set its tool
         # promises".
         dlogs.check_channel(channel)
-        return {"verdict": "TARGET", "line": "Bochs port E9h: [+ 0.000] BOOT  . start",
-                "already": True, "lines_total": 1, "lines_before": 0, "arrived_during": 0,
-                "waited_s": 0.0,
+        return {"verdict": "TARGET", "pattern": pattern, "channel": channel,
+                "line": "Bochs port E9h: [+ 0.000] BOOT  . start", "already": True,
+                "lines_total": 1, "lines_before": 0, "arrived_during": 0, "waited_s": 0.0,
                 "lines_examined": 1, "since_mark": 0}
 
     def e9(self, pattern: str, limit: int) -> tuple[list[str], int]:
@@ -999,6 +1004,7 @@ def test_a_dump_returns_the_path_the_bytes_actually_landed_at(tmp_path: Path) ->
     got = server.memdump(ref="0749:00000000", length=16, dest=str(dest))
     assert got["status"] == "ok"
     assert Path(got["path"]) == dest and got["bytes"] == 16
+    assert got["seg_off"] == "0749:00000000" and got["length"] == 16, got
 
 
 # --------------------------------------------------------------- the reply shape
@@ -2399,9 +2405,16 @@ def returned_key_sets(fn: object) -> list[frozenset[str]]:
             and f.value.id in getattr(fn, "__globals__", {})
             and inspect.ismodule(fn.__globals__[f.value.id])):  # type: ignore[attr-defined]
         return returned_key_sets(getattr(fn.__globals__[f.value.id], f.attr))  # type: ignore[attr-defined]
-    return [frozenset(k.value for k in node.value.keys
-                      if isinstance(k, ast.Constant) and isinstance(k.value, str))
-            for node in ast.walk(ast.parse(src))
+    # A WAIT'S `**got.fields()` is the core wait's `Found`, spread whole: its fields are the keys.
+    found = frozenset(f.name for f in dataclasses.fields(core_wait.Found))
+
+    def keys(d: ast.Dict) -> frozenset[str]:
+        named = {k.value for k in d.keys
+                 if isinstance(k, ast.Constant) and isinstance(k.value, str)}
+        spread = any(k is None and isinstance(v, ast.Call) and isinstance(v.func, ast.Attribute)
+                     and v.func.attr == "fields" for k, v in zip(d.keys, d.values, strict=True))
+        return frozenset(named | (found if spread else set()))
+    return [keys(node.value) for node in ast.walk(ast.parse(src))
             if isinstance(node, ast.Return) and isinstance(node.value, ast.Dict)]
 
 def test_the_status_docstring_names_every_field_its_reply_carries() -> None:
@@ -3019,7 +3032,7 @@ class NamesFake:
                progress: ds.Progress = ds.no_progress) -> dict[str, object]:
         self.runto_calls.append((segment, offset, seconds))
         self.last_control = control
-        ctl = (None if control is None else
+        ctl = (contract.unavailable("no control was named") if control is None else
                {"at": f"{control[0]:04X}:{control[1]:04X}", "hits": self.control_hits,
                 "removed": True})
         # `runto_running` models a bound that ran out: the real one interrupts the run there,
@@ -3028,7 +3041,7 @@ class NamesFake:
                    "OTHER_STOP" if self.runto_elsewhere else "TARGET")
         return {"verdict": verdict, "target": f"{segment:04X}:{offset:04X}",
                 "stopped_at": {"cs": self.cs, "eip": self.eip, "mode": self.mode},
-                "waited_s": 0.0, "breakpoint_removed": verdict == "TARGET", "control": ctl,
+                "waited_s": 0.0, "breakpoint_removed": True, "control": ctl,
                 "note": "" if verdict == "TARGET" else f"{verdict.lower()}: not at the target"}
 
     def command(self, text: str, **_k: object) -> str:
@@ -3337,7 +3350,7 @@ def test_send_mouse_moves_presses_and_reads_the_pointer_back(tmp_path: Path) -> 
     assert moved["arrived"] is True and "asked" not in moved
     assert moved["pointer"]["screen"] == {"x": 100, "y": 50, "width": 320, "height": 200}
     assert moved["pointer"]["mouse"] == {"x": 200, "y": 50, "max_x": 639, "max_y": 199}
-    assert moved["pointer"]["vga_mode"] == "0x13" and moved["pointer"]["buttons"] == []
+    assert moved["pointer"]["bios_mode"] == "0x13" and moved["pointer"]["buttons"] == []
     fake.commands_sent.clear()
     both = cast(dict[str, Any], server.send_mouse(x=0, y=0, button="right"))
     assert fake.commands_sent[1] == [b"M\x00\x00\x00\x00", b"B\x81", b"B\x01"], fake.commands_sent
@@ -4425,12 +4438,12 @@ def test_watch_add_read_mode_stores_and_arms_nothing(tmp_path: Path) -> None:
     got = server.watch_add(ref="g_rate", mode="show", length=4, fmt="u32")
     assert got["status"] == "ok" and got["armed"] is False and got["mode"] == "show"
     assert fake.rows == [], "a show watch must arm nothing"
-    # dec 12, one word per concept: the state `watch_add` gives a resolved show watch is
-    # the SAME word `watch_list` gives it: a word per tool would make the identical watch
-    # report two different states.
-    assert got["state"] == "resolved"
+    # dec 12, one word per concept: the state `watch_add` gives a placed show watch is
+    # the SAME word `watch_list` and a stop's `watches` give it: a word per tool would make
+    # the identical watch report two different states.
+    assert got["state"] == "evaluated"
     lst = server.watch_list()
-    assert lst["watches"][0]["state"] == "resolved"
+    assert lst["watches"][0]["state"] == "evaluated"
 
 
 def test_watch_add_an_unresolved_change_is_kept_not_refused(tmp_path: Path) -> None:
@@ -5381,7 +5394,7 @@ def test_the_lists_answer_from_the_store_and_the_last_stop_while_the_guest_runs(
     assert running["breakpoints"][0]["state"] == "armed", running      # as of the last stop
     watches = server.watch_list()
     assert watches["status"] == "ok" and watches["debugger_read"] is False, watches
-    assert watches["watches"][0]["state"] == "resolved", watches
+    assert watches["watches"][0]["state"] == "evaluated", watches
     # NEVER STOPPED: nothing to date the answer by, and the rows still come.
     dstate.STATE.last_stop.clear()
     fresh = server.breakpoint_list()
@@ -6573,6 +6586,7 @@ def test_run_to_summary_spells_a_control_that_never_counted_as_a_count_not_a_pre
     assert got["status"] == "ok" and got["verdict"] == "TARGET", got
     assert got["summary"] == "run_to 0000:0010: TARGET at 00A7:00000000, control counted 0", (
         got["summary"])
+    assert "note" not in got, "a clean arrival says nothing more: no note"
 
 
 def test_perform_checks_a_symbols_find_step_before_any_step_runs(tmp_path: Path) -> None:
@@ -6790,7 +6804,7 @@ def test_watch_add_judges_the_mode_before_the_size(tmp_path: Path) -> None:
 
 
 def test_a_breakpoint_left_armed_by_run_to_counts_as_a_stopper(tmp_path: Path) -> None:
-    """`run_to` that stopped elsewhere leaves its target armed in the debugger with no
+    """A `run_to` target whose removal could not be confirmed stays in the debugger with no
     declaration behind it, and `resume` must not refuse to run a machine that row could
     stop: the debugger's own list at the last stop is what says what is armed."""
     fake = _names(tmp_path, watched=False)
@@ -6926,7 +6940,7 @@ def test_a_step_takes_null_for_an_optional_scalar_and_judges_anything_else(
 ) -> None:
     """`breakpoint_interrupt`'s `ah` is `int | None`: a step may pass it null explicitly,
     which the schema of the tool itself accepts, and any other value is judged as an int."""
-    said = sequence._wrong_type(server.breakpoint_interrupt, {"number": 0x21, "ah": ah})
+    said = step_judge.wrong_type(server.breakpoint_interrupt, {"number": 0x21, "ah": ah})
     assert (said is None) if refusal is None else (said or "").startswith(refusal), said
 
 
@@ -7246,6 +7260,8 @@ def test_every_tool_is_summarised_by_its_own_line() -> None:
             assert lines[name] is media_tools.TOOLS[name].summary, name
         elif name.startswith("map_"):
             assert lines[name] is getattr(screen_map, name.removeprefix("map_") + "_line"), name
+        elif name == "perform_export":
+            assert lines[name] is recording.export_summary, name
         else:
             assert lines[name].__name__ == name, (name, lines[name])
 
@@ -7366,7 +7382,7 @@ def test_drive_says_its_act_ended_after_its_last_step_when_the_emulator_went(
     server.breakpoint_interrupt(number=0x21)            # something declared: the tail waits
     monkeypatch.setattr(sequence, "_wait_for_stop", lambda *a, **k: "gone")
     got = cast(dict[str, Any], server.drive(act=[{"op": "resume"}], settle_seconds=1))
-    assert got.get("code") == "step_failed", {k: got[k] for k in ("summary", "status")}
+    assert got.get("code") == "session_broken", {k: got[k] for k in ("summary", "status")}
     assert "GONE" in got["message"] and "available" not in got["message"], got
     assert "after its last step" in got["message"], got["message"]
 
@@ -7427,3 +7443,81 @@ def test_a_number_a_caller_spells_in_hex_reaches_the_tool_as_the_integer(tmp_pat
     assert cast(dict[str, Any], server.set_register(name="EAX", value=""))["code"] == \
         "bad_argument"
     del fake
+
+
+def test_drive_carries_its_acts_own_code_when_no_step_failed(tmp_path: Path) -> None:
+    """A list the executor refused (a console step after a release with `settle_seconds` 0) is
+    `not_stopped`, not a failed step: `drive` answers the act's own code."""
+    fake = _names(tmp_path, watched=True)
+    fake.halted = False                         # the resume leaves the guest running
+    got = cast(dict[str, Any], server.drive(act=[{"op": "resume"}, {"op": "registers"}],
+                                            settle_seconds=0))
+    assert got["code"] == "not_stopped", {k: got.get(k) for k in ("code", "message")}
+
+
+
+def test_start_names_no_stop_of_its_own_beside_the_park(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The park after `start` is stop 1, the session's own: no stop "on its own" rides beside it."""
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch)
+    assert got["status"] == "ok" and "stopped_on_its_own" not in got, sorted(got)
+
+
+def test_start_refuses_a_settle_bound_with_no_plan_to_bound(tmp_path: Path) -> None:
+    """`settle_seconds` bounds a plan's waits: with no plan it would be silently ignored."""
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    got = cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path), session_seconds=60,
+                                            settle_seconds=5))
+    assert got["code"] == "bad_argument" and "plan" in got["message"], got
+
+
+def test_a_refused_list_answers_the_contracts_shape(tmp_path: Path) -> None:
+    """A list refused part-way is a refusal like any other: `summary`, `status`, `code`,
+    `message` first."""
+    _names(tmp_path)
+    contract.check_refusal("perform", cast(dict[str, Any], server.perform(
+        steps=[{"op": "registers"}, {"op": "write", "ref": "nowhere", "data_hex": "00"}])))
+
+
+def test_the_pointer_names_the_bios_mode_and_the_screen_its_vga_mode(tmp_path: Path) -> None:
+    """`vga_mode` is the VGA listing's word wherever it is spelled; the mouse driver's video mode
+    is the BIOS mode number, its own word."""
+    fake = _guest(tmp_path)
+    moved = cast(dict[str, Any], server.send_mouse(x=1, y=1, units="mouse"))
+    assert moved["pointer"]["bios_mode"].startswith("0x") and "vga_mode" not in moved["pointer"]
+    del fake
+
+
+def test_drive_waits_for_its_expect_five_seconds_by_default(tmp_path: Path) -> None:
+    """The default bound on `drive`'s wait for `expect` is the one both servers name, and it is
+    the bound the wait is handed when `seconds` is left out."""
+    assert inputs.DRIVE_EXPECT_WAIT_S == 5.0
+    assert dosbox_docs.DOC_VALUES["EXPECT_WAIT_S"] == "5"
+    fake = _names(tmp_path, watched=True)
+    fake.running = True
+    server.drive(act=[{"op": "send_keys", "keys": ["a"]}], expect="key_cue_a")
+    assert fake.wait_calls and fake.wait_calls[-1][1] == 5.0, fake.wait_calls
+
+
+def test_log_waits_stop_refusal_names_the_pattern_and_the_stop(tmp_path: Path) -> None:
+    """`wait_stopped` from `log_wait` carries what was waited for and the stop it met."""
+    fake = _names(tmp_path, watched=True)
+    fake.running = True
+    fake.stops_during_wait = True
+    got = cast(dict[str, Any], server.log_wait(channel="guest", pattern="never", seconds=1))
+    assert got["code"] == "wait_stopped" and got["pattern"] == "never", got
+    assert got["last_stop"]["pc"] == "00A7:00000000", got
+
+
+def test_the_instructions_families_are_the_registered_tools_and_the_running_ones_answer() -> None:
+    """The roster's families name every registered tool once and nothing else (a misspelt name
+    would be a tool the session looks for and never finds), and every tool the running sentence
+    names, a whole family's included, is one a running guest is answered by."""
+    listed = [t for _, tools in dosbox_mcp._FAMILIES for t in tools]
+    assert sorted(listed) == sorted(dosbox_mcp.registered_tools()), (
+        sorted(set(listed) ^ set(dosbox_mcp.registered_tools())))
+    answering = sequence.RUNNING_OK_OPS | (checks.NOT_STEPS - {"start", "build_check"})
+    named = dosbox_mcp.answering_named() - {"registers(from_last_stop=True)"}
+    assert named <= answering, sorted(named - answering)
+    assert dosbox_mcp.running_sentence() in (server.mcp.instructions or "")

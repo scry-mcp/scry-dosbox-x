@@ -240,7 +240,7 @@ send_mouse(x=160, y=100, button="left", expect="clicked")
    -> {"route": "guest", "arrived": true,
        "pointer": {"screen": {"x": 160, "y": 100, "width": 320, "height": 200},
                    "mouse": {"x": 320, "y": 100, "max_x": 639, "max_y": 199},
-                   "buttons": [], "vga_mode": "0x13"},
+                   "buttons": [], "bios_mode": "0x13"},
        "verify": {"checked": true, "seen": true, "verdict": "TARGET", ...}}
 ```
 
@@ -265,8 +265,9 @@ run_to(ref="ATTRACT_RUN", control="MAIN_LOOP", seconds=60)
 
 In real mode the same byte has many spellings (`07DF:0599` and `0837:0041` are one
 address), and arrival is judged on the linear address, whatever paragraph the program's
-`CS` happens to hold when it stops. The breakpoint `run_to` armed is removed once it has
-arrived; one it could not arrive at is left armed and the reply says so.
+`CS` happens to hold when it stops. The breakpoint `run_to` armed is removed whatever the
+verdict, and the reply says so (`target_disarmed`, false only when the removal could not be
+confirmed).
 
 ### A window on the guest's clock
 

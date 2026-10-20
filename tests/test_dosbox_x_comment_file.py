@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from scry_core import prose
 
 import dosbox_comment_file as cf
 import dosbox_x_server  # noqa: F401 -- imports the envelope and the boundary the shape guard wraps
@@ -81,8 +82,8 @@ def test_a_header_alone_is_an_empty_file() -> None:
                                            (f"start\t\t{STAMP}", 3)])
 def test_a_row_of_fewer_than_four_columns_is_refused_naming_its_line(line: str,
                                                                     columns: int) -> None:
-    assert f"c.tsv:2: a row is ref, cpu, created_at and text separated by tabs; this one has " \
-           f"{columns} column(s)" in _refused(_file(line))
+    assert ("c.tsv:2: a row is ref, cpu, created_at and text separated by tabs; this one has "
+            + prose.counted(columns, "column")) in _refused(_file(line))
 
 
 def test_the_text_is_the_rest_of_the_line_after_the_third_tab() -> None:

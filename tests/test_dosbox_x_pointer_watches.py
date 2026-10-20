@@ -56,7 +56,7 @@ def test_a_pointer_watch_is_resolved_when_armed_and_the_reply_says_through_what(
         tmp_path: Path) -> None:
     _pointing(tmp_path)
     out = server.watch_add(ref="[_g_engine]+0x4", mode="show", length=2, fmt="i16")
-    assert out["status"] == "ok" and out["by"] == "pointer" and out["state"] == "resolved", out
+    assert out["status"] == "ok" and out["by"] == "pointer" and out["state"] == "evaluated", out
     assert out["pointer"] == {"at": "00AF:00001000", "length": 4, "value": "200000", "offset": 4,
                               "target": f"00AF:{HEAP + 4:08X}"}
     out = server.watch_add(ref="_g_engine->sync_delta", mode="show")

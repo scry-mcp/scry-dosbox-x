@@ -59,7 +59,7 @@ def _flags() -> list[str]:
 def _hold(background: bool) -> tuple[int, int]:
     """One shared probe start, launched as asked, held, closed: its window, in ms."""
     began = focus_watch.now_ms()
-    boot(conf=conf_without_launch(PROBE_CONF, "PROBE.COM"), cwd=GUEST, mode="shared",
+    boot(conf=conf_without_launch(PROBE_CONF, "PROBE.COM"), cwd=GUEST, shared=True,
          window_flags=_flags(), program="PROBE.COM", background=background)
     must(M.call(server.resume), "releasing the probe")
     time.sleep(focus_watch.HOLD_S)

@@ -78,9 +78,13 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
         if _advance(session, began, deadline, report_slow_retrace):
             # THE BOUND INTERRUPTS: a `VRT` still out leaves the machine running, so it is
             # brought back where it stands and surveyed there, as every bounded run hands the
-            # machine back stopped. The `VRT` stays armed, and the next release meets it.
-            ds.Session.stop_at_bound(session)
+            # machine back stopped. The `VRT` stays armed, and the next release meets it. A stop
+            # that landed before the interrupt looked is the retrace's, which spends it, unless a
+            # declared breakpoint made it (`_cut`), which ends the run as inside the loop.
+            STATE.retrace_pending = ds.Session.stop_at_bound(session)
             verdict = contract.TIMEOUT
+            if not STATE.retrace_pending and cuttable and _cut(session) is not None:
+                verdict = contract.OTHER_STOP
             break
         polls += 1
         if frames:
@@ -232,7 +236,7 @@ def screen_wait(session: ds.Session, text: str, seconds: float,
                             out=False, began=began)
         if _advance(session, began, deadline, ds.no_progress):
             return _expired(session, text, seconds, polls, f"{not_text} of {examined}", seen,
-                            out=True, began=began)
+                            out=True, began=began, cuttable=cuttable)
         polls += 1
         cut = _cut(session) if cuttable else None
         if cut is not None:
@@ -298,13 +302,23 @@ def _ended_at(session: ds.Session) -> dict[str, Any]:
 
 
 def _expired(session: ds.Session, text: str, seconds: float, polls: int, not_text: str,
-             seen: dict[str, Any], *, out: bool, began: float) -> dict[str, Any]:
+             seen: dict[str, Any], *, out: bool, began: float,
+             cuttable: bool = False) -> dict[str, Any]:
     """`screen_wait`'s bound, a `TIMEOUT` at a stop: with a `VRT` still `out` the machine is
     interrupted where it stands, and the retrace stays armed for the next release; stopped at a
     retrace of its own, that stop is surveyed. Stopped before any, nothing was typed and the
     reply carries no stop."""
+    # A `VRT` typed and still out is interrupted; one whose stop landed first is spent, and
+    # that stop is surveyed like any other, unless a declared breakpoint made it: then the wait
+    # ends as a cut inside it does.
+    pending = out and ds.Session.stop_at_bound(session)
+    if out and not pending and cuttable and (cut := _cut(session)) is not None:
+        raise ds.Invalid("wait_stopped",
+            f"a declared breakpoint stopped the machine as the {seconds:g} s bound ran out, so "
+            f"the wait for `{text}` ends there; {PENDING_NOTE}",
+            polls=polls, attribution=cut, **_ended_at(session), retrace_pending=True, **seen)
     if out:
-        out = ds.Session.stop_at_bound(session)
+        STATE.retrace_pending = pending
     skipped = "" if not_text.startswith("0 ") else (
         f"; {not_text} frames examined were not in a text mode")
     base: dict[str, Any] = {
@@ -312,7 +326,7 @@ def _expired(session: ds.Session, text: str, seconds: float, polls: int, not_tex
         "retrace_pending": STATE.retrace_pending,
         "waited_s": round(time.monotonic() - began, 1),
         "note": f"`{text}` was not on the text screen in {polls} retrace(s) within "
-                f"{seconds:g} s{skipped}" + (f"; {PENDING_NOTE}" if out else "")}
+                f"{seconds:g} s{skipped}" + (f"; {PENDING_NOTE}" if pending else "")}
     if not (polls or out):
         return st.reply(**base)
     return _stop_reply(session, base)

@@ -434,12 +434,16 @@ def _perform(steps: list[dict[str, Any]], settle_seconds: float = 30.0,
     steps_whole("steps", steps)
 
 
-def _start(plan: list[dict[str, Any]] | None = None, settle_seconds: float = 30.0,
+def _start(plan: list[dict[str, Any]] | None = None, settle_seconds: float | None = None,
            **_: Any) -> None:
     """`start` judges its paths and its launch itself, before anything starts; its plan is a
     list like `perform`'s, refused whole before the emulator boots rather than after it."""
+    if settle_seconds is not None and not plan:
+        raise ds.Invalid("bad_argument", "`settle_seconds` bounds the waits of a `plan`, and "
+                         "there is no plan: it would be silently ignored")
     if plan:
-        sequence.validate_wait(settle_seconds)
+        sequence.validate_wait(sequence.SETTLE_DEFAULT_S if settle_seconds is None
+                               else settle_seconds)
         steps_whole("plan", plan)
 
 
@@ -461,7 +465,7 @@ def _drive(act: list[dict[str, Any]], expect: str = "", seconds: float | None = 
             f"limit is between 1 and {dlogs.LOG_LIMIT_MAX}; got {limit!r}")
     if expect:
         dlogs.compiled(expect)
-    wait_s = inputs.EFFECT_WAIT_DEFAULT_S if seconds is None else seconds
+    wait_s = inputs.drive_wait_s(seconds)
     if isinstance(wait_s, bool) or not isinstance(wait_s, int | float) \
             or not 0 < wait_s <= ds.RUN_TO_MAX:
         raise ds.Invalid("bad_argument",

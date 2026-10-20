@@ -264,7 +264,7 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
         # holds up to there is collected as a stop that cut it would be, a TIMEOUT. A log the
         # machine closed first is not what ran, and the collect refuses it as such.
         try:
-            ds.Session.stop_at_bound(session)
+            expired = ds.Session.stop_at_bound(session)   # False: it came to rest on its own
         except ds.Invalid as e:
             raise ds.Invalid(e.code,
                 f"{e}. The debugger's log is still open at {places[0]}: the next trace refuses "

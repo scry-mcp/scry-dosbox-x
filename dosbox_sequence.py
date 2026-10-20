@@ -14,7 +14,6 @@ look.
 
 from __future__ import annotations
 
-import inspect
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -24,6 +23,7 @@ from scry_core import progress as mprogress
 from scry_core import recording
 from scry_core import reply_contract as contract
 from scry_core import sequence_account as account
+from scry_core import steps as step_judge
 
 import dosbox_arming as arming
 import dosbox_checks as checks
@@ -44,6 +44,8 @@ Ops = dict[str, Callable[..., dict[str, Any]]]
 #: The most calls one recording keeps, this server's bound (`scry_core.recording.Recorder`):
 #: `perform` takes a list of any length, so the bound is the recording's own.
 RECORD_MAX = 5000
+#: How long a step waits for a stop by default, in `perform`, `drive` and `start`'s plan.
+SETTLE_DEFAULT_S = 30.0
 
 #: THE TOOLS THAT ANSWER ON A RUNNING GUEST, the one table of them: they read a file or the
 #: log, post input into the guest, go down the debugger channel, or queue a declaration as
@@ -128,38 +130,6 @@ def _wait_for_stop(session: ds.Session, seconds: float,
 
 
 
-_TYPED: dict[str, tuple[type | tuple[type, ...], str]] = {
-    "int": (int, "an integer"), "float": ((int, float), "a number"),
-    "str": (str, "a string"), "bool": (bool, "a boolean"),
-}
-
-
-def _wrong_type(fn: Any, args: dict[str, Any]) -> str | None:
-    """The first argument whose value is not what the tool's own signature declares, as the
-    refusal names it, or None. A bool is never an integer here: `True` for a count is a
-    mistake, not a 1. The scalar annotations are judged, and a scalar `| None` too (a
-    `None` passes it, anything else is judged as the scalar); a step's remaining shapes are
-    the check's business."""
-    for name, param in inspect.signature(fn).parameters.items():
-        if name not in args:
-            continue
-        ann = param.annotation if isinstance(param.annotation, str) else getattr(
-            param.annotation, "__name__", "")
-        parts = [part.strip() for part in ann.split("|")]
-        value = args[name]
-        if "None" in parts and len(parts) == 2:
-            if value is None:
-                continue
-            parts.remove("None")
-        typed = _TYPED.get(parts[0]) if len(parts) == 1 else None
-        if typed is None:
-            continue
-        want, word = typed
-        if (isinstance(value, bool) and want is not bool) or not isinstance(value, want):
-            return f"{name} is {word}; got {value!r}"
-    return None
-
-
 def refused_text(refused: list[dict[str, Any]]) -> str:
     """The message of a list refused before anything ran: every refusal, each by its step and
     its op (a step that is no mapping has none to name, and its own message quotes it)."""
@@ -188,30 +158,9 @@ def preflight(steps: list[dict[str, Any]], ops: Ops) -> list[dict[str, Any]]:
                             "message": f"is not a step ({step!r}): the vocabulary is the "
                                        f"server's own operation names, {sorted(ops)}"})
             continue
-        args = recording.step_arguments(step)
-        if (why := recording.refuse_recorded(step)) is not None:
-            refused.append({"step": i, "op": op, "code": "bad_argument", "message": why})
-            continue
-        # `ctx` is the SDK's, injected when the client calls a tool, never an argument a
-        # step may carry: a stray value would reach the progress bridge as a context.
-        if "ctx" in args:
-            refused.append({"step": i, "op": op, "code": "bad_argument",
-                            "message": "carries `ctx`, which is not a step argument: the "
-                                       "client's context is not something a step names"})
-            continue
-        try:
-            # BIND against the REAL tool signature (functools.wraps exposes it via
-            # __wrapped__, which inspect.signature follows), so a bad ARGUMENT NAME is the
-            # sequence's fault to report, and a genuine TypeError raised INSIDE a tool later
-            # is NOT swallowed as "bad arguments" but escapes as the bug it is.
-            inspect.signature(ops[op]).bind(**args)
-        except TypeError as e:
-            refused.append({"step": i, "op": op, "code": "bad_argument",
-                            "message": f"has bad arguments: {e}"})
-            continue
-        wrong = _wrong_type(ops[op], args)
-        if wrong is not None:
-            refused.append({"step": i, "op": op, "code": "bad_argument", "message": wrong})
+        refusal, args = step_judge.judge(ops[op], step)
+        if refusal is not None:
+            refused.append({"step": i, "op": op, **refusal})
             continue
         try:
             checks.preflight(op, args)
@@ -429,7 +378,7 @@ def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, op
         if recorded is None:
             final = {"stopped": _final_stop(session)}
         elif last.get("stop_seq") == recorded["stop_seq"] and "regs" in last:
-            final = {"stopped": {**recorded, **guest.recorded_position(),
+            final = {"stopped": {**guest.recorded_head(recorded),
                                  **{k: last[k] for k in _ENRICHED if k in last}}}
         else:
             final = {"stopped": _recorded_stop(session, recorded)}
@@ -563,7 +512,7 @@ def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str 
     """The body of the `drive` tool. Its arguments are judged before the session gate
     (`dosbox_checks._drive`, the act whole); what needs the session, the input route of a key
     step, is judged when the act runs."""
-    wait_s = inputs.EFFECT_WAIT_DEFAULT_S if seconds is None else seconds
+    wait_s = inputs.drive_wait_s(seconds)
     # THE MARK, before anything moves. A session with no logfile has no LOOK and no VERIFY,
     # and that is refused before the act rather than discovered after it.
     try:
@@ -575,7 +524,10 @@ def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str 
                     prechecked=True)
     account = {k: v for k, v in ran.items() if k not in ("status", "session")}
     if ran.get("status") != "ok":
-        return st.reply(status="INVALID", code="step_failed", act=account,
+        # THE ACT'S OWN CODE: a step that failed is `step_failed`, but a list the executor
+        # refused (`not_stopped`) or an emulator gone under it (`session_broken`) says so.
+        act_code: contract.Code = ran.get("code", "step_failed")
+        return st.reply(status="INVALID", code=act_code, act=account,
                       message=f"the act stopped {_where_stopped(ran.get('failed_at'))}: "
                               f"{ran.get('message')}",
                       looked=_look(session, mark, pattern, limit))

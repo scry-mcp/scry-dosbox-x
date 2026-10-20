@@ -173,7 +173,6 @@ def log_wait(ses: ds.Session, pattern: str, seconds: float, channel: str, mark: 
     ds.check_wait_bound(seconds)
     rx = dlogs.compiled(pattern)
     dlogs.check_channel(channel)
-    kind = "instrumentation" if channel == "guest" else channel
     # THE ONLY REFUSAL BEFORE THE WAIT. A log that does not EXIST yet, or holds no
     # instrumentation yet, is the ordinary state of a guest just resumed, and waiting for its
     # FIRST trace is what this is for; a session with no logfile has no channel to wait on.
@@ -193,27 +192,16 @@ def log_wait(ses: ds.Session, pattern: str, seconds: float, channel: str, mark: 
                          alive=ses.alive, progress=progress,
                          label=f"log_wait {channel} /{pattern}/")
     if isinstance(got, core_wait.Found):
-        return {"verdict": contract.TARGET, "line": got.line, "already": got.already,
-                "lines_total": got.lines_total, "lines_before": got.lines_before,
-                "arrived_during": got.arrived_during, "waited_s": got.waited_s,
-                "lines_examined": got.lines_examined, "since_mark": mark}
+        return {"verdict": contract.TARGET, "pattern": pattern, "channel": channel,
+                **got.fields(), "since_mark": mark}
     if got.how == "STOPPED":
         raise ds._wait_stopped(pattern, got.arrived_during, got.waited_s, got.at_bound)
     if got.how == "GONE":
-        raise Invalid("session_broken",
-            f"the emulator is GONE, {got.waited_s}s into a {seconds}s wait for {pattern!r}, "
-            f"and a final read of the log after it died found nothing matching either. "
-            f"Nothing more will be written, so this needs a new session, not a bigger number")
+        raise Invalid("session_broken", core_wait.gone_message(pattern, got, seconds))
     region = "in the log altogether" if mark == 0 else f"since the mark at byte {mark}"
-    silent = ("" if got.arrived_during else
-              " The guest wrote NOTHING at all in this window, so the question may "
-              "be whether it is still emitting rather than what it emitted.")
     # THE BOUND RAN OUT AND THE WAIT ANSWERED: a verdict, not a refusal. The machine still
     # runs, and the caller decides whether to wait longer.
-    return {"verdict": contract.TIMEOUT, "arrived_during": got.arrived_during,
-            "lines_examined": got.lines_examined, "waited_s": got.waited_s,
-            "since_mark": mark,
-            "note": f"nothing matched {pattern!r} in {got.waited_s}s: {got.arrived_during} "
-                    f"{kind} line(s) arrived DURING the wait ({got.lines_examined} {region}), "
-                    f"so this is a bound that expired and not 'there was nothing to match "
-                    f"against'.{silent} The emulator is still running"}
+    return {"verdict": contract.TIMEOUT, "pattern": pattern, "channel": channel,
+            "arrived_during": got.arrived_during, "lines_examined": got.lines_examined,
+            "waited_s": got.waited_s, "since_mark": mark,
+            "note": core_wait.timeout_note(pattern, got, region, "guest")}

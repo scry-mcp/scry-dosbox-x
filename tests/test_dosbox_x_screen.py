@@ -1730,3 +1730,31 @@ def test_an_attribute_controller_listing_of_another_shape_is_an_unexpected_answe
     with pytest.raises(ds.Invalid, match="`VGA AC` lacks a word") as e:
         screen.text_cells(bytes([0x41, 0x07]), {"palette": ["00"] * 16}, ["000000"] * 256)
     assert e.value.code == "unexpected_answer"
+
+
+class LandsAtTheBound(Frames):
+    """The race the bound can lose: the wait gives up with the `VRT` out, and its stop lands
+    before the interrupt looks, so nothing is interrupted and the retrace is spent."""
+
+    def retrace(self, began: float, deadline: float,
+                progress: ds.Progress = ds.no_progress) -> tuple[bool, float]:
+        super().retrace(began, deadline, progress)
+        return True, 0.0
+
+
+def test_a_retrace_that_lands_as_the_wait_expires_is_spent_not_pending(tmp_path: Path) -> None:
+    dbg = waiting(["probe-park", "probe-park"], 1, tmp_path, kind=LandsAtTheBound)
+    r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=5))
+    assert r["verdict"] == "TIMEOUT" and "BREAK" not in dbg.sent, (r, dbg.sent)
+    assert r["retrace_pending"] is False and dstate.STATE.retrace_pending is False, r
+    assert "stop_seq" in r, "the retrace's stop landed: it is surveyed"
+
+
+def test_a_breakpoint_that_lands_as_the_wait_expires_ends_it_naming_it(tmp_path: Path) -> None:
+    """The bound's race lost to a declared breakpoint: the `VRT` is still armed, and the wait
+    ends as a cut inside it does."""
+    dbg = cut_by_breakpoint(tmp_path)
+    dbg.__class__ = LandsAtTheBound
+    r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=5))
+    assert r["code"] == "wait_stopped" and r["retrace_pending"] is True, r
+    assert r["attribution"]["ref"] == "0814:0108" and "BREAK" not in dbg.sent, r

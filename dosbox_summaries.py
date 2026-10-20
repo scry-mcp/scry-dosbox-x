@@ -473,12 +473,6 @@ def capture_frame(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 # ---------------------------------------------------------------------- the sequences
 
-def perform_export(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    cut = f", cut at call {reply['cut']['call']}" if "call" in reply.get("cut", {}) else ""
-    return (f"perform_export: {_said(reply['steps'], 'step')}, {_said(reply['checks'], 'check')}, "
-            f"{reply['dropped_total']} dropped{cut} to {reply['path']}")
-
-
 def perform(args: dict[str, Any], reply: dict[str, Any]) -> str:
     # THE COUNT AND THE TAIL ON THE LINE: under `summaries=True` a nested list's line is all
     # its caller keeps, and `ok` alone tells a list that ended stopped from one still running.

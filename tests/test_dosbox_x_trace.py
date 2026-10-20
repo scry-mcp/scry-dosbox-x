@@ -240,9 +240,10 @@ def test_a_dynamic_core_is_refused_by_its_counter_and_the_file_is_kept(tmp_path:
     assert got["stop_seq"] and got["pc"].endswith(":00000106"), got
 
 
-def cut(tmp_path: Path, close: str | None = "probe-cut-close-delta") -> Tracer:
+def cut(tmp_path: Path, close: str | None = "probe-cut-close-delta",
+        kind: type[Tracer] = Tracer) -> Tracer:
     """A breakpoint at the `dec bx` after the settle loop, and a trace asked past it."""
-    dbg = live(Tracer([cap("probe-cut-survey-before"), cap("probe-cut-survey-after-close")],
+    dbg = live(kind([cap("probe-cut-survey-before"), cap("probe-cut-survey-after-close")],
                       cwd_of(tmp_path),
                       [("probe-cut-open", "probe-cut-open-delta"), (None, close)]))
     assert dstate.STATE.store is not None
@@ -1513,3 +1514,21 @@ def test_an_interrupt_that_found_no_prompt_names_the_log_left_open(tmp_path: Pat
                                             dest=str(tmp_path / "u.trace"), seconds=0.3))
     assert got["code"] == "not_settled" and got["trace"]["closed"] is False, got
     assert "still open" in got["message"] and log_open(), got["message"]
+
+
+
+class StopsAsTheBoundExpires(Tracer):
+    """The race the bound can lose: a stop cuts the count after the wait gave up and before the
+    interrupt looks, so nothing is interrupted and the run ended at another's stop."""
+
+    def log_cpu(self, word: str, count: int, began: float, deadline: float,
+                progress: ds.Progress = ds.no_progress) -> tuple[bool, float]:
+        expired, saw = super().log_cpu(word, count, began, deadline, progress)
+        return (True if count else expired), saw     # the close (`LOGC 0`) answers as it does
+
+
+def test_a_trace_cut_as_the_bound_expires_is_another_stop_not_a_timeout(tmp_path: Path) -> None:
+    dbg = cut(tmp_path, kind=StopsAsTheBoundExpires)
+    got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",
+                                            dest=str(tmp_path / "t.trace")))
+    assert "BREAK" not in dbg.sent and got["verdict"] == "OTHER_STOP", (got, dbg.sent)
