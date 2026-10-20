@@ -245,6 +245,8 @@ def check_scan_range(length: int, cell_bytes: int) -> None:
 #: How many survivors a filter lists unless asked for more: while a scan narrows, the count is
 #: the answer, and a listing costs a page of console per screenful.
 HITS_DEFAULT = 40
+#: Why a filter with no `value` answers none: it compared each cell with the scan's opening.
+NO_VALUE_WHY = "no `value` was given, so each cell was compared with its value at `scan_start`"
 
 
 def check_filter(operator: str, value: int | None, limit: int = HITS_DEFAULT) -> None:
@@ -357,7 +359,7 @@ def scan_filter(session: ds.Session, operator: str, value: int | None,
         held, STATE.scan_iterations = STATE.scan_iterations, None
         STATE.scan_cell_bytes = None
         closing: dict[str, Any] = {
-            "operator": operator, "value": value,
+            "operator": operator, "value": _asked(value),
             "iterations": contract.unavailable(
                 "the debugger's closing line carries no count, and this server holds none it "
                 "can stand behind: the scan was opened, filtered or ended through `debug`")
@@ -371,7 +373,7 @@ def scan_filter(session: ds.Session, operator: str, value: int | None,
     iterations = int(summary.group(2), 16)
     STATE.scan_iterations = iterations
     listed = survivors <= limit
-    return {"operator": operator, "value": value, "iterations": iterations, "closed": False,
+    return {"operator": operator, "value": _asked(value), "iterations": iterations, "closed": False,
             "hits": _listing(session, survivors) if listed else [],
             "hits_total": survivors, "truncated": not listed}
 
@@ -388,3 +390,8 @@ def scan_clear(session: ds.Session) -> dict[str, Any]:
     if SCAN_NONE_TO_CANCEL in last:
         return {"cleared": False, "note": "no search instance was open"}
     raise _unexpected(session, out, "a cancelled instance nor that none was open")
+
+
+def _asked(value: int | None) -> int | dict[str, Any]:
+    """The `value` a filter compared with, or why there is none."""
+    return contract.unavailable(NO_VALUE_WHY) if value is None else value

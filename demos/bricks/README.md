@@ -94,8 +94,8 @@ DOSBox-X `<volatile>`.
 {
   "conf": "./demos/bricks/bricks.conf",
   "cwd": "./demos/bricks",
-  "seconds": 900,
-  "mode": "shared",
+  "session_seconds": 900,
+  "shared": true,
   "window_flags": "<host>",
   "break_on_int3": true,
   "logfile": "./tmp/demos/bricks/bricks-e9.log",
@@ -107,7 +107,7 @@ DOSBox-X `<volatile>`.
 {
   "summary": "<volatile>",
   "status": "ok",
-  "mode": "shared",
+  "shared": true,
   "ready_after_s": "<volatile>",
   "argv": "<volatile>",
   "binary": "<volatile>",
@@ -116,28 +116,19 @@ DOSBox-X `<volatile>`.
   "stub": "./guest/INJECT.COM",
   "input_port": "<volatile>",
   "background": false,
-  "stopped_on_its_own": {
-    "stop_seq": 1,
-    "at": "F000:0000FFF0",
-    "attribution": {
-      "attributed": false,
-      "at": "F000:FFF0",
-      "why": "the stop address matches no declared code breakpoint. The debugger keeps no hit flag, and a memory watch stops at the WRITING instruction rather than the watched address, so which declaration fired cannot be derived from the stop"
-    }
-  },
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": false,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -158,9 +149,19 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "resume: halted at 08A2:00000119",
+  "summary": "resume: OTHER_STOP, stopped at 08A2:00000119",
   "status": "ok",
-  "registers": {
+  "verdict": "OTHER_STOP",
+  "omitted": [
+    "screen_delta",
+    "screen_chars",
+    "clipped"
+  ],
+  "how": "detail=True adds the debugger's repaint for this command",
+  "waited_s": "<volatile>",
+  "pc": "08A2:00000119",
+  "cpu_mode": "real",
+  "regs": {
     "EAX": "D05B0E0A",
     "ESI": "000005B2",
     "DS": "08A2",
@@ -180,7 +181,7 @@ DOSBox-X `<volatile>`.
   "watches": [],
   "attribution": {
     "attributed": false,
-    "at": "08A2:0119",
+    "at": "08A2:00000119",
     "why": "the stop address matches no declared code breakpoint. The debugger keeps no hit flag, and a memory watch stops at the WRITING instruction rather than the watched address, so which declaration fired cannot be derived from the stop"
   },
   "e9": {
@@ -192,40 +193,34 @@ DOSBox-X `<volatile>`.
   },
   "stop_seq": 2,
   "instruction": {
-    "at": "08A2:00000119",
+    "seg_off": "08A2:00000119",
     "bytes": "CD03",
     "text": "int 3",
     "flow": "call",
     "code_bits": 16,
     "bytes_from": "code pane",
-    "symbol": null,
-    "delta": null
+    "symbol": {
+      "available": false,
+      "why": "no symbol table is loaded"
+    },
+    "delta": {
+      "available": false,
+      "why": "no symbol table is loaded"
+    }
   },
-  "halted": true,
-  "stopped_at": {
-    "cs": "08A2",
-    "eip": "00000119",
-    "mode": "Real"
-  },
-  "omitted": [
-    "screen_delta",
-    "screen_chars",
-    "clipped"
-  ],
-  "how": "detail=True adds the debugger's repaint for this command",
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": false,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -240,7 +235,7 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "source": "./demos/bricks/bricks.sym",
+  "path": "./demos/bricks/bricks.sym",
   "base": "8a20"
 }
 ```
@@ -268,7 +263,7 @@ DOSBox-X `<volatile>`.
   "excluded_pattern": 0,
   "excluded_unplaceable": 0,
   "unencodable": [],
-  "unencodable_count": 0,
+  "unencodable_total": 0,
   "truncated_names": 0,
   "disambiguated": 0,
   "renamed": 0,
@@ -282,16 +277,16 @@ DOSBox-X `<volatile>`.
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": false,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -316,8 +311,7 @@ DOSBox-X `<volatile>`.
   "summary": "disassemble brick_hit: 14 lines at 08A2:000002C8, 16-bit",
   "status": "ok",
   "ref": "brick_hit",
-  "segment": 2210,
-  "offset": 712,
+  "seg_off": "08A2:000002C8",
   "length": 32,
   "code_bits": 16,
   "code_bits_from": "real mode",
@@ -358,42 +352,38 @@ DOSBox-X `<volatile>`.
     {
       "line": 2,
       "operand": "0x1ee",
-      "offset": "0x1ee",
       "kind": "target",
-      "segment": "08A2",
-      "linear": "00008C0E",
+      "seg_off": "08A2:000001EE",
+      "addr": "0x00008c0e",
       "symbol": "brick_index",
       "delta": 0
     },
     {
       "line": 4,
       "operand": "byte ptr [0x62b]",
-      "offset": "0x62b",
       "kind": "memory",
-      "segment": "08A2",
       "register": "DS",
-      "linear": "0000904B",
+      "seg_off": "08A2:0000062B",
+      "addr": "0x0000904b",
       "symbol": "bricks_left",
       "delta": 0
     },
     {
       "line": 7,
       "operand": "0x1f9",
-      "offset": "0x1f9",
       "kind": "target",
-      "segment": "08A2",
-      "linear": "00008C19",
+      "seg_off": "08A2:000001F9",
+      "addr": "0x00008c19",
       "symbol": "brick_rect",
       "delta": 0
     },
     {
       "line": 13,
       "operand": "word ptr [0x615]",
-      "offset": "0x615",
       "kind": "memory",
-      "segment": "08A2",
       "register": "DS",
-      "linear": "00009035",
+      "seg_off": "08A2:00000615",
+      "addr": "0x00009035",
       "symbol": "score",
       "delta": 0
     }
@@ -401,16 +391,16 @@ DOSBox-X `<volatile>`.
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": false,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -441,20 +431,19 @@ DOSBox-X `<volatile>`.
   "state": "armed",
   "entry": "BP 08A2:02C8",
   "marked": false,
-  "note": null,
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -477,7 +466,7 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "watch_add score: resolved",
+  "summary": "watch_add score: evaluated",
   "status": "ok",
   "ref": "score",
   "by": "symbol",
@@ -487,20 +476,20 @@ DOSBox-X `<volatile>`.
   "stored": true,
   "already_stored": false,
   "armed": false,
-  "state": "resolved",
+  "state": "evaluated",
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -521,9 +510,19 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "resume: halted at 08A2:000002C8",
+  "summary": "resume: OTHER_STOP, stopped at 08A2:000002C8",
   "status": "ok",
-  "registers": {
+  "verdict": "OTHER_STOP",
+  "omitted": [
+    "screen_delta",
+    "screen_chars",
+    "clipped"
+  ],
+  "how": "detail=True adds the debugger's repaint for this command",
+  "waited_s": "<volatile>",
+  "pc": "08A2:000002C8",
+  "cpu_mode": "real",
+  "regs": {
     "EAX": "D05B0005",
     "ESI": "00000039",
     "DS": "08A2",
@@ -556,7 +555,7 @@ DOSBox-X `<volatile>`.
     "attributed": true,
     "ref": "brick_hit",
     "by": "symbol",
-    "at": "08A2:02C8"
+    "at": "08A2:000002C8"
   },
   "e9": {
     "lines_total": 2,
@@ -567,7 +566,7 @@ DOSBox-X `<volatile>`.
   },
   "stop_seq": 3,
   "instruction": {
-    "at": "08A2:000002C8",
+    "seg_off": "08A2:000002C8",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -576,31 +575,19 @@ DOSBox-X `<volatile>`.
     "symbol": "brick_hit",
     "delta": 0
   },
-  "halted": true,
-  "stopped_at": {
-    "cs": "08A2",
-    "eip": "000002C8",
-    "mode": "Real"
-  },
-  "omitted": [
-    "screen_delta",
-    "screen_chars",
-    "clipped"
-  ],
-  "how": "detail=True adds the debugger's repaint for this command",
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -621,9 +608,19 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "resume: halted at 08A2:000002C8",
+  "summary": "resume: OTHER_STOP, stopped at 08A2:000002C8",
   "status": "ok",
-  "registers": {
+  "verdict": "OTHER_STOP",
+  "omitted": [
+    "screen_delta",
+    "screen_chars",
+    "clipped"
+  ],
+  "how": "detail=True adds the debugger's repaint for this command",
+  "waited_s": "<volatile>",
+  "pc": "08A2:000002C8",
+  "cpu_mode": "real",
+  "regs": {
     "EAX": "D05B0005",
     "ESI": "00000038",
     "DS": "08A2",
@@ -656,7 +653,7 @@ DOSBox-X `<volatile>`.
     "attributed": true,
     "ref": "brick_hit",
     "by": "symbol",
-    "at": "08A2:02C8"
+    "at": "08A2:000002C8"
   },
   "e9": {
     "lines_total": 3,
@@ -667,7 +664,7 @@ DOSBox-X `<volatile>`.
   },
   "stop_seq": 4,
   "instruction": {
-    "at": "08A2:000002C8",
+    "seg_off": "08A2:000002C8",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -676,32 +673,19 @@ DOSBox-X `<volatile>`.
     "symbol": "brick_hit",
     "delta": 0
   },
-  "halted": true,
-  "stopped_at": {
-    "cs": "08A2",
-    "eip": "000002C8",
-    "mode": "Real"
-  },
-  "omitted": [
-    "screen_delta",
-    "screen_chars",
-    "clipped"
-  ],
-  "how": "detail=True adds the debugger's repaint for this command",
-  "waited_s": "<volatile>",
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -723,11 +707,10 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "read_memory score: 8 rows at 08A2:0615",
+  "summary": "read_memory score: 8 rows at 08A2:00000615",
   "status": "ok",
   "ref": "score",
-  "segment": 2210,
-  "offset": 1557,
+  "seg_off": "08A2:00000615",
   "length": 2,
   "hex": "0a00",
   "rows": [
@@ -743,16 +726,16 @@ DOSBox-X `<volatile>`.
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -775,8 +758,8 @@ DOSBox-X `<volatile>`.
 {
   "summary": "screen_view M_VGA: 320x200 at [0, 0] pixels; 1280x800 PNG x4, inline",
   "status": "ok",
-  "mode": "M_VGA",
-  "source": "indices",
+  "vga_mode": "M_VGA",
+  "kind": "pixel",
   "width": 320,
   "height": 200,
   "crop": [
@@ -799,16 +782,16 @@ DOSBox-X `<volatile>`.
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -824,7 +807,9 @@ Also attached: image/png.
 <details><summary>call and reply</summary>
 
 ```json
-{}
+{
+  "all": true
+}
 ```
 
 ```json
@@ -836,20 +821,19 @@ Also attached: image/png.
     "BP 08A2:02C8"
   ],
   "pending_disarm": [],
-  "note": null,
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -873,7 +857,11 @@ Also attached: image/png.
 {
   "summary": "<volatile>",
   "status": "ok",
-  "registers": "<volatile>",
+  "verdict": "ELAPSED",
+  "polls": 3,
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "regs": "<volatile>",
   "watches": [
     {
       "ref": "score",
@@ -896,30 +884,34 @@ Also attached: image/png.
   },
   "stop_seq": 5,
   "instruction": "<volatile>",
-  "verdict": "ELAPSED",
-  "polls": 3,
-  "running": false,
   "emulated_before_s": 2.0022688,
   "emulated_after_s": 2.0317822000000003,
-  "frame_before": null,
-  "frame_after": null,
-  "cycles": null,
-  "cycles_why": "the pane's `cc=` counts cycles only on the normal core, and which core runs is not something this server can read, so no count is given",
-  "stopped_at": "<volatile>",
+  "frame_before": {
+    "available": false,
+    "why": "a DOS machine keeps no frame counter a server could read: `polls` counts the retraces"
+  },
+  "frame_after": {
+    "available": false,
+    "why": "a DOS machine keeps no frame counter a server could read: `polls` counts the retraces"
+  },
+  "cycles": {
+    "available": false,
+    "why": "the pane's `cc=` counts cycles only on the normal core, and which core runs is not something this server can read, so no count is given"
+  },
   "waited_s": "<volatile>",
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -941,11 +933,10 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory ball_x: 8 rows at 08A2:0621",
+  "summary": "read_memory ball_x: 8 rows at 08A2:00000621",
   "status": "ok",
   "ref": "ball_x",
-  "segment": 2210,
-  "offset": 1569,
+  "seg_off": "08A2:00000621",
   "length": 8,
   "hex": "bc005200feff0200",
   "rows": [
@@ -961,16 +952,16 @@ Also attached: image/png.
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -991,8 +982,6 @@ Also attached: image/png.
 {
   "summary": "resume: running",
   "status": "ok",
-  "halted": false,
-  "stopped_at": null,
   "omitted": [
     "screen_delta",
     "screen_chars",
@@ -1002,16 +991,16 @@ Also attached: image/png.
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -1075,10 +1064,11 @@ Also attached: image/png.
           "posted": 1,
           "bytes": 4,
           "ticks": 4,
-          "effect": {
+          "verify": {
             "checked": true,
             "seen": true,
             "expected": "KEY R",
+            "verdict": "TARGET",
             "line": "Bochs port E9h: KEY R",
             "seen_before_waiting": "<volatile>",
             "lines_before": "<volatile>",
@@ -1088,16 +1078,16 @@ Also attached: image/png.
           "session": {
             "pid": "<volatile>",
             "alive": true,
+            "running": true,
             "altered": true,
             "conf": "./demos/bricks/bricks.conf",
             "conf_digest": "6a91a7cd8d6ac7c3",
             "conf_changed_on_disk": false,
             "watched": true,
-            "seconds_bound": 900,
-            "seconds_elapsed": "<volatile>",
+            "bound_s": 900,
+            "elapsed_s": "<volatile>",
             "terminal_bytes_dropped": 0,
             "drain_alive": true,
-            "drain_ended": "",
             "captures": "off",
             "state_dir": "./tmp/demos/bricks/bricks-states"
           }
@@ -1116,10 +1106,11 @@ Also attached: image/png.
           "posted": 1,
           "bytes": 4,
           "ticks": 4,
-          "effect": {
+          "verify": {
             "checked": true,
             "seen": true,
             "expected": "KEY R",
+            "verdict": "TARGET",
             "line": "Bochs port E9h: KEY R",
             "seen_before_waiting": "<volatile>",
             "lines_before": "<volatile>",
@@ -1129,16 +1120,16 @@ Also attached: image/png.
           "session": {
             "pid": "<volatile>",
             "alive": true,
+            "running": true,
             "altered": true,
             "conf": "./demos/bricks/bricks.conf",
             "conf_digest": "6a91a7cd8d6ac7c3",
             "conf_changed_on_disk": false,
             "watched": true,
-            "seconds_bound": 900,
-            "seconds_elapsed": "<volatile>",
+            "bound_s": 900,
+            "elapsed_s": "<volatile>",
             "terminal_bytes_dropped": 0,
             "drain_alive": true,
-            "drain_ended": "",
             "captures": "off",
             "state_dir": "./tmp/demos/bricks/bricks-states"
           }
@@ -1157,10 +1148,11 @@ Also attached: image/png.
           "posted": 1,
           "bytes": 4,
           "ticks": 4,
-          "effect": {
+          "verify": {
             "checked": true,
             "seen": true,
             "expected": "KEY R",
+            "verdict": "TARGET",
             "line": "Bochs port E9h: KEY R",
             "seen_before_waiting": "<volatile>",
             "lines_before": "<volatile>",
@@ -1170,36 +1162,38 @@ Also attached: image/png.
           "session": {
             "pid": "<volatile>",
             "alive": true,
+            "running": true,
             "altered": true,
             "conf": "./demos/bricks/bricks.conf",
             "conf_digest": "6a91a7cd8d6ac7c3",
             "conf_changed_on_disk": false,
             "watched": true,
-            "seconds_bound": 900,
-            "seconds_elapsed": "<volatile>",
+            "bound_s": 900,
+            "elapsed_s": "<volatile>",
             "terminal_bytes_dropped": 0,
             "drain_alive": true,
-            "drain_ended": "",
             "captures": "off",
             "state_dir": "./tmp/demos/bricks/bricks-states"
           }
         }
       }
     ],
-    "completed": 3,
-    "failed_at": null,
-    "held": 0,
-    "failed": null
+    "steps_completed": 3,
+    "failed_at": {
+      "available": false,
+      "why": "no step failed"
+    },
+    "held": 0
   },
   "verify": {
     "checked": false,
     "why": "no `expect` given; the act's own steps carried whatever verification they asked for"
   },
   "looked": {
-    "e9": {
+    "guest": {
       "available": true,
       "since_mark": "<volatile>",
-      "written": "<volatile>",
+      "lines_written": "<volatile>",
       "lines_total": "<volatile>",
       "truncated": false,
       "lines": [
@@ -1214,16 +1208,16 @@ Also attached: image/png.
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -1244,30 +1238,30 @@ Also attached: image/png.
 {
   "summary": "<volatile>",
   "status": "ok",
-  "registers": "<volatile>",
+  "interrupted": true,
+  "via": "break",
+  "waited_s": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "regs": "<volatile>",
   "watches": "<volatile>",
   "attribution": "<volatile>",
   "e9": "<volatile>",
   "stop_seq": 6,
   "instruction": "<volatile>",
-  "interrupted": true,
-  "running": false,
-  "how": "break",
-  "waited_s": "<volatile>",
-  "stopped_at": "<volatile>",
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -1289,27 +1283,26 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory paddle_x: 8 rows at 08A2:061F",
+  "summary": "read_memory paddle_x: 8 rows at 08A2:0000061F",
   "status": "ok",
   "ref": "paddle_x",
-  "segment": 2210,
-  "offset": 1567,
+  "seg_off": "08A2:0000061F",
   "length": 2,
   "hex": "a400",
   "rows": "<volatile>",
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -1330,8 +1323,6 @@ Also attached: image/png.
 {
   "summary": "resume: running",
   "status": "ok",
-  "halted": false,
-  "stopped_at": null,
   "omitted": [
     "screen_delta",
     "screen_chars",
@@ -1341,16 +1332,16 @@ Also attached: image/png.
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -1385,10 +1376,11 @@ Also attached: image/png.
   "posted": 1,
   "bytes": 2,
   "ticks": 2,
-  "effect": {
+  "verify": {
     "checked": true,
     "seen": true,
     "expected": "MOUSE ON$",
+    "verdict": "TARGET",
     "line": "Bochs port E9h: MOUSE ON",
     "seen_before_waiting": "<volatile>",
     "lines_before": "<volatile>",
@@ -1398,16 +1390,16 @@ Also attached: image/png.
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -1436,8 +1428,6 @@ Also attached: image/png.
   "x": 240,
   "y": 100,
   "units": "screen",
-  "button": null,
-  "action": null,
   "route": "guest",
   "pointer": {
     "screen": {
@@ -1453,13 +1443,14 @@ Also attached: image/png.
       "max_y": 199
     },
     "buttons": [],
-    "mode": "0x13"
+    "bios_mode": "0x13"
   },
   "arrived": true,
-  "effect": {
+  "verify": {
     "checked": true,
     "seen": true,
     "expected": "MOUSE$",
+    "verdict": "TARGET",
     "line": "Bochs port E9h: MOUSE",
     "seen_before_waiting": "<volatile>",
     "lines_before": "<volatile>",
@@ -1469,16 +1460,16 @@ Also attached: image/png.
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -1513,10 +1504,11 @@ Also attached: image/png.
   "posted": 1,
   "bytes": 2,
   "ticks": 2,
-  "effect": {
+  "verify": {
     "checked": true,
     "seen": true,
     "expected": "MOUSE OFF$",
+    "verdict": "TARGET",
     "line": "Bochs port E9h: MOUSE OFF",
     "seen_before_waiting": "<volatile>",
     "lines_before": "<volatile>",
@@ -1526,16 +1518,16 @@ Also attached: image/png.
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -1556,30 +1548,30 @@ Also attached: image/png.
 {
   "summary": "<volatile>",
   "status": "ok",
-  "registers": "<volatile>",
+  "interrupted": true,
+  "via": "break",
+  "waited_s": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "regs": "<volatile>",
   "watches": "<volatile>",
   "attribution": "<volatile>",
   "e9": "<volatile>",
   "stop_seq": 7,
   "instruction": "<volatile>",
-  "interrupted": true,
-  "running": false,
-  "how": "break",
-  "waited_s": "<volatile>",
-  "stopped_at": "<volatile>",
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -1601,27 +1593,26 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory paddle_x: 8 rows at 08A2:061F",
+  "summary": "read_memory paddle_x: 8 rows at 08A2:0000061F",
   "status": "ok",
   "ref": "paddle_x",
-  "segment": 2210,
-  "offset": 1567,
+  "seg_off": "08A2:0000061F",
   "length": 2,
   "hex": "dc00",
   "rows": "<volatile>",
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -1642,8 +1633,6 @@ Also attached: image/png.
 {
   "summary": "resume: running",
   "status": "ok",
-  "halted": false,
-  "stopped_at": null,
   "omitted": [
     "screen_delta",
     "screen_chars",
@@ -1653,16 +1642,16 @@ Also attached: image/png.
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -1691,24 +1680,23 @@ Also attached: image/png.
   "version": "<volatile>",
   "program": "BRICKS",
   "machine": "MCH_VGA",
-  "memory_size": "4096",
-  "time_stamp": "<volatile>",
+  "memory_mb": 4096,
+  "saved_at": "<volatile>",
   "paused": true,
-  "running": true,
   "waited_s": "<volatile>",
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -1743,10 +1731,11 @@ Also attached: image/png.
   "posted": 1,
   "bytes": 4,
   "ticks": 4,
-  "effect": {
+  "verify": {
     "checked": true,
     "seen": true,
     "expected": "KEY L$",
+    "verdict": "TARGET",
     "line": "Bochs port E9h: KEY L",
     "seen_before_waiting": "<volatile>",
     "lines_before": "<volatile>",
@@ -1756,16 +1745,16 @@ Also attached: image/png.
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -1793,24 +1782,23 @@ Also attached: image/png.
   "version": "<volatile>",
   "program": "BRICKS",
   "machine": "MCH_VGA",
-  "memory_size": "4096",
-  "time_stamp": "<volatile>",
+  "memory_mb": 4096,
+  "saved_at": "<volatile>",
   "paused": true,
-  "running": true,
   "waited_s": "<volatile>",
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -1831,30 +1819,30 @@ Also attached: image/png.
 {
   "summary": "<volatile>",
   "status": "ok",
-  "registers": "<volatile>",
+  "interrupted": true,
+  "via": "break",
+  "waited_s": "<volatile>",
+  "pc": "<volatile>",
+  "cpu_mode": "real",
+  "regs": "<volatile>",
   "watches": "<volatile>",
   "attribution": "<volatile>",
   "e9": "<volatile>",
   "stop_seq": 8,
   "instruction": "<volatile>",
-  "interrupted": true,
-  "running": false,
-  "how": "break",
-  "waited_s": "<volatile>",
-  "stopped_at": "<volatile>",
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -1876,27 +1864,26 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory paddle_x: 8 rows at 08A2:061F",
+  "summary": "read_memory paddle_x: 8 rows at 08A2:0000061F",
   "status": "ok",
   "ref": "paddle_x",
-  "segment": 2210,
-  "offset": 1567,
+  "seg_off": "08A2:0000061F",
   "length": 2,
   "hex": "dc00",
   "rows": "<volatile>",
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": false,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -1917,8 +1904,6 @@ Also attached: image/png.
 {
   "summary": "resume: running",
   "status": "ok",
-  "halted": false,
-  "stopped_at": null,
   "omitted": [
     "screen_delta",
     "screen_chars",
@@ -1928,16 +1913,16 @@ Also attached: image/png.
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -1972,10 +1957,11 @@ Also attached: image/png.
   "posted": 1,
   "bytes": 2,
   "ticks": 2,
-  "effect": {
+  "verify": {
     "checked": true,
     "seen": true,
     "expected": "SERVE$",
+    "verdict": "TARGET",
     "line": "Bochs port E9h: SERVE",
     "seen_before_waiting": "<volatile>",
     "lines_before": "<volatile>",
@@ -1985,16 +1971,16 @@ Also attached: image/png.
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -2008,7 +1994,9 @@ Also attached: image/png.
 <details><summary>call and reply</summary>
 
 ```json
-{}
+{
+  "all": true
+}
 ```
 
 ```json
@@ -2018,20 +2006,19 @@ Also attached: image/png.
   "declarations_cleared": 1,
   "disarmed": [],
   "pending_disarm": [],
-  "note": null,
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }
@@ -2053,22 +2040,21 @@ Also attached: image/png.
   "summary": "close: quit, exit code 0",
   "status": "ok",
   "closed": true,
-  "how": "quit",
+  "ended_by": "quit",
   "exit_code": 0,
-  "reap_failed": "",
   "session": {
     "pid": "<volatile>",
     "alive": true,
+    "running": true,
     "altered": true,
     "conf": "./demos/bricks/bricks.conf",
     "conf_digest": "6a91a7cd8d6ac7c3",
     "conf_changed_on_disk": false,
     "watched": true,
-    "seconds_bound": 900,
-    "seconds_elapsed": "<volatile>",
+    "bound_s": 900,
+    "elapsed_s": "<volatile>",
     "terminal_bytes_dropped": 0,
     "drain_alive": true,
-    "drain_ended": "",
     "captures": "off",
     "state_dir": "./tmp/demos/bricks/bricks-states"
   }

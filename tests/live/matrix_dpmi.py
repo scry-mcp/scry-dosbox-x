@@ -91,6 +91,13 @@ F_CELLS = cells(
 )
 
 
+def _names_its_mode(cpu_mode: object) -> bool:
+    """A stop's `cpu_mode` as a word, or the unavailable datum with the reason the pane gave."""
+    return isinstance(cpu_mode, str) or (
+        isinstance(cpu_mode, dict) and cpu_mode.get("available") is False
+        and bool(cpu_mode.get("why")))
+
+
 def _cs_of(reply: dict[str, Any]) -> str:
     """The code segment of a stop reply's `pc`, empty when the reply names no position."""
     pc = reply.get("pc")
@@ -171,7 +178,9 @@ def _placed_retraces(program_cs: str) -> None:
     """Ten `run_for(frames=1)`, each with its own stop reply, the positions quoted by where they
     fall: the DPMI client's code selector (read at the INT 31h stop), the BIOS handlers, or
     elsewhere (the DPMI host). A retrace lands wherever the cpu is, so no share is required;
-    what is required is that every stop was surveyed and names a mode."""
+    what is required is that every stop was surveyed and names a mode, or says why it cannot:
+    a protected-mode pane that paints no PAGE/NOPG mark leaves paging unknown, and no register
+    the survey reads (CR0 is not among them) settles it."""
     stops = [M.call(server.run_for, frames=1) for _ in range(RETRACES_PLACED)]
     at = [_cs_of(s) for s in stops]
     program = sum(1 for cs in at if cs == program_cs)
@@ -179,7 +188,7 @@ def _placed_retraces(program_cs: str) -> None:
     M.judge("F run_for stops ten times, each placed and surveyed",
             all(ok(s) and s.get("verdict") == "ELAPSED" and s.get("polls") == 1
                 and (clock_moved(s) or 0) > 0 and s.get("regs")
-                and isinstance(s.get("cpu_mode"), str)
+                and _names_its_mode(s.get("cpu_mode"))
                 for s in stops),
             f"program {program}, BIOS {bios}, other {len(at) - program - bios}: "
             + " ".join(str(s.get("pc")) for s in stops))

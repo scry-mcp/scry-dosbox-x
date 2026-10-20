@@ -530,3 +530,11 @@ def test_a_scan_that_needs_another_call_first_says_needs_call(line: str) -> None
     with pytest.raises(ds.Invalid) as e:
         finder._refuse(line, "filter")
     assert e.value.code == "needs_call" and "`scan_" in str(e.value)
+
+
+def test_a_filter_with_no_value_says_what_it_compared_with_instead_of_a_null() -> None:
+    """No `value`: each cell is compared with its value when the scan opened, and the reply's
+    `value` says so as the unavailable datum, never a null."""
+    s = session([("MEMS =", "mems_matches")])
+    got = finder.scan_filter(s, "=", None)
+    assert got["value"] == {"available": False, "why": finder.NO_VALUE_WHY}, got["value"]

@@ -163,7 +163,8 @@ def scan_start(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def scan_filter(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    what = f"{args.get('operator', '=')} {args.get('value')}"
+    value = args.get("value")
+    what = args.get("operator", "=") + ("" if value is None else f" {value}")
     return f"scan_filter {what}: {_said(reply.get('hits_total'), 'survivor')}" + (
         ", scan closed" if reply.get("closed") else "") + (
         ", not listed (over `limit`)" if reply.get("truncated") else "")

@@ -46,6 +46,7 @@ import dosbox_declarations as dec
 import dosbox_docs
 import dosbox_inputs as inputs
 import dosbox_launch as dlaunch
+import dosbox_lifecycle
 import dosbox_logs as dlogs
 import dosbox_mcp
 import dosbox_placement as placement
@@ -7463,8 +7464,13 @@ def test_start_names_no_stop_of_its_own_beside_the_park(
     assert got["status"] == "ok" and "stopped_on_its_own" not in got, sorted(got)
 
 
-def test_start_refuses_a_settle_bound_with_no_plan_to_bound(tmp_path: Path) -> None:
-    """`settle_seconds` bounds a plan's waits: with no plan it would be silently ignored."""
+def test_start_refuses_a_settle_bound_with_no_plan_to_bound(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`settle_seconds` bounds a plan's waits: with no plan it would be silently ignored. The
+    launch is replaced, so a regression of the refusal fails here and never starts an emulator."""
+    def launched(*_a: Any, **_k: Any) -> dict[str, Any]:
+        raise AssertionError("the start was not refused: it reached the launch")
+    monkeypatch.setattr(dosbox_lifecycle, "start", launched)
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     got = cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path), session_seconds=60,

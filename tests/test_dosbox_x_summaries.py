@@ -28,3 +28,8 @@ def test_an_irregular_plural_is_said_as_english_says_it() -> None:
 
 def test_a_count_the_reply_did_not_carry_is_shown_as_it_came() -> None:
     assert one_line.snapshot({}, {"path": "/a.png"}) == "snapshot: None bytes at /a.png"
+
+
+def test_a_filter_with_no_value_names_no_value_in_its_line() -> None:
+    line = one_line.scan_filter({"operator": "="}, {"hits_total": 3, "closed": False})
+    assert line == "scan_filter =: 3 survivors", line
