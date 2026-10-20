@@ -41,7 +41,10 @@ def test_the_screen_guests_capture_becomes_a_series_every_file_tool_reads(
     sig = _ok(server.screen_signature(crop=[0, 0, 32, 32]))
     assert len(sig["signature"]) == 16 and sig["kind"] == "pixel"
     assert _ok(server.resume(seconds=30)).get("verdict") == "OTHER_STOP"   # the display start moves
-    newest = max(_ok(server.captures())["captures"], key=lambda c: str(c["path"]))
+    listed = _ok(server.captures())["captures"]
+    videos = [c for c in listed if c["kind"] == "avi"]
+    assert videos, listed
+    newest = max(videos, key=lambda c: str(c["path"]))
     count = min(int(newest["avi_frames"]), 10)
     assert count >= 2, newest
     series = _ok(server.series_capture(first=0, last=count - 1, capture_path=newest["path"],

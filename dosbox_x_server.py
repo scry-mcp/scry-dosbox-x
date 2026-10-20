@@ -94,6 +94,7 @@ from scry_core import (  # noqa: E402
     narrowing,
     process_name,
     recording,
+    reply_schema,  # noqa: E402
     screen_map,
 )
 from scry_core import presence as scry_presence  # noqa: E402
@@ -122,6 +123,7 @@ import dosbox_media as media  # noqa: E402
 import dosbox_paths as paths  # noqa: E402
 import dosbox_placement as placement  # noqa: E402
 import dosbox_presence as dpresence  # noqa: E402
+import dosbox_replies  # noqa: E402
 import dosbox_retrace as retrace  # noqa: E402
 import dosbox_running as running  # noqa: E402
 import dosbox_screen as screen  # noqa: E402
@@ -1877,6 +1879,7 @@ def drive(act: list[dict[str, Any]], expect: str = "",
 
 
 strict.strict_arguments(mcp)
+reply_schema.declare(mcp, dosbox_replies.MODELS)
 
 
 #: The signals that end a server whose client went away abruptly (a SIGTERM, the SIGHUP of a

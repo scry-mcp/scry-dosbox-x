@@ -201,6 +201,11 @@ caveat, decided on purpose: the first contact after a stop applies the declarati
 while the guest ran, so a reader can be the call that arms a breakpoint; that write belongs
 to the declaring call, which said `pending`, and the reader's reply says `applied_on_stop`.
 
+**Every tool publishes its reply's field names** as its `outputSchema` (its model is in
+`dosbox_replies.py`), with `status` required and no constraint on any value: any datum may come back as
+`unavailable(why)`, so a published type could refuse a real reply. The test suite holds every
+reply it builds to the model's types strictly, so a field no model names fails a run.
+
 **The `session` block closes every reply**, `{alive: false, running: false, altered: false}`
 when there is no session. **Its alarms ride on every reply**: `alive`, `running` (the guest runs,
 off the session's own flag, with no console round trip), `altered`, and each alarm while it holds:
