@@ -47,8 +47,9 @@ HONESTY, wired into the contract rather than into a prompt:
   "there is no instrumentation to match against" is INVALID, and a caller that cannot
   tell them apart reports a broken instrument as a clean result.
 - EVERY reply carries the session's state, `altered` included -- the INVALID ones
-  too.  An INVALID answer is the one a caller reasons hardest about, and it is the worst
-  one to hand over with no trace that the machine had been written to.
+  too (whole on `start`, `status` and `close`, its alarms on the rest).  An INVALID
+  answer is the one a caller reasons hardest about, and it is the worst one to hand over
+  with no trace that the machine had been written to.
 - A PATH A CALLER GIVES IT IS ABSOLUTE OR `~`-LED, judged by scry-core's one judge
   (through `dosbox_paths`): `~` is expanded, a relative path is refused, and the refusal
   names the argument.
@@ -97,6 +98,7 @@ from scry_core import (  # noqa: E402
 )
 from scry_core import presence as scry_presence  # noqa: E402
 from scry_core import strict_arguments as strict  # noqa: E402
+from scry_core import vocabulary as vocab
 from scry_core.progress import bridge  # noqa: E402
 
 import dosbox_advance as advance  # noqa: E402
@@ -108,9 +110,11 @@ import dosbox_code as code  # noqa: E402
 import dosbox_comments as comments  # noqa: E402
 import dosbox_console as dcons  # noqa: E402
 import dosbox_dac as vgadac  # noqa: E402
+import dosbox_declarations as dec  # noqa: E402
 import dosbox_dump as dumping  # noqa: E402
 import dosbox_find as finder  # noqa: E402
 import dosbox_inputs as inputs  # noqa: E402
+import dosbox_launch as dlaunch  # noqa: E402
 import dosbox_lifecycle as lifecycle  # noqa: E402
 import dosbox_logs as dlogs  # noqa: E402
 import dosbox_machine as machine  # noqa: E402
@@ -190,13 +194,16 @@ def build_check(binary: str = "") -> dict[str, Any]:
 # ---------------------------------------------------------- session: start, status, close
 
 @tool("Start a DOSBox-X session", summary=one_line.start, on_cancel="kill")
-def start(conf: str, cwd: str, session_seconds: int, shared: bool = False,
-          window_flags: list[str] | None = None, flags: list[str] | None = None,
-          break_on_int3: bool = False, program: str = "", logfile: str = "",
-          capture_video: bool = False, captures_dir: str = "",
-          plan: list[dict[str, Any]] | None = None, settle_seconds: float | None = None,
-          input_port: int = 0, state_dir: str = "", binary: str = "",
-          background: bool | None = None,
+def start(conf: str, cwd: str,
+          session_seconds: Annotated[int, vocab.bounds(1, dlaunch.MAX_SECONDS)],
+          shared: bool = False, window_flags: list[str] | None = None,
+          flags: list[str] | None = None, break_on_int3: bool = False, program: str = "",
+          logfile: str = "", capture_video: bool = False, captures_dir: str = "",
+          plan: list[dict[str, Any]] | None = None,
+          settle_seconds: Annotated[float, ds.WAIT_FROM_ZERO_BOUNDS] | None = None,
+          input_port: Annotated[int, vocab.bounds(0, dlaunch.INPUT_PORT_MAX)] = 0,
+          state_dir: str = "",
+          binary: str = "", background: bool | None = None,
           presence: Annotated[bool, Field(description=scry_presence.ARGUMENT)] = True,
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Open ONE live DOSBox-X session from your conf, parked at the debugger, stopped and
@@ -243,26 +250,26 @@ def status() -> dict[str, Any]:
     (`applied_on_stop`).
 
     Reply: `session`, `alive: false` when there is none (under `status: "ok"`: nothing
-    running is an answer). The same block rides on EVERY reply of every tool:
+    running is an answer). Whole here, on `start` and on `close`; any other reply carries
+    `alive`, `running`, `altered` and each alarm (!) while it holds, naming the rest in `omitted`:
 
       pid                     the emulator process's pid.
       alive                   the emulator process is up.
       running                 the guest runs; false parked at the debugger.
-      altered                 something here WROTE to the guest: a later measurement is of a
-                              forced state.
+      altered                 something here WROTE to the guest: later readings are forced.
       conf                    the config the session was started from.
       conf_digest             a digest of that file's content AT START.
-      conf_changed_on_disk    the file changed since (`false` when GONE, unavailable unreadable).
-      watched                 it was started to be looked at, so a window was placed.
+      conf_changed_on_disk !  the file changed since (`false` also if gone).
+      watched                 a window was placed to be watched.
       bound_s                 the ceiling the session was given.
       elapsed_s               how much of that is spent.
-      terminal_bytes_dropped  nonzero: a screen delta had a hole in it.
-      drain_alive             the terminal reader runs; dead, reads return nothing.
-      drain_ended             why that reader stopped, present once it has.
+      terminal_bytes_dropped ! nonzero: a screen delta had a hole in it.
+      drain_alive !           the terminal reader runs.
+      drain_ended !           why that reader stopped, present once it has.
       captures                `off`, or where a `capture_video` session records.
       state_dir               where `state_save` writes and `state_list` reads.
 
-    At the top: `alive` and `running` again, `last_stop` (`stop_seq`, `pc`, `attribution`,
+    At the top: `alive`, `running`, `last_stop` (`stop_seq`, `pc`, `attribution`,
     `since_s`, `wall_at`; the park after `start` is stop 1; unavailable with no session or a cut
     survey), `pending` (asked while the guest ran: `arm` refs, a `disarm` count,
     `symbols_load`), `presence` (`true` drawn, `false` asked off, or why not), and with a
@@ -300,7 +307,9 @@ def close(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
 # ------------------------------------------------------------------ the guest's own log
 
 @tool("Read the log", summary=one_line.log, read_only=True)
-def log(pattern: str, channel: str, limit: int = 40, labels: bool = False) -> dict[str, Any]:
+def log(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
+        limit: Annotated[int, vocab.bounds(1, dlogs.LOG_LIMIT_MAX)] = 40,
+        labels: bool = False) -> dict[str, Any]:
     """The session's log, one `channel` of it, filtered in the server by a regex.
 
     `channel` is `guest` (the program's own 0xE9 instrumentation, one line per write),
@@ -333,7 +342,8 @@ def log(pattern: str, channel: str, limit: int = 40, labels: bool = False) -> di
 
 
 @tool("Wait for a log line", summary=one_line.log_wait, read_only=True, on_cancel="none")
-def log_wait(pattern: str, channel: str, seconds: float = 30.0,
+def log_wait(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
+             seconds: Annotated[float, ds.WAIT_BOUNDS] = 30.0,
              ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """WHEN a line of `channel` matching `pattern` was logged: at once if it already was,
     else wait for it. Reports its progress while it waits.
@@ -396,7 +406,9 @@ def registers(from_last_stop: bool = False) -> dict[str, Any]:
 
 
 @tool("Read memory", summary=one_line.read_memory, read_only=True, replay=("hex",))
-def read_memory(ref: str, length: int = 16) -> dict[str, Any]:
+def read_memory(ref: str,
+                length: Annotated[int, vocab.bounds(1, dcons.DATA_VIEW_BYTES)] = 16,
+                ) -> dict[str, Any]:
     """`length` bytes at `ref`, a symbol or a `SEG:OFF` (the colon is the tell: a bare
     number is read as a symbol name), as `hex`;
     beside them the data-view ROWS the debugger's `D` printed, which is where the bytes come
@@ -418,7 +430,8 @@ def read_memory(ref: str, length: int = 16) -> dict[str, Any]:
 
 
 @tool("Disassemble code", summary=one_line.disassemble, read_only=True)
-def disassemble(ref: str, length: int = 16) -> dict[str, Any]:
+def disassemble(ref: str, length: Annotated[int, vocab.bounds(1, code.LENGTH_MAX)] = 16,
+                ) -> dict[str, Any]:
     """Decode `length` bytes (1..{DISASM_MAX}) from `ref`, a symbol or a `SEG:OFF`, one x86
     instruction a line, on the host (capstone): the debugger has no disassembly command. The
     listing completes the instruction that straddles the end, so it may run a little past
@@ -532,7 +545,8 @@ def find(data_hex: str, ref: str, length: int) -> dict[str, Any]:
 
 
 @tool("Start a value scan", summary=one_line.scan_start, replay="drop")
-def scan_start(ref: str, length: int, cell_bytes: int = 1) -> dict[str, Any]:
+def scan_start(ref: str, length: int,
+               cell_bytes: Annotated[int, vocab.enum(finder.CELL_BYTES)] = 1) -> dict[str, Any]:
     """Open the debugger's value scanner (`MEMFIND`) over `length` bytes from `ref`, in cells
     of `cell_bytes` (1, 2 or 4, little-endian): every cell is a candidate
     until `scan_filter` narrows them. The debugger holds ONE scan at a time, so a scan
@@ -552,8 +566,10 @@ def scan_start(ref: str, length: int, cell_bytes: int = 1) -> dict[str, Any]:
 
 
 @tool("Filter the value scan", summary=one_line.scan_filter, replay="drop")
-def scan_filter(operator: str = "=", value: judges.NumberArg | None = None,
-                limit: int = finder.HITS_DEFAULT) -> dict[str, Any]:
+def scan_filter(operator: Annotated[str, vocab.enum(finder.OPERATORS)] = "=",
+                value: judges.NumberArg | None = None,
+                limit: Annotated[int, vocab.bounds(1, finder.HITS_MAX)] = finder.HITS_DEFAULT,
+                ) -> dict[str, Any]:
     """Keep the scan's cells whose current content satisfies `operator` (`=`, `!`, `>`,
     `>=`, `<`, `<=`) against `value`; with no `value`, against what each cell held when
     `scan_start` opened the scan: `!` alone keeps the cells that CHANGED since then, `=`
@@ -669,8 +685,8 @@ def write(ref: str, data_hex: str) -> dict[str, Any]:
 # ------------------------------------------------------------- advancing the machine
 
 @tool("Resume the machine", summary=one_line.resume, on_cancel="none", replay="wall")
-def resume(e9: str = "none", e9_filter: str = ".",
-           e9_stamp: str = "", seconds: float = 0.0, detail: bool = False,
+def resume(e9: str = "none", e9_filter: str = ".", e9_stamp: str = "",
+           seconds: Annotated[float, ds.WAIT_FROM_ZERO_BOUNDS] = 0.0, detail: bool = False,
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Let the machine run (F5, sent once). With `seconds` at zero (the default) it comes back
     at once, no verdict; with a bound it waits up to `seconds` for a stop, listening for the
@@ -735,7 +751,8 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
 
 
 @tool("Step instructions", summary=one_line.step)
-def step(count: int = 1, mode: str = "into",
+def step(count: Annotated[int, vocab.bounds(1, ds.STEP_MAX)] = 1,
+         mode: Annotated[str, vocab.enum(ds.STEP_MODES)] = "into",
          e9: str = "none", e9_filter: str = ".",
          e9_stamp: str = "") -> dict[str, Any]:
     """`count` instructions, one at a time, `mode` `into` (F11, the default) or
@@ -759,11 +776,12 @@ def step(count: int = 1, mode: str = "into",
     # A step that STOPPED carries the full stop reply; one that ran away (a CALL that never
     # returned) left the machine running, which `session.running` says, and a running machine
     # has nothing to read.
-    return running.stop_or_base(session, not ran_away, e9, e9_filter, e9_stamp or None, out)
+    return running.stop_or_base(session, not ran_away, e9, e9_filter, e9_stamp or None, out,
+                                e9_how=running.E9_BY_ARGUMENT)
 
 
 @tool("Run to a place, with a control", summary=one_line.run_to, on_cancel="stop")
-def run_to(ref: str, control: str, seconds: float = 30.0,
+def run_to(ref: str, control: str, seconds: Annotated[float, ds.WAIT_BOUNDS] = 30.0,
            e9: str = "none", e9_filter: str = ".",
            e9_stamp: str = "",
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
@@ -798,8 +816,9 @@ def run_to(ref: str, control: str, seconds: float = 30.0,
 
 
 @tool("Run for frames or emulated time", summary=one_line.run_for, on_cancel="stop")
-def run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
-            e9: str = "none", e9_filter: str = ".", e9_stamp: str = "",
+def run_for(milliseconds: int = 0, frames: int = 0,
+            seconds: Annotated[float, ds.WAIT_BOUNDS] = 30.0, e9: str = "none",
+            e9_filter: str = ".", e9_stamp: str = "",
             ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run the machine for `frames` frames of the display, one vertical retrace each (the
     debugger's `VRT`), or for `milliseconds` of its emulated time, and come back STOPPED with
@@ -833,7 +852,9 @@ def run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
 
 
 @tool("Trace what a run executes", summary=one_line.trace, on_cancel="stop")
-def trace(instructions: int, shape: str = "normal", dest: str = "", seconds: float = 60.0,
+def trace(instructions: Annotated[int, vocab.bounds(1, tracing.INSTRUCTIONS_MAX)],
+          shape: Annotated[str, vocab.enum(tracing.SHAPE_WORDS)] = "normal", dest: str = "",
+          seconds: Annotated[float, ds.WAIT_BOUNDS] = 60.0,
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run the machine `instructions` instructions with the debugger's CPU log on (its `LOG`
     family), come back STOPPED with the log in a file and the full stop reply, and say which
@@ -870,7 +891,7 @@ def trace(instructions: int, shape: str = "normal", dest: str = "", seconds: flo
 
 
 @tool("Run until text is on screen", summary=one_line.screen_wait, on_cancel="stop", replay="wall")
-def screen_wait(text: str, seconds: float = 30.0,
+def screen_wait(text: str, seconds: Annotated[float, ds.WAIT_BOUNDS] = 30.0,
                 ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run the machine retrace by retrace until `text` is on the TEXT screen, and stop there.
     `text` (1 to {SCREEN_TEXT_MAX} characters code page 437 draws, not ending in a blank) is matched
@@ -885,12 +906,12 @@ def screen_wait(text: str, seconds: float = 30.0,
     first. A frame not in a text mode is no match.
 
     Reply: `verdict` `TARGET` with `already`, `waited_s`, `polls` (the retraces run), `point`
-    (`[column, row]` where the text begins), `line` (that row); when it ran, {STOP_FIELDS} (or
-    `enrichment` unavailable, its survey cut), and a `note` when a declared watch or interrupt
-    breakpoint could have made a stop it took for a retrace. The bound: `verdict` `TIMEOUT` with
-    `polls`, `text` (the rows of the last text page read, absent when none was),
-    `retrace_pending`, a `note` and the stop it ended at (a `VRT` still out is interrupted where
-    it stands).
+    (`[column, row]` where the text begins), `line` (that row), and a `note` when a declared watch
+    or interrupt breakpoint could have made a stop it took for a retrace. The bound: `verdict`
+    `TIMEOUT` with `waited_s`, `polls`, `text` (the rows of the last text page read, absent when
+    none was), `retrace_pending` and a `note` (a `VRT` still out is interrupted where it stands).
+    Either, when it ran: the stop it ended at, {STOP_FIELDS} (or `enrichment` unavailable, its
+    survey cut).
 
     Refused: a bad `text` or `seconds` (`bad_argument`, before anything is typed); a declared
     code breakpoint stopping the machine first (`wait_stopped`, with its `attribution`,
@@ -907,7 +928,8 @@ def screen_wait(text: str, seconds: float = 30.0,
 
 
 @tool("Save the machine state", summary=one_line.state_save)
-def state_save(name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, Any]:
+def state_save(name: str, seconds: Annotated[float, ds.WAIT_BOUNDS] = ds.STATE_WAIT_S) -> dict[str,
+               Any]:
     """Save the machine under `name` as `<state_dir>/<name>.sav`, by the debugger's own
     `SAVESTATE` sent down the debugger channel: no window, no menu, no focus taken, headless
     or windowed. Needs a DOSBox-X that carries the command; any other build is refused
@@ -925,7 +947,8 @@ def state_save(name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, Any]:
 
 
 @tool("Load a machine state", summary=one_line.state_load)
-def state_load(name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, Any]:
+def state_load(name: str, seconds: Annotated[float, ds.WAIT_BOUNDS] = ds.STATE_WAIT_S) -> dict[str,
+               Any]:
     """Load the state `name` from `<state_dir>/<name>.sav`, by the debugger's own `LOADSTATE`
     sent down the debugger channel, as `state_save` saves (same build, no window). A RUNNING
     guest is stopped for it and released again (`paused: true`), now running the loaded
@@ -940,7 +963,7 @@ def state_load(name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, Any]:
 
 
 @tool("Snapshot the screen to a PNG", summary=one_line.snapshot, on_cancel="none", replay="drop")
-def snapshot(dest: str = "", seconds: float = ds.SNAPSHOT_WAIT_S,
+def snapshot(dest: str = "", seconds: Annotated[float, ds.WAIT_BOUNDS] = ds.SNAPSHOT_WAIT_S,
              ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """One still of the RUNNING screen, taken inside the guest through the input stub (no
     window, no menu, any session), confirmed by the new `.png` under the captures directory
@@ -979,7 +1002,8 @@ def state_list() -> dict[str, Any]:
 
 
 @tool("Arm an interrupt breakpoint", summary=one_line.breakpoint_interrupt)
-def breakpoint_interrupt(number: int, ah: int | None = None,
+def breakpoint_interrupt(number: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)],
+                         ah: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)] | None = None,
                          detail: bool = False) -> dict[str, Any]:
     """Break on an interrupt, optionally on one `ah` function: `BPINT <number> [<ah>]`.
 
@@ -1003,7 +1027,8 @@ def breakpoint_interrupt(number: int, ah: int | None = None,
 # --------------------------------------------------------------- names for addresses
 
 @tool("Load a symbol table", summary=one_line.symbols_load)
-def symbols_load(path: str, base: str = "", base_from: str = "CS",
+def symbols_load(path: str, base: str = "",
+                 base_from: Annotated[str, vocab.folded(ds.SELINFO_REGS)] = "CS",
                  pattern: str = "", keep_noise: bool = False,
                  section_bases: dict[str, str] | None = None, types: str = "",
                  ) -> dict[str, Any]:
@@ -1053,7 +1078,9 @@ def symbols_load(path: str, base: str = "", base_from: str = "CS",
 @tool("Look a symbol up", summary=one_line.symbols_find, read_only=True)
 def symbols_find(name: str = "", offset: int | None = None,
                  section: int | None = None,
-                 linear: str = "", limit: int = 10) -> dict[str, Any]:
+                 linear: str = "",
+                 limit: Annotated[int, vocab.bounds(1, placement.SYMBOLS_LIMIT_MAX)] = 10,
+                 ) -> dict[str, Any]:
     """Look a symbol up in the FULL table `symbols_load` parsed (untruncated names).
 
     `name`: exact match, else prefix matches, up to `limit` (`truncated` says if it
@@ -1068,10 +1095,9 @@ def symbols_find(name: str = "", offset: int | None = None,
     loaded, or `limit` outside 1..{SYMBOLS_LIMIT_MAX} on the `name` question (a prefix matching
     more is a listing, not a lookup).
     """
-    # THE SESSION IS ASKED FOR FIRST, as every read tool asks. The table is forgotten when
-    # the session OBJECT changes, and the burial of a session that died on its bound happens
-    # inside `live()`: without the call a table would outlive the program it was measured on,
-    # and answer `ok` with a linear address for a process that is gone.
+    # THE SESSION IS ASKED FOR FIRST, as every read tool asks: a session whose emulator died is
+    # `session_broken` there, and the table is forgotten when the session OBJECT changes, so it
+    # never answers `ok` with a linear address for a process that is gone.
     live()
     return placement.find(name or None, offset, section, linear or None, limit)
 
@@ -1178,7 +1204,8 @@ def comment_load(path: str) -> dict[str, Any]:
 # ---------------------------------------------------------------------- the DOS machine
 
 @tool("Map the machine", summary=one_line.machine_map, replay="drop")
-def machine_map(sections: list[str] | None = None, dest: str = "") -> dict[str, Any]:
+def machine_map(sections: list[Annotated[str, vocab.enum(machine.SECTION_NAMES)]] | None = None,
+                dest: str = "") -> dict[str, Any]:
     """WHAT THE DOS MACHINE IS AT THIS STOP, one section per debugger listing, read live off the
     session's logfile: it needs the machine STOPPED and a session started with `logfile`, and
     costs a console round trip per listing.
@@ -1199,7 +1226,7 @@ def machine_map(sections: list[str] | None = None, dest: str = "") -> dict[str, 
     `size_bytes`, `what`), `xms` (`handle`, `status`, `location`, `size_bytes`), `ems`
     (`handle`, `addr`, `size_bytes`, `name`), `ems_pages` (`handle`, `page`, `start`, `end`),
     `bios_mem` (`start`, `end`, `status`, `what`), `callbacks` (`number`, `desc`), `emu_mem`,
-    `machine`, `cpu` (control registers, flags, `gdt`, `idt`, `tr`, `ldt`); `gdt`/`ldt`
+    `machine`, `cpu` (control registers, flags, `gdtr`, `idt`, `tr`, `ldtr`); `gdt`/`ldt`
     (`selector`, `base`, `limit`, `type`, `dpl`, `p`, `a`, `r`, `b`, `g`); `paging` (runs:
     `start`, `end`, `phy`, `flags`, `d`, `a`); `vga` (`mode`, `crtc`, `seq`, `gc`, `ac`, `dac`,
     `draw`). A section the debugger refused or printed nothing known for is ABSENT and
@@ -1232,7 +1259,8 @@ def machine_map(sections: list[str] | None = None, dest: str = "") -> dict[str, 
 
 
 @tool("Read the interrupt vectors", summary=one_line.interrupt_vectors, replay="drop")
-def interrupt_vectors(number: int | None = None) -> dict[str, Any]:
+def interrupt_vectors(number: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)] | None = None,
+                      ) -> dict[str, Any]:
     """WHICH HANDLER EVERY INTERRUPT VECTOR POINTS AT, AND WHAT HOLDS IT: the debugger's
     `INTVEC` table, each handler placed in the block of the MCB chain, the kernel's blocks or
     the BIOS's that holds it, and named by the loaded symbol table where that table reaches.
@@ -1426,12 +1454,12 @@ def map_find() -> dict[str, Any]:
 
 
 @tool("Save the screen map", summary=one_line.map_save, replay="drop")
-def map_save(path: str, overwrite: bool = False) -> dict[str, Any]:
+def map_save(dest: str, overwrite: bool = False) -> dict[str, Any]:
     """{MAP_SAVE}.
 
     Reference: REFERENCE.md, Screen maps.
     """
-    return st.reply(**STATE.maps.save(path, overwrite))
+    return st.reply(**STATE.maps.save(dest, overwrite))
 
 
 @tool("Capture a series of frames", summary=one_line.series_capture, replay="drop")
@@ -1453,8 +1481,8 @@ def series_capture(frames: list[int] | None = None, first: int | None = None,
     crop), `frames_asked`, `kept_after_close`, `frame_source` (`avi`), `capture_path`, `crop`.
     It answers on a running guest too: it reads the file. Refused: a frame past the capture's
     end, a crop off its frames, a `dest` already there (`bad_argument`); a session with no
-    `captures_dir` or no `capture_video` (`no_channel`), or no capture written yet
-    (`unexpected_answer`); no `ffmpeg`, or ffmpeg failing (`host_failed`).
+    `capture_video` (`no_channel`), or no capture written yet (`unexpected_answer`); no
+    `ffmpeg`, or ffmpeg failing (`host_failed`).
 
     Reference: REFERENCE.md, Media files.
     """
@@ -1477,7 +1505,8 @@ golden_check = _MEDIA["golden_check"]
 # --------------------------------------------------- declarations: breakpoints, watches
 
 @tool("Declare a breakpoint", summary=one_line.breakpoint_at)
-def breakpoint_at(ref: str, by: str = "auto") -> dict[str, Any]:
+def breakpoint_at(ref: str, by: Annotated[str, vocab.enum(checks.BREAKPOINT_BY)] = "auto",
+                  ) -> dict[str, Any]:
     """Declare a code breakpoint at a SYMBOL or a `SEG:OFF`, and arm it if it can be.
 
     The declaration is STORED on disk keyed by the conf, stamped with this session as its
@@ -1548,8 +1577,9 @@ def breakpoint_clear(ref: str = "", all: bool = False) -> dict[str, Any]:
 
 
 @tool("Declare a watch", summary=one_line.watch_add)
-def watch_add(ref: str, mode: str, length: int = 0, fmt: str = "auto",
-              by: str = "auto") -> dict[str, Any]:
+def watch_add(ref: str, mode: Annotated[str, vocab.enum(dec.WATCH_MODES)], length: int = 0,
+              fmt: str = "auto", by: Annotated[str, vocab.enum(checks.WATCH_BY)] = "auto",
+              ) -> dict[str, Any]:
     """Declare a WATCH by symbol, by `SEG:OFF`, or at a place reached THROUGH a pointer, read as
     `fmt` (little-endian), in one of two modes. The declaration persists like a breakpoint's and
     re-resolves on `symbols_load`.
@@ -1619,8 +1649,9 @@ def watch_clear(ref: str = "", all: bool = False) -> dict[str, Any]:
 # ------------------------------------------------------------ input to a running guest
 
 @tool("Send keystrokes", summary=one_line.send_keys, on_cancel="none")
-def send_keys(keys: list[str], modifiers: list[str] | None = None,
-              expect: str = "", seconds: float | None = None,
+def send_keys(keys: list[str],
+              modifiers: list[Annotated[str, vocab.folded(inputs.MODIFIER_WORDS)]] | None = None,
+              expect: str = "", seconds: Annotated[float, ds.WAIT_BOUNDS] | None = None,
               ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Send KEYSTROKES into the RUNNING guest, inside the machine, and, with `expect`, PROVE
     the program took them. The wait for the reaction reports its progress.
@@ -1648,9 +1679,12 @@ def send_keys(keys: list[str], modifiers: list[str] | None = None,
 
 
 @tool("Send mouse input", summary=one_line.send_mouse, on_cancel="none")
-def send_mouse(x: int | None = None, y: int | None = None, button: str = "",
-               action: str = "click", units: str = "screen", expect: str = "",
-               seconds: float | None = None, target: str = "",
+def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = None,
+               y: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = None,
+               button: Annotated[str, vocab.enum(("", *inputs.BUTTON_WORDS))] = "",
+               action: Annotated[str, vocab.enum(inputs.ACTIONS)] = "click",
+               units: Annotated[str, vocab.enum(inputs.UNITS)] = "screen", expect: str = "",
+               seconds: Annotated[float, ds.WAIT_BOUNDS] | None = None, target: str = "",
                ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Move the guest's MOUSE POINTER and press its buttons, inside the machine, and read the
     pointer back. With `expect`, PROVE the program reacted, as `send_keys` does.
@@ -1700,14 +1734,18 @@ def send_mouse(x: int | None = None, y: int | None = None, button: str = "",
 
 @tool("List this session's captures", summary=one_line.captures, read_only=True)
 def captures() -> dict[str, Any]:
-    """The video captures this session recorded, with what is in them.
+    """The files the tools below wrote and handed back, in the order they wrote them, re-read
+    now: `capture_frame`, `snapshot`, `memdump`, `machine_map`, `comment_save`, `perform_export`,
+    `map_save`, `screen_view` and `palette` (`kind` the extension), `series_capture` (`kind`
+    `series`, its manifest) and `trace`; then the video the emulator recorded with
+    `capture_video` (`kind` `avi`, in `captures_dir` or `capture/` under `cwd`), largest last,
+    two files being the normal case (the recording restarts when the guest changes video mode).
+    A file gone since is listed with `present: false` and no `bytes`; an empty list is an
+    answer. Works on a running guest.
 
-    Needs `start(capture_video=True, program=..., captures_dir=...)`. Reply: `captures`, a
-    list of `path`, `bytes`, `avi_frames`, `complete` (the recording was finalised; `false` is
-    information, not damage: a frame extracts from an unindexed capture fine), largest last.
-    Two files is the normal case: the recording restarts when the guest changes video mode.
-    An empty list on a conf whose autoexec exits before `program` runs is explained in the
-    reply. Works on a running guest.
+    Reply: `captures` (`kind`, `path`, `present`, `bytes`, and an AVI's `riff_avi`,
+    `avi_frames` and `complete`: the recording was finalised, `false` being information, not
+    damage).
     """
     return caps.captures(live())
 
@@ -1745,7 +1783,7 @@ checks.take_step_ops(_step_ops)
 
 
 @tool("Export the session as a replay", summary=recording.export_summary)
-def perform_export(path: str, overwrite: bool = False) -> dict[str, Any]:
+def perform_export(dest: str, overwrite: bool = False) -> dict[str, Any]:
     """{EXPORTS}
 
     Kept: what moved the machine, as steps, and the reads that are checks (`read_memory`,
@@ -1761,12 +1799,13 @@ def perform_export(path: str, overwrite: bool = False) -> dict[str, Any]:
 
     Reference: REFERENCE.md, From an investigation to a bench.
     """
-    return st.reply(**recording.export(RECORDER, path, overwrite))
+    return st.reply(**recording.export(RECORDER, dest, overwrite))
 
 
 @tool("Run a sequence of steps", summary=one_line.perform, on_cancel="stop")
-def perform(steps: list[dict[str, Any]], settle_seconds: float = 30.0, summaries: bool = False,
-            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
+def perform(steps: list[dict[str, Any]],
+            settle_seconds: Annotated[float, ds.WAIT_FROM_ZERO_BOUNDS] = 30.0,
+            summaries: bool = False, ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run a LIST of the server's own operations in order on the open session, in ONE round
     trip, stopping at the first failure with the whole account.
 
@@ -1804,9 +1843,10 @@ def perform(steps: list[dict[str, Any]], settle_seconds: float = 30.0, summaries
 
 @tool("Drive an input and verify it", summary=one_line.drive, on_cancel="none")
 def drive(act: list[dict[str, Any]], expect: str = "",
-          seconds: float | None = None, pattern: str = ".", limit: int = 40,
-          settle_seconds: float = 30.0, summaries: bool = False,
-          ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
+          seconds: Annotated[float, ds.WAIT_BOUNDS] | None = None, pattern: str = ".",
+          limit: Annotated[int, vocab.bounds(1, dlogs.LOG_LIMIT_MAX)] = 40,
+          settle_seconds: Annotated[float, ds.WAIT_FROM_ZERO_BOUNDS] = 30.0,
+          summaries: bool = False, ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """LOOK, ACT, VERIFY in one call: the way a browser is driven, for a DOS program. The
     waits inside (for a stop between steps, for `expect`) report their progress.
 

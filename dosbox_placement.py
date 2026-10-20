@@ -92,10 +92,12 @@ def parse_seg_off(ref: str) -> tuple[int, int]:
             f"a raw address is SEG:OFF in hex (e.g. 00A7:0016DD80); got {ref!r}. A bare "
             f"linear address has no segment to arm at -- use a symbol, which carries one")
     seg_s, off_s = r.split(":", 1)
-    try:
-        seg, off = int(seg_s, 16), int(off_s, 16)
-    except ValueError:
-        raise ds.Invalid("bad_argument", f"{ref!r} is not a hex SEG:OFF") from None
+    # EACH HALF IS A HEX ADDRESS AS EVERY ADDRESS ARGUMENT WRITES ONE: `int(..., 16)` alone also
+    # takes a sign and underscores, and `0038:-10` would reach every address tool as offset -16.
+    if not (_HEX_ADDR.fullmatch(seg_s.strip()) and _HEX_ADDR.fullmatch(off_s.strip())):
+        raise ds.Invalid("bad_argument", f"{ref!r} is not a hex SEG:OFF: hex digits each side, "
+                         "with or without `0x`, no sign")
+    seg, off = int(seg_s, 16), int(off_s, 16)
     # THE SEGMENT IS JUDGED HERE, where every raw ref becomes numbers, so no tool can take one it
     # cannot address: a segment past sixteen bits written by `memdump` lands nowhere the caller
     # meant, and armed by `breakpoint_at` persists a declaration nothing can ever clear. The

@@ -217,7 +217,7 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "series_capture": {"first": 0, "last": 1},
         **MEDIA_ABSENT,
         "perform": {"steps": [{"op": "status"}]},
-        "perform_export": {"path": M.fresh(".json")},
+        "perform_export": {"dest": M.fresh(".json")},
         "drive": {"act": [{"op": "status"}]},
         "comment_add": {"ref": COMMENT_REF, "text": "matrix A"},
         "comment_list": {},
@@ -227,7 +227,7 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "map_load": {"path": "/nonexistent/probe.scry-map.json"},
         "map_add": {"screen": f"probe_{state}", "match": [[0, 0, 8, 1]]},
         "map_find": {},
-        "map_save": {"path": M.fresh(f"-{state}.scry-map.json"), "overwrite": True},
+        "map_save": {"dest": M.fresh(f"-{state}.scry-map.json"), "overwrite": True},
     }
     return table[tool]
 
@@ -376,10 +376,11 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                       "send_keys docstring: refused on a machine stopped at the debugger"),
         "send_mouse": (lambda r: refused(r, "not_running"),
                        "send_mouse docstring: refused on a machine stopped at the debugger"),
-        "captures": (lambda r: refused(r), "captures docstring: needs capture_video"),
+        "captures": (lambda r: ok(r) and r.get("captures") == [],
+                     "captures docstring: an empty list is an answer"),
         "capture_frame": (lambda r: refused(r), "capture_frame docstring: needs capture_video"),
         "series_capture": (lambda r: refused(r, "no_channel"),
-                           "series_capture docstring: needs captures_dir and capture_video"),
+                           "series_capture docstring: needs capture_video"),
         **_SEQUENCES,
         "resume": (lambda r: ok(r) and "stop_seq" not in r,
                    "resume docstring: a stopper declared, it runs"),

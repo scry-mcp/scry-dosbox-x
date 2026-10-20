@@ -88,12 +88,13 @@ def _word(value: Any) -> str:
 
 
 def status(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    ses = _block(reply, "session")
-    if "pid" not in ses:
+    # THE REPLY'S OWN FACTS, never its block: the summary is read off the body's reply, whose
+    # block is the short one. `declarations` is counted on every session and on none without.
+    if "declarations" not in reply:
         return "status: no session"
-    state = ("gone" if not ses.get("alive")
-             else "alive, running" if ses.get("running") else "alive, stopped")
-    return f"status: {state}, {ses.get('elapsed_s')}s of a {ses.get('bound_s')}s bound"
+    if not reply.get("alive"):
+        return "status: DOSBox-X has exited, `close` it"
+    return f"status: alive, {'running' if reply.get('running') else 'stopped'}"
 
 
 def close(args: dict[str, Any], reply: dict[str, Any]) -> str:

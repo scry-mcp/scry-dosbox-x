@@ -32,6 +32,7 @@ from typing import Any, cast
 from unittest import mock
 
 import pytest
+from e9_hints import hints_heard
 from scry_core import log_wait as core_wait
 from scry_core import media_tools, recording, screen_map
 from scry_core import reply_contract as contract
@@ -105,9 +106,12 @@ class FakeSession:
         self._alive = alive
         self._screen = screen
         self.closed = 0
+        # The process, as the server reads its exit off it: -15 once the double is dead.
+        self.proc = SimpleNamespace(poll=lambda: None if self._alive else -15, pid=4242)
         # The launch a tool reads relative paths from (`cwd`) and the E9 channel from
         # (`logfile`); the real one is a `Launch`, and these are the two fields reached.
         self.launch = SimpleNamespace(cwd=Path("/"), logfile=None, watched=False)
+        self._avi_facts: dict[tuple[str, int, int], dict[str, object]] = {}
         self.e9_calls: list[tuple[str, int]] = []
         self.log_calls: list[tuple[str, int, str]] = []
         self.loaded: list[tuple[str, int]] = []
@@ -413,7 +417,7 @@ def clean_session() -> Any:
     THE SYMBOL TABLE IS A MODULE GLOBAL TOO, and leaving it was measured doing exactly
     what this warns about: `test_find_refuses_before_anything_is_loaded` came back `ok`
     with zero matches, because an earlier case in this file had left a table installed.
-    It is only ever cleared in production by `start`, `close` and the burial of a dead
+    It is only ever cleared in production by `start`, `close` and a cancel that kills the
     session -- and `install()` reaches past all three.
     """
     dstate.STATE.session = None
@@ -483,27 +487,19 @@ def test_a_cap_of_zero_would_lie_and_is_refused() -> None:
         "screen_delta": "cdef", "screen_chars": 6, "clipped": True}
 
 
-def test_a_dead_session_that_had_been_written_to_says_so_in_its_refusal() -> None:
-    """`live()` clears the global before raising, so `_reply` can no longer describe
-    what it just buried and `session` comes back null. The module docstring promises
-    every reply carries `altered`, "the INVALID ones too"; this is the one path where
-    the field cannot exist, so the REASON carries it instead.
-
-    Without it, a caller who forced a register and whose emulator then hit its bound
-    gets an INVALID with no trace that anything was pushed."""
-    written = FakeSession(alive=False)
-    written.altered = True
-    dstate.STATE.session = written  # type: ignore[assignment]
-    got = server.registers()
-    assert got["status"] == "INVALID"
-    assert "HAD been written to" in str(got["message"]), got["message"]
-
-    # AND THE CONTROL, which is what makes the assertion above about `altered` and not
-    # about the refusal happening at all: an untouched session is buried silently.
-    dstate.STATE.session = FakeSession(alive=False)  # type: ignore[assignment]
-    clean = server.registers()
-    assert clean["status"] == "INVALID"
-    assert "HAD been written to" not in str(clean["message"]), clean["message"]
+def test_a_dead_session_that_had_been_written_to_says_so_in_its_block() -> None:
+    """A session whose emulator died is kept until `close`, so its `session` block still
+    says it was written to, as a field: a caller who forced a register and whose emulator
+    then hit its bound is never left with a refusal that hides it."""
+    written = install()
+    written.altered, written._alive = True, False
+    got = cast(dict[str, Any], server.registers())
+    assert got["code"] == "session_broken" and got["exit_code"] == -15, got
+    assert got["session"]["altered"] is True and got["session"]["alive"] is False, got
+    # AND THE CONTROL: the field follows the session, not the refusal.
+    clean = install(alive=False)
+    assert cast(dict[str, Any], server.registers())["session"]["altered"] is False
+    assert clean.closed == 0
 
 
 def test_a_close_that_could_not_reap_the_child_says_so_in_its_reply() -> None:
@@ -939,14 +935,56 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         assert "no live session" in got["message"], name
 
 
-def test_a_dead_session_is_closed_cleared_and_answered_as_absent() -> None:
-    """Leaving a corpse installed is what made `status` keep reporting it and made the
-    next `start` leak its terminal instead of reclaiming it."""
+def test_a_short_block_carries_each_alarm_while_it_holds_and_names_the_rest() -> None:
+    """Every reply carries `alive`, `running`, `altered` and each alarm WHILE IT HOLDS; the rest
+    rides on `start`, `status` and `close` and is named in `omitted` elsewhere. Read on a session
+    whose alarms all hold, then on its quiet twin."""
+    fake = install()
+    quiet = fake.state()
+    loud = {**quiet, "conf_changed_on_disk": True, "terminal_bytes_dropped": 4096,
+            "drain_alive": False, "drain_ended": "EIO"}
+    alarms = ("conf_changed_on_disk", "terminal_bytes_dropped", "drain_alive", "drain_ended")
+    fake.state = lambda: loud  # type: ignore[method-assign]
+    short = cast(dict[str, Any], server.registers())["session"]
+    assert all(short[k] == loud[k] for k in alarms), short
+    assert "pid" not in short and "pid" in short["omitted"] and short["how"], short
+    assert cast(dict[str, Any], server.status())["session"]["pid"] == 4242
+    fake.state = lambda: quiet  # type: ignore[method-assign]
+    short = cast(dict[str, Any], server.registers())["session"]
+    assert not set(alarms) & set(short), short
+    assert {"conf_changed_on_disk", "terminal_bytes_dropped", "drain_alive"} <= set(
+        short["omitted"]), short
+    closed = cast(dict[str, Any], server.close())["session"]
+    assert closed["pid"] == 4242 and closed["elapsed_s"] == 1.0, "close's block is whole"
+
+
+def test_a_dead_session_answers_broken_until_close_collects_it() -> None:
+    """A machine that died under the session is `session_broken` with its `exit_code`, the
+    session kept (its block, its `altered`) until `close`, which collects it."""
     dead = install(alive=False)
-    got = server.registers()
-    assert got["status"] == "INVALID"
-    assert dead.closed == 1
-    assert dstate.STATE.session is None
+    got = cast(dict[str, Any], server.registers())
+    assert got["code"] == "session_broken" and got["exit_code"] == -15, got
+    assert dead.closed == 0 and cast(object, dstate.STATE.session) is dead
+    closed = cast(dict[str, Any], server.close())
+    assert closed["status"] == "ok" and dead.closed == 1 and dstate.STATE.session is None
+
+
+def test_start_over_a_dead_session_collects_it_first_and_refuses_over_a_live_one(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n")
+
+    def spawn(launch: Any) -> Any:
+        raise ds.Invalid("session_broken", "not starting anything")
+    monkeypatch.setattr("scry_core.binaries.shutil.which", lambda _n: "/somewhere/dosbox-x")
+    monkeypatch.setattr("dosbox_x_server.ds.Session", spawn)
+    kw = {"conf": str(conf), "cwd": str(tmp_path), "session_seconds": 60}
+    live_one = install()
+    assert cast(dict[str, Any], server.start(**kw))["code"] == "session_live"
+    assert live_one.closed == 0 and cast(object, dstate.STATE.session) is live_one
+    dead = install(alive=False)
+    assert cast(dict[str, Any], server.start(**kw))["code"] == "session_broken"
+    assert dead.closed == 1 and dstate.STATE.session is None, "the dead session was not collected"
 
 
 # ------------------------------------------------------------------- the answers
@@ -1058,9 +1096,8 @@ def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
                         "conf_changed_on_disk", "watched", "bound_s",
                         "elapsed_s", "terminal_bytes_dropped",
                         "drain_alive", "drain_ended", "captures", "state_dir"}
-    # WHETHER CAPTURES ARE ON is said here, at `start` and on every reply, and not only by
-    # `captures` refusing: otherwise a caller has to probe `captures` to learn there are
-    # none.
+    # WHETHER CAPTURES ARE ON is said here, at `start` and at `close`, so a caller need not
+    # infer it from a `captures` listing with no `avi` row.
     assert got["captures"] == "off"
     fake.launch = dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, capture_video=True,
                             program="X.EXE", captures_dir=tmp_path / "caps")
@@ -1111,6 +1148,10 @@ def test_the_double_has_not_drifted_from_what_it_stands_in_for(tmp_path: Path) -
         launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60))
     real = ds.Session.state(fake)  # type: ignore[arg-type]
     assert set(FakeSession().state()) == set(real)
+    # THE BLOCK'S ALARMS NAME KEYS OF THIS SHAPE: a renamed key would leave a dead rule and
+    # the alarm would ride as a fixed fact, omitted.
+    fake.drain_ended = "EIO"
+    assert {*dstate._ALARM_WHEN, *dstate._ALWAYS} <= set(ds.Session.state(fake))  # type: ignore[arg-type]
     # AND THE METHOD SURFACE, which this case's own name promised and did not check.
     # MEASURED: adding `read_memory` to the server left this green and made two other
     # cases die with an `AttributeError` -- a crash, not a contract failure, and one
@@ -1262,17 +1303,30 @@ def test_both_halves_of_the_capture_come_back(tmp_path: Path) -> None:
     The bug this closes: `capture_video=True` started a recording and NO tool handed
     back the file. It recorded and did not say so.
     """
-    install()
+    fake = install()
+    caps_dir = tmp_path / "caps"
+    caps_dir.mkdir()
+    fixtures = Path(__file__).parent / "fixtures" / "avi"
+    for name in ("dosbox-x-zmbv-12.avi", "dosbox-x-zmbv-running.avi"):
+        shutil.copyfile(fixtures / name, caps_dir / name)
+    fake.launch.capture_video, fake.launch.captures_dir = True, caps_dir
     got = server.captures()
-    assert got["status"] == "ok"
-    assert [c["avi_frames"] for c in got["captures"]] == [40, 5428], (
-        "largest last: the default source for a still depends on that order")
+    assert got["status"] == "ok" and [c["kind"] for c in got["captures"]] == ["avi", "avi"], got
+    sizes = [c["bytes"] for c in got["captures"]]
+    assert sizes == sorted(sizes), "largest last: the default source for a still"
+    assert all(c["present"] is True and c["avi_frames"] > 0 for c in got["captures"]), got
 
     dest = tmp_path / "shot" / "frame.png"
     shot = server.capture_frame(frame=1400, dest=str(dest))
     assert shot["status"] == "ok"
     assert Path(shot["path"]) == dest and shot["bytes"] > 0
     assert shot["frame"] == 1400 and len(shot["sha256"]) == 64, shot
+    listed = server.captures()["captures"]
+    assert listed[0] == {"kind": "png", "path": str(dest), "present": True,
+                         "bytes": dest.stat().st_size}, "the still the session wrote, first"
+    dest.unlink()
+    assert server.captures()["captures"][0] == {"kind": "png", "path": str(dest),
+                                                "present": False}, "gone, and said so"
 
 
 def test_a_dump_of_the_wrong_size_is_not_the_dump_that_was_asked_for(
@@ -1854,17 +1908,16 @@ def test_a_session_that_died_on_its_bound_takes_the_table_with_it(
     """THE MOST DANGEROUS OF THE THREE CLEARING SITES, and the one no test reached.
 
     `_forget_symbols` runs when the session OBJECT changes. A session that expires on
-    its own bound changes no object: it is buried inside `live()`, and `symbols_find`
-    did not call `live()` at all -- so it answered `ok` with a linear address for a
-    program that was gone, and whether the caller got that or a refusal depended on
-    whether they happened to call another tool first.
+    its own bound changes no object until `close` collects it, so `symbols_find` asks
+    `live()` first and is `session_broken` meanwhile: without the call it would answer `ok`
+    with a linear address for a program that is gone.
     """
     s = install()
     server.symbols_load(path=_source(tmp_path))
     s._alive = False                      # what a bound expiring looks like from here
     got = cast(dict[str, Any], server.symbols_find(linear="0056DF24"))
-    assert got["status"] == "INVALID", got
-    assert "no live session" in got["message"], got
+    assert got["code"] == "session_broken", got
+    server.close()
     assert dstate.STATE.table == [], "the table outlived the process it was measured on"
 
 
@@ -3392,10 +3445,10 @@ def test_send_mouse_refuses_before_anything_is_sent(tmp_path: Path) -> None:
         (lambda: server.send_mouse(x=-1, y=0), "whole number"),
         (lambda: server.send_mouse(x=inputs.MAX_COORD + 1, y=0, units="mouse"), "to 32767"),
         (lambda: server.send_mouse(x=0, y=2**31, units="mouse"), "to 32767"),
-        (lambda: server.send_mouse(button="wheel"), "mouse button is one of"),
-        (lambda: server.send_mouse(button="left", action="triple"), "`action` is one of"),
+        (lambda: server.send_mouse(button="wheel"), "button is one of"),
+        (lambda: server.send_mouse(button="left", action="triple"), "action is one of"),
         (lambda: server.send_mouse(x=1, y=1, action="down"), "acts on a `button`"),
-        (lambda: server.send_mouse(x=1, y=1, units="pixels"), "`units` is 'screen'"),
+        (lambda: server.send_mouse(x=1, y=1, units="pixels"), "units is one of"),
     ]
     for call, words in cases:
         got = call()
@@ -4852,6 +4905,27 @@ def test_e9_seconds_window_is_cut_on_the_guests_own_clock(tmp_path: Path) -> Non
     assert bad["status"] == "INVALID" and "e9_stamp" in bad["message"]
 
 
+def test_each_e9_tools_stop_names_its_argument_and_any_other_stop_names_the_log(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The hint is the way THIS tool's caller can take: the tools that take `e9` name it (`run_for`
+    in its own file), a stop reached by any other tool names `log`."""
+    seen = hints_heard(monkeypatch)
+    fake = _names(tmp_path)
+    fake.log = ["a", "b"]
+    calls: dict[str, Callable[[], object]] = {
+        "resume": server.resume, "step": server.step,
+        "run_to": lambda: server.run_to(ref="00A7:00001A27", control="00A7:00009999",
+                                        seconds=1)}
+    for tool, call in calls.items():
+        fake.halted = True
+        seen.clear()
+        reply = cast(dict[str, Any], call())
+        assert reply["status"] == "ok" and seen == [running.E9_BY_ARGUMENT], (tool, seen, reply)
+    seen.clear()
+    running.stop_reply(fake, halted=True)  # type: ignore[arg-type]
+    assert seen == [running.E9_BY_LOG], "a stop no e9 tool reached named an argument"
+
+
 def test_resume_enriches_a_halt_and_leaves_a_running_machine_bare(tmp_path: Path) -> None:
     """The wiring: a resume that HALTED carries the full stop reply (watches, E9, ...); one
     that left the machine running carries only its base, because a running machine has
@@ -5517,7 +5591,7 @@ def test_resume_on_a_running_guest_is_refused_before_any_other_check(
         got = server.resume()
         bound = server.resume(seconds=-1)
     assert got["status"] == "INVALID" and got["code"] == "not_stopped", got
-    assert bound["code"] == "bad_argument" and "negative" in bound["message"], bound
+    assert bound["code"] == "bad_argument" and "is not a bound" in bound["message"], bound
     # A bad display argument is judged earlier still, with no machine, as every argument is.
     assert server.resume(e9="sometimes")["code"] == "bad_argument"
 
@@ -6465,9 +6539,9 @@ def test_read_memory_length_is_bounded_and_resume_takes_the_siblings_bound(
         out = cast(dict[str, Any], server.read_memory(ref="g_rate", length=bad))
         assert out["status"] == "INVALID" and "memdump" in out["message"], out
     out = cast(dict[str, Any], server.resume(seconds=-1))
-    assert out["status"] == "INVALID" and "negative" in out["message"], out
+    assert out["status"] == "INVALID" and "is not a bound" in out["message"], out
     past = cast(dict[str, Any], server.resume(seconds=ds.RUN_TO_MAX + 1))
-    assert past["code"] == "bad_argument" and f"past the {ds.RUN_TO_MAX} s" in past["message"]
+    assert past["code"] == "bad_argument" and f"at most {ds.RUN_TO_MAX} s" in past["message"]
     fake.launch.watched = True                   # a windowed session needs no stopper
     def read_nothing(timeout: float) -> str:
         time.sleep(timeout)
@@ -6665,7 +6739,7 @@ def test_drives_lines_ceiling_is_logs_ceiling_and_not_a_second_constant(
     monkeypatch.setattr(dlogs, "LOG_LIMIT_MAX", 7)
     key = {"op": "send_keys", "keys": ["a"]}
     over = cast(dict[str, Any], server.drive(act=[key], limit=8))
-    assert over["status"] == "INVALID" and "between 1 and 7" in over["message"], over
+    assert over["status"] == "INVALID" and "outside 1..7" in over["message"], over
     assert fake.commands_sent == [], "a refused drive must not have acted"
     at = cast(dict[str, Any], server.drive(act=[key], limit=7))
     assert at["status"] == "ok", at
@@ -6799,9 +6873,9 @@ def test_watch_add_judges_the_mode_before_the_size(tmp_path: Path) -> None:
     _names(tmp_path)
     got = server.watch_add(ref="00AF:0100", mode="bogus")
     assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
-    assert "a watch needs a mode" in got["message"], got["message"]
+    assert "mode is one of" in got["message"], got["message"]
     step = server.perform(steps=[{"op": "watch_add", "ref": "00AF:0100", "mode": "bogus"}])
-    assert step["code"] == "bad_argument" and "a watch needs a mode" in step["message"], step
+    assert step["code"] == "bad_argument" and "mode is one of" in step["message"], step
 
 
 def test_a_breakpoint_left_armed_by_run_to_counts_as_a_stopper(tmp_path: Path) -> None:
@@ -7144,6 +7218,17 @@ def test_status_with_no_session_adds_no_machine_facts() -> None:
     assert got["summary"] == "status: no session", got["summary"]
 
 
+def test_status_summarises_the_session_it_answers_about() -> None:
+    """The summary is built from the body's reply, whose block is the short one: it reads the
+    reply's own facts, so a live session is never summarised as none."""
+    install()
+    got = cast(dict[str, Any], server.status())
+    assert got["session"]["alive"] and got["summary"] == "status: alive, stopped", got["summary"]
+    install(alive=False)
+    got = cast(dict[str, Any], server.status())
+    assert got["summary"] == "status: DOSBox-X has exited, `close` it", got["summary"]
+
+
 def test_status_does_not_name_a_stop_it_could_not_read_as_the_one_it_is_in(
         tmp_path: Path) -> None:
     """The guest stopped again and the survey of that stop was cut: the record still holds the
@@ -7169,8 +7254,8 @@ def test_status_counts_the_declarations_on_a_running_machine_too(tmp_path: Path)
     assert "pc" not in got and got["declarations"] == {"breakpoints": 1, "watches": 0}, got
 
 
-def test_the_stop_count_survives_a_session_buried_mid_batch() -> None:
-    """A bound that expires mid-list buries the session and clears the stop record, so the
+def test_the_stop_count_survives_a_session_closed_mid_batch() -> None:
+    """A session closed mid-list clears the stop record, so the
     server's counter reads 0 afterwards: the count still covers every stop the replies carry,
     rather than coming back empty beside rows that show them."""
     dstate.STATE.last_stop.clear()
@@ -7527,3 +7612,20 @@ def test_the_instructions_families_are_the_registered_tools_and_the_running_ones
     named = dosbox_mcp.answering_named() - {"registers(from_last_stop=True)"}
     assert named <= answering, sorted(named - answering)
     assert dosbox_mcp.running_sentence() in (server.mcp.instructions or "")
+
+
+def test_a_plans_wait_is_held_to_the_one_wait_bound_before_anything_is_spawned(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`start(plan=..., settle_seconds=...)` is a wait like every other: one past `RUN_TO_MAX`
+    is refused before the emulator exists, in the one wait judge's sentence."""
+    spawned: list[Any] = []
+    monkeypatch.setattr(subprocess, "Popen", lambda *a, **k: spawned.append(a))
+    conf = tmp_path / "x.conf"
+    conf.write_text("[autoexec]\n")
+    out = cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path),
+                                            session_seconds=60,
+                                            plan=[{"op": "registers"}],
+                                            settle_seconds=ds.RUN_TO_MAX + 1))
+    assert out["code"] == "bad_argument", out
+    assert out["message"].startswith(f"settle_seconds={ds.RUN_TO_MAX + 1} is not a bound"), out
+    assert spawned == [], "refused before anything was spawned"

@@ -17,11 +17,10 @@ from __future__ import annotations
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
-from scry_core import progress as mprogress
-from scry_core import recording
 from scry_core import reply_contract as contract
+from scry_core import sequence as executor
 from scry_core import sequence_account as account
 from scry_core import steps as step_judge
 
@@ -97,7 +96,7 @@ def _leaves_running(op: str, reply: dict[str, Any]) -> bool:
 
 
 def _wait_for_stop(session: ds.Session, seconds: float,
-                   progress: ds.Progress = ds.no_progress) -> str:
+                   progress: ds.Progress = ds.no_progress) -> executor.Waited:
     """`stopped` | `running` | `gone`: LISTENING for the debugger's prompt on the terminal
     until the machine is back at the debugger, the bound expires, or the emulator has died,
     the same passive wait `run_to` and a bounded `resume` make (`Session.await_stop`).
@@ -216,200 +215,87 @@ def account_of(ran: list[dict[str, Any]], summaries: bool, keep_last: bool, sinc
                            rows_shown=st.ROWS_SHOWN)
 
 
+class _Dosbox(executor.SequenceMachine):
+    """This server's half of a list (`scry_core.sequence`): a stop heard by the debugger's
+    prompt, a list that begins on a machine taken as stopped, a step's own missed wait, and the
+    stop a step that answers on a running guest came to rest at."""
+
+    undeclared = "no breakpoint, no interrupt breakpoint, no change watch"
+
+    def __init__(self, session: ds.Session, summaries: bool) -> None:
+        self.session, self.summaries = session, summaries
+        self.since = int(STATE.last_stop.get("seq", 0))  # the stops this list numbers follow it
+
+    def answers_running(self, op: str, args: dict[str, Any]) -> bool:
+        return answers_running(op, args)
+
+    def running(self) -> bool:
+        return not self.session.at_debugger()
+
+    def began_running(self) -> bool:
+        # EVERY LIST BEGINS AS ON A STOPPED MACHINE: a step that needs one and finds the guest
+        # running answers so itself, and an act of keys sent to a running guest (`drive`'s
+        # usual shape) must not wait for a stop it never asked for.
+        return False
+
+    def leaves_running(self, op: str, reply: dict[str, Any]) -> bool:
+        return _leaves_running(op, reply)
+
+    def wait_for_stop(self, seconds: float, progress: ds.Progress,
+                      tail: bool = False) -> executor.Waited:
+        return _wait_for_stop(self.session, seconds, progress)
+
+    def can_be_stopped(self) -> bool:
+        return arming.something_can_stop_it()
+
+    def tail_stop(self) -> dict[str, Any]:
+        return _final_stop(self.session)
+
+    def account(self, ran: list[dict[str, Any]], keep_last: bool,
+                also: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+        return account_of(ran, self.summaries, keep_last, self.since, also)
+
+    def missed(self, op: str, reply: dict[str, Any]) -> bool:
+        return _missed(op, reply)
+
+    def rested(self, ran: list[dict[str, Any]]) -> dict[str, Any] | None:
+        """THE STOP CAME DURING THE LAST STEP (a `stop`, or a breakpoint that fired while a
+        declaration or a key went in): it is the stop the run was heading for. One a step already
+        surveyed (the `stop` tool's own reply, a step that found it on its own) is named as
+        recorded, never surveyed twice: a second survey numbers it again. Its registers, watches
+        and E9 come from the step's reply when the step surveyed it, else off the record."""
+        recorded = STATE.as_of_current(self.session)
+        last = ran[-1]["reply"] if ran else {}
+        if recorded is None:
+            return _final_stop(self.session)
+        if last.get("stop_seq") == recorded["stop_seq"] and "regs" in last:
+            return {**guest.recorded_head(recorded),
+                    **{k: last[k] for k in _ENRICHED if k in last}}
+        return _recorded_stop(self.session, recorded)
+
+
 def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
               ops: Ops, progress: ds.Progress = ds.no_progress,
               summaries: bool = False, name: str = "perform",
               prechecked: bool = False) -> dict[str, Any]:
-    """Execute steps in order, STOPPING at the first failure with a full account. Returns
-    `ran` (each step and its reply), `failed` (the step that stopped it, absent when none did),
-    `steps_completed`, `held` (the steps whose `recorded` answer this run matched), and the machine
-    state. A step is `{"op": <name>, ...args}`. `prechecked` when the tool's pre-gate already
-    judged the list whole (`dosbox_checks.steps_whole`), so it is judged once a call.
-    """
-    held = [0]
-    reply = _run_steps(session, steps, wait, ops, progress, summaries, name, held, prechecked)
-    return {**reply, "held": held[0]}
-
-
-def _run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float, ops: Ops,
-               progress: ds.Progress, summaries: bool, name: str, held: list[int],
-               prechecked: bool = False) -> dict[str, Any]:
-    """`run_steps`' body, counting into `held`.
-
-    THE RESUME BOUNDARY: after a step that leaves the machine RUNNING, only a
-    running-OK op may follow immediately; before any CONSOLE op the sequence WAITS for the
-    next stop (bounded by `wait`), because a console op sent to a running guest is swallowed.
-    A console op reached with the machine still running after that wait is a FAILURE naming
-    the boundary, not a call dispatched into the void. The caller owns the `live()` call and
-    hands the session in, so the "needs a session" gate sees the TOOL, not this helper.
-
-    With `summaries`, `ran` is the compact account `account_of` builds.
-    """
+    """Execute steps in order (`scry_core.sequence.run`, its rules), STOPPING at the first
+    failure with a full account: `ran` (each step and its reply), `failed` (the step that stopped
+    it, absent when none did), `steps_completed`, `held` (the steps whose `recorded` answer this
+    run matched), and the machine state. A step is `{"op": <name>, ...args}`. `prechecked` when
+    the tool's pre-gate already judged the list whole (`dosbox_checks.steps_whole`), so it is
+    judged once a call. With `summaries`, `ran` is the compact account `account_of` builds."""
     validate_summaries(summaries)
-    since = int(STATE.last_stop.get("seq", 0))     # the stops this call numbers come after it
     refused = [] if prechecked else preflight(steps, ops)
     if refused:
         first = refused[0]
         return st.reply(status="INVALID", code="bad_argument", ran=[], steps_completed=0,
                         failed_at=first["step"], failed=first, errors=refused,
-                        message=refused_text(refused))
-    ran: list[dict[str, Any]] = []
-    running = False
-    released_last = False     # the LAST step is the one that let the machine run
-    came_to_rest = False      # the LAST step found the released machine stopped
-    waited = False            # a wait for a stop was asked for and made: the list earns a verdict
-    began = time.monotonic()           # the line of the list rises from here
-    for i, step in enumerate(steps):
-        if not isinstance(step, dict) or "op" not in step:
-            return st.reply(status="INVALID", code="bad_argument",
-                          **account_of(ran, summaries, keep_last=False, since=since),
-                          steps_completed=len(ran), failed_at=i,
-                          message=f"step {i} is not a {{'op': <name>, ...}} object: {step!r}")
-        op = str(step["op"])
-        args = recording.step_arguments(step)
-        if op not in ops:
-            return st.reply(status="INVALID", code="bad_argument",
-                          **account_of(ran, summaries, keep_last=False, since=since),
-                          steps_completed=len(ran), failed_at=i,
-                          message=f"{op!r} is not a step: the vocabulary is the server's own "
-                                 f"operation names, {sorted(ops)}")
-        # A CONSOLE OP NEEDS A STOPPED MACHINE. If the previous step left it
-        # running, wait for the stop a breakpoint or the guest will produce -- or find the
-        # emulator gone, which is a DIFFERENT answer from "still running".
-        if running and not answers_running(op, args):
-            state = _wait_for_stop(session, wait, progress)
-            if state == "gone":
-                return st.reply(status="INVALID", code="session_broken",
-                              **account_of(ran, summaries, keep_last=True, since=since),
-                              steps_completed=len(ran), failed_at=i,
-                              message=f"the emulator is GONE (its bound expired or it "
-                                     f"crashed) before the console step {op!r} could run")
-            if state == "running":
-                why = (f"the machine was still running {wait:g}s after the previous step, so "
-                       f"the console step {op!r} cannot be sent (it would be swallowed). A "
-                       f"breakpoint or watch has to stop it first")
-                if not wait:
-                    # NO WAIT WAS ASKED, so nothing ran out: the step could not be sent at all.
-                    return st.reply(status="INVALID", code="not_stopped",
-                                  **account_of(ran, summaries, keep_last=True, since=since),
-                                  steps_completed=len(ran), failed_at=i, message=why)
-                # THE WAIT RAN OUT: a verdict, and the list ends here with what it completed.
-                return st.reply(**account_of(ran, summaries, keep_last=True, since=since),
-                                steps_completed=len(ran), failed_at=_none_failed(),
-                                verdict=contract.TIMEOUT,
-                                note=f"{why}; it and the steps after it were not sent")
-            waited = waited or wait > 0
-            running = False
-        # A STEP HAS NO REQUEST OF ITS OWN: its progress goes out on the list's line.
-        with mprogress.within(progress, f"{name} step {i + 1} of {len(steps)} ({op})", began):
-            reply = ops[op](**args)  # its arguments were bound up front, before any step ran
-        if reply.get("status") != "ok":
-            # STOP HERE. `ran` holds only the steps that SUCCEEDED; the one that
-            # stopped the sequence is `failed`, and the machine state rides in `session` --
-            # deliberate from inertial is exactly what this keeps separable.
-            return st.reply(status="INVALID", code="step_failed",
-                          **account_of(ran, summaries, keep_last=False, since=since,
-                                       also=[reply]),
-                          steps_completed=len(ran), failed_at=i, failed={"op": op, "reply": reply},
-                          message=f"step {i} ({op!r}) failed: {reply.get('message')}")
-        if (apart := recording.diverged(step.get(recording.RECORDED) or {}, reply)) is not None:
-            # A REPLAY THAT LEFT THE SESSION IT REPLAYS stops where it left, where a desync is
-            # cheapest to read: every step after it would only compound it.
-            message, fields = recording.divergence(i, op, reply, apart)
-            return st.reply(status="INVALID", code="diverged",
-                          **account_of(ran, summaries, keep_last=False, since=since,
-                                       also=[reply]),
-                          steps_completed=len(ran), **fields, message=message)
-        held[0] += bool(step.get(recording.RECORDED))
-        ran.append({"op": op, "reply": reply})
-        if _missed(op, reply):
-            # A STEP'S OWN WAIT FOR WHAT IT WAS TO SEE RAN OUT: what the rest of the list was
-            # built on did not happen, so it ends here with the verdict, as a wait of the
-            # list's own does.
-            return st.reply(**account_of(ran, summaries, keep_last=True, since=since),
-                            steps_completed=len(ran), failed_at=_none_failed(),
-                            verdict=contract.TIMEOUT,
-                            note=f"step {i} ({op!r}) waited for what it was to see and it did "
-                                 f"not come; the steps after it were not sent")
-        # A RUNNING-OK OP DOES NOT RELEASE THE MACHINE, and whether it stopped it is the
-        # SESSION's to say, never the op's name: `_leaves_running` would answer False for a
-        # `send_keys` after a `resume` and send the next console step into a running guest,
-        # while a `stop`, or a breakpoint that fired during a key's `expect`, did stop it.
-        if not answers_running(op, args):
-            came_to_rest = False
-            running = _leaves_running(op, reply)
-            released_last = running
-        else:
-            came_to_rest = running and session.at_debugger()
-            running = running and not came_to_rest
-            released_last = False
-    # THE TAIL: if the sequence ends with the machine running, wait for the stop it was
-    # heading for and hand back the ENRICHED reply at that stop -- that is the
-    # value R1/R3 want, the state AT the breakpoint. If it does not stop in time, say so
-    # rather than pretending the run finished at a stop.
-    final: dict[str, Any] = {}
-    if running and wait == 0:
-        final = {"still_running": True,
-                 "note": "settle_seconds=0: the sequence ended with the machine running and "
-                         "no stop was waited for"}
-    elif (running and not released_last
-          and not arming.something_can_stop_it()):
-        # THE LAST STEP WAS A RUNNING-GUEST OP AND NOTHING DECLARED CAN STOP THE MACHINE,
-        # so a wait cannot end: a list that ends in `e9` after a `resume`, with the
-        # breakpoints cleared and only show watches declared, wants the guest left
-        # running: otherwise the tail sits out its whole bound for a stop nothing can
-        # produce. With a breakpoint or change-watch declared the
-        # tail still waits (R1's shape: arm, resume, send the key, hand back the stop).
-        final = {"still_running": True,
-                 "note": "the sequence ended with the machine running after a "
-                         "running-guest step and nothing declared can stop it (no "
-                         "breakpoint, interrupt or change-watch), so no stop was waited "
-                         "for; declare one, or end the list with the resume/run_to/step "
-                         "to wait for its stop"}
-    elif came_to_rest:
-        # THE STOP CAME DURING THE LAST STEP (a `stop`, or a breakpoint that fired while a
-        # declaration or a key went in): it is the stop the run was heading for. One a step
-        # already surveyed (the `stop` tool's own reply, a step that found it on its own) is
-        # named as recorded, never surveyed twice: a second survey numbers it again. Its
-        # registers, watches and E9 come from the step's reply when the step surveyed it (the
-        # `stop` tool), else off the record.
-        recorded = STATE.as_of_current(session)
-        last = ran[-1]["reply"] if ran else {}
-        if recorded is None:
-            final = {"stopped": _final_stop(session)}
-        elif last.get("stop_seq") == recorded["stop_seq"] and "regs" in last:
-            final = {"stopped": {**guest.recorded_head(recorded),
-                                 **{k: last[k] for k in _ENRICHED if k in last}}}
-        else:
-            final = {"stopped": _recorded_stop(session, recorded)}
-    elif running:
-        state = _wait_for_stop(session, wait, progress)
-        if state == "gone":
-            return st.reply(status="INVALID", code="session_broken",
-                            **account_of(ran, summaries, keep_last=True, since=since),
-                            steps_completed=len(ran), failed_at=_none_failed(),
-                            message="the sequence ended with the machine running and the "
-                                    "emulator is now GONE (its bound expired or it crashed)")
-        waited = True
-        if state == "stopped":
-            final = {"stopped": _final_stop(session)}
-        else:
-            final = {"verdict": contract.TIMEOUT,
-                     "note": f"the sequence ended with the machine running and it did not "
-                             f"stop within {wait:g}s"}
-    # A LIST THAT WAITED FOR A STOP EARNS A VERDICT, `TARGET` when every wait it made ended at
-    # one; a list that waited for none carries none.
-    if waited and "verdict" not in final and "still_running" not in final:
-        final = {"verdict": contract.TARGET, **final}
-    stopped = final.get("stopped")
-    return st.reply(**account_of(ran, summaries, keep_last=True, since=since,
-                                 also=[stopped] if isinstance(stopped, dict) else None),
-                    steps_completed=len(ran), failed_at=_none_failed(), **final)
-
-
-def _none_failed() -> dict[str, Any]:
-    """`failed_at` of a list no step of which failed."""
-    return contract.unavailable("no step failed")
+                        message=refused_text(refused), held=0)
+    ended = executor.run(_Dosbox(session, summaries), steps, ops, wait, progress, name)
+    if ended.code is not None:
+        return st.reply(status="INVALID", code=ended.code, message=ended.message,
+                        **ended.fields, held=ended.held)
+    return st.reply(**ended.fields, held=ended.held)
 
 
 #: What a stop's enriched reply adds to the record of it.
@@ -439,14 +325,9 @@ def _final_stop(session: ds.Session) -> dict[str, Any]:
 
 
 def validate_wait(wait: float) -> None:
-    """The bound a sequence waits for a stop, refused when it is not a bound: zero or a
-    negative one makes the decision-37 wait give up at once and report a machine that was
-    never given the time, and a huge one is not a bound."""
-    if isinstance(cast(object, wait), bool) or not isinstance(cast(object, wait), int | float) \
-            or not 0 <= wait <= ds.RUN_TO_MAX:
-        raise ds.Invalid("bad_argument",
-            f"settle_seconds is a bound from 0 (never wait) to {ds.RUN_TO_MAX} seconds; "
-                         f"got {wait!r}")
+    """The bound a sequence waits for a stop once it ran: 0 does not wait, and a negative or a
+    huge one is not a bound."""
+    ds.check_wait_bound(wait, "settle_seconds", from_zero=True)
 
 
 def _verify_after_wait(session: ds.Session, expect: str, wait_s: float, mark: int,

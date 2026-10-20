@@ -114,7 +114,8 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
             break
     fields: dict[str, Any] = {"verdict": verdict, "polls": polls}
     try:
-        reply = running.stop_reply(session, e9, e9_filter, e9_stamp, **fields)
+        reply = running.stop_reply(session, e9, e9_filter, e9_stamp,
+                                   e9_how=running.E9_BY_ARGUMENT, **fields)
         stopped_at: dict[str, str] | None = dict(STATE.last_stop["where"])
     except ds.Invalid as exc:                 # a cut pane: the account stands without the stop
         reply = st.reply(enrichment={"available": False, "why": str(exc)}, **fields)

@@ -23,12 +23,14 @@ import os
 import shutil
 import tempfile
 import time
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
 from scry_core import cancel, narrowing, screen_map
 from scry_core import reply_contract as contract
+from scry_core import session_block as blocks
 
 import dosbox_console as dcons
 import dosbox_declarations as dec
@@ -163,6 +165,9 @@ class State:
         # the files are numbered per call by `batches`, so two calls never share one.
         self.scratch: Path | None = None
         self.batches = 0
+        #: Every file a call of this session wrote and handed back, `(kind, path)` in order:
+        #: what `captures` lists, re-read when it is asked.
+        self.written: list[tuple[str, str]] = []
         # THE SESSION'S SCRATCH: where a picture or a series goes when the call names no
         # `dest`, made on first use and removed with the session (`clear_running_state`). A
         # path a reply places there is gone at `close`; a `dest` is what outlives the session.
@@ -336,14 +341,15 @@ class State:
     def clear_running_state(self) -> None:
         """What a session's end takes with it: the last stop, the queue, the armed rows, any
         account not yet handed to a reply, and the session's scratch with its files. Called by
-        `start`, `close` and the burial of a dead session, so `status` never dates an answer by
-        a stop of a session that is gone."""
+        `start`, `close` and a cancelled call that killed the session, so `status` never dates
+        an answer by a stop of a session that is gone."""
         self.last_stop.clear()
         self.pending.update(arm=[], disarm=[], load=None, dirty=False, drained_seq=-1)
         self.armed.clear()
         self.applied_last.clear()
         self.found_stop_last = {}
         self.e9_mark.update(count=0, offset=0)    # the next session's log starts empty
+        self.written.clear()                      # its files are the next session's to list
         self.scan_iterations = None               # the debugger's scan dies with it
         self.scan_cell_bytes = None
         self.retrace_pending = False              # and so does its armed retrace
@@ -440,10 +446,31 @@ def reply(status: str = "ok", **fields: Any) -> dict[str, Any]:
 NO_SESSION_BLOCK: dict[str, Any] = {"alive": False, "running": False, "altered": False}
 
 
-def session_block() -> dict[str, Any]:
-    """The `session` block every reply closes with, read off the session as it is now, and
-    the same three keys saying nothing runs when there is none."""
-    return STATE.session.state() if STATE.session is not None else dict(NO_SESSION_BLOCK)
+#: The facts of the block that are alarms while they hold, each with the test that says so: a conf
+#: changed under the session (or unreadable), terminal bytes dropped, a reader that died.
+_ALARM_WHEN: dict[str, Callable[[Any], bool]] = {
+    "conf_changed_on_disk": lambda v: v is not False,
+    "terminal_bytes_dropped": lambda v: bool(v),
+    "drain_alive": lambda v: v is False,
+    "drain_ended": lambda v: True,
+}
+#: What every reply carries whatever it holds.
+_ALWAYS = ("alive", "running", "altered")
+
+
+def session_block(whole: bool = False) -> dict[str, Any]:
+    """The `session` block every reply closes with, read off the session as it is now: its
+    alarms on every reply, what is fixed for the session or only counts on `start` and
+    `status` (`scry_core.session_block`), and the same three keys saying nothing runs when there
+    is none."""
+    if STATE.session is None:
+        return dict(NO_SESSION_BLOCK)
+    alarms: dict[str, Any] = {}
+    fixed: dict[str, Any] = {}
+    for key, value in STATE.session.state().items():
+        alarm = key in _ALWAYS or (key in _ALARM_WHEN and _ALARM_WHEN[key](value))
+        (alarms if alarm else fixed)[key] = value
+    return blocks.block(alarms, fixed, whole)
 
 
 def extend(built: dict[str, Any], **fields: Any) -> dict[str, Any]:

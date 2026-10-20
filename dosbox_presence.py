@@ -12,6 +12,7 @@ session has moved the guest's mouse: a program driven by keys alone shows the ed
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Protocol
 
 from scry_core import presence
@@ -91,6 +92,10 @@ class ChannelAdapter:
         # and the overlay goes on the first one there is. An output it can never draw on is.
         if "output=undrawable" in self.answer.split():
             raise presence.Unavailable(NO_OUTPUT)
+
+    def repaint(self, still: Callable[[], bool]) -> None:
+        """Nothing: a guest parked at the debugger keeps its loop drawing frames, so the
+        `PRESENCE` just answered is drawn without a command of the server's own."""
 
 
 def pointer_moved(shown: presence.Shown) -> None:

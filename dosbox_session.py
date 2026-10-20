@@ -41,6 +41,7 @@ from typing import Any
 
 from scry_core import avi, cancel, guardian, judges, live_host, presence
 from scry_core import reply_contract as contract
+from scry_core import vocabulary as vocab
 from scry_core.progress import PROGRESS_EVERY_S as PROGRESS_EVERY_S
 from scry_core.progress import Progress as Progress
 from scry_core.progress import no_progress as no_progress
@@ -156,6 +157,8 @@ NUDGE = "BPLIST"
 # `step(mode="into")` reports `completed: 1` for an unknown number of instructions.
 # NOT MEASURED HERE either way, so nothing here asserts it.
 STEP_KEYS = {"over": b"\x1b[21~", "into": b"\x1b[23~"}
+#: The ways to step, as `step` takes them.
+STEP_MODES = tuple(STEP_KEYS)
 
 # F5, "Run.". It is a CONSTANT because two methods send it -- `resume` and the resume
 # inside `run_to` -- and a second copy of an escape sequence is a second thing to get
@@ -288,6 +291,10 @@ SYM_SAVE_NAME = "SYMSBK.BIN"
 # breakpoint that is going to fire and short enough that a session is never wedged for
 # an afternoon by one call.
 RUN_TO_MAX = 10 * 60
+#: A wait's schema half, `Annotated[float, WAIT_BOUNDS]`, as `check_wait_bound` judges it: above
+#: 0 and at most `RUN_TO_MAX`; `WAIT_FROM_ZERO_BOUNDS` for the waits whose 0 means no wait.
+WAIT_BOUNDS = vocab.bounds(0, RUN_TO_MAX, open_lo=True)
+WAIT_FROM_ZERO_BOUNDS = vocab.bounds(0, RUN_TO_MAX)
 
 # A BOUNDED WAIT REPORTS PROGRESS WITH A MESSAGE, through a callback the server hands in, and
 # polls for its call's cancellation at every turn: the vocabulary is `scry_core.progress`'s and
@@ -498,18 +505,20 @@ def check_register_value(key: str, value: int) -> None:
             f"{(1 << bits) - 1:#x}): nothing was sent")
 
 
+#: An interrupt number and AH are one byte each.
+BYTE_MAX = 0xFF
+
+
 def check_interrupt(number: int, ah: int | None) -> None:
-    if not 0 <= number <= 0xFF:
+    if not 0 <= number <= BYTE_MAX:
         raise Invalid("bad_argument", f"an interrupt number is 0x00 to 0xFF; got {number}")
-    if ah is not None and not 0 <= ah <= 0xFF:
+    if ah is not None and not 0 <= ah <= BYTE_MAX:
         raise Invalid("bad_argument", f"AH is 0x00 to 0xFF; got {ah}")
 
 
 def check_step(mode: str, count: int) -> None:
-    if mode not in STEP_KEYS:
-        raise Invalid("bad_argument", f"{mode!r} is not a way to step. It is one of "
-                      f"{', '.join(sorted(STEP_KEYS))}: `over` runs a CALL to its "
-                      f"return, `into` follows it")
+    vocab.one_of("mode", mode, STEP_MODES,
+                 ": `over` runs a CALL to its return, `into` follows it")
     if not 1 <= count <= STEP_MAX:
         raise Invalid("bad_argument",
             f"a step count is 1 to {STEP_MAX}; got {count}. Each step is "
@@ -517,16 +526,19 @@ def check_step(mode: str, count: int) -> None:
                       f"the ceiling is a cost bound: past it, use `run_to`")
 
 
-def check_wait_bound(seconds: float) -> None:
-    """A wait is a bound: more than zero and at most `RUN_TO_MAX`, because with no ceiling
-    the call would sit on something that is never going to arrive, holding the session's
-    lock while it did."""
-    if not 0 < seconds <= RUN_TO_MAX:
+def check_wait_bound(seconds: object, name: str = "seconds", from_zero: bool = False) -> None:
+    """THE ONE JUDGE OF A WAIT: seconds, more than zero (from zero where 0 means no wait) and at
+    most `RUN_TO_MAX`, because with no ceiling the call would sit on something that is never
+    going to arrive, holding the session's lock while it did. Types are judged too: a `perform`
+    step hands its arguments over untyped. Compared, never converted: a NaN fails the floor, an
+    infinity or an integer too large for a float the ceiling."""
+    floor = "from 0 (no wait)" if from_zero else "more than 0"
+    if (isinstance(seconds, bool) or not isinstance(seconds, int | float)
+            or not (seconds >= 0 if from_zero else seconds > 0) or seconds > RUN_TO_MAX):
         raise Invalid("bad_argument",
-            f"a wait of {seconds} is not a bound. It is more than zero "
-                      f"and at most {RUN_TO_MAX}s: with no ceiling this would sit "
-                      f"waiting for something that is never going to arrive, holding "
-                      f"the session's lock while it did")
+            f"{name}={seconds!r} is not a bound: it is {floor} and at most {RUN_TO_MAX} s, "
+            f"because with no ceiling the call would hold the session's lock waiting for "
+            f"something that may never arrive")
 
 
 def check_dump_length(length: int) -> None:
@@ -1233,21 +1245,14 @@ class Session:
         the wrong four rows.
         """
         check_segment(seg)
-        # THE OFFSET'S WIDTH IS THE CPU MODE'S: the shipped clamp was a flat
-        # 0xFFFF, which refuses EVERY 32-bit protected-mode address -- and every DJGPP
-        # global is one (`_main` sits at 0x16DF20). `run_to` and `watch` both take the
-        # ceiling from `offset_ceiling(mode)`; `read_memory` was the THIRD site nobody
-        # brought in, and `dosbox_console.offset_ceiling`'s own docstring already named the family.
-        # `where()` gives the mode AND refuses a running machine, before the `D` goes out.
+        # THE OFFSET'S WIDTH IS THE CPU MODE'S (`check_offset`): a flat 0xFFFF would refuse every
+        # 32-bit protected-mode address, and every DJGPP global is one. `where()` gives the mode
+        # AND refuses a running machine, before the `D` goes out.
         # A CACHED `mode` skips that survey: a stop reply has just read the
         # machine once and passes the mode in, so N show watches do not re-survey it N
         # times. It is only ever passed when the machine is known stopped (the reply read
         # `where` to get here), so the running-machine guard it bypasses is already met.
-        top = dcons.offset_ceiling(mode if mode is not None else self.where()["mode"])
-        if not 0 <= off <= top:
-            raise Invalid("bad_argument",
-                f"an offset is 0x0 to 0x{top:X} in this CPU mode; got 0x{off:X}."
-                          f" In real mode an offset past 0xFFFF addresses nothing")
+        dcons.check_offset(off, mode if mode is not None else self.where()["mode"])
         rows = dcons.parse_data_view(self.command(f"D {seg:04X}:{off:04X}"))
         if not rows:
             # NO CAUSE IS NAMED, per this class's own rule. An empty parse has several
@@ -1343,10 +1348,7 @@ class Session:
             raise Invalid("bad_argument", "a write needs at least one byte")
         check_segment(seg)
         mode = mode if mode is not None else self.where()["mode"]
-        top = dcons.offset_ceiling(mode)
-        if not 0 <= off <= top:
-            raise Invalid("bad_argument",
-                f"an offset is 0x0 to 0x{top:X} in this CPU mode; got 0x{off:X}")
+        top = dcons.check_offset(off, mode)
         # THE LAST BYTE IS BOUNDED TOO. A write is a range, and a range starting under the
         # ceiling whose tail runs past it would send `SM seg:10000`, an offset the segment
         # cannot address, to a debugger that takes it without a word.
@@ -1526,11 +1528,9 @@ class Session:
 
         WHAT `halted: False` DOES NOT ESTABLISH, said out loud: it is the ABSENCE of a
         marker, and an emulator that has gone produces the same absence. What tells
-        those apart is `alive` -- but it lives in the reply's `session` block, so it is
-        there only while there IS a session to report. An emulator already found dead is
-        buried by the server's `live`, which then REFUSES, and that reply carries the
-        no-session block, whose `alive` is false; the refusal's own text says what was
-        buried, exactly as `live` already does for `altered`.
+        those apart is `alive`, in the reply's `session` block. An emulator found dead is
+        `session_broken` at the server's `live`, whose block says `alive: false` beside the
+        session's own `altered`.
         """
         self._write(RUN_KEY)
         text = self._collect(settle=1.0, timeout=8.0)
@@ -1774,12 +1774,7 @@ class Session:
         # accepted and listed as `BP 0087:12345`, because its list prints a MINIMUM of
         # four hex digits rather than exactly four, which is why the `:04X` this
         # compares with still matches a wider one.
-        top = dcons.offset_ceiling(stopped["mode"])
-        if not 0 <= off <= top:
-            raise Invalid("bad_argument",
-                f"an offset is 0x0 to 0x{top:X} in {stopped['mode']} mode; got "
-                f"0x{off:X}. In real mode an offset past 0xFFFF addresses nothing, and "
-                f"this debugger would accept it and then never fire")
+        top = dcons.check_offset(off, stopped["mode"])
         target = f"{seg:04X}:{off:04X}"
         ctl = None
         if control is not None:
@@ -2102,10 +2097,7 @@ class Session:
         # docstring says must never land on a running machine.
         cpu = self.where()["mode"]
         check_segment(segment)
-        top = dcons.offset_ceiling(cpu)
-        if not 0 <= offset <= top:
-            raise Invalid("bad_argument", f"an offset is 0x0 to 0x{top:X} in {cpu} mode; got "
-                          f"0x{offset:X}")
+        dcons.check_offset(offset, cpu)
         # THE THREE LIST SPELLINGS ARE MEASURED, NOT DERIVED. What the debugger
         # PRINTS in `BPLIST` is not what you SEND, and it is not uniform:
         #
@@ -2161,12 +2153,7 @@ class Session:
         """
         stopped = self.where()      # refuses a running machine BEFORE arming
         check_segment(seg)
-        top = dcons.offset_ceiling(stopped["mode"])
-        if not 0 <= off <= top:
-            raise Invalid("bad_argument",
-                f"an offset is 0x0 to 0x{top:X} in {stopped['mode']} mode; got "
-                          f"0x{off:X}. In real mode an offset past 0xFFFF addresses "
-                          f"nothing, and the debugger would accept it and then never fire")
+        dcons.check_offset(off, stopped["mode"])
         target = f"{seg:04X}:{off:04X}"
         self.altered = True
         self.command(f"BP {target}")
@@ -2189,9 +2176,8 @@ class Session:
         is gone from the list read after the delete.
         """
         stopped = self.where()
-        top = dcons.offset_ceiling(stopped["mode"])
-        if not (0 <= seg <= 0xFFFF and 0 <= off <= top):
-            raise Invalid("bad_argument", f"{seg:X}:{off:X} is not an address this mode can hold")
+        check_segment(seg)
+        dcons.check_offset(off, stopped["mode"])
         want = ("BP", seg, off)
         target = f"BP {seg:04X}:{off:04X}"
         mine = [b for b in self.breakpoints() if dcons.bp_row_target(b["entry"]) == want]
@@ -2409,13 +2395,14 @@ class Session:
         with an empty name and an all-zero base, which is indistinguishable from a real
         null-base selector.
         """
+        # ASCII ONLY BEFORE THE CASE IS FOLDED: `upper()` turns `ſs` into `SS`, which the
+        # published pattern refuses.
+        if not (reg.isascii() and reg.upper() in SELINFO_REGS):
+            vocab.one_of("base_from", reg, SELINFO_REGS,
+                         ", any case taken. The debugger answers any other register with a "
+                         "ZEROED descriptor rather than an error, which reads as a real "
+                         "selector based at 0")
         name = reg.upper()
-        if name not in SELINFO_REGS:
-            raise Invalid("bad_argument",
-                f"{reg!r} is not a segment register this debugger reports. It takes "
-                f"one of {', '.join(SELINFO_REGS)}, and it answers anything else with "
-                f"a ZEROED descriptor rather than an error, which reads as a real "
-                f"selector based at 0")
         out = self.command(f"SELINFO {name}")
         marker = f"{SELINFO_ECHO} {name}:"
         at = out.rfind(marker)
@@ -2524,8 +2511,7 @@ class Session:
         machine parked: the stub takes its commands on the timer tick, which a machine
         stopped at the debugger never reaches. The caller has checked the stub is resident."""
         check_wait_bound(seconds)
-        folder = (self.launch.captures_dir if self.launch.captures_dir is not None
-                  else self.launch.cwd / "capture")
+        folder = frames.folder(self)
         target = None if dest is None else paths.fresh_dest("dest", dest)
         if self.at_debugger():
             raise Invalid("not_running",
@@ -2720,7 +2706,8 @@ class Session:
             os.killpg(os.getpgid(self.proc.pid), sig)
 
     def state(self) -> dict[str, object]:
-        """What every reply carries, `altered` included."""
+        """The whole `session` block; `dosbox_state.session_block` splits it into what rides on
+        every reply and what rides on `start`, `status` and `close`."""
         changed: bool | dict[str, Any]
         try:
             changed = (self.launch.conf.is_file()
@@ -2754,13 +2741,13 @@ class Session:
             "drain_alive": self._drainer is not None and self._drainer.is_alive(),
             # WHY THE READER STOPPED, present only once it has: an empty reason is no datum.
             **({"drain_ended": self.drain_ended} if self.drain_ended else {}),
-            # WHETHER THIS SESSION RECORDS, said up front: without it the only way to learn
-            # was to call `captures` and read the refusal.
+            # WHETHER THIS SESSION RECORDS, and where, so a caller need not infer it from a
+            # `captures` with no `avi` row.
             "captures": (str(self.launch.captures_dir) if self.launch.captures_dir is not None
                          else "on, in the emulator's own directory")
                         if self.launch.capture_video else "off",
-            # WHERE `state_save` writes and `state_list` reads, said on every reply so a
-            # project knows which directory holds its states without asking twice.
+            # WHERE `state_save` writes and `state_list` reads, so a project knows which
+            # directory holds its states without asking twice.
             "state_dir": str(self.launch.state_dir) if self.launch.state_dir is not None
                          else "the emulator's own save/ under its working directory",
         }

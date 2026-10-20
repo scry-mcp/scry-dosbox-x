@@ -15,6 +15,7 @@ from test_dosbox_x_server import _names, clean_session, install  # noqa: F401
 
 import dosbox_find as finder
 import dosbox_launch as dlaunch
+import dosbox_placement as placement
 import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_symbols as dsym
@@ -80,7 +81,8 @@ def test_a_state_wait_out_of_bounds_is_judged_with_no_session() -> None:
     ("set_register", {"name": "cs", "value": -1}, "negative"),
     ("scan_start", {"ref": "0000:0400", "length": 3, "cell_bytes": 2}, "whole number"),
     ("run_to", {"ref": "0000:0100", "control": ""}, "control"),
-    ("breakpoint_at", {"ref": "[g_p]", "by": "pointer"}, "auto, symbol or address"),
+    ("breakpoint_at", {"ref": "[g_p]", "by": "pointer"},
+     "by is one of ('auto', 'symbol', 'address')"),
     ("breakpoint_at", {"ref": "[g_p]"}, "not declared through a pointer"),
     ("watch_add", {"ref": "foo", "mode": "show", "length": 4, "by": "pointer"},
      "not a pointer ref"),
@@ -88,9 +90,9 @@ def test_a_state_wait_out_of_bounds_is_judged_with_no_session() -> None:
     ("send_keys", {"keys": ["bogus_key_name"]}, "unknown key name"),
     ("find", {"ref": "1000:0000", "data_hex": "00", "length": -5}, "-5"),
     ("find", {"ref": "1000:0000", "data_hex": "0000", "length": 1}, "shorter"),
-    ("resume", {"seconds": "5"}, "not a finite number"),
-    ("resume", {"seconds": math.nan}, "not a finite number"),
-    ("resume", {"seconds": math.inf}, "not a finite number"),
+    ("resume", {"seconds": "5"}, "is not a bound"),
+    ("resume", {"seconds": math.nan}, "is not a bound"),
+    ("resume", {"seconds": math.inf}, "is not a bound"),
 ])
 def test_a_value_wrong_with_no_machine_is_bad_argument_not_no_session(
         tool: str, kw: dict[str, Any], words: str) -> None:
@@ -131,7 +133,7 @@ def test_a_step_value_of_the_wrong_type_is_a_refusal_not_a_traceback(
 
 def test_watch_add_names_its_own_by_words() -> None:
     _refused(server.watch_add(ref="x", mode="show", length=4, by="nope"), "bad_argument",
-             "auto, symbol, address or pointer")
+             "by is one of ('auto', 'symbol', 'address', 'pointer')")
 
 
 # ------------------------------------------------------------------ run_to and the clears
@@ -208,3 +210,20 @@ def test_a_start_plan_is_judged_whole_before_anything_starts(tmp_path: Path) -> 
         # the control: a plan of the rule reaches the boot
         _refused(server.start(**kw, plan=[{"op": "registers"}]), "session_broken")
     assert len(booted) == 1
+
+
+@pytest.mark.parametrize("ref", ["0814:-10", "0038:+10", "-1:0010", "0038:1_0", "0038: "])
+def test_a_signed_or_malformed_offset_is_refused_before_the_session_gate(ref: str) -> None:
+    for tool, kw in (("read_memory", {"ref": ref}),
+                     ("memdump", {"ref": ref, "length": 16, "dest": "/tmp/nope.bin"})):
+        out = cast(dict[str, Any], getattr(server, tool)(**kw))
+        assert out["code"] == "bad_argument" and "not a hex SEG:OFF" in out["message"], out
+
+
+def test_a_seg_off_takes_hex_with_or_without_0x_as_every_address_argument_does() -> None:
+    """One hex grammar: `0x` is taken on either half, as `hex_arg` takes it, so a declaration
+    stored in that spelling still arms."""
+    assert placement.parse_seg_off("0x0814:0x10") == placement.parse_seg_off("0814:10") == (
+        0x814, 0x10)
+    with pytest.raises(ds.Invalid, match="no sign"):
+        placement.parse_seg_off("0x-1:10")

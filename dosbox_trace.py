@@ -29,6 +29,7 @@ from pathlib import Path
 from typing import Any, TypeVar
 
 from scry_core import reply_contract as contract
+from scry_core import vocabulary as vocab
 
 import dosbox_binary as binaries
 import dosbox_collect as dcollect
@@ -44,7 +45,8 @@ from dosbox_state import STATE
 T = TypeVar("T")
 
 #: The four shapes, by the debugger's word for each, in its own order.
-SHAPES = dict(zip(("normal", "short", "long", "cs_ip"), ds.LOG_WORDS, strict=True))
+SHAPE_WORDS = ("normal", "short", "long", "cs_ip")
+SHAPES = dict(zip(SHAPE_WORDS, ds.LOG_WORDS, strict=True))
 #: The file the debugger writes, in the emulator's working directory.
 LOG_FILE = "LOGCPU.TXT"
 #: The most instructions one call executes, chosen from the heaviest shape's measured cost so
@@ -76,7 +78,6 @@ NO_LINEAR = "no linear address"
 #: runs nothing and answers `command not recognized`, which leaves that command on its input line
 #: (REFERENCE.md, The console).
 NOT_CREATED_LINE = "DEBUG: Logfile couldn't be created."
-E9_BY_LOG = "this tool takes no `e9`: `log(pattern=\".\", channel=\"guest\")` reads the lines"
 
 DYNAMIC_CORE = ("on a dynamic core the debugger logs at block boundaries: trace on the normal "
                 "core, `start(flags=[\"-set\", \"cpu core=normal\"])`")
@@ -95,8 +96,7 @@ def check_arguments(instructions: object, shape: object) -> None:
         raise ds.Invalid("bad_argument",
             f"instructions={instructions!r} is not a whole number from 1 to {INSTRUCTIONS_MAX}: "
             f"how many instructions the trace executes")
-    if not isinstance(shape, str) or shape not in SHAPES:
-        raise ds.Invalid("bad_argument", f"shape={shape!r} is not one of {', '.join(SHAPES)}")
+    vocab.one_of("shape", shape, SHAPE_WORDS)
 
 
 def set_path(path: Path) -> Path:
@@ -301,7 +301,7 @@ def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: 
                                   trace={"path": str(collected), "closed": False})
     kept = {"path": str(collected), "bytes": collected.stat().st_size, "shape": shape}
     try:
-        reply = running.stop_reply(session, retrace_may_stop=not ran_out, e9_how=E9_BY_LOG)
+        reply = running.stop_reply(session, retrace_may_stop=not ran_out)
     except ds.Invalid as exc:
         raise ds.Invalid("unexpected_answer",
             f"the stop the trace ended at could not be surveyed ({exc}), so its count cannot be "

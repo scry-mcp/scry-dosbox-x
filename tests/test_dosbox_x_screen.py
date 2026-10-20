@@ -7,6 +7,7 @@ changes a capture (one word edited), it says so.
 """
 from __future__ import annotations
 
+import asyncio
 import gzip
 import hashlib
 import os
@@ -1611,9 +1612,18 @@ def test_the_screen_wait_description_names_every_key_its_replies_carry(
     replies.append(cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5)))
     assert [r.get("code", r.get("verdict")) for r in replies] == [
         "TARGET", "TARGET", "wait_stopped", "TIMEOUT"], replies
-    doc = server.screen_wait.__doc__ or ""
-    unnamed = sorted({k for r in replies for k in r} - ENVELOPE
-                     - {k for r in replies for k in r if f"`{k}`" in doc})
+    # EACH REPLY AGAINST ITS OWN CLAUSE of the description the client reads: a key named only in
+    # another reply's clause (`text` is also the argument) is not named for this one.
+    desc = next(t.description for t in asyncio.run(server.mcp.list_tools())
+                if t.name == "screen_wait") or ""
+    ran = desc[desc.index("Either, when it ran:"):desc.index("Refused:")]
+    found = desc[desc.index("Reply:"):desc.index("The bound:")] + ran
+    bound = desc[desc.index("The bound:"):desc.index("Either, when it ran:")] + ran
+    stopped = desc[desc.index("(`wait_stopped`"):desc.index("a screen it cannot read")]
+    clauses = [found, found, stopped, bound]
+    unnamed = [(r.get("code", r.get("verdict")), k) for r, clause in zip(replies, clauses,
+                                                                         strict=True)
+               for k in r if k not in ENVELOPE and f"`{k}`" not in clause]
     assert not unnamed, unnamed
 
 

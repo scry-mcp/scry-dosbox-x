@@ -43,7 +43,7 @@ def test_a_bricks_session_replays_twice_and_an_edited_one_diverges(tmp_path: Pat
         assert server.resume()["status"] == "ok"
         server.send_keys(keys=["right"])
         document = tmp_path / "bricks-session.json"
-        exported = server.perform_export(path=str(document))
+        exported = server.perform_export(dest=str(document))
     finally:
         server.close()
     assert exported["status"] == "ok", exported.get("summary")

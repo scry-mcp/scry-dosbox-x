@@ -200,7 +200,7 @@ def _args(tmp_path: Path) -> dict[str, dict[str, Any]]:
         "golden_check": {"manifest": "/nonexistent/m.json",
                          "checksums": "/nonexistent/g.sha256"},
         "map_load": {"path": str(tmp_path / "none.scry-map.json")},
-        "map_save": {"path": str(tmp_path / "x.scry-map.json")},
+        "map_save": {"dest": str(tmp_path / "x.scry-map.json")},
         "map_add": {"screen": "s", "match": [[0, 0, 1, 1]]}, "map_find": {},
     }
 

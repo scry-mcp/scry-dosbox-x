@@ -310,9 +310,11 @@ def parse_cpu(text: str) -> dict[str, Any]:
     cr, fl, gdt, idt, tr, ldt = (x for x in m if x is not None)
     return {"cr0": cr[1], "cr2": cr[2], "cr3": cr[3], "cpl": int(cr[4]),
             "eflags": fl[1], "vm": int(fl[2]), "iopl": int(fl[3]), "nt": int(fl[4]),
-            "gdt": {"base": gdt[1], "limit": gdt[2]}, "idt": {"base": idt[1], "limit": idt[2]},
+            # THE TABLE REGISTERS TAKE INTEL'S NAMES, `gdtr` and `ldtr`: `gdt` and `ldt` are the
+            # descriptor lists of the same reply, and one word names one thing.
+            "gdtr": {"base": gdt[1], "limit": gdt[2]}, "idt": {"base": idt[1], "limit": idt[2]},
             "tr": {"selector": tr[1], "base": tr[2], "limit": tr[3]},
-            "ldt": {"selector": ldt[1], "base": ldt[2], "limit": ldt[3]}}
+            "ldtr": {"selector": ldt[1], "base": ldt[2], "limit": ldt[3]}}
 
 
 #: cr0's protection-enable and paging bits.

@@ -82,7 +82,7 @@ def check_watch_mode(mode: str | None) -> None:
     """The mode is a word of the vocabulary, judged before anything about the size: a
     caller who typed a mode that does not exist is told that, not that the width is missing."""
     if mode not in WATCH_MODES:
-        raise DeclarationError(f"a watch needs a mode, one of {WATCH_MODES}; got {mode!r}")
+        raise DeclarationError(f"mode is one of {WATCH_MODES}; got {mode!r}")
 # A watch is N BYTES AT A NAME with a declared width and format: a symbol
 # table gives addresses, not types, so there are no struct fields here.
 # A watch is BYTES AT A NAME read as a FORMAT: a scalar (N of them, `width` bytes), an

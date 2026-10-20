@@ -23,9 +23,11 @@ from dataclasses import dataclass
 from typing import Any, cast
 
 from scry_core import reply_contract as contract
+from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Code, unavailable
 
 import dosbox_launch as dlaunch
+import dosbox_log_reader as logreader
 import dosbox_logs as dlogs
 import dosbox_running as running
 import dosbox_session as ds
@@ -104,6 +106,10 @@ REPORT_WAIT_S = 5.0     # a report is two ticks away; this bounds a stub that ne
 
 BUTTONS = {"left": 0, "right": 1, "middle": 2}
 MAX_COORD = 0x7FFF      # INT 33h takes a coordinate in a signed 16-bit register
+#: The modifiers as `send_keys` names them, in any case.
+MODIFIER_WORDS = tuple(SCAN_MODIFIERS)
+#: The buttons as `send_mouse` names them.
+BUTTON_WORDS = tuple(BUTTONS)
 ACTIONS = ("click", "double", "down", "up")
 UNITS = ("screen", "mouse")
 
@@ -368,10 +374,11 @@ def _verify(session: ds.Session, kind: str, post: Any, expect: str | None,
 
 
 def check_expectation(expect: str | None, seconds: float | None) -> None:
-    """The reaction half's arguments: a non-empty pattern that compiles, and a bound only
-    beside it. TYPES ARE CHECKED because a `perform` step hands its arguments over untyped
-    (JSON, no signature check on values), and a TypeError out of `re.compile` or `0 < "3"`
-    is a traceback the tool wrapper deliberately does not translate."""
+    """THE ONE JUDGE OF AN EXPECTATION, an input's and `drive`'s: a non-empty pattern that
+    compiles, and a bound only beside it. TYPES ARE CHECKED
+    because a `perform` step hands its arguments over untyped (JSON, no signature check on
+    values), and a TypeError out of `re.compile` or `0 < "3"` is a traceback the tool wrapper
+    deliberately does not translate."""
     if expect is None:
         if seconds is not None:
             raise ds.Invalid("bad_argument",
@@ -381,14 +388,8 @@ def check_expectation(expect: str | None, seconds: float | None) -> None:
         return
     dlogs.compiled(expect)
     dlogs.compiled(program_reaction(expect))
-    wait_s = EFFECT_WAIT_DEFAULT_S if seconds is None else seconds
-    if isinstance(cast(object, wait_s), bool) or not isinstance(cast(object, wait_s),
-                                                                  int | float):
-        raise ds.Invalid("bad_argument", f"`seconds` is a number; got {seconds!r}")
-    if not 0 < wait_s <= ds.RUN_TO_MAX:
-        raise ds.Invalid("bad_argument",
-            f"a wait of {wait_s}s for the effect is not a bound: it is more "
-                         f"than zero and at most {ds.RUN_TO_MAX}s. Refused before posting")
+    if seconds is not None:
+        ds.check_wait_bound(seconds)
 
 
 def check_keys(keys: list[str], modifiers: list[str] | None, expect: str | None = None,
@@ -449,17 +450,13 @@ def check_mouse(x: int | None, y: int | None, button: str | None, action: str = 
                                   or not 0 <= value <= MAX_COORD):
             raise ds.Invalid("bad_argument",
                 f"`{name}` is a whole number from 0 to {MAX_COORD}, in `units`; got {value!r}")
-    if button is not None and button not in BUTTONS:
-        raise ds.Invalid("bad_argument",
-            f"a mouse button is one of {sorted(BUTTONS)}; got {button!r}")
-    if action not in ACTIONS:
-        raise ds.Invalid("bad_argument", f"`action` is one of {list(ACTIONS)}; got {action!r}")
+    if button is not None:
+        vocab.one_of("button", button, BUTTON_WORDS)
+    vocab.one_of("action", action, ACTIONS)
     if action != "click" and button is None:
         raise ds.Invalid("bad_argument", f"`action={action!r}` acts on a `button`; name one")
-    if units not in UNITS:
-        raise ds.Invalid("bad_argument",
-            f"`units` is 'screen' (cells in a text mode, pixels in a graphics one, as "
-            f"`screen_view` counts them) or 'mouse' (the driver's own coordinates); got {units!r}")
+    vocab.one_of("units", units, UNITS, ": `screen` counts cells in a text mode and pixels in "
+                 "a graphics one, as `screen_view` does; `mouse` the driver's own coordinates")
     check_expectation(expect, seconds)
 
 
@@ -556,10 +553,9 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
     `aimed` is the control a `target` named (`screen_map.Maps.target`), whose screen the guest
     must still show the kind and size of."""
     check_mouse(x, y, button, action, units, expect, seconds)
-    if session.launch.logfile is None:
-        raise ds.Invalid("no_channel",
-            "send_mouse reads the pointer back off the guest's E9 log, and this session was "
-            "started without a logfile: start it with logfile= to use the mouse")
+    # THE POINTER IS READ BACK off the guest's E9 log: no logfile, no mouse.
+    logreader.require_logfile(session, "E9 log to read the pointer back from: start it with "
+                                       "logfile= to use the mouse")
     _refuse_stopped(session, "a mouse event")
     require_stub(session)
     before = _report(session)

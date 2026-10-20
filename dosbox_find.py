@@ -30,6 +30,7 @@ from pathlib import Path
 from typing import Any
 
 from scry_core import reply_contract as contract
+from scry_core import vocabulary as vocab
 
 import dosbox_console as dcons
 import dosbox_dump as dumping
@@ -62,6 +63,8 @@ SCAN_NONE_TO_CANCEL = "No active search instances to cancel."
 SCAN_NONE_TO_LIST = "No active search instances to list from."
 #: The cells a scan reads, by their size in bytes, and the letter the debugger takes for each.
 CELLS = {1: "B", 2: "W", 4: "D"}
+#: The cell sizes, as `scan_start` takes them.
+CELL_BYTES = tuple(CELLS)
 OPERATORS = ("=", "!", ">", ">=", "<", "<=")
 
 
@@ -228,9 +231,7 @@ def _unexpected(session: ds.Session, out: str, wanted: str) -> ds.Invalid:
 def check_scan_range(length: int, cell_bytes: int) -> None:
     """A scan's range as the debugger takes it: a cell of a size it reads, and a length of whole
     cells within the six hex digits the debugger reads."""
-    if isinstance(cell_bytes, bool) or cell_bytes not in CELLS:
-        raise ds.Invalid("bad_argument",
-                         f"cell_bytes={cell_bytes!r} is not one of {sorted(CELLS)}")
+    vocab.one_of("cell_bytes", cell_bytes, CELL_BYTES)
     if length <= 0:
         raise ds.Invalid("bad_argument", f"length={length} is not a byte count")
     if length > 0xFFFFFF:
@@ -256,8 +257,7 @@ def check_filter(operator: str, value: int | None, limit: int = HITS_DEFAULT) ->
     if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= HITS_MAX:
         raise ds.Invalid("bad_argument", f"limit={limit!r} is outside 1..{HITS_MAX}, how many "
                          f"survivors a filter lists; above {HITS_MAX}, filter again")
-    if operator not in OPERATORS:
-        raise ds.Invalid("bad_argument", f"operator={operator!r} is not one of {OPERATORS}")
+    vocab.one_of("operator", operator, OPERATORS)
     if value is not None and (isinstance(value, bool) or not isinstance(value, int)
                               or value < 0):
         raise ds.Invalid("bad_argument",

@@ -32,8 +32,8 @@ INVENTORY = frozenset({
     ("capture_frame", "capture_path"), ("symbols_load", "path"), ("symbols_load", "types"),
     ("comment_save", "dest"), ("comment_load", "path"), ("start", "binary"),
     ("build_check", "binary"), ("machine_map", "dest"), ("series_capture", "dest"),
-    ("series_capture", "capture_path"), ("map_load", "path"), ("map_save", "path"),
-    ("perform_export", "path"),
+    ("series_capture", "capture_path"), ("map_load", "path"), ("map_save", "dest"),
+    ("perform_export", "dest"),
 })
 
 
@@ -174,8 +174,8 @@ def _base(tool: str, tmp_path: Path) -> dict[str, Any]:
         "build_check": {},
         "machine_map": {"dest": str(tmp_path / "m.json")},
         "map_load": {"path": str(tmp_path / "m.scry-map.json")},
-        "map_save": {"path": str(tmp_path / "m.scry-map.json")},
-        "perform_export": {"path": str(tmp_path / "p.json")},
+        "map_save": {"dest": str(tmp_path / "m.scry-map.json")},
+        "perform_export": {"dest": str(tmp_path / "p.json")},
         "series_capture": {"frames": [0], "dest": str(tmp_path / "series"),
                            "capture_path": str(tmp_path / "c.avi")},
     }

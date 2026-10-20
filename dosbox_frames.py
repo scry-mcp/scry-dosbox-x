@@ -14,46 +14,57 @@ import dosbox_paths as paths
 import dosbox_session as ds
 
 
+def folder(ses: ds.Session) -> Path:
+    """Where the emulator writes a capture: `captures_dir`, else `capture/` under its working
+    directory, which is DOSBox-X's own default."""
+    given = ses.launch.captures_dir
+    return given if given is not None else ses.launch.cwd / "capture"
+
+
+def videos(ses: ds.Session) -> list[dict[str, object]]:
+    """The video this session recorded, largest last, each with what is IN it: its frame count
+    and its index, not just its size, because a capture that recorded nothing and one that
+    recorded the whole session are both files of plausible sizes. None when it records nothing.
+
+    TWO FILES IS THE NORMAL CASE, not a fault: DX-CAPTURE restarts its recording when the guest
+    changes video mode, so a program that boots in DOS text and then goes graphical leaves a
+    small first file and the real one after it."""
+    where = folder(ses)
+    if not ses.launch.capture_video or not where.is_dir():
+        return []
+    out: list[dict[str, object]] = []
+    # THE FACTS OF A FILE THAT HAS NOT CHANGED ARE THE FACTS READ LAST TIME: `captures` is
+    # polled while a recording runs, and reading every capture whole at each poll to count its
+    # frames is the cost. One entry per file, keyed by its size AND its modification time, so a
+    # file replaced by another of the same size is read again; the entries of files no longer
+    # listed leave with this rebuild. A file the emulator removed between the listing and the
+    # read is not listed.
+    fresh: dict[tuple[str, int, int], dict[str, object]] = {}
+    for f in where.glob("*.avi"):
+        try:
+            stat = f.stat()
+            key = (str(f), stat.st_size, stat.st_mtime_ns)
+            facts = ses._avi_facts.get(key)
+            if facts is None:
+                facts = ds.avi_facts(f.read_bytes())
+        except FileNotFoundError:
+            continue
+        fresh[key] = facts
+        out.append({"path": str(f), **facts})
+    ses._avi_facts = fresh
+    return sorted(out, key=lambda row: int(str(row["bytes"])))
+
+
 def captures(ses: ds.Session) -> list[dict[str, object]]:
-    """The capture files this session has produced, with what is IN them.
-
-    It reports the frame count and the index, not just the size, because a
-    capture that recorded nothing and one that recorded the whole session are
-    both files and both plausible sizes. The size alone has never been the
-    evidence.
-
-    TWO FILES IS THE NORMAL CASE, not a fault: DX-CAPTURE restarts its recording
-    when the guest changes video mode, so a program that boots in DOS text and
-    then goes graphical leaves a small first file and the real one after it. They
-    are returned largest last.
-    """
-    if ses.launch.captures_dir is None:
-        raise Invalid("no_channel", "this session was started without a captures directory, so "
-                      "there is nowhere for a capture to have been written")
+    """The video a still is taken out of, refused when there is none: `videos`, largest last."""
     if not ses.launch.capture_video:
         raise Invalid("no_channel", "this session was not started with capture_video, so "
                       "nothing was recording. That is not an empty capture, it "
                       "is no capture")
-    out: list[dict[str, object]] = []
-    # THE FACTS OF A FILE THAT HAS NOT CHANGED ARE THE FACTS READ LAST TIME: this is
-    # the tool a caller polls while a recording runs, and reading every capture whole
-    # at each poll to count its frames is the cost. One entry per file, keyed by its
-    # size AND its modification time, so a file replaced by another of the same size
-    # is read again; the entries of files no longer listed leave with this rebuild.
-    fresh: dict[tuple[str, int, int], dict[str, object]] = {}
-    for f in sorted(ses.launch.captures_dir.glob("*.avi"),
-                    key=lambda p: p.stat().st_size):
-        stat = f.stat()
-        key = (str(f), stat.st_size, stat.st_mtime_ns)
-        facts = ses._avi_facts.get(key)
-        if facts is None:
-            facts = ds.avi_facts(f.read_bytes())
-        fresh[key] = facts
-        out.append({"path": str(f), **facts})
-    ses._avi_facts = fresh
+    out = videos(ses)
     if not out:
         raise Invalid("unexpected_answer",
-            f"no capture appeared in {ses.launch.captures_dir}. Two causes, and "
+            f"no capture appeared in {folder(ses)}. Two causes, and "
             f"they need different answers: the recording stops when the captured "
             f"PROGRAM exits, so a session still running may not have written one "
             f"yet; OR the program never started, because `program` is passed with "

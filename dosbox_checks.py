@@ -21,13 +21,13 @@ session has, the one fact of the session a value check depends on.
 """
 from __future__ import annotations
 
-import math
 import re
 from collections.abc import Callable
 from typing import Any
 
 from scry_core import judges, media_tools, narrowing, picture, screen_map
 from scry_core import value_format as vf
+from scry_core import vocabulary as vocab
 
 import dosbox_code as code
 import dosbox_comment_file as cf
@@ -66,9 +66,7 @@ WATCH_BY = (*BREAKPOINT_BY, "pointer")
 
 
 def by_choice(by: object, family: tuple[str, ...]) -> None:
-    if by not in family:
-        raise ds.Invalid("bad_argument",
-            f"`by` is {', '.join(family[:-1])} or {family[-1]}; got {by!r}")
+    vocab.one_of("by", by, family)
 
 
 def declared(kind: str, ref: object, by: str) -> str:
@@ -201,8 +199,8 @@ def _map_add(screen: str = "", match: Any = None, controls: Any = None, **_: Any
     screen_map.check_add(screen, match, controls)
 
 
-def _map_save(path: str = "", overwrite: bool = False, **_: Any) -> None:
-    screen_map.check_save(path, overwrite)
+def _map_save(dest: str = "", overwrite: bool = False, **_: Any) -> None:
+    screen_map.check_save(dest, overwrite)
 
 
 def _log(pattern: str, channel: str, limit: int = 40, **_: Any) -> None:
@@ -390,15 +388,7 @@ def _state(name: str, seconds: float = ds.STATE_WAIT_S, **_: Any) -> None:
 
 
 def _resume(seconds: float = 0.0, **rest: Any) -> None:
-    if (isinstance(seconds, bool) or not isinstance(seconds, int | float)
-            or not math.isfinite(seconds)):
-        raise ds.Invalid("bad_argument",
-            f"seconds={seconds!r} is not a finite number of seconds; 0 is no bound")
-    if seconds < 0:
-        raise ds.Invalid("bad_argument", f"seconds={seconds!r} is negative; 0 is no bound")
-    if seconds > ds.RUN_TO_MAX:
-        raise ds.Invalid("bad_argument", f"seconds={seconds!r} is past the {ds.RUN_TO_MAX} s "
-                                         "a run waits at most; 0 is no bound")
+    ds.check_wait_bound(seconds, from_zero=True)
     _display(**rest)
 
 
@@ -459,21 +449,8 @@ def _drive(act: list[dict[str, Any]], expect: str = "", seconds: float | None = 
         raise ds.Invalid("bad_argument",
             "pattern is a non-empty regular expression over the E9 log ('.' for everything)")
     dlogs.compiled(pattern)
-    if (isinstance(limit, bool) or not isinstance(limit, int)
-            or not 0 < limit <= dlogs.LOG_LIMIT_MAX):
-        raise ds.Invalid("bad_argument",
-            f"limit is between 1 and {dlogs.LOG_LIMIT_MAX}; got {limit!r}")
-    if expect:
-        dlogs.compiled(expect)
-    wait_s = inputs.drive_wait_s(seconds)
-    if isinstance(wait_s, bool) or not isinstance(wait_s, int | float) \
-            or not 0 < wait_s <= ds.RUN_TO_MAX:
-        raise ds.Invalid("bad_argument",
-            f"seconds is a bound between 0 and {ds.RUN_TO_MAX}; got {seconds!r}")
-    if not expect and seconds is not None:
-        raise ds.Invalid("bad_argument",
-            "`seconds` bounds the wait for `expect`, and there is no `expect`: it would be "
-            "silently ignored")
+    dlogs.check_e9_limit(limit)
+    inputs.check_expectation(expect or None, seconds)
     sequence.validate_wait(settle_seconds)
     steps_whole("act", act)
 
@@ -616,7 +593,7 @@ NOT_STEPS = SEQUENCES | {"build_check", "start", "close", "perform_export"}
 #: alike. They take no argument at all (`status`, `stop`, `scan_clear`, `state_list`,
 #: `breakpoint_list`, `watch_list`, `captures`, `call_stack`, `comment_list`, `map_find`); or a
 #: flag every value of which is valid (`registers`); or they are no step
-#: and have no half here (`build_check`'s binary and `perform_export`'s path, judged by their
+#: and have no half here (`build_check`'s binary and `perform_export`'s `dest`, judged by their
 #: bodies first; `close`).
 MACHINE_JUDGES = frozenset({
     "status", "stop", "registers", "scan_clear", "state_list", "breakpoint_list",

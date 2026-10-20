@@ -12,6 +12,7 @@ from types import SimpleNamespace
 from typing import Any, TypeVar, cast
 
 import pytest
+from e9_hints import hints_heard
 from scry_core import reply_contract as contract
 from test_dosbox_x_debug import RESUME_HALTED, Debugger
 from test_dosbox_x_server import clean_session, install  # noqa: F401  (the autouse teardown)
@@ -19,6 +20,7 @@ from test_dosbox_x_server import clean_session, install  # noqa: F401  (the auto
 import dosbox_arming as arming
 import dosbox_console as dcons
 import dosbox_retrace as retrace
+import dosbox_running as running
 import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_x_server as server
@@ -110,6 +112,15 @@ def test_three_frames_land_three_retraces_with_the_whole_stop_reply() -> None:
     assert got["regs"] and "attribution" in got and "e9" in got and "stop_seq" in got
     assert got["session"]["altered"] is False, "advancing is not writing"
     assert got["summary"].startswith("run_for 3 frames: ELAPSED"), got["summary"]
+
+
+def test_the_stop_run_for_lands_on_names_its_own_e9_argument(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """`run_for` takes `e9`, so the hint its stop carries names it, not `log`."""
+    seen = hints_heard(monkeypatch)
+    live(three_frames())
+    assert cast(dict[str, Any], server.run_for(frames=3))["status"] == "ok"
+    assert seen == [running.E9_BY_ARGUMENT], seen
 
 
 def test_with_nothing_that_can_cut_it_no_frame_is_surveyed() -> None:

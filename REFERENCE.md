@@ -48,8 +48,8 @@ you want them. The rule is what is written, because a count of "which tools" goe
 
 - `logfile` is where the guest's instrumentation and the emulator's own lines are written,
   and it is what `log` and `log_wait` read. Without it, `log` has no channel and says so.
-- `captures_dir` is where a video capture lands, so `captures` and `capture_frame` both
-  need it, and where a `trace` with no `dest` puts its file.
+- `captures_dir` is where a video capture lands (without it, `capture/` under `cwd`, the
+  emulator's own), and where a `trace` with no `dest` puts its file.
 
 `captures_dir` is NOT where a dump lands, whatever its name suggests. `memdump` names the
 debugger's file itself, `MCPDUMP.BIN` in the emulator's **working directory**, because a build
@@ -104,10 +104,11 @@ console to see whether it answers. `false` is an answer, not a refusal: `trace` 
 such a build.
 
 **Every path you give is absolute or starts with `~`, which is expanded.** `start`'s `cwd`, `conf`,
-`logfile`, `captures_dir`, `state_dir` and `binary`, `build_check`'s `binary`, `memdump`'s, `trace`'s, `snapshot`'s, `palette`'s,
-`screen_view`'s, `capture_frame`'s and `series_capture`'s `dest`, `capture_frame`'s and
-`series_capture`'s `capture_path`, `symbols_load`'s `path` and `types`, `comment_load`'s and
-the map files' `path`, and the media file tools' paths (`a`, `b`, `manifest`, `ref`, `dir`,
+`logfile`, `captures_dir`, `state_dir` and `binary`, `build_check`'s `binary`, every `dest`
+(`memdump`'s, `trace`'s, `snapshot`'s, `palette`'s, `screen_view`'s, `machine_map`'s,
+`comment_save`'s, `map_save`'s, `perform_export`'s, `capture_frame`'s and `series_capture`'s),
+`capture_frame`'s and `series_capture`'s `capture_path`, `symbols_load`'s `path` and `types`,
+`comment_load`'s and `map_load`'s `path`, and the media file tools' paths (`a`, `b`, `manifest`, `ref`, `dir`,
 `checksums`) go through one judge, scry-core's. An optional path left empty is not given. A
 relative path is refused because it would be judged against one directory and used in another:
 this server's own working directory is wherever the client launched it, the emulator's is `cwd`,
@@ -201,20 +202,26 @@ while the guest ran, so a reader can be the call that arms a breakpoint; that wr
 to the declaring call, which said `pending`, and the reader's reply says `applied_on_stop`.
 
 **The `session` block closes every reply**, `{alive: false, running: false, altered: false}`
-when there is no session, and with one: `pid` (the
-emulator's, to read instead of hunting it), `alive`, `running` (the guest runs, off the session's
-own flag, with no console round trip), `altered`, `conf` and `conf_digest` (the
-config the session started from, and a digest of its content at start), `conf_changed_on_disk`
-(`true` when that file changed since, `false` when it did not or is gone, unavailable with why
-when it could not be read), `watched` (started to be looked at, so a window was placed), `bound_s` and
-`elapsed_s`, `terminal_bytes_dropped` (nonzero: a screen delta had a hole in it; it
-counts the emulator's terminal, never the guest's E9 stream, which is read off the log file),
-`drain_alive` and `drain_ended` (whether the terminal reader still runs, and, present once it
-has stopped, why:
-a dead reader makes every later read return nothing while `alive` still says true),
+when there is no session. **Its alarms ride on every reply**: `alive`, `running` (the guest runs,
+off the session's own flag, with no console round trip), `altered`, and each alarm while it holds:
+`conf_changed_on_disk` (`true` when the conf the session started from changed since, unavailable
+with why when it could not be read, `false` when it is gone), `terminal_bytes_dropped` when not zero (a screen delta had a
+hole in it; it counts the emulator's terminal, never the guest's E9 stream, which is read off the
+log file), `drain_alive: false` and `drain_ended` (the terminal reader stopped, and why: a dead
+reader makes every later read return nothing while `alive` still says true). **What is fixed for
+the session, or only counts, rides on `start`, `status` and `close`** (`close`'s describing the
+session as it was before the close): `pid` (the emulator's, to read instead of
+hunting it), `conf` and `conf_digest` (the config and a digest of its content at start),
+`watched` (started to be looked at, so a window was placed), `bound_s` and `elapsed_s`,
 `captures` (`off`, or where a `capture_video` session records, `on, in the emulator's own
-directory` when it was given no `captures_dir`) and `state_dir` (where
-`state_save` writes and `state_list` reads).
+directory` when it was given no `captures_dir`), `state_dir` (where `state_save` writes and
+`state_list` reads), and the alarms' quiet values. Every other reply names that half in
+`omitted` beside `how`, so the short block is never read as the whole one.
+
+**A session whose emulator died is kept until `close`**: every call that needs the machine
+answers `session_broken` with the `exit_code`, and the block still says whether the session was
+written to (`altered`), which a caller measuring a forced state must not lose; `status` answers
+it, `alive: false` in its whole block; `close` collects it, and a `start` closes it first.
 
 **A refusal is one contract, and a class holds it.** `status` is `ok` or `INVALID`; an
 INVALID carries `code`, one word from a fixed table (`no_session`, `not_stopped`,
@@ -239,7 +246,20 @@ value wider than its register or negative, a scan's length in whole cells, a sea
 a declaration's ref in the shape its family takes (a breakpoint is never declared through a
 pointer, `[g_p]` included), a watch's length, a key name, `resume`'s `seconds`, a wait's
 bound, and every step of a `perform`, `drive` or `start(plan=)` list (its op, its argument
-names and values).
+names and values). An argument held to a fixed vocabulary (`mode`, `by`, `channel`, `operator`,
+`cell_bytes`, `shape`, `button`, `action`, `units`) lists its words as its schema's `enum`, made
+from the tuple the tool judges it against (`button`'s holds `""`, not given); a list whose items
+are held the same way (`machine_map`'s `sections`) publishes them on its items; `base_from` and
+`send_keys`'s `modifiers`, taken in any case, publish a `pattern` of their words in either case
+instead. A scalar held to a range publishes `minimum` and `maximum` (every wait, `read_memory`'s
+and `disassemble`'s `length`, every `limit`, `step`'s `count`, `trace`'s `instructions`, an
+interrupt's `number` and `ah`, `x`, `y`, `session_seconds`, `input_port`); a length whose ceiling
+is the machine's (`memdump`, `find`, `scan_start`, `watch_add`) publishes none. A wait's floor is
+`exclusiveMinimum` 0, except `resume`'s and `settle_seconds`, where 0 means no wait. Two ranges
+are wider than their judge, which a schema range cannot narrow: `input_port` is also refused from
+1 to 1023, and `symbols_find`'s `limit` is judged on the `name` question only. A word outside a
+vocabulary still reaches the tool and is refused there in one sentence (`mode is one of (...);
+got ...`), a value outside a range in its tool's own.
 
 **A read that found nothing says which kind of nothing.** "No line matched" is an answer and
 comes back as an empty list. "There is no log to match against" is `INVALID`. A caller that
@@ -290,8 +310,10 @@ that cannot write the line waited for; `not_settled`, a `BREAK` whose prompt nev
 for how long a wait may take (a session's lifetime is `session_seconds`: a lifetime, not a
 wait), `count` for how many steps, `length` for how many bytes, `limit` for how many rows come
 back, `pattern` for a regex over a log, `<list>_total` for how many a list holds, listed or not
-(`hits_total` from `scan_start` on), `path` for the file a tool reads or writes and
-`<what>_path` for any other file a reply names (`capture_path`), `<what>_dir` for a directory,
+(`hits_total` from `scan_start` on), `dest` for the file a call writes (`memdump`, `map_save`,
+`perform_export`...), `path` for the file a call reads (`comment_load`, `map_load`) and for the
+file a reply names, always the whole path, and `<what>_path` for any other file a reply names
+(`capture_path`, also the argument naming the capture `capture_frame` and `series_capture` read), `<what>_dir` for a directory,
 `bytes` for a byte count and `data_hex` for the bytes themselves. A count names what it counts:
 `bytes_written`, `lines_written`, `steps_completed` (a sequence's), `instructions_completed` (a
 `step`'s), `hits_in_run` (a control over one run). `note` is a reply's one string of prose,
@@ -522,7 +544,8 @@ build and not about the source.
 `breakpoint_at`, `watch_add`, `run_to` and the readers take a **symbol or a `SEG:OFF`**
 indifferently, and the server works out the debugger's command from the machine's own CPU
 mode: a selector in protected mode, a paragraph in real mode, `BPM` or `BPPM` for a
-change-watch. The caller says the same thing whatever the binary is.
+change-watch. The caller says the same thing whatever the binary is. A `SEG:OFF` is hex on
+both sides, with or without `0x`, and never signed.
 
 One debugger row is one declaration: a second ref on an address another breakpoint or watch
 of the store already holds is refused, naming the ref that holds it, because two
@@ -833,7 +856,7 @@ most 600 (`RUN_TO_MAX`), the ceiling `log_wait`, the state tools and the `expect
 holds the server's lock for its whole duration, so every other tool, `status` included, is
 unanswerable until it ends; the ceiling is what stops one abandoned question from wedging a
 session. `resume`'s `seconds` and the `settle_seconds` of `start`, `perform` and `drive` are
-held to it too, and take 0 as well, which never waits.
+held to it too, and take 0 as well, which means no wait.
 
 **`resume` sends F5 once**, and an F5 that never left the debugger comes back as the full stop.
 With `seconds` it waits that long for a stop, listening for the prompt as `run_to` does: a stop
@@ -901,8 +924,8 @@ One spelling stays the debugger's own: a breakpoint as `BPLIST` lists it (`run_t
 and its `controls[].at`, a breakpoint row's `entry`), because that is the string the server
 matches the list against.
 
-**What a stop returns.** Every stop (`resume`, `step`, `run_to`, `run_for`, `trace`, and the tail of a
-`perform`) carries its number `stop_seq` (the one `last_stop` names), where it stopped (`pc`,
+**What a stop returns.** Every stop (`resume`, `step`, `run_to`, `run_for`, `trace`, `stop`,
+`screen_wait`, and the tail of a `perform`) carries its number `stop_seq` (the one `last_stop` names), where it stopped (`pc`,
 `SSSS:OOOOOOOO`, the form every DOS ref takes, and `cpu_mode`: `real`, `protected` or `paged`,
 off the pane's mode word and its PAGE/NOPG mark), the `instruction` it stopped on (`seg_off`,
 `bytes`, `text`, `flow`, `code_bits`, `bytes_from` and the nearest `symbol` and `delta`; decoded
@@ -915,10 +938,12 @@ the show watches already evaluated (each with `state: "evaluated"`), an `attribu
 declaration whose address it stopped at (`attributed`, `ref`, `by`, `at`; or an honest
 cannot-say with `why`: the
 debugger keeps no hit flag, and a memory watch stops at the instruction that WROTE), and an
-E9 summary, `e9`, that is OFF by default with the count and how to turn it on, because the
+E9 summary, `e9`, that is OFF by default with the count and how to see the lines, because the
 guest's log can blow up a conversation: `lines_total` lines matched the filter, `unfiltered`
-were logged in all, `shown` came back in `lines`. Every stop but `trace`, which takes no `e9`,
-leaves it off and names `log` in `how`, turns it on with `e9="all"`, `"lines:N"` or `"since"` (the previous stop) plus
+were logged in all, `shown` came back in `lines`. `how` names a way the caller can take: on a stop
+of a tool that takes no `e9` (`stop`, `screen_wait`, `trace`, a sequence's tail) it names
+`log(pattern=".", channel="guest")`; `resume`, `step`, `run_to` and `run_for` turn it on with
+`e9="all"`, `"lines:N"` or `"since"` (the previous stop) plus
 a filter; and `"seconds:N"` when the caller lends `e9_stamp`, a regex with one group
 capturing each line's own time, because this server knows no clock of its own on the log
 and a guest that stamps its lines (a monotonic guest clock) is the only honest one. The
@@ -1107,7 +1132,8 @@ than run.
 **Which sections exist depends on the mode, and an absent one says why.** `cpu_mode` is read
 off the `CPU` listing's cr0. In real mode the descriptor lists `gdt` and `ldt` are absent,
 because there the debugger reads the interrupt vector table as descriptors (the `cpu` section's
-own `gdt` and `ldt` are the table registers, present in every mode); in protected mode they
+`gdtr` and `ldtr` are the table registers, present in every mode, so the names `gdt` and `ldt`
+are the descriptor lists only); in protected mode they
 come back with their empty slots dropped. `paging` is absent with paging off, and with it on
 comes back as runs of pages contiguous in linear and physical memory with the same flags, `d`
 and `a`, so expanding a run page by page gives the listing back. A section whose listing the
@@ -1284,7 +1310,7 @@ declared it returns at once, still running, and says why. A list that waited for
 answers its `verdict`: `TARGET` when every wait ended at one, `TIMEOUT` when one ran out, the
 steps after it unsent; with `settle_seconds` 0 a console step after a release is refused
 `not_stopped`, and an emulator gone during a wait is `session_broken`. `settle_seconds` runs
-from 0, which never waits, to 600 (`RUN_TO_MAX`), and `drive` takes the same.
+from 0, no wait, to 600 (`RUN_TO_MAX`), and `drive` takes the same.
 
 A `resume` inside a sequence drains what the console steps before it left in the terminal as
 the key goes out, so their prompt does not read as the resume's halt. What the drain does NOT
@@ -1342,7 +1368,7 @@ look: the still needs a recording and `ffmpeg`, and `capture_frame` offers it on
 ## From an investigation to a bench
 
 Every session is recorded from the `start` that succeeds, and cleared by the next one; `close`
-keeps it. `perform_export(path)` writes it as `perform`'s own document, and the runner plays it
+keeps it. `perform_export(dest)` writes it as `perform`'s own document, and the runner plays it
 back with no model, from this repository:
 
 ```sh
@@ -1501,11 +1527,15 @@ host mouse is captured. The stub's own report line is never served as the progra
 to `expect`.
 
 **Capturing what the screen shows: both halves, and they are not symmetric.** Start the
-session with `capture_video=True`, a `program` for the recorder to wrap, and a `captures_dir`
-to write into. Then:
+session with `capture_video=True` and a `program` for the recorder to wrap; it records into
+`captures_dir`, or `capture/` under `cwd`. Then:
 
 - **The video** is DOSBox-X's own doing (`DX-CAPTURE /V`) and needs no keypress. `captures`
-  hands back the files with their frame counts.
+  lists the files these tools wrote, in order (`capture_frame`, `snapshot`, `memdump`,
+  `machine_map`, `comment_save`, `perform_export`, `map_save`, `screen_view`, `palette`, a
+  `series_capture`'s manifest, a `trace`), then the video files with their frame counts:
+  each `kind` (the extension, `series` or `avi`), `path`, `present` and `bytes`, re-read when
+  asked, a file gone since listed with `present: false` and no `bytes`.
 - **A still** of the running screen is `snapshot`: the stub writes the integration device's
   capture trigger and the emulator writes the PNG, on any session with a `logfile`, headless
   included (its command is a scan code to an older stub, so the log's announce has to say
@@ -1539,8 +1569,8 @@ anything, so nothing of the caller's is overwritten and no dump is left behind.
 **One constraint on your config:** `program` is passed with `-c`, and `-c` runs **after** the
 config's `[autoexec]` section. A config whose autoexec ends in `exit` quits the emulator
 before that command is ever reached, so `program` needs one that mounts what it needs and
-does not run-and-exit. `captures` says this when nothing appears, because the symptom is an
-empty directory and the cause is elsewhere.
+does not run-and-exit: a `captures` with no `avi` row on such a session is the symptom, and the
+cause is elsewhere.
 
 **`palette` is the DAC as the debugger lists it, never a picture of the screen.** `VGA DAC`
 gives its width and mask (`bits`, `pel_mask`), `VGA DACPAL` its 256 entries, read off the
@@ -1813,7 +1843,8 @@ added to one file.
   and the one survey a stop reply is built from, with its E9 block.
 - **`dosbox_inputs.py`**: the two routes a key takes and the one the mouse takes, and the
   proof the guest reacted; `send_keys` and `send_mouse`.
-- **`dosbox_captures.py`**: the video the emulator recorded, and a still out of it.
+- **`dosbox_captures.py`**: the files the session's tools wrote, the video the emulator
+  recorded, and a still out of it.
 - **`dosbox_media.py`**: `series_capture`, frames out of a video capture as a series.
 - **`dosbox_find.py`**: the exact byte search and the debugger's own scanner.
 - **`dosbox_disasm.py`**: x86 decoded on the host by capstone, the one module that imports it:

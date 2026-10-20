@@ -423,6 +423,17 @@ def offset_ceiling(mode: str) -> int:
     return 0xFFFFFFFF if mode.startswith("Pr") else 0xFFFF
 
 
+def check_offset(off: int, mode: str) -> int:
+    """THE JUDGE OF AN OFFSET a tool reads, writes, arms or clears at, against `offset_ceiling`
+    in `mode`: the ceiling, or the refusal."""
+    top = offset_ceiling(mode)
+    if not 0 <= off <= top:
+        raise Invalid("bad_argument",
+            f"an offset is 0x0 to 0x{top:X} in {mode} mode; got 0x{off:X}: in real mode an "
+            "offset past 0xFFFF addresses nothing")
+    return top
+
+
 def parse_pane_clock(text: str) -> float | None:
     """The emulated milliseconds the last pane on the screen paints, None when none says."""
     found = PANE_CLOCK.findall(text)

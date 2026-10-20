@@ -63,10 +63,10 @@ def test_saved_screens_become_the_file_layer_and_load_back(tmp_path: Path) -> No
     screen_bench("probe-booted", tmp_path)
     _ok(server.map_add(screen="prompt", match=[PROMPT], controls=[CONTROL]))
     path = tmp_path / "probe.scry-map.json"
-    saved = _ok(server.map_save(path=str(path)))
+    saved = _ok(server.map_save(dest=str(path)))
     assert saved["promoted"] == ["prompt"] and json.loads(path.read_text())["application"] == (
         "probe")
-    refused = cast(dict[str, Any], server.map_save(path=str(path)))
+    refused = cast(dict[str, Any], server.map_save(dest=str(path)))
     assert refused["code"] == "bad_argument", refused
     dstate.STATE.maps = screen_map.Maps()
     loaded = _ok(server.map_load(path=str(path)))
@@ -82,7 +82,7 @@ def test_a_start_empties_the_session_layer_and_keeps_the_file(tmp_path: Path,
     screen_bench("probe-booted", tmp_path)
     _ok(server.map_add(screen="prompt", match=[PROMPT]))
     path = tmp_path / "probe.scry-map.json"
-    _ok(server.map_save(path=str(path)))
+    _ok(server.map_save(dest=str(path)))
     _ok(server.map_add(screen="again", match=[PROMPT]))
     server.close()
     _ok(_start_on_a_booted_fake(tmp_path, monkeypatch))
@@ -93,7 +93,7 @@ def test_a_start_empties_the_session_layer_and_keeps_the_file(tmp_path: Path,
 
 @pytest.mark.parametrize(("call", "code"), [
     (lambda p: server.map_find(), "needs_call"),
-    (lambda p: server.map_save(path=str(p / "x.scry-map.json")), "needs_call"),
+    (lambda p: server.map_save(dest=str(p / "x.scry-map.json")), "needs_call"),
     (lambda p: server.map_load(path=str(p / "no.scry-map.json")), "bad_argument"),
     (lambda p: server.map_load(path="relative.scry-map.json"), "bad_argument"),
     (lambda p: server.map_load(path=str(p / "x.json")), "bad_argument"),
@@ -102,7 +102,7 @@ def test_a_start_empties_the_session_layer_and_keeps_the_file(tmp_path: Path,
     (lambda p: server.map_add(screen="s", match=[[0, 0, 0, 1]]), "bad_argument"),
     (lambda p: server.map_add(screen="s", match=[PROMPT], controls=[{"name": "a"}]),
      "bad_argument"),
-    (lambda p: server.map_save(path=str(p / "x.scry-map.json"), overwrite="yes"),
+    (lambda p: server.map_save(dest=str(p / "x.scry-map.json"), overwrite="yes"),
      "bad_argument"),
 ], ids=["find with nothing mapped", "save with nothing mapped", "a file that is not there",
         "a relative path", "a name without the map suffix", "an empty screen name",
@@ -120,8 +120,9 @@ def test_perform_refuses_a_misshapen_map_step_before_any_step_runs(tmp_path: Pat
     s = screen_bench("probe-booted", tmp_path)
     r = cast(dict[str, Any], server.perform(steps=[
         {"op": "palette"}, {"op": "map_add", "screen": "s", "match": "row 3"},
-        {"op": "map_save", "path": str(tmp_path / "x.scry-map.json"), "overwrite": "yes"}]))
+        {"op": "map_save", "dest": str(tmp_path / "x.scry-map.json"), "overwrite": "yes"}]))
     assert r["status"] == "INVALID" and [e["step"] for e in r["errors"]] == [1, 2], r
+    assert "overwrite" in r["errors"][1]["message"], r["errors"][1]
     assert s.asked == [] and s.dumps == []
 
 
@@ -218,13 +219,13 @@ def test_an_export_keeps_the_map_an_identification_was_made_against_and_replays_
     screen_bench("probe-booted", tmp_path)
     _ok(server.map_add(screen="prompt", match=[PROMPT], controls=[CONTROL]))
     path = tmp_path / "probe.scry-map.json"
-    _ok(server.map_save(path=str(path)))
+    _ok(server.map_save(dest=str(path)))
     monkeypatch.setattr(dosbox_mcp.RECORDER, "recording", recording.Recording({"conf": "/x"}))
     _ok(server.map_load(path=str(path)))
     _ok(server.map_add(screen="row", match=[[0, 0, 80, 1]]))
     _ok(server.map_find())
-    _ok(server.map_save(path=str(tmp_path / "again.scry-map.json")))
-    out = _ok(server.perform_export(path=str(tmp_path / "s.json")))
+    _ok(server.map_save(dest=str(tmp_path / "again.scry-map.json")))
+    out = _ok(server.perform_export(dest=str(tmp_path / "s.json")))
     steps = json.loads((tmp_path / "s.json").read_text())["steps"]
     assert [s["op"] for s in steps] == ["map_load", "map_add", "map_find"]
     assert steps[2]["recorded"] == {"matched": True, "screen": "row"}

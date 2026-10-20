@@ -370,7 +370,7 @@ def test_set_register_takes_and_its_mark_survives_into_every_later_reply() -> No
     # ON A LATER REPLY, and on an INVALID one, which is where an earlier version of
     # this server dropped it and is the reply a caller reasons hardest about.
     assert cast(dict[str, Any], server.status())["session"]["altered"] is True
-    invalid = cast(dict[str, Any], server.captures())
+    invalid = cast(dict[str, Any], server.step(count=0))
     assert invalid["status"] == "INVALID"
     assert invalid["session"]["altered"] is True, (
         "an INVALID reply stopped saying the machine had been written to")

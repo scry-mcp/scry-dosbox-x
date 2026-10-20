@@ -218,10 +218,10 @@ def test_the_cpu_listing_in_protected_mode() -> None:
     assert cpu == {
         "cr0": "80000011", "cr2": "FFFFFFFF", "cr3": "00034000", "cpl": 3,
         "eflags": "00003206", "vm": 0, "iopl": 3, "nt": 0,
-        "gdt": {"base": "000D16FE", "limit": "00000087"},
+        "gdtr": {"base": "000D16FE", "limit": "00000087"},
         "idt": {"base": "000D1B86", "limit": "000007FF"},
         "tr": {"selector": "0060", "base": "000D377A", "limit": "000000F1*1"},
-        "ldt": {"selector": "0078", "base": "000D1786", "limit": "000003FF*1"}}
+        "ldtr": {"selector": "0078", "base": "000D1786", "limit": "000003FF*1"}}
     assert machine.cpu_mode(cpu) == "paged"
     assert machine.cpu_mode(machine.parse_cpu(listing("probe-booted", "CPU"))) == "real"
     protected = dict(cpu, cr0="00000011")

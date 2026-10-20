@@ -20,6 +20,7 @@ from scry_core import boundary, cancel, envelope, presence, recording
 from scry_core import strict_arguments as strict
 
 import dosbox_arming as arming
+import dosbox_captures as caps
 import dosbox_checks as checks
 import dosbox_docs as docs
 import dosbox_presence as dpresence
@@ -231,6 +232,7 @@ def _invoke(fn: Callable[..., Any], called: inspect.BoundArguments) -> dict[str,
         # without a session.
         checks.check(fn.__name__, **given)
         reply: dict[str, Any] = fn(*called.args, **called.kwargs)
+        caps.note_written(fn.__name__, reply)
         return reply
     except ds.NotStopped as e:
         # THE GUEST RUNS AND THIS READER CANNOT ANSWER: say where the machine was last seen and

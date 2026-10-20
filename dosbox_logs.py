@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import re
 
+from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Invalid
 
 # A live line of the guest's Bochs 0xE9 instrumentation, as DOSBox-X logs it.
@@ -46,11 +47,9 @@ def count_e9(text: str) -> int:
 
 
 def check_channel(channel: str) -> None:
-    if channel not in LOG_CHANNELS:
-        raise Invalid("bad_argument",
-                      f"channel is one of {LOG_CHANNELS}; got {channel!r}. There is no "
-                      "`process` channel: the emulator's stdout is the debugger's own "
-                      "terminal (`debug` reads it) and not a log")
+    vocab.one_of("channel", channel, LOG_CHANNELS, ". There is no `process` channel: the "
+                 "emulator's stdout is the debugger's own terminal (`debug` reads it) and not a "
+                 "log")
 
 
 def channel_of(line: str) -> str:
@@ -123,7 +122,10 @@ def filter_e9(text: str, pattern: str, limit: int) -> tuple[list[str], int]:
 LOG_LIMIT_MAX = 400
 
 
-def check_e9_limit(limit: int) -> None:
+def check_e9_limit(limit: object) -> None:
+    """THE ONE JUDGE OF A LOG READ'S `limit`, `log`'s and `drive`'s look."""
+    if isinstance(limit, bool) or not isinstance(limit, int):
+        raise Invalid("bad_argument", f"limit is a count of lines; got {limit!r}")
     if limit <= 0:
         raise Invalid("bad_argument",
             "a limit of zero or less would return the whole log, which is "

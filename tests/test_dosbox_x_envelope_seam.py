@@ -12,7 +12,7 @@ import pathlib
 import sys
 from threading import Event, Thread
 from time import monotonic
-from typing import Any
+from typing import Annotated, Any, get_args, get_origin
 
 import pytest
 from mcp.server.mcpserver.exceptions import UnexpectedToolError
@@ -141,7 +141,10 @@ def test_every_tool_that_takes_ctx_still_accepts_a_valid_call() -> None:
         for p in params.values():
             if p.name == "ctx" or p.default is not _inspect.Parameter.empty:
                 continue
-            args[p.name] = _SAMPLE.get(p.annotation, [{"op": "status"}])
+            # A RANGED OR CLOSED ARGUMENT is its scalar under `Annotated`'s schema half.
+            ann = (get_args(p.annotation)[0] if get_origin(p.annotation) is Annotated
+                   else p.annotation)
+            args[p.name] = _SAMPLE.get(ann, [{"op": "status"}])
         _res, reply = _call(t.name, args)
         assert not reply.get("message", "").startswith("refused by the schema"), (t.name, reply)
         seen.append(t.name)

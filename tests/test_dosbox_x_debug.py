@@ -529,7 +529,7 @@ def test_a_dead_emulator_is_a_refusal_and_not_a_partial_result() -> None:
 
 def test_step_refuses_a_mode_it_does_not_have_and_a_count_it_cannot_afford() -> None:
     dbg = Debugger([REAL_PANE] * 4)
-    with pytest.raises(ds.Invalid, match="not a way to step"):
+    with pytest.raises(ds.Invalid, match="mode is one of"):
         step(dbg, mode="sideways", count=1)
     with pytest.raises(ds.Invalid, match="step count"):
         step(dbg, mode="over", count=0)

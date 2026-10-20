@@ -295,7 +295,8 @@ start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj",
 resume()
 log_wait(pattern="READY", channel="guest", seconds=30)
                                          -> {"verdict": "TARGET", "already": false, "waited_s": 2.1, ...}
-captures()                               -> {"captures": [{"path": ".../app_000.avi", "avi_frames": 143, ...}]}
+captures()                               -> {"captures": [{"kind": "avi", "path": ".../app_000.avi",
+                                                           "present": true, "avi_frames": 143, ...}]}
 capture_frame(frame=140, dest="/path/to/proj/build/captures/ready.png")
 ```
 
@@ -355,7 +356,7 @@ project and carries no default that points anywhere in particular.
 | `perform_export` | the session since its `start`, written as `perform`'s own document: what moved the machine as steps, the checking reads holding to what they answered, every drop and the first call no replay can place named; `uv run python -m scry_core.replay <file>`, from this repository, plays it back with no model |
 | `send_keys` | keystrokes into the RUNNING guest, verified against the program's own reaction with `expect` |
 | `send_mouse` | the guest's pointer placed at a screen pixel and read back, and its buttons clicked, double-clicked or held, verified the same way |
-| `captures` | the video captures this session recorded, and what is in them |
+| `captures` | the files this session's tools wrote, then the video it recorded and what is in it |
 | `capture_frame` | one still image out of a capture, returning its path. Always a **PNG**, whatever `dest` is called; a `dest` already there is refused, never deleted |
 | `snapshot` | one still of the RUNNING screen, taken inside the guest on any session, confirmed by the new `.png` under the captures directory and moved to `dest` when given |
 | `screen_signature` | `(crop=None)`: one string for what is on screen or on a crop of it, each cell or pixel in the colour it is shown in, to compare instead of reading it; the modes `screen_view` reads. Needs a session started with `logfile` |

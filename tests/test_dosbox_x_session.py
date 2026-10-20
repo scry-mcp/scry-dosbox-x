@@ -1195,11 +1195,6 @@ def stopped(**over: object) -> Any:
     return SimpleNamespace(launch=SimpleNamespace(**base), _avi_facts={})
 
 
-def test_a_session_with_nowhere_to_capture_says_so(tmp_path: Path) -> None:
-    with pytest.raises(ds.Invalid, match="nowhere for a capture"):
-        ds.Session.captures(stopped())
-
-
 def test_a_session_that_was_not_recording_is_not_an_empty_capture(tmp_path: Path) -> None:
     """"Nothing was recording" and "the recording is empty" are different answers, and
     only one of them is about the guest.

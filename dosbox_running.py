@@ -71,9 +71,12 @@ def drain_if_stopped(session: ds.Session) -> None:
 
 
 _E9_MODES = ("none", "all", "since")
-_E9_HOW = ("pass e9='all', e9='lines:N', e9='since' or e9='seconds:N' (with "
-           "e9_stamp=<regex capturing the seconds>), with e9_filter=<pattern>, to include "
-           "the lines")
+#: THE E9 BLOCK'S `how` names a way the caller can take: the argument on the four tools that
+#: take `e9` (`resume`, `step`, `run_to`, `run_for`), the log on every other stop.
+E9_BY_ARGUMENT = ("pass e9='all', e9='lines:N', e9='since' or e9='seconds:N' (with "
+                  "e9_stamp=<regex capturing the seconds>), with e9_filter=<pattern>, to include "
+                  "the lines")
+E9_BY_LOG = "this tool takes no `e9`: `log(pattern=\".\", channel=\"guest\")` reads the lines"
 
 
 def e9_validate(mode: str, e9_filter: str, e9_stamp: str | None = None) -> None:
@@ -111,11 +114,11 @@ def e9_validate(mode: str, e9_filter: str, e9_stamp: str | None = None) -> None:
 
 
 def e9_summary(session: ds.Session, mode: str, e9_filter: str,
-                e9_stamp: str | None = None, how: str = _E9_HOW) -> dict[str, Any]:
-    """The E9 block of a stop reply: OFF by default, carrying the COUNT and
-    `how`, how to see the lines (how to turn them on, by default), because the volume can blow
-    up context and off-with-no-word leaves doubt. The switch is `none` | `all` | `lines:N` |
-    `since` | `seconds:N`, with a filter.
+                e9_stamp: str | None = None, how: str = E9_BY_LOG) -> dict[str, Any]:
+    """The E9 block of a stop reply: OFF by default, carrying the COUNT and `how`, the way to
+    see the lines (`e9=` on the tools that take one, `log` on every other stop), because the
+    volume can blow up context and off-with-no-word leaves doubt. The switch is `none` | `all` |
+    `lines:N` | `since` | `seconds:N`, with a filter.
     The mode is assumed already validated by `e9_validate` (before the guest was resumed).
 
     `since` shows only what the guest logged since the previous stop, off a mark keyed on the
@@ -215,7 +218,7 @@ def _e9_count(mode: str) -> int:
 
 def stop_reply(session: ds.Session, e9: str = "none", e9_filter: str = ".",
                 e9_stamp: str | None = None, *, retrace_may_stop: bool = False,
-                e9_how: str = _E9_HOW, **base: Any) -> dict[str, Any]:
+                e9_how: str = E9_BY_LOG, **base: Any) -> dict[str, Any]:
     """What a stop ALWAYS returns, on top of the tool's own fields in `base`:
     where it stopped and by which declaration (attribution by address, or an honest
     cannot-say), the watches already evaluated, the registers, and the E9 summary, whose `how`
@@ -261,7 +264,7 @@ def recorded_stop_reply(session: ds.Session, recorded: dict[str, Any]) -> dict[s
 
 
 def _stop_e9(session: ds.Session, e9: str, e9_filter: str, e9_stamp: str | None = None,
-             how: str = _E9_HOW) -> dict[str, Any]:
+             how: str = E9_BY_LOG) -> dict[str, Any]:
     """A stop's E9 block, and the since-last-stop mark moved to it: the offset and the count
     move together, or the next `since` with a filter starts lines before the one without. The
     mark is the UNFILTERED count, so the next `since` is independent of whichever filter this
@@ -274,7 +277,7 @@ def _stop_e9(session: ds.Session, e9: str, e9_filter: str, e9_stamp: str | None 
 
 def stop_or_base(session: ds.Session, stopped: bool, e9: str, e9_filter: str,
                   e9_stamp: str | None, base: dict[str, Any], *,
-                  retrace_may_stop: bool = False) -> dict[str, Any]:
+                  retrace_may_stop: bool = False, e9_how: str = E9_BY_LOG) -> dict[str, Any]:
     """The enriched stop reply when the machine STOPPED, else just the tool's base answer.
     A halt whose POSITION cannot be read (a cut pane leaves `where` refusing, which `resume`'s
     read-back meets as a stop with no position) is not discarded: the halt is a real
@@ -284,7 +287,7 @@ def stop_or_base(session: ds.Session, stopped: bool, e9: str, e9_filter: str,
         return st.reply(**base)
     try:
         return stop_reply(session, e9=e9, e9_filter=e9_filter, e9_stamp=e9_stamp,
-                          retrace_may_stop=retrace_may_stop, **base)
+                          retrace_may_stop=retrace_may_stop, e9_how=e9_how, **base)
     except ds.Invalid as e:
         return st.reply(enrichment={"available": False, "why": str(e)}, **base)
 
@@ -355,28 +358,21 @@ def status_facts(session: ds.Session | None) -> dict[str, Any]:
 
 
 def live() -> ds.Session:
-    """The session, or INVALID. A session found DEAD is closed and cleared here.
+    """The session, or INVALID: `no_session` with none, `session_broken` with `exit_code` for
+    one whose emulator died under it.
 
-    Leaving a corpse installed is what made `status` keep reporting it and made the
-    next `start` leak its terminal rather than reclaim it.
-    """
-    buried = ""
-    if STATE.session is not None and not STATE.session.alive():
-        # WHAT IS BEING BURIED IS SAID IN THE REFUSAL, and it has to be said HERE
-        # because `st.reply` cannot: once the global is cleared there is nothing left to
-        # ask, so `session` comes back as the no-session block. Every reply carries
-        # `altered`, the INVALID ones too (the server's docstring), and a caller who wrote
-        # to a machine that then hit its bound would otherwise get an INVALID with no trace
-        # that anything had been forced.
-        if STATE.session.altered:
-            buried = (" The session that has gone HAD been written to, so anything "
-                      "measured on it was a measurement of a forced state.")
-        STATE.session.close()
-        STATE.session = None
-        STATE.forget_symbols()
-        STATE.clear_running_state()
-    if STATE.session is None:
+    A DEAD SESSION IS KEPT UNTIL `close`: its `session` block still says whether
+    it was written to (`altered`), which a caller measuring a forced state must not lose, and
+    `close` collects the exit before the scratch goes. Every call that needs the machine answers
+    `session_broken` until then; a `start` closes it first."""
+    ses = STATE.session
+    if ses is None:
         raise ds.Invalid("no_session", "there is no live session. `start` one first; a reply from "
-                         "a dead session would be a reading of nothing." + buried)
-    drain_if_stopped(STATE.session)
-    return STATE.session
+                         "a dead session would be a reading of nothing.")
+    if not ses.alive():
+        exit_code = ses.proc.poll()
+        raise ds.Invalid("session_broken",
+                         f"DOSBox-X exited with code {exit_code} under this session: `close` "
+                         f"collects what it left, then `start` a new one", exit_code=exit_code)
+    drain_if_stopped(ses)
+    return ses

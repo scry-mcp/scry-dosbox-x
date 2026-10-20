@@ -60,7 +60,8 @@ def resume(e9: str, e9_filter: str, e9_stamp: str | None, seconds: float, detail
     # watches evaluated, the attribution and the E9 summary. A machine still running has
     # nothing to read, so it comes back with just the base.
     return running.stop_or_base(session, halted, e9, e9_filter, e9_stamp, base,
-                                retrace_may_stop=True)
+                                retrace_may_stop=True,
+                                e9_how=running.E9_BY_ARGUMENT)
 
 
 def run_to(ref: str, control: str, seconds: float, e9: str, e9_filter: str,
@@ -103,7 +104,9 @@ def run_to(ref: str, control: str, seconds: float, e9: str, e9_filter: str,
         refused = {k: v for k, v in fields.items() if k != "verdict"}
         return running.stop_or_base(session, True, e9, e9_filter, e9_stamp,
                                     {"status": "INVALID", "code": code, "message": message,
-                                     **refused}, retrace_may_stop=True)
+                                     **refused}, retrace_may_stop=True,
+                                e9_how=running.E9_BY_ARGUMENT)
     # An arrival is the stop `run_to` made; a stop elsewhere may be a retrace `run_for` left.
     return running.stop_or_base(session, True, e9, e9_filter, e9_stamp, fields,
-                                retrace_may_stop=verdict != contract.TARGET)
+                                retrace_may_stop=verdict != contract.TARGET,
+                                e9_how=running.E9_BY_ARGUMENT)

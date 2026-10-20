@@ -33,7 +33,7 @@ def recorder(monkeypatch: pytest.MonkeyPatch) -> Iterator[recording.Recorder]:
 def test_with_nothing_recorded_the_export_is_no_recording(
         monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path) -> None:
     monkeypatch.setattr(dosbox_mcp.RECORDER, "recording", None)
-    out = server.perform_export(path=str(tmp_path / "s.json"))
+    out = server.perform_export(dest=str(tmp_path / "s.json"))
     assert out["status"] == "INVALID" and out["code"] == "no_recording", out
 
 
@@ -44,7 +44,7 @@ def test_a_session_on_the_double_is_exported_as_steps_checks_and_named_drops(
     regs = server.registers()
     server.status()
     server.comment_add(ref="F000:0000", text="the entry")
-    out = server.perform_export(path=str(tmp_path / "s.json"))
+    out = server.perform_export(dest=str(tmp_path / "s.json"))
     assert out["status"] == "ok" and out["cut"]["available"] is False, out
     doc = json.loads((tmp_path / "s.json").read_text())
     assert doc["server"] == "dosbox-x" and doc["start"] == {"conf": "/x.conf"}
@@ -81,7 +81,7 @@ def test_a_stop_the_session_counted_before_its_record_moves_no_later_call(
     ses.command = sent  # type: ignore[method-assign]
     server.status()
     server.comment_add(ref="F000:0000", text="after")
-    out = server.perform_export(path=str(tmp_path / "s.json"))
+    out = server.perform_export(dest=str(tmp_path / "s.json"))
     assert [d["op"] for d in out["dropped"]] == ["status", "comment_add"], out
 
 
@@ -152,7 +152,7 @@ def test_a_start_with_a_plan_is_exported_and_its_document_replays_on_the_same_do
                                         {"op": "registers"}])
     assert got["status"] == "ok", got
     server.read_memory(ref="F000:0000", length=1)
-    out = server.perform_export(path=str(tmp_path / "s.json"))
+    out = server.perform_export(dest=str(tmp_path / "s.json"))
     assert out["status"] == "ok" and out["cut"]["available"] is False, out
     doc = json.loads((tmp_path / "s.json").read_text())
     assert "plan" not in doc["start"] and doc["entry"] == "dosbox_x_server.py"

@@ -34,7 +34,7 @@ SOURCES = sorted(p for p in PACKAGE.glob("*.py") if p.name != "mapsweep.py")
 _ARGS: dict[str, dict[str, Any]] = {
     "series_capture": {"frames": [0]},
     "map_load": {"path": "/nonexistent/x.scry-map.json"},
-    "map_save": {"path": "/nonexistent/x.scry-map.json"},
+    "map_save": {"dest": "/nonexistent/x.scry-map.json"},
     "map_add": {"screen": "s", "match": [[0, 0, 1, 1]]},
     "image_diff": {"a": "/nonexistent/a.png", "b": "/nonexistent/b.png"},
     "series_diff": {"a": "/nonexistent/a.json", "b": "/nonexistent/b.json"},
@@ -68,7 +68,7 @@ _ARGS: dict[str, dict[str, Any]] = {
     "state_save": {"name": "x"},
     "state_load": {"name": "x"},
     "perform": {"steps": [{"op": "status"}]},
-    "perform_export": {"path": "/nonexistent/session.json"},
+    "perform_export": {"dest": "/nonexistent/session.json"},
     "drive": {"act": [{"op": "status"}], "pattern": "."},
     "comment_add": {"ref": "x", "text": "t"},
     "comment_delete": {"ref": "x"},

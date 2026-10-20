@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import asyncio
 import time
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -152,6 +153,9 @@ def test_a_start_plan_lights_the_window_while_it_runs(monkeypatch: pytest.Monkey
         def show(self, state: presence.State) -> None:
             shown.append(state)
 
+        def repaint(self, still: Callable[[], bool]) -> None:
+            """A guest parked at the debugger draws on its own."""
+
     def lit(session: Any, asked: bool, shared: bool) -> presence.Shown:
         return presence.Presence.open(Shows(), ())
 
@@ -186,7 +190,7 @@ def test_a_mouse_move_keeps_its_reply_when_the_session_dies_after_it(
     asked: list[int] = []
 
     def live() -> object:
-        """A session the first time, buried after it, as `live()` buries a dead one."""
+        """A session the first time, refused after it, as `live()` refuses a dead one."""
         asked.append(1)
         if len(asked) > 1:
             raise RuntimeError("no live session")

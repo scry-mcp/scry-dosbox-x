@@ -53,7 +53,7 @@ def test_bricks_map_finds_the_play_screen_and_a_control_is_clicked_by_name(
         # The session layer: the screen in front, saved beside the loaded one as one map.
         added = _ok(server.map_add(screen="header", match=[[0, 0, 52, 8]]))
         assert added["shadows_file"] is False
-        saved = _ok(server.map_save(path=str(tmp_path / "bricks.scry-map.json")))
+        saved = _ok(server.map_save(dest=str(tmp_path / "bricks.scry-map.json")))
         assert saved["screens"] == 2 and saved["promoted"] == ["header"]
         _ok(server.resume())
         _ok(server.send_keys(keys=["m"], expect="MOUSE ON$", seconds=10))

@@ -179,7 +179,7 @@ def close(progress: ds.Progress) -> dict[str, Any]:
     """The body of the `close` tool."""
     if STATE.session is None:
         return st.reply(closed=False, ended_by="none", note="there was no session")
-    was = STATE.session.state()
+    was = st.session_block(whole=True)        # the session's last account, whole
     rc = STATE.session.close(progress=progress)
     # READ AFTER THE CLOSE, because that is when it can be set: a child SIGKILLed and never
     # reaped has no exit code, and `exit_code` says why in its place (an emulator may still

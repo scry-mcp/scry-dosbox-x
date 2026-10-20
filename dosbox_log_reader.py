@@ -5,6 +5,8 @@ session method's body, and `Session` delegates to it."""
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from scry_core import log_wait as core_wait
 from scry_core import reply_contract as contract
 from scry_core.progress import Progress, no_progress
@@ -48,17 +50,24 @@ def log(ses: ds.Session, pattern: str, limit: int, channel: str) -> tuple[list[s
     return dlogs.filter_log(ses._log_text(), pattern, limit, channel)
 
 
+def require_logfile(ses: ds.Session, what: str) -> Path:
+    """The session's logfile, or the log readers' refusal of a session with none, `no_channel`,
+    naming `what` it lacks. A tool that needs the log for a listing says which, in its own."""
+    if ses.launch.logfile is None:
+        raise Invalid("no_channel",
+                      f"this session was started without a logfile, so there is no {what}")
+    return ses.launch.logfile
+
+
 def _log_text(ses: ds.Session) -> str:
     """The log file, or the refusal that says which nothing: no logfile on the
     session, or a file the emulator has not created yet."""
-    if ses.launch.logfile is None:
-        raise Invalid("no_channel", "this session was started without a logfile, so there is "
-                      "no log channel to filter")
-    if not ses.launch.logfile.exists():
-        raise Invalid("no_channel", f"no log at {ses.launch.logfile}: the emulator has not "
+    log = require_logfile(ses, "log channel to filter")
+    if not log.exists():
+        raise Invalid("no_channel", f"no log at {log}: the emulator has not "
                       f"written anything yet, which is not the same as having "
                       f"nothing to say")
-    return ses.launch.logfile.read_text(encoding="utf-8", errors="replace")
+    return log.read_text(encoding="utf-8", errors="replace")
 
 
 def _e9_text(ses: ds.Session) -> str:
@@ -98,13 +107,10 @@ def e9_new_since(ses: ds.Session, offset: int) -> tuple[list[str], int]:
     session with no logfile has no channel, and a log the guest has not created yet
     cannot be looked at, which is not zero lines. The wait's reader keeps its own
     reading of an absent log, because nothing yet is what a wait is for."""
-    if ses.launch.logfile is None:
+    log = require_logfile(ses, "instrumentation channel to summarise")
+    if not log.exists():
         raise Invalid("no_channel",
-            "this session was started without a logfile, so there is no "
-                      "instrumentation channel to summarise")
-    if not ses.launch.logfile.exists():
-        raise Invalid("no_channel",
-            f"no log at {ses.launch.logfile}: the guest has not written "
+            f"no log at {log}: the guest has not written "
                       f"anything yet, which is not the same as having nothing to say")
     return ses._e9_since(offset)
 
@@ -114,10 +120,7 @@ def e9_since_mark(ses: ds.Session, mark: int) -> list[str]:
     LOOK after an act. A session with no logfile has no channel; a log that has not
     appeared yet answers nothing, which is an answer about the window. The count is
     bounded by what the guest wrote, not by a limit here: the caller cuts."""
-    if ses.launch.logfile is None:
-        raise Invalid("no_channel",
-            "this session was started without a logfile, so there is no "
-                      "instrumentation channel to look at")
+    require_logfile(ses, "instrumentation channel to look at")
     lines, _ = ses._e9_since(mark)
     return lines
 
@@ -137,11 +140,7 @@ def e9_mark(ses: ds.Session) -> int:
     belongs to before it. Finding the last newline would mean reading the whole file,
     which on a multi-megabyte log is the cost `_e9_since` was written to avoid.
     """
-    if ses.launch.logfile is None:
-        raise Invalid("no_channel",
-            "this session was started without a logfile, so there is no "
-                      "instrumentation channel to mark a position in")
-    log = ses.launch.logfile
+    log = require_logfile(ses, "instrumentation channel to mark a position in")
     return log.stat().st_size if log.exists() else 0
 
 
@@ -176,11 +175,8 @@ def log_wait(ses: ds.Session, pattern: str, seconds: float, channel: str, mark: 
     # THE ONLY REFUSAL BEFORE THE WAIT. A log that does not EXIST yet, or holds no
     # instrumentation yet, is the ordinary state of a guest just resumed, and waiting for its
     # FIRST trace is what this is for; a session with no logfile has no channel to wait on.
-    if ses.launch.logfile is None:
-        raise Invalid("no_channel",
-            "this session was started without a logfile, so there is no "
-                      "instrumentation channel to wait on, and waiting cannot "
-                      "bring one into existence")
+    require_logfile(ses, "instrumentation channel to wait on, and waiting cannot "
+                    "bring one into existence")
     offset = mark
 
     def fresh() -> list[str]:
