@@ -29,7 +29,7 @@ from matrix_common import (
     must,
     server,
 )
-from scry_core import focus_watch
+from scry_core import focus_gate, focus_watch
 
 FLAGS_VAR = "DOSBOX_X_LIVE_WINDOW_FLAGS"
 NAMES = {"dosbox-x"}
@@ -62,7 +62,7 @@ def _hold(background: bool) -> tuple[int, int]:
     boot(conf=conf_without_launch(PROBE_CONF, "PROBE.COM"), cwd=GUEST, shared=True,
          window_flags=_flags(), program="PROBE.COM", background=background)
     must(M.call(server.resume), "releasing the probe")
-    time.sleep(focus_watch.HOLD_S)
+    time.sleep(focus_gate.HOLD_S)
     close_whatever()
     return began, focus_watch.now_ms()
 
@@ -74,12 +74,12 @@ def section_o_control() -> None:
     watch.__enter__()
     WATCH.append(watch)
     print(f"  focus watch: {tsv}", flush=True)
-    c = focus_watch.control(watch, NAMES, _hold)
+    c = focus_gate.control(watch, NAMES, _hold)
     for spec, judged in zip(O_CONTROL, (c.front, c.behind, c.space), strict=True):
         if judged.status == "BLOCKED":
             M.block(spec.label, judged.reason)
         else:
-            M.judge(spec.label, judged.status == "PASS", judged.reason)
+            M.judge(spec.label, judged.status == "OK", judged.reason)
     if c.since is not None:
         SINCE.append(c.since)
 
@@ -89,9 +89,9 @@ def section_o_verdict() -> None:
     if not WATCH:
         M.block_rest("the control never started the watch")
         return
-    v = focus_watch.verdict(WATCH.pop(), NAMES, SINCE[0] if SINCE else None,
+    v = focus_gate.verdict(WATCH.pop(), NAMES, SINCE[0] if SINCE else None,
                             focus_watch.now_ms())
     if v.status == "BLOCKED":
         M.block_rest(v.reason)
     else:
-        M.judge(O_VERDICT[0].label, v.status == "PASS", v.reason)
+        M.judge(O_VERDICT[0].label, v.status == "OK", v.reason)
