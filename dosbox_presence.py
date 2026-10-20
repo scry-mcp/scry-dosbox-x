@@ -52,7 +52,7 @@ def channel_args(look: presence.Look = presence.LOOK) -> str:
     return (f"rgb={look.rgb:06X} edge={look.edge:g} steps={look.steps} "
             f"acting={look.acting_alpha:.3f} held={look.held_alpha:.3f} fade={look.fade_s:g} "
             f"outline={look.pointer_outline_rgb:06X} size={look.pointer_size:g} "
-            f"sprite={'/'.join(look.pointer)}")
+            f"glide={look.pointer_glide_s:g} sprite={'/'.join(look.pointer)}")
 
 
 class Channel(Protocol):

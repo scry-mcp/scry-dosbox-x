@@ -28,13 +28,14 @@ def test_every_registered_tool_is_declared_driving_or_still_and_no_other() -> No
 def test_the_look_goes_to_the_channel_one_word_per_key_with_its_arrow() -> None:
     words = dict(w.split("=", 1) for w in dpresence.channel_args().split(" "))
     assert list(words) == ["rgb", "edge", "steps", "acting", "held", "fade", "outline", "size",
-                           "sprite"]
+                           "glide", "sprite"]
     look = presence.LOOK
     assert words == {"rgb": f"{look.rgb:06X}", "edge": f"{look.edge:g}",
                      "steps": str(look.steps), "acting": f"{look.acting_alpha:.3f}",
                      "held": f"{look.held_alpha:.3f}", "fade": f"{look.fade_s:g}",
                      "outline": f"{look.pointer_outline_rgb:06X}",
-                     "size": f"{look.pointer_size:g}", "sprite": "/".join(look.pointer)}
+                     "size": f"{look.pointer_size:g}", "glide": f"{look.pointer_glide_s:g}",
+                     "sprite": "/".join(look.pointer)}
 
 
 class _Channel:

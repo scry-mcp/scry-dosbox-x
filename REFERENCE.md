@@ -164,8 +164,9 @@ the picture, dim from `start` to `close`, bright while a call that drives the ma
 that can move the guest on or change what it holds: it lets the machine run or stops it, feeds
 it input, writes it or restores it; `debug` counts too, since any command may), fading back to
 dim over a couple of seconds once the call ends, the guest running or held at the debugger.
-Once the session has moved the guest's mouse an orange arrow marks the guest's pointer too; a
-program driven by keys alone shows the edge only. So whoever sits at the host can tell whether
+Once the session has moved the guest's mouse an orange arrow marks the guest's pointer too,
+gliding to each new place rather than jumping (drawing only: the guest's pointer is where the
+move put it at once); a program driven by keys alone shows the edge only. So whoever sits at the host can tell whether
 to keep their hands off, and whether there is still a session to wait for. A machine left
 running by `resume` shows the dim edge: the indicator marks the calls, not the machine.
 `start(presence=False)` leaves it off. The edge's width is a share of the picture DOSBox-X
