@@ -15,6 +15,7 @@ from typing import Any, cast
 import pytest
 from scry_core import cancel
 
+import dosbox_inputs as inputs
 import dosbox_launch as dlaunch
 import dosbox_mcp
 import dosbox_session as ds
@@ -294,9 +295,9 @@ class ShotFake(StateFake):
         self.shots = 0
         self.sent: list[list[bytes]] = []
         self.writes = True                   # False: the stub took the command, nothing came
-        self.stub_protocol = "2"
+        self.stub_protocol = inputs.STUB_PROTOCOL
 
-    def send_commands(self, commands: list[bytes]) -> int:
+    def send_commands(self, commands: list[bytes]) -> list[str]:
         self.sent.append(list(commands))
         if commands == [ds.SCREENSHOT_COMMAND] and self.writes and not self.parked:
             assert self.launch.captures_dir is not None
@@ -304,7 +305,7 @@ class ShotFake(StateFake):
             shot = self.launch.captures_dir / f"g_{self.shots:03d}.png"
             shot.write_bytes(b"\x89PNG" + bytes(20))
             self.shots += 1
-        return 1
+        return []
 
 
 def test_snapshot_refuses_a_dangling_link_dest_and_sends_nothing(tmp_path: Path) -> None:

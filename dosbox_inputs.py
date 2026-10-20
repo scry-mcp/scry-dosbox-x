@@ -27,7 +27,6 @@ from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Code, unavailable
 
 import dosbox_launch as dlaunch
-import dosbox_log_reader as logreader
 import dosbox_logs as dlogs
 import dosbox_running as running
 import dosbox_session as ds
@@ -97,12 +96,11 @@ def scan_sequence(keys: list[str], mods: str) -> bytes:
 
 # THE STUB'S PROTOCOL, the opcodes `guest/inject.asm` reads (its header is the contract).
 OP_KEY, OP_BUTTON, OP_MOVE, OP_REPORT = b"K", b"B", b"M", b"R"
-STUB_PROTOCOL = "2"
+STUB_PROTOCOL = "3"
 STUB_ANNOUNCE = re.compile(r"STUB  \. inject device=(\w+)(?: proto=(\d+))?")
 REPORT_LINE = re.compile(
     r"STUB  \. mouse x=(\d+) y=(\d+) buttons=(\d+) max=(\d+),(\d+) mode=(\d+) "
     r"screen=(\d+)x(\d+)")
-REPORT_WAIT_S = 5.0     # a report is two ticks away; this bounds a stub that never answers
 
 BUTTONS = {"left": 0, "right": 1, "middle": 2}
 MAX_COORD = 0x7FFF      # INT 33h takes a coordinate in a signed 16-bit register
@@ -183,19 +181,21 @@ def move_command(x: int, y: int) -> bytes:
 
 def require_stub(session: ds.Session) -> None:
     """The stub has to be resident and speak this protocol before anything is sent: an older
-    stub reads every byte as a scan code, so a mouse command would arrive as keystrokes. Read
-    off the log when the session has one; without a log there is nothing to read it from, and
-    the keys go out on the conf's word."""
+    stub would take the frames for scan codes or for other commands. Read off the log when the
+    session has one; without a log there is nothing to read it from, and the input goes out on
+    the conf's word."""
     if session.launch.logfile is None or session.stub_protocol == STUB_PROTOCOL:
         return
     announce = [STUB_ANNOUNCE.search(line) for line in session.e9_since_mark(0)]
     found = [m for m in announce if m is not None]
     if not found:
+        loaded = (f"`start(program=...)` mounted it on {session.launch.stub_drive}: and ran it "
+                  f"after the conf's [autoexec], which may have exited or run the program first"
+                  if session.launch.stub_drive else "or `start(program=...)` loads it by itself")
         raise ds.Invalid("no_channel",
             "the guest has not announced the input stub (`STUB  . inject` on E9), so nothing "
             "would receive the input: the conf's [autoexec] runs it before the program, "
-            f"`mount g \"{dlaunch.GUEST_DIR}\"` then `G:\\INJECT.COM`, or `start(program=...)` "
-            "loads it by itself")
+            f"`mount g \"{dlaunch.GUEST_DIR}\"` then `G:\\INJECT.COM`; {loaded}")
     device, proto = found[-1].groups()
     if device != "present":
         raise ds.Invalid("no_channel",
@@ -218,10 +218,26 @@ class Delivered(ds.Invalid):
         self.fields = fields
 
 
-# THE STUB WRITES ON THE SAME CHANNEL THE PROGRAM DOES, and its read-back lands after the mark a
-# reaction is waited from: a pattern its line matches would be served as the program reacting.
-# Spelled without a space and under its own flags, so a caller's verbose or case-blind pattern
-# cannot change what it excludes.
+def _delivered(e: ds.Invalid) -> Delivered:
+    """A send that failed part-way: SOME OF IT MAY HAVE GONE IN (the refusal says how much), so
+    the reply says it was delivered and a caller does not send it twice."""
+    return Delivered(e.code, str(e), {"route": "guest"})
+
+
+def _send(session: ds.Session, commands: list[bytes]) -> list[str]:
+    """The commands down the stub's link, its report lines back; a machine that stopped under
+    the send has its stop recorded before the refusal goes on."""
+    try:
+        return session.send_commands(commands)
+    except ds.Invalid as e:
+        if e.code == "wait_stopped":
+            running.observe_stop(session)
+        raise
+
+
+# THE STUB'S ANNOUNCE IS ON THE PROGRAM'S CHANNEL, and a reaction is waited for there: a pattern
+# its line matches would be served as the program reacting. Spelled without a space and under its
+# own flags, so a caller's verbose or case-blind pattern cannot change what it excludes.
 STUB_LINE = r"(?-i:STUB[ ]{2}\.[ ])"
 _GLOBAL_FLAGS = re.compile(r"^(?:\(\?[aiLmsux]+\))+")
 
@@ -234,6 +250,25 @@ def program_reaction(expect: str) -> str:
     head = flags.group(0) if flags else ""
     body = expect[len(head):] + ("\n" if "x" in head else "")
     return rf"{head}^(?!.*{STUB_LINE})(?=.*?(?:{body}))"
+
+
+def _ready(session: ds.Session, what: str, expect: str | None) -> None:
+    """What an input needs before anything goes to the guest, the mouse's first report
+    included: a running machine, a log to check `expect` against, a stub of this protocol."""
+    _refuse_stopped(session, what)
+    if expect is not None:
+        _expect_mark(session)
+    require_stub(session)
+
+
+def _expect_mark(session: ds.Session) -> int:
+    """Where the log ends, the mark a reaction is waited from; a session with no log to wait on
+    is refused before anything is posted, because a post cannot be taken back."""
+    try:
+        return session.e9_mark()
+    except ds.Invalid as e:
+        raise ds.Invalid("bad_argument", f"`expect` cannot be checked: {e}. Refused before posting "
+                         f"anything, because a post cannot be taken back") from None
 
 
 def _refuse_stopped(session: ds.Session, what: str) -> None:
@@ -253,14 +288,9 @@ def _refuse_stopped(session: ds.Session, what: str) -> None:
 
 
 def _report(session: ds.Session) -> Report:
-    mark = session.e9_mark()
-    session.send_commands([OP_REPORT])
-    got = session.e9_wait(REPORT_LINE.pattern, REPORT_WAIT_S, mark=mark)
-    if got["verdict"] != contract.TARGET:
-        raise ds.Invalid("host_failed",
-            f"the stub did not report the pointer within {REPORT_WAIT_S}s: it is not reading "
-            "the port (a guest that masked the timer, or a stub that is gone)")
-    return parse_report(str(got["line"]))
+    # ON THE STUB'S OWN LINE, after its acknowledgement: on E9 it shared the program's channel
+    # and could land inside one of the program's lines.
+    return parse_report(_send(session, [OP_REPORT])[0])
 
 def verify_block(expect: str, reaction: dict[str, object]) -> dict[str, Any]:
     """The `verify` block a post or an act hands back, ONE shape for `send_keys`,
@@ -324,9 +354,8 @@ def _post_and_verify(session: ds.Session, kind: str, post: Any, expect: str | No
         return _verify(session, kind, post, expect, seconds, progress, fields)
     except Delivered as e:
         return st.reply(status="INVALID", code=e.code, **fields, **e.fields, delivered=True,
-                        verify={"checked": False, "why": "the read-back failed after the "
-                                                      "commands went in"},
-                        message=f"the {kind} went into the guest, and then {e}")
+                        verify={"checked": False, "why": "the send failed part-way"},
+                        message=f"the {kind} was sent, and some of it may have gone in: {e}")
 
 
 def _verify(session: ds.Session, kind: str, post: Any, expect: str | None,
@@ -338,11 +367,7 @@ def _verify(session: ds.Session, kind: str, post: Any, expect: str | None,
             "why": "no `expect` was given, so the reply says what went into the guest and NOT "
                    "that the program took it; pass expect=<E9 pattern> to confirm its reaction"})
     wait_s = EFFECT_WAIT_DEFAULT_S if seconds is None else seconds
-    try:
-        mark = session.e9_mark()          # refuses a session with no logfile: no channel
-    except ds.Invalid as e:
-        raise ds.Invalid("bad_argument", f"`expect` cannot be checked: {e}. Refused before posting "
-                         f"anything, because a post cannot be taken back") from None
+    mark = _expect_mark(session)
     host = dict(fields, **post())
     try:
         reaction = session.e9_wait(program_reaction(expect), wait_s, mark=mark,
@@ -465,17 +490,14 @@ def send_keys(session: ds.Session, keys: list[str], modifiers: list[str] | None,
               progress: ds.Progress = ds.no_progress) -> dict[str, Any]:
     """The body of the `send_keys` tool."""
     check_keys(keys, modifiers, expect, seconds)
-    _refuse_stopped(session, "a key")
-    require_stub(session)
+    _ready(session, "a key", expect)
     seq = scan_sequence(keys, "+".join(modifiers) if modifiers else "-")
 
     def post() -> dict[str, Any]:
         try:
-            session.send_commands(key_commands(seq))
+            _send(session, key_commands(seq))
         except ds.Invalid as e:
-            # SOME OF IT MAY HAVE GONE IN: the socket can die between two commands, and a key
-            # that went in must not be sent again.
-            raise Delivered(e.code, str(e), {"route": "guest"}) from None
+            raise _delivered(e) from None
         return {"route": "guest", "posted": len(keys), "bytes": len(seq), "ticks": len(seq)}
     return _post_and_verify(session, "key", post, expect, seconds, progress=progress,
                             keys=keys, modifiers=modifiers or [])
@@ -549,15 +571,10 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
                progress: ds.Progress = ds.no_progress,
                aimed: dict[str, Any] | None = None) -> dict[str, Any]:
     """The body of the `send_mouse` tool: read where the pointer is, move it, press, read it
-    back. The read-back needs the log, so a session without one is refused before anything.
-    `aimed` is the control a `target` named (`screen_map.Maps.target`), whose screen the guest
-    must still show the kind and size of."""
+    back, each report off the stub's own line. `aimed` is the control a `target` named
+    (`screen_map.Maps.target`), whose screen the guest must still show the kind and size of."""
     check_mouse(x, y, button, action, units, expect, seconds)
-    # THE POINTER IS READ BACK off the guest's E9 log: no logfile, no mouse.
-    logreader.require_logfile(session, "E9 log to read the pointer back from: start it with "
-                                       "logfile= to use the mouse")
-    _refuse_stopped(session, "a mouse event")
-    require_stub(session)
+    _ready(session, "a mouse event", expect)
     before = _report(session)
     if aimed is not None:
         _still_the_screen(before, aimed)
@@ -567,15 +584,10 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
         commands = [] if target is None else [move_command(*target)]
         commands += [] if button is None else button_commands(button, action)
         try:
-            session.send_commands(commands)
+            _send(session, commands)
             after = _report(session)
-        except ds.E9Stopped as e:
-            running.observe_stop(session)
-            raise Delivered(e.code, str(e), {"route": "guest"}) from None
         except ds.Invalid as e:
-            # SOME OF IT MAY HAVE GONE IN: the socket can die between two commands, and the
-            # read-back runs after all of them.
-            raise Delivered(e.code, str(e), {"route": "guest"}) from None
+            raise _delivered(e) from None
         landed = target is None or (after.x, after.y) == target
         fields: dict[str, Any] = {"route": "guest", "pointer": _pointer(after),
                                   "arrived": landed}

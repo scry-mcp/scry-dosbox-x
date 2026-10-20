@@ -5,6 +5,7 @@ session comes up and goes down changes for reasons the tool registrations do not
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import replace
 from typing import Any
 
 from scry_core import reply_contract as contract
@@ -80,6 +81,8 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         background=dlaunch.judge_background(background, shared),
     )
     dlaunch.validate(launch)
+    if launch.program and launch.input_port is not None:
+        launch = replace(launch, stub_drive=dlaunch.stub_drive(launch.conf))
     # KEY AND VALIDATE THE DECLARATION STORE BEFORE THE EMULATOR BOOTS. Its constructor
     # reads and parses the persisted file, and a corrupt or hand-edited one raises a
     # `DeclarationError` -- which, done after the session was up, escaped as a traceback
@@ -94,7 +97,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     for name, made in (("captures_dir", launch.captures_dir), ("state_dir", launch.state_dir)):
         if made is not None:
             paths.make_directory(name, made)
-    binary_facts = binaries.facts(resolved)
+    binary_facts = dlaunch.binary_facts(resolved)
     session = ds.Session(launch)
     STATE.starting = session
     try:

@@ -53,6 +53,7 @@ import dosbox_control as control
 import dosbox_launch as dlaunch
 import dosbox_paths as paths
 import dosbox_presence as dpresence
+import dosbox_stub_link as stub_link
 
 #: What this server, and after it the guardian beside every emulator, are called in the host's
 #: process list.
@@ -462,7 +463,6 @@ def avi_facts(data: bytes) -> dict[str, object]:
 
 
 SCREENSHOT_COMMAND = b"S"   # the stub's opcode for the device's capture trigger (guest/inject.asm)
-COMMAND_GAP_S = 0.06    # the pause between stub commands: just over one 18.2 Hz timer tick
 
 BREAK_IN_WAIT_S = 5.0     # from BREAK on the channel to the debugger's prompt on the terminal
 SNAPSHOT_WAIT_S = 10.0
@@ -723,9 +723,11 @@ class Session:
             # init, and a guest polling a serial port with no peer BLOCKS the emulator
             # ("Nullmodem: block on polling", its own log line).
             self._input: socket.socket | None = None
+            self._link: stub_link.Link | None = None
             if listener is not None:
                 self._input = dlaunch.accept_input(listener, dlaunch.INPUT_CONNECT_S,
                                                    self.proc.poll)
+                self._link = stub_link.Link(self._input, self.at_debugger)
         except BaseException:
             if listener is not None:
                 listener.close()
@@ -2542,32 +2544,17 @@ class Session:
     def state_list(self) -> dict[str, object]:
         return saved_states.state_list(self)
 
-    def send_commands(self, commands: list[bytes]) -> int:
-        """The input route's post: each framed command goes down the socket the session
-        connected at start, and the guest's resident stub carries out one per timer tick.
-        Returns how many bytes went. A socket the emulator closed (its bound expired) is
-        reported as the route being gone, not as a delivery."""
-        if self._input is None:
+    def send_commands(self, commands: list[bytes]) -> list[str]:
+        """The input route's post: each command down the socket the session connected at start,
+        carried out by the guest's resident stub one per timer tick and acknowledged
+        (`dosbox_stub_link`); the lines its reports brought back. A socket the emulator closed
+        (its bound expired) is the route being gone, not a delivery."""
+        if self._link is None:
             raise Invalid("no_channel", "this session has no input route: its socket was "
                           "never connected")
         if not commands:
             raise Invalid("bad_argument", "nothing to send")
-        # ONE COMMAND PER TICK, PACED FROM HERE AS WELL AS QUEUED THERE. The stub carries out
-        # one command per timer tick because the emulated 8042 holds one byte; a whole
-        # sequence written in one burst once overran the guest's UART (the emulator logged
-        # `Overrun RX:1` and the key never came). The stub's FIFO queues a burst, and the gap
-        # below keeps the arrivals under the tick rate regardless, so neither half has to be
-        # right alone. A command's own bytes go together: five fit the FIFO whole.
-        try:
-            for i, command in enumerate(commands):
-                if i:
-                    time.sleep(COMMAND_GAP_S)
-                self._input.sendall(command)
-        except OSError as e:
-            raise Invalid("session_broken",
-                f"the input socket is gone ({e}): the emulator closed its end, so "
-                          f"nothing more was delivered") from None
-        return sum(len(c) for c in commands)
+        return self._link.send(commands)
 
     # ------------------------------------------------------------------ closing
 
@@ -2667,6 +2654,7 @@ class Session:
                 with contextlib.suppress(OSError):
                     sock.close()
                 self._input = None
+                self._link = None
             channel = getattr(self, "control", None)
             if channel is not None:
                 channel.close()

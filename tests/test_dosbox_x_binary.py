@@ -17,6 +17,8 @@ from scry_core import binaries as core_binaries
 from scry_core.reply_contract import Invalid
 
 import dosbox_binary as binaries
+import dosbox_launch as dlaunch
+import dosbox_session as ds
 import dosbox_x_server as server
 
 # The stub answers as the real build does (`dosbox_binary.version`).
@@ -194,3 +196,32 @@ def test_the_path_rung_answers_an_absolute_path(tmp_path: Path,
     monkeypatch.setenv("PATH", "rel")
     got = binaries.resolve("")
     assert got == binaries.Resolved(os.path.join(str(tmp_path), "rel", "dosbox-x"), "PATH")
+
+
+def test_both_probes_of_a_build_spawn_it_behind_as_a_session_does(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """An option this build does not know starts the emulator, so its `-version` and
+    `-helpdebug` probes are launched as a session is, behind, whatever the server's own
+    environment holds."""
+    monkeypatch.delenv(dlaunch.BACKGROUND_VAR, raising=False)
+    seen = tmp_path / "seen"
+    mine = build(tmp_path, version=f'echo "v=${dlaunch.BACKGROUND_VAR}" >> {seen}; '
+                                    f'echo "{BANNER}" >&2; exit 1')
+    text = mine.read_text().replace(
+        '-helpdebug) echo "-break-start"',
+        f'-helpdebug) echo "h=${dlaunch.BACKGROUND_VAR}" >> {seen}; echo "-break-start"')
+    assert text != mine.read_text(), "the -helpdebug arm was not found to record its env"
+    mine.write_text(text)
+    got = cast(dict[str, Any], server.build_check(binary=str(mine)))
+    assert got["status"] == "ok", got
+    assert sorted(seen.read_text().split()) == ["h=1", "v=1"], seen.read_text()
+    # AND `start`'s own probe, before it spawns the session.
+    seen.unlink()
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+
+    def spawn(launch: Any) -> Any:
+        raise ds.Invalid("session_broken", "not starting anything")
+    monkeypatch.setattr("dosbox_x_server.ds.Session", spawn)
+    server.start(conf=str(conf), cwd=str(tmp_path), session_seconds=60, binary=str(mine))
+    assert seen.read_text().split() == ["v=1"], seen.read_text()

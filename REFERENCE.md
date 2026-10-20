@@ -1437,19 +1437,29 @@ takes ONE command off the socket on every timer tick and carries it out in the g
 byte into the emulated 8042, a mouse button into the device's button register, the pointer
 placed with INT 33h, a report of where the pointer is, a screenshot through the device's
 capture trigger. One command per tick is the 8042's own pace (the stub's header says why).
+Each command goes as a numbered, checked frame and is acknowledged on the same serial link, and
+the next goes only once the last is, so the guest sets the pace (the stub's header has the
+framing and why). A frame that loses a byte on the way is sent again and runs nothing else, and
+one whose acknowledgement was lost is not carried out twice. A stub that acknowledges none of a
+frame's sends (a guest that masked the timer, a stub missing from a loaded state, a guest too
+slow to tick within the wait) is `host_failed` naming how many commands were
+acknowledged before it. The pointer's report comes back on the serial link too, never on the
+E9, where it could land inside a line the program was writing.
 
 What the conf owes this route is ONE line: its autoexec runs the stub before the program
 (mount the package's `guest/` directory, or copy the COM next to the program). A session
 started with `program` needs none: `start` loads the stub with two `-c` commands of its own
-ahead of the program's (why a conf that runs its own program needs the line is under *The
-session*, `program`). A conf that runs the stub AND a `program` session end with one copy: the
+ahead of the program's, on the first drive from Y: down that the conf's `[autoexec]` does not
+mount with `mount`, `imgmount` or `subst`; a conf that mounts them all is refused, naming its
+mounts. (Why a conf that runs its own program needs the line: *The session*, `program`.) A conf that runs the stub AND a `program` session end with one copy: the
 second says `STUB  . inject already resident` and leaves. The stub says `STUB  . inject
-device=present proto=2` on the E9 when the device answered, and exits saying `absent` when
+device=present proto=3` on the E9 when the device answered, and exits saying `absent` when
 it did not; the first input reads that line off the log and refuses (`no_channel`, naming
 the fix) when it is missing, when the device is absent, or when the stub speaks another
-protocol, because an older stub reads every byte as a scan code and a mouse command would
-arrive as keystrokes. A session with no `logfile` has no line to read: keys go out on the
-conf's word, and the mouse, which reads its pointer back through the log, is refused. A conf
+protocol, because an older stub would read the frames as other commands. A session with no
+`logfile` has no line to read: input goes out on the conf's word. The acknowledgement then says
+only that a stub of this protocol took it; an older stub resident there may already have read
+the frames as other commands. A conf
 that configures `serial1` itself loses it to the route. The session listens on the port before
 the emulator exists and holds it, so nothing can take it between the pick and the emulator's
 dial; a port something else already holds is refused before the emulator exists.
@@ -1517,14 +1527,13 @@ pointer where it is asked. `screen` units know the standard BIOS modes (text, as
 the driver's range holds at eight units a cell, so 80 by 25 or 80 by 50; 320x200, 640x200,
 640x350, 640x480); in any other mode (VESA, a custom one) they are refused
 naming the mode, and `units="mouse"` reaches it in the driver's coordinates. A target off
-the screen or outside the driver's range is refused before anything is sent, as is a session
-without a `logfile` (the read-back goes through it). A double click is two clicks a tick
+the screen or outside the driver's range is refused before anything is sent. A double click is two clicks a tick
 apart, which is what a DOS program timing its own double click sees; a drag is `down`, a
 move, `up`. What the route does NOT reach: a mouse driver loaded inside the guest, a program
 reading the PS/2 port directly, and a program that reads the driver's motion counters (INT
 33h AX=0Bh): setting the pointer produces no motion, and DOSBox-X counts motion only while the
-host mouse is captured. The stub's own report line is never served as the program's reaction
-to `expect`.
+host mouse is captured. A line the stub writes on the E9 (its announce, a second copy saying it
+stays out) is never served as the program's reaction to `expect`.
 
 **Capturing what the screen shows: both halves, and they are not symmetric.** Start the
 session with `capture_video=True` and a `program` for the recorder to wrap; it records into

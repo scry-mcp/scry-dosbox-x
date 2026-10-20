@@ -12,6 +12,7 @@ import pytest
 from test_dosbox_x_server import NM_TEXT, _names, clean_session  # noqa: F401
 
 import dosbox_declarations as dec
+import dosbox_inputs as inputs
 import dosbox_launch as dlaunch
 import dosbox_mcp
 import dosbox_sequence as sequence
@@ -65,10 +66,12 @@ class RunningGuest:
                  **_: object) -> dict[str, object]:
         return {"verdict": "TARGET", "line": "x", "already": True}
 
-    stub_protocol = "2"
+    stub_protocol = inputs.STUB_PROTOCOL
 
-    def send_commands(self, commands: list[bytes]) -> int:
-        return sum(len(c) for c in commands)
+    def send_commands(self, commands: list[bytes]) -> list[str]:
+        """The stub's answer: one report line per `R`, as the real link hands back."""
+        return ["STUB  . mouse x=0 y=0 buttons=0 max=639,199 mode=3 screen=720x400"
+                for c in commands if c == b"R"]
 
     def break_in(self, seconds: float = 5.0, progress: object = None) -> float:
         self.stopped = True

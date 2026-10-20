@@ -8,14 +8,28 @@
 ; takes ONE COMMAND off COM1 and carries it out inside the machine. It is what the upstream
 ; maintainer suggested in issue #4601 while a first-class control channel does not exist.
 ;
-; THE COMMANDS (protocol 2), each an opcode byte and a fixed payload:
+; A FRAME (protocol 3): SYNC (A5h), a sequence byte (1 to 255), then the command, an opcode
+; byte and a fixed payload, then a CHECK: every byte after SYNC XORed into FFh. A SYNC byte can sit
+; inside a payload (A5h is the break of a key), so a frame short of a byte can be completed by the
+; next one's: the check is what makes that frame not add up, and one that does not is dropped. Every frame is ACKNOWLEDGED on COM1, the line it came in on: 5Ah, its
+; sequence byte, its opcode, then 1 when it was carried out or 0 when it was not because it
+; repeats the last sequence carried out. The host sends the next frame only once the last is
+; acknowledged, so the UART's queue never holds more than one frame and the guest sets the
+; pace. A byte lost on the way costs one frame and never runs another: a frame still short after
+; STALE_TICKS ticks with nothing arriving is dropped, the stub hunts for the next SYNC, and the
+; host, with no acknowledgement, sends the same frame again; if it was the acknowledgement that
+; was lost, the repeat is acknowledged with 0 and not carried out twice. An opcode the stub does
+; not know drops its frame the same way, unacknowledged. The commands:
 ;   'K' b              a scan byte into the 8042 keyboard register (the host composes makes,
 ;                      breaks and E0 prefixes, so the stub knows nothing about keys)
 ;   'B' b              a mouse button into the same register's button sub-selector: bit 7
 ;                      pressed or released, the low bits which button (0 left, 1 right, 2 middle)
 ;   'M' xl xh yl yh    INT 33h AX=04h: the pointer AT these driver coordinates, exactly
-;   'R'                report on E9: INT 33h AX=03h (position, buttons), AX=26h (the driver's
-;                      range), the BIOS video mode, the display size
+;   'R'                report, on COM1 after its acknowledgement (a repeat too: it reads,
+;                      it changes nothing), one line ending CR LF:
+;                      INT 33h AX=03h (position, buttons), AX=26h (the driver's range), the
+;                      BIOS video mode, the display size. On COM1, never on E9: the program's
+;                      own lines go to E9, and a report there could split one of them.
 ;   'S'                a screenshot, through the device's capture trigger
 ; An unknown opcode is dropped, so a host speaking a newer protocol cannot wedge the stub.
 ;
@@ -29,7 +43,7 @@
 ; emulator code behind a callback; a mouse driver loaded INSIDE the guest is not reached by
 ; this route and is not supported.
 ;
-; It announces itself on the E9 port (`STUB  . inject device=present proto=2`) so a host
+; It announces itself on the E9 port (`STUB  . inject device=present proto=3`) so a host
 ; reading the log can tell whether the device answered, and which protocol it speaks, before
 ; it trusts the route. A build whose device does not answer exits with a code and stays out
 ; of memory.
@@ -57,6 +71,9 @@ REG_VGA_SIZE     equ 006845C0h      ; height << 16 | width, as the display draws
 REG_SCREENSHOT   equ 00C54010h      ; bit 0: take a screenshot
 BIOS_VIDEO_MODE  equ 0449h          ; the BIOS data area's current mode byte (segment 0)
 COM1             equ 3F8h
+SYNC             equ 0A5h           ; a frame's first byte, host to stub
+ACK              equ 5Ah            ; an acknowledgement's first byte, stub to host
+STALE_TICKS      equ 3              ; a frame short this many ticks running is dropped
 
 start:
         ; --- probe: does the device answer? ---
@@ -74,7 +91,8 @@ start:
         ; between two parsers, so a conf that runs the stub AND a server that loads it before
         ; a `program` must end with one. Asked before the UART is touched, so the resident
         ; copy's queue is left alone. The handler is preceded by a signature, so the INT 1Ch
-        ; vector itself says whose it is.
+        ; vector itself says whose it is; its version digit is left out of the comparison, so a
+        ; copy of another protocol counts too, and the host reads which one from its announce.
         mov     ax, 351Ch
         int     21h                 ; es:bx = the current vector
         cld
@@ -83,7 +101,7 @@ start:
         mov     di, bx
         sub     di, SIG_LEN
         mov     si, signature
-        mov     cx, SIG_LEN
+        mov     cx, SIG_LEN - 1
         repe    cmpsb               ; ds:si (ours) against es:di (the vector's owner)
         jne     .first
         mov     dx, msg_twice
@@ -130,9 +148,9 @@ start:
         int     21h                 ; TSR
 
 ; ---------------------------------------------------------------- the tick handler
-; Bytes are taken off the UART until one command is whole (or the UART is empty: the rest of
-; the command waits in `buf` for the next tick), then that one command runs.
-signature db 'SCRY-INJECT-2'      ; what the already-resident check reads before `tick`
+; Bytes are taken off the UART until one frame is whole (or the UART is empty: the rest of the
+; frame waits in `frame` for the next tick), then that one command runs and is acknowledged.
+signature db 'SCRY-INJECT-3'      ; what the already-resident check reads before `tick`
 SIG_LEN equ $ - signature
 tick:
         pushf
@@ -143,60 +161,112 @@ tick:
         push    cs
         pop     ds
         cld                         ; the interrupted program's direction flag is not ours
+        mov     byte [tx_dead], 0   ; this tick's line is given its chance afresh
 .more:
         mov     dx, COM1+5
         in      al, dx
         test    al, 1
-        jz      .done
+        jz      .empty
         mov     dx, COM1
         in      al, dx
+        cmp     byte [hunting], 0
+        je      .framing
+        cmp     al, SYNC            ; HUNTING: every byte but a SYNC is dropped
+        jne     .more
+        mov     byte [hunting], 0
+        mov     byte [have], 0
+        mov     byte [stale], 0
+        jmp     .more
+.framing:
+        mov     byte [stale], 0
         movzx   bx, byte [have]
-        mov     [buf+bx], al
+        mov     [frame+bx], al      ; frame = seq, opcode, payload
         inc     byte [have]
-        ; how long is this command?
-        mov     al, [buf]
-        mov     cl, 2
+        cmp     byte [have], 2
+        jb      .more               ; the sequence byte alone so far
+        ; how long is this frame (sequence byte, opcode, payload, check)?
+        mov     al, [frame+1]
+        mov     cl, 4
         cmp     al, 'K'
         je      .len
         cmp     al, 'B'
         je      .len
-        mov     cl, 5
+        mov     cl, 7
         cmp     al, 'M'
         je      .len
-        mov     cl, 1
+        mov     cl, 3
+        cmp     al, 'R'
+        je      .len
+        cmp     al, 'S'
+        je      .len
+        mov     byte [hunting], 1   ; an opcode this stub does not know: drop the frame
+        jmp     .more
 .len:
         cmp     [have], cl
         jb      .more
-        mov     byte [have], 0
-        mov     al, [buf]
+        mov     byte [hunting], 1   ; the next frame starts at the next SYNC
+        movzx   cx, cl
+        dec     cx                  ; the bytes before the check
+        xor     bx, bx
+        mov     ah, 0FFh
+.sum:   xor     ah, [frame+bx]
+        inc     bx
+        loop    .sum
+        cmp     ah, [frame+bx]
+        jne     .more               ; it does not add up: dropped, unacknowledged
+        mov     al, [frame]
+        cmp     al, [last_seq]
+        mov     byte [carried], 0
+        je      .acked              ; a repeat of the last carried out: acknowledged, not run
+        mov     [last_seq], al
+        mov     byte [carried], 1
+        mov     al, [frame+1]
         cmp     al, 'K'
         jne     .notk
-        mov     al, [buf+1]
+        mov     al, [frame+2]
         call    inject_byte
-        jmp     .done
+        jmp     .acked
 .notk:  cmp     al, 'B'
         jne     .notb
-        movzx   eax, byte [buf+1]
+        movzx   eax, byte [frame+2]
         or      eax, INJECT_MOUSEBTN
         call    inject_reg
-        jmp     .done
+        jmp     .acked
 .notb:  cmp     al, 'M'
         jne     .notm
         mov     ax, 4
-        mov     cx, [buf+1]
-        mov     dx, [buf+3]
+        mov     cx, [frame+2]
+        mov     dx, [frame+4]
         int     33h
-        jmp     .done
+        jmp     .acked
 .notm:  cmp     al, 'R'
-        jne     .notr
-        call    report
-        jmp     .done
-.notr:  cmp     al, 'S'
-        jne     .done               ; unknown opcode: dropped
-        mov     eax, REG_SCREENSHOT
+        je      .acked              ; the report goes out after its acknowledgement
+        mov     eax, REG_SCREENSHOT ; 'S', the last opcode `.len` lets through
         call    write_regsel
         mov     eax, 1
         call    write_data
+.acked:
+        mov     al, ACK
+        call    com_tx
+        mov     al, [frame]         ; the sequence byte
+        call    com_tx
+        mov     al, [frame+1]       ; the opcode
+        call    com_tx
+        mov     al, [carried]
+        call    com_tx
+        cmp     byte [frame+1], 'R'
+        jne     .done
+        mov     byte [to_com], 1    ; the report's text goes to COM1, never to E9
+        call    report
+        mov     byte [to_com], 0
+        jmp     .done
+.empty:                             ; the UART is drained for this tick
+        cmp     byte [hunting], 0
+        jne     .done
+        inc     byte [stale]        ; a frame still short, its SYNC alone included
+        cmp     byte [stale], STALE_TICKS
+        jb      .done
+        mov     byte [hunting], 1   ; dropped: its rest is not coming
 .done:
         pop     es
         pop     ds
@@ -353,25 +423,55 @@ e9_print:                           ; ds:dx = '$'-terminated
 .end:   pop     si
         ret
 
-e9_char:                            ; al
+e9_char:                            ; al, to E9, or to COM1 while a report is written
+        cmp     byte [to_com], 0
+        jne     com_tx
         push    dx
         mov     dx, 0E9h
         out     dx, al
         pop     dx
         ret
 
+com_tx:                             ; al -> COM1, once its holding register is empty
+        push    dx
+        push    cx
+        push    ax
+        cmp     byte [tx_dead], 0
+        jne     .quit               ; the line gave up once this tick: so does the rest
+        mov     dx, COM1+5
+        mov     cx, 0FFFFh          ; bounded: a line nobody drains never hangs the tick
+.wait:  in      al, dx
+        test    al, 20h
+        jnz     .ready
+        loop    .wait
+        mov     byte [tx_dead], 1
+.quit:  pop     ax                  ; given up: the byte is dropped
+        jmp     .out
+.ready: pop     ax
+        mov     dx, COM1
+        out     dx, al
+.out:   pop     cx
+        pop     dx
+        ret
+
 ; ---------------------------------------------------------------- data
 old1c       dd 0
 ; No timestamp: a stamp is the guest program's own clock, and this is not the program.
-msg_present db 'STUB  . inject device=present proto=2', 13, 10, '$'
+msg_present db 'STUB  . inject device=present proto=3', 13, 10, '$'
 msg_rep db 'STUB  . mouse x=$'
 msg_y db ' y=$'
 msg_b db ' buttons=$'
 msg_max db ' max=$'
 msg_mode db ' mode=$'
 msg_scr db ' screen=$'
-have db 0            ; bytes of the current command taken so far
-buf times 8 db 0      ; the current command, opcode first
+hunting db 1         ; between frames: every byte until a SYNC is dropped
+have db 0            ; bytes of the current frame taken so far, after its SYNC
+frame times 8 db 0    ; the current frame: sequence byte, opcode, payload, check
+to_com db 0          ; 1 while a report is written to COM1
+stale db 0           ; ticks the current frame has ended short with nothing arriving
+last_seq db 0        ; the sequence byte last carried out; the host never sends 0
+carried db 0         ; 1 when this frame was carried out, 0 when it repeated the last
+tx_dead db 0         ; 1 once COM1 refused a byte this tick
 msg_absent  db 'STUB  . inject device=absent', 13, 10, '$'
 msg_twice   db 'STUB  . inject already resident', 13, 10, '$'
 resident_end:

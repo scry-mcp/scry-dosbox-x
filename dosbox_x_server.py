@@ -165,14 +165,10 @@ def build_check(binary: str = "") -> dict[str, Any]:
         got = subprocess.run(
             [resolved.path, "-helpdebug"], capture_output=True, text=True, check=False,
             stdin=subprocess.DEVNULL,
-            # WHAT PROTECTS THIS CALL IS THE TIMEOUT, AND NOTHING ELSE. No headless
-            # setting is passed (`-set "sdl videodriver=dummy"` is a session's, and
-            # headless is the application's setting, never an environment variable), and
-            # `env=None` is `subprocess`'s DEFAULT, inherit the parent environment: it
-            # sets nothing at all. The risk is real (this build does not refuse an
-            # option it does not know, it starts), so the bound below is what stands in
-            # front of it.
-            timeout=20)
+            # LAUNCHED BEHIND, as a session is, and BOUNDED: this build does not refuse an
+            # option it does not know, it starts, so a probe that opened a window would
+            # otherwise take the front, and only the bound would end it.
+            env=dlaunch.launch_environment(True), timeout=20)
     except subprocess.TimeoutExpired:
         raise ds.Invalid("host_failed",
             f"`{resolved.path} -helpdebug` did not return in 20 s. On this emulator an "
@@ -187,7 +183,7 @@ def build_check(binary: str = "") -> dict[str, Any]:
             f"`step`, `debug`), the breakpoints, the watches and the symbol placement all "
             f"need it; the guest's log (`log`, `log_wait`), the captures and the "
             f"in-guest input do not")
-    return st.reply(**binaries.facts(resolved), debugger=True,
+    return st.reply(**dlaunch.binary_facts(resolved), debugger=True,
                     heavy_debug=binaries.heavy_debug(resolved.path), tools=registered_tools())
 
 
@@ -206,8 +202,8 @@ def start(conf: str, cwd: str,
           binary: str = "", background: bool | None = None,
           presence: Annotated[bool, Field(description=scry_presence.ARGUMENT)] = True,
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Open ONE live DOSBox-X session from your conf, parked at the debugger, stopped and
-    ready. Refuses while a session is live.
+    """Open ONE live DOSBox-X session from your conf, parked (stopped) at the debugger.
+    Refuses while a session is live.
 
     Every path is absolute or `~`-led: `cwd`, the emulator's working directory, there; `conf`;
     `logfile`, its directory there; `captures_dir` and `state_dir`, created with their parents.
@@ -223,7 +219,7 @@ def start(conf: str, cwd: str,
     for the input (`0`: a free one); the conf's autoexec runs the reply's `stub` first, or
     `program` loads it. `state_dir`: what `state_save` writes to (`save` under `cwd`). `binary`:
     the build to run; omitted, `DOSBOX_X_BINARY`, else the PATH's `dosbox-x`. `background`:
-    `true` behind, your focus kept; `false` in front; omitted, by `shared`.
+    `true` behind; `false` in front; omitted, by `shared`.
 
     Reply: `shared`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `stub`,
     `input_port`, `background`, `presence`, and `rearm_refused` (why) when stored raw
@@ -233,7 +229,8 @@ def start(conf: str, cwd: str,
     Refused before anything starts: a path not absolute, an unresolved binary, a missing
     conf, `cwd` or `logfile` directory, `session_seconds` out of range, `shared` without
     `window_flags` or headless with them, a glued or shredded `-set`, `capture_video`
-    without `program`, an `input_port` outside {INPUT_PORT_MIN}-{INPUT_PORT_MAX} or busy.
+    without `program`, an `input_port` outside {INPUT_PORT_MIN}-{INPUT_PORT_MAX} or busy, no
+    drive free for the stub.
 
     Reference: REFERENCE.md, The session.
     """
@@ -1699,11 +1696,11 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
 
     Refused before anything is sent: no move and no button, half a move, a negative or
     non-integer coordinate, a place off the screen or outside the driver's range, `screen`
-    units in a mode this server does not map, an unknown button, action or units, a session
-    with no `logfile` (the read-back goes through it), a stopped machine, no stub. A `target`
-    beside `x`, `y` or `units="mouse"` (`bad_argument`); no `map_find` match since the start,
-    or a guest no longer showing that screen's kind and size (`needs_call`); a control that
-    screen lacks (`unknown_ref`).
+    units in a mode this server does not map, an unknown button, action or units, a stopped
+    machine, no stub (with no `logfile` there is no announce to read and the mouse goes in).
+    A `target` beside `x`, `y` or `units="mouse"` (`bad_argument`); no `map_find` match since
+    the start, or a guest no longer showing that screen's kind and size (`needs_call`); a
+    control that screen lacks (`unknown_ref`).
 
     Reply: `route: "guest"`, `pointer` read back after the call (`screen` with `x`, `y`,
     `width`, `height`, or unavailable in an unmapped mode; `mouse` with the driver's `x`, `y`,

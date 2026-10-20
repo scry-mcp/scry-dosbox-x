@@ -309,10 +309,10 @@ class FakeSession:
     def e9_mark(self) -> int:
         return 0
 
-    stub_protocol = "2"   # the guest announced the stub: `require_stub` reads no log
+    stub_protocol = inputs.STUB_PROTOCOL   # announced: `require_stub` reads no log
 
-    def send_commands(self, commands: list[bytes]) -> int:
-        return sum(len(c) for c in commands)
+    def send_commands(self, commands: list[bytes]) -> list[str]:
+        return []
 
     def e9_since_mark(self, mark: int) -> list[str]:
         return ["Bochs port E9h: [+ 0.000] BOOT  . start"]
@@ -2840,12 +2840,14 @@ class NamesFake:
         self.break_ins = 0                       # how many times the menu route was taken
         # THE STUB'S VIEW OF THE DRIVER, as the real one reports it: a pointer, its buttons,
         # the range the driver maps it into and the BIOS mode (text 80x25 by default).
-        self.stub_protocol = "2"
+        self.stub_protocol = inputs.STUB_PROTOCOL
         self.pointer = (320, 96)
         self.buttons = 0
         self.mouse_max = (639, 199)
         self.video_mode = 3
         self.pointer_snaps = 1                   # a text mode places the pointer on its cell
+        self.reports_lost: set[int] = set()       # the reports (counted from 1) that never come
+        self.reports = 0
         self.input_effect: str | None = None      # a log line the guest writes on a post
         self.after_effect: list[str] = []         # what it writes after that, for a LOOK
         self.resume_effect: list[str] = []        # what it writes during a resume
@@ -2885,16 +2887,18 @@ class NamesFake:
 
     def report_line(self) -> str:
         x, y = self.pointer
-        return (f"Bochs port E9h: STUB  . mouse x={x} y={y} buttons={self.buttons} "
+        return (f"STUB  . mouse x={x} y={y} buttons={self.buttons} "
                 f"max={self.mouse_max[0]},{self.mouse_max[1]} mode={self.video_mode} "
                 f"screen=720x400")
 
-    def send_commands(self, commands: list[bytes]) -> int:
+    def send_commands(self, commands: list[bytes]) -> list[str]:
         """The stub of the real guest, carried out on this double's own state: `K` is a scan
         byte, `B` a button, `M` the pointer placed (snapped to `pointer_snaps`, as a text
-        mode does), `R` the report line. THE GUEST REACTS to a post that is not only a report,
-        when the test says so, by writing `input_effect` and then `after_effect`."""
+        mode does), `R` the report line, handed back. THE GUEST REACTS to a post that is not
+        only a report, when the test says so, by writing `input_effect` and then
+        `after_effect`."""
         self.commands_sent.append(list(commands))
+        reports: list[str] = []
         keys = b"".join(c[1:] for c in commands if c[:1] == b"K")
         if keys:
             self.scancodes_sent.append(keys)
@@ -2907,13 +2911,17 @@ class NamesFake:
                 x, y = int.from_bytes(c[1:3], "little"), int.from_bytes(c[3:5], "little")
                 self.pointer = (min(x, self.mouse_max[0]) // snap * snap,
                                 min(y, self.mouse_max[1]) // snap * snap)
-            elif c[:1] == b"R" and self.log is not None:
-                self.log.append(self.report_line())
+            elif c[:1] == b"R":
+                self.reports += 1
+                if self.reports in self.reports_lost:
+                    raise ds.Invalid("host_failed", "the stub acknowledged none of 3 sends of a "
+                                     "'R' command: it is not reading the port")
+                reports.append(self.report_line())
         acted = any(c[:1] != b"R" for c in commands)
         if acted and self.input_effect is not None and self.log is not None:
             self.log.append(self.input_effect)
             self.log.extend(self.after_effect)
-        return sum(len(c) for c in commands)
+        return reports
 
     def break_in(self, seconds: float = 5.0) -> float:
         """The channel route of the real one, headless or windowed: the machine is at the
@@ -3355,18 +3363,16 @@ def _guest(tmp_path: Path) -> Any:
     return fake
 
 
-def test_input_reaches_a_headless_session_and_the_mouse_needs_the_log(tmp_path: Path) -> None:
+def test_input_reaches_a_headless_session_and_the_mouse_needs_no_log(tmp_path: Path) -> None:
     """Every input goes into the guest, so a headless session takes keys and clicks like a
-    windowed one; the mouse reads its pointer back off the E9 log, so a session without one
-    is refused before anything is sent."""
+    windowed one; the mouse reads its pointer back off the stub's own line, so a session with
+    no log takes it too."""
     fake = _guest(tmp_path)
     assert cast(dict[str, Any], server.send_keys(keys=["a"]))["route"] == "guest"
     assert cast(dict[str, Any], server.send_mouse(button="left"))["route"] == "guest"
     fake.launch = dlaunch.Launch(conf=Path("/x.conf"), cwd=Path("/"), seconds=60, logfile=None)
-    sent = len(fake.commands_sent)
     nolog = cast(dict[str, Any], server.send_mouse(button="left"))
-    assert nolog["status"] == "INVALID" and nolog["code"] == "no_channel", nolog
-    assert "logfile" in nolog["message"] and len(fake.commands_sent) == sent
+    assert nolog["status"] == "ok" and nolog["pointer"], nolog
 
 
 def test_send_keys_composes_the_scan_bytes_as_key_commands(tmp_path: Path) -> None:
@@ -3476,17 +3482,10 @@ def test_a_stub_that_never_reports_is_named_and_a_malformed_report_refused(
     instrument broken (`host_failed`), never a pointer that did not move; and a report in
     another shape is refused rather than half-read."""
     fake = _guest(tmp_path)
-    fake.log = None                        # the report never arrives
-    fake.launch = dataclasses.replace(fake.launch, logfile=Path("/e9.log"))
-
-    def silent(pattern: str, seconds: float, mark: int = 0, **_: object) -> dict[str, object]:
-        return {"verdict": "TIMEOUT", "arrived_during": 0, "lines_examined": 0,
-                    "waited_s": seconds, "since_mark": mark, "note": "no line matched"}
-    fake.e9_wait = silent
-    fake.e9_mark = lambda: 0
+    fake.reports_lost = {1}
     got = cast(dict[str, Any], server.send_mouse(button="left"))
     assert got["status"] == "INVALID" and got["code"] == "host_failed", got
-    assert "did not report the pointer" in got["message"], got
+    assert "not reading the port" in got["message"], got
     with pytest.raises(ds.Invalid, match="not in its shape"):
         inputs.parse_report("STUB  . mouse x=1 y=2")
 
@@ -3509,8 +3508,11 @@ def test_the_stub_must_have_announced_its_protocol_before_anything_is_sent(
     assert "protocol 1" in old["message"] and "older INJECT.COM" in old["message"], old
     assert fake.commands_sent == []
     fake.log.append("Bochs port E9h: STUB  . inject device=present proto=2")
+    stale = cast(dict[str, Any], server.send_keys(keys=["a"]))
+    assert "protocol 2" in stale["message"] and fake.commands_sent == [], stale
+    fake.log.append(f"Bochs port E9h: STUB  . inject device=present proto={inputs.STUB_PROTOCOL}")
     assert cast(dict[str, Any], server.send_keys(keys=["a"]))["status"] == "ok"
-    assert fake.stub_protocol == "2"
+    assert fake.stub_protocol == inputs.STUB_PROTOCOL
     fake.log.clear()
     assert cast(dict[str, Any], server.send_keys(keys=["a"]))["status"] == "ok"
 
@@ -5991,7 +5993,7 @@ def test_send_keys_hands_its_progress_to_the_wait_for_the_reaction() -> None:
     ordinary use, and it reports like every other bounded wait."""
     class _Route:
         launch = SimpleNamespace(watched=False, input_port=5555, logfile=None)
-        stub_protocol = "2"
+        stub_protocol = inputs.STUB_PROTOCOL
 
         def e9_mark(self) -> int:
             return 0
@@ -6003,8 +6005,8 @@ def test_send_keys_hands_its_progress_to_the_wait_for_the_reaction() -> None:
         def at_debugger(self) -> bool:
             return False
 
-        def send_commands(self, commands: list[bytes]) -> int:
-            return sum(len(c) for c in commands)
+        def send_commands(self, commands: list[bytes]) -> list[str]:
+            return []
 
         log_wait = _log_wait_as_guest
 

@@ -22,6 +22,7 @@ import dpmi_guest as guest
 import pytest
 from _live_teardown import no_session_left_behind  # noqa: F401  (registers the autouse teardown)
 
+import dosbox_inputs as inputs
 import dosbox_x_server as server
 
 pytestmark = pytest.mark.live
@@ -162,7 +163,8 @@ def test_the_stub_announces_itself_once_and_ignored_keys_arrive(
     server.resume()
     stub = cast(dict[str, Any], server.log_wait(channel="guest", pattern="STUB  . inject device=",
                                                 seconds=60))
-    assert stub["status"] == "ok" and "device=present proto=2" in stub["line"], stub
+    announce = f"device=present proto={inputs.STUB_PROTOCOL}"
+    assert stub["status"] == "ok" and announce in stub["line"], stub
     twice = cast(dict[str, Any], server.log_wait(channel="guest",
                                                  pattern="STUB  . inject already resident",
                                                  seconds=30))
@@ -207,6 +209,14 @@ def test_send_mouse_puts_the_pointer_where_asked_and_the_program_clicks_there(
         assert "a mode this server does not map now" in aimed["message"], aimed
     after = cast(dict[str, Any], server.send_mouse(x=0, y=0, units="mouse"))
     assert after["status"] == "ok", after
+    # THE REPORTS RODE THE STUB'S OWN LINE: none reached the program's channel, where one once
+    # landed inside a line the program was writing.
+    seen = cast(dict[str, Any], server.log(pattern=r"STUB  \. mouse", channel="guest"))
+    assert seen["status"] == "ok" and seen["lines_total"] == 0, seen
+    # THE CONTROL, off the same log: the stub's own announce is there to be found.
+    said = cast(dict[str, Any], server.log(pattern=r"STUB  \. inject device=present",
+                                           channel="guest"))
+    assert said["status"] == "ok" and said["lines_total"] >= 1, said
 
 def _guest_xy(line: str) -> tuple[int, int]:
     m = re.search(r"x=(\d+) y=(\d+)", line)

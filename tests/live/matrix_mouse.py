@@ -11,6 +11,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+import dosbox_inputs as inputs  # isort: skip -- a module of the repository root
 from matrix_common import (
     GUEST,
     M,
@@ -27,13 +28,13 @@ from matrix_common import (
 
 MOUSE_CONF = GUEST / "mouse.conf"
 MOUSE_PROGRAM = "MOUSE.COM"
-ANNOUNCE = r"STUB  \. inject device=present proto=2"
+ANNOUNCE = rf"STUB  \. inject device=present proto={inputs.STUB_PROTOCOL}"
 WAIT_S = 20
 #: The guest's line for a pointer at (x, y) in the driver's coordinates.
 POS = r"MOUSE \. pos x={x} y={y} "
 
 P_CELLS = cells(
-    ("P start loads the stub before the program, which announces protocol 2",
+    ("P start loads the stub before the program, which announces our protocol",
      "REFERENCE.md, Input and the screen: `program` needs no conf line"),
     ("P a second copy the conf also runs stays out, and keys still arrive whole",
      "guest/inject.asm: already resident; known: the guest logs `key=97` for a"),
@@ -61,8 +62,8 @@ P_CELLS = cells(
      "send_mouse docstring: refused before anything is sent"),
     ("P snapshot headless: the stub's command writes a PNG, no window and no menu",
      "snapshot docstring: taken inside the guest, any session"),
-    ("P without a logfile the mouse is refused naming it, and a key still goes in",
-     "send_mouse docstring: the read-back goes through the log"),
+    ("P without a logfile the mouse and a key go in, the pointer off the stub's link",
+     "REFERENCE.md, Input and the screen: the report rides the stub's own serial link"),
 )
 
 
@@ -105,7 +106,7 @@ def section_p() -> None:
     caps.mkdir()
     _mouse_boot(captures_dir=str(caps))
     r = _guest_line(ANNOUNCE)
-    judged("P start loads the stub before the program, which announces protocol 2", reply=r,
+    judged("P start loads the stub before the program, which announces our protocol", reply=r,
            holds=ok(r))
     must(_guest_line(r"MOUSE \. reset"), "the guest reset the driver")
     r = M.call(server.send_keys, keys=["a"], expect=r"MOUSE \. key=97$", seconds=WAIT_S)
@@ -209,7 +210,7 @@ def _no_log() -> None:
     _mouse_boot(logfile=None)
     r = M.call(server.send_mouse, button="left")
     key = M.call(server.send_keys, keys=["a"])
-    judged("P without a logfile the mouse is refused naming it, and a key still goes in",
-           reply=r, holds=refused(r, "no_channel") and "logfile" in str(r.get("message"))
-           and ok(key) and key.get("route") == "guest")
+    judged("P without a logfile the mouse and a key go in, the pointer off the stub's link",
+           reply=r, holds=ok(r) and bool(r.get("pointer")) and ok(key)
+           and key.get("route") == "guest")
     must(M.call(server.close), "closing")

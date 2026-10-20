@@ -6,6 +6,7 @@ line cannot fake, and what a call says when its commands went in and the read-ba
 from __future__ import annotations
 
 import dataclasses
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
 
@@ -13,14 +14,17 @@ import pytest
 from test_dosbox_x_server import _guest, _names
 
 import dosbox_inputs as inputs
+import dosbox_launch as dlaunch
 import dosbox_logs as dlogs
+import dosbox_running as running
 import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_x_server as server
 
-#: Captured off section P's live run: text mode 3, then mode 13h with the left button held.
-REAL_TEXT = "Bochs port E9h: STUB  . mouse x=16 y=8 buttons=0 max=639,199 mode=3 screen=720x400"
-REAL_13H = "Bochs port E9h: STUB  . mouse x=200 y=50 buttons=1 max=639,199 mode=19 screen=320x400"
+#: Captured off section P's live run, as the stub writes them: text mode 3, then mode 13h with
+#: the left button held.
+REAL_TEXT = "STUB  . mouse x=16 y=8 buttons=0 max=639,199 mode=3 screen=720x400"
+REAL_13H = "STUB  . mouse x=200 y=50 buttons=1 max=639,199 mode=19 screen=320x400"
 
 
 def test_a_real_report_parses_into_its_fields() -> None:
@@ -60,13 +64,14 @@ def test_both_axes_are_bounded_on_the_screen_and_in_the_driver(tmp_path: Path) -
     assert fake.commands_sent[-2] == [inputs.move_command(632, 192)]
 
 
-def test_the_stub_s_own_report_is_never_the_program_s_reaction(tmp_path: Path) -> None:
-    """The read-back lands after the mark `expect` waits from, so a pattern the stub's line
-    matches would be served as the program having reacted. It is not: the program is silent,
-    and that is a miss."""
+def test_the_stub_s_own_line_is_never_the_program_s_reaction(tmp_path: Path) -> None:
+    """The stub still writes on the program's channel (a second copy saying it stays out), and
+    such a line can land after the mark `expect` waits from: a pattern it matches would be
+    served as the program having reacted. It is not: the program is silent, and that is a
+    miss."""
     fake = _guest(tmp_path)
-    fake.input_effect = None
-    for pattern in ("buttons=1", r"x=\d+", "STUB", "(?i)mouse"):
+    fake.input_effect = "Bochs port E9h: STUB  . inject already resident"
+    for pattern in ("already", "STUB", "(?i)inject", "resident$"):
         got = cast(dict[str, Any], server.send_mouse(button="left", action="down",
                                                      expect=pattern, seconds=0.5))
         assert got["status"] == "ok" and got["verify"]["verdict"] == "TIMEOUT", (pattern, got)
@@ -80,21 +85,11 @@ def test_commands_that_went_in_are_said_when_the_read_back_fails(tmp_path: Path)
     """The move and the click are in the guest once sent; a read-back that then fails is the
     instrument's, and the reply still says what went in, so a caller does not click twice."""
     fake = _guest(tmp_path)
-    calls = {"n": 0}
-    real_wait = fake.e9_wait
-
-    def second_report_silent(pattern: str, seconds: float, mark: int = 0,
-                             **kw: Any) -> dict[str, object]:
-        calls["n"] += 1
-        if calls["n"] == 2:
-            return {"verdict": "TIMEOUT", "arrived_during": 0, "lines_examined": 0,
-                    "waited_s": seconds, "since_mark": mark, "note": "no line matched"}
-        return cast(dict[str, object], real_wait(pattern, seconds, mark=mark, **kw))
-    fake.e9_wait = second_report_silent
+    fake.reports_lost = {2}
     got = cast(dict[str, Any], server.send_mouse(x=10, y=5, button="left"))
     assert got["status"] == "INVALID" and got["code"] == "host_failed", got
     assert got["delivered"] is True and got["route"] == "guest", got
-    assert "did not report the pointer" in got["message"], got
+    assert "not reading the port" in got["message"], got
     acted = [c for c in fake.commands_sent if c != [inputs.OP_REPORT]]
     assert acted == [[inputs.move_command(80, 40), b"B\x80", b"B\x00"]], fake.commands_sent
 
@@ -111,13 +106,16 @@ def test_without_a_log_the_keys_go_out_on_the_conf_s_word(tmp_path: Path) -> Non
 def test_a_stub_of_a_newer_protocol_is_refused_too(tmp_path: Path) -> None:
     fake = _guest(tmp_path)
     fake.stub_protocol = ""
-    fake.log = ["Bochs port E9h: STUB  . inject device=present proto=3"]
+    newer = int(inputs.STUB_PROTOCOL) + 1
+    fake.log = [f"Bochs port E9h: STUB  . inject device=present proto={newer}"]
     got = cast(dict[str, Any], server.send_keys(keys=["a"]))
-    assert got["status"] == "INVALID" and "protocol 3" in got["message"], got
+    assert got["status"] == "INVALID" and f"protocol {newer}" in got["message"], got
     assert fake.commands_sent == []
 
 
-STUB_REPORT = "Bochs port E9h: STUB  . mouse x=1 y=2 buttons=1 max=639,199 mode=3 screen=720x400"
+#: A line on the program's channel from the stub, carrying every word the patterns below look
+#: for, so only its being the stub's keeps it out.
+STUB_ON_E9 = "Bochs port E9h: STUB  . inject cue MENU open aa UI x mouse down # the click"
 
 
 @pytest.mark.parametrize(("pattern", "program", "hit"), [
@@ -134,7 +132,7 @@ def test_the_reaction_keeps_the_caller_s_pattern_and_never_takes_the_stub_s_line
         pattern: str, program: str, hit: bool) -> None:
     rx = dlogs.compiled(inputs.program_reaction(pattern))
     assert bool(rx.search(program)) is hit, (pattern, program)
-    assert rx.search(STUB_REPORT) is None, pattern
+    assert rx.search(STUB_ON_E9) is None, pattern
 
 
 def test_a_reaction_pattern_that_cannot_be_composed_is_refused_before_anything_is_sent(
@@ -203,27 +201,24 @@ def test_keys_that_failed_part_way_say_some_of_them_may_have_gone_in(tmp_path: P
 
 def test_a_first_report_that_fails_delivered_nothing(tmp_path: Path) -> None:
     fake = _guest(tmp_path)
-
-    def silent(pattern: str, seconds: float, mark: int = 0, **_: Any) -> dict[str, object]:
-        return {"verdict": "TIMEOUT", "arrived_during": 0, "lines_examined": 0,
-                    "waited_s": seconds, "since_mark": mark, "note": "no line matched"}
-    fake.e9_wait = silent
+    fake.reports_lost = {1}
     got = cast(dict[str, Any], server.send_mouse(button="left"))
     assert got["status"] == "INVALID" and "delivered" not in got, got
     assert all(c == [inputs.OP_REPORT] for c in fake.commands_sent), fake.commands_sent
 
 
 def test_drive_at_a_stop_never_takes_the_stub_s_line_for_the_program_s() -> None:
-    """The verify of an act that ended stopped reads the log since the mark once: the stub's
-    read-back of a mouse step sits there, and it is not the program reacting."""
+    """The verify of an act that ended stopped reads the log since the mark once: a line of the
+    stub's can sit there, and it is not the program reacting."""
     import dosbox_sequence as sequence
 
     class Since:
         def e9_since_mark(self, mark: int) -> list[str]:
-            return [STUB_REPORT, "Bochs port E9h: UI    . clicked"]
-    stub_only = sequence._verify_at_a_stop(cast(ds.Session, Since()), "buttons=1", 0)
+            return ["Bochs port E9h: STUB  . inject already resident",
+                    "Bochs port E9h: UI    . clicked"]
+    stub_only = sequence._verify_at_a_stop(cast(ds.Session, Since()), "resident", 0)
     assert stub_only["seen"] is False, stub_only
-    program = sequence._verify_at_a_stop(cast(ds.Session, Since()), "clicked|buttons", 0)
+    program = sequence._verify_at_a_stop(cast(ds.Session, Since()), "clicked|resident", 0)
     assert program["seen"] is True and "UI" in program["line"], program
 
 
@@ -249,3 +244,57 @@ def test_a_target_is_held_to_the_screen_the_guest_shows_before_anything_is_sent(
     got = cast(dict[str, Any], server.send_mouse(target="prompt"))
     assert got["status"] == "ok" and got["identified_at_stop"] == 3, got
     assert fake.commands_sent[-2] == [inputs.move_command(16, 24)]
+
+
+def test_a_program_session_whose_stub_never_announced_names_the_drive_it_used(
+        tmp_path: Path) -> None:
+    fake = _guest(tmp_path)
+    conf = tmp_path / "g.conf"
+    conf.write_text("[autoexec]\nmount y .\n", encoding="utf-8")
+    fake.launch = dataclasses.replace(fake.launch, conf=conf, program="APP.EXE",
+                                      stub_drive=dlaunch.stub_drive(conf))
+    conf.write_text("[autoexec]\n" + "\n".join(f"mount {d} ." for d in dlaunch.STUB_DRIVES))
+    fake.stub_protocol = ""
+    fake.log = ["Bochs port E9h: BOOT  . start"]
+    got = cast(dict[str, Any], server.send_keys(keys=["a"]))
+    assert got["code"] == "no_channel" and "mounted it on X:" in got["message"], got
+    assert fake.commands_sent == []
+
+
+def test_expect_on_a_session_with_no_log_is_refused_before_anything_reaches_the_guest(
+        tmp_path: Path) -> None:
+    """The mouse's first report goes to the guest before the post, so `expect` with no E9 to
+    check it on is refused ahead of it, as the keys are."""
+    fake = _guest(tmp_path)
+    fake.launch = dataclasses.replace(fake.launch, logfile=None)
+
+    def no_log() -> int:
+        raise ds.Invalid("no_channel", "this session was started without a logfile")
+    fake.e9_mark = no_log
+    for got in (server.send_mouse(button="left", expect="CLICK"),
+                server.send_keys(keys=["a"], expect="KEY")):
+        got = cast(dict[str, Any], got)
+        assert got["code"] == "bad_argument" and "cannot be checked" in got["message"], got
+    assert fake.commands_sent == []
+
+
+def test_a_machine_that_stopped_under_a_send_has_its_stop_recorded_and_the_send_said(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    fake = _guest(tmp_path)
+    seen: list[object] = []
+    raised = {"yes": False}
+    # ONLY A STOP RECORDED AFTER THE SEND MET IT COUNTS: `live()` records any stop first.
+    monkeypatch.setattr(running, "observe_stop",
+                        lambda ses: seen.append(ses) if raised["yes"] else None)
+
+    def stopped(commands: list[bytes]) -> list[str]:
+        raised["yes"] = True
+        raise ds.Invalid("wait_stopped", "the machine stopped at the debugger")
+    fake.send_commands = stopped
+    calls: list[Callable[[], object]] = [lambda: server.send_keys(keys=["a"]),
+                                         lambda: server.send_mouse(button="left")]
+    for call in calls:
+        seen.clear()
+        raised["yes"] = False
+        got = cast(dict[str, Any], call())
+        assert got["code"] == "wait_stopped" and fake in seen, (got, seen)

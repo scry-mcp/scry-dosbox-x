@@ -30,12 +30,14 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
+from test_dosbox_x_stub_link import REPORT, Stub
 
 import dosbox_console as dcons
 import dosbox_launch as dlaunch
 import dosbox_logs as dlogs
 import dosbox_running as running
 import dosbox_session as ds
+import dosbox_stub_link as stub_link
 
 # --------------------------------------------------------------------- fixtures
 
@@ -170,8 +172,9 @@ def test_the_serial_socket_is_the_emulators_dial_and_a_dial_that_never_comes_is_
     """`accept_input` takes the emulator's dial on the session's listener, so a dial that
     comes a moment after the emulator starts is reached, and closes the listener; no dial
     within the bound is a refusal naming the port, never a session with a route that does not
-    exist. And `send_commands` sends what it is given, refuses an empty send, and reports a
-    socket the other end closed as the route being GONE rather than as a delivery."""
+    exist. And `send_commands` sends what it is given through the session's link, refuses an
+    empty send, and reports a socket the other end closed as the route being GONE rather than
+    as a delivery."""
     listener = dlaunch.listen_input(_free_port())
     port = listener.getsockname()[1]
     emulator = socket.socket()
@@ -182,16 +185,11 @@ def test_the_serial_socket_is_the_emulators_dial_and_a_dial_that_never_comes_is_
         with pytest.raises(OSError):
             listener.accept()            # closed once the dial was taken
         try:
-            fake = SimpleNamespace(_input=client)
-            began = time.monotonic()
+            fake = SimpleNamespace(_link=stub_link.Link(client))
+            stub = Stub(peer)
             commands = [b"K\x1e", b"M\x10\x00\x20\x00", b"R"]
-            assert ds.Session.send_commands(fake, commands) == 8  # type: ignore[arg-type]
-            # PACED: each command leaves a tick after the one before, so they arrive apart.
-            assert time.monotonic() - began >= 2 * ds.COMMAND_GAP_S
-            got = b""
-            while len(got) < 8:
-                got += peer.recv(8)
-            assert got == b"".join(commands)
+            got = ds.Session.send_commands(fake, commands)  # type: ignore[arg-type]
+            assert got == [REPORT[:-2].decode()] and stub.carried == commands
             with pytest.raises(ds.Invalid, match="nothing to send"):
                 ds.Session.send_commands(fake, [])  # type: ignore[arg-type]
             peer.close()
@@ -206,7 +204,7 @@ def test_the_serial_socket_is_the_emulators_dial_and_a_dial_that_never_comes_is_
     quiet = silent.getsockname()[1]
     with pytest.raises(ds.Invalid, match=f"never dialled the serial input port {quiet} within"):
         dlaunch.accept_input(silent, 0.5, lambda: None)
-    no_route = SimpleNamespace(_input=None)
+    no_route = SimpleNamespace(_link=None)
     with pytest.raises(ds.Invalid, match="no input route"):
         ds.Session.send_commands(no_route, [b"K\x1e"])  # type: ignore[arg-type]
 
@@ -2775,3 +2773,34 @@ def test_the_session_spawns_a_named_guardian_with_its_wall_clock_bound(
     assert seen and seen[0][0] == ds.PROCESS_NAME
     assert ds.GUARDIAN_NAME == "scry-dosbox-x-guardian"
     assert before + 90 + ds.GUARDIAN_GRACE_S <= seen[0][1] <= time.time() + 90 + ds.GUARDIAN_GRACE_S
+
+
+def test_the_stub_takes_the_first_drive_from_y_down_that_the_conf_does_not_mount(
+        tmp_path: Path) -> None:
+    """`program` mounts the stub with `-c` after the conf's `[autoexec]`, so a letter the conf
+    already mounted would run whatever is there: the stub takes the first one free from Y down,
+    and a conf that mounts them all is refused naming its mounts."""
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\nfullscreen=false\n[autoexec]\nmount c .\n@MOUNT y /tmp\n"
+                    "imgmount x disk.img -t hdd\nsubst W: C:\\TOOLS\n", encoding="utf-8")
+    argv = dlaunch.build_argv(launch(conf, program="APP.EXE", input_port=5555))
+    assert f'mount V "{dlaunch.GUEST_DIR}"' in argv and "V:\\INJECT.COM" in argv, argv
+    every = "\n".join(f"mount {d} ." for d in "DEFGHIJKLMNOPQRSTUVWXY")
+    conf.write_text(f"[autoexec]\n{every}\n", encoding="utf-8")
+    with pytest.raises(ds.Invalid, match=r"no drive from Y: to D: is free.*mounts D:, E:"):
+        dlaunch.validate(launch(conf, program="APP.EXE", input_port=5555))
+    # WHAT NEEDS NO DRIVE IS NOT REFUSED: no program, or no input route.
+    dlaunch.validate(launch(conf, program="", input_port=5555))
+    dlaunch.validate(launch(conf, program="APP.EXE", input_port=None))
+
+
+@pytest.mark.parametrize(("autoexec", "taken"), [
+    ("mount -t cdrom d /cd", "D"), ("[AUTOEXEC]\nMOUNT y .", "Y"),
+    ("imgmount -t floppy a a.img", "A"), ("subst x: c:\\tools", "X"),
+])
+def test_a_conf_s_mounts_are_read_past_options_case_and_a_bom(tmp_path: Path, autoexec: str,
+                                                            taken: str) -> None:
+    conf = tmp_path / "g.conf"
+    head = "" if autoexec.startswith("[") else "[autoexec]\n"
+    conf.write_text(f"{head}{autoexec}\n[sdl]\nmount q .\n", encoding="utf-8-sig")
+    assert dlaunch.conf_mounts(conf) == [taken], "a mount outside [autoexec] counted, or missed"

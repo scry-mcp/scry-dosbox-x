@@ -35,6 +35,7 @@ import zipfile
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from scry_core import live_host
 from scry_core import reply_contract as contract
@@ -86,6 +87,9 @@ class Launch:
     # `launch` then carries. The conf's autoexec
     # runs the stub before its program, or `program` has it loaded first.
     input_port: int | None = None
+    # THE DRIVE A `program` SESSION MOUNTS THE STUB ON (`stub_drive`), chosen once at `start` so
+    # what the session says later is the drive it used, whatever the conf holds by then.
+    stub_drive: str = ""
     # WHETHER THE LAUNCH STAYS BEHIND the owner's front app (`judge_background`).
     background: bool = True
     # WHERE THE SAVE STATES LIVE: the slot directory the build's `-savedir` option names, and
@@ -196,17 +200,54 @@ def build_argv(launch: Launch) -> list[str]:
             # THE STUB GOES IN FIRST, by the same `-c` route: these run in order after the
             # conf's autoexec, so the program this launches finds it resident. A conf that runs
             # its own program from the autoexec never reaches here and carries the stub line.
-            argv += ["-c", f'mount {STUB_DRIVE} "{GUEST_DIR}"', "-c", f"{STUB_DRIVE}:\\INJECT.COM"]
+            drive = launch.stub_drive or stub_drive(launch.conf)
+            argv += ["-c", f'mount {drive} "{GUEST_DIR}"', "-c", f"{drive}:\\INJECT.COM"]
         argv += ["-c", cmd]
     return argv
 
 
-# THE STUB'S HOME, shipped beside this module, and the drive a `program` session mounts it on:
-# a letter late in the alphabet, so it does not take one a conf is likely to mount.
+# THE STUB'S HOME, shipped beside this module, and the drives a `program` session may mount it
+# on: late in the alphabet first, where a conf is least likely to mount, and never one the conf's
+# `[autoexec]` already mounted, since `-c` runs after it and would run whatever is there.
 GUEST_DIR = Path(__file__).resolve().with_name("guest")
+STUB_DRIVES = "YXWVUTSRQPONMLKJIHGFED"
+MOUNTING = frozenset({"mount", "imgmount", "subst"})
 
 
-STUB_DRIVE = "Y"
+def conf_mounts(conf: Path) -> list[str]:
+    """The drive letters the conf's `[autoexec]` mounts (`mount`, `imgmount`, `subst`), in its
+    order: each command's first argument that is a letter alone, with or without `:`, so an
+    option and its value before it (`mount -t cdrom d ...`) are passed over."""
+    found: list[str] = []
+    section = ""
+    try:
+        text = conf.read_text(encoding="utf-8-sig", errors="replace")
+    except OSError:
+        return found                    # gone since `start`: `conf_changed_on_disk` says so
+    for line in text.splitlines():
+        words = line.split()
+        if line.strip().startswith("["):
+            section = line.strip().lower()
+        elif section == "[autoexec]" and words and words[0].lstrip("@").lower() in MOUNTING:
+            letters = [w.rstrip(":").upper() for w in words[1:]
+                       if len(w.rstrip(":")) == 1 and w[0].isalpha()]
+            if letters and letters[0] not in found:
+                found.append(letters[0])
+    return found
+
+
+def stub_drive(conf: Path) -> str:
+    """The drive `program` mounts the stub on: the first of `STUB_DRIVES` the conf leaves free,
+    or a refusal naming the conf's mounts."""
+    mounted = conf_mounts(conf)
+    free = [d for d in STUB_DRIVES if d not in mounted]
+    if not free:
+        raise Invalid("bad_argument",
+            f"no drive from {STUB_DRIVES[0]}: to {STUB_DRIVES[-1]}: is free for the input stub: "
+            f"the conf's [autoexec] mounts {', '.join(f'{d}:' for d in mounted)}. Leave one "
+            f"unmounted, or load the stub from the conf (`G:\\INJECT.COM` after mounting this "
+            f"package's guest directory) and run the program from there")
+    return free[0]
 
 
 INPUT_CONNECT_S = 8.0     # how long a session waits for the emulator's serial port to dial it
@@ -236,6 +277,12 @@ def launch_environment(background: bool) -> dict[str, str]:
     else:
         spawned.pop(BACKGROUND_VAR, None)
     return spawned
+
+
+def binary_facts(resolved: binaries.Resolved) -> dict[str, Any]:
+    """The build's facts (`scry_core.binaries.facts`), its `-version` probe spawned as a session
+    is: this build starts on an option it does not know, so the probe launches behind."""
+    return binaries.facts(resolved, env=launch_environment(True))
 
 
 def listen_input(port: int) -> socket.socket:
@@ -430,6 +477,8 @@ def validate(launch: Launch) -> None:
             "capture_video needs a program to capture: DX-CAPTURE wraps a "
                       "PROGRAM and stops when it exits, so without one the flag "
                       "would be accepted and quietly do nothing")
+    if launch.program and launch.input_port is not None:
+        stub_drive(launch.conf)
     if launch.input_port and not INPUT_PORT_MIN <= launch.input_port <= INPUT_PORT_MAX:
         raise Invalid("bad_argument",
             f"input_port is the TCP port the emulator's COM1 dials, between "
