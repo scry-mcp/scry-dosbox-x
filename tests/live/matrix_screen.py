@@ -25,6 +25,7 @@ from matrix_common import (
     refused,
     release_running,
     server,
+    videos,
 )
 
 import dosbox_console as dcons
@@ -304,7 +305,7 @@ def _screen_cells(stop: str) -> None:
 def _against_the_capture(picture: bytes) -> None:
     """The last frame the capture wrote before this stop (the guest draws nothing after its
     retraces), against the server's picture doubled each way as the emulator renders 13h."""
-    caps = M.call(server.captures).get("captures") or []
+    caps = videos()
     # THE NEWEST FILE, by its number: the recording restarts at every mode change and the reply
     # orders by size, so the largest is not always the one being written.
     last: dict[str, Any] = max(caps, key=lambda c: str(c.get("path")), default={})

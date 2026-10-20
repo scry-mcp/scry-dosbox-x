@@ -221,7 +221,8 @@ hunting it), `conf` and `conf_digest` (the config and a digest of its content at
 `captures` (`off`, or where a `capture_video` session records, `on, in the emulator's own
 directory` when it was given no `captures_dir`), `state_dir` (where `state_save` writes and
 `state_list` reads), and the alarms' quiet values. Every other reply names that half in
-`omitted` beside `how`, so the short block is never read as the whole one.
+`omitted` beside `how`, so the short block is never read as the whole one, unless naming it
+would cost more than the half itself, which then rides whole.
 
 **A session whose emulator died is kept until `close`**: every call that needs the machine
 answers `session_broken` with the `exit_code`, and the block still says whether the session was
@@ -258,11 +259,13 @@ are held the same way (`machine_map`'s `sections`) publishes them on its items; 
 `send_keys`'s `modifiers`, taken in any case, publish a `pattern` of their words in either case
 instead. A scalar held to a range publishes `minimum` and `maximum` (every wait, `read_memory`'s
 and `disassemble`'s `length`, every `limit`, `step`'s `count`, `trace`'s `instructions`, an
-interrupt's `number` and `ah`, `x`, `y`, `session_seconds`, `input_port`); a length whose ceiling
+interrupt's `number` and `ah`, `x`, `y`, `session_seconds`, `input_port`, `palette`'s `first` and
+`count`); a length whose ceiling
 is the machine's (`memdump`, `find`, `scan_start`, `watch_add`) publishes none. A wait's floor is
-`exclusiveMinimum` 0, except `resume`'s and `settle_seconds`, where 0 means no wait. Two ranges
+`exclusiveMinimum` 0, except `resume`'s and `settle_seconds`, where 0 means no wait. Three ranges
 are wider than their judge, which a schema range cannot narrow: `input_port` is also refused from
-1 to 1023, and `symbols_find`'s `limit` is judged on the `name` question only. A word outside a
+1 to 1023, `symbols_find`'s `limit` is judged on the `name` question only, and `palette`'s
+`first + count` may not pass 256. A word outside a
 vocabulary still reaches the tool and is refused there in one sentence (`mode is one of (...);
 got ...`), a value outside a range in its tool's own.
 
@@ -1286,7 +1289,8 @@ runs first on its own (a key name no route knows, a pattern that does not compil
 count past the ceiling, a wait that is not a bound, a raw address that does not parse, an
 argument of the wrong type, a required argument missing). A batch with a mistake in step 3
 does not press the keys of steps 0 to 2 and then stop: the reply is INVALID with `errors`
-listing every refused step, `ran` is empty, and the caller fixes the batch once. What only
+listing every refused step, `ran` is empty, and the caller fixes the batch once (`drive` carries
+them inside `act`, beside `verify` and `looked`, the shape every `drive` reply has). What only
 its step can judge still refuses there, with `failed_at` and `ran` as the honest account: a
 symbol name against the table loaded by then (`symbols_load` may be an earlier step of the
 same list), a file an earlier step writes, and anything that needs the machine. `debug` is a
@@ -1297,7 +1301,8 @@ step, read off the
 server's own registry. A `resume` ends the console-driven part of a sequence. After it, what
 answers on a RUNNING guest runs at once: the one table a running-guest refusal lists in
 `answers_while_running` (`status`, the log, `symbols_find`, the input, the captures, the
-saved states, the snapshot, `stop`, the declarations, `comment_list` and `comment_save`),
+saved states, the snapshot, the screen-map files, the media file tools, `stop`, the
+declarations, `comment_list` and `comment_save`),
 the five it adds for a caller
 outside a list (`registers(from_last_stop=True)`, `close`, `drive`, `perform`, `perform_export`)
 apart. A
@@ -1803,8 +1808,8 @@ them, and not digits only: the emulator's own slot files are `<n>.sav` in the sa
 
 `debug` sends one command to the debugger console and hands back the screen delta it
 produced, capped and saying so (`screen_chars`, `clipped`). It needs the machine stopped,
-like every reader: the console answers only then. A mutating command counts as a write and
-marks the session altered. Everything the typed tools do goes through this same console,
+like every reader: the console answers only then. A command that writes the guest (`SM`
+memory, `SR` a register) marks the session altered; no other command is classified. Everything the typed tools do goes through this same console,
 which is why they exist: they parse what the console paints, read the lists back and refuse
 a shape they were not captured answering, where a raw command hands you the paint.
 
@@ -1855,8 +1860,12 @@ added to one file.
   ran; the six declaring tools and `breakpoint_interrupt`.
 - **`dosbox_running.py`**: a stop the guest reached on its own, the first contact after it,
   and the one survey a stop reply is built from, with its E9 block.
-- **`dosbox_inputs.py`**: the two routes a key takes and the one the mouse takes, and the
-  proof the guest reacted; `send_keys` and `send_mouse`.
+- **`dosbox_inputs.py`**: the one route a key and the mouse take (COM1 to the resident stub),
+  and the proof the guest reacted; `send_keys` and `send_mouse`.
+- **`dosbox_stub_link.py`**: protocol 3 on the host's side: the frame, its check byte, the
+  acknowledgement each frame waits for and the resend.
+- **`dosbox_replies.py`**: each tool's reply model, published by field name as its
+  `outputSchema` and held to every reply the suite builds (`scry_core.reply_schema`).
 - **`dosbox_captures.py`**: the files the session's tools wrote, the video the emulator
   recorded, and a still out of it.
 - **`dosbox_media.py`**: `series_capture`, frames out of a video capture as a series.
@@ -1868,7 +1877,8 @@ added to one file.
   carries, and `call_stack`'s walk.
 - **`dosbox_machine.py`**: the debugger's listings parsed, `machine_map` assembled from them
   by mode, and the vector table placed in them.
-- **`dosbox_sequence.py`**: the executor behind `perform`, `start(plan=)` and `drive`.
+- **`dosbox_sequence.py`**: this server's half of `perform`, `start(plan=)` and `drive`, over
+  `scry_core.sequence`.
 - **`dosbox_comments.py`**: where a comment lands now and the one-per-place rule; the five
   comment tools.
 - **`dosbox_comment_file.py`**: the comment file read and written: its header, its rules for a

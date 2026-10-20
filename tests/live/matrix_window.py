@@ -104,7 +104,7 @@ def _probe() -> None:
     judged("G snapshot while running", reply=r,
            holds=ok(r) and Path(shot).is_file() and Path(shot).read_bytes()[:8] == PNG_MAGIC)
     r = M.call(server.captures)
-    listed = r.get("captures") or []
+    listed = [c for c in r.get("captures") or [] if c.get("kind") == "avi"]
     judged("G captures lists the recording", reply=r,
            holds=ok(r) and bool(listed) and all(c.get("avi_frames") is not None for c in listed))
     frame = M.fresh(".png")

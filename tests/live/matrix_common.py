@@ -87,6 +87,13 @@ def refused(r: dict[str, Any], *codes: str) -> bool:
     return whole(r) and r.get("status") == "INVALID" and (not codes or r.get("code") in codes)
 
 
+def videos() -> list[dict[str, Any]]:
+    """The rows of `captures` the emulator recorded (`kind` `avi`): the reply lists every file
+    the session's tools wrote as well."""
+    listed = M.call(server.captures).get("captures") or []
+    return [c for c in listed if isinstance(c, dict) and c.get("kind") == "avi"]
+
+
 def said(r: dict[str, Any], limit: int = 140) -> str:
     """What a reply said, short, for the result line: the exception, else code and summary, and
     first what is wrong with the envelope when that is what fails the cell."""

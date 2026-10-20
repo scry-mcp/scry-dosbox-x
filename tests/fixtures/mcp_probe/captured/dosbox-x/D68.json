@@ -8,15 +8,15 @@
  "runs": [
   {
    "lines": [
-    "D68: CANNOT The VGA DAC holds only entries 0 to 255, so entry 300 does not exist."
+    "D68: CANNOT The DAC holds entries 0 to 255 only, and palette refuses an entry past 255."
    ],
    "right": true
   },
   {
    "lines": [
-    "D68: CANNOT The VGA DAC holds only entries 0 to 255, so entry 300 does not exist."
+    "D68: {\"tool\": \"palette\", \"args\": {\"first\": 300, \"count\": 1}}"
    ],
-   "right": true
+   "right": false
   },
   {
    "lines": [

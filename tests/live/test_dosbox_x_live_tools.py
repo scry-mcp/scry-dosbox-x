@@ -618,7 +618,7 @@ def test_captures_and_a_still_come_out_of_a_real_recording(tmp_path: Path) -> No
 
     got = cast(dict[str, Any], server.captures())
     assert got["status"] == "ok", got
-    files = cast(list[dict[str, Any]], got["captures"])
+    files = [c for c in cast(list[dict[str, Any]], got["captures"]) if c["kind"] == "avi"]
     biggest = files[-1]
     assert biggest["riff_avi"] is True, files
     assert cast(int, biggest["avi_frames"]) > 100, files

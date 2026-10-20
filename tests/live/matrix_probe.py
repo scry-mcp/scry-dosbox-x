@@ -149,7 +149,7 @@ _NEEDS_STOP = ("registers", "read_memory", "disassemble", "call_stack", "memdump
                "resume", "machine_map", "interrupt_vectors", "palette", "screen_view",
                "screen_signature", "screen_wait", "comment_add", "comment_delete",
                "comment_load", "map_add", "map_find")
-_NO_CAPTURE = ("captures", "capture_frame", "series_capture")
+_NO_CAPTURE = ("capture_frame", "series_capture")
 #: The media file tools read files and no machine, so they answer in every state alike; each is
 #: asked about files that are not there, which its judge refuses by name.
 MEDIA_ABSENT: dict[str, dict[str, Any]] = {
@@ -376,8 +376,13 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                       "send_keys docstring: refused on a machine stopped at the debugger"),
         "send_mouse": (lambda r: refused(r, "not_running"),
                        "send_mouse docstring: refused on a machine stopped at the debugger"),
-        "captures": (lambda r: ok(r) and r.get("captures") == [],
-                     "captures docstring: an empty list is an answer"),
+        # Before it, this state's order has `memdump`, `map_save` and others write files, so the
+        # list is not empty, and a session started without `capture_video` lists no video.
+        "captures": (lambda r: ok(r) and isinstance(r.get("captures"), list)
+                     and bool(r["captures"])
+                     and not any(c.get("kind") == "avi" for c in r["captures"])
+                     and all({"kind", "path", "present"} <= set(c) for c in r["captures"]),
+                     "captures docstring: the files the tools wrote, and no video unrecorded"),
         "capture_frame": (lambda r: refused(r), "capture_frame docstring: needs capture_video"),
         "series_capture": (lambda r: refused(r, "no_channel"),
                            "series_capture docstring: needs capture_video"),
@@ -413,6 +418,9 @@ def _running(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
     if tool in _WINDOWED:
         return (lambda r: refused(r) and r.get("code") != "unknown_ref" and alive(r),
                 "the tool's docstring: a windowed session only")
+    if tool == "captures":
+        # THE FILES THE TOOLS WROTE answer in any state; only a video needs `capture_video`.
+        return _stopped(tool)
     if tool in _NO_CAPTURE:
         return (lambda r: refused(r) and alive(r), "the tool's docstring: needs capture_video")
     d: dict[str, tuple[Callable[[dict[str, Any]], bool], str]] = {

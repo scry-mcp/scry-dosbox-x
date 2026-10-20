@@ -16,6 +16,7 @@ from scry_core.reply_contract import Invalid
 import dosbox_checks as checks
 import dosbox_code as code
 import dosbox_console as dcons
+import dosbox_dac as vgadac
 import dosbox_declarations as dec
 import dosbox_find as finder
 import dosbox_inputs as inputs
@@ -54,6 +55,7 @@ RANGES: list[tuple[str, str, int, int]] = [
     ("send_mouse", "x", 0, inputs.MAX_COORD), ("send_mouse", "y", 0, inputs.MAX_COORD),
     ("start", "session_seconds", 1, dlaunch.MAX_SECONDS),
     ("start", "input_port", 0, dlaunch.INPUT_PORT_MAX),
+    ("palette", "first", 0, vgadac.DAC_ENTRIES - 1), ("palette", "count", 0, vgadac.DAC_ENTRIES),
 ]
 WAITS = ("seconds", "settle_seconds")
 #: The waits whose 0 means no wait at all, so their floor is closed.

@@ -39,6 +39,7 @@ from matrix_common import (
     ok,
     said,
     server,
+    videos,
 )
 from scry_core import avi, presence, window_capture
 
@@ -153,7 +154,7 @@ def _stills() -> dict[str, str]:
 
 
 def _latest_capture() -> str:
-    listed = M.call(server.captures).get("captures") or []
+    listed = videos()
     paths = [Path(str(c.get("path"))) for c in listed if isinstance(c, dict)]
     paths = [p for p in paths if p.is_file()]
     return str(max(paths, key=lambda p: p.stat().st_mtime)) if paths else ""
@@ -204,7 +205,7 @@ def _spin_record(adapter: dpresence.ChannelAdapter) -> dict[str, Any]:
     out["snapshot"] = (_digest(off_shot) if ok(off_snap) else "",
                        _digest(on_shot) if ok(on_snap) else "")
     capture = _latest_capture()
-    listed = M.call(server.captures).get("captures") or []
+    listed = videos()
     total = max((int(c.get("avi_frames") or 0) for c in listed
                  if isinstance(c, dict) and str(c.get("path")) == capture), default=0)
     # A frame from the middle of each stretch, by the frames recorded at its two ends.

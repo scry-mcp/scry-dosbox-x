@@ -226,7 +226,7 @@ DOSBox-X `<volatile>`.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -295,7 +295,7 @@ DOSBox-X `<volatile>`.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -412,7 +412,7 @@ DOSBox-X `<volatile>`.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -458,7 +458,7 @@ DOSBox-X `<volatile>`.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -507,7 +507,7 @@ DOSBox-X `<volatile>`.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -608,7 +608,7 @@ DOSBox-X `<volatile>`.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -709,7 +709,7 @@ DOSBox-X `<volatile>`.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -762,7 +762,7 @@ DOSBox-X `<volatile>`.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -821,7 +821,7 @@ DOSBox-X `<volatile>`.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -866,7 +866,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -947,7 +947,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -1000,7 +1000,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -1042,7 +1042,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -1132,7 +1132,7 @@ Also attached: image/png.
               "captures",
               "state_dir"
             ],
-            "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+            "how": "call `status`"
           }
         }
       },
@@ -1177,7 +1177,7 @@ Also attached: image/png.
               "captures",
               "state_dir"
             ],
-            "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+            "how": "call `status`"
           }
         }
       },
@@ -1222,7 +1222,7 @@ Also attached: image/png.
               "captures",
               "state_dir"
             ],
-            "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+            "how": "call `status`"
           }
         }
       }
@@ -1271,7 +1271,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -1318,7 +1318,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -1362,7 +1362,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -1404,7 +1404,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -1465,7 +1465,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -1538,7 +1538,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -1599,7 +1599,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -1646,7 +1646,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -1690,7 +1690,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -1732,7 +1732,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -1780,7 +1780,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -1841,7 +1841,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -1888,7 +1888,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -1935,7 +1935,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -1979,7 +1979,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -2021,7 +2021,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -2082,7 +2082,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```
@@ -2123,7 +2123,7 @@ Also attached: image/png.
       "captures",
       "state_dir"
     ],
-    "how": "`status` answers the whole block: what is fixed for this session as well as its alarms"
+    "how": "call `status`"
   }
 }
 ```

@@ -1040,7 +1040,8 @@ def test_a_set_file_the_host_refuses_part_way_is_removed_and_said(
         if next(rows) == 1:
             raise OSError(28, "No space left on device")
         return "{}"
-    monkeypatch.setattr(json, "dumps", full)
+    # The trace's own writer alone: the rest of the process (the session block's cost) keeps json.
+    monkeypatch.setattr(tracing, "json", SimpleNamespace(dumps=full))
     live(Tracer([cap("probe-start-survey-before"), cap("probe-start-survey-after")],
                 cwd_of(tmp_path), [("probe-start-normal-200", "probe-start-normal-200-delta")]))
     dest = tmp_path / "f.trace"

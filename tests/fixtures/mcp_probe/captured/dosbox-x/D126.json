@@ -7,15 +7,15 @@
  "runs": [
   {
    "lines": [
-    "D126: CANNOT No tool reports whether the session's window edge is drawn; the presence flag only requests it at start and the status reply reports the result as `presence`, which I would read via status."
-   ],
-   "right": false
-  },
-  {
-   "lines": [
     "D126: {\"tool\": \"status\", \"args\": {}}"
    ],
    "right": true
+  },
+  {
+   "lines": [
+    "D126: CANNOT The server has no tool that reports whether the presence edge is drawn for the window; `status` reports `presence` only as the edge's state at the last start or status read, and that answer is only available with a session open."
+   ],
+   "right": false
   },
   {
    "lines": [

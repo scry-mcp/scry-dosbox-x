@@ -244,7 +244,7 @@ def start(conf: str, cwd: str,
 
 @tool("Session status", summary=one_line.status, read_only=True)
 def status() -> dict[str, Any]:
-    """What the session is right now. Safe on a running guest. It records a stop no tool has
+    """What the session is right now. It records a stop no tool has
     reported (`stopped_on_its_own`) and applies what was queued while the guest ran
     (`applied_on_stop`).
 
@@ -271,7 +271,8 @@ def status() -> dict[str, Any]:
     At the top: `alive`, `running`, `last_stop` (`stop_seq`, `pc`, `attribution`,
     `since_s`, `wall_at`; the park after `start` is stop 1; unavailable with no session or a cut
     survey), `pending` (asked while the guest ran: `arm` refs, a `disarm` count,
-    `symbols_load`), `presence` (`true` drawn, `false` asked off, or why not), and with a
+    `symbols_load`), `presence` (the window's edge: `true` drawn, `false` off or no session,
+    or why not), and with a
     session its stop's `pc` (absent while it runs) and `cpu_mode` (`real`, `protected`,
     `paged`; unavailable while it runs), and `declarations`, this server's own counted
     (`breakpoints`, `watches`).
@@ -1305,7 +1306,8 @@ def interrupt_vectors(number: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)] | Non
 # ------------------------------------------------------------------------ the screen
 
 @tool("Read the palette", summary=one_line.palette, replay="drop")
-def palette(first: judges.NumberArg = 0, count: int = 0, scale: int = 0,
+def palette(first: Annotated[int, vocab.bounds(0, vgadac.DAC_ENTRIES - 1)] | str = 0,
+            count: Annotated[int, vocab.bounds(0, vgadac.DAC_ENTRIES)] = 0, scale: int = 0,
             dest: str = "") -> dict[str, Any]:
     """THE 256 COLOURS OF THE VGA'S DAC AS THEY ARE AT THIS STOP, read off the debugger's
     `VGA DAC` and `VGA DACPAL` listings in the session's logfile, with their swatch attached:
@@ -1704,22 +1706,22 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
     a VESA or custom mode). `target`: instead of `x`, `y`, a control of the screen the latest
     `map_find` matched, its centre in `screen` units. `button`: `left`, `right` or `middle`;
     `action`: `click` (default), `double` (two clicks a tick apart), `down` or `up` (a drag is
-    `down`, a move, `up`). A move and a button in one call: the move goes first.
+    `down`, a move, `up`). A button with no `x`, `y` acts where the pointer is, so `down` alone
+    holds it for the calls that follow. A move and a button in one call: the move goes first.
 
-    Refused before anything is sent: no move and no button, half a move, a negative or
-    non-integer coordinate, a place off the screen or outside the driver's range, `screen`
-    units in a mode this server does not map, an unknown button, action or units, a stopped
-    machine, no stub (with no `logfile` there is no announce to read and the mouse goes in).
+    Refused before anything is sent: no move and no button, half a move, a place off the
+    screen or outside the driver's range, `screen` units in a mode this server does not map, a
+    stopped machine, no stub (with no `logfile` there is no announce to read and the mouse goes in).
     A `target` beside `x`, `y` or `units="mouse"` (`bad_argument`); no `map_find` match since
     the start, or a guest no longer showing that screen's kind and size (`needs_call`); a
     control that screen lacks (`unknown_ref`).
 
-    Reply: `route: "guest"`, `pointer` read back after the call (`screen` with `x`, `y`,
+    Reply: `route` (`guest`), `pointer` read back (`screen` with `x`, `y`,
     `width`, `height`, or unavailable in an unmapped mode; `mouse` with the driver's `x`, `y`,
     `max_x`, `max_y`; `buttons` held; `bios_mode`), `arrived` (the read-back is where it was
     asked; when it is not, `asked` says where in the driver's coordinates: a text mode snaps to
     its cell, a program's own range clamps), the arguments, `verify` as `send_keys`'; with a
-    `target`, `target`, `screen` and `identified_at_stop`, the stop that `map_find` read. A
+    `target`, `target`, `screen` and `identified_at_stop` (`map_find`'s stop). A
     read-back that fails after the commands went in is INVALID with `delivered: true`, so
     nothing is sent twice.
 

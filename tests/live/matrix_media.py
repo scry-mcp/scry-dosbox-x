@@ -18,7 +18,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from matrix_common import M, boot, cells, ok, server
+from matrix_common import M, boot, cells, ok, server, videos
 from matrix_screen import SCREEN_CONF, SCREEN_PROGRAM
 from scry_core import png, raster, traffic
 
@@ -91,7 +91,7 @@ def section_q() -> None:
     M.judge(Q_CELLS[5].label, new_s2["image_tokens"] == 0 < hand_s2["image_tokens"],
             f"hand {hand_s2}, new {new_s2}")
     # S1 over the capture the 13h steps wrote: the newest file, by its number.
-    caps = M.call(server.captures).get("captures") or []
+    caps = videos()
     last: dict[str, Any] = max(caps, key=lambda c: str(c.get("path")), default={})
     count = min(int(last.get("avi_frames") or 0), S1_FRAMES_MAX)
     source = str(last.get("path"))
