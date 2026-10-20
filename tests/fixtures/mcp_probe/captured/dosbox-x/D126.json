@@ -7,6 +7,18 @@
  "runs": [
   {
    "lines": [
+    "D126: CANNOT No tool reports whether the session's window edge is drawn; the presence flag only requests it at start and the status reply reports the result as `presence`, which I would read via status."
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D126: {\"tool\": \"status\", \"args\": {}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D126: {\"tool\": \"status\", \"args\": {}}"
    ],
    "right": true

@@ -116,6 +116,7 @@ DOSBox-X `<volatile>`.
   "stub": "./guest/INJECT.COM",
   "input_port": "<volatile>",
   "background": false,
+  "presence": true,
   "session": {
     "pid": "<volatile>",
     "alive": true,
