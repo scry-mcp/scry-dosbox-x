@@ -169,7 +169,8 @@ def preflight(steps: list[dict[str, Any]], ops: Ops) -> list[dict[str, Any]]:
             # A step's value the schema never saw (a list's members are not typed) reaching a
             # check that assumes its type: the caller's mistake, refused, never a traceback.
             refused.append({"step": i, "op": op, "code": "bad_argument",
-                            "message": f"carries a value its tool cannot take: {e}"})
+                            "message": f"its value is not one the tool's argument check "
+                                       f"could judge: {e}"})
     return refused
 
 
@@ -446,9 +447,9 @@ def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str 
             return st.reply(status="INVALID", code="wait_stopped", act=account,
                           verify=checked, last_stop=stop,
                           looked=_look(session, mark, pattern, limit),
-                          message=f"the act ran and the machine is STOPPED at the debugger"
-                                 f"{when}{where}, so the guest could not do what was "
-                                 f"expected: {checked['why']}")
+                          message=f"the act ran, the machine is STOPPED at the debugger"
+                                 f"{when}{where}, and no line matching `expect` was in the "
+                                 f"log since the act: {checked['why']}")
         if not checked.get("checked"):
             # The verify's own refusal names the cause; the act ran, so the reply keeps it.
             code: contract.Code = checked.get("code", "unexpected_answer")

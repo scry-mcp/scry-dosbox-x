@@ -1,8 +1,8 @@
 """The CAPTURES: the files this session's tools wrote, the video DOSBox-X recorded, and a still
 out of it. The ledger is filled by the server's one call path, so `captures` lists what the tools
 handed back without each tool remembering to. The VIDEO is the emulator's own doing and needs no
-keypress; the STILL is an extraction from it with `ffmpeg`, because the emulator's own screenshot
-is a mapper action with no non-interactive trigger.
+keypress; a still OUT OF IT is an extraction with `ffmpeg`, and a still of the running screen is
+`snapshot`, the stub's command to the integration device's capture trigger.
 """
 
 from __future__ import annotations

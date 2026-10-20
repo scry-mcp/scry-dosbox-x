@@ -199,12 +199,14 @@ def require_stub(session: ds.Session) -> None:
     device, proto = found[-1].groups()
     if device != "present":
         raise ds.Invalid("no_channel",
-            "the stub found no integration device (`device=absent`), so it left memory: the "
-            "session needs `integration device=true`, which `start` sets with an input port")
+            f"the stub's device probe did not answer the expected identification "
+            f"(`device={device}`), so it left memory: the session needs `integration "
+            f"device=true`, which `start` sets with an input port, and a build whose device "
+            f"answers otherwise reads the same")
     if proto != STUB_PROTOCOL:
         raise ds.Invalid("no_channel",
-            f"the resident stub speaks protocol {proto or '1'} and this server protocol "
-            f"{STUB_PROTOCOL}: the conf mounts an older INJECT.COM. Mount this package's "
+            f"the resident stub announces protocol {proto or 'none'} and this server speaks "
+            f"{STUB_PROTOCOL}: the conf mounts another INJECT.COM. Mount this package's "
             f"`{dlaunch.GUEST_DIR}`")
     session.stub_protocol = proto
 
@@ -305,9 +307,10 @@ def verify_block(expect: str, reaction: dict[str, object]) -> dict[str, Any]:
                 "verdict": reaction["verdict"], "waited_s": reaction["waited_s"],
                 "arrived_during": reaction["arrived_during"],
                 "lines_examined": reaction["lines_examined"],
-                "note": f"the program did not react: {reaction['note']}. It may have "
-                        f"swallowed the input (a modal, a loading state); either way this is "
-                        f"a MISS, not a delivery"}
+                "note": f"no new line matching the pattern: {reaction['note']}. The input "
+                        f"was delivered and this is a miss on the pattern: the program "
+                        f"swallowed it (a modal, a loading state), reacted without writing "
+                        f"that line, or the pattern does not match what it writes"}
     return {"checked": True, "seen": True, "expected": expect, "verdict": contract.TARGET,
             "line": reaction["line"], "seen_before_waiting": reaction["already"],
             "lines_before": reaction["lines_before"],

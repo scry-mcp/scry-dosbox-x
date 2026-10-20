@@ -324,8 +324,10 @@ def read_target(ref: str, reg: str, session: ds.Session, *,
         raise ds.Invalid("unknown_ref", f"{ref!r} is not a symbol in this build, so there is no "
                          f"address to read")
     if not session.at_debugger():
-        raise ds.NotStopped(f"the guest is running, so {ref!r} cannot be placed against "
-                            f"its selector now, and a read needs the machine stopped anyway")
+        why = res.get("why")
+        raise ds.NotStopped(f"{why}; and a read needs the machine stopped anyway" if why else
+                            f"the guest is running, so {ref!r} cannot be placed now, and a "
+                            f"read needs the machine stopped anyway")
     raise ds.Invalid("unknown_ref",
         str(res.get("why", f"{ref!r} cannot be resolved to an address")))
 
@@ -493,9 +495,17 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
     if unknown:
         raise ds.Invalid("bad_argument",
                          f"types are named for symbols the table lacks: {unknown[:5]}")
-    STATE.pending["load"] = None            # a newer load supersedes one still queued
+    # A BATCH STILL QUEUED is the debugger's to take as well when this one accumulates onto it,
+    # and superseded when this one replaces it; dropped only once this load has gone through.
+    queued = STATE.pending["load"]
+    if queued and same_place:
+        try:
+            data = sym.joined(queued, data)
+        except sym.BadSymbolText as e:
+            raise ds.Invalid("bad_argument", str(e)) from None
     if session.at_debugger():
         held = session.load_symbols(data)
+        STATE.pending["load"] = None
         pending = False
     else:
         # THE GUEST RUNS: the table is held here at once (so `symbols_find` and the name
@@ -531,8 +541,10 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
     rearm = ({"deferred": True, "note": "re-armed at the next stop, after the load"}
              if pending else rearm_declarations(session))
     if (unwritten := take_the_map(session)) is not None:
+        done = ("the symbols are held here and queued for the next stop" if pending else
+                "the symbols are loaded and the declarations re-armed")
         raise ds.Invalid("host_failed",
-            f"the symbols are loaded and the declarations re-armed, but {unwritten}: the "
+            f"{done}, but {unwritten}: the "
             "comments this session placed before any map are held in memory as this map's, "
             "and the next write that succeeds puts them on disk", held_in_memory=True)
     return st.reply(base=desc["base"], limit=desc["limit"], descriptor=desc["type"],
@@ -570,7 +582,10 @@ def take_the_batch(symbols: list[sym.Symbol], accumulate: bool) -> None:
     if conf is None:
         return
     batch = dec.Build.of(conf, [(s.name, linear_of(s)) for s in symbols])
-    STATE.map_batches = [*STATE.map_batches, batch] if accumulate else [batch]
+    # ONE MAP LOADED AGAIN IS ONE BATCH, now the latest: the debugger's list holds its names
+    # once, and every stamp walks the batches held.
+    kept = [held for held in STATE.map_batches if held.stamp != batch.stamp]
+    STATE.map_batches = [*kept, batch] if accumulate else [batch]
 
 
 def stamp_at(linear: int | None, raw: bool) -> str | None:
@@ -727,7 +742,7 @@ def find(name: str | None, offset: int | None, section: int | None,
     else:
         raise ds.Invalid("bad_argument",
             f"this table is SECTIONED and an offset alone does not name an address: "
-            f"its sections overlap, so 0x{offset:X} exists in each of "
+            f"its sections overlap, so 0x{offset:X} is a different address in each of "
             f"{sorted(STATE.section_bases)}. Pass `section`, or ask by `linear`, which says "
             f"which section it is in by itself")
     if offset is not None:
@@ -746,8 +761,8 @@ def _linear_section(linear: int) -> int:
     if not under:
         raise ds.Invalid("unknown_ref",
             f"0x{linear:X} is below every section this table was placed at "
-            f"({ {i: hex(b) for i, b in sorted(STATE.section_bases.items())} }), so it "
-            f"is not an address in this program")
+            f"({ {i: hex(b) for i, b in sorted(STATE.section_bases.items())} }), so no "
+            f"section of this table places an address there")
     return max(under, key=lambda i: STATE.section_bases[i])
 
 

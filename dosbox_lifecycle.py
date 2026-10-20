@@ -55,6 +55,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         # run and `reap_failed` is never set: a consumer here would be unreachable.
         STATE.session.close()
         STATE.session = None
+        STATE.clear_running_state()     # its stop and its queue, whatever this start then does
     # A NEW SESSION IS A NEW PROCESS AT A NEW BASE, so the previous one's table may not
     # survive into it. It is cleared here rather than only on the dead-session branch
     # above, because `start` is reached with no session at all far more often than with

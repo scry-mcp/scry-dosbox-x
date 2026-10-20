@@ -234,8 +234,9 @@ def _run_to(ref: str, control: str = "", seconds: float = 30.0, **rest: Any) -> 
         raise ds.Invalid("bad_argument",
             "no control is named: `run_to` measures nothing without one. A `control` is a "
             "second ref known to be hot on this screen (the vblank or timer handler, a loop "
-            "the program is in): with it, a bound that expires proves the target did not "
-            "run, and without it the silence could be the breakpoint never firing at all")
+            "the program is in): with it, a bound that expires with the control firing says "
+            "breakpoints work here and the target's did not fire; without it the silence "
+            "could be breakpoints never firing at all")
     address_shape(control)
     _display(**rest)
 

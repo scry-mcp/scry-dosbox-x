@@ -64,12 +64,12 @@ def captures(ses: ds.Session) -> list[dict[str, object]]:
     out = videos(ses)
     if not out:
         raise Invalid("unexpected_answer",
-            f"no capture appeared in {folder(ses)}. Two causes, and "
-            f"they need different answers: the recording stops when the captured "
-            f"PROGRAM exits, so a session still running may not have written one "
-            f"yet; OR the program never started, because `program` is passed with "
-            f"`-c`, which runs AFTER the conf's [autoexec] section -- a conf whose "
-            f"autoexec ends in `exit` quits before it is reached")
+            f"no .avi file in {folder(ses)}, and that absence is all this saw. The causes "
+            f"known: the recording stops when the captured PROGRAM exits, so a session "
+            f"still running may not have written one yet; the program was never reached, "
+            f"because `program` is passed with `-c`, which runs AFTER the conf's [autoexec] "
+            f"section (a conf whose autoexec ends in `exit` quits before it); or the "
+            f"emulator wrote it somewhere else")
     return out
 
 

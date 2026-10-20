@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Re-take every figure this package's README publishes, and validate the instrument.
+"""Re-take the figures this package's documents rest on, and validate the instrument.
 
     python bench.py --conf your.conf --cwd /path/to/it [--json out.json]
 
@@ -211,7 +211,7 @@ def reach_the_state(conf: Path, cwd: Path) -> dict[str, float]:
                 break
             time.sleep(0.05)
         else:
-            no_measurement(f"{MARKER!r} never appeared on the live path")
+            no_measurement(f"{MARKER!r} did not appear on the live path within the wait")
         up = time.perf_counter() - t0
     finally:
         s.close()
@@ -311,7 +311,8 @@ def advance_rate(conf: Path, cwd: Path) -> dict[str, object]:
         while newest(log) is None and time.perf_counter() < deadline:
             time.sleep(0.5)
         if newest(log) is None:
-            no_measurement("the guest emitted no clock at all")
+            no_measurement("no clock stamp could be read from the guest's log (none written, "
+                           "or the log unreadable)")
 
         step = WINDOW_SECS / WINDOW_SAMPLES
         samples: list[tuple[float, float]] = []
@@ -320,7 +321,7 @@ def advance_rate(conf: Path, cwd: Path) -> dict[str, object]:
             time.sleep(step)
             g = newest(log)
             if g is None:
-                no_measurement("the guest clock vanished mid-window")
+                no_measurement("the guest's log no longer yields a clock stamp mid-window")
             samples.append((time.perf_counter() - t0, g))
             if not s.alive():
                 no_measurement("the emulator exited inside the window")
@@ -389,8 +390,8 @@ def main() -> int:
           f"{check['read_ms']} ms ({check['error_pct']}% off); a do-nothing call "
           f"reads {check['negative_ms']} ms")
     if not check["ok"]:
-        invalid_line("the timer failed its own known answer, so nothing below is a "
-              "measurement")
+        invalid_line("the timer check failed (its known answer, or the cost of a call that "
+                     "does nothing), so nothing below is a measurement")
         return INVALID_RC
 
     out: dict[str, Any] = {"timer": check, **stamp()}

@@ -1506,9 +1506,9 @@ many lines the guest wrote between the mark and the reaction. The field is not c
 that reads as "it had happened before the key was sent", and it would say so about reactions
 stamped after their posts.
 
-Timing is coarse: an input lands "now", a tick at a time. For a key that must arrive at a
-precise guest instant, stop there first (`run_to`, a change-watch), send, then `resume`: the
-debugger provides the WHEN and the stub provides the key.
+Timing is coarse: an input lands "now", a tick at a time, on a running guest. A key cannot be
+parked at a stop for the resume to deliver (a machine at the debugger is refused, above), so the
+nearest instant is the stop just before it: `resume`, then send.
 
 **The mouse: a position, set and read back.** `send_mouse` takes a move (`x`, `y`), a
 `button` (`left`, `right`, `middle`) with an `action` (`click`, `double`, `down`, `up`), or
@@ -1983,9 +1983,10 @@ killed and FAILS the run by name. A green run removes its scratch, its jobs' wit
 INVALID or broken one keeps it and prints its path (`scry_core.live_host`).
 
 `bench.py` needs the same two things, and it takes them as FLAGS: `--conf` and `--cwd`,
-beside the `--json`, `--reps` and `--song` its parser already had. It measures YOUR
-program, so it has no default to fall back on and refuses without them, naming the
-flags; two equally required inputs arriving through a different door than the other
+beside the `--json`, `--reps` and `--song` its parser already had. Those two have no
+default and are refused without, naming the flags; the song, the boot marker it waits for and
+the make target of its batch cost are its author's program's, so a bench of another program
+names its own; two equally required inputs arriving through a different door than the other
 three is an incoherence, not a need.
 
 ### The fixtures, and the sweep that is not on the commit path

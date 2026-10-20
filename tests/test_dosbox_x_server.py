@@ -983,8 +983,11 @@ def test_start_over_a_dead_session_collects_it_first_and_refuses_over_a_live_one
     assert cast(dict[str, Any], server.start(**kw))["code"] == "session_live"
     assert live_one.closed == 0 and cast(object, dstate.STATE.session) is live_one
     dead = install(alive=False)
+    dstate.STATE.last_stop.update({"stop_seq": 7, "where": {"cs": "0814", "eip": "00000106"}})
     assert cast(dict[str, Any], server.start(**kw))["code"] == "session_broken"
     assert dead.closed == 1 and dstate.STATE.session is None, "the dead session was not collected"
+    # ITS ACCOUNT GOES WITH IT, even when the start that collected it is refused after.
+    assert dstate.STATE.last_stop == {}, dstate.STATE.last_stop
 
 
 # ------------------------------------------------------------------- the answers
@@ -2914,8 +2917,8 @@ class NamesFake:
             elif c[:1] == b"R":
                 self.reports += 1
                 if self.reports in self.reports_lost:
-                    raise ds.Invalid("host_failed", "the stub acknowledged none of 3 sends of a "
-                                     "'R' command: it is not reading the port")
+                    raise ds.Invalid("host_failed", "no acknowledgement of a 'R' command "
+                                     "after 3 sends")
                 reports.append(self.report_line())
         acted = any(c[:1] != b"R" for c in commands)
         if acted and self.input_effect is not None and self.log is not None:
@@ -3485,7 +3488,7 @@ def test_a_stub_that_never_reports_is_named_and_a_malformed_report_refused(
     fake.reports_lost = {1}
     got = cast(dict[str, Any], server.send_mouse(button="left"))
     assert got["status"] == "INVALID" and got["code"] == "host_failed", got
-    assert "not reading the port" in got["message"], got
+    assert "no acknowledgement" in got["message"], got
     with pytest.raises(ds.Invalid, match="not in its shape"):
         inputs.parse_report("STUB  . mouse x=1 y=2")
 
@@ -3505,7 +3508,7 @@ def test_the_stub_must_have_announced_its_protocol_before_anything_is_sent(
     assert "integration device=true" in absent["message"], absent
     fake.log.append("Bochs port E9h: STUB  . inject device=present")
     old = cast(dict[str, Any], server.send_mouse(button="left"))
-    assert "protocol 1" in old["message"] and "older INJECT.COM" in old["message"], old
+    assert "protocol none" in old["message"] and "another INJECT.COM" in old["message"], old
     assert fake.commands_sent == []
     fake.log.append("Bochs port E9h: STUB  . inject device=present proto=2")
     stale = cast(dict[str, Any], server.send_keys(keys=["a"]))
@@ -3560,7 +3563,7 @@ def test_send_keys_reports_a_swallowed_key_as_a_miss_not_a_success(tmp_path: Pat
     fake.input_effect = None                                              # the guest is silent
     got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a", seconds=2))
     assert got["status"] == "ok" and got["verify"]["verdict"] == "TIMEOUT", got
-    assert "did not react" in got["verify"]["note"], got["verify"]
+    assert "miss on the pattern" in got["verify"]["note"], got["verify"]
     assert got["posted"] == 1 and got["route"] == "guest", got     # the post is still reported
     assert got["verify"]["checked"] is True and got["verify"]["seen"] is False, got["verify"]
     # from PAST the stale line
@@ -3583,7 +3586,7 @@ def test_send_keys_an_instrument_that_broke_is_not_reported_as_a_miss(
     assert got["verify"] == {"checked": False, "expected": "key_cue_a",
                              "why": "the emulator is GONE, 0.2s into a 10.0s wait"}, got
     assert "could NOT be verified" in got["message"] and "GONE" in got["message"], got["message"]
-    assert "did not react" not in got["message"], got["message"]
+    assert "miss on the pattern" not in got["message"], got["message"]
 
 
 def test_send_keys_without_an_expectation_says_it_did_not_verify(tmp_path: Path) -> None:
@@ -5865,7 +5868,7 @@ def test_drive_names_a_stop_that_landed_during_its_verify(tmp_path: Path) -> Non
     assert got["status"] == "INVALID", got
     assert got["verify"]["stopped_during_wait"] is True, got["verify"]
     assert "STOPPED at the debugger during the wait at 00A7:00000000" in got["message"], got
-    assert "not do what was expected" in got["message"], got["message"]
+    assert "no line matching `expect`" in got["message"], got["message"]
     assert got["last_stop"]["pc"] == "00A7:00000000", got["last_stop"]
 
 
@@ -7631,3 +7634,71 @@ def test_a_plans_wait_is_held_to_the_one_wait_bound_before_anything_is_spawned(
     assert out["code"] == "bad_argument", out
     assert out["message"].startswith(f"settle_seconds={ds.RUN_TO_MAX + 1} is not a bound"), out
     assert spawned == [], "refused before anything was spawned"
+
+
+def test_a_raw_command_that_writes_the_guest_marks_the_session_altered() -> None:
+    """`SM` and `SR` typed through `debug` write memory and registers as `write` and
+    `set_register` do, so every later reply says the machine was written to; a reader does not."""
+    fake = install()
+    server.debug(command="BPLIST")
+    assert fake.altered is False, "a command that writes nothing marked the session"
+    for command in ("SM 0000:0400 0FF", "sr eax 1"):
+        fake.altered = False
+        got = cast(dict[str, Any], server.debug(command=command))
+        assert fake.altered is True and got["session"]["altered"] is True, command
+
+
+def test_two_loads_queued_while_the_guest_runs_reach_the_debugger_together(
+        tmp_path: Path) -> None:
+    """Two batches loaded at one place while the guest runs accumulate in the table, so the
+    debugger takes both at the next stop: a queue of one would leave the first batch named here
+    and unknown there."""
+    one, two = tmp_path / "one.nm", tmp_path / "two.nm"
+    one.write_text("00001000 T _main\n", encoding="utf-8")
+    two.write_text("00002000 T _second\n", encoding="utf-8")
+    fake = _names(tmp_path)
+    taken: list[str] = []
+
+    def load(data: bytes) -> list[tuple[str, int]]:
+        taken.extend(name for name, _ in dsym.decode(data))
+        return [("loaded", len(taken))]
+    fake.load_symbols = load  # type: ignore[method-assign]
+    fake.running, fake.halted = True, False
+    for nm in (one, two):
+        assert server.symbols_load(path=str(nm), base="400000")["pending"] is True
+    assert {s.name for s in dstate.STATE.table} == {"_main", "_second"}
+    fake.running, fake.halted = False, True
+    assert server.resume()["applied_on_stop"]["symbols_loaded"] is True
+    assert sorted(taken) == ["_main", "_second"], taken
+
+
+def test_a_refused_load_leaves_the_batch_still_queued(tmp_path: Path) -> None:
+    one, two = tmp_path / "one.nm", tmp_path / "two.nm"
+    one.write_text("00001000 T _main\n", encoding="utf-8")
+    two.write_text("00002000 T _second\n", encoding="utf-8")
+    fake = _names(tmp_path)
+    fake.running, fake.halted = True, False
+    server.symbols_load(path=str(one), base="400000")
+    queued = dstate.STATE.pending["load"]
+    assert queued, "nothing was queued"
+    fake.running, fake.halted = False, True
+
+    def refused(data: bytes) -> list[tuple[str, int]]:
+        raise ds.Invalid("unexpected_answer", "LV was not acknowledged")
+    fake.load_symbols = refused  # type: ignore[method-assign]
+    got = cast(dict[str, Any], server.symbols_load(path=str(two), base="400000"))
+    assert got["status"] == "INVALID" and dstate.STATE.pending["load"] == queued, got
+
+
+def test_one_map_loaded_again_is_held_once_and_a_forgotten_table_takes_its_bases(
+        tmp_path: Path) -> None:
+    nm = tmp_path / "one.nm"
+    nm.write_text("00001000 T _main\n", encoding="utf-8")
+    _names(tmp_path)
+    dstate.STATE.conf_fingerprint = "conf"
+    for _ in range(3):
+        assert server.symbols_load(path=str(nm), base="400000")["status"] == "ok"
+    assert len(dstate.STATE.map_batches) == 1, "one map loaded again is not another batch"
+    dstate.STATE.section_bases[1] = 0x1000
+    dstate.STATE.forget_symbols()
+    assert dstate.STATE.section_bases == {}, "a forgotten table kept its section bases"

@@ -173,17 +173,17 @@ def build_check(binary: str = "") -> dict[str, Any]:
             env=dlaunch.launch_environment(True), timeout=20)
     except subprocess.TimeoutExpired:
         raise ds.Invalid("host_failed",
-            f"`{resolved.path} -helpdebug` did not return in 20 s. On this emulator an "
-            f"option it does not recognise does not fail, it hangs, so that is what "
-            f"a build without this option looks like") from None
+            f"`{resolved.path} -helpdebug` did not return in 20 s: a build that does not "
+            f"know the option hangs on it rather than failing, and a slow or wedged start "
+            f"looks the same") from None
     text = got.stdout + got.stderr
     has_debugger = "-break-start" in text
     if not has_debugger:
         raise ds.Invalid("host_failed",
-            f"`{resolved.path}` does not list `-break-start`, so it was built without the "
-            f"debugger. The readers of the machine (`registers`, `read_memory`, `memdump`, "
-            f"`step`, `debug`), the breakpoints, the watches and the symbol placement all "
-            f"need it; the guest's log (`log`, `log_wait`), the captures and the "
+            f"`{resolved.path} -helpdebug` does not list `-break-start`: a build without the "
+            f"debugger answers so. The readers of the machine (`registers`, `read_memory`, "
+            f"`memdump`, `step`, `debug`), the breakpoints, the watches and the symbol "
+            f"placement all need it; the guest's log (`log`, `log_wait`), the captures and the "
             f"in-guest input do not")
     return st.reply(**dlaunch.binary_facts(resolved), debugger=True,
                     heavy_debug=binaries.heavy_debug(resolved.path), tools=registered_tools())
@@ -607,6 +607,10 @@ def scan_clear() -> dict[str, Any]:
     return st.reply(**finder.scan_clear(session))
 
 
+#: The debugger's commands that write the guest: memory and registers.
+DEBUG_WRITES = frozenset({"SM", "SR"})
+
+
 @tool("Debugger console command", summary=one_line.debug)
 def debug(command: str) -> dict[str, Any]:
     """One raw `command` to the debugger console; the LAST resort, not the first.
@@ -620,7 +624,7 @@ def debug(command: str) -> dict[str, Any]:
     that read the debugger's list back, which this does not. Refused `bad_argument` before
     anything is typed: a command that lets the guest run (`VRT`, `RUNWATCH`, `INT`, the `LOG`
     family), naming the tool that does it and reports the stop, and a command carrying a control
-    character.
+    character. A command that writes the guest (`SM`, `SR`) marks the session `altered`.
     """
     session = live()
     ds.console_listening(session, repr(command))
@@ -629,6 +633,10 @@ def debug(command: str) -> dict[str, Any]:
     if command.strip().upper().startswith(("MEMS", "MEMFIND")):
         STATE.scan_iterations = None
         STATE.scan_cell_bytes = None
+    # A COMMAND THAT WRITES THE GUEST (`SM` memory, `SR` a register) marks the session as `write`
+    # and `set_register` do, before it is typed: what reaches the machine has been written.
+    if command.split()[:1] and command.split()[0].upper() in DEBUG_WRITES:
+        session.altered = True
     out = session.command(command)
     if not out.strip():
         raise ds.Invalid("unexpected_answer",
@@ -670,9 +678,10 @@ def write(ref: str, data_hex: str) -> dict[str, Any]:
 
     Reply: `ref`, `seg_off`, `bytes_written` (sent), `readback` (hex read back from
     the same range), `verified` (readback equals what was sent). `verified: false` is not
-    always a failure: a memory-mapped register answers what it answers; for RAM it means the
-    write went nowhere. A real-mode address in the ROM range is REFUSED with nothing sent:
-    measured on this build, `SM` into ROM ends the emulator instead of writing.
+    always a failure: a memory-mapped register answers what it answers; for RAM the read-back
+    differs from what was sent (the write did not land, or the view did not repaint). A
+    real-mode address in the ROM range is REFUSED with nothing sent: measured on this build,
+    `SM` into ROM ends the emulator instead of writing.
     """
     data = checks.write_data(data_hex)        # parsed once; the bytes travel, not the text
     session = live()
@@ -761,7 +770,8 @@ def step(count: Annotated[int, vocab.bounds(1, ds.STEP_MAX)] = 1,
     `instructions_completed` (how many steps actually landed, not how many were asked; fewer
     when the machine left the debugger, e.g. an `over` across a call that never returns, which
     `session.running` says, so the remaining steps were not sent), `moved`, `stalled` (steps
-    that did not change position: a swallowed keystroke), and when it stopped {STOP_FIELDS}.
+    after which CS:EIP was unchanged: a swallowed keystroke, a `rep` iteration, a jump to
+    itself, a halt), and when it stopped {STOP_FIELDS}.
     `e9` is `none`
     (default), `all` (the whole log), `lines:N` (the last N), `since` (every line since the
     previous stop) or `seconds:N` (needs `e9_stamp`), filtered by `e9_filter`. A settle per
@@ -1080,7 +1090,8 @@ def symbols_find(name: str = "", offset: int | None = None,
                  linear: str = "",
                  limit: Annotated[int, vocab.bounds(1, placement.SYMBOLS_LIMIT_MAX)] = 10,
                  ) -> dict[str, Any]:
-    """Look a symbol up in the FULL table `symbols_load` parsed (untruncated names).
+    """Look a symbol up in the table `symbols_load` kept (names untruncated; what its `pattern`
+    and noise filters excluded is not in it).
 
     `name`: exact match, else prefix matches, up to `limit` (`truncated` says if it
     bit). `offset` (a toolchain offset) or `linear` (a linear address as hex text, `0x1000`;
@@ -1669,8 +1680,7 @@ def send_keys(keys: list[str],
     with `seen`, `line`, `waited_s`, `seen_before_waiting`, `lines_before`, `lines_total`, or
     `TIMEOUT` (a miss, the program did not react) with `arrived_during` and a `note`; or
     `checked: false` with no `expect`. A stop that lands DURING the wait is INVALID
-    (`wait_stopped`) with `last_stop`. Timing is "now": for a precise guest instant, `run_to`
-    it, send, then `resume`.
+    (`wait_stopped`) with `last_stop`. Timing is "now", on a running guest.
 
     Reference: REFERENCE.md, Input and the screen.
     """

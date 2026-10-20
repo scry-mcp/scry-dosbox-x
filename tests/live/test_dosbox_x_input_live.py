@@ -88,7 +88,7 @@ def test_send_keys_reaches_the_running_guest_and_it_acts(
     # red beside the green, "verified" and "the verifier never looked" print the same thing.
     missed = cast(dict[str, Any], server.send_keys(keys=["f11"], expect=KEY_MARK, seconds=3))
     assert missed["status"] == "ok" and missed["verify"]["verdict"] == "TIMEOUT", missed
-    assert "did not react" in missed["verify"]["note"], missed
+    assert "miss on the pattern" in missed["verify"]["note"], missed
     assert missed["posted"] == 1 and missed["verify"]["seen"] is False, missed
     # AND THE MISS IS THE PROGRAM'S, NOT THE ROUTE'S: when the guest announces every key it
     # receives (its `key down <NAME>` arrival line), the ignored key is shown to have
@@ -175,7 +175,7 @@ def test_the_stub_announces_itself_once_and_ignored_keys_arrive(
     assert ignored["status"] == "ok" and ignored["verify"]["seen"] is True, ignored
     missed = cast(dict[str, Any], server.send_keys(keys=["f11"], expect=KEY_MARK, seconds=3))
     assert missed["status"] == "ok" and missed["verify"]["verdict"] == "TIMEOUT", missed
-    assert "did not react" in missed["verify"]["note"], missed
+    assert "miss on the pattern" in missed["verify"]["note"], missed
 
 
 def test_send_mouse_puts_the_pointer_where_asked_and_the_program_clicks_there(

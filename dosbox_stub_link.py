@@ -55,13 +55,15 @@ class Link:
         refused naming how many were acknowledged before it; it may have been carried out
         itself (its acknowledgements lost, or the machine stopped with it written)."""
         reports: list[str] = []
-        for done, command in enumerate(commands):
+        acknowledged = 0
+        for command in commands:
             try:
                 self._deliver(command)
+                acknowledged += 1
                 if command[0] == OP_REPORT:
                     reports.append(self._line())
             except Invalid as e:
-                raise Invalid(e.code, f"{e} (after {done} of {len(commands)} commands "
+                raise Invalid(e.code, f"{e} ({acknowledged} of {len(commands)} commands "
                               f"acknowledged)") from None
         return reports
 
@@ -80,9 +82,9 @@ class Link:
             # loaded from another session), so it is sent again under the next.
             seq = self._next()
         raise Invalid("host_failed",
-            f"the stub acknowledged none of {SENDS} sends of a {chr(command[0])!r} command "
-            f"within {ACK_WAIT_S}s each: it is not reading the port (a guest that masked the "
-            f"timer, or a stub that is gone)")
+            f"no acknowledgement of a {chr(command[0])!r} command after {SENDS} sends, "
+            f"{ACK_WAIT_S}s each: a guest that masked the timer or ticks too slowly, a stub "
+            f"that dropped every frame, or one that is gone, which this cannot tell apart")
 
     def _next(self) -> int:
         """The next sequence byte, 1 to 255: the stub starts at 0, which no frame carries."""
@@ -94,8 +96,8 @@ class Link:
             self.sock.settimeout(None)      # a read's slice is not the send's bound
             self.sock.sendall(data)
         except OSError as e:
-            raise Invalid("session_broken", f"the input socket is gone ({e}): the emulator "
-                          f"closed its end, so nothing more was delivered") from None
+            raise Invalid("session_broken", f"the input socket is gone ({e}): the rest of the "
+                          f"commands were not sent") from None
 
     def _acknowledged(self, seq: int, op: int) -> bool | None:
         """This frame's acknowledgement: whether it was carried out, None when none came within

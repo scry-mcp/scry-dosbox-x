@@ -89,7 +89,7 @@ def test_commands_that_went_in_are_said_when_the_read_back_fails(tmp_path: Path)
     got = cast(dict[str, Any], server.send_mouse(x=10, y=5, button="left"))
     assert got["status"] == "INVALID" and got["code"] == "host_failed", got
     assert got["delivered"] is True and got["route"] == "guest", got
-    assert "not reading the port" in got["message"], got
+    assert "no acknowledgement" in got["message"], got
     acted = [c for c in fake.commands_sent if c != [inputs.OP_REPORT]]
     assert acted == [[inputs.move_command(80, 40), b"B\x80", b"B\x00"]], fake.commands_sent
 

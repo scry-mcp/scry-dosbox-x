@@ -139,6 +139,14 @@ class Lossy:
         return getattr(self.sock, name)
 
 
+def _acks_with_no_line(guest: socket.socket) -> None:
+    """A stub that acknowledges the first frame it reads and sends nothing after it."""
+    def ack_only() -> None:
+        frame = guest.recv(16)
+        guest.sendall(bytes((link.ACK, frame[1], frame[2], 1)))
+    threading.Thread(target=ack_only, daemon=True).start()
+
+
 @pytest.fixture
 def pair() -> Any:
     host, guest = socket.socketpair()
@@ -242,18 +250,14 @@ def test_a_stub_that_never_answers_is_refused_naming_what_went_in_before(pair: A
     host, guest = pair
     stub = Stub(guest)
     lossy = Lossy(host, {n: slice(0, 0) for n in range(1, 99)})
-    with pytest.raises(Invalid, match=r"none of 3 sends of a .K. command.*after 1 of 4"):
+    with pytest.raises(Invalid, match=r"no acknowledgement of a .K. command.*\(1 of 4 commands"):
         link.Link(lossy).send(KEYS)  # type: ignore[arg-type]
     assert stub.carried == KEYS[:1]
 
 
 def test_an_acknowledged_report_with_no_line_is_refused(pair: Any) -> None:
     host, guest = pair
-
-    def ack_only() -> None:
-        frame = guest.recv(16)
-        guest.sendall(bytes((link.ACK, frame[1], frame[2], 1)))
-    threading.Thread(target=ack_only, daemon=True).start()
+    _acks_with_no_line(guest)
     with pytest.raises(Invalid, match="sent no line"):
         link.Link(host).send([b"R"])
 
@@ -277,3 +281,11 @@ def test_a_closed_line_is_the_route_gone(pair: Any, closed: str) -> None:
     with pytest.raises(Invalid) as e:
         link.Link(host).send([b"K\x1e"])
     assert e.value.code == "session_broken", e.value
+
+
+def test_a_report_acknowledged_with_no_line_counts_its_command_as_acknowledged(
+        pair: Any) -> None:
+    host, guest = pair
+    _acks_with_no_line(guest)
+    with pytest.raises(Invalid, match=r"\(1 of 1 commands acknowledged\)"):
+        link.Link(host).send([b"R"])

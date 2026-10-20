@@ -390,6 +390,7 @@ class State:
         self.table_generation += 1
         self.name_index.clear()
         self.symbol_types.clear()
+        self.section_bases.clear()
         self.base.clear()
         self.map_batches = []
 

@@ -1650,6 +1650,16 @@ def place(sym: Symbol, bases: Mapping[int, int]) -> int:
     return bases[sym.section] + sym.offset
 
 
+def joined(first: bytes, then: bytes) -> bytes:
+    """Two encoded batches as one, the way the debugger's `LV` would hold them loaded one after
+    the other: the count of both, then each one's records in order."""
+    count = struct.unpack_from("<H", first)[0] + struct.unpack_from("<H", then)[0]
+    if count > 0xFFFF:
+        raise BadSymbolText(f"{count} symbols queued for one load: the file holds at most "
+                            f"{0xFFFF}; stop the guest and load in two")
+    return struct.pack("<H", count) + first[2:] + then[2:]
+
+
 def encode(p: Plan, base: int | None = None, *,
            section_bases: Mapping[int, int] | None = None) -> bytes:
     """The plan plus WHERE THE PROGRAM WAS LOADED, as the bytes the debugger reads.

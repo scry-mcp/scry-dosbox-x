@@ -1212,7 +1212,7 @@ def test_a_session_that_was_not_recording_is_not_an_empty_capture(tmp_path: Path
 def test_a_recording_session_with_no_file_yet_says_why(tmp_path: Path) -> None:
     """The green's other half: with `capture_video` on, the refusal changes to the one
     about the file, which is what tells a caller to wait rather than to reconfigure."""
-    with pytest.raises(ds.Invalid, match="no capture appeared"):
+    with pytest.raises(ds.Invalid, match="no .avi file in"):
         ds.Session.captures(
             stopped(captures_dir=tmp_path, capture_video=True))
 
