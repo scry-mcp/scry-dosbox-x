@@ -868,7 +868,8 @@ class Session:
             self._raw_tail = (self._raw_tail + raw)[-RAW_TAIL_KEEP:]
             self._raw_reads += 1
         text = dcons.ANSI.sub("", raw)
-        self._screen = (self._screen + text)[-SCREEN_KEEP:]
+        if text:
+            self._screen = (self._screen + text)[-SCREEN_KEEP:]
         return text
 
     def _mark_stopped(self) -> None:

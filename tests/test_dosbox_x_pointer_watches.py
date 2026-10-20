@@ -8,6 +8,7 @@ base's own segment.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import pytest
 from scry_core import value_format as vf
@@ -208,3 +209,32 @@ def test_an_address_inside_a_pointer_ref_matches_in_any_spelling_too(tmp_path: P
     assert again["already_stored"] is True and again["ref"] == "[00AF:1000]", again
     assert server.watch_clear(ref="[ 0af:1000 ]")["declarations_cleared"] == 1
     assert dec.canonical_ref("_g_engine->sync_delta", "pointer") == "_g_engine->sync_delta"
+
+
+def test_a_base_typed_ptr16_is_read_two_bytes_wide_whatever_the_cpu_mode(tmp_path: Path) -> None:
+    """The base's own type sets the pointer's width: a `ptr16` in a protected-mode program
+    reads two bytes, and the bytes past them are no part of the address."""
+    fake = _pointing(tmp_path)
+    dstate.STATE.symbol_types["_G_ENGINE"] = "ptr16{rate:u32,sync_delta:i16,flags:u8}"
+    fake.mem[(DS, ENGINE)] = bytes([0x34, 0x12, 0xFF, 0x00])
+    out = server.watch_add(ref="[_g_engine]+0x4", mode="show", length=2, fmt="i16")
+    assert out["status"] == "ok", out
+    assert out["pointer"]["length"] == 2 and out["pointer"]["target"] == "00AF:00001238", out
+
+
+def test_a_cached_machine_places_an_untyped_pointer_without_asking_the_machine(
+        tmp_path: Path) -> None:
+    fake = _pointing(tmp_path)
+    asked: list[bool] = []
+    where = fake.where
+
+    def counted() -> Any:
+        asked.append(True)
+        return where()
+    fake.where = counted  # type: ignore[method-assign]
+    decl = dec.Declaration("watch", "pointer", "[00AF:1000]", width=2, fmt="u16",
+                           watch_mode="show")
+    res = placement.resolve_ref(decl, "DS", fake,  # type: ignore[arg-type]
+                                machine=("Pr32", fake.registers()))
+    assert res["state"] == "armable", res
+    assert asked == [], "a cached machine was asked again"

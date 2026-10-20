@@ -289,3 +289,26 @@ def test_a_report_acknowledged_with_no_line_counts_its_command_as_acknowledged(
     _acks_with_no_line(guest)
     with pytest.raises(Invalid, match=r"\(1 of 1 commands acknowledged\)"):
         link.Link(host).send([b"R"])
+
+
+def test_an_acknowledgement_already_on_the_line_is_read_before_a_stop_is_named(
+        pair: Any) -> None:
+    """The stub acknowledged on the tick just before a breakpoint parked the guest: the
+    acknowledgement is on the line, so the command is carried and not refused as stopped,
+    which a caller would answer by sending it again."""
+    host, guest = pair
+
+    def ack_then_park() -> None:
+        frame = guest.recv(16)
+        guest.sendall(bytes((link.ACK, frame[1], frame[2], 1)))
+    threading.Thread(target=ack_then_park, daemon=True).start()
+    time.sleep(0.05)
+    parked = {"yes": False}
+    sent = link.Link(host, parked=lambda: parked["yes"])
+
+    def write_then_park(data: bytes) -> None:
+        host.sendall(data)
+        time.sleep(0.05)
+        parked["yes"] = True
+    sent._write = write_then_park  # type: ignore[method-assign]
+    assert sent.send([b"K\x1e"]) == []

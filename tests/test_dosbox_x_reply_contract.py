@@ -91,6 +91,8 @@ def test_every_tool_answers_the_contract_with_no_machine(
     `start` refuses its argument before spawning anything; `build_check` on a host with no
     emulator says the host failed it; `status` and `close` answer `ok` about the absence."""
     monkeypatch.setattr(shutil, "which", lambda name: None)
+    # NO MACHINE IS THIS CASE'S PREMISE, set here rather than inherited from the case before it.
+    monkeypatch.setattr(dstate.STATE, "session", None)
     reply = getattr(server, name)(**_ARGS.get(name, {}))
     if name in ("status", "close"):
         assert reply["status"] == "ok" and "code" not in reply and "message" not in reply, reply

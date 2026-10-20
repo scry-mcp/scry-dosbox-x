@@ -323,6 +323,34 @@ def test_a_live_emulator_refusing_during_the_wait_is_its_own_answer_never_gone(
     assert sequence._wait_for_stop(fake, 1.0) == "gone"  # type: ignore[arg-type]
 
 
+def test_the_wait_names_an_emulator_gone_at_its_bound_or_under_a_read_and_nothing_else(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """At the bound, a dead emulator is `gone` and a live one `running`; a read that failed on
+    a dead pty is `gone`, and on a live one the error goes on."""
+    fake = _names(tmp_path, watched=True)
+    monkeypatch.setattr(ds.Session, "await_stop", lambda *_a, **_k: (True, 0.0))
+    assert sequence._wait_for_stop(fake, 1.0) == "running"  # type: ignore[arg-type]
+    fake.alive = lambda: False  # type: ignore[method-assign]
+    assert sequence._wait_for_stop(fake, 1.0) == "gone"  # type: ignore[arg-type]
+
+    def dead_pty(*_a: Any, **_k: Any) -> Any:
+        raise OSError(5, "Input/output error")
+    monkeypatch.setattr(ds.Session, "await_stop", dead_pty)
+    assert sequence._wait_for_stop(fake, 1.0) == "gone"  # type: ignore[arg-type]
+    fake.alive = lambda: True  # type: ignore[method-assign]
+    with pytest.raises(OSError):
+        sequence._wait_for_stop(fake, 1.0)  # type: ignore[arg-type]
+
+
+def test_a_list_not_judged_beforehand_is_refused_whole_before_its_first_step(
+        tmp_path: Path) -> None:
+    fake = _names(tmp_path, watched=True)
+    got = sequence.run_steps(fake, [{"op": "status"}, {"op": "warp_core"}], 1.0,  # type: ignore[arg-type]
+                             server._step_ops())
+    assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+    assert got["ran"] == [] and got["steps_completed"] == 0 and got["held"] == 0, got
+
+
 @pytest.mark.parametrize("ref", ["g_rate", "[g_rate]", "[0000:0400]"])
 def test_a_declaration_by_name_on_a_running_guest_types_nothing(
         tmp_path: Path, ref: str) -> None:

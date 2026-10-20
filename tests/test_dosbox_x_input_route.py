@@ -45,6 +45,13 @@ def test_a_screen_unit_maps_onto_the_driver_and_back(unit: int, size: int, top: 
     assert inputs.to_screen(driver, size, top) == unit
 
 
+def test_no_screen_unit_maps_past_the_driver_s_top() -> None:
+    """A range the program set needs not divide the screen evenly; the last unit still lands at
+    or below the driver's top, never past it."""
+    for size, top in ((350, 199), (320, 255), (640, 479), (25, 199)):
+        assert max(inputs.to_driver(u, size, top) for u in range(size)) <= top, (size, top)
+
+
 def test_a_text_mode_s_rows_and_columns_come_from_the_driver_s_range() -> None:
     """Mode 3 is 80 x 25 or 80 x 50 by the font, and the BIOS mode byte is 3 for both: the
     driver's range says which, eight units a cell."""
@@ -186,6 +193,8 @@ def test_a_send_that_failed_part_way_says_some_of_it_may_have_gone_in(tmp_path: 
     got = cast(dict[str, Any], server.send_mouse(x=1, y=1, button="left"))
     assert got["status"] == "INVALID" and got["delivered"] is True, got
     assert got["code"] == "session_broken", got
+    assert got["verify"] == {"checked": False, "why": "the send failed part-way"}, got
+    assert (got["x"], got["y"], got["units"]) == (1, 1, "screen"), got
 
 
 def test_keys_that_failed_part_way_say_some_of_them_may_have_gone_in(tmp_path: Path) -> None:

@@ -49,6 +49,7 @@ import dosbox_inputs as inputs
 import dosbox_launch as dlaunch
 import dosbox_lifecycle
 import dosbox_logs as dlogs
+import dosbox_machine as machine
 import dosbox_mcp
 import dosbox_placement as placement
 import dosbox_running as running
@@ -3781,7 +3782,7 @@ def test_drive_marks_acts_verifies_and_looks_from_the_mark(tmp_path: Path) -> No
         return where()
     fake.where = counted  # type: ignore[method-assign]
     out = cast(dict[str, Any], server.drive(
-        act=[{"op": "send_keys", "keys": ["a"]}], expect="key_cue_a", seconds=5,
+        act=[{"op": "send_keys", "keys": ["a"]}], expect="key_cue_a", seconds=7,
         pattern="ACT", limit=10))
     assert out["status"] == "ok", out
     assert asked == [], "whether the guest runs is the session's flag, never a console command"
@@ -3789,7 +3790,7 @@ def test_drive_marks_acts_verifies_and_looks_from_the_mark(tmp_path: Path) -> No
     assert act["steps_completed"] == 1 and act["failed_at"]["available"] is False, act
     assert out["verify"]["seen"] is True and "on=1" in out["verify"]["line"], out["verify"]
     # from the mark
-    assert fake.wait_calls[-1] == (inputs.program_reaction("key_cue_a"), 5.0, 2), fake.wait_calls
+    assert fake.wait_calls[-1] == (inputs.program_reaction("key_cue_a"), 7.0, 2), fake.wait_calls
     e9 = out["looked"]["guest"]
     assert e9["available"] is True and e9["since_mark"] == 2, e9
     assert e9["lines_written"] == e9["lines_total"] == 1, e9
@@ -3850,9 +3851,13 @@ def test_drive_reports_a_miss_a_failed_act_and_refuses_what_it_cannot_do(
     for refusal in refusals:
         got = refusal()
         assert got["status"] == "INVALID", got
+        # ONE SHAPE, whichever check refused it: the act's account, a verify and a look.
+        assert {"act", "verify", "looked"} <= set(got) and "errors" not in got, got
+        assert got["act"]["steps_completed"] == 0, got
     fake.log = None
     nolog = cast(dict[str, Any], server.drive(act=[key]))
     assert nolog["status"] == "INVALID" and "logfile" in nolog["message"]
+    assert {"act", "verify", "looked"} <= set(nolog), nolog
     assert (len(fake.commands_sent), len(fake.wait_calls)) == (posted, waited), (
         "a refused drive must not have acted or waited")
     # `perform` refuses the same non-bound `wait`.
@@ -3902,6 +3907,35 @@ def test_drive_verifies_a_stopped_guest_with_one_read_and_no_wait(tmp_path: Path
     seen = cast(dict[str, Any], server.drive(act=[{"op": "resume"}], expect="key_cue_a"))
     assert seen["status"] == "ok" and seen["verify"]["seen"] is True, seen
     assert seen["verify"]["waited_s"] == 0.0 and fake.wait_calls == []
+
+
+def test_drive_takes_the_act_s_own_ending_over_the_session_flag(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """An act that says it ended running is waited on even when the flag reads stopped, and one
+    that says it ended at a stop is read once even when the flag reads running: the act's tail
+    saw the machine last."""
+    fake = _names(tmp_path, watched=True)
+    fake.log = ["Bochs port E9h: [+   0.000] BOOT  . start"]
+
+    def ended(how: str) -> Any:
+        account = {"status": "ok", "ran": [], "steps_completed": 1,
+                   how: True if how == "still_running" else {"stop_seq": 2}}
+        return lambda *_a, **_k: account
+    for how, flag_running, waits in (("still_running", False, 1), ("stopped", True, 0)):
+        fake.running = flag_running
+        fake.wait_calls.clear()
+        monkeypatch.setattr(sequence, "run_steps", ended(how))
+        server.drive(act=[{"op": "status"}], expect="key_cue_a", seconds=1)
+        assert len(fake.wait_calls) == waits, (how, fake.wait_calls)
+
+
+def test_a_log_that_cannot_be_read_at_a_stop_is_the_verify_s_refusal_never_a_check() -> None:
+    class Gone:
+        def e9_since_mark(self, mark: int) -> list[str]:
+            raise ds.Invalid("no_channel", "the log went away")
+    got = sequence._verify_at_a_stop(cast(ds.Session, Gone()), "key", 0)
+    assert got == {"checked": False, "expected": "key", "why": "the log went away",
+                   "code": "no_channel"}, got
 
 
 def test_perform_a_running_ok_step_leaves_the_machine_as_it_found_it(tmp_path: Path) -> None:
@@ -4531,6 +4565,54 @@ def test_rearm_counts_unresolved_and_ambiguous(tmp_path: Path) -> None:
     got = server.symbols_load(path=str(nm), base="400000")
     assert got["declarations"]["unresolved"] == 1
     assert got["declarations"]["rearmed"] == 1
+
+
+def test_real_mode_placement_at_its_exact_edges() -> None:
+    """Linear 0x100000 is the first address past real mode's reach and is refused; 0xFFFFF is
+    the last and is taken; an offset of exactly 0x10000 is folded to a seg:off whose offset
+    fits, never handed on as a 17-bit offset."""
+    real = NamesFake(mode="Real")
+    dstate.STATE.base.clear()
+    dstate.STATE.base.update({"base": 0xF0000, "limit": -1, "type": -1})
+    with pytest.raises(ds.Invalid, match="past the 0xFFFFF"):
+        placement.target_for(0x10000, "CS", real)   # type: ignore[arg-type]
+    seg, off = placement.target_for(0xFFFF, "CS", real)   # type: ignore[arg-type]
+    assert seg * 16 + off == 0xFFFFF and off <= 0xFFFF, (hex(seg), hex(off))
+    dstate.STATE.base.update({"base": 0x10000})
+    seg, off = placement.target_for(0x10000, "CS", real)   # type: ignore[arg-type]
+    assert seg * 16 + off == 0x20000 and off <= 0xFFFF, (hex(seg), hex(off))
+
+
+def test_a_sectioned_table_places_by_base_says_it_has_no_flat_one_and_counts_what_it_skipped(
+        tmp_path: Path) -> None:
+    """The section a linear address is in is the one with the greatest base below it, whatever
+    the sections' numbers; a sectioned load answers the flat base's sentinel and a real-mode
+    target refuses it."""
+    fake = install()
+    src = tmp_path / "flat.map"
+    src.write_text(TLINK32_TEXT, encoding="utf-8")
+    got = cast(dict[str, Any], server.symbols_load(
+        path=str(src), section_bases={"1": "0x423000", "2": "0x401000"}))
+    assert got["status"] == "ok" and got["base"] == -1, got
+    found = cast(dict[str, Any], server.symbols_find(linear="004230E4"))
+    assert found["name"] == "_main" and found["delta"] == 0, found
+    real = NamesFake(mode="Real")
+    with pytest.raises(ds.Invalid, match="FLAT base"):
+        placement.target_for(0x10, "CS", real)   # type: ignore[arg-type]
+    del fake
+
+
+def test_a_load_somewhere_else_replaces_the_table_and_its_types(tmp_path: Path) -> None:
+    """A line the parser could not read is counted; a load at another base replaces the table
+    and drops the types the earlier one carried."""
+    one = tmp_path / "one.nm"
+    one.write_text("00001000 D _rate\n         U _undefined\n", encoding="utf-8")
+    _names(tmp_path)
+    first = cast(dict[str, Any], server.symbols_load(path=str(one), base="400000"))
+    assert first["status"] == "ok" and first["unreadable"] == 1, first
+    dstate.STATE.symbol_types["_RATE"] = "u16"           # as a types file would have set it
+    again = cast(dict[str, Any], server.symbols_load(path=str(one), base="500000"))
+    assert again["table_mode"] == "replaced" and dstate.STATE.symbol_types == {}, again
 
 
 def test_target_for_refuses_a_real_mode_symbol_that_folds_past_1mb() -> None:
@@ -6434,6 +6516,17 @@ def test_the_modifier_vocabulary_is_the_dos_keyboard_s() -> None:
 
 
 @pytest.mark.parametrize(("op", "bad", "good"), [
+    ("breakpoint_interrupt", {"number": 0x21, "ah": 0x100}, {"number": 0x21, "ah": 0x4C}),
+    ("machine_map", {"sections": ["bogus"]}, {"sections": [machine.SECTION_NAMES[0]]}),
+    ("scan_filter", {"operator": "=", "value": 1, "limit": 401},
+     {"operator": "=", "value": 1, "limit": 400}),
+    ("send_keys", {"keys": ["a"], "seconds": 5.0}, {"keys": ["a"], "expect": "R", "seconds": 5.0}),
+    ("send_keys", {"keys": ["a"], "expect": "R", "seconds": -1.0}, {"keys": ["a"], "expect": "R"}),
+    ("send_keys", {"keys": ["a"], "modifiers": ["cmd"]}, {"keys": ["a"], "modifiers": ["shift"]}),
+    ("send_mouse", {"x": 1, "y": 1, "seconds": 5.0},
+     {"x": 1, "y": 1, "expect": "R", "seconds": 5.0}),
+    ("send_mouse", {"x": 1, "y": 1, "expect": "R", "seconds": -1.0},
+     {"x": 1, "y": 1, "expect": "R"}),
     ("send_mouse", {"button": "wheel"}, {"button": "middle"}),
     ("send_mouse", {"x": 3}, {"x": 3, "y": 4}),
     ("send_mouse", {"button": "left", "action": "hold"}, {"button": "left", "action": "down"}),
@@ -7702,3 +7795,26 @@ def test_one_map_loaded_again_is_held_once_and_a_forgotten_table_takes_its_bases
     dstate.STATE.section_bases[1] = 0x1000
     dstate.STATE.forget_symbols()
     assert dstate.STATE.section_bases == {}, "a forgotten table kept its section bases"
+
+
+def test_a_load_at_a_stop_replaces_a_queued_batch_the_debugger_refused(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A batch queued while the guest ran and refused at the stop stays queued for the next
+    one; a load made at the stop supersedes it, so it is never applied over the new table."""
+    one = tmp_path / "one.nm"
+    one.write_text("00001000 T _main\n", encoding="utf-8")
+    fake = _names(tmp_path)
+    fake.running, fake.halted = True, False
+    server.symbols_load(path=str(one), base="500000")
+    assert dstate.STATE.pending["load"], "nothing was queued"
+    fake.running, fake.halted = False, True
+    real = fake.load_symbols
+
+    def refuses(data: bytes) -> Any:
+        raise ds.Invalid("unexpected_answer", "the debugger refused the batch")
+    monkeypatch.setattr(fake, "load_symbols", refuses)
+    server.status()                                # the stop's drain: refused, kept queued
+    assert dstate.STATE.pending["load"], "the refused batch was not kept"
+    monkeypatch.setattr(fake, "load_symbols", real)
+    got = cast(dict[str, Any], server.symbols_load(path=str(one), base="400000"))
+    assert got["status"] == "ok" and dstate.STATE.pending["load"] is None, got

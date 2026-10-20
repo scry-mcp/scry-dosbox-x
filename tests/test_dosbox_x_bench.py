@@ -16,8 +16,10 @@ the thing being measured measures the double.
 from __future__ import annotations
 
 import ast
+import json
 import re
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -192,3 +194,52 @@ def test_the_stamp_pattern_matches_what_this_guest_actually_prints() -> None:
     assert bench.STAMP.findall("[+  1.250] something") == ["1.250"]
     assert bench.STAMP.findall("[+1] something") == [], "an integer is not a stamp"
     assert isinstance(bench.STAMP, re.Pattern)
+
+
+def test_a_timer_that_fails_its_known_answer_is_invalid(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A sleep that does not sleep reads far off the known answer: the check fails."""
+    monkeypatch.setattr(time, "sleep", lambda s: None)
+    assert bench.validate_timer()["ok"] is False
+
+
+def _runnable(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *extra: str) -> None:
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    monkeypatch.setattr(sys, "argv", ["bench.py", "--conf", str(conf), "--cwd", str(tmp_path),
+                                      *extra])
+
+
+def test_a_failed_timer_publishes_nothing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                                          capsys: pytest.CaptureFixture[str]) -> None:
+    _runnable(tmp_path, monkeypatch)
+    monkeypatch.setattr(bench, "validate_timer", lambda: {
+        "known_ms": 250.0, "read_ms": 0.0, "error_pct": 100.0, "negative_ms": 0.0, "ok": False})
+
+    def no_run(*_a: object, **_k: object) -> object:
+        raise AssertionError("a measurement ran on a failed timer")
+    monkeypatch.setattr(bench, "stamp", no_run)
+    assert bench.main() == bench.INVALID_RC
+    assert capsys.readouterr().err.startswith("INVALID"), "the failure was not said"
+
+
+def test_the_published_medians_are_the_runs_medians(tmp_path: Path,
+                                                    monkeypatch: pytest.MonkeyPatch) -> None:
+    """The instrument's wiring, its measurements doubled: the headline figures are the medians
+    of what the runs answered."""
+    out = tmp_path / "bench.json"
+    _runnable(tmp_path, monkeypatch, "--reps", "3", "--json", str(out))
+    monkeypatch.setattr(bench, "validate_timer", lambda: {
+        "known_ms": 250.0, "read_ms": 250.0, "error_pct": 0.0, "negative_ms": 0.0, "ok": True})
+    monkeypatch.setattr(bench, "stamp", lambda: {"machine": "m", "emulator": "e",
+                                                 "load_average": "0"})
+    totals, prompts, ups = iter([4.0, 6.0, 5.0]), iter([1.0, 4.0, 3.0]), iter([7.0, 9.0, 8.0])
+    monkeypatch.setattr(bench, "batch_cost", lambda cwd, song: {"total_s": next(totals)})
+    monkeypatch.setattr(bench, "reach_the_state", lambda conf, cwd: {
+        "debugger_prompt_s": next(prompts), "application_up_s": next(ups)})
+    monkeypatch.setattr(bench, "per_question", lambda conf, cwd: {})
+    monkeypatch.setattr(bench, "advance_rate", lambda conf, cwd: {})
+    assert bench.main() == 0
+    got = json.loads(out.read_text())
+    assert got["batch"]["total_s_median"] == 5.0, got["batch"]
+    assert (got["reach"]["debugger_prompt_s_median"],
+            got["reach"]["application_up_s_median"]) == (3.0, 8.0), got["reach"]

@@ -162,12 +162,7 @@ class DisassembleReply(DosboxEnvelope, total=False):
 
 class DriveReply(DosboxEnvelope, total=False):
     act: dict[str, Any]
-    errors: list[Any]
-    failed: dict[str, Any]
-    failed_at: int
     looked: dict[str, Any]
-    ran: list[Any]
-    steps_completed: int
     verify: dict[str, Any]
 
 

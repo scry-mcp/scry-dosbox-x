@@ -131,14 +131,17 @@ class Link:
         """What the stub sent, appended; False once `deadline` passed with nothing new."""
         while (left := deadline - time.monotonic()) > 0:
             cancel.check()
-            if self.parked():
-                raise Invalid("wait_stopped", "the machine stopped at the debugger while the "
-                              "stub's answer was awaited: the stub runs on the timer tick, "
-                              "which a stopped machine never reaches")
             self.sock.settimeout(min(left, READ_SLICE_S))
             try:
                 got = self.sock.recv(4096)
             except TimeoutError:
+                # A STOP IS NAMED ONLY ONCE THE LINE HAS NOTHING: an acknowledgement sent on the
+                # tick before the machine parked is read first, or its command would be refused
+                # as not carried and sent again.
+                if self.parked():
+                    raise Invalid("wait_stopped", "the machine stopped at the debugger while "
+                                  "the stub's answer was awaited: the stub runs on the timer "
+                                  "tick, which a stopped machine never reaches") from None
                 continue
             except OSError as e:
                 raise Invalid("session_broken", f"the input socket is gone ({e})") from None

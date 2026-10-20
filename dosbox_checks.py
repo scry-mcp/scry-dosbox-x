@@ -441,6 +441,14 @@ def _start(plan: list[dict[str, Any]] | None = None, settle_seconds: float | Non
 def _drive(act: list[dict[str, Any]], expect: str = "", seconds: float | None = None,
            pattern: str = ".", limit: int = 40, settle_seconds: float = 30.0,
            summaries: bool = False, **_: Any) -> None:
+    try:
+        _drive_arguments(act, expect, seconds, pattern, limit, settle_seconds, summaries)
+    except ds.Invalid as e:
+        raise sequence.drive_refused(e) from None
+
+
+def _drive_arguments(act: list[dict[str, Any]], expect: str, seconds: float | None,
+                     pattern: str, limit: int, settle_seconds: float, summaries: bool) -> None:
     sequence.validate_summaries(summaries)
     if not isinstance(act, list) or not act:
         raise ds.Invalid("bad_argument",

@@ -158,11 +158,12 @@ def test_a_target_moves_the_pointer_to_its_controls_centre_and_says_which(
 
     def send(session: Any, x: Any, y: Any, button: Any, action: Any, units: Any, *rest: Any,
              ) -> dict[str, Any]:
-        sent.append((x, y, button, units, rest[-1]["size"]))
+        sent.append((x, y, button, units, rest[-1]["size"], rest[0], rest[1]))
         return {"status": "ok", "route": "guest", "arrived": True}
     monkeypatch.setattr(inputs, "send_mouse", send)
-    r = _ok(server.send_mouse(target="prompt", button="left"))
-    assert sent == [(2, 3, "left", "screen", (80, 25))], "the centre, in the screen's units"
+    r = _ok(server.send_mouse(target="prompt", button="left", expect="clicked", seconds=3))
+    assert sent == [(2, 3, "left", "screen", (80, 25), "clicked", 3)], (
+        "the centre, in the screen's units, with the caller's expectation")
     assert (r["target"], r["screen"]) == ("prompt", "prompt")
 
 

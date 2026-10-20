@@ -19,6 +19,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from scry_core import prose
 from scry_core import reply_contract as contract
 from scry_core import sequence as executor
 from scry_core import sequence_account as account
@@ -135,7 +136,7 @@ def refused_text(refused: list[dict[str, Any]]) -> str:
     def one(e: dict[str, Any]) -> str:
         op = f" ({e['op']!r})" if isinstance(e["op"], str) else ""
         return f"step {e['step']}{op} {e['message']}"
-    return (f"{len(refused)} step(s) refused before anything ran: "
+    return (f"{prose.counted(len(refused), 'step')} refused before anything ran: "
             + "; ".join(one(e) for e in refused) + ". Nothing was run")
 
 
@@ -388,6 +389,21 @@ def _where_stopped(failed_at: object) -> str:
     return f"at step {failed_at}" if isinstance(failed_at, int) else "after its last step"
 
 
+def drive_refused(e: ds.Invalid) -> ds.Invalid:
+    """`drive`'s refusal before anything ran, in the one shape every `drive` reply has: `act`
+    (the list's own account when the steps were judged, else none ran), `verify` and `looked`,
+    honest about having looked at nothing. So a caller parses one reply whichever check refused
+    it."""
+    judged = {k: e.fields.pop(k) for k in ("ran", "steps_completed", "failed_at", "failed",
+                                          "errors") if k in e.fields}
+    act = judged or {"ran": [], "steps_completed": 0, "failed": executor.none_failed(),
+                      "failed_at": executor.none_failed()}
+    return ds.Invalid(e.code, str(e), **e.fields, act=act,
+                      verify={"checked": False, "why": "the act was refused before anything ran"},
+                      looked=contract.unavailable("the act was refused before anything ran, so "
+                                                  "nothing was looked at"))
+
+
 def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str | None,
           seconds: float | None, pattern: str, limit: int, wait: float,
           progress: ds.Progress = ds.no_progress, summaries: bool = False) -> dict[str, Any]:
@@ -400,8 +416,8 @@ def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str 
     try:
         mark = session.e9_mark()
     except ds.Invalid as e:
-        raise ds.Invalid("no_channel",
-            f"drive needs a session started with a logfile: {e}") from None
+        raise drive_refused(ds.Invalid("no_channel",
+            f"drive needs a session started with a logfile: {e}")) from None
     ran = run_steps(session, act, wait, ops, progress, summaries, name="drive",
                     prechecked=True)
     account = {k: v for k, v in ran.items() if k not in ("status", "session")}
