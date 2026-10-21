@@ -97,7 +97,7 @@ def _symbols(data: bytes) -> dict[str, int] | None:
 
 def executable_beside(table: Path) -> Path | None:
     """The executable a table is kept for: the file beside it under its stem, the name in any
-    case as DOS reads it (`RECHIPD.SYM` beside `RECHIPD.exe`)."""
+    case as DOS reads it (`GAME.SYM` beside `GAME.exe`)."""
     want = f"{table.stem}.exe".lower()
     try:
         return next((c for c in sorted(table.parent.iterdir())

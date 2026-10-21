@@ -95,7 +95,8 @@ but whether this build carries the DEBUGGER, which the whole surface rests on; a
 one starts fine and then hangs `start` until its timeout. It is read off the binary itself (the
 debugger's own answer to a command it does not know is compiled into it), because `-helpdebug`
 listing `-break-start` is not enough: a build configured without the debugger lists it too
-(tests/fixtures/build_check). It is INVALID when a precondition fails: the one tool whose
+(tests/fixtures/build_check). Beside `debugger` and `heavy_debug` it lists `tools`, the names
+the MCP layer actually serves, asked of that layer. It is INVALID when a precondition fails: the one tool whose
 purpose is examining preconditions never reports a clean result for a missing tool. And it REFUSES while a
 session is live, because answering means starting a SECOND emulator: `-helpdebug` starts the
 emulator to answer, and a build that does not know the option runs it as a full emulator for
@@ -402,8 +403,10 @@ even with patience.
 `symbols_load` takes **text**: `nm` output, a GNU `ld` link map, or the `Publics by ...`
 section of a Borland TLINK/TASM map, **both generations of that one**, the real-mode
 `SEG:OFFS` rows and the 32-bit `SECTION:OFFSET` rows, which keep their section index and are
-placed from `section_bases`, or an Open Watcom map. It parses no binaries, deliberately: put COFF in a generic
-debug server and it must learn TDS next, and DWARF after that. Every DOS toolchain emits one
+placed from `section_bases`, or an Open Watcom map. It parses no binary symbol format,
+deliberately: put COFF in a generic debug server and it must learn TDS next, and DWARF after
+that. Its one read of a binary is the check below, a DJGPP image's own COFF table read only to
+compare against the text table, never to load names from. Every DOS toolchain emits one
 of these from a tool that already knows its own format.
 
 **The debugger's own file format is documented nowhere**, so it was opened and read: a `u16`
@@ -534,15 +537,16 @@ and becomes a step that DEMANDS its bases.
 
 **A table is checked against its build before anything is loaded.** A stale table resolves every
 name a few bytes off, and nothing in it can say so; the executable can. When the file beside the
-table under its stem is a DJGPP (go32) image (`RECHIPD.SYM` beside `RECHIPD.exe`, the name in
+table under its stem is a DJGPP (go32) image (`GAME.SYM` beside `GAME.exe`, the name in
 any case), its own COFF symbol table, written by the link that made the code, is read, and every
 global code symbol the two share has to hold the image's value: one that does not refuses the
 load `bad_argument`, naming the disagreements, with the table loaded before left as it was.
 Which of the two is stale it cannot know: a stale executable beside a fresh table refuses alike,
 and with it moved away the table loads unchecked.
 `checked` says what was compared (`against`, `agree`), or why nothing could be: no executable
-beside it, one with no COFF table (a real-mode executable carries none), one stripped of its
-table, one cut short, or none in common.
+beside it, a table with no symbol kinds (a link map lists none, so only an `nm` table is
+checked), an executable that cannot be read, one with no COFF table (a real-mode executable
+carries none), one stripped of its table, one cut short, or none in common.
 
 **A file most of which was discarded is refused.** `parse` returns how many rows it could not
 read, and a symbol section that lost MORE rows than it kept is refused: a reading that
@@ -598,8 +602,8 @@ declaration script survives being re-run.
 **Every declaration knows when and by which session it was made**, and every row a list or a
 re-arm account gives says so (`scry_core.declaration_rows`): `ref`, `by`, `cpu`
 (unavailable: a DOS machine has one), `created_at`, `origin`, `inherited` (true for a row this
-session did not declare) and `age_s` (whole seconds since `created_at`, unavailable for a row
-with no date). Nothing expires: a row another session left is shown as such and cleared by its
+session did not declare) and `age_s` (whole seconds since `created_at`, floored, negative for
+a stamp ahead of the clock, and unavailable for a row with no date or a date with no offset). Nothing expires: a row another session left is shown as such and cleared by its
 `ref`. The clear tools take
 exactly the `ref` the declaring reply carried (`breakpoint_interrupt(0x21, ah=0x4B)` answers
 `ref: "BPINT 21 AH=4B"`, and that is the string that clears it). An interrupt breakpoint is
@@ -758,8 +762,8 @@ returns leaves the machine running and the rest of the keystrokes go nowhere.
 `instructions_completed` is what happened; `session.running` says why it stopped short.
 `moved` is asked per step and `stalled` counts the ones that did not change position, because comparing only the endpoints answers
 wrong on a two-instruction loop (`L: nop` / `jmp L`): it comes back where it started, so two
-steps that both moved read as a swallowed key. About a second and a half per step, which is
-the settle on the repaint that proves it landed. So `count` is 1 to 64 (`STEP_MAX`), a cost
+steps that both moved read as a swallowed key. Each step costs a settle on the repaint that
+proves it landed. So `count` is 1 to 64 (`STEP_MAX`), a cost
 bound and not a safety one: past it the question is `run_to`, which pays the settle once.
 
 `run_to` takes a symbol or a `SEG:OFF` (`ref`, the one spelling the whole surface uses), arms
@@ -1085,7 +1089,9 @@ read and an unbounded hold would swallow the stream and go blind while reporting
 wrong.
 
 `write` and `set_register` READ BACK what landed (`readback`, `verified`) and mark the session
-altered for good: a write into ROM is taken and changes nothing, which the readback says.
+altered for good. A real-mode write into the ROM range (linear 0xC0000-0xFFFFF) is refused
+`bad_argument` with nothing sent: the debugger's `SM` there neither writes nor refuses, it ends
+the emulator.
 A register is read back where the pane paints it and at its own width: a 32-bit name as its
 whole register, a segment register under its own name, and a 16-bit name (`ax` .. `sp`, `ip`)
 as the low half of its 32-bit register, because the pane shows `EAX` and never `AX`.
@@ -1252,8 +1258,8 @@ cost that a line from before the rewrite can be served again as new.
 **`since_mark` asks "after Y".** A guest that replays a saved timeline writes lines that look
 like the ones before the load, stamps included, so content cannot tell them apart; a position
 can. `state_load` answers `mark`, where the log ended as the load was sent, one number per
-channel and all three equal because one file holds them (unavailable, with why, for a session
-started without a logfile), and `log` and `log_wait` take
+channel (`guest`, `emulator`, `all`), all three equal because one file holds them (unavailable,
+with why, for a session started without a logfile), and `log` and `log_wait` take
 `since_mark`: only whole lines written after it are read, and for `log_wait` "already" means
 "since the mark". 0, the default, reads the whole log. A negative one and one past where the log
 ends now (a mark of another session, a log rewritten shorter) are refused `bad_argument`. The
@@ -1914,6 +1920,8 @@ added to one file.
   reply (`summary` first, `session` last, composed after the body).
 - **`dosbox_binary.py`**: which DOSBox-X `start` and `build_check` run, by the ladder *The
   session* sets out, and the build's own version line.
+- **`dosbox_coff.py`**: a DJGPP image's own COFF symbol table, read to check a text table
+  against the build it was made for.
 - **`dosbox_state.py`**: what the server holds between calls (the session, the symbol table,
   the declaration store, the last stop, what waits for the next one) and the envelope every
   reply carries.

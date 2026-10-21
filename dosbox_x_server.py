@@ -343,6 +343,8 @@ def log(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
     pattern that does not compile; a channel that is not one of the three; a `since_mark` that
     names no position of the log; the session is gone. For "when did X happen, and wait if it
     has not" use `log_wait`.
+
+    Reference: REFERENCE.md, The log.
     """
     lines, total = live().log(pattern, limit, channel, since_mark)
     reply: dict[str, Any] = dict(pattern=pattern, channel=channel, lines_total=total,
@@ -383,6 +385,8 @@ def log_wait(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS
     run: the guest is usually still running when this returns, and the console tools refuse
     then. `expect` on `send_keys`/`drive` is this same wait on the guest channel, from a
     mark taken before the act.
+
+    Reference: REFERENCE.md, The log.
     """
     session = live()
     if since_mark:
@@ -992,6 +996,8 @@ def state_save(name: str, seconds: Annotated[float, ds.WAIT_BOUNDS] = ds.STATE_W
     Reply: `name`, `path`, `bytes`, `version`, `program`, `machine`, `memory_mb`, `saved_at`
     (the state's own members, the local time it was saved), `paused`, `waited_s` (the command
     alone); `session.running` says whether the guest runs after the call.
+
+    Reference: REFERENCE.md, Saved states.
     """
     return st.answer(live().state_save(name, seconds))
 
@@ -1009,6 +1015,8 @@ def state_load(name: str, seconds: Annotated[float, ds.WAIT_BOUNDS] = ds.STATE_W
     Reply: `name`, `path`, the state's own members, `paused`, `waited_s`, {MARK}; `session.running`
     says whether the guest runs after the call. A `.sav` that is no regular file is `unknown_ref`,
     never opened.
+
+    Reference: REFERENCE.md, Saved states.
     """
     return st.answer(live().state_load(name, seconds))
 
@@ -1050,6 +1058,8 @@ def state_list() -> dict[str, Any]:
     `working_slot`. Works on a running guest and needs no window.
 
     Reply: `state_dir`, `states`, `working_slot`.
+
+    Reference: REFERENCE.md, Saved states.
     """
     return st.answer(live().state_list())
 
@@ -1331,7 +1341,8 @@ def interrupt_vectors(number: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)] | Non
     guest (`not_stopped`); no table reported written, or a file that is not the whole table
     (`unexpected_answer`); and the listings' refusals, as `machine_map` gives them.
 
-    Reply: `cpu_mode` (without `logfile`, as `status` reports it), `vectors` (each `number`,
+    Reply: `cpu_mode` (`VM86` among its words; without `logfile`, as `status` reports it),
+    `vectors` (each `number`,
     `seg_off` as the table holds it, `addr` the linear address before any paging, the row that
     holds the handler under its own section's name, `mcbs`, `kern` or `bios_mem`, first match in
     that order, absent when none does or it was not placed, and `symbol` as

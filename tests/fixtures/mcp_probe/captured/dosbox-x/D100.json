@@ -4,8 +4,37 @@
   "prompt": "The guest is stopped. Show me the swatch of all 256 DAC colours at their natural size, with no enlargement.",
   "tool": "palette",
   "args": {
-   "scale": 1
-  }
+   "any_of": [
+    {
+     "scale": 1
+    },
+    {
+     "first": 0,
+     "scale": 1
+    },
+    {
+     "count": 0,
+     "scale": 1
+    },
+    {
+     "first": 0,
+     "count": 0,
+     "scale": 1
+    },
+    {
+     "count": 256,
+     "scale": 1
+    },
+    {
+     "first": 0,
+     "count": 256,
+     "scale": 1
+    }
+   ]
+  },
+  "grammar": [
+   256
+  ]
  },
  "runs": [
   {
