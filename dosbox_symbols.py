@@ -697,10 +697,10 @@ def parse(text: str, report: ParseReport | None = None) -> tuple[list[Symbol], i
         if report is not None:
             report._claim("borland-tlink")
         raise BadSymbolText(
-            "this is a Borland TLINK/TASM map and it has NO `Publics by ...` section, "
-            "so it carries no symbol this can place. That is a fact about the LINK and "
-            "not about the file: link with `/m` (a full map) rather than the default "
-            "segment listing, and check the symbols you want are declared PUBLIC")
+            "this has the segment-table header of a Borland TLINK/TASM map and no "
+            "`Publics by ...` header, so there is no symbol here this can place. If it is a "
+            "Borland map, it was linked without publics (TLINK `/m` writes them) or its "
+            "symbol section is not spelled as this expects")
     if looks_like_tlink(text):
         # THE FORMAT IS STAMPED BEFORE THE WALK, so a refusal names the reader that
         # refused. Stamping it on the way out would leave `fmt` empty on exactly the
@@ -731,16 +731,16 @@ def parse(text: str, report: ParseReport | None = None) -> tuple[list[Symbol], i
                     f"hex digits then four or five), folded `seg * 16 + off`; and a "
                     f"32-bit row (`0001:00000BE0  NAME`, four then eight), whose left "
                     f"half is a SECTION INDEX kept on the symbol and placed later from "
-                    f"`section_bases`. Neither shape matched here, so this is a row of a "
-                    f"THIRD kind -- an offset wider than the format allows, a mark this "
-                    f"reader does not know, or a column that is not where it expects. "
-                    f"Pass a `ParseReport` and read `unreadable_rows`: the rows "
-                    f"themselves say which")
+                    f"`section_bases`. None of them could be read: a row matched neither "
+                    f"shape (an offset wider than the format allows, a mark this reader does "
+                    f"not know, a column not where it expects), or matched the real-mode "
+                    f"shape and was refused (an offset above 0xFFFF, or a short offset in a "
+                    f"file that also has a 32-bit section table). The refused rows are the "
+                    f"lines under the `Publics by ...` header that start like `SEG:OFFS`")
             raise BadSymbolText(
-                "this is a Borland TLINK/TASM map and its `Publics by ...` section is "
-                "EMPTY. That is a statement about the link, not about this reader: "
-                "TASM emits no publics for a module whose symbols are all local, so "
-                "check the source declares them PUBLIC")
+                "this has a `Publics by ...` header (the Borland TLINK/TASM shape) and no "
+                "line under it that starts like `SEG:OFFS`. If it is a Borland map, its link "
+                "published nothing: check the source declares the symbols PUBLIC")
         return syms, unreadable
     # WATCOM BEFORE THE OTHER TWO, for the same measured reason Borland goes first: its
     # rows score ZERO on both of the remaining sniffs, so without this a Watcom map
@@ -799,9 +799,10 @@ def _parse(text: str, rx: re.Pattern[str], addr_group: int, name_group: int,
         raise BadSymbolText(
             "no symbol lines were recognised in that text. `nm` output is "
             "`<hex address> <type> <name>`, a GNU link map is `<indent> 0x<hex> "
-            "<name>`, and a Borland TLINK map is a `Publics by ...` section of "
-            "`SEG:OFFS  NAME` rows; an empty result here means the file is none of "
-            "the three, not that the program has no symbols")
+            "<name>`, a Borland TLINK map is a `Publics by ...` section of "
+            "`SEG:OFFS  NAME` rows, and an Open Watcom map has its own symbol section; no "
+            "line here matched the shape this text was read as (a line of `nm -C` output "
+            "holds spaces and is not read), so there is nothing to load")
     return out, unreadable
 
 
@@ -1011,8 +1012,8 @@ def _refuse_if_mostly_unreadable(fmt: str, rows_read: int, unreadable: int) -> N
             f"came back would be a minority of the file wearing the shape of all of "
             f"it. A row of a shape this reader does not know is the usual cause -- a "
             f"mark it does not expect, an offset wider than the format allows -- and "
-            f"the rows themselves are in `ParseReport.unreadable_rows` if you passed "
-            f"one")
+            f"the rows are the lines in that section that look like rows and were not "
+            f"read")
 
 
 def parse_tlink(text: str, report: ParseReport | None = None) -> tuple[list[Symbol], int]:

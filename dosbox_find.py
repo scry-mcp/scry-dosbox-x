@@ -24,6 +24,8 @@ asked for only when the survivors are few enough to fit one reply.
 
 from __future__ import annotations
 
+import collections
+import contextlib
 import re
 import tempfile
 from pathlib import Path
@@ -106,17 +108,21 @@ def find(session: ds.Session, seg: int, off: int, length: int, pattern: bytes) -
     with tempfile.TemporaryDirectory(prefix="dosbox-find-") as scratch:
         dumped = dumping.dump_range(session, seg, off, length, Path(scratch) / "range.bin")
         data = dumped.path.read_bytes()
-    hits: list[int] = []
+    # COUNTED WHOLE, KEPT AT THE TOP: a pattern that matches everywhere (a range of zeros)
+    # would otherwise hold one number per byte to answer with the highest `HITS_MAX`.
+    hits: collections.deque[int] = collections.deque(maxlen=HITS_MAX)
+    total = 0
     at = data.find(pattern)
     while at != -1:
         hits.append(off + at)
+        total += 1
         at = data.find(pattern, at + 1)
     # THE SPAN EXAMINED RIDES ON THE REPLY, so a zero says over which bytes it is a zero.
     # The only range source here is the caller's own, so `source` is always `ref+length`.
     return {"seg_off": st.seg_off(seg, off), "length": length,
             "span": {"from": st.seg_off(seg, off), "length": length, "source": "ref+length"},
-            "hits": [_spelled(seg, o, dumped.real_past_ffff) for o in hits[-HITS_MAX:]],
-            "hits_total": len(hits), "truncated": len(hits) > HITS_MAX}
+            "hits": [_spelled(seg, o, dumped.real_past_ffff) for o in hits],
+            "hits_total": total, "truncated": total > HITS_MAX}
 
 
 def _spelled(seg: int, off: int, real_past_ffff: bool) -> str:
@@ -164,9 +170,7 @@ def _refuse(line: str, what: str) -> None:
     if m := SCAN_RANGE.search(line):
         raise ds.Invalid("bad_argument",
             f"the range runs past the memory the debugger addresses "
-                         f"({int(m.group(1), 16)} bytes); nothing was opened. At the reset "
-                         f"vector the BIOS segment is aliased high, so a `F000:` range is "
-                         f"refused there while `0000:0400` is not")
+                         f"({int(m.group(1), 16)} bytes); nothing was opened")
     if SCAN_NOT_ACTIVE in line:
         STATE.scan_iterations = None        # whatever was counted belongs to a scan now gone
         STATE.scan_cell_bytes = None
@@ -226,10 +230,10 @@ def _unexpected(session: ds.Session, out: str, wanted: str) -> ds.Invalid:
     return ds.Invalid("unexpected_answer",
         f"the debugger did not report {wanted}. What it showed: {out.strip()[-300:]!r}",
         line_recovered=recovered,
-        note=("the debugger's command line was cleared, so this session is still usable"
+        note=("the debugger's command line was empty when checked after this"
               if recovered else
-              "the debugger's command line could NOT be cleared: every later command would "
-              "concatenate onto it instead of running, so `close` this session"))
+              "the debugger's command line was not confirmed empty: later commands may be "
+              "eaten by a pager or typed onto what it holds, so `close` this session"))
 
 
 def check_scan_range(length: int, cell_bytes: int) -> None:
@@ -282,6 +286,10 @@ def scan_start(session: ds.Session, seg: int, off: int, length: int,
     if opened is None:
         raise _unexpected(session, out, "a search instance")
     if int(opened.group(4), 16) != length:
+        # IT OPENED ONE, just not this one: closed before the refusal, or the next `scan_start`
+        # would be told a scan is open that this server does not hold.
+        with contextlib.suppress(ds.Invalid):
+            session.command("MEMFIND !")
         raise _unexpected(session, out,
             f"the range asked for: {length:#x} bytes were asked and it opened a search over "
             f"{int(opened.group(4), 16):#x}")

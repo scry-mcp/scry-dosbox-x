@@ -36,11 +36,11 @@ closes that is reading the map -- a person's job, done once, exactly as blessing
 golden is.
 
 AND IT PINS `parse`'s NUMBERS, NOT THE ONES THE MCP TOOL REPORTS.  `symbols_load`
-answers with `plan.parsed` / `plan.kept` / `plan.overlay_idle`, all computed AFTER
-`plan()` has applied the section-label filter, the unplaceable classes, the caller's
-`pattern`, truncation and collision renaming.  This counts symbols as the READER
-produced them.  The two agree on every map in the manifest today because none of them
-has a filtered symbol, and they would part company the moment one did -- so a regression
+answers with `plan.kept` and `plan.overlay_idle` computed AFTER `plan()` has applied the
+section-label filter, the unplaceable classes, the caller's `pattern`, truncation and
+collision renaming (`plan.parsed` is before them).  This counts symbols as the READER
+produced them.  The two agree on a map with no filtered symbol, and part company the
+moment one is filtered -- so a regression
 inside `plan()` moves what a tool caller sees and moves NOTHING here.  Stated rather
 than assumed, because an undeclared limit is the same as a claim.
 
@@ -73,7 +73,7 @@ OK, RED, USAGE, INVALID = 0, 1, 2, 3
 # this whole module exists to make impossible.
 NUMERIC = ("symbols", "overlay_idle", "unreadable")
 
-# How many unreadable rows are QUOTED per project. The count is always exact; this
+# How many unreadable rows are QUOTED per project. The count is exact for what it counts; this
 # bounds the QUOTING, because 292 rows of one shape teach nothing the first three do
 # not, and a report long enough to be skimmed is a report whose verdict gets skimmed
 # with it. It says how many it withheld rather than trailing off.
@@ -227,16 +227,15 @@ def _load_manifest(path: Path) -> tuple[dict[str, dict[str, object]], int]:
 def _read(name: str, path: Path, expect: Mapping[str, object]) -> Result:
     """One project through the shipped reader, and what disagreed."""
     if not path.is_file():
-        raise Invalid(f"{name}: {path} is not there, so this project was NOT swept. "
+        raise Invalid(f"{name}: {path} is not a file, so this project was NOT swept. "
                       f"That is not the same as its map having changed")
     report = ds.ParseReport()
     res = Result(name=name, path=path, disagreements=[])
     assert res.disagreements is not None
     try:
-        # `latin-1` NEVER FAILS AND NEVER SUBSTITUTES. A DOS linker writes CP437 in its
-        # module names, and `utf-8` with `errors="replace"` would turn a byte the reader
-        # does not care about into a character it does -- a silent edit to the material
-        # the sweep exists to read unmodified.
+        # `latin-1` NEVER FAILS AND NEVER SUBSTITUTES a byte, where the tool reads UTF-8 with
+        # `errors="replace"`: a map with high bytes (CP437 in a module name) can read
+        # differently in the two, 0x85 even splitting a line here.
         text = path.read_text(encoding="latin-1")
     except OSError as exc:
         raise Invalid(f"{name}: cannot read {path}: {exc}") from None
@@ -245,12 +244,10 @@ def _read(name: str, path: Path, expect: Mapping[str, object]) -> Result:
     except ds.BadSymbolText as exc:
         res.fmt = report.fmt or "?"
         res.refused = str(exc)
-        # THE ROWS SURVIVE THE REFUSAL, and this is the one path where they matter most.
-        # They were assigned only on the success path, so a file refused for losing more
-        # rows than it kept printed a message ending "the rows themselves are in
-        # `ParseReport.unreadable_rows` if you passed one" -- from the only caller that
-        # DOES pass one -- with no row quoted. A count says a population was cut; the row
-        # says what the cut was.
+        # THE ROWS SURVIVE THE REFUSAL, and this is the one path where they matter most: a
+        # file refused for losing more rows than it kept is refused by a message that can
+        # only describe them, and this caller holds the report that lists them. A count says
+        # a population was cut; the row says what the cut was.
         res.rows = list(report.unreadable_rows)
         res.unreadable = len(res.rows)
         wanted = expect.get("refused")
@@ -296,7 +293,7 @@ def _render(res: Result, write: Callable[[str], None]) -> None:
         write(f"{head} symbols={res.symbols} overlay_idle={res.overlay_idle} "
               f"unreadable={res.unreadable}")
     for row in (res.rows or [])[:QUOTE_MAX]:
-        write(f"                 could not place: {row.rstrip()}")
+        write(f"                 unread line: {row.rstrip()}")
     extra = len(res.rows or []) - QUOTE_MAX
     if extra > 0:
         # SAID, NEVER TRAILED OFF. A report that stops quoting without saying it stopped

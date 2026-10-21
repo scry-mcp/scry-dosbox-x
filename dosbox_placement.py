@@ -486,8 +486,9 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
         if base is None and dcons.real_segments(session.where()["mode"]):
             raise ds.Invalid("bad_argument",
                 "the machine is in real mode, where there is no descriptor to measure a base "
-                "from: pass `base` as hex text, the load segment * 16 (segment 0x0800 is "
-                "\"8000\"). Placed at base 0, every symbol would sit at its raw offset")
+                "from: pass `base` (a flat map) as hex text, the load segment * 16 (segment "
+                "0x0800 is \"8000\"), or `section_bases` (a sectioned map). Placed at base 0, "
+                "every symbol would sit at its raw offset")
         desc = (session.selector(base_from) if base is None
                 else {"base": base, "limit": -1, "type": -1})
         # A TABLE LOADED AT A PROTECTED-MODE STOP KEEPS THE PROGRAM'S SELECTORS: a later stop
@@ -839,7 +840,7 @@ def _nearest_offset(want: int, section: int) -> dict[str, Any]:
         raise ds.Invalid("unknown_ref",
             f"nothing in section {section} sits at or below offset {want:#x}. That "
             f"is an answer about the TABLE, not about the program: it means this address "
-            f"is below the lowest symbol loaded in that section")
+            f"is below the lowest symbol loaded in that section, or the section has none")
     best = symbols[i]
     return {"query": f"0x{want:X}", **_placed(best), "delta": want - best.offset}
 

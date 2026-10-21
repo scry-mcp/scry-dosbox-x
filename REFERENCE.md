@@ -399,8 +399,8 @@ even with patience.
 
 `symbols_load` takes **text**: `nm` output, a GNU `ld` link map, or the `Publics by ...`
 section of a Borland TLINK/TASM map, **both generations of that one**, the real-mode
-`SEG:OFFS` rows and the 32-bit `SECTION:OFFSET` rows, which are resolved against the section
-table printed in the same file. It parses no binaries, deliberately: put COFF in a generic
+`SEG:OFFS` rows and the 32-bit `SECTION:OFFSET` rows, which keep their section index and are
+placed from `section_bases`, or an Open Watcom map. It parses no binaries, deliberately: put COFF in a generic
 debug server and it must learn TDS next, and DWARF after that. Every DOS toolchain emits one
 of these from a tool that already knows its own format.
 
@@ -424,7 +424,7 @@ Three things that decides, none of them optional:
 - **The name field is 16 bytes, so 15 usable characters**, and a real C symbol table has
   many names longer than that; truncating them blindly collapses a good fraction of the
   table onto colliding names. So a collision keeps *all* its members and shortens them for an
-  index (`__poly_scan~00`), the ledger of taken names is GLOBAL rather than per-group (a
+  index (`__poly_scan~0`), the ledger of taken names is GLOBAL rather than per-group (a
   per-group ledger leaves symbols carrying another symbol's name), and the reply says how
   many were truncated and how many renamed. **Read `renamed`, not `truncated_names`**:
   `truncated_names` counts names longer than the field, and a name that FITTED is mutilated
@@ -433,7 +433,9 @@ Three things that decides, none of them optional:
   else's address. `symbols_find` answers from the full untruncated table, held in the server;
   asked by `linear`, it takes the address as hex text (`"0x56DF24"`), as `symbols_load` takes
   its bases.
-- **`unreadable` is how many lines matched neither format**, and it is reported beside the
+- **`unreadable` is how many lines the chosen reader could not read** (every unmatched line
+  for `nm` and a GNU map, the row-shaped lines inside the symbol section for Borland and
+  Watcom), and it is reported beside the
   buckets rather than inside them. `parsed` counts what was RECOGNISED, so without it a file
   half of which the parser could not read produces a plan whose every count adds up. `nm -C`
   is the ordinary way to hit it: a demangled C++ name holds spaces.

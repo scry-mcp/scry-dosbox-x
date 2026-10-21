@@ -1100,7 +1100,7 @@ def symbols_load(path: str, base: str = "",
     (`table_mode`), the debugger keeping every row until `close`.
 
     Reply: `parsed`, `kept`, `loaded` (the debugger's own count), `table_mode`,
-    `table_total`, `renamed` (names the debugger shortened with `~n`), the parse's other
+    `table_total`, `renamed` (names loaded cut or with `~n`), the parse's other
     accounts (`truncated_names`, `disambiguated`, `unreadable`, `excluded_*`, `overlay_idle`,
     `unencodable*`, `symbols_typed`, `bytes`), `descriptor`, `pending`, `base_from`, `base`,
     `limit`, `checked` (`against`, `agree`, or why not), and `declarations` (the re-arm by

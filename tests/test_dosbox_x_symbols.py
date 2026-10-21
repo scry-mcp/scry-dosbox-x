@@ -160,7 +160,7 @@ def test_text_that_is_not_a_symbol_list_is_an_error_and_not_an_empty_list() -> N
     Returning `[]` for both is the instrument that examined nothing reporting a clean
     result, which is the failure this package is written against.
     """
-    with pytest.raises(sym.BadSymbolText, match="none of the three"):
+    with pytest.raises(sym.BadSymbolText, match="nothing to load"):
         sym.parse_nm("Makefile:12: warning: overriding recipe for target 'all'\n")
 
 
@@ -748,7 +748,7 @@ def test_a_borland_map_with_no_publics_says_so_instead_of_blaming_the_file() -> 
     reader their file is not a symbol list, when what is true is that this LINK printed
     no publics."""
     segments_only = TLINK_MAP.split("  Address")[0]
-    with pytest.raises(sym.BadSymbolText, match="NO `Publics by"):
+    with pytest.raises(sym.BadSymbolText, match="no `Publics by ...` header"):
         sym.parse(segments_only)
 
 
@@ -852,7 +852,7 @@ def test_a_publics_section_this_reader_cannot_parse_is_not_called_empty() -> Non
     # THE CONTROL: a genuinely empty section still gets the OTHER message, or the fix
     # would have been to replace one wrong diagnosis with a different wrong one.
     empty = "  Address         Publics by Name\r\n\r\nProgram entry point at 0000:0000\r\n"
-    with pytest.raises(sym.BadSymbolText, match="section is EMPTY"):
+    with pytest.raises(sym.BadSymbolText, match="no line under it that starts like"):
         sym.parse(empty)
 
 
@@ -1368,7 +1368,7 @@ def test_a_32_bit_map_that_printed_no_publics_says_so_too() -> None:
     symbol lines were recognised in that text", about a linker map.
     """
     segments_only = TLINK32_MAP.split("  Address")[0]
-    with pytest.raises(sym.BadSymbolText, match="NO `Publics by"):
+    with pytest.raises(sym.BadSymbolText, match="no `Publics by ...` header"):
         sym.parse(segments_only)
 
 
@@ -1543,7 +1543,7 @@ def test_an_nm_file_carrying_four_ordinary_words_is_not_a_borland_map() -> None:
     assert [s.name for s in got] == ["_main", "_engine_load"], got
     # THE CONTROL, so the fix is not "never refuse": a real 32-bit map that printed no
     # publics still gets told so.
-    with pytest.raises(sym.BadSymbolText, match="NO `Publics by"):
+    with pytest.raises(sym.BadSymbolText, match="no `Publics by ...` header"):
         sym.parse(TLINK32_MAP.split("  Address")[0])
 
 

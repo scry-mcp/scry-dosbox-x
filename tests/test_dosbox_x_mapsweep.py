@@ -219,7 +219,7 @@ def test_a_project_expected_to_be_refused_is_green_when_it_is(tmp_path: Path) ->
     """
     root, mf = _tree(tmp_path, {"proj/L.MAP": NO_PUBLICS_MAP},
                      {"LIMA": {"path": "proj/L.MAP",
-                            "expect": {"refused": "NO `Publics by"}}})
+                            "expect": {"refused": "no `Publics by ...` header"}}})
     rc, out = _run(root, mf)
     assert rc == 0, out
     assert "refused" in out.lower(), out
@@ -274,7 +274,7 @@ def test_a_path_that_is_not_there_is_invalid_and_never_green(tmp_path: Path) -> 
     # the run still exits 3, through the read failing, so a case asserting the code alone
     # is GREEN over a report that has stopped saying which of the two things went wrong.
     # The verdict is the same and the message is the product.
-    assert "is not there" in out, out
+    assert "is not a file" in out, out
     assert "NOT swept" in out, out
 
 
@@ -439,18 +439,14 @@ def test_more_unreadable_rows_than_it_quotes_says_how_many_it_withheld(
                                "expect": {"symbols": 9, "unreadable": 5}}})
     rc, out = _run(root, mf)
     assert rc == 0, out
-    assert out.count("could not place:") == 3, out
+    assert out.count("unread line:") == 3, out
     assert "and 2 more row(s) not quoted here" in out, out
 
 
 def test_a_refused_file_still_quotes_the_rows_it_could_not_place(tmp_path: Path) -> None:
-    """The one occasion the row IS the whole diagnosis, and it was the one path that
-    dropped them.
-
-    A file refused for losing more rows than it kept comes back with a message ending
-    "the rows themselves are in `ParseReport.unreadable_rows` if you passed one" -- and
-    this is the only caller that DOES pass one.
-    """
+    """The one occasion the row IS the whole diagnosis: a file refused for losing more rows
+    than it kept is refused by a message that can only describe them, and the sweep holds the
+    report that lists them, so it quotes them."""
     rows = "".join(f" 0001:0000{i:04X}       _plain{i}\r\n" for i in range(2))
     rows += "".join(f" 0459:1FFF{i:01X}       _wide{i}\r\n" for i in range(5))
     root, mf = _tree(tmp_path, {"proj/A.MAP":
@@ -459,7 +455,7 @@ def test_a_refused_file_still_quotes_the_rows_it_could_not_place(tmp_path: Path)
                                "expect": {"refused": "MORE WAS DISCARDED THAN KEPT"}}})
     rc, out = _run(root, mf)
     assert rc == 0, out
-    assert "could not place:  0459:1FFF0" in out, out
+    assert "unread line:  0459:1FFF0" in out, out
 
 
 def test_one_unreadable_path_does_not_discard_the_projects_already_read(
@@ -481,7 +477,7 @@ def test_one_unreadable_path_does_not_discard_the_projects_already_read(
     assert rc == 3, out
     # AND WHAT WAS READ IS STILL REPORTED, which is the half that was lost.
     assert "ZULU         borland-tlink  symbols=4" in out, out
-    assert "NOPE.MAP" in out and "is not there" in out, out
+    assert "NOPE.MAP" in out and "is not a file" in out, out
     assert "could NOT be examined" in out, out
 
 
@@ -570,7 +566,8 @@ def test_expecting_a_refusal_and_a_count_together_is_invalid(tmp_path: Path) -> 
     evaluated is worse than one that never had them."""
     root, mf = _tree(tmp_path, {"proj/L.MAP": NO_PUBLICS_MAP},
                      {"LIMA": {"path": "proj/L.MAP",
-                               "expect": {"refused": "NO `Publics by", "symbols": 99999}}})
+                               "expect": {"refused": "no `Publics by ...` header",
+                                          "symbols": 99999}}})
     rc, out = _run(root, mf)
     assert rc == 3, out
     assert "expects a refusal AND" in out, out

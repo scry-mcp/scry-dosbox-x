@@ -336,10 +336,10 @@ def test_scan_start_reads_past_two_stacked_stale_lines_and_checks_the_echoed_ran
     got = finder.scan_start(s, 0, 0, 0xFFFFFF, 1)
     assert got["hits_total"] == 0xFFFFFF and got["addr"] == "0x00000000"
     short = session([("MEMFIND 0000:0 FFFFFE B", "memfind_opened"),
-                     ("", "memfind_cancelled")])
+                     ("MEMFIND !", "memfind_cancelled"), ("", "memfind_cancelled")])
     with pytest.raises(ds.Invalid, match="the range asked for"):
         finder.scan_start(short, 0, 0, 0xFFFFFE, 1)
-    assert short.sent == ["MEMFIND 0000:0 FFFFFE B", ""]
+    assert short.sent == ["MEMFIND 0000:0 FFFFFE B", "MEMFIND !", ""]
 
 
 def test_scan_start_accepts_an_offset_wider_than_sixteen_bits() -> None:
@@ -557,3 +557,28 @@ def test_a_filter_with_no_value_says_what_it_compared_with_instead_of_a_null() -
     s = session([("MEMS =", "mems_matches")])
     got = finder.scan_filter(s, "=", None)
     assert got["value"] == {"available": False, "why": finder.NO_VALUE_WHY}, got["value"]
+
+
+def test_find_keeps_no_more_hits_than_it_answers() -> None:
+    """A pattern that matches everywhere counts every hit and keeps the highest `HITS_MAX`,
+    never a list of every one: a long range of zeros is a common thing to search."""
+    import tracemalloc
+    dump = bytes(0xFFFF)
+    s = session([], dump)
+    tracemalloc.start()
+    got = finder.find(s, 0, 0, len(dump), b"\x00")
+    peak = tracemalloc.get_traced_memory()[1]
+    tracemalloc.stop()
+    assert got["hits_total"] == len(dump) and len(got["hits"]) == finder.HITS_MAX, got["hits_total"]
+    assert peak < 3 * len(dump), f"{peak} bytes traced for a {len(dump)}-byte range"
+
+
+def test_a_scan_opened_over_another_range_is_cancelled_before_it_is_refused() -> None:
+    """The debugger opened an instance, just not the one asked for: refused, and closed, so the
+    next `scan_start` is not told one is already open by a scan nobody holds."""
+    s = session([("MEMFIND 0000:400 80 B", "memfind_opened_0400"),
+                 ("MEMFIND !", "memfind_cancelled"), ("", "memfind_cancelled")])
+    with pytest.raises(ds.Invalid, match="the range asked for"):
+        finder.scan_start(s, 0, 0x400, 0x80, 1)
+    assert s.sent[:2] == ["MEMFIND 0000:400 80 B", "MEMFIND !"], s.sent
+    assert dstate.STATE.scan_cell_bytes is None
