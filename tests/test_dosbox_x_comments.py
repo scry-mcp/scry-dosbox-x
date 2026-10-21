@@ -42,6 +42,8 @@ PROBE_BASE = 0x8140
 
 def comment(ref: str, text: str = "entry", **kw: Any) -> dec.Declaration:
     by = "address" if ":" in ref else "symbol"
+    if by == "address":
+        kw.setdefault("cpu_mode", "real")      # placed at a real-mode stop, unless said
     return dec.Declaration("comment", by, ref, text=text, created_at=kw.pop("created_at", STAMP),
                            **kw)
 
@@ -219,8 +221,11 @@ def test_with_only_a_comment_nothing_can_stop_the_guest(tmp_path: Path) -> None:
     store = cast(dec.DeclarationStore, dstate.STATE.store)
     store.apply(adds=[comment("start"), comment("0814:010B")])
     assert not arming.something_can_stop_it()
-    # THE CONTROL: the same store with one code breakpoint beside them can stop it.
-    assert store.add(dec.Declaration("breakpoint", "address", "0814:010B"))
+    # THE CONTROL: the same store with one code breakpoint beside them, placed at the real-mode
+    # stop the guest was released from, can stop it.
+    dstate.STATE.last_stop.update(seq=1, at="0814:0106", attribution={}, when=0.0, clock=None,
+                                  held=[], where={"mode": "Real"}, registers={})
+    assert store.add(dec.Declaration("breakpoint", "address", "0814:010B", cpu_mode="real"))
     assert arming.something_can_stop_it()
 
 
@@ -376,14 +381,15 @@ def test_a_running_guest_lists_and_saves_but_add_delete_and_load_refuse(tmp_path
     dstate.STATE.last_stop.update(seq=1, at="0814:0106", attribution={}, when=0.0, clock="c",
                                   held=[], where={"mode": "Real"}, registers={})
     store = cast(dec.DeclarationStore, dstate.STATE.store)
-    store.apply(adds=[comment("0814:010B", "raw"), comment("00A7:00001000", "pm")])
+    store.apply(adds=[comment("0814:010B", "raw"),
+                      comment("00A7:00001000", "pm", cpu_mode="protected")])
     listed = ok(server.comment_list())
     assert listed["session"]["running"] is True and listed["last_stop"]["stop_seq"] == 1
-    assert [r.get("addr") for r in listed["comments"]] == ["0x0000824b", "0x00001a70"]
+    assert [r.get("addr") for r in listed["comments"]] == ["0x0000824b", None]
     dstate.STATE.last_stop["where"] = {"mode": "Pr32"}
     pm = ok(server.comment_list())["comments"]
     assert [r["state"] for r in pm] == ["unarmable", "unarmable"]
-    assert "machine runs" in pm[0]["why"]
+    assert "machine runs" in pm[1]["why"]
     ok(server.comment_save(dest=str(tmp_path / "c.tsv")))
     for got in (server.comment_add(ref="start", text="x"), server.comment_delete(ref="0814:010B"),
                 server.comment_load(path=str(tmp_path / "c.tsv"))):
@@ -590,8 +596,8 @@ def test_a_file_row_this_stop_cannot_place_loads_unarmable_and_named(
 def test_a_protected_mode_save_loads_at_the_real_mode_park_and_is_placed_back(
         tmp_path: Path) -> None:
     """Every session starts parked in real mode, so a file saved at a protected-mode stop has
-    to load there: its rows past FFFF wait, unplaced, for the next protected-mode stop, and a
-    save from that stop writes the same bytes."""
+    to load there: its rows past FFFF wait, unplaced, until the file is loaded again at a
+    protected-mode stop, and a save from the park writes the same bytes."""
     install()
     dstate.STATE.session = Protected()  # type: ignore[assignment]
     ok(server.comment_add(ref="00A7:00045F80", text="pm"))
@@ -604,6 +610,8 @@ def test_a_protected_mode_save_loads_at_the_real_mode_park_and_is_placed_back(
     ok(server.comment_save(dest=str(again)))
     assert again.read_bytes() == saved.read_bytes()
     dstate.STATE.session = Protected()  # type: ignore[assignment]
+    assert "no stop has placed it" in _rows_by_ref()["00A7:45F80"]["why"]
+    ok(server.comment_load(path=str(saved)))
     row = _rows_by_ref()["00A7:45F80"]
     assert (row["state"], row["addr"]) == ("resolved", "0x00445f80")
 
@@ -611,7 +619,7 @@ def test_a_protected_mode_save_loads_at_the_real_mode_park_and_is_placed_back(
 def test_a_real_mode_save_loads_at_a_protected_mode_stop_and_is_placed_back(
         tmp_path: Path) -> None:
     """The mirror: a vector of the interrupt table, saved at the park, names the null selector
-    at a protected-mode stop, so it waits there and is placed again in real mode."""
+    at a protected-mode stop, so it waits there and is placed again by a load in real mode."""
     install()
     ok(server.comment_add(ref="0000:0084", text="int 21h vector"))
     saved = tmp_path / "real.tsv"
@@ -622,6 +630,8 @@ def test_a_real_mode_save_loads_at_a_protected_mode_stop_and_is_placed_back(
     assert got["added"] == 1 and "0000:0084" in got["note"]
     assert "null selector" in _rows_by_ref()["0000:0084"]["why"]
     dstate.STATE.session = FakeSession()  # type: ignore[assignment]
+    assert "no stop has placed it" in _rows_by_ref()["0000:0084"]["why"]
+    ok(server.comment_load(path=str(saved)))
     row = _rows_by_ref()["0000:0084"]
     assert (row["state"], row["addr"]) == ("resolved", "0x00000084")
 
@@ -652,7 +662,8 @@ def test_a_stale_row_with_the_files_text_loaded_where_it_waits_is_brought_to_thi
     install_store()
     dstate.STATE.conf_fingerprint = "now"
     store = cast(dec.DeclarationStore, dstate.STATE.store)
-    store.apply(adds=[comment(ref, "same", fingerprint="then", conf_fingerprint="then")])
+    store.apply(adds=[comment(ref, "same", fingerprint="then", conf_fingerprint="then",
+                              cpu_mode="real" if waits_in_protected_mode else "protected")])
     got = ok(server.comment_load(path=str(_file(tmp_path, (ref, "same")))))
     assert (got["unchanged"], got["added"], got["replaced_total"]) == (1, 0, 0)
     dstate.STATE.session = there()  # type: ignore[assignment]
@@ -704,7 +715,7 @@ def test_a_file_loaded_at_the_real_mode_park_is_placed_after_the_protected_mode_
     ok(got)
     conf = (tmp_path / "g.conf").resolve()
     cast(dec.DeclarationStore, dstate.STATE.store).apply(adds=[comment(
-        "00A7:2000", "over another map",
+        "00A7:2000", "over another map", cpu_mode="protected",
         fingerprint=build_of(conf, other.read_text(encoding="utf-8")))])
     loaded = ok(server.comment_load(path=str(_file(tmp_path, ("00A7:00045F80", "pm")))))
     assert loaded["added"] == 1 and "00A7:45F80" in loaded["note"]
@@ -777,8 +788,8 @@ def test_a_row_placed_before_the_map_is_placed_over_a_second_map_of_the_same_ses
 
 def test_a_row_another_session_left_before_any_map_is_not_taken_into_this_sessions_map(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Only this session's rows take its map: one an earlier session placed with no map
-    loaded names no build but the conf, and it stays stale over a map that describes it."""
+    """Only this session's rows take its map: one an earlier session loaded where no stop
+    could place it waits, before the map and after it."""
     mapf = tmp_path / "prog.map"
     mapf.write_text("00001000 T _start\n0016dd80 T _main\n", encoding="utf-8")
     got, booted = _start_over_a_store(tmp_path, monkeypatch, {}, double=_ParkedInRealMode)
@@ -786,9 +797,9 @@ def test_a_row_another_session_left_before_any_map_is_not_taken_into_this_sessio
     ok(server.comment_load(path=str(_file(tmp_path, ("00A7:00062310", "no map here")))))
     booted = _a_new_session(tmp_path, monkeypatch)
     booted.mode = "Pr32"
-    assert _rows_by_ref()["00A7:62310"]["state"] == "resolved"
+    assert "no stop has placed it" in _rows_by_ref()["00A7:62310"]["why"]
     ok(server.symbols_load(path=str(mapf), base="400000"))
-    assert _rows_by_ref()["00A7:62310"]["state"] == "stale"
+    assert "no stop has placed it" in _rows_by_ref()["00A7:62310"]["why"]
 
 
 def test_a_store_that_cannot_take_the_maps_build_is_host_failed_and_held_in_memory(
@@ -990,9 +1001,10 @@ def test_a_null_selector_is_refused_not_stored() -> None:
     assert "null selector" in refused(server.comment_add(ref="0000:0100", text="x"),
                                       "bad_argument")
     assert ok(server.comment_list())["comments_total"] == 0
-    # HELD ALREADY (a store from a real-mode session), the same address lists, unplaced and why:
-    # one row a selector cannot address must not take the whole listing down.
-    cast(dec.DeclarationStore, dstate.STATE.store).apply(adds=[comment("0000:0100")])
+    # HELD ALREADY (a store written before modes were kept), the same address lists, unplaced
+    # and why: one row a selector cannot address must not take the whole listing down.
+    cast(dec.DeclarationStore, dstate.STATE.store).apply(adds=[comment("0000:0100",
+                                                                       cpu_mode=None)])
     (row,) = ok(server.comment_list())["comments"]
     assert row["state"] == "unarmable" and "null selector" in row["why"]
 
@@ -1026,7 +1038,8 @@ def test_apply_restamps_another_kind_in_place_and_refuses_any_other_change_of_it
 def test_a_raw_comment_on_a_guest_that_has_not_stopped_yet_is_unplaced_and_says_why(
         tmp_path: Path) -> None:
     _running(tmp_path)
-    cast(dec.DeclarationStore, dstate.STATE.store).apply(adds=[comment("0814:010B")])
+    cast(dec.DeclarationStore, dstate.STATE.store).apply(adds=[comment("0814:010B",
+                                                                       cpu_mode=None)])
     (row,) = ok(server.comment_list())["comments"]
     assert row["state"] == "unarmable" and "not stopped yet" in row["why"]
 

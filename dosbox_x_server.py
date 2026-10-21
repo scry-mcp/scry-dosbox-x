@@ -1105,7 +1105,7 @@ def symbols_load(path: str, base: str = "",
     `excluded_unplaceable`, `overlay_idle`, `unencodable`, `unencodable_total`, `symbols_typed`,
     `bytes`, `descriptor`, `pending`, `base_from`, `base`, `limit`, and `declarations` (the
     re-arm: `rearmed`, `stale`, `unresolved`, `ambiguous`, `unarmable`, each a list of
-    `breakpoint_list`'s rows, `why` on the last three).
+    `breakpoint_list`'s rows, `why` on `ambiguous` and `unarmable`).
 
     Reference: REFERENCE.md, Names for addresses.
     """
@@ -1237,7 +1237,8 @@ def comment_load(path: str) -> dict[str, Any]:
     (a raw one taken into this session's build, ref and stamp kept); rows only the store holds stay.
     Two rows this stop places at one byte are both kept, and `note` names them; so is a raw row
     this stop's mode cannot place (past FFFF in real mode, the null selector in protected mode),
-    kept `unarmable` and placed at a stop whose mode holds it. Needs the machine STOPPED.
+    kept `unarmable` until a load at a stop whose mode holds it places it. Needs the machine
+    STOPPED.
 
     Reply: `path` (the file read), `parsed`, `added`, `replaced_comments` (the store's old rows,
     whole), `replaced_total`, `truncated`, `unchanged`, `comments_total`, `declarations`
@@ -1593,17 +1594,19 @@ def breakpoint_list() -> dict[str, Any]:
     Reply: `breakpoints`, each with `ref` (the string that clears it), `by`, `cpu`, `created_at`,
     `origin` (the session that declared or last adopted it), `inherited` (true for one an earlier
     session left), `age_s` (whole seconds since `created_at`), `entry`, `state` -- `armed` (its
-    entry is in the debugger's list), `unresolved` (no such symbol in this build), `gone`
-    (armable but no longer in the list), `unarmable` (machine running or no symbols loaded),
+    entry is in the debugger's list), `unresolved` (the symbol table loaded now, or none, has no
+    such name), `gone` (armable, and the debugger's list has no such row now: it may never have
+    been armed in this session), `unarmable` (it cannot be placed now: why says),
     `ambiguous` (a name this build defines more than once: nothing is armed for it), `pending`
     (declared while the guest ran, applied at the next stop), `stale` (a raw address declared
-    over another build: kept, never re-armed here; declare it again to adopt it), `orphan` (from
-    a store that kept no origin, where it would otherwise say `gone`; every such row also
-    carries `orphan: true` whatever its state: nobody's, clear it by its `ref` or declare it
-    again) -- plus `marked` for symbols; and `foreign`, entries the debugger holds that this
-    store never declared (a `run_to` whose cleanup could not be confirmed leaves one), listed
-    and never deleted. `breakpoint_clear` is this family's broom and never touches a watch;
-    `watch_clear` is the other, and the two together empty the store.
+    with no map held now that vouches for it: kept, never re-armed here; declare it again to
+    adopt it), `orphan` (no origin recorded, where it would otherwise say `gone` or `stale`;
+    every such row also carries `orphan: true` whatever its state: nobody's, clear it by its
+    `ref` or declare it again) -- plus `marked` for symbols; and `foreign`, entries the
+    debugger holds that no declaration of this store resolves to now (a `run_to` whose cleanup
+    could not be confirmed leaves one), listed and never deleted. `breakpoint_clear` is this
+    family's broom and never touches a watch; `watch_clear` is the other, and the two together
+    empty the store.
     """
     return arming.breakpoint_list(live())
 
@@ -1672,7 +1675,8 @@ def watch_list() -> dict[str, Any]:
     `unarmable`, it arms nothing but IS EVALUATED at every stop; a change watch additionally
     `armed` or `gone`; either `orphan` when it comes from a store that kept no origin: it is
     nobody's, clear it by its `ref` or declare it again to adopt it), and `foreign`, memory
-    breakpoints the debugger holds that this store never declared. No watch is re-armed
+    breakpoints the debugger holds that no declaration of this store resolves to now. No
+    watch is re-armed
     across sessions, so none is ever `stale`; the origin says whose it is. `watch_clear` is
     this family's broom; `breakpoint_clear` never touches a watch, and the two together
     empty the store.

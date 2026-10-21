@@ -97,6 +97,12 @@ def three_frames() -> Retraces:
                     [cap("probe-vrt-1"), cap("probe-vrt-2"), cap("probe-vrt-3")])
 
 
+def _real_bp(ref: str) -> None:
+    """A raw breakpoint declared at the real-mode stop the probe guest sits at."""
+    assert dstate.STATE.store is not None
+    dstate.STATE.store.add(arming.declare("breakpoint", "address", ref, cpu=dcons.REAL_MODE))
+
+
 def test_three_frames_land_three_retraces_with_the_whole_stop_reply() -> None:
     dbg = live(three_frames())
     got = cast(dict[str, Any], server.run_for(frames=3))
@@ -136,8 +142,7 @@ def cut_on_the_second_frame() -> Retraces:
                     cap("probe-survey-cut-by-bp-0108"), cap("probe-survey-cut-by-bp-0108")],
                    [cap("probe-vrt-1"), cap("probe-vrt-cut-by-bp-0108")])
     live(dbg)
-    assert dstate.STATE.store is not None
-    dstate.STATE.store.add(arming.declare("breakpoint", "address", "0814:0108"))
+    _real_bp("0814:0108")
     return dbg
 
 
@@ -258,8 +263,7 @@ def test_a_declared_code_breakpoint_carries_the_dynamic_core_limit() -> None:
     """On a dynamic core a code breakpoint armed after its code ran under `VRT` can fail to cut
     a frame, so a run with one declared says an `ELAPSED` does not prove it was not reached."""
     live(Retraces([cap("probe-survey-0"), cap("probe-survey-1")], [cap("probe-vrt-1")]))
-    assert dstate.STATE.store is not None
-    dstate.STATE.store.add(arming.declare("breakpoint", "address", "0000:0002"))
+    _real_bp("0000:0002")
     got = cast(dict[str, Any], server.run_for(frames=1))
     assert got["verdict"] == "ELAPSED", got
     assert "dynamic core" in got["note"] and "run_to" in got["note"], got["note"]
@@ -317,8 +321,7 @@ def test_a_cut_on_the_last_frame_is_named_by_the_stop_reply() -> None:
                     cap("probe-survey-cut-by-bp-0108")],
                    [cap("probe-vrt-1"), cap("probe-vrt-cut-by-bp-0108")])
     live(dbg)
-    assert dstate.STATE.store is not None
-    dstate.STATE.store.add(arming.declare("breakpoint", "address", "0814:0108"))
+    _real_bp("0814:0108")
     got = cast(dict[str, Any], server.run_for(frames=2, seconds=2))
     assert got["verdict"] == "OTHER_STOP" and got["polls"] == 2, got
     assert got["retrace_pending"] is True and dstate.STATE.retrace_pending is True
@@ -326,8 +329,7 @@ def test_a_cut_on_the_last_frame_is_named_by_the_stop_reply() -> None:
 
 def test_a_stop_a_declaration_explains_keeps_the_retrace_pending() -> None:
     live(three_frames())
-    assert dstate.STATE.store is not None
-    dstate.STATE.store.add(arming.declare("breakpoint", "address", "0814:0108"))
+    _real_bp("0814:0108")
     dstate.STATE.retrace_pending = True
     got = arming.attribute_stop(cast(ds.Session, dstate.STATE.session),
                                 where={"cs": "0814", "eip": "00000108", "mode": "Real"},
@@ -419,8 +421,7 @@ def test_a_breakpoint_cuts_a_timed_run_too() -> None:
                     cap("probe-survey-cut-by-bp-0108"), cap("probe-survey-cut-by-bp-0108")],
                    [cap("probe-vrt-1"), cap("probe-vrt-cut-by-bp-0108")])
     live(dbg)
-    assert dstate.STATE.store is not None
-    dstate.STATE.store.add(arming.declare("breakpoint", "address", "0814:0108"))
+    _real_bp("0814:0108")
     got = cast(dict[str, Any], server.run_for(milliseconds=100, seconds=2))
     assert got["verdict"] == "OTHER_STOP" and got["polls"] == 2, got
     assert got["retrace_pending"] is True and dstate.STATE.retrace_pending is True
@@ -465,8 +466,7 @@ def test_a_breakpoint_that_lands_as_the_bound_expires_leaves_the_retrace_pending
     dbg = live(CutAtTheBound([cap("probe-survey-0"), cap("probe-survey-cut-by-bp-0108"),
                               cap("probe-survey-cut-by-bp-0108")],
                              [cap("probe-vrt-cut-by-bp-0108")]))
-    assert dstate.STATE.store is not None
-    dstate.STATE.store.add(arming.declare("breakpoint", "address", "0814:0108"))
+    _real_bp("0814:0108")
     got = cast(dict[str, Any], server.run_for(frames=3, seconds=5))
     assert "BREAK" not in dbg.sent and got["verdict"] == "OTHER_STOP", (got, dbg.sent)
     assert got["retrace_pending"] is True and dstate.STATE.retrace_pending is True, got

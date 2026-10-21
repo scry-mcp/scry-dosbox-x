@@ -218,11 +218,14 @@ def _e9_count(mode: str) -> int:
 
 def stop_reply(session: ds.Session, e9: str = "none", e9_filter: str = ".",
                 e9_stamp: str | None = None, *, retrace_may_stop: bool = False,
-                e9_how: str = E9_BY_LOG, **base: Any) -> dict[str, Any]:
+                e9_how: str = E9_BY_LOG, made_by: dict[str, str] | None = None,
+                **base: Any) -> dict[str, Any]:
     """What a stop ALWAYS returns, on top of the tool's own fields in `base`:
     where it stopped and by which declaration (attribution by address, or an honest
     cannot-say), the watches already evaluated, the registers, and the E9 summary, whose `how`
-    is `e9_how` (a tool that takes no `e9` names what reads the lines instead). `altered`
+    is `e9_how` (a tool that takes no `e9` names what reads the lines instead). `made_by`, a
+    stop the calling tool made itself (`run_to`'s target, whose breakpoint is gone by now),
+    is attributed to it rather than looked for among the declarations. `altered`
     rides in the standard `session` block `st.reply` adds, so it is carried the same way here.
     """
     # ONE SURVEY for where AND registers (a round trip costs most of a second): they
@@ -235,7 +238,13 @@ def stop_reply(session: ds.Session, e9: str = "none", e9_filter: str = ".",
     machine = (where["mode"], registers)
     watches = arming.evaluate_watches(session, machine=machine, held=held)
     attribution = arming.attribute_stop(session, where=where, machine=machine,
-                                        retrace_may_stop=retrace_may_stop)
+                                        retrace_may_stop=retrace_may_stop and made_by is None)
+    if made_by is not None:
+        # THE TOOL'S OWN STOP, and any declaration resolving to the same place named beside it.
+        also = (attribution.get("refs") or [attribution["ref"]]
+                if attribution.get("attributed") else [])
+        attribution = {"attributed": True, **made_by, "at": attribution["at"],
+                       **({"refs": also} if also else {})}
     STATE.remember_stop(session, where, registers, held, attribution)
     picture = STATE.last_stop["picture"] = code.stop_instruction(session, where, registers,
                                                                  session.survey_text)
@@ -277,7 +286,8 @@ def _stop_e9(session: ds.Session, e9: str, e9_filter: str, e9_stamp: str | None 
 
 def stop_or_base(session: ds.Session, stopped: bool, e9: str, e9_filter: str,
                   e9_stamp: str | None, base: dict[str, Any], *,
-                  retrace_may_stop: bool = False, e9_how: str = E9_BY_LOG) -> dict[str, Any]:
+                  retrace_may_stop: bool = False, e9_how: str = E9_BY_LOG,
+                  made_by: dict[str, str] | None = None) -> dict[str, Any]:
     """The enriched stop reply when the machine STOPPED, else just the tool's base answer.
     A halt whose POSITION cannot be read (a cut pane leaves `where` refusing, which `resume`'s
     read-back meets as a stop with no position) is not discarded: the halt is a real
@@ -287,7 +297,8 @@ def stop_or_base(session: ds.Session, stopped: bool, e9: str, e9_filter: str,
         return st.reply(**base)
     try:
         return stop_reply(session, e9=e9, e9_filter=e9_filter, e9_stamp=e9_stamp,
-                          retrace_may_stop=retrace_may_stop, e9_how=e9_how, **base)
+                          retrace_may_stop=retrace_may_stop, e9_how=e9_how, made_by=made_by,
+                          **base)
     except ds.Invalid as e:
         return st.reply(enrichment={"available": False, "why": str(e)}, **base)
 

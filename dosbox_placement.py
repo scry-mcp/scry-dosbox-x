@@ -145,7 +145,7 @@ def target_for(offset: int, reg: str, session: ds.Session, *,
         return int(regs[reg], 16), offset
     if STATE.base.get("base", -1) < 0:
         raise ds.Invalid("bad_argument",
-            "a real-mode symbol needs a FLAT base measured by symbols_load, and this table "
+            "a real-mode symbol needs a FLAT base from symbols_load (`base`), and this table "
             "has none -- it is sectioned, or none is loaded. Load a real-mode map first")
     base_seg = STATE.base["base"] // 16
     ds.check_segment(base_seg)              # a base past a megabyte addresses nothing in real mode
@@ -154,8 +154,8 @@ def target_for(offset: int, reg: str, session: ds.Session, *,
     linear = base_seg * 16 + offset          # a high real-mode offset (a data segment)
     if linear > 0xFFFFF:
         raise ds.Invalid("bad_argument",
-            f"the symbol folds to linear 0x{linear:X}, past the 0xFFFFF a real-mode "
-            f"seg:off can reach; the paragraph split would drop bit 20 and arm the wrong "
+            f"the symbol folds to linear 0x{linear:X}, past the 0xFFFFF this paragraph split "
+            f"can express; the split would drop bit 20 and arm the wrong "
             f"address. Arm by an explicit SEG:OFF, or load this map in protected mode")
     return (linear >> 4) & 0xFFFF, linear & 0xF
 
@@ -250,7 +250,7 @@ def _resolve_pointer(decl: dec.Declaration, reg: str, session: ds.Session,
             dec.Declaration("breakpoint", "symbol", pr.base), STATE.table, STATE.name_index)
         if base.state == "unresolved":
             return {"state": "unresolved", "why": (
-                f"{pr.base!r} is not a symbol of this build and not a SEG:OFF, so there is no "
+                f"{pr.base!r} {NOT_IN_TABLE} and is not a SEG:OFF, so there is no "
                 f"pointer to start from: a stack local has no stable address, and a pointer "
                 f"ref needs a GLOBAL (a symbol of the table, or an address) as its base")}
         if base.matches > 1:
@@ -321,8 +321,8 @@ def read_target(ref: str, reg: str, session: ds.Session, *,
     if res["state"] == "armable":
         return res["seg"], res["off"]
     if res["state"] == "unresolved":
-        raise ds.Invalid("unknown_ref", f"{ref!r} is not a symbol in this build, so there is no "
-                         f"address to read")
+        raise ds.Invalid("unknown_ref", f"{ref!r} {NOT_IN_TABLE}, so there is no address to "
+                         f"read")
     if not session.at_debugger():
         why = res.get("why")
         raise ds.NotStopped(f"{why}; and a read needs the machine stopped anyway" if why else
@@ -538,13 +538,16 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
     # being sent again. It runs here because this is the moment the map changed.
     # THE BATCH IS HELD BEFORE THE RE-ARM judges which raw addresses are stale against it.
     take_the_batch(plan.symbols, accumulate=same_place)
-    rearm = ({"deferred": True, "note": "re-armed at the next stop, after the load"}
+    # THIS SESSION'S ROWS NO STOP PLACED ARE TAKEN FIRST, so the re-arm that follows arms what
+    # the load placed; a load while the guest runs places nothing, since a row is placed only
+    # at a stop.
+    unwritten = None if pending else take_the_map(session)
+    rearm = ({"deferred": True,
+              "note": "the re-arm runs at the next stop, after the debugger takes the load"}
              if pending else rearm_declarations(session))
-    if (unwritten := take_the_map(session)) is not None:
-        done = ("the symbols are held here and queued for the next stop" if pending else
-                "the symbols are loaded and the declarations re-armed")
+    if unwritten is not None:
         raise ds.Invalid("host_failed",
-            f"{done}, but {unwritten}: the "
+            f"the symbols are loaded and the re-arm ran, but {unwritten}: the "
             "comments this session placed before any map are held in memory as this map's, "
             "and the next write that succeeds puts them on disk", held_in_memory=True)
     return st.reply(base=desc["base"], limit=desc["limit"], descriptor=desc["type"],
@@ -637,22 +640,32 @@ def mode_word(cpu: str | None) -> str | None:
     return "protected" if cpu is not None and cpu.startswith("Pr") else None
 
 
+#: A name the symbol table held now does not define: kept, and placed when a table does.
+NOT_IN_TABLE = ("is not in the symbol table loaded now (none is loaded, or it does not define "
+                "the name)")
+
+
 def waits(decl: dec.Declaration, cpu: Callable[[], str | None]) -> str | None:
-    """The mode a raw row waits for at this stop (`cpu` gives its spelling, asked only for a row
-    that recorded one): the mode it was placed in, when this stop's is the other or is not
-    known; None when the row is judged here. A SEG:OFF read in the other mode is another byte,
-    so such a row is neither judged nor armed: it is `unarmable`, named by `waits_why`."""
-    if decl.cpu_mode is None or not dec.is_raw_code(decl.kind, decl.by):
-        return None
-    return None if mode_word(cpu()) == decl.cpu_mode else decl.cpu_mode
+    """`dec.waits` at this stop, whose mode `cpu` gives in the debugger's spelling: the mode a
+    raw row waits for, `dec.UNPLACED` for one no stop placed, None when it is judged here. Such
+    a row is neither judged nor armed: it is `unarmable`, named by `waits_why`."""
+    return dec.waits(decl, lambda: mode_word(cpu()))
 
 
-def waits_why(mode: str, again: str) -> str:
-    """Why a row placed in `mode` waits at a stop of the other mode; `again` is the gesture that
-    places it in this one."""
-    return (f"placed at a {mode}-mode stop, and its SEG:OFF names another byte in the other "
-            f"mode: judged and armed only at a {mode}-mode stop. {again} at this stop to place "
-            "it in this mode")
+def waits_why(mode: str, again: str, here: bool = True) -> str:
+    """Why a row placed in `mode` waits at a stop of the other mode, or one no stop placed
+    (`dec.UNPLACED`) waits at any; `again` is the gesture that places it, offered for this stop
+    only when `here` (the machine is stopped and this stop can place the address)."""
+    if mode == dec.UNPLACED:
+        return ("no stop has placed it (declared while the guest ran, declared or loaded where "
+                "its stop could not place it, or stored before modes were kept), and a SEG:OFF "
+                "names one byte in real mode and another in protected mode: judged and armed "
+                f"in neither until a stop places it. {again} at a stop that places it")
+    said = (f"placed at a {mode}-mode stop, and its SEG:OFF names another byte in the other "
+            f"mode: judged and armed only at a {mode}-mode stop")
+    if not here:
+        return f"{said}, which it waits for (this one cannot place it in its own mode)"
+    return f"{said}. {again} at this stop to place it in this mode"
 
 
 # THE CEILING ON A NAME LOOKUP: a `limit` with no top hands a whole table back under the

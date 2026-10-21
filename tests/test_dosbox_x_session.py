@@ -2820,3 +2820,29 @@ def test_a_conf_s_mounts_are_read_past_options_case_and_a_bom(tmp_path: Path, au
     head = "" if autoexec.startswith("[") else "[autoexec]\n"
     conf.write_text(f"{head}{autoexec}\n[sdl]\nmount q .\n", encoding="utf-8-sig")
     assert dlaunch.conf_mounts(conf) == [taken], "a mount outside [autoexec] counted, or missed"
+
+
+@pytest.mark.parametrize("from_zero", [False, True])
+def test_a_wait_bound_takes_its_maximum_and_refuses_one_past_it(from_zero: bool) -> None:
+    ds.check_wait_bound(ds.RUN_TO_MAX, from_zero=from_zero)
+    with pytest.raises(ds.Invalid, match="seconds"):
+        ds.check_wait_bound(ds.RUN_TO_MAX + 0.5, from_zero=from_zero)
+
+
+def test_the_argument_judges_take_their_edges_and_refuse_one_past(
+) -> None:
+    """Each judge at its maximum and its minimum, one past each refused `bad_argument`."""
+    for count in (1, ds.STEP_MAX):
+        ds.check_step("into", count)
+    for count in (0, ds.STEP_MAX + 1):
+        with pytest.raises(ds.Invalid) as e:
+            ds.check_step("into", count)
+        assert e.value.code == "bad_argument"
+    for number, ah in ((0, None), (ds.BYTE_MAX, None), (0x21, 0), (0x21, ds.BYTE_MAX)):
+        ds.check_interrupt(number, ah)
+    for number, ah in ((-1, None), (ds.BYTE_MAX + 1, None), (0x21, ds.BYTE_MAX + 1)):
+        with pytest.raises(ds.Invalid):
+            ds.check_interrupt(number, ah)
+    ds.check_dump_length(1)
+    with pytest.raises(ds.Invalid):
+        ds.check_dump_length(0)

@@ -106,7 +106,9 @@ def run_to(ref: str, control: str, seconds: float, e9: str, e9_filter: str,
                                     {"status": "INVALID", "code": code, "message": message,
                                      **refused}, retrace_may_stop=True,
                                 e9_how=running.E9_BY_ARGUMENT)
-    # An arrival is the stop `run_to` made; a stop elsewhere may be a retrace `run_for` left.
+    # AN ARRIVAL IS THE STOP `run_to` MADE, attributed to its target although the breakpoint
+    # that made it is removed by now; a stop elsewhere may be a retrace `run_for` left.
+    arrived = verdict == contract.TARGET
     return running.stop_or_base(session, True, e9, e9_filter, e9_stamp, fields,
-                                retrace_may_stop=verdict != contract.TARGET,
-                                e9_how=running.E9_BY_ARGUMENT)
+                                retrace_may_stop=not arrived, e9_how=running.E9_BY_ARGUMENT,
+                                made_by={"ref": ref, "by": "run_to"} if arrived else None)

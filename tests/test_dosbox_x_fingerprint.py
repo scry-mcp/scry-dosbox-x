@@ -73,4 +73,4 @@ def test_symbols_load_re_arms_a_raw_address_over_the_same_map_and_leaves_it_over
     assert [r["ref"] for r in got["declarations"]["rearmed"]] == ["_main"]
     listed = {b["ref"]: b for b in server.breakpoint_list()["breakpoints"]}
     assert listed["00A7:5C6F0"]["state"] == "stale"
-    assert "another build" in listed["00A7:5C6F0"]["why"]
+    assert "no map held now vouches" in listed["00A7:5C6F0"]["why"]

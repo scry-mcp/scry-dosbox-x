@@ -3706,7 +3706,7 @@ def test_run_to_takes_a_symbol_or_an_address_like_the_readers_do(tmp_path: Path)
     assert fake.runto_calls[-1] == (0xF000, 0xE05, 30.0)
     assert by_addr["target"] == "F000:0E05", by_addr
     absent = cast(dict[str, Any], server.run_to(ref="_nobody", control="0000:0020"))
-    assert absent["status"] == "INVALID" and "not a symbol" in absent["message"], absent
+    assert absent["status"] == "INVALID" and "not in the symbol table" in absent["message"], absent
     twice = cast(dict[str, Any], server.run_to(ref="twice", control="0000:0020"))
     assert twice["status"] == "INVALID" and "names 2 symbols" in twice["message"], twice
     empty = cast(dict[str, Any], server.run_to(ref="", control="0000:0020"))
@@ -3966,8 +3966,8 @@ def test_perform_a_running_ok_step_leaves_the_machine_as_it_found_it(tmp_path: P
     fake = _names(tmp_path, watched=True)
     fake.input_effect = E9_KEY_ACT
     fake.halted = False              # the resume leaves the machine running...
-    fake.where_refusals = 2          # ...and it stops after two polls of the tail
     server.breakpoint_at(ref="00A7:0100")   # R1 ARMS before it resumes: the stop is coming
+    fake.where_refusals = 2          # ...and it stops after two polls of the tail
     # THE RESUME LETS IT RUN, and only the resume: the machine is at rest until the F5, which
     # `resume` itself checks, and away from the debugger from then on.
     released: list[bool] = []
@@ -4848,14 +4848,14 @@ def test_read_memory_refuses_an_unlocatable_or_ambiguous_target(tmp_path: Path) 
     _names(tmp_path, symbols=[dsym.Symbol("dup", 0x1, kind="d"),
                               dsym.Symbol("dup", 0x2, kind="d")])
     absent = cast(dict[str, Any], server.read_memory(ref="nope"))
-    assert absent["status"] == "INVALID" and "not a symbol" in absent["message"]
+    assert absent["status"] == "INVALID" and "not in the symbol table" in absent["message"]
     ambig = cast(dict[str, Any], server.read_memory(ref="dup"))
     assert ambig["status"] == "INVALID" and "names 2 symbols" in ambig["message"]
     # A BARE NUMBER (no colon) is a symbol lookup, not a linear address -- `_decide_by` keys
     # on the colon. Pinned directly so a regression that read bare hex as an address (the
     # confusion _decide_by's own docstring warns of) would redden here.
     numeric = cast(dict[str, Any], server.read_memory(ref="400000"))
-    assert numeric["status"] == "INVALID" and "not a symbol" in numeric["message"]
+    assert numeric["status"] == "INVALID" and "not in the symbol table" in numeric["message"]
 
 
 def test_render_watch_reads_the_bytes_as_little_endian_values() -> None:
@@ -5311,16 +5311,19 @@ def _start_over_a_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
                         conf_text: str = "[sdl]\n") -> tuple[dict[str, Any], NamesFake]:
     """`start` driven whole over a store an earlier session left: each raw address in
     `stamped` declared as a breakpoint with that build fingerprint (None: this start's own,
-    the conf alone). The store lives under a state directory of the case's own; the conf
-    holds `conf_text`, so a case can edit the conf between two sessions."""
+    the conf alone), placed at a stop of the mode the double parks in. The store lives under a
+    state directory of the case's own; the conf holds `conf_text`, so a case can edit the conf
+    between two sessions."""
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
     conf = tmp_path / "g.conf"
     conf.write_text(conf_text, encoding="utf-8")
+    booted = double(conf=conf)
+    mode = "real" if booted.mode == dcons.REAL_MODE else "protected"
     store = dec.DeclarationStore(str(conf.resolve()))
     for ref, fp in stamped.items():
         store.add(dec.Declaration("breakpoint", "address", ref, created_at="t0", origin="s1",
-                                  fingerprint=fp or dlaunch.fingerprint(conf.resolve())))
-    booted = double(conf=conf)
+                                  fingerprint=fp or dlaunch.fingerprint(conf.resolve()),
+                                  cpu_mode=mode))
     monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
     with mock.patch("dosbox_x_server.ds.Session", lambda _l: booted):
         got = cast(dict[str, Any], server.start(
@@ -5510,7 +5513,10 @@ def test_perform_does_not_wait_for_a_stop_when_the_last_step_was_a_running_guest
     tail = server.perform(steps=[{"op": "resume"}], settle_seconds=0.6)
     assert tail.get("verdict") == "TIMEOUT" and time.monotonic() - began >= 0.5, tail
     fake.running = False
+    # Declared at a stop whose mode the survey reads, so it is placed there and armed.
+    fake.where_raises = False
     server.breakpoint_at(ref="00A7:0100")
+    fake.where_raises = True
     began = time.monotonic()
     armed = server.perform(steps=[{"op": "resume"}, {"op": "status"}], settle_seconds=0.6)
     assert armed.get("verdict") == "TIMEOUT" and time.monotonic() - began >= 0.5, armed
@@ -5547,7 +5553,7 @@ def test_a_declaration_from_a_store_that_kept_no_origin_is_listed_as_an_orphan(
     store = dstate.STATE.store
     assert store is not None
     store.add(dec.Declaration("watch", "symbol", "g_rate", width=4, fmt="u32", watch_mode="show"))
-    store.add(dec.Declaration("breakpoint", "address", "00A7:0100"))
+    store.add(dec.Declaration("breakpoint", "address", "00A7:0100", cpu_mode="protected"))
     store.add(dec.Declaration("interrupt", "address", "BPINT 21"))
     watches = server.watch_list()["watches"]
     assert watches[0]["state"] == "orphan" and "EVALUATED" in watches[0]["why"], watches
@@ -5866,7 +5872,8 @@ def test_the_states_a_listing_still_gives_when_nothing_is_held(tmp_path: Path) -
     dstate.STATE.session_origin = "s2"
     server.breakpoint_interrupt(number=0x21)         # this session's: gone once its row is
     fake.rows.clear()
-    dstate.STATE.store.add(dec.Declaration("breakpoint", "address", "00A7:0300"))  # type: ignore[union-attr]
+    dstate.STATE.store.add(dec.Declaration("breakpoint", "address", "00A7:0300",  # type: ignore[union-attr]
+                                            cpu_mode="protected"))
     rows = {b["ref"]: b for b in server.breakpoint_list()["breakpoints"]}
     assert rows["BPINT 21"]["state"] == "gone" and rows["00A7:0300"]["state"] == "orphan", rows
     real = _names(tmp_path, symbols=[dsym.Symbol("_main", 0x1000, kind="T")], mode="Real",
@@ -6426,7 +6433,7 @@ def test_write_puts_bytes_at_a_name_or_an_address_and_reads_them_back(tmp_path: 
     spaced = cast(dict[str, Any], server.write(ref="0040:0100", data_hex="34 56"))
     assert spaced["status"] == "ok" and fake.mem[(0x40, 0x100)] == b"\x34\x56", spaced
     unknown = cast(dict[str, Any], server.write(ref="nope", data_hex="00"))
-    assert unknown["status"] == "INVALID" and "not a symbol" in unknown["message"]
+    assert unknown["status"] == "INVALID" and "not in the symbol table" in unknown["message"]
     fake.running = True
     running = cast(dict[str, Any], server.write(ref="0040:0100", data_hex="12"))
     assert running["status"] == "INVALID" and "running" in running["message"], running
@@ -7948,3 +7955,228 @@ def test_a_state_dir_the_caller_gave_is_named_as_theirs_when_a_file_holds_it(
     got = server.start(conf=str(tmp_path / "g.conf"), cwd=str(tmp_path), session_seconds=60,
                        state_dir=str(tmp_path / "mine"))
     assert got["status"] == "INVALID" and got["message"].startswith("state_dir: "), got
+
+
+def test_a_breakpoint_and_a_change_watch_queued_at_one_ref_are_both_armed_at_the_stop(
+        tmp_path: Path) -> None:
+    """The queue holds a ref once, and both families declared under it while the guest ran
+    are armed at the next stop: the account names the ref, and the debugger holds both rows."""
+    fake = _names(tmp_path, watched=True, mode="Real")
+    server.status()
+    fake.running = True
+    w = server.watch_add(ref="0814:0100", mode="change", length=2)
+    b = server.breakpoint_at(ref="0814:0100")
+    assert w["state"] == "pending" and b["state"] == "pending", (w, b)
+    fake.running = False
+    st = server.status()
+    assert st["applied_on_stop"]["armed"] == ["0814:0100"], st
+    assert set(dstate.STATE.armed) == {("watch", "0814:0100"), ("bp", "0814:0100")}, \
+        dstate.STATE.armed
+
+
+def test_an_arrival_is_attributed_to_run_tos_own_target_and_recorded_so(tmp_path: Path) -> None:
+    """The breakpoint `run_to` armed is removed before the stop is surveyed, and no declaration
+    sits there: the reply that says TARGET names the target as what made the stop, and so does
+    `last_stop`, instead of saying no declared breakpoint did. A stop elsewhere is still looked
+    for among the declarations."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("_engine_load_midi", 0x3D5E0, kind="T")])
+    got = cast(dict[str, Any],
+               server.run_to(ref="_engine_load_midi", control="0000:0020", seconds=5))
+    assert got["verdict"] == "TARGET", got
+    assert got["attribution"]["attributed"] is True, got["attribution"]
+    assert (got["attribution"]["ref"], got["attribution"]["by"]) == ("_engine_load_midi",
+                                                                      "run_to"), got
+    assert server.status()["last_stop"]["attribution"]["by"] == "run_to"
+    fake.runto_elsewhere = True
+    fake.control_hits = 1
+    other = cast(dict[str, Any], server.run_to(ref="_engine_load_midi", control="0000:0020"))
+    assert other["verdict"] == "OTHER_STOP" and other["attribution"].get("by") != "run_to", other
+
+
+def _ok(reply: dict[str, Any]) -> dict[str, Any]:
+    assert reply["status"] == "ok", reply
+    return reply
+
+
+def test_a_stored_declaration_follows_its_names_into_a_rebuilt_map(tmp_path: Path) -> None:
+    """Nothing a declaration keeps was resolved when it was made: a name is stored as typed and
+    placed again against the map loaded now, so over a rebuild that moved `_main` and `g_rate`
+    the breakpoint is armed and the watch listed at the new places, never the old."""
+    old, new = tmp_path / "old.nm", tmp_path / "new.nm"
+    old.write_text("0016dd80 T _main\n00200000 D g_rate\n", encoding="utf-8")
+    new.write_text("0017ee90 T _main\n00210040 D g_rate\n", encoding="utf-8")
+    fake = _names(tmp_path)
+    dstate.STATE.session_origin = "s1"
+    _ok(server.symbols_load(path=str(old), base="400000"))
+    _ok(server.breakpoint_at(ref="_main"))
+    _ok(server.watch_add(ref="g_rate", mode="show", length=4, fmt="u32"))
+    assert "BP 00A7:16DD80" in [r["entry"] for r in fake.rows], fake.rows
+    fake.rows.clear()
+    dstate.STATE.session_origin = "s2"
+    got = _ok(server.symbols_load(path=str(new), base="400000"))
+    assert [r["ref"] for r in got["declarations"]["rearmed"]] == ["_main"], got["declarations"]
+    assert [r["entry"] for r in fake.rows] == ["BP 00A7:17EE90"], fake.rows
+    (bp,) = server.breakpoint_list()["breakpoints"]
+    assert (bp["state"], bp["entry"]) == ("armed", "BP 00A7:17EE90"), bp
+    store = dstate.STATE.store
+    assert store is not None
+    (watch,) = [d for d in store.declarations() if d.kind == "watch"]
+    placed = placement.resolve_ref(watch, "DS", cast(ds.Session, fake))
+    assert (placed["state"], placed["off"]) == ("armable", 0x210040), placed
+
+
+def test_a_change_watch_that_cannot_be_placed_says_why_and_is_stored(tmp_path: Path) -> None:
+    """A real-mode table with no flat base places no symbol: the change watch is kept and
+    answered `unarmable` with the resolution's own reason, never a traceback; a name the loaded
+    table does not define says the table, not the build."""
+    real = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x1000, kind="D")], mode="Real",
+                  base=-1)
+    got = server.watch_add(ref="g_rate", mode="change", length=2)
+    assert got["status"] == "ok" and got["state"] == "unarmable", got
+    assert "FLAT base" in got["why"] and real.rows == [], got
+    none = server.watch_add(ref="g_absent", mode="change", length=2)
+    assert none["state"] == "unresolved" and "build" not in none.get("note", ""), none
+
+
+def _deferred_load_with(tmp_path: Path, declare: Any) -> tuple[NamesFake, Path]:
+    """A table with `foo`, a breakpoint on it, the guest released, `declare` run while it runs,
+    and a second load of the same map queued for the stop."""
+    nm = tmp_path / "foo.nm"
+    nm.write_text("00001000 T foo\n", encoding="utf-8")
+    fake = _names(tmp_path)
+    _ok(server.symbols_load(path=str(nm), base="400000"))
+    _ok(server.breakpoint_at(ref="foo"))
+    fake.rows.clear()
+    fake.running = True
+    declare()
+    assert server.symbols_load(path=str(nm), base="400000")["status"] == "ok"
+    return fake, nm
+
+
+def test_a_watch_queued_under_a_ref_the_load_re_arms_is_armed_too(tmp_path: Path) -> None:
+    """The load's re-arm covers breakpoints only: a change watch queued under the same ref is
+    armed at the stop on its own, not dropped from the queue with the breakpoint's ref."""
+    fake, _ = _deferred_load_with(
+        tmp_path, lambda: server.watch_add(ref="foo", mode="change", length=2))
+    fake.running = False
+    server.status()
+    kinds = sorted(r["entry"].split()[0] for r in fake.rows)
+    assert kinds == ["BP", "BPPM"], fake.rows
+
+
+def test_a_re_arm_that_fails_after_a_deferred_load_is_armed_from_the_queue(
+        tmp_path: Path) -> None:
+    fake, _ = _deferred_load_with(tmp_path, lambda: None)
+    fake.running = False
+    fake.bp_raises = True                       # the list read after the load refuses, once
+    first = server.status()
+    assert any("re-arm after the load" in s
+               for s in first["applied_on_stop"].get("still_pending", [])), first
+    fake.bp_raises = False
+    fake.running = True
+    fake.running = False
+    server.status()
+    assert [r["entry"].split()[0] for r in fake.rows] == ["BP"], fake.rows
+
+
+def test_an_interrupt_breakpoint_the_store_cannot_keep_is_not_armed(tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    store = dstate.STATE.store
+    assert store is not None
+    path = tmp_path / "decl.json"
+    path.unlink(missing_ok=True)
+    path.mkdir()                                  # the store's next write fails
+    got = server.breakpoint_interrupt(number=0x21)
+    assert got["status"] == "INVALID", got
+    assert not [r for r in fake.rows if r["entry"].startswith("BPINT")], fake.rows
+
+
+def test_a_show_watch_under_a_queued_ref_arms_nothing(tmp_path: Path) -> None:
+    """A show watch arms nothing ever: a breakpoint queued under its ref while the guest runs
+    arms the breakpoint alone at the stop, never a memory trap the watch would then read."""
+    fake = _names(tmp_path, mode="Real")
+    _ok(server.watch_add(ref="0814:0100", mode="show", length=2))
+    server.status()
+    fake.running = True
+    _ok(server.breakpoint_at(ref="0814:0100"))
+    fake.running = False
+    server.status()
+    assert [r["entry"].split()[0] for r in fake.rows] == ["BP"], fake.rows
+
+
+def test_a_failed_re_arm_after_a_load_queues_only_what_the_re_arm_would_arm(
+        tmp_path: Path) -> None:
+    """A raw address another build left is never re-armed: the re-arm a deferred load owes
+    queues this build's breakpoints, not every stored one."""
+    def stale() -> None:
+        store, session = dstate.STATE.store, dstate.STATE.session
+        assert store is not None and session is not None
+        dstate.STATE.conf_fingerprint = dlaunch.fingerprint(session.launch.conf)
+        store.add(dec.Declaration("breakpoint", "address", "00A7:5C6F0", origin="s0",
+                                  fingerprint="another-build", cpu_mode="protected"))
+    fake, _ = _deferred_load_with(tmp_path, stale)
+    fake.running = False
+    fake.bp_raises = True
+    server.status()
+    assert "00A7:5C6F0" not in dstate.STATE.pending["arm"], dstate.STATE.pending
+    assert not [r for r in fake.rows if "5C6F0" in r["entry"]], fake.rows
+
+
+def test_an_interrupt_breakpoint_the_debugger_refused_is_not_kept(tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+
+    def refuse(number: int, ah: int | None = None) -> str:
+        raise ds.Invalid("unexpected_answer", "no BPINT row came back")
+
+    fake.breakpoint_interrupt = refuse  # type: ignore[method-assign]
+    got = server.breakpoint_interrupt(number=0x21)
+    assert got["status"] == "INVALID", got
+    assert server.breakpoint_list()["breakpoints"] == [], server.breakpoint_list()
+
+
+def test_an_arrival_on_a_declared_breakpoint_names_both(tmp_path: Path) -> None:
+    fake = _names(tmp_path, symbols=[dsym.Symbol("foo", 0x1000, kind="T")])
+    _ok(server.breakpoint_at(ref="foo"))
+    fake.cs, fake.eip = "00A7", "00001000"
+    got = cast(dict[str, Any], server.run_to(ref="foo", control="0000:0020", seconds=5))
+    assert got["attribution"]["by"] == "run_to" and got["attribution"]["refs"] == ["foo"], got
+
+
+def test_a_queued_raw_breakpoint_whose_place_cannot_be_written_is_said_at_the_stop(
+        tmp_path: Path) -> None:
+    fake = _names(tmp_path, mode="Real")
+    server.status()
+    fake.running = True
+    _ok(server.breakpoint_at(ref="0814:0100"))
+    path = tmp_path / "decl.json"
+    path.unlink(missing_ok=True)
+    path.mkdir()                                  # the stop's write of its place fails
+    fake.running = False
+    got = server.status()
+    assert got["status"] == "ok", got
+    assert any("could not be written" in s
+               for s in got["applied_on_stop"].get("still_pending", [])), got["applied_on_stop"]
+
+
+@pytest.mark.parametrize(("decl", "can"), [
+    (dec.Declaration("watch", "address", "0814:0100", width=2, fmt="u16", watch_mode="show"),
+     False),
+    (dec.Declaration("watch", "address", "0814:0100", width=2, fmt="u16", watch_mode="change"),
+     True),
+    (dec.Declaration("interrupt", "address", "BPINT 21", origin="an earlier session"), False),
+    (dec.Declaration("interrupt", "address", "BPINT 21", origin="s-now"), True),
+    (dec.Declaration("breakpoint", "symbol", "_absent", origin="s-now"), False),
+    (dec.Declaration("breakpoint", "symbol", "_main", origin="s-now"), True),
+], ids=["show", "change", "old-interrupt", "interrupt", "unresolved", "resolved"])
+def test_what_can_stop_the_guest_is_what_would_be_armed(tmp_path: Path,
+                                                        decl: dec.Declaration,
+                                                        can: bool) -> None:
+    """A show watch arms nothing, an interrupt of an earlier session is not re-armed, a name the
+    table does not define arms nothing: none of them can bring a running guest back."""
+    _names(tmp_path, symbols=[dsym.Symbol("_main", 0x1000, kind="T")], mode="Real")
+    dstate.STATE.session_origin = "s-now"
+    dstate.STATE.last_stop["held"] = []
+    store = dstate.STATE.store
+    assert store is not None
+    store.add(decl)
+    assert arming.something_can_stop_it() is can

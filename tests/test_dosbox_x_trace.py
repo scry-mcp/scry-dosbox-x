@@ -125,6 +125,12 @@ STOPPED_AT = {"probe-settle": {s: ("0814", "00000106") for s in tracing.SHAPES} 
                          "long": ("00A7", "001604C0"), "cs_ip": ("00A7", "00028DCF")}}
 
 
+def _real_bp(ref: str) -> None:
+    """A raw breakpoint declared at the real-mode stop the probe guest sits at."""
+    assert dstate.STATE.store is not None
+    dstate.STATE.store.add(arming.declare("breakpoint", "address", ref, cpu=dcons.REAL_MODE))
+
+
 @pytest.mark.parametrize(("bench", "shape"), SHAPE_FILES)
 def test_every_captured_shape_parses_whole_with_the_stop_as_its_last_line(
         bench: str, shape: str) -> None:
@@ -246,8 +252,7 @@ def cut(tmp_path: Path, close: str | None = "probe-cut-close-delta",
     dbg = live(kind([cap("probe-cut-survey-before"), cap("probe-cut-survey-after-close")],
                       cwd_of(tmp_path),
                       [("probe-cut-open", "probe-cut-open-delta"), (None, close)]))
-    assert dstate.STATE.store is not None
-    dstate.STATE.store.add(arming.declare("breakpoint", "address", "0814:0108"))
+    _real_bp("0814:0108")
     return dbg
 
 
@@ -1348,8 +1353,7 @@ def test_a_trace_started_on_a_code_breakpoint_stops_there_again_and_says_so(
     live(Tracer([cap("probe-cut-survey-after-close"), cap("probe-cut-survey-after-close")],
                 cwd_of(tmp_path), [("probe-on-bp-cs_ip", "probe-cut-open-delta"),
                                    (None, "probe-cut-close-delta")]))
-    assert dstate.STATE.store is not None
-    dstate.STATE.store.add(arming.declare("breakpoint", "address", "0814:0108"))
+    _real_bp("0814:0108")
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",
                                             dest=str(tmp_path / "b.trace")))
     assert got["status"] == "ok" and got["verdict"] == "OTHER_STOP", got
@@ -1409,8 +1413,7 @@ def test_a_cut_run_that_counted_two_more_is_refused(tmp_path: Path) -> None:
                       cwd_of(tmp_path),
                       [("probe-cut-open", "probe-cut-open-delta"),
                        (None, "probe-cut-close-delta")]))
-    assert dstate.STATE.store is not None
-    dstate.STATE.store.add(arming.declare("breakpoint", "address", "0814:0108"))
+    _real_bp("0814:0108")
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",
                                             dest=str(tmp_path / "c.trace")))
     assert got["status"] == "INVALID" and got["code"] == "no_channel", got

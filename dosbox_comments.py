@@ -100,13 +100,17 @@ class _Places:
         """A held comment's place: `where` its ref lands, then `stale` for a raw address over
         another build, still with the `linear` it was given. One this stop cannot place (a
         load keeps those) keeps `refuse` and says it waits for a stop that can. One placed in
-        the other cpu mode is not placed here at all: it waits for a stop of its own."""
-        if (mode := placement.waits(decl, self.mode)) is not None:
-            return {"state": "unarmable",
-                    "why": placement.waits_why(mode, "Comment it again, or load its file,")}
+        the other cpu mode is not placed here at all: it waits for a stop of its own; one no
+        stop has placed waits for a call that places it."""
+        again = "Comment it again, or load its file,"
+        if (mode := placement.waits(decl, self.mode)) not in (None, dec.UNPLACED):
+            return {"state": "unarmable", "why": placement.waits_why(mode, again)}
         place = self.where(decl.by, decl.ref)
         if "refuse" in place:
             place["why"] = f"{place['refuse']}; {place['waits']}"
+        elif mode == dec.UNPLACED and "linear" in place:
+            # This stop could place it, but no stop has: placing is a write, made by a call.
+            return {"state": "unarmable", "why": placement.waits_why(mode, again)}
         if "linear" in place and (stale := placement.staleness(
                 decl, lambda: place["linear"])) is not None:
             place.update(state="stale", why=_STALE_WHY[stale])
@@ -229,7 +233,8 @@ def _taken(places: _Places, old: dec.Declaration, text: str,
     that places it; with a map held, where it would be stamped `pending` and lost to the next
     session, it keeps its whole record and only its text and date change."""
     new = _new(places, old.by, old.ref, text, created_at=created_at)
-    if placement.waits(old, places.mode) is None or "linear" in places.where(old.by, old.ref):
+    if placement.waits(old, places.mode) in (None, dec.UNPLACED) \
+            or "linear" in places.where(old.by, old.ref):
         return new
     if new.fingerprint == dec.PENDING_STAMP:
         return dataclasses.replace(old, text=text, created_at=new.created_at)
@@ -255,18 +260,19 @@ def park_rows_take_the_map(session: ds.Session) -> str | None:
     is not taken: nothing says which map it was placed under. The store's write error, if it
     could not be written (the change is held in memory), else None."""
     store, conf = STATE.store, STATE.conf_fingerprint
-    if store is None or STATE.session_origin is None or conf is None:
-        return None
+    if store is None or STATE.session_origin is None or conf is None \
+            or not session.at_debugger():
+        return None              # a row is placed only at a stop
     mine = [d for d in (*store.comments(), *store.declarations())
             if dec.is_raw_code(d.kind, d.by) and d.origin == STATE.session_origin
-            and (d.fingerprint == dec.PENDING_STAMP
+            and (d.cpu_mode is None or d.fingerprint == dec.PENDING_STAMP
                  or (d.kind == "comment" and d.fingerprint == conf))]
     places = _Places(session)
     taken = []
     for d in mine:
         try:
             # A row placed in the other mode is not this stop's to place.
-            linear = (None if placement.waits(d, places.mode) is not None
+            linear = (None if placement.waits(d, places.mode) not in (None, dec.UNPLACED)
                       else places.where(d.by, d.ref).get("linear"))
         except ds.Invalid:
             linear = None

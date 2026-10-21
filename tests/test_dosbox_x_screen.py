@@ -28,6 +28,7 @@ from test_dosbox_x_server import clean_session, install  # noqa: F401
 
 import dosbox_arming as arming
 import dosbox_checks as checks
+import dosbox_console as dcons
 import dosbox_dac as vgadac
 import dosbox_docs as docs
 import dosbox_machine as machine
@@ -61,6 +62,12 @@ def window(name: str) -> bytes:
 
 
 # ------------------------------------------------------------------ the listings
+
+
+def _real_bp(ref: str) -> None:
+    """A raw breakpoint declared at the real-mode stop the probe guest sits at."""
+    assert dstate.STATE.store is not None
+    dstate.STATE.store.add(arming.declare("breakpoint", "address", ref, cpu=dcons.REAL_MODE))
 
 
 @pytest.mark.parametrize("bench", BENCHES)
@@ -1444,8 +1451,7 @@ def cut_by_breakpoint(tmp_path: Path) -> Frames:
     dbg = waiting(["probe-booted"], 2, tmp_path)
     dbg.panes = [cap_vrt("probe-survey-cut-by-bp-0108")] * 3
     dbg.vrts = [cap_vrt("probe-vrt-cut-by-bp-0108")]
-    assert dstate.STATE.store is not None
-    dstate.STATE.store.add(arming.declare("breakpoint", "address", "0814:0108"))
+    _real_bp("0814:0108")
     return dbg
 
 
@@ -1507,8 +1513,7 @@ def test_a_cut_repaint_after_a_retrace_is_not_taken_for_a_breakpoint(tmp_path: P
     pane (an empty repaint) cannot place the stop, so the wait reads the screen and goes on."""
     dbg = waiting(["probe-park", "probe-booted"], 1, tmp_path)
     dbg.panes = ["", *[cap_vrt("probe-survey-0")] * 3]
-    assert dstate.STATE.store is not None
-    dstate.STATE.store.add(arming.declare("breakpoint", "address", "0814:0108"))
+    _real_bp("0814:0108")
     r = cast(dict[str, Any], server.screen_wait(text="PROBE.COM", seconds=10))
     assert r["status"] == "ok" and r["polls"] == 1 and r["point"] == [4, 3], r
 

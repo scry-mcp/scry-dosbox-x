@@ -119,6 +119,21 @@ class _Sessions:
             ok(server.comment_load(path=str(_file(self.tmp, (SPELLED.get(arg, arg),
                                                                "same text"))))
                if verb == "realload" else server.breakpoint_at(ref=arg))
+        elif verb in ("runbp", "realrunbp"):
+            # DECLARED WHILE THE GUEST RUNS, after a stop of that mode (`runbp` protected,
+            # `realrunbp` real): stored and queued, `pending`. The guest is left running.
+            self.booted.mode = "Pr32" if verb == "runbp" else dcons.REAL_MODE
+            where, regs = self.booted.where_and_registers()
+            dstate.STATE.remember_stop(self.booted, where, regs, [], {})
+            self.booted.running = True
+            assert ok(server.breakpoint_at(ref=arg))["state"] == "pending"
+        elif verb in ("pmstop", "realstop"):
+            # THE GUEST STOPS in that mode, and the first call after the stop drains the queue.
+            self.booted.running = False
+            self.booted.mode = "Pr32" if verb == "pmstop" else dcons.REAL_MODE
+            where, regs = self.booted.where_and_registers()
+            dstate.STATE.remember_stop(self.booted, where, regs, [], {})
+            ok(server.breakpoint_list())
         elif verb == "conf":
             self.conf_text = "[sdl]\nfullscreen=false\n"
         elif verb == "strip":
@@ -155,6 +170,9 @@ class _Sessions:
 # A raw row records the cpu mode of the stop that placed it, and is judged only at a stop of
 # that mode: B1-B29 place and list each ref in its own mode, the mode rows (B30-B33) place a
 # row in one mode and list it in the other, a key's `real` or `pm` naming the listing's stop.
+# A row no stop placed (no mode) waits in either mode, `unarmable`: B8's and B21's `W`, B29's
+# rows before a load of their session places them, and the rows declared while the guest runs
+# (B34-B36) until the stop that arms them gives them its mode.
 TABLE = [
     ("B1 park row, no map yet", ["start", f"add {P}"], {P: "resolved"}),
     ("B2 park row added, then the first map", ["start", f"add {P}", "map A"], {P: "resolved"}),
@@ -189,7 +207,7 @@ TABLE = [
     ("B8 park row no batch describes, of a session with no map, next session's map",
      ["start", f"add {P}", "start", "map A"], {P: "resolved"}),
     ("B8 park row a map describes, of a session with no map, next session's map",
-     ["start", f"load {W}", "start", "map A"], {W: ("stale", "no build beyond the conf")}),
+     ["start", f"load {W}", "start", "map A"], {W: ("unarmable", "no stop has placed it")}),
     ("B9 reloaded at this park, then the map",
      ["start", f"add {P}", "start", f"load {P}", "map A"], {P: "resolved"}),
     ("B9 re-added at this park, then the map",
@@ -276,7 +294,7 @@ TABLE = [
      ["start", f"add {P}", "strip", "start", "map A"], {P: "resolved"}),
     ("B21 park row a map describes, stored without its conf, next session's map",
      ["start", f"load {W}", "strip", "start", "map A"],
-     {W: ("stale", "no build beyond the conf")}),
+     {W: ("unarmable", "no stop has placed it")}),
     ("B22 batches naming one static at two addresses, the first relinked moving only it",
      ["start", "map AS", "map A2T", f"add {Q}", f"bp {Q}", "start", "map AM", "map A2T"],
      {Q: "stale", f"bp {Q}": "stale"}),
@@ -311,18 +329,21 @@ TABLE = [
      {Q: "stale", f"bp {Q}": "stale"}),
     ("B29 a row loaded and a breakpoint declared at a real-mode stop after map A, next park",
      ["start", "map A", f"realload {W}", f"realbp {W}", "start"],
-     {W: ("stale", "never placed"), f"bp {W}": "stale"}),
+     {f"real {W}": ("unarmable", "kept for a protected-mode stop"),
+      f"real bp {W}": ("unarmable", "no stop has placed it")}),
     ("B29 the same two, listed at the protected-mode stop that follows, no load since",
-     ["start", "map A", f"realload {W}", f"realbp {W}"], {W: "resolved", f"bp {W}": "armed"}),
+     ["start", "map A", f"realload {W}", f"realbp {W}"],
+     {W: ("unarmable", "no stop has placed it"),
+      f"bp {W}": ("unarmable", "no stop has placed it")}),
     ("B29 the same two, next session map A",
      ["start", "map A", f"realload {W}", f"realbp {W}", "start", "map A"],
-     {W: "stale", f"bp {W}": "stale"}),
+     {W: "unarmable", f"bp {W}": "unarmable"}),
     ("B29 the same two, next session map B (relinked over them)",
      ["start", "map A", f"realload {W}", f"realbp {W}", "start", "map B"],
-     {W: "stale", f"bp {W}": "stale"}),
+     {W: "unarmable", f"bp {W}": "unarmable"}),
     ("B29 the same two, next session map C (not over them)",
      ["start", "map A", f"realload {W}", f"realbp {W}", "start", "map C"],
-     {W: "stale", f"bp {W}": "stale"}),
+     {W: "unarmable", f"bp {W}": "unarmable"}),
     ("B29 the same two, a later map in the same session places them",
      ["start", "map A", f"realload {W}", f"realbp {W}", "map A"],
      {W: "resolved", f"bp {W}": "armed"}),
@@ -382,6 +403,30 @@ TABLE = [
       f"real bp {Q}": "unarmable"}),
     ("B33 the same two, declared again at that stop",
      ["start", f"add {Q}", f"bp {Q}", "start", f"bp {Q}"], {f"bp {Q}": "armed"}),
+    ("B34 declared running after a protected-mode stop, no map, armed at the next one",
+     ["start", f"runbp {Q}", "pmstop"], {f"bp {Q}": "armed"}),
+    ("B34 the same, next session's park",
+     ["start", f"runbp {Q}", "pmstop", "start"],
+     {f"real bp {Q}": ("unarmable", "protected-mode stop")}),
+    ("B34 the same, next session's protected-mode stop",
+     ["start", f"runbp {Q}", "pmstop", "start"], {f"bp {Q}": "gone"}),
+    ("B34 declared running after a real-mode stop under map A, armed there, next session map C",
+     ["start", "map A", f"realrunbp {Q}", "realstop", "start", "map C"],
+     {f"bp {Q}": ("unarmable", "real-mode stop"), f"real bp {Q}": "armed"}),
+    ("B34 declared running after a protected-mode stop under map A, armed there, next map C",
+     ["start", "map A", f"runbp {Q}", "pmstop", "start", "map C"], {f"bp {Q}": "stale"}),
+    ("B35 declared running, no stop since",
+     ["start", f"runbp {Q}"], {f"bp {Q}": "pending"}),
+    ("B35 declared running, no stop since, next session",
+     ["start", f"runbp {Q}", "start"],
+     {f"real bp {Q}": ("unarmable", "no stop has placed it"),
+      f"bp {Q}": ("unarmable", "no stop has placed it")}),
+    ("B35 a real-mode address declared running, no stop since, next session's park",
+     ["start", f"realrunbp {P}", "start"], {f"bp {P}": ("unarmable", "no stop has placed it")}),
+    ("B36 placed at a protected-mode stop, declared again running, a real-mode stop next",
+     ["start", f"bp {Q}", f"runbp {Q}", "realstop"], {f"real bp {Q}": "pending"}),
+    ("B36 the same, then a protected-mode stop",
+     ["start", f"bp {Q}", f"runbp {Q}", "realstop", "pmstop"], {f"bp {Q}": "armed"}),
 ]
 
 
@@ -399,6 +444,25 @@ def test_a_raw_comments_state_across_sessions_and_maps(
         assert row["state"] == state, row
         if why is not None:
             assert why in row["why"], row
+
+
+def test_a_map_loaded_while_the_guest_runs_places_nothing(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A row is placed only at a stop: a `symbols_load` while the guest runs leaves this
+    session's row no stop placed with no mode, and the stop that follows places it."""
+    run = _Sessions(tmp_path, monkeypatch)
+    for step in ("start", f"realrunbp {P}"):
+        run.step(step)
+    ok(server.symbols_load(path=str(run.maps["A"]), base="400000"))
+    store = dstate.STATE.store
+    assert store is not None
+
+    def mode() -> str | None:
+        return next(d for d in store.declarations() if d.ref == P).cpu_mode
+
+    assert mode() is None
+    run.step("realstop")
+    assert mode() == "real"
 
 
 def test_the_store_keeps_one_batch_per_stamp_and_drops_it_with_its_last_row(
@@ -586,7 +650,11 @@ def test_a_real_mode_save_waits_at_a_protected_mode_stop_and_is_placed_back(
     row = _rows_by_ref()[ref]
     assert got["added"] == 1 and ref in got["note"]
     assert row["state"] == "unarmable" and "null selector" in row["why"], row
+    # At a real-mode stop it still waits: no stop placed it. Loaded again there, it is placed.
     dstate.STATE.session = FakeSession()  # type: ignore[assignment]
+    waiting = _rows_by_ref()[ref]
+    assert waiting["state"] == "unarmable" and "no stop has placed it" in waiting["why"], waiting
+    ok(server.comment_load(path=str(saved)))
     assert (_rows_by_ref()[ref]["state"], _rows_by_ref()[ref]["addr"]) == ("resolved", back)
 
 

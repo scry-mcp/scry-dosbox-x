@@ -594,15 +594,19 @@ otherwise (a relinked map, the map at another base); and, where no batch describ
 the conf only when it was declared with no map describing it, so one declared before any map is
 re-armed at `start`, and one declared under a map waits for that map's load and is `stale`
 under any other, its address described or not (the map at a base past it, relinked shorter or
-longer). One declared where its place is not known while a map is held (a protected-mode
-offset past FFFF at a real-mode stop) takes the batch that describes it when a later load of its
-session places it; with no such load it is `stale` in every later session, at `start` too, and
-is never re-armed blind. It also records the cpu mode of the stop that placed it, real or
-protected, because one `SEG:OFF` names another byte in the other mode: it is judged and armed
-only at a stop of that mode, and at a stop of the other it is `unarmable`, its `why` naming the
-mode it waits for, so `start`, which parks in real mode, never re-arms a protected-mode one (a
-`symbols_load` at a protected-mode stop does). A comment file's row takes the mode of the first
-stop that places it, so a protected-mode program's file is loaded at a protected-mode stop.
+longer). It also records the cpu mode of the stop that placed it, real or protected, because
+one `SEG:OFF` names another byte in the other mode: a raw row is placed, stamped and armed only
+at a stop, judged and armed only at a stop of its mode, and at a stop of the other it is
+`unarmable`, its `why` naming the mode it waits for, so `start`, which parks in real mode, never
+re-arms a protected-mode one (a `symbols_load` at a protected-mode stop does). One no stop
+placed waits in either mode, `unarmable`, and nothing re-arms it: declared while the guest
+runs, it is placed by the stop that arms it, which writes that stop's mode (a row a stop placed
+before and declared again while the guest runs keeps its mode, and stays queued at a stop of
+the other); declared or loaded where its stop cannot place it (a protected-mode offset past
+FFFF at a real-mode stop), it is placed by a later `symbols_load` of its session at a stop that
+can, or by declaring or loading it again there; a row stored before modes were kept waits the
+same way. A `symbols_load` while the guest runs places nothing. So a protected-mode program's
+comment file is loaded at a protected-mode stop.
 Within one session a held batch is taken as the running program, so a guest that exits
 and runs a relinked EXE inside the same session is not seen until the next session, which judges
 its rows against the map it loads. The store keeps each batch its rows name once, beside them,
@@ -693,8 +697,8 @@ row stored without its conf is `stale` at the park, its `why` saying so). A load
 raw row the text it holds takes it into this session and the batch that describes it, which is
 how a `stale` row is brought back.
 `unarmable`, a place that cannot be worked out now (a selector whose base needs the logfile,
-a protected-mode address while the guest runs, or a raw address a load kept that this stop's
-mode cannot place). Comments a rebuild or a load brought to one place are all kept, and a call
+a protected-mode address while the guest runs, a raw address a load kept that this stop's
+mode cannot place, or one no stop has placed). Comments a rebuild or a load brought to one place are all kept, and a call
 reaches the one whose ref it spells.
 
 **The comment file** is how a project keeps its comments: `comment_save(dest=)` writes them,
@@ -950,9 +954,10 @@ decodes in its own width, which is not always the segment's), with its nearest s
 in protected mode costs one `SELINFO CS` and only with a table loaded; unavailable, with why,
 when no bytes could be read or they start no instruction), the registers (`regs`),
 the show watches already evaluated (each with `state: "evaluated"`), an `attribution` to the
-declaration whose address it stopped at (`attributed`, `ref`, `by`, `at`; or an honest
-cannot-say with `why`: the
-debugger keeps no hit flag, and a memory watch stops at the instruction that WROTE), and an
+declaration whose address it stopped at (`attributed`, `ref`, `by`, `at`; a `run_to` that
+arrived names its own target, `by: "run_to"`, whose breakpoint is removed by then; or an honest
+cannot-say with `why`: the debugger keeps no hit flag, and a memory watch stops at the
+instruction that WROTE), and an
 E9 summary, `e9`, that is OFF by default with the count and how to see the lines, because the
 guest's log can blow up a conversation: `lines_total` lines matched the filter, `unfiltered`
 were logged in all, `shown` came back in `lines`. `how` names a way the caller can take: on a stop

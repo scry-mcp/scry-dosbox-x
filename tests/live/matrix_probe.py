@@ -959,6 +959,8 @@ C_CELLS = cells(
     ("C drive sees a new probe line", "drive docstring; known: the probe logs every few s"),
     ("C log_wait answers history at once", REF_DOC + "The log: already, waited_s 0.0"),
     ("C log_wait expiry is a TIMEOUT", REF_DOC + "The log: a bound that expires"),
+    ("C a breakpoint and a change watch at one ref, declared while running, both armed",
+     REF_DOC + "Declarations: what is declared while it runs is armed at the next stop"),
     ("C declared while running applies at the next stop",
      REF_DOC + "Advancing: what is asked while running is applied at the next stop"),
     ("C a change watch on the counter stops the probe",
@@ -1141,11 +1143,37 @@ def _c_pending(p: Probe) -> None:
             and bool(found.get("stopped_on_its_own"))
             and "0000:0007" in [str(a) for a in armed])
     M.call(server.breakpoint_clear, all=True)
+    _c_two_families(p)
     w = M.call(server.watch_add, ref=p.at(p.cnt + 4), mode="change", length=1, fmt="u8")
     r = M.call(server.resume, seconds=10)
     judged("C a change watch on the counter stops the probe", reply=r,
             holds=ok(w) and w.get("armed") is True and ok(r) and "stop_seq" in r
             and str(r.get("pc")).split(":")[0] == f"{p.seg:04X}")
+    M.call(server.watch_clear, all=True)
+    M.setup()
+
+
+def _c_two_families(p: Probe) -> None:
+    """Two families queued under one ref while the guest runs: the stop that follows arms both,
+    and the debugger's own list holds both rows."""
+    M.call(server.breakpoint_at, ref=p.at(p.pause))
+    M.call(server.resume)
+    M.setup()
+    ref = "0000:0009"            # an interrupt vector's byte: nothing runs or writes it here
+    w = M.call(server.watch_add, ref=ref, mode="change", length=1, fmt="u8")
+    b = M.call(server.breakpoint_at, ref=ref)
+    found: dict[str, Any] = {}
+    for _ in range(30):
+        found = M.call(server.status)
+        if found.get("stopped_on_its_own"):
+            break
+        time.sleep(0.5)
+    listing = str(M.call(server.debug, command="BPLIST").get("screen_delta", ""))
+    judged("C a breakpoint and a change watch at one ref, declared while running, both armed",
+           reply=found, holds=w.get("state") == "pending" and b.get("state") == "pending"
+           and ref in [str(a) for a in (found.get("applied_on_stop") or {}).get("armed") or []]
+           and f"BP {ref}" in listing and f"BPMEM {ref}" in listing)
+    M.call(server.breakpoint_clear, all=True)
     M.call(server.watch_clear, all=True)
     M.setup()
 

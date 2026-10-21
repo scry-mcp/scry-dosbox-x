@@ -482,3 +482,21 @@ def test_resolve_name_through_the_index_is_the_scan_resolution() -> None:
             scan.state, scan.offset, scan.matches, scan.idle), ref
     assert dec.DeclarationStore.resolve_name(
         dec.Declaration("breakpoint", "symbol", "_a"), table, index).offset == 0x100
+
+
+def test_a_write_that_fails_leaves_the_store_as_the_file_holds_it(tmp_path: Path) -> None:
+    """The file is the record: an add or a remove whose write fails changes nothing, so a
+    caller told INVALID does not meet the row listed anyway, and a clear that failed does not
+    come back at the next start as a breakpoint the caller thought gone."""
+    path = tmp_path / "decl.json"
+    store = dec.DeclarationStore("/conf", path=path)
+    store.add(dec.Declaration("breakpoint", "symbol", "_main"))
+    before = store.declarations()
+    path.unlink()
+    path.mkdir()                                  # the next write cannot replace it
+    with pytest.raises(dec.DeclarationError):
+        store.add(dec.Declaration("breakpoint", "symbol", "_other"))
+    assert store.declarations() == before, store.declarations()
+    with pytest.raises(dec.DeclarationError):
+        store.remove(ref="_main")
+    assert store.declarations() == before, store.declarations()

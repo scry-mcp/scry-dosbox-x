@@ -405,6 +405,27 @@ def is_raw_code(kind: str, by: str) -> bool:
     return kind in ("breakpoint", "comment") and by == "address"
 
 
+#: What a raw row with no cpu mode waits for: a stop that places it. No stop has (it was declared
+#: while the guest ran, declared or loaded where its stop could not place it, or stored before
+#: modes were kept).
+UNPLACED = "unplaced"
+
+
+def waits(decl: Declaration, stop_mode: Callable[[], str | None]) -> str | None:
+    """Why a raw code row is neither judged nor armed at this stop, or None when it is judged
+    here. A raw `SEG:OFF` names one byte in real mode and another in protected mode, so a row is
+    placed, stamped and armed only at a stop, carries that stop's mode, and is judged and armed
+    only at a stop of that mode: the mode it waits for when this stop's (`stop_mode`, one of
+    `CPU_MODES` or None, asked only of a row that recorded one) is another, or `UNPLACED` for a
+    row no stop placed, which waits in either mode until one does. Every reader that judges or
+    arms a raw row asks this first."""
+    if not is_raw_code(decl.kind, decl.by):
+        return None
+    if decl.cpu_mode is None:
+        return UNPLACED
+    return None if stop_mode() == decl.cpu_mode else decl.cpu_mode
+
+
 def raw_staleness(decl: Declaration, conf: str | None, batches: Sequence[Build],
                   place_now: Callable[[], int | None]) -> str | None:
     """Why a raw code breakpoint or comment is not known to be this build's, or None when it
@@ -576,6 +597,17 @@ class DeclarationStore:
                 f"declarations; it holds a {type(raw).__name__}")
         return raw
 
+    def _commit(self, mine: list[Declaration], new: list[Declaration]) -> None:
+        """This conf's rows become `new` and are written; a write that fails puts them back,
+        so memory never holds what the file does not (the next `start` reads the file)."""
+        old = list(mine)
+        mine[:] = new
+        try:
+            self._persist()
+        except BaseException:
+            mine[:] = old
+            raise
+
     def _persist(self) -> None:
         # RE-READ THE FILE AND REPLACE ONLY THIS CONF'S ENTRY, so a second store opened for
         # a DIFFERENT guest does not clobber it: each store holds only its own conf in
@@ -706,12 +738,17 @@ class DeclarationStore:
             held = mine[i]
             origin = decl.origin if decl.origin is not None else held.origin
             created = decl.created_at if decl.created_at is not None else held.created_at
-            build, mode = ((decl.fingerprint, decl.cpu_mode) if decl.fingerprint is not None
+            # A DECLARATION NO STOP PLACED (made while the guest runs, or where this stop
+            # cannot place it) does not overwrite the place of a row a stop did: the held row
+            # keeps its build and its mode, and is placed again only at a stop of that mode.
+            placed = decl.fingerprint is not None and (decl.cpu_mode is not None
+                                                       or held.cpu_mode is None)
+            build, mode = ((decl.fingerprint, decl.cpu_mode) if placed
                            else (held.fingerprint, held.cpu_mode))
             if (origin, created, build, mode) != (held.origin, held.created_at,
                                                   held.fingerprint, held.cpu_mode):
-                mine[i] = held.adopted_by(origin, created, build, mode)
-                self._persist()
+                self._commit(mine, [*mine[:i], held.adopted_by(origin, created, build, mode),
+                                    *mine[i + 1:]])
             return False
         if decl.kind == "watch":
             for d in mine:
@@ -730,8 +767,7 @@ class DeclarationStore:
                 raise DeclarationError(
                     f"{decl.ref!r} is already declared as a {d.watch_mode} watch of width "
                     f"{d.width} rendered as {d.fmt}; clear it before declaring it another way")
-        mine.append(decl)
-        self._persist()
+        self._commit(mine, [*mine, decl])
         return True
 
     def remove(self, *, ref: str | None = None, kind: str | None = None) -> int:
@@ -749,8 +785,7 @@ class DeclarationStore:
                 if not ((ref is None or d.ref == ref) and (kind is None or d.kind == kind))]
         removed = len(mine) - len(keep)
         if removed:
-            mine[:] = keep
-            self._persist()
+            self._commit(mine, keep)
         return removed
 
     @staticmethod
