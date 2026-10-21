@@ -21,9 +21,11 @@ believed, 2 for an argument (it takes none) or a job count that is none.
 from __future__ import annotations
 
 import os
+import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 from typing import Any
@@ -69,9 +71,16 @@ def _child(summary: Path, nodes: list[str]) -> int:
     os.chdir(ROOT)      # the node ids are the root's, whatever directory the run began in
     began = time.monotonic()
     seen = _Outcomes()
+    # A BASETEMP OF THE JOB'S OWN: pytest keeps only the newest few `pytest-<n>` directories
+    # under its user's root in the temporary directory every job shares, so a job starting
+    # beside others deletes a running job's `tmp_path`.
+    basetemp = Path(tempfile.mkdtemp(prefix="dosbox-x-live-pytest-tmp-"))
     # THE NODE IDS GO LAST: the repository's `addopts` ends in `--cov`, whose value is optional,
     # so a node id right after it is taken as the coverage source and pytest runs every test.
-    rc = pytest.main([*PYTEST_ARGS, *nodes], plugins=[seen])
+    try:
+        rc = pytest.main([*PYTEST_ARGS, "--basetemp", str(basetemp), *nodes], plugins=[seen])
+    finally:
+        shutil.rmtree(basetemp, ignore_errors=True)
     outcomes = {n: seen.outcomes.get(n, "FAIL") for n in nodes}
     reasons = {n: seen.reasons.get(n, f"never reported (pytest exit {rc})")
                for n, o in outcomes.items() if o != "OK"}

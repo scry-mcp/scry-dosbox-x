@@ -8,7 +8,12 @@
 ; `MOUSE . mode=<n>`. It never returns. Built here from this source, like the other guests:
 ;
 ;     nasm -f bin mouse.asm -o mouse.com
+;
+; IT HIDES THE TEXT CURSOR, at the start and after every mode switch (the BIOS shows it again at
+; each), so its screen holds still between captures: a blinking cursor would count as part of
+; the arrow in a case that compares a capture with the pointer's arrow against one without it.
         org 100h
+        call    hide
         xor     ax, ax
         int     33h
         mov     dx, m_reset
@@ -42,6 +47,7 @@ loop_:
 .mode:  xor     ah, ah
         mov     al, bl
         int     10h
+        call    hide
         xor     ax, ax
         int     33h
         mov     dx, m_mode
@@ -88,6 +94,10 @@ loop_:
         call    nl
         jmp     loop_
 
+hide:   mov     ah, 01h             ; cursor shape: start line bit 5 set hides it
+        mov     cx, 2000h
+        int     10h
+        ret
 pr:     push    si
         mov     si, dx
 .n:     lodsb

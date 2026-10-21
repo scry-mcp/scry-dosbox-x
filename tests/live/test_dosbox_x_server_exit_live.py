@@ -15,12 +15,13 @@ import time
 from pathlib import Path
 from typing import Any
 
+import live_private  # isort: skip -- first: a pooled job's working copies
 import pytest
 
 pytestmark = pytest.mark.live
 
 ROOT = Path(__file__).resolve().parents[2]
-BRICKS = ROOT / "demos" / "bricks"
+BRICKS = live_private.bricks_dir()
 #: Past the close's own grace (`Session.close`), with room for the server to get there.
 GONE_WITHIN_S = 20.0
 #: The bound on the server's answers, past which a silent server is this case's FAIL, never a hang.

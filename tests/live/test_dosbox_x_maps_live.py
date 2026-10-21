@@ -10,6 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
+import live_private  # isort: skip -- first: a pooled job's working copies
 import pytest
 from _live_teardown import no_session_left_behind  # noqa: F401  (registers the autouse teardown)
 
@@ -17,8 +18,7 @@ import dosbox_x_server as server
 
 pytestmark = pytest.mark.live
 
-ROOT = Path(__file__).resolve().parents[2]
-BRICKS = ROOT / "demos" / "bricks"
+BRICKS = live_private.bricks_dir()
 MAP = BRICKS / "bricks.scry-map.json"
 #: The control the map names on the play screen, and its centre: where the paddle goes.
 COURT_CENTRE = [240, 100]

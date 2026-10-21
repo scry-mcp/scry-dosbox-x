@@ -348,3 +348,24 @@ def test_a_green_pytest_tier_that_launched_no_emulator_is_invalid(
                         lambda *_a, **_k: lp.PoolResult([], "", {"t.py::a": "OK"}, {}))
     assert rlp.main() != rlp.EXIT_PASSED
     assert any("the ledger recorded no emulator launch" in line for line in _out(capsys))
+
+
+def test_each_pytest_job_runs_in_a_basetemp_of_its_own_and_leaves_it_behind(
+        rlp: ModuleType, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """pytest keeps only the newest few `pytest-<n>` directories under the temporary directory
+    every job shares, so a job beside others deleted a running job's `tmp_path`: each child
+    hands pytest a basetemp of its own, and removes it as it ends."""
+    seen: list[Path] = []
+
+    def main(args: list[str], plugins: list[Any]) -> int:
+        at = Path(args[args.index("--basetemp") + 1])
+        assert at.is_dir() and at.is_relative_to(tmp_path), at
+        seen.append(at)
+        return 0
+
+    monkeypatch.setattr(rlp.pytest, "main", main)
+    monkeypatch.chdir(tmp_path)
+    for n in (1, 2):
+        rlp._child(tmp_path / f"summary-{n}.json", [f"tests/live/x.py::t{n}"])
+    assert len(seen) == 2 and seen[0] != seen[1], seen
+    assert not any(p.exists() for p in seen), "a job's basetemp outlived it"

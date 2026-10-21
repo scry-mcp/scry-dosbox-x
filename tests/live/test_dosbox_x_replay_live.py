@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 from typing import Any, cast
 
+import live_private  # isort: skip -- first: a pooled job's working copies
 import pytest
 
 import dosbox_x_server as server
@@ -18,7 +19,7 @@ import dosbox_x_server as server
 pytestmark = pytest.mark.live
 
 ROOT = Path(__file__).resolve().parents[2]
-BRICKS = ROOT / "demos" / "bricks"
+BRICKS = live_private.bricks_dir()
 #: One replay, start to close: well past the steps' own bounds.
 REPLAY_WITHIN_S = 600
 

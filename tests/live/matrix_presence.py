@@ -60,6 +60,10 @@ QUIET_S = 0.5
 STRETCH_S = 2.0
 #: The most of the window the arrow alone may span: a sprite, nothing like the edge's frame.
 ARROW_SPAN = 0.25
+#: A bound on the captures a settled frame may take, so a window that never holds still blocks
+#: the cell instead of stalling it; two in a row alike end it sooner, `SETTLE_GAP_S` apart.
+SETTLE_CAPTURES = 6
+SETTLE_GAP_S = 0.5
 E9_OPEN = ["-set", "dosbox bochs debug port e9=true"]
 
 R_CELLS = cells(
@@ -308,7 +312,7 @@ def _arrow(label: str) -> None:
     moved = M.call(server.send_mouse, x=40, y=12, units="screen")    # a text cell
     # The edge back to held before either capture, so the two differ by the arrow alone.
     time.sleep(presence.LOOK.fade_s + QUIET_S)
-    after = _window("after-mouse")
+    after = _settled("after-mouse")
     shown = dpresence.of(STATE.session)
     adapter = shown.adapter if isinstance(shown.adapter, dpresence.ChannelAdapter) else None
     answer = adapter.answer if adapter is not None else ""
@@ -318,7 +322,7 @@ def _arrow(label: str) -> None:
         adapter.pointer = False
         shown.held.redeliver()
     time.sleep(QUIET_S)
-    hidden = _window("arrow-off")
+    hidden = _settled("arrow-off")
     if isinstance(hidden, str) or isinstance(after, str):
         M.block(label, hidden if isinstance(hidden, str) else str(after))
     else:
@@ -334,6 +338,23 @@ def _arrow(label: str) -> None:
                     f"{d.span[0]:.2f} x {d.span[1]:.2f} of the window, the deepest "
                     f"{d.deepest:.3f} of the box's shorter side in")
     close_whatever()
+
+
+def _settled(tag: str) -> window_capture.Image | str:
+    """The window once two captures in a row are alike, within `SETTLE_CAPTURES`: a frame half
+    drawn under load is not judged, and a window that never holds still says so as the block's
+    reason rather than as a FAIL of what it shows; a capture the host refuses is its reason."""
+    last = _window(f"{tag}-1")
+    for n in range(2, SETTLE_CAPTURES + 1):
+        if isinstance(last, str):
+            return last
+        time.sleep(SETTLE_GAP_S)
+        now = _window(f"{tag}-{n}")
+        if isinstance(now, str) or now == last:
+            return now
+        last = now
+    return (f"the window did not hold still over {SETTLE_CAPTURES} captures {SETTLE_GAP_S} s "
+            "apart")
 
 
 def _judge_window(label: str, off: window_capture.Image, on: window_capture.Image) -> None:
