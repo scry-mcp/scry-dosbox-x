@@ -203,14 +203,18 @@ def _clear_line(session: ds.Session) -> bool:
     The price of that silence is that the collect waits out its own bound with nothing to
     settle on, which a refusal path can afford and a hot path could not.
 
-    It is spent until the screen stops showing a page mark, under a bound."""
+    It is spent until the screen stops showing a page mark, under a bound. A tail the ENTER
+    submitted and the debugger did not take stays on the line, and a second ENTER would only
+    run it again, so that line is emptied with `Session.clear_line`, which runs nothing."""
     for _ in range(RECOVER_ENTERS_MAX):
         try:
             out = session.command("")
+            if dcons.PAGER_MARK not in out:
+                if dcons.input_line(out):
+                    out = session.clear_line()
+                return not dcons.input_line(out)
         except ds.Invalid:
             return False
-        if dcons.PAGER_MARK not in out:
-            return True
     return False
 
 

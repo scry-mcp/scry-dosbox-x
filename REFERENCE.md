@@ -815,16 +815,16 @@ itself when it is the captures directory: that name is the call's own, never the
 working directory the emulator cannot write is refused `no_channel` before anything is typed,
 because there the debugger answers the log's command `not recognized` (The console says what that
 leaves); refused the file all the same, the trace answers `host_failed` when the `logfile` says
-so, and `close` is the way out. What ran before a
+so, with the line the refused `LOG` left emptied. What ran before a
 stop is not read back: the debugger's `HEAVYLOG` keeps a ring of recent instructions but writes it
 only when the emulator exits, so it is answered by a trace forward from an earlier stop.
 
 **A trace proves its own count, because the line count is an instruction count only on the
-normal core.** A dynamic core calls the log at the boundaries of the blocks it translated, and
-the server cannot read which core runs, so the register pane's `cc=` counter, which on the normal
-core moves by one per instruction (read across its 32-bit wrap), has to have moved by the
-instructions the file says executed. A mismatch is refused `no_channel` with the file kept at its
-path, and a session to trace in is one started with `flags=["-set", "cpu core=normal"]`. A stop
+normal core.** A dynamic core writes one entry per block it translated, and its `cc=` moves
+only for what it hands the normal core; the server cannot read which core runs, so the
+register pane's `cc=` counter, which on the normal core moves by one per instruction (read
+across its 32-bit wrap), has to have moved by the entries the file holds. A mismatch is refused
+`no_channel` with the file kept at its path, and a session to trace in is one started with `flags=["-set", "cpu core=normal"]`. A stop
 that comes first (a declared breakpoint or watch, an interrupt breakpoint, a retrace `run_for`
 left pending) ends the run `OTHER_STOP` with the log still open: the file moves first, then
 `LOGC 0` closes the log, executing nothing. An interrupt breakpoint stops inside its INT, after
@@ -855,8 +855,7 @@ not), read off one `GDT` and `LDT` listing at the stop, which needs a session st
 real mode but switches to protected mode in between is read by paragraphs, and a real-mode
 segment that also reads as a qualifying selector is placed through it; a line whose CS does not
 qualify gets no linear and `note` says so. A stop the pane names `VM86` (virtual-8086 mode) is
-no mode the survey reads, so a trace is refused at one before its log opens, and one that ends
-at one comes back `unexpected_answer` with the path of its log, that stop not surveyed. `long`
+read as a real-mode one, CS times 16 plus EIP, and its `cpu_mode` is `VM86`. `long`
 places every line by its own mode. `symbols` has a row per routine
 (`symbol`, its own `addr`, `addresses`, `instructions`, and the lowest and highest address
 executed inside as `first` and `last`), ascending; the reply carries the lowest-addressed rows,
@@ -942,8 +941,8 @@ matches the list against.
 
 **What a stop returns.** Every stop (`resume`, `step`, `run_to`, `run_for`, `trace`, `stop`,
 `screen_wait`, and the tail of a `perform`) carries its number `stop_seq` (the one `last_stop` names), where it stopped (`pc`,
-`SSSS:OOOOOOOO`, the form every DOS ref takes, and `cpu_mode`: `real`, `protected` or `paged`,
-off the pane's mode word and its PAGE/NOPG mark), the `instruction` it stopped on (`seg_off`,
+`SSSS:OOOOOOOO`, the form every DOS ref takes, and `cpu_mode`: `real`, `protected`, `paged` or
+`VM86`, off the pane's mode word and its PAGE/NOPG mark), the `instruction` it stopped on (`seg_off`,
 `bytes`, `text`, `flow`, `code_bits`, `bytes_from` and the nearest `symbol` and `delta`; decoded
 as `disassemble` decodes it, its bytes taken off the code pane the stop's own survey painted, which the debugger moves to CS:EIP whenever a stop lands
 outside it, or off one `D` when the pane does not hold that line whole as one instruction (it
@@ -989,12 +988,14 @@ The running-guest contract, in three parts:
   `status` and `captures` included: that reply says `stopped_on_its_own` (its `stop_seq`,
   `pc` and attribution), once, and carries the same `applied_on_stop` block when something
   was pending. `status` counts what is pending.
-- **`last_stop`, wherever it helps.** `status` carries the last stop, and beside it `pc` and
-  `cpu_mode` (`real`, `protected` or `paged`, from the register pane's mode word and its
-  `PAGE`/`NOPG` mark) of the stop the machine is IN, unavailable with why in three
-  cases: while it runs (or is gone), since the pane is read off a stopped machine; when the
-  stop it is in was not readable yet (a cut pane, and `last_stop` is then the one before it);
-  and when the pane named a mode that does not place it as real, protected or paged.
+- **`last_stop`, wherever it helps.** `status` carries the last stop, and beside it `pc`, where
+  the machine is now, read off the pane (one console round trip: a command that moves CS:IP
+  inside a stop makes no new stop, so the stop's own pc stays in `last_stop`), and `cpu_mode`
+  (`real`, `protected`, `paged` or `VM86`, from the stop's mode word and its `PAGE`/`NOPG`
+  mark). Each is unavailable with why while the machine runs (or is gone), since the pane is
+  read off a stopped machine, and when the pane cannot be read (`pc`) or the stop's survey was
+  cut (`cpu_mode`, and `last_stop` is then the one before it); `cpu_mode` too when the pane
+  named a mode it does not place.
   `declarations` counts this server's own
   (`breakpoints`, interrupts among them, and `watches`) in any state, the rows its `_list`
   tools return, on a running machine too; a reader refused because
@@ -1039,8 +1040,8 @@ selector's descriptor off the `GDT` or `LDT` listing, so it needs `logfile` (`no
 without) and costs those listings, and is refused on a 16-bit segment, past the limit, or for
 a selector with no descriptor, rather than handed back with a wrapped copy or zeros in it. The
 selector in `CS` is judged the same way, although the debugger reads it through its cached base
-and no limit. A v86 stop, which the pane names `VM86`, is not a mode the stop survey reads, so
-a range past 0xFFFF there is refused with it. `find` takes the same route, and in real mode
+and no limit. At a `VM86` stop the range is cut into windows as in real mode. `find` takes
+the same route, and in real mode
 names a hit past offset 0xFFFF from its own paragraph, since an offset that large addresses
 nothing there.
 
@@ -1832,8 +1833,12 @@ them, and not digits only: the emulator's own slot files are `<n>.sav` in the sa
 
 `debug` sends one command to the debugger console and hands back the screen delta it
 produced, capped and saying so (`screen_chars`, `clipped`). It needs the machine stopped,
-like every reader: the console answers only then. A command that writes the guest (`SM`
-memory, `SR` a register) marks the session altered; no other command is classified. Everything the typed tools do goes through this same console,
+like every reader: the console answers only then; a running guest's console drops what is
+typed at it, and it is not run at the next stop either. A command that writes the guest marks
+the session altered: memory (`SM`, `SMV`), a register (`SR`), an interrupt taken (`INTT`), a
+timer IRQ raised at the PIC (`TIMERIRQ`), a state loaded (`LOADSTATE`), a port written (`OUTB`,
+`OUTP`, `OUTW`, `OUTD`) and the BIOS clock (`TIME`, `DATE`, which reset its midnight flag with or
+without an argument); a breakpoint or a listing writes no guest state and is not classified. Everything the typed tools do goes through this same console,
 which is why they exist: they parse what the console paints, read the lists back and refuse
 a shape they were not captured answering, where a raw command hands you the paint.
 
@@ -1847,10 +1852,14 @@ family, `resume` with a breakpoint where the machine should stop for the other t
 a control character is refused too: a line break would type a second command past that check,
 and an escape is a key.
 
-**A command the console does not recognise stays on its input line**, `VGA` with no
-subcommand among them: the console answers `not recognized` and keeps the text, the next command
-is typed onto it and fails too, and so does every one after, until the session is closed. The
-typed tools never send one; a `debug` with one poisons the console for them.
+**`debug` leaves the console clean.** A command the console does not recognise stays on its
+input line, `VGA` with no subcommand among them: left there, the next command is typed onto it
+and fails too, and so does every one after. So when the line still holds text once the prompt
+is back, `debug` empties it with ESC, which runs nothing whatever the line's length (a bare
+return would run it again), and its `note` names what the line held. A listing that pages is
+answered with `Q` alone, the rest of it lands in `screen_delta`, and the `note` says so. `trace`
+does the same for a `LOG` the debugger refused (its log file could not be created): the line is
+emptied, and the refusal says nothing ran.
 
 ## Development
 

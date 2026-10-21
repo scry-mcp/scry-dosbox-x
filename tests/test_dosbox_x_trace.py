@@ -234,7 +234,7 @@ def test_a_dynamic_core_is_refused_by_its_counter_and_the_file_is_kept(tmp_path:
     dest = tmp_path / "d.trace"
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip", dest=str(dest)))
     assert got["status"] == "INVALID" and got["code"] == "no_channel", got
-    assert "moved by 0 while the log says 16" in got["message"], got["message"]
+    assert "moved by 0 while the log holds 16 entries" in got["message"], got["message"]
     assert "cpu core=normal" in got["message"], got["message"]
     assert got["trace"]["path"] == str(dest) and dest.exists(), got
     assert got["stop_seq"] and got["pc"].endswith(":00000106"), got
@@ -468,8 +468,8 @@ def test_a_log_the_debugger_could_not_create_is_named_and_not_remembered_open(
     assert got["status"] == "INVALID" and got["code"] == "host_failed", got
     assert "could not create LOGCPU.TXT" in got["message"], got["message"]
     assert "Logfile couldn't be created." in got["message"], got["message"]
-    assert "`close`" in got["message"], got["message"]
-    assert not log_open() and dbg.keys == [b"LOGC 11\r"]
+    assert "was emptied, so the console takes commands again" in got["message"], got["message"]
+    assert not log_open() and dbg.keys == [b"LOGC 11\r", dcons.CLEAR_LINE_KEY], dbg.keys
 
 
 @pytest.mark.parametrize(("earlier", "words"), [
@@ -1414,7 +1414,7 @@ def test_a_cut_run_that_counted_two_more_is_refused(tmp_path: Path) -> None:
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",
                                             dest=str(tmp_path / "c.trace")))
     assert got["status"] == "INVALID" and got["code"] == "no_channel", got
-    assert f"moved by {executed + 2} while the log says {executed}" in got["message"]
+    assert f"moved by {executed + 2} while the log holds {executed} entries" in got["message"]
     assert dbg.keys == [b"LOGC 186A1\r", b"LOGC 0\r"]
 
 

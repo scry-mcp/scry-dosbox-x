@@ -59,6 +59,12 @@ PAGER_MARK = "Paged content: Hit ENTER to continue"
 PAGER_EXIT = b"Q"
 
 
+# A COMMAND THE DEBUGGER DID NOT RECOGNISE STAYS ON ITS INPUT LINE, and the next one typed is
+# appended to it and fails too, and so on for every later command. ESC empties the line and
+# runs nothing, whatever its length; a bare CR would run the line again, which is the failure.
+CLEAR_LINE_KEY = b"\x1b"
+
+
 # THE DEBUGGER'S OWN LAST WORDS: it closes the repaint that answers a command by redrawing its
 # input line EMPTY (`I-> `, the cursor mark, erase to the end of the line, the cursor placed, the
 # attributes reset), or by its pager's line when a listing pages; a listing that pages draws the
@@ -147,9 +153,18 @@ SETTABLE = frozenset(n.lower() for n in REGISTER_NAMES) | LOW_HALVES
 # accepts and arms against a segment that does not exist. A missing token is INVALID
 # here, never a mode.
 REAL_MODE = "Real"
+#: Virtual-8086 mode, the pane's own word for a protected-mode machine running a real-mode task.
+V86_MODE = "VM86"
 
 
-CPU_MODES = (REAL_MODE, "Pr16", "Pr32")
+CPU_MODES = (REAL_MODE, "Pr16", "Pr32", V86_MODE)
+
+
+def real_segments(mode: str) -> bool:
+    """Whether a stop in `mode` reads a SEG:OFF as a real-mode segment: in real mode, and in
+    VM86, where the debugger takes the segment as a paragraph as the CPU does
+    (`GetAddress`: selectors only in protected mode outside VM86)."""
+    return mode in (REAL_MODE, V86_MODE)
 
 
 # IT IS ANCHORED ON THE `SS=` LINE, and that is not tidiness -- an unanchored version
@@ -162,7 +177,7 @@ CPU_MODES = (REAL_MODE, "Pr16", "Pr32")
 # accepts and arms against a segment that does not exist.
 #
 # The token's place is fixed: it closes the `SS=` line of the register pane
-# (`SS=008F Pr32`). Anchoring there means only a register pane can supply it.
+# (`SS=008F Pr32`, `SS=0814 VM86`). Anchoring there means only a register pane can supply it.
 CPU_MODE = re.compile(rf"SS=[0-9A-F]{{4}}\s+({'|'.join(CPU_MODES)})\b")
 
 

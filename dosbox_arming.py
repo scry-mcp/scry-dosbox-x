@@ -69,7 +69,7 @@ class RawPlaces:
             seg, off = placement.parse_seg_off(ref)
             if self._segs is None and not self.session.at_debugger():
                 last = STATE.last_machine()
-                real = last is not None and last[0] == dcons.REAL_MODE
+                real = last is not None and dcons.real_segments(last[0])
                 return dumping.real_linear(seg, off) if real and off <= dcons.offset_ceiling(
                     dcons.REAL_MODE) else None
             if self._segs is None:
@@ -735,7 +735,7 @@ def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:
     # running case must answer `unarmed`, not escape as INVALID (which it did once).
     want = ("BP", res["seg"], res["off"])
     try:
-        placement._listening(session)     # a running console would take the list unread
+        placement._listening(session)     # a running console drops what is typed at it
         existing = next((b for b in session.breakpoints()
                          if dcons.bp_row_target(b["entry"]) == want), None)
         if existing is not None and moved:
@@ -1030,7 +1030,7 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
     # check is INSIDE the try for the same reason as breakpoint_at: `breakpoints()` and
     # `where()` refuse a running machine, and a by-address ref has not touched it yet.
     try:
-        placement._listening(session)     # a running console would take the list unread
+        placement._listening(session)     # a running console drops what is typed at it
         if watch_held(session.breakpoints(), res["seg"], res["off"]) is not None:
             # ALREADY ARMED: a no-op re-declaration. It still carries the Pr caveat, because
             # a re-declared change-watch is as untrustworthy under paging as a fresh one --

@@ -117,6 +117,8 @@ class FakeSession:
         self._avi_facts: dict[tuple[str, int, int], dict[str, object]] = {}
         self.e9_calls: list[tuple[str, int]] = []
         self.log_calls: list[tuple[str, int, str]] = []
+        self.console_keys: list[str] = []
+        self.after_pager = "I-> _"
         self.since_marks: list[int] = []
         self.loaded: list[tuple[str, int]] = []
         # WHAT THE ADDRESS-TAKING TOOLS WERE ACTUALLY HANDED. Without this the double
@@ -171,6 +173,14 @@ class FakeSession:
 
     def command(self, text: str, **_: object) -> str:
         return self._screen
+
+    def end_pager(self) -> str:
+        self.console_keys.append("end_pager")
+        return self.after_pager
+
+    def clear_line(self) -> str:
+        self.console_keys.append("clear_line")
+        return ""
 
     def await_stop(self, began: float, deadline: float, target: str,
                    progress: ds.Progress = ds.no_progress, label: str = "") -> tuple[bool, float]:
@@ -275,6 +285,9 @@ class FakeSession:
         # session so the SERVER's cases have something to call. What `halted` is really
         # read off is exercised next door, against captured deltas.
         return {"screen": "", "halted": False, "stopped_at": None}
+
+    def resume_after_command(self) -> dict[str, object]:
+        return self.resume()       # its confirmation is the session's, tested on the wire
 
     # THE DEBUGGING TRIO, as CONTRACTS rather than as behaviour. What they really do is
     # driven against a debugger double in `test_dosbox_x_debug.py`, which is where the
@@ -5704,7 +5717,7 @@ def test_status_and_a_running_refusal_carry_the_last_stop(tmp_path: Path) -> Non
 def test_memdump_on_a_running_guest_is_refused_before_the_session_is_asked(
         tmp_path: Path) -> None:
     """`memdump` is one of the readers the running-guest contract refuses: a dump command
-    typed at a console that is not listening lands at the next stop, unread. So it refuses
+    typed at a console that is not listening is dropped. So it refuses
     `not_stopped` with `last_stop`, the way `find` does, before the session is handed
     anything."""
     fake = _names(tmp_path)
@@ -7393,18 +7406,32 @@ def test_status_summarises_the_session_it_answers_about() -> None:
 def test_status_does_not_name_a_stop_it_could_not_read_as_the_one_it_is_in(
         tmp_path: Path) -> None:
     """The guest stopped again and the survey of that stop was cut: the record still holds the
-    PREVIOUS stop, so `pc` and `cpu_mode` are null with why, never the old stop's values given
-    as the current one's."""
+    PREVIOUS stop, so `pc` and `cpu_mode` are unavailable with why, never the old stop's values
+    given as the current one's."""
     fake = _names(tmp_path, mode="Real")
     server.registers()                              # the park, recorded
     before = dict(dstate.STATE.last_stop)
     fake._running = True                            # it ran on...
     fake.stop_unread = True                         # ...and stopped where nobody has looked
     fake.registers_raises = True                    # ...and that stop's pane comes back cut
+    fake.where_raises = True                        # ...to every reader of it
     got = cast(dict[str, Any], server.status())
     assert dstate.STATE.last_stop["seq"] == before["seq"], "the cut stop was recorded"
-    assert "pc" not in got and got["cpu_mode"]["available"] is False, got
+    assert got["pc"]["available"] is False and "not readable" in got["pc"]["why"], got
+    assert got["cpu_mode"]["available"] is False, got
     assert "not readable" in got["cpu_mode"]["why"], got
+
+
+def test_status_pc_is_where_the_machine_is_now_after_a_command_moved_it(tmp_path: Path) -> None:
+    """A command that moves CS:IP inside a stop (`INTT`, `set_register`) makes no new stop:
+    `status.pc` reads the pane now, and the stop's own pc stays in `last_stop`."""
+    fake = _names(tmp_path, mode="Real", cs="0814", ds_="0814")
+    server.registers()                              # the park, recorded
+    stop_pc = dstate.STATE.last_stop["at"]
+    fake.cs = "F000"                                # `INTT 21` took the machine into the handler
+    got = cast(dict[str, Any], server.status())
+    assert got["pc"].startswith("F000:") and got["pc"] != stop_pc, got
+    assert dstate.STATE.last_stop["at"] == stop_pc, "the stop's record moved with it"
 
 
 def test_status_counts_the_declarations_on_a_running_machine_too(tmp_path: Path) -> None:
@@ -7793,15 +7820,44 @@ def test_a_plans_wait_is_held_to_the_one_wait_bound_before_anything_is_spawned(
 
 
 def test_a_raw_command_that_writes_the_guest_marks_the_session_altered() -> None:
-    """`SM` and `SR` typed through `debug` write memory and registers as `write` and
-    `set_register` do, so every later reply says the machine was written to; a reader does not."""
+    """A command that writes the guest's memory, registers, ports, PIC or
+    DOS clock marks the session as `write` and `set_register` do, so every later reply says the
+    machine was written to; a breakpoint or a listing writes no guest state and does not."""
     fake = install()
-    server.debug(command="BPLIST")
-    assert fake.altered is False, "a command that writes nothing marked the session"
-    for command in ("SM 0000:0400 0FF", "sr eax 1"):
+    for command in ("BPLIST", "BP 0000:0009", "BPDEL *", "MEMDUMPBIN 0:0 10", "IV 0:0 X"):
+        server.debug(command=command)
+        assert fake.altered is False, f"{command} writes nothing and marked the session"
+    for command in ("SM 0000:0400 0FF", "sr eax 1", "SMV 400 0FF", "INTT 21", "TIMERIRQ",
+                    "LOADSTATE /x/a.sav", "OUTB E9 51", "OUTP E9 51", "OUTW 80 0", "OUTD 80 0",
+                    "TIME", "date 01-02-2026"):
         fake.altered = False
         got = cast(dict[str, Any], server.debug(command=command))
         assert fake.altered is True and got["session"]["altered"] is True, command
+
+
+def test_debug_empties_a_line_the_debugger_did_not_take_and_says_so() -> None:
+    """A command the debugger does not recognise stays on its input line, and every later
+    command would be appended to it: `debug` empties the line and names what it held."""
+    fake = install()
+    fake._screen = "*** Debugger command not recognized\nI-> VGA_"
+    got = cast(dict[str, Any], server.debug(command="VGA"))
+    assert fake.console_keys == ["clear_line"], fake.console_keys
+    assert "did not take 'VGA'" in got["note"], got
+    fake.console_keys.clear()
+    fake._screen = "Breakpoint list:\nI-> _"
+    got = cast(dict[str, Any], server.debug(command="BPLIST"))
+    assert fake.console_keys == [] and "note" not in got, got
+
+
+def test_debug_pages_a_listing_out_and_returns_the_rest_of_it() -> None:
+    """A listing that pages leaves the pager waiting; `debug` ends it with `Q` alone and the
+    rest of the listing is in the delta it returns."""
+    fake = install()
+    fake._screen = "page one\nI-> HELP_\n^ Paged content: Hit ENTER to continue, Q to exit paging"
+    fake.after_pager = "page two\nI-> _"
+    got = cast(dict[str, Any], server.debug(command="HELP"))
+    assert fake.console_keys == ["end_pager"], fake.console_keys
+    assert got["screen_delta"].endswith("page two\nI-> _") and got["note"] == server.PAGED_NOTE
 
 
 def test_two_loads_queued_while_the_guest_runs_reach_the_debugger_together(

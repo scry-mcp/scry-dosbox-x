@@ -576,11 +576,31 @@ def _still_armed(exc: Invalid, target: str, began: float, ctl: str | None = None
 
 
 def console_listening(session: Session, what: str) -> None:
-    """Refuse, before anything is typed, a command for a console that is not listening: on
-    a running guest it lands at the next stop, unread, and the reply read now is not its."""
+    """Refuse, before anything is typed, a command for a console that is not listening: a
+    running guest's console drops what is typed at it (it is not run at the next stop either),
+    and nothing read now would be its reply."""
     if not session.at_debugger():
         raise NotStopped(f"the guest is running, so the console cannot take {what}: a "
-                         "command typed now lands at the next stop, unread")
+                         "command typed now is dropped, never run at the next stop")
+
+
+def forget_stop(session: Session) -> None:
+    """The stopped flag, the passive peek's carry and what the terminal holds, all gone: from
+    here the machine may be running."""
+    session._at_debugger = False
+    session._peek_carry = ""
+    with contextlib.suppress(Invalid):     # a dropped-bytes reading: text the release discards
+        session._read(0.0)
+
+
+def gone_if_dead(session: Session, began: float, bound_s: float, what: str) -> None:
+    """Refuse a wait whose emulator has gone, at once: nothing will arrive, and a wait that only
+    watches its clock would sit out its whole bound to call the machine slow."""
+    if not session.alive():
+        raise Invalid("session_broken",
+            f"the emulator is GONE, {round(time.monotonic() - began, 1)}s into a "
+            f"{round(bound_s, 1)}s wait for {what}. Nothing will arrive, so a longer bound "
+            f"would not help: this needs a new session, not a bigger number")
 
 
 def check_segment(seg: int) -> None:
@@ -969,10 +989,7 @@ class Session:
         """
         if data not in RELEASE_KEYS and LOG_COMMAND.fullmatch(data) is None:
             return
-        self._at_debugger = False
-        self._peek_carry = ""
-        with contextlib.suppress(Invalid):     # a dropped-bytes reading: text the release discards
-            self._read(0.0)
+        forget_stop(self)
 
     def _write(self, data: bytes) -> None:
         """Write it ALL. A pty master's buffer is finite, so a single `os.write` can
@@ -1100,6 +1117,16 @@ class Session:
         except FileNotFoundError:
             raise Invalid("no_channel", f"no log at {logfile}: the emulator has not "
                           f"written it, so `{command}` left nothing to read") from None
+
+    def end_pager(self) -> str:
+        """`PAGER_EXIT` at a pager, and what the screen produced for it: the rest of the
+        listing and an empty input line."""
+        return self._keys(dcons.PAGER_EXIT)
+
+    def clear_line(self) -> str:
+        """`CLEAR_LINE_KEY` at the prompt, and what the screen produced for it: an input line
+        left holding a command the debugger did not take is emptied, nothing run."""
+        return self._keys(dcons.CLEAR_LINE_KEY)
 
     def _collect(self, settle: float, timeout: float, early: bool = False) -> str:
         """What arrives until it has been quiet for `settle`, once something has arrived;
@@ -1552,6 +1579,27 @@ class Session:
                 stopped_at = None
         return {"screen": text, "halted": halted, "stopped_at": stopped_at}
 
+    def resume_after_command(self) -> dict[str, object]:
+        """`resume` after a command that ran at a stop the server made for it (a saved
+        state's), with the halt it reports confirmed. That command's own repaint can land
+        after the release's drain, and its prompt is then read as the key's halt over a guest
+        that runs. A halt with no position read (`stopped_at` None) is forgotten and asked
+        once more,
+        so the second look decides it by what it sees itself: a pane is the halt and its
+        position; a prompt with no pane (a breakpoint that fired inside the look) is a halt
+        whose position is not read; nothing means the guest runs. Like `resume`, it never
+        raises for what it reads: a pane that cannot be read leaves the halt as the look
+        found it."""
+        before = self.stop_count
+        out = self.resume()
+        if out["halted"] and out["stopped_at"] is None:
+            forget_stop(self)
+            self.stop_count = before
+            with contextlib.suppress(Invalid):
+                out["stopped_at"] = self.where()
+            out["halted"] = self._at_debugger
+        return out
+
     # --------------------------------------------------------------- the debugging
 
     def step(self, count: int = 1, mode: str = "into") -> dict[str, object]:
@@ -1977,12 +2025,7 @@ class Session:
             # with the server's lock held, so `status` could not even be asked. MEASURED
             # against a dead double: the whole bound spent polling, and `alive()`
             # consulted ZERO times until the loop was over.
-            if not self.alive():
-                raise Invalid("session_broken",
-                    f"the emulator is GONE, {round(time.monotonic() - began, 1)}s into "
-                    f"a {round(deadline - began, 1)}s wait for {target}. Nothing will "
-                    f"arrive, so a longer bound would not help: this needs a new session, "
-                    f"not a bigger number")
+            gone_if_dead(self, began, deadline - began, target)
             # ONLY THE FRESH TEXT IS SCANNED, PLUS A BOUNDED CARRY. Re-parsing the whole
             # accumulated terminal every poll is quadratic in the length of the wait,
             # which is the defect `e9_wait` measured on its side and fixed. MEASURED here on
@@ -2487,6 +2530,7 @@ class Session:
             cancel.check()
             if self.at_debugger():
                 return round(time.monotonic() - began, 2)
+            gone_if_dead(self, began, seconds, "the debugger's prompt")
             time.sleep(0.05)
         raise Invalid("not_settled",
             f"the debugger channel accepted BREAK and the debugger's prompt did not "
@@ -2534,6 +2578,7 @@ class Session:
                 time.sleep(0.2)
                 if size and path.stat().st_size == size:     # the writer is done with it
                     break
+            gone_if_dead(self, began, seconds, "the screenshot")
             if time.monotonic() - began >= seconds:
                 raise Invalid("wait_expired",
                     f"no new PNG appeared under {folder} within {seconds:g} s of the command")

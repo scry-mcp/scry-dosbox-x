@@ -303,6 +303,10 @@ class Debugger(RealPositionReaders):
                  early: bool = False) -> str:
         return self.deltas.pop(0) if self.deltas else ""
 
+    def clear_line(self) -> str:
+        self._write(dcons.CLEAR_LINE_KEY)
+        return ""
+
     def _read(self, seconds: float = 0.0) -> str:
         return self.reads.pop(0) if self.reads else ""
 
@@ -1016,18 +1020,18 @@ def test_where_and_registers_refuses_a_cut_pane_like_where_does() -> None:
         ds.Session.where_and_registers(cast(ds.Session, Debugger([no_mode])))
 
 
-def test_a_virtual_8086_pane_is_no_mode_a_position_is_read_in() -> None:
-    """The debugger names a virtual-8086 stop `VM86`, and no reader here addresses through it:
-    both surveys refuse the pane rather than read it as real mode or as a selector, which is
-    what a trace from such a stop, or ending at one, meets."""
+def test_a_virtual_8086_pane_is_read_as_its_own_mode_with_real_mode_segments() -> None:
+    """The debugger names a virtual-8086 stop `VM86` at the mode slot (`SS=0814 VM86` on the
+    package's own v86 guest), and both surveys read it under that word: a reply says what the
+    console shows, and every address at such a stop is a real-mode segment."""
     vm86 = REAL_PANE.replace(" Real\r\n", " VM86\r\n")
     assert vm86 != REAL_PANE
-    with pytest.raises(ds.Invalid, match="no CPU mode") as e:
-        ds.Session.where(cast(ds.Session, Debugger([vm86])))
-    assert e.value.code == "unexpected_answer"
-    with pytest.raises(ds.Invalid, match="no CPU mode") as e:
-        ds.Session.where_and_registers(cast(ds.Session, Debugger([vm86])))
-    assert e.value.code == "unexpected_answer"
+    at = ds.Session.where(cast(ds.Session, Debugger([vm86])))
+    assert at["mode"] == "VM86", at
+    where, regs = ds.Session.where_and_registers(cast(ds.Session, Debugger([vm86])))
+    assert where["mode"] == "VM86" and regs, where
+    assert dcons.real_segments("VM86") and dcons.real_segments("Real")
+    assert not any(dcons.real_segments(m) for m in ("Pr16", "Pr32"))
 
 
 def test_a_protected_mode_watch_may_be_wider_than_sixteen_bits() -> None:
@@ -2370,6 +2374,77 @@ def test_a_leftover_of_the_previous_command_is_not_read_as_this_ones_reply() -> 
     assert "00A7:5D730" not in delta, delta
     assert dcons.parse_breakpoints(delta) == [], delta
     assert wire.keys == [b"BPLIST\r"], "the drain never types anything"
+
+
+class Released(Wire):
+    """The wire after a state command: the stop flag and its count as the real session keeps
+    them, so a halt the release reads and the one taken back are both visible."""
+
+    def __init__(self, script: list[str], panes: list[str] | None = None) -> None:
+        super().__init__(script, panes)
+        self._at_debugger, self.stop_count = True, 1
+
+    _mark_stopped = ds.Session._mark_stopped
+    resume = ds.Session.resume
+    where = ds.Session.where
+    _survey = ds.Session._survey
+
+    def alive(self) -> bool:
+        return True
+
+
+def test_a_late_repaint_read_as_the_releases_halt_is_taken_back_when_no_pane_comes() -> None:
+    """A state command's own repaint can land after the release's drain: its prompt reads as a
+    halt over a guest that runs. A halt with no position read is asked once more; with no
+    register pane back, the guest runs and the counted stop is taken back."""
+    late = "DEBUG: Saved /x/a.sav\r\n" + dcons.PROMPT + " _"
+    wire = Released(["", late], panes=[])          # where(), twice: nothing comes back
+    got = ds.Session.resume_after_command(cast(ds.Session, wire))
+    assert got["halted"] is False and got["stopped_at"] is None, got
+    assert wire._at_debugger is False and wire.stop_count == 1, "the false stop stayed counted"
+
+
+def test_a_real_halt_after_the_release_is_kept_with_its_position() -> None:
+    """A breakpoint that fires right after the release is a halt: the second look reads it."""
+    late = dcons.PROMPT + " _"
+    wire = Released(["", late], panes=["", pane_with([], cs="0814", eip="00000112")])
+    got = ds.Session.resume_after_command(cast(ds.Session, wire))
+    assert got["halted"] is True and got["stopped_at"] == {"cs": "0814", "eip": "00000112",
+                                                           "mode": "Real"}, got
+    assert wire._at_debugger is True and wire.stop_count == 2
+
+
+class PromptInTheLook(Released):
+    """A breakpoint fires inside the second look: its prompt marks the stop, as `_keys` does,
+    and no register pane comes with it."""
+
+    def where(self) -> dict[str, str]:
+        ds.Session._mark_stopped(cast(ds.Session, self))
+        raise ds.NotStopped("no register pane came back from `BPLIST` (emulator running)")
+
+
+def test_a_stop_the_second_look_saw_is_kept_without_its_position() -> None:
+    """The halt is decided by what the second look saw itself: a prompt there is a stop, kept
+    and counted once, whatever pane did not come with it."""
+    wire = PromptInTheLook(["", dcons.PROMPT + " _"], panes=[])
+    got = ds.Session.resume_after_command(cast(ds.Session, wire))
+    assert got["halted"] is True and got["stopped_at"] is None, got
+    assert wire._at_debugger is True and wire.stop_count == 2, (wire._at_debugger,
+                                                               wire.stop_count)
+
+
+class UnreadablePane(Released):
+    def where(self) -> dict[str, str]:
+        ds.Session._mark_stopped(cast(ds.Session, self))
+        raise ds.Invalid("unexpected_answer", "the register pane came back but names no CPU mode")
+
+
+def test_a_second_look_that_cannot_read_the_pane_does_not_raise() -> None:
+    """Like `resume`, the confirmation never raises for what it reads: a save that the emulator
+    made must not be refused (and deleted) because the look after it was cut."""
+    wire = UnreadablePane(["", dcons.PROMPT + " _"], panes=[])
+    got = ds.Session.resume_after_command(cast(ds.Session, wire))
+    assert got["halted"] is True and got["stopped_at"] is None, got
 
 
 # What `Session.resume` waits for the stop's repaint, as it passes `_collect`.

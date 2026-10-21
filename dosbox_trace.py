@@ -8,14 +8,16 @@ comes first (a breakpoint, a watch, an interrupt breakpoint) leaves the log open
 first, to the caller's `dest` or to the session's captures directory, and `LOGC 0` then closes
 the log without executing anything (`_collected` says why in that order).
 
-THE LINE COUNT IS AN INSTRUCTION COUNT ONLY ON THE NORMAL CORE, where the pane's `cc=` moves by
-one per instruction; a dynamic core logs at the boundaries of the blocks it translated and its
-`cc=` stays put. This server cannot read which core runs, so every trace proves its own count
+THE LINE COUNT IS AN INSTRUCTION COUNT ONLY ON AN INTERPRETING CORE, where the pane's `cc=`
+moves by one per instruction, across mode switches too. A dynamic core writes one entry per
+translated block, and its `cc=` moves only for what it hands an interpreting core, so the two
+disagree. This server cannot read which core runs, so every trace proves its own count
 against `cc=`. A proved log is then joined to the loaded symbols (`join`), and its executed
 addresses written beside it, one JSON line each.
 """
 from __future__ import annotations
 
+import contextlib
 import itertools
 import json
 import os
@@ -75,12 +77,13 @@ LINEAR_MASK = 0xFFFFFFFF
 #: The words a note carries when a line was given no linear address.
 NO_LINEAR = "no linear address"
 #: The line the debugger writes to the session's logfile when it cannot create its log. It then
-#: runs nothing and answers `command not recognized`, which leaves that command on its input line
-#: (REFERENCE.md, The console).
+#: runs nothing and answers `command not recognized`, which leaves that command on its input line,
+#: where every command typed after it is appended and fails with it (REFERENCE.md, The console).
 NOT_CREATED_LINE = "DEBUG: Logfile couldn't be created."
 
-DYNAMIC_CORE = ("on a dynamic core the debugger logs at block boundaries: trace on the normal "
-                "core, `start(flags=[\"-set\", \"cpu core=normal\"])`")
+DYNAMIC_CORE = ("a dynamic core writes one entry per translated block, and `cc=` counts only "
+                "what the normal core runs; trace on the normal core, "
+                "`start(flags=[\"-set\", \"cpu core=normal\"])`")
 #: Who closes the log under a running machine, in the words every reply that meets it uses.
 MACHINE_CLOSES = "a BIOS power-on self test closes the log"
 AT_ITS_START = ("the machine stopped where the trace began without executing anything: the log "
@@ -272,7 +275,7 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
                 f"opening its own", trace={"path": str(places[0]), "closed": False}) from None
         saw_at = round(time.monotonic() - began, 1)
     return _collected(session, shape, asked, path, places, before, saw_at,
-                      armed_at["mode"] == dcons.REAL_MODE, says, interrupted=expired)
+                      dcons.real_segments(armed_at["mode"]), says, interrupted=expired)
 
 
 def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: list[Path],
@@ -326,8 +329,9 @@ def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: 
     # so a cut run may count one instruction more than it executed; a count that ran out may not.
     if moved != executed and (ran_out or moved != executed + 1):
         raise ds.Invalid("no_channel",
-            f"the pane's `cc=` moved by {moved} while the log says {executed} instructions "
-            f"executed: {DYNAMIC_CORE}. The log is at {collected}", trace=kept, **stop)
+            f"the pane's `cc=` moved by {moved} while the log holds {executed} entries, so the "
+            f"log is not a count of executed instructions ({DYNAMIC_CORE}). The log is at "
+            f"{collected}", trace=kept, **stop)
     parsed = _host(lambda: parse(collected, shape), collected)
     notes = [AT_ITS_START] if executed == 0 else []
     coverage = join(session, parsed, armed_real, notes)
@@ -362,7 +366,7 @@ def join(session: ds.Session, parsed: Parsed, armed_real: bool, notes: list[str]
     """Each executed address as a linear one where its mode allows, and inside the loaded
     table's span the nearest symbol: a `long` line by its own mode, any other by the mode of the
     window's two ends (REFERENCE.md, Advancing the machine, says the rule and its limits)."""
-    stop_real = STATE.last_stop["where"]["mode"] == dcons.REAL_MODE
+    stop_real = dcons.real_segments(STATE.last_stop["where"]["mode"])
     window_flat = armed_real and stop_real
     flat_of = {a: (a[2] if a[2] is not None else window_flat) for a in parsed.executed}
     bases: dict[str, int | None] = {}
@@ -469,24 +473,28 @@ def _host(read: Callable[[], T], path: Path) -> T:
 
 def _no_log(session: ds.Session, says: Callable[[str], bool]) -> ds.Invalid:
     """The refusal for a stop with no log in the working directory. It clears `STATE.log_open`
-    only when the logfile says the debugger was refused the file, so no log opened; otherwise
-    something may have removed the file while the log was open, and the log stays remembered."""
+    and empties the input line the refused `LOG` was left on only when the logfile says the
+    debugger was refused the file, so no log opened; otherwise something may have removed the
+    file while the log was open, and the log stays remembered."""
     cwd = session.launch.cwd
     if says(NOT_CREATED_LINE):
         STATE.log_open = False
+        with contextlib.suppress(ds.Invalid):       # the refusal below is the answer either way
+            session.clear_line()
         return ds.Invalid("host_failed",
             f"the debugger could not create {LOG_FILE} in {cwd} (the logfile says "
-            f"`{NOT_CREATED_LINE}`), so nothing ran. It answered `command not recognized`, and "
-            f"every command typed after that fails as well: `close`, then `start` with a working "
-            f"directory the emulator can write")
+            f"`{NOT_CREATED_LINE}`), so nothing ran. It answered `command not recognized` and "
+            f"the `LOG` it left on the input line was emptied, so the console takes commands "
+            f"again; to trace, `start` with a working directory the emulator can write")
     seen = ("the session's logfile does not say it was refused" if session.launch.logfile
             is not None else "with no `logfile`, where the debugger says when it is refused the "
             "file, the two cannot be told apart")
     return ds.Invalid("unexpected_answer",
         f"the trace stopped and no {LOG_FILE} is in {cwd}: the debugger was refused the file, "
-        f"or something removed it while the log was open, and {seen}. Refused, its console "
-        f"fails every command after it and `close` is the way out; removed, the log is still "
-        f"open and the next trace closes it before its own")
+        f"or something removed it while the log was open, and {seen}. Refused, the `LOG` stays "
+        f"on the input line and the next command is appended to it and fails with it until "
+        f"the line is emptied (`debug` empties a line the debugger did not take); removed, "
+        f"the log is still open and the next trace closes it before its own")
 
 
 def _logfile_reader(session: ds.Session) -> Callable[[str], bool]:

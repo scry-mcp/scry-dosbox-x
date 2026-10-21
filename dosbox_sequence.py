@@ -446,7 +446,7 @@ def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str 
         # otherwise: an act of running-guest steps alone (the usual shape) says nothing
         # about the state, because the executor starts every sequence assuming a stopped
         # machine; the session's own flag answers with no console round trip (a command typed
-        # at a running guest's console waits out its whole timeout and lands at the next stop).
+        # at a running guest's console waits out its whole timeout and is dropped).
         if "still_running" in ran:
             ended_running = True
         elif "stopped" in ran:

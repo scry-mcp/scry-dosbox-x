@@ -1010,6 +1010,12 @@ def test_a_selector_is_looked_up_in_its_own_table_or_named_as_missing() -> None:
     assert machine.vector_linear("0018:0000", "paged", {})[1] == "`gdt` is absent"
 
 
+def test_a_vm86_stops_vectors_are_paragraphs_with_no_descriptor_table_read() -> None:
+    """At a `VM86` stop the table `INTVEC` writes holds real-mode SEG:OFF, so a vector is placed
+    by its paragraph, with no `GDT` asked for."""
+    assert machine.vector_linear("0070:0100", "VM86", {}) == (0x0800, "")
+
+
 @pytest.mark.parametrize(("address", "section", "key", "value"), [
     (0x04500, "mcbs", "mcb_seg", "0450"),        # the block's own header paragraph
     (0x06FFF, "mcbs", "mcb_seg", "0450"),        # its last byte

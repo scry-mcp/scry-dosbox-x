@@ -144,6 +144,7 @@ class CommentSaveReply(DosboxEnvelope, total=False):
 class DebugReply(DosboxEnvelope, total=False):
     clipped: bool
     command: str
+    note: str
     screen_chars: int
     screen_delta: str
 

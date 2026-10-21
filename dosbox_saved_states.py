@@ -50,6 +50,10 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
         ses.state_sent = True
         ok, lines = ses.control.request(f"EXEC {verb} {path}", seconds, poll=cancel.check)
     except BaseException as e:
+        # AN EMULATOR THAT DIED UNDER THE COMMAND closes the channel, which reads as a drop the
+        # channel redials: said as what it is, since nothing will answer again.
+        if isinstance(e, Invalid) and not ses.alive():
+            ds.gone_if_dead(ses, began, seconds, f"`{verb}`")
         # A COMMAND THAT ENDS EARLY, refused or cancelled (its waits poll, the break-in's
         # included), releases the guest it stopped, as its bound would. Best effort: the
         # command's own refusal or the cancellation is the answer, and one from the release
@@ -60,7 +64,7 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
                 if cancel.is_cancellation(e) and not ses.at_debugger():
                     ses.break_in()        # a BREAK sent lands; wait for it, then release
                 if ses.at_debugger():
-                    ses.resume()
+                    ses.resume_after_command()
         if isinstance(e, Invalid) and e.code == "no_channel":
             why = str(e).rstrip(".")
             raise Invalid("no_channel",
@@ -71,7 +75,7 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
         raise
     waited = round(time.monotonic() - began, 2)
     if paused:
-        ses.resume()                           # `session.running` says where it is left
+        ses.resume_after_command()             # `session.running` says where it is left
     if ok:
         return {"paused": paused, "waited_s": waited, **marked}
     said = " / ".join(line.strip() for line in lines if line.strip())

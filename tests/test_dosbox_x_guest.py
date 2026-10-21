@@ -45,7 +45,7 @@ COM = GUEST / "probe.com"
 #: Every NASM guest this package owns, with the size its binary has: the probe the live tier runs,
 #: the screen guest whose stops are the screen tools' known answers, and the code guest whose
 #: frames and bytes are the code tools'.
-GUESTS = {"probe": 144, "screen": 212, "code": 195, "mouse": 345}
+GUESTS = {"probe": 144, "screen": 212, "code": 195, "mouse": 345, "v86": 1296}
 
 
 def _declared_strings(asm: Path = ASM) -> list[bytes]:

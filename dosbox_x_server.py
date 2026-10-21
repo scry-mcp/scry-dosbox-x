@@ -275,9 +275,8 @@ def status() -> dict[str, Any]:
     survey), `pending` (asked while the guest ran: `arm` refs, a `disarm` count,
     `symbols_load`), `presence` (the window's edge: `true` drawn, `false` off or no session,
     or why not), and with a
-    session its stop's `pc` (absent while it runs) and `cpu_mode` (`real`, `protected`,
-    `paged`; unavailable while it runs), and `declarations`, this server's own counted
-    (`breakpoints`, `watches`).
+    session `pc` (where it is now, read off the pane; unavailable while it runs) and `cpu_mode`
+    (`real`, `protected`, `paged`, `VM86`), and `declarations`, this server's own counted.
 
     Reference: REFERENCE.md, What every reply carries.
     """
@@ -617,8 +616,13 @@ def scan_clear() -> dict[str, Any]:
     return st.reply(**finder.scan_clear(session))
 
 
-#: The debugger's commands that write the guest: memory and registers.
-DEBUG_WRITES = frozenset({"SM", "SR"})
+#: The debugger's commands that write the guest, read in upstream's command parser: memory
+#: (`SM`, `SMV`), registers (`SR`), an interrupt taken (`INTT`), a timer IRQ raised at the PIC
+#: (`TIMERIRQ`), a state loaded (`LOADSTATE`), a port written (`OUTB`/`OUTP`/`OUTW`/`OUTD`), and
+#: the BIOS clock (`TIME`, `DATE`: both reset its midnight flag, set or not). Breakpoints and
+#: listings write no guest state.
+DEBUG_WRITES = frozenset({"SM", "SMV", "SR", "INTT", "TIMERIRQ", "LOADSTATE", "OUTB", "OUTP",
+                          "OUTW", "OUTD", "TIME", "DATE"})
 
 
 @tool("Debugger console command", summary=one_line.debug)
@@ -634,7 +638,10 @@ def debug(command: str) -> dict[str, Any]:
     that read the debugger's list back, which this does not. Refused `bad_argument` before
     anything is typed: a command that lets the guest run (`VRT`, `RUNWATCH`, `INT`, the `LOG`
     family), naming the tool that does it and reports the stop, and a command carrying a control
-    character. A command that writes the guest (`SM`, `SR`) marks the session `altered`.
+    character. A command that writes the guest (memory, a register, a port, an interrupt or the
+    timer raised, a state loaded, the BIOS clock) marks the session `altered`. `note`: a line
+    the debugger did not take, emptied, or a listing that paged, ended (REFERENCE.md, The
+    console).
     """
     session = live()
     ds.console_listening(session, repr(command))
@@ -643,8 +650,8 @@ def debug(command: str) -> dict[str, Any]:
     if command.strip().upper().startswith(("MEMS", "MEMFIND")):
         STATE.scan_iterations = None
         STATE.scan_cell_bytes = None
-    # A COMMAND THAT WRITES THE GUEST (`SM` memory, `SR` a register) marks the session as `write`
-    # and `set_register` do, before it is typed: what reaches the machine has been written.
+    # A COMMAND THAT WRITES THE GUEST (`DEBUG_WRITES`) marks the session as `write` and
+    # `set_register` do, before it is typed: what reaches the machine has been written.
     if command.split()[:1] and command.split()[0].upper() in DEBUG_WRITES:
         session.altered = True
     out = session.command(command)
@@ -652,7 +659,23 @@ def debug(command: str) -> dict[str, Any]:
         raise ds.Invalid("unexpected_answer",
             f"the debugger produced nothing for {command!r}: an empty "
                          f"screen delta is not an empty answer, it is no answer")
-    return st.reply(command=command, **st.delta(out, st.DEBUG_TEXT_KEEP))
+    # THE CONSOLE IS LEFT CLEAN, whatever the command did to it: a listing that paged is paged
+    # out, and a line the debugger did not take is emptied, so no later tool types onto it.
+    notes = []
+    if dcons.at_pager(out):
+        out += session.end_pager()
+        notes.append(PAGED_NOTE)
+    if held := dcons.input_line(out):
+        session.clear_line()
+        notes.append(f"the debugger did not take {held!r} (still on its input line after the "
+                     f"prompt came back), so the line was emptied and the next command runs "
+                     f"on its own")
+    return st.reply(command=command, **st.delta(out, st.DEBUG_TEXT_KEEP),
+                    **({"note": "; ".join(notes)} if notes else {}))
+
+
+#: What `debug` says of a command whose listing paged.
+PAGED_NOTE = "the listing paged: `Q` ended the pager and the rest of it is in `screen_delta`"
 
 
 @tool("Force a register", summary=one_line.set_register)
@@ -888,8 +911,8 @@ def trace(instructions: Annotated[int, vocab.bounds(1, tracing.INSTRUCTIONS_MAX)
     `build_check`'s `heavy_debug`.
 
     The count is proved against the pane's `cc=` counter, which on the normal core moves one
-    per instruction: a mismatch is `no_channel`, the file kept (a dynamic core logs at block
-    boundaries: `start(flags=["-set", "cpu core=normal"])` to trace).
+    per instruction: a mismatch is `no_channel`, the file kept (a dynamic core logs once per
+    block: `start(flags=["-set", "cpu core=normal"])` to trace).
 
     Reply: `verdict`, `ELAPSED` (all ran; the file holds one line more, the stop), `OTHER_STOP`
     (a declared stopper or pending retrace first, `attribution`) or `TIMEOUT` (the bound ran
@@ -900,7 +923,7 @@ def trace(instructions: Annotated[int, vocab.bounds(1, tracing.INSTRUCTIONS_MAX)
     {SYMBOLS_SHOWN}), `symbols_total`, `truncated`, `note` for what it cannot prove.
     `readback_refused`: the log closed early (the machine closed it before the trace stopped, so
     its lines are not what ran), is empty, or would not close; `host_failed`: the debugger was
-    refused its file (`close`). Advancing is not altering.
+    refused its file, nothing ran and the line it left is emptied. Advancing is not altering.
 
     Reference: REFERENCE.md, Advancing the machine.
     """

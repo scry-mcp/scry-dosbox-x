@@ -512,6 +512,8 @@ def _a_cells() -> list[Cell]:
            if not (s == "stopped" and t == "close")]
     out.append(Cell("A running registers(from_last_stop)",
                     "registers docstring: `superseded`, marked, with last_stop"))
+    out.append(Cell(SAVES_LABEL, "state_save docstring: a running guest is stopped for it and "
+                                 "released"))
     out.append(Cell("A stopped close", "close docstring: `quit` on a parked session"))
     return out
 
@@ -522,6 +524,21 @@ def _a_one(tool: str, state: str) -> dict[str, Any]:
     note_spawn()
     M.judge(_a_label(tool, state), predicate(r), said(r))
     return r
+
+
+#: A save on a running guest, over and over: a late repaint of the command's own can be read as a
+#: stop, so one save proves too little.
+SAVES = 30
+SAVES_LABEL = f"A state_save on a running guest leaves it running, {SAVES} times in a row"
+
+
+def _saves_leave_it_running() -> None:
+    for i in range(SAVES):
+        r = M.call(server.state_save, name=f"matrix_a_loop_{i}", seconds=10)
+        if not (ok(r) and (r.get("session") or {}).get("running") is True):
+            M.judge(SAVES_LABEL, False, f"save {i + 1} of {SAVES}: {said(r)}")
+            return
+    M.judge(SAVES_LABEL, True, f"{SAVES} saves, the guest running after each")
 
 
 #: The order inside a state: what reads first, what arms and clears in pairs, and what changes
@@ -572,6 +589,7 @@ def section_a() -> None:
     M.judge("A running registers(from_last_stop)",
             ok(r) and r.get("superseded") is True
             and "stop_seq" in (r.get("last_stop") or {}), said(r))
+    _saves_leave_it_running()
     _a_one("stop", "running")            # last of the running cells: it parks the machine
     M.setup()
     must(M.call(server.resume), "releasing the probe again for the running close")
@@ -914,6 +932,9 @@ C_CELLS = cells(
     ("C altered false after start and reads", REF_DOC + "What every reply carries: altered"),
     ("C altered true after a write, and stays", REF_DOC + "What every reply carries: altered"),
     ("C read_memory and memdump agree", "known: both read the bytes `write` put there"),
+    ("C debug of a command the debugger does not take empties the line and names it",
+     REF_DOC + "The console: `debug` leaves the console clean"),
+    ("C the command after it runs on its own", REF_DOC + "The console: emptied with ESC"),
     ("C find finds what write wrote", "known: the bytes `write` put there, once"),
     ("C scan_start while a scan is open", "scan_start docstring: one scan at a time"),
     ("C scan ! keeps the one cell written", REF_DOC + "Reading and writing: `!` since the open"),
@@ -972,6 +993,17 @@ def _c_memory() -> None:
     hits = r.get("hits") or []
     judged("C find finds what write wrote", reply=r, holds=ok(r) and r.get("hits_total") == 1
             and len(hits) == 1 and hexint(str(hits[0]).split(":")[1]) == 0x3000)
+
+
+def _c_console() -> None:
+    left = M.call(server.debug, command="VGA")
+    judged("C debug of a command the debugger does not take empties the line and names it",
+           reply=left, holds=ok(left) and "did not take 'VGA'" in str(left.get("note", "")))
+    after = M.call(server.debug, command="BPLIST")
+    regs = M.call(server.registers)
+    judged("C the command after it runs on its own", reply=after,
+           holds=ok(after) and "Breakpoint list" in str(after.get("screen_delta", ""))
+           and "note" not in after and ok(regs))
 
 
 def _c_scan() -> None:
@@ -1167,6 +1199,7 @@ def section_c() -> None:
     p = into_probe()
     M.setup()
     _c_memory()
+    _c_console()
     _c_scan()
     _c_declarations(p)
     _c_stops(p)

@@ -117,6 +117,15 @@ DOSBox-X `<volatile>`.
   "input_port": "<volatile>",
   "background": false,
   "presence": true,
+  "declarations": {
+    "rearm": {
+      "rearmed": [],
+      "stale": [],
+      "unresolved": [],
+      "ambiguous": [],
+      "unarmable": []
+    }
+  },
   "session": {
     "alive": true,
     "running": false,
@@ -252,12 +261,11 @@ DOSBox-X `<volatile>`.
   "limit": -1,
   "descriptor": -1,
   "declarations": {
-    "rearmed": 0,
-    "rearmed_refs": [],
+    "rearmed": [],
     "stale": [],
-    "unresolved": 0,
-    "ambiguous": 0,
-    "unarmable": 0
+    "unresolved": [],
+    "ambiguous": [],
+    "unarmable": []
   },
   "pending": false,
   "base_from": "caller",
@@ -1871,6 +1879,11 @@ Also attached: image/png.
   "saved_at": "<volatile>",
   "paused": true,
   "waited_s": "<volatile>",
+  "mark": {
+    "guest": 10473,
+    "emulator": 10473,
+    "all": 10473
+  },
   "session": {
     "alive": true,
     "running": true,

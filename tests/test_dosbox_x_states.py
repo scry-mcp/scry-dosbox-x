@@ -90,6 +90,7 @@ class StateFake:
         self.release_s = 0.0
         self.release_raises: BaseException | None = None
         self.break_raises: ds.Invalid | None = None
+        self.lives = True
 
     def at_debugger(self) -> bool:
         return self.parked
@@ -109,8 +110,12 @@ class StateFake:
         self.parked = self.halts_on_release
         return {"halted": self.halts_on_release}
 
+    def resume_after_command(self) -> dict[str, object]:
+        return self.resume()        # its confirmation is `Session`'s own, tested on the wire
+
     def alive(self) -> bool:
-        return True
+        return self.lives
+
 
     def state(self) -> dict[str, object]:
         return {"alive": True, "running": not self.parked, "altered": self.altered}
@@ -391,6 +396,30 @@ def test_snapshot_refuses_parked_and_a_command_that_produced_no_file(tmp_path: P
     with pytest.raises(ds.Invalid, match="no new PNG") as exc:
         ds.Session.snapshot(as_session(silent), None, 0.3)
     assert exc.value.code == "wait_expired" and str(tmp_path / "caps") in str(exc.value)
+
+
+def test_a_snapshot_whose_emulator_died_is_refused_at_once_not_at_its_bound(
+        tmp_path: Path) -> None:
+    """A dead emulator writes no picture: the wait says it is gone at its first poll rather than
+    sitting out its bound to report a picture that never came."""
+    dead = ShotFake(tmp_path / "save")
+    dead.writes, dead.lives = False, False
+    began = time.monotonic()
+    with pytest.raises(ds.Invalid) as exc:
+        ds.Session.snapshot(as_session(dead), None, 5.0)
+    assert exc.value.code == "session_broken" and "GONE" in str(exc.value), exc.value
+    assert time.monotonic() - began < 1.0, "the dead emulator's wait sat out its bound"
+
+
+def test_a_state_command_under_an_emulator_that_died_says_it_is_gone(tmp_path: Path) -> None:
+    """A dead emulator closes the channel, which reads as a drop it redials: the state command
+    says the emulator is gone instead, since nothing will answer again."""
+    fake = StateFake(tmp_path / "save")
+    fake.lives = False
+    fake.control.raises = ds.Invalid("session_broken", "debugger channel dropped; it redials")
+    with pytest.raises(ds.Invalid) as exc:
+        ds.Session.state_save(as_session(fake), "boot", 5.0)
+    assert exc.value.code == "session_broken" and "GONE" in str(exc.value), exc.value
 
 
 def test_the_snapshot_tool_carries_the_envelope_and_is_named_like_the_siblings(

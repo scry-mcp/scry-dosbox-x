@@ -100,7 +100,7 @@ class Segments:
         self.session = session
         self.registers = registers
         self.mode = where["mode"]
-        self.real = self.mode == dcons.REAL_MODE
+        self.real = dcons.real_segments(self.mode)
         self._selinfo: dict[str, dict[str, int]] = {}
         self._reading: machine.Reading | None = None
 

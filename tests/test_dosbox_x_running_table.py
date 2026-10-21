@@ -23,8 +23,8 @@ import dosbox_x_server as server
 
 #: What a session does WITHOUT the debugger's console: the log file, the guest's input,
 #: the debugger channel, the capture directory, the state directory. Everything else it
-#: does is a console command, and on a running guest a console command lands at the next
-#: stop, unread.
+#: does is a console command, and a running guest's console drops a command typed at it: it is
+#: not run at the next stop either.
 NO_CONSOLE = {"alive", "state", "at_debugger", "log", "log_wait", "e9", "e9_mark",
               "e9_lines", "e9_new_since", "e9_since_mark", "e9_wait", "send_commands",
               "break_in", "state_save", "state_load",
@@ -225,8 +225,8 @@ def test_the_table_holds_exactly_what_answers_on_a_running_guest(
 @pytest.mark.parametrize("tool", sorted(sequence.RUNNING_OK_OPS))
 def test_no_tool_of_the_table_types_at_a_running_guests_console(
         tool: str, tmp_path: Path) -> None:
-    """The table's own claim: on a running guest a console command lands at the next stop,
-    unread, after its survey has sat out the whole wait for a pane that does not come."""
+    """The table's own claim: a running guest's console drops what is typed at it, after its
+    survey has sat out the whole wait for a pane that does not come."""
     fake = _running(tmp_path)
     getattr(server, tool)(**_args(tmp_path)[tool])
     assert fake.asked == [], (tool, fake.asked)
@@ -355,9 +355,9 @@ def test_a_list_not_judged_beforehand_is_refused_whole_before_its_first_step(
 @pytest.mark.parametrize("ref", ["g_rate", "[g_rate]", "[0000:0400]"])
 def test_a_declaration_by_name_on_a_running_guest_types_nothing(
         tmp_path: Path, ref: str) -> None:
-    """Placing a symbol or a pointer needs the registers; on a running guest the nudge that
-    asks for them would land at the next stop, unread. So nothing is typed, and the
-    declaration is queued as it would be after typing."""
+    """Placing a symbol or a pointer needs the registers; a running guest's console drops the
+    nudge that asks for them. So nothing is typed, and the declaration is queued as it would
+    be after typing."""
     fake = _running(tmp_path)
     dstate.STATE.install_table([dsym.Symbol("g_rate", 0x1000, kind="d")])
     got = (server.breakpoint_at(ref=ref) if not ref.startswith("[")

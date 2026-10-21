@@ -4,7 +4,8 @@
 off + x)` (upstream `src/debug/debug.cpp`, `SaveMemoryBin`). Two things in that function make a
 long dump wrong while it still answers success with the length asked:
 
-* A 16-bit segment masks the offset to sixteen bits: always in real mode and in v86, and in
+* A 16-bit segment masks the offset to sixteen bits: always in real mode and at a `VM86` stop,
+  and in
   protected mode when the descriptor's D/B bit is clear. A dump that runs past offset 0xFFFF
   reads the start of its own segment again.
 * In protected mode a byte past the descriptor's limit has no address, and the dump writes a
@@ -15,8 +16,7 @@ address it alike, and its limit is not judged there). A longer one costs somethi
 the wrap can happen: in real mode it is cut into windows that each sit inside one segment's 64
 KiB, the pieces joined in order; in protected mode the selector's descriptor is read and the
 range is refused on a 16-bit segment or past the limit (CS included, judged like the rest).
-A v86 stop, which the pane names `VM86`, is a mode `Session.where` refuses, so a range past
-0xFFFF there is refused with it.
+At a `VM86` stop the range is cut into windows as in real mode: its segments are real-mode ones.
 """
 
 from __future__ import annotations
@@ -164,8 +164,8 @@ def dump_range(session: ds.Session, seg: int, off: int, length: int, dest: Path,
     (one survey): in real mode the windows of `dump_windows`, each dumped to a scratch file of
     this call's own and joined into `dest`, written once and never over anything; in protected
     mode `judge_protected` (over `found`, listings the caller already read at a stop it knows to
-    be protected, so the mode is not surveyed again), then one `Session.memdump`. A v86 stop is
-    refused by the survey."""
+    be protected, so the mode is not surveyed again), then one `Session.memdump`. A `VM86` stop
+    takes the real-mode windows."""
     ds.check_segment(seg)
     ds.check_dump_length(length)
     if not crosses(off, length):
@@ -177,7 +177,7 @@ def dump_range(session: ds.Session, seg: int, off: int, length: int, dest: Path,
     dcollect.judge_collection(dest, session.launch.cwd, candidates, "dump")
     dcollect.refuse_leftover(candidates, "dump")
     paths.fresh_dest("dest", dest)
-    if found is not None or session.where()["mode"] != dcons.REAL_MODE:
+    if found is not None or not dcons.real_segments(session.where()["mode"]):
         judge_protected(session, seg, off, length, found)
         return Dump(session.memdump(seg, off, length, dest), False)
     windows = dump_windows(seg, off, length)

@@ -293,10 +293,13 @@ def stop_or_base(session: ds.Session, stopped: bool, e9: str, e9_filter: str,
 
 
 def cpu_mode_of(mode: str, paging: bool | None) -> str | dict[str, Any]:
-    """The cpu mode of a stop in `status`'s words, `real`, `protected` or `paged`, off the
-    pane's mode word and its paging mark; unavailable when the two do not place it."""
+    """The cpu mode of a stop in `status`'s words, `real`, `protected`, `paged` or the pane's own
+    `VM86`, off the pane's mode word and its paging mark; unavailable when the two do not place
+    it."""
     if mode == dcons.REAL_MODE:
         return "real"
+    if mode == dcons.V86_MODE:
+        return dcons.V86_MODE
     if mode.startswith("Pr") and paging is not None:
         return "paged" if paging else "protected"
     return contract.unavailable(
@@ -326,35 +329,47 @@ def recorded_head(recorded: dict[str, Any]) -> dict[str, Any]:
 
 
 def status_facts(session: ds.Session | None) -> dict[str, Any]:
-    """What `status` adds about the MACHINE: `pc`, only when the stop the machine is IN was
-    read, and `cpu_mode` of that stop, unavailable while it runs or when the pane could not
-    place it; and `declarations`, this server's own declarations counted per family in any
-    state, which are records and so present on a running machine too. No session: none of
-    them."""
+    """What `status` adds about the MACHINE: `pc`, where it is NOW, read off the pane at a stop
+    (one console round trip), so a command that moved CS:IP
+    inside the stop (`INTT`, `set_register`) is seen, the stop's own pc staying in `last_stop`;
+    `cpu_mode` (`stop_cpu_mode`); and `declarations`, this server's own declarations counted
+    per family in any state, which are records and so present on a running machine too. No
+    session: none of them."""
     if session is None:
         return {}
-    stopped = session.alive() and session.at_debugger()
-    current = STATE.as_of_current(session) if stopped else None
-    facts: dict[str, Any] = {"pc": current["pc"]} if current else {}
-    if not stopped:
-        facts["cpu_mode"] = contract.unavailable(
-            "the guest is running (or gone): the mode is read off a stopped machine's "
-            "register pane, and `last_stop` says where it was last seen")
-    elif current is None:
-        # THE RECORD IS NOT THIS STOP'S: its survey was cut, so the record still holds the
-        # previous one, and naming that as the stop the machine is in would be a confident
-        # wrong answer of the right shape.
-        facts["cpu_mode"] = contract.unavailable(
-            "the stop the machine is in was not readable yet (a cut pane; the next contact "
-            "retries), and `last_stop` is the one before it")
-    else:
-        facts["cpu_mode"] = cpu_mode_of(str(STATE.last_stop.get("where", {}).get("mode", "")),
-                                        STATE.last_stop.get("paging"))
+    facts: dict[str, Any] = {"cpu_mode": stop_cpu_mode(session)}
+    if session.alive() and session.at_debugger():
+        try:
+            now = session.where()
+        except ds.Invalid as e:
+            facts["pc"] = contract.unavailable(
+                f"the pane was not readable ({e}), and `last_stop` is the stop before")
+        else:
+            facts["pc"] = f"{now['cs']}:{now['eip']}"
     families = {"breakpoints": 0, "watches": 0}
     for decl in (STATE.store.declarations() if STATE.store is not None else []):
         families["watches" if decl.kind == "watch" else "breakpoints"] += 1
     facts["declarations"] = families
     return facts
+
+
+def stop_cpu_mode(session: ds.Session) -> str | dict[str, Any]:
+    """The cpu mode of the stop the machine is in, off its recorded survey (no console round
+    trip: a command inside a stop does not switch the mode); unavailable while the guest runs,
+    when that stop's survey was cut, or when the pane does not place it."""
+    if not (session.alive() and session.at_debugger()):
+        return contract.unavailable(
+            "the guest is running (or gone): the mode is read off a stopped machine's "
+            "register pane, and `last_stop` says where it was last seen")
+    if STATE.as_of_current(session) is None:
+        # THE RECORD IS NOT THIS STOP'S: its survey was cut, so the record still holds the
+        # previous one, and naming that as the stop the machine is in would be a confident
+        # wrong answer of the right shape.
+        return contract.unavailable(
+            "the stop the machine is in was not readable yet (a cut pane; the next contact "
+            "retries), and `last_stop` is the one before it")
+    return cpu_mode_of(str(STATE.last_stop.get("where", {}).get("mode", "")),
+                       STATE.last_stop.get("paging"))
 
 
 def live() -> ds.Session:

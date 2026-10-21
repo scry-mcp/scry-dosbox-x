@@ -112,7 +112,7 @@ def run_for(control: str, seconds: float) -> dict[str, Any]:
 
 
 def refused_on_the_dynamic_core(label: str) -> None:
-    """A program's own conf runs the dynamic core, where the debugger logs at block boundaries:
+    """A program's own conf runs the dynamic core, where the debugger logs once per block:
     a trace there is refused by its own count, and the log it kept at `dest` is removed here."""
     dest = Path(M.fresh(".trace"))
     r = M.call(server.trace, instructions=16, dest=str(dest), seconds=30)

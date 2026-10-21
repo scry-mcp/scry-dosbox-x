@@ -108,8 +108,8 @@ def parse_seg_off(ref: str) -> tuple[int, int]:
 
 def _listening(session: ds.Session) -> None:
     """Refuse, before anything is typed, a placement that would ask a console that is not
-    listening: its nudge lands at the next stop, unread, and the declaration waits for that
-    stop anyway."""
+    listening: a running guest's console drops its nudge, and the declaration waits for the
+    next stop anyway."""
     if not session.at_debugger():
         raise ds.NotStopped("the guest is running, so nothing can be placed against its "
                             "registers now")
@@ -446,7 +446,7 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
         # REAL MODE HAS NO DESCRIPTOR TO MEASURE, and the pane already says so: asked there,
         # this build's `SELINFO` prints no descriptor line at all inside a program, so the
         # refusal would be the parser's and name the wrong cause.
-        if base is None and session.where()["mode"] == dcons.REAL_MODE:
+        if base is None and dcons.real_segments(session.where()["mode"]):
             raise ds.Invalid("bad_argument",
                 "the machine is in real mode, where there is no descriptor to measure a base "
                 "from: pass `base` as hex text, the load segment * 16 (segment 0x0800 is "
@@ -630,8 +630,9 @@ def is_stale(decl: dec.Declaration, place_now: Callable[[], int | None]) -> bool
 
 def mode_word(cpu: str | None) -> str | None:
     """A stop's cpu mode as a raw row records it (`dec.CPU_MODES`), from the debugger's
-    spelling (`Real`, `Pr16`, `Pr32`); None for a mode not known."""
-    if cpu == dcons.REAL_MODE:
+    spelling (`Real`, `Pr16`, `Pr32`, `VM86`, whose SEG:OFF is a real-mode one); None for a mode
+    not known."""
+    if cpu is not None and dcons.real_segments(cpu):
         return "real"
     return "protected" if cpu is not None and cpu.startswith("Pr") else None
 

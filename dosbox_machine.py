@@ -27,6 +27,7 @@ from typing import Any, NamedTuple
 
 from scry_core import reply_contract as contract
 
+import dosbox_console as dcons
 import dosbox_logs as dlogs
 import dosbox_placement as placement
 import dosbox_running as running
@@ -320,13 +321,15 @@ def parse_cpu(text: str) -> dict[str, Any]:
 #: cr0's protection-enable and paging bits.
 CR0_PE = 1
 CR0_PG = 1 << 31
-#: The `cpu_mode` words whose selectors name descriptors.
+#: The `cpu_mode` words whose selectors name descriptors, and those whose segments are paragraphs.
 PROTECTED_MODES = frozenset({"protected", "paged"})
+REAL_SEGMENT_MODES = frozenset({"real", dcons.V86_MODE})
 
 
 def cpu_mode(cpu: dict[str, Any]) -> str:
-    """`real`, `protected` or `paged`, the words `status` uses, read off this listing's own cr0
-    so the sections it gates come from the same moment."""
+    """`real`, `protected` or `paged`, read off this listing's own cr0 so the sections it gates
+    come from the same moment (a `VM86` stop reads protected here: `interrupt_vectors` takes the
+    stop's own word for it)."""
     cr0 = int(cpu["cr0"], 16)
     if not cr0 & CR0_PE:
         return "real"
@@ -607,7 +610,7 @@ def vector_linear(addr: str, mode: str | None, found: dict[str, Any]) -> tuple[i
     names, in the LDT when its table indicator is set, plus the offset."""
     seg_text, off_text = addr.split(":")
     sel, off = int(seg_text, 16), int(off_text, 16)
-    if mode == "real":
+    if mode in REAL_SEGMENT_MODES:
         return sel * PARAGRAPH_BYTES + off, ""
     if mode is None:
         return None, "the mode is unknown"
@@ -661,13 +664,16 @@ def interrupt_vectors(session: ds.Session, number: int | None) -> dict[str, Any]
             f"`INTVEC` wrote a file that is not the vector table: {e.line}") from None
     tables_unread = False
     if session.launch.logfile is None:
-        facts = running.status_facts(session).get("cpu_mode")
+        facts = running.stop_cpu_mode(session)
         mode = facts if isinstance(facts, str) else None       # unavailable: the mode unknown
         tables_unread = mode in PROTECTED_MODES
         reading = Reading(mode=mode, notes=[
             (NO_LOGFILE_TABLES if tables_unread else NO_LOGFILE_BLOCKS) + NO_LOGFILE_WHY])
     else:
         reading = read(session, PLACEMENT_SECTIONS)
+        # cr0 says protected at a VM86 stop, and the vectors there are still SEG:OFF.
+        if running.stop_cpu_mode(session) == dcons.V86_MODE:
+            reading.mode = dcons.V86_MODE
     reading.sources = {"vectors": ["INTVEC"], **reading.sources}
     if all(r["seg_off"] == st.seg_off(0, 0) for r in rows):
         reading.notes.append("every vector is 0000:0000: nothing has filled the table yet")

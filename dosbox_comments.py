@@ -125,7 +125,7 @@ class _Places:
             return {"state": "unarmable", "why": (
                 "the machine has not stopped yet, so its mode is not known and a SEG:OFF cannot "
                 "be placed")}
-        if mode == dcons.REAL_MODE:
+        if dcons.real_segments(mode):
             if off > dcons.offset_ceiling(mode):
                 why = f"{ref} has an offset past FFFF, the last a real-mode segment holds"
                 return {"state": "unarmable", "why": why, "refuse": why, "waits": (

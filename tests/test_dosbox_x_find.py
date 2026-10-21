@@ -11,6 +11,7 @@ from typing import Any, cast
 
 import pytest
 
+import dosbox_console as dcons
 import dosbox_find as finder
 import dosbox_session as ds
 import dosbox_state as dstate
@@ -443,6 +444,24 @@ def test_an_idle_prompt_answers_a_bare_enter_with_nothing_and_that_counts_as_cle
 
     assert finder._clear_line(cast(Any, type("Idle", (), {"command": staticmethod(command)})()))
     assert typed == [""], f"one ENTER should have been enough; it typed {typed!r}"
+
+
+def test_a_tail_the_debugger_did_not_take_is_emptied_with_escape_not_run_again() -> None:
+    """A page turned can leave a stranded tail on the line, which an ENTER submits and the
+    debugger does not take: a second ENTER would run it again, so ESC empties it."""
+    typed: list[str] = []
+
+    class Stranded:
+        def command(self, text: str, **_: object) -> str:
+            typed.append(text)
+            return "*** Debugger command not recognized\r\n" + dcons.PROMPT + " =FF _"
+
+        def clear_line(self) -> str:
+            typed.append("ESC")
+            return dcons.PROMPT + " _"
+
+    assert finder._clear_line(cast(Any, Stranded()))
+    assert typed == ["", "ESC"], typed
 
 
 def test_a_scan_the_debugger_says_is_gone_leaves_no_count_to_add_to(no_scan_count: None) -> None:

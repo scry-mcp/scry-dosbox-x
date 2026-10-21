@@ -192,10 +192,11 @@ class _Channel:
         return self.ok, [] if self.ok else ["not now"]
 
 
-def _session(ok: bool, parks: bool) -> ds.Session:
+def _session(ok: bool, parks: bool, alive: bool = True) -> ds.Session:
     s = ds.Session.__new__(ds.Session)
     s.control = _Channel(ok)  # type: ignore[assignment]
     s.at_debugger = lambda: parks  # type: ignore[method-assign]
+    s.alive = lambda: alive  # type: ignore[method-assign]
     return s
 
 
@@ -209,6 +210,16 @@ def test_break_in_says_when_the_prompt_never_comes() -> None:
     with pytest.raises(Invalid) as e:
         ds.Session.break_in(_session(ok=True, parks=False), seconds=0.1)
     assert e.value.code == "not_settled" and "still be running" in str(e.value)
+
+
+def test_break_in_on_an_emulator_that_died_says_so_at_once() -> None:
+    """A dead emulator never parks: the wait refuses it as gone at its first poll rather than
+    sitting out its bound to call the guest still running."""
+    began = time.monotonic()
+    with pytest.raises(Invalid) as e:
+        ds.Session.break_in(_session(ok=True, parks=False, alive=False), seconds=5.0)
+    assert e.value.code == "session_broken" and "GONE" in str(e.value), e.value
+    assert time.monotonic() - began < 1.0, "the dead emulator's wait sat out its bound"
 
 
 def test_break_in_says_when_the_channel_refuses() -> None:
