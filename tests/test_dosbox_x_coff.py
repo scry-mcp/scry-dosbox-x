@@ -1,0 +1,70 @@
+"""A text table checked against the executable it was made for: the DPMI guest's own `dpmi.exe`
+and `dpmi.sym` are the known answer, a copy whose code symbols moved by a relink is the stale
+table, and an image with no COFF table or none at all is a check that could not be made."""
+
+from __future__ import annotations
+
+import shutil
+from pathlib import Path
+
+import pytest
+
+import dosbox_coff as coff
+import dosbox_session as ds
+import dosbox_symbols as sym
+
+GUEST = Path(__file__).resolve().parent / "guest"
+
+
+def _parsed(table: Path) -> list[sym.Symbol]:
+    return sym.parse(table.read_text(encoding="utf-8"))[0]
+
+
+def test_the_guests_table_agrees_with_its_executable() -> None:
+    got = coff.check(GUEST / "dpmi.sym", _parsed(GUEST / "dpmi.sym"))
+    assert got["against"].endswith("dpmi.exe") and got["agree"] > 100, got
+
+
+def test_a_table_of_a_relinked_build_is_refused_naming_what_differs(tmp_path: Path) -> None:
+    shutil.copy(GUEST / "dpmi.exe", tmp_path / "dpmi.exe")
+    rows = []
+    for line in (GUEST / "dpmi.sym").read_text(encoding="utf-8").splitlines():
+        parts = line.split()
+        if len(parts) == 3 and parts[1] in "Tt":
+            parts[0] = f"{int(parts[0], 16) + 0xD0:08x}"
+        rows.append(" ".join(parts))
+    stale = tmp_path / "dpmi.sym"
+    stale.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    with pytest.raises(ds.Invalid) as e:
+        coff.check(stale, _parsed(stale))
+    assert e.value.code == "bad_argument" and "not this build's" in str(e.value), str(e.value)
+    assert "in dpmi.exe" in str(e.value) and "more" in str(e.value), str(e.value)
+
+
+def test_no_executable_or_none_with_a_coff_table_is_said_not_judged(tmp_path: Path) -> None:
+    table = tmp_path / "prog.sym"
+    shutil.copy(GUEST / "dpmi.sym", table)
+    alone = coff.check(table, _parsed(table))
+    assert alone["available"] is False and "no executable" in alone["why"], alone
+    (tmp_path / "PROG.EXE").write_bytes(b"MZ" + bytes(510))
+    real = coff.check(table, _parsed(table))
+    assert real["available"] is False and "no COFF symbol table" in real["why"], real
+
+
+@pytest.mark.parametrize("cut", [2, 40, 0.6], ids=["mz-only", "header-only", "in-strings"])
+def test_a_cut_image_is_said_never_a_traceback(tmp_path: Path, cut: float) -> None:
+    whole = (GUEST / "dpmi.exe").read_bytes()
+    size = int(len(whole) * cut) if isinstance(cut, float) else cut
+    (tmp_path / "dpmi.exe").write_bytes(whole[:size])
+    shutil.copy(GUEST / "dpmi.sym", tmp_path / "dpmi.sym")
+    got = coff.check(tmp_path / "dpmi.sym", _parsed(tmp_path / "dpmi.sym"))
+    assert got["available"] is False and got["why"], got
+
+
+def test_a_table_with_no_symbol_kinds_is_said_as_such(tmp_path: Path) -> None:
+    shutil.copy(GUEST / "dpmi.exe", tmp_path / "dpmi.exe")
+    table = tmp_path / "dpmi.sym"
+    shutil.copy(GUEST / "dpmi.sym", table)
+    kindless = [sym.Symbol(s.name, s.offset) for s in _parsed(table)]
+    got = coff.check(table, kindless)
+    assert got["available"] is False and "no symbol kinds" in got["why"], got

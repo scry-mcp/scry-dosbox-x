@@ -24,6 +24,7 @@ from typing import Any, cast
 
 from scry_core import value_format as vf
 
+import dosbox_coff as coff
 import dosbox_console as dcons
 import dosbox_declarations as dec
 import dosbox_paths as paths
@@ -115,6 +116,34 @@ def _listening(session: ds.Session) -> None:
                             "registers now")
 
 
+def _program_selectors(session: ds.Session, desc: dict[str, int],
+                       measured_by_cs: bool) -> dict[str, int]:
+    """CS and DS as this stop holds them when they are the program's: a live protected-mode
+    stop whose CS has the table's base (by construction when the base was measured off CS,
+    asked of `SELINFO CS` otherwise). Nothing at a real-mode stop, while the guest runs (the
+    last stop may be another program's), or in a DPMI host's own code."""
+    if not session.at_debugger():
+        return {}
+    where, regs = session.where_and_registers()
+    if not where["mode"].startswith("Pr") or not {"CS", "DS"} <= set(regs):
+        return {}
+    if not measured_by_cs and session.selector("CS")["base"] != desc["base"]:
+        return {}
+    return {f"selector_{reg}": int(regs[reg], 16) for reg in ("CS", "DS")}
+
+
+#: What says where a table sits; the program's selectors are carried beside it, not part of it.
+PLACE_KEYS = ("base", "limit", "type")
+
+
+#: A protected-mode program's symbol at a stop that is not in protected mode.
+OUTSIDE_THE_PROGRAM = (
+    "the machine stopped outside the program: its table was loaded at a protected-mode stop, and "
+    "this real-mode stop (a BIOS or DOS handler the program called into) has no selector to "
+    "place its symbols through. A breakpoint armed before the release brings it back into the "
+    "program's code")
+
+
 def target_for(offset: int, reg: str, session: ds.Session, *,
                 machine: tuple[str, dict[str, str]] | None = None) -> tuple[int, int]:
     """The seg:off to arm at a symbol OFFSET, derived from the machine's mode.
@@ -140,6 +169,11 @@ def target_for(offset: int, reg: str, session: ds.Session, *,
     if machine is None:
         _listening(session)
     mode = machine[0] if machine is not None else session.where()["mode"]
+    selector = STATE.base.get(f"selector_{reg}")
+    if selector is not None:
+        if not mode.startswith("Pr"):
+            raise ds.Invalid("bad_argument", OUTSIDE_THE_PROGRAM)
+        return selector, offset
     if mode.startswith("Pr"):
         regs = machine[1] if machine is not None else session.registers()
         return int(regs[reg], 16), offset
@@ -405,6 +439,9 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
         syms, unreadable = sym.parse(text)
     except sym.BadSymbolText as e:
         raise ds.Invalid("bad_argument", f"{source}: {e}") from None
+    # THE TABLE IS CHECKED AGAINST ITS BUILD BEFORE ANYTHING IS LOADED: a stale one resolves
+    # every name a few bytes off and nothing in it can say so (`dosbox_coff`).
+    checked = coff.check(src, syms)
     # `plan` IS OUTSIDE THAT BLOCK, and the prefix is why. `BadSymbolText`'s own
     # docstring says the MCP layer translates it into "a refusal that NAMES THE
     # CALLER'S FILE", which is right for text that could not be parsed and WRONG for a
@@ -453,6 +490,11 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
                 "\"8000\"). Placed at base 0, every symbol would sit at its raw offset")
         desc = (session.selector(base_from) if base is None
                 else {"base": base, "limit": -1, "type": -1})
+        # A TABLE LOADED AT A PROTECTED-MODE STOP KEEPS THE PROGRAM'S SELECTORS: a later stop
+        # may hold another program's (a DPMI host's 16-bit code) or none (a BIOS handler), and
+        # a symbol is placed through the program's own, never through what the stop holds.
+        desc.update(_program_selectors(session, desc,
+                                       base is None and base_from.upper() == "CS"))
     try:
         data = (sym.encode(plan, section_bases=bases) if bases is not None
                 else sym.encode(plan, desc["base"]))
@@ -478,8 +520,15 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
     # places them, so carrying earlier symbols across a load that moved the base would
     # silently re-place them at addresses nobody measured. A load that changes the base or
     # the section bases REPLACES, and the reply says which of the two happened.
-    same_place = (bool(STATE.table) and dict(STATE.base) == dict(desc)
+    same_place = (bool(STATE.table)
+                  and all(STATE.base.get(k) == desc.get(k) for k in PLACE_KEYS)
                   and dict(STATE.section_bases) == dict(bases or {}))
+    if same_place:
+        # A BATCH ADDED WHERE THE TABLE SITS keeps the selectors it was measured with when this
+        # stop could not give them (a real-mode stop, a running guest).
+        for key in ("selector_CS", "selector_DS"):
+            if key in STATE.base and key not in desc:
+                desc[key] = STATE.base[key]
     # THE TYPES ARE JUDGED BEFORE ANYTHING IS WRITTEN, and that ordering is the whole of it.
     # A name typed that the table will not carry is a refusal, because a type nothing
     # carries would be honoured by nothing. Judged AFTER the debugger has taken the file
@@ -551,7 +600,7 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
             "comments this session placed before any map are held in memory as this map's, "
             "and the next write that succeeds puts them on disk", held_in_memory=True)
     return st.reply(base=desc["base"], limit=desc["limit"], descriptor=desc["type"],
-                  declarations=rearm, pending=pending,
+                  declarations=rearm, pending=pending, checked=checked,
                   base_from=("caller" if base is not None else base_from.upper()),
                   parsed=plan.parsed, kept=plan.kept,
                   excluded_sections=plan.excluded_noise,

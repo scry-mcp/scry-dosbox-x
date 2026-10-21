@@ -515,11 +515,27 @@ difference:
 be declared honestly, and which one won would be exactly the thing nobody notices getting
 wrong. Passing neither is refused for a sectioned map, and for a flat one in real mode; a flat
 map in protected mode measures its base off the selector `base_from` names (`CS` by default).
+A flat table loaded at a protected-mode stop inside the program (its CS holds the table's base)
+keeps the program's CS and DS as that stop holds them, and every symbol is placed through them
+whatever selectors a later stop holds (a DPMI host's 16-bit code has its own); at a real-mode
+stop (a BIOS or DOS handler the program called into) none can be placed, and each says the
+machine stopped outside the program. A table loaded while the guest runs, or at a stop outside
+the program, keeps no selectors and is placed through what each stop holds, as is a sectioned
+one; a second batch at the same base keeps the selectors the first was loaded with.
 What is never taken is a default of zero: it encodes a file that is well formed, loads
 without complaint, and names whatever occupies low memory. A symbol therefore keeps
 its section, and placement happens once, afterwards, from that table; a flat format is the
 degenerate case, one section, one base, and placement stops being a side effect of reading
 and becomes a step that DEMANDS its bases.
+
+**A table is checked against its build before anything is loaded.** A stale table resolves every
+name a few bytes off, and nothing in it can say so; the executable can. When the file beside the
+table under its stem is a DJGPP (go32) image (`RECHIPD.SYM` beside `RECHIPD.exe`, the name in
+any case), its own COFF symbol table, written by the link that made the code, is read, and every
+global code symbol the two share has to hold the image's value: one that does not refuses the
+load `bad_argument`, naming the disagreements, with the table loaded before left as it was.
+`checked` says what was compared (`against`, `agree`), or why nothing could be: no executable
+beside it, one with no COFF table (a real-mode executable carries none), or none in common.
 
 **A file most of which was discarded is refused.** `parse` returns how many rows it could not
 read, and a symbol section that lost MORE rows than it kept is refused: a reading that

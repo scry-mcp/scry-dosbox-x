@@ -660,6 +660,8 @@ class SymbolsLoadReply(DosboxEnvelope, total=False):
     overlay_idle: int
     parsed: int
     pending: bool
+    #: The table against the executable beside it (`against`, `agree`), or unavailable why.
+    checked: dict[str, Any]
     renamed: int
     symbols_typed: int
     table_mode: str

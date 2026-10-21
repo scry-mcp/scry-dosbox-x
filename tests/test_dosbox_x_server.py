@@ -8180,3 +8180,90 @@ def test_what_can_stop_the_guest_is_what_would_be_armed(tmp_path: Path,
     assert store is not None
     store.add(decl)
     assert arming.something_can_stop_it() is can
+
+
+def _protected_table(tmp_path: Path) -> NamesFake:
+    """A table loaded at a protected-mode stop, its base measured off CS (00A7)."""
+    nm = tmp_path / "prog.nm"
+    nm.write_text("0016dd80 T _main\n00200000 D _g_eng_rate\n", encoding="utf-8")
+    fake = _names(tmp_path)
+    _ok(server.symbols_load(path=str(nm), base_from="CS"))
+    return fake
+
+
+def test_a_stop_outside_the_program_says_so_for_every_symbol(tmp_path: Path) -> None:
+    """A stop in a real-mode BIOS handler the program called into has no selector to place a
+    protected-mode symbol through: readers, a breakpoint and a scan answer that the machine
+    stopped outside the program, never the segment check's own number."""
+    fake = _protected_table(tmp_path)
+    fake.mode, fake.cs, fake.ds = "Real", "F000", "0040"
+    read = server.read_memory(ref="_g_eng_rate", length=4)
+    assert read["status"] == "INVALID" and "outside the program" in read["message"], read
+    assert "0x0000 to 0xFFFF" not in read["message"], read
+    bp = server.breakpoint_at(ref="_main")
+    assert bp["state"] == "unarmable" and "outside the program" in bp["why"], bp
+
+
+def test_a_protected_stop_in_another_selector_places_by_the_programs_own(
+        tmp_path: Path) -> None:
+    """A stop in a DPMI host's 16-bit code holds the host's selectors: a symbol is placed
+    through the selector its table was measured against, not the one the stop holds."""
+    fake = _protected_table(tmp_path)
+    fake.cs, fake.ds = "0018", "0020"
+    bp = _ok(server.breakpoint_at(ref="_main"))
+    assert bp["entry"].startswith("BP 00A7:"), bp
+
+
+def test_a_table_of_another_build_is_refused_and_the_loaded_one_stays(tmp_path: Path) -> None:
+    """The executable beside a table is the build's own record: a table that disagrees with it
+    is refused before the debugger takes anything, and the table loaded before stays."""
+    guest = Path(__file__).resolve().parent / "guest"
+    fake = _names(tmp_path)
+    good = tmp_path / "good" / "dpmi.sym"
+    good.parent.mkdir()
+    shutil.copy(guest / "dpmi.sym", good)
+    shutil.copy(guest / "dpmi.exe", good.parent / "dpmi.exe")
+    loaded = _ok(server.symbols_load(path=str(good), base_from="CS"))
+    assert loaded["checked"]["agree"] > 100, loaded["checked"]
+    stale = tmp_path / "stale" / "dpmi.sym"
+    stale.parent.mkdir()
+    shutil.copy(guest / "dpmi.exe", stale.parent / "dpmi.exe")
+    stale.write_text("".join(
+        f"{int(p[0], 16) + 0xD0:08x} {p[1]} {p[2]}\n" if len(p) == 3 and p[1] == "T" else ln + "\n"
+        for ln in good.read_text(encoding="utf-8").splitlines() for p in [ln.split()]),
+        encoding="utf-8")
+    before, base, loads = list(dstate.STATE.table), dict(dstate.STATE.base), fake.loads
+    refused = server.symbols_load(path=str(stale), base_from="CS")
+    assert refused["status"] == "INVALID" and "not this build's" in refused["message"], refused
+    assert dstate.STATE.table == before and dict(dstate.STATE.base) == base, "state moved"
+    assert fake.loads == loads, "the debugger was handed the refused table"
+
+
+def test_a_second_batch_at_the_same_base_accumulates_whatever_stop_it_is_loaded_at(
+        tmp_path: Path) -> None:
+    """The program's selectors are a fact about the table, not about where it sits: a second
+    batch at the same base, loaded at a real-mode stop, adds to the first."""
+    first, second = tmp_path / "a.nm", tmp_path / "b.nm"
+    first.write_text("0016dd80 T _main\n", encoding="utf-8")
+    second.write_text("0017ee90 T _other\n", encoding="utf-8")
+    fake = _names(tmp_path)
+    _ok(server.symbols_load(path=str(first), base="400000"))
+    fake.mode = "Real"
+    got = _ok(server.symbols_load(path=str(second), base="400000"))
+    assert got["table_mode"] == "accumulated", got
+    assert {s.name for s in dstate.STATE.table} >= {"_main", "_other"}
+
+
+def test_a_table_loaded_while_the_guest_runs_takes_no_selectors_from_the_last_stop(
+        tmp_path: Path) -> None:
+    """The last stop may be another program's: a real-mode table loaded while the guest runs
+    keeps no selectors, and is placed by its paragraph at the real-mode stop that follows."""
+    nm = tmp_path / "rm.nm"
+    nm.write_text("00000100 T _start\n", encoding="utf-8")
+    fake = _names(tmp_path)
+    server.status()                                  # a protected-mode stop recorded
+    fake.running = True
+    assert server.symbols_load(path=str(nm), base="8000")["status"] == "ok"
+    fake.running, fake.mode = False, "Real"
+    got = server.breakpoint_at(ref="_start")
+    assert got["state"] == "armed", got

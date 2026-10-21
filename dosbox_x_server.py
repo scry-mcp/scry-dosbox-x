@@ -760,9 +760,10 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
 
     THE MACHINE STOPS WHEREVER IT IS, and that is not always in the program: a DJGPP guest
     spends part of every frame in real-mode BIOS handlers (`F000:xxxx`), and a stop landing
-    there has no protected-mode selector to place a symbol against, so a watch on a
-    protected symbol reads `unarmable` at that stop, and a stop lands there often.
-    `run_to` a symbol of the program, or `step` a few times, to get back to its code.
+    there has no protected-mode selector to place a symbol through, so every symbol of a
+    protected-mode table answers that the machine stopped outside the program, and a stop
+    lands there often. A breakpoint on the program, armed at a stop inside it before the
+    release, is what brings the machine back into its code.
 
     `unarmable` AND `unresolved` ARE DIFFERENT ANSWERS and the difference is worth holding:
     `unarmable` means the symbol IS in the table and its address cannot be worked out at
@@ -1093,19 +1094,17 @@ def symbols_load(path: str, base: str = "",
 
     Refused (INVALID): both `base` and `section_bases`; a sectioned map with no `section_bases`; a
     real-mode map with no `base`; a running machine with no explicit base; a file whose symbol rows
-    were mostly unreadable.
+    were mostly unreadable; a table the COFF symbols of the `<stem>.exe` beside it contradict.
 
-    A second load ADDS to the first, on both sides; a load with a different base REPLACES the
-    table here (`table_mode` says which), while the debugger keeps every row it was given until
-    `close`.
+    A second load at the same base ADDS to the first; at another base it REPLACES the table here
+    (`table_mode`), the debugger keeping every row until `close`.
 
     Reply: `parsed`, `kept`, `loaded` (the debugger's own count), `table_mode`,
-    `table_total`, `truncated_names`, `renamed` (names the debugger shortened with `~n`),
-    `disambiguated`, `unreadable`, `excluded_sections`, `excluded_pattern`,
-    `excluded_unplaceable`, `overlay_idle`, `unencodable`, `unencodable_total`, `symbols_typed`,
-    `bytes`, `descriptor`, `pending`, `base_from`, `base`, `limit`, and `declarations` (the
-    re-arm: `rearmed`, `stale`, `unresolved`, `ambiguous`, `unarmable`, each a list of
-    `breakpoint_list`'s rows, `why` on `ambiguous` and `unarmable`).
+    `table_total`, `renamed` (names the debugger shortened with `~n`), the parse's other
+    accounts (`truncated_names`, `disambiguated`, `unreadable`, `excluded_*`, `overlay_idle`,
+    `unencodable*`, `symbols_typed`, `bytes`), `descriptor`, `pending`, `base_from`, `base`,
+    `limit`, `checked` (`against`, `agree`, or why not), and `declarations` (the re-arm by
+    state, `rearmed` to `unarmable`, as `breakpoint_list`'s rows).
 
     Reference: REFERENCE.md, Names for addresses.
     """
