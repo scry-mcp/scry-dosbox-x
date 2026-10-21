@@ -593,6 +593,12 @@ def forget_stop(session: Session) -> None:
         session._read(0.0)
 
 
+def reader_dead(session: Session) -> bool:
+    """The terminal reader thread ended: nothing comes back whatever the machine does."""
+    drainer = getattr(session, "_drainer", None)
+    return drainer is not None and not drainer.is_alive()
+
+
 def gone_if_dead(session: Session, began: float, bound_s: float, what: str) -> None:
     """Refuse a wait whose emulator has gone, at once: nothing will arrive, and a wait that only
     watches its clock would sit out its whole bound to call the machine slow."""
@@ -690,6 +696,7 @@ class Session:
         self._closing = threading.Lock()
         self._closed = False
         self.state_sent = False   # whether the last state command went down the channel
+        self.state_answered = False   # whether the emulator answered it ok
         # Set only when SIGKILL was sent and the child had still not been reaped.
         #
         # IT IS NOT IN `state()`, because a copy there would be inert. It can
@@ -1176,8 +1183,7 @@ class Session:
             # cause it CAN see is named: a dead reader thread returns nothing for every
             # command while the process is up, and "running" would then be the broken
             # instrument reporting itself as a quiet machine.
-            drainer = getattr(self, "_drainer", None)
-            if drainer is not None and not drainer.is_alive():
+            if reader_dead(self):
                 raise NotStopped(
                     f"no register pane came back from `{NUDGE}`, and the terminal reader "
                     f"has DIED ({self.drain_ended or 'no reason recorded'}): nothing can "
@@ -1659,13 +1665,13 @@ class Session:
             # work: `_survey` distinguishes gone, reader-dead and running in its own words,
             # so only the RUNNING case gets this method's message and the rest escape as
             # themselves. The docstring promises exactly that.
-            if not self.alive():
+            if not self.alive() or reader_dead(self):
                 raise
             raise NotStopped(
                 "a step needs the machine STOPPED at the debugger, and it is running: a "
                 "step is a KEYSTROKE (F10/F11) to the debugger's window, and a keystroke to "
                 "a running guest is swallowed with no error anywhere, so stepping now would "
-                "report a machine it never touched. Nothing was sent. Bring it back with "
+                "report a machine it never touched. No step key was sent. Bring it back with "
                 "`stop` or a breakpoint armed before it ran (the "
                 "position could not be read, which is how a running machine is known here)"
             ) from None

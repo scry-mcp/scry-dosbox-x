@@ -31,13 +31,13 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
     again after, so the machine is left the way it was found. The reply's part:
     `paused` (it had to be stopped) and `waited_s` (the command alone, not the break-in or
     the release); whether it runs after the call is the session block's to say."""
+    # WHETHER THE COMMAND WENT DOWN THE CHANNEL, which a load cut short reads (one cancelled
+    # in the break-in sent nothing and replaced nothing), and whether it was answered ok.
+    ses.state_sent = ses.state_answered = False
     if "\n" in str(path) or "\r" in str(path):
         raise Invalid("bad_argument", f"a state path is one line; got {str(path)!r}")
     paused = not ses.at_debugger()
     began = time.monotonic()
-    # WHETHER THE COMMAND WENT DOWN THE CHANNEL, which a load cut short reads: one cancelled
-    # in the break-in sent nothing and replaced nothing.
-    ses.state_sent = False
     marked: dict[str, object] = {}
     try:
         if paused:
@@ -49,6 +49,7 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
             marked = {"mark": channel_marks(ses)}
         ses.state_sent = True
         ok, lines = ses.control.request(f"EXEC {verb} {path}", seconds, poll=cancel.check)
+        ses.state_answered = ok
     except BaseException as e:
         # AN EMULATOR THAT DIED UNDER THE COMMAND closes the channel, which reads as a drop the
         # channel redials: said as what it is, since nothing will answer again.
@@ -81,9 +82,9 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
     said = " / ".join(line.strip() for line in lines if line.strip())
     if not any(line.startswith(f"DEBUG: {verb}") for line in lines):
         raise Invalid("no_channel",
-            f"this DOSBox-X has no `{verb}` debugger command ({said or 'no answer'}): "
-                      f"saved states need a build that carries it (REFERENCE.md, Saved "
-                      f"states)")
+            f"`{verb}` came back without the debugger's own answer to it "
+                      f"({said or 'nothing came back'}): saved states need a build whose "
+                      f"debugger carries `{verb}` (REFERENCE.md, Saved states)")
     raise Invalid("unexpected_answer",
         f"the emulator refused {verb} of {path}: {said}. Its log says why (a state of "
                   f"another DOSBox-X version, program, memory size or machine type is "
@@ -123,7 +124,8 @@ def state_save(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
     try:
         outcome = ses._state_command("SAVESTATE", dest, seconds)
     except BaseException:                  # a refusal, a cancel or a defect alike
-        dest.unlink(missing_ok=True)       # it was not there before this call
+        if not ses.state_answered:         # answered ok, only the release failed: it is whole
+            dest.unlink(missing_ok=True)   # it was not there before this call
         raise
     if not dest.is_file():
         raise Invalid("unexpected_answer",

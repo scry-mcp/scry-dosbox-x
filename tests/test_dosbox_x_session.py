@@ -1466,7 +1466,7 @@ def test_set_register_whose_pane_lacks_the_register_is_refused_and_still_altered
     fake = SimpleNamespace(altered=False, command=sent.append, registers=lambda: {"EBX": "0"})
     with pytest.raises(ds.Invalid, match="without EAX after `SR`"):
         ds.Session.set_register(fake, "eax", 1)   # type: ignore[arg-type]
-    assert sent == ["SR EAX 00000001"] or sent, sent
+    assert sent == ["SR eax 1"], sent
     assert fake.altered is True
     fake.registers = lambda: {"EAX": "00000001"}
     ok = ds.Session.set_register(fake, "eax", 1)   # type: ignore[arg-type]
@@ -2462,6 +2462,22 @@ def test_step_on_a_dead_emulator_escapes_as_itself_not_as_a_running_machine(
     with pytest.raises(ds.NotStopped) as caught:
         session.step(mode="over", count=1)
     assert caught.value is gone, f"the dead-emulator refusal was rewritten: {caught.value}"
+
+
+def test_step_with_a_dead_reader_escapes_as_itself_not_as_a_running_machine(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A reader thread that ended answers nothing while the process is up: `_survey` names
+    it, and `stop` cannot bring back what nothing will read."""
+    dead = ds.NotStopped("no register pane came back from `BPLIST`, and the terminal reader "
+                         "has DIED (EOF): nothing can come back from this session")
+    session = cast(Any, ds.Session.__new__(ds.Session))
+    session._drainer = SimpleNamespace(is_alive=lambda: False)
+    monkeypatch.setattr(type(session), "where", lambda self: (_ for _ in ()).throw(dead))
+    monkeypatch.setattr(type(session), "alive", lambda self: True)
+    with pytest.raises(ds.NotStopped) as caught:
+        session.step(mode="over", count=1)
+    assert caught.value is dead, f"the dead-reader refusal was rewritten: {caught.value}"
 
 
 def test_a_headless_caller_flag_reaches_argv(conf: Path) -> None:

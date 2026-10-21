@@ -265,7 +265,7 @@ class FakeSession:
         self.altered = True
         self.writes = getattr(self, "writes", []) + [(seg, off, data)]
         back = bytes(len(data)) if self.rom else data
-        return {"written": len(data), "readback": back.hex(), "verified": back == data}
+        return {"bytes_written": len(data), "readback": back.hex(), "verified": back == data}
 
     def set_register(self, name: str, value: int) -> dict[str, object]:
         self.altered = True

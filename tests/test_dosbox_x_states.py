@@ -205,8 +205,11 @@ def test_a_build_without_the_commands_is_no_channel_naming_the_command(tmp_path:
     fake = StateFake(tmp_path / "save", carries=False)
     with pytest.raises(ds.Invalid) as exc:
         ds.Session.state_save(as_session(fake), "boot", 5.0)
-    assert exc.value.code == "no_channel" and "`SAVESTATE` debugger command" in str(exc.value)
-    assert "REFERENCE.md, Saved states" in str(exc.value)
+    said = str(exc.value)
+    assert exc.value.code == "no_channel", said
+    assert "`SAVESTATE` came back without the debugger's own answer to it" in said, said
+    assert "has no" not in said, "a cause the server did not see is named"
+    assert "REFERENCE.md, Saved states" in said
     write_state(tmp_path / "save" / "boot.sav")
     with pytest.raises(ds.Invalid) as exc:
         ds.Session.state_load(as_session(fake), "boot", 5.0)
@@ -679,3 +682,22 @@ def test_a_load_marks_zero_before_the_log_exists_and_none_without_a_logfile(
     fake.launch.logfile.unlink(missing_ok=True)  # type: ignore[union-attr]
     got = ds.Session.state_load(as_session(fake), "boot", 5.0)
     assert got["mark"] == {"guest": 0, "emulator": 0, "all": 0}, got
+
+
+def test_a_save_the_emulator_made_is_kept_when_only_the_release_after_it_failed(
+        tmp_path: Path) -> None:
+    """The emulator answered the save; the release that lets the guest run again refused. The
+    file is whole, so the refusal is the release's and the state stays where it was written."""
+    fake = StateFake(tmp_path / "save", parked=False)
+    fake.release_raises = ds.Invalid("unexpected_answer", "the release could not be read")
+    with pytest.raises(ds.Invalid, match="the release could not be read"):
+        ds.Session.state_save(as_session(fake), "boot", 5.0)
+    assert (tmp_path / "save" / "boot.sav").is_file(), "a save the emulator made was deleted"
+
+
+def test_a_save_the_emulator_refused_leaves_no_file(tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "save")
+    fake.control.refuse = "write failed"
+    with pytest.raises(ds.Invalid):
+        ds.Session.state_save(as_session(fake), "boot", 5.0)
+    assert not (tmp_path / "save" / "boot.sav").exists()
