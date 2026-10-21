@@ -12,19 +12,15 @@ Read the section for the family you are about to lean on.
   `videodriver=dummy` setting, not the `SDL_VIDEODRIVER` environment variable and not
   `-silent` (which also hides the window but exits after `AUTOEXEC.BAT`, so it cannot
   host a session). Audio still works.
-- **`shared: true`**: somebody is watching, and you pass the window placement flags in.
-
-The server never computes where a window goes, and refuses a `shared` session without
-flags rather than inventing a geometry. Pass them as **separate tokens**
-(`["-set", "sdl display=1"]`, not one string): a `-set` pair arriving glued is an
-argument DOSBox-X does not recognise, and it hangs on those rather than refusing them.
+- **`shared: true`**: somebody is watching, and the host's placement helper puts the window on
+  `display` (Window placement, below).
 
 **`background` decides whether the launch takes the owner's focus**, through SDL3's
 `SDL_MAC_BACKGROUND_APP` (which reaches SDL3 through the sdl2-compat layer DOSBox-X links):
 `true` launches behind, `false` in front; omitted, a headless start goes behind and a shared
 one in front. The hint is set or removed in the spawned environment, never inherited from
 the server's, and the reply's `background` says what the process was told. A window launched
-behind is still drawn where the placement flags put it.
+behind is still drawn where the placement helper put it.
 
 `session_seconds` is a **hard bound and required**: a DOSBox-X nobody reads freezes under its
 terminal, so every session carries a ceiling on its life, and `status` says how much of it is
@@ -34,6 +30,14 @@ held at the debugger never advances. So a guardian beside the emulator (`scry_co
 named `scry-dosbox-x-guardian` in the host's process list) also keeps it on the host's clock,
 ending the emulator a few seconds past the bound if it is still there, and within one poll of
 this server dying, however it dies.
+
+**Why a session ended rides on the reply that ends it.** `close` reads the last words of both
+channels after the exit: `stdout_tail`, the console's (the debugger's terminal, its escapes
+stripped, so the emulator's own lines and the screen it painted last), and `errorlog_tail`, the
+logfile's (unavailable with why when `start` was given none), each the newest 1500 characters.
+They come back when the end was not a clean `quit` with exit code 0, or with `detail=True`; a
+clean quit names them in `omitted`, because once `close` has answered the console's are gone
+(the logfile stays at its path).
 
 **What else `start` takes.** `program` runs with `-c` AFTER the conf's autoexec, so that
 autoexec must not `exit` or the program never runs. `plan` is a list of the server's own
@@ -81,13 +85,16 @@ refused over it.
 **Which DOSBox-X runs is resolved once per `start` and per `build_check`, and said.** The
 ladder is the `binary` argument (an absolute path), else the `DOSBOX_X_BINARY` variable, else
 the `dosbox-x` the PATH finds, and the first rung holding a value is the one taken. A relative
-value is `bad_argument`; one naming no executable file is refused naming what all three rungs
-held, `bad_argument` when it was the `binary` argument and `host_failed` when it was the host's
+value is `bad_argument` (at `binary`, saying that leaving it empty climbs to the other two);
+one naming no executable file is refused naming what all three rungs held, `bad_argument` when it was the `binary` argument and `host_failed` when it was the host's
 variable or PATH, and is never passed over for the next, because a caller who named a build and got
 another would be measuring the wrong emulator. Both replies carry `binary` (absolute),
 `binary_origin` (`argument`, `DOSBOX_X_BINARY` or `PATH`) and `version`: the first non-blank
-line `-version` prints, or `{"available": false, "why": ...}` when it printed nothing, did not
-return in 5 s or could not run. Either way the call goes on.
+line `-version` prints, asked as a session is launched and within 5 s that `start` takes out of
+its wait for the debugger's prompt, its whole process group ended when they run out; or
+`{"available": false, "why": ...}` when it printed nothing, did not return in time or could not
+run. Either way the call goes on. `bench.py` measures the build this ladder lands on, and its
+stamp names it the same way.
 
 **`build_check` answers about the build, and refuses while a session is live.** It asks the
 question a failure asks first, about the thing that matters: not whether there is a binary
@@ -140,14 +147,17 @@ where it is not (a byte-order mark an editor wrote first is dropped); a symbol m
 leniently, because a DOS toolchain's map may carry code page 437 bytes in a path or a comment,
 and its parser counts the lines it could not read.
 
-**Window placement.** The server never decides where a shared window goes; it takes the
-`window_flags` and passes them through. A `shared` session without them is refused rather
-than given a geometry the server invented, and a headless session with them is refused too:
-there is no window to place.
+**Window placement.** The server never decides where a shared window goes: it asks the host's
+placement helper, the program `WINDOW_APP` names, as `<helper> dosbox --shared` with `display`
+(`main` or `secondary`; empty, the display `WINDOW_SHARED_DISPLAY` names, else the secondary),
+and passes the flags it prints, one argv token a line, to the emulator. No flags is an answer (a
+host with one display); no helper, or one that fails, refuses a shared `start` `host_failed`
+rather than give the window a geometry the server invented, and a `display` on a headless
+session is refused: nobody looks at a display there. The reply says which display it went to.
 
 **The emulator's own options go in `flags`, in either mode.** They are argv tokens placed
 after this server's defaults, so a `-set` the caller passes for the same key wins
-(`["-set", "cpu cycles=fixed 2500"]`), one token per `-set` value as for `window_flags`. What
+(`["-set", "cpu cycles=fixed 2500"]`), one token per `-set` value. What
 a named argument sets is not theirs to retune: `-time-limit` is `session_seconds`,
 `sdl videodriver` is `shared`, `log logfile` is `logfile`, and so on for the conf, the break at start, the save
 directory, the program, the int 3 key, the input route and the captures. Such a flag is
@@ -190,6 +200,9 @@ to capture, so `snapshot`, `capture_frame` and `series_capture` never carry it, 
 `screen_view` and `screen_signature`, which read the VGA memory and the DAC, never see it. A
 recording of the window made from outside does show it.
 
+**A capture is the emulated screen and nothing else**: DOSBox-X has no layouts, so there is no
+view to choose and no capture names one.
+
 ## What every reply carries
 
 **Every reply carries `altered`, in its `session` block, and opens with a `summary`.**
@@ -217,21 +230,19 @@ off the session's own flag, with no console round trip), `altered`, and each ala
 with why when it could not be read, `false` when it is gone), `terminal_bytes_dropped` when not zero (a screen delta had a
 hole in it; it counts the emulator's terminal, never the guest's E9 stream, which is read off the
 log file), `drain_alive: false` and `drain_ended` (the terminal reader stopped, and why: a dead
-reader makes every later read return nothing while `alive` still says true). **What is fixed for
-the session, or only counts, rides on `start`, `status` and `close`** (`close`'s describing the
-session as it was before the close): `pid` (the emulator's, to read instead of
+reader makes every later read return nothing while `alive` still says true). **What the
+process is rides at the top of `start`, `status` and `close`** (`close`'s are the
+process it just ended, read before the end), and on no other reply: `pid` (the emulator's, to read instead of
 hunting it), `conf` and `conf_digest` (the config and a digest of its content at start),
 `watched` (started to be looked at, so a window was placed), `bound_s` and `elapsed_s`,
 `captures` (`off`, or where a `capture_video` session records, `on, in the emulator's own
 directory` when it was given no `captures_dir`), `state_dir` (where `state_save` writes and
-`state_list` reads), and the alarms' quiet values. Every other reply names that half in
-`omitted` beside `how`, so the short block is never read as the whole one, unless naming it
-would cost more than the half itself, which then rides whole.
+`state_list` reads), and the alarms' facts whatever they hold.
 
 **A session whose emulator died is kept until `close`**: every call that needs the machine
 answers `session_broken` with the `exit_code`, and the block still says whether the session was
 written to (`altered`), which a caller measuring a forced state must not lose; `status` answers
-it, `alive: false` in its whole block; `close` collects it, and a `start` closes it first.
+it, `alive: false` in its block; `close` collects it, and a `start` closes it first.
 
 **A refusal is one contract, and a class holds it.** `status` is `ok` or `INVALID`; an
 INVALID carries `code`, one word from a fixed table (`no_session`, `not_stopped`,
@@ -278,7 +289,7 @@ comes back as an empty list. "There is no log to match against" is `INVALID`. A 
 cannot tell those apart reports a broken instrument as a clean result.
 
 **A session it cannot reproduce is refused, before the process exists.** An unreadable
-config, a watched session with no placement flags, a session with no bound: all refused up
+config, a watched session with no placement helper, a session with no bound: all refused up
 front. A guarantee that leaves alive what it just declared invalid is not a guarantee.
 
 **Reads are narrow on purpose.** `log` filters in the server and hands back matching lines,
@@ -350,7 +361,7 @@ waits for a line or a screen, a bounded `resume`, an input's `verify`/`expect`.
 - `run_to` requires its `control`: this debugger keeps no control between runs.
 - `run_for` counts frames as vertical retraces, and `trace(instructions)` is a different fact
   from `step(count)`: instructions run against steps taken.
-- `start` takes `shared` and the emulator's raw `window_flags`: the window is the emulator's.
+- `start` takes `shared` and a `display`, and asks the host's helper where the window goes.
 - `debug` answers `screen_delta` and `screen_chars`: the console is a repaint, not a reply.
 - `snapshot` refuses a machine parked at the debugger (the guest's own stub takes the
   command), `state_save` and `state_load` take a running guest (stopped for them and released
@@ -2025,9 +2036,10 @@ Three more things the overrides expect, none of them guessable:
   waiting case asks. A token that is already there makes that case report INVALID, which is
   the correct refusal and not a pass.
 
-A sixth variable, `DOSBOX_X_LIVE_WINDOW_FLAGS`, carries the placement flags for the one case
-that opens a watched window (newline-separated, because a `-set` pair contains a space).
-Without it that case skips: where a window goes is not this package's decision.
+A sixth variable, `WINDOW_APP`, names the placement helper the cases that open a watched window
+ask, as `start` does; its runs go to the display `WINDOW_SHARED_DISPLAY` names, the secondary
+when unset, so they stay off the one somebody works on. Without it those cases skip: where a
+window goes is not this package's decision.
 
 **The live tiers need no other project.** The protected-mode cases run on a second guest the
 package owns, `tests/guest/dpmi.c`, a DJGPP program built into the committed `dpmi.exe` and

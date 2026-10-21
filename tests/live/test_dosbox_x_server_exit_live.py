@@ -69,7 +69,7 @@ def test_the_emulator_ends_with_the_server(ended_by: str, code: int, tmp_path: P
             "conf": str(BRICKS / "bricks.conf"), "cwd": str(BRICKS), "session_seconds": 120}})
         body = started["result"]["structuredContent"]
         assert body["status"] == "ok", body.get("summary")
-        pid = body["session"]["pid"]
+        pid = body["pid"]
         assert _alive(pid), "the emulator the start reported is not running"
         if ended_by == "stdin":
             proc.stdin.close()

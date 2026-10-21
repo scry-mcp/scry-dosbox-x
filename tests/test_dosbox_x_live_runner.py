@@ -332,7 +332,7 @@ def test_the_bricks_demo_refuses_a_host_that_cannot_start_dosbox_x(
         monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.syspath_prepend(str(ROOT / "demos" / "bricks"))
     demo = importlib.import_module("demo")
-    monkeypatch.setattr(demo, "placement", lambda _shared: ([], ""))
+    monkeypatch.setattr(demo, "unplaced", lambda _where: "")
     monkeypatch.setattr(dosbox_binary, "canary_for", lambda _b="": ["/opt/dosbox-x"])
     monkeypatch.setattr(live_host, "canary", lambda _argv: "dosbox-x did not return")
     assert demo.precheck(demo.Run(dir=ROOT, options={})) == "dosbox-x did not return"

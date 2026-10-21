@@ -18,7 +18,6 @@ import time
 from pathlib import Path
 
 from matrix_common import (
-    ENV,
     GUEST,
     PROBE_CONF,
     M,
@@ -31,7 +30,7 @@ from matrix_common import (
 )
 from scry_core import focus_gate, focus_watch
 
-FLAGS_VAR = "DOSBOX_X_LIVE_WINDOW_FLAGS"
+HELPER_VAR = "WINDOW_APP"
 NAMES = {"dosbox-x"}
 
 O_CONTROL = cells(
@@ -52,22 +51,18 @@ WATCH: list[focus_watch.FocusWatch] = []
 SINCE: list[int] = []
 
 
-def _flags() -> list[str]:
-    return [ln for ln in ENV.get(FLAGS_VAR, "").splitlines() if ln.strip()]
-
-
 def _hold(background: bool) -> tuple[int, int]:
     """One shared probe start, launched as asked, held, closed: its window, in ms."""
     began = focus_watch.now_ms()
     boot(conf=conf_without_launch(PROBE_CONF, "PROBE.COM"), cwd=GUEST, shared=True,
-         window_flags=_flags(), program="PROBE.COM", background=background)
+         program="PROBE.COM", background=background)
     must(M.call(server.resume), "releasing the probe")
     time.sleep(focus_gate.HOLD_S)
     close_whatever()
     return began, focus_watch.now_ms()
 
 
-@M.section("O", "the focus gate's control, opening the run", O_CONTROL, FLAGS_VAR, place=0)
+@M.section("O", "the focus gate's control, opening the run", O_CONTROL, HELPER_VAR, place=0)
 def section_o_control() -> None:
     tsv = Path(M.fresh("-focus.tsv"))
     watch = focus_watch.FocusWatch(tsv)
@@ -84,7 +79,7 @@ def section_o_control() -> None:
         SINCE.append(c.since)
 
 
-@M.section("O", "the focus gate's verdict, closing the run", O_VERDICT, FLAGS_VAR, place=2)
+@M.section("O", "the focus gate's verdict, closing the run", O_VERDICT, HELPER_VAR, place=2)
 def section_o_verdict() -> None:
     if not WATCH:
         M.block_rest("the control never started the watch")

@@ -67,6 +67,7 @@ class Launch:
     cwd: Path
     seconds: int
     watched: bool = False
+    # WHERE A WATCHED WINDOW GOES, as the host's placement helper answered (`start` asks it).
     window_flags: list[str] = field(default_factory=list)
     # THE CALLER'S EMULATOR FLAGS (a `-set` of a fixed clock, the quit warning back), in any
     # mode. Placement is `window_flags`; these are everything else, so a headless session
@@ -279,10 +280,11 @@ def launch_environment(background: bool) -> dict[str, str]:
     return spawned
 
 
-def binary_facts(resolved: binaries.Resolved) -> dict[str, Any]:
+def binary_facts(resolved: binaries.Resolved, seconds: float) -> dict[str, Any]:
     """The build's facts (`scry_core.binaries.facts`), its `-version` probe spawned as a session
-    is: this build starts on an option it does not know, so the probe launches behind."""
-    return binaries.facts(resolved, env=launch_environment(True))
+    is (this build starts on an option it does not know, so the probe launches behind) and
+    bounded by `seconds`."""
+    return binaries.facts(resolved, env=launch_environment(True), seconds=seconds)
 
 
 def listen_input(port: int) -> socket.socket:
@@ -449,18 +451,6 @@ def validate(launch: Launch) -> None:
     except (OSError, ValueError) as e:     # a stat refused (before 3.14 it raises, not answers)
         raise Invalid("bad_argument",
                       f"a path of this launch cannot be looked at: {e}") from None
-    if launch.watched and not launch.window_flags:
-        raise Invalid("bad_argument",
-            "a watched session needs its placement flags, and this server does "
-            "not compute them: they come from the caller, which is what keeps "
-            "one helper the single source of where a window goes. Inventing a "
-            "geometry here is how windows end up off-screen or on the display "
-            "nobody is looking at.")
-    if not launch.watched and launch.window_flags:
-        raise Invalid("bad_argument",
-            "`window_flags` place a WINDOW and a headless session has none, so they would "
-            "be dropped: an emulator flag (a `-set` of the clock, say) goes in `flags`, "
-            "which reaches the command line in either mode")
     check_flags("window_flags", launch.window_flags)
     check_flags("flags", launch.flags)
     if launch.seconds <= 0:

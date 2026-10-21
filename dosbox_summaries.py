@@ -90,8 +90,8 @@ def _word(value: Any) -> str:
 
 
 def status(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    # THE REPLY'S OWN FACTS, never its block: the summary is read off the body's reply, whose
-    # block is the short one. `declarations` is counted on every session and on none without.
+    # THE REPLY'S OWN FACTS, never its block: the summary is read off the body's reply, before
+    # the block is added. `declarations` is counted on every session and on none without.
     if "declarations" not in reply:
         return "status: no session"
     why = reply.get("pc", {}).get("why") if isinstance(reply.get("pc"), dict) else None

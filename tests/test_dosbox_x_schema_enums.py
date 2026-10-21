@@ -11,6 +11,7 @@ import re
 from typing import Any
 
 import pytest
+from scry_core import placement as window
 from scry_core.reply_contract import Invalid
 
 import dosbox_checks as checks
@@ -37,6 +38,7 @@ CLOSED: list[tuple[str, str, tuple[Any, ...]]] = [
     ("send_mouse", "button", ("", *inputs.BUTTON_WORDS)),
     ("send_mouse", "action", inputs.ACTIONS), ("send_mouse", "units", inputs.UNITS),
     ("machine_map", "sections", machine.SECTION_NAMES),
+    ("start", "display", window.DISPLAY_OPTIONS),
 ]
 #: The two taken in any case: a pattern of their words, never an `enum` that would refuse one.
 FOLDED: list[tuple[str, str, tuple[str, ...]]] = [

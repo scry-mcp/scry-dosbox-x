@@ -8,12 +8,11 @@ loaded. The session is windowed so the game can be watched, and nothing in it ne
 `stop` and the saved states go down the debugger channel, the keys and the mouse in inside the
 guest. The saved states need a DOSBox-X that carries SAVESTATE and LOADSTATE.
 
-Where the window goes is the host's to say, never this demo's: it asks the placement helper named
-by `WINDOW_APP`, `<helper> dosbox` for a run nobody watches
-and `<helper> dosbox --shared` with `--shared`. A run nobody watches that the helper cannot place
-away from the owner's work (no helper, or a helper that places nothing, as on one display) is
-refused rather than opened on top of it; `--shared` says somebody is watching, so it may open
-where they look. The placement is the host's, so the transcript shows `<host>` for it.
+Where the window goes is the host's to say, never this demo's: the server asks the placement
+helper `WINDOW_APP` names, for the secondary display on a run nobody watches and the main one
+with `--shared`. A run nobody watches that the helper cannot place away from the owner's work (no
+helper, or a helper that places nothing, as on one display) is refused rather than opened on top
+of it; `--shared` says somebody is watching, so it opens where they look; it still needs the helper.
 """
 
 from __future__ import annotations
@@ -22,23 +21,19 @@ import atexit
 import functools
 import os
 import shutil
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
 from typing import Any
 
 from scry_core import live_host
+from scry_core import placement as window
 from scry_core.demo import Demo, Reply, Run, Step, StepFailed, main
 
 import dosbox_binary  # isort: skip -- a module of the repository root, installed in its environment
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-#: Where a watched window goes when there is no helper, or it places nothing (one display):
-#: centred, where the person who asked to watch is looking.
-CENTRED = ["-set", "sdl windowposition=,"]
-HELPER_TIMEOUT_S = 10
 #: These mirror bricks.asm, and the checks go red if the game moves them: the fixed serve's
 #: first brick and its `(6 - row) * 10` points, then PADDLE_HOME and PADDLE_STEP.
 FIRST_ROW, FIRST_COL, FIRST_POINTS = 5, 7, 10
@@ -66,30 +61,24 @@ def word(reply: Reply) -> int:
     return raw[0] | raw[1] << 8
 
 
+def display(run: Run) -> str:
+    """The display the window opens on: the one being looked at with `--shared`, else the
+    secondary, away from the owner's work."""
+    return "main" if run.options.get("shared") else "secondary"
+
+
 @functools.cache
-def placement(shared: bool) -> tuple[list[str], str]:
-    """The window flags the host's helper gives, one argument a line, or why there are none."""
-    helper = os.environ.get("WINDOW_APP", "").strip()
-    if not helper:
-        return (CENTRED, "") if shared else ([], (
-            "WINDOW_APP names no placement helper, so the window would open wherever the "
-            "emulator likes, likely on top of your work; set it, or pass --shared if you are "
-            "watching"))
-    try:
-        said = subprocess.run([helper, "dosbox", *(["--shared"] if shared else [])],
-                              capture_output=True, text=True, timeout=HELPER_TIMEOUT_S)
-    except (OSError, subprocess.TimeoutExpired) as e:
-        return [], f"the placement helper {helper} could not be run: {e}"
-    if said.returncode != 0:
-        return [], (f"the placement helper {helper} answered exit code {said.returncode}: "
-                    f"{said.stderr.strip() or said.stdout.strip()}")
-    flags = [ln for ln in said.stdout.splitlines() if ln.strip()]
-    if not flags and shared:
-        return CENTRED, ""
-    if not flags:
-        return [], ("the placement helper has nowhere to put a window away from your work (one "
-                    "display); pass --shared if you are watching")
-    return flags, ""
+def unplaced(where: str) -> str:
+    """Why the window cannot open on `where` as the server would place it (`scry_core.placement`,
+    the helper `WINDOW_APP` names), or ''. A run nobody watches that the helper cannot put away
+    from the owner's work (one display: no flags) is refused rather than opened on top of it."""
+    placed = window.ask("dosbox", True, where)
+    if placed.flags is None:
+        return placed.why
+    if not placed.flags and where == "secondary":
+        return ("the placement helper has nowhere to put a window away from your work (one "
+                "display); pass --shared if you are watching")
+    return ""
 
 
 def precheck(run: Run) -> str:
@@ -99,7 +88,7 @@ def precheck(run: Run) -> str:
     binary = run.options.get("binary")
     if binary and not Path(binary).is_absolute():
         return f"the server takes absolute paths only: --binary {binary}"
-    if why := placement(bool(run.options.get("shared")))[1]:
+    if why := unplaced(display(run)):
         return why
     argv = dosbox_binary.canary_for(binary or "")
     return live_host.canary(argv) if argv else ""
@@ -114,7 +103,7 @@ def boot(run: Run) -> dict[str, Any]:
     # `shared` is the server's windowed session; the demo's own --shared only decides where the
     # window goes.
     return {"conf": HERE / "bricks.conf", "cwd": HERE, "session_seconds": 900, "shared": True,
-            "window_flags": placement(bool(run.options.get("shared")))[0],
+            "display": display(run),
             "break_on_int3": True, "logfile": run.dir / "bricks-e9.log",
             "state_dir": states}
 
@@ -314,7 +303,6 @@ DEMO = Demo(
     name="bricks", root=ROOT, server=[sys.executable, str(ROOT / "dosbox_x_server.py")],
     readme=HERE / "README.md", steps=STEPS, capture=lambda run: run.dir / "screen.png",
     offers=frozenset({"shared"}), reads=frozenset({"shared"}), precheck=precheck,
-    host_args={"window_flags": "where this host puts the window"},
     volatile={"argv": "the emulator's command line, which carries the host's window placement",
               "elapsed_s": "wall-clock time since the session started",
               "waited_s": "wall-clock time a wait took", "ready_after_s": "wall-clock time "

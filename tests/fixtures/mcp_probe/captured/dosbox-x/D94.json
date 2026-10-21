@@ -1,41 +1,25 @@
 {
  "task": {
   "id": "D94",
-  "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody who is watching, its window placed by the two tokens -set and sdl display=1, but launched behind my own windows so it does not take my focus.",
+  "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody who is watching, its window on my secondary display, but launched behind my own windows so it does not take my focus.",
   "tool": "start",
   "args": {
    "conf": "/opt/dosfury/fury.conf",
    "cwd": "/opt/dosfury",
    "session_seconds": 900,
    "shared": true,
-   "window_flags": [
-    "-set",
-    "sdl display=1"
-   ],
+   "display": "secondary",
    "background": true
   },
   "grammar": [
    "shared",
-   "-set",
-   "sdl display=1"
+   "secondary"
   ]
  },
  "runs": [
   {
    "lines": [
-    "D94: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"window_flags\": [\"-set\", \"sdl display=1\"], \"background\": true}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D94: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"window_flags\": [\"-set\", \"sdl display=1\"], \"background\": true}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D94: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"window_flags\": [\"-set\", \"sdl display=1\"], \"background\": true}}"
+    "D94: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"display\": \"secondary\", \"background\": true}}"
    ],
    "right": true
   }

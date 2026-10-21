@@ -31,7 +31,6 @@ from typing import Any, cast
 
 from scry_core import cancel, judges, narrowing, screen_map
 from scry_core import reply_contract as contract
-from scry_core import session_block as blocks
 
 import dosbox_console as dcons
 import dosbox_declarations as dec
@@ -465,18 +464,23 @@ _ALWAYS = ("alive", "running", "altered")
 
 
 def session_block(whole: bool = False) -> dict[str, Any]:
-    """The `session` block every reply closes with, read off the session as it is now: its
-    alarms on every reply, what is fixed for the session or only counts on `start` and
-    `status` (`scry_core.session_block`), and the same three keys saying nothing runs when there
-    is none."""
+    """The `session` block every reply closes with, read off the session as it is now: alive,
+    running, altered and each alarm while it holds, and the same three keys saying nothing runs
+    when there is none. Nothing in it is fixed for the session, so `whole` changes nothing: the
+    process's facts ride at the top of `start`, `status` and `close` (`process_facts`)."""
     if STATE.session is None:
         return dict(NO_SESSION_BLOCK)
-    alarms: dict[str, Any] = {}
-    fixed: dict[str, Any] = {}
-    for key, value in STATE.session.state().items():
-        alarm = key in _ALWAYS or (key in _ALARM_WHEN and _ALARM_WHEN[key](value))
-        (alarms if alarm else fixed)[key] = value
-    return blocks.block(alarms, fixed, whole)
+    return {key: value for key, value in STATE.session.state().items()
+            if key in _ALWAYS or (key in _ALARM_WHEN and _ALARM_WHEN[key](value))}
+
+
+def process_facts() -> dict[str, Any]:
+    """What the process a session runs is (`pid`, the conf and its digest, the bound and what is
+    spent, the terminal's reader, the captures, the state directory), at the top of `start`,
+    `status` and `close`: asked for, so never on every reply. Nothing with no session."""
+    if STATE.session is None:
+        return {}
+    return {key: value for key, value in STATE.session.state().items() if key not in _ALWAYS}
 
 
 def extend(built: dict[str, Any], **fields: Any) -> dict[str, Any]:

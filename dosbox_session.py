@@ -633,6 +633,9 @@ import dosbox_log_reader as log_reader  # noqa: E402
 import dosbox_saved_states as saved_states  # noqa: E402
 import dosbox_symbol_file as symbol_file  # noqa: E402
 
+#: How long `start` waits for the debugger's prompt, the `-version` probe's time included.
+READY_TIMEOUT_S = 30.0
+
 
 class Session:
     """A DOSBox-X process that stays put between questions.
@@ -941,7 +944,18 @@ class Session:
                 pass          # a dropped-bytes reading; the flag stands as it was
         return self._at_debugger
 
-    def wait_ready(self, timeout: float = 30.0, progress: Progress = no_progress) -> float:
+    def console_tail(self, chars: int) -> str:
+        """The last `chars` of what the emulator's console printed (the debugger's terminal,
+        escapes stripped): what reads took, then whatever the drain still holds, which after a
+        close is the emulator's last words."""
+        rest = self._pending + self._take().decode("utf-8", errors="replace")
+        self._pending = ""
+        if rest:
+            self._screen = (self._screen + dcons.ANSI.sub("", rest))[-SCREEN_KEEP:]
+        return self._screen[-chars:]
+
+    def wait_ready(self, timeout: float = READY_TIMEOUT_S,
+                   progress: Progress = no_progress) -> float:
         """Seconds until the debugger prompt appears; INVALID if it never does. The longest
         wait a session makes, and the one the owner watches: it reports where it is.
 
@@ -2754,8 +2768,8 @@ class Session:
             os.killpg(os.getpgid(self.proc.pid), sig)
 
     def state(self) -> dict[str, object]:
-        """The whole `session` block; `dosbox_state.session_block` splits it into what rides on
-        every reply and what rides on `start`, `status` and `close`."""
+        """Everything the server says about the session: `dosbox_state.session_block` keeps what
+        rides on every reply, and `process_facts` the rest, for `start`, `status` and `close`."""
         changed: bool | dict[str, Any]
         try:
             changed = (self.launch.conf.is_file()

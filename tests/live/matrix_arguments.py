@@ -291,11 +291,10 @@ def _running_table() -> None:
 def _state_dir_named(state_dir: Path) -> None:
     st = M.call(server.status)
     listed = M.call(server.state_list)
-    block = st.get("session") or {}
     M.judge("L status and state_list name state_dir, and no savedir",
-            ok(st) and ok(listed) and block.get("state_dir") == str(state_dir)
-            and "savedir" not in block and listed.get("state_dir") == str(state_dir)
-            and "savedir" not in listed, f"{block.get('state_dir')}; {said(listed, 60)}")
+            ok(st) and ok(listed) and st.get("state_dir") == str(state_dir)
+            and "savedir" not in st and listed.get("state_dir") == str(state_dir)
+            and "savedir" not in listed, f"{st.get('state_dir')}; {said(listed, 60)}")
 
 
 def _dests() -> None:

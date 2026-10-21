@@ -31,6 +31,7 @@ AND THE ONE FIGURE IT REFUSES TO PUBLISH AS A RATIO. See `advance_rate`.
 from __future__ import annotations
 
 import argparse
+import functools
 import json
 import os
 import re
@@ -43,7 +44,9 @@ from pathlib import Path
 from typing import Any, NoReturn
 
 sys.path.append(str(Path(__file__).resolve().parent))
+from scry_core.reply_contract import Invalid  # noqa: E402
 
+import dosbox_binary as dbinary  # noqa: E402
 import dosbox_console as dcons  # noqa: E402
 import dosbox_launch as dlaunch  # noqa: E402
 import dosbox_logs as dlogs  # noqa: E402
@@ -200,7 +203,8 @@ def reach_the_state(conf: Path, cwd: Path) -> dict[str, float]:
     if log.exists():
         log.unlink()
     t0 = time.perf_counter()
-    s = ds.Session(dlaunch.Launch(conf=conf, cwd=cwd, seconds=180, logfile=log))
+    s = ds.Session(dlaunch.Launch(binary=build().path, conf=conf,
+                                  cwd=cwd, seconds=180, logfile=log))
     try:
         s.wait_ready()
         prompt = time.perf_counter() - t0
@@ -230,7 +234,8 @@ def per_question(conf: Path, cwd: Path) -> dict[str, object]:
     log = Path("/tmp/dosbox-bench-q.log")
     if log.exists():
         log.unlink()
-    s = ds.Session(dlaunch.Launch(conf=conf, cwd=cwd, seconds=300, logfile=log))
+    s = ds.Session(dlaunch.Launch(binary=build().path, conf=conf,
+                                  cwd=cwd, seconds=300, logfile=log))
     out: dict[str, object] = {}
     try:
         ms, _ = timed(s.wait_ready)
@@ -303,7 +308,8 @@ def advance_rate(conf: Path, cwd: Path) -> dict[str, object]:
     log = Path("/tmp/dosbox-bench-rate.log")
     if log.exists():
         log.unlink()
-    s = ds.Session(dlaunch.Launch(conf=conf, cwd=cwd, seconds=240, logfile=log))
+    s = ds.Session(dlaunch.Launch(binary=build().path, conf=conf,
+                                  cwd=cwd, seconds=240, logfile=log))
     try:
         s.wait_ready()
         s.resume()
@@ -347,24 +353,29 @@ def window_rates(samples: list[tuple[float, float]]) -> dict[str, object]:
     }
 
 
+@functools.cache
+def build() -> dbinary.Resolved:
+    """The DOSBox-X this bench measures: the one the server's own ladder lands on
+    (`dosbox_binary`), so a bench and a session never run two different builds."""
+    try:
+        return dbinary.resolve("")
+    except Invalid as e:
+        no_measurement(f"no build to measure: {e}")
+
+
 def stamp() -> dict[str, object]:
-    """The machine and the emulator build, READ BACK rather than assumed.
-
-    `dosbox-x -version` writes to STDERR. An earlier version read `.stdout`, got an
-    empty string, and shipped `"emulator": []` in silence -- so the README's version
-    stamp was true by luck rather than by record, in the one field whose whole job is
-    to make the run attributable.
-    """
-    def run(*cmd: str) -> str:
-        got = subprocess.run(cmd, capture_output=True, text=True, check=False)
-        return (got.stdout + got.stderr).strip()
-
-    ver = run("dosbox-x", "-version").splitlines()
-    if not ver:
-        no_measurement("dosbox-x reported no version, so this run cannot "
-                         "be attributed to a build")
-    return {"machine": run("sysctl", "-n", "hw.model"),
-            "emulator": ver[0],
+    """The machine and the emulator build, READ BACK rather than assumed: the build's path, the
+    rung it came from and its version as `start` reads it (`dosbox_launch.binary_facts`, launched
+    as a session is, stderr read too: this build writes its banner there)."""
+    found = build()
+    ver = dlaunch.binary_facts(found, dbinary.VERSION_TIMEOUT_S)["version"]
+    if not isinstance(ver, str):
+        no_measurement(f"{found.path} reported no version ({ver['why']}), so this run cannot "
+                       "be attributed to a build")
+    machine = subprocess.run(("sysctl", "-n", "hw.model"), capture_output=True, text=True,
+                             check=False)
+    return {"machine": (machine.stdout + machine.stderr).strip(), "emulator": ver,
+            "binary": found.path, "binary_origin": found.origin,
             "load_average": os.getloadavg()}
 
 

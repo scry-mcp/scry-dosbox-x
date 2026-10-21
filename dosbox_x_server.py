@@ -38,7 +38,7 @@ one instruction at a time (`step`), or arm a watch and leave it stopped (`watch`
 HONESTY, wired into the contract rather than into a prompt:
 
 - `start` refuses a session it cannot reproduce -- an unreadable config or working
-  directory, a watched session with no placement flags, a session with no bound or
+  directory, a watched session with no placement helper, a session with no bound or
   with one so large it bounds nothing -- and refuses it BEFORE the process exists.
   When a session comes up but never reaches its debugger, it is CLOSED before the
   refusal is returned: a guarantee that leaves alive what it just declared invalid is
@@ -98,6 +98,7 @@ from scry_core import (  # noqa: E402
     reply_schema,  # noqa: E402
     screen_map,
 )
+from scry_core import placement as window  # noqa: E402
 from scry_core import presence as scry_presence  # noqa: E402
 from scry_core import strict_arguments as strict  # noqa: E402
 from scry_core import vocabulary as vocab
@@ -194,7 +195,7 @@ def build_check(binary: str = "") -> dict[str, Any]:
             f"debugger's own text. The readers of the machine, the breakpoints, the watches "
             f"and the symbol placement all need it; the guest's log, the captures and the "
             f"in-guest input do not")
-    return st.reply(**dlaunch.binary_facts(resolved), debugger=True,
+    return st.reply(**dlaunch.binary_facts(resolved, binaries.VERSION_TIMEOUT_S), debugger=True,
                     heavy_debug=binaries.heavy_debug(resolved.path), tools=registered_tools())
 
 
@@ -203,7 +204,9 @@ def build_check(binary: str = "") -> dict[str, Any]:
 @tool("Start a DOSBox-X session", summary=one_line.start, on_cancel="kill")
 def start(conf: str, cwd: str,
           session_seconds: Annotated[int, vocab.bounds(1, dlaunch.MAX_SECONDS)],
-          shared: bool = False, window_flags: list[str] | None = None,
+          shared: bool = False,
+          display: Annotated[str, vocab.enum(window.DISPLAY_OPTIONS),
+                             Field(description=window.DISPLAY_ARGUMENT)] = "",
           flags: list[str] | None = None, break_on_int3: bool = False, program: str = "",
           logfile: str = "", capture_video: bool = False, captures_dir: str = "",
           plan: list[dict[str, Any]] | None = None,
@@ -219,9 +222,9 @@ def start(conf: str, cwd: str,
     Every path is absolute or `~`-led: `cwd`, the emulator's working directory, there; `conf`;
     `logfile`, its directory there; `captures_dir` and `state_dir`, created with their parents.
     `session_seconds`: the session's REQUIRED lifetime; `close` is
-    the act. `shared`: watched, in a window `window_flags` places; false, headless.
-    `window_flags` and `flags` (the emulator's own, after this server's defaults) are
-    argv tokens, a `-set` value ONE token with its spaces: `["-set", "sdl display=1"]`.
+    the act. `shared`: watched, in a window the host's helper places on `display`; false,
+    headless. `flags` (the emulator's own, after this server's defaults) are argv
+    tokens, a `-set` value ONE token with its spaces.
     `break_on_int3`: the guest's `int 3` stops at the debugger. `logfile`: the guest's E9
     channel, without which `log`, `log_wait`, `expect` and `drive` have none. `program` runs
     with `-c` AFTER the conf's autoexec (which must not `exit`); `capture_video` records it.
@@ -232,20 +235,20 @@ def start(conf: str, cwd: str,
     the build to run; omitted, `DOSBOX_X_BINARY`, else the PATH's `dosbox-x`. `background`:
     `true` behind; `false` in front; omitted, by `shared`.
 
-    Reply: `shared`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `stub`,
-    `input_port`, `background`, `presence`, `declarations.rearm`, and `rearm_refused` (why)
-    when stored raw breakpoints could not re-arm; with `plan`, the sequence account, the start
-    facts under `start`.
+    Reply: the process (`status`'s rows), `shared`, `display`, `ready_after_s`, `argv`,
+    `binary`, `binary_origin`, `version`, `stub`, `input_port`, `background`, `presence`,
+    `declarations.rearm`, and `rearm_refused` (why) when stored raw breakpoints could not
+    re-arm; with `plan`, the sequence account, the start facts under `start`.
 
     Refused before anything starts: a path not absolute, an unresolved binary, a missing
-    conf, `cwd` or `logfile` directory, `session_seconds` out of range, `shared` without
-    `window_flags` or headless with them, a glued or shredded `-set`, `capture_video`
+    conf, `cwd` or `logfile` directory, `session_seconds` out of range, `display` headless,
+    `shared` with no window helper, a glued or shredded `-set`, `capture_video`
     without `program`, an `input_port` outside {INPUT_PORT_MIN}-{INPUT_PORT_MAX} or busy, no
     drive free for the stub.
 
     Reference: REFERENCE.md, The session.
     """
-    return lifecycle.start(conf, cwd, session_seconds, shared, window_flags, flags,
+    return lifecycle.start(conf, cwd, session_seconds, shared, display, flags,
                            break_on_int3, program, logfile, capture_video, captures_dir, plan,
                            settle_seconds, input_port, state_dir, binary, background,
                            presence, bridge(ctx), _step_ops)
@@ -257,9 +260,10 @@ def status() -> dict[str, Any]:
     reported (`stopped_on_its_own`) and applies what was queued while the guest ran
     (`applied_on_stop`).
 
-    Reply: `session`, `alive: false` when there is none (under `status: "ok"`: nothing
-    running is an answer). Whole here, on `start` and on `close`; any other reply carries
-    `alive`, `running`, `altered` and each alarm (!) while it holds, naming the rest in `omitted`:
+    Reply, at the top here, on `start` and on `close`: the rows below but `alive`, `running`
+    and `altered` (none with no session). `session`, on every reply, carries those three
+    (`alive` false with no session: nothing running is an answer) and each alarm (!) while it
+    holds:
 
       pid                     the emulator process's pid.
       alive                   the emulator process is up.
@@ -277,7 +281,7 @@ def status() -> dict[str, Any]:
       captures                `off`, or where a `capture_video` session records.
       state_dir               where `state_save` writes and `state_list` reads.
 
-    At the top (`alive` and `running` are the `session` block's): `last_stop` (`stop_seq`,
+    Also at the top: `last_stop` (`stop_seq`,
     `pc`, `cause`, `since_s`, `wall_at`; the park after `start` is stop 1; unavailable with no
     session or a cut survey), `pending` (asked while the guest ran: `arm` refs, a `disarm` count,
     `symbols_load`), `presence` (the window's edge: `true` drawn, `false` off or no session,
@@ -289,13 +293,13 @@ def status() -> dict[str, Any]:
     """
     if STATE.session is not None and STATE.session.alive():
         running.drain_if_stopped(STATE.session)   # `status` asks for no session, but uses one
-    return st.reply(last_stop=STATE.dated(),
+    return st.reply(**st.process_facts(), last_stop=STATE.dated(),
                     pending=STATE.pending_summary(), **running.status_facts(STATE.session),
                     presence=lifecycle.presence_shown(STATE.session))
 
 
 @tool("Close the session", summary=one_line.close, session_before=True, on_cancel="kill")
-def close(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
+def close(detail: bool = False, ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """End the session deliberately rather than waiting for its bound. Reports its progress
     while the emulator takes its time to leave.
 
@@ -305,10 +309,13 @@ def close(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     guest wedged, and SIGKILL ended it; `died`: it had already exited when this was called;
     `none`: nothing to close), `exit_code` (an integer, or unavailable with its `why`:
     SIGKILLed and still not reaped, an emulator may still be on the machine, or not read).
-    `session` describes the state as it was BEFORE closing, so its `pid` is the process this
-    call ended.
+    `stdout_tail` and `errorlog_tail` (the last words of the console and of the logfile, read
+    after the exit) when the end was not a clean `quit` with exit code 0, or with
+    `detail=True`, else `omitted` names them with `how`. What the process was (`status`'s
+    rows, `pid` first) rides at the top, read before the end, so `pid` is the process this call
+    ended; `session` is the block as it stood BEFORE closing.
     """
-    return lifecycle.close(bridge(ctx))
+    return lifecycle.close(bridge(ctx), detail)
 
 
 # ------------------------------------------------------------------ the guest's own log

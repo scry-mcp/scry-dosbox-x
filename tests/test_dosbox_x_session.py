@@ -306,14 +306,6 @@ def test_a_missing_working_directory_is_refused_too(conf: Path, tmp_path: Path) 
         dlaunch.validate(launch(conf, cwd=tmp_path / "nowhere"))
 
 
-def test_a_watched_session_without_placement_flags_is_refused(conf: Path) -> None:
-    """The server does not COMPUTE where a window goes: one helper decides that for
-    the whole fleet, and inventing a geometry here is how a window ends up
-    off-screen. Refusing is the honest alternative to a private default."""
-    with pytest.raises(ds.Invalid, match="placement flags"):
-        dlaunch.validate(launch(conf, watched=True))
-
-
 def test_a_glued_placement_pair_is_refused(conf: Path) -> None:
     """`-set` and its value are two tokens. Arriving as one, DOSBox-X does not refuse
     it, it hangs on it.
@@ -2486,13 +2478,6 @@ def test_a_shredded_or_glued_set_is_refused(conf: Path, flags: list[str]) -> Non
     Both are refused before a process exists."""
     with pytest.raises(ds.Invalid, match="bad_argument|-set"):
         dlaunch.validate(launch(conf, flags=flags))
-
-
-def test_placement_flags_on_a_headless_session_are_refused_not_dropped(conf: Path) -> None:
-    """Placement flags on a headless session are refused, never dropped: there is no window to
-    place, and an emulator flag belongs in `flags`. The refusal says both."""
-    with pytest.raises(ds.Invalid, match="flags"):
-        dlaunch.validate(launch(conf, window_flags=["-set", "cpu cycles=fixed 3000"]))
 
 
 @pytest.mark.parametrize("flags", [

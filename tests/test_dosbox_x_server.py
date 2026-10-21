@@ -388,6 +388,9 @@ class FakeSession:
         self.ended_how = "quit"
         return 0
 
+    def console_tail(self, chars: int) -> str:
+        return ""
+
     def selector(self, reg: str) -> dict[str, int]:
         """THE REAL METHOD, run against a CAPTURED descriptor screen.
 
@@ -962,10 +965,11 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         assert "no live session" in got["message"], name
 
 
-def test_a_short_block_carries_each_alarm_while_it_holds_and_names_the_rest() -> None:
-    """Every reply carries `alive`, `running`, `altered` and each alarm WHILE IT HOLDS; the rest
-    rides on `start`, `status` and `close` and is named in `omitted` elsewhere. Read on a session
-    whose alarms all hold, then on its quiet twin."""
+def test_the_block_carries_each_alarm_while_it_holds_and_the_process_facts_ride_at_the_top(
+        ) -> None:
+    """Every reply's block carries `alive`, `running`, `altered` and each alarm WHILE IT HOLDS;
+    what the process is rides at the top of `start`, `status` and `close` and nowhere else. Read
+    on a session whose alarms all hold, then on its quiet twin."""
     fake = install()
     quiet = fake.state()
     loud = {**quiet, "conf_changed_on_disk": True, "terminal_bytes_dropped": 4096,
@@ -973,16 +977,14 @@ def test_a_short_block_carries_each_alarm_while_it_holds_and_names_the_rest() ->
     alarms = ("conf_changed_on_disk", "terminal_bytes_dropped", "drain_alive", "drain_ended")
     fake.state = lambda: loud  # type: ignore[method-assign]
     short = cast(dict[str, Any], server.registers())["session"]
-    assert all(short[k] == loud[k] for k in alarms), short
-    assert "pid" not in short and "pid" in short["omitted"] and short["how"], short
-    assert cast(dict[str, Any], server.status())["session"]["pid"] == 4242
+    assert all(short[k] == loud[k] for k in alarms) and "pid" not in short, short
+    status = cast(dict[str, Any], server.status())
+    assert status["pid"] == 4242 and status["drain_ended"] == "EIO", status
     fake.state = lambda: quiet  # type: ignore[method-assign]
     short = cast(dict[str, Any], server.registers())["session"]
-    assert not set(alarms) & set(short), short
-    assert {"conf_changed_on_disk", "terminal_bytes_dropped", "drain_alive"} <= set(
-        short["omitted"]), short
-    closed = cast(dict[str, Any], server.close())["session"]
-    assert closed["pid"] == 4242 and closed["elapsed_s"] == 1.0, "close's block is whole"
+    assert set(short) == {"alive", "running", "altered"}, short
+    closed = cast(dict[str, Any], server.close())
+    assert closed["pid"] == 4242 and closed["elapsed_s"] == 1.0, "close says what it ended"
 
 
 def test_a_dead_session_answers_broken_until_close_collects_it() -> None:
@@ -2538,14 +2540,14 @@ def test_the_status_docstring_names_every_field_its_reply_carries() -> None:
     # `conf_changed_on_disk` and the word `config`. MEASURED, both rows could be
     # deleted from the docstring and this stayed green -- over the one defect it is
     # here to catch.
-    unnamed = sorted(k for k in cast(dict[str, Any], got["session"])
-                     if not re.search(rf"^\s+{re.escape(k)}\s", doc, re.M))
+    fields = {*cast(dict[str, Any], got["session"]), *dstate.process_facts()}
+    unnamed = sorted(k for k in fields if not re.search(rf"^\s+{re.escape(k)}\s", doc, re.M))
     assert not unnamed, (
         f"`status` returns these and its docstring does not name them: {unnamed}. An "
         f"MCP caller reads the docstring and not the README")
     # AND IT MEASURED SOMETHING: without this, a reply that lost its session block
     # would pass by having nothing to check.
-    assert len(cast(dict[str, Any], got["session"])) >= 11, got
+    assert len(fields) >= 11 and fields <= set(got) | set(got["session"]), got
     # A LIMIT, SAID OUT LOUD: this asks whether the field has a ROW, not whether what is
     # written beside it is true. It catches a field going UNDESCRIBED, which is what
     # happened to six of the eleven; it cannot catch one being described wrongly.
@@ -3063,6 +3065,9 @@ class NamesFake:
         self.ended_how = "killed"
         return 0
 
+
+    def console_tail(self, chars: int) -> str:
+        return ""
     def where_and_registers(self) -> tuple[dict[str, str], dict[str, str]]:
         return self.where(), self.registers()
 
@@ -4328,6 +4333,8 @@ def _start_on_a_booted_fake(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 
     if which:
         monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
+        # AND ITS VERSION, or the host's own `/usr/bin/dosbox-x -version` would run, if it has one.
+        monkeypatch.setattr("scry_core.binaries.version", lambda *_a, **_k: "DOSBox-X (a stub)")
     def booted(launch: dlaunch.Launch) -> Booted:
         fake = Booted(conf=conf)
         fake.launch.input_port = launch.input_port    # the session's own, as a real one keeps
@@ -7611,11 +7618,22 @@ def test_a_stop_whose_survey_came_back_cut_names_no_mode_off_the_stop_before(
     assert got["cpu_mode"]["available"] is False, got
 
 
+def placed_by(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, said: str) -> Path:
+    """A placement helper at `WINDOW_APP` that prints `said` and records how it was asked."""
+    asked = tmp_path / "helper-asked.txt"
+    exe = tmp_path / "place-window"
+    exe.write_text(f'#!/bin/sh\necho "$@" >> "{asked}"\nprintf %s "{said}"\n', encoding="utf-8")
+    exe.chmod(0o755)
+    monkeypatch.setenv("WINDOW_APP", str(exe))
+    monkeypatch.delenv("WINDOW_SHARED_DISPLAY", raising=False)
+    return asked
+
+
 @pytest.mark.parametrize(("shared", "said"), [(False, "headless"), (True, "shared")])
 def test_starts_line_names_how_the_session_is_watched(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch, shared: bool, said: str) -> None:
-    kw: dict[str, Any] = {"shared": True, "window_flags": ["-set", "sdl display=1"]} if shared \
-        else {}
+    placed_by(tmp_path, monkeypatch, "-set\nsdl display=1\n")
+    kw: dict[str, Any] = {"shared": True} if shared else {}
     got = _start_on_a_booted_fake(tmp_path, monkeypatch, **kw)
     assert got["status"] == "ok" and got["summary"].startswith(f"start g.conf: {said} on "), got
 
@@ -8212,3 +8230,131 @@ def test_a_stop_named_while_the_machine_is_in_it_names_its_declaration_too() -> 
                          "at": "0814:00001A27"})
     stop, words = state.stop_named(cast(ds.Session, session))
     assert stop["pc"] == "0814:00001A27" and words == " at 0814:00001A27 (_tick)", words
+
+
+def test_start_takes_the_version_probe_out_of_the_ready_bound(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The `-version` probe is part of the start: what it spends comes off the wait for the
+    debugger's prompt, so a build that hangs on it costs no more than the start's own bound."""
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    waited: list[float] = []
+
+    class Recorder:
+        def __init__(self, launch: dlaunch.Launch) -> None:
+            self.reap_failed = ""
+
+        def wait_ready(self, timeout: float, **_: Any) -> float:
+            waited.append(timeout)
+            raise ds.Invalid("session_broken", "recorded, not started")
+
+        def close(self, **_: Any) -> None:
+            pass
+
+    def slow_facts(resolved: Any, seconds: float) -> dict[str, Any]:
+        waited.append(seconds)
+        time.sleep(0.3)
+        return {"binary": resolved.path, "binary_origin": resolved.origin, "version": "v"}
+
+    monkeypatch.setattr(shutil, "which", lambda _: "/bin/true")
+    monkeypatch.setattr(dlaunch, "binary_facts", slow_facts)
+    monkeypatch.setattr(ds, "Session", Recorder)
+    dstate.STATE.session = None
+    got = cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path),
+                                            session_seconds=30))
+    assert got["code"] == "session_broken", got
+    asked, ready = waited
+    assert asked == binaries.VERSION_TIMEOUT_S, waited
+    assert ready <= ds.READY_TIMEOUT_S - 0.3, waited
+
+
+def test_close_carries_the_last_words_of_both_channels_when_the_end_was_not_clean(
+        tmp_path: Path) -> None:
+    """Why it ended, in the reply that ends it: the console's last words (the debugger's
+    terminal, escapes stripped) and the logfile's, each the newest `TAIL_CHARS`, on an end
+    that was not a clean quit, or when `detail` asks; a clean quit names them in `omitted`.
+    With no logfile the log's tail is unavailable, saying why."""
+    log = tmp_path / "s.log"
+    log.write_text("x" * 2000 + "LOG: the end\n", encoding="utf-8")
+
+    class Ended(FakeSession):
+        def __init__(self, how: str, code: int, logfile: Path | None) -> None:
+            super().__init__()
+            self._how, self._code = how, code
+            self.launch = SimpleNamespace(cwd=Path("/"), logfile=logfile, watched=False)
+
+        def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
+            self.ended_how, self._alive = self._how, False
+            return self._code
+
+        def console_tail(self, chars: int) -> str:
+            return ("y" * 3000 + "Exit to error: the console's own words")[-chars:]
+
+    dstate.STATE.session = Ended("killed", -9, log)  # type: ignore[assignment]
+    got = cast(dict[str, Any], server.close())
+    assert got["stdout_tail"].endswith("the console's own words"), got
+    assert len(got["stdout_tail"]) == log_marks.TAIL_CHARS, len(got["stdout_tail"])
+    assert got["errorlog_tail"].endswith("LOG: the end\n"), got
+    dstate.STATE.session = Ended("quit", 0, None)  # type: ignore[assignment]
+    clean = cast(dict[str, Any], server.close())
+    assert "stdout_tail" not in clean and {"stdout_tail", "errorlog_tail"} <= set(
+        clean["omitted"]) and "detail=True" in clean["how"], clean
+    dstate.STATE.session = Ended("quit", 0, None)  # type: ignore[assignment]
+    asked = cast(dict[str, Any], server.close(detail=True))
+    assert asked["stdout_tail"] and asked["errorlog_tail"]["available"] is False, asked
+    assert "logfile" in asked["errorlog_tail"]["why"], asked
+
+
+def test_the_process_facts_ride_at_the_top_of_status_and_close_and_the_block_keeps_the_rest(
+        ) -> None:
+    """What the process is (`pid`, the conf and its digest, the bound) is asked for: it rides at
+    the top of `status`, `start` and `close`. The block keeps what every reply
+    must carry: alive, running, altered and each alarm while it holds."""
+    install()
+    st = cast(dict[str, Any], server.status())
+    assert st["pid"] == 4242 and "conf_digest" in st and "bound_s" in st, st
+    assert set(st["session"]) == {"alive", "running", "altered"}, st["session"]
+    read = cast(dict[str, Any], server.registers())
+    assert "pid" not in read and set(read["session"]) == {"alive", "running", "altered"}, read
+    closed = cast(dict[str, Any], server.close())
+    assert closed["pid"] == 4242 and set(closed["session"]) == {"alive", "running", "altered"}, (
+        closed)
+
+
+def test_a_watched_window_is_placed_by_the_host_s_helper_on_the_display_asked(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A watched session's window goes where `WINDOW_APP` says, asked as `dosbox --shared` and
+    the display; its flags reach the command line one token per line, a `-set` pair included,
+    and the reply says which display it went to."""
+    asked = placed_by(tmp_path, monkeypatch, "-set\nsdl display=1\n")
+    seen: list[dlaunch.Launch] = []
+
+    def booted(launch: dlaunch.Launch) -> Any:
+        seen.append(launch)
+        raise ds.Invalid("session_broken", "recorded, not started")
+
+    monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
+    monkeypatch.setattr("scry_core.binaries.version", lambda *_a, **_k: "DOSBox-X (a stub)")
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    with mock.patch("dosbox_x_server.ds.Session", booted):
+        server.start(conf=str(conf), cwd=str(tmp_path), session_seconds=60, shared=True,
+                     display="main")
+    assert seen and seen[0].window_flags == ["-set", "sdl display=1"], seen
+    assert asked.read_text().split() == ["dosbox", "--shared", "--display", "main"]
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True)
+    assert got["status"] == "ok" and got["display"] == "secondary", got
+
+
+def test_a_watched_start_with_no_helper_is_refused_and_a_display_needs_a_watched_run(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """No helper, no window placed: a watched start is the host's to fix, never given a geometry
+    invented here. A `display` on a headless run is refused: nobody looks at a display there."""
+    monkeypatch.delenv("WINDOW_APP", raising=False)
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True)
+    assert got["code"] == "host_failed" and "WINDOW_APP" in got["message"], got
+    got = _start_on_a_booted_fake(tmp_path, monkeypatch, display="main")
+    assert got["code"] == "bad_argument" and "nobody watches" in got["message"], got
+    placed_by(tmp_path, monkeypatch, "")
+    quiet = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True)
+    assert quiet["status"] == "ok", "one display, no flags: an answer, and the window opens"

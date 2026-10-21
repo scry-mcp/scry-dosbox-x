@@ -30,6 +30,8 @@ from typing import Any
 import pytest
 
 import bench
+import dosbox_binary as dbinary
+import dosbox_launch as dlaunch
 
 
 def test_the_timer_reads_true_and_its_negative_reads_zero() -> None:
@@ -291,25 +293,26 @@ def test_a_batch_is_timed_only_when_it_answered(tmp_path: Path, monkeypatch: pyt
     assert e.value.code == bench.INVALID_RC
 
 
-def test_the_stamp_reads_the_version_off_stderr_and_refuses_none(
+def test_the_stamp_names_the_build_the_ladder_found_and_refuses_one_with_no_version(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    asked: list[tuple[str, ...]] = []
-
-    def run(said: str) -> Any:
-        def fake(cmd: tuple[str, ...], **kw: object) -> Any:
-            assert kw == {"capture_output": True, "text": True, "check": False}, kw
-            asked.append(tuple(cmd))
-            if cmd[0] == "dosbox-x":
-                return SimpleNamespace(stdout="", stderr=said)
-            return SimpleNamespace(stdout="Mac16,10", stderr="")
-        return fake
-    monkeypatch.setattr("subprocess.run", run("DOSBox-X version 2026.08.31 SDL2\nmore\n"))
+    """The bench measures the build the server's own ladder lands on, named with its rung and
+    its version as the server reads it, and a build with no version is no measurement."""
+    bench.build.cache_clear()
+    monkeypatch.setattr(dbinary, "resolve",
+                        lambda binary: dbinary.Resolved("/opt/dosbox-x", "DOSBOX_X_BINARY"))
+    monkeypatch.setattr(dlaunch, "binary_facts",
+                        lambda found, _s: {"version": f"DOSBox-X at {found.path}"})
+    monkeypatch.setattr("subprocess.run", lambda cmd, **kw: SimpleNamespace(stdout="Mac16,10",
+                                                                            stderr=""))
     monkeypatch.setattr("os.getloadavg", lambda: (1.0, 2.0, 3.0))
     got = bench.stamp()
-    assert got == {"machine": "Mac16,10", "emulator": "DOSBox-X version 2026.08.31 SDL2",
+    assert got == {"machine": "Mac16,10", "emulator": "DOSBox-X at /opt/dosbox-x",
+                   "binary": "/opt/dosbox-x", "binary_origin": "DOSBOX_X_BINARY",
                    "load_average": (1.0, 2.0, 3.0)}, got
-    assert asked == [("dosbox-x", "-version"), ("sysctl", "-n", "hw.model")], asked
-    monkeypatch.setattr("subprocess.run", run(""))
+    monkeypatch.setattr(dlaunch, "binary_facts",
+                        lambda found, _s: {"version": {"available": False,
+                                                       "why": "printed nothing"}})
     with pytest.raises(SystemExit) as e:
         bench.stamp()
     assert e.value.code == bench.INVALID_RC
+    bench.build.cache_clear()

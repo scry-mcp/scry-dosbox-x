@@ -28,8 +28,9 @@ incomplete or a copy is absent or off its pin. What a run takes from the environ
                                   the state cells need one that carries SAVESTATE and
                                   LOADSTATE
     DOSBOX_X_LIVE_BENCH           the bench's root (`~/.local/share/scry-bench/dosbox-x` unset)
-    DOSBOX_X_LIVE_WINDOW_FLAGS    G and R: the placement flags of a watched window, one token
-                                  per line
+    WINDOW_APP                    G, O and R: the placement helper a watched start asks
+                                  (`scry_core.placement`); its run goes to the display
+                                  WINDOW_SHARED_DISPLAY names, the secondary when unset
     DOSBOX_X_LEAK_BINARY          R: a scratch build that paints the presence rim where
                                   capture reads, the red of the evidence cells (BLOCKED unset)
     DOSBOX_X_STOCK_BINARY         R: a build whose channel has no PRESENCE (BLOCKED unset)

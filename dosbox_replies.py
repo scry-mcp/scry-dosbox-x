@@ -93,9 +93,23 @@ class CapturesReply(DosboxEnvelope, total=False):
 
 
 class CloseReply(DosboxEnvelope, total=False):
+    bound_s: float
+    captures: str
     closed: bool
+    conf: str
+    conf_changed_on_disk: bool | dict[str, Any]
+    conf_digest: str
+    drain_alive: bool
+    drain_ended: str
+    elapsed_s: float
     ended_by: str
+    errorlog_tail: str | dict[str, Any]
     note: str
+    pid: int
+    state_dir: str
+    stdout_tail: str
+    terminal_bytes_dropped: int
+    watched: bool
 
 
 class CommentAddReply(DosboxEnvelope, total=False):
@@ -523,13 +537,23 @@ class StartReply(DosboxEnvelope, total=False):
     background: bool
     binary: str
     binary_origin: str
+    bound_s: float
+    captures: str
+    conf: str
+    conf_changed_on_disk: bool | dict[str, Any]
+    conf_digest: str
     declarations: dict[str, Any]
+    display: str
+    drain_alive: bool
+    drain_ended: str
+    elapsed_s: float
     errors: list[Any]
     failed: dict[str, Any]
     failed_at: int | dict[str, Any]
     held: int
     input_port: int | dict[str, Any]
     note: str
+    pid: int
     presence: bool | dict[str, Any]
     ran: list[Any]
     ran_path: str | dict[str, Any]
@@ -538,15 +562,18 @@ class StartReply(DosboxEnvelope, total=False):
     replies_path: str | dict[str, Any]
     shared: bool
     start: dict[str, Any]
+    state_dir: str
     steps_completed: int
     steps_total: int
     still_running: bool
     stopped: dict[str, Any]
     stops: dict[str, Any]
     stub: str
+    terminal_bytes_dropped: int
     truncated: bool
     verdict: str
     version: str | dict[str, Any]
+    watched: bool
 
 
 class StateListReply(DosboxEnvelope, total=False):
@@ -580,11 +607,23 @@ class StateSaveReply(DosboxEnvelope, total=False):
 
 
 class StatusReply(DosboxEnvelope, total=False):
+    bound_s: float
+    captures: str
+    conf: str
+    conf_changed_on_disk: bool | dict[str, Any]
+    conf_digest: str
     cpu_mode: str | dict[str, Any]
     declarations: dict[str, Any]
+    drain_alive: bool
+    drain_ended: str
+    elapsed_s: float
     pc: str | dict[str, Any]
     pending: dict[str, Any]
+    pid: int
     presence: bool | dict[str, Any]
+    state_dir: str
+    terminal_bytes_dropped: int
+    watched: bool
 
 
 class StepReply(DosboxEnvelope, total=False):

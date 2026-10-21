@@ -4,10 +4,14 @@ session comes up and goes down changes for reasons the tool registrations do not
 
 from __future__ import annotations
 
+import time
 from collections.abc import Callable
 from dataclasses import replace
+from pathlib import Path
 from typing import Any
 
+from scry_core import log_marks, narrowing
+from scry_core import placement as window
 from scry_core import reply_contract as contract
 
 import dosbox_arming as arming
@@ -28,8 +32,22 @@ DEFAULT_STATE_DIR = (f"the default state directory (`<cwd>/{dlaunch.DEFAULT_STAT
                      "`state_dir` names another)")
 
 
+def _window_flags(shared: bool, display: str) -> list[str]:
+    """Where a watched window goes, as the host's placement helper says (`scry_core.placement`);
+    a headless session has no window. No flags is an answer on a one-display host; no helper,
+    or one that failed, refuses a watched start: inventing a geometry here is how windows end up
+    off-screen or on the display nobody is looking at."""
+    if not shared:
+        return []
+    placed = window.ask("dosbox", True, display)
+    if placed.flags is None:
+        raise ds.Invalid("host_failed", f"a watched session needs its window placed, and "
+                         f"{placed.why}. Fix that, or start without `shared`")
+    return placed.flags
+
+
 def start(conf: str, cwd: str, session_seconds: int, shared: bool,
-          window_flags: list[str] | None, flags: list[str] | None, break_on_int3: bool,
+          display: str, flags: list[str] | None, break_on_int3: bool,
           program: str, logfile: str, capture_video: bool, captures_dir: str,
           plan: list[dict[str, Any]] | None, settle_seconds: float | None, input_port: int,
           state_dir: str, binary: str, background: bool | None, presence: bool,
@@ -45,6 +63,8 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     state_path = paths.absolute("state_dir", state_dir) if state_dir else None
     if binary:
         paths.absolute("binary", binary)
+    window.check_display(shared, display)
+    shown_display = window.shared_display(shared, display)
     if STATE.session is not None:
         if STATE.session.alive():
             raise ds.Invalid("session_live", "a session is already live. `close` it first: two "
@@ -71,7 +91,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     launch = dlaunch.Launch(
         conf=conf_path, cwd=cwd_path, seconds=session_seconds,
         watched=shared,
-        window_flags=list(window_flags or []),
+        window_flags=_window_flags(shared, shown_display),
         flags=list(flags or []),
         break_on_int3=break_on_int3,
         program=program or None,
@@ -105,11 +125,14 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     for name, made in (("captures_dir", launch.captures_dir), (state_name, launch.state_dir)):
         if made is not None:
             paths.make_directory(name, made)
-    binary_facts = dlaunch.binary_facts(resolved)
+    # THE PROBE IS PART OF THE START: what it spends comes off the wait for the prompt.
+    asked = time.monotonic()
+    binary_facts = dlaunch.binary_facts(resolved, binaries.VERSION_TIMEOUT_S)
     session = ds.Session(launch)
     STATE.starting = session
     try:
-        ready = session.wait_ready(progress=progress)
+        ready = session.wait_ready(
+            timeout=max(ds.READY_TIMEOUT_S - (time.monotonic() - asked), 0.0), progress=progress)
     except ds.Invalid as e:
         # IT IS CLOSED BEFORE THE REFUSAL GOES OUT. Assigning first and waiting after
         # left a real emulator running behind an INVALID reply, with nothing in the
@@ -156,7 +179,9 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     session.presence = dpresence.open_shown(session, presence, shared)
     # WHERE THE STUB IS, said in the reply: a conf's autoexec that runs its own program has to
     # run the stub first, and a wheel install puts it wherever the package landed.
-    started = st.reply(shared=shared, ready_after_s=ready, argv=session.argv, **binary_facts,
+    started = st.reply(**st.process_facts(), shared=shared, display=shown_display,
+                       ready_after_s=ready,
+                       argv=session.argv, **binary_facts,
                        stub=str(dlaunch.GUEST_DIR / "INJECT.COM"),
                        input_port=contract.or_unavailable(session.launch.input_port,
                                                           "no input route was opened"),
@@ -186,12 +211,40 @@ def presence_shown(session: ds.Session | None) -> bool | dict[str, Any]:
     return dpresence.of(session).reply()
 
 
-def close(progress: ds.Progress) -> dict[str, Any]:
+#: How a clean close's reply names the tails it left out.
+CLOSE_HOW = ("close(detail=True) keeps the channels' last words on a clean quit too; once a close "
+             "has answered the console's are gone (the logfile stays at its path)")
+
+
+def _log_tail(session: ds.Session) -> str | dict[str, Any]:
+    """The logfile's last words, or why there are none."""
+    logfile = session.launch.logfile
+    if logfile is None:
+        return contract.unavailable("this session was started without a logfile")
+    try:
+        # THE END ONLY: a guest's log can run to hundreds of megabytes, and four bytes a
+        # character covers any UTF-8 the tail holds.
+        with Path(logfile).open("rb") as f:
+            f.seek(max(f.seek(0, 2) - 4 * log_marks.TAIL_CHARS, 0))
+            return f.read().decode("utf-8", errors="replace")[-log_marks.TAIL_CHARS:]
+    except OSError as e:
+        return contract.unavailable(f"the logfile could not be read: {e}")
+
+
+def close(progress: ds.Progress, detail: bool = False) -> dict[str, Any]:
     """The body of the `close` tool."""
     if STATE.session is None:
         return st.reply(closed=False, ended_by="none", note="there was no session")
-    was = st.session_block(whole=True)        # the session's last account, whole
+    # THE SESSION'S LAST ACCOUNT, read before it ends: what the process was, at the top, so its
+    # `pid` is the process this call ended, and the block as it stood.
+    facts, was = st.process_facts(), st.session_block()
     rc = STATE.session.close(progress=progress)
+    # THE LAST WORDS ARE READ AFTER THE EXIT, so they hold what the emulator said on its way
+    # out; the console's are what the drain still holds, the log's are the file's.
+    clean = STATE.session.ended_how == "quit" and rc == 0
+    tails = ({"stdout_tail": STATE.session.console_tail(log_marks.TAIL_CHARS),
+              "errorlog_tail": _log_tail(STATE.session)} if detail or not clean
+             else narrowing.omission(["stdout_tail", "errorlog_tail"], CLOSE_HOW))
     # READ AFTER THE CLOSE, because that is when it can be set: a child SIGKILLed and never
     # reaped has no exit code, and `exit_code` says why in its place (an emulator may still
     # be on the machine). Not in `state()`: `was` is captured before `close()` runs.
@@ -204,5 +257,5 @@ def close(progress: ds.Progress) -> dict[str, Any]:
         None if unreaped else rc,
         f"the emulator was SIGKILLed and not reaped ({unreaped}): it may still be on the "
         f"machine" if unreaped else "the emulator's exit code could not be read")
-    return {"status": "ok", "closed": True, "ended_by": ended_by, "exit_code": exit_code,
-            "session": was}
+    return {"status": "ok", "closed": True, **facts, "ended_by": ended_by,
+            "exit_code": exit_code, **tails, "session": was}

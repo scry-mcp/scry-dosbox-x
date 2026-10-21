@@ -53,7 +53,7 @@ def _start(proc: subprocess.Popen[bytes], seconds: int) -> int:
         "conf": str(BRICKS / "bricks.conf"), "cwd": str(BRICKS), "session_seconds": seconds}})
     body = started["result"]["structuredContent"]
     assert body["status"] == "ok", body.get("summary")
-    pid = int(body["session"]["pid"])
+    pid = int(body["pid"])
     assert _alive(pid), "the emulator the start reported is not running"
     return pid
 

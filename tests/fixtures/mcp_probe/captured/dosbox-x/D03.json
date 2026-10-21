@@ -1,17 +1,14 @@
 {
  "task": {
   "id": "D03",
-  "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody who is watching: its window goes where the two window-flag tokens -set and sdl display=0 say. Keep its savestates in /opt/dosfury/states, and on the fresh session run the plan of one operation, reading the registers, waiting at most 12 seconds for a stop.",
+  "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 900 seconds, for somebody who is watching, its window on my main display. Keep its savestates in /opt/dosfury/states, and on the fresh session run the plan of one operation, reading the registers, waiting at most 12 seconds for a stop.",
   "tool": "start",
   "args": {
    "conf": "/opt/dosfury/fury.conf",
    "cwd": "/opt/dosfury",
    "session_seconds": 900,
    "shared": true,
-   "window_flags": [
-    "-set",
-    "sdl display=0"
-   ],
+   "display": "main",
    "state_dir": "/opt/dosfury/states",
    "plan": [
     {
@@ -22,26 +19,14 @@
   },
   "grammar": [
    "shared",
-   "-set",
+   "main",
    "registers"
   ]
  },
  "runs": [
   {
    "lines": [
-    "D03: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"window_flags\": [\"-set\", \"sdl display=0\"], \"state_dir\": \"/opt/dosfury/states\", \"plan\": [{\"op\": \"registers\"}], \"settle_seconds\": 12}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D03: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"window_flags\": [\"-set\", \"sdl display=0\"], \"state_dir\": \"/opt/dosfury/states\", \"plan\": [{\"op\": \"registers\"}], \"settle_seconds\": 12}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D03: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"window_flags\": [\"-set\", \"sdl display=0\"], \"state_dir\": \"/opt/dosfury/states\", \"plan\": [{\"op\": \"registers\"}], \"settle_seconds\": 12}}"
+    "D03: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"display\": \"main\", \"state_dir\": \"/opt/dosfury/states\", \"plan\": [{\"op\": \"registers\"}], \"settle_seconds\": 12}}"
    ],
    "right": true
   }

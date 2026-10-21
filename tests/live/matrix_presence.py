@@ -46,7 +46,7 @@ from scry_core import avi, presence, window_capture
 import dosbox_presence as dpresence  # isort: skip -- found through the path the matrix sets
 from dosbox_state import STATE  # isort: skip
 
-FLAGS_VAR = "DOSBOX_X_LIVE_WINDOW_FLAGS"
+HELPER_VAR = "WINDOW_APP"
 LEAK_VAR = "DOSBOX_X_LEAK_BINARY"
 STOCK_VAR = "DOSBOX_X_STOCK_BINARY"
 SCREEN_CONF = GUEST / "screen.conf"
@@ -91,10 +91,6 @@ R_CELLS = cells(
 )
 MOUSE_CONF = GUEST / "mouse.conf"
 MOUSE_PROGRAM = "MOUSE.COM"
-
-
-def _flags() -> list[str]:
-    return [ln for ln in ENV.get(FLAGS_VAR, "").splitlines() if ln.strip()]
 
 
 def _digest(path: Path) -> str:
@@ -226,7 +222,7 @@ def _start(**kw: Any) -> dict[str, Any]:
     # E9 OPEN, which the screen guest's conf leaves shut: `snapshot` needs the input stub's
     # announcement there.
     return boot(conf=SCREEN_CONF, program=SCREEN_PROGRAM, break_on_int3=True, shared=True,
-                window_flags=_flags(), background=True, capture_video=True,
+                background=True, capture_video=True,
                 captures_dir=M.fresh("-cap"), flags=E9_OPEN, **kw)
 
 
@@ -235,7 +231,7 @@ def _same(pair: Any) -> bool:
 
 
 @M.section("R", "the presence edge, drawn into the window and never into the evidence",
-           R_CELLS, FLAGS_VAR, alone=True)
+           R_CELLS, HELPER_VAR, alone=True)
 def section_r() -> None:
     started = _start(presence=True)
     status = M.call(server.status)
@@ -305,8 +301,7 @@ def section_r() -> None:
 def _arrow(label: str) -> None:
     """The mouse guest running in a window, captured after a mouse move and again with the arrow
     turned off: the difference is the arrow, inside the picture where the edge never reaches."""
-    boot(conf=MOUSE_CONF, program=MOUSE_PROGRAM, shared=True, window_flags=_flags(),
-         background=True, presence=True)
+    boot(conf=MOUSE_CONF, program=MOUSE_PROGRAM, shared=True, background=True, presence=True)
     must(M.call(server.resume), "releasing the mouse guest")
     time.sleep(QUIET_S)
     moved = M.call(server.send_mouse, x=40, y=12, units="screen")    # a text cell

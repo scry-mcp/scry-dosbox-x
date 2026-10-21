@@ -1,0 +1,18 @@
+{
+ "task": {
+  "id": "D131",
+  "prompt": "End the DOSBox-X session, and even if it quits cleanly I want the last words of the console and of the log in the answer.",
+  "tool": "close",
+  "args": {
+   "detail": true
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D131: {\"tool\": \"close\", \"args\": {\"detail\": true}}"
+   ],
+   "right": true
+  }
+ ]
+}

@@ -9,7 +9,6 @@ from pathlib import Path
 
 import dpmi_guest as guest
 from matrix_common import (
-    ENV,
     GUEST,
     NEVER_RUNS_STOPPER,
     PROBE_CONF,
@@ -27,7 +26,7 @@ from matrix_common import (
 )
 from matrix_dpmi import dpmi_boot, dpmi_leave
 
-FLAGS_VAR = "DOSBOX_X_LIVE_WINDOW_FLAGS"
+HELPER_VAR = "WINDOW_APP"
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 
 DPMI_CELLS = ("G the DPMI guest: snapshot", "G the DPMI guest: a click reaches the program",
@@ -61,15 +60,11 @@ G_CELLS = cells(
 KEEP: list[str] = []
 
 
-def _flags() -> list[str]:
-    return [ln for ln in ENV.get(FLAGS_VAR, "").splitlines() if ln.strip()]
-
-
 def _probe() -> None:
     conf = conf_without_launch(PROBE_CONF, "PROBE.COM")
     caps = Path(M.fresh("-captures"))
     caps.mkdir()
-    boot(conf=conf, cwd=GUEST, shared=True, window_flags=_flags(), background=True,
+    boot(conf=conf, cwd=GUEST, shared=True, background=True,
          program="PROBE.COM",
          capture_video=True, captures_dir=str(caps))
     must(M.call(server.resume), "releasing the probe")
@@ -135,8 +130,8 @@ def _scaled() -> None:
     """The probe guest again, its window drawn at twice the size: the pointer is set inside the
     guest, so the same cell lands on the same driver coordinates."""
     conf = conf_without_launch(PROBE_CONF, "PROBE.COM")
-    flags = [*_flags(), "-set", "sdl output=opengl", "-set", "sdl windowresolution=1280x800"]
-    boot(conf=conf, cwd=GUEST, shared=True, window_flags=flags, background=True,
+    flags = ["-set", "sdl output=opengl", "-set", "sdl windowresolution=1280x800"]
+    boot(conf=conf, cwd=GUEST, shared=True, flags=flags, background=True,
          program="PROBE.COM")
     must(M.call(server.resume), "releasing the probe")
     must(M.call(server.log_wait, pattern="PROBE", channel="guest", seconds=30),
@@ -148,7 +143,7 @@ def _scaled() -> None:
 
 
 def _dpmi() -> None:
-    dpmi_boot(shared=True, window_flags=_flags(), background=True)
+    dpmi_boot(shared=True, background=True)
     release_running(NEVER_RUNS_STOPPER)
     must(M.call(server.log_wait, pattern=guest.SETTLED_MARK, channel="guest", seconds=30),
          "the guest's first TICK line")
@@ -167,7 +162,7 @@ def _dpmi() -> None:
 
 
 @M.section("G", "the windowed tools, on the probe guest and on the DPMI guest", G_CELLS,
-           FLAGS_VAR, alone=True)
+           HELPER_VAR, alone=True)
 def section_g() -> None:
     print("  windows open behind, on the display the placement flags name", flush=True)
     try:

@@ -9,6 +9,7 @@ default tier that every commit runs.
 from __future__ import annotations
 
 import subprocess
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -25,6 +26,7 @@ class _ClosesWithoutEnding:
         self.proc = proc
         self.reap_failed = ""
         self.ended_how = "none"
+        self.launch = SimpleNamespace(logfile=None)
 
     def state(self) -> dict[str, object]:
         return {"alive": True, "pid": self.proc.pid}
@@ -32,6 +34,9 @@ class _ClosesWithoutEnding:
     def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
         self.ended_how = "quit"
         return 0
+
+    def console_tail(self, chars: int) -> str:
+        return ""
 
 
 def test_a_process_close_left_running_is_killed_and_the_case_is_told() -> None:

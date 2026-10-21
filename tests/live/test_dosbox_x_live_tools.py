@@ -26,6 +26,8 @@ had cut the requested address out of.
 from __future__ import annotations
 
 import os
+import signal
+import subprocess
 import time
 from pathlib import Path
 from typing import Any, cast
@@ -73,18 +75,11 @@ import dosbox_state as dstate
 import dosbox_x_server as server
 
 # WHERE A WATCHED WINDOW GOES IS NOT THIS PACKAGE'S TO DECIDE, and it is not this
-# test's either. The server refuses a watched session with no placement flags rather
-# than inventing a geometry, because that decision belongs to one helper for a whole
-# fleet; a test that hardcoded a position would be putting that private layout back
-# in, one layer down, in a package meant to be published.
-#
-# So the flags arrive the same way the conf does: from outside. NEWLINE-separated,
-# because a placement flag is a `-set` PAIR and its second half contains a space
-# (`sdl display=1`), so splitting on whitespace shreds it into an argument DOSBox-X
-# does not recognise, and on this emulator an unrecognised argument does not fail, it
-# hangs.
-FLAGS_RAW = os.environ.get("DOSBOX_X_LIVE_WINDOW_FLAGS", "")
-WINDOW_FLAGS = [ln for ln in FLAGS_RAW.splitlines() if ln.strip()]
+# test's either: the server asks the host's helper and refuses a watched session without
+# one rather than inventing a geometry, and a test that hardcoded a position would be
+# putting that private layout back in, one layer down, in a package meant to be published.
+#: The placement helper a watched start asks (`scry_core.placement`), and what it answers here.
+HELPER = os.environ.get("WINDOW_APP", "").strip()
 
 pytestmark = [
     pytest.mark.live,
@@ -205,40 +200,40 @@ def test_start_headless_reaches_the_debugger_and_declares_what_it_launched() -> 
     # this emulator neither refuses nor honours.
     assert argv[argv.index("sdl videodriver=dummy") - 1] == "-set"
     assert cast(float, reply["ready_after_s"]) > 0
-    state = cast(dict[str, Any], reply["session"])
-    assert state["alive"] is True and state["watched"] is False
-    assert state["drain_alive"] is True, "the terminal reader never started"
+    assert reply["session"]["alive"] is True and reply["watched"] is False, reply
+    assert reply["drain_alive"] is True, "the terminal reader never started"
 
 
 @pytest.mark.windowed
-@pytest.mark.skipif(not WINDOW_FLAGS,
-                    reason="set DOSBOX_X_LIVE_WINDOW_FLAGS (one argv token per line, "
-                           "as `place-window dosbox` prints them) to exercise the "
-                           "watched path")
-def test_start_shared_keeps_the_callers_flags_and_adds_no_dummy_driver() -> None:
+@pytest.mark.skipif(not HELPER, reason="set WINDOW_APP to the placement helper "
+                                       "(`place-window`) to exercise the watched path")
+def test_start_shared_takes_the_helper_s_flags_and_adds_no_dummy_driver() -> None:
     """The WATCHED path, on the real emulator, bounded to seconds.
 
     WHAT THIS COVERS IS THE MECHANISM AND NOT THE MODE'S INTENT, and the difference
     is worth stating because the case would otherwise look like it was validating
     something it cannot. `shared` means somebody is watching; nobody is watching this.
-    What is checked is that the caller's tokens reach argv intact and adjacent, that
+    What is checked is that the helper's tokens reach argv intact and adjacent, that
     the headless property is NOT added on top of them, and that a window session
     really comes up and answers. Where the window lands is the helper's decision and
     is not re-derived here.
 
-    It is short and bounded for the same reason: the fleet rule sends an unwatched run
-    to the secondary display, so the flags handed in already keep it off whatever the
-    person is using, and it is gone in seconds either way.
+    It is short and bounded for the same reason: the run's display is the secondary unless
+    `WINDOW_SHARED_DISPLAY` says otherwise, off whatever the person is using, and it is gone
+    in seconds either way.
     """
-    reply = start_ok(session_seconds=30, shared=True, window_flags=WINDOW_FLAGS)
+    reply = start_ok(session_seconds=30, shared=True)
     argv = cast(list[str], reply["argv"])
+    asked = subprocess.run([HELPER, "dosbox", "--shared", "--display", str(reply["display"])],
+                           capture_output=True, text=True, check=True)
+    window_flags = [ln for ln in asked.stdout.splitlines() if ln.strip()]
     assert reply["shared"] is True
     assert "sdl videodriver=dummy" not in argv, "a watched session was forced headless"
     # THE TOKENS SURVIVE AS A RUN, in order: reversing them or gluing a pair is
     # exactly what an unrecognised argument is made of.
-    joined, want = "\x00".join(argv), "\x00".join(WINDOW_FLAGS)
+    joined, want = "\x00".join(argv), "\x00".join(window_flags)
     assert want in joined, f"the placement flags did not arrive intact: {argv}"
-    assert cast(dict[str, Any], reply["session"])["watched"] is True
+    assert reply["watched"] is True, reply
     # AND IT REALLY CAME UP: a windowed session that reaches its debugger answers with
     # a value, which is the only evidence the flags were accepted rather than hung on.
     regs = cast(dict[str, Any], server.registers())
@@ -276,13 +271,13 @@ def test_status_reports_the_live_session_and_not_a_remembered_one() -> None:
     start_ok(session_seconds=60)
     first = cast(dict[str, Any], server.status())
     assert first["status"] == "ok"
-    assert wait_for(lambda: cast(dict[str, Any], server.status())["session"][
-        "elapsed_s"] > first["session"]["elapsed_s"], seconds=10), \
+    assert wait_for(lambda: cast(dict[str, Any], server.status())[
+        "elapsed_s"] > first["elapsed_s"], seconds=10), \
         "the elapsed time did not move: this is not a reading of a live session"
-    later = cast(dict[str, Any], server.status())["session"]
-    assert later["alive"] is True
+    later = cast(dict[str, Any], server.status())
+    assert later["session"]["alive"] is True
     assert later["drain_alive"] is True and "drain_ended" not in later
-    assert later["altered"] is False, "nothing wrote to this machine"
+    assert later["session"]["altered"] is False, "nothing wrote to this machine"
     assert later["terminal_bytes_dropped"] == 0, (
         "the terminal overflowed on an idle session, so a screen delta had a hole "
         "in it and the drain is not keeping up")
@@ -666,6 +661,27 @@ def test_captures_and_a_still_come_out_of_a_real_recording(tmp_path: Path) -> No
 
 # ------------------------------------------------------------------------ closing
 
+def test_a_close_after_the_emulator_died_carries_the_last_words_of_both_channels(
+        tmp_path: Path) -> None:
+    """Why it ended, in the reply that ends it, on the real emulator: killed under the session,
+    its `close` says `died` and carries the console's last words and the logfile's, neither
+    empty; a clean quit names them in `omitted`, and `detail` brings them back."""
+    log = tmp_path / "s.log"
+    started = start_ok(session_seconds=60, logfile=str(log))
+    os.killpg(os.getpgid(int(started["pid"])), signal.SIGKILL)
+    assert wait_for(lambda: not server.status()["session"]["alive"], seconds=10)
+    gone = cast(dict[str, Any], server.close())
+    assert gone["ended_by"] == "died", gone
+    assert gone["stdout_tail"].strip() and gone["errorlog_tail"].strip(), gone
+    start_ok(session_seconds=60, logfile=str(log))
+    clean = cast(dict[str, Any], server.close())
+    assert clean["ended_by"] == "quit" and set(clean["omitted"]) == {
+        "stdout_tail", "errorlog_tail"}, clean
+    start_ok(session_seconds=60, logfile=str(log))
+    asked = cast(dict[str, Any], server.close(detail=True))
+    assert asked["stdout_tail"].strip() and asked["errorlog_tail"].strip(), asked
+
+
 def test_close_clears_the_session_so_the_next_tool_says_there_is_none() -> None:
     """Closing is TWO things, and the second is the one that had no live case.
 
@@ -681,7 +697,7 @@ def test_close_clears_the_session_so_the_next_tool_says_there_is_none() -> None:
     start_ok(session_seconds=60)
     reply = cast(dict[str, Any], server.close())
     assert reply["status"] == "ok" and reply["closed"] is True
-    assert "pid" in reply["session"], "it did not say what it had just closed"
+    assert "pid" in reply, "it did not say what it had just closed"
     assert dstate.STATE.session is None, "the server is still pointing at a dead session"
     # WHAT A CALLER SEES NEXT, which is the half that matters: every tool needing a
     # machine must now refuse, rather than reading nothing and calling it an answer.

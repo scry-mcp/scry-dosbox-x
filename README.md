@@ -14,7 +14,7 @@ this.
 ## What it can do
 
 - **Hold a live machine open and answer from it.** `start` boots your conf headless (or
-  in a window you place) and parks the guest at the debugger, ready. Registers, memory,
+  in a window your host's placement helper places) and parks the guest at the debugger, ready. Registers, memory,
   the guest's own log, a still frame: each one is a call. While a session holds the window
   an orange edge marks it, bright while a call drives the machine, never in the server's
   own captures or screen reads (`presence=False` turns it off).
@@ -112,8 +112,8 @@ close()
 ```
 
 Your conf needs `bochs debug port e9 = true` for the log to exist at all. Everything about
-*your* project comes from you: the conf, the working directory, the program, where a
-window goes. The server knows no project and carries no default that points anywhere.
+*your* project comes from you: the conf, the working directory, the program; where a window
+goes is your host's placement helper's, named by `WINDOW_APP`. The server knows no project and carries no default that points anywhere.
 Every path you give is absolute or starts with `~`, which is expanded; a relative path is
 refused (REFERENCE.md, The session, says why).
 
@@ -292,7 +292,7 @@ when the guest changes video mode.
 ## The tools
 
 Everything about *your* project comes from you: the config file, the working
-directory, the program to run, and where a window should go. The server knows no
+directory and the program to run; where a window goes is your host's placement helper's. The server knows no
 project and carries no default that points anywhere in particular.
 
 | tool | what it does |
