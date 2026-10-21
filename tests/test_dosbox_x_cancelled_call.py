@@ -387,7 +387,7 @@ def test_a_frame_whose_retrace_never_comes_still_reports_progress(
     monkeypatch.setattr(mprogress, "PROGRESS_EVERY_S", 0.2)   # short, never zero: it is judged
     with pytest.raises(asyncio.CancelledError):
         retrace.run_for(ses, 5, 0, 30.0,  # type: ignore[arg-type]
-                        lambda p, t, m: lines.append((p, t, m)), "none", "", None)
+                        lambda p, t, m: lines.append((p, t, m)))
     waiting = [m for _p, _t, m in lines if "frame 0 of 5" in m and "waiting for its retrace" in m]
     assert len(waiting) >= 2, lines           # it goes on saying so, on the wall clock
 

@@ -30,8 +30,9 @@ from scry_core.comment_file import (
 __all__ = ["HEADER", "TEXT_MAX_BYTES", "CommentFileError", "Row", "cpu_fault", "parse",
            "ref_fault", "render", "stamp_fault", "text_fault"]
 
-#: A raw address as a file spells it: hex digits either side of the one colon, no `0x`.
-_SEG_OFF = re.compile(r"([0-9A-Fa-f]+):([0-9A-Fa-f]+)")
+#: A raw address: hex digits either side of the one colon, each half with or without `0x`, the
+#: spelling `registers` reads a segment back in.
+_SEG_OFF = re.compile(r"(?:0[xX])?([0-9A-Fa-f]+):(?:0[xX])?([0-9A-Fa-f]+)")
 
 
 def ref_fault(ref: str) -> str | None:
@@ -40,7 +41,7 @@ def ref_fault(ref: str) -> str | None:
     sixteen bits; without one, a name. Either way no whitespace or unprintable character, no
     leading `#` (a reader skips that line as a comment), and none of the forms a place that
     moves at run time is written in: a pointer (`[` `]`, `->`), an offset added (`+`), or a
-    `0x` prefix, since an address here always carries its segment."""
+    bare `0x` number, since an address here always carries its segment."""
     if ref == "":
         return "is empty"
     if ref[0] == "#":
@@ -53,9 +54,10 @@ def ref_fault(ref: str) -> str | None:
     if "+" in ref:
         return (f"{ref!r} adds an offset; a comment names a symbol or a SEG:OFF as it stands, "
                 "so name the address itself")
-    if ref.lower().startswith("0x"):
-        return f"{ref!r} is a bare number; an address here is a SEG:OFF in hex, as 0814:010B"
     if ":" not in ref:
+        if ref.lower().startswith("0x"):
+            return (f"{ref!r} is a bare number; an address here is a SEG:OFF in hex, as "
+                    "0814:010B")
         return None
     m = _SEG_OFF.fullmatch(ref)
     if m is None:

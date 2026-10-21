@@ -147,14 +147,13 @@ breakpoint_at(ref="_engine_set_rate")
                               -> {"stored": true, "armed": true, "entry": "BP 00AF:0017A6EC", ...}
 watch_add(ref="_g_eng_rate", mode="show", length=4, fmt="u32")
 breakpoint_clear(ref="BPINT 21")
-resume(e9="since", e9_filter="PERF|audio")
+resume(seconds=30)
 ```
 
 The last reply is the stop itself: `pc`, `cpu_mode`, `regs`, `watches` with `_g_eng_rate`
-already read as a `u32`, `attribution` naming `_engine_set_rate` as the declaration that
-fired, and `e9` holding the lines the guest wrote between the two stops that match your
-filter (`since_last_stop`, `shown`, `lines_total` for how many matched and `unfiltered` for how
-many there were in all).
+already read as a `u32`, `cause` naming `_engine_set_rate` as the declaration that fired, and
+`e9` holding the lines the guest wrote between the two stops (`lines_total`, the newest ones in
+`lines`, and the `mark` they start at, from which `log` reads them all when the block was cut).
 
 ### The same thing in one call
 
@@ -167,7 +166,7 @@ start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj",
             {"op": "breakpoint_at", "ref": "_engine_set_rate"},
             {"op": "watch_add", "ref": "_g_eng_rate", "mode": "show", "length": 4, "fmt": "u32"},
             {"op": "breakpoint_clear", "ref": "BPINT 21"},
-            {"op": "resume", "e9": "since"}])
+            {"op": "resume"}])
 ```
 
 `plan` runs those steps on the fresh session and stops at the first failure with the
@@ -271,21 +270,6 @@ address), and arrival is judged on the linear address, whatever paragraph the pr
 verdict, and the reply says so (`target_disarmed`, false only when the removal could not be
 confirmed).
 
-### A window on the guest's clock
-
-A guest that stamps its lines has a clock the server can cut on. Lend the stamp as a
-regex with one group and ask for the last N seconds of log at every stop:
-
-```
-run_to(ref="_engine_set_rate", control="_vbl_handler", seconds=30, e9="seconds:2",
-       e9_stamp="\\[\\+\\s*(\\d+\\.\\d+)\\]", e9_filter="PERF")
-   -> {..., "e9": {"lines": [...], "shown": 3, "now": 14.207, "window_s": 2, "unstamped": 0,
-                "lines_total": 412, "filter": "PERF"}}
-```
-
-"Now" is the latest stamp in the log; a line without a stamp is counted, never placed;
-the mode without a stamp is refused before the machine moves.
-
 ### Wait for a line, then take a still
 
 ```
@@ -367,7 +351,7 @@ project and carries no default that points anywhere in particular.
 | `series_diff` | two series compared frame by frame, after checking each can tell its frames apart |
 | `region_track` | the frames where a region of a series changes, by signature, changed pixels or a match against a reference |
 | `golden_check` | a series or a directory of PNGs against goldens written by `shasum -a 256` |
-| `screen_wait` | `(text, seconds=30)`: runs the machine retrace by retrace until `text` is inside one row of the text screen, and stops there with the stop's registers and attribution; a string already on screen is answered at once (`already`), the machine not moved; a frame that is not text is no match. Needs a session started with `logfile` |
+| `screen_wait` | `(text, seconds=30)`: runs the machine retrace by retrace until `text` is inside one row of the text screen, and stops there with the stop's registers and `cause`; a string already on screen is answered at once (`already`), the machine not moved; a frame that is not text is no match. Needs a session started with `logfile` |
 | `state_save` | the machine under a NAME, as `<state_dir>/<name>.sav`, by the debugger's own `SAVESTATE` sent down the debugger channel: no window, no menu, no focus taken. A running guest is stopped for it and released again (`paused`); the file is read back for what it says about itself. Never overwrites; alters nothing. Needs a DOSBox-X that carries the command (see Saved states below) |
 | `state_load` | the named state, by the debugger's own `LOADSTATE`, as `state_save` saves; a running guest is stopped for it and released again, a parked one stays parked at the loaded position. A state of another DOSBox-X version, program, memory size or machine type is refused, never asked about. Marks the session altered |
 | `state_list` | every state under the session's `state_dir` with the members its ZIP carries (`version`, `program`, `machine`, `memory_mb`, `saved_at`), read without loading; no window needed, works while the guest runs |

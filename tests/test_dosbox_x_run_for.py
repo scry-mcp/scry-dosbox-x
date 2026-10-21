@@ -12,7 +12,6 @@ from types import SimpleNamespace
 from typing import Any, TypeVar, cast
 
 import pytest
-from e9_hints import hints_heard
 from scry_core import reply_contract as contract
 from test_dosbox_x_debug import RESUME_HALTED, Debugger
 from test_dosbox_x_server import clean_session, install  # noqa: F401  (the autouse teardown)
@@ -20,7 +19,6 @@ from test_dosbox_x_server import clean_session, install  # noqa: F401  (the auto
 import dosbox_arming as arming
 import dosbox_console as dcons
 import dosbox_retrace as retrace
-import dosbox_running as running
 import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_x_server as server
@@ -115,18 +113,18 @@ def test_three_frames_land_three_retraces_with_the_whole_stop_reply() -> None:
     assert got["emulated_after_s"] == pytest.approx(0.0485122)
     assert got["frame_before"]["available"] is False and got["frame_after"]["available"] is False
     assert "normal core" in got["cycles"]["why"], got
-    assert got["regs"] and "attribution" in got and "e9" in got and "stop_seq" in got
+    assert got["regs"] and "cause" in got and "e9" in got and "stop_seq" in got
     assert got["session"]["altered"] is False, "advancing is not writing"
     assert got["summary"].startswith("run_for 3 frames: ELAPSED"), got["summary"]
 
 
-def test_the_stop_run_for_lands_on_names_its_own_e9_argument(
-        monkeypatch: pytest.MonkeyPatch) -> None:
-    """`run_for` takes `e9`, so the hint its stop carries names it, not `log`."""
-    seen = hints_heard(monkeypatch)
+def test_the_stop_run_for_lands_on_carries_the_e9_block_even_with_no_log() -> None:
+    """The block is on for every stop, `run_for`'s included: this session has no logfile, so
+    it is the unavailable shape naming why (the served shape is the stop reply's own test)."""
     live(three_frames())
-    assert cast(dict[str, Any], server.run_for(frames=3))["status"] == "ok"
-    assert seen == [running.E9_BY_ARGUMENT], seen
+    got = cast(dict[str, Any], server.run_for(frames=3))
+    assert got["status"] == "ok" and got["e9"]["available"] is False, got["e9"]
+    assert "logfile" in got["e9"]["why"], got["e9"]
 
 
 def test_with_nothing_that_can_cut_it_no_frame_is_surveyed() -> None:
@@ -153,7 +151,7 @@ def test_a_breakpoint_that_cuts_a_frame_ends_it_other_stop_and_leaves_the_retrac
     got = cast(dict[str, Any], server.run_for(frames=5, seconds=2))
     assert got["status"] == "ok", got
     assert got["verdict"] == "OTHER_STOP" and got["polls"] == 2, got
-    assert got["attribution"]["ref"] == "0814:0108", got["attribution"]
+    assert "breakpoint 0814:0108 " in got["cause"], got["cause"]
     assert got["retrace_pending"] is True and retrace.PENDING_NOTE in got["note"], got
     assert dstate.STATE.retrace_pending is True
 
@@ -222,8 +220,7 @@ def test_a_protected_mode_frame_reads_its_position_off_the_survey() -> None:
     {}, {"frames": 0, "milliseconds": 0}, {"frames": 2, "milliseconds": 50}, {"frames": -1},
     {"frames": True}, {"milliseconds": -5}, {"milliseconds": 2.5}, {"milliseconds": True},
     {"milliseconds": 10 ** 400}, {"frames": 3, "seconds": 0},
-    {"frames": 3, "seconds": ds.RUN_TO_MAX + 1},
-    {"frames": 3, "e9": "bogus"}])
+    {"frames": 3, "seconds": ds.RUN_TO_MAX + 1}])
 def test_a_bad_argument_is_refused_before_the_session_gate(args: dict[str, Any]) -> None:
     dstate.STATE.session = None
     got = cast(dict[str, Any], server.run_for(**args))
@@ -278,7 +275,7 @@ def test_a_resume_that_stops_where_nothing_is_declared_names_the_pending_retrace
     dstate.STATE.retrace_pending = True
     got = cast(dict[str, Any], server.resume())
     assert "stop_seq" in got, got
-    assert got["attribution"].get("retrace_pending") is True, got["attribution"]
+    assert got["cause"].startswith("most likely the retrace stop"), got["cause"]
     assert dstate.STATE.retrace_pending is False
 
 

@@ -1,38 +1,20 @@
 {
  "task": {
   "id": "D22",
-  "prompt": "Step into the next 4 instructions, following calls, and give me every E9 line the guest wrote since the previous stop.",
+  "prompt": "Step into the next 4 instructions, following calls, and show me the E9 lines the guest wrote since the previous stop.",
   "tool": "step",
   "args": {
    "mode": "into",
-   "count": 4,
-   "e9": "since"
+   "count": 4
   },
-  "allow": [
-   "e9_filter",
-   "e9_stamp"
-  ],
   "grammar": [
-   "into",
-   "since"
+   "into"
   ]
  },
  "runs": [
   {
    "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"e9\": \"since\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"e9\": \"since\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"e9\": \"since\"}}"
+    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4}}"
    ],
    "right": true
   }

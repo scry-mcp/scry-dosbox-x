@@ -59,8 +59,7 @@ def test_a_perform_sequence_runs_by_name_and_stops_where_it_was_headed(
     # else in `out["stopped"]`. Read whichever carries the attribution.
     resume_reply = out["ran"][-1]["reply"]
     stop = out.get("stopped") or resume_reply
-    assert stop["attribution"]["attributed"] is True, stop["attribution"]
-    assert stop["attribution"]["ref"] == guest.STOP, stop["attribution"]
+    assert stop["cause"].startswith(f"breakpoint {guest.STOP} "), stop["cause"]
     watched = {x["ref"]: x for x in stop["watches"]}
     for name in guest.WATCHES:
         assert watched[name]["state"] == "evaluated" and "value" in watched[name], watched[name]

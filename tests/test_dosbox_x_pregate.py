@@ -67,7 +67,6 @@ def test_a_state_wait_out_of_bounds_is_judged_with_no_session() -> None:
     ("snapshot", {"dest": "rel.png"}, "relative"),
     ("state_save", {"name": "a b"}, "letters"),
     ("resume", {"seconds": -1}, "seconds"),
-    ("resume", {"e9": "bogus"}, "e9"),
     ("perform", {"steps": [{"op": "nope"}]}, "nope"),
     ("perform", {"steps": [{"op": "read_memory", "ref": "00A7:zz"}]}, "00A7:zz"),
     ("perform", {"steps": [{"op": "registers"}], "settle_seconds": -1}, "settle_seconds"),

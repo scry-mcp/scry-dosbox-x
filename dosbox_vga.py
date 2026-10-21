@@ -276,7 +276,7 @@ class Tables:
 
 
 def in_v86(reading: machine.Reading) -> bool:
-    return bool(reading.found.get("cpu", {}).get("vm"))
+    return bool(reading.found.get("control", {}).get("vm"))
 
 
 def tables_from(reading: machine.Reading) -> Tables:

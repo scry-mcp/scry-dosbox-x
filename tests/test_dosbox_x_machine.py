@@ -474,7 +474,7 @@ def test_before_dos_booted_the_dos_sections_are_absent_quoting_the_debugger(
     assert ('`mcbs` is absent: `DOS MCBS` answered "Cannot enumerate MCB list while DOS '
             'kernel is inactive."') in r["coverage_note"]
     assert '`ems` and `ems_pages` are absent: `DOS EMS` answered' in r["coverage_note"]
-    assert r["cpu"]["cr0"] == "00000010" and r["bios_mem"]
+    assert r["control"]["cr0"] == "00000010" and r["bios_mem"]
 
 
 def test_a_listing_cut_at_the_ceiling_says_so_and_counts_the_whole(
@@ -547,7 +547,7 @@ def test_an_unreadable_cpu_listing_reads_no_table_and_says_the_mode_is_unknown(
     r = mapped_with(Edited("dos-djgpp32", tmp_path / "x.log", "CPU", "cpl=3", "cpl=?"))
     assert r["cpu_mode"]["available"] is False and "cpu" not in r and "gdt" not in r
     assert r["_asked"][-1] == "CPU"
-    assert "`cpu` is absent" in r["coverage_note"] and "mode is unknown" in r["coverage_note"]
+    assert "`control` is absent" in r["coverage_note"] and "mode is unknown" in r["coverage_note"]
     assert r["summary"].startswith("machine_map (mode unread): "), r["summary"]
 
 

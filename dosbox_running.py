@@ -5,16 +5,15 @@ around that: a stop the machine reached on its own is RECORDED by the first tool
 finds it and the queue of what was asked meanwhile is drained (`observe_stop`,
 `drain_if_stopped`); and a stop a tool produced comes back as ONE survey of the screen
 (`stop_reply`): where, the instruction there, by which declaration, the watches evaluated,
-the registers and the E9 block, with the three arguments every stop tool shares validated
-BEFORE the machine is moved (`e9_validate`).
+the registers and the E9 block.
 """
 
 from __future__ import annotations
 
 import copy
-import re
-from typing import Any, cast
+from typing import Any
 
+from scry_core import log_marks
 from scry_core import reply_contract as contract
 
 import dosbox_arming as arming
@@ -54,7 +53,7 @@ def observe_stop(session: ds.Session) -> None:
                                          retrace_may_stop=True))
     # The account rides on THIS contact's reply, once.
     STATE.found_stop_last = {"stop_seq": STATE.last_stop["seq"], "pc": STATE.last_stop["at"],
-                             "attribution": dict(STATE.last_stop["attribution"])}
+                             "cause": st.cause(STATE.last_stop["attribution"])}
 
 
 def drain_if_stopped(session: ds.Session) -> None:
@@ -70,160 +69,28 @@ def drain_if_stopped(session: ds.Session) -> None:
         arming.apply_pending(session)             # accumulates into `STATE.applied_last`
 
 
-_E9_MODES = ("none", "all", "since")
-#: THE E9 BLOCK'S `how` names a way the caller can take: the argument on the four tools that
-#: take `e9` (`resume`, `step`, `run_to`, `run_for`), the log on every other stop.
-E9_BY_ARGUMENT = ("pass e9='all', e9='lines:N', e9='since' or e9='seconds:N' (with "
-                  "e9_stamp=<regex capturing the seconds>), with e9_filter=<pattern>, to include "
-                  "the lines")
-E9_BY_LOG = "this tool takes no `e9`: `log(pattern=\".\", channel=\"guest\")` reads the lines"
-
-
-def e9_validate(mode: str, e9_filter: str, e9_stamp: str | None = None) -> None:
-    """Refuse a bad E9 mode or filter BEFORE the machine is moved. A stop reply's E9 block is
-    a DISPLAY option, but the tools that carry it (resume/step/run_to) first RESUME the guest
-    -- an irreversible act -- so a typo in `e9` must be caught before the F5, not after, or a
-    whole stop reply is thrown away for a malformed optional parameter that could have been
-    rejected up front. The regex is compiled here too, so a bad filter fails the same way.
-
-    `seconds:N` NEEDS A STAMP. The guest's log carries no time this server knows how to read;
-    a program that stamps its own lines (`[+SSSS.mmm]` from a monotonic guest clock, say)
-    lends that knowledge through `e9_stamp`, a regex with ONE group that captures the seconds
-    as a number. Without it the window is refused here, not served wrong."""
-    if mode not in _E9_MODES and not mode.startswith(("lines:", "seconds:")):
-        raise ds.Invalid("bad_argument",
-            f"e9 is none | all | lines:N | since | seconds:N; got {mode!r}")
-    if mode.startswith(("lines:", "seconds:")):
-        _e9_count(mode)          # raises for a non-positive or non-integer N
-    dlogs.compiled(e9_filter)       # raises for a bad regex, naming it as the caller's
-    if e9_stamp is not None:
-        if not isinstance(cast(object, e9_stamp), str) or not e9_stamp:
-            raise ds.Invalid("bad_argument",
-                "e9_stamp is a regular expression with ONE group capturing the "
-                             "line's time in seconds")
-        if dlogs.compiled(e9_stamp).groups != 1:
-            raise ds.Invalid("bad_argument",
-                f"e9_stamp must capture the seconds in exactly ONE group; "
-                             f"{e9_stamp!r} has {dlogs.compiled(e9_stamp).groups}")
-    if mode.startswith("seconds:") and e9_stamp is None:
-        raise ds.Invalid("bad_argument",
-            "a last-N-seconds window needs `e9_stamp`: a regex with one group "
-                         "capturing each line's own time in seconds (the guest's clock), "
-                         "because this server knows no timestamp of its own on the log. "
-                         "Without one, use lines:N or since")
-
-
-def e9_summary(session: ds.Session, mode: str, e9_filter: str,
-                e9_stamp: str | None = None, how: str = E9_BY_LOG) -> dict[str, Any]:
-    """The E9 block of a stop reply: OFF by default, carrying the COUNT and `how`, the way to
-    see the lines (`e9=` on the tools that take one, `log` on every other stop), because the
-    volume can blow up context and off-with-no-word leaves doubt. The switch is `none` | `all` |
-    `lines:N` | `since` | `seconds:N`, with a filter.
-    The mode is assumed already validated by `e9_validate` (before the guest was resumed).
-
-    `since` shows only what the guest logged since the previous stop, off a mark keyed on the
-    UNFILTERED line count, so a `since` window is the SAME whatever filter this or the earlier
-    stop used -- the position in the log does not depend on how it is filtered. `seconds:N` is
-    NOT served and says why: the guest's E9 log carries no per-line timestamp this server has
-    measured, so a time window cannot be cut honestly -- a limitation carried to QA.
-    """
-    pat = dlogs.compiled(e9_filter)
-    # THE DEFAULT PATH READS ONLY WHAT IS NEW. Every stop carries this block, and the
-    # whole log was read from byte zero and filtered at each of them, even with nothing
-    # asked for (`none`): quadratic in the session, the shape `e9_wait` had already left
-    # behind. With no filter, `none` and `since` need only the lines since the previous
-    # stop and a running total; a filter, or a mode that shows history, reads it whole.
-    if mode in ("none", "since") and e9_filter == ".":
-        mark = int(STATE.e9_mark.get("offset", 0))
-        try:
-            fresh_all, offset = session.e9_new_since(mark)
-        except ds.Invalid as exc:
-            return {"available": False, "why": str(exc)}
-        if offset < mark:
-            STATE.e9_mark["count"] = 0       # rewritten shorter: read from its start, counted so
-        STATE.e9_mark["offset"] = offset
-        unfiltered = int(STATE.e9_mark["count"]) + len(fresh_all)
-        block: dict[str, Any] = {"lines_total": unfiltered, "unfiltered": unfiltered,
-                                 "filter": e9_filter}
-        if mode == "none":
-            block["shown"] = 0
-            block["how"] = how
-        else:
-            block.update(lines=fresh_all, shown=len(fresh_all), since_last_stop=len(fresh_all))
-        return block
+def e9_block(session: ds.Session) -> dict[str, Any]:
+    """The guest's E9 lines since the previous stop, as every stop reply shows them
+    (`log_marks.stop_block`, the guest channel's): the count whole, the newest few, and the mark
+    they start at, from which `log` reads the rest. Unavailable with why when there is no log
+    to read; a log rewritten shorter is read from its start."""
+    mark = STATE.e9_offset
     try:
-        every = session.e9_lines()                     # every E9 line, in order
+        fresh, offset = session.e9_new_since(mark)
     except ds.Invalid as exc:
-        return {"available": False, "why": str(exc)}
-    unfiltered = len(every)
-    STATE.e9_mark["offset"] = session.e9_mark()
-    filtered = [ln for ln in every if pat.search(ln)]
-    block = {"lines_total": len(filtered), "unfiltered": unfiltered, "filter": e9_filter}
-    if mode == "none":
-        block["shown"] = 0
-        block["how"] = how
-    elif mode == "all":
-        block["lines"], block["shown"] = filtered, len(filtered)
-    elif mode.startswith("lines:"):
-        block["lines"] = filtered[-_e9_count(mode):]
-        block["shown"] = len(block["lines"])
-    elif mode == "since":
-        fresh = [ln for ln in every[STATE.e9_mark["count"]:] if pat.search(ln)]
-        block["lines"], block["shown"], block["since_last_stop"] = fresh, len(fresh), len(fresh)
-    elif e9_stamp is None:  # seconds:N with no stamp: validated away up front, said here too
-        block["shown"] = 0
-        block["unsupported"] = ("a last-N-seconds window needs `e9_stamp`, a regex with one "
-                                "group capturing each line's own time in seconds")
-    else:
-        # THE WINDOW IS THE GUEST'S CLOCK, not the host's: "now" is the latest stamp any
-        # line carries, and a line is in the window when its own stamp is within N of it.
-        # A line without a stamp cannot be placed and is counted as such, never guessed.
-        stamp = dlogs.compiled(e9_stamp)
-        block.update(_last_seconds(every, filtered, stamp, _e9_count(mode)))
-    return block
+        return contract.unavailable(str(exc))
+    if offset < mark:
+        mark = 0
+    STATE.e9_offset = offset
+    return log_marks.stop_block(fresh, mark, "guest", dlogs.LOG_LIMIT_MAX)
 
 
-def _last_seconds(every: list[str], filtered: list[str], stamp: re.Pattern[str],
-                  n: int) -> dict[str, Any]:
-    """The lines whose own stamp is within `n` seconds of the latest stamp in the log."""
-    def at(line: str) -> float | None:
-        m = stamp.search(line)
-        if m is None:
-            return None
-        try:
-            return float(m.group(1))
-        except ValueError:
-            return None
-    stamped = [t for t in (at(ln) for ln in every) if t is not None]
-    if not stamped:
-        return {"shown": 0, "lines": [], "unstamped": len(every),
-                "unsupported": "no line in the log matched `e9_stamp`, so there is no clock "
-                               "to cut a window on"}
-    now = max(stamped)
-    kept = [ln for ln in filtered if (t := at(ln)) is not None and t >= now - n]
-    return {"lines": kept, "shown": len(kept), "now": now, "window_s": n,
-            "unstamped": sum(1 for ln in filtered if at(ln) is None)}
-
-
-def _e9_count(mode: str) -> int:
-    """The N out of `lines:N` (or `seconds:N`), refused if it is not a positive integer."""
-    try:
-        n = int(mode.split(":", 1)[1])
-    except ValueError:
-        raise ds.Invalid("bad_argument", f"the N in {mode!r} is not an integer") from None
-    if n <= 0:
-        raise ds.Invalid("bad_argument", f"the N in {mode!r} must be positive")
-    return n
-
-
-def stop_reply(session: ds.Session, e9: str = "none", e9_filter: str = ".",
-                e9_stamp: str | None = None, *, retrace_may_stop: bool = False,
-                e9_how: str = E9_BY_LOG, made_by: dict[str, str] | None = None,
-                **base: Any) -> dict[str, Any]:
+def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
+               made_by: dict[str, str] | None = None, **base: Any) -> dict[str, Any]:
     """What a stop ALWAYS returns, on top of the tool's own fields in `base`:
-    where it stopped and by which declaration (attribution by address, or an honest
-    cannot-say), the watches already evaluated, the registers, and the E9 summary, whose `how`
-    is `e9_how` (a tool that takes no `e9` names what reads the lines instead). `made_by`, a
+    where it stopped and by which declaration (its `cause`: a declaration matched by address, or
+    why none can be named), the watches already evaluated, the registers, and the guest's E9
+    lines since the previous stop (`e9_block`). `made_by`, a
     stop the calling tool made itself (`run_to`'s target, whose breakpoint is gone by now),
     is attributed to it rather than looked for among the declarations. `altered`
     rides in the standard `session` block `st.reply` adds, so it is carried the same way here.
@@ -248,17 +115,18 @@ def stop_reply(session: ds.Session, e9: str = "none", e9_filter: str = ".",
     STATE.remember_stop(session, where, registers, held, attribution)
     picture = STATE.last_stop["picture"] = code.stop_instruction(session, where, registers,
                                                                  session.survey_text)
-    e9_block = _stop_e9(session, e9, e9_filter, e9_stamp, e9_how)
+    e9 = e9_block(session)
     # THE STOP'S NUMBER rides on its reply: it is what a batch with `summaries`
     # counts its stops by, and what `last_stop.stop_seq` later names.
     return st.reply(**{**base, **position(where, getattr(session, "paging", None))},
-                    regs=registers, watches=watches, attribution=attribution,
-                    e9=e9_block, stop_seq=STATE.last_stop["seq"], **picture)
+                    regs=st.shown_regs(registers), watches=watches,
+                    cause=st.cause(attribution),
+                    e9=e9, stop_seq=STATE.last_stop["seq"], **picture)
 
 
 def recorded_stop_reply(session: ds.Session, recorded: dict[str, Any]) -> dict[str, Any]:
     """The enriched stop for one already recorded (`STATE.as_of_current`), built off that
-    record: its registers, the watches evaluated and the E9 summary read now, and the
+    record: its registers, the watches evaluated and the E9 block read now, and the
     instruction it is on, decoded here off the screen its survey read when no reply has yet.
     Never surveyed again, which would number the same stop twice."""
     stop = STATE.last_stop
@@ -267,27 +135,14 @@ def recorded_stop_reply(session: ds.Session, recorded: dict[str, Any]) -> dict[s
     if "picture" not in stop:
         stop["picture"] = code.stop_instruction(session, dict(stop["where"]),
                                                 dict(stop["registers"]), session.survey_text)
-    return {**recorded_head(recorded), "regs": dict(stop["registers"]),
+    return {**recorded_head(recorded), "regs": st.shown_regs(stop["registers"]),
             "watches": watches,
-            "e9": _stop_e9(session, "none", "."), **copy.deepcopy(stop["picture"])}
+            "e9": e9_block(session), **copy.deepcopy(stop["picture"])}
 
 
-def _stop_e9(session: ds.Session, e9: str, e9_filter: str, e9_stamp: str | None = None,
-             how: str = E9_BY_LOG) -> dict[str, Any]:
-    """A stop's E9 block, and the since-last-stop mark moved to it: the offset and the count
-    move together, or the next `since` with a filter starts lines before the one without. The
-    mark is the UNFILTERED count, so the next `since` is independent of whichever filter this
-    stop or that one used; not moved when the log is unavailable."""
-    block = e9_summary(session, e9, e9_filter, e9_stamp, how)
-    if "unfiltered" in block:
-        STATE.e9_mark["count"] = int(block["unfiltered"])
-    return block
-
-
-def stop_or_base(session: ds.Session, stopped: bool, e9: str, e9_filter: str,
-                  e9_stamp: str | None, base: dict[str, Any], *,
-                  retrace_may_stop: bool = False, e9_how: str = E9_BY_LOG,
-                  made_by: dict[str, str] | None = None) -> dict[str, Any]:
+def stop_or_base(session: ds.Session, stopped: bool, base: dict[str, Any], *,
+                 retrace_may_stop: bool = False,
+                 made_by: dict[str, str] | None = None) -> dict[str, Any]:
     """The enriched stop reply when the machine STOPPED, else just the tool's base answer.
     A halt whose POSITION cannot be read (a cut pane leaves `where` refusing, which `resume`'s
     read-back meets as a stop with no position) is not discarded: the halt is a real
@@ -296,9 +151,7 @@ def stop_or_base(session: ds.Session, stopped: bool, e9: str, e9_filter: str,
     if not stopped:
         return st.reply(**base)
     try:
-        return stop_reply(session, e9=e9, e9_filter=e9_filter, e9_stamp=e9_stamp,
-                          retrace_may_stop=retrace_may_stop, e9_how=e9_how, made_by=made_by,
-                          **base)
+        return stop_reply(session, retrace_may_stop=retrace_may_stop, made_by=made_by, **base)
     except ds.Invalid as e:
         return st.reply(enrichment={"available": False, "why": str(e)}, **base)
 
@@ -339,6 +192,13 @@ def recorded_head(recorded: dict[str, Any]) -> dict[str, Any]:
     return {**recorded, **position(dict(stop["where"]), stop.get("paging"))}
 
 
+#: Why `status` has no `pc`, one text per cause, so its summary can say which without a second
+#: field: `alive` and `running` are the session block's.
+PC_RUNNING_WHY = ("the guest is running: `pc` is read off a stopped machine's register pane, and "
+                  "`last_stop` says where it was last seen")
+PC_GONE_WHY = "DOSBox-X has exited: `last_stop` says where the guest was last seen"
+
+
 def status_facts(session: ds.Session | None) -> dict[str, Any]:
     """What `status` adds about the MACHINE: `pc`, where it is NOW, read off the pane at a stop
     (one console round trip), so a command that moved CS:IP
@@ -358,9 +218,7 @@ def status_facts(session: ds.Session | None) -> dict[str, Any]:
         else:
             facts["pc"] = f"{now['cs']}:{now['eip']}"
     else:
-        facts["pc"] = contract.unavailable(
-            "the guest is running (or gone): `pc` is read off a stopped machine's register "
-            "pane, and `last_stop` says where it was last seen")
+        facts["pc"] = contract.unavailable(PC_RUNNING_WHY if session.alive() else PC_GONE_WHY)
     families = {"breakpoints": 0, "watches": 0}
     for decl in (STATE.store.declarations() if STATE.store is not None else []):
         families["watches" if decl.kind == "watch" else "breakpoints"] += 1

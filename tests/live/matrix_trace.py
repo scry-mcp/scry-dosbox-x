@@ -213,7 +213,7 @@ def _cut() -> None:
     found = r.get("trace") or {}
     M.judge("K a breakpoint cuts a trace: OTHER_STOP, the instructions equal to ECX",
             ok(r) and r.get("verdict") == "OTHER_STOP" and found.get("instructions") == ecx
-            and (r.get("attribution") or {}).get("ref") == ref and _no_log_left(),
+            and str(r.get("cause")).startswith(f"breakpoint {ref} ") and _no_log_left(),
             f"ECX {ecx}, {found.get('instructions')} executed; {said(r, 80)}")
     must(M.call(server.breakpoint_clear, ref=ref), "clearing the dec bx")
     M.setup()

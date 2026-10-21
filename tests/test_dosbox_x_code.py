@@ -858,7 +858,7 @@ def test_a_stop_whose_survey_was_cut_carries_no_instruction() -> None:
     def cut() -> tuple[dict[str, str], dict[str, str], list[dict[str, str]]]:
         raise ds.Invalid("unexpected_answer", "no register pane came back")
     s.stop_survey = cut  # type: ignore[method-assign]
-    reply = running.stop_or_base(cast(ds.Session, s), True, "none", ".", None, {"halted": True})
+    reply = running.stop_or_base(cast(ds.Session, s), True, {"halted": True})
     assert "instruction" not in reply and reply["enrichment"]["available"] is False, reply
 
 

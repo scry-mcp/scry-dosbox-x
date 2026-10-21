@@ -334,14 +334,17 @@ file a reply names, always the whole path, and `<what>_path` for any other file 
 false, "why": ...}` in the place its value would have taken: no reply carries a null.** A time
 is `_s`, a span a reader acts on (`waited_s`, `since_s`) to the tenth of a second; a wall-clock
 instant is `<event>_at` (`created_at`, `saved_at`, a stop's `wall_at`). A value is an integer
-or `0x` text, never decimal text.
+or `0x` text, never decimal text; a value the machine holds comes back as `0x` text at its
+holder's width (`regs`, `set_register`'s `value` and `readback`, a scan's values), the spelling
+an argument takes back. `waited_s` rides only where the time is the answer: the
+waits for a line or a screen, a bounded `resume`, an input's `verify`/`expect`.
 
 **Where a word here means something of its own**, each for its reason:
 
 - `pc` is `SSSS:OOOOOOOO` with `cpu_mode` beside it, and a row carries `seg_off` beside `addr`:
   a DOS place is segmented, and the segment is half of what it means.
-- A stop carries `instruction`, the one decoded at the stop, and `attribution`, the
-  declaration matched by address: what the debugger shows, structured.
+- A stop carries `instruction`, the one decoded at the stop, and `cause`, prose naming the
+  declaration matched by address or why none can be named.
 - `vga_mode` is the VGA mode word, `bios_mode` the mouse driver's video mode, and a screen's
   `kind` is `text` or `pixel`: a DOS screen is either.
 - `run_to` requires its `control`: this debugger keeps no control between runs.
@@ -806,7 +809,7 @@ the stop reply's after the last (`emulated_before_s`, `emulated_after_s`); a clo
 move over the run is `no_progress`. `cycles` is unavailable: the pane's `cc=` counts cycles only on
 the normal core, and which core runs is not something the server can read. The `verdict` is
 `ELAPSED` when the run ran its course, `OTHER_STOP` when a declared code breakpoint stopped the
-machine first (named by `attribution`), and `TIMEOUT` when the bound expired; `polls` counts the
+machine first (named by `cause`), and `TIMEOUT` when the bound expired; `polls` counts the
 `VRT`s a stop answered, the cut one included.
 
 **`run_for(milliseconds=N)` counts the same clock instead of the frames.** It runs retrace by
@@ -821,8 +824,8 @@ one of `frames` and `milliseconds` is above zero.
 
 **A `VRT` a breakpoint cuts stays armed in the debugger**, and the next release stops at the next
 retrace. So an `OTHER_STOP` says `retrace_pending: true`, and the first stop a later `resume` or
-`run_to` makes that no declaration explains carries `retrace_pending: true` in its `attribution`,
-with a `why` naming that retrace as the likeliest cause; a step, a `stop` or a `run_to` that
+`run_to` makes that no declaration explains names that retrace as the likeliest cause in its
+`cause`; a step, a `stop` or a `run_to` that
 arrived is its caller's own stop and leaves it armed. Two limits the `note` states when they
 apply: on a dynamic core a code breakpoint armed after its code already ran under a retrace run
 can fail to cut the frames after it, while `run_to` and `resume` honour it, so an `ELAPSED` with
@@ -910,7 +913,7 @@ With `seconds` it waits that long for a stop, listening for the prompt as `run_t
 is `OTHER_STOP` with the full stop reply, and a bound that runs out is `TIMEOUT` with
 `waited_s` and a `note` saying it is still running, LEAVING it running; the default `0` comes
 back at once with no verdict, and a negative one is
-refused, as is a malformed `e9` argument, both before any session is asked for. A guest
+refused before any session is asked for. A guest
 already running is then refused `not_stopped`, because an F5 there
 does nothing and an `ok` would read like a release. Nothing has to be declared before a
 `resume`: `stop` brings a running guest back, headless or windowed.
@@ -919,7 +922,7 @@ does nothing and an `ok` would read like a release. Nothing has to be declared b
 on a local port the kernel picks and passes it as `-set "dosbox mcp_server=<port>"`, the emulator
 dials it at start, and `stop` sends `BREAK` down it. The emulator polls the channel from a timer
 tick, so it answers while the guest runs, and the debugger's prompt on the terminal is what says
-the machine is back (`waited_s`). No window, no menu and no focus are involved, so `stop` works
+the machine is back. No window, no menu and no focus are involved, so `stop` works
 on a headless session as on a windowed one. A build without the channel (one that predates it
 upstream, or one built without the debugger) never dials, and `stop` is then `no_channel`, naming it; the
 `-set` key is the session's own, so a caller's `flags` may not carry it.
@@ -962,7 +965,7 @@ exactly four. In real mode anything past `0xFFFF` addresses nothing, so that is 
 instead of being accepted and never firing.
 
 **Addresses in a reply** are spelled two ways: a segmented one as `SSSS:OOOOOOOO`, the form
-every DOS ref takes (under its own key it is `seg_off`; a stop's `pc`, an attribution's `at` and
+every DOS ref takes (under its own key it is `seg_off`; a stop's `pc`, the address in its `cause` and
 a pointer's `at` and `target` are spelled so too), and a linear one as `addr`, `0x` and eight
 digits, so the same place is one string and compares as one. A row carries `addr` where the
 server already knows the linear address (a symbol, a scan hit, a placed operand); it is never
@@ -981,23 +984,19 @@ outside it, or off one `D` when the pane does not hold that line whole as one in
 decodes in its own width, which is not always the segment's), with its nearest symbol, which
 in protected mode costs one `SELINFO CS` and only with a table loaded; unavailable, with why,
 when no bytes could be read or they start no instruction), the registers (`regs`),
-the show watches already evaluated (each with `state: "evaluated"`), an `attribution` to the
-declaration whose address it stopped at (`attributed`, `ref`, `by`, `at`; a `run_to` that
-arrived names its own target, `by: "run_to"`, whose breakpoint is removed by then, with `refs`
-naming the declarations at the same place beside it; or an honest
-cannot-say with `why`: the debugger keeps no hit flag, and a memory watch stops at the
-instruction that WROTE), and an
-E9 summary, `e9`, that is OFF by default with the count and how to see the lines, because the
-guest's log can blow up a conversation: `lines_total` lines matched the filter, `unfiltered`
-were logged in all, `shown` came back in `lines`. `how` names a way the caller can take: on a stop
-of a tool that takes no `e9` (`stop`, `screen_wait`, `trace`, a sequence's tail) it names
-`log(pattern=".", channel="guest")`; `resume`, `step`, `run_to` and `run_for` turn it on with
-`e9="all"`, `"lines:N"` or `"since"` (the previous stop) plus
-a filter; and `"seconds:N"` when the caller lends `e9_stamp`, a regex with one group
-capturing each line's own time, because this server knows no clock of its own on the log
-and a guest that stamps its lines (a monotonic guest clock) is the only honest one. The
-window is then cut on the guest's clock, "now" being the latest stamp in the log, and a line
-without a stamp is counted rather than placed.
+the show watches already evaluated (each with `state: "evaluated"`), its `cause`, and `e9`.
+`cause` is prose naming what stopped it: the declaration whose address it stopped at, with how
+it was named and where (`breakpoint <ref> (by <by>) at SSSS:OOOOOOOO`; several declarations at
+one address are all named); a `run_to` that arrived names its own target, whose breakpoint is
+removed by then, and any declaration at the same place beside it; a stop a `run_for` left armed
+is named as the likeliest retrace stop; or an honest cannot-say: the debugger keeps no hit flag,
+and a memory watch stops at the instruction that WROTE. `e9` is the guest's E9 lines since the
+previous stop, ON and bounded on every stop, because each stop is where a caller asks what the
+guest said: `lines_total` (the count, whole), `truncated`, `lines` (the newest of them) and
+`mark`, the byte position they start at; a cut block's `how` is the one way to read the rest,
+the same on every stop: `log(pattern=".", channel="guest",
+since_mark=<mark>, limit=<n>)`. `log` is also where a filter or a window of the log is asked
+for. No logfile, no lines: the block is unavailable with why.
 
 **While the guest runs.** The debugger's console answers only while the machine is stopped,
 and on macOS nothing can break a running guest in (dosbox-x #4026). Those two facts are the
@@ -1008,7 +1007,7 @@ The running-guest contract, in three parts:
 - **The lists answer from what the server holds.** `breakpoint_list` and `watch_list` on a
   running guest return the declarations with the state the last stop's survey saw, say
   `debugger_read: false`, and date the answer with `last_stop` (the last stop's `stop_seq`, `pc`,
-  `attribution`, `since_s`, and `wall_at`, the host's UTC time, to the second, at which the stop
+  `cause`, `since_s`, and `wall_at`, the host's UTC time, to the second, at which the stop
   was recorded). Stopped, they read the debugger and say `debugger_read: true`.
   Before any stop, `last_stop` is unavailable and a symbol's state is `unarmable`.
 - **What is asked while running is applied at the next stop.** `breakpoint_at` and a
@@ -1020,7 +1019,7 @@ The running-guest contract, in three parts:
   `still_pending` for what could not be applied). A stop that happened on its own, during a
   wait or a key, is recorded by the first tool that finds the machine at the debugger,
   `status` and `captures` included: that reply says `stopped_on_its_own` (its `stop_seq`,
-  `pc` and attribution), once, and carries the same `applied_on_stop` block when something
+  `pc` and `cause`), once, and carries the same `applied_on_stop` block when something
   was pending. `status` counts what is pending.
 - **`last_stop`, wherever it helps.** `status` carries the last stop, and beside it `pc`, where
   the machine is now, read off the pane (one console round trip: a command that moves CS:IP
@@ -1093,7 +1092,8 @@ wrong.
 altered for good. A real-mode write into the ROM range (linear 0xC0000-0xFFFFF) is refused
 `bad_argument` with nothing sent: the debugger's `SM` there neither writes nor refuses, it ends
 the emulator.
-A register is read back where the pane paints it and at its own width: a 32-bit name as its
+A register is read back where the pane paints it and at its own width (`0x` and its digits):
+a 32-bit name as its
 whole register, a segment register under its own name, and a 16-bit name (`ax` .. `sp`, `ip`)
 as the low half of its 32-bit register, because the pane shows `EAX` and never `AX`.
 Compared whole, `ax` would read `verified: false` for a write that landed whenever the high
@@ -1113,9 +1113,10 @@ debugger and turned with a bare ENTER because a command typed while a page waits
 one keystroke per page. With no `value`, a filter compares each cell with what it held when
 the scan OPENED, not at the previous filter: `!` keeps the cells that changed since then,
 `=` those that did not, and a cell changed once and left alone keeps passing `!`. Every
-filter reply says `hits_total` and `truncated`: above `limit` survivors, 40 unless asked
-for up to 400, `hits` is empty and the listing is never typed (`find` keeps its highest
-400 instead), and `iterations`, which the debugger prints on every filter but the one that
+filter reply says `hits_total`, `truncated` and the first `limit` survivors (40 unless asked
+for up to 400) in `hits`, their values `0x` at the cell's width; past 400 survivors none is
+listed, with a `note`, because the debugger pages the listing a screenful at a time and each
+page is a console round trip (`find` keeps its highest 400 instead); and `iterations`, which the debugger prints on every filter but the one that
 closes the scan; there the server answers its own count, or unavailable with why when `debug`
 touched the scan.
 
@@ -1164,15 +1165,15 @@ ends at a zero or non-rising saved BP, a frame past the stack segment, a return 
 `ended_why` says which. Its reads are the data view's, each `D` reused while it covers the next.
 
 **`machine_map` is the machine as the debugger lists it, read off the logfile.** By default it
-reads the DOS machine and the cpu (`mcbs`, `devs`, `kern`, `xms`, `ems`, `ems_pages`,
-`emu_mem`, `machine`, `cpu`, and `gdt`/`ldt` in protected mode), and leaves `bios_mem`,
+reads the DOS machine and the cpu's control registers (`mcbs`, `devs`, `kern`, `xms`, `ems`,
+`ems_pages`, `emu_mem`, `machine`, `control`, and `gdt`/`ldt` in protected mode), and leaves `bios_mem`,
 `callbacks`, `vga` and `paging` unread, naming those this mode has in `omitted`. `sections`
 names the ones to read instead, and only those listings are typed, plus `CPU`, which says the
 mode; `dest` writes every section read whole, lists uncut, as JSON. Each
 section is one debugger command and keeps its listing's words: `DOS MCBS` gives `mcbs`, `DOS DEVS`
 `devs`, `DOS KERN` `kern`, `DOS XMS` `xms`, `DOS EMS` `ems` and `ems_pages`, `BIOS MEM`
 `bios_mem`, `CALLBACKS` `callbacks`, `EMU MEM` `emu_mem`, `EMU MACHINE` `machine` and `CPU`
-`cpu`, each field named by its column. The rows come from the session's logfile and never
+`control` (the cpu's control registers), each field named by its column. The rows come from the session's logfile and never
 from the screen: the debugger writes a listing there with its columns intact, while the
 repaint draws the columns with cursor moves the escape strip removes, so on the screen a
 segment and a size run together. A session started without `logfile` is refused
@@ -1186,7 +1187,7 @@ than run.
 off the `CPU` listing's cr0, which cannot tell VM86 from protected mode: at a VM86 stop it says
 `protected` where the stop and `status` say `VM86`, and `interrupt_vectors` takes the stop's own
 word for it. In real mode the descriptor lists `gdt` and `ldt` are absent,
-because there the debugger reads the interrupt vector table as descriptors (the `cpu` section's
+because there the debugger reads the interrupt vector table as descriptors (the `control` section's
 `gdtr` and `ldtr` are the table registers, present in every mode, so the names `gdt` and `ldt`
 are the descriptor lists only); in protected mode they
 come back with their empty slots dropped. `paging` is absent with paging off, and with it on
@@ -1401,7 +1402,7 @@ to its end.
 
 **`summaries=True` keeps a long list readable.** Every step but the last one that ran
 becomes a compact row: its `step` index, its `op`, and its reply cut to `summary`, `status`,
-a stop's `stop_seq` and `attribution`, and `stopped_on_its_own` when the step found one. A
+a stop's `stop_seq` and `cause`, and `stopped_on_its_own` when the step found one. A
 list that fails keeps every step before the failure compact and the failing reply whole under
 `failed`. `ran` shows the first `ROWS_SHOWN` (24) rows and the kept step, with `steps_total`
 and `truncated`; every compact row goes to `ran_path` and every full reply to
@@ -1410,8 +1411,8 @@ and `truncated`; every compact row goes to `ran_path` and every full reply to
 unavailable with its reason, and the account beside them stands. `stops` is the server's
 count of the stops it numbered during the call: the range (`stop_seq_first`, `stop_seq_last`,
 unavailable when none was numbered), how many the replies
-`surveyed`, a count per attribution in `by_how` (`unattributed` for a stop no declaration
-accounts for), and `unaccounted`, the stops numbered that no reply surveyed. `drive` takes
+`surveyed`, a count per `cause` in `by_cause` (the address taken off, so one declaration is one
+key, and a stop no declaration accounts for is one key of its own), and `unaccounted`, the stops numbered that no reply surveyed. `drive` takes
 the same switch for its act. The reason is size: a run of stops each carrying its registers,
 watches and log crosses what a client keeps in line, and a count assembled by hand from
 summary lines is the number that comes out wrong.

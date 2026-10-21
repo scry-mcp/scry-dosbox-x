@@ -293,7 +293,7 @@ def test_the_tools_carry_the_envelope_and_the_summaries_name_the_state(tmp_path:
     assert listed["summary"] == "state_list: 1 state in " + str(tmp_path / "save")
     loaded = cast(dict[str, Any], server.state_load(name="boot"))
     assert loaded["status"] == "ok" and loaded["session"]["altered"] is True
-    assert loaded["summary"] == f"state_load boot: loaded in {loaded['waited_s']}s"
+    assert loaded["summary"] == "state_load boot: loaded"
     for name in ("state_save", "state_load", "state_list"):
         assert name in dosbox_mcp.registered_tools()
     assert "state_list" in dosbox_mcp._ANSWERS_WHILE_RUNNING
@@ -360,7 +360,7 @@ def test_snapshot_sends_the_stub_s_command_and_hands_back_the_new_png_or_moves_i
     out = ds.Session.snapshot(as_session(fake), None, 5.0)
     assert fake.sent == [[b"S"]]
     assert Path(str(out["path"])) == tmp_path / "caps" / "g_000.png" and out["bytes"] == 24
-    assert out["route"] == "guest" and cast(float, out["waited_s"]) >= 0
+    assert out["route"] == "guest" and "waited_s" not in out
     dest = tmp_path / "shot.png"
     again = ds.Session.snapshot(as_session(fake), dest, 5.0)
     assert again["path"] == str(dest) and dest.is_file()
@@ -463,7 +463,7 @@ def test_waited_s_is_the_command_alone_not_the_release(tmp_path: Path) -> None:
     fake = StateFake(tmp_path / "save", parked=False)
     fake.release_s = 0.3
     out = ds.Session.state_save(as_session(fake), "boot", 5.0)
-    assert out["paused"] is True and cast(float, out["waited_s"]) < 0.3
+    assert out["paused"] is True and "waited_s" not in out
 
 
 def test_the_released_guest_is_the_session_blocks_to_say(tmp_path: Path) -> None:

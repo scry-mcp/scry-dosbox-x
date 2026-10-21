@@ -722,7 +722,8 @@ def _b_scan() -> None:
                     and len(r.get("hits") or []) == 400 and r.get("truncated") is False)
         else:
             good = (ok(opened) and ok(r) and r.get("hits_total") == 401
-                    and r.get("hits") == [] and r.get("truncated") is True)
+                    and r.get("hits") == [] and r.get("truncated") is True
+                    and bool(r.get("note")))
         label = "B scan 400 survivors listed" if n == 400 else "B scan 401 survivors cut"
         M.judge(label, good, said(r))
     for n in (40, 41):
@@ -732,7 +733,7 @@ def _b_scan() -> None:
         listed = n <= 40
         M.judge(f"B scan {n} survivors {'listed' if listed else 'cut'} by default",
                 ok(opened) and ok(r) and r.get("hits_total") == n
-                and len(r.get("hits") or []) == (n if listed else 0)
+                and len(r.get("hits") or []) == (n if listed else 40)
                 and r.get("truncated") is (not listed), said(r))
     M.call(server.scan_clear)
 
@@ -785,12 +786,12 @@ def section_b() -> None:
     cs, eax = (int(str(regs["regs"][k]), 16) for k in ("CS", "EAX"))
     r = M.call(server.set_register, name="cs", value=cs)
     judged("B set_register cs reads back under its own name", reply=r,
-           holds=ok(r) and r.get("verified") is True and r.get("readback") == f"{cs:04X}")
+           holds=ok(r) and r.get("verified") is True and r.get("readback") == f"{cs:#06x}")
     must(M.call(server.set_register, name="eax", value=0xABCD0000), "EAX with its high half set")
     r = M.call(server.set_register, name="ax", value=0x1234)
     judged("B set_register ax is verified with the high half set", reply=r,
-           holds=ok(r) and r.get("verified") is True and r.get("readback") == "1234"
-           and r.get("regs", {}).get("EAX") == "ABCD1234")
+           holds=ok(r) and r.get("verified") is True and r.get("readback") == "0x1234"
+           and r.get("regs", {}).get("EAX") == "0xabcd1234")
     must(M.call(server.set_register, name="eax", value=eax), "EAX put back")
     r = M.call(server.memdump, ref=f"{SCRATCH}:0000", length=0x10000, dest=M.fresh(".bin"))
     judged("B memdump 64 KiB", reply=r, holds=ok(r) and r.get("bytes") == 0x10000
@@ -1061,18 +1062,18 @@ def _c_declarations(p: Probe) -> None:
 def _c_stops(p: Probe) -> None:
     w = M.call(server.watch_add, ref=p.at(p.cnt), mode="show", fmt="char[5]")
     b = M.call(server.breakpoint_at, ref=p.at(p.pause))
-    r = M.call(server.resume, seconds=10, e9="since", e9_filter="PROBE")
+    r = M.call(server.resume, seconds=10)
     watches = r.get("watches") or []
     value = str(watches[0].get("value")) if watches else ""
     judged("C a show watch rides the stop with the counter's digits", reply=r,
             holds=ok(w) and ok(b) and ok(r) and "stop_seq" in r
             and len(value.strip("'\"")) == 5 and value.strip("'\"").isdigit())
-    r = M.call(server.resume, seconds=10, e9="since", e9_filter="PROBE")
+    r = M.call(server.resume, seconds=10)
     e9 = r.get("e9") or {}
     lines = e9.get("lines") or []
     judged("C the stop's e9 since the previous stop", reply=r,
             holds=ok(r) and "stop_seq" in r and bool(lines)
-            and all("PROBE" in str(x) for x in lines))
+            and any("PROBE" in str(x) for x in lines))
     r = M.call(server.perform, steps=[{"op": "status"}, {"op": "resume"}], settle_seconds=10)
     judged("C perform ending in resume carries the stop", reply=r,
             holds=ok(r) and isinstance(r.get("stopped"), dict))
@@ -1272,7 +1273,7 @@ H_CELLS = cells(
     ("H seconds=0 is refused", "the bound dosbox_session.RUN_TO_MAX declares"),
     ("H seconds=600.5 is refused", "the bound dosbox_session.RUN_TO_MAX declares"),
     ("H a breakpoint on the guest's loop ends it OTHER_STOP",
-     REF_DOC + "Advancing: OTHER_STOP, attribution; known: probe.asm `.s1` and `.spin`"),
+     REF_DOC + "Advancing: OTHER_STOP, cause; known: probe.asm `.s1` and `.spin`"),
     ("H the next release stops at the pending retrace, named",
      REF_DOC + "Advancing: retrace_pending, the first stop no declaration explains"),
     ("H debug VRT is refused naming run_for", REF_DOC + "The console: a typed release"),
@@ -1321,13 +1322,14 @@ def section_h() -> None:
     r = M.call(server.run_for, frames=5)
     M.judge("H a breakpoint on the guest's loop ends it OTHER_STOP",
             ok(r) and r.get("verdict") == "OTHER_STOP" and r.get("retrace_pending") is True
-            and (r.get("attribution") or {}).get("ref") in loops, said(r))
+            and any(str(r.get("cause")).startswith(f"breakpoint {ref} ") for ref in loops),
+            said(r))
     must(M.call(server.breakpoint_clear, all=True), "clearing the loops")
     must(M.call(server.breakpoint_at, ref=NEVER_RUNS_STOPPER), "arming a stopper that never fires")
     r = M.call(server.resume, seconds=5)
     M.judge("H the next release stops at the pending retrace, named",
             ok(r) and "stop_seq" in r
-            and (r.get("attribution") or {}).get("retrace_pending") is True, said(r))
+            and str(r.get("cause")).startswith("most likely the retrace stop"), said(r))
     r = M.call(server.debug, command="VRT")
     judged("H debug VRT is refused naming run_for", reply=r,
            holds=refused(r, "bad_argument") and "run_for" in str(r.get("message")))

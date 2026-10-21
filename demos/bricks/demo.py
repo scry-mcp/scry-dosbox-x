@@ -149,8 +149,7 @@ def listing(reply: Reply, run: Run) -> str:
 
 def at_brick(row: int, col: int, score: int, which: str) -> Any:
     def check(reply: Reply, run: Run) -> str:
-        expect(reply["attribution"].get("ref") == "brick_hit",
-               f"stopped by {reply['attribution']}")
+        expect(reply["cause"].startswith("breakpoint brick_hit "), f"stopped by {reply['cause']}")
         got = (low_byte(reply, "EAX"), low_byte(reply, "EBX"), reply["watches"][0]["value"])
         expect(got == (row, col, score), f"row, column and score {got}")
         return f"brick_hit for the {which} brick, row {row} column {col}, score {score}"
@@ -234,7 +233,7 @@ def restored(reply: Reply, run: Run) -> str:
 
 #: Values a `stop` shows, which land wherever the game is when the break arrives.
 BREAK_STOP = {key: "the stop lands wherever the game is when the break arrives"
-             for key in ("summary", "regs", "instruction", "pc", "attribution",
+             for key in ("summary", "regs", "instruction", "pc", "cause",
                          "watches", "e9")}
 #: Counts an input step reports that depend on when the host delivered the input, not on what
 #: the game did with it.
@@ -265,7 +264,7 @@ STEPS = [
     Step("frames", "run_for", {"frames": 3, "seconds": WAIT_S}, frames,
          volatile={key: "a retrace stop lands at any instruction of the game's retrace poll"
                    for key in ("summary", "regs", "instruction", "pc",
-                               "attribution")}),
+                               "cause")}),
     Step("ball", "read_memory", {"ref": "ball_x", "length": 8}, ball),
     Step("play", "resume", {}, lambda reply, run: "the game runs"),
     Step("keys", "drive", {"act": [{"op": "send_keys", "keys": ["right"], "expect": "KEY R",

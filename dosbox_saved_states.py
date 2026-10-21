@@ -29,8 +29,8 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
     """`SAVESTATE` or `LOADSTATE` of `path` over the debugger channel, with the debugger
     stopped as the commands need it: a RUNNING guest is broken in on first and released
     again after, so the machine is left the way it was found. The reply's part:
-    `paused` (it had to be stopped) and `waited_s` (the command alone, not the break-in or
-    the release); whether it runs after the call is the session block's to say."""
+    `paused` (it had to be stopped); whether it runs after the call is the session block's to
+    say."""
     # WHETHER THE COMMAND WENT DOWN THE CHANNEL, which a load cut short reads (one cancelled
     # in the break-in sent nothing and replaced nothing), and whether it was answered ok.
     ses.state_sent = ses.state_answered = False
@@ -74,11 +74,10 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
                           f"debugger command (REFERENCE.md, Saved states)"
                           ) from None
         raise
-    waited = round(time.monotonic() - began, 2)
     if paused:
         ses.resume_after_command()             # `session.running` says where it is left
     if ok:
-        return {"paused": paused, "waited_s": waited, **marked}
+        return {"paused": paused, **marked}
     said = " / ".join(line.strip() for line in lines if line.strip())
     if not any(line.startswith(f"DEBUG: {verb}") for line in lines):
         raise Invalid("no_channel",

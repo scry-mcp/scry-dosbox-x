@@ -173,18 +173,17 @@ def test_scan_filter_hands_back_a_whole_listing_when_the_rows_match_the_count() 
     got = finder.scan_filter(s, "=", 0)
     assert got["hits_total"] == 22 and got["closed"] is False and got["iterations"] == 1
     assert len(got["hits"]) == 22
-    assert got["hits"][0] == {"seg_off": "0000:00000400", "addr": "0x00000400", "value": 0}
+    assert got["hits"][0] == {"seg_off": "0000:00000400", "addr": "0x00000400", "value": "0x00"}
     assert got["hits"][-1]["seg_off"] == "0000:000004FF"
 
 
-def test_scan_filter_lists_no_more_survivors_than_its_limit_and_says_so() -> None:
-    """256 survivors against the default limit: the count comes back, the listing is never
-    typed, and `truncated` says the hits are not all of them."""
-    s = session([("MEMS =0", "mems_matches")])
-    got = finder.scan_filter(s, "=", 0)
-    assert got["hits_total"] == 256 > finder.HITS_DEFAULT
-    assert got["hits"] == [] and got["truncated"] is True
-    assert s.sent == ["MEMS =0"]
+def test_scan_filter_shows_the_first_limit_survivors_and_says_more_survive() -> None:
+    """22 survivors against a limit of 5: the listing is read and the first five come back,
+    never an empty list, with `truncated` saying they are not all of them."""
+    s = twenty_two()
+    got = finder.scan_filter(s, "=", 0, 5)
+    assert got["hits_total"] == 22 and len(got["hits"]) == 5 and got["truncated"] is True, got
+    assert got["hits"][0]["seg_off"] == "0000:00000400", got
 
 
 @pytest.mark.parametrize("limit", [0, finder.HITS_MAX + 1, True, 2.5])
@@ -195,21 +194,20 @@ def test_scan_filter_refuses_a_limit_outside_its_range_before_typing(limit: obje
     assert s.sent == []
 
 
-@pytest.mark.parametrize("limit, listed", [(22, True), (21, False)])
+@pytest.mark.parametrize("limit, whole", [(22, True), (21, False)])
 def test_scan_filter_lists_exactly_at_its_limit_and_cuts_one_above(limit: int,
-                                                                   listed: bool) -> None:
-    """22 survivors: a limit of 22 lists them, a limit of 21 types no listing at all."""
+                                                                   whole: bool) -> None:
+    """22 survivors: a limit of 22 shows them all, a limit of 21 the first 21, truncated."""
     s = twenty_two()
     got = finder.scan_filter(s, "=", 0, limit)
-    assert len(got["hits"]) == (22 if listed else 0) and got["truncated"] is not listed
-    assert ("MEMFIND L" in s.sent) is listed
+    assert len(got["hits"]) == limit and got["truncated"] is not whole, got
 
 
 def test_scan_filter_reports_a_finished_scan_as_closed_with_no_survivors() -> None:
     s = session([("MEMS !0", "mems_finished")])
     got = finder.scan_filter(s, "!", 0)
     assert {k: got[k] for k in ("operator", "value", "hits_total", "closed", "hits")} == {
-        "operator": "!", "value": 0, "hits_total": 0, "closed": True, "hits": []}, got
+        "operator": "!", "value": "0x00", "hits_total": 0, "closed": True, "hits": []}, got
 
 
 def test_scan_filter_refuses_a_value_wider_than_the_cells() -> None:
@@ -246,7 +244,7 @@ def test_scan_filter_does_not_list_above_the_cap(monkeypatch: pytest.MonkeyPatch
     got = finder.scan_filter(s, "=", 0, 0xFF)
     assert got["hits_total"] == 0x100 and got["hits"] == [], got
     assert got["hits_total"] == 0x100 and got["truncated"] is True, got
-    assert "listed" not in got, got
+    assert "listed" not in got and "filter again" in got["note"], got
     assert s.sent == ["MEMS =0"]
 
 
@@ -551,9 +549,11 @@ def test_a_scan_that_needs_another_call_first_says_needs_call(line: str) -> None
     assert e.value.code == "needs_call" and "`scan_" in str(e.value)
 
 
-def test_a_filter_with_no_value_says_what_it_compared_with_instead_of_a_null() -> None:
+def test_a_filter_with_no_value_says_what_it_compared_with_instead_of_a_null(
+        monkeypatch: pytest.MonkeyPatch) -> None:
     """No `value`: each cell is compared with its value when the scan opened, and the reply's
     `value` says so as the unavailable datum, never a null."""
+    monkeypatch.setattr(finder, "HITS_MAX", 0xFF)      # the 256 survivors are not listed
     s = session([("MEMS =", "mems_matches")])
     got = finder.scan_filter(s, "=", None)
     assert got["value"] == {"available": False, "why": finder.NO_VALUE_WHY}, got["value"]

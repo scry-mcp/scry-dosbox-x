@@ -1451,7 +1451,7 @@ class Session:
                           f"write could not be read back. The session is marked altered "
                           f"anyway, because the attempt reached the machine")
         held = int(got, 16) & ((1 << bits) - 1)
-        return {"register": key, "regs": regs, "readback": f"{held:0{bits // 4}X}",
+        return {"register": key, "regs": regs, "readback": judges.hex_at_width(held, bits),
                 "verified": held == value}
 
     def breakpoint_interrupt(self, number: int, ah: int | None = None) -> str:
@@ -2278,9 +2278,6 @@ class Session:
     def e9(self, pattern: str, limit: int = 40) -> tuple[list[str], int]:
         return log_reader.e9(self, pattern, limit)
 
-    def e9_lines(self) -> list[str]:
-        return log_reader.e9_lines(self)
-
     def log(self, pattern: str, limit: int, channel: str,
             since_mark: int = 0) -> tuple[list[str], int]:
         return log_reader.log(self, pattern, limit, channel, since_mark)
@@ -2602,8 +2599,7 @@ class Session:
             time.sleep(0.1)
         if target is not None:
             path = dcollect.collect(path, target, "screenshot")
-        return {"route": "guest", **judges.file_facts(path),
-                "waited_s": round(time.monotonic() - began, 2)}
+        return {"route": "guest", **judges.file_facts(path)}
 
     def state_list(self) -> dict[str, object]:
         return saved_states.state_list(self)

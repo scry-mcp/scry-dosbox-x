@@ -243,7 +243,7 @@ def test_start_shared_keeps_the_callers_flags_and_adds_no_dummy_driver() -> None
     # a value, which is the only evidence the flags were accepted rather than hung on.
     regs = cast(dict[str, Any], server.registers())
     assert regs["status"] == "ok", regs
-    assert regs["regs"]["CS"] == "F000"
+    assert regs["regs"]["CS"] == "0xf000"
 
 
 def test_stop_brings_a_running_headless_guest_back_through_the_debugger_channel() -> None:
@@ -258,7 +258,7 @@ def test_stop_brings_a_running_headless_guest_back_through_the_debugger_channel(
     assert released["session"]["running"] is True, released
     back = cast(dict[str, Any], server.stop())
     assert back["status"] == "ok" and back["interrupted"] is True and back["via"] == "break", back
-    assert "regs" in back and cast(float, back["waited_s"]) >= 0
+    assert "regs" in back and "waited_s" not in back, back
     again = cast(dict[str, Any], server.stop())
     assert again["interrupted"] is False
 
@@ -342,7 +342,7 @@ def test_registers_returns_a_value_the_caller_did_not_supply() -> None:
     reply = cast(dict[str, Any], server.registers())
     assert reply["status"] == "ok", reply
     regs = cast(dict[str, str], reply["regs"])
-    assert regs["CS"] == "F000" and regs["EIP"] == "0000FFF0"
+    assert regs["CS"] == "0xf000" and regs["EIP"] == "0x0000fff0"
     # EAX IS NAMED DELIBERATELY. The register pane is painted with the alternate
     # character set, so a name abuts the run of fill in front of it; when the pattern
     # carried a word boundary, every register whose name followed a space was read and
@@ -364,8 +364,8 @@ def test_set_register_takes_and_its_mark_survives_into_every_later_reply() -> No
     assert cast(dict[str, Any], server.status())["session"]["altered"] is False
     reply = cast(dict[str, Any], server.set_register(name="ax", value=0x1234))
     assert reply["status"] == "ok", reply
-    assert reply["regs"]["EAX"] == "00001234"
-    assert reply["readback"] == "1234" and reply["verified"] is True
+    assert reply["regs"]["EAX"] == "0x00001234"
+    assert reply["readback"] == "0x1234" and reply["verified"] is True
     assert reply["session"]["altered"] is True
     # ON A LATER REPLY, and on an INVALID one, which is where an earlier version of
     # this server dropped it and is the reply a caller reasons hardest about.
@@ -688,7 +688,7 @@ def test_close_clears_the_session_so_the_next_tool_says_there_is_none() -> None:
     after = cast(dict[str, Any], server.registers())
     assert after["status"] == "INVALID" and "no live session" in str(after["message"])
     gone = cast(dict[str, Any], server.status())
-    assert gone["session"]["alive"] is False and gone["alive"] is False, gone
+    assert gone["session"]["alive"] is False and "alive" not in gone, gone
     # CLOSING TWICE IS NOT A FAILURE: the bound can have got there first, and a
     # caller told to always close what they opened must be able to.
     again = cast(dict[str, Any], server.close())
@@ -772,7 +772,7 @@ def test_a_real_mode_session_refuses_rather_than_placing_at_base_zero(
     """
     start_ok(session_seconds=60)
     regs = cast(dict[str, Any], server.registers())["regs"]
-    assert regs["CS"] == "F000", (
+    assert regs["CS"] == "0xf000", (
         f"expected a session stopped at the reset vector, got CS={regs['CS']}")
     src = tmp_path / "probe.sym"
     src.write_text("0000fff0 T _reset_vector\n", encoding="utf-8")
@@ -1089,7 +1089,7 @@ def test_machine_map_is_honest_before_dos_and_finds_the_guest_after(tmp_path: Pa
     park = cast(dict[str, Any], server.machine_map(sections=list(machine.SECTION_NAMES)))
     assert park["status"] == "ok" and "mcbs" not in park, park
     assert "DOS kernel is inactive" in park["coverage_note"], park["coverage_note"]
-    assert park["cpu"]["cr0"] and park["bios_mem"], park
+    assert park["control"]["cr0"] and park["bios_mem"], park
     program = Path(GUEST_PROGRAM).stem.upper()
     for _ in range(BOOT_SLICES_MAX):
         assert server.run_for(frames=BOOT_SLICE_FRAMES)["verdict"] == "ELAPSED"
@@ -1554,7 +1554,7 @@ def test_scan_narrows_to_every_zero_cell_and_closes_once() -> None:
     assert kept["hits_total"] == 256 and kept["closed"] is False, kept
     assert len(kept["hits"]) == 256, kept["summary"]
     assert kept["hits_total"] == 256 and kept["truncated"] is False, kept["summary"]
-    assert kept["hits"][0] == {"seg_off": "0000:00000400", "addr": "0x00000400", "value": 0}
+    assert kept["hits"][0] == {"seg_off": "0000:00000400", "addr": "0x00000400", "value": "0x00"}
     assert kept["hits"][-1]["seg_off"] == "0000:000004FF"
     wide = cast(dict[str, Any], server.scan_filter(operator="=", value=0x1FF))
     assert wide["status"] == "INVALID" and "is wider than the open scan's" in wide["message"], wide

@@ -261,7 +261,7 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
     # before then leaves the next trace to close it, or that trace's own `LOG` lands on the open
     # stream and what it runs is written nowhere.
     STATE.log_open = True
-    expired, saw_at = session.log_cpu(SHAPES[shape], asked, began, began + seconds, progress)
+    expired, _ = session.log_cpu(SHAPES[shape], asked, began, began + seconds, progress)
     if expired:
         # THE BOUND INTERRUPTS: the machine is brought back where it stands, and what the log
         # holds up to there is collected as a stop that cut it would be, a TIMEOUT. A log the
@@ -273,13 +273,12 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
                 f"{e}. The debugger's log is still open at {places[0]}: the next trace refuses "
                 f"while that file sits there, and once it is moved closes the log before "
                 f"opening its own", trace={"path": str(places[0]), "closed": False}) from None
-        saw_at = round(time.monotonic() - began, 1)
-    return _collected(session, shape, asked, path, places, before, saw_at,
+    return _collected(session, shape, asked, path, places, before,
                       dcons.real_segments(armed_at["mode"]), says, interrupted=expired)
 
 
 def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: list[Path],
-               before: int, saw_at: float, armed_real: bool,
+               before: int, armed_real: bool,
                says: Callable[[str], bool], *, interrupted: bool = False) -> dict[str, Any]:
     """The machine is stopped: the log moved, closed if a stop cut it, and its count proved."""
     source = _written(places)
@@ -349,7 +348,7 @@ def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: 
         found["note"] = "; ".join(notes)
     verdict = (contract.ELAPSED if ran_out else
                contract.TIMEOUT if interrupted else contract.OTHER_STOP)
-    return st.extend(reply, verdict=verdict, waited_s=saw_at, trace=found)
+    return st.extend(reply, verdict=verdict, trace=found)
 
 
 # --------------------------------------------------------------------------------- the join

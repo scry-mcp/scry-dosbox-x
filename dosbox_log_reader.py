@@ -31,16 +31,6 @@ def e9(ses: ds.Session, pattern: str, limit: int = 40) -> tuple[list[str], int]:
     return dlogs.filter_e9(ses._e9_text(), pattern, limit)
 
 
-def e9_lines(ses: ds.Session) -> list[str]:
-    """EVERY line of the guest's instrumentation, in order, with `e9`'s guard on the
-    channel: what the stop reply's E9 block reduces from. It carries no `limit`
-    because the reduction is the server's, and the caller-facing ceiling on `e9` and
-    `log` refused the whole-log read this block needs (measured: `1 << 30` as the
-    limit, refused as a haystack, and every stop's `e9` block came back
-    `available: false`)."""
-    return dlogs.log_hits(ses._e9_text(), ".", "guest")
-
-
 def log(ses: ds.Session, pattern: str, limit: int, channel: str,
         since_mark: int = 0) -> tuple[list[str], int]:
     """The log's `channel`, filtered at the source: the guest's E9 lines with `e9`'s
@@ -208,15 +198,15 @@ def log_wait(ses: ds.Session, pattern: str, seconds: float, channel: str, mark: 
                          label=f"log_wait {channel} /{pattern}/")
     if isinstance(got, core_wait.Found):
         return {"verdict": contract.TARGET, "pattern": pattern, "channel": channel,
-                **got.fields(), "since_mark": mark}
-    if got.how == "STOPPED":
+                **got.fields()}
+    if got.ending == "STOPPED":
         raise ds._wait_stopped(pattern, got.arrived_during, got.waited_s, got.at_bound)
-    if got.how == "GONE":
+    if got.ending == "GONE":
         raise Invalid("session_broken", core_wait.gone_message(pattern, got, seconds))
     region = "in the log altogether" if mark == 0 else f"since the mark at byte {mark}"
     # THE BOUND RAN OUT AND THE WAIT ANSWERED: a verdict, not a refusal. The machine still
     # runs, and the caller decides whether to wait longer.
     return {"verdict": contract.TIMEOUT, "pattern": pattern, "channel": channel,
             "arrived_during": got.arrived_during, "lines_examined": got.lines_examined,
-            "waited_s": got.waited_s, "since_mark": mark,
+            "waited_s": got.waited_s,
             "note": core_wait.timeout_note(pattern, got, region, "guest")}

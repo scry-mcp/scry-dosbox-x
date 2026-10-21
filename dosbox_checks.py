@@ -42,7 +42,6 @@ import dosbox_machine as machine
 import dosbox_media as media
 import dosbox_paths as paths
 import dosbox_placement as placement
-import dosbox_running as running
 import dosbox_screen as screen
 import dosbox_sequence as sequence
 import dosbox_session as ds
@@ -88,8 +87,9 @@ def declared(kind: str, ref: object, by: str) -> str:
 def comment_ref(ref: object) -> None:
     """A comment's ref, held to the comment file's rule for one, so a call and a file refuse
     the same refs: a symbol, or a hex `SEG:OFF` with its segment in sixteen bits (no pointer,
-    no `+`, no `0x`, nothing that is not one visible word). The placement parser makes the
-    numbers when the ref is placed, and every address this rule takes is one it parses."""
+    no `+`, no bare `0x` number, nothing that is not one visible word). The placement parser
+    makes the numbers when the ref is placed, and every address this rule takes is one it
+    parses."""
     if not isinstance(ref, str):
         raise ds.Invalid("bad_argument", f"ref={ref!r} is not a string: a symbol or a SEG:OFF")
     fault = cf.ref_fault(ref)
@@ -218,17 +218,11 @@ def _log_wait(pattern: str, channel: str, seconds: float = 30.0, since_mark: int
     log_marks.check_position(since_mark, channel)
 
 
-def _display(e9: str = "none", e9_filter: str = ".", e9_stamp: str = "",
-             **_: Any) -> None:
-    running.e9_validate(e9, e9_filter, e9_stamp or None)
-
-
-def _step(count: int = 1, mode: str = "into", **rest: Any) -> None:
+def _step(count: int = 1, mode: str = "into", **_: Any) -> None:
     ds.check_step(mode, count)
-    _display(**rest)
 
 
-def _run_to(ref: str, control: str = "", seconds: float = 30.0, **rest: Any) -> None:
+def _run_to(ref: str, control: str = "", seconds: float = 30.0, **_: Any) -> None:
     ds.check_wait_bound(seconds)
     address_shape(ref)
     # THE CONTROL IS REQUIRED (the schema says so), and an empty one is no control: a list is
@@ -241,7 +235,6 @@ def _run_to(ref: str, control: str = "", seconds: float = 30.0, **rest: Any) -> 
             "breakpoints work here and the target's did not fire; without it the silence "
             "could be breakpoints never firing at all")
     address_shape(control)
-    _display(**rest)
 
 
 def _count(name: str, value: object) -> int:
@@ -268,7 +261,7 @@ def _trace(instructions: int, shape: str = "normal", dest: str = "", seconds: fl
 
 
 def _run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
-             **rest: Any) -> None:
+             **_: Any) -> None:
     ms, n = _count("milliseconds", milliseconds), _count("frames", frames)
     if ms > RUN_FOR_MS_MAX:
         raise ds.Invalid("bad_argument",
@@ -278,7 +271,6 @@ def _run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
             f"exactly one of milliseconds and frames is above zero; got milliseconds={ms}, "
             f"frames={n}")
     ds.check_wait_bound(seconds)
-    _display(**rest)
 
 
 def _breakpoint_at(ref: str, by: str = "auto", **_: Any) -> None:
@@ -391,9 +383,8 @@ def _state(name: str, seconds: float = ds.STATE_WAIT_S, **_: Any) -> None:
     ds.check_wait_bound(seconds)
 
 
-def _resume(seconds: float = 0.0, **rest: Any) -> None:
+def _resume(seconds: float = 0.0, **_: Any) -> None:
     ds.check_wait_bound(seconds, from_zero=True)
-    _display(**rest)
 
 
 #: The server's step vocabulary, handed in by the server once its tools exist (`take_step_ops`):

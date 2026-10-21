@@ -59,8 +59,8 @@ def test_every_instructions_and_tool_description_fits_the_client_cap(
 
 
 @pytest.mark.parametrize(("line", "refusal"), [
-    ('D1: {"tool": "step", "args": {"mode": "into", "count": 3}}', None),
-    ('D1: {"tool": "step", "args": {"mode": "into", "count": 3, "e9": "sideways"}}',
+    ('D1: {"tool": "run_for", "args": {"frames": 12}}', None),
+    ('D1: {"tool": "run_for", "args": {"frames": 12, "milliseconds": 250}}',
      "the server's check refuses it"),
 ])
 def test_the_servers_own_check_judges_the_call(line: str, refusal: str | None) -> None:

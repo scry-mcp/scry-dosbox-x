@@ -1,6 +1,5 @@
-"""The enriched stop reply (Phase 4, decisions 13 and 15) against REAL programs: a stop
-carries the registers, the watches EVALUATED, the attribution, and the E9 summary, and the
-E9 lines are off by default with a count.
+"""The enriched stop reply against REAL programs: a stop carries the registers, the watches
+EVALUATED, its `cause`, and the E9 block, the guest's lines since the previous stop, bounded.
 
 The real-mode case runs dos-real16's copy on the bench, as the other real-mode live files do;
 the DJGPP case runs on the package's DPMI guest. It SHARES `reach_realmode` and `reach_djgpp` so it
@@ -8,23 +7,22 @@ cannot drift on how each program is reached.
 
 TWO CASES, BECAUSE THE TWO SESSIONS PROVE DIFFERENT HALVES. The real-mode session is started
 WITHOUT a logfile, so its E9 block can only be the honest `available: False` shape, naming the
-missing log, and that is what the real-mode case asserts. The SERVED shape -- a count,
-`shown: 0`, how to turn it on, and the lines on request -- needs a guest that logs, which is
-the DPMI guest; that case also brings several globals declared by NAME back TOGETHER on one
-stop, and the guest stamps every line with its own clock, which is what the seconds window is
-cut on.
+missing log, and that is what the real-mode case asserts. The SERVED shape (the count whole,
+the newest lines, the mark they start at, and a `log` call that reads the rest) needs a guest
+that logs, which is the DPMI guest; that case also brings several globals declared by NAME
+back TOGETHER on one stop.
 
   DOSBOX_X_WALK_MAX       ceiling on the resume-walk to the client (see the entry routes)
 """
 from __future__ import annotations
 
-import re
 from pathlib import Path
 from typing import Any, cast
 
 import dpmi_guest as guest
 import pytest
 from _live_teardown import no_session_left_behind  # noqa: F401  (registers the autouse teardown)
+from scry_core.log_marks import STOP_LINES_SHOWN
 from test_dosbox_x_entry_routes import (
     REAL_PROGRAM,
     REAL_VARIABLE,
@@ -34,6 +32,7 @@ from test_dosbox_x_entry_routes import (
 )
 
 import dosbox_x_server as server
+from dosbox_logs import LOG_LIMIT_MAX
 
 pytestmark = pytest.mark.live
 
@@ -68,21 +67,21 @@ def test_a_stop_carries_the_registers_watches_attribution_and_e9(
     assert watch in watched, out
     assert watched[watch]["state"] == "evaluated" and "value" in watched[watch], watched[watch]
 
-    assert "attributed" in out["attribution"], out             # named, or an honest no
+    assert isinstance(out["cause"], str), out                  # named, or an honest no
     # NO CHANNEL, so the block is the unavailable shape and says WHY: there is no log to read.
     # The served shape is the DJGPP case's.
     assert out["e9"]["available"] is False, out["e9"]
     assert "started without a logfile" in out["e9"]["why"], out["e9"]
 
 
-def test_a_djgpp_stop_returns_named_globals_together_with_the_e9_summary(
+def test_a_djgpp_stop_returns_named_globals_together_with_the_e9_block(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """R2 in the flesh, on the real DPMI program: reach its 32-bit code, load the symbols,
     declare show watches BY NAME on several globals and a breakpoint BY NAME on a function
     it calls once it has logged, then resume until THAT breakpoint is the attributed stop.
-    The reply carries the registers, every watch evaluated to a value, the attribution
-    naming the symbol, and the E9 block OFF with a positive count and how to turn it on;
-    one step from there, with the switch on, hands the lines back.
+    The reply carries the registers, every watch evaluated to a value, the `cause` naming the
+    symbol, and the E9 block with a positive count, the newest lines and, when cut, the `log`
+    call that reads the rest; one step from there is a stop with a block of its own.
 
     THE WALK'S INTERRUPT IS CLEARED FIRST. `reach_djgpp` leaves `BPINT 31 AH=00` armed, and
     with it every resume stops at the runtime's next DPMI call instead of at the breakpoint:
@@ -109,8 +108,7 @@ def test_a_djgpp_stop_returns_named_globals_together_with_the_e9_summary(
     # The enriched reply sits on the resume's own reply when it halted at once, else in
     # `stopped`, written by the tail that waited for it.
     out = cast(dict[str, Any], ran.get("stopped") or ran["ran"][-1]["reply"])
-    assert out.get("attribution", {}).get("attributed") is True, out
-    assert out["attribution"]["ref"] == guest.STOP, out["attribution"]
+    assert str(out.get("cause")).startswith(f"breakpoint {guest.STOP} "), out
     assert isinstance(out["regs"], dict) and out["regs"], out
     watched = {x["ref"]: x for x in out["watches"]}
     for name in guest.WATCHES:
@@ -118,21 +116,16 @@ def test_a_djgpp_stop_returns_named_globals_together_with_the_e9_summary(
         assert watched[name]["state"] == "evaluated", watched[name]
         assert isinstance(watched[name]["value"], int), watched[name]
     blk = out["e9"]
-    assert blk["shown"] == 0 and "how" in blk, blk
     assert blk["lines_total"] > 0, f"the program was to have logged before {guest.STOP}: {blk}"
+    assert blk["lines"] and len(blk["lines"]) <= min(blk["lines_total"], STOP_LINES_SHOWN), blk
+    assert blk["truncated"] is (blk["lines_total"] > STOP_LINES_SHOWN), blk
+    # THE CUT BLOCK'S `how` IS A CALL AS IT CAN BE SENT: sent, it reads the lines the stop cut.
+    if blk["truncated"]:
+        got = cast(dict[str, Any], server.log(pattern=".", channel="guest",
+                                              since_mark=blk["mark"], limit=LOG_LIMIT_MAX))
+        assert got["status"] == "ok" and blk["how"].startswith("`log(pattern="), (blk, got)
+        assert got["lines"][-len(blk["lines"]):] == blk["lines"], (got, blk)
 
-    # THE SWITCH: a step is a stop too, and with `all` the same channel's lines come back.
-    on = cast(dict[str, Any], server.step(mode="over", e9="all"))
-    assert on["status"] == "ok", on
-    assert on["e9"]["shown"] == len(on["e9"]["lines"]) == on["e9"]["lines_total"] > 0, on["e9"]
-    # THE SECONDS WINDOW ON THE GUEST'S OWN CLOCK: the window is cut at the latest stamp, so it
-    # holds fewer lines than the whole and every line in it carries a stamp within the window;
-    # an unstamped line (the serial stub's) is counted, not placed.
-    win = cast(dict[str, Any], server.step(mode="over", e9="seconds:1", e9_stamp=guest.E9_STAMP))
-    assert win["status"] == "ok", win
-    blk = win["e9"]
-    assert "now" in blk and blk["shown"] == len(blk["lines"]) <= blk["lines_total"], blk
-    assert blk["shown"] >= 1 and "unstamped" in blk, blk   # this stop follows a log line
-    for ln in blk["lines"]:
-        m = re.search(guest.E9_STAMP, ln)
-        assert m and blk["now"] - float(m.group(1)) <= 1.0, (ln, blk["now"])
+    # A STEP IS A STOP TOO, and its block holds only what the guest logged since this one.
+    on = cast(dict[str, Any], server.step(mode="over"))
+    assert on["status"] == "ok" and on["e9"]["mark"] >= blk["mark"], on

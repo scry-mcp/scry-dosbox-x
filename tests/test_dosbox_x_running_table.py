@@ -26,7 +26,7 @@ import dosbox_x_server as server
 #: does is a console command, and a running guest's console drops a command typed at it: it is
 #: not run at the next stop either.
 NO_CONSOLE = {"alive", "state", "at_debugger", "log", "log_wait", "e9", "e9_mark",
-              "e9_lines", "e9_new_since", "e9_since_mark", "e9_wait", "send_commands",
+              "e9_new_since", "e9_since_mark", "e9_wait", "send_commands",
               "break_in", "state_save", "state_load",
               "state_list", "snapshot", "captures", "frame"}
 
@@ -105,9 +105,6 @@ class RunningGuest:
 
     def e9_new_since(self, offset: int) -> tuple[list[str], int]:
         return [], offset
-
-    def e9_lines(self) -> list[str]:
-        return []
 
     # AT A STOP (after `stop`'s break-in) the survey answers, like the real one.
     def where(self) -> dict[str, str]:
@@ -371,7 +368,7 @@ def test_a_declaration_by_name_on_a_running_guest_types_nothing(
 def test_a_stop_the_stop_step_surveyed_is_not_numbered_again(tmp_path: Path) -> None:
     """The `stop` tool hands back its own stop; the tail names that one, and a second survey
     would number the same stop twice. It is still the ENRICHED stop REFERENCE promises when the
-    last step met one: that survey's registers, watches and E9 summary."""
+    last step met one: that survey's registers, watches and E9 block."""
     fake = _names(tmp_path, watched=True)
     server.status()
     released = fake.resume

@@ -31,6 +31,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from scry_core import judges
 from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 
@@ -40,9 +41,9 @@ import dosbox_session as ds
 import dosbox_state as st
 from dosbox_state import STATE
 
-# The ceiling on the rows a reply lists: `find` keeps its highest 400 hits (the end of the
+# The ceiling on the rows a reply lists: `find` keeps its highest `HITS_MAX` hits (the end of the
 # range a caller hunting a table's tail wants), and a scan's `limit` may be raised to it.
-HITS_MAX = 400
+HITS_MAX = judges.HITS_MAX
 # The lines the debugger prints, verbatim from debug.cpp. `%06X` fields are hex.
 SCAN_CREATED = "Created memory search instance."
 SCAN_ACTIVE = "Memory search instance is already active."
@@ -255,7 +256,11 @@ def check_scan_range(length: int, cell_bytes: int) -> None:
 
 #: How many survivors a filter lists unless asked for more: while a scan narrows, the count is
 #: the answer, and a listing costs a page of console per screenful.
-HITS_DEFAULT = 40
+HITS_DEFAULT = judges.HITS_DEFAULT
+#: Why a filter past `HITS_MAX` survivors lists none: the debugger pages its listing a screen at a
+#: time, so listing them costs a console round trip per page, to show `limit` of them.
+UNLISTED_NOTE = (f"more than {judges.HITS_MAX} survive, and the debugger lists them a page at a "
+                f"time: filter again to list them")
 #: Why a filter with no `value` answers none: it compared each cell with the scan's opening.
 NO_VALUE_WHY = "no `value` was given, so each cell was compared with its value at `scan_start`"
 
@@ -350,8 +355,9 @@ def scan_filter(session: ds.Session, operator: str, value: int | None,
     """Keep the cells whose current content satisfies `operator` against `value`, or, with
     no value, against what each cell held when the scan was opened (measured: a cell changed
     once and then left alone keeps passing `!` filter after filter, and written back to its
-    opening value it stops). The survivors are listed with their current values when at
-    most `limit` remain, else cut whole (`truncated`); a step that leaves none CLOSES the
+    opening value it stops). The first `limit` survivors are listed with their current values
+    (`truncated` when more survive), up to `HITS_MAX` survivors, past which the listing would
+    cost a console page per screenful and none is listed; a step that leaves none CLOSES the
     instance, which is what the debugger does, and the reply says so.
 
     `iterations` is the debugger's own count, printed on every filter but the closing one,
@@ -373,7 +379,7 @@ def scan_filter(session: ds.Session, operator: str, value: int | None,
         held, STATE.scan_iterations = STATE.scan_iterations, None
         STATE.scan_cell_bytes = None
         closing: dict[str, Any] = {
-            "operator": operator, "value": _asked(value),
+            "operator": operator, "value": _asked(value, cell),
             "iterations": contract.unavailable(
                 "the debugger's closing line carries no count, and this server holds none it "
                 "can stand behind: the scan was opened, filtered or ended through `debug`")
@@ -386,10 +392,12 @@ def scan_filter(session: ds.Session, operator: str, value: int | None,
     survivors = int(summary.group(1), 16)
     iterations = int(summary.group(2), 16)
     STATE.scan_iterations = iterations
-    listed = survivors <= limit
-    return {"operator": operator, "value": _asked(value), "iterations": iterations, "closed": False,
-            "hits": _listing(session, survivors) if listed else [],
-            "hits_total": survivors, "truncated": not listed}
+    listable = survivors <= HITS_MAX
+    hits = [_shown(row, cell) for row in _listing(session, survivors)[:limit]] if listable else []
+    return {"operator": operator, "value": _asked(value, cell), "iterations": iterations,
+            "closed": False, "hits": hits, "hits_total": survivors,
+            "truncated": survivors > len(hits),
+            **({} if listable else {"note": UNLISTED_NOTE})}
 
 
 def scan_clear(session: ds.Session) -> dict[str, Any]:
@@ -406,6 +414,18 @@ def scan_clear(session: ds.Session) -> dict[str, Any]:
     raise _unexpected(session, out, "a cancelled instance nor that none was open")
 
 
-def _asked(value: int | None) -> int | dict[str, Any]:
-    """The `value` a filter compared with, or why there is none."""
-    return contract.unavailable(NO_VALUE_WHY) if value is None else value
+def _cell_bits(cell: int | None) -> int:
+    """The bits a value of the open scan's cell is shown at; a byte when the cell is unknown (a
+    scan opened through `debug`), the narrowest a value of any cell takes."""
+    return 8 * (cell or 1)
+
+
+def _asked(value: int | None, cell: int | None) -> str | dict[str, Any]:
+    """The `value` a filter compared with, `0x` at the cell's width, or why there is none."""
+    return (contract.unavailable(NO_VALUE_WHY) if value is None
+            else judges.hex_at_width(value, _cell_bits(cell)))
+
+
+def _shown(row: dict[str, Any], cell: int | None) -> dict[str, Any]:
+    """A survivor's row with its value `0x` at the cell's width."""
+    return {**row, "value": judges.hex_at_width(int(row["value"]), _cell_bits(cell))}

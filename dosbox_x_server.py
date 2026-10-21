@@ -277,9 +277,9 @@ def status() -> dict[str, Any]:
       captures                `off`, or where a `capture_video` session records.
       state_dir               where `state_save` writes and `state_list` reads.
 
-    At the top: `alive`, `running`, `last_stop` (`stop_seq`, `pc`, `attribution`,
-    `since_s`, `wall_at`; the park after `start` is stop 1; unavailable with no session or a cut
-    survey), `pending` (asked while the guest ran: `arm` refs, a `disarm` count,
+    At the top (`alive` and `running` are the `session` block's): `last_stop` (`stop_seq`,
+    `pc`, `cause`, `since_s`, `wall_at`; the park after `start` is stop 1; unavailable with no
+    session or a cut survey), `pending` (asked while the guest ran: `arm` refs, a `disarm` count,
     `symbols_load`), `presence` (the window's edge: `true` drawn, `false` off or no session,
     or why not), and with a
     session `pc` (where it is now, read off the pane; unavailable while it runs) and `cpu_mode`
@@ -289,8 +289,7 @@ def status() -> dict[str, Any]:
     """
     if STATE.session is not None and STATE.session.alive():
         running.drain_if_stopped(STATE.session)   # `status` asks for no session, but uses one
-    block = st.session_block()
-    return st.reply(alive=block["alive"], running=block["running"], last_stop=STATE.dated(),
+    return st.reply(last_stop=STATE.dated(),
                     pending=STATE.pending_summary(), **running.status_facts(STATE.session),
                     presence=lifecycle.presence_shown(STATE.session))
 
@@ -371,9 +370,9 @@ def log_wait(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS
     Reply: `verdict` `TARGET`, `pattern`, `channel`, `line` (the FIRST match; `log` is the tool
     for the newest), `already` (it was in the log before this call: history, not something you
     were present for), `waited_s` (0.0 when already), `lines_before`, `lines_total`,
-    `arrived_during`, `lines_examined`, `since_mark`; when the bound ran out, `verdict`
-    `TIMEOUT` with `pattern`, `channel`, `arrived_during`, `lines_examined`, `waited_s`,
-    `since_mark` and a `note` (the guest still runs). `status: INVALID`: `wait_stopped` when the
+    `arrived_during`, `lines_examined`; when the bound ran out, `verdict` `TIMEOUT` with
+    `pattern`, `channel`, `arrived_during`, `lines_examined`, `waited_s` and a `note` (the guest
+    still runs). `status: INVALID`: `wait_stopped` when the
     machine is STOPPED and the log does not already hold the line (a stopped guest writes
     nothing; the refusal names `pattern` and `last_stop`, and a stop that lands DURING the wait
     is reported the same way after one last read of the log), `session_broken` when the emulator
@@ -419,9 +418,9 @@ def registers(from_last_stop: bool = False) -> dict[str, Any]:
         if not STATE.last_stop:
             raise ds.Invalid("no_stop", "no stop yet in this session, so there are no last-stop "
                              "registers to hand back")
-        return st.reply(regs=dict(STATE.last_stop["registers"]), superseded=True,
+        return st.reply(regs=st.shown_regs(STATE.last_stop["registers"]), superseded=True,
                         last_stop=STATE.dated())
-    return st.reply(regs=live().registers())
+    return st.reply(regs=st.shown_regs(live().registers()))
 
 
 @tool("Read memory", summary=one_line.read_memory, read_only=True, replay=("hex",))
@@ -596,12 +595,12 @@ def scan_filter(operator: Annotated[str, vocab.enum(finder.OPERATORS)] = "=",
 
     `value` is an integer or a `0x` hex string; one wider than the cell of a scan `scan_start`
     opened is refused before `MEMS` is typed. Needs the machine stopped and a scan open. Reply:
-    `operator`, `value`, `iterations` (the filters so far, this one included; on the closing
-    reply the server's own count, unavailable for a scan `debug` touched), `closed` (a step that
-    leaves NO survivor closes the scan, which is what the debugger does), `hits` (each
-    survivor's `seg_off`, `addr` and current `value`), `hits_total` and `truncated`: above
-    `limit` survivors (1 to {HITS_MAX}, default {HITS_DEFAULT}) `hits` is empty and `truncated`
-    true, so filter again, with a larger `limit` if need be.
+    `operator`, `value` (`0x` at the cell's width), `iterations` (the filters so far, this one
+    included; on the closing reply the server's own count, unavailable for a scan `debug`
+    touched), `closed` (a step that leaves NO survivor closes the scan, which is what the
+    debugger does), `hits` (the first `limit`, each survivor's `seg_off`, `addr` and current
+    `value`), `hits_total` and `truncated` (more survive than `hits` shows). Past {HITS_MAX}
+    survivors none is listed, with a `note`: the debugger pages its listing, so filter again.
 
     THE COMMAND LINE IS LEFT CLEAN even when the answer cannot be read. The debugger eats a
     command character by character while a paged-content prompt waits, one page per
@@ -698,16 +697,18 @@ def set_register(name: str, value: judges.NumberArg) -> dict[str, Any]:
     before anything is sent when negative or wider. Needs the machine stopped.
 
     Reply: `register` (the name as `SR` takes it), `regs` (the pane after the write), `value`
-    (what was sent), `readback` (the register asked for as the pane shows it now, at its own
-    width: eight hex digits for a 32-bit name, four for a segment register, read under its own
-    name, and four for a 16-bit name, read as the low half of its 32-bit register, `ax` in
-    `EAX`), `verified` (readback equals what was sent; false is not always a failure: a register
-    the debugger masks is doing its job). INVALID when no pane, or a pane without that register,
+    (what was sent) and `readback` (the register asked for as the pane shows it now), both `0x`
+    at the register's own width (eight digits for a 32-bit name, four for a segment register,
+    and four for a 16-bit name, read as the low half of its 32-bit register, `ax` in `EAX`),
+    `verified` (readback equals what was sent; false is not always a failure: a register the
+    debugger masks is doing its job). INVALID when no pane, or a pane without that register,
     came back to read.
     """
     number = checks.number("value", value)
     out = live().set_register(name, number)
-    return st.answer({"value": number, **out})
+    bits = ds.READBACK[str(out["register"])][1]
+    return st.answer({"value": judges.hex_at_width(number, bits), **out,
+                      "regs": st.shown_regs(cast(dict[str, str], out["regs"]))})
 
 
 @tool("Write memory", summary=one_line.write)
@@ -737,8 +738,7 @@ def write(ref: str, data_hex: str) -> dict[str, Any]:
 # ------------------------------------------------------------- advancing the machine
 
 @tool("Resume the machine", summary=one_line.resume, on_cancel="none", replay="wall")
-def resume(e9: str = "none", e9_filter: str = ".", e9_stamp: str = "",
-           seconds: Annotated[float, ds.WAIT_FROM_ZERO_BOUNDS] = 0.0, detail: bool = False,
+def resume(seconds: Annotated[float, ds.WAIT_FROM_ZERO_BOUNDS] = 0.0, detail: bool = False,
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Let the machine run (F5, sent once). With `seconds` at zero (the default) it comes back
     at once, no verdict; with a bound it waits up to `seconds` for a stop, listening for the
@@ -751,15 +751,13 @@ def resume(e9: str = "none", e9_filter: str = ".", e9_stamp: str = "",
     Nothing has to be declared first: `stop` brings a running guest back, headless or windowed.
 
     Reply: a reply that stopped (an F5 that never left the debugger is a stop too) carries
-    {STOP_FIELDS}. `e9` is OFF by default: `"all"`, `"lines:N"`, `"since"` (since the previous
-    stop) or `"seconds:N"` (needs `e9_stamp`, a regex with ONE group capturing each line's own
-    time), filtered by `e9_filter`. With `detail=True`, `screen_delta`: the debugger's repaint
+    {STOP_FIELDS}. With `detail=True`, `screen_delta`: the debugger's repaint
     for the F5, a POSITIONAL tail capped at its last {DETAIL_TEXT_KEEP} characters (`clipped`),
     never a value; without it `omitted` names it.
 
     Reference: REFERENCE.md, Advancing the machine.
     """
-    return advance.resume(e9, e9_filter, e9_stamp or None, seconds, detail, bridge(ctx))
+    return advance.resume(seconds, detail, bridge(ctx))
 
 
 @tool("Stop a running machine", summary=one_line.stop, on_cancel="stop", replay="wall")
@@ -783,10 +781,9 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     about the stop: `symbols_load` accumulates its batches, so a name missing after several
     loads is one none of them carried.
 
-    Reply: `interrupted` (`true` with the full stop reply, `via: "break"` and `waited_s`, the
-    seconds from the request to the debugger's prompt; `false` when the machine was already
-    stopped, with `last_stop` and a `note`). A `BREAK` whose prompt never comes is
-    `not_settled`: asking again is allowed, and if `stop` fails as well, `close` then
+    Reply: `interrupted` (`true` with the full stop reply and `via: "break"`; `false` when the
+    machine was already stopped, with `last_stop` and a `note`). A `BREAK` whose prompt never
+    comes is `not_settled`: asking again is allowed, and if `stop` fails as well, `close` then
     `start`.
     """
     session = live()
@@ -799,15 +796,13 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
                         note="the machine was already stopped" + (
                             "" if current is not None else ", its position not readable yet "
                             "(a cut pane; the next contact retries)"))
-    waited = session.break_in()
-    return running.stop_reply(session, interrupted=True, via="break", waited_s=waited)
+    session.break_in()
+    return running.stop_reply(session, interrupted=True, via="break")
 
 
 @tool("Step instructions", summary=one_line.step)
 def step(count: Annotated[int, vocab.bounds(1, ds.STEP_MAX)] = 1,
-         mode: Annotated[str, vocab.enum(ds.STEP_MODES)] = "into",
-         e9: str = "none", e9_filter: str = ".",
-         e9_stamp: str = "") -> dict[str, Any]:
+         mode: Annotated[str, vocab.enum(ds.STEP_MODES)] = "into") -> dict[str, Any]:
     """`count` instructions, one at a time, `mode` `into` (F11, the default) or
     `over` (F10), each step READ BACK. Needs the machine stopped.
 
@@ -816,11 +811,8 @@ def step(count: Annotated[int, vocab.bounds(1, ds.STEP_MAX)] = 1,
     when the machine left the debugger, e.g. an `over` across a call that never returns, which
     `session.running` says, so the remaining steps were not sent), `moved`, `stalled` (steps
     after which CS:EIP was unchanged: a swallowed keystroke, a `rep` iteration, a jump to
-    itself, a halt), and when it stopped {STOP_FIELDS}.
-    `e9` is `none`
-    (default), `all` (the whole log), `lines:N` (the last N), `since` (every line since the
-    previous stop) or `seconds:N` (needs `e9_stamp`), filtered by `e9_filter`. A settle per
-    step; for a longer run use `run_to`.
+    itself, a halt), and when it stopped {STOP_FIELDS}. A settle per step; for a longer run use
+    `run_to`.
     """
     session = live()
     out = cast(dict[str, Any], session.step(mode=mode, count=count))
@@ -830,14 +822,11 @@ def step(count: Annotated[int, vocab.bounds(1, ds.STEP_MAX)] = 1,
     # A step that STOPPED carries the full stop reply; one that ran away (a CALL that never
     # returned) left the machine running, which `session.running` says, and a running machine
     # has nothing to read.
-    return running.stop_or_base(session, not ran_away, e9, e9_filter, e9_stamp or None, out,
-                                e9_how=running.E9_BY_ARGUMENT)
+    return running.stop_or_base(session, not ran_away, out)
 
 
 @tool("Run to a place, with a control", summary=one_line.run_to, on_cancel="stop")
 def run_to(ref: str, control: str, seconds: Annotated[float, ds.WAIT_BOUNDS] = 30.0,
-           e9: str = "none", e9_filter: str = ".",
-           e9_stamp: str = "",
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run until a SYMBOL or a `SEG:OFF`, and say where it really stopped. Reports its
     progress while it waits.
@@ -857,22 +846,20 @@ def run_to(ref: str, control: str, seconds: Annotated[float, ds.WAIT_BOUNDS] = 3
     Reply: `verdict` (`TARGET`; `OTHER_STOP`, another breakpoint got there first; `TIMEOUT`,
     the bound ran out and the run was interrupted where it stood), `target_disarmed` (the
     breakpoint it armed, removed on every outcome; false when that could not be confirmed),
-    `waited_s`, `target`, `control_hits`, `controls` (`ref`, `at`, `hits_in_run`, `removed`), a
-    `note` explaining a non-arrival, and {STOP_FIELDS} (same `e9`/`e9_filter`/`e9_stamp` as
-    `resume`). INVALID
+    `target`, `control_hits`, `controls` (`ref`, `at`, `hits_in_run`, `removed`), a `note`
+    explaining a non-arrival, and {STOP_FIELDS}. INVALID
     carries no `verdict`: `control_silent` (a TIMEOUT with no control hit) or
     `cut_by_other_stop` (another stop before the control fired), each with the stop surveyed;
     `not_settled` when the interrupt found no prompt.
 
     Reference: REFERENCE.md, Advancing the machine.
     """
-    return advance.run_to(ref, control, seconds, e9, e9_filter, e9_stamp or None, bridge(ctx))
+    return advance.run_to(ref, control, seconds, bridge(ctx))
 
 
 @tool("Run for frames or emulated time", summary=one_line.run_for, on_cancel="stop")
 def run_for(milliseconds: int = 0, frames: int = 0,
-            seconds: Annotated[float, ds.WAIT_BOUNDS] = 30.0, e9: str = "none",
-            e9_filter: str = ".", e9_stamp: str = "",
+            seconds: Annotated[float, ds.WAIT_BOUNDS] = 30.0,
             ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run the machine for `frames` frames of the display, one vertical retrace each (the
     debugger's `VRT`), or for `milliseconds` of its emulated time, and come back STOPPED with
@@ -881,15 +868,14 @@ def run_for(milliseconds: int = 0, frames: int = 0,
     Arguments: exactly one of `frames` and `milliseconds` above zero. By `milliseconds` it runs
     retrace by retrace until the register pane's emulated clock has risen at least that far, so
     it stops at the first retrace at or past the mark, surveying every frame to read it.
-    `seconds`: the wall-clock bound. `e9`, `e9_filter`, `e9_stamp` as in
-    `resume`. Needs the machine stopped. A DOS machine keeps no frame counter, so `frames` counts
-    retraces from where the call starts.
+    `seconds`: the wall-clock bound. Needs the machine stopped. A DOS machine keeps no frame
+    counter, so `frames` counts retraces from where the call starts.
 
     Reply: `verdict`, `ELAPSED` (the run ran its course: every frame, or the clock at the mark),
-    `OTHER_STOP` (a declared code breakpoint stopped it first, named by `attribution`) or
+    `OTHER_STOP` (a declared code breakpoint stopped it first, named by `cause`) or
     `TIMEOUT` (the bound expired); `polls`, the `VRT`s answered by a stop; `emulated_before_s`
     and `emulated_after_s`, the register pane's emulated clock; `frame_before`, `frame_after`
-    and `cycles`, unavailable with why; `waited_s`, and {STOP_FIELDS}. `retrace_pending: true`:
+    and `cycles`, unavailable with why; and {STOP_FIELDS}. `retrace_pending: true`:
     the debugger still holds a retrace stop, which the next release meets. `note`: what the
     reply cannot prove (a declared breakpoint or watch, an unread clock). A `TIMEOUT` with a
     `VRT` still out is interrupted where it stands, its retrace left pending. INVALID
@@ -901,8 +887,7 @@ def run_for(milliseconds: int = 0, frames: int = 0,
     """
     session = live()
     ds.console_listening(session, "a `VRT`")
-    return retrace.run_for(session, frames, milliseconds, seconds, bridge(ctx), e9, e9_filter,
-                           e9_stamp or None)
+    return retrace.run_for(session, frames, milliseconds, seconds, bridge(ctx))
 
 
 @tool("Trace what a run executes", summary=one_line.trace, on_cancel="stop")
@@ -927,8 +912,8 @@ def trace(instructions: Annotated[int, vocab.bounds(1, tracing.INSTRUCTIONS_MAX)
     block: `start(flags=["-set", "cpu core=normal"])` to trace).
 
     Reply: `verdict`, `ELAPSED` (all ran; the file holds one line more, the stop), `OTHER_STOP`
-    (a declared stopper or pending retrace first, `attribution`) or `TIMEOUT` (the bound ran
-    out: the run interrupted where it stood, and what ran up to there collected); `waited_s`,
+    (a declared stopper or pending retrace first, `cause`) or `TIMEOUT` (the bound ran
+    out: the run interrupted where it stood, and what ran up to there collected);
     {STOP_FIELDS}; `trace`: `path`, `bytes`, `shape`, `instructions` (executed), `addresses`
     (distinct), `unplaced` (no symbol places them), `set_path` (a JSON line per address;
     unavailable when it could not be written, said in `note`), `symbols` (per routine, the first
@@ -968,7 +953,7 @@ def screen_wait(text: str, seconds: Annotated[float, ds.WAIT_BOUNDS] = 30.0,
     survey cut).
 
     Refused: a bad `text` or `seconds` (`bad_argument`, before anything is typed); a declared
-    code breakpoint stopping the machine first (`wait_stopped`, with its `attribution`,
+    code breakpoint stopping the machine first (`wait_stopped`, with its `cause`,
     `stop_seq`, `polls`, `retrace_pending`, `text`); a screen it cannot read, as `screen_view`
     refuses it, with `polls` and `stop_seq` after a retrace; where `stop_seq` is due and the
     stop's survey came back cut, `enrichment` unavailable instead; no `logfile`
@@ -994,8 +979,8 @@ def state_save(name: str, seconds: Annotated[float, ds.WAIT_BOUNDS] = ds.STATE_W
     letter or digit first, at most {STATE_NAME_MAX}, not digits only (the emulator's slot files).
 
     Reply: `name`, `path`, `bytes`, `version`, `program`, `machine`, `memory_mb`, `saved_at`
-    (the state's own members, the local time it was saved), `paused`, `waited_s` (the command
-    alone); `session.running` says whether the guest runs after the call.
+    (the state's own members, the local time it was saved), `paused`; `session.running` says
+    whether the guest runs after the call.
 
     Reference: REFERENCE.md, Saved states.
     """
@@ -1012,7 +997,7 @@ def state_load(name: str, seconds: Annotated[float, ds.WAIT_BOUNDS] = ds.STATE_W
     DOSBox-X version, program, memory size or machine type is refused, never asked about. It
     REPLACES the machine, so the session is altered from here on.
 
-    Reply: `name`, `path`, the state's own members, `paused`, `waited_s`, {MARK}; `session.running`
+    Reply: `name`, `path`, the state's own members, `paused`, {MARK}; `session.running`
     says whether the guest runs after the call. A `.sav` that is no regular file is `unknown_ref`,
     never opened.
 
@@ -1033,7 +1018,7 @@ def snapshot(dest: str = "", seconds: Annotated[float, ds.WAIT_BOUNDS] = ds.SNAP
     older stub, and only the log says which is resident), and on a guest whose log shows no
     stub, as `send_keys` is.
 
-    Reply: `route: "guest"`, `path`, `bytes`, `sha256` (of the file), `waited_s`.
+    Reply: `route: "guest"`, `path`, `bytes`, `sha256` (of the file).
     """
     session = live()
     if session.launch.logfile is None:
@@ -1276,9 +1261,10 @@ def machine_map(sections: list[Annotated[str, vocab.enum(machine.SECTION_NAMES)]
     session's logfile: it needs the machine STOPPED and a session started with `logfile`, and
     costs a console round trip per listing.
 
-    `sections` names the ones to read; left out, the DOS machine and the cpu: `mcbs`, `devs`,
-    `kern`, `xms`, `ems`, `ems_pages`, `emu_mem`, `machine`, `cpu`, and in protected mode `gdt`
-    and `ldt`. The rest are read only when named: `bios_mem`, `callbacks`, `vga`, `paging`.
+    `sections` names the ones to read; left out, the DOS machine and its control registers:
+    `mcbs`, `devs`, `kern`, `xms`, `ems`, `ems_pages`, `emu_mem`, `machine`, `control`, and in
+    protected mode `gdt` and `ldt`. The rest are read only when named: `bios_mem`, `callbacks`,
+    `vga`, `paging`.
     `dest` (absolute, not there yet) writes every section read WHOLE as JSON (`path`).
 
     Refused: an empty or unknown `sections`, or a `dest` already there (`bad_argument`, before
@@ -1292,7 +1278,7 @@ def machine_map(sections: list[Annotated[str, vocab.enum(machine.SECTION_NAMES)]
     `size_bytes`, `what`), `xms` (`handle`, `status`, `location`, `size_bytes`), `ems`
     (`handle`, `addr`, `size_bytes`, `name`), `ems_pages` (`handle`, `page`, `start`, `end`),
     `bios_mem` (`start`, `end`, `status`, `what`), `callbacks` (`number`, `desc`), `emu_mem`,
-    `machine`, `cpu` (control registers, flags, `gdtr`, `idt`, `tr`, `ldtr`); `gdt`/`ldt`
+    `machine`, `control` (control registers, flags, `gdtr`, `idt`, `tr`, `ldtr`); `gdt`/`ldt`
     (`selector`, `base`, `limit`, `type`, `dpl`, `p`, `a`, `r`, `b`, `g`); `paging` (runs:
     `start`, `end`, `phy`, `flags`, `d`, `a`); `vga` (`mode`, `crtc`, `seq`, `gc`, `ac`, `dac`,
     `draw`). A section the debugger refused or printed nothing known for is ABSENT and
@@ -1605,7 +1591,7 @@ def breakpoint_list() -> dict[str, Any]:
     """Every breakpoint DECLARATION with its state, cross-referenced with the debugger's
     own list. Answers on a RUNNING guest too: then the debugger cannot be asked, so the
     states are those of the last stop's survey, `debugger_read` is false and `last_stop` dates
-    the answer by that stop (`stop_seq`, `pc`, `attribution`, `since_s`, `wall_at`); with no
+    the answer by that stop (`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`); with no
     stop yet, `last_stop` is unavailable and a symbol's state is `unarmable`. Stopped: read
     live, `debugger_read` true.
 

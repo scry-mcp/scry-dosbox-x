@@ -416,7 +416,9 @@ EVERY_MODE: tuple[Section, ...] = (
     Section(("callbacks",), "CALLBACKS", parse_callbacks),
     Section(("emu_mem",), "EMU MEM", parse_emu_mem),
     Section(("machine",), "EMU MACHINE", parse_emu_machine),
-    Section(("cpu",), "CPU", parse_cpu),
+    # `control`, never `cpu`: the listing is the cpu's control registers, and `cpu` already
+    # names a field of a declaration's row.
+    Section(("control",), "CPU", parse_cpu),
 )
 
 #: Only in protected mode: in real mode the debugger reads the interrupt vector table as
@@ -464,17 +466,17 @@ class Reading:
 
 def read(session: ds.Session, wanted: frozenset[str] | None = None) -> Reading:
     """Every section this machine's mode has, read live and whole, one command each; with
-    `wanted`, only the sections named there (and always `cpu`, which says the mode)."""
+    `wanted`, only the sections named there (and always `control`, which says the mode)."""
     reading = Reading()
 
     def take(section: Section) -> None:
-        if wanted is None or "cpu" in section.names or wanted & set(section.names):
+        if wanted is None or "control" in section.names or wanted & set(section.names):
             reading.take(session, section)
 
     for section in EVERY_MODE:
         take(section)
-    if "cpu" in reading.found:
-        reading.mode = cpu_mode(reading.found["cpu"])
+    if "control" in reading.found:
+        reading.mode = cpu_mode(reading.found["control"])
     if reading.mode is None:
         reading.notes.append("`gdt`, `ldt` and `paging` are absent: without the `CPU` listing "
                              "the mode is unknown")
@@ -512,7 +514,7 @@ SECTION_NAMES: tuple[str, ...] = (
 #: mode, the descriptor tables. Left out: the BIOS's blocks and callbacks, the VGA's registers and
 #: the page runs, which together are most of a whole map and are seldom the question.
 DEFAULT_SECTIONS = frozenset({"mcbs", "devs", "kern", "xms", "ems", "ems_pages", "emu_mem",
-                              "machine", "cpu", "gdt", "ldt"})
+                              "machine", "control", "gdt", "ldt"})
 
 
 #: How a short map asks for the rest: the sections it left out, or every row of a cut list.

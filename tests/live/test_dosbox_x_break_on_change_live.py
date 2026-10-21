@@ -61,4 +61,4 @@ def test_a_real_mode_change_watch_stops_the_machine_when_the_memory_changes(
     # The stop is enriched (Phase 4): registers came back, and attribution is honest that a
     # memory watch cannot be traced from the stop to the declaration.
     assert isinstance(out.get("regs"), dict) and out["regs"], out
-    assert out["attribution"]["attributed"] is False, out["attribution"]
+    assert out["cause"].startswith("no declared code breakpoint"), out["cause"]

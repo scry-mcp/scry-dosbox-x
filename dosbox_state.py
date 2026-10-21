@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import atexit
 import os
+import re
 import shutil
 import tempfile
 import time
@@ -28,7 +29,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
-from scry_core import cancel, narrowing, screen_map
+from scry_core import cancel, judges, narrowing, screen_map
 from scry_core import reply_contract as contract
 from scry_core import session_block as blocks
 
@@ -161,10 +162,9 @@ class State:
         # A CALL THE CLIENT CANCELLED has no reply of its own, so what it left rides on the next
         # reply that closes, whatever tool that is, and is then forgotten (`take_cancelled`).
         self.cancelled: cancel.Cancelled | None = None
-        # How many instrumentation lines the log held at the LAST stop, so `e9='since'`
-        # can show only what the guest logged between then and now. Session-lived, reset
-        # on `start`.
-        self.e9_mark: dict[str, int] = {"count": 0, "offset": 0}
+        # Where the log ended at the LAST stop, so a stop's E9 block holds only what the
+        # guest logged between then and now. Session-lived, reset on `start`.
+        self.e9_offset = 0
         # WHERE A BATCH WITH `summaries` WRITES ITS TWO FILES, made on first use and kept for
         # the life of the process, so a path a reply handed back still opens after `close`;
         # the files are numbered per call by `batches`, so two calls never share one.
@@ -235,7 +235,7 @@ class State:
         if not self.last_stop:
             return None
         return {"stop_seq": self.last_stop["seq"], "pc": self.last_stop["at"],
-                "attribution": self.last_stop["attribution"],
+                "cause": cause(self.last_stop["attribution"]),
                 "since_s": round(time.monotonic() - float(self.last_stop["when"]), 1),
                 "wall_at": self.last_stop["clock"]}
 
@@ -269,7 +269,7 @@ class State:
         if stop is None:
             return (contract.unavailable(UNREAD_STOP_WHY),
                     ", its position not readable yet (a cut pane; the next contact retries)")
-        who = stop.get("attribution") or {}
+        who = self.last_stop.get("attribution") or {}
         by = f" ({who['ref']})" if who.get("attributed") else ""
         return stop, f" at {stop['pc']}{by}"
 
@@ -353,7 +353,7 @@ class State:
         self.armed.clear()
         self.applied_last.clear()
         self.found_stop_last = {}
-        self.e9_mark.update(count=0, offset=0)    # the next session's log starts empty
+        self.e9_offset = 0    # the next session's log starts empty
         self.written.clear()                      # its files are the next session's to list
         self.scan_iterations = None               # the debugger's scan dies with it
         self.scan_cell_bytes = None
@@ -561,3 +561,41 @@ def delta_if_asked(out: str, keep: int, detail: bool) -> dict[str, Any]:
     answer is parsed off the screen gives the raw text only when asked: the parsed fields are
     the answer, and the repaint is most of the reply's size."""
     return delta(out, keep) if detail else narrowing.omission(list(REPAINT_FIELDS), REPAINT_HOW)
+
+
+#: A stop's address inside its `cause`, the part that varies from one stop to the next.
+_CAUSE_AT = re.compile(r" at [0-9A-Fa-f]{4}:[0-9A-Fa-f]{4,8}")
+
+
+def cause(attribution: dict[str, Any]) -> str:
+    """What stopped the machine, in the words every stop reply carries as `cause`: the
+    declaration a stop is at, with how it was named and where, or why none can be named."""
+    # A stop whose address the record lacks is still named; only its place is left out.
+    at = attribution.get("at", "an address the record lacks")
+    if not attribution.get("attributed"):
+        if attribution.get("retrace_pending"):
+            return (f"most likely the retrace stop a `run_for` left armed: no declared code "
+                    f"breakpoint at {at}")
+        return (f"no declared code breakpoint at {at}: the debugger keeps no hit flag and a memory "
+                f"watch stops at the instruction that wrote, so which declaration fired cannot "
+                f"be told")
+    if attribution.get("by") == "run_to":
+        also = list(attribution.get("refs", []))
+        return (f"run_to's target {attribution['ref']} at {at}"
+                + (f", where breakpoint {', '.join(also)} is declared too" if also else ""))
+    refs = attribution.get("refs")
+    if refs:
+        return f"breakpoints {', '.join(refs)} at {at}, every declaration at that address named"
+    return f"breakpoint {attribution['ref']} (by {attribution['by']}) at {at}"
+
+
+def cause_key(text: str) -> str:
+    """`cause` with its address taken off: the key a count of stops by declaration uses."""
+    return _CAUSE_AT.sub("", text)
+
+
+def shown_regs(registers: dict[str, str]) -> dict[str, str]:
+    """The register pane as a reply shows it: each value `0x` and its digits at the width the
+    pane prints it, the spelling a value argument takes back (`judges.number`)."""
+    return {name: judges.hex_at_width(int(digits, 16), 4 * len(digits))
+            for name, digits in registers.items()}

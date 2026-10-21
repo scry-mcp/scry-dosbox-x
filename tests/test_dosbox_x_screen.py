@@ -1271,7 +1271,7 @@ def test_a_string_that_appears_after_a_retrace_is_found_with_the_stop_reply(
     assert r["status"] == "ok", r
     assert r["already"] is False and r["polls"] == 1 and r["point"] == [4, 3], r
     assert r["line"] == "C:\\>PROBE.COM" and isinstance(r["waited_s"], float)
-    assert r["regs"] and "attribution" in r and "stop_seq" in r
+    assert r["regs"] and "cause" in r and "stop_seq" in r
     assert dbg.keys == [ds.RETRACE_COMMAND] and dbg.dumps == [(0xB800, 0, 4000)]
     assert dbg.asked.count("VGA MODE") == 2 and dbg.asked.count("VGA CRTC") == 1
     assert r["summary"] == "screen_wait 'PROBE.COM': found at 4,3 after 1 retrace(s)"
@@ -1459,7 +1459,7 @@ def test_a_breakpoint_that_cuts_a_frame_ends_the_wait_naming_it(tmp_path: Path) 
     cut_by_breakpoint(tmp_path)
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=5))
     assert r["status"] == "INVALID" and r["code"] == "wait_stopped", r
-    assert r["attribution"]["ref"] == "0814:0108" and r["retrace_pending"] is True
+    assert "breakpoint 0814:0108 " in r["cause"] and r["retrace_pending"] is True
     assert r["polls"] == 1 and dstate.STATE.retrace_pending is True
     assert r["stop_seq"] == dstate.STATE.last_stop["seq"]
 
@@ -1772,4 +1772,24 @@ def test_a_breakpoint_that_lands_as_the_wait_expires_ends_it_naming_it(tmp_path:
     dbg.__class__ = LandsAtTheBound
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=5))
     assert r["code"] == "wait_stopped" and r["retrace_pending"] is True, r
-    assert r["attribution"]["ref"] == "0814:0108" and "BREAK" not in dbg.sent, r
+    assert "breakpoint 0814:0108 " in r["cause"] and "BREAK" not in dbg.sent, r
+
+
+def test_a_wait_refused_at_a_retrace_carries_the_stop_it_ended_at_with_its_cause(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A screen that can no longer be read after a retrace ends the wait at that stop: the
+    refusal carries the stop's `stop_seq` AND its `cause`, the pair a sequence counts a stop
+    by, so its account never files a stop under no cause."""
+    waiting(["probe-park", "probe-booted"], 1, tmp_path)
+    reads = iter([None])
+
+    def rows(self: object) -> list[str] | None:
+        try:
+            return next(reads)
+        except StopIteration:
+            raise ds.Invalid("no_channel", "the screen's listing is gone") from None
+
+    monkeypatch.setattr(retrace.TextWatch, "rows", rows)
+    r = cast(dict[str, Any], server.screen_wait(text="PROBE.COM", seconds=10))
+    assert r["status"] == "INVALID" and r["code"] == "no_channel", r
+    assert "stop_seq" in r and isinstance(r.get("cause"), str), r

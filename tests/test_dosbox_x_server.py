@@ -33,8 +33,7 @@ from typing import Any, cast
 from unittest import mock
 
 import pytest
-from e9_hints import hints_heard
-from scry_core import declaration_rows, media_tools, recording, screen_map
+from scry_core import declaration_rows, log_marks, media_tools, recording, screen_map
 from scry_core import log_wait as core_wait
 from scry_core import reply_contract as contract
 from scry_core import sequence_account as account
@@ -351,15 +350,11 @@ class FakeSession:
         return {"verdict": "TARGET", "pattern": pattern, "channel": channel,
                 "line": "Bochs port E9h: [+ 0.000] BOOT  . start", "already": True,
                 "lines_total": 1, "lines_before": 0, "arrived_during": 0, "waited_s": 0.0,
-                "lines_examined": 1, "since_mark": 0}
+                "lines_examined": 1}
 
     def e9(self, pattern: str, limit: int) -> tuple[list[str], int]:
         self.e9_calls.append((pattern, limit))
         return ["one line"], 500          # MANY matched, ONE returned
-
-    def e9_lines(self) -> list[str]:
-        self.e9_calls.append((".", 0))          # 0: no limit, the whole channel
-        return ["one line"]
 
     def log(self, pattern: str, limit: int, channel: str,
             since_mark: int = 0) -> tuple[list[str], int]:
@@ -1034,7 +1029,7 @@ def test_the_success_path_of_each_reader_returns_a_result(tmp_path: Path) -> Non
     seg, off = 0x0749, 0
     row = f"{seg:04X}:{off:08X} " + " ".join(["00"] * 16) + "  " + "." * 16
     install(screen=f"some screen\r\n{row}\r\n")
-    assert server.registers()["regs"]["EAX"] == "00001234"
+    assert server.registers()["regs"]["EAX"] == "0x00001234"
     assert server.debug(command="BPLIST")["status"] == "ok"
     got = server.read_memory(ref=f"{seg:04X}:{off:08X}")
     assert got["status"] == "ok"
@@ -2169,16 +2164,17 @@ def test_set_register_writes_the_value_it_was_given() -> None:
     the session block, never the mapping that comes back, so the VALUE was unwatched."""
     fake = install()
     got = cast(dict[str, Any], server.set_register(name="EAX", value=0xDEADBEEF))
-    assert got["regs"]["EAX"] == "DEADBEEF", got["regs"]
+    assert got["regs"]["EAX"] == "0xdeadbeef", got["regs"]
     # READ BACK: `readback` is what the pane says and `verified` whether it equals what
     # was sent; a register the debugger masks answers false under `status: ok` and
     # `altered` either way, rather than being refused.
-    assert got["readback"] == "DEADBEEF" and got["verified"] is True and got["value"] == 0xDEADBEEF
+    assert (got["readback"] == "DEADBEEF" and got["verified"] is True
+            and got["value"] == "0xdeadbeef")
     assert got["summary"] == "set_register EAX = 3735928559, verified True"
     # THE CONTROL: a different value has to produce a different answer, or this is
     # asserting a constant.
     again = cast(dict[str, Any], server.set_register(name="EAX", value=1))
-    assert again["regs"]["EAX"] == "00000001"
+    assert again["regs"]["EAX"] == "0x00000001"
     fake.masks = True
     masked = cast(dict[str, Any], server.set_register(name="EAX", value=0x10000))
     assert masked["status"] == "ok" and masked["verified"] is False
@@ -3025,13 +3021,12 @@ class NamesFake:
         if not hits:
             return {"verdict": "TIMEOUT", "arrived_during": 0,
                     "lines_examined": len(self.log) - mark, "waited_s": seconds,
-                    "since_mark": mark, "note": f"nothing matched {pattern!r} in {seconds}s"}
+                    "note": f"nothing matched {pattern!r} in {seconds}s"}
         # The effect line was appended by `send_input` BEFORE this wait began, so the
         # honest answer is the real method's: it was ALREADY there on the first read.
         return {"verdict": "TARGET", "line": hits[0], "already": True, "lines_total": len(hits),
                 "lines_before": self.log[mark:].index(hits[0]), "arrived_during": 0,
-                "waited_s": 0.0, "lines_examined": len(self.log) - mark,
-                "since_mark": mark}
+                "waited_s": 0.0, "lines_examined": len(self.log) - mark}
 
     def where(self) -> dict[str, str]:
         if self.where_refusals > 0:
@@ -3090,12 +3085,6 @@ class NamesFake:
         self.full_reads += 1
         hit = [ln for ln in self.log if re.search(pattern, ln)]
         return hit[-limit:], len(hit)
-
-    def e9_lines(self) -> list[str]:
-        if self.log is None:
-            raise ds.Invalid("no_channel", "this session was started without a logfile")
-        self.full_reads += 1
-        return list(self.log)
 
     def breakpoints(self) -> list[dict[str, str]]:
         self.bp_calls += 1
@@ -4061,7 +4050,7 @@ def test_perform_tail_waits_for_the_stop_and_returns_the_enriched_reply(
     assert out["status"] == "ok", out
     assert "stopped" in out and "base" not in out["stopped"], out
     stop = out["stopped"]
-    assert "regs" in stop and "watches" in stop and "attribution" in stop, stop
+    assert "regs" in stop and "watches" in stop and "cause" in stop, stop
 
 
 def test_perform_tail_says_so_if_the_machine_never_stops(tmp_path: Path) -> None:
@@ -4948,10 +4937,9 @@ def test_evaluate_watches_will_not_read_a_change_watch_off_its_trap(tmp_path: Pa
     assert by["g_absent"]["state"] == "unresolved" and "value" not in by["g_absent"]
 
 
-def test_stop_reply_carries_registers_watches_attribution_and_e9_off(tmp_path: Path) -> None:
-    """Decision 13: a stop reply always carries the registers, the watches evaluated, the
-    attribution, and the E9 summary -- and E9 is OFF by default (decision 15), showing only
-    the count and how to turn it on, since the volume can blow up context."""
+def test_stop_reply_carries_registers_watches_cause_and_the_e9_block(tmp_path: Path) -> None:
+    """A stop reply always carries the registers, the watches evaluated, its `cause`, and the
+    E9 block: the guest's lines since the previous stop, whole when they fit."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x1000, kind="d")], ds_="00AF")
     fake.mem[(0xAF, 0x1000)] = (48000).to_bytes(4, "little")
     fake.log = ["boot", "rate=48000", "tick"]
@@ -4961,10 +4949,10 @@ def test_stop_reply_carries_registers_watches_attribution_and_e9_off(tmp_path: P
                            watch_mode="show"))
     out = running.stop_reply(fake, halted=True)  # type: ignore[arg-type]
     assert out["status"] == "ok" and out["halted"] is True
-    assert out["regs"]["CS"] == "00A7" and out["regs"]["DS"] == "00AF"
+    assert out["regs"]["CS"] == "0x00a7" and out["regs"]["DS"] == "0x00af"
     assert out["watches"][0]["value"] == 48000 and out["watches"][0]["state"] == "evaluated"
-    assert out["attribution"]["attributed"] is False       # nothing declared at CS:EIP
-    assert out["e9"]["lines_total"] == 3 and out["e9"]["shown"] == 0 and "how" in out["e9"]
+    assert out["cause"].startswith("no declared code breakpoint")  # nothing declared at CS:EIP
+    assert out["e9"]["lines_total"] == 3 and out["e9"]["truncated"] is False, out["e9"]
 
 
 def test_attribution_names_a_breakpoint_at_the_stop_or_says_it_cannot(tmp_path: Path) -> None:
@@ -4981,83 +4969,6 @@ def test_attribution_names_a_breakpoint_at_the_stop_or_says_it_cannot(tmp_path: 
     fake.eip = "00005555"
     miss = arming.attribute_stop(fake, where=fake.where())  # type: ignore[arg-type]
     assert miss["attributed"] is False and "no hit flag" in miss["why"]
-
-
-def test_e9_summary_serves_each_mode_and_is_honest_about_seconds(tmp_path: Path) -> None:
-    """The E9 switch: all / lines:N / since, with a count and a filter; a session with no
-    logfile says so; and seconds:N is not served, naming the missing per-line timestamp."""
-    fake = _names(tmp_path)
-    fake.log = [f"line{i}" for i in range(10)]
-    dstate.STATE.e9_mark["count"] = 0
-    allm = running.e9_summary(fake, "all", ".")  # type: ignore[arg-type]
-    assert allm["lines_total"] == 10 and len(allm["lines"]) == 10
-    lim = running.e9_summary(fake, "lines:3", ".")  # type: ignore[arg-type]
-    assert lim["shown"] == 3 and lim["lines"] == ["line7", "line8", "line9"]
-    dstate.STATE.e9_mark["count"] = 10
-    fake.log += ["line10", "line11"]
-    since = running.e9_summary(fake, "since", ".")  # type: ignore[arg-type]
-    assert since["since_last_stop"] == 2 and since["lines"] == ["line10", "line11"]
-    fake.log = None
-    assert running.e9_summary(fake, "none", ".")["available"] is False  # type: ignore[arg-type]
-    fake.log = []
-    assert "unsupported" in running.e9_summary(fake, "seconds:5", ".")  # type: ignore[arg-type]
-
-
-STAMP = r"\[\+\s*(\d+\.\d+)\]"     # a guest's own `[+SSSS.mmm]`, a monotonic guest clock
-
-
-def test_e9_seconds_window_is_cut_on_the_guests_own_clock(tmp_path: Path) -> None:
-    """`seconds:N` is served when the caller lends the stamp: "now" is the latest stamp in
-    the log, a line is in the window when its own stamp is within N of it, a line with no
-    stamp is COUNTED and never placed, the filter still applies, and with no stamp at all
-    the block says there is no clock rather than guessing one. Validation refuses the mode
-    without a stamp, and a stamp with the wrong number of groups, before the machine moves."""
-    fake = _names(tmp_path)
-    fake.log = ["Bochs port E9h: [+   1.000] PERF  . a",
-                "Bochs port E9h: [+   8.500] ACT   . b",
-                "Bochs port E9h: [+   9.900] PERF  . c",
-                "Bochs port E9h: no stamp here",
-                "Bochs port E9h: [+  10.250] ACT   . d"]
-    got = running.e9_summary(fake, "seconds:2", ".", STAMP)  # type: ignore[arg-type]
-    assert got["now"] == 10.25 and got["window_s"] == 2, got
-    assert [ln[-1] for ln in got["lines"]] == ["b", "c", "d"] and got["shown"] == 3, got
-    assert got["unstamped"] == 1, got
-    only_act = running.e9_summary(fake, "seconds:2", "ACT", STAMP)  # type: ignore[arg-type]
-    assert [ln[-1] for ln in only_act["lines"]] == ["b", "d"], only_act
-    noclock = running.e9_summary(fake, "seconds:2", ".", r"never (\d+)")  # type: ignore[arg-type]
-    assert noclock["shown"] == 0 and "no clock" in noclock["unsupported"], noclock
-    with pytest.raises(ds.Invalid, match="needs `e9_stamp`"):
-        running.e9_validate("seconds:2", ".")
-    with pytest.raises(ds.Invalid, match="exactly ONE group"):
-        running.e9_validate("seconds:2", ".", r"\[(\+)(\d+)\]")
-    running.e9_validate("seconds:2", ".", STAMP)          # the good shape passes
-    # AND THROUGH A TOOL: a resume that halts carries the window, cut on the guest's clock.
-    fake.halted = True
-    reply = cast(dict[str, Any], server.resume(e9="seconds:2", e9_stamp=STAMP))
-    assert reply["e9"]["shown"] == 3 and reply["e9"]["now"] == 10.25, reply["e9"]
-    bad = cast(dict[str, Any], server.resume(e9="seconds:2"))
-    assert bad["status"] == "INVALID" and "e9_stamp" in bad["message"]
-
-
-def test_each_e9_tools_stop_names_its_argument_and_any_other_stop_names_the_log(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The hint is the way THIS tool's caller can take: the tools that take `e9` name it (`run_for`
-    in its own file), a stop reached by any other tool names `log`."""
-    seen = hints_heard(monkeypatch)
-    fake = _names(tmp_path)
-    fake.log = ["a", "b"]
-    calls: dict[str, Callable[[], object]] = {
-        "resume": server.resume, "step": server.step,
-        "run_to": lambda: server.run_to(ref="00A7:00001A27", control="00A7:00009999",
-                                        seconds=1)}
-    for tool, call in calls.items():
-        fake.halted = True
-        seen.clear()
-        reply = cast(dict[str, Any], call())
-        assert reply["status"] == "ok" and seen == [running.E9_BY_ARGUMENT], (tool, seen, reply)
-    seen.clear()
-    running.stop_reply(fake, halted=True)  # type: ignore[arg-type]
-    assert seen == [running.E9_BY_LOG], "a stop no e9 tool reached named an argument"
 
 
 def test_resume_enriches_a_halt_and_leaves_a_running_machine_bare(tmp_path: Path) -> None:
@@ -5138,23 +5049,6 @@ def test_attribution_in_real_mode_compares_the_linear_address(tmp_path: Path) ->
     assert hit["attributed"] is True and hit["ref"] == "1001:00000000"
 
 
-def test_a_bad_e9_arg_is_refused_before_the_machine_moves(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A stop tool RESUMES the guest, which is irreversible, so a malformed E9 display arg is
-    refused BEFORE the F5 -- not after, where it would throw away a whole real stop reply."""
-    fake = _names(tmp_path)
-
-    def nope() -> dict[str, object]:
-        raise AssertionError("resume must not run when the e9 arg is invalid")
-    monkeypatch.setattr(fake, "resume", nope)
-    bad = cast(dict[str, Any], server.resume(e9="bogus"))
-    assert bad["status"] == "INVALID" and "e9 is" in bad["message"]
-    zero = cast(dict[str, Any], server.resume(e9="lines:0"))
-    assert zero["status"] == "INVALID" and "must be positive" in zero["message"]
-    badre = cast(dict[str, Any], server.resume(e9_filter="["))
-    assert badre["status"] == "INVALID"
-
-
 def test_a_halt_whose_position_is_unreadable_keeps_the_halt(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A halt is a real observation. If the position cannot be read (a cut pane, where()
@@ -5186,37 +5080,50 @@ def test_a_read_watch_is_not_read_off_a_change_watchs_armed_trap(tmp_path: Path)
     assert w["state"] == "shadowed" and "value" not in w and "trap" in w["note"]
 
 
-def test_since_is_filter_independent_across_stops(tmp_path: Path) -> None:
-    """The since-last-stop mark is the UNFILTERED count, so a `since` window is the same
-    whatever filter this or the previous stop used."""
-    fake = _names(tmp_path)
-    fake.log = ["A err", "B ok", "C err"]
-    dstate.STATE.e9_mark["count"] = 0
-    b1 = running.e9_summary(fake, "all", "err")  # type: ignore[arg-type]
-    assert b1["lines_total"] == 2 and b1["unfiltered"] == 3
-    dstate.STATE.e9_mark["count"] = b1["unfiltered"]     # what _stop_reply stores
-    assert fake.log is not None
-    fake.log += ["D new", "E err2"]
-    b2 = running.e9_summary(fake, "since", ".")  # type: ignore[arg-type]
-    assert b2["since_last_stop"] == 2 and b2["lines"] == ["D new", "E err2"]
-
-
-def test_a_stop_a_sequence_found_moves_the_since_mark_whole(tmp_path: Path) -> None:
-    """A stop recorded by the contact that found it (`recorded_stop_reply`) moves the offset AND
-    the count, or a later filtered `since` starts lines before the unfiltered one."""
+def test_a_stop_a_sequence_found_moves_the_mark_its_block_starts_from(tmp_path: Path) -> None:
+    """A stop recorded by the contact that found it (`recorded_stop_reply`) shows the lines since
+    the previous stop and moves the mark, so the next stop shows only what came after it."""
     fake = _names(tmp_path)
     fake.log = ["L1", "L2"]
-    dstate.STATE.e9_mark.update(count=0, offset=0)
+    dstate.STATE.e9_offset = 0
     dstate.STATE.remember_stop(cast(ds.Session, fake), {"cs": "F000", "eip": "0000FFF0",
                                                         "mode": "Real"}, {}, [],
                                {"attributed": False})
     dstate.STATE.last_stop["picture"] = {}
-    running.recorded_stop_reply(fake, {})  # type: ignore[arg-type]
+    found = running.recorded_stop_reply(fake, {})  # type: ignore[arg-type]
+    assert found["e9"]["lines"] == ["L1", "L2"] and found["e9"]["mark"] == 0, found["e9"]
     assert fake.log is not None
     fake.log += ["L3"]
-    plain = running.e9_summary(fake, "since", ".")  # type: ignore[arg-type]
-    filtered = running.e9_summary(fake, "since", "^L")  # type: ignore[arg-type]
-    assert plain["lines"] == filtered["lines"] == ["L3"], (plain, filtered)
+    nxt = running.e9_block(fake)  # type: ignore[arg-type]
+    assert nxt["lines"] == ["L3"] and nxt["mark"] > 0, nxt
+
+
+def test_every_stop_shows_its_guest_lines_since_the_previous_one_bounded(
+        tmp_path: Path) -> None:
+    """ON AND BOUNDED: whole up to `STOP_LINES_SHOWN`, one past it the newest ones with
+    `truncated` and a `how` naming `log` from the block's own mark, arguments `log` takes; the
+    tools that stop take no display argument; no log is unavailable with why."""
+    fake = _names(tmp_path)
+    fake.halted = True
+    shown = log_marks.STOP_LINES_SHOWN
+    fake.log = [f"line{i}" for i in range(shown)]
+    whole = server.resume()["e9"]
+    assert (whole["lines_total"], whole["truncated"], whole["mark"]) == (shown, False, 0), whole
+    assert "how" not in whole, whole
+    fake.log += [f"more{i}" for i in range(shown + 1)]
+    cut = server.resume()["e9"]
+    assert cut["truncated"] and cut["lines_total"] == shown + 1 and cut["mark"] > 0, cut
+    assert cut["lines"] == [f"more{i}" for i in range(1, shown + 1)], cut
+    named = set(re.findall(r"(\w+)=", cut["how"]))
+    params = inspect.signature(server.log).parameters
+    required = {k for k, v in params.items() if v.default is inspect.Parameter.empty}
+    assert f"since_mark={cut['mark']}" in cut["how"] and required <= named <= set(params), (
+        cut["how"])
+    for tool in ("resume", "step", "run_to", "run_for"):
+        params = inspect.signature(getattr(server, tool)).parameters
+        assert not {"e9", "e9_filter", "e9_stamp"} & set(params), tool
+    fake.log = None
+    assert server.resume()["e9"]["available"] is False
 
 
 def test_stop_on_a_parked_machine_never_names_a_previous_stop(
@@ -5742,7 +5649,8 @@ def test_status_and_a_running_refusal_carry_the_last_stop(tmp_path: Path) -> Non
     assert refused["last_stop"]["stop_seq"] == 2, refused
     assert "log" in refused["answers_while_running"], refused
     old = server.registers(from_last_stop=True)
-    assert old["status"] == "ok" and old["superseded"] is True and old["regs"]["CS"] == "00A7", old
+    assert (old["status"] == "ok" and old["superseded"] is True
+            and old["regs"]["CS"] == "0x00a7"), old
     assert old["last_stop"]["stop_seq"] == 2
     dstate.STATE.last_stop.clear()
     assert server.registers(from_last_stop=True)["status"] == "INVALID"
@@ -5789,8 +5697,6 @@ def test_resume_on_a_running_guest_is_refused_before_any_other_check(
         bound = server.resume(seconds=-1)
     assert got["status"] == "INVALID" and got["code"] == "not_stopped", got
     assert bound["code"] == "bad_argument" and "is not a bound" in bound["message"], bound
-    # A bad display argument is judged earlier still, with no machine, as every argument is.
-    assert server.resume(e9="sometimes")["code"] == "bad_argument"
 
 
 def test_stop_keeps_the_envelope_on_both_branches(tmp_path: Path) -> None:
@@ -5855,7 +5761,7 @@ def test_a_stop_that_came_on_its_own_still_applies_the_queue_at_the_next_contact
     assert server.status()["last_stop"]["stop_seq"] == 2
     assert server.status()["last_stop"]["pc"] == "00A7:00001234"
     assert server.status()["last_stop"]["stop_seq"] == 2      # observed once, not per call
-    assert server.registers(from_last_stop=True)["regs"]["EIP"] == "00001234"
+    assert server.registers(from_last_stop=True)["regs"]["EIP"] == "0x00001234"
 
 
 def test_the_queue_covers_interrupts_and_change_watches_and_says_what_it_could_not_apply(
@@ -6151,7 +6057,7 @@ def test_the_verify_of_drive_forwards_the_progress_to_the_wait() -> None:
             progress(1.0, seconds, "tick")
             return {"verdict": "TARGET", "line": "x", "already": False, "lines_total": 1,
                     "lines_before": 0,
-                    "arrived_during": 1, "waited_s": 1.0, "lines_examined": 1, "since_mark": 0}
+                    "arrived_during": 1, "waited_s": 1.0, "lines_examined": 1}
 
     ticks: list[str] = []
     out = sequence._verify_after_wait(_Waits(), "x", 3.0, 0,  # type: ignore[arg-type]
@@ -6211,7 +6117,7 @@ def test_send_keys_hands_its_progress_to_the_wait_for_the_reaction() -> None:
             progress(1.0, seconds, "tick")
             return {"verdict": "TARGET", "line": "READY", "already": False, "lines_total": 1,
                     "lines_before": 0,
-                    "arrived_during": 1, "waited_s": 1.0, "lines_examined": 1, "since_mark": 0}
+                    "arrived_during": 1, "waited_s": 1.0, "lines_examined": 1}
 
     ticks: list[str] = []
     out = inputs.send_keys(_Route(), ["enter"], None, "READY", 2.0,  # type: ignore[arg-type]
@@ -6357,9 +6263,8 @@ def test_one_breakpoint_row_is_one_declaration_and_an_old_store_is_attributed_wh
     fake.eip = "00000100"
     fake.halted = True
     stop = server.resume()
-    who = stop["attribution"]
-    assert who["attributed"] is True and who["ref"] == "foo"
-    assert who["refs"] == ["foo", "bar"] and "2 declarations" in who["note"]
+    assert stop["cause"].startswith("breakpoints foo, bar at ") and "every declaration" in \
+        stop["cause"], stop["cause"]
 
 
 def test_watch_add_refuses_an_ambiguous_name_and_stores_nothing(tmp_path: Path) -> None:
@@ -6474,39 +6379,21 @@ def test_write_puts_bytes_at_a_name_or_an_address_and_reads_them_back(tmp_path: 
 
 
 def test_a_stop_reads_only_what_the_guest_wrote_since_the_previous_stop(tmp_path: Path) -> None:
-    """Every stop carried the E9 block and read the whole log from byte zero to build it,
-    even with `e9='none'`, the default: quadratic in the session, the cost `e9_wait` had
-    already left behind. With no filter the default path reads what is new and keeps a
-    running total; the counts agree with a whole read, and `since` shows exactly the new
-    lines. A filter, or a mode that shows history, still reads the log whole."""
+    """Every stop carries the E9 block, so it reads only what is new since the previous stop,
+    never the whole log: a session's cost per stop does not grow with its log."""
     fake = _names(tmp_path)
     fake.halted = True
     fake.log = [f"line{i}" for i in range(10)]
     first = server.resume()
-    assert first["e9"]["lines_total"] == 10 and first["e9"]["unfiltered"] == 10
+    assert first["e9"]["lines_total"] == 10 and first["e9"]["mark"] == 0
     assert fake.full_reads == 0 and fake.incremental_reads == 1
     fake.log += ["line10", "line11"]
-    second = server.resume(e9="since")
-    assert second["e9"]["lines"] == ["line10", "line11"] and second["e9"]["lines_total"] == 12
+    second = server.resume()
+    assert second["e9"]["lines"] == ["line10", "line11"] and second["e9"]["lines_total"] == 2
     assert fake.full_reads == 0 and fake.incremental_reads == 2
     third = server.resume()
-    assert third["e9"]["lines_total"] == 12 and fake.incremental_reads == 3
-    filtered = server.resume(e9="since", e9_filter="line1")
-    assert filtered["e9"]["lines_total"] == 3 and fake.full_reads == 1
-    whole = server.resume(e9="all")
-    assert whole["e9"]["shown"] == 12 and fake.full_reads == 2
-    quiet = server.resume(e9_filter="line1")
-    assert quiet["e9"]["shown"] == 0 and quiet["e9"]["lines_total"] == 3 and fake.full_reads == 3
-    # BACK TO THE INCREMENTAL PATH AFTER A WHOLE READ, WITH THE LOG GROWN IN BETWEEN: the
-    # whole read leaves the mark at the end of what it read, so the next default stop
-    # shows exactly the lines written since, neither the old tail again nor a gap.
-    fake.log += ["line12", "line13", "line14"]
-    again = server.resume(e9="since")
-    assert again["e9"]["lines"] == ["line12", "line13", "line14"]
-    assert again["e9"]["lines_total"] == 15
-    assert fake.full_reads == 3 and fake.incremental_reads == 4
+    assert third["e9"]["lines_total"] == 0 and fake.incremental_reads == 3
     fake.log = None
-    assert server.resume(e9_filter="line1")["e9"]["available"] is False
     assert server.resume()["e9"]["available"] is False
 
 
@@ -6548,7 +6435,7 @@ def test_stop_brings_a_running_guest_back_headless_or_windowed(tmp_path: Path,
     assert "focus" not in out, "nothing is clicked, so there is no focus to report"
     assert fake.break_ins == 1 and fake.running is False
     assert "regs" in out and out["pc"] == "00A7:00000000"
-    assert out["summary"] == "stop: break, at 00A7:00000000 after 0.12s"
+    assert out["summary"] == "stop: break, at 00A7:00000000"
     again = cast(dict[str, Any], server.stop())
     assert again["interrupted"] is False and again["last_stop"]["stop_seq"] >= 1
     assert fake.break_ins == 1
@@ -6648,7 +6535,7 @@ def test_the_modifier_vocabulary_is_the_dos_keyboard_s() -> None:
     ("log", {"pattern": "x", "channel": "process"}, {"pattern": "x", "channel": "all"}),
     ("log_wait", {"pattern": "x", "channel": "guest", "seconds": 0},
      {"pattern": "x", "channel": "emulator", "seconds": 3}),
-    ("resume", {"e9": "sometimes"}, {"e9": "all"}),
+    ("resume", {"seconds": -1}, {"seconds": 0}),
     ("step", {"mode": "sideways"}, {"mode": "into", "count": 2}),
     ("run_to", {"ref": "ZZZZ:", "seconds": 5}, {"ref": "00A7:0100", "control": "00A7:0200"}),
     ("breakpoint_at", {"ref": "_main", "by": "guess"}, {"ref": "_main"}),
@@ -7332,8 +7219,8 @@ def test_perform_with_summaries_cuts_every_step_but_the_last_and_counts_the_stop
         summaries=True))
     assert out["status"] == "ok" and out["steps_total"] == 3 and out["truncated"] is False, out
     first, second, last = out["ran"]
-    assert {"summary", "status", "stop_seq", "attribution"} <= set(first["reply"]), first
-    assert set(first["reply"]) <= {"summary", "status", "stop_seq", "attribution",
+    assert {"summary", "status", "stop_seq", "cause"} <= set(first["reply"]), first
+    assert set(first["reply"]) <= {"summary", "status", "stop_seq", "cause",
                                    "stopped_on_its_own"}, first
     assert "regs" not in second["reply"] and "regs" in last["reply"], out["ran"]
     assert out["summary"] == "perform: 3 of 3 steps", out["summary"]
@@ -7345,7 +7232,8 @@ def test_perform_with_summaries_cuts_every_step_but_the_last_and_counts_the_stop
     assert stops["stop_seq_last"] == dstate.STATE.last_stop["seq"], stops
     assert stops["unaccounted"] == 0 and stops["surveyed"] >= 2, stops
     assert stops["surveyed"] == stops["stop_seq_last"] - stops["stop_seq_first"] + 1, stops
-    assert stops["by_how"] == {"unattributed": stops["surveyed"]}, stops
+    assert list(stops["by_cause"].values()) == [stops["surveyed"]], stops
+    assert next(iter(stops["by_cause"])).startswith("no declared code breakpoint"), stops
     plain = cast(dict[str, Any], server.perform(steps=[{"op": "registers"}]))
     assert "steps_total" not in plain and "regs" in plain["ran"][0]["reply"], plain
 
@@ -7485,11 +7373,14 @@ def test_the_stop_count_survives_a_session_closed_mid_batch() -> None:
     rather than coming back empty beside rows that show them."""
     dstate.STATE.last_stop.clear()
     ran = [{"op": "resume", "reply": {"summary": "s", "status": "ok", "stop_seq": n,
-                                      "attribution": {"attributed": False}}}
+                                      "cause": dstate.cause({"attributed": False,
+                                                             "at": f"0814:000001{n:02X}"})}}
            for n in (6, 7, 8)]
     got = sequence.account_of(ran, True, keep_last=False, since=5)["stops"]
     assert got == {"stop_seq_first": 6, "stop_seq_last": 8, "surveyed": 3,
-                   "by_how": {"unattributed": 3}, "unaccounted": 0}, got
+                   "by_cause": {dstate.cause_key(dstate.cause({"attributed": False,
+                                                                  "at": "0814:00000100"})): 3},
+                   "unaccounted": 0}, got
 
 
 def test_a_batch_writes_both_files_or_neither_and_remakes_a_vanished_scratch(
@@ -7544,7 +7435,7 @@ def test_drive_hands_summaries_to_its_act(tmp_path: Path) -> None:
                                              summaries=True))
     act = got["act"]
     assert act["steps_total"] == 2 and act["ran_path"] and "stops" in act, act
-    assert set(act["ran"][0]["reply"]) <= {"summary", "status", "stop_seq", "attribution",
+    assert set(act["ran"][0]["reply"]) <= {"summary", "status", "stop_seq", "cause",
                                            "stopped_on_its_own"}, act["ran"][0]
 
 
@@ -7649,17 +7540,16 @@ def test_a_list_that_waited_mid_way_and_ends_running_carries_no_target(
 
 
 def test_a_log_rewritten_between_two_stops_is_counted_from_its_start(tmp_path: Path) -> None:
-    """The stop's E9 block keeps a running total of the lines since the session began; a log
-    rewritten shorter between two stops is read from its start, and the total restarts with it
-    rather than adding the new lines to a count of a file that no longer exists."""
+    """A log rewritten shorter between two stops is read from its start, and the block says so
+    with its mark at zero, rather than counting from a place in a file that no longer exists."""
     fake = _names(tmp_path)
     fake.halted = True
     fake.log = [f"line{i}" for i in range(10)]
     assert server.resume()["e9"]["lines_total"] == 10
     fake.log = ["fresh0", "fresh1"]
-    again = server.resume(e9="since")
-    assert again["e9"]["lines_total"] == 2 and again["e9"]["lines"] == ["fresh0", "fresh1"], (
-        again["e9"])
+    again = server.resume()["e9"]
+    assert (again["lines_total"], again["lines"], again["mark"]) == (
+        2, ["fresh0", "fresh1"], 0), again
 
 
 def test_a_bounded_resume_whose_f5_never_left_is_a_stop_with_its_verdict(
@@ -7750,7 +7640,7 @@ def test_a_clear_names_what_it_clears_even_past_the_pre_gate(
 def test_a_number_a_caller_spells_in_hex_reaches_the_tool_as_the_integer(tmp_path: Path) -> None:
     fake = install()
     got = cast(dict[str, Any], server.set_register(name="EAX", value="0xDEADBEEF"))
-    assert got["value"] == 0xDEADBEEF and got["regs"]["EAX"] == "DEADBEEF", got
+    assert got["value"] == "0xdeadbeef" and got["regs"]["EAX"] == "0xdeadbeef", got
     assert cast(dict[str, Any], server.set_register(name="EAX", value=""))["code"] == \
         "bad_argument"
     del fake
@@ -8013,14 +7903,12 @@ def test_an_arrival_is_attributed_to_run_tos_own_target_and_recorded_so(tmp_path
     got = cast(dict[str, Any],
                server.run_to(ref="_engine_load_midi", control="0000:0020", seconds=5))
     assert got["verdict"] == "TARGET", got
-    assert got["attribution"]["attributed"] is True, got["attribution"]
-    assert (got["attribution"]["ref"], got["attribution"]["by"]) == ("_engine_load_midi",
-                                                                      "run_to"), got
-    assert server.status()["last_stop"]["attribution"]["by"] == "run_to"
+    assert got["cause"].startswith("run_to's target _engine_load_midi at "), got["cause"]
+    assert server.status()["last_stop"]["cause"].startswith("run_to's target ")
     fake.runto_elsewhere = True
     fake.control_hits = 1
     other = cast(dict[str, Any], server.run_to(ref="_engine_load_midi", control="0000:0020"))
-    assert other["verdict"] == "OTHER_STOP" and other["attribution"].get("by") != "run_to", other
+    assert other["verdict"] == "OTHER_STOP" and not other["cause"].startswith("run_to"), other
 
 
 def _ok(reply: dict[str, Any]) -> dict[str, Any]:
@@ -8169,7 +8057,8 @@ def test_an_arrival_on_a_declared_breakpoint_names_both(tmp_path: Path) -> None:
     _ok(server.breakpoint_at(ref="foo"))
     fake.cs, fake.eip = "00A7", "00001000"
     got = cast(dict[str, Any], server.run_to(ref="foo", control="0000:0020", seconds=5))
-    assert got["attribution"]["by"] == "run_to" and got["attribution"]["refs"] == ["foo"], got
+    assert (got["cause"].startswith("run_to's target ")
+            and "breakpoint foo is declared" in got["cause"]), got
 
 
 def test_a_queued_raw_breakpoint_whose_place_cannot_be_written_is_said_at_the_stop(
@@ -8311,3 +8200,15 @@ def test_symbols_load_hands_keep_noise_on_and_reads_a_map_with_a_byte_no_utf8_re
     noisy = _ok(server.symbols_load(path=str(nm), base="400000", keep_noise=True))
     assert plain["excluded_sections"] == 1 and noisy["excluded_sections"] == 0, (plain, noisy)
     assert noisy["kept"] == plain["kept"] + 1 and plain["unreadable"] == 1, (plain, noisy)
+
+
+def test_a_stop_named_while_the_machine_is_in_it_names_its_declaration_too() -> None:
+    """The words a `wait_stopped` refusal names the stop with carry the declaration it is at,
+    read off the record, not only its address."""
+    state = dstate.State()
+    session = SimpleNamespace(stop_count=3)
+    state.remember_stop(cast(ds.Session, session), {"cs": "0814", "eip": "00001A27"}, {}, [],
+                        {"attributed": True, "ref": "_tick", "by": "symbol",
+                         "at": "0814:00001A27"})
+    stop, words = state.stop_named(cast(ds.Session, session))
+    assert stop["pc"] == "0814:00001A27" and words == " at 0814:00001A27 (_tick)", words

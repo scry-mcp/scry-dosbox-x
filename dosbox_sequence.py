@@ -183,20 +183,16 @@ def validate_summaries(summaries: object) -> None:
         raise ds.Invalid("bad_argument", f"summaries is true or false; got {summaries!r}")
 
 
-def _how(stop: dict[str, Any]) -> str:
-    """The key a stop is counted under: the declaration it was attributed to, or
-    `unattributed` (the debugger keeps no hit flag, so an address match is all a stop can say
-    about its cause)."""
-    attribution = stop.get("attribution")
-    if isinstance(attribution, dict) and attribution.get("attributed"):
-        return str(attribution.get("ref"))
-    return "unattributed"
+def _cause_key(stop: dict[str, Any]) -> str:
+    """The key a stop is counted under: its `cause` without the address, so one declaration is
+    one key wherever it stopped the machine."""
+    return st.cause_key(str(stop.get("cause")))
 
 
 #: THIS SERVER'S HALF OF THE ACCOUNT (`scry_core.sequence_account`): a stop's compact row keeps
 #: its number and what stopped it, spelled as the full reply spells them; its registers,
 #: watches and log stay in the full reply.
-SHAPE = account.Shape(kept=("stop_seq", "attribution"), how=_how)
+SHAPE = account.Shape(kept=("stop_seq", "cause"), cause_key=_cause_key)
 
 
 def _batch_stem() -> Path:

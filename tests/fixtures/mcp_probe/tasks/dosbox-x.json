@@ -1,7 +1,6 @@
 {"tasks": [
-  {"id": "D1", "prompt": "Step INTO the next 3 instructions, entering any call.",
-   "tool": "step", "args": {"mode": "into", "count": 3}, "allow": ["e9", "e9_filter", "e9_stamp"],
-   "grammar": ["into"]},
+  {"id": "D1", "prompt": "Let the guest run 12 frames of the display and stop there.",
+   "tool": "run_for", "args": {"frames": 12}, "allow": ["milliseconds", "seconds"]},
   {"id": "D2", "prompt": "Step the guest BACKWARDS by 3 instructions, undoing what they did.",
    "expect": "CANNOT", "about": "step"}
 ]}

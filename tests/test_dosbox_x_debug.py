@@ -282,8 +282,8 @@ class Debugger(RealPositionReaders):
         self.keys: list[bytes] = []
         self._alive = alive
         self.altered = False
-        # No instrumentation channel: the enriched stop reply's E9 summary delegates to the
-        # real `e9`, which refuses a logfile-less session, and reads that refusal as "no log
+        # No instrumentation channel: the stop reply's E9 block reads through the real
+        # session, which refuses a logfile-less one, and reads that refusal as "no log
         # available" rather than letting it blow up the reply.
         self.launch = SimpleNamespace(logfile=None, watched=True)
 
@@ -931,7 +931,7 @@ TOOL_FIELDS = {"step": set(returned_key_sets(ds.Session.step)[0]) - {"completed"
                                 if "line" in keys)}
 # `run_to` SPEAKS THE SHARED WORDS, so its session's account is mapped and not handed on: the
 # set is the tool's own, every one of which comes from that account.
-TOOL_FIELDS["run_to"] = {"verdict", "target", "ref", "pc", "cpu_mode", "waited_s",
+TOOL_FIELDS["run_to"] = {"verdict", "target", "ref", "pc", "cpu_mode",
                          "target_disarmed", "control_hits", "controls"}
 
 
@@ -1261,7 +1261,7 @@ def test_a_wait_from_a_mark_does_not_answer_with_what_was_written_before_it(
         fh.write(f"{later}\n")
     got = s.e9_wait("info_open", seconds=0.3, mark=mark)
     assert got["line"] == later and got["lines_total"] == 1, got
-    assert got["lines_examined"] == 1 and got["since_mark"] == mark, got
+    assert got["lines_examined"] == 1 and "since_mark" not in got, got
     # A mark on a log that does not exist yet is 0: the whole future log is "after" it.
     assert LogSession(tmp_path / "absent.log").e9_mark() == 0
 
@@ -2528,9 +2528,9 @@ def test_the_tool_hands_both_fields_on_and_takes_nothing_away() -> None:
     assert got["pc"] == "0814:00000112" and got["cpu_mode"] == "real"
     assert got["screen_delta"] == RESUME_HALTED, got
     assert "omitted" not in got and "how" not in got
-    # decision 13: the halt now also carries the registers, the (empty) watch list, the
-    # attribution and the E9 summary -- none of which displaced the base fields above.
-    assert got["regs"] and got["watches"] == [] and "attributed" in got["attribution"]
+    # The halt also carries the registers, the (empty) watch list, its `cause` and the E9
+    # block, none of which displaced the base fields above.
+    assert got["regs"] and got["watches"] == [] and isinstance(got["cause"], str)
     assert got["e9"]["available"] is False    # this fake owns no logfile
 
 

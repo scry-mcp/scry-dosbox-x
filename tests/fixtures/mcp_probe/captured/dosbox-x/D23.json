@@ -1,35 +1,18 @@
 {
  "task": {
   "id": "D23",
-  "prompt": "Run until the symbol _draw_hud, with _vsync as the control that is known to fire often, within 50 seconds, and give me the last 6 E9 lines when it stops.",
+  "prompt": "Run until the symbol _draw_hud, with _vsync as the control that is known to fire often, within 50 seconds, and show me the guest's newest E9 lines when it stops.",
   "tool": "run_to",
   "args": {
    "ref": "_draw_hud",
    "control": "_vsync",
-   "seconds": 50,
-   "e9": "lines:6"
-  },
-  "allow": [
-   "e9_filter",
-   "e9_stamp"
-  ]
+   "seconds": 50
+  }
  },
  "runs": [
   {
    "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50, \"e9\": \"lines:6\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50, \"e9\": \"lines:6\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50, \"e9\": \"lines:6\"}}"
+    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
    ],
    "right": true
   }

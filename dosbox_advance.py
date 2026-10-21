@@ -16,7 +16,7 @@ import dosbox_state as st
 from dosbox_running import live
 
 
-def resume(e9: str, e9_filter: str, e9_stamp: str | None, seconds: float, detail: bool,
+def resume(seconds: float, detail: bool,
            progress: ds.Progress) -> dict[str, Any]:
     """The body of the `resume` tool. With a bound it waits for a stop: `OTHER_STOP` with the
     stop's survey, or `TIMEOUT` with the machine LEFT RUNNING; with none it waits for nothing
@@ -57,15 +57,12 @@ def resume(e9: str, e9_filter: str, e9_stamp: str | None, seconds: float, detail
         # before's; the stop's own survey (`stop_reply`) replaces this with the mark it read.
         base.update(running.position(stopped_at, None))
     # A HALT IS A STOP, so it carries the full stop reply: registers, the
-    # watches evaluated, the attribution and the E9 summary. A machine still running has
+    # watches evaluated, its `cause` and the E9 block. A machine still running has
     # nothing to read, so it comes back with just the base.
-    return running.stop_or_base(session, halted, e9, e9_filter, e9_stamp, base,
-                                retrace_may_stop=True,
-                                e9_how=running.E9_BY_ARGUMENT)
+    return running.stop_or_base(session, halted, base, retrace_may_stop=True)
 
 
-def run_to(ref: str, control: str, seconds: float, e9: str, e9_filter: str,
-           e9_stamp: str | None, progress: ds.Progress) -> dict[str, Any]:
+def run_to(ref: str, control: str, seconds: float, progress: ds.Progress) -> dict[str, Any]:
     """The body of the `run_to` tool."""
     session = live()
     # ONE SURVEY for the resolution: a symbol needs the mode and the CS
@@ -85,7 +82,6 @@ def run_to(ref: str, control: str, seconds: float, e9: str, e9_filter: str,
     fields: dict[str, Any] = {
         "verdict": verdict, "target": out["target"], "ref": ref,
         **running.position(out["stopped_at"], None),      # the survey's mark replaces it
-        "waited_s": out["waited_s"],
         "target_disarmed": out["breakpoint_removed"], "control_hits": hits,
         "controls": [{"ref": control, "at": armed["at"], "hits_in_run": hits,
                       "removed": armed["removed"]}],
@@ -102,13 +98,11 @@ def run_to(ref: str, control: str, seconds: float, e9: str, e9_filter: str,
                    f"another stop ended the run before the control {control} fired, so "
                    f"nothing was measured about {ref}")
         refused = {k: v for k, v in fields.items() if k != "verdict"}
-        return running.stop_or_base(session, True, e9, e9_filter, e9_stamp,
+        return running.stop_or_base(session, True,
                                     {"status": "INVALID", "code": code, "message": message,
-                                     **refused}, retrace_may_stop=True,
-                                e9_how=running.E9_BY_ARGUMENT)
+                                     **refused}, retrace_may_stop=True)
     # AN ARRIVAL IS THE STOP `run_to` MADE, attributed to its target although the breakpoint
     # that made it is removed by now; a stop elsewhere may be a retrace `run_for` left.
     arrived = verdict == contract.TARGET
-    return running.stop_or_base(session, True, e9, e9_filter, e9_stamp, fields,
-                                retrace_may_stop=not arrived, e9_how=running.E9_BY_ARGUMENT,
+    return running.stop_or_base(session, True, fields, retrace_may_stop=not arrived,
                                 made_by={"ref": ref, "by": "run_to"} if arrived else None)

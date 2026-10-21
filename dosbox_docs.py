@@ -23,7 +23,7 @@ import dosbox_trace as trace
 #: What every stop reply carries, named once for every tool that stops the machine.
 STOP_FIELDS = (
     "the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `instruction`, `regs`, `watches`, "
-    "`attribution` and `e9`"
+    "`cause` and `e9`"
 )
 
 DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES,

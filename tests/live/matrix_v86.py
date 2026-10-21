@@ -44,7 +44,8 @@ def section_v() -> None:
             and str(s.get("pc", "")).count(":") == 1, said(s))
     st = M.call(server.status)
     M.judge(V_CELLS[2].label, ok(st) and st.get("cpu_mode") == "VM86"
-            and str(st.get("pc", "")).split(":")[0] == (s.get("regs") or {}).get("CS"), said(st))
+            and hexint(str(st.get("pc", "")).split(":")[0])
+            == hexint((s.get("regs") or {}).get("CS")), said(st))
     regs = must(M.call(server.registers), "reading the VM86 stop's registers")["regs"]
     cs, ip = hexint(regs.get("CS")) or 0, (hexint(regs.get("EIP")) or 0) & 0xFFFF
     image = V86_COM.read_bytes()

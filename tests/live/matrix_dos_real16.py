@@ -53,7 +53,7 @@ D_CELLS = cells(
      "trace docstring: the count is proved per call"),
     ("D log_wait Entering main loop", "known: the game logs `Entering main loop` at start"),
     ("D breakpoint_at COMPOSE_FRAME fires three frames",
-     "known: COMPOSE_FRAME runs every frame; REFERENCE.md, What a stop returns: attribution"),
+     "known: COMPOSE_FRAME runs every frame; REFERENCE.md, What a stop returns: cause"),
     *DOS_REAL16_CODE_CELLS,
     *DOS_REAL16_COMMENT_CELLS,
     ("D COMPOSE_FRAME hits over ten retraces, quoted",
@@ -115,8 +115,7 @@ def section_d() -> None:
     M.judge("D breakpoint_at COMPOSE_FRAME fires three frames",
             ok(b) and b.get("state") == "armed" and all(
                 ok(s) and "stop_seq" in s
-                and (s.get("attribution") or {}).get("attributed") is True
-                and (s.get("attribution") or {}).get("ref") == "COMPOSE_FRAME" for s in stops),
+                and str(s.get("cause")).startswith("breakpoint COMPOSE_FRAME ") for s in stops),
             "; ".join(said(s, 60) for s in stops))
     must(M.call(server.breakpoint_clear, all=True), "clearing COMPOSE_FRAME")
     dos_real16_code()
@@ -200,7 +199,7 @@ def _retraces(load: int) -> None:
         replies.append(r)
         calls += 1
         if r.get("verdict") == "OTHER_STOP" \
-                and (r.get("attribution") or {}).get("ref") == "COMPOSE_FRAME":
+                and str(r.get("cause")).startswith("breakpoint COMPOSE_FRAME "):
             hits += 1
         elif r.get("verdict") == "ELAPSED":
             retraces += 1

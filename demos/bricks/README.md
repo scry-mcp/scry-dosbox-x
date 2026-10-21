@@ -172,34 +172,32 @@ DOSBox-X `<volatile>`.
   "pc": "08AF:00000119",
   "cpu_mode": "real",
   "regs": {
-    "EAX": "D05B0E0A",
-    "ESI": "000005B2",
-    "DS": "08AF",
-    "ES": "A000",
-    "FS": "0000",
-    "GS": "0000",
-    "SS": "08AF",
-    "EBX": "0000000F",
-    "EDI": "0000BC1E",
-    "CS": "08AF",
-    "EIP": "00000119",
-    "ECX": "005B0004",
-    "EBP": "0000091C",
-    "EDX": "00000000",
-    "ESP": "0000FFFE"
+    "EAX": "0xd05b0e0a",
+    "ESI": "0x000005b2",
+    "DS": "0x08af",
+    "ES": "0xa000",
+    "FS": "0x0000",
+    "GS": "0x0000",
+    "SS": "0x08af",
+    "EBX": "0x0000000f",
+    "EDI": "0x0000bc1e",
+    "CS": "0x08af",
+    "EIP": "0x00000119",
+    "ECX": "0x005b0004",
+    "EBP": "0x0000091c",
+    "EDX": "0x00000000",
+    "ESP": "0x0000fffe"
   },
   "watches": [],
-  "attribution": {
-    "attributed": false,
-    "at": "08AF:00000119",
-    "why": "the stop address matches no declared code breakpoint. The debugger keeps no hit flag, and a memory watch stops at the WRITING instruction rather than the watched address, so which declaration fired cannot be derived from the stop"
-  },
+  "cause": "no declared code breakpoint at 08AF:00000119: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
   "e9": {
     "lines_total": 2,
-    "unfiltered": 2,
-    "filter": ".",
-    "shown": 0,
-    "how": "pass e9='all', e9='lines:N', e9='since' or e9='seconds:N' (with e9_stamp=<regex capturing the seconds>), with e9_filter=<pattern>, to include the lines"
+    "truncated": false,
+    "lines": [
+      "Bochs port E9h: STUB  . inject device=present proto=3",
+      "Bochs port E9h: BRICKS ready"
+    ],
+    "mark": 0
   },
   "stop_seq": 2,
   "instruction": {
@@ -551,21 +549,21 @@ DOSBox-X `<volatile>`.
   "pc": "08AF:000002C8",
   "cpu_mode": "real",
   "regs": {
-    "EAX": "D05B0005",
-    "ESI": "00000039",
-    "DS": "08AF",
-    "ES": "A000",
-    "FS": "0000",
-    "GS": "0000",
-    "SS": "08AF",
-    "EBX": "00000707",
-    "EDI": "000064E4",
-    "CS": "08AF",
-    "EIP": "000002C8",
-    "ECX": "005B0020",
-    "EBP": "0000091C",
-    "EDX": "00000000",
-    "ESP": "0000FFFA"
+    "EAX": "0xd05b0005",
+    "ESI": "0x00000039",
+    "DS": "0x08af",
+    "ES": "0xa000",
+    "FS": "0x0000",
+    "GS": "0x0000",
+    "SS": "0x08af",
+    "EBX": "0x00000707",
+    "EDI": "0x000064e4",
+    "CS": "0x08af",
+    "EIP": "0x000002c8",
+    "ECX": "0x005b0020",
+    "EBP": "0x0000091c",
+    "EDX": "0x00000000",
+    "ESP": "0x0000fffa"
   },
   "watches": [
     {
@@ -579,18 +577,12 @@ DOSBox-X `<volatile>`.
       "bytes": "0000"
     }
   ],
-  "attribution": {
-    "attributed": true,
-    "ref": "brick_hit",
-    "by": "symbol",
-    "at": "08AF:000002C8"
-  },
+  "cause": "breakpoint brick_hit (by symbol) at 08AF:000002C8",
   "e9": {
-    "lines_total": 2,
-    "unfiltered": 2,
-    "filter": ".",
-    "shown": 0,
-    "how": "pass e9='all', e9='lines:N', e9='since' or e9='seconds:N' (with e9_stamp=<regex capturing the seconds>), with e9_filter=<pattern>, to include the lines"
+    "lines_total": 0,
+    "truncated": false,
+    "lines": [],
+    "mark": 2771
   },
   "stop_seq": 3,
   "instruction": {
@@ -652,21 +644,21 @@ DOSBox-X `<volatile>`.
   "pc": "08AF:000002C8",
   "cpu_mode": "real",
   "regs": {
-    "EAX": "D05B0005",
-    "ESI": "00000038",
-    "DS": "08AF",
-    "ES": "A000",
-    "FS": "0000",
-    "GS": "0000",
-    "SS": "08AF",
-    "EBX": "00000606",
-    "EDI": "000064C2",
-    "CS": "08AF",
-    "EIP": "000002C8",
-    "ECX": "005B0020",
-    "EBP": "0000091C",
-    "EDX": "00000000",
-    "ESP": "0000FFFA"
+    "EAX": "0xd05b0005",
+    "ESI": "0x00000038",
+    "DS": "0x08af",
+    "ES": "0xa000",
+    "FS": "0x0000",
+    "GS": "0x0000",
+    "SS": "0x08af",
+    "EBX": "0x00000606",
+    "EDI": "0x000064c2",
+    "CS": "0x08af",
+    "EIP": "0x000002c8",
+    "ECX": "0x005b0020",
+    "EBP": "0x0000091c",
+    "EDX": "0x00000000",
+    "ESP": "0x0000fffa"
   },
   "watches": [
     {
@@ -680,18 +672,14 @@ DOSBox-X `<volatile>`.
       "bytes": "0a00"
     }
   ],
-  "attribution": {
-    "attributed": true,
-    "ref": "brick_hit",
-    "by": "symbol",
-    "at": "08AF:000002C8"
-  },
+  "cause": "breakpoint brick_hit (by symbol) at 08AF:000002C8",
   "e9": {
-    "lines_total": 3,
-    "unfiltered": 3,
-    "filter": ".",
-    "shown": 0,
-    "how": "pass e9='all', e9='lines:N', e9='since' or e9='seconds:N' (with e9_stamp=<regex capturing the seconds>), with e9_filter=<pattern>, to include the lines"
+    "lines_total": 1,
+    "truncated": false,
+    "lines": [
+      "Bochs port E9h: HIT 5 7"
+    ],
+    "mark": 4179
   },
   "stop_seq": 4,
   "instruction": {
@@ -917,13 +905,14 @@ Also attached: image/png.
       "bytes": "1400"
     }
   ],
-  "attribution": "<volatile>",
+  "cause": "<volatile>",
   "e9": {
-    "lines_total": 4,
-    "unfiltered": 4,
-    "filter": ".",
-    "shown": 0,
-    "how": "pass e9='all', e9='lines:N', e9='since' or e9='seconds:N' (with e9_stamp=<regex capturing the seconds>), with e9_filter=<pattern>, to include the lines"
+    "lines_total": 1,
+    "truncated": false,
+    "lines": [
+      "Bochs port E9h: HIT 5 6"
+    ],
+    "mark": 4483
   },
   "stop_seq": 5,
   "instruction": "<volatile>",
@@ -941,7 +930,6 @@ Also attached: image/png.
     "available": false,
     "why": "the pane's `cc=` counts cycles only on the normal core, and which core runs is not something this server can read, so no count is given"
   },
-  "waited_s": "<volatile>",
   "session": {
     "alive": true,
     "running": false,
@@ -1304,12 +1292,11 @@ Also attached: image/png.
   "status": "ok",
   "interrupted": true,
   "via": "break",
-  "waited_s": "<volatile>",
   "pc": "<volatile>",
   "cpu_mode": "real",
   "regs": "<volatile>",
   "watches": "<volatile>",
-  "attribution": "<volatile>",
+  "cause": "<volatile>",
   "e9": "<volatile>",
   "stop_seq": 6,
   "instruction": "<volatile>",
@@ -1632,12 +1619,11 @@ Also attached: image/png.
   "status": "ok",
   "interrupted": true,
   "via": "break",
-  "waited_s": "<volatile>",
   "pc": "<volatile>",
   "cpu_mode": "real",
   "regs": "<volatile>",
   "watches": "<volatile>",
-  "attribution": "<volatile>",
+  "cause": "<volatile>",
   "e9": "<volatile>",
   "stop_seq": 7,
   "instruction": "<volatile>",
@@ -1774,7 +1760,6 @@ Also attached: image/png.
   "memory_mb": 4096,
   "saved_at": "<volatile>",
   "paused": true,
-  "waited_s": "<volatile>",
   "session": {
     "alive": true,
     "running": true,
@@ -1882,7 +1867,6 @@ Also attached: image/png.
   "memory_mb": 4096,
   "saved_at": "<volatile>",
   "paused": true,
-  "waited_s": "<volatile>",
   "mark": "<volatile>",
   "session": {
     "alive": true,
@@ -1922,12 +1906,11 @@ Also attached: image/png.
   "status": "ok",
   "interrupted": true,
   "via": "break",
-  "waited_s": "<volatile>",
   "pc": "<volatile>",
   "cpu_mode": "real",
   "regs": "<volatile>",
   "watches": "<volatile>",
-  "attribution": "<volatile>",
+  "cause": "<volatile>",
   "e9": "<volatile>",
   "stop_seq": 8,
   "instruction": "<volatile>",

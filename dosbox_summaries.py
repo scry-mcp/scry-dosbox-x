@@ -24,6 +24,8 @@ from typing import Any
 from scry_core import prose, screen_map
 from scry_core import reply_contract as contract
 
+import dosbox_running as running
+
 #: A tool's summary: the call's arguments (defaults applied) and its reply, to one line.
 Summary = Callable[[dict[str, Any], dict[str, Any]], str]
 
@@ -92,9 +94,10 @@ def status(args: dict[str, Any], reply: dict[str, Any]) -> str:
     # block is the short one. `declarations` is counted on every session and on none without.
     if "declarations" not in reply:
         return "status: no session"
-    if not reply.get("alive"):
+    why = reply.get("pc", {}).get("why") if isinstance(reply.get("pc"), dict) else None
+    if why == running.PC_GONE_WHY:
         return "status: DOSBox-X has exited, `close` it"
-    return f"status: alive, {'running' if reply.get('running') else 'stopped'}"
+    return f"status: alive, {'running' if why == running.PC_RUNNING_WHY else 'stopped'}"
 
 
 def close(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -168,7 +171,13 @@ def scan_filter(args: dict[str, Any], reply: dict[str, Any]) -> str:
     what = args.get("operator", "=") + ("" if value is None else f" {value}")
     return f"scan_filter {what}: {_said(reply.get('hits_total'), 'survivor')}" + (
         ", scan closed" if reply.get("closed") else "") + (
-        ", not listed (over `limit`)" if reply.get("truncated") else "")
+        _listed(reply) if reply.get("truncated") else "")
+
+
+def _listed(reply: dict[str, Any]) -> str:
+    """How much of a cut survivor list a `scan_filter` reply holds."""
+    shown = len(reply.get("hits") or [])
+    return f", the first {shown} listed" if shown else ", none listed (`note` says why)"
 
 
 def scan_clear(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -201,7 +210,7 @@ def resume(args: dict[str, Any], reply: dict[str, Any]) -> str:
 def stop(args: dict[str, Any], reply: dict[str, Any]) -> str:
     if not reply.get("interrupted"):
         return "stop: already stopped"
-    return f"stop: {reply.get('via')}, at {_at(reply.get('pc'))} after {reply.get('waited_s')}s"
+    return f"stop: {reply.get('via')}, at {_at(reply.get('pc'))}"
 
 
 def step(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -245,7 +254,7 @@ def state_save(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def state_load(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return f"state_load {reply.get('name')}: loaded in {reply.get('waited_s')}s"
+    return f"state_load {reply.get('name')}: loaded"
 
 
 def state_list(args: dict[str, Any], reply: dict[str, Any]) -> str:

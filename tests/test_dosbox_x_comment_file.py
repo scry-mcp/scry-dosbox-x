@@ -128,13 +128,21 @@ def test_a_text_with_a_tab_is_refused_in_a_row_to_write() -> None:
 
 
 # THE REF.
+@pytest.mark.parametrize("ref", ["0x0814:010B", "0814:0x010B", "0X00A7:0X0000204B"])
+def test_a_seg_off_with_0x_halves_is_the_spelling_a_register_reads_back_and_is_taken(
+        ref: str) -> None:
+    """`registers` answers `CS` as `0x0814`, so a ref built from it carries the prefix: it is a
+    SEG:OFF all the same, as every other address argument takes it."""
+    assert cf.ref_fault(ref) is None
+
+
 @pytest.mark.parametrize("ref, said", [
     ("#start", "`#`"), ("st art", "whitespace"), ("st\u00a0art", "whitespace"),
     ("[g_p]", "pointer"), ("[g_p]+4", "pointer"), ("g_p->x", "pointer"),
     ("g_p[0", "pointer"), ("g_p]", "pointer"),
     ("start+2", "adds an offset"), ("0x824B", "bare number"), ("0X824B", "bare number"),
     ("0814:", "not a hex SEG:OFF"), ("0814:01G0", "not a hex SEG:OFF"),
-    ("ns::fn", "not a hex SEG:OFF"), ("0x0814:010B", "bare number"),
+    ("ns::fn", "not a hex SEG:OFF"), ("0x0814:0x", "not a hex SEG:OFF"),
     ("10000:0000", "segment past"), ("0814:100000000", "offset past")])
 def test_a_ref_that_is_not_a_symbol_or_a_seg_off_is_refused(ref: str, said: str) -> None:
     fault = cf.ref_fault(ref)

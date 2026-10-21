@@ -133,7 +133,7 @@ def test_the_debugger_comes_up_and_answers_with_a_value(session: ds.Session) -> 
     """
     session.wait_ready()
     written = session.set_register("ax", 0x1234)
-    assert written["readback"] == "1234" and written["verified"] is True
+    assert written["readback"] == "0x1234" and written["verified"] is True
     assert session.state()["altered"] is True
 
 
@@ -174,7 +174,7 @@ def test_a_breakpoint_gives_control_back(session: ds.Session) -> None:
         f"cannot have moved, so one of the two is not a reading of it")
     assert stopped["mode"] in dcons.CPU_MODES, stopped
     # (iii) and it takes a NEW command afterwards, carrying a NEW value.
-    assert session.set_register("bx", 0x4321)["readback"] == "4321"
+    assert session.set_register("bx", 0x4321)["readback"] == "0x4321"
 
 
 def test_the_instrumentation_channel_tells_the_two_nothings_apart(session: ds.Session) -> None:

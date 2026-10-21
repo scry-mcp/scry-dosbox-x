@@ -204,7 +204,6 @@ class LogWaitReply(DosboxEnvelope, total=False):
     lines_total: int
     note: str
     pattern: str
-    since_mark: int
     verdict: str
     waited_s: float
 
@@ -212,9 +211,9 @@ class LogWaitReply(DosboxEnvelope, total=False):
 class MachineMapReply(DosboxEnvelope, total=False):
     bios_mem: list[Any]
     callbacks: list[Any]
+    control: dict[str, Any]
     counts: dict[str, Any]
     coverage_note: str
-    cpu: dict[str, Any]
     cpu_mode: str | dict[str, Any]
     devs: list[Any]
     ems: list[Any]
@@ -297,9 +296,9 @@ class PerformReply(DosboxEnvelope, total=False):
     held: int
     note: str
     ran: list[Any]
-    ran_path: str
+    ran_path: str | dict[str, Any]
     recorded: Any
-    replies_path: str
+    replies_path: str | dict[str, Any]
     steps_completed: int
     steps_total: int
     still_running: bool
@@ -333,7 +332,7 @@ class RegistersReply(DosboxEnvelope, total=False):
 
 
 class ResumeReply(DosboxEnvelope, total=False):
-    attribution: dict[str, Any]
+    cause: str
     clipped: bool
     cpu_mode: str | dict[str, Any]
     e9: dict[str, Any]
@@ -351,7 +350,7 @@ class ResumeReply(DosboxEnvelope, total=False):
 
 
 class RunForReply(DosboxEnvelope, total=False):
-    attribution: dict[str, Any]
+    cause: str
     cpu_mode: str | dict[str, Any]
     cycles: dict[str, Any]
     e9: dict[str, Any]
@@ -368,12 +367,11 @@ class RunForReply(DosboxEnvelope, total=False):
     retrace_pending: bool
     stop_seq: int
     verdict: str
-    waited_s: float
     watches: list[Any]
 
 
 class RunToReply(DosboxEnvelope, total=False):
-    attribution: dict[str, Any]
+    cause: str
     control_hits: int
     controls: list[Any]
     cpu_mode: str | dict[str, Any]
@@ -388,7 +386,6 @@ class RunToReply(DosboxEnvelope, total=False):
     target: str
     target_disarmed: bool
     verdict: str
-    waited_s: float
     watches: list[Any]
 
 
@@ -409,7 +406,7 @@ class ScanFilterReply(DosboxEnvelope, total=False):
     rows: int
     survivors: int
     truncated: bool
-    value: int | dict[str, Any]
+    value: str | dict[str, Any]
 
 
 class ScanStartReply(DosboxEnvelope, total=False):
@@ -446,7 +443,7 @@ class ScreenViewReply(DosboxEnvelope, total=False):
 
 class ScreenWaitReply(DosboxEnvelope, total=False):
     already: bool
-    attribution: dict[str, Any]
+    cause: str
     cpu_mode: str
     e9: dict[str, Any]
     enrichment: dict[str, Any]
@@ -510,7 +507,7 @@ class SetRegisterReply(DosboxEnvelope, total=False):
     readback: str
     register: str
     regs: dict[str, Any]
-    value: int
+    value: str
     verified: bool
 
 
@@ -519,7 +516,6 @@ class SnapshotReply(DosboxEnvelope, total=False):
     path: str
     route: str
     sha256: str
-    waited_s: float
 
 
 class StartReply(DosboxEnvelope, total=False):
@@ -536,10 +532,10 @@ class StartReply(DosboxEnvelope, total=False):
     note: str
     presence: bool | dict[str, Any]
     ran: list[Any]
-    ran_path: str
+    ran_path: str | dict[str, Any]
     ready_after_s: float
     rearm_refused: str
-    replies_path: str
+    replies_path: str | dict[str, Any]
     shared: bool
     start: dict[str, Any]
     steps_completed: int
@@ -569,7 +565,6 @@ class StateLoadReply(DosboxEnvelope, total=False):
     program: str
     saved_at: str
     version: str
-    waited_s: float
 
 
 class StateSaveReply(DosboxEnvelope, total=False):
@@ -582,23 +577,20 @@ class StateSaveReply(DosboxEnvelope, total=False):
     program: str
     saved_at: str
     version: str
-    waited_s: float
 
 
 class StatusReply(DosboxEnvelope, total=False):
-    alive: bool
     cpu_mode: str | dict[str, Any]
     declarations: dict[str, Any]
-    pc: str
+    pc: str | dict[str, Any]
     pending: dict[str, Any]
     presence: bool | dict[str, Any]
-    running: bool
 
 
 class StepReply(DosboxEnvelope, total=False):
     after: str
     asked: int
-    attribution: dict[str, Any]
+    cause: str
     before: str
     cpu_mode: str | dict[str, Any]
     e9: dict[str, Any]
@@ -615,7 +607,7 @@ class StepReply(DosboxEnvelope, total=False):
 
 
 class StopReply(DosboxEnvelope, total=False):
-    attribution: dict[str, Any]
+    cause: str
     cpu_mode: str | dict[str, Any]
     e9: dict[str, Any]
     instruction: dict[str, Any]
@@ -625,7 +617,6 @@ class StopReply(DosboxEnvelope, total=False):
     regs: dict[str, Any]
     stop_seq: int
     via: str
-    waited_s: float
     watches: list[Any]
 
 
@@ -673,7 +664,7 @@ class SymbolsLoadReply(DosboxEnvelope, total=False):
 
 
 class TraceReply(DosboxEnvelope, total=False):
-    attribution: dict[str, Any]
+    cause: str
     cpu_mode: str | dict[str, Any]
     e9: dict[str, Any]
     instruction: dict[str, Any]
@@ -682,7 +673,6 @@ class TraceReply(DosboxEnvelope, total=False):
     stop_seq: int
     trace: dict[str, Any]
     verdict: str
-    waited_s: float
     watches: list[Any]
 
 

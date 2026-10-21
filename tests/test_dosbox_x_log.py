@@ -144,7 +144,7 @@ def test_log_wait_since_mark_takes_a_line_before_the_mark_for_history(tmp_path: 
     log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
     mark = log.stat().st_size
     missed = LogSession(log).log_wait("BOOT", seconds=0.2, channel="guest", mark=mark)
-    assert missed["verdict"] == "TIMEOUT" and missed["since_mark"] == mark, missed
+    assert missed["verdict"] == "TIMEOUT" and "since_mark" not in missed, missed
     with log.open("a", encoding="utf-8") as fh:
         fh.write(f"{E9_BOOT}\n")
     got = LogSession(log).log_wait("BOOT", seconds=1, channel="guest", mark=mark)

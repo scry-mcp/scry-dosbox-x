@@ -7,12 +7,10 @@ not an opinion of this file.
 """
 from __future__ import annotations
 
-import inspect
 import json
 import os
 import re
 import shutil
-import time
 from collections import Counter
 from pathlib import Path
 from types import SimpleNamespace
@@ -219,7 +217,7 @@ def test_sixteen_instructions_ask_seventeen_lines_in_hex_and_come_back_elapsed(
         "instructions": 16, "addresses": 1}, got["trace"]
     assert dest.read_bytes() == (TRACE / "probe-settle-cs_ip-16.trace").read_bytes()
     assert no_log_left(dbg.launch.cwd), "the log stayed in the working directory"
-    assert got["regs"] and "attribution" in got and "stop_seq" in got and "e9" in got
+    assert got["regs"] and "cause" in got and "stop_seq" in got and "e9" in got
     assert got["session"]["altered"] is False, "advancing is not writing"
     assert got["summary"].startswith("trace 16 cs_ip: ELAPSED, 16 executed at 1 address")
 
@@ -263,7 +261,7 @@ def test_a_breakpoint_that_cuts_the_trace_is_other_stop_and_the_log_is_closed_fi
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip", dest=str(dest)))
     assert got["status"] == "ok", got
     assert dbg.keys == [b"LOGC 186A1\r", b"LOGC 0\r"], "the open log closed before it moved"
-    assert got["verdict"] == "OTHER_STOP" and got["attribution"]["ref"] == "0814:0108", got
+    assert got["verdict"] == "OTHER_STOP" and "breakpoint 0814:0108 " in got["cause"], got
     assert got["trace"]["instructions"] == 5506 and got["trace"]["addresses"] == 1, got["trace"]
     assert got["pc"].endswith(":00000108") and dest.exists() and no_log_left(
         dbg.launch.cwd)
@@ -406,7 +404,7 @@ def test_a_pending_retrace_is_left_by_a_count_and_taken_by_an_unexplained_stop(
     cut_by(tmp_path / "b", "int-mid")
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",
                                             dest=str(tmp_path / "r2.trace")))
-    assert got["attribution"].get("retrace_pending") is True, got["attribution"]
+    assert got["cause"].startswith("most likely the retrace stop"), got["cause"]
     assert not dstate.STATE.retrace_pending
 
 
@@ -1284,39 +1282,6 @@ def test_a_set_file_that_appeared_during_the_wait_is_left_alone(tmp_path: Path) 
     assert path.read_text() == "theirs\n" and "could not be written" in notes[0], notes
 
 
-class LateTracer(Tracer):
-    """The stop heard a while after the command: the wait's reads come back empty until then."""
-
-    late_s = 0.3
-    typed_at: float | None = None
-
-    def _write(self, data: bytes) -> None:
-        if ds.LOG_COMMAND.fullmatch(data):
-            self.typed_at = time.monotonic()
-        super()._write(data)
-
-    def _read(self, seconds: float = 0.0) -> str:
-        if self.typed_at is not None and time.monotonic() < self.typed_at + self.late_s:
-            time.sleep(0.02)
-            return ""
-        return super()._read(seconds)
-
-
-def test_waited_s_is_when_the_stop_was_heard_not_the_work_after_it(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    real_join = tracing.join
-
-    def slow(*args: Any) -> tracing.Coverage:
-        time.sleep(0.6)
-        return real_join(*args)
-    monkeypatch.setattr(tracing, "join", slow)
-    live(LateTracer([cap("probe-settle-survey-before"), cap("probe-settle-survey-after")],
-                    cwd_of(tmp_path), [("probe-settle-cs_ip-16", "probe-settle-cs_ip-16-delta")]))
-    got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
-                                            dest=str(tmp_path / "w.trace")))
-    assert got["status"] == "ok" and LateTracer.late_s <= got["waited_s"] < 0.6, got["waited_s"]
-
-
 def test_the_e9_block_names_the_tool_that_reads_the_lines_not_an_argument_trace_lacks(
         tmp_path: Path) -> None:
     dbg = live(LogfileTracer([cap("probe-settle-survey-before"),
@@ -1327,13 +1292,8 @@ def test_the_e9_block_names_the_tool_that_reads_the_lines_not_an_argument_trace_
     dbg.launch.logfile.write_text("")
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
                                             dest=str(tmp_path / "e.trace")))
-    assert got["status"] == "ok" and got["e9"]["shown"] == 0, got["e9"]
-    how = got["e9"]["how"]
-    assert "e9=" not in how and "`log(" in how, how
-    named = set(re.findall(r"(\w+)=", how))
-    params = inspect.signature(server.log).parameters
-    required = {n for n, p in params.items() if p.default is inspect.Parameter.empty}
-    assert named <= set(params) and required <= named, (named, required)
+    assert got["status"] == "ok" and got["e9"] == {"lines_total": 0, "truncated": False,
+                                                    "lines": [], "mark": 0}, got["e9"]
 
 
 def test_with_the_captures_directory_the_working_directory_the_default_lands_there(
@@ -1357,7 +1317,7 @@ def test_a_trace_started_on_a_code_breakpoint_stops_there_again_and_says_so(
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",
                                             dest=str(tmp_path / "b.trace")))
     assert got["status"] == "ok" and got["verdict"] == "OTHER_STOP", got
-    assert got["attribution"]["ref"] == "0814:0108" and got["trace"]["instructions"] == 0, got
+    assert "breakpoint 0814:0108 " in got["cause"] and got["trace"]["instructions"] == 0, got
     assert "code breakpoint" in got["trace"]["note"], got["trace"]["note"]
 
 

@@ -228,8 +228,7 @@ def section_f() -> None:
     r = M.call(server.resume, seconds=30)
     judged("F breakpoint_at _tick fires", reply=r,
            holds=ok(b) and ok(r) and "stop_seq" in r
-           and (r.get("attribution") or {}).get("attributed") is True
-           and (r.get("attribution") or {}).get("ref") == "_tick")
+           and str(r.get("cause")).startswith("breakpoint _tick "))
     pic = r.get("instruction") or {}
     M.judge("F the _tick stop's instruction names _tick at delta 0, 32-bit",
             (pic.get("symbol"), pic.get("delta"), pic.get("code_bits")) == ("_tick", 0, 32),

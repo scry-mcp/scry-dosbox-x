@@ -14,7 +14,6 @@ fires on the right thing".
 from __future__ import annotations
 
 import contextlib
-import inspect
 import json
 import os
 import shutil
@@ -35,7 +34,6 @@ from test_dosbox_x_stub_link import REPORT, Stub
 import dosbox_console as dcons
 import dosbox_launch as dlaunch
 import dosbox_logs as dlogs
-import dosbox_running as running
 import dosbox_session as ds
 import dosbox_stub_link as stub_link
 
@@ -429,19 +427,6 @@ def test_a_limit_of_zero_or_less_is_refused() -> None:
     dlogs.filter_e9(LIVE, "loudness", dlogs.LOG_LIMIT_MAX)
     with pytest.raises(ds.Invalid, match=f"1..{dlogs.LOG_LIMIT_MAX}"):
         dlogs.filter_e9(LIVE, "loudness", dlogs.LOG_LIMIT_MAX + 1)
-    # AND THE SERVER'S OWN REDUCTION IS NOT A CALLER: the stop reply's E9 block reads the
-    # whole channel to cut `all`, `lines:N`, `since` and `seconds:N` from it, and it used
-    # to ask `e9` for it with a limit of `1 << 30`, which the ceiling refuses (found by
-    # the audit of the ceiling, invisible to the server suite because its double never
-    # carried the check). `e9_lines` is the whole channel on the REAL session path, above
-    # the ceiling, and `e9_summary` builds on it.
-    many = "\n".join(f"Bochs port E9h: [+ {i:6.3f}] PERF  . n={i}"
-                     for i in range(dlogs.LOG_LIMIT_MAX + 5))
-    fake = SimpleNamespace(_e9_text=lambda: many)
-    lines = ds.Session.e9_lines(fake)  # type: ignore[arg-type]
-    assert len(lines) == dlogs.LOG_LIMIT_MAX + 5
-    src = inspect.getsource(running.e9_summary)
-    assert "e9_lines()" in src and "1 << 30" not in src, src
 
 
 def test_an_unusable_pattern_is_invalid_and_does_not_escape() -> None:
@@ -1470,7 +1455,7 @@ def test_set_register_whose_pane_lacks_the_register_is_refused_and_still_altered
     assert fake.altered is True
     fake.registers = lambda: {"EAX": "00000001"}
     ok = ds.Session.set_register(fake, "eax", 1)   # type: ignore[arg-type]
-    assert ok["readback"] == "00000001" and ok["verified"] is True
+    assert ok["readback"] == "0x00000001" and ok["verified"] is True
     fake.registers = lambda: {"EAX": "00000002"}
     assert ds.Session.set_register(fake, "eax", 1)["verified"] is False   # type: ignore[arg-type]
 
@@ -1487,7 +1472,7 @@ def test_a_segment_register_reads_back_under_its_own_name() -> None:
     there."""
     fake = _pane_after_sr({"EAX": "00000000", "CS": "0050", "DS": "0040"})
     got = ds.Session.set_register(fake, "cs", 0x50)   # type: ignore[arg-type]
-    assert got["readback"] == "0050" and got["verified"] is True, got
+    assert got["readback"] == "0x0050" and got["verified"] is True, got
     assert fake.altered is True
     # THE CONTROL: the same name against a pane holding another value is not verified.
     assert ds.Session.set_register(fake, "ds", 0x50)["verified"] is False   # type: ignore[arg-type]
@@ -1498,15 +1483,15 @@ def test_a_16_bit_name_is_read_back_as_the_low_half_of_its_register() -> None:
     whatever the high half holds."""
     fake = _pane_after_sr({"EAX": "ABCD1234", "EIP": "00010100", "CS": "0050"})
     got = ds.Session.set_register(fake, " AX", 0x1234)   # type: ignore[arg-type]
-    assert got["readback"] == "1234" and got["verified"] is True, got
+    assert got["readback"] == "0x1234" and got["verified"] is True, got
     assert got["register"] == "ax", got      # the name as `SR` takes it, not as it was asked
     ip = ds.Session.set_register(fake, "ip", 0x0100)   # type: ignore[arg-type]
-    assert ip["readback"] == "0100" and ip["verified"] is True, ip
+    assert ip["readback"] == "0x0100" and ip["verified"] is True, ip
     # THE CONTROL: a low half that differs is not verified, whatever the high half holds.
     assert ds.Session.set_register(fake, "ax", 0x5678)["verified"] is False   # type: ignore[arg-type]
     # AND THE 32-BIT NAME IS UNCHANGED: the whole register, eight digits.
     wide = ds.Session.set_register(fake, "eax", 0xABCD1234)   # type: ignore[arg-type]
-    assert wide["readback"] == "ABCD1234" and wide["verified"] is True, wide
+    assert wide["readback"] == "0xabcd1234" and wide["verified"] is True, wide
 
 
 def test_every_settable_name_has_the_pane_register_and_width_it_is_read_back_at() -> None:

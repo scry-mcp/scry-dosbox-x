@@ -1,0 +1,32 @@
+{
+ "task": {
+  "id": "D129",
+  "prompt": "The last stop's E9 block was cut: it counted 57 lines from mark 9120 and showed only the newest. Read all 57 of them.",
+  "tool": "log",
+  "args": {
+   "channel": "guest",
+   "since_mark": 9120,
+   "limit": {
+    "any_of": [
+     57,
+     400
+    ]
+   }
+  },
+  "allow": [
+   "pattern",
+   "labels"
+  ],
+  "grammar": [
+   "guest"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D129: {\"tool\": \"log\", \"args\": {\"pattern\": \".\", \"channel\": \"guest\", \"limit\": 57, \"since_mark\": 9120}}"
+   ],
+   "right": true
+  }
+ ]
+}

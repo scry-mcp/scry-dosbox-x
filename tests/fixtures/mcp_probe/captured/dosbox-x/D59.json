@@ -1,34 +1,17 @@
 {
  "task": {
   "id": "D59",
-  "prompt": "Advance the guest by 12 frames of the display and stop there, within 20 seconds, then give me its last 5 E9 lines that match ^TICK.",
+  "prompt": "Advance the guest by 12 frames of the display and stop there, within 20 seconds, and show me the E9 lines it wrote since the previous stop.",
   "tool": "run_for",
   "args": {
    "frames": 12,
-   "seconds": 20,
-   "e9": "lines:5",
-   "e9_filter": "^TICK"
-  },
-  "allow": [
-   "e9_stamp"
-  ]
+   "seconds": 20
+  }
  },
  "runs": [
   {
    "lines": [
-    "D59: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 12, \"seconds\": 20}, {\"op\": \"log\", \"channel\": \"guest\", \"pattern\": \"^TICK\", \"limit\": 5}]}}"
-   ],
-   "right": false
-  },
-  {
-   "lines": [
-    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20, \"e9\": \"lines:5\", \"e9_filter\": \"^TICK\"}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20, \"e9\": \"lines:5\", \"e9_filter\": \"^TICK\"}}"
+    "D59: {\"tool\": \"run_for\", \"args\": {\"frames\": 12, \"seconds\": 20}}"
    ],
    "right": true
   }

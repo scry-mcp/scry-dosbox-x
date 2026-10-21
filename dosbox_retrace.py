@@ -38,8 +38,7 @@ PANE_CLOCK_DECIMALS = 9
 
 
 def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
-            progress: ds.Progress, e9: str, e9_filter: str,
-            e9_stamp: str | None) -> dict[str, Any]:
+            progress: ds.Progress) -> dict[str, Any]:
     """`frames` retraces, or as many as cover `milliseconds` of the pane's clock, within
     `seconds`, as the reply `run_for` publishes. The bound starts once the opening survey has
     read the clock, so a short one still reaches the first frame. By milliseconds every frame
@@ -114,20 +113,19 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
             break
     fields: dict[str, Any] = {"verdict": verdict, "polls": polls}
     try:
-        reply = running.stop_reply(session, e9, e9_filter, e9_stamp,
-                                   e9_how=running.E9_BY_ARGUMENT, **fields)
+        reply = running.stop_reply(session, **fields)
         stopped_at: dict[str, str] | None = dict(STATE.last_stop["where"])
     except ds.Invalid as exc:                 # a cut pane: the account stands without the stop
         reply = st.reply(enrichment={"available": False, "why": str(exc)}, **fields)
         stopped_at = None
-    if verdict == contract.ELAPSED and (reply.get("attribution") or {}).get("attributed"):
+    if verdict == contract.ELAPSED and STATE.last_stop.get("attribution", {}).get("attributed") \
+            and stopped_at is not None:
         STATE.retrace_pending = True          # the last frame, cut: named by its own survey
         verdict = contract.OTHER_STOP
     after = session.pane_clock_ms if stopped_at else (last if timed else None)
     extra: dict[str, Any] = {**_clock(before, after), **_counts(),
                              # A cut survey's reply has no position of its own to carry.
-                             **({} if stopped_at else running.position(None, None)),
-                             "waited_s": round(time.monotonic() - began, 1)}
+                             **({} if stopped_at else running.position(None, None))}
     pending = STATE.retrace_pending           # every cut and every interrupt leaves it armed
     notes = [note for note, holds in ((PENDING_NOTE, pending),
                                       (UNCUT_NOTE, cuttable),
@@ -244,7 +242,7 @@ def screen_wait(session: ds.Session, text: str, seconds: float,
             raise ds.Invalid("wait_stopped",
                 f"a declared breakpoint stopped the machine before retrace {polls}, so the "
                 f"wait for `{text}` cannot go on; {PENDING_NOTE}",
-                polls=polls, attribution=cut, **_ended_at(session), retrace_pending=True,
+                polls=polls, **{**_ended_at(session), "cause": st.cause(cut)}, retrace_pending=True,
                 **seen)
         try:
             rows = watch.rows()
@@ -275,14 +273,14 @@ def screen_wait(session: ds.Session, text: str, seconds: float,
 def _stop_reply(session: ds.Session, base: dict[str, Any]) -> dict[str, Any]:
     """The stop reply with `base` in it; a survey that comes back cut keeps `base`, its
     enrichment marked unavailable, and records no stop."""
-    return running.stop_or_base(session, True, "none", ".", None, base)
+    return running.stop_or_base(session, True, base)
 
 
 #: What a refused wait carries of the stop reply that recorded its stop: the stop's number, or
 #: the enrichment marked unavailable when its survey came back cut, and the accounts that reply
 #: delivered (a stop the guest reached on its own, declarations applied on it), which would
 #: otherwise be spent on a reply nobody sees.
-ENDED_KEYS = ("stop_seq", "enrichment", "stopped_on_its_own", "applied_on_stop")
+ENDED_KEYS = ("stop_seq", "cause", "enrichment", "stopped_on_its_own", "applied_on_stop")
 
 
 def _heard(session: ds.Session) -> bool:
@@ -317,7 +315,8 @@ def _expired(session: ds.Session, text: str, seconds: float, polls: int, not_tex
         raise ds.Invalid("wait_stopped",
             f"a declared breakpoint stopped the machine as the {seconds:g} s bound ran out, so "
             f"the wait for `{text}` ends there; {PENDING_NOTE}",
-            polls=polls, attribution=cut, **_ended_at(session), retrace_pending=True, **seen)
+            polls=polls, **{**_ended_at(session), "cause": st.cause(cut)}, retrace_pending=True,
+            **seen)
     if out:
         STATE.retrace_pending = pending
     skipped = "" if not_text.startswith("0 ") else (
