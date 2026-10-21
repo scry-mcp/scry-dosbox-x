@@ -59,10 +59,11 @@ import dosbox_state as dstate
 import dosbox_symbols as dsym
 import dosbox_x_server as server
 
-# A `SELINFO CS` reply CAPTURED from a live DJGPP program under CWSDPMI (DOSBox-X
-# this build). It is pasted whole rather than reduced, because the property
-# it exists to exercise is the NOISE: the debugger overlays a descriptor line into the
-# REGISTER pane (`ss: b:00008240`) as well as printing the one that was asked for, so a
+# A `SELINFO CS` reply in the shape a DJGPP program under CWSDPMI gets, AUTHORED: no capture
+# of it is kept, so it is the assumed screen, not a record. It is whole rather than reduced,
+# because the property it exists to exercise is the NOISE: the debugger overlays a descriptor
+# line into the REGISTER pane (`ss: b:00008240`) as well as printing the one that was asked
+# for, so a
 # reader that searches the screen for the first `b:` returns the STACK selector's base
 # for a question about the code selector -- a wrong answer of exactly the right shape.
 SELINFO_SCREEN = (
@@ -398,7 +399,7 @@ class FakeSession:
     def load_symbols(self, data: bytes) -> list[tuple[str, int]]:
         """What the debugger would hold afterwards, INCLUDING what it already held.
 
-        `LV` APPENDS -- measured, three names loaded on top of two left five -- so the
+        `LV` APPENDS (authored: no kept capture shows a second load leaving both), so the
         double accumulates. A stub that returned only the last load would let the
         server claim `loaded` is the size of this load, which is the one property the
         real command does not have.
@@ -650,9 +651,9 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
     assert got == dest and dest.stat().st_size > 1000
     # THE FORMAT IS FORCED IN THE ARGV, which no test could see while every one of
     # them mocked `subprocess.run` without looking at what it was handed. Without
-    # these flags ffmpeg picks the encoder from `dest`'s EXTENSION, and MEASURED on
-    # ffmpeg 9.0.1 a frame past the end then writes a 1307-byte frameless container at
-    # exit 0 -- a file that passes every other check in the guard.
+    # these flags ffmpeg picks the encoder from `dest`'s EXTENSION, and a frame past the end
+    # can then write a frameless container at exit 0 (authored from ffmpeg 9.0.1's behaviour;
+    # no record of it is kept) -- a file that passes every other check in the guard.
     assert argv, "the mock never saw a command line"
     assert argv[0][-5:] == ["-f", "image2", "-c:v", "png", str(dest)], argv[0]
 
@@ -671,8 +672,8 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
         ds.Session.frame(fake, 99999, tmp_path / "never.png")  # type: ignore[arg-type]
 
     # AND ffmpeg FAILING WHILE LEAVING A NON-EMPTY FILE, which the size check alone
-    # cannot see. MEASURED on ffmpeg 7.x: a frame past the end writes nothing for a
-    # `.png` destination but a 261-byte frameless container for an `.mp4` one, so
+    # cannot see. Authored from ffmpeg 7.x's behaviour, no record kept: a frame past the end
+    # writes nothing for a `.png` destination but a frameless container for an `.mp4` one, so
     # "a file exists and is not empty" and "ffmpeg succeeded" are different questions
     # and only the first was being asked.
     bad = tmp_path / "junk.png"
@@ -691,9 +692,9 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
         ds.Session.frame(fake, 5, bad)  # type: ignore[arg-type]
 
     # AND A WELL-FORMED FILE OF THE WRONG KIND at exit 0, which neither the code nor
-    # the size can see. MEASURED on ffmpeg 9.0.1: a frame past the end of a real
-    # capture, with `dest` named `.mp4`, produced a 1307-byte FRAMELESS CONTAINER at
-    # exit 0 -- every term of the guard false, and `frame()` returned it as a still.
+    # the size can see. Authored from ffmpeg 9.0.1's behaviour, no record kept: a frame past
+    # the end of a capture, with `dest` named `.mp4`, gives a FRAMELESS CONTAINER at exit 0 --
+    # every term of the guard false, and `frame()` would return it as a still.
     # The format is forced now, so this should be unreachable through the real ffmpeg;
     # it is asserted anyway because the defect was a file that passed every test but
     # the one nobody was making.
@@ -1630,8 +1631,8 @@ def test_loaded_is_read_back_out_of_the_debugger_and_lv_appends(
         tmp_path: Path) -> None:
     """`ok` is not evidence: this emulator prints it for a filename it truncated.
 
-    And `LV` appends, measured, so a second load leaves BOTH lists -- `loaded` is the
-    debugger's whole holding, not the size of this call. A tool reporting the latter
+    And `LV` appends (authored, no kept capture), so a second load leaves BOTH lists --
+    `loaded` is the debugger's whole holding, not the size of this call. A tool reporting the latter
     would be describing something the real command does not do.
     """
     install(mode="Pr32")
@@ -1664,8 +1665,8 @@ def test_a_source_that_is_not_a_symbol_list_is_refused_by_name(tmp_path: Path) -
 def test_a_register_this_debugger_does_not_report_is_refused_not_sent(
         tmp_path: Path) -> None:
     """`SELINFO` answers an argument it does not know with an EMPTY name and an all-zero
-    descriptor rather than an error -- measured on `SELINFO AF` -- which reads exactly
-    like a real selector based at 0."""
+    descriptor rather than an error -- authored from `SELINFO AF`, no kept capture -- which
+    reads exactly like a real selector based at 0."""
     install(mode="Pr32")
     got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path),
                                                    base_from="AX"))
@@ -1959,7 +1960,7 @@ def test_a_start_refused_because_a_session_is_live_keeps_the_table(
                 server.symbols_find(name="_main"))["status"] == "ok"
 
 
-# A `SELINFO CS` reply CAPTURED at `-break-start` (real mode, at the reset vector). The
+# A `SELINFO CS` reply at `-break-start` (real mode, at the reset vector), AUTHORED. The
 # descriptor is all zeroes and it is INDISTINGUISHABLE from the reply for a selector nothing
 # has set up -- which is why the type field is what decides, not the base.
 SELINFO_ZEROED = (

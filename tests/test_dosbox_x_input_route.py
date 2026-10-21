@@ -21,8 +21,8 @@ import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_x_server as server
 
-#: Captured off section P's live run, as the stub writes them: text mode 3, then mode 13h with
-#: the left button held.
+#: In the format the stub's source prints (authored; no capture of these two lines is kept):
+#: text mode 3, then mode 13h with the left button held.
 REAL_TEXT = "STUB  . mouse x=16 y=8 buttons=0 max=639,199 mode=3 screen=720x400"
 REAL_13H = "STUB  . mouse x=200 y=50 buttons=1 max=639,199 mode=19 screen=320x400"
 
