@@ -35,6 +35,7 @@ import subprocess
 import termios
 import threading
 import time
+from collections.abc import Callable
 from dataclasses import replace
 from pathlib import Path
 from typing import Any
@@ -599,6 +600,16 @@ def reader_dead(session: Session) -> bool:
     return drainer is not None and not drainer.is_alive()
 
 
+def _the_socket_itself(sock: socket.socket) -> socket.socket:
+    return sock
+
+
+#: A TEST'S SEAM, never a caller's: what the input socket is wrapped in before the stub link
+#: takes it. The live suite puts a line that drops, holds, splits and closes bytes here to
+#: provoke the stub's recovery paths; a session left alone talks to the socket itself.
+INPUT_LINE: Callable[[socket.socket], Any] = _the_socket_itself
+
+
 def gone_if_dead(session: Session, began: float, bound_s: float, what: str) -> None:
     """Refuse a wait whose emulator has gone, at once: nothing will arrive, and a wait that only
     watches its clock would sit out its whole bound to call the machine slow."""
@@ -754,7 +765,7 @@ class Session:
             if listener is not None:
                 self._input = dlaunch.accept_input(listener, dlaunch.INPUT_CONNECT_S,
                                                    self.proc.poll)
-                self._link = stub_link.Link(self._input, self.at_debugger)
+                self._link = stub_link.Link(INPUT_LINE(self._input), self.at_debugger)
         except BaseException:
             if listener is not None:
                 listener.close()

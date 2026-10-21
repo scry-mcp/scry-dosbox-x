@@ -1,0 +1,9 @@
+[
+  false,
+  [
+    "No saved slot - 1 (<dir>/no-such-state.sav)",
+    "The selected save file is currently empty.",
+    "DEBUG: LOADSTATE failed: <dir>/no-such-state.sav (the log says why)",
+    "*** Debugger command not recognized"
+  ]
+]

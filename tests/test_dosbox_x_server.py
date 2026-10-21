@@ -416,7 +416,7 @@ class FakeSession:
     def load_symbols(self, data: bytes) -> list[tuple[str, int]]:
         """What the debugger would hold afterwards, INCLUDING what it already held.
 
-        `LV` APPENDS (authored: no kept capture shows a second load leaving both), so the
+        `LV` APPENDS (tests/fixtures/symbols-lv: a second load leaves both), so the
         double accumulates. A stub that returned only the last load would let the
         server claim `loaded` is the size of this load, which is the one property the
         real command does not have.
@@ -669,8 +669,8 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
     # THE FORMAT IS FORCED IN THE ARGV, which no test could see while every one of
     # them mocked `subprocess.run` without looking at what it was handed. Without
     # these flags ffmpeg picks the encoder from `dest`'s EXTENSION, and a frame past the end
-    # can then write a frameless container at exit 0 (authored from ffmpeg 9.0.1's behaviour;
-    # no record of it is kept) -- a file that passes every other check in the guard.
+    # then writes a frameless container at exit 0 (tests/fixtures/ffmpeg) -- a file that
+    # passes every other check in the guard.
     assert argv, "the mock never saw a command line"
     assert argv[0][-5:] == ["-f", "image2", "-c:v", "png", str(dest)], argv[0]
 
@@ -679,9 +679,11 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
     # empty-output guard could be deleted with the whole battery green, and `frame()`
     # would then return a path it had not written -- the defect this file's own header
     # says the double was rebuilt to stop agreeing with.
+    past_end = _ffmpeg_record("past-end-png")
+
     def writes_nothing(*_a: object, **_k: object) -> object:
-        return SimpleNamespace(stdout="", stderr="Output file is empty",
-                               returncode=0)
+        return SimpleNamespace(stdout="", stderr=past_end["stderr"],
+                               returncode=past_end["returncode"])
 
     with (mock.patch("dosbox_session.subprocess.run", writes_nothing),
           mock.patch("dosbox_frames.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
@@ -689,15 +691,16 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
         ds.Session.frame(fake, 99999, tmp_path / "never.png")  # type: ignore[arg-type]
 
     # AND ffmpeg FAILING WHILE LEAVING A NON-EMPTY FILE, which the size check alone
-    # cannot see. Authored from ffmpeg 7.x's behaviour, no record kept: a frame past the end
-    # writes nothing for a `.png` destination but a frameless container for an `.mp4` one, so
-    # "a file exists and is not empty" and "ffmpeg succeeded" are different questions
-    # and only the first was being asked.
+    # cannot see. The exit code and stderr are a corrupt input's (tests/fixtures/ffmpeg); the
+    # file it leaves is AUTHORED, since that recorded failure writes nothing: "a file exists
+    # and is not empty" and "ffmpeg succeeded" are different questions either way.
     bad = tmp_path / "junk.png"
+    corrupt = _ffmpeg_record("corrupt-input")
 
     def fails_but_writes(*_a: object, **_k: object) -> object:
         bad.write_bytes(b"not an image, but not empty either")
-        return SimpleNamespace(stdout="", stderr="Conversion failed", returncode=1)
+        return SimpleNamespace(stdout="", stderr=corrupt["stderr"],
+                               returncode=corrupt["returncode"])
 
     # AND THE TWO REFUSALS SAY DIFFERENT THINGS, which is the point: a non-zero exit
     # is ffmpeg reporting its own failure with the reason in hand, while an empty
@@ -705,26 +708,36 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
     # Merged, the message blamed "a frame past the end" for a conversion error.
     with (mock.patch("dosbox_session.subprocess.run", fails_but_writes),
           mock.patch("dosbox_frames.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
-          pytest.raises(ds.Invalid, match="ffmpeg exited 1")):
+          pytest.raises(ds.Invalid, match=f"ffmpeg exited {corrupt['returncode']}")):
         ds.Session.frame(fake, 5, bad)  # type: ignore[arg-type]
 
     # AND A WELL-FORMED FILE OF THE WRONG KIND at exit 0, which neither the code nor
-    # the size can see. Authored from ffmpeg 9.0.1's behaviour, no record kept: a frame past
-    # the end of a capture, with `dest` named `.mp4`, gives a FRAMELESS CONTAINER at exit 0 --
-    # every term of the guard false, and `frame()` would return it as a still.
+    # the size can see. Recorded (tests/fixtures/ffmpeg): a frame past the end of a capture,
+    # with `dest` named `.mp4` and the format not forced, gives a FRAMELESS CONTAINER at exit
+    # 0 -- every term of the guard false, and `frame()` would return it as a still.
     # The format is forced now, so this should be unreachable through the real ffmpeg;
     # it is asserted anyway because the defect was a file that passed every test but
     # the one nobody was making.
     container = tmp_path / "container.mp4"
 
+    recorded = (FFMPEG_FIX / "past-end-unforced.mp4").read_bytes()
+
     def writes_a_container(*_a: object, **_k: object) -> object:
-        container.write_bytes(b"\x00\x00\x00\x20ftypisom" + b"\x00" * 1275)
+        container.write_bytes(recorded)
         return SimpleNamespace(stdout="", stderr="", returncode=0)
 
     with (mock.patch("dosbox_session.subprocess.run", writes_a_container),
           mock.patch("dosbox_frames.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
           pytest.raises(ds.Invalid, match="is not a PNG")):
         ds.Session.frame(fake, 99999, container)  # type: ignore[arg-type]
+
+
+FFMPEG_FIX = Path(__file__).resolve().parent / "fixtures" / "ffmpeg"
+
+
+def _ffmpeg_record(case: str) -> dict[str, Any]:
+    """What ffmpeg answered in one recorded case (exit code, bytes written, stderr)."""
+    return cast(dict[str, Any], json.loads((FFMPEG_FIX / f"{case}.json").read_text("utf-8")))
 
 
 def _tools_called_in_tests(source: str) -> set[str]:
@@ -1648,7 +1661,7 @@ def test_loaded_is_read_back_out_of_the_debugger_and_lv_appends(
         tmp_path: Path) -> None:
     """`ok` is not evidence: this emulator prints it for a filename it truncated.
 
-    And `LV` appends (authored, no kept capture), so a second load leaves BOTH lists --
+    And `LV` appends (tests/fixtures/symbols-lv), so a second load leaves BOTH lists --
     `loaded` is the debugger's whole holding, not the size of this call. A tool reporting the latter
     would be describing something the real command does not do.
     """
@@ -1682,7 +1695,7 @@ def test_a_source_that_is_not_a_symbol_list_is_refused_by_name(tmp_path: Path) -
 def test_a_register_this_debugger_does_not_report_is_refused_not_sent(
         tmp_path: Path) -> None:
     """`SELINFO` answers an argument it does not know with an EMPTY name and an all-zero
-    descriptor rather than an error -- authored from `SELINFO AF`, no kept capture -- which
+    descriptor rather than an error (tests/fixtures/selinfo/break-start-af.txt), which
     reads exactly like a real selector based at 0."""
     install(mode="Pr32")
     got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path),
@@ -2226,7 +2239,21 @@ def test_build_check_is_invalid_when_the_build_has_no_debugger() -> None:
                      lambda *_a, **_k: SimpleNamespace(stdout="usage: ...", stderr=""))):
         got = cast(dict[str, Any], server.build_check())
     assert got["status"] == "INVALID", got
-    assert "without the debugger" in str(got["message"])
+    assert "carries no debugger" in str(got["message"])
+
+
+def test_a_build_that_lists_the_option_but_carries_no_debugger_is_refused(
+        tmp_path: Path) -> None:
+    """MEASURED (tests/fixtures/build_check): a build configured with `--disable-debug` still
+    lists `-break-start` in `-helpdebug`, because the option parser is there either way. What
+    tells the two apart is the debugger's own text in the binary."""
+    binary = tmp_path / "dosbox-x"
+    binary.write_bytes(b"\x00a build with the option and no debugger\x00")
+    with (mock.patch("scry_core.binaries.shutil.which", lambda _n: str(binary)),
+          mock.patch("dosbox_x_server.subprocess.run",
+                     lambda *_a, **_k: SimpleNamespace(stdout="-break-start\n", stderr=""))):
+        got = cast(dict[str, Any], server.build_check())
+    assert got["status"] == "INVALID" and "carries no debugger" in str(got["message"]), got
 
 
 def test_build_check_says_ok_and_names_the_surface_on_a_good_build(tmp_path: Path) -> None:
@@ -2234,13 +2261,14 @@ def test_build_check_says_ok_and_names_the_surface_on_a_good_build(tmp_path: Pat
     `build_check` that raises unconditionally. The binary is a file of this case's own,
     carrying the help line a heavy-debug build compiles, and one without it says false."""
     binary = tmp_path / "dosbox-x"
-    binary.write_bytes(b"\x00" + binaries.HEAVY_DEBUG_MARK + b"\x00")
+    binary.write_bytes(b"\x00" + binaries.DEBUGGER_MARK + b"\x00" + binaries.HEAVY_DEBUG_MARK
+                       + b"\x00")
     with (mock.patch("scry_core.binaries.shutil.which", lambda _n: str(binary)),
           mock.patch("dosbox_x_server.subprocess.run",
                      lambda *_a, **_k: SimpleNamespace(stdout="-break-start\n",
                                                        stderr=""))):
         got = cast(dict[str, Any], server.build_check())
-        binary.write_bytes(b"\x00LOGS only\x00")
+        binary.write_bytes(b"\x00" + binaries.DEBUGGER_MARK + b"\x00LOGS only\x00")
         plain = cast(dict[str, Any], server.build_check())
     assert got["status"] == "ok", got
     assert got["binary"] == str(binary)
@@ -8267,3 +8295,17 @@ def test_a_table_loaded_while_the_guest_runs_takes_no_selectors_from_the_last_st
     fake.running, fake.mode = False, "Real"
     got = server.breakpoint_at(ref="_start")
     assert got["state"] == "armed", got
+
+
+def test_symbols_load_hands_keep_noise_on_and_reads_a_map_with_a_byte_no_utf8_reads(
+        tmp_path: Path) -> None:
+    """`keep_noise` reaches the plan (a section label kept or excluded by it), and the map is
+    read leniently: a code-page byte in a line counts that line unread, never a refusal."""
+    nm = tmp_path / "prog.nm"
+    nm.write_bytes(b"00001000 t .text\n0016dd80 T _main\n\xb0 not a row\n")
+    _names(tmp_path)
+    plain = _ok(server.symbols_load(path=str(nm), base="400000"))
+    _names(tmp_path)
+    noisy = _ok(server.symbols_load(path=str(nm), base="400000", keep_noise=True))
+    assert plain["excluded_sections"] == 1 and noisy["excluded_sections"] == 0, (plain, noisy)
+    assert noisy["kept"] == plain["kept"] + 1 and plain["unreadable"] == 1, (plain, noisy)

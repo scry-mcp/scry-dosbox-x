@@ -1,0 +1,2 @@
+What this is: a map file this package builds itself, from the sources beside it, by the
+recipe beside it (the DJGPP cross compiler and `nm`, run by `build.sh`; `mapdemo.ld.map` is the link's map, `mapdemo.sym` the `nm` listing of the executable). Re-made by running that recipe.

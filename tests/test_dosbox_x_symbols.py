@@ -1912,3 +1912,15 @@ def test_a_parse_report_may_not_be_used_for_two_reads() -> None:
     again = sym.ParseReport()
     _, u2 = sym.parse(text, again)
     assert u2 == len(again.unreadable_rows) == 1, again.unreadable_rows
+
+
+def test_the_var_list_s_count_takes_its_edges() -> None:
+    """An empty list is two bytes and decodes to nothing; two batches joining to exactly the
+    count the file holds load, one more is refused."""
+    assert sym.decode(b"\0\0") == []
+    with pytest.raises(sym.BadSymbolText):
+        sym.decode(b"\0")
+    full = struct.pack("<H", 0xFFFF)
+    assert struct.unpack_from("<H", sym.joined(full, b"\0\0"))[0] == 0xFFFF
+    with pytest.raises(sym.BadSymbolText):
+        sym.joined(full, struct.pack("<H", 1))

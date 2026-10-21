@@ -1,0 +1,5 @@
+{
+  "returncode": 183,
+  "output_bytes": null,
+  "stderr": "[in#0 @ 0x808c0c000] Error opening input: Invalid data found when processing input\nError opening input file corrupt.avi.\nError opening input files: Invalid data found when processing input\n"
+}

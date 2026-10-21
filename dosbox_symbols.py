@@ -41,7 +41,7 @@ FIVE MORE FACTS OF THE FORMAT, each of which decides something here:
 - **`IV` uppercases its argument; the FILE does not.**  `zero_lower` typed at the
   console is stored `ZERO_LOWER`, but a file written here holding `lower_case_sym` loads
   back byte-identical.  That is the whole reason this can carry C symbols at all.
-- **`LV` APPENDS.**  Three names loaded on top of two left five, not two.  So a caller
+- **`LV` APPENDS** (tests/fixtures/symbols-lv: a second load leaves both).  So a caller
   reloading a list gets both, and the round-trip count is a floor rather than an
   equality.
 - **A `SV`/`LV` filename is TRUNCATED TO 12 CHARACTERS, SILENTLY, and reported `ok`.**

@@ -1,0 +1,4 @@
+What this is: what the debugger holds after two `LV` loads in a row, read back each time through
+`SV` by `Session.load_symbols` (names and linear addresses), recorded on 2026-10-21 off a live
+DOSBox-X, the scry build f06aa5d26 (macOS, SDL2), at the DPMI guest's first INT 31h AH=02h:
+a second load ADDS to the first.

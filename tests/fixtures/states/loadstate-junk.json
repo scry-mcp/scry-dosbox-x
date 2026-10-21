@@ -1,0 +1,8 @@
+[
+  false,
+  [
+    "Loading state from slot: 1 (<dir>/junk.sav)",
+    "DEBUG: LOADSTATE failed: <dir>/junk.sav (the log says why)",
+    "*** Debugger command not recognized"
+  ]
+]

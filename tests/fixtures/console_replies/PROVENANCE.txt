@@ -1,0 +1,6 @@
+What this is: three debugger console replies as `Session._collect` read them, each a list of
+(seconds since the command, raw chunk) pairs: `prompt` (a reply that ends on the input line),
+`paged` (one that ends on the pager's line) and `running` (a command typed at a running guest).
+They were recorded over a whole headless run of the live matrix, by the change that ends a reply
+on the debugger's last words (commit 9d2ed30, 2026-10-15). The build and the run are not recorded
+beyond that commit's own account.

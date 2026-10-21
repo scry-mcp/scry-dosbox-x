@@ -1,0 +1,11 @@
+{
+  "helpdebug_lists_break_start": true,
+  "helpdebug": "\ndosbox-x [options]\n\nDOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.\nDOSBox-X project maintainer: joncampbell123 (The Great Codeholio)\n\nBased on DOSBox by the DOSBox Team (See AUTHORS file)\n\nDebugging options:\n\n  -debug                                  Set all logging levels to debug\n  -early-debug                            Log early initialization messages in DOSBox-X (implies -console)\n  -keydbg                                 Log all SDL key events\n  -break-start                            Break into debugger at startup\n  -console                                Show logging console (Windows builds only)\n  -noconsole                              Do not show logging console (Windows debug builds only)\n  -log-con                                Log CON output to a log file\n  -log-int21                              Log calls to INT 21h (debug level)\n  -log-fileio                             Log file I/O through INT 21h (debug level)\n  -nolog                                  Do not log anything to log file\n  -tests                                  Run unit tests to test the DOSBox-X code\n  -print-ticks                            (Debug) Print emulator time and SDL_GetTicks()\n  -force-gfx-hardware                     Force render scaler system to act as if GFX_HARDWARE\n\n",
+  "build_check": {
+    "status": "ok",
+    "code": null,
+    "message": null,
+    "debugger": true,
+    "heavy_debug": true
+  }
+}

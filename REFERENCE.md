@@ -91,13 +91,15 @@ return in 5 s or could not run. Either way the call goes on.
 
 **`build_check` answers about the build, and refuses while a session is live.** It asks the
 question a failure asks first, about the thing that matters: not whether there is a binary
-but whether this build carries the DEBUGGER (`-helpdebug` listing `-break-start`), which the
-whole surface rests on; a build without one starts fine and then hangs `start` until its
-timeout. It is INVALID when a precondition fails: the one tool whose purpose is examining
+but whether this build carries the DEBUGGER, which the whole surface rests on; a build without
+one starts fine and then hangs `start` until its timeout. It is read off the binary itself (the
+debugger's own answer to a command it does not know is compiled into it), because `-helpdebug`
+listing `-break-start` is not enough: a build configured without the debugger lists it too
+(tests/fixtures/build_check). It is INVALID when a precondition fails: the one tool whose purpose is examining
 preconditions never reports a clean result for a missing tool. And it REFUSES while a
-session is live, because answering means starting a SECOND emulator: on a build without the
-debugger `dosbox-x -helpdebug` is not a help listing but a full emulator for the whole bound,
-since this build does not refuse an option it does not know. What it examines is a property
+session is live, because answering means starting a SECOND emulator: `-helpdebug` starts the
+emulator to answer, and a build that does not know the option runs it as a full emulator for
+the whole bound, since it does not refuse an option it does not know. What it examines is a property
 of the build and does not change while a session is up. `heavy_debug` says whether the build
 carries the debugger's CPU log, which `trace` needs: it is read off the binary's bytes, which hold
 the `LOG` family's help line only when the build is a heavy-debug one, never by typing `LOG` at a
@@ -1837,8 +1839,10 @@ STOPPED: while the guest runs, the channel is served from a timer tick handler, 
 there would replace the tick handlers the timer is walking. So a running guest is stopped for the
 command (`stop`'s `BREAK`) and released again, and the reply's `paused` says it happened; a parked
 one stays parked, at the loaded machine's position after a load. The command is the confirmation: a
-refusal of its own (a state of another DOSBox-X version, program, memory size or machine type is
-refused, never asked about) is `unexpected_answer` quoting it, and the emulator's log says why. The
+refusal of its own is `unexpected_answer` quoting it, with the causes of its verb (a load: a state
+of another DOSBox-X version, program, memory size or machine type, refused, never asked about; a
+save: a file the host would not take, as a full volume's `SAVE_FAILED`), and the emulator's log,
+when the session keeps one, says more. The
 state is `<name>.sav` under the session's `state_dir`, written there directly and read back for
 what it says about itself; `state_list` reads every state's ZIP members (`version`, `program`,
 `machine`, `memory_mb`, `saved_at`) without loading, needs no window, and answers while the guest

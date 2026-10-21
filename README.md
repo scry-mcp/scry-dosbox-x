@@ -78,8 +78,8 @@ this.
 
 ## Two minutes to a first answer
 
-You need a DOSBox-X built with the debugger (most distribution builds are;
-`dosbox-x -helpdebug` listing `-break-start` is the tell): the `dosbox-x` on your `PATH`,
+You need a DOSBox-X built with the debugger (most distribution builds are; `build_check`
+says whether yours is): the `dosbox-x` on your `PATH`,
 or another build named by `DOSBOX_X_BINARY` or by `start`'s `binary`. And Python 3.11 or
 newer.
 The debugger wants a terminal, and the server provides one itself. `stop` reaches a running

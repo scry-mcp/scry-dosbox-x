@@ -1,0 +1,15 @@
+What these are: ffmpeg's answers to the frame extraction `dosbox_frames.frame` runs, on
+ffmpeg 9.0.2 (Homebrew, macOS), recorded on 2026-10-21 against tests/fixtures/avi/
+dosbox-x-zmbv-12.avi with the server's own argv (`-f image2 -c:v png`) unless named otherwise.
+Each JSON holds the exit code, the size of what was written (null: nothing), and stderr.
+
+past-end-png.json            a frame past the end, the server's argv: exit 0, nothing written.
+past-end-mp4-unforced.json   the same request WITHOUT the forced format, into a `.mp4`: exit 0
+past-end-unforced.mp4        and a frameless container, kept beside it (the shape the forced
+                             format exists to prevent).
+past-end-mp4-forced.json     the server's argv into a `.mp4`: exit 0, nothing written.
+corrupt-input.json           the capture cut short: a non-zero exit, nothing written.
+
+Not kept as a file: a FIFO with no writer as the input, where ffmpeg blocks until it is
+killed (the server's own bound raises `TimeoutExpired` there, so no exit code is a record).
+Not observed: a failure that writes a file; the corrupt input writes nothing.

@@ -26,8 +26,8 @@ def load_symbols(ses: ds.Session, data: bytes) -> list[tuple[str, int]]:
     round trip is the only thing that can say a record arrived with the name and
     the address it was given.
 
-    THE COUNT COMES BACK AS A FLOOR AND NOT AN EQUALITY, because `LV` APPENDS:
-    measured, loading three names on top of two left five. A caller loading twice
+    THE COUNT COMES BACK AS A FLOOR AND NOT AN EQUALITY, because `LV` APPENDS
+    (tests/fixtures/symbols-lv: a second load leaves both). A caller loading twice
     gets both lists, and this returns everything the debugger holds rather than
     pretending the last load is all of it.
 

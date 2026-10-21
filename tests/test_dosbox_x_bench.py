@@ -7,10 +7,12 @@ the instrument that exists to stop a number lying was itself ungated. Measured: 
 coverage, `CoverageWarning: Module bench was never imported`.
 
 What is here is the half a contract tier can reach: the timer's known answer with its
-negative, and the refusal that stops a session which answered NOTHING being published
-as a fast one. The emulator-driving half (`reach_the_state`, `per_question`,
-`advance_rate`) is out of reach by construction and is not faked, because a double for
-the thing being measured measures the double.
+negative, the refusal that stops a session which answered NOTHING being published
+as a fast one, the rate's arithmetic (`window_rates`), and the refusals of the two runs that
+only call a program (`batch_cost`, `stamp`, with that program doubled). The emulator-driving
+half (`reach_the_state`, `per_question`, `advance_rate`'s sampling) is out of reach by
+construction and is not faked, because a double for the thing being measured measures the
+double.
 """
 
 from __future__ import annotations
@@ -18,9 +20,12 @@ from __future__ import annotations
 import ast
 import json
 import re
+import subprocess
 import sys
 import time
 from pathlib import Path
+from types import SimpleNamespace
+from typing import Any
 
 import pytest
 
@@ -243,3 +248,68 @@ def test_the_published_medians_are_the_runs_medians(tmp_path: Path,
     assert got["batch"]["total_s_median"] == 5.0, got["batch"]
     assert (got["reach"]["debugger_prompt_s_median"],
             got["reach"]["application_up_s_median"]) == (3.0, 8.0), got["reach"]
+
+
+def test_the_rate_is_the_median_of_the_windows_after_the_settling_sample() -> None:
+    """The first sample is dropped (the log is backed up after the boot burst), each window
+    between the rest is a rate, and the median, minimum and maximum are of those."""
+    samples = [(0.06, 0.0), (3.06, 3.0), (6.06, 4.0), (9.06, 6.0), (12.06, 8.2)]
+    got = bench.window_rates(samples)
+    assert (got["rate_median"], got["rate_min"], got["rate_max"]) == (0.667, 0.333, 0.733), got
+    assert got["windows"] == 3 and got["discarded_settling_samples"] == 1, got
+    assert got["samples"] == [(0.1, 0.0), (3.1, 3.0), (6.1, 4.0), (9.1, 6.0), (12.1, 8.2)], got
+
+
+def _run_writing(log: Path, text: str | None) -> Any:
+    def run(cmd: list[str], **kw: object) -> Any:
+        assert cmd == ["make", "prof-log", "SONG=S", "SECS=30"], cmd
+        assert kw["cwd"] == str(log.parent.parent) and kw["check"] is False, kw
+        assert kw["stdout"] == kw["stderr"] == subprocess.DEVNULL, kw
+        if text is not None:
+            log.parent.mkdir(parents=True, exist_ok=True)
+            log.write_bytes(text.encode("utf-8", "surrogateescape"))  # a byte no UTF-8 reads
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+    return run
+
+
+@pytest.mark.parametrize(("written", "measured"), [
+    (f"\udcff{bench.MARKER}\n", True), ("booted, no marker\n", False), (None, False)],
+    ids=["answered", "no-marker", "nothing-written"])
+def test_a_batch_is_timed_only_when_it_answered(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                                                written: str | None, measured: bool) -> None:
+    """A stale log left by an earlier run is removed first, so it cannot answer for this one."""
+    log = tmp_path / "build" / "PROF.E9.log"
+    log.parent.mkdir()
+    log.write_text(f"{bench.MARKER}\n", encoding="utf-8")       # an earlier run's answer
+    monkeypatch.setattr("subprocess.run", _run_writing(log, written))
+    monkeypatch.setattr(bench, "timed", lambda fn: (9994.0, fn()))
+    if measured:
+        assert bench.batch_cost(tmp_path, "S") == {"total_s": 9.99}
+        return
+    with pytest.raises(SystemExit) as e:
+        bench.batch_cost(tmp_path, "S")
+    assert e.value.code == bench.INVALID_RC
+
+
+def test_the_stamp_reads_the_version_off_stderr_and_refuses_none(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    asked: list[tuple[str, ...]] = []
+
+    def run(said: str) -> Any:
+        def fake(cmd: tuple[str, ...], **kw: object) -> Any:
+            assert kw == {"capture_output": True, "text": True, "check": False}, kw
+            asked.append(tuple(cmd))
+            if cmd[0] == "dosbox-x":
+                return SimpleNamespace(stdout="", stderr=said)
+            return SimpleNamespace(stdout="Mac16,10", stderr="")
+        return fake
+    monkeypatch.setattr("subprocess.run", run("DOSBox-X version 2026.08.31 SDL2\nmore\n"))
+    monkeypatch.setattr("os.getloadavg", lambda: (1.0, 2.0, 3.0))
+    got = bench.stamp()
+    assert got == {"machine": "Mac16,10", "emulator": "DOSBox-X version 2026.08.31 SDL2",
+                   "load_average": (1.0, 2.0, 3.0)}, got
+    assert asked == [("dosbox-x", "-version"), ("sysctl", "-n", "hw.model")], asked
+    monkeypatch.setattr("subprocess.run", run(""))
+    with pytest.raises(SystemExit) as e:
+        bench.stamp()
+    assert e.value.code == bench.INVALID_RC

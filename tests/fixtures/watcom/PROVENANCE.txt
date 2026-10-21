@@ -1,0 +1,2 @@
+What this is: a map file this package builds itself, from the sources beside it, by the
+recipe beside it (Open Watcom run inside DOSBox-X by `build.sh`; the map's first line names its linker). Re-made by running that recipe.

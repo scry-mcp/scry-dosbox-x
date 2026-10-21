@@ -582,3 +582,21 @@ def test_a_scan_opened_over_another_range_is_cancelled_before_it_is_refused() ->
         finder.scan_start(s, 0, 0x400, 0x80, 1)
     assert s.sent[:2] == ["MEMFIND 0000:400 80 B", "MEMFIND !"], s.sent
     assert dstate.STATE.scan_cell_bytes is None
+
+
+def test_the_scan_judges_take_their_edges_and_refuse_one_past() -> None:
+    """A filter's `limit` at 1 and at `HITS_MAX`, a value that is no number (a bool), a scan
+    range of one cell; and `find` with exactly `HITS_MAX` hits is all of them, not cut."""
+    op = finder.OPERATORS[0]
+    for limit in (1, finder.HITS_MAX):
+        finder.check_filter(op, None, limit)
+    for limit in (0, finder.HITS_MAX + 1):
+        with pytest.raises(ds.Invalid):
+            finder.check_filter(op, None, limit)
+    with pytest.raises(ds.Invalid):
+        finder.check_filter(op, True)
+    finder.check_scan_range(1, 1)
+    with pytest.raises(ds.Invalid):
+        finder.check_scan_range(0, 1)
+    got = finder.find(session([], b"\xaa" * finder.HITS_MAX), 0, 0, finder.HITS_MAX, b"\xaa")
+    assert got["hits_total"] == finder.HITS_MAX and got["truncated"] is False, got["truncated"]

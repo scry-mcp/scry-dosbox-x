@@ -1,0 +1,24 @@
+What these are: the debugger channel's answers to `EXEC LOADSTATE` and `EXEC SAVESTATE` (the
+(ok, lines) pair `Control.request` returns), and replies of the server's own tools, recorded on
+2026-10-21 off a live DOSBox-X, the scry build f06aa5d26 (macOS, SDL2), probe.conf or
+mouse.conf, driven by the server's Session through the live matrix harness.
+
+loadstate-missing.json          LOADSTATE of a path where no file is.
+loadstate-junk.json             LOADSTATE of a file that is not a state (a zip header, then text).
+savestate-full-disk.json        SAVESTATE onto a 1 MB HFS+ disk image filled to its last byte
+                                (`SAVE_FAILED`); the lines are the ones the server's refusal
+                                below joined with " / ", split back. With a few kilobytes left
+                                the same channel answered `Saved` and wrote a whole state.
+state-save-full-disk-reply.json `state_save` through the server onto that full volume: refused
+                                `unexpected_answer`, nothing left on disk. Its message is the one
+                                the server gave then, which named a load's causes for a save; the
+                                server says the save's own now.
+snapshot-name.json              `snapshot` on the mouse guest: the emulator names its still after
+                                the program, `<program>_000.png`, under the captures directory.
+close-after-sigkill.json        `close` after the emulator was SIGKILLed: the server reaps it and
+                                says `died`, exit code -9. A child that is not reaped could not be
+                                provoked this way, so that branch has no record here.
+
+Not captured: a write whose read-back disagrees. The one memory that ignores writes, the ROM
+range, is refused by the server before anything is sent (an `SM` there ends the emulator), so
+`verified: false` has no record here. Paths are replaced by <dir> and <volume>.

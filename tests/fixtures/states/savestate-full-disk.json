@@ -1,0 +1,9 @@
+[
+  false,
+  [
+    "Saving state to slot: 1 (<volume>/states/full.sav)",
+    "SAVE_FAILED",
+    "DEBUG: SAVESTATE failed: <volume>/states/full.sav (the log says why)",
+    "*** Debugger command not recognized"
+  ]
+]

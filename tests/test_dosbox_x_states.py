@@ -319,7 +319,8 @@ def test_state_list_keeps_the_working_slot_apart_from_the_named_states(tmp_path:
 # ------------------------------------------------------------------ the screenshot
 
 class ShotFake(StateFake):
-    """The screenshot's seam: the stub's `S` command writes `<captures_dir>/<conf>_NNN.png`,
+    """The screenshot's seam: the stub's `S` command writes `<captures_dir>/<conf>_NNN.png`
+    (tests/fixtures/states/snapshot-name.json),
     on a running machine only (parked, the stub never reaches its tick)."""
 
     def __init__(self, state_dir: Path, **kw: Any) -> None:

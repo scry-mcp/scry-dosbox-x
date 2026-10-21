@@ -124,12 +124,11 @@ def frame(ses: ds.Session, at: int, dest: Path, source: Path | None = None) -> P
         got = subprocess.run(
             # THE FORMAT IS FORCED, and this is not tidiness: without it ffmpeg
             # picks the encoder from `dest`'s EXTENSION, which is the caller's.
-            # MEASURED on ffmpeg 9.0.1 with this exact argv: asking for a frame
-            # PAST THE END of a real capture writes nothing for a `.png`
-            # destination but a 1307-byte FRAMELESS CONTAINER for an `.mp4` one,
-            # at exit code ZERO -- so every term of the guard below was false and
-            # `frame()` handed that container back as a still. With the format
-            # forced, the same request writes NO FILE and the guard fires.
+            # Asking for a frame PAST THE END of a real capture, with the format left to
+            # ffmpeg, writes a FRAMELESS CONTAINER for an `.mp4` destination at exit code
+            # ZERO, so every term of the guard below would be false and `frame()` would
+            # hand that container back as a still. With the format forced, the same request
+            # writes NO FILE and the guard fires (tests/fixtures/ffmpeg holds both).
             #
             # It also means this tool's promise ("ONE still image") no longer
             # depends on the caller spelling the extension the way it meant.
@@ -146,10 +145,9 @@ def frame(ses: ds.Session, at: int, dest: Path, source: Path | None = None) -> P
         raise Invalid("host_failed", f"`ffmpeg` did not return within {ds.FFMPEG_SECS}s pulling "
                       f"frame {at} from {src}. That is the tool hanging, not an "
                       f"answer about the capture") from None
-    # THE EXIT CODE IS READ, and it was not. MEASURED on ffmpeg 7.x: a frame past
-    # the end of a capture writes NO file for a `.png` destination but a 261-byte
-    # frameless container for an `.mp4` one, so "a file exists and is non-empty" is
-    # not the same question as "ffmpeg succeeded". Only the size was asked.
+    # THE EXIT CODE IS READ beside the output: "a file exists and is non-empty" is not the
+    # same question as "ffmpeg succeeded". A failure that writes a file was not observed (the
+    # recorded one writes nothing); the check holds either way.
     if got.returncode != 0 or not dest.exists() or dest.stat().st_size == 0:
         # THE TWO ARMS SAY DIFFERENT THINGS, because they ARE different things and
         # merging them picks a cause. A non-zero exit code is ffmpeg reporting its

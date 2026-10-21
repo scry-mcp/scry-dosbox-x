@@ -1,0 +1,24 @@
+{
+  "summary": "close: died, exit code -9",
+  "status": "ok",
+  "closed": true,
+  "ended_by": "died",
+  "exit_code": -9,
+  "session": {
+    "alive": false,
+    "running": false,
+    "altered": false,
+    "drain_alive": false,
+    "drain_ended": "the descriptor reached end of file",
+    "pid": 93017,
+    "conf": "<dir>/probe.conf",
+    "conf_digest": "78bdc38f360b9b4a",
+    "conf_changed_on_disk": false,
+    "watched": false,
+    "bound_s": 1200,
+    "elapsed_s": 1.6,
+    "terminal_bytes_dropped": 0,
+    "captures": "off",
+    "state_dir": "<dir>/n8-save"
+  }
+}

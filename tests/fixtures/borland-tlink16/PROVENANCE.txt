@@ -1,0 +1,2 @@
+What this is: a map file this package builds itself, from the sources beside it, by the
+recipe beside it (TASM and TLINK run inside DOSBox-X by `build.sh`, which names their versions). Re-made by running that recipe.

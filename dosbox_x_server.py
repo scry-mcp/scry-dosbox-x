@@ -182,10 +182,17 @@ def build_check(binary: str = "") -> dict[str, Any]:
     has_debugger = "-break-start" in text
     if not has_debugger:
         raise ds.Invalid("host_failed",
-            f"`{resolved.path} -helpdebug` does not list `-break-start`: a build without the "
-            f"debugger answers so. The readers of the machine (`registers`, `read_memory`, "
+            f"`{resolved.path} -helpdebug` does not list `-break-start`, so this build carries no "
+            f"debugger. The readers of the machine (`registers`, `read_memory`, "
             f"`memdump`, `step`, `debug`), the breakpoints, the watches and the symbol "
             f"placement all need it; the guest's log (`log`, `log_wait`), the captures and the "
+            f"in-guest input do not")
+    if not binaries.debugger(resolved.path):
+        raise ds.Invalid("host_failed",
+            f"{resolved.path} carries no debugger: `-helpdebug` lists `-break-start`, which a "
+            f"build configured without the debugger lists too, and the binary holds none of the "
+            f"debugger's own text. The readers of the machine, the breakpoints, the watches "
+            f"and the symbol placement all need it; the guest's log, the captures and the "
             f"in-guest input do not")
     return st.reply(**dlaunch.binary_facts(resolved), debugger=True,
                     heavy_debug=binaries.heavy_debug(resolved.path), tools=registered_tools())

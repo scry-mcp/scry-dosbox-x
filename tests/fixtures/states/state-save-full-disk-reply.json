@@ -1,0 +1,10 @@
+{
+  "state_save": {
+    "status": "INVALID",
+    "code": "unexpected_answer",
+    "message": "the emulator refused SAVESTATE of <volume>/states/full.sav: Saving state to slot: 1 (<volume>/states/full.sav) / SAVE_FAILED / DEBUG: SAVESTATE failed: <volume>/states/full.sav (the log says why) / *** Debugger command not recognized. Its log says why (a state of another DOSBox-X version, program, memory size or machine type is refused rather than asked about)",
+    "bytes": null,
+    "path": null
+  },
+  "on_disk": {}
+}

@@ -1,0 +1,10 @@
+What these are: `<binary> -helpdebug` as `build_check` runs it (behind, bounded, stdin closed),
+and what `build_check` answers for that binary, recorded on 2026-10-21 on macOS.
+
+no-debugger.json   a DOSBox-X built from source with `./configure --enable-sdl2
+                   --disable-debug` (a scratch build, not kept):
+                   `-helpdebug` still lists `-break-start`, so the help text alone cannot tell
+                   it from a debugger build, and `build_check` refuses it by the binary's own
+                   text (the debugger's answer to a command it does not know is not in it).
+debugger.json      the scry build f06aa5d26, which carries the debugger and the CPU log.
+Paths are replaced by <dir>.

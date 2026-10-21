@@ -328,6 +328,13 @@ def advance_rate(conf: Path, cwd: Path) -> dict[str, object]:
     finally:
         s.close()
 
+    return window_rates(samples)
+
+
+def window_rates(samples: list[tuple[float, float]]) -> dict[str, object]:
+    """`advance_rate`'s figures off its (wall seconds, guest seconds) samples: the first
+    `SETTLE_SAMPLES` dropped, one rate per window between the samples left, and their median,
+    minimum and maximum (the spread is the evidence, see `advance_rate`)."""
     used = samples[SETTLE_SAMPLES:]
     rates = [(g1 - g0) / (w1 - w0)
              for (w0, g0), (w1, g1) in zip(used, used[1:], strict=False)]

@@ -28,10 +28,12 @@ BANNER = "DOSBox-X version 0.0.0 SDL2, a stub build"
 def build(where: Path, *, version: str = f'echo "{BANNER}" >&2; exit 1',
           name: str = "dosbox-x") -> Path:
     """An executable at `where/name` answering `-version` with the shell in `version` and
-    `-helpdebug` with the line that says the debugger is there."""
+    `-helpdebug` with the line a debugger build lists, carrying the debugger's own text as a
+    debugger build does."""
     where.mkdir(parents=True, exist_ok=True)
     path = where / name
     path.write_text("#!/bin/sh\n"
+                    f"# {binaries.DEBUGGER_MARK.decode()}\n"
                     f'case "$1" in -version) {version} ;; -helpdebug) echo "-break-start" ;; '
                     "esac\n", encoding="utf-8")
     path.chmod(0o755)

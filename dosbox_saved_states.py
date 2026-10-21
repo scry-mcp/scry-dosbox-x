@@ -85,10 +85,14 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
             f"`{verb}` came back without the debugger's own answer to it "
                       f"({said or 'nothing came back'}): saved states need a build whose "
                       f"debugger carries `{verb}` (REFERENCE.md, Saved states)")
+    # WHAT A REFUSAL CAN MEAN IS THE VERB'S: a load refuses a state of another build or machine,
+    # a save one the host would not take (a full volume answers `SAVE_FAILED`).
+    why = (" A state of another DOSBox-X version, program, memory size or machine type is "
+           "refused rather than asked about." if verb == "LOADSTATE" else
+           " The host would not take the file (a full volume answers `SAVE_FAILED`).")
+    where = " The emulator's log says more." if ses.launch.logfile is not None else ""
     raise Invalid("unexpected_answer",
-        f"the emulator refused {verb} of {path}: {said}. Its log says why (a state of "
-                  f"another DOSBox-X version, program, memory size or machine type is "
-                  f"refused rather than asked about)")
+        f"the emulator refused {verb} of {path}: {said}.{why}{where}")
 
 
 def channel_marks(ses: ds.Session) -> dict[str, object]:

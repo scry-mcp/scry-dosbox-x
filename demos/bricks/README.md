@@ -268,6 +268,10 @@ DOSBox-X `<volatile>`.
     "unarmable": []
   },
   "pending": false,
+  "checked": {
+    "available": false,
+    "why": "no executable named bricks.exe beside the table, so it could not be checked against its build"
+  },
   "base_from": "caller",
   "parsed": 65,
   "kept": 65,
@@ -1880,9 +1884,9 @@ Also attached: image/png.
   "paused": true,
   "waited_s": "<volatile>",
   "mark": {
-    "guest": 10473,
-    "emulator": 10473,
-    "all": 10473
+    "guest": 10577,
+    "emulator": 10577,
+    "all": 10577
   },
   "session": {
     "alive": true,
