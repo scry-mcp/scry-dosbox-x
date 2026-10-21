@@ -9,18 +9,19 @@ import contextlib
 import time
 from pathlib import Path
 
-from scry_core import cancel
+from scry_core import cancel, state_files
 from scry_core import reply_contract as contract
 from scry_core.reply_contract import Invalid
 
 import dosbox_launch as dlaunch
+import dosbox_logs as dlogs
 import dosbox_paths as paths
 import dosbox_session as ds
 
 
 def _state_dir(ses: ds.Session) -> Path:
     if ses.launch.state_dir is None:
-        return ses.launch.cwd / "save"
+        return ses.launch.cwd / dlaunch.DEFAULT_STATE_SUBDIR
     return ses.launch.state_dir
 
 
@@ -37,10 +38,15 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
     # WHETHER THE COMMAND WENT DOWN THE CHANNEL, which a load cut short reads: one cancelled
     # in the break-in sent nothing and replaced nothing.
     ses.state_sent = False
+    marked: dict[str, object] = {}
     try:
         if paused:
             ses.break_in()
             began = time.monotonic()
+        if verb == "LOADSTATE":
+            # THE MARK IS TAKEN WITH THE GUEST PARKED AND THE LOAD NOT YET SENT: nothing is
+            # written in between, so everything after it is the loaded machine's.
+            marked = {"mark": channel_marks(ses)}
         ses.state_sent = True
         ok, lines = ses.control.request(f"EXEC {verb} {path}", seconds, poll=cancel.check)
     except BaseException as e:
@@ -67,7 +73,7 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
     if paused:
         ses.resume()                           # `session.running` says where it is left
     if ok:
-        return {"paused": paused, "waited_s": waited}
+        return {"paused": paused, "waited_s": waited, **marked}
     said = " / ".join(line.strip() for line in lines if line.strip())
     if not any(line.startswith(f"DEBUG: {verb}") for line in lines):
         raise Invalid("no_channel",
@@ -78,6 +84,20 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
         f"the emulator refused {verb} of {path}: {said}. Its log says why (a state of "
                   f"another DOSBox-X version, program, memory size or machine type is "
                   f"refused rather than asked about)")
+
+
+def channel_marks(ses: ds.Session) -> dict[str, object]:
+    """`state_load`'s `mark`: where the log ends now, one number per channel `log` takes, all
+    equal because one file holds the three (`scry_core.log_marks`); unavailable with no logfile,
+    or when the host could not size it."""
+    if ses.launch.logfile is None:
+        return contract.unavailable("this session was started without a logfile, so there is "
+                                    "no log to mark")
+    try:
+        end = ses.e9_mark()
+    except OSError as e:
+        return contract.unavailable(f"the logfile could not be sized: {e}")
+    return {channel: end for channel in dlogs.LOG_CHANNELS}
 
 
 def state_save(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, object]:
@@ -121,6 +141,10 @@ def state_load(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
     ds.check_wait_bound(seconds)
     state_dir = ses._state_dir()
     source = state_dir / f"{name}.sav"
+    if (why := state_files.not_a_state(source)) is not None:
+        raise Invalid("unknown_ref",
+            f"no state named {name!r} to load: at {source} {why}, and `state_save` refuses "
+                      "the name while it is there")
     if not source.is_file():
         raise Invalid("unknown_ref",
             f"no state named {name!r} under {state_dir}: `state_list` says what is there")
@@ -145,6 +169,14 @@ def state_load(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
             **{k: meta[k] for k in dlaunch.STATE_META}, **outcome}
 
 
+def _listed(path: Path) -> dict[str, object] | None:
+    """`state_meta` of a listed `.sav`, or None for one removed while the directory was read."""
+    try:
+        return dlaunch.state_meta(path)
+    except FileNotFoundError:
+        return None
+
+
 def state_list(ses: ds.Session) -> dict[str, object]:
     """Every `.sav` under the state directory with what it says about itself. A reading
     of a directory: no window, no console, works while the machine runs."""
@@ -152,8 +184,8 @@ def state_list(ses: ds.Session) -> dict[str, object]:
     files = sorted(state_dir.glob("*.sav")) if state_dir.is_dir() else []
     # THE WORKING SLOT IS NOT A NAMED STATE: the emulator's own numbered file sits
     # beside the copies, and listed among them it counts one state too many.
-    named = [dlaunch.state_meta(p) for p in files if not p.stem.isdigit()]
-    slots = [dlaunch.state_meta(p) for p in files if p.stem.isdigit()]
+    named = [m for p in files if not p.stem.isdigit() and (m := _listed(p)) is not None]
+    slots = [m for p in files if p.stem.isdigit() and (m := _listed(p)) is not None]
     return {"state_dir": str(state_dir), "states": named,
             "working_slot": slots[-1] if slots else contract.unavailable(
                 "the emulator's own numbered slot has not been written")}

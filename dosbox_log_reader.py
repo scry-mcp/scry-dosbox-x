@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from scry_core import log_marks
 from scry_core import log_wait as core_wait
 from scry_core import reply_contract as contract
 from scry_core.progress import Progress, no_progress
@@ -40,14 +41,28 @@ def e9_lines(ses: ds.Session) -> list[str]:
     return dlogs.log_hits(ses._e9_text(), ".", "guest")
 
 
-def log(ses: ds.Session, pattern: str, limit: int, channel: str) -> tuple[list[str], int]:
+def log(ses: ds.Session, pattern: str, limit: int, channel: str,
+        since_mark: int = 0) -> tuple[list[str], int]:
     """The log's `channel`, filtered at the source: the guest's E9 lines with `e9`'s
     own guard (a file with no instrumentation is no channel), the emulator's own
-    lines, or the whole file tagged."""
+    lines, or the whole file tagged. With `since_mark`, only the whole lines written after
+    it: one file holds every channel, so one position serves all three, and a window with no
+    instrumentation in it is an empty answer about the window."""
     dlogs.check_channel(channel)
+    if since_mark:
+        lines, _ = core_wait.lines_since(log_file_from(ses, since_mark, channel), since_mark)
+        return dlogs.filter_log("\n".join(lines), pattern, limit, channel)
     if channel == "guest":
         return dlogs.filter_e9(ses._e9_text(), pattern, limit)
     return dlogs.filter_log(ses._log_text(), pattern, limit, channel)
+
+
+def log_file_from(ses: ds.Session, since_mark: int, channel: str) -> Path:
+    """The session's logfile, with `since_mark` held to where it ends now
+    (`log_marks.check_since_mark`)."""
+    log = require_logfile(ses, "log channel to read from a mark")
+    log_marks.check_since_mark(since_mark, log.stat().st_size if log.exists() else 0, channel)
+    return log
 
 
 def require_logfile(ses: ds.Session, what: str) -> Path:

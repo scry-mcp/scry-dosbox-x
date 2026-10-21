@@ -66,6 +66,10 @@ class Channel:
         if verb == "SAVESTATE":
             write_state(Path(path))
             return True, [f"DEBUG: Saved {path}"]
+        log = self.session.launch.logfile
+        if log is not None:
+            with log.open("a", encoding="utf-8") as fh:
+                fh.write("Bochs port E9h: after the load\n")
         return True, [f"DEBUG: Loaded {path}"]
 
 
@@ -111,6 +115,7 @@ class StateFake:
     def state(self) -> dict[str, object]:
         return {"alive": True, "running": not self.parked, "altered": self.altered}
 
+    e9_mark = ds.Session.e9_mark
     _state_dir = ds.Session._state_dir
     _state_command = ds.Session._state_command
     state_save = ds.Session.state_save
@@ -244,6 +249,29 @@ def test_state_list_reads_every_state_with_its_metadata_and_needs_no_window(
     assert cast(dict[str, Any], out["working_slot"])["program"] == "OTHER"
     assert "not a save state" in str(by["junk"]["note"])
     assert cast(dict[str, Any], by["junk"]["program"])["available"] is False, by["junk"]
+
+
+def test_a_name_that_holds_no_state_is_listed_saying_what_is_there_never_raised(
+        tmp_path: Path) -> None:
+    """A dangling `.sav` link and a `.sav` directory take the name all the same: the listing
+    shows each with its readings unavailable, saying what is there, rather than failing whole;
+    `state_load` refuses them `unknown_ref` saying the same."""
+    fake = StateFake(tmp_path / "save")
+    write_state(tmp_path / "save" / "boot.sav")
+    (tmp_path / "save" / "x.sav").symlink_to("/nowhere.zip")
+    (tmp_path / "save" / "d.sav").mkdir()
+    out = ds.Session.state_list(as_session(fake))
+    by = {s["name"]: s for s in cast(list[dict[str, Any]], out["states"])}
+    assert sorted(by) == ["boot", "d", "x"], by
+    assert by["x"]["note"] == ("the file is a link to /nowhere.zip, and no file is reached "
+                               "through it")
+    assert by["d"]["note"] == "the file is a directory, not a state"
+    for name in ("x", "d"):
+        for key in ("bytes", "program", "saved_at"):
+            assert by[name][key] == {"available": False, "why": by[name]["note"]}, by[name]
+    with pytest.raises(ds.Invalid, match="a directory, not a state") as exc:
+        ds.Session.state_load(as_session(fake), "d", 5.0)
+    assert exc.value.code == "unknown_ref"
 
 
 def test_the_tools_carry_the_envelope_and_the_summaries_name_the_state(tmp_path: Path) -> None:
@@ -592,3 +620,33 @@ def test_a_release_that_fails_on_the_host_keeps_the_cancellation(
     with pytest.raises(asyncio.CancelledError):
         ds.Session.state_save(as_session(fake), "boot", 5.0)
     assert fake.moves == ["break", "resume"]
+
+
+@pytest.mark.parametrize("parked", [True, False], ids=["parked", "running"])
+def test_a_load_marks_where_the_log_ended_as_it_was_sent_on_every_channel(
+        tmp_path: Path, parked: bool) -> None:
+    """The mark is the log's end with the guest parked and the load not yet sent: a line the
+    loaded machine writes lands after it, so `since_mark` reads that line and not the ones
+    before; one number per channel, since one file holds the three."""
+    fake = StateFake(tmp_path / "save", parked=parked)
+    log = tmp_path / "e9.log"
+    log.write_text("Bochs port E9h: before the load\n", encoding="utf-8")
+    fake.launch = dataclasses.replace(fake.launch, logfile=log)
+    write_state(tmp_path / "save" / "boot.sav")
+    before = log.stat().st_size
+    got = ds.Session.state_load(as_session(fake), "boot", 5.0)
+    assert got["mark"] == {"guest": before, "emulator": before, "all": before}, got
+    assert log.stat().st_size > before, "the loaded machine's line is after the mark"
+    assert ("break" in fake.moves) is not parked, fake.moves
+
+
+def test_a_load_marks_zero_before_the_log_exists_and_none_without_a_logfile(
+        tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "save")
+    write_state(tmp_path / "save" / "boot.sav")
+    got = ds.Session.state_load(as_session(fake), "boot", 5.0)
+    assert cast(dict[str, Any], got["mark"])["available"] is False, got
+    fake.launch = dataclasses.replace(fake.launch, logfile=tmp_path / "later.log")
+    fake.launch.logfile.unlink(missing_ok=True)  # type: ignore[union-attr]
+    got = ds.Session.state_load(as_session(fake), "boot", 5.0)
+    assert got["mark"] == {"guest": 0, "emulator": 0, "all": 0}, got

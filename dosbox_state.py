@@ -60,8 +60,13 @@ def flat(linear: int) -> str:
     return f"{linear:#010x}"
 
 
+def utc_now() -> datetime:
+    """The one clock a declaration is stamped and aged by."""
+    return datetime.now(UTC)
+
+
 def now() -> str:
-    return datetime.now(UTC).isoformat(timespec="seconds")
+    return utc_now().isoformat(timespec="seconds")
 
 
 def family(kind: str) -> str:

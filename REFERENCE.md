@@ -41,7 +41,8 @@ operations run on the fresh session with `perform`'s vocabulary and rules, `sett
 bounding each wait for a stop, and its account replaces the plain reply, with the start
 facts under `start`. `state_dir` is where `state_save` writes and `state_list` reads (`save`
 under `cwd` when omitted), and every session turns the emulator's save remark dialog off,
-which would otherwise wait for a click nobody sends.
+which would otherwise wait for a click nobody sends. A file where that default directory goes
+refuses `start` `host_failed`, naming the default and `state_dir` as what moves it.
 
 **Two parameters govern the tools that READ what they set up**, and neither is optional if
 you want them. The rule is what is written, because a count of "which tools" goes stale:
@@ -561,7 +562,9 @@ declarations sharing one row would be disarmed together by a clear of either, in
 
 What the server STORES is the declaration, not the armed row. A symbol's address moves every
 time you recompile; the declaration does not, so on every `symbols_load` each one is
-re-resolved against the new map and re-armed, and the reply names them (`rearmed_refs`). A
+re-resolved against the new map and re-armed, and the reply names them (`declarations`: one list
+per state, `rearmed`, `stale`, `unresolved`, `ambiguous`, `unarmable`, each a list row, `why`
+on the last three; `start`'s `declarations.rearm` is the same account for the park). A
 symbol that no longer exists (the compiler inlined it, or you removed it for now) is KEPT,
 unresolved, and `breakpoint_list` says so: it arms nothing and it is lost nothing. The store
 is on disk, keyed by the config file's identity, so it survives closing the emulator and
@@ -569,7 +572,12 @@ restarting the client, and two different guests never inherit each other's break
 Re-declaring something already stored is a no-op that says `already_stored`, so a
 declaration script survives being re-run.
 
-**Every declaration knows when and by which session it was made**, and the clear tools take
+**Every declaration knows when and by which session it was made**, and every row a list or a
+re-arm account gives says so (`scry_core.declaration_rows`): `ref`, `by`, `cpu`
+(unavailable: a DOS machine has one), `created_at`, `origin`, `inherited` (true for a row this
+session did not declare) and `age_s` (whole seconds since `created_at`, unavailable for a row
+with no date). Nothing expires: a row another session left is shown as such and cleared by its
+`ref`. The clear tools take
 exactly the `ref` the declaring reply carried (`breakpoint_interrupt(0x21, ah=0x4B)` answers
 `ref: "BPINT 21 AH=4B"`, and that is the string that clears it). An interrupt breakpoint is
 stored under its `BPINT` spelling rather than cleared through the console's index, which
@@ -1205,9 +1213,19 @@ It returns the **first** match, `verdict` `TARGET` (the question is "when did it
 `lines_total` says how many there were, so a caller who wanted the latest knows to use `log`,
 which keeps the newest). `waited_s` is measured, and is `0.0` exactly when it had already
 happened. The engine is `scry_core.log_wait`: the log read whole lines at a time from a mark,
-so a line half-written between two flushes is seen once and whole, and a log rewritten shorter
-than the mark is read from its start, at the cost that a line from before the rewrite can be
-served again as new.
+so a line half-written between two flushes is seen once and whole, a line begun before a mark
+is left to before it, and a log rewritten shorter than the mark is read from its start, at the
+cost that a line from before the rewrite can be served again as new.
+
+**`since_mark` asks "after Y".** A guest that replays a saved timeline writes lines that look
+like the ones before the load, stamps included, so content cannot tell them apart; a position
+can. `state_load` answers `mark`, where the log ended as the load was sent, one number per
+channel and all three equal because one file holds them, and `log` and `log_wait` take
+`since_mark`: only whole lines written after it are read, and for `log_wait` "already" means
+"since the mark". 0, the default, reads the whole log. A negative one and one past where the log
+ends now (a mark of another session, a log rewritten shorter) are refused `bad_argument`. The
+mark is a position in the file, not a moment: a line the emulator had not yet flushed to the
+file when the load was sent lands after it.
 
 **Every ending takes one last read of the log first.** The loop asks whether the emulator is
 still there BEFORE it reads and leaves on the deadline AFTER it, so a line written in either
@@ -1799,7 +1817,13 @@ refusal of its own (a state of another DOSBox-X version, program, memory size or
 refused, never asked about) is `unexpected_answer` quoting it, and the emulator's log says why. The
 state is `<name>.sav` under the session's `state_dir`, written there directly and read back for
 what it says about itself; `state_list` reads every state's ZIP members (`version`, `program`,
-`machine`, `memory_mb`, `saved_at`) without loading, needs no window, and answers while the guest runs. A save
+`machine`, `memory_mb`, `saved_at`) without loading, needs no window, and answers while the guest
+runs. A `.sav` that holds no state is listed with a `note` and each reading unavailable saying
+what is there: a file that is not a state's ZIP, and a name held by no file, judged by what the
+path resolves to before anything opens it (a link through which no file is reached, a
+directory, a link to one, a FIFO, whose open would hold the call, a socket or a device), which
+`state_load` refuses `unknown_ref` saying the same.
+`state_load`'s `mark` is where the log ended as the load was sent (*The log*). A save
 never overwrites and alters nothing; a load marks the session altered, because it replaces the
 machine. A name is letters, digits, `_` and `-`, starting with a letter or a digit, at most 64 of
 them, and not digits only: the emulator's own slot files are `<n>.sav` in the same directory.

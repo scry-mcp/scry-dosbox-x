@@ -37,7 +37,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from scry_core import live_host
+from scry_core import live_host, state_files
 from scry_core import reply_contract as contract
 from scry_core.reply_contract import Invalid
 
@@ -501,6 +501,8 @@ STATE_META = {"version": "DOSBox-X_Version", "program": "Program_Name",
               "saved_at": "Time_Stamp"}
 
 
+#: Where the states go when `start` is given no `state_dir`: this directory under `cwd`.
+DEFAULT_STATE_SUBDIR = "save"
 #: A file in the state directory that is no state: said in its row, never refused.
 NOT_A_STATE = "not a save state: the file is not a ZIP the emulator wrote"
 
@@ -538,7 +540,13 @@ def check_state_name(name: object) -> None:
 def state_meta(path: Path) -> dict[str, object]:
     """What a state file says about itself, read off the ZIP without loading it. A file
     that is not a state ZIP gets a `note` rather than a refusal, because `state_list` is a
-    reading of a directory and a stray file in it is information."""
+    reading of a directory and a stray file in it is information; so does a name held by
+    something that is no file at all (`scry_core.state_files`: a dangling link, a directory,
+    a FIFO), judged before anything opens it, every reading unavailable saying what is there."""
+    if (why := state_files.not_a_state(path)) is not None:
+        gone = contract.unavailable(why)
+        return {"name": path.stem, "path": str(path), "bytes": gone, "note": why,
+                **{key: gone for key in STATE_META}}
     out: dict[str, object] = {"name": path.stem, "path": str(path),
                               "bytes": path.stat().st_size}
     read: dict[str, object] = {}

@@ -59,10 +59,11 @@ class RunningGuest:
     def state(self) -> dict[str, object]:
         return {"pid": 1, "alive": True, "running": not self.stopped, "altered": self.altered}
 
-    def log(self, pattern: str, limit: int, channel: str) -> tuple[list[str], int]:
+    def log(self, pattern: str, limit: int, channel: str,
+            since_mark: int = 0) -> tuple[list[str], int]:
         return [], 0
 
-    def log_wait(self, pattern: str, seconds: float, channel: str,
+    def log_wait(self, pattern: str, seconds: float, channel: str, mark: int = 0,
                  **_: object) -> dict[str, object]:
         return {"verdict": "TARGET", "line": "x", "already": True}
 

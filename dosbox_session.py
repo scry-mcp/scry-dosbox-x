@@ -2221,8 +2221,9 @@ class Session:
     def e9_lines(self) -> list[str]:
         return log_reader.e9_lines(self)
 
-    def log(self, pattern: str, limit: int, channel: str) -> tuple[list[str], int]:
-        return log_reader.log(self, pattern, limit, channel)
+    def log(self, pattern: str, limit: int, channel: str,
+            since_mark: int = 0) -> tuple[list[str], int]:
+        return log_reader.log(self, pattern, limit, channel, since_mark)
 
     def _log_text(self) -> str:
         return log_reader._log_text(self)

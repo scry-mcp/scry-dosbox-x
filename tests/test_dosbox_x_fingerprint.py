@@ -64,12 +64,13 @@ def test_symbols_load_re_arms_a_raw_address_over_the_same_map_and_leaves_it_over
     # A NEW SESSION over the SAME conf and map: everything comes back, whoever declared it.
     got = a_session("s2")
     assert got["declarations"]["stale"] == [], got["declarations"]
-    assert set(got["declarations"]["rearmed_refs"]) == {"_main", "00A7:5C6F0"}
+    assert {r["ref"] for r in got["declarations"]["rearmed"]} == {"_main", "00A7:5C6F0"}
     # The map is RELINKED: the raw address is stale, the name re-resolves.
     nm.write_text("00001000 T _start\n0016dd90 T _main\n", encoding="utf-8")
     got = a_session("s3")
-    assert got["declarations"]["stale"] == ["00A7:5C6F0"], got["declarations"]
-    assert got["declarations"]["rearmed_refs"] == ["_main"]
+    assert [r["ref"] for r in got["declarations"]["stale"]] == ["00A7:5C6F0"], \
+        got["declarations"]
+    assert [r["ref"] for r in got["declarations"]["rearmed"]] == ["_main"]
     listed = {b["ref"]: b for b in server.breakpoint_list()["breakpoints"]}
     assert listed["00A7:5C6F0"]["state"] == "stale"
     assert "another build" in listed["00A7:5C6F0"]["why"]

@@ -25,7 +25,7 @@ import re
 from collections.abc import Callable
 from typing import Any
 
-from scry_core import judges, media_tools, narrowing, picture, screen_map
+from scry_core import judges, log_marks, media_tools, narrowing, picture, screen_map
 from scry_core import value_format as vf
 from scry_core import vocabulary as vocab
 
@@ -203,16 +203,19 @@ def _map_save(dest: str = "", overwrite: bool = False, **_: Any) -> None:
     screen_map.check_save(dest, overwrite)
 
 
-def _log(pattern: str, channel: str, limit: int = 40, **_: Any) -> None:
+def _log(pattern: str, channel: str, limit: int = 40, since_mark: int = 0, **_: Any) -> None:
     dlogs.compiled(pattern)
     dlogs.check_e9_limit(limit)
     dlogs.check_channel(channel)
+    log_marks.check_position(since_mark, channel)
 
 
-def _log_wait(pattern: str, channel: str, seconds: float = 30.0, **_: Any) -> None:
+def _log_wait(pattern: str, channel: str, seconds: float = 30.0, since_mark: int = 0,
+              **_: Any) -> None:
     ds.check_wait_bound(seconds)
     dlogs.compiled(pattern)
     dlogs.check_channel(channel)
+    log_marks.check_position(since_mark, channel)
 
 
 def _display(e9: str = "none", e9_filter: str = ".", e9_stamp: str = "",

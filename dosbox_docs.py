@@ -4,7 +4,7 @@ tools' descriptions are scry-core's own values, and a number is the constant tha
 never typed into the text."""
 from __future__ import annotations
 
-from scry_core import docs, picture, recording, screen_map, series
+from scry_core import docs, log_marks, picture, recording, screen_map, series
 
 import dosbox_checks as checks
 import dosbox_code as code
@@ -31,6 +31,7 @@ DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES
               "STOP_FIELDS": STOP_FIELDS,
               "DROPPED_SHOWN": str(recording.DROPPED_SHOWN),
               "RECORD_MAX": str(sequence.RECORD_MAX),
+              **log_marks.DOC_VALUES,
               "LOG_LIMIT_MAX": str(logs.LOG_LIMIT_MAX), "WAIT_MAX_S": f"{ds.RUN_TO_MAX:g}",
               "READ_MAX": str(console.DATA_VIEW_BYTES), "DISASM_MAX": str(code.LENGTH_MAX),
               "INSTRUCTIONS_MAX": str(trace.INSTRUCTIONS_MAX),

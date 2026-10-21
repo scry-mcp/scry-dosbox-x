@@ -241,5 +241,9 @@
    "tool": "start",
    "args": {"conf": "/opt/dosfury/fury.conf", "cwd": "/opt/dosfury", "session_seconds": 900,
             "presence": false}},
-  {"id": "D126", "prompt": "Is the edge that marks this session's window being drawn, or could it not be drawn, and why?", "tool": "status"}
+  {"id": "D126", "prompt": "Is the edge that marks this session's window being drawn, or could it not be drawn, and why?", "tool": "status"},
+  {"id": "D127", "prompt": "A state was just loaded and its reply gave the mark 30715 for the guest channel. Show the newest 25 lines of the guest's E9 instrumentation matching TICK [0-9]+ that were written after that mark.",
+   "tool": "log", "args": {"pattern": "TICK [0-9]+", "channel": "guest", "limit": 25, "since_mark": 30715}, "grammar": ["guest"]},
+  {"id": "D128", "prompt": "After a state load whose reply gave the mark 8820 for the guest channel, wait up to 40 seconds for a guest line matching LEVEL 3, counting only what the guest wrote after that mark.",
+   "tool": "log_wait", "args": {"pattern": "LEVEL 3", "channel": "guest", "seconds": 40, "since_mark": 8820}, "grammar": ["guest"]}
 ]}

@@ -90,6 +90,7 @@ sys.path.append(str(Path(__file__).resolve().parent))
 from scry_core import (  # noqa: E402
     fresh,
     judges,
+    log_marks,
     media_tools,
     narrowing,
     process_name,
@@ -117,6 +118,7 @@ import dosbox_find as finder  # noqa: E402
 import dosbox_inputs as inputs  # noqa: E402
 import dosbox_launch as dlaunch  # noqa: E402
 import dosbox_lifecycle as lifecycle  # noqa: E402
+import dosbox_log_reader as log_reader  # noqa: E402
 import dosbox_logs as dlogs  # noqa: E402
 import dosbox_machine as machine  # noqa: E402
 import dosbox_media as media  # noqa: E402
@@ -204,14 +206,14 @@ def start(conf: str, cwd: str,
           binary: str = "", background: bool | None = None,
           presence: Annotated[bool, Field(description=scry_presence.ARGUMENT)] = True,
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Open ONE live DOSBox-X session from your conf, parked (stopped) at the debugger.
+    """Open ONE live DOSBox-X session from your conf, parked at the debugger.
     Refuses while a session is live.
 
     Every path is absolute or `~`-led: `cwd`, the emulator's working directory, there; `conf`;
     `logfile`, its directory there; `captures_dir` and `state_dir`, created with their parents.
     `session_seconds`: the session's REQUIRED lifetime, at most {SESSION_MAX_S} s; `close` is
     the act. `shared`: watched, in a window `window_flags` places; false, headless.
-    `window_flags` and `flags` (the emulator's own options, after this server's defaults) are
+    `window_flags` and `flags` (the emulator's own, after this server's defaults) are
     argv tokens, a `-set` value ONE token with its spaces: `["-set", "sdl display=1"]`.
     `break_on_int3`: the guest's `int 3` stops at the debugger. `logfile`: the guest's E9
     channel, without which `log`, `log_wait`, `expect` and `drive` have none. `program` runs
@@ -224,9 +226,9 @@ def start(conf: str, cwd: str,
     `true` behind; `false` in front; omitted, by `shared`.
 
     Reply: `shared`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `stub`,
-    `input_port`, `background`, `presence`, and `rearm_refused` (why) when stored raw
-    breakpoints could not be re-armed; with `plan`, the sequence account, the start facts
-    under `start`.
+    `input_port`, `background`, `presence`, `declarations.rearm`, and `rearm_refused` (why)
+    when stored raw breakpoints could not re-arm; with `plan`, the sequence account, the start
+    facts under `start`.
 
     Refused before anything starts: a path not absolute, an unresolved binary, a missing
     conf, `cwd` or `logfile` directory, `session_seconds` out of range, `shared` without
@@ -309,7 +311,8 @@ def close(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
 @tool("Read the log", summary=one_line.log, read_only=True)
 def log(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
         limit: Annotated[int, vocab.bounds(1, dlogs.LOG_LIMIT_MAX)] = 40,
-        labels: bool = False) -> dict[str, Any]:
+        labels: bool = False,
+        since_mark: Annotated[int, log_marks.SINCE_MARK_BOUND] = 0) -> dict[str, Any]:
     """The session's log, one `channel` of it, filtered in the server by a regex.
 
     `channel` is `guest` (the program's own 0xE9 instrumentation, one line per write),
@@ -318,7 +321,8 @@ def log(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
     emulator's stdout, which here is the debugger's terminal, and is refused by name.
     `pattern` is a Python regular expression; `limit` keeps the NEWEST
     matching lines; `labels=True` adds `labels`, how many returned lines carry each first
-    word (the guest's own `BOOT`, `PERF`, `UI`...), one glance at who is talking. Needs a
+    word (the guest's own `BOOT`, `PERF`, `UI`...), one glance at who is talking. {SINCE_MARK}
+    (one file holds the three channels, so one position serves each). Needs a
     session started with `logfile`. Works on a running guest (and, like every tool, applies
     what was queued while the guest ran if it finds the machine stopped, saying so in
     `applied_on_stop`).
@@ -330,10 +334,11 @@ def log(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
     INVALID, with `code` and `message` saying which: no `logfile` on this session; the log
     does not exist yet; the guest channel holds no instrumentation at all; `limit` outside
     1..{LOG_LIMIT_MAX} (above that, narrow the pattern); a
-    pattern that does not compile; a channel that is not one of the three; the session is
-    gone. For "when did X happen, and wait if it has not" use `log_wait`.
+    pattern that does not compile; a channel that is not one of the three; a `since_mark` that
+    names no position of the log; the session is gone. For "when did X happen, and wait if it
+    has not" use `log_wait`.
     """
-    lines, total = live().log(pattern, limit, channel)
+    lines, total = live().log(pattern, limit, channel, since_mark)
     reply: dict[str, Any] = dict(pattern=pattern, channel=channel, lines_total=total,
                                  truncated=total > len(lines), lines=lines)
     if labels:
@@ -344,13 +349,15 @@ def log(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
 @tool("Wait for a log line", summary=one_line.log_wait, read_only=True, on_cancel="none")
 def log_wait(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
              seconds: Annotated[float, ds.WAIT_BOUNDS] = 30.0,
+             since_mark: Annotated[int, log_marks.SINCE_MARK_BOUND] = 0,
              ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """WHEN a line of `channel` matching `pattern` was logged: at once if it already was,
     else wait for it. Reports its progress while it waits.
 
     `channel` as in `log` (`guest`, `emulator`, `all`); `pattern` is a regex over that
     channel; `seconds` bounds the wait. It reads what the log ALREADY holds first, so a line
-    that went past before you asked is still found. Works on a running guest (the usual
+    that went past before you asked is still found. `since_mark` as in `log`: "already" is then
+    "since the mark", which is how "after the load" is asked. Works on a running guest (the usual
     case: a guest writing traces is a guest that runs).
 
     Reply: `verdict` `TARGET`, `pattern`, `channel`, `line` (the FIRST match; `log` is the tool
@@ -362,9 +369,9 @@ def log_wait(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS
     machine is STOPPED and the log does not already hold the line (a stopped guest writes
     nothing; the refusal names `pattern` and `last_stop`, and a stop that lands DURING the wait
     is reported the same way after one last read of the log), `session_broken` when the emulator
-    went away. No `logfile`, a bad `seconds` (outside (0, {WAIT_MAX_S}]), an unusable regex or
-    an unknown channel is refused. A log that does not exist YET is not refused: that is the
-    ordinary state right after `resume`.
+    went away. No `logfile`, a bad `seconds` (outside (0, {WAIT_MAX_S}]), an unusable regex, an
+    unknown channel or a `since_mark` that names no position of the log is refused. A log that
+    does not exist YET is not refused: that is the ordinary state right after `resume`.
 
     The moment it hands back is for choosing an address to `run_to` or `watch` on the NEXT
     run: the guest is usually still running when this returns, and the console tools refuse
@@ -372,8 +379,10 @@ def log_wait(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS
     mark taken before the act.
     """
     session = live()
+    if since_mark:
+        log_reader.log_file_from(session, since_mark, channel)
     try:
-        got = session.log_wait(pattern, seconds, channel, progress=bridge(ctx))
+        got = session.log_wait(pattern, seconds, channel, mark=since_mark, progress=bridge(ctx))
         return st.answer({**got, "channel": channel})
     except ds.E9Stopped as e:
         running.observe_stop(session)          # the stop the wait found is recorded and named
@@ -966,8 +975,9 @@ def state_load(name: str, seconds: Annotated[float, ds.WAIT_BOUNDS] = ds.STATE_W
     DOSBox-X version, program, memory size or machine type is refused, never asked about. It
     REPLACES the machine, so the session is altered from here on.
 
-    Reply: `name`, `path`, the state's own members, `paused`, `waited_s`; `session.running`
-    says whether the guest runs after the call.
+    Reply: `name`, `path`, the state's own members, `paused`, `waited_s`, {MARK}; `session.running`
+    says whether the guest runs after the call. A `.sav` that is no regular file is `unknown_ref`,
+    never opened.
     """
     return st.answer(live().state_load(name, seconds))
 
@@ -1002,7 +1012,9 @@ def snapshot(dest: str = "", seconds: Annotated[float, ds.WAIT_BOUNDS] = ds.SNAP
 def state_list() -> dict[str, Any]:
     """Every state under the session's state directory, each with what it says about
     itself (`version`, `program`, `machine`, `memory_mb`, `saved_at`, `bytes`), read
-    off the file without loading it. A file there that is not a state carries a `note`.
+    off the file without loading it. A file there that is not a state carries a `note`, and so
+    does a `.sav` that is no regular file (a link to nothing, a directory, a FIFO), each reading
+    unavailable.
     The emulator's own numbered slot file is NOT a named state and is reported apart, as
     `working_slot`. Works on a running guest and needs no window.
 
@@ -1069,8 +1081,8 @@ def symbols_load(path: str, base: str = "",
     `disambiguated`, `unreadable`, `excluded_sections`, `excluded_pattern`,
     `excluded_unplaceable`, `overlay_idle`, `unencodable`, `unencodable_total`, `symbols_typed`,
     `bytes`, `descriptor`, `pending`, `base_from`, `base`, `limit`, and `declarations` (the
-    stored breakpoints re-armed: `rearmed_refs`, `stale`, and counts for `unresolved`,
-    `ambiguous`, `unarmable`).
+    re-arm: `rearmed`, `stale`, `unresolved`, `ambiguous`, `unarmable`, each a list of
+    `breakpoint_list`'s rows, `why` on the last three).
 
     Reference: REFERENCE.md, Names for addresses.
     """
@@ -1128,7 +1140,8 @@ def comment_add(ref: str, text: str) -> dict[str, Any]:
     (`[g]+2`), `symbol+offset`, a `0x` number, a malformed `SEG:OFF`, an offset past its
     segment's limit, a bad text; `ambiguous_ref`, a name this table defines twice.
 
-    Reply: `comment` (the row: `ref`, `by`, `created_at`, `origin`, `text`, `addr` once
+    Reply: `comment` (the row: `ref`, `by`, `cpu`, `created_at`, `origin`, `inherited`, `age_s`,
+    `text`, `addr` once
     placed, `state`, `why`), `replaced_comments` (the rows replaced, whole), `declarations`
     (`persistent`, true: the store is a file, and `path`, that file), `note` (why the place is
     not `resolved`).
@@ -1145,7 +1158,8 @@ def comment_list() -> dict[str, Any]:
     on a RUNNING guest too, typing nothing: then a protected-mode `SEG:OFF` is `unarmable` until
     a stop reads its selector's base.
 
-    Reply: `comments`, each row with `ref`, `by`, `created_at`, `origin`, `text`, `addr`
+    Reply: `comments`, each row with `ref`, `by`, `cpu`, `created_at`, `origin`, `inherited`,
+    `age_s`, `text`, `addr`
     (the linear address, once placed), `state` (`resolved`, `unresolved` no such symbol now,
     `ambiguous`, `stale` a raw address not known to be this build's, `unarmable` its place cannot be
     worked out now), `why`, and `orphan` on a row from a store that kept no origin;
@@ -1553,8 +1567,9 @@ def breakpoint_list() -> dict[str, Any]:
     stop yet, `last_stop` is unavailable and a symbol's state is `unarmable`. Stopped: read
     live, `debugger_read` true.
 
-    Reply: `breakpoints`, each with `ref` (the string that clears it), `by`, `created_at`,
-    `origin` (the session that declared or last adopted it), `entry`, `state` -- `armed` (its
+    Reply: `breakpoints`, each with `ref` (the string that clears it), `by`, `cpu`, `created_at`,
+    `origin` (the session that declared or last adopted it), `inherited` (true for one an earlier
+    session left), `age_s` (whole seconds since `created_at`), `entry`, `state` -- `armed` (its
     entry is in the debugger's list), `unresolved` (no such symbol in this build), `gone`
     (armable but no longer in the list), `unarmable` (machine running or no symbols loaded),
     `ambiguous` (a name this build defines more than once: nothing is armed for it), `pending`
@@ -1628,7 +1643,8 @@ def watch_list() -> dict[str, Any]:
     """Every watch DECLARATION and its state, on a stopped OR a running guest (running:
     states as of the last stop's survey, `debugger_read` false, `last_stop` dating the answer;
     see `breakpoint_list`). Reply: `watches`, each with `ref`, `by`,
-    `created_at`, `origin` (the session that declared or last adopted it), `mode`,
+    `cpu`, `created_at`, `origin` (the session that declared or last adopted it), `inherited`,
+    `age_s`, `mode`,
     `length`, `fmt`, `state` (a show watch: `evaluated`/`unresolved`/`ambiguous`/
     `unarmable`, it arms nothing but IS EVALUATED at every stop; a change watch additionally
     `armed` or `gone`; either `orphan` when it comes from a store that kept no origin: it is

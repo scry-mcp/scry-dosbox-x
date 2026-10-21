@@ -526,6 +526,7 @@ class StartReply(DosboxEnvelope, total=False):
     background: bool
     binary: str
     binary_origin: str
+    declarations: dict[str, Any]
     errors: list[Any]
     failed: dict[str, Any]
     failed_at: int | dict[str, Any]
@@ -559,6 +560,7 @@ class StateListReply(DosboxEnvelope, total=False):
 
 class StateLoadReply(DosboxEnvelope, total=False):
     machine: str
+    mark: dict[str, Any]
     memory_mb: int
     name: str
     path: str

@@ -26,6 +26,7 @@ import textwrap
 import threading
 import time
 from collections.abc import Callable
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
@@ -33,8 +34,8 @@ from unittest import mock
 
 import pytest
 from e9_hints import hints_heard
+from scry_core import declaration_rows, media_tools, recording, screen_map
 from scry_core import log_wait as core_wait
-from scry_core import media_tools, recording, screen_map
 from scry_core import reply_contract as contract
 from scry_core import sequence_account as account
 from scry_core import steps as step_judge
@@ -116,6 +117,7 @@ class FakeSession:
         self._avi_facts: dict[tuple[str, int, int], dict[str, object]] = {}
         self.e9_calls: list[tuple[str, int]] = []
         self.log_calls: list[tuple[str, int, str]] = []
+        self.since_marks: list[int] = []
         self.loaded: list[tuple[str, int]] = []
         # WHAT THE ADDRESS-TAKING TOOLS WERE ACTUALLY HANDED. Without this the double
         # could not tell a tool that forwards its caller's address from one that
@@ -346,9 +348,11 @@ class FakeSession:
         self.e9_calls.append((".", 0))          # 0: no limit, the whole channel
         return ["one line"]
 
-    def log(self, pattern: str, limit: int, channel: str) -> tuple[list[str], int]:
+    def log(self, pattern: str, limit: int, channel: str,
+            since_mark: int = 0) -> tuple[list[str], int]:
         dlogs.check_channel(channel)
         self.log_calls.append((pattern, limit, channel))
+        self.since_marks.append(since_mark)
         return ["one line"], 500
 
     def memdump(self, seg: int, off: int, length: int, dest: Path) -> Path:
@@ -4449,7 +4453,7 @@ def test_symbols_load_rearms_a_declaration_at_its_new_address(tmp_path: Path) ->
     assert fake.rows == [], "nothing to arm against before a table is loaded"
     got = server.symbols_load(path=str(nm), base="400000")
     assert got["status"] == "ok"
-    assert got["declarations"]["rearmed"] == 1
+    assert [r["ref"] for r in got["declarations"]["rearmed"]] == ["_main"]
     assert any(r["entry"] == "BP 00A7:16DD80" for r in fake.rows)
 
 
@@ -4564,8 +4568,8 @@ def test_rearm_counts_unresolved_and_ambiguous(tmp_path: Path) -> None:
     server.breakpoint_at(ref="_main")          # will resolve once loaded
     server.breakpoint_at(ref="_gone")          # stays unresolved
     got = server.symbols_load(path=str(nm), base="400000")
-    assert got["declarations"]["unresolved"] == 1
-    assert got["declarations"]["rearmed"] == 1
+    assert [r["ref"] for r in got["declarations"]["unresolved"]] == ["_gone"]
+    assert [r["ref"] for r in got["declarations"]["rearmed"]] == ["_main"]
 
 
 def test_real_mode_placement_at_its_exact_edges() -> None:
@@ -4735,8 +4739,9 @@ def test_rearm_counts_ambiguous_and_unarmable_apart(tmp_path: Path) -> None:
     dstate.STATE.base.clear()
     dstate.STATE.base.update({"base": -1, "limit": -1, "type": -1})
     got = arming.rearm_declarations(cast(Any, dstate.STATE.session))
-    assert got == {"rearmed": 0, "rearmed_refs": [], "stale": [], "unresolved": 0,
-                   "ambiguous": 1, "unarmable": 1}
+    assert {k: [r["ref"] for r in v] for k, v in got.items()} == {
+        "rearmed": [], "stale": [], "unresolved": [], "ambiguous": ["dup"], "unarmable": ["one"]}
+    assert all(r["why"] for r in (*got["ambiguous"], *got["unarmable"])), got
 
 
 def test_watch_flows_in_real_mode_arm_list_and_clear(tmp_path: Path) -> None:
@@ -5259,9 +5264,9 @@ def test_symbols_load_leaves_another_builds_raw_address_stale_and_names_what_it_
     dstate.STATE.session_origin = "s2"
     dstate.STATE.conf_fingerprint = dlaunch.fingerprint(fake.launch.conf)
     got = server.symbols_load(path=str(nm), base="400000")
-    assert got["declarations"]["rearmed"] == 1, got["declarations"]
-    assert got["declarations"]["rearmed_refs"] == ["_main"], got["declarations"]
-    assert got["declarations"]["stale"] == ["00A7:5C6F0"], got["declarations"]
+    assert [r["ref"] for r in got["declarations"]["rearmed"]] == ["_main"], got["declarations"]
+    assert [r["ref"] for r in got["declarations"]["stale"]] == ["00A7:5C6F0"], \
+        got["declarations"]
     assert [r["entry"] for r in fake.rows] == ["BP 00A7:16DD80"], fake.rows
     listed = {b["ref"]: b for b in server.breakpoint_list()["breakpoints"]}
     assert listed["00A7:5C6F0"]["state"] == "stale", listed
@@ -5346,6 +5351,9 @@ def test_a_re_arm_at_start_that_cannot_read_the_list_is_said_not_fatal(
     got, _ = _start_over_a_store(tmp_path, monkeypatch, {"00A7:0100": None}, CutList)
     assert got["status"] == "ok", got
     assert "no BPLIST header" in got["rearm_refused"], got
+    rearm = got["declarations"]["rearm"]
+    assert rearm["stale"] == [] and [r["ref"] for r in rearm["unarmable"]] == ["00A7:0100"], rearm
+    assert "no BPLIST header" in rearm["unarmable"][0]["why"], rearm
     assert dstate.STATE.session is not None
     assert [d.ref for d in dstate.STATE.store.declarations()] == ["00A7:0100"]  # type: ignore[union-attr]
 
@@ -5358,6 +5366,60 @@ def test_start_with_nothing_to_re_arm_does_not_read_the_list(
                                       {"00A7:0200": "fp-of-another-build"})
     assert got["status"] == "ok" and "rearm_refused" not in got, got
     assert booted.bp_calls == 0, booted.bp_calls
+
+
+def test_start_answers_each_stored_breakpoint_as_a_row_saying_whose_and_how_old(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`start`'s re-arm account is a list of rows per bucket, each the row the lists give, so a
+    declaration an earlier session left says whose it is as it re-arms, and one of another build
+    says it is stale. Both paths: the park that reads the list and arms, and the
+    one that has nothing to arm and reads nothing."""
+    got, _ = _start_over_a_store(tmp_path, monkeypatch, {
+        "00A7:0100": None, "00A7:0200": "fp-of-another-build"})
+    rearm = got["declarations"]["rearm"]
+    assert {k: [r["ref"] for r in v] for k, v in rearm.items()} == {
+        "rearmed": ["00A7:0100"], "stale": ["00A7:0200"], "unresolved": [], "ambiguous": [],
+        "unarmable": []}, rearm
+    for row in (*rearm["rearmed"], *rearm["stale"]):
+        assert row["origin"] == "s1" and row["inherited"] is True, row
+        assert row["cpu"] == contract.unavailable(arming.ONE_CPU_WHY), row
+        assert row["age_s"] == contract.unavailable(declaration_rows.UNDATED_WHY), "t0 is no date"
+    dstate.STATE.session = None
+    (tmp_path / "again").mkdir()
+    got, booted = _start_over_a_store(tmp_path / "again", monkeypatch,
+                                      {"00A7:0200": "fp-of-another-build"})
+    assert [r["ref"] for r in got["declarations"]["rearm"]["stale"]] == ["00A7:0200"], got
+    assert booted.bp_calls == 0, booted.bp_calls
+
+
+def test_a_listed_row_carries_its_age_from_the_servers_clock_and_whose_it_is(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`age_s` is whole seconds since `created_at` on this server's clock, and this session's own
+    row is not `inherited`: the half of a row a caller cannot read off `origin`."""
+    then = datetime(2026, 1, 1, tzinfo=UTC)
+    monkeypatch.setattr(dstate, "utc_now", lambda: then)
+    _names(tmp_path)
+    server.breakpoint_at(ref="_main")
+    monkeypatch.setattr(dstate, "utc_now", lambda: then + timedelta(seconds=90))
+    row = server.breakpoint_list()["breakpoints"][0]
+    assert (row["ref"], row["age_s"], row["inherited"]) == ("_main", 90, False), row
+    assert row["created_at"] == then.isoformat(timespec="seconds"), row
+
+
+def test_a_file_where_the_default_state_directory_goes_is_refused_naming_the_default(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """With no `state_dir` the session's saves go to `<cwd>/save`; a FILE there refuses `start`
+    `host_failed` (the host's filesystem refused), naming the default and the argument that
+    moves it, never `state_dir` as if the caller had given one."""
+    (tmp_path / "save").write_text("a file, not a directory", encoding="utf-8")
+    (tmp_path / "g.conf").write_text("[sdl]\n", encoding="utf-8")
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
+    monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
+    got = server.start(conf=str(tmp_path / "g.conf"), cwd=str(tmp_path), session_seconds=60)
+    assert got["status"] == "INVALID" and got["code"] == "host_failed", got
+    assert got["message"].startswith(
+        "the default state directory (`<cwd>/save`; `state_dir` names another): "), got
+    assert dstate.STATE.session is None
 
 
 def test_a_stored_address_the_parser_refuses_is_listed_and_clearable(tmp_path: Path) -> None:
@@ -7819,3 +7881,14 @@ def test_a_load_at_a_stop_replaces_a_queued_batch_the_debugger_refused(
     monkeypatch.setattr(fake, "load_symbols", real)
     got = cast(dict[str, Any], server.symbols_load(path=str(one), base="400000"))
     assert got["status"] == "ok" and dstate.STATE.pending["load"] is None, got
+
+
+def test_a_state_dir_the_caller_gave_is_named_as_theirs_when_a_file_holds_it(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    (tmp_path / "mine").write_text("a file", encoding="utf-8")
+    (tmp_path / "g.conf").write_text("[sdl]\n", encoding="utf-8")
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
+    monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
+    got = server.start(conf=str(tmp_path / "g.conf"), cwd=str(tmp_path), session_seconds=60,
+                       state_dir=str(tmp_path / "mine"))
+    assert got["status"] == "INVALID" and got["message"].startswith("state_dir: "), got

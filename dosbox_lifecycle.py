@@ -23,6 +23,10 @@ import dosbox_session as ds
 import dosbox_state as st
 from dosbox_state import STATE
 
+#: How a refusal names the state directory `start` chose when the caller gave none.
+DEFAULT_STATE_DIR = (f"the default state directory (`<cwd>/{dlaunch.DEFAULT_STATE_SUBDIR}`; "
+                     "`state_dir` names another)")
+
 
 def start(conf: str, cwd: str, session_seconds: int, shared: bool,
           window_flags: list[str] | None, flags: list[str] | None, break_on_int3: bool,
@@ -77,7 +81,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         # EVERY SESSION HAS THE INPUT ROUTE: input reaches the guest through that socket alone,
         # so a session started without a port could take no key and no click at all.
         input_port=input_port,
-        state_dir=state_path if state_path is not None else cwd_path / "save",
+        state_dir=state_path if state_path is not None else cwd_path / dlaunch.DEFAULT_STATE_SUBDIR,
         binary=resolved.path,
         background=dlaunch.judge_background(background, shared),
     )
@@ -95,7 +99,10 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     # EVERYTHING ELSE JUDGED, then the two directories this server writes into, with their
     # parents: the emulator creates neither (a save into a missing state directory is logged as
     # `SAVE_FAILED`). A refusal past this point (a busy port) leaves them made.
-    for name, made in (("captures_dir", launch.captures_dir), ("state_dir", launch.state_dir)):
+    # A DEFAULT IS NAMED AS ONE: a caller who passed no `state_dir` is told which place was
+    # chosen for them and which argument moves it, not handed an argument they never gave.
+    state_name = "state_dir" if state_path is not None else DEFAULT_STATE_DIR
+    for name, made in (("captures_dir", launch.captures_dir), (state_name, launch.state_dir)):
         if made is not None:
             paths.make_directory(name, made)
     binary_facts = dlaunch.binary_facts(resolved)

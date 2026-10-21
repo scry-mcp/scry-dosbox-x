@@ -117,3 +117,69 @@ def test_a_log_wait_whose_call_is_cancelled_stops_waiting(
     with pytest.raises(asyncio.CancelledError):
         LogSession(log).log_wait("NEVER_THERE", seconds=5, channel="guest")
     assert time.monotonic() - began < 1.0
+
+
+def test_since_mark_reads_only_what_came_after_it_on_every_channel(tmp_path: Path) -> None:
+    """One file holds the three channels, so one position serves each: after the mark only
+    what was written after it, whatever the channel; a mark at the end reads nothing."""
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n{EMU_LINE}\n", encoding="utf-8")
+    mark = log.stat().st_size
+    with log.open("a", encoding="utf-8") as fh:
+        fh.write(f"{E9_BOOT}\n{EMU_LINE_2}\n")      # the replayed timeline writes BOOT again
+    ses = LogSession(log)
+    assert ses.log("BOOT", 40, "guest", mark) == ([E9_BOOT], 1)
+    assert ses.log("BOOT", 40, "guest") == ([E9_BOOT, E9_BOOT], 2), "0 reads the whole log"
+    assert ses.log(".", 40, "emulator", mark) == ([EMU_LINE_2], 1)
+    assert ses.log(".", 40, "all", mark) == (
+        [f"[guest] {E9_BOOT}", f"[emulator] {EMU_LINE_2}"], 2)
+    assert ses.log(".", 40, "guest", log.stat().st_size) == ([], 0), "a window, not the channel"
+    with pytest.raises(ds.Invalid, match=r"past where the guest log ends now") as e:
+        ses.log(".", 40, "guest", log.stat().st_size + 1)
+    assert e.value.code == "bad_argument"
+
+
+def test_log_wait_since_mark_takes_a_line_before_the_mark_for_history(tmp_path: Path) -> None:
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+    mark = log.stat().st_size
+    missed = LogSession(log).log_wait("BOOT", seconds=0.2, channel="guest", mark=mark)
+    assert missed["verdict"] == "TIMEOUT" and missed["since_mark"] == mark, missed
+    with log.open("a", encoding="utf-8") as fh:
+        fh.write(f"{E9_BOOT}\n")
+    got = LogSession(log).log_wait("BOOT", seconds=1, channel="guest", mark=mark)
+    assert got["verdict"] == "TARGET" and got["already"] is True and got["lines_before"] == 0
+
+
+def test_the_tools_refuse_a_mark_that_names_no_position_before_reading(tmp_path: Path) -> None:
+    """A negative mark is refused by the judge every list runs too; one past the end by the
+    tool, against the file as it stands."""
+    import dosbox_checks as checks
+    with pytest.raises(ds.Invalid, match="0 or more"):
+        checks.BY_OP["log"](pattern=".", channel="guest", since_mark=-1)
+    with pytest.raises(ds.Invalid, match="0 or more"):
+        checks.BY_OP["log_wait"](pattern=".", channel="guest", since_mark=-1)
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+    s = install()
+    s.launch.logfile = log
+    got = server.log_wait(pattern=".", channel="guest", seconds=1, since_mark=10**6)
+    assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+    assert "past where the guest log ends now" in got["message"], got
+
+
+def test_the_log_tool_hands_its_mark_to_the_session() -> None:
+    s = install()
+    server.log(pattern="PERF", channel="guest", limit=7, since_mark=12)
+    assert s.since_marks == [12], s.since_marks
+
+
+def test_the_log_wait_tool_waits_from_its_mark(tmp_path: Path) -> None:
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+    s = install()
+    s.launch.logfile = log
+    s.log_wait = LogSession(log).log_wait  # type: ignore[method-assign]
+    got = server.log_wait(pattern="BOOT", channel="guest", seconds=0.3,
+                          since_mark=log.stat().st_size)
+    assert got["status"] == "ok" and got["verdict"] == "TIMEOUT", got

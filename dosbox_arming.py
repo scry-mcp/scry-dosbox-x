@@ -19,7 +19,7 @@ import functools
 from collections.abc import Callable
 from typing import Any, cast
 
-from scry_core import reply_contract as contract
+from scry_core import declaration_rows
 from scry_core import value_format as vf
 
 import dosbox_checks as checks
@@ -137,17 +137,16 @@ def orphan(decl: dec.Declaration) -> bool:
 
 
 def decl_row(decl: dec.Declaration) -> dict[str, Any]:
-    """The fields every listed declaration carries: its ref, how it was declared, and
-    when and by which session (`origin`), so a caller can tell this session's from what
-    an earlier one left."""
-    return {"ref": decl.ref, "by": decl.by,
-            "created_at": contract.or_unavailable(decl.created_at, UNDATED_WHY),
-            "origin": contract.or_unavailable(decl.origin, NO_ORIGIN_WHY)}
+    """The fields every listed declaration carries (`scry_core.declaration_rows`): its ref, how
+    it was declared, the cpu, when and in which session (`origin`), whether that session is this
+    one (`inherited`) and how old it is."""
+    return declaration_rows.row(ref=decl.ref, by=decl.by, cpu=None, cpu_why=ONE_CPU_WHY,
+                                created_at=decl.created_at, origin=decl.origin,
+                                own_origin=STATE.session_origin, now=st.utc_now())
 
 
-#: A listed declaration from a store that kept no date or no origin for it.
-UNDATED_WHY = "the store kept no date for it"
-NO_ORIGIN_WHY = "the store kept no origin for it: nobody's, clear it by its ref or declare it again"
+#: Why no DOSBox-X row names a cpu.
+ONE_CPU_WHY = "a DOS machine has one cpu, and every row acts on it"
 
 
 # The BPLIST kind tokens for a memory watch, told apart from a code breakpoint (`BP`) and
@@ -383,57 +382,64 @@ def _follow(session: ds.Session, decl: dec.Declaration, seg: int, off: int,
     return where
 
 
+#: The buckets of a re-arm's account, each a list of `decl_row`s, `why` on the last three.
+REARM_BUCKETS = ("rearmed", "stale", "unresolved", "ambiguous", "unarmable")
+
+
 def rearm_declarations(session: ds.Session) -> dict[str, Any]:
     """Re-resolve every stored declaration against the just-loaded table and arm the code
     ones that resolve and are not already held. The re-arm: a breakpoint declared
     by name is meant to survive a rebuild and re-place itself. It arms nothing for an
-    unresolved or ambiguous name -- those are counted and reported, never guessed at.
+    unresolved or ambiguous name -- those are listed, never guessed at. The account is one
+    list of rows per bucket (`REARM_BUCKETS`), each row `decl_row`'s, so a row another session
+    left says whose it is and how old as it re-arms.
     """
-    empty: dict[str, Any] = {"rearmed": 0, "rearmed_refs": [], "stale": [],
-                             "unresolved": 0, "ambiguous": 0, "unarmable": 0}
+    out: dict[str, Any] = {key: [] for key in REARM_BUCKETS}
     if STATE.store is None:
-        return empty
+        return out
     held = {dcons.bp_row_target(b["entry"]) for b in session.breakpoints()}
-    out = dict(empty)
     places = RawPlaces(session)
     for decl in STATE.store.declarations():
         if decl.kind != "breakpoint":
             continue
+        row = decl_row(decl)
         res = placement.resolve_ref(decl, "CS", session)
         state = res["state"]
         if state in ("unresolved", "ambiguous", "unarmable"):
-            out[state] += 1
+            out[state].append({**row, **({"why": res["why"]} if "why" in res else {})})
         elif ("BP", res["seg"], res["off"]) in held:
             continue              # already armed, by this session or by a symbol's re-arm
         # A RAW ADDRESS PLACED IN THE OTHER MODE waits for a stop of its own: read here, its
         # SEG:OFF is another byte. `start` parks in real mode, so a protected-mode row is
         # re-armed by a `symbols_load` at a protected-mode stop, never at the park.
-        elif placement.waits(decl, places.cpu) is not None:
-            out["unarmable"] += 1
+        elif (mode := placement.waits(decl, places.cpu)) is not None:
+            out["unarmable"].append({**row, "why": placement.waits_why(mode, "Declare it again")})
         # A RAW ADDRESS FROM ANOTHER BUILD IS NOT RE-ARMED (the owner's decision, per
         # build): it re-resolves against nothing, and armed blind on a relinked program it
         # lands wherever the linker put something else. It stays in the store, is NAMED here
         # and listed `stale`, and declaring it again adopts it. Tested AFTER `held`, so a
         # row the debugger holds anyway is never called stale here and `armed` in the list.
         elif placement.is_stale(decl, places.judged(decl)):
-            out["stale"].append(decl.ref)
+            out["stale"].append(row)
         else:
             try:
                 session.arm_code_breakpoint(res["seg"], res["off"])
                 STATE.note_armed(decl.ref, {"kind": "bp", "seg": res["seg"], "off": res["off"],
                                        "entry": f"BP {res['seg']:04X}:{res['off']:04X}"})
-                out["rearmed"] += 1
-                out["rearmed_refs"].append(decl.ref)
-            except ds.Invalid:
-                out["unarmable"] += 1   # the machine moved under us; the intent is kept
+                out["rearmed"].append(row)
+            except ds.Invalid as e:
+                # the machine moved under us; the intent is kept
+                out["unarmable"].append({**row, "why": str(e)})
     return out
 
 
-def arm_at_start(session: ds.Session) -> dict[str, str]:
+def arm_at_start(session: ds.Session) -> dict[str, Any]:
     """At `start`, the machine parked: arm again the raw addresses an earlier session declared
     over THIS build, which is what the per-build rule promises and what nothing else does
-    before the first `symbols_load`. Another build's stay `stale`. With none to arm, the
-    debugger's list is not read, so a start with nothing declared costs no round trip.
+    before the first `symbols_load`. Another build's stay `stale`. The reply's part is
+    `declarations.rearm`, the account `rearm_declarations` gives; with no breakpoint to arm,
+    the debugger's list is not read, so a start with nothing declared costs no round trip, and
+    each stored breakpoint is listed where the park leaves it.
 
     The session is already installed when this runs, so a refusal here is handed back for
     `start`'s reply (`rearm_refused`) rather than raised: raised, it would answer INVALID over
@@ -442,12 +448,33 @@ def arm_at_start(session: ds.Session) -> dict[str, str]:
             d.kind == "breakpoint" and d.by == "address"
             and not placement.is_stale(d, _nowhere)
             for d in STATE.store.declarations()):
-        return {}
+        return {"declarations": {"rearm": _unarmed_at_start()}}
     try:
-        rearm_declarations(session)
+        return {"declarations": {"rearm": rearm_declarations(session)}}
     except ds.Invalid as e:
-        return {"rearm_refused": str(e)}
-    return {}
+        return {"declarations": {"rearm": _unarmed_at_start(str(e))}, "rearm_refused": str(e)}
+
+
+def _unarmed_at_start(refused: str = "") -> dict[str, Any]:
+    """The account of a park that armed nothing, every stored breakpoint by its state there,
+    read without the console: a name waits for the table; a raw address of another build is
+    stale, and one of this build is unarmable with the re-arm's `refused` reason."""
+    out: dict[str, Any] = {key: [] for key in REARM_BUCKETS}
+    for decl in STATE.store.declarations() if STATE.store is not None else []:
+        if decl.kind != "breakpoint":
+            continue
+        row = decl_row(decl)
+        if decl.by != "address":
+            out["unresolved"].append({**row, "why": NO_TABLE_WHY})
+        elif refused and not placement.is_stale(decl, _nowhere):
+            out["unarmable"].append({**row, "why": refused})
+        else:
+            out["stale"].append(row)
+    return out
+
+
+#: Why a name is not re-armed at the park: the table it resolves in is loaded later.
+NO_TABLE_WHY = "no symbol table is loaded yet: `symbols_load` re-arms it"
 
 
 def apply_pending(session: ds.Session) -> dict[str, Any]:
@@ -468,7 +495,7 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
             STATE.pending["load"] = None
             out["symbols_loaded"] = True
             # THE RE-ARM THAT FOLLOWS EVERY LOAD, which the pending reply promised.
-            out["armed"].extend(rearm_declarations(session)["rearmed_refs"])
+            out["armed"].extend(r["ref"] for r in rearm_declarations(session)["rearmed"])
         except ds.Invalid as e:
             out["still_pending"].append(f"symbols_load: {e}")
     kept_disarm: list[dict[str, Any]] = []

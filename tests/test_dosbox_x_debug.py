@@ -1209,8 +1209,9 @@ class LogSession:
     def _log_text(self) -> str:
         return ds.Session._log_text(cast(ds.Session, self))
 
-    def log(self, pattern: str, limit: int, channel: str) -> tuple[list[str], int]:
-        return ds.Session.log(cast(ds.Session, self), pattern, limit, channel)
+    def log(self, pattern: str, limit: int, channel: str,
+            since_mark: int = 0) -> tuple[list[str], int]:
+        return ds.Session.log(cast(ds.Session, self), pattern, limit, channel, since_mark)
 
     def _e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
         return ds.Session._e9_since(cast(ds.Session, self), offset, channel)
