@@ -78,7 +78,14 @@ def test_the_emulator_ends_with_the_server(ended_by: str, code: int, tmp_path: P
         deadline = time.monotonic() + GONE_WITHIN_S
         while _alive(pid) and time.monotonic() < deadline:
             time.sleep(0.2)
-        assert not _alive(pid), f"DOSBox-X {pid} outlived a server ended by {ended_by}"
+        # WHAT WAS STILL THERE IS SAID, so a case that fails once under load leaves the evidence
+        # it needs: a zombie (`Z`) is an emulator gone and not yet reaped, a server still alive
+        # is a close that has not finished.
+        seen = subprocess.run(["ps", "-o", "pid=,stat=,etime=", "-p", f"{pid},{proc.pid}"],
+                              capture_output=True, text=True, check=False).stdout.strip()
+        assert not _alive(pid), (f"DOSBox-X {pid} outlived a server ended by {ended_by} by "
+                                 f"{GONE_WITHIN_S:g} s; ps: {seen or 'nothing'}; server: "
+                                 f"{errors.read_text(errors='replace')[-600:]}")
         assert proc.wait(GONE_WITHIN_S) == code, errors.read_text(errors="replace")[-600:]
     finally:
         silent.cancel()

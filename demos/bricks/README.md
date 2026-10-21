@@ -1883,11 +1883,7 @@ Also attached: image/png.
   "saved_at": "<volatile>",
   "paused": true,
   "waited_s": "<volatile>",
-  "mark": {
-    "guest": 10577,
-    "emulator": 10577,
-    "all": 10577
-  },
+  "mark": "<volatile>",
   "session": {
     "alive": true,
     "running": true,

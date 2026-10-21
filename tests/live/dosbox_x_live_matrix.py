@@ -100,20 +100,22 @@ def _pool(workers: int) -> Callable[[list[Section]], live_pool.PoolResult]:
         out = Path(M.fresh("-jobs"))
         print(f"jobs: {workers} at once, logs and summaries in {out}", flush=True)
         letters = sorted({s.letter for s in sections})
-        jobs = [live_pool.Job(
-                    letter, [sys.executable, str(Path(__file__).resolve())],
-                    env={SECTIONS_VAR: letter, JOBS_VAR: "1", live_private.PRIVATE_VAR: "1",
-                         **M.host.job_env(letter)},
-                    planned=tuple(c.label for s in sections if s.letter == letter
-                                  for c in s.cells))
-                for letter in letters]
 
         def ended(r: live_pool.JobResult) -> None:
+            copies.ended(r.job.name)
             counts = {k: sum(1 for v in r.outcomes().values() if v == k)
                       for k in ("OK", "FAIL", "BLOCKED")}
             print(f"  [{r.job.name}] OK {counts['OK']} FAIL {counts['FAIL']} "
                   f"BLOCKED {counts['BLOCKED']}  {r.elapsed_s:.0f} s  log: {r.log}", flush=True)
-        return live_pool.run_pool(jobs, workers, out, SUMMARY_VAR, on_done=ended)
+        with live_private.copies_of_jobs() as copies:
+            jobs = [live_pool.Job(
+                        letter, [sys.executable, str(Path(__file__).resolve())],
+                        env={SECTIONS_VAR: letter, JOBS_VAR: "1", **copies.env(letter),
+                             **M.host.job_env(letter)},
+                        planned=tuple(c.label for s in sections if s.letter == letter
+                                      for c in s.cells))
+                    for letter in letters]
+            return live_pool.run_pool(jobs, workers, out, SUMMARY_VAR, on_done=ended)
     return run
 
 

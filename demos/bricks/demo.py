@@ -297,7 +297,9 @@ STEPS = [
          seen("the left arrow moved the paddle after the save"), volatile=INPUT_TIMING),
     Step("load", "state_load", {"name": "bricks"},
          lambda reply, run: f"state loaded from {Path(str(reply['path'])).name}",
-         volatile={"summary": "it carries how long the load took"}),
+         volatile={"summary": "it carries how long the load took",
+                   "mark": "the game ran until the load, so where its log ended then follows "
+                   "the frame it was sent at"}),
     Step("halt", "stop", {}, stopped, volatile=BREAK_STOP),
     Step("restored", "read_memory", {"ref": "paddle_x", "length": 2}, restored,
          volatile=MOUSE_PLACED),

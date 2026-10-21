@@ -101,11 +101,12 @@ def _collect(marks: str) -> list[str] | None:
     return [ln for ln in done.stdout.splitlines() if "::" in ln and not ln.startswith(" ")]
 
 
-def _jobs(nodes: list[str], prefix: str, together: bool) -> list[live_pool.Job]:
+def _jobs(nodes: list[str], prefix: str, together: bool,
+          copies: live_private.Copies) -> list[live_pool.Job]:
     me = [sys.executable, str(Path(__file__).resolve())]
     groups = [nodes] if together else [[n] for n in nodes]
     return [live_pool.Job(f"{prefix}{i:03d}", me,
-                          env={NODES_VAR: "\n".join(g), live_private.PRIVATE_VAR: "1"},
+                          env={NODES_VAR: "\n".join(g), **copies.env(f"{prefix}{i:03d}")},
                           planned=tuple(g)) for i, g in enumerate(groups, 1) if g]
 
 
@@ -157,6 +158,7 @@ def _run(run: live_host.LiveRun, workers: int) -> int:
           flush=True)
 
     def ended(r: live_pool.JobResult) -> None:
+        copies.ended(r.job.name)
         bad = [n for n, o in r.outcomes().items() if o != "OK"]
         word = "FAIL" if any(o == "FAIL" for o in r.outcomes().values()) else (
             "BLOCKED" if bad else "OK")
@@ -165,12 +167,13 @@ def _run(run: live_host.LiveRun, workers: int) -> int:
 
     began = time.monotonic()
     results = []
-    if pooled:
-        results.append(live_pool.run_pool(_jobs(pooled, "p", False), workers, out, SUMMARY_VAR,
-                                          on_done=ended))
-    if windowed:
-        results.append(live_pool.run_pool(_jobs(windowed, "w", True), 1, out, SUMMARY_VAR,
-                                          on_done=ended))
+    with live_private.copies_of_jobs() as copies:
+        if pooled:
+            results.append(live_pool.run_pool(_jobs(pooled, "p", False, copies), workers, out,
+                                              SUMMARY_VAR, on_done=ended))
+        if windowed:
+            results.append(live_pool.run_pool(_jobs(windowed, "w", True, copies), 1, out,
+                                              SUMMARY_VAR, on_done=ended))
     outcomes = {k: v for r in results for k, v in r.outcomes.items()}
     reasons = {k: v for r in results for k, v in r.reasons.items()}
     for node, outcome in outcomes.items():
