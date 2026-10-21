@@ -2239,7 +2239,7 @@ def test_build_check_is_invalid_when_the_build_has_no_debugger() -> None:
                      lambda *_a, **_k: SimpleNamespace(stdout="usage: ...", stderr=""))):
         got = cast(dict[str, Any], server.build_check())
     assert got["status"] == "INVALID", got
-    assert "carries no debugger" in str(got["message"])
+    assert "which a build with the debugger does" in str(got["message"])
 
 
 def test_a_build_that_lists_the_option_but_carries_no_debugger_is_refused(
@@ -7402,7 +7402,8 @@ def test_status_names_the_cpu_mode_of_the_stop_it_is_in(
     assert got["pc"] == dstate.STATE.last_stop["at"], got
     fake.running = True
     running_now = cast(dict[str, Any], server.status())
-    assert "pc" not in running_now and running_now["cpu_mode"]["available"] is False, running_now
+    assert running_now["pc"]["available"] is False and "running" in running_now["pc"]["why"]
+    assert running_now["cpu_mode"]["available"] is False, running_now
     assert "running" in running_now["cpu_mode"]["why"], running_now
 
 
@@ -7474,7 +7475,8 @@ def test_status_counts_the_declarations_on_a_running_machine_too(tmp_path: Path)
     server.breakpoint_at(ref="0749:0010")
     fake.running = True
     got = cast(dict[str, Any], server.status())
-    assert "pc" not in got and got["declarations"] == {"breakpoints": 1, "watches": 0}, got
+    assert got["pc"]["available"] is False, got
+    assert got["declarations"] == {"breakpoints": 1, "watches": 0}, got
 
 
 def test_the_stop_count_survives_a_session_closed_mid_batch() -> None:
@@ -8262,7 +8264,7 @@ def test_a_table_of_another_build_is_refused_and_the_loaded_one_stays(tmp_path: 
         encoding="utf-8")
     before, base, loads = list(dstate.STATE.table), dict(dstate.STATE.base), fake.loads
     refused = server.symbols_load(path=str(stale), base_from="CS")
-    assert refused["status"] == "INVALID" and "not this build's" in refused["message"], refused
+    assert refused["status"] == "INVALID" and "another build's" in refused["message"], refused
     assert dstate.STATE.table == before and dict(dstate.STATE.base) == base, "state moved"
     assert fake.loads == loads, "the debugger was handed the refused table"
 

@@ -183,3 +183,17 @@ def test_the_log_wait_tool_waits_from_its_mark(tmp_path: Path) -> None:
     got = server.log_wait(pattern="BOOT", channel="guest", seconds=0.3,
                           since_mark=log.stat().st_size)
     assert got["status"] == "ok" and got["verdict"] == "TIMEOUT", got
+
+
+def test_a_mark_does_not_flatten_the_two_nothings_on_the_guest_channel(tmp_path: Path) -> None:
+    """A file with no instrumentation at all is no channel with a mark too, never an empty
+    window: the guard is on the file, the mark only narrows what is read of it."""
+    log = tmp_path / "guest.log"
+    log.write_text(f"{EMU_LINE}\n", encoding="utf-8")
+    mark = log.stat().st_size
+    with log.open("a", encoding="utf-8") as fh:
+        fh.write(f"{EMU_LINE_2}\n")
+    with pytest.raises(ds.Invalid) as e:
+        LogSession(log).log(".", 40, "guest", mark)
+    assert e.value.code == "no_channel", e.value
+    assert LogSession(log).log(".", 40, "emulator", mark) == ([EMU_LINE_2], 1)

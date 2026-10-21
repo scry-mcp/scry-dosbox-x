@@ -604,6 +604,12 @@ class DeclarationStore:
         mine[:] = new
         try:
             self._persist()
+        except OSError as e:
+            # THE HOST REFUSED THE WRITE: the store's own error, so the tools answer a refusal
+            # where a bare OSError would reach the caller as a traceback.
+            mine[:] = old
+            raise DeclarationError(f"the declaration file {self._path} could not be written "
+                                   f"({e}); nothing was changed") from None
         except BaseException:
             mine[:] = old
             raise

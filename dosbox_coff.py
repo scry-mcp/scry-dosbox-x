@@ -35,6 +35,10 @@ class CutImage(Exception):
     """A COFF image whose header or tables run past the end of the file."""
 
 
+class Stripped(Exception):
+    """A COFF image whose header names no symbol table: `strip` ran on it."""
+
+
 def _coff_start(data: bytes) -> int:
     """Where the COFF file starts: after the go32 stub when the image opens with one, whose
     size the MZ header gives in pages and the bytes of its last page."""
@@ -48,20 +52,29 @@ def _coff_start(data: bytes) -> int:
 
 def global_code_symbols(exe: Path) -> dict[str, int] | None:
     """The image's global `.text` symbols, name to value, or None when it is not a COFF image
-    (a real-mode executable, or anything else); `CutImage` when it is one cut short."""
+    (a real-mode executable, or anything else); `CutImage` when it is one cut short, `Stripped`
+    when it is one with no symbol table."""
     try:
         return _symbols(exe.read_bytes())
     except (struct.error, ValueError, IndexError) as e:
         raise CutImage(str(e)) from None
+    # `Stripped` passes through: the image is whole, it only names no table.
 
 
 def _symbols(data: bytes) -> dict[str, int] | None:
     start = _coff_start(data)
+    if len(data) < start:
+        # A REAL-MODE IMAGE ENDS WHERE ITS MZ HEADER SAYS, a go32 one carries its COFF file past
+        # it: a file shorter than its own header is neither, it is cut.
+        raise CutImage(f"the file is {len(data)} bytes, shorter than its MZ header says "
+                       f"({start})")
     if len(data) < start + 20:
         return None
     magic, _sections, _stamp, table, count = struct.unpack_from("<HHIII", data, start)
-    if magic != I386_MAGIC or table == 0:
+    if magic != I386_MAGIC:
         return None
+    if table == 0:
+        raise Stripped
     strings = start + table + count * ENTRY_BYTES
     out: dict[str, int] = {}
     i = 0
@@ -109,6 +122,9 @@ def check(table: Path, symbols: list[sym.Symbol]) -> dict[str, Any]:
     except CutImage as e:
         return contract.unavailable(f"{exe.name}'s COFF image is cut ({e}), so the table could "
                                     "not be checked against it")
+    except Stripped:
+        return contract.unavailable(f"{exe.name} is a COFF image stripped of its symbol table, "
+                                    "so the table could not be checked against it")
     except OSError as e:
         return contract.unavailable(f"{exe.name} could not be read ({e})")
     if image is None:
@@ -125,7 +141,8 @@ def check(table: Path, symbols: list[sym.Symbol]) -> dict[str, Any]:
                           f"in {exe.name}" for s in off[:NAMED_MAX])
         more = f", and {len(off) - NAMED_MAX} more" if len(off) > NAMED_MAX else ""
         raise ds.Invalid("bad_argument",
-            f"the table is not this build's: {len(off)} of its {len(shared)} global code "
-            f"symbols disagree with the executable's own ({named}{more}). Nothing was "
-            f"loaded; regenerate the table from this build")
+            f"the table and {exe.name} beside it disagree on {len(off)} of the {len(shared)} "
+            f"global code symbols they share ({named}{more}), so one of the two is another "
+            f"build's. Nothing was loaded; regenerate the table from the executable the "
+            f"guest runs, or move a stale {exe.name} away from it")
     return {"against": str(exe), "agree": len(shared)}

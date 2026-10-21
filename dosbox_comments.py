@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Any
 
 from scry_core import fresh, prose
+from scry_core import reply_contract as contract
 
 import dosbox_arming as arming
 import dosbox_code as code
@@ -198,8 +199,15 @@ def _key(ref: str, place: dict[str, Any]) -> tuple[str, Any]:
     return ("ref", ref)
 
 
+#: A comment is adopted by commenting it again, not by declaring it, so its row says that.
+NO_ORIGIN_WHY = ("the row names no session it was commented in: delete it by its ref, or "
+                 "comment it again here to adopt it")
+
+
 def _row(decl: dec.Declaration, place: dict[str, Any]) -> dict[str, Any]:
     row = arming.decl_row(decl)
+    if isinstance(row["origin"], dict):
+        row["origin"] = contract.unavailable(NO_ORIGIN_WHY)
     if arming.orphan(decl):
         row["orphan"] = True
     row["text"] = decl.text

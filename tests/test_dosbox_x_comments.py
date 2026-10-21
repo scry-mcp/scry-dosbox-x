@@ -1050,6 +1050,7 @@ def test_a_comment_from_a_store_that_kept_no_origin_is_marked_orphan() -> None:
     cast(dec.DeclarationStore, dstate.STATE.store).apply(adds=[comment("0814:010B")])
     (row,) = ok(server.comment_list())["comments"]
     assert row["orphan"] is True and row["origin"]["available"] is False
+    assert "comment it again" in row["origin"]["why"] and "declare" not in row["origin"]["why"]
 
 
 # ------------------------------------- a file a save wrote loads, whatever the machine's state

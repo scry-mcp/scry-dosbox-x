@@ -103,12 +103,14 @@ def test_the_record_shows_a_killed_emulator_reaped_and_said_to_have_died() -> No
 
 
 def _build_answering(tmp_path: Path, record: str, carries: bool) -> tuple[Path, Any]:
-    """A binary of this case's own, holding the debugger's text or not, and `subprocess.run`
-    answering `-helpdebug` with the recorded listing."""
+    """A binary of this case's own, holding the debugger's text (and the CPU log's, as the
+    recorded debugger build does) or not, and `subprocess.run` answering `-helpdebug` with the
+    recorded listing."""
     help_text = json.loads((FIX / "build_check" / record).read_text("utf-8"))["helpdebug"]
     binary = tmp_path / record / "dosbox-x"
     binary.parent.mkdir()
-    binary.write_bytes(b"\x00" + (binaries.DEBUGGER_MARK if carries else b"no debugger") + b"\x00")
+    marks = binaries.DEBUGGER_MARK + b"\x00" + binaries.HEAVY_DEBUG_MARK if carries else b"none"
+    binary.write_bytes(b"\x00" + marks + b"\x00")
     binary.chmod(0o755)
     return binary, lambda *_a, **_k: SimpleNamespace(stdout=help_text, stderr="")
 
@@ -122,11 +124,19 @@ def test_a_build_without_the_debugger_lists_the_option_too_and_is_refused_by_its
         binary, run = _build_answering(tmp_path, record, carries)
         monkeypatch.setattr("subprocess.run", run)
         got = server.build_check(binary=str(binary))
-        assert got["status"] == status, (record, got)
+        said = json.loads((FIX / "build_check" / record).read_text("utf-8"))["build_check"]
+        assert got["status"] == status == said["status"], (record, got)
+        assert got.get("code") == said["code"], (record, got)
+        if said["message"] is not None:
+            assert got["message"] == said["message"].replace("<dir>", str(binary.parent)), got
+        else:
+            assert (got["debugger"], got["heavy_debug"]) == (said["debugger"],
+                                                             said["heavy_debug"]), got
 
 
 def test_the_record_names_a_still_after_its_conf() -> None:
-    """The emulator names a snapshot `<conf>_NNN.png` (the snapshot double writes that shape)."""
+    """The emulator names a snapshot `<stem>_NNN.png`, the stem the conf and the program share
+    here (the snapshot double writes that shape; the server reads any new PNG, name unread)."""
     shot = json.loads((FIX / "states" / "snapshot-name.json").read_text("utf-8"))
     assert shot["path_name"] == "mouse_000.png" == shot["written_names"][0], shot
 

@@ -1,6 +1,6 @@
 What these are: the debugger channel's answers to `EXEC LOADSTATE` and `EXEC SAVESTATE` (the
 (ok, lines) pair `Control.request` returns), and replies of the server's own tools, recorded on
-2026-10-21 off a live DOSBox-X, the scry build f06aa5d26 (macOS, SDL2), probe.conf or
+2026-10-21 off a live DOSBox-X, a build carrying the debugger (macOS, SDL2), probe.conf or
 mouse.conf, driven by the server's Session through the live matrix harness.
 
 loadstate-missing.json          LOADSTATE of a path where no file is.
@@ -13,8 +13,10 @@ state-save-full-disk-reply.json `state_save` through the server onto that full v
                                 `unexpected_answer`, nothing left on disk. Its message is the one
                                 the server gave then, which named a load's causes for a save; the
                                 server says the save's own now.
-snapshot-name.json              `snapshot` on the mouse guest: the emulator names its still after
-                                the program, `<program>_000.png`, under the captures directory.
+snapshot-name.json              `snapshot` on the mouse guest (`mouse.conf` running `MOUSE.COM`):
+                                the still is `mouse_000.png` under the captures directory. The
+                                conf and the program share the stem, so this record does not say
+                                which of the two names it; the server reads any new PNG there.
 close-after-sigkill.json        `close` after the emulator was SIGKILLed: the server reaps it and
                                 says `died`, exit code -9. A child that is not reaped could not be
                                 provoked this way, so that branch has no record here.

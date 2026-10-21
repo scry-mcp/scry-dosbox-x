@@ -215,6 +215,8 @@ def _clear_line(session: ds.Session) -> bool:
             out = session.command("")
             if dcons.PAGER_MARK not in out:
                 if dcons.input_line(out):
+                    # ESC REPAINTS NO PROMPT, only the cursor, and the line is empty after it
+                    # (the next command is taken whole): a delta with no prompt is a clear.
                     out = session.clear_line()
                 return not dcons.input_line(out)
         except ds.Invalid:

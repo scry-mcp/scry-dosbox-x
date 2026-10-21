@@ -458,7 +458,7 @@ def test_a_tail_the_debugger_did_not_take_is_emptied_with_escape_not_run_again()
 
         def clear_line(self) -> str:
             typed.append("ESC")
-            return dcons.PROMPT + " _"
+            return "_"                  # the live answer: the cursor alone, no prompt repainted
 
     assert finder._clear_line(cast(Any, Stranded()))
     assert typed == ["", "ESC"], typed

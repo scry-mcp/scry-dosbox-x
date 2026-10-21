@@ -152,9 +152,7 @@ def state_load(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
     state_dir = ses._state_dir()
     source = state_dir / f"{name}.sav"
     if (why := state_files.not_a_state(source)) is not None:
-        raise Invalid("unknown_ref",
-            f"no state named {name!r} to load: at {source} {why}, and `state_save` refuses "
-                      "the name while it is there")
+        raise state_files.refused_load(name, source, why)
     if not source.is_file():
         raise Invalid("unknown_ref",
             f"no state named {name!r} under {state_dir}: `state_list` says what is there")

@@ -37,7 +37,7 @@ def test_a_table_of_a_relinked_build_is_refused_naming_what_differs(tmp_path: Pa
     stale.write_text("\n".join(rows) + "\n", encoding="utf-8")
     with pytest.raises(ds.Invalid) as e:
         coff.check(stale, _parsed(stale))
-    assert e.value.code == "bad_argument" and "not this build's" in str(e.value), str(e.value)
+    assert e.value.code == "bad_argument" and "disagree" in str(e.value), str(e.value)
     assert "in dpmi.exe" in str(e.value) and "more" in str(e.value), str(e.value)
 
 
@@ -51,14 +51,16 @@ def test_no_executable_or_none_with_a_coff_table_is_said_not_judged(tmp_path: Pa
     assert real["available"] is False and "no COFF symbol table" in real["why"], real
 
 
-@pytest.mark.parametrize("cut", [2, 40, 0.6], ids=["mz-only", "header-only", "in-strings"])
-def test_a_cut_image_is_said_never_a_traceback(tmp_path: Path, cut: float) -> None:
+@pytest.mark.parametrize(("cut", "said"), [
+    (2, "the MZ header is cut"), (40, "shorter than its MZ header says"), (0.6, "is cut")],
+    ids=["mz-only", "header-only", "in-strings"])
+def test_a_cut_image_is_said_never_a_traceback(tmp_path: Path, cut: float, said: str) -> None:
     whole = (GUEST / "dpmi.exe").read_bytes()
     size = int(len(whole) * cut) if isinstance(cut, float) else cut
     (tmp_path / "dpmi.exe").write_bytes(whole[:size])
     shutil.copy(GUEST / "dpmi.sym", tmp_path / "dpmi.sym")
     got = coff.check(tmp_path / "dpmi.sym", _parsed(tmp_path / "dpmi.sym"))
-    assert got["available"] is False and got["why"], got
+    assert got["available"] is False and said in got["why"] and "real-mode" not in got["why"], got
 
 
 def test_a_table_with_no_symbol_kinds_is_said_as_such(tmp_path: Path) -> None:
@@ -68,3 +70,16 @@ def test_a_table_with_no_symbol_kinds_is_said_as_such(tmp_path: Path) -> None:
     kindless = [sym.Symbol(s.name, s.offset) for s in _parsed(table)]
     got = coff.check(table, kindless)
     assert got["available"] is False and "no symbol kinds" in got["why"], got
+
+
+def test_a_stripped_image_is_said_stripped_never_real_mode(tmp_path: Path) -> None:
+    """A go32 image whose COFF header holds no symbol table (`strip` ran) is a protected-mode
+    program with nothing to compare, not a real-mode one."""
+    whole = bytearray((GUEST / "dpmi.exe").read_bytes())
+    start = coff._coff_start(bytes(whole))
+    whole[start + 8:start + 12] = bytes(4)            # the symbol table's offset, zeroed
+    (tmp_path / "dpmi.exe").write_bytes(bytes(whole))
+    shutil.copy(GUEST / "dpmi.sym", tmp_path / "dpmi.sym")
+    got = coff.check(tmp_path / "dpmi.sym", _parsed(tmp_path / "dpmi.sym"))
+    assert got["available"] is False and "stripped" in got["why"], got
+    assert "real-mode" not in got["why"], got

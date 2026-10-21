@@ -500,3 +500,19 @@ def test_a_write_that_fails_leaves_the_store_as_the_file_holds_it(tmp_path: Path
     with pytest.raises(dec.DeclarationError):
         store.remove(ref="_main")
     assert store.declarations() == before, store.declarations()
+
+
+def test_a_full_volume_under_an_add_is_a_refusal_never_a_traceback(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The host refusing the write (a full volume, a permission) comes out as the store's own
+    error, which the tools answer as a refusal, and the row is not kept."""
+    from scry_core import fresh
+
+    store = dec.DeclarationStore("/conf", path=tmp_path / "decl.json")
+
+    def full(*_a: object, **_k: object) -> None:
+        raise OSError(28, "No space left on device")
+    monkeypatch.setattr(fresh, "replace", full)
+    with pytest.raises(dec.DeclarationError, match="No space left"):
+        store.add(dec.Declaration("breakpoint", "symbol", "_main"))
+    assert store.declarations() == []

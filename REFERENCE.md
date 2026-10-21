@@ -95,12 +95,12 @@ but whether this build carries the DEBUGGER, which the whole surface rests on; a
 one starts fine and then hangs `start` until its timeout. It is read off the binary itself (the
 debugger's own answer to a command it does not know is compiled into it), because `-helpdebug`
 listing `-break-start` is not enough: a build configured without the debugger lists it too
-(tests/fixtures/build_check). It is INVALID when a precondition fails: the one tool whose purpose is examining
-preconditions never reports a clean result for a missing tool. And it REFUSES while a
+(tests/fixtures/build_check). It is INVALID when a precondition fails: the one tool whose
+purpose is examining preconditions never reports a clean result for a missing tool. And it REFUSES while a
 session is live, because answering means starting a SECOND emulator: `-helpdebug` starts the
 emulator to answer, and a build that does not know the option runs it as a full emulator for
-the whole bound, since it does not refuse an option it does not know. What it examines is a property
-of the build and does not change while a session is up. `heavy_debug` says whether the build
+the whole bound, since it does not refuse an option it does not know. What it examines is a
+property of the build and does not change while a session is up. `heavy_debug` says whether the build
 carries the debugger's CPU log, which `trace` needs: it is read off the binary's bytes, which hold
 the `LOG` family's help line only when the build is a heavy-debug one, never by typing `LOG` at a
 console to see whether it answers. `false` is an answer, not a refusal: `trace` is what refuses
@@ -538,8 +538,11 @@ table under its stem is a DJGPP (go32) image (`RECHIPD.SYM` beside `RECHIPD.exe`
 any case), its own COFF symbol table, written by the link that made the code, is read, and every
 global code symbol the two share has to hold the image's value: one that does not refuses the
 load `bad_argument`, naming the disagreements, with the table loaded before left as it was.
+Which of the two is stale it cannot know: a stale executable beside a fresh table refuses alike,
+and with it moved away the table loads unchecked.
 `checked` says what was compared (`against`, `agree`), or why nothing could be: no executable
-beside it, one with no COFF table (a real-mode executable carries none), or none in common.
+beside it, one with no COFF table (a real-mode executable carries none), one stripped of its
+table, one cut short, or none in common.
 
 **A file most of which was discarded is refused.** `parse` returns how many rows it could not
 read, and a symbol section that lost MORE rows than it kept is refused: a reading that
@@ -975,7 +978,8 @@ in protected mode costs one `SELINFO CS` and only with a table loaded; unavailab
 when no bytes could be read or they start no instruction), the registers (`regs`),
 the show watches already evaluated (each with `state: "evaluated"`), an `attribution` to the
 declaration whose address it stopped at (`attributed`, `ref`, `by`, `at`; a `run_to` that
-arrived names its own target, `by: "run_to"`, whose breakpoint is removed by then; or an honest
+arrived names its own target, `by: "run_to"`, whose breakpoint is removed by then, with `refs`
+naming the declarations at the same place beside it; or an honest
 cannot-say with `why`: the debugger keeps no hit flag, and a memory watch stops at the
 instruction that WROTE), and an
 E9 summary, `e9`, that is OFF by default with the count and how to see the lines, because the
@@ -1172,7 +1176,9 @@ is refused `unexpected_answer`, because the next command would be appended to it
 than run.
 
 **Which sections exist depends on the mode, and an absent one says why.** `cpu_mode` is read
-off the `CPU` listing's cr0. In real mode the descriptor lists `gdt` and `ldt` are absent,
+off the `CPU` listing's cr0, which cannot tell VM86 from protected mode: at a VM86 stop it says
+`protected` where the stop and `status` say `VM86`, and `interrupt_vectors` takes the stop's own
+word for it. In real mode the descriptor lists `gdt` and `ldt` are absent,
 because there the debugger reads the interrupt vector table as descriptors (the `cpu` section's
 `gdtr` and `ldtr` are the table registers, present in every mode, so the names `gdt` and `ldt`
 are the descriptor lists only); in protected mode they
@@ -1246,7 +1252,8 @@ cost that a line from before the rewrite can be served again as new.
 **`since_mark` asks "after Y".** A guest that replays a saved timeline writes lines that look
 like the ones before the load, stamps included, so content cannot tell them apart; a position
 can. `state_load` answers `mark`, where the log ended as the load was sent, one number per
-channel and all three equal because one file holds them, and `log` and `log_wait` take
+channel and all three equal because one file holds them (unavailable, with why, for a session
+started without a logfile), and `log` and `log_wait` take
 `since_mark`: only whole lines written after it are read, and for `log_wait` "already" means
 "since the mark". 0, the default, reads the whole log. A negative one and one past where the log
 ends now (a mark of another session, a log rewritten shorter) are refused `bad_argument`. The

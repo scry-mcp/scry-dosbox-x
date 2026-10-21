@@ -2827,6 +2827,11 @@ def test_a_wait_bound_takes_its_maximum_and_refuses_one_past_it(from_zero: bool)
     ds.check_wait_bound(ds.RUN_TO_MAX, from_zero=from_zero)
     with pytest.raises(ds.Invalid, match="seconds"):
         ds.check_wait_bound(ds.RUN_TO_MAX + 0.5, from_zero=from_zero)
+    if from_zero:
+        ds.check_wait_bound(0, from_zero=True)
+    else:
+        with pytest.raises(ds.Invalid, match="seconds"):
+            ds.check_wait_bound(0)
 
 
 def test_the_argument_judges_take_their_edges_and_refuse_one_past(

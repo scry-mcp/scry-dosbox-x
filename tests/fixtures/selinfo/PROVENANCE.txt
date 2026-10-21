@@ -1,6 +1,6 @@
 What these are: the debugger console's reply to `SELINFO <reg>`, as `Session.command` returns
 it (the screen delta the command produced), recorded raw on 2026-10-21 off a live DOSBox-X,
-the scry build f06aa5d26 (macOS, SDL2), driven by the server's own Session through the live
+a build carrying the debugger (macOS, SDL2), driven by the server's own Session through the live
 matrix harness.
 
 break-start-cs.txt   `SELINFO CS` at the park `start` makes (the reset vector, real mode,

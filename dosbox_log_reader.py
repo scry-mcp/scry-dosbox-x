@@ -46,10 +46,13 @@ def log(ses: ds.Session, pattern: str, limit: int, channel: str,
     """The log's `channel`, filtered at the source: the guest's E9 lines with `e9`'s
     own guard (a file with no instrumentation is no channel), the emulator's own
     lines, or the whole file tagged. With `since_mark`, only the whole lines written after
-    it: one file holds every channel, so one position serves all three, and a window with no
-    instrumentation in it is an empty answer about the window."""
+    it: one file holds every channel, so one position serves all three. The guard stays on
+    the file: one with no instrumentation at all is no channel with a mark too, and only a
+    window with none in a file that has some is an empty answer about the window."""
     dlogs.check_channel(channel)
     if since_mark:
+        if channel == "guest":
+            ses._e9_text()
         lines, _ = core_wait.lines_since(log_file_from(ses, since_mark, channel), since_mark)
         return dlogs.filter_log("\n".join(lines), pattern, limit, channel)
     if channel == "guest":
@@ -61,7 +64,8 @@ def log_file_from(ses: ds.Session, since_mark: int, channel: str) -> Path:
     """The session's logfile, with `since_mark` held to where it ends now
     (`log_marks.check_since_mark`)."""
     log = require_logfile(ses, "log channel to read from a mark")
-    log_marks.check_since_mark(since_mark, log.stat().st_size if log.exists() else 0, channel)
+    log_marks.check_since_mark(since_mark, log.stat().st_size if log.exists() else 0,
+                               "session" if channel == "all" else channel)
     return log
 
 

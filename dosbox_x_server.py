@@ -182,8 +182,8 @@ def build_check(binary: str = "") -> dict[str, Any]:
     has_debugger = "-break-start" in text
     if not has_debugger:
         raise ds.Invalid("host_failed",
-            f"`{resolved.path} -helpdebug` does not list `-break-start`, so this build carries no "
-            f"debugger. The readers of the machine (`registers`, `read_memory`, "
+            f"`{resolved.path} -helpdebug` does not list `-break-start`, which a build with the "
+            f"debugger does. The readers of the machine (`registers`, `read_memory`, "
             f"`memdump`, `step`, `debug`), the breakpoints, the watches and the symbol "
             f"placement all need it; the guest's log (`log`, `log_wait`), the captures and the "
             f"in-guest input do not")
@@ -1111,7 +1111,7 @@ def symbols_load(path: str, base: str = "",
     accounts (`truncated_names`, `disambiguated`, `unreadable`, `excluded_*`, `overlay_idle`,
     `unencodable*`, `symbols_typed`, `bytes`), `descriptor`, `pending`, `base_from`, `base`,
     `limit`, `checked` (`against`, `agree`, or why not), and `declarations` (the re-arm by
-    state, `rearmed` to `unarmable`, as `breakpoint_list`'s rows).
+    state, `rearmed` to `unarmable`, each a list row, `why` on the last three).
 
     Reference: REFERENCE.md, Names for addresses.
     """

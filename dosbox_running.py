@@ -357,6 +357,10 @@ def status_facts(session: ds.Session | None) -> dict[str, Any]:
                 f"the pane was not readable ({e}), and `last_stop` is the stop before")
         else:
             facts["pc"] = f"{now['cs']}:{now['eip']}"
+    else:
+        facts["pc"] = contract.unavailable(
+            "the guest is running (or gone): `pc` is read off a stopped machine's register "
+            "pane, and `last_stop` says where it was last seen")
     families = {"breakpoints": 0, "watches": 0}
     for decl in (STATE.store.declarations() if STATE.store is not None else []):
         families["watches" if decl.kind == "watch" else "breakpoints"] += 1
