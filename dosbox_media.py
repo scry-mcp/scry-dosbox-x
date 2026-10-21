@@ -34,12 +34,12 @@ MEDIA_TOOLS = media_tools.IMAGE_TOOLS
 #: What a series' frame numbers count here: the capture file's own frames, from 0.
 FRAME_SOURCE = "avi"
 
-def check_series_capture(frames: list[int] | None = None, first: int | None = None,
+def check_series_capture(at_frames: list[int] | None = None, first: int | None = None,
                          last: int | None = None, step: int = 1, crop: list[int] | None = None,
                          dest: str = "", capture_path: str = "", **_: Any) -> None:
     """`series_capture`'s machine-independent half: the frames, the crop's shape, and the two
     paths absolute, with no `%` (ffmpeg's image2 muxer reads one as a numbering template)."""
-    series.frame_list(frames, first, last, step)
+    series.frame_list(at_frames, first, last, step)
     if crop is not None:
         judges.rect("crop", crop)
     if capture_path:
@@ -58,15 +58,15 @@ def select_expression(wanted: list[int]) -> str:
     return "+".join(f"eq(n\\,{f})" for f in wanted)
 
 
-def series_capture(session: ds.Session, scratch: Path, frames: list[int] | None,
+def series_capture(session: ds.Session, scratch: Path, at_frames: list[int] | None,
                    first: int | None, last: int | None, step: int, crop: list[int] | None,
                    dest: str, capture_path: str) -> dict[str, Any]:
     """The body of the `series_capture` tool."""
-    check_series_capture(frames, first, last, step, crop, dest, capture_path)
+    check_series_capture(at_frames, first, last, step, crop, dest, capture_path)
     if shutil.which("ffmpeg") is None:
         raise ds.Invalid("host_failed", "a series is extracted from the capture with `ffmpeg`, "
                          "and there is none on PATH")
-    wanted = series.frame_list(frames, first, last, step)
+    wanted = series.frame_list(at_frames, first, last, step)
     # A FRAME PAST THE END is told by ffmpeg, which reads the file's frames.
     src = (paths.input_file("capture_path", capture_path, "capture") if capture_path
            else Path(str(session.captures()[-1]["path"])))

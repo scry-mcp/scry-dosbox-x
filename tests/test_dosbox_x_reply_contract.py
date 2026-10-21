@@ -32,7 +32,7 @@ SOURCES = sorted(p for p in PACKAGE.glob("*.py") if p.name != "mapsweep.py")
 
 # The arguments a tool needs to be CALLED at all; the gate refuses before any is judged.
 _ARGS: dict[str, dict[str, Any]] = {
-    "series_capture": {"frames": [0]},
+    "series_capture": {"at_frames": [0]},
     "map_load": {"path": "/nonexistent/x.scry-map.json"},
     "map_save": {"dest": "/nonexistent/x.scry-map.json"},
     "map_add": {"screen": "s", "match": [[0, 0, 1, 1]]},

@@ -218,7 +218,7 @@ def start(conf: str, cwd: str,
 
     Every path is absolute or `~`-led: `cwd`, the emulator's working directory, there; `conf`;
     `logfile`, its directory there; `captures_dir` and `state_dir`, created with their parents.
-    `session_seconds`: the session's REQUIRED lifetime, at most {SESSION_MAX_S} s; `close` is
+    `session_seconds`: the session's REQUIRED lifetime; `close` is
     the act. `shared`: watched, in a window `window_flags` places; false, headless.
     `window_flags` and `flags` (the emulator's own, after this server's defaults) are
     argv tokens, a `-set` value ONE token with its spaces: `["-set", "sdl display=1"]`.
@@ -338,8 +338,8 @@ def log(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
     is an answer: the channel is there and nothing matched.
 
     INVALID, with `code` and `message` saying which: no `logfile` on this session; the log
-    does not exist yet; the guest channel holds no instrumentation at all; `limit` outside
-    1..{LOG_LIMIT_MAX} (above that, narrow the pattern); a
+    does not exist yet; the guest channel holds no instrumentation at all; `limit` out of range
+    (above it, narrow the pattern); a
     pattern that does not compile; a channel that is not one of the three; a `since_mark` that
     names no position of the log; the session is gone. For "when did X happen, and wait if it
     has not" use `log_wait`.
@@ -377,7 +377,7 @@ def log_wait(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS
     machine is STOPPED and the log does not already hold the line (a stopped guest writes
     nothing; the refusal names `pattern` and `last_stop`, and a stop that lands DURING the wait
     is reported the same way after one last read of the log), `session_broken` when the emulator
-    went away. No `logfile`, a bad `seconds` (outside (0, {WAIT_MAX_S}]), an unusable regex, an
+    went away. No `logfile`, a bad `seconds`, an unusable regex, an
     unknown channel or a `since_mark` that names no position of the log is refused. A log that
     does not exist YET is not refused: that is the ordinary state right after `resume`.
 
@@ -451,7 +451,7 @@ def read_memory(ref: str,
 @tool("Disassemble code", summary=one_line.disassemble, read_only=True)
 def disassemble(ref: str, length: Annotated[int, vocab.bounds(1, code.LENGTH_MAX)] = 16,
                 ) -> dict[str, Any]:
-    """Decode `length` bytes (1..{DISASM_MAX}) from `ref`, a symbol or a `SEG:OFF`, one x86
+    """Decode `length` bytes from `ref`, a symbol or a `SEG:OFF`, one x86
     instruction a line, on the host (capstone): the debugger has no disassembly command. The
     listing completes the instruction that straddles the end, so it may run a little past
     `length`, unless the segment ends first. Needs the machine stopped.
@@ -471,7 +471,7 @@ def disassemble(ref: str, length: Annotated[int, vocab.bounds(1, code.LENGTH_MAX
     `delta`, unavailable outside the table's span; a row that could not be placed has `addr`
     unavailable too. A register-relative operand is not resolved.
 
-    Refused: `length` outside 1..{DISASM_MAX}, and one that runs past the end of a 16-bit segment
+    Refused: `length` out of range, and one that runs past the end of a 16-bit segment
     (IP wraps there), naming the most bytes from there; `memdump`'s refusals apply to the
     bytes read (a leftover dump file, a protected-mode range past offset 0xFFFF without
     `logfile`).
@@ -881,7 +881,7 @@ def run_for(milliseconds: int = 0, frames: int = 0,
     Arguments: exactly one of `frames` and `milliseconds` above zero. By `milliseconds` it runs
     retrace by retrace until the register pane's emulated clock has risen at least that far, so
     it stops at the first retrace at or past the mark, surveying every frame to read it.
-    `seconds`: the wall-clock bound, (0, {WAIT_MAX_S}]. `e9`, `e9_filter`, `e9_stamp` as in
+    `seconds`: the wall-clock bound. `e9`, `e9_filter`, `e9_stamp` as in
     `resume`. Needs the machine stopped. A DOS machine keeps no frame counter, so `frames` counts
     retraces from where the call starts.
 
@@ -919,7 +919,7 @@ def trace(instructions: Annotated[int, vocab.bounds(1, tracing.INSTRUCTIONS_MAX)
     CR0) or `cs_ip` (`LOGC`: the address alone). `dest`: absolute, its directory there, the
     file not, not directly in the emulator's working directory; empty,
     the next free `trace-<n>.trace` in the session's captures directory. `seconds`: the
-    wall-clock bound, (0, {WAIT_MAX_S}]. Needs the machine stopped, a writable working directory and
+    wall-clock bound. Needs the machine stopped, a writable working directory and
     `build_check`'s `heavy_debug`.
 
     The count is proved against the pane's `cc=` counter, which on the normal core moves one
@@ -951,7 +951,7 @@ def screen_wait(text: str, seconds: Annotated[float, ds.WAIT_BOUNDS] = 30.0,
     `text` (1 to {SCREEN_TEXT_MAX} characters code page 437 draws, not ending in a blank) is matched
     literally, case-sensitive, inside ONE row of the screen as `screen_view` reads it, trailing
     blanks dropped: a string that wraps across rows is not found. `seconds`, the wall-clock
-    bound, (0, {WAIT_MAX_S}], counted from after the first read of the screen, so a short one still
+    bound, counted from after the first read of the screen, so a short one still
     reaches the first frame; a frame's read under way when it passes is finished. Needs the
     machine stopped and a session started with `logfile`; reports its progress while it waits.
 
@@ -1071,11 +1071,12 @@ def breakpoint_interrupt(number: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)],
     """Break on an interrupt, optionally on one `ah` function: `BPINT <number> [<ah>]`.
 
     `number` and `ah` are the debugger's HEX values given as integers: pass `0x21` (33) for
-    DOS, not `21`, which would arm INT 0x15. This is how control comes BACK from a running
-    guest on this platform (a host keypress cannot break in): arm it BEFORE `resume`. While the
-    guest runs it is queued `pending`, as below. The declaration is STORED under its
-    `BPINT ..` spelling, so `breakpoint_list` shows it and `breakpoint_clear(ref="BPINT 21")`
-    removes it; arming the same interrupt again is a no-op that says `already_stored`.
+    DOS, not `21`, which would arm INT 0x15; a DJGPP program's is `0x31` with `ah=2`. This is
+    how control comes BACK from a running guest on this platform (a host keypress cannot break
+    in): arm it BEFORE `resume`. While the guest runs it is queued `pending`, as below. The
+    declaration is STORED under its `BPINT ..` spelling, so `breakpoint_list` shows it and
+    `breakpoint_clear(ref="BPINT 21")` removes it; arming the same interrupt again is a no-op
+    that says `already_stored`.
 
     Reply: `ref`, the exact string `breakpoint_clear` takes for it (`BPINT 21`,
     `BPINT 21 AH=4B`: the debugger's own row spelling, hex, `AH=` included when `ah` was
@@ -1154,7 +1155,7 @@ def symbols_find(name: str = "", offset: int | None = None,
     Reply: by name, `query`, `symbols_total` (how many) and `symbols`, a list with `name`, `offset`,
     `addr` (linear), `section`, `idle` (Borland's own mark on that row, always false for `nm`/GNU);
     by offset or linear, the nearest symbol's own fields and `delta`. INVALID with no table
-    loaded, or `limit` outside 1..{SYMBOLS_LIMIT_MAX} on the `name` question (a prefix matching
+    loaded, or `limit` out of range on the `name` question (a prefix matching
     more is a listing, not a lookup).
     """
     # THE SESSION IS ASKED FOR FIRST, as every read tool asks: a session whose emulator died is
@@ -1530,14 +1531,14 @@ def map_save(dest: str, overwrite: bool = False) -> dict[str, Any]:
 
 
 @tool("Capture a series of frames", summary=one_line.series_capture, replay="drop")
-def series_capture(frames: list[int] | None = None, first: int | None = None,
+def series_capture(at_frames: list[int] | None = None, first: int | None = None,
                    last: int | None = None, step: int = 1, crop: list[int] | None = None,
                    dest: str = "", capture_path: str = "") -> dict[str, Any]:
     """FRAMES OUT OF THE SESSION'S VIDEO CAPTURE, as PNGs and one manifest: the series
     `series_diff`, `region_track` and `golden_check` read, with no picture in the reply. Needs
     `ffmpeg` (named when missing) and a session started with `capture_video`.
 
-    The frames are the AVI's own, numbered from 0, NOT emulated frames: `frames` (a list,
+    The frames are the AVI's own, numbered from 0, NOT emulated frames: `at_frames` (a list,
     ascending) or `first`, `last` and `step`, at most {SERIES_MAX}. `capture_path`: an absolute
     path of a capture, default the largest. `crop` `[x, y, width, height]` in the capture's pixels,
     default the whole frame. `dest`: a new absolute directory, kept after `close`; else one in
@@ -1554,7 +1555,7 @@ def series_capture(frames: list[int] | None = None, first: int | None = None,
     Reference: REFERENCE.md, Media files.
     """
     session = live()
-    return st.reply(**media.series_capture(session, STATE.session_scratch(), frames, first,
+    return st.reply(**media.series_capture(session, STATE.session_scratch(), at_frames, first,
                                            last, step, crop, dest, capture_path))
 
 
@@ -1764,10 +1765,10 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
     screen's own units as `screen_view` counts them (character cells in a text mode, pixels in
     a graphics one; the standard BIOS modes), or `mouse`, the DOS driver's own coordinates (for
     a VESA or custom mode). `target`: instead of `x`, `y`, a control of the screen the latest
-    `map_find` matched, its centre in `screen` units. `button`: `left`, `right` or `middle`;
-    `action`: `click` (default), `double` (two clicks a tick apart), `down` or `up` (a drag is
-    `down`, a move, `up`). A button with no `x`, `y` acts where the pointer is, so `down` alone
-    holds it for the calls that follow. A move and a button in one call: the move goes first.
+    `map_find` matched, its centre in `screen` units. `button` and `action` (`double`: two
+    clicks a tick apart; a drag is `down`, a move, `up`). A button with no `x`, `y` acts where the
+    pointer is, so `down` alone holds it for the calls that follow. A move and a button in one
+    call: the move goes first.
 
     Refused before anything is sent: no move and no button, half a move, a place off the
     screen or outside the driver's range, `screen` units in a mode this server does not map, a
@@ -1926,7 +1927,7 @@ def drive(act: list[dict[str, Any]], expect: str = "",
     `expect` (a regex; empty for none) the call then waits up to `seconds` (default
     {EXPECT_WAIT_S}, at most {WAIT_MAX_S}) for a NEW matching line from that mark, the act's
     overall effect; and `looked.guest` is what the guest wrote since the mark, filtered by
-    `pattern` (a regex) and cut to the LAST `limit` (1..{LOG_LIMIT_MAX}, default 40): `pattern`
+    `pattern` (a regex) and cut to the LAST `limit`: `pattern`
     only filters what is SHOWN and proves nothing, so it is never the `expect`. An act that
     ended stopped at the debugger has the log read once, not waited on: a stopped guest cannot
     write. `settle_seconds` and `summaries` are `perform`'s. `seconds` with no `expect` is

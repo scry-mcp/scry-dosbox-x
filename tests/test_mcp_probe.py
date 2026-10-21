@@ -49,7 +49,11 @@ def test_the_probe_reads_the_server_the_suite_imports() -> None:
     assert REPO.checks["dosbox-x"] is dosbox_checks.probe_check
 
 
-def test_every_instructions_and_tool_description_fits_the_client_cap() -> None:
+def test_every_instructions_and_tool_description_fits_the_client_cap(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    """Over the cap fails; the margins print on every run."""
+    with capsys.disabled():
+        print("\nthe texts nearest the client's cap:\n  " + "\n  ".join(probe_checks.margins(REPO)))
     if over := probe_checks.over_cap(REPO):
         pytest.fail("\n".join(over), pytrace=False)
 

@@ -48,7 +48,8 @@ KEY_CELLS = ("F send_keys a is answered by key_cue_a",
 
 F_CELLS = cells(
     ("F the program carries its E9 channel", "known: dpmi.c writes `BOOT  . start` first"),
-    ("F INT 31h AH=02h stops inside the DPMI client", "server instructions: 0x31 ah=2 DJGPP"),
+    ("F INT 31h AH=02h stops inside the DPMI client",
+     "breakpoint_interrupt's description: 0x31 with ah=2 for DJGPP"),
     ("F the stub announces the serial route", "REFERENCE.md, Input and the screen"),
     ("F screen_view at the client's first stop reads the shell's page through a flat segment",
      "screen_view docstring: protected mode through the GDT or LDT; known: the program is "

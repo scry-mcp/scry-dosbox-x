@@ -158,7 +158,7 @@ def test_what_ffmpeg_is_never_asked_about(tmp_path: Path, monkeypatch: pytest.Mo
         media.series_capture(session, tmp_path / "s", [1], None, None, 1, [60, 0, 8, 8], "",  # type: ignore[arg-type]
                              "")
     with pytest.raises(ds.Invalid, match="containing `%`"):
-        media.check_series_capture(frames=[1], dest=str(tmp_path / "run%d"))
+        media.check_series_capture(at_frames=[1], dest=str(tmp_path / "run%d"))
     assert ran == [], "every refusal above came before ffmpeg was run"
     monkeypatch.setattr(shutil, "which", lambda name: None)
     with pytest.raises(ds.Invalid, match="there is none on PATH") as e:

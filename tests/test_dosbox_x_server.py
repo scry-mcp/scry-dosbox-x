@@ -906,7 +906,7 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         "write": lambda: server.write(ref="0040:0100", data_hex="00"),
         "breakpoint_interrupt": lambda: server.breakpoint_interrupt(number=0x21),
         "resume": server.resume, "stop": server.stop,
-        "series_capture": lambda: server.series_capture(frames=[0]),
+        "series_capture": lambda: server.series_capture(at_frames=[0]),
         "map_add": lambda: server.map_add(screen="s", match=[[0, 0, 1, 1]]),
         "map_find": server.map_find,
         "read_memory": lambda: server.read_memory(ref="0000:00000000"),

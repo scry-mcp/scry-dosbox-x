@@ -125,7 +125,7 @@ mcp = envelope.Envelope(
         '`start` parks it STOPPED at the debugger; `resume` lets it RUN, and readers refuse\n'
         '(`not_stopped`, naming `last_stop`); ' + running_sentence() + '\nIt stops at a '
         'breakpoint armed BEFORE the release '
-        '(`breakpoint_interrupt` 0x21 real mode, 0x31 ah=2 DJGPP) or at `stop`. What you\n'
+        'or at `stop`. What you\n'
         'declare while it runs is `pending` until the next stop. After `symbols_load`, a `ref`\n'
         'is a symbol or a `SEG:OFF`. A cancel ends a call as its bound would; the next reply\n'
         'says `cancelled`.\n'

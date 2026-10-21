@@ -320,8 +320,9 @@ that cannot write the line waited for; `not_settled`, a `BREAK` whose prompt nev
 
 **One spelling per concept, the Scry servers' own.** `ref` for how a place is named, `seconds`
 for how long a wait may take (a session's lifetime is `session_seconds`: a lifetime, not a
-wait), `count` for how many steps, `length` for how many bytes, `limit` for how many rows come
-back, `pattern` for a regex over a log, `<list>_total` for how many a list holds, listed or not
+wait), `count` for how many and `first` for from where, each of the tool's own items (steps,
+rows), `length` for how many bytes, `limit` for how many rows come back, `frames` only for a
+count of frames (`series_capture`'s list of frame numbers is `at_frames`), `pattern` for a regex over a log, `<list>_total` for how many a list holds, listed or not
 (`hits_total` from `scan_start` on), `dest` for the file a call writes (`memdump`, `map_save`,
 `perform_export`...), `path` for the file a call reads (`comment_load`, `map_load`) and for the
 file a reply names, always the whole path, and `<what>_path` for any other file a reply names

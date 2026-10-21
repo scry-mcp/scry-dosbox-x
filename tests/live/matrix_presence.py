@@ -172,7 +172,7 @@ def _frame_of(capture: str, frame: int) -> str:
 
 def _series_of(capture: str, frames: list[int]) -> list[str]:
     dest = Path(M.fresh("-series"))
-    r = M.call(server.series_capture, frames=frames, dest=str(dest), capture_path=capture)
+    r = M.call(server.series_capture, at_frames=frames, dest=str(dest), capture_path=capture)
     return [_digest(p) for p in sorted(dest.glob("*.png"))] if ok(r) and dest.is_dir() else []
 
 

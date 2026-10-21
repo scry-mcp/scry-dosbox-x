@@ -176,7 +176,7 @@ def _base(tool: str, tmp_path: Path) -> dict[str, Any]:
         "map_load": {"path": str(tmp_path / "m.scry-map.json")},
         "map_save": {"dest": str(tmp_path / "m.scry-map.json")},
         "perform_export": {"dest": str(tmp_path / "p.json")},
-        "series_capture": {"frames": [0], "dest": str(tmp_path / "series"),
+        "series_capture": {"at_frames": [0], "dest": str(tmp_path / "series"),
                            "capture_path": str(tmp_path / "c.avi")},
     }
     return table[tool]
