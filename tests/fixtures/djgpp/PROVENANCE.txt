@@ -1,2 +1,4 @@
 What this is: a map file this package builds itself, from the sources beside it, by the
 recipe beside it (the DJGPP cross compiler and `nm`, run by `build.sh`; `mapdemo.ld.map` is the link's map, `mapdemo.sym` the `nm` listing of the executable). Re-made by running that recipe.
+One edit by hand: the link named the compiler's temporary object by its host path, a per-user
+temporary directory; those five names read `mapdemo.o`, which is that object.

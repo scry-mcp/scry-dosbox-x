@@ -207,12 +207,16 @@ DPMI_CFLAGS = ["-O1", "-fno-omit-frame-pointer", "-Wall", "-Wextra", "-Wshadow",
                            "cannot be rebuilt")
 def test_the_dpmi_guest_is_exactly_what_its_source_builds_to(tmp_path: Path) -> None:
     """The DJGPP build is reproducible: the same source gives the same bytes, so the committed
-    binary is compared byte for byte, and its table is `nm`'s own text for it."""
+    binary, stripped of its debug sections as the header says, is compared byte for byte, and
+    its table is `nm`'s own text for it."""
     guest = _dpmi_guest()
     out = tmp_path / "dpmi.exe"
     r = subprocess.run([str(DJGPP_GCC), *DPMI_CFLAGS, "-o", str(out), str(GUEST / "dpmi.c")],
                        capture_output=True, text=True, check=False)
     assert r.returncode == 0, f"dpmi.c does not build: {r.stderr}"
+    s = subprocess.run([str(DJGPP_BIN / "i586-pc-msdosdjgpp-strip"), "--strip-debug", str(out)],
+                       capture_output=True, text=True, check=False)
+    assert s.returncode == 0, f"the strip failed: {s.stderr}"
     assert out.read_bytes() == guest.EXE.read_bytes(), (
         "dpmi.exe is not the build of dpmi.c: rebuild it with the command in dpmi.c's header")
     nm = subprocess.run([str(DJGPP_BIN / "i586-pc-msdosdjgpp-nm"), str(guest.EXE)],

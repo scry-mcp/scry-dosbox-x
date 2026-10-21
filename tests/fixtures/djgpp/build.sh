@@ -18,11 +18,14 @@ cd "$(dirname "$0")"
 # "toolchain's" opened a quote and the whole script died with `unexpected EOF while
 # looking for matching quote` -- at LOAD time, before line 1 ran. MEASURED here.
 bin="${DJGPP_BIN:?set DJGPP_BIN to the bin directory of the DJGPP cross toolchain}"
-"$bin/i586-pc-msdosdjgpp-gcc" -O0 -Wl,-Map,mapdemo.ld.map -o mapdemo.exe mapdemo.c
+# COMPILED THEN LINKED, so the map names `mapdemo.o` and not the compiler's temporary object
+# under the host's per-user temporary directory.
+"$bin/i586-pc-msdosdjgpp-gcc" -O0 -c -o mapdemo.o mapdemo.c
+"$bin/i586-pc-msdosdjgpp-gcc" -O0 -Wl,-Map,mapdemo.ld.map -o mapdemo.exe mapdemo.o
 "$bin/i586-pc-msdosdjgpp-nm" mapdemo.exe > mapdemo.sym
 # The executable is NOT kept: this package reads TEXT and never a binary, so a 148 KB
 # .exe in the fixtures would be 148 KB nothing reads.
-rm -f mapdemo.exe
+rm -f mapdemo.exe mapdemo.o
 # `|| true` ON THE COUNT, because `grep -c` exits 1 on zero matches and `set -e` would
 # then kill the script at the moment it had something to report. The count itself is
 # what says whether the run produced anything: a 0 here is a fixture with no symbols.

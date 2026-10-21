@@ -25,7 +25,10 @@
  * Build (tests/guest/, DJDIR defaulting to $HOME/djgpp):
  *   $DJDIR/bin/i586-pc-msdosdjgpp-gcc -O1 -fno-omit-frame-pointer -Wall -Wextra -Wshadow \
  *       -Werror -o dpmi.exe dpmi.c
+ *   $DJDIR/bin/i586-pc-msdosdjgpp-strip --strip-debug dpmi.exe
  *   $DJDIR/bin/i586-pc-msdosdjgpp-nm dpmi.exe > dpmi.sym
+ * The strip drops the debug sections libgcc brings, which name the directory the toolchain was
+ * built in; the COFF symbol table, which the table check reads, stays.
  */
 
 #include <bios.h>

@@ -282,7 +282,7 @@ Name             Origin             Length             Attributes
 Linker script and memory map
 
 LOAD /opt/djgpp/lib/gcc/i586-pc-msdosdjgpp/12.2.0/../../../../i586-pc-msdosdjgpp/lib/crt0.o
-LOAD /var/folders/9p/smf5trpd0js052m0tvsgwzd00000gn/T/cc3zLOd1.o
+LOAD mapdemo.o
 LOAD /opt/djgpp/lib/gcc/i586-pc-msdosdjgpp/12.2.0/libgcc.a
 LOAD /opt/djgpp/lib/gcc/i586-pc-msdosdjgpp/12.2.0/../../../../i586-pc-msdosdjgpp/lib/libc.a
 LOAD /opt/djgpp/lib/gcc/i586-pc-msdosdjgpp/12.2.0/libgcc.a
@@ -296,7 +296,7 @@ LOAD /opt/djgpp/lib/gcc/i586-pc-msdosdjgpp/12.2.0/libgcc.a
                 0x0000000000001ce0                __sbrk
                 0x0000000000001cf8                __brk
                 0x0000000000001f06                _crt0_init_mcount
- .text          0x0000000000001f10       0x70 /var/folders/9p/smf5trpd0js052m0tvsgwzd00000gn/T/cc3zLOd1.o
+ .text          0x0000000000001f10       0x70 mapdemo.o
                 0x0000000000001f24                map_demo_a_very_long_symbol_name
                 0x0000000000001f49                map_demo_short
                 0x0000000000001f53                main
@@ -608,7 +608,7 @@ LOAD /opt/djgpp/lib/gcc/i586-pc-msdosdjgpp/12.2.0/libgcc.a
  *(.data)
  *fill*         0x000000000000e004        0xc 
  .data          0x000000000000e010       0xd0 /opt/djgpp/lib/gcc/i586-pc-msdosdjgpp/12.2.0/../../../../i586-pc-msdosdjgpp/lib/crt0.o
- .data          0x000000000000e0e0        0x0 /var/folders/9p/smf5trpd0js052m0tvsgwzd00000gn/T/cc3zLOd1.o
+ .data          0x000000000000e0e0        0x0 mapdemo.o
  .data          0x000000000000e0e0        0x0 /opt/djgpp/lib/gcc/i586-pc-msdosdjgpp/12.2.0/libgcc.a(unwind-dw2-fde.o)
  .data          0x000000000000e0e0       0x10 /opt/djgpp/lib/gcc/i586-pc-msdosdjgpp/12.2.0/../../../../i586-pc-msdosdjgpp/lib/libc.a(abort.o)
  .data          0x000000000000e0f0        0x0 /opt/djgpp/lib/gcc/i586-pc-msdosdjgpp/12.2.0/../../../../i586-pc-msdosdjgpp/lib/libc.a(nmalloc.o)
@@ -830,7 +830,7 @@ LOAD /opt/djgpp/lib/gcc/i586-pc-msdosdjgpp/12.2.0/libgcc.a
 .bss            0x0000000000011000     0x3600
  *(.bss .gnu.linkonce.b.*)
  .bss           0x0000000000011000       0x10 /opt/djgpp/lib/gcc/i586-pc-msdosdjgpp/12.2.0/../../../../i586-pc-msdosdjgpp/lib/crt0.o
- .bss           0x0000000000011010        0x4 /var/folders/9p/smf5trpd0js052m0tvsgwzd00000gn/T/cc3zLOd1.o
+ .bss           0x0000000000011010        0x4 mapdemo.o
                 0x0000000000011010                map_demo_common
  .bss           0x0000000000011014        0xc /opt/djgpp/lib/gcc/i586-pc-msdosdjgpp/12.2.0/libgcc.a(unwind-dw2-fde.o)
  .bss           0x0000000000011020        0x0 /opt/djgpp/lib/gcc/i586-pc-msdosdjgpp/12.2.0/../../../../i586-pc-msdosdjgpp/lib/libc.a(abort.o)
@@ -1086,7 +1086,7 @@ LOAD /opt/djgpp/lib/gcc/i586-pc-msdosdjgpp/12.2.0/libgcc.a
 OUTPUT(mapdemo.exe coff-go32-exe)
 
 .comment        0x0000000000000000      0x6cc
- .comment       0x0000000000000000       0x14 /var/folders/9p/smf5trpd0js052m0tvsgwzd00000gn/T/cc3zLOd1.o
+ .comment       0x0000000000000000       0x14 mapdemo.o
  .comment       0x0000000000000014       0x14 /opt/djgpp/lib/gcc/i586-pc-msdosdjgpp/12.2.0/libgcc.a(unwind-dw2-fde.o)
  .comment       0x0000000000000028       0x14 /opt/djgpp/lib/gcc/i586-pc-msdosdjgpp/12.2.0/../../../../i586-pc-msdosdjgpp/lib/libc.a(abort.o)
  .comment       0x000000000000003c       0x14 /opt/djgpp/lib/gcc/i586-pc-msdosdjgpp/12.2.0/../../../../i586-pc-msdosdjgpp/lib/libc.a(nmalloc.o)
