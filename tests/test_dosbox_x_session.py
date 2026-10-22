@@ -29,11 +29,13 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
+from scry_core import vocabulary as vocab
 from test_dosbox_x_stub_link import REPORT, Stub
 
 import dosbox_console as dcons
 import dosbox_launch as dlaunch
 import dosbox_logs as dlogs
+import dosbox_process as dprocess
 import dosbox_session as ds
 import dosbox_stub_link as stub_link
 
@@ -541,7 +543,7 @@ def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
             # so the line can be painted); reaped after SIGKILL.
             now = time.monotonic()
             self.first = self.first or now
-            if now - self.first < ds.TERM_GRACE:
+            if now - self.first < dprocess.TERM_GRACE:
                 self.stretches = 1
                 time.sleep(timeout or 0)
                 raise subprocess.TimeoutExpired(cmd="dosbox-x", timeout=timeout or 0)
@@ -2223,7 +2225,7 @@ def test_close_records_which_ending_it_got() -> None:
         def wait(timeout: float | None = None) -> int:
             now = time.monotonic()
             first[0] = first[0] or now
-            if now - first[0] < wait_raises * ds.TERM_GRACE:
+            if now - first[0] < wait_raises * dprocess.TERM_GRACE:
                 time.sleep(timeout or 0)
                 raise subprocess.TimeoutExpired("dosbox-x", timeout or 0)
             polls[:] = [0]
@@ -2756,9 +2758,10 @@ def test_the_session_spawns_a_named_guardian_with_its_wall_clock_bound(
     before = time.time()
     with pytest.raises(OSError, match="stop here"):
         ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=90))
-    assert seen and seen[0][0] == ds.PROCESS_NAME
-    assert ds.GUARDIAN_NAME == "scry-dosbox-x-guardian"
-    assert before + 90 + ds.GUARDIAN_GRACE_S <= seen[0][1] <= time.time() + 90 + ds.GUARDIAN_GRACE_S
+    assert seen and seen[0][0] == dprocess.PROCESS_NAME
+    assert dprocess.GUARDIAN_NAME == "scry-dosbox-x-guardian"
+    grace = dprocess.GUARDIAN_GRACE_S
+    assert before + 90 + grace <= seen[0][1] <= time.time() + 90 + grace
 
 
 def test_the_stub_takes_the_first_drive_from_y_down_that_the_conf_does_not_mount(
@@ -2794,14 +2797,15 @@ def test_a_conf_s_mounts_are_read_past_options_case_and_a_bom(tmp_path: Path, au
 
 @pytest.mark.parametrize("from_zero", [False, True])
 def test_a_wait_bound_takes_its_maximum_and_refuses_one_past_it(from_zero: bool) -> None:
-    ds.check_wait_bound(ds.RUN_TO_MAX, from_zero=from_zero)
+    zero_means = "no wait" if from_zero else ""
+    vocab.check_wait(vocab.WAIT_MAX_S, zero_means=zero_means)
     with pytest.raises(ds.Invalid, match="seconds"):
-        ds.check_wait_bound(ds.RUN_TO_MAX + 0.5, from_zero=from_zero)
+        vocab.check_wait(vocab.WAIT_MAX_S + 0.5, zero_means=zero_means)
     if from_zero:
-        ds.check_wait_bound(0, from_zero=True)
+        vocab.check_wait(0, zero_means="no wait")
     else:
         with pytest.raises(ds.Invalid, match="seconds"):
-            ds.check_wait_bound(0)
+            vocab.check_wait(0)
 
 
 def test_the_argument_judges_take_their_edges_and_refuse_one_past(

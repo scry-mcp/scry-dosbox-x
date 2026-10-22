@@ -85,6 +85,8 @@ class StateFake:
         self.control = Channel(self, carries)
         self.moves: list[str] = []
         self.altered = False
+        self.machine_replaced = False
+        self._link: Any = None
         self.stop_count = 0
         self.halts_on_release = False
         self.release_s = 0.0
@@ -702,3 +704,30 @@ def test_a_save_the_emulator_refused_leaves_no_file(tmp_path: Path) -> None:
     with pytest.raises(ds.Invalid):
         ds.Session.state_save(as_session(fake), "boot", 5.0)
     assert not (tmp_path / "save" / "boot.sav").exists()
+
+
+class _Link:
+    """The input link's half a load reaches: whether its sequence still has to be proved."""
+
+    def __init__(self) -> None:
+        self.unproved = 0
+
+    def unprove(self) -> None:
+        self.unproved += 1
+
+
+def test_a_load_that_answered_or_was_cut_short_after_it_went_unproves_the_link(
+        tmp_path: Path) -> None:
+    """The guest's memory, the stub's last sequence with it, is the loaded one: the link proves
+    its sequence again before a key counts on it, whether the load answered or was refused once
+    sent; and the session says the machine was replaced, for the base's measure."""
+    fake = StateFake(tmp_path / "save")
+    link = _Link()
+    fake._link = link
+    write_state(tmp_path / "save" / "boot.sav")
+    ds.Session.state_load(as_session(fake), "boot", 5.0)
+    assert link.unproved == 1 and fake.machine_replaced is True
+    fake.control.refuse = "failed: x (the log says why)"
+    with pytest.raises(ds.Invalid):
+        ds.Session.state_load(as_session(fake), "boot", 5.0)
+    assert link.unproved == 2 and fake.machine_replaced is True

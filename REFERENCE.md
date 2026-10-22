@@ -646,8 +646,11 @@ runs, it is placed by the stop that arms it, which writes that stop's mode (a ro
 before and declared again while the guest runs keeps its mode, and stays queued at a stop of
 the other); declared or loaded where its stop cannot place it (a protected-mode offset past
 FFFF at a real-mode stop), it is placed by a later `symbols_load` of its session at a stop that
-can, or by declaring or loading it again there; a row stored before modes were kept waits the
-same way. A `symbols_load` while the guest runs places nothing. So a protected-mode program's
+can, or by declaring or loading it again there. A raw breakpoint a store wrote before modes
+were kept (stamped with the batch that described it, no mode) was never placed under any map
+of today, so the first stop that can place it arms it, writes its place and mode, and makes it
+this session's; one such row stamped with the conf alone cannot be told from today's unplaced
+rows and waits as they do. A `symbols_load` while the guest runs places nothing. So a protected-mode program's
 comment file is loaded at a protected-mode stop.
 Within one session a held batch is taken as the running program, so a guest that exits
 and runs a relinked EXE inside the same session is not seen until the next session, which judges
@@ -732,7 +735,8 @@ address otherwise, `stale` where none does and its map is not held (at the next 
 well), and judged by the conf only when no map described it as it was placed (a row placed
 before any map, or loaded where its place is not known while a map is held, takes the batch
 that describes it when its session loads one, a store that cannot take that write making the
-load `host_failed` with the row held in memory, and the second kind is `stale` in a later
+load `host_failed` with nothing taken (the store rolls back every write that fails), and the
+second kind is `stale` in a later
 session that no such load reached, its `why` saying so; a row an earlier session placed with no map
 is `stale` once a batch describes it, its `why` saying no build beyond the conf was recorded; a
 row stored without its conf is `stale` at the park, its `why` saying so). A load that gives a
@@ -913,7 +917,7 @@ last; one the host refuses part-way is removed and `note` says so. With no table
 is named and `note` says so.
 
 **The waits are bounds**: `run_to`'s, `run_for`'s and `trace`'s `seconds` is more than zero and at
-most 600 (`RUN_TO_MAX`), the ceiling `log_wait`, the state tools and the `expect` waits share. A wait
+most 600 (`WAIT_MAX_S`), the ceiling `log_wait`, the state tools and the `expect` waits share. A wait
 holds the server's lock for its whole duration, so every other tool, `status` included, is
 unanswerable until it ends; the ceiling is what stops one abandoned question from wedging a
 session. `resume`'s `seconds` and the `settle_seconds` of `start`, `perform` and `drive` are
@@ -1026,8 +1030,9 @@ The running-guest contract, in three parts:
   declaration now and queue the debugger's row (`pending_disarm`); `symbols_load` with an
   explicit base parses and holds the table at once (`symbols_find` answers) and loads the
   debugger at the stop (`pending: true`). The next stop applies all of it before reading
-  anything and says so in `applied_on_stop` (`armed`, `disarmed`, `symbols_loaded`, and
-  `still_pending` for what could not be applied). A stop that happened on its own, during a
+  anything and says so in `applied_on_stop` (`armed`, `disarmed`, `symbols_loaded`,
+  `base_remeasured` after a `state_load` moved the program, and `still_pending` for what could
+  not be applied). A stop that happened on its own, during a
   wait or a key, is recorded by the first tool that finds the machine at the debugger,
   `status` and `captures` included: that reply says `stopped_on_its_own` (its `stop_seq`,
   `pc` and `cause`), once, and carries the same `applied_on_stop` block when something
@@ -1357,8 +1362,8 @@ fresh session.
 step's operation, argument names and argument VALUES go through the same checks each tool
 runs first on its own (a key name no route knows, a pattern that does not compile, a step
 count past the ceiling, a wait that is not a bound, a raw address that does not parse, an
-argument of the wrong type, a required argument missing). A batch with a mistake in step 3
-does not press the keys of steps 0 to 2 and then stop: the reply is INVALID with `errors`
+argument of the wrong type, a required argument missing). A batch with a mistake in step 4
+does not press the keys of steps 1 to 3 and then stop: the reply is INVALID with `errors`
 listing every refused step, `ran` is empty, and the caller fixes the batch once (`drive` carries
 them inside `act`, beside `verify` and `looked`, the shape every `drive` reply has). What only
 its step can judge still refuses there, with `failed_at` and `ran` as the honest account: a
@@ -1389,8 +1394,11 @@ can still produce a stop (a breakpoint, an interrupt, a change-watch), and with 
 declared it returns at once, still running, and says why. A list that waited for a stop
 answers its `verdict`: `TARGET` when every wait ended at one, `TIMEOUT` when one ran out, the
 steps after it unsent; with `settle_seconds` 0 a console step after a release is refused
-`not_stopped`, and an emulator gone during a wait is `session_broken`. `settle_seconds` runs
-from 0, no wait, to 600 (`RUN_TO_MAX`), and `drive` takes the same.
+`not_stopped`, and an emulator gone during a wait is `session_broken`. A list begun on a
+running guest waits the same way before its first step that needs a stop. A terminal that
+fails while the list waits (its buffer overflowed) ends it with the account of what ran, the
+failure as its end. Messages count steps from 1, as the progress line does; the indexes a reply carries (`failed_at`, a row's `step`, `errors`' `step`) count from 0. `settle_seconds` runs
+from 0, no wait, to 600 (`WAIT_MAX_S`), and `drive` takes the same.
 
 A `resume` inside a sequence drains what the console steps before it left in the terminal as
 the key goes out, so their prompt does not read as the resume's halt. What the drain does NOT
@@ -1879,7 +1887,17 @@ directory, a link to one, a FIFO, whose open would hold the call, a socket or a 
 `state_load` refuses `unknown_ref` saying the same.
 `state_load`'s `mark` is where the log ended as the load was sent (*The log*). A save
 never overwrites and alters nothing; a load marks the session altered, because it replaces the
-machine. A name is letters, digits, `_` and `-`, starting with a letter or a digit, at most 64 of
+machine. **The symbol table survives a load, and its base is measured again at the first stop in
+the program's code**: the program is the same, but the restored machine may hold it at another
+base under other selectors (a DPMI host allocates them as that run went), so a base
+`symbols_load` measured off a register is read again through that register, with the program's
+selectors, at the first protected-mode stop whose `EIP` lies within the table; a stop in a
+handler, a DPMI host or another program leaves it pending (`status`'s `pending.base_remeasure`,
+always present, true until then). When the base moved, the table moves, the breakpoints declared
+by name are cleared at their old places (the debugger's rows outlive a load) and armed anew
+(`applied_on_stop.base_remeasured`, from and to); a base the caller gave is kept as given. The
+debugger's own name list keeps the names where the first load put them. The input stub's link proves its sequence again too: a loaded
+stub's last sequence is the one the saved session left. A name is letters, digits, `_` and `-`, starting with a letter or a digit, at most 64 of
 them, and not digits only: the emulator's own slot files are `<n>.sav` in the same directory.
 
 ## The console
@@ -1936,8 +1954,8 @@ added to one file.
 - **`dosbox_coff.py`**: a DJGPP image's own COFF symbol table, read to check a text table
   against the build it was made for.
 - **`dosbox_state.py`**: what the server holds between calls (the session, the symbol table,
-  the declaration store, the last stop, what waits for the next one) and the envelope every
-  reply carries.
+  the declaration store, the last stop, what waits for the next one), a reply's body, and the
+  `session` block the boundary closes it with.
 - **`dosbox_checks.py`**: the table of which argument each tool judges BEFORE the session
   gate, one function per rule owned by the module that does the work, read by the surface and
   by the batch executor alike.
@@ -1971,7 +1989,10 @@ added to one file.
   comment tools.
 - **`dosbox_comment_file.py`**: the comment file read and written: its header, its rules for a
   ref, a stamp and a text, and nothing that needs the machine.
-- **`dosbox_session.py`**: one live session and the emulator's terminal it drives; four of its
+- **`dosbox_process.py`**: the emulator's process the session drives: spawned under a
+  pseudo-terminal with its sockets, its terminal drained by a thread, and ended so nothing is
+  left behind; `Session`'s base.
+- **`dosbox_session.py`**: one live session, the debugger's console on that process; four of its
   jobs are bodies in modules of their own, the session delegating to each:
   **`dosbox_log_reader.py`** (the logs read and waited on), **`dosbox_frames.py`** (the video and
   its stills), **`dosbox_saved_states.py`** (the saved states), **`dosbox_symbol_file.py`** (the

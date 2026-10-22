@@ -430,6 +430,16 @@ def rearm_declarations(session: ds.Session) -> dict[str, Any]:
         # protected-mode row is re-armed by a `symbols_load` at a protected-mode stop, never at
         # the park, and a row no stop placed is re-armed nowhere until one does.
         elif (mode := placement.waits(decl, places.cpu)) is not None:
+            if mode == dec.UNPLACED and _stored_before_modes(decl):
+                # ONE ROW THAT CANNOT BE ADOPTED IS THAT ROW'S ANSWER, never the whole re-arm's.
+                try:
+                    adopted = _adopted(session, decl, res, places)
+                except ds.Invalid as e:
+                    out["unarmable"].append({**row, "why": str(e)})
+                    continue
+                if adopted is not None:
+                    out["rearmed"].append({**row, **adopted})
+                    continue
             out["unarmable"].append({**row, "why": placement.waits_why(mode, "Declare it again")})
         # A RAW ADDRESS FROM ANOTHER BUILD IS NOT RE-ARMED (the owner's decision, per
         # build): it re-resolves against nothing, and armed blind on a relinked program it
@@ -500,7 +510,8 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
     Returns the account, empty when nothing was pending. Each half is attempted on its own:
     a refusal on one (a symbol that no longer resolves) is reported, not allowed to hold the
     others back, and what could not be applied stays pending for the next stop."""
-    if not (STATE.pending["arm"] or STATE.pending["disarm"] or STATE.pending["load"] is not None):
+    if not (STATE.pending["arm"] or STATE.pending["disarm"] or STATE.pending["load"] is not None
+            or STATE.pending["remeasure"]):
         return {}
     STATE.pending["dirty"] = False
     STATE.pending["drained_seq"] = STATE.last_stop.get("seq", 0)
@@ -525,6 +536,8 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
                 for decl in _armable_declarations():
                     if decl.kind == "breakpoint" and decl.ref not in STATE.pending["arm"]:
                         STATE.pending["arm"].append(decl.ref)
+    if STATE.pending["remeasure"]:
+        _remeasure(session, out)
     kept_disarm: list[dict[str, Any]] = []
     for spec in STATE.pending["disarm"]:
         try:
@@ -575,7 +588,7 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
     if not out["still_pending"]:
         del out["still_pending"]
     if not (out["symbols_loaded"] or out["disarmed"] or out["armed"]
-            or out.get("still_pending")):
+            or out.get("still_pending") or "base_remeasured" in out):
         return {}
     # ACCUMULATED, NOT REPLACED: `live()` may have drained part of the queue a moment
     # before a stop tool drains the rest, and the reply must carry BOTH accounts as one
@@ -632,6 +645,82 @@ def _arm_queued(session: ds.Session, decl: dec.Declaration,
     return True
 
 
+#: How far past the table's last symbol a stop still counts as the program's code: the last
+#: routine's body, which no symbol bounds. A stop in a DPMI host or another program lies outside
+#: the program's span by far more.
+PROGRAM_TAIL = 0x10000
+
+
+def _remeasure(session: ds.Session, out: dict[str, Any]) -> None:
+    """The first stop IN THE PROGRAM'S CODE after a state load measures the table's base again,
+    through the register the load measured it from, and the program's selectors with it: the
+    restored machine may hold the program elsewhere, under other selectors, and a symbol placed
+    through the old base or armed through the old selector would name another byte. The program's
+    code is a protected-mode stop whose `EIP` falls within the table's span (`PROGRAM_TAIL`
+    past its last symbol): a real-mode handler, a DPMI host's code or another program waits for
+    the next stop, as one that cannot be measured does. A base that moved moves the table and
+    re-arms what is declared by name."""
+    reg = STATE.base_measured_from
+    if reg is None or not STATE.table:
+        STATE.pending["remeasure"] = False
+        return
+    try:
+        where, regs = session.where_and_registers()
+        offsets = [s.offset for s in STATE.table]
+        eip = int(where.get("eip", "-1"), 16)
+        if (not where["mode"].startswith("Pr") or not {"CS", "DS"} <= set(regs)
+                or not min(offsets) <= eip <= max(offsets) + PROGRAM_TAIL):
+            out["still_pending"].append(
+                "measuring the table's base again after the load: this stop is not in the "
+                "program's protected-mode code, so the next one that is measures it")
+            return
+        desc = session.selector(reg)
+    except (ds.Invalid, ValueError) as e:
+        out["still_pending"].append(f"measuring the table's base again after the load: {e}")
+        return
+    selectors = {f"selector_{r}": int(regs[r], 16) for r in ("CS", "DS")}
+    STATE.pending["remeasure"] = False
+    old = STATE.base.get("base", -1)
+    moved = {**{k: desc[k] for k in placement.PLACE_KEYS}, **selectors}
+    if all(STATE.base.get(k) == v for k, v in moved.items()):
+        return
+    STATE.base.update(moved)
+    if old != desc["base"]:
+        out["base_remeasured"] = {"register": reg, "from": f"{old:#010x}",
+                                  "to": f"{desc['base']:#010x}"}
+    _disarm_by_name(session, out)
+    # THE BASE HAS MOVED WHATEVER THE RE-ARM ANSWERS: one that fails queues what it would have
+    # armed, as the re-arm after a load does.
+    try:
+        out["armed"].extend(r["ref"] for r in rearm_declarations(session)["rearmed"])
+    except ds.Invalid as e:
+        out["still_pending"].append(f"the re-arm after the base was measured again: {e}")
+        for decl in _armable_declarations():
+            if decl.kind == "breakpoint" and decl.ref not in STATE.pending["arm"]:
+                STATE.pending["arm"].append(decl.ref)
+
+
+def _disarm_by_name(session: ds.Session, out: dict[str, Any]) -> None:
+    """The code breakpoints armed by NAME before the base moved, cleared from the debugger: its
+    rows outlive a state load, and on the restored machine their old places are someone else's
+    bytes. A reload keeps them (the same machine, see `STATE.note_armed`); a replaced machine
+    does not. One that cannot be cleared stays queued to disarm."""
+    by_name = {d.ref for d in current_store().declarations()
+               if d.kind == "breakpoint" and d.by == "symbol"}
+    for (fam, ref), rows in list(STATE.armed.items()):
+        if fam != "bp" or ref not in by_name:
+            continue
+        for spec in [r for r in rows if r.get("kind") == "bp"]:
+            try:
+                session.clear_code_breakpoint(spec["seg"], spec["off"])
+            except ds.Invalid as e:
+                out["still_pending"].append(f"clearing {spec['entry']} after the base moved: {e}")
+                STATE.pending["disarm"].append(spec)
+            rows.remove(spec)
+        if not rows:
+            del STATE.armed[(fam, ref)]
+
+
 def merge_applied(account: dict[str, Any]) -> None:
     """One drain's account joined into `STATE.applied_last`: the lists accumulate, a load of
     symbols is kept once any drain made one, and what is still pending is the latest word."""
@@ -639,6 +728,8 @@ def merge_applied(account: dict[str, Any]) -> None:
     for key in ("disarmed", "armed"):
         if key in account:
             merged[key] = list(merged.get(key, [])) + list(account[key])
+    if "base_remeasured" in account:
+        merged["base_remeasured"] = account["base_remeasured"]
     if "symbols_loaded" in account:
         merged["symbols_loaded"] = (bool(merged.get("symbols_loaded"))
                                     or bool(account["symbols_loaded"]))
@@ -660,20 +751,59 @@ def _waits_at(decl: dec.Declaration, places: RawPlaces) -> str | None:
     return cpu
 
 
+def _stored_before_modes(decl: dec.Declaration) -> bool:
+    """A raw row a store wrote before modes were kept: stamped with the batch that described its
+    place, with no mode, which no row of today can be (one placed takes its stop's mode, one
+    whose place was not known takes the pending stamp, or the conf's with no batch held, and
+    waits for a stop of its own session). A legacy row stamped with the conf alone cannot be
+    told from those, and waits as they do."""
+    return decl.cpu_mode is None and decl.fingerprint not in (
+        None, dec.PENDING_STAMP, decl.conf_fingerprint, STATE.conf_fingerprint)
+
+
+def _adopted(session: ds.Session, decl: dec.Declaration, res: dict[str, Any],
+             places: RawPlaces) -> dict[str, str] | None:
+    """A raw breakpoint no stop placed, armed at this one when it can place it, and placed by
+    it; queued for a later stop when this one cannot (None). A row stored before modes were
+    kept was never placed under any map, so the stop that places it makes it this session's
+    (`_placed_here`). Armed, it answers what its row adds: a `why` when the place could not be
+    written, since the breakpoint is armed all the same."""
+    cpu = places.mode_here(decl.by, decl.ref)
+    if cpu is None or "seg" not in res:
+        if decl.ref not in STATE.pending["arm"]:
+            STATE.pending["arm"].append(decl.ref)
+        return None
+    session.arm_code_breakpoint(res["seg"], res["off"])
+    STATE.note_armed(decl.ref, {"kind": "bp", "seg": res["seg"], "off": res["off"],
+                                "entry": f"BP {res['seg']:04X}:{res['off']:04X}"})
+    try:
+        _placed_here(decl, places, cpu)
+    except ds.Invalid as e:
+        # ARMED, ITS PLACE NOT WRITTEN: queued, so the next stop writes it (the re-arm skips a
+        # row the debugger already holds, and would never come back to it).
+        if decl.ref not in STATE.pending["arm"]:
+            STATE.pending["arm"].append(decl.ref)
+        return {"why": f"{e}; the next stop writes it again"}
+    return {}
+
+
 def _placed_here(decl: dec.Declaration, places: RawPlaces, cpu: str | None) -> None:
     """A queued raw breakpoint armed at this stop is placed by it: the stop's mode and the stamp
-    of its place are written, as `breakpoint_at` writes them at a stop."""
+    of its place are written, as `breakpoint_at` writes them at a stop. One no stop placed
+    before becomes this session's: nothing says another map placed it."""
     if cpu is None:
         return
     new = dataclasses.replace(
         decl, fingerprint=placement.stamp_at(places.linear(decl.by, decl.ref), raw=True),
-        cpu_mode=placement.mode_word(cpu))
-    if (new.fingerprint, new.cpu_mode) != (decl.fingerprint, decl.cpu_mode):
+        cpu_mode=placement.mode_word(cpu),
+        origin=STATE.session_origin if _stored_before_modes(decl) else decl.origin)
+    if (new.fingerprint, new.cpu_mode, new.origin) != (decl.fingerprint, decl.cpu_mode,
+                                                       decl.origin):
         try:
             placement.to_invalid(lambda: current_store().apply(replaces=[(decl, new)]))
         except dec.StoreWriteError as e:
             raise ds.Invalid("host_failed", f"armed, but its place could not be written: {e}; "
-                             "held in memory until a write succeeds") from None
+                             "the stored row keeps its old place") from None
 
 
 def _armable_declarations() -> list[dec.Declaration]:

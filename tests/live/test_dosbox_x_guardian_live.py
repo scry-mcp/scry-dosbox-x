@@ -17,7 +17,7 @@ from typing import Any
 import pytest
 from test_dosbox_x_server_exit_live import ANSWER_WITHIN_S, BRICKS, ROOT, _alive, _rpc
 
-import dosbox_session as ds
+import dosbox_process as dprocess
 
 pytestmark = [pytest.mark.live,
               pytest.mark.skipif(sys.platform == "win32", reason="the guardian is POSIX only")]
@@ -108,12 +108,12 @@ def test_a_session_held_at_the_debugger_ends_at_its_bound_only_with_the_guardian
         mode: str, tmp_path: Path) -> None:
     with (tmp_path / "server.stderr").open("wb") as err:
         proc = _server(mode, err)
-    silent = threading.Timer(ANSWER_WITHIN_S + BOUND_S + ds.GUARDIAN_GRACE_S, proc.kill)
+    silent = threading.Timer(ANSWER_WITHIN_S + BOUND_S + dprocess.GUARDIAN_GRACE_S, proc.kill)
     silent.start()
     pid = None
     try:
         pid = _start(proc, BOUND_S)              # parked at the debugger, and left there
-        gone = _gone_within(pid, BOUND_S + ds.GUARDIAN_GRACE_S + GONE_WITHIN_S)
+        gone = _gone_within(pid, BOUND_S + dprocess.GUARDIAN_GRACE_S + GONE_WITHIN_S)
         assert gone is (mode == "guarded"), (
             f"DOSBox-X {pid} {'outlived' if not gone else 'ended at'} its {BOUND_S} s bound, "
             f"{mode}")

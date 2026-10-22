@@ -70,6 +70,7 @@ import dosbox_code as code
 import dosbox_console as dcons
 import dosbox_logs as dlogs
 import dosbox_machine as machine
+import dosbox_process as dprocess
 import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_x_server as server
@@ -770,8 +771,8 @@ def test_closing_a_running_session_does_not_wait_out_a_signal_it_ignores() -> No
         f"closing a running session took {took:.2f}s. With the quit warning off the "
         f"emulator answers the TERM at once; a wait this long means it is sitting behind "
         f"a dialog nobody will answer, the failure forcing the warning off exists to "
-        f"prevent. The honest ceiling is TERM_GRACE ({ds.TERM_GRACE}s) plus the drain "
-        f"join ({ds.DRAIN_JOIN_SECS}s)")
+        f"prevent. The honest ceiling is TERM_GRACE ({dprocess.TERM_GRACE}s) plus the drain "
+        f"join ({dprocess.DRAIN_JOIN_SECS}s)")
 
 
 # ----------------------------------------------------------------- symbols_load / find

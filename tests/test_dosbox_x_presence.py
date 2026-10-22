@@ -156,6 +156,9 @@ def test_a_start_plan_lights_the_window_while_it_runs(monkeypatch: pytest.Monkey
         def repaint(self, still: Callable[[], bool]) -> None:
             """A guest parked at the debugger draws on its own."""
 
+        def wake(self) -> None:
+            """No repaint waits here."""
+
     def lit(session: Any, asked: bool, shared: bool) -> presence.Shown:
         return presence.Presence.open(Shows(), ())
 

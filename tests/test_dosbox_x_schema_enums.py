@@ -12,6 +12,7 @@ from typing import Any
 
 import pytest
 from scry_core import placement as window
+from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Invalid
 
 import dosbox_checks as checks
@@ -102,11 +103,11 @@ def test_a_ranged_argument_publishes_its_judges_bounds(tool: str, arg: str, lo: 
 
 def test_every_wait_publishes_the_one_bound_and_nothing_publishes_what_no_row_holds() -> None:
     with pytest.raises(Invalid):
-        ds.check_wait_bound(0)            # the judge refuses the floor the schema leaves open
-    ds.check_wait_bound(0, from_zero=True)
+        vocab.check_wait(0)            # the judge refuses the floor the schema leaves open
+    vocab.check_wait(0, zero_means="no wait")
     for wild in (10**400, float("nan"), float("inf"), True, "3"):
         with pytest.raises(Invalid, match="is not a bound"):
-            ds.check_wait_bound(wild)
+            vocab.check_wait(wild)
     enums, ranges, waits = set(), set(), 0
     for tool, schema in _schemas().items():
         for arg, prop in schema["properties"].items():
@@ -116,7 +117,8 @@ def test_every_wait_publishes_the_one_bound_and_nothing_publishes_what_no_row_ho
             if arg in WAITS:
                 waits += 1
                 low = "minimum" if (tool, arg) in ZERO_MEANS else "exclusiveMinimum"
-                assert (scalar.get(low), scalar.get("maximum")) == (0, ds.RUN_TO_MAX), (tool, arg)
+                bound = (scalar.get(low), scalar.get("maximum"))
+                assert bound == (0, vocab.WAIT_MAX_S), (tool, arg)
             elif "maximum" in scalar:
                 ranges.add((tool, arg))
     assert waits, "no wait was found: the schema read examined nothing"

@@ -81,7 +81,7 @@ class Launch:
     logfile: Path | None = None
     # THE EMULATOR, the absolute path `start` resolved (`dosbox_binary`); the bare name is the
     # default a hand-built `Launch` runs, the PATH's.
-    binary: str = binaries.EMULATOR_NAME
+    binary: str = binaries.EXECUTABLE_NAME
     # THE INPUT ROUTE: a TCP port the session listens on and the emulator's COM1 dials
     # (`serial1=nullmodem server:`), which the resident stub in `guest/INJECT.COM` reads its
     # commands from; 0 has the session's listener take a free one, which the session's

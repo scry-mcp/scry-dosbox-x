@@ -10,6 +10,7 @@ from pathlib import Path
 from scry_core import log_marks
 from scry_core import log_wait as core_wait
 from scry_core import reply_contract as contract
+from scry_core import vocabulary as vocab
 from scry_core.progress import Progress, no_progress
 from scry_core.reply_contract import Invalid
 
@@ -178,7 +179,7 @@ def log_wait(ses: ds.Session, pattern: str, seconds: float, channel: str, mark: 
     the moment is for: choosing an address to arm on the NEXT run, before the machine is
     released.
     """
-    ds.check_wait_bound(seconds)
+    vocab.check_wait(seconds)
     rx = dlogs.compiled(pattern)
     dlogs.check_channel(channel)
     # THE ONLY REFUSAL BEFORE THE WAIT. A log that does not EXIST yet, or holds no

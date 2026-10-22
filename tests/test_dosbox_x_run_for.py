@@ -13,6 +13,7 @@ from typing import Any, TypeVar, cast
 
 import pytest
 from scry_core import reply_contract as contract
+from scry_core import vocabulary as vocab
 from test_dosbox_x_debug import RESUME_HALTED, Debugger
 from test_dosbox_x_server import clean_session, install  # noqa: F401  (the autouse teardown)
 
@@ -220,7 +221,7 @@ def test_a_protected_mode_frame_reads_its_position_off_the_survey() -> None:
     {}, {"frames": 0, "milliseconds": 0}, {"frames": 2, "milliseconds": 50}, {"frames": -1},
     {"frames": True}, {"milliseconds": -5}, {"milliseconds": 2.5}, {"milliseconds": True},
     {"milliseconds": 10 ** 400}, {"frames": 3, "seconds": 0},
-    {"frames": 3, "seconds": ds.RUN_TO_MAX + 1}])
+    {"frames": 3, "seconds": vocab.WAIT_MAX_S + 1}])
 def test_a_bad_argument_is_refused_before_the_session_gate(args: dict[str, Any]) -> None:
     dstate.STATE.session = None
     got = cast(dict[str, Any], server.run_for(**args))

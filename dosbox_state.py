@@ -107,6 +107,10 @@ class State:
         # table and for the same reason: a base belongs to ONE loaded process.
         self.section_bases: dict[int, int] = {}
         self.base: dict[str, int] = {}
+        # THE REGISTER WHOSE SELECTOR THE TABLE'S BASE WAS MEASURED FROM (`symbols_load` with no
+        # `base`), so a state load can have the next stop measure it again; None for a base
+        # the caller gave, which nothing on the machine can contradict.
+        self.base_measured_from: str | None = None
 
         # THE DECLARATION STORE for the conf the current session was started from, or None
         # before a session exists. Unlike the symbol table, it PERSISTS ACROSS SESSIONS
@@ -144,7 +148,7 @@ class State:
         # the console still owes. Drained by `apply_pending` at the head of every stop
         # reply, and cleared by `start`.
         self.pending: dict[str, Any] = {"arm": [], "disarm": [], "load": None,
-                                        "dirty": False, "drained_seq": -1}
+                                        "remeasure": False, "dirty": False, "drained_seq": -1}
         # WHAT THIS SESSION ARMED, per ref: the debugger row it produced (`kind`
         # bp/int/watch, its seg:off or number, its `entry`). A clear made later removes
         # THAT row, whether or not the name still resolves: a symbol table reloaded in
@@ -338,7 +342,8 @@ class State:
 
     def pending_summary(self) -> dict[str, Any]:
         return {"arm": list(self.pending["arm"]), "disarm": len(self.pending["disarm"]),
-                "symbols_load": self.pending["load"] is not None}
+                "symbols_load": self.pending["load"] is not None,
+                "base_remeasure": bool(self.pending["remeasure"])}
 
     # ----------------------------------------------------------- the session's turnover
 
@@ -348,7 +353,8 @@ class State:
         `start`, `close` and a cancelled call that killed the session, so `status` never dates
         an answer by a stop of a session that is gone."""
         self.last_stop.clear()
-        self.pending.update(arm=[], disarm=[], load=None, dirty=False, drained_seq=-1)
+        self.pending.update(arm=[], disarm=[], load=None, remeasure=False, dirty=False,
+                            drained_seq=-1)
         self.armed.clear()
         self.applied_last.clear()
         self.found_stop_last = {}
@@ -386,6 +392,13 @@ class State:
         self.name_index.clear()
         self.name_index.update(sym.index_by_name(self.table))
 
+    def machine_replaced(self) -> None:
+        """A state was loaded: the program's selectors are the restored machine's, so the next
+        stop measures the table's base again (`dosbox_arming.apply_pending`) when the load
+        measured it off the machine. The table itself is kept: the program is the same."""
+        if self.table and self.base_measured_from is not None:
+            self.pending["remeasure"] = self.pending["dirty"] = True
+
     def forget_symbols(self) -> None:
         """Drop the table and the base. Called wherever the session stops being the one
         they were measured against. The declaration STORE is NOT dropped here: it is keyed
@@ -396,6 +409,7 @@ class State:
         self.symbol_types.clear()
         self.section_bases.clear()
         self.base.clear()
+        self.base_measured_from = None
         self.map_batches = []
 
     def origin(self) -> str:
@@ -424,9 +438,10 @@ def remove_scratch() -> None:
 
 
 def reply(status: str = "ok", **fields: Any) -> dict[str, Any]:
-    """Every reply, including an INVALID one, carries the session's state, and passes the
-    contract's guard: an INVALID with no `code` of the table, no `message`, or a retired
-    spelling (`reason`) is a programmer's error here and never a reply."""
+    """Every reply's body, including an INVALID one's, passed through the contract's guard: an
+    INVALID with no `code` of the table, no `message`, or a retired spelling (`reason`) is a
+    programmer's error here and never a reply. The `session` block is added once, by the call
+    boundary after the body (`session_block`)."""
     out: dict[str, Any] = {"status": status}
     # A REFUSAL READS ITS CODE AND ITS MESSAGE FIRST, whatever account it carries after them.
     out.update({k: fields.pop(k) for k in ("code", "message") if k in fields})
@@ -443,7 +458,6 @@ def reply(status: str = "ok", **fields: Any) -> dict[str, Any]:
     if STATE.found_stop_last and "stopped_on_its_own" not in out:
         out["stopped_on_its_own"] = dict(STATE.found_stop_last)
     STATE.found_stop_last = {}
-    out["session"] = session_block()
     return contract.check_envelope(out)
 
 
@@ -484,12 +498,12 @@ def process_facts() -> dict[str, Any]:
 
 
 def extend(built: dict[str, Any], **fields: Any) -> dict[str, Any]:
-    """Fields added to a reply already built, placed BEFORE `session`, which closes every
-    reply: appended, they land after it and break the envelope a reader takes the last key
-    of."""
-    tail = built.pop("session")
+    """Fields added to a reply body already built. A body carries no `session` (the boundary
+    closes every reply with it) but `close`'s, the state before the close, which stays last."""
+    tail = built.pop("session", None)
     built.update(fields)
-    built["session"] = tail
+    if tail is not None:
+        built["session"] = tail
     return built
 
 

@@ -575,6 +575,7 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
     STATE.symbol_types.update(types or {})
     STATE.base.clear()
     STATE.base.update(desc)
+    STATE.base_measured_from = base_from.upper() if base is None and bases is None else None
     # THE TABLE IS KEPT TOO, so `symbols_find` reports the same linear address the
     # debugger holds. Without it that tool would fall back to `STATE.base["base"]`, which for
     # a sectioned load is the `-1` sentinel above -- a number, plausible, and wrong for
@@ -597,9 +598,9 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
              if pending else rearm_declarations(session))
     if unwritten is not None:
         raise ds.Invalid("host_failed",
-            f"the symbols are loaded and the re-arm ran, but {unwritten}: the "
-            "comments this session placed before any map are held in memory as this map's, "
-            "and the next write that succeeds puts them on disk", held_in_memory=True)
+            f"the symbols are loaded and the re-arm ran, but {unwritten}: the comments this "
+            "session placed before any map keep their place as it was, and a later load "
+            "takes them")
     return st.reply(base=desc["base"], limit=desc["limit"], descriptor=desc["type"],
                   declarations=rearm, pending=pending, checked=checked,
                   base_from=("caller" if base is not None else base_from.upper()),

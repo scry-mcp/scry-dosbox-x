@@ -63,7 +63,8 @@ def drain_if_stopped(session: ds.Session) -> None:
     (passively: no console round trip) and drains the queue, and its reply carries
     `applied_on_stop`. A stop tool still drains it itself, in `stop_reply`."""
     observe_stop(session)                  # a stop nobody reported is recorded first
-    waiting = STATE.pending["arm"] or STATE.pending["disarm"] or STATE.pending["load"] is not None
+    waiting = (STATE.pending["arm"] or STATE.pending["disarm"] or STATE.pending["remeasure"]
+               or STATE.pending["load"] is not None)
     fresh = STATE.pending["dirty"] or STATE.pending["drained_seq"] != STATE.last_stop.get("seq", 0)
     if waiting and fresh and session.at_debugger():
         arming.apply_pending(session)             # accumulates into `STATE.applied_last`

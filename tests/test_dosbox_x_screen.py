@@ -400,7 +400,7 @@ def test_perform_refuses_an_attach_that_is_no_yes_or_no_before_any_step_runs(
     r = cast(dict[str, Any], server.perform(steps=[
         {"op": "palette"}, {"op": "screen_view", "attach": "no"}]))
     assert r["status"] == "INVALID" and [e["step"] for e in r["errors"]] == [1], r
-    assert "attach is a boolean" in str(r["errors"]) and s.asked == []
+    assert "attach is true or false" in str(r["errors"]) and s.asked == []
 
 
 def test_a_dest_from_home_passes_the_gate_expanded(monkeypatch: pytest.MonkeyPatch,
@@ -990,7 +990,7 @@ def test_the_256_colour_screen_asked_not_to_attach_is_written_and_says_why(
 def test_an_attach_that_is_no_yes_or_no_is_refused_before_anything_is_typed(
         tmp_path: Path) -> None:
     s = screen_bench("screen-13h", tmp_path)
-    with pytest.raises(ds.Invalid, match="attach is a boolean"):
+    with pytest.raises(ds.Invalid, match="attach is true or false"):
         screen.screen_view(cast(Any, dstate.STATE.session), None, 0, None, tmp_path,
                            cast(Any, "no"))
     assert s.asked == [] and s.dumps == []

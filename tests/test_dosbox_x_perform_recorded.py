@@ -39,7 +39,7 @@ def test_a_step_that_does_not_hold_stops_the_list_as_diverged() -> None:
     assert out["failed_at"] == 1 and out["steps_completed"] == 1
     assert out["field"] == "regs" and out["got"] == regs
     assert out["failed"]["op"] == "registers" and out["failed"]["reply"]["regs"] == regs
-    assert "step 1 ('registers') diverged" in out["message"]
+    assert "step 2 ('registers') diverged" in out["message"]
     assert out["held"] == 1, "the step before the divergence held, the diverged one did not"
 
 

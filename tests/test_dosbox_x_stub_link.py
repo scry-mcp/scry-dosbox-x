@@ -13,7 +13,7 @@ import threading
 import time
 from collections import deque
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import pytest
 from scry_core.reply_contract import Invalid
@@ -312,3 +312,17 @@ def test_an_acknowledgement_already_on_the_line_is_read_before_a_stop_is_named(
         parked["yes"] = True
     sent._write = write_then_park  # type: ignore[method-assign]
     assert sent.send([b"K\x1e"]) == []
+
+
+def test_a_dropped_first_frame_to_a_stub_whose_last_sequence_is_its_own_is_still_carried(
+        pair: Any) -> None:
+    """A stub whose last sequence is the host's next (a state loaded from another session), and
+    the first frame lost on the line: the resend is answered as a repeat, which after a loss
+    cannot say whether the command ran. The link proves the sequence before it counts on it, so
+    the command is carried out once."""
+    host, guest = pair
+    stub = Stub(guest, last_seq=1)
+    loaded = link.Link(cast(Any, Lossy(host, {0: slice(0, 0)})))
+    loaded.unprove()
+    loaded.send([b"K\x1e"])
+    assert stub.carried[-1:] == [b"K\x1e"] and b"K\x1e" not in stub.carried[:-1], stub.carried

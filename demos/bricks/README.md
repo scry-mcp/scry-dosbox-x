@@ -1008,6 +1008,8 @@ Also attached: image/png.
       "available": false,
       "why": "no step failed"
     },
+    "still_running": true,
+    "note": "the list began with the machine running and no step of it released it, so no stop was waited for",
     "held": 0
   },
   "verify": {

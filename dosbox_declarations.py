@@ -516,8 +516,8 @@ BUILDS_KEY = "builds"
 
 
 class StoreWriteError(Exception):
-    """The store's file could not be written. The change it carried is held in memory, so this
-    session still sees it; the next write that succeeds puts it on disk."""
+    """The store's file could not be written, and the change it carried was rolled back: memory
+    never holds what the file does not, as every write of the store promises (`_commit`)."""
 
 
 class DeclarationStore:
@@ -673,7 +673,7 @@ class DeclarationStore:
         not at all; a row of another kind may be replaced only by itself with new stamps. A
         replaced or removed row is found by identity among those held; one that is not held is
         a programmer's error, and so is a second comment under a held ref.
-        No change writes nothing. If the file cannot be written the changes stay in memory and
+        No change writes nothing. If the file cannot be written every change is rolled back and
         `StoreWriteError` says so."""
         if any(d.kind != "comment" for d in (*adds, *removes)) or any(
                 new.kind != "comment" and new != old for old, new in replaces):
@@ -697,12 +697,13 @@ class DeclarationStore:
                                    "hold")
         updated += adds
         _one_comment_per_ref(updated)
-        mine[:] = updated
         try:
-            self._persist()
-        except (OSError, Invalid, DeclarationError) as e:
-            raise StoreWriteError(f"the declaration file {self._path} could not be written: "
-                                  f"{e}") from None
+            self._commit(mine, updated)
+        except DeclarationError as e:
+            raise StoreWriteError(str(e)) from None
+        except Invalid as e:
+            raise StoreWriteError(f"the declaration file {self._path} could not be written "
+                                  f"({e}); nothing was changed") from None
 
     def held_ref(self, ref: str, kinds: tuple[str, ...]) -> str | None:
         """The stored spelling of `ref` among declarations of `kinds`, an address matched

@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from scry_core import live_bench as bench
+from scry_core import verdict
 
 
 def _root() -> Path:
@@ -162,7 +163,7 @@ def _unpinned(program: Program) -> str:
     file opened unpinned would be read unchecked."""
     try:
         pinned = BENCH.pinned
-    except bench.Invalid as e:
+    except verdict.Invalid as e:
         return f"bench {e}"
     off = next((p for p in opened(program) if p not in pinned), None)
     return "" if off is None else (

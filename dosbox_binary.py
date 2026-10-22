@@ -14,7 +14,7 @@ from scry_core.reply_contract import Invalid
 #: The ladder is scry-core's (`scry_core.binaries`); this server names its rungs. The executable
 #: name is also what a `ps` line of a session started with no `binary` carries.
 LADDER = binaries.Ladder(product="DOSBox-X", executable="dosbox-x", variable="DOSBOX_X_BINARY")
-EMULATOR_NAME, VARIABLE = LADDER.executable, LADDER.variable
+EXECUTABLE_NAME, VARIABLE = LADDER.executable, LADDER.variable
 ARGUMENT, PATH_RUNG = binaries.ARGUMENT, binaries.PATH_RUNG
 Resolved = binaries.Resolved
 resolve = LADDER.resolve

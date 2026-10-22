@@ -26,6 +26,7 @@ from collections.abc import Callable
 from typing import Any
 
 from scry_core import judges, log_marks, media_tools, narrowing, picture, screen_map
+from scry_core import sequence_account as account
 from scry_core import value_format as vf
 from scry_core import vocabulary as vocab
 
@@ -212,7 +213,7 @@ def _log(pattern: str, channel: str, limit: int = 40, since_mark: int = 0, **_: 
 
 def _log_wait(pattern: str, channel: str, seconds: float = 30.0, since_mark: int = 0,
               **_: Any) -> None:
-    ds.check_wait_bound(seconds)
+    vocab.check_wait(seconds)
     dlogs.compiled(pattern)
     dlogs.check_channel(channel)
     log_marks.check_position(since_mark, channel)
@@ -223,7 +224,7 @@ def _step(count: int = 1, mode: str = "into", **_: Any) -> None:
 
 
 def _run_to(ref: str, control: str = "", seconds: float = 30.0, **_: Any) -> None:
-    ds.check_wait_bound(seconds)
+    vocab.check_wait(seconds)
     address_shape(ref)
     # THE CONTROL IS REQUIRED (the schema says so), and an empty one is no control: a list is
     # checked WHOLE before its first step runs, so a step without one is refused here.
@@ -257,7 +258,7 @@ def _trace(instructions: int, shape: str = "normal", dest: str = "", seconds: fl
            **_: Any) -> None:
     tracing.check_arguments(instructions, shape)
     optional_path("dest", dest)
-    ds.check_wait_bound(seconds)
+    vocab.check_wait(seconds)
 
 
 def _run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
@@ -270,7 +271,7 @@ def _run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
         raise ds.Invalid("bad_argument",
             f"exactly one of milliseconds and frames is above zero; got milliseconds={ms}, "
             f"frames={n}")
-    ds.check_wait_bound(seconds)
+    vocab.check_wait(seconds)
 
 
 def _breakpoint_at(ref: str, by: str = "auto", **_: Any) -> None:
@@ -380,11 +381,11 @@ def _machine_map(sections: list[str] | None = None, dest: str = "", **_: Any) ->
 
 def _state(name: str, seconds: float = ds.STATE_WAIT_S, **_: Any) -> None:
     dlaunch.check_state_name(name)
-    ds.check_wait_bound(seconds)
+    vocab.check_wait(seconds)
 
 
 def _resume(seconds: float = 0.0, **_: Any) -> None:
-    ds.check_wait_bound(seconds, from_zero=True)
+    vocab.check_wait(seconds, zero_means="no wait")
 
 
 #: The server's step vocabulary, handed in by the server once its tools exist (`take_step_ops`):
@@ -415,7 +416,7 @@ def steps_whole(name: str, steps: object) -> None:
 def _perform(steps: list[dict[str, Any]], settle_seconds: float = 30.0,
              summaries: bool = False, **_: Any) -> None:
     sequence.validate_wait(settle_seconds)
-    sequence.validate_summaries(summaries)
+    account.check_summaries(summaries)
     steps_whole("steps", steps)
 
 
@@ -443,7 +444,7 @@ def _drive(act: list[dict[str, Any]], expect: str = "", seconds: float | None = 
 
 def _drive_arguments(act: list[dict[str, Any]], expect: str, seconds: float | None,
                      pattern: str, limit: int, settle_seconds: float, summaries: bool) -> None:
-    sequence.validate_summaries(summaries)
+    account.check_summaries(summaries)
     if not isinstance(act, list) or not act:
         raise ds.Invalid("bad_argument",
             "act is a non-empty LIST of steps ({'op': <name>, ...}), the same shape `perform` "
@@ -466,7 +467,7 @@ def _capture_frame(frame: int, dest: str, capture_path: str = "", **_: Any) -> N
 
 def _snapshot(dest: str = "", seconds: float = ds.SNAPSHOT_WAIT_S, **_: Any) -> None:
     optional_path("dest", dest)
-    ds.check_wait_bound(seconds)
+    vocab.check_wait(seconds)
 
 
 def _palette(first: object = 0, count: int = 0, scale: int = 0, dest: str = "",
@@ -517,7 +518,7 @@ def _screen_wait(text: object, seconds: float = 30.0, **_: Any) -> None:
                                  if undrawable else "ends in a blank, and a row is read "
                                  "without its trailing blanks")
             + ": it could never be found")
-    ds.check_wait_bound(seconds)
+    vocab.check_wait(seconds)
 
 
 def _symbols_find(name: str = "", offset: int | None = None,

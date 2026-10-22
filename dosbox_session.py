@@ -16,7 +16,8 @@ off covers the window before ncurses owns the terminal.
 THE SESSION IS ONE OBJECT AND ITS GRAMMARS ARE NOT: what a session is launched with, judged and
 built into a command line, is `dosbox_launch`'s; what the console prints, parsed, is
 `dosbox_console`'s; the log's channels and filters are `dosbox_logs`'s; and the files the emulator
-wrote, collected to where the caller asked, are `dosbox_collect`'s. And four of its jobs live in
+wrote, collected to where the caller asked, are `dosbox_collect`'s. The process under it, spawned,
+drained and ended, is `dosbox_process.Process`, its base class. And four of its jobs live in
 modules of their own, `Session` delegating each method to its body there: reading and waiting
 on the logs (`dosbox_log_reader`), the video and its stills (`dosbox_frames`), the saved states
 (`dosbox_saved_states`) and the symbol file handed to the debugger (`dosbox_symbol_file`).
@@ -26,21 +27,14 @@ from __future__ import annotations
 
 import contextlib
 import os
-import pty
 import re
-import select
-import signal
 import socket
-import subprocess
-import termios
-import threading
 import time
 from collections.abc import Callable
-from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
-from scry_core import avi, cancel, guardian, judges, live_host, presence
+from scry_core import avi, cancel, judges, presence
 from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 from scry_core.progress import PROGRESS_EVERY_S as PROGRESS_EVERY_S
@@ -50,21 +44,10 @@ from scry_core.reply_contract import Invalid as Invalid
 
 import dosbox_collect as dcollect
 import dosbox_console as dcons
-import dosbox_control as control
 import dosbox_launch as dlaunch
 import dosbox_paths as paths
-import dosbox_presence as dpresence
+import dosbox_process as dprocess
 import dosbox_stub_link as stub_link
-
-#: What this server, and after it the guardian beside every emulator, are called in the host's
-#: process list.
-PROCESS_NAME = "scry-dosbox-x"
-GUARDIAN_NAME = guardian.name_of(PROCESS_NAME)
-#: How far past the bound, on the host's clock from the spawn, the guardian waits: a guest
-#: released at once still ends on its own `-time-limit`, which quits cleanly and finishes the
-#: recording. `-time-limit` counts emulated time, so a session that spent its time parked reaches
-#: the guardian's kill first, as the bound on the host's clock says it should.
-GUARDIAN_GRACE_S = 10.0
 
 # The var-list ENCODING lives next door, in a module with no emulator in it, so a
 # golden can exist over the bytes without a machine. This file owns only the part that
@@ -285,18 +268,10 @@ SYM_LOAD_NAME = "SYMS.BIN"
 SYM_SAVE_NAME = "SYMSBK.BIN"
 
 
-# THE CEILING ON ONE `run_to` WAIT, which is a different bound from the session's and
-# needs its own reason. The session's bound stops an abandoned emulator; this one stops
-# an abandoned QUESTION. A wait blocks the server's lock for its whole duration, so
-# every other tool -- `status` and `e9` included, the two a caller reaches for when
-# something looks stuck -- is unanswerable until it ends. Ten minutes is far past any
-# breakpoint that is going to fire and short enough that a session is never wedged for
-# an afternoon by one call.
-RUN_TO_MAX = 10 * 60
-#: A wait's schema half, `Annotated[float, WAIT_BOUNDS]`, as `check_wait_bound` judges it: above
-#: 0 and at most `RUN_TO_MAX`; `WAIT_FROM_ZERO_BOUNDS` for the waits whose 0 means no wait.
-WAIT_BOUNDS = vocab.bounds(0, RUN_TO_MAX, open_lo=True)
-WAIT_FROM_ZERO_BOUNDS = vocab.bounds(0, RUN_TO_MAX)
+# THE CEILING ON EVERY WAIT, its schema halves and its judge are scry-core's (`vocab.WAIT_MAX_S`,
+# `vocab.check_wait`), one name each on both servers. A wait blocks the server's lock for its whole
+# duration, so every other tool, `status` and `log` included, the two a caller reaches for when
+# something looks stuck, is unanswerable until it ends.
 
 # A BOUNDED WAIT REPORTS PROGRESS WITH A MESSAGE, through a callback the server hands in, and
 # polls for its call's cancellation at every turn: the vocabulary is `scry_core.progress`'s and
@@ -308,36 +283,6 @@ WAIT_FROM_ZERO_BOUNDS = vocab.bounds(0, RUN_TO_MAX)
 # longer indexes into it, so trimming is safe.
 SCREEN_KEEP = 256 * 1024
 
-# THE TERMINAL IS DRAINED BY A THREAD, AND THAT IS NOT AN OPTIMISATION.
-#
-# A pty master's buffer is FINITE, and when it fills, the WRITER blocks -- in the
-# kernel, not in anybody's code. The writer here is the emulator, so a session whose
-# only reader is a tool call FREEZES THE MACHINE between questions.
-#
-# MEASURED during a QA round, and it is why this is a thread and not a longer timeout:
-# three sessions sat at EXACTLY the same guest instant (`[+ 2.091]`, 20% of a
-# soundfont load) for 105, 48 and 36 seconds of wall clock, and a single `registers`
-# call moved the guest 7 seconds forward. Controls: with video capture and without,
-# launched with `-c` and from the conf's `[autoexec]` -- the stall was identical, so
-# neither is the cause. The same program in a batch run reached `[+ 27.463]` playing.
-#
-# It also explains why the contract tests could not see it: they always have a call
-# in flight, which is precisely the condition under which the defect does not exist.
-#
-# THE NUMBER, which is a different question from the thread and needs its own reason.
-# It is a CEILING ON MEMORY, not a working set: a repaint of this debugger's screen is
-# ~4 KB, so 4 MB is about a thousand of them, far more than any reply needs and small
-# enough that a session forgotten for an afternoon cannot grow without bound. It is
-# deliberately LARGER than `SCREEN_KEEP` (256 KB), which is what `_screen` retains
-# afterwards: the two bound different things, and reaching this one is an event a
-# caller is told about (`_read` refuses the reading) while reaching that one is not.
-DRAIN_KEEP = 4 * 1024 * 1024
-
-# How long `close()` waits for the drain thread before it stops trusting it. It is a
-# teardown budget, not a guess about the work: the thread's loop wakes every 0.05 s, so
-# anything past a few tenths of a second means it is not coming back, and the caller is
-# waiting on a session they have already asked to end.
-DRAIN_JOIN_SECS = 2.0
 
 # How long `ffmpeg` is given to pull one frame out of a capture. It is named rather
 # than inline because it is the ONE bound in this module belonging to a tool that is
@@ -346,42 +291,6 @@ DRAIN_JOIN_SECS = 2.0
 # `build_check` catches exactly that exception for exactly this reason.
 FFMPEG_SECS = 120
 
-# HOW LONG SIGTERM IS BELIEVED IN. Every session is launched with the emulator's quit
-# warning OFF, and with it off a guest holding a program answers the TERM at once, running
-# or stopped, in a window or headless: so this is a bound and not a wait the ordinary close
-# spends. It stays small because what can still ignore the signal (a conf that puts the
-# warning back, a build that does not answer under a pty) is not slow but deaf, and the
-# SIGKILL behind it cannot be ignored. It is separate from the post-KILL reap budget so a
-# close waits in proportion to what the wait can achieve; on a WATCHED session that wait
-# sits on somebody's screen. The measured figures belong in the commit that took them.
-TERM_GRACE = 2.0
-
-
-# How often `wait_exit` asks whether the process is gone.
-EXIT_POLL_S = 0.1
-
-
-def wait_exit(proc: subprocess.Popen[Any], seconds: float, progress: Progress,
-              what: str) -> int | None:
-    """The process's exit code within `seconds`, or None: a `proc.wait(timeout)` that reports
-    its progress, because `close` is a wait the owner watches and a quit that takes seconds
-    looks exactly like a hung server without the line."""
-    t0 = time.monotonic()
-    next_tick = t0 + PROGRESS_EVERY_S
-    while True:
-        cancel.check()
-        # SLICES OF THE REAL `wait`, not a `poll` loop: `wait` is what reaps the child, and
-        # what the doubles of `close` speak.
-        try:
-            return int(proc.wait(timeout=EXIT_POLL_S))
-        except subprocess.TimeoutExpired:
-            pass
-        now = time.monotonic()
-        if now - t0 >= seconds:
-            return None
-        if now >= next_tick:
-            next_tick = now + PROGRESS_EVERY_S
-            progress(now - t0, None, f"{what}, {now - t0:.0f}s of {seconds:g}s")
 
 
 # THE REFUSAL is `scry_core.reply_contract.Invalid` (a code of the
@@ -527,21 +436,6 @@ def check_step(mode: str, count: int) -> None:
                       f"the ceiling is a cost bound: past it, use `run_to`")
 
 
-def check_wait_bound(seconds: object, name: str = "seconds", from_zero: bool = False) -> None:
-    """THE ONE JUDGE OF A WAIT: seconds, more than zero (from zero where 0 means no wait) and at
-    most `RUN_TO_MAX`, because with no ceiling the call would sit on something that is never
-    going to arrive, holding the session's lock while it did. Types are judged too: a `perform`
-    step hands its arguments over untyped. Compared, never converted: a NaN fails the floor, an
-    infinity or an integer too large for a float the ceiling."""
-    floor = "from 0 (no wait)" if from_zero else "more than 0"
-    if (isinstance(seconds, bool) or not isinstance(seconds, int | float)
-            or not (seconds >= 0 if from_zero else seconds > 0) or seconds > RUN_TO_MAX):
-        raise Invalid("bad_argument",
-            f"{name}={seconds!r} is not a bound: it is {floor} and at most {RUN_TO_MAX} s, "
-            f"because with no ceiling the call would hold the session's lock waiting for "
-            f"something that may never arrive")
-
-
 def check_dump_length(length: int) -> None:
     if length <= 0:
         raise Invalid("bad_argument", f"a dump of {length} bytes is not a dump")
@@ -637,7 +531,7 @@ import dosbox_symbol_file as symbol_file  # noqa: E402
 READY_TIMEOUT_S = 30.0
 
 
-class Session:
+class Session(dprocess.Process):
     """A DOSBox-X process that stays put between questions.
 
     THE THREE THINGS ITS CONTRACT ENFORCES, so they do not depend on anyone
@@ -654,10 +548,6 @@ class Session:
       measurement of the program, and an INVALID reply is exactly the one a caller
       reasons hardest about.
     """
-
-    #: The guardian beside the emulator (`scry_core.guardian`), set once it is spawned; why, in
-    #: REFERENCE.md, The session.
-    guard: subprocess.Popen[bytes] | None = None
 
     def __init__(self, launch: dlaunch.Launch) -> None:
         dlaunch.validate(launch)
@@ -681,179 +571,22 @@ class Session:
         self._raw_tail = ""     # the last raw terminal bytes read, escapes kept (`REPLY_END`)
         self._raw_reads = 0     # how many reads brought raw bytes, escapes alone included
 
-        # What the drain thread fills and `_read` empties. `dropped` is not
-        # bookkeeping: the buffer is bounded, so a session left alone for long enough
-        # discards its OLDEST bytes, and a caller has no other way to tell a stream it
-        # saw whole from one with a hole in it.
-        self._buf = bytearray()
-        self._lock = threading.Lock()
-        self._stop = threading.Event()
-        self._eof = threading.Event()
-        self.dropped = 0
-        # WHY THE DRAINER ENDED, and never just THAT it ended. `_eof` is set by four
-        # different endings -- a real EOF, `_stop` from `close()`, and an error out of
-        # either `select` or `os.read` -- and a drainer killed by a transient error
-        # makes every later read return "" forever while `alive` still says true. A
-        # session that is a broken instrument reporting itself as a quiet machine is
-        # the one failure this module exists to prevent.
-        self._drainer: threading.Thread | None = None
-        self.drain_ended = ""
         self._avi_facts: dict[tuple[str, int, int], dict[str, object]] = {}
-        # HOW THE SESSION ENDED, set by `close` and read by the server beside `exit_code`,
-        # one word each: `quit` (it left on the first signal), `killed` (SIGKILL,
-        # which a session under a pty always needs), `died` (already gone when `close` was
-        # called), `none` (not closed yet).
-        self.ended_how = "none"
-        # ONE CLOSE AT A TIME, AND ONE THAT FINISHED WHOLE IS NOT RUN AGAIN: the server's own
-        # end and a signalled one that waited out the tool lock can both reach this session from
-        # two threads, and a second `_close` would signal the group and close the master again.
-        self._closing = threading.Lock()
-        self._closed = False
         self.state_sent = False   # whether the last state command went down the channel
+        self.machine_replaced = False   # whether the last `state_load` replaced the machine
         self.state_answered = False   # whether the emulator answered it ok
-        # Set only when SIGKILL was sent and the child had still not been reaped.
-        #
-        # IT IS NOT IN `state()`, because a copy there would be inert. It can
-        # only be set DURING `close()`, and every caller discards the session straight
-        # afterwards -- so a copy in `state()` is unreachable by construction. The
-        # `close` tool reads it off the object after closing and reports it beside
-        # `exit_code`, which is the reply that would otherwise be a bare null.
-        self.reap_failed = ""
         # The presence of this session (`dosbox_presence`), set by `start`.
         self.presence = presence.Shown()
+        # THE PROCESS COMES UP LAST, its own fields first: everything a failed spawn's cleanup or
+        # a reader on the drain thread reaches is set by then.
+        dprocess.Process.__init__(self)
+        self._spawn(launch)
 
-        # THE WHOLE SETUP IS UNDER `finally`, because three calls between opening the
-        # terminal and handing it to the child can raise, and on any of them the
-        # object is never bound to anything: nothing could ever reach `close()` to
-        # reclaim the descriptors.
-        listener = (dlaunch.listen_input(launch.input_port) if launch.input_port is not None
-                    else None)                        # before any process exists
-        if listener is not None:
-            launch = self.launch = replace(launch, input_port=listener.getsockname()[1])
-        try:
-            self.control = control.ControlChannel(lambda: self.proc.poll())
-            launch = self.launch = replace(launch, control_port=self.control.port)
-            self._master, slave = pty.openpty()
-        except BaseException:
-            if listener is not None:
-                listener.close()
-            if getattr(self, "control", None) is not None:
-                self.control.close()
-            raise
-        try:
-            attrs = termios.tcgetattr(slave)
-            attrs[3] &= ~(termios.ECHO | termios.ECHONL | termios.ECHOE | termios.ECHOK)
-            termios.tcsetattr(slave, termios.TCSANOW, attrs)
-            self.argv = dlaunch.build_argv(launch)
-            self.proc = subprocess.Popen(
-                self.argv, cwd=str(launch.cwd), stdin=slave, stdout=slave,
-                stderr=slave, env=dlaunch.launch_environment(launch.background),
-                start_new_session=True, close_fds=True)
-            if (ledger := live_host.EmulatorLedger.from_environment()) is not None:
-                ledger.record(self.proc.pid, self.argv[0])
-            self.guard = guardian.spawn(self.proc, PROCESS_NAME,
-                                        deadline=time.time() + launch.seconds + GUARDIAN_GRACE_S)
-            # STARTED HERE AND NOT LAZILY ON THE FIRST READ: the window this closes
-            # is the one between the child being born and the first question, which
-            # is exactly when the boot chatter fills the buffer.
-            self._drainer = threading.Thread(target=self._drain, name="dosbox-drain",
-                                             daemon=True)
-            self._drainer.start()
-            # THE INPUT SOCKET IS ACCEPTED NOW, before the guest runs a single instruction
-            # (`-break-start` holds it at reset): the nullmodem dials from the emulator's
-            # init, and a guest polling a serial port with no peer BLOCKS the emulator
-            # ("Nullmodem: block on polling", its own log line).
-            self._input: socket.socket | None = None
-            self._link: stub_link.Link | None = None
-            if listener is not None:
-                self._input = dlaunch.accept_input(listener, dlaunch.INPUT_CONNECT_S,
-                                                   self.proc.poll)
-                self._link = stub_link.Link(INPUT_LINE(self._input), self.at_debugger)
-        except BaseException:
-            if listener is not None:
-                listener.close()
-            self.control.close()
-            # THE CHILD IS KILLED HERE, and this arm is why. Before the drain thread
-            # existed, `Popen` was the LAST statement in this block, so nothing could
-            # raise once a process existed. Now two statements follow it, and both can
-            # raise for real: `Thread.start()` with `RuntimeError("can't start new
-            # thread")`, or the `KeyboardInterrupt`/`SystemExit` that `except
-            # BaseException` is written for. Closing the master and re-raising without
-            # touching `self.proc` would leave an emulator running under a bound of up
-            # to `dosbox_launch.MAX_SECONDS` with NO object anywhere able to reach `close()`
-            # -- which is exactly the six-left-running disaster `dosbox_launch.validate`'s
-            # docstring is about, arriving by a different door.
-            with contextlib.suppress(Exception):
-                proc = getattr(self, "proc", None)
-                if proc is not None and proc.poll() is None:
-                    self._signal_group(signal.SIGKILL)
-                    proc.wait(timeout=5)
-            self._stop.set()
-            # THE DRAIN THREAD IS JOINED BEFORE THE DESCRIPTOR IS CLOSED, as `close()` does
-            # and for its reason: besides an interrupt, a dial that never came arrives
-            # here seconds later with the thread selecting on `_master`. Closing under it
-            # leaves it reading a number the kernel is free to hand to the next session's
-            # pty.
-            drainer = getattr(self, "_drainer", None)
-            if drainer is not None:
-                drainer.join(timeout=2.0)
-            with contextlib.suppress(OSError):
-                os.close(self._master)
-            raise
-        finally:
-            with contextlib.suppress(OSError):
-                os.close(slave)
+
+    def _linked(self, sock: socket.socket) -> stub_link.Link:
+        return stub_link.Link(INPUT_LINE(sock), self.at_debugger)
 
     # ------------------------------------------------------------------ reading
-
-    def _drain(self) -> None:
-        """Read the terminal for as long as it lives. See `DRAIN_KEEP` for why.
-
-        It runs whether or not anybody is asking anything, because the thing it is
-        preventing is the emulator BLOCKING on a full buffer, and that happens
-        precisely when nobody is asking.
-
-        It drops the OLDEST bytes on overflow rather than the newest: what a caller
-        wants from a terminal is the current screen, and the repaint that carries it
-        is the most recent thing in there. The drop is COUNTED, and `_read` REFUSES
-        the reading it lands in rather than handing back a stream with a hole.
-
-        HOW IT ENDED IS RECORDED, because `_eof` alone cannot say. Four endings reach
-        it and only one of them is normal; a drainer killed by a transient error makes
-        every later read return "" forever while `state()` still reports `alive`.
-        """
-        ended = "the descriptor reached end of file"
-        while not self._stop.is_set():
-            try:
-                ready, _, _ = select.select([self._master], [], [], 0.05)
-            except (OSError, ValueError) as exc:
-                ended = f"select on the terminal failed: {exc!r}"
-                break
-            if not ready:
-                continue
-            try:
-                chunk = os.read(self._master, 65536)
-            except OSError as exc:
-                ended = f"reading the terminal failed: {exc!r}"
-                break
-            if not chunk:
-                break
-            with self._lock:
-                self._buf += chunk
-                over = len(self._buf) - DRAIN_KEEP
-                if over > 0:
-                    del self._buf[:over]
-                    self.dropped += over
-        else:
-            ended = "stopped deliberately by close()"
-        self.drain_ended = ended
-        self._eof.set()
-
-    def _take(self) -> bytes:
-        with self._lock:
-            got = bytes(self._buf)
-            self._buf.clear()
-        return got
 
     def _read(self, seconds: float) -> str:
         """Whatever the terminal offered within `seconds`, with the escapes stripped.
@@ -1808,7 +1541,7 @@ class Session:
 
         THE WAIT CONSULTS THE EMULATOR AND SCANS ONLY WHAT IS NEW, as `e9_wait` does. A
         session that dies the instant the machine is released would otherwise burn the
-        whole bound, `RUN_TO_MAX`, with the server's lock held; and re-parsing the whole
+        whole bound, `vocab.WAIT_MAX_S`, with the server's lock held; and re-parsing the whole
         accumulated terminal every poll is quadratic in the length of the wait. A
         bounded carry keeps a register that
         arrives split across two reads from being missed.
@@ -1848,7 +1581,7 @@ class Session:
         # machine they were told about the register pane instead of about the argument
         # that was actually wrong.
         check_segment(seg)
-        check_wait_bound(seconds)
+        vocab.check_wait(seconds)
         stopped = self.where()      # refuses a running machine BEFORE arming anything
         # THE OFFSET'S WIDTH IS THE CPU MODE'S. Clamping to 16 bits would refuse
         # essentially every interesting protected-mode address (a DJGPP `_main` sits
@@ -2042,7 +1775,9 @@ class Session:
         pane is NOT a reliable announcement (`run_to`'s docstring has the count): it is
         repainted only when its cells changed.
         """
-        carry = ""
+        # THE CARRY STARTS WHERE THE LAST PASSIVE PEEK LEFT IT (`at_debugger`), so a prompt
+        # split across that peek and this wait is one prompt, and a parked guest is heard.
+        carry = self._peek_carry
         next_tick = began + PROGRESS_EVERY_S
         while (now := time.monotonic()) < deadline:
             cancel.check()
@@ -2052,7 +1787,7 @@ class Session:
                                             f"{now - began:.0f}s of {deadline - began:g}s")
             # THE DEATH IS CHECKED IN THE LOOP, the fix `e9_wait` already carries and
             # this one did not. Without it a session that died the instant the machine
-            # was released burned the WHOLE bound -- up to RUN_TO_MAX, ten minutes --
+            # was released burned the WHOLE bound, up to `vocab.WAIT_MAX_S`, ten minutes:
             # with the server's lock held, so `status` could not even be asked. MEASURED
             # against a dead double: the whole bound spent polling, and `alive()`
             # consulted ZERO times until the loop was over.
@@ -2084,6 +1819,9 @@ class Session:
                 # the two `monotonic()` calls disagree inside one reply.
                 return False, round(time.monotonic() - began, 1)
             carry = fresh[-dcons.STOP_CARRY:]
+        # WHAT THE WAIT READ LAST IS THE NEXT LOOK'S START, as a peek's is: a prompt split
+        # across the bound and the next contact is still heard whole.
+        self._peek_carry = carry
         return True, 0.0
 
     @staticmethod
@@ -2586,7 +2324,7 @@ class Session:
         and moved to `dest` when one is given (absolute, not there yet). REFUSED with the
         machine parked: the stub takes its commands on the timer tick, which a machine
         stopped at the debugger never reaches. The caller has checked the stub is resident."""
-        check_wait_bound(seconds)
+        vocab.check_wait(seconds)
         folder = frames.folder(self)
         target = None if dest is None else paths.fresh_dest("dest", dest)
         if self.at_debugger():
@@ -2631,141 +2369,6 @@ class Session:
         return self._link.send(commands)
 
     # ------------------------------------------------------------------ closing
-
-    def alive(self) -> bool:
-        return self.proc.poll() is None
-
-    def close(self, grace: float = 8.0, progress: Progress = no_progress) -> int | None:
-        """End the session and leave nothing behind (`_close`), EVEN WHEN THE CALL IS CANCELLED
-        HALF-WAY: the cancel lands in the wait for the exit, and an emulator signalled but never
-        waited on is the one thing a cancel must not leave, so the close runs again, shielded and
-        silent, and the cancellation goes on unwinding once it has."""
-        with self._closing:
-            if self._closed:
-                return self.proc.returncode
-            try:
-                code = self._close(grace, progress)
-            except BaseException as e:
-                if not cancel.is_cancellation(e):
-                    raise
-                with cancel.shielded():
-                    self._close(grace)
-                self._closed = True
-                raise
-            # FINAL ONLY WHEN NOTHING WAS LEFT BEHIND: an emulator SIGKILLed and not yet reaped
-            # is one a later close can still reap.
-            self._closed = not self.reap_failed
-            return code
-
-    def _close(self, grace: float = 8.0, progress: Progress = no_progress) -> int | None:
-        """End the session and leave nothing behind; a second call finishes what an interrupted
-        one began, and never closes the terminal twice.
-
-        A live session outlives the turn, which is the one hazard a batch launcher
-        does not have. The bound is the backstop and this is the deliberate act; both
-        exist because either alone leaves a case uncovered -- and the backstop, kept by
-        the guardian, is the one that survives this process being killed, since a
-        `finally` does not run on SIGKILL.
-
-        `grace` IS THE WAIT AFTER SIGKILL, FLOORED AT ONE SECOND, and SIGTERM gets
-        `TERM_GRACE` of its own: with the quit warning off on every argv the ordinary session
-        answers the TERM at once, so that budget is a bound on a signal that is expected to
-        land, and what still ignores it is deaf rather than slow (see that constant). One
-        budget for both would spend the post-KILL reap budget on every close of a used
-        session. The floor exists because `grace=0` is a
-        reasonable reading of "do not wait" and SIGKILL still needs reaping.
-
-        THE DESCRIPTOR IS CLOSED UNDER `finally`. Without it, a second `wait` that
-        times out takes the exception out of here with the master still open and the
-        caller's session state still pointing at a half-closed object.
-
-        The process GROUP is signalled, not just the child: `start_new_session` put
-        it in its own, so anything it spawned would otherwise be missed.
-        """
-        # The presence's writer stops first: the channel it sends on is about to go.
-        dpresence.of(self).close()
-        try:
-            if self.proc.poll() is not None:
-                # A process that left on this close's own SIGTERM quit; one found gone, died.
-                self.ended_how = "quit" if getattr(self, "_termed", False) else "died"
-            else:
-                self._signal_group(signal.SIGTERM)
-                self._termed = True
-                if wait_exit(self.proc, TERM_GRACE, progress,
-                             "close: waiting for the emulator to leave on SIGTERM") is not None:
-                    self.ended_how = "quit"
-                else:
-                    self.ended_how = "killed"
-                    self._signal_group(signal.SIGKILL)
-                    # THE SIGKILL WAIT IS FLOORED, and a caller cannot ask for none.
-                    # `close(grace=0)` is a reasonable reading of "do not wait" and it
-                    # produced the state this class forbids: the child SIGKILLed, the
-                    # TimeoutExpired suppressed, `None` returned as the exit code, and
-                    # the server then dropping its reference -- an un-reaped process
-                    # nothing can reach. SIGKILL cannot be ignored, so the only
-                    # question is how long reaping takes, and a second is far past it.
-                    # AND AN EXPIRY HERE IS RECORDED, not merely survived. Suppressing
-                    # it and returning `self.proc.returncode` hands back None for a
-                    # child that was SIGKILLed and not yet reaped, and the server then
-                    # drops its reference: an un-reaped process nothing can reach, with
-                    # `exit_code: null` as the only trace. The drain-thread join eleven
-                    # lines below already does the right thing with its own expiry;
-                    # this is the same treatment for this one.
-                    if wait_exit(self.proc, max(grace, 1.0), progress,
-                                 "close: waiting for the SIGKILLed emulator to be reaped") is None:
-                        # THE MESSAGE STATES THE FACT AND NOTHING ABOUT A REPLY.
-                        # Both earlier wordings named an `exit_code` "below" or "in
-                        # this reply", and both dangled: the field is consumed by two
-                        # different tools and only one of them has an exit code.
-                        self.reap_failed = (
-                            f"SIGKILL was sent and the process had not been reaped "
-                            f"{max(grace, 1.0)}s later")
-        finally:
-            # THE INPUT SOCKET GOES FIRST, and quietly: the emulator's end is dying or dead
-            # by now, and a socket left open is a descriptor leaked per session.
-            sock = getattr(self, "_input", None)
-            if sock is not None:
-                with contextlib.suppress(OSError):
-                    sock.close()
-                self._input = None
-                self._link = None
-            channel = getattr(self, "control", None)
-            if channel is not None:
-                channel.close()
-            # THE THREAD IS STOPPED BEFORE THE DESCRIPTOR IS CLOSED, and the order is
-            # the whole point: closing first leaves it selecting on a number the
-            # kernel is free to hand to the next file this process opens.
-            #
-            # AND THE JOIN IS CHECKED, because a `join(timeout=...)` that EXPIRES
-            # produces exactly the state this ordering exists to prevent, silently:
-            # `join` returns None either way. If the thread outlives the wait, the
-            # descriptor is DELIBERATELY LEAKED rather than closed. One leaked fd in a
-            # process that is ending a session is cheap; a recycled fd being read by a
-            # stale drainer -- into the next session's buffer -- is not, and in a
-            # long-lived MCP server the next fd is the next session's own terminal.
-            self._stop.set()
-            if self._drainer is not None:
-                self._drainer.join(timeout=DRAIN_JOIN_SECS)
-            if self._drainer is not None and self._drainer.is_alive():
-                self.drain_ended = (f"the drain thread did not stop within "
-                                    f"{DRAIN_JOIN_SECS} s; the terminal descriptor was "
-                                    f"left open on purpose rather than recycled under "
-                                    f"a live reader")
-            elif not getattr(self, "_master_closed", False):
-                self._master_closed = True
-                with contextlib.suppress(OSError):
-                    os.close(self._master)
-            # The guardian stops only once the emulator is reaped: stopped earlier, a server
-            # dying in between would leave it unwatched.
-            if self.proc.poll() is not None:
-                guardian.stop(self.guard)
-        # None, not -1: `subprocess` encodes a signal death as a NEGATIVE number, so
-        # -1 is the genuine code for "killed by SIGHUP" and cannot double as "unknown".
-        return self.proc.returncode
-
-    def _signal_group(self, sig: int) -> None:
-        with contextlib.suppress(ProcessLookupError, PermissionError, OSError):
-            os.killpg(os.getpgid(self.proc.pid), sig)
 
     def state(self) -> dict[str, object]:
         """Everything the server says about the session: `dosbox_state.session_block` keeps what

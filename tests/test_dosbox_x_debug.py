@@ -48,6 +48,7 @@ from typing import Any, cast
 import pytest
 from scry_core import log_wait as core_wait
 from scry_core import progress as mprogress
+from scry_core import vocabulary as vocab
 from test_dosbox_x_server import returned_key_sets
 
 import dosbox_console as dcons
@@ -827,7 +828,7 @@ def test_run_to_refuses_an_address_and_a_wait_it_cannot_honour() -> None:
         run_to(dbg, 0, 0x10000)          # Real mode: past 0xFFFF addresses nothing
     with pytest.raises(ds.Invalid, match="not a bound"):
         run_to(dbg, 0, 0, seconds=0)
-    assert ds.RUN_TO_MAX == 600, "the ceiling moved; decide it deliberately and edit here"
+    assert vocab.WAIT_MAX_S == 600, "the ceiling moved; decide it deliberately and edit here"
     with pytest.raises(ds.Invalid, match="not a bound"):
         run_to(dbg, 0, 0, seconds=601)
     # IT LOOKED AT THE MACHINE (that is how it knows the mode) AND ARMED NOTHING. The
@@ -1528,7 +1529,7 @@ def test_a_line_that_only_quotes_an_e9_trace_is_not_one(tmp_path: Path) -> None:
 def test_e9_wait_refuses_a_wait_that_is_not_a_bound(tmp_path: Path) -> None:
     log = tmp_path / "guest.log"
     log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
-    assert ds.RUN_TO_MAX == 600, "the ceiling moved; decide it deliberately and edit here"
+    assert vocab.WAIT_MAX_S == 600, "the ceiling moved; decide it deliberately and edit here"
     for bad in (0, -1, 601):
         with pytest.raises(ds.Invalid, match="not a bound"):
             LogSession(log).e9_wait("x", seconds=bad)
@@ -1676,7 +1677,7 @@ def test_a_dead_session_is_noticed_in_the_wait_and_not_after_the_whole_bound() -
 
     Against a session dead from the moment the machine is released, `alive()` consulted
     only once the loop is over spends the whole bound before saying anything -- on a
-    `RUN_TO_MAX` of 600s that is ten minutes in which `status` cannot even be asked, for
+    `WAIT_MAX_S` of 600s that is ten minutes in which `status` cannot even be asked, for
     a session that has already gone.
 
     `e9_wait` carries the same check and says so in a comment; the two are one shape.
@@ -2792,6 +2793,8 @@ def test_e9_wait_reports_its_progress_while_it_waits(tmp_path: Path,
 class _Listening:
     """What `await_stop` reaches for on a machine that never announces a stop."""
 
+    _peek_carry = ""
+
     def alive(self) -> bool:
         return True
 
@@ -2807,6 +2810,19 @@ def test_the_stop_wait_of_run_to_reports_its_progress(monkeypatch: pytest.Monkey
     expired, _saw = ds.Session.await_stop(cast(ds.Session, _Listening()), began, began + 0.3,
                                            "0087:0234", lambda p, t, m: ticks.append(m))
     assert expired is True and ticks and ticks[0].startswith("run_to 0087:0234: ")
+
+
+def test_a_wait_that_runs_out_leaves_what_it_read_last_for_the_next_look() -> None:
+    """A prompt split across the bound and the next contact is heard whole by that contact."""
+    class _Split(_Listening):
+        def _read(self, timeout: float) -> str:
+            return "DS=0008 I-"
+
+    listening = _Split()
+    began = time.monotonic()
+    expired, _ = ds.Session.await_stop(cast(ds.Session, listening), began, began + 0.3,
+                                       "0087:0234", lambda p, t, m: None)
+    assert expired is True and listening._peek_carry.endswith("I-"), listening._peek_carry
 
 
 def test_run_to_hands_its_progress_to_the_stop_wait(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -2934,3 +2950,29 @@ def test_a_non_arrival_whose_control_cleanup_failed_says_both_in_sentences() -> 
     got = run_to(dbg, 0xF000, 0xFFF0, control=(0xF000, 0xE05B))
     assert "F000:FFF0 was removed. `BPDEL` was sent and F000:E05B is STILL" in str(got["note"]), (
         got["note"])
+
+
+class _SplitPrompt(_Listening):
+    """A parked guest whose prompt the last passive peek read half of: `I` held in the carry,
+    `->` the next read."""
+
+    _peek_carry = "I"
+
+    def __init__(self) -> None:
+        self.reads = ["->"]
+        self.stopped = False
+
+    def _read(self, timeout: float) -> str:
+        return self.reads.pop(0) if self.reads else super()._read(timeout)
+
+    def _mark_stopped(self) -> None:
+        self.stopped = True
+
+
+def test_a_prompt_split_between_the_last_peek_and_the_stop_wait_is_heard() -> None:
+    """The wait starts from what the passive peek held, so a prompt cut across the two is one
+    prompt: a parked guest is not waited on until the bound runs out."""
+    s = _SplitPrompt()
+    began = time.monotonic()
+    expired, _saw = ds.Session.await_stop(cast(ds.Session, s), began, began + 0.5, "x")
+    assert expired is False and s.stopped, "the split prompt was never matched"

@@ -186,15 +186,18 @@ def test_apply_makes_every_change_and_writes_the_file_once(tmp_path: Path,
     assert [(d.ref, d.text) for d in store.comments()] == [("start", "c"), ("bump", "d")]
 
 
-def test_a_store_write_that_fails_keeps_the_change_in_memory_and_says_so(
+def test_a_store_write_that_fails_rolls_the_change_back_and_says_so(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """One policy for every write of the store: memory never holds what the file does not, so a
+    load that could not be written is not half-taken by this session and lost by the next."""
     store = dec.DeclarationStore("g", path=tmp_path / "d.json")
+    store.apply(adds=[comment("start")])
 
     def fails() -> None:
         raise OSError("disk full")
     monkeypatch.setattr(store, "_persist", fails)
-    with pytest.raises(dec.StoreWriteError, match="disk full"):
-        store.apply(adds=[comment("start")])
+    with pytest.raises(dec.StoreWriteError, match="disk full.*nothing was changed"):
+        store.apply(adds=[comment("bump")], removes=store.comments())
     assert [d.ref for d in store.comments()] == ["start"]
 
 
@@ -360,7 +363,7 @@ def test_a_raw_comment_over_another_build_lists_stale_with_its_place() -> None:
     assert (row["state"], row["addr"]) == ("stale", "0x0000824b") and "another build" in row["why"]
 
 
-def test_a_store_that_cannot_be_written_is_host_failed_and_the_comment_still_listed(
+def test_a_store_that_cannot_be_written_is_host_failed_and_nothing_changed(
         monkeypatch: pytest.MonkeyPatch) -> None:
     install()
     store = cast(dec.DeclarationStore, dstate.STATE.store)
@@ -370,8 +373,8 @@ def test_a_store_that_cannot_be_written_is_host_failed_and_the_comment_still_lis
     monkeypatch.setattr(store, "_persist", fails)
     got = server.comment_add(ref="0814:0106", text="x")
     refused(got, "host_failed")
-    assert got["held_in_memory"] is True
-    assert ok(server.comment_list())["comments_total"] == 1
+    assert "held_in_memory" not in got
+    assert ok(server.comment_list())["comments_total"] == 0
 
 
 # ------------------------------------------------------------------ a running guest
@@ -802,25 +805,27 @@ def test_a_row_another_session_left_before_any_map_is_not_taken_into_this_sessio
     assert "no stop has placed it" in _rows_by_ref()["00A7:62310"]["why"]
 
 
-def test_a_store_that_cannot_take_the_maps_build_is_host_failed_and_held_in_memory(
+def test_a_store_that_cannot_take_the_maps_build_is_host_failed_and_the_row_as_it_was(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The park row's new build is written with the store; a store that cannot be written
-    says so, the table is loaded and the row is this build's for the rest of the session."""
+    says so, the table is loaded, and the row stays as the file holds it (the store rolls back
+    every write that fails), for a later load to take."""
     mapf = tmp_path / "prog.map"
     mapf.write_text("00001000 T _start\n0016dd80 T _main\n", encoding="utf-8")
     got, booted = _start_over_a_store(tmp_path, monkeypatch, {}, double=_ParkedInRealMode)
     ok(got)
     ok(server.comment_load(path=str(_file(tmp_path, ("00A7:00062310", "at the park")))))
     store = cast(dec.DeclarationStore, dstate.STATE.store)
+    before = [d.to_dict() for d in store.comments()]
 
     def fails() -> None:
         raise OSError("read-only")
     monkeypatch.setattr(store, "_persist", fails)
     booted.mode = "Pr32"
     got = server.symbols_load(path=str(mapf), base="400000")
-    assert "symbols are loaded" in refused(got, "host_failed") and got["held_in_memory"] is True
+    assert "symbols are loaded" in refused(got, "host_failed") and "held_in_memory" not in got
     assert dstate.STATE.table
-    assert _rows_by_ref()["00A7:62310"]["state"] == "resolved"
+    assert [d.to_dict() for d in store.comments()] == before, "a write that failed took a row"
 
 
 def test_a_park_row_this_stop_cannot_place_leaves_the_map_loaded_and_the_row_as_it_was(

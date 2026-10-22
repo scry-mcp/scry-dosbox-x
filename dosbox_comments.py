@@ -266,7 +266,7 @@ def park_rows_take_the_map(session: ds.Session) -> str | None:
     loads, and its map can only be loaded at the protected-mode stop that follows, so the
     batch that arrives is what those rows never had, not another build. Another session's row
     is not taken: nothing says which map it was placed under. The store's write error, if it
-    could not be written (the change is held in memory), else None."""
+    could not be written (nothing taken), else None."""
     store, conf = STATE.store, STATE.conf_fingerprint
     if store is None or STATE.session_origin is None or conf is None \
             or not session.at_debugger():
@@ -298,11 +298,11 @@ def park_rows_take_the_map(session: ds.Session) -> str | None:
 
 
 def _apply(store: dec.DeclarationStore, **changes: Any) -> None:
-    """One write of the store; a failed write is the host's refusal, the change kept in memory."""
+    """One write of the store; a failed write is the host's refusal, nothing changed."""
     try:
         store.apply(**changes)
     except dec.StoreWriteError as e:
-        raise ds.Invalid("host_failed", str(e), held_in_memory=True) from None
+        raise ds.Invalid("host_failed", str(e)) from None
 
 
 def _own_ref(decl: dec.Declaration) -> str:

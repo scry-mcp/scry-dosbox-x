@@ -38,6 +38,7 @@ from scry_core import log_wait as core_wait
 from scry_core import reply_contract as contract
 from scry_core import sequence_account as account
 from scry_core import steps as step_judge
+from scry_core import vocabulary as vocab
 
 import dosbox_arming as arming
 import dosbox_binary as binaries
@@ -52,6 +53,7 @@ import dosbox_logs as dlogs
 import dosbox_machine as machine
 import dosbox_mcp
 import dosbox_placement as placement
+import dosbox_process as dprocess
 import dosbox_running as running
 import dosbox_sequence as sequence
 import dosbox_session as ds
@@ -631,7 +633,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
     `build_check` catches the same exception twelve lines of comment deep, for the same
     reason. This one shipped without a test.
 
-    A LIMIT SAID OUT LOUD: `dosbox_session.subprocess` IS the stdlib module, so these
+    A LIMIT SAID OUT LOUD: `dosbox_frames.subprocess` IS the stdlib module, so these
     patches are process-wide for the duration of the block. That is safe here because
     the blocks are two statements long, but this suite runs in ONE pytest process,
     which is the same hazard `clean_session`'s
@@ -642,7 +644,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
     src = tmp_path / "cap.avi"
     src.write_bytes(b"RIFF")
     fake = SimpleNamespace(captures=lambda: [{"path": str(src)}])
-    with (mock.patch("dosbox_session.subprocess.run", hangs),
+    with (mock.patch("dosbox_frames.subprocess.run", hangs),
           mock.patch("dosbox_frames.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
           pytest.raises(ds.Invalid, match="did not return within")):
         ds.Session.frame(fake, 0, tmp_path / "out.png")  # type: ignore[arg-type]
@@ -660,7 +662,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
         dest.write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 2000)
         return SimpleNamespace(stdout="", stderr="", returncode=0)
 
-    with (mock.patch("dosbox_session.subprocess.run", writes),
+    with (mock.patch("dosbox_frames.subprocess.run", writes),
           mock.patch("dosbox_frames.shutil.which", lambda _n: "/usr/bin/ffmpeg")):
         got = ds.Session.frame(fake, 0, dest)  # type: ignore[arg-type]
     assert got == dest and dest.stat().st_size > 1000
@@ -683,7 +685,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
         return SimpleNamespace(stdout="", stderr=past_end["stderr"],
                                returncode=past_end["returncode"])
 
-    with (mock.patch("dosbox_session.subprocess.run", writes_nothing),
+    with (mock.patch("dosbox_frames.subprocess.run", writes_nothing),
           mock.patch("dosbox_frames.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
           pytest.raises(ds.Invalid, match="ffmpeg exited 0 but no image")):
         ds.Session.frame(fake, 99999, tmp_path / "never.png")  # type: ignore[arg-type]
@@ -704,7 +706,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
     # is ffmpeg reporting its own failure with the reason in hand, while an empty
     # output at exit 0 is the frame-past-the-end shape where the cause is a guess.
     # Merged, the message blamed "a frame past the end" for a conversion error.
-    with (mock.patch("dosbox_session.subprocess.run", fails_but_writes),
+    with (mock.patch("dosbox_frames.subprocess.run", fails_but_writes),
           mock.patch("dosbox_frames.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
           pytest.raises(ds.Invalid, match=f"ffmpeg exited {corrupt['returncode']}")):
         ds.Session.frame(fake, 5, bad)  # type: ignore[arg-type]
@@ -724,7 +726,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
         container.write_bytes(recorded)
         return SimpleNamespace(stdout="", stderr="", returncode=0)
 
-    with (mock.patch("dosbox_session.subprocess.run", writes_a_container),
+    with (mock.patch("dosbox_frames.subprocess.run", writes_a_container),
           mock.patch("dosbox_frames.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
           pytest.raises(ds.Invalid, match="is not a PNG")):
         ds.Session.frame(fake, 99999, container)  # type: ignore[arg-type]
@@ -2856,6 +2858,7 @@ class NamesFake:
                  conf: Path | None = None, arm_fails: bool = False,
                  watched: bool = True, input_port: int | None = None) -> None:
         self.mode, self.cs, self.ds = mode, cs, ds_
+        self._peek_carry = ""                # `Session.await_stop` runs on this double
         self.arm_fails = arm_fails
         # THE GUEST RUNS: one switch that makes every console method refuse the way the
         # real ones do (where, registers, the list, arming, clearing, a watch, a load), and
@@ -3015,7 +3018,7 @@ class NamesFake:
         # raw re.error), and an expired bound is the `TIMEOUT` verdict, which is the one
         # answer the server may read as a miss.
         rx = dlogs.compiled(pattern)
-        if not 0 < seconds <= ds.RUN_TO_MAX:
+        if not 0 < seconds <= vocab.WAIT_MAX_S:
             raise ds.Invalid("bad_argument", f"a wait of {seconds} is not a bound")
         if self.log is None:
             raise ds.Invalid("no_channel", "this session was started without a logfile")
@@ -3704,7 +3707,7 @@ def test_perform_stops_at_a_send_keys_step_whose_expectation_missed(tmp_path: Pa
         {"op": "send_keys", "keys": ["a"], "expect": "key_cue_a", "seconds": 1},
         {"op": "status"}]))
     assert out["status"] == "ok" and out["verdict"] == "TIMEOUT", out
-    assert out["steps_completed"] == 1 and "step 0 ('send_keys')" in out["note"], out
+    assert out["steps_completed"] == 1 and "step 1 ('send_keys')" in out["note"], out
     assert out["ran"][0]["reply"]["posted"] == 1, out["ran"][0]
     assert "status" not in [r["op"] for r in out["ran"]], "the steps after it were not sent"
 
@@ -5615,7 +5618,7 @@ def test_what_is_asked_while_the_guest_runs_is_applied_at_the_next_stop(
     assert cleared["status"] == "ok" and cleared["pending_disarm"] == ["BP 00A7:2000"], cleared
     st = server.status()
     assert st["pending"] == {"arm": ["_main", "g_rate"], "disarm": 1,
-                             "symbols_load": True}, st
+                             "symbols_load": True, "base_remeasure": False}, st
     assert fake.rows == [{"index": "00", "entry": "BP 00A7:2000"}], (
         "nothing touched the debugger yet")
     # THE STOP: everything pending is applied first, then the stop is read.
@@ -5630,7 +5633,8 @@ def test_what_is_asked_while_the_guest_runs_is_applied_at_the_next_stop(
     entries = [r["entry"] for r in fake.rows]
     assert "BP 00A7:1000" in entries and "BP 00A7:2000" not in entries, entries
     assert any(e.startswith("BPPM 00AF:0017A6EC") for e in entries), entries
-    assert server.status()["pending"] == {"arm": [], "disarm": 0, "symbols_load": False}
+    assert server.status()["pending"] == {"arm": [], "disarm": 0, "symbols_load": False,
+                                          "base_remeasure": False}
     # NOTHING PENDING: the next stop says nothing about it.
     assert "applied_on_stop" not in server.resume()
 
@@ -5873,7 +5877,8 @@ def test_the_running_guest_contract_holds_at_its_edges(tmp_path: Path) -> None:
     # CLOSE TAKES THE STATE WITH IT.
     server.close()
     assert server.status()["last_stop"]["available"] is False
-    assert server.status()["pending"] == {"arm": [], "disarm": 0, "symbols_load": False}
+    assert server.status()["pending"] == {"arm": [], "disarm": 0, "symbols_load": False,
+                                          "base_remeasure": False}
 
 
 def test_perform_checks_every_op_before_running_any(tmp_path: Path) -> None:
@@ -6203,10 +6208,8 @@ def test_every_registered_tool_is_named_in_the_instructions() -> None:
     """The `instructions` string is the one channel a session receives at connection, and a
     tool registered but not named there is one the session never learns exists. Asked of
     the MCP layer, never of a list kept beside it."""
-    text = server.mcp.instructions or ""
-    missing = sorted(t for t in dosbox_mcp.registered_tools()
-                     if f"`{t}`" not in text and f"`{t}(" not in text)
-    assert not missing, f"registered tools the instructions never name: {missing}"
+    assert dosbox_mcp.ROSTER.unlisted(dosbox_mcp.registered_tools()) == []
+    assert dosbox_mcp.ROSTER.text() in (server.mcp.instructions or ""), "the roster is missing"
 
 
 def test_perform_checks_every_steps_arguments_before_any_step_runs(tmp_path: Path) -> None:
@@ -6627,9 +6630,9 @@ def test_wait_ready_and_close_report_their_progress() -> None:
             return 0
 
     ticks = []
-    assert ds.wait_exit(_SlowExit(2.2), 5.0, lambda p, t, m: ticks.append(m), "close: x") == 0  # type: ignore[arg-type]
+    assert dprocess.wait_exit(_SlowExit(2.2), 5.0, lambda p, t, m: ticks.append(m), "close: x") == 0  # type: ignore[arg-type]
     assert ticks and ticks[0].startswith("close: x, 1s of 5"), ticks
-    assert ds.wait_exit(_SlowExit(9.0), 0.3, lambda p, t, m: None, "close: x") is None  # type: ignore[arg-type]
+    assert dprocess.wait_exit(_SlowExit(9.0), 0.3, lambda p, t, m: None, "close: x") is None  # type: ignore[arg-type]
 
 
 def test_read_memory_length_is_bounded_and_resume_takes_the_siblings_bound(
@@ -6643,8 +6646,8 @@ def test_read_memory_length_is_bounded_and_resume_takes_the_siblings_bound(
         assert out["status"] == "INVALID" and "memdump" in out["message"], out
     out = cast(dict[str, Any], server.resume(seconds=-1))
     assert out["status"] == "INVALID" and "is not a bound" in out["message"], out
-    past = cast(dict[str, Any], server.resume(seconds=ds.RUN_TO_MAX + 1))
-    assert past["code"] == "bad_argument" and f"at most {ds.RUN_TO_MAX} s" in past["message"]
+    past = cast(dict[str, Any], server.resume(seconds=vocab.WAIT_MAX_S + 1))
+    assert past["code"] == "bad_argument" and f"at most {vocab.WAIT_MAX_S:g}," in past["message"]
     fake.launch.watched = True                   # a windowed session needs no stopper
     def read_nothing(timeout: float) -> str:
         time.sleep(timeout)
@@ -6927,7 +6930,7 @@ def test_perform_a_step_missing_a_value_or_carrying_the_wrong_type_is_refused_no
     typed = server.perform(steps=[{"op": "step", "count": 1, "mode": "over"},
                                   {"op": "read_memory", "ref": "F000:C9B0", "length": "8"}])
     assert typed["status"] == "INVALID" and typed["code"] == "bad_argument", typed
-    assert "step 1 ('read_memory') length is an integer; got '8'" in typed["message"], typed
+    assert "step 2 ('read_memory') length is an integer; got '8'" in typed["message"], typed
     assert "not supported" not in typed["message"]
 
 
@@ -7516,7 +7519,7 @@ def test_a_wait_step_that_ran_out_ends_the_list_and_a_run_that_did_goes_on(
         {"op": "log_wait", "pattern": "NEVER", "channel": "guest", "seconds": 1},
         {"op": "status"}]))
     assert out["status"] == "ok" and out["verdict"] == "TIMEOUT", out
-    assert out["steps_completed"] == 1 and "step 0 ('log_wait')" in out["note"], out
+    assert out["steps_completed"] == 1 and "step 1 ('log_wait')" in out["note"], out
     fake.running = False
     fake.runto_running, fake.control_hits = True, 1
     ran = cast(dict[str, Any], server.perform(steps=[
@@ -7738,18 +7741,16 @@ def test_the_instructions_families_are_the_registered_tools_and_the_running_ones
     """The roster's families name every registered tool once and nothing else (a misspelt name
     would be a tool the session looks for and never finds), and every tool the running sentence
     names, a whole family's included, is one a running guest is answered by."""
-    listed = [t for _, tools in dosbox_mcp._FAMILIES for t in tools]
-    assert sorted(listed) == sorted(dosbox_mcp.registered_tools()), (
-        sorted(set(listed) ^ set(dosbox_mcp.registered_tools())))
+    assert dosbox_mcp.ROSTER.unlisted(dosbox_mcp.registered_tools()) == []
     answering = sequence.RUNNING_OK_OPS | (checks.NOT_STEPS - {"start", "build_check"})
-    named = dosbox_mcp.answering_named() - {"registers(from_last_stop=True)"}
+    named = dosbox_mcp.ROSTER.answering_named() - {"registers(from_last_stop=True)"}
     assert named <= answering, sorted(named - answering)
-    assert dosbox_mcp.running_sentence() in (server.mcp.instructions or "")
+    assert dosbox_mcp.ROSTER.running_sentence() in (server.mcp.instructions or "")
 
 
 def test_a_plans_wait_is_held_to_the_one_wait_bound_before_anything_is_spawned(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """`start(plan=..., settle_seconds=...)` is a wait like every other: one past `RUN_TO_MAX`
+    """`start(plan=..., settle_seconds=...)` is a wait like every other: one past `WAIT_MAX_S`
     is refused before the emulator exists, in the one wait judge's sentence."""
     spawned: list[Any] = []
     monkeypatch.setattr(subprocess, "Popen", lambda *a, **k: spawned.append(a))
@@ -7758,9 +7759,9 @@ def test_a_plans_wait_is_held_to_the_one_wait_bound_before_anything_is_spawned(
     out = cast(dict[str, Any], server.start(conf=str(conf), cwd=str(tmp_path),
                                             session_seconds=60,
                                             plan=[{"op": "registers"}],
-                                            settle_seconds=ds.RUN_TO_MAX + 1))
+                                            settle_seconds=vocab.WAIT_MAX_S + 1))
     assert out["code"] == "bad_argument", out
-    assert out["message"].startswith(f"settle_seconds={ds.RUN_TO_MAX + 1} is not a bound"), out
+    assert out["message"].startswith(f"settle_seconds={vocab.WAIT_MAX_S + 1} is not a bound"), out
     assert spawned == [], "refused before anything was spawned"
 
 
@@ -8358,3 +8359,293 @@ def test_a_watched_start_with_no_helper_is_refused_and_a_display_needs_a_watched
     placed_by(tmp_path, monkeypatch, "")
     quiet = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True)
     assert quiet["status"] == "ok", "one display, no flags: an answer, and the window opens"
+
+
+def test_a_list_begun_on_a_running_guest_waits_for_its_stop_before_a_console_step(
+        tmp_path: Path) -> None:
+    """The executor's rule on both servers: a list begun on a running machine waits for its
+    stop before its first step that needs one, as one that released the machine itself does,
+    never sending the step to be refused at once."""
+    fake = _names(tmp_path)
+    fake._running = True
+    out = cast(dict[str, Any], server.perform(steps=[{"op": "registers"}], settle_seconds=0.3))
+    assert out["status"] == "ok" and out["verdict"] == "TIMEOUT", out
+    assert out["steps_completed"] == 0 and "still running" in out["note"], out
+
+
+def test_a_terminal_that_overflows_while_the_list_waits_ends_it_with_what_ran(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The keys were posted and the machine released before the wait's read found a hole in
+    the terminal: the reply carries those steps, the overflow as the list's end."""
+    fake = _names(tmp_path)
+    fake._running = True
+
+    def overflowed(*_a: Any, **_k: Any) -> tuple[bool, float]:
+        raise ds.Invalid("unexpected_answer", "the terminal buffer overflowed and 4096 bytes "
+                         "were discarded during this read")
+
+    monkeypatch.setattr(ds.Session, "await_stop", overflowed)
+    out = cast(dict[str, Any], server.perform(
+        steps=[{"op": "send_keys", "keys": ["a"]}, {"op": "registers"}], settle_seconds=0.5))
+    assert out["code"] == "unexpected_answer" and "overflowed" in out["message"], out
+    assert [s["op"] for s in out["ran"]] == ["send_keys"] and out["steps_completed"] == 1, out
+
+
+def test_a_raw_breakpoint_stored_before_modes_were_kept_is_adopted_by_the_stop_that_places_it(
+        tmp_path: Path) -> None:
+    """A raw row with no cpu mode (a store written before modes were kept) was never placed
+    under any map, so the first stop that can place it arms it, writes its place and its mode,
+    and makes it this session's (the owner's decision)."""
+    fake = _names(tmp_path, mode="Real")
+    dstate.STATE.session_origin = "this-session"
+    st = dstate.STATE.store
+    assert st is not None
+    st.add(dec.Declaration("breakpoint", "address", "0814:010B", cpu_mode=None, origin="old",
+                           fingerprint="0123456789abcdef"))
+    got = arming.rearm_declarations(cast(Any, fake))
+    assert [r["ref"] for r in got["rearmed"]] == ["0814:010B"], got
+    (row,) = st.declarations()
+    assert row.cpu_mode == "real" and row.origin == "this-session", row
+    assert row.fingerprint != dec.PENDING_STAMP, row
+
+
+def test_a_state_load_keeps_the_table_and_its_base_is_measured_again_at_the_next_stop(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The restored machine may hold the program at another base: the table is kept (no load
+    again), and the first stop after the load measures the base the load measured, through the
+    same register, moving the symbols' places and the breakpoints armed by name with it."""
+    fake = _names(tmp_path)
+    mapf = tmp_path / "prog.map"
+    mapf.write_text("00001000 T _tick\n", encoding="utf-8")
+    loaded = cast(dict[str, Any], server.symbols_load(path=str(mapf)))
+    assert loaded["status"] == "ok" and dstate.STATE.base["base"] == 0x00400000, loaded
+    monkeypatch.setattr(type(fake), "selector",
+                        lambda self, reg: {"base": 0x00500000, "limit": 0x0023FFFF, "type": 0x1B})
+    fake.eip = "00001004"                           # stopped in `_tick`, the program's code
+    dstate.STATE.pending["remeasure"] = True        # what a state load leaves
+    out = arming.apply_pending(cast(Any, fake))
+    assert dstate.STATE.table and dstate.STATE.base["base"] == 0x00500000, dstate.STATE.base
+    assert out["base_remeasured"] == {"register": "CS", "from": "0x00400000",
+                                      "to": "0x00500000"}, out
+    assert dstate.STATE.pending["remeasure"] is False
+
+
+def test_a_state_load_asks_the_next_stop_to_measure_a_measured_base_again(
+        tmp_path: Path) -> None:
+    """Only a base the load measured off the machine is measured again: one the caller gave is
+    the caller's, and no table means nothing to place."""
+    _names(tmp_path, symbols=[dsym.Symbol("_tick", 0x1000, kind="T")])
+    dstate.STATE.base_measured_from = "CS"
+    dstate.STATE.machine_replaced()
+    assert dstate.STATE.pending["remeasure"] is True
+    dstate.STATE.pending["remeasure"] = False
+    dstate.STATE.base_measured_from = None
+    dstate.STATE.machine_replaced()
+    assert dstate.STATE.pending["remeasure"] is False
+
+
+def _loaded_then_restored(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *,
+                          cs: str = "00B7") -> NamesFake:
+    """A table loaded off CS at a program stop, then a state load: the restored machine holds the
+    program at another base under the selector `cs`."""
+    fake = _names(tmp_path)
+    mapf = tmp_path / "prog.map"
+    mapf.write_text("00001000 T _tick\n", encoding="utf-8")
+    loaded = cast(dict[str, Any], server.symbols_load(path=str(mapf)))
+    assert loaded["status"] == "ok" and dstate.STATE.base["selector_CS"] == 0xA7, loaded
+    monkeypatch.setattr(type(fake), "selector",
+                        lambda self, reg: {"base": 0x00500000, "limit": 0x0023FFFF, "type": 0x1B})
+    fake.cs, fake.eip = cs, "00001004"      # stopped in `_tick`, the program's own code
+    dstate.STATE.machine_replaced()
+    return fake
+
+
+def test_the_base_measured_again_takes_the_program_s_selectors_with_it(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The restored run's host gave the program other selectors: a breakpoint armed by name
+    goes through the new one, never the selector of the run the table was loaded in."""
+    fake = _loaded_then_restored(tmp_path, monkeypatch)
+    out = arming.apply_pending(cast(Any, fake))
+    assert dstate.STATE.base["selector_CS"] == 0xB7, dstate.STATE.base
+    assert out["base_remeasured"]["to"] == "0x00500000", out
+    assert placement.target_for(0x1000, "CS", cast(Any, fake))[0] == 0xB7
+
+
+def test_a_stop_outside_the_program_s_code_leaves_the_base_to_measure_at_the_next(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A real-mode stop (a BIOS or DOS handler the program called into) holds no selector of the
+    program's: measured there, the table would move to whatever CS holds."""
+    fake = _loaded_then_restored(tmp_path, monkeypatch)
+    asked: list[str] = []
+
+    def selector(self: Any, reg: str) -> dict[str, int]:
+        asked.append(reg)
+        return {"base": 0x00500000, "limit": 0x0023FFFF, "type": 0x1B}
+
+    monkeypatch.setattr(type(fake), "selector", selector)
+    for mode, eip in (("Real", "00001004"), ("Pr32", "00F00000")):   # a handler; a host's code
+        fake.mode, fake.eip = mode, eip
+        out = arming.apply_pending(cast(Any, fake))
+        assert dstate.STATE.base["base"] == 0x00400000 and "base_remeasured" not in out, out
+        assert dstate.STATE.pending["remeasure"] is True
+        assert any("not in the program's protected-mode code" in w
+                   for w in out["still_pending"]), out
+    assert asked == [], "a stop outside the program asks no descriptor"
+
+
+def test_a_re_arm_that_fails_after_the_base_moved_queues_what_it_would_arm(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The base has moved whatever the re-arm answers: the account says so, the failure is
+    pending, and the drain goes on to the queues it was there for."""
+    fake = _loaded_then_restored(tmp_path, monkeypatch)
+
+    def cut(_session: Any) -> dict[str, Any]:
+        raise ds.Invalid("unexpected_answer", "the pane was cut")
+
+    monkeypatch.setattr(arming, "rearm_declarations", cut)
+    out = arming.apply_pending(cast(Any, fake))
+    assert out["base_remeasured"]["to"] == "0x00500000", out
+    assert any("the pane was cut" in w for w in out["still_pending"]), out
+
+
+def test_a_pending_measure_is_said_by_status_and_drained_by_the_next_contact(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A parked load leaves the machine at the loaded position: the next reader measures there,
+    not the next stop tool wherever it lands."""
+    fake = _loaded_then_restored(tmp_path, monkeypatch)
+    assert dstate.STATE.pending_summary()["base_remeasure"] is True
+    import dosbox_running as running
+    running.drain_if_stopped(cast(Any, fake))
+    assert dstate.STATE.base["base"] == 0x00500000, dstate.STATE.base
+    assert dstate.STATE.pending_summary()["base_remeasure"] is False
+
+
+def test_a_load_refused_before_it_was_sent_replaced_nothing(tmp_path: Path) -> None:
+    """`machine_replaced` is the last load's: a refusal before anything went down the channel
+    leaves it False whatever an earlier state command left behind."""
+    import dosbox_saved_states as saved
+    ses = SimpleNamespace(machine_replaced=True, state_sent=True,
+                          _state_dir=lambda: tmp_path)
+    with pytest.raises(ds.Invalid) as refusal:
+        saved.state_load(cast(Any, ses), "nope")
+    assert refusal.value.code == "unknown_ref" and ses.machine_replaced is False
+
+
+def test_one_row_that_cannot_be_adopted_is_that_row_s_answer(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Two rows stored before modes were kept: the first refuses to arm, the second is adopted
+    all the same, and the re-arm answers both."""
+    fake = _names(tmp_path, mode="Real")
+    dstate.STATE.session_origin = "this-session"
+    st = dstate.STATE.store
+    assert st is not None
+    for ref in ("0814:010B", "0814:0200"):
+        st.add(dec.Declaration("breakpoint", "address", ref, cpu_mode=None, origin="old",
+                               fingerprint="0123456789abcdef"))
+    armed = type(fake).arm_code_breakpoint
+
+    def first_refuses(self: Any, seg: int, off: int) -> dict[str, object]:
+        if off == 0x010B:
+            raise ds.Invalid("unexpected_answer", "the debugger refused it")
+        return armed(self, seg, off)
+
+    monkeypatch.setattr(fake, "arm_code_breakpoint", first_refuses.__get__(fake))
+    got = arming.rearm_declarations(cast(Any, fake))
+    assert [r["ref"] for r in got["rearmed"]] == ["0814:0200"], got
+    assert [r["ref"] for r in got["unarmable"]] == ["0814:010B"], got
+
+
+def test_a_row_armed_whose_place_could_not_be_written_is_queued_for_the_next_stop(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The breakpoint is armed, so the re-arm would skip it as held and never write its place:
+    the row is queued, and its account says so."""
+    fake = _names(tmp_path, mode="Real")
+    dstate.STATE.session_origin = "this-session"
+    st = dstate.STATE.store
+    assert st is not None
+    st.add(dec.Declaration("breakpoint", "address", "0814:010B", cpu_mode=None, origin="old",
+                           fingerprint="0123456789abcdef"))
+
+    def refuses(*_a: Any, **_k: Any) -> None:
+        raise dec.StoreWriteError("the disk is full")
+
+    monkeypatch.setattr(st, "apply", refuses)
+    got = arming.rearm_declarations(cast(Any, fake))
+    (row,) = got["rearmed"]
+    assert "next stop writes it again" in row["why"], row
+    assert "0814:010B" in dstate.STATE.pending["arm"]
+
+
+def test_a_base_that_moved_clears_the_rows_armed_by_name_at_the_old_place(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The debugger's rows outlive a state load, and on the restored machine the old place is
+    someone else's bytes: the breakpoint declared by name is cleared there and armed anew."""
+    fake = _loaded_then_restored(tmp_path, monkeypatch)
+    fake.cs = "00A7"                                   # declared before the load, at the old place
+    dstate.STATE.pending["remeasure"] = False
+    declared = cast(dict[str, Any], server.breakpoint_at(ref="_tick"))
+    assert declared["status"] == "ok", declared
+    cleared: list[tuple[int, int]] = []
+    def clear(self: Any, seg: int, off: int) -> dict[str, object]:
+        cleared.append((seg, off))
+        return {"removed": True}
+
+    monkeypatch.setattr(type(fake), "clear_code_breakpoint", clear)
+    fake.cs = "00B7"
+    dstate.STATE.machine_replaced()
+    out = arming.apply_pending(cast(Any, fake))
+    assert out["base_remeasured"]["to"] == "0x00500000", out
+    assert cleared == [(0xA7, 0x1000)], cleared
+    assert [r["entry"] for r in dstate.STATE.armed[("bp", "_tick")]] == ["BP 00B7:1000"]
+
+
+def test_a_state_load_through_the_server_asks_the_next_stop_for_the_base(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """End to end through `state_load`: a load the session says replaced the machine queues the
+    base's measure; one it says did not (refused before it was sent) queues nothing."""
+    fake = _names(tmp_path)
+    mapf = tmp_path / "prog.map"
+    mapf.write_text("00001000 T _tick\n", encoding="utf-8")
+    assert cast(dict[str, Any], server.symbols_load(path=str(mapf)))["status"] == "ok"
+    dstate.STATE.pending["remeasure"] = False
+
+    def loads(self: Any, name: str, seconds: float = 20.0) -> dict[str, object]:
+        self.machine_replaced = name == "here"
+        if name != "here":
+            raise ds.Invalid("unknown_ref", f"no state named {name!r}")
+        return {"name": name, "paused": True}
+
+    monkeypatch.setattr(type(fake), "state_load", loads, raising=False)
+    assert cast(dict[str, Any], server.state_load(name="gone"))["code"] == "unknown_ref"
+    assert dstate.STATE.pending_summary()["base_remeasure"] is False
+    assert cast(dict[str, Any], server.state_load(name="here"))["status"] == "ok"
+    assert dstate.STATE.pending_summary()["base_remeasure"] is True
+    assert dict(dstate.STATE.pending)["dirty"] is True
+
+
+def test_a_base_the_caller_gave_is_never_measured_again(tmp_path: Path) -> None:
+    """A base `symbols_load` was handed is the caller's: a state load leaves it as it is."""
+    _names(tmp_path)
+    mapf = tmp_path / "prog.map"
+    mapf.write_text("00001000 T _tick\n", encoding="utf-8")
+    loaded = cast(dict[str, Any], server.symbols_load(path=str(mapf), base="400000"))
+    assert loaded["status"] == "ok", loaded
+    assert dstate.STATE.base_measured_from is None
+    dstate.STATE.machine_replaced()
+    assert dstate.STATE.pending["remeasure"] is False
+
+
+def test_drive_with_an_expect_leaves_the_wait_to_it_on_a_running_guest(tmp_path: Path) -> None:
+    """The verify is the wait: an act on a running guest does not first sit out
+    `settle_seconds` for a stop at its tail, or its effect would be judged after the wait ran
+    out and never looked for."""
+    fake = _names(tmp_path, watched=True, mode="Real")
+    declared = cast(dict[str, Any], server.breakpoint_at(ref="0814:0100"))
+    assert declared["status"] == "ok", declared        # something that can stop the guest
+    fake.running = True
+    fake.where_raises = True
+    fake.log = ["Bochs port E9h: [+   0.000] BOOT  . start"]
+    out = cast(dict[str, Any], server.drive(act=[{"op": "status"}], expect="NEVER_LOGGED",
+                                            seconds=0.2, settle_seconds=1.0))
+    assert out["act"].get("verdict") != "TIMEOUT", out["act"]
+    assert out["verify"].get("available") is not False, out["verify"]

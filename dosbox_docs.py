@@ -5,6 +5,7 @@ never typed into the text."""
 from __future__ import annotations
 
 from scry_core import docs, log_marks, picture, recording, screen_map, series
+from scry_core import vocabulary as vocab
 
 import dosbox_checks as checks
 import dosbox_code as code
@@ -16,7 +17,6 @@ import dosbox_launch as launch
 import dosbox_logs as logs
 import dosbox_placement as placement
 import dosbox_sequence as sequence
-import dosbox_session as ds
 import dosbox_state as st
 import dosbox_trace as trace
 
@@ -32,7 +32,7 @@ DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES
               "DROPPED_SHOWN": str(recording.DROPPED_SHOWN),
               "RECORD_MAX": str(sequence.RECORD_MAX),
               **log_marks.DOC_VALUES,
-              "LOG_LIMIT_MAX": str(logs.LOG_LIMIT_MAX), "WAIT_MAX_S": f"{ds.RUN_TO_MAX:g}",
+              "LOG_LIMIT_MAX": str(logs.LOG_LIMIT_MAX), "WAIT_MAX_S": f"{vocab.WAIT_MAX_S:g}",
               "READ_MAX": str(console.DATA_VIEW_BYTES), "DISASM_MAX": str(code.LENGTH_MAX),
               "INSTRUCTIONS_MAX": str(trace.INSTRUCTIONS_MAX),
               "SYMBOLS_LIMIT_MAX": str(placement.SYMBOLS_LIMIT_MAX),

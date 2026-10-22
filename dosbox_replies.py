@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import Any
 
 from scry_core import media_replies
+from scry_core import sequence_account as account
 from scry_core.reply_schema import ReplyEnvelope
 
 
@@ -115,7 +116,6 @@ class CloseReply(DosboxEnvelope, total=False):
 class CommentAddReply(DosboxEnvelope, total=False):
     comment: dict[str, Any]
     declarations: dict[str, Any]
-    held_in_memory: bool
     note: str
     replaced_comments: list[Any]
 
@@ -301,25 +301,8 @@ class PaletteReply(DosboxEnvelope, total=False):
     rgb: list[Any]
 
 
-class PerformReply(DosboxEnvelope, total=False):
-    errors: list[Any]
-    failed: dict[str, Any]
-    failed_at: int | dict[str, Any]
-    field: str
-    got: Any
-    held: int
-    note: str
-    ran: list[Any]
-    ran_path: str | dict[str, Any]
-    recorded: Any
-    replies_path: str | dict[str, Any]
-    steps_completed: int
-    steps_total: int
-    still_running: bool
-    stopped: dict[str, Any]
-    stops: dict[str, Any]
-    truncated: bool
-    verdict: str
+class PerformReply(DosboxEnvelope, account.SequenceFields, total=False):
+    """The sequence's fields (`scry_core.sequence_account.SequenceFields`), none its own."""
 
 
 class PerformExportReply(DosboxEnvelope, total=False):
@@ -683,7 +666,6 @@ class SymbolsLoadReply(DosboxEnvelope, total=False):
     excluded_pattern: int
     excluded_sections: int
     excluded_unplaceable: int
-    held_in_memory: bool
     kept: int
     limit: int
     loaded: int

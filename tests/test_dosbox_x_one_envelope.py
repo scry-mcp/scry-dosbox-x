@@ -85,7 +85,7 @@ def test_the_block_is_composed_under_the_lock_over_the_one_machine(
     real = dosbox_mcp.BOUNDARY.finished
 
     def spy(*a: Any, **k: Any) -> dict[str, Any]:
-        held.append(dosbox_mcp.LOCK._is_owned())  # type: ignore[attr-defined]
+        held.append(dosbox_mcp.LOCK.held_here())
         return real(*a, **k)
 
     monkeypatch.setattr(dosbox_mcp.BOUNDARY, "finished", spy)

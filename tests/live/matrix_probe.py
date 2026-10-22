@@ -648,10 +648,10 @@ B_CELLS = cells(
     ("B log_wait seconds=600 already there", "log_wait docstring: (0, 600]; history first"),
     ("B log_wait seconds=600.5", "log_wait docstring: seconds in (0, 600]"),
     ("B log_wait seconds=0", "log_wait docstring: seconds in (0, 600]"),
-    ("B run_to seconds=600 arrives", "the bound dosbox_session.RUN_TO_MAX declares, log_wait's "
-                                     "published (0, 600]"),
-    ("B run_to seconds=600.5", "the bound dosbox_session.RUN_TO_MAX declares"),
-    ("B run_to seconds=0", "the bound dosbox_session.RUN_TO_MAX declares"),
+    ("B run_to seconds=600 arrives", "the bound scry_core.vocabulary.WAIT_MAX_S declares, "
+                                     "log_wait's published (0, 600]"),
+    ("B run_to seconds=600.5", "the bound scry_core.vocabulary.WAIT_MAX_S declares"),
+    ("B run_to seconds=0", "the bound scry_core.vocabulary.WAIT_MAX_S declares"),
     ("B run_to without a control", "run_to docstring: control is REQUIRED"),
     ("B run_to real-mode offset past FFFF", REF_DOC + "Advancing: refused in real mode"),
     ("B resume seconds=-1", "resume docstring: `seconds` is 0 or a bound up to the ceiling"),
@@ -668,7 +668,7 @@ B_CELLS = cells(
     ("B send_mouse x=32768", "send_mouse docstring: a driver coordinate is 16-bit signed"),
     ("B send_mouse x=2**31", "send_mouse docstring: a driver coordinate is 16-bit signed"),
     ("B perform settle_seconds=600",
-     REF_DOC + "Sequences: settle_seconds is a bound; its top is RUN_TO_MAX's"),
+     REF_DOC + "Sequences: settle_seconds is a bound; its top is WAIT_MAX_S's"),
     ("B perform settle_seconds=600.5",
      REF_DOC + "Sequences: a settle_seconds that is not a bound"),
     ("B perform settle_seconds=-1", REF_DOC + "Sequences: a settle_seconds that is not a bound"),
@@ -1254,7 +1254,7 @@ TEXT_MODE_HZ = 70
 #: What a timed run is asked for. Its last retrace lands at or past the mark and under one frame
 #: beyond it.
 TIMED_MS = 50
-#: Just past `run_for`'s wall-clock ceiling, `RUN_TO_MAX`.
+#: Just past `run_for`'s wall-clock ceiling, `WAIT_MAX_S`.
 PAST_THE_BOUND = 600.5
 
 H_CELLS = cells(
@@ -1270,8 +1270,8 @@ H_CELLS = cells(
     ("H frames and milliseconds both set is refused",
      "dosbox_checks: exactly one of milliseconds and frames"),
     ("H frames=-1 is refused", "dosbox_checks: a whole number of zero or more"),
-    ("H seconds=0 is refused", "the bound dosbox_session.RUN_TO_MAX declares"),
-    ("H seconds=600.5 is refused", "the bound dosbox_session.RUN_TO_MAX declares"),
+    ("H seconds=0 is refused", "the bound scry_core.vocabulary.WAIT_MAX_S declares"),
+    ("H seconds=600.5 is refused", "the bound scry_core.vocabulary.WAIT_MAX_S declares"),
     ("H a breakpoint on the guest's loop ends it OTHER_STOP",
      REF_DOC + "Advancing: OTHER_STOP, cause; known: probe.asm `.s1` and `.spin`"),
     ("H the next release stops at the pending retrace, named",

@@ -417,7 +417,7 @@ def check_expectation(expect: str | None, seconds: float | None) -> None:
     dlogs.compiled(expect)
     dlogs.compiled(program_reaction(expect))
     if seconds is not None:
-        ds.check_wait_bound(seconds)
+        vocab.check_wait(seconds)
 
 
 def check_keys(keys: list[str], modifiers: list[str] | None, expect: str | None = None,

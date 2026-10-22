@@ -24,6 +24,7 @@ from scry_core import reply_contract as contract
 from scry_core import sequence as executor
 from scry_core import sequence_account as account
 from scry_core import steps as step_judge
+from scry_core import vocabulary as vocab
 
 import dosbox_arming as arming
 import dosbox_checks as checks
@@ -131,11 +132,12 @@ def _wait_for_stop(session: ds.Session, seconds: float,
 
 
 def refused_text(refused: list[dict[str, Any]]) -> str:
-    """The message of a list refused before anything ran: every refusal, each by its step and
-    its op (a step that is no mapping has none to name, and its own message quotes it)."""
+    """The message of a list refused before anything ran: every refusal, each by its step
+    (counted from 1, as the executor and its progress line count) and its op (a step that is
+    no mapping has none to name, and its own message quotes it)."""
     def one(e: dict[str, Any]) -> str:
         op = f" ({e['op']!r})" if isinstance(e["op"], str) else ""
-        return f"step {e['step']}{op} {e['message']}"
+        return f"step {e['step'] + 1}{op} {e['message']}"
     return (f"{prose.counted(len(refused), 'step')} refused before anything ran: "
             + "; ".join(one(e) for e in refused) + ". Nothing was run")
 
@@ -177,12 +179,6 @@ def preflight(steps: list[dict[str, Any]], ops: Ops) -> list[dict[str, Any]]:
 
 # ------------------------------------------------------------ a batch with `summaries`
 
-def validate_summaries(summaries: object) -> None:
-    """`summaries` is a yes or a no, in the one sentence both batch tools use."""
-    if not isinstance(summaries, bool):
-        raise ds.Invalid("bad_argument", f"summaries is true or false; got {summaries!r}")
-
-
 def _cause_key(stop: dict[str, Any]) -> str:
     """The key a stop is counted under: its `cause` without the address, so one declaration is
     one key wherever it stopped the machine."""
@@ -215,8 +211,10 @@ def account_of(ran: list[dict[str, Any]], summaries: bool, keep_last: bool, sinc
 
 class _Dosbox(executor.SequenceMachine):
     """This server's half of a list (`scry_core.sequence`): a stop heard by the debugger's
-    prompt, a list that begins on a machine taken as stopped, a step's own missed wait, and the
-    stop a step that answers on a running guest came to rest at."""
+    prompt, a step's own missed wait, and the stop a step that answers on a running guest came
+    to rest at. A list begun on a running guest waits for its stop before its first step that
+    needs one (the core rule); keys sent to a running guest answer running, so an act of keys
+    waits for nothing."""
 
     undeclared = "no breakpoint, no interrupt breakpoint, no change watch"
 
@@ -229,12 +227,6 @@ class _Dosbox(executor.SequenceMachine):
 
     def running(self) -> bool:
         return not self.session.at_debugger()
-
-    def began_running(self) -> bool:
-        # EVERY LIST BEGINS AS ON A STOPPED MACHINE: a step that needs one and finds the guest
-        # running answers so itself, and an act of keys sent to a running guest (`drive`'s
-        # usual shape) must not wait for a stop it never asked for.
-        return False
 
     def leaves_running(self, op: str, reply: dict[str, Any]) -> bool:
         return _leaves_running(op, reply)
@@ -275,21 +267,24 @@ class _Dosbox(executor.SequenceMachine):
 def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
               ops: Ops, progress: ds.Progress = ds.no_progress,
               summaries: bool = False, name: str = "perform",
-              prechecked: bool = False) -> dict[str, Any]:
+              prechecked: bool = False, tail_wait: bool = True) -> dict[str, Any]:
     """Execute steps in order (`scry_core.sequence.run`, its rules), STOPPING at the first
     failure with a full account: `ran` (each step and its reply), `failed` (the step that stopped
     it, absent when none did), `steps_completed`, `held` (the steps whose `recorded` answer this
     run matched), and the machine state. A step is `{"op": <name>, ...args}`. `prechecked` when
     the tool's pre-gate already judged the list whole (`dosbox_checks.steps_whole`), so it is
-    judged once a call. With `summaries`, `ran` is the compact account `account_of` builds."""
-    validate_summaries(summaries)
+    judged once a call. With `summaries`, `ran` is the compact account `account_of` builds.
+    `tail_wait` False when the caller waits for the list's effect its own way (`drive` with an
+    `expect`)."""
+    account.check_summaries(summaries)
     refused = [] if prechecked else preflight(steps, ops)
     if refused:
         first = refused[0]
         return st.reply(status="INVALID", code="bad_argument", ran=[], steps_completed=0,
                         failed_at=first["step"], failed=first, errors=refused,
                         message=refused_text(refused), held=0)
-    ended = executor.run(_Dosbox(session, summaries), steps, ops, wait, progress, name)
+    ended = executor.run(_Dosbox(session, summaries), steps, ops, wait, progress, name,
+                         tail_wait=tail_wait)
     if ended.code is not None:
         return st.reply(status="INVALID", code=ended.code, message=ended.message,
                         **ended.fields, held=ended.held)
@@ -325,7 +320,7 @@ def _final_stop(session: ds.Session) -> dict[str, Any]:
 def validate_wait(wait: float) -> None:
     """The bound a sequence waits for a stop once it ran: 0 does not wait, and a negative or a
     huge one is not a bound."""
-    ds.check_wait_bound(wait, "settle_seconds", from_zero=True)
+    vocab.check_wait(wait, "settle_seconds", zero_means="never wait")
 
 
 def _verify_after_wait(session: ds.Session, expect: str, wait_s: float, mark: int,
@@ -365,24 +360,13 @@ def _verify_at_a_stop(session: ds.Session, expect: str, mark: int) -> dict[str, 
 
 
 def _look(session: ds.Session, mark: int, pattern: str, limit: int) -> dict[str, Any]:
-    """The LOOK after an act: the guest's lines since the mark matching `pattern`, cut to the
-    last `limit`, with the counts that say what was cut, in `log`'s own words. Unavailable is
+    """The LOOK after an act: the guest's lines since the mark (`account.looked`). Unavailable is
     said, not hidden."""
     try:
         since = session.e9_since_mark(mark)
     except ds.Invalid as e:
         return {"guest": {"available": False, "why": str(e)}}
-    rx = dlogs.compiled(pattern)
-    kept = [ln for ln in since if rx.search(ln)]
-    return {"guest": {"available": True, "since_mark": mark, "lines_written": len(since),
-                   "lines_total": len(kept), "truncated": len(kept) > limit,
-                   "lines": kept[-limit:], "pattern": pattern}}
-
-
-def _where_stopped(failed_at: object) -> str:
-    """Where a refused act stopped: at its failing step, or after its last step when every step
-    ran and the tail's wait found the emulator gone (`failed_at` unavailable)."""
-    return f"at step {failed_at}" if isinstance(failed_at, int) else "after its last step"
+    return account.looked("guest", since, mark, dlogs.compiled(pattern), limit)
 
 
 def drive_refused(e: ds.Invalid) -> ds.Invalid:
@@ -414,21 +398,23 @@ def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str 
     except ds.Invalid as e:
         raise drive_refused(ds.Invalid("no_channel",
             f"drive needs a session started with a logfile: {e}")) from None
+    # WITH AN `expect` THE VERIFY IS THE WAIT: the act's tail does not wait for a stop first, or a
+    # running guest's act would sit out `settle_seconds` before its effect is looked for.
     ran = run_steps(session, act, wait, ops, progress, summaries, name="drive",
-                    prechecked=True)
-    account = {k: v for k, v in ran.items() if k not in ("status", "session")}
+                    prechecked=True, tail_wait=expect is None)
+    told = {k: v for k, v in ran.items() if k not in ("status", "session")}
     if ran.get("status") != "ok":
         # THE ACT'S OWN CODE: a step that failed is `step_failed`, but a list the executor
         # refused (`not_stopped`) or an emulator gone under it (`session_broken`) says so.
         act_code: contract.Code = ran.get("code", "step_failed")
-        return st.reply(status="INVALID", code=act_code, act=account,
-                      message=f"the act stopped {_where_stopped(ran.get('failed_at'))}: "
+        return st.reply(status="INVALID", code=act_code, act=told,
+                      message=f"the act stopped {executor.where_stopped(ran.get('failed_at'))}: "
                               f"{ran.get('message')}",
                       looked=_look(session, mark, pattern, limit))
     checked: dict[str, Any] = {"checked": False,
                                 "why": "no `expect` given; the act's own steps carried "
                                        "whatever verification they asked for"}
-    if expect is not None and account.get("verdict") == contract.TIMEOUT:
+    if expect is not None and told.get("verdict") == contract.TIMEOUT:
         # THE ACT DID NOT COME TO REST: its own wait ran out, so what it was meant to cause
         # cannot be asked of the guest yet.
         checked = contract.unavailable("the act's own wait ran out (`act.verdict` TIMEOUT), so "
@@ -439,10 +425,10 @@ def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str 
         # the expectation would burn the bound on a machine that cannot act and then blame
         # the program. So the log is read ONCE from the mark and the verdict says why.
         # WHICH IT IS comes from the act's own tail when it had one, and from the machine
-        # otherwise: an act of running-guest steps alone (the usual shape) says nothing
-        # about the state, because the executor starts every sequence assuming a stopped
-        # machine; the session's own flag answers with no console round trip (a command typed
-        # at a running guest's console waits out its whole timeout and is dropped).
+        # otherwise: an act of running-guest steps alone (the usual shape) waits for nothing
+        # and surveys nothing, so its account says nothing about the state; the session's own
+        # flag answers with no console round trip (a command typed at a running guest's
+        # console waits out its whole timeout and is dropped).
         if "still_running" in ran:
             ended_running = True
         elif "stopped" in ran:
@@ -456,7 +442,7 @@ def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str 
             # could not write it, so this is the stop's, never the program's miss.
             stop, where = STATE.stop_named(session)
             when = " during the wait" if checked.get("stopped_during_wait") else ""
-            return st.reply(status="INVALID", code="wait_stopped", act=account,
+            return st.reply(status="INVALID", code="wait_stopped", act=told,
                           verify=checked, last_stop=stop,
                           looked=_look(session, mark, pattern, limit),
                           message=f"the act ran, the machine is STOPPED at the debugger"
@@ -465,8 +451,8 @@ def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str 
         if not checked.get("checked"):
             # The verify's own refusal names the cause; the act ran, so the reply keeps it.
             code: contract.Code = checked.get("code", "unexpected_answer")
-            return st.reply(status="INVALID", code=code, act=account, verify=checked,
+            return st.reply(status="INVALID", code=code, act=told, verify=checked,
                           looked=_look(session, mark, pattern, limit),
                           message=f"the act ran and its effect could NOT be verified: "
                                  f"{checked['why']}")
-    return st.reply(act=account, verify=checked, looked=_look(session, mark, pattern, limit))
+    return st.reply(act=told, verify=checked, looked=_look(session, mark, pattern, limit))

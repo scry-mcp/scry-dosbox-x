@@ -87,7 +87,7 @@ def test_a_green_run_removes_its_scratch_and_its_jobs(
         job.mkdir(parents=True)
         assert job.parent.parent == m.scratch
     m.host.begin(None, "DOSBox-X")
-    assert _run(m, pool=_pool(lm, {"a1": "OK", "b1": "OK"})) == lm.EXIT_PASSED
+    assert _run(m, pool=_pool(lm, {"a1": "OK", "b1": "OK"})) == lm.EXIT_PASS
     assert "scratch removed, the transcript with it" in _out(capsys)
     assert list(tmp_path.iterdir()) == []
 
@@ -95,7 +95,7 @@ def test_a_green_run_removes_its_scratch_and_its_jobs(
 def test_a_red_run_keeps_its_scratch_and_names_it_before_its_verdict(
         lm: ModuleType, capsys: pytest.CaptureFixture[str]) -> None:
     m = _ledger(lm, ("C", ["c1"], lambda m: m.judge("c1", False)))
-    assert _run(m) == lm.EXIT_FAILED
+    assert _run(m) == lm.EXIT_FAIL
     assert _out(capsys)[-2:] == [f"kept: {m.scratch}", "==> LIVE MATRIX FAILED"]
 
 
@@ -107,7 +107,7 @@ def test_a_pooled_job_leaves_its_scratch_to_its_parent_and_proves_nothing(
     monkeypatch.setattr(live_host.EmulatorLedger, "reap", lambda _s: pytest.fail("a job reaped"))
     m = _ledger(lm, ("A", ["a1"], lambda m: m.judge("a1", True)))
     assert m.host.job and m.host.begin(["dosbox-x"], "DOSBox-X") == ""
-    assert _run(m, summary=tmp_path / "summary.json") == lm.EXIT_PASSED
+    assert _run(m, summary=tmp_path / "summary.json") == lm.EXIT_PASS
     out = "\n".join(_out(capsys))
     assert "scratch removed" not in out and "kept:" not in out and m.scratch.is_dir()
 
@@ -153,7 +153,7 @@ def test_an_emulator_that_outlived_the_run_fails_it_by_name_beside_the_verdict(
         order.append("reap")
         return live_host.Leftovers(1, 1, ((77, "U"),))
     monkeypatch.setattr(live_host.EmulatorLedger, "reap", reap)
-    assert _run(m) == lm.EXIT_FAILED
+    assert _run(m) == lm.EXIT_FAIL
     out = "\n".join(_out(capsys))
     assert order == ["close", "reap"]
     assert "FAIL  1 emulator(s) outlived the run" in out and "pid 77 state U" in out
@@ -266,14 +266,14 @@ def test_the_pytest_tier_fails_on_an_emulator_its_tests_left_alive(
         capsys: pytest.CaptureFixture[str]) -> None:
     monkeypatch.setattr(live_host.EmulatorLedger, "reap",
                         lambda _self: live_host.Leftovers(1, 1))
-    assert rlp.main() == rlp.EXIT_FAILED
+    assert rlp.main() == rlp.EXIT_FAIL
     out = "\n".join(_out(capsys))
     assert "FAIL  1 emulator(s) outlived the run" in out and "kept: " in out
 
 
 def test_the_pytest_tier_green_leaves_nothing(rlp: ModuleType, tmp_path: Path,
                                               capsys: pytest.CaptureFixture[str]) -> None:
-    assert rlp.main() == rlp.EXIT_PASSED
+    assert rlp.main() == rlp.EXIT_PASS
     assert "scratch removed, the transcript with it" in _out(capsys)
     assert list(tmp_path.iterdir()) == []
 
@@ -297,7 +297,7 @@ def test_the_pytest_tier_that_breaks_keeps_its_logs_and_still_proves_its_emulato
         with pytest.raises(KeyboardInterrupt):
             rlp.main()
     else:
-        assert rlp.main() == rlp.EXIT_FAILED
+        assert rlp.main() == rlp.EXIT_FAIL
     out = "\n".join(_out(capsys))
     assert reaped == [True] and "kept: " in out
 
@@ -346,7 +346,7 @@ def test_a_green_pytest_tier_that_launched_no_emulator_is_invalid(
     lp = rlp.live_pool
     monkeypatch.setattr(lp, "run_pool",
                         lambda *_a, **_k: lp.PoolResult([], "", {"t.py::a": "OK"}, {}))
-    assert rlp.main() != rlp.EXIT_PASSED
+    assert rlp.main() != rlp.EXIT_PASS
     assert any("the ledger recorded no emulator launch" in line for line in _out(capsys))
 
 

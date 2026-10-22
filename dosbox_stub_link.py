@@ -48,6 +48,16 @@ class Link:
         self.parked = parked
         self.seq = 0
         self._pending = bytearray()
+        # WHETHER THE STUB'S LAST SEQUENCE IS KNOWN NOT TO BE OUR NEXT: true of a stub this
+        # session started (it begins at 0). One holding a state loaded since may have it at any
+        # value, and a frame of ours lost and then answered as a repeat cannot say whether it
+        # ran, so the next send proves the sequence first with a report, which is harmless run
+        # once or not at all.
+        self.proved = True
+
+    def unprove(self) -> None:
+        """The stub's memory was replaced (a state loaded): its last sequence is unknown again."""
+        self.proved = False
 
     def send(self, commands: list[bytes]) -> list[str]:
         """Each command framed, sent and acknowledged in order; the report lines the `R`
@@ -56,6 +66,10 @@ class Link:
         itself (its acknowledgements lost, or the machine stopped with it written)."""
         reports: list[str] = []
         acknowledged = 0
+        if not self.proved:
+            self._deliver(bytes((OP_REPORT,)))
+            self._line()                       # the stub reports on a repeat too
+            self.proved = True
         for command in commands:
             try:
                 self._deliver(command)

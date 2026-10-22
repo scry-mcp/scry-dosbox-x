@@ -33,6 +33,9 @@ from typing import Any
 import live_private  # isort: skip -- first: a pooled job's working copies (`live_private`)
 import pytest
 from scry_core import live_host, live_pool
+from scry_core.verdict import EXIT_FAIL as EXIT_FAIL
+from scry_core.verdict import EXIT_INVALID as EXIT_INVALID
+from scry_core.verdict import EXIT_PASS as EXIT_PASS
 
 import dosbox_binary  # isort: skip -- a module of the repository root, installed in its environment
 
@@ -42,7 +45,7 @@ SUMMARY_VAR = "DOSBOX_X_LIVE_SUMMARY"
 # The node ids a child runs, one per line; set by the parent, never by hand.
 NODES_VAR = "DOSBOX_X_LIVE_PYTEST_NODES"
 PYTEST_ARGS = ["-q", "--no-cov", "-p", "no:cacheprovider", "-m", "live"]
-EXIT_PASSED, EXIT_FAILED, EXIT_INVALID = 0, 1, 3
+
 SCRATCH_PREFIX = "dosbox-x-live-pytest-"
 
 
@@ -194,7 +197,7 @@ def _run(run: live_host.LiveRun, workers: int) -> int:
         print(f"==> LIVE PYTEST INVALID: {invalid}")
         return EXIT_INVALID
     print("==> LIVE PYTEST " + ("FAILED" if count["FAIL"] else "PASSED"))
-    return EXIT_FAILED if count["FAIL"] else EXIT_PASSED
+    return EXIT_FAIL if count["FAIL"] else EXIT_PASS
 
 
 if __name__ == "__main__":

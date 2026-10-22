@@ -11,6 +11,7 @@ from pathlib import Path
 
 from scry_core import cancel, state_files
 from scry_core import reply_contract as contract
+from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Invalid
 
 import dosbox_launch as dlaunch
@@ -116,7 +117,7 @@ def state_save(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
     in place, so a failure part-way would otherwise hold the name with a broken state.
     Saving alters nothing."""
     dlaunch.check_state_name(name)
-    ds.check_wait_bound(seconds)
+    vocab.check_wait(seconds)
     state_dir = ses._state_dir()
     dest = state_dir / f"{name}.sav"
     if paths.taken(dest):         # a dangling link too: the save would write through it
@@ -138,6 +139,13 @@ def state_save(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
             **{k: meta[k] for k in dlaunch.STATE_META}, **outcome}
 
 
+def _replaced(ses: ds.Session) -> None:
+    """The machine is the loaded one, whole or in part: altered, its stub's report unproved,
+    and `machine_replaced` set for the server, which measures the table's base again."""
+    ses.altered = ses.machine_replaced = True
+    _stub_replaced(ses)
+
+
 def state_load(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, object]:
     """Load the state `name` from `<state_dir>/<name>.sav` by the debugger's own
     `LOADSTATE`. Running or parked: a running guest is stopped for it and released again,
@@ -146,8 +154,9 @@ def state_load(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
     REPLACES the machine, so the session is altered from here on, and after any refusal
     but a missing channel too, since a load refused part-way may have replaced some of
     it."""
+    ses.machine_replaced = False
     dlaunch.check_state_name(name)
-    ds.check_wait_bound(seconds)
+    vocab.check_wait(seconds)
     state_dir = ses._state_dir()
     source = state_dir / f"{name}.sav"
     if (why := state_files.not_a_state(source)) is not None:
@@ -165,15 +174,23 @@ def state_load(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
         # that is gone, as a load that answered does. Cut short before, it replaced nothing.
         if ses.state_sent and not (isinstance(e, Invalid)
                                     and e.code in ("no_channel", "bad_argument")):
-            ses.altered = True
+            _replaced(ses)
             if parked:
                 ses.stop_count += 1
         raise
-    ses.altered = True
+    _replaced(ses)
     if not outcome["paused"]:
         ses.stop_count += 1
     return {"name": name, "path": str(source),
             **{k: meta[k] for k in dlaunch.STATE_META}, **outcome}
+
+
+def _stub_replaced(ses: ds.Session) -> None:
+    """The guest's memory was loaded, the input stub's last sequence with it: the link proves
+    its sequence again before it counts on it (`dosbox_stub_link.Link.unprove`)."""
+    link = getattr(ses, "_link", None)
+    if link is not None:
+        link.unprove()
 
 
 def _listed(path: Path) -> dict[str, object] | None:

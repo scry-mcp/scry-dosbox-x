@@ -22,8 +22,9 @@ from pathlib import Path
 from typing import Any
 
 from scry_core import live_host, live_pool
-
-EXIT_PASSED, EXIT_FAILED, EXIT_INVALID = 0, 1, 3
+from scry_core.verdict import EXIT_FAIL as EXIT_FAIL
+from scry_core.verdict import EXIT_INVALID as EXIT_INVALID
+from scry_core.verdict import EXIT_PASS as EXIT_PASS
 
 #: How long one call may be allowed to wait for the guest. A call whose own bound is longer is
 #: never made: its cell is BLOCKED, because a matrix that waits out a hung channel measures the
@@ -377,7 +378,7 @@ class Ledger:
             print("==> LIVE MATRIX INVALID: no cell ran, so there is no verdict")
             return EXIT_INVALID
         print("==> LIVE MATRIX " + ("FAILED" if self.failed else "PASSED"))
-        return EXIT_FAILED if self.failed else EXIT_PASSED
+        return EXIT_FAIL if self.failed else EXIT_PASS
 
     def _adopt(self, pooled: list[Section], result: live_pool.PoolResult) -> str:
         """The pooled sections' cells counted as judged here, in plan order, and their jobs'

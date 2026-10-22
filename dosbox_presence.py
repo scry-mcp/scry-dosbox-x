@@ -93,6 +93,9 @@ class ChannelAdapter:
         if "output=undrawable" in self.answer.split():
             raise presence.Unavailable(NO_OUTPUT)
 
+    def wake(self) -> None:
+        """Nothing to wake: this emulator repaints on its own and no repaint waits."""
+
     def repaint(self, still: Callable[[], bool]) -> None:
         """Nothing: a guest parked at the debugger keeps its loop drawing frames, so the
         `PRESENCE` just answered is drawn without a command of the server's own."""

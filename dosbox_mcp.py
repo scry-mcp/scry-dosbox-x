@@ -11,12 +11,11 @@ this server's part is `refusal`, the reply a refused call gets under its lock.
 from __future__ import annotations
 
 import inspect
-import threading
 from collections.abc import Callable
 from typing import Any
 
 from pydantic import ValidationError
-from scry_core import boundary, cancel, envelope, presence, recording
+from scry_core import boundary, cancel, envelope, presence, recording, roster
 from scry_core import strict_arguments as strict
 
 import dosbox_arming as arming
@@ -60,70 +59,40 @@ _ANSWERS_WHILE_RUNNING = [*sorted(sequence.RUNNING_OK_OPS), "registers(from_last
                           *sorted(checks.NOT_STEPS - {"start", "build_check"})]
 
 
-#: THE TOOLS BY FAMILY, in the order the instructions list them: `(name, tools)`.
-#: The instructions' roster and their "answers while it runs" sentence are both rendered from
-#: it, so a family that answers whole is named once instead of tool by tool.
-_FAMILIES: list[tuple[str, list[str]]] = [
-    ("Session", ["build_check", "start", "status", "close"]),
-    ("Read", ["registers", "read_memory", "disassemble", "call_stack", "memdump", "find",
+#: THE TOOLS BY FAMILY, in the order the instructions list them (`scry_core.roster`): the
+#: roster and the "answers while it runs" sentence are both rendered from it, so a family that
+#: answers whole is named once instead of tool by tool.
+ROSTER = roster.Roster(families=(
+    ("Session", ("build_check", "start", "status", "close")),
+    ("Read", ("registers", "read_memory", "disassemble", "call_stack", "memdump", "find",
                   "log", "log_wait", "machine_map", "interrupt_vectors", "palette",
-                  "screen_view", "screen_signature", "map_add", "map_find", "debug"]),
-    ("Scan", ["scan_start", "scan_filter", "scan_clear"]),
-    ("Write", ["set_register", "write"]),
-    ("Advance", ["run_to", "run_for", "trace", "screen_wait", "step", "resume", "stop"]),
-    ("Declarations", ["breakpoint_at", "breakpoint_list", "breakpoint_clear",
+                  "screen_view", "screen_signature", "map_add", "map_find", "debug")),
+    ("Scan", ("scan_start", "scan_filter", "scan_clear")),
+    ("Write", ("set_register", "write")),
+    ("Advance", ("run_to", "run_for", "trace", "screen_wait", "step", "resume", "stop")),
+    ("Declarations", ("breakpoint_at", "breakpoint_list", "breakpoint_clear",
                                          "breakpoint_interrupt", "watch_add", "watch_list",
-                                         "watch_clear"]),
-    ("States", ["state_save", "state_load", "state_list"]),
-    ("Names", ["symbols_load", "symbols_find"]),
-    ("Comments", ["comment_add", "comment_list", "comment_delete", "comment_save",
-                      "comment_load"]),
-    ("Input", ["send_keys", "send_mouse", "drive"]),
-    ("Captures", ["captures", "capture_frame", "series_capture", "snapshot"]),
-    ("Files", ["image_diff", "series_diff", "region_track", "golden_check",
-                              "map_load", "map_save"]),
-    ("Sequences", ["perform", "perform_export"]),
-]
-
-
-def _ticked(names: list[str]) -> str:
-    return ", ".join(f"`{n}`" for n in names)
-
-
-def _roster() -> str:
-    return " ".join(f"{name}: {_ticked(tools)}." for name, tools in _FAMILIES)
-
-
-def _answering() -> tuple[list[str], list[str]]:
-    """The families every member of which answers a running guest, and the other names that
-    do, in roster order with what no family holds last."""
-    running = set(_ANSWERS_WHILE_RUNNING)
-    whole = [name for name, tools in _FAMILIES if running >= set(tools)]
-    rest = [t for name, tools in _FAMILIES if name not in whole for t in tools if t in running]
-    held = {t for _, tools in _FAMILIES for t in tools}
-    return whole, rest + [t for t in _ANSWERS_WHILE_RUNNING if t not in held]
-
-
-def answering_named() -> set[str]:
-    """Every tool the running sentence covers, its whole families expanded."""
-    whole, rest = _answering()
-    return {t for name, tools in _FAMILIES if name in whole for t in tools} | set(rest)
-
-
-def running_sentence() -> str:
-    whole, rest = _answering()
-    return (f"these answer then: {', '.join(whole[:-1])} and {whole[-1]} whole, "
-            f"and {_ticked(rest)}.")
+                                         "watch_clear")),
+    ("States", ("state_save", "state_load", "state_list")),
+    ("Names", ("symbols_load", "symbols_find")),
+    ("Comments", ("comment_add", "comment_list", "comment_delete", "comment_save",
+                      "comment_load")),
+    ("Input", ("send_keys", "send_mouse", "drive")),
+    ("Captures", ("captures", "capture_frame", "series_capture", "snapshot")),
+    ("Files", ("image_diff", "series_diff", "region_track", "golden_check",
+                              "map_load", "map_save")),
+    ("Sequences", ("perform", "perform_export")),
+), answering=tuple(_ANSWERS_WHILE_RUNNING))
 
 
 mcp = envelope.Envelope(
     "dosbox-x",
     instructions=(
         'A live DOS machine in DOSBox-X.\n\n'
-        'TOOLS. ' + _roster() + '\n\n'
+        'TOOLS. ' + ROSTER.text() + '\n\n'
         'A SESSION. `build_check` answers about the BUILD and REFUSES while a session is live.\n'
         '`start` parks it STOPPED at the debugger; `resume` lets it RUN, and readers refuse\n'
-        '(`not_stopped`, naming `last_stop`); ' + running_sentence() + '\nIt stops at a '
+        '(`not_stopped`, naming `last_stop`); ' + ROSTER.running_sentence() + '\nIt stops at a '
         'breakpoint armed BEFORE the release '
         'or at `stop`. What you\n'
         'declare while it runs is `pending` until the next stop. After `symbols_load`, a `ref`\n'
@@ -140,7 +109,7 @@ mcp = envelope.Envelope(
 # ONE machine, one session. The lock serialises the tools rather than letting two
 # questions interleave on a terminal that has no notion of them being separate. The
 # session itself, and everything held beside it, is `STATE` (`dosbox_state`).
-LOCK = threading.RLock()
+LOCK = boundary.ServerLock()
 
 
 def registered_tools() -> list[str]:
