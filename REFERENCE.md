@@ -356,7 +356,7 @@ waits for a line or a screen, a bounded `resume`, an input's `verify`/`expect`.
 - `pc` is `SSSS:OOOOOOOO` with `cpu_mode` beside it, and a row carries `seg_off` beside `addr`:
   a DOS place is segmented, and the segment is half of what it means.
 - A stop carries `instruction`, the one decoded at the stop, and `cause`, prose naming the
-  declaration matched by address or why none can be named.
+  declaration matched by address, the `stop` call that asked for it, or why none can be named.
 - `vga_mode` is the VGA mode word, `bios_mode` the mouse driver's video mode, and a screen's
   `kind` is `text` or `pixel`: a DOS screen is either.
 - `run_to` requires its `control`: this debugger keeps no control between runs.

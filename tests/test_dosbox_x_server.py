@@ -5713,6 +5713,16 @@ def test_resume_on_a_running_guest_is_refused_before_any_other_check(
     assert bound["code"] == "bad_argument" and "is not a bound" in bound["message"], bound
 
 
+def test_a_stop_the_caller_asked_for_is_named_as_its_cause(tmp_path: Path) -> None:
+    """`stop`'s own stop names the call as its cause, never "which declaration fired cannot be
+    told": nothing is at that address to tell apart, and the caller knows what stopped it."""
+    fake = _names(tmp_path, watched=True)
+    server.status()
+    fake.running = True
+    got = server.stop()
+    assert got["cause"] == "the `stop` call at 00A7:00000000", got
+
+
 def test_stop_keeps_the_envelope_on_both_branches(tmp_path: Path) -> None:
     """Every reply opens with `summary` and closes with `session`, on both branches of `stop`:
     the one that interrupts a windowed guest, which adds `stopped_at` to a reply already

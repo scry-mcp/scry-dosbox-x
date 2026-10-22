@@ -21,12 +21,14 @@ import dosbox_state as st
      "breakpoint _tick (by symbol)"),
     ({"attributed": True, "ref": "_tick", "by": "run_to", "at": "0814:00000106"},
      "run_to's target _tick"),
+    ({"attributed": True, "ref": "stop", "by": "stop", "at": "0814:00000106"},
+     "the `stop` call"),
     ({"attributed": False, "at": "0814:0000010A", "why": "none"},
      "no declared code breakpoint: the debugger keeps no hit flag and a memory watch stops at "
      "the instruction that wrote, so which declaration fired cannot be told"),
     ({"attributed": False, "at": "0814:0106", "retrace_pending": True},
      "most likely the retrace stop a `run_for` left armed: no declared code breakpoint"),
-], ids=["declared", "run_to", "unattributed", "retrace"])
+], ids=["declared", "run_to", "asked", "unattributed", "retrace"])
 def test_a_stop_is_counted_under_its_cause_without_the_address(attribution: dict[str, Any],
                                                                key: str) -> None:
     """One declaration is one key wherever it stopped the machine: the address is the part of

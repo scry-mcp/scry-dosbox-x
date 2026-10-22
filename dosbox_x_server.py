@@ -810,7 +810,7 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
                             "" if current is not None else ", its position not readable yet "
                             "(a cut pane; the next contact retries)"))
     session.break_in()
-    return running.stop_reply(session, interrupted=True, via="break")
+    return running.stop_reply(session, by_stop=True, interrupted=True, via="break")
 
 
 @tool("Step instructions", summary=one_line.step)
