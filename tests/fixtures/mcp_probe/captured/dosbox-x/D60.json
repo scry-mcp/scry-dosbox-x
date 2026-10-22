@@ -8,19 +8,19 @@
  "runs": [
   {
    "lines": [
-    "D60: CANNOT The DOS machine keeps no frame counter the server can read, and run_for counts retraces only from where the call starts."
+    "D60: CANNOT A DOS machine keeps no frame counter, so there is no absolute frame number to run to."
    ],
    "right": true
   },
   {
    "lines": [
-    "D60: CANNOT A DOS machine keeps no frame counter, and `run_for` counts frames only from where the call starts."
+    "D60: CANNOT The DOS machine keeps no absolute frame counter, and run_for counts retraces only from where the call starts."
    ],
    "right": true
   },
   {
    "lines": [
-    "D60: CANNOT DOS keeps no absolute frame counter, run_for counts retraces from the call's start, and no tool reads an absolute frame count."
+    "D60: CANNOT The debugger keeps no absolute frame counter, and run_for counts retraces only from where the call starts."
    ],
    "right": true
   }

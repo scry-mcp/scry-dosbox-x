@@ -31,7 +31,7 @@
   },
   {
    "lines": [
-    "D96: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"gdt\", \"paging\"]}}"
+    "D96: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"paging\", \"gdt\"]}}"
    ],
    "right": true
   },

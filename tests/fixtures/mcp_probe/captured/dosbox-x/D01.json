@@ -12,10 +12,8 @@
    "right": true
   },
   {
-   "lines": [
-    "D01: {\"tool\": \"build_check\", \"args\": {}}"
-   ],
-   "right": true
+   "lines": [],
+   "right": false
   },
   {
    "lines": [

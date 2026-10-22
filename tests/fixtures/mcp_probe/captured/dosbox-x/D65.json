@@ -8,19 +8,19 @@
  "runs": [
   {
    "lines": [
-    "D65: CANNOT No baseline of the interrupt vectors is kept from session start, so changes since then cannot be reported."
+    "D65: CANNOT interrupt_vectors reads only the current table and keeps no record of the table at session start."
    ],
    "right": true
   },
   {
    "lines": [
-    "D65: CANNOT No tool diffs the interrupt vectors against their state at session start."
+    "D65: CANNOT interrupt_vectors reads only the current table, and no tool keeps a baseline from session start to compare against."
    ],
    "right": true
   },
   {
    "lines": [
-    "D65: CANNOT No tool records interrupt vector changes over time; interrupt_vectors reports only the table as it stands at a stop."
+    "D65: CANNOT No tool compares interrupt vectors against their state at session start; interrupt_vectors reads only the current table."
    ],
    "right": true
   }

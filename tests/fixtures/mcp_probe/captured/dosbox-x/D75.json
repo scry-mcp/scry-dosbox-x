@@ -8,19 +8,19 @@
  "runs": [
   {
    "lines": [
-    "D75: CANNOT screen_wait matches only text on the text screen, and no tool searches a graphics picture for a word."
+    "D75: CANNOT screen_wait matches only literal text on a text screen and cannot search a graphics picture for pixels."
    ],
    "right": true
   },
   {
    "lines": [
-    "D75: CANNOT `screen_wait` matches only text screens, and no tool searches a 320x200 graphics picture for a word."
+    "D75: CANNOT screen_wait matches text on the text screen only, and no tool searches the graphics picture for pixels."
    ],
    "right": true
   },
   {
    "lines": [
-    "D75: CANNOT screen_wait matches text on the text screen only, and no tool finds a word in a graphics picture."
+    "D75: CANNOT screen_wait matches only text on the text screen, not pixels in a graphics picture."
    ],
    "right": true
   }

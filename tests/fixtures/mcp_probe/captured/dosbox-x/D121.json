@@ -14,6 +14,18 @@
     "D121: {\"tool\": \"map_save\", \"args\": {\"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
    ],
    "right": true
+  },
+  {
+   "lines": [
+    "D121: {\"tool\": \"map_save\", \"args\": {\"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D121: {\"tool\": \"map_save\", \"args\": {\"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+   ],
+   "right": true
   }
  ]
 }

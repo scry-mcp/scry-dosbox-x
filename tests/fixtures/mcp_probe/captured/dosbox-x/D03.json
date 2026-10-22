@@ -29,6 +29,18 @@
     "D03: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"display\": \"main\", \"state_dir\": \"/opt/dosfury/states\", \"plan\": [{\"op\": \"registers\"}], \"settle_seconds\": 12}}"
    ],
    "right": true
+  },
+  {
+   "lines": [
+    "D03: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"display\": \"main\", \"state_dir\": \"/opt/dosfury/states\", \"plan\": [{\"op\": \"registers\"}], \"settle_seconds\": 12}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D03: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": true, \"display\": \"main\", \"state_dir\": \"/opt/dosfury/states\", \"plan\": [{\"op\": \"registers\"}], \"settle_seconds\": 12}}"
+   ],
+   "right": true
   }
  ]
 }

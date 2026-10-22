@@ -17,6 +17,18 @@
     "D22: {\"tool\": \"step\", \"args\": {\"count\": 4}}"
    ],
    "right": true
+  },
+  {
+   "lines": [
+    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4, \"mode\": \"into\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D22: {\"tool\": \"step\", \"args\": {\"count\": 4}}"
+   ],
+   "right": true
   }
  ]
 }

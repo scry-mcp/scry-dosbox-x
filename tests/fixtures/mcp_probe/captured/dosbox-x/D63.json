@@ -8,19 +8,19 @@
  "runs": [
   {
    "lines": [
-    "D63: CANNOT machine_map and every other memory listing need the machine stopped, so a running guest cannot be read here."
+    "D63: CANNOT machine_map refuses a running guest, and the guest must not be stopped for this read."
    ],
    "right": true
   },
   {
    "lines": [
-    "D63: CANNOT `machine_map` needs the machine stopped and refuses a running guest."
+    "D63: CANNOT machine_map and the other DOS-state readers need the guest stopped at the debugger, and the guest must not be stopped."
    ],
    "right": true
   },
   {
    "lines": [
-    "D63: CANNOT The machine map and the MCB listings need the guest stopped, and no tool reads memory control blocks from a running guest without stopping it."
+    "D63: CANNOT machine_map refuses a running guest, and the guest must not be stopped to read it."
    ],
    "right": true
   }

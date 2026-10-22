@@ -15,6 +15,18 @@
     "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
    ],
    "right": true
+  },
+  {
+   "lines": [
+    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D23: {\"tool\": \"run_to\", \"args\": {\"ref\": \"_draw_hud\", \"control\": \"_vsync\", \"seconds\": 50}}"
+   ],
+   "right": true
   }
  ]
 }

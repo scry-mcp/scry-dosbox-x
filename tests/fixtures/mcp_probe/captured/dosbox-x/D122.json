@@ -20,7 +20,7 @@
   },
   {
    "lines": [
-    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"button\": \"left\", \"action\": \"click\"}}"
+    "D122: {\"tool\": \"send_mouse\", \"args\": {\"target\": \"serve\", \"button\": \"left\"}}"
    ],
    "right": true
   },

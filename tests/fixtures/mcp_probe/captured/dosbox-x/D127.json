@@ -16,7 +16,19 @@
  "runs": [
   {
    "lines": [
-    "D127: {\"tool\": \"log\", \"args\": {\"pattern\": \"TICK [0-9]+\", \"channel\": \"guest\", \"since_mark\": 30715, \"limit\": 25}}"
+    "D127: {\"tool\": \"log\", \"args\": {\"pattern\": \"TICK [0-9]+\", \"channel\": \"guest\", \"limit\": 25, \"since_mark\": 30715}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D127: {\"tool\": \"log\", \"args\": {\"pattern\": \"TICK [0-9]+\", \"channel\": \"guest\", \"limit\": 25, \"since_mark\": 30715}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D127: {\"tool\": \"log\", \"args\": {\"pattern\": \"TICK [0-9]+\", \"channel\": \"guest\", \"limit\": 25, \"since_mark\": 30715}}"
    ],
    "right": true
   }

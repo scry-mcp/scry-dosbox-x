@@ -22,6 +22,18 @@
     "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
    ],
    "right": true
+  },
+  {
+   "lines": [
+    "D130: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"control\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D130: {\"tool\": \"registers\", \"args\": {}}"
+   ],
+   "right": false
   }
  ]
 }

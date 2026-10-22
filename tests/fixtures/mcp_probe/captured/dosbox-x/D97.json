@@ -16,15 +16,15 @@
   },
   {
    "lines": [
-    "D97: CANNOT `machine_map` has no option to lift its 400-row cut, so the file cannot be written without truncation."
+    "D97: {\"tool\": \"machine_map\", \"args\": {\"dest\": \"/tmp/mcp-probe-map.json\"}}"
    ],
-   "right": false
+   "right": true
   },
   {
    "lines": [
-    "D97: CANNOT machine_map has no argument to lift its 400-row cut, so the written map cannot be uncut."
+    "D97: {\"tool\": \"machine_map\", \"args\": {\"dest\": \"/tmp/mcp-probe-map.json\"}}"
    ],
-   "right": false
+   "right": true
   }
  ]
 }

@@ -45,9 +45,9 @@
  "runs": [
   {
    "lines": [
-    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
+    "D51: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"], \"expect\": \"^MENU\", \"seconds\": 12}, {\"op\": \"log\", \"pattern\": \"MENU|KEY\", \"channel\": \"guest\", \"limit\": 30}], \"settle_seconds\": 18}}"
    ],
-   "right": true
+   "right": false
   },
   {
    "lines": [

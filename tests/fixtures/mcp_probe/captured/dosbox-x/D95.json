@@ -14,7 +14,7 @@
  "runs": [
   {
    "lines": [
-    "D95: {\"tool\": \"scan_filter\", \"args\": {\"value\": 7, \"limit\": 200}}"
+    "D95: {\"tool\": \"scan_filter\", \"args\": {\"operator\": \"=\", \"value\": 7, \"limit\": 200}}"
    ],
    "right": true
   },

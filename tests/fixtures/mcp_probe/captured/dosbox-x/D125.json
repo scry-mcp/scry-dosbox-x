@@ -13,7 +13,7 @@
  "runs": [
   {
    "lines": [
-    "D125: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"shared\": false, \"presence\": false}}"
+    "D125: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/dosfury/fury.conf\", \"cwd\": \"/opt/dosfury\", \"session_seconds\": 900, \"presence\": false}}"
    ],
    "right": true
   },

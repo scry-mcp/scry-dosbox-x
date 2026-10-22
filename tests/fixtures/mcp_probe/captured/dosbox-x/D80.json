@@ -8,19 +8,19 @@
  "runs": [
   {
    "lines": [
-    "D80: CANNOT The server only runs forward and keeps no history of executed instructions, so the last 100 before this stop cannot be listed."
+    "D80: CANNOT No tool reads back instructions already executed; trace only runs forward from the stop."
    ],
    "right": true
   },
   {
    "lines": [
-    "D80: CANNOT Tracing only runs forward, and no tool keeps a history of instructions already executed."
+    "D80: CANNOT trace only runs forward from the stop, and no tool keeps a history of the instructions executed before it."
    ],
    "right": true
   },
   {
    "lines": [
-    "D80: CANNOT No tool lists instructions already executed; trace only runs the machine forward from the stop."
+    "D80: CANNOT No tool reports past execution; trace only runs forward and records what it executes from then on."
    ],
    "right": true
   }
