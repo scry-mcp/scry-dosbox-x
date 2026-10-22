@@ -44,34 +44,6 @@ def on_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     return found
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def test_build_check_answers_the_three_fields_and_asks_the_build_it_resolved(
         tmp_path: Path, on_path: Path) -> None:
     mine = build(tmp_path / "arg")
@@ -120,3 +92,14 @@ def test_both_probes_of_a_build_spawn_it_behind_as_a_session_does(
     monkeypatch.setattr("dosbox_x_server.ds.Session", spawn)
     server.start(conf=str(conf), cwd=str(tmp_path), session_seconds=60, binary=str(mine))
     assert seen.read_text().split() == ["v=1"], seen.read_text()
+
+
+def test_build_check_with_nothing_resolvable_is_host_failed_and_names_no_binary(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The ladder's refusal passes through whole: an INVALID reply carries no `binary`, which
+    would read as a build that was found."""
+    monkeypatch.delenv(binaries.VARIABLE, raising=False)
+    monkeypatch.setenv("PATH", str(tmp_path / "empty"))
+    got = cast(dict[str, Any], server.build_check())
+    assert got["code"] == "host_failed" and "binary" not in got, got
+    assert "no DOSBox-X binary resolves from the PATH rung" in got["message"], got

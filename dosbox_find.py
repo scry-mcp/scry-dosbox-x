@@ -41,9 +41,6 @@ import dosbox_session as ds
 import dosbox_state as st
 from dosbox_state import STATE
 
-# The ceiling on the rows a reply lists: `find` keeps its highest `HITS_MAX` hits (the end of the
-# range a caller hunting a table's tail wants), and a scan's `limit` may be raised to it.
-HITS_MAX = judges.HITS_MAX
 # The lines the debugger prints, verbatim from debug.cpp. `%06X` fields are hex.
 SCAN_CREATED = "Created memory search instance."
 SCAN_ACTIVE = "Memory search instance is already active."
@@ -111,7 +108,7 @@ def find(session: ds.Session, seg: int, off: int, length: int, pattern: bytes) -
         data = dumped.path.read_bytes()
     # COUNTED WHOLE, KEPT AT THE TOP: a pattern that matches everywhere (a range of zeros)
     # would otherwise hold one number per byte to answer with the highest `HITS_MAX`.
-    hits: collections.deque[int] = collections.deque(maxlen=HITS_MAX)
+    hits: collections.deque[int] = collections.deque(maxlen=judges.HITS_MAX)
     total = 0
     at = data.find(pattern)
     while at != -1:
@@ -123,7 +120,7 @@ def find(session: ds.Session, seg: int, off: int, length: int, pattern: bytes) -
     return {"seg_off": st.seg_off(seg, off), "length": length,
             "span": {"from": st.seg_off(seg, off), "length": length, "source": "ref+length"},
             "hits": [_spelled(seg, o, dumped.real_past_ffff) for o in hits],
-            "hits_total": total, "truncated": total > HITS_MAX}
+            "hits_total": total, "truncated": total > judges.HITS_MAX}
 
 
 def _spelled(seg: int, off: int, real_past_ffff: bool) -> str:
@@ -254,24 +251,25 @@ def check_scan_range(length: int, cell_bytes: int) -> None:
             f"{length % cell_bytes} byte(s) would be no cell")
 
 
-#: How many survivors a filter lists unless asked for more: while a scan narrows, the count is
-#: the answer, and a listing costs a page of console per screenful.
-HITS_DEFAULT = judges.HITS_DEFAULT
-#: Why a filter past `HITS_MAX` survivors lists none: the debugger pages its listing a screen at a
-#: time, so listing them costs a console round trip per page, to show `limit` of them.
-UNLISTED_NOTE = (f"more than {judges.HITS_MAX} survive, and the debugger lists them a page at a "
-                f"time: filter again to list them")
+def unlisted_note() -> str:
+    """Why a filter past the listing ceiling (`judges.HITS_MAX`) lists none: the debugger pages
+    its listing a screen at a time, so listing them costs a console round trip per page, to show
+    `limit` of them."""
+    return (f"more than {judges.HITS_MAX} survive, and the debugger lists them a page at a "
+            f"time: filter again to list them")
+
+
 #: Why a filter with no `value` answers none: it compared each cell with the scan's opening.
 NO_VALUE_WHY = "no `value` was given, so each cell was compared with its value at `scan_start`"
 
 
-def check_filter(operator: str, value: int | None, limit: int = HITS_DEFAULT) -> None:
+def check_filter(operator: str, value: int | None, limit: int = judges.HITS_DEFAULT) -> None:
     """A filter as the debugger takes it, judged with no machine: one of its operators, a
     value that is absent or a whole number of zero or more (it compares unsigned), and a
     `limit` of survivors to list, 1 to `HITS_MAX`."""
-    if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= HITS_MAX:
-        raise ds.Invalid("bad_argument", f"limit={limit!r} is outside 1..{HITS_MAX}, how many "
-                         f"survivors a filter lists; above {HITS_MAX}, filter again")
+    if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= judges.HITS_MAX:
+        raise ds.Invalid("bad_argument", f"limit={limit!r} is outside 1..{judges.HITS_MAX}, how "
+                         f"many survivors a filter lists; above {judges.HITS_MAX}, filter again")
     vocab.one_of("operator", operator, OPERATORS)
     if value is not None and (isinstance(value, bool) or not isinstance(value, int)
                               or value < 0):
@@ -351,7 +349,7 @@ def _listing(session: ds.Session, survivors: int) -> list[dict[str, Any]]:
 
 
 def scan_filter(session: ds.Session, operator: str, value: int | None,
-                limit: int = HITS_DEFAULT) -> dict[str, Any]:
+                limit: int = judges.HITS_DEFAULT) -> dict[str, Any]:
     """Keep the cells whose current content satisfies `operator` against `value`, or, with
     no value, against what each cell held when the scan was opened (measured: a cell changed
     once and then left alone keeps passing `!` filter after filter, and written back to its
@@ -392,12 +390,12 @@ def scan_filter(session: ds.Session, operator: str, value: int | None,
     survivors = int(summary.group(1), 16)
     iterations = int(summary.group(2), 16)
     STATE.scan_iterations = iterations
-    listable = survivors <= HITS_MAX
+    listable = survivors <= judges.HITS_MAX
     hits = [_shown(row, cell) for row in _listing(session, survivors)[:limit]] if listable else []
     return {"operator": operator, "value": _asked(value, cell), "iterations": iterations,
             "closed": False, "hits": hits, "hits_total": survivors,
             "truncated": survivors > len(hits),
-            **({} if listable else {"note": UNLISTED_NOTE})}
+            **({} if listable else {"note": unlisted_note()})}
 
 
 def scan_clear(session: ds.Session) -> dict[str, Any]:

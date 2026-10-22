@@ -26,6 +26,7 @@ from collections.abc import Callable
 from typing import Any
 
 from scry_core import judges, log_marks, media_tools, narrowing, picture, screen_map
+from scry_core import sequence as executor
 from scry_core import sequence_account as account
 from scry_core import value_format as vf
 from scry_core import vocabulary as vocab
@@ -370,7 +371,7 @@ def _scan_filter(operator: str = "=", value: object = None, **rest: Any) -> None
     # The default is read at the call: importing `dosbox_find` reaches this module (through
     # `dosbox_dump`), so its names are not there yet while this one is being defined.
     finder.check_filter(operator, None if value is None else number("value", value),
-                        rest.get("limit", finder.HITS_DEFAULT))
+                        rest.get("limit", judges.HITS_DEFAULT))
 
 
 def _machine_map(sections: list[str] | None = None, dest: str = "", **_: Any) -> None:
@@ -409,7 +410,7 @@ def steps_whole(name: str, steps: object) -> None:
     refused = sequence.preflight(steps, STEP_OPS())
     if refused:
         first = refused[0]
-        raise ds.Invalid("bad_argument", sequence.refused_text(refused),
+        raise ds.Invalid("bad_argument", executor.refused_text(refused),
             ran=[], steps_completed=0, failed_at=first["step"], failed=first, errors=refused)
 
 

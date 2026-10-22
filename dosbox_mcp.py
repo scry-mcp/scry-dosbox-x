@@ -55,8 +55,8 @@ def refusal(name: str, arguments: dict[str, Any], cause: ValidationError) -> dic
 #: What a refusal for a running guest names as answering: the sequence's table, and five
 #: that answer it outside a list (the last stop's registers, the two that run steps, the
 #: export of the session, the session's end).
-_ANSWERS_WHILE_RUNNING = [*sorted(sequence.RUNNING_OK_OPS), "registers(from_last_stop=True)",
-                          *sorted(checks.NOT_STEPS - {"start", "build_check"})]
+_ANSWERS_WHILE_RUNNING = roster.answers_while_running(
+    sequence.RUNNING_OK_OPS, checks.NOT_STEPS, {"start", "build_check"})
 
 
 #: THE TOOLS BY FAMILY, in the order the instructions list them (`scry_core.roster`): the
@@ -81,7 +81,7 @@ ROSTER = roster.Roster(families=(
     ("Captures", ("captures", "capture_frame", "series_capture", "snapshot")),
     ("Files", ("image_diff", "series_diff", "region_track", "golden_check",
                               "map_load", "map_save")),
-    ("Sequences", ("perform", "perform_export")),
+    ("Lists", ("perform", "perform_export")),
 ), answering=tuple(_ANSWERS_WHILE_RUNNING))
 
 

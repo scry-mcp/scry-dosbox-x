@@ -186,11 +186,9 @@ def state_load(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
 
 
 def _stub_replaced(ses: ds.Session) -> None:
-    """The guest's memory was loaded, the input stub's last sequence with it: the link proves
-    its sequence again before it counts on it (`dosbox_stub_link.Link.unprove`)."""
-    link = getattr(ses, "_link", None)
-    if link is not None:
-        link.unprove()
+    """The guest's memory was loaded, the input stub's last sequence with it: the session's link
+    proves its sequence again before it counts on it (`Session.stub_replaced`)."""
+    ds.Session.stub_replaced(ses)
 
 
 def _listed(path: Path) -> dict[str, object] | None:

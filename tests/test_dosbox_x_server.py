@@ -148,6 +148,9 @@ class FakeSession:
     def state_save(self, name: str, seconds: float = 20.0) -> dict[str, object]:
         raise ds.Invalid("no_channel", "this DOSBox-X has no `SAVESTATE` debugger command")
 
+    def stub_replaced(self) -> None:
+        """No input link here to prove again."""
+
     def state_load(self, name: str, seconds: float = 20.0) -> dict[str, object]:
         raise ds.Invalid("no_channel", "this DOSBox-X has no `LOADSTATE` debugger command")
 
@@ -7672,6 +7675,7 @@ def test_drive_carries_its_acts_own_code_when_no_step_failed(tmp_path: Path) -> 
     `not_stopped`, not a failed step: `drive` answers the act's own code."""
     fake = _names(tmp_path, watched=True)
     fake.halted = False                         # the resume leaves the guest running
+    fake.where_raises = True                    # ...and it stays running: no prompt to hear
     got = cast(dict[str, Any], server.drive(act=[{"op": "resume"}, {"op": "registers"}],
                                             settle_seconds=0))
     assert got["code"] == "not_stopped", {k: got.get(k) for k in ("code", "message")}
@@ -8649,3 +8653,55 @@ def test_drive_with_an_expect_leaves_the_wait_to_it_on_a_running_guest(tmp_path:
                                             seconds=0.2, settle_seconds=1.0))
     assert out["act"].get("verdict") != "TIMEOUT", out["act"]
     assert out["verify"].get("available") is not False, out["verify"]
+
+
+def test_a_stop_already_parked_is_heard_by_a_wait_of_no_seconds(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`settle_seconds=0` waits for nothing, but a stop that already came is a stop: the one look
+    at the terminal after the bound hears it, and the console step runs."""
+    fake = _names(tmp_path)
+    fake.halted = False                 # resume leaves it running
+    fake.where_raises = True
+
+    def parked(timeout: float) -> str:
+        fake.where_raises = False       # the prompt already sits in the drain
+        return dcons.PROMPT
+
+    monkeypatch.setattr(fake, "_read", parked, raising=False)
+    out = cast(dict[str, Any], server.perform(
+        steps=[{"op": "resume"}, {"op": "registers"}], settle_seconds=0))
+    assert out["status"] == "ok" and out["steps_completed"] == 2, out
+
+
+def test_the_stop_a_list_ends_on_may_be_the_retrace_a_run_for_left_armed(
+        tmp_path: Path) -> None:
+    """A stop no tool made is one a release reached: a retrace `run_for` left armed is named as
+    its likeliest cause, and the flag is spent, as for a bounded `resume`."""
+    fake = _names(tmp_path)
+    declared = cast(dict[str, Any], server.breakpoint_at(ref="0814:0100"))
+    assert declared["status"] == "ok", declared
+    fake.halted = False
+    dstate.STATE.retrace_pending = True
+    out = cast(dict[str, Any], server.perform(steps=[{"op": "resume"}], settle_seconds=2.0))
+    assert "retrace" in str(out["stopped"].get("cause")), out["stopped"]
+    assert dstate.STATE.retrace_pending is False
+
+
+def test_a_stop_tool_s_drain_is_not_repeated_by_the_next_contact(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The stop reply drains what was pending before it reads; the next contact finds the same
+    stop and nothing new asked, so it drains nothing again (a console round trip a stop)."""
+    import dosbox_running as running
+    fake = _names(tmp_path)
+    running.stop_reply(cast(Any, fake))
+    dstate.STATE.pending["arm"] = ["9999:9999"]       # still waiting for a stop that places it
+    dstate.STATE.pending["dirty"] = False
+    drains: list[int] = []
+
+    def counted(_session: Any) -> dict[str, Any]:
+        drains.append(1)
+        return {"armed": [], "disarmed": []}
+
+    monkeypatch.setattr(arming, "apply_pending", counted)
+    running.drain_if_stopped(cast(Any, fake))
+    assert drains == [], "the stop's own drain was taken for none"

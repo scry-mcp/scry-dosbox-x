@@ -114,6 +114,9 @@ def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
         attribution = {"attributed": True, **made_by, "at": attribution["at"],
                        **({"refs": also} if also else {})}
     STATE.remember_stop(session, where, registers, held, attribution)
+    # THIS STOP'S DRAIN IS THE ONE ABOVE: marked under the number the stop has just been given,
+    # or the next contact would take it for a stop nobody drained and drain again.
+    STATE.pending["drained_seq"] = STATE.last_stop["seq"]
     picture = STATE.last_stop["picture"] = code.stop_instruction(session, where, registers,
                                                                  session.survey_text)
     e9 = e9_block(session)

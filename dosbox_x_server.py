@@ -599,7 +599,7 @@ def scan_start(ref: str, length: int,
 @tool("Filter the value scan", summary=one_line.scan_filter, replay="drop")
 def scan_filter(operator: Annotated[str, vocab.enum(finder.OPERATORS)] = "=",
                 value: judges.NumberArg | None = None,
-                limit: Annotated[int, vocab.bounds(1, finder.HITS_MAX)] = finder.HITS_DEFAULT,
+                limit: Annotated[int, vocab.bounds(1, judges.HITS_MAX)] = judges.HITS_DEFAULT,
                 ) -> dict[str, Any]:
     """Keep the scan's cells whose current content satisfies `operator` (`=`, `!`, `>`,
     `>=`, `<`, `<=`) against `value`; with no `value`, against what each cell held when

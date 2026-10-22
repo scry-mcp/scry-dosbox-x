@@ -515,7 +515,7 @@ class SnapshotReply(DosboxEnvelope, total=False):
     sha256: str
 
 
-class StartReply(DosboxEnvelope, total=False):
+class StartReply(DosboxEnvelope, account.SequenceFields, total=False):
     argv: list[Any]
     background: bool
     binary: str
@@ -530,31 +530,16 @@ class StartReply(DosboxEnvelope, total=False):
     drain_alive: bool
     drain_ended: str
     elapsed_s: float
-    errors: list[Any]
-    failed: dict[str, Any]
-    failed_at: int | dict[str, Any]
-    held: int
     input_port: int | dict[str, Any]
-    note: str
     pid: int
     presence: bool | dict[str, Any]
-    ran: list[Any]
-    ran_path: str | dict[str, Any]
     ready_after_s: float
     rearm_refused: str
-    replies_path: str | dict[str, Any]
     shared: bool
     start: dict[str, Any]
     state_dir: str
-    steps_completed: int
-    steps_total: int
-    still_running: bool
-    stopped: dict[str, Any]
-    stops: dict[str, Any]
     stub: str
     terminal_bytes_dropped: int
-    truncated: bool
-    verdict: str
     version: str | dict[str, Any]
     watched: bool
 

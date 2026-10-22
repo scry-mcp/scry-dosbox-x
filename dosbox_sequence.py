@@ -19,7 +19,6 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from scry_core import prose
 from scry_core import reply_contract as contract
 from scry_core import sequence as executor
 from scry_core import sequence_account as account
@@ -114,7 +113,7 @@ def _wait_for_stop(session: ds.Session, seconds: float,
     try:
         expired, _saw_at = ds.Session.await_stop(
             session, began, began + seconds, "the next console step", progress,
-            label="waiting for the machine to stop")
+            label="waiting for the machine to stop", look_once=True)
     except ds.Invalid:
         if session.alive():
             raise
@@ -129,17 +128,6 @@ def _wait_for_stop(session: ds.Session, seconds: float,
         return "gone" if not session.alive() else "running"
     return "stopped"
 
-
-
-def refused_text(refused: list[dict[str, Any]]) -> str:
-    """The message of a list refused before anything ran: every refusal, each by its step
-    (counted from 1, as the executor and its progress line count) and its op (a step that is
-    no mapping has none to name, and its own message quotes it)."""
-    def one(e: dict[str, Any]) -> str:
-        op = f" ({e['op']!r})" if isinstance(e["op"], str) else ""
-        return f"step {e['step'] + 1}{op} {e['message']}"
-    return (f"{prose.counted(len(refused), 'step')} refused before anything ran: "
-            + "; ".join(one(e) for e in refused) + ". Nothing was run")
 
 
 def preflight(steps: list[dict[str, Any]], ops: Ops) -> list[dict[str, Any]]:
@@ -282,7 +270,7 @@ def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
         first = refused[0]
         return st.reply(status="INVALID", code="bad_argument", ran=[], steps_completed=0,
                         failed_at=first["step"], failed=first, errors=refused,
-                        message=refused_text(refused), held=0)
+                        message=executor.refused_text(refused), held=0)
     ended = executor.run(_Dosbox(session, summaries), steps, ops, wait, progress, name,
                          tail_wait=tail_wait)
     if ended.code is not None:
@@ -310,9 +298,11 @@ def _final_stop(session: ds.Session) -> dict[str, Any]:
     away the whole sequence account. `guest.stop_reply` reads `where`/`registers` AGAIN and
     either can refuse on a partial repaint, so a failure there marks the enrichment
     unavailable while `ran`/`steps_completed` stand. It takes the tool's own fields as **base; the
-    tail adds none, so it is called with none: `base={}` would land a literal `base` field."""
+    tail adds none, so it is called with none: `base={}` would land a literal `base` field.
+    A stop no tool made is one a release reached, so a retrace a `run_for` left armed may be it,
+    as for a bounded `resume`."""
     try:
-        return guest.stop_reply(session)
+        return guest.stop_reply(session, retrace_may_stop=True)
     except ds.Invalid as e:
         return {"enrichment": {"available": False, "why": str(e)}}
 
@@ -402,23 +392,18 @@ def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str 
     # running guest's act would sit out `settle_seconds` before its effect is looked for.
     ran = run_steps(session, act, wait, ops, progress, summaries, name="drive",
                     prechecked=True, tail_wait=expect is None)
-    told = {k: v for k, v in ran.items() if k not in ("status", "session")}
+    told = executor.act_told(ran)
     if ran.get("status") != "ok":
         # THE ACT'S OWN CODE: a step that failed is `step_failed`, but a list the executor
         # refused (`not_stopped`) or an emulator gone under it (`session_broken`) says so.
-        act_code: contract.Code = ran.get("code", "step_failed")
-        return st.reply(status="INVALID", code=act_code, act=told,
-                      message=f"the act stopped {executor.where_stopped(ran.get('failed_at'))}: "
-                              f"{ran.get('message')}",
-                      looked=_look(session, mark, pattern, limit))
-    checked: dict[str, Any] = {"checked": False,
-                                "why": "no `expect` given; the act's own steps carried "
-                                       "whatever verification they asked for"}
-    if expect is not None and told.get("verdict") == contract.TIMEOUT:
-        # THE ACT DID NOT COME TO REST: its own wait ran out, so what it was meant to cause
-        # cannot be asked of the guest yet.
-        checked = contract.unavailable("the act's own wait ran out (`act.verdict` TIMEOUT), so "
-                                       "its effect was not checked")
+        act_code, said = executor.act_stopped(ran)
+        return st.reply(status="INVALID", code=act_code, act=told, message=said,
+                        looked=_look(session, mark, pattern, limit))
+    checked: dict[str, Any] = dict(executor.NO_EXPECT)
+    if told.get("verdict") == contract.TIMEOUT:
+        # AN ACT THAT RAN OUT ITS WAIT DID NOT DO WHAT IT WAS ASKED, so nothing it did is
+        # checked: the verdict is the act's, and the verify says why there is none.
+        checked = executor.act_ran_out()
     elif expect is not None:
         # A GUEST STOPPED AT THE DEBUGGER CANNOT WRITE A LINE. When the act ended at a stop
         # (its tail found one, or no step ever let the machine run), waiting `seconds` for

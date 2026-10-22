@@ -11,6 +11,7 @@ import re
 from typing import Any
 
 import pytest
+from scry_core import judges
 from scry_core import placement as window
 from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Invalid
@@ -48,7 +49,7 @@ FOLDED: list[tuple[str, str, tuple[str, ...]]] = [
 ]
 RANGES: list[tuple[str, str, int, int]] = [
     ("log", "limit", 1, dlogs.LOG_LIMIT_MAX), ("drive", "limit", 1, dlogs.LOG_LIMIT_MAX),
-    ("scan_filter", "limit", 1, finder.HITS_MAX),
+    ("scan_filter", "limit", 1, judges.HITS_MAX),
     ("read_memory", "length", 1, dcons.DATA_VIEW_BYTES),
     ("disassemble", "length", 1, code.LENGTH_MAX),
     ("symbols_find", "limit", 1, placement.SYMBOLS_LIMIT_MAX),

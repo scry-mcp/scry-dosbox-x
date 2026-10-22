@@ -583,6 +583,12 @@ class Session(dprocess.Process):
         self._spawn(launch)
 
 
+    def stub_replaced(self) -> None:
+        """The guest's memory was replaced (a loaded state), the stub's last sequence with it: the
+        link proves its sequence again before a key counts on it."""
+        if self._link is not None:
+            self._link.unprove()
+
     def _linked(self, sock: socket.socket) -> stub_link.Link:
         return stub_link.Link(INPUT_LINE(sock), self.at_debugger)
 
@@ -1756,7 +1762,8 @@ class Session(dprocess.Process):
                             f" The breakpoint at {target} was removed.{cleanup}")}
 
     def await_stop(self, began: float, deadline: float, target: str,
-                    progress: Progress = no_progress, label: str = "") -> tuple[bool, float]:
+                    progress: Progress = no_progress, label: str = "",
+                    look_once: bool = False) -> tuple[bool, float]:
         """Listen for the debugger to announce a stop, until `deadline`: `(expired, saw_at)`,
         reporting the seconds spent through `progress` as it listens. `label` heads the
         progress line when the wait is not `run_to`'s (the sequence executor's wait for the
@@ -1779,7 +1786,12 @@ class Session(dprocess.Process):
         # split across that peek and this wait is one prompt, and a parked guest is heard.
         carry = self._peek_carry
         next_tick = began + PROGRESS_EVERY_S
-        while (now := time.monotonic()) < deadline:
+        # `look_once`: THE TERMINAL IS READ AT LEAST ONCE, a bound of 0 included, for a caller
+        # that asks whether a stop already came (a list's wait); a caller that waits in a loop
+        # of its own leaves it off, so its bound ends the loop.
+        looked = not look_once
+        while not looked or time.monotonic() < deadline:
+            now = time.monotonic()
             cancel.check()
             if now >= next_tick:
                 next_tick = now + PROGRESS_EVERY_S
@@ -1806,7 +1818,8 @@ class Session(dprocess.Process):
             # needs to fire (its value group is `+`, so a value split across reads still
             # matches on its head) and the whole prompt, so neither announcement can be
             # lost to a split.
-            fresh = carry + self._read(0.25)
+            fresh = carry + self._read(0.25 if now < deadline else 0.0)
+            looked = True
             # EITHER ANNOUNCEMENT ENDS THE WAIT. The prompt is the one a stop reliably
             # sends (see the docstring); the register repaint is kept because a first
             # stop after a fresh pane does resend it, and it costs one regex.

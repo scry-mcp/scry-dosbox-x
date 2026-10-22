@@ -231,6 +231,28 @@ def test_the_pool_hands_each_job_a_scratch_inside_the_runs(
                         for j in seen)
 
 
+def test_each_job_s_copies_go_as_that_job_ends_not_at_the_pool_s_end(
+        matrix: ModuleType, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The pool's hook removes a job's copies the moment that job ends, so they never pile up
+    for the length of the run; the pool's own end removes what a killed job left."""
+    lp = matrix.live_pool
+    private = importlib.import_module("live_private")
+    gone_by_then: list[bool] = []
+
+    def run_pool(jobs: list[Any], *_a: Any, on_done: Any = None, **_k: Any) -> Any:
+        for job in jobs:
+            mine = Path(job.env[private.PRIVATE_VAR])
+            mine.mkdir(parents=True)
+            (mine / "copy").write_text("x")
+            on_done(lp.JobResult(job, 0, tmp_path / "log", 0.0, None))
+            gone_by_then.append(not mine.exists())
+        return lp.PoolResult([], "", {}, {})
+
+    monkeypatch.setattr(lp, "run_pool", run_pool)
+    matrix._pool(2)([s for s in matrix.M.sections if s.letter in "AB"])
+    assert gone_by_then == [True, True], gone_by_then
+
+
 # ================================================================ run_live_pytest's end
 
 

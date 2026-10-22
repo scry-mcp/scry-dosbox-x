@@ -34,7 +34,7 @@ this server dying, however it dies.
 **Why a session ended rides on the reply that ends it.** `close` reads the last words of both
 channels after the exit: `stdout_tail`, the console's (the debugger's terminal, its escapes
 stripped, so the emulator's own lines and the screen it painted last), and `errorlog_tail`, the
-logfile's (unavailable with why when `start` was given none), each the newest 1500 characters.
+logfile's (unavailable with why when `start` was given none), each the newest characters up to the tail's bound (scry-core's `log_marks.TAIL_CHARS`).
 They come back when the end was not a clean `quit` with exit code 0, or with `detail=True`; a
 clean quit names them in `omitted`, because once `close` has answered the console's are gone
 (the logfile stays at its path).
@@ -90,7 +90,8 @@ one naming no executable file is refused naming what all three rungs held, `bad_
 variable or PATH, and is never passed over for the next, because a caller who named a build and got
 another would be measuring the wrong emulator. Both replies carry `binary` (absolute),
 `binary_origin` (`argument`, `DOSBOX_X_BINARY` or `PATH`) and `version`: the first non-blank
-line `-version` prints, asked as a session is launched and within 5 s that `start` takes out of
+line `-version` prints, asked as a session is launched and within the version probe's bound (scry-core's
+`binaries.VERSION_TIMEOUT_S`) that `start` takes out of
 its wait for the debugger's prompt, its whole process group ended when they run out; or
 `{"available": false, "why": ...}` when it printed nothing, did not return in time or could not
 run. Either way the call goes on. `bench.py` measures the build this ladder lands on, and its
@@ -1129,10 +1130,10 @@ debugger and turned with a bare ENTER because a command typed while a page waits
 one keystroke per page. With no `value`, a filter compares each cell with what it held when
 the scan OPENED, not at the previous filter: `!` keeps the cells that changed since then,
 `=` those that did not, and a cell changed once and left alone keeps passing `!`. Every
-filter reply says `hits_total`, `truncated` and the first `limit` survivors (40 unless asked
-for up to 400) in `hits`, their values `0x` at the cell's width; past 400 survivors none is
-listed, with a `note`, because the debugger pages the listing a screenful at a time and each
-page is a console round trip (`find` keeps its highest 400 instead); and `iterations`, which the debugger prints on every filter but the one that
+filter reply says `hits_total`, `truncated` and the first `limit` survivors (its default and
+its ceiling are the schema's) in `hits`, their values `0x` at the cell's width; past that
+ceiling none is listed, with a `note`, because the debugger pages the listing a screenful at a
+time and each page is a console round trip (`find` keeps its highest up to the same ceiling); and `iterations`, which the debugger prints on every filter but the one that
 closes the scan; there the server answers its own count, or unavailable with why when `debug`
 touched the scan.
 

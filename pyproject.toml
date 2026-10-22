@@ -26,7 +26,7 @@ dependencies = [
     "capstone>=5.0.9,<6",
     # What the Scry servers share (the reply contract, the probe, the live bench), pinned by
     # its release tag so a build reads exactly the core it was tested against.
-    "scry-core @ git+https://github.com/scry-mcp/scry-core@v0.43.1",
+    "scry-core @ git+https://github.com/scry-mcp/scry-core@v0.44.0",
 ]
 
 [dependency-groups]
