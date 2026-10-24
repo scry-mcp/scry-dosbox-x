@@ -391,7 +391,7 @@ def log_wait(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS
     unknown channel or a `since_mark` that names no position of the log is refused. A log that
     does not exist YET is not refused: that is the ordinary state right after `resume`.
 
-    The moment it hands back is for choosing an address to `run_to` or `watch` on the NEXT
+    The moment it hands back is for choosing an address to `run_to` or `watch_add` on the NEXT
     run: the guest is usually still running when this returns, and the console tools refuse
     then. `expect` on `send_keys`/`drive` is this same wait on the guest channel, from a
     mark taken before the act.
@@ -739,8 +739,8 @@ def write(ref: str, data_hex: str) -> dict[str, Any]:
     the same range), `verified` (readback equals what was sent). `verified: false` is not
     always a failure: a memory-mapped register answers what it answers; for RAM the read-back
     differs from what was sent (the write did not land, or the view did not repaint). A
-    real-mode address in the ROM range is REFUSED with nothing sent: measured on this build,
-    `SM` into ROM ends the emulator instead of writing.
+    real-mode address in the ROM range is REFUSED with nothing sent: the debugger's `SM` into
+    ROM ends the emulator instead of writing.
     """
     data = checks.write_data(data_hex)        # parsed once; the bytes travel, not the text
     session = live()
@@ -790,9 +790,9 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
 
     `unarmable` AND `unresolved` ARE DIFFERENT ANSWERS and the difference is worth holding:
     `unarmable` means the symbol IS in the table and its address cannot be worked out at
-    this instant (this case), while `unresolved` means the table does not carry the name at
-    all. A session that met `unresolved` here was being told the truth about its TABLE, not
-    about the stop: `symbols_load` accumulates its batches, so a name missing after several
+    this instant, while `unresolved` means the table does not carry the name at all:
+    `unresolved` is a fact about the TABLE, not about the stop: `symbols_load` accumulates its
+    batches, so a name missing after several
     loads is one none of them carried.
 
     Reply: `interrupted` (`true` with the full stop reply and `via: "break"`; `false` when the
@@ -1080,9 +1080,10 @@ def breakpoint_interrupt(number: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)],
     """Break on an interrupt, optionally on one `ah` function: `BPINT <number> [<ah>]`.
 
     `number` and `ah` are the debugger's HEX values given as integers: pass `0x21` (33) for
-    DOS, not `21`, which would arm INT 0x15; a DJGPP program's is `0x31` with `ah=2`. This is
-    how control comes BACK from a running guest on this platform (a host keypress cannot break
-    in): arm it BEFORE `resume`. While the guest runs it is queued `pending`, as below. The
+    DOS, not `21`, which would arm INT 0x15; a DJGPP program's is `0x31` with `ah=2`. It
+    brings a running guest back AT that interrupt (`stop` brings it back wherever it is; a
+    host keypress cannot): arm it BEFORE `resume`. While the guest runs it is queued `pending`,
+    as below. The
     declaration is STORED under its `BPINT ..` spelling, so `breakpoint_list` shows it and
     `breakpoint_clear(ref="BPINT 21")` removes it; arming the same interrupt again is a no-op
     that says `already_stored`.

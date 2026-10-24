@@ -217,9 +217,10 @@ breakpoint_interrupt(number, ah=null, detail=false)
 Break on an interrupt, optionally on one `ah` function: `BPINT <number> [<ah>]`.
 
 `number` and `ah` are the debugger's HEX values given as integers: pass `0x21` (33) for
-DOS, not `21`, which would arm INT 0x15; a DJGPP program's is `0x31` with `ah=2`. This is
-how control comes BACK from a running guest on this platform (a host keypress cannot break
-in): arm it BEFORE `resume`. While the guest runs it is queued `pending`, as below. The
+DOS, not `21`, which would arm INT 0x15; a DJGPP program's is `0x31` with `ah=2`. It
+brings a running guest back AT that interrupt (`stop` brings it back wherever it is; a
+host keypress cannot): arm it BEFORE `resume`. While the guest runs it is queued `pending`,
+as below. The
 declaration is STORED under its `BPINT ..` spelling, so `breakpoint_list` shows it and
 `breakpoint_clear(ref="BPINT 21")` removes it; arming the same interrupt again is a no-op
 that says `already_stored`.

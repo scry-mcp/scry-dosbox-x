@@ -726,9 +726,9 @@ release, is what brings the machine back into its code.
 
 `unarmable` AND `unresolved` ARE DIFFERENT ANSWERS and the difference is worth holding:
 `unarmable` means the symbol IS in the table and its address cannot be worked out at
-this instant (this case), while `unresolved` means the table does not carry the name at
-all. A session that met `unresolved` here was being told the truth about its TABLE, not
-about the stop: `symbols_load` accumulates its batches, so a name missing after several
+this instant, while `unresolved` means the table does not carry the name at all:
+`unresolved` is a fact about the TABLE, not about the stop: `symbols_load` accumulates its
+batches, so a name missing after several
 loads is one none of them carried.
 
 Reply: `interrupted` (`true` with the full stop reply and `via: "break"`; `false` when the

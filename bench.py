@@ -380,7 +380,8 @@ def main() -> int:
                     help="(required) the working directory that config runs in")
     ap.add_argument("--json", type=Path, help="write the full result here")
     ap.add_argument("--reps", type=int, default=3)
-    ap.add_argument("--song", default=r"D:\MIDI\DESCENT.MID")
+    ap.add_argument("--song", help="the song your `make prof-log` plays; with none named, "
+                                   "the batch figure is not taken")
     args = ap.parse_args()
 
     # BOTH ARE REQUIRED AND BOTH ARE FLAGS. They arrived by environment while this same
@@ -407,10 +408,13 @@ def main() -> int:
     out: dict[str, Any] = {"timer": check, **stamp()}
     print(f"machine: {out['machine']} | {out['emulator']} | load {out['load_average']}")
 
-    runs = [batch_cost(cwd, args.song) for _ in range(args.reps)]
-    out["batch"] = {"runs": runs,
-                    "total_s_median": round(
-                        statistics.median(r["total_s"] for r in runs), 2)}
+    if args.song:
+        runs = [batch_cost(cwd, args.song) for _ in range(args.reps)]
+        out["batch"] = {"runs": runs,
+                        "total_s_median": round(
+                            statistics.median(r["total_s"] for r in runs), 2)}
+    else:
+        out["batch"] = {"available": False, "why": "no --song named, so no batch was run"}
     reach = [reach_the_state(conf, cwd) for _ in range(args.reps)]
     out["reach"] = {
         "runs": reach,

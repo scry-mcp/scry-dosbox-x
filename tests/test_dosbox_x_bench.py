@@ -228,7 +228,7 @@ def test_the_published_medians_are_the_runs_medians(tmp_path: Path,
     """The instrument's wiring, its measurements doubled: the headline figures are the medians
     of what the runs answered."""
     out = tmp_path / "bench.json"
-    _runnable(tmp_path, monkeypatch, "--reps", "3", "--json", str(out))
+    _runnable(tmp_path, monkeypatch, "--reps", "3", "--json", str(out), "--song", "S")
     monkeypatch.setattr(bench, "validate_timer", lambda: {
         "known_ms": 250.0, "read_ms": 250.0, "error_pct": 0.0, "negative_ms": 0.0, "ok": True})
     monkeypatch.setattr(bench, "stamp", lambda: {"machine": "m", "emulator": "e",
@@ -310,3 +310,27 @@ def test_the_stamp_names_the_build_the_ladder_found_and_refuses_one_with_no_vers
         bench.stamp()
     assert e.value.code == bench.INVALID_RC
     bench.build.cache_clear()
+
+
+def test_with_no_song_the_batch_is_not_run_and_the_result_says_why(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The batch plays the caller's own song through the caller's own `make prof-log`: with none
+    named there is nothing of theirs to time, and a default would time somebody else's file."""
+    out = tmp_path / "bench.json"
+    _runnable(tmp_path, monkeypatch, "--reps", "1", "--json", str(out))
+    monkeypatch.setattr(bench, "validate_timer", lambda: {
+        "known_ms": 250.0, "read_ms": 250.0, "error_pct": 0.0, "negative_ms": 0.0, "ok": True})
+    monkeypatch.setattr(bench, "stamp", lambda: {"machine": "m", "emulator": "e",
+                                                 "load_average": "0"})
+
+    def no_batch(cwd: Path, song: str) -> dict[str, float]:
+        raise AssertionError("the batch ran with no song named")
+
+    monkeypatch.setattr(bench, "batch_cost", no_batch)
+    monkeypatch.setattr(bench, "reach_the_state", lambda conf, cwd: {
+        "debugger_prompt_s": 1.0, "application_up_s": 2.0})
+    monkeypatch.setattr(bench, "per_question", lambda conf, cwd: {})
+    monkeypatch.setattr(bench, "advance_rate", lambda conf, cwd: {})
+    assert bench.main() == 0
+    got = json.loads(out.read_text())
+    assert got["batch"] == {"available": False, "why": "no --song named, so no batch was run"}

@@ -95,8 +95,8 @@ Reply: `ref`, `seg_off`, `bytes_written` (sent), `readback` (hex read back from
 the same range), `verified` (readback equals what was sent). `verified: false` is not
 always a failure: a memory-mapped register answers what it answers; for RAM the read-back
 differs from what was sent (the write did not land, or the view did not repaint). A
-real-mode address in the ROM range is REFUSED with nothing sent: measured on this build,
-`SM` into ROM ends the emulator instead of writing.
+real-mode address in the ROM range is REFUSED with nothing sent: the debugger's `SM` into
+ROM ends the emulator instead of writing.
 
 | argument | type | default |
 |---|---|---|

@@ -563,7 +563,7 @@ went away. No `logfile`, a bad `seconds`, an unusable regex, an
 unknown channel or a `since_mark` that names no position of the log is refused. A log that
 does not exist YET is not refused: that is the ordinary state right after `resume`.
 
-The moment it hands back is for choosing an address to `run_to` or `watch` on the NEXT
+The moment it hands back is for choosing an address to `run_to` or `watch_add` on the NEXT
 run: the guest is usually still running when this returns, and the console tools refuse
 then. `expect` on `send_keys`/`drive` is this same wait on the guest channel, from a
 mark taken before the act.
