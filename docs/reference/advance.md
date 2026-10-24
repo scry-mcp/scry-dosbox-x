@@ -490,7 +490,8 @@ step(count=1, mode="into")
 stopped.
 
 Reply: `mode`, `asked`, `before`, `after`, `instructions_completed`, `moved`, `stalled`
-(CS:EIP unchanged after a step), and the stop reply. For longer runs `run_to`.
+(CS:EIP unchanged after a step), and the stop reply; an `over` whose call never returns
+leaves the guest running, with no stop reply. For longer runs `run_to`.
 
 | argument | type | default |
 |---|---|---|

@@ -16,7 +16,8 @@ failure.
 `perform`, `drive`, `perform_export`. A `send_keys` or `send_mouse` whose `expect`
 misses ends the list `TIMEOUT`. A step's `recorded` must hold, else INVALID `diverged`.
 The whole list is checked first: INVALID `errors` (`step`, `op`, `code`, `message`),
-nothing run.
+nothing run. `settle_seconds` bounds each wait for a stop before a step that needs one (0:
+never wait).
 
 Reply: `ran`, `steps_completed`, `held`, `failed_at`, `failed` (INVALID `step_failed`),
 `verdict` (`TARGET` adds `stopped`, `TIMEOUT` `note`), else `still_running`.
@@ -143,7 +144,7 @@ perform_export(dest, overwrite=false)
 
 Write the session's calls since `start` to `dest` as a `perform` document.
 
-Kept: moving calls and checks (`read_memory`, `registers`, `screen_signature`,
+Kept: moving calls and checks (`read_memory`, `registers`, `screen_signature`, `map_find`,
 `image_compare(method="golden")`), each held to its `recorded` reply. Other calls drop;
 the first no replay can place, or past 5000, cuts the rest.
 

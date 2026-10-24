@@ -61,7 +61,7 @@ def test_the_name_layer_arms_lists_and_clears_against_a_real_program(
     assert states.get(REAL_LOOP) == "armed", listed
     assert states.get(REAL_MARKED) == "armed", listed
     assert states.get("BPINT 21") == "armed", listed
-    assert listed["foreign"] == [], listed
+    assert "foreign" not in listed, listed
 
     # RE-DECLARING is a no-op that says so, and does not arm a second copy.
     again = cast(dict[str, Any], server.breakpoint_at(ref=REAL_LOOP))

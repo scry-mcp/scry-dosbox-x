@@ -433,7 +433,7 @@ class StartReply(DosboxEnvelope, account.SequenceFields, total=False):
     input_port: int | dict[str, Any]
     operations: list[Any]
     pid: int
-    presence: Annotated[bool | dict[str, Any], OmitEmpty]
+    presence: bool | dict[str, Any]
     ready_after_s: float
     rearm_refused: str
     shared: Annotated[bool, OmitEmpty]
@@ -465,7 +465,7 @@ class StatusReply(DosboxEnvelope, total=False):
     pc: str | dict[str, Any]
     pending: dict[str, Any]
     pid: int
-    presence: Annotated[bool | dict[str, Any], OmitEmpty]
+    presence: bool | dict[str, Any]
     state_dir: str
     terminal_bytes_dropped: Annotated[int, OmitEmpty]
     watched: Annotated[bool, OmitEmpty]

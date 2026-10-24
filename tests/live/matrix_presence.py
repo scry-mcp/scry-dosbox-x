@@ -292,7 +292,7 @@ def section_r() -> None:
     close_whatever()
     asked_off = _start(presence=False)
     M.judge(R_CELLS[7].label, shown_headless == {"available": False, "why": dpresence.NO_WINDOW}
-            and "presence" not in asked_off,
+            and asked_off.get("presence") is False,
             f"headless {shown_headless!r}, asked off {asked_off.get('presence')!r}")
     close_whatever()
     _arrow(R_CELLS[8].label)

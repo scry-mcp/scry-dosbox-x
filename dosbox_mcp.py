@@ -98,7 +98,8 @@ mcp = envelope.Envelope(
         'says `cancelled`.\n'
         'FOR A VALUE: `registers`, `read_memory`, `memdump`, `log`; `debug` last.\n\n'
         'EVERY REPLY carries `summary`, `status` (`ok`, or `INVALID` with `code` and `message`)\n'
-        "and `session` (`altered` after a write); a field left out of a reply is empty.\n"
+        "and `session` (`altered` after a write); a diagnostic left out is empty, and\n"
+        "`omitted` names what was not sent.\n"
         "A wrong TYPE is the schema's `bad_argument`.\n\n"
         'Reference: REFERENCE.md.'
     ),

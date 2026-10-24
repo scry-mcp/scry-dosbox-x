@@ -38,6 +38,7 @@ ROWS = ("ref", "by", "cpu", "created_at", "origin", "inherited", "age_s", "state
 #: fails; a word kept here that its tool no longer quotes fails too.
 REPLY_WORDS: dict[str, tuple[str, ...]] = {
     "close": ("quit", "why"),
+    "step": ("over",),
     "log_wait": ("logfile",),
     "machine_map": ("logfile",),
     "status": ("alive", "running", "altered"),

@@ -77,10 +77,12 @@ Paths are absolute or `~`-led. `session_seconds`: the lifetime. `shared`: watche
 `display`; false, headless. `flags`: argv tokens, a `-set` value one token. `logfile`: the
 guest's E9 channel, for `log`, `log_wait`, `drive`. `program` runs after autoexec;
 `capture_video` records it. `plan` runs as `perform` does, each wait bounded by
-`settle_seconds` (default 30). `input_port`: COM1's TCP port.
+`settle_seconds` (default 30). `input_port`: COM1's TCP port, 0 a free one.
+`state_dir`: where `state_write` saves; empty, under `cwd`.
 
 Refused: a live session, a bad path, `session_seconds` out of range, `capture_video`
-without `program`, an `input_port` outside 1024-65535 or busy.
+without `program`, an `input_port` other than 0 outside 1024-65535, or
+busy.
 
 Reply: `pid`, `stub`, `input_port`, `declarations` (`rearm`); with `plan`, its account.
 

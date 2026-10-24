@@ -8894,3 +8894,16 @@ def test_a_stop_tool_s_drain_is_not_repeated_by_the_next_contact(
     monkeypatch.setattr(arming, "apply_pending", counted)
     running.drain_if_stopped(cast(Any, fake))
     assert drains == [], "the stop's own drain was taken for none"
+
+
+def test_the_instructions_tell_an_empty_diagnostic_from_a_field_not_sent() -> None:
+    text = " ".join((server.mcp.instructions or "").split())
+    assert "`omitted` names what was not sent" in text, text
+
+
+def test_presence_off_is_answered_false_as_on_the_mame_server() -> None:
+    from scry_core import reply_schema
+
+    import dosbox_replies
+    for model in (dosbox_replies.StartReply, dosbox_replies.StatusReply):
+        assert "presence" not in reply_schema.omitted_when_empty(model), model

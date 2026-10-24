@@ -321,8 +321,9 @@ declaration_clear(kind, ref="", all=false)
 ```
 
 Clear the declarations of `kind`: all with `all=True`, or the one named by the exact `ref`
-its declaring reply carried. Removes only what this store armed, and only while the
-machine is stopped; a `foreign` entry is never deleted.
+its declaring reply carried; `breakpoint` takes `breakpoint_interrupt` rows too. Removes only
+what this store armed, the declarations at once and, on a running guest, their debugger
+rows at the next stop (`pending_disarm`); a `foreign` entry is never deleted.
 
 Refused: a `ref` matching none, naming the refs held; neither `ref` nor `all`, or both
 (`bad_argument`).

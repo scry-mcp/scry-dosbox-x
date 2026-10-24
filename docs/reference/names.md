@@ -151,7 +151,8 @@ symbols_find(name="", offset=null, section=null, linear="", limit=10)
 ```
 
 Look a symbol up in the table `symbols_load` kept. `name`: exact, else prefixes up to
-`limit`. `offset` or `linear` (hex text), with `section`: the nearest symbol at or below.
+`limit`. `offset` (an integer) or `linear` (hex text), with `section`: the nearest symbol at
+or below.
 
 Reply: `query`, `symbols_total`, `symbols` (`name`, `offset`, `addr`),
 `truncated`; by address, the symbol's fields and `delta`. INVALID: no table.

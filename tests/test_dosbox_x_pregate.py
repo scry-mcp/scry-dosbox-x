@@ -229,3 +229,12 @@ def test_a_seg_off_takes_hex_with_or_without_0x_as_every_address_argument_does()
         0x814, 0x10)
     with pytest.raises(ds.Invalid, match="no sign"):
         placement.parse_seg_off("0x-1:10")
+
+
+def test_a_scan_start_without_a_length_is_refused_by_name() -> None:
+    import pytest
+
+    import dosbox_checks as checks
+    import dosbox_session as ds
+    with pytest.raises(ds.Invalid, match="length"):
+        checks.BY_OP["scan"](method="start", ref="0000:0400")

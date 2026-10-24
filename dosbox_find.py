@@ -243,6 +243,8 @@ def check_scan_range(length: int, cell_bytes: int) -> None:
     """A scan's range as the debugger takes it: a cell of a size it reads, and a length of whole
     cells within the six hex digits the debugger reads."""
     vocab.one_of("cell_bytes", cell_bytes, CELL_BYTES)
+    if not isinstance(length, int) or isinstance(length, bool):
+        raise ds.Invalid("bad_argument", f"length is a byte count; got {length!r}")
     if length <= 0:
         raise ds.Invalid("bad_argument", f"length={length} is not a byte count")
     if length > 0xFFFFFF:

@@ -223,10 +223,12 @@ def start(conf: str, cwd: str,
     `display`; false, headless. `flags`: argv tokens, a `-set` value one token. `logfile`: the
     guest's E9 channel, for `log`, `log_wait`, `drive`. `program` runs after autoexec;
     `capture_video` records it. `plan` runs as `perform` does, each wait bounded by
-    `settle_seconds` (default {SETTLE_S}). `input_port`: COM1's TCP port.
+    `settle_seconds` (default {SETTLE_S}). `input_port`: COM1's TCP port, 0 a free one.
+    `state_dir`: where `state_write` saves; empty, under `cwd`.
 
     Refused: a live session, a bad path, `session_seconds` out of range, `capture_video`
-    without `program`, an `input_port` outside {INPUT_PORT_MIN}-{INPUT_PORT_MAX} or busy.
+    without `program`, an `input_port` other than 0 outside {INPUT_PORT_MIN}-{INPUT_PORT_MAX}, or
+    busy.
 
     Reply: `pid`, `stub`, `input_port`, `declarations` (`rearm`); with `plan`, its account.
 
@@ -607,7 +609,8 @@ def step(count: Annotated[int, vocab.bounds(1, ds.STEP_MAX)] = 1,
     stopped.
 
     Reply: `mode`, `asked`, `before`, `after`, `instructions_completed`, `moved`, `stalled`
-    (CS:EIP unchanged after a step), and the stop reply. For longer runs `run_to`.
+    (CS:EIP unchanged after a step), and the stop reply; an `over` whose call never returns
+    leaves the guest running, with no stop reply. For longer runs `run_to`.
     """
     session = live()
     out = cast(dict[str, Any], session.step(mode=mode, count=count))
@@ -817,7 +820,8 @@ def symbols_find(name: str = "", offset: int | None = None,
                  limit: Annotated[int, vocab.bounds(1, placement.SYMBOLS_LIMIT_MAX)] = 10,
                  ) -> dict[str, Any]:
     """Look a symbol up in the table `symbols_load` kept. `name`: exact, else prefixes up to
-    `limit`. `offset` or `linear` (hex text), with `section`: the nearest symbol at or below.
+    `limit`. `offset` (an integer) or `linear` (hex text), with `section`: the nearest symbol at
+    or below.
 
     Reply: `query`, `symbols_total`, `symbols` (`name`, `offset`, `addr`),
     `truncated`; by address, the symbol's fields and `delta`. INVALID: no table.
@@ -856,7 +860,8 @@ def comment_write(method: Annotated[str, vocab.enum(tuple(folds.COMMENT))], ref:
 
     `delete`: the comment `ref` names. Reply: `deleted`, `declarations`, `note`.
 
-    `save`: every comment to `dest`, an absolute path; answers on a running guest.
+    `save`: every comment to `dest`, an absolute path, replacing a comment file there (rows
+    only it held in `dropped_comments`); any other file is refused; answers on a running guest.
     Reply: `path`, `comments_total`, `dropped_comments`, `dropped_total`, `truncated`, `note`.
 
     `load`: the comment file at `path`, all or nothing, the file winning. Reply: `path`,
@@ -1123,8 +1128,9 @@ def declaration_list(kind: Annotated[str, vocab.enum(("", *folds.KINDS))] = "",
 def declaration_clear(kind: Annotated[str, vocab.enum(folds.KINDS)], ref: str = "",
                       all: bool = False) -> dict[str, Any]:
     """Clear the declarations of `kind`: all with `all=True`, or the one named by the exact `ref`
-    its declaring reply carried. Removes only what this store armed, and only while the
-    machine is stopped; a `foreign` entry is never deleted.
+    its declaring reply carried; `breakpoint` takes `breakpoint_interrupt` rows too. Removes only
+    what this store armed, the declarations at once and, on a running guest, their debugger
+    rows at the next stop (`pending_disarm`); a `foreign` entry is never deleted.
 
     Refused: a `ref` matching none, naming the refs held; neither `ref` nor `all`, or both
     (`bad_argument`).
@@ -1267,7 +1273,7 @@ checks.take_step_ops(_step_ops)
 def perform_export(dest: str, overwrite: bool = False) -> dict[str, Any]:
     """Write the session's calls since `start` to `dest` as a `perform` document.
 
-    Kept: moving calls and checks (`read_memory`, `registers`, `screen_signature`,
+    Kept: moving calls and checks (`read_memory`, `registers`, `screen_signature`, `map_find`,
     `image_compare(method="golden")`), each held to its `recorded` reply. Other calls drop;
     the first no replay can place, or past {RECORD_MAX}, cuts the rest.
 
@@ -1295,7 +1301,8 @@ def perform(steps: list[dict[str, Any]],
     `perform`, `drive`, `perform_export`. A `send_keys` or `send_mouse` whose `expect`
     misses ends the list `TIMEOUT`. A step's `recorded` must hold, else INVALID `diverged`.
     The whole list is checked first: INVALID `errors` (`step`, `op`, `code`, `message`),
-    nothing run.
+    nothing run. `settle_seconds` bounds each wait for a stop before a step that needs one (0:
+    never wait).
 
     Reply: `ran`, `steps_completed`, `held`, `failed_at`, `failed` (INVALID `step_failed`),
     `verdict` (`TARGET` adds `stopped`, `TIMEOUT` `note`), else `still_running`.

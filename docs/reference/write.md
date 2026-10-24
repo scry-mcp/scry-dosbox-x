@@ -132,4 +132,4 @@ Example, from a live run:
 
 **Why `verified: false` is not always a failure.** A memory-mapped register answers what it answers; for RAM the write did not land or the view did not repaint.
 
-**Why the width is bounded.** `the read ceiling` is the data view's reach for the readback; a region is not a write.
+**Why the width is bounded.** The width is the data view's reach for the readback; a region is not a write.
