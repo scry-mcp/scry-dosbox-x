@@ -340,15 +340,6 @@ def test_the_wait_names_an_emulator_gone_at_its_bound_or_under_a_read_and_nothin
         sequence._wait_for_stop(fake, 1.0)  # type: ignore[arg-type]
 
 
-def test_a_list_not_judged_beforehand_is_refused_whole_before_its_first_step(
-        tmp_path: Path) -> None:
-    fake = _names(tmp_path, watched=True)
-    got = sequence.run_steps(fake, [{"op": "status"}, {"op": "warp_core"}], 1.0,  # type: ignore[arg-type]
-                             server._step_ops())
-    assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
-    assert got["ran"] == [] and got["steps_completed"] == 0 and got["held"] == 0, got
-
-
 @pytest.mark.parametrize("ref", ["g_rate", "[g_rate]", "[0000:0400]"])
 def test_a_declaration_by_name_on_a_running_guest_types_nothing(
         tmp_path: Path, ref: str) -> None:

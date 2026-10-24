@@ -809,7 +809,7 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
                             "" if current is not None else ", its position not readable yet "
                             "(a cut pane; the next contact retries)"))
     session.break_in()
-    return running.stop_reply(session, by_stop=True, interrupted=True, via="break")
+    return running.stop_reply(session, asked_by="stop", interrupted=True, via="break")
 
 
 @tool("Step instructions", summary=one_line.step)
@@ -1918,8 +1918,7 @@ def perform(steps: list[dict[str, Any]],
 
     Reference: REFERENCE.md, Sequences in one call.
     """
-    return sequence.run_steps(live(), steps, settle_seconds, _step_ops(), bridge(ctx), summaries,
-                              prechecked=True)
+    return sequence.run_steps(live(), steps, settle_seconds, _step_ops(), bridge(ctx), summaries)
 
 
 @tool("Drive an input and verify it", summary=one_line.drive, on_cancel="none")

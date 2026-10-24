@@ -202,7 +202,8 @@ def test_a_start_plan_is_judged_whole_before_anything_starts(tmp_path: Path) -> 
     kw: dict[str, Any] = {"conf": str(conf), "cwd": str(tmp_path), "session_seconds": 60}
     with mock.patch("scry_core.binaries.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
          mock.patch("dosbox_x_server.ds.Session", boot):
-        _refused(server.start(**kw, plan=[{"op": "nope"}]), "bad_argument", "nope")
+        planned = _refused(server.start(**kw, plan=[{"op": "nope"}]), "bad_argument", "nope")
+        assert "resume" in planned["operations"], planned
         _refused(server.start(**kw, plan=[{"op": "registers"}], settle_seconds=-1), "bad_argument",
                  "settle_seconds")
         assert booted == [] and not (tmp_path / "save").exists()

@@ -407,11 +407,13 @@ def steps_whole(name: str, steps: object) -> None:
         raise ds.Invalid("bad_argument",
             f"{name} is a LIST of steps ({{'op': <name>, ...}}); got {steps!r}")
     assert STEP_OPS is not None, "the server registers its step vocabulary at import"
-    refused = sequence.preflight(steps, STEP_OPS())
+    ops = STEP_OPS()
+    refused = sequence.preflight(steps, ops)
     if refused:
         first = refused[0]
         raise ds.Invalid("bad_argument", executor.refused_text(refused),
-            ran=[], steps_completed=0, failed_at=first["step"], failed=first, errors=refused)
+            ran=[], steps_completed=0, failed_at=first["step"], failed=first, errors=refused,
+            **executor.vocabulary_named(refused, ops))
 
 
 def _perform(steps: list[dict[str, Any]], settle_seconds: float = 30.0,

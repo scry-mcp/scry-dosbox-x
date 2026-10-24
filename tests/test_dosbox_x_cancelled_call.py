@@ -212,6 +212,25 @@ def test_the_stop_end_hands_the_next_reply_what_the_stop_applied(
     assert server.status().get("applied_on_stop") == {"armed": ["F000:0100"]}
 
 
+def test_the_stop_end_names_its_stop_as_the_cancelled_calls(
+        monkeypatch: pytest.MonkeyPatch, waiting_tool: dict[str, Any]) -> None:
+    """The stop the end makes on a running guest is the cancelled call's own: its reply is built
+    to say so (`asked_by`), not that no declaration can be told."""
+    import dosbox_running as running
+    install()
+    _running()
+    asked: list[dict[str, Any]] = []
+
+    def stop_reply(session: Any, **fields: Any) -> dict[str, Any]:
+        asked.append(fields)
+        return {}
+    monkeypatch.setattr(running, "stop_reply", stop_reply)
+    _cancel_at(monkeypatch, 2)
+    with pytest.raises(asyncio.CancelledError):
+        waiting_tool["stop"]()
+    assert [f.get("asked_by") for f in asked] == ["cancel"], asked
+
+
 def test_a_stop_of_its_own_the_call_had_reached_is_recorded_as_its_own(
         monkeypatch: pytest.MonkeyPatch, waiting_tool: dict[str, Any]) -> None:
     """Cancelled with the guest already at a stop nobody has read (its own retrace, its own
@@ -356,11 +375,20 @@ def test_a_cancelled_trace_ends_stopped_with_its_log_closed_and_the_file_kept(
         ses.stop_count = (ses.stop_count or 0) + 1   # released and back at the prompt
         return False, 0.0
     monkeypatch.setattr(ses, "log_cpu", log_cpu)
+    import dosbox_running as running
+    asked: list[Any] = []
+    real = running.stop_reply
+
+    def stop_reply(session: Any, **fields: Any) -> dict[str, Any]:
+        asked.append(fields.get("asked_by"))
+        return real(session, **fields)
+    monkeypatch.setattr(running, "stop_reply", stop_reply)
     st.STATE.log_open = True
     _cancel_at(monkeypatch, 2)
     with pytest.raises(asyncio.CancelledError):
         waiting_tool["stop"]()
     assert ses.breaks == 1 and typed == [("LOGC", 0)], typed
+    assert asked == ["cancel"], "the stop the end broke in for is the cancelled call's"
     assert st.STATE.log_open is False
     kept = sorted(home.glob("trace-cancelled-*.trace"))
     assert [k.read_text() for k in kept] == ["one line the trace had written\n"], kept

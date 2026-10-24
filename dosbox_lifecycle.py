@@ -196,7 +196,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     settle = sequence.SETTLE_DEFAULT_S if settle_seconds is None else settle_seconds
     # A PLAN DRIVES THE MACHINE as `perform` does, so the window is lit while it runs.
     with dpresence.of(session).driving():
-        ran = sequence.run_steps(session, plan, settle, ops(), prechecked=True)
+        ran = sequence.run_steps(session, plan, settle, ops())
     return st.extend(ran, start={k: v for k, v in started.items()
                                  if k not in ("status", "session")})
 

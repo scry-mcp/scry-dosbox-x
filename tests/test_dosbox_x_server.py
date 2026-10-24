@@ -3381,14 +3381,20 @@ def test_perform_runs_steps_in_order_and_stops_at_the_first_failure(
 
 
 def test_perform_refuses_an_unknown_op(tmp_path: Path) -> None:
-    """The vocabulary is the server's own op names. An unknown op is refused naming the
-    vocabulary."""
+    """The vocabulary is the server's own op names. An unknown op is refused naming it once, in
+    the refusal's own `operations`, as MAME's does; each step's message points there instead of
+    repeating the list, which every copy of the message (`errors`, the joined refusal) would."""
     _names(tmp_path)
-    unknown = server.perform(steps=[{"op": "warp_core"}])
+    unknown = server.perform(steps=[{"op": "warp_core"}, {"op": "nope"}])
     assert unknown["status"] == "INVALID" and "not a step" in unknown["message"]
-    # THE REFUSAL NAMES THE VOCABULARY, not just "not a step": dropping the op list from the
-    # message would leave the weaker assertion green.
-    assert "resume" in unknown["message"], unknown
+    assert unknown["operations"] == sorted(server._step_ops()), unknown
+    assert "resume" in unknown["operations"] and "warp_core" not in unknown["operations"]
+    assert "see `operations`" in unknown["errors"][0]["message"], unknown
+    assert "resume" not in unknown["message"], "the vocabulary is in `operations`, not here"
+    known = server.perform(steps=[{"op": "registers", "nope": 1}])
+    assert known["status"] == "INVALID" and "operations" not in known, known
+    driven = server.drive(act=[{"op": "warp_core"}])
+    assert driven["operations"] == sorted(server._step_ops()), driven
     # A malformed step carries failed_at like every other failure, not a missing key.
     shapeless = server.perform(steps=["registers"])   # not an {op: ...} object
     assert shapeless["status"] == "INVALID" and "not a" in shapeless["message"]
@@ -4995,6 +5001,32 @@ def test_a_stop_names_no_declaration_the_debugger_holds_no_row_for(tmp_path: Pat
     fake.rows.append({"index": "0", "entry": "BP 00A7:00001A27"})
     held = running.stop_reply(fake)  # type: ignore[arg-type]
     assert held["cause"].startswith("breakpoint 00A7:00001A27"), held["cause"]
+
+
+def test_a_cancelled_calls_stop_names_the_cancel_unless_a_declaration_is_there(
+        tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    fake.cs, fake.eip = "00A7", "00001A27"
+    got = running.stop_reply(fake, asked_by="cancel")  # type: ignore[arg-type]
+    assert got["cause"] == "a cancelled call's stop at 00A7:00001A27", got["cause"]
+    assert dstate.cause_key(got["cause"]) == "a cancelled call's stop"
+    store = dstate.STATE.store
+    assert store is not None
+    store.add(dec.Declaration("breakpoint", "address", "00A7:00001A27"))
+    fake.rows.append({"index": "0", "entry": "BP 00A7:00001A27"})
+    named = running.stop_reply(fake, asked_by="cancel")  # type: ignore[arg-type]
+    assert named["cause"].startswith("breakpoint 00A7:00001A27"), named["cause"]
+
+
+def test_the_stop_a_cancelled_calls_end_made_is_last_stops_cause(tmp_path: Path) -> None:
+    """End to end: the end brings a running guest back, and the stop it made is what `status`
+    then names as the last stop, by the cancelled call."""
+    fake = _names(tmp_path)
+    fake.cs, fake.eip = "00A7", "00001A27"
+    fake.running = True
+    dosbox_mcp._stop_of_its_own(fake)  # type: ignore[arg-type]
+    got = cast(dict[str, Any], server.status())
+    assert got["last_stop"]["cause"] == "a cancelled call's stop at 00A7:00001A27", got
 
 
 def test_resume_enriches_a_halt_and_leaves_a_running_machine_bare(tmp_path: Path) -> None:

@@ -140,13 +140,9 @@ def preflight(steps: list[dict[str, Any]], ops: Ops) -> list[dict[str, Any]]:
     (`dosbox_checks`). Returns the refusals, each `step`, `op`, `code`, `message`."""
     refused: list[dict[str, Any]] = []
     for i, step in enumerate(steps):
-        op = str(step.get("op")) if isinstance(step, dict) else None
+        op = executor.step_op(step)
         if op is None or op not in ops:
-            refused.append({"step": i,
-                            "op": contract.or_unavailable(op, "the step is no mapping"),
-                            "code": "bad_argument",
-                            "message": f"is not a step ({step!r}): the vocabulary is the "
-                                       f"server's own operation names, {sorted(ops)}"})
+            refused.append(executor.not_a_step(i, step, "the step names no `op`"))
             continue
         refusal, args = step_judge.judge(ops[op], step)
         if refusal is not None:
@@ -255,22 +251,16 @@ class _Dosbox(executor.SequenceMachine):
 def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
               ops: Ops, progress: ds.Progress = ds.no_progress,
               summaries: bool = False, name: str = "perform",
-              prechecked: bool = False, tail_wait: bool = True) -> dict[str, Any]:
+              tail_wait: bool = True) -> dict[str, Any]:
     """Execute steps in order (`scry_core.sequence.run`, its rules), STOPPING at the first
     failure with a full account: `ran` (each step and its reply), `failed` (the step that stopped
     it, absent when none did), `steps_completed`, `held` (the steps whose `recorded` answer this
-    run matched), and the machine state. A step is `{"op": <name>, ...args}`. `prechecked` when
-    the tool's pre-gate already judged the list whole (`dosbox_checks.steps_whole`), so it is
-    judged once a call. With `summaries`, `ran` is the compact account `account_of` builds.
+    run matched), and the machine state. A step is `{"op": <name>, ...args}`. The list arrives
+    judged whole by the tool's pre-gate (`dosbox_checks.steps_whole`), once a call. With
+    `summaries`, `ran` is the compact account `account_of` builds.
     `tail_wait` False when the caller waits for the list's effect its own way (`drive` with an
     `expect`)."""
     account.check_summaries(summaries)
-    refused = [] if prechecked else preflight(steps, ops)
-    if refused:
-        first = refused[0]
-        return st.reply(status="INVALID", code="bad_argument", ran=[], steps_completed=0,
-                        failed_at=first["step"], failed=first, errors=refused,
-                        message=executor.refused_text(refused), held=0)
     ended = executor.run(_Dosbox(session, summaries), steps, ops, wait, progress, name,
                          tail_wait=tail_wait)
     if ended.code is not None:
@@ -391,7 +381,7 @@ def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str 
     # WITH AN `expect` THE VERIFY IS THE WAIT: the act's tail does not wait for a stop first, or a
     # running guest's act would sit out `settle_seconds` before its effect is looked for.
     ran = run_steps(session, act, wait, ops, progress, summaries, name="drive",
-                    prechecked=True, tail_wait=expect is None)
+                    tail_wait=expect is None)
     told = executor.act_told(ran)
     if ran.get("status") != "ok":
         # THE ACT'S OWN CODE: a step that failed is `step_failed`, but a list the executor

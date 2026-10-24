@@ -11,7 +11,7 @@ the registers and the E9 block.
 from __future__ import annotations
 
 import copy
-from typing import Any
+from typing import Any, Literal
 
 from scry_core import log_marks
 from scry_core import reply_contract as contract
@@ -87,15 +87,17 @@ def e9_block(session: ds.Session) -> dict[str, Any]:
 
 
 def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
-               made_by: dict[str, str] | None = None, by_stop: bool = False,
+               made_by: dict[str, str] | None = None,
+               asked_by: Literal["stop", "cancel"] | None = None,
                **base: Any) -> dict[str, Any]:
     """What a stop ALWAYS returns, on top of the tool's own fields in `base`:
     where it stopped and by which declaration (its `cause`: a declaration matched by address, or
     why none can be named), the watches already evaluated, the registers, and the guest's E9
     lines since the previous stop (`e9_block`). `made_by`, a
     stop the calling tool made itself (`run_to`'s target, whose breakpoint is gone by now),
-    is attributed to it rather than looked for among the declarations; `by_stop`, the caller's own
-    `stop`, names the call when no declaration is at the address. `altered`
+    is attributed to it rather than looked for among the declarations; `asked_by`, a stop the
+    caller asked for (its own `stop`, or the end a cancelled call made), names that when no
+    declaration is at the address. `altered`
     rides in the standard `session` block `st.reply` adds, so it is carried the same way here.
     """
     # ONE SURVEY for where AND registers (a round trip costs most of a second): they
@@ -116,10 +118,12 @@ def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
                 if attribution.get("attributed") else [])
         attribution = {"attributed": True, **made_by, "at": attribution["at"],
                        **({"refs": also} if also else {})}
-    elif by_stop and not attribution.get("attributed"):
-        # A STOP THE CALLER ASKED FOR, with no declaration at its address: the call is the cause.
-        # One that is there keeps its name, since the guest may have reached it as BREAK went.
-        attribution = {"attributed": True, "ref": "stop", "by": "stop", "at": attribution["at"]}
+    elif asked_by is not None and not attribution.get("attributed"):
+        # A STOP THE CALLER ASKED FOR, by `stop` or by cancelling a call, with no declaration at
+        # its address: that is the cause. One that is there keeps its name, since the guest may
+        # have reached it as BREAK went.
+        attribution = {"attributed": True, "ref": asked_by, "by": asked_by,
+                       "at": attribution["at"]}
     STATE.remember_stop(session, where, registers, held, attribution)
     # THIS STOP'S DRAIN IS THE ONE ABOVE: marked under the number the stop has just been given,
     # or the next contact would take it for a stop nobody drained and drain again.

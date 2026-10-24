@@ -356,7 +356,8 @@ waits for a line or a screen, a bounded `resume`, an input's `verify`/`expect`.
 - `pc` is `SSSS:OOOOOOOO` with `cpu_mode` beside it, and a row carries `seg_off` beside `addr`:
   a DOS place is segmented, and the segment is half of what it means.
 - A stop carries `instruction`, the one decoded at the stop, and `cause`, prose naming the
-  declaration matched by address, the `stop` call that asked for it, or why none can be named.
+  declaration matched by address, the `stop` call or the cancelled call that asked for it, or
+  why none can be named.
 - `vga_mode` is the VGA mode word, `bios_mode` the mouse driver's video mode, and a screen's
   `kind` is `text` or `pixel`: a DOS screen is either.
 - `run_to` requires its `control`: this debugger keeps no control between runs.
@@ -403,7 +404,7 @@ Every tool ends one of three ways, and one that declares no end ends `none`:
 
 | End | What the cancel leaves | Tools |
 |---|---|---|
-| `stop` | the guest back at the debugger by `BREAK`, as `stop` does, or a stop it had already reached recorded as its own; a `run_to` removes the breakpoints it armed; a CPU log still open (a `trace`'s) is moved aside to `trace-cancelled-<n>.trace` in the session's captures directory (the working directory when there is none to write in) and closed | `stop`, `run_to`, `run_for`, `trace`, `screen_wait`, `perform` |
+| `stop` | the guest back at the debugger by `BREAK`, as `stop` does (the cancelled call answers nothing, so that stop is read in the next reply's `last_stop`, its `cause` "a cancelled call's stop at SSSS:OOOO" when no declaration is at that address), or a stop it had already reached recorded as its own; a `run_to` removes the breakpoints it armed; a CPU log still open (a `trace`'s) is moved aside to `trace-cancelled-<n>.trace` in the session's captures directory (the working directory when there is none to write in) and closed | `stop`, `run_to`, `run_for`, `trace`, `screen_wait`, `perform` |
 | `kill` | the emulator closed; a close cancelled half-way still finishes | `start`, `close` |
 | `none` | the guest as the call found it | `build_check`, `status`, `log`, `log_wait`, `registers`, `read_memory`, `disassemble`, `call_stack`, `memdump`, `find`, `scan_start`, `scan_filter`, `scan_clear`, `debug`, `set_register`, `write`, `resume`, `step`, `state_save`, `state_load`, `snapshot`, `state_list`, `breakpoint_interrupt`, `symbols_load`, `symbols_find`, `comment_add`, `comment_list`, `comment_delete`, `comment_save`, `comment_load`, `machine_map`, `interrupt_vectors`, `palette`, `screen_view`, `screen_signature`, `map_load`, `map_add`, `map_find`, `map_save`, `series_capture`, `image_diff`, `series_diff`, `region_track`, `golden_check`, `breakpoint_at`, `breakpoint_list`, `breakpoint_clear`, `watch_add`, `watch_list`, `watch_clear`, `send_keys`, `send_mouse`, `captures`, `capture_frame`, `perform_export`, `drive` |
 
@@ -1008,11 +1009,14 @@ decodes in its own width, which is not always the segment's), with its nearest s
 in protected mode costs one `SELINFO CS` and only with a table loaded; unavailable, with why,
 when no bytes could be read or they start no instruction), the registers (`regs`),
 the show watches already evaluated (each with `state: "evaluated"`), its `cause`, and `e9`.
-`cause` is prose naming what stopped it: the declaration whose address it stopped at, with how
-it was named and where (`breakpoint <ref> (by <by>) at SSSS:OOOOOOOO`; several declarations at
-one address are all named); a `run_to` that arrived names its own target, whose breakpoint is
-removed by then, and any declaration at the same place beside it; a stop a `run_for` left armed
-is named as the likeliest retrace stop; or an honest cannot-say: the debugger keeps no hit flag,
+`cause` is prose naming what stopped it: the declaration whose address it stopped at and whose
+code row the debugger holds there, with how it was named and where (`breakpoint <ref> (by <by>)
+at SSSS:OOOOOOOO`; several declarations at one address are all named); a `run_to` that arrived
+names its own target, whose breakpoint is removed by then, and any declaration at the same place
+beside it; with no declaration there, a `stop` the caller asked for names the call
+(``the `stop` call at ...``) and the stop a cancelled call's end made says so (`a cancelled call's stop
+at ...`); a stop a `run_for` left armed is named as the likeliest retrace stop; or an honest
+cannot-say: the debugger keeps no hit flag,
 and a memory watch stops at the instruction that WROTE. `e9` is the guest's E9 lines since the
 previous stop, ON and bounded on every stop, because each stop is where a caller asks what the
 guest said: `lines_total` (the count, whole), `truncated`, `lines` (the newest of them) and
@@ -1373,7 +1377,10 @@ count past the ceiling, a wait that is not a bound, a raw address that does not 
 argument of the wrong type, a required argument missing). A batch with a mistake in step 4
 does not press the keys of steps 1 to 3 and then stop: the reply is INVALID with `errors`
 listing every refused step, `ran` is empty, and the caller fixes the batch once (`drive` carries
-them inside `act`, beside `verify` and `looked`, the shape every `drive` reply has). What only
+them inside `act`, beside `verify` and `looked`, the shape every `drive` reply has). A step that
+names no operation of the server is refused pointing at `operations`, the server's own operation
+names, which the refusal carries once, at its top level (beside `errors`, or beside `act` in a
+`drive`). What only
 its step can judge still refuses there, with `failed_at` and `ran` as the honest account: a
 symbol name against the table loaded by then (`symbols_load` may be an earlier step of the
 same list), a file an earlier step writes, and anything that needs the machine. `debug` is a

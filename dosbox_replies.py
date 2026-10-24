@@ -178,6 +178,7 @@ class DisassembleReply(DosboxEnvelope, total=False):
 class DriveReply(DosboxEnvelope, total=False):
     act: dict[str, Any]
     looked: dict[str, Any]
+    operations: list[Any]
     verify: dict[str, Any]
 
 
@@ -302,7 +303,9 @@ class PaletteReply(DosboxEnvelope, total=False):
 
 
 class PerformReply(DosboxEnvelope, account.SequenceFields, total=False):
-    """The sequence's fields (`scry_core.sequence_account.SequenceFields`), none its own."""
+    """The sequence's fields (`scry_core.sequence_account.SequenceFields`), and `operations` on
+    a refusal for a step naming no operation."""
+    operations: list[Any]
 
 
 class PerformExportReply(DosboxEnvelope, total=False):
@@ -531,6 +534,7 @@ class StartReply(DosboxEnvelope, account.SequenceFields, total=False):
     drain_ended: str
     elapsed_s: float
     input_port: int | dict[str, Any]
+    operations: list[Any]
     pid: int
     presence: bool | dict[str, Any]
     ready_after_s: float

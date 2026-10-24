@@ -602,6 +602,8 @@ def cause(attribution: dict[str, Any]) -> str:
                 f"be told")
     if attribution.get("by") == "stop":
         return f"the `stop` call at {at}"
+    if attribution.get("by") == "cancel":
+        return f"a cancelled call's stop at {at}"
     if attribution.get("by") == "run_to":
         also = list(attribution.get("refs", []))
         return (f"run_to's target {attribution['ref']} at {at}"

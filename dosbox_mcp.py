@@ -150,14 +150,16 @@ def _end_cancelled(name: str, on_cancel: cancel.OnCancel
                 STATE.forget_symbols()
                 STATE.clear_running_state()
             elif on_cancel == "stop" and ses is not None and ses.alive():
+                broke_in = False
                 if STATE.log_open:
                     # CLOSED BEFORE THE STOP IS RECORDED: the close is a release and a return to
                     # the prompt of its own, which recorded after it the next contact would find
                     # as a stop nobody made.
                     if not ses.at_debugger():
                         ses.break_in()
+                        broke_in = True
                     trace.close_log_left_open(ses)
-                stopped = _stop_of_its_own(ses)
+                stopped = _stop_of_its_own(ses, broke_in)
         except (ds.Invalid, OSError):
             left = "unknown"
         if left is None:
@@ -167,13 +169,15 @@ def _end_cancelled(name: str, on_cancel: cancel.OnCancel
     return left, stopped or None
 
 
-def _stop_of_its_own(ses: ds.Session) -> dict[str, Any]:
+def _stop_of_its_own(ses: ds.Session, broke_in: bool = False) -> dict[str, Any]:
     """The `stop` end's stop, its reply: a running guest is brought back with `BREAK`, as the
-    `stop` tool does, and one already at a stop nobody has read (the call's own retrace or
+    `stop` tool does (already, by the end itself, when `broke_in`: a trace's log is closed at a
+    stop first), and one already at a stop nobody has read (the call's own retrace or
     breakpoint) has that stop recorded as the call's, as its bound's refusal records it."""
-    if not ses.at_debugger():
-        ses.break_in()
-        return running.stop_reply(ses, interrupted=True, via="break")
+    if broke_in or not ses.at_debugger():
+        if not broke_in:
+            ses.break_in()
+        return running.stop_reply(ses, interrupted=True, via="break", asked_by="cancel")
     if getattr(ses, "stop_count", None) != STATE.last_stop.get("stop_count"):
         return running.stop_or_base(ses, True, {})
     return {}
