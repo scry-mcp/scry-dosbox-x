@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import re
 import struct
+from pathlib import Path
 
 import pytest
 
@@ -42,24 +43,20 @@ REAL_THREE = bytes.fromhex(
 # THE SECOND GOLDEN, and the one that carries the case this module actually loads.
 #
 # `REAL_THREE` above holds NO lowercase letter -- `IV` uppercases what is typed at it,
-# so `zero_lower` was stored `ZERO_LOWER` -- while 10 of the 10 names in `NM_FRAGMENT`
-# below are lowercase, because that is what a C toolchain emits. So the property this
+# so `zero_lower` was stored `ZERO_LOWER` -- while every name in `NM_FRAGMENT`
+# below is lowercase, because that is what a C toolchain emits. So the property this
 # whole module rests on, that a C symbol table survives the round trip, needs bytes of
 # its own that run on every commit.
 #
-# CAPTURED by the round trip the module PERFORMS: a
-# binary written, `LV SYMS.BIN`, `SV SYMSBK.BIN`, and the bytes read back off disk.
+# CAPTURED by the round trip the module PERFORMS: a binary written, `LV` of it, `SV` of the
+# list, and the bytes read back off disk (tests/fixtures/symbols-lv/PROVENANCE.txt).
 #
 # THE CAPTURE GOES THROUGH `LV`, NOT `IV`: typed with `IV` the names come back `_MAIN`,
 # `_ENGINE_LOAD_MI` and `_POLY_SCANLINE` -- uppercased and truncated -- which would say a C
 # table cannot survive at all. `IV` is the TYPING path; `LV` is the LOADING one, and the
 # module only ever uses the second.
-REAL_THREE_LOWER = bytes.fromhex(
-    "0300"
-    "5f6d61696e0000000000000000000000  b8790100"
-    "5f656e67696e655f6c6f616400000000  70080000"
-    "5f706f6c795f7363616e6c696e650000  1f000a00"
-    .replace(" ", ""))
+REAL_THREE_LOWER = (Path(__file__).parent / "fixtures" / "symbols-lv" / "three-lower.bin"
+                    ).read_bytes()
 
 # `nm` lines in that program's shape (see the module docstring: transcribed, source not kept).
 NM_FRAGMENT = """\
@@ -774,12 +771,13 @@ def test_a_c_symbol_table_survives_the_round_trip_with_its_case_intact() -> None
     """
     got = sym.decode(REAL_THREE_LOWER)
     assert got == [("_main", 0x000179B8),
-                   ("_engine_load", 0x00000870),
-                   ("_poly_scanline", 0x000A001F)]
-    # AND THE ENCODER REPRODUCES THEM, which is the half that cannot be satisfied by
-    # agreeing with itself: the right-hand side came out of DOSBox-X.
-    syms = [sym.Symbol("_main", 0x000179B8), sym.Symbol("_engine_load", 0x00000870),
-            sym.Symbol("_poly_scanline", 0x000A001F)]
+                   ("_engine_load_mi", 0x00000870),
+                   ("_poly_scanline_", 0x000A001F)]
+    # AND THE ENCODER'S LAYOUT IS THE DEBUGGER'S: `SV` writes the debugger's own variable list,
+    # so its bytes equalling the encoder's say the debugger read those records as it writes
+    # its own, case and the fifteen-character cut included.
+    syms = [sym.Symbol("_main", 0x000179B8), sym.Symbol("_engine_load_midi", 0x00000870),
+            sym.Symbol("_poly_scanline_gcol8", 0x000A001F)]
     assert sym.encode(sym.plan(syms), base=0) == REAL_THREE_LOWER
     # THE CONTROL: the case really is what distinguishes these two goldens, so a
     # comparison that folded it would be satisfied by the uppercase one.
@@ -1071,85 +1069,25 @@ def test_nm_and_gnu_symbols_are_not_flagged_idle() -> None:
 
 # --------------------------------------------- the 32-bit map, and its own section table
 
-# SYNTHESISED, NOT CAPTURED, and that distinction is the first thing to know about it.
-# No 32-bit linker map exists anywhere on this machine -- a sweep of 1,979 `.map` files
-# found five with a `Publics by` section and NONE with a 32-bit row -- and no 32-bit
-# linker is installed to make one. So this is written, and the precedent for doing that
-# is deliberate rather than convenient: a fixture is authored when the real artefact
-# cannot be reached, and it is then judged by INTERNAL CONSISTENCY.
-#
-# ITS SHAPE IS NOT INVENTED. Every column comes from Embarcadero's own "Detailed-Segments
-# Map File" documentation, including these exact numbers: the 32-bit
-# segment table is `Start Length Name Class` -- NO `Stop` column, which is what tells it
-# from the 16-bit table -- over rows like ` 0001:00401000 0000214D4H _TEXT  CODE`, and
-# the publics are ` 0001:000000E4  _main`. So the left half of a public IS a section
-# index and the right half an offset INSIDE that section.
-#
-# WHAT IS STILL UNVERIFIED, said out loud: documentation is not a captured artefact. No
-# map produced by a real 32-bit link has been through this reader, and the first one that
-# is, is the acceptance test. The card records that rather than implying coverage.
-#
-# THE `Detailed map of segments` ROW IS THE TRAP AND IS HERE ON PURPOSE: it opens with
-# the same `sect:offset` pair, so a section table built by scanning the whole file would
-# take it for a section definition and key section 1's base to an offset INSIDE section 1.
-# THIS FIXTURE WAS REBUILT AGAINST A REAL ARTEFACT, and both halves that changed were
-# measured wrong rather than merely improved.
-#
-# It came from Embarcadero's documented example, whose `Start` column reads
-# `0001:00401000` -- a full address -- and whose mark the reader spelled `idle`. Then a
-# real ILINK32 map arrived (`HELLO32.MAP`, 1092 lines, 508 publics rows), and it
-# disagrees on both:
-#
-#   - `Start` is `section:offset` with every offset ZERO (`0001:00000000`,
-#     `0002:00000000`, `0003:00000000`), and section 2 appears again and again with
-#     GROWING offsets, so it is a SEGMENT LIST and not a table of section bases. The
-#     reader read `{1: 0, 2: 0, 3: 0}` and folded every section onto one address space.
-#   - the mark is `Idle`, with a capital I. 292 of 508 rows -- 57% -- were refused for
-#     the case of one letter, and `parse` returned the other 216 with no exception.
-#
-# So the fixture reproduces the artefact: zero offsets, capital `Idle`. What is deleted
-# is the ASSUMPTION that the `Start` column is a base, NOT the possibility that some
-# linker prints one -- one file cannot establish that. Placement now comes from the
-# caller (`section_bases`), which is decision 26, and the column is read and not used.
-TLINK32_MAP = (
-    "\r\n"
-    " Start         Length     Name               Class\r\n"
-    "\r\n"
-    " 0001:00000000 0000214D4H _TEXT              CODE\r\n"
-    " 0002:00000000 0000059B8H _DATA              DATA\r\n"
-    " 0003:00000000 000002F24H _BSS               BSS\r\n"
-    "\r\n"
-    "Detailed map of segments\r\n"
-    "\r\n"
-    " 0001:000000E4 00001038 C=CODE   S=_TEXT   G=(none)  M=HELLO.OBJ ACBP=A9\r\n"
-    "\r\n"
-    "  Address         Publics by Name\r\n"
-    "\r\n"
-    " 0001:000000E4       _main\r\n"
-    " 0002:000024C4       _table\r\n"
-    " 0003:00001A00  Idle _swapped\r\n"
-    "\r\n"
-    "  Address         Publics by Value\r\n"
-    "\r\n"
-    " 0001:000000E4       _main\r\n"
-    " 0002:000024C4       _table\r\n"
-    " 0003:00001A00  Idle _swapped\r\n"
-    "\r\n"
-    "Program entry point at 0001:000000E4\r\n")
+# A REAL ILINK32 MAP, trimmed by deleting lines (tests/fixtures/borland-ilink32/PROVENANCE.txt).
+# Two things in it a reader built from the vendor's documentation gets wrong: the segment
+# table's `Start` is `section:offset` with every section starting at ZERO and section 2 listed
+# again and again at growing offsets, so it is a segment list and never a table of bases; and
+# the mark is `Idle`, with a capital I. Placement therefore comes from the caller
+# (`section_bases`), and the column is read and not used. The `Detailed map of segments` rows
+# open with the same `sect:offset` pair, which is the trap a scan of the whole file falls into.
+ILINK32_MAP = (Path(__file__).parent / "fixtures" / "borland-ilink32" / "sections32.map"
+               ).read_bytes().decode("latin-1")
 
-# THE BASES A CALLER SUPPLIES FOR THAT MAP, and they are DISTINCT on purpose (finding
-# A6). With every section at the same base, a reader that consults the section index and
-# one that ignores it entirely produce byte-identical output, so the test asserts
-# nothing about the one feature it exists to check -- and coverage cannot stand in for
-# it either: an all-zero table EXECUTES every line of the lookup.
-#
-# MEASURED, three symbols at the same offset in three sections:
-#     bases ALL 0    -> 0xe4, 0xe4, 0xe4        indistinguishable
-#     bases DISTINCT -> 0x4010e4, 0x4230e4, 0x428a9c
-TLINK32_BASES = {1: 0x401000, 2: 0x423000, 3: 0x4289B8}
+# THE BASES A CALLER SUPPLIES FOR THAT MAP, DISTINCT on purpose: with every section at one
+# base, a reader that consults the section index and one that ignores it place every symbol
+# alike, so nothing about the index would be asserted -- and coverage cannot stand in for it,
+# since an all-zero table executes every line of the lookup.
+ILINK32_BASES = {1: 0x401000, 2: 0x423000, 3: 0x4289B8}
 
-def _declared_sections(text: str) -> dict[int, tuple[int, int]]:
-    """index -> (start, length), READ OUT OF THE FIXTURE by a regex of this test's own.
+def _declared_sections(text: str) -> dict[int, int]:
+    """index -> the extent its segments reach (the furthest `start + length`), READ OUT OF THE
+    FIXTURE by a regex of this test's own: a section is listed once per segment it holds.
 
     A dict written out beside the fixture is not an oracle: both halves are hand-written,
     so editing one and not the other goes unnoticed. Shrinking the fixture's `_TEXT`
@@ -1162,8 +1100,9 @@ def _declared_sections(text: str) -> dict[int, tuple[int, int]]:
     the parser's own arithmetic restated.
     """
     rx = re.compile(r"^ ([0-9A-Fa-f]{4}):([0-9A-Fa-f]{8}) ([0-9A-Fa-f]+)[Hh] ", re.M)
-    out = {int(i, 16): (int(start, 16), int(ln, 16))
-           for i, start, ln in rx.findall(text)}
+    out: dict[int, int] = {}
+    for i, start, ln in rx.findall(text):
+        out[int(i, 16)] = max(out.get(int(i, 16), 0), int(start, 16) + int(ln, 16))
     assert out, "the fixture's section table did not parse: this oracle read nothing"
     return out
 
@@ -1178,29 +1117,27 @@ def test_a_32_bit_row_keeps_its_section_and_is_placed_by_the_callers_table() -> 
     one address space and every symbol comes back plausible and on top of another. The
     section index survives to the symbol, and the caller says where each section went.
     """
-    got, unreadable = sym.parse(TLINK32_MAP)
+    got, unreadable = sym.parse(ILINK32_MAP)
     assert unreadable == 0, unreadable
     # THE COUNT, because a name-keyed dict COLLAPSES a doubled emission in silence. This
     # fixture prints both publics sections, so the de-duplication is exercised here, and
     # without this line it is exercised without being observed.
-    assert len(got) == 3, got
+    assert len(got) == 4, got
     kept = {s.name: (s.section, s.offset) for s in got}
-    assert kept == {"_main": (1, 0x000000E4),
-                    "_table": (2, 0x000024C4),
-                    "_swapped": (3, 0x00001A00)}, kept
-    # AND THE ADDRESSES, once the caller answers. The three bases are DISTINCT, which is
+    assert kept == {"_main": (1, 0x00000130), "_errno": (2, 0x00002090),
+                    "_g_count": (2, 0x000022D4), "___xxInfo": (3, 0x00000000)}, kept
+    # AND THE ADDRESSES, once the caller answers. The bases are DISTINCT, which is
     # what makes this assertion able to fail at all: with a shared base a reader that
     # consults the section index and one that ignores it give the same answer.
     placed = dict(sym.decode(sym.encode(sym.plan(got),
-                                        section_bases=TLINK32_BASES)))
-    assert placed == {"_main": 0x004010E4,
-                      "_table": 0x004254C4,
-                      "_swapped": 0x0042A3B8}, placed
+                                        section_bases=ILINK32_BASES)))
+    assert placed == {"_main": 0x00401130, "_errno": 0x00425090,
+                      "_g_count": 0x004252D4, "___xxInfo": 0x004289B8}, placed
 
 
 
 def test_every_offset_lands_inside_the_length_its_own_section_declared() -> None:
-    """INTERNAL CONSISTENCY, which is the only oracle a synthesised fixture can have.
+    """CONSISTENCY with the LENGTH column, the oracle the file itself carries.
 
     It is checked against the LENGTH column, which the parser NEVER reads: a symbol
     carrying section N must have an offset inside N's own declared extent. An oracle
@@ -1211,15 +1148,15 @@ def test_every_offset_lands_inside_the_length_its_own_section_declared() -> None
     is asserted BEFORE the loop, because a `for` over an empty list passes every
     assertion inside it: this file already documents that failure by name.
     """
-    declared = _declared_sections(TLINK32_MAP)
-    syms = sym.parse_tlink(TLINK32_MAP)[0]
-    assert len(syms) == 3, syms
+    declared = _declared_sections(ILINK32_MAP)
+    syms = sym.parse_tlink(ILINK32_MAP)[0]
+    assert len(syms) == 4, syms
     for one in syms:
         assert one.section in declared, f"{one.name} names section {one.section}"
-        _, length = declared[one.section]
-        assert 0 <= one.offset < length, (
+        extent = declared[one.section]
+        assert 0 <= one.offset < extent, (
             f"{one.name} at {one.offset:#x} is outside its own section's "
-            f"{length:#x} bytes")
+            f"{extent:#x} bytes")
     # EVERY DECLARED SECTION IS EXERCISED, so a fixture that grows a section nothing
     # references cannot quietly stop being checked.
     assert {one.section for one in syms} == set(declared), declared
@@ -1230,29 +1167,24 @@ def test_the_detailed_map_row_is_not_taken_for_a_section() -> None:
     """THE TRAP, and it is the same one the publics walk was built around.
 
     `Detailed map of segments` opens every row with a `sect:offset` pair as well, so a
-    table built by scanning the whole file keys section 1 to 0x000000E4 -- an offset
-    INSIDE section 1. The walk is anchored on the table's HEADER, and the `H` on the
-    length column refuses the row a second time.
-
-    WHAT THE TABLE IS FOR NOW is narrower than it was, and the case says so: it no
-    longer positions anything, so this asserts the INDICES it reads and not the
-    addresses it once handed out.
+    table built by scanning the whole file would take its rows for sections. The walk is
+    anchored on the table's HEADER, and the row's shape (no `H` on the length, five trailing
+    tokens) refuses it a second time; the table positions nothing, so the INDICES it reads
+    are what is asserted, and the shape alone is put to the test below.
     """
-    sections = sym._tlink_sections(TLINK32_MAP.splitlines())
+    sections = sym._tlink_sections(ILINK32_MAP.splitlines())
     assert sorted(sections) == [1, 2, 3], sections
-    assert 0x000000E4 not in sections.values(), sections
     # AND THE CONTROL: the trap row really is in the fixture, so this is not passing
     # over a file that never contained one.
-    assert "Detailed map of segments" in TLINK32_MAP
-    assert " 0001:000000E4 00001038 C=CODE" in TLINK32_MAP
+    assert "Detailed map of segments" in ILINK32_MAP
+    assert " 0001:00000108 0000004B C=CODE" in ILINK32_MAP
 
     # AND THE ROW SHAPE IS ISOLATED FROM THE HEADER ANCHOR, because with both in place
-    # either one alone is enough and neither is individually necessary -- MEASURED, the
-    # break that removes the anchor came back GREEN, saved by the shape. Here the trap
-    # row sits INSIDE the walk's own range, so only the shape can refuse it.
+    # either one alone is enough and neither is individually necessary: here the trap row
+    # sits INSIDE the walk's own range, so only the shape can refuse it.
     inline = [" Start         Length     Name               Class",
               "",
-              " 0001:000000E4 00001038 C=CODE   S=_TEXT   G=(none)  M=HELLO.OBJ ACBP=A9"]
+              " 0001:00000108 0000004B C=CODE    S=_TEXT    G=(none)   M=HELLO32.C  ACBP=A9"]
     assert sym._tlink_sections(inline) == {}, sym._tlink_sections(inline)
 
 
@@ -1286,7 +1218,7 @@ def test_the_two_row_shapes_cannot_claim_the_same_row() -> None:
     real map on this machine stops parsing.
     """
     real_mode = " 0D74:00E21 idle  ACTIVEIMAN"
-    flat = " 0001:000000E4       _main"
+    flat = " 0001:00000130       _main"
     assert sym._TLINK_ROW.match(real_mode) and not sym._TLINK_ROW32.match(real_mode)
     assert sym._TLINK_ROW32.match(flat) and not sym._TLINK_ROW.match(flat)
 
@@ -1303,14 +1235,16 @@ def test_a_section_the_caller_did_not_position_is_refused_and_never_placed_at_ze
     The row survives to the symbol instead, and the refusal names the section and lists
     the ones the table does hold.
     """
-    orphan = TLINK32_MAP.replace(" 0002:000024C4       _table\r\n",
-                                 " 0002:000024C4       _table\r\n"
-                                 " 0009:00000100       _nowhere\r\n")
+    orphan = ILINK32_MAP.replace(" 0002:00002090       _errno\r\n",
+                                 " 0002:00002090       _errno\r\n"
+                                 " 0009:00000100       _nowhere\r\n", 1)
+    assert orphan.count("_nowhere") == 1, "the substitution matched nothing"
     got, unreadable = sym.parse(orphan)
     assert unreadable == 0, unreadable
-    assert sorted(s.name for s in got) == ["_main", "_nowhere", "_swapped", "_table"], got
+    assert sorted(s.name for s in got) == ["___xxInfo", "_errno", "_g_count", "_main",
+                                           "_nowhere"], got
     with pytest.raises(sym.BadSymbolText, match="section 9") as e:
-        sym.encode(sym.plan(got), section_bases=TLINK32_BASES)
+        sym.encode(sym.plan(got), section_bases=ILINK32_BASES)
     assert "_nowhere" in str(e.value), str(e.value)
 
 
@@ -1360,7 +1294,7 @@ def test_a_32_bit_map_that_printed_no_publics_says_so_too() -> None:
     it -- and a 32-bit map with no publics went to the `nm` parser and came back "no
     symbol lines were recognised in that text", about a linker map.
     """
-    segments_only = TLINK32_MAP.split("  Address")[0]
+    segments_only = ILINK32_MAP.split("  Address")[0]
     with pytest.raises(sym.BadSymbolText, match="no `Publics by ...` header"):
         sym.parse(segments_only)
 
@@ -1380,24 +1314,23 @@ def test_a_32_bit_row_carries_the_mark_too_and_it_is_spelled_idle() -> None:
     carrying it -- was GREEN across the whole suite, and so was deleting the alternative
     from the pattern, since no 32-bit fixture row had one.
 
-    AND THE SPELLING IS PART OF IT. The pattern said `idle`, lowercase, because no real
-    32-bit map existed to check. One does: ILINK32 writes `Idle`, and 292 of that file's
-    508 rows -- 57% -- were refused over the case of one letter while `parse` returned
-    the other 216 with no exception raised.
+    AND THE SPELLING IS PART OF IT: ILINK32 writes `Idle`, and a lowercase pattern refuses
+    every flagged row over the case of one letter while `parse` returns the rest with no
+    exception raised.
     """
-    at = {s.name: s.idle for s in sym.parse_tlink(TLINK32_MAP)[0]}
-    assert at == {"_main": False, "_table": False, "_swapped": True}, at
+    at = {s.name: s.idle for s in sym.parse_tlink(ILINK32_MAP)[0]}
+    assert at == {"_main": False, "_errno": False, "_g_count": True, "___xxInfo": False}, at
     # AND IT IS STILL KEPT, with its section and offset intact -- the mark must not have
     # become an exclusion on this branch either.
-    where = {s.name: (s.section, s.offset) for s in sym.parse_tlink(TLINK32_MAP)[0]}
-    assert where["_swapped"] == (3, 0x00001A00), where
+    where = {s.name: (s.section, s.offset) for s in sym.parse_tlink(ILINK32_MAP)[0]}
+    assert where["_g_count"] == (2, 0x000022D4), where
     # THE LOWERCASE SPELLING IS NOT ACCEPTED, which is the half that keeps this reader
     # evidence about a particular linker rather than about linkers in general.
-    lower = TLINK32_MAP.replace(" Idle _swapped", " idle _swapped")
-    assert lower != TLINK32_MAP, "the substitution matched nothing"
+    lower = ILINK32_MAP.replace(" Idle _g_count", " idle _g_count")
+    assert lower.count(" idle _g_count") == 2, "the substitution did not reach both tables"
     got, unreadable = sym.parse_tlink(lower)
     assert unreadable == 2, unreadable
-    assert "_swapped" not in [s.name for s in got], got
+    assert "_g_count" not in [s.name for s in got], got
 
 
 def test_the_overlay_count_is_a_count_and_not_a_flag() -> None:
@@ -1538,7 +1471,7 @@ def test_an_nm_file_carrying_four_ordinary_words_is_not_a_borland_map() -> None:
     # THE CONTROL, so the fix is not "never refuse": a real 32-bit map that printed no
     # publics still gets told so.
     with pytest.raises(sym.BadSymbolText, match="no `Publics by ...` header"):
-        sym.parse(TLINK32_MAP.split("  Address")[0])
+        sym.parse(ILINK32_MAP.split("  Address")[0])
 
 
 # --------------------------------------------------------------------- the anchored walk
@@ -1735,16 +1668,14 @@ def test_the_dedupe_key_carries_the_section_in_both_sectioned_readers() -> None:
 def test_a_section_most_of_which_was_discarded_is_refused_and_not_returned() -> None:
     """THE KNOWN ANSWER, and it is the real defect rather than an invented one.
 
-    Before the `Idle` fix, the real ILINK32 map went through this reader as 216 symbols
-    and 292 refused rows -- 57% of the file gone -- and `parse` raised nothing. A caller
-    who does not read the second return value got a well-formed list, a plan whose
-    buckets add up, and a table that loads clean, about a file the reader understood a
-    minority of.
+    A real ILINK32 map read with the wrong case for its `Idle` mark loses more rows than it
+    keeps, and `parse` raises nothing: a caller who does not read the second return value
+    gets a well-formed list, a plan whose buckets add up, and a table that loads clean, about
+    a file the reader understood a minority of.
 
-    THE SHAPE IS REPRODUCED HERE rather than the artefact being read, because the
-    artefact is not in this repository (it describes somebody's unpublished program) and
-    a case that skips on a machine without it is a case that proves nothing on a clone.
-    The proportion is what matters and it is what this builds: more rows lost than kept.
+    THE SHAPE IS BUILT HERE rather than read off tests/fixtures/borland-ilink32, which keeps
+    four publics: the proportion is what matters and it is what this builds, more rows lost
+    than kept.
     """
     rows = "".join(f" 0001:0000{i:04X}  Idle _flagged{i}\r\n" for i in range(6))
     rows += "".join(f" 0001:0001{i:04X}       _plain{i}\r\n" for i in range(4))

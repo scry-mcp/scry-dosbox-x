@@ -2,3 +2,9 @@ What this is: what the debugger holds after two `LV` loads in a row, read back e
 `SV` by `Session.load_symbols` (names and linear addresses), recorded on 2026-10-21 off a live
 DOSBox-X, a build carrying the debugger (macOS, SDL2), at the DPMI guest's first INT 31h AH=02h:
 a second load ADDS to the first.
+
+`three-lower.bin`: what `SV` wrote back after `LV` of a binary this package encoded for
+`_main` at 0x179B8, `_engine_load_midi` at 0x870 and `_poly_scanline_gcol8` at 0xA001F (names
+cut to the record's fifteen characters by the encoder), at the real-mode probe guest's first
+stop, on a DOSBox-X build carrying the debugger (macOS, SDL2). The file `SV` wrote is byte for byte the
+file `LV` was given.

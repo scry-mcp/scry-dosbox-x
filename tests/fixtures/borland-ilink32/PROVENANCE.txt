@@ -1,0 +1,6 @@
+What this is: `sections32.map`, the map ILINK32 wrote for a 32-bit hello world built with
+Borland C++ 5, copied from the owner's machine (this package did not build it, and there is no
+recipe beside it to remake it). Trimmed by deleting lines, never by editing one: the segment
+table whole, the first two rows of the detailed map, and four rows of each publics table (a code
+symbol, two data symbols, one of them `Idle`, and the one symbol of section 3), so every line
+here is a line of the original, CR LF endings included. The original prints no entry point.

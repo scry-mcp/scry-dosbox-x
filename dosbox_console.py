@@ -520,10 +520,23 @@ def parse_breakpoints(text: str) -> list[dict[str, str]]:
             for i, e in BREAKPOINT_ROW.findall(text[at + len(BPLIST_HEADER):])]
 
 
+def seg_off(seg: int, off: int, digits: int = 8) -> str:
+    """ONE SPELLING FOR A SEGMENTED ADDRESS: the segment in four digits and the offset in
+    `digits`, eight unless the offset is a 16-bit one."""
+    return f"{seg:04X}:{off:0{digits}X}"
+
+
+def canonical_seg_off(seg: int, off: int) -> str:
+    """A place as a ref spells it: its offset in eight digits past FFFF and in four within it, so
+    one place has one spelling however it was typed."""
+    return seg_off(seg, off, 8 if off > 0xFFFF else 4)
+
 # The kind token and the seg:off of a breakpoint row, as NUMBERS. `BP F000:E05B`,
 # `BPMEM 0040:006C (00)`, `BPPM 00AF:00006024 (00)` all parse; `BPINT 21 AH=4C` does not,
 # because it names an interrupt and not an address, and has no seg:off to match.
 _BP_ROW_ADDR = re.compile(r"^(BP[A-Z]*)\s+([0-9A-Fa-f]+):([0-9A-Fa-f]+)")
+# `BPLM 00000600 (00)`: a linear memory watch, one address and no segment.
+_BP_ROW_LINEAR = re.compile(r"^(BPLM)\s+([0-9A-Fa-f]+)\b")
 
 
 def interrupt_row(number: int, ah: int | None) -> str:
@@ -561,12 +574,16 @@ def bp_row_target(entry: str) -> tuple[str, int, int] | None:
     IS set as absent -- and then clears nothing and arms a duplicate. Parsing the fields
     and comparing the integers is immune to which width it chose. The kind token is kept
     so a code breakpoint (`BP`) is told from a memory watch (`BPMEM`/`BPPM`/`BPLM`) at the
-    same address, which is the one thing the number alone cannot say.
+    same address, which is the one thing the number alone cannot say. A linear row (`BPLM`)
+    has no segment and comes back as segment 0 and its linear address.
     """
     m = _BP_ROW_ADDR.match(entry.strip())
-    if m is None:
+    if m is not None:
+        return m.group(1), int(m.group(2), 16), int(m.group(3), 16)
+    lin = _BP_ROW_LINEAR.match(entry.strip())
+    if lin is None:
         return None
-    return m.group(1), int(m.group(2), 16), int(m.group(3), 16)
+    return lin.group(1), 0, int(lin.group(2), 16)
 
 
 def parse_data_view(text: str) -> list[str]:

@@ -1,0 +1,17 @@
+What this is: what a live run of DOSBox-X (a build carrying the debugger, macOS, SDL2) printed
+and answered, captured through this server's own session and tools, never written by hand. The `.txt` files
+are the screen a command left (`BPLIST`, the session's delta, escapes stripped), the `.json`
+files are tool replies whole.
+
+- On the real-mode probe guest, at its first stop: `bplist-bpmem.txt` after `watch_add
+  0000:0500` (change, two bytes; `real-change-watch.json` holds that write, the watch and a
+  `read_memory` of the watched bytes), `bplist-bplm.txt` after `BPLM 600` typed at the console,
+  `bpdel-before.txt` and `bpdel-after.txt` around a `BPDEL` of the middle of three code
+  breakpoints armed at F000:0100, F000:0200 and F000:0300 in that order, and
+  `pointer-watches.json` for a show and a change watch through the BIOS keyboard head and tail
+  ([0040:001A], [0040:001C]).
+- On the VM86 guest, stopped by `stop` inside its loop: `vm86-arm.json` (the stop, a
+  `breakpoint_at` at the stop's own address, and the `resume` that met it) and
+  `bplist-vm86.txt`.
+- On the DPMI guest, at its first INT 31h AH=02h: `bppm.json` and `bplist-bppm.txt` after a
+  change watch on `_g_ticks`.

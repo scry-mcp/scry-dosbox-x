@@ -33,6 +33,7 @@ from scry_core import value_format as vf
 from scry_core.reply_contract import Invalid
 
 import dosbox_comment_file as cf
+import dosbox_console as dcons
 import dosbox_symbols as sym
 
 # THREE kinds: a code breakpoint and a watch, declared by symbol or by address, and an
@@ -56,7 +57,7 @@ BY = ("symbol", "address", "pointer")
 # An interrupt declaration's ref IS the debugger's BPLIST row spelling, so it is validated
 # at the shape `dosbox_console.interrupt_row` produces and `parse_interrupt_row` reads. Its
 # own regex, not imported from session: this module validates its own stored data and does
-# not depend on the session layer (session does not import this one).
+# not depend on the session layer.
 INTERRUPT_ROW = re.compile(r"^BPINT [0-9A-Fa-f]{2}(?: AH=[0-9A-Fa-f]{2})?$")
 # THE STAMP OF A RAW ROW DECLARED WHERE ITS PLACE IS NOT KNOWN, while a map is held (a
 # protected-mode address at a real-mode stop): which batch describes it cannot be told, and
@@ -68,10 +69,9 @@ PENDING_STAMP = "pending"
 # and another in protected mode (a selector's base), so a row placed in one is judged and armed
 # only at a stop of that mode. None on a row no stop has placed yet.
 CPU_MODES = ("real", "protected")
-# A watch has TWO halves: SHOW evaluates the bytes at
-# every stop and arms NOTHING, and BREAK-ON-CHANGE arms a memory-change breakpoint. A
-# single address may not be both -- see `add` -- because arming writes a trap byte that a
-# later read would return as program bytes.
+# A watch has TWO halves: SHOW evaluates the bytes at every stop and arms NOTHING, and
+# BREAK-ON-CHANGE arms a memory-change breakpoint and evaluates the bytes too. One ref is one
+# watch -- see `add`.
 # `show` was spelled `read` until "read" was left to name an access only: a stored row still
 # carrying the old word is read as the new one (`Declaration.from_dict`).
 WATCH_MODES = ("show", "change")
@@ -105,9 +105,11 @@ def same_place(a: Declaration, b: Declaration) -> bool:
 
 
 def canonical_ref(ref: str, by: str) -> str:
-    """The one spelling a ref is stored and matched under: a `SEG:OFF` upper-case with at
-    least four digits a side (the debugger's own listing); anything else as typed, stripped.
-    A `SEG:OFF` that does not parse is left as typed, for the tool's own refusal to name."""
+    """The one spelling a ref is stored and matched under: a `SEG:OFF` upper-case, its offset
+    at the width of its bits (eight digits for one past FFFF, four for a 16-bit one, the
+    debugger's own listing), so one place has one spelling however it was typed; anything else
+    as typed, stripped. A `SEG:OFF` that does not parse is left as typed, for the tool's own
+    refusal to name."""
     text = ref.strip()
     if by == "pointer":
         # THE BASE INSIDE A POINTER REF FOLDS LIKE A BARE ADDRESS, and
@@ -126,7 +128,7 @@ def canonical_ref(ref: str, by: str) -> str:
         seg, off = int(seg_s, 16), int(off_s, 16)
     except ValueError:
         return text
-    return f"{seg:04X}:{off:04X}"
+    return dcons.canonical_seg_off(seg, off)
 
 
 @dataclass(frozen=True)
@@ -211,7 +213,7 @@ class Declaration:
             except vf.FormatError as e:
                 raise DeclarationError(str(e)) from None
             # A SIZED FORMAT NAMES ITS OWN WIDTH: the declaration carries it so every
-            # reader of `width` (the trap's length, the read) sees one number.
+            # reader of `width` (the armed length, the read) sees one number.
             object.__setattr__(self, "width", width)
         elif self.kind != "comment":  # breakpoint, interrupt
             extras = {"width": self.width, "fmt": self.fmt, "watch_mode": self.watch_mode}
@@ -680,10 +682,9 @@ class DeclarationStore:
         can re-arm if the debugger no longer holds it.
 
         ONE conflict is still refused: for a watch, the SAME `ref` carrying the OTHER half
-        -- a `show` where a `change` already sits, or the reverse:
-        break-on-change arms a trap byte in that memory and a show watch reads those
-        same bytes back, so one address that is both would report the trap as the value
-        it exists to show, a wrong answer of exactly the right shape.
+        -- a `show` where a `change` already sits, or the reverse. A change watch reports its
+        bytes at every stop already, so the show beside it would be the same reading twice,
+        and a `watch_clear` of the ref has to name one declaration.
         """
         if decl.kind == "comment":
             raise DeclarationError("a comment goes through apply: add adopts by equality, "
@@ -719,10 +720,10 @@ class DeclarationStore:
                     continue
                 if d.watch_mode != decl.watch_mode:
                     raise DeclarationError(
-                        f"{decl.ref!r} already has a {d.watch_mode!r} watch, and one address "
-                        f"may not be both a show AND a change watch: arming a "
-                        f"change-watch writes a trap byte that a show watch would hand "
-                        f"back as the value")
+                        f"{decl.ref!r} already has a {d.watch_mode!r} watch, and one ref "
+                        f"may not be both a show AND a change watch: a change watch reports "
+                        f"its value at every stop as a show watch does, so the one there "
+                        f"already shows it")
                 # ONE REF, ONE SHAPE: another width or format under the same name would be
                 # a second declaration sharing one debugger row, and a clear by ref could
                 # only half account for it, leaving the other orphaned.

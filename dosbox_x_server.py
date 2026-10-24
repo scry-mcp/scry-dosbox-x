@@ -1665,8 +1665,9 @@ def watch_add(ref: str, mode: Annotated[str, vocab.enum(dec.WATCH_MODES)], lengt
 
     Arguments:
     - `mode`: `show` (read at each stop: nothing is armed, the value rides in `watches`)
-      or `change` (a trap is armed and the machine stops when the bytes change; trusted in REAL
-      mode, while under a DJGPP program's paging the reply says its firing is not to be trusted).
+      or `change` (the machine stops when the bytes change, and each stop reads them as `show`
+      does; trusted in REAL mode, while under a DJGPP program's paging the reply says its firing
+      is not to be trusted).
     - `ref`: a symbol, a `SEG:OFF`, or `[base]`, `[base]+0x28`, `[base]-0x4`, `base->field`, with
       `base` a symbol or address holding a POINTER (read at its type's width, else four bytes in
       protected mode and two in real), re-resolved at every stop.
@@ -1674,10 +1675,11 @@ def watch_add(ref: str, mode: Annotated[str, vocab.enum(dec.WATCH_MODES)], lengt
       (`char[16]`) or a struct (`{x:i16,y:i16}`). With no `fmt` a typed symbol reads as its type,
       else the widest unsigned scalar `length` divides.
     - `length`: TOTAL bytes, a whole number of `fmt` values; a sized format needs none. A show
-      watch is at most {READ_MAX} bytes.
+      watch is at most {READ_MAX} bytes; a change watch at most {CHANGE_WATCH_MAX}, a debugger
+      row per byte (`entries`), `armed` while every row is held.
     - `by`: `auto` (by shape) unless you must force `symbol`, `address` or `pointer`.
 
-    Refused: one address as both show and change; a length over the ceiling; a pointer base the
+    Refused: one ref as both show and change; a length over the ceiling; a pointer base the
     table lacks (most likely a stack local).  Reply: `ref` (the string `watch_clear` takes),
     `by`, `mode`, `stored`, `already_stored`, `state` (`evaluated` for a placed show watch,
     `unresolved`, `unarmable`, `null_pointer`; a change watch adds `armed`, or `pending` while

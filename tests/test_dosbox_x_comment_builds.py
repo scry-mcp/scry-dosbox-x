@@ -44,7 +44,7 @@ import dosbox_x_server as server
 #: a map, in the first batch's span; a protected-mode row past FFFF, in that span too, which the
 #: real-mode park keeps waiting and the map's stop places; a row that span holds at either base;
 #: a row only the second batch's span holds. CS's base is 00400000, as each map's.
-P, Q, W, V, R = "0814:0106", "00A7:2000", "00A7:62310", "00A7:120000", "00A7:185000"
+P, Q, W, V, R = "0814:0106", "00A7:2000", "00A7:00062310", "00A7:00120000", "00A7:00185000"
 SPELLED = {W: "00A7:00062310"}
 MODE = {P: dcons.REAL_MODE, Q: "Pr32", W: "Pr32", V: "Pr32", R: "Pr32"}
 
@@ -546,6 +546,9 @@ def test_a_batch_is_its_conf_and_entries_and_spans_its_lowest_to_its_highest() -
     assert a.stamp != dec.Build.of("c", [("_main", 1), ("_s", 3)]).stamp, "the repeat counts"
     assert a.stamp != dec.Build.of("d", a.entries).stamp, "another conf"
     assert a.stamp != dec.Build.of("c", [("_main", 2), ("_s", 3), ("_s", 3)]).stamp, "relinked"
+    # A stored row carries its stamp, so the recipe may never drift from what wrote it: this is
+    # the digest the recipe gave for that batch, kept as a literal rather than recomputed here.
+    assert a.stamp == "1182701ba80a27c7", a.stamp
     assert [a.covers(x) for x in (0, 1, 2, 3, 4)] == [False, True, True, True, False]
     assert not dec.Build.of("c", []).covers(0)
 
@@ -597,7 +600,7 @@ def test_a_protected_mode_save_loads_waiting_at_the_real_mode_park(tmp_path: Pat
     dstate.STATE.session = FakeSession()  # type: ignore[assignment]
     install_store()
     got = ok(server.comment_load(path=str(saved)))
-    row = _rows_by_ref()["00A7:45F80"]
+    row = _rows_by_ref()["00A7:00045F80"]
     assert got["added"] == 1 and row["state"] == "unarmable" and "addr" not in row
 
 
@@ -608,7 +611,7 @@ def test_one_past_ffff_and_the_formats_top_offset_wait_at_the_park_beside_a_plac
     probe_table()
     got = ok(server.comment_load(path=str(_file(tmp_path, (f"00A7:{off}", "edge"),
                                                   ("start", "s")))))
-    ref = f"00A7:{int(off, 16):X}"
+    ref = dec.canonical_ref(f"00A7:{off}", "address")
     rows = _rows_by_ref()
     assert got["added"] == 2 and ref in got["note"]
     assert rows[ref]["state"] == "unarmable" and rows["start"]["state"] == "resolved"
@@ -664,17 +667,17 @@ def test_a_row_past_its_selectors_limit_waits_for_that_limit_not_a_mode(tmp_path
     dstate.STATE.session = Protected()  # type: ignore[assignment]
     install_store()
     got = ok(server.comment_load(path=str(_file(tmp_path, ("00A7:00240000", "past")))))
-    why = _rows_by_ref()["00A7:240000"]["why"]
+    why = _rows_by_ref()["00A7:00240000"]["why"]
     assert "limit reaches it" in why and "mode holds" not in why + got["note"], why
     dstate.STATE.session = FakeSession()  # type: ignore[assignment]
-    assert _rows_by_ref()["00A7:240000"]["state"] == "unarmable"
+    assert _rows_by_ref()["00A7:00240000"]["state"] == "unarmable"
 
 
 @pytest.mark.parametrize("ref, key, at_park, at_pm", [
-    ("0000:00010000", "0000:10000", "no stop places it", "no stop places it"),
-    ("0003:00010000", "0003:10000", "no stop places it", "no stop places it"),
-    ("0000:0001FFFF", "0000:1FFFF", "no stop places it", "no stop places it"),
-    ("0004:00010000", "0004:10000", "kept for a protected-mode stop", None),
+    ("0000:00010000", "0000:00010000", "no stop places it", "no stop places it"),
+    ("0003:00010000", "0003:00010000", "no stop places it", "no stop places it"),
+    ("0000:0001FFFF", "0000:0001FFFF", "no stop places it", "no stop places it"),
+    ("0004:00010000", "0004:00010000", "kept for a protected-mode stop", None),
 ])
 def test_the_why_of_a_row_past_ffff_names_only_a_stop_that_places_it(
         tmp_path: Path, ref: str, key: str, at_park: str, at_pm: str | None) -> None:
@@ -728,8 +731,8 @@ def test_a_held_row_of_another_build_given_another_text_is_this_builds(tmp_path:
 
 
 @pytest.mark.parametrize("ref, held_in, then", [
-    ("00A7:45F80", dcons.REAL_MODE, "Pr32"), ("0000:0084", "Pr32", dcons.REAL_MODE),
-    ("00A7:45F80", "Pr32", "Pr32")])
+    ("00A7:00045F80", dcons.REAL_MODE, "Pr32"), ("0000:0084", "Pr32", dcons.REAL_MODE),
+    ("00A7:00045F80", "Pr32", "Pr32")])
 def test_a_held_row_of_another_build_given_its_text_where_it_waits_or_not_is_brought(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ref: str, held_in: str,
         then: str) -> None:

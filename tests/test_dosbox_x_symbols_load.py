@@ -98,17 +98,14 @@ def test_a_load_says_how_many_bytes_it_handed_the_debugger(tmp_path: Path) -> No
     assert got["bytes"] == 2 + dsym.RECORD, got
 
 
-# A 32-bit map of one section, its `Start` column zero as ILINK32 prints it.
-ONE_SECTION = (" Start         Length     Name               Class\r\n"
-               " 0001:00000000 000000100H _TEXT              CODE\r\n"
-               "\r\n  Address         Publics by Name\r\n\r\n"
-               " 0001:00000010       _main\r\n")
+# A real ILINK32 map of three sections (tests/fixtures/borland-ilink32/PROVENANCE.txt).
+ILINK32_MAP = Path(__file__).parent / "fixtures" / "borland-ilink32" / "sections32.map"
+ILINK32_BASES = {"1": "401000", "2": "423000", "3": "4289B8"}
 
 
 def test_a_sectioned_table_has_no_descriptor(tmp_path: Path) -> None:
     _names(tmp_path)
-    got = _ok(server.symbols_load(path=_map(tmp_path, "a.map", ONE_SECTION),
-                                  section_bases={"1": "401000"}))
+    got = _ok(server.symbols_load(path=str(ILINK32_MAP), section_bases=ILINK32_BASES))
     assert (got["limit"], got["descriptor"]) == (-1, -1), got
 
 
@@ -163,11 +160,10 @@ def test_a_batch_that_would_overfill_the_queued_one_is_refused_and_the_table_kep
 
 def test_a_section_the_table_does_not_hold_is_refused_by_name(tmp_path: Path) -> None:
     _names(tmp_path)
-    _ok(server.symbols_load(path=_map(tmp_path, "a.map", ONE_SECTION),
-                            section_bases={"1": "401000"}))
-    got = cast(dict[str, Any], server.symbols_find(offset=0x10, section=2))
+    _ok(server.symbols_load(path=str(ILINK32_MAP), section_bases=ILINK32_BASES))
+    got = cast(dict[str, Any], server.symbols_find(offset=0x10, section=4))
     assert got["status"] == "INVALID" and got["code"] == "unknown_ref", got
-    assert "nothing in section 2" in got["message"], got
+    assert "nothing in section 4" in got["message"], got
 
 
 def test_section_bases_that_are_no_mapping_are_refused_naming_them() -> None:

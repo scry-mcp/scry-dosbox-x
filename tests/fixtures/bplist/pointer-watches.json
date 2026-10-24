@@ -1,0 +1,129 @@
+{
+ "show": {
+  "summary": "watch_add [0040:001A]: null_pointer",
+  "status": "ok",
+  "ref": "[0040:001A]",
+  "by": "pointer",
+  "mode": "show",
+  "fmt": "u16",
+  "length": 2,
+  "stored": true,
+  "already_stored": false,
+  "armed": false,
+  "state": "null_pointer",
+  "why": "the pointer at 0040:0000001A is null, so there is nothing to watch yet; the declaration is kept and re-resolved at every stop",
+  "pointer": {
+   "at": "0040:0000001A",
+   "length": 2,
+   "value": "0000",
+   "offset": 0
+  },
+  "session": {
+   "alive": true,
+   "running": false,
+   "altered": true
+  }
+ },
+ "change": {
+  "summary": "watch_add [0040:001C]: null_pointer",
+  "status": "ok",
+  "ref": "[0040:001C]",
+  "by": "pointer",
+  "mode": "change",
+  "fmt": "u16",
+  "length": 2,
+  "stored": true,
+  "already_stored": false,
+  "armed": false,
+  "state": "null_pointer",
+  "why": "the pointer at 0040:0000001C is null, so there is nothing to watch yet; the declaration is kept and re-resolved at every stop",
+  "pointer": {
+   "at": "0040:0000001C",
+   "length": 2,
+   "value": "0000",
+   "offset": 0
+  },
+  "session": {
+   "alive": true,
+   "running": false,
+   "altered": true
+  }
+ },
+ "watch_list": {
+  "summary": "watch_list: 3 declared",
+  "status": "ok",
+  "watches": [
+   {
+    "ref": "0000:0500",
+    "by": "address",
+    "cpu": {
+     "available": false,
+     "why": "a DOS machine has one cpu, and every row acts on it"
+    },
+    "created_at": "2026-10-24T07:19:20+00:00",
+    "origin": "2026-10-24T07:19:19+00:00#58060.3",
+    "inherited": false,
+    "age_s": 10,
+    "mode": "change",
+    "length": 2,
+    "fmt": "u16",
+    "entry": "BPMEM 0000:0500",
+    "state": "armed"
+   },
+   {
+    "ref": "[0040:001A]",
+    "by": "pointer",
+    "cpu": {
+     "available": false,
+     "why": "a DOS machine has one cpu, and every row acts on it"
+    },
+    "created_at": "2026-10-24T07:19:28+00:00",
+    "origin": "2026-10-24T07:19:19+00:00#58060.3",
+    "inherited": false,
+    "age_s": 2,
+    "mode": "show",
+    "length": 2,
+    "fmt": "u16",
+    "pointer": {
+     "at": "0040:0000001A",
+     "length": 2,
+     "value": "0000",
+     "offset": 0
+    },
+    "state": "null_pointer",
+    "why": "the pointer at 0040:0000001A is null, so there is nothing to watch yet; the declaration is kept and re-resolved at every stop"
+   },
+   {
+    "ref": "[0040:001C]",
+    "by": "pointer",
+    "cpu": {
+     "available": false,
+     "why": "a DOS machine has one cpu, and every row acts on it"
+    },
+    "created_at": "2026-10-24T07:19:29+00:00",
+    "origin": "2026-10-24T07:19:19+00:00#58060.3",
+    "inherited": false,
+    "age_s": 2,
+    "mode": "change",
+    "length": 2,
+    "fmt": "u16",
+    "pointer": {
+     "at": "0040:0000001C",
+     "length": 2,
+     "value": "0000",
+     "offset": 0
+    },
+    "state": "null_pointer",
+    "why": "the pointer at 0040:0000001C is null, so there is nothing to watch yet; the declaration is kept and re-resolved at every stop"
+   }
+  ],
+  "foreign": [],
+  "debugger_read": true,
+  "session": {
+   "alive": true,
+   "running": false,
+   "altered": true
+  }
+ },
+ "bplist": "B_P_L_I_S_T__ooooRegister OverviewoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooEAX=00000000  ESI=00000000  DS=0000   ES=0000   FS=0000   GS=0000   SS=0000 Real\r\nEBX=00000000  EDI=00000000  CS=F000   EIP=0000FFF0  C0 Z0 S0 O0 A0 P0 D0 I0 T0\r\nECX=00000000  EBP=00000000NOPG  IOPL0  CPL0\r\nEDX=00000000  ESP=00000000cc=0RUN\r\nST0=00000.00  ST1=00000.00  ST2=00000.00  ST3=00000.00pfi=0.700000000\r\nST4=00000.00  ST5=00000.00  ST6=00000.00  ST7=00000.00\r\nooooData view (segmented)ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo0040:0000001C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................\r\n0040:0000002C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................\r\n0040:0000003C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................\r\n0040:0000004C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................\r\n0040:0000005C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................\r\n0040:0000006C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................\r\n0040:0000007C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................\r\n0040:0000008C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................\r\nooooCode OverviewoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooF000:0000FFF0 EA5BE000F0          jmp  F000:E05B\r\nF000:0000FFF5 3031xor  [bx+di],dhds:[0000]=0000\r\nF000:0000FFF7 2Fdas\r\nF000:0000FFF8 3031xor  [bx+di],dhds:[0000]=0000\r\nF000:0000FFFA 2Fdas\r\nF000:0000FFFB 3932cmp  [bp+si],siss:[0000]=0000\r\nF000:0000FFFD 00FCadd  ah,bh\r\nF000:0000FFFF 55push bp\r\nF000:00010000 0000add  [bx+si],alds:[0000]=0000\r\nF000:00010002 0000add  [bx+si],alds:[0000]=0000\r\nF000:00010004 0000add  [bx+si],alds:[0000]=0000\r\nooooOutputooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooBreakpoint list:\r\n-------------------------------------------------------------------------\r\n00. BP F000:0300\r\n01. BP F000:0100\r\n02. BPLM 00000600 (00)\r\n03. BPMEM 0000:0500 (00)\r\nDEBUG: Set data overview to 0040:001A\r\nBreakpoint list:\r\n-------------------------------------------------------------------------\r\n00. BP F000:0300\r\n01. BP F000:0100\r\n02. BPLM 00000600 (00)\r\n03. BPMEM 0000:0500 (00)\r\nDEBUG: Set data overview to 0040:001C\r\nBreakpoint list:\r\n-------------------------------------------------------------------------\r\n00. BP F000:0300\r\n01. BP F000:0100\r\n02. BPLM 00000600 (00)\r\n03. BPMEM 0000:0500 (00)\r\nI-> _"
+}

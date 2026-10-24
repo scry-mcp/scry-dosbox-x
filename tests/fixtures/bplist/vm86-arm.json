@@ -1,0 +1,139 @@
+{
+ "stop": {
+  "summary": "stop: break, at 0814:00000221",
+  "status": "ok",
+  "interrupted": true,
+  "via": "break",
+  "pc": "0814:00000221",
+  "cpu_mode": "VM86",
+  "regs": {
+   "EAX": "0x00000800",
+   "ESI": "0x0000023c",
+   "DS": "0x0814",
+   "ES": "0x0814",
+   "FS": "0x0814",
+   "GS": "0x0814",
+   "SS": "0x0814",
+   "EBX": "0x00000239",
+   "EDI": "0x00000380",
+   "CS": "0x0814",
+   "EIP": "0x00000221",
+   "ECX": "0x0000a515",
+   "EBP": "0x0000091c",
+   "EDX": "0x000000ba",
+   "ESP": "0x00000610"
+  },
+  "watches": [],
+  "cause": "the `stop` call at 0814:00000221",
+  "e9": {
+   "lines_total": 2,
+   "truncated": false,
+   "lines": [
+    "Bochs port E9h: V86 0000",
+    "Bochs port E9h: V86 0001"
+   ],
+   "mark": 0
+  },
+  "stop_seq": 2,
+  "instruction": {
+   "seg_off": "0814:00000221",
+   "bytes": "E2FE",
+   "text": "loop 0x221",
+   "flow": "branch",
+   "code_bits": 16,
+   "bytes_from": "code pane",
+   "symbol": {
+    "available": false,
+    "why": "no symbol table is loaded"
+   },
+   "delta": {
+    "available": false,
+    "why": "no symbol table is loaded"
+   }
+  },
+  "session": {
+   "alive": true,
+   "running": false,
+   "altered": true
+  }
+ },
+ "breakpoint_at": {
+  "summary": "breakpoint_at 0814:0221: armed",
+  "status": "ok",
+  "ref": "0814:0221",
+  "by": "address",
+  "stored": true,
+  "already_stored": false,
+  "armed": true,
+  "state": "armed",
+  "entry": "BP 0814:0221",
+  "marked": false,
+  "session": {
+   "alive": true,
+   "running": false,
+   "altered": true
+  }
+ },
+ "resume": {
+  "summary": "resume: OTHER_STOP, stopped at 0814:00000221",
+  "status": "ok",
+  "verdict": "OTHER_STOP",
+  "omitted": [
+   "screen_delta",
+   "screen_chars",
+   "clipped"
+  ],
+  "how": "detail=True adds the debugger's repaint for this command",
+  "waited_s": 0.0,
+  "pc": "0814:00000221",
+  "cpu_mode": "VM86",
+  "regs": {
+   "EAX": "0x00000800",
+   "ESI": "0x0000023c",
+   "DS": "0x0814",
+   "ES": "0x0814",
+   "FS": "0x0814",
+   "GS": "0x0814",
+   "SS": "0x0814",
+   "EBX": "0x00000239",
+   "EDI": "0x00000380",
+   "CS": "0x0814",
+   "EIP": "0x00000221",
+   "ECX": "0x0000a514",
+   "EBP": "0x0000091c",
+   "EDX": "0x000000ba",
+   "ESP": "0x00000610"
+  },
+  "watches": [],
+  "cause": "breakpoint 0814:0221 (by address) at 0814:00000221",
+  "e9": {
+   "lines_total": 0,
+   "truncated": false,
+   "lines": [],
+   "mark": 3100
+  },
+  "stop_seq": 3,
+  "instruction": {
+   "seg_off": "0814:00000221",
+   "bytes": "E2FE",
+   "text": "loop 0x221",
+   "flow": "branch",
+   "code_bits": 16,
+   "bytes_from": "code pane",
+   "symbol": {
+    "available": false,
+    "why": "no symbol table is loaded"
+   },
+   "delta": {
+    "available": false,
+    "why": "no symbol table is loaded"
+   }
+  },
+  "session": {
+   "alive": true,
+   "running": false,
+   "altered": true
+  }
+ },
+ "ref": "0814:0221"
+}

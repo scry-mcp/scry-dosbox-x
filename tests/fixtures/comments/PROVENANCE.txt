@@ -1,3 +1,5 @@
 What this is: the comment file format's known answer, written by a writer independent of this
 server's own (the words of tests/test_dosbox_x_comment_file.py, which reads it and checks every
-rule of the format against it). How it was written is not recorded further. It is not a capture.
+rule of the format against it). A live session of this server took it in through `comment_load`
+and wrote it back through `comment_save`, at a real-mode stop of the probe guest on a DOSBox-X
+build carrying the debugger (macOS, SDL2), byte for byte the same file.

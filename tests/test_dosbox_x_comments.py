@@ -299,7 +299,7 @@ def test_an_ambiguous_symbol_is_refused_and_nothing_stored() -> None:
 
 def test_a_real_mode_offset_past_ffff_is_refused() -> None:
     install()
-    assert "past FFFF" in refused(server.comment_add(ref="0814:10000", text="x"),
+    assert "past FFFF" in refused(server.comment_add(ref="0814:00010000", text="x"),
                                   "bad_argument")
     assert ok(server.comment_list())["comments_total"] == 0
 
@@ -567,7 +567,7 @@ def _rows_by_ref() -> dict[str, dict[str, Any]]:
 
 
 @pytest.mark.parametrize("protected, fine, ref, said, waits", [
-    (False, "0814:0106", "0814:10000", "past FFFF", "kept for a protected-mode stop"),
+    (False, "0814:0106", "0814:00010000", "past FFFF", "kept for a protected-mode stop"),
     (True, "00A7:00001000", "00A7:00240000", "limit 23FFFF",
      "kept for a stop at which 00A7's limit reaches it"),
     (True, "00A7:00001000", "0000:0100", "null selector", "kept for a real-mode stop"),
@@ -608,14 +608,14 @@ def test_a_protected_mode_save_loads_at_the_real_mode_park_and_is_placed_back(
     ok(server.comment_save(dest=str(saved)))
     install()
     got = ok(server.comment_load(path=str(saved)))
-    assert got["added"] == 1 and "00A7:45F80" in got["note"]
-    assert _rows_by_ref()["00A7:45F80"]["state"] == "unarmable"
+    assert got["added"] == 1 and "00A7:00045F80" in got["note"]
+    assert _rows_by_ref()["00A7:00045F80"]["state"] == "unarmable"
     ok(server.comment_save(dest=str(again)))
     assert again.read_bytes() == saved.read_bytes()
     dstate.STATE.session = Protected()  # type: ignore[assignment]
-    assert "no stop has placed it" in _rows_by_ref()["00A7:45F80"]["why"]
+    assert "no stop has placed it" in _rows_by_ref()["00A7:00045F80"]["why"]
     ok(server.comment_load(path=str(saved)))
-    row = _rows_by_ref()["00A7:45F80"]
+    row = _rows_by_ref()["00A7:00045F80"]
     assert (row["state"], row["addr"]) == ("resolved", "0x00445f80")
 
 
@@ -652,7 +652,7 @@ def test_a_stale_comment_with_the_files_text_is_brought_to_this_build(tmp_path: 
 
 
 @pytest.mark.parametrize("ref, waits_in_protected_mode", [
-    ("00A7:45F80", False), ("0000:0084", True)])
+    ("00A7:00045F80", False), ("0000:0084", True)])
 def test_a_stale_row_with_the_files_text_loaded_where_it_waits_is_brought_to_this_build(
         tmp_path: Path, ref: str, waits_in_protected_mode: bool) -> None:
     """A held raw row from another build that the file gives the same text is brought to this
@@ -691,7 +691,7 @@ def test_a_file_row_whose_selector_this_stop_does_not_describe_waits_for_one_tha
     row = rows["0097:0010"]
     assert row["state"] == "unarmable" and "names no descriptor" in row["why"], row
     assert "a real-mode one, or one whose tables describe 0097" in row["why"], row
-    assert rows["0097:10000"]["why"].endswith("kept for a stop whose tables describe 0097")
+    assert rows["0097:00010000"]["why"].endswith("kept for a stop whose tables describe 0097")
     assert "names no descriptor" in refused(server.comment_add(ref="0097:0010", text="x"),
                                             "bad_argument")
 
@@ -721,12 +721,12 @@ def test_a_file_loaded_at_the_real_mode_park_is_placed_after_the_protected_mode_
         "00A7:2000", "over another map", cpu_mode="protected",
         fingerprint=build_of(conf, other.read_text(encoding="utf-8")))])
     loaded = ok(server.comment_load(path=str(_file(tmp_path, ("00A7:00045F80", "pm")))))
-    assert loaded["added"] == 1 and "00A7:45F80" in loaded["note"]
+    assert loaded["added"] == 1 and "00A7:00045F80" in loaded["note"]
     booted.mode = "Pr32"
     ok(server.symbols_load(path=str(mapf), base="400000"))
     rows = _rows_by_ref()
-    assert (rows["00A7:45F80"]["state"], rows["00A7:45F80"].get("addr")) == (
-        "resolved", "0x00445f80"), rows["00A7:45F80"]
+    assert (rows["00A7:00045F80"]["state"], rows["00A7:00045F80"].get("addr")) == (
+        "resolved", "0x00445f80"), rows["00A7:00045F80"]
     assert rows["00A7:2000"]["state"] == "stale", rows["00A7:2000"]
 
 
@@ -757,7 +757,7 @@ def test_a_row_placed_before_the_map_in_an_earlier_session_is_stale_over_a_relin
         ref, mode = "0814:0106", dcons.REAL_MODE
         ok(server.comment_add(ref=ref, text="at the park"))
     else:
-        ref, mode = "00A7:62310", "Pr32"
+        ref, mode = "00A7:00062310", "Pr32"
         ok(server.comment_load(path=str(_file(tmp_path, ("00A7:00062310", "at the park")))))
     booted.mode = "Pr32"
     ok(server.symbols_load(path=str(mapf), base="400000"))
@@ -799,7 +799,7 @@ def test_a_row_placed_before_a_map_loaded_while_the_guest_ran_takes_it_at_the_st
     booted = _a_new_session(tmp_path, monkeypatch)
     booted.mode = "Pr32"
     ok(server.symbols_load(path=str(other), base="400000"))
-    assert _rows_by_ref()["00A7:62310"]["state"] == "stale", _rows_by_ref()
+    assert _rows_by_ref()["00A7:00062310"]["state"] == "stale", _rows_by_ref()
 
 
 def test_a_store_that_cannot_take_a_deferred_maps_build_says_so_at_the_stop(
@@ -829,7 +829,7 @@ def test_a_row_placed_before_the_map_is_placed_over_a_second_map_of_the_same_ses
     booted.mode = "Pr32"
     ok(server.symbols_load(path=str(mapf), base="400000"))
     ok(server.symbols_load(path=str(other), base="400000"))
-    assert _rows_by_ref()["00A7:62310"]["state"] == "resolved"
+    assert _rows_by_ref()["00A7:00062310"]["state"] == "resolved"
 
 
 def test_a_row_another_session_left_before_any_map_is_not_taken_into_this_sessions_map(
@@ -843,9 +843,9 @@ def test_a_row_another_session_left_before_any_map_is_not_taken_into_this_sessio
     ok(server.comment_load(path=str(_file(tmp_path, ("00A7:00062310", "no map here")))))
     booted = _a_new_session(tmp_path, monkeypatch)
     booted.mode = "Pr32"
-    assert "no stop has placed it" in _rows_by_ref()["00A7:62310"]["why"]
+    assert "no stop has placed it" in _rows_by_ref()["00A7:00062310"]["why"]
     ok(server.symbols_load(path=str(mapf), base="400000"))
-    assert "no stop has placed it" in _rows_by_ref()["00A7:62310"]["why"]
+    assert "no stop has placed it" in _rows_by_ref()["00A7:00062310"]["why"]
 
 
 def test_a_store_that_cannot_take_the_maps_build_is_host_failed_and_the_row_as_it_was(
@@ -1186,6 +1186,21 @@ def test_a_held_address_in_another_spelling_is_reached_by_its_own_ref(tmp_path: 
     store.apply(adds=[comment("38:B8000", "short")])
     got = ok(server.comment_add(ref="0038:000B8000", text="full"))
     assert [r["text"] for r in got["replaced_comments"]] == ["short"]
-    loaded = ok(server.comment_load(path=str(_file(tmp_path, ("0038:B8000", "file")))))
+    loaded = ok(server.comment_load(path=str(_file(tmp_path, ("0038:000B8000", "file")))))
     assert (loaded["replaced_total"], loaded["added"]) == (1, 0)
     assert [(c.ref, c.text) for c in store.comments()] == [("38:B8000", "file")]
+
+
+def test_a_saved_file_spells_every_ref_once_whatever_the_store_held(tmp_path: Path) -> None:
+    """A row a store holds in another spelling (an older version kept `00A7:45F880`, a caller
+    typed eight digits for an offset under FFFF) is written in the one spelling a ref has."""
+    _running(tmp_path)
+    dstate.STATE.last_stop.update(seq=1, at="0814:0106", attribution={}, when=0.0, clock="c",
+                                  held=[], where={"mode": "Real"}, registers={})
+    store = cast(dec.DeclarationStore, dstate.STATE.store)
+    store.apply(adds=[comment("00A7:45F880", "legacy", cpu_mode="protected"),
+                      comment("00A7:00001000", "wide", cpu_mode="protected")])
+    dest = tmp_path / "c.tsv"
+    ok(server.comment_save(dest=str(dest)))
+    refs = sorted(line.split("\t")[0] for line in dest.read_text(encoding="utf-8").splitlines()[1:])
+    assert refs == ["00A7:0045F880", "00A7:1000"], refs

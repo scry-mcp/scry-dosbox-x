@@ -483,7 +483,7 @@ def comment_save(session: ds.Session, dest: str) -> dict[str, Any]:
     path, before = _judged_dest(dest, store)
     _one_per_place(_placed_comments(_Places(session), store))
     held = store.comments()
-    text = cf.render([cf.Row(d.ref, "", d.created_at or "", d.text) for d in held])
+    text = cf.render([cf.Row(_own_ref(d), "", d.created_at or "", d.text) for d in held])
     mine = {_own_ref(d) for d in held}
     dropped = [{"ref": r.ref} for r in before or []
                if _canonical_file_ref(r.ref) not in mine]

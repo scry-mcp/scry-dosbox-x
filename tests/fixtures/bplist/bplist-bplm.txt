@@ -1,0 +1,46 @@
+B_P_L_I_S_T__ooooRegister OverviewoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooEAX=00000000  ESI=00000000  DS=0000   ES=0000   FS=0000   GS=0000   SS=0000 Real
+EBX=00000000  EDI=00000000  CS=F000   EIP=0000FFF0  C0 Z0 S0 O0 A0 P0 D0 I0 T0
+ECX=00000000  EBP=00000000NOPG  IOPL0  CPL0
+EDX=00000000  ESP=00000000cc=0RUN
+ST0=00000.00  ST1=00000.00  ST2=00000.00  ST3=00000.00pfi=0.700000000
+ST4=00000.00  ST5=00000.00  ST6=00000.00  ST7=00000.00
+ooooData view (segmented)ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo0000:00000500 5A A5 00 00 00 00 00 00 00 00 00 00 00 00 00 00  Z...............
+0000:00000510 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+0000:00000520 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+0000:00000530 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+0000:00000540 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+0000:00000550 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+0000:00000560 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+0000:00000570 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+ooooCode OverviewoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooF000:0000FFF0 EA5BE000F0          jmp  F000:E05B
+F000:0000FFF5 3031xor  [bx+di],dhds:[0000]=0000
+F000:0000FFF7 2Fdas
+F000:0000FFF8 3031xor  [bx+di],dhds:[0000]=0000
+F000:0000FFFA 2Fdas
+F000:0000FFFB 3932cmp  [bp+si],siss:[0000]=0000
+F000:0000FFFD 00FCadd  ah,bh
+F000:0000FFFF 55push bp
+F000:00010000 0000add  [bx+si],alds:[0000]=0000
+F000:00010002 0000add  [bx+si],alds:[0000]=0000
+F000:00010004 0000add  [bx+si],alds:[0000]=0000
+ooooOutputooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooBreakpoint list:
+-------------------------------------------------------------------------
+Breakpoint list:
+-------------------------------------------------------------------------
+DEBUG: Set memory breakpoint at 0000:0500
+Breakpoint list:
+-------------------------------------------------------------------------
+00. BPMEM 0000:0500 (00)
+Breakpoint list:
+-------------------------------------------------------------------------
+00. BPMEM 0000:0500 (00)
+Breakpoint list:
+-------------------------------------------------------------------------
+00. BPMEM 0000:0500 (00)
+DEBUG: Set data overview to 0000:0500
+DEBUG: Set linear memory breakpoint at 00000600
+Breakpoint list:
+-------------------------------------------------------------------------
+00. BPLM 00000600 (00)
+01. BPMEM 0000:0500 (00)
+I-> _

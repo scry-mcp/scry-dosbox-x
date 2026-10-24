@@ -33,6 +33,7 @@ DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES
               **log_marks.DOC_VALUES,
               "LOG_LIMIT_MAX": str(logs.LOG_LIMIT_MAX), "WAIT_MAX_S": f"{vocab.WAIT_MAX_S:g}",
               "READ_MAX": str(console.DATA_VIEW_BYTES), "DISASM_MAX": str(code.LENGTH_MAX),
+              "CHANGE_WATCH_MAX": str(checks.CHANGE_WATCH_MAX),
               "INSTRUCTIONS_MAX": str(trace.INSTRUCTIONS_MAX),
               "SYMBOLS_LIMIT_MAX": str(placement.SYMBOLS_LIMIT_MAX),
               "COMMENT_BYTES_MAX": str(comment_file.TEXT_MAX_BYTES),

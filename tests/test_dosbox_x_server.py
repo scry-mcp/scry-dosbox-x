@@ -1778,23 +1778,11 @@ def test_an_nm_table_is_reported_with_no_overlay_symbols(tmp_path: Path) -> None
     assert found["symbols"][0]["idle"] is False, found
 
 
-# TWO SECTIONS AT THE SAME OFFSET, and the `Start` column reading ZERO -- both of them
-# copied from the real artefact (`HELLO32.MAP`) rather than from the vendor's
-# documentation, which is where the previous version of this came from and where it was
-# wrong. Two sections because with one, a reply that ignored the section index and one
-# that used it are the same reply.
-TLINK32_TEXT = (
-    " Start         Length     Name               Class\r\n"
-    "\r\n"
-    " 0001:00000000 0000214D4H _TEXT              CODE\r\n"
-    " 0002:00000000 0000059B8H _DATA              DATA\r\n"
-    "\r\n"
-    "  Address         Publics by Name\r\n"
-    "\r\n"
-    " 0001:000000E4       _main\r\n"
-    " 0002:000000E4       _table\r\n"
-    "\r\n"
-    "Program entry point at 0001:000000E4\r\n")
+# A REAL ILINK32 MAP (tests/fixtures/borland-ilink32/PROVENANCE.txt): three sections whose
+# `Start` column reads ZERO, so the bases are the caller's, and DISTINCT bases, so a reply that
+# ignored the section index would place every symbol at the wrong address.
+ILINK32_MAP = Path(__file__).parent / "fixtures" / "borland-ilink32" / "sections32.map"
+ILINK32_BASES = {"1": "0x401000", "2": "0x423000", "3": "0x4289B8"}
 
 
 def test_a_32_bit_map_reaches_the_caller_through_the_tool(tmp_path: Path) -> None:
@@ -1809,27 +1797,26 @@ def test_a_32_bit_map_reaches_the_caller_through_the_tool(tmp_path: Path) -> Non
     sectioned map is placed from a table the CALLER supplies, because the bases are not in
     the file.
 
-    THE TWO BASES ARE DISTINCT AND THE TWO SYMBOLS SHARE AN OFFSET, which is what lets
-    this fail at all: with one base, or with the section index ignored, `_main` and
-    `_table` come back at the same address and the reply reads exactly as right.
+    THE BASES ARE DISTINCT, which is what lets this fail at all: with one base, or with the
+    section index ignored, `_main` and `_errno` come back at addresses that read exactly as
+    right and are not.
     """
     install()
-    src = tmp_path / "flat.map"
-    src.write_text(TLINK32_TEXT, encoding="utf-8")
+    src = ILINK32_MAP
     got = cast(dict[str, Any], server.symbols_load(
-        path=str(src), section_bases={"1": "0x401000", "2": "0x423000"}))
+        path=str(src), section_bases=ILINK32_BASES))
     assert got["status"] == "ok", got
-    assert got["kept"] == 2 and got["unreadable"] == 0, got
-    assert got["overlay_idle"] == 0, got
+    assert got["kept"] == 4 and got["unreadable"] == 0, got
+    assert got["overlay_idle"] == 1, got
 
     at = {}
-    for name in ("_main", "_table"):
+    for name, offset in (("_main", 0x130), ("_errno", 0x2090)):
         found = cast(dict[str, Any], server.symbols_find(name=name))
         one = found["symbols"][0]
-        assert one["offset"] == 0x000000E4, one
+        assert one["offset"] == offset, one
         assert one["idle"] is False, one
         at[name] = (one["section"], int(one["addr"], 16))
-    assert at == {"_main": (1, 0x004010E4), "_table": (2, 0x004230E4)}, at
+    assert at == {"_main": (1, 0x00401130), "_errno": (2, 0x00425090)}, at
 
 
 def test_a_sectioned_map_refuses_a_section_the_caller_did_not_position(
@@ -1837,16 +1824,15 @@ def test_a_sectioned_map_refuses_a_section_the_caller_did_not_position(
     """The refusal a caller most needs, through the layer they meet it at: it NAMES the
     section nobody positioned rather than reporting a row as lost."""
     install()
-    src = tmp_path / "flat.map"
-    src.write_text(TLINK32_TEXT, encoding="utf-8")
+    src = ILINK32_MAP
     # THE TOOL DECORATOR TRANSLATES A REFUSAL INTO A REPLY rather than letting it
     # escape, which is the whole reason `Invalid` exists as its own type -- so the
     # assertion is on the reply, not on an exception.
     got = cast(dict[str, Any], server.symbols_load(
-        path=str(src), section_bases={"1": "0x401000"}))
+        path=str(src), section_bases={"1": "0x401000", "3": "0x4289B8"}))
     assert got["status"] != "ok", got
     assert "section 2" in str(got["message"]), got["message"]
-    assert "_table" in str(got["message"]), got["message"]
+    assert "_errno" in str(got["message"]), got["message"]
 
 
 def test_section_bases_keys_arrive_as_json_strings_and_are_read_as_numbers(
@@ -1858,11 +1844,10 @@ def test_section_bases_keys_arrive_as_json_strings_and_are_read_as_numbers(
     their sections are unpositioned about a table naming all of them.
     """
     install()
-    src = tmp_path / "flat.map"
-    src.write_text(TLINK32_TEXT, encoding="utf-8")
+    src = ILINK32_MAP
     got = cast(dict[str, Any], server.symbols_load(
-        path=str(src), section_bases={"0x1": "0x401000", "2": "0x423000"}))
-    assert got["kept"] == 2, got
+        path=str(src), section_bases={"0x1": "0x401000", "2": "0x423000", "3": "0x4289B8"}))
+    assert got["kept"] == 4, got
     # AND A KEY THAT IS NOT A NUMBER IS REFUSED rather than silently dropped, because a
     # dropped key is a section that then reads as unpositioned.
     bad = cast(dict[str, Any], server.symbols_load(
@@ -2719,19 +2704,17 @@ def test_a_sectioned_table_answers_a_linear_address_without_being_told_the_secti
     back the sum they came here to have computed.
     """
     install()
-    src = tmp_path / "flat.map"
-    src.write_text(TLINK32_TEXT, encoding="utf-8")
-    server.symbols_load(path=str(src),
-                        section_bases={"1": "0x401000", "2": "0x423000"})
-    # 0x4010F0 is 12 bytes past `_main`, which is section 1 offset 0xE4.
-    got = cast(dict[str, Any], server.symbols_find(linear="4010F0"))
+    src = ILINK32_MAP
+    server.symbols_load(path=str(src), section_bases=ILINK32_BASES)
+    # 0x40113C is 12 bytes past `_main`, which is section 1 offset 0x130.
+    got = cast(dict[str, Any], server.symbols_find(linear="40113C"))
     assert got["name"] == "_main" and got["section"] == 1, got
     assert got["delta"] == 0xC, got
     # AND THE OTHER SECTION, at the SAME distance past its own symbol -- which a table
-    # that ignored the section index would answer with `_main` too, because 0x4230F0 is
+    # that ignored the section index would answer from section 1, because 0x42509C is
     # also above section 1's base.
-    other = cast(dict[str, Any], server.symbols_find(linear="4230F0"))
-    assert other["name"] == "_table" and other["section"] == 2, other
+    other = cast(dict[str, Any], server.symbols_find(linear="42509C"))
+    assert other["name"] == "_errno" and other["section"] == 2, other
     assert other["delta"] == 0xC, other
 
 
@@ -2740,18 +2723,17 @@ def test_an_offset_alone_is_refused_on_a_sectioned_table(tmp_path: Path) -> None
     would mean picking one silently -- which is exactly the confident wrong answer this
     package treats as worse than a refusal."""
     install()
-    src = tmp_path / "flat.map"
-    src.write_text(TLINK32_TEXT, encoding="utf-8")
-    server.symbols_load(path=str(src),
-                        section_bases={"1": "0x401000", "2": "0x423000"})
-    got = cast(dict[str, Any], server.symbols_find(offset=0xE4))
+    src = ILINK32_MAP
+    server.symbols_load(path=str(src), section_bases=ILINK32_BASES)
+    got = cast(dict[str, Any], server.symbols_find(offset=0x2090))
     assert got["status"] != "ok", got
     assert "SECTIONED" in str(got["message"]), got["message"]
     # WITH THE SECTION NAMED it answers, and the two sections give DIFFERENT symbols for
     # the same offset -- which is the whole reason the bare form is refused.
-    one = cast(dict[str, Any], server.symbols_find(offset=0xE4, section=1))
-    two = cast(dict[str, Any], server.symbols_find(offset=0xE4, section=2))
-    assert (one["name"], two["name"]) == ("_main", "_table"), (one, two)
+    one = cast(dict[str, Any], server.symbols_find(offset=0x2090, section=1))
+    two = cast(dict[str, Any], server.symbols_find(offset=0x2090, section=2))
+    assert (one["name"], one["delta"]) == ("_main", 0x2090 - 0x130), one
+    assert (two["name"], two["delta"]) == ("_errno", 0), two
 
 
 def test_an_address_below_every_section_is_refused_rather_than_folded(
@@ -2759,10 +2741,8 @@ def test_an_address_below_every_section_is_refused_rather_than_folded(
     """Below every base there is no section to subtract, and choosing one anyway would
     produce a negative offset and then the nearest symbol of whatever section that was."""
     install()
-    src = tmp_path / "flat.map"
-    src.write_text(TLINK32_TEXT, encoding="utf-8")
-    server.symbols_load(path=str(src),
-                        section_bases={"1": "0x401000", "2": "0x423000"})
+    src = ILINK32_MAP
+    server.symbols_load(path=str(src), section_bases=ILINK32_BASES)
     got = cast(dict[str, Any], server.symbols_find(linear="0x1000"))
     assert got["status"] != "ok", got
     assert "below every section" in str(got["message"]), got["message"]
@@ -2791,10 +2771,8 @@ def test_nothing_below_the_asked_offset_names_the_section_it_looked_in(
     has to say WHICH section it examined -- otherwise a caller reads it as a statement
     about the whole program."""
     install()
-    src = tmp_path / "flat.map"
-    src.write_text(TLINK32_TEXT, encoding="utf-8")
-    server.symbols_load(path=str(src),
-                        section_bases={"1": "0x401000", "2": "0x423000"})
+    src = ILINK32_MAP
+    server.symbols_load(path=str(src), section_bases=ILINK32_BASES)
     got = cast(dict[str, Any], server.symbols_find(offset=0x10, section=1))
     assert got["status"] != "ok", got
     assert "section 1" in str(got["message"]), got["message"]
@@ -3148,8 +3126,16 @@ class NamesFake:
     def command(self, text: str, **_k: object) -> str:
         if text.startswith("BPDEL "):
             idx = text.split()[1]
-            self.rows = [r for r in self.rows if r.get("index") != idx]
+            self._relist([r for r in self.rows if r.get("index") != idx])
         return ""
+
+    def _relist(self, rows: list[dict[str, str]]) -> None:
+        """The list as the debugger prints it after a change: newest first, numbered from 00
+        down, so a delete moves every later row up one index (tests/fixtures/bplist)."""
+        self.rows[:] = [{**r, "index": f"{i:02d}"} for i, r in enumerate(rows)]
+
+    def _listed(self, entry: str) -> None:
+        self._relist([{"index": "", "entry": entry}, *self.rows])
 
     def arm_code_breakpoint(self, seg: int, off: int) -> dict[str, object]:
         if self.running:
@@ -3157,7 +3143,7 @@ class NamesFake:
         if self.arm_fails:
             raise ds.Invalid("not_stopped", "the machine is running; nothing was armed")
         entry = f"BP {seg:04X}:{off:04X}"
-        self.rows.append({"index": f"{len(self.rows):02d}", "entry": entry})
+        self._listed(entry)
         return {"target": f"{seg:04X}:{off:04X}", "entry": entry, "breakpoints": self.rows}
 
     def _console(self) -> None:
@@ -3168,13 +3154,13 @@ class NamesFake:
         self._console()
         entry = f"BP {seg:04X}:{off:04X}"
         before = len(self.rows)
-        self.rows = [r for r in self.rows if r["entry"] != entry]
+        self._relist([r for r in self.rows if r["entry"] != entry])
         return {"entry": entry, "removed": len(self.rows) < before}
 
     def breakpoint_interrupt(self, number: int, ah: int | None = None) -> str:
         self._console()
         entry = dcons.interrupt_row(number, ah)
-        self.rows.append({"index": f"{len(self.rows):02d}", "entry": entry})
+        self._listed(entry)
         return f"DEBUG: Set interrupt breakpoint at INT {number:02X}"
 
     def clear_interrupt_breakpoint(self, number: int,
@@ -3182,7 +3168,7 @@ class NamesFake:
         self._console()
         entry = dcons.interrupt_row(number, ah)
         before = len(self.rows)
-        self.rows = [r for r in self.rows if r["entry"] != entry]
+        self._relist([r for r in self.rows if r["entry"] != entry])
         return {"entry": entry, "removed": len(self.rows) < before}
 
     def load_symbols(self, data: bytes) -> list[tuple[str, int]]:
@@ -3210,8 +3196,10 @@ class NamesFake:
             else f"BPMEM {seg:04X}:{off:04X}"
         # THE REAL DEBUGGER APPENDS A TRAILING HIT COUNT to a memory-watch row that a code
         # breakpoint's does not carry, written here to the real row's `(00)` suffix.
-        self.rows.append({"index": f"{len(self.rows):02d}", "entry": f"{armed} (00)"})
-        return {"command": f"BP.. {seg:04X}:{off:04X}", "mode": self.mode,
+        self._listed(f"{armed} (00)")
+        sent = (f"BPPM {seg:04X}:{off:04X}" if self.mode.startswith("Pr")
+                else f"BPM {seg:04X}:{off:04X}")     # the command the real one types
+        return {"command": sent, "mode": self.mode,
                 "addressing": "segment", "armed": armed, "breakpoints": self.rows,
                 "fires_on": "a change"}
 
@@ -3310,7 +3298,7 @@ def test_re_declaring_a_change_watch_is_a_no_op_and_keeps_the_pr_caveat(
     again = server.watch_add(ref="_g_rate", mode="change", length=4)
     assert again["already_stored"] is True and again["armed"] is True
     assert "protected-mode watch" in str(again["caveat"])
-    assert len([r for r in fake.rows if r["entry"].startswith("BPPM")]) == 1
+    assert len([r for r in fake.rows if r["entry"].startswith("BPPM")]) == 4   # a row a byte
 
 
 def test_a_by_address_declaration_on_a_running_machine_is_kept_unarmed_not_invalid(
@@ -4635,12 +4623,11 @@ def test_a_sectioned_table_places_by_base_says_it_has_no_flat_one_and_counts_wha
     the sections' numbers; a sectioned load answers the flat base's sentinel and a real-mode
     target refuses it."""
     fake = install()
-    src = tmp_path / "flat.map"
-    src.write_text(TLINK32_TEXT, encoding="utf-8")
+    src = ILINK32_MAP
     got = cast(dict[str, Any], server.symbols_load(
-        path=str(src), section_bases={"1": "0x423000", "2": "0x401000"}))
+        path=str(src), section_bases={"1": "0x423000", "2": "0x401000", "3": "0x4289B8"}))
     assert got["status"] == "ok" and got["base"] == -1, got
-    found = cast(dict[str, Any], server.symbols_find(linear="004230E4"))
+    found = cast(dict[str, Any], server.symbols_find(linear="00423130"))
     assert found["name"] == "_main" and found["delta"] == 0, found
     real = NamesFake(mode="Real")
     with pytest.raises(ds.Invalid, match="FLAT base"):
@@ -4932,11 +4919,13 @@ def test_evaluate_watches_reads_read_mode_together_and_bytes_for_a_struct(
     assert by["g_cue"]["bytes"] == "0102030405060708"
 
 
-def test_evaluate_watches_will_not_read_a_change_watch_off_its_trap(tmp_path: Path) -> None:
-    """A break-on-change watch armed a trap byte in its memory (decision 29), so its value
-    is NOT read here -- the reply carries the reason instead of a value that would be the
-    trap. Unresolved and unreadable watches carry why, never a guessed value."""
+def test_evaluate_watches_reads_a_change_watch_s_value_beside_its_state(tmp_path: Path) -> None:
+    """A break-on-change watch writes nothing into the memory it watches (a live read under an
+    armed `BPMEM` returns the program's bytes, tests/fixtures/bplist/real-change-watch.json), so
+    each stop reports its value beside whether it is still armed. Unresolved and unreadable
+    watches carry why, never a guessed value."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("g_x", 0x1000, kind="d")], ds_="00AF")
+    fake.mem[(0xAF, 0x1000)] = (7).to_bytes(4, "little")
     st = dstate.STATE.store
     assert st is not None
     st.add(dec.Declaration("watch", "symbol", "g_x", width=4, fmt="u32",
@@ -4944,7 +4933,8 @@ def test_evaluate_watches_will_not_read_a_change_watch_off_its_trap(tmp_path: Pa
     st.add(dec.Declaration("watch", "symbol", "g_absent", width=4, fmt="u32",
                            watch_mode="show"))
     by = {w["ref"]: w for w in arming.evaluate_watches(fake)}  # type: ignore[arg-type]
-    assert "value" not in by["g_x"] and "trap" in by["g_x"]["note"]
+    assert by["g_x"]["value"] == arming.render_watch((7).to_bytes(4, "little"), 4, "u32"), by
+    assert by["g_x"]["bytes"] == "07000000" and "note" not in by["g_x"], by
     assert by["g_absent"]["state"] == "unresolved" and "value" not in by["g_absent"]
 
 
@@ -5126,9 +5116,9 @@ def test_a_halt_whose_position_is_unreadable_keeps_the_halt(
     assert "regs" not in out
 
 
-def test_a_read_watch_is_not_read_off_a_change_watchs_armed_trap(tmp_path: Path) -> None:
-    """decision 29 airtight against aliasing: a show watch whose address is CURRENTLY armed as
-    a memory watch (however declared) is `shadowed`, not read -- its bytes would be the trap."""
+def test_a_show_watch_on_bytes_a_change_watch_covers_is_read_as_any_other(tmp_path: Path) -> None:
+    """Two refs can alias one address, a show watch and a change watch: the change watch writes
+    nothing there, so the show watch reads the program's bytes as it would anywhere."""
     fake = _names(tmp_path, ds_="00AF")
     fake.rows.append({"index": "00", "entry": "BPPM 00AF:00006024 (00)"})   # armed elsewhere
     fake.mem[(0xAF, 0x6024)] = (999).to_bytes(4, "little")
@@ -5137,7 +5127,7 @@ def test_a_read_watch_is_not_read_off_a_change_watchs_armed_trap(tmp_path: Path)
     st.add(dec.Declaration("watch", "address", "00AF:00006024", width=4, fmt="u32",
                            watch_mode="show"))
     w = arming.evaluate_watches(fake)[0]  # type: ignore[arg-type]
-    assert w["state"] == "shadowed" and "value" not in w and "trap" in w["note"]
+    assert w["state"] == "evaluated" and w["bytes"] == (999).to_bytes(4, "little").hex(), w
 
 
 def test_a_stop_a_sequence_found_moves_the_mark_its_block_starts_from(tmp_path: Path) -> None:
@@ -5572,7 +5562,8 @@ def test_a_declaration_from_a_store_that_kept_no_origin_is_listed_as_an_orphan(
     assert listed["foreign"] == [], listed
     store.add(dec.Declaration("watch", "address", "00A7:0200", width=4, fmt="u32",
                               watch_mode="change"))
-    fake.rows.append({"index": "01", "entry": "BPPM 00A7:00000200 (00)"})
+    fake.rows.extend({"index": f"{1 + i:02d}", "entry": f"BPPM 00A7:{0x200 + i:08X} (00)"}
+                     for i in range(4))                  # a row for each of its four bytes
     wl = server.watch_list()
     armed = next(w for w in wl["watches"] if w["ref"] == "00A7:0200")
     assert armed["state"] == "armed" and armed["orphan"] is True and wl["foreign"] == [], wl
@@ -6888,8 +6879,8 @@ def test_the_data_view_ceilings_pass_at_the_maximum_on_both_paths(tmp_path: Path
     checks.preflight("write", {"ref": "0000:0000", "data_hex": "00" * 128})
     checks.preflight("watch_add", {"ref": "0000:0000", "mode": "show", "length": 128})
     checks.preflight("watch_add", {"ref": "0000:0000", "mode": "show", "fmt": "u16[64]"})
-    # A change watch arms a trap and reads nothing at a stop: the view's reach is not its bound.
-    checks.preflight("watch_add", {"ref": "0000:0000", "mode": "change", "length": 129})
+    checks.preflight("watch_add", {"ref": "0000:0000", "mode": "change",
+                                   "length": checks.CHANGE_WATCH_MAX})
     assert server.read_memory(ref="0000:0000", length=129)["code"] == "bad_argument"
     assert server.write(ref="0000:0000", data_hex="00" * 129)["code"] == "bad_argument"
 
@@ -7244,11 +7235,10 @@ def test_section_bases_are_hex_text_too(tmp_path: Path) -> None:
     """The sectioned form: a base per section index, each hex text; an integer
     value is refused naming the section."""
     install()
-    src = tmp_path / "flat.map"
-    src.write_text(TLINK32_TEXT, encoding="utf-8")
+    src = ILINK32_MAP
     got = cast(dict[str, Any], server.symbols_load(
-        path=str(src), section_bases={"1": "0x401000", "2": "423000"}))
-    assert got["status"] == "ok" and got["kept"] == 2, got
+        path=str(src), section_bases={"1": "0x401000", "2": "423000", "3": "4289B8"}))
+    assert got["status"] == "ok" and got["kept"] == 4, got
     bad = cast(dict[str, Any], server.symbols_load(
         path=str(src), section_bases={"1": 0x401000}))
     assert bad["code"] == "bad_argument" and "section_bases" in bad["message"], bad
@@ -8106,7 +8096,7 @@ def test_a_watch_queued_under_a_ref_the_load_re_arms_is_armed_too(tmp_path: Path
     fake.running = False
     server.status()
     kinds = sorted(r["entry"].split()[0] for r in fake.rows)
-    assert kinds == ["BP", "BPPM"], fake.rows
+    assert kinds == ["BP", "BPPM", "BPPM"], fake.rows            # the watch's two bytes
 
 
 def test_a_re_arm_that_fails_after_a_deferred_load_is_armed_from_the_queue(

@@ -251,8 +251,8 @@ def test_an_interrupt_breakpoint_is_a_declaration_by_number(tmp_path: Path) -> N
 
 
 def test_one_address_may_not_be_both_show_and_change_watch(tmp_path: Path) -> None:
-    """Decision 29: break-on-change arms a trap byte, a show watch reads those bytes back,
-    so a single address that is both would hand back the trap as the value."""
+    """One ref is one watch: a change watch reports its value at every stop already, so a show
+    watch beside it would be the same reading twice, and `watch_clear` of the ref names one."""
     s = _store(tmp_path)
     s.add(dec.Declaration("watch", "symbol", "g_cue", width=1, fmt="u8", watch_mode="show"))
     with pytest.raises(dec.DeclarationError, match="both a show AND a change watch"):

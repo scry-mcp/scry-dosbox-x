@@ -1,0 +1,59 @@
+{
+ "write": {
+  "summary": "write 0000:0500: 2 bytes, verified True",
+  "status": "ok",
+  "ref": "0000:0500",
+  "seg_off": "0000:00000500",
+  "bytes_written": 2,
+  "readback": "5aa5",
+  "verified": true,
+  "session": {
+   "alive": true,
+   "running": false,
+   "altered": true
+  }
+ },
+ "watch_add": {
+  "summary": "watch_add 0000:0500: armed",
+  "status": "ok",
+  "ref": "0000:0500",
+  "by": "address",
+  "mode": "change",
+  "fmt": "u16",
+  "length": 2,
+  "stored": true,
+  "already_stored": false,
+  "armed": true,
+  "state": "armed",
+  "command": "BPM 0000:0500",
+  "entry": "BPMEM 0000:0500",
+  "session": {
+   "alive": true,
+   "running": false,
+   "altered": true
+  }
+ },
+ "read_memory": {
+  "summary": "read_memory 0000:0500: 8 rows at 0000:00000500",
+  "status": "ok",
+  "ref": "0000:0500",
+  "seg_off": "0000:00000500",
+  "length": 2,
+  "hex": "5aa5",
+  "rows": [
+   "0000:00000500 5A A5 00 00 00 00 00 00 00 00 00 00 00 00 00 00  Z...............",
+   "0000:00000510 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................",
+   "0000:00000520 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................",
+   "0000:00000530 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................",
+   "0000:00000540 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................",
+   "0000:00000550 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................",
+   "0000:00000560 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................",
+   "0000:00000570 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................"
+  ],
+  "session": {
+   "alive": true,
+   "running": false,
+   "altered": true
+  }
+ }
+}

@@ -219,12 +219,13 @@ _TLINK_SEGMENTS = re.compile(
 _TLINK_SECT_HEADER = re.compile(
     r"^[ \t]*Start[ \t]+Length[ \t]+Name[ \t]+Class[ \t]*\r?$", re.M)
 
-# ` 0001:00401000 0000214D4H _TEXT              CODE` -- a SECTION INDEX, the LINEAR
-# address that section begins at, its length, its name and its class.
+# ` 0001:00000000 000008DCCH _TEXT                  CODE` -- a SECTION INDEX, the offset a
+# segment of it begins at (zero for the first, and ILINK32 lists a section once per segment),
+# its length, its name and its class.
 #
 # WHAT REFUSES A DETAILED-MAP ROW IS TWO GUARDS AND NEITHER OF THEM ALONE, which is
 # worth stating precisely because the obvious reading is wrong in both directions. That
-# row is ` 0001:000000E4 00001038 C=CODE  S=_TEXT  G=(none)  M=HELLO.OBJ ACBP=A9`: the
+# row is ` 0001:00000108 0000004B C=CODE    S=_TEXT    G=(none)   M=HELLO32.C  ACBP=A9`: the
 # same opening pair, a length with NO `H`, and FIVE trailing tokens where a section row
 # has exactly two.
 #
@@ -251,7 +252,7 @@ _TLINK_SECTION = re.compile(
 # with the message blaming a table that is visibly in the file.
 _TLINK_SECTION_ANY = re.compile(r"^[ \t]*[0-9A-Fa-f]{4}:[0-9A-Fa-f]{8}\b")
 
-# ` 0001:000000E4       _main` -- the 32-bit publics row: a SECTION INDEX and an offset
+# ` 0001:00000130       _main` -- the 32-bit publics row: a SECTION INDEX and an offset
 # INSIDE that section, eight hex digits wide.
 #
 # THE INDEX IS PRINTED IN DECIMAL AND IS READ HERE AS HEX, AND THE ARGUMENT THAT THIS IS
@@ -294,8 +295,8 @@ _TLINK_SECTION_ANY = re.compile(r"^[ \t]*[0-9A-Fa-f]{4}:[0-9A-Fa-f]{8}\b")
 #     0001:000071D0       @$bdele$qpv          parsed
 #     0001:0000085C  Idle @jump$qv             REFUSED
 #
-# More than half of such a map's publics rows would be refused for the case of one letter,
-# and `parse` would return the rest as a plausible answer with no exception raised.
+# Every flagged row of such a map would be refused for the case of one letter, and `parse`
+# would return the rest as a plausible answer with no exception raised.
 #
 # SO THE MARK IS PER FORMAT AND NOT GLOBAL: TLINK 16-bit writes `idle`, ILINK32 writes
 # `Idle`, and each pattern carries its own. Making the match case-insensitive would
@@ -913,7 +914,9 @@ _TLINK_SECTABLE = Anchored(header=_TLINK_SECT_HEADER, row_shaped=_TLINK_SECTION_
 
 
 def _tlink_sections(lines: list[str]) -> dict[int, int]:
-    """A 32-bit map's section table: index -> the LINEAR address that section begins at.
+    """A 32-bit map's section table: index -> the offset its first listed segment begins at,
+    which is zero in an ILINK32 map: the table says which sections the file HAS, and the
+    caller's `section_bases` say where they went.
 
     Empty for a 16-bit map, which has no such table -- its rows carry a `Stop` column
     and flat `00000H` values, and its publics fold by `seg * 16` with nothing to look up.

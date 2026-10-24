@@ -1,0 +1,21 @@
+{
+ "summary": "watch_add _g_ticks: armed",
+ "status": "ok",
+ "ref": "_g_ticks",
+ "by": "symbol",
+ "mode": "change",
+ "fmt": "u32",
+ "length": 4,
+ "stored": true,
+ "already_stored": false,
+ "armed": true,
+ "state": "armed",
+ "command": "BPPM 00AF:19A14",
+ "entry": "BPPM 00AF:00019A14",
+ "caveat": "this is a protected-mode watch (BPPM); under a paged DPMI program it fires on the paging host, not the program, so a stop here is not to be trusted. Break-on-change is reliable in real mode",
+ "session": {
+  "alive": true,
+  "running": false,
+  "altered": true
+ }
+}

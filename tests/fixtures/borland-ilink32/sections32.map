@@ -1,0 +1,36 @@
+
+ Start         Length     Name                   Class
+ 0001:00000000 000008DCCH _TEXT                  CODE
+ 0002:00000000 000002268H _DATA                  DATA
+ 0002:00002268 000000000H _TLSCBA                TLSCBA
+ 0002:00002268 000000048H _INIT_                 INITDATA
+ 0002:000022B0 000000000H _INITEND_              INITDATA
+ 0002:000022B0 000000024H _EXIT_                 EXITDATA
+ 0002:000022D4 000000000H _EXITEND_              EXITDATA
+ 0002:000022D4 000000000H CONST                  CONST
+ 0002:000022D4 0000004D8H _BSS                   BSS
+ 0002:000027AC 000000000H _BSSEND                BSS
+ 0003:00000000 0000000B0H _TLS                   TLS
+ 0003:000000B0 000000000H _TLSEND                TLS
+
+
+Detailed map of segments
+
+ 0001:00000000 00000108 C=CODE    S=_TEXT    G=(none)   M=c0nt.ASM   ACBP=A9
+ 0001:00000108 0000004B C=CODE    S=_TEXT    G=(none)   M=HELLO32.C  ACBP=A9
+
+
+  Address         Publics by Name
+
+ 0002:00002090       _errno
+ 0002:000022D4  Idle _g_count
+ 0001:00000130       _main
+ 0003:00000000       ___xxInfo
+
+
+  Address         Publics by Value
+
+ 0001:00000130       _main
+ 0002:00002090       _errno
+ 0002:000022D4  Idle _g_count
+ 0003:00000000       ___xxInfo

@@ -82,7 +82,7 @@ def dump_windows(seg: int, off: int, length: int) -> list[tuple[int, int, int]]:
     last = start + length - 1
     if start > REAL_REACH_LAST:
         raise ds.Invalid("bad_argument",
-            f"{seg:04X}:{off:04X} is linear {start:X}, which starts past FFFF:FFFF "
+            f"{dcons.canonical_seg_off(seg, off)} is linear {start:X}, which starts past FFFF:FFFF "
             f"({REAL_REACH_LAST:X}), the last byte a real-mode address reaches: no byte from "
             f"there can be asked for")
     if last > REAL_REACH_LAST:
@@ -119,9 +119,9 @@ def judge_protected(session: ds.Session, sel: int, off: int, length: int,
     descriptor listings a caller already read at this stop, so they are not read twice."""
     if session.launch.logfile is None:
         raise ds.Invalid("no_channel",
-            f"{length} bytes from {sel:04X}:{off:08X} run past offset 0xFFFF, where the "
-            f"selector's descriptor decides whether they wrap or end at its limit, and the "
-            f"descriptor tables are read off the session's logfile: `start` with `logfile`")
+            f"{length} bytes from {dcons.canonical_seg_off(sel, off)} run past offset 0xFFFF, "
+            f"where the selector's descriptor decides whether they wrap or end at its limit, and "
+            f"the descriptor tables are read off the session's logfile: `start` with `logfile`")
     notes: list[str] = []
     if found is None:
         reading = machine.read(session, frozenset({"gdt", "ldt"}))
@@ -152,8 +152,8 @@ def judge_protected(session: ds.Session, sel: int, off: int, length: int,
         span = (f"above its limit {limit:08X} (expand-down)" if down
                 else f"up to its limit {limit:08X}")
         raise ds.Invalid("bad_argument",
-            f"{length} bytes from {sel:04X}:{off:08X} end at offset {last:08X}, and "
-            f"{sel:04X}'s descriptor covers offsets {span}: past it the debugger writes zeros "
+            f"{length} bytes from {dcons.canonical_seg_off(sel, off)} end at offset {last:08X}, "
+            f"and {sel:04X}'s descriptor covers offsets {span}: past it the debugger writes zeros "
             f"(through the selector in CS, the bytes past the segment), not the segment's memory")
 
 

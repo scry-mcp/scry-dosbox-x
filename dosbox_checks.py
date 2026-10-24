@@ -171,14 +171,27 @@ def read_length(length: int) -> None:
             "`memdump`, which writes exactly the bytes asked for")
 
 
-def show_watch_width(mode: str, width: int) -> None:
-    """A show watch reads its bytes off the data view at every stop, so it is at most
-    the view's reach; wider, it would be stored only to report 'unreadable' at each stop."""
+# A CHANGE WATCH ARMS ONE DEBUGGER ROW PER BYTE (each memory breakpoint compares one byte), and
+# the debugger checks every memory row at every instruction it runs, so its bytes are a cost the
+# guest pays on each one: this many covers a scalar or a small struct, and a wider place is a
+# show watch, or several change watches on the fields that matter.
+CHANGE_WATCH_MAX = 16
+
+
+def watch_width(mode: str, width: int) -> None:
+    """A show watch reads its bytes off the data view at every stop, so it is at most the view's
+    reach; wider, it would be stored only to report 'unreadable' at each stop. A change watch
+    arms a row per byte, at most `CHANGE_WATCH_MAX` of them."""
     if mode == "show" and width > dcons.DATA_VIEW_BYTES:
         raise ds.Invalid("bad_argument",
             f"a show watch reads up to {dcons.DATA_VIEW_BYTES} bytes at a stop (the data "
             f"view's reach); {width} is a region, and it would be stored only to report "
             f"'unreadable' at every stop. Use memdump for a region, or a smaller length")
+    if mode == "change" and width > CHANGE_WATCH_MAX:
+        raise ds.Invalid("bad_argument",
+            f"a change watch is at most {CHANGE_WATCH_MAX} bytes: it arms one debugger row "
+            f"per byte, each checked at every instruction the guest runs; {width} bytes are a "
+            f"show watch, or change watches on the fields that matter")
 
 
 def _send_keys(keys: list[str], modifiers: list[str] | None = None, expect: str = "",
@@ -306,13 +319,13 @@ def _watch_add(ref: str, mode: str, length: int = 0, fmt: str = "auto", by: str 
                              f"{ref} was given neither")
         # A symbol with no length takes its width from the table at its step; a length given
         # is the width, whatever scalar the tool then picks for it.
-        show_watch_width(mode, length)
+        watch_width(mode, length)
         return
     # THE DECLARATION'S OWN VALIDATION, on a declaration that is built and dropped: the
     # format and the length against it are the model's rules, judged once there.
     placement.to_invalid(lambda: dec.Declaration("watch", "address", "0000:0000",
                                                  width=length, fmt=fmt, watch_mode=mode))
-    show_watch_width(mode, vf.parse(fmt).width_for(length))
+    watch_width(mode, vf.parse(fmt).width_for(length))
 
 
 def _read_memory(ref: str, length: int = 16, **_: Any) -> None:

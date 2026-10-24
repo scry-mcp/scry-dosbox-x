@@ -678,15 +678,21 @@ declaration written by a store from before origins were kept is listed `orphan`,
 `ref` that clears it, and a show watch among them is still evaluated at every stop until it
 is cleared or re-declared.
 
-**A watch has two halves, and one address may not be both.** A show watch (`mode="show"`) arms NOTHING:
+**A watch has two halves, and one ref may not be both.** A show watch (`mode="show"`) arms NOTHING:
 it is a plain memory read at every stop, rendered in its declared width and format, and it is at
-most 128 bytes: a region is `memdump`'s job. A change-watch arms a trap byte, and the debugger
-never takes a watch away, so the read would return the trap as program bytes. A row a store
+most 128 bytes: a region is `memdump`'s job. A change watch is read at every stop too (its
+memory breakpoint writes nothing into the bytes it watches), its state `armed` or `gone` by
+whether the debugger still holds it, and one ref is one watch: the other half on the same ref
+is refused, since it would be the same reading twice. A row a store
 holds under the retired mode `read` is read as `show`, and written so at the next write.
 
 A change watch (`watch_add` with `mode="change"`) breaks when memory **changes**, the
 debugger's own wording, and the thing most likely to be misread: a read never fires it, and
-neither does a write storing the value already there. Arming it eats the
+neither does a write storing the value already there. The debugger's memory breakpoint compares
+one byte, so a watch of `length` bytes arms a row per byte (`entries` lists them, `entry` and
+`command` are the first's), at most `dosbox_checks.CHANGE_WATCH_MAX` bytes since each row is
+checked at every instruction the guest runs, and it is `armed` only while the debugger holds
+every row. Arming it eats the
 selector-versus-segment choice by reading the CPU mode off the machine (`BPM` in real mode,
 `BPPM` in protected), because the same sixteen bits mean different things in each, the
 debugger accepts either without comment, and the mode changes underneath a caller as their
@@ -991,7 +997,11 @@ instead of being accepted and never firing.
 **Addresses in a reply** are spelled two ways: a segmented one as `SSSS:OOOOOOOO`, the form
 every DOS ref takes (under its own key it is `seg_off`; a stop's `pc`, the address in its `cause` and
 a pointer's `at` and `target` are spelled so too), and a linear one as `addr`, `0x` and eight
-digits, so the same place is one string and compares as one. A row carries `addr` where the
+digits, so the same place is one string and compares as one. A **ref** a caller gives is
+matched, and a comment is stored and saved, in the spelling the width of its offset needs: `SSSS:OOOO` within
+`FFFF`, `SSSS:OOOOOOOO` past it, upper case, so one place has one spelling however it was typed
+(`814:10b` is `0814:010B`, `00a7:45f880` is `00A7:0045F880`); a breakpoint or a watch lists
+its ref as it was given. A row carries `addr` where the
 server already knows the linear address (a symbol, a scan hit, a placed operand); it is never
 bought with another console round trip. `linear` is an argument only (`symbols_find(linear=)`).
 One spelling stays the debugger's own: a breakpoint as `BPLIST` lists it (`run_to`'s `target`
@@ -1008,7 +1018,8 @@ outside it, or off one `D` when the pane does not hold that line whole as one in
 decodes in its own width, which is not always the segment's), with its nearest symbol, which
 in protected mode costs one `SELINFO CS` and only with a table loaded; unavailable, with why,
 when no bytes could be read or they start no instruction), the registers (`regs`),
-the show watches already evaluated (each with `state: "evaluated"`), its `cause`, and `e9`.
+the watches already evaluated (a show watch's `state` `evaluated`, a change watch's `armed` or
+`gone`, each with its `value`), its `cause`, and `e9`.
 `cause` is prose naming what stopped it: the declaration whose address it stopped at and whose
 code row the debugger holds there, with how it was named and where (`breakpoint <ref> (by <by>)
 at SSSS:OOOOOOOO`; several declarations at one address are all named); a `run_to` that arrived

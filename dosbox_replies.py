@@ -692,6 +692,7 @@ class WatchAddReply(DosboxEnvelope, total=False):
     by: str
     caveat: str
     command: str
+    entries: list[Any]
     entry: str
     fmt: str
     length: int

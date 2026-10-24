@@ -1120,8 +1120,8 @@ class Session(dprocess.Process):
             return bytes(by_off[off + i] for i in range(n))
         except KeyError:
             raise Invalid("unexpected_answer",
-                f"the data view for {seg:04X}:{off:04X} did not cover all {n} bytes "
-                f"asked for; it painted {len(by_off)} from the start address") from None
+                f"the data view for {dcons.canonical_seg_off(seg, off)} did not cover all {n} "
+                f"bytes asked for; it painted {len(by_off)} from the start address") from None
 
     # How many bytes one `SM` carries: the debugger takes a list of values after the
     # address on one input line, and a short line is one every build reads whole.
@@ -1162,7 +1162,7 @@ class Session(dprocess.Process):
             lo, hi = seg * 16 + off, seg * 16 + off + len(data) - 1
             if hi >= self.ROM_LINEAR[0] and lo <= self.ROM_LINEAR[1]:
                 raise Invalid("bad_argument",
-                    f"{seg:04X}:{off:04X} is in the ROM range (linear 0x{lo:X}, "
+                    f"{dcons.canonical_seg_off(seg, off)} is in the ROM range (linear 0x{lo:X}, "
                     f"0x{self.ROM_LINEAR[0]:X}-0x{self.ROM_LINEAR[1]:X}): measured on this "
                     f"build, the debugger's `SM` into it does not write and does not "
                     f"refuse, it ENDS the emulator. Nothing was sent")
@@ -1619,7 +1619,7 @@ class Session(dprocess.Process):
         # goes out and stays marked whatever happens next. The debugger arms a code
         # breakpoint by putting a trap byte in memory -- this module's own non-arrival
         # note says so -- and `run_to` leaves that byte in place on two of its three
-        # outcomes, so a `read_memory` over a watched address reads the trap as program
+        # outcomes, so a `read_memory` over that address reads the trap as program
         # bytes. A measurement on a forced state is not a measurement of the program, and
         # that is the whole reason this flag exists.
         self.altered = True

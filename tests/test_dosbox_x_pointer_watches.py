@@ -75,16 +75,18 @@ def test_a_pointer_watch_is_re_resolved_at_every_stop_and_a_change_watch_follows
     fake = _pointing(tmp_path)
     out = server.watch_add(ref="_g_engine->sync_delta", mode="change")
     assert out["status"] == "ok" and out["state"] == "armed", out
-    assert fake.rows[-1]["entry"].startswith(f"BPPM 00AF:{HEAP + 4:08X}")
+    assert sorted(r["entry"] for r in fake.rows) == [
+        f"BPPM 00AF:{HEAP + 4 + i:08X} (00)" for i in range(2)], fake.rows   # a row a byte
     (w,) = arming.evaluate_watches(fake)  # type: ignore[arg-type]
     assert w["state"] == "armed" and "moved" not in w
     fake.mem[(DS, ENGINE)] = HEAP2.to_bytes(4, "little")       # the pointer moved
     (w,) = arming.evaluate_watches(fake)  # type: ignore[arg-type]
     assert w["moved"] == {"from": f"00AF:{HEAP + 4:08X}", "to": f"00AF:{HEAP2 + 4:08X}"}, w
     assert w["pointer"]["value"] == "300000" and w["state"] == "armed"
-    assert [r["entry"] for r in fake.rows] == [f"BPPM 00AF:{HEAP2 + 4:08X} (00)"], fake.rows
+    assert sorted(r["entry"] for r in fake.rows) == [
+        f"BPPM 00AF:{HEAP2 + 4 + i:08X} (00)" for i in range(2)], fake.rows
     rows = dstate.STATE.armed[("watch", "_g_engine->sync_delta")]
-    assert [(r["seg"], r["off"]) for r in rows] == [(DS, HEAP2 + 4)]
+    assert sorted((r["seg"], r["off"]) for r in rows) == [(DS, HEAP2 + 4), (DS, HEAP2 + 5)]
     (w,) = arming.evaluate_watches(fake)  # type: ignore[arg-type]
     assert "moved" not in w
     # A SHOW watch through the pointer reads where it points NOW.
@@ -116,7 +118,8 @@ def test_a_null_pointer_is_a_state_at_the_stop_never_a_watch_at_zero(tmp_path: P
     fake.mem[(DS, ENGINE)] = HEAP.to_bytes(4, "little")
     (w,) = arming.evaluate_watches(fake)  # type: ignore[arg-type]
     assert w["state"] == "armed" and w["moved"] == {"from": "null", "to": f"00AF:{HEAP + 4:08X}"}, w
-    assert fake.rows[-1]["entry"].startswith(f"BPPM 00AF:{HEAP + 4:08X}")
+    assert sorted(r["entry"] for r in fake.rows) == [
+        f"BPPM 00AF:{HEAP + 4 + i:08X} (00)" for i in range(2)], fake.rows   # a row a byte
 
 
 def test_a_pointer_that_cannot_be_placed_or_read_is_a_state_with_its_reason(
@@ -153,11 +156,13 @@ def test_a_move_the_debugger_refuses_keeps_the_record_and_says_why(tmp_path: Pat
     (w,) = arming.evaluate_watches(fake)  # type: ignore[arg-type]
     assert w["moved"]["why"] and w["moved"]["to"] == f"00AF:{HEAP2 + 4:08X}", w
     rows = dstate.STATE.armed[("watch", "_g_engine->sync_delta")]
-    assert [(r["seg"], r["off"]) for r in rows] == [(DS, HEAP + 4)], "the record stayed"
+    assert sorted((r["seg"], r["off"]) for r in rows) == [(DS, HEAP + 4), (DS, HEAP + 5)], (
+        "the record stayed")
     # AND THE OLD ROW IS STILL HELD BY THE DEBUGGER, and the state is judged there (the
     # audit found the old row deleted before the new was tried, and the state read at the
     # refused place).
-    assert [r["entry"] for r in fake.rows] == [f"BPPM 00AF:{HEAP + 4:08X} (00)"], fake.rows
+    assert sorted(r["entry"] for r in fake.rows) == [
+        f"BPPM 00AF:{HEAP + 4 + i:08X} (00)" for i in range(2)], fake.rows
     assert w["state"] == "armed", w
 
 
@@ -260,16 +265,17 @@ def test_a_move_whose_old_row_the_debugger_will_not_delete_keeps_both_and_says_s
     assert w["state"] == "armed" and w["moved"]["to"] == f"00AF:{HEAP2 + 4:08X}", w
     assert "not deleted" in w["moved"]["why"], w
     rows = dstate.STATE.armed[("watch", "_g_engine->sync_delta")]
-    assert sorted((r["seg"], r["off"]) for r in rows) == [(DS, HEAP + 4), (DS, HEAP2 + 4)], rows
+    assert sorted((r["seg"], r["off"]) for r in rows) == [
+        (DS, HEAP + 4), (DS, HEAP + 5), (DS, HEAP2 + 4), (DS, HEAP2 + 5)], rows
     # THE NEXT STOP, the pointer unmoved: no second row at the new place, no move said again,
     # and once the debugger takes the delete the old row leaves the record.
     (w,) = arming.evaluate_watches(fake)  # type: ignore[arg-type]
-    assert "moved" not in w and len(fake.rows) == 2, (w, fake.rows)
+    assert "moved" not in w and len(fake.rows) == 4, (w, fake.rows)   # two bytes, two places
     setattr(fake, "command", sent)  # noqa: B010
     (w,) = arming.evaluate_watches(fake)  # type: ignore[arg-type]
-    assert "moved" not in w and [r["entry"] for r in fake.rows] == [
-        f"BPPM 00AF:{HEAP2 + 4:08X} (00)"], fake.rows
-    assert [(r["seg"], r["off"]) for r in rows] == [(DS, HEAP2 + 4)], rows
+    assert "moved" not in w and sorted(r["entry"] for r in fake.rows) == [
+        f"BPPM 00AF:{HEAP2 + 4 + i:08X} (00)" for i in range(2)], fake.rows
+    assert sorted((r["seg"], r["off"]) for r in rows) == [(DS, HEAP2 + 4), (DS, HEAP2 + 5)], rows
 
 
 # ------------------------------------------------- what a pointer ref resolves to, whole

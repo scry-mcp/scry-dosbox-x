@@ -175,6 +175,9 @@ ONE_CPU_WHY = "a DOS machine has one cpu, and every row acts on it"
 # The BPLIST kind tokens for a memory watch, told apart from a code breakpoint (`BP`) and
 # an interrupt (`BPINT`): protected paged, real, and linear.
 _WATCH_KINDS = ("BPPM", "BPMEM", "BPLM")
+# The kinds this server arms, at a SEG:OFF. `BPLM` watches a linear address and is never this
+# server's: one at the linear address a real-mode SEG:OFF names is still somebody else's row.
+_OWN_WATCH_KINDS = ("BPPM", "BPMEM")
 
 # ONE definition of the protected-mode change-watch caveat, shared by the fresh-arm and the
 # re-declare paths so the two cannot drift.
@@ -200,9 +203,20 @@ def watch_held(held: list[dict[str, str]], seg: int, off: int) -> dict[str, str]
     kinds and `watch_clear` must not delete a code breakpoint."""
     for b in held:
         t = dcons.bp_row_target(b["entry"])
-        if t is not None and t[0] in _WATCH_KINDS and (t[1], t[2]) == (seg, off):
+        if t is not None and t[0] in _OWN_WATCH_KINDS and (t[1], t[2]) == (seg, off):
             return b
     return None
+
+
+def change_bytes(seg: int, off: int, width: int | None) -> list[tuple[int, int]]:
+    """Every byte a change watch of `width` bytes at seg:off arms a row for: the debugger's
+    memory breakpoint compares one byte, so a watch over more is a row per byte."""
+    return [(seg, off + i) for i in range(max(int(width or 1), 1))]
+
+
+def all_held(held: list[dict[str, str]], places: list[tuple[int, int]]) -> bool:
+    """Whether the debugger lists a memory watch at every one of `places`."""
+    return all(watch_held(held, seg, off) is not None for seg, off in places)
 
 
 def render_watch(raw: bytes, width: int, fmt: str) -> vf.Value:
@@ -214,12 +228,10 @@ def render_watch(raw: bytes, width: int, fmt: str) -> vf.Value:
 def evaluate_watches(session: ds.Session, *,
                       machine: tuple[str, dict[str, str]] | None = None,
                       held: list[dict[str, str]] | None = None) -> list[dict[str, Any]]:
-    """Every watch declaration, EVALUATED at this stop. A show watch
-    is read and rendered -- it arms nothing, so its bytes are the program's.
-    A break-on-change watch is NOT read: it armed a trap byte in that memory, and reading
-    it would hand back the trap as the value it exists to report, so it is listed with its
-    state and that reason instead. A watch that no longer resolves is listed with why, never
-    a value at a guessed address.
+    """Every watch declaration, EVALUATED at this stop: its bytes read and rendered, a show
+    watch's state `evaluated`, a break-on-change watch's `armed` or `gone` (whether the
+    debugger still holds it). A watch that no longer resolves, or whose bytes cannot be read,
+    is listed with why, never a value at a guessed address.
     """
     if STATE.store is None:
         return []
@@ -250,33 +262,23 @@ def evaluate_watches(session: ds.Session, *,
             # at the old struct is moved to the new one, and the reply says from where. A
             # move the debugger refused leaves it armed where it was, and the state below
             # is judged THERE.
-            moved = _follow(session, decl, seg, off, held)
+            moved = _follow(session, decl, seg, off)
             if moved is not None:
                 item["moved"] = moved
                 held = session.breakpoints()
                 recorded = [r for r in STATE.armed.get(("watch", decl.ref), [])
                             if r["kind"] == "watch"]
                 if recorded and all((r["seg"], r["off"]) != (seg, off) for r in recorded):
-                    # the new row was refused: the watch is judged where it is still armed
-                    seg, off = int(recorded[0]["seg"]), int(recorded[0]["off"])
-        if decl.watch_mode == "change":
-            item["state"] = "armed" if watch_held(held, seg, off) else "gone"
-            item["note"] = ("a break-on-change watch arms a trap byte in this memory, so "
-                            "its value is not read here -- the read would return the trap. "
-                            "Clear it to read the value")
-            out.append(item)
-            continue
-        # A show watch whose address is CURRENTLY armed as a memory watch (a change watch on
-        # the same bytes, however it was declared -- the pair is refused by ref, but
-        # two refs can alias one address) would read that watch's trap byte. Checked against
-        # the live BPLIST, not the store, so it holds whatever the declaration said.
-        if watch_held(held, seg, off) is not None:
-            item["state"] = "shadowed"
-            item["note"] = ("a break-on-change watch is armed at this same address, so its "
-                            "bytes are the trap, not the value -- this read is skipped. Clear "
-                            "the change watch to read here")
-            out.append(item)
-            continue
+                    # the new rows were refused: the watch is judged where it is still armed
+                    first = min(recorded, key=lambda r: (r["seg"], r["off"]))
+                    seg, off = int(first["seg"]), int(first["off"])
+        # A CHANGE WATCH IS READ AS A SHOW WATCH IS: the debugger's memory breakpoints write
+        # nothing into the memory they watch, so its bytes are the program's; its state says
+        # whether the debugger still holds it, and a read that fails leaves that state with why.
+        change = decl.watch_mode == "change"
+        if change:
+            item["state"] = ("armed" if all_held(held, change_bytes(seg, off, decl.width))
+                             else "gone")
         try:
             # THE CACHED MODE: a show watch's read_bytes would else
             # re-survey the machine for its offset ceiling -- N watches, N surveys of a
@@ -285,11 +287,13 @@ def evaluate_watches(session: ds.Session, *,
             mode = machine[0] if machine is not None else None
             raw = session.read_bytes(seg, off, cast(int, decl.width), mode=mode)
         except ds.Invalid as e:
-            item["state"] = "unreadable"
+            if not change:
+                item["state"] = "unreadable"
             item["why"] = str(e)
             out.append(item)
             continue
-        item["state"] = "evaluated"
+        if not change:
+            item["state"] = "evaluated"
         item["value"] = render_watch(raw, cast(int, decl.width), cast(str, decl.fmt))
         item["bytes"] = raw.hex()
         out.append(item)
@@ -384,56 +388,64 @@ def attribute_stop(session: ds.Session, *, where: dict[str, str],
                    "derived from the stop"}
 
 
-def _follow(session: ds.Session, decl: dec.Declaration, seg: int, off: int,
-            held: list[dict[str, str]]) -> dict[str, str] | None:
-    """A change watch whose pointer now points elsewhere: a row at the new place is armed first,
-    and the old row deleted once the new one is held. `{from, to}` when it moved, None when it is
-    where it was. A debugger that refuses the new row leaves the record as it was and `why`
-    beside `from`/`to`; one that keeps the old row (its delete refused, or not taken) leaves both
-    in the record, says so in `why`, and the delete is tried again at the next stop."""
+def _follow(session: ds.Session, decl: dec.Declaration, seg: int,
+            off: int) -> dict[str, str] | None:
+    """A change watch whose pointer now points elsewhere: the rows at the new place, one per byte
+    (`change_bytes`), are armed first, and the old rows deleted once the new ones are held.
+    `{from, to}` when it moved, None when every byte is where it was. A debugger that refuses a
+    new row leaves the old rows armed and `why` beside `from`/`to`; one that keeps an old row
+    (its delete refused, or not taken) leaves it in the record, says so in `why`, and the delete
+    is tried again at the next stop."""
     rows = STATE.armed.get(("watch", decl.ref), [])
-    here = [r for r in rows if r["kind"] == "watch" and (r["seg"], r["off"]) == (seg, off)]
-    stale = [r for r in rows if r["kind"] == "watch" and (r["seg"], r["off"]) != (seg, off)]
-    if here:
-        _drop_stale(session, rows, stale, held)
+    want = change_bytes(seg, off, decl.width)
+    mine = [r for r in rows if r["kind"] == "watch"]
+    stale = [r for r in mine if (r["seg"], r["off"]) not in want]
+    have = {(r["seg"], r["off"]) for r in mine}
+    missing = [place for place in want if place not in have]
+    if not missing:
+        _drop_stale(session, rows, stale)
         return None
-    old = stale[0] if stale else None
+    old = min(stale, key=lambda r: (r["seg"], r["off"])) if stale else None
     # A watch declared while the pointer was NULL armed nothing: the stop that finds the
     # pointer set arms it, and says it came from null.
     where = {"from": st.seg_off(old["seg"], old["off"]) if old is not None else "null",
              "to": st.seg_off(seg, off)}
-    # THE NEW ROW FIRST, the old one only once the new is held: a refusal then leaves the
-    # watch armed where it was, the record true, and `why` beside `from`/`to`.
+    # THE NEW ROWS FIRST, the old ones only once the new are held: a refusal then leaves the
+    # watch armed where it was and `why` beside `from`/`to`.
     try:
-        armed = session.watch(segment=seg, offset=off)
+        for s_, o_ in missing:
+            armed = session.watch(segment=s_, offset=o_)
+            STATE.note_armed(decl.ref, {"kind": "watch", "seg": s_, "off": o_,
+                                        "entry": str(armed["armed"])})
     except ds.Invalid as e:
         return {**where, "why": str(e)}
-    STATE.note_armed(decl.ref, {"kind": "watch", "seg": seg, "off": off,
-                                "entry": str(armed["armed"])})
-    kept = _drop_stale(session, rows, stale, held)
+    kept = _drop_stale(session, rows, stale)
     if kept:
         where["why"] = (f"the old row was not deleted ({kept}): the watch is armed at both "
                         "places until the next stop deletes it")
     return where
 
 
-def _drop_stale(session: ds.Session, rows: list[dict[str, Any]], stale: list[dict[str, Any]],
-                held: list[dict[str, str]]) -> str:
+def _drop_stale(session: ds.Session, rows: list[dict[str, Any]],
+                stale: list[dict[str, Any]]) -> str:
     """The rows of a moved watch at a place it no longer points to deleted from the debugger and
     then from the record; one the debugger still lists after its `BPDEL` stays in both. What
     kept one, or an empty string."""
     kept = ""
     for old in stale:
-        row = watch_held(held, int(old["seg"]), int(old["off"]))
-        if row is not None:
-            try:
+        # EACH INDEX FROM THE LIST AS IT STANDS NOW: the debugger lists a row just armed first
+        # and a delete renumbers every row below it, so an index read before either names
+        # another row, and its `BPDEL` deletes that one.
+        try:
+            row = watch_held(session.breakpoints(), int(old["seg"]), int(old["off"]))
+            if row is not None:
                 session.command(f"BPDEL {row['index']}")
                 if watch_held(session.breakpoints(), int(old["seg"]), int(old["off"])):
                     kept = "the debugger still lists it"
                     continue
-            except ds.Invalid as e:
-                kept = str(e)
-                continue
+        except ds.Invalid as e:
+            kept = str(e)
+            continue
         rows[:] = [r for r in rows if r is not old]
     return kept
 
@@ -671,16 +683,17 @@ def _arm_queued(session: ds.Session, decl: dec.Declaration,
             res = placement.resolve_ref(decl, "DS", session, machine=machine)
             if res["state"] != "armable":
                 raise ds.Invalid("unknown_ref", str(res.get("why", res["state"])))
-            aliased = _aliased(ref, res["seg"], res["off"])
+            covered = change_bytes(res["seg"], res["off"], decl.width)
+            aliased = _aliased(ref, covered)
             if aliased is not None:
                 raise ds.Invalid("ambiguous_ref", aliased)
-            row = watch_held(held, res["seg"], res["off"])
-            entry = (row["entry"] if row is not None else
-                     str(session.watch(segment=res["seg"], offset=res["off"])["armed"]))
-            if row is None:
-                held.append({"index": "?", "entry": entry})   # the list learns the row
-            STATE.note_armed(ref, {"kind": "watch", "seg": res["seg"], "off": res["off"],
-                              "entry": entry})
+            for s_, o_ in covered:
+                row = watch_held(held, s_, o_)
+                entry = (row["entry"] if row is not None else
+                         str(session.watch(segment=s_, offset=o_)["armed"]))
+                if row is None:
+                    held.append({"index": "?", "entry": entry})   # the list learns the row
+                STATE.note_armed(ref, {"kind": "watch", "seg": s_, "off": o_, "entry": entry})
         else:
             cpu = _waits_at(decl, places)
             res = placement.resolve_ref(decl, "CS", session, machine=machine)
@@ -903,7 +916,7 @@ def something_can_stop_it() -> bool:
     to be armed (a stale raw address, a symbol this build does not define). The remaining
     doubt errs on the side of waiting."""
     held = STATE.last_stop.get("held") or []
-    if any(str(r.get("entry", "")).startswith(("BP ", "BPINT ", "BPMEM ", "BPPM "))
+    if any(str(r.get("entry", "")).startswith(("BP ", "BPINT ", "BPMEM ", "BPPM ", "BPLM "))
            for r in held):
         return True
     # A declaration still on the arm queue is armed only AT a stop, so it cannot produce one.
@@ -972,7 +985,7 @@ def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:
                              but=ref)
         if others:
             raise ds.Invalid("ambiguous_ref",
-                f"{res['seg']:04X}:{res['off']:04X} is already declared under "
+                f"{dcons.canonical_seg_off(res['seg'], res['off'])} is already declared under "
                              f"{others[0].ref!r}: one breakpoint row is one declaration, so "
                              f"clear that ref or use it")
     # DECLARED AGAIN IN THE OTHER MODE: the debugger fixed the row's address when it was made,
@@ -1232,16 +1245,17 @@ def _unqueue_cleared(store: dec.DeclarationStore) -> None:
     STATE.pending["arm"][:] = [r for r in STATE.pending["arm"] if r in held]
 
 
-def _aliased(ref: str, seg: int, off: int) -> str | None:
-    """The refusal when ANOTHER ref of this store already armed a watch at seg:off: two
+def _aliased(ref: str, places: list[tuple[int, int]]) -> str | None:
+    """The refusal when ANOTHER ref of this store already armed a watch at one of `places`: two
     declarations sharing one debugger row would be disarmed together by a clear of either,
     in silence. One watchpoint is one declaration."""
     for (family, other), rows in STATE.armed.items():
         if family != "watch" or other == ref:
             continue
-        if any(r["kind"] == "watch" and (r["seg"], r["off"]) == (seg, off) for r in rows):
-            return (f"{seg:04X}:{off:04X} is already armed under {other!r}: one watchpoint is "
-                    "one declaration, so clear that ref or use it")
+        for seg, off in places:
+            if any(r["kind"] == "watch" and (r["seg"], r["off"]) == (seg, off) for r in rows):
+                return (f"{dcons.canonical_seg_off(seg, off)} is already armed under {other!r}: "
+                        "one watchpoint is one declaration, so clear that ref or use it")
     return None
 
 
@@ -1281,7 +1295,7 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
         width = vf.parse(fmt).width_for(width)
     except vf.FormatError as e:
         raise ds.Invalid("bad_argument", str(e)) from None
-    checks.show_watch_width(mode, width)
+    checks.watch_width(mode, width)
     decl = declare("watch", chosen, ref, width=width, fmt=fmt, watch_mode=mode)
     stored = current_store().held_ref(ref, ("watch",))
     if stored is not None and stored != ref:
@@ -1295,7 +1309,7 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
     if res["state"] == "ambiguous":
         raise ds.Invalid("unknown_ref", res["why"])
     if mode == "change" and res["state"] == "armable":
-        aliased = _aliased(ref, res["seg"], res["off"])
+        aliased = _aliased(ref, change_bytes(res["seg"], res["off"], width))
         if aliased is not None:
             raise ds.Invalid("ambiguous_ref", aliased)
     already = not cast(bool, placement.to_invalid(lambda: current_store().add(decl)))
@@ -1335,7 +1349,9 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
     # `where()` refuse a running machine, and a by-address ref has not touched it yet.
     try:
         placement._listening(session)     # a running console drops what is typed at it
-        if watch_held(session.breakpoints(), res["seg"], res["off"]) is not None:
+        places = change_bytes(res["seg"], res["off"], width)
+        listed = session.breakpoints()
+        if all_held(listed, places):
             # ALREADY ARMED: a no-op re-declaration. It still carries the Pr caveat, because
             # a re-declared change-watch is as untrustworthy under paging as a fresh one --
             # returning None would drop the warning on exactly the repeated call a rebuild
@@ -1345,7 +1361,12 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
                           already_stored=already, armed=True, state="armed",
                           entry=_watch_entry(res["seg"], res["off"], mode),
                           **({"caveat": _PR_WATCH_CAVEAT} if mode.startswith("Pr") else {}))
-        armed = session.watch(segment=res["seg"], offset=res["off"])
+        made: list[dict[str, Any]] = []
+        for s_, o_ in places:
+            if watch_held(listed, s_, o_) is None:
+                made.append(session.watch(segment=s_, offset=o_))
+                STATE.note_armed(ref, {"kind": "watch", "seg": s_, "off": o_,
+                                       "entry": str(made[-1]["armed"])})
     except ds.Invalid as e:
         if isinstance(e, ds.NotStopped) or not session.at_debugger():
             return st.reply(ref=ref, by=chosen, mode="change", fmt=fmt, length=width, stored=True,
@@ -1353,12 +1374,11 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
                           **STATE.queue_arm(ref))
         return st.reply(ref=ref, by=chosen, mode="change", fmt=fmt, length=width, stored=True,
                       already_stored=already, armed=False, state="unarmable", why=str(e))
-    caveat = {"caveat": _PR_WATCH_CAVEAT} if str(armed["mode"]).startswith("Pr") else {}
-    STATE.note_armed(ref, {"kind": "watch", "seg": res["seg"], "off": res["off"],
-                      "entry": str(armed["armed"])})
+    caveat = {"caveat": _PR_WATCH_CAVEAT} if str(made[0]["mode"]).startswith("Pr") else {}
     return st.reply(ref=ref, by=chosen, mode="change", fmt=fmt, length=width, stored=True,
-                    already_stored=already, armed=True, state="armed", command=armed["command"],
-                    entry=armed["armed"], **caveat, **extra)
+                    already_stored=already, armed=True, state="armed",
+                    command=made[0]["command"], entry=made[0]["armed"],
+                    entries=[m["armed"] for m in made], **caveat, **extra)
 
 
 def watch_list(session: ds.Session) -> dict[str, Any]:
@@ -1398,17 +1418,18 @@ def watch_list(session: ds.Session) -> dict[str, Any]:
             # reconstructed spelling: the debugger's offset width is not fixed (one address
             # was listed as both `BPPM 00AF:6024` and `BPPM 00AF:00006024`), so an equality
             # or prefix test on the spelling reports an armed watch as gone.
-            listed = watch_held(held, seg, off) is not None
-            if listed:
-                mine.add((seg, off))
+            places = change_bytes(seg, off, decl.width)
+            listed = all_held(held, places)
+            mine.update(place for place in places if watch_held(held, *place) is not None)
             _held_state(item, decl, listed)
         out.append(item)
     _pending_states(out)
     queued = {(sp["seg"], sp["off"]) for sp in STATE.pending["disarm"] if sp["kind"] == "watch"}
     foreign = [b["entry"] for b in held
                if (t := dcons.bp_row_target(b["entry"])) is not None
-               and t[0] in _WATCH_KINDS and (t[1], t[2]) not in mine
-               and (t[1], t[2]) not in queued]
+               and t[0] in _WATCH_KINDS
+               and (t[0] not in _OWN_WATCH_KINDS
+                    or ((t[1], t[2]) not in mine and (t[1], t[2]) not in queued))]
     dated: dict[str, Any] = {} if read else {"last_stop": STATE.dated()}
     return st.reply(watches=out, foreign=foreign, debugger_read=read, **dated)
 
@@ -1430,9 +1451,10 @@ def watch_clear(session: ds.Session, ref: str | None) -> dict[str, Any]:
         if decl.watch_mode == "change" and not rows and not running:
             res = placement.resolve_ref(decl, "DS", session)
             if res["state"] == "armable":
-                rows = [{"kind": "watch", "seg": res["seg"], "off": res["off"],
-                         "entry": _watch_entry(res["seg"], res["off"],
-                                               session.where()["mode"])}]
+                mode = session.where()["mode"]
+                rows = [{"kind": "watch", "seg": s_, "off": o_,
+                         "entry": _watch_entry(s_, o_, mode)}
+                        for s_, o_ in change_bytes(res["seg"], res["off"], decl.width)]
         plan.append(rows)             # a show watch armed nothing
     removed = cast(int, placement.to_invalid(lambda: store.remove(ref=ref, kind="watch")))
     for decl, rows in zip(to_go, plan, strict=True):

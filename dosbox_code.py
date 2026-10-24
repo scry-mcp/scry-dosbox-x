@@ -199,9 +199,9 @@ def read_code(segs: Segments, seg: int, off: int, length: int, bits: int) -> byt
         room = SEGMENT_END_16 - off
         if length > room:
             raise ds.Invalid("bad_argument",
-                f"{seg:04X}:{off:04X} is in a 16-bit segment, which ends at offset FFFF: the "
-                f"CPU wraps IP to the segment's start there, so the bytes past it are not the "
-                f"next instructions. "
+                f"{dcons.canonical_seg_off(seg, off)} is in a 16-bit segment, which ends at offset "
+                f"FFFF: the CPU wraps IP to the segment's start there, so the bytes past it are "
+                f"not the next instructions. "
                 + (f"Ask for at most {room} bytes from there" if room > 0 else
                    "That offset is past the end"))
         want = min(want, room)

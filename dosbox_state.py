@@ -51,7 +51,7 @@ ROWS_SHOWN = 24
 def seg_off(seg: int, off: int) -> str:
     """ONE SPELLING FOR A SEGMENTED ADDRESS in every reply: `SSSS:OOOOOOOO`, the form every
     DOS ref takes and the debugger itself prints."""
-    return f"{seg:04X}:{off:08X}"
+    return dcons.seg_off(seg, off)
 
 
 def flat(linear: int) -> str:
