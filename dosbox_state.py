@@ -137,16 +137,15 @@ class State:
 
         # THE LAST STOP, as its one survey saw it: position, registers, the debugger's
         # list, the attribution, and when. It is what the server can still say about the
-        # machine while the guest runs and the console answers nothing (the owner's
-        # decision: the running-guest contract). Filled by every stop reply, cleared by
+        # machine while the guest runs and the console answers nothing (the running-guest
+        # contract). Filled by every stop reply, cleared by
         # `start` and `close`. Empty means no stop yet in this session.
         self.last_stop: dict[str, Any] = {}
-        # WHAT WAS ASKED WHILE THE GUEST RAN, to be applied at the next stop (the owner's
-        # decision): the refs to arm (a breakpoint or a change-watch declared
-        # while running), the debugger rows to remove (a clear made while running), and the
-        # symbol bytes to load. The STORE already holds the intent; this holds only what
-        # the console still owes. Drained by `apply_pending` at the head of every stop
-        # reply, and cleared by `start`.
+        # WHAT WAS ASKED WHILE THE GUEST RAN, to be applied at the next stop: the refs to arm
+        # (a breakpoint or a change-watch declared while running), the debugger rows to remove
+        # (a clear made while running), and the symbol bytes to load. The STORE already holds
+        # the intent; this holds only what the console still owes. Drained by `apply_pending`
+        # at the head of every stop reply, and cleared by `start`.
         self.pending: dict[str, Any] = {"arm": [], "disarm": [], "load": None,
                                         "remeasure": False, "dirty": False, "drained_seq": -1}
         # WHAT THIS SESSION ARMED, per ref: the debugger row it produced (`kind`
@@ -360,13 +359,18 @@ class State:
         self.found_stop_last = {}
         self.e9_offset = 0    # the next session's log starts empty
         self.written.clear()                      # its files are the next session's to list
-        self.scan_iterations = None               # the debugger's scan dies with it
-        self.scan_cell_bytes = None
+        self.scan_forget()                        # the debugger's scan dies with it
         self.retrace_pending = False              # and so does its armed retrace
         self.log_open = False                     # and its CPU log
         if self.session_dir is not None:          # and the pictures and series it made
             shutil.rmtree(self.session_dir, ignore_errors=True)
             self.session_dir = None
+
+    def scan_forget(self) -> None:
+        """No scan this server can speak for is open: what it counted and the cell it opened are
+        dropped together, wherever the scan ended or was taken out of its hands."""
+        self.scan_iterations = None
+        self.scan_cell_bytes = None
 
     def install_table(self, symbols: list[sym.Symbol], accumulate: bool = False) -> None:
         """THE ONE WAY A TABLE ARRIVES, so the index by name can never describe a
@@ -534,9 +538,8 @@ def delta(out: str, keep: int) -> dict[str, Any]:
 
     A repaint of a full ncurses screen is unbounded and the conversation is not, so
     the tools that hand back raw screen text keep only the tail of it. That is a slice
-    by POSITION, which this fleet's own rules call a sample rather than a result, and
-    while it was undeclared a caller could not tell a whole delta from a clipped one:
-    both arrived as `screen_delta` under `status: ok`.
+    by POSITION, a sample rather than a result, and undeclared a caller could not tell a
+    whole delta from a clipped one: both would arrive as `screen_delta` under `status: ok`.
 
     THE CAPS ARE HEADROOM ON A STOPPED MACHINE, measured per tool: `HELP` is the longest
     listing this debugger prints and it fits under `debug`'s cap, and a quiet guest's F5

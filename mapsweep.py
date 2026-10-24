@@ -1,9 +1,8 @@
 """The sweep: real linker maps read by the shipped reader, against what each one holds.
 
-WHY IT EXISTS.  This package claims to read three toolchains' symbol output, and until
-this existed that claim rested on ONE file per format and on numbers a person had
-produced by hand.  A format is not demonstrated by one artefact, and a number nobody
-re-checks is a number that was true once.  So the sweep reads every real map on this
+WHY IT EXISTS.  This package claims to read three toolchains' symbol output, and a format
+is not demonstrated by one artefact, nor by numbers a person produced by hand: a number
+nobody re-checks is a number that was true once.  So the sweep reads every real map on this
 machine, in place, and compares what the reader makes of it against what the manifest
 says it holds.
 
@@ -56,15 +55,14 @@ EXIT CODES, and 1 is never conflated with 3:
 from __future__ import annotations
 
 import argparse
-import contextlib
-import io
 import json
 import os
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import NoReturn
 
-import dosbox_symbols as ds
+import dosbox_symbols as sym
 
 OK, RED, USAGE, INVALID = 0, 1, 2, 3
 
@@ -74,7 +72,7 @@ OK, RED, USAGE, INVALID = 0, 1, 2, 3
 NUMERIC = ("symbols", "overlay_idle", "unreadable")
 
 # How many unreadable rows are QUOTED per project. The count is exact for what it counts; this
-# bounds the QUOTING, because 292 rows of one shape teach nothing the first three do
+# bounds the QUOTING, because hundreds of rows of one shape teach nothing the first three do
 # not, and a report long enough to be skimmed is a report whose verdict gets skimmed
 # with it. It says how many it withheld rather than trailing off.
 QUOTE_MAX = 3
@@ -105,11 +103,11 @@ def _expand(path: Path) -> Path:
     """`~` resolved, or INVALID -- never a traceback and never exit 1.
 
     `Path.expanduser()` RAISES `RuntimeError` when it cannot resolve a leading `~`: an
-    unknown user (`~olduser/Code`, an invocation copied from the other machine in this
-    fleet) or no home at all (a launchd job, a container). Only `Invalid` was caught, so
-    the process died with a traceback and status **1** -- which this module documents as
-    "at least one DISAGREED. The honest red" -- while nothing had been examined. That is
-    exactly the conflation the docstring says never happens.
+    unknown user (`~olduser/Code`, an invocation copied from another machine) or no home
+    at all (a launchd job, a container). Uncaught, the process would die with a traceback
+    and status **1** -- which this module documents as "at least one DISAGREED. The honest
+    red" -- while nothing had been examined, exactly the conflation the docstring says
+    never happens.
     """
     try:
         return path.expanduser()
@@ -229,7 +227,7 @@ def _read(name: str, path: Path, expect: Mapping[str, object]) -> Result:
     if not path.is_file():
         raise Invalid(f"{name}: {path} is not a file, so this project was NOT swept. "
                       f"That is not the same as its map having changed")
-    report = ds.ParseReport()
+    report = sym.ParseReport()
     res = Result(name=name, path=path, disagreements=[])
     assert res.disagreements is not None
     try:
@@ -240,8 +238,8 @@ def _read(name: str, path: Path, expect: Mapping[str, object]) -> Result:
     except OSError as exc:
         raise Invalid(f"{name}: cannot read {path}: {exc}") from None
     try:
-        syms, unreadable = ds.parse(text, report)
-    except ds.BadSymbolText as exc:
+        syms, unreadable = sym.parse(text, report)
+    except sym.BadSymbolText as exc:
         res.fmt = report.fmt or "?"
         res.refused = str(exc)
         # THE ROWS SURVIVE THE REFUSAL, and this is the one path where they matter most: a
@@ -303,14 +301,39 @@ def _render(res: Result, write: Callable[[str], None]) -> None:
         write(f"    DISAGREES  {res.name}: {bad}")
 
 
+class _Parser(argparse.ArgumentParser):
+    """ARGPARSE'S OWN OUTPUT GOES THROUGH `write`, because argparse writes to stdout/stderr
+    directly and this module's whole seam is that a caller can drive `main` with a list and
+    read what it said: a usage failure that came back as `rc == 2` and an EMPTY transcript could
+    not say WHICH argument was wrong. Its three printing methods are routed here, not the
+    process's streams, so nothing else that writes meanwhile is captured."""
+
+    def __init__(self, write: Callable[[str], None], prog: str, description: str | None) -> None:
+        super().__init__(prog=prog, description=description)
+        self._write = write
+
+    def _lines(self, text: str | None) -> None:
+        for line in (text or "").splitlines():
+            self._write(line)
+
+    def print_usage(self, file: object = None) -> None:
+        self._lines(self.format_usage())
+
+    def print_help(self, file: object = None) -> None:
+        self._lines(self.format_help())
+
+    def exit(self, status: int = 0, message: str | None = None) -> NoReturn:
+        self._lines(message)
+        raise SystemExit(status)
+
+
 def main(argv: Sequence[str] | None = None, *,
          write: Callable[[str], None] = print,
          env: Mapping[str, str] | None = None) -> int:
     """`write` and `env` are SEAMS, so the suite drives this without a shell or a real
     machine: every case builds its own root and its own manifest under `tmp_path`."""
     environ = os.environ if env is None else env
-    ap = argparse.ArgumentParser(prog="mapsweep", add_help=True,
-                                 description=__doc__ and __doc__.splitlines()[0])
+    ap = _Parser(write, "mapsweep", __doc__ and __doc__.splitlines()[0])
     ap.add_argument("--manifest", default=environ.get("MAPSWEEP_MANIFEST", ""),
                     help="the project list (default: $MAPSWEEP_MANIFEST)")
     ap.add_argument("--root", default=environ.get("MAPSWEEP_ROOT", ""),
@@ -320,20 +343,9 @@ def main(argv: Sequence[str] | None = None, *,
     try:
         # An UNKNOWN OPTION EXITS. Ignored, it leaves the setting at its default, and a
         # run that measured the wrong thing prints exactly like one that measured the
-        # right one.
-        #
-        # ARGPARSE'S OWN OUTPUT IS CAPTURED AND SENT THROUGH `write`, because argparse
-        # writes to stdout/stderr directly and this function's whole seam is that a
-        # caller can drive it with a list. Without this, a usage failure came back as
-        # `rc == 2` and an EMPTY transcript, so nothing inside the seam could say WHICH
-        # argument was wrong -- which is the same "the code is right and the diagnosis
-        # is gone" shape as the four guards below.
-        buf = io.StringIO()
-        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
-            args = ap.parse_args(list(argv) if argv is not None else None)
+        # right one. What argparse says goes through `write` (`_Parser`).
+        args = ap.parse_args(list(argv) if argv is not None else None)
     except SystemExit as exc:
-        for line in buf.getvalue().splitlines():
-            write(line)
         code = exc.code
         return USAGE if code not in (0, None) else OK
 

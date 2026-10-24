@@ -43,6 +43,7 @@ from scry_core import vocabulary as vocab
 import dosbox_arming as arming
 import dosbox_binary as binaries
 import dosbox_checks as checks
+import dosbox_code as dcode
 import dosbox_console as dcons
 import dosbox_declarations as dec
 import dosbox_docs
@@ -1371,11 +1372,10 @@ def test_a_dump_of_the_wrong_size_is_not_the_dump_that_was_asked_for(
     """The size is the ONLY thing tying those bytes to this request, so it is checked
     for EQUALITY.
 
-    The first version asked only `> 0`, which accepts a truncated write, a wrong
-    segment that landed short, and any leftover file with a byte in it. `length` was
-    in hand the whole time. `Session.memdump` runs UNBOUND here against a stand-in
-    whose `command` writes the file the debugger would have written -- the real method,
-    the real check, no emulator.
+    `> 0` would accept a truncated write, a wrong segment that landed short, and any
+    leftover file with a byte in it, with `length` in hand the whole time.
+    `Session.memdump` runs UNBOUND here against a stand-in whose `command` writes the file
+    the debugger would have written -- the real method, the real check, no emulator.
     """
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
@@ -1804,11 +1804,10 @@ def test_a_32_bit_map_reaches_the_caller_through_the_tool(tmp_path: Path) -> Non
     `symbols_load` -> `parse` -> the 32-bit path -> `plan` -> `encode` -> the debugger ->
     `_placed` is where the arithmetic a caller actually sees is decided.
 
-    `section_bases` IS THE POINT OF THE CASE NOW, and it replaced `base=0`. That old
-    argument rested on the belief that the map's `Start` column is a full address, so
-    the offsets coming out were already complete; the real artefact prints zeros there,
-    which makes `base=0` mean "put everything at its raw offset". A sectioned map is
-    placed from a table the CALLER supplies, because the bases are not in the file.
+    `section_bases` IS THE POINT OF THE CASE, not `base=0`: a real ILINK32 map prints zeros
+    in its `Start` column, so `base=0` would mean "put everything at its raw offset". A
+    sectioned map is placed from a table the CALLER supplies, because the bases are not in
+    the file.
 
     THE TWO BASES ARE DISTINCT AND THE TWO SYMBOLS SHARE AN OFFSET, which is what lets
     this fail at all: with one base, or with the section index ignored, `_main` and
@@ -2421,14 +2420,9 @@ def test_read_memory_refuses_a_segment_that_will_not_fit_the_command() -> None:
 
 
 def test_each_double_returns_the_field_set_the_real_method_returns() -> None:
-    """The comment above the four debugging doubles claims exactly this, and it was
-    FALSE for two of them.
-
-    MEASURED by AST before the fix: `step`'s double was missing `moved` and `stalled`
-    -- and `stalled` was added by the fix pass, so the double had never been
-    brought forward with the fix it stands in for -- while `e9_wait`'s was missing
-    `arrived_during` and `lines_examined` and INVENTED `lines_scanned`, a field the real
-    method has never returned.
+    """The comment above the four debugging doubles claims exactly this, and the claim is
+    held here, by AST: a double that drops a field the real method returns (`step`'s
+    `moved` or `stalled`) or invents one it never does is caught when either moves.
 
     A DOUBLE IS CAPTURED FROM THE REAL THING, NEVER AUTHORED FROM WHAT SOMEBODY
     BELIEVES IT LOOKS LIKE, and these four were authored. A comment saying they agree
@@ -2572,7 +2566,7 @@ def test_read_memory_refuses_an_offset_that_will_not_fit_the_command() -> None:
     install(screen=f"some screen\r\n{row}\r\n")
     got = cast(dict[str, Any], server.read_memory(ref="0000:00010000"))
     assert got["status"] == "INVALID", got
-    # Decision 38 made the ceiling mode-aware; in the real mode this double reports,
+    # The ceiling is mode-aware; in the real mode this double reports,
     # 0x10000 still addresses nothing, and the refusal says so rather than blaming the
     # screen.
     assert "past 0xFFFF addresses nothing" in str(got["message"]), got["message"]
@@ -2580,17 +2574,16 @@ def test_read_memory_refuses_an_offset_that_will_not_fit_the_command() -> None:
 
 # ------------------------------------------ every bucket the plan carries, at the seam
 #
-# `nm` OUTPUT WITH SEVERAL BUCKETS NON-EMPTY, captured from a real listing: a long name
+# `nm` OUTPUT WITH SEVERAL BUCKETS NON-EMPTY, WRITTEN for this case in `nm`'s shape: a long name
 # (truncated_names), two statics that shorten to the same fifteen (disambiguated), a section
 # label (noise) and an absolute (unplaceable). A reply full of zeroes cannot tell a
 # counter that travelled from one that was defaulted, so the fixture has to make several
 # of them move at once.
 #
 # EVERY BUCKET A DIFFERENT NUMBER, and that is the load-bearing property rather than
-# tidiness: with two buckets both at zero, SWAPPING them in the reply is invisible.
-# MEASURED -- the first version had `excluded_noise` and `excluded_pattern` both 0
-# (`.comment` is type `N`, so it leaves as UNPLACEABLE before the noise filter ever sees
-# it, and no pattern was passed), and exchanging those two fields came back GREEN.
+# tidiness: with two buckets both at zero, SWAPPING them in the reply is invisible (with
+# `excluded_noise` and `excluded_pattern` both 0, exchanging those two fields stays green;
+# `.comment` is type `N`, so it leaves as UNPLACEABLE before the noise filter sees it).
 # So: THREE section labels of a PLACEABLE type for the noise bucket, ONE `N` and ONE `A`
 # for the unplaceable one, and a `pattern` that drops exactly two more.
 NM_FRAGMENT = (
@@ -2614,19 +2607,14 @@ def test_the_caller_is_told_about_every_bucket_the_plan_carries(tmp_path: Path) 
     caller got a report whose buckets do not add up to `parsed` and no field explaining
     the gap -- the exact failure `Plan`'s docstring says cannot happen.
 
-    IT IS DERIVED FROM THE DATACLASS AND IT USED TO SAY SO WHILE LISTING SEVEN NAMES BY
-    HAND, which is the same false claim one level up: a future bucket was NOT caught,
-    the test simply had to be edited when one arrived -- and `overlay_idle` is the one
-    that arrived and proved it.
+    IT IS DERIVED FROM THE DATACLASS, not listed by hand, so a future bucket is caught
+    rather than the test edited when one arrives.
 
-    IT IS DERIVED BY EXCLUSION AND NOT BY TYPE, which is the correction after that. The
-    first version kept the fields typed `int`, with a floor of eight against a population
-    of nine -- so retyping ONE counter `int | None` dropped it out of the set (`f.type` is
-    a STRING here, `"int | None"`), left eight, passed the floor, and stopped requiring
-    that counter to reach the caller at all. A filter on the SHAPE of a field standing in
-    for a claim about the POPULATION is exactly the wrong way round. Now every field must
-    be reported unless it is named below, so a retyped counter forces a red or an
-    explicit exception rather than vanishing.
+    AND BY EXCLUSION, NOT BY TYPE: a filter keeping the fields typed `int` would drop a
+    counter retyped `int | None` (`f.type` is a STRING here) and stop requiring it to reach
+    the caller at all. A filter on the SHAPE of a field standing in for a claim about the
+    POPULATION is exactly the wrong way round, so every field must be reported unless it is
+    named below, and a retyped counter forces a red or an explicit exception.
     """
     import dataclasses
     # THE THREE THAT TRAVEL BY ANOTHER ROUTE, each named with its reason: `unencodable`
@@ -2862,6 +2850,7 @@ class NamesFake:
                  watched: bool = True, input_port: int | None = None) -> None:
         self.mode, self.cs, self.ds = mode, cs, ds_
         self._peek_carry = ""                # `Session.await_stop` runs on this double
+        self.vars_held = 0                   # the debugger's list, as `load_symbols` reads it
         self.arm_fails = arm_fails
         # THE GUEST RUNS: one switch that makes every console method refuse the way the
         # real ones do (where, registers, the list, arming, clearing, a watch, a load), and
@@ -3202,12 +3191,16 @@ class NamesFake:
                 "no register pane came back, so this console is not taking "
                              "commands")
         self.loads = getattr(self, "loads", 0) + 1
-        return [("loaded", 0)]
+        # WHAT THE DEBUGGER HOLDS AFTERWARDS, every load of the session, as the real one reads
+        # it back (`LV` appends).
+        self.held_vars = [*getattr(self, "held_vars", []), *dsym.decode(data)]
+        return list(self.held_vars)
 
     def selector(self, reg: str) -> dict[str, int]:
         if self.running:      # likewise: a plain Invalid in the real session
             raise ds.Invalid("unexpected_answer", "no register pane came back")
-        return {"base": 0x00400000, "limit": 0x0023FFFF, "type": 0x1B}
+        # the real method's four keys, the D/B bit of a 32-bit DJGPP code segment among them
+        return {"base": 0x00400000, "limit": 0x0023FFFF, "type": 0x1B, "big": 1}
 
     def watch(self, segment: int | None = None, offset: int | None = None,
               linear: int | None = None) -> dict[str, object]:
@@ -3216,8 +3209,7 @@ class NamesFake:
         armed = f"BPPM {seg:04X}:{off:08X}" if self.mode.startswith("Pr") \
             else f"BPMEM {seg:04X}:{off:04X}"
         # THE REAL DEBUGGER APPENDS A TRAILING HIT COUNT to a memory-watch row that a code
-        # breakpoint's does not carry -- captured, not invented, because a clean double hid
-        # exactly this and a live run caught it.
+        # breakpoint's does not carry, written here to the real row's `(00)` suffix.
         self.rows.append({"index": f"{len(self.rows):02d}", "entry": f"{armed} (00)"})
         return {"command": f"BP.. {seg:04X}:{off:04X}", "mode": self.mode,
                 "addressing": "segment", "armed": armed, "breakpoints": self.rows,
@@ -4977,11 +4969,32 @@ def test_attribution_names_a_breakpoint_at_the_stop_or_says_it_cannot(tmp_path: 
     assert st is not None
     st.add(dec.Declaration("breakpoint", "address", "00A7:00001A27"))
     st.add(dec.Declaration("breakpoint", "address", "00A7:00009999"))
-    hit = arming.attribute_stop(fake, where=fake.where())  # type: ignore[arg-type]
+    held = [{"index": "0", "entry": "BP 00A7:00001A27"}, {"index": "1", "entry": "BP 00A7:9999"}]
+    hit = arming.attribute_stop(fake, where=fake.where(), held=held)  # type: ignore[arg-type]
     assert hit["attributed"] is True and hit["ref"] == "00A7:00001A27"
     fake.eip = "00005555"
-    miss = arming.attribute_stop(fake, where=fake.where())  # type: ignore[arg-type]
+    miss = arming.attribute_stop(fake, where=fake.where(), held=held)  # type: ignore[arg-type]
     assert miss["attributed"] is False and "no hit flag" in miss["why"]
+
+
+def test_a_stop_names_no_declaration_the_debugger_holds_no_row_for(tmp_path: Path) -> None:
+    """A declaration at the stop's address whose row the debugger does not hold (queued, a
+    stale raw address of another build, one waiting for its mode) cannot have made the stop:
+    the stop reply does not name it. The control: the same declaration armed is named."""
+    fake = _names(tmp_path)
+    fake.cs, fake.eip = "00A7", "00001A27"
+    store = dstate.STATE.store
+    assert store is not None
+    store.add(dec.Declaration("breakpoint", "address", "00A7:00001A27"))
+    unheld = running.stop_reply(fake)  # type: ignore[arg-type]
+    assert not unheld["cause"].startswith("breakpoint"), unheld["cause"]
+    fake.rows.append({"index": "0", "entry": "BPPM 00A7:00001A27 (00)"})   # a watch row there
+    watched = running.stop_reply(fake)  # type: ignore[arg-type]
+    assert not watched["cause"].startswith("breakpoint"), watched["cause"]
+    fake.rows.clear()
+    fake.rows.append({"index": "0", "entry": "BP 00A7:00001A27"})
+    held = running.stop_reply(fake)  # type: ignore[arg-type]
+    assert held["cause"].startswith("breakpoint 00A7:00001A27"), held["cause"]
 
 
 def test_resume_enriches_a_halt_and_leaves_a_running_machine_bare(tmp_path: Path) -> None:
@@ -5058,7 +5071,9 @@ def test_attribution_in_real_mode_compares_the_linear_address(tmp_path: Path) ->
     assert st is not None
     st.add(dec.Declaration("breakpoint", "address", "0FFF:00000110"))   # 0xFFF0+0x110=0x10100? no
     st.add(dec.Declaration("breakpoint", "address", "1001:00000000"))   # linear 0x10010 -- same
-    hit = arming.attribute_stop(fake, where=fake.where())  # type: ignore[arg-type]
+    # the row as the debugger lists the declared paragraph, the stop through another alias
+    held = [{"index": "0", "entry": "BP 1001:0000"}]
+    hit = arming.attribute_stop(fake, where=fake.where(), held=held)  # type: ignore[arg-type]
     assert hit["attributed"] is True and hit["ref"] == "1001:00000000"
 
 
@@ -7832,8 +7847,9 @@ def test_two_loads_queued_while_the_guest_runs_reach_the_debugger_together(
     taken: list[str] = []
 
     def load(data: bytes) -> list[tuple[str, int]]:
-        taken.extend(name for name, _ in dsym.decode(data))
-        return [("loaded", len(taken))]
+        held = dsym.decode(data)
+        taken.extend(name for name, _ in held)
+        return held
     fake.load_symbols = load  # type: ignore[method-assign]
     fake.running, fake.halted = True, False
     for nm in (one, two):
@@ -8004,6 +8020,52 @@ def _deferred_load_with(tmp_path: Path, declare: Any) -> tuple[NamesFake, Path]:
     return fake, nm
 
 
+def test_a_load_leaves_a_breakpoint_the_debugger_holds_armed_and_out_of_its_account(
+        tmp_path: Path) -> None:
+    """The re-arm's account is what this load armed or could not: a breakpoint the debugger
+    already holds stays armed as it is, listed in no bucket (`breakpoint_list` shows it)."""
+    nm = tmp_path / "foo.nm"
+    nm.write_text("00001000 T foo\n", encoding="utf-8")
+    fake = _names(tmp_path, mode="Real")
+    _ok(server.breakpoint_at(ref="0814:0100"))
+    rows = list(fake.rows)
+    assert rows, "the raw breakpoint was not armed"
+    got = _ok(server.symbols_load(path=str(nm), base="400000"))
+    assert not any(got["declarations"][b] for b in arming.REARM_BUCKETS), got["declarations"]
+    assert fake.rows == rows, "the held row was touched"
+
+
+def test_a_breakpoint_cleared_and_declared_again_while_a_load_waits_is_armed_at_the_stop(
+        tmp_path: Path) -> None:
+    """Cleared and declared again while the guest runs, with a load queued: at the stop the
+    clear's row goes first and the declaration is armed after, so the breakpoint is held, never
+    reported armed over a row the same stop deleted."""
+    fake, _ = _deferred_load_with(tmp_path, lambda: None)
+    fake.running = False
+    server.status()
+    assert [r["entry"].split()[0] for r in fake.rows] == ["BP"], fake.rows
+    fake.running = True
+    _ok(server.symbols_load(path=str(tmp_path / "foo.nm"), base="400000"))
+    _ok(server.breakpoint_clear(ref="foo"))
+    _ok(server.breakpoint_at(ref="foo"))
+    fake.running = False
+    server.status()
+    assert [r["entry"].split()[0] for r in fake.rows] == ["BP"], fake.rows
+
+
+def test_a_deferred_load_the_debuggers_list_cannot_hold_is_dropped_once(tmp_path: Path) -> None:
+    """A load queued while the guest ran that would carry the debugger's list past what its save
+    holds can never be taken in this session: the stop drops it and says so, once."""
+    fake, _ = _deferred_load_with(tmp_path, lambda: None)
+    fake.vars_held = dsym.COUNT_MAX
+    loads = getattr(fake, "loads", 0)
+    fake.running = False
+    applied = _ok(server.status())["applied_on_stop"]
+    assert getattr(fake, "loads", 0) == loads, "the load was sent to the debugger"
+    assert any(p.startswith("symbols_load, dropped:") for p in applied["still_pending"]), applied
+    assert dstate.STATE.pending["load"] is None
+
+
 def test_a_watch_queued_under_a_ref_the_load_re_arms_is_armed_too(tmp_path: Path) -> None:
     """The load's re-arm covers breakpoints only: a change watch queued under the same ref is
     armed at the stop on its own, not dropped from the queue with the breakpoint's ref."""
@@ -8030,6 +8092,49 @@ def test_a_re_arm_that_fails_after_a_deferred_load_is_armed_from_the_queue(
     assert [r["entry"].split()[0] for r in fake.rows] == ["BP"], fake.rows
 
 
+@pytest.mark.parametrize("family", ["breakpoint", "watch"])
+def test_a_clear_the_store_cannot_write_disarms_nothing(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, family: str) -> None:
+    """The store is written before any row is taken out: a write that fails is the whole
+    refusal, the declaration is kept and its row stays armed."""
+    fake = _names(tmp_path, mode="Real")
+    ref = "0814:0100" if family == "breakpoint" else "0814:0200"
+    if family == "breakpoint":
+        _ok(server.breakpoint_at(ref=ref))
+    else:
+        _ok(server.watch_add(ref=ref, mode="change", length=2))
+    armed = [r["entry"] for r in fake.rows]
+    assert armed, fake.rows
+    store = dstate.STATE.store
+    assert store is not None
+
+    def fails() -> None:
+        raise OSError("read-only")
+    monkeypatch.setattr(store, "_persist", fails)
+    clear = server.breakpoint_clear if family == "breakpoint" else server.watch_clear
+    got = clear(ref=ref)
+    assert got["status"] == "INVALID" and "could not be written" in got["message"], got
+    assert [r["entry"] for r in fake.rows] == armed, "a refused clear disarmed a row"
+    assert len(store.declarations()) == 1, store.declarations()
+    key = ("bp" if family == "breakpoint" else "watch", ref)
+    assert key in dstate.STATE.armed, "a refused clear dropped the record of its row"
+    fake.running = True
+    assert clear(ref=ref)["status"] == "INVALID"
+    assert dstate.STATE.pending["disarm"] == [], "a refused clear queued a disarm"
+
+
+def test_a_watch_clear_that_cannot_read_the_mode_changes_nothing(tmp_path: Path) -> None:
+    """With no record of its row the clear reads the machine to name it; a cut pane there is
+    refused before the store is written, so the declaration stays to clear again."""
+    fake = _names(tmp_path, mode="Real")
+    _ok(server.watch_add(ref="0814:0200", mode="change", length=2))
+    dstate.STATE.armed.clear()
+    fake.where_raises = True
+    assert server.watch_clear(ref="0814:0200")["status"] == "INVALID"
+    store = dstate.STATE.store
+    assert store is not None and len(store.declarations()) == 1, "the declaration was dropped"
+
+
 def test_an_interrupt_breakpoint_the_store_cannot_keep_is_not_armed(tmp_path: Path) -> None:
     fake = _names(tmp_path)
     store = dstate.STATE.store
@@ -8040,6 +8145,30 @@ def test_an_interrupt_breakpoint_the_store_cannot_keep_is_not_armed(tmp_path: Pa
     got = server.breakpoint_interrupt(number=0x21)
     assert got["status"] == "INVALID", got
     assert not [r for r in fake.rows if r["entry"].startswith("BPINT")], fake.rows
+
+
+def test_a_queued_raw_breakpoint_a_stop_cannot_survey_blames_the_survey_not_the_row(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A stop whose survey is refused cannot give a queued raw row its mode: the row stays
+    queued, and what is pending says the survey failed, not that no stop has placed it."""
+    fake = _names(tmp_path, mode="Real")
+    server.status()
+    fake.running = True
+    _ok(server.breakpoint_at(ref="0814:0100"))
+    fake.running = False
+
+    def refused(_session: object) -> object:
+        raise ds.Invalid("unexpected_answer", "a cut pane")
+    with monkeypatch.context() as cut:
+        cut.setattr(dcode, "segments_at_stop", refused)
+        applied = server.status()["applied_on_stop"]
+    (why,) = applied["still_pending"]
+    assert "no stop has placed it" not in why and "survey" in why, why
+    assert dstate.STATE.pending["arm"] == ["0814:0100"], dstate.STATE.pending
+    fake.running = True
+    fake.running = False
+    server.status()
+    assert [r["entry"].split()[0] for r in fake.rows] == ["BP"], fake.rows
 
 
 def test_a_show_watch_under_a_queued_ref_arms_nothing(tmp_path: Path) -> None:

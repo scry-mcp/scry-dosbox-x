@@ -17,14 +17,16 @@ gate, and its expected numbers live in the manifest rather than here.
 THE MANIFEST IS THE ORACLE, and that is the design.  A sweep that merely PRINTS what it
 read is an instrument nobody re-reads; one that carries what each project is expected to
 hold goes RED when reality and the expectation part company, in either direction.  That
-is what makes "REAL16: 294 publics, 82 of them idle, 0 unreadable" a control rather than
-a number somebody once wrote down.
+is what makes a project's row (its publics, how many are idle, how many unreadable) a
+control rather than a number somebody once wrote down.
 """
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
+
+import pytest
 
 import mapsweep
 
@@ -60,15 +62,24 @@ SMALL_MAP = (
     "\r\n"
     "Program entry point at 0000:0000\r\n")
 
-# The same map with ONE row this reader cannot place: a real-mode offset wider than the
-# sixteen bits it holds.  It is a row by shape and not a symbol, which is precisely the
-# distinction the sweep has to be able to REPORT rather than merely count.
-MAP_WITH_A_BAD_ROW = SMALL_MAP.replace(
-    " 0459:00123       ACTIVE_CLS\r\n",
-    " 0459:1FFFF       ACTIVE_CLS\r\n")
 
-# A Borland map that carries NO `Publics by ...` section at all -- which is dos-real16-alt's
-# state, measured, and a fact about the LINK rather than about this reader.
+
+def _rows_replaced(text: str, old: str, new: str, count: int) -> str:
+    """`text` with `old` replaced, asserted to have been there `count` times: a replace that
+    matched nothing would hand back the map unchanged under this double's name."""
+    assert text.count(old) == count, (old, text.count(old))
+    return text.replace(old, new)
+
+
+# The same map with ONE symbol this reader cannot place, in both tables (by name and by
+# value), so two rows: a real-mode offset wider than the sixteen bits it holds.  It is a row
+# by shape and not a symbol, which is precisely the distinction the sweep has to be able to
+# REPORT rather than merely count.
+MAP_WITH_A_BAD_ROW = _rows_replaced(SMALL_MAP, " 0459:00123       ACTIVE_CLS\r\n",
+                                    " 0459:1FFFF       ACTIVE_CLS\r\n", 2)
+
+# A Borland map that carries NO `Publics by ...` section at all -- a real project's map can be
+# so, and that is a fact about the LINK rather than about this reader.
 NO_PUBLICS_MAP = (
     "\r\n"
     " Start  Stop   Length Name               Class\r\n"
@@ -209,13 +220,12 @@ def test_the_rows_it_could_not_place_are_quoted_and_not_merely_counted(
 # ------------------------------------------------------------------- refusal, both ways
 
 def test_a_project_expected_to_be_refused_is_green_when_it_is(tmp_path: Path) -> None:
-    """dos-real16-alt's case, and why the sweep may not simply go red on a refusal.
+    """A map with no publics, and why the sweep may not simply go red on a refusal.
 
-    A map with no `Publics by` section is a statement about that project's LINK, is
-    already recorded as its own card, and is expected to stay that way until that project
-    changes.  A sweep that went red on it every run would be red for ever, and the reason
-    decision 30 declares this manual is that a gate nobody can ever get green is one
-    people learn to ignore.
+    A map with no `Publics by` section is a statement about that project's LINK, and is
+    expected to stay that way until that project changes.  A sweep that went red on it
+    every run would be red for ever, and a gate nobody can ever get green is one people
+    learn to ignore.
     """
     root, mf = _tree(tmp_path, {"proj/L.MAP": NO_PUBLICS_MAP},
                      {"LIMA": {"path": "proj/L.MAP",
@@ -358,7 +368,7 @@ def test_project_selects_one_and_leaves_the_others_unread(tmp_path: Path) -> Non
                       "YANKEE": {"path": "proj/B.SYM", "expect": {"symbols": 999}}})
     rc, out = _run(root, mf, "--project", "ZULU")
     assert rc == 0, out
-    assert "B" not in out.replace("BORLAND", "").replace("borland", ""), out
+    assert "YANKEE" not in out and "B.SYM" not in out, out
 
 
 def test_an_unknown_option_exits_rather_than_being_ignored(tmp_path: Path) -> None:
@@ -366,7 +376,17 @@ def test_an_unknown_option_exits_rather_than_being_ignored(tmp_path: Path) -> No
     wrong thing is indistinguishable from one that measured the right one."""
     out: list[str] = []
     rc = mapsweep.main(["--nonsense"], write=out.append, env={})
-    assert rc == 2, out
+    assert rc == 2 and any("--nonsense" in line for line in out), out
+
+
+def test_argparses_own_words_reach_the_transcript_and_not_the_process(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    """What argparse prints goes through `write`, help included, and nothing reaches the
+    process's own streams."""
+    out: list[str] = []
+    assert mapsweep.main(["--help"], write=out.append, env={}) == mapsweep.OK
+    assert any("--manifest" in line for line in out), out
+    assert capsys.readouterr() == ("", "")
 
 
 # ------------------------------------------------------- notes inside a JSON manifest
@@ -427,8 +447,8 @@ def test_more_unreadable_rows_than_it_quotes_says_how_many_it_withheld(
         tmp_path: Path) -> None:
     """"SAID, NEVER TRAILED OFF" is the rule and nothing tested it.
 
-    No fixture here produced more than two unreadable rows, so the truncation branch
-    never ran: deleting it left a 292-row loss printing three rows and stopping, which
+    Without a fixture of more unreadable rows than are quoted, the truncation branch never
+    runs, and deleting it would leave a large loss printing three rows and stopping, which
     reads as a complete list of what was lost.
     """
     rows = "".join(f" 0001:0000{i:04X}       _plain{i}\r\n" for i in range(9))

@@ -671,8 +671,7 @@ def debug(command: str) -> dict[str, Any]:
     # A SCAN COMMAND TYPED HERE moves the debugger's own count past the one `scan_filter` keeps,
     # and may open a scan at another width, so both are dropped rather than answered stale.
     if command.strip().upper().startswith(("MEMS", "MEMFIND")):
-        STATE.scan_iterations = None
-        STATE.scan_cell_bytes = None
+        STATE.scan_forget()
     # A COMMAND THAT WRITES THE GUEST (`DEBUG_WRITES`) marks the session as `write` and
     # `set_register` do, before it is typed: what reaches the machine has been written.
     if command.split()[:1] and command.split()[0].upper() in DEBUG_WRITES:
@@ -1698,8 +1697,9 @@ def watch_list() -> dict[str, Any]:
     see `breakpoint_list`). Reply: `watches`, each with `ref`, `by`,
     `cpu`, `created_at`, `origin` (the session that declared or last adopted it), `inherited`,
     `age_s`, `mode`,
-    `length`, `fmt`, `state` (a show watch: `evaluated`/`unresolved`/`ambiguous`/
-    `unarmable`, it arms nothing but IS EVALUATED at every stop; a change watch additionally
+    `length`, `fmt`, `state` (a show watch: `evaluated` once placed, its value in each stop's
+    reply and not here, or `unresolved`/`ambiguous`/`unarmable`/`null_pointer`; a change watch
+    additionally
     `armed` or `gone`; either `orphan` when it comes from a store that kept no origin: it is
     nobody's, clear it by its `ref` or declare it again to adopt it), and `foreign`, memory
     breakpoints the debugger holds that no declaration of this store resolves to now. No

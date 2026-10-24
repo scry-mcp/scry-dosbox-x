@@ -1,22 +1,21 @@
 """The var-list converter, against bytes read out of the real debugger.
 
-WHY A GOLDEN AND NOT A ROUND TRIP THROUGH MY OWN ENCODER: this format is documented
-NOWHERE. `CDebugVar::SaveVars` is called with its body unpublished, `README.debugger`
+WHY A GOLDEN AND NOT A ROUND TRIP THROUGH THE MODULE'S OWN ENCODER: this format is
+documented nowhere but in the debugger's source (`CDebugVar::SaveVars`); `README.debugger`
 does not mention it, and neither does the doxygen. So the only thing that can say the
 encoder is right is bytes that came OUT of DOSBox-X, and `REAL_THREE` below is exactly
-that -- the 62 bytes it wrote for three names typed at its console,
-This debugger, transcribed from `xxd`.
+that -- the bytes it wrote for three names typed at its console, transcribed from `xxd`.
 
 An encoder tested only against its own decoder agrees with itself perfectly while both
 are wrong, which is the whole failure mode here: there was no specification to be wrong
 ABOUT until the file was opened.
 
-`NM_FRAGMENT` is likewise CAPTURED and not written: every line is copied verbatim out of
-`i586-pc-msdosdjgpp-nm build/DJGPP32.EXE` on the binary this was built against. It is
-not a tidy sample -- it carries a real 21-character name, a real three-way collision
-from the graphics library, real duplicate section symbols and a real compiler label --
-because those are the cases that decide the design, and a hand-written fixture is where
-somebody's idea of the input quietly replaces the input.
+`NM_FRAGMENT` is TRANSCRIBED from `i586-pc-msdosdjgpp-nm` output of a DJGPP program whose
+binary is not kept, so nothing here can check it against its source and it stands as
+authored to that shape. It is not a tidy sample -- it carries a 21-character name, a
+three-way collision from a graphics library, duplicate section symbols and a compiler
+label -- because those are the cases that decide the design. The real `nm` output this
+suite does hold is `tests/fixtures/djgpp/` (with its PROVENANCE).
 """
 
 from __future__ import annotations
@@ -45,17 +44,16 @@ REAL_THREE = bytes.fromhex(
 # `REAL_THREE` above holds NO lowercase letter -- `IV` uppercases what is typed at it,
 # so `zero_lower` was stored `ZERO_LOWER` -- while 10 of the 10 names in `NM_FRAGMENT`
 # below are lowercase, because that is what a C toolchain emits. So the property this
-# whole module rests on, that a C symbol table survives the round trip, was pinned by
-# the live pass and by nothing that runs on a commit.
+# whole module rests on, that a C symbol table survives the round trip, needs bytes of
+# its own that run on every commit.
 #
 # CAPTURED by the round trip the module PERFORMS: a
 # binary written, `LV SYMS.BIN`, `SV SYMSBK.BIN`, and the bytes read back off disk.
 #
-# THE FIRST ATTEMPT AT THIS CAPTURE MEASURED THE WRONG PATH, which is worth recording
-# because it nearly became a finding: it typed the names with `IV` and got `_MAIN`,
-# `_ENGINE_LOAD_MI` and `_POLY_SCANLINE` back -- uppercased and truncated -- which
-# would have said a C table cannot survive at all. `IV` is the TYPING path; `LV` is the
-# LOADING one, and the module only ever uses the second.
+# THE CAPTURE GOES THROUGH `LV`, NOT `IV`: typed with `IV` the names come back `_MAIN`,
+# `_ENGINE_LOAD_MI` and `_POLY_SCANLINE` -- uppercased and truncated -- which would say a C
+# table cannot survive at all. `IV` is the TYPING path; `LV` is the LOADING one, and the
+# module only ever uses the second.
 REAL_THREE_LOWER = bytes.fromhex(
     "0300"
     "5f6d61696e0000000000000000000000  b8790100"
@@ -63,7 +61,7 @@ REAL_THREE_LOWER = bytes.fromhex(
     "5f706f6c795f7363616e6c696e650000  1f000a00"
     .replace(" ", ""))
 
-# Verbatim `nm` lines. The addresses and the names are the binary's, not this test's.
+# `nm` lines in that program's shape (see the module docstring: transcribed, source not kept).
 NM_FRAGMENT = """\
 0016df20 T _main
 0005c830 T _engine_load_midi
@@ -77,9 +75,8 @@ NM_FRAGMENT = """\
 002308b8 b .bss
 """
 
-# The base a DJGPP program under CWSDPMI was MEASURED at, via `SELINFO CS`:
-# `CS: b:00400000 ... l:0023FFFF`. The limit bracketing the binary's own top `nm`
-# address (0x2388E4) is what identified it as this program's.
+# A DJGPP program's flat base under CWSDPMI, as `SELINFO CS` reads it
+# (`CS: b:00400000 ... l:0023FFFF`); any plausible base serves these cases.
 MEASURED_BASE = 0x00400000
 
 
@@ -183,7 +180,7 @@ def test_a_collision_keeps_every_member_instead_of_dropping_the_losers() -> None
     """The three `__poly_scanline_*` names share their first fifteen characters.
 
     Truncating and keeping the first winner is the obvious design and it silently
-    discards 1,821 of 7,238 symbols on the real binary -- concentrated in exactly the
+    discards a large share of a real binary's symbols -- concentrated in exactly the
     generated inner loops where landing on an unnamed address is likeliest. So all
     three survive, distinctly, and the plan SAYS how many it had to rename.
     """
@@ -199,26 +196,24 @@ def test_a_collision_keeps_every_member_instead_of_dropping_the_losers() -> None
 # ------------------------------------------------- distinctness, the central guarantee
 
 # THESE THREE FIXTURES ARE THE CASES THAT DECIDE THE DESIGN, and none of them is in
-# `NM_FRAGMENT` -- which is why the first version of this module shipped emitting 6,183
-# distinct names for 7,238 symbols while every test here was green. `NM_FRAGMENT`
-# carries a three-way collision inside ONE group, which is the easy case.
+# `NM_FRAGMENT`, which carries a three-way collision inside ONE group, the easy case: a
+# reader can pass it and still hand one symbol's name to another.
 TWO_GROUPS_ONE_STEM = ("00001000 T _blender_black_a\n"      # -> _blender_blac..
                        "00002000 T _blender_black_b\n"
                        "00003000 T _blender_blackXa\n"      # ...and so does this one
                        "00004000 T _blender_blackXb\n")
 
 REPEATED_FULL_NAME = ("00001000 t _static_helper\n"          # `nm` really does this:
-                      "00002000 t _static_helper\n"          # 296 names appear more
-                      "00003000 t _static_helper\n")         # than once on the binary
+                      "00002000 t _static_helper\n"          # hundreds of names appear
+                      "00003000 t _static_helper\n")         # more than once in a binary
 
 
 def test_no_two_symbols_are_ever_given_the_same_name() -> None:
     """THE CENTRAL GUARANTEE, over every fixture at once.
 
-    It was FALSE and no test could see it: distinctness was enforced within a group of
-    identical 15-character prefixes and nowhere else. Measured on the real binary,
-    1,055 of 7,238 symbols carried a name belonging to a different symbol, while
-    `disambiguated` reported the job done.
+    Enforced within a group of identical 15-character prefixes and nowhere else, it fails
+    across groups: a large share of a real binary's symbols would carry a name belonging
+    to a different symbol, while `disambiguated` reported the job done.
     """
     for name, text in (("fragment", NM_FRAGMENT),
                        ("two groups one stem", TWO_GROUPS_ONE_STEM),
@@ -240,8 +235,8 @@ def test_two_groups_that_shorten_to_one_stem_do_not_both_start_at_zero() -> None
 
 
 def test_a_name_nm_emits_more_than_once_yields_that_many_distinct_names() -> None:
-    """Cause two. `nm` prints 296 names more than once on the real binary -- 1,134
-    symbols, e.g. six distinct addresses all called
+    """Cause two. `nm` prints hundreds of names more than once in a real binary, e.g.
+    several distinct addresses all called
     `___FSEXT_call_open_handlers_wrapper.constprop.0`. A mapping keyed on the NAME
     keeps the last of each and gives every one of them that same name."""
     p = sym.plan(sym.parse_nm(REPEATED_FULL_NAME))
@@ -463,6 +458,9 @@ def test_the_name_index_answers_exactly_what_the_scan_answers() -> None:
     assert sym.find_by_name(table, "_main", index) == sym.find_by_name(table, "_main")
     assert len(sym.find_by_name(table, "_mai", index)) == 3
     assert sym.find_by_name(table, "_nope", index) == []
+    got = sym.find_by_name(table, "_main", index)
+    got.clear()
+    assert len(index["_main"]) == 2, "the caller emptied the index"
 
 
 def test_an_address_resolves_to_the_nearest_symbol_below_it_with_the_distance() -> None:
@@ -482,12 +480,12 @@ def test_an_address_below_every_symbol_is_none_and_not_the_lowest_one() -> None:
     assert sym.find_by_offset(table, 0x10) is None
 
 
-# --------------------------------------------------------------- the size that was measured
+# --------------------------------------------------------- the size a real program produces
 
 def test_the_size_a_real_program_produces_encodes_and_decodes_intact() -> None:
-    """7,238 records were MEASURED loading into the debugger and saving back whole, so
-    nothing caps this below the format's own ceiling at the size that actually occurs.
-    This asserts the encoder survives it; the live case asserts the debugger does."""
+    """A real program's table, thousands of records, loads into the debugger and saves back
+    whole, so nothing caps one load below the format's own ceiling. This asserts the
+    encoder survives that size; the live case asserts the debugger does."""
     many = [sym.Symbol(f"_sym_{i:05d}", 0x1000 + i * 4) for i in range(7238)]
     data = sym.encode(sym.plan(many), MEASURED_BASE)
     assert len(data) == 2 + 20 * 7238 == 144762
@@ -661,10 +659,11 @@ def test_a_linked_program_loses_no_symbol_to_the_unplaceable_filter() -> None:
 
 # --------------------------------------------------- Borland TLINK / TASM (real mode)
 
-# CAPTURED VERBATIM from a real TLINK map (`REAL16.MAP`, 680 lines, 294 publics), CRLF
-# and all. Every property this parser turns on is in here and none of it was invented:
-# the segment table whose rows ALSO open with a `seg:off` pair, the FIVE-digit offset,
-# the optional `idle` flag, the two identical publics sections, and the trailer.
+# AN EXCERPT IN A REAL TLINK MAP'S SHAPE, CRLF and all, its rows chosen and edited by hand: the
+# map it was cut from is not kept, so it stands as authored. Every property this parser turns
+# on is in here: the segment table whose rows ALSO open with a `seg:off` pair, the FIVE-digit
+# offset, the optional `idle` flag, the two identical publics sections, and the trailer. The
+# real TLINK map this suite holds whole is `tests/fixtures/borland-tlink16/MAPDEMO.MAP`.
 TLINK_MAP = (
     "\r\n"
     " Start  Stop   Length Name               Class\r\n"
@@ -696,8 +695,7 @@ def test_a_borland_map_is_read_and_its_segment_table_is_not_mistaken_for_symbols
 
     A TLINK map's "Detailed map of segments" opens every row with a `seg:off` pair too,
     so a pattern matching the LINE takes the last token and emits symbols called
-    `ACBP=48` -- plausible, silent, and in a table that then loads clean. MEASURED on
-    the real file: ten of them.
+    `ACBP=48` -- plausible, silent, and in a table that then loads clean.
     """
     got, unreadable = sym.parse(TLINK_MAP)
     names = [s.name for s in got]
@@ -721,8 +719,8 @@ def test_a_borland_address_is_folded_the_way_the_debugger_folds_it() -> None:
 
 
 def test_the_two_publics_sections_are_one_set_and_not_two() -> None:
-    """TLINK prints the same symbols twice, by name and by value -- MEASURED on the real
-    file, 294 and 294 with ZERO differences. Read without de-duplicating, every symbol
+    """TLINK prints the same symbols twice, by name and by value, with no difference
+    between the two. Read without de-duplicating, every symbol
     collides with itself and `_disambiguate` invents a `~1` for all of them."""
     p = sym.plan(sym.parse_tlink(TLINK_MAP)[0])
     assert p.parsed == 3, p
@@ -742,11 +740,10 @@ def test_two_different_symbols_sharing_a_name_still_survive_as_two() -> None:
 
 
 def test_a_borland_map_with_no_publics_says_so_instead_of_blaming_the_file() -> None:
-    """The two nothings, told apart. MEASURED on two real maps from the same toolchain:
-    `REAL16.MAP` carries 294 publics and `R16ALT.MAP` carries none, and before this both
-    were refused with "no symbol lines were recognised in that text" -- which tells the
-    reader their file is not a symbol list, when what is true is that this LINK printed
-    no publics."""
+    """The two nothings, told apart. Two real maps of one toolchain can differ exactly so,
+    one with publics and one with none, and "no symbol lines were recognised in that text"
+    for the second would tell the reader their file is not a symbol list, when what is true
+    is that this LINK printed no publics."""
     segments_only = TLINK_MAP.split("  Address")[0]
     with pytest.raises(sym.BadSymbolText, match="no `Publics by ...` header"):
         sym.parse(segments_only)
@@ -835,13 +832,10 @@ def test_a_publics_section_this_reader_cannot_parse_is_not_called_empty() -> Non
     about the second sends somebody off to declare symbols PUBLIC that are already there
     and already printed.
 
-    THE EXAMPLE CHANGED WITH THE MODEL, and that is worth saying rather than quietly
-    editing: an eight-digit row in a file with no section table USED to be the
-    unreadable case, because the reader had to place it while reading and nothing
-    positioned it. Under decision 36 the reader keeps `(section, offset)` and placement
-    is a later step, so that row now READS -- and is refused at PLACE time, by name, if
-    the caller does not position its section. The case that remains genuinely unreadable
-    is a row of a shape neither pattern knows.
+    An eight-digit row in a file with no section table is NOT the unreadable case: the
+    reader keeps `(section, offset)` and placement is a later step, so that row READS -- and
+    is refused at PLACE time, by name, if the caller does not position its section. The
+    case that is genuinely unreadable is a row of a shape neither pattern knows.
     """
     unknown = ("  Address         Publics by Name\r\n"
                "\r\n"
@@ -994,7 +988,7 @@ def test_an_overlay_symbol_is_placed_and_the_flag_travels_with_it() -> None:
 
     TLINK writes it beside a public living in an overlay it has NOT made resident, so
     that address holds whatever is swapped in when you look. Placing such a symbol is
-    right -- a large part of a real map such as `REAL16.MAP` carries the flag, and losing
+    right -- a large part of a real map carries the flag, and losing
     that much of a table is the worse failure of the two -- but placing it
     with NOTHING SAID is a name pointing at a conditional address, indistinguishable in
     the reply from one that does not move.
@@ -1027,11 +1021,11 @@ def test_the_name_of_a_flagged_row_is_the_name_and_not_the_flag() -> None:
 
 
 def test_the_overlay_symbols_are_counted_and_do_not_break_the_accounting() -> None:
-    """DECISION 4, and it is the one that would have refused every real map.
+    """The rule that keeps every real map with an overlay loadable.
 
     `overlay_idle` is a SUBSET of `kept`, not a bucket beside it. Added to `check()`'s
     sum it double-counts, so a Borland map carrying a single overlay symbol is rejected
-    as an accounting failure -- which is the whole of `REAL16.MAP`, 82 times over.
+    as an accounting failure -- every real map carrying the mark.
     Both halves are asserted together because that is what pins a SUBSET rather than a
     number: the count is right AND the partition is untouched.
     """
@@ -1322,14 +1316,13 @@ def test_a_section_the_caller_did_not_position_is_refused_and_never_placed_at_ze
 
 
 def test_a_32_bit_map_with_no_section_table_still_reads_and_still_needs_its_bases() -> None:
-    """THE OTHER DIRECTION OF THE SAME MOVE, and it is a behaviour change stated rather
-    than slipped in.
+    """THE OTHER DIRECTION OF THE SAME RULE.
 
-    A reader that places while reading can only REFUSE a file with eight-digit rows and
-    no section table outright, because nothing positions the section. Under decision 36
-    it reads: the row says section 1, offset 0xBE0, and that is what the file said. What
-    nobody may do is invent the missing half -- encoding it without a base for section 1
-    is refused, by name.
+    A reader that placed while reading could only REFUSE a file with eight-digit rows and
+    no section table outright, because nothing positions the section. Keeping
+    `(section, offset)` it reads: the row says section 1, offset 0xBE0, and that is what the
+    file said. What nobody may do is invent the missing half -- encoding it without a base
+    for section 1 is refused, by name.
     """
     wide = ("  Address         Publics by Name\r\n"
             "\r\n"
@@ -1339,8 +1332,8 @@ def test_a_32_bit_map_with_no_section_table_still_reads_and_still_needs_its_base
     assert unreadable == 0, unreadable
     with pytest.raises(sym.BadSymbolText, match="section 1"):
         sym.encode(sym.plan(got), section_bases={2: 0x400000})
-    # AND A FLAT BASE DOES NOT QUIETLY SERVE A SECTIONED SYMBOL, which is the collapse
-    # decision 36 exists to make impossible.
+    # AND A FLAT BASE DOES NOT QUIETLY SERVE A SECTIONED SYMBOL: that collapse is what
+    # keeping the section makes impossible.
     with pytest.raises(sym.BadSymbolText, match="section 1"):
         sym.encode(sym.plan(got), 0x400000)
 
@@ -1411,9 +1404,9 @@ def test_the_overlay_count_is_a_count_and_not_a_flag() -> None:
     """`== 1` ACCEPTS `True`, so every assertion on this counter was satisfied by a bool.
 
     Replacing `sum(...)` with `any(...)` left the entire suite green: `True == 1` and
-    `False == 0`, and mypy is happy because `bool` subclasses `int`. On the real map the
-    field exists for -- 82 flagged symbols of 294 -- the tool would then report 1, and
-    the number is the whole point of the field.
+    `False == 0`, and mypy is happy because `bool` subclasses `int`. On a real map with
+    dozens of flagged symbols the tool would then report 1, and the number is the whole
+    point of the field.
 
     The axis is VALUE, not presence, and it needed a fixture with TWO flagged symbols:
     with one, a count and a flag are indistinguishable by construction.
@@ -1509,7 +1502,8 @@ def test_a_section_length_in_lowercase_hex_is_still_a_section() -> None:
 
 
 def test_a_short_offset_in_a_file_that_has_a_section_table_is_refused() -> None:
-    """The MIRROR of decision 7, which was applied in one direction only.
+    """The MIRROR of the rule that a long row in a file with no section table is a section
+    index.
 
     A four-or-five-digit row is folded `seg * 16 + off`, which is right for a real-mode
     map and wrong in a file whose own section table says its left column is an index --
@@ -1549,10 +1543,9 @@ def test_an_nm_file_carrying_four_ordinary_words_is_not_a_borland_map() -> None:
 
 # --------------------------------------------------------------------- the anchored walk
 #
-# The ONE thing decision 27 extracted, tested where it lives rather than only through the
+# The ONE walk the readers share, tested where it lives rather than only through the
 # format that uses it. The accounting below -- step over a row you cannot read, and COUNT
-# it -- is the whole reason it was extracted: it had already gone wrong twice in this
-# file, in two different functions, found separately and fixed separately.
+# it -- is the whole reason it is shared: two copies of it can go wrong separately.
 
 _WALK = sym.Anchored(header=re.compile(r"^HEAD$", re.M),
                      row_shaped=re.compile(r"^ROW"))
@@ -1678,7 +1671,7 @@ def test_a_watcom_section_with_no_readable_row_refuses_and_does_not_return_empty
 
     A file that parsed to nothing and a program with no symbols are different facts, and
     returning `[]` for both is the "instrument that examined nothing reporting a clean
-    result" this fleet's rules forbid.
+    result", which says nothing true.
 
     IT CALLS THE READER DIRECTLY, on purpose. `parse` never reaches here with nothing,
     because `looks_like_watcom` requires a readable row before it will claim a file --

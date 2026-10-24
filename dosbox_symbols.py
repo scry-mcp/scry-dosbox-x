@@ -1,11 +1,11 @@
 """Names for addresses: a toolchain's TEXT symbol list turned into the debugger's own.
 
 WHY THIS EXISTS.  DOSBox-X's debugger does have a symbol facility -- `IV` names an
-address, `SV` saves the list, `LV` loads one -- and a card in the project that asked
-for this said flatly that it did not, which is the kind of false premise that makes
-the next reader design the wrong thing.  What it has no route for is getting NINE
-THOUSAND names in: `IV` is one address typed at a console, and it UPPERCASES what you
-type, so a C symbol table cannot be entered that way even with patience.
+address, `SV` saves the list, `LV` loads one -- and it is easy to assume it has none,
+which is the kind of false premise that makes the next reader design the wrong thing.
+What it has no route for is getting THOUSANDS of names in: `IV` is one address typed at
+a console, and it UPPERCASES what you type, so a C symbol table cannot be entered that
+way even with patience.
 
 WHAT IT DELIBERATELY DOES NOT DO: parse a binary.  It reads TEXT -- `nm` output, a
 GNU `ld` link map, and the `Publics by ...` section of a Borland TLINK/TASM map --
@@ -14,9 +14,9 @@ toolchain at a time.  Every DOS toolchain emits one of these three from a tool t
 already knows its own format, and a stranger installing this pack can produce one
 without this code knowing anything about their compiler.
 
-THE FORMAT IS DOCUMENTED NOWHERE -- not in `README.debugger`, not in the doxygen, and
-`CDebugVar::SaveVars`/`LoadVars` are called with their bodies unpublished.  So it was
-OPENED AND READ,, by naming three addresses through the console
+THE FORMAT IS DOCUMENTED NOWHERE but in the debugger's own source (`CDebugVar::SaveVars` and
+`LoadVars` in DOSBox-X's `src/debug/debug.cpp`) -- not in `README.debugger`, not in the
+doxygen.  So it was also OPENED AND READ, by naming three addresses through the console
 and saving them:
 
     IV 1234:5678 MYSYMBOL   ->  0300  "MYSYMBOL"...  b8 79 01 00
@@ -34,9 +34,9 @@ agree.  62 bytes for three records is `2 + 3*20` exactly.
 FIVE MORE FACTS OF THE FORMAT, each of which decides something here:
 
 - **The name field is 16 bytes, so 15 usable characters.**  `ABCDEFGHIJKLMNOPQRSTUV...`
-  comes back as `ABCDEFGHIJKLMNO`.  In a real C program more than a third of the names
-  are longer than that, so truncation is the normal case and not an edge case, and
-  truncating blindly loses a quarter of them to collisions (every generated variant of
+  comes back as `ABCDEFGHIJKLMNO`.  In a real C program a large share of the names are
+  longer than that, so truncation is the normal case and not an edge case, and
+  truncating blindly loses many of them to collisions (every generated variant of
   an inner loop collapses onto one name).  Hence `_disambiguate`.
 - **`IV` uppercases its argument; the FILE does not.**  `zero_lower` typed at the
   console is stored `ZERO_LOWER`, but a file written here holding `lower_case_sym` loads
@@ -51,8 +51,9 @@ FIVE MORE FACTS OF THE FORMAT, each of which decides something here:
   `SYM_ARG_MAX` in `dosbox_session.py` -- beside the two names actually sent, which is
   the only module that builds one -- and hence the caller of this module verifying the
   file it expected really appeared.
-- **A real program's whole table loads and saves back intact**, so nothing caps this
-  below the format's own `u16` ceiling at the size a real program produces.
+- **One load is capped by the format's own `u16` count and nothing lower**, and a
+  session's loads together by what the debugger's `SV` can save back (`COUNT_MAX`,
+  judged in `dosbox_symbol_file`), because `LV` appends.
 
 WHAT THE NAMES ARE ACTUALLY GOOD FOR, said plainly because it is narrower than it
 sounds: the debugger substitutes a name into the OPERAND of a memory reference
@@ -122,6 +123,10 @@ NAME_FIELD = 16
 NAME_MAX = NAME_FIELD - 1
 ADDR_FIELD = 4
 RECORD = NAME_FIELD + ADDR_FIELD
+# THE COUNT IS A u16, AND IT BOUNDS THE DEBUGGER'S WHOLE LIST TOO: `SV` refuses to save a list
+# longer than it (`CDebugVar::SaveVars` in DOSBox-X's `src/debug/debug.cpp`), and nothing but the
+# emulator's shutdown empties the list (`CDebugVar::DeleteAll`), so every `LV` of a session adds
+# to one holding that has to stay under it to be read back.
 COUNT_MAX = 0xFFFF
 ADDR_MAX = 0xFFFFFFFF
 
@@ -150,13 +155,13 @@ PRINTABLE = re.compile(r"\A[\x20-\x7E]+\Z")
 
 # `nm` prints `<addr> <type> <name>`, and an UNDEFINED symbol prints `        U name`
 # with no address at all. The width is not assumed: a 64-bit `nm` prints sixteen digits
-# for the same file, and pinning eight would silently match nothing there -- which is
-# the failure mode this repo's rules call a broken instrument reporting a clean result.
+# for the same file, and pinning eight would silently match nothing there: a broken
+# instrument reporting a clean result.
 # `re.M` is not decoration: `_parse` walks line by line, where it changes nothing, but
 # `looks_like_map` counts matches across the WHOLE text -- and without it `^` anchors
-# only at the start of the string, so both counts came back 0 and the sniff always
-# answered "nm output". Caught by the case that asserts a link map IS recognised;
-# the mirror case (`nm` output is not a map) passed all along, on `0 > 0`.
+# only at the start of the string, so both counts would be 0 and the sniff would always
+# answer "nm output". The case that asserts a link map IS recognised holds it; the mirror
+# case (`nm` output is not a map) would pass either way, on `0 > 0`.
 _NM = re.compile(r"^\s*([0-9a-fA-F]{4,16})\s+([A-Za-z])\s+(\S+)\s*$", re.M)
 
 # GNU `ld --print-map` puts an address and a name on one line, the address `0x`-prefixed
@@ -195,11 +200,9 @@ _TLINK_HEADER = re.compile(r"^[ \t]*Address[ \t]+Publics by[ \t]*\w+.*$", re.M)
 # map I cannot read" and "this is a Borland map that carries no public symbols" are
 # different facts, and the second is a statement about the LINK: a real map linked
 # without `/m` opens with this header and has no `Publics by` section.
-# `\r?$` AND NOT `[ \t]*$`: a Borland map is CRLF, `re.M`'s `$` matches only before a
-# `\n`, and the `\s*` this replaced was absorbing the `\r` by accident. Tightening it
-# without putting the `\r` back made this pattern miss every real map -- caught by the
-# suite on the first run, which is the whole reason the fixture is captured with its
-# line endings intact.
+# `\r?$` AND NOT `[ \t]*$`: a Borland map is CRLF, and `re.M`'s `$` matches only before a
+# `\n`, so a pattern without the `\r` misses every real map. That is why the fixture is
+# kept with its line endings intact.
 _TLINK_SEGMENTS = re.compile(
     r"^[ \t]*Start[ \t]+Stop[ \t]+Length[ \t]+Name[ \t]+Class[ \t]*\r?$", re.M)
 
@@ -288,11 +291,11 @@ _TLINK_SECTION_ANY = re.compile(r"^[ \t]*[0-9A-Fa-f]{4}:[0-9A-Fa-f]{8}\b")
 # THE MARK IS `Idle`, WITH A CAPITAL I, as a real ILINK32 map writes it; a lowercase
 # `idle` here would refuse every flagged row of such a map:
 #
-#     0001:000071D0       @$bdele$qpv          216 rows, parsed
-#     0001:0000085C  Idle @jump$qv             146 rows, REFUSED
+#     0001:000071D0       @$bdele$qpv          parsed
+#     0001:0000085C  Idle @jump$qv             REFUSED
 #
-# 292 of its 508 publics rows -- 57% -- were refused for the case of one letter, and
-# `parse` returned the other 216 as a plausible answer with no exception raised.
+# More than half of such a map's publics rows would be refused for the case of one letter,
+# and `parse` would return the rest as a plausible answer with no exception raised.
 #
 # SO THE MARK IS PER FORMAT AND NOT GLOBAL: TLINK 16-bit writes `idle`, ILINK32 writes
 # `Idle`, and each pattern carries its own. Making the match case-insensitive would
@@ -339,7 +342,7 @@ _TLINK_ROW_ANY = re.compile(r"^[ \t]*[0-9A-Fa-f]{4,}:[0-9A-Fa-f]+\b")
 
 # Symbols that name a SECTION or a compiler-generated local label rather than anything a
 # person would look up. They are excluded by DEFAULT and counted, never dropped in
-# silence: in a real binary they are a quarter of the table and `.text` alone appears
+# silence: in a real binary they are a large share of the table and `.text` alone appears
 # hundreds of times, which would otherwise dominate the collision accounting and hide
 # the real ones. `..@15.l0` starts with a dot too, so ONE alternative covers both
 # classes; spelt out as `^(\.|\.\.@)` the second branch is unreachable because
@@ -387,7 +390,7 @@ class ParseReport:
     a loader needs and all it needs.  A sweep across somebody's real maps needs two more
     things and neither fits in that pair: WHICH reader ran, and WHICH rows were lost.  A
     count says a population was amputated; the row says what the amputation was, and it
-    is the only form in which it can be acted on: `unreadable=292` says nothing at all,
+    is the only form in which it can be acted on: a large `unreadable` says nothing at all,
     while one quoted `Idle @jump$qv` row is the whole defect.
 
     IT IS AN OUT-PARAMETER AND NOT A THIRD RETURN VALUE, deliberately.  `parse`,
@@ -455,14 +458,12 @@ class Symbol:
     # WHICH SECTION THAT OFFSET IS INSIDE. `FLAT` (below, and it is -1) means "this
     # format has none".
     #
-    # THE FILE GAVE US THIS AND THE READER USED TO THROW IT AWAY at parse time, folding
-    # `base + offset` while reading. Everything that went wrong with the sectioned
-    # formats followed from that ONE mistake: a wrong base could not be corrected
-    # without re-reading, the sectioned formats needed a second code path, and a caller
-    # could receive a FOLDED address with no way to tell it had been folded wrongly.
-    # A real TLINK32 map shows all three at once: its section table reads
-    # `{1: 0, 2: 0, 3: 0}`, so every symbol comes back plausible and every one of them on
-    # top of the others.
+    # THE FILE GIVES THIS, AND FOLDING `base + offset` WHILE READING WOULD THROW IT AWAY:
+    # a wrong base could not then be corrected without re-reading, the sectioned formats
+    # would need a second code path, and a caller would receive a FOLDED address with no
+    # way to tell it had been folded wrongly. A TLINK32 map shows why at once: its section
+    # table reads `{1: 0, 2: 0, 3: 0}`, so a fold at read time puts every symbol at a
+    # plausible address and every one of them on top of the others.
     #
     # A FLAT FORMAT IS THE DEGENERATE CASE, not a second path: one section, one base --
     # the `base` every caller already passes. `nm`, a GNU map and a REAL-MODE Borland
@@ -477,10 +478,9 @@ class Symbol:
     # at an address belonging to nothing. A negative index is one no map can print,
     # because every one of these formats prints it as unsigned hex.
     #
-    # KEYWORD-ONLY, and inserting this field is exactly why. It went in as the THIRD
-    # positional, so `Symbol("_main", 0x10, "T")` silently stopped meaning `kind="T"` and
-    # started meaning `section="T"` -- a change of meaning with no error anywhere, which
-    # `place` would then turn into a `KeyError` rather than a refusal, or, with an int
+    # KEYWORD-ONLY: as the THIRD positional, `Symbol("_main", 0x10, "T")` would mean
+    # `section="T"` rather than `kind="T"` -- a change of meaning with no error anywhere,
+    # which `place` would turn into a `KeyError` rather than a refusal, or, with an int
     # third argument, into a symbol quietly filed under a section that is really a kind.
     # `kw_only` makes the whole class of mistake inexpressible instead of relying on
     # every call site having used keywords, which is a property nobody re-checks.
@@ -503,9 +503,9 @@ class Symbol:
     #     module are exactly the ones that come back UNFLAGGED, while the resident ones
     #     are all flagged. Backwards from the claim.
     #
-    # NO REPLACEMENT EXPLANATION IS OFFERED. Swapping one guess for another is how the
-    # first one got written, and this fleet's rule is that an unanswered question is
-    # recorded as a question rather than as a mechanism. What would settle it is
+    # NO REPLACEMENT EXPLANATION IS OFFERED. Swapping one guess for another produces the
+    # same kind of wrong answer, so an unanswered question is recorded as a question
+    # rather than as a mechanism. What would settle it is
     # Borland's own documentation of the map format, or a linker source.
     #
     # WHAT IS UNCHANGED, because none of it was ever the guess: the mark is READ, it is
@@ -567,19 +567,19 @@ class Plan:
     # IT IS A SUBSET OF `kept`, and that is the whole of why
     # it is NOT in `check()`'s sum below: the sum PARTITIONS `parsed`, these symbols are
     # already counted inside `kept`, and adding the term would make every Borland map
-    # carrying the mark be refused as an accounting failure. In a real map better than a
-    # quarter of the symbols carry the flag, so EXCLUDING them is not an option either,
+    # carrying the mark be refused as an accounting failure. In a real map a large share of
+    # the symbols carry the flag, so EXCLUDING them is not an option either,
     # and the module's own idiom applies instead: place them, and count them so the
     # conditionality is visible. THE POPULATION IS SYMBOLS AND NOT ROWS: a map prints
     # each flagged symbol in both publics sections, and reading the row count doubles it.
     # `overlay_idle` and not `excluded_idle`: the prefix would say they were dropped.
     overlay_idle: int = 0
     symbols: list[Symbol] = field(default_factory=list)
-    # PARALLEL TO `symbols`, BY INDEX, and never a dict keyed on the name. Measured:
-    # `nm` on a real binary emits 296 names MORE THAN ONCE -- 1,134 symbols, e.g. six
-    # distinct addresses all called `___FSEXT_call_open_handlers_wrapper.constprop.0`
-    # -- so a name-keyed mapping keeps the LAST of each and hands every one of them
-    # that same name, throwing away the distinct forms this module had just computed.
+    # PARALLEL TO `symbols`, BY INDEX, and never a dict keyed on the name: `nm` on a real
+    # binary emits hundreds of names MORE THAN ONCE (several distinct addresses all called
+    # `___FSEXT_call_open_handlers_wrapper.constprop.0`), so a name-keyed mapping keeps the
+    # LAST of each and hands every one of them that same name, throwing away the distinct
+    # forms this module had just computed.
     short: list[str] = field(default_factory=list)
 
     @property
@@ -590,13 +590,13 @@ class Plan:
         """Every parsed symbol landed in exactly one bucket, or this is not a plan.
 
         A conservation check and not decoration: the accounting is what a caller reads
-        instead of the 9,000 names, so an accounting that does not add up is a report
+        instead of thousands of names, so an accounting that does not add up is a report
         about nothing.
         """
         # THE DISTINCTNESS IS ASSERTED HERE, in the constructor's own check, and not
-        # only in a test. It is this module's central guarantee, it was measurably
-        # FALSE for a while, and a guarantee that lives only in a test is one that
-        # holds until somebody edits the function without running that test.
+        # only in a test. It is this module's central guarantee, and a guarantee that
+        # lives only in a test is one that holds until somebody edits the function
+        # without running that test.
         if len(set(self.short)) != len(self.short):
             dupes = sorted({s for s in self.short if self.short.count(s) > 1})
             raise BadSymbolText(
@@ -616,9 +616,8 @@ class Plan:
         # lines never became symbols, this one because the symbols are already in.
         # AND THE SUBSET RELATION IS ASSERTED, not merely asserted ABOUT. Keeping
         # `overlay_idle` out of the sum above rests entirely on it being a subset of
-        # `kept`, and that was stated in three comments and enforced nowhere -- while
-        # this class's own standard, four lines up, is that a guarantee living only in a
-        # test holds until somebody edits the function without running that test.
+        # `kept`, and this class's own standard, four lines up, is that a guarantee living
+        # only in a comment or a test holds until somebody edits the function.
         if not 0 <= self.overlay_idle <= self.kept:
             raise BadSymbolText(
                 f"{self.overlay_idle} symbols carry the linker's `idle` mark, out "
@@ -673,7 +672,7 @@ def parse(text: str, report: ParseReport | None = None) -> tuple[list[Symbol], i
     """
     # BORLAND IS ASKED FIRST, because a TLINK map scores ZERO on both of the other
     # two sniffs and would therefore land on `nm` and be refused with a message telling
-    # the reader their file is not a symbol list -- about a file holding 294 of them.
+    # the reader their file is not a symbol list -- about a file full of them.
     # BOTH SEGMENT-TABLE HEADERS, because "a Borland map that printed no publics" is a
     # statement about the LINK and it is just as true of a 32-bit one. Asking only about
     # the 16-bit table sent a 32-bit map with no publics to the `nm` parser, which then
@@ -745,7 +744,7 @@ def parse(text: str, report: ParseReport | None = None) -> tuple[list[Symbol], i
     # WATCOM BEFORE THE OTHER TWO, for the same measured reason Borland goes first: its
     # rows score ZERO on both of the remaining sniffs, so without this a Watcom map
     # lands on the `nm` parser and comes back "no symbol lines were recognised in that
-    # text" -- about a file holding 78 of them.
+    # text" -- about a file full of them.
     if looks_like_watcom(text):
         if report is not None:
             report._claim("watcom")
@@ -769,7 +768,7 @@ def _parse(text: str, rx: re.Pattern[str], addr_group: int, name_group: int,
 
     A file that parsed to nothing and a program with no symbols are different facts,
     and returning `[]` for both is exactly the "instrument that examined nothing
-    reporting a clean result" this fleet's rules forbid. So it raises, and the caller
+    reporting a clean result", which says nothing true. So it raises, and the caller
     turns that into INVALID.
     """
     out: list[Symbol] = []
@@ -948,12 +947,10 @@ def _tlink_sections(lines: list[str]) -> dict[int, int]:
     # generator, so the rest of the file is never walked. That is what stops a second
     # table merging into this one.
     #
-    # THE UNREADABLE ROWS ARE DISCARDED HERE, and it is deliberate rather than an
-    # oversight the extraction introduced: nothing counted them before either. The loss
-    # is still visible, because the publics naming a section this could not read are
-    # then refused and DO reach `parse()`'s count -- as unreadable PUBLICS, so the number
-    # points at the wrong half of the file. That limitation is unchanged, and the
-    # refusal message names the possibility instead.
+    # THE UNREADABLE ROWS ARE DISCARDED HERE, on purpose. The loss is still visible, because
+    # the publics naming a section this could not read are then refused and DO reach
+    # `parse()`'s count -- as unreadable PUBLICS, so the number points at the wrong half of the
+    # file, and the refusal message names that possibility.
     walked = next(_anchored_sections(lines, _TLINK_SECTABLE, _TLINK_SECTION.match), None)
     if walked is None:
         return {}
@@ -977,8 +974,8 @@ def _refuse_if_mostly_unreadable(fmt: str, rows_read: int, unreadable: int) -> N
     caller who does not look at that second value gets a well-formed list, a plan whose
     buckets add up, and a table that loads clean -- about a file the reader understood a
     minority of: a real ILINK32 map read with the wrong case for its `Idle` mark loses
-    more than half its rows with no exception raised.
-    Carmack's test says that should be IMPOSSIBLE rather than documented.
+    more than half its rows with no exception raised. That should be IMPOSSIBLE rather
+    than documented.
 
     THE BAR IS "MORE LOST THAN KEPT", and it is a statement rather than a tuned number: a
     reading that discarded more rows than it understood is not a reading of that file. It
@@ -1020,14 +1017,11 @@ def parse_tlink(text: str, report: ParseReport | None = None) -> tuple[list[Symb
     """The publics of a Borland TLINK/TASM map, as LINEAR offsets, and what it could
     not read.
 
-    IT RETURNS A COUNT LIKE `_parse` DOES, and that is not symmetry for its own sake.
-    A bare list with `parse()` reporting `unreadable = 0` for this path unconditionally
-    rests on "the walk stops at the section's end, so there is no amputated population
-    to report", and the walk does not stop at the section's end: it stops at the first
-    row it cannot read, WHEREVER that row is. On a four-symbol section with one
-    unreadable row third, one symbol comes back, `unreadable` is 0, and `check()`
-    accepts the result as a complete, loadable table. That is the defect
-    `Plan.unreadable` exists to make impossible.
+    IT RETURNS A COUNT LIKE `_parse` DOES, and that is not symmetry for its own sake: the
+    walk steps over a row it cannot read rather than stopping, so a section can lose rows
+    anywhere, and a bare list with `unreadable = 0` would have `check()` accept a partial
+    table as a complete, loadable one. That is the defect `Plan.unreadable` exists to make
+    impossible.
 
     `seg:off` IS FOLDED TO `seg * 16 + off`, which is what the debugger's own var list
     stores and is therefore not a convention invented here: the captured golden shows
@@ -1074,8 +1068,8 @@ def parse_tlink(text: str, report: ParseReport | None = None) -> tuple[list[Symb
     it.
 
     THEY ARE STILL PLACED, and the number is the point rather than a filter: in a real
-    map better than a quarter of the symbols are flagged, so excluding them would
-    throw away that much of the names.
+    map a large share of the symbols are flagged, so excluding them would throw away that
+    much of the names.
     (MIND WHICH POPULATION THAT COUNTS. A file holds twice as many flagged ROWS, because
     both publics sections print the same set; the SYMBOLS are half that, and `overlay_idle` counts
     symbols. Reading the row count as a symbol count doubles it.) This module's idiom is
@@ -1144,9 +1138,9 @@ def parse_tlink(text: str, report: ParseReport | None = None) -> tuple[list[Symb
             seen.add((name, section, offset))
             # `?` AND NOT `T`, for the same reason `parse_map` answers `?`: a TLINK map
             # does not say whether a public is code or data, and both are printed in
-            # this one section. Stamping every one `T` was a claim the file does not
-            # make, and `kind` is no longer inert -- `plan()` compares it against
-            # `_UNPLACEABLE`, and `symbols_find` reports it to the caller.
+            # this one section, so `T` would be a claim the file does not make, and `kind`
+            # is not inert -- `plan()` compares it against `_UNPLACEABLE`, and
+            # `symbols_find` reports it to the caller.
             out.append(Symbol(name=name, offset=offset, section=section, kind="?",
                               idle=idle))
     _refuse_if_mostly_unreadable("Borland TLINK/TASM", rows_read, unreadable)
@@ -1171,10 +1165,8 @@ def _tlink_place(row: str, sectioned: bool) -> tuple[str, int, int, bool] | None
     HOLDING, and in one direction only: the real-mode pattern is tried FIRST, so widening
     IT to eight digits makes every 32-bit row trip the sixteen-bit bound and be refused,
     while widening the 32-bit one changes nothing at all because the first pattern has
-    already claimed the row. This paragraph asserted the opposite -- that a real-mode row
-    would be "read as a section index" -- which the try-order makes impossible; the
-    break that was said to demonstrate it is behaviourally inert and is caught only
-    because the property is pinned on the patterns themselves.
+    already claimed the row. A real-mode row is never "read as a section index": the
+    try-order makes it impossible, and the property is pinned on the patterns themselves.
 
     AND A SHORT OFFSET IN A FILE THAT HAS A SECTION TABLE IS AMBIGUOUS, so it is REFUSED.
     Without the table there is nothing to be ambiguous with and the row is real-mode by
@@ -1188,10 +1180,10 @@ def _tlink_place(row: str, sectioned: bool) -> tuple[str, int, int, bool] | None
     if m is not None and sectioned:
         return None
     if m is not None:
-        # THE GROUP NUMBERS ARE READ OFF THE PATTERN, not remembered. `idle` became a
-        # CAPTURING group so the flag could be carried, which pushed the name from
-        # `group(3)` to `group(4)` -- and left at 3 it would have returned the FLAG as
-        # the symbol's name, for the flagged rows only, with nothing failing.
+        # THE GROUP NUMBERS ARE READ OFF THE PATTERN, not remembered: `idle` is a CAPTURING
+        # group so the flag can be carried, the name is `group(4)`, and `group(3)` would
+        # return the FLAG as the symbol's name, for the flagged rows only, with nothing
+        # failing.
         seg, off = m.group(1), m.group(2)
         # SIXTEEN BITS, ENFORCED. The row regex allows five hex digits because this
         # linker pads to five, but five digits reach 0xFFFFF and a real-mode offset
@@ -1372,25 +1364,19 @@ def looks_like_map(text: str) -> bool:
 def _disambiguate(names: list[str]) -> tuple[list[str], int, int]:
     """Fifteen characters each, and NO TWO ALIKE across the whole list.
 
-    TRUNCATING AND KEEPING THE FIRST WINNER WAS THE OBVIOUS DESIGN AND IT IS WRONG
-    HERE: on a real binary it silently discards a quarter of the symbols, and the
+    TRUNCATING AND KEEPING THE FIRST WINNER IS THE OBVIOUS DESIGN AND IT IS WRONG
+    HERE: on a real binary it silently discards a large share of the symbols, and the
     addresses it discards are not random -- they are
     every generated variant of the graphics library's inner loops, which is precisely
     the region where landing on an unnamed address is likeliest.
 
-    THE FIRST FIX FOR THAT WAS ALSO WRONG, AND IN A WORSE WAY, because it looked
-    right. It grouped names by their 15-character prefix and numbered within each
-    group, which guarantees distinctness INSIDE a group and nothing at all between
-    them. An adversarial pass measured what that produced on the same binary:
-
-        7,238 symbols  ->  6,183 distinct names
-        1,055 symbols carried a name belonging to a DIFFERENT symbol
-
-    i.e. it repaired 42% of the loss it was written to repair, while `disambiguated`
-    reported 2,424 renames and nothing said the rest had collided. Two causes, both
+    NUMBERING WITHIN GROUPS OF ONE 15-CHARACTER PREFIX IS WRONG IN A WORSE WAY, because
+    it looks right: it guarantees distinctness INSIDE a group and nothing at all between
+    them, so a large share of symbols carry a name belonging to a DIFFERENT symbol while
+    `disambiguated` counts renames and nothing says the rest collided. Two causes, both
     invisible to a per-group check: two groups whose keys differ only at the end
     shorten to the SAME stem and both start numbering at `~0` (`__accel_bank_stub` and
-    `__accel_bank_switch` both became `__accel_bank_~0`), and a name that genuinely
+    `__accel_bank_switch` would both become `__accel_bank_~0`), and a name that genuinely
     CONTAINS a tilde can collide with a generated one.
 
     So the ledger is GLOBAL: a name is emitted only if nothing has taken it, and
@@ -1404,19 +1390,19 @@ def _disambiguate(names: list[str]) -> tuple[list[str], int, int]:
     is never touched.
     """
     truncated_names = sum(1 for n in names if len(n) > NAME_MAX)
-    # TWO PASSES, AND THE FIRST ONE IS THE FIX. Walking once in input order lets a
-    # GENERATED name take a stem that a LATER symbol owns outright, which breaks the
+    # TWO PASSES, AND THE FIRST ONE IS WHAT KEEPS THE PROMISE. Walking once in input order
+    # would let a GENERATED name take a stem that a LATER symbol owns outright, which breaks the
     # promise three paragraphs up that "a name that fits and is unique is never
     # touched". The order that exposes it:
     #     ["abcdefghijklmXY1", "abcdefghijklmXY2", "abcdefghijklm~0"]
     # the third symbol is really CALLED `abcdefghijklm~0`, it fits, and it is unique in
-    # the input -- and one pass handed that name to the SECOND symbol, so the debugger
-    # pointed a real name at somebody else's address while `check()` saw perfect
+    # the input -- and one pass would hand that name to the SECOND symbol, so the debugger
+    # would point a real name at somebody else's address while `check()` saw perfect
     # distinctness. Reserving the outright winners first makes that inexpressible.
     stems = [n[:NAME_MAX] for n in names]
-    # `Counter`, NOT `stems.count(s)` PER DISTINCT STEM. That was a scan of the whole
-    # list once per stem, and `plan()` admits up to 65,535 names before calling here:
-    # quadratic in the table, billions of comparisons at the ceiling. One pass instead.
+    # `Counter`, NOT `stems.count(s)` PER DISTINCT STEM, which would scan the whole list
+    # once per stem, quadratic in the table, and `plan()` admits up to `COUNT_MAX` names
+    # before calling here. One pass instead.
     seen_stems = Counter(stems)
     solo = {s for s, k in seen_stems.items() if k == 1}
     # RESERVED FIRST: every name that FITS WHOLE, and not `solo` -- stems that are
@@ -1430,8 +1416,8 @@ def _disambiguate(names: list[str]) -> tuple[list[str], int, int]:
     # at a different address -- and renames the second `abcdefghijklm~0`. Every
     # counter clean, `check()` satisfied, and a person typing the real name lands on the
     # wrong function. That is the "name that LIES" this module says is worse than a
-    # missing one. It was also ORDER-DEPENDENT: the same two names the other way round
-    # came out right, so one link order was correct and the other silently was not.
+    # missing one. And ORDER-DEPENDENT: the same two names the other way round come out
+    # right, so one link order would be correct and the other silently not.
     #
     # A name that fits whole can only be claimed by its own symbol, so reserving them
     # all makes the theft inexpressible rather than unlikely.
@@ -1599,12 +1585,11 @@ def resolve_bases(base: int | None,
     two would have won is precisely the thing nobody would notice getting wrong.
 
     `base` is the flat answer and becomes `{FLAT: base}`: one section, one base. It is
-    `FLAT` and NOT `0` -- this line said `{0: base}` while the code returned `{-1: base}`,
-    which sends a reader who follows it to `section_bases={0: ...}` and a refusal naming
-    section -1 for an ordinary `nm` file.
+    `FLAT` (-1) and NOT `0`: a reader who takes it for `{0: base}` writes
+    `section_bases={0: ...}` and meets a refusal naming section -1 for an ordinary `nm` file.
     `section_bases` is the sectioned one, a base per section index.
 
-    NEITHER is also refused, and that is the older rule kept: a default of zero encodes
+    NEITHER is also refused: a default of zero encodes
     a file that is well formed, loads without complaint, and names whatever occupies
     low memory -- a wrong answer wearing the shape of a right one.
     """
@@ -1779,7 +1764,8 @@ def find_by_name(symbols: list[Symbol], name: str, index: NameIndex | None = Non
     between an answer and a guess. `index` is the table's own `index_by_name`, which
     answers the exact half without a scan; the prefix half is the scan, only on a miss.
     """
-    exact = index[name] if index is not None and name in index else (
+    # A COPY of the index's own bucket: a caller that edits its answer must not edit the index.
+    exact = list(index[name]) if index is not None and name in index else (
         [s for s in symbols if s.name == name])
     if exact:
         return exact

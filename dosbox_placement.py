@@ -229,7 +229,7 @@ def resolve_ref(decl: dec.Declaration, reg: str, session: ds.Session, *,
             return {"state": "unarmable", "why": f"stored address {decl.ref!r} cannot be "
                                                   f"read: {e}. Clear it by this ref"}
         return {"state": "armable", "seg": seg, "off": off, "marked": False}
-    # ONE SOURCE OF NAMES (owner's QA call): the name->offset half goes through the store's
+    # ONE SOURCE OF NAMES: the name->offset half goes through the store's
     # `resolve_name`, the same routine `symbols_load`'s re-resolution uses, so a symbol
     # resolves one way everywhere. This layer adds only the live seg:off (`target_for`),
     # which the store cannot know because it never touches the machine.
@@ -644,24 +644,16 @@ def take_the_batch(symbols: list[sym.Symbol], accumulate: bool) -> None:
 
 def stamp_at(linear: int | None, raw: bool) -> str | None:
     """The stamp a row placed at `linear` takes now: the most recently loaded batch whose span
-    holds it, kept in the store for the rows that will name it, or the conf alone where no
-    batch describes it. A raw code row (`raw`) whose place is not known now while a batch is
-    held is `dec.PENDING_STAMP`, and takes its batch when a load of its session places it."""
-    cover, stamp = _stamp_now(linear, raw)
-    if cover is not None and STATE.store is not None:
-        STATE.store.keep_build(cover)
-    return stamp
-
-
-def _stamp_now(linear: int | None, raw: bool) -> tuple[dec.Build | None, str | None]:
-    """`stamp_at`'s answer and the batch it names, written nowhere."""
+    holds it, or the conf alone where no batch describes it. A raw code row (`raw`) whose place
+    is not known now while a batch is held is `dec.PENDING_STAMP`, and takes its batch when a
+    load of its session places it."""
     cover = next((b for b in reversed(STATE.map_batches)
                   if linear is not None and b.covers(linear)), None)
     if cover is not None:
-        return cover, cover.stamp
+        return cover.stamp
     if raw and linear is None and STATE.map_batches:
-        return None, dec.PENDING_STAMP
-    return None, STATE.conf_fingerprint
+        return dec.PENDING_STAMP
+    return STATE.conf_fingerprint
 
 
 def staleness(decl: dec.Declaration, place_now: Callable[[], int | None]) -> str | None:
@@ -673,7 +665,7 @@ def staleness(decl: dec.Declaration, place_now: Callable[[], int | None]) -> str
     if decl.fingerprint == dec.PENDING_STAMP and decl.origin == STATE.session_origin \
             and STATE.session_origin is not None:
         linear = place_now()
-        _, stamp = _stamp_now(linear, raw=True)
+        stamp = stamp_at(linear, raw=True)
         decl, place_now = dataclasses.replace(decl, fingerprint=stamp), lambda: linear
     return dec.raw_staleness(decl, STATE.conf_fingerprint, STATE.map_batches, place_now)
 

@@ -27,9 +27,13 @@ def load_symbols(ses: ds.Session, data: bytes) -> list[tuple[str, int]]:
     the address it was given.
 
     THE COUNT COMES BACK AS A FLOOR AND NOT AN EQUALITY, because `LV` APPENDS
-    (tests/fixtures/symbols-lv: a second load leaves both). A caller loading twice
-    gets both lists, and this returns everything the debugger holds rather than
-    pretending the last load is all of it.
+    (tests/fixtures/symbols-lv: a second load leaves both) and no debugger command empties the
+    list. A caller loading twice gets both lists, and this returns everything the debugger
+    holds rather than pretending the last load is all of it. The server places names from
+    its own table, never the debugger's, so what an older load left there is the debugger's
+    own display alone; and a load that would carry the holding past what `SV` can save
+    (`symbols.COUNT_MAX`) is refused before `LV`, which would append it and then fail its
+    read-back.
 
     The two files live in the emulator's WORKING DIRECTORY, which is somebody's
     project, so an existing file of either name is a REFUSAL rather than something
@@ -40,6 +44,8 @@ def load_symbols(ses: ds.Session, data: bytes) -> list[tuple[str, int]]:
     without a word. See the guard below for why that is read here rather than
     inferred from the reply, and for what it does NOT claim.
     """
+    if (full := vars_overflow(ses, data)) is not None:
+        raise Invalid("bad_argument", full)
     for n in (ds.SYM_LOAD_NAME, ds.SYM_SAVE_NAME):
         if len(n) > ds.SYM_ARG_MAX:
             raise Invalid("bad_argument",
@@ -61,10 +67,8 @@ def load_symbols(ses: ds.Session, data: bytes) -> list[tuple[str, int]]:
     #
     # `LV` goes through the console, and one that is not listening swallows it
     # without a word -- which arrives here as `_acked` reporting an acknowledgement
-    # that never came. MEASURED: that refusal named a truncated filename, an older
-    # `ok` and a gone emulator, and the same reply's own data excluded all three
-    # (`SYMS.BIN` is 8 characters, it was the session's first load, `alive` was
-    # true). The caller was sent to look at filenames.
+    # that never came, and that refusal would send the caller to look at filenames
+    # (truncation, an older `ok`, a gone emulator) when none of them is the cause.
     #
     # THE PRECEDENT IS `step`, `run_to` AND `watch`, which all settle it first.
     # This is NOT the one caller that does not ask: `read_memory`, `set_register`,
@@ -137,6 +141,8 @@ def load_symbols(ses: ds.Session, data: bytes) -> list[tuple[str, int]]:
                           f"{ds.SYM_ARG_MAX} characters") from None
         out = ses.command(f"LV {ds.SYM_LOAD_NAME}")
         ses._acked(out, ds.SYM_LOAD_ECHO, ds.SYM_LOAD_NAME)
+        # `LV` TOOK THEM: the holding is at least this much more, whatever the read-back says.
+        ses.vars_held += int.from_bytes(data[:2], "little")
         out = ses.command(f"SV {ds.SYM_SAVE_NAME}")
         ses._acked(out, ds.SYM_SAVE_ECHO, ds.SYM_SAVE_NAME)
         if not back.exists():
@@ -145,13 +151,14 @@ def load_symbols(ses: ds.Session, data: bytes) -> list[tuple[str, int]]:
                 f"is in {ses.launch.cwd}. Those disagree, so nothing here is a "
                 f"reading of what it loaded")
         try:
-            return symbols.decode(back.read_bytes())
+            held = symbols.decode(back.read_bytes())
+            ses.vars_held = len(held)
+            return held
         except (symbols.BadSymbolText, OSError) as exc:
-            # `BadSymbolText` is NOT an `Invalid`, and its own docstring says it is
-            # a distinct type "so the MCP layer can translate it" -- which the
-            # server does for `parse`/`plan`/`encode` and not for this call. So the
-            # one place a MALFORMED file can arrive from the emulator was the one
-            # place it escaped as a traceback.
+            # `BadSymbolText` is NOT an `Invalid` (a distinct type "so the MCP layer can
+            # translate it"), and the server translates it for `parse`/`plan`/`encode`, not
+            # for this call: a MALFORMED file from the emulator is translated here, or it
+            # would escape as a traceback.
             raise Invalid("host_failed", f"the debugger saved {ds.SYM_SAVE_NAME} and it cannot be "
                           f"read back: {exc}. That is not a reading of what it "
                           f"loaded") from None
@@ -162,6 +169,19 @@ def load_symbols(ses: ds.Session, data: bytes) -> list[tuple[str, int]]:
             # debugger would be handed over as a `PermissionError` about a file.
             with contextlib.suppress(OSError):
                 p.unlink(missing_ok=True)
+
+
+def vars_overflow(ses: ds.Session, data: bytes) -> str | None:
+    """Why `data` cannot be loaded into this session's debugger at all, or None: `LV` appends and
+    nothing clears the list, and `SV` cannot save one past `symbols.COUNT_MAX`, so a load that
+    would carry the holding past it would append and then fail its read-back. Nothing but a new
+    session changes that answer."""
+    incoming = int.from_bytes(data[:2], "little")
+    if ses.vars_held + incoming <= symbols.COUNT_MAX:
+        return None
+    return (f"the debugger's list holds {ses.vars_held} names and nothing clears it, so this "
+            f"load's {incoming} would carry it past {symbols.COUNT_MAX}, which its save cannot "
+            "hold. Load a narrower `pattern`, or start the session again for an empty list")
 
 
 def _acked(out: str, echo: str, name: str) -> None:
@@ -180,8 +200,7 @@ def _acked(out: str, echo: str, name: str) -> None:
     line that names this file, exactly as `selector` anchors with `rfind`: the
     same hazard, solved the same way in this class.
 
-    It takes no `self`: nothing here touches the session, and the three `type:
-    ignore[arg-type]` its tests needed were the smell that said so.
+    It takes no `self`: nothing here touches the session.
     """
     head = f"{echo} ({name}"
     at = out.rfind(head)

@@ -412,7 +412,7 @@ Any other tool that meets a cancel ends `none`.
 ## Names for addresses
 
 The debugger *does* have a symbol facility (`IV` names an address, `SV` saves the list, `LV`
-loads one) and no route for getting nine thousand names in: `IV` is one address typed at a
+loads one) and no route for getting thousands of names in: `IV` is one address typed at a
 console, and it uppercases what you type, so a C symbol table cannot be entered that way
 even with patience.
 
@@ -518,6 +518,11 @@ Three things that decides, none of them optional:
   fails leaves the debugger holding the list while the reply is INVALID and the previous table
   stays; retrying is safe for this side's answers and adds a second copy to the debugger's
   pane.
+- **One guarded.** Nothing empties the debugger's list within a session, and its `SV` cannot
+  save one past 65535 names, so a load that would carry the holding past that is refused before
+  `LV` (`bad_argument`, saying both counts); queued while the guest ran, it is dropped at the
+  stop and said once in `applied_on_stop.still_pending`. A new session starts with an empty
+  list.
 
 `loaded` is read back out of the debugger with `SV` rather than taken from its `ok`, because
 **a `SV`/`LV` filename is silently cut to twelve characters and reported `ok` for whatever
@@ -605,9 +610,11 @@ declarations sharing one row would be disarmed together by a clear of either, in
 
 What the server STORES is the declaration, not the armed row. A symbol's address moves every
 time you recompile; the declaration does not, so on every `symbols_load` each one is
-re-resolved against the new map and re-armed, and the reply names them (`declarations`: one list
-per state, `rearmed`, `stale`, `unresolved`, `ambiguous`, `unarmable`, each a list row, `why`
-on the last three; `start`'s `declarations.rearm` is the same account for the park). A
+re-resolved against the new map and re-armed, and the reply names what the load armed or could
+not (`declarations`: one list per state, `rearmed`, `stale`, `unresolved`, `ambiguous`,
+`unarmable`, each a list row, `why` on the last three; `start`'s `declarations.rearm` is the
+same account for the park). One the debugger already holds at its address stays armed as it is
+and is in none of them. A
 symbol that no longer exists (the compiler inlined it, or you removed it for now) is KEPT,
 unresolved, and `breakpoint_list` says so: it arms nothing and it is lost nothing. The store
 is on disk, keyed by the config file's identity, so it survives closing the emulator and
@@ -655,8 +662,8 @@ rows and waits as they do. A `symbols_load` while the guest runs places nothing.
 comment file is loaded at a protected-mode stop.
 Within one session a held batch is taken as the running program, so a guest that exits
 and runs a relinked EXE inside the same session is not seen until the next session, which judges
-its rows against the map it loads. The store keeps each batch its rows name once, beside them,
-and drops it with the last row that names it. If
+its rows against the map it loads: a row carries its batch's stamp, and the batches are held in
+memory only, by the session that loaded them. If
 the re-arm at `start` cannot read the debugger's list, the session still comes up and the
 reply says why in `rearm_refused`. One declared over another build is kept but never re-armed:
 it re-resolves against nothing, and re-armed blind on a relinked program it lands wherever the

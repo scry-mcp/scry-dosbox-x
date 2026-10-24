@@ -465,44 +465,36 @@ def test_a_map_loaded_while_the_guest_runs_places_nothing(
     assert mode() == "real"
 
 
-def test_the_store_keeps_one_batch_per_stamp_and_drops_it_with_its_last_row(
+def test_the_store_writes_no_batch_and_drops_the_one_an_older_store_wrote(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A row is judged by the stamp it carries against the batches this session loaded, so the
+    batch's entries are written nowhere: a record no reader uses is a second copy of the map
+    that only goes stale. One an older store wrote for this conf leaves with the next write,
+    and another conf's is left as it is."""
     run = _Sessions(tmp_path, monkeypatch)
     for step in ["start", "map AS", "map A2T", f"add {Q}", f"bp {Q}"]:
         run.step(step)
     store = dstate.STATE.store
     assert store is not None
-
-    def kept() -> dict[str, Any]:
-        doc = json.loads(store.path.read_text(encoding="utf-8"))
-        return dict(doc.get("builds", {}).get(str(store._conf), {}))
-
-    conf = dstate.STATE.conf_fingerprint
-    assert conf is not None
-    stamp = dec.Build.of(conf, [("_main", 0x401000), ("_shared", 0x570000)]).stamp
-    builds = kept()
-    assert list(builds) == [stamp], "two rows of one batch: one record, the batch Q lies in"
-    assert builds[stamp] == {"conf": conf, "entries": ["_main\t401000", "_shared\t570000"]}
+    doc = json.loads(store.path.read_text(encoding="utf-8"))
+    assert "builds" not in doc, doc
+    doc["builds"] = {str(store._conf): {"s": {"conf": "c", "entries": []}},
+                     "other": {"t": {"conf": "o", "entries": []}}}
+    store.path.write_text(json.dumps(doc), encoding="utf-8")
     ok(server.comment_delete(ref=Q))
-    assert list(kept()) == [stamp], "the breakpoint still names it"
-    ok(server.breakpoint_clear(ref=Q))
-    assert kept() == {}, "no row names it"
-    ok(server.comment_add(ref="_main", text="by name"))
-    assert kept() == {}, "a symbol is never judged by its build"
+    after = json.loads(store.path.read_text(encoding="utf-8"))
+    assert after["builds"] == {"other": {"t": {"conf": "o", "entries": []}}}, after
 
 
-@pytest.mark.parametrize("stored, match", [
-    ({"conf": "c"}, "not a conf with its entries"),
-    ({"conf": "c", "entries": "_a\t10"}, "not a conf with its entries"),
-    ({"conf": "c", "entries": ["_a 10"]}, "not a name and an address"),
-    ({"conf": "c", "entries": ["_a\tzz"]}, "not a name and an address"),
+@pytest.mark.parametrize("builds", [
+    {"g": {"s": {"conf": "c"}}}, {"g": {"s": {"conf": "c", "entries": ["_a 10"]}}},
+    {"g": {"s": "not a mapping"}}, {"g": "x"}, [], "x",
 ])
-def test_a_stored_build_of_the_wrong_shape_refuses_the_store(
-        tmp_path: Path, stored: dict[str, Any], match: str) -> None:
+def test_a_batch_an_older_store_wrote_is_ignored_whatever_its_shape(
+        tmp_path: Path, builds: Any) -> None:
     path = tmp_path / "d.json"
-    path.write_text(json.dumps({"g": [], "builds": {"g": {"s": stored}}}), encoding="utf-8")
-    with pytest.raises(dec.DeclarationError, match=match):
-        dec.DeclarationStore("g", path=path)
+    path.write_text(json.dumps({"g": [], "builds": builds}), encoding="utf-8")
+    assert dec.DeclarationStore("g", path=path).declarations() == []
 
 
 def test_a_breakpoint_declared_again_in_the_other_mode_is_armed_again_there(
@@ -556,7 +548,6 @@ def test_a_batch_is_its_conf_and_entries_and_spans_its_lowest_to_its_highest() -
     assert a.stamp != dec.Build.of("c", [("_main", 2), ("_s", 3), ("_s", 3)]).stamp, "relinked"
     assert [a.covers(x) for x in (0, 1, 2, 3, 4)] == [False, True, True, True, False]
     assert not dec.Build.of("c", []).covers(0)
-    assert dec.Build.from_dict(a.to_dict()) == a
 
 
 def test_a_batch_hashes_its_entries_once_however_many_rows_ask(

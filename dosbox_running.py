@@ -50,7 +50,7 @@ def observe_stop(session: ds.Session) -> None:
     machine = (where["mode"], registers)
     STATE.remember_stop(session, where, registers, held,
                    arming.attribute_stop(session, where=where, machine=machine,
-                                         retrace_may_stop=True))
+                                         retrace_may_stop=True, held=held))
     # The account rides on THIS contact's reply, once.
     STATE.found_stop_last = {"stop_seq": STATE.last_stop["seq"], "pc": STATE.last_stop["at"],
                              "cause": st.cause(STATE.last_stop["attribution"])}
@@ -108,7 +108,8 @@ def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
     machine = (where["mode"], registers)
     watches = arming.evaluate_watches(session, machine=machine, held=held)
     attribution = arming.attribute_stop(session, where=where, machine=machine,
-                                        retrace_may_stop=retrace_may_stop and made_by is None)
+                                        retrace_may_stop=retrace_may_stop and made_by is None,
+                                        held=held)
     if made_by is not None:
         # THE TOOL'S OWN STOP, and any declaration resolving to the same place named beside it.
         also = (attribution.get("refs") or [attribution["ref"]]

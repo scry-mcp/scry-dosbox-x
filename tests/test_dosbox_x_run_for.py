@@ -161,12 +161,12 @@ def test_the_next_unattributed_stop_is_named_as_the_pending_retrace_and_forgets_
     live(three_frames())
     dstate.STATE.retrace_pending = True
     where = {"cs": "0814", "eip": "00000106", "mode": "Real"}
-    kept = arming.attribute_stop(cast(ds.Session, dstate.STATE.session), where=where)
+    kept = arming.attribute_stop(cast(ds.Session, dstate.STATE.session), where=where, held=[])
     assert "retrace_pending" not in kept and dstate.STATE.retrace_pending is True, (
         "a stop the caller made itself (a step, a menu stop, an arrival) is its own, and the "
         "retrace is still pending after it: only a release that ran on may consume it")
     named = arming.attribute_stop(cast(ds.Session, dstate.STATE.session), where=where,
-                                  retrace_may_stop=True)
+                                  held=[], retrace_may_stop=True)
     assert named["attributed"] is False and named["retrace_pending"] is True, named
     assert "run_for" in named["why"], named["why"]
     assert dstate.STATE.retrace_pending is False
@@ -331,6 +331,7 @@ def test_a_stop_a_declaration_explains_keeps_the_retrace_pending() -> None:
     dstate.STATE.retrace_pending = True
     got = arming.attribute_stop(cast(ds.Session, dstate.STATE.session),
                                 where={"cs": "0814", "eip": "00000108", "mode": "Real"},
+                                held=[{"index": "0", "entry": "BP 0814:0108"}],
                                 retrace_may_stop=True)
     assert got["attributed"] is True and dstate.STATE.retrace_pending is True, got
 

@@ -557,6 +557,7 @@ class Session(dprocess.Process):
         # THE STUB'S PROTOCOL once the guest announced it (`dosbox_inputs.require_stub`), so
         # the log is searched for the announce once per session, not once per key.
         self.stub_protocol = ""
+        self.vars_held = 0          # the names the debugger's list held at the last read-back
         self.started_at = time.monotonic()
         self._screen = ""
         self._at_debugger = False   # set by the prompt, cleared by a run key
@@ -696,7 +697,7 @@ class Session(dprocess.Process):
     def wait_ready(self, timeout: float = READY_TIMEOUT_S,
                    progress: Progress = no_progress) -> float:
         """Seconds until the debugger prompt appears; INVALID if it never does. The longest
-        wait a session makes, and the one the owner watches: it reports where it is.
+        wait a session makes, and the one a person watches: it reports where it is.
 
         It watches the PROCESS as well as the terminal. When the emulator exits at
         once -- an unknown driver name aborts at SDL init, for instance -- the master

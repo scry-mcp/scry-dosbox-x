@@ -773,16 +773,59 @@ def test_a_row_placed_before_the_map_in_an_earlier_session_is_stale_over_a_relin
         want, want if park_row == "loaded" else "resolved"), (after_map, park)
 
 
-def test_a_row_placed_before_the_map_is_placed_over_a_second_map_of_the_same_session(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The first map's batch is the park row's; a second, relinked map in the same session
-    leaves that batch held, and one session runs one program."""
+def _a_park_row(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[Path, Path, Any]:
+    """A session parked in real mode with a protected-mode comment loaded at the park, and two
+    maps of one program: `prog.map` and `other.map`, the same program relinked."""
     mapf, other = tmp_path / "prog.map", tmp_path / "other.map"
     mapf.write_text("00001000 T _start\n0016dd80 T _main\n", encoding="utf-8")
     other.write_text("00001000 T _start\n0016dd90 T _main\n", encoding="utf-8")
     got, booted = _start_over_a_store(tmp_path, monkeypatch, {}, double=_ParkedInRealMode)
     ok(got)
     ok(server.comment_load(path=str(_file(tmp_path, ("00A7:00062310", "at the park")))))
+    return mapf, other, booted
+
+
+def test_a_row_placed_before_a_map_loaded_while_the_guest_ran_takes_it_at_the_stop(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A load made while the guest runs is the debugger's at the next stop, and so is taking
+    the map for the rows this session placed before it: the next session judges the park row
+    by that batch, stale over a relinked map, as when the load was made at a stop."""
+    mapf, other, booted = _a_park_row(tmp_path, monkeypatch)
+    booted.mode = "Pr32"
+    booted.running = True
+    assert ok(server.symbols_load(path=str(mapf), base="400000"))["pending"] is True
+    booted.running = False
+    assert ok(server.status())["applied_on_stop"]["symbols_loaded"] is True
+    booted = _a_new_session(tmp_path, monkeypatch)
+    booted.mode = "Pr32"
+    ok(server.symbols_load(path=str(other), base="400000"))
+    assert _rows_by_ref()["00A7:62310"]["state"] == "stale", _rows_by_ref()
+
+
+def test_a_store_that_cannot_take_a_deferred_maps_build_says_so_at_the_stop(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    mapf, _, booted = _a_park_row(tmp_path, monkeypatch)
+    store = cast(dec.DeclarationStore, dstate.STATE.store)
+    before = [d.to_dict() for d in store.comments()]
+    booted.mode = "Pr32"
+    booted.running = True
+    ok(server.symbols_load(path=str(mapf), base="400000"))
+    booted.running = False
+
+    def fails() -> None:
+        raise OSError("read-only")
+    monkeypatch.setattr(store, "_persist", fails)
+    applied = ok(server.status())["applied_on_stop"]
+    assert applied["symbols_loaded"] is True, applied
+    assert any(s.startswith("taking the map:") for s in applied["still_pending"]), applied
+    assert [d.to_dict() for d in store.comments()] == before, "a write that failed took a row"
+
+
+def test_a_row_placed_before_the_map_is_placed_over_a_second_map_of_the_same_session(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The first map's batch is the park row's; a second, relinked map in the same session
+    leaves that batch held, and one session runs one program."""
+    mapf, other, booted = _a_park_row(tmp_path, monkeypatch)
     booted.mode = "Pr32"
     ok(server.symbols_load(path=str(mapf), base="400000"))
     ok(server.symbols_load(path=str(other), base="400000"))
@@ -810,11 +853,7 @@ def test_a_store_that_cannot_take_the_maps_build_is_host_failed_and_the_row_as_i
     """The park row's new build is written with the store; a store that cannot be written
     says so, the table is loaded, and the row stays as the file holds it (the store rolls back
     every write that fails), for a later load to take."""
-    mapf = tmp_path / "prog.map"
-    mapf.write_text("00001000 T _start\n0016dd80 T _main\n", encoding="utf-8")
-    got, booted = _start_over_a_store(tmp_path, monkeypatch, {}, double=_ParkedInRealMode)
-    ok(got)
-    ok(server.comment_load(path=str(_file(tmp_path, ("00A7:00062310", "at the park")))))
+    mapf, _, booted = _a_park_row(tmp_path, monkeypatch)
     store = cast(dec.DeclarationStore, dstate.STATE.store)
     before = [d.to_dict() for d in store.comments()]
 
@@ -830,11 +869,7 @@ def test_a_store_that_cannot_take_the_maps_build_is_host_failed_and_the_row_as_i
 
 def test_a_park_row_this_stop_cannot_place_leaves_the_map_loaded_and_the_row_as_it_was(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    mapf = tmp_path / "prog.map"
-    mapf.write_text("00001000 T _start\n0016dd80 T _main\n", encoding="utf-8")
-    got, booted = _start_over_a_store(tmp_path, monkeypatch, {}, double=_ParkedInRealMode)
-    ok(got)
-    ok(server.comment_load(path=str(_file(tmp_path, ("00A7:00062310", "at the park")))))
+    mapf, _, booted = _a_park_row(tmp_path, monkeypatch)
 
     def unreadable(*_: Any) -> dict[str, Any]:
         raise ds.Invalid("unexpected_answer", "a descriptor this stop cannot read")

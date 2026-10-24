@@ -238,3 +238,35 @@ def test_a_cached_machine_places_an_untyped_pointer_without_asking_the_machine(
                                 machine=("Pr32", fake.registers()))
     assert res["state"] == "armable", res
     assert asked == [], "a cached machine was asked again"
+
+
+def test_a_move_whose_old_row_the_debugger_will_not_delete_keeps_both_and_says_so(
+        tmp_path: Path) -> None:
+    """The new row is held when the old one's `BPDEL` is refused: the stop's reply still comes,
+    the watch is judged where it now points, and the record keeps the old row too, since the
+    debugger still holds it, with `why` saying it was not deleted."""
+    fake = _pointing(tmp_path)
+    server.watch_add(ref="_g_engine->sync_delta", mode="change")
+    fake.mem[(DS, ENGINE)] = HEAP2.to_bytes(4, "little")
+    sent = fake.command
+
+    def refuse_bpdel(text: str, *a: Any, **k: Any) -> Any:
+        if text.startswith("BPDEL"):
+            raise ds.Invalid("unexpected_answer", "BPDEL was not acknowledged")
+        return sent(text, *a, **k)
+
+    setattr(fake, "command", refuse_bpdel)  # noqa: B010
+    (w,) = arming.evaluate_watches(fake)  # type: ignore[arg-type]
+    assert w["state"] == "armed" and w["moved"]["to"] == f"00AF:{HEAP2 + 4:08X}", w
+    assert "not deleted" in w["moved"]["why"], w
+    rows = dstate.STATE.armed[("watch", "_g_engine->sync_delta")]
+    assert sorted((r["seg"], r["off"]) for r in rows) == [(DS, HEAP + 4), (DS, HEAP2 + 4)], rows
+    # THE NEXT STOP, the pointer unmoved: no second row at the new place, no move said again,
+    # and once the debugger takes the delete the old row leaves the record.
+    (w,) = arming.evaluate_watches(fake)  # type: ignore[arg-type]
+    assert "moved" not in w and len(fake.rows) == 2, (w, fake.rows)
+    setattr(fake, "command", sent)  # noqa: B010
+    (w,) = arming.evaluate_watches(fake)  # type: ignore[arg-type]
+    assert "moved" not in w and [r["entry"] for r in fake.rows] == [
+        f"BPPM 00AF:{HEAP2 + 4:08X} (00)"], fake.rows
+    assert [(r["seg"], r["off"]) for r in rows] == [(DS, HEAP2 + 4)], rows

@@ -93,10 +93,10 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
         if not (timed or (cuttable and polls < frames)):
             continue                          # the stop reply surveys the last frame
         try:
-            where, registers = session.where_and_registers()
+            where, registers, held = session.stop_survey()
         except ds.Invalid:
             continue                          # a cut repaint: the next frame's survey reads it
-        if cuttable and _cut(session, where, registers) is not None:
+        if cuttable and _cut(session, (where, registers, held)) is not None:
             verdict = contract.OTHER_STOP
             break
         now = session.pane_clock_ms
@@ -165,17 +165,20 @@ def _advance(session: ds.Session, began: float, deadline: float, tick: ds.Progre
     return expired
 
 
-def _cut(session: ds.Session, where: dict[str, str] | None = None,
-         registers: dict[str, str] | None = None) -> dict[str, Any] | None:
+def _cut(session: ds.Session,
+         survey: tuple[dict[str, str], dict[str, str], list[dict[str, str]]] | None = None,
+         ) -> dict[str, Any] | None:
     """The attribution when a declared code breakpoint made this stop rather than the retrace,
     whose `VRT` then stays armed; None for a retrace, or a repaint too cut to place. Surveys the
-    stop unless the caller already has."""
-    if where is None or registers is None:
+    stop, its list read off the same repaint, unless the caller already has."""
+    if survey is None:
         try:
-            where, registers = session.where_and_registers()
+            survey = session.stop_survey()
         except ds.Invalid:
             return None
-    attribution = arming.attribute_stop(session, where=where, machine=(where["mode"], registers))
+    where, registers, held = survey
+    attribution = arming.attribute_stop(session, where=where, machine=(where["mode"], registers),
+                                        held=held)
     if not attribution["attributed"]:
         return None
     STATE.retrace_pending = True

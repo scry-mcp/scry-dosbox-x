@@ -38,6 +38,7 @@ import dosbox_logs as dlogs
 import dosbox_process as dprocess
 import dosbox_session as ds
 import dosbox_stub_link as stub_link
+import dosbox_symbols as dsym
 
 # --------------------------------------------------------------------- fixtures
 
@@ -1619,7 +1620,7 @@ def _loader(tmp_path: Path, reply: Callable[[str], str] | None = None) -> Any:
     return SimpleNamespace(launch=SimpleNamespace(cwd=tmp_path),
                            command=reply or default,
                            _survey=lambda: (pane, dcons.parse_registers(pane)),
-                           alive=lambda: True,
+                           alive=lambda: True, vars_held=0,
                            _acked=ds.Session._acked)
 
 
@@ -1650,6 +1651,52 @@ def test_a_symbol_file_round_trips_and_leaves_nothing_behind(tmp_path: Path) -> 
     assert got == [("_x", 0x10)]
     for name in (ds.SYM_LOAD_NAME, ds.SYM_SAVE_NAME):
         assert not (tmp_path / name).exists(), f"{name} was left behind"
+
+
+def test_a_load_past_what_the_debuggers_save_can_hold_is_refused_before_lv(
+        tmp_path: Path) -> None:
+    """`LV` appends and nothing clears the debugger's list, and its `SV` refuses a list past
+    65535 names: a load that would carry the holding past that is refused BEFORE `LV`, which
+    would otherwise append and then fail its own read-back as an unacknowledged save."""
+    sent: list[str] = []
+    fake = _loader(tmp_path)
+    plain = fake.command
+
+    def recorded(text: str) -> str:
+        sent.append(text)
+        return str(plain(text))
+    fake.command = recorded
+    fake.vars_held = dsym.COUNT_MAX
+    with pytest.raises(ds.Invalid, match="65535") as refused:
+        ds.Session.load_symbols(fake, GOOD_LIST)
+    assert sent == [] and "nothing clears" in str(refused.value), sent
+    fake.vars_held = dsym.COUNT_MAX - 1
+    assert ds.Session.load_symbols(fake, GOOD_LIST) == [("_x", 0x10)]
+    assert fake.vars_held == 1, "the holding is what the read-back says"
+
+
+def test_a_load_whose_save_fails_after_lv_counts_what_lv_took(tmp_path: Path) -> None:
+    """`LV` acknowledged has appended its names whatever the read-back does next, so the holding
+    the ceiling is judged against grows by them even when `SV` then fails."""
+    def reply(text: str) -> str:
+        if text.startswith("LV"):
+            return f"DEBUG: {ds.SYM_LOAD_ECHO} ({ds.SYM_LOAD_NAME}{ds.SYM_OK}\n"
+        return f"DEBUG: {ds.SYM_SAVE_ECHO} ({ds.SYM_SAVE_NAME}) : failure.\n"
+    fake = _loader(tmp_path, reply)
+    with pytest.raises(ds.Invalid):
+        ds.Session.load_symbols(fake, GOOD_LIST)
+    assert fake.vars_held == 1
+
+
+def test_the_ceiling_is_judged_before_the_file_is_written(tmp_path: Path) -> None:
+    fake = _loader(tmp_path)
+    fake.vars_held = dsym.COUNT_MAX
+    tmp_path.chmod(0o555)
+    try:
+        with pytest.raises(ds.Invalid, match="past 65535"):
+            ds.Session.load_symbols(fake, GOOD_LIST)
+    finally:
+        tmp_path.chmod(0o755)
 
 
 def test_a_running_machine_is_refused_before_a_byte_is_written(tmp_path: Path) -> None:

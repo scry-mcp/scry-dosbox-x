@@ -170,8 +170,7 @@ def _refuse(line: str, what: str) -> None:
             f"the range runs past the memory the debugger addresses "
                          f"({int(m.group(1), 16)} bytes); nothing was opened")
     if SCAN_NOT_ACTIVE in line:
-        STATE.scan_iterations = None        # whatever was counted belongs to a scan now gone
-        STATE.scan_cell_bytes = None
+        STATE.scan_forget()                 # whatever was counted belongs to a scan now gone
         raise ds.Invalid("needs_call",
             f"no search instance is open, so there is nothing to {what}: `scan_start` one")
     if SCAN_TOO_WIDE in line:
@@ -374,8 +373,8 @@ def scan_filter(session: ds.Session, operator: str, value: int | None,
     last = _last_scan_line(out)
     _refuse(last, "filter")
     if SCAN_FINISHED.search(last):
-        held, STATE.scan_iterations = STATE.scan_iterations, None
-        STATE.scan_cell_bytes = None
+        held = STATE.scan_iterations
+        STATE.scan_forget()
         closing: dict[str, Any] = {
             "operator": operator, "value": _asked(value, cell),
             "iterations": contract.unavailable(
@@ -403,8 +402,7 @@ def scan_clear(session: ds.Session) -> dict[str, Any]:
     out = session.command("MEMFIND !")
     last = _last_scan_line(out)
     if SCAN_CANCELLED in last or SCAN_NONE_TO_CANCEL in last:
-        STATE.scan_iterations = None
-        STATE.scan_cell_bytes = None
+        STATE.scan_forget()
     if SCAN_CANCELLED in last:
         return {"cleared": True}
     if SCAN_NONE_TO_CANCEL in last:

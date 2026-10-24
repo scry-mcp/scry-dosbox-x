@@ -158,7 +158,8 @@ class Declaration:
     created_at: str | None = field(default=None, kw_only=True, compare=False)
     origin: str | None = field(default=None, kw_only=True, compare=False)
     # THE BUILD IT WAS DECLARED AGAINST: the stamp of the one batch that described its
-    # address (`Build.stamp`, the batch kept in the store), or the conf's fingerprint alone
+    # address (`Build.stamp`; the batch itself is held in memory by the session that loaded
+    # it), or the conf's fingerprint alone
     # where no batch did. A raw address is judged by it (`raw_staleness`); a name re-resolves
     # whatever the fingerprint. Out of equality like the stamps: the same thing declared
     # against a new build is adopted, not doubled.
@@ -345,8 +346,9 @@ class Build:
     """One batch a `symbols_load` loaded, over a conf: the conf's fingerprint and every entry
     the batch placed, sorted, a line the batch repeats kept twice. Its span, lowest entry to
     highest, is the stretch of the program it describes, and a raw row is judged by the one
-    batch that describes its address, never by everything loaded beside it. Kept once per
-    batch in the store, for the rows whose stamp names it."""
+    batch that describes its address, never by everything loaded beside it. Held in memory
+    only: a row carries its stamp, and the batches a session loads are what the stamp is
+    judged against."""
 
     conf: str
     entries: tuple[Entry, ...]
@@ -374,30 +376,9 @@ class Build:
         above."""
         return self._span is not None and self._span[0] <= linear <= self._span[1]
 
-    def to_dict(self) -> dict[str, object]:
-        return {"conf": self.conf, "entries": [_entry_text(e) for e in self.entries]}
-
-    @staticmethod
-    def from_dict(d: object) -> Build:
-        if not (isinstance(d, dict) and isinstance(d.get("conf"), str)
-                and isinstance(d.get("entries"), list)):
-            raise DeclarationError(f"a stored build is not a conf with its entries: {d!r}")
-        return Build.of(d["conf"], [_entry_of(t) for t in d["entries"]])
-
 
 def _entry_text(entry: Entry) -> str:
     return f"{entry[0]}\t{entry[1]:X}"
-
-
-def _entry_of(text: object) -> Entry:
-    name, tab, linear = str(text).rpartition("\t")
-    try:
-        if not tab:
-            raise ValueError
-        return name, int(linear, 16)
-    except ValueError:
-        raise DeclarationError(f"a stored build entry is not a name and an address: "
-                               f"{text!r}") from None
 
 
 def is_raw_code(kind: str, by: str) -> bool:
@@ -511,7 +492,8 @@ def _one_comment_per_ref(decls: Sequence[Declaration]) -> None:
         seen.add(ref)
 
 
-#: The store file's key for the batches the rows name, beside the conf identities.
+#: The key under which an older store wrote the batches its rows named, beside the conf
+#: identities: ignored on read, and this conf's entry dropped on the next write.
 BUILDS_KEY = "builds"
 
 
@@ -527,13 +509,8 @@ class DeclarationStore:
     for one conf reads the whole file but exposes only that conf's list; a write persists
     the whole file. Two stores over the same file and different identities cannot see each
     other's declarations, on purpose: a symbol from another binary would arm at
-    a plausible and wrong address.
-
-    THE BATCHES THE ROWS NAME live beside them, under `BUILDS_KEY` and then the conf: one
-    record per batch a raw row's stamp names (a symbol is never judged by its build), however
-    many rows name it, and none for a batch no such row names, so a batch of thousands of
-    entries is written once and leaves with its last row.
-    The key cannot be a conf identity, which is a resolved path.
+    a plausible and wrong address. `BUILDS_KEY` is no conf identity (those are resolved
+    paths), so an older file's batches are never read as a conf's rows.
     """
 
     def __init__(self, conf_identity: str, path: Path | None = None) -> None:
@@ -543,7 +520,6 @@ class DeclarationStore:
         self._path = path or default_path()
         raw = self._read_raw()
         self._items = self._decls_for(raw, conf_identity)
-        self._builds = self._builds_for(raw, conf_identity)
 
     @staticmethod
     def _decls_for(raw: dict[str, object], conf: str) -> list[Declaration]:
@@ -565,21 +541,6 @@ class DeclarationStore:
             out.append(Declaration.from_dict(d))
         _one_comment_per_ref(out)
         return out
-
-    @staticmethod
-    def _builds_for(raw: dict[str, object], conf: str) -> dict[str, Build]:
-        """This conf's kept batches, by stamp, refusing a shape that is not one."""
-        every = raw.get(BUILDS_KEY, {})
-        mine = every.get(conf, {}) if isinstance(every, dict) else None
-        if not isinstance(mine, dict):
-            raise DeclarationError(f"the builds kept for {conf!r} are not a mapping of stamp "
-                                   f"to build")
-        return {str(k): Build.from_dict(v) for k, v in mine.items()}
-
-    def keep_build(self, build: Build) -> None:
-        """Hold a batch for the rows that will name it; written with the next write that a row
-        naming it makes."""
-        self._builds[build.stamp] = build
 
     def _read_raw(self) -> dict[str, object]:
         """The whole file as it is on disk right now, or empty when there is none."""
@@ -620,7 +581,7 @@ class DeclarationStore:
         # memory, and writing the whole in-memory picture would erase every conf this store
         # never loaded. Found by the isolation test, which is exactly this shape.
         #
-        # THIS ASSUMES A SINGLE WRITER, which is what this fleet has: the MCP server holds
+        # THIS ASSUMES A SINGLE WRITER, which is what this server is: the MCP server holds
         # ONE session and serialises its tools under one lock, so the read-modify-write
         # below is never interleaved with its own. It is NOT locked against a SECOND
         # process writing the same file at the same instant -- two servers over one file
@@ -630,18 +591,13 @@ class DeclarationStore:
         # sees a half-written file.
         raw = self._read_raw()
         raw[self._conf] = [d.to_dict() for d in self._items]
-        named = {d.fingerprint for d in self._items if d.by == "address"}
-        kept = {k: b.to_dict() for k, b in sorted(self._builds.items()) if k in named}
         every = raw.get(BUILDS_KEY)
-        every = dict(every) if isinstance(every, Mapping) else {}
-        if kept:
-            every[self._conf] = kept
-        else:
-            every.pop(self._conf, None)
-        if every:
-            raw[BUILDS_KEY] = every
-        else:
-            raw.pop(BUILDS_KEY, None)
+        if isinstance(every, Mapping):
+            rest = {k: v for k, v in every.items() if k != self._conf}
+            if rest:
+                raw[BUILDS_KEY] = rest
+            else:
+                raw.pop(BUILDS_KEY)
         # WHOLE OR NOT AT ALL (`fresh.replace`): the declarations are meant to survive exactly
         # the interruptions a plain truncate-then-write is most exposed to.
         self._path.parent.mkdir(parents=True, exist_ok=True)
@@ -721,8 +677,7 @@ class DeclarationStore:
         script after every compile -- the very workflow the store exists for -- would
         otherwise meet their own earlier declarations as a hard INVALID and have to clear
         before declaring. Nothing is stored twice; the caller learns it was already there and
-        can re-arm if the debugger no longer holds it. The owner chose this over keeping
-        the refusal, at the plan's QA.
+        can re-arm if the debugger no longer holds it.
 
         ONE conflict is still refused: for a watch, the SAME `ref` carrying the OTHER half
         -- a `show` where a `change` already sits, or the reverse:
@@ -737,7 +692,7 @@ class DeclarationStore:
         i = next((i for i, d in enumerate(mine) if same_place(d, decl)), None)
         if i is not None:
             # ADOPTED, not ignored: the session re-declaring it becomes its origin, so a
-            # raw address is no longer `stale` here (the owner's decision), and the
+            # raw address is no longer `stale` here, and the
             # stamp says when. Each half is taken from the re-declaration only when it
             # CARRIES one, so a stampless duplicate changes nothing and a half-stamped
             # one cannot blank the other half, which would turn an origin into None and
@@ -777,19 +732,22 @@ class DeclarationStore:
         self._commit(mine, [*mine, decl])
         return True
 
-    def remove(self, *, ref: str | None = None, kind: str | None = None) -> int:
-        """Drop declarations and return how many went.
+    def remove(self, *, ref: str | None = None,
+               kind: str | tuple[str, ...] | None = None) -> int:
+        """Drop declarations and return how many went, in ONE write.
 
         With no argument it clears EVERYTHING for this conf. `ref` clears every declaration
-        naming that symbol or address. `kind` clears one family: breakpoints WITHOUT touching
-        watches, and the reverse. The two compose: a
+        naming that symbol or address. `kind` clears one family, or several given together:
+        breakpoints WITHOUT touching watches, and the reverse. The two compose: a
         `ref` and a `kind` together clear only that ref within that family.
         """
-        if kind is not None and kind not in KINDS:
-            raise DeclarationError(f"kind is one of {KINDS}; got {kind!r}")
+        kinds = (kind,) if isinstance(kind, str) else kind
+        bad = [k for k in kinds or () if k not in KINDS]
+        if bad:
+            raise DeclarationError(f"kind is one of {KINDS}; got {bad[0]!r}")
         mine = self._mine()
         keep = [d for d in mine
-                if not ((ref is None or d.ref == ref) and (kind is None or d.kind == kind))]
+                if not ((ref is None or d.ref == ref) and (kinds is None or d.kind in kinds))]
         removed = len(mine) - len(keep)
         if removed:
             self._commit(mine, keep)

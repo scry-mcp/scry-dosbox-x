@@ -31,6 +31,7 @@ import dosbox_dump as dumping
 import dosbox_placement as placement
 import dosbox_session as ds
 import dosbox_state as st
+import dosbox_symbol_file as symbol_file
 from dosbox_state import STATE
 
 
@@ -99,6 +100,11 @@ class RawPlaces:
         if dcons.real_segments(cpu or "") and self.place(by, ref) is None:
             return None
         return cpu
+
+    def unsurveyed(self) -> bool:
+        """At a stop whose survey, once asked for (`mode_here`, `cpu`), was refused: this instant
+        cannot say a row's mode, which is the survey's failure and not the row's."""
+        return self._segs is None and self.session.at_debugger()
 
     def cpu(self) -> str | None:
         """This stop's cpu mode as the debugger spells it, off the same survey; the last stop's
@@ -248,11 +254,11 @@ def evaluate_watches(session: ds.Session, *,
             if moved is not None:
                 item["moved"] = moved
                 held = session.breakpoints()
-                if "why" in moved:
-                    still = next((r for r in STATE.armed.get(("watch", decl.ref), [])
-                                  if r["kind"] == "watch"), None)
-                    if still is not None:
-                        seg, off = int(still["seg"]), int(still["off"])
+                recorded = [r for r in STATE.armed.get(("watch", decl.ref), [])
+                            if r["kind"] == "watch"]
+                if recorded and all((r["seg"], r["off"]) != (seg, off) for r in recorded):
+                    # the new row was refused: the watch is judged where it is still armed
+                    seg, off = int(recorded[0]["seg"]), int(recorded[0]["off"])
         if decl.watch_mode == "change":
             item["state"] = "armed" if watch_held(held, seg, off) else "gone"
             item["note"] = ("a break-on-change watch arms a trap byte in this memory, so "
@@ -303,7 +309,8 @@ def _same_code_addr(mode: str, a: tuple[int, int], b: tuple[int, int]) -> bool:
 def _bp_holders(session: ds.Session, mode: str, at: tuple[int, int], *, but: str = "",
                 machine: tuple[str, dict[str, str]] | None = None) -> list[dec.Declaration]:
     """The breakpoint declarations that resolve to the code address `at` (by linear address
-    in real mode, where many spellings alias one byte), other than `but`."""
+    in real mode, where many spellings alias one byte), other than `but`, whatever their row's
+    state: one row is one declaration, armed or not."""
     if STATE.store is None:
         return []
     out: list[dec.Declaration] = []
@@ -326,6 +333,7 @@ def _bp_holders(session: ds.Session, mode: str, at: tuple[int, int], *, but: str
 
 def attribute_stop(session: ds.Session, *, where: dict[str, str],
                     machine: tuple[str, dict[str, str]] | None = None,
+                    held: list[dict[str, str]],
                     retrace_may_stop: bool = False) -> dict[str, Any]:
     """WHICH declaration the stop is at, BY ADDRESS COMPARISON, or an honest cannot-say.
     A code breakpoint whose resolved address equals CS:EIP is named. Nothing
@@ -338,6 +346,9 @@ def attribute_stop(session: ds.Session, *, where: dict[str, str],
 
     `where` and `machine` are read once by the caller: attribution over M
     breakpoints would otherwise re-read the machine M times for a state fixed at this stop.
+    `held` is the debugger's list at this stop, off the same repaint: a declaration whose row it
+    does not hold there (queued, another build's, waiting for its mode) did not make the stop,
+    and is not named.
 
     `retrace_may_stop` is a stop reached by a release that ran on (`resume`, a `run_to` that did
     not arrive, a stop found on its own): a retrace `run_for` left armed is the likeliest cause
@@ -347,6 +358,10 @@ def attribute_stop(session: ds.Session, *, where: dict[str, str],
     stop = (int(where["cs"], 16), int(where["eip"], 16))
     mode = where["mode"]
     holders = _bp_holders(session, mode, stop, machine=machine)
+    rows = [t[1:] for t in map(dcons.bp_row_target, (b["entry"] for b in held))
+            if t is not None and t[0] == "BP"]
+    if not any(_same_code_addr(mode, stop, row) for row in rows):
+        holders = []
     if holders:
         out: dict[str, Any] = {"attributed": True, "ref": holders[0].ref, "by": holders[0].by,
                                "at": st.seg_off(*stop)}
@@ -371,14 +386,18 @@ def attribute_stop(session: ds.Session, *, where: dict[str, str],
 
 def _follow(session: ds.Session, decl: dec.Declaration, seg: int, off: int,
             held: list[dict[str, str]]) -> dict[str, str] | None:
-    """A change watch whose pointer now points elsewhere: the old row is deleted, a row at
-    the new place armed, the record moved. `{from, to}` when it moved, None when it is
-    where it was; a debugger that refuses the new row leaves `why` beside them and the
-    record as it was."""
+    """A change watch whose pointer now points elsewhere: a row at the new place is armed first,
+    and the old row deleted once the new one is held. `{from, to}` when it moved, None when it is
+    where it was. A debugger that refuses the new row leaves the record as it was and `why`
+    beside `from`/`to`; one that keeps the old row (its delete refused, or not taken) leaves both
+    in the record, says so in `why`, and the delete is tried again at the next stop."""
     rows = STATE.armed.get(("watch", decl.ref), [])
-    old = next((r for r in rows if r["kind"] == "watch"), None)
-    if old is not None and (old["seg"], old["off"]) == (seg, off):
+    here = [r for r in rows if r["kind"] == "watch" and (r["seg"], r["off"]) == (seg, off)]
+    stale = [r for r in rows if r["kind"] == "watch" and (r["seg"], r["off"]) != (seg, off)]
+    if here:
+        _drop_stale(session, rows, stale, held)
         return None
+    old = stale[0] if stale else None
     # A watch declared while the pointer was NULL armed nothing: the stop that finds the
     # pointer set arms it, and says it came from null.
     where = {"from": st.seg_off(old["seg"], old["off"]) if old is not None else "null",
@@ -389,13 +408,34 @@ def _follow(session: ds.Session, decl: dec.Declaration, seg: int, off: int,
         armed = session.watch(segment=seg, offset=off)
     except ds.Invalid as e:
         return {**where, "why": str(e)}
-    row = watch_held(held, int(old["seg"]), int(old["off"])) if old is not None else None
-    if row is not None:
-        session.command(f"BPDEL {row['index']}")
-    rows[:] = [r for r in rows if r is not old]
     STATE.note_armed(decl.ref, {"kind": "watch", "seg": seg, "off": off,
                                 "entry": str(armed["armed"])})
+    kept = _drop_stale(session, rows, stale, held)
+    if kept:
+        where["why"] = (f"the old row was not deleted ({kept}): the watch is armed at both "
+                        "places until the next stop deletes it")
     return where
+
+
+def _drop_stale(session: ds.Session, rows: list[dict[str, Any]], stale: list[dict[str, Any]],
+                held: list[dict[str, str]]) -> str:
+    """The rows of a moved watch at a place it no longer points to deleted from the debugger and
+    then from the record; one the debugger still lists after its `BPDEL` stays in both. What
+    kept one, or an empty string."""
+    kept = ""
+    for old in stale:
+        row = watch_held(held, int(old["seg"]), int(old["off"]))
+        if row is not None:
+            try:
+                session.command(f"BPDEL {row['index']}")
+                if watch_held(session.breakpoints(), int(old["seg"]), int(old["off"])):
+                    kept = "the debugger still lists it"
+                    continue
+            except ds.Invalid as e:
+                kept = str(e)
+                continue
+        rows[:] = [r for r in rows if r is not old]
+    return kept
 
 
 #: The buckets of a re-arm's account, each a list of `decl_row`s, `why` on the last three.
@@ -404,7 +444,8 @@ REARM_BUCKETS = ("rearmed", "stale", "unresolved", "ambiguous", "unarmable")
 
 def rearm_declarations(session: ds.Session) -> dict[str, Any]:
     """Re-resolve every stored declaration against the just-loaded table and arm the code
-    ones that resolve and are not already held. The re-arm: a breakpoint declared
+    ones that resolve and are not already held; a held one stays as it is and is in no bucket.
+    The re-arm: a breakpoint declared
     by name is meant to survive a rebuild and re-place itself. It arms nothing for an
     unresolved or ambiguous name -- those are listed, never guessed at. The account is one
     list of rows per bucket (`REARM_BUCKETS`), each row `decl_row`'s, so a row another session
@@ -441,9 +482,9 @@ def rearm_declarations(session: ds.Session) -> dict[str, Any]:
                     out["rearmed"].append({**row, **adopted})
                     continue
             out["unarmable"].append({**row, "why": placement.waits_why(mode, "Declare it again")})
-        # A RAW ADDRESS FROM ANOTHER BUILD IS NOT RE-ARMED (the owner's decision, per
-        # build): it re-resolves against nothing, and armed blind on a relinked program it
-        # lands wherever the linker put something else. It stays in the store, is NAMED here
+        # A RAW ADDRESS FROM ANOTHER BUILD IS NOT RE-ARMED (decided per build): it re-resolves
+        # against nothing, and armed blind on a relinked program it lands wherever the linker
+        # put something else. It stays in the store, is NAMED here
         # and listed `stale`, and declaring it again adopts it. Tested AFTER `held`, so a
         # row the debugger holds anyway is never called stale here and `armed` in the list.
         elif placement.is_stale(decl, places.judged(decl)):
@@ -517,27 +558,9 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
     STATE.pending["drained_seq"] = STATE.last_stop.get("seq", 0)
     out: dict[str, Any] = {"symbols_loaded": False, "disarmed": [], "armed": [],
                            "still_pending": []}
-    if STATE.pending["load"] is not None:
-        try:
-            session.load_symbols(cast(bytes, STATE.pending["load"]))
-            STATE.pending["load"] = None
-            out["symbols_loaded"] = True
-        except ds.Invalid as e:
-            out["still_pending"].append(f"symbols_load: {e}")
-        if out["symbols_loaded"]:
-            # THE RE-ARM THAT FOLLOWS EVERY LOAD, which the pending reply promised. The load is
-            # done whatever this answers, so a re-arm that fails puts the breakpoints it would
-            # have armed (never a raw address of another build) on the queue the loop below
-            # works through now, and what that cannot arm stays queued for the next stop.
-            try:
-                out["armed"].extend(r["ref"] for r in rearm_declarations(session)["rearmed"])
-            except ds.Invalid as e:
-                out["still_pending"].append(f"the re-arm after the load: {e}")
-                for decl in _armable_declarations():
-                    if decl.kind == "breakpoint" and decl.ref not in STATE.pending["arm"]:
-                        STATE.pending["arm"].append(decl.ref)
-    if STATE.pending["remeasure"]:
-        _remeasure(session, out)
+    # THE CLEARS FIRST: a row a clear queued is gone before the load's re-arm reads the list, so a
+    # breakpoint declared again after its clear is armed again, never counted armed over a row
+    # this same stop deletes.
     kept_disarm: list[dict[str, Any]] = []
     for spec in STATE.pending["disarm"]:
         try:
@@ -557,6 +580,41 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
             kept_disarm.append(spec)
             out["still_pending"].append(f"disarm {spec['entry']}: {e}")
     STATE.pending["disarm"][:] = kept_disarm
+    if STATE.pending["load"] is not None and (full := symbol_file.vars_overflow(
+            session, cast(bytes, STATE.pending["load"]))) is not None:
+        # A LOAD NO STOP OF THIS SESSION CAN TAKE is dropped, said once, never retried at each.
+        STATE.pending["load"] = None
+        out["still_pending"].append(f"symbols_load, dropped: {full}")
+    if STATE.pending["load"] is not None:
+        try:
+            session.load_symbols(cast(bytes, STATE.pending["load"]))
+            STATE.pending["load"] = None
+            out["symbols_loaded"] = True
+        except ds.Invalid as e:
+            out["still_pending"].append(f"symbols_load: {e}")
+        if out["symbols_loaded"]:
+            # THE MAP IS TAKEN HERE, as a load at a stop takes it: this session's rows no stop
+            # had placed are stamped with the batch that now describes them, before the re-arm
+            # judges them. Imported at the call: the comments module is built on this one.
+            import dosbox_comments
+            unwritten = dosbox_comments.park_rows_take_the_map(session)
+            if unwritten is not None:
+                out["still_pending"].append(
+                    f"taking the map: {unwritten}; the rows this session placed before any map "
+                    "keep their place as it was, and a later load takes them")
+            # THE RE-ARM THAT FOLLOWS EVERY LOAD, which the pending reply promised. The load is
+            # done whatever this answers, so a re-arm that fails puts the breakpoints it would
+            # have armed (never a raw address of another build) on the queue the loop below
+            # works through now, and what that cannot arm stays queued for the next stop.
+            try:
+                out["armed"].extend(r["ref"] for r in rearm_declarations(session)["rearmed"])
+            except ds.Invalid as e:
+                out["still_pending"].append(f"the re-arm after the load: {e}")
+                for decl in _armable_declarations():
+                    if decl.kind == "breakpoint" and decl.ref not in STATE.pending["arm"]:
+                        STATE.pending["arm"].append(decl.ref)
+    if STATE.pending["remeasure"]:
+        _remeasure(session, out)
     kept_arm: list[str] = []
     places = RawPlaces(session)
     if STATE.store is not None and STATE.pending["arm"]:
@@ -745,6 +803,9 @@ def _waits_at(decl: dec.Declaration, places: RawPlaces) -> str | None:
     if not dec.is_raw_code(decl.kind, decl.by):
         return None
     cpu = places.mode_here(decl.by, decl.ref)
+    if cpu is None and places.unsurveyed():
+        raise ds.Invalid("unexpected_answer", "this stop's survey could not be read, so the mode "
+                         "that places the row is not known here: it waits for the next stop")
     if cpu is None or placement.waits(decl, lambda: cpu) not in (None, dec.UNPLACED):
         raise ds.Invalid("unknown_ref", placement.waits_why(decl.cpu_mode or dec.UNPLACED,
                                                           "Declare it again", cpu is not None))
@@ -921,7 +982,7 @@ def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:
     moved = (before is not None and None not in (before.cpu_mode, decl.cpu_mode)
              and before.cpu_mode != decl.cpu_mode)
     is_new = cast(bool, placement.to_invalid(lambda: current_store().add(decl)))
-    # A RE-DECLARATION IS A NO-OP, NOT A REFUSAL (owner's call at QA): the store keeps one
+    # A RE-DECLARATION IS A NO-OP, NOT A REFUSAL: the store keeps one
     # copy and says whether this call added it. The arming below still runs, so a
     # re-declared breakpoint whose debugger entry was lost (a new session) is re-armed.
     already = not is_new
@@ -1113,7 +1174,9 @@ def _pending_note(running: bool, pending: list[str]) -> str | None:
 
 
 def breakpoint_clear(session: ds.Session, ref: str | None) -> dict[str, Any]:
-    """The body of the `breakpoint_clear` tool."""
+    """The body of the `breakpoint_clear` tool. Both families are cleared here: a `ref` alone (or
+    nothing) takes breakpoints AND interrupts, and a caller wanting only one family clears by
+    ref. Watches are a different tool, cleared without touching these."""
     store = current_store()
     ref = _require_a_match(store, ref, ("breakpoint", "interrupt"))
     disarmed: list[str] = []
@@ -1122,37 +1185,40 @@ def breakpoint_clear(session: ds.Session, ref: str | None) -> dict[str, Any]:
     # and the declarations are dropped at once; a name resolves against the last stop's
     # machine, since the console cannot say what mode it is in.
     running = not session.at_debugger()
+    # WHAT EACH DECLARATION ARMED is worked out before anything changes: this session's record
+    # of its rows (a reload can have armed a second), or with none the live resolution while
+    # stopped, and nothing while running, since a row this session never armed does not exist
+    # in an emulator this session started.
+    plan: list[tuple[dec.Declaration, list[dict[str, Any]], Callable[..., dict[str, object]]]]
+    plan = []
     for decl in store.declarations():
         if ref is not None and decl.ref != ref:
             continue
+        rows = list(STATE.armed.get(("bp", decl.ref), []))
         if decl.kind == "breakpoint":
-            # WHAT THIS SESSION ARMED for the ref is what gets removed, every row of it (a
-            # reload can have armed a second); with no record, the live resolution is the
-            # fallback while stopped, and NOTHING is queued while running: a row this
-            # session never armed does not exist in an emulator this session started.
-            rows = STATE.armed.pop(("bp", decl.ref), [])
             if not rows and not running:
                 res = placement.resolve_ref(decl, "CS", session)
                 if res["state"] == "armable":
                     rows = [{"kind": "bp", "seg": res["seg"], "off": res["off"],
                              "entry": f"BP {res['seg']:04X}:{res['off']:04X}"}]
-            for spec in rows:
-                _disarm_one(spec, str(spec["entry"]), running, disarmed, pending_disarm,
-                            functools.partial(session.clear_code_breakpoint, spec["seg"],
-                                              spec["off"]))
+            plan.append((decl, rows, session.clear_code_breakpoint))
         elif decl.kind == "interrupt":
-            rows = STATE.armed.pop(("bp", decl.ref), [])
             num, ah = dcons.parse_interrupt_row(decl.ref)
             if not rows and not running:
                 rows = [{"kind": "int", "num": num, "ah": ah, "entry": decl.ref}]
-            for spec in rows:
-                _disarm_one(spec, decl.ref, running, disarmed, pending_disarm,
-                            functools.partial(session.clear_interrupt_breakpoint, num, ah))
-    # Both families cleared here, so `kind` is not passed: a `ref` alone (or nothing)
-    # takes breakpoints AND interrupts, and a caller wanting only one family clears by
-    # ref. Watches are a different tool, cleared without touching these.
+            plan.append((decl, rows, functools.partial(session.clear_interrupt_breakpoint,
+                                                        num, ah)))
+    # THEN THE STORE, in one write: a write that fails changes nothing (the store rolls back)
+    # and leaves every row armed, so the refusal is the whole story.
     removed = cast(int, placement.to_invalid(
-        lambda: store.remove(ref=ref, kind="breakpoint") + store.remove(ref=ref, kind="interrupt")))
+        lambda: store.remove(ref=ref, kind=("breakpoint", "interrupt"))))
+    for decl, rows, clear in plan:
+        STATE.armed.pop(("bp", decl.ref), None)
+        for spec in rows:
+            named = str(spec["entry"]) if decl.kind == "breakpoint" else decl.ref
+            one = (functools.partial(clear, spec["seg"], spec["off"])
+                   if decl.kind == "breakpoint" else clear)
+            _disarm_one(spec, named, running, disarmed, pending_disarm, one)
     _unqueue_cleared(store)
     return st.reply(declarations_cleared=removed, disarmed=disarmed,
                   pending_disarm=pending_disarm,
@@ -1356,17 +1422,21 @@ def watch_clear(session: ds.Session, ref: str | None) -> dict[str, Any]:
     disarmed: list[str] = []
     pending_disarm: list[str] = []
     running = not session.at_debugger()
+    # THE ROWS FIRST, THEN THE STORE, as `breakpoint_clear`: nothing changes before the rows are
+    # known, and a write that fails changes nothing and disarms nothing.
+    plan: list[list[dict[str, Any]]] = []
     for decl in to_go:
-        if decl.watch_mode == "show":
-            STATE.armed.pop(("watch", decl.ref), None)
-            continue                 # armed nothing
-        rows = STATE.armed.pop(("watch", decl.ref), [])
-        if not rows and not running:
+        rows = [] if decl.watch_mode == "show" else list(STATE.armed.get(("watch", decl.ref), []))
+        if decl.watch_mode == "change" and not rows and not running:
             res = placement.resolve_ref(decl, "DS", session)
             if res["state"] == "armable":
                 rows = [{"kind": "watch", "seg": res["seg"], "off": res["off"],
                          "entry": _watch_entry(res["seg"], res["off"],
                                                session.where()["mode"])}]
+        plan.append(rows)             # a show watch armed nothing
+    removed = cast(int, placement.to_invalid(lambda: store.remove(ref=ref, kind="watch")))
+    for decl, rows in zip(to_go, plan, strict=True):
+        STATE.armed.pop(("watch", decl.ref), None)
         for spec in rows:
             seg, off, entry = spec["seg"], spec["off"], str(spec["entry"])
             if running:
@@ -1388,7 +1458,6 @@ def watch_clear(session: ds.Session, ref: str | None) -> dict[str, Any]:
                 STATE.pending["disarm"].append(spec)
                 STATE.pending["dirty"] = True
                 pending_disarm.append(entry)
-    removed = cast(int, placement.to_invalid(lambda: store.remove(ref=ref, kind="watch")))
     _unqueue_cleared(store)
     return st.reply(declarations_cleared=removed, disarmed=disarmed,
                   pending_disarm=pending_disarm,
