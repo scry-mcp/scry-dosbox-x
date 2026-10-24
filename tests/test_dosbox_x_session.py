@@ -2319,10 +2319,12 @@ def test_close_records_which_ending_it_got() -> None:
     assert raised == [True] and s.ended_how == "quit" and closed == [99], (s.ended_how, closed)
 
 
-def _writer(memory: dict[str, bytes]) -> tuple[ds.Session, list[str]]:
-    """A real-mode session whose console records what `write_memory` sends and whose data
-    view answers `memory["held"]` (a dict, so a test can move it between writes): the
-    readback, not the acknowledgement, is what the tests judge."""
+def _writer(memory: dict[str, bytes], mode: str = "Real",
+            asked: list[tuple[Any, ...]] | None = None) -> tuple[ds.Session, list[str]]:
+    """A session stopped in `mode` whose console records what `write_memory` sends and whose
+    data view answers `memory["held"]` (a dict, so a test can move it between writes), noting
+    each read in `asked` when given: the readback, not the acknowledgement, is what the tests
+    judge."""
     sent: list[str] = []
     s = ds.Session.__new__(ds.Session)
     s.altered = False
@@ -2331,9 +2333,13 @@ def _writer(memory: dict[str, bytes]) -> tuple[ds.Session, list[str]]:
         sent.append(text)
         return ""
 
+    def read_bytes(seg: int, off: int, n: int, mode: str | None = None) -> bytes:
+        if asked is not None:
+            asked.append((seg, off, n, mode))
+        return memory["held"][:n]
     s.command = command  # type: ignore[method-assign]
-    s.where = lambda: {"cs": "F000", "eip": "0", "mode": "Real"}  # type: ignore[method-assign]
-    s.read_bytes = lambda seg, off, n, mode=None: memory["held"][:n]  # type: ignore[method-assign]
+    s.where = lambda: {"cs": "F000", "eip": "0", "mode": mode}  # type: ignore[method-assign]
+    s.read_bytes = read_bytes  # type: ignore[method-assign]
     return s, sent
 
 

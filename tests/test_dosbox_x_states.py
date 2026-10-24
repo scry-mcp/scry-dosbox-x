@@ -2,11 +2,13 @@
 over the debugger channel (a DOSBox-X that carries them). They need the debugger stopped, so
 a running guest is stopped for them and released again. A state is a
 ZIP naming its `Program_Name`, `Machine_Type`, `Memory_Size`, `Time_Stamp` and
-`DOSBox-X_Version`. The tools are `state_save(name)`, `state_load(name)` and `state_list`."""
+`DOSBox-X_Version`. The tools are `state_save(name)`, `state_load(name)` and `state_list`; the
+`snapshot` tool, which shares their doubles, is here too."""
 from __future__ import annotations
 
 import asyncio
 import dataclasses
+import threading
 import time
 import zipfile
 from pathlib import Path
@@ -731,3 +733,57 @@ def test_a_load_that_answered_or_was_cut_short_after_it_went_unproves_the_link(
     with pytest.raises(ds.Invalid):
         ds.Session.state_load(as_session(fake), "boot", 5.0)
     assert link.unproved == 2 and fake.machine_replaced is True
+
+
+def test_a_state_command_waits_the_callers_bound(tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "save")
+    asked: list[float] = []
+    request = fake.control.request
+
+    def recorded(command: str, seconds: float = 5.0, poll: Any = None) -> tuple[bool, list[str]]:
+        asked.append(seconds)
+        return request(command, seconds, poll)
+    fake.control.request = recorded  # type: ignore[method-assign]
+    ds.Session.state_save(as_session(fake), "boot", 7.0)
+    ds.Session.state_load(as_session(fake), "boot", 9.0)
+    assert asked == [7.0, 9.0], asked
+
+
+def test_a_snapshot_onto_a_file_already_there_names_dest(tmp_path: Path) -> None:
+    fake = ShotFake(tmp_path / "save")
+    dest = tmp_path / "shot.png"
+    dest.write_bytes(b"mine")
+    with pytest.raises(ds.Invalid) as there:
+        ds.Session.snapshot(as_session(fake), dest, 5.0)
+    assert str(there.value).startswith("dest: ") and "already exists" in str(there.value)
+
+
+def test_a_snapshot_waits_for_a_new_whole_png_and_only_for_one(tmp_path: Path) -> None:
+    """A PNG already in the captures directory is not this call's; an empty one is not
+    written yet; one that lands a moment after the command is waited for."""
+    fake = ShotFake(tmp_path / "save")
+    caps = tmp_path / "caps"
+    caps.mkdir()
+    (caps / "g_000.png").write_bytes(b"\x89PNG" + bytes(20))
+    fake.writes = False
+    with pytest.raises(ds.Invalid) as stale:
+        ds.Session.snapshot(as_session(fake), None, 0.3)
+    assert stale.value.code == "wait_expired", stale.value.code
+    (caps / "g_000.png").unlink()
+
+    def empty(commands: list[bytes]) -> list[str]:
+        (caps / "g_000.png").write_bytes(b"")
+        return []
+    fake.send_commands = empty  # type: ignore[method-assign]
+    with pytest.raises(ds.Invalid) as unwritten:
+        ds.Session.snapshot(as_session(fake), None, 0.5)
+    assert unwritten.value.code == "wait_expired", unwritten.value.code
+    (caps / "g_000.png").unlink()
+
+    def late(commands: list[bytes]) -> list[str]:
+        threading.Timer(0.3, (caps / "g_001.png").write_bytes,
+                        args=(b"\x89PNG" + bytes(20),)).start()
+        return []
+    fake.send_commands = late  # type: ignore[method-assign]
+    got = ds.Session.snapshot(as_session(fake), None, 5.0)
+    assert Path(str(got["path"])).name == "g_001.png", got

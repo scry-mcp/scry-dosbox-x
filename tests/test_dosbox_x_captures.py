@@ -80,3 +80,11 @@ def test_every_tool_that_writes_to_a_dest_is_a_writer_captures_lists() -> None:
     assert takes_dest <= set(caps.WRITERS), sorted(takes_dest - set(caps.WRITERS))
     caps.note_written("screen_view", {"status": "ok", "image": {"path": "/g/screen.png"}})
     assert dstate.STATE.written[-1] == ("png", "/g/screen.png")
+
+
+def test_a_capture_gone_between_the_listing_and_its_size_is_absent(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    gone = tmp_path / "gone.png"
+    monkeypatch.setattr(Path, "is_file", lambda self: True)
+    assert caps._row("snapshot", gone) == {"kind": "snapshot", "path": str(gone),
+                                           "present": False}

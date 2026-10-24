@@ -16,6 +16,7 @@ import pytest
 import dosbox_mcp
 import dosbox_state as dstate
 import dosbox_x_server as server
+from dosbox_mcp import LOCK
 
 
 class _Live:
@@ -196,3 +197,29 @@ def test_a_close_whose_reap_failed_is_finished_by_the_next_one(
     ses.close()
     ses.close()
     assert len(bodies) == 2, bodies
+
+
+def test_a_signalled_end_waits_for_the_tool_holding_the_lock_before_closing(
+        monkeypatch: pytest.MonkeyPatch, ending: dict[str, Any]) -> None:
+    """The end takes the lock first, up to `LOCK_WAIT_S`: a tool still holding it finishes
+    before the emulator is closed under it."""
+    closed: list[float] = []
+    ses = type("Held", (), {"close": lambda self: closed.append(time.monotonic())})()
+    monkeypatch.setattr(dstate.STATE, "session", ses)
+    monkeypatch.setattr(server, "LOCK_WAIT_S", 5.0)
+    released: list[float] = []
+    held = threading.Event()
+
+    def a_tool() -> None:              # another thread's tool: the lock is re-entrant
+        with LOCK:
+            held.set()
+            time.sleep(0.3)
+            released.append(time.monotonic())
+    tool = threading.Thread(target=a_tool)
+    tool.start()
+    held.wait(5.0)
+    try:
+        server._end_signalled(128 + signal.SIGTERM)
+    finally:
+        tool.join()
+    assert closed and released and closed[0] >= released[0], (closed, released)

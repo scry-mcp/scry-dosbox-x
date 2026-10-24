@@ -1,0 +1,186 @@
+"""`symbols_load` by what it leaves for the next tool and what its reply says: the program's
+selectors kept only when the table is the program's, carried into a batch added where it sits,
+the account of a load deferred while the guest runs, a sectioned table's descriptor and what
+`symbols_find` says of a section it lacks, the types a later batch may name, the refusals that
+name the argument at fault, and a read of a name the table holds twice."""
+
+from __future__ import annotations
+
+import struct
+from pathlib import Path
+from typing import Any, cast
+
+import pytest
+from test_dosbox_x_server import NamesFake, _names, clean_session  # noqa: F401
+
+import dosbox_placement as placement
+import dosbox_session as ds
+import dosbox_state as dstate
+import dosbox_symbols as dsym
+import dosbox_x_server as server
+
+
+def _map(tmp_path: Path, name: str, text: str) -> str:
+    path = tmp_path / name
+    path.write_text(text, encoding="utf-8")
+    return str(path)
+
+
+def _ok(got: Any) -> dict[str, Any]:
+    reply = cast(dict[str, Any], got)
+    assert reply["status"] == "ok", reply
+    return reply
+
+
+def _selectors() -> dict[str, int]:
+    return {k: v for k, v in dstate.STATE.base.items() if k.startswith("selector_")}
+
+
+def _asking(fake: NamesFake) -> list[str]:
+    asked: list[str] = []
+    real = fake.selector
+
+    def selector(reg: str) -> dict[str, int]:
+        asked.append(reg)
+        return real(reg)
+    fake.selector = selector  # type: ignore[method-assign]
+    return asked
+
+
+def test_a_table_measured_off_another_register_keeps_the_selectors_when_cs_agrees(
+        tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    asked = _asking(fake)
+    _ok(server.symbols_load(path=_map(tmp_path, "a.nm", "00001000 T _main\n"), base_from="DS"))
+    assert asked == ["DS", "CS"], asked
+    assert _selectors() == {"selector_CS": 0xA7, "selector_DS": 0xAF}, dstate.STATE.base
+
+
+def test_a_base_the_caller_gave_keeps_no_selectors_where_cs_holds_another(
+        tmp_path: Path) -> None:
+    _names(tmp_path)
+    _ok(server.symbols_load(path=_map(tmp_path, "a.nm", "00001000 T _main\n"), base="500000"))
+    assert _selectors() == {}, dstate.STATE.base
+    _ok(server.symbols_load(path=_map(tmp_path, "b.nm", "00001000 T _main\n"), base="400000"))
+    assert _selectors() == {"selector_CS": 0xA7, "selector_DS": 0xAF}, dstate.STATE.base
+
+
+def test_a_batch_added_where_the_table_sits_carries_the_selectors_it_cannot_read(
+        tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    _ok(server.symbols_load(path=_map(tmp_path, "a.nm", "00001000 T _main\n"), base="400000"))
+    fake.running = True
+    _ok(server.symbols_load(path=_map(tmp_path, "b.nm", "00002000 T _second\n"),
+                            base="400000"))
+    assert _selectors() == {"selector_CS": 0xA7, "selector_DS": 0xAF}, dstate.STATE.base
+    fake.running = False
+    fake.cs, fake.ds = "00B7", "00BF"
+    _ok(server.symbols_load(path=_map(tmp_path, "c.nm", "00003000 T _third\n"), base="400000"))
+    assert _selectors() == {"selector_CS": 0xB7, "selector_DS": 0xBF}, "the stop's own win"
+
+
+def test_a_load_while_the_guest_runs_says_its_re_arm_waits_for_the_stop(
+        tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    fake.running = True
+    got = _ok(server.symbols_load(path=_map(tmp_path, "a.nm", "00001000 T _main\n"),
+                                  base="400000"))
+    assert got["declarations"] == {
+        "deferred": True,
+        "note": "the re-arm runs at the next stop, after the debugger takes the load"}, got
+    assert dstate.STATE.pending["dirty"] is True
+
+
+def test_a_load_says_how_many_bytes_it_handed_the_debugger(tmp_path: Path) -> None:
+    _names(tmp_path)
+    got = _ok(server.symbols_load(path=_map(tmp_path, "a.nm", "00001000 T _main\n"),
+                                  base="400000"))
+    assert got["bytes"] == 2 + dsym.RECORD, got
+
+
+# A 32-bit map of one section, its `Start` column zero as ILINK32 prints it.
+ONE_SECTION = (" Start         Length     Name               Class\r\n"
+               " 0001:00000000 000000100H _TEXT              CODE\r\n"
+               "\r\n  Address         Publics by Name\r\n\r\n"
+               " 0001:00000010       _main\r\n")
+
+
+def test_a_sectioned_table_has_no_descriptor(tmp_path: Path) -> None:
+    _names(tmp_path)
+    got = _ok(server.symbols_load(path=_map(tmp_path, "a.map", ONE_SECTION),
+                                  section_bases={"1": "401000"}))
+    assert (got["limit"], got["descriptor"]) == (-1, -1), got
+
+
+def test_a_real_mode_stop_with_no_base_names_both_ways_to_give_one(tmp_path: Path) -> None:
+    _names(tmp_path, mode="Real")
+    got = cast(dict[str, Any], server.symbols_load(
+        path=_map(tmp_path, "a.nm", "00001000 T _main\n")))
+    assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+    for said in ("`base`", "`section_bases`", '"8000"'):
+        assert said in got["message"], said
+
+
+def test_types_may_name_a_symbol_of_any_batch_the_table_holds(tmp_path: Path) -> None:
+    _names(tmp_path)
+    _ok(server.symbols_load(path=_map(tmp_path, "a.nm", "00001000 D _old\n"), base="400000"))
+    types = _map(tmp_path, "t.txt", "_old: ptr32\n_new: u16\n")
+    _ok(server.symbols_load(path=_map(tmp_path, "b.nm", "00002000 D _new\n"), base="400000",
+                            types=types))
+
+
+def test_types_for_symbols_the_table_lacks_are_named_five_at_most(tmp_path: Path) -> None:
+    _names(tmp_path)
+    types = _map(tmp_path, "t.txt", "".join(f"_absent{i}: u16\n" for i in range(6)))
+    got = cast(dict[str, Any], server.symbols_load(
+        path=_map(tmp_path, "a.nm", "00001000 D _main\n"), base="400000", types=types))
+    assert got["status"] == "INVALID", got
+    listed = got["message"].split("lacks: ", 1)[1]
+    assert listed.count("_ABSENT") == 5, listed
+
+
+def test_a_types_file_that_is_not_there_is_refused_naming_types(tmp_path: Path) -> None:
+    _names(tmp_path)
+    got = cast(dict[str, Any], server.symbols_load(
+        path=_map(tmp_path, "a.nm", "00001000 D _main\n"), base="400000",
+        types=str(tmp_path / "absent.txt")))
+    assert got["status"] == "INVALID" and got["message"].startswith("types:"), got
+
+
+def test_a_batch_that_would_overfill_the_queued_one_is_refused_and_the_table_kept(
+        tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    _ok(server.symbols_load(path=_map(tmp_path, "a.nm", "00001000 T _main\n"), base="400000"))
+    fake.running = True
+    dstate.STATE.pending["load"] = struct.pack("<H", dsym.COUNT_MAX) + bytes(
+        dsym.RECORD * dsym.COUNT_MAX)
+    before = list(dstate.STATE.table)
+    got = cast(dict[str, Any], server.symbols_load(
+        path=_map(tmp_path, "b.nm", "00002000 T _second\n"), base="400000"))
+    assert got["status"] == "INVALID" and "queued for one load" in got["message"], got
+    assert dstate.STATE.table == before
+
+
+def test_a_section_the_table_does_not_hold_is_refused_by_name(tmp_path: Path) -> None:
+    _names(tmp_path)
+    _ok(server.symbols_load(path=_map(tmp_path, "a.map", ONE_SECTION),
+                            section_bases={"1": "401000"}))
+    got = cast(dict[str, Any], server.symbols_find(offset=0x10, section=2))
+    assert got["status"] == "INVALID" and got["code"] == "unknown_ref", got
+    assert "nothing in section 2" in got["message"], got
+
+
+def test_section_bases_that_are_no_mapping_are_refused_naming_them() -> None:
+    with pytest.raises(ds.Invalid) as refused:
+        placement.hex_bases("400000")  # type: ignore[arg-type]
+    assert str(refused.value).startswith("section_bases is a mapping of section index"), refused
+
+
+def test_a_read_of_an_ambiguous_name_while_the_guest_runs_says_why(tmp_path: Path) -> None:
+    fake = _names(tmp_path, symbols=[dsym.Symbol("_twice", 0x10, kind="D"),
+                                     dsym.Symbol("_twice", 0x20, kind="D")])
+    fake.running = True
+    with pytest.raises(ds.NotStopped) as refused:
+        placement.read_target("_twice", "DS", fake)  # type: ignore[arg-type]
+    assert "names 2 symbols" in str(refused.value), refused.value
+

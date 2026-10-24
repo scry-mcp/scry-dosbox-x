@@ -270,3 +270,92 @@ def test_a_move_whose_old_row_the_debugger_will_not_delete_keeps_both_and_says_s
     assert "moved" not in w and [r["entry"] for r in fake.rows] == [
         f"BPPM 00AF:{HEAP2 + 4:08X} (00)"], fake.rows
     assert [(r["seg"], r["off"]) for r in rows] == [(DS, HEAP2 + 4)], rows
+
+
+# ------------------------------------------------- what a pointer ref resolves to, whole
+
+def _resolved(fake: NamesFake, ref: str) -> dict[str, Any]:
+    decl = dec.Declaration("watch", "pointer", ref, width=2, fmt="u16", watch_mode="show")
+    return placement.resolve_ref(decl, "DS", fake)  # type: ignore[arg-type]
+
+
+def test_an_armable_pointer_is_its_place_and_the_pointer_read_and_nothing_else(
+        tmp_path: Path) -> None:
+    fake = _pointing(tmp_path)
+    assert _resolved(fake, "[_g_engine]+0x4") == {
+        "state": "armable", "seg": DS, "off": HEAP + 4, "marked": False,
+        "pointer": {"at": "00AF:00001000", "length": 4, "value": f"{HEAP:04X}", "offset": 4,
+                    "target": f"00AF:{HEAP + 4:08X}"}}
+
+
+def test_an_untyped_pointer_is_as_wide_as_the_modes_near_pointer(tmp_path: Path) -> None:
+    fake = _pointing(tmp_path)
+    fake.mem[(DS, 0x2000)] = (0x10).to_bytes(4, "little")
+    assert _resolved(fake, "[00AF:2000]")["pointer"]["length"] == 4
+    fake.mode = "Real"
+    fake.mem[(DS, 0x2000)] = (0x10).to_bytes(2, "little")
+    assert _resolved(fake, "[00AF:2000]")["pointer"]["length"] == 2
+
+
+def test_a_null_pointer_carries_the_pointer_it_read(tmp_path: Path) -> None:
+    fake = _pointing(tmp_path)
+    fake.mem[(DS, ENGINE)] = bytes(4)
+    got = _resolved(fake, "[_g_engine]")
+    assert got["state"] == "null_pointer" and got["pointer"] == {
+        "at": "00AF:00001000", "length": 4, "value": "0000", "offset": 0}, got
+
+
+@pytest.mark.parametrize(("value", "ref", "state"), [
+    (4, "[_g_engine]-4", "armable"),                         # the target 0 is an offset
+    (3, "[_g_engine]-4", "unarmable"),                       # one below it
+    (0xFFFFFFFF - 4, "[_g_engine]+4", "armable"),            # the ceiling itself
+    (0xFFFFFFFF - 4, "[_g_engine]+5", "unarmable"),          # one past it
+])
+def test_a_pointer_target_is_judged_at_both_ends_of_the_offset(
+        tmp_path: Path, value: int, ref: str, state: str) -> None:
+    fake = _pointing(tmp_path)
+    fake.mem[(DS, ENGINE)] = value.to_bytes(4, "little")
+    got = _resolved(fake, ref)
+    assert got["state"] == state, got
+    if state == "unarmable":
+        assert got["pointer"]["value"] == f"{value:04X}" and "target" not in got["pointer"], got
+
+
+@pytest.mark.parametrize(("spec", "said"), [
+    (None, "it is untyped. Or name the offset"),
+    ("u32", "it is u32. Or name the offset"),
+    ("ptr32", "it is ptr32. Or name the offset"),
+    ("ptr32 u32", "typed as a pointer to a struct"),
+])
+def test_a_field_through_a_base_not_typed_as_a_pointer_to_a_struct_says_what_it_is(
+        tmp_path: Path, spec: str | None, said: str) -> None:
+    fake = _pointing(tmp_path)
+    dstate.STATE.symbol_types.clear()
+    if spec is not None:
+        dstate.STATE.symbol_types["_G_ENGINE"] = spec
+    got = _resolved(fake, "_g_engine->x")
+    assert got["state"] == "unresolved" and said in got["why"], got
+
+
+def test_a_pointer_the_machine_will_not_read_is_unarmable_with_its_words(tmp_path: Path) -> None:
+    fake = _pointing(tmp_path)
+
+    def refused(*_: Any, **__: Any) -> bytes:
+        raise ds.Invalid("unexpected_answer", "no data view")
+    fake.read_bytes = refused  # type: ignore[method-assign]
+    assert _resolved(fake, "[00AF:1000]") == {"state": "unarmable", "why": "no data view"}
+
+
+def test_a_pointer_base_a_real_mode_stop_cannot_place_is_unarmable_saying_why(
+        tmp_path: Path) -> None:
+    fake = _pointing(tmp_path)
+    fake.mode = "Real"
+    dstate.STATE.base["base"] = -1
+    got = _resolved(fake, "[_g_engine]+4")
+    assert got["state"] == "unarmable" and "FLAT base" in got["why"], got
+
+
+def test_a_pointer_base_spelt_as_no_address_is_unarmable_with_the_parsers_words(
+        tmp_path: Path) -> None:
+    got = _resolved(_pointing(tmp_path), "[00AF:ZZ]")
+    assert got["state"] == "unarmable" and "ZZ" in got["why"] and got["why"] != "None", got

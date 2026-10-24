@@ -297,7 +297,7 @@ def _resolve_pointer(decl: dec.Declaration, reg: str, session: ds.Session,
     spec = STATE.symbol_types.get(pr.base.strip().upper())
     fmt = vf.parse(spec) if spec else None
     width = fmt.size if fmt is not None and fmt.kind == "pointer" else None
-    offset, field_fmt = pr.offset, None
+    offset = pr.offset
     if pr.field is not None:
         if (fmt is None or fmt.kind != "pointer" or fmt.target is None
                 or fmt.target.kind != "struct"):
@@ -306,7 +306,7 @@ def _resolve_pointer(decl: dec.Declaration, reg: str, session: ds.Session,
                 f"(`ptr32{{...}}` or `ptr16{{...}}` in the `types` file); it is "
                 f"{spec or 'untyped'}. Or name the offset: `[{pr.base}]+0x..`")}
         try:
-            offset, field_fmt = vf.field_offset(fmt.target, pr.field)
+            offset, _ = vf.field_offset(fmt.target, pr.field)
         except vf.FormatError as e:
             return {"state": "unresolved", "why": str(e)}
     try:
@@ -330,8 +330,7 @@ def _resolve_pointer(decl: dec.Declaration, reg: str, session: ds.Session,
             f"the pointer plus the offset, {target:#x}, is outside what an offset can be "
             f"in {mode} mode")}
     info["target"] = st.seg_off(seg, target)
-    return {"state": "armable", "seg": seg, "off": target, "marked": False, "pointer": info,
-            "field_fmt": field_fmt}
+    return {"state": "armable", "seg": seg, "off": target, "marked": False, "pointer": info}
 
 
 def read_target(ref: str, reg: str, session: ds.Session, *,
