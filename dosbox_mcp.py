@@ -179,7 +179,7 @@ def _stop_of_its_own(ses: ds.Session, broke_in: bool = False) -> dict[str, Any]:
             ses.break_in()
         return running.stop_reply(ses, interrupted=True, via="break", asked_by="cancel")
     if getattr(ses, "stop_count", None) != STATE.last_stop.get("stop_count"):
-        return running.stop_or_base(ses, True, {})
+        return running.stop_or_base(ses, True, {}, asked_by="cancel")
     return {}
 
 

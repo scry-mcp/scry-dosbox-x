@@ -157,7 +157,8 @@ def recorded_stop_reply(session: ds.Session, recorded: dict[str, Any]) -> dict[s
 
 def stop_or_base(session: ds.Session, stopped: bool, base: dict[str, Any], *,
                  retrace_may_stop: bool = False,
-                 made_by: dict[str, str] | None = None) -> dict[str, Any]:
+                 made_by: dict[str, str] | None = None,
+                 asked_by: Literal["stop", "cancel"] | None = None) -> dict[str, Any]:
     """The enriched stop reply when the machine STOPPED, else just the tool's base answer.
     A halt whose POSITION cannot be read (a cut pane leaves `where` refusing, which `resume`'s
     read-back meets as a stop with no position) is not discarded: the halt is a real
@@ -166,7 +167,8 @@ def stop_or_base(session: ds.Session, stopped: bool, base: dict[str, Any], *,
     if not stopped:
         return st.reply(**base)
     try:
-        return stop_reply(session, retrace_may_stop=retrace_may_stop, made_by=made_by, **base)
+        return stop_reply(session, retrace_may_stop=retrace_may_stop, made_by=made_by,
+                          asked_by=asked_by, **base)
     except ds.Invalid as e:
         return st.reply(enrichment={"available": False, "why": str(e)}, **base)
 

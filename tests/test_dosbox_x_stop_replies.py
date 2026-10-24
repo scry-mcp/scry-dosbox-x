@@ -231,3 +231,15 @@ def test_a_reply_off_a_record_with_no_picture_decodes_it_from_that_stop(
     assert asked == [(fake, dict(stop["where"]), dict(stop["registers"]), "THE SURVEY")], asked
     assert got["instruction"] == {"text": "DECODED"} and stop["picture"] == {
         "instruction": {"text": "DECODED"}}, (got, stop)
+
+
+def test_a_stop_the_cancelled_call_had_already_reached_is_named_as_that_call_s(
+        tmp_path: Path) -> None:
+    """A cancel that lands with the guest at a stop nobody read (the call's own retrace or
+    breakpoint) records that stop as the cancelled call's, in the words a cancelled call's stop
+    is named with, as the stop it breaks in for is."""
+    import dosbox_mcp
+    fake = _names(tmp_path)
+    fake.stop_count = 1
+    got = dosbox_mcp._stop_of_its_own(fake)  # type: ignore[arg-type]
+    assert got["cause"].startswith("a cancelled call's stop at "), got["cause"]
