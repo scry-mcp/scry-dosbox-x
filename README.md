@@ -1,368 +1,206 @@
 # scry-dosbox-x
 
-**Drive and debug a DOS program from your MCP client, live.** One DOSBox-X stays open;
-you ask it things by name, stop it where you mean to, press its keys and prove they
-landed, and every answer says what it examined. A question costs under a second instead
-of a boot.
+**Drive and debug a DOS program from your MCP client, live.** One DOSBox-X stays open; you ask
+it things by name, stop it where you mean to, press its keys and prove they landed, and every
+answer says what it examined. A question costs a round trip instead of a boot.
 
-If you develop for DOS under DOSBox-X you know the loop: start the emulator, wait for the
-guest, reach the point you care about, read one line, quit. Two questions are two boots.
-This server pays that cost once, then answers, and it is built so that an autonomous
-session can be left alone with it: a browser is driven by look, act, verify, and so is
-this.
+If you develop for DOS under DOSBox-X you know the loop: start the emulator, wait for the guest,
+reach the point you care about, read one line, quit. This server pays the boot once and then
+answers, and it is built so that an autonomous session can be left alone with it: a browser is
+driven by look, act, verify, and so is this.
 
 ## What it can do
 
-- **Hold a live machine open and answer from it.** `start` boots your conf headless (or
-  in a window your host's placement helper places) and parks the guest at the debugger, ready. Registers, memory,
-  the guest's own log, a still frame: each one is a call. While a session holds the window
-  an orange edge marks it, bright while a call drives the machine, never in the server's
-  own captures or screen reads (`presence=False` turns it off).
-- **Read the program's own account.** A guest that writes to the Bochs `0xE9` port has a
-  log, and the server filters it for you: the last lines matching a pattern, WHEN a line
-  happened (already, or wait for it), what was written since the last stop, or a window
-  measured on the guest's own clock.
-- **Names, not addresses.** Load the symbol list your toolchain already prints (`nm`, a
-  GNU `ld` map, a Borland TLINK map of either generation, an Open Watcom map) and then
-  say `_engine_set_rate`, not `00AF:0017A6EC`. Breakpoints and watches are declarations
-  that survive a rebuild: recompile, reload the symbols, and they re-resolve themselves.
-- **Annotate the program.** A comment by symbol follows it through a rebuild, kept per conf,
-  saved to and loaded from a file the project versions beside its symbol file.
-- **Read the code.** `disassemble` reads code as instructions at any address, decoded on the
-  host in the segment's own 16 or 32-bit width, with call targets and direct memory operands
-  named from the loaded symbols. `call_stack` guesses the chain of callers of the routine a
-  stop is in, walking the frame pointers and keeping only return addresses that follow a real
-  call instruction, always marked heuristic.
-- **See what the machine is.** `machine_map` says what the DOS machine is right now: who
-  is resident and where, the kernel, the emulator's own blocks, the XMS and EMS handles and,
-  in protected mode, the descriptor tables; asked by name, the BIOS's blocks, the page
-  mapping and the VGA's state as its own listings print it. `interrupt_vectors` says which handler every
-  interrupt vector points at, and whose memory it lies in.
-- **Read the screen without a window.** `screen_view` gives the screen at this stop as the
-  text it holds or, in the 256-colour mode, as a picture the model sees, attached;
-  `screen_signature` answers "is it the same screen" with one string instead of a picture;
-  `screen_wait` runs the machine until a string appears on the text screen, and stops there;
-  `palette` gives the 256 colours of the VGA's DAC, as a table and as a picture.
-- **Frames and pictures as numbers.** `series_capture` turns frames of the session's video
-  capture into PNGs and a manifest; `image_diff`, `series_diff`, `region_track` and
-  `golden_check` answer about PNGs and series with numbers, the three that compare a series
-  or goldens refusing a result their own control could not have contradicted.
-- **Stop where you mean to.** Run to a symbol and be told whether you arrived, stopped
-  somewhere else, or ran out of time, the run then stopped where it stood. Break on an
-  interrupt, or on the program's own `int 3`. Break when a variable changes. Step one
-  instruction at a time with every step read back. Every stop returns
-  where it is, the instruction it stopped on with its nearest symbol, the registers, the
-  watches you declared, which declaration produced it, and an optional summary of the log.
-- **Advance it by frames, or by emulated time.** `run_for` runs the machine for a number of
-  frames of the display, one vertical retrace each, or for a number of emulated milliseconds,
-  and stops there with that same stop reply, the emulated clock before and after beside it.
-- **Trace what it executes.** `trace` runs the machine a counted number of instructions with
-  the debugger's CPU log on, hands the log over as a file, each count proved against the
-  counter the debugger's register pane keeps, and says which routines ran.
-- **Press its keys, move its mouse, and prove it.** `send_keys` and `send_mouse` go in
-  INSIDE the machine, through a serial socket and a tiny resident stub: no window comes to
-  the front and your own pointer never moves, so it runs beside you while you work. The
-  mouse is placed at a screen pixel and read back. Give `expect`, a pattern only the
-  program's reaction writes, and the reply says whether the program acted. A swallowed key
-  is reported as a miss, never as success.
-- **One call per turn, not one per step.** `perform` runs a list of operations and stops
-  at the first failure with the whole account; `start(plan=...)` does it on a fresh
-  session; `drive` is LOOK, ACT, VERIFY in a single round trip, with what the guest wrote
-  since handed back. The server does the segment, selector and mode arithmetic so the
-  caller never does.
-- **Honest replies, by construction.** Every reply opens with a one-line `summary` (the
-  line your client paints for the call) and closes with a `session` block carrying `altered`
-  (has anything here written to the machine?). A read that could not look says so as
-  `INVALID`, and a wait that expired says what it examined meanwhile. "No line matched" and
-  "there was no log" are different answers here.
+- **Hold a live machine open.** `start` boots your conf headless (or in a window your host's
+  placement helper places) and parks the guest at the debugger. Registers, memory, the guest's
+  own log, a still frame: each is one call.
+- **Read the program's own account.** A guest that writes to the Bochs `0xE9` port has a log,
+  filtered in the server: the last lines matching a pattern, when a line happened (or a wait
+  for it), what was written since the last stop.
+- **Names, not addresses.** Load the symbol list your toolchain prints (`nm`, a GNU `ld` map, a
+  Borland TLINK map, an Open Watcom map) and say `_engine_set_rate`, not `00AF:0017A6EC`.
+  Breakpoints, watches and comments are declarations that survive a rebuild.
+- **Read the code and the machine.** `disassemble` decodes at any address in the segment's own
+  width with targets named from your symbols; `call_stack` guesses the callers, marked
+  heuristic; `machine_map` and `interrupt_vectors` say what the DOS machine is right now.
+- **Read the screen without a window.** `screen_view` gives the screen at this stop as text or,
+  in mode 13h, as a picture; `screen_signature` answers "is it the same screen" with one string;
+  `screen_wait` runs until a string appears.
+- **Stop where you mean to.** Run to a symbol and be told whether you arrived, stopped elsewhere
+  or ran out of time; break on an interrupt, on the program's own `int 3`, or when a variable
+  changes; step with every step read back; run by frames of the display or by emulated time.
+- **Press its keys, move its mouse, and prove it.** `send_keys` and `send_mouse` go in inside
+  the machine, so no window comes to the front and your own pointer never moves. Give `expect`
+  and the reply says whether the program acted; a swallowed key is reported as a miss.
+- **One call per turn.** `perform` runs a list of operations and stops at the first failure with
+  the whole account; `drive` is look, act, verify in one round trip.
+- **Honest replies.** Every reply opens with a one-line `summary` and closes with a `session`
+  block saying whether anything was written to the machine. "No line matched" and "there was no
+  log" are different answers here.
 
 ## Two minutes to a first answer
 
-You need a DOSBox-X built with the debugger (most distribution builds are; `build_check`
-says whether yours is): the `dosbox-x` on your `PATH`,
-or another build named by `DOSBOX_X_BINARY` or by `start`'s `binary`. And Python 3.11 or
-newer.
-The debugger wants a terminal, and the server provides one itself. `stop` reaches a running
-guest through the debugger's control channel (`mcp_server`), which a current DOSBox-X has.
-The saved states (`state_save`, `state_load`) need two debugger commands, `SAVESTATE` and
-`LOADSTATE`, that are not in a release yet (REFERENCE.md, *Saved states*): name a build that
-carries them with `DOSBOX_X_BINARY`.
-Absence of any of these is named by the tool that needs it, never worked around.
+You need git, Python 3.11 or newer, [uv](https://docs.astral.sh/uv/), and a DOSBox-X built with
+the debugger (`build_check` says whether yours is): the `dosbox-x` on your `PATH`, or another
+named by `DOSBOX_X_BINARY` or by `start`'s `binary`. The saved states need two debugger
+commands, `SAVESTATE` and `LOADSTATE`, that DOSBox-X has merged into its `main-ai` branch but not
+yet into a release: name a build that carries them with `DOSBOX_X_BINARY`. A missing piece is
+named by the tool that needs it, never worked around.
 
 ```sh
-pip install .
-claude mcp add dosbox-x -s user -- scry-dosbox-x
-# or, from a checkout without installing:
-claude mcp add dosbox-x -s user -- uv run --directory /path/to/scry-dosbox-x scry-dosbox-x
+git clone https://github.com/scry-mcp/scry-dosbox-x
+cd scry-dosbox-x
+claude mcp add dosbox-x -s user -- uv run --directory "$PWD" scry-dosbox-x
 ```
 
-Then, from the client:
+Any other MCP client starts the same command over stdio:
+`uv run --directory /path/to/scry-dosbox-x scry-dosbox-x`.
 
+Then ask your client to `start` your conf with `conf`, `cwd` and a `logfile` for the guest's log
+(your conf needs `bochs debug port e9 = true` for that log to exist). Every path you give is
+absolute or starts with `~`. A session nobody watches runs headless; one that opens a window asks
+the placement helper `WINDOW_APP` names where to put it (the [bricks demo's
+README](demos/bricks/README.md) says what the helper prints). Everything about your project
+comes from you; the server carries no default that points anywhere.
+
+## See it run
+
+[`demos/bricks/`](demos/bricks/) is a small game this repository builds to be debugged, and a
+`demo.py` that makes the calls a model would and checks every answer, from the first stop inside
+the program to a breakpoint on the routine every falling brick goes through. The calls and
+replies below are the last run's, written here by the demo itself
+(`uv run python demos/bricks/demo.py --update-readme`), each cut to the fields that make its
+point. The demo opens a window so the game can be watched, so it needs the placement helper
+`WINDOW_APP` names; its README says what the helper prints.
+
+![Bricks in mode 13h, stopped as the ball reaches its second brick](demos/bricks/screen.png)
+
+<!-- demo-flow:begin bricks -->
 ```
-build_check()
-start(conf="/path/to/proj/dev.conf", cwd="/path/to/proj",
-      session_seconds=600, logfile="/path/to/proj/build/e9.log")
-resume()                      -> {"status": "ok", ...}        the guest is running
-log_wait(pattern="BOOT", channel="guest", seconds=20)
-                              -> {"verdict": "TARGET", "already": true,
-                                  "line": "[+  0.412] BOOT  . start",
-                                  "waited_s": 0.0, "lines_total": 1, ...}
-log(pattern="PERF", channel="guest", limit=5)   -> the last five PERF lines, filtered in the server
-close()
-```
-
-Your conf needs `bochs debug port e9 = true` for the log to exist at all. Everything about
-*your* project comes from you: the conf, the working directory, the program; where a window
-goes is your host's placement helper's, named by `WINDOW_APP`. The server knows no project and carries no default that points anywhere.
-Every path you give is absolute or starts with `~`, which is expanded; a relative path is
-refused (REFERENCE.md, The session, says why).
-
-## Demos
-
-[`demos/bricks/`](demos/bricks/) is a Breakout-like game this repository builds, made to be
-debugged: a prompt to give your MCP client, and a `demo.py` that makes the same calls and checks
-every answer, from the first stop inside the program to a breakpoint on the routine every
-falling brick goes through. Its README carries the transcript of a run, regenerated by the
-demo itself.
-
-## Examples
-
-Every example below was run against a real program. Replies are abridged to the fields
-that matter; the tools' own descriptions list the rest.
-
-### Stop in a function by name, read a variable, and see what the program logged
-
-A DJGPP program: its `nm` listing is the symbol source, and the base is read off the
-running machine, so no arithmetic is needed. The trick is to load the symbols with the
-guest stopped INSIDE the program, which an interrupt breakpoint gives you.
-
-```
-start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj",
-      session_seconds=600, logfile="/path/to/proj/build/e9.log")
-breakpoint_interrupt(number=0x21)
-resume(seconds=30)            -> {"verdict": "OTHER_STOP", "pc": "00AF:0017A6EC", ...}
-symbols_load(path="/path/to/proj/build/APP.SYM")
-                              -> {"parsed": 9652, "kept": 7238, "loaded": 7238, "base_from": "CS", ...}
-breakpoint_at(ref="_engine_set_rate")
-                              -> {"stored": true, "armed": true, "entry": "BP 00AF:0017A6EC", ...}
-watch_add(ref="_g_eng_rate", mode="show", length=4, fmt="u32")
-breakpoint_clear(ref="BPINT 21")
-resume(seconds=30)
-```
-
-The last reply is the stop itself: `pc`, `cpu_mode`, `regs`, `watches` with `_g_eng_rate`
-already read as a `u32`, `cause` naming `_engine_set_rate` as the declaration that fired, and
-`e9` holding the lines the guest wrote between the two stops (`lines_total`, the newest ones in
-`lines`, and the `mark` they start at, from which `log` reads them all when the block was cut).
-
-### The same thing in one call
-
-```
-start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj",
-      session_seconds=600, logfile="/path/to/proj/build/e9.log",
-      plan=[{"op": "breakpoint_interrupt", "number": 33},
-            {"op": "resume"},
-            {"op": "symbols_load", "path": "/path/to/proj/build/APP.SYM"},
-            {"op": "breakpoint_at", "ref": "_engine_set_rate"},
-            {"op": "watch_add", "ref": "_g_eng_rate", "mode": "show", "length": 4, "fmt": "u32"},
-            {"op": "breakpoint_clear", "ref": "BPINT 21"},
-            {"op": "resume"}])
-```
-
-`plan` runs those steps on the fresh session and stops at the first failure with the
-steps that ran, their replies, and the machine's state. A `resume` in the middle ends the
-console part: before the next console step the sequence waits, bounded by `settle_seconds`,
-for the stop a breakpoint produces. The declarations persist on disk keyed by the conf, so
-the next session's plan can be shorter: they re-arm on `symbols_load`.
-
-### Press a key and prove the program took it
-
-The program writes `key_cue_a` on its E9 port from the A-key handler and nowhere else.
-That is what `expect` is for.
-
-```
-send_keys(keys=["a"], expect="key_cue_a", seconds=5)
-   -> {"route": "guest", "posted": 1, "bytes": 2, "ticks": 2,
-       "verify": {"checked": true, "seen": true, "expected": "key_cue_a",
-                  "verdict": "TARGET", "line": "[+ 12.407] key_cue_a ...",
-                  "seen_before_waiting": false, "lines_before": 2, "waited_s": 0.3,
-                  "lines_total": 1}}
-```
-
-A modal dialog that swallowed the key comes back with `posted: 1` and `verify.verdict:
-"TIMEOUT"`, `seen: false`: the key went in, the program did not take it, and the two are
-never confused.
-
-### Drive: look, act, verify, in one round trip
-
-```
-drive(act=[{"op": "send_keys", "keys": ["a"], "expect": "key_cue_a"},
-           {"op": "send_keys", "keys": ["right", "right"]}],
-      expect="cue .* set", seconds=5, pattern="cue|PERF", limit=20)
-   -> {"status": "ok",
-       "act": {"ran": [{"op": "send_keys", "reply": {...}}, {"op": "send_keys", "reply": {...}}],
-               "steps_completed": 2,
-               "failed_at": {"available": false, "why": "no step failed"}},
-       "verify": {"checked": true, "seen": true, "verdict": "TARGET", "line": "...",
-                  "seen_before_waiting": false, "lines_before": 5, "waited_s": 0.4,
-                  "lines_total": 1},
-       "looked": {"guest": {"available": true, "since_mark": 1240, "lines_written": 37,
-                            "lines_total": 25, "truncated": true,
-                            "lines": [...the 20 most recent matching lines...],
-                            "pattern": "cue|PERF"}}}
-```
-
-The log is marked once, before the first step. The steps run as `perform` runs them, each
-`send_keys` verifying its own `expect`; then the call waits for the act's overall effect
-from that same mark; then `looked.guest` is what the guest wrote since, matching `pattern` and
-cut to the last `limit`, in `log`'s words. A failed step stops the act and comes back `INVALID`
-with the account; a miss is the verify's `TIMEOUT`, and a step's own miss ends the act there.
-An act that ended with the machine stopped at the debugger carries the enriched stop in
-`act.stopped`.
-
-### The input route: a conf line, then keys and the mouse
-
-The conf's autoexec runs the shipped stub before its program (a session started with
-`program` needs no line: `start` loads the stub first):
-
-```
-[autoexec]
-mount g "/path/to/scry-dosbox-x/guest"
-G:\INJECT.COM
-APP.EXE
+resume(seconds=60)
+-> {
+  "summary": "resume: OTHER_STOP, stopped at 08AF:00000119",
+  "cause": "no declared code breakpoint at 08AF:00000119: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+  "instruction": {
+    "seg_off": "08AF:00000119",
+    "bytes": "CD03",
+    "text": "int 3",
+    "flow": "call",
+    "code_bits": 16,
+    "bytes_from": "code pane",
+    "symbol": {
+      "available": false,
+      "why": "no symbol table is loaded"
+    },
+    "delta": {
+      "available": false,
+      "why": "no symbol table is loaded"
+    }
+  }
+}
 ```
 
 ```
-start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj",
-      session_seconds=600, logfile="/path/to/proj/build/e9.log")
-   -> {..., "input_port": 50432, "stub": "/path/to/scry-dosbox-x/guest/INJECT.COM"}
-resume()
-send_mouse(x=160, y=100, button="left", expect="clicked")
-   -> {"route": "guest", "arrived": true,
-       "pointer": {"screen": {"x": 160, "y": 100, "width": 320, "height": 200},
-                   "mouse": {"x": 320, "y": 100, "max_x": 639, "max_y": 199},
-                   "buttons": [], "bios_mode": "0x13"},
-       "verify": {"checked": true, "seen": true, "verdict": "TARGET", ...}}
+symbols_load(path="./demos/bricks/bricks.sym", base="8af0")
+-> {
+  "summary": "symbols_load: 65 loaded of 65 parsed, base 35568",
+  "base": 35568
+}
 ```
 
-`x` and `y` are the screen's own units, as `screen_view` counts them (pixels here, mode
-13h); the reply reads the pointer back, so a move that did not arrive says so.
-
-### A real-mode program: TLINK map, load segment, run to a symbol
-
-A 16-bit Borland program is loaded at a paragraph decided at run time, and its map prints
-offsets from a frame. Reach the program's own code first, then place the map.
-
 ```
-start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj", session_seconds=300)
-breakpoint_interrupt(number=0x21)
-resume()  ... until the segment of `pc` is the program's own (the loader's is different)
-symbols_load(path="/path/to/proj/build/APP.MAP", base="7DF0")    # (0x0837 - 0x0058) * 16, as hex text
-   -> {"parsed": 307, "loaded": 307, "overlay_idle": 80, "unreadable": 0, "base_from": "caller", ...}
-run_to(ref="ATTRACT_RUN", control="MAIN_LOOP", seconds=60)
-   -> {"verdict": "TARGET", "pc": "0837:00000599", "cpu_mode": "real",
-       "target_disarmed": true, "control_hits": 3, "controls": [...], ...}
+breakpoint_at(ref="brick_hit")
+-> {
+  "summary": "breakpoint_at brick_hit: armed",
+  "entry": "BP 08AF:02C8"
+}
 ```
 
-In real mode the same byte has many spellings (`07DF:0599` and `0837:0041` are one
-address), and arrival is judged on the linear address, whatever paragraph the program's
-`CS` happens to hold when it stops. The breakpoint `run_to` armed is removed whatever the
-verdict, and the reply says so (`target_disarmed`, false only when the removal could not be
-confirmed).
-
-### Wait for a line, then take a still
+```
+resume(seconds=60)
+-> {
+  "summary": "resume: OTHER_STOP, stopped at 08AF:000002C8",
+  "cause": "breakpoint brick_hit (by symbol) at 08AF:000002C8",
+  "watches": [
+    {
+      "ref": "score",
+      "by": "symbol",
+      "mode": "show",
+      "length": 2,
+      "fmt": "u16",
+      "state": "evaluated",
+      "value": 0,
+      "bytes": "0000"
+    }
+  ]
+}
+```
 
 ```
-start(conf="/path/to/proj/conf/dev.conf", cwd="/path/to/proj",
-      session_seconds=120, logfile="/path/to/proj/build/e9.log",
-      capture_video=True, program="APP.EXE", captures_dir="/path/to/proj/build/captures")
-resume()
-log_wait(pattern="READY", channel="guest", seconds=30)
-                                         -> {"verdict": "TARGET", "already": false, "waited_s": 2.1, ...}
-captures()                               -> {"captures": [{"kind": "avi", "path": ".../app_000.avi",
-                                                           "present": true, "avi_frames": 143, ...}]}
-capture_frame(frame=140, dest="/path/to/proj/build/captures/ready.png")
+read_memory(ref="score", length=2)
+-> {
+  "summary": "read_memory score: 8 rows at 08AF:00000615",
+  "hex": "0a00"
+}
 ```
 
-The video is DOSBox-X's own recording and needs no keypress; the still is an extraction
-from it (`ffmpeg`), because the emulator's screenshot is a mapper action with no
-non-interactive trigger. Two capture files is the normal case: the recording restarts
-when the guest changes video mode.
+```
+drive(act=[{"op": "send_keys", "keys": ["right"], "expect": "KEY R", "seconds": 10}, {"op": "send_keys", "keys": ["right"], "expect": "KEY R", "seconds": 10}, {"op": "send_keys", "keys": ["right"], "expect": "KEY R", "seconds": 10}], pattern="KEY|PLAYER")
+-> {
+  "looked": {
+    "guest": {
+      "available": true,
+      "since_mark": "<volatile>",
+      "lines_written": "<volatile>",
+      "lines_total": "<volatile>",
+      "truncated": false,
+      "lines": [
+        "Bochs port E9h: PLAYER",
+        "Bochs port E9h: KEY R",
+        "Bochs port E9h: KEY R",
+        "Bochs port E9h: KEY R"
+      ],
+      "pattern": "KEY|PLAYER"
+    }
+  }
+}
+```
+
+```
+state_save(name="bricks")
+-> {
+  "name": "bricks"
+}
+```
+
+```
+state_load(name="bricks")
+-> {
+  "name": "bricks"
+}
+```
+
+```
+read_memory(ref="paddle_x", length=2)
+-> {
+  "summary": "read_memory paddle_x: 8 rows at 08AF:0000061F",
+  "hex": "dc00"
+}
+```
+<!-- demo-flow:end bricks -->
 
 ## The tools
 
-Everything about *your* project comes from you: the config file, the working
-directory and the program to run; where a window goes is your host's placement helper's. The server knows no
-project and carries no default that points anywhere in particular.
-
-| tool | what it does |
-|---|---|
-| `start` | opens a session and stops it at the debugger, ready to be asked things, behind your own windows unless you ask otherwise; `flags` carries the emulator's own options in either mode, and `break_on_int3` makes the guest's own `int 3` a stop |
-| `status` | is it up, how much of its bound is SPENT, and whether it has been written to; where it is stopped, in which cpu mode, and how many declarations it holds; a stop the guest reached on its own that no tool has seen yet is recorded here and said in `stopped_on_its_own` |
-| `close` | ends it deliberately, and says how in `ended_by`: `quit` on the first signal, which is the normal ending because `start` turns the emulator's quit warning off; `killed` only when the signal was ignored |
-| `build_check` | what the server can see of its own preconditions, `heavy_debug` among them: whether the build carries the CPU log `trace` needs |
-| `symbols_load` | a toolchain's TEXT symbol list into the debugger, so addresses carry names |
-| `symbols_find` | look one up: by name, or by where you have stopped (`linear` as hex text) |
-| `comment_add` | a comment on a place, by symbol (it follows the symbol through a rebuild) or by `SEG:OFF`; one per place, so another spelling of the same byte replaces its text |
-| `comment_list` | every comment with where it lands now (`addr`) and its state; answers on a running guest too |
-| `comment_delete` | one comment, by its ref or by any spelling of its place |
-| `comment_save` | every comment to a comment file (`dest`, absolute), the record a project versions beside its symbol file |
-| `comment_load` | a comment file into the store, all or nothing; where the two disagree, the file wins |
-| `map_load`, `map_add`, `map_find`, `map_save` | a screen map: an application's screens, each known by the signatures of stable regions, and the named controls on each; `map_find` says which screen is showing off one read, and `send_mouse(target=)` clicks a control by name |
-| `machine_map` | `(sections=None, dest="")`: what the DOS machine is at this stop, one section per debugger listing (the MCB chain, devices, kernel, BIOS, XMS and EMS, the cpu, the VGA's state as `vga` and, in protected mode, the descriptor tables and paging); by default the DOS machine and the cpu, the rest named in `omitted`; `dest` writes every section read whole. A section the debugger cannot list yet is absent, with why. Needs a session started with `logfile` |
-| `interrupt_vectors` | `(number=None)`: the vector table, each handler with the block of the MCB chain, the kernel or the BIOS that holds it and, inside the loaded table's span, its symbol; in protected mode the IDT, placed through the GDT, the LDT and the pages. A program's or a TSR's hook shows as the block it lies in. The blocks, and in protected mode the descriptor tables, need a session started with `logfile`; the debugger's file is written into the working directory and removed |
-| `breakpoint_at` | a code breakpoint by SYMBOL or by `SEG:OFF`, stored as a declaration that survives a rebuild; a raw-address breakpoint is re-armed at the next session only over the same build FINGERPRINT (the conf and, once a map is loaded, every name the table holds with its linear address, hashed), whoever declared it, and listed `stale` over another |
-| `breakpoint_list` | every declaration with its state: armed, unresolved, gone, or a foreign row the store never put there |
-| `breakpoint_clear` | one declaration by ref, or all of them; never touches watches, never deletes a foreign row |
-| `breakpoint_interrupt` | breaks on an interrupt; `detail=True` adds the debugger's acknowledgement repaint |
-| `watch_add` | N bytes at a name, shown at every stop (`mode="show"`) or breaking when they change (`mode="change"`); the bytes read as a FORMAT of the value grammar: a scalar (`u16`, N of them by `length`), an array (`u16[8]`), a string (`char[16]`) or a struct (`{x:i16,y:i16,flags:u8}`), a sized format implying its length, and a symbol typed by the `types` file `symbols_load` takes reading as its type with no format named |
-| `watch_list` | the watch declarations and their state |
-| `watch_clear` | one watch by ref, or all; never touches breakpoints |
-| `step` | `(count=1, mode="into")`: one instruction at a time, into or over, with every step READ BACK rather than counted out |
-| `run_to` | run until a SYMBOL or a `SEG:OFF`, and say where it really stopped: `TARGET`, `OTHER_STOP`, or `TIMEOUT` with the run interrupted at its bound; the `control` is REQUIRED (a second `ref` known to be hot), so a bound that expires is a measurement and not a silence; it reports its progress while it waits, as do `run_for`, `trace`, `log_wait`, `perform`'s wait for a stop, `drive`, the wait for `expect` in `send_keys` and `send_mouse`, `start` waiting for the debugger prompt, `close` waiting for the emulator to leave |
-| `run_for` | `(frames=N)` or `(milliseconds=N)`: run for N frames of the display, one vertical retrace each, or retrace by retrace until the emulated clock has risen N ms, and stop there with the full stop reply; `verdict` says whether the run ran its course (`ELAPSED`), a declared breakpoint stopped it first (`OTHER_STOP`, saying the retrace it leaves pending), or the bound expired (`TIMEOUT`), and the pane's emulated clock says how far it went |
-| `trace` | `(instructions=N, shape="normal", dest="")`: run N instructions with the debugger's CPU log on, one line each (`normal`, `short`, `long` or `cs_ip`), and stop with the full stop reply, the log moved to `dest` or to the next `trace-<n>.trace` in the captures directory; the count is proved against the pane's `cc=` counter, which only the normal core keeps in step, and `verdict` is `ELAPSED`, `OTHER_STOP` or `TIMEOUT` as for `run_for`; the executed addresses are joined to the loaded symbols, the routines in `symbols` (the lowest-addressed ones, `symbols_total` counting them all) and every address in a set file beside the log |
-| `resume` | lets the machine run; an F5 that never left the debugger comes back as the stop; with `seconds` it waits that long for a stop, listening for the prompt as `run_to` does: `OTHER_STOP` with the stop, or `TIMEOUT` leaving the machine running; nothing has to be declared first, since `stop` brings it back; `detail=True` adds the debugger's repaint |
-| `stop` | brings a RUNNING guest back to the debugger and surveys the stop, headless or windowed, by sending `BREAK` down the emulator's own debugger channel (upstream's `mcp_server`, which the session sets to a port of its own): no window, no menu, no focus taken |
-| `registers` | the register pane, as a mapping |
-| `disassemble` | code at an address as instructions, decoded on the host in the segment's own width, each line's `flow`, and with symbols loaded the direct targets and memory operands named (`resolved`) |
-| `call_stack` | the callers of the routine the stop is in, a heuristic: the frame chain walked, each return kept only where a call instruction ends at it, and why the walk ended |
-| `set_register` | writes a register, reads it back (`readback`, `verified`), and marks the session altered, for good |
-| `read_memory` | `length` bytes at an address as `hex`, read off the data-view **rows** the debugger printed and returned beside them; INVALID unless that address is among the rows, and above what the rows hold the answer is `memdump` |
-| `write` | bytes at a symbol or a `SEG:OFF`, read back (`readback`, `verified`), marking the session altered; a real-mode address in the ROM range is refused `bad_argument` with nothing sent, because the debugger's `SM` there ends the emulator |
-| `memdump` | `(ref, length, dest)`: memory to a **file**, returning its path; past offset 0xFFFF it reads the memory really there or refuses |
-| `find` | `(data_hex, ref, length)`: every address in the range holding the bytes (`hits`, `hits_total`, `truncated`); the debugger has no pattern search, so the range is dumped by `memdump`'s route into a scratch file of the call's own and searched exactly |
-| `scan_start` / `scan_filter` / `scan_clear` | the debugger's own value scanner (`MEMFIND` / `MEMS`), for a program with no map: open a range at a cell width, filter it by an operator against a value or, with no value, against what each cell held when the scan opened (`!` keeps the cells that changed, `=` those that did not), read the survivors with their current values (when at most `limit` remain, 40 unless asked for up to 400), cancel it. ONE scan at a time, held by the debugger: a second `scan_start` is refused in its words. The listing is paged by the debugger and the tool turns the pages with a bare ENTER, because a command typed while a page waits is eaten one keystroke per page |
-| `log` | one `channel` of the log, filtered **in the server** by a pattern: `guest` is the program's own 0xE9 instrumentation, `emulator` DOSBox-X's own lines, `all` the file in order with every line tagged; `labels=True` counts the first word of each line |
-| `log_wait` | WHEN a line of a channel happened: it answers at once if it already has, and waits if it has not |
-| `perform` | a LIST of the server's own operations, checked WHOLE before the first step runs (every refused step listed, nothing run) and then run in order, stopping at the first failure; `summaries=True` cuts every step but the last to its summary line, writes them all to two files and counts the stops |
-| `drive` | LOOK, ACT, VERIFY in one call: mark the log, run input steps, wait for the expected reaction, hand back what the guest wrote since; `summaries=True` as in `perform` |
-| `perform_export` | the session since its `start`, written as `perform`'s own document: what moved the machine as steps, the checking reads holding to what they answered, every drop and the first call no replay can place named; `uv run python -m scry_core.replay <file>`, from this repository, plays it back with no model |
-| `send_keys` | keystrokes into the RUNNING guest, verified against the program's own reaction with `expect` |
-| `send_mouse` | the guest's pointer placed at a screen pixel and read back, and its buttons clicked, double-clicked or held, verified the same way |
-| `captures` | the files this session's tools wrote, then the video it recorded and what is in it |
-| `capture_frame` | one still image out of a capture, returning its path. Always a **PNG**, whatever `dest` is called; a `dest` already there is refused, never deleted |
-| `snapshot` | one still of the RUNNING screen, taken inside the guest on any session, confirmed by the new `.png` under the captures directory and moved to `dest` when given |
-| `screen_signature` | `(crop=None)`: one string for what is on screen or on a crop of it, each cell or pixel in the colour it is shown in, to compare instead of reading it; the modes `screen_view` reads. Needs a session started with `logfile` |
-| `palette` | `(first=0, count=0, scale=0, dest="")`: the 256 colours of the VGA's DAC at this stop, as `#rrggbb` and as the six-bit `rgb` the debugger prints, and their swatch, an indexed PNG of one square per entry, attached. Needs a session started with `logfile` |
-| `screen_view` | `(crop=None, scale=0, dest="")`: what the screen shows at this stop, read from video memory: a text mode as its rows of text with the cursor, the chained 256-colour mode (13h's) as an indexed PNG, attached; any other mode is refused naming `capture_frame`. Needs a session started with `logfile` |
-| `series_capture` | frames of the session's video capture, by the AVI's own numbering, as PNGs and one manifest, no picture in the reply. Needs `ffmpeg` |
-| `image_diff` | two PNGs compared pixel by pixel, with a crop, a shift and a tolerance: how many differ and where |
-| `series_diff` | two series compared frame by frame, after checking each can tell its frames apart |
-| `region_track` | the frames where a region of a series changes, by signature, changed pixels or a match against a reference |
-| `golden_check` | a series or a directory of PNGs against goldens written by `shasum -a 256` |
-| `screen_wait` | `(text, seconds=30)`: runs the machine retrace by retrace until `text` is inside one row of the text screen, and stops there with the stop's registers and `cause`; a string already on screen is answered at once (`already`), the machine not moved; a frame that is not text is no match. Needs a session started with `logfile` |
-| `state_save` | the machine under a NAME, as `<state_dir>/<name>.sav`, by the debugger's own `SAVESTATE` sent down the debugger channel: no window, no menu, no focus taken. A running guest is stopped for it and released again (`paused`); the file is read back for what it says about itself. Never overwrites; alters nothing. Needs a DOSBox-X that carries the command (see Saved states below) |
-| `state_load` | the named state, by the debugger's own `LOADSTATE`, as `state_save` saves; a running guest is stopped for it and released again, a parked one stays parked at the loaded position. A state of another DOSBox-X version, program, memory size or machine type is refused, never asked about. Marks the session altered |
-| `state_list` | every state under the session's `state_dir` with the members its ZIP carries (`version`, `program`, `machine`, `memory_mb`, `saved_at`), read without loading; no window needed, works while the guest runs |
-| `debug` | one command to the debugger console |
+The tools by family, each with its arguments, its reply and a real example, are in the index
+at the top of [REFERENCE.md](REFERENCE.md). A tool's own description, delivered to your client
+at connection, is its contract.
 
 ## Going further
 
-Every tool's own description, delivered to your client at connection, is its contract. The
-WHY behind each contract, what each tool refuses and what it hands back in every case, the
-symbol formats, the running-guest rules and how to run the tests are in
-[`REFERENCE.md`](REFERENCE.md), one section per family in the order above.
+[REFERENCE.md](REFERENCE.md) holds what the families share (the session, what every reply
+carries, names for addresses) and links each family's page, where every tool's block is
+followed by why its contract is shaped that way. [CONTRIBUTING.md](CONTRIBUTING.md) is for
+changing the server: its battery, its live tier and what proves a change.
 
 ## Licence
 

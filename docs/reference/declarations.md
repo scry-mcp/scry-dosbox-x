@@ -296,18 +296,18 @@ re-resolves on `symbols_load`.
 
 Arguments:
 - `mode`: `show` (read at each stop: nothing is armed, the value rides in `watches`)
-or `change` (the machine stops when the bytes change, and each stop reads them as `show`
-does; trusted in REAL mode, while under a DJGPP program's paging the reply says its firing
-is not to be trusted).
+  or `change` (the machine stops when the bytes change, and each stop reads them as `show`
+  does; trusted in REAL mode, while under a DJGPP program's paging the reply says its firing
+  is not to be trusted).
 - `ref`: a symbol, a `SEG:OFF`, or `[base]`, `[base]+0x28`, `[base]-0x4`, `base->field`, with
-`base` a symbol or address holding a POINTER (read at its type's width, else four bytes in
-protected mode and two in real), re-resolved at every stop.
+  `base` a symbol or address holding a POINTER (read at its type's width, else four bytes in
+  protected mode and two in real), re-resolved at every stop.
 - `fmt`: the value grammar: a scalar (`u8` .. `f64`), an array (`u16[8]`), a string
-(`char[16]`) or a struct (`{x:i16,y:i16}`). With no `fmt` a typed symbol reads as its type,
-else the widest unsigned scalar `length` divides.
+  (`char[16]`) or a struct (`{x:i16,y:i16}`). With no `fmt` a typed symbol reads as its type,
+  else the widest unsigned scalar `length` divides.
 - `length`: TOTAL bytes, a whole number of `fmt` values; a sized format needs none. A show
-watch is at most 128 bytes; a change watch at most 16, a debugger
-row per byte (`entries`), `armed` while every row is held.
+  watch is at most 128 bytes; a change watch at most 16, a debugger
+  row per byte (`entries`), `armed` while every row is held.
 - `by`: `auto` (by shape) unless you must force `symbol`, `address` or `pointer`.
 
 Refused: one ref as both show and change; a length over the ceiling; a pointer base the

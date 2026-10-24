@@ -269,21 +269,21 @@ and `altered` (none with no session). `session`, on every reply, carries those t
 (`alive` false with no session: nothing running is an answer) and each alarm (!) while it
 holds:
 
-pid                     the emulator process's pid.
-alive                   the emulator process is up.
-running                 the guest runs; false parked at the debugger.
-altered                 something here WROTE to the guest: later readings are forced.
-conf                    the config the session was started from.
-conf_digest             a digest of that file's content AT START.
-conf_changed_on_disk !  the file changed since (`false` also if gone).
-watched                 a window was placed to be watched.
-bound_s                 the ceiling the session was given.
-elapsed_s               how much of that is spent.
-terminal_bytes_dropped ! nonzero: a screen delta had a hole in it.
-drain_alive !           the terminal reader runs.
-drain_ended !           why that reader stopped, present once it has.
-captures                `off`, or where a `capture_video` session records.
-state_dir               where `state_save` writes and `state_list` reads.
+  pid                     the emulator process's pid.
+  alive                   the emulator process is up.
+  running                 the guest runs; false parked at the debugger.
+  altered                 something here WROTE to the guest: later readings are forced.
+  conf                    the config the session was started from.
+  conf_digest             a digest of that file's content AT START.
+  conf_changed_on_disk !  the file changed since (`false` also if gone).
+  watched                 a window was placed to be watched.
+  bound_s                 the ceiling the session was given.
+  elapsed_s               how much of that is spent.
+  terminal_bytes_dropped ! nonzero: a screen delta had a hole in it.
+  drain_alive !           the terminal reader runs.
+  drain_ended !           why that reader stopped, present once it has.
+  captures                `off`, or where a `capture_video` session records.
+  state_dir               where `state_save` writes and `state_list` reads.
 
 Also at the top: `last_stop` (`stop_seq`,
 `pc`, `cause`, `since_s`, `wall_at`; the park after `start` is stop 1; unavailable with no

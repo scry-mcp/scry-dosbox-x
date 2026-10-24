@@ -225,7 +225,7 @@ comment_save(dest)
 ```
 
 Write every comment of this conf to `dest`, an absolute path, as a comment file (`# comments
-v1:` header, one sorted tab-separated row each; convention `<symbol file stem>.comments.tsv`
+v1:` header, one sorted tab-separated row each; convention `&lt;symbol file stem>.comments.tsv`
 beside the symbol file), whole or not at all. Answers on a running guest too.
 
 Refused `bad_argument`, the path left as it is: relative, a link, a directory or any

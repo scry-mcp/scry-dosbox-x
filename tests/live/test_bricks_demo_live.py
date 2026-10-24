@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from scry_core.demo import readme_drift
+from scry_core.demo import load, stale
 
 pytestmark = pytest.mark.live
 
@@ -29,12 +29,10 @@ TIMEOUT_S = 1800
 @pytest.mark.windowed
 @pytest.mark.skipif(not os.environ.get("WINDOW_APP"),
                     reason="set WINDOW_APP to a placement helper: the demo opens a window")
-def test_the_bricks_demo_passes_and_matches_its_readme() -> None:
+def test_the_bricks_demo_passes_and_matches_its_readme_and_the_front_door() -> None:
     ran = subprocess.run([sys.executable, str(DEMO / "demo.py")], cwd=ROOT, capture_output=True,
                          text=True, timeout=TIMEOUT_S)
     verdict = [ln for ln in ran.stdout.splitlines() if ln.startswith(("DEMO", "FAIL", "INVALID"))]
     assert ran.returncode == 0, f"rc {ran.returncode}: {verdict} {ran.stderr.strip()[-300:]}"
-    drift = readme_drift(DEMO / "README.md", RUN / "transcript.normalised.md")
-    assert drift == "", drift
-    assert (DEMO / "screen.png").read_bytes() == (RUN / "screen.png").read_bytes(), \
-        "the committed screen.png is not this run's capture"
+    stale_files = stale(load(DEMO / "demo.py"), RUN)
+    assert stale_files == [], stale_files
