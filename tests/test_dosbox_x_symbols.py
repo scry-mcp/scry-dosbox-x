@@ -1602,7 +1602,7 @@ def test_a_watcom_section_with_no_readable_row_refuses_and_does_not_return_empty
     IT CALLS THE READER DIRECTLY, on purpose. `parse` never reaches here with nothing,
     because `looks_like_watcom` requires a readable row before it will claim a file --
     so the refusal is unreachable through the front door and reachable through this one,
-    which is a public function. Deleting the refusal would leave the whole suite green.
+    which is a public function. Only this case goes red if the refusal is deleted.
     """
     header = ("                        +----------------+\r\n"
               "                        |   Memory Map   |\r\n"

@@ -101,7 +101,7 @@ resume(seconds=60)
 ```
 
 ```
-symbols_load(path="./demos/bricks/bricks.sym", base="8af0")
+symbols_load(path="/path/to/scry-dosbox-x/demos/bricks/bricks.sym", base="8af0")
 -> {
   "summary": "symbols_load: 65 loaded of 65 parsed, base 35568",
   "base": 35568
