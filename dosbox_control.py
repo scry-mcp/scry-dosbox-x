@@ -1,7 +1,7 @@
 """The emulator's two local TCP routes, and the debugger channel that is one of them.
 
 Both routes have the same shape: the SESSION listens before the emulator exists, and the
-emulator dials it. The other way round, with the emulator listening, was measured losing: a
+emulator dials it. The other way round, with the emulator listening, loses: a
 process that took the port between the server's check and the emulator's bind was left listening
 beside it, and the session's connect reached THAT process. A port the kernel picks and the
 session holds from that moment cannot be taken in between. `listen_local` and `await_dial` are

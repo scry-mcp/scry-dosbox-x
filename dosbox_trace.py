@@ -51,7 +51,7 @@ SHAPE_WORDS = ("normal", "short", "long", "cs_ip")
 SHAPES = dict(zip(SHAPE_WORDS, ds.LOG_WORDS, strict=True))
 #: The file the debugger writes, in the emulator's working directory.
 LOG_FILE = "LOGCPU.TXT"
-#: The most instructions one call executes, chosen from the heaviest shape's measured cost so
+#: The most instructions one call executes, chosen from the heaviest shape's cost so
 #: that one call's file stays under a gibibyte and its wall time under half the wait ceiling.
 INSTRUCTIONS_MAX = 3_000_000
 #: How long the close of a log is given: it executes nothing.

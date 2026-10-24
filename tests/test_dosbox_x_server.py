@@ -3,10 +3,10 @@
 These are CONTRACT tests, not emulator tests: none of them launches DOSBox-X. What
 they hold is the part that has to be true before one is involved.
 
-THE STUB REPRODUCES THE CONTRACT, NOT THE CODE.  An earlier version's stub returned a
-path it had not written, which is exactly what the real `memdump` wrongly did -- so
-the test AGREED WITH THE BUG and the suite could not tell "the guard fired" from
-"this tool never works". A double is built from what the thing PROMISES.
+THE STUB REPRODUCES THE CONTRACT, NOT THE CODE.  A stub returning a path it had not
+written would agree with a `memdump` that wrongly does the same -- so the test AGREES
+WITH THE BUG and the suite cannot tell "the guard fired" from "this tool never works". A double is
+built from what the thing PROMISES.
 """
 
 from __future__ import annotations
@@ -125,8 +125,7 @@ class FakeSession:
         self.loaded: list[tuple[str, int]] = []
         # WHAT THE ADDRESS-TAKING TOOLS WERE ACTUALLY HANDED. Without this the double
         # could not tell a tool that forwards its caller's address from one that
-        # forwards zero, and MEASURED, that break came back GREEN:
-        # `memdump(0, 0, length, ...)` passed the whole contract tier.
+        # forwards zero: `memdump(0, 0, length, ...)` would pass the whole contract tier.
         self.memdump_calls: list[tuple[int, int, int]] = []
 
     reap_failed = ""      # read by the `close` tool and by `start`'s failure arm
@@ -440,9 +439,9 @@ def clean_session() -> Any:
     because the whole suite shares ONE process: a stub left in a module global outlives the
     file that set it.
 
-    THE SYMBOL TABLE IS A MODULE GLOBAL TOO, and leaving it was measured doing exactly
-    what this warns about: `test_find_refuses_before_anything_is_loaded` came back `ok`
-    with zero matches, because an earlier case in this file had left a table installed.
+    THE SYMBOL TABLE IS A MODULE GLOBAL TOO, and leaving it does exactly
+    what this warns about: `test_find_refuses_before_anything_is_loaded` comes back `ok`
+    with zero matches when an earlier case in this file has left a table installed.
     It is only ever cleared in production by `start`, `close` and a cancel that kills the
     session -- and `install()` reaches past all three.
     """
@@ -559,10 +558,9 @@ def test_a_start_that_left_an_unreapable_emulator_says_so(tmp_path: Path) -> Non
     """The ONE path besides `close` where an unreaped child can be seen.
 
     `reap_failed` is set inside `close()`'s `if self.proc.poll() is None:` block, so it
-    exists only when a LIVE session is closed. Two consumers were added for it in
-    earlier rounds and BOTH sat on the dead branch, where `poll()` is non-None and the
-    signals never run: MEASURED, closing an already-exited session leaves the field
-    empty, so neither could ever fire. They are deleted.
+    exists only when a LIVE session is closed. A consumer on the dead branch, where
+    `poll()` is non-None and the signals never run, could never fire: closing an
+    already-exited session leaves the field empty.
 
     This arm is where it matters. `wait_ready` raising with the child still running is
     exactly the case where SIGKILL can fail to reap, and the reply is a refusal that
@@ -571,13 +569,12 @@ def test_a_start_that_left_an_unreapable_emulator_says_so(tmp_path: Path) -> Non
     class Unreapable:
         """THE FIELD IS EARNED BY BEING CLOSED, not preset.
 
-        Its first version set `reap_failed` as a class attribute, so `if
-        session.reap_failed:` fired whether or not `close()` had run -- and
-        MEASURED, deleting the `session.close()` above it left the whole battery
-        green, restoring the very defect the comment there names. A real `Session`
-        cannot present a non-empty `reap_failed` before `close()` has run, so a
-        double that does is the "state the real class cannot occupy" this commit
-        convicted three earlier rounds of building.
+        Setting `reap_failed` as a class attribute would make `if
+        session.reap_failed:` fire whether or not `close()` had run, and deleting the
+        `session.close()` above it would leave the whole battery green, restoring the
+        very defect the comment there names. A real `Session` cannot present a
+        non-empty `reap_failed` before `close()` has run, so a double that does is a
+        "state the real class cannot occupy".
         """
 
         argv = ["dosbox-x"]
@@ -612,11 +609,11 @@ def test_a_start_that_left_an_unreapable_emulator_says_so(tmp_path: Path) -> Non
     assert "the debugger never appeared" in str(got["message"]), got
     assert "may still be running" in str(got["message"]), got
     # THE SESSION WAS ACTUALLY CLOSED. What makes deleting that `close()` go red is
-    # the DOUBLE earning `reap_failed` inside its own `close()` -- measured, this
+    # the DOUBLE earning `reap_failed` inside its own `close()`; this
     # assertion alone is not what fires. It is here so the call is pinned directly
     # rather than only through its side effect, and the distinction is written down
-    # because a later pass reading a vaguer comment could remove the earning and keep
-    # this line, which would reopen the hole.
+    # because a vaguer comment could let the earning be removed while this line stays,
+    # which would reopen the hole.
     assert made[0].closed == 1, "the refused session was never closed"
     assert dstate.STATE.session is None
 
@@ -657,7 +654,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
         ds.Session.frame(fake, 0, tmp_path / "out.png")  # type: ignore[arg-type]
 
     # THE GREEN BESIDE IT, without which an unconditional `raise Invalid` at the top of
-    # `frame()` passes -- MEASURED, it did. There is no other contract case in which
+    # `frame()` passes. There is no other contract case in which
     # the real `frame()` SUCCEEDS: the double's `frame` is a stub and the only other
     # case is a second refusal.
     dest = tmp_path / "ok.png"
@@ -803,13 +800,11 @@ def test_every_tool_has_a_live_case_naming_it() -> None:
     tomorrow turns this red until it has a live case, and a list nobody maintains
     cannot quietly fall behind the surface.
 
-    IT PARSES THE SOURCE, it does not search it, and the first version searched. That
-    version's condition ended in `f".{t}(" not in text`, which subsumed its own two
-    earlier clauses and made them dead -- so a tool counted as covered if ANY dotted
-    call of that name appeared anywhere, including inside a COMMENT, and including
-    `s.memdump(...)` on a `Session` object, which is not the tool at all. Both were
-    demonstrated: deleting the only real call to the `debug` tool and leaving the words
-    in a comment kept the gate green. An AST cannot be satisfied by prose.
+    IT PARSES THE SOURCE, it does not search it. A text search counts a tool as covered
+    if ANY dotted call of that name appears anywhere, including inside a COMMENT, and
+    including `s.memdump(...)` on a `Session` object, which is not the tool at all:
+    deleting the only real call to the `debug` tool and leaving the words in a comment
+    would keep the gate green. An AST cannot be satisfied by prose.
     """
     live = Path(str(server.__file__)).parent / "tests" / "live"
     called: set[str] = set()
@@ -824,7 +819,7 @@ def test_every_tool_has_a_live_case_naming_it() -> None:
 
 
 def test_every_tool_this_server_promises_is_actually_registered() -> None:
-    """MEASURED: `mcp.tool()` returns the function unchanged, so dropping the
+    """`mcp.tool()` returns the function unchanged, so dropping the
     registration leaves every other test green while the server exposes NOTHING.
     Nothing asserted the surface existed, only that individual functions behaved."""
     expected = {"start", "status", "close", "log", "debug", "registers",
@@ -1098,8 +1093,8 @@ def test_every_reply_carries_whether_the_machine_was_written_to() -> None:
 
 
 def test_an_invalid_reply_carries_it_too() -> None:
-    """The one a caller reasons hardest about, and the one an earlier version handed
-    back with no trace that the machine had been forced."""
+    """The one a caller reasons hardest about, and the easiest to hand back with no
+    trace that the machine has been forced."""
     install(screen="   \n")                 # nothing but whitespace comes back
     server.set_register(name="ax", value=0x10)
     got = server.debug(command="BPLIST")
@@ -1113,14 +1108,12 @@ def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
     `Session.state` is called UNBOUND against a minimal object carrying only the four
     attributes it reads, which exercises the actual code without a process existing.
     With only a hand-written stub in play, `altered` could be deleted from the real
-    `state()` and the whole suite stayed green -- the headline guarantee gated by a
-    double that had been written to agree with it.
+    `state()` and the whole suite stay green -- the headline guarantee gated by a
+    double written to agree with it.
 
-    EVERY VALUE IS ASSERTED, not just the key set. An adversarial pass proved the
-    earlier version toothless: breaking `"alive": self.alive()` to a hardcoded `True`,
-    and `"terminal_bytes_dropped"` to a hardcoded `0`, each left all 56 green. Five of
-    the nine values were checked by nothing, including the counter the whole drain
-    change is about.
+    EVERY VALUE IS ASSERTED, not just the key set: breaking `"alive": self.alive()` to a
+    hardcoded `True`, or `"terminal_bytes_dropped"` to a hardcoded `0`, would otherwise
+    leave everything green, including the counter the whole drain is about.
     """
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
@@ -1193,11 +1186,11 @@ def test_the_double_has_not_drifted_from_what_it_stands_in_for(tmp_path: Path) -
     # the alarm would ride as a fixed fact, omitted.
     fake.drain_ended = "EIO"
     assert {*dstate._ALARM_WHEN, *dstate._ALWAYS} <= set(ds.Session.state(fake))  # type: ignore[arg-type]
-    # AND THE METHOD SURFACE, which this case's own name promised and did not check.
-    # MEASURED: adding `read_memory` to the server left this green and made two other
-    # cases die with an `AttributeError` -- a crash, not a contract failure, and one
-    # the `tool()` wrapper deliberately does NOT translate, so on the real path it
-    # would have escaped as a traceback rather than as INVALID.
+    # AND THE METHOD SURFACE, which this case's own name promises. A method the server
+    # calls and the double lacks makes cases die with an `AttributeError` -- a crash,
+    # not a contract failure, and one the `tool()` wrapper deliberately does NOT
+    # translate, so on the real path it would escape as a traceback rather than as
+    # INVALID.
     #
     # THE LIST IS DERIVED FROM THE SERVER'S OWN SOURCE, never written out here: a
     # parallel list is populated by whoever remembers, which is the same defect one
@@ -1213,11 +1206,10 @@ def test_the_double_has_not_drifted_from_what_it_stands_in_for(tmp_path: Path) -
     #   any `.name` by TEXT           -- read comments and docstrings, and made
     #                                    `subprocess.run` into a phantom requirement.
     #   `live()` usage by AST        -- precise about the source of the call and
-    #                                    therefore NARROWER than the regex it replaced:
-    #                                    MEASURED, it covered 10 where the regex had
-    #                                    covered 14, so deleting `wait_ready` from the
-    #                                    double went green. A guard against going blind
-    #                                    that itself went blind.
+    #                                    therefore NARROWER than a regex: it covers
+    #                                    fewer calls, so deleting `wait_ready` from the
+    #                                    double goes green. A guard against going blind
+    #                                    that itself goes blind.
     #
     # This one is by AST (so prose cannot contribute) and excludes attributes reached
     # on an IMPORT (so `subprocess.run` cannot), which is the pair of properties the
@@ -1411,8 +1403,8 @@ def test_a_dump_of_the_wrong_size_is_not_the_dump_that_was_asked_for(
 def test_a_dump_refuses_rather_than_deleting_what_is_already_there(
         tmp_path: Path) -> None:
     """It will not delete from the emulator's working directory, which is somebody's
-    project. The earlier version unlinked every candidate with the error SUPPRESSED,
-    so the staleness guarantee rested on an error nobody read."""
+    project. Unlinking every candidate with the error SUPPRESSED would leave the
+    staleness guarantee resting on an error nobody reads."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     work = tmp_path / "work"
@@ -1682,7 +1674,7 @@ def test_loaded_is_read_back_out_of_the_debugger_and_lv_appends(
 def test_the_bytes_that_went_in_carry_the_measured_linear_address(
         tmp_path: Path) -> None:
     """End to end through the server: `nm`'s 0x16DF20 plus the machine's 0x400000 is
-    the 0x56DF20 the live debugger was measured holding for `_main`."""
+    the 0x56DF20 the live debugger holds for `_main`."""
     s = install(mode="Pr32")
     server.symbols_load(path=_source(tmp_path))
     assert ("_main", 0x0056DF20) in s.loaded, s.loaded
@@ -1949,7 +1941,7 @@ def test_a_new_session_does_not_inherit_the_previous_ones_table(
         tmp_path: Path) -> None:
     """The second untested site. `start` clears ABOVE every validation, so it is
     reached with no previous session and on every failure path -- but nothing asserted
-    it, and deleting that one call left the whole suite green.
+    it, and deleting that one call would leave the whole suite green.
 
     IT CLEARS EVEN WHEN `start` GOES ON TO REFUSE, which is the direction that matters:
     the clear sits above every validation, so a `start` that fails for any reason still
@@ -2078,9 +2070,8 @@ def test_a_failed_load_does_not_replace_a_table_that_was_working(
         tmp_path: Path) -> None:
     """A REFUSAL THAT ALSO CORRUPTS STATE inverts this module's one rule.
 
-    `load_symbols` refuses on many paths -- seven at the time of writing, and the count
-    is not the point, which is why this no longer quotes one: it said FOUR while the
-    method already had six. Installing the table before calling it meant a refused load
+    `load_symbols` refuses on many paths, and the count is not the point, which is why
+    this does not quote one. Installing the table before calling it meant a refused load
     still replaced a good one: the caller got INVALID from `symbols_load` and `ok` from
     `symbols_find`, answering out of a table the debugger does not hold.
     """
@@ -2128,12 +2119,11 @@ def test_a_source_that_cannot_be_read_is_a_refusal_and_not_a_traceback(
     assert d["status"] == "INVALID", d
 
 
-# ---------------------------------- the three blind spots that were MEASURED
+# ---------------------------------- three blind spots of the double
 #
-# Each of these breaks came back GREEN over the whole contract tier. They are the
-# same shape as the defect `read_memory`'s own docstring convicts -- accept a number,
-# never use it, echo it back -- and that one was fixed while its two neighbours were
-# not.
+# Each of these breaks would come back GREEN over the whole contract tier. They are the
+# same shape as the defect `read_memory`'s own docstring convicts: accept a number,
+# never use it, echo it back.
 
 
 def test_memdump_forwards_the_address_the_caller_asked_for(tmp_path: Path) -> None:
@@ -2200,15 +2190,10 @@ def test_the_central_distinctness_guarantee_is_gated_and_not_merely_written() ->
 # ------------------------------------------------ the verification pass
 
 def test_build_check_is_invalid_and_not_ok_when_there_is_no_binary() -> None:
-    """`build_check` had NO contract case at all -- not one, which is what the finding
-    said, but none.
-
-    MEASURED: `grep build_check tests/` matched a comment, a string inside another
-    test's expected set, and ONE case in the LIVE tier; `pytest -k build_check` selected
-    zero of 288. So the defect its own docstring records -- "An earlier version
-    returned `ok` with `binary: None`, the one tool whose purpose is examining
-    preconditions reporting a clean result for a missing tool" -- was pinned by nothing
-    that runs on a commit, and by nothing else either.
+    """`build_check` is INVALID and not `ok` with `binary: None` when there is no binary:
+    the one tool whose purpose is examining preconditions must not report a clean result
+    for a missing tool. This contract case is what pins it on a commit; the live tier
+    runs it only with an emulator.
 
     THE PATH IS PATCHED, NOT THE ANSWER: `shutil.which` is what decides, so that is
     what the double stands in for, and the real body runs.
@@ -2234,7 +2219,7 @@ def test_build_check_is_invalid_when_the_build_has_no_debugger() -> None:
 
 def test_a_build_that_lists_the_option_but_carries_no_debugger_is_refused(
         tmp_path: Path) -> None:
-    """MEASURED (tests/fixtures/build_check): a build configured with `--disable-debug` still
+    """A build configured with `--disable-debug` (tests/fixtures/build_check) still
     lists `-break-start` in `-helpdebug`, because the option parser is there either way. What
     tells the two apart is the debugger's own text in the binary."""
     binary = tmp_path / "dosbox-x"
@@ -2278,10 +2263,8 @@ def test_build_check_refuses_to_start_a_second_emulator_beside_a_live_one() -> N
     is a full emulator for the whole 20 s bound, because this build does not refuse an
     option it does not know: it starts.
 
-    `start` refuses exactly this, in as many words. MEASURED before the fix: with a
-    live session installed, `build_check` spawned
-    `['/opt/homebrew/bin/dosbox-x', '-helpdebug']` with a 20 s timeout and returned
-    `ok`, while `start` in the identical state refused.
+    `start` refuses exactly this, in as many words, and `build_check` refuses in the
+    same state: it must not spawn the binary with `-helpdebug` under a live session.
 
     THE SPAWN IS WATCHED, not merely the status: asserting INVALID alone would pass
     over a refusal raised AFTER the process had already been started.
@@ -2303,11 +2286,11 @@ def test_build_check_refuses_to_start_a_second_emulator_beside_a_live_one() -> N
 
 def test_a_limit_means_nothing_where_one_symbol_comes_back_and_is_not_refused_there(
 ) -> None:
-    """`limit <= 0` was refused ABOVE the branch split, so it fired for `offset` and
+    """`limit <= 0` is refused only where it means something, not for `offset` and
     `linear` -- which answer with exactly one symbol and never slice.
 
-    MEASURED before the fix: on the offset branch `limit=1` and `limit=10` returned
-    byte-identical replies (the proof it is not read) while `limit=0` was refused.
+    On the offset branch `limit=1` and `limit=10` return byte-identical replies (the
+    proof it is not read) and `limit=0` is not refused.
     """
     install(alive=True)
     dstate.STATE.install_table([dsym.Symbol(name="_main", offset=0x1000, kind="T"),
@@ -2371,13 +2354,13 @@ def test_a_bad_pattern_is_a_refusal_and_not_a_traceback(tmp_path: Path) -> None:
 
 def test_a_read_memory_reply_carries_the_whole_data_view_and_not_just_the_row_asked_for(
 ) -> None:
-    """The fixture held ONE row, and the reply's whole value is that EIGHT come back.
+    """A fixture of ONE row is not enough: the reply's whole value is that EIGHT come back.
 
     This tool returns rows instead of a screen precisely because the debugger's data
-    view holds eight of them and a positional cut fell inside them -- so the answer
-    began at E040 for a caller who had asked about E000. MEASURED before this case:
-    reducing `read_memory` to return only the row asked for left the ENTIRE contract
-    tier green (252 passed), over the exact defect the tool exists to prevent.
+    view holds eight of them and a positional cut falls inside them -- so the answer
+    would begin at E040 for a caller who asked about E000. Reducing `read_memory` to
+    return only the row asked for would leave the ENTIRE contract tier green over the
+    exact defect the tool exists to prevent.
     """
     seg, off = 0x0749, 0
     rows = [f"{seg:04X}:{off + 16 * i:08X} " + " ".join([f"{i:02X}"] * 16)
@@ -2392,10 +2375,9 @@ def test_a_read_memory_reply_carries_the_whole_data_view_and_not_just_the_row_as
 
 
 def test_read_memory_refuses_a_segment_that_will_not_fit_the_command() -> None:
-    """The range check had no contract case at all: removing it left the
-    whole contract tier green (252 passed, measured), and its only cover was one
-    assertion in the LIVE tier -- the tier that skips itself on a machine with no
-    conf."""
+    """The range check needs its own contract case: removing it would leave the
+    whole contract tier green, with its only other cover one assertion in the LIVE
+    tier -- the tier that skips itself on a machine with no conf."""
     seg, off = 0x0749, 0
     row = f"{seg:04X}:{off:08X} " + " ".join(["00"] * 16) + "  " + "." * 16
     install(screen=f"some screen\r\n{row}\r\n")
@@ -2425,13 +2407,13 @@ def test_each_double_returns_the_field_set_the_real_method_returns() -> None:
         double = returned_key_sets(getattr(FakeSession, name))
         assert branches, f"nothing was read off the real {name}: this measured nothing"
         assert len(double) == 1, f"the {name} double should have one return"
-        # PER BRANCH, NOT THE UNION, which is how the first version of this gate could
-        # be fooled. `e9_wait` has FOUR dict returns and `run_to` two; a set
-        # comprehension over all of them unions the keys, so a field present on three
-        # branches and missing from the fourth was invisible -- and that is the exact
+        # PER BRANCH, NOT THE UNION, which can be fooled. `e9_wait` has FOUR dict
+        # returns and `run_to` two; a set comprehension over all of them unions the
+        # keys, so a field present on three branches and missing from the fourth is
+        # invisible -- and that is the exact
         # defect `run_to`'s own comment names ("a field that appears on one branch is a
         # field a caller must first discover the shape of the reply to read").
-        # MEASURED: all four methods return an IDENTICAL key set on every branch today,
+        # All four methods return an IDENTICAL key set on every branch,
         # so this is a real invariant and not a convenience.
         for i, real in enumerate(branches):
             # A VERDICT IS WHAT TELLS TWO SHAPES APART: a wait's `TIMEOUT` carries what arrived
@@ -2457,9 +2439,9 @@ def test_a_delta_longer_than_the_cap_is_cut_and_says_so() -> None:
     which is a case about a different guard -- so the live tier, looking for somewhere
     to delegate this branch to, delegated it to a TOOL instead and got it wrong.
 
-    MEASURED against a real emulator: on a STOPPED machine no ordinary
-    command on this build reaches a cap -- `debug("BPLIST")` is 2973 and
-    `debug("HELP")`, the longest listing the debugger prints, is 3083, both under the
+    Against a real emulator, on a STOPPED machine no ordinary
+    command on this build reaches a cap: `debug("BPLIST")` and
+    `debug("HELP")`, the longest listing the debugger prints, are both under the
     4000 `debug` passes. So on a STOPPED machine this branch is not reachable live (a
     running guest's `resume` reaches its own cap, its Output pane scrolling through the
     settle, and the tool's contract says so), and it is covered HERE, on a screen built to
@@ -2515,11 +2497,10 @@ def returned_key_sets(fn: object) -> list[frozenset[str]]:
 
 def test_the_status_docstring_names_every_field_its_reply_carries() -> None:
     """An MCP caller reads this docstring and NOT the README, which `status`'s own
-    docstring says -- and it then described five of eleven fields.
+    docstring says -- so it must describe every field.
 
-    The six it left out included `conf_changed_on_disk`, the one field that says the
-    session no longer reproduces the config it was started from. MEASURED before the
-    fix: only `alive` and `terminal_bytes_dropped` appeared by name at all.
+    A field left out would include `conf_changed_on_disk`, the one field that says the
+    session no longer reproduces the config it was started from.
 
     IT IS DERIVED AND NOT REMEMBERED, which is the point: a docstring brought up to
     date once falls behind at the next field, and nothing notices. This reads the
@@ -2531,20 +2512,20 @@ def test_the_status_docstring_names_every_field_its_reply_carries() -> None:
     doc = server.status.__doc__ or ""
     # MATCHED AS A ROW, NOT AS A SUBSTRING. `k not in doc` is shadowed by longer
     # names: `alive` sits inside `drain_alive`, and `conf` inside `conf_digest`,
-    # `conf_changed_on_disk` and the word `config`. MEASURED, both rows could be
-    # deleted from the docstring and this stayed green -- over the one defect it is
-    # here to catch.
+    # `conf_changed_on_disk` and the word `config`. With a substring test both rows
+    # could be deleted from the docstring and this would stay green -- over the one
+    # defect it is here to catch.
     fields = {*cast(dict[str, Any], got["session"]), *dstate.process_facts()}
     unnamed = sorted(k for k in fields if not re.search(rf"^\s+{re.escape(k)}\s", doc, re.M))
     assert not unnamed, (
         f"`status` returns these and its docstring does not name them: {unnamed}. An "
         f"MCP caller reads the docstring and not the README")
-    # AND IT MEASURED SOMETHING: without this, a reply that lost its session block
+    # AND IT EXAMINED SOMETHING: without this, a reply that lost its session block
     # would pass by having nothing to check.
     assert len(fields) >= 11 and fields <= set(got) | set(got["session"]), got
     # A LIMIT, SAID OUT LOUD: this asks whether the field has a ROW, not whether what is
-    # written beside it is true. It catches a field going UNDESCRIBED, which is what
-    # happened to six of the eleven; it cannot catch one being described wrongly.
+    # written beside it is true. It catches a field going UNDESCRIBED; it cannot catch
+    # one being described wrongly.
 
 
 def test_read_memory_refuses_an_offset_that_will_not_fit_the_command() -> None:
@@ -2646,8 +2627,8 @@ def test_the_caller_is_told_about_every_bucket_the_plan_carries(tmp_path: Path) 
     #       the key gone from the reply, and so did `_unused = plan.truncated_names`.
     #   `getattr(plan, c) in reply.values()` -- VALUE MEMBERSHIP, which is identity's
     #       opposite: it asks whether that NUMBER appears anywhere, and on a real fixture
-    #       several buckets share a value. MEASURED: deleting the count from the reply
-    #       entirely left this case GREEN, because some other field happened to hold the
+    #       several buckets share a value: deleting the count from the reply
+    #       entirely leaves this case GREEN, because some other field happens to hold the
     #       same number.
     #
     # The mapping is a second statement of the reply's shape and could drift, which is
@@ -2680,9 +2661,9 @@ def test_the_caller_is_told_about_every_bucket_the_plan_carries(tmp_path: Path) 
     assert len(non_zero) >= 4, f"this fixture leaves too much at zero to tell: {non_zero}"
     # A SECOND READ WITH A DIFFERENT FILTER, and this is the identity axis rather than
     # the presence one. The loop above catches a SWAP between two reply keys only when
-    # their values differ, and on any one fixture some buckets coincide -- MEASURED,
-    # `excluded_noise` and `excluded_pattern` were both 0 on the first version of this
-    # fixture and exchanging those two fields in the reply came back GREEN.
+    # their values differ, and on any one fixture some buckets coincide: if
+    # `excluded_noise` and `excluded_pattern` are both 0, exchanging those two fields in
+    # the reply comes back GREEN.
     #
     # Reading the SAME file twice under different `pattern`s moves the buckets by
     # different amounts, so a fixed swap has to survive BOTH vectors to stay invisible.
@@ -3583,7 +3564,7 @@ def test_send_keys_with_an_expectation_confirms_the_guest_reacted(tmp_path: Path
     assert got["status"] == "ok" and got["posted"] == 1, got
     # `seen_before_waiting`, not `already`: the reaction was written AFTER the post (the
     # fake appends it on send) and was there when the wait first looked from the mark, and
-    # `lines_before` says nothing sat between the mark and it (measured).
+    # `lines_before` says nothing sat between the mark and it.
     assert got["verify"] == {"checked": True, "seen": True, "expected": "key_cue_a",
                              "verdict": "TARGET", "line": E9_KEY_ACT,
                              "seen_before_waiting": True, "lines_before": 0, "waited_s": 0.0,
@@ -3985,10 +3966,10 @@ def test_a_log_that_cannot_be_read_at_a_stop_is_the_verify_s_refusal_never_a_che
 
 def test_perform_a_running_ok_step_leaves_the_machine_as_it_found_it(tmp_path: Path) -> None:
     """R1's shape, `resume` then `send_keys`: the key step runs on the RUNNING guest and
-    must not make the executor believe the machine stopped. Two consequences, both seen red
-    when a running-OK op overwrote `running`: the TAIL still waits for the stop the resume was
+    must not make the executor believe the machine stopped. Two consequences, both red
+    if a running-OK op overwrites `running`: the TAIL still waits for the stop the resume was
     heading for and hands back the enriched reply; and a CONSOLE step after `[resume, status]`
-    is held at the decision-37 boundary ("still running") rather than dispatched into a
+    is held at the "still running" boundary rather than dispatched into a
     running machine and failing on a cut pane."""
     fake = _names(tmp_path, watched=True)
     fake.input_effect = E9_KEY_ACT
@@ -4678,8 +4659,8 @@ def test_breakpoint_list_tells_unarmable_from_ambiguous_from_unresolved(
     """The three non-armed states are DISTINCT and must not collapse. A real-mode table
     with no flat base makes a resolvable symbol `unarmable` (the address cannot be worked
     out now), NEVER `ambiguous` (which would lie that the name is defined twice). A name
-    defined twice is `ambiguous`; a name absent is `unresolved`. Before the fix a single
-    `except Invalid` labelled the no-base case `ambiguous` too."""
+    defined twice is `ambiguous`; a name absent is `unresolved`. A single
+    `except Invalid` would label the no-base case `ambiguous` too."""
     dup = [dsym.Symbol("twice", 0x100, kind="T"), dsym.Symbol("twice", 0x200, kind="T")]
     one = dsym.Symbol("once", 0x300, kind="T")
     _names(tmp_path, symbols=[*dup, one], mode="Real")
@@ -5217,10 +5198,10 @@ def test_a_read_watch_wider_than_128_bytes_is_refused_at_declaration(tmp_path: P
 # ----------------------------------------------------- the ref you clear with
 
 def test_every_declaration_reply_carries_the_ref_that_clears_it(tmp_path: Path) -> None:
-    """MEASURED on a real guest: `breakpoint_interrupt(0x21, ah=0x4B)` answered with
-    an `entry` and no `ref`, and the spelling that clears it -- the debugger's own
-    `BPINT 21 AH=4B` -- was in no description and no reply, so the caller's
-    `breakpoint_clear(ref="BPINT 21 4B")` cleared nothing. The reply of every tool that
+    """`breakpoint_interrupt(0x21, ah=0x4B)` answers with an `entry` and a `ref`: without
+    the spelling that clears it -- the debugger's own `BPINT 21 AH=4B` -- in a reply,
+    the caller's `breakpoint_clear(ref="BPINT 21 4B")` would clear nothing. The reply of every
+    tool that
     creates a declaration carries `ref`, and that string clears it."""
     fake = _names(tmp_path)
     armed = server.breakpoint_interrupt(number=0x21, ah=0x4B)
@@ -5237,7 +5218,7 @@ def test_every_declaration_reply_carries_the_ref_that_clears_it(tmp_path: Path) 
 def test_clearing_a_ref_that_matches_nothing_is_refused_naming_what_there_is(
         tmp_path: Path) -> None:
     """A zero in green is indistinguishable from "nothing to clear" for a caller who spelt
-    the ref wrong, and that caller left a breakpoint armed (measured). A `ref`
+    the ref wrong, and that caller leaves a breakpoint armed. A `ref`
     that matches no declaration is INVALID and names the refs the store holds; clearing
     ALL of an empty store stays `ok` with 0, because there the zero is the answer."""
     _names(tmp_path)
@@ -5476,9 +5457,9 @@ def test_a_relative_path_is_refused_and_an_absolute_one_names_the_file_it_looked
 
 def test_perform_does_not_wait_for_a_stop_when_the_last_step_was_a_running_guest_op(
         tmp_path: Path) -> None:
-    """MEASURED on a real guest: `perform([..., resume, e9_wait, send_keys, e9])`
-    came back after the FULL 30 s `wait` with "did not stop within 30.0s" -- a stop nobody
-    asked for, because the list ended in `e9`. The tail waits only when the LAST step is
+    """`perform([..., resume, e9_wait, send_keys, e9])` must not come back after the FULL
+    30 s `wait` with "did not stop within 30.0s" -- a stop nobody asked for, because the
+    list ends in `e9`. The tail waits only when the LAST step is
     the one that released the machine, or something declared can still produce a stop (a
     breakpoint, an interrupt, a change-watch: R1 arms one before it resumes and wants the
     stop). With nothing declared, the sequence returns at once, still running, and says why
@@ -5542,9 +5523,9 @@ def test_perform_does_not_wait_for_a_stop_when_the_last_step_was_a_running_guest
 
 def test_a_declaration_from_a_store_that_kept_no_origin_is_listed_as_an_orphan(
         tmp_path: Path) -> None:
-    """MEASURED on a real guest: a show watch from an older store sat in every stop
-    reply with no origin and nothing to tell it from this session's, and the breakpoint
-    broom left it. Both families list such a row as `orphan` with the ref that clears it,
+    """A show watch from an older store would sit in every stop reply with no origin and
+    nothing to tell it from this session's, and the breakpoint broom would leave it. Both families
+    list such a row as `orphan` with the ref that clears it,
     and each broom sweeps only its own family."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
     dstate.STATE.session_origin = "s2"
@@ -5590,9 +5571,9 @@ def test_a_declaration_from_a_store_that_kept_no_origin_is_listed_as_an_orphan(
 # ------------------------------------------- a stop reads the list once
 
 def test_a_stop_reads_the_breakpoint_list_once_and_shares_it(tmp_path: Path) -> None:
-    """MEASURED on a real guest: a `resume` that stopped cost four `BPLIST` round
-    trips, two of them for the same screen -- the watches re-read the list the stop's own
-    repaint already carried. A stop takes ONE survey (where, registers, list) and evaluates
+    """A `resume` that stops must not cost four `BPLIST` round trips, two of them for the
+    same screen, by the watches re-reading the list the stop's own repaint already
+    carried. A stop takes ONE survey (where, registers, list) and evaluates
     the watches against it; `breakpoints()` is not read again on the way."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
     server.watch_add(ref="g_rate", mode="show", length=4, fmt="u32")
@@ -5608,8 +5589,8 @@ def test_a_stop_reads_the_breakpoint_list_once_and_shares_it(tmp_path: Path) -> 
 
 def test_the_lists_answer_from_the_store_and_the_last_stop_while_the_guest_runs(
         tmp_path: Path) -> None:
-    """MEASURED on a real guest: `breakpoint_list` with the guest running answered
-    INVALID with `registers`' own text, while its description promised rows from the store.
+    """`breakpoint_list` with the guest running must not answer INVALID with `registers`'
+    own text, when its description promises rows from the store.
     The server HOLDS the answer: the declarations, and the debugger's list as the last stop's
     survey saw it. Running, the lists answer from those two, say `debugger_read: false` and
     `last_stop` the last stop; stopped, they read the debugger and say `debugger_read: true`."""
@@ -5797,8 +5778,8 @@ def test_a_stop_nobody_read_is_counted_by_status_alone_and_said_once(
     """A caller driving an unwatched run with `status` and `captures` only must learn
     that the guest has stopped: the first contact finds the prompt in the drain, counts
     the stop THEN, records it, and its reply says `stopped_on_its_own`; the next reply does
-    not repeat it. Measured on a real guest: with the count read before the peek, `status`
-    kept naming the previous stop and only `registers` moved it."""
+    not repeat it. With the count read before the peek, `status` would keep naming the
+    previous stop and only `registers` would move it."""
     fake = _names(tmp_path)
     before = server.status()["last_stop"]["stop_seq"]    # the park, on record
     fake.running = True                                  # released
@@ -5827,8 +5808,8 @@ def test_a_stop_that_came_on_its_own_still_applies_the_queue_at_the_next_contact
     assert [r["entry"] for r in fake.rows] == ["BP 00A7:1000"]
     assert "applied_on_stop" not in server.status()      # said once, by the reply that did it
     # AND THE STOP ITSELF IS ON RECORD: `last_stop` is the stop the machine is in, not the
-    # one before (measured: it stayed on the previous stop while `registers`
-    # read the new address).
+    # one before (it must not stay on the previous stop while `registers` reads the new
+    # address).
     assert st["last_stop"]["stop_seq"] == 1 and st["last_stop"]["pc"] == "00A7:00000000", st
     fake.running = True
     fake.eip = "00001234"
@@ -5946,8 +5927,8 @@ def test_the_running_guest_contract_holds_at_its_edges(tmp_path: Path) -> None:
 
 
 def test_perform_checks_every_op_before_running_any(tmp_path: Path) -> None:
-    """MEASURED on a real guest: `[send_keys, close, status]` SENT the key and then
-    refused at step 1 because `close` is not a step. A refusal for the vocabulary comes
+    """`[send_keys, close, status]` must not SEND the key and then refuse at step 1
+    because `close` is not a step. A refusal for the vocabulary comes
     before anything runs."""
     fake = _names(tmp_path, watched=True)
     out = server.perform(steps=[{"op": "send_keys", "keys": ["a"]}, {"op": "close"},
@@ -5959,10 +5940,10 @@ def test_perform_checks_every_op_before_running_any(tmp_path: Path) -> None:
 
 def test_send_keys_names_a_stop_that_landed_during_the_wait_not_still_running(
         tmp_path: Path) -> None:
-    """Measured: A key posted by serial just before a breakpoint fired: the
-    wait's expiry said "the guest wrote NOTHING ... The emulator is still running" -- the
-    PROCESS -- and blamed the program, while the debugger had held the machine for seconds
-    and the next `send_keys` refused for exactly that. The miss names the stop the machine
+    """A key posted by serial just before a breakpoint fires: the wait's expiry must not
+    say "the guest wrote NOTHING ... The emulator is still running" -- the PROCESS --
+    blaming the program, while the debugger holds the machine and the next `send_keys`
+    refuses for exactly that. The miss names the stop the machine
     is in, says where the key went, and carries `last_stop` so the caller can act on it."""
     fake = _names(tmp_path, watched=False, input_port=5555)
     fake.running = True                      # a RUNNING guest, as a key is sent to
@@ -6530,8 +6511,8 @@ def test_a_bad_value_in_a_later_step_runs_nothing_and_every_refusal_is_listed(
     """A batch is checked WHOLE before its first step runs, with the same checks each tool
     runs on its own: a key name no route knows, a pattern that does not compile. Nothing
     is posted, and the reply lists every refused step so a caller fixes the batch once.
-    Measured on a real guest: the first key went in and the program reacted before the
-    second step's unknown name was seen."""
+    Otherwise the first key would go in and the program react before the second step's
+    unknown name was seen."""
     fake = _names(tmp_path, watched=True)
     fake.running = True
     out = cast(dict[str, Any], server.perform(steps=[

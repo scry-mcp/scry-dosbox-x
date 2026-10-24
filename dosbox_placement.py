@@ -380,8 +380,8 @@ def _placed(s: sym.Symbol) -> dict[str, Any]:
     # it would dress a server bug as an answer. The read three lines away already
     # subscripts. A bug escapes as a bug.
     # `idle` IS THE ONE FIELD HERE THAT IS NOT AN ADDRESS: it is Borland's mark on that
-    # row, passed through. What it MEANS is unknown -- the explanation once written here
-    # was measured false, and the evidence is on `Symbol.idle`. Reported per symbol as
+    # row, passed through. What it MEANS is unknown; the evidence is on `Symbol.idle`. Reported
+    # per symbol as
     # well as counted in `symbols_load`'s `overlay_idle`, because a total cannot tell
     # you whether THIS name carries it. False for every `nm` and GNU-map symbol:
     # neither format prints such a column.
@@ -511,10 +511,10 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
     # table the debugger does not hold. A refusal that also corrupts state inverts this
     # module's one rule, that a refusal is visible and a wrong answer is not.
     # THE TABLE ACCUMULATES, the way the debugger's own `LV` does. Loading in narrow
-    # batches is the reasonable thing to do with thousands of symbols, and while this table
-    # was REPLACED by every load, the second batch dropped the first one's symbols out of
-    # `symbols_find` and orphaned any breakpoint armed on them: the debugger kept its row,
-    # this side no longer knew the name, and nothing could clear it.
+    # batches is the reasonable thing to do with thousands of symbols, and a table
+    # REPLACED by every load would drop the first batch's symbols out of `symbols_find`
+    # and orphan any breakpoint armed on them: the debugger keeps its row, this side
+    # no longer knows the name, and nothing can clear it.
     #
     # IT ACCUMULATES ONLY WHILE THE PLACEMENT HOLDS. The table stores OFFSETS and the base
     # places them, so carrying earlier symbols across a load that moved the base would

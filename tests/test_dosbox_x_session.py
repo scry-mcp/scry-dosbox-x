@@ -1,9 +1,9 @@
 """What the session guarantees, held to fixtures rather than to a live emulator.
 
-EVERY CASE HERE EXISTS BECAUSE SOMETHING WENT WRONG ONCE.  The channel guard, the
-tail slice, the refusals and the argv adjacency are not hypotheticals: each was a
-defect measured while this server was built, and each is written as the NEGATIVE that
-would have caught it.
+EVERY CASE HERE EXISTS BECAUSE SOMETHING CAN GO WRONG.  The channel guard, the
+tail slice, the refusals and the argv adjacency are not hypotheticals: each is a
+defect of this server's surface, and each is written as the NEGATIVE that
+catches it.
 
 AND EVERY RED HAS A GREEN BESIDE IT.  A refusal test on its own passes just as well
 when the guard refuses EVERYTHING, so each one is paired with a case that must get
@@ -68,7 +68,7 @@ def pair_at(argv: list[str], value: str) -> bool:
     """Is `value` immediately after a `-set`?
 
     ADJACENCY, not membership. A `-set` and its value present but APART is the
-    shredded-pair failure this fleet has measured: DOSBox-X accepts the stray tokens
+    shredded-pair failure: DOSBox-X accepts the stray tokens
     and silently ignores the setting, so two independent `in` checks pass while the
     option never takes effect.
     """
@@ -119,7 +119,7 @@ def test_a_watched_session_gets_no_dummy_driver_and_keeps_the_callers_flags(conf
 
 
 def test_every_launch_carries_its_bound(conf: Path) -> None:
-    """DOSBox-X does not refuse an unknown option, it HANGS (measured). The bound is
+    """DOSBox-X does not refuse an unknown option, it HANGS. The bound is
     the only thing that ends an abandoned session."""
     argv = dlaunch.build_argv(launch(conf, seconds=45))
     assert argv[argv.index("-time-limit") + 1] == "45"
@@ -267,8 +267,8 @@ def test_a_dial_that_never_comes_kills_the_child_it_spawned(
 def test_the_program_reaches_the_emulator_as_one_argv_element(conf: Path) -> None:
     """The vocabulary is ours; the values are the caller's.
 
-    An earlier version of this case asserted `"-loadstate" not in argv`, which cannot
-    fail: `in` on a list is element equality, so a program string containing that word
+    Asserting `"-loadstate" not in argv` cannot fail: `in` on a list is element equality, so a
+    program string containing that word
     is never an element whatever `build_argv` does. What has to hold is that the
     program stays ONE token -- split, its tail arrives in FLAG position, and by this
     emulator's own measurement an unrecognised flag does not fail, it hangs.
@@ -282,11 +282,11 @@ def test_the_program_reaches_the_emulator_as_one_argv_element(conf: Path) -> Non
 # ---------------------------------------------------------------- the refusals
 #
 # THESE CALL `validate` AND NEVER `Session`, and that is not a stylistic choice.
-# While the guards lived inside the constructor, testing them meant CONSTRUCTING a
-# session, so the break that deletes a guard did not make a test fail -- it made
-# the test START A REAL EMULATOR that nothing then closed. MEASURED: six left running
-# on the machine, and the one from the missing-bound case carried `-time-limit 0`,
-# which is no bound at all. A pure decision cannot spawn anything, broken or not.
+# Guards inside the constructor could only be tested by CONSTRUCTING a session, so the
+# break that deletes a guard would not make a test fail -- it would make the test
+# START A REAL EMULATOR that nothing then closes, and the one from the missing-bound
+# case would carry `-time-limit 0`, which is no bound at all. A pure decision cannot
+# spawn anything, broken or not.
 
 def test_a_valid_launch_passes_validation_without_starting_anything(conf: Path) -> None:
     """The green beside every red below. Without it, `validate` could refuse
@@ -313,12 +313,11 @@ def test_a_glued_placement_pair_is_refused(conf: Path) -> None:
     """`-set` and its value are two tokens. Arriving as one, DOSBox-X does not refuse
     it, it hangs on it.
 
-    THIS TEST PASSED FOR THE WRONG REASON FOR ITS WHOLE LIFE. Its fixture carried TWO
-    malformations -- the glued pair AND a trailing `""` -- and the guard only ever
-    tested the type and the emptiness, so it was the empty string that raised. MEASURED:
-    the glued pair ALONE validated clean. The fixture is now one
-    malformation per case, each asserting the message that belongs to it, which is the
-    only arrangement in which either can fail for its own reason.
+    ONE MALFORMATION PER CASE. A fixture carrying TWO -- the glued pair AND a trailing
+    `""` -- would pass for the wrong reason when the guard tests only the type and the
+    emptiness, since it is the empty string that raises while the glued pair ALONE
+    validates clean. Each case asserts the message that belongs to its malformation,
+    the only arrangement in which either can fail for its own reason.
     """
     with pytest.raises(ds.Invalid, match="GLUED into one token"):
         dlaunch.validate(launch(conf, watched=True, window_flags=['-set "sdl display=1"']))
@@ -492,11 +491,10 @@ def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
     nothing can reach any more would be `exit_code: null`, indistinguishable from a
     clean end.
 
-    THE FIRST VERSION OF THIS FIX WAS `max(grace, 1.0)` AND NOTHING ELSE, which makes
-    the case unlikely rather than reportable. A round of review neutralised the
-    recording and the whole battery stayed green, because the only case naming it covers a test
-    that covers `state()`'s pass-through of the field, never `close()` setting it.
-    This exercises the assignment.
+    `max(grace, 1.0)` AND NOTHING ELSE would make the case unlikely rather than
+    reportable. Neutralising the recording would leave the whole battery green when the
+    only case naming it covers `state()`'s pass-through of the field, never `close()`
+    setting it. This exercises the assignment.
     """
     class NeverDies:
         returncode: int | None = None
@@ -516,19 +514,17 @@ def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
     assert fake.reap_failed.startswith("SIGKILL was sent"), (
         f"the session reported nothing about a child it could not reap: "
         f"{fake.reap_failed!r}")
-    # THE SIGNALS THEMSELVES, in order. Nothing asserted their IDENTITY, so replacing
-    # SIGKILL with a second SIGTERM left the whole contract battery green -- and the
-    # message above, which says "SIGKILL was sent", became a lie its own assertion
+    # THE SIGNALS THEMSELVES, in order. Without asserting their IDENTITY, replacing
+    # SIGKILL with a second SIGTERM would leave the whole contract battery green -- and
+    # the message above, which says "SIGKILL was sent", would be a lie its own assertion
     # accepted.
     assert sent == [signal.SIGTERM, signal.SIGKILL], sent
 
     # THE CONTROL IGNORES SIGTERM AND THEN DIES ON SIGKILL, which is the ORDINARY
-    # close of a running session on this build. Its first version returned at the
-    # SIGTERM wait, so it never reached SIGKILL at all -- and with that control,
-    # recording on EVERY SIGKILL rather than only on the expiry was green. Since
-    # SIGTERM is measured to be ignored while the guest runs, that break would have
-    # stamped "the exit code is not a reading of how it died" on essentially every real
-    # close.
+    # close of a running session on this build. It must reach SIGKILL: returning at the
+    # SIGTERM wait would let recording on EVERY SIGKILL rather than only on the expiry
+    # stay green. Since SIGTERM is ignored while the guest runs, that break would stamp
+    # "the exit code is not a reading of how it died" on essentially every real close.
     class IgnoresTermDiesOnKill:
         returncode = -9
 
@@ -604,9 +600,9 @@ def test_a_destination_that_is_a_numbering_template_is_refused(
         tmp_path: Path) -> None:
     """`-f image2` reads the path as a printf TEMPLATE.
 
-    MEASURED: a `dest` of `shot%03d.png` makes ffmpeg write `shot001.png` and leave
-    `dest` untouched, after which the refusal blames "a frame past the end" for an
-    extraction that worked. The format is forced for every extension now, so this
+    A `dest` of `shot%03d.png` makes ffmpeg write `shot001.png` and leave
+    `dest` untouched, after which the refusal would blame "a frame past the end" for an
+    extraction that worked. The format is forced for every extension, so this
     reaches any caller rather than only one who named a `.png`.
     """
     fake = SimpleNamespace(captures=lambda: [{"path": str(tmp_path / "cap.avi")}])
@@ -670,7 +666,7 @@ def test_the_dump_is_looked_for_in_the_working_directory_first(tmp_path: Path) -
 
     BOTH SPELLINGS ARE CHECKED because a case-folding filesystem hides which of the
     two is really on disk, and the working directory comes FIRST because that is where
-    the file was measured. The name `memdump` passes is first, the default after it.
+    the file lands. The name `memdump` passes is first, the default after it.
     """
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
@@ -721,9 +717,9 @@ REAL_DATA_VIEW = (
 
 def test_a_data_row_that_abuts_the_pane_header_is_still_read() -> None:
     """THE ROW THE CALLER ASKED ABOUT IS THE FIRST ONE, and the first one is the one
-    that abuts. MEASURED against a live emulator with the pattern anchored at line
-    start: eight rows on screen, SEVEN parsed, and the missing one was E000 for a
-    caller who had asked for E000. Losing any other row would be a degradation;
+    that abuts. With the pattern anchored at line start, eight rows on screen parse
+    SEVEN, and the missing one is E000 for a caller who asked for E000. Losing any other row would
+    be a degradation;
     losing this one makes the tool answer about somewhere else."""
     rows = dcons.parse_data_view(REAL_DATA_VIEW)
     assert rows[0].startswith("F000:0000E000"), rows
@@ -739,8 +735,8 @@ def test_a_code_row_is_not_a_data_row() -> None:
     Without this, `read_memory` would happily return the disassembly sitting two panes
     below and call it memory.
 
-    IT ASSERTS THE ADDRESSES, NOT THE MNEMONIC TEXT, and the difference is a measured
-    blind spot rather than a refinement. Loosening the pattern's `{16}` to `{1,16}` --
+    IT ASSERTS THE ADDRESSES, NOT THE MNEMONIC TEXT, and the difference is a blind
+    spot rather than a refinement. Loosening the pattern's `{16}` to `{1,16}` --
     the natural way to break this -- makes code rows parse as `'F000:0000FFF0 EA'`,
     which stops BEFORE the `jmp`, so a test asking "is `jmp` absent" stays green while
     two disassembly rows enter a `read_memory` reply. Naming the addresses that may
@@ -756,9 +752,9 @@ def test_two_rows_on_one_line_both_come_back() -> None:
 
     The header/row abutment that `DATA_ROW` exists to survive is produced by ncurses
     painting runs of cells; nothing makes that mechanism stop at the boundary between
-    two DATA rows. MEASURED on `.search`, which returns one match per line: two
-    complete rows parsed to ONE, and `read_memory` then reported "that is a reading of
-    somewhere else" about a row present in the very string it had parsed.
+    two DATA rows. `.search` returns one match per line: two complete rows would parse
+    to ONE, and `read_memory` would then report "that is a reading of somewhere else"
+    about a row present in the very string it had parsed.
     """
     glued = ("F000:0000E000" + " 00" * 16 + "  ................"
              "F000:0000E010" + " 11" * 16 + "  xxxxxxxxxxxxxxxx")
@@ -809,18 +805,17 @@ def test_a_gutter_cannot_reach_into_the_row_below() -> None:
 
 
 def test_a_reading_of_somewhere_else_is_refused(tmp_path: Path) -> None:
-    """THE CASE WHOSE ABSENCE MADE THE FIX UNGATED, which is the whole point of it.
+    """THE GUARD ON THE ADDRESS IS GATED, which is the whole point of this case.
 
     `read_memory`'s headline claim is that the address asked for is the assertion, not
-    merely that some rows came back. MEASURED during this block's own review:
-    replacing that guard with `if False:` left ALL 63 contract tests and ALL 22 live
-    tests green. The only negative that existed drove the OTHER guard (an empty
-    screen), and the live case asserts `rows[0]` on what a real emulator returned,
-    which is true with the guard gone.
+    merely that some rows came back. Replacing that guard with `if False:` would leave
+    every other contract test and the live tier green: the other negative drives the
+    OTHER guard (an empty screen), and the live case asserts `rows[0]` on what a real
+    emulator returns, which is true with the guard gone.
 
-    So the exact defect this method was written to fix -- a reply that is `ok` and
-    about somewhere else -- was one deleted line away, with nothing anywhere to say
-    so. A green that cannot turn red is not a gate.
+    So the exact defect this method exists to prevent -- a reply that is `ok` and about
+    somewhere else -- would be one deleted line away, with nothing to say so. A green
+    that cannot turn red is not a gate.
 
     THE SCREEN HOLDS A NEIGHBOURING ADDRESS, not junk: a wrong-address reply is
     plausible, well formed and full of real hex, which is what makes it dangerous.
@@ -873,10 +868,10 @@ def test_read_memory_with_a_cached_mode_does_not_survey_for_it(tmp_path: Path) -
 
 
 def test_read_memory_takes_a_32_bit_offset_in_protected_mode(tmp_path: Path) -> None:
-    """The shipped `read_memory` clamped the offset flat to 0xFFFF, so it
-    refused every 32-bit DJGPP address while `run_to` and `watch` took one. Seen RED: at
-    0x16DF20 on a Pr32 machine it must be REFUSED before the fix and read after, and in
-    real mode the same offset must still be refused (there it addresses nothing).
+    """A flat clamp of the offset to 0xFFFF would refuse every 32-bit DJGPP address
+    while `run_to` and `watch` take one. At 0x16DF20 on a Pr32 machine the offset must
+    be READ, and in real mode the same offset must still be refused (there it addresses
+    nothing).
     """
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
@@ -901,13 +896,12 @@ def test_read_memory_takes_a_32_bit_offset_in_protected_mode(tmp_path: Path) -> 
 
 def test_read_memory_hands_back_one_view_when_the_pane_repainted_twice(
         tmp_path: Path) -> None:
-    """MEASURED LIVE through the MCP transport on a stopped Pr32 machine: `D 00AF:179784`
-    answered with the eight data rows TWICE -- the view is painted once with the
-    `Set data overview` acknowledgement and again on the settle -- and `read_memory`
-    handed back sixteen rows for an eight-row pane. A caller counting rows, or reading
-    "the row after" one, was reading a repaint. The reply is ONE view: each address once,
-    at the place it was LAST painted, because the last repaint is the newest reading.
-    Seen RED: sixteen rows came back before the fix.
+    """On a stopped Pr32 machine `D 00AF:179784` answers with the eight data rows TWICE
+    -- the view is painted once with the `Set data overview` acknowledgement and again on
+    the settle -- and `read_memory` would hand back sixteen rows for an eight-row pane.
+    A caller counting rows, or reading "the row after" one, would be reading a repaint.
+    The reply is ONE view: each address once, at the place it was LAST painted, because
+    the last repaint is the newest reading.
     """
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
@@ -926,11 +920,11 @@ def test_read_memory_hands_back_one_view_when_the_pane_repainted_twice(
 
 
 def test_the_gutter_stops_at_sixteen_characters() -> None:
-    """The bound itself, which nothing asserted once the lookahead subsumed it.
+    """The bound itself, which the lookahead alone does not assert.
 
-    MEASURED: widening `{0,16}` to `{0,64}` left the whole battery green, and a glued
-    screen then returned fifty characters of pane decoration INSIDE what a caller reads
-    as a memory row. The lookahead stops an ADDRESS; only the bound stops everything
+    Widening `{0,16}` to `{0,64}` would leave the whole battery green, and a glued
+    screen would then return fifty characters of pane decoration INSIDE what a caller
+    reads as a memory row. The lookahead stops an ADDRESS; only the bound stops everything
     else, and the gutter of this debugger's data view is sixteen characters because
     that is how many bytes the row holds.
     """
@@ -965,8 +959,8 @@ def test_a_dump_destination_inside_the_debuggers_own_place_is_refused(
     assert not candidate.is_dir(), "the candidate path was turned into a directory"
 
     # THE THREE SPELLINGS THAT ARE THE SAME FILE TO THE KERNEL AND UNEQUAL TO `==`.
-    # The first version of this guard compared path STRINGS, and all three escaped it,
-    # each reproducing the poisoning it exists to prevent. The relative one is the
+    # A guard comparing path STRINGS lets all three escape, each reproducing the
+    # poisoning it exists to prevent. The relative one is the
     # worst: it SUCCEEDS, depositing the dump onto the candidate, so it is the NEXT
     # call that is refused.
     with pytest.raises(ds.Invalid, match="where the debugger writes"):
@@ -1115,7 +1109,7 @@ def fake_avi(frames: int, complete: bool = True) -> bytes:
     """The SHAPE of a capture, as the two real ones under `fixtures/avi` hold it.
 
     It is not a playable file and does not pretend to be: what `avi_facts` reads is
-    the RIFF header, the main header's total (0 while recording, as measured), the `00dc`
+    the RIFF header, the main header's total (0 while recording), the `00dc`
     frame chunks, and the `idx1` index, which names every frame again once it is written.
     """
     avih = b"avih" + struct.pack("<I", 56) + struct.pack(
@@ -1178,11 +1172,9 @@ def test_a_session_that_was_not_recording_is_not_an_empty_capture(tmp_path: Path
     only one of them is about the guest.
 
     THE PHRASE MATCHED HERE IS THE ONE ONLY THIS BRANCH PRINTS. `match="no capture"`
-    was the first attempt and it passed with the guard REMOVED, because the fall-
-    through then raises "no capture appeared in ..." over an empty directory, which
-    contains that substring too. A test that passes for the wrong reason is worse
-    than no test, and it was found by deleting that guard and watching this case stay
-    green.
+    would pass with the guard REMOVED, because the fall-through then raises "no capture
+    appeared in ..." over an empty directory, which contains that substring too. A test
+    that passes for the wrong reason is worse than no test.
     """
     with pytest.raises(ds.Invalid, match="nothing was recording"):
         ds.Session.captures(
@@ -1334,13 +1326,12 @@ def test_a_repaint_escape_survives_wherever_the_read_boundary_falls(
         chunks: list[str]) -> None:
     """WHERE THE CHUNK BOUNDARY FELL MAY NOT CHANGE WHAT WAS READ.
 
-    MEASURED before the fix, on these three exact cases: 1 row, 1 row, and ZERO. The
-    hold was given up when `held.start() == 0` -- precisely when the head was ALL
-    there was to hold -- so the fragment was stripped as a lone escape and its final
-    byte `m` was then injected into the row's hex, which `DATA_ROW` correctly refuses.
-    `read_memory` answers that with INVALID: a FALSE one, from the narrow reader whose
-    whole purpose is not lying about what it examined, arriving only when the boundary
-    happened to fall there.
+    A hold given up when `held.start() == 0` -- precisely when the head is ALL there is
+    to hold -- strips the fragment as a lone escape and injects its final byte `m` into
+    the row's hex, which `DATA_ROW` correctly refuses: these three cases would read 1
+    row, 1 row, and ZERO. `read_memory` answers that with INVALID: a FALSE one, from the
+    narrow reader whose whole purpose is not lying about what it examined, arriving only
+    when the boundary happens to fall there.
     """
     read = reader(chunks)
     text = "".join(read() for _ in chunks)
@@ -1409,10 +1400,10 @@ def test_a_read_the_drain_dropped_bytes_out_of_is_refused() -> None:
 def test_a_name_that_is_not_a_register_never_reaches_the_debugger() -> None:
     """THE GUARD IS EXERCISED, not just its frozenset read back.
 
-    MEASURED: with the `SETTABLE` check deleted, the whole contract battery stayed
-    green, because the only test near it asserted the CONTENTS of the frozenset -- a
-    tautology about a literal. The live tier passes only valid names, so it was green
-    there too. `SR` takes MULTIPLE pairs and this class appends a carriage return, so
+    With the `SETTABLE` check deleted, a battery whose only test near it asserts the
+    CONTENTS of the frozenset -- a tautology about a literal -- stays green, and the live
+    tier passes only valid names. `SR` takes MULTIPLE pairs and this class appends a carriage
+    return, so
     the hazard the docstring names is real: an unchecked name is a way to run commands
     the caller never asked for.
     """
@@ -1505,7 +1496,7 @@ def test_every_settable_name_has_the_pane_register_and_width_it_is_read_back_at(
 # ------------------------------------------------------------ the symbol file's name
 
 def test_an_ack_naming_a_truncated_filename_is_not_an_ack() -> None:
-    """THE SILENT HAZARD IN THIS COMMAND, measured rather than imagined.
+    """THE SILENT HAZARD IN THIS COMMAND.
 
     This debugger cuts a `SV`/`LV` filename to twelve characters with no warning
     and reports success for whatever it used:
@@ -1513,27 +1504,27 @@ def test_an_ack_naming_a_truncated_filename_is_not_an_ack() -> None:
         SV ABCDEFGHIJKLMNOPQRST.BIN
           -> DEBUG: Variable list save (ABCDEFGHIJKL) : ok.
 
-    and a 144,762-byte file called `ABCDEFGHIJKL`, no extension, appeared in the
+    and a file called `ABCDEFGHIJKL`, no extension, appears in the
     emulator's working directory. So searching the reply for `ok` is searching for a
     TRUE statement about a file the caller never named, and the echoed name is the only
     thing in the reply that can reveal it.
 
     IT USES THE MODULE'S OWN CONSTANTS, not a literal spelling of them. With the
     literals, lower-casing both constants -- a break that makes EVERY `load_symbols`
-    fail against a debugger that uppercases its argument -- left this test green.
+    fail against a debugger that uppercases its argument -- would leave this test green.
     """
     ok = f"DEBUG: {ds.SYM_SAVE_ECHO} ({ds.SYM_SAVE_NAME}{ds.SYM_OK}\n"
     ds.Session._acked(ok, ds.SYM_SAVE_ECHO, ds.SYM_SAVE_NAME)
 
-    # BOTH ECHOES, because only one of them was ever exercised here and `LV`'s is the
-    # one every load goes through first. Verified against the emulator's own format
+    # BOTH ECHOES, because `LV`'s is the one every load goes through first. Verified against the
+    # emulator's own format
     # strings: `DEBUG: Variable list save (%s) : %s.` and `... load (%s) : %s.`
     ok_load = f"DEBUG: {ds.SYM_LOAD_ECHO} ({ds.SYM_LOAD_NAME}{ds.SYM_OK}\n"
     ds.Session._acked(ok_load, ds.SYM_LOAD_ECHO, ds.SYM_LOAD_NAME)
     with pytest.raises(ds.Invalid, match="did not acknowledge"):
         ds.Session._acked(ok_load, ds.SYM_SAVE_ECHO, ds.SYM_SAVE_NAME)
 
-    # The measured reply for a name it truncated. It contains `ok`, and it is not one.
+    # The reply for a name it truncated. It contains `ok`, and it is not one.
     truncated = "DEBUG: Variable list save (ABCDEFGHIJKL) : ok.\n"
     with pytest.raises(ds.Invalid, match="truncates a filename"):
         ds.Session._acked(truncated, ds.SYM_SAVE_ECHO, "ABCDEFGHIJKLMNOPQRST.BIN")
@@ -1546,7 +1537,7 @@ def test_an_ack_naming_a_truncated_filename_is_not_an_ack() -> None:
 
 
 def test_an_ok_from_an_earlier_call_does_not_acknowledge_this_one() -> None:
-    """THE SECOND AXIS, and the one the first version of `_acked` was blind to.
+    """THE SECOND AXIS: an earlier call's `ok` in the same delta.
 
     `in` takes ANY occurrence in the delta, and this debugger's Output pane is a
     scrolling log: a repaint carries earlier replies along with it. Loading twice over
@@ -1564,12 +1555,12 @@ def test_an_ok_from_an_earlier_call_does_not_acknowledge_this_one() -> None:
 
 
 def test_both_filenames_this_module_uses_fit_inside_what_the_debugger_keeps() -> None:
-    """A constant checked against the measured limit, so growing one of these names
+    """A constant checked against the debugger's limit, so growing one of these names
     past twelve characters is caught here and not by a file appearing under a name
     nobody chose.
 
-    AND THE CASE, which is the debugger's OTHER transformation of the argument and was
-    untested: it UPPERCASES what it echoes (`/private/tmp/...` came back
+    AND THE CASE, which is the debugger's OTHER transformation of the argument: it
+    UPPERCASES what it echoes (`/private/tmp/...` comes back
     `(/PRIVATE/TMP)`), so a constant spelled in lower case would make every
     acknowledgement fail to match its own request.
     """
@@ -1712,13 +1703,12 @@ def test_a_running_machine_is_refused_before_a_byte_is_written(tmp_path: Path) -
     emulator while the SAME reply's data excludes all three. The caller is sent to check
     filenames while the answer is "stop the machine".
 
-    TWO AXES, and the second was added because the first version was BLIND to place.
-    That version asserted nothing was SENT and that no file was LEFT in the working
-    directory -- and the second of those is unobservable, because `load_symbols`
-    unlinks both files in a `finally` however it leaves. MEASURED: with the guard moved
-    down to the line before the `LV`, so that the symbol file IS written into somebody's
-    project first, all 85 tests stayed green while the refusal's own sentence ("Nothing
-    was written") had become false.
+    TWO AXES, because asserting only that nothing was SENT and that no file was LEFT in
+    the working directory is BLIND to place: the second of those is unobservable, since
+    `load_symbols` unlinks both files in a `finally` however it leaves. With the guard
+    moved down to the line before the `LV`, so that the symbol file IS written into
+    somebody's project first, every such test stays green while the refusal's own
+    sentence ("Nothing was written") has become false.
 
     So the second case asks the question the cleanup cannot erase: with a working
     directory that CANNOT be written, a guard that comes first still refuses about the
@@ -1785,8 +1775,8 @@ def test_a_file_already_there_is_named_before_the_machine_is_read(
     The guard's own comment justifies sitting AFTER the two checks that need nothing
     from the machine: reading the machine costs a settle, and a caller whose working
     directory already holds `SYMS.BIN` should hear about that rather than wait for a
-    repaint first. Nothing held it. MEASURED: hoisting the guard above both checks
-    left all 341 tests green, and the break is not a no-op -- with a running
+    repaint first. Hoisting the guard above both checks
+    leaves every other test green, and the break is not a no-op -- with a running
     machine AND the file present, the refusal flips from naming the file to naming
     the machine, so the caller is told to go and stop a guest when what is in the way
     is a leftover in their own project.
@@ -1828,11 +1818,11 @@ def test_a_gone_emulator_is_not_told_to_arm_a_breakpoint(tmp_path: Path) -> None
 
 
 def test_the_console_guard_catches_only_the_cause_it_names(tmp_path: Path) -> None:
-    """THE EXCEPTION IDENTITY, which was ungated: `except Invalid` here was green.
+    """THE EXCEPTION IDENTITY: `except Invalid` here must not stay green.
 
     `NotStopped` is a subclass of `Invalid` and exists as a separate type for exactly
-    this, its docstring recording a MEASURED case where catching the base class turned
-    one refusal into a confident diagnosis of a cause nobody had observed. `_survey`
+    this: catching the base class turns one refusal into a confident diagnosis of a
+    cause nobody has observed. `_survey`
     reaches `command`, which has truthful refusals of its own (a hole in the terminal
     stream, say). Those must come through as themselves.
     """
@@ -1908,9 +1898,9 @@ def test_a_missing_acknowledgement_names_every_cause_that_has_been_seen() -> Non
     also covers `SV`, and because a list presented as closed is the defect rather than
     the missing entry.
 
-    THE DELTA IS THE ONE THAT WAS MEASURED, verbatim: a running guest leaves its own
-    E9 instrumentation on the screen and no acknowledgement anywhere. Which is the
-    evidence the message now tells the reader how to read.
+    THE DELTA IS A REAL ONE, verbatim: a running guest leaves its own E9
+    instrumentation on the screen and no acknowledgement anywhere, which is the
+    evidence the message tells the reader how to read.
     """
     running = ("\x1b7\x1b8\r\nBochs port E9h: [+ 00000.000] PROBE . tick"
                "\x1b7\x1b8\r\nBochs port E9h: [+ 00001.000] PROBE . tick")
@@ -2097,9 +2087,9 @@ def test_clear_code_breakpoint_reads_removal_back_and_is_honest_when_absent(
 
 def test_clear_interrupt_breakpoint_finds_the_row_by_text_and_reads_removal_back(
         tmp_path: Path) -> None:
-    """MEASURED: BPLIST numbers code breakpoints before interrupts whatever the arming
+    """BPLIST numbers code breakpoints before interrupts whatever the arming
     order, so `BPDEL 0` on a list `00. BP 00A7:16DD80 / 01. BP 00A7:3D5E0 / 02. BPINT 31
-    AH=00` deleted the `_main` breakpoint when the interrupt was meant. This finds the
+    AH=00` would delete the `_main` breakpoint when the interrupt was meant. This finds the
     interrupt's row by its whole text, sends the index it holds NOW, and answers with the
     list read back. An AH is part of the identity, and an absent row is `removed: False`."""
     held = [{"index": "00", "entry": "BP 00A7:16DD80"},
@@ -2368,10 +2358,10 @@ def test_write_memory_sends_short_sm_lines_and_reads_the_range_back() -> None:
 
 
 def test_write_memory_refuses_the_rom_range_and_a_dead_pty_is_named() -> None:
-    """Measured on this build: `SM` into the BIOS ROM ends the emulator, so a real-mode
+    """On this build `SM` into the BIOS ROM ends the emulator, so a real-mode
     write whose bytes touch the ROM range is refused before a line goes out. And a write
-    to the terminal of an emulator that has died is an INVALID naming it, where it escaped
-    as an I/O error with no session block."""
+    to the terminal of an emulator that has died is an INVALID naming it, not an I/O
+    error with no session block."""
     s, sent = _writer({"held": b""})
     for seg, off in ((0xF000, 0xE05B), (0xC000, 0x0000), (0xBFFF, 0x0010)):
         with pytest.raises(ds.Invalid, match="ENDS the emulator"):
@@ -2435,7 +2425,7 @@ def test_the_launch_turns_the_quit_warning_off_so_close_is_a_quit(conf: Path) ->
 
 
 def test_a_byte_that_spells_a_flag_name_is_sent_as_a_number() -> None:
-    """MEASURED on the real debugger: `SM 9000:0040 AC` wrote 00, `SM 9000:0060 0AC` wrote
+    """On the real debugger `SM 9000:0040 AC` writes 00, `SM 9000:0060 0AC` writes
     AC. The console's value parser reads a bare `AC` (and `AF`, `CF`, `DF`) as the FLAG of
     that name before it reads hex, so a byte value that spells one was silently replaced
     by the flag's value, zero, and every byte after it in the same `SM` went with it. A
@@ -2587,9 +2577,9 @@ def test_the_paging_mark_is_the_stop_surveys_and_a_later_survey_does_not_move_it
 
 def test_a_stranger_that_takes_the_port_after_the_check_never_receives_the_input(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """MEASURED LIVE: a port picked free and taken by another process before the emulator was
-    up left the emulator listening beside it and the session connected to the OTHER process,
-    so every key went to it while the replies said delivered. Here the stranger tries to take
+    """A port picked free and taken by another process before the emulator is up would
+    leave the emulator listening beside it and the session connected to the OTHER process,
+    so every key would go to it while the replies said delivered. Here the stranger tries to take
     the port the moment the emulator is spawned, and the emulator double dials the port the
     session gave it: the session's socket must be the emulator's, never the stranger's."""
     conf = tmp_path / "g.conf"
@@ -2751,7 +2741,7 @@ def test_a_reply_with_no_debugger_ending_keeps_the_settle() -> None:
 
 def test_only_a_commands_reply_ends_early() -> None:
     """`resume` and `step` collect a stop's repaint with a settle of their own, which no
-    recording measured ending early: their collect waits it out."""
+    recording shows ending early: their collect waits it out."""
     [(_, raw)] = _recorded("prompt")
     ses = _replaying([(0.0, raw)])
     began = time.monotonic()

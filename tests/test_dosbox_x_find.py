@@ -430,9 +430,9 @@ def test_an_unreadable_answer_clears_the_command_line_before_it_refuses() -> Non
 
 
 def test_an_idle_prompt_answers_a_bare_enter_with_nothing_and_that_counts_as_cleared() -> None:
-    """The measured idle behaviour, pinned. A bare ENTER at an idle prompt produces NO
-    output at all (measured against the probe guest, three in a row, and the last command
-    was not repeated), so an empty delta is what a successful clear looks like. A recovery
+    """The idle behaviour, pinned. A bare ENTER at an idle prompt produces NO
+    output at all (against the probe guest, even three in a row, and the last command
+    is not repeated), so an empty delta is what a successful clear looks like. A recovery
     reading emptiness as failure would spend its whole bound and then declare a healthy
     session unusable."""
     typed: list[str] = []

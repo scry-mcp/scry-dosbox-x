@@ -100,10 +100,10 @@ def filter_log(text: str, pattern: str, limit: int, channel: str) -> tuple[list[
 def filter_e9(text: str, pattern: str, limit: int) -> tuple[list[str], int]:
     """(the newest `limit` matching lines, HOW MANY matched in total).
 
-    THE TOTAL IS RETURNED SEPARATELY because the two are different answers and an
-    earlier version conflated them: it reported the length of the slice under the
-    name `matched`, so a caller asking "how many times did this fire" got the limit
-    back and could not tell a genuine 40 from a truncated 5000.
+    THE TOTAL IS RETURNED SEPARATELY because the two are different answers: reporting
+    the length of the slice under the name `matched` would hand a caller asking "how
+    many times did this fire" the limit back, with no way to tell a genuine 40 from a
+    truncated 5000.
 
     THE GUARD IS ON THE CHANNEL, not on the content: a line counts only when it IS an
     instrumentation line, never when it merely quotes one. A build log naming

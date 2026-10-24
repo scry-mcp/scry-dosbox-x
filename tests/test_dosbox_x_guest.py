@@ -17,8 +17,8 @@ any machine. The second reassembles and compares byte for byte, and can only run
 machine without the assembler -- a gate that skips is not a gate, and a gate whose only
 case skips is worse than none because its name still appears in the report.
 
-MEASURED when this was written: `nasm -f bin probe.asm` reproduces the committed 144
-bytes exactly, so the pair was correct and merely ungated.
+`nasm -f bin probe.asm` reproduces the committed binary exactly, which is what the
+rebuild tier checks.
 
 The DPMI guest (`dpmi.c`, built with DJGPP) has the same two tiers: what the tier reads off it is
 checked against the committed binary and table everywhere, and the rebuild, where DJGPP is.

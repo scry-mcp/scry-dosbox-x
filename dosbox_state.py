@@ -244,8 +244,7 @@ class State:
     def as_of_current(self, session: ds.Session) -> dict[str, Any] | None:
         """`as_of()` only when the record describes the stop the machine is IN. After a
         survey that refused (a cut pane) the record is still the PREVIOUS stop's, and naming
-        its address as this one's would be a confident wrong answer of the right shape
-        (an auditor's finding)."""
+        its address as this one's would be a confident wrong answer of the right shape."""
         stop = self.as_of()
         if stop is None or self.last_stop.get("stop_count") != getattr(session,
                                                                         "stop_count", None):
@@ -541,7 +540,7 @@ def delta(out: str, keep: int) -> dict[str, Any]:
     by POSITION, a sample rather than a result, and undeclared a caller could not tell a
     whole delta from a clipped one: both would arrive as `screen_delta` under `status: ok`.
 
-    THE CAPS ARE HEADROOM ON A STOPPED MACHINE, measured per tool: `HELP` is the longest
+    THE CAPS ARE HEADROOM ON A STOPPED MACHINE, set per tool: `HELP` is the longest
     listing this debugger prints and it fits under `debug`'s cap, and a quiet guest's F5
     repaint fits under `resume`'s. On a RUNNING guest the F5 delta is bounded by the
     collect's settle over a scrolling Output pane rather than by a repaint's size, so a

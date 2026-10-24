@@ -471,8 +471,8 @@ def test_palette_on_a_running_guest_is_refused_not_stopped(tmp_path: Path) -> No
 
 
 def test_a_dac_not_in_its_six_bit_mode_is_not_expanded(tmp_path: Path) -> None:
-    """The booted probe's `VGA DAC` with `bits=8` (an edited capture): the widening was measured
-    on the six-bit DAC only."""
+    """The booted probe's `VGA DAC` with `bits=8` (an edited capture): the widening applies
+    to the six-bit DAC only."""
     s = bench("probe-booted", tmp_path)
     plain = s.listing
     s.listing = lambda command: plain(command).replace("bits=6", "bits=8")  # type: ignore[method-assign]

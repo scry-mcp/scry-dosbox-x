@@ -86,7 +86,7 @@ def run_to(ref: str, control: str, seconds: float, progress: ds.Progress) -> dic
         "controls": [{"ref": control, "at": armed["at"], "hits_in_run": hits,
                       "removed": armed["removed"]}],
         "note": out["note"]}
-    # A RUN THAT MEASURED NOTHING ABOUT ITS CONTROL proves nothing about its target: the bound
+    # A RUN THAT SAW NOTHING OF ITS CONTROL proves nothing about its target: the bound
     # ran out with the control never fired, or another stop ended the run before it could
     # fire. Both are refused, with the stop the run left surveyed beside the refusal.
     if verdict != contract.TARGET and not hits:

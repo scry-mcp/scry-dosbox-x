@@ -72,9 +72,8 @@ WINDOW_SECS = 30.0
 WINDOW_SAMPLES = 6
 
 # The first sample after `resume` is DISCARDED, and the reason is the LOG PIPELINE, not
-# a baseline. An earlier comment said it "straddles the moment `base` is taken", which
-# described a `base` this code no longer takes: the earliest rate here is already
-# between two real samples. What is true is that the first interval after `resume`
+# a baseline: the earliest rate here is already between two real samples. The first
+# interval after `resume`
 # begins with the guest's boot burst still draining, so it reads fast; the discard costs
 # one sample of the seven and removes that transient from the median.
 SETTLE_SAMPLES = 1
@@ -175,10 +174,10 @@ def newest(log: Path) -> float | None:
 def batch_cost(cwd: Path, song: str) -> dict[str, float]:
     """What one question costs run as a BATCH: launch, reach the state, read, tear down.
 
-    IT TIMES THE COMMAND AND CHECKS THE ANSWER AFTERWARDS rather than during. An
-    earlier version polled `build/PROF.E9.log` while the run was in flight to split out
-    "reaching the state", and reported INVALID three times running: that file is written
-    at the END. The honest split lives in `reach_the_state`, on the path whose log
+    IT TIMES THE COMMAND AND CHECKS THE ANSWER AFTERWARDS rather than during. That
+    file is written at the END, so polling `build/PROF.E9.log` while the run is in flight
+    to split out "reaching the state" would report INVALID. The honest split lives in
+    `reach_the_state`, on the path whose log
     really is progressive.
     """
     log = cwd / "build" / "PROF.E9.log"
@@ -288,22 +287,15 @@ def advance_rate(conf: Path, cwd: Path) -> dict[str, object]:
     """How fast the guest runs while NOBODY is asking it anything.
 
     THE FIGURE PUBLISHED IS THE MEDIAN OF THE PER-WINDOW RATES, not the ratio of the
-    whole span, and the first window is DISCARDED. That is a correction of a measured
-    artefact rather than a refinement:
-
-    an earlier version divided (last stamp - first stamp) by the wall span and reported
-    **1.019**, i.e. the guest running FASTER than real time. Broken into its six
-    windows, the same data reads 1.199, 0.978, 0.901, 1.130, 0.869, 1.043 -- the entire
-    surplus lives in the FIRST window, taken when the log pipeline is at its most backed
-    up after the boot burst. Windows two to six give a MEDIAN of 0.978, below real time,
-    which is what `cycles=fixed` should produce. (0.984 is their MEAN, and this
-    docstring quoted it while the code below computes the median: a figure no run of
-    this instrument could print.)
+    whole span, and the first window is DISCARDED. The ratio of the whole span can read
+    above 1.0, the guest running FASTER than real time: the entire surplus lives in the
+    FIRST window, taken when the log pipeline is at its most backed up after the boot
+    burst. The later windows give a MEDIAN below real time, which is what `cycles=fixed`
+    should produce.
 
     AND MONOTONICITY IS NOT REPORTED AS EVIDENCE, because `newest()` is a MAXIMUM over
-    a growing file and therefore cannot decrease. The old text offered "monotonic across
-    all six samples" as corroboration; it would have held if the guest had frozen solid.
-    What IS evidence is the SPREAD, so that is what is published.
+    a growing file and therefore cannot decrease: it would hold if the guest had frozen
+    solid. What IS evidence is the SPREAD, so that is what is published.
     """
     log = Path("/tmp/dosbox-bench-rate.log")
     if log.exists():

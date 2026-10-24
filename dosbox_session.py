@@ -69,13 +69,12 @@ import dosbox_stub_link as stub_link
 # what it was: `held.start() > 0` gave up precisely when the ESC was the first byte of
 # the read, i.e. exactly when the head was ALL there was to hold.
 #
-# MEASURED on a real captured data row with one SGR change repainted mid-row and the
-# same escape split three ways: whole in one read -> 1 row; split with text before the
-# ESC -> 1 row; split with the ESC as the first byte -> ZERO rows, because the head was
-# stripped as a lone fragment and its final byte `m` was then injected into the row's
-# hex. `read_memory` answers that with INVALID -- a false one, from the narrow reader
-# whose whole purpose is not lying about what it examined, and only when the chunk
-# boundary happened to fall there.
+# On a data row with one SGR change repainted mid-row, the same escape split three ways
+# reads: whole in one read -> 1 row; split with text before the ESC -> 1 row; split
+# with the ESC as the first byte -> ZERO rows if the head is stripped as a lone fragment,
+# its final byte `m` then injected into the row's hex. `read_memory` would answer that
+# with INVALID -- a false one, from the narrow reader whose whole purpose is not lying
+# about what it examined, and only when the chunk boundary happens to fall there.
 #
 # 4 KB is far past any real escape (the longest this debugger emits is a dozen bytes)
 # and far short of a screenful, so the give-up arm is unreachable for well-formed input
@@ -131,16 +130,12 @@ NUDGE = "BPLIST"
 # return, exactly as `resume` sends F5: a return belongs to a typed command, and on
 # this path it would land on a guest that is already running.
 #
-# MEASURED HERE, and only for F10: from reset at F000:FFF0, whose instruction is
-# `jmp F000:E05B`, F10 lands at E05B. That is what the live case asserts.
-#
-# AN EARLIER NOTE CLAIMED F11 LANDS AT C9B0 FROM THE SAME POINT, and it is deleted
-# rather than kept, because it cannot be reconciled with this file's own model: a `jmp`
-# is neither a CALL nor an INT, so `over` and `into` must land in the SAME place, and
-# `F000:E05B` is itself `jmp F000:C9B0`. Either that reading is right and the note was a
-# misattributed second step, or one F11 executes two instructions -- in which case
-# `step(mode="into")` reports `completed: 1` for an unknown number of instructions.
-# NOT MEASURED HERE either way, so nothing here asserts it.
+# ONLY F10 IS ASSERTED: from reset at F000:FFF0, whose instruction is `jmp F000:E05B`,
+# F10 lands at E05B, which the live case checks. F11 from the same point is not
+# asserted: a `jmp` is neither a CALL nor an INT, so `over` and `into` must land in the
+# SAME place, and `F000:E05B` is itself `jmp F000:C9B0`. If one F11 executed two
+# instructions, `step(mode="into")` would report `completed: 1` for an unknown number
+# of instructions.
 STEP_KEYS = {"over": b"\x1b[21~", "into": b"\x1b[23~"}
 #: The ways to step, as `step` takes them.
 STEP_MODES = tuple(STEP_KEYS)
@@ -203,7 +198,7 @@ INTVEC_OK = "Interrupt vector table written to"
 # OFFSETS and this debugger's var list stores LINEAR addresses, so `linear = base +
 # offset` and nothing else can supply the base.
 #
-# IT TAKES A REGISTER NAME AND NOT A SELECTOR NUMBER, measured: `SELINFO AF` came back
+# IT TAKES A REGISTER NAME AND NOT A SELECTOR NUMBER: `SELINFO AF` comes back
 # with an EMPTY name and a zeroed descriptor -- `: b:00000000 type:00 ... l:00000000` --
 # rather than refusing. So a caller may only ask about a selector some register is
 # currently holding, and asking about a number gets a plausible answer about nothing.
@@ -212,8 +207,8 @@ SELINFO_ECHO = "SelectorInfo"
 # correctness. The answer arrives as TWO lines (`... parbg` then `l:0023FFFF ...`), so
 # something has to span the break -- but unbounded under `re.S` it will happily run on
 # to the NEXT descriptor's limit if this one's did not arrive, and report a base from
-# one descriptor with a limit from another. MEASURED on constructed screens: fields
-# 30,020 characters apart were stitched into one answer. The limit is the independent
+# one descriptor with a limit from another: fields
+# 30,020 characters apart would be stitched into one answer. The limit is the independent
 # fact a caller checks the base against, so a limit belonging to somebody else is
 # exactly the "hands the caller's own assumption back as evidence" failure the server's
 # docstring names. 64 characters covers the real gap (the flag column plus a newline)
@@ -225,7 +220,7 @@ SELINFO_FIELDS = re.compile(
 
 # A descriptor with `type:00` IS NOT PRESENT, and returning its base would be the
 # worst answer this module can give: zero, which is a perfectly plausible base and
-# would place every symbol at its raw offset. MEASURED, TWO different situations
+# would place every symbol at its raw offset. TWO different situations
 # produce it, and neither is an error the debugger reports:
 #
 #   SELINFO CS  at `-break-start` (REAL MODE)  -> b:00000000 type:00 l:00000000
@@ -235,10 +230,8 @@ SELINFO_FIELDS = re.compile(
 # Against a real protected-mode program the same command reads `type:1B` for code and
 # `type:13` for data, so zero is the discriminator.
 #
-# THIS COMMENT USED TO SAY "bit 7 of that byte is the descriptor's PRESENT flag", AND
-# THAT IS FALSE -- it was offered explicitly as "not a heuristic", which is the worst
-# way to be wrong. Bit 7 is CLEAR in all four descriptors this package has captured,
-# three of them present. The emulator's own format string is
+# THE PRESENT FLAG IS NOT BIT 7 of that byte: bit 7 is CLEAR in the present
+# descriptors this package has captured. The emulator's own format string is
 # `%s: b:%08lX type:%02X parbg\n    l:%08lX dpl : %01X %1X%1X%1X%1X%1X`: `type` is the
 # 5-bit S|type field (so at most 0x1F), and P is the first digit of the `parbg` column
 # -- `10011` for the two present ones, `00000` in real mode. The guard is still right,
@@ -307,8 +300,8 @@ class NotStopped(Invalid):
     SIBLINGS. `step` and `run_to` both catch a failure to read the position and conclude
     "the machine is running" -- and `where()` refuses for three different reasons: no
     pane at all, a pane that names no CPU mode, and a partial pane carrying no CS/EIP.
-    Catching the base class turned the last two into a confident diagnosis of a cause
-    that had not been observed. MEASURED: a STOPPED machine whose pane carried no mode
+    Catching the base class turns the last two into a confident diagnosis of a cause
+    that was not observed: a STOPPED machine whose pane carries no mode
     token would be reported by `run_to` as a machine still running, with its breakpoint
     armed and unremovable, every clause of which is false.
 
@@ -363,7 +356,7 @@ def avi_facts(data: bytes) -> dict[str, object]:
         "bytes": len(data),
         "riff_avi": data[:4] == b"RIFF" and data[8:12] == b"AVI ",
         "avi_frames": avi.count(data),   # `scry_core.avi` says which count and why
-        # `complete` is INFORMATION, not a usability verdict: MEASURED, ffmpeg
+        # `complete` is INFORMATION, not a usability verdict: ffmpeg
         # extracts a frame from an unindexed capture perfectly well. What it says is
         # that the recording was FINALISED -- which happens when the recorded program
         # exits or the emulator exits cleanly, and NOT when the session is closed
@@ -609,13 +602,13 @@ class Session(dprocess.Process):
 
         A READING THE DRAIN DROPPED BYTES OUT OF IS REFUSED, NOT RETURNED, and that
         is the whole reason the counter is checked here rather than only reported in
-        `state()`. MEASURED by executing the real regexes: a hole landing inside a
+        `state()`. A hole landing inside a
         repaint leaves `'\\x1b[0000EAX=00001234  ESI=00000000'`, whose CSI branch eats
         the `E` of `EAX` as its terminator, so the pane parses to `{'ESI': ...}` with
         EAX simply absent. `registers()` raises only on an EMPTY parse, so that
-        partial mapping is returned AS a reading, and `set_register` then reports
+        partial mapping would be returned AS a reading, and `set_register` would report
         "the write did not take" for a write that took perfectly -- a confident,
-        specific, wrong diagnosis whose only cause was the session being left alone
+        specific, wrong diagnosis whose only cause is the session being left alone
         long enough to overflow. Refusing costs the caller one retry against a
         now-drained buffer; the alternative costs them a false answer.
         """
@@ -754,8 +747,8 @@ class Session(dprocess.Process):
         as `halted` off text painted before the key. What it does NOT buy is a delta free of
         the previous listing: the F5's own repaint carries the debugger's Output pane, which
         replays the last console output, so "Breakpoint list:" in a resume's delta is the
-        pane and not a leak (MEASURED: three empty drains over a quiet machine before
-        the key, and four listings in the delta after it). The drain lives here, for every
+        pane and not a leak (a quiet machine drains empty before
+        the key, yet the delta after it can hold several listings). The drain lives here, for every
         key that lets the machine go, because a stale `EIP=` left by the read-back before
         the key makes a ten-minute bound "expire" a quarter of a second in.
         """
@@ -789,13 +782,13 @@ class Session(dprocess.Process):
         """Send one debugger command and return what the screen produced FOR IT.
 
         The reply is the delta this call accumulated, never a search over everything
-        that ever arrived: an earlier version searched the whole buffer, so a marker
-        produced during the twelve seconds of boot satisfied a check named for a reply
-        to a command typed afterwards.
+        that ever arrived: searching the whole buffer would let a marker produced during
+        the twelve seconds of boot satisfy a check named for a reply to a command typed
+        afterwards.
 
         THE QUIET TIMER ONLY STARTS ONCE SOMETHING HAS ARRIVED. Starting it
-        immediately meant a debugger that took longer than `settle` to repaint was
-        reported as having said NOTHING -- an INVALID caused by this loop rather than
+        immediately would report a debugger that takes longer than `settle` to repaint
+        as having said NOTHING -- an INVALID caused by this loop rather than
         by the emulator.
 
         LIMIT, said out loud: this returns what the TERMINAL produced, not a parsed
@@ -812,9 +805,9 @@ class Session(dprocess.Process):
         # WHAT THE TERMINAL STILL HOLDS IS NOT THIS COMMAND'S REPLY. A repaint the previous
         # command delivered after its own collect had gone quiet sits in the drain; taken as
         # this command's first bytes it starts the settle timer, and the real answer arrives
-        # after the loop has stopped. MEASURED on a real guest: `run_to` deleted its target and
-        # then its control with two `BPDEL` in a row, the list read back after the second still
-        # showed the control, and a `BPLIST` typed by hand right after showed it gone. The
+        # after the loop has stopped. With `run_to` deleting its target and
+        # then its control by two `BPDEL` in a row, the list read back after the second still
+        # shows the control, while a `BPLIST` typed by hand right after shows it gone. The
         # leftover is read for the one thing it can honestly say, a prompt (the same passive
         # peek `at_debugger` makes), and discarded.
         with contextlib.suppress(Invalid):        # a dropped-bytes reading: nothing to keep
@@ -827,12 +820,12 @@ class Session(dprocess.Process):
         # THE PROMPT IS COUNTED WHEREVER IT IS READ. A command typed at a RUNNING guest is
         # swallowed, but its collect window stays open for up to `timeout`, and a breakpoint
         # that fires inside it prints the prompt INTO this reply -- with no register pane, so
-        # the reader refuses `NotStopped`, and before this line nothing recorded the stop:
-        # every passive peek afterwards found an empty terminal, a wait sat out its bound
-        # to say "still running", and the next key was refused for a machine that had been
-        # parked throughout.
+        # the reader refuses `NotStopped`, and without this line nothing would record the
+        # stop: every passive peek afterwards would find an empty terminal, a wait would
+        # sit out its bound to say "still running", and the next key would be refused for
+        # a machine parked throughout.
         # Seeded from, and feeding, the passive peek's carry: a prompt split across the end
-        # of this reply and the next read is found either way (an auditor's finding).
+        # of this reply and the next read is found either way.
         seen = self._peek_carry + reply
         if dcons.PROMPT in seen:
             self._mark_stopped()
@@ -1065,10 +1058,10 @@ class Session(dprocess.Process):
                 f"{'running' if self.alive() else 'GONE'}). Several things produce "
                 f"this and none of them is picked here: the machine is running, the "
                 f"pane did not repaint, the emulator is gone")
-        # TWO REPAINTS OF ONE VIEW ARE ONE VIEW. MEASURED live, through the MCP transport,
-        # on a stopped Pr32 machine: one `D` produced a delta holding the eight rows TWICE
-        # (the pane is painted with the `Set data overview` acknowledgement and again on
-        # the settle), and this handed back sixteen rows for an eight-row pane. Each
+        # TWO REPAINTS OF ONE VIEW ARE ONE VIEW. On a stopped Pr32 machine one `D`
+        # produces a delta holding the eight rows TWICE (the pane is painted with the
+        # `Set data overview` acknowledgement and again on the settle), which would hand
+        # back sixteen rows for an eight-row pane. Each
         # address is kept once, at the place it was LAST painted: the last repaint is
         # the newest reading, and the order stays the paint order the docstring promises.
         newest: dict[str, str] = {}
@@ -1128,7 +1121,7 @@ class Session(dprocess.Process):
     WRITE_CHUNK = 8
 
     # THE ROM OF A REAL-MODE MACHINE, by linear address: the option ROMs and the BIOS.
-    # Measured on this build: `SM` into it does not write and does not refuse, it ENDS the
+    # On this build `SM` into it does not write and does not refuse, it ENDS the
     # emulator, so a write there is refused before anything is sent.
     ROM_LINEAR = (0xC0000, 0xFFFFF)
 
@@ -1143,7 +1136,7 @@ class Session(dprocess.Process):
         cannot be made is the refusal, since nothing was checked. Up to the data view's
         reach, which is what the readback can cover in one read: the caller's bound is
         `dosbox_checks.write_data`'s, judged before a sequence runs. A real-mode address in the
-        ROM range is refused: measured, `SM` there ends the emulator instead of writing.
+        ROM range is refused: `SM` there ends the emulator instead of writing.
         """
         if not data:
             raise Invalid("bad_argument", "a write needs at least one byte")
@@ -1169,9 +1162,9 @@ class Session(dprocess.Process):
         self.altered = True
         for i in range(0, len(data), self.WRITE_CHUNK):
             chunk = data[i:i + self.WRITE_CHUNK]
-            # EVERY VALUE LEADS WITH A ZERO. MEASURED on this build: the console's value
+            # EVERY VALUE LEADS WITH A ZERO. On this build the console's value
             # parser reads a bare `AC` (and `AF`, `CF`, `DF`) as the FLAG of that name before
-            # it reads hex, so `SM ... AC` wrote the flag's value, zero, and took every byte
+            # it reads hex, so `SM ... AC` writes the flag's value, zero, and takes every byte
             # after it in the same line with it; `0AC` is a number to that parser and lands.
             values = " ".join(f"0{b:02X}" for b in chunk)
             self.command(f"SM {seg:04X}:{off + i:04X} {values}")
@@ -1220,7 +1213,7 @@ class Session(dprocess.Process):
         open, reports that on macOS you cannot break back into the debugger once
         emulation has begun, because the shortcut maps to a key the keyboards do not
         have. A breakpoint is the emulator stopping ITSELF, which is a different path,
-        and it was MEASURED working.
+        and it works.
         """
         check_interrupt(number, ah)
         arg = f"BPINT {number:02X}" + (f" {ah:02X}" if ah is not None else "")
@@ -1228,15 +1221,14 @@ class Session(dprocess.Process):
         # READ THE LIST BACK, exactly as `run_to` and `watch` do, and for the reason
         # this module states everywhere else: nothing here believes an acknowledgement.
         #
-        # WHAT WAS HERE INSTEAD COULD NOT FAIL. The test was `"reakpoint" not in out`,
-        # and `BPLIST_HEADER` is `"Breakpoint list:"`, which CONTAINS it -- while
-        # `NUDGE` IS `BPLIST`, so every register read in this class puts that header on
-        # the scrolling Output pane. After any other tool had run, the acknowledgement
-        # was unfailable. MEASURED in a real session: the delta for this
-        # very call carried SEVEN `Breakpoint list:` blocks before the real
-        # acknowledgement, so an unrecognised `BPINT` would have been reported `ok`
-        # and the caller would have resumed with nothing to stop the machine.
-        # THE ROW'S TWO FORMS ARE CAPTURED, not remembered. MEASURED with both armed
+        # THE ACKNOWLEDGEMENT TEXT CANNOT BE THE TEST: `"reakpoint" not in out` is
+        # unfailable, because `BPLIST_HEADER` is `"Breakpoint list:"`, which CONTAINS it,
+        # and `NUDGE` IS `BPLIST`, so every register read in this class puts that header
+        # on the scrolling Output pane. The delta for this very call can carry SEVEN
+        # `Breakpoint list:` blocks before the real acknowledgement, so an unrecognised
+        # `BPINT` would be reported `ok` and the caller would resume with nothing to
+        # stop the machine.
+        # THE ROW'S TWO FORMS ARE CAPTURED, not remembered. With both armed
         # at once:
         #     00. BPINT 21
         #     01. BPINT 31 AH=00
@@ -1288,24 +1280,23 @@ class Session(dprocess.Process):
         the screen and never a count of anything. The drain is one snapshot: a repaint
         landing in the instant between it and the key is read as the key's own.
 
-        THIS USED TO RETURN A BARE SCREEN AND EXAMINE NOTHING, which is the defect it
-        was rewritten to close: `ok` for a machine still sitting at the debugger is
-        indistinguishable from `ok` for one that ran, and the symptom it produces is a
-        guest that looks hung. A session was closed over exactly that.
+        IT EXAMINES THE RESULT AND NEVER RETURNS A BARE SCREEN: `ok` for a machine still
+        sitting at the debugger is indistinguishable from `ok` for one that ran, and the
+        symptom it produces is a guest that looks hung.
 
-        `halted` IS THE PROMPT COMING BACK, AND THAT IS A MEASUREMENT rather than the
+        `halted` IS THE PROMPT COMING BACK, WHICH IS NOT the
         obvious reading. The obvious reading is to parse the register pane out of the
         delta, and it does not work: this debugger is a full-screen ncurses application
         that repaints only the cells that CHANGED, so a machine that stops again
         redraws its code and data panes while the register pane's labels -- `EAX=` and
-        the rest -- stay exactly as they were and are never sent. MEASURED over
-        controlled resumes scored against `where()`: the prompt in the delta agrees with
-        the machine on every one, the pane header is never present, and a non-empty
-        `parse_registers` agrees on about half.
+        the rest -- stay exactly as they were and are never sent. Scored against `where()`, the
+        prompt in the delta agrees with
+        the machine, the pane header is never present, and a non-empty
+        `parse_registers` agrees on only about half the resumes.
 
         So the pane reading would answer "running" for a machine at the debugger, which
-        is the very defect this closes, and its half is worse than it looks: on one of
-        those deltas `parse_registers` glued the repainted DIGITS of
+        is the very defect this closes, and its half is worse than it looks: on such
+        a delta `parse_registers` can glue the repainted DIGITS of
         several fields into `CS=081401080100FF91C81440026`, a value no register ever
         held. The prompt is the debugger saying it has the keyboard back, and nothing
         else on this screen says that.
@@ -1314,7 +1305,7 @@ class Session(dprocess.Process):
         not carry an address either -- see above. It is `where()`, the same reader
         `step`, `run_to` and `watch` rest on, and it is asked ONLY when the prompt came
         back: on a machine that ran, the nudge would be swallowed with no error
-        anywhere and would buy a settle for nothing. Measured cost, a console round trip
+        anywhere and would buy a settle for nothing. The cost is a console round trip
         on the halted path and none at all on the ordinary one.
 
         IT IS A READING AND NOT A RETRY. Nothing here sends F5 again. A tool that
@@ -1404,9 +1395,9 @@ class Session(dprocess.Process):
         AND A REFUSAL MID-LOOP NAMES THE STEPS ALREADY TAKEN, because they cannot be
         undone. `where()` refuses three ways, and only one is `NotStopped`: a pane naming
         no CPU mode and a CUT repaint carrying no `CS`/`EIP` are PLAIN `Invalid`, and
-        catching the first alone lets the other two escape whole (MEASURED against a
-        double that steps four times and then hands back a partial pane: five keystrokes
-        reached the machine and the caller was told about none of them). It STILL
+        catching the first alone lets the other two escape whole (against a
+        double that steps four times and then hands back a partial pane, five keystrokes
+        reach the machine and the caller is told about none of them). It
         refuses, deliberately: a reading that could not be made is not an answer, and
         replying here would have this method claim a position it just failed to read.
         The refusal carries the irreversible part.
@@ -1466,7 +1457,7 @@ class Session(dprocess.Process):
             except NotStopped:
                 # THE MACHINE IS GONE OR IT IS RUNNING, AND THOSE ARE NOT THE SAME
                 # ANSWER. A dead emulator has no partial result worth reporting -- the
-                # steps that "completed" were measured against a machine that no longer
+                # steps that "completed" were taken on a machine that no longer
                 # exists -- so that one is left to escape as the refusal it is. A
                 # RUNNING one is an honest outcome of stepping and is reported as such.
                 if not self.alive():
@@ -1474,23 +1465,23 @@ class Session(dprocess.Process):
                 running = True
                 break
             except Invalid as exc:
-                # AND EVERY OTHER `Invalid` FROM `where()`, WHICH USED TO SAY NOTHING
-                # ABOUT THE STEPS ALREADY TAKEN. `NotStopped` is only one of the three
-                # ways that method refuses; the other two -- a pane naming no CPU mode,
-                # and a CUT repaint carrying no `CS`/`EIP` -- are PLAIN `Invalid` and
-                # escaped this loop whole. MEASURED against a double that steps four
-                # times and then hands back a partial pane: five keystrokes had reached
-                # the machine and the caller was told about none of them.
+                # EVERY OTHER `Invalid` FROM `where()` MUST REPORT THE STEPS ALREADY
+                # TAKEN. `NotStopped` is only one of the three ways that method refuses;
+                # the other two -- a pane naming no CPU mode, and a CUT repaint carrying
+                # no `CS`/`EIP` -- are PLAIN `Invalid` and would escape this loop whole:
+                # against a double that steps four times and then hands back a partial
+                # pane, five keystrokes reach the machine and the caller is told about
+                # none of them.
                 #
                 # THAT IS NOT LIKE LOSING A READ. A step is IRREVERSIBLE -- this
                 # debugger has no un-step -- so a caller who asked for ten and got an
                 # exception has a machine in a position neither of them can name.
                 #
-                # IT STILL REFUSES, and deliberately: a reading that could not be made
+                # IT REFUSES, deliberately: a reading that could not be made
                 # is not an answer, and turning this into a reply would be this module
-                # claiming to know a position it just failed to read. What changes is
-                # that the refusal now CARRIES the irreversible part, so `completed` is
-                # recoverable from the message instead of being lost with it.
+                # claiming to know a position it just failed to read. The refusal
+                # CARRIES the irreversible part, so `completed` is recoverable from the
+                # message instead of being lost with it.
                 if isinstance(exc, NotStopped):
                     raise
                 # IT REPORTS THE KEYSTROKES SENT, NOT THE ONES READ BACK. `completed`
@@ -1566,27 +1557,27 @@ class Session(dprocess.Process):
         A caller who still wants the place calls `run_to` again; one who wants it to stay
         declares it with `breakpoint_at`.
 
-        THE ONE TRAP THIS CANNOT CLOSE, MEASURED HERE AND DOCUMENTED NOWHERE: A CODE
-        BREAKPOINT IN ROM IS ACKNOWLEDGED AND NEVER FIRES. `BP F000:E05B` and
-        `BP F000:C9B0` both came back `DEBUG: Set breakpoint at ...`, both appeared in
-        `BPLIST`, and neither stopped a machine that provably executed them -- the
-        reset vector jumps to E05B, which jumps to C9B0. The same command at a RAM
-        address (`BP 0087:0234`) fired on the first attempt. Two controls rule out the
-        obvious explanations: it is NOT the dynamic core (a `core=normal` run behaved
-        identically) and it is NOT a missing feature (`HEAVYLOG` is in the binary, so
-        heavy debugging is compiled in). The likely mechanism is the usual one -- the
-        debugger arms a breakpoint by writing a trap byte into memory, and a write to
-        ROM is silently absorbed -- but that is an EXPLANATION and not a measurement,
-        because the arming happens after the machine is released and cannot be observed
-        from a stopped debugger. What is measured is the behaviour, and this cannot
-        detect it in advance for the same reason. So it goes in the non-arrival note,
+        THE ONE TRAP THIS CANNOT CLOSE: A CODE BREAKPOINT IN ROM IS ACKNOWLEDGED AND
+        NEVER FIRES. `BP F000:E05B` and `BP F000:C9B0` both come back
+        `DEBUG: Set breakpoint at ...`, both appear in `BPLIST`, and neither stops a
+        machine that provably executes them -- the reset vector jumps to E05B, which
+        jumps to C9B0. The same command at a RAM address (`BP 0087:0234`) fires. Two
+        controls rule out the obvious explanations: it is NOT the dynamic core (a
+        `core=normal` run behaves identically) and it is NOT a missing feature
+        (`HEAVYLOG` is in the binary, so heavy debugging is compiled in). The likely
+        mechanism is the usual one -- the debugger arms a breakpoint by writing a trap
+        byte into memory, and a write to ROM is silently absorbed -- but that is an
+        EXPLANATION and not an observation, because the arming happens after the machine
+        is released and cannot be observed from a stopped debugger. The behaviour is what
+        is observed, and this cannot detect it in advance for the same reason. So it goes in the
+        non-arrival note,
         where the caller is already asking why.
         """
         # THE ARGUMENT CHECKS THAT NEED NOTHING FROM THE MACHINE GO FIRST. Reading the
-        # machine costs a settle, and a caller who passed `seconds=0` was made to wait
-        # for one only to be told a constant was out of range -- and on a RUNNING
-        # machine they were told about the register pane instead of about the argument
-        # that was actually wrong.
+        # machine costs a settle, and a caller who passes `seconds=0` would wait
+        # for one only to be told a constant is out of range -- and on a RUNNING
+        # machine would be told about the register pane instead of about the argument
+        # that is actually wrong.
         check_segment(seg)
         vocab.check_wait(seconds)
         stopped = self.where()      # refuses a running machine BEFORE arming anything
@@ -1798,18 +1789,16 @@ class Session(dprocess.Process):
                 next_tick = now + PROGRESS_EVERY_S
                 progress(now - began, None, f"{label or f'run_to {target}'}: running "
                                             f"{now - began:.0f}s of {deadline - began:g}s")
-            # THE DEATH IS CHECKED IN THE LOOP, the fix `e9_wait` already carries and
-            # this one did not. Without it a session that died the instant the machine
-            # was released burned the WHOLE bound, up to `vocab.WAIT_MAX_S`, ten minutes:
-            # with the server's lock held, so `status` could not even be asked. MEASURED
-            # against a dead double: the whole bound spent polling, and `alive()`
-            # consulted ZERO times until the loop was over.
+            # THE DEATH IS CHECKED IN THE LOOP, as `e9_wait` does. Without it a session that
+            # died the instant the machine was released would burn the WHOLE bound, up to
+            # `vocab.WAIT_MAX_S`, ten minutes: with the server's lock held, so `status`
+            # could not even be asked.
             gone_if_dead(self, began, deadline - began, target)
             # ONLY THE FRESH TEXT IS SCANNED, PLUS A BOUNDED CARRY. Re-parsing the whole
             # accumulated terminal every poll is quadratic in the length of the wait,
-            # which is the defect `e9_wait` measured on its side and fixed. MEASURED here on
-            # the same regex: doubling the polls quadrupled the cost, against a flat cost
-            # for the fresh-only form, with the server's lock held throughout.
+            # which `e9_wait` avoids the same way: doubling the polls quadruples the cost,
+            # against a flat cost for the fresh-only form, with the server's lock held
+            # throughout.
             #
             # THE CARRY IS WHY THIS IS NOT SIMPLY "SCAN THE NEW PART". A read is cut
             # wherever the pipe happened to be, so `EIP=00001` can arrive in one poll
@@ -1918,8 +1907,8 @@ class Session(dprocess.Process):
 
         THERE IS NO LINEAR FORM, ON PURPOSE: `BPLM` watches a LINEAR address, and a DPMI
         program runs PAGED, so the frame named belongs to whoever holds it at that instant
-        -- MEASURED, an attempt to watch a static in a DJGPP binary that way fired on
-        unrelated code and never on the app. The raw tool that offered it was retired.
+        -- watching a static in a DJGPP binary that way fires on unrelated code and
+        never on the app.
         """
         return Session.watch_places(self, [(segment, offset)])[0]
 
@@ -1935,7 +1924,7 @@ class Session(dprocess.Process):
         for segment, offset in places:
             check_segment(segment)
             dcons.check_offset(offset, cpu)
-        # THE THREE LIST SPELLINGS ARE MEASURED, NOT DERIVED. What the debugger
+        # THE THREE LIST SPELLINGS ARE CAPTURED, NOT DERIVED. What the debugger
         # PRINTS in `BPLIST` is not what you SEND, and it is not uniform:
         #
         #   BPM  0040:006C   -> `BPMEM 0040:006C (00)`      offset %04X
@@ -2038,9 +2027,9 @@ class Session(dprocess.Process):
         It is `clear_code_breakpoint` for the `BPINT` family, and it exists because the
         console was the only way to remove one and the console takes an INDEX: `BPDEL n`
         numbers the list as the debugger prints it, which is NOT the arming order --
-        MEASURED, a session that armed `BPINT 31` first and two `BP`s after listed the
-        code breakpoints at 00 and 01 and the interrupt at 02, so `BPDEL 0` deleted the
-        wrong one. The row is found by its whole text (the spelling `breakpoint_interrupt`
+        e.g. a session that arms `BPINT 31` first and two `BP`s after lists the
+        code breakpoints at 00 and 01 and the interrupt at 02, so `BPDEL 0` would delete
+        the wrong one. The row is found by its whole text (the spelling `breakpoint_interrupt`
         already captures), the index looked up fresh, and `removed` is what the list says
         AFTER the delete, never what this method sent.
         """
@@ -2190,13 +2179,13 @@ class Session(dprocess.Process):
                     p.unlink()
 
     def _memdump_candidates(self) -> list[Path]:
-        """Every place the dump could land, MEASURED rather than read off the help.
+        """Every place the dump could land, as observed rather than read off the help.
 
         The name this server passes, `MEMDUMP_FILE` in the WORKING DIRECTORY, comes first.
         The default name of a build that takes none is looked for in BOTH places and under
         both spellings: the debugger's help names `memdump.bin` without saying where, the
         file of the requested length is in the working directory and not the captures
-        directory on the build that was measured, and that is one build on one platform. A
+        directory on the build observed, and that is one build on one platform. A
         filesystem that folds case also hides which of the two names is on disk, so neither
         is assumed.
         """
@@ -2221,7 +2210,7 @@ class Session(dprocess.Process):
         This is the load-time fact a symbol table cannot be placed without: a toolchain
         emits offsets inside a selector and the debugger's var list stores LINEAR
         addresses, so somebody has to supply `base`, and only the running machine knows
-        it. MEASURED on a DJGPP program under CWSDPMI: `CS` and `DS` both come back
+        it. On a DJGPP program under CWSDPMI, `CS` and `DS` both come back
         `b:00400000 l:0023FFFF`, and that limit matching the highest address in the
         binary's own `nm` output is what identifies the base as this program's.
 
@@ -2255,9 +2244,9 @@ class Session(dprocess.Process):
                 f"a reading when the machine is stopped at the debugger. What it "
                 f"showed: {out.strip()[-300:]!r}")
         # ANCHORED ON THE ANSWER'S OWN LINE, which begins with the register's name.
-        # A bounded SEARCH from the echo is not enough and that correction is measured:
-        # with this descriptor's `l:` missing, the pattern simply slid forward and
-        # matched the NEXT descriptor completely -- asked about CS, answered with DS's
+        # A bounded SEARCH from the echo is not enough:
+        # with this descriptor's `l:` missing, the pattern would slide forward and
+        # match the NEXT descriptor completely -- asked about CS, answered with DS's
         # base, type and limit, all three consistent with each other and none of them
         # about the register that was asked for. `match` cannot slide.
         line = out.find(f"{name}: b:", at)

@@ -38,8 +38,8 @@ def test_a_perform_sequence_runs_by_name_and_stops_where_it_was_headed(
 
     # THE SEQUENCE CLEARS THE WALK'S INTERRUPT FIRST. reach_djgpp leaves `BPINT 31 AH=00`
     # armed (its docstring says so), so a bare resume would stop at the next DPMI interrupt,
-    # not at the caller's breakpoint -- MEASURED, exactly that happened. Clearing it by name is
-    # the interrupt-clear this work added, and it is why the two pieces belong together: a
+    # not at the caller's breakpoint. Clearing it by name is
+    # the interrupt-clear, and it is why the two pieces belong together: a
     # clean sequence to a code breakpoint needs the walk's interrupt gone.
     steps: list[dict[str, Any]] = [
         {"op": "symbols_load", "path": str(guest.SYM)}]

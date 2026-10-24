@@ -36,8 +36,8 @@ def observe_stop(session: ds.Session) -> None:
     # THE TERMINAL IS LOOKED AT FIRST. The peek is what counts a stop nobody has read (the
     # prompt sitting in the drain), so a count read before it is the count as of the LAST
     # contact, and comparing that with the record says "nothing new" about a machine that
-    # stopped minutes ago. Measured on a real guest: `status` kept naming the previous
-    # stop while the memory breakpoint's own line sat unread in the buffer.
+    # stopped minutes ago: `status` keeps naming the previous
+    # stop while the memory breakpoint's own line sits unread in the buffer.
     if not session.at_debugger():
         return
     count = getattr(session, "stop_count", None)
@@ -103,8 +103,8 @@ def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
     # ONE SURVEY for where AND registers (a round trip costs most of a second): they
     # read the same stopped screen, so taking two was one avoidable console round trip a stop.
     # ONE repaint for the three things a stop reads: where, registers and the list the
-    # watches check against. Measured on dos-real16 before this: four `BPLIST` round trips
-    # per stop, two of them for the same screen.
+    # watches check against: separate reads cost a `BPLIST` round trip each, twice for the
+    # same screen.
     arming.apply_pending(session)      # what the running guest kept the console from; the reply
     where, registers, held = session.stop_survey()   # carries the account via `st.reply`
     machine = (where["mode"], registers)

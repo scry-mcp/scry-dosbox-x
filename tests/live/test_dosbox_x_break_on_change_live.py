@@ -2,7 +2,7 @@
 
 A change-watch armed on memory the guest writes STOPS the machine when that memory changes,
 in real mode (BPM). This is the example S2 the plan measures against, and it is the one
-place break-on-change gets an honest LIVE proof: Phase 1 measured BPPM firing on the paging
+place break-on-change gets an honest LIVE proof: BPPM fires on the paging
 host rather than the program under DJGPP, so protected-mode break-on-change carries a caveat
 instead of a live firing test, and real mode is where it is proven.
 

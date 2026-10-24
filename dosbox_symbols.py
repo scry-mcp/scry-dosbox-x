@@ -209,8 +209,8 @@ _TLINK_SEGMENTS = re.compile(
 # THE 32-BIT SEGMENT TABLE'S HEADER, which has NO `Stop` column -- that is what tells
 # the two generations of this map apart, and it is not a guess: Embarcadero's own
 # "Detailed-Segments Map File" page prints the 32-bit table as `Start Length Name Class`
-# over rows like ` 0001:00401000 0000214D4H _TEXT  CODE`, while the 16-bit maps measured
-# on this machine all carry `Start Stop Length Name Class`.
+# over rows like ` 0001:00401000 0000214D4H _TEXT  CODE`, while the 16-bit maps all carry `Start
+# Stop Length Name Class`.
 #
 # IT IS AN ANCHOR AND NOT A LINE SHAPE, for exactly the reason spelled out above
 # `_TLINK_HEADER`: the "Detailed map of segments" section ALSO opens every row with a
@@ -742,7 +742,7 @@ def parse(text: str, report: ParseReport | None = None) -> tuple[list[Symbol], i
                 "line under it that starts like `SEG:OFFS`. If it is a Borland map, its link "
                 "published nothing: check the source declares the symbols PUBLIC")
         return syms, unreadable
-    # WATCOM BEFORE THE OTHER TWO, for the same measured reason Borland goes first: its
+    # WATCOM BEFORE THE OTHER TWO, for the same reason Borland goes first: its
     # rows score ZERO on both of the remaining sniffs, so without this a Watcom map
     # lands on the `nm` parser and comes back "no symbol lines were recognised in that
     # text" -- about a file full of them.
@@ -828,7 +828,7 @@ class Anchored:
     """
 
     # The line that opens the section. IT IS THE ANCHOR AND A ROW SHAPE IS NOT, which is
-    # measured and not stylistic: a Borland map's "Detailed map of segments" opens every
+    # a fact of the format and not a style: a Borland map's "Detailed map of segments" opens every
     # one of ITS rows with the same `seg:off` pair as the publics, so a pattern matching
     # the LINE gathers ten symbols called `ACBP=48`. Reading only what follows a header
     # excludes that section by construction.
@@ -922,7 +922,7 @@ def _tlink_sections(lines: list[str]) -> dict[int, int]:
     and flat `00000H` values, and its publics fold by `seg * 16` with nothing to look up.
 
     THE WALK IS ANCHORED ON THE HEADER, which is the same shape as the publics walk
-    below and for the same measured reason: the "Detailed map of segments" section opens
+    below and for the same reason: the "Detailed map of segments" section opens
     every one of ITS rows with a `sect:offset` pair as well, so a `findall` over the whole
     text would fill this table with offsets INSIDE a section, keyed by that section's own
     index. That heading is not a row, so it ends the walk before those rows are reached.
@@ -1540,7 +1540,7 @@ def plan(symbols: list[Symbol], pattern: str | None = None,
         # representation in it. Encoding with `errors="replace"` would put a `?` in the
         # debugger and call it a symbol, which is a name that LIES -- worse than a
         # missing one. And the gate is PRINTABLE and not merely "ASCII" because a NUL
-        # is ASCII: see `PRINTABLE`, where the two-addresses-one-name case is measured.
+        # is ASCII: see `PRINTABLE`, where the two-addresses-one-name case is explained.
         if not PRINTABLE.match(s.name):
             p.unencodable.append(s.name)
             continue

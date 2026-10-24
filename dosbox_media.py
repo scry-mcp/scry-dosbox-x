@@ -1,7 +1,7 @@
 """`series_capture`: frames out of the session's video capture, written as a `scry-series/1`
 series (`scry_core.series`): PNGs and one manifest, no picture in the reply.
 
-WHY FROM THE AVI. DOS has no frame counter a stop can read, and a stop per retrace has no measured
+WHY FROM THE AVI. DOS has no frame counter a stop can read, and a stop per retrace has no
 route, so the one headless record of frames is the capture `start(capture_video=True)` writes. Its
 frames are numbered by the file's own index from 0: what the series calls frame N is the AVI's
 N-th frame, not an emulated frame number, and the reply's `frame_source` says so.

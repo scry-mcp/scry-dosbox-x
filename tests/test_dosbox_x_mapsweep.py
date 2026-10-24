@@ -164,10 +164,10 @@ def test_a_symbol_count_that_moved_is_red_and_names_the_project(tmp_path: Path) 
                      {"ZULU": {"path": "proj/A.MAP", "expect": {"symbols": 5}}})
     rc, out = _run(root, mf)
     assert rc == 1, out
-    # THE WHOLE LINE. `assert "A" in out` was the old form and it could not fail: the
-    # project was named `A` and `_render` writes the word DISAGREES, which contains one.
-    # The one property in this test's name was untested, and so was the AXIS -- `symbols`
-    # appears on every green line too. Hence a name no message can spell by accident.
+    # THE WHOLE LINE. `assert "A" in out` could not fail: the project is named `A` and
+    # `_render` writes the word DISAGREES, which contains one. The one property in this
+    # test's name would go untested, and so would the AXIS -- `symbols` appears on every
+    # green line too. Hence a name no message can spell by accident.
     assert "DISAGREES  ZULU: symbols: expected 5, read 4" in out, out
 
 
@@ -205,7 +205,7 @@ def test_the_rows_it_could_not_place_are_quoted_and_not_merely_counted(
     """"and which" is the plan's word, and a count cannot answer it.
 
     A number tells a reader that something was lost; the row tells them WHAT, which is the
-    only form in which the loss can be acted on.  MEASURED as the difference that matters:
+    only form in which the loss can be acted on.  That is the difference that matters:
     `unreadable=2` on the real TLINK32 map says nothing, while one quoted `Idle` row says
     the whole defect.
     """
@@ -236,8 +236,8 @@ def test_a_project_expected_to_be_refused_is_green_when_it_is(tmp_path: Path) ->
     # AND THE FORMAT IS REPORTED ON THE REFUSAL PATH TOO. It is the path where a reader
     # most wants it -- "which reader refused this" is the whole question -- and it is
     # stamped by a DIFFERENT line from the clean path's, so the clean path's case cannot
-    # see it go blank. MEASURED: with the refusal's stamp removed, every other case here
-    # stayed green.
+    # see it go blank: with the refusal's stamp removed, every other case here
+    # stays green.
     assert "borland-tlink" in out, out
 
 
@@ -280,7 +280,7 @@ def test_a_path_that_is_not_there_is_invalid_and_never_green(tmp_path: Path) -> 
     rc, out = _run(root, mf)
     assert rc == 3, out
     assert "NOPE.MAP" in out, out
-    # AND THE DIAGNOSIS, not only the verdict. MEASURED: with the `is_file` guard removed
+    # AND THE DIAGNOSIS, not only the verdict. With the `is_file` guard removed
     # the run still exits 3, through the read failing, so a case asserting the code alone
     # is GREEN over a report that has stopped saying which of the two things went wrong.
     # The verdict is the same and the message is the product.
@@ -292,7 +292,7 @@ def test_a_manifest_with_no_projects_is_invalid(tmp_path: Path) -> None:
     """An instrument that examined nothing reports INVALID, never a clean bill of health.
 
     THE MESSAGE IS ASSERTED TOO. Every INVALID here exits 3, so the code alone cannot
-    tell an empty MANIFEST from an empty SELECTION -- and MEASURED, removing this guard
+    tell an empty MANIFEST from an empty SELECTION -- removing this guard
     lands on the selection's message, which sends the reader to look at a `--project`
     they never typed.
     """
@@ -353,7 +353,7 @@ def test_no_root_at_all_is_invalid_rather_than_reading_relative_to_the_cwd(
     out = "\n".join(lines)
     assert rc == 3, out
     # THE WORST DEGRADATION OF THE FOUR, and the reason this guard is not decoration.
-    # MEASURED with it removed: the run still exits 3, and reports `p/A.MAP is not
+    # With it removed the run still exits 3, and reports `p/A.MAP is not
     # there` -- about a file that IS there. It blames the material for a missing
     # argument, which is a diagnosis pointing at the wrong repository.
     assert "no root" in out, out
@@ -424,7 +424,7 @@ def test_an_unknown_expect_key_is_invalid_and_names_it(tmp_path: Path) -> None:
     exactly like an assertion" -- and which nothing exercised.
 
     Every other case in this file supplies only the four known keys, so deleting the
-    guard left the whole suite green while a row spelled `symbolz` swept clean pinning
+    guard would leave the whole suite green while a row spelled `symbolz` swept clean pinning
     nothing. That is the module's central failure, inside the module written against it.
     """
     root, mf = _tree(tmp_path, {"proj/A.MAP": SMALL_MAP},

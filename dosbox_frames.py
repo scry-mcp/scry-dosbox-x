@@ -87,8 +87,7 @@ def frame(ses: ds.Session, at: int, dest: Path, source: Path | None = None) -> P
 
     IT ALWAYS WRITES A PNG, whatever `dest` is called, and the caller is told so
     here because nothing in the reply says it. The encoder is forced rather than
-    inferred from the extension: see the argv below for what inferring it was
-    measured doing.
+    inferred from the extension: see the argv below for what inferring it does.
     """
     if shutil.which("ffmpeg") is None:
         raise Invalid("host_failed", "a still is extracted from the capture with `ffmpeg`, and "
@@ -130,7 +129,7 @@ def frame(ses: ds.Session, at: int, dest: Path, source: Path | None = None) -> P
             # hand that container back as a still. With the format forced, the same request
             # writes NO FILE and the guard fires (tests/fixtures/ffmpeg holds both).
             #
-            # It also means this tool's promise ("ONE still image") no longer
+            # It also means this tool's promise ("ONE still image") does not
             # depends on the caller spelling the extension the way it meant.
             ["ffmpeg", "-v", "error", "-y", "-i", str(src),
              "-vf", f"select='eq(n\\,{at})'", "-fps_mode", "passthrough",

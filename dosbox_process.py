@@ -75,7 +75,7 @@ DRAIN_JOIN_SECS = 2.0
 # warning back, a build that does not answer under a pty) is not slow but deaf, and the
 # SIGKILL behind it cannot be ignored. It is separate from the post-KILL reap budget so a
 # close waits in proportion to what the wait can achieve; on a WATCHED session that wait
-# sits on somebody's screen. The measured figures belong in the commit that took them.
+# sits on somebody's screen.
 TERM_GRACE = 2.0
 
 

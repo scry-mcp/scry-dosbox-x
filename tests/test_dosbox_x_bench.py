@@ -3,8 +3,7 @@
 `bench.py` is INFRASTRUCTURE, not a scratch script: it publishes the figures this
 server's cost claims rest on. It carries its own known-answer validation, and until
 this file existed NOTHING RAN IT except a live bench somebody launched by hand -- so
-the instrument that exists to stop a number lying was itself ungated. Measured: 0%
-coverage, `CoverageWarning: Module bench was never imported`.
+the instrument that exists to stop a number lying would be ungated.
 
 What is here is the half a contract tier can reach: the timer's known answer with its
 negative, the refusal that stops a session which answered NOTHING being published
@@ -73,14 +72,10 @@ def test_a_call_that_did_answer_is_timed() -> None:
     got = bench.bench("speaks", lambda: "EAX=00000000", 3, answered=bool)
     assert got["n"] == 3
     assert set(got) == {"median_ms", "min_ms", "max_ms", "n"}, got
-    # THE MEDIAN IS TYPE-ASSERTED NOW, and its two neighbours already were. That is the
-    # whole of it, and this comment first claimed something FALSE and more interesting:
-    # that an `isinstance` on a subscript "narrows NOTHING". It narrows fine --
+    # EACH OF THE THREE IS TYPE-ASSERTED. An `isinstance` on a subscript narrows:
     # `assert isinstance(d["a"], float)` then `reveal_type(d["a"])` gives `float` while
-    # an unchecked key gives `object`, measured. Which is exactly why mypy reported two
-    # errors and not three: `min_ms` and `max_ms` WERE narrowed and the median simply
-    # was never checked. The locals are for readability; the fix is the third
-    # `isinstance`.
+    # an unchecked key gives `object`, so a key left unchecked is the one mypy reports.
+    # The locals are for readability; the `isinstance` per key is the narrowing.
     lo, mid, hi = got["min_ms"], got["median_ms"], got["max_ms"]
     assert isinstance(lo, float) and isinstance(mid, float) and isinstance(hi, float), got
     assert lo <= mid <= hi, got
@@ -115,10 +110,10 @@ def test_a_log_that_is_not_there_is_not_a_zero(tmp_path: Path) -> None:
 def test_the_bench_refuses_without_its_two_inputs_and_names_the_flags(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """THE REFUSAL NAMES WHAT THE CALLER TYPED. Both inputs used to arrive by environment
-    while this same parser already took three flags, so a caller who misspelled one got a
-    run against somebody else's program instead of a refusal; and a refusal that named
-    variables sent them looking in the wrong place. It fires BEFORE the timer's known
+    """THE REFUSAL NAMES WHAT THE CALLER TYPED. Both inputs are flags like the parser's
+    others: environment variables would let a caller who misspelled one get a run against
+    somebody else's program instead of a refusal, and a refusal that named variables
+    would send them looking in the wrong place. It fires BEFORE the timer's known
     answer, so a run with no program to measure costs no emulator."""
     monkeypatch.setattr(sys, "argv", ["bench.py"])
     assert bench.main() == 3
@@ -159,10 +154,9 @@ def test_one_flag_without_the_other_is_refused_too(
 def test_every_invalid_in_this_file_leaves_with_one_exit_code(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """ONE SPELLING PER CONCEPT, and this one had two. `main`'s own guards returned 3 while
-    every other INVALID raised `SystemExit` with a STRING, which CPython prints and exits 1
-    on: measured, with its control (`SystemExit(3)` gives 3, `SystemExit("...")` gives 1). A
-    caller reading the code rather than the text got two answers to one question.
+    """ONE SPELLING PER CONCEPT. A `main` guard returning 3 beside an INVALID that raises
+    `SystemExit` with a STRING would give two answers to one question, because CPython
+    prints the string and exits 1 (`SystemExit(3)` gives 3, `SystemExit("...")` gives 1).
 
     The message goes to STDERR, because a diagnostic that shares a channel with the figures
     is a diagnostic somebody's parser reads as data."""
@@ -170,11 +164,11 @@ def test_every_invalid_in_this_file_leaves_with_one_exit_code(
         bench.no_measurement("a probe")
     assert caught.value.code == bench.INVALID_RC == 3, caught.value.code
     said = capsys.readouterr()
-    # THE PREFIX IS THE HELPER'S. Nine sites used to write it by hand, which is nine chances
-    # to spell it differently and a caller grepping for it finding eight.
+    # THE PREFIX IS THE HELPER'S: sites writing it by hand are chances to spell it
+    # differently, and a caller grepping for it finding all but one.
     assert said.err.strip() == "INVALID: a probe", said
     assert said.out == "", "a refusal does not go out with the figures"
-    # AND NO RAW `SystemExit` SURVIVES: a tenth site added later would be the drift again,
+    # AND NO RAW `SystemExit` SURVIVES: a site added later would be the drift again,
     # and this is the only thing that would notice. READ AS SYNTAX, not as text, for the
     # reason this package's own code scan is an AST walk: a substring count answers about a
     # docstring that QUOTES the old shape, and misses a live one wrapped across two lines.

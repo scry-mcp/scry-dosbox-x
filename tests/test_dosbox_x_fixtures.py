@@ -8,10 +8,9 @@ and read by these cases -- which is what turns the claim into a fact a clone can
 
 THEY SHIP WITH THEIR GENERATOR, which is the half that is easy to skip.  A captured
 artefact whose recipe is lost cannot be re-captured, so every later question about it is
-unanswerable.  MEASURED as a real cost on this package: an earlier session's Watcom map
-went missing from disk, and a discrepancy in its transcription can no longer be settled
-by anybody.  `build.sh` beside each fixture re-makes it, and the TLINK one was VERIFIED
-to come back BYTE-IDENTICAL from its own recipe.
+unanswerable: a discrepancy in a transcription of a map that went missing from disk can
+be settled by nobody.  `build.sh` beside each fixture re-makes it, and the TLINK one comes
+back BYTE-IDENTICAL from its own recipe.
 
 WHAT THESE CASES ARE NOT.  They are not the sweep.  The sweep reads the real five maps
 where they live and is declared MANUAL for that reason (`tests/gates-manual.txt`); these
@@ -76,14 +75,14 @@ def test_the_two_publics_sections_are_one_set_and_not_two() -> None:
 
 
 def test_the_borland_fixture_folds_seg_times_sixteen_plus_offset() -> None:
-    """THE ADDRESS, which is the product of this whole package and which no case here
-    asserted for this fixture.
+    """THE ADDRESS, which is the product of this whole package, asserted against this
+    fixture.
 
-    Names, counts, marks and the segment-table trap were all pinned; the arithmetic that
-    turns `0023:0000` into an offset was not. MEASURED as a surviving break: changing the
-    fold to `seg * 8 + off` left every case in this module green, and the property was
-    caught only by text written inside the test file -- never against an artefact a real
-    linker emitted.
+    Names, counts, marks and the segment-table trap are pinned elsewhere; this pins the
+    arithmetic that turns `0023:0000` into an offset.  Changing the fold to
+    `seg * 8 + off` would leave every other case in this module green, and the property
+    would be caught only by text written inside the test file, never against an artefact
+    a real linker emitted.
     """
     at = {s.name: s.offset for s in _read(TLINK16)[0]}
     # Read off the fixture's own rows: MAP_OVERLAID_ONE is ` 0023:0000`, ..._TWO is
@@ -141,7 +140,7 @@ def test_the_detailed_segment_map_does_not_leak_in_as_symbols() -> None:
 
 
 def test_the_mark_is_read_per_symbol_and_is_not_a_property_of_the_segment() -> None:
-    """WHAT `idle` MEANS IS UNKNOWN, and this case pins only what was MEASURED.
+    """WHAT `idle` MEANS IS UNKNOWN, and this case pins only what is observed.
 
     One tempting explanation is "a public that lives in an overlay TLINK has not made
     resident".  This fixture refutes it: it is linked WITH an overlay (`/o`), and the two
@@ -197,9 +196,9 @@ def test_the_unplaceable_classes_are_excluded_and_counted_not_dropped() -> None:
     assert "_map_demo_absolute" not in [x.name for x in p.symbols], "the absolute was kept"
     assert "_map_demo_absol" not in p.short, "the absolute was placed under its stem"
     # AND THE IDENTITY, not just a positive count. `excluded_unplaceable > 0` was carried
-    # entirely by other symbols: MEASURED on this fixture, 94 of type `N` and exactly ONE
-    # of type `A`, so dropping `A` from `_UNPLACEABLE` left the count at 94 and the case
-    # green. The `A` is the one the fixture's source says it exists for.
+    # entirely by other symbols: this fixture has many of type `N` and exactly ONE
+    # of type `A`, so dropping `A` from `_UNPLACEABLE` would leave the count high and the
+    # case green. The `A` is the one the fixture's source says it exists for.
     absolutes = [x for x in syms if x.kind == "A"]
     assert [x.name for x in absolutes] == ["_map_demo_absolute"], absolutes
     assert p.excluded_unplaceable == len([x for x in syms if x.kind in sym._UNPLACEABLE])
@@ -331,7 +330,7 @@ def test_the_watcom_fixture_spans_more_than_one_section() -> None:
 
 
 def test_section_zero_is_real_and_is_why_the_flat_sentinel_is_negative() -> None:
-    """MEASURED, and it decided a constant: `0000:00001234  __DOSseg__`.
+    """It decides a constant: `0000:00001234  __DOSseg__`.
 
     A Watcom map really emits section ZERO. With 0 as the "this format has no sections"
     sentinel, that symbol would be placed with a FLAT base handed in for some other
@@ -349,11 +348,11 @@ def test_the_watcom_symbols_place_at_distinct_addresses_from_the_callers_bases()
     bases come from the caller -- from the executable's own object table, which this
     module does not read because it does not parse binaries.
 
-    TWO OF THE THREE BASES ARE MEASURED off the linked image of the pair this format was
+    TWO OF THE THREE BASES ARE READ off the linked image of the pair this format was
     pinned against -- object 1 at 0x10000, object 2 at 0x20000. THE THIRD IS CHOSEN, and
     saying so matters: section 0 exists only because `__DOSseg__` is in it, and 0x8000 is
     a number picked so that symbol can be positioned at all. Presenting all three as
-    measured would hide which one is a choice.
+    read off the image would hide which one is a choice.
 
     AND THE DISCRIMINATION IS THE TWO EQUALITIES, not an inequality. A `!=` between these
     two reads as "the assertion a shared base cannot make" and is a TAUTOLOGY on this

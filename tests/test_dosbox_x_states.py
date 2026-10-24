@@ -147,7 +147,7 @@ def clean_session() -> Any:
 
 def test_the_launch_turns_the_remark_dialog_off_and_names_the_save_directory(
         tmp_path: Path) -> None:
-    """MEASURED: with `saveremark` at its default a save opens a dialog that takes the window
+    """With `saveremark` at its default a save opens a dialog that takes the window
     away and writes nothing. So every session turns it off, and the slot directory is the
     caller's `state_dir`, passed as the option the build documents."""
     argv = dlaunch.build_argv(dlaunch.Launch(conf=tmp_path / "g.conf", cwd=tmp_path, seconds=60,

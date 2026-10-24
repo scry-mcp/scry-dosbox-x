@@ -6,12 +6,12 @@ HEADLESS IS THE APPLICATION'S OWN SETTING, not an environment variable reached a
 it with.  `videodriver` is a DOSBox-X `[sdl]` config property whose own description
 reads "Forces a video driver (e.g. windib/windows, directx, x11, fbcon, dummy, etc)
 for the SDL library to use", so `-set "sdl videodriver=dummy"` is the sanctioned
-mechanism.  MEASURED: it alone yields `SDL: version 2.32.70, Video dummy, Audio
+mechanism.  It alone yields `SDL: version 2.32.70, Video dummy, Audio
 coreaudio` -- note it keeps REAL AUDIO, which `-silent` does not, and `-silent` also
 exits after AUTOEXEC.BAT and so cannot host a session at all.
 
-EVERY LAUNCH IS BOUNDED, and that is not belt-and-braces.  MEASURED: DOSBox-X does
-NOT refuse an option it does not know -- `-loadstate 1` never returned at all.
+EVERY LAUNCH IS BOUNDED, and that is not belt-and-braces.  DOSBox-X does
+NOT refuse an option it does not know -- `-loadstate 1` never returns at all.
 So a session handed a bad flag does not fail, it hangs, and the bound is what stands
 between that and an emulator running until the machine is rebooted.
 
@@ -95,7 +95,7 @@ class Launch:
     background: bool = True
     # WHERE THE SAVE STATES LIVE: the slot directory the build's `-savedir` option names, and
     # the directory the state tools write `<name>.sav` into. None: `save/` under `cwd`, the
-    # emulator's own default (measured), which the session names to the commands in full.
+    # emulator's own default, which the session names to the commands in full.
     state_dir: Path | None = None
     # THE DEBUGGER CHANNEL'S PORT (`dosbox_control`), the session's own listener's, set by the
     # session and never by a caller: it is how a running guest is broken in on.
@@ -148,7 +148,7 @@ def build_argv(launch: Launch) -> list[str]:
             # `-set` wins, for the one caller who wants the dialog back.
             "-set", "dosbox quit warning=false"]
     # THE REMARK DIALOG IS OFF IN EVERY SESSION, for the same reason and in the same place:
-    # measured, with `saveremark` at its default a `Save state` opens a dialog asking for
+    # with `saveremark` at its default a `Save state` opens a dialog asking for
     # a remark, the dialog takes the SDL window with it (no window, no menu bar, the
     # process spinning) and nothing is written, stopped or running alike. Before the
     # caller's flags, so a later `-set` wins. The slot directory is the caller's when they
@@ -169,7 +169,7 @@ def build_argv(launch: Launch) -> list[str]:
     if launch.input_port is not None:
         # THE INPUT ROUTE'S TWO SWITCHES, as `-set` overrides so the caller's conf need not
         # carry them: the integration device lives in the `[cpu]` section (upstream's own
-        # Windows notes say so; under `[dosbox]` it is silently ignored -- measured), and
+        # Windows notes say so; under `[dosbox]` it is silently ignored), and
         # COM1 becomes a TCP client of the session's own listener. TRANSPARENT, because
         # otherwise the nullmodem reads a 0xFF from the socket as the escape of its own
         # line-status protocol, and a pointer coordinate holding that byte would arrive changed.
@@ -188,9 +188,9 @@ def build_argv(launch: Launch) -> list[str]:
         # which is the only screen capture DOSBox-X offers with nobody at the
         # keyboard: the still screenshot is a mapper action and needs a keypress.
         #
-        # A CONSTRAINT ON THE CONF, MEASURED rather than assumed: `-c` runs AFTER the
+        # A CONSTRAINT ON THE CONF: `-c` runs AFTER the
         # conf's `[autoexec]` section, so a conf whose autoexec ends in `exit` quits
-        # the emulator before this command is ever reached. Verified both ways --
+        # the emulator before this command is ever reached. Both ways hold --
         # `-c "ECHO ran > C:\DASHC.TXT"` against such a conf leaves no file, and the
         # same command with `-noautoexec` leaves none either, because then C: is not
         # mounted. So `program` needs a conf that mounts what it needs and does NOT
@@ -434,14 +434,12 @@ def _judge_files(launch: Launch) -> None:
 def validate(launch: Launch) -> None:
     """Everything that makes a session refusable, decided BEFORE any process exists.
 
-    IT IS A FUNCTION OF ITS OWN AND NOT A FEW LINES INSIDE `Session.__init__`, and the
-    reason is a leak this cost before it was moved. While these guards lived in the
-    constructor, the only way to test them was to CONSTRUCT a session -- fine while
+    IT IS A FUNCTION OF ITS OWN AND NOT A FEW LINES INSIDE `Session.__init__`, because
+    guards in the constructor can only be tested by CONSTRUCTING a session -- fine while
     they hold, and a disaster the moment one is removed: the break that deletes a
-    guard makes the same test START a real emulator that nothing then closes.
-    MEASURED, and found by hand before any gate noticed: six emulators left running
-    on the machine, and the one from the missing-bound case carried `-time-limit 0`,
-    which is not a short bound but NO bound at all.
+    guard makes the same test START a real emulator that nothing then closes, and the
+    missing-bound case would carry `-time-limit 0`, which is not a short bound but NO
+    bound at all.
 
     As a pure function it is testable without a process existing, so the break that
     removes a guard makes a test FAIL rather than spawn.
@@ -483,8 +481,9 @@ STATE_NAME_MAX = 64
 STATE_NAME = re.compile(rf"[A-Za-z0-9][A-Za-z0-9_-]{{0,{STATE_NAME_MAX - 1}}}")
 
 
-# The members of a state ZIP that identify it without loading it, measured off a real
-# one: the emulator's version, the program, the machine, the memory size in megabytes (the
+# The members of a state ZIP that identify it without loading it, as a real
+# one carries them: the emulator's version, the program, the machine, the memory size in megabytes
+# (the
 # conf's `memsize`), and the local time it was saved at, as the emulator stamps it.
 STATE_META = {"version": "DOSBox-X_Version", "program": "Program_Name",
               "machine": "Machine_Type", "memory_mb": "Memory_Size",

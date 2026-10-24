@@ -132,8 +132,8 @@ def _spelled(seg: int, off: int, real_past_ffff: bool) -> str:
 
 
 # THE OUTPUT PANE IS A SCROLLBACK, NOT AN ANSWER. Every `command` delta is a repaint of the
-# whole ncurses screen, and its Output pane still shows what EARLIER commands printed (measured:
-# a `MEMFIND !` delta carried the previous `MEMS`'s "not active" line above its own). So a
+# whole ncurses screen, and its Output pane still shows what EARLIER commands printed (a
+# `MEMFIND !` delta carries the previous `MEMS`'s "not active" line above its own). So a
 # reply is read off the LAST line the pane holds that belongs to this family, never the first
 # match in the text; a family line that is not the last one is somebody else's answer.
 SCAN_LINES = (SCAN_OPENED, SCAN_MATCHES, SCAN_FINISHED, SCAN_RANGE,
@@ -142,8 +142,8 @@ SCAN_LINES = (SCAN_OPENED, SCAN_MATCHES, SCAN_FINISHED, SCAN_RANGE,
               re.compile(re.escape(SCAN_CANCELLED)), re.compile(re.escape(SCAN_NONE_TO_CANCEL)),
               re.compile(re.escape(SCAN_NONE_TO_LIST)))
 # The listing is PAGED by the debugger (`dcons.PAGER_MARK`), this many rows and then a prompt that
-# any key continues (measured: a command typed while a page waited was eaten character by
-# character, one page per keystroke, and the rows in between never crossed the screen). Its
+# any key continues (a command typed while a page waits is eaten character by
+# character, one page per keystroke, and the rows in between never cross the screen). Its
 # rows reach only the screen, so the pages are turned with a bare ENTER, one at a time, and
 # the rows are read off each delta, where a listing read off the logfile leaves with `Q`.
 SCAN_LISTED = re.compile(r"\[MEMFIND\] Matched values during current instance: ([0-9A-F]{6})")
@@ -189,18 +189,18 @@ def _clear_line(session: ds.Session) -> bool:
     got there.
 
     WHY THIS EXISTS. The debugger eats a command CHARACTER BY CHARACTER while a paged-content
-    prompt waits, one page per keystroke (this module's own measured note, above). So a page
+    prompt waits, one page per keystroke (see the scrollback note above). So a page
     left unturned swallows the front of the next command and strands its tail on the command
     line (`MEMS ` eaten, `=FF` left typed), and from there every later call
     concatenates onto the same line (`=FFMEMFIND !BPLISTBPLISTBPLIST`) instead of running.
-    Nothing but `close` recovered.
+    Nothing but `close` recovers.
 
     A bare ENTER is the one keystroke that is safe either way: it turns a waiting page, and
     at an IDLE prompt it submits whatever is typed there and clears it. That second half is
-    the one this whole recovery rests on, so it was MEASURED against the probe guest rather
-    than assumed: several bare ENTERs in a row at an idle prompt produced no output at all
-    and did NOT repeat the last command (a convention some interactive debuggers do follow,
-    which here would have re-issued a `MEMFIND` or a `MEMS` instead of clearing anything).
+    the one this whole recovery rests on, and it holds against the probe guest: several bare
+    ENTERs in a row at an idle prompt produce no output at all and do NOT repeat the last
+    command (a convention some interactive debuggers do follow, which here would re-issue a
+    `MEMFIND` or a `MEMS` instead of clearing anything).
     The price of that silence is that the collect waits out its own bound with nothing to
     settle on, which a refusal path can afford and a hot path could not.
 
@@ -350,7 +350,7 @@ def _listing(session: ds.Session, survivors: int) -> list[dict[str, Any]]:
 def scan_filter(session: ds.Session, operator: str, value: int | None,
                 limit: int = judges.HITS_DEFAULT) -> dict[str, Any]:
     """Keep the cells whose current content satisfies `operator` against `value`, or, with
-    no value, against what each cell held when the scan was opened (measured: a cell changed
+    no value, against what each cell held when the scan was opened (a cell changed
     once and then left alone keeps passing `!` filter after filter, and written back to its
     opening value it stops). The first `limit` survivors are listed with their current values
     (`truncated` when more survive), up to `HITS_MAX` survivors, past which the listing would

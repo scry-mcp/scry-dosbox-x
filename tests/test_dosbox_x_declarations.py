@@ -372,9 +372,9 @@ def test_a_failed_write_cleans_up_its_temporary(
 
 def test_a_declaration_remembers_when_and_by_which_session_it_was_made(
         tmp_path: Path) -> None:
-    """MEASURED on a real guest: a raw-address breakpoint armed in one session on the
-    wrong selector re-armed itself in the next, and nothing in the store could say which
-    session had left it. A declaration carries `created_at` and `origin`; both round-trip
+    """A raw-address breakpoint armed in one session on the wrong selector re-arms itself
+    in the next, and without a record nothing in the store can say which session left
+    it. A declaration carries `created_at` and `origin`; both round-trip
     through the file; neither takes part in equality, so re-declaring the same thing from a
     new session is the SAME declaration (adopted, below), not a second one."""
     a = dec.Declaration("breakpoint", "address", "00A7:5C6F0",

@@ -663,8 +663,8 @@ class StoppedCode(CodeMachine):
         return self.where(), self.registers(), []
 
     def read_bytes(self, seg: int, off: int, n: int, mode: str | None = None) -> bytes:
-        """The data view's reach as measured live: from an address inside a row it painted
-        112 bytes, not 128 (dos-djgpp32, 00A7:6230F, the live matrix's section F)."""
+        """The data view's reach as the live debugger shows it: from an address inside a row
+        it paints fewer bytes than the full 128."""
         self.d_reads.append((seg, off, n))
         if off > 0xFFFF:
             raise ds.Invalid("bad_argument", f"an offset is 0x0 to 0xFFFF; got 0x{off:X}")

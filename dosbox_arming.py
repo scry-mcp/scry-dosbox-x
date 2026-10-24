@@ -697,7 +697,7 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
         return {}
     # ACCUMULATED, NOT REPLACED: `live()` may have drained part of the queue a moment
     # before a stop tool drains the rest, and the reply must carry BOTH accounts as one
-    # (measured: a drain in `live()` followed by the stop's own lost the first's disarms).
+    # (a drain in `live()` followed by the stop's own loses the first's disarms).
     merge_applied(out)
     return out
 

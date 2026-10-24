@@ -249,7 +249,7 @@ def _scan() -> tuple[bool, str]:
 
 
 def _coin() -> None:
-    """Measured rather than assumed: the game reads the keyboard through its own INT 9 handler
+    """The game reads the keyboard through its own INT 9 handler
     and the serial stub injects scan codes into the emulator's keyboard controller. Whether the
     key reaches that handler is the INT 9 stop; whether the game counted it, its own CREDITOS
     read before and a few frames after."""

@@ -206,7 +206,7 @@ def test_a_megabyte_from_0000_is_the_memory_there_and_not_window_0_sixteen_times
 
 
 def test_a_dump_across_offset_ffff_holds_the_next_segments_bytes(tmp_path: Path) -> None:
-    """The probe guest's measured case: one command from 0814:FFF0 read 0814:0000 again after
+    """The probe guest's case: one command from 0814:FFF0 reads 0814:0000 again after
     sixteen bytes; the window from 1813:0000 holds what lies there."""
     debugger(tmp_path)
     got = dumped("0814:FFF0", 0x20, tmp_path / "x.bin")

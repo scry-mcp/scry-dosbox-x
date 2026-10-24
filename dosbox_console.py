@@ -84,11 +84,11 @@ REPLY_END = re.compile(
 # NO WORD BOUNDARY, and that is the whole lesson of this line. An ncurses pane is
 # painted as runs of cells and the debugger draws its frames with the DEC alternate
 # character set, which arrives here as ordinary letters -- so a register name abuts
-# the run in front of it. MEASURED against a live emulator, the screen carried
+# the run in front of it. The live screen carries
 # `...ooooooooooooEAX=00001234  ESI=00000000`, where `\b` finds no boundary between
-# `o` and `E`. The effect was silent and one-sided: every register whose name happened
-# to follow a space was read, and EAX -- the one a caller sets to prove the machine
-# answered -- was the one that never matched.
+# `o` and `E`. A `\b` would fail silently and one-sided: every register whose name
+# follows a space would be read, and EAX -- the one a caller sets to prove the machine
+# answered -- would never match.
 #
 # The names are spelled out rather than built from character classes, longest first,
 # so a shorter name cannot win inside a longer one.
@@ -114,11 +114,10 @@ REGISTER = re.compile(f"({'|'.join(REGISTER_NAMES)})=([0-9A-F]+)")
 # The only split that loses a match is one falling inside `NAME=` itself, and the
 # widest of those is the whole of it.
 #
-# THE FIRST VERSION WAS `... + 1 + 32` and its comment called it DERIVED while
-# describing "a value wider than any 32-bit register this debugger prints" -- a
-# hand-picked 32 wearing a derivation's clothes, and the term that would have gone
-# stale. An adversarial pass could not pin it at any width, for the reason above:
-# every fixture needing a carry wider than `NAME=` already matched without one.
+# A hand-picked extra width ("wider than any 32-bit register this debugger prints")
+# would be a guess wearing a derivation's clothes, and the term that goes stale. No
+# width beyond `NAME=` can be pinned, for the reason above: every split needing a carry
+# wider than `NAME=` already matched without one.
 EIP_CARRY = max(len(n) for n in REGISTER_NAMES) + 1
 
 
@@ -139,7 +138,7 @@ SETTABLE = frozenset(n.lower() for n in REGISTER_NAMES) | LOW_HALVES
 
 # THE CPU MODE, AS A POSITIVE TOKEN IN EVERY DIRECTION.
 #
-# MEASURED, in one session walked from reset to a DJGPP client:
+# Walking a session from reset to a DJGPP client shows:
 #
 #   SS=0000 Real     at F000:FFF0, before anything has switched mode
 #   SS=008F Pr16     inside CWSDPMI's 16-bit stub
@@ -168,11 +167,11 @@ def real_segments(mode: str) -> bool:
 
 
 # IT IS ANCHORED ON THE `SS=` LINE, and that is not tidiness -- an unanchored version
-# was a live wrong answer. `Real` is an ordinary English word, the Output pane is a
+# gives a live wrong answer. `Real` is an ordinary English word, the Output pane is a
 # scrolling LOG carrying DOSBox-X's own messages and the guest's E9 lines, and that
 # pane is painted BELOW the register pane. So a bare `\b(Real|Pr16|Pr32)\b` taking the
-# LAST match deliberately preferred the one region of the screen that can say anything
-# at all: a `Pr32` machine whose log happened to carry the word "Real" answered `Real`,
+# LAST match prefers the one region of the screen that can say anything
+# at all: a `Pr32` machine whose log happens to carry the word "Real" answers `Real`,
 # and `watch` then sent `BPM` where the machine wanted `BPPM` -- which this debugger
 # accepts and arms against a segment that does not exist.
 #
@@ -212,8 +211,8 @@ PANE_CYCLES = re.compile(r"cc=([0-9]+) *[A-Z]+\r?$", re.M)
 # and this module needs to RECOGNISE an entry it created, not to model every shape the
 # debugger can print.
 #
-# IT IS NOT ANCHORED TO THE START OF A LINE, and it was -- the last of the three pane
-# patterns to learn what `REGISTER` and `DATA_ROW` each learned from a measured defect.
+# IT IS NOT ANCHORED TO THE START OF A LINE, for the reason `REGISTER` and `DATA_ROW` are not.
+# patterns to need what `REGISTER` and `DATA_ROW` need too.
 # This debugger's repaints GLUE content to whatever precedes it with no newline (the
 # captures in the test file show `ooooOutputoooo...Breakpoint list:`), so a row arriving
 # as `----------------00. BP F000:FFF0` matched nothing. The bad direction is not the
@@ -227,8 +226,8 @@ BREAKPOINT_ROW = re.compile(r"\s*([0-9A-F]{2})\.\s+(\S.*?)\s*$", re.M)
 # The header `BPLIST` prints above its list. The LAST one in a delta is the one that
 # belongs to the command just sent: this debugger's Output pane is a SCROLLING LOG, so
 # a repaint carries earlier listings and earlier acknowledgements along with the new
-# one. MEASURED -- a second `BPLIST` came back with two headers, and a `BPM` delta
-# carried the `DEBUG: Set breakpoint at F000:E05B` from a `BP` sent before it.
+# one: a second `BPLIST` comes back with two headers, and a `BPM` delta
+# carries the `DEBUG: Set breakpoint at F000:E05B` from a `BP` sent before it.
 #
 # That is why nothing here believes an acknowledgement. A breakpoint is confirmed by
 # READING THE LIST BACK, the same discipline `load_symbols` uses on the var list and
@@ -238,8 +237,7 @@ BPLIST_HEADER = "Breakpoint list:"
 
 # The banner the debugger paints at the top of the register pane, and therefore the
 # only reliable mark of where one REPAINT ends and the next begins. `parse_last_pane`
-# rests on it, so it is measured rather than assumed:, three
-# consecutive surveys each carried exactly ONE occurrence, at the same offset, above
+# rests on it: every repaint carries exactly ONE occurrence, at the same offset, above
 # fifteen register hits in a fixed order.
 #
 # IT IS THE TEXT AND NOT THE BOX-DRAWING AROUND IT. The terminal renders the banner's
@@ -265,10 +263,8 @@ PANE_HEADER = "Register Overview"
 # abuts the first row with no newline between them and the screen carries
 # `ooooData view (segmented)oooo...ooooF000:0000E000 00 00 ...`. Anchored at line
 # start, that row does not match -- and it is the FIRST row, which is the one at the
-# address the caller asked about. MEASURED with the anchor in place: eight rows on
-# screen, SEVEN parsed, and the missing one was E000 for a caller who asked for E000.
-# The same defect as the register pattern's, in the same file, found by a test written
-# after that comment had already explained it.
+# address the caller asked about: with eight rows on screen, an anchored pattern parses
+# SEVEN, and the missing one is E000 for a caller who asked for E000.
 #
 # The ASCII gutter is OPTIONAL because it is not the evidence. It is bounded at 16 and
 # NO CHARACTER OF IT MAY BEGIN AN ADDRESS: without that, a row followed immediately by
@@ -277,14 +273,12 @@ PANE_HEADER = "Register Overview"
 # rows are on ONE line to begin with, which is the whole reason this pattern is not
 # anchored.
 #
-# THE LOOKAHEAD IS INSIDE THE REPETITION, AND THE FIRST ATTEMPT PUT IT OUTSIDE. That
-# version guarded only the gutter's FIRST character, so it worked for an EMPTY gutter
-# and for a FULL one and failed for every length between. MEASURED across all 17
-# lengths: 0 and 16 recovered both rows, 1 through 15 lost the second and produced the
-# INVALID that says "that is a reading of somewhere else" about a row present in the
-# string it had just parsed -- verbatim the failure the fix claimed to remove. Its test
-# and the check beside it were calibrated on length 0, so both were green: the axis moved
-# was the lookahead's PRESENCE and never the gutter's LENGTH.
+# THE LOOKAHEAD IS INSIDE THE REPETITION. Outside it, only the gutter's FIRST character
+# is guarded, which works for an EMPTY gutter and for a FULL one and fails for every
+# length between: of the 17 lengths, 0 and 16 recover both rows, 1 through 15 lose the
+# second and produce the INVALID that says "that is a reading of somewhere else" about
+# a row present in the string just parsed. A check calibrated on length 0 stays green,
+# so the gutter's LENGTH is the axis to vary.
 # The data view is eight rows of sixteen bytes on this build: the most `read_memory` can
 # hand back as `hex` from a row's start.
 DATA_VIEW_BYTES = 128
@@ -376,9 +370,8 @@ def parse_last_pane(text: str) -> dict[str, str]:
     own. A delta carrying an old whole pane above a CUT one therefore yields a mapping
     that NEITHER repaint holds -- `CS` from the first and `EIP` from the second -- and
     the pair looks perfectly well formed, so the `missing` check downstream cannot see
-    it. MEASURED on a fixture built from two panes: `where()` answered
-    `{'cs': '0087', 'eip': '00012345'}` for a machine no repaint ever showed there, and
-    `run_to` turned that into `arrived: True`.
+    it: on two panes it would answer `{'cs': '0087', 'eip': '00012345'}` for a machine
+    no repaint ever showed there, and `run_to` would turn that into `arrived: True`.
 
     IT IS ANCHORED ON THE PANE'S OWN HEADER, not on the rule "a pane cannot name the
     same register twice" with a REPEAT as the start of the next repaint. That rule only
@@ -394,7 +387,7 @@ def parse_last_pane(text: str) -> dict[str, str]:
         repaint resets at the fresh `EIP`, throwing away the fresh `CS` read moments
         before, so `where()` refuses a delta whose last repaint was unambiguous.
 
-    THE HEADER IS A MEASURED MARKER, not an inference from names: every repaint this
+    THE HEADER IS A MARKER THE DEBUGGER PAINTS, not an inference from names: every repaint this
     debugger paints carries exactly one `Register Overview` banner, at the same offset,
     with the register hits in a fixed order after it.
 
@@ -426,8 +419,8 @@ def offset_ceiling(mode: str) -> int:
     16-bit clamp was corrected on `run_to` and left standing on `watch`, so a watch on
     a DJGPP static past 0xFFFF was refused outright while a breakpoint on one was not.
 
-    In protected mode an offset is 32 bits, and MEASURED, the debugger takes one:
-    `BP 0087:00012345` was accepted and listed as `BP 0087:12345`. In real mode
+    In protected mode an offset is 32 bits, and the debugger takes one:
+    `BP 0087:00012345` is accepted and listed as `BP 0087:12345`. In real mode
     anything past 0xFFFF addresses nothing, and this debugger would accept it and then
     never fire, which is the silent direction.
 
@@ -480,14 +473,14 @@ def parse_mode(text: str) -> str | None:
     earlier register pane above the current one, and the mode being asked about is the
     one the machine is in NOW.
 
-    A LIMIT, said out loud, and HALF of it is now closed. This and `parse_registers` are
+    A LIMIT, said out loud, and HALF of it is closed. This and `parse_registers` are
     each last-wins over the same text, and nothing checks they came from the SAME
-    repaint. The half that WAS closed is the worse one: `parse_registers` is last-wins
+    repaint. The half that is closed is the worse one: `parse_registers` is last-wins
     PER REGISTER, so a delta could compose an address out of a `CS` from one repaint and
-    an `EIP` from another -- MEASURED, `where()` answered `{'cs': '0087', 'eip':
-    '00012345'}` for a machine no repaint ever showed there, and `run_to` turned it into
-    `arrived: True`. `parse_last_pane` is what `where()` reads now, so the address comes
-    from one repaint or the refusal fires.
+    an `EIP` from another (`{'cs': '0087', 'eip': '00012345'}` for a machine no repaint
+    ever showed there, which `run_to` would turn into `arrived: True`).
+    `parse_last_pane` is what `where()` reads, so the address comes from one repaint or
+    the refusal fires.
 
     WHAT IS STILL OPEN is the MODE against that address: this function is last-wins over
     the whole text independently of which pane the registers came from, so a delta
@@ -567,7 +560,7 @@ def bp_row_target(entry: str) -> tuple[str, int, int] | None:
     seg:off.
 
     RECOGNITION IS BY THE NUMBERS, NEVER BY A RECONSTRUCTED SPELLING, because the width
-    the debugger prints an offset at is not fixed: MEASURED, one watch address came back
+    the debugger prints an offset at is not fixed: one watch address comes back
     as both `BPPM 00AF:6024` and `BPPM 00AF:00006024`, and a code offset accepted as
     `BP 0087:00012345` listed as `BP 0087:12345`. So `f"BP {seg:04X}:{off:04X}"` compared
     for equality against the row the debugger actually printed reports a breakpoint that
@@ -595,21 +588,21 @@ def parse_data_view(text: str) -> list[str]:
     IT EXISTS BECAUSE THE ALTERNATIVE IS A SLICE BY POSITION, and a slice takes the wrong
     end: this debugger paints its Output log BELOW its Data view, so the screen's last
     2000 characters are the emulator's boot chatter and what is thrown away is the
-    memory. MEASURED: `D F000:E000` produces a delta longer than that cap in which the
+    memory: `D F000:E000` produces a delta longer than that cap in which the
     row for E000 is present, and the capped reply begins rows later. A tool answering
     `ok` without containing its own answer.
 
     IT SEARCHES RATHER THAN MATCHING WHOLE LINES, so what comes back is the row and not
     the pane decoration around it. See `DATA_ROW` for why a row is not at the start of
-    its line, and for what anchoring there was measured to cost.
+    its line, and for what anchoring costs.
 
     AND IT TAKES EVERY MATCH ON A LINE, NOT THE FIRST. The same repaint mechanism that
     glues a pane header to the row after it glues ROWS to each other, so `.search` --
-    which returns one match per line -- silently dropped every row but the first
-    whenever two arrived without a newline between them. MEASURED on the pattern: two
-    complete rows, gutters and all, parsed to ONE, and asking for the second address
-    then produced an INVALID whose text asserted "that is a reading of somewhere else"
-    about a row sitting in the string it had just parsed.
+    which returns one match per line -- silently drops every row but the first
+    whenever two arrive without a newline between them: two complete rows, gutters and
+    all, parse to ONE, and asking for the second address then yields an INVALID whose
+    text asserts "that is a reading of somewhere else" about a row sitting in the string
+    just parsed.
     """
     return [m.group(0) for raw in text.splitlines()
             for m in DATA_ROW.finditer(raw)]

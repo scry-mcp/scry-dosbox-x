@@ -116,7 +116,7 @@ def registered_tools() -> list[str]:
     """The names the MCP layer will actually serve, ASKED OF THE MCP LAYER.
 
     It reads the server's own registry rather than a list this module keeps beside
-    it. MEASURED: `mcp.tool()` returns the function unchanged, so deleting the
+    it: `mcp.tool()` returns the function unchanged, so deleting the
     registration leaves every ordinary test green while the server exposes NOTHING --
     and a parallel list maintained here is populated on the way past whether or not
     the registration happened, so asserting against it caught that defect not at

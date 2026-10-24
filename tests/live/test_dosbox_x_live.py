@@ -9,7 +9,7 @@ says WHICH, because "skipped" and "passed" must not print the same thing.
 Point it at your own program instead with `DOSBOX_X_LIVE_CONF` plus that config's
 working directory in `DOSBOX_X_LIVE_CWD` -- BOTH or NEITHER, because DOSBox-X configs
 mount relative paths, so the directory is part of the fixture and not a detail. Setting
-one of the two used to pair a stranger's config with this package's directory and
+one of the two would pair a stranger's config with this package's directory and
 refuse neither.
 """
 
@@ -32,12 +32,10 @@ import dosbox_session as ds
 # THE PACKAGE'S OWN GUEST IS THE DEFAULT, and pointing the tier at a project is the
 # override rather than the requirement.
 #
-# It used to be the other way round, and the cost was measured: with the tier aimed at a
-# config whose guest was not one particular private application, NINE cases FAILED --
-# not skipped -- while the README said it "SKIPS unless you point it at a config". The
-# dependency was never the project's name; it is that the guest RUNS after a `resume`
+# Requiring a project's config would make the tier FAIL, not skip, for anyone else. The
+# dependency is not on any project's name; it is that the guest RUNS after a `resume`
 # and EMITS instrumentation, which `resume`, `e9`, `e9_wait`, `step`-on-a-running-
-# machine and the bound cases all rest on. `tests/guest/` holds 144 bytes that do
+# machine and the bound cases all rest on. `tests/guest/` holds a tiny guest that does
 # exactly that and nothing else.
 _OWN = guest_dir()
 
@@ -45,19 +43,19 @@ _OWN = guest_dir()
 def _override(name: str, default: str) -> str:
     """One `DOSBOX_X_LIVE_*` override, resolved the SAME WAY as the other four.
 
-    THE FIVE USED TWO IDIOMS AND THEREFORE HAD THREE BEHAVIOURS on an exported-but-
-    EMPTY value, which is an ordinary thing to have in a shell (`export X=` in a
-    profile, a CI variable with no value). MEASURED, all three:
+    ONE IDIOM FOR ALL, because an exported-but-EMPTY value is an ordinary thing to have
+    in a shell (`export X=` in a profile, a CI variable with no value) and the usual
+    idioms give three behaviours on it:
 
-      * `... or default` -- CONF and CWD -- fell back SILENTLY, so a caller who meant
-        their own config ran the package's guest and was told nothing.
-      * `get(name, default)` -- PROGRAM -- kept the empty string, and
-        `"".split()[0]` raised `IndexError: list index out of range` out of a fixture,
-        so two cases ERRORED rather than skipped.
-      * `get(name, default)` -- MARK -- kept it too, and an empty pattern compiles to a
-        regex matching EVERY line while `"" in <anything>` is True, so the case passed
-        having asserted nothing about the guest at all. That is the worst of the three:
-        the other two are loud.
+      * `... or default` falls back SILENTLY, so a caller who meant their own config
+        runs the package's guest and is told nothing.
+      * `get(name, default)` keeps the empty string, and `"".split()[0]` raises
+        `IndexError: list index out of range` out of a fixture, so cases ERROR rather
+        than skip.
+      * `get(name, default)` on a pattern keeps it too, and an empty pattern compiles
+        to a regex matching EVERY line while `"" in <anything>` is True, so the case
+        passes having asserted nothing about the guest at all. That is the worst of
+        the three: the other two are loud.
 
     Whitespace is stripped for the same reason: a trailing newline off a `$(...)` is
     the same mistake wearing different bytes.
@@ -127,9 +125,8 @@ def test_the_debugger_comes_up_and_answers_with_a_value(session: ds.Session) -> 
     """The reply a terminal echo cannot fabricate.
 
     An acknowledgement like "Set Register success." contains only words the caller
-    typed; the VALUE in the register pane is the emulator's. Measured while building
-    this: with echo left on and no emulator running at all, a check looking for its
-    own command words scored TRUE.
+    typed; the VALUE in the register pane is the emulator's. With echo left on and no
+    emulator running at all, a check looking for its own command words scores TRUE.
     """
     session.wait_ready()
     written = session.set_register("ax", 0x1234)
@@ -216,7 +213,7 @@ def test_close_leaves_nothing_behind(tmp_path: Path) -> None:
 def conf_that_does_not_exit(tmp_path: Path) -> Path:
     """The caller's conf with its run-and-exit removed, and the mounts kept.
 
-    `program` is passed with `-c`, and MEASURED, `-c` runs AFTER the `[autoexec]`
+    `program` is passed with `-c`, and `-c` runs AFTER the `[autoexec]`
     section: a conf whose autoexec ends in `exit` quits before it is reached. So this
     parameter needs a conf of a particular shape, and the honest way to test it is to
     BUILD that shape rather than to pretend the caller's own conf has it.
@@ -226,8 +223,8 @@ def conf_that_does_not_exit(tmp_path: Path) -> Path:
     """
     text = Path(CONF).read_text(encoding="utf-8", errors="replace")
     # THE LAUNCH LINE AND THE `exit`, COUNTED SEPARATELY, whichever program the caller
-    # pointed at. Three things were wrong with doing it in one alternation and a
-    # `n < 2` guard, and all three are MEASURED against this package's own conf:
+    # pointed at. Doing it in one alternation and a
+    # `n < 2` guard goes wrong three ways against this package's own conf:
     #
     #   * `n >= 2` never required ONE OF EACH. Two `exit` lines satisfied it while the
     #     launch line SURVIVED -- and a surviving launch line means the guest starts
@@ -294,8 +291,8 @@ def test_both_halves_of_the_capture_against_a_real_emulator(tmp_path: Path) -> N
     assert cast(int, biggest["avi_frames"]) > 100, got
     # `complete` is NOT asserted, and its absence here is the finding: the program
     # under capture runs forever, so the recording is never finalised and the file
-    # carries no index. MEASURED, that does not matter -- a frame comes out anyway,
-    # which is what the next lines prove and what an earlier docstring wrongly denied.
+    # carries no index. That does not matter -- a frame comes out anyway,
+    # which is what the next lines prove.
 
     shot = tmp_path / "shot.png"
     ds.Session.frame(s, 60, shot)
@@ -305,25 +302,24 @@ def test_both_halves_of_the_capture_against_a_real_emulator(tmp_path: Path) -> N
 
 def test_a_dump_really_lands_and_carries_the_bytes_that_were_asked_for(
         tmp_path: Path) -> None:
-    """The case whose absence let a tool ship having never once worked.
+    """The dump run against a real emulator, where the tool's path is proved.
 
     `memdump` collected from the CAPTURES directory, on the strength of a sentence in
-    the debugger's help. MEASURED during #317's QA: the file lands in the emulator's
-    WORKING directory instead, so every dump ever taken reported INVALID -- correct
-    behaviour (the debugger claimed success and the disk disagreed, so the tool
-    refused to call it a reading) from a tool looking in the wrong place. Nothing
-    caught it because nothing ran it against a real emulator.
+    the debugger's help. The file lands in the emulator's WORKING directory instead,
+    so such a dump reports INVALID -- correct behaviour (the debugger claims success
+    and the disk disagrees, so the tool refuses to call it a reading) from a tool
+    looking in the wrong place. Only a run against a real emulator shows it.
 
     THE LENGTH IS ASSERTED FOR EQUALITY, not merely that a file appeared: a stale file
     from an earlier run is also a file, and the size is what ties this one to THIS
     request. THE CONTENT IS ASSERTED TOO: a uniform buffer is what a wrong segment,
     unmapped memory and a truncated write all produce alike.
 
-    IT DUMPS THE BIOS ROM AND NOT THE BIOS DATA AREA, and the address was MEASURED
+    IT DUMPS THE BIOS ROM AND NOT THE BIOS DATA AREA, and the address is observed
     rather than reasoned. The session is stopped at the RESET VECTOR, before the BIOS
-    has initialised anything, so the obvious choice is worthless here: probed on this
+    has initialised anything, so the obvious choice is worthless here: on this
     build, 256 bytes at `0000:0400` hold ONE distinct value and so do 256 at
-    `F000:0000`, while `F000:E000` holds 26. Only the third can tell a real read from
+    `F000:0000`, while `F000:E000` holds many. Only the third can tell a real read from
     a buffer of zeros, which is the whole point of looking at the content at all.
     """
     dest = tmp_path / "dump.bin"
@@ -331,7 +327,7 @@ def test_a_dump_really_lands_and_carries_the_bytes_that_were_asked_for(
     try:
         s.wait_ready()
         # THE PRE-EXISTING FILE IS REFUSED, and it is asked here rather than assumed:
-        # this tool used to DELETE whatever sat at those paths, and the first of them
+        # deleting whatever sits at those paths would be unsafe, and the first of them
         # is the emulator's working directory, which is somebody's repository.
         candidates = s._memdump_candidates()
         planted = candidates[0]
@@ -391,10 +387,10 @@ def test_the_machine_keeps_running_while_nobody_is_asking(tmp_path: Path) -> Non
     """The defect this test exists for, and the reason no contract test could see it.
 
     A pty master's buffer is finite, so when it fills the WRITER blocks -- and the
-    writer is the emulator. While the only reader was a tool call, the machine froze
-    between questions. MEASURED before the drain thread existed: three sessions stuck
-    at EXACTLY `[+ 2.091]` for 105, 48 and 36 seconds of wall clock, and one
-    `registers` call moved the guest forward by 7 guest-seconds.
+    writer is the emulator. While the only reader was a tool call, the machine freezes
+    between questions: the log stays stuck at one stamp for the whole wall clock, and
+    one `registers` call moves the guest forward by seconds of guest time. A drain
+    thread keeps the reader running.
 
     IT MEASURES THE LOGFILE ON DISK AND NEVER ASKS THE SESSION, which is the load
     bearing decision here: every read through the session drains the terminal, so a
@@ -454,21 +450,16 @@ def test_the_machine_keeps_running_while_nobody_is_asking(tmp_path: Path) -> Non
     assert moved is not None, "the guest clock vanished from the log: INVALID"
     assert len(samples) >= 5, f"only {len(samples)} samples: this window measured nothing"
     advanced = moved - base
-    # THE FLOOR IS IN TICKS, BECAUSE THE STAMP IS A TICK COUNT. It used to be
-    # `QUIET_SECONDS / 5.0`, and every number in the paragraph justifying it -- "30.65
-    # guest seconds in 30 s of wall clock", "~1500 bytes per guest second", "a 4 KB
-    # flush releases ~2.7 guest seconds" -- described a DIFFERENT guest: a private
-    # application whose stamp was a profiler clock in seconds. `probe.com`'s stamp is an
-    # odometer that rises by ONE per line, so the derivation was arithmetic about a
-    # quantity this guest does not emit, and the floor it produced was 5.0.
+    # THE FLOOR IS IN TICKS, BECAUSE THE STAMP IS A TICK COUNT. `probe.com`'s stamp is
+    # an odometer that rises by ONE per line, not a clock in seconds, so a floor derived
+    # from seconds of wall clock describes a quantity this guest does not emit.
     #
-    # MEASURED on this machine, `cycles=fixed 10000`, reading the case's own logfile:
-    # the odometer reaches **5** over the whole session. So the old floor of 5.0 was
-    # passing by a margin of ZERO -- one line slower and this case goes red blaming a
-    # pty deadlock, on a host that is merely busy.
+    # Over the whole session at `cycles=fixed 10000` the odometer reaches only a few
+    # ticks, so a high floor leaves no margin: one line slower and this case goes red
+    # blaming a pty deadlock, on a host that is merely busy.
     #
     # TWO IS THE FLOOR AND THE SHAPE BELOW IS WHAT MAKES IT ENOUGH. A frozen guest
-    # advances by 0, which 2 catches with room to spare; the thing 5.0 was reaching for
+    # advances by 0, which 2 catches with room to spare; the thing a higher floor would reach for
     # -- a single buffered flush releasing a backlog and looking like progress -- is a
     # question about STEPS and not about distance, and it is asserted directly, four
     # lines down, where it belongs.

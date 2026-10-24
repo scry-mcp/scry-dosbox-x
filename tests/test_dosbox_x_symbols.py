@@ -331,7 +331,7 @@ def test_the_base_is_added_to_every_offset() -> None:
     p = sym.plan(sym.parse_nm(NM_FRAGMENT), pattern="^_main$")
     got = sym.decode(sym.encode(p, MEASURED_BASE))
     assert got == [("_main", MEASURED_BASE + 0x0016DF20)]
-    assert got[0][1] == 0x0056DF20      # what the live debugger was measured holding
+    assert got[0][1] == 0x0056DF20      # what the live debugger holds
 
 
 def test_a_name_too_long_for_the_field_is_refused_rather_than_shifting_the_file() -> None:
@@ -358,11 +358,10 @@ def test_encode_refuses_when_nothing_says_where_the_program_was_loaded() -> None
     complaint, and names whatever occupies low memory: a wrong answer wearing the shape
     of a right one.
 
-    IT USED TO ASK THE SIGNATURE -- that `base` had no default -- and that stopped
-    expressing the requirement the moment `section_bases` became the other way to answer
-    the same question: `base` now defaults to `None` and the requirement is UNCHANGED,
-    only enforced at run time by `resolve_bases`. Asserting the BEHAVIOUR rather than
-    the argument list is what survives the next way of supplying a base, and it is
+    IT ASKS THE BEHAVIOUR AND NOT THE SIGNATURE. `base` defaults to `None` because
+    `section_bases` is the other way to answer the same question, and the requirement is
+    enforced at run time by `resolve_bases`. Asserting the BEHAVIOUR rather than the
+    argument list is what survives the next way of supplying a base, and it is
     stronger: a signature can carry a required parameter that the body then ignores.
     """
     p = sym.plan([sym.Symbol("_x", 0x10)])
@@ -398,9 +397,9 @@ def test_an_empty_section_table_is_refused_rather_than_read_as_a_flat_program() 
 def test_two_sections_at_the_same_offset_land_at_different_addresses() -> None:
     """THE WHOLE POINT OF THE CALLER'S SECTION BASES, and the case a shared base cannot express.
 
-    MEASURED on the real Borland 32-bit map, whose section table reads `{1: 0, 2: 0,
-    3: 0}`: with the old model every section folded onto one address space and three
-    symbols at the same offset in three different sections came back at ONE address,
+    On the real Borland 32-bit map, whose section table reads `{1: 0, 2: 0,
+    3: 0}`, a model folding every section onto one address space would put three
+    symbols at the same offset in three different sections at ONE address,
     plausible and wrong. With the bases apart they are three addresses, and a reader
     that ignored the section index could not produce this answer.
     """
@@ -490,17 +489,17 @@ def test_the_size_a_real_program_produces_encodes_and_decodes_intact() -> None:
     assert len(sym.decode(data)) == 7238
 
 
-# ------------------------------------------- the seven the adversarial review measured
+# ------------------------------------------- guarantees stated in a docstring
 #
-# Each of these is a defect that was LIVE and that the suite above was green over. They
-# are grouped so the next reader can see the shape they share: six of the seven are a
-# guarantee stated in a docstring that nothing was asking about.
+# Each of these is a defect the cases above are green over. They are grouped to show
+# the shape they share: most are a guarantee stated in a docstring that nothing asks
+# about.
 
 
 def test_a_line_the_parser_cannot_read_is_counted_and_not_dropped() -> None:
-    """MEASURED: `nm -C` emits `Foo::bar(int, char)`, whose name holds spaces, so the
-    single-token name column does not match. Two lines went in, one symbol came out,
-    and `parsed` said 1 -- accounting that adds up over an amputated population."""
+    """`nm -C` emits `Foo::bar(int, char)`, whose name holds spaces, so the
+    single-token name column does not match. Two lines go in, one symbol comes out,
+    and `parsed` would say 1 -- accounting that adds up over an amputated population."""
     text = "0016df20 T _main\n0016df30 T Foo::bar(int, char)\n"
     syms, unreadable = sym.parse(text)
     assert [s.name for s in syms] == ["_main"]
@@ -527,10 +526,9 @@ def test_a_nul_inside_a_name_cannot_put_two_addresses_under_one_name() -> None:
     """The central guarantee was expressed on `str` and the file is BYTES. `_a\\0b` and
     `_a\\0c` are different strings, so `check()` called them distinct, and the debugger
     cuts a name at the first NUL: both decoded to `_a`."""
-    # THE THIRD SYMBOL IS LOAD-BEARING, and the first version of this test did without
-    # it and failed: with both NUL names rejected the plan is EMPTY, which the guard
-    # one test up now refuses. Two fixes composing correctly, and the fixture has to
-    # exercise this one without tripping that one.
+    # THE THIRD SYMBOL IS LOAD-BEARING: with both NUL names rejected the plan is EMPTY,
+    # which the guard one test up refuses. The fixture has to exercise this guard
+    # without tripping that one.
     p = sym.plan([sym.Symbol("_a\x00b", 1), sym.Symbol("_a\x00c", 2),
                   sym.Symbol("_ok", 3)])
     assert p.kept == 1 and len(p.unencodable) == 2
@@ -550,15 +548,15 @@ def test_an_empty_name_and_a_control_byte_are_refused() -> None:
 
 
 def test_a_negative_offset_and_an_oversized_base_are_refused() -> None:
-    """Only the SUM was checked, so the two errors CANCELLED. MEASURED: offset -0x1000
-    against base 0x400000 encoded as 0x3FF000, naming memory below the program; and
-    base 0x100000000 with offset -1 encoded as 0xFFFFFFFF."""
+    """Checking only the SUM lets the two errors CANCEL: offset -0x1000
+    against base 0x400000 would encode as 0x3FF000, naming memory below the program; and
+    base 0x100000000 with offset -1 would encode as 0xFFFFFFFF."""
     with pytest.raises(sym.BadSymbolText, match="not negative"):
         sym.encode(sym.plan([sym.Symbol("_x", -0x1000)]), MEASURED_BASE)
     with pytest.raises(sym.BadSymbolText, match="not a 32-bit linear base"):
         sym.encode(sym.plan([sym.Symbol("_y", 1)]), 0x100000000)
-    # THE CONTROL: the legitimate extremes still encode, so this did not simply narrow
-    # the range until nothing passes.
+    # THE CONTROL: the legitimate extremes still encode, so the check does not simply
+    # narrow the range until nothing passes.
     assert len(sym.encode(sym.plan([sym.Symbol("_z", 0)]), 0)) == 2 + sym.RECORD
     assert len(sym.encode(sym.plan([sym.Symbol("_z", 0)]), sym.ADDR_MAX)) == 2 + sym.RECORD
 
@@ -606,13 +604,10 @@ def test_a_value_that_is_not_an_address_is_excluded_and_counted() -> None:
     """`nm` prints a COMMON symbol's SIZE in the address column and an ABSOLUTE
     symbol's constant, so neither can be placed on a map of the program.
 
-    MEASURED on objects built by this machine's own DJGPP before the fix: a plan over
-    `nm` of a `.o` came back `parsed=8, kept=4, unencodable=0, truncated_names=0,
-    renamed=0`
-    -- every counter clean -- `check()` did not raise, and the emitted table put
-    `_big_table` at linear 0x14000, which is its SIZE (4096 ints x 4 bytes), and
-    `_PORT`, a `.set _PORT, 0x3F8` serial-port constant, at 0x103F8. Complete,
-    plausible, loadable and entirely false.
+    Planned over `nm` of a `.o`, every counter would stay clean, `check()` would not
+    raise, and the emitted table would put `_big_table` at its SIZE (4096 ints x 4
+    bytes) and `_PORT`, a `.set _PORT, 0x3F8` serial-port constant, at the constant plus
+    the base. Complete, plausible, loadable and entirely false.
 
     EXCLUDED AND COUNTED rather than refusing the file, which is this module's own
     idiom: the bucket keeps the table TRUE and conservation keeps the loss VISIBLE.
@@ -635,8 +630,8 @@ def test_a_value_that_is_not_an_address_is_excluded_and_counted() -> None:
 def test_a_linked_program_loses_no_symbol_to_the_unplaceable_filter() -> None:
     """THE CONTROL, and it is what makes the exclusion cheap rather than a judgement.
 
-    MEASURED on the linked DJGPP binary this package was built against: 9,653 symbols,
-    of which `C` and `A` are ZERO. The linker allocates commons into `.bss`, where they
+    On the linked DJGPP binary this package was built against, `C` and `A` are ZERO.
+    The linker allocates commons into `.bss`, where they
     become `B`, so these kinds exist only in an UNLINKED object -- the one mistake the
     filter catches. Without this case the filter could silently eat a real workload and
     the case above would still pass.
@@ -787,7 +782,7 @@ def test_a_c_symbol_table_survives_the_round_trip_with_its_case_intact() -> None
 
 # --------------------------------------------------- what the eight cases above cannot see
 #
-# Every case below exists because a BREAK of the shipped code came back GREEN against
+# Every case below exists because a BREAK of the shipped code would stay GREEN against
 # the eight cases above it. They are grouped here rather than folded in beside their
 # siblings so that the reason they exist stays legible: this block is the answer to
 # "seen red along which axis".
@@ -852,8 +847,8 @@ def test_an_offset_wider_than_sixteen_bits_is_not_folded_into_an_address() -> No
     """`{4,5}` is a fact about this linker's PADDING, not a widening of the field.
 
     Five hex digits reach 0xFFFFF and a real-mode offset does not, so `seg * 16 + off`
-    on a wider value invents an address. MEASURED before the fix: ` 0459:1FFFF  FOO`
-    came back as a symbol at 0x2458F with every counter clean.
+    on a wider value invents an address: ` 0459:1FFFF  FOO` would come back as a symbol
+    at 0x2458F with every counter clean.
     """
     got, unreadable = sym.parse_tlink(
         "  Address         Publics by Name\n"
@@ -907,10 +902,10 @@ def test_a_borland_public_does_not_claim_to_be_code() -> None:
 
 
 def test_the_letters_whose_value_is_not_an_address_are_the_measured_ones() -> None:
-    """THE SET'S CONTENTS, which no case asserted -- so widening it to `CAWV` (which
-    excludes real, placeable, weak-defined symbols) was GREEN.
+    """THE SET'S CONTENTS: widening it to `CAWV` (which excludes real, placeable,
+    weak-defined symbols) must not stay GREEN.
 
-    Every letter here is one MEASURED on a real DJGPP artefact, and the two directions
+    Every letter here is one observed on a real DJGPP artefact, and the two directions
     are asserted together because that is what pins a SET rather than a behaviour.
     """
     assert set(sym._UNPLACEABLE) == set("CAaN"), sym._UNPLACEABLE
@@ -920,14 +915,12 @@ def test_the_letters_whose_value_is_not_an_address_are_the_measured_ones() -> No
 
 
 def test_a_local_absolute_and_a_debug_symbol_are_not_placed_either() -> None:
-    """The lowercase half, and the letter the reasoning never considered.
-
-    The set was UPPERCASE ONLY, justified by "the four in the measured binary are
-    `.absolut`, which `_NOISE` already excludes by name". That is a fact about one
-    binary doing the work of a rule, and it failed two ways. MEASURED on the linked
-    DJGPP binary: 499 `N` symbols (`00002210 N .comment`, a section-relative offset)
-    and 4 `a`, ALL of them placed the moment `keep_noise` is on -- and a lowercase `a`
-    with an ordinary name was placed even with it off, because `_NOISE` never saw it.
+    """The lowercase half: an UPPERCASE-ONLY set, justified by "the `a` symbols in the
+    binary are `.absolut`, which `_NOISE` already excludes by name", is a fact about one
+    binary doing the work of a rule, and fails two ways. On the linked DJGPP binary the
+    `N` symbols (`00002210 N .comment`, a section-relative offset) and the `a` ones
+    would ALL be placed the moment `keep_noise` is on -- and a lowercase `a` with an
+    ordinary name would be placed even with it off, because `_NOISE` never sees it.
     """
     # `_NOISE` cannot save this one: the name has no leading dot.
     p = sym.plan(sym.parse_nm("000003f8 a _localport\n0016df20 T _main\n"))
@@ -1144,7 +1137,7 @@ def test_every_offset_lands_inside_the_length_its_own_section_declared() -> None
     built from anything the parser reads would be the parser's arithmetic written twice.
 
     THE EXTENTS ARE READ OUT OF THE FIXTURE, not written beside it -- see
-    `_declared_sections`, whose docstring carries the measured reason. And the population
+    `_declared_sections`, whose docstring carries the reason. And the population
     is asserted BEFORE the loop, because a `for` over an empty list passes every
     assertion inside it: this file already documents that failure by name.
     """
@@ -1209,8 +1202,8 @@ def test_the_two_row_shapes_cannot_claim_the_same_row() -> None:
     """WHY THE ORDER THEY ARE TRIED IN DOES NOT MATTER, asserted instead of assumed.
 
     `_tlink_place` tries the real-mode pattern first, so ANY widening of the 32-bit one
-    is invisible to every case that feeds it real material -- MEASURED, widening it to
-    `{4,8}` was green across the whole suite. What makes the order safe is that the two
+    is invisible to every case that feeds it real material: widening it to
+    `{4,8}` stays green across the whole suite. What makes the order safe is that the two
     offset widths do not overlap, and that is a property, so it is pinned as one.
 
     The direction that bites is a real-mode row read as a SECTION INDEX: `0D74` is not a
@@ -1299,11 +1292,11 @@ def test_a_32_bit_map_that_printed_no_publics_says_so_too() -> None:
         sym.parse(segments_only)
 
 
-# ------------------------------------------- what the review of the block above found
+# ------------------------------------------- breaks the cases above are green over
 #
-# Every case here exists because a BREAK came back GREEN against the cases before it,
-# or because an auditor read a claim in the source that the code did not support. They
-# are grouped so the reason they exist stays legible.
+# Every case here exists because a BREAK would stay GREEN against the cases before it,
+# or because the source makes a claim that the code does not support. They are grouped
+# so the reason they exist stays legible.
 
 
 def test_a_32_bit_row_carries_the_mark_too_and_it_is_spelled_idle() -> None:
@@ -1336,12 +1329,12 @@ def test_a_32_bit_row_carries_the_mark_too_and_it_is_spelled_idle() -> None:
 def test_the_overlay_count_is_a_count_and_not_a_flag() -> None:
     """`== 1` ACCEPTS `True`, so every assertion on this counter was satisfied by a bool.
 
-    Replacing `sum(...)` with `any(...)` left the entire suite green: `True == 1` and
+    Replacing `sum(...)` with `any(...)` would leave the entire suite green: `True == 1` and
     `False == 0`, and mypy is happy because `bool` subclasses `int`. On a real map with
     dozens of flagged symbols the tool would then report 1, and the number is the whole
     point of the field.
 
-    The axis is VALUE, not presence, and it needed a fixture with TWO flagged symbols:
+    The axis is VALUE, not presence, and it needs a fixture with TWO flagged symbols:
     with one, a count and a flag are indistinguishable by construction.
     """
     two = TLINK_MAP.replace(" 0459:00123       ACTIVE_CLS\r\n",
@@ -1573,10 +1566,10 @@ def test_two_unreadable_rows_in_one_section_are_counted_as_two_and_not_as_one() 
     """THE COUNT IS OF ROWS AND NOT OF SECTIONS, which is a distinction nothing here
     could see until this case existed.
 
-    MEASURED as a surviving break: replacing `unreadable += len(bad)` with
-    `unreadable += 1 if bad else 0` left the whole suite green AND the five real maps
-    byte-identical -- because every one of them reads with `unreadable = 0`, so a
-    per-section count and a per-row count agree everywhere the control can look. A
+    Replacing `unreadable += len(bad)` with `unreadable += 1 if bad else 0` would leave
+    the whole suite green AND the real maps byte-identical -- because every one of them
+    reads with `unreadable = 0`, so a per-section count and a per-row count agree
+    everywhere the control can look. A
     section losing five symbols would then have reported one.
 
     THE ROWS ARE ASSERTED BESIDE THE COUNT, on purpose: the count is the number a caller
@@ -1609,8 +1602,7 @@ def test_a_watcom_section_with_no_readable_row_refuses_and_does_not_return_empty
     IT CALLS THE READER DIRECTLY, on purpose. `parse` never reaches here with nothing,
     because `looks_like_watcom` requires a readable row before it will claim a file --
     so the refusal is unreachable through the front door and reachable through this one,
-    which is a public function. MEASURED as a surviving break: deleting the refusal left
-    the whole suite green.
+    which is a public function. Deleting the refusal would leave the whole suite green.
     """
     header = ("                        +----------------+\r\n"
               "                        |   Memory Map   |\r\n"
@@ -1627,11 +1619,10 @@ def test_a_watcom_section_with_no_readable_row_refuses_and_does_not_return_empty
 def test_the_dedupe_key_carries_the_section_in_both_sectioned_readers() -> None:
     """The SAME NAME at the same offset in DIFFERENT sections is TWO symbols.
 
-    THE FIRST VERSION OF THIS CASE DID NOT BITE, and the reason is worth keeping: it used
-    two DIFFERENT names, so `(name, offset)` separated them perfectly well and dropping
-    the section from the key changed nothing. MEASURED -- both readers survived that
-    break green. The collision needs the name to be equal, which is the only thing the
-    section is left deciding.
+    THE NAMES MUST BE EQUAL for this case to bite: with two DIFFERENT names,
+    `(name, offset)` separates them perfectly well and dropping the section from the key
+    changes nothing. The collision needs the name to be equal, which is the only thing
+    the section is left deciding.
 
     On these formats it is not hypothetical: the sections OVERLAP. Every section of the
     real Borland 32-bit map starts at 0 and a Watcom map's sections 1 and 2 both do, so
@@ -1712,10 +1703,10 @@ def test_the_ratio_does_not_bind_the_flat_readers_where_it_would_refuse_every_gn
 
     For an ANCHORED reader `unreadable` counts lines INSIDE a symbol section that LOOK
     like rows, so every one is a symbol lost. For a FLAT reader it counts every line that
-    did not match, and a GNU `ld` map is MOSTLY not symbols by construction -- MEASURED
-    on this package's own fixture, 912 unmatched against 228 symbols. One ratio over both
-    would refuse every GNU map ever written, which is a guard that breaks the thing it
-    was meant to protect.
+    did not match, and a GNU `ld` map is MOSTLY not symbols by construction -- on this
+    package's own fixture, unmatched lines outnumber symbols several times over. One
+    ratio over both would refuse every GNU map ever written, which is a guard that breaks
+    the thing it is meant to protect.
     """
     ld = ("Memory Configuration\r\n"
           "Name             Origin             Length\r\n"
@@ -1750,22 +1741,23 @@ def test_a_watcom_map_reads_through_parse_with_no_report_at_all() -> None:
 
 
 def test_a_name_that_fits_whole_is_never_given_to_a_different_symbol() -> None:
-    """THE WORST THING THIS MODULE CAN DO, and it did it: hand one symbol's EXACT,
-    complete, untruncated name to a DIFFERENT symbol at a different address.
+    """THE WORST THING THIS MODULE CAN DO: hand one symbol's EXACT, complete,
+    untruncated name to a DIFFERENT symbol at a different address.
 
-    The reservation pass keyed on the STEM -- `stems.count(s) == 1` -- and a name that
-    fits in fifteen characters is NOT a unique stem when some longer name truncates onto
-    it, which by this module's own measurement is the normal case (35.7% of names are
-    longer than the field). So nothing protected it and the longer name took it.
+    A reservation pass keyed on the STEM -- `stems.count(s) == 1` -- would treat a name
+    that fits in fifteen characters as a unique stem even when some longer name
+    truncates onto it, which is the normal case (many names are longer than the field).
+    Nothing would protect it and the longer name would take it.
 
-    MEASURED: `["abcdefghijklmnoXYZ", "abcdefghijklmno"]` came back with the FIRST named
-    `abcdefghijklmno`. Every counter clean, `check()` satisfied -- the names were
-    distinct, after all -- and somebody typing the real name lands on the wrong function.
-    That is the "name that LIES", which this module says is worse than a missing one.
+    `["abcdefghijklmnoXYZ", "abcdefghijklmno"]` must not come back with the FIRST named
+    `abcdefghijklmno`. Every counter would be clean and `check()` satisfied -- the names
+    are distinct, after all -- and somebody typing the real name lands on the wrong
+    function. That is the "name that LIES", which this module says is worse than a
+    missing one.
 
-    AND IT WAS ORDER-DEPENDENT, so the same program linked in a different order gave a
-    different answer and one of the two was silently wrong. Both orders are asserted
-    here for that reason.
+    IT MUST NOT BE ORDER-DEPENDENT, or the same program linked in a different order
+    gives a different answer and one of the two is silently wrong. Both orders are
+    asserted here for that reason.
     """
     for order in (["abcdefghijklmnoXYZ", "abcdefghijklmno"],
                   ["abcdefghijklmno", "abcdefghijklmnoXYZ"]):
@@ -1787,16 +1779,15 @@ def test_two_symbols_that_genuinely_share_a_whole_name_are_still_told_apart() ->
 
 
 def test_find_by_offset_does_not_answer_out_of_a_different_section() -> None:
-    """A DECISION-36 REGRESSION, caught by an adversarial reading and not by any test.
+    """The nearest symbol is searched within ONE section.
 
-    Before it, every producer folded its offsets into ONE space and comparing them across
-    the whole list was sound. The two sectioned readers broke that precondition and this
-    function was not revisited -- and these formats' sections OVERLAP, so the situation
-    is ordinary rather than contrived.
+    A producer folding its offsets into ONE space makes comparing them across the whole
+    list sound. The two sectioned readers do not, and these formats' sections OVERLAP,
+    so the situation is ordinary rather than contrived.
 
-    MEASURED: `[_main @ 1:0x10, _dataend @ 2:0x20]` asked about 0x100 answered
+    `[_main @ 1:0x10, _dataend @ 2:0x20]` asked about 0x100 must not answer
     `_dataend +0xE0` -- a symbol from a different selector, with a plausible delta and no
-    error, when `_main` was the only right answer.
+    error, when `_main` is the only right answer.
     """
     table = [sym.Symbol("_main", 0x10, section=1),
              sym.Symbol("_dataend", 0x20, section=2)]
@@ -1815,11 +1806,11 @@ def test_find_by_offset_does_not_answer_out_of_a_different_section() -> None:
 
 def test_a_parse_report_may_not_be_used_for_two_reads() -> None:
     """Every writer APPENDS to `unreadable_rows` while `fmt` is OVERWRITTEN, so a report
-    handed to two reads described the SECOND file's format and BOTH files' lost rows --
-    while the comment on that field says the count and the rows cannot disagree.
+    handed to two reads would describe the SECOND file's format and BOTH files' lost
+    rows -- while the comment on that field says the count and the rows cannot disagree.
 
-    MEASURED: two reads of a one-bad-row section left `len(unreadable_rows) == 2` and
-    `parse` returned 1.
+    Two reads of a one-bad-row section would leave `len(unreadable_rows) == 2` while
+    `parse` returns 1.
     """
     text = ("  Address         Publics by Name\r\n"
             "\r\n"
