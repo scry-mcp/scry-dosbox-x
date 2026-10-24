@@ -687,6 +687,18 @@ whether the debugger still holds it, and one ref is one watch: the other half on
 is refused, since it would be the same reading twice. A row a store
 holds under the retired mode `read` is read as `show`, and written so at the next write.
 
+**A watch at a raw `SEG:OFF` keeps the cpu mode of the stop that placed it**, as a raw
+breakpoint does, because the debugger computes a memory breakpoint's address in the mode of the
+moment it compares, and the segment is a paragraph in real mode and a selector in protected mode.
+It is read and judged only at a stop of that mode; at a stop of the other it is `unarmable`, its
+`why` naming the mode it waits for, with no value, since its bytes there are another place's.
+Declared again at that stop, it is placed in this mode: a change watch's rows of the other mode
+are deleted and armed again. One declared while the guest runs, or kept by a store from before
+modes were kept, is placed by the first stop that reads or arms it, so a protected-mode watch of
+such a store that a real-mode stop reads first waits at the program's stops until it is declared
+again at one. A watch by symbol or through a pointer is resolved at each stop and keeps no
+mode.
+
 A change watch (`watch_add` with `mode="change"`) breaks when memory **changes**, the
 debugger's own wording, and the thing most likely to be misread: a read never fires it, and
 neither does a write storing the value already there. The debugger's memory breakpoint compares

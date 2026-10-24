@@ -42,7 +42,7 @@ def declare(kind: str, by: str, ref: str, linear: int | None = None,
     of the stop that placed it (`cpu`; None where no stop did, or the guest runs): the one
     place the declaring tools build one, so none of them can forget the stamp."""
     raw = dec.is_raw_code(kind, by)
-    mode = placement.mode_word(cpu) if raw else None
+    mode = placement.mode_word(cpu) if dec.keeps_mode(kind, by) else None
     return cast(dec.Declaration,
                 placement.to_invalid(lambda: dec.Declaration(kind, by, ref, created_at=st.now(),
                                                     origin=STATE.session_origin,
@@ -258,6 +258,7 @@ def evaluate_watches(session: ds.Session, *,
     # caller with no stop in hand pays a fresh read.
     if held is None:
         held = session.breakpoints()
+    places = RawPlaces(session)
     out: list[dict[str, Any]] = []
     for decl in STATE.store.declarations():
         if decl.kind != "watch":
@@ -266,6 +267,9 @@ def evaluate_watches(session: ds.Session, *,
                                 "length": decl.width, "fmt": decl.fmt}
         if orphan(decl):
             item["orphan"] = True       # nobody's: from a store that kept no origin
+        if _watch_waits(item, decl, places, machine):
+            out.append(item)
+            continue
         res = placement.resolve_ref(decl, "DS", session, machine=machine)
         if "pointer" in res:
             item["pointer"] = res["pointer"]
@@ -455,7 +459,8 @@ def delete_watch_rows(session: ds.Session,
     them highest first keeps every index read from that one list true. The rows the read back
     no longer lists, and the places it still does."""
     listed = session.breakpoints()
-    found = [(place, row) for place in places if (row := watch_held(listed, *place)) is not None]
+    found = [(place, row) for place in dict.fromkeys(places)
+             if (row := watch_held(listed, *place)) is not None]
     for _, row in sorted(found, key=lambda pr: int(pr[1]["index"]), reverse=True):
         session.command(f"BPDEL {row['index']}")
     after = session.breakpoints() if found else listed
@@ -710,6 +715,7 @@ def _arm_queued(session: ds.Session, decl: dec.Declaration,
                 session.breakpoint_interrupt(num, ah)
             STATE.note_armed(ref, {"kind": "int", "num": num, "ah": ah, "entry": decl.ref})
         elif decl.kind == "watch":
+            cpu = _waits_at(decl, places)
             res = placement.resolve_ref(decl, "DS", session, machine=machine)
             if res["state"] != "armable":
                 raise ds.Invalid("unknown_ref", str(res.get("why", res["state"])))
@@ -727,6 +733,7 @@ def _arm_queued(session: ds.Session, decl: dec.Declaration,
                     held.append({"index": "?", "entry": entry})   # the list learns the row
                 STATE.note_armed(ref, {"kind": "watch", "seg": place[0], "off": place[1],
                                        "entry": entry})
+            _placed_here(decl, places, cpu)
         else:
             cpu = _waits_at(decl, places)
             res = placement.resolve_ref(decl, "CS", session, machine=machine)
@@ -844,9 +851,9 @@ def merge_applied(account: dict[str, Any]) -> None:
 
 
 def _waits_at(decl: dec.Declaration, places: RawPlaces) -> str | None:
-    """The mode this stop gives a queued raw breakpoint (None for a symbol), refused when the
-    row waits here: placed in the other mode, or this stop cannot place it. It stays queued."""
-    if not dec.is_raw_code(decl.kind, decl.by):
+    """The mode this stop gives a queued raw row (None for a symbol), refused when the row waits
+    here: placed in the other mode, or this stop cannot place it. It stays queued."""
+    if not dec.keeps_mode(decl.kind, decl.by):
         return None
     cpu = places.mode_here(decl.by, decl.ref)
     if cpu is None and places.unsurveyed():
@@ -855,6 +862,47 @@ def _waits_at(decl: dec.Declaration, places: RawPlaces) -> str | None:
     if cpu is None or placement.waits(decl, lambda: cpu) not in (None, dec.UNPLACED):
         raise ds.Invalid("unknown_ref", placement.waits_why(decl.cpu_mode or dec.UNPLACED,
                                                           "Declare it again", cpu is not None))
+    return cpu
+
+
+def _moved(before: dec.Declaration | None, decl: dec.Declaration) -> bool:
+    """Whether `decl` places again, in the other mode, a raw row a stop of one mode placed."""
+    return (before is not None and None not in (before.cpu_mode, decl.cpu_mode)
+            and before.cpu_mode != decl.cpu_mode)
+
+
+def _watch_waits(item: dict[str, Any], decl: dec.Declaration, places: RawPlaces,
+                 machine: tuple[str, dict[str, str]] | None) -> bool:
+    """Whether a raw watch waits at this stop for one of the mode that placed it, its `item`
+    then given that state and why, as a raw breakpoint's: read here, its SEG:OFF is another byte.
+    One no stop placed is placed by the first stop that can, so a watch declared while the guest
+    ran is read in that stop's mode; a placement the store cannot write is tried again at the
+    next stop, and the watch is read here all the same."""
+    cpu = (lambda: machine[0]) if machine is not None else places.cpu
+    mode = placement.waits(decl, cpu)
+    if mode is None:
+        return False
+    here = _mode_here(decl, places, machine)
+    if mode == dec.UNPLACED and here is not None:
+        with contextlib.suppress(ds.Invalid):
+            _placed_here(decl, places, here)
+        return False
+    item["state"] = "unarmable"
+    item["why"] = placement.waits_why(mode, "Declare it again", here is not None)
+    return True
+
+
+def _mode_here(decl: dec.Declaration, places: RawPlaces,
+               machine: tuple[str, dict[str, str]] | None) -> str | None:
+    """`RawPlaces.mode_here`, off the stop's own survey when the caller holds it: a protected-mode
+    stop places any SEG:OFF in its mode, a real-mode one an offset within FFFF, which needs no
+    second survey to tell."""
+    if machine is None:
+        return places.mode_here(decl.by, decl.ref)
+    cpu = machine[0]
+    if dcons.real_segments(cpu):
+        _, off = placement.parse_seg_off(decl.ref)
+        return cpu if off <= dcons.offset_ceiling(dcons.REAL_MODE) else None
     return cpu
 
 
@@ -895,15 +943,17 @@ def _adopted(session: ds.Session, decl: dec.Declaration, res: dict[str, Any],
 
 
 def _placed_here(decl: dec.Declaration, places: RawPlaces, cpu: str | None) -> None:
-    """A queued raw breakpoint armed at this stop is placed by it: the stop's mode and the stamp
-    of its place are written, as `breakpoint_at` writes them at a stop. One no stop placed
-    before becomes this session's: nothing says another map placed it."""
+    """A raw row armed or read at this stop is placed by it: the stop's mode is written. A code
+    row takes the stamp of its place too, as `breakpoint_at` writes it, and one no stop placed
+    before becomes this session's, since nothing says another map placed it; a watch is judged
+    by no build, so its place is its mode alone."""
     if cpu is None:
         return
-    new = dataclasses.replace(
-        decl, fingerprint=placement.stamp_at(places.linear(decl.by, decl.ref), raw=True),
-        cpu_mode=placement.mode_word(cpu),
-        origin=STATE.session_origin if _stored_before_modes(decl) else decl.origin)
+    new = dataclasses.replace(decl, cpu_mode=placement.mode_word(cpu))
+    if dec.is_raw_code(decl.kind, decl.by):
+        new = dataclasses.replace(
+            new, fingerprint=placement.stamp_at(places.linear(decl.by, decl.ref), raw=True),
+            origin=STATE.session_origin if _stored_before_modes(decl) else decl.origin)
     if (new.fingerprint, new.cpu_mode, new.origin) != (decl.fingerprint, decl.cpu_mode,
                                                        decl.origin):
         try:
@@ -921,7 +971,10 @@ def _armable_declarations() -> list[dec.Declaration]:
         return []
     return [d for d in STATE.store.declarations()
             if not placement.is_stale(d, _nowhere)
-            and placement.waits(d, _last_cpu) is None
+            # A RAW WATCH NO STOP PLACED is placed by the first stop that reads it, and armed
+            # there; a raw breakpoint no stop placed is armed nowhere until one is declared again.
+            and placement.waits(d, _last_cpu) in ((None, dec.UNPLACED) if d.kind == "watch"
+                                                  else (None,))
             and not (d.kind == "interrupt" and d.origin != STATE.session_origin)
             and not (d.by == "symbol" and dec.DeclarationStore.resolve_name(
                 d, STATE.table, STATE.name_index).state == "unresolved")]
@@ -1023,10 +1076,8 @@ def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:
                              f"clear that ref or use it")
     # DECLARED AGAIN IN THE OTHER MODE: the debugger fixed the row's address when it was made,
     # in that stop's mode, so the row that reads the same text is another byte now.
-    before = next((d for d in current_store().declarations()
-                   if d.kind == "breakpoint" and d.ref == ref), None)
-    moved = (before is not None and None not in (before.cpu_mode, decl.cpu_mode)
-             and before.cpu_mode != decl.cpu_mode)
+    moved = _moved(next((d for d in current_store().declarations()
+                         if d.kind == "breakpoint" and d.ref == ref), None), decl)
     is_new = cast(bool, placement.to_invalid(lambda: current_store().add(decl)))
     # A RE-DECLARATION IS A NO-OP, NOT A REFUSAL: the store keeps one
     # copy and says whether this call added it. The arming below still runs, so a
@@ -1329,12 +1380,18 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
     except vf.FormatError as e:
         raise ds.Invalid("bad_argument", str(e)) from None
     checks.watch_width(mode, width)
-    decl = declare("watch", chosen, ref, width=width, fmt=fmt, watch_mode=mode)
+    places = RawPlaces(session)
+    decl = declare("watch", chosen, ref,
+                   cpu=places.mode_here(chosen, ref) if chosen == "address" else None,
+                   width=width, fmt=fmt, watch_mode=mode)
     stored = current_store().held_ref(ref, ("watch",))
     if stored is not None and stored != ref:
         # AN ADDRESS DECLARED AGAIN IN ANOTHER SPELLING IS THE SAME DECLARATION, and
         # it is handled under its stored spelling, the string a clear takes.
         ref, decl = stored, dataclasses.replace(decl, ref=stored)
+    # DECLARED AGAIN IN THE OTHER MODE: its rows compare their SEG:OFF in the mode of the moment,
+    # so the ones the other mode made watch another byte here, and are made again.
+    moved = _moved(_stored_watch(ref), decl)
     res = placement.resolve_ref(decl, "DS", session)
     # A NAME THAT MATCHES SEVERAL SYMBOLS IS REFUSED BEFORE STORING, as `breakpoint_at`
     # does: stored, the change path then read `seg` off a resolution that has none, and
@@ -1346,6 +1403,13 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
         if aliased is not None:
             raise ds.Invalid("ambiguous_ref", aliased)
     already = not cast(bool, placement.to_invalid(lambda: current_store().add(decl)))
+    # THE ROW AS STORED WAITS at this stop when one of the other mode placed it and this one could
+    # not place it again: read and armed only at a stop of its own mode.
+    waiting: dict[str, Any] = {}
+    if session.at_debugger() and _watch_waits(waiting, cast(dec.Declaration, _stored_watch(ref)),
+                                              places, None):
+        return st.reply(ref=ref, by=chosen, mode=mode, fmt=fmt, length=width, stored=True,
+                        already_stored=already, armed=False, **waiting)
     # THROUGH A POINTER the reply says through what: where the pointer sits, its width,
     # what it holds, and the offset past it; a null pointer is a state the stop re-resolves.
     extra: dict[str, Any] = {"pointer": res["pointer"]} if "pointer" in res else {}
@@ -1383,9 +1447,11 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
     try:
         placement._listening(session)     # a running console drops what is typed at it
         mode = session.where()["mode"]
-        places = reachable_bytes(res["seg"], res["off"], width, mode)
+        covered = reachable_bytes(res["seg"], res["off"], width, mode)
+        if moved:
+            _unarm_moved(session, ref, covered)
         listed = session.breakpoints()
-        missing = [place for place in places if watch_held(listed, *place) is None]
+        missing = [place for place in covered if watch_held(listed, *place) is None]
         made = dict(zip(missing, session.watch_places(missing), strict=True)) if missing else {}
     except ds.Invalid as e:
         if isinstance(e, ds.NotStopped) or not session.at_debugger():
@@ -1398,8 +1464,8 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
     # armed: the record names them all, so a clear deletes them all. A re-declaration that found
     # every row held is a no-op, and still carries the Pr caveat, because a re-declared change
     # watch is as untrustworthy under paging as a fresh one.
-    entries = [str(made[p]["armed"]) if p in made else _watch_entry(*p, mode) for p in places]
-    for (s_, o_), entry in zip(places, entries, strict=True):
+    entries = [str(made[p]["armed"]) if p in made else _watch_entry(*p, mode) for p in covered]
+    for (s_, o_), entry in zip(covered, entries, strict=True):
         STATE.note_armed(ref, {"kind": "watch", "seg": s_, "off": o_, "entry": entry})
     caveat = {"caveat": _PR_WATCH_CAVEAT} if mode.startswith("Pr") else {}
     sent = {"command": str(made[missing[0]]["command"])} if missing else {}
@@ -1408,10 +1474,30 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
                     entries=entries, **sent, **caveat, **extra)
 
 
+def _unarm_moved(session: ds.Session, ref: str, covered: list[tuple[int, int]]) -> None:
+    """A change watch's rows of the other mode deleted and forgotten, so the record names only
+    the rows armed in this one; a row the debugger still lists refuses the arm, since a held row
+    of the other mode would be counted as this one's."""
+    gone, kept = delete_watch_rows(session, covered)
+    for entry in gone:
+        STATE.snapshot_forget(entry)
+    STATE.armed.pop(("watch", ref), None)
+    if kept:
+        raise ds.Invalid("unexpected_answer", f"the rows the other mode armed at "
+                         f"{', '.join(dcons.canonical_seg_off(*p) for p in kept)} are still listed "
+                         "after their delete: nothing was armed in this mode")
+
+
+def _stored_watch(ref: str) -> dec.Declaration | None:
+    return next((d for d in current_store().declarations() if d.kind == "watch" and d.ref == ref),
+                None)
+
+
 def watch_list(session: ds.Session) -> dict[str, Any]:
     """The body of the `watch_list` tool."""
     store = current_store()
     held, read, machine = STATE.list_basis(session)
+    places = RawPlaces(session)
     out: list[dict[str, Any]] = []
     mine: set[tuple[int, int]] = set()
     for decl in store.declarations():
@@ -1429,6 +1515,10 @@ def watch_list(session: ds.Session) -> dict[str, Any]:
             item["state"] = state
             if "why" in res:
                 item["why"] = res["why"]
+        elif _watch_waits(item, decl, places, machine):
+            # ITS ROWS ARE STILL ITS OWN, never foreign: made in the other mode's terms.
+            mine.update(place for place in change_bytes(res["seg"], res["off"], decl.width)
+                        if watch_held(held, *place) is not None)
         elif decl.watch_mode == "show":
             # arms nothing; resolution is the whole state, unless it is nobody's, which is
             # the one thing a reader of every stop reply needs to know about it
@@ -1445,9 +1535,9 @@ def watch_list(session: ds.Session) -> dict[str, Any]:
             # reconstructed spelling: the debugger's offset width is not fixed (one address
             # was listed as both `BPPM 00AF:6024` and `BPPM 00AF:00006024`), so an equality
             # or prefix test on the spelling reports an armed watch as gone.
-            places = change_bytes(seg, off, decl.width)
-            listed = all_held(held, places)
-            mine.update(place for place in places if watch_held(held, *place) is not None)
+            covered = change_bytes(seg, off, decl.width)
+            listed = all_held(held, covered)
+            mine.update(place for place in covered if watch_held(held, *place) is not None)
             _held_state(item, decl, listed)
         out.append(item)
     _pending_states(out)

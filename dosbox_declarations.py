@@ -170,8 +170,9 @@ class Declaration:
     # so without it a stale row's why could not tell a row made over another build from one
     # stored before the conf was kept (`raw_staleness`).
     conf_fingerprint: str | None = field(default=None, kw_only=True, compare=False)
-    # AND THE MODE OF THE STOP THAT PLACED IT, on a raw code row (`CPU_MODES`), taken with the
-    # stamp: the stamp says which build the address was read against, this says how it was read.
+    # AND THE MODE OF THE STOP THAT PLACED IT, on a raw row (`keeps_mode`, `CPU_MODES`), taken
+    # with the stamp: the stamp says which build the address was read against, this says how it
+    # was read.
     cpu_mode: str | None = field(default=None, kw_only=True, compare=False)
     # A COMMENT'S TEXT, out of equality like the stamps: the comment at a place is ONE
     # declaration whatever it says, and a new text replaces the old one rather than doubling it.
@@ -194,9 +195,9 @@ class Declaration:
                     f"{self.ref!r} is not a pointer ref: `[base]`, `[base]+0x28`, "
                     "`[base]-0x4` or `base->field`, with `base` a symbol or a SEG:OFF")
         if self.cpu_mode is not None and (self.cpu_mode not in CPU_MODES
-                                          or not is_raw_code(self.kind, self.by)):
-            raise DeclarationError(f"a cpu mode is one of {CPU_MODES}, on a raw breakpoint or "
-                                   f"comment; got {self.cpu_mode!r} on a {self.kind} by "
+                                          or not keeps_mode(self.kind, self.by)):
+            raise DeclarationError(f"a cpu mode is one of {CPU_MODES}, on a raw breakpoint, "
+                                   f"comment or watch; got {self.cpu_mode!r} on a {self.kind} by "
                                    f"{self.by}")
         if self.kind == "comment":
             self._check_comment()
@@ -337,7 +338,8 @@ class Declaration:
         return Declaration(kind=kind, by=by, ref=ref, width=width,
                            fmt=str(fmt) if fmt is not None else None,
                            watch_mode=mode,
-                           created_at=created_at, origin=origin, fingerprint=fingerprint)
+                           created_at=created_at, origin=origin, fingerprint=fingerprint,
+                           cpu_mode=cpu_mode)
 
 
 Entry = tuple[str, int]
@@ -388,6 +390,12 @@ def is_raw_code(kind: str, by: str) -> bool:
     return kind in ("breakpoint", "comment") and by == "address"
 
 
+def keeps_mode(kind: str, by: str) -> bool:
+    """Whether a row keeps the mode of the stop that placed it: every row at a raw `SEG:OFF`,
+    whose segment is a selector in protected mode and a paragraph in real mode."""
+    return by == "address" and kind in ("breakpoint", "comment", "watch")
+
+
 #: What a raw row with no cpu mode waits for: a stop that places it. No stop has (it was declared
 #: while the guest ran, declared or loaded where its stop could not place it, or stored before
 #: modes were kept).
@@ -395,14 +403,14 @@ UNPLACED = "unplaced"
 
 
 def waits(decl: Declaration, stop_mode: Callable[[], str | None]) -> str | None:
-    """Why a raw code row is neither judged nor armed at this stop, or None when it is judged
+    """Why a raw row is neither judged nor armed at this stop, or None when it is judged
     here. A raw `SEG:OFF` names one byte in real mode and another in protected mode, so a row is
     placed, stamped and armed only at a stop, carries that stop's mode, and is judged and armed
     only at a stop of that mode: the mode it waits for when this stop's (`stop_mode`, one of
     `CPU_MODES` or None, asked only of a row that recorded one) is another, or `UNPLACED` for a
     row no stop placed, which waits in either mode until one does. Every reader that judges or
     arms a raw row asks this first."""
-    if not is_raw_code(decl.kind, decl.by):
+    if not keeps_mode(decl.kind, decl.by):
         return None
     if decl.cpu_mode is None:
         return UNPLACED
