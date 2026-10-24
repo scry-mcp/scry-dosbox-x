@@ -7,10 +7,11 @@ reply grows is named here in the same change. The file tools' models are the cor
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Annotated, Any
 
 from scry_core import media_replies
 from scry_core import sequence_account as account
+from scry_core.reply_contract import OmitEmpty
 from scry_core.reply_schema import ReplyEnvelope
 
 
@@ -26,11 +27,11 @@ class DosboxEnvelope(ReplyEnvelope, total=False):
 
 
 class BreakpointAtReply(DosboxEnvelope, total=False):
-    already_stored: bool
+    already_stored: Annotated[bool, OmitEmpty]
     armed: bool
     by: str
     entry: str
-    marked: bool
+    marked: Annotated[bool, OmitEmpty]
     note: str
     ref: str
     state: str
@@ -38,17 +39,10 @@ class BreakpointAtReply(DosboxEnvelope, total=False):
     why: str
 
 
-class BreakpointClearReply(DosboxEnvelope, total=False):
-    declarations_cleared: int
-    disarmed: list[Any]
-    note: str
-    pending_disarm: list[Any]
-
-
 class BreakpointInterruptReply(DosboxEnvelope, total=False):
-    already_stored: bool
+    already_stored: Annotated[bool, OmitEmpty]
     armed: bool
-    clipped: bool
+    clipped: Annotated[bool, OmitEmpty]
     entry: str
     note: str
     ref: str
@@ -56,12 +50,6 @@ class BreakpointInterruptReply(DosboxEnvelope, total=False):
     screen_delta: str
     state: str
     stored: bool
-
-
-class BreakpointListReply(DosboxEnvelope, total=False):
-    breakpoints: list[Any]
-    debugger_read: bool
-    foreign: list[Any]
 
 
 class BuildCheckReply(DosboxEnvelope, total=False):
@@ -98,7 +86,7 @@ class CloseReply(DosboxEnvelope, total=False):
     captures: str
     closed: bool
     conf: str
-    conf_changed_on_disk: bool | dict[str, Any]
+    conf_changed_on_disk: Annotated[bool | dict[str, Any], OmitEmpty]
     conf_digest: str
     drain_alive: bool
     drain_ended: str
@@ -109,21 +97,8 @@ class CloseReply(DosboxEnvelope, total=False):
     pid: int
     state_dir: str
     stdout_tail: str
-    terminal_bytes_dropped: int
-    watched: bool
-
-
-class CommentAddReply(DosboxEnvelope, total=False):
-    comment: dict[str, Any]
-    declarations: dict[str, Any]
-    note: str
-    replaced_comments: list[Any]
-
-
-class CommentDeleteReply(DosboxEnvelope, total=False):
-    declarations: dict[str, Any]
-    deleted: dict[str, Any]
-    note: str
+    terminal_bytes_dropped: Annotated[int, OmitEmpty]
+    watched: Annotated[bool, OmitEmpty]
 
 
 class CommentListReply(DosboxEnvelope, total=False):
@@ -133,30 +108,8 @@ class CommentListReply(DosboxEnvelope, total=False):
     truncated: bool
 
 
-class CommentLoadReply(DosboxEnvelope, total=False):
-    added: int
-    comments_total: int
-    declarations: dict[str, Any]
-    note: str
-    parsed: int
-    path: str
-    replaced_comments: list[Any]
-    replaced_total: int
-    truncated: bool
-    unchanged: int
-
-
-class CommentSaveReply(DosboxEnvelope, total=False):
-    comments_total: int
-    dropped_comments: list[Any]
-    dropped_total: int
-    note: str
-    path: str
-    truncated: bool
-
-
 class DebugReply(DosboxEnvelope, total=False):
-    clipped: bool
+    clipped: Annotated[bool, OmitEmpty]
     command: str
     note: str
     screen_chars: int
@@ -247,16 +200,6 @@ class MachineMapReply(DosboxEnvelope, total=False):
     xms: list[Any]
 
 
-class MapAddReply(DosboxEnvelope, total=False):
-    controls: int
-    kind: str
-    match: list[Any]
-    replaced: bool
-    screen: str
-    shadows_file: bool
-    size: list[Any]
-
-
 class MapFindReply(DosboxEnvelope, total=False):
     controls: list[Any]
     kind: str
@@ -266,21 +209,6 @@ class MapFindReply(DosboxEnvelope, total=False):
     screens_mapped: int
     screens_tried: int
     size: list[Any]
-
-
-class MapLoadReply(DosboxEnvelope, total=False):
-    application: str
-    controls: int
-    path: str
-    screens: int
-
-
-class MapSaveReply(DosboxEnvelope, total=False):
-    application: str
-    controls: int
-    path: str
-    promoted: list[Any]
-    screens: int
 
 
 class MemdumpReply(DosboxEnvelope, total=False):
@@ -333,7 +261,7 @@ class RegistersReply(DosboxEnvelope, total=False):
 
 class ResumeReply(DosboxEnvelope, total=False):
     cause: str
-    clipped: bool
+    clipped: Annotated[bool, OmitEmpty]
     cpu_mode: str | dict[str, Any]
     e9: dict[str, Any]
     enrichment: dict[str, Any]
@@ -387,37 +315,6 @@ class RunToReply(DosboxEnvelope, total=False):
     target_disarmed: bool
     verdict: str
     watches: list[Any]
-
-
-class ScanClearReply(DosboxEnvelope, total=False):
-    cleared: bool
-    line_recovered: bool
-    note: str
-
-
-class ScanFilterReply(DosboxEnvelope, total=False):
-    closed: bool
-    hits: list[Any]
-    hits_total: int
-    iterations: int | dict[str, Any]
-    line_recovered: bool
-    note: str
-    operator: str
-    rows: int
-    survivors: int
-    truncated: bool
-    value: str | dict[str, Any]
-
-
-class ScanStartReply(DosboxEnvelope, total=False):
-    addr: str
-    cell_bytes: int
-    hits_total: int
-    length: int
-    line_recovered: bool
-    note: str
-    ref: str
-    seg_off: str
 
 
 class ScreenSignatureReply(DosboxEnvelope, total=False):
@@ -526,26 +423,26 @@ class StartReply(DosboxEnvelope, account.SequenceFields, total=False):
     bound_s: float
     captures: str
     conf: str
-    conf_changed_on_disk: bool | dict[str, Any]
+    conf_changed_on_disk: Annotated[bool | dict[str, Any], OmitEmpty]
     conf_digest: str
     declarations: dict[str, Any]
-    display: str
+    display: Annotated[str, OmitEmpty]
     drain_alive: bool
     drain_ended: str
     elapsed_s: float
     input_port: int | dict[str, Any]
     operations: list[Any]
     pid: int
-    presence: bool | dict[str, Any]
+    presence: Annotated[bool | dict[str, Any], OmitEmpty]
     ready_after_s: float
     rearm_refused: str
-    shared: bool
+    shared: Annotated[bool, OmitEmpty]
     start: dict[str, Any]
     state_dir: str
     stub: str
-    terminal_bytes_dropped: int
+    terminal_bytes_dropped: Annotated[int, OmitEmpty]
     version: str | dict[str, Any]
-    watched: bool
+    watched: Annotated[bool, OmitEmpty]
 
 
 class StateListReply(DosboxEnvelope, total=False):
@@ -554,35 +451,11 @@ class StateListReply(DosboxEnvelope, total=False):
     working_slot: dict[str, Any]
 
 
-class StateLoadReply(DosboxEnvelope, total=False):
-    machine: str
-    mark: dict[str, Any]
-    memory_mb: int
-    name: str
-    path: str
-    paused: bool
-    program: str
-    saved_at: str
-    version: str
-
-
-class StateSaveReply(DosboxEnvelope, total=False):
-    bytes: int
-    machine: str
-    memory_mb: int
-    name: str
-    path: str
-    paused: bool
-    program: str
-    saved_at: str
-    version: str
-
-
 class StatusReply(DosboxEnvelope, total=False):
     bound_s: float
     captures: str
     conf: str
-    conf_changed_on_disk: bool | dict[str, Any]
+    conf_changed_on_disk: Annotated[bool | dict[str, Any], OmitEmpty]
     conf_digest: str
     cpu_mode: str | dict[str, Any]
     declarations: dict[str, Any]
@@ -592,10 +465,10 @@ class StatusReply(DosboxEnvelope, total=False):
     pc: str | dict[str, Any]
     pending: dict[str, Any]
     pid: int
-    presence: bool | dict[str, Any]
+    presence: Annotated[bool | dict[str, Any], OmitEmpty]
     state_dir: str
-    terminal_bytes_dropped: int
-    watched: bool
+    terminal_bytes_dropped: Annotated[int, OmitEmpty]
+    watched: Annotated[bool, OmitEmpty]
 
 
 class StepReply(DosboxEnvelope, total=False):
@@ -687,7 +560,7 @@ class TraceReply(DosboxEnvelope, total=False):
 
 
 class WatchAddReply(DosboxEnvelope, total=False):
-    already_stored: bool
+    already_stored: Annotated[bool, OmitEmpty]
     armed: bool
     by: str
     caveat: str
@@ -705,19 +578,6 @@ class WatchAddReply(DosboxEnvelope, total=False):
     why: str
 
 
-class WatchClearReply(DosboxEnvelope, total=False):
-    declarations_cleared: int
-    disarmed: list[Any]
-    note: str
-    pending_disarm: list[Any]
-
-
-class WatchListReply(DosboxEnvelope, total=False):
-    debugger_read: bool
-    foreign: list[Any]
-    watches: list[Any]
-
-
 class WriteReply(DosboxEnvelope, total=False):
     bytes_written: int
     readback: str
@@ -727,22 +587,100 @@ class WriteReply(DosboxEnvelope, total=False):
     written: int
 
 
+class CommentWriteReply(DosboxEnvelope, total=False):
+    added: int
+    comment: dict[str, Any]
+    comments_total: int
+    declarations: dict[str, Any]
+    deleted: dict[str, Any]
+    dropped_comments: list[Any]
+    dropped_total: int
+    note: str
+    parsed: int
+    path: str
+    replaced_comments: list[Any]
+    replaced_total: int
+    truncated: bool
+    unchanged: int
+
+
+class DeclarationClearReply(DosboxEnvelope, total=False):
+    declarations_cleared: int
+    disarmed: list[Any]
+    note: str
+    pending_disarm: Annotated[list[Any], OmitEmpty]
+
+
+class DeclarationListReply(DosboxEnvelope, total=False):
+    breakpoints: list[Any]
+    debugger_read: bool
+    foreign: Annotated[dict[str, Any], OmitEmpty]
+    watches: list[Any]
+
+
+class MapWriteReply(DosboxEnvelope, total=False):
+    application: str
+    controls: int
+    kind: str
+    match: list[Any]
+    path: str
+    promoted: list[Any]
+    replaced: bool
+    screen: str
+    screens: int
+    shadows_file: bool
+    size: list[Any]
+
+
+class ScanReply(DosboxEnvelope, total=False):
+    addr: str
+    cell_bytes: int
+    cleared: bool
+    closed: bool
+    hits: list[Any]
+    hits_total: int
+    iterations: int | dict[str, Any]
+    length: int
+    line_recovered: bool
+    note: str
+    operator: str
+    ref: str
+    rows: int
+    seg_off: str
+    survivors: int
+    truncated: bool
+    value: str | dict[str, Any]
+
+
+class StateWriteReply(DosboxEnvelope, total=False):
+    bytes: int
+    machine: str
+    mark: dict[str, Any]
+    memory_mb: int
+    name: str
+    path: str
+    paused: bool
+    program: str
+    saved_at: str
+    version: str
+
+
 #: Each tool's reply model, by the tool's name.
 MODELS: dict[str, type] = {
+    "comment_write": CommentWriteReply,
+    "declaration_clear": DeclarationClearReply,
+    "declaration_list": DeclarationListReply,
+    "map_write": MapWriteReply,
+    "scan": ScanReply,
+    "state_write": StateWriteReply,
     "breakpoint_at": BreakpointAtReply,
-    "breakpoint_clear": BreakpointClearReply,
     "breakpoint_interrupt": BreakpointInterruptReply,
-    "breakpoint_list": BreakpointListReply,
     "build_check": BuildCheckReply,
     "call_stack": CallStackReply,
     "capture_frame": CaptureFrameReply,
     "captures": CapturesReply,
     "close": CloseReply,
-    "comment_add": CommentAddReply,
-    "comment_delete": CommentDeleteReply,
     "comment_list": CommentListReply,
-    "comment_load": CommentLoadReply,
-    "comment_save": CommentSaveReply,
     "debug": DebugReply,
     "disassemble": DisassembleReply,
     "drive": DriveReply,
@@ -751,10 +689,7 @@ MODELS: dict[str, type] = {
     "log": LogReply,
     "log_wait": LogWaitReply,
     "machine_map": MachineMapReply,
-    "map_add": MapAddReply,
     "map_find": MapFindReply,
-    "map_load": MapLoadReply,
-    "map_save": MapSaveReply,
     "memdump": MemdumpReply,
     "palette": PaletteReply,
     "perform": PerformReply,
@@ -764,9 +699,6 @@ MODELS: dict[str, type] = {
     "resume": ResumeReply,
     "run_for": RunForReply,
     "run_to": RunToReply,
-    "scan_clear": ScanClearReply,
-    "scan_filter": ScanFilterReply,
-    "scan_start": ScanStartReply,
     "screen_signature": ScreenSignatureReply,
     "screen_view": ScreenViewReply,
     "screen_wait": ScreenWaitReply,
@@ -777,8 +709,6 @@ MODELS: dict[str, type] = {
     "snapshot": SnapshotReply,
     "start": StartReply,
     "state_list": StateListReply,
-    "state_load": StateLoadReply,
-    "state_save": StateSaveReply,
     "status": StatusReply,
     "step": StepReply,
     "stop": StopReply,
@@ -786,9 +716,6 @@ MODELS: dict[str, type] = {
     "symbols_load": SymbolsLoadReply,
     "trace": TraceReply,
     "watch_add": WatchAddReply,
-    "watch_clear": WatchClearReply,
-    "watch_list": WatchListReply,
     "write": WriteReply,
-    **{name: media_replies.MODELS[name]
-       for name in ("golden_check", "image_diff", "region_track", "series_diff")},
+    "image_compare": media_replies.MODELS["image_compare"],
 }

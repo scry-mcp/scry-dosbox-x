@@ -117,7 +117,7 @@ def section_d() -> None:
                 ok(s) and "stop_seq" in s
                 and str(s.get("cause")).startswith("breakpoint COMPOSE_FRAME ") for s in stops),
             "; ".join(said(s, 60) for s in stops))
-    must(M.call(server.breakpoint_clear, all=True), "clearing COMPOSE_FRAME")
+    must(M.call(server.declaration_clear, kind="breakpoint", all=True), "clearing COMPOSE_FRAME")
     dos_real16_code()
     dos_real16_comments(mapf, f"{load * 16:X}")
     M.setup()
@@ -151,7 +151,7 @@ def dos_real16_main_loop(wait: float = 30, exempt: str = "", **kw: Any) -> dict[
     found = M.call(server.symbols_find, name="COMPOSE_FRAME")
     must(M.call(server.breakpoint_at, ref="ATRCT_RUN"), "arming ATRCT_RUN")
     must(M.call(server.resume, exempt=exempt, seconds=wait), "running to ATRCT_RUN")
-    must(M.call(server.breakpoint_clear, all=True), "clearing ATRCT_RUN")
+    must(M.call(server.declaration_clear, kind="breakpoint", all=True), "clearing ATRCT_RUN")
     return {"cs": cs, "psp": psp, "load": load, "loaded": loaded, "found": found}
 
 
@@ -205,7 +205,7 @@ def _retraces(load: int) -> None:
             retraces += 1
         else:
             break
-    must(M.call(server.breakpoint_clear, all=True), "clearing COMPOSE_FRAME")
+    must(M.call(server.declaration_clear, kind="breakpoint", all=True), "clearing COMPOSE_FRAME")
     M.judge("D COMPOSE_FRAME hits over ten retraces, quoted",
             retraces == RETRACES_QUOTED and all(ok(x) for x in replies),
             f"COMPOSE_FRAME {hits} times over {retraces} retraces ({calls} calls)")
@@ -224,10 +224,10 @@ def _scan() -> tuple[bool, str]:
     frames, a code breakpoint, so the bytes scanned carry no trap of the debugger's."""
     seg, off = sym("TOTALTIME")
     at = f"{seg:04X}:{off:04X}"
-    opened = M.call(server.scan_start, ref=f"{seg:04X}:{off - 0x100:04X}", length=0x200,
+    opened = M.call(server.scan, method="start", ref=f"{seg:04X}:{off - 0x100:04X}", length=0x200,
                     cell_bytes=2)
     first_value = read_word(at)
-    first = M.call(server.scan_filter, operator="=", value=first_value)
+    first = M.call(server.scan, method="filter", operator="=", value=first_value)
     must(M.call(server.breakpoint_at, ref="COMPOSE_FRAME"), "arming COMPOSE_FRAME")
     value = first_value
     for _ in range(FRAMES_FOR_A_CHANGE):
@@ -235,14 +235,14 @@ def _scan() -> tuple[bool, str]:
         value = read_word(at)
         if value != first_value:
             break
-    must(M.call(server.breakpoint_clear, all=True), "clearing COMPOSE_FRAME")
+    must(M.call(server.declaration_clear, kind="breakpoint", all=True), "clearing COMPOSE_FRAME")
     if value == first_value:
-        M.call(server.scan_clear)
+        M.call(server.scan, method="clear")
         raise RuntimeError(f"TOTALTIME kept {value} over {FRAMES_FOR_A_CHANGE} frames")
-    moved = M.call(server.scan_filter, operator="!")
-    last = M.call(server.scan_filter, operator="=", value=value, limit=400)
+    moved = M.call(server.scan, method="filter", operator="!")
+    last = M.call(server.scan, method="filter", operator="=", value=value, limit=400)
     lin = [hexint(h.get("addr")) for h in last.get("hits") or []]
-    M.call(server.scan_clear)
+    M.call(server.scan, method="clear")
     return (off % 2 == 1 and ok(opened) and ok(first) and ok(moved) and ok(last)
             and seg * 16 + off in lin,
             f"TOTALTIME {at} {first_value} -> {value}; {said(last, 80)}")
@@ -271,5 +271,5 @@ def _coin() -> None:
     for _ in range(5):
         M.call(server.resume, seconds=10)
     after = read_word(f"{seg:04X}:{off:04X}")
-    must(M.call(server.breakpoint_clear, all=True), "clearing COMPOSE_FRAME")
+    must(M.call(server.declaration_clear, kind="breakpoint", all=True), "clearing COMPOSE_FRAME")
     M.judge("D the coin adds to CREDITOS", after > before, f"CREDITOS {before} -> {after}")

@@ -222,7 +222,7 @@ def section_f() -> None:
     M.judge("F INT 08 lies in the CWSDPMI block, through the GDT and the pages",
             ok(r) and r.get("cpu_mode") == "paged" and str(row.get("seg_off")).startswith("0018:")
             and (row.get("mcbs") or {}).get("filename") == "CWSDPMI", str(row)[:160])
-    must(M.call(server.breakpoint_clear, all=True), "clearing INT 31h")
+    must(M.call(server.declaration_clear, kind="breakpoint", all=True), "clearing INT 31h")
     b = M.call(server.breakpoint_at, ref="_tick")
     w = M.call(server.watch_add, ref="_g_ticks", mode="show", length=4, fmt="u32")
     r = M.call(server.resume, seconds=30)
@@ -244,7 +244,7 @@ def section_f() -> None:
     M.judge("F a show watch on _g_ticks rides the stop",
             ok(w) and any(x.get("ref") == "_g_ticks" and isinstance(x.get("value"), int)
                           for x in watches), str(watches)[:120])
-    must(M.call(server.breakpoint_clear, all=True), "clearing _tick")
+    must(M.call(server.declaration_clear, kind="breakpoint", all=True), "clearing _tick")
     dpmi_code()
     dpmi_comments()
     refused_on_the_dynamic_core("F trace on the conf's dynamic core is refused naming the core")

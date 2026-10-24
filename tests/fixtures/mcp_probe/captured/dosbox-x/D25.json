@@ -2,28 +2,104 @@
  "task": {
   "id": "D25",
   "prompt": "Load the state level3 into the running machine, waiting up to 75 seconds.",
-  "tool": "state_load",
+  "tool": "state_write",
   "args": {
+   "method": "load",
    "name": "level3",
    "seconds": 75
-  }
+  },
+  "grammar": [
+   "load"
+  ]
  },
  "runs": [
   {
    "lines": [
-    "D25: {\"tool\": \"state_load\", \"args\": {\"name\": \"level3\", \"seconds\": 75}}"
+    "D25: {\"tool\": \"state_write\", \"args\": {\"method\": \"load\", \"name\": \"level3\", \"seconds\": 75}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D25: {\"tool\": \"state_load\", \"args\": {\"name\": \"level3\", \"seconds\": 75}}"
+    "D25: {\"tool\": \"state_write\", \"args\": {\"method\": \"load\", \"name\": \"level3\", \"seconds\": 75}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D25: {\"tool\": \"state_load\", \"args\": {\"name\": \"level3\", \"seconds\": 75}}"
+    "D25: {\"tool\":\"state_write\",\"args\":{\"method\":\"load\",\"name\":\"level3\",\"seconds\":75}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D25: {\"tool\": \"state_write\", \"args\": {\"method\": \"load\", \"name\": \"level3\", \"seconds\": 75}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D25: {\"tool\": \"state_write\", \"args\": {\"method\": \"load\", \"name\": \"level3\", \"seconds\": 75}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D25: {\"tool\": \"state_write\", \"args\": {\"method\": \"load\", \"name\": \"level3\", \"seconds\": 75}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D25: {\"tool\": \"state_write\", \"args\": {\"method\": \"load\", \"name\": \"level3\", \"seconds\": 75}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D25: {\"tool\": \"state_write\", \"args\": {\"method\": \"load\", \"name\": \"level3\", \"seconds\": 75}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D25: {\"tool\": \"state_write\", \"args\": {\"method\": \"load\", \"name\": \"level3\", \"seconds\": 75}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D25: {\"tool\": \"state_write\", \"args\": {\"method\": \"load\", \"name\": \"level3\", \"seconds\": 75}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D25: {\"tool\": \"state_write\", \"args\": {\"method\": \"load\", \"name\": \"level3\", \"seconds\": 75}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D25: {\"tool\": \"state_write\", \"args\": {\"method\": \"load\", \"name\": \"level3\", \"seconds\": 75}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D25: {\"tool\":\"state_write\",\"args\":{\"method\":\"load\",\"name\":\"level3\",\"seconds\":75}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D25: {\"tool\": \"state_write\", \"args\": {\"method\": \"load\", \"name\": \"level3\", \"seconds\": 75}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D25: {\"tool\": \"state_write\", \"args\": {\"method\": \"load\", \"name\": \"level3\", \"seconds\": 75}}"
    ],
    "right": true
   }

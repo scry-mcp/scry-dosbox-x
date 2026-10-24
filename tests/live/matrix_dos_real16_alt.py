@@ -109,7 +109,7 @@ def section_e() -> None:
         for label in KEY_CELLS:
             M.block(label, why)
         _moves(control, data)
-    M.call(server.scan_clear)
+    M.call(server.scan, method="clear")
     r = M.call(server.close)
     judged("E close", reply=r, holds=ok(r) and r.get("closed") is True)
 
@@ -128,15 +128,16 @@ def _moves(control: str, data: int) -> None:
     """When no key can reach the game: the cells of its data segment that change on their own
     across two runs of a few seconds, and one survivor read, written and read back."""
     for start in range(0, 0x10000, SCAN_WINDOW):
-        opened = M.call(server.scan_start, ref=f"{data:04X}:{start:04X}", length=SCAN_WINDOW,
+        opened = M.call(server.scan, method="start", ref=f"{data:04X}:{start:04X}",
+                        length=SCAN_WINDOW,
                         cell_bytes=2)
         run_for(control, 4)
-        first = M.call(server.scan_filter, operator="!")
+        first = M.call(server.scan, method="filter", operator="!")
         if not ok(first) or not 1 <= int(first.get("hits_total") or 0) <= 400:
-            M.call(server.scan_clear)
+            M.call(server.scan, method="clear")
             continue
         run_for(control, 4)
-        second = M.call(server.scan_filter, operator="!", limit=400)
+        second = M.call(server.scan, method="filter", operator="!", limit=400)
         hits = second.get("hits") or []
         M.judge(MOVES_CELL, ok(opened) and ok(second) and 1 <= len(hits) <= 400,
                 f"window {data:04X}:{start:04X}, {first.get('hits_total')} then "
@@ -153,7 +154,8 @@ def _moves(control: str, data: int) -> None:
 def _coin(control: str, data: int) -> None:
     """With the serial route alive: a coin (Tab), its `Credits: N` on E9, and a scan over the
     data segment narrowed by that value."""
-    opened = M.call(server.scan_start, ref=f"{data:04X}:0000", length=0x8000, cell_bytes=2)
+    opened = M.call(server.scan, method="start", ref=f"{data:04X}:0000", length=0x8000,
+                    cell_bytes=2)
     try:
         reached = key_reaches_int9("tab")
     except RuntimeError as exc:
@@ -176,8 +178,8 @@ def _coin(control: str, data: int) -> None:
             M.block(label, "no `Credits: N` line after the coin, so no value to scan for")
         return
     value = int(credits.group(1))
-    moved = M.call(server.scan_filter, operator="!")
-    kept = M.call(server.scan_filter, operator="=", value=value, limit=400)
+    moved = M.call(server.scan, method="filter", operator="!")
+    kept = M.call(server.scan, method="filter", operator="=", value=value, limit=400)
     hits = kept.get("hits") or []
     M.judge(KEY_CELLS[2], ok(opened) and ok(moved) and ok(kept) and 1 <= len(hits) <= 400,
             f"value {value}: {said(kept, 80)}")

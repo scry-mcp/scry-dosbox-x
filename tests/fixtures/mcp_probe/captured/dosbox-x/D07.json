@@ -27,6 +27,78 @@
   },
   {
    "lines": [
+    "D07: {\"tool\":\"log_wait\",\"args\":{\"pattern\":\"LEVEL [0-9]+ START\",\"channel\":\"emulator\",\"seconds\":45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D07: {\"tool\":\"log_wait\",\"args\":{\"pattern\":\"LEVEL [0-9]+ START\",\"channel\":\"emulator\",\"seconds\":45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D07: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL [0-9]+ START\", \"channel\": \"emulator\", \"seconds\": 45}}"
    ],
    "right": true

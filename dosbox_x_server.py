@@ -14,7 +14,8 @@ in a batch run: a batch reaches an EXACT frame, identical across runs, and a liv
 session sits wherever the last question left it.  That is not a gap to be closed
 later, it is the reason both exist.
 
-SAVE STATES.  The state tools (`state_save`, `state_load`) are the debugger's own SAVESTATE
+SAVE STATES.  The state tools (`state_write(method="save")`, `state_write(method="load")`) are the
+debugger's own SAVESTATE
 and LOADSTATE, sent down the debugger channel to a build that carries both; `state_list`
 reads the directory.  The other ways in are no tools, each for its reason: a config's
 `autosave=<interval> <slot>` writes on a timer the caller does not choose; loading through
@@ -92,13 +93,13 @@ from scry_core import (  # noqa: E402
     judges,
     log_marks,
     media_tools,
+    methods,
     narrowing,
     process_name,
     recording,
     reference,
     reply_schema,  # noqa: E402
-    screen_map,
-)
+    )
 from scry_core import placement as window  # noqa: E402
 from scry_core import presence as scry_presence  # noqa: E402
 from scry_core import sequence_account as account  # noqa: E402
@@ -119,6 +120,7 @@ import dosbox_dac as vgadac  # noqa: E402
 import dosbox_declarations as dec  # noqa: E402
 import dosbox_dump as dumping  # noqa: E402
 import dosbox_find as finder  # noqa: E402
+import dosbox_folds as folds  # noqa: E402
 import dosbox_inputs as inputs  # noqa: E402
 import dosbox_launch as dlaunch  # noqa: E402
 import dosbox_lifecycle as lifecycle  # noqa: E402
@@ -149,16 +151,11 @@ from dosbox_state import STATE  # noqa: E402
 
 @tool("Check the build", summary=one_line.build_check, read_only=True)
 def build_check(binary: str = "") -> dict[str, Any]:
-    """Whether this server's PRECONDITIONS hold: a DOSBox-X binary resolves and that build
-    carries the DEBUGGER. Run it BEFORE `start`; it REFUSES while a session is live
-    (answering means starting a second emulator). `binary`: the absolute path of the build to
-    ask about; omitted, the `DOSBOX_X_BINARY` variable, else the PATH's `dosbox-x`, as `start`
-    resolves it; a named build that does not resolve is refused, never replaced. Reply:
-    `binary` (the absolute path), `binary_origin` (`argument`, `DOSBOX_X_BINARY` or `PATH`),
-    `version` (the build's first line, or `{available: false, why}`), `debugger`,
-    `heavy_debug` (the build carries the debugger's CPU log, which `trace` needs), and INVALID
-    naming the precondition that fails; `heavy_debug: false` is an answer, and it is `trace`
-    that refuses such a build. It is about the build, never about a reading.
+    """Whether a DOSBox-X binary resolves and carries the debugger. Run before `start`; it
+    refuses while a session is live. `binary`: omitted, `DOSBOX_X_BINARY`, else the PATH's
+    `dosbox-x`; a named build that fails is refused.
+
+    Reply: `binary`, `binary_origin`, `version`, `debugger`, `heavy_debug` (`trace` needs it).
     """
     if binary:          # the shape first, as every path's, whatever the session is
         paths.absolute("binary", binary)
@@ -220,35 +217,18 @@ def start(conf: str, cwd: str,
           binary: str = "", background: bool | None = None,
           presence: Annotated[bool, Field(description=scry_presence.ARGUMENT)] = True,
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Open ONE live DOSBox-X session from your conf, parked at the debugger.
-    Refuses while a session is live.
+    """Open one live DOSBox-X session from your conf, parked at the debugger.
 
-    Every path is absolute or `~`-led: `cwd`, the emulator's working directory, there; `conf`;
-    `logfile`, its directory there; `captures_dir` and `state_dir`, created with their parents.
-    `session_seconds`: the session's REQUIRED lifetime; `close` is
-    the act. `shared`: watched, in a window the host's helper places on `display`; false,
-    headless. `flags` (the emulator's own, after this server's defaults) are argv
-    tokens, a `-set` value ONE token with its spaces.
-    `break_on_int3`: the guest's `int 3` stops at the debugger. `logfile`: the guest's E9
-    channel, without which `log`, `log_wait`, `expect` and `drive` have none. `program` runs
-    with `-c` AFTER the conf's autoexec (which must not `exit`); `capture_video` records it.
-    `plan`: operations run on the fresh session with `perform`'s rules, `settle_seconds`
-    (default {SETTLE_S}, and only with a plan) bounding each wait. `input_port`: COM1's TCP port
-    for the input (`0`: a free one); the conf's autoexec runs the reply's `stub` first, or
-    `program` loads it. `state_dir`: what `state_save` writes to (`save` under `cwd`). `binary`:
-    the build to run; omitted, `DOSBOX_X_BINARY`, else the PATH's `dosbox-x`. `background`:
-    `true` behind; `false` in front; omitted, by `shared`.
+    Paths are absolute or `~`-led. `session_seconds`: the lifetime. `shared`: watched on
+    `display`; false, headless. `flags`: argv tokens, a `-set` value one token. `logfile`: the
+    guest's E9 channel, for `log`, `log_wait`, `drive`. `program` runs after autoexec;
+    `capture_video` records it. `plan` runs as `perform` does, each wait bounded by
+    `settle_seconds` (default {SETTLE_S}). `input_port`: COM1's TCP port.
 
-    Reply: the process (`status`'s rows), `shared`, `display`, `ready_after_s`, `argv`,
-    `binary`, `binary_origin`, `version`, `stub`, `input_port`, `background`, `presence`,
-    `declarations.rearm`, and `rearm_refused` (why) when stored raw breakpoints could not
-    re-arm; with `plan`, the sequence account, the start facts under `start`.
+    Refused: a live session, a bad path, `session_seconds` out of range, `capture_video`
+    without `program`, an `input_port` outside {INPUT_PORT_MIN}-{INPUT_PORT_MAX} or busy.
 
-    Refused before anything starts: a path not absolute, an unresolved binary, a missing
-    conf, `cwd` or `logfile` directory, `session_seconds` out of range, `display` headless,
-    `shared` with no window helper, a glued or shredded `-set`, `capture_video`
-    without `program`, an `input_port` outside {INPUT_PORT_MIN}-{INPUT_PORT_MAX} or busy, no
-    drive free for the stub.
+    Reply: `pid`, `stub`, `input_port`, `declarations` (`rearm`); with `plan`, its account.
 
     Reference: REFERENCE.md, The session.
     """
@@ -260,38 +240,16 @@ def start(conf: str, cwd: str,
 
 @tool("Session status", summary=one_line.status, read_only=True)
 def status() -> dict[str, Any]:
-    """What the session is right now. It records a stop no tool has
-    reported (`stopped_on_its_own`) and applies what was queued while the guest ran
+    """What the session is right now. It records a stop no tool has reported
+    (`stopped_on_its_own`) and applies what was queued while the guest ran
     (`applied_on_stop`).
 
-    Reply, at the top here, on `start` and on `close`: the rows below but `alive`, `running`
-    and `altered` (none with no session). `session`, on every reply, carries those three
-    (`alive` false with no session: nothing running is an answer) and each alarm (!) while it
-    holds:
-
-      pid                     the emulator process's pid.
-      alive                   the emulator process is up.
-      running                 the guest runs; false parked at the debugger.
-      altered                 something here WROTE to the guest: later readings are forced.
-      conf                    the config the session was started from.
-      conf_digest             a digest of that file's content AT START.
-      conf_changed_on_disk !  the file changed since (`false` also if gone).
-      watched                 a window was placed to be watched.
-      bound_s                 the ceiling the session was given.
-      elapsed_s               how much of that is spent.
-      terminal_bytes_dropped ! nonzero: a screen delta had a hole in it.
-      drain_alive !           the terminal reader runs.
-      drain_ended !           why that reader stopped, present once it has.
-      captures                `off`, or where a `capture_video` session records.
-      state_dir               where `state_save` writes and `state_list` reads.
-
-    Also at the top: `last_stop` (`stop_seq`,
-    `pc`, `cause`, `since_s`, `wall_at`; the park after `start` is stop 1; unavailable with no
-    session or a cut survey), `pending` (asked while the guest ran: `arm` refs, a `disarm` count,
-    `symbols_load`; `base_remeasure` after a `state_load`), `presence` (the window's edge:
-    `true` drawn, `false` off or no session, or why not), and with a
-    session `pc` (where it is now, read off the pane; unavailable while it runs) and `cpu_mode`
-    (`real`, `protected`, `paged`, `VM86`), and `declarations`, this server's own counted.
+    Reply: `pid`, `conf`, `conf_digest`, `conf_changed_on_disk`, `watched`, `bound_s`,
+    `elapsed_s`, `terminal_bytes_dropped`, `drain_alive`, `drain_ended`, `captures`,
+    `state_dir`, `pending` (`arm` refs, a `disarm` count, `symbols_load`, `base_remeasure`),
+    `presence`, `declarations`, and with a session `pc` and `cpu_mode`. Also `last_stop`
+    (`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`). `session` carries `alive`, `running`,
+    `altered` and each alarm while it holds.
 
     Reference: REFERENCE.md, What every reply carries.
     """
@@ -304,20 +262,11 @@ def status() -> dict[str, Any]:
 
 @tool("Close the session", summary=one_line.close, session_before=True, on_cancel="kill")
 def close(detail: bool = False, ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """End the session deliberately rather than waiting for its bound. Reports its progress
-    while the emulator takes its time to leave.
+    """End the session deliberately rather than waiting for its bound.
 
-    Reply: `closed`, `ended_by` (`quit`: the emulator left on the first signal, which is what
-    a session launched here does, program loaded or not, because `start` turns the quit
-    warning off; `killed`: it ignored the signal, a conf that puts the warning back or a
-    guest wedged, and SIGKILL ended it; `died`: it had already exited when this was called;
-    `none`: nothing to close), `exit_code` (an integer, or unavailable with its `why`:
-    SIGKILLed and still not reaped, an emulator may still be on the machine, or not read).
-    `stdout_tail` and `errorlog_tail` (the last words of the console and of the logfile, read
-    after the exit) when the end was not a clean `quit` with exit code 0, or with
-    `detail=True`, else `omitted` names them with `how`. What the process was (`status`'s
-    rows, `pid` first) rides at the top, read before the end, so `pid` is the process this call
-    ended; `session` is the block as it stood BEFORE closing.
+    Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid`, `stdout_tail` and
+    `errorlog_tail` when the end was not a clean `quit`, or with `detail=True`. `exit_code` is
+    an integer or unavailable with its `why`. `session` is the block before closing.
     """
     return lifecycle.close(bridge(ctx), detail)
 
@@ -329,30 +278,15 @@ def log(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
         limit: Annotated[int, vocab.bounds(1, dlogs.LOG_LIMIT_MAX)] = 40,
         labels: bool = False,
         since_mark: Annotated[int, log_marks.SINCE_MARK_BOUND] = 0) -> dict[str, Any]:
-    """The session's log, one `channel` of it, filtered in the server by a regex.
+    """The session's log, one `channel` (`guest`, `emulator`, `all`) filtered by the Python regex
+    `pattern`; `limit` keeps the newest matches; `labels=True` adds `labels`. `since_mark` (a
+    byte position, from a `mark`) reads only what follows. Needs a session with `logfile`; works
+    on a running guest.
 
-    `channel` is `guest` (the program's own 0xE9 instrumentation, one line per write),
-    `emulator` (DOSBox-X's own lines, the categories its `log` section names) or `all` (the
-    file in order, each line tagged `[guest] ` or `[emulator] `); `process` names the
-    emulator's stdout, which here is the debugger's terminal, and is refused by name.
-    `pattern` is a Python regular expression; `limit` keeps the NEWEST
-    matching lines; `labels=True` adds `labels`, how many returned lines carry each first
-    word (the guest's own `BOOT`, `PERF`, `UI`...), one glance at who is talking. {SINCE_MARK}
-    (one file holds the three channels, so one position serves each). Needs a
-    session started with `logfile`. Works on a running guest (and, like every tool, applies
-    what was queued while the guest ran if it finds the machine stopped, saying so in
-    `applied_on_stop`).
-
-    Reply: `channel`, `lines` (the newest `limit` matches, in order), `lines_total` (how many
-    matched IN ALL, not how many came back), `truncated`, and `labels` when asked. An empty `lines`
-    is an answer: the channel is there and nothing matched.
-
-    INVALID, with `code` and `message` saying which: no `logfile` on this session; the log
-    does not exist yet; the guest channel holds no instrumentation at all; `limit` out of range
-    (above it, narrow the pattern); a
-    pattern that does not compile; a channel that is not one of the three; a `since_mark` that
-    names no position of the log; the session is gone. For "when did X happen, and wait if it
-    has not" use `log_wait`.
+    Reply: `channel`, `lines`, `lines_total`, `truncated`, `labels`, `pattern`. INVALID with
+    `code`: no `logfile`, no log yet, no guest instrumentation, `limit` out of range, a bad
+    pattern, an unknown channel (`process` is refused by name), a `since_mark` naming no
+    position. To wait for a line use `log_wait`.
 
     Reference: REFERENCE.md, The log.
     """
@@ -369,32 +303,15 @@ def log_wait(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS
              seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
              since_mark: Annotated[int, log_marks.SINCE_MARK_BOUND] = 0,
              ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """WHEN a line of `channel` matching `pattern` was logged: at once if it already was,
-    else wait for it. Reports its progress while it waits.
+    """When a line of `channel` matching `pattern` was logged: at once if the log already holds it,
+    else wait up to `seconds`. `channel` and `since_mark` as in `log`. Works on a running guest.
 
-    `channel` as in `log` (`guest`, `emulator`, `all`); `pattern` is a regex over that
-    channel; `seconds` bounds the wait. It reads what the log ALREADY holds first, so a line
-    that went past before you asked is still found. `since_mark` as in `log`: "already" is then
-    "since the mark", which is how "after the load" is asked. Works on a running guest (the usual
-    case: a guest writing traces is a guest that runs).
-
-    Reply: `verdict` `TARGET`, `pattern`, `channel`, `line` (the FIRST match; `log` is the tool
-    for the newest), `already` (it was in the log before this call: history, not something you
-    were present for), `waited_s` (0.0 when already), `lines_before`, `lines_total`,
-    `arrived_during`, `lines_examined`; when the bound ran out, `verdict` `TIMEOUT` with
-    `pattern`, `channel`, `arrived_during`, `lines_examined`, `waited_s` and a `note` (the guest
-    still runs). `status: INVALID`: `wait_stopped` when the
-    machine is STOPPED and the log does not already hold the line (a stopped guest writes
-    nothing; the refusal names `pattern` and `last_stop`, and a stop that lands DURING the wait
-    is reported the same way after one last read of the log), `session_broken` when the emulator
-    went away. No `logfile`, a bad `seconds`, an unusable regex, an
-    unknown channel or a `since_mark` that names no position of the log is refused. A log that
-    does not exist YET is not refused: that is the ordinary state right after `resume`.
-
-    The moment it hands back is for choosing an address to `run_to` or `watch_add` on the NEXT
-    run: the guest is usually still running when this returns, and the console tools refuse
-    then. `expect` on `send_keys`/`drive` is this same wait on the guest channel, from a
-    mark taken before the act.
+    Reply: `verdict` `TARGET`, `pattern`, `channel`, `line` (the first match), `already`,
+    `waited_s`, `lines_before`, `lines_total`, `arrived_during`, `lines_examined`; on timeout
+    `verdict` `TIMEOUT` with `note`, `arrived_during`, `lines_examined`, `waited_s`. `status:
+    INVALID`: `wait_stopped` on a stopped machine whose log lacks the line, `session_broken`
+    when the emulator went away; no `logfile`, a bad `seconds`, regex, channel or `since_mark`
+    are refused.
 
     Reference: REFERENCE.md, The log.
     """
@@ -418,14 +335,11 @@ def log_wait(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS
 
 @tool("Read the registers", summary=one_line.registers, read_only=True, replay=("regs",))
 def registers(from_last_stop: bool = False) -> dict[str, Any]:
-    """The register pane as a mapping. Needs the machine stopped at the debugger; INVALID
-    when no pane came back, and that refusal carries `last_stop` and the tools that do answer
-    while the guest runs. `from_last_stop=True` hands back the registers AS THEY WERE at the
-    last stop, never as the current value; INVALID before any stop.
+    """The register pane. `from_last_stop=True` returns the registers of the last stop, never the
+    current value; refused before any stop.
 
-    Reply: `regs` (`EAX`, `EIP`, `CS`, `DS`, ... as hex strings), and from the last stop
-    `superseded` (true) with `last_stop`. The control registers (CR0, CR3) and the descriptor
-    tables' registers are not in the pane: `machine_map(sections=["control"])` reads them.
+    Reply: `regs` (hex strings), `superseded`. CR0, CR3 and descriptor tables:
+    `machine_map(sections=["control"])`.
     """
     if from_last_stop:
         live()
@@ -441,18 +355,12 @@ def registers(from_last_stop: bool = False) -> dict[str, Any]:
 def read_memory(ref: str,
                 length: Annotated[int, vocab.bounds(1, dcons.DATA_VIEW_BYTES)] = 16,
                 ) -> dict[str, Any]:
-    """`length` bytes at `ref`, a symbol or a `SEG:OFF` (the colon is the tell: a bare
-    number is read as a symbol name), as `hex`;
-    beside them the data-view ROWS the debugger's `D` printed, which is where the bytes come
-    from. Needs the machine stopped.
+    """`length` bytes (1..{READ_MAX}) at `ref`, a symbol or `SEG:OFF` (a bare number is read as a
+    symbol).
 
-    Reply: `hex` (`length` bytes from the address), `length`, `rows` (the data view's rows
-    of sixteen bytes, as many as the debugger's window showed), and `seg_off`, where the
-    ref resolved to. `length` is 1 to {READ_MAX}, and the rows have to hold it from the
-    address: a view that showed fewer bytes than asked is refused (`readback_refused`)
-    naming what it held, and above the view the answer is `memdump`. INVALID unless the
-    address asked for is among the rows returned, so a cut repaint is refused rather than
-    handed back shifted. An absent or ambiguous symbol is refused.
+    Reply: `hex`, `length`, `rows` (the data view's), `seg_off`, `ref`. A view holding fewer
+    bytes than asked is `readback_refused`; above it use `memdump`. An absent or ambiguous
+    symbol is refused.
     """
     session = live()                 # `length` is judged by the registry, before the call
     seg, off = placement.read_target(ref, "DS", session)
@@ -464,30 +372,16 @@ def read_memory(ref: str,
 @tool("Disassemble code", summary=one_line.disassemble, read_only=True)
 def disassemble(ref: str, length: Annotated[int, vocab.bounds(1, code.LENGTH_MAX)] = 16,
                 ) -> dict[str, Any]:
-    """Decode `length` bytes from `ref`, a symbol or a `SEG:OFF`, one x86
-    instruction a line, on the host (capstone): the debugger has no disassembly command. The
-    listing completes the instruction that straddles the end, so it may run a little past
-    `length`, unless the segment ends first. Needs the machine stopped.
+    """Decode `length` bytes from `ref` (a symbol or `SEG:OFF`) as x86, one instruction a line. The
+    last is completed unless the segment ends first.
 
-    The width is the segment's own D bit: real mode 16-bit; in protected mode the pane's
-    `Pr32`/`Pr16` for CS, `SELINFO` for a selector another segment register holds, the
-    descriptor listings (which need `logfile`) for one no register holds.
+    Reply: `seg_off`, `length`, `code_bits`, `code_bits_from`, `lines`, `flow` (per line:
+    `call`, `branch`, `return`, `sequential`, `unknown`), `flow_source`, and with symbols loaded
+    `resolved` (direct call/branch targets and memory operands: `line`, `operand`, `seg_off`,
+    `addr`, `symbol`, `delta`).
 
-    Reply: `seg_off`, `length`, `code_bits` (16 or 32) and `code_bits_from` (where
-    the width was read), `lines` (`SSSS:OOOOOOOO BYTES TEXT`; a byte no instruction starts
-    with is `.byte 0x..`), `flow` (per line: `call`, an interrupt included; `branch`; `return`;
-    `sequential`; `unknown` for such a byte), `flow_source` (`capstone`), and with a symbol
-    table loaded `resolved`: every direct call or branch target (`kind` `target`, its segment
-    the line's own or the far pointer's) and direct memory operand (`kind` `memory`,
-    `register` the segment register it is read through, at its value at this stop), each with
-    `line`, `operand`, `seg_off`, `addr` (the linear address), and the nearest `symbol` with
-    `delta`, unavailable outside the table's span; a row that could not be placed has `addr`
-    unavailable too. A register-relative operand is not resolved.
-
-    Refused: `length` out of range, and one that runs past the end of a 16-bit segment
-    (IP wraps there), naming the most bytes from there; `memdump`'s refusals apply to the
-    bytes read (a leftover dump file, a protected-mode range past offset 0xFFFF without
-    `logfile`).
+    Refused: `length` out of range or past the end of a 16-bit segment; `memdump`'s refusals
+    apply.
 
     Reference: REFERENCE.md, Reading and writing.
     """
@@ -496,25 +390,13 @@ def disassemble(ref: str, length: Annotated[int, vocab.bounds(1, code.LENGTH_MAX
 
 @tool("Guess the call stack", summary=one_line.call_stack, read_only=True)
 def call_stack() -> dict[str, Any]:
-    """A heuristic chain of the callers of the routine the stop is in, never a verdict: the
-    frame pointers walked (C's `push bp`/`mov bp, sp` and the `enter` frame), each return
-    address kept only when a call instruction ends exactly there. Needs the machine stopped.
+    """A heuristic chain of the stop's callers, never a verdict: frame pointers walked (`push
+    bp`/`mov bp, sp`, `enter`), each return kept only when a call instruction ends there. Row 0
+    is the stop.
 
-    Row 0 is the stop. Outside its routine's frame (a `push bp` or `enter` at the routine's own
-    address, the `mov bp, sp` right after the push, the `ret` that leaves it) the caller is read
-    off the stack pointer (`via` `entry`); then the chain from BP (`bp_chain`): the return
-    beside each frame, near or far as the call before it says. A return is named by the
-    routine its call is in. The walk ends at a zero
-    or non-rising saved frame pointer, a frame past the stack segment's end, a return no call
-    precedes (not listed), a return outside the loaded table (listed), or its bound.
-
-    Reply: `heuristic` (always true), `code_bits`, `calls` (innermost first: `seg_off`,
-    `addr` (linear), `symbol` and `delta`, unavailable outside the table's span,
-    `via`, `call` (the call instruction at the call site, unavailable on row 0), `bp` (the
-    frame it was read beside, unavailable on rows 0 and `entry`)), `truncated` (the bound was
-    reached), `ended_why` (a read that failed says so here). Refused when the register pane
-    shows no SS, ESP or EBP. A routine that keeps no frame pointer is invisible to it: its
-    caller's caller is listed in its place, or nothing.
+    Reply: `heuristic`, `code_bits`, `calls` (innermost first: `seg_off`, `addr`, `symbol`,
+    `delta`, `via`, `call`, `bp`), `truncated`, `ended_why`. Refused when the register pane
+    shows no SS, ESP or EBP. A routine with no frame pointer is invisible.
 
     Reference: REFERENCE.md, Reading and writing.
     """
@@ -523,22 +405,12 @@ def call_stack() -> dict[str, Any]:
 
 @tool("Dump memory to a file", summary=one_line.memdump, replay="drop")
 def memdump(ref: str, length: int, dest: str) -> dict[str, Any]:
-    """`length` bytes of memory to a FILE at `dest`.
+    """`length` bytes from `ref` (a symbol or `SEG:OFF`) to the new file `dest` (absolute).
 
-    Reply: `ref`, `seg_off`, `length`, `path` and `bytes` (the size written).
-
-    `ref` is a symbol or a `SEG:OFF` (colon required); `dest` is an absolute path, its
-    directory there. Needs the machine stopped. The size
-    handed back is checked for EQUALITY against `length`. Refused rather than overwriting: a
-    dump file already sitting where the debugger writes (the emulator's working directory),
-    a dangling link there included, or at `dest`, and a `dest` directly in that directory (a
-    subdirectory of it is fine). An absent or ambiguous symbol is refused.
-
-    Past offset 0xFFFF the debugger would wrap a 16-bit segment or read zeros past a limit: in
-    real mode the range is read in 64 KiB windows, so it holds the bytes really there, up to
-    `FFFF:FFFF`; in protected mode the selector's descriptor is read (which needs `logfile`)
-    and a 16-bit segment, a range past its limit, or a selector with no descriptor is refused.
-    Inside 0 to 0xFFFF the limit is not judged and the debugger reads zeros past it.
+    Reply: `ref`, `seg_off`, `length`, `path`, `bytes`. Refused: a dump file already where the
+    debugger writes or at `dest`, a `dest` directly in that directory, an absent or ambiguous
+    symbol; in protected mode a 16-bit segment, a range past its limit, or no descriptor (needs
+    `logfile`).
     """
     session = live()
     ds.console_listening(session, "a dump")
@@ -550,21 +422,11 @@ def memdump(ref: str, length: int, dest: str) -> dict[str, Any]:
 
 @tool("Find bytes in memory", summary=one_line.find, read_only=True)
 def find(data_hex: str, ref: str, length: int) -> dict[str, Any]:
-    """Every address holding the bytes `data_hex` (whole hex bytes, two digits each) in
-    `length` bytes from `ref`. `ref` and `length` are required: there is no default range.
+    """Every address holding `data_hex` (whole hex bytes) in `length` bytes from `ref`; both
+    required. `memdump`'s refusals apply. For a value narrowed over time use `scan`.
 
-    The debugger has no pattern search of its own, so the range is dumped (the `memdump`
-    route, its windows past offset 0xFFFF included, into a scratch file of this call's own
-    that is gone before the reply) and searched exactly. Needs the machine
-    stopped; `memdump`'s refusals apply (a leftover dump file where the debugger writes). In
-    real mode a hit past offset 0xFFFF is named from its own paragraph. For a VALUE narrowed
-    by what it does over time, the debugger's own scanner is `scan_start` / `scan_filter` /
-    `scan_clear`.
-
-    Reply: `seg_off`, `length`, `span` (what was examined:
-    `from`, `length`, `source`, here always `ref+length` since the range is the caller's
-    own), `hits` (`SEG:OFF` in address order, at most {HITS_MAX}: when truncated, the HIGHEST
-    addresses are kept), `hits_total` (every hit), `truncated`.
+    Reply: `seg_off`, `length`, `span`, `hits` (`SEG:OFF`, at most {HITS_MAX}, highest kept),
+    `hits_total`, `truncated`.
     """
     # THE HEX BEFORE THE MACHINE, which is where `write` already asked it and where this did
     # not: the same argument of the same server answered `bad_argument` through one tool and
@@ -577,68 +439,35 @@ def find(data_hex: str, ref: str, length: int) -> dict[str, Any]:
     return st.reply(ref=ref, **finder.find(session, seg, off, length, pattern))
 
 
-@tool("Start a value scan", summary=one_line.scan_start, replay="drop")
-def scan_start(ref: str, length: int,
-               cell_bytes: Annotated[int, vocab.enum(finder.CELL_BYTES)] = 1) -> dict[str, Any]:
-    """Open the debugger's value scanner (`MEMFIND`) over `length` bytes from `ref`, in cells
-    of `cell_bytes` (1, 2 or 4, little-endian): every cell is a candidate
-    until `scan_filter` narrows them. The debugger holds ONE scan at a time, so a scan
-    already open is refused in its words: `scan_clear` it, or keep filtering it.
+@tool("Value scan", summary=methods.fold_line("scan", folds.SCAN), replay="drop")
+def scan(method: Annotated[str, vocab.enum(tuple(folds.SCAN))], ref: str = "",
+         length: int | None = None,
+         cell_bytes: Annotated[int, vocab.enum(finder.CELL_BYTES)] | None = None,
+         operator: Annotated[str, vocab.enum(finder.OPERATORS)] | None = None,
+         value: judges.NumberArg | None = None,
+         limit: Annotated[int, vocab.bounds(1, judges.HITS_MAX)] | None = None,
+         ) -> dict[str, Any]:
+    """Value scan: find a variable no map names (the debugger's `MEMFIND`). One scan at a time.
 
-    This is the cheat-search loop for a program with no map: open the scan, play, filter
-    by what the value must have done (`=` a known value, `!` with no value for "changed
-    since the scan opened"), until the survivors are the cells that move the way the
-    program does. `length` is a whole number of cells.
-    Needs the machine stopped. Reply: `seg_off`, `length`, `cell_bytes`, `addr` (the linear
-    address the scan opened at), `hits_total` (every cell is a candidate).
+    `start`: every cell of `cell_bytes` (little-endian) over `length` bytes from `ref` is a
+    candidate. Reply: `seg_off`, `length`, `cell_bytes`, `addr`, `hits_total`.
+
+    `filter`: keep the cells whose content satisfies `operator` (`=` default) against `value`
+    (an integer or a `0x` string), or with no `value` against what each held at `start`; none
+    left closes the scan. Reply: `operator`, `value`, `iterations`, `closed`, `hits` (the first
+    `limit`, default {HITS_DEFAULT}), `hits_total`, `truncated`, `note`.
+
+    `clear`: cancel the open scan. Reply: `cleared`.
+
+    Refused: an argument the method does not take; a scan already open, in the debugger's
+    words; a `value` wider than the cell. An answer this cannot read clears the debugger's
+    command line before refusing (`line_recovered`).
+
+    Reference: REFERENCE.md, Reading and writing.
     """
-    session = live()
-    ds.console_listening(session, "a search")
-    seg, off = placement.read_target(ref, "DS", session)
-    return st.reply(ref=ref, **finder.scan_start(session, seg, off, length, cell_bytes))
+    return methods.dispatch(folds.SCAN, locals())
 
 
-@tool("Filter the value scan", summary=one_line.scan_filter, replay="drop")
-def scan_filter(operator: Annotated[str, vocab.enum(finder.OPERATORS)] = "=",
-                value: judges.NumberArg | None = None,
-                limit: Annotated[int, vocab.bounds(1, judges.HITS_MAX)] = judges.HITS_DEFAULT,
-                ) -> dict[str, Any]:
-    """Keep the scan's cells whose current content satisfies `operator` (`=`, `!`, `>`,
-    `>=`, `<`, `<=`) against `value`; with no `value`, against what each cell held when
-    `scan_start` opened the scan: `!` alone keeps the cells that CHANGED since then, `=`
-    alone those that did not, `>` alone those that grew. The debugger's `MEMS`.
-
-    `value` is an integer or a `0x` hex string; one wider than the cell of a scan `scan_start`
-    opened is refused before `MEMS` is typed. Needs the machine stopped and a scan open. Reply:
-    `operator`, `value` (`0x` at the cell's width), `iterations` (the filters so far, this one
-    included; on the closing reply the server's own count, unavailable for a scan `debug`
-    touched), `closed` (a step that leaves NO survivor closes the scan, which is what the
-    debugger does), `hits` (the first `limit`, each survivor's `seg_off`, `addr` and current
-    `value`), `hits_total` and `truncated` (more survive than `hits` shows). Past {HITS_MAX}
-    survivors none is listed, with a `note`: the debugger pages its listing, so filter again.
-
-    THE COMMAND LINE IS LEFT CLEAN even when the answer cannot be read. The debugger eats a
-    command character by character while a paged-content prompt waits, one page per
-    keystroke, so a listing that ends with a page unturned swallows the front of the next
-    command and strands its tail on the line, and from there every later call concatenates
-    instead of running until `close`. So a listing turns its last page, and an
-    `unexpected_answer` clears the line before it refuses, saying so in `line_recovered`.
-    """
-    session = live()
-    ds.console_listening(session, "a search")
-    number = None if value is None else checks.number("value", value)
-    return st.reply(**finder.scan_filter(session, operator, number, limit))
-
-
-@tool("Clear the value scan", summary=one_line.scan_clear, replay="drop")
-def scan_clear() -> dict[str, Any]:
-    """Cancel the debugger's open scan (`MEMFIND !`). Nothing open is a no-op that says so.
-    Needs the machine stopped. Reply: `cleared`. An answer this cannot read clears the
-    debugger's command line before refusing (`line_recovered`): see `scan_filter`.
-    """
-    session = live()
-    ds.console_listening(session, "a search")
-    return st.reply(**finder.scan_clear(session))
 
 
 #: The debugger's commands that write the guest, read in upstream's command parser: memory
@@ -652,25 +481,19 @@ DEBUG_WRITES = frozenset({"SM", "SMV", "SR", "INTT", "TIMERIRQ", "LOADSTATE", "O
 
 @tool("Debugger console command", summary=one_line.debug)
 def debug(command: str) -> dict[str, Any]:
-    """One raw `command` to the debugger console; the LAST resort, not the first.
+    """One raw `command` to the debugger console; the last resort. For a value use `registers`,
+    `read_memory` or `memdump`; for the log `log`.
 
-    Needs the machine STOPPED at the debugger (a running guest's console takes nothing). Reply:
-    `screen_delta`, the delta the screen produced for the command, capped at its last
-    {DEBUG_TEXT_KEEP} characters with `screen_chars` (how much the screen produced) and
-    `clipped` (whether what came back is all of it). It is a repaint of an ncurses screen,
-    interleaved with the rest of the panes, not a parsed answer. For a VALUE use `registers`,
-    `read_memory` or `memdump`; for the log use `log`; for a breakpoint or a watch use the tools
-    that read the debugger's list back, which this does not. Refused `bad_argument` before
-    anything is typed: a command that lets the guest run (`VRT`, `RUNWATCH`, `INT`, the `LOG`
-    family), naming the tool that does it and reports the stop, and a command carrying a control
-    character. A command that writes the guest (memory, a register, a port, an interrupt or the
-    timer raised, a state loaded, the BIOS clock) marks the session `altered`. `note`: a line
-    the debugger did not take, emptied, or a listing that paged, ended (REFERENCE.md, The
-    console).
+    Reply: `screen_delta` (the last {DEBUG_TEXT_KEEP} characters of the screen's repaint),
+    `screen_chars`, `clipped`, `command`, `note`.
+
+    Refused `bad_argument`: a command that lets the guest run (`VRT`, `RUNWATCH`, `INT`, the
+    `LOG` family) and a control character.
     """
     session = live()
     ds.console_listening(session, repr(command))
-    # A SCAN COMMAND TYPED HERE moves the debugger's own count past the one `scan_filter` keeps,
+    # A SCAN COMMAND TYPED HERE moves the debugger's own count past the one `scan(method="filter")`
+    # keeps,
     # and may open a scan at another width, so both are dropped rather than answered stale.
     if command.strip().upper().startswith(("MEMS", "MEMFIND")):
         STATE.scan_forget()
@@ -704,19 +527,14 @@ PAGED_NOTE = "the listing paged: `Q` ended the pager and the rest of it is in `s
 
 @tool("Force a register", summary=one_line.set_register)
 def set_register(name: str, value: judges.NumberArg) -> dict[str, Any]:
-    """Write one register, READ IT BACK off the pane, and mark the session `altered` for
-    good: every later reading is of a forced state, and the flag on every reply is how a reader
-    three questions later knows. `name` is a register the debugger's `SR` takes (`eax`, `ax`,
-    `ip`, ...); `value` is an integer or a `0x` hex string within the register's width, refused
-    before anything is sent when negative or wider. Needs the machine stopped.
+    """Write one register and read it back off the pane; marks the session `altered`. Needs the
+    machine stopped.
 
-    Reply: `register` (the name as `SR` takes it), `regs` (the pane after the write), `value`
-    (what was sent) and `readback` (the register asked for as the pane shows it now), both `0x`
-    at the register's own width (eight digits for a 32-bit name, four for a segment register,
-    and four for a 16-bit name, read as the low half of its 32-bit register, `ax` in `EAX`),
-    `verified` (readback equals what was sent; false is not always a failure: a register the
-    debugger masks is doing its job). INVALID when no pane, or a pane without that register,
-    came back to read.
+    `name` is a register the debugger's `SR` takes (`eax`, `ax`, `ip`); a negative or too wide
+    `value` is refused unsent.
+
+    Reply: `register`, `regs`, `value`, `readback` (both `0x` at the register's width),
+    `verified`. INVALID when no pane came back.
     """
     number = checks.number("value", value)
     out = live().set_register(name, number)
@@ -727,20 +545,13 @@ def set_register(name: str, value: judges.NumberArg) -> dict[str, Any]:
 
 @tool("Write memory", summary=one_line.write)
 def write(ref: str, data_hex: str) -> dict[str, Any]:
-    """Write bytes at a SYMBOL or a `SEG:OFF` and READ THEM BACK. MODIFIES the machine:
-    every later reply says so in `altered`.
+    """Write bytes at a symbol or `SEG:OFF` and read them back. Modifies the machine; needs it
+    stopped.
 
-    `data_hex` is whole hex bytes, two digits each, up to {READ_MAX} (the data view's reach for the
-    readback; a region is not a write). The bytes go through the debugger's `SM` and the
-    range is read back off the data view. Needs the machine stopped; an absent or ambiguous
-    symbol is refused.
+    `data_hex` is whole hex bytes, up to {READ_MAX}. An absent or ambiguous symbol, and a
+    real-mode ROM address, are refused unsent.
 
-    Reply: `ref`, `seg_off`, `bytes_written` (sent), `readback` (hex read back from
-    the same range), `verified` (readback equals what was sent). `verified: false` is not
-    always a failure: a memory-mapped register answers what it answers; for RAM the read-back
-    differs from what was sent (the write did not land, or the view did not repaint). A
-    real-mode address in the ROM range is REFUSED with nothing sent: the debugger's `SM` into
-    ROM ends the emulator instead of writing.
+    Reply: `ref`, `seg_off`, `bytes_written`, `readback`, `verified`.
     """
     data = checks.write_data(data_hex)        # parsed once; the bytes travel, not the text
     session = live()
@@ -754,20 +565,12 @@ def write(ref: str, data_hex: str) -> dict[str, Any]:
 @tool("Resume the machine", summary=one_line.resume, on_cancel="none", replay="wall")
 def resume(seconds: Annotated[float, vocab.WAIT_FROM_ZERO_BOUNDS] = 0.0, detail: bool = False,
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Let the machine run (F5, sent once). With `seconds` at zero (the default) it comes back
-    at once, no verdict; with a bound it waits up to `seconds` for a stop, listening for the
-    debugger's prompt as `run_to` does and reporting its progress: `verdict` `OTHER_STOP` with
-    the full stop when one lands, or `TIMEOUT` with `waited_s` and a `note`, LEAVING IT RUNNING
-    (unlike `run_to`, which interrupts at its bound); `seconds` is 0 or a bound up to
-    {WAIT_MAX_S}. Needs the machine stopped: a guest already running is refused `not_stopped`,
-    since an F5 there does nothing and an `ok` would read like a release.
+    """Let the machine run. `seconds` 0 (the default) returns at once; a bound up to {WAIT_MAX_S}
+    waits for a stop and, if none comes, leaves it running. Needs a stopped machine.
 
-    Nothing has to be declared first: `stop` brings a running guest back, headless or windowed.
-
-    Reply: a reply that stopped (an F5 that never left the debugger is a stop too) carries
-    {STOP_FIELDS}. With `detail=True`, `screen_delta`: the debugger's repaint
-    for the F5, a POSITIONAL tail capped at its last {DETAIL_TEXT_KEEP} characters (`clipped`),
-    never a value; without it `omitted` names it.
+    Reply: with a bound, `verdict` (`OTHER_STOP` with the stop reply of `run_to`; `TIMEOUT`,
+    `waited_s`, `note`). `screen_delta` (with `detail=True`: the repaint's last
+    {DETAIL_TEXT_KEEP} characters; else `omitted`).
 
     Reference: REFERENCE.md, Advancing the machine.
     """
@@ -776,29 +579,12 @@ def resume(seconds: Annotated[float, vocab.WAIT_FROM_ZERO_BOUNDS] = 0.0, detail:
 
 @tool("Stop a running machine", summary=one_line.stop, on_cancel="stop", replay="wall")
 def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Bring a RUNNING guest back to the debugger and survey the stop, headless or windowed
-    alike: the session sends `BREAK` down the emulator's own debugger channel (upstream's
-    `mcp_server`), which reaches the debugger while the guest runs, with no window, no menu and
-    nothing taken from whoever is using the screen.
+    """Bring a running guest back to the debugger and survey the stop, headless or windowed.
 
-    THE MACHINE STOPS WHEREVER IT IS, and that is not always in the program: a DJGPP guest
-    spends part of every frame in real-mode BIOS handlers (`F000:xxxx`), and a stop landing
-    there has no protected-mode selector to place a symbol through, so every symbol of a
-    protected-mode table answers that the machine stopped outside the program, and a stop
-    lands there often. A breakpoint on the program, armed at a stop inside it before the
-    release, is what brings the machine back into its code.
+    Reply: `interrupted` (`true` with the stop reply and `via: "break"`; `false` when already
+    stopped, with a `note`). INVALID `not_settled`: the `BREAK` got no prompt; ask again.
 
-    `unarmable` AND `unresolved` ARE DIFFERENT ANSWERS and the difference is worth holding:
-    `unarmable` means the symbol IS in the table and its address cannot be worked out at
-    this instant, while `unresolved` means the table does not carry the name at all:
-    `unresolved` is a fact about the TABLE, not about the stop: `symbols_load` accumulates its
-    batches, so a name missing after several
-    loads is one none of them carried.
-
-    Reply: `interrupted` (`true` with the full stop reply and `via: "break"`; `false` when the
-    machine was already stopped, with `last_stop` and a `note`). A `BREAK` whose prompt never
-    comes is `not_settled`: asking again is allowed, and if `stop` fails as well, `close` then
-    `start`.
+    Reference: REFERENCE.md, Advancing the machine.
     """
     session = live()
     if session.at_debugger():
@@ -817,16 +603,11 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
 @tool("Step instructions", summary=one_line.step)
 def step(count: Annotated[int, vocab.bounds(1, ds.STEP_MAX)] = 1,
          mode: Annotated[str, vocab.enum(ds.STEP_MODES)] = "into") -> dict[str, Any]:
-    """`count` instructions, one at a time, `mode` `into` (F11, the default) or
-    `over` (F10), each step READ BACK. Needs the machine stopped.
+    """`count` instructions, each read back; `mode` `into` (F11) or `over` (F10). Needs the machine
+    stopped.
 
-    Reply: `mode`, `asked`, `before` and `after` (each `SSSS:OOOOOOOO`),
-    `instructions_completed` (how many steps actually landed, not how many were asked; fewer
-    when the machine left the debugger, e.g. an `over` across a call that never returns, which
-    `session.running` says, so the remaining steps were not sent), `moved`, `stalled` (steps
-    after which CS:EIP was unchanged: a swallowed keystroke, a `rep` iteration, a jump to
-    itself, a halt), and when it stopped {STOP_FIELDS}. A settle per step; for a longer run use
-    `run_to`.
+    Reply: `mode`, `asked`, `before`, `after`, `instructions_completed`, `moved`, `stalled`
+    (CS:EIP unchanged after a step), and the stop reply. For longer runs `run_to`.
     """
     session = live()
     out = cast(dict[str, Any], session.step(mode=mode, count=count))
@@ -842,29 +623,15 @@ def step(count: Annotated[int, vocab.bounds(1, ds.STEP_MAX)] = 1,
 @tool("Run to a place, with a control", summary=one_line.run_to, on_cancel="stop")
 def run_to(ref: str, control: str, seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Run until a SYMBOL or a `SEG:OFF`, and say where it really stopped. Reports its
-    progress while it waits.
+    """Run until a symbol or a `SEG:OFF` and say where it stopped.
 
-    `ref` is a symbol name from the loaded table or a raw `SEG:OFF` in hex (the colon is the
-    tell); the server derives the debugger's address from the machine's own mode, arms a
-    `BP`, verifies it by reading the list back, releases the machine and waits up to
-    `seconds`, INTERRUPTING the run at its bound. `control` is REQUIRED, this run's own (the
-    session keeps no declared control): a second `ref` known to be HOT, armed
-    beside the target and counted every time it fires, so a bound that expires with ZERO
-    control hits is INVALID rather than "it did not arrive". Pick one that fires a few times a
-    run: each hit costs a round trip.
+    `ref`: a loaded symbol or hex `SEG:OFF`. `control` is required: a second ref known to be
+    hot, counted when it fires, so a bound that expires with no control hit is INVALID, not "it
+    did not arrive". Needs a stopped machine. Refused: an absent or ambiguous name.
 
-    Refused before the machine moves: no control (the schema requires one, and an empty one is
-    none), an absent or ambiguous name, a machine not stopped.
-
-    Reply: `verdict` (`TARGET`; `OTHER_STOP`, another breakpoint got there first; `TIMEOUT`,
-    the bound ran out and the run was interrupted where it stood), `target_disarmed` (the
-    breakpoint it armed, removed on every outcome; false when that could not be confirmed),
-    `target`, `control_hits`, `controls` (`ref`, `at`, `hits_in_run`, `removed`), a `note`
-    explaining a non-arrival, and {STOP_FIELDS}. INVALID
-    carries no `verdict`: `control_silent` (a TIMEOUT with no control hit) or
-    `cut_by_other_stop` (another stop before the control fired), each with the stop surveyed;
-    `not_settled` when the interrupt found no prompt.
+    Reply: `verdict` (`TARGET`, `OTHER_STOP`, `TIMEOUT`), `target_disarmed`, `control_hits`,
+    `controls` (`ref`, `at`, `hits_in_run`), `note`, the stop (`pc`, `regs`, `cause`). INVALID:
+    `control_silent`, `cut_by_other_stop`, `not_settled`.
 
     Reference: REFERENCE.md, Advancing the machine.
     """
@@ -875,27 +642,12 @@ def run_to(ref: str, control: str, seconds: Annotated[float, vocab.WAIT_BOUNDS] 
 def run_for(milliseconds: int = 0, frames: int = 0,
             seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
             ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Run the machine for `frames` frames of the display, one vertical retrace each (the
-    debugger's `VRT`), or for `milliseconds` of its emulated time, and come back STOPPED with
-    the full stop reply. Reports its progress while it waits.
+    """Run for `frames` display frames (one `VRT` each) or `milliseconds` of emulated time (exactly
+    one) and come back STOPPED. Reports progress while it waits. Needs the machine stopped.
 
-    Arguments: exactly one of `frames` and `milliseconds` above zero. By `milliseconds` it runs
-    retrace by retrace until the register pane's emulated clock has risen at least that far, so
-    it stops at the first retrace at or past the mark, surveying every frame to read it.
-    `seconds`: the wall-clock bound. Needs the machine stopped. A DOS machine keeps no frame
-    counter, so `frames` counts retraces from where the call starts.
-
-    Reply: `verdict`, `ELAPSED` (the run ran its course: every frame, or the clock at the mark),
-    `OTHER_STOP` (a declared code breakpoint stopped it first, named by `cause`) or
-    `TIMEOUT` (the bound expired); `polls`, the `VRT`s answered by a stop; `emulated_before_s`
-    and `emulated_after_s`, the register pane's emulated clock; `frame_before`, `frame_after`
-    and `cycles`, unavailable with why; and {STOP_FIELDS}. `retrace_pending: true`:
-    the debugger still holds a retrace stop, which the next release meets. `note`: what the
-    reply cannot prove (a declared breakpoint or watch, an unread clock). A `TIMEOUT` with a
-    `VRT` still out is interrupted where it stands, its retrace left pending. INVALID
-    `no_progress` when the clock did not move (over the run by frames, at any frame by
-    milliseconds); `unexpected_answer` when a timed run finds no clock to start from, before
-    anything runs. Advancing is not altering.
+    Reply: `verdict` (`ELAPSED`, `OTHER_STOP`, `TIMEOUT`), `polls`, `emulated_before_s`,
+    `emulated_after_s`, `frame_before`, `frame_after`, `cycles` (unavailable with why),
+    `retrace_pending`, `note`, {STOP_FIELDS}. INVALID: `no_progress`, `unexpected_answer`.
 
     Reference: REFERENCE.md, Advancing the machine.
     """
@@ -909,32 +661,17 @@ def trace(instructions: Annotated[int, vocab.bounds(1, tracing.INSTRUCTIONS_MAX)
           shape: Annotated[str, vocab.enum(tracing.SHAPE_WORDS)] = "normal", dest: str = "",
           seconds: Annotated[float, vocab.WAIT_BOUNDS] = 60.0,
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Run the machine `instructions` instructions with the debugger's CPU log on (its `LOG`
-    family), come back STOPPED with the log in a file and the full stop reply, and say which
-    loaded symbols the executed addresses fall in.
+    """Run `instructions` (1 to {INSTRUCTIONS_MAX}) with the debugger's CPU log on and come back
+    STOPPED with the log in a file, joined to symbols.
 
-    Arguments: `instructions`, how many to EXECUTE, 1 to {INSTRUCTIONS_MAX}. `shape`: `normal`
-    (`LOG`: disassembly and registers), `short` (`LOGS`), `long` (`LOGL`: adds emulated time, VM and
-    CR0) or `cs_ip` (`LOGC`: the address alone). `dest`: absolute, its directory there, the
-    file not, not directly in the emulator's working directory; empty,
-    the next free `trace-<n>.trace` in the session's captures directory. `seconds`: the
-    wall-clock bound. Needs the machine stopped, a writable working directory and
-    `build_check`'s `heavy_debug`.
+    `shape`: `normal` (`LOG`), `short` (`LOGS`), `long` (`LOGL`) or `cs_ip` (`LOGC`). `dest`:
+    absolute, its directory there, the file not; empty is the next `trace-<n>.trace` in
+    captures. Needs a stopped machine, a writable working directory and `build_check`'s
+    `heavy_debug`; a dynamic core needs `start(flags=["-set", "cpu core=normal"])`.
 
-    The count is proved against the pane's `cc=` counter, which on the normal core moves one
-    per instruction: a mismatch is `no_channel`, the file kept (a dynamic core logs once per
-    block: `start(flags=["-set", "cpu core=normal"])` to trace).
-
-    Reply: `verdict`, `ELAPSED` (all ran; the file holds one line more, the stop), `OTHER_STOP`
-    (a declared stopper or pending retrace first, `cause`) or `TIMEOUT` (the bound ran
-    out: the run interrupted where it stood, and what ran up to there collected);
-    {STOP_FIELDS}; `trace`: `path`, `bytes`, `shape`, `instructions` (executed), `addresses`
-    (distinct), `unplaced` (no symbol places them), `set_path` (a JSON line per address;
-    unavailable when it could not be written, said in `note`), `symbols` (per routine, the first
-    {SYMBOLS_SHOWN}), `symbols_total`, `truncated`, `note` for what it cannot prove.
-    `readback_refused`: the log closed early (the machine closed it before the trace stopped, so
-    its lines are not what ran), is empty, or would not close; `host_failed`: the debugger was
-    refused its file, nothing ran and the line it left is emptied. Advancing is not altering.
+    Reply: `verdict`, the stop reply of `run_to`, `trace` (`path`, `instructions`, `addresses`,
+    `unplaced`, `set_path`, `symbols` (first {SYMBOLS_SHOWN})). Refused: `no_channel`,
+    `readback_refused`, `host_failed`.
 
     Reference: REFERENCE.md, Advancing the machine.
     """
@@ -947,31 +684,15 @@ def trace(instructions: Annotated[int, vocab.bounds(1, tracing.INSTRUCTIONS_MAX)
 def screen_wait(text: str, seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
                 ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run the machine retrace by retrace until `text` is on the TEXT screen, and stop there.
-    `text` (1 to {SCREEN_TEXT_MAX} characters code page 437 draws, not ending in a blank) is matched
-    literally, case-sensitive, inside ONE row of the screen as `screen_view` reads it, trailing
-    blanks dropped: a string that wraps across rows is not found. `seconds`, the wall-clock
-    bound, counted from after the first read of the screen, so a short one still
-    reaches the first frame; a frame's read under way when it passes is finished. Needs the
-    machine stopped and a session started with `logfile`; reports its progress while it waits.
+    `text` (1 to {SCREEN_TEXT_MAX} code page 437 characters) is matched literally,
+    case-sensitive, inside one row as `screen_view` reads it. Needs a stopped machine and a
+    session started with `logfile`. Already on screen: answered at once. Each retrace costs a
+    stop and five round trips, so `run_for` first for a distant string.
 
-    Already on screen at the call: answered at once, the machine not moved. Otherwise each
-    retrace costs a stop and five console round trips, so for a string far ahead `run_for`
-    first. A frame not in a text mode is no match.
-
-    Reply: `verdict` `TARGET` with `already`, `waited_s`, `polls` (the retraces run), `point`
-    (`[column, row]` where the text begins), `line` (that row), and a `note` when a declared watch
-    or interrupt breakpoint could have made a stop it took for a retrace. The bound: `verdict`
-    `TIMEOUT` with `waited_s`, `polls`, `text` (the rows of the last text page read, absent when
-    none was), `retrace_pending` and a `note` (a `VRT` still out is interrupted where it stands).
-    Either, when it ran: the stop it ended at, {STOP_FIELDS} (or `enrichment` unavailable, its
-    survey cut).
-
-    Refused: a bad `text` or `seconds` (`bad_argument`, before anything is typed); a declared
-    code breakpoint stopping the machine first (`wait_stopped`, with its `cause`,
-    `stop_seq`, `polls`, `retrace_pending`, `text`); a screen it cannot read, as `screen_view`
-    refuses it, with `polls` and `stop_seq` after a retrace; where `stop_seq` is due and the
-    stop's survey came back cut, `enrichment` unavailable instead; no `logfile`
-    (`no_channel`); a running guest (`not_stopped`).
+    Reply: `verdict` `TARGET` (`already`, `waited_s`, `polls`, `point` `[column, row]`, `line`)
+    or `TIMEOUT` (`waited_s`, `polls`, `text`, `retrace_pending`), `note`, the stop reply of
+    `run_to`. Refused: `bad_argument`, `wait_stopped` (a declared breakpoint stopped it),
+    `no_channel` (no `logfile`).
 
     Reference: REFERENCE.md, Input and the screen.
     """
@@ -980,69 +701,16 @@ def screen_wait(text: str, seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
     return retrace.screen_wait(session, text, seconds, bridge(ctx))
 
 
-@tool("Save the machine state", summary=one_line.state_save)
-def state_save(name: str,
-               seconds: Annotated[float, vocab.WAIT_BOUNDS] = ds.STATE_WAIT_S) -> dict[str, Any]:
-    """Save the machine under `name` as `<state_dir>/<name>.sav`, by the debugger's own
-    `SAVESTATE` sent down the debugger channel: no window, no menu, no focus taken, headless
-    or windowed. Needs a DOSBox-X that carries the command; any other build is refused
-    `no_channel`, naming the command it lacks. The command needs the debugger stopped, so
-    a RUNNING guest is stopped for it and released again (`paused: true`); a parked one stays
-    parked. The file is read back for what it says about itself. Never overwrites. Saving
-    alters nothing. `seconds` bounds the command's reply. `name`: letters, digits, `_`, `-`, a
-    letter or digit first, at most {STATE_NAME_MAX}, not digits only (the emulator's slot files).
-
-    Reply: `name`, `path`, `bytes`, `version`, `program`, `machine`, `memory_mb`, `saved_at`
-    (the state's own members, the local time it was saved), `paused`; `session.running` says
-    whether the guest runs after the call.
-
-    Reference: REFERENCE.md, Saved states.
-    """
-    return st.answer(live().state_save(name, seconds))
-
-
-@tool("Load a machine state", summary=one_line.state_load)
-def state_load(name: str,
-               seconds: Annotated[float, vocab.WAIT_BOUNDS] = ds.STATE_WAIT_S) -> dict[str, Any]:
-    """Load the state `name` from `<state_dir>/<name>.sav`, by the debugger's own `LOADSTATE`
-    sent down the debugger channel, as `state_save` saves (same build, no window). A RUNNING
-    guest is stopped for it and released again (`paused: true`), now running the loaded
-    machine; a parked one stays parked, at the loaded machine's position. A state of another
-    DOSBox-X version, program, memory size or machine type is refused, never asked about. It
-    REPLACES the machine, so the session is altered from here on; the symbol table is kept,
-    and a base measured off a register is measured again at the first stop in the program's
-    code (`applied_on_stop.base_remeasured` when it moved; `status`'s `pending` until then).
-
-    Reply: `name`, `path`, the state's own members, `paused`, {MARK}; `session.running`
-    says whether the guest runs after the call. A `.sav` that is no regular file is `unknown_ref`,
-    never opened.
-
-    Reference: REFERENCE.md, Saved states.
-    """
-    session = live()
-    try:
-        return st.answer(session.state_load(name, seconds))
-    finally:
-        # A LOAD THAT REPLACED THE MACHINE, answered or cut short after it went (the session
-        # decides, `dosbox_saved_states.state_load`): the table is kept and its base is measured
-        # again at the next stop.
-        if getattr(session, "machine_replaced", False):
-            STATE.machine_replaced()
 
 
 @tool("Snapshot the screen to a PNG", summary=one_line.snapshot, on_cancel="none", replay="drop")
 def snapshot(dest: str = "", seconds: Annotated[float, vocab.WAIT_BOUNDS] = ds.SNAPSHOT_WAIT_S,
              ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """One still of the RUNNING screen, taken inside the guest through the input stub (no
-    window, no menu, any session), confirmed by the new `.png` under the captures directory
-    (`captures_dir`, or `capture/` under `cwd`) within `seconds`, and moved to `dest` when
-    given (absolute, its directory there, not there yet).
-    REFUSED with the machine parked at the debugger (the stub takes commands on the timer
-    tick), on a session with no `logfile` (the command is the Delete key's scan code to an
-    older stub, and only the log says which is resident), and on a guest whose log shows no
-    stub, as `send_keys` is.
+    """A still of the running screen, taken in the guest into the captures directory within
+    `seconds`, moved to `dest` if given (absolute, new). Refused: parked at the debugger, no
+    `logfile`, no stub in the log.
 
-    Reply: `route: "guest"`, `path`, `bytes`, `sha256` (of the file).
+    Reply: `route`, `path`, `bytes`, `sha256`.
     """
     session = live()
     if session.launch.logfile is None:
@@ -1058,42 +726,51 @@ def snapshot(dest: str = "", seconds: Annotated[float, vocab.WAIT_BOUNDS] = ds.S
 
 @tool("List the saved states", summary=one_line.state_list, read_only=True)
 def state_list() -> dict[str, Any]:
-    """Every state under the session's state directory, each with what it says about
-    itself (`version`, `program`, `machine`, `memory_mb`, `saved_at`, `bytes`), read
-    off the file without loading it. A file there that is not a state carries a `note`, and so
-    does a `.sav` that is no regular file (a link to nothing, a directory, a FIFO), each reading
-    unavailable.
-    The emulator's own numbered slot file is NOT a named state and is reported apart, as
-    `working_slot`. Works on a running guest and needs no window.
+    """List the session's saved states, read off each file without loading it.
 
-    Reply: `state_dir`, `states`, `working_slot`.
+    Reply: `state_dir`, `states` (`version`, `program`, `machine`, `memory_mb`, `saved_at`,
+    `bytes`, `note`), `working_slot`.
 
     Reference: REFERENCE.md, Saved states.
     """
     return st.answer(live().state_list())
 
 
+@tool("Save or load a machine state", summary=methods.fold_line("state_write",
+                                                             folds.STATE_METHODS))
+def state_write(method: Annotated[str, vocab.enum(tuple(folds.STATE_METHODS))], name: str,
+                seconds: Annotated[float, vocab.WAIT_BOUNDS] = ds.STATE_WAIT_S
+                ) -> dict[str, Any]:
+    """Save or load the machine as `<state_dir>/<name>.sav` through the debugger's `SAVESTATE` and
+    `LOADSTATE`; no window or focus needed. A running guest is stopped for it and released
+    again. `name`: letters, digits, `_`, `-`, a letter or digit first, at most {STATE_NAME_MAX},
+    not digits only. `seconds` bounds the command's reply.
+
+    `save`: never overwrites. Reply: `name`, `path`, `bytes`, `version`, `program`, `machine`,
+    `memory_mb`, `saved_at`, `paused`.
+
+    `load`: replaces the machine, altering the session. Reply: `name`, `path`, the state's own
+    members, `paused`, `mark`.
+
+    Refused: a DOSBox-X without the commands (`no_channel`); a state of another version,
+    program, memory size or machine type; a `.sav` that is no regular file (`unknown_ref`).
+
+    Reference: REFERENCE.md, Saved states.
+    """
+    return methods.dispatch(folds.STATE_METHODS, locals())
+
+
 @tool("Arm an interrupt breakpoint", summary=one_line.breakpoint_interrupt)
 def breakpoint_interrupt(number: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)],
                          ah: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)] | None = None,
                          detail: bool = False) -> dict[str, Any]:
-    """Break on an interrupt, optionally on one `ah` function: `BPINT <number> [<ah>]`.
+    """Break on an interrupt, optionally one `ah` function. Arm it before `resume`. `number` and
+    `ah` are hex given as integers: `0x21` for DOS, not `21`. Pending while the guest runs.
 
-    `number` and `ah` are the debugger's HEX values given as integers: pass `0x21` (33) for
-    DOS, not `21`, which would arm INT 0x15; a DJGPP program's is `0x31` with `ah=2`. It
-    brings a running guest back AT that interrupt (`stop` brings it back wherever it is; a
-    host keypress cannot): arm it BEFORE `resume`. While the guest runs it is queued `pending`,
-    as below. The
-    declaration is STORED under its `BPINT ..` spelling, so `breakpoint_list` shows it and
-    `breakpoint_clear(ref="BPINT 21")` removes it; arming the same interrupt again is a no-op
-    that says `already_stored`.
+    Reply: `ref` (e.g. `BPINT 21 AH=4B`, what `declaration_clear` takes), `stored`,
+    `already_stored`, `armed`, `state`, `entry`; with `detail=True` also `screen_delta`.
 
-    Reply: `ref`, the exact string `breakpoint_clear` takes for it (`BPINT 21`,
-    `BPINT 21 AH=4B`: the debugger's own row spelling, hex, `AH=` included when `ah` was
-    given), `stored`, `already_stored`, `entry`; with `detail=True` the acknowledgement's
-    `screen_delta` (capped, with `screen_chars`/`clipped`), else `omitted` names them: a
-    fresh arm only, since a pending or already armed one typed nothing. While the
-    guest runs it is stored `pending` and armed at the next stop.
+    Reference: REFERENCE.md, Declarations.
     """
     return arming.breakpoint_interrupt(live(), number, ah, detail)
 
@@ -1106,33 +783,19 @@ def symbols_load(path: str, base: str = "",
                  pattern: str = "", keep_noise: bool = False,
                  section_bases: dict[str, str] | None = None, types: str = "",
                  ) -> dict[str, Any]:
-    """Load a toolchain's TEXT symbol list into the debugger and the server, so every other tool
-    takes NAMES. Wants the machine stopped INSIDE the program whose symbols these are (a breakpoint
-    on INT 0x21, or INT 0x31 with ah=2 for a DJGPP program). With an explicit `base` it also works
-    while the guest RUNS: the table answers at once and the debugger's list loads at the next stop
-    (`pending: true`).
+    """Load a toolchain's symbol list so other tools take names. Stop inside the program first;
+    with an explicit `base` a running guest works too (`pending: true`).
 
-    Arguments: `path`, a file (an absolute path): `nm` output, a GNU `ld` map, a
-    Borland TLINK/TASM map, or an Open Watcom map. A FLAT list (`nm`, GNU, real-mode Borland) takes
-    `base`: measured by default off the selector named by `base_from` (default `CS`, right under
-    DPMI), REQUIRED in real mode as HEX TEXT, `load_segment * 16` (segment 0x0800 is `"0x8000"`).
-    A SECTIONED map (32-bit Borland, Watcom) takes `section_bases`, hex per section index.
-    `types`: a UTF-8 file typing symbols in the value grammar. `pattern`: a regex SEARCHED in the
-    full name (`^_snd` keeps a prefix); `keep_noise` keeps section and compiler-label symbols.
+    `path`: `nm` output or a GNU `ld`, Borland or Watcom map. Flat lists take `base` (hex text,
+    required in real mode); sectioned maps take `section_bases`. `types`, `pattern`,
+    `keep_noise` filter and type rows.
 
-    Refused (INVALID): both `base` and `section_bases`; a sectioned map with no `section_bases`; a
-    real-mode map with no `base`; a running machine with no explicit base; a file whose symbol rows
-    were mostly unreadable; a table the COFF symbols of the `<stem>.exe` beside it contradict.
+    Refused (INVALID): both `base` and `section_bases`; a sectioned map without
+    `section_bases`; real mode or a running machine without `base`; a mostly unreadable file;
+    a table the `<stem>.exe` contradicts.
 
-    A second load at the same base ADDS to the first; at another base it REPLACES the table here
-    (`table_mode`), the debugger keeping every row until `close`.
-
-    Reply: `parsed`, `kept`, `loaded` (the debugger's own count), `table_mode`,
-    `table_total`, `renamed` (names loaded cut or with `~n`), the parse's other
-    accounts (`truncated_names`, `disambiguated`, `unreadable`, `excluded_*`, `overlay_idle`,
-    `unencodable*`, `symbols_typed`, `bytes`), `descriptor`, `pending`, `base_from`, `base`,
-    `limit`, `checked` (`against`, `agree`, or why not), and `declarations` (the re-arm by
-    state, `rearmed` to `unarmable`, each a list row, `why` on the last three).
+    Reply: `parsed`, `kept`, `loaded`, `table_mode`, `table_total`, `renamed`, `pending`,
+    `base`, `checked`, `declarations`.
 
     Reference: REFERENCE.md, Names for addresses.
     """
@@ -1153,20 +816,11 @@ def symbols_find(name: str = "", offset: int | None = None,
                  linear: str = "",
                  limit: Annotated[int, vocab.bounds(1, placement.SYMBOLS_LIMIT_MAX)] = 10,
                  ) -> dict[str, Any]:
-    """Look a symbol up in the table `symbols_load` kept (names untruncated; what its `pattern`
-    and noise filters excluded is not in it).
+    """Look a symbol up in the table `symbols_load` kept. `name`: exact, else prefixes up to
+    `limit`. `offset` or `linear` (hex text), with `section`: the nearest symbol at or below.
 
-    `name`: exact match, else prefix matches, up to `limit` (`truncated` says if it
-    bit). `offset` (a toolchain offset) or `linear` (a linear address as hex text, `0x1000`;
-    a `SEG:OFF` is `read_memory`'s, not this one's),
-    optionally with `section`: what am I inside? -- the nearest symbol AT OR BELOW and the
-    distance above it (this table carries no sizes). One question per call.
-
-    Reply: by name, `query`, `symbols_total` (how many) and `symbols`, a list with `name`, `offset`,
-    `addr` (linear), `section`, `idle` (Borland's own mark on that row, always false for `nm`/GNU);
-    by offset or linear, the nearest symbol's own fields and `delta`. INVALID with no table
-    loaded, or `limit` out of range on the `name` question (a prefix matching
-    more is a listing, not a lookup).
+    Reply: `query`, `symbols_total`, `symbols` (`name`, `offset`, `addr`),
+    `truncated`; by address, the symbol's fields and `delta`. INVALID: no table.
     """
     # THE SESSION IS ASKED FOR FIRST, as every read tool asks: a session whose emulator died is
     # `session_broken` there, and the table is forgotten when the session OBJECT changes, so it
@@ -1177,104 +831,48 @@ def symbols_find(name: str = "", offset: int | None = None,
 
 # ------------------------------------------------------------------------------- comments
 
-@tool("Add a comment", summary=one_line.comment_add, replay="drop")
-def comment_add(ref: str, text: str) -> dict[str, Any]:
-    """A comment on a place in the program, kept with this conf's declarations: by symbol it
-    follows the symbol through a rebuild, by raw `SEG:OFF` it is `stale` once the build changes.
-    One comment per place: a second at the same linear address, in any spelling, replaces the
-    text and keeps the held row's `ref`. Nothing is written to the machine.
-
-    Arguments: `ref`, a symbol or a `SEG:OFF` (read in the mode the machine is in); `text`, one
-    printable line, no edge blanks, at most {COMMENT_BYTES_MAX} UTF-8 bytes. Needs the machine
-    STOPPED. Refused `bad_argument` before anything is stored: an empty, blank or `#` ref, a pointer
-    (`[g]+2`), `symbol+offset`, a `0x` number, a malformed `SEG:OFF`, an offset past its
-    segment's limit, a bad text; `ambiguous_ref`, a name this table defines twice.
-
-    Reply: `comment` (the row: `ref`, `by`, `cpu`, `created_at`, `origin`, `inherited`, `age_s`,
-    `text`, `addr` once
-    placed, `state`, `why`), `replaced_comments` (the rows replaced, whole), `declarations`
-    (`persistent`, true: the store is a file, and `path`, that file), `note` (why the place is
-    not `resolved`).
-    A store that cannot be written is `host_failed`, nothing changed.
-
-    Reference: REFERENCE.md, Declarations.
-    """
-    return comments.comment_add(live(), ref, text)
-
 
 @tool("List the comments", summary=one_line.comment_list, read_only=True)
 def comment_list() -> dict[str, Any]:
-    """Every comment of this conf, in the order the store holds them, each placed now. Answers
-    on a RUNNING guest too, typing nothing: then a protected-mode `SEG:OFF` is `unarmable` until
-    a stop reads its selector's base.
+    """Every comment of this conf, in store order. Answers on a running guest too.
 
-    Reply: `comments`, each row with `ref`, `by`, `cpu`, `created_at`, `origin`, `inherited`,
-    `age_s`, `text`, `addr`
-    (the linear address, once placed), `state` (`resolved`, `unresolved` no such symbol now,
-    `ambiguous`, `stale` a raw address not known to be this build's, `unarmable` its place cannot be
-    worked out now), `why`, and `orphan` on a row from a store that kept no origin;
-    `comments_total`, `truncated`, `declarations` (`persistent`, `path`); running, also
-    `last_stop`.
+    Reply: `comments` (each `ref`, `text`, `addr`, `state`, `why`),
+    `comments_total`, `truncated`, `declarations`.
 
     Reference: REFERENCE.md, Declarations.
     """
     return comments.comment_list(live())
 
 
-@tool("Delete a comment", summary=one_line.comment_delete, replay="drop")
-def comment_delete(ref: str) -> dict[str, Any]:
-    """Delete one comment: the one whose own `ref` this spells, else the one at the place it
-    names. There is no delete-all. Needs the machine STOPPED. Refused `bad_argument` on a ref
-    no comment could have (empty, a pointer, `+`, `0x`); `unknown_ref` when nothing matches,
-    naming the refs held.
+@tool("Write the comments", summary=methods.fold_line("comment_write", folds.COMMENT),
+      replay="drop")
+def comment_write(method: Annotated[str, vocab.enum(tuple(folds.COMMENT))], ref: str = "",
+                  text: str = "", dest: str = "", path: str = "") -> dict[str, Any]:
+    """Change this conf's comments.
 
-    Reply: `deleted` (the row), `declarations` (`persistent`, `path`), `note`. A store that
-    cannot be written is `host_failed`, nothing changed.
+    `add`: `text` (one printable line, at most {COMMENT_BYTES_MAX} UTF-8 bytes) on `ref`,
+    a symbol or a `SEG:OFF`; a second there replaces it. Reply: `comment`, `replaced_comments`,
+    `declarations`, `note`.
 
-    Reference: REFERENCE.md, Declarations.
-    """
-    return comments.comment_delete(live(), ref)
+    `delete`: the comment `ref` names. Reply: `deleted`, `declarations`, `note`.
 
+    `save`: every comment to `dest`, an absolute path; answers on a running guest.
+    Reply: `path`, `comments_total`, `dropped_comments`, `dropped_total`, `truncated`, `note`.
 
-@tool("Save the comments to a file", summary=one_line.comment_save, replay="drop")
-def comment_save(dest: str) -> dict[str, Any]:
-    """Write every comment of this conf to `dest`, an absolute path, as a comment file (`# comments
-    v1:` header, one sorted tab-separated row each; convention `<symbol file stem>.comments.tsv`
-    beside the symbol file), whole or not at all. Answers on a running guest too.
+    `load`: the comment file at `path`, all or nothing, the file winning. Reply: `path`,
+    `parsed`, `added`, `replaced_comments`, `replaced_total`, `truncated`, `unchanged`,
+    `comments_total`, `declarations`, `note`.
 
-    Refused `bad_argument`, the path left as it is: relative, a link, a directory or any
-    other non-regular file, a missing directory, an existing file that is not a comment file,
-    the declaration store's own file; two comments at one place, which a file names once (named,
-    so one can be deleted). A file the host will not let it write is `host_failed`.
-
-    Reply: `path` (the file written), `comments_total`, `dropped_comments` (each `ref` of the
-    replaced file that the store does not hold), `dropped_total`, `truncated`, `note`.
+    `add`, `delete` and `load` need the machine stopped. Refused: an argument the method
+    does not take, a misshapen `ref` or `text` (`bad_argument`), a name defined twice
+    (`ambiguous_ref`), an unknown `ref` (`unknown_ref`), an unwritable store (`host_failed`).
 
     Reference: REFERENCE.md, Declarations.
     """
-    return comments.comment_save(live(), dest)
+    return methods.dispatch(folds.COMMENT, locals())
 
 
-@tool("Load comments from a file", summary=one_line.comment_load, replay="drop")
-def comment_load(path: str) -> dict[str, Any]:
-    """Read a comment file (an absolute `path`) into this conf's comments, all or nothing: the
-    file is parsed and every row placed first, and a row the format refuses or one address in
-    two spellings refuses the whole file (`bad_argument`). Then the file wins: a place the store
-    does not comment is added, one with another text replaced, one with the same text unchanged
-    (a raw one taken into this session's build, ref and stamp kept); rows only the store holds stay.
-    Two rows this stop places at one byte are both kept, and `note` names them; so is a raw row
-    this stop's mode cannot place (past FFFF in real mode, the null selector in protected mode),
-    kept `unarmable` until a load at a stop whose mode holds it places it. Needs the machine
-    STOPPED.
 
-    Reply: `path` (the file read), `parsed`, `added`, `replaced_comments` (the store's old rows,
-    whole), `replaced_total`, `truncated`, `unchanged`, `comments_total`, `declarations`
-    (`persistent`, `path`), `note`. A store that cannot be written is `host_failed`, nothing
-    changed.
-
-    Reference: REFERENCE.md, Declarations.
-    """
-    return comments.comment_load(live(), path)
 
 
 # ---------------------------------------------------------------------- the DOS machine
@@ -1282,34 +880,15 @@ def comment_load(path: str) -> dict[str, Any]:
 @tool("Map the machine", summary=one_line.machine_map, replay="drop")
 def machine_map(sections: list[Annotated[str, vocab.enum(machine.SECTION_NAMES)]] | None = None,
                 dest: str = "") -> dict[str, Any]:
-    """WHAT THE DOS MACHINE IS AT THIS STOP, one section per debugger listing, read live off the
-    session's logfile: it needs the machine STOPPED and a session started with `logfile`, and
-    costs a console round trip per listing.
+    """What the DOS machine is at this stop: one section per debugger listing, read off the logfile
+    (needs `logfile`). `sections` left out reads the DOS machine and `control`; `bios_mem`,
+    `callbacks`, `vga`, `paging` only when named. `dest` (absolute, new) writes all sections
+    whole as JSON. Writes nothing to the guest.
 
-    `sections` names the ones to read; left out, the DOS machine and its control registers:
-    `mcbs`, `devs`, `kern`, `xms`, `ems`, `ems_pages`, `emu_mem`, `machine`, `control`, and in
-    protected mode `gdt` and `ldt`. The rest are read only when named: `bios_mem`, `callbacks`,
-    `vga`, `paging`.
-    `dest` (absolute, not there yet) writes every section read WHOLE as JSON (`path`).
-
-    Refused: an empty or unknown `sections`, or a `dest` already there (`bad_argument`, before
-    anything is typed); no `logfile` (`no_channel`); a running guest (`not_stopped`); no prompt
-    after a listing (`unexpected_answer`: `close` the session); a logfile that shrank
-    (`session_broken`).
-
-    Reply: `cpu_mode` (`real`, `protected`, `paged`; unavailable when the `CPU` listing is
-    unreadable), then each section read: `mcbs` (`memory`, `mcb_seg`, `size_bytes`, `psp_seg`,
-    `notes`, `filename`), `devs` (`header`, `attr`, `strat`, `intr`, `name`), `kern` (`seg`,
-    `size_bytes`, `what`), `xms` (`handle`, `status`, `location`, `size_bytes`), `ems`
-    (`handle`, `addr`, `size_bytes`, `name`), `ems_pages` (`handle`, `page`, `start`, `end`),
-    `bios_mem` (`start`, `end`, `status`, `what`), `callbacks` (`number`, `desc`), `emu_mem`,
-    `machine`, `control` (control registers, flags, `gdtr`, `idt`, `tr`, `ldtr`); `gdt`/`ldt`
-    (`selector`, `base`, `limit`, `type`, `dpl`, `p`, `a`, `r`, `b`, `g`); `paging` (runs:
-    `start`, `end`, `phy`, `flags`, `d`, `a`); `vga` (`mode`, `crtc`, `seq`, `gc`, `ac`, `dac`,
-    `draw`). A section the debugger refused or printed nothing known for is ABSENT and
-    `coverage_note` says why. `counts` (full lengths), `truncated` (a list cut at
-    {LOG_LIMIT_MAX} rows), `sources`; `omitted` (sections this mode has that were not read) with
-    `how`. Writes nothing to the guest.
+    Reply: `cpu_mode`, one key per section read as rows, `counts`, `truncated` (cut at
+    {LOG_LIMIT_MAX} rows), `sources`, `coverage_note` (why a section is absent), `path`.
+    Refused: bad `sections` or an existing `dest` (`bad_argument`); no `logfile` (`no_channel`);
+    a running guest (`not_stopped`); no prompt after a listing (`unexpected_answer`: `close`).
 
     Reference: REFERENCE.md, Reading and writing.
     """
@@ -1338,30 +917,17 @@ def machine_map(sections: list[Annotated[str, vocab.enum(machine.SECTION_NAMES)]
 @tool("Read the interrupt vectors", summary=one_line.interrupt_vectors, replay="drop")
 def interrupt_vectors(number: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)] | None = None,
                       ) -> dict[str, Any]:
-    """WHICH HANDLER EVERY INTERRUPT VECTOR POINTS AT, AND WHAT HOLDS IT: the debugger's
-    `INTVEC` table, each handler placed in the block of the MCB chain, the kernel's blocks or
-    the BIOS's that holds it, and named by the loaded symbol table where that table reaches.
-    `number`, an integer 0 to 255 (INT 0x21 is 33), narrows the reply to one vector; the whole
-    table is read either way. Needs the machine STOPPED. In protected mode the table is the IDT,
-    placed through the GDT or LDT and, with paging on, the page runs. The debugger writes
-    `MCPIVT.TXT` into the emulator's working directory, which this reads and removes; with
-    `logfile` it then reads the listings `machine_map` reads, a console round trip each.
-    Without `logfile` no vector has a holder, nor in protected mode an `addr` or a `symbol`.
+    """Which handler every interrupt vector points at and what holds it, from the debugger's
+    `INTVEC` table: a handler is placed in the MCB, kernel or BIOS block holding it and named by
+    loaded symbols. `number` (0 to 255) narrows the reply to one vector. In protected mode the
+    table is the IDT.
 
-    Refused: `number` outside 0 to 255 (`bad_argument`, before anything is typed); a
-    `MCPIVT.TXT` already there (`bad_argument`: somebody else's, left in place); a running
-    guest (`not_stopped`); no table reported written, or a file that is not the whole table
-    (`unexpected_answer`); and the listings' refusals, as `machine_map` gives them.
+    Reply: `cpu_mode`, `vectors` (each `number`, `seg_off`, `addr`, a holder row, `symbol`),
+    `counts`, `sources`, `coverage_note`.
 
-    Reply: `cpu_mode` (`VM86` among its words; without `logfile`, as `status` reports it),
-    `vectors` (each `number`,
-    `seg_off` as the table holds it, `addr` the linear address before any paging, the row that
-    holds the handler under its own section's name, `mcbs`, `kern` or `bios_mem`, first match in
-    that order, absent when none does or it was not placed, and `symbol` as
-    `symbols_find(linear=)` answers it, given only between the table's lowest and highest
-    symbol), `counts` (`vectors`, `held`, `named`, over the whole table), `sources`,
-    `coverage_note` (what could not be placed, and why). Before DOS has filled the table every
-    vector is 0000:0000, as read.
+    Refused: `number` out of range or a `MCPIVT.TXT` already there (`bad_argument`); a running
+    guest (`not_stopped`); an incomplete table (`unexpected_answer`); `machine_map`'s listing
+    refusals.
 
     Reference: REFERENCE.md, Reading and writing.
     """
@@ -1376,28 +942,17 @@ def interrupt_vectors(number: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)] | Non
 def palette(first: Annotated[int, vocab.bounds(0, vgadac.DAC_ENTRIES - 1)] | str = 0,
             count: Annotated[int, vocab.bounds(0, vgadac.DAC_ENTRIES)] = 0, scale: int = 0,
             dest: str = "") -> dict[str, Any]:
-    """THE 256 COLOURS OF THE VGA'S DAC AS THEY ARE AT THIS STOP, read off the debugger's
-    `VGA DAC` and `VGA DACPAL` listings in the session's logfile, with their swatch attached:
-    it needs the machine STOPPED and a session started with `logfile`, and costs a console
-    round trip per listing and one more for `VGA DACPAL`'s pager.
+    """The VGA DAC's 256 colours at this stop, read off the `VGA DAC` listings in the logfile
+    (needs `logfile`), with an indexed PNG swatch. `first` and `count` (0 for all from `first`)
+    choose entries, `first + count` at most 256. `scale` 0 fits the largest enlargement up to 8;
+    `dest` a new path, else a scratch gone at `close`.
 
-    The DAC holds entries 0 to 255 and nothing past them: an entry past 255 does not exist.
-    `first` (0 to 255; an integer or a `0x` hex string) and `count` (1 to
-    256, 0 for every entry from `first`) choose the entries returned, `first + count` at most
-    256. The swatch is one square per entry, sixteen a row, an indexed PNG whose every pixel is
-    the entry's index into the DAC. {PICTURE}. {PICTURE_ARGS}.
+    Reply: `entries`, `first`, `count`, `colors` (`#rrggbb`), `rgb`, `bits`, `pel_mask`,
+    `image`.
 
-    Reply: `entries` (256), `first`, `count` (how many came back), `colors` (`#rrggbb`, each
-    six-bit component widened as the emulator renders it, its two top bits repeated below),
-    `rgb` (each entry as `VGA DACPAL` printed it, three six-bit components in hex), `bits` (6),
-    `pel_mask` as `VGA DAC` printed it, and `image`.
-
-    Refused: an entry the DAC does not have (`first` 256 or more, `first + count` past 256), a
-    `scale` out of range or a relative `dest` (`bad_argument`, before anything is typed); a
-    `dest` already there or with no directory (`bad_argument`); no `logfile` (`no_channel`); a
-    running guest (`not_stopped`); a DAC not in its six-bit mode, or a listing in a shape this
-    was not written against (`unexpected_answer`); a picture the disk could not take whole
-    (`host_failed`, leaving no file).
+    Refused: an entry past 255, a bad `scale`, a relative or existing `dest` (`bad_argument`);
+    no `logfile` (`no_channel`); a running guest (`not_stopped`); a DAC not six-bit
+    (`unexpected_answer`); a picture not taken whole (`host_failed`).
 
     Reference: REFERENCE.md, Media files.
     """
@@ -1411,29 +966,18 @@ def palette(first: Annotated[int, vocab.bounds(0, vgadac.DAC_ENTRIES - 1)] | str
 @tool("Read the screen", summary=one_line.screen_view, replay="drop")
 def screen_view(crop: list[int] | None = None, scale: int = 0,
                 dest: str = "", attach: bool = True) -> dict[str, Any]:
-    """WHAT THE SCREEN SHOWS AT THIS STOP, read from video memory where the VGA listings say it
-    lies: needs the machine STOPPED and a session started with `logfile`. A text mode comes back
-    as text; the chained 256-colour mode (13h's) as the picture: an indexed PNG of
-    the indices the guest wrote, the PLTE the DAC. {PICTURE}.
-    {PICTURE_ARGS}; {PICTURE_ATTACH}; a text mode takes none of these. `crop`
-    `[x, y, width, height]`,
-    in characters or pixels. Protected mode reads through a covering GDT or LDT segment.
+    """What the screen shows at this stop, read from video memory (needs `logfile`): text as text,
+    the chained 256-colour mode (13h) as a PNG. `crop` is `[x, y, width, height]` in characters
+    or pixels. `scale` 0 fits the largest up to 8x; `dest` a new path (else a scratch); `attach`
+    false leaves it unattached.
 
-    Reply: `vga_mode` (`VGA MODE`'s word), `kind` (`text` or `pixel`), `width` and `height` (in
-    characters or pixels), `crop` (the rectangle read), `display_start` (as `VGA MODE` printed
-    it); in text, `text` (one string a row of the crop, as code page 437 draws it, trailing
-    spaces dropped) and `cursor` (`[column, row]` in the crop, unavailable when hidden or
-    outside it); in 256 colours, `image`.
+    Reply: `vga_mode`, `kind`, `width`, `height`, `crop`, `display_start`; in text `text`,
+    `cursor`; in 256 colours `image`.
 
-    Refused: a relative `dest`, a `scale` out of range or a misshapen `crop` (`bad_argument`,
-    before anything is typed); `dest`, `scale` or `attach` in a text mode, a `crop` off the
-    screen, a `dest` already there or with no directory, or a dump file left in the emulator's
-    working directory (`bad_argument`); any other mode, planar, linear-frame-buffer or none set,
-    naming it and `capture_frame`; a layout this does not decode (split, panning, a row wider
-    than the screen), a screen past its window, or one no segment or page reaches as itself; no
-    `logfile` (each `no_channel`); a running guest (`not_stopped`); a DAC not six-bit, or a
-    listing in another shape (`unexpected_answer`); a picture the disk could not take whole
-    (`host_failed`).
+    Refused: a relative or existing `dest`, a bad `scale` or `crop`, `dest`/`scale`/`attach` in
+    text (`bad_argument`); another mode (naming `capture_frame`), an undecodable layout or no
+    `logfile` (`no_channel`); a running guest (`not_stopped`); a DAC not six-bit
+    (`unexpected_answer`).
 
     Reference: REFERENCE.md, Media files.
     """
@@ -1447,22 +991,12 @@ def screen_view(crop: list[int] | None = None, scale: int = 0,
 @tool("Signature of the screen", summary=one_line.screen_signature, read_only=True,
       replay=("signature",))
 def screen_signature(crop: list[int] | None = None) -> dict[str, Any]:
-    """One hex string for what is on screen, or on `crop` of it, so "is it the same screen" is
-    answered by comparing two strings and no picture crosses the conversation. It is the
-    `scry-sig/1` signature a series row carries over the same crop: in a text mode each cell is
-    its code page 437 byte and the colours its attribute resolves to through the Attribute
-    Controller and the DAC; in 256 colours each pixel is its DAC colour. So a palette change is
-    a new signature, and the cursor is not part of it. `crop` `[x, y, width, height]`, in
-    characters or pixels. It reads what `screen_view` reads, in the same modes; needs the
-    machine STOPPED and a session started with `logfile`.
+    """One hex string for what is on screen or on `crop` `[x, y, width, height]`: the `scry-sig/1`
+    signature of a series row (text cells by byte and colours, 256-colour pixels by DAC colour;
+    no cursor). Reads what `screen_view` reads (needs `logfile`).
 
-    Reply: `signature` (16 hex characters), `kind` (`text` or `pixel`), `width` and `height`
-    (the screen's), `crop` (the rectangle hashed), `vga_mode`.
-
-    Refused as `screen_view` is, `dest` and `scale` aside: a `crop` off the screen
-    (`bad_argument`); another mode, naming it and `capture_frame`, or a screen it cannot place
-    (`no_channel`); no `logfile` (`no_channel`); a running guest (`not_stopped`); a DAC not in
-    its six-bit mode or a listing in another shape (`unexpected_answer`).
+    Reply: `signature`, `kind`, `width`, `height`, `crop`, `vga_mode`. Refusals as
+    `screen_view`, `dest` and `scale` aside.
 
     Reference: REFERENCE.md, Media files.
     """
@@ -1473,53 +1007,14 @@ def screen_signature(crop: list[int] | None = None) -> dict[str, Any]:
 
 # ------------------------------------------------------------------- the screen maps
 
-def _map_read(session: ds.Session) -> screen_map.Read:
-    """The one screen read a map is matched against, `screen_signature`'s."""
-    return lambda: screen.grid(session)[0]
-
-
-@tool("Load a screen map", summary=one_line.map_load)
-def map_load(path: str) -> dict[str, Any]:
-    """{MAP_LOAD}.
-
-    Reference: REFERENCE.md, Screen maps.
-    """
-    return st.reply(**STATE.maps.load(path))
-
-
-@tool("Map the screen in front of you", summary=one_line.map_add)
-def map_add(screen: str, match: list[list[int]],
-            controls: list[dict[str, Any]] | None = None) -> dict[str, Any]:
-    """Map the screen the machine shows NOW as `screen` in the SESSION layer: one read signs each
-    `match` crop (`[x, y, width, height]`, 1..16, regions that stay still on that screen, never
-    a cursor or a moving sprite), and `controls` (`[{"name", "rect"}]`, a `rect` shaped as a
-    crop) name its controls, all in the screen's own units (cells in a text mode, pixels in 256
-    colours, as `screen_view` counts). A screen of the same name in the file is shadowed
-    (`shadows_file`). Needs the machine STOPPED and a session started with `logfile`; a `start`
-    empties the session layer.
-
-    Reply: `screen`, `kind`, `size`, `match` (each crop with its `signature`), `controls`,
-    `replaced`, `shadows_file`. Refused: a misshapen name, crop or control, a rectangle off the
-    screen (`bad_argument`); the modes `screen_view` refuses.
-
-    Reference: REFERENCE.md, Screen maps.
-    """
-    session = live()
-    ds.console_listening(session, "a listing")
-    return st.reply(**STATE.maps.add(screen, match, controls, _map_read(session)))
 
 
 @tool("Which mapped screen is this", summary=one_line.map_find, read_only=True,
       replay=("matched", "screen"))
 def map_find() -> dict[str, Any]:
-    """WHICH MAPPED SCREEN the machine shows, from ONE screen read and no picture: the session
-    layer first, then the file's; a screen matches when its kind and size are the screen's and
-    every region's signature is. Needs the machine STOPPED and a session with `logfile`.
-
-    Reply: `matched`; matched, `screen`, `layer` (`session` or `file`), `kind`, `size`,
-    `controls` (each `name`, `rect`, `centre`), and `send_mouse(target=)` then acts on them; not
-    matched, `kind`, `size`, `screens_mapped`, `screens_tried` (of that kind and size). Refused:
-    no screen mapped (`needs_call`); the modes `screen_view` refuses.
+    """Which mapped screen the machine shows. Reply: `matched`; matched, `screen`, `layer`, `kind`,
+    `size`, `controls` (`name`, `rect`, `centre`); else `screens_mapped`, `screens_tried`. None
+    mapped: `needs_call`.
 
     Reference: REFERENCE.md, Screen maps.
     """
@@ -1528,40 +1023,50 @@ def map_find() -> dict[str, Any]:
     # The stop the read is of, or None when that stop's own record could not be made (a cut
     # pane): a previous stop's number would date the identification wrong.
     current = STATE.as_of_current(session)
-    return st.reply(**STATE.maps.find(_map_read(session),
+    return st.reply(**STATE.maps.find(folds.map_read(session),
                                       None if current is None else current["stop_seq"]))
 
 
-@tool("Save the screen map", summary=one_line.map_save, replay="drop")
-def map_save(dest: str, overwrite: bool = False) -> dict[str, Any]:
-    """{MAP_SAVE}.
+@tool("Write the screen map", summary=methods.fold_line("map_write", folds.MAP),
+      replay={"add": "step", "load": "step", "save": "drop"})
+def map_write(method: Annotated[str, vocab.enum(tuple(folds.MAP))], screen: str = "",
+              match: list[list[int]] | None = None, controls: list[dict[str, Any]] | None = None,
+              path: str = "", dest: str = "", overwrite: bool | None = None) -> dict[str, Any]:
+    """The screen map: an application's screens, each known by the signatures of its stable
+    regions, and their controls, in a session layer and a file layer.
+
+    `add`: the screen shown now as `screen` in the session layer, one read signing each `match`
+    crop ([x, y, width, height], 1..16), `controls` ([{"name", "rect"}]) in the screen's own
+    units; needs `logfile`. Reply: `screen`, `kind`, `size`, `match`, `controls`, `replaced`,
+    `shadows_file`.
+
+    `load`: `path` (`<application>{MAP_SUFFIX}`, absolute or `~`-led) as the file layer. Reply:
+    `path`, `application`, `screens`, `controls`.
+
+    `save`: both layers as one map to `dest`, refused there without `overwrite`, made the file
+    layer. Reply: `path`, `application`, `screens`, `controls`, `promoted`.
+
+    Refused: an argument the method does not take; a misshapen name, crop, control or file
+    (`bad_argument`); nothing mapped to save (`needs_call`); the modes `screen_view` refuses.
 
     Reference: REFERENCE.md, Screen maps.
     """
-    return st.reply(**STATE.maps.save(dest, overwrite))
+    return methods.dispatch(folds.MAP, locals())
+
 
 
 @tool("Capture a series of frames", summary=one_line.series_capture, replay="drop")
 def series_capture(at_frames: list[int] | None = None, first: int | None = None,
                    last: int | None = None, step: int = 1, crop: list[int] | None = None,
                    dest: str = "", capture_path: str = "") -> dict[str, Any]:
-    """FRAMES OUT OF THE SESSION'S VIDEO CAPTURE, as PNGs and one manifest: the series
-    `series_diff`, `region_track` and `golden_check` read, with no picture in the reply. Needs
-    `ffmpeg` (named when missing) and a session started with `capture_video`.
+    """Capture frames as PNGs plus a manifest (read by `image_compare`).
 
-    The frames are the AVI's own, numbered from 0, NOT emulated frames: `at_frames` (a list,
-    ascending) or `first`, `last` and `step`, at most {SERIES_MAX}. `capture_path`: an absolute
-    path of a capture, default the largest. `crop` `[x, y, width, height]` in the capture's pixels,
-    default the whole frame. `dest`: a new absolute directory, kept after `close`; else one in
-    the session's scratch, gone at `close` (`kept_after_close` says which). A `%` in `dest` is
-    refused (ffmpeg would read it as a template).
+    AVI frames from 0: `at_frames`, or `first`, `last`, `step`; max {SERIES_MAX}. `crop`:
+    `[x, y, w, h]`. `dest`: new directory, kept after `close`.
 
-    Reply: `manifest` (its path), `count`, `first`, `last`, `distinct` (signatures over the
-    crop), `frames_asked`, `kept_after_close`, `frame_source` (`avi`), `capture_path`, `crop`.
-    It answers on a running guest too: it reads the file. Refused: a frame past the capture's
-    end, a crop off its frames, a `dest` already there (`bad_argument`); a session with no
-    `capture_video` (`no_channel`), or no capture written yet (`unexpected_answer`); no
-    `ffmpeg`, or ffmpeg failing (`host_failed`).
+    Reply: `manifest`, `count`, `first`, `last`, `distinct`, `kept_after_close`, `capture_path`,
+    `crop`. Refused: `bad_argument` (frame, crop, `dest`), `no_channel` (no `capture_video`),
+    `unexpected_answer` (no capture), `host_failed` (no `ffmpeg`).
 
     Reference: REFERENCE.md, Media files.
     """
@@ -1575,10 +1080,7 @@ def series_capture(at_frames: list[int] | None = None, first: int | None = None,
 # bodies make theirs; bound here by name so a step and a direct call find them as they find
 # every other tool.
 _MEDIA = media_tools.register(tool, media.MEDIA_TOOLS, lambda body: st.reply(**body))
-image_diff = _MEDIA["image_diff"]
-series_diff = _MEDIA["series_diff"]
-region_track = _MEDIA["region_track"]
-golden_check = _MEDIA["golden_check"]
+image_compare = _MEDIA["image_compare"]
 
 
 # --------------------------------------------------- declarations: breakpoints, watches
@@ -1586,151 +1088,80 @@ golden_check = _MEDIA["golden_check"]
 @tool("Declare a breakpoint", summary=one_line.breakpoint_at)
 def breakpoint_at(ref: str, by: Annotated[str, vocab.enum(checks.BREAKPOINT_BY)] = "auto",
                   ) -> dict[str, Any]:
-    """Declare a code breakpoint at a SYMBOL or a `SEG:OFF`, and arm it if it can be.
+    """Declare a code breakpoint at a symbol or `SEG:OFF`, and arm it if it can be. Stored, and
+    re-armed on `symbols_load`; a raw `SEG:OFF` goes `stale` over another build.
 
-    The declaration is STORED on disk keyed by the conf, stamped with this session as its
-    `origin`, so it survives a rebuild: on every `symbols_load` a symbol re-resolves and
-    re-arms, while a raw `SEG:OFF` re-arms per BUILD, whoever declared it: at `start` when it
-    was declared before any map was loaded, after a `symbols_load` of the same map when it was
-    declared over that map, and `stale` over another build (declaring it again adopts it). A
-    symbol absent from THIS
-    build is stored `unresolved`, not refused (it may be inlined this time). A name matching
-    several symbols is refused, nothing stored; so is an address another declaration of
-    this store already holds, naming that ref (one breakpoint row is one declaration:
-    clear that ref or use it). `by` is `auto` (symbol or address by shape)
-    unless you must force `symbol` or `address`. Arming needs the machine stopped and the
-    debugger to take the `BP`; the entry is read back from its list.
+    Refused: a name matching several symbols; an address another declaration holds, naming it.
+    A symbol absent from this build is stored `unresolved`.
 
-    Reply: `ref` (the string that clears it), `by`, `stored`, `already_stored` (a no-op
-    re-declaration, adopted by this session), `armed`, `entry` (the debugger's row, e.g.
-    `BP 00AF:0017A6EC`), `state` (`armed`, `unresolved`, `unarmable`, `pending` when the
-    guest is running: stored now, armed at the next stop and said so in `applied_on_stop`
-    with `why`), `marked` and `note` when the symbol carries the linker's mark (a fact, not a
-    refusal: whether such an address fires is an open question).
+    Reply: `ref`, `stored`, `already_stored`, `armed`, `entry`, `state` (`armed`,
+    `unresolved`, `unarmable`, `pending` while the guest runs), `why`, `marked` and `note` for
+    a linker-marked symbol.
+
+    Reference: REFERENCE.md, Declarations.
     """
     return arming.breakpoint_at(live(), ref, by)
 
 
-@tool("List the breakpoint declarations", summary=one_line.breakpoint_list, read_only=True)
-def breakpoint_list() -> dict[str, Any]:
-    """Every breakpoint DECLARATION with its state, cross-referenced with the debugger's
-    own list. Answers on a RUNNING guest too: then the debugger cannot be asked, so the
-    states are those of the last stop's survey, `debugger_read` is false and `last_stop` dates
-    the answer by that stop (`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`); with no
-    stop yet, `last_stop` is unavailable and a symbol's state is `unarmable`. Stopped: read
-    live, `debugger_read` true.
+@tool("List the declarations", summary=one_line.declaration_list, read_only=True)
+def declaration_list(kind: Annotated[str, vocab.enum(("", *folds.KINDS))] = "",
+                     ) -> dict[str, Any]:
+    """List the declarations of `kind` (empty: every kind) with their state, cross-referenced
+    with the debugger's own list. On a running guest the states are the last stop's survey
+    (`debugger_read` false).
 
-    Reply: `breakpoints`, each with `ref` (the string that clears it), `by`, `cpu`, `created_at`,
-    `origin` (the session that declared or last adopted it), `inherited` (true for one an earlier
-    session left), `age_s` (whole seconds since `created_at`), `entry`, `state` -- `armed` (its
-    entry is in the debugger's list), `unresolved` (the symbol table loaded now, or none, has no
-    such name), `gone` (armable, and the debugger's list has no such row now: it may never have
-    been armed in this session), `unarmable` (it cannot be placed now: why says),
-    `ambiguous` (a name this build defines more than once: nothing is armed for it), `pending`
-    (declared while the guest ran, applied at the next stop), `stale` (a raw address declared
-    with no map held now that vouches for it: kept, never re-armed here; declare it again to
-    adopt it), `orphan` (no origin recorded, where it would otherwise say `gone` or `stale`;
-    every such row also carries `orphan: true` whatever its state: nobody's, clear it by its
-    `ref` or declare it again) -- plus `marked` for symbols; and `foreign`, entries the
-    debugger holds that no declaration of this store resolves to now (a `run_to` whose cleanup
-    could not be confirmed leaves one), listed and never deleted. `breakpoint_clear` is this
-    family's broom and never touches a watch; `watch_clear` is the other, and the two together
-    empty the store.
+    Reply: `breakpoints`, `watches` (each kind asked; each row `ref`, `by`, `cpu`,
+    `created_at`, `origin`, `inherited`, `age_s`, `state`, plus its kind's fields), `foreign`
+    (debugger entries no declaration resolves to), `debugger_read`.
+
+    Reference: REFERENCE.md, Declarations.
     """
-    return arming.breakpoint_list(live())
+    return folds.list_declarations(kind)
 
 
-@tool("Clear breakpoint declarations", summary=one_line.breakpoint_clear)
-def breakpoint_clear(ref: str = "", all: bool = False) -> dict[str, Any]:
-    """Clear breakpoint declarations: all of them with `all=True`, or the one named by the
-    exact `ref` its declaring reply carried (a symbol, a `SEG:OFF`, or a `BPINT NN` /
-    `BPINT NN AH=NN` row). Removes from the debugger ONLY what this store armed, and only
-    while the machine is stopped; the declarations themselves are dropped either way. A
-    `foreign` entry is never deleted, only reported as left.
+@tool("Clear declarations", summary=one_line.declaration_clear)
+def declaration_clear(kind: Annotated[str, vocab.enum(folds.KINDS)], ref: str = "",
+                      all: bool = False) -> dict[str, Any]:
+    """Clear the declarations of `kind`: all with `all=True`, or the one named by the exact `ref`
+    its declaring reply carried. Removes only what this store armed, and only while the
+    machine is stopped; a `foreign` entry is never deleted.
 
-    Reply: `declarations_cleared`, `disarmed` (the debugger rows removed), `pending_disarm`
-    (rows queued for removal at the next stop because the guest is running: the
-    declarations are gone now, the rows go then), `note`. A `ref` that matches no
-    breakpoint declaration is INVALID, naming the refs the store holds; `all=True` on an empty
-    store is `ok` with 0; neither `ref` nor `all`, or both, is `bad_argument`.
+    Refused: a `ref` matching none, naming the refs held; neither `ref` nor `all`, or both
+    (`bad_argument`).
+
+    Reply: `declarations_cleared`, `disarmed`, `pending_disarm` (removed at the next stop),
+    `note`.
+
+    Reference: REFERENCE.md, Declarations.
     """
-    checks.clear_scope(ref, all)                  # here too: no path reaches the body unjudged
-    return arming.breakpoint_clear(live(), None if all else ref)
+    return folds.clear_declarations(kind, ref, all)
+
+
 
 
 @tool("Declare a watch", summary=one_line.watch_add)
 def watch_add(ref: str, mode: Annotated[str, vocab.enum(dec.WATCH_MODES)], length: int = 0,
               fmt: str = "auto", by: Annotated[str, vocab.enum(checks.WATCH_BY)] = "auto",
               ) -> dict[str, Any]:
-    """Declare a WATCH by symbol, by `SEG:OFF`, or at a place reached THROUGH a pointer, read as
-    `fmt` (little-endian), in one of two modes. The declaration persists like a breakpoint's and
+    """Declare a watch by symbol, `SEG:OFF` or through a pointer, read as `fmt`. Persists and
     re-resolves on `symbols_load`.
 
-    Arguments:
-    - `mode`: `show` (read at each stop: nothing is armed, the value rides in `watches`)
-      or `change` (the machine stops when the bytes change, and each stop reads them as `show`
-      does; trusted in REAL mode, while under a DJGPP program's paging the reply says its firing
-      is not to be trusted).
-    - `ref`: a symbol, a `SEG:OFF`, or `[base]`, `[base]+0x28`, `[base]-0x4`, `base->field`, with
-      `base` a symbol or address holding a POINTER (read at its type's width, else four bytes in
-      protected mode and two in real), re-resolved at every stop.
-    - `fmt`: the value grammar: a scalar (`u8` .. `f64`), an array (`u16[8]`), a string
-      (`char[16]`) or a struct (`{x:i16,y:i16}`). With no `fmt` a typed symbol reads as its type,
-      else the widest unsigned scalar `length` divides.
-    - `length`: TOTAL bytes, a whole number of `fmt` values; a sized format needs none. A show
-      watch is at most {READ_MAX} bytes; a change watch at most {CHANGE_WATCH_MAX}, a debugger
-      row per byte (`entries`), `armed` while every row is held.
-    - `by`: `auto` (by shape) unless you must force `symbol`, `address` or `pointer`.
+    `mode`: `show` (read at each stop) or `change` (stops when the bytes change). `ref`: a
+    symbol, `SEG:OFF`, or `[base]+0x28`, `base->field`. `fmt`: a scalar (`u8` .. `f64`), an
+    array (`u16[8]`), a string (`char[16]`) or a struct (`{x:i16,y:i16}`). `length`: total
+    bytes; at most {READ_MAX} for show, {CHANGE_WATCH_MAX} for change (a debugger row per byte,
+    `entries`).
 
-    Refused: one ref as both show and change; a length over the ceiling; a pointer base the
-    table lacks (most likely a stack local).  Reply: `ref` (the string `watch_clear` takes),
-    `by`, `mode`, `stored`, `already_stored`, `state` (`evaluated` for a placed show watch,
-    `unresolved`, `unarmable`, `null_pointer`; a change watch adds `armed`, or `pending` while
-    the guest runs, armed at the next stop and said in `applied_on_stop`), `pointer` through a
-    pointer (`at`, `length`, `value`, `offset`, `field`), and `entry`/`command` for a change
-    watch.
+    Refused: one ref as both modes; a length over the ceiling; a pointer base the table lacks.
+
+    Reply: `ref`, `stored`, `already_stored`, `state` (`evaluated`, `unresolved`, `unarmable`,
+    `null_pointer`, `pending`), `armed`, `pointer`, `entry`, `caveat`.
 
     Reference: REFERENCE.md, Declarations.
     """
     return arming.watch_add(live(), ref, mode, length, fmt, by)
 
 
-@tool("List the watch declarations", summary=one_line.watch_list, read_only=True)
-def watch_list() -> dict[str, Any]:
-    """Every watch DECLARATION and its state, on a stopped OR a running guest (running:
-    states as of the last stop's survey, `debugger_read` false, `last_stop` dating the answer;
-    see `breakpoint_list`). Reply: `watches`, each with `ref`, `by`,
-    `cpu`, `created_at`, `origin` (the session that declared or last adopted it), `inherited`,
-    `age_s`, `mode`,
-    `length`, `fmt`, `state` (a show watch: `evaluated` once placed, its value in each stop's
-    reply and not here, or `unresolved`/`ambiguous`/`unarmable`/`null_pointer`; a change watch
-    additionally
-    `armed` or `gone`; either `orphan` when it comes from a store that kept no origin: it is
-    nobody's, clear it by its `ref` or declare it again to adopt it), and `foreign`, memory
-    breakpoints the debugger holds that no declaration of this store resolves to now. No
-    watch is re-armed
-    across sessions, so none is ever `stale`; the origin says whose it is. `watch_clear` is
-    this family's broom; `breakpoint_clear` never touches a watch, and the two together
-    empty the store.
-    """
-    return arming.watch_list(live())
-
-
-@tool("Clear watch declarations", summary=one_line.watch_clear)
-def watch_clear(ref: str = "", all: bool = False) -> dict[str, Any]:
-    """Clear watch declarations: all with `all=True`, or the one named by the exact `ref`
-    its `watch_add` reply carried. Disarms from the debugger only the change-watches this
-    store armed (show watches armed nothing), and only while the machine is stopped;
-    declarations are dropped either way. A foreign memory breakpoint is never deleted, only
-    reported as left.
-
-    Reply: `declarations_cleared`, `disarmed`, `pending_disarm` (rows queued for removal
-    at the next stop because the guest is running), `note`. A `ref` that matches no watch
-    declaration is INVALID, naming the refs the store holds; `all=True` on an empty store is
-    `ok` with 0; neither `ref` nor `all`, or both, is `bad_argument`.
-    """
-    checks.clear_scope(ref, all)
-    return arming.watch_clear(live(), None if all else ref)
 
 
 # ------------------------------------------------------------ input to a running guest
@@ -1740,24 +1171,16 @@ def send_keys(keys: list[str],
               modifiers: list[Annotated[str, vocab.folded(inputs.MODIFIER_WORDS)]] | None = None,
               expect: str = "", seconds: Annotated[float, vocab.WAIT_BOUNDS] | None = None,
               ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Send KEYSTROKES into the RUNNING guest, inside the machine, and, with `expect`, PROVE
-    the program took them. The wait for the reaction reports its progress.
+    """Send keystrokes to the running guest; with `expect`, prove the program took them.
 
-    Arguments: `keys`, key names (`a`, `1`, `enter`, `esc`, `space`, `up`, `f1`..`f12`,
-    punctuation names), at most {KEYS_MAX} per call; `modifiers` (`shift`, `ctrl`, `alt`), held
-    across them; `expect`, a regex over the guest's E9 log that only the program's REACTION
-    writes, waited for up to `seconds` (default {EFFECT_WAIT_S}).
+    `keys`: at most {KEYS_MAX}. `expect`: a regex over the E9 log the program's
+    reaction writes, waited up to `seconds` (default {EFFECT_WAIT_S}).
 
-    Refused before anything is sent: an unknown key or modifier name; `seconds` without
-    `expect`; a machine stopped at the debugger (the keys would land at the next resume); a
-    guest whose log shows no stub announce, or an older stub (`no_channel`, naming the conf
-    line); with no `logfile` there is no announce to read and the keys go out.
+    Refused: an unknown key or modifier, `seconds` without `expect`, a stopped machine, no
+    stub (`no_channel`).
 
-    Reply: `route: "guest"`, `posted`, `bytes`, `ticks`, and `verify`: `verdict` `TARGET`
-    with `seen`, `line`, `waited_s`, `seen_before_waiting`, `lines_before`, `lines_total`, or
-    `TIMEOUT` (a miss, the program did not react) with `arrived_during` and a `note`; or
-    `checked: false` with no `expect`. A stop that lands DURING the wait is INVALID
-    (`wait_stopped`) with `last_stop`. Timing is "now", on a running guest.
+    Reply: `route`, `posted`, `bytes`, `ticks`, `verify` (`verdict` `TARGET` or `TIMEOUT`,
+    `seen`).
 
     Reference: REFERENCE.md, Input and the screen.
     """
@@ -1772,33 +1195,18 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
                units: Annotated[str, vocab.enum(inputs.UNITS)] = "screen", expect: str = "",
                seconds: Annotated[float, vocab.WAIT_BOUNDS] | None = None, target: str = "",
                ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Move the guest's MOUSE POINTER and press its buttons, inside the machine, and read the
-    pointer back. With `expect`, PROVE the program reacted, as `send_keys` does.
+    """Move the guest's mouse pointer, press buttons, and read the pointer back; `expect`
+    proves the program reacted, as in `send_keys`.
 
-    `x`, `y`: where the pointer goes, both or neither, in `units`: `screen` (default), the
-    screen's own units as `screen_view` counts them (character cells in a text mode, pixels in
-    a graphics one; the standard BIOS modes), or `mouse`, the DOS driver's own coordinates (for
-    a VESA or custom mode). `target`: instead of `x`, `y`, a control of the screen the latest
-    `map_find` matched, its centre in `screen` units. `button` and `action` (`double`: two
-    clicks a tick apart; a drag is `down`, a move, `up`). A button with no `x`, `y` acts where the
-    pointer is, so `down` alone holds it for the calls that follow. A move and a button in one
-    call: the move goes first.
+    `x`, `y`: both or neither, in `units`. `target`: a control of the latest `map_find` screen,
+    instead of `x`, `y`. A drag is `down`, a move, `up`.
 
-    Refused before anything is sent: no move and no button, half a move, a place off the
-    screen or outside the driver's range, `screen` units in a mode this server does not map, a
-    stopped machine, no stub (with no `logfile` there is no announce to read and the mouse goes in).
-    A `target` beside `x`, `y` or `units="mouse"` (`bad_argument`); no `map_find` match since
-    the start, or a guest no longer showing that screen's kind and size (`needs_call`); a
-    control that screen lacks (`unknown_ref`).
+    Refused: no move and no button, half a move, a place off the screen, a stopped machine, no
+    stub; `target` beside `x`, `y` or `units="mouse"` (`bad_argument`); no `map_find` match
+    (`needs_call`); an unknown control (`unknown_ref`).
 
-    Reply: `route` (`guest`), `pointer` read back (`screen` with `x`, `y`,
-    `width`, `height`, or unavailable in an unmapped mode; `mouse` with the driver's `x`, `y`,
-    `max_x`, `max_y`; `buttons` held; `bios_mode`), `arrived` (the read-back is where it was
-    asked; when it is not, `asked` says where in the driver's coordinates: a text mode snaps to
-    its cell, a program's own range clamps), the arguments, `verify` as `send_keys`'; with a
-    `target`, `target`, `screen` and `identified_at_stop` (`map_find`'s stop). A
-    read-back that fails after the commands went in is INVALID with `delivered: true`, so
-    nothing is sent twice.
+    Reply: `route`, `pointer`, `arrived` (else `asked`), `verify`; with `target`: `target`,
+    `screen`, `identified_at_stop`.
 
     Reference: REFERENCE.md, Input and the screen.
     """
@@ -1820,31 +1228,22 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
 
 @tool("List this session's captures", summary=one_line.captures, read_only=True)
 def captures() -> dict[str, Any]:
-    """The files the tools below wrote and handed back, in the order they wrote them, re-read
-    now: `capture_frame`, `snapshot`, `memdump`, `machine_map`, `comment_save`, `perform_export`,
-    `map_save`, `screen_view` and `palette` (`kind` the extension), `series_capture` (`kind`
-    `series`, its manifest) and `trace`; then the video the emulator recorded with
-    `capture_video` (`kind` `avi`, in `captures_dir` or `capture/` under `cwd`), largest last,
-    two files being the normal case (the recording restarts when the guest changes video mode).
-    A file gone since is listed with `present: false` and no `bytes`; an empty list is an
-    answer. Works on a running guest.
+    """Lists the files the session's tools wrote, in write order, re-read now, then the
+    `capture_video` AVIs, largest last. Works on a running guest.
 
-    Reply: `captures` (`kind`, `path`, `present`, `bytes`, and an AVI's `riff_avi`,
-    `avi_frames` and `complete`: the recording was finalised, `false` being information, not
-    damage).
+    Reply: `captures` (each `kind`, `path`, `present`, `bytes`; an AVI also `riff_avi`,
+    `avi_frames`, `complete`). A file gone has `present: false`, no `bytes`.
     """
     return caps.captures(live())
 
 
 @tool("Extract a frame to a file", summary=one_line.capture_frame, replay="drop")
 def capture_frame(frame: int, dest: str, capture_path: str = "") -> dict[str, Any]:
-    """ONE still image out of a capture, frame `frame`, written to `dest` as PNG whatever
-    the name says; `capture_path` defaults to the largest capture; both are absolute paths. Needs
-    `ffmpeg` (named when missing) and a session started with `capture_video`. Reply: `path`,
-    `bytes`, `sha256`, `capture_path` (the capture read), `frame`. A `%` anywhere in `dest` is
-    refused (ffmpeg would read the path as a template), and so is a `dest` already there: it is
-    never deleted or overwritten; a frame past the end is refused rather than a frameless file
-    handed back.
+    """Frame `frame` of a capture written to `dest` as PNG; `capture_path` defaults to the
+    largest. Needs `ffmpeg`, `capture_video`. Refused: `%` in or existing `dest`, a frame
+    past the end.
+
+    Reply: `path`, `bytes`, `sha256`, `capture_path`, `frame`.
     """
     session = live()
     return caps.capture_frame(session, frame, paths.absolute("dest", dest),
@@ -1866,18 +1265,14 @@ checks.take_step_ops(_step_ops)
 
 @tool("Export the session as a replay", summary=recording.export_summary)
 def perform_export(dest: str, overwrite: bool = False) -> dict[str, Any]:
-    """{EXPORTS}
+    """Write the session's calls since `start` to `dest` as a `perform` document.
 
-    Kept: what moved the machine, as steps, and the reads that are checks (`read_memory`,
-    `registers`, `screen_signature`, `golden_check`), each holding to what its reply said
-    (`recorded`). Dropped, each named with why: a refused call, any other read, a call that
-    changes nothing in the emulated machine. Cut, named: the first call no replay can place (a
-    release, a `stop` or `screen_wait` that ran the guest and came back stopped, or a wall-clock
-    bound that ended a run, whose run ends where no replay reaches; no reply; a refusal after the
-    guest moved; a guest found elsewhere than the call before left it; a step that wrote a file
-    the session named; past {RECORD_MAX} calls kept).
+    Kept: moving calls and checks (`read_memory`, `registers`, `screen_signature`,
+    `image_compare(method="golden")`), each held to its `recorded` reply. Other calls drop;
+    the first no replay can place, or past {RECORD_MAX}, cuts the rest.
 
-    {EXPORT_REPLY}
+    `dest` (`.json`) is refused if present unless `overwrite`. Reply: `path`, `steps`,
+    `checks`, `dropped`, `dropped_total`, `cut`, `replay`; `no_recording` if empty.
 
     Reference: REFERENCE.md, From an investigation to a bench.
     """
@@ -1893,33 +1288,17 @@ def perform(steps: list[dict[str, Any]],
             settle_seconds: Annotated[float, vocab.WAIT_FROM_ZERO_BOUNDS] = 30.0,
             summaries: Annotated[bool, Field(description=SUMMARIES_ARGUMENT)] = False,
             ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Run a LIST of the server's own operations in order on the open session, in ONE round
-    trip, stopping at the first failure with the whole account.
+    """Run this server's operations in order on the open session, stopping at the first
+    failure.
 
-    Arguments: `steps`, each `{"op": <tool name>, ...its arguments}`; every tool but
-    `build_check`, `start`, `close`, `perform`, `drive` and `perform_export` is a step, `debug`
-    included. A `resume` (or a `step` that comes back running) ends the console-driven part:
-    after it the steps `answers_while_running` lists run at once (a `stop` ends the run), and
-    before any other the sequence WAITS up to `settle_seconds` for the machine to stop (0 never
-    waits), as a list begun running does. A `send_keys`/`send_mouse` step whose own `expect` misses
-    ends the list, `verdict` `TIMEOUT`.
+    `steps`: `{"op": <tool>, ...arguments}`, any tool but `build_check`, `start`, `close`,
+    `perform`, `drive`, `perform_export`. A `send_keys` or `send_mouse` whose `expect`
+    misses ends the list `TIMEOUT`. A step's `recorded` must hold, else INVALID `diverged`.
+    The whole list is checked first: INVALID `errors` (`step`, `op`, `code`, `message`),
+    nothing run.
 
-    A step's `recorded`, `{field: value}`, is what its reply must hold (a replay,
-    `perform_export`): else INVALID `diverged` there, with `field`, `recorded` and `got`; `held`
-    counts the steps that held.
-
-    Refused before the first step runs: the WHOLE list is checked (ops, argument names and
-    VALUES, through each tool's own checks), and the reply is INVALID with `errors` listing EVERY
-    refused step (`step`, `op`, `code`, `message`), nothing run. What only its step can judge (a
-    symbol against the table loaded by then, a file an earlier step writes, the machine's mode)
-    refuses at that step.
-
-    Reply: `ran` (each step's `op` and full `reply`), `steps_completed`, `held`; a step's refusal is
-    INVALID (`step_failed`) with `failed_at` and `failed`; once it waited, `verdict`: `TARGET`
-    (a list ending running adds `stopped`, the stop it was heading for) or `TIMEOUT` (the steps
-    after the wait unsent, a `note`); with no wait, `not_stopped` before a console step, or
-    `still_running`; a wait whose channel failed ends the list with its code (`session_broken`
-    when the emulator is gone). `start(plan=...)` runs one too.
+    Reply: `ran`, `steps_completed`, `held`, `failed_at`, `failed` (INVALID `step_failed`),
+    `verdict` (`TARGET` adds `stopped`, `TIMEOUT` `note`), else `still_running`.
 
     Reference: REFERENCE.md, Sequences in one call.
     """
@@ -1933,33 +1312,19 @@ def drive(act: list[dict[str, Any]], expect: str = "",
           settle_seconds: Annotated[float, vocab.WAIT_FROM_ZERO_BOUNDS] = 30.0,
           summaries: Annotated[bool, Field(description=SUMMARIES_ARGUMENT)] = False,
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """LOOK, ACT, VERIFY in one call: the way a browser is driven, for a DOS program. The
-    waits inside (for a stop between steps, for `expect`) report their progress.
+    """Look, act and verify in one call. Marks the E9 log, runs `act` (steps in `perform`'s
+    vocabulary), then with `expect` waits up to `seconds` (default {EXPECT_WAIT_S}, at most
+    {WAIT_MAX_S}) for a new matching line. Needs a `logfile`.
 
-    The E9 log is MARKED first; `act` (a list of steps in `perform`'s vocabulary, typically
-    `send_keys`/`send_mouse` each with its own `expect`) runs with `perform`'s rules; with
-    `expect` (a regex; empty for none) the call then waits up to `seconds` (default
-    {EXPECT_WAIT_S}, at most {WAIT_MAX_S}) for a NEW matching line from that mark, the act's
-    overall effect; and `looked.guest` is what the guest wrote since the mark, filtered by
-    `pattern` (a regex) and cut to the LAST `limit`: `pattern`
-    only filters what is SHOWN and proves nothing, so it is never the `expect`. An act that
-    ended stopped at the debugger has the log read once, not waited on: a stopped guest cannot
-    write. `settle_seconds` and `summaries` are `perform`'s. `seconds` with no `expect` is
-    refused. Needs a session with `logfile`.
+    `pattern` and `limit` only filter the lines shown; `settle_seconds` is the call's, as in
+    `perform`. Refused: `seconds` without `expect`.
 
-    Reply: `act` (`ran`, `steps_completed`, `failed_at`, `failed` when a step did, `perform`'s
-    tail), `verify` (`checked`; `verdict` `TARGET` with `seen`, `line`, `seen_before_waiting`,
-    `lines_before`, `waited_s`, `lines_total`, or `TIMEOUT`, the expectation not met, with
-    `arrived_during` and a `note`; `checked: false` with `why` when no `expect` was given;
-    `available: false` when `act.verdict` is `TIMEOUT`), and `looked.guest` (`lines_written`,
-    `lines_total`, `truncated`, `lines`, `since_mark`, `pattern`). INVALID with the same `act`,
-    `verify` and `looked` when a step failed (`step_failed`), when the act itself was refused or
-    its emulator went (its own code: `not_stopped`, `session_broken`, `diverged`...), when a
-    stopped machine lacks the line (`wait_stopped`), or when the verify itself refused (its
-    `code`). No screen in the look: a still is `capture_frame`.
+    Reply: `act` (`ran`, `steps_completed`, `failed_at`), `verify` (`verdict` `TARGET` or
+    `TIMEOUT`, `seen`, `line`; `checked: false`), `looked.guest` (`lines`, `truncated`).
+    INVALID with the same fields on `step_failed`, `wait_stopped`, or the act's own refusal.
+    No screen: use `capture_frame`.
 
-    `checked` is whether a check ran at all, `seen` whether the line arrived; neither is
-    `verified`, which everywhere else means a readback equal to what was sent.
+    Reference: REFERENCE.md, Input and the screen.
     """
     return sequence.drive(live(), _step_ops(), act, expect or None, seconds, pattern, limit,
                           settle_seconds, bridge(ctx), summaries)

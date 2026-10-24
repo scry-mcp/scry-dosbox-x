@@ -115,7 +115,7 @@ def into_probe() -> Probe:
         return read_bytes(f"{seg:04X}:0100", 16) == head
 
     resume_until(in_probe, "a timer tick inside the probe", 40, seconds=10)
-    must(M.call(server.breakpoint_clear, ref="BPINT 08"), "clearing INT 8")
+    must(M.call(server.declaration_clear, kind="breakpoint", ref="BPINT 08"), "clearing INT 8")
     return Probe(seg)
 
 
@@ -126,7 +126,16 @@ def into_probe() -> Probe:
 # is the only variable, and every reply's session block has to agree with the machine.
 
 STATES = ("none", "stopped", "running", "closed")
-TOOLS = list(dosbox_mcp.registered_tools())
+#: The registered tools, a fold by each of its methods (`_folded`), set below `_STOPPED_ORDER`.
+REGISTERED = list(dosbox_mcp.registered_tools())
+
+
+def _folded(name: str) -> tuple[str, dict[str, Any]]:
+    """A probe name, `<tool>` or a fold's `<tool> <value>`, as the tool and its selector: the
+    value is the fold's `kind` for the declarations, its `method` otherwise."""
+    tool, _, value = name.partition(" ")
+    return tool, ({"kind" if tool.startswith("declaration_") else "method": value}
+                  if value else {})
 SCRATCH = f"{SCRATCH_SEG:04X}"
 REF_DOC = "REFERENCE.md, "
 
@@ -143,20 +152,21 @@ _WITHOUT_SESSION: dict[str, tuple[Callable[[dict[str, Any]], bool], str]] = {
 
 _WINDOWED = ("snapshot",)
 _NEEDS_STOP = ("registers", "read_memory", "disassemble", "call_stack", "memdump", "find",
-               "scan_start",
-               "scan_filter", "scan_clear", "debug", "set_register", "write", "step", "run_to",
+               "scan start",
+               "scan filter", "scan clear", "debug", "set_register", "write", "step", "run_to",
                "run_for", "trace",
                "resume", "machine_map", "interrupt_vectors", "palette", "screen_view",
-               "screen_signature", "screen_wait", "comment_add", "comment_delete",
-               "comment_load", "map_add", "map_find")
+               "screen_signature", "screen_wait", "comment_write add", "comment_write delete",
+               "comment_write load", "map_write add", "map_find")
 _NO_CAPTURE = ("capture_frame", "series_capture")
 #: The media file tools read files and no machine, so they answer in every state alike; each is
 #: asked about files that are not there, which its judge refuses by name.
 MEDIA_ABSENT: dict[str, dict[str, Any]] = {
-    "image_diff": {"a": "/nonexistent/a.png", "b": "/nonexistent/b.png"},
-    "series_diff": {"a": "/nonexistent/a.json", "b": "/nonexistent/b.json"},
-    "region_track": {"manifest": "/nonexistent/m.json"},
-    "golden_check": {"manifest": "/nonexistent/m.json", "checksums": "/nonexistent/g.sha256"},
+    "image_compare image": {"a": "/nonexistent/a.png", "b": "/nonexistent/b.png"},
+    "image_compare series": {"a": "/nonexistent/a.json", "b": "/nonexistent/b.json"},
+    "image_compare region": {"manifest": "/nonexistent/m.json"},
+    "image_compare golden": {"manifest": "/nonexistent/m.json",
+                             "checksums": "/nonexistent/g.sha256"},
 }
 
 
@@ -171,8 +181,9 @@ def _args(tool: str, state: str) -> dict[str, Any]:
     p = Ctx.probe
     control = p.at(p.spin) if p else NEVER_RUNS_CONTROL
     table: dict[str, dict[str, Any]] = {
-        "build_check": {}, "status": {}, "close": {}, "registers": {}, "scan_clear": {},
-        "resume": {}, "stop": {}, "state_list": {}, "breakpoint_list": {}, "watch_list": {},
+        "build_check": {}, "status": {}, "close": {}, "registers": {}, "scan clear": {},
+        "resume": {}, "stop": {}, "state_list": {}, "declaration_list breakpoint": {},
+                                        "declaration_list watch": {},
         "captures": {},
         "start": {"conf": str(PROBE_CONF), "cwd": str(GUEST), "session_seconds": SESSION_S,
                   "logfile": M.fresh(".log"), "state_dir": M.fresh("-save")},
@@ -184,8 +195,8 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "call_stack": {},
         "memdump": {"ref": "0000:0400", "length": 16, "dest": M.fresh(".bin")},
         "find": {"data_hex": "00", "ref": f"{SCRATCH}:0000", "length": 16},
-        "scan_start": {"ref": f"{SCRATCH}:0000", "length": 16},
-        "scan_filter": {"operator": "="},
+        "scan start": {"ref": f"{SCRATCH}:0000", "length": 16},
+        "scan filter": {"operator": "="},
         "debug": {"command": "BPLIST"},
         "machine_map": {},
         "interrupt_vectors": {"number": 0x21},
@@ -199,18 +210,18 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "run_to": {"ref": NEVER_RUNS_TARGET, "seconds": 3, "control": control},
         "run_for": {"frames": 1},
         "trace": {"instructions": 16, "shape": "cs_ip", "dest": M.fresh(".trace"), "seconds": 30},
-        "state_save": {"name": f"matrix_a_{state}", "seconds": 10},
+        "state_write save": {"name": f"matrix_a_{state}", "seconds": 10},
         # the stopped cells save before they load; the running ones meet the load first, and
         # load the state the stopped cells saved
-        "state_load": {"name": "matrix_a_stopped", "seconds": 10},
+        "state_write load": {"name": "matrix_a_stopped", "seconds": 10},
         "snapshot": {"dest": M.fresh(".png"), "seconds": 10},
         "breakpoint_interrupt": {"number": 0x21, "ah": 0x4C},
         "symbols_load": {"path": str(FIXTURE_MAP), "base": "8000"},
         "symbols_find": {"name": FIXTURE_SYMBOL},
         "breakpoint_at": {"ref": "0000:0002"},
-        "breakpoint_clear": {"ref": "0000:0002"},
+        "declaration_clear breakpoint": {"ref": "0000:0002"},
         "watch_add": {"ref": "0040:006C", "mode": "show", "length": 4},
-        "watch_clear": {"ref": "0040:006C"},
+        "declaration_clear watch": {"ref": "0040:006C"},
         "send_keys": {"keys": ["a"]},
         "send_mouse": {"button": "left"},
         "capture_frame": {"frame": 0, "dest": M.fresh(".png")},
@@ -219,15 +230,15 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "perform": {"steps": [{"op": "status"}]},
         "perform_export": {"dest": M.fresh(".json")},
         "drive": {"act": [{"op": "status"}]},
-        "comment_add": {"ref": COMMENT_REF, "text": "matrix A"},
+        "comment_write add": {"ref": COMMENT_REF, "text": "matrix A"},
         "comment_list": {},
-        "comment_delete": {"ref": COMMENT_REF},
-        "comment_save": {"dest": M.fresh(".comments.tsv")},
-        "comment_load": {"path": _header_only()},
-        "map_load": {"path": "/nonexistent/probe.scry-map.json"},
-        "map_add": {"screen": f"probe_{state}", "match": [[0, 0, 8, 1]]},
+        "comment_write delete": {"ref": COMMENT_REF},
+        "comment_write save": {"dest": M.fresh(".comments.tsv")},
+        "comment_write load": {"path": _header_only()},
+        "map_write load": {"path": "/nonexistent/probe.scry-map.json"},
+        "map_write add": {"screen": f"probe_{state}", "match": [[0, 0, 8, 1]]},
         "map_find": {},
-        "map_save": {"dest": M.fresh(f"-{state}.scry-map.json"), "overwrite": True},
+        "map_write save": {"dest": M.fresh(f"-{state}.scry-map.json"), "overwrite": True},
     }
     return table[tool]
 
@@ -299,12 +310,12 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
         "call_stack": (lambda r: ok(r) and r.get("heuristic") is True
                        and len(r.get("calls") or []) >= 1 and bool(r.get("ended_why")),
                        "call_stack docstring: row 0 the stop, heuristic, why it ended"),
-        "scan_start": (lambda r: ok(r) and r.get("hits_total") == 16,
-                       "scan_start docstring: every cell a candidate (16 bytes, one-byte cells)"),
-        "scan_filter": (lambda r: ok(r) and r.get("hits_total") == 16,
-                        "scan_filter docstring: `=` alone keeps cells unchanged since the "
+        "scan start": (lambda r: ok(r) and r.get("hits_total") == 16,
+                       "scan start: docstring, every cell a candidate (16 bytes, one-byte cells)"),
+        "scan filter": (lambda r: ok(r) and r.get("hits_total") == 16,
+                        "scan filter: docstring, `=` alone keeps cells unchanged since the "
                         "open; the machine stayed stopped"),
-        "scan_clear": (lambda r: ok(r) and r.get("cleared") is True, "scan_clear docstring"),
+        "scan clear": (lambda r: ok(r) and r.get("cleared") is True, "scan clear docstring"),
         "debug": (lambda r: ok(r) and bool(r.get("screen_delta")), "debug docstring"),
         "machine_map": (lambda r: ok(r) and r.get("cpu_mode") == "real"
                         and "PROBE" in {b.get("filename") for b in r.get("mcbs") or []},
@@ -343,11 +354,12 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                   and (r.get("trace") or {}).get("instructions") == 16
                   and Path(str((r.get("trace") or {}).get("path"))).is_file(),
                   "trace docstring: `instructions` executed, the log in a file"),
-        "state_save": (lambda r: ok(r) and r.get("paused") is False,
-                       "state_save docstring: by SAVESTATE, a parked machine stays parked"),
-        "state_load": (lambda r: ok(r) and r.get("paused") is False
+        "state_write save": (lambda r: ok(r) and r.get("paused") is False,
+                       "state_write save: docstring, by SAVESTATE, a parked machine stays parked"),
+        "state_write load": (lambda r: ok(r) and r.get("paused") is False
                        and (r.get("session") or {}).get("altered") is True,
-                       "state_load docstring: by LOADSTATE, the state the stopped cells saved"),
+                       "state_write load: docstring, by LOADSTATE, the state the stopped cells "
+                       "saved"),
         "snapshot": (lambda r: refused(r), "snapshot docstring: refused parked, windowed"),
         "state_list": (lambda r: ok(r) and isinstance(r.get("states"), list),
                        "state_list docstring: needs no window"),
@@ -359,24 +371,25 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                          "symbols_find docstring: by name"),
         "breakpoint_at": (lambda r: ok(r) and r.get("state") == "armed",
                           "breakpoint_at docstring: armed, read back"),
-        "breakpoint_list": (lambda r: ok(r) and r.get("debugger_read") is True
+        "declaration_list breakpoint": (lambda r: ok(r) and r.get("debugger_read") is True
                             and any(b.get("ref") == "0000:0002" and b.get("state") == "armed"
                                     for b in r.get("breakpoints") or []),
-                            "breakpoint_list docstring: stopped, read live"),
-        "breakpoint_clear": (lambda r: ok(r) and r.get("declarations_cleared") == 1,
-                             "breakpoint_clear docstring"),
+                            "declaration_list breakpoint docstring: stopped, read live"),
+        "declaration_clear breakpoint": (lambda r: ok(r) and r.get("declarations_cleared") == 1,
+                             "declaration_clear breakpoint docstring"),
         "watch_add": (lambda r: ok(r) and r.get("state") == "evaluated",
                       "watch_add docstring: a show watch is evaluated"),
-        "watch_list": (lambda r: ok(r) and any(w.get("ref") == "0040:006C"
+        "declaration_list watch": (lambda r: ok(r) and any(w.get("ref") == "0040:006C"
                                                for w in r.get("watches") or []),
-                       "watch_list docstring"),
-        "watch_clear": (lambda r: ok(r) and r.get("declarations_cleared") == 1,
-                        "watch_clear docstring"),
+                       "declaration_list watch docstring"),
+        "declaration_clear watch": (lambda r: ok(r) and r.get("declarations_cleared") == 1,
+                        "declaration_clear watch docstring"),
         "send_keys": (lambda r: refused(r, "not_running"),
                       "send_keys docstring: refused on a machine stopped at the debugger"),
         "send_mouse": (lambda r: refused(r, "not_running"),
                        "send_mouse docstring: refused on a machine stopped at the debugger"),
-        # Before it, this state's order has `memdump`, `map_save` and others write files, so the
+        # Before it, this state's order has `memdump`, `map_write(method="save")` and others write
+        # files, so the
         # list is not empty, and a session started without `capture_video` lists no video.
         "captures": (lambda r: ok(r) and isinstance(r.get("captures"), list)
                      and bool(r["captures"])
@@ -389,20 +402,22 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
         **_SEQUENCES,
         "resume": (lambda r: ok(r) and "stop_seq" not in r,
                    "resume docstring: a stopper declared, it runs"),
-        "comment_add": (lambda r: ok(r) and (r.get("comment") or {}).get("state") == "resolved",
-                        "comment_add docstring: a real-mode SEG:OFF placed by arithmetic"),
+        "comment_write add": (lambda r: ok(r)
+                              and (r.get("comment") or {}).get("state") == "resolved",
+                        "comment_write add: docstring at a real-mode SEG:OFF placed by arithmetic"),
         "comment_list": (lambda r: ok(r) and any(c.get("ref") == COMMENT_REF
                                                  for c in r.get("comments") or []),
                          "comment_list docstring"),
-        "comment_save": (lambda r: ok(r) and Path(str(r.get("path"))).is_file(),
-                         "comment_save docstring"),
-        "comment_load": (lambda r: ok(r) and r.get("parsed") == 0
-                         and r.get("added") == 0, "comment_load docstring"),
-        "comment_delete": (lambda r: ok(r) and (r.get("deleted") or {}).get("ref") == COMMENT_REF,
-                           "comment_delete docstring"),
-        "map_add": (lambda r: ok(r) and r.get("kind") == "text" and r.get("size") == [80, 25]
+        "comment_write save": (lambda r: ok(r) and Path(str(r.get("path"))).is_file(),
+                         "comment_write save docstring"),
+        "comment_write load": (lambda r: ok(r) and r.get("parsed") == 0
+                         and r.get("added") == 0, "comment_write load docstring"),
+        "comment_write delete": (lambda r: ok(r)
+                                 and (r.get("deleted") or {}).get("ref") == COMMENT_REF,
+                           "comment_write delete docstring"),
+        "map_write add": (lambda r: ok(r) and r.get("kind") == "text" and r.get("size") == [80, 25]
                     and len(str((r.get("match") or [{}])[0].get("signature"))) == 16,
-                    "map_add docstring: one read signs each crop, in the screen's own units"),
+                    "map_write add docstring: one read signs each crop, in the screen's own units"),
         "map_find": (lambda r: ok(r) and r.get("matched") is True
                      and r.get("screen") == "probe_stopped" and r.get("layer") == "session",
                      "map_find docstring: the screen just mapped, the session layer first"),
@@ -434,10 +449,12 @@ def _running(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
         "log_wait": (lambda r: ok(r) and "PROBE" in str(r.get("line")),
                      "log_wait docstring; known: probe.asm writes `PROBE . tick`"),
         "state_list": (lambda r: ok(r), "state_list docstring: answers while running"),
-        "state_save": (lambda r: ok(r) and r.get("paused") is True,
-                       "state_save docstring: a running guest is stopped for it and released"),
-        "state_load": (lambda r: ok(r) and r.get("paused") is True,
-                       "state_load docstring: a running guest is stopped for it and released"),
+        "state_write save": (lambda r: ok(r) and r.get("paused") is True,
+                       "state_write save: docstring, a running guest is stopped for it and "
+                       "released"),
+        "state_write load": (lambda r: ok(r) and r.get("paused") is True,
+                       "state_write load: docstring, a running guest is stopped for it and "
+                       "released"),
         "breakpoint_interrupt": (lambda r: ok(r) and r.get("state") == "pending",
                                  "breakpoint_interrupt docstring: stored pending"),
         "symbols_load": (lambda r: ok(r) and r.get("pending") is True,
@@ -446,19 +463,19 @@ def _running(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                          REF_DOC + "Names for addresses: the table answers at once"),
         "breakpoint_at": (lambda r: ok(r) and r.get("state") == "pending",
                           "breakpoint_at docstring: pending when the guest is running"),
-        "breakpoint_list": (lambda r: ok(r) and r.get("debugger_read") is False,
-                            "breakpoint_list docstring: running, debugger_read false"),
-        "breakpoint_clear": (lambda r: ok(r) and r.get("declarations_cleared") == 1,
-                             "breakpoint_clear docstring"),
+        "declaration_list breakpoint": (lambda r: ok(r) and r.get("debugger_read") is False,
+                            "declaration_list breakpoint docstring: running, debugger_read false"),
+        "declaration_clear breakpoint": (lambda r: ok(r) and r.get("declarations_cleared") == 1,
+                             "declaration_clear breakpoint docstring"),
         "watch_add": (lambda r: ok(r), "watch_add docstring"),
-        "watch_list": (lambda r: ok(r) and r.get("debugger_read") is False,
-                       "watch_list docstring: running, debugger_read false"),
-        "watch_clear": (lambda r: ok(r) and r.get("declarations_cleared") == 1,
-                        "watch_clear docstring"),
+        "declaration_list watch": (lambda r: ok(r) and r.get("debugger_read") is False,
+                       "declaration_list watch docstring: running, debugger_read false"),
+        "declaration_clear watch": (lambda r: ok(r) and r.get("declarations_cleared") == 1,
+                        "declaration_clear watch docstring"),
         "comment_list": (lambda r: ok(r) and (r.get("session") or {}).get("running") is True,
                          "comment_list docstring: answers on a running guest"),
-        "comment_save": (lambda r: ok(r) and Path(str(r.get("path"))).is_file(),
-                         "comment_save docstring: answers on a running guest"),
+        "comment_write save": (lambda r: ok(r) and Path(str(r.get("path"))).is_file(),
+                         "comment_write save docstring: answers on a running guest"),
         "send_keys": (lambda r: refused(r, "no_channel"),
                       "send_keys docstring: no stub announced, so nothing would receive it"),
         "send_mouse": (lambda r: refused(r, "no_channel"),
@@ -476,15 +493,15 @@ def _expect(tool: str, state: str) -> tuple[Callable[[dict[str, Any]], bool], st
         return ((lambda r: refused(r, "bad_argument") and "is not a file" in str(r.get("message"))
                  and (alive(r) if live else no_session(r))),
                 f"{tool} docstring: reads files, in any state; a missing one refused by name")
-    if tool == "map_load":
+    if tool == "map_write load":
         return ((lambda r: refused(r, "bad_argument") and "no map file" in str(r.get("message"))),
-                "map_load docstring: any state; a file that is not there refused by name")
-    if tool == "map_save":
+                "map_write load docstring: any state; a file that is not there refused by name")
+    if tool == "map_write save":
         if state == "none":
             return ((lambda r: refused(r, "needs_call") and no_session(r)),
-                    "map_save docstring: nothing mapped yet is `needs_call`")
+                    "map_write save docstring: nothing mapped yet is `needs_call`")
         return ((lambda r: ok(r) and Path(str(r.get("path"))).is_file()),
-                "map_save docstring: any state; the maps the server holds, written")
+                "map_write save docstring: any state; the maps the server holds, written")
     if tool == "perform_export" and state in ("none", "closed"):
         # Before any `start` there is nothing recorded; a closed session's recording is still
         # the last one, and it exports with no machine.
@@ -512,7 +529,8 @@ def _a_cells() -> list[Cell]:
            if not (s == "stopped" and t == "close")]
     out.append(Cell("A running registers(from_last_stop)",
                     "registers docstring: `superseded`, marked, with last_stop"))
-    out.append(Cell(SAVES_LABEL, "state_save docstring: a running guest is stopped for it and "
+    out.append(Cell(SAVES_LABEL,
+                    "state_write save: docstring, a running guest is stopped for it and "
                                  "released"))
     out.append(Cell("A stopped close", "close docstring: `quit` on a parked session"))
     return out
@@ -520,7 +538,8 @@ def _a_cells() -> list[Cell]:
 
 def _a_one(tool: str, state: str) -> dict[str, Any]:
     predicate, _ = _expect(tool, state)
-    r = M.call(getattr(server, tool), **_args(tool, state))
+    name, selector = _folded(tool)
+    r = M.call(getattr(server, name), **selector, **_args(tool, state))
     note_spawn()
     M.judge(_a_label(tool, state), predicate(r), said(r))
     return r
@@ -529,12 +548,12 @@ def _a_one(tool: str, state: str) -> dict[str, Any]:
 #: A save on a running guest, over and over: a late repaint of the command's own can be read as a
 #: stop, so one save proves too little.
 SAVES = 30
-SAVES_LABEL = f"A state_save on a running guest leaves it running, {SAVES} times in a row"
+SAVES_LABEL = f"A state_write save on a running guest leaves it running, {SAVES} times in a row"
 
 
 def _saves_leave_it_running() -> None:
     for i in range(SAVES):
-        r = M.call(server.state_save, name=f"matrix_a_loop_{i}", seconds=10)
+        r = M.call(server.state_write, method="save", name=f"matrix_a_loop_{i}", seconds=10)
         if not (ok(r) and (r.get("session") or {}).get("running") is True):
             M.judge(SAVES_LABEL, False, f"save {i + 1} of {SAVES}: {said(r)}")
             return
@@ -546,21 +565,29 @@ def _saves_leave_it_running() -> None:
 _STOPPED_ORDER = [
     "build_check", "start", "status", "log", "log_wait", "registers", "read_memory",
     "disassemble", "call_stack", "memdump",
-    "find", "scan_start", "scan_filter", "scan_clear", "debug", "machine_map",
+    "find", "scan start", "scan filter", "scan clear", "debug", "machine_map",
     "interrupt_vectors", "palette", "screen_view", "screen_signature", "screen_wait",
-    "map_add", "map_find", "map_save", "map_load",
+    "map_write add", "map_find", "map_write save", "map_write load",
     "set_register", "write", "stop",
-    "step", "run_to", "run_for", "trace", "state_save", "state_load", "snapshot", "state_list",
-    "breakpoint_interrupt", "symbols_load", "symbols_find", "comment_add", "comment_list",
-    "comment_save", "comment_load", "comment_delete", "breakpoint_at", "breakpoint_list",
-    "breakpoint_clear", "watch_add", "watch_list", "watch_clear", "send_keys", "send_mouse",
+    "step", "run_to", "run_for", "trace", "state_write save", "state_write load", "snapshot",
+                  "state_list",
+    "breakpoint_interrupt", "symbols_load", "symbols_find", "comment_write add", "comment_list",
+    "comment_write save", "comment_write load", "comment_write delete", "breakpoint_at",
+                  "declaration_list breakpoint",
+    "declaration_clear breakpoint", "watch_add", "declaration_list watch",
+                  "declaration_clear watch", "send_keys", "send_mouse",
     "captures", "capture_frame", "series_capture", *MEDIA_ABSENT, "perform", "drive",
     "perform_export"]
+
+
+TOOLS = [p for t in REGISTERED
+         for p in ([q for q in _STOPPED_ORDER if _folded(q)[0] == t and " " in q] or [t])]
 
 
 @M.section("A", "every tool in every machine state, on the probe guest", _a_cells())
 def section_a() -> None:
     missing = sorted(set(TOOLS) - set(_STOPPED_ORDER) - {"resume", "close"})
+    missing += sorted({_folded(p)[0] for p in _STOPPED_ORDER} - set(REGISTERED))
     if missing:
         raise RuntimeError(f"tools this matrix has no order for: {missing}")
     for tool in TOOLS:
@@ -576,13 +603,16 @@ def section_a() -> None:
     for tool in _STOPPED_ORDER:
         _a_one(tool, "stopped")
         if tool == "breakpoint_interrupt":
-            M.call(server.breakpoint_clear, ref="BPINT 21 AH=4C")
+            M.call(server.declaration_clear, kind="breakpoint", ref="BPINT 21 AH=4C")
             M.setup()
     M.call(server.breakpoint_at, ref=NEVER_RUNS_STOPPER)
     M.setup()
     _a_one("resume", "stopped")
     _a_one("log_wait", "running")        # first: it is what proves the guest runs
-    for tool in TOOLS:
+    # In the stopped order, so a fold's method meets what an earlier tool declared (a watch
+    # is cleared after `watch_add`), whatever order the server registers them in.
+    for tool in [*(t for t in _STOPPED_ORDER if t in TOOLS), *(t for t in TOOLS
+                                                                if t not in _STOPPED_ORDER)]:
         if tool not in ("log_wait", "close", "stop"):
             _a_one(tool, "running")
     r = M.call(server.registers, from_last_stop=True)
@@ -631,10 +661,10 @@ B_CELLS = cells(
     ("B find length=401 of zeros", "find docstring: at most 400 hits, the highest kept"),
     ("B scan 400 survivors listed", REF_DOC + "Reading and writing: `limit` 400 is the ceiling"),
     ("B scan 401 survivors cut", REF_DOC + "Reading and writing: `limit` 400 is the ceiling"),
-    ("B scan 40 survivors listed by default", "scan_filter docstring: `limit` defaults to 40"),
-    ("B scan 41 survivors cut by default", "scan_filter docstring: `limit` defaults to 40"),
-    ("B scan_start cell_bytes=3", "scan_start docstring: `cell_bytes` 1, 2 or 4"),
-    ("B scan_filter operator=~", "scan_filter docstring: the six operators"),
+    ("B scan 40 survivors listed by default", "scan filter: docstring, `limit` defaults to 40"),
+    ("B scan 41 survivors cut by default", "scan filter: docstring, `limit` defaults to 40"),
+    ("B scan start cell_bytes=3", "scan start: docstring, `cell_bytes` 1, 2 or 4"),
+    ("B scan filter operator=~", "scan filter: docstring, the six operators"),
     ("B step count=64", "the ceiling dosbox_session.STEP_MAX declares, REFERENCE's Advancing "
                         "quotes; step docstring: instructions_completed is what landed"),
     ("B step count=65", "the ceiling dosbox_session.STEP_MAX declares"),
@@ -714,9 +744,9 @@ def _b_find() -> None:
 
 def _b_scan() -> None:
     for n in (400, 401):
-        M.call(server.scan_clear)
-        opened = M.call(server.scan_start, ref=f"{SCRATCH}:1000", length=n)
-        r = M.call(server.scan_filter, operator="=", limit=400)
+        M.call(server.scan, method="clear")
+        opened = M.call(server.scan, method="start", ref=f"{SCRATCH}:1000", length=n)
+        r = M.call(server.scan, method="filter", operator="=", limit=400)
         if n == 400:
             good = (ok(opened) and ok(r) and r.get("hits_total") == 400
                     and len(r.get("hits") or []) == 400 and r.get("truncated") is False)
@@ -727,15 +757,15 @@ def _b_scan() -> None:
         label = "B scan 400 survivors listed" if n == 400 else "B scan 401 survivors cut"
         M.judge(label, good, said(r))
     for n in (40, 41):
-        M.call(server.scan_clear)
-        opened = M.call(server.scan_start, ref=f"{SCRATCH}:1000", length=n)
-        r = M.call(server.scan_filter, operator="=")
+        M.call(server.scan, method="clear")
+        opened = M.call(server.scan, method="start", ref=f"{SCRATCH}:1000", length=n)
+        r = M.call(server.scan, method="filter", operator="=")
         listed = n <= 40
         M.judge(f"B scan {n} survivors {'listed' if listed else 'cut'} by default",
                 ok(opened) and ok(r) and r.get("hits_total") == n
                 and len(r.get("hits") or []) == (n if listed else 40)
                 and r.get("truncated") is (not listed), said(r))
-    M.call(server.scan_clear)
+    M.call(server.scan, method="clear")
 
 
 def _b_serial() -> None:
@@ -813,12 +843,12 @@ def section_b() -> None:
     inside.unlink(missing_ok=True)
     _b_find()
     _b_scan()
-    r = M.call(server.scan_start, ref=f"{SCRATCH}:0000", length=16, cell_bytes=3)
-    judged("B scan_start cell_bytes=3", reply=r, holds=_bad(r))
-    M.call(server.scan_start, ref=f"{SCRATCH}:0000", length=16)
-    r = M.call(server.scan_filter, operator="~")
-    judged("B scan_filter operator=~", reply=r, holds=refused(r))
-    M.call(server.scan_clear)
+    r = M.call(server.scan, method="start", ref=f"{SCRATCH}:0000", length=16, cell_bytes=3)
+    judged("B scan start cell_bytes=3", reply=r, holds=_bad(r))
+    M.call(server.scan, method="start", ref=f"{SCRATCH}:0000", length=16)
+    r = M.call(server.scan, method="filter", operator="~")
+    judged("B scan filter operator=~", reply=r, holds=refused(r))
+    M.call(server.scan, method="clear")
     M.setup()
     r = M.call(server.step, count=64)
     done = r.get("instructions_completed")
@@ -869,7 +899,7 @@ def section_b() -> None:
     r = M.call(server.resume, seconds=-1)
     judged("B resume seconds=-1", reply=r,
            holds=_bad(r) and (r.get("session") or {}).get("alive") is True)
-    M.call(server.breakpoint_clear, ref="BPINT 08")
+    M.call(server.declaration_clear, kind="breakpoint", ref="BPINT 08")
     M.setup()
     M.call(server.symbols_load, path=str(FIXTURE_MAP), base="8000")
     M.setup()
@@ -882,12 +912,12 @@ def section_b() -> None:
                      (HUGE, "B watch_add show length=2**31")):
         r = M.call(server.watch_add, ref=f"{SCRATCH}:0000", mode="show", length=n)
         judged(label, reply=r, holds=ok(r) if n == 128 else refused(r))
-    M.call(server.watch_clear, all=True)
+    M.call(server.declaration_clear, kind="watch", all=True)
     M.setup()
     r = M.call(server.breakpoint_interrupt, number=0xFF)
     judged("B breakpoint_interrupt number=0xFF", reply=r,
            holds=ok(r) and r.get("ref") == "BPINT FF")
-    M.call(server.breakpoint_clear, ref="BPINT FF")
+    M.call(server.declaration_clear, kind="breakpoint", ref="BPINT FF")
     M.setup()
     r = M.call(server.breakpoint_interrupt, number=0x100)
     judged("B breakpoint_interrupt number=0x100", reply=r, holds=_bad(r))
@@ -937,13 +967,14 @@ C_CELLS = cells(
      REF_DOC + "The console: `debug` leaves the console clean"),
     ("C the command after it runs on its own", REF_DOC + "The console: emptied with ESC"),
     ("C find finds what write wrote", "known: the bytes `write` put there, once"),
-    ("C scan_start while a scan is open", "scan_start docstring: one scan at a time"),
+    ("C scan start while a scan is open", "scan start: docstring, one scan at a time"),
     ("C scan ! keeps the one cell written", REF_DOC + "Reading and writing: `!` since the open"),
     ("C scan closing = answers its own iterations", REF_DOC + "Reading and writing: iterations"),
-    ("C scan_clear with nothing open", "scan_clear docstring: a no-op that says so"),
+    ("C scan clear with nothing open", "scan clear docstring: a no-op that says so"),
     ("C breakpoint_interrupt twice is already_stored", "breakpoint_interrupt docstring"),
     ("C a second ref on the same byte is refused", REF_DOC + "Declarations: one row"),
-    ("C breakpoint_clear of an unknown ref", REF_DOC + "Declarations: a ref matching nothing"),
+    ("C declaration_clear breakpoint of an unknown ref",
+     REF_DOC + "Declarations: a ref matching nothing"),
     ("C status counts the declarations", REF_DOC + "Advancing the machine: declarations"),
     ("C run_to arrives in the probe and removes its breakpoint",
      REF_DOC + "Advancing the machine; known: probe.asm `emit`"),
@@ -1010,23 +1041,23 @@ def _c_console() -> None:
 
 
 def _c_scan() -> None:
-    M.call(server.scan_clear)
-    opened = M.call(server.scan_start, ref=f"{SCRATCH}:2000", length=8)
-    again = M.call(server.scan_start, ref=f"{SCRATCH}:2000", length=8)
-    judged("C scan_start while a scan is open", reply=again, holds=ok(opened) and refused(again))
+    M.call(server.scan, method="clear")
+    opened = M.call(server.scan, method="start", ref=f"{SCRATCH}:2000", length=8)
+    again = M.call(server.scan, method="start", ref=f"{SCRATCH}:2000", length=8)
+    judged("C scan start while a scan is open", reply=again, holds=ok(opened) and refused(again))
     M.call(server.write, ref=f"{SCRATCH}:2003", data_hex="FF")
-    moved = M.call(server.scan_filter, operator="!")
+    moved = M.call(server.scan, method="filter", operator="!")
     hits = moved.get("hits") or []
     judged("C scan ! keeps the one cell written", reply=moved,
             holds=ok(moved) and moved.get("hits_total") == 1 and len(hits) == 1
             and hexint(hits[0].get("addr")) == SCRATCH_SEG * 16 + 0x2003
             and hexint(hits[0].get("value")) == 0xFF)
-    closing = M.call(server.scan_filter, operator="=")
+    closing = M.call(server.scan, method="filter", operator="=")
     judged("C scan closing = answers its own iterations", reply=closing,
             holds=ok(closing) and closing.get("hits_total") == 0 and closing.get("closed") is True
             and closing.get("iterations") == 2)
-    r = M.call(server.scan_clear)
-    judged("C scan_clear with nothing open", reply=r, holds=ok(r) and r.get("cleared") is False)
+    r = M.call(server.scan, method="clear")
+    judged("C scan clear with nothing open", reply=r, holds=ok(r) and r.get("cleared") is False)
 
 
 def _c_declarations(p: Probe) -> None:
@@ -1038,20 +1069,20 @@ def _c_declarations(p: Probe) -> None:
     alias = M.call(server.breakpoint_at, ref="0001:0000")
     judged("C a second ref on the same byte is refused", reply=alias,
             holds=ok(held) and refused(alias) and "0000:0010" in str(alias.get("message")))
-    r = M.call(server.breakpoint_clear, ref="0000:0999")
-    judged("C breakpoint_clear of an unknown ref", reply=r,
+    r = M.call(server.declaration_clear, kind="breakpoint", ref="0000:0999")
+    judged("C declaration_clear breakpoint of an unknown ref", reply=r,
             holds=refused(r, "unknown_ref") and "0000:0010" in str(r.get("message")))
     r = M.call(server.status)
     judged("C status counts the declarations", reply=r,
             holds=ok(r) and (r.get("declarations") or {}).get("breakpoints") == 2)
-    M.call(server.breakpoint_clear, all=True)
+    M.call(server.declaration_clear, kind="breakpoint", all=True)
     M.setup()
     r = M.call(server.run_to, ref=p.at(p.emit), seconds=10, control=p.at(p.spin))
     # The debugger's own list, through the tool that reads it back: an entry this store never
     # declared is listed `foreign`, which is where a breakpoint `run_to` failed to remove would
     # sit. A raw `BPLIST` screen would not do: its Output pane scrolls, so the arming listing
     # from before the run is still painted above the new one.
-    listed = M.call(server.breakpoint_list)
+    listed = M.call(server.declaration_list, kind="breakpoint")
     left = [str(f) for f in listed.get("foreign") or []]
     judged("C run_to arrives in the probe and removes its breakpoint", reply=r,
             holds=ok(r) and r.get("verdict") == "TARGET" and r.get("target_disarmed") is True
@@ -1089,8 +1120,8 @@ def _c_stops(p: Probe) -> None:
         errors = r.get("errors") or []
         judged(label, reply=r,
                 holds=refused(r) and r.get("ran") == [] and any(e.get("step") == 1 for e in errors))
-    M.call(server.watch_clear, all=True)
-    M.call(server.breakpoint_clear, all=True)
+    M.call(server.declaration_clear, kind="watch", all=True)
+    M.call(server.declaration_clear, kind="breakpoint", all=True)
     M.setup()
 
 
@@ -1124,7 +1155,7 @@ def _c_pending(p: Probe) -> None:
     """A stop the matrix can predict: a breakpoint on `.pause`, armed before the release,
     fires after the probe's next line. A breakpoint declared WHILE it runs is pending, and the first
     tool that finds the machine stopped applies it and says so."""
-    M.call(server.breakpoint_clear, all=True)
+    M.call(server.declaration_clear, kind="breakpoint", all=True)
     M.call(server.breakpoint_at, ref=p.at(p.pause))
     M.call(server.resume)
     M.setup()
@@ -1143,14 +1174,14 @@ def _c_pending(p: Probe) -> None:
             holds=ok(pend) and pend.get("state") == "pending"
             and bool(found.get("stopped_on_its_own"))
             and "0000:0007" in [str(a) for a in armed])
-    M.call(server.breakpoint_clear, all=True)
+    M.call(server.declaration_clear, kind="breakpoint", all=True)
     _c_two_families(p)
     w = M.call(server.watch_add, ref=p.at(p.cnt + 4), mode="change", length=1, fmt="u8")
     r = M.call(server.resume, seconds=10)
     judged("C a change watch on the counter stops the probe", reply=r,
             holds=ok(w) and w.get("armed") is True and ok(r) and "stop_seq" in r
             and str(r.get("pc")).split(":")[0] == f"{p.seg:04X}")
-    M.call(server.watch_clear, all=True)
+    M.call(server.declaration_clear, kind="watch", all=True)
     M.setup()
 
 
@@ -1174,8 +1205,8 @@ def _c_two_families(p: Probe) -> None:
            reply=found, holds=w.get("state") == "pending" and b.get("state") == "pending"
            and ref in [str(a) for a in (found.get("applied_on_stop") or {}).get("armed") or []]
            and f"BP {ref}" in listing and f"BPMEM {ref}" in listing)
-    M.call(server.breakpoint_clear, all=True)
-    M.call(server.watch_clear, all=True)
+    M.call(server.declaration_clear, kind="breakpoint", all=True)
+    M.call(server.declaration_clear, kind="watch", all=True)
     M.setup()
 
 
@@ -1186,7 +1217,7 @@ def _c_store() -> None:
     close_whatever()
     boot()
     M.setup()
-    r = M.call(server.breakpoint_list)
+    r = M.call(server.declaration_list, kind="breakpoint")
     row = [b for b in r.get("breakpoints") or [] if b.get("ref") == "0000:0006"]
     judged("C a raw breakpoint from another session on the same build re-arms", reply=r,
             holds=ok(r) and r.get("debugger_read") is True and len(row) == 1
@@ -1199,7 +1230,7 @@ def _c_store() -> None:
     other.write_text(PROBE_CONF.read_text(encoding="utf-8"), encoding="utf-8")
     boot(conf=other)
     M.setup()
-    r = M.call(server.breakpoint_list)
+    r = M.call(server.declaration_list, kind="breakpoint")
     judged("C another conf inherits nothing", reply=r,
             holds=ok(r) and not any(b.get("ref") == "0000:0006"
                                     for b in r.get("breakpoints") or []))
@@ -1324,7 +1355,7 @@ def section_h() -> None:
             ok(r) and r.get("verdict") == "OTHER_STOP" and r.get("retrace_pending") is True
             and any(str(r.get("cause")).startswith(f"breakpoint {ref} ") for ref in loops),
             said(r))
-    must(M.call(server.breakpoint_clear, all=True), "clearing the loops")
+    must(M.call(server.declaration_clear, kind="breakpoint", all=True), "clearing the loops")
     must(M.call(server.breakpoint_at, ref=NEVER_RUNS_STOPPER), "arming a stopper that never fires")
     r = M.call(server.resume, seconds=5)
     M.judge("H the next release stops at the pending retrace, named",

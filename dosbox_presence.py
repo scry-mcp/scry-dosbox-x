@@ -27,17 +27,14 @@ from scry_core.reply_contract import unavailable
 #: registry.
 DRIVING_TOOLS = frozenset({
     "resume", "stop", "step", "run_to", "run_for", "trace", "screen_wait", "send_keys",
-    "send_mouse", "drive", "perform", "state_load", "debug", "write", "set_register"})
+    "send_mouse", "drive", "perform", "state_write", "debug", "write", "set_register"})
 STILL_TOOLS = frozenset({
-    "breakpoint_at", "breakpoint_clear", "breakpoint_interrupt", "breakpoint_list",
-    "build_check", "call_stack", "capture_frame", "captures", "close", "comment_add",
-    "comment_delete", "comment_list", "comment_load", "comment_save", "disassemble", "find",
-    "golden_check", "image_diff", "interrupt_vectors", "log", "log_wait", "machine_map",
-    "map_add", "map_find", "map_load", "map_save", "memdump", "palette", "perform_export",
-    "read_memory", "region_track", "registers", "scan_clear", "scan_filter", "scan_start",
-    "screen_signature", "screen_view", "series_capture", "series_diff", "snapshot", "start",
-    "state_list", "state_save", "status", "symbols_find", "symbols_load", "watch_add",
-    "watch_clear", "watch_list"})
+    "breakpoint_at", "breakpoint_interrupt", "build_check", "call_stack", "capture_frame",
+    "captures", "close", "comment_list", "comment_write", "declaration_clear",
+    "declaration_list", "disassemble", "find", "image_compare", "interrupt_vectors", "log",
+    "log_wait", "machine_map", "map_find", "map_write", "memdump", "palette", "perform_export",
+    "read_memory", "registers", "scan", "screen_signature", "screen_view", "series_capture",
+    "snapshot", "start", "state_list", "status", "symbols_find", "symbols_load", "watch_add"})
 
 #: What a build whose channel lacks the command is said to lack.
 NO_COMMAND = "this DOSBox-X's debugger channel has no PRESENCE command"

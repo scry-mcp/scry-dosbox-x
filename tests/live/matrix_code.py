@@ -209,7 +209,7 @@ def _code_guest() -> None:
     rows = [(c.get("symbol"), c.get("via")) for c in entry.get("calls") or []]
     M.judge("M call_stack at middle's first byte reads outer off SP, via entry",
             ok(entry) and rows[:2] == [("middle", "stop"), ("outer", "entry")], str(rows))
-    must(M.call(server.breakpoint_clear, all=True), "clearing middle")
+    must(M.call(server.declaration_clear, kind="breakpoint", all=True), "clearing middle")
     inner = M.call(server.resume, seconds=30)
     _inner_stack()
     pic = inner.get("instruction") or {}

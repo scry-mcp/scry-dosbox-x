@@ -26,6 +26,78 @@
   },
   {
    "lines": [
+    "D81: {\"tool\":\"trace\",\"args\":{\"instructions\":4000,\"dest\":\"/tmp/cov.trace\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D81: {\"tool\":\"trace\",\"args\":{\"instructions\":4000,\"dest\":\"/tmp/cov.trace\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D81: {\"tool\": \"trace\", \"args\": {\"instructions\": 4000, \"dest\": \"/tmp/cov.trace\"}}"
    ],
    "right": true

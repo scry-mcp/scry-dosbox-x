@@ -96,7 +96,9 @@ L_CELLS = cells(
      "REFERENCE.md, The session: nothing at a file a tool writes, a dangling link included"),
     ("L with no session, a value wrong with no machine answers bad_argument, never no_session",
      "REFERENCE.md, What every reply carries: judged before the session gate"),
-    (CLEAR_CELL, "breakpoint_clear and watch_clear docstrings: all with `all=True`; neither `ref` "
+    (CLEAR_CELL,
+     "declaration_clear breakpoint and declaration_clear watch docstrings: all with `all=True`; "
+     "neither `ref` "
                  "nor `all`, or both, is `bad_argument`"),
     (PERFORM_CELL, "perform docstring: every tool but `build_check`, `start`, `close`, "
                    "`perform`, `drive` and `perform_export` is a step"),
@@ -106,9 +108,14 @@ L_CELLS = cells(
 )
 #: Each wrong with no machine at all: a state name, a scan, a register, a bound, a list.
 NO_MACHINE_NEEDED: tuple[tuple[str, dict[str, Any]], ...] = (
-    ("state_save", {"name": "abc\n", "seconds": 5}), ("state_load", {"name": "1", "seconds": 5}),
-    ("state_save", {"name": "a" * 65, "seconds": 5}), ("scan_filter", {"operator": "?"}),
-    ("scan_start", {"ref": "0000:0400", "length": 3, "cell_bytes": 2}),
+    ("state_write", {"method": "save", "name": "abc\n", "seconds": 5}), ("state_write",
+                                                                         {"method": "load",
+                                                                          "name": "1",
+                                                                          "seconds": 5}),
+    ("state_write", {"method": "save", "name": "a" * 65, "seconds": 5}), ("scan",
+                                                                          {"method": "filter",
+                                                                           "operator": "?"}),
+    ("scan", {"method": "start", "ref": "0000:0400", "length": 3, "cell_bytes": 2}),
     ("set_register", {"name": "ax", "value": 0x10000}), ("resume", {"seconds": -1}),
     ("run_to", {"ref": "0000:0100", "control": ""}),
     ("breakpoint_at", {"ref": "[g_p]", "by": "pointer"}),
@@ -224,15 +231,17 @@ def _empty_ref_clears() -> None:
               M.call(server.watch_add, ref=f"{cs}:0100", mode="show", length=2),
               M.call(server.watch_add, ref=f"{cs}:0102", mode="show", length=2)):
         must(r, "declaring before the brooms")
-    unscoped = [M.call(server.breakpoint_clear, ref=""), M.call(server.breakpoint_clear),
-                M.call(server.breakpoint_clear, ref="x", all=True),
-                M.call(server.watch_clear, ref=""), M.call(server.watch_clear),
-                M.call(server.watch_clear, ref="x", all=True)]
-    kept = M.call(server.watch_list)
-    bps = M.call(server.breakpoint_clear, all=True)
-    left = M.call(server.watch_list)
-    ws = M.call(server.watch_clear, all=True)
-    after = M.call(server.breakpoint_list)
+    unscoped = [M.call(server.declaration_clear, kind="breakpoint", ref=""),
+                M.call(server.declaration_clear, kind="breakpoint"),
+                M.call(server.declaration_clear, kind="breakpoint", ref="x", all=True),
+                M.call(server.declaration_clear, kind="watch", ref=""),
+                M.call(server.declaration_clear, kind="watch"),
+                M.call(server.declaration_clear, kind="watch", ref="x", all=True)]
+    kept = M.call(server.declaration_list, kind="watch")
+    bps = M.call(server.declaration_clear, kind="breakpoint", all=True)
+    left = M.call(server.declaration_list, kind="watch")
+    ws = M.call(server.declaration_clear, kind="watch", all=True)
+    after = M.call(server.declaration_list, kind="breakpoint")
     M.judge(CLEAR_CELL,
             all(refused(r, "bad_argument") for r in unscoped)
             and len(kept.get("watches") or []) == 2
@@ -285,7 +294,7 @@ def _running_table() -> None:
     declared = ran[1].get("reply") or {} if len(ran) > 1 else {}
     M.judge(PENDING_CELL, ok(r) and declared.get("state") == "pending"
             and bool(r.get("stopped")), said(r))
-    M.call(server.breakpoint_clear, all=True)
+    M.call(server.declaration_clear, kind="breakpoint", all=True)
 
 
 def _state_dir_named(state_dir: Path) -> None:

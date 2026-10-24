@@ -2,24 +2,102 @@
  "task": {
   "id": "D40",
   "prompt": "List every watch declaration and its state.",
-  "tool": "watch_list"
+  "tool": "declaration_list",
+  "args": {
+   "kind": "watch"
+  },
+  "grammar": [
+   "watch"
+  ]
  },
  "runs": [
   {
    "lines": [
-    "D40: {\"tool\": \"watch_list\", \"args\": {}}"
+    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D40: {\"tool\": \"watch_list\", \"args\": {}}"
+    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D40: {\"tool\": \"watch_list\", \"args\": {}}"
+    "D40: {\"tool\":\"declaration_list\",\"args\":{\"kind\":\"watch\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D40: {\"tool\":\"declaration_list\",\"args\":{\"kind\":\"watch\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D40: {\"tool\": \"declaration_list\", \"args\": {\"kind\": \"watch\"}}"
    ],
    "right": true
   }

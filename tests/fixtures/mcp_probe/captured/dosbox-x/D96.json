@@ -37,6 +37,78 @@
   },
   {
    "lines": [
+    "D96: {\"tool\":\"machine_map\",\"args\":{\"sections\":[\"paging\",\"gdt\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D96: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"paging\", \"gdt\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D96: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"paging\", \"gdt\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D96: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"paging\", \"gdt\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D96: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"paging\", \"gdt\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D96: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"paging\", \"gdt\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D96: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"paging\", \"gdt\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D96: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"paging\", \"gdt\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D96: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"paging\", \"gdt\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D96: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"paging\", \"gdt\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D96: {\"tool\":\"machine_map\",\"args\":{\"sections\":[\"paging\",\"gdt\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D96: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"paging\", \"gdt\"]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D96: {\"tool\": \"machine_map\", \"args\": {\"sections\": [\"paging\", \"gdt\"]}}"
    ],
    "right": true

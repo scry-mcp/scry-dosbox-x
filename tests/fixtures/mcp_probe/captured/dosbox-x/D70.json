@@ -22,6 +22,78 @@
   },
   {
    "lines": [
+    "D70: {\"tool\":\"screen_view\",\"args\":{\"dest\":\"/tmp/frame.png\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D70: {\"tool\":\"screen_view\",\"args\":{\"dest\":\"/tmp/frame.png\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D70: {\"tool\": \"screen_view\", \"args\": {\"dest\": \"/tmp/frame.png\"}}"
    ],
    "right": true

@@ -9,33 +9,17 @@
 perform(steps, settle_seconds=30.0, summaries=false)
 ```
 
-Run a LIST of the server's own operations in order on the open session, in ONE round
-trip, stopping at the first failure with the whole account.
+Run this server's operations in order on the open session, stopping at the first
+failure.
 
-Arguments: `steps`, each `{"op": <tool name>, ...its arguments}`; every tool but
-`build_check`, `start`, `close`, `perform`, `drive` and `perform_export` is a step, `debug`
-included. A `resume` (or a `step` that comes back running) ends the console-driven part:
-after it the steps `answers_while_running` lists run at once (a `stop` ends the run), and
-before any other the sequence WAITS up to `settle_seconds` for the machine to stop (0 never
-waits), as a list begun running does. A `send_keys`/`send_mouse` step whose own `expect` misses
-ends the list, `verdict` `TIMEOUT`.
+`steps`: `{"op": <tool>, ...arguments}`, any tool but `build_check`, `start`, `close`,
+`perform`, `drive`, `perform_export`. A `send_keys` or `send_mouse` whose `expect`
+misses ends the list `TIMEOUT`. A step's `recorded` must hold, else INVALID `diverged`.
+The whole list is checked first: INVALID `errors` (`step`, `op`, `code`, `message`),
+nothing run.
 
-A step's `recorded`, `{field: value}`, is what its reply must hold (a replay,
-`perform_export`): else INVALID `diverged` there, with `field`, `recorded` and `got`; `held`
-counts the steps that held.
-
-Refused before the first step runs: the WHOLE list is checked (ops, argument names and
-VALUES, through each tool's own checks), and the reply is INVALID with `errors` listing EVERY
-refused step (`step`, `op`, `code`, `message`), nothing run. What only its step can judge (a
-symbol against the table loaded by then, a file an earlier step writes, the machine's mode)
-refuses at that step.
-
-Reply: `ran` (each step's `op` and full `reply`), `steps_completed`, `held`; a step's refusal is
-INVALID (`step_failed`) with `failed_at` and `failed`; once it waited, `verdict`: `TARGET`
-(a list ending running adds `stopped`, the stop it was heading for) or `TIMEOUT` (the steps
-after the wait unsent, a `note`); with no wait, `not_stopped` before a console step, or
-`still_running`; a wait whose channel failed ends the list with its code (`session_broken`
-when the emulator is gone). `start(plan=...)` runs one too.
+Reply: `ran`, `steps_completed`, `held`, `failed_at`, `failed` (INVALID `step_failed`),
+`verdict` (`TARGET` adds `stopped`, `TIMEOUT` `note`), else `still_running`.
 
 Reference: REFERENCE.md, Sequences in one call.
 
@@ -45,7 +29,7 @@ Reference: REFERENCE.md, Sequences in one call.
 | `settle_seconds` | number (>= 0, <= 600.0) | `30.0` |
 | `summaries` | boolean | `false` |
 
-- `summaries`: True keeps a long list readable (an argument of the call, never of a step): each step but the one the list ended on becomes a compact row (a failed one stays whole under `failed`); `ran` shows the first 24 (`truncated`, of `steps_total`), `ran_path` and `replies_path` hold all, and `stops` counts the stops.
+- `summaries`: True (of the call, never of a step) makes each step but the last a compact row; `ran` shows the first 24 (`truncated`), `ran_path` and `replies_path` hold all; `stops` counts the stops.
 
 | reply field | type |
 |---|---|
@@ -91,23 +75,20 @@ Example, from a live run:
       "reply": {
         "summary": "status: alive, stopped",
         "status": "ok",
-        "pid": 42881,
-        "conf": "$TMPDIR/dosbox-x-live-job-tcl53hm5/A/tests/guest/probe.conf",
+        "pid": 74310,
+        "conf": "$TMPDIR/dosbox-x-live-job-tkj8_x5o/A/tests/guest/probe.conf",
         "conf_digest": "78bdc38f360b9b4a",
-        "conf_changed_on_disk": false,
-        "watched": false,
         "bound_s": 1200,
-        "elapsed_s": 54.5,
-        "terminal_bytes_dropped": 0,
+        "elapsed_s": 54.4,
         "drain_alive": true,
         "captures": "off",
-        "state_dir": "$TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/jobs-scratch/A/n632-save",
+        "state_dir": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n632-save",
         "last_stop": {
           "stop_seq": 9,
           "pc": "0814:00000130",
           "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
           "since_s": 8.5,
-          "wall_at": "2026-10-24T16:10:36+00:00"
+          "wall_at": "2026-10-24T22:13:18+00:00"
         },
         "pending": {
           "arm": [],
@@ -143,11 +124,13 @@ Example, from a live run:
 ```
 <!-- scry-reference:end perform -->
 
-**A `resume` inside a sequence drains what the console steps before it left in the terminal**, so their prompt does not read as the resume's halt. Its `screen_delta` (`detail=True`) is a tail capped at 2000 characters because the repaint replays the debugger's Output pane: an earlier `breakpoint_list` shows up in it however long the machine sat quiet. That is the pane, not the log (`log` reads the log).
+**A `resume` inside a sequence drains what the console steps before it left in the terminal**, so their prompt does not read as the resume's halt. Its `screen_delta` (`detail=True`) is a tail capped at 2000 characters because the repaint replays the debugger's Output pane: an earlier `declaration_list(kind="breakpoint")` shows up in it however long the machine sat quiet. That is the pane, not the log (`log` reads the log).
 
 **A stopper that fires in a loop ends a key sequence early, and correctly**: the next key's `expect` is refused for a stopped machine. Clear it ahead of the `resume`, in the same `perform`.
 
 **`summaries=True`** exists for size, and `stops` is the server's own count because one assembled by hand from summary lines comes out wrong.
+
+After a `resume`, only the ops `answers_while_running` lists go on at once, and before any other the list waits up to `settle_seconds` for a stop. `start(plan=...)` also runs a list. A `step` that comes back running ends the console-driven part like a `resume`, and a `stop` ends the run. A `resume` inside a sequence drains what the console steps before it left in the terminal, so their prompt does not read as the resume's halt. A stopper that fires in a loop ends a key sequence early, and correctly, because the next key's `expect` is refused for a stopped machine: clear it ahead of the `resume`, in the same `perform`. `settle_seconds` 0 never waits. What only a step can judge (a symbol against the table loaded by then, a file an earlier step writes, the machine's mode) refuses at that step; the list check covers ops, argument names and values through each tool's own checks. `summaries` exists for size, and `stops` is the server's own count because one assembled by hand from summary lines comes out wrong. A wait whose channel failed ends the list with its code (`session_broken` when the emulator is gone). `ran` carries each step's `op` and full `reply`; `held` counts the steps that held their `recorded`; `not_stopped` is the answer before a console step when nothing waited. Refused steps in `errors` each carry `step`, `op`, `code` and `message`.
 
 <!-- scry-reference:begin perform_export -->
 ## `perform_export`
@@ -158,18 +141,14 @@ Example, from a live run:
 perform_export(dest, overwrite=false)
 ```
 
-Write what this session did since its `start` to `dest` as `perform`'s own document, so an investigation becomes a bench: `uv run python -m scry_core.replay <dest>`, from this server's repository, plays it with no model and exits 0 when every step held. Answers in any state, a closed session's included.
+Write the session's calls since `start` to `dest` as a `perform` document.
 
-Kept: what moved the machine, as steps, and the reads that are checks (`read_memory`,
-`registers`, `screen_signature`, `golden_check`), each holding to what its reply said
-(`recorded`). Dropped, each named with why: a refused call, any other read, a call that
-changes nothing in the emulated machine. Cut, named: the first call no replay can place (a
-release, a `stop` or `screen_wait` that ran the guest and came back stopped, or a wall-clock
-bound that ended a run, whose run ends where no replay reaches; no reply; a refusal after the
-guest moved; a guest found elsewhere than the call before left it; a step that wrote a file
-the session named; past 5000 calls kept).
+Kept: moving calls and checks (`read_memory`, `registers`, `screen_signature`,
+`image_compare(method="golden")`), each held to its `recorded` reply. Other calls drop;
+the first no replay can place, or past 5000, cuts the rest.
 
-`dest` absolute or `~`-led, ending `.json`; refused if it is there unless `overwrite`. Reply: `path` (the file written), `steps`, `checks`, `dropped` (the last 40, each `call`, `op`, `why`) and `dropped_total`, `cut` (`call`, `op`, `why`, or unavailable) and `replay`, the runner's command line. `no_recording` before a `start` succeeded, after one was cancelled, or when no recorded call is a step a replay could take.
+`dest` (`.json`) is refused if present unless `overwrite`. Reply: `path`, `steps`,
+`checks`, `dropped`, `dropped_total`, `cut`, `replay`; `no_recording` if empty.
 
 Reference: REFERENCE.md, From an investigation to a bench.
 
@@ -192,15 +171,15 @@ Example, from a live run:
 
 ```json
 {
-  "dest": "$TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/jobs-scratch/A/n1257.json"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n1257.json"
 }
 ```
 
 ```json
 {
-  "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/jobs-scratch/A/n1257.json",
+  "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n1257.json",
   "status": "ok",
-  "path": "$TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/jobs-scratch/A/n1257.json",
+  "path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n1257.json",
   "steps": 1,
   "checks": 0,
   "dropped": [],
@@ -210,7 +189,9 @@ Example, from a live run:
     "op": "resume",
     "why": "its run was stopped by the wall clock or by the machine itself, at a place inside its frame that no replayed advance reaches"
   },
-  "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/jobs-scratch/A/n1257.json"
+  "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n1257.json"
 }
 ```
 <!-- scry-reference:end perform_export -->
+
+A release, a `stop` or `screen_wait` that ran the guest and came back stopped, or a wall-clock bound that ended a run, ends the document because the run ends where no replay reaches. Also cut: a call with no reply, a refusal after the guest moved, a guest found elsewhere than the call before left it, a step that wrote a file the session named. Dropped: a refused call, any other read, a call that changes nothing in the emulated machine. The replay is `uv run python -m scry_core.replay <dest>`, from this server's repository, and exits 0 when every step held. `dropped` shows the last 40 rows (`call`, `op`, `why`); `cut` is unavailable when nothing was cut; `no_recording` also covers a cancelled `start`. Dropped and cut calls are each named with a `why`.

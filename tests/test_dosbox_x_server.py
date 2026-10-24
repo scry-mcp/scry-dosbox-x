@@ -32,8 +32,17 @@ from types import SimpleNamespace
 from typing import Any, cast
 from unittest import mock
 
+import fold_calls
 import pytest
-from scry_core import declaration_rows, log_marks, media_tools, recording, screen_map
+from scry_core import (
+    declaration_rows,
+    log_marks,
+    media_tools,
+    recording,
+    reply_schema,
+    roster,
+    screen_map,
+)
 from scry_core import log_wait as core_wait
 from scry_core import reply_contract as contract
 from scry_core import sequence_account as account
@@ -47,6 +56,7 @@ import dosbox_code as dcode
 import dosbox_console as dcons
 import dosbox_declarations as dec
 import dosbox_docs
+import dosbox_folds as folds
 import dosbox_inputs as inputs
 import dosbox_launch as dlaunch
 import dosbox_lifecycle
@@ -55,6 +65,7 @@ import dosbox_machine as machine
 import dosbox_mcp
 import dosbox_placement as placement
 import dosbox_process as dprocess
+import dosbox_replies
 import dosbox_running as running
 import dosbox_sequence as sequence
 import dosbox_session as ds
@@ -145,13 +156,13 @@ class FakeSession:
     def break_in(self, seconds: float = 5.0) -> float:
         raise ds.Invalid("no_channel", "the emulator never dialled the debugger channel")
 
-    def state_save(self, name: str, seconds: float = 20.0) -> dict[str, object]:
+    def save_state(self, name: str, seconds: float = 20.0) -> dict[str, object]:
         raise ds.Invalid("no_channel", "this DOSBox-X has no `SAVESTATE` debugger command")
 
     def stub_replaced(self) -> None:
         """No input link here to prove again."""
 
-    def state_load(self, name: str, seconds: float = 20.0) -> dict[str, object]:
+    def load_state(self, name: str, seconds: float = 20.0) -> dict[str, object]:
         raise ds.Invalid("no_channel", "this DOSBox-X has no `LOADSTATE` debugger command")
 
     def state_list(self) -> dict[str, object]:
@@ -822,21 +833,16 @@ def test_every_tool_this_server_promises_is_actually_registered() -> None:
     """`mcp.tool()` returns the function unchanged, so dropping the
     registration leaves every other test green while the server exposes NOTHING.
     Nothing asserted the surface existed, only that individual functions behaved."""
-    expected = {"start", "status", "close", "log", "debug", "registers",
-                "set_register", "write", "breakpoint_interrupt", "resume", "read_memory",
-                "disassemble", "call_stack", "memdump", "find", "scan_start", "scan_filter",
-                "scan_clear",
-                "captures", "capture_frame", "build_check",
-                "symbols_load", "symbols_find", "step", "run_to", "run_for", "log_wait",
-                "breakpoint_at", "breakpoint_list", "breakpoint_clear",
-                "watch_add", "watch_list", "watch_clear", "perform", "perform_export",
-                "state_save", "state_load", "state_list", "snapshot",
-                "send_keys", "send_mouse", "drive", "stop", "machine_map",
-                "interrupt_vectors", "palette", "screen_view", "screen_signature",
-                "screen_wait", "trace", "comment_add", "comment_list", "comment_delete",
-                "comment_save", "comment_load", "series_capture",
-                "image_diff", "series_diff", "region_track", "golden_check",
-                "map_load", "map_add", "map_find", "map_save"}
+    expected = {
+        "start", "status", "close", "log", "log_wait", "debug", "registers", "set_register",
+        "write", "read_memory", "disassemble", "call_stack", "memdump", "find", "scan",
+        "machine_map", "interrupt_vectors", "palette", "screen_view", "screen_signature",
+        "screen_wait", "breakpoint_interrupt", "stop", "resume", "step", "run_to", "run_for",
+        "trace", "breakpoint_at", "watch_add", "declaration_list", "declaration_clear",
+        "state_write", "state_list", "snapshot", "captures", "capture_frame", "build_check",
+        "symbols_load", "symbols_find", "send_keys", "send_mouse", "perform", "perform_export",
+        "drive", "comment_list", "comment_write", "series_capture", "image_compare", "map_find",
+        "map_write"}
     got = dosbox_mcp.registered_tools()
     assert set(got) == expected
     # NOT a length check against `expected`: `registered_tools()` reads a dict keyed
@@ -881,11 +887,18 @@ def live_callers() -> set[str]:
     `test_every_tool_has_a_live_case_naming_it` does: `"live()" in text` is satisfied
     by a comment.
     """
+    def asks(node: ast.AST) -> bool:
+        return any(isinstance(sub, ast.Call) and isinstance(sub.func, ast.Name)
+                   and sub.func.id == "live" for sub in ast.walk(node))
+
     tree = ast.parse(Path(str(server.__file__)).read_text(encoding="utf-8"))
-    return {node.name for node in tree.body
-            if isinstance(node, ast.FunctionDef)
-            and any(isinstance(sub, ast.Call) and isinstance(sub.func, ast.Name)
-                    and sub.func.id == "live" for sub in ast.walk(node))}
+    direct = {node.name for node in tree.body if isinstance(node, ast.FunctionDef) and asks(node)}
+    # A FOLD'S METHODS ask in `dosbox_folds`, each in its own body: the tool is a caller when
+    # one of its methods is.
+    folded = {tool for tool, table in (("comment_write", folds.COMMENT), ("map_write", folds.MAP),
+                                       ("scan", folds.SCAN), ("state_write", folds.STATE_METHODS))
+              if any(asks(ast.parse(inspect.getsource(m.body))) for m in table.values())}
+    return direct | folded
 
 
 def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
@@ -909,14 +922,14 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         "breakpoint_interrupt": lambda: server.breakpoint_interrupt(number=0x21),
         "resume": server.resume, "stop": server.stop,
         "series_capture": lambda: server.series_capture(at_frames=[0]),
-        "map_add": lambda: server.map_add(screen="s", match=[[0, 0, 1, 1]]),
+        "map_write add": lambda: server.map_write("add", screen="s", match=[[0, 0, 1, 1]]),
         "map_find": server.map_find,
         "read_memory": lambda: server.read_memory(ref="0000:00000000"),
         "memdump": lambda: server.memdump(ref="0000:00000000", length=8, dest="/tmp/x"),
         "find": lambda: server.find(ref="0000:00000000", length=8, data_hex="00"),
-        "scan_start": lambda: server.scan_start(ref="0000:00000000", length=8),
-        "scan_filter": lambda: server.scan_filter(operator="=", value=0),
-        "scan_clear": server.scan_clear,
+        "scan start": lambda: server.scan("start", ref="0000:00000000", length=8),
+        "scan filter": lambda: server.scan("filter", operator="=", value=0),
+        "scan clear": lambda: server.scan("clear"),
         "captures": server.captures,
         "capture_frame": lambda: server.capture_frame(frame=0, dest="/tmp/x.png"),
         "log_wait": lambda: server.log_wait(channel="guest", pattern="x", seconds=1.0),
@@ -934,31 +947,31 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         "screen_signature": server.screen_signature,
         "screen_wait": lambda: server.screen_wait(text="C:"),
         "symbols_load": lambda: server.symbols_load(path=str(nm), base="10000"),
-        "state_save": lambda: server.state_save(name="x"),
-        "state_load": lambda: server.state_load(name="x"),
+        "state_write save": lambda: server.state_write("save", name="x"),
+        "state_write load": lambda: server.state_write("load", name="x"),
         "state_list": server.state_list,
         "snapshot": server.snapshot,
         "breakpoint_at": lambda: server.breakpoint_at(ref="_main"),
-        "breakpoint_list": server.breakpoint_list,
-        "breakpoint_clear": lambda: server.breakpoint_clear(all=True),
+        "declaration_list breakpoint": lambda: server.declaration_list("breakpoint"),
+        "declaration_clear breakpoint": lambda: server.declaration_clear("breakpoint", all=True),
         "watch_add": lambda: server.watch_add(ref="_main", mode="change", length=4),
-        "watch_list": server.watch_list,
-        "watch_clear": lambda: server.watch_clear(all=True),
+        "declaration_list watch": lambda: server.declaration_list("watch"),
+        "declaration_clear watch": lambda: server.declaration_clear("watch", all=True),
         "perform": lambda: server.perform(steps=[{"op": "registers"}]),
         "send_keys": lambda: server.send_keys(keys=["a"]),
         "send_mouse": lambda: server.send_mouse(button="left"),
         "drive": lambda: server.drive(act=[{"op": "status"}]),
-        "comment_add": lambda: server.comment_add(ref="_main", text="x"),
+        "comment_write add": lambda: server.comment_write("add", ref="_main", text="x"),
         "comment_list": server.comment_list,
-        "comment_delete": lambda: server.comment_delete(ref="_main"),
-        "comment_save": lambda: server.comment_save(dest="/tmp/x.comments.tsv"),
-        "comment_load": lambda: server.comment_load(path=str(nm)),
+        "comment_write delete": lambda: server.comment_write("delete", ref="_main"),
+        "comment_write save": lambda: server.comment_write("save", dest="/tmp/x.comments.tsv"),
+        "comment_write load": lambda: server.comment_write("load", path=str(nm)),
     }
     callers = live_callers()
     assert len(callers) > len(calls) // 2, (
         f"the derived population found {sorted(callers)}: an AST search that matches nothing "
         f"makes the check below pass whatever the tools are")
-    missing = sorted(callers - set(calls))
+    missing = sorted(callers - {name.split()[0] for name in calls})
     assert not missing, (
         f"these tools ask for a live session and are not exercised here: {missing}. "
         f"A tool that stopped calling `live()` would answer from a corpse and nothing "
@@ -1146,26 +1159,26 @@ def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
     # `state()` fails here instead of being absorbed.
     assert got["alive"] is False
     assert got["altered"] is True
-    assert got["watched"] is True
+    assert got.get("watched", False) is True
     assert got["conf"] == str(conf)
     assert got["bound_s"] == 60
     assert cast(float, got["elapsed_s"]) >= 3.0
     # Reported rather than inferred: the terminal buffer is bounded, so a caller has
     # no other way to tell a screen it saw whole from one missing its oldest bytes.
-    assert got["terminal_bytes_dropped"] == 4096
+    assert got.get("terminal_bytes_dropped", 0) == 4096
     # A drainer that died takes every later read with it while `alive` still says the
     # emulator is up. Both halves are carried: whether it is running, and how it ended.
     assert got["drain_alive"] is False
     assert got["drain_ended"] == "reading the terminal failed: OSError()"
-    assert got["conf_changed_on_disk"] is False
+    assert got.get("conf_changed_on_disk", False) is False
     # And it NOTICES when the conf moves under a live session, which is the only
     # reason the digest is carried at all.
     conf.write_text("[sdl]\nchanged\n", encoding="utf-8")
-    assert ds.Session.state(fake)["conf_changed_on_disk"] is True  # type: ignore[arg-type]
+    assert ds.Session.state(fake).get("conf_changed_on_disk", False) is True  # type: ignore[arg-type]
     # A conf that cannot be read is said, never left a null nobody can tell from "unchanged".
     with mock.patch.object(dlaunch, "current_digest", side_effect=PermissionError("denied")):
         unread = cast(dict[str, Any], ds.Session.state(fake))  # type: ignore[arg-type]
-    assert unread["conf_changed_on_disk"] == {"available": False,
+    assert unread.get("conf_changed_on_disk", False) == {"available": False,
                                               "why": "the conf could not be read: denied"}
 
 
@@ -2449,7 +2462,7 @@ def test_a_delta_longer_than_the_cap_is_cut_and_says_so() -> None:
     """
     out = "x" * 5000
     got = dstate.delta(out, 4000)
-    assert got["clipped"] is True
+    assert got.get("clipped", False) is True
     assert len(cast(str, got["screen_delta"])) == 4000, "the delta is cut to the cap"
     assert got["screen_chars"] == 5000, (
         "`screen_chars` is the WHOLE screen and not the slice -- reporting the slice's "
@@ -2495,6 +2508,16 @@ def returned_key_sets(fn: object) -> list[frozenset[str]]:
         return value if isinstance(value, ast.Dict) else None
     return [keys(d) for node in ast.walk(ast.parse(src)) if (d := returned(node)) is not None]
 
+def documented(tool: str) -> str:
+    """What a reader finds for `tool` past its description: its family's page and REFERENCE.md,
+    their wrapped lines joined."""
+    import dosbox_mcp
+    root = Path(__file__).resolve().parent.parent
+    family = next(f for f, tools in dosbox_mcp.ROSTER.families if tool in tools)
+    pages = (root / "docs" / "reference" / f"{family.lower()}.md", root / "REFERENCE.md")
+    return " ".join(" ".join(p.read_text(encoding="utf-8").split()) for p in pages)
+
+
 def test_the_status_docstring_names_every_field_its_reply_carries() -> None:
     """An MCP caller reads this docstring and NOT the README, which `status`'s own
     docstring says -- so it must describe every field.
@@ -2510,19 +2533,18 @@ def test_the_status_docstring_names_every_field_its_reply_carries() -> None:
     install(alive=True)
     got = cast(dict[str, Any], server.status())
     doc = server.status.__doc__ or ""
-    # MATCHED AS A ROW, NOT AS A SUBSTRING. `k not in doc` is shadowed by longer
-    # names: `alive` sits inside `drain_alive`, and `conf` inside `conf_digest`,
-    # `conf_changed_on_disk` and the word `config`. With a substring test both rows
-    # could be deleted from the docstring and this would stay green -- over the one
-    # defect it is here to catch.
+    # MATCHED IN BACKTICKS, NOT AS A SUBSTRING: `alive` sits inside `drain_alive`, and `conf`
+    # inside `conf_digest`, so a bare substring would stay green over a field left out.
     fields = {*cast(dict[str, Any], got["session"]), *dstate.process_facts()}
-    unnamed = sorted(k for k in fields if not re.search(rf"^\s+{re.escape(k)}\s", doc, re.M))
+    unnamed = sorted(k for k in fields if f"`{k}`" not in doc)
     assert not unnamed, (
         f"`status` returns these and its docstring does not name them: {unnamed}. An "
         f"MCP caller reads the docstring and not the README")
     # AND IT EXAMINED SOMETHING: without this, a reply that lost its session block
     # would pass by having nothing to check.
-    assert len(fields) >= 11 and fields <= set(got) | set(got["session"]), got
+    # A field left out empty (`OmitEmpty`) is named all the same, and absent from the reply.
+    left_out = reply_schema.omitted_when_empty(dosbox_replies.MODELS["status"])
+    assert len(fields) >= 11 and fields - left_out <= set(got) | set(got["session"]), got
     # A LIMIT, SAID OUT LOUD: this asks whether the field has a ROW, not whether what is
     # written beside it is true. It catches a field going UNDESCRIBED; it cannot catch
     # one being described wrongly.
@@ -2808,7 +2830,8 @@ def test_the_server_declares_instructions_and_they_name_what_a_caller_needs() ->
 
 class NamesFake:
     """A session double for the name-layer tools: it holds a mutable BPLIST so arming and
-    clearing are visible to `breakpoint_list`, and answers `where`/`registers` so the
+    clearing are visible to `declaration_list(kind="breakpoint")`, and answers `where`/`registers`
+    so the
     server can derive a seg:off. Real vs protected mode and the CS/DS selectors are set by
     the test, since they are exactly what the derivation turns on."""
 
@@ -3250,7 +3273,7 @@ def test_breakpoint_at_a_symbol_arms_stores_and_says_when_it_is_marked(
     assert "note" not in got, "nothing to say: no note"
     assert [d.ref for d in dstate.STATE.store.declarations()] == ["_uicue_apply"]   # type: ignore[union-attr]
     marked = server.breakpoint_at(ref="ATRCT_RUN")
-    assert marked["armed"] is True and marked["marked"] is True
+    assert marked["armed"] is True and marked.get("marked", False) is True
     assert "linker's mark" in str(marked["note"])
 
 
@@ -3264,18 +3287,18 @@ def test_re_declaring_a_breakpoint_is_a_no_op_that_re_arms_a_lost_row(
     syms = [dsym.Symbol("_uicue_apply", 0x3D5E0, kind="T", idle=True)]  # marked, for note
     fake = _names(tmp_path, symbols=syms)
     first = server.breakpoint_at(ref="_uicue_apply")
-    assert first["already_stored"] is False and first["armed"] is True
-    assert first["marked"] is True and "linker's mark" in str(first["note"])
+    assert first.get("already_stored", False) is False and first["armed"] is True
+    assert first.get("marked", False) is True and "linker's mark" in str(first["note"])
     again = server.breakpoint_at(ref="_uicue_apply")
-    assert again["already_stored"] is True and again["armed"] is True
+    assert again.get("already_stored", False) is True and again["armed"] is True
     assert len([r for r in fake.rows if r["entry"] == "BP 00A7:3D5E0"]) == 1
     # THE NOTE SURVIVES the no-op: dropping it would lose the mark warning on the repeated
     # call a rebuild makes most.
-    assert again["marked"] is True and "linker's mark" in str(again["note"])
+    assert again.get("marked", False) is True and "linker's mark" in str(again["note"])
     # ROW LOST (new session), re-declared -> re-armed, not falsely reported armed.
     fake.rows.clear()
     rearmed = server.breakpoint_at(ref="_uicue_apply")
-    assert rearmed["already_stored"] is True and rearmed["armed"] is True
+    assert rearmed.get("already_stored", False) is True and rearmed["armed"] is True
     assert [r["entry"] for r in fake.rows] == ["BP 00A7:3D5E0"]
     assert len(dstate.STATE.store.declarations()) == 1   # type: ignore[union-attr]
 
@@ -3287,10 +3310,10 @@ def test_re_declaring_a_change_watch_is_a_no_op_and_keeps_the_pr_caveat(
     syms = [dsym.Symbol("_g_rate", 0x1234, kind="D")]
     fake = _names(tmp_path, symbols=syms, mode="Pr32")
     first = server.watch_add(ref="_g_rate", mode="change", length=4)
-    assert first["already_stored"] is False and first["armed"] is True
+    assert first.get("already_stored", False) is False and first["armed"] is True
     assert "protected-mode watch" in str(first["caveat"])
     again = server.watch_add(ref="_g_rate", mode="change", length=4)
-    assert again["already_stored"] is True and again["armed"] is True
+    assert again.get("already_stored", False) is True and again["armed"] is True
     assert "protected-mode watch" in str(again["caveat"])
     assert len([r for r in fake.rows if r["entry"].startswith("BPPM")]) == 4   # a row a byte
 
@@ -3322,21 +3345,21 @@ def test_an_interrupt_breakpoint_is_stored_listed_cleared_and_not_double_armed(
     the debugger row -- by text, since the row carries no seg:off."""
     fake = _names(tmp_path)
     armed = server.breakpoint_interrupt(number=0x21)
-    assert armed["stored"] is True and armed["already_stored"] is False
+    assert armed["stored"] is True and armed.get("already_stored", False) is False
     assert armed["entry"] == "BPINT 21", "the row spelling the docstring promises"
     assert [r["entry"] for r in fake.rows] == ["BPINT 21"]
-    listed = server.breakpoint_list()
+    listed = server.declaration_list("breakpoint")
     row = next(b for b in listed["breakpoints"] if b["ref"] == "BPINT 21")
-    assert row["state"] == "armed" and listed["foreign"] == []
+    assert row["state"] == "armed" and "foreign" not in listed
     # RE-ARM IS A NO-OP: no second BPINT 21 row, and the reply says already_stored.
     again = server.breakpoint_interrupt(number=0x21)
-    assert again["already_stored"] is True and again["armed"] is True
+    assert again.get("already_stored", False) is True and again["armed"] is True
     assert [r["entry"] for r in fake.rows] == ["BPINT 21"]
     # A BPINT the store did not place is FOREIGN, matched by its text.
     fake.rows.append({"index": "09", "entry": "BPINT 10"})
-    assert "BPINT 10" in server.breakpoint_list()["foreign"]
+    assert "BPINT 10" in server.declaration_list("breakpoint")["foreign"]["breakpoints"]
     # CLEAR removes the declaration and disarms the row it owns, leaving the foreign one.
-    cleared = server.breakpoint_clear(all=True)
+    cleared = server.declaration_clear("breakpoint", all=True)
     assert cleared["declarations_cleared"] == 1 and cleared["disarmed"] == ["BPINT 21"]
     assert [r["entry"] for r in fake.rows] == ["BPINT 10"]
     assert dstate.STATE.store.declarations() == []   # type: ignore[union-attr]
@@ -4157,10 +4180,8 @@ def test_every_tool_declares_a_title_and_the_readers_a_read_only_hint() -> None:
     assert read_only == {"status", "log", "log_wait", "registers", "read_memory", "find",
                          "disassemble", "call_stack",
                          "symbols_find",
-                         "breakpoint_list", "watch_list", "captures", "build_check",
-                         "state_list", "comment_list",
-                         "screen_signature", "map_find",
-                         "image_diff", "series_diff", "golden_check"}, read_only
+                         "declaration_list", "captures", "build_check", "state_list",
+                         "comment_list", "screen_signature", "map_find"}, read_only
 
 
 def test_perform_after_a_run_to_that_timed_out_needs_no_tail(tmp_path: Path) -> None:
@@ -4256,7 +4277,7 @@ def test_start_with_a_plan_runs_it_on_the_fresh_session_and_folds_the_boot_in(
     assert out["status"] == "ok", out
     assert [r["op"] for r in out["ran"]] == ["registers"], out
     # THE BOOT IS FOLDED IN under `start`, stripped of status/session.
-    assert out["start"]["shared"] is False and "argv" in out["start"], out
+    assert out["start"].get("shared", False) is False and "argv" in out["start"], out
     assert "status" not in out["start"] and "session" not in out["start"], out
 
     # A plan that FAILS AT A STEP leaves the session OPEN (start does not close it): a symbol
@@ -4408,14 +4429,14 @@ def test_start_with_a_plan_keeps_session_as_the_last_key(tmp_path: Path,
 
 def test_breakpoint_clear_by_ref_takes_the_family_without_touching_watches(
         tmp_path: Path) -> None:
-    """`breakpoint_clear` clears breakpoints AND interrupts, and a
-    watch of the same session is left alone -- that is `watch_clear`'s job."""
+    """`declaration_clear(kind="breakpoint")` clears breakpoints AND interrupts, and a
+    watch of the same session is left alone -- that is `declaration_clear(kind="watch")`'s job."""
     syms = [dsym.Symbol("_uicue_apply", 0x3D5E0, kind="T")]
     fake = _names(tmp_path, symbols=syms)
     server.breakpoint_at(ref="_uicue_apply")
     server.breakpoint_interrupt(number=0x21)
     server.watch_add(ref="00AF:0100", mode="change", length=4)
-    cleared = server.breakpoint_clear(all=True)
+    cleared = server.declaration_clear("breakpoint", all=True)
     assert cleared["declarations_cleared"] == 2                  # bp + interrupt, not watch
     kinds = sorted(d.kind for d in dstate.STATE.store.declarations())  # type: ignore[union-attr]
     assert kinds == ["watch"], kinds
@@ -4447,10 +4468,10 @@ def test_breakpoint_list_shows_armed_unresolved_and_foreign(tmp_path: Path) -> N
     server.breakpoint_at(ref="_main")            # armed
     server.breakpoint_at(ref="gone_symbol")      # unresolved
     fake.rows.append({"index": "09", "entry": "BP F000:E05B"})   # a foreign leftover
-    got = server.breakpoint_list()
+    got = server.declaration_list("breakpoint")
     states = {b["ref"]: b["state"] for b in got["breakpoints"]}
     assert states == {"_main": "armed", "gone_symbol": "unresolved"}
-    assert got["foreign"] == ["BP F000:E05B"]
+    assert got["foreign"] == {"breakpoints": ["BP F000:E05B"]}
 
 
 def test_breakpoint_clear_disarms_only_its_own_and_leaves_the_foreign(
@@ -4458,7 +4479,7 @@ def test_breakpoint_clear_disarms_only_its_own_and_leaves_the_foreign(
     fake = _names(tmp_path, symbols=[dsym.Symbol("_main", 0x16DD80, kind="T")])
     server.breakpoint_at(ref="_main")
     fake.rows.append({"index": "09", "entry": "BP F000:E05B"})    # foreign
-    got = server.breakpoint_clear(all=True)
+    got = server.declaration_clear("breakpoint", all=True)
     assert got["declarations_cleared"] == 1
     assert got["disarmed"] == ["BP 00A7:16DD80"]
     assert {r["entry"] for r in fake.rows} == {"BP F000:E05B"}    # the foreign one stays
@@ -4502,15 +4523,15 @@ def test_a_protected_mode_change_watch_carries_the_paging_caveat(tmp_path: Path)
 
 def test_watch_list_matches_a_watch_despite_its_trailing_hit_count(tmp_path: Path) -> None:
     """A memory-watch BPLIST row carries a `(00)` hit count a code breakpoint's does not.
-    watch_list must match by PREFIX or the armed watch reads as `gone` AND its own entry
+    declaration_list watch must match by PREFIX or the armed watch reads as `gone` AND its own entry
     reappears as `foreign` -- which a live run caught before this case existed."""
     _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")], mode="Pr32")
     server.watch_add(ref="g_rate", mode="change", length=4, fmt="u32")
-    got = server.watch_list()
+    got = server.declaration_list("watch")
     row = next(w for w in got["watches"] if w["ref"] == "g_rate")
     assert row["state"] == "armed", got
     assert row["length"] == 4 and "width" not in row, "the list speaks watch_add's word"
-    assert got["foreign"] == [], got
+    assert "foreign" not in got, got
 
 
 def test_breakpoint_at_by_address_parses_the_seg_off(tmp_path: Path) -> None:
@@ -4540,7 +4561,7 @@ def test_breakpoint_list_reports_gone_when_the_debugger_no_longer_holds_it(
     fake = _names(tmp_path, symbols=[dsym.Symbol("_main", 0x16DD80, kind="T")])
     server.breakpoint_at(ref="_main")
     fake.rows.clear()          # the debugger lost it (a close, or a hand BPDEL)
-    got = server.breakpoint_list()
+    got = server.declaration_list("breakpoint")
     assert got["breakpoints"][0]["state"] == "gone"
 
 
@@ -4550,7 +4571,7 @@ def test_breakpoint_list_reports_an_ambiguous_declaration_without_crashing(
     dstate.STATE.store.add(dec.Declaration("breakpoint", "symbol", "dup"))   # type: ignore[union-attr]
     dstate.STATE.install_table([dsym.Symbol("dup", 0x1000, kind="t"),
                         dsym.Symbol("dup", 0x2000, kind="t")])
-    got = server.breakpoint_list()
+    got = server.declaration_list("breakpoint")
     assert got["breakpoints"][0]["state"] == "ambiguous"
 
 
@@ -4560,10 +4581,11 @@ def test_watch_add_read_mode_stores_and_arms_nothing(tmp_path: Path) -> None:
     assert got["status"] == "ok" and got["armed"] is False and got["mode"] == "show"
     assert fake.rows == [], "a show watch must arm nothing"
     # dec 12, one word per concept: the state `watch_add` gives a placed show watch is
-    # the SAME word `watch_list` and a stop's `watches` give it: a word per tool would make
+    # the SAME word `declaration_list(kind="watch")` and a stop's `watches` give it: a word per tool
+    # would make
     # the identical watch report two different states.
     assert got["state"] == "evaluated"
-    lst = server.watch_list()
+    lst = server.declaration_list("watch")
     assert lst["watches"][0]["state"] == "evaluated"
 
 
@@ -4578,7 +4600,7 @@ def test_watch_clear_disarms_change_and_leaves_read_alone(tmp_path: Path) -> Non
     _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
     server.watch_add(ref="g_rate", mode="show", length=4, fmt="u32")     # arms nothing
     server.watch_add(ref="0040:006C", mode="change", length=4)          # arms a BPPM row
-    got = server.watch_clear(all=True)
+    got = server.declaration_clear("watch", all=True)
     assert got["declarations_cleared"] == 2
     assert got["disarmed"], "the change-watch's entry should have been removed"
     assert dstate.STATE.store.declarations() == []   # type: ignore[union-attr]
@@ -4671,7 +4693,7 @@ def test_breakpoint_list_tells_unarmable_from_ambiguous_from_unresolved(
     st.add(dec.Declaration("breakpoint", "symbol", "once"))
     st.add(dec.Declaration("breakpoint", "symbol", "twice"))
     st.add(dec.Declaration("breakpoint", "symbol", "absent"))
-    listed = server.breakpoint_list()
+    listed = server.declaration_list("breakpoint")
     states = {b["ref"]: b["state"] for b in listed["breakpoints"]}
     assert states == {"once": "unarmable", "twice": "ambiguous", "absent": "unresolved"}
 
@@ -4695,7 +4717,7 @@ def test_watch_clear_reports_disarmed_only_after_reading_the_removal_back(
     fake = _names(tmp_path)
     server.watch_add(ref="0040:006C", mode="change", length=4)     # arms a BPPM row
     monkeypatch.setattr(fake, "command", lambda *_a, **_k: "")    # BPDEL is a no-op now
-    got = server.watch_clear(all=True)
+    got = server.declaration_clear("watch", all=True)
     assert got["declarations_cleared"] == 1
     assert got["disarmed"] == [], "the watch was NOT gone from the list, so not disarmed"
 
@@ -4774,12 +4796,12 @@ def test_watch_flows_in_real_mode_arm_list_and_clear(tmp_path: Path) -> None:
     dstate.STATE.base.update({"base": 0x7DF0, "limit": -1, "type": -1})
     w = cast(dict[str, Any], server.watch_add(ref="0100:0200", mode="change", length=4))
     assert w["armed"] is True
-    lst = cast(dict[str, Any], server.watch_list())
+    lst = cast(dict[str, Any], server.declaration_list("watch"))
     assert lst["watches"][0]["state"] == "armed"
     assert str(lst["watches"][0]["entry"]).startswith("BPMEM ")
-    cl = cast(dict[str, Any], server.watch_clear(all=True))
+    cl = cast(dict[str, Any], server.declaration_clear("watch", all=True))
     assert cl["disarmed"]
-    assert cast(dict[str, Any], server.watch_list())["watches"] == []
+    assert cast(dict[str, Any], server.declaration_list("watch"))["watches"] == []
 
 
 def test_watch_list_reports_gone_and_foreign(tmp_path: Path) -> None:
@@ -4791,10 +4813,10 @@ def test_watch_list_reports_gone_and_foreign(tmp_path: Path) -> None:
     server.watch_add(ref="0100:0200", mode="change", length=4)          # armed
     fake.rows.append({"index": "09", "entry": "BPMEM 0300:0400 (00)"})  # foreign
     fake.rows = [r for r in fake.rows if not r["entry"].startswith("BPMEM 0100")]  # gone
-    lst = cast(dict[str, Any], server.watch_list())
+    lst = cast(dict[str, Any], server.declaration_list("watch"))
     states = {w["ref"]: w["state"] for w in lst["watches"]}
     assert states["0100:0200"] == "gone"
-    assert "BPMEM 0300:0400 (00)" in lst["foreign"]
+    assert "BPMEM 0300:0400 (00)" in lst["foreign"]["watches"]
 
 
 def test_watch_list_states_unresolved_and_ambiguous(tmp_path: Path) -> None:
@@ -4806,7 +4828,7 @@ def test_watch_list_states_unresolved_and_ambiguous(tmp_path: Path) -> None:
     assert st is not None
     st.add(dec.Declaration("watch", "symbol", "two", width=4, fmt="u32", watch_mode="change"))
     st.add(dec.Declaration("watch", "symbol", "gone", width=4, fmt="u32", watch_mode="show"))
-    lst = cast(dict[str, Any], server.watch_list())
+    lst = cast(dict[str, Any], server.declaration_list("watch"))
     states = {w["ref"]: w["state"] for w in lst["watches"]}
     assert states["two"] == "ambiguous" and states["gone"] == "unresolved"
 
@@ -4826,14 +4848,15 @@ def test_watch_add_change_that_cannot_arm_is_kept_unarmed(
 
 def test_watch_clear_skips_an_unresolvable_change_and_still_clears_the_store(
         tmp_path: Path) -> None:
-    """A change watch that no longer resolves armed nothing to remove, so `watch_clear`
+    """A change watch that no longer resolves armed nothing to remove, so
+    `declaration_clear(kind="watch")`
     skips the debugger for it but still drops the declaration (it is the store's)."""
     _names(tmp_path, symbols=[])          # empty table: the name will not resolve
     st = dstate.STATE.store
     assert st is not None
     st.add(dec.Declaration("watch", "symbol", "gone", width=4, fmt="u32",
                            watch_mode="change"))
-    got = cast(dict[str, Any], server.watch_clear(all=True))
+    got = cast(dict[str, Any], server.declaration_clear("watch", all=True))
     assert got["declarations_cleared"] == 1 and got["disarmed"] == []
 
 
@@ -5164,7 +5187,7 @@ def test_every_stop_shows_its_guest_lines_since_the_previous_one_bounded(
     assert f"since_mark={cut['mark']}" in cut["how"] and required <= named <= set(params), (
         cut["how"])
     for tool in ("resume", "step", "run_to", "run_for"):
-        params = inspect.signature(getattr(server, tool)).parameters
+        params = inspect.signature(fold_calls.of(server, tool)).parameters
         assert not {"e9", "e9_filter", "e9_stamp"} & set(params), tool
     fake.log = None
     assert server.resume()["e9"]["available"] is False
@@ -5200,19 +5223,20 @@ def test_a_read_watch_wider_than_128_bytes_is_refused_at_declaration(tmp_path: P
 def test_every_declaration_reply_carries_the_ref_that_clears_it(tmp_path: Path) -> None:
     """`breakpoint_interrupt(0x21, ah=0x4B)` answers with an `entry` and a `ref`: without
     the spelling that clears it -- the debugger's own `BPINT 21 AH=4B` -- in a reply,
-    the caller's `breakpoint_clear(ref="BPINT 21 4B")` would clear nothing. The reply of every
+    the caller's `declaration_clear(kind="breakpoint", ref="BPINT 21 4B")` would clear nothing. The
+    reply of every
     tool that
     creates a declaration carries `ref`, and that string clears it."""
     fake = _names(tmp_path)
     armed = server.breakpoint_interrupt(number=0x21, ah=0x4B)
     assert armed["ref"] == "BPINT 21 AH=4B", armed
     assert [r["entry"] for r in fake.rows] == ["BPINT 21 AH=4B"]
-    cleared = server.breakpoint_clear(ref=armed["ref"])
+    cleared = server.declaration_clear("breakpoint", ref=armed["ref"])
     assert cleared["status"] == "ok" and cleared["declarations_cleared"] == 1, cleared
     assert fake.rows == []
     watched = server.watch_add(ref="_g_state", mode="show", length=4)
     assert watched["ref"] == "_g_state", watched
-    assert server.watch_clear(ref=watched["ref"])["declarations_cleared"] == 1
+    assert server.declaration_clear("watch", ref=watched["ref"])["declarations_cleared"] == 1
 
 
 def test_clearing_a_ref_that_matches_nothing_is_refused_naming_what_there_is(
@@ -5223,15 +5247,15 @@ def test_clearing_a_ref_that_matches_nothing_is_refused_naming_what_there_is(
     ALL of an empty store stays `ok` with 0, because there the zero is the answer."""
     _names(tmp_path)
     server.breakpoint_interrupt(number=0x21, ah=0x4B)
-    wrong = server.breakpoint_clear(ref="BPINT 21 4B")
+    wrong = server.declaration_clear("breakpoint", ref="BPINT 21 4B")
     assert wrong["status"] == "INVALID", wrong
     assert "BPINT 21 AH=4B" in wrong["message"], wrong["message"]
-    assert server.breakpoint_list()["breakpoints"][0]["state"] == "armed"
-    assert server.watch_clear(ref="_nope")["status"] == "INVALID"
-    server.breakpoint_clear(all=True)
-    empty = server.breakpoint_clear(all=True)
+    assert server.declaration_list("breakpoint")["breakpoints"][0]["state"] == "armed"
+    assert server.declaration_clear("watch", ref="_nope")["status"] == "INVALID"
+    server.declaration_clear("breakpoint", all=True)
+    empty = server.declaration_clear("breakpoint", all=True)
     assert empty["status"] == "ok" and empty["declarations_cleared"] == 0, empty
-    assert server.watch_clear(all=True)["status"] == "ok"
+    assert server.declaration_clear("watch", all=True)["status"] == "ok"
 
 
 # ------------------------------------------- stale raw addresses across sessions
@@ -5260,14 +5284,15 @@ def test_symbols_load_leaves_another_builds_raw_address_stale_and_names_what_it_
     assert [r["ref"] for r in got["declarations"]["stale"]] == ["00A7:5C6F0"], \
         got["declarations"]
     assert [r["entry"] for r in fake.rows] == ["BP 00A7:16DD80"], fake.rows
-    listed = {b["ref"]: b for b in server.breakpoint_list()["breakpoints"]}
+    listed = {b["ref"]: b for b in server.declaration_list("breakpoint")["breakpoints"]}
     assert listed["00A7:5C6F0"]["state"] == "stale", listed
     assert listed["00A7:5C6F0"]["origin"] == "s1" and listed["00A7:5C6F0"]["created_at"]
     assert listed["_main"]["state"] == "armed" and listed["_main"]["origin"] == "s1"
     # ADOPTION: declaring the same raw address in s2 arms it and moves its origin here.
     adopted = server.breakpoint_at(ref="00A7:5C6F0")
-    assert adopted["already_stored"] is True and adopted["armed"] is True, adopted
-    row = next(b for b in server.breakpoint_list()["breakpoints"] if b["ref"] == "00A7:5C6F0")
+    assert adopted.get("already_stored", False) is True and adopted["armed"] is True, adopted
+    row = next(b for b in server.declaration_list("breakpoint")["breakpoints"]
+               if b["ref"] == "00A7:5C6F0")
     assert row["state"] == "armed" and row["origin"] == "s2", row
 
 
@@ -5325,7 +5350,7 @@ def test_start_re_arms_a_raw_address_left_over_the_same_build_and_not_another_bu
         "00A7:0100": None, "00A7:0200": "fp-of-another-build", "00A7:0300": over_map})
     assert got["status"] == "ok", got
     assert [r["entry"] for r in booted.rows] == ["BP 00A7:0100"], booted.rows
-    listed = server.breakpoint_list()
+    listed = server.declaration_list("breakpoint")
     assert listed["debugger_read"] is True, listed
     rows = {b["ref"]: b for b in listed["breakpoints"]}
     assert rows["00A7:0100"]["state"] == "armed", rows
@@ -5396,7 +5421,7 @@ def test_a_listed_row_carries_its_age_from_the_servers_clock_and_whose_it_is(
     _names(tmp_path)
     server.breakpoint_at(ref="_main")
     monkeypatch.setattr(dstate, "utc_now", lambda: then + timedelta(seconds=90))
-    row = server.breakpoint_list()["breakpoints"][0]
+    row = server.declaration_list("breakpoint")["breakpoints"][0]
     assert (row["ref"], row["age_s"], row["inherited"]) == ("_main", 90, False), row
     assert row["created_at"] == then.isoformat(timespec="seconds"), row
 
@@ -5419,14 +5444,16 @@ def test_a_file_where_the_default_state_directory_goes_is_refused_naming_the_def
 
 def test_a_stored_address_the_parser_refuses_is_listed_and_clearable(tmp_path: Path) -> None:
     """A hand-edited or older declaration file is the one input the tools do not get to
-    validate, and one unreadable address in it would make `breakpoint_list` and every
-    `breakpoint_clear` die on that row, so nothing could list or remove it. It is
+    validate, and one unreadable address in it would make `declaration_list(kind="breakpoint")` and
+    every
+    `declaration_clear(kind="breakpoint")` die on that row, so nothing could list or remove it. It
+    is
     `unarmable` with the parser's words, and its own ref clears it."""
     _names(tmp_path)
     dstate.STATE.store.add(dec.Declaration("breakpoint", "address", "0x1234"))  # type: ignore[union-attr]
-    rows = server.breakpoint_list()["breakpoints"]
+    rows = server.declaration_list("breakpoint")["breakpoints"]
     assert rows[0]["state"] == "unarmable" and "cannot be read" in rows[0]["why"], rows
-    assert server.breakpoint_clear(ref="0x1234")["declarations_cleared"] == 1
+    assert server.declaration_clear("breakpoint", ref="0x1234")["declarations_cleared"] == 1
 
 
 # ------------------------------ a relative path refused, an absolute one named
@@ -5507,7 +5534,7 @@ def test_perform_does_not_wait_for_a_stop_when_the_last_step_was_a_running_guest
     assert "settle_seconds=0" in zero["note"], zero
     # A STALE raw address (another build's, never re-armed) cannot stop it: no wait.
     fake.running = False
-    server.breakpoint_clear(all=True)
+    server.declaration_clear("breakpoint", all=True)
     dstate.STATE.session_origin = "s2"
     dstate.STATE.conf_fingerprint = "fp-now"
     dstate.STATE.store.add(dec.Declaration("breakpoint", "address", "00A7:0200",  # type: ignore[union-attr]
@@ -5534,9 +5561,9 @@ def test_a_declaration_from_a_store_that_kept_no_origin_is_listed_as_an_orphan(
     store.add(dec.Declaration("watch", "symbol", "g_rate", width=4, fmt="u32", watch_mode="show"))
     store.add(dec.Declaration("breakpoint", "address", "00A7:0100", cpu_mode="protected"))
     store.add(dec.Declaration("interrupt", "address", "BPINT 21"))
-    watches = server.watch_list()["watches"]
+    watches = server.declaration_list("watch")["watches"]
     assert watches[0]["state"] == "orphan" and "EVALUATED" in watches[0]["why"], watches
-    bps = {b["ref"]: b for b in server.breakpoint_list()["breakpoints"]}
+    bps = {b["ref"]: b for b in server.declaration_list("breakpoint")["breakpoints"]}
     assert bps["00A7:0100"]["state"] == "orphan" and bps["BPINT 21"]["state"] == "orphan", bps
     assert bps["00A7:0100"]["orphan"] is True and "EVALUATED" not in bps["00A7:0100"]["why"]
     # THE STOP REPLY SAYS IT TOO: the orphan show watch is evaluated, flagged as nobody's.
@@ -5549,22 +5576,24 @@ def test_a_declaration_from_a_store_that_kept_no_origin_is_listed_as_an_orphan(
     store.add(dec.Declaration("breakpoint", "symbol", "g_rate"))
     store.add(dec.Declaration("breakpoint", "symbol", "nope"))
     fake.rows.append({"index": "00", "entry": "BP 00A7:0017A6EC"})
-    listed = server.breakpoint_list()
+    listed = server.declaration_list("breakpoint")
     bps = {b["ref"]: b for b in listed["breakpoints"]}
     assert bps["g_rate"]["state"] == "armed" and bps["g_rate"]["orphan"] is True, bps
     assert bps["nope"]["state"] == "unresolved" and bps["nope"]["orphan"] is True, bps
-    assert listed["foreign"] == [], listed
+    assert "foreign" not in listed, listed
     store.add(dec.Declaration("watch", "address", "00A7:0200", width=4, fmt="u32",
                               watch_mode="change"))
     fake.rows.extend({"index": f"{1 + i:02d}", "entry": f"BPPM 00A7:{0x200 + i:08X} (00)"}
                      for i in range(4))                  # a row for each of its four bytes
-    wl = server.watch_list()
+    wl = server.declaration_list("watch")
     armed = next(w for w in wl["watches"] if w["ref"] == "00A7:0200")
-    assert armed["state"] == "armed" and armed["orphan"] is True and wl["foreign"] == [], wl
+    assert armed["state"] == "armed" and armed["orphan"] is True and "foreign" not in wl, wl
     fake.rows.clear()
-    assert server.breakpoint_clear(all=True)["declarations_cleared"] == 4      # the watches stay
-    assert sorted(w["ref"] for w in server.watch_list()["watches"]) == ["00A7:0200", "g_rate"]
-    assert server.watch_clear(all=True)["declarations_cleared"] == 2
+    assert server.declaration_clear("breakpoint",
+                                    all=True)["declarations_cleared"] == 4      # the watches stay
+    assert sorted(w["ref"] for w in server.declaration_list("watch")["watches"]) == ["00A7:0200",
+                                                                                     "g_rate"]
+    assert server.declaration_clear("watch", all=True)["declarations_cleared"] == 2
     assert fake.rows == []
 
 
@@ -5589,7 +5618,8 @@ def test_a_stop_reads_the_breakpoint_list_once_and_shares_it(tmp_path: Path) -> 
 
 def test_the_lists_answer_from_the_store_and_the_last_stop_while_the_guest_runs(
         tmp_path: Path) -> None:
-    """`breakpoint_list` with the guest running must not answer INVALID with `registers`'
+    """`declaration_list(kind="breakpoint")` with the guest running must not answer INVALID with
+    `registers`'
     own text, when its description promises rows from the store.
     The server HOLDS the answer: the declarations, and the debugger's list as the last stop's
     survey saw it. Running, the lists answer from those two, say `debugger_read: false` and
@@ -5601,13 +5631,13 @@ def test_the_lists_answer_from_the_store_and_the_last_stop_while_the_guest_runs(
     fake.halted = True
     stop = server.resume()                       # the survey of this stop is remembered
     assert "stop_seq" in stop
-    stopped = server.breakpoint_list()
+    stopped = server.declaration_list("breakpoint")
     assert stopped["debugger_read"] is True and stopped["breakpoints"][0]["state"] == "armed"
     # THE GUEST RUNS: the console refuses, the lists do not.
     fake.halted = False
     fake.bp_raises = True
     fake.where_raises = True
-    running = server.breakpoint_list()
+    running = server.declaration_list("breakpoint")
     assert running["status"] == "ok", running
     assert running["debugger_read"] is False, running
     # stop 1 is the park the machine was found in at the first contact; the resume's halt
@@ -5616,12 +5646,12 @@ def test_the_lists_answer_from_the_store_and_the_last_stop_while_the_guest_runs(
     assert running["last_stop"]["pc"] == "00A7:00000000", running
     assert running["breakpoints"][0]["ref"] == "_main"
     assert running["breakpoints"][0]["state"] == "armed", running      # as of the last stop
-    watches = server.watch_list()
+    watches = server.declaration_list("watch")
     assert watches["status"] == "ok" and watches["debugger_read"] is False, watches
     assert watches["watches"][0]["state"] == "evaluated", watches
     # NEVER STOPPED: nothing to date the answer by, and the rows still come.
     dstate.STATE.last_stop.clear()
-    fresh = server.breakpoint_list()
+    fresh = server.declaration_list("breakpoint")
     assert fresh["status"] == "ok" and fresh["last_stop"]["available"] is False, fresh
     assert fresh["breakpoints"][0]["state"] == "unarmable", fresh
 
@@ -5649,8 +5679,9 @@ def test_what_is_asked_while_the_guest_runs_is_applied_at_the_next_stop(
     assert armed["status"] == "ok" and armed["state"] == "pending", armed
     watched = server.watch_add(ref="g_rate", mode="change", length=4, fmt="u32")
     assert watched["status"] == "ok" and watched["state"] == "pending", watched
-    cleared = server.breakpoint_clear(ref="_old")
-    assert cleared["status"] == "ok" and cleared["pending_disarm"] == ["BP 00A7:2000"], cleared
+    cleared = server.declaration_clear("breakpoint", ref="_old")
+    assert cleared["status"] == "ok" and cleared.get("pending_disarm",
+                                                     []) == ["BP 00A7:2000"], cleared
     st = server.status()
     assert st["pending"] == {"arm": ["_main", "g_rate"], "disarm": 1,
                              "symbols_load": True, "base_remeasure": False}, st
@@ -5835,12 +5866,15 @@ def test_the_queue_covers_interrupts_and_change_watches_and_says_what_it_could_n
     server.resume()
     fake.running = True
     fake.halted = False
-    assert server.breakpoint_clear(ref="BPINT 21 AH=4B")["pending_disarm"] == ["BPINT 21 AH=4B"]
-    wc = server.watch_clear(ref="g_rate")
-    assert wc["pending_disarm"] and wc["pending_disarm"][0].startswith("BPPM 00AF:0017A6EC"), wc
+    bc = server.declaration_clear("breakpoint", ref="BPINT 21 AH=4B")
+    assert bc.get("pending_disarm", []) == ["BPINT 21 AH=4B"]
+    wc = server.declaration_clear("watch", ref="g_rate")
+    assert wc.get("pending_disarm", []) and wc.get("pending_disarm",
+                                                   [])[0].startswith("BPPM 00AF:0017A6EC"), wc
     assert server.breakpoint_at(ref="_gone")["state"] == "pending"
     assert server.breakpoint_at(ref="_late")["state"] == "pending"
-    assert server.breakpoint_clear(ref="_gone")["declarations_cleared"] == 1   # before the stop
+    assert server.declaration_clear("breakpoint",
+                                    ref="_gone")["declarations_cleared"] == 1   # before the stop
     dstate.STATE.install_table([dsym.Symbol("g_rate", 0x17A6EC, kind="d")])   # `_late` vanished
     fake.running = False
     fake.halted = True
@@ -5864,7 +5898,7 @@ def test_the_states_a_listing_still_gives_when_nothing_is_held(tmp_path: Path) -
     fake.rows.clear()
     dstate.STATE.store.add(dec.Declaration("breakpoint", "address", "00A7:0300",  # type: ignore[union-attr]
                                             cpu_mode="protected"))
-    rows = {b["ref"]: b for b in server.breakpoint_list()["breakpoints"]}
+    rows = {b["ref"]: b for b in server.declaration_list("breakpoint")["breakpoints"]}
     assert rows["BPINT 21"]["state"] == "gone" and rows["00A7:0300"]["state"] == "orphan", rows
     real = _names(tmp_path, symbols=[dsym.Symbol("_main", 0x1000, kind="T")], mode="Real",
                   base=-1)
@@ -5890,10 +5924,11 @@ def test_the_running_guest_contract_holds_at_its_edges(tmp_path: Path) -> None:
     fake.halted = False
     assert server.symbols_load(path=str(nm), base="400000")["pending"] is True
     assert server.breakpoint_at(ref="00A7:0100")["state"] == "pending"
-    assert server.breakpoint_clear(ref="00A7:0100")["pending_disarm"] == []   # never armed
+    assert server.declaration_clear("breakpoint", ref="00A7:0100").get("pending_disarm",
+                                                                       []) == []   # never armed
     assert server.breakpoint_interrupt(number=0x21)["state"] == "pending"
     assert server.breakpoint_at(ref="00A7:0200")["state"] == "pending"
-    lst = server.breakpoint_list()
+    lst = server.declaration_list("breakpoint")
     states = {b["ref"]: b["state"] for b in lst["breakpoints"]}
     assert states["00A7:0200"] == "pending" and states["BPINT 21"] == "pending", states
     refused = server.read_memory(ref="_main")
@@ -5911,13 +5946,14 @@ def test_the_running_guest_contract_holds_at_its_edges(tmp_path: Path) -> None:
     server.symbols_load(path=str(nm), base="400000")
     entries = [r["entry"] for r in fake.rows]
     assert "BP 00A7:1000" in entries and "BP 00A7:1200" in entries, entries
-    cleared = server.breakpoint_clear(ref="_main")
+    cleared = server.declaration_clear("breakpoint", ref="_main")
     assert sorted(cleared["disarmed"]) == ["BP 00A7:1000", "BP 00A7:1200"], cleared
-    assert server.breakpoint_list()["foreign"] == []
+    assert "foreign" not in server.declaration_list("breakpoint")
     # A QUEUED DISARM'S ROW IS NOT FOREIGN while it waits.
     fake.running = True
-    assert server.breakpoint_clear(ref="00A7:0200")["pending_disarm"] == ["BP 00A7:0200"]
-    assert server.breakpoint_list()["foreign"] == []
+    assert server.declaration_clear("breakpoint", ref="00A7:0200").get("pending_disarm",
+                                                                       []) == ["BP 00A7:0200"]
+    assert "foreign" not in server.declaration_list("breakpoint")
     fake.running = False
     # CLOSE TAKES THE STATE WITH IT.
     server.close()
@@ -6210,7 +6246,7 @@ def test_an_aliased_change_watch_declared_while_running_stays_pending_and_says_w
     assert second["status"] == "INVALID" and "already armed under 'g_rate'" in str(
         second["message"])
     # Queued BEFORE the alias existed, aliased by the time the stop drains the queue.
-    server.watch_clear(ref="g_rate")
+    server.declaration_clear("watch", ref="g_rate")
     dstate.STATE.armed.clear()
     queued = server.watch_add(ref="00AF:0017A6EC", mode="change", length=4)
     assert queued["status"] == "ok" and queued["state"] == "pending", queued
@@ -6296,7 +6332,8 @@ def test_one_breakpoint_row_is_one_declaration_and_an_old_store_is_attributed_wh
     third = server.breakpoint_at(ref="bar")
     assert third["status"] == "INVALID" and "'foo'" in third["message"], third
     assert [d.ref for d in dstate.STATE.store.declarations()] == ["foo"]  # type: ignore[union-attr]
-    assert server.breakpoint_at(ref="foo")["already_stored"] is True, "a re-declaration adopts"
+    assert server.breakpoint_at(ref="foo").get("already_stored",
+                                               False) is True, "a re-declaration adopts"
     # THE OLD STORE: both declarations already there, the stop at their address.
     dstate.STATE.store.add(dec.Declaration("breakpoint", "symbol", "bar",  # type: ignore[union-attr]
                                            origin=dstate.STATE.session_origin))
@@ -6556,8 +6593,8 @@ def test_the_modifier_vocabulary_is_the_dos_keyboard_s() -> None:
 @pytest.mark.parametrize(("op", "bad", "good"), [
     ("breakpoint_interrupt", {"number": 0x21, "ah": 0x100}, {"number": 0x21, "ah": 0x4C}),
     ("machine_map", {"sections": ["bogus"]}, {"sections": [machine.SECTION_NAMES[0]]}),
-    ("scan_filter", {"operator": "=", "value": 1, "limit": 401},
-     {"operator": "=", "value": 1, "limit": 400}),
+    ("scan", {"method": "filter", "operator": "=", "value": 1, "limit": 401},
+     {"method": "filter", "operator": "=", "value": 1, "limit": 400}),
     ("send_keys", {"keys": ["a"], "seconds": 5.0}, {"keys": ["a"], "expect": "R", "seconds": 5.0}),
     ("send_keys", {"keys": ["a"], "expect": "R", "seconds": -1.0}, {"keys": ["a"], "expect": "R"}),
     ("send_keys", {"keys": ["a"], "modifiers": ["cmd"]}, {"keys": ["a"], "modifiers": ["shift"]}),
@@ -6760,29 +6797,29 @@ def test_find_through_the_tool_searches_the_dump_and_reports_the_sibling_shape()
 
 def test_scan_start_through_the_tool_reports_the_opened_instance() -> None:
     install(screen=_tail("memfind_opened_0400"))
-    got = server.scan_start(ref="0000:00000400", length=256)
+    got = server.scan("start", ref="0000:00000400", length=256)
     assert got["status"] == "ok", got
     assert got["hits_total"] == 256 and got["cell_bytes"] == 1 and got["addr"] == "0x00000400"
-    assert got["summary"] == "scan_start 0000:00000400: 256 cells of 1 byte"
+    assert got["summary"] == "scan start: 0000:00000400, 256 cells of 1 byte"
 
 
 def test_scan_filter_through_the_tool_reports_a_finished_scan_and_says_so() -> None:
     install(screen=_tail("mems_finished"))
-    got = server.scan_filter(operator="!", value=0)
+    got = server.scan("filter", operator="!", value=0)
     assert got["status"] == "ok", got
     assert got["hits_total"] == 0 and got["closed"] is True and got["hits"] == []
-    assert got["summary"] == "scan_filter ! 0: 0 survivors, scan closed"
+    assert got["summary"] == "scan filter: ! 0, 0 survivors, scan closed"
 
 
 def test_scan_clear_through_the_tool_reports_both_outcomes() -> None:
     install(screen=_tail("memfind_cancelled"))
-    got = server.scan_clear()
+    got = server.scan("clear")
     assert got["status"] == "ok" and got["cleared"] is True, got
-    assert got["summary"] == "scan_clear: cleared"
+    assert got["summary"] == "scan clear: cleared"
     install(screen=_tail("memfind_cancel_none"))
-    none = server.scan_clear()
+    none = server.scan("clear")
     assert none["status"] == "ok" and none["cleared"] is False, none
-    assert none["summary"] == "scan_clear: nothing was open"
+    assert none["summary"] == "scan clear: nothing was open"
 
 
 def test_run_to_summary_spells_a_control_that_never_counted_as_a_count_not_a_prefix(
@@ -6888,12 +6925,12 @@ def test_an_address_ref_has_one_spelling_and_a_clear_takes_any_of_them(tmp_path:
     fake = _names(tmp_path)
     out = server.breakpoint_at(ref="00a7:100")
     assert out["status"] == "ok" and out["ref"] == "00a7:100", out
-    assert server.breakpoint_at(ref="00A7:0100")["already_stored"] is True
-    cleared = server.breakpoint_clear(ref="0A7:00000100")
+    assert server.breakpoint_at(ref="00A7:0100").get("already_stored", False) is True
+    cleared = server.declaration_clear("breakpoint", ref="0A7:00000100")
     assert cleared["declarations_cleared"] == 1, cleared
     assert not any(r["entry"].startswith("BP ") for r in fake.rows), fake.rows
     assert server.watch_add(ref="00AF:0100", mode="change", length=4)["ref"] == "00AF:0100"
-    assert server.watch_clear(ref="00af:100")["declarations_cleared"] == 1
+    assert server.declaration_clear("watch", ref="00af:100")["declarations_cleared"] == 1
 
 
 def test_a_second_load_with_a_narrower_pattern_keeps_what_the_first_one_placed(
@@ -7048,7 +7085,7 @@ def test_a_machine_independent_argument_is_refused_before_the_session_gate() -> 
                  lambda: server.log(channel="bogus", pattern="x"),
                  lambda: server.find(ref="12345:0010", length=4, data_hex="00"),
                  lambda: server.watch_add(ref="F000:0000", mode="bogus", length=2),
-                 lambda: server.scan_start(ref="12345:0010", length=4))
+                 lambda: server.scan("start", ref="12345:0010", length=4))
     for call in calls:
         got = cast(dict[str, Any], call())
         assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
@@ -7343,8 +7380,8 @@ def test_status_counts_the_declarations_as_the_lists_list_them(tmp_path: Path) -
     server.breakpoint_interrupt(number=0x21)
     server.watch_add(ref="0749:0020", mode="show", length=2)
     got = cast(dict[str, Any], server.status())["declarations"]
-    assert got == {"breakpoints": len(server.breakpoint_list()["breakpoints"]),
-                   "watches": len(server.watch_list()["watches"])} == {
+    assert got == {"breakpoints": len(server.declaration_list("breakpoint")["breakpoints"]),
+                   "watches": len(server.declaration_list("watch")["watches"])} == {
                        "breakpoints": 2, "watches": 1}, got
 
 
@@ -7496,11 +7533,20 @@ def test_every_tool_is_summarised_by_its_own_line() -> None:
     tool or a screen map tool, scry-core's line of that tool."""
     from scry_core import screen_map
     lines = dosbox_mcp.BOUNDARY.summaries
+    folded = {"comment_write": folds.COMMENT, "map_write": folds.MAP, "scan": folds.SCAN,
+              "state_write": folds.STATE_METHODS}
     for name in dosbox_mcp.registered_tools():
         if name in media_tools.TOOLS:
             assert lines[name] is media_tools.TOOLS[name].summary, name
-        elif name.startswith("map_"):
-            assert lines[name] is getattr(screen_map, name.removeprefix("map_") + "_line"), name
+        elif name in folded:
+            # A fold's line opens with the tool and the method, then the method's own, this
+            # server's or scry-core's.
+            assert lines[name].__qualname__.startswith("fold_line"), (name, lines[name])
+            for method in folded[name].values():
+                assert method.line.__module__ in ("dosbox_summaries", "scry_core.screen_map"), (
+                    name, method.line)
+        elif name == "map_find":
+            assert lines[name] is screen_map.find_line, name
         elif name == "perform_export":
             assert lines[name] is recording.export_summary, name
         else:
@@ -7670,7 +7716,7 @@ def test_starts_line_names_how_the_session_is_watched(
     assert got["status"] == "ok" and got["summary"].startswith(f"start g.conf: {said} on "), got
 
 
-@pytest.mark.parametrize("tool", ["breakpoint_clear", "watch_clear"])
+@pytest.mark.parametrize("tool", ["declaration_clear breakpoint", "declaration_clear watch"])
 @pytest.mark.parametrize("kw", [{}, {"ref": ""}, {"ref": "x", "all": True}])
 def test_a_clear_names_what_it_clears_even_past_the_pre_gate(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch, tool: str, kw: dict[str, Any]) -> None:
@@ -7679,10 +7725,10 @@ def test_a_clear_names_what_it_clears_even_past_the_pre_gate(
     _names(tmp_path)
     server.watch_add(ref="00AF:0100", mode="change", length=4)
     server.breakpoint_interrupt(number=0x21)
-    refused = cast(dict[str, Any], getattr(server, tool)(**kw))
+    refused = cast(dict[str, Any], fold_calls.of(server, tool)(**kw))
     assert refused["code"] == "bad_argument", refused
     monkeypatch.setattr(checks, "check", lambda *a, **k: None)          # no pre-gate
-    past = cast(dict[str, Any], getattr(server, tool)(**kw))
+    past = cast(dict[str, Any], fold_calls.of(server, tool)(**kw))
     assert past["code"] == "bad_argument", past
     assert dstate.STATE.store is not None and len(dstate.STATE.store.declarations()) == 2
 
@@ -7772,7 +7818,8 @@ def test_the_instructions_families_are_the_registered_tools_and_the_running_ones
     would be a tool the session looks for and never finds), and every tool the running sentence
     names, a whole family's included, is one a running guest is answered by."""
     assert dosbox_mcp.ROSTER.unlisted(dosbox_mcp.registered_tools()) == []
-    answering = sequence.RUNNING_OK_OPS | (checks.NOT_STEPS - {"start", "build_check"})
+    answering = (roster.by_method(sequence.RUNNING_OK_OPS, sequence.RUNNING_METHODS)
+                 | (checks.NOT_STEPS - {"start", "build_check"}))
     named = dosbox_mcp.ROSTER.answering_named() - {"registers(from_last_stop=True)"}
     assert named <= answering, sorted(named - answering)
     assert dosbox_mcp.ROSTER.running_sentence() in (server.mcp.instructions or "")
@@ -7984,7 +8031,7 @@ def test_a_stored_declaration_follows_its_names_into_a_rebuilt_map(tmp_path: Pat
     got = _ok(server.symbols_load(path=str(new), base="400000"))
     assert [r["ref"] for r in got["declarations"]["rearmed"]] == ["_main"], got["declarations"]
     assert [r["entry"] for r in fake.rows] == ["BP 00A7:17EE90"], fake.rows
-    (bp,) = server.breakpoint_list()["breakpoints"]
+    (bp,) = server.declaration_list("breakpoint")["breakpoints"]
     assert (bp["state"], bp["entry"]) == ("armed", "BP 00A7:17EE90"), bp
     store = dstate.STATE.store
     assert store is not None
@@ -8024,7 +8071,8 @@ def _deferred_load_with(tmp_path: Path, declare: Any) -> tuple[NamesFake, Path]:
 def test_a_load_leaves_a_breakpoint_the_debugger_holds_armed_and_out_of_its_account(
         tmp_path: Path) -> None:
     """The re-arm's account is what this load armed or could not: a breakpoint the debugger
-    already holds stays armed as it is, listed in no bucket (`breakpoint_list` shows it)."""
+    already holds stays armed as it is, listed in no bucket (`declaration_list(kind="breakpoint")`
+    shows it)."""
     nm = tmp_path / "foo.nm"
     nm.write_text("00001000 T foo\n", encoding="utf-8")
     fake = _names(tmp_path, mode="Real")
@@ -8047,7 +8095,7 @@ def test_a_breakpoint_cleared_and_declared_again_while_a_load_waits_is_armed_at_
     assert [r["entry"].split()[0] for r in fake.rows] == ["BP"], fake.rows
     fake.running = True
     _ok(server.symbols_load(path=str(tmp_path / "foo.nm"), base="400000"))
-    _ok(server.breakpoint_clear(ref="foo"))
+    _ok(server.declaration_clear("breakpoint", ref="foo"))
     _ok(server.breakpoint_at(ref="foo"))
     fake.running = False
     server.status()
@@ -8112,15 +8160,14 @@ def test_a_clear_the_store_cannot_write_disarms_nothing(
     def fails() -> None:
         raise OSError("read-only")
     monkeypatch.setattr(store, "_persist", fails)
-    clear = server.breakpoint_clear if family == "breakpoint" else server.watch_clear
-    got = clear(ref=ref)
+    got = server.declaration_clear(family, ref=ref)
     assert got["status"] == "INVALID" and "could not be written" in got["message"], got
     assert [r["entry"] for r in fake.rows] == armed, "a refused clear disarmed a row"
     assert len(store.declarations()) == 1, store.declarations()
     key = ("bp" if family == "breakpoint" else "watch", ref)
     assert key in dstate.STATE.armed, "a refused clear dropped the record of its row"
     fake.running = True
-    assert clear(ref=ref)["status"] == "INVALID"
+    assert server.declaration_clear(family, ref=ref)["status"] == "INVALID"
     assert dstate.STATE.pending["disarm"] == [], "a refused clear queued a disarm"
 
 
@@ -8131,7 +8178,7 @@ def test_a_watch_clear_that_cannot_read_the_mode_changes_nothing(tmp_path: Path)
     _ok(server.watch_add(ref="0814:0200", mode="change", length=2))
     dstate.STATE.armed.clear()
     fake.where_raises = True
-    assert server.watch_clear(ref="0814:0200")["status"] == "INVALID"
+    assert server.declaration_clear("watch", ref="0814:0200")["status"] == "INVALID"
     store = dstate.STATE.store
     assert store is not None and len(store.declarations()) == 1, "the declaration was dropped"
 
@@ -8212,7 +8259,8 @@ def test_an_interrupt_breakpoint_the_debugger_refused_is_not_kept(tmp_path: Path
     fake.breakpoint_interrupt = refuse  # type: ignore[method-assign]
     got = server.breakpoint_interrupt(number=0x21)
     assert got["status"] == "INVALID", got
-    assert server.breakpoint_list()["breakpoints"] == [], server.breakpoint_list()
+    listed = server.declaration_list("breakpoint")
+    assert listed["breakpoints"] == [], listed
 
 
 def test_an_arrival_on_a_declared_breakpoint_names_both(tmp_path: Path) -> None:
@@ -8488,7 +8536,7 @@ def test_a_watched_window_is_placed_by_the_host_s_helper_on_the_display_asked(
     assert seen and seen[0].window_flags == ["-set", "sdl display=1"], seen
     assert asked.read_text().split() == ["dosbox", "--shared", "--display", "main"]
     got = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True)
-    assert got["status"] == "ok" and got["display"] == "secondary", got
+    assert got["status"] == "ok" and got.get("display", "") == "secondary", got
 
 
 def test_a_watched_start_with_no_helper_is_refused_and_a_display_needs_a_watched_run(
@@ -8671,7 +8719,7 @@ def test_a_load_refused_before_it_was_sent_replaced_nothing(tmp_path: Path) -> N
     ses = SimpleNamespace(machine_replaced=True, state_sent=True,
                           _state_dir=lambda: tmp_path)
     with pytest.raises(ds.Invalid) as refusal:
-        saved.state_load(cast(Any, ses), "nope")
+        saved.load_state(cast(Any, ses), "nope")
     assert refusal.value.code == "unknown_ref" and ses.machine_replaced is False
 
 
@@ -8745,7 +8793,8 @@ def test_a_base_that_moved_clears_the_rows_armed_by_name_at_the_old_place(
 
 def test_a_state_load_through_the_server_asks_the_next_stop_for_the_base(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """End to end through `state_load`: a load the session says replaced the machine queues the
+    """End to end through `state_write(method="load")`: a load the session says replaced the machine
+    queues the
     base's measure; one it says did not (refused before it was sent) queues nothing."""
     fake = _names(tmp_path)
     mapf = tmp_path / "prog.map"
@@ -8759,10 +8808,10 @@ def test_a_state_load_through_the_server_asks_the_next_stop_for_the_base(
             raise ds.Invalid("unknown_ref", f"no state named {name!r}")
         return {"name": name, "paused": True}
 
-    monkeypatch.setattr(type(fake), "state_load", loads, raising=False)
-    assert cast(dict[str, Any], server.state_load(name="gone"))["code"] == "unknown_ref"
+    monkeypatch.setattr(type(fake), "load_state", loads, raising=False)
+    assert cast(dict[str, Any], server.state_write("load", name="gone"))["code"] == "unknown_ref"
     assert dstate.STATE.pending_summary()["base_remeasure"] is False
-    assert cast(dict[str, Any], server.state_load(name="here"))["status"] == "ok"
+    assert cast(dict[str, Any], server.state_write("load", name="here"))["status"] == "ok"
     assert dstate.STATE.pending_summary()["base_remeasure"] is True
     assert dict(dstate.STATE.pending)["dirty"] is True
 

@@ -2,8 +2,9 @@
  "task": {
   "id": "D108",
   "prompt": "In the series /tmp/run1/manifest.json, how many pixels of the rectangle at x 0, y 180, 320 by 20 changed from the frame before, on each frame where some did?",
-  "tool": "region_track",
+  "tool": "image_compare",
   "args": {
+   "method": "region",
    "manifest": "/tmp/run1/manifest.json",
    "crop": [
     0,
@@ -14,25 +15,98 @@
    "measure": "changed_pixels"
   },
   "grammar": [
-   "changed_pixels"
+   "changed_pixels",
+   "region"
   ]
  },
  "runs": [
   {
    "lines": [
-    "D108: {\"tool\": \"region_track\", \"args\": {\"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
+    "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D108: {\"tool\": \"region_track\", \"args\": {\"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
+    "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"measure\": \"changed_pixels\", \"crop\": [0, 180, 320, 20]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D108: {\"tool\": \"region_track\", \"args\": {\"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
+    "D108: {\"tool\":\"image_compare\",\"args\":{\"method\":\"region\",\"manifest\":\"/tmp/run1/manifest.json\",\"crop\":[0,180,320,20],\"measure\":\"changed_pixels\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D108: {\"tool\":\"image_compare\",\"args\":{\"method\":\"region\",\"manifest\":\"/tmp/run1/manifest.json\",\"crop\":[0,180,320,20],\"measure\":\"changed_pixels\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D108: {\"tool\": \"image_compare\", \"args\": {\"method\": \"region\", \"manifest\": \"/tmp/run1/manifest.json\", \"crop\": [0, 180, 320, 20], \"measure\": \"changed_pixels\"}}"
    ],
    "right": true
   }

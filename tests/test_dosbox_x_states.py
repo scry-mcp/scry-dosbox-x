@@ -2,7 +2,8 @@
 over the debugger channel (a DOSBox-X that carries them). They need the debugger stopped, so
 a running guest is stopped for them and released again. A state is a
 ZIP naming its `Program_Name`, `Machine_Type`, `Memory_Size`, `Time_Stamp` and
-`DOSBox-X_Version`. The tools are `state_save(name)`, `state_load(name)` and `state_list`; the
+`DOSBox-X_Version`. The tools are `state_write(method="save", name)`, `state_write(method="load",
+name)` and `state_list`; the
 `snapshot` tool, which shares their doubles, is here too."""
 from __future__ import annotations
 
@@ -76,7 +77,8 @@ class Channel:
 
 
 class StateFake:
-    """The seams `state_save`/`state_load` rest on: the launch, whether the machine is parked,
+    """The seams `state_write(method="save")`/`state_write(method="load")` rest on: the launch,
+    whether the machine is parked,
     the break-in and the release, and the channel. The helpers are the REAL ones."""
 
     def __init__(self, state_dir: Path, *, parked: bool = True, carries: bool = True,
@@ -127,8 +129,8 @@ class StateFake:
     e9_mark = ds.Session.e9_mark
     _state_dir = ds.Session._state_dir
     _state_command = ds.Session._state_command
-    state_save = ds.Session.state_save
-    state_load = ds.Session.state_load
+    save_state = ds.Session.save_state
+    load_state = ds.Session.load_state
     state_list = ds.Session.state_list
 
 
@@ -161,7 +163,7 @@ def test_the_launch_turns_the_remark_dialog_off_and_names_the_save_directory(
 
 def test_state_save_sends_savestate_of_the_named_file_and_reads_it_back(tmp_path: Path) -> None:
     fake = StateFake(tmp_path / "save")
-    out = ds.Session.state_save(as_session(fake), "boot", 5.0)
+    out = ds.Session.save_state(as_session(fake), "boot", 5.0)
     dest = tmp_path / "save" / "boot.sav"
     assert fake.control.sent == [f"EXEC SAVESTATE {dest}"]
     assert out["name"] == "boot" and Path(str(out["path"])) == dest and dest.is_file()
@@ -171,9 +173,9 @@ def test_state_save_sends_savestate_of_the_named_file_and_reads_it_back(tmp_path
     assert out["paused"] is False and fake.moves == [], "a parked machine is left parked"
     assert fake.altered is False, "saving alters nothing"
     with pytest.raises(ds.Invalid, match="already exists"):
-        ds.Session.state_save(as_session(fake), "boot", 5.0)
+        ds.Session.save_state(as_session(fake), "boot", 5.0)
     with pytest.raises(ds.Invalid, match="letters, digits"):
-        ds.Session.state_save(as_session(fake), "a b", 5.0)
+        ds.Session.save_state(as_session(fake), "a b", 5.0)
     assert len(fake.control.sent) == 1, "a refused save sends nothing"
 
 
@@ -182,13 +184,13 @@ def test_a_running_guest_is_stopped_for_the_command_and_released_again(tmp_path:
     the channel is served from one while the guest runs), so the session breaks in, sends,
     and releases: the machine is left as it was found, and `paused` says it was stopped."""
     fake = StateFake(tmp_path / "save", parked=False)
-    out = ds.Session.state_save(as_session(fake), "boot", 5.0)
+    out = ds.Session.save_state(as_session(fake), "boot", 5.0)
     assert out["paused"] is True and fake.moves == ["break", "resume"] and fake.parked is False
-    loaded = ds.Session.state_load(as_session(fake), "boot", 5.0)
+    loaded = ds.Session.load_state(as_session(fake), "boot", 5.0)
     assert loaded["paused"] is True and fake.moves[2:] == ["break", "resume"]
     fake.control.refuse = "failed: x (the log says why)"
     with pytest.raises(ds.Invalid):
-        ds.Session.state_load(as_session(fake), "boot", 5.0)
+        ds.Session.load_state(as_session(fake), "boot", 5.0)
     assert fake.moves[4:] == ["break", "resume"], "released again even when the load is refused"
 
 
@@ -201,14 +203,14 @@ def test_a_dangling_link_named_like_the_state_is_refused_and_nothing_written_thr
     (tmp_path / "save").mkdir(exist_ok=True)
     (tmp_path / "save" / "boot.sav").symlink_to(target)
     with pytest.raises(ds.Invalid, match="already exists"):
-        ds.Session.state_save(as_session(fake), "boot", 5.0)
+        ds.Session.save_state(as_session(fake), "boot", 5.0)
     assert fake.control.sent == [] and not target.exists()
 
 
 def test_a_build_without_the_commands_is_no_channel_naming_the_command(tmp_path: Path) -> None:
     fake = StateFake(tmp_path / "save", carries=False)
     with pytest.raises(ds.Invalid) as exc:
-        ds.Session.state_save(as_session(fake), "boot", 5.0)
+        ds.Session.save_state(as_session(fake), "boot", 5.0)
     said = str(exc.value)
     assert exc.value.code == "no_channel", said
     assert "`SAVESTATE` came back without the debugger's own answer to it" in said, said
@@ -216,7 +218,7 @@ def test_a_build_without_the_commands_is_no_channel_naming_the_command(tmp_path:
     assert "REFERENCE.md, Saved states" in said
     write_state(tmp_path / "save" / "boot.sav")
     with pytest.raises(ds.Invalid) as exc:
-        ds.Session.state_load(as_session(fake), "boot", 5.0)
+        ds.Session.load_state(as_session(fake), "boot", 5.0)
     assert exc.value.code == "no_channel"
 
 
@@ -227,20 +229,20 @@ def test_the_emulators_own_refusal_is_unexpected_answer_saying_why(tmp_path: Pat
                     "slot must be 1 to 100"):
         fake.control.refuse = refusal
         with pytest.raises(ds.Invalid) as exc:
-            ds.Session.state_load(as_session(fake), "boot", 5.0)
+            ds.Session.load_state(as_session(fake), "boot", 5.0)
         assert exc.value.code == "unexpected_answer" and refusal in str(exc.value)
 
 
 def test_state_load_needs_a_named_state_and_marks_altered(tmp_path: Path) -> None:
     fake = StateFake(tmp_path / "save")
     source = write_state(tmp_path / "save" / "boot.sav", Time_Stamp="2026-09-09 20:53")
-    out = ds.Session.state_load(as_session(fake), "boot", 5.0)
+    out = ds.Session.load_state(as_session(fake), "boot", 5.0)
     assert fake.control.sent == [f"EXEC LOADSTATE {source}"]
     assert out["name"] == "boot" and out["saved_at"] == "2026-09-09 20:53"
     assert out["paused"] is False and fake.parked is True, "a parked machine stays parked"
     assert fake.altered is True
     with pytest.raises(ds.Invalid, match="no state named") as exc:
-        ds.Session.state_load(as_session(fake), "nope", 5.0)
+        ds.Session.load_state(as_session(fake), "nope", 5.0)
     assert exc.value.code == "unknown_ref" and len(fake.control.sent) == 1
 
 
@@ -267,7 +269,7 @@ def test_a_name_that_holds_no_state_is_listed_saying_what_is_there_never_raised(
         tmp_path: Path) -> None:
     """A dangling `.sav` link and a `.sav` directory take the name all the same: the listing
     shows each with its readings unavailable, saying what is there, rather than failing whole;
-    `state_load` refuses them `unknown_ref` saying the same."""
+    `state_write(method="load")` refuses them `unknown_ref` saying the same."""
     fake = StateFake(tmp_path / "save")
     write_state(tmp_path / "save" / "boot.sav")
     (tmp_path / "save" / "x.sav").symlink_to("/nowhere.zip")
@@ -282,26 +284,26 @@ def test_a_name_that_holds_no_state_is_listed_saying_what_is_there_never_raised(
         for key in ("bytes", "program", "saved_at"):
             assert by[name][key] == {"available": False, "why": by[name]["note"]}, by[name]
     with pytest.raises(ds.Invalid, match="a directory, not a state") as exc:
-        ds.Session.state_load(as_session(fake), "d", 5.0)
+        ds.Session.load_state(as_session(fake), "d", 5.0)
     assert exc.value.code == "unknown_ref"
 
 
 def test_the_tools_carry_the_envelope_and_the_summaries_name_the_state(tmp_path: Path) -> None:
     fake = StateFake(tmp_path / "save", parked=False)
     dstate.STATE.session = fake  # type: ignore[assignment]
-    saved = cast(dict[str, Any], server.state_save(name="boot"))
+    saved = cast(dict[str, Any], server.state_write("save", name="boot"))
     assert saved["status"] == "ok" and saved["session"]["altered"] is False
-    assert saved["summary"] == (f"state_save boot: {saved['bytes']} bytes, "
+    assert saved["summary"] == (f"state_write save: boot, {saved['bytes']} bytes, "
                                 "PROBE 2026-09-10 03:58")
     listed = cast(dict[str, Any], server.state_list())
     assert listed["summary"] == "state_list: 1 state in " + str(tmp_path / "save")
-    loaded = cast(dict[str, Any], server.state_load(name="boot"))
+    loaded = cast(dict[str, Any], server.state_write("load", name="boot"))
     assert loaded["status"] == "ok" and loaded["session"]["altered"] is True
-    assert loaded["summary"] == "state_load boot: loaded"
-    for name in ("state_save", "state_load", "state_list"):
+    assert loaded["summary"] == "state_write load: boot, loaded"
+    for name in ("state_write", "state_list"):
         assert name in dosbox_mcp.registered_tools()
     assert "state_list" in dosbox_mcp._ANSWERS_WHILE_RUNNING
-    assert "state_load" in dosbox_mcp._ANSWERS_WHILE_RUNNING
+    assert "state_write" in dosbox_mcp._ANSWERS_WHILE_RUNNING
 
 
 def test_state_list_keeps_the_working_slot_apart_from_the_named_states(tmp_path: Path) -> None:
@@ -426,7 +428,7 @@ def test_a_state_command_under_an_emulator_that_died_says_it_is_gone(tmp_path: P
     fake.lives = False
     fake.control.raises = ds.Invalid("session_broken", "debugger channel dropped; it redials")
     with pytest.raises(ds.Invalid) as exc:
-        ds.Session.state_save(as_session(fake), "boot", 5.0)
+        ds.Session.save_state(as_session(fake), "boot", 5.0)
     assert exc.value.code == "session_broken" and "GONE" in str(exc.value), exc.value
 
 
@@ -457,16 +459,16 @@ def test_a_save_that_failed_leaves_no_file_holding_the_name(tmp_path: Path) -> N
     fake = StateFake(tmp_path / "save")
     fake.control.refuse, fake.control.partial = "failed: x (the log says why)", True
     with pytest.raises(ds.Invalid):
-        ds.Session.state_save(as_session(fake), "boot", 5.0)
+        ds.Session.save_state(as_session(fake), "boot", 5.0)
     assert not (tmp_path / "save" / "boot.sav").exists()
     fake.control.refuse = ""
-    assert ds.Session.state_save(as_session(fake), "boot", 5.0)["name"] == "boot"
+    assert ds.Session.save_state(as_session(fake), "boot", 5.0)["name"] == "boot"
 
 
 def test_waited_s_is_the_command_alone_not_the_release(tmp_path: Path) -> None:
     fake = StateFake(tmp_path / "save", parked=False)
     fake.release_s = 0.3
-    out = ds.Session.state_save(as_session(fake), "boot", 5.0)
+    out = ds.Session.save_state(as_session(fake), "boot", 5.0)
     assert out["paused"] is True and "waited_s" not in out
 
 
@@ -474,13 +476,13 @@ def test_the_released_guest_is_the_session_blocks_to_say(tmp_path: Path) -> None
     """Whether the guest runs after a save is `session.running`, never a field of the save:
     a running guest is released again, and one that halted on its release is parked."""
     fake = StateFake(tmp_path / "save", parked=False)
-    assert "running" not in ds.Session.state_save(as_session(fake), "a", 5.0)
+    assert "running" not in ds.Session.save_state(as_session(fake), "a", 5.0)
     assert fake.state()["running"] is True
     fake.parked, fake.halts_on_release = False, True
-    ds.Session.state_save(as_session(fake), "b", 5.0)
+    ds.Session.save_state(as_session(fake), "b", 5.0)
     assert fake.state()["running"] is False
     parked = StateFake(tmp_path / "other")
-    ds.Session.state_save(as_session(parked), "c", 5.0)
+    ds.Session.save_state(as_session(parked), "c", 5.0)
     assert parked.state()["running"] is False, "a parked guest stays parked"
 
 
@@ -489,7 +491,7 @@ def test_a_release_that_fails_does_not_hide_the_command_s_own_failure(tmp_path: 
     fake.control.raises = ds.Invalid("host_failed", "the reply never ended")
     fake.release_raises = ds.Invalid("session_broken", "the emulator is gone")
     with pytest.raises(ds.Invalid) as exc:
-        ds.Session.state_save(as_session(fake), "boot", 5.0)
+        ds.Session.save_state(as_session(fake), "boot", 5.0)
     assert exc.value.code == "host_failed" and fake.moves == ["break", "resume"]
 
 
@@ -497,14 +499,14 @@ def test_a_break_in_that_fails_sends_nothing_and_releases_nothing(tmp_path: Path
     fake = StateFake(tmp_path / "save", parked=False)
     fake.break_raises = ds.Invalid("unexpected_answer", "no prompt")
     with pytest.raises(ds.Invalid):
-        ds.Session.state_save(as_session(fake), "boot", 5.0)
+        ds.Session.save_state(as_session(fake), "boot", 5.0)
     assert fake.control.sent == [] and fake.moves == []
 
 
 def test_a_path_of_two_lines_is_refused_before_the_break_in(tmp_path: Path) -> None:
     fake = StateFake(tmp_path / "sa\nve", parked=False)
     with pytest.raises(ds.Invalid) as exc:
-        ds.Session.state_save(as_session(fake), "boot", 5.0)
+        ds.Session.save_state(as_session(fake), "boot", 5.0)
     assert exc.value.code == "bad_argument" and fake.moves == [] and fake.control.sent == []
 
 
@@ -515,7 +517,7 @@ def test_a_missing_channel_names_the_command_and_alters_nothing(tmp_path: Path) 
     fake.control.raises = ds.Invalid("no_channel", "the emulator never dialled the debugger "
                                      "channel, so a running guest cannot be reached")
     with pytest.raises(ds.Invalid) as exc:
-        ds.Session.state_load(as_session(fake), "boot", 5.0)
+        ds.Session.load_state(as_session(fake), "boot", 5.0)
     assert exc.value.code == "no_channel" and "`LOADSTATE` debugger command" in str(exc.value)
     assert "REFERENCE.md, Saved states" in str(exc.value)
     assert "cannot be reached. The saved states" in str(exc.value), "one sentence each"
@@ -523,7 +525,7 @@ def test_a_missing_channel_names_the_command_and_alters_nothing(tmp_path: Path) 
     fake.control.raises = None
     fake.control.carries = False
     with pytest.raises(ds.Invalid):
-        ds.Session.state_load(as_session(fake), "boot", 5.0)
+        ds.Session.load_state(as_session(fake), "boot", 5.0)
     assert fake.altered is False
 
 
@@ -532,10 +534,10 @@ def test_a_parked_load_is_a_stop_of_its_own(tmp_path: Path) -> None:
     so the next reader surveys again instead of naming the old position."""
     fake = StateFake(tmp_path / "save")
     write_state(tmp_path / "save" / "boot.sav")
-    ds.Session.state_load(as_session(fake), "boot", 5.0)
+    ds.Session.load_state(as_session(fake), "boot", 5.0)
     assert fake.stop_count == 1
     running = StateFake(tmp_path / "save", parked=False)
-    ds.Session.state_load(as_session(running), "boot", 5.0)
+    ds.Session.load_state(as_session(running), "boot", 5.0)
     assert running.stop_count == 0, "a released guest's next stop is counted when it comes"
 
 
@@ -567,7 +569,7 @@ def test_a_save_cancelled_in_its_wait_ends_as_its_bound_would(
     fake = StateFake(tmp_path / "save", parked=False)
     monkeypatch.setattr(cancel, "check", _cancelled)
     with pytest.raises(asyncio.CancelledError):
-        ds.Session.state_save(as_session(fake), "boot", 5.0)
+        ds.Session.save_state(as_session(fake), "boot", 5.0)
     assert fake.moves == ["break", "resume"] and fake.parked is False
     assert not (tmp_path / "save" / "boot.sav").exists()
 
@@ -578,7 +580,7 @@ def test_a_load_cancelled_in_its_wait_is_released_and_counts_as_altered(
     write_state(tmp_path / "save" / "boot.sav")
     monkeypatch.setattr(cancel, "check", _cancelled)
     with pytest.raises(asyncio.CancelledError):
-        ds.Session.state_load(as_session(fake), "boot", 5.0)
+        ds.Session.load_state(as_session(fake), "boot", 5.0)
     assert fake.moves == ["break", "resume"] and fake.altered is True
 
 
@@ -594,7 +596,7 @@ def test_a_state_command_cancelled_while_it_breaks_in_releases_the_guest(
         raise asyncio.CancelledError
     monkeypatch.setattr(fake, "break_in", break_in)
     with pytest.raises(asyncio.CancelledError):
-        ds.Session.state_save(as_session(fake), "boot", 5.0)
+        ds.Session.save_state(as_session(fake), "boot", 5.0)
     assert fake.moves == ["break", "resume"] and fake.control.sent == []
 
 
@@ -612,7 +614,7 @@ def test_a_state_command_cancelled_before_its_break_in_landed_still_releases_the
         raise asyncio.CancelledError           # BREAK taken, the prompt not shown yet
     monkeypatch.setattr(fake, "break_in", break_in)
     with pytest.raises(asyncio.CancelledError):
-        ds.Session.state_save(as_session(fake), "boot", 5.0)
+        ds.Session.save_state(as_session(fake), "boot", 5.0)
     assert fake.moves[-1] == "resume" and fake.parked is False, fake.moves
 
 
@@ -624,7 +626,7 @@ def test_a_parked_load_cancelled_after_it_was_sent_counts_the_machine_as_replace
     write_state(tmp_path / "save" / "boot.sav")
     monkeypatch.setattr(cancel, "check", _cancelled)
     with pytest.raises(asyncio.CancelledError):
-        ds.Session.state_load(as_session(fake), "boot", 5.0)
+        ds.Session.load_state(as_session(fake), "boot", 5.0)
     assert fake.stop_count == 1 and fake.altered is True
 
 
@@ -641,7 +643,7 @@ def test_a_load_cancelled_before_anything_was_sent_leaves_the_session_unaltered(
         raise asyncio.CancelledError
     monkeypatch.setattr(fake, "break_in", break_in)
     with pytest.raises(asyncio.CancelledError):
-        ds.Session.state_load(as_session(fake), "boot", 5.0)
+        ds.Session.load_state(as_session(fake), "boot", 5.0)
     assert fake.control.sent == [] and fake.altered is False and fake.stop_count == 0
     assert fake.moves == ["break", "resume"]
 
@@ -655,7 +657,7 @@ def test_a_release_that_fails_on_the_host_keeps_the_cancellation(
     fake.release_raises = OSError("the channel went away")
     monkeypatch.setattr(cancel, "check", _cancelled)
     with pytest.raises(asyncio.CancelledError):
-        ds.Session.state_save(as_session(fake), "boot", 5.0)
+        ds.Session.save_state(as_session(fake), "boot", 5.0)
     assert fake.moves == ["break", "resume"]
 
 
@@ -671,7 +673,7 @@ def test_a_load_marks_where_the_log_ended_as_it_was_sent_on_every_channel(
     fake.launch = dataclasses.replace(fake.launch, logfile=log)
     write_state(tmp_path / "save" / "boot.sav")
     before = log.stat().st_size
-    got = ds.Session.state_load(as_session(fake), "boot", 5.0)
+    got = ds.Session.load_state(as_session(fake), "boot", 5.0)
     assert got["mark"] == {"guest": before, "emulator": before, "all": before}, got
     assert log.stat().st_size > before, "the loaded machine's line is after the mark"
     assert ("break" in fake.moves) is not parked, fake.moves
@@ -681,11 +683,11 @@ def test_a_load_marks_zero_before_the_log_exists_and_none_without_a_logfile(
         tmp_path: Path) -> None:
     fake = StateFake(tmp_path / "save")
     write_state(tmp_path / "save" / "boot.sav")
-    got = ds.Session.state_load(as_session(fake), "boot", 5.0)
+    got = ds.Session.load_state(as_session(fake), "boot", 5.0)
     assert cast(dict[str, Any], got["mark"])["available"] is False, got
     fake.launch = dataclasses.replace(fake.launch, logfile=tmp_path / "later.log")
     fake.launch.logfile.unlink(missing_ok=True)  # type: ignore[union-attr]
-    got = ds.Session.state_load(as_session(fake), "boot", 5.0)
+    got = ds.Session.load_state(as_session(fake), "boot", 5.0)
     assert got["mark"] == {"guest": 0, "emulator": 0, "all": 0}, got
 
 
@@ -696,7 +698,7 @@ def test_a_save_the_emulator_made_is_kept_when_only_the_release_after_it_failed(
     fake = StateFake(tmp_path / "save", parked=False)
     fake.release_raises = ds.Invalid("unexpected_answer", "the release could not be read")
     with pytest.raises(ds.Invalid, match="the release could not be read"):
-        ds.Session.state_save(as_session(fake), "boot", 5.0)
+        ds.Session.save_state(as_session(fake), "boot", 5.0)
     assert (tmp_path / "save" / "boot.sav").is_file(), "a save the emulator made was deleted"
 
 
@@ -704,7 +706,7 @@ def test_a_save_the_emulator_refused_leaves_no_file(tmp_path: Path) -> None:
     fake = StateFake(tmp_path / "save")
     fake.control.refuse = "write failed"
     with pytest.raises(ds.Invalid):
-        ds.Session.state_save(as_session(fake), "boot", 5.0)
+        ds.Session.save_state(as_session(fake), "boot", 5.0)
     assert not (tmp_path / "save" / "boot.sav").exists()
 
 
@@ -727,11 +729,11 @@ def test_a_load_that_answered_or_was_cut_short_after_it_went_unproves_the_link(
     link = _Link()
     fake._link = link
     write_state(tmp_path / "save" / "boot.sav")
-    ds.Session.state_load(as_session(fake), "boot", 5.0)
+    ds.Session.load_state(as_session(fake), "boot", 5.0)
     assert link.unproved == 1 and fake.machine_replaced is True
     fake.control.refuse = "failed: x (the log says why)"
     with pytest.raises(ds.Invalid):
-        ds.Session.state_load(as_session(fake), "boot", 5.0)
+        ds.Session.load_state(as_session(fake), "boot", 5.0)
     assert link.unproved == 2 and fake.machine_replaced is True
 
 
@@ -744,8 +746,8 @@ def test_a_state_command_waits_the_callers_bound(tmp_path: Path) -> None:
         asked.append(seconds)
         return request(command, seconds, poll)
     fake.control.request = recorded  # type: ignore[method-assign]
-    ds.Session.state_save(as_session(fake), "boot", 7.0)
-    ds.Session.state_load(as_session(fake), "boot", 9.0)
+    ds.Session.save_state(as_session(fake), "boot", 7.0)
+    ds.Session.load_state(as_session(fake), "boot", 9.0)
     assert asked == [7.0, 9.0], asked
 
 

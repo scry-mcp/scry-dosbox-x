@@ -9,29 +9,15 @@
 run_to(ref, control, seconds=30.0)
 ```
 
-Run until a SYMBOL or a `SEG:OFF`, and say where it really stopped. Reports its
-progress while it waits.
+Run until a symbol or a `SEG:OFF` and say where it stopped.
 
-`ref` is a symbol name from the loaded table or a raw `SEG:OFF` in hex (the colon is the
-tell); the server derives the debugger's address from the machine's own mode, arms a
-`BP`, verifies it by reading the list back, releases the machine and waits up to
-`seconds`, INTERRUPTING the run at its bound. `control` is REQUIRED, this run's own (the
-session keeps no declared control): a second `ref` known to be HOT, armed
-beside the target and counted every time it fires, so a bound that expires with ZERO
-control hits is INVALID rather than "it did not arrive". Pick one that fires a few times a
-run: each hit costs a round trip.
+`ref`: a loaded symbol or hex `SEG:OFF`. `control` is required: a second ref known to be
+hot, counted when it fires, so a bound that expires with no control hit is INVALID, not "it
+did not arrive". Needs a stopped machine. Refused: an absent or ambiguous name.
 
-Refused before the machine moves: no control (the schema requires one, and an empty one is
-none), an absent or ambiguous name, a machine not stopped.
-
-Reply: `verdict` (`TARGET`; `OTHER_STOP`, another breakpoint got there first; `TIMEOUT`,
-the bound ran out and the run was interrupted where it stood), `target_disarmed` (the
-breakpoint it armed, removed on every outcome; false when that could not be confirmed),
-`target`, `control_hits`, `controls` (`ref`, `at`, `hits_in_run`, `removed`), a `note`
-explaining a non-arrival, and the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `instruction`, `regs`, `watches`, `cause` and `e9`. INVALID
-carries no `verdict`: `control_silent` (a TIMEOUT with no control hit) or
-`cut_by_other_stop` (another stop before the control fired), each with the stop surveyed;
-`not_settled` when the interrupt found no prompt.
+Reply: `verdict` (`TARGET`, `OTHER_STOP`, `TIMEOUT`), `target_disarmed`, `control_hits`,
+`controls` (`ref`, `at`, `hits_in_run`), `note`, the stop (`pc`, `regs`, `cause`). INVALID:
+`control_silent`, `cut_by_other_stop`, `not_settled`.
 
 Reference: REFERENCE.md, Advancing the machine.
 
@@ -147,6 +133,8 @@ because `BPDEL` renumbers.
 ROM breakpoint that never fires (`breakpoint_at`). A cold target beside a hot control fires the
 control and never the target; with the roles swapped the target arrives.
 
+The server derives the debugger's address from the machine's own mode, arms a `BP`, verifies it by reading the list back, and interrupts at the bound. Pick a control that fires a few times a run: each hit costs a round trip. `OTHER_STOP` means another breakpoint got there first. The `target_disarmed` breakpoint is removed on every outcome (false when that could not be confirmed). `control_silent` is a TIMEOUT with no control hit and `cut_by_other_stop` another stop before the control fired, each with the stop surveyed; `not_settled` is an interrupt that found no prompt.
+
 <!-- scry-reference:begin run_for -->
 ## `run_for`
 
@@ -156,27 +144,12 @@ control and never the target; with the roles swapped the target arrives.
 run_for(milliseconds=0, frames=0, seconds=30.0)
 ```
 
-Run the machine for `frames` frames of the display, one vertical retrace each (the
-debugger's `VRT`), or for `milliseconds` of its emulated time, and come back STOPPED with
-the full stop reply. Reports its progress while it waits.
+Run for `frames` display frames (one `VRT` each) or `milliseconds` of emulated time (exactly
+one) and come back STOPPED. Reports progress while it waits. Needs the machine stopped.
 
-Arguments: exactly one of `frames` and `milliseconds` above zero. By `milliseconds` it runs
-retrace by retrace until the register pane's emulated clock has risen at least that far, so
-it stops at the first retrace at or past the mark, surveying every frame to read it.
-`seconds`: the wall-clock bound. Needs the machine stopped. A DOS machine keeps no frame
-counter, so `frames` counts retraces from where the call starts.
-
-Reply: `verdict`, `ELAPSED` (the run ran its course: every frame, or the clock at the mark),
-`OTHER_STOP` (a declared code breakpoint stopped it first, named by `cause`) or
-`TIMEOUT` (the bound expired); `polls`, the `VRT`s answered by a stop; `emulated_before_s`
-and `emulated_after_s`, the register pane's emulated clock; `frame_before`, `frame_after`
-and `cycles`, unavailable with why; and the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `instruction`, `regs`, `watches`, `cause` and `e9`. `retrace_pending: true`:
-the debugger still holds a retrace stop, which the next release meets. `note`: what the
-reply cannot prove (a declared breakpoint or watch, an unread clock). A `TIMEOUT` with a
-`VRT` still out is interrupted where it stands, its retrace left pending. INVALID
-`no_progress` when the clock did not move (over the run by frames, at any frame by
-milliseconds); `unexpected_answer` when a timed run finds no clock to start from, before
-anything runs. Advancing is not altering.
+Reply: `verdict` (`ELAPSED`, `OTHER_STOP`, `TIMEOUT`), `polls`, `emulated_before_s`,
+`emulated_after_s`, `frame_before`, `frame_after`, `cycles` (unavailable with why),
+`retrace_pending`, `note`, the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `instruction`, `regs`, `watches`, `cause` and `e9`. INVALID: `no_progress`, `unexpected_answer`.
 
 Reference: REFERENCE.md, Advancing the machine.
 
@@ -290,6 +263,8 @@ breakpoint armed after its code already ran can fail to cut the frames after it,
 does not prove its address was not reached; and a change-watch or interrupt breakpoint cannot be
 told from a retrace, so its stop counts as a frame.
 
+By milliseconds it surveys every frame to read the register pane's emulated clock. A `TIMEOUT` with a `VRT` still out is interrupted where it stands, its retrace left pending. `retrace_pending: true` means the debugger still holds a retrace stop, which the next release meets. The `note` states what the reply cannot prove (a declared breakpoint or watch, an unread clock). Advancing is not altering.
+
 <!-- scry-reference:begin trace -->
 ## `trace`
 
@@ -299,32 +274,17 @@ told from a retrace, so its stop counts as a frame.
 trace(instructions, shape="normal", dest="", seconds=60.0)
 ```
 
-Run the machine `instructions` instructions with the debugger's CPU log on (its `LOG`
-family), come back STOPPED with the log in a file and the full stop reply, and say which
-loaded symbols the executed addresses fall in.
+Run `instructions` (1 to 3000000) with the debugger's CPU log on and come back
+STOPPED with the log in a file, joined to symbols.
 
-Arguments: `instructions`, how many to EXECUTE, 1 to 3000000. `shape`: `normal`
-(`LOG`: disassembly and registers), `short` (`LOGS`), `long` (`LOGL`: adds emulated time, VM and
-CR0) or `cs_ip` (`LOGC`: the address alone). `dest`: absolute, its directory there, the
-file not, not directly in the emulator's working directory; empty,
-the next free `trace-<n>.trace` in the session's captures directory. `seconds`: the
-wall-clock bound. Needs the machine stopped, a writable working directory and
-`build_check`'s `heavy_debug`.
+`shape`: `normal` (`LOG`), `short` (`LOGS`), `long` (`LOGL`) or `cs_ip` (`LOGC`). `dest`:
+absolute, its directory there, the file not; empty is the next `trace-<n>.trace` in
+captures. Needs a stopped machine, a writable working directory and `build_check`'s
+`heavy_debug`; a dynamic core needs `start(flags=["-set", "cpu core=normal"])`.
 
-The count is proved against the pane's `cc=` counter, which on the normal core moves one
-per instruction: a mismatch is `no_channel`, the file kept (a dynamic core logs once per
-block: `start(flags=["-set", "cpu core=normal"])` to trace).
-
-Reply: `verdict`, `ELAPSED` (all ran; the file holds one line more, the stop), `OTHER_STOP`
-(a declared stopper or pending retrace first, `cause`) or `TIMEOUT` (the bound ran
-out: the run interrupted where it stood, and what ran up to there collected);
-the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `instruction`, `regs`, `watches`, `cause` and `e9`; `trace`: `path`, `bytes`, `shape`, `instructions` (executed), `addresses`
-(distinct), `unplaced` (no symbol places them), `set_path` (a JSON line per address;
-unavailable when it could not be written, said in `note`), `symbols` (per routine, the first
-64), `symbols_total`, `truncated`, `note` for what it cannot prove.
-`readback_refused`: the log closed early (the machine closed it before the trace stopped, so
-its lines are not what ran), is empty, or would not close; `host_failed`: the debugger was
-refused its file, nothing ran and the line it left is emptied. Advancing is not altering.
+Reply: `verdict`, the stop reply of `run_to`, `trace` (`path`, `instructions`, `addresses`,
+`unplaced`, `set_path`, `symbols` (first 64)). Refused: `no_channel`,
+`readback_refused`, `host_failed`.
 
 Reference: REFERENCE.md, Advancing the machine.
 
@@ -354,14 +314,14 @@ Example, from a live run:
 {
   "instructions": 16,
   "shape": "cs_ip",
-  "dest": "$TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/jobs-scratch/A/n954.trace",
+  "dest": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n954.trace",
   "seconds": 30
 }
 ```
 
 ```json
 {
-  "summary": "trace 16 cs_ip: ELAPSED, 16 executed at 1 address, at 0814:00000130, to $TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/jobs-scratch/A/n954.trace",
+  "summary": "trace 16 cs_ip: ELAPSED, 16 executed at 1 address, at 0814:00000130, to $TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n954.trace",
   "status": "ok",
   "pc": "0814:00000130",
   "cpu_mode": "real",
@@ -409,13 +369,13 @@ Example, from a live run:
   },
   "verdict": "ELAPSED",
   "trace": {
-    "path": "$TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/jobs-scratch/A/n954.trace",
+    "path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n954.trace",
     "bytes": 238,
     "shape": "cs_ip",
     "instructions": 16,
     "addresses": 1,
     "unplaced": 1,
-    "set_path": "$TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/jobs-scratch/A/n954.trace.set.jsonl",
+    "set_path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n954.trace.set.jsonl",
     "symbols": [],
     "symbols_total": 0,
     "truncated": false,
@@ -439,6 +399,8 @@ it executed; and the log writes each line before breakpoints are checked, so a t
 breakpoint's address stops there again with nothing executed. The machine can close the log itself
 (the BIOS's power-on self test does, so a trace from the reset park meets it).
 
+`verdict`: `ELAPSED` means all ran and the file holds one line more, the stop; `OTHER_STOP` a declared stopper or pending retrace first (`cause`); `TIMEOUT` the run was interrupted where it stood and what ran up to there collected. `instructions` is executed, `addresses` distinct, `unplaced` those no symbol places; `set_path` is a JSON line per address, unavailable when it could not be written (said in `note`). `no_channel`: the count is proved against the pane's `cc=` counter, which moves one per instruction on the normal core only. `readback_refused`: the log closed early (the machine closed it before the trace stopped, so its lines are not what ran), is empty, or would not close. `host_failed`: the debugger was refused its file, nothing ran and the line it left is emptied.
+
 <!-- scry-reference:begin screen_wait -->
 ## `screen_wait`
 
@@ -449,31 +411,15 @@ screen_wait(text, seconds=30.0)
 ```
 
 Run the machine retrace by retrace until `text` is on the TEXT screen, and stop there.
-`text` (1 to 132 characters code page 437 draws, not ending in a blank) is matched
-literally, case-sensitive, inside ONE row of the screen as `screen_view` reads it, trailing
-blanks dropped: a string that wraps across rows is not found. `seconds`, the wall-clock
-bound, counted from after the first read of the screen, so a short one still
-reaches the first frame; a frame's read under way when it passes is finished. Needs the
-machine stopped and a session started with `logfile`; reports its progress while it waits.
+`text` (1 to 132 code page 437 characters) is matched literally,
+case-sensitive, inside one row as `screen_view` reads it. Needs a stopped machine and a
+session started with `logfile`. Already on screen: answered at once. Each retrace costs a
+stop and five round trips, so `run_for` first for a distant string.
 
-Already on screen at the call: answered at once, the machine not moved. Otherwise each
-retrace costs a stop and five console round trips, so for a string far ahead `run_for`
-first. A frame not in a text mode is no match.
-
-Reply: `verdict` `TARGET` with `already`, `waited_s`, `polls` (the retraces run), `point`
-(`[column, row]` where the text begins), `line` (that row), and a `note` when a declared watch
-or interrupt breakpoint could have made a stop it took for a retrace. The bound: `verdict`
-`TIMEOUT` with `waited_s`, `polls`, `text` (the rows of the last text page read, absent when
-none was), `retrace_pending` and a `note` (a `VRT` still out is interrupted where it stands).
-Either, when it ran: the stop it ended at, the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `instruction`, `regs`, `watches`, `cause` and `e9` (or `enrichment` unavailable, its
-survey cut).
-
-Refused: a bad `text` or `seconds` (`bad_argument`, before anything is typed); a declared
-code breakpoint stopping the machine first (`wait_stopped`, with its `cause`,
-`stop_seq`, `polls`, `retrace_pending`, `text`); a screen it cannot read, as `screen_view`
-refuses it, with `polls` and `stop_seq` after a retrace; where `stop_seq` is due and the
-stop's survey came back cut, `enrichment` unavailable instead; no `logfile`
-(`no_channel`); a running guest (`not_stopped`).
+Reply: `verdict` `TARGET` (`already`, `waited_s`, `polls`, `point` `[column, row]`, `line`)
+or `TIMEOUT` (`waited_s`, `polls`, `text`, `retrace_pending`), `note`, the stop reply of
+`run_to`. Refused: `bad_argument`, `wait_stopped` (a declared breakpoint stopped it),
+`no_channel` (no `logfile`).
 
 Reference: REFERENCE.md, Input and the screen.
 
@@ -529,6 +475,8 @@ Example, from a live run:
 ```
 <!-- scry-reference:end screen_wait -->
 
+`seconds` is counted from after the first read so that a short one still reaches the first frame; a frame read under way when it passes is finished. A frame not in a text mode is no match. `note` on a TARGET appears when a declared watch or interrupt breakpoint could have made a stop it took for a retrace. On a TIMEOUT `text` holds the rows of the last text page read, absent when none was, and a `VRT` still out is interrupted where it stands. Refusals that ran a retrace carry `polls` and `stop_seq`; `wait_stopped` also carries `stop_seq`, `polls`, `retrace_pending` and `text`. Where `stop_seq` is due and the stop's survey came back cut, `enrichment` is unavailable instead.
+
 <!-- scry-reference:begin step -->
 ## `step`
 
@@ -538,16 +486,11 @@ Example, from a live run:
 step(count=1, mode="into")
 ```
 
-`count` instructions, one at a time, `mode` `into` (F11, the default) or
-`over` (F10), each step READ BACK. Needs the machine stopped.
+`count` instructions, each read back; `mode` `into` (F11) or `over` (F10). Needs the machine
+stopped.
 
-Reply: `mode`, `asked`, `before` and `after` (each `SSSS:OOOOOOOO`),
-`instructions_completed` (how many steps actually landed, not how many were asked; fewer
-when the machine left the debugger, e.g. an `over` across a call that never returns, which
-`session.running` says, so the remaining steps were not sent), `moved`, `stalled` (steps
-after which CS:EIP was unchanged: a swallowed keystroke, a `rep` iteration, a jump to
-itself, a halt), and when it stopped the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `instruction`, `regs`, `watches`, `cause` and `e9`. A settle per step; for a longer run use
-`run_to`.
+Reply: `mode`, `asked`, `before`, `after`, `instructions_completed`, `moved`, `stalled`
+(CS:EIP unchanged after a step), and the stop reply. For longer runs `run_to`.
 
 | argument | type | default |
 |---|---|---|
@@ -634,6 +577,8 @@ running and the remaining keystrokes go nowhere; the position is re-established 
 (`L: nop` / `jmp L`) as a swallowed key. `count` is a cost bound, not a safety one: past it the
 question is `run_to`, which pays the settle once.
 
+`instructions_completed` can be fewer than asked when the machine left the debugger (an `over` across a call that never returns, which `session.running` says), so the remaining steps were not sent. `stalled` is a swallowed keystroke, a `rep` iteration, a jump to itself or a halt. The per-step settle is why `count` is a cost bound.
+
 <!-- scry-reference:begin resume -->
 ## `resume`
 
@@ -643,20 +588,12 @@ question is `run_to`, which pays the settle once.
 resume(seconds=0.0, detail=false)
 ```
 
-Let the machine run (F5, sent once). With `seconds` at zero (the default) it comes back
-at once, no verdict; with a bound it waits up to `seconds` for a stop, listening for the
-debugger's prompt as `run_to` does and reporting its progress: `verdict` `OTHER_STOP` with
-the full stop when one lands, or `TIMEOUT` with `waited_s` and a `note`, LEAVING IT RUNNING
-(unlike `run_to`, which interrupts at its bound); `seconds` is 0 or a bound up to
-600. Needs the machine stopped: a guest already running is refused `not_stopped`,
-since an F5 there does nothing and an `ok` would read like a release.
+Let the machine run. `seconds` 0 (the default) returns at once; a bound up to 600
+waits for a stop and, if none comes, leaves it running. Needs a stopped machine.
 
-Nothing has to be declared first: `stop` brings a running guest back, headless or windowed.
-
-Reply: a reply that stopped (an F5 that never left the debugger is a stop too) carries
-the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `instruction`, `regs`, `watches`, `cause` and `e9`. With `detail=True`, `screen_delta`: the debugger's repaint
-for the F5, a POSITIONAL tail capped at its last 2000 characters (`clipped`),
-never a value; without it `omitted` names it.
+Reply: with a bound, `verdict` (`OTHER_STOP` with the stop reply of `run_to`; `TIMEOUT`,
+`waited_s`, `note`). `screen_delta` (with `detail=True`: the repaint's last
+2000 characters; else `omitted`).
 
 Reference: REFERENCE.md, Advancing the machine.
 
@@ -703,6 +640,8 @@ Example, from a live run:
 ```
 <!-- scry-reference:end resume -->
 
+It listens for the debugger's prompt as `run_to` does and reports progress. A refused running guest is because an F5 there does nothing and an `ok` would read like a release. Nothing has to be declared first: `stop` brings a running guest back, headless or windowed. An F5 that never left the debugger is a stop too.
+
 <!-- scry-reference:begin stop -->
 ## `stop`
 
@@ -712,29 +651,12 @@ Example, from a live run:
 stop()
 ```
 
-Bring a RUNNING guest back to the debugger and survey the stop, headless or windowed
-alike: the session sends `BREAK` down the emulator's own debugger channel (upstream's
-`mcp_server`), which reaches the debugger while the guest runs, with no window, no menu and
-nothing taken from whoever is using the screen.
+Bring a running guest back to the debugger and survey the stop, headless or windowed.
 
-THE MACHINE STOPS WHEREVER IT IS, and that is not always in the program: a DJGPP guest
-spends part of every frame in real-mode BIOS handlers (`F000:xxxx`), and a stop landing
-there has no protected-mode selector to place a symbol through, so every symbol of a
-protected-mode table answers that the machine stopped outside the program, and a stop
-lands there often. A breakpoint on the program, armed at a stop inside it before the
-release, is what brings the machine back into its code.
+Reply: `interrupted` (`true` with the stop reply and `via: "break"`; `false` when already
+stopped, with a `note`). INVALID `not_settled`: the `BREAK` got no prompt; ask again.
 
-`unarmable` AND `unresolved` ARE DIFFERENT ANSWERS and the difference is worth holding:
-`unarmable` means the symbol IS in the table and its address cannot be worked out at
-this instant, while `unresolved` means the table does not carry the name at all:
-`unresolved` is a fact about the TABLE, not about the stop: `symbols_load` accumulates its
-batches, so a name missing after several
-loads is one none of them carried.
-
-Reply: `interrupted` (`true` with the full stop reply and `via: "break"`; `false` when the
-machine was already stopped, with `last_stop` and a `note`). A `BREAK` whose prompt never
-comes is `not_settled`: asking again is allowed, and if `stop` fails as well, `close` then
-`start`.
+Reference: REFERENCE.md, Advancing the machine.
 
 Takes no argument.
 
@@ -767,10 +689,12 @@ Example, from a live run:
     "stop_seq": 4,
     "pc": "F000:0000FEA5",
     "cause": "no declared code breakpoint at F000:0000FEA5: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-    "since_s": 25.0,
-    "wall_at": "2026-10-24T16:10:01+00:00"
+    "since_s": 24.8,
+    "wall_at": "2026-10-24T22:12:43+00:00"
   },
   "note": "the machine was already stopped"
 }
 ```
 <!-- scry-reference:end stop -->
+
+The session sends `BREAK` down the emulator's own debugger channel (upstream's `mcp_server`), so it needs no window, no menu and nothing taken from whoever is using the screen. The machine stops wherever it is, often outside the program: a DJGPP guest spends part of every frame in real-mode BIOS handlers (`F000:xxxx`), where no protected-mode selector can place a symbol, so every symbol of a protected-mode table answers that the machine stopped outside the program. A breakpoint on the program, armed at a stop inside it before the release, brings the machine back into its code. `unarmable` means the symbol is in the table and its address cannot be worked out at this instant; `unresolved` means the table does not carry the name, a fact about the table and not the stop, since `symbols_load` accumulates its batches. If `stop` fails as well, `close` then `start`. Last stop is reported as `last_stop`.

@@ -96,7 +96,7 @@ def precheck(run: Run) -> str:
 
 def boot(run: Run) -> dict[str, Any]:
     """A fresh log and state directory of this demo's own under the run's, so nothing an earlier
-    run left is counted again (`state_save` never overwrites)."""
+    run left is counted again (`state_write(method="save")` never overwrites)."""
     (run.dir / "bricks-e9.log").unlink(missing_ok=True)
     states = run.dir / "bricks-states"
     shutil.rmtree(states, ignore_errors=True)
@@ -109,7 +109,7 @@ def boot(run: Run) -> dict[str, Any]:
 
 
 def started(reply: Reply, run: Run) -> str:
-    watched = "shared" if reply["shared"] else "headless"
+    watched = "shared" if reply.get("shared", False) else "headless"
     return f"{watched} DOSBox-X, parked at the debugger before DOS boots"
 
 
@@ -254,7 +254,8 @@ STEPS = [
     Step("score", "read_memory", {"ref": "score", "length": 2}, score_is(FIRST_POINTS),
          shown=("summary", "hex")),
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png"}, pictured),
-    Step("unbreak", "breakpoint_clear", {"all": True}, lambda reply, run: "breakpoint cleared"),
+    Step("unbreak", "declaration_clear", {"kind": "breakpoint", "all": True}, lambda reply,
+         run: "breakpoint cleared"),
     Step("frames", "run_for", {"frames": 3, "seconds": WAIT_S}, frames,
          volatile={key: "a retrace stop lands at any instruction of the game's retrace poll"
                    for key in ("summary", "regs", "instruction", "pc",
@@ -283,14 +284,14 @@ STEPS = [
     Step("before save", "read_memory", {"ref": "paddle_x", "length": 2}, moved,
          volatile=MOUSE_PLACED),
     Step("on again", "resume", {}, lambda reply, run: "the game runs"),
-    Step("save", "state_save", {"name": "bricks"},
+    Step("save", "state_write", {"method": "save", "name": "bricks"},
          lambda reply, run: f"state saved as {Path(str(reply['path'])).name}",
          volatile={"summary": "it carries the state's size and time", "bytes": "the state is "
                    "compressed, so its size follows the frame it was taken at"},
          shown=("name",)),
     Step("left", "send_keys", {"keys": ["left"], "expect": "KEY L$", "seconds": 10},
          seen("the left arrow moved the paddle after the save"), volatile=INPUT_TIMING),
-    Step("load", "state_load", {"name": "bricks"},
+    Step("load", "state_write", {"method": "load", "name": "bricks"},
          lambda reply, run: f"state loaded from {Path(str(reply['path'])).name}",
          volatile={"summary": "it carries how long the load took",
                    "mark": "the game ran until the load, so where its log ended then follows "
@@ -303,7 +304,8 @@ STEPS = [
     Step("play on", "resume", {}, lambda reply, run: "the game runs"),
     Step("serve", "send_keys", {"keys": ["space"], "expect": "SERVE$", "seconds": 10},
          seen("SPACE served the ball that was waiting on the paddle"), volatile=INPUT_TIMING),
-    Step("unwatch", "watch_clear", {"all": True}, lambda reply, run: "watch cleared"),
+    Step("unwatch", "declaration_clear", {"kind": "watch", "all": True}, lambda reply,
+         run: "watch cleared"),
     Step("close", "close", {}, lambda reply, run: f"closed: {reply['ended_by']}"),
 ]
 

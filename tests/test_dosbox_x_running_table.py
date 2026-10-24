@@ -4,11 +4,14 @@ holds exactly the ones that answer without `not_stopped`. The reply's `answers_w
 and `perform`'s step vocabulary are read off the same table and the same registry."""
 from __future__ import annotations
 
+import tempfile
 import time
 from pathlib import Path
 from typing import Any
 
+import fold_calls
 import pytest
+from scry_core import roster
 from test_dosbox_x_server import NM_TEXT, _names, clean_session  # noqa: F401
 
 import dosbox_declarations as dec
@@ -27,7 +30,7 @@ import dosbox_x_server as server
 #: not run at the next stop either.
 NO_CONSOLE = {"alive", "state", "at_debugger", "log", "log_wait", "e9", "e9_mark",
               "e9_new_since", "e9_since_mark", "e9_wait", "send_commands",
-              "break_in", "state_save", "state_load",
+              "break_in", "save_state", "load_state",
               "state_list", "snapshot", "captures", "frame"}
 
 
@@ -78,11 +81,11 @@ class RunningGuest:
         self.stopped = True
         return 0.0
 
-    def state_save(self, name: str, seconds: float = 20.0,
+    def save_state(self, name: str, seconds: float = 20.0,
                    progress: object = None) -> dict[str, object]:
         return {"name": name}
 
-    state_load = state_save
+    load_state = save_state
 
     def state_list(self) -> dict[str, object]:
         return {"state_dir": "/x/save", "states": [],
@@ -176,62 +179,78 @@ def _args(tmp_path: Path) -> dict[str, dict[str, Any]]:
         "call_stack": {},
         "memdump": {"ref": "0000:0400", "length": 16, "dest": str(tmp_path / "d.bin")},
         "find": {"data_hex": "41", "ref": "0000:0400", "length": 16},
-        "scan_start": {"ref": "0000:0400", "length": 16}, "scan_filter": {}, "scan_clear": {},
+        "scan start": {"ref": "0000:0400", "length": 16}, "scan filter": {}, "scan clear": {},
         "debug": {"command": "R"}, "set_register": {"name": "ax", "value": 1},
         "write": {"ref": "0000:0400", "data_hex": "41"}, "resume": {}, "stop": {}, "step": {},
         "run_to": {"ref": "0000:0400", "control": "0000:0500"}, "run_for": {"frames": 1},
         "trace": {"instructions": 1, "dest": str(tmp_path / "t.log")}, "screen_wait": {"text": "A"},
-        "state_save": {"name": "boot"}, "state_load": {"name": "boot"}, "snapshot": {},
+        "state_write save": {"name": "boot"}, "state_write load": {"name": "boot"}, "snapshot": {},
         "state_list": {}, "breakpoint_interrupt": {"number": 0x21},
         "symbols_load": {"path": str(source)}, "symbols_find": {"name": "x"},
         "machine_map": {}, "interrupt_vectors": {}, "palette": {}, "screen_view": {},
-        "screen_signature": {}, "breakpoint_at": {"ref": "0000:0400"}, "breakpoint_list": {},
-        "breakpoint_clear": {"all": True},
+        "screen_signature": {}, "breakpoint_at": {"ref": "0000:0400"},
+        "declaration_list breakpoint": {},
+        "declaration_clear breakpoint": {"all": True},
         "watch_add": {"ref": "0000:0400", "mode": "change", "length": 2},
-        "watch_list": {}, "watch_clear": {"all": True}, "send_keys": {"keys": ["a"]},
+        "declaration_list watch": {}, "declaration_clear watch": {"all": True},
+        "send_keys": {"keys": ["a"]},
         "send_mouse": {"button": "left"}, "captures": {},
         "capture_frame": {"frame": 0, "dest": str(tmp_path / "f.png")},
-        "comment_add": {"ref": "0000:0400", "text": "x"}, "comment_list": {},
-        "comment_delete": {"ref": "0000:0400"}, "comment_save": {"dest": str(tmp_path / "c.tsv")},
-        "comment_load": {"path": str(tmp_path / "c.tsv")},
+        "comment_write add": {"ref": "0000:0400", "text": "x"}, "comment_list": {},
+        "comment_write delete": {"ref": "0000:0400"},
+        "comment_write save": {"dest": str(tmp_path / "c.tsv")},
+        "comment_write load": {"path": str(tmp_path / "c.tsv")},
         "series_capture": {"at_frames": [0]},
-        "image_diff": {"a": "/nonexistent/a.png", "b": "/nonexistent/b.png"},
-        "series_diff": {"a": "/nonexistent/a.json", "b": "/nonexistent/b.json"},
-        "region_track": {"manifest": "/nonexistent/m.json"},
-        "golden_check": {"manifest": "/nonexistent/m.json",
-                         "checksums": "/nonexistent/g.sha256"},
-        "map_load": {"path": str(tmp_path / "none.scry-map.json")},
-        "map_save": {"dest": str(tmp_path / "x.scry-map.json")},
-        "map_add": {"screen": "s", "match": [[0, 0, 1, 1]]}, "map_find": {},
+        "image_compare image": {"a": "/nonexistent/a.png", "b": "/nonexistent/b.png"},
+        "image_compare series": {"a": "/nonexistent/a.json", "b": "/nonexistent/b.json"},
+        "image_compare region": {"manifest": "/nonexistent/m.json"},
+        "image_compare golden": {"manifest": "/nonexistent/m.json",
+                                 "checksums": "/nonexistent/g.sha256"},
+        "map_write load": {"path": str(tmp_path / "none.scry-map.json")},
+        "map_write save": {"dest": str(tmp_path / "x.scry-map.json")},
+        "map_write add": {"screen": "s", "match": [[0, 0, 1, 1]]}, "map_find": {},
     }
 
 
+#: Every step a list may take, a fold by each of its methods (`fold_calls`).
+with tempfile.TemporaryDirectory() as _scratch:
+    PROBES = sorted(_args(Path(_scratch)))
+
+
+def _answers(probe: str) -> bool:
+    """Whether the table says this step answers on a running guest."""
+    tool, _, value = probe.partition(" ")
+    selector = {"kind" if tool.startswith("declaration_") else "method": value} if value else {}
+    return sequence.answers_running(tool, selector)
+
+
 def test_every_step_tool_has_arguments_here(tmp_path: Path) -> None:
-    assert set(_args(tmp_path)) == set(dosbox_mcp.registered_tools()) - NOT_STEPS
+    assert {p.partition(" ")[0] for p in _args(tmp_path)} == (
+        set(dosbox_mcp.registered_tools()) - NOT_STEPS)
 
 
-@pytest.mark.parametrize("tool", sorted(set(dosbox_mcp.registered_tools()) - NOT_STEPS))
+@pytest.mark.parametrize("probe", PROBES)
 def test_the_table_holds_exactly_what_answers_on_a_running_guest(
-        tool: str, tmp_path: Path) -> None:
+        probe: str, tmp_path: Path) -> None:
     _running(tmp_path)
-    got = getattr(server, tool)(**_args(tmp_path)[tool])
+    got = fold_calls.of(server, probe)(**_args(tmp_path)[probe])
     refused = got.get("code") == "not_stopped"
-    assert refused is (tool not in sequence.RUNNING_OK_OPS), (tool, got)
+    assert refused is not _answers(probe), (probe, got)
 
 
-@pytest.mark.parametrize("tool", sorted(sequence.RUNNING_OK_OPS))
+@pytest.mark.parametrize("probe", [p for p in PROBES if _answers(p)])
 def test_no_tool_of_the_table_types_at_a_running_guests_console(
-        tool: str, tmp_path: Path) -> None:
+        probe: str, tmp_path: Path) -> None:
     """The table's own claim: a running guest's console drops what is typed at it, after its
     survey has sat out the whole wait for a pane that does not come."""
     fake = _running(tmp_path)
-    getattr(server, tool)(**_args(tmp_path)[tool])
-    assert fake.asked == [], (tool, fake.asked)
+    fold_calls.of(server, probe)(**_args(tmp_path)[probe])
+    assert fake.asked == [], (probe, fake.asked)
 
 
 def test_answers_while_running_is_the_table_and_the_five_that_answer_outside_a_list() -> None:
-    table = [*sorted(sequence.RUNNING_OK_OPS), "registers(from_last_stop=True)", "close",
-             "drive", "perform", "perform_export"]
+    table = [*sorted(roster.by_method(sequence.RUNNING_OK_OPS, sequence.RUNNING_METHODS)),
+             "registers(from_last_stop=True)", "close", "drive", "perform", "perform_export"]
     assert table == dosbox_mcp._ANSWERS_WHILE_RUNNING
 
 
@@ -432,12 +451,11 @@ def test_clearing_one_family_keeps_the_queued_arm_of_the_other_at_the_same_ref(
     w = server.watch_add(ref="0814:0100", mode="change", length=2)
     b = server.breakpoint_at(ref="0814:0100")
     assert w["state"] == "pending" and b["state"] == "pending", (w, b)
-    clear = server.breakpoint_clear if cleared == "breakpoint" else server.watch_clear
-    c = clear(ref="0814:0100")
+    other = "watch" if cleared == "breakpoint" else "breakpoint"
+    c = server.declaration_clear(cleared, ref="0814:0100")
     assert c["status"] == "ok" and c["declarations_cleared"] == 1, c
     assert dstate.STATE.pending["arm"] == ["0814:0100"], dstate.STATE.pending
-    gone = server.watch_clear if cleared == "breakpoint" else server.breakpoint_clear
-    gone(all=True)                   # the other family cleared too: nothing left to arm
+    server.declaration_clear(other, all=True)   # the other family cleared too: nothing to arm
     assert dstate.STATE.pending["arm"] == [], dstate.STATE.pending
 
 

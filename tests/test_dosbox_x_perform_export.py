@@ -43,20 +43,22 @@ def test_a_session_on_the_double_is_exported_as_steps_checks_and_named_drops(
     server.write(ref="F000:0000", data_hex="aa")
     regs = server.registers()
     server.status()
-    server.comment_add(ref="F000:0000", text="the entry")
+    server.comment_write("add", ref="F000:0000", text="the entry")
     out = server.perform_export(dest=str(tmp_path / "s.json"))
     assert out["status"] == "ok" and out["cut"]["available"] is False, out
     doc = json.loads((tmp_path / "s.json").read_text())
     assert doc["server"] == "dosbox-x" and doc["start"] == {"conf": "/x.conf"}
     assert [step["op"] for step in doc["steps"]] == ["write", "registers"]
     assert doc["steps"][1]["recorded"] == {"regs": regs["regs"]}
-    assert out["checks"] == 1 and [d["op"] for d in out["dropped"]] == ["status", "comment_add"]
+    assert out["checks"] == 1 and [d["op"] for d in out["dropped"]] == ["status",
+                                                                        "comment_write"]
     assert out["summary"].startswith("perform_export: 2 steps, 1 check, 2 dropped to ")
 
 
 def test_the_machine_around_a_call_is_the_sessions_stop_count_and_never_a_frame() -> None:
     """The count is the session's, which every return to the prompt moves, never the record of
-    the last stop, which a stop nobody surveyed yet (a parked `state_load`) leaves behind."""
+    the last stop, which a stop nobody surveyed yet (a parked `state_write(method="load")`) leaves
+    behind."""
     ses = install()
     ses.stop_count = 4  # type: ignore[attr-defined]
     got = dosbox_mcp._machine()
@@ -72,7 +74,8 @@ def test_a_stop_the_session_counted_before_its_record_moves_no_later_call(
     sent = ses.command
 
     def counted(text: str, **kw: object) -> str:
-        # INSIDE a call, as a parked `state_load` counts its stop: counted, not surveyed. A count
+        # INSIDE a call, as a parked `state_write(method="load")` counts its stop: counted, not
+        # surveyed. A count
         # that moved between two calls would be motion outside the recording, a cut.
         ses.stop_count = 2  # type: ignore[attr-defined]
         return sent(text, **kw)
@@ -80,9 +83,9 @@ def test_a_stop_the_session_counted_before_its_record_moves_no_later_call(
     server.write(ref="F000:0000", data_hex="aa")
     ses.command = sent  # type: ignore[method-assign]
     server.status()
-    server.comment_add(ref="F000:0000", text="after")
+    server.comment_write("add", ref="F000:0000", text="after")
     out = server.perform_export(dest=str(tmp_path / "s.json"))
-    assert [d["op"] for d in out["dropped"]] == ["status", "comment_add"], out
+    assert [d["op"] for d in out["dropped"]] == ["status", "comment_write"], out
 
 
 def test_the_export_and_the_lifecycle_are_never_recorded_and_never_a_step() -> None:
@@ -97,21 +100,20 @@ def test_the_export_and_the_lifecycle_are_never_recorded_and_never_a_step() -> N
 #: moves is seen: a check of fields, a run the wall clock ends, a drop, or (absent) a step.
 DECLARED = {
     "read_memory": ("hex",), "registers": ("regs",), "screen_signature": ("signature",),
-    "golden_check": ("matched", "differing_total", "missing_total", "extra_total", "differing",
-                     "missing", "extra"),
+    "image_compare": {"image": "drop", "series": "drop", "region": "drop",
+                      "golden": ("matched", "differing_total", "missing_total", "extra_total",
+                                 "differing", "missing", "extra")},
+    "map_write": {"add": "step", "load": "step", "save": "drop"},
     "resume": "wall", "stop": "wall", "screen_wait": "wall",
-    **dict.fromkeys(("memdump", "scan_start", "scan_filter", "scan_clear", "snapshot",
-                     "capture_frame", "series_capture", "comment_add", "comment_delete",
-                     "comment_save", "comment_load", "machine_map", "interrupt_vectors",
-                     "palette", "screen_view", "image_diff", "series_diff", "region_track",
-                     "map_save"),
-                    "drop"),
+    **dict.fromkeys(("memdump", "scan", "snapshot", "capture_frame", "series_capture",
+                     "comment_write", "machine_map", "interrupt_vectors", "palette",
+                     "screen_view"), "drop"),
     # A replay knows the map an identification was made against, and holds the find to it.
     "map_find": ("matched", "screen"),
     # The readers dropped by default, named so a reader that turns into a step is seen.
-    **dict.fromkeys(("breakpoint_list", "build_check", "call_stack", "captures", "comment_list",
-                     "disassemble", "find", "log", "log_wait", "state_list", "status",
-                     "symbols_find", "watch_list"), "drop"),
+    **dict.fromkeys(("declaration_list", "build_check", "call_stack", "captures",
+                     "comment_list", "disassemble", "find", "log", "log_wait", "state_list",
+                     "status", "symbols_find"), "drop"),
 }
 
 
@@ -119,7 +121,9 @@ def test_each_tool_is_exported_as_it_is_declared_and_the_rest_as_steps_or_droppe
     declared = dosbox_mcp.RECORDER.declared
     for tool, kind in declared.items():
         want = DECLARED.get(tool, "step")
-        assert kind.export_as == want, (tool, kind.export_as, want)
+        got = ({m: d.export_as for m, d in kind.items()} if isinstance(kind, dict)
+               else kind.export_as)
+        assert got == want, (tool, got, want)
     assert set(DECLARED) <= set(declared), sorted(set(DECLARED) - set(declared))
 
 
@@ -173,8 +177,9 @@ def test_the_declarations_the_recorder_reads_are_the_refs_the_list_tools_answer(
     assert server.breakpoint_interrupt(number=0x21)["status"] == "ok"
     assert server.watch_add(ref="F000:0020", mode="show", length=2)["status"] == "ok"
     declared = dosbox_mcp.RECORDER._stored()
-    assert set(declared) == set(dosbox_mcp.RECORDER.lists) <= set(dosbox_mcp.registered_tools())
-    for tool, key in dosbox_mcp.RECORDER.lists.items():
+    assert set(declared) == set(dosbox_mcp.RECORDER.lists)
+    assert set(dosbox_mcp.RECORDER.lists.values()) <= set(dosbox_mcp.registered_tools())
+    for key, tool in dosbox_mcp.RECORDER.lists.items():
         listed = getattr(server, tool)()[key]
-        assert sorted(r["ref"] for r in listed) == sorted(declared[tool]), tool
+        assert sorted(r["ref"] for r in listed) == sorted(declared[key]), key
     assert sum(len(refs) for refs in declared.values()) == 3

@@ -15,14 +15,11 @@ A view's PNG goes to the session's scratch (`close` deletes it; `dest` keeps one
 registers(from_last_stop=false)
 ```
 
-The register pane as a mapping. Needs the machine stopped at the debugger; INVALID
-when no pane came back, and that refusal carries `last_stop` and the tools that do answer
-while the guest runs. `from_last_stop=True` hands back the registers AS THEY WERE at the
-last stop, never as the current value; INVALID before any stop.
+The register pane. `from_last_stop=True` returns the registers of the last stop, never the
+current value; refused before any stop.
 
-Reply: `regs` (`EAX`, `EIP`, `CS`, `DS`, ... as hex strings), and from the last stop
-`superseded` (true) with `last_stop`. The control registers (CR0, CR3) and the descriptor
-tables' registers are not in the pane: `machine_map(sections=["control"])` reads them.
+Reply: `regs` (hex strings), `superseded`. CR0, CR3 and descriptor tables:
+`machine_map(sections=["control"])`.
 
 | argument | type | default |
 |---|---|---|
@@ -64,6 +61,8 @@ Example, from a live run:
 ```
 <!-- scry-reference:end registers -->
 
+A refusal for lack of a pane carries `last_stop` and names the tools that do answer while the guest runs.
+
 <!-- scry-reference:begin read_memory -->
 ## `read_memory`
 
@@ -73,18 +72,12 @@ Example, from a live run:
 read_memory(ref, length=16)
 ```
 
-`length` bytes at `ref`, a symbol or a `SEG:OFF` (the colon is the tell: a bare
-number is read as a symbol name), as `hex`;
-beside them the data-view ROWS the debugger's `D` printed, which is where the bytes come
-from. Needs the machine stopped.
+`length` bytes (1..128) at `ref`, a symbol or `SEG:OFF` (a bare number is read as a
+symbol).
 
-Reply: `hex` (`length` bytes from the address), `length`, `rows` (the data view's rows
-of sixteen bytes, as many as the debugger's window showed), and `seg_off`, where the
-ref resolved to. `length` is 1 to 128, and the rows have to hold it from the
-address: a view that showed fewer bytes than asked is refused (`readback_refused`)
-naming what it held, and above the view the answer is `memdump`. INVALID unless the
-address asked for is among the rows returned, so a cut repaint is refused rather than
-handed back shifted. An absent or ambiguous symbol is refused.
+Reply: `hex`, `length`, `rows` (the data view's), `seg_off`, `ref`. A view holding fewer
+bytes than asked is `readback_refused`; above it use `memdump`. An absent or ambiguous
+symbol is refused.
 
 | argument | type | default |
 |---|---|---|
@@ -136,6 +129,8 @@ held and prepended to the next (at offset zero too), or a fragment stripped alon
 byte into a row's hex; the hold is bounded by length, or an unterminated OSC would swallow the
 stream and go blind while reporting nothing wrong.
 
+The bytes come from the debugger's data-view rows, and the reply is INVALID unless the address asked for is among them, so a cut repaint is refused rather than handed back shifted.
+
 <!-- scry-reference:begin disassemble -->
 ## `disassemble`
 
@@ -145,30 +140,16 @@ stream and go blind while reporting nothing wrong.
 disassemble(ref, length=16)
 ```
 
-Decode `length` bytes from `ref`, a symbol or a `SEG:OFF`, one x86
-instruction a line, on the host (capstone): the debugger has no disassembly command. The
-listing completes the instruction that straddles the end, so it may run a little past
-`length`, unless the segment ends first. Needs the machine stopped.
+Decode `length` bytes from `ref` (a symbol or `SEG:OFF`) as x86, one instruction a line. The
+last is completed unless the segment ends first.
 
-The width is the segment's own D bit: real mode 16-bit; in protected mode the pane's
-`Pr32`/`Pr16` for CS, `SELINFO` for a selector another segment register holds, the
-descriptor listings (which need `logfile`) for one no register holds.
+Reply: `seg_off`, `length`, `code_bits`, `code_bits_from`, `lines`, `flow` (per line:
+`call`, `branch`, `return`, `sequential`, `unknown`), `flow_source`, and with symbols loaded
+`resolved` (direct call/branch targets and memory operands: `line`, `operand`, `seg_off`,
+`addr`, `symbol`, `delta`).
 
-Reply: `seg_off`, `length`, `code_bits` (16 or 32) and `code_bits_from` (where
-the width was read), `lines` (`SSSS:OOOOOOOO BYTES TEXT`; a byte no instruction starts
-with is `.byte 0x..`), `flow` (per line: `call`, an interrupt included; `branch`; `return`;
-`sequential`; `unknown` for such a byte), `flow_source` (`capstone`), and with a symbol
-table loaded `resolved`: every direct call or branch target (`kind` `target`, its segment
-the line's own or the far pointer's) and direct memory operand (`kind` `memory`,
-`register` the segment register it is read through, at its value at this stop), each with
-`line`, `operand`, `seg_off`, `addr` (the linear address), and the nearest `symbol` with
-`delta`, unavailable outside the table's span; a row that could not be placed has `addr`
-unavailable too. A register-relative operand is not resolved.
-
-Refused: `length` out of range, and one that runs past the end of a 16-bit segment
-(IP wraps there), naming the most bytes from there; `memdump`'s refusals apply to the
-bytes read (a leftover dump file, a protected-mode range past offset 0xFFFF without
-`logfile`).
+Refused: `length` out of range or past the end of a 16-bit segment; `memdump`'s refusals
+apply.
 
 Reference: REFERENCE.md, Reading and writing.
 
@@ -222,6 +203,8 @@ Example, from a live run:
 ```
 <!-- scry-reference:end disassemble -->
 
+The debugger has no disassembly command, hence capstone on the host. The width is the segment's own D bit: real mode 16-bit; in protected mode the pane's `Pr32`/`Pr16` for CS, `SELINFO` for a selector another segment register holds, the descriptor listings (which need `logfile`) for one no register holds. `lines` are `SSSS:OOOOOOOO BYTES TEXT`; a byte no instruction starts with is `.byte 0x..` with flow `unknown`. In a 16-bit segment IP wraps at its end, which is why a longer range is refused, naming the most bytes from there. `resolved` rows carry the segment register a memory operand is read through at this stop; an address unavailable outside the table's span.
+
 <!-- scry-reference:begin call_stack -->
 ## `call_stack`
 
@@ -231,25 +214,13 @@ Example, from a live run:
 call_stack()
 ```
 
-A heuristic chain of the callers of the routine the stop is in, never a verdict: the
-frame pointers walked (C's `push bp`/`mov bp, sp` and the `enter` frame), each return
-address kept only when a call instruction ends exactly there. Needs the machine stopped.
+A heuristic chain of the stop's callers, never a verdict: frame pointers walked (`push
+bp`/`mov bp, sp`, `enter`), each return kept only when a call instruction ends there. Row 0
+is the stop.
 
-Row 0 is the stop. Outside its routine's frame (a `push bp` or `enter` at the routine's own
-address, the `mov bp, sp` right after the push, the `ret` that leaves it) the caller is read
-off the stack pointer (`via` `entry`); then the chain from BP (`bp_chain`): the return
-beside each frame, near or far as the call before it says. A return is named by the
-routine its call is in. The walk ends at a zero
-or non-rising saved frame pointer, a frame past the stack segment's end, a return no call
-precedes (not listed), a return outside the loaded table (listed), or its bound.
-
-Reply: `heuristic` (always true), `code_bits`, `calls` (innermost first: `seg_off`,
-`addr` (linear), `symbol` and `delta`, unavailable outside the table's span,
-`via`, `call` (the call instruction at the call site, unavailable on row 0), `bp` (the
-frame it was read beside, unavailable on rows 0 and `entry`)), `truncated` (the bound was
-reached), `ended_why` (a read that failed says so here). Refused when the register pane
-shows no SS, ESP or EBP. A routine that keeps no frame pointer is invisible to it: its
-caller's caller is listed in its place, or nothing.
+Reply: `heuristic`, `code_bits`, `calls` (innermost first: `seg_off`, `addr`, `symbol`,
+`delta`, `via`, `call`, `bp`), `truncated`, `ended_why`. Refused when the register pane
+shows no SS, ESP or EBP. A routine with no frame pointer is invisible.
 
 Reference: REFERENCE.md, Reading and writing.
 
@@ -304,6 +275,8 @@ Example, from a live run:
 ```
 <!-- scry-reference:end call_stack -->
 
+Outside a routine's frame (at its `push bp` or `enter`, the `mov bp, sp` after it, the `ret`) the caller is read off the stack pointer (`via` `entry`); then the chain from BP, near or far as the call before it says. The walk ends at a zero or non-rising saved frame pointer, a frame past the stack segment's end, a return no call precedes (not listed), a return outside the loaded table (listed), or its bound. A routine that keeps no frame pointer shows its caller's caller in its place, or nothing. `call` is unavailable on row 0, `bp` on row 0 and `entry` rows.
+
 <!-- scry-reference:begin memdump -->
 ## `memdump`
 
@@ -313,22 +286,12 @@ Example, from a live run:
 memdump(ref, length, dest)
 ```
 
-`length` bytes of memory to a FILE at `dest`.
+`length` bytes from `ref` (a symbol or `SEG:OFF`) to the new file `dest` (absolute).
 
-Reply: `ref`, `seg_off`, `length`, `path` and `bytes` (the size written).
-
-`ref` is a symbol or a `SEG:OFF` (colon required); `dest` is an absolute path, its
-directory there. Needs the machine stopped. The size
-handed back is checked for EQUALITY against `length`. Refused rather than overwriting: a
-dump file already sitting where the debugger writes (the emulator's working directory),
-a dangling link there included, or at `dest`, and a `dest` directly in that directory (a
-subdirectory of it is fine). An absent or ambiguous symbol is refused.
-
-Past offset 0xFFFF the debugger would wrap a 16-bit segment or read zeros past a limit: in
-real mode the range is read in 64 KiB windows, so it holds the bytes really there, up to
-`FFFF:FFFF`; in protected mode the selector's descriptor is read (which needs `logfile`)
-and a 16-bit segment, a range past its limit, or a selector with no descriptor is refused.
-Inside 0 to 0xFFFF the limit is not judged and the debugger reads zeros past it.
+Reply: `ref`, `seg_off`, `length`, `path`, `bytes`. Refused: a dump file already where the
+debugger writes or at `dest`, a `dest` directly in that directory, an absent or ambiguous
+symbol; in protected mode a 16-bit segment, a range past its limit, or no descriptor (needs
+`logfile`).
 
 | argument | type | default |
 |---|---|---|
@@ -350,18 +313,18 @@ Example, from a live run:
 {
   "ref": "0000:0400",
   "length": 16,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/jobs-scratch/A/n733.bin"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n733.bin"
 }
 ```
 
 ```json
 {
-  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/jobs-scratch/A/n733.bin",
+  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n733.bin",
   "status": "ok",
   "ref": "0000:0400",
   "seg_off": "0000:00000400",
   "length": 16,
-  "path": "$TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/jobs-scratch/A/n733.bin",
+  "path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n733.bin",
   "bytes": 16
 }
 ```
@@ -370,6 +333,8 @@ Example, from a live run:
 **`memdump` names the debugger's file itself**, `MCPDUMP.BIN` in the emulator's working directory, so `captures_dir` is not where a dump lands. A build whose `MEMDUMPBIN` is given no name reads one from past the end of the line; a build that takes no name writes `MEMDUMP.BIN`, collected from the working directory and the captures directory alike, because where that lands is one build's behaviour.
 
 A `dest` that is, or lives under, one of the debugger's file names is refused too, compared on the filesystem rather than the spelling: a dump collected into the directory it is collected FROM cannot be told from the leftover, and would poison every later dump.
+
+The debugger writes its dump into the emulator's working directory, so a dangling link there counts as a leftover. The size handed back is checked for equality against `length`. Past offset 0xFFFF the debugger would wrap a 16-bit segment or read zeros past a limit: in real mode the range is read in 64 KiB windows, up to `FFFF:FFFF`; in protected mode the selector's descriptor is read instead. Inside 0 to 0xFFFF the limit is not judged and the debugger reads zeros past it.
 
 <!-- scry-reference:begin find -->
 ## `find`
@@ -380,21 +345,11 @@ A `dest` that is, or lives under, one of the debugger's file names is refused to
 find(data_hex, ref, length)
 ```
 
-Every address holding the bytes `data_hex` (whole hex bytes, two digits each) in
-`length` bytes from `ref`. `ref` and `length` are required: there is no default range.
+Every address holding `data_hex` (whole hex bytes) in `length` bytes from `ref`; both
+required. `memdump`'s refusals apply. For a value narrowed over time use `scan`.
 
-The debugger has no pattern search of its own, so the range is dumped (the `memdump`
-route, its windows past offset 0xFFFF included, into a scratch file of this call's own
-that is gone before the reply) and searched exactly. Needs the machine
-stopped; `memdump`'s refusals apply (a leftover dump file where the debugger writes). In
-real mode a hit past offset 0xFFFF is named from its own paragraph. For a VALUE narrowed
-by what it does over time, the debugger's own scanner is `scan_start` / `scan_filter` /
-`scan_clear`.
-
-Reply: `seg_off`, `length`, `span` (what was examined:
-`from`, `length`, `source`, here always `ref+length` since the range is the caller's
-own), `hits` (`SEG:OFF` in address order, at most 400: when truncated, the HIGHEST
-addresses are kept), `hits_total` (every hit), `truncated`.
+Reply: `seg_off`, `length`, `span`, `hits` (`SEG:OFF`, at most 400, highest kept),
+`hits_total`, `truncated`.
 
 | argument | type | default |
 |---|---|---|
@@ -449,6 +404,8 @@ Example, from a live run:
 ```
 <!-- scry-reference:end find -->
 
+The debugger has no pattern search, so the range is dumped by the `memdump` route (windows past offset 0xFFFF included) into a scratch file of the call's own, gone before the reply, and searched exactly. In real mode a hit past offset 0xFFFF is named from its own paragraph. `span` is always `ref+length` here since the range is the caller's own.
+
 <!-- scry-reference:begin log -->
 ## `log`
 
@@ -458,30 +415,15 @@ Example, from a live run:
 log(pattern, channel, limit=40, labels=false, since_mark=0)
 ```
 
-The session's log, one `channel` of it, filtered in the server by a regex.
+The session's log, one `channel` (`guest`, `emulator`, `all`) filtered by the Python regex
+`pattern`; `limit` keeps the newest matches; `labels=True` adds `labels`. `since_mark` (a
+byte position, from a `mark`) reads only what follows. Needs a session with `logfile`; works
+on a running guest.
 
-`channel` is `guest` (the program's own 0xE9 instrumentation, one line per write),
-`emulator` (DOSBox-X's own lines, the categories its `log` section names) or `all` (the
-file in order, each line tagged `[guest] ` or `[emulator] `); `process` names the
-emulator's stdout, which here is the debugger's terminal, and is refused by name.
-`pattern` is a Python regular expression; `limit` keeps the NEWEST
-matching lines; `labels=True` adds `labels`, how many returned lines carry each first
-word (the guest's own `BOOT`, `PERF`, `UI`...), one glance at who is talking. `since_mark`, a byte position in the channel's log (the `mark` a `state_load` or a stop's log block gives for it): only what was written after it is read; 0, the default, reads the whole log
-(one file holds the three channels, so one position serves each). Needs a
-session started with `logfile`. Works on a running guest (and, like every tool, applies
-what was queued while the guest ran if it finds the machine stopped, saying so in
-`applied_on_stop`).
-
-Reply: `channel`, `lines` (the newest `limit` matches, in order), `lines_total` (how many
-matched IN ALL, not how many came back), `truncated`, and `labels` when asked. An empty `lines`
-is an answer: the channel is there and nothing matched.
-
-INVALID, with `code` and `message` saying which: no `logfile` on this session; the log
-does not exist yet; the guest channel holds no instrumentation at all; `limit` out of range
-(above it, narrow the pattern); a
-pattern that does not compile; a channel that is not one of the three; a `since_mark` that
-names no position of the log; the session is gone. For "when did X happen, and wait if it
-has not" use `log_wait`.
+Reply: `channel`, `lines`, `lines_total`, `truncated`, `labels`, `pattern`. INVALID with
+`code`: no `logfile`, no log yet, no guest instrumentation, `limit` out of range, a bad
+pattern, an unknown channel (`process` is refused by name), a `since_mark` naming no
+position. To wait for a line use `log_wait`.
 
 Reference: REFERENCE.md, The log.
 
@@ -532,6 +474,8 @@ Example, from a live run:
 ```
 <!-- scry-reference:end log -->
 
+`guest` is the program's own 0xE9 instrumentation, one line per write; `emulator` is DOSBox-X's own lines; `all` is the file in order, each line tagged `[guest] ` or `[emulator] `. `labels` counts returned lines by first word (BOOT, PERF, UI...), one glance at who is talking. `lines_total` counts all matches, not those returned, and an empty `lines` is an answer. One file holds the three channels, so one mark position serves each. `process` is the emulator's stdout, which here is the debugger's terminal. Queued work applies on a stop, saying so in `applied_on_stop`.
+
 <!-- scry-reference:begin log_wait -->
 ## `log_wait`
 
@@ -541,32 +485,15 @@ Example, from a live run:
 log_wait(pattern, channel, seconds=30.0, since_mark=0)
 ```
 
-WHEN a line of `channel` matching `pattern` was logged: at once if it already was,
-else wait for it. Reports its progress while it waits.
+When a line of `channel` matching `pattern` was logged: at once if the log already holds it,
+else wait up to `seconds`. `channel` and `since_mark` as in `log`. Works on a running guest.
 
-`channel` as in `log` (`guest`, `emulator`, `all`); `pattern` is a regex over that
-channel; `seconds` bounds the wait. It reads what the log ALREADY holds first, so a line
-that went past before you asked is still found. `since_mark` as in `log`: "already" is then
-"since the mark", which is how "after the load" is asked. Works on a running guest (the usual
-case: a guest writing traces is a guest that runs).
-
-Reply: `verdict` `TARGET`, `pattern`, `channel`, `line` (the FIRST match; `log` is the tool
-for the newest), `already` (it was in the log before this call: history, not something you
-were present for), `waited_s` (0.0 when already), `lines_before`, `lines_total`,
-`arrived_during`, `lines_examined`; when the bound ran out, `verdict` `TIMEOUT` with
-`pattern`, `channel`, `arrived_during`, `lines_examined`, `waited_s` and a `note` (the guest
-still runs). `status: INVALID`: `wait_stopped` when the
-machine is STOPPED and the log does not already hold the line (a stopped guest writes
-nothing; the refusal names `pattern` and `last_stop`, and a stop that lands DURING the wait
-is reported the same way after one last read of the log), `session_broken` when the emulator
-went away. No `logfile`, a bad `seconds`, an unusable regex, an
-unknown channel or a `since_mark` that names no position of the log is refused. A log that
-does not exist YET is not refused: that is the ordinary state right after `resume`.
-
-The moment it hands back is for choosing an address to `run_to` or `watch_add` on the NEXT
-run: the guest is usually still running when this returns, and the console tools refuse
-then. `expect` on `send_keys`/`drive` is this same wait on the guest channel, from a
-mark taken before the act.
+Reply: `verdict` `TARGET`, `pattern`, `channel`, `line` (the first match), `already`,
+`waited_s`, `lines_before`, `lines_total`, `arrived_during`, `lines_examined`; on timeout
+`verdict` `TIMEOUT` with `note`, `arrived_during`, `lines_examined`, `waited_s`. `status:
+INVALID`: `wait_stopped` on a stopped machine whose log lacks the line, `session_broken`
+when the emulator went away; no `logfile`, a bad `seconds`, regex, channel or `since_mark`
+are refused.
 
 Reference: REFERENCE.md, The log.
 
@@ -625,6 +552,8 @@ A tool that only waited would sit out its bound for a line that went past before
 
 No breakpoint can be armed on a log line: the guest is usually still running and the console takes no commands then. The nearest is a change watch on the variable whose change produces the line.
 
+It reads what the log already holds first, so a line that went past before the call is found. A log that does not exist yet is not refused: that is the state right after `resume`. The moment it returns is for choosing an address to `run_to` or `watch_add` on the next run; the guest is usually still running then, and console tools refuse. `expect` on `send_keys`/`drive` is this wait on the guest channel, from a mark taken before the act. `already` marks history rather than something you were present for.
+
 <!-- scry-reference:begin machine_map -->
 ## `machine_map`
 
@@ -634,34 +563,15 @@ No breakpoint can be armed on a log line: the guest is usually still running and
 machine_map(sections=null, dest="")
 ```
 
-WHAT THE DOS MACHINE IS AT THIS STOP, one section per debugger listing, read live off the
-session's logfile: it needs the machine STOPPED and a session started with `logfile`, and
-costs a console round trip per listing.
+What the DOS machine is at this stop: one section per debugger listing, read off the logfile
+(needs `logfile`). `sections` left out reads the DOS machine and `control`; `bios_mem`,
+`callbacks`, `vga`, `paging` only when named. `dest` (absolute, new) writes all sections
+whole as JSON. Writes nothing to the guest.
 
-`sections` names the ones to read; left out, the DOS machine and its control registers:
-`mcbs`, `devs`, `kern`, `xms`, `ems`, `ems_pages`, `emu_mem`, `machine`, `control`, and in
-protected mode `gdt` and `ldt`. The rest are read only when named: `bios_mem`, `callbacks`,
-`vga`, `paging`.
-`dest` (absolute, not there yet) writes every section read WHOLE as JSON (`path`).
-
-Refused: an empty or unknown `sections`, or a `dest` already there (`bad_argument`, before
-anything is typed); no `logfile` (`no_channel`); a running guest (`not_stopped`); no prompt
-after a listing (`unexpected_answer`: `close` the session); a logfile that shrank
-(`session_broken`).
-
-Reply: `cpu_mode` (`real`, `protected`, `paged`; unavailable when the `CPU` listing is
-unreadable), then each section read: `mcbs` (`memory`, `mcb_seg`, `size_bytes`, `psp_seg`,
-`notes`, `filename`), `devs` (`header`, `attr`, `strat`, `intr`, `name`), `kern` (`seg`,
-`size_bytes`, `what`), `xms` (`handle`, `status`, `location`, `size_bytes`), `ems`
-(`handle`, `addr`, `size_bytes`, `name`), `ems_pages` (`handle`, `page`, `start`, `end`),
-`bios_mem` (`start`, `end`, `status`, `what`), `callbacks` (`number`, `desc`), `emu_mem`,
-`machine`, `control` (control registers, flags, `gdtr`, `idt`, `tr`, `ldtr`); `gdt`/`ldt`
-(`selector`, `base`, `limit`, `type`, `dpl`, `p`, `a`, `r`, `b`, `g`); `paging` (runs:
-`start`, `end`, `phy`, `flags`, `d`, `a`); `vga` (`mode`, `crtc`, `seq`, `gc`, `ac`, `dac`,
-`draw`). A section the debugger refused or printed nothing known for is ABSENT and
-`coverage_note` says why. `counts` (full lengths), `truncated` (a list cut at
-400 rows), `sources`; `omitted` (sections this mode has that were not read) with
-`how`. Writes nothing to the guest.
+Reply: `cpu_mode`, one key per section read as rows, `counts`, `truncated` (cut at
+400 rows), `sources`, `coverage_note` (why a section is absent), `path`.
+Refused: bad `sections` or an existing `dest` (`bad_argument`); no `logfile` (`no_channel`);
+a running guest (`not_stopped`); no prompt after a listing (`unexpected_answer`: `close`).
 
 Reference: REFERENCE.md, Reading and writing.
 
@@ -939,6 +849,8 @@ leaves in it, and its `psp_seg` of `0000` says it is free. The MCB chain is chec
 (each block starts right past the one above, `END OF CHAIN` right past the last); a chain that
 breaks that walk is cut, and `mcbs` is absent.
 
+Each listing costs a console round trip. `cpu_mode` is `real`, `protected` or `paged`, unavailable when the `CPU` listing is unreadable. `gdt` and `ldt` exist in protected mode. Row fields per section: `mcbs` (`memory`, `mcb_seg`, `size_bytes`, `psp_seg`, `notes`, `filename`), `devs` (`header`, `attr`, `strat`, `intr`, `name`), `kern` (`seg`, `size_bytes`, `what`), `xms` (`handle`, `status`, `location`, `size_bytes`), `ems` (`handle`, `addr`, `size_bytes`, `name`), `ems_pages` (`handle`, `page`, `start`, `end`), `bios_mem` (`start`, `end`, `status`, `what`), `callbacks` (`number`, `desc`), `control` (control registers, flags, `gdtr`, `idt`, `tr`, `ldtr`), `gdt`/`ldt` (`selector`, `base`, `limit`, `type`, `dpl`, `p`, `a`, `r`, `b`, `g`), `paging` runs (`start`, `end`, `phy`, `flags`, `d`, `a`), `vga` (`mode`, `crtc`, `seq`, `gc`, `ac`, `dac`, `draw`). `omitted` and `how` name the sections of this mode that were not read. A logfile that shrank is `session_broken`. A section the debugger refused or printed in no known shape is absent rather than partial.
+
 <!-- scry-reference:begin interrupt_vectors -->
 ## `interrupt_vectors`
 
@@ -948,30 +860,17 @@ breaks that walk is cut, and `mcbs` is absent.
 interrupt_vectors(number=null)
 ```
 
-WHICH HANDLER EVERY INTERRUPT VECTOR POINTS AT, AND WHAT HOLDS IT: the debugger's
-`INTVEC` table, each handler placed in the block of the MCB chain, the kernel's blocks or
-the BIOS's that holds it, and named by the loaded symbol table where that table reaches.
-`number`, an integer 0 to 255 (INT 0x21 is 33), narrows the reply to one vector; the whole
-table is read either way. Needs the machine STOPPED. In protected mode the table is the IDT,
-placed through the GDT or LDT and, with paging on, the page runs. The debugger writes
-`MCPIVT.TXT` into the emulator's working directory, which this reads and removes; with
-`logfile` it then reads the listings `machine_map` reads, a console round trip each.
-Without `logfile` no vector has a holder, nor in protected mode an `addr` or a `symbol`.
+Which handler every interrupt vector points at and what holds it, from the debugger's
+`INTVEC` table: a handler is placed in the MCB, kernel or BIOS block holding it and named by
+loaded symbols. `number` (0 to 255) narrows the reply to one vector. In protected mode the
+table is the IDT.
 
-Refused: `number` outside 0 to 255 (`bad_argument`, before anything is typed); a
-`MCPIVT.TXT` already there (`bad_argument`: somebody else's, left in place); a running
-guest (`not_stopped`); no table reported written, or a file that is not the whole table
-(`unexpected_answer`); and the listings' refusals, as `machine_map` gives them.
+Reply: `cpu_mode`, `vectors` (each `number`, `seg_off`, `addr`, a holder row, `symbol`),
+`counts`, `sources`, `coverage_note`.
 
-Reply: `cpu_mode` (`VM86` among its words; without `logfile`, as `status` reports it),
-`vectors` (each `number`,
-`seg_off` as the table holds it, `addr` the linear address before any paging, the row that
-holds the handler under its own section's name, `mcbs`, `kern` or `bios_mem`, first match in
-that order, absent when none does or it was not placed, and `symbol` as
-`symbols_find(linear=)` answers it, given only between the table's lowest and highest
-symbol), `counts` (`vectors`, `held`, `named`, over the whole table), `sources`,
-`coverage_note` (what could not be placed, and why). Before DOS has filled the table every
-vector is 0000:0000, as read.
+Refused: `number` out of range or a `MCPIVT.TXT` already there (`bad_argument`); a running
+guest (`not_stopped`); an incomplete table (`unexpected_answer`); `machine_map`'s listing
+refusals.
 
 Reference: REFERENCE.md, Reading and writing.
 
@@ -1044,6 +943,8 @@ The holder row says which program
 hooked a vector without comparing against an earlier table; a table taken at `start` is all zeros,
 since the park comes before DOS fills it.
 
+Without `logfile` no vector has a holder. The debugger writes `MCPIVT.TXT` into the emulator's working directory, which this reads and removes; with `logfile` it then reads the listings `machine_map` reads, a console round trip each. The whole table is read either way. The holder is the first match in the order mcbs, kern, bios_mem; `symbol` is given only between the table's lowest and highest symbol, as `symbols_find(linear=)` answers it. Before DOS fills the table every vector is 0000:0000, as read. `cpu_mode` has `VM86` among its words.
+
 <!-- scry-reference:begin palette -->
 ## `palette`
 
@@ -1053,28 +954,17 @@ since the park comes before DOS fills it.
 palette(first=0, count=0, scale=0, dest="")
 ```
 
-THE 256 COLOURS OF THE VGA'S DAC AS THEY ARE AT THIS STOP, read off the debugger's
-`VGA DAC` and `VGA DACPAL` listings in the session's logfile, with their swatch attached:
-it needs the machine STOPPED and a session started with `logfile`, and costs a console
-round trip per listing and one more for `VGA DACPAL`'s pager.
+The VGA DAC's 256 colours at this stop, read off the `VGA DAC` listings in the logfile
+(needs `logfile`), with an indexed PNG swatch. `first` and `count` (0 for all from `first`)
+choose entries, `first + count` at most 256. `scale` 0 fits the largest enlargement up to 8;
+`dest` a new path, else a scratch gone at `close`.
 
-The DAC holds entries 0 to 255 and nothing past them: an entry past 255 does not exist.
-`first` (0 to 255; an integer or a `0x` hex string) and `count` (1 to
-256, 0 for every entry from `first`) choose the entries returned, `first + count` at most
-256. The swatch is one square per entry, sixteen a row, an indexed PNG whose every pixel is
-the entry's index into the DAC. The PNG is attached after the JSON when within the inline ceiling (1568 px a side, 1568 tiles of 28 px); `image` names it either way (`path`, `bytes`, `sha256`, `width`, `height`, `scale`, `indexed`, `border`, `inline`, `not_inlined`). `scale` 0, the largest integer enlargement up to 8 that fits; `dest` a new path, else the scratch, gone at `close`.
+Reply: `entries`, `first`, `count`, `colors` (`#rrggbb`), `rgb`, `bits`, `pel_mask`,
+`image`.
 
-Reply: `entries` (256), `first`, `count` (how many came back), `colors` (`#rrggbb`, each
-six-bit component widened as the emulator renders it, its two top bits repeated below),
-`rgb` (each entry as `VGA DACPAL` printed it, three six-bit components in hex), `bits` (6),
-`pel_mask` as `VGA DAC` printed it, and `image`.
-
-Refused: an entry the DAC does not have (`first` 256 or more, `first + count` past 256), a
-`scale` out of range or a relative `dest` (`bad_argument`, before anything is typed); a
-`dest` already there or with no directory (`bad_argument`); no `logfile` (`no_channel`); a
-running guest (`not_stopped`); a DAC not in its six-bit mode, or a listing in a shape this
-was not written against (`unexpected_answer`); a picture the disk could not take whole
-(`host_failed`, leaving no file).
+Refused: an entry past 255, a bad `scale`, a relative or existing `dest` (`bad_argument`);
+no `logfile` (`no_channel`); a running guest (`not_stopped`); a DAC not six-bit
+(`unexpected_answer`); a picture not taken whole (`host_failed`).
 
 Reference: REFERENCE.md, Media files.
 
@@ -1123,7 +1013,7 @@ Example, from a live run:
   "bits": 6,
   "pel_mask": "ffh",
   "image": {
-    "path": "$TMPDIR/dosbox-x-session-rmnni3t3/gfx/palette-1.png",
+    "path": "$TMPDIR/dosbox-x-session-9rhds9vj/gfx/palette-1.png",
     "bytes": 1009,
     "sha256": "a5dff617e307a60f3bf521d96fed8809cc0f3b38409a74c904cfa5c1ad4371e1",
     "width": 256,
@@ -1136,6 +1026,8 @@ Example, from a live run:
 ```
 <!-- scry-reference:end palette -->
 
+Each six-bit component is widened as the emulator renders it, its two top bits repeated below; `rgb` is each entry as `VGA DACPAL` printed it, three six-bit components in hex. Every pixel of the swatch is the entry's index into the DAC. The PNG is attached after the JSON when within the inline ceiling (1568 px a side, 1568 tiles of 28 px); `image` names it either way, with `indexed` and `border`. The listing costs a console round trip, and one more for `VGA DACPAL`'s pager.
+
 <!-- scry-reference:begin screen_view -->
 ## `screen_view`
 
@@ -1145,29 +1037,18 @@ Example, from a live run:
 screen_view(crop=null, scale=0, dest="", attach=true)
 ```
 
-WHAT THE SCREEN SHOWS AT THIS STOP, read from video memory where the VGA listings say it
-lies: needs the machine STOPPED and a session started with `logfile`. A text mode comes back
-as text; the chained 256-colour mode (13h's) as the picture: an indexed PNG of
-the indices the guest wrote, the PLTE the DAC. The PNG is attached after the JSON when within the inline ceiling (1568 px a side, 1568 tiles of 28 px); `image` names it either way (`path`, `bytes`, `sha256`, `width`, `height`, `scale`, `indexed`, `border`, `inline`, `not_inlined`).
-`scale` 0, the largest integer enlargement up to 8 that fits; `dest` a new path, else the scratch, gone at `close`; `attach` false writes the file, unattached; a text mode takes none of these. `crop`
-`[x, y, width, height]`,
-in characters or pixels. Protected mode reads through a covering GDT or LDT segment.
+What the screen shows at this stop, read from video memory (needs `logfile`): text as text,
+the chained 256-colour mode (13h) as a PNG. `crop` is `[x, y, width, height]` in characters
+or pixels. `scale` 0 fits the largest up to 8x; `dest` a new path (else a scratch); `attach`
+false leaves it unattached.
 
-Reply: `vga_mode` (`VGA MODE`'s word), `kind` (`text` or `pixel`), `width` and `height` (in
-characters or pixels), `crop` (the rectangle read), `display_start` (as `VGA MODE` printed
-it); in text, `text` (one string a row of the crop, as code page 437 draws it, trailing
-spaces dropped) and `cursor` (`[column, row]` in the crop, unavailable when hidden or
-outside it); in 256 colours, `image`.
+Reply: `vga_mode`, `kind`, `width`, `height`, `crop`, `display_start`; in text `text`,
+`cursor`; in 256 colours `image`.
 
-Refused: a relative `dest`, a `scale` out of range or a misshapen `crop` (`bad_argument`,
-before anything is typed); `dest`, `scale` or `attach` in a text mode, a `crop` off the
-screen, a `dest` already there or with no directory, or a dump file left in the emulator's
-working directory (`bad_argument`); any other mode, planar, linear-frame-buffer or none set,
-naming it and `capture_frame`; a layout this does not decode (split, panning, a row wider
-than the screen), a screen past its window, or one no segment or page reaches as itself; no
-`logfile` (each `no_channel`); a running guest (`not_stopped`); a DAC not six-bit, or a
-listing in another shape (`unexpected_answer`); a picture the disk could not take whole
-(`host_failed`).
+Refused: a relative or existing `dest`, a bad `scale` or `crop`, `dest`/`scale`/`attach` in
+text (`bad_argument`); another mode (naming `capture_frame`), an undecodable layout or no
+`logfile` (`no_channel`); a running guest (`not_stopped`); a DAC not six-bit
+(`unexpected_answer`).
 
 Reference: REFERENCE.md, Media files.
 
@@ -1232,6 +1113,8 @@ Example, from a live run:
 
 **In protected mode the screen is read through a data segment that covers it** (the lowest present one of the GDT, then of the LDT), with paging on only when every page maps to the same physical address; none qualifying is `no_channel`.
 
+Protected mode reads through a covering GDT or LDT segment. `text` is one string a row of the crop as code page 437 draws it, trailing spaces dropped; `cursor` is `[column, row]` in the crop, unavailable when hidden or outside it. The PNG's PLTE is the DAC and its pixels the indices the guest wrote. It is attached after the JSON when within the inline ceiling (1568 px a side, 1568 tiles of 28 px); `image` names it either way (`path`, `bytes`, `sha256`, `width`, `height`, `scale`, `indexed`, `border`, `inline`, `not_inlined`). A dump file left in the emulator's working directory, a screen past its window, one no segment or page reaches, a layout with split or panning is refused, and a picture the disk could not take whole is `host_failed`.
+
 <!-- scry-reference:begin screen_signature -->
 ## `screen_signature`
 
@@ -1241,22 +1124,12 @@ Example, from a live run:
 screen_signature(crop=null)
 ```
 
-One hex string for what is on screen, or on `crop` of it, so "is it the same screen" is
-answered by comparing two strings and no picture crosses the conversation. It is the
-`scry-sig/1` signature a series row carries over the same crop: in a text mode each cell is
-its code page 437 byte and the colours its attribute resolves to through the Attribute
-Controller and the DAC; in 256 colours each pixel is its DAC colour. So a palette change is
-a new signature, and the cursor is not part of it. `crop` `[x, y, width, height]`, in
-characters or pixels. It reads what `screen_view` reads, in the same modes; needs the
-machine STOPPED and a session started with `logfile`.
+One hex string for what is on screen or on `crop` `[x, y, width, height]`: the `scry-sig/1`
+signature of a series row (text cells by byte and colours, 256-colour pixels by DAC colour;
+no cursor). Reads what `screen_view` reads (needs `logfile`).
 
-Reply: `signature` (16 hex characters), `kind` (`text` or `pixel`), `width` and `height`
-(the screen's), `crop` (the rectangle hashed), `vga_mode`.
-
-Refused as `screen_view` is, `dest` and `scale` aside: a `crop` off the screen
-(`bad_argument`); another mode, naming it and `capture_frame`, or a screen it cannot place
-(`no_channel`); no `logfile` (`no_channel`); a running guest (`not_stopped`); a DAC not in
-its six-bit mode or a listing in another shape (`unexpected_answer`).
+Reply: `signature`, `kind`, `width`, `height`, `crop`, `vga_mode`. Refusals as
+`screen_view`, `dest` and `scale` aside.
 
 Reference: REFERENCE.md, Media files.
 
@@ -1298,88 +1171,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end screen_signature -->
 
-<!-- scry-reference:begin map_add -->
-## `map_add`
 
-*Map the screen in front of you*
-
-```text
-map_add(screen, match, controls=null)
-```
-
-Map the screen the machine shows NOW as `screen` in the SESSION layer: one read signs each
-`match` crop (`[x, y, width, height]`, 1..16, regions that stay still on that screen, never
-a cursor or a moving sprite), and `controls` (`[{"name", "rect"}]`, a `rect` shaped as a
-crop) name its controls, all in the screen's own units (cells in a text mode, pixels in 256
-colours, as `screen_view` counts). A screen of the same name in the file is shadowed
-(`shadows_file`). Needs the machine STOPPED and a session started with `logfile`; a `start`
-empties the session layer.
-
-Reply: `screen`, `kind`, `size`, `match` (each crop with its `signature`), `controls`,
-`replaced`, `shadows_file`. Refused: a misshapen name, crop or control, a rectangle off the
-screen (`bad_argument`); the modes `screen_view` refuses.
-
-Reference: REFERENCE.md, Screen maps.
-
-| argument | type | default |
-|---|---|---|
-| `screen` | string | required |
-| `match` | array of array of integer | required |
-| `controls` | array of object or null | `null` |
-
-| reply field | type |
-|---|---|
-| `controls` | integer |
-| `kind` | string |
-| `match` | array |
-| `replaced` | boolean |
-| `screen` | string |
-| `shadows_file` | boolean |
-| `size` | array |
-
-Example, from a live run:
-
-```json
-{
-  "screen": "probe_stopped",
-  "match": [
-    [
-      0,
-      0,
-      8,
-      1
-    ]
-  ]
-}
-```
-
-```json
-{
-  "summary": "map_add: probe_stopped (text 80x25), 1 region, 0 controls",
-  "status": "ok",
-  "screen": "probe_stopped",
-  "kind": "text",
-  "size": [
-    80,
-    25
-  ],
-  "match": [
-    {
-      "crop": [
-        0,
-        0,
-        8,
-        1
-      ],
-      "signature": "ed0b26b4f25ef236"
-    }
-  ],
-  "controls": 0,
-  "replaced": false,
-  "shadows_file": false
-}
-```
-<!-- scry-reference:end map_add -->
 
 <!-- scry-reference:begin map_find -->
 ## `map_find`
@@ -1390,14 +1182,9 @@ Example, from a live run:
 map_find()
 ```
 
-WHICH MAPPED SCREEN the machine shows, from ONE screen read and no picture: the session
-layer first, then the file's; a screen matches when its kind and size are the screen's and
-every region's signature is. Needs the machine STOPPED and a session with `logfile`.
-
-Reply: `matched`; matched, `screen`, `layer` (`session` or `file`), `kind`, `size`,
-`controls` (each `name`, `rect`, `centre`), and `send_mouse(target=)` then acts on them; not
-matched, `kind`, `size`, `screens_mapped`, `screens_tried` (of that kind and size). Refused:
-no screen mapped (`needs_call`); the modes `screen_view` refuses.
+Which mapped screen the machine shows. Reply: `matched`; matched, `screen`, `layer`, `kind`,
+`size`, `controls` (`name`, `rect`, `centre`); else `screens_mapped`, `screens_tried`. None
+mapped: `needs_call`.
 
 Reference: REFERENCE.md, Screen maps.
 
@@ -1437,6 +1224,107 @@ Example, from a live run:
 ```
 <!-- scry-reference:end map_find -->
 
+Session layer first, then the file's; a screen matches when its kind and size are the screen's and every region's signature is. Matched controls are what `send_mouse(target=)` acts on. The modes `screen_view` refuses are refused.
+
+<!-- scry-reference:begin map_write -->
+## `map_write`
+
+*Write the screen map*
+
+```text
+map_write(method, screen="", match=null, controls=null, path="", dest="", overwrite=null)
+```
+
+The screen map: an application's screens, each known by the signatures of its stable
+regions, and their controls, in a session layer and a file layer.
+
+`add`: the screen shown now as `screen` in the session layer, one read signing each `match`
+crop ([x, y, width, height], 1..16), `controls` ([{"name", "rect"}]) in the screen's own
+units; needs `logfile`. Reply: `screen`, `kind`, `size`, `match`, `controls`, `replaced`,
+`shadows_file`.
+
+`load`: `path` (`<application>.scry-map.json`, absolute or `~`-led) as the file layer. Reply:
+`path`, `application`, `screens`, `controls`.
+
+`save`: both layers as one map to `dest`, refused there without `overwrite`, made the file
+layer. Reply: `path`, `application`, `screens`, `controls`, `promoted`.
+
+Refused: an argument the method does not take; a misshapen name, crop, control or file
+(`bad_argument`); nothing mapped to save (`needs_call`); the modes `screen_view` refuses.
+
+Reference: REFERENCE.md, Screen maps.
+
+| argument | type | default |
+|---|---|---|
+| `method` | one of `"add"`, `"load"`, `"save"` | required |
+| `screen` | string | `""` |
+| `match` | array of array of integer or null | `null` |
+| `controls` | array of object or null | `null` |
+| `path` | string | `""` |
+| `dest` | string | `""` |
+| `overwrite` | boolean or null | `null` |
+
+| reply field | type |
+|---|---|
+| `application` | string |
+| `controls` | integer |
+| `kind` | string |
+| `match` | array |
+| `path` | string |
+| `promoted` | array |
+| `replaced` | boolean |
+| `screen` | string |
+| `screens` | integer |
+| `shadows_file` | boolean |
+| `size` | array |
+
+Example, from a live run:
+
+```json
+{
+  "method": "add",
+  "screen": "probe_stopped",
+  "match": [
+    [
+      0,
+      0,
+      8,
+      1
+    ]
+  ]
+}
+```
+
+```json
+{
+  "summary": "map_write add: probe_stopped (text 80x25), 1 region, 0 controls",
+  "status": "ok",
+  "screen": "probe_stopped",
+  "kind": "text",
+  "size": [
+    80,
+    25
+  ],
+  "match": [
+    {
+      "crop": [
+        0,
+        0,
+        8,
+        1
+      ],
+      "signature": "ed0b26b4f25ef236"
+    }
+  ],
+  "controls": 0,
+  "replaced": false,
+  "shadows_file": false
+}
+```
+<!-- scry-reference:end map_write -->
+
+Units are cells in a text mode and pixels in 256 colours.
+
 <!-- scry-reference:begin debug -->
 ## `debug`
 
@@ -1446,21 +1334,14 @@ Example, from a live run:
 debug(command)
 ```
 
-One raw `command` to the debugger console; the LAST resort, not the first.
+One raw `command` to the debugger console; the last resort. For a value use `registers`,
+`read_memory` or `memdump`; for the log `log`.
 
-Needs the machine STOPPED at the debugger (a running guest's console takes nothing). Reply:
-`screen_delta`, the delta the screen produced for the command, capped at its last
-4000 characters with `screen_chars` (how much the screen produced) and
-`clipped` (whether what came back is all of it). It is a repaint of an ncurses screen,
-interleaved with the rest of the panes, not a parsed answer. For a VALUE use `registers`,
-`read_memory` or `memdump`; for the log use `log`; for a breakpoint or a watch use the tools
-that read the debugger's list back, which this does not. Refused `bad_argument` before
-anything is typed: a command that lets the guest run (`VRT`, `RUNWATCH`, `INT`, the `LOG`
-family), naming the tool that does it and reports the stop, and a command carrying a control
-character. A command that writes the guest (memory, a register, a port, an interrupt or the
-timer raised, a state loaded, the BIOS clock) marks the session `altered`. `note`: a line
-the debugger did not take, emptied, or a listing that paged, ended (REFERENCE.md, The
-console).
+Reply: `screen_delta` (the last 4000 characters of the screen's repaint),
+`screen_chars`, `clipped`, `command`, `note`.
+
+Refused `bad_argument`: a command that lets the guest run (`VRT`, `RUNWATCH`, `INT`, the
+`LOG` family) and a control character.
 
 | argument | type | default |
 |---|---|---|
@@ -1488,8 +1369,7 @@ Example, from a live run:
   "status": "ok",
   "command": "BPLIST",
   "screen_delta": "B_P_L_I_S_T__ooooRegister OverviewoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooEAX=00000000  ESI=00000100  DS=0814   ES=0814   FS=0000   GS=0000   SS=0814 Real\r\nEBX=00000124  ... (3231 characters)",
-  "screen_chars": 3231,
-  "clipped": false
+  "screen_chars": 3231
 }
 ```
 <!-- scry-reference:end debug -->
@@ -1497,3 +1377,5 @@ Example, from a live run:
 **A command that lets the guest run is refused before it is typed**, because it leaves the debugger without the session knowing and `last_stop` and `status` would go on naming the stop before it. A control character is refused: a line break would type a second command past that check, and an escape is a key.
 
 **`debug` leaves the console clean.** A command the console does not recognise stays on its input line, and the next command is typed onto it and fails too. So when the line still holds text once the prompt is back, `debug` empties it with ESC, which runs nothing whatever the line's length (a bare return would run it again). A listing that pages is answered with `Q`; `trace` empties the line the same way for a `LOG` the debugger refused.
+
+A command that lets the guest run is refused because it leaves the debugger without the session knowing, and `last_stop` and `status` would go on naming the stop before it; the refusal names the tool that does it. A control character is refused: a line break would type a second command past that check, and an escape is a key. An unrecognised command stays on the input line and the next one is typed onto it, so `debug` empties the line with ESC when the prompt is back (a bare return would run it again); a listing that pages is answered with `Q`; `trace` empties the line the same way for a `LOG` the debugger refused.

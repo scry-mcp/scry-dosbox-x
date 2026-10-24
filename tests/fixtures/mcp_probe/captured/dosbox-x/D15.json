@@ -2,24 +2,102 @@
  "task": {
   "id": "D15",
   "prompt": "Cancel the debugger's open value scan.",
-  "tool": "scan_clear"
+  "tool": "scan",
+  "args": {
+   "method": "clear"
+  },
+  "grammar": [
+   "clear"
+  ]
  },
  "runs": [
   {
    "lines": [
-    "D15: {\"tool\": \"scan_clear\", \"args\": {}}"
+    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D15: {\"tool\": \"scan_clear\", \"args\": {}}"
+    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D15: {\"tool\": \"scan_clear\", \"args\": {}}"
+    "D15: {\"tool\":\"scan\",\"args\":{\"method\":\"clear\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D15: {\"tool\":\"scan\",\"args\":{\"method\":\"clear\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D15: {\"tool\": \"scan\", \"args\": {\"method\": \"clear\"}}"
    ],
    "right": true
   }

@@ -11,7 +11,25 @@
  "runs": [
   {
    "lines": [
-    "D33: {\"tool\": \"symbols_find\", \"args\": {\"offset\": 7340, \"section\": 2}}"
+    "D33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D33: {\"tool\":\"symbols_find\",\"args\":{\"offset\":7340,\"section\":2}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
    ],
    "right": true
   },
@@ -24,6 +42,60 @@
   {
    "lines": [
     "D33: {\"tool\": \"symbols_find\", \"args\": {\"offset\": 7340, \"section\": 2}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D33: {\"tool\": \"symbols_find\", \"args\": {\"offset\": 7340, \"section\": 2}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D33: {\"tool\": \"symbols_find\", \"args\": {\"offset\": 7340, \"section\": 2}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D33: {\"tool\": \"symbols_find\", \"args\": {\"offset\": 7340, \"section\": 2}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D33: {\"tool\":\"symbols_find\",\"args\":{\"offset\":7340,\"section\":2}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D33: {\"tool\": \"symbols_find\", \"args\": {\"offset\": 7340, \"section\": 2}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D33: {\"tool\": \"symbols_find\", \"args\": {\"section\": 2, \"offset\": 7340}}"
    ],
    "right": true
   }

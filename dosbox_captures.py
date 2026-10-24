@@ -23,8 +23,11 @@ from dosbox_state import STATE
 #: `path`.
 WRITERS: dict[str, Callable[[dict[str, Any]], object]] = {
     **{tool: (lambda r: r.get("path")) for tool in (
-        "capture_frame", "snapshot", "memdump", "machine_map", "comment_save", "perform_export",
-        "map_save")},
+        "capture_frame", "snapshot", "memdump", "machine_map", "perform_export")},
+    # A fold writes by its `save` alone, whose reply is the one carrying these fields; its
+    # `load` answers the `path` it read.
+    "comment_write": lambda r: r.get("path") if "dropped_total" in r else None,
+    "map_write": lambda r: r.get("path") if "promoted" in r else None,
     **{tool: (lambda r: (r.get("image") or {}).get("path")) for tool in ("screen_view",
                                                                        "palette")},
     "series_capture": lambda r: r.get("manifest"),

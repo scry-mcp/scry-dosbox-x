@@ -567,7 +567,7 @@ class Session(dprocess.Process):
 
         self._avi_facts: dict[tuple[str, int, int], dict[str, object]] = {}
         self.state_sent = False   # whether the last state command went down the channel
-        self.machine_replaced = False   # whether the last `state_load` replaced the machine
+        self.machine_replaced = False   # whether the last state load replaced the machine
         self.state_answered = False   # whether the emulator answered it ok
         # The presence of this session (`dosbox_presence`), set by `start`.
         self.presence = presence.Shown()
@@ -2327,11 +2327,11 @@ class Session(dprocess.Process):
     def _state_command(self, verb: str, path: Path, seconds: float) -> dict[str, object]:
         return saved_states._state_command(self, verb, path, seconds)
 
-    def state_save(self, name: str, seconds: float = STATE_WAIT_S) -> dict[str, object]:
-        return saved_states.state_save(self, name, seconds)
+    def save_state(self, name: str, seconds: float = STATE_WAIT_S) -> dict[str, object]:
+        return saved_states.save_state(self, name, seconds)
 
-    def state_load(self, name: str, seconds: float = STATE_WAIT_S) -> dict[str, object]:
-        return saved_states.state_load(self, name, seconds)
+    def load_state(self, name: str, seconds: float = STATE_WAIT_S) -> dict[str, object]:
+        return saved_states.load_state(self, name, seconds)
 
     def snapshot(self, dest: Path | None = None, seconds: float = SNAPSHOT_WAIT_S,
                  progress: Progress = no_progress) -> dict[str, object]:
@@ -2429,7 +2429,8 @@ class Session(dprocess.Process):
             "captures": (str(self.launch.captures_dir) if self.launch.captures_dir is not None
                          else "on, in the emulator's own directory")
                         if self.launch.capture_video else "off",
-            # WHERE `state_save` writes and `state_list` reads, so a project knows which
+            # WHERE `state_write(method="save")` writes and `state_list` reads, so a project knows
+            # which
             # directory holds its states without asking twice.
             "state_dir": str(self.launch.state_dir) if self.launch.state_dir is not None
                          else "the emulator's own save/ under its working directory",

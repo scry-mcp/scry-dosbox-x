@@ -22,6 +22,78 @@
   },
   {
    "lines": [
+    "D76: {\"tool\":\"trace\",\"args\":{\"instructions\":5000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D76: {\"tool\": \"trace\", \"args\": {\"instructions\": 5000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D76: {\"tool\": \"trace\", \"args\": {\"instructions\": 5000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D76: {\"tool\": \"trace\", \"args\": {\"instructions\": 5000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D76: {\"tool\": \"trace\", \"args\": {\"instructions\": 5000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D76: {\"tool\": \"trace\", \"args\": {\"instructions\": 5000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D76: {\"tool\": \"trace\", \"args\": {\"instructions\": 5000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D76: {\"tool\": \"trace\", \"args\": {\"instructions\": 5000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D76: {\"tool\": \"trace\", \"args\": {\"instructions\": 5000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D76: {\"tool\": \"trace\", \"args\": {\"instructions\": 5000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D76: {\"tool\":\"trace\",\"args\":{\"instructions\":5000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D76: {\"tool\": \"trace\", \"args\": {\"instructions\": 5000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D76: {\"tool\": \"trace\", \"args\": {\"instructions\": 5000}}"
    ],
    "right": true

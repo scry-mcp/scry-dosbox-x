@@ -248,9 +248,9 @@ def test_a_media_file_tool_answers_in_this_server_s_envelope(tmp_path: Path) -> 
     wears the envelope every other reply wears: `status`, `session` and its own summary."""
     pic = tmp_path / "a.png"
     pic.write_bytes(png.encode(png.Raster(2, 2, bytes(12))))
-    r = cast(dict[str, Any], server.image_diff(a=str(pic), b=str(pic)))
+    r = cast(dict[str, Any], server.image_compare("image", a=str(pic), b=str(pic)))
     assert r["status"] == "ok" and "session" in r, r
-    assert r["summary"].startswith("image_diff: no pixel differs"), r["summary"]
+    assert r["summary"].startswith("image_compare image: no pixel differs"), r["summary"]
 
 
 def test_the_media_tools_are_named_once_for_the_registration_the_sequences_and_the_gate() -> None:

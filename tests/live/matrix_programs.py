@@ -63,7 +63,7 @@ def program_stop() -> int:
     must(M.call(server.breakpoint_interrupt, number=0x21), "arming INT 21h")
     regs = resume_until(lambda regs: hexint(regs["CS"]) != FIRMWARE_SEG,
                         "an INT 21h call outside the firmware", 12)
-    must(M.call(server.breakpoint_clear, ref="BPINT 21"), "clearing INT 21h")
+    must(M.call(server.declaration_clear, kind="breakpoint", ref="BPINT 21"), "clearing INT 21h")
     return hexint(regs["CS"]) or 0
 
 
@@ -84,7 +84,7 @@ def program_timer(load: int) -> str:
 
     if not hooked({}):
         resume_until(hooked, "the program hooking INT 8", 8)
-    must(M.call(server.watch_clear, all=True), "clearing the change watch")
+    must(M.call(server.declaration_clear, kind="watch", all=True), "clearing the change watch")
     return found
 
 
@@ -159,7 +159,8 @@ def key_reaches_int9(key: str) -> bool:
     deadline = time.monotonic() + KEY_ARRIVAL_S
     while time.monotonic() < deadline:
         if isinstance(M.call(server.status).get("cpu_mode"), str):
-            must(M.call(server.breakpoint_clear, ref="BPINT 09"), "clearing INT 9")
+            must(M.call(server.declaration_clear, kind="breakpoint", ref="BPINT 09"),
+                 "clearing INT 9")
             return True
         time.sleep(0.25)
     return False

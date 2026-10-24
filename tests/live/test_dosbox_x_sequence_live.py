@@ -45,7 +45,8 @@ def test_a_perform_sequence_runs_by_name_and_stops_where_it_was_headed(
         {"op": "symbols_load", "path": str(guest.SYM)}]
     for name in guest.WATCHES:
         steps.append({"op": "watch_add", "ref": name, "mode": "show", "length": 4, "fmt": "i32"})
-    steps.append({"op": "breakpoint_clear", "ref": "BPINT 31 AH=00"})   # the walk's interrupt
+    steps.append({"op": "declaration_clear", "kind": "breakpoint",
+                  "ref": "BPINT 31 AH=00"})   # the walk's interrupt
     steps.append({"op": "breakpoint_at", "ref": guest.STOP})
     steps.append({"op": "resume"})
 

@@ -38,6 +38,78 @@
   },
   {
    "lines": [
+    "D11: {\"tool\":\"find\",\"args\":{\"data_hex\":\"CD21\",\"ref\":\"0800:0000\",\"length\":3000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D11: {\"tool\": \"find\", \"args\": {\"data_hex\": \"CD21\", \"ref\": \"0800:0000\", \"length\": 3000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D11: {\"tool\": \"find\", \"args\": {\"data_hex\": \"CD21\", \"ref\": \"0800:0000\", \"length\": 3000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D11: {\"tool\": \"find\", \"args\": {\"data_hex\": \"CD21\", \"ref\": \"0800:0000\", \"length\": 3000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D11: {\"tool\": \"find\", \"args\": {\"data_hex\": \"CD21\", \"ref\": \"0800:0000\", \"length\": 3000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D11: {\"tool\": \"find\", \"args\": {\"data_hex\": \"CD21\", \"ref\": \"0800:0000\", \"length\": 3000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D11: {\"tool\": \"find\", \"args\": {\"data_hex\": \"CD21\", \"ref\": \"0800:0000\", \"length\": 3000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D11: {\"tool\": \"find\", \"args\": {\"data_hex\": \"CD21\", \"ref\": \"0800:0000\", \"length\": 3000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D11: {\"tool\": \"find\", \"args\": {\"data_hex\": \"CD21\", \"ref\": \"0800:0000\", \"length\": 3000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D11: {\"tool\": \"find\", \"args\": {\"data_hex\": \"CD21\", \"ref\": \"0800:0000\", \"length\": 3000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D11: {\"tool\":\"find\",\"args\":{\"data_hex\":\"CD21\",\"ref\":\"0800:0000\",\"length\":3000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D11: {\"tool\": \"find\", \"args\": {\"data_hex\": \"CD21\", \"ref\": \"0800:0000\", \"length\": 3000}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D11: {\"tool\": \"find\", \"args\": {\"data_hex\": \"CD21\", \"ref\": \"0800:0000\", \"length\": 3000}}"
    ],
    "right": true

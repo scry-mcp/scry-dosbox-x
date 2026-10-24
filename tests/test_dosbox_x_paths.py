@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, cast
 from unittest import mock
 
+import fold_calls
 import pytest
 from test_dosbox_x_dump import debugger
 from test_dosbox_x_server import clean_session, install  # noqa: F401
@@ -25,14 +26,16 @@ import dosbox_x_server as server
 #: tools' arguments NAMED as paths (`paths.PATH_PARAMETERS`) to it: a new one under one of those
 #: names is added here and meets the rule, or fails; a path argument under another name is the
 #: set's to add first.
+#: A fold's path argument is its method's: `dest` the save's, `path` the load's.
+METHOD_OF = {"dest": "save", "path": "load"}
 INVENTORY = frozenset({
     ("start", "cwd"), ("start", "conf"), ("start", "logfile"), ("start", "captures_dir"),
     ("start", "state_dir"), ("memdump", "dest"), ("trace", "dest"), ("snapshot", "dest"),
     ("palette", "dest"), ("screen_view", "dest"), ("capture_frame", "dest"),
     ("capture_frame", "capture_path"), ("symbols_load", "path"), ("symbols_load", "types"),
-    ("comment_save", "dest"), ("comment_load", "path"), ("start", "binary"),
+    ("comment_write", "dest"), ("comment_write", "path"), ("start", "binary"),
     ("build_check", "binary"), ("machine_map", "dest"), ("series_capture", "dest"),
-    ("series_capture", "capture_path"), ("map_load", "path"), ("map_save", "dest"),
+    ("series_capture", "capture_path"), ("map_write", "path"), ("map_write", "dest"),
     ("perform_export", "dest"),
 })
 
@@ -169,12 +172,12 @@ def _base(tool: str, tmp_path: Path) -> dict[str, Any]:
         "capture_frame": {"frame": 0, "dest": str(tmp_path / "f.png"),
                           "capture_path": str(tmp_path / "c.avi")},
         "symbols_load": {"path": str(sym), "types": str(sym)},
-        "comment_save": {"dest": str(tmp_path / "c.tsv")},
-        "comment_load": {"path": str(tmp_path / "c.tsv")},
+        "comment_write dest": {"method": "save", "dest": str(tmp_path / "c.tsv")},
+        "comment_write path": {"method": "load", "path": str(tmp_path / "c.tsv")},
         "build_check": {},
         "machine_map": {"dest": str(tmp_path / "m.json")},
-        "map_load": {"path": str(tmp_path / "m.scry-map.json")},
-        "map_save": {"dest": str(tmp_path / "m.scry-map.json")},
+        "map_write path": {"method": "load", "path": str(tmp_path / "m.scry-map.json")},
+        "map_write dest": {"method": "save", "dest": str(tmp_path / "m.scry-map.json")},
         "perform_export": {"dest": str(tmp_path / "p.json")},
         "series_capture": {"at_frames": [0], "dest": str(tmp_path / "series"),
                            "capture_path": str(tmp_path / "c.avi")},
@@ -182,11 +185,16 @@ def _base(tool: str, tmp_path: Path) -> dict[str, Any]:
     return table[tool]
 
 
+def _base_for(tool: str, arg: str, tmp_path: Path) -> dict[str, Any]:
+    """A call's other arguments: a fold's are its method's, the one the argument belongs to."""
+    return _base(f"{tool} {arg}" if tool in ("comment_write", "map_write") else tool, tmp_path)
+
+
 @pytest.mark.parametrize(("tool", "arg"), sorted(INVENTORY))
 @pytest.mark.parametrize("spelled", ["rel/x", "x"])
 def test_every_path_argument_refuses_a_relative_one_with_no_session(
         tool: str, arg: str, spelled: str, tmp_path: Path) -> None:
-    kw = {**_base(tool, tmp_path), arg: spelled}
+    kw = {**_base_for(tool, arg, tmp_path), arg: spelled}
     reply = _start_stubbed(**kw) if tool == "start" else getattr(server, tool)(**kw)
     _refused(reply, "bad_argument", f"{arg}={spelled!r}")
 
@@ -392,7 +400,7 @@ def test_an_empty_optional_path_of_start_is_taken_for_none(tmp_path: Path, arg: 
 def test_an_empty_dest_means_none_where_that_is_its_default() -> None:
     for tool in ("palette", "screen_view", "snapshot", "trace"):
         kw: dict[str, Any] = {"instructions": 16} if tool == "trace" else {}
-        got = cast(dict[str, Any], getattr(server, tool)(dest="", **kw))
+        got = cast(dict[str, Any], fold_calls.of(server, tool)(dest="", **kw))
         assert got["code"] == "no_session", (tool, got)
 
 

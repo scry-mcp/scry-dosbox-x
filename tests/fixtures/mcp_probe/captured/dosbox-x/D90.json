@@ -8,21 +8,93 @@
  "runs": [
   {
    "lines": [
-    "D90: CANNOT disassemble has no option to show comments inline; comment_list returns notes but does not merge them into a listing."
+    "D90: CANNOT disassemble does not show comments inline; comment_list only lists them."
    ],
    "right": true
   },
   {
    "lines": [
-    "D90: CANNOT disassemble does not carry comments inline; comment_list returns them separately."
+    "D90: CANNOT The disassemble tool lists instructions without the notes, and no tool interleaves comments into a disassembly listing."
    ],
    "right": true
   },
   {
    "lines": [
-    "D90: CANNOT disassemble takes no comment argument, and no tool lists notes beside instructions."
+    "D90: CANNOT disassemble has no option to place notes inline; comment_list returns the notes separately."
    ],
    "right": true
+  },
+  {
+   "lines": [
+    "D90: CANNOT disassemble does not show comments inline; comment_list returns the notes but no tool interleaves them with the disassembly."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D90: CANNOT disassemble does not show comments inline; comments are only listed or saved through comment_list and comment_write."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D90: CANNOT disassemble does not show comments inline, and comment_list returns them without the instructions they sit beside."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D90: CANNOT disassemble takes no comment option and does not place notes beside instructions; comment_list only lists them."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D90: CANNOT No tool shows notes beside the disassembly; comment_list lists them, and disassemble does not include them."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D90: CANNOT disassemble does not show comments inline, and no tool interleaves saved notes with disassembly lines."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D90: CANNOT disassemble does not render comments inline, and comment_list reports them separately from the disassembly."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D90: CANNOT No tool renders notes inline on disassembly; comment_list and comment_write only manage the comment store."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D90: CANNOT no tool renders comments inline beside disassembly; disassemble lists instructions and symbols only, and comment_list returns comments without placing them on lines."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D90: CANNOT disassemble does not carry comments inline; comment_list gives the notes but no tool merges them into the disassembly."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\"}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D90: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"draw_sprite\"}}"
+   ],
+   "right": false
   }
  ]
 }

@@ -99,7 +99,7 @@ def test_a_djgpp_stop_returns_named_globals_together_with_the_e9_block(
         assert w["status"] == "ok" and w["state"] == "evaluated", w
     bp = cast(dict[str, Any], server.breakpoint_at(ref=guest.STOP))
     assert bp["status"] == "ok" and bp["armed"] is True, bp
-    gone = cast(dict[str, Any], server.breakpoint_clear(ref="BPINT 31 AH=00"))
+    gone = cast(dict[str, Any], server.declaration_clear("breakpoint", ref="BPINT 31 AH=00"))
     assert gone["status"] == "ok", gone
 
     ran = cast(dict[str, Any], server.perform(steps=[{"op": "resume"}],

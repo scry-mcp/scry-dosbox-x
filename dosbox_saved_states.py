@@ -96,7 +96,8 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
 
 
 def channel_marks(ses: ds.Session) -> dict[str, object]:
-    """`state_load`'s `mark`: where the log ends now, one number per channel `log` takes, all
+    """`state_write(method="load")`'s `mark`: where the log ends now, one number per channel `log`
+    takes, all
     equal because one file holds the three (`scry_core.log_marks`); unavailable with no logfile,
     or when the host could not size it."""
     if ses.launch.logfile is None:
@@ -109,7 +110,7 @@ def channel_marks(ses: ds.Session) -> dict[str, object]:
     return {channel: end for channel in dlogs.LOG_CHANNELS}
 
 
-def state_save(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, object]:
+def save_state(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, object]:
     """Save the machine under `name` as `<state_dir>/<name>.sav`, by the debugger's own
     `SAVESTATE` (`_state_command`), and read the file back for what it says about
     itself. Running or parked, headless or windowed. Never overwrites, and a save that
@@ -146,7 +147,7 @@ def _replaced(ses: ds.Session) -> None:
     _stub_replaced(ses)
 
 
-def state_load(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, object]:
+def load_state(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, object]:
     """Load the state `name` from `<state_dir>/<name>.sav` by the debugger's own
     `LOADSTATE`. Running or parked: a running guest is stopped for it and released again,
     a parked one stays parked, at the loaded machine's position, which counts as a stop

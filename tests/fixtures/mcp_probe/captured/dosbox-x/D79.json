@@ -24,6 +24,78 @@
   },
   {
    "lines": [
+    "D79: {\"tool\":\"trace\",\"args\":{\"instructions\":250000,\"dest\":\"/tmp/big.trace\",\"seconds\":300}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D79: {\"tool\": \"trace\", \"args\": {\"instructions\": 250000, \"dest\": \"/tmp/big.trace\", \"seconds\": 300}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D79: {\"tool\": \"trace\", \"args\": {\"instructions\": 250000, \"shape\": \"normal\", \"dest\": \"/tmp/big.trace\", \"seconds\": 300}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D79: {\"tool\": \"trace\", \"args\": {\"instructions\": 250000, \"dest\": \"/tmp/big.trace\", \"seconds\": 300}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D79: {\"tool\": \"trace\", \"args\": {\"instructions\": 250000, \"dest\": \"/tmp/big.trace\", \"seconds\": 300}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D79: {\"tool\": \"trace\", \"args\": {\"instructions\": 250000, \"dest\": \"/tmp/big.trace\", \"seconds\": 300}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D79: {\"tool\": \"trace\", \"args\": {\"instructions\": 250000, \"dest\": \"/tmp/big.trace\", \"seconds\": 300}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D79: {\"tool\": \"trace\", \"args\": {\"instructions\": 250000, \"dest\": \"/tmp/big.trace\", \"seconds\": 300}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D79: {\"tool\": \"trace\", \"args\": {\"instructions\": 250000, \"dest\": \"/tmp/big.trace\", \"seconds\": 300}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D79: {\"tool\": \"trace\", \"args\": {\"instructions\": 250000, \"dest\": \"/tmp/big.trace\", \"seconds\": 300}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D79: {\"tool\":\"trace\",\"args\":{\"instructions\":250000,\"dest\":\"/tmp/big.trace\",\"seconds\":300}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D79: {\"tool\": \"trace\", \"args\": {\"instructions\": 250000, \"dest\": \"/tmp/big.trace\", \"seconds\": 300}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D79: {\"tool\": \"trace\", \"args\": {\"instructions\": 250000, \"dest\": \"/tmp/big.trace\", \"seconds\": 300}}"
    ],
    "right": true

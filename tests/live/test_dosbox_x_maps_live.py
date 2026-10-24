@@ -1,5 +1,6 @@
 """Screen maps on a real screen: bricks' own map (`demos/bricks/bricks.scry-map.json`, written by
-a session through `map_add` and `map_save`) recognises the play screen off one read, and a
+a session through `map_write(method="add")` and `map_write(method="save")`) recognises the play
+screen off one read, and a
 control named on it is clicked by name, the game logging that its paddle followed the pointer.
 
 The map knows the play screen by the two words of its header, `SCORE` and `LIVES` without their
@@ -35,7 +36,7 @@ def test_bricks_map_finds_the_play_screen_and_a_control_is_clicked_by_name(
     _ok(server.start(conf=str(BRICKS / "bricks.conf"), cwd=str(BRICKS), session_seconds=300,
                      logfile=str(tmp_path / "bricks-e9.log")))
     try:
-        loaded = _ok(server.map_load(path=str(MAP)))
+        loaded = _ok(server.map_write("load", path=str(MAP)))
         assert (loaded["application"], loaded["screens"], loaded["controls"]) == ("bricks", 1, 1)
         # Parked before anything set a video mode there is no screen to read: the find fails,
         # and a failed find identifies nothing a control could be clicked on.
@@ -51,9 +52,9 @@ def test_bricks_map_finds_the_play_screen_and_a_control_is_clicked_by_name(
         assert (found["matched"], found["screen"], found["layer"]) == (True, "play", "file")
         assert found["controls"][0]["centre"] == COURT_CENTRE
         # The session layer: the screen in front, saved beside the loaded one as one map.
-        added = _ok(server.map_add(screen="header", match=[[0, 0, 52, 8]]))
+        added = _ok(server.map_write("add", screen="header", match=[[0, 0, 52, 8]]))
         assert added["shadows_file"] is False
-        saved = _ok(server.map_save(dest=str(tmp_path / "bricks.scry-map.json")))
+        saved = _ok(server.map_write("save", dest=str(tmp_path / "bricks.scry-map.json")))
         assert saved["screens"] == 2 and saved["promoted"] == ["header"]
         _ok(server.resume())
         _ok(server.send_keys(keys=["m"], expect="MOUSE ON$", seconds=10))

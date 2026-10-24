@@ -15,7 +15,79 @@
  "runs": [
   {
    "lines": [
+    "D103: {\"tool\": \"series_capture\", \"args\": {\"at_frames\": [12, 48, 96]}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
     "D103: {\"tool\": \"series_capture\", \"args\": {\"at_frames\": [12, 48, 96], \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D103: {\"tool\":\"series_capture\",\"args\":{\"at_frames\":[12,48,96],\"capture_path\":\"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D103: {\"tool\": \"series_capture\", \"args\": {\"at_frames\": [12, 48, 96], \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D103: {\"tool\": \"series_capture\", \"args\": {\"at_frames\": [12, 48, 96], \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D103: {\"tool\": \"series_capture\", \"args\": {\"at_frames\": [12, 48, 96], \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D103: {\"tool\": \"series_capture\", \"args\": {\"at_frames\": [12, 48, 96], \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D103: {\"tool\": \"series_capture\", \"args\": {\"at_frames\": [12, 48, 96], \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D103: {\"tool\": \"series_capture\", \"args\": {\"at_frames\": [12, 48, 96], \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D103: {\"tool\": \"series_capture\", \"args\": {\"at_frames\": [12, 48, 96], \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D103: {\"tool\": \"series_capture\", \"args\": {\"at_frames\": [12, 48, 96], \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D103: {\"tool\": \"series_capture\", \"args\": {\"at_frames\": [12, 48, 96], \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D103: {\"tool\":\"series_capture\",\"args\":{\"at_frames\":[12,48,96],\"capture_path\":\"/opt/dosfury/caps/fury_001.avi\"}}"
    ],
    "right": true
   },

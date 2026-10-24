@@ -52,18 +52,18 @@ def test_the_screen_guests_capture_becomes_a_series_every_file_tool_reads(
     assert series["count"] == count and series["frame_source"] == "avi"
     manifest = series["manifest"]
     frames = sorted((tmp_path / "series").glob("f*.png"))
-    same = _ok(server.image_diff(a=str(frames[0]), b=str(frames[0])))
+    same = _ok(server.image_compare("image", a=str(frames[0]), b=str(frames[0])))
     assert same["differing_pixels"] == 0 and same["bbox"]["available"] is False
     # The guest moves the display start while it records, so the series changes: a series that
     # came out uniform is a capture that missed it, never a pass by the other branch.
     assert series["distinct"] > 1, series
-    pair = _ok(server.series_diff(a=manifest, b=manifest))
+    pair = _ok(server.image_compare("series", a=manifest, b=manifest))
     assert pair["identical"] == count, pair
-    track = _ok(server.region_track(manifest=manifest))
+    track = _ok(server.image_compare("region", manifest=manifest))
     assert track["transitions_total"] >= 1, track
     sums = tmp_path / "goldens.sha256"
     sums.write_text("".join(f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n"
                             for p in frames))
-    gold = _ok(server.golden_check(manifest=manifest, checksums=str(sums)))
+    gold = _ok(server.image_compare("golden", manifest=manifest, checksums=str(sums)))
     assert gold["matched"] == count and gold["differing"] == []
     _ok(server.close())

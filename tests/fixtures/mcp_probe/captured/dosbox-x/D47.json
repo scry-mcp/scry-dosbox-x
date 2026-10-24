@@ -27,6 +27,78 @@
   },
   {
    "lines": [
+    "D47: {\"tool\":\"send_mouse\",\"args\":{\"x\":812,\"y\":455,\"units\":\"mouse\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D47: {\"tool\":\"send_mouse\",\"args\":{\"x\":812,\"y\":455,\"units\":\"mouse\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D47: {\"tool\": \"send_mouse\", \"args\": {\"x\": 812, \"y\": 455, \"units\": \"mouse\"}}"
    ],
    "right": true

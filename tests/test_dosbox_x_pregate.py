@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, cast
 from unittest import mock
 
+import fold_calls
 import pytest
 from test_dosbox_x_server import _names, clean_session, install  # noqa: F401
 
@@ -42,19 +43,19 @@ def _call(name: str, args: dict[str, Any]) -> dict[str, Any]:
 @pytest.mark.parametrize(("name", "words"), [
     ("abc\n", "letters, digits"), ("a" * 65, "64"), ("1", "slot"), ("42", "slot"),
     ("a b", "letters, digits"), ("", "letters, digits"), ("-a", "letters, digits")])
-@pytest.mark.parametrize("tool", ["state_save", "state_load"])
+@pytest.mark.parametrize("tool", ["state_write save", "state_write load"])
 def test_a_state_name_is_judged_with_no_session(tool: str, name: str, words: str) -> None:
-    _refused(getattr(server, tool)(name=name), "bad_argument", words)
+    _refused(fold_calls.of(server, tool)(name=name), "bad_argument", words)
 
 
 @pytest.mark.parametrize("name", ["a" * 64, "boot", "a1", "1a", "A_b-c"])
 def test_a_state_name_of_the_rule_reaches_the_gate(name: str) -> None:
-    _refused(server.state_save(name=name), "no_session")
+    _refused(server.state_write("save", name=name), "no_session")
 
 
 def test_a_state_wait_out_of_bounds_is_judged_with_no_session() -> None:
-    _refused(server.state_save(name="boot", seconds=0), "bad_argument")
-    _refused(server.state_load(name="boot", seconds=601), "bad_argument")
+    _refused(server.state_write("save", name="boot", seconds=0), "bad_argument")
+    _refused(server.state_write("load", name="boot", seconds=601), "bad_argument")
     _refused(server.snapshot(seconds=-1), "bad_argument")
 
 
@@ -62,10 +63,10 @@ def test_a_state_wait_out_of_bounds_is_judged_with_no_session() -> None:
 
 
 @pytest.mark.parametrize(("tool", "kw", "words"), [
-    ("scan_filter", {"operator": "?"}, "operator"),
-    ("scan_filter", {"operator": "=", "value": -1}, "value"),
+    ("scan", {"method": "filter", "operator": "?"}, "operator"),
+    ("scan", {"method": "filter", "operator": "=", "value": -1}, "value"),
     ("snapshot", {"dest": "rel.png"}, "relative"),
-    ("state_save", {"name": "a b"}, "letters"),
+    ("state_write", {"method": "save", "name": "a b"}, "letters"),
     ("resume", {"seconds": -1}, "seconds"),
     ("perform", {"steps": [{"op": "nope"}]}, "nope"),
     ("perform", {"steps": [{"op": "read_memory", "ref": "00A7:zz"}]}, "00A7:zz"),
@@ -78,7 +79,7 @@ def test_a_state_wait_out_of_bounds_is_judged_with_no_session() -> None:
     ("set_register", {"name": "ax", "value": 0x10000}, "16"),
     ("set_register", {"name": "eax", "value": 1 << 32}, "32"),
     ("set_register", {"name": "cs", "value": -1}, "negative"),
-    ("scan_start", {"ref": "0000:0400", "length": 3, "cell_bytes": 2}, "whole number"),
+    ("scan", {"method": "start", "ref": "0000:0400", "length": 3, "cell_bytes": 2}, "whole number"),
     ("run_to", {"ref": "0000:0100", "control": ""}, "control"),
     ("breakpoint_at", {"ref": "[g_p]", "by": "pointer"},
      "by is one of ('auto', 'symbol', 'address')"),
@@ -95,15 +96,15 @@ def test_a_state_wait_out_of_bounds_is_judged_with_no_session() -> None:
 ])
 def test_a_value_wrong_with_no_machine_is_bad_argument_not_no_session(
         tool: str, kw: dict[str, Any], words: str) -> None:
-    _refused(getattr(server, tool)(**kw), "bad_argument", words)
+    _refused(fold_calls.of(server, tool)(**kw), "bad_argument", words)
 
 
 @pytest.mark.parametrize(("tool", "kw"), [
     ("set_register", {"name": "ax", "value": 0xFFFF}),
     ("set_register", {"name": "eax", "value": 0xFFFFFFFF}),
     ("set_register", {"name": "cs", "value": 0}),
-    ("scan_start", {"ref": "0000:0400", "length": 4, "cell_bytes": 2}),
-    ("scan_filter", {"operator": "!"}),
+    ("scan", {"method": "start", "ref": "0000:0400", "length": 4, "cell_bytes": 2}),
+    ("scan", {"method": "filter", "operator": "!"}),
     ("resume", {"seconds": 0}),
     ("perform", {"steps": [{"op": "registers"}]}),
     ("drive", {"act": [{"op": "send_keys", "keys": ["a"]}], "expect": "x"}),
@@ -114,12 +115,12 @@ def test_a_value_wrong_with_no_machine_is_bad_argument_not_no_session(
     ("find", {"ref": "1000:0000", "data_hex": "00", "length": 1}),
 ])
 def test_the_edge_of_each_rule_reaches_the_gate(tool: str, kw: dict[str, Any]) -> None:
-    _refused(getattr(server, tool)(**kw), "no_session")
+    _refused(fold_calls.of(server, tool)(**kw), "no_session")
 
 
 @pytest.mark.parametrize("step", [
     {"op": "send_keys", "keys": 5}, {"op": "set_register", "name": 7, "value": 1},
-    {"op": "state_save", "name": ["boot"]}])
+    {"op": "state_write", "method": "save", "name": ["boot"]}])
 @pytest.mark.parametrize("tool", ["perform", "drive"])
 def test_a_step_value_of_the_wrong_type_is_a_refusal_not_a_traceback(
         tool: str, step: dict[str, Any]) -> None:
@@ -150,16 +151,17 @@ def test_all_clears_every_declaration_of_the_family(tmp_path: Path) -> None:
     server.breakpoint_interrupt(number=0x21)
     server.watch_add(ref="00AF:0100", mode="change", length=4)
     server.watch_add(ref="00AF:0200", mode="show", length=4)
-    cleared = cast(dict[str, Any], server.breakpoint_clear(all=True))
+    cleared = cast(dict[str, Any], server.declaration_clear("breakpoint", all=True))
     assert cleared["status"] == "ok" and cleared["declarations_cleared"] == 2, cleared
-    gone = cast(dict[str, Any], server.watch_clear(all=True))
+    gone = cast(dict[str, Any], server.declaration_clear("watch", all=True))
     assert gone["status"] == "ok" and gone["declarations_cleared"] == 2, gone
     assert dstate.STATE.store is not None and dstate.STATE.store.declarations() == []
 
 
 def test_a_null_ref_is_the_schemas_refusal() -> None:
     install()
-    _refused(_call("breakpoint_clear", {"ref": None}), "bad_argument", "refused by the schema",
+    _refused(_call("declaration_clear", {"kind": "breakpoint", "ref": None}), "bad_argument",
+             "refused by the schema",
              "ref")
 
 
@@ -180,7 +182,7 @@ def test_a_value_wider_than_the_open_scans_cell_is_refused_before_mems() -> None
     dstate.STATE.scan_cell_bytes = 1
     try:
         with pytest.raises(ds.Invalid, match="byte") as e:
-            finder.scan_filter(cast(ds.Session, s), "=", 0x100)
+            finder.filter_scan(cast(ds.Session, s), "=", 0x100)
     finally:
         dstate.STATE.scan_cell_bytes = None
     assert e.value.code == "bad_argument" and s.typed == []
@@ -216,7 +218,7 @@ def test_a_start_plan_is_judged_whole_before_anything_starts(tmp_path: Path) -> 
 def test_a_signed_or_malformed_offset_is_refused_before_the_session_gate(ref: str) -> None:
     for tool, kw in (("read_memory", {"ref": ref}),
                      ("memdump", {"ref": ref, "length": 16, "dest": "/tmp/nope.bin"})):
-        out = cast(dict[str, Any], getattr(server, tool)(**kw))
+        out = cast(dict[str, Any], fold_calls.of(server, tool)(**kw))
         assert out["code"] == "bad_argument" and "not a hex SEG:OFF" in out["message"], out
 
 

@@ -55,7 +55,8 @@ def reach_djgpp(logfile: str | None = None) -> dict[str, int]:
 
     THE INTERRUPT BREAKPOINT IS LEFT ARMED, deliberately: the walk's last stop IS one of
     its firings, and the caller decides what to do next. It is now a stored declaration,
-    so `breakpoint_clear` removes it by its row text (the console's `BPDEL` numbers the
+    so `declaration_clear(kind="breakpoint")` removes it by its row text (the console's `BPDEL`
+    numbers the
     list BP-first, not by arming order, which is why clearing it by index once deleted a
     code breakpoint); the walk leaves it for the caller rather than clearing it here.
     """

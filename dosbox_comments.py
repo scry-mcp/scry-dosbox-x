@@ -22,7 +22,7 @@ running guest, holds rows a later stop finds at one place, and they are kept, as
 them, and named; a row saved in protected mode is past FFFF at the real-mode park every session
 starts at (and an interrupt vector's segment is the null selector in protected mode), so it is
 kept `unarmable`, named, and placed at a stop whose mode holds it. A call is answered at this
-stop, so `comment_add` still refuses such an address.
+stop, so `comment_write(method="add")` still refuses such an address.
 """
 from __future__ import annotations
 
@@ -350,8 +350,8 @@ def _shown(rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], bool]:
 
 # ------------------------------------------------------------------------------- the tools
 
-def comment_add(session: ds.Session, ref: str, text: str) -> dict[str, Any]:
-    """The body of the `comment_add` tool."""
+def add_comment(session: ds.Session, ref: str, text: str) -> dict[str, Any]:
+    """The body of the `comment_write(method="add")` tool."""
     store = arming.current_store()
     ds.console_listening(session, "a comment, whose raw address is read in the mode of a stop")
     places = _Places(session)
@@ -388,8 +388,8 @@ def comment_list(session: ds.Session) -> dict[str, Any]:
                     **_store_fields(store), **running)
 
 
-def comment_delete(session: ds.Session, ref: str) -> dict[str, Any]:
-    """The body of the `comment_delete` tool."""
+def delete_comment(session: ds.Session, ref: str) -> dict[str, Any]:
+    """The body of the `comment_write(method="delete")` tool."""
     store = arming.current_store()
     ds.console_listening(session, "a comment's place, read in the mode of a stop")
     places = _Places(session)
@@ -473,12 +473,13 @@ def _one_per_place(placed: list[tuple[dec.Declaration, dict[str, Any]]]) -> None
         other, ref = sharing[0]
         raise ds.Invalid("bad_argument",
             f"{other!r} and {ref!r} are comments at one place, which a comment file "
-            "names once: `comment_delete` one of them, or `comment_add` the place again "
+            "names once: `comment_write(method=\"delete\")` one of them, or "
+            "`comment_write(method=\"add\")` the place again "
             "to keep one text, then save")
 
 
-def comment_save(session: ds.Session, dest: str) -> dict[str, Any]:
-    """The body of the `comment_save` tool."""
+def save_comments(session: ds.Session, dest: str) -> dict[str, Any]:
+    """The body of the `comment_write(method="save")` tool."""
     store = arming.current_store()
     path, before = _judged_dest(dest, store)
     _one_per_place(_placed_comments(_Places(session), store))
@@ -495,8 +496,8 @@ def comment_save(session: ds.Session, dest: str) -> dict[str, Any]:
                     dropped_total=len(dropped), truncated=truncated, **note)
 
 
-def comment_load(session: ds.Session, given: str) -> dict[str, Any]:
-    """The body of the `comment_load` tool."""
+def load_comments(session: ds.Session, given: str) -> dict[str, Any]:
+    """The body of the `comment_write(method="load")` tool."""
     store = arming.current_store()
     ds.console_listening(session, "comments, whose raw addresses are read in the mode of a stop")
     path = paths.input_file("path", given, "comment file")
@@ -559,7 +560,8 @@ def comment_load(session: ds.Session, given: str) -> dict[str, Any]:
     if sharing := _sharing([*held, *added]):
         notes.append(f"{prose.counted(len(sharing), 'comment')} share a place with another, "
                      f"{sharing[0][0]!r} and {sharing[0][1]!r} first: a comment file names a "
-                     "place once, so `comment_save` refuses them until `comment_delete` "
+                     "place once, so `comment_write(method=\"save\")` refuses them until "
+                     "`comment_write(method=\"delete\")` "
                      "leaves one at each")
     note = {"note": "; ".join(notes)} if notes else {}
     return st.reply(path=str(path), parsed=len(rows), added=len(adds),

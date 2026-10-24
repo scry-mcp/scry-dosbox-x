@@ -9,33 +9,19 @@
 symbols_load(path, base="", base_from="CS", pattern="", keep_noise=false, section_bases=null, types="")
 ```
 
-Load a toolchain's TEXT symbol list into the debugger and the server, so every other tool
-takes NAMES. Wants the machine stopped INSIDE the program whose symbols these are (a breakpoint
-on INT 0x21, or INT 0x31 with ah=2 for a DJGPP program). With an explicit `base` it also works
-while the guest RUNS: the table answers at once and the debugger's list loads at the next stop
-(`pending: true`).
+Load a toolchain's symbol list so other tools take names. Stop inside the program first;
+with an explicit `base` a running guest works too (`pending: true`).
 
-Arguments: `path`, a file (an absolute path): `nm` output, a GNU `ld` map, a
-Borland TLINK/TASM map, or an Open Watcom map. A FLAT list (`nm`, GNU, real-mode Borland) takes
-`base`: measured by default off the selector named by `base_from` (default `CS`, right under
-DPMI), REQUIRED in real mode as HEX TEXT, `load_segment * 16` (segment 0x0800 is `"0x8000"`).
-A SECTIONED map (32-bit Borland, Watcom) takes `section_bases`, hex per section index.
-`types`: a UTF-8 file typing symbols in the value grammar. `pattern`: a regex SEARCHED in the
-full name (`^_snd` keeps a prefix); `keep_noise` keeps section and compiler-label symbols.
+`path`: `nm` output or a GNU `ld`, Borland or Watcom map. Flat lists take `base` (hex text,
+required in real mode); sectioned maps take `section_bases`. `types`, `pattern`,
+`keep_noise` filter and type rows.
 
-Refused (INVALID): both `base` and `section_bases`; a sectioned map with no `section_bases`; a
-real-mode map with no `base`; a running machine with no explicit base; a file whose symbol rows
-were mostly unreadable; a table the COFF symbols of the `<stem>.exe` beside it contradict.
+Refused (INVALID): both `base` and `section_bases`; a sectioned map without
+`section_bases`; real mode or a running machine without `base`; a mostly unreadable file;
+a table the `<stem>.exe` contradicts.
 
-A second load at the same base ADDS to the first; at another base it REPLACES the table here
-(`table_mode`), the debugger keeping every row until `close`.
-
-Reply: `parsed`, `kept`, `loaded` (the debugger's own count), `table_mode`,
-`table_total`, `renamed` (names loaded cut or with `~n`), the parse's other
-accounts (`truncated_names`, `disambiguated`, `unreadable`, `excluded_*`, `overlay_idle`,
-`unencodable*`, `symbols_typed`, `bytes`), `descriptor`, `pending`, `base_from`, `base`,
-`limit`, `checked` (`against`, `agree`, or why not), and `declarations` (the re-arm by
-state, `rearmed` to `unarmable`, each a list row, `why` on the last three).
+Reply: `parsed`, `kept`, `loaded`, `table_mode`, `table_total`, `renamed`, `pending`,
+`base`, `checked`, `declarations`.
 
 Reference: REFERENCE.md, Names for addresses.
 
@@ -153,6 +139,8 @@ symbols:
 	@mv $@.tmp build/APP.SYM
 ```
 
+The debugger's list stores a `u16` count then 16-byte NUL-padded names with `u32` linear addresses, so long names are cut and collisions get `~n`; read `renamed`, not `truncated_names`. Real mode cannot report a selector base, so a flat map without `base` is refused: base 0 would load cleanly at wrong addresses. A 32-bit Borland row is a section index plus an offset, so its bases cannot come from the map, and such a map describes a Win32 program (breakpoints may refuse afterwards). A second load at the same base adds; at another base it replaces the server's table while the debugger keeps every row until `close`. A stale table places names a few bytes off silently, hence the check against the build. Base is measured off `base_from` (default `CS`, right under DPMI); `section_bases` is hex per section index; `pattern` is searched in the full name; the table carries no sizes, so address lookups give the nearest symbol below.
+
 <!-- scry-reference:begin symbols_find -->
 ## `symbols_find`
 
@@ -162,20 +150,11 @@ symbols:
 symbols_find(name="", offset=null, section=null, linear="", limit=10)
 ```
 
-Look a symbol up in the table `symbols_load` kept (names untruncated; what its `pattern`
-and noise filters excluded is not in it).
+Look a symbol up in the table `symbols_load` kept. `name`: exact, else prefixes up to
+`limit`. `offset` or `linear` (hex text), with `section`: the nearest symbol at or below.
 
-`name`: exact match, else prefix matches, up to `limit` (`truncated` says if it
-bit). `offset` (a toolchain offset) or `linear` (a linear address as hex text, `0x1000`;
-a `SEG:OFF` is `read_memory`'s, not this one's),
-optionally with `section`: what am I inside? -- the nearest symbol AT OR BELOW and the
-distance above it (this table carries no sizes). One question per call.
-
-Reply: by name, `query`, `symbols_total` (how many) and `symbols`, a list with `name`, `offset`,
-`addr` (linear), `section`, `idle` (Borland's own mark on that row, always false for `nm`/GNU);
-by offset or linear, the nearest symbol's own fields and `delta`. INVALID with no table
-loaded, or `limit` out of range on the `name` question (a prefix matching
-more is a listing, not a lookup).
+Reply: `query`, `symbols_total`, `symbols` (`name`, `offset`, `addr`),
+`truncated`; by address, the symbol's fields and `delta`. INVALID: no table.
 
 | argument | type | default |
 |---|---|---|
@@ -227,3 +206,5 @@ Example, from a live run:
 }
 ```
 <!-- scry-reference:end symbols_find -->
+
+A `SEG:OFF` is `read_memory`'s, not `linear`'s. A prefix matching more than `limit` is a listing, not a lookup, so `limit` is range-checked on the name question. `idle` is Borland's own mark on a row, always false for `nm`/GNU; names are untruncated and exclude what `pattern` and the noise filters dropped.

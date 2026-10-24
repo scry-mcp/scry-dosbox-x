@@ -31,6 +31,78 @@
   },
   {
    "lines": [
+    "D102: {\"tool\":\"series_capture\",\"args\":{\"first\":100,\"last\":160,\"step\":4,\"crop\":[0,0,320,20],\"dest\":\"/tmp/dx-series\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D102: {\"tool\": \"series_capture\", \"args\": {\"first\": 100, \"last\": 160, \"step\": 4, \"crop\": [0, 0, 320, 20], \"dest\": \"/tmp/dx-series\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D102: {\"tool\": \"series_capture\", \"args\": {\"first\": 100, \"last\": 160, \"step\": 4, \"crop\": [0, 0, 320, 20], \"dest\": \"/tmp/dx-series\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D102: {\"tool\": \"series_capture\", \"args\": {\"first\": 100, \"last\": 160, \"step\": 4, \"crop\": [0, 0, 320, 20], \"dest\": \"/tmp/dx-series\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D102: {\"tool\": \"series_capture\", \"args\": {\"first\": 100, \"last\": 160, \"step\": 4, \"crop\": [0, 0, 320, 20], \"dest\": \"/tmp/dx-series\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D102: {\"tool\": \"series_capture\", \"args\": {\"first\": 100, \"last\": 160, \"step\": 4, \"crop\": [0, 0, 320, 20], \"dest\": \"/tmp/dx-series\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D102: {\"tool\": \"series_capture\", \"args\": {\"first\": 100, \"last\": 160, \"step\": 4, \"crop\": [0, 0, 320, 20], \"dest\": \"/tmp/dx-series\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D102: {\"tool\": \"series_capture\", \"args\": {\"first\": 100, \"last\": 160, \"step\": 4, \"crop\": [0, 0, 320, 20], \"dest\": \"/tmp/dx-series\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D102: {\"tool\": \"series_capture\", \"args\": {\"first\": 100, \"last\": 160, \"step\": 4, \"crop\": [0, 0, 320, 20], \"dest\": \"/tmp/dx-series\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D102: {\"tool\": \"series_capture\", \"args\": {\"first\": 100, \"last\": 160, \"step\": 4, \"crop\": [0, 0, 320, 20], \"dest\": \"/tmp/dx-series\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D102: {\"tool\":\"series_capture\",\"args\":{\"first\":100,\"last\":160,\"step\":4,\"crop\":[0,0,320,20],\"dest\":\"/tmp/dx-series\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D102: {\"tool\": \"series_capture\", \"args\": {\"first\": 100, \"last\": 160, \"step\": 4, \"crop\": [0, 0, 320, 20], \"dest\": \"/tmp/dx-series\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D102: {\"tool\": \"series_capture\", \"args\": {\"first\": 100, \"last\": 160, \"step\": 4, \"crop\": [0, 0, 320, 20], \"dest\": \"/tmp/dx-series\"}}"
    ],
    "right": true

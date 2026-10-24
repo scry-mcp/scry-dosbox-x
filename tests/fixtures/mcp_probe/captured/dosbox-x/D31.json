@@ -18,7 +18,25 @@
  "runs": [
   {
    "lines": [
-    "D31: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.map\", \"section_bases\": {\"2\": \"0x501000\"}}}"
+    "D31: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.map\", \"section_bases\": {\"2\": \"501000\"}}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D31: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.map\", \"section_bases\": {\"2\": \"501000\"}}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D31: {\"tool\":\"symbols_load\",\"args\":{\"path\":\"/opt/game/game.map\",\"section_bases\":{\"2\":\"501000\"}}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D31: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.map\", \"section_bases\": {\"2\": \"501000\"}}}"
    ],
    "right": true
   },
@@ -30,7 +48,61 @@
   },
   {
    "lines": [
+    "D31: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.map\", \"section_bases\": {\"2\": \"501000\"}}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D31: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.map\", \"section_bases\": {\"2\": \"501000\"}}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D31: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.map\", \"section_bases\": {\"2\": \"501000\"}}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D31: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.map\", \"section_bases\": {\"2\": \"0x501000\"}}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D31: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.map\", \"section_bases\": {\"2\": \"501000\"}}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D31: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.map\", \"section_bases\": {\"2\": \"501000\"}}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D31: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.map\", \"section_bases\": {\"2\": \"501000\"}}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D31: {\"tool\":\"symbols_load\",\"args\":{\"path\":\"/opt/game/game.map\",\"section_bases\":{\"2\":\"501000\"}}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D31: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.map\", \"section_bases\": {\"2\": \"501000\"}}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D31: {\"tool\": \"symbols_load\", \"args\": {\"path\": \"/opt/game/game.map\", \"section_bases\": {\"2\": \"501000\"}}}"
    ],
    "right": true
   }

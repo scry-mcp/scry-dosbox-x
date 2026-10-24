@@ -23,6 +23,78 @@
   },
   {
    "lines": [
+    "D83: {\"tool\":\"disassemble\",\"args\":{\"ref\":\"1A2B:0040\",\"length\":20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D83: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D83: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D83: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D83: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D83: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D83: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D83: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D83: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D83: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D83: {\"tool\":\"disassemble\",\"args\":{\"ref\":\"1A2B:0040\",\"length\":20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D83: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 20}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D83: {\"tool\": \"disassemble\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 20}}"
    ],
    "right": true

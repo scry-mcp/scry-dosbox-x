@@ -239,7 +239,8 @@ class Declaration:
 
     def _check_comment(self) -> None:
         """A comment holds to the comment file's rules, so a store edited by hand cannot hold
-        one `comment_save` could not write: by symbol or by address, the shape agreeing with
+        one `comment_write(method="save")` could not write: by symbol or by address, the shape
+        agreeing with
         `by` (a colon makes an address), the file's ref, stamp and text rules, no watch field."""
         if self.by not in ("symbol", "address"):
             raise DeclarationError(f"a comment is declared by symbol or by address; got "
@@ -692,7 +693,7 @@ class DeclarationStore:
         ONE conflict is still refused: for a watch, the SAME `ref` carrying the OTHER half
         -- a `show` where a `change` already sits, or the reverse. A change watch reports its
         bytes at every stop already, so the show beside it would be the same reading twice,
-        and a `watch_clear` of the ref has to name one declaration.
+        and a `declaration_clear(kind="watch")` of the ref has to name one declaration.
         """
         if decl.kind == "comment":
             raise DeclarationError("a comment goes through apply: add adopts by equality, "

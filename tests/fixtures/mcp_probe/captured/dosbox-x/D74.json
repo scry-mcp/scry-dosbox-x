@@ -23,6 +23,78 @@
   },
   {
    "lines": [
+    "D74: {\"tool\":\"screen_wait\",\"args\":{\"text\":\"GAME OVER\",\"seconds\":90}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D74: {\"tool\":\"screen_wait\",\"args\":{\"text\":\"GAME OVER\",\"seconds\":90}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D74: {\"tool\": \"screen_wait\", \"args\": {\"text\": \"GAME OVER\", \"seconds\": 90}}"
    ],
    "right": true

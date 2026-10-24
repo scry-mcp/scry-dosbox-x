@@ -24,6 +24,78 @@
   },
   {
    "lines": [
+    "D49: {\"tool\":\"capture_frame\",\"args\":{\"frame\":1440,\"dest\":\"/tmp/mcp-probe-frame.png\",\"capture_path\":\"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D49: {\"tool\": \"capture_frame\", \"args\": {\"frame\": 1440, \"dest\": \"/tmp/mcp-probe-frame.png\", \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D49: {\"tool\": \"capture_frame\", \"args\": {\"frame\": 1440, \"dest\": \"/tmp/mcp-probe-frame.png\", \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D49: {\"tool\": \"capture_frame\", \"args\": {\"frame\": 1440, \"dest\": \"/tmp/mcp-probe-frame.png\", \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D49: {\"tool\": \"capture_frame\", \"args\": {\"frame\": 1440, \"dest\": \"/tmp/mcp-probe-frame.png\", \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D49: {\"tool\": \"capture_frame\", \"args\": {\"frame\": 1440, \"dest\": \"/tmp/mcp-probe-frame.png\", \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D49: {\"tool\": \"capture_frame\", \"args\": {\"frame\": 1440, \"dest\": \"/tmp/mcp-probe-frame.png\", \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D49: {\"tool\": \"capture_frame\", \"args\": {\"frame\": 1440, \"dest\": \"/tmp/mcp-probe-frame.png\", \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D49: {\"tool\": \"capture_frame\", \"args\": {\"frame\": 1440, \"dest\": \"/tmp/mcp-probe-frame.png\", \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D49: {\"tool\": \"capture_frame\", \"args\": {\"frame\": 1440, \"dest\": \"/tmp/mcp-probe-frame.png\", \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D49: {\"tool\":\"capture_frame\",\"args\":{\"frame\":1440,\"dest\":\"/tmp/mcp-probe-frame.png\",\"capture_path\":\"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D49: {\"tool\": \"capture_frame\", \"args\": {\"frame\": 1440, \"dest\": \"/tmp/mcp-probe-frame.png\", \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D49: {\"tool\": \"capture_frame\", \"args\": {\"frame\": 1440, \"dest\": \"/tmp/mcp-probe-frame.png\", \"capture_path\": \"/opt/dosfury/caps/fury_001.avi\"}}"
    ],
    "right": true

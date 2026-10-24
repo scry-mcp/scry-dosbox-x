@@ -22,6 +22,78 @@
   },
   {
    "lines": [
+    "D91: {\"tool\":\"build_check\",\"args\":{\"binary\":\"/opt/dbx-dev/src/dosbox-x\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D91: {\"tool\":\"build_check\",\"args\":{\"binary\":\"/opt/dbx-dev/src/dosbox-x\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D91: {\"tool\": \"build_check\", \"args\": {\"binary\": \"/opt/dbx-dev/src/dosbox-x\"}}"
    ],
    "right": true

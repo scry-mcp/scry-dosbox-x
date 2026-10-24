@@ -33,6 +33,78 @@
   },
   {
    "lines": [
+    "D43: {\"tool\":\"send_keys\",\"args\":{\"keys\":[\"s\"],\"modifiers\":[\"ctrl\"],\"expect\":\"SAVED OK\",\"seconds\":6}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D43: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"s\"], \"modifiers\": [\"ctrl\"], \"expect\": \"SAVED OK\", \"seconds\": 6}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D43: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"s\"], \"modifiers\": [\"ctrl\"], \"expect\": \"SAVED OK\", \"seconds\": 6}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D43: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"s\"], \"modifiers\": [\"ctrl\"], \"expect\": \"SAVED OK\", \"seconds\": 6}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D43: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"s\"], \"modifiers\": [\"ctrl\"], \"expect\": \"SAVED OK\", \"seconds\": 6}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D43: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"s\"], \"modifiers\": [\"ctrl\"], \"expect\": \"SAVED OK\", \"seconds\": 6}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D43: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"s\"], \"modifiers\": [\"ctrl\"], \"expect\": \"SAVED OK\", \"seconds\": 6}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D43: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"s\"], \"modifiers\": [\"ctrl\"], \"expect\": \"SAVED OK\", \"seconds\": 6}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D43: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"s\"], \"modifiers\": [\"ctrl\"], \"expect\": \"SAVED OK\", \"seconds\": 6}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D43: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"s\"], \"modifiers\": [\"ctrl\"], \"expect\": \"SAVED OK\", \"seconds\": 6}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D43: {\"tool\":\"send_keys\",\"args\":{\"keys\":[\"s\"],\"modifiers\":[\"ctrl\"],\"expect\":\"SAVED OK\",\"seconds\":6}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D43: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"s\"], \"modifiers\": [\"ctrl\"], \"expect\": \"SAVED OK\", \"seconds\": 6}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D43: {\"tool\": \"send_keys\", \"args\": {\"keys\": [\"s\"], \"modifiers\": [\"ctrl\"], \"expect\": \"SAVED OK\", \"seconds\": 6}}"
    ],
    "right": true

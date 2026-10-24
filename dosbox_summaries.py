@@ -161,27 +161,27 @@ def find(args: dict[str, Any], reply: dict[str, Any]) -> str:
             f"{args.get('data_hex')} in {_said(reply.get('length'), 'byte')}")
 
 
-def scan_start(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"scan_start {args.get('ref', '')}: {reply.get('hits_total')} cells of "
+def start_scan(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    return (f"{args.get('ref', '')}, {reply.get('hits_total')} cells of "
             f"{_said(reply.get('cell_bytes'), 'byte')}")
 
 
-def scan_filter(args: dict[str, Any], reply: dict[str, Any]) -> str:
+def filter_scan(args: dict[str, Any], reply: dict[str, Any]) -> str:
     value = args.get("value")
-    what = args.get("operator", "=") + ("" if value is None else f" {value}")
-    return f"scan_filter {what}: {_said(reply.get('hits_total'), 'survivor')}" + (
+    what = (args.get("operator") or "=") + ("" if value is None else f" {value}")
+    return f"{what}, {_said(reply.get('hits_total'), 'survivor')}" + (
         ", scan closed" if reply.get("closed") else "") + (
         _listed(reply) if reply.get("truncated") else "")
 
 
 def _listed(reply: dict[str, Any]) -> str:
-    """How much of a cut survivor list a `scan_filter` reply holds."""
+    """How much of a cut survivor list a filter's reply holds."""
     shown = len(reply.get("hits") or [])
     return f", the first {shown} listed" if shown else ", none listed (`note` says why)"
 
 
-def scan_clear(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return "scan_clear: cleared" if reply.get("cleared") else "scan_clear: nothing was open"
+def clear_scan(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    return "cleared" if reply.get("cleared") else "nothing was open"
 
 
 def debug(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -248,13 +248,13 @@ def run_to(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 # ------------------------------------------------------------------------ the states
 
-def state_save(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"state_save {reply.get('name')}: {_said(reply.get('bytes'), 'byte')}, "
+def save_state(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    return (f"{reply.get('name')}, {_said(reply.get('bytes'), 'byte')}, "
             f"{reply.get('program')} {reply.get('saved_at')}")
 
 
-def state_load(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return f"state_load {reply.get('name')}: loaded"
+def load_state(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    return f"{reply.get('name')}, loaded"
 
 
 def state_list(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -344,12 +344,18 @@ def breakpoint_interrupt(args: dict[str, Any], reply: dict[str, Any]) -> str:
             f"{'stored' if reply.get('stored') else 'kept'}")
 
 
-def breakpoint_list(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return f"breakpoint_list: {len(reply.get('breakpoints') or [])} declared"
+#: Each kind's reply field, in the order a list of every kind names them.
+DECLARATION_ROWS = {"breakpoint": "breakpoints", "watch": "watches"}
 
 
-def breakpoint_clear(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"breakpoint_clear {args.get('ref') or 'all'}: "
+def declaration_list(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    kind = f" {args['kind']}" if args.get("kind") else ""
+    return f"declaration_list{kind}: " + ", ".join(
+        f"{len(reply[key])} {key} declared" for key in DECLARATION_ROWS.values() if key in reply)
+
+
+def declaration_clear(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    return (f"declaration_clear {args.get('kind')} {args.get('ref') or 'all'}: "
             f"{reply.get('declarations_cleared')} cleared")
 
 
@@ -360,39 +366,29 @@ def _comment_place(row: object) -> str:
     return str(row.get("addr") or row.get("state"))
 
 
-def comment_add(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return f"comment_add {args.get('ref', '')}: {_comment_place(reply.get('comment'))}, stored"
+def add_comment(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    return f"{args.get('ref', '')} at {_comment_place(reply.get('comment'))}, stored"
 
 
 def comment_list(args: dict[str, Any], reply: dict[str, Any]) -> str:
     return f"comment_list: {_said(reply.get('comments_total'), 'comment')}"
 
 
-def comment_delete(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"comment_delete {args.get('ref', '')}: {_comment_place(reply.get('deleted'))} "
-            "deleted")
+def delete_comment(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    return f"{args.get('ref', '')} at {_comment_place(reply.get('deleted'))} deleted"
 
 
-def comment_save(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return f"comment_save: {_said(reply.get('comments_total'), 'comment')} to {reply.get('path')}"
+def save_comments(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    return f"{_said(reply.get('comments_total'), 'comment')} to {reply.get('path')}"
 
 
-def comment_load(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"comment_load: {reply.get('parsed')} read, {reply.get('added')} added, "
+def load_comments(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    return (f"{reply.get('parsed')} read, {reply.get('added')} added, "
             f"{reply.get('replaced_total')} replaced")
 
 
 def watch_add(args: dict[str, Any], reply: dict[str, Any]) -> str:
     return f"watch_add {args.get('ref', '')}: {reply.get('state')}"
-
-
-def watch_list(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return f"watch_list: {len(reply.get('watches') or [])} declared"
-
-
-def watch_clear(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return (f"watch_clear {args.get('ref') or 'all'}: "
-            f"{reply.get('declarations_cleared')} cleared")
 
 
 # ------------------------------------------------------------------ input and captures
@@ -452,11 +448,8 @@ def screen_signature(args: dict[str, Any], reply: dict[str, Any]) -> str:
     return f"screen_signature {reply.get('vga_mode')} {_region(reply)}: {reply.get('signature')}"
 
 
-# The screen maps' four lines are scry-core's, alike on both servers.
-map_load = screen_map.load_line
-map_add = screen_map.add_line
+# The screen maps' lines are scry-core's, alike on both servers.
 map_find = screen_map.find_line
-map_save = screen_map.save_line
 
 
 def series_capture(args: dict[str, Any], reply: dict[str, Any]) -> str:

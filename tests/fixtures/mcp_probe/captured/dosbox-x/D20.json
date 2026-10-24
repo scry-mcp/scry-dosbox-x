@@ -22,6 +22,78 @@
   },
   {
    "lines": [
+    "D20: {\"tool\":\"resume\",\"args\":{\"seconds\":25}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D20: {\"tool\":\"drive\",\"args\":{\"act\":[{\"op\":\"resume\",\"seconds\":25}]}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D20: {\"tool\": \"resume\", \"args\": {\"seconds\": 25}}"
    ],
    "right": true

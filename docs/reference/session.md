@@ -11,16 +11,11 @@ A session is one DOSBox-X process, parked at the debugger by `start` and ended b
 build_check(binary="")
 ```
 
-Whether this server's PRECONDITIONS hold: a DOSBox-X binary resolves and that build
-carries the DEBUGGER. Run it BEFORE `start`; it REFUSES while a session is live
-(answering means starting a second emulator). `binary`: the absolute path of the build to
-ask about; omitted, the `DOSBOX_X_BINARY` variable, else the PATH's `dosbox-x`, as `start`
-resolves it; a named build that does not resolve is refused, never replaced. Reply:
-`binary` (the absolute path), `binary_origin` (`argument`, `DOSBOX_X_BINARY` or `PATH`),
-`version` (the build's first line, or `{available: false, why}`), `debugger`,
-`heavy_debug` (the build carries the debugger's CPU log, which `trace` needs), and INVALID
-naming the precondition that fails; `heavy_debug: false` is an answer, and it is `trace`
-that refuses such a build. It is about the build, never about a reading.
+Whether a DOSBox-X binary resolves and carries the debugger. Run before `start`; it
+refuses while a session is live. `binary`: omitted, `DOSBOX_X_BINARY`, else the PATH's
+`dosbox-x`; a named build that fails is refused.
+
+Reply: `binary`, `binary_origin`, `version`, `debugger`, `heavy_debug` (`trace` needs it).
 
 | argument | type | default |
 |---|---|---|
@@ -43,27 +38,29 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "build_check: /path/to/dosbox-x-builds/scry-f06aa5d26/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
+  "summary": "build_check: ~/.local/state/dosbox-x-builds/scry-f06aa5d26/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
   "status": "ok",
-  "binary": "/path/to/dosbox-x-builds/scry-f06aa5d26/dosbox-x",
+  "binary": "~/.local/state/dosbox-x-builds/scry-f06aa5d26/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
   "debugger": true,
   "heavy_debug": true,
   "tools": [
     "breakpoint_at",
-    "breakpoint_clear",
     "breakpoint_interrupt",
-    "breakpoint_list",
     "build_check",
     "call_stack",
-    "... 58 more"
+    "capture_frame",
+    "captures",
+    "... 45 more"
   ]
 }
 ```
 <!-- scry-reference:end build_check -->
 
 A build without the debugger starts fine and then hangs `start` until its timeout. The debugger is read off the binary itself, since `-helpdebug` listing `-break-start` also happens in a build configured without the debugger. It refuses while a session is live because `-helpdebug` starts the emulator, which a build that does not know the option runs for the whole bound.
+
+**`heavy_debug: false` is an answer, not a failure**: it is `trace` that refuses such a build. The tool is about the build, never about a reading. `binary_origin` is `argument`, `DOSBOX_X_BINARY` or `PATH`; `version` is the build's first line, or `{available: false, why}`.
 
 <!-- scry-reference:begin start -->
 ## `start`
@@ -74,35 +71,18 @@ A build without the debugger starts fine and then hangs `start` until its timeou
 start(conf, cwd, session_seconds, shared=false, display="", flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="", plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null, presence=true)
 ```
 
-Open ONE live DOSBox-X session from your conf, parked at the debugger.
-Refuses while a session is live.
+Open one live DOSBox-X session from your conf, parked at the debugger.
 
-Every path is absolute or `~`-led: `cwd`, the emulator's working directory, there; `conf`;
-`logfile`, its directory there; `captures_dir` and `state_dir`, created with their parents.
-`session_seconds`: the session's REQUIRED lifetime; `close` is
-the act. `shared`: watched, in a window the host's helper places on `display`; false,
-headless. `flags` (the emulator's own, after this server's defaults) are argv
-tokens, a `-set` value ONE token with its spaces.
-`break_on_int3`: the guest's `int 3` stops at the debugger. `logfile`: the guest's E9
-channel, without which `log`, `log_wait`, `expect` and `drive` have none. `program` runs
-with `-c` AFTER the conf's autoexec (which must not `exit`); `capture_video` records it.
-`plan`: operations run on the fresh session with `perform`'s rules, `settle_seconds`
-(default 30, and only with a plan) bounding each wait. `input_port`: COM1's TCP port
-for the input (`0`: a free one); the conf's autoexec runs the reply's `stub` first, or
-`program` loads it. `state_dir`: what `state_save` writes to (`save` under `cwd`). `binary`:
-the build to run; omitted, `DOSBOX_X_BINARY`, else the PATH's `dosbox-x`. `background`:
-`true` behind; `false` in front; omitted, by `shared`.
+Paths are absolute or `~`-led. `session_seconds`: the lifetime. `shared`: watched on
+`display`; false, headless. `flags`: argv tokens, a `-set` value one token. `logfile`: the
+guest's E9 channel, for `log`, `log_wait`, `drive`. `program` runs after autoexec;
+`capture_video` records it. `plan` runs as `perform` does, each wait bounded by
+`settle_seconds` (default 30). `input_port`: COM1's TCP port.
 
-Reply: the process (`status`'s rows), `shared`, `display`, `ready_after_s`, `argv`,
-`binary`, `binary_origin`, `version`, `stub`, `input_port`, `background`, `presence`,
-`declarations.rearm`, and `rearm_refused` (why) when stored raw breakpoints could not
-re-arm; with `plan`, the sequence account, the start facts under `start`.
+Refused: a live session, a bad path, `session_seconds` out of range, `capture_video`
+without `program`, an `input_port` outside 1024-65535 or busy.
 
-Refused before anything starts: a path not absolute, an unresolved binary, a missing
-conf, `cwd` or `logfile` directory, `session_seconds` out of range, `display` headless,
-`shared` with no window helper, a glued or shredded `-set`, `capture_video`
-without `program`, an `input_port` outside 1024-65535 or busy, no
-drive free for the stub.
+Reply: `pid`, `stub`, `input_port`, `declarations` (`rearm`); with `plan`, its account.
 
 Reference: REFERENCE.md, The session.
 
@@ -127,8 +107,8 @@ Reference: REFERENCE.md, The session.
 | `background` | boolean or null | `null` |
 | `presence` | boolean | `true` |
 
-- `display`: Where a watched (`shared`) window opens: `main` or `secondary`; empty, the display `WINDOW_SHARED_DISPLAY` names, else the secondary. The host's placement helper (`WINDOW_APP`) places it; a run nobody watches takes none.
-- `presence`: Draw an edge around the emulator's window while this session is open: dim while idle, bright while a call runs the machine. No capture, recording or screen reader of this server carries it; a recording of the window made from outside does.
+- `display`: Where a watched (`shared`) window opens: `main` or `secondary`; empty, the display `WINDOW_SHARED_DISPLAY` names, else the secondary.
+- `presence`: Draw an edge around the emulator's window while this session is open: dim while idle, bright while a call runs the machine. No capture of this server carries it.
 
 | reply field | type |
 |---|---|
@@ -182,52 +162,49 @@ Example, from a live run:
 
 ```json
 {
-  "conf": "$TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/n2.conf",
+  "conf": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n2.conf",
   "cwd": "/path/to/scry-dosbox-x/tests/guest",
   "session_seconds": 1200,
   "shared": true,
   "program": "PROBE.COM",
   "background": false,
-  "logfile": "$TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/n3.log",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/n4-save",
+  "logfile": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n3.log",
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n4-save",
   "presence": false
 }
 ```
 
 ```json
 {
-  "summary": "start n2.conf: shared on /path/to/dosbox-x-builds/scry-f06aa5d26/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.209s",
+  "summary": "start n2.conf: shared on ~/.local/state/dosbox-x-builds/scry-f06aa5d26/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.205s",
   "status": "ok",
-  "pid": 42512,
-  "conf": "$TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/n2.conf",
+  "pid": 74107,
+  "conf": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n2.conf",
   "conf_digest": "33a4a905f64a2a65",
-  "conf_changed_on_disk": false,
   "watched": true,
   "bound_s": 1200,
   "elapsed_s": 0.9,
-  "terminal_bytes_dropped": 0,
   "drain_alive": true,
   "captures": "off",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/n4-save",
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n4-save",
   "shared": true,
   "display": "secondary",
-  "ready_after_s": 0.209,
+  "ready_after_s": 0.205,
   "argv": [
-    "/path/to/dosbox-x-builds/scry-f06aa5d26/dosbox-x",
+    "~/.local/state/dosbox-x-builds/scry-f06aa5d26/dosbox-x",
     "-conf",
-    "$TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/n2.conf",
+    "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n2.conf",
     "-time-limit",
     "1200",
     "-break-start",
     "... 25 more"
   ],
-  "binary": "/path/to/dosbox-x-builds/scry-f06aa5d26/dosbox-x",
+  "binary": "~/.local/state/dosbox-x-builds/scry-f06aa5d26/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
   "stub": "/path/to/scry-dosbox-x/guest/INJECT.COM",
-  "input_port": 63016,
+  "input_port": 53048,
   "background": false,
-  "presence": false,
   "declarations": {
     "rearm": {
       "rearmed": [],
@@ -251,6 +228,16 @@ Example, from a live run:
 
 **`break_on_int3`** has two limits that are the debugger's: at the reset vector there is no row, so a trap faults; and the first instruction after a `resume` runs unchecked, so a trap written at the stop itself is stepped over.
 
+**`binary` and `background`**: `binary` omitted is `DOSBOX_X_BINARY`, else the PATH's `dosbox-x`, as `build_check` resolves it. `background` `true` starts behind, `false` in front, omitted by `shared`.
+
+**`flags` are argv tokens, so a `-set` value with spaces is one token**; a glued or shredded `-set` is refused because the emulator would read it as something else.
+
+**`program` loads the stub itself when the conf's autoexec does not run it**, which is why the autoexec must not `exit` before `program` runs.
+
+**`state_dir`** is what `state_write(method="save")` writes to; empty, `save` under `cwd`. **`break_on_int3`** has two limits that are the debugger's.
+
+**Also refused before anything starts**: a missing conf, `cwd` or `logfile` directory, an unresolved binary, `display` headless, `shared` with no window helper, a glued or shredded `-set`, and no drive free for the stub. `captures_dir` and `state_dir` are created with their parents. The reply also carries `shared`, `display`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `background`, `presence` and `rearm_refused` (why, when stored raw breakpoints could not re-arm).
+
 <!-- scry-reference:begin status -->
 ## `status`
 
@@ -260,38 +247,16 @@ Example, from a live run:
 status()
 ```
 
-What the session is right now. It records a stop no tool has
-reported (`stopped_on_its_own`) and applies what was queued while the guest ran
+What the session is right now. It records a stop no tool has reported
+(`stopped_on_its_own`) and applies what was queued while the guest ran
 (`applied_on_stop`).
 
-Reply, at the top here, on `start` and on `close`: the rows below but `alive`, `running`
-and `altered` (none with no session). `session`, on every reply, carries those three
-(`alive` false with no session: nothing running is an answer) and each alarm (!) while it
-holds:
-
-  pid                     the emulator process's pid.
-  alive                   the emulator process is up.
-  running                 the guest runs; false parked at the debugger.
-  altered                 something here WROTE to the guest: later readings are forced.
-  conf                    the config the session was started from.
-  conf_digest             a digest of that file's content AT START.
-  conf_changed_on_disk !  the file changed since (`false` also if gone).
-  watched                 a window was placed to be watched.
-  bound_s                 the ceiling the session was given.
-  elapsed_s               how much of that is spent.
-  terminal_bytes_dropped ! nonzero: a screen delta had a hole in it.
-  drain_alive !           the terminal reader runs.
-  drain_ended !           why that reader stopped, present once it has.
-  captures                `off`, or where a `capture_video` session records.
-  state_dir               where `state_save` writes and `state_list` reads.
-
-Also at the top: `last_stop` (`stop_seq`,
-`pc`, `cause`, `since_s`, `wall_at`; the park after `start` is stop 1; unavailable with no
-session or a cut survey), `pending` (asked while the guest ran: `arm` refs, a `disarm` count,
-`symbols_load`; `base_remeasure` after a `state_load`), `presence` (the window's edge:
-`true` drawn, `false` off or no session, or why not), and with a
-session `pc` (where it is now, read off the pane; unavailable while it runs) and `cpu_mode`
-(`real`, `protected`, `paged`, `VM86`), and `declarations`, this server's own counted.
+Reply: `pid`, `conf`, `conf_digest`, `conf_changed_on_disk`, `watched`, `bound_s`,
+`elapsed_s`, `terminal_bytes_dropped`, `drain_alive`, `drain_ended`, `captures`,
+`state_dir`, `pending` (`arm` refs, a `disarm` count, `symbols_load`, `base_remeasure`),
+`presence`, `declarations`, and with a session `pc` and `cpu_mode`. Also `last_stop`
+(`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`). `session` carries `alive`, `running`,
+`altered` and each alarm while it holds.
 
 Reference: REFERENCE.md, What every reply carries.
 
@@ -336,11 +301,14 @@ Example, from a live run:
     "disarm": 0,
     "symbols_load": false,
     "base_remeasure": false
-  },
-  "presence": false
+  }
 }
 ```
 <!-- scry-reference:end status -->
+
+**The alarms** are `conf_changed_on_disk` (the file changed since start; `false` also if gone), `terminal_bytes_dropped`, `drain_alive` (the terminal reader runs) and `drain_ended` (why it stopped, present once it has). They ride in `session` only while they hold.
+
+**`pc` is read off the pane**, so it is unavailable while the guest runs; `cpu_mode` is `real`, `protected`, `paged` or `VM86`. `last_stop` is unavailable with no session or a cut survey. `presence` is `true` drawn, `false` off or no session, or why not. `declarations` is this server's own count.
 
 <!-- scry-reference:begin close -->
 ## `close`
@@ -351,20 +319,11 @@ Example, from a live run:
 close(detail=false)
 ```
 
-End the session deliberately rather than waiting for its bound. Reports its progress
-while the emulator takes its time to leave.
+End the session deliberately rather than waiting for its bound.
 
-Reply: `closed`, `ended_by` (`quit`: the emulator left on the first signal, which is what
-a session launched here does, program loaded or not, because `start` turns the quit
-warning off; `killed`: it ignored the signal, a conf that puts the warning back or a
-guest wedged, and SIGKILL ended it; `died`: it had already exited when this was called;
-`none`: nothing to close), `exit_code` (an integer, or unavailable with its `why`:
-SIGKILLed and still not reaped, an emulator may still be on the machine, or not read).
-`stdout_tail` and `errorlog_tail` (the last words of the console and of the logfile, read
-after the exit) when the end was not a clean `quit` with exit code 0, or with
-`detail=True`, else `omitted` names them with `how`. What the process was (`status`'s
-rows, `pid` first) rides at the top, read before the end, so `pid` is the process this call
-ended; `session` is the block as it stood BEFORE closing.
+Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid`, `stdout_tail` and
+`errorlog_tail` when the end was not a clean `quit`, or with `detail=True`. `exit_code` is
+an integer or unavailable with its `why`. `session` is the block before closing.
 
 | argument | type | default |
 |---|---|---|
@@ -401,17 +360,15 @@ Example, from a live run:
   "summary": "close: quit, exit code 0",
   "status": "ok",
   "closed": true,
-  "pid": 42512,
-  "conf": "$TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/n2.conf",
+  "pid": 74107,
+  "conf": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n2.conf",
   "conf_digest": "33a4a905f64a2a65",
-  "conf_changed_on_disk": false,
   "watched": true,
   "bound_s": 1200,
   "elapsed_s": 6.0,
-  "terminal_bytes_dropped": 0,
   "drain_alive": true,
   "captures": "off",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/n4-save",
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n4-save",
   "ended_by": "quit",
   "exit_code": 0,
   "omitted": [
@@ -422,3 +379,7 @@ Example, from a live run:
 }
 ```
 <!-- scry-reference:end close -->
+
+**The `ended_by` values**: `quit` is the emulator leaving on the first signal, which is what a session launched here does, program loaded or not, because `start` turns the quit warning off; `killed` is a conf that puts the warning back or a wedged guest, ended by SIGKILL; `died` is already exited when called; `none` is nothing to close. **`exit_code`** is unavailable when SIGKILLed and still not reaped, since an emulator may still be on the machine.
+
+**The reply also carries** what the process was (`status`'s rows, `pid` first), read before the end, so `pid` is the process this call ended.

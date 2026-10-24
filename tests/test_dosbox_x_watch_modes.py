@@ -37,7 +37,7 @@ def _stored(ref: str) -> dec.Declaration:
 
 
 def _listed(ref: str) -> dict[str, Any]:
-    return next(w for w in ok(server.watch_list())["watches"] if w["ref"] == ref)
+    return next(w for w in ok(server.declaration_list("watch"))["watches"] if w["ref"] == ref)
 
 
 def _at_stop(booted: Any, ref: str) -> dict[str, Any]:
@@ -70,9 +70,9 @@ def test_a_change_watch_declared_again_in_the_other_mode_is_armed_again_there(
     assert ok(server.watch_add(ref=AT, mode="change", length=2))["entries"] == [
         "BPMEM 0000:0600", "BPMEM 0000:0601"]
     booted.mode = "Pr32"
-    listed = ok(server.watch_list())
+    listed = ok(server.declaration_list("watch"))
     assert listed["watches"][0]["state"] == "unarmable", listed
-    assert listed["foreign"] == [], listed
+    assert "foreign" not in listed, listed
     again = ok(server.watch_add(ref=AT, mode="change", length=2))
     assert again["entries"] == ["BPPM 0000:00000600", "BPPM 0000:00000601"], again
     held = [r["entry"] for r in booted.rows]
@@ -121,7 +121,7 @@ def test_a_change_watch_moved_to_the_other_mode_keeps_one_record_per_byte_and_cl
     booted.mode = "Pr32"
     ok(server.watch_add(ref=AT, mode="change", length=2))
     assert len(dstate.STATE.armed[("watch", AT)]) == 2, dstate.STATE.armed
-    ok(server.watch_clear(ref=AT))
+    ok(server.declaration_clear("watch", ref=AT))
     assert [r["entry"] for r in booted.rows] == ["BP 0814:0100"], booted.rows
 
 

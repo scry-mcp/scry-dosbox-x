@@ -37,20 +37,12 @@ ROWS = ("ref", "by", "cpu", "created_at", "origin", "inherited", "age_s", "state
 #: never hides a field another tool's model lacks. A name in neither its model nor its row here
 #: fails; a word kept here that its tool no longer quotes fails too.
 REPLY_WORDS: dict[str, tuple[str, ...]] = {
-    "close": ("quit",),
+    "close": ("quit", "why"),
     "log_wait": ("logfile",),
-    "disassemble": ("addr",),
-    "debug": ("altered",),
-    "stop": ("BREAK",),
-    "run_for": ("VRT",),
-    "breakpoint_interrupt": ("pending",),
-    "comment_list": (*ROWS, "text", "addr", "why", "orphan"),
-    "series_capture": ("capture_video", "ffmpeg"),
-    "breakpoint_list": (*ROWS, "entry", "armed", "unresolved", "gone", "unarmable", "ambiguous",
-                        "pending", "stale", "orphan", "marked"),
-    "breakpoint_clear": ("ok",),
-    "watch_list": (*ROWS, "mode", "length", "fmt", "stale"),
-    "watch_clear": ("ok",),
+    "machine_map": ("logfile",),
+    "status": ("alive", "running", "altered"),
+    "screen_signature": ("dest", "scale"),
+    "captures": ("bytes",),
 }
 
 

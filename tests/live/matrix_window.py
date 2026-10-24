@@ -36,10 +36,10 @@ DPMI_CELLS = ("G the DPMI guest: snapshot", "G the DPMI guest: a click reaches t
 G_CELLS = cells(
     ("G stop brings a running guest back", "stop docstring: BREAK, `interrupted: true`"),
     ("G declared while running applies at stop", "REFERENCE.md, Advancing: applied_on_stop"),
-    ("G state_save while running", "state_save docstring"),
+    ("G state_write save while running", "state_write save docstring"),
     ("G state_list lists it", "state_list docstring"),
-    ("G state_load while running", "state_load docstring"),
-    ("G stop after the load", "state_load docstring: a running guest is released again"),
+    ("G state_write load while running", "state_write load docstring"),
+    ("G stop after the load", "state_write load: docstring, a running guest is released again"),
     ("G snapshot while running", "snapshot docstring"),
     ("G captures lists the recording", "captures docstring"),
     ("G capture_frame writes a PNG", "capture_frame docstring"),
@@ -80,17 +80,17 @@ def _probe() -> None:
     armed = [str(a) for a in (r.get("applied_on_stop") or {}).get("armed") or []]
     judged("G declared while running applies at stop", reply=r,
            holds=ok(pend) and pend.get("state") == "pending" and "0000:0009" in armed)
-    must(M.call(server.breakpoint_clear, all=True), "clearing 0000:0009")
+    must(M.call(server.declaration_clear, kind="breakpoint", all=True), "clearing 0000:0009")
     must(M.call(server.resume), "releasing the probe")
     M.setup()
-    r = M.call(server.state_save, name="matrix_g", seconds=30)
-    judged("G state_save while running", reply=r,
+    r = M.call(server.state_write, method="save", name="matrix_g", seconds=30)
+    judged("G state_write save while running", reply=r,
            holds=ok(r) and Path(str(r.get("path"))).is_file() and int(r.get("bytes") or 0) > 0)
     r = M.call(server.state_list)
     judged("G state_list lists it", reply=r, holds=ok(r) and any(
         "matrix_g" in str(s.get("name", s)) for s in r.get("states") or []))
-    r = M.call(server.state_load, name="matrix_g", seconds=30)
-    judged("G state_load while running", reply=r, holds=ok(r))
+    r = M.call(server.state_write, method="load", name="matrix_g", seconds=30)
+    judged("G state_write load while running", reply=r, holds=ok(r))
     r = M.call(server.stop)
     judged("G stop after the load", reply=r, holds=ok(r) and r.get("interrupted") is True)
     must(M.call(server.resume), "releasing the probe")

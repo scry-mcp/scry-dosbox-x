@@ -8,7 +8,8 @@ visual tokens of the pictures they attached) is in the cell's detail.
 
 S1, "which frames of the capture changed in region R": the hand way extracts each AVI frame with
 `capture_frame` and compares the region's pixels here, with this file's own comparison; the new
-way is `series_capture` and `region_track` over the same frames of the same file. S2, "is this
+way is `series_capture` and `image_compare(method="region")` over the same frames of the same file.
+S2, "is this
 screen the golden": the golden is the 13h picture at the guest's 13h stop; the hand way looks at
 the screen again and compares pixels, the new way compares one string; its control is the same
 question at the next stop, where the guest moved the display start, which must come out no.
@@ -30,8 +31,8 @@ S1_FRAMES_MAX = 24
 Q_CELLS = cells(
     ("Q S1 hand: capture_frame per frame finds which frames of the capture changed in the crop",
      "known: compared here, pixel by pixel, from ffmpeg's own extraction of each frame"),
-    ("Q S1 new: series_capture and region_track find the same frames, with no picture",
-     "series_capture and region_track docstrings"),
+    ("Q S1 new: series_capture and image_compare region find the same frames, with no picture",
+     "series_capture and image_compare region docstrings"),
     ("Q S1 cost: the new way takes fewer calls",
      "the honest comparison of a new tool is the job it replaces"),
     ("Q S2 hand: screen_view attaches the 13h screen and its pixels equal the golden's",
@@ -110,7 +111,8 @@ def section_q() -> None:
     start = len(M.calls)
     series = M.call(server.series_capture, first=0, last=count - 1, crop=S1_CROP,
                   capture_path=source)
-    track = (M.call(server.region_track, manifest=series["manifest"], measure="changed_pixels")
+    track = (M.call(server.image_compare, method="region", manifest=series["manifest"],
+                    measure="changed_pixels")
              if ok(series) else series)
     new = [f for f, _ in track.get("transitions", [])] if ok(track) else []
     new_s1 = _cost(start)

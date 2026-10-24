@@ -52,11 +52,11 @@ def test_the_name_layer_arms_lists_and_clears_against_a_real_program(
     # A MARKED public says so in the reply, and is not refused.
     marked = cast(dict[str, Any], server.breakpoint_at(ref=REAL_MARKED))
     assert marked["status"] == "ok", marked
-    assert marked["marked"] is True and "linker's mark" in str(marked["note"]), marked
+    assert marked.get("marked", False) is True and "linker's mark" in str(marked["note"]), marked
 
     # The list shows both as armed, the walk's INT 21 beside them (an interrupt
     # breakpoint is a declaration too), and no foreign entry the store did not place.
-    listed = cast(dict[str, Any], server.breakpoint_list())
+    listed = cast(dict[str, Any], server.declaration_list("breakpoint"))
     states = {b["ref"]: b["state"] for b in listed["breakpoints"]}
     assert states.get(REAL_LOOP) == "armed", listed
     assert states.get(REAL_MARKED) == "armed", listed
@@ -65,7 +65,7 @@ def test_the_name_layer_arms_lists_and_clears_against_a_real_program(
 
     # RE-DECLARING is a no-op that says so, and does not arm a second copy.
     again = cast(dict[str, Any], server.breakpoint_at(ref=REAL_LOOP))
-    assert again["status"] == "ok" and again["already_stored"] is True, again
+    assert again["status"] == "ok" and again.get("already_stored", False) is True, again
     assert again["armed"] is True, again
     rows = [b for b in cast(ds.Session, dstate.STATE.session).breakpoints()
             if b["entry"] == named["entry"]]
@@ -74,15 +74,15 @@ def test_the_name_layer_arms_lists_and_clears_against_a_real_program(
     # A break-on-change watch by ADDRESS (real mode, BPM), listed, then cleared.
     w = cast(dict[str, Any], server.watch_add(ref=watch, mode="change", length=4, fmt="u32"))
     assert w["status"] == "ok" and w["armed"] is True, w
-    wl = cast(dict[str, Any], server.watch_list())
+    wl = cast(dict[str, Any], server.declaration_list("watch"))
     assert any(x["ref"] == watch and x["state"] == "armed" for x in wl["watches"]), wl
 
     # Clear removes the declarations AND disarms what the store placed: the two code
     # breakpoints and the interrupt, read back off the debugger's list.
-    bc = cast(dict[str, Any], server.breakpoint_clear(all=True))
+    bc = cast(dict[str, Any], server.declaration_clear("breakpoint", all=True))
     assert bc["declarations_cleared"] == 3 and len(bc["disarmed"]) == 3, bc
     assert "BPINT 21" in bc["disarmed"], bc
-    wc = cast(dict[str, Any], server.watch_clear(all=True))
+    wc = cast(dict[str, Any], server.declaration_clear("watch", all=True))
     assert wc["declarations_cleared"] == 1, wc
-    after = cast(dict[str, Any], server.breakpoint_list())
+    after = cast(dict[str, Any], server.declaration_list("breakpoint"))
     assert after["breakpoints"] == [], after

@@ -200,7 +200,7 @@ def _watch_entry(seg: int, off: int, mode: str) -> str:
 def watch_held(held: list[dict[str, str]], seg: int, off: int) -> dict[str, str] | None:
     """The held BPLIST row that is a memory watch at seg:off, by VALUE, or None. A code
     breakpoint at the same address (`BP`) is deliberately not a match: the two are different
-    kinds and `watch_clear` must not delete a code breakpoint."""
+    kinds and `declaration_clear(kind="watch")` must not delete a code breakpoint."""
     for b in held:
         t = dcons.bp_row_target(b["entry"])
         if t is not None and t[0] in _OWN_WATCH_KINDS and (t[1], t[2]) == (seg, off):
@@ -1146,8 +1146,8 @@ def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:
                   state="armed", entry=held["entry"], marked=res["marked"], note=note)
 
 
-def breakpoint_list(session: ds.Session) -> dict[str, Any]:
-    """The body of the `breakpoint_list` tool."""
+def list_breakpoints(session: ds.Session) -> dict[str, Any]:
+    """The body of the `declaration_list(kind="breakpoint")` tool."""
     store = current_store()
     held, read, machine = STATE.list_basis(session)
     places = RawPlaces(session)
@@ -1270,8 +1270,9 @@ def _pending_note(running: bool, pending: list[str]) -> str | None:
             "on the next call (`applied_on_stop.disarmed`); the declarations are cleared now")
 
 
-def breakpoint_clear(session: ds.Session, ref: str | None) -> dict[str, Any]:
-    """The body of the `breakpoint_clear` tool. Both families are cleared here: a `ref` alone (or
+def clear_breakpoints(session: ds.Session, ref: str | None) -> dict[str, Any]:
+    """The body of the `declaration_clear(kind="breakpoint")` tool. Both families are cleared here:
+    a `ref` alone (or
     nothing) takes breakpoints AND interrupts, and a caller wanting only one family clears by
     ref. Watches are a different tool, cleared without touching these."""
     store = current_store()
@@ -1421,7 +1422,8 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
         # A SHOW WATCH ARMS NOTHING: a plain memory read at every stop. The declaration is
         # stored; whether the symbol resolves yet only
         # decides whether it can be READ, not whether it is kept. The state is its
-        # resolution, spelled the same way `watch_list` and a stop's `watches` spell it (one
+        # resolution, spelled the same way `declaration_list(kind="watch")` and a stop's `watches`
+        # spell it (one
         # word per concept) -- `evaluated` when it has an address, else the reason it
         # has none.
         state = "evaluated" if res["state"] == "armable" else res["state"]
@@ -1493,8 +1495,8 @@ def _stored_watch(ref: str) -> dec.Declaration | None:
                 None)
 
 
-def watch_list(session: ds.Session) -> dict[str, Any]:
-    """The body of the `watch_list` tool."""
+def list_watches(session: ds.Session) -> dict[str, Any]:
+    """The body of the `declaration_list(kind="watch")` tool."""
     store = current_store()
     held, read, machine = STATE.list_basis(session)
     places = RawPlaces(session)
@@ -1551,8 +1553,8 @@ def watch_list(session: ds.Session) -> dict[str, Any]:
     return st.reply(watches=out, foreign=foreign, debugger_read=read, **dated)
 
 
-def watch_clear(session: ds.Session, ref: str | None) -> dict[str, Any]:
-    """The body of the `watch_clear` tool."""
+def clear_watches(session: ds.Session, ref: str | None) -> dict[str, Any]:
+    """The body of the `declaration_clear(kind="watch")` tool."""
     store = current_store()
     ref = _require_a_match(store, ref, ("watch",))
     to_go = [d for d in store.declarations()
@@ -1560,7 +1562,8 @@ def watch_clear(session: ds.Session, ref: str | None) -> dict[str, Any]:
     disarmed: list[str] = []
     pending_disarm: list[str] = []
     running = not session.at_debugger()
-    # THE ROWS FIRST, THEN THE STORE, as `breakpoint_clear`: nothing changes before the rows are
+    # THE ROWS FIRST, THEN THE STORE, as `declaration_clear(kind="breakpoint")`: nothing changes
+    # before the rows are
     # known, and a write that fails changes nothing and disarms nothing.
     plan: list[list[dict[str, Any]]] = []
     for decl in to_go:

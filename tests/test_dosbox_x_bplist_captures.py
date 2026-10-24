@@ -87,7 +87,8 @@ def test_a_breakpoint_declared_at_a_vm86_stop_arms_and_names_the_stop_as_a_live_
     fake.eip = "00000221"
     got = server.breakpoint_at(ref="0814:0221")
     keys = ("status", "by", "armed", "state", "marked")
-    assert {k: got[k] for k in keys} == {k: live["breakpoint_at"][k] for k in keys}, got
+    # `marked` false is left out of a reply now (`OmitEmpty`); the capture still carries it.
+    assert {k: got.get(k, False) for k in keys} == {k: live["breakpoint_at"][k] for k in keys}, got
     stop = running.stop_reply(fake)  # type: ignore[arg-type]
     assert stop["cause"] == live["resume"]["cause"] and stop["cpu_mode"] == "VM86", stop
 
@@ -121,7 +122,8 @@ def test_a_pointer_watch_on_a_null_head_answers_as_a_live_run_did(tmp_path: Path
 
 def test_a_saved_comment_keeps_the_width_its_offset_was_read_with(tmp_path: Path) -> None:
     """An offset past FFFF keeps its eight digits through a load and a save, a 16-bit one its
-    four, as the format's known answer spells them; a live `comment_save` wrote `00A7:45F880`."""
+    four, as the format's known answer spells them; a live `comment_write(method="save")` wrote
+    `00A7:45F880`."""
     import dosbox_declarations as dec
     assert dec.canonical_ref("00A7:0045F880", "address") == "00A7:0045F880"
     assert dec.canonical_ref("00a7:45f880", "address") == "00A7:0045F880"
@@ -134,8 +136,8 @@ def test_a_linear_watch_armed_at_the_console_is_listed_as_nobody_s(tmp_path: Pat
     import dosbox_x_server as server
     fake = _names(tmp_path, mode="Real", cs="0000", ds_="0000")
     fake.rows[:] = [r for r in rows("bplist-bplm.txt") if r["entry"].startswith("BPLM ")]
-    got = server.watch_list()
-    assert got["foreign"] == ["BPLM 00000600 (00)"], got["foreign"]
+    got = server.declaration_list("watch")
+    assert got["foreign"] == {"watches": ["BPLM 00000600 (00)"]}, got["foreign"]
 
 
 def test_the_session_arms_a_change_watch_with_the_command_and_row_a_live_run_saw() -> None:
@@ -184,7 +186,7 @@ def test_a_console_linear_watch_at_a_server_watch_s_place_is_neither_taken_nor_d
     assert added["armed"] is True, added
     fake.rows[:] = [{"index": "00", "entry": "BPLM 00000600 (00)"}, *fake.rows]
     fake._relist(fake.rows)
-    assert server.watch_list()["foreign"] == ["BPLM 00000600 (00)"]
-    gone = server.watch_clear(ref="0000:0600")
+    assert server.declaration_list("watch")["foreign"] == {"watches": ["BPLM 00000600 (00)"]}
+    gone = server.declaration_clear("watch", ref="0000:0600")
     assert [r["entry"] for r in fake.rows] == ["BPLM 00000600 (00)"], (gone, fake.rows)
     assert gone["disarmed"] == ["BPMEM 0000:0600 (00)"], gone

@@ -11,7 +11,7 @@ import re
 from typing import Any
 
 import pytest
-from scry_core import judges
+from scry_core import judges, media_tools
 from scry_core import placement as window
 from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Invalid
@@ -22,6 +22,7 @@ import dosbox_console as dcons
 import dosbox_dac as vgadac
 import dosbox_declarations as dec
 import dosbox_find as finder
+import dosbox_folds as folds
 import dosbox_inputs as inputs
 import dosbox_launch as dlaunch
 import dosbox_logs as dlogs
@@ -33,7 +34,7 @@ import dosbox_x_server as server
 
 CLOSED: list[tuple[str, str, tuple[Any, ...]]] = [
     ("log", "channel", dlogs.LOG_CHANNELS), ("log_wait", "channel", dlogs.LOG_CHANNELS),
-    ("scan_start", "cell_bytes", finder.CELL_BYTES), ("scan_filter", "operator", finder.OPERATORS),
+    ("scan", "cell_bytes", finder.CELL_BYTES), ("scan", "operator", finder.OPERATORS),
     ("step", "mode", ds.STEP_MODES), ("trace", "shape", tracing.SHAPE_WORDS),
     ("breakpoint_at", "by", checks.BREAKPOINT_BY), ("watch_add", "by", checks.WATCH_BY),
     ("watch_add", "mode", dec.WATCH_MODES),
@@ -41,6 +42,11 @@ CLOSED: list[tuple[str, str, tuple[Any, ...]]] = [
     ("send_mouse", "action", inputs.ACTIONS), ("send_mouse", "units", inputs.UNITS),
     ("machine_map", "sections", machine.SECTION_NAMES),
     ("start", "display", window.DISPLAY_OPTIONS),
+    ("declaration_list", "kind", ("", *folds.KINDS)), ("declaration_clear", "kind", folds.KINDS),
+    # A fold's `method`, judged by `scry_core.methods` against the fold's own table.
+    ("comment_write", "method", tuple(folds.COMMENT)), ("map_write", "method", tuple(folds.MAP)),
+    ("scan", "method", tuple(folds.SCAN)), ("state_write", "method", tuple(folds.STATE_METHODS)),
+    ("image_compare", "method", tuple(media_tools.IMAGE_METHODS)),
 ]
 #: The two taken in any case: a pattern of their words, never an `enum` that would refuse one.
 FOLDED: list[tuple[str, str, tuple[str, ...]]] = [
@@ -49,7 +55,7 @@ FOLDED: list[tuple[str, str, tuple[str, ...]]] = [
 ]
 RANGES: list[tuple[str, str, int, int]] = [
     ("log", "limit", 1, dlogs.LOG_LIMIT_MAX), ("drive", "limit", 1, dlogs.LOG_LIMIT_MAX),
-    ("scan_filter", "limit", 1, judges.HITS_MAX),
+    ("scan", "limit", 1, judges.HITS_MAX),
     ("read_memory", "length", 1, dcons.DATA_VIEW_BYTES),
     ("disassemble", "length", 1, code.LENGTH_MAX),
     ("symbols_find", "limit", 1, placement.SYMBOLS_LIMIT_MAX),

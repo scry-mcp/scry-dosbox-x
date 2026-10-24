@@ -94,6 +94,7 @@ def test_a_state_the_emulator_refused_is_named_in_its_own_words(fixture: str, ve
 
 def test_the_record_shows_a_full_disk_save_left_nothing_behind() -> None:
     reply = json.loads((FIX / "states" / "state-save-full-disk-reply.json").read_text("utf-8"))
+    # The record's own key: the call it captured was spelt so when it ran.
     assert reply["state_save"]["status"] == "INVALID" and reply["on_disk"] == {}, reply
 
 

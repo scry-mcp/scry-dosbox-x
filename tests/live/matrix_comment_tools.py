@@ -40,28 +40,28 @@ HEADER = "# comments v1: ref\tcpu\tcreated_at\ttext"
 UNTYPED_S = 2.0
 
 N_CELLS = cells(
-    ("N comment_add by start lands at 0000824B, resolved", "known: probe.sym at 8140"),
+    ("N comment_write add by start lands at 0000824B, resolved", "known: probe.sym at 8140"),
     ("N 0824:000B, the same byte, replaces the text and keeps the ref start",
-     "comment_add docstring: one comment per place"),
+     "comment_write add: docstring at one comment per place"),
     ("N a raw 0814:0106 comment lands at 00008246", "REFERENCE.md, Declarations: real mode"),
     ("N comment_list holds the two, each resolved", "comment_list docstring"),
     ("N status declarations do not count a comment", "REFERENCE.md, Declarations"),
-    ("N comment_save writes the header and the two rows the contract spells",
+    ("N comment_write save writes the header and the two rows the contract spells",
      "REFERENCE.md, Declarations: the comment file"),
     ("N deleted, loaded back and saved again, the file is byte for byte the same",
-     "comment_load docstring: the file a save wrote loads back whole"),
-    ("N a second delete of the same ref is unknown_ref", "comment_delete docstring"),
+     "comment_write load docstring: the file a save wrote loads back whole"),
+    ("N a second delete of the same ref is unknown_ref", "comment_write delete docstring"),
     ("N a bad text is refused: empty, a tab, an edge blank, 238 bytes",
-     "comment_add docstring: one printable line, at most 237 UTF-8 bytes"),
+     "comment_write add: docstring at one printable line, at most 237 UTF-8 bytes"),
     ("N a bad ref is refused: [g]+2, start+2, 0x824B, 0814:01G0",
-     "comment_add docstring: no pointer, no symbol+offset, no 0x number"),
+     "comment_write add: docstring at no pointer, no symbol+offset, no 0x number"),
     ("N relative and unknown-~user paths are refused for save and load",
      "every path here is absolute or `~`-led"),
     ("N save refuses the store's own file, a FIFO and a file that is not a comment file, "
-     "leaving each as it was", "comment_save docstring"),
+     "leaving each as it was", "comment_write save docstring"),
     ("N perform runs comment steps", "REFERENCE.md, Sequences in one call"),
     ("N on a running guest list and save answer at once, typing nothing",
-     "comment_list and comment_save docstrings: they answer on a running guest"),
+     "comment_list and comment_write save docstrings: they answer on a running guest"),
     ("N on a running guest add, delete and load are refused not_stopped",
      "their docstrings: they need the machine stopped"),
     ("N the comment outlives the session and is deleted in the next",
@@ -81,8 +81,8 @@ DPMI_COMMENT_CELLS = (
      "REFERENCE.md, Declarations: protected mode through the selector's base"),
     ("F DS:offset is that place when DS has CS's base, another when not",
      "REFERENCE.md, Declarations: the place is the linear address"),
-    ("F comment_save, delete, comment_load, comment_save: the same bytes",
-     "comment_load docstring: the file a save wrote loads back whole"),
+    ("F comment_write save, delete, comment_write load, comment_write save: the same bytes",
+     "comment_write load docstring: the file a save wrote loads back whole"),
 )
 
 
@@ -108,17 +108,17 @@ def _taken(refs: set[str], linears: set[int]) -> list[str]:
 
 def _delete_mine(mine: set[str]) -> None:
     for ref in sorted(mine & {str(r["ref"]) for r in _listed()}):
-        must(M.call(server.comment_delete, ref=ref), f"deleting the comment {ref}")
+        must(M.call(server.comment_write, method="delete", ref=ref), f"deleting the comment {ref}")
 
 
 def _round_trip(refs: set[str]) -> tuple[bool, str]:
     """Save, delete `refs`, load the file, save again: the two files equal byte for byte."""
     first, second = Path(M.fresh(".comments.tsv")), Path(M.fresh(".comments.tsv"))
-    saved = M.call(server.comment_save, dest=str(first))
+    saved = M.call(server.comment_write, method="save", dest=str(first))
     for ref in sorted(refs):
-        M.call(server.comment_delete, ref=ref)
-    loaded = M.call(server.comment_load, path=str(first))
-    again = M.call(server.comment_save, dest=str(second))
+        M.call(server.comment_write, method="delete", ref=ref)
+    loaded = M.call(server.comment_write, method="load", path=str(first))
+    again = M.call(server.comment_write, method="save", dest=str(second))
     same = ok(saved) and ok(loaded) and ok(again) and first.read_bytes() == second.read_bytes()
     return same, (f"save {said(saved, 50)}; load {said(loaded, 60)}; "
                   f"{'equal' if same else 'differ'}")
@@ -144,7 +144,8 @@ def section_n() -> None:
     try:
         _known_answers(counted)
         _refusals()
-        r = M.call(server.perform, steps=[{"op": "comment_add", "ref": "emit", "text": "out"},
+        r = M.call(server.perform, steps=[{"op": "comment_write", "method": "add", "ref": "emit",
+                                           "text": "out"},
                                           {"op": "comment_list"}])
         judged("N perform runs comment steps", reply=r,
                holds=ok(r) and r.get("steps_completed") == 2)
@@ -160,7 +161,8 @@ def section_n() -> None:
         left = {str(r["ref"]) for r in _listed()} & mine
         _delete_mine(mine)
         gone = not ({str(r["ref"]) for r in _listed()} & mine)
-        must(M.call(server.breakpoint_clear, all=True), "clearing this section's breakpoints")
+        must(M.call(server.declaration_clear, kind="breakpoint", all=True),
+             "clearing this section's breakpoints")
         if restarted:
             M.judge("N the comment outlives the session and is deleted in the next",
                     bool(left) and gone, f"held after the new start: {sorted(left)}")
@@ -171,15 +173,15 @@ def section_n() -> None:
 
 
 def _known_answers(counted: object) -> None:
-    a = M.call(server.comment_add, ref="start", text="entry")
-    judged("N comment_add by start lands at 0000824B, resolved", reply=a,
+    a = M.call(server.comment_write, method="add", ref="start", text="entry")
+    judged("N comment_write add by start lands at 0000824B, resolved", reply=a,
            holds=ok(a) and (a.get("comment") or {}).get("addr") == "0x0000824b"
            and (a.get("comment") or {}).get("state") == "resolved")
-    b = M.call(server.comment_add, ref="0824:000B", text="entry, aliased")
+    b = M.call(server.comment_write, method="add", ref="0824:000B", text="entry, aliased")
     judged("N 0824:000B, the same byte, replaces the text and keeps the ref start", reply=b,
            holds=ok(b) and (b.get("comment") or {}).get("ref") == "start"
            and [r.get("text") for r in b.get("replaced_comments") or []] == ["entry"])
-    c = M.call(server.comment_add, ref="0814:0106", text="the settle loop")
+    c = M.call(server.comment_write, method="add", ref="0814:0106", text="the settle loop")
     judged("N a raw 0814:0106 comment lands at 00008246", reply=c,
            holds=ok(c) and (c.get("comment") or {}).get("addr") == "0x00008246")
     rows = [r for r in _listed() if r["ref"] in ("start", "0814:0106")]
@@ -189,38 +191,41 @@ def _known_answers(counted: object) -> None:
     judged("N status declarations do not count a comment", reply=s,
            holds=ok(s) and s.get("declarations") == counted)
     first = Path(M.fresh(".comments.tsv"))
-    saved = M.call(server.comment_save, dest=str(first))
+    saved = M.call(server.comment_write, method="save", dest=str(first))
     others = [r for r in _listed() if r["ref"] not in ("start", "0814:0106")]
     want = _expected(rows + others)
-    M.judge("N comment_save writes the header and the two rows the contract spells",
+    M.judge("N comment_write save writes the header and the two rows the contract spells",
             ok(saved) and first.exists() and first.read_bytes() == want,
             f"{said(saved, 60)}; {first.read_bytes()[:120]!r}" if first.exists() else said(saved))
     for ref in ("start", "0814:0106"):
-        must(M.call(server.comment_delete, ref=ref), f"deleting {ref}")
-    loaded = M.call(server.comment_load, path=str(first))
+        must(M.call(server.comment_write, method="delete", ref=ref), f"deleting {ref}")
+    loaded = M.call(server.comment_write, method="load", path=str(first))
     second = Path(M.fresh(".comments.tsv"))
-    again = M.call(server.comment_save, dest=str(second))
+    again = M.call(server.comment_write, method="save", dest=str(second))
     M.judge("N deleted, loaded back and saved again, the file is byte for byte the same",
             ok(loaded) and loaded.get("added") == 2 and ok(again)
             and second.read_bytes() == first.read_bytes(), said(loaded, 80))
-    must(M.call(server.comment_delete, ref="0814:0106"), "deleting the raw comment")
-    twice = M.call(server.comment_delete, ref="0814:0106")
+    must(M.call(server.comment_write, method="delete", ref="0814:0106"), "deleting the raw comment")
+    twice = M.call(server.comment_write, method="delete", ref="0814:0106")
     judged("N a second delete of the same ref is unknown_ref", reply=twice,
            holds=refused(twice, "unknown_ref"))
-    must(M.call(server.comment_add, ref="0814:0106", text="the settle loop"), "re-adding")
+    must(M.call(server.comment_write, method="add", ref="0814:0106", text="the settle loop"),
+         "re-adding")
 
 
 def _refusals() -> None:
     texts = ["", "a\tb", " edge", "x" * 238]
-    got = [M.call(server.comment_add, ref="start", text=t) for t in texts]
+    got = [M.call(server.comment_write, method="add", ref="start", text=t) for t in texts]
     M.judge("N a bad text is refused: empty, a tab, an edge blank, 238 bytes",
             all(refused(r, "bad_argument") for r in got), "; ".join(said(r, 40) for r in got))
     refs = ["[g]+2", "start+2", "0x824B", "0814:01G0"]
-    got = [M.call(server.comment_add, ref=r, text="x") for r in refs]
+    got = [M.call(server.comment_write, method="add", ref=r, text="x") for r in refs]
     M.judge("N a bad ref is refused: [g]+2, start+2, 0x824B, 0814:01G0",
             all(refused(r, "bad_argument") for r in got), "; ".join(said(r, 40) for r in got))
-    got = [M.call(server.comment_save, dest=p) for p in ("c.tsv", "~no-such-user-matrix/c.tsv")]
-    got += [M.call(server.comment_load, path=p) for p in ("c.tsv", "~no-such-user-matrix/c.tsv")]
+    got = [M.call(server.comment_write, method="save", dest=p) for p in ("c.tsv",
+                                                                         "~no-such-user-matrix/c.tsv")]
+    got += [M.call(server.comment_write, method="load", path=p) for p in ("c.tsv",
+                                                                          "~no-such-user-matrix/c.tsv")]
     M.judge("N relative and unknown-~user paths are refused for save and load",
             all(refused(r, "bad_argument") for r in got), "; ".join(said(r, 40) for r in got))
     store = Path(str(must(M.call(server.comment_list), "the store's path")["declarations"]["path"]))
@@ -229,7 +234,7 @@ def _refusals() -> None:
     notes = Path(M.fresh(".txt"))
     notes.write_bytes(b"somebody's notes\n")
     before = store.read_bytes()
-    got = [M.call(server.comment_save, dest=str(p)) for p in (store, fifo, notes)]
+    got = [M.call(server.comment_write, method="save", dest=str(p)) for p in (store, fifo, notes)]
     M.judge("N save refuses the store's own file, a FIFO and a file that is not a comment file, "
             "leaving each as it was",
             all(refused(r, "bad_argument") for r in got) and store.read_bytes() == before
@@ -267,7 +272,7 @@ def _running() -> None:
     M.setup()
     timed: list[tuple[dict[str, Any], float, int]] = []
     for fn, kw in ((server.comment_list, {}),
-                   (server.comment_save, {"dest": M.fresh(".comments.tsv")})):
+                   (server.comment_write, {"method": "save", "dest": M.fresh(".comments.tsv")})):
         t0 = time.monotonic()
         with _typed() as writes:
             r = M.call(fn, **kw)
@@ -277,9 +282,9 @@ def _running() -> None:
             and timed[0][0]["session"]["running"] is True,
             f"control typed {len(control)}; "
             + "; ".join(f"{said(r, 40)} in {dt:.2f}s, typed {n}" for r, dt, n in timed))
-    got = [M.call(server.comment_add, ref="bump", text="x"),
-           M.call(server.comment_delete, ref="start"),
-           M.call(server.comment_load, path=str(GUEST / "probe.sym"))]
+    got = [M.call(server.comment_write, method="add", ref="bump", text="x"),
+           M.call(server.comment_write, method="delete", ref="start"),
+           M.call(server.comment_write, method="load", path=str(GUEST / "probe.sym"))]
     M.judge("N on a running guest add, delete and load are refused not_stopped",
             all(refused(r, "not_stopped") for r in got), "; ".join(said(r, 40) for r in got))
     M.setup()
@@ -321,8 +326,9 @@ def dos_real16_comments(mapf: Path, base: str) -> None:
             M.block(label, f"dos-real16's store already comments these places: {taken}")
         return
     try:
-        must(M.call(server.comment_add, ref="COMPOSE_FRAME", text="builds the frame"), "by name")
-        must(M.call(server.comment_add, ref=raw, text="16 bytes in"), "by address")
+        must(M.call(server.comment_write, method="add", ref="COMPOSE_FRAME",
+                    text="builds the frame"), "by name")
+        must(M.call(server.comment_write, method="add", ref=raw, text="16 bytes in"), "by address")
         must(M.call(server.symbols_load, path=str(moved), base=base), "the rebuilt map")
         there = M.call(server.symbols_find, name="COMPOSE_FRAME")
         rows = {str(r["ref"]): r for r in _listed()}
@@ -361,12 +367,14 @@ def dpmi_comments() -> None:
             M.block(label, f"the store already comments these places: {taken}")
         return
     try:
-        must(M.call(server.comment_add, ref="_tick", text="the tick"), "by name")
-        r = M.call(server.comment_add, ref=f"{cs}:{off:08X}", text="the tick, by CS")
+        must(M.call(server.comment_write, method="add", ref="_tick", text="the tick"), "by name")
+        r = M.call(server.comment_write, method="add", ref=f"{cs}:{off:08X}",
+                   text="the tick, by CS")
         M.judge(labels[0], ok(r) and (r.get("comment") or {}).get("ref") == "_tick"
                 and (r.get("comment") or {}).get("addr") == f"0x{linear:08x}"
                 and len(r.get("replaced_comments") or []) == 1, said(r, 120))
-        d = M.call(server.comment_add, ref=f"{ds}:{off:08X}", text="the tick, by DS")
+        d = M.call(server.comment_write, method="add", ref=f"{ds}:{off:08X}",
+                   text="the tick, by DS")
         if ds_base == cs_base:
             holds = ok(d) and (d.get("comment") or {}).get("ref") == "_tick"
         else:

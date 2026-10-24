@@ -56,7 +56,8 @@ def refusal(name: str, arguments: dict[str, Any], cause: ValidationError) -> dic
 #: that answer it outside a list (the last stop's registers, the two that run steps, the
 #: export of the session, the session's end).
 _ANSWERS_WHILE_RUNNING = roster.answers_while_running(
-    sequence.RUNNING_OK_OPS, checks.NOT_STEPS, {"start", "build_check"})
+    roster.by_method(sequence.RUNNING_OK_OPS, sequence.RUNNING_METHODS), checks.NOT_STEPS,
+    {"start", "build_check"})
 
 
 #: THE TOOLS BY FAMILY, in the order the instructions list them (`scry_core.roster`): the
@@ -66,21 +67,18 @@ ROSTER = roster.Roster(families=(
     ("Session", ("build_check", "start", "status", "close")),
     ("Read", ("registers", "read_memory", "disassemble", "call_stack", "memdump", "find",
                   "log", "log_wait", "machine_map", "interrupt_vectors", "palette",
-                  "screen_view", "screen_signature", "map_add", "map_find", "debug")),
-    ("Scan", ("scan_start", "scan_filter", "scan_clear")),
+                  "screen_view", "screen_signature", "map_find", "map_write", "debug")),
+    ("Scan", ("scan",)),
     ("Write", ("set_register", "write")),
     ("Advance", ("run_to", "run_for", "trace", "screen_wait", "step", "resume", "stop")),
-    ("Declarations", ("breakpoint_at", "breakpoint_list", "breakpoint_clear",
-                                         "breakpoint_interrupt", "watch_add", "watch_list",
-                                         "watch_clear")),
-    ("States", ("state_save", "state_load", "state_list")),
+    ("Declarations", ("breakpoint_at", "breakpoint_interrupt", "watch_add", "declaration_list",
+                      "declaration_clear")),
+    ("States", ("state_list", "state_write")),
     ("Names", ("symbols_load", "symbols_find")),
-    ("Comments", ("comment_add", "comment_list", "comment_delete", "comment_save",
-                      "comment_load")),
+    ("Comments", ("comment_list", "comment_write")),
     ("Input", ("send_keys", "send_mouse", "drive")),
     ("Captures", ("captures", "capture_frame", "series_capture", "snapshot")),
-    ("Files", ("image_diff", "series_diff", "region_track", "golden_check",
-                              "map_load", "map_save")),
+    ("Files", ("image_compare",)),
     ("Lists", ("perform", "perform_export")),
 ), answering=tuple(_ANSWERS_WHILE_RUNNING))
 
@@ -100,7 +98,8 @@ mcp = envelope.Envelope(
         'says `cancelled`.\n'
         'FOR A VALUE: `registers`, `read_memory`, `memdump`, `log`; `debug` last.\n\n'
         'EVERY REPLY carries `summary`, `status` (`ok`, or `INVALID` with `code` and `message`)\n'
-        "and `session` (`altered` after a write). A wrong TYPE is the schema's `bad_argument`.\n\n"
+        "and `session` (`altered` after a write); a field left out of a reply is empty.\n"
+        "A wrong TYPE is the schema's `bad_argument`.\n\n"
         'Reference: REFERENCE.md.'
     ),
     refusal=refusal,
@@ -224,7 +223,8 @@ def _keep_cancelled(record: cancel.Cancelled) -> None:
 def _machine() -> recording.Machine:
     """The machine around a recorded call: whether the guest runs, and how many times the
     session has come back to the prompt, which every stop moves the moment the prompt shows (a
-    parked `state_load` included, before any survey records it), so a call is judged by what it
+    parked `state_write(method="load")` included, before any survey records it), so a call is judged
+    by what it
     did and not by a record that catches up later. A session that died is unreadable."""
     ses = STATE.session
     if ses is None:
@@ -241,8 +241,9 @@ def _machine() -> recording.Machine:
 # `live` is what `start` refuses over: a start refused there touched nothing.
 #: Each kind of declaration a `start` re-arms, by the tool that lists it and the field its rows
 #: are under (an interrupt is a breakpoint's row).
-_LISTS = {"breakpoint": ("breakpoint_list", "breakpoints"),
-          "interrupt": ("breakpoint_list", "breakpoints"), "watch": ("watch_list", "watches")}
+_LISTS = {"breakpoint": ("declaration_list", "breakpoints"),
+          "interrupt": ("declaration_list", "breakpoints"),
+          "watch": ("declaration_list", "watches")}
 
 
 RECORDER = recording.Recorder("dosbox-x", "dosbox_x_server.py", sequence.RECORD_MAX, _machine,
@@ -252,7 +253,8 @@ RECORDER = recording.Recorder("dosbox-x", "dosbox_x_server.py", sequence.RECORD_
                               stop_fields=("regs",),
                               outside=checks.NOT_STEPS - checks.SEQUENCES - {"start"},
                               sequences=checks.SEQUENCES, start_tool="start",
-                              states=("state_save", "state_load", "name"), plan="plan",
+                              states=recording.States("state_write", "save", "load", "name"),
+                              plan="plan",
                               plan_with=("settle_seconds",))
 
 def _session_presence() -> presence.Presence | None:
@@ -274,7 +276,7 @@ BOUNDARY = boundary.Boundary(
 def tool(
     title: str, *, summary: one_line.Summary, read_only: bool = False, idempotent: bool = False,
     session_before: bool = False, on_cancel: cancel.OnCancel | None = None,
-    replay: recording.ExportAs | None = None,
+    replay: recording.Replay | None = None,
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Register an MCP tool on this server's boundary (`scry_core.boundary.Boundary.tool`, the
     contract), `summary` its line in `dosbox_summaries`; `on_cancel` ends at `_end_cancelled`,

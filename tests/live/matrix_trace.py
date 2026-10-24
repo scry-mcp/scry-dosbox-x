@@ -215,7 +215,7 @@ def _cut() -> None:
             ok(r) and r.get("verdict") == "OTHER_STOP" and found.get("instructions") == ecx
             and str(r.get("cause")).startswith(f"breakpoint {ref} ") and _no_log_left(),
             f"ECX {ecx}, {found.get('instructions')} executed; {said(r, 80)}")
-    must(M.call(server.breakpoint_clear, ref=ref), "clearing the dec bx")
+    must(M.call(server.declaration_clear, kind="breakpoint", ref=ref), "clearing the dec bx")
     M.setup()
     dest = M.fresh(".trace")
     r = M.call(server.trace, instructions=16, shape="cs_ip", dest=dest, seconds=TRACE_S)
@@ -250,7 +250,7 @@ def _window(ref: str, instructions: int, shape: str) -> dict[str, Any]:
     """A trace from `ref`'s breakpoint, armed for the one stop and cleared before the trace."""
     must(M.call(server.breakpoint_at, ref=ref), f"arming {ref}")
     must(M.call(server.resume, seconds=TRACE_S), f"running to {ref}")
-    must(M.call(server.breakpoint_clear, all=True), f"clearing {ref}")
+    must(M.call(server.declaration_clear, kind="breakpoint", all=True), f"clearing {ref}")
     M.setup()
     return M.call(server.trace, instructions=instructions, shape=shape, dest=M.fresh(".trace"),
                   seconds=TRACE_S)
@@ -301,7 +301,7 @@ def _dos_real16() -> None:
     except Exception as exc:  # noqa: BLE001 -- the other bench still runs; this one says why
         _judge_rest(DOS_REAL16_CELLS, done, exc)
     finally:
-        M.call(server.breakpoint_clear, all=True)
+        M.call(server.declaration_clear, kind="breakpoint", all=True)
         M.call(server.close)
 
 
@@ -311,7 +311,7 @@ def _dpmi() -> None:
         stop, loaded = dpmi_client(wait=DPMI_BOOT_S, exempt=BOOT_EXEMPT, flags=NORMAL_CORE_FLAGS)
         must(stop, "the DPMI client's first INT 31h")
         base = must(loaded, "dpmi.sym off CS").get("base")
-        must(M.call(server.breakpoint_clear, all=True), "clearing INT 31h")
+        must(M.call(server.declaration_clear, kind="breakpoint", all=True), "clearing INT 31h")
         own = _linear_of("_tick")
         seen: list[str] = []
         joined = False
@@ -335,7 +335,7 @@ def _dpmi() -> None:
     except Exception as exc:  # noqa: BLE001 -- a bench's failure is its own cells' verdict
         _judge_rest(DPMI_CELLS, done, exc)
     finally:
-        M.call(server.breakpoint_clear, all=True)
+        M.call(server.declaration_clear, kind="breakpoint", all=True)
         M.call(server.close)
 
 

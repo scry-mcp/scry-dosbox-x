@@ -24,7 +24,7 @@ from scry_core import png
 from test_dosbox_x_machine import Bench, Logfile, listing
 from test_dosbox_x_run_for import Retraces
 from test_dosbox_x_run_for import cap as cap_vrt
-from test_dosbox_x_server import clean_session, install  # noqa: F401
+from test_dosbox_x_server import clean_session, documented, install  # noqa: F401
 
 import dosbox_arming as arming
 import dosbox_checks as checks
@@ -1421,9 +1421,8 @@ def test_a_short_bound_still_reaches_the_first_frame_and_records_the_stop_it_exp
     assert r["verdict"] == "TIMEOUT" and r["polls"] == 1 and "BREAK" not in dbg.sent, r
     assert r["retrace_pending"] is False and dbg.keys == [ds.RETRACE_COMMAND]
     assert r["stop_seq"] == dstate.STATE.last_stop["seq"] == before + 1
-    doc = " ".join((server.screen_wait.__doc__ or "").split())
-    assert "counted from after the first read of the screen, so a short one still reaches the " \
-        "first frame" in doc
+    assert "counted from after the first read so that a short one still reaches the first " \
+        "frame" in documented("screen_wait")
 
 
 def test_screen_wait_on_a_running_guest_is_refused_not_stopped(tmp_path: Path) -> None:
@@ -1604,7 +1603,7 @@ def test_the_screen_wait_description_names_every_key_its_replies_carry(
         tmp_path: Path, ahead: list[float]) -> None:
     """Found with its stop reply, found with that reply's survey cut, stopped by a breakpoint,
     and expired at a retrace of its own: each key beside the envelope's is named in the
-    description, in backticks."""
+    description or on its family page, in backticks."""
     replies: list[dict[str, Any]] = []
     waiting(["probe-park", "probe-booted"], 1, tmp_path)
     replies.append(cast(dict[str, Any], server.screen_wait(text="PROBE.COM", seconds=10)))
@@ -1617,18 +1616,9 @@ def test_the_screen_wait_description_names_every_key_its_replies_carry(
     replies.append(cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5)))
     assert [r.get("code", r.get("verdict")) for r in replies] == [
         "TARGET", "TARGET", "wait_stopped", "TIMEOUT"], replies
-    # EACH REPLY AGAINST ITS OWN CLAUSE of the description the client reads: a key named only in
-    # another reply's clause (`text` is also the argument) is not named for this one.
-    desc = next(t.description for t in asyncio.run(server.mcp.list_tools())
-                if t.name == "screen_wait") or ""
-    ran = desc[desc.index("Either, when it ran:"):desc.index("Refused:")]
-    found = desc[desc.index("Reply:"):desc.index("The bound:")] + ran
-    bound = desc[desc.index("The bound:"):desc.index("Either, when it ran:")] + ran
-    stopped = desc[desc.index("(`wait_stopped`"):desc.index("a screen it cannot read")]
-    clauses = [found, found, stopped, bound]
-    unnamed = [(r.get("code", r.get("verdict")), k) for r, clause in zip(replies, clauses,
-                                                                         strict=True)
-               for k in r if k not in ENVELOPE and f"`{k}`" not in clause]
+    text = documented("screen_wait")
+    unnamed = [(r.get("code", r.get("verdict")), k) for r in replies
+               for k in r if k not in ENVELOPE and f"`{k}`" not in text]
     assert not unnamed, unnamed
 
 
@@ -1667,7 +1657,6 @@ def test_a_refused_wait_whose_stop_survey_comes_back_cut_says_so_and_records_not
 def test_the_picture_reaches_the_client_attached_beside_the_json(tmp_path: Path) -> None:
     """Through the MCP layer: the 256-colour screen comes back as the JSON and, after it, the
     PNG itself, the file the body names, hashed again."""
-    import asyncio
     import base64
 
     from mcp.types import CallToolResult, ImageContent

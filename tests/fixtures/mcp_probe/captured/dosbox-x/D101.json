@@ -28,6 +28,78 @@
   },
   {
    "lines": [
+    "D101: {\"tool\":\"screen_view\",\"args\":{\"crop\":[40,30,64,48],\"scale\":3}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D101: {\"tool\":\"screen_view\",\"args\":{\"crop\":[40,30,64,48],\"scale\":3}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D101: {\"tool\": \"screen_view\", \"args\": {\"crop\": [40, 30, 64, 48], \"scale\": 3}}"
    ],
    "right": true

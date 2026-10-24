@@ -27,91 +27,91 @@
  "runs": [
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"by\": \"address\", \"length\": 10, \"fmt\": \"char[10]\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10, \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "D39: {\"tool\":\"watch_add\",\"args\":{\"ref\":\"1A2B:0300\",\"mode\":\"show\",\"fmt\":\"char[10]\",\"length\":10,\"by\":\"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10, \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"length\": 10, \"fmt\": \"char[10]\", \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10, \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10, \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10, \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"length\": 10, \"fmt\": \"char[10]\", \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10, \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10, \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"length\": 10, \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "D39: {\"tool\":\"watch_add\",\"args\":{\"ref\":\"1A2B:0300\",\"mode\":\"show\",\"fmt\":\"char[10]\",\"length\":10,\"by\":\"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"length\": 10, \"fmt\": \"char[10]\", \"by\": \"address\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"fmt\": \"char[10]\", \"by\": \"address\"}}"
+    "D39: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0300\", \"mode\": \"show\", \"length\": 10, \"fmt\": \"char[10]\", \"by\": \"address\"}}"
    ],
    "right": true
   }

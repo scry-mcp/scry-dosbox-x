@@ -31,15 +31,15 @@ def test_a_count_the_reply_did_not_carry_is_shown_as_it_came() -> None:
 
 
 def test_a_filter_with_no_value_names_no_value_in_its_line() -> None:
-    line = one_line.scan_filter({"operator": "="}, {"hits_total": 3, "closed": False})
-    assert line == "scan_filter =: 3 survivors", line
+    line = one_line.filter_scan({"operator": "="}, {"hits_total": 3, "closed": False})
+    assert line == "=, 3 survivors", line
 
 
 def test_a_cut_scan_filter_says_how_much_of_the_list_it_holds() -> None:
     """`truncated` means more survive than are listed: the line says the first ones are there,
     or that none is when the note says the list was too long to page."""
-    some = one_line.scan_filter({"operator": "!"}, {"hits_total": 90, "truncated": True,
+    some = one_line.filter_scan({"operator": "!"}, {"hits_total": 90, "truncated": True,
                                                     "hits": [{}, {}]})
-    none = one_line.scan_filter({"operator": "!"}, {"hits_total": 900, "truncated": True,
+    none = one_line.filter_scan({"operator": "!"}, {"hits_total": 900, "truncated": True,
                                                     "hits": [], "note": "..."})
     assert some.endswith("the first 2 listed") and "none listed" in none, (some, none)

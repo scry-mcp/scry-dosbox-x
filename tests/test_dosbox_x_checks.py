@@ -30,7 +30,7 @@ def _refused(tool: str, **given: Any) -> str:
     ("start", {"plan": "x"}, "plan is a LIST of steps"),
     ("run_for", {"milliseconds": -1}, "milliseconds=-1 is not a whole number"),
     ("run_for", {"frames": -1}, "frames=-1"),
-    ("scan_filter", {"operator": "=", "value": "zz"}, "value='zz'"),
+    ("scan", {"method": "filter", "operator": "=", "value": "zz"}, "value='zz'"),
     ("set_register", {"name": "eax", "value": "zz"}, "value='zz'"),
     ("screen_signature", {"crop": [1, 2]}, "crop=[1, 2]"),
     ("screen_view", {"crop": [1, 2]}, "crop=[1, 2]"),
@@ -92,9 +92,10 @@ def test_a_scan_step_without_a_cell_size_is_judged_one_byte_a_cell() -> None:
     """A step judged by the preflight with an argument left out is judged as the tool would run
     it, with its own default: one byte a cell, so a length of 3 is whole cells and passes, and a
     cell size named that does not divide it is refused."""
-    checks.preflight("scan_start", {"ref": "0000:0000", "length": 3})
+    checks.preflight("scan", {"method": "start", "ref": "0000:0000", "length": 3})
     with pytest.raises(ds.Invalid):
-        checks.preflight("scan_start", {"ref": "0000:0000", "length": 3, "cell_bytes": 2})
+        checks.preflight("scan", {"method": "start", "ref": "0000:0000", "length": 3,
+                                  "cell_bytes": 2})
 
 
 def test_a_step_whose_keys_are_not_a_list_is_refused_naming_keys() -> None:

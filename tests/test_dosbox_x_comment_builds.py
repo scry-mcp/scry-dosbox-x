@@ -1,5 +1,6 @@
 """When a raw comment is `stale`: the whole rule as one table of sessions, and the inputs that
-probed it, each driven through `start`, `comment_add`, `comment_load` and `symbols_load` as a
+probed it, each driven through `start`, `comment_write(method="add")`,
+`comment_write(method="load")` and `symbols_load` as a
 client drives them.
 
 A raw row records the one batch that described its address when it was placed or loaded (the
@@ -93,9 +94,9 @@ class _Sessions:
             ok(got)
         elif verb == "add":
             self.booted.mode = MODE[arg] if arg != P else dcons.REAL_MODE
-            ok(server.comment_add(ref=arg, text="same text"))
+            ok(server.comment_write("add", ref=arg, text="same text"))
         elif verb == "load":
-            ok(server.comment_load(path=str(_file(self.tmp, (SPELLED.get(arg, arg),
+            ok(server.comment_write("load", path=str(_file(self.tmp, (SPELLED.get(arg, arg),
                                                                "same text")))))
         elif verb == "map":
             # `map A`, `map A @500000` at another base, `map AS /_main` with a pattern.
@@ -110,13 +111,13 @@ class _Sessions:
         elif verb == "pmload":
             # A PROTECTED-MODE STOP, whatever the ref's own mode.
             self.booted.mode = "Pr32"
-            ok(server.comment_load(path=str(_file(self.tmp, (SPELLED.get(arg, arg),
+            ok(server.comment_write("load", path=str(_file(self.tmp, (SPELLED.get(arg, arg),
                                                                "same text")))))
         elif verb in ("realload", "realbp"):
             # A REAL-MODE STOP AFTER THE MAP, where a protected-mode row cannot be placed: the
             # file loads it waiting, and the breakpoint is declared without a place.
             self.booted.mode = dcons.REAL_MODE
-            ok(server.comment_load(path=str(_file(self.tmp, (SPELLED.get(arg, arg),
+            ok(server.comment_write("load", path=str(_file(self.tmp, (SPELLED.get(arg, arg),
                                                                "same text"))))
                if verb == "realload" else server.breakpoint_at(ref=arg))
         elif verb in ("runbp", "realrunbp"):
@@ -133,7 +134,7 @@ class _Sessions:
             self.booted.mode = "Pr32" if verb == "pmstop" else dcons.REAL_MODE
             where, regs = self.booted.where_and_registers()
             dstate.STATE.remember_stop(self.booted, where, regs, [], {})
-            ok(server.breakpoint_list())
+            ok(server.declaration_list("breakpoint"))
         elif verb == "conf":
             self.conf_text = "[sdl]\nfullscreen=false\n"
         elif verb == "strip":
@@ -159,7 +160,7 @@ class _Sessions:
         self.booted.mode = stop or MODE[ref]
         if verb == "bp":
             rows: dict[str, dict[str, Any]] = {
-                b["ref"]: b for b in server.breakpoint_list()["breakpoints"]}
+                b["ref"]: b for b in server.declaration_list("breakpoint")["breakpoints"]}
             return rows[ref]
         return _rows_by_ref()[ref]
 
@@ -481,7 +482,7 @@ def test_the_store_writes_no_batch_and_drops_the_one_an_older_store_wrote(
     doc["builds"] = {str(store._conf): {"s": {"conf": "c", "entries": []}},
                      "other": {"t": {"conf": "o", "entries": []}}}
     store.path.write_text(json.dumps(doc), encoding="utf-8")
-    ok(server.comment_delete(ref=Q))
+    ok(server.comment_write("delete", ref=Q))
     after = json.loads(store.path.read_text(encoding="utf-8"))
     assert after["builds"] == {"other": {"t": {"conf": "o", "entries": []}}}, after
 
@@ -575,13 +576,14 @@ def test_a_batch_hashes_its_entries_once_however_many_rows_ask(
 
 def test_a_row_this_session_takes_into_its_map_keeps_its_stamp_and_names_this_session(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A reload of a row an earlier session left adopts it, as `comment_add` adopts: this
+    """A reload of a row an earlier session left adopts it, as `comment_write(method="add")` adopts:
+    this
     session's origin, the build that follows, and the row's own `created_at`."""
     run = _Sessions(tmp_path, monkeypatch)
     for step in ("start", f"add {P}", "start"):
         run.step(step)
     before = run.state(P)
-    got = ok(server.comment_load(path=str(_file(tmp_path, (P, "same text")))))
+    got = ok(server.comment_write("load", path=str(_file(tmp_path, (P, "same text")))))
     assert (got["unchanged"], got["added"], got["replaced_total"]) == (1, 0, 0)
     after = run.state(P)
     assert after["created_at"] == before["created_at"]
@@ -594,12 +596,12 @@ def test_a_row_this_session_takes_into_its_map_keeps_its_stamp_and_names_this_se
 def test_a_protected_mode_save_loads_waiting_at_the_real_mode_park(tmp_path: Path) -> None:
     install()
     dstate.STATE.session = Protected()  # type: ignore[assignment]
-    ok(server.comment_add(ref="00A7:00045F80", text="pm"))
+    ok(server.comment_write("add", ref="00A7:00045F80", text="pm"))
     saved = tmp_path / "pm.tsv"
-    ok(server.comment_save(dest=str(saved)))
+    ok(server.comment_write("save", dest=str(saved)))
     dstate.STATE.session = FakeSession()  # type: ignore[assignment]
     install_store()
-    got = ok(server.comment_load(path=str(saved)))
+    got = ok(server.comment_write("load", path=str(saved)))
     row = _rows_by_ref()["00A7:00045F80"]
     assert got["added"] == 1 and row["state"] == "unarmable" and "addr" not in row
 
@@ -609,7 +611,7 @@ def test_one_past_ffff_and_the_formats_top_offset_wait_at_the_park_beside_a_plac
         tmp_path: Path, off: str) -> None:
     install()
     probe_table()
-    got = ok(server.comment_load(path=str(_file(tmp_path, (f"00A7:{off}", "edge"),
+    got = ok(server.comment_write("load", path=str(_file(tmp_path, (f"00A7:{off}", "edge"),
                                                   ("start", "s")))))
     ref = dec.canonical_ref(f"00A7:{off}", "address")
     rows = _rows_by_ref()
@@ -619,14 +621,14 @@ def test_one_past_ffff_and_the_formats_top_offset_wait_at_the_park_beside_a_plac
 
 def test_offset_ffff_is_placed_at_the_park_and_named_nowhere(tmp_path: Path) -> None:
     install()
-    got = ok(server.comment_load(path=str(_file(tmp_path, ("00A7:0000FFFF", "top")))))
+    got = ok(server.comment_write("load", path=str(_file(tmp_path, ("00A7:0000FFFF", "top")))))
     assert _rows_by_ref()["00A7:FFFF"]["state"] == "resolved" and "note" not in got
 
 
 def test_a_waiting_row_is_deleted_at_the_park(tmp_path: Path) -> None:
     install()
-    ok(server.comment_load(path=str(_file(tmp_path, ("00A7:00045F80", "pm")))))
-    ok(server.comment_delete(ref="00A7:00045F80"))
+    ok(server.comment_write("load", path=str(_file(tmp_path, ("00A7:00045F80", "pm")))))
+    ok(server.comment_write("delete", ref="00A7:00045F80"))
     assert ok(server.comment_list())["comments_total"] == 0
 
 
@@ -635,12 +637,12 @@ def test_a_real_mode_save_waits_at_a_protected_mode_stop_and_is_placed_back(
         tmp_path: Path, ref: str, back: str) -> None:
     """The interrupt table's segment and the last null selector (RPL 3)."""
     install()
-    ok(server.comment_add(ref=ref, text="real"))
+    ok(server.comment_write("add", ref=ref, text="real"))
     saved = tmp_path / "real.tsv"
-    ok(server.comment_save(dest=str(saved)))
+    ok(server.comment_write("save", dest=str(saved)))
     dstate.STATE.session = Protected()  # type: ignore[assignment]
     install_store()
-    got = ok(server.comment_load(path=str(saved)))
+    got = ok(server.comment_write("load", path=str(saved)))
     row = _rows_by_ref()[ref]
     assert got["added"] == 1 and ref in got["note"]
     assert row["state"] == "unarmable" and "null selector" in row["why"], row
@@ -648,7 +650,7 @@ def test_a_real_mode_save_waits_at_a_protected_mode_stop_and_is_placed_back(
     dstate.STATE.session = FakeSession()  # type: ignore[assignment]
     waiting = _rows_by_ref()[ref]
     assert waiting["state"] == "unarmable" and "no stop has placed it" in waiting["why"], waiting
-    ok(server.comment_load(path=str(saved)))
+    ok(server.comment_write("load", path=str(saved)))
     assert (_rows_by_ref()[ref]["state"], _rows_by_ref()[ref]["addr"]) == ("resolved", back)
 
 
@@ -656,7 +658,7 @@ def test_a_segment_no_descriptor_holds_waits_beside_one_placed_at_a_protected_mo
         tmp_path: Path) -> None:
     dstate.STATE.session = Protected()  # type: ignore[assignment]
     install_store()
-    got = ok(server.comment_load(path=str(_file(tmp_path, ("0814:010B", "real"),
+    got = ok(server.comment_write("load", path=str(_file(tmp_path, ("0814:010B", "real"),
                                                   ("00A7:00001000", "pm")))))
     rows = _rows_by_ref()
     assert got["added"] == 2 and rows["00A7:1000"]["state"] == "resolved"
@@ -666,7 +668,7 @@ def test_a_segment_no_descriptor_holds_waits_beside_one_placed_at_a_protected_mo
 def test_a_row_past_its_selectors_limit_waits_for_that_limit_not_a_mode(tmp_path: Path) -> None:
     dstate.STATE.session = Protected()  # type: ignore[assignment]
     install_store()
-    got = ok(server.comment_load(path=str(_file(tmp_path, ("00A7:00240000", "past")))))
+    got = ok(server.comment_write("load", path=str(_file(tmp_path, ("00A7:00240000", "past")))))
     why = _rows_by_ref()["00A7:00240000"]["why"]
     assert "limit reaches it" in why and "mode holds" not in why + got["note"], why
     dstate.STATE.session = FakeSession()  # type: ignore[assignment]
@@ -685,7 +687,7 @@ def test_the_why_of_a_row_past_ffff_names_only_a_stop_that_places_it(
     stop; selector 0004 is no null selector, so a protected-mode stop may place it."""
     dstate.STATE.session = FakeSession()  # type: ignore[assignment]
     install_store()
-    ok(server.comment_load(path=str(_file(tmp_path, (ref, "x")))))
+    ok(server.comment_write("load", path=str(_file(tmp_path, (ref, "x")))))
     park_why = _rows_by_ref()[key]["why"]
     dstate.STATE.session = Protected()  # type: ignore[assignment]
     pm_why = _rows_by_ref()[key]["why"]
@@ -710,9 +712,10 @@ def test_one_address_in_two_spellings_is_refused_and_two_aliases_load_with_a_not
         tmp_path: Path) -> None:
     install()
     two = _file(tmp_path, ("0814:010B", "a"), ("0814:0000010B", "b"), name="two.tsv")
-    assert "one comment per ref" in refused(server.comment_load(path=str(two)), "bad_argument")
+    assert "one comment per ref" in refused(server.comment_write("load", path=str(two)),
+                                            "bad_argument")
     alias = _file(tmp_path, ("0814:010B", "a"), ("0824:000B", "b"), name="alias.tsv")
-    assert "share a place" in ok(server.comment_load(path=str(alias)))["note"]
+    assert "share a place" in ok(server.comment_write("load", path=str(alias)))["note"]
 
 
 # ------------------------------------------- a held row of another build, given its text
@@ -725,7 +728,7 @@ def test_a_held_row_of_another_build_given_another_text_is_this_builds(tmp_path:
     run = _Sessions(tmp_path, monkeypatch)
     for step in ("start", "map B", f"add {W}", "start"):
         run.step(step)
-    got = ok(server.comment_load(path=str(_file(tmp_path, (W, "a new text")))))
+    got = ok(server.comment_write("load", path=str(_file(tmp_path, (W, "a new text")))))
     run.step("map A")
     assert got["replaced_total"] == 1 and run.state(W)["state"] == "resolved"
 
@@ -742,11 +745,11 @@ def test_a_held_row_of_another_build_given_its_text_where_it_waits_or_not_is_bro
     run = _Sessions(tmp_path, monkeypatch)
     run.step("start")
     run.booted.mode = "Pr32" if ref.startswith("00A7") else dcons.REAL_MODE
-    ok(server.comment_add(ref=ref, text="same"))
+    ok(server.comment_write("add", ref=ref, text="same"))
     run.step("map B")
     run.step("start")
     run.booted.mode = held_in
-    got = ok(server.comment_load(path=str(_file(tmp_path, (ref, "same")))))
+    got = ok(server.comment_write("load", path=str(_file(tmp_path, (ref, "same")))))
     assert got["unchanged"] == 1, got
     created = _rows_by_ref()[ref]["created_at"]
     run.step("map A")

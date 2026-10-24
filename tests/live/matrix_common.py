@@ -282,7 +282,7 @@ def into_dos() -> None:
     with nothing left armed. The vector table is filled from here on."""
     must(M.call(server.breakpoint_interrupt, number=0x21), "arming INT 21h")
     resume_until(lambda _regs: True, "DOS calling INT 21h", 1)
-    must(M.call(server.breakpoint_clear, ref="BPINT 21"), "clearing INT 21h")
+    must(M.call(server.declaration_clear, kind="breakpoint", ref="BPINT 21"), "clearing INT 21h")
 
 
 def exec_of(name: str, limit: int = 12) -> None:
@@ -291,7 +291,8 @@ def exec_of(name: str, limit: int = 12) -> None:
     must(M.call(server.breakpoint_interrupt, number=0x21, ah=0x4B), "arming the EXEC stop")
     resume_until(lambda regs: name.encode() in read_bytes(reg_ref(regs, "DS", "EDX"), 32).upper(),
                  f"DOS EXECing {name}", limit)
-    must(M.call(server.breakpoint_clear, ref="BPINT 21 AH=4B"), "clearing the EXEC stop")
+    must(M.call(server.declaration_clear, kind="breakpoint", ref="BPINT 21 AH=4B"),
+         "clearing the EXEC stop")
 
 
 def release_running(stopper: str = NEVER_RUNS_STOPPER) -> None:

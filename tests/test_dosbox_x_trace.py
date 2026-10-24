@@ -517,15 +517,14 @@ def test_a_wrong_argument_is_refused_before_the_session_is_asked(
 
 
 def test_the_description_states_the_bound_the_check_holds() -> None:
-    assert f"1 to {tracing.INSTRUCTIONS_MAX}." in str(server.trace.__doc__)
+    assert f"(1 to {tracing.INSTRUCTIONS_MAX})" in str(server.trace.__doc__)
 
 
-@pytest.mark.parametrize("where", ["description", "REFERENCE.md"])
+@pytest.mark.parametrize("where", ["docs/reference/advance.md", "REFERENCE.md"])
 def test_the_texts_say_the_bound_interrupts_the_trace(where: str) -> None:
     """A trace whose stop never comes is interrupted at its bound, so the texts may not
     promise a count that runs on, nor a log left open for the next trace."""
-    package = Path(__file__).parents[1]
-    text = str(server.trace.__doc__) if where == "description" else (package / where).read_text()
+    text = (Path(__file__).parents[1] / where).read_text()
     flat = " ".join(text.split())
     assert "interrupted where it stood" in flat
     for promise in ("runs to its count and stops there", "so the log runs on to its count",

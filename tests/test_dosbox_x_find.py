@@ -107,11 +107,11 @@ def test_whitespace_between_the_bytes_is_accepted(good: str, want: bytes) -> Non
     assert finder.check_pattern(good) == want
 
 
-# ------------------------------------------------------------------- scan_start
+# ------------------------------------------------------------------- scan start
 
 def test_scan_start_reads_the_opened_line_past_an_earlier_refusal() -> None:
     s = session([("MEMFIND 0000:400 100 B", "memfind_opened_0400")])
-    got = finder.scan_start(s, 0, 0x400, 0x100, 1)
+    got = finder.start_scan(s, 0, 0x400, 0x100, 1)
     assert got == {"seg_off": "0000:00000400", "length": 0x100,
                    "cell_bytes": 1, "addr": "0x00000400", "hits_total": 0x100}
 
@@ -119,24 +119,24 @@ def test_scan_start_reads_the_opened_line_past_an_earlier_refusal() -> None:
 def test_scan_start_refuses_when_the_debugger_already_holds_one() -> None:
     s = session([("MEMFIND 0000:400 100 B", "memfind_already_active")])
     with pytest.raises(ds.Invalid, match="one is open"):
-        finder.scan_start(s, 0, 0x400, 0x100, 1)
+        finder.start_scan(s, 0, 0x400, 0x100, 1)
 
 
 def test_scan_start_refuses_the_range_the_debugger_refused() -> None:
     s = session([("MEMFIND F000:E000 100 B", "memfind_range_exceeds")])
     with pytest.raises(ds.Invalid, match="past the memory"):
-        finder.scan_start(s, 0xF000, 0xE000, 0x100, 1)
+        finder.start_scan(s, 0xF000, 0xE000, 0x100, 1)
 
 
 @pytest.mark.parametrize("length,cell_bytes", [(0, 1), (0x1000000, 1), (16, 8), (16, True)])
 def test_scan_start_refuses_its_own_arguments_before_typing(length: int, cell_bytes: int) -> None:
     s = session([])
     with pytest.raises(ds.Invalid):
-        finder.scan_start(s, 0, 0, length, cell_bytes)
+        finder.start_scan(s, 0, 0, length, cell_bytes)
     assert s.sent == []
 
 
-# ------------------------------------------------------------------ scan_filter
+# ------------------------------------------------------------------ scan filter
 
 def test_scan_filter_refuses_a_listing_whose_rows_do_not_add_up() -> None:
     """The captured page is twenty rows and the captured end two more, against a count
@@ -146,7 +146,7 @@ def test_scan_filter_refuses_a_listing_whose_rows_do_not_add_up() -> None:
     # 0x100 survivors are what the machine said; the two captured pages hold 22 rows, so
     # the whole-listing check must REFUSE rather than hand back a partial table.
     with pytest.raises(ds.Invalid, match="a whole listing"):
-        finder.scan_filter(s, "=", 0, judges.HITS_MAX)
+        finder.filter_scan(s, "=", 0, judges.HITS_MAX)
     # The last ENTER is the refusal clearing the command line: a refusal that leaves it
     # dirty costs the whole session.
     assert s.sent == ["MEMS =0", "MEMFIND L", "", ""]
@@ -171,7 +171,7 @@ def test_scan_filter_hands_back_a_whole_listing_when_the_rows_match_the_count() 
     the debugger reports is rewritten to 22 in both places it prints it and the listing
     is then whole: first row, last row, every row keyed once."""
     s = twenty_two()
-    got = finder.scan_filter(s, "=", 0)
+    got = finder.filter_scan(s, "=", 0)
     assert got["hits_total"] == 22 and got["closed"] is False and got["iterations"] == 1
     assert len(got["hits"]) == 22
     assert got["hits"][0] == {"seg_off": "0000:00000400", "addr": "0x00000400", "value": "0x00"}
@@ -182,7 +182,7 @@ def test_scan_filter_shows_the_first_limit_survivors_and_says_more_survive() -> 
     """22 survivors against a limit of 5: the listing is read and the first five come back,
     never an empty list, with `truncated` saying they are not all of them."""
     s = twenty_two()
-    got = finder.scan_filter(s, "=", 0, 5)
+    got = finder.filter_scan(s, "=", 0, 5)
     assert got["hits_total"] == 22 and len(got["hits"]) == 5 and got["truncated"] is True, got
     assert got["hits"][0]["seg_off"] == "0000:00000400", got
 
@@ -191,7 +191,7 @@ def test_scan_filter_shows_the_first_limit_survivors_and_says_more_survive() -> 
 def test_scan_filter_refuses_a_limit_outside_its_range_before_typing(limit: object) -> None:
     s = session([])
     with pytest.raises(ds.Invalid, match="is outside 1..400"):
-        finder.scan_filter(s, "=", 0, cast(int, limit))
+        finder.filter_scan(s, "=", 0, cast(int, limit))
     assert s.sent == []
 
 
@@ -200,13 +200,13 @@ def test_scan_filter_lists_exactly_at_its_limit_and_cuts_one_above(limit: int,
                                                                    whole: bool) -> None:
     """22 survivors: a limit of 22 shows them all, a limit of 21 the first 21, truncated."""
     s = twenty_two()
-    got = finder.scan_filter(s, "=", 0, limit)
+    got = finder.filter_scan(s, "=", 0, limit)
     assert len(got["hits"]) == limit and got["truncated"] is not whole, got
 
 
 def test_scan_filter_reports_a_finished_scan_as_closed_with_no_survivors() -> None:
     s = session([("MEMS !0", "mems_finished")])
-    got = finder.scan_filter(s, "!", 0)
+    got = finder.filter_scan(s, "!", 0)
     assert {k: got[k] for k in ("operator", "value", "hits_total", "closed", "hits")} == {
         "operator": "!", "value": "0x00", "hits_total": 0, "closed": True, "hits": []}, got
 
@@ -214,18 +214,18 @@ def test_scan_filter_reports_a_finished_scan_as_closed_with_no_survivors() -> No
 def test_scan_filter_refuses_a_value_wider_than_the_cells() -> None:
     s = session([("MEMS =FFF", "mems_too_wide")])
     with pytest.raises(ds.Invalid, match="does not fit"):
-        finder.scan_filter(s, "=", 0xFFF)
+        finder.filter_scan(s, "=", 0xFFF)
 
 
-def test_scan_filter_refuses_when_nothing_is_open_and_names_scan_start() -> None:
+def test_a_filter_refuses_when_nothing_is_open_and_names_the_start() -> None:
     s = session([("MEMS =12", "mems_not_active")])
-    with pytest.raises(ds.Invalid, match="scan_start"):
-        finder.scan_filter(s, "=", 0x12)
+    with pytest.raises(ds.Invalid, match=r'scan\(method="start"\)'):
+        finder.filter_scan(s, "=", 0x12)
 
 
 def test_scan_filter_sends_no_value_when_none_is_given() -> None:
     s = session([("MEMS >", "mems_finished")])
-    finder.scan_filter(s, ">", None)
+    finder.filter_scan(s, ">", None)
     assert s.sent == ["MEMS >"]
 
 
@@ -233,7 +233,7 @@ def test_scan_filter_sends_no_value_when_none_is_given() -> None:
 def test_scan_filter_refuses_its_own_arguments_before_typing(op: str, value: int) -> None:
     s = session([])
     with pytest.raises(ds.Invalid):
-        finder.scan_filter(s, op, value)
+        finder.filter_scan(s, op, value)
     assert s.sent == []
 
 
@@ -242,7 +242,7 @@ def test_scan_filter_does_not_list_above_the_cap(monkeypatch: pytest.MonkeyPatch
     `truncated: true`, the words `find` uses for the same idea; `listed` is gone."""
     monkeypatch.setattr(judges, "HITS_MAX", 0xFF)
     s = session([("MEMS =0", "mems_matches")])
-    got = finder.scan_filter(s, "=", 0, 0xFF)
+    got = finder.filter_scan(s, "=", 0, 0xFF)
     assert got["hits_total"] == 0x100 and got["hits"] == [], got
     assert got["hits_total"] == 0x100 and got["truncated"] is True, got
     assert "listed" not in got and "filter again" in got["note"], got
@@ -271,7 +271,7 @@ def test_a_listed_reply_says_it_is_whole(no_scan_count: None) -> None:
     s = session([("MEMS =0", "mems_matches"), ("MEMFIND L", "memfind_list_page"),
                  ("", "memfind_list_last")])
     _listed_22(s)
-    got = finder.scan_filter(s, "=", 0)
+    got = finder.filter_scan(s, "=", 0)
     assert got["truncated"] is False and got["hits_total"] == 22, got
     assert len(got["hits"]) == 22 and "listed" not in got, got
 
@@ -283,8 +283,8 @@ def test_the_closing_reply_carries_the_count_one_past_the_last_filter(
     s = session([("MEMS =0", "mems_matches"), ("MEMFIND L", "memfind_list_page"),
                  ("", "memfind_list_last"), ("MEMS !0", "mems_finished")])
     _listed_22(s)
-    first = finder.scan_filter(s, "=", 0)
-    closing = finder.scan_filter(s, "!", 0)
+    first = finder.filter_scan(s, "=", 0)
+    closing = finder.filter_scan(s, "!", 0)
     assert closing["closed"] is True and closing["iterations"] == first["iterations"] + 1
     assert closing["hits"] == [] and closing["hits_total"] == 0, closing
     assert closing["truncated"] is False, closing
@@ -293,51 +293,51 @@ def test_the_closing_reply_carries_the_count_one_past_the_last_filter(
 def test_a_close_with_no_count_held_says_so_rather_than_guessing(no_scan_count: None) -> None:
     """A scan opened past the server (`debug("MEMFIND ...")`) leaves no count here: the
     closing reply says `iterations: null` and why, never a number made up."""
-    got = finder.scan_filter(session([("MEMS !0", "mems_finished")]), "!", 0)
+    got = finder.filter_scan(session([("MEMS !0", "mems_finished")]), "!", 0)
     assert got["iterations"]["available"] is False, got
 
 
 def test_scan_start_and_scan_clear_reset_the_count(no_scan_count: None) -> None:
     dstate.STATE.scan_iterations = 7                    # an earlier scan's count
-    finder.scan_start(session([("MEMFIND 0000:400 100 B", "memfind_opened_0400")]),
+    finder.start_scan(session([("MEMFIND 0000:400 100 B", "memfind_opened_0400")]),
                       0, 0x400, 0x100, 1)
-    got = finder.scan_filter(session([("MEMS !0", "mems_finished")]), "!", 0)
+    got = finder.filter_scan(session([("MEMS !0", "mems_finished")]), "!", 0)
     assert got["iterations"] == 1, got                  # the first filter closed it
     dstate.STATE.scan_iterations = 7
-    finder.scan_clear(session([("MEMFIND !", "memfind_cancelled")]))
+    finder.clear_scan(session([("MEMFIND !", "memfind_cancelled")]))
     assert dstate.STATE.scan_iterations is None
 
 
-# ------------------------------------------------------------------- scan_clear
+# ------------------------------------------------------------------- scan clear
 
 def test_scan_clear_reads_the_last_line_not_the_stale_one_above_it() -> None:
     s = session([("MEMFIND !", "memfind_cancelled")])
-    assert finder.scan_clear(s) == {"cleared": True}
+    assert finder.clear_scan(s) == {"cleared": True}
 
 
 @pytest.mark.parametrize("fixture", ["memfind_cancel_none", "memfind_cancel_after_finished"])
 def test_scan_clear_says_nothing_was_open_without_refusing(fixture: str) -> None:
     s = session([("MEMFIND !", fixture)])
-    got = finder.scan_clear(s)
+    got = finder.clear_scan(s)
     assert got["cleared"] is False and "no search instance" in got["note"]
 
 
 def test_scan_clear_refuses_an_answer_it_cannot_read() -> None:
     s = session([("MEMFIND !", "memfind_list_none"), ("", "memfind_cancelled")])
     with pytest.raises(ds.Invalid, match="did not report") as caught:
-        finder.scan_clear(s)
+        finder.clear_scan(s)
     assert caught.value.fields["line_recovered"] is True, caught.value.fields
     assert s.sent == ["MEMFIND !", ""], "the refusal cleared the line before returning"
 
 
 def test_scan_start_reads_past_two_stacked_stale_lines_and_checks_the_echoed_range() -> None:
     s = session([("MEMFIND 0000:0 FFFFFF B", "memfind_opened")])
-    got = finder.scan_start(s, 0, 0, 0xFFFFFF, 1)
+    got = finder.start_scan(s, 0, 0, 0xFFFFFF, 1)
     assert got["hits_total"] == 0xFFFFFF and got["addr"] == "0x00000000"
     short = session([("MEMFIND 0000:0 FFFFFE B", "memfind_opened"),
                      ("MEMFIND !", "memfind_cancelled"), ("", "memfind_cancelled")])
     with pytest.raises(ds.Invalid, match="the range asked for"):
-        finder.scan_start(short, 0, 0, 0xFFFFFE, 1)
+        finder.start_scan(short, 0, 0, 0xFFFFFE, 1)
     assert short.sent == ["MEMFIND 0000:0 FFFFFE B", "MEMFIND !", ""]
 
 
@@ -352,7 +352,7 @@ def test_scan_start_accepts_an_offset_wider_than_sixteen_bits() -> None:
         return orig(text).replace("0000:0400 (lin 00000400) with range: 000100",
                                   "0023:16DF20 (lin 0016DF20) with range: 000100")
     s.command = command
-    got = finder.scan_start(s, 0x23, 0x16DF20, 0x100, 1)
+    got = finder.start_scan(s, 0x23, 0x16DF20, 0x100, 1)
     assert got["addr"] == "0x0016df20" and got["hits_total"] == 0x100
 
 
@@ -374,7 +374,7 @@ def test_listing_ignores_the_previous_listings_closing_line_and_rows_above_the_s
     s = session([("MEMS =0", "mems_matches"), ("MEMFIND L", "mems_matches")])
     answers = iter([fresh_summary, page])
     s.command = lambda text, **_: next(answers)
-    got = finder.scan_filter(s, "=", 0)
+    got = finder.filter_scan(s, "=", 0)
     assert got["hits_total"] == 2 and [h["seg_off"] for h in got["hits"]] == [
         "0000:000004FE", "0000:000004FF"]
 
@@ -403,7 +403,7 @@ def test_a_listing_that_ends_with_a_page_still_waiting_turns_it_before_returning
         return next(answers)
 
     s.command = command
-    got = finder.scan_filter(s, "=", 0)
+    got = finder.filter_scan(s, "=", 0)
     assert got["hits_total"] == 2, got
     assert typed[-1] == "", (
         f"the listing returned on {typed[-1]!r} with a page still waiting: the next command "
@@ -423,7 +423,7 @@ def test_an_unreadable_answer_clears_the_command_line_before_it_refuses() -> Non
             return tail("memfind_list_none") if text else tail("memfind_cancelled")
 
     with pytest.raises(ds.Invalid) as caught:
-        finder.scan_clear(cast(Any, Dirty()))
+        finder.clear_scan(cast(Any, Dirty()))
     assert caught.value.code == "unexpected_answer", caught.value
     assert "" in typed[1:], (
         f"the refusal went back without clearing the line; what it typed was {typed!r}")
@@ -467,9 +467,9 @@ def test_a_scan_the_debugger_says_is_gone_leaves_no_count_to_add_to(no_scan_coun
     """The debugger said no scan is open, so whatever this server counted belongs to a scan
     that ended past it: the next close answers null with why, never the stale sum."""
     dstate.STATE.scan_iterations = 2
-    with pytest.raises(ds.Invalid, match="scan_start"):
-        finder.scan_filter(session([("MEMS =12", "mems_not_active")]), "=", 0x12)
-    got = finder.scan_filter(session([("MEMS !0", "mems_finished")]), "!", 0)
+    with pytest.raises(ds.Invalid, match=r'scan\(method="start"\)'):
+        finder.filter_scan(session([("MEMS =12", "mems_not_active")]), "=", 0x12)
+    got = finder.filter_scan(session([("MEMS !0", "mems_finished")]), "!", 0)
     assert got["iterations"]["available"] is False, got
 
 
@@ -515,7 +515,7 @@ def test_clear_running_state_drops_the_count() -> None:
 @pytest.mark.parametrize("fixture", ["memfind_cancel_none", "memfind_cancel_after_finished"])
 def test_a_clear_with_nothing_open_drops_the_count_too(no_scan_count: None, fixture: str) -> None:
     dstate.STATE.scan_iterations = 3
-    finder.scan_clear(session([("MEMFIND !", fixture)]))
+    finder.clear_scan(session([("MEMFIND !", fixture)]))
     assert dstate.STATE.scan_iterations is None
 
 
@@ -533,21 +533,22 @@ def test_a_scan_opened_at_a_width_takes_a_value_of_exactly_that_many_bytes(
     def command(text: str, **_: object) -> str:
         return orig(text).replace("1 byte specified", f"{said} specified")
     s.command = command
-    assert finder.scan_start(s, 0, 0x400, 0x100, size)["cell_bytes"] == size
+    assert finder.start_scan(s, 0, 0x400, 0x100, size)["cell_bytes"] == size
     with pytest.raises(ds.Invalid, match="wider than"):
-        finder.scan_filter(s, "=", top + 1)
-    assert finder.scan_filter(s, "=", top)["closed"] is True
+        finder.filter_scan(s, "=", top + 1)
+    assert finder.filter_scan(s, "=", top)["closed"] is True
     assert s.sent == [f"MEMFIND 0000:400 100 {letter}", f"MEMS ={top:X}"]
 
 
 @pytest.mark.parametrize("line", [finder.SCAN_ACTIVE, finder.SCAN_NOT_ACTIVE],
                          ids=["one already open", "none open"])
 def test_a_scan_that_needs_another_call_first_says_needs_call(line: str) -> None:
-    """The shared table's `needs_call`: another call has to come first (`scan_clear`, or
-    `scan_start`), named in the message, where `bad_argument` would ask for another value."""
+    """The shared table's `needs_call`: another call has to come first (`scan(method="clear")`, or
+    `scan(method="start")`), named in the message, where `bad_argument` would ask for another
+    value."""
     with pytest.raises(ds.Invalid) as e:
         finder._refuse(line, "filter")
-    assert e.value.code == "needs_call" and "`scan_" in str(e.value)
+    assert e.value.code == "needs_call" and "`scan(method=" in str(e.value)
 
 
 def test_a_filter_with_no_value_says_what_it_compared_with_instead_of_a_null(
@@ -556,7 +557,7 @@ def test_a_filter_with_no_value_says_what_it_compared_with_instead_of_a_null(
     `value` says so as the unavailable datum, never a null."""
     monkeypatch.setattr(judges, "HITS_MAX", 0xFF)      # the 256 survivors are not listed
     s = session([("MEMS =", "mems_matches")])
-    got = finder.scan_filter(s, "=", None)
+    got = finder.filter_scan(s, "=", None)
     assert got["value"] == {"available": False, "why": finder.NO_VALUE_WHY}, got["value"]
     assert got["note"] == finder.unlisted_note() and "more than 255 survive" in got["note"]
 
@@ -577,11 +578,11 @@ def test_find_keeps_no_more_hits_than_it_answers() -> None:
 
 def test_a_scan_opened_over_another_range_is_cancelled_before_it_is_refused() -> None:
     """The debugger opened an instance, just not the one asked for: refused, and closed, so the
-    next `scan_start` is not told one is already open by a scan nobody holds."""
+    next `scan(method="start")` is not told one is already open by a scan nobody holds."""
     s = session([("MEMFIND 0000:400 80 B", "memfind_opened_0400"),
                  ("MEMFIND !", "memfind_cancelled"), ("", "memfind_cancelled")])
     with pytest.raises(ds.Invalid, match="the range asked for"):
-        finder.scan_start(s, 0, 0x400, 0x80, 1)
+        finder.start_scan(s, 0, 0x400, 0x80, 1)
     assert s.sent[:2] == ["MEMFIND 0000:400 80 B", "MEMFIND !"], s.sent
     assert dstate.STATE.scan_cell_bytes is None
 

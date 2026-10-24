@@ -22,6 +22,18 @@
   },
   {
    "lines": [
+    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"since_mark\": 8820, \"seconds\": 40}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D128: {\"tool\":\"log_wait\",\"args\":{\"pattern\":\"LEVEL 3\",\"channel\":\"guest\",\"seconds\":40,\"since_mark\":8820}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
    ],
    "right": true
@@ -29,6 +41,66 @@
   {
    "lines": [
     "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D128: {\"tool\":\"log_wait\",\"args\":{\"pattern\":\"LEVEL 3\",\"channel\":\"guest\",\"seconds\":40,\"since_mark\":8820}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"seconds\": 40, \"since_mark\": 8820}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D128: {\"tool\": \"log_wait\", \"args\": {\"pattern\": \"LEVEL 3\", \"channel\": \"guest\", \"since_mark\": 8820, \"seconds\": 40}}"
    ],
    "right": true
   }

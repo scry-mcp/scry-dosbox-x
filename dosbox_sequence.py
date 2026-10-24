@@ -54,18 +54,23 @@ SETTLE_DEFAULT_S = 30.0
 #: membership is proven tool by tool against a running session, not trusted to this list;
 #: `symbols_load` is out because without a `base` it measures one off the machine.
 RUNNING_OK_OPS = frozenset({
-    "status", "log", "log_wait", "symbols_find", "comment_list", "comment_save",
-    "breakpoint_at", "breakpoint_interrupt", "breakpoint_list", "breakpoint_clear",
-    "watch_add", "watch_list", "watch_clear",
-    "captures", "capture_frame", "series_capture", "send_keys", "send_mouse",
-    "state_save", "state_load", "state_list", "snapshot", "stop", "map_load", "map_save",
+    "status", "log", "log_wait", "symbols_find", "comment_list", "comment_write",
+    "breakpoint_at", "breakpoint_interrupt", "declaration_list", "declaration_clear",
+    "watch_add", "captures", "capture_frame", "series_capture", "send_keys", "send_mouse",
+    "state_write", "state_list", "snapshot", "stop", "map_write",
     # the media file tools read files, never the machine
     *media.MEDIA_TOOLS})
+#: The methods of a fold among them that answer on a running guest; its others need a stop.
+RUNNING_METHODS: dict[str, tuple[str, ...]] = {"comment_write": ("save",),
+                                                "map_write": ("load", "save")}
 
 
 def answers_running(op: str, args: dict[str, Any]) -> bool:
-    """Whether this step answers on a running guest: a `RUNNING_OK_OPS` tool, or the registers
-    as the last stop surveyed them, which type nothing at the console."""
+    """Whether this step answers on a running guest: a `RUNNING_OK_OPS` tool (a fold of
+    `RUNNING_METHODS` by those methods only), or the registers as the last stop surveyed them,
+    which type nothing at the console."""
+    if op in RUNNING_METHODS:
+        return args.get("method") in RUNNING_METHODS[op]
     return op in RUNNING_OK_OPS or (op == "registers" and args.get("from_last_stop") is True)
 
 

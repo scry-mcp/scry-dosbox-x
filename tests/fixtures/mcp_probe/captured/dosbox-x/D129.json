@@ -30,6 +30,18 @@
   },
   {
    "lines": [
+    "D129: {\"tool\": \"log\", \"args\": {\"pattern\": \".\", \"channel\": \"guest\", \"since_mark\": 9120, \"limit\": 57}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D129: {\"tool\":\"log\",\"args\":{\"pattern\":\".\",\"channel\":\"guest\",\"since_mark\":9120,\"limit\":57}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D129: {\"tool\": \"log\", \"args\": {\"pattern\": \".\", \"channel\": \"guest\", \"limit\": 57, \"since_mark\": 9120}}"
    ],
    "right": true
@@ -37,6 +49,66 @@
   {
    "lines": [
     "D129: {\"tool\": \"log\", \"args\": {\"pattern\": \".\", \"channel\": \"guest\", \"limit\": 57, \"since_mark\": 9120}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D129: {\"tool\": \"log\", \"args\": {\"pattern\": \".\", \"channel\": \"guest\", \"limit\": 57, \"since_mark\": 9120}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D129: {\"tool\": \"log\", \"args\": {\"pattern\": \".\", \"channel\": \"guest\", \"limit\": 57, \"since_mark\": 9120}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D129: {\"tool\": \"log\", \"args\": {\"pattern\": \".\", \"channel\": \"guest\", \"limit\": 57, \"since_mark\": 9120}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D129: {\"tool\": \"log\", \"args\": {\"pattern\": \".\", \"channel\": \"guest\", \"since_mark\": 9120, \"limit\": 57}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D129: {\"tool\": \"log\", \"args\": {\"pattern\": \".\", \"channel\": \"guest\", \"since_mark\": 9120, \"limit\": 57}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D129: {\"tool\": \"log\", \"args\": {\"pattern\": \".\", \"channel\": \"guest\", \"since_mark\": 9120, \"limit\": 57}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D129: {\"tool\": \"log\", \"args\": {\"pattern\": \".\", \"channel\": \"guest\", \"limit\": 57, \"since_mark\": 9120}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D129: {\"tool\":\"log\",\"args\":{\"pattern\":\".\",\"channel\":\"guest\",\"since_mark\":9120,\"limit\":57}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D129: {\"tool\": \"log\", \"args\": {\"pattern\": \".\", \"channel\": \"guest\", \"limit\": 57, \"since_mark\": 9120}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D129: {\"tool\": \"log\", \"args\": {\"pattern\": \".\", \"channel\": \"guest\", \"since_mark\": 9120, \"limit\": 57}}"
    ],
    "right": true
   }

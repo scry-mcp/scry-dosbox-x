@@ -159,17 +159,14 @@ def test_build_check_answers_about_this_build_and_names_the_whole_surface() -> N
     # is a red rather than a silent gap, which is the acceptable direction.
     assert set(reply["tools"]) == {
         "start", "status", "close", "log", "log_wait", "debug", "registers", "set_register",
-        "write", "read_memory", "disassemble", "call_stack", "memdump", "find", "scan_start",
-        "scan_filter", "scan_clear", "machine_map", "interrupt_vectors", "palette",
-        "screen_view", "screen_signature", "screen_wait", "breakpoint_interrupt", "stop",
-        "resume", "step", "run_to", "run_for", "trace", "breakpoint_at", "breakpoint_list",
-        "breakpoint_clear", "watch_add", "watch_list", "watch_clear", "state_save",
-        "state_load", "state_list", "snapshot", "captures", "capture_frame", "build_check",
+        "write", "read_memory", "disassemble", "call_stack", "memdump", "find", "scan",
+        "machine_map", "interrupt_vectors", "palette", "screen_view", "screen_signature",
+        "screen_wait", "breakpoint_interrupt", "stop", "resume", "step", "run_to", "run_for",
+        "trace", "breakpoint_at", "watch_add", "declaration_list", "declaration_clear",
+        "state_write", "state_list", "snapshot", "captures", "capture_frame", "build_check",
         "symbols_load", "symbols_find", "send_keys", "send_mouse", "perform", "perform_export",
-        "drive",
-        "comment_add", "comment_list", "comment_delete", "comment_save", "comment_load",
-        "series_capture", "image_diff", "series_diff", "region_track", "golden_check",
-        "map_load", "map_add", "map_find", "map_save"}
+        "drive", "comment_list", "comment_write", "series_capture", "image_compare", "map_find",
+        "map_write"}
     # NO SESSION, so the envelope must say so rather than omitting the key or printing a
     # null: a caller distinguishing "no session" from "the field is missing" cannot do it
     # if the two print the same thing.
@@ -188,14 +185,14 @@ def test_start_headless_reaches_the_debugger_and_declares_what_it_launched() -> 
     """
     reply = start_ok(session_seconds=60)
     argv = cast(list[str], reply["argv"])
-    assert reply["shared"] is False
+    assert reply.get("shared", False) is False
     assert "-break-start" in argv
     assert argv[argv.index("-time-limit") + 1] == "60"
     # ADJACENCY, not mere presence: a `-set` pair that arrives split is an argument
     # this emulator neither refuses nor honours.
     assert argv[argv.index("sdl videodriver=dummy") - 1] == "-set"
     assert cast(float, reply["ready_after_s"]) > 0
-    assert reply["session"]["alive"] is True and reply["watched"] is False, reply
+    assert reply["session"]["alive"] is True and reply.get("watched", False) is False, reply
     assert reply["drain_alive"] is True, "the terminal reader never started"
 
 
@@ -219,16 +216,17 @@ def test_start_shared_takes_the_helper_s_flags_and_adds_no_dummy_driver() -> Non
     """
     reply = start_ok(session_seconds=30, shared=True)
     argv = cast(list[str], reply["argv"])
-    asked = subprocess.run([HELPER, "dosbox", "--shared", "--display", str(reply["display"])],
+    asked = subprocess.run([HELPER, "dosbox", "--shared", "--display", str(reply.get("display",
+                                                                                     ""))],
                            capture_output=True, text=True, check=True)
     window_flags = [ln for ln in asked.stdout.splitlines() if ln.strip()]
-    assert reply["shared"] is True
+    assert reply.get("shared", False) is True
     assert "sdl videodriver=dummy" not in argv, "a watched session was forced headless"
     # THE TOKENS SURVIVE AS A RUN, in order: reversing them or gluing a pair is
     # exactly what an unrecognised argument is made of.
     joined, want = "\x00".join(argv), "\x00".join(window_flags)
     assert want in joined, f"the placement flags did not arrive intact: {argv}"
-    assert reply["watched"] is True, reply
+    assert reply.get("watched", False) is True, reply
     # AND IT REALLY CAME UP: a windowed session that reaches its debugger answers with
     # a value, which is the only evidence the flags were accepted rather than hung on.
     regs = cast(dict[str, Any], server.registers())
@@ -273,7 +271,7 @@ def test_status_reports_the_live_session_and_not_a_remembered_one() -> None:
     assert later["session"]["alive"] is True
     assert later["drain_alive"] is True and "drain_ended" not in later
     assert later["session"]["altered"] is False, "nothing wrote to this machine"
-    assert later["terminal_bytes_dropped"] == 0, (
+    assert later.get("terminal_bytes_dropped", 0) == 0, (
         "the terminal overflowed on an idle session, so a screen delta had a hole "
         "in it and the drain is not keeping up")
     # THE MACHINE FACTS, read off the park: the reset vector, in real mode, nothing declared.
@@ -300,7 +298,7 @@ def test_break_on_int3_stops_the_guests_own_int3_and_only_with_the_key(key: bool
     booted = cast(dict[str, Any], server.resume(seconds=30))
     assert booted.get("verdict") == "OTHER_STOP", (
         "DOS never called INT 21h: nothing here was measured")
-    server.breakpoint_clear(ref="BPINT 21")
+    server.declaration_clear("breakpoint", ref="BPINT 21")
     assert server.write(ref=_TRAP_AT, data_hex=_TRAP)["verified"] is True
     seg, off = (int(x, 16) for x in _TRAP_AT.split(":"))
     server.set_register(name="cs", value=seg)
@@ -433,15 +431,15 @@ def test_debug_hands_back_a_delta_and_says_whether_it_kept_all_of_it() -> None:
     # would breaking the cap.
     delta, chars = str(reply["screen_delta"]), cast(int, reply["screen_chars"])
     assert len(delta) <= DEBUG_CAP
-    assert reply["clipped"] is (chars > DEBUG_CAP), (
+    assert reply.get("clipped", False) is (chars > DEBUG_CAP), (
         f"clipped={reply['clipped']} with {chars} characters against a {DEBUG_CAP} cap")
-    if not reply["clipped"]:
+    if not reply.get("clipped", False):
         # UNCLIPPED, `screen_chars` MUST BE THE WHOLE DELTA. That is the assertion the
         # slice-length defect fails, and it can only be made on this branch.
         assert chars == len(delta), (
             f"screen_chars {chars} is not the length of an unclipped delta ({len(delta)})")
     resumed = cast(dict[str, Any], server.resume(detail=True))
-    assert resumed["clipped"] is (
+    assert resumed.get("clipped", False) is (
         cast(int, resumed["screen_chars"]) > SMALL_CAP), resumed["screen_chars"]
 
     # WHERE THE `clipped: True` BRANCH IS COVERED, AND WHY IT IS NOT COVERED HERE.
@@ -1260,7 +1258,8 @@ def test_comments_follow_the_symbol_one_per_place_and_round_trip_through_a_file(
         tmp_path: Path) -> None:
     """On the probe with `probe.sym` at 8140: a comment by `start` lands where `symbols_find`
     places it, `0824:000B` (the same byte) replaces its text and keeps its ref, `status` counts
-    no comment as a declaration, and the file `comment_save` writes is the one `comment_load`
+    no comment as a declaration, and the file `comment_write(method="save")` writes is the one
+    `comment_write(method="load")`
     reads back into a second save byte for byte. Every comment made here is deleted again, so
     the probe conf's store is left as it was found."""
     start_ok(session_seconds=120, logfile=str(tmp_path / "guest.log"))
@@ -1271,26 +1270,28 @@ def test_comments_follow_the_symbol_one_per_place_and_round_trip_through_a_file(
     assert not held & {"start", "0814:0106"}, f"the store already comments these: {held}"
     counted = cast(dict[str, Any], server.status())["declarations"]
     linear = cast(dict[str, Any], server.symbols_find(name="start"))["symbols"][0]["addr"]
-    added = cast(dict[str, Any], server.comment_add(ref="start", text="entry"))
+    added = cast(dict[str, Any], server.comment_write("add", ref="start", text="entry"))
     assert added["status"] == "ok" and added["comment"]["addr"] == linear, added
-    aliased = cast(dict[str, Any], server.comment_add(ref="0824:000B", text="entry, aliased"))
+    aliased = cast(dict[str, Any], server.comment_write("add", ref="0824:000B",
+                                                        text="entry, aliased"))
     assert aliased["comment"]["ref"] == "start", aliased
     assert [r["text"] for r in aliased["replaced_comments"]] == ["entry"], aliased
     assert cast(dict[str, Any], server.status())["declarations"] == counted
     first, second = tmp_path / "a.comments.tsv", tmp_path / "b.comments.tsv"
     try:
-        saved = cast(dict[str, Any], server.comment_save(dest=str(first)))
+        saved = cast(dict[str, Any], server.comment_write("save", dest=str(first)))
         assert saved["status"] == "ok", saved
         assert "start\t\t" in first.read_text(encoding="utf-8")
-        assert cast(dict[str, Any], server.comment_delete(ref="start"))["status"] == "ok"
-        loaded = cast(dict[str, Any], server.comment_load(path=str(first)))
+        assert cast(dict[str, Any], server.comment_write("delete", ref="start"))["status"] == "ok"
+        loaded = cast(dict[str, Any], server.comment_write("load", path=str(first)))
         assert loaded["status"] == "ok" and loaded["added"] == 1, loaded
-        assert cast(dict[str, Any], server.comment_save(dest=str(second)))["status"] == "ok"
+        assert cast(dict[str, Any], server.comment_write("save",
+                                                         dest=str(second)))["status"] == "ok"
         assert first.read_bytes() == second.read_bytes()
     finally:
         for ref in {c["ref"] for c in cast(dict[str, Any], server.comment_list())["comments"]} \
                 - held:
-            server.comment_delete(ref=ref)
+            server.comment_write("delete", ref=ref)
 
 
 def test_call_stack_at_the_probes_settle_loop_lists_the_stop_and_why_it_ended(
@@ -1478,10 +1479,10 @@ def test_states_round_trip_headless_through_the_debugger_commands(tmp_path: Path
     assert started["status"] == "ok", started
     empty = cast(dict[str, Any], server.state_list())
     assert empty["status"] == "ok" and empty["states"] == [], empty
-    missing = cast(dict[str, Any], server.state_load(name="live"))
+    missing = cast(dict[str, Any], server.state_write("load", name="live"))
     assert missing["status"] == "INVALID" and missing["code"] == "unknown_ref", missing
     assert server.write(ref=_MARK_AT, data_hex="AA")["verified"] is True
-    saved = cast(dict[str, Any], server.state_save(name="live"))
+    saved = cast(dict[str, Any], server.state_write("save", name="live"))
     if saved.get("code") == "no_channel":
         pytest.skip(f"this DOSBox-X carries no SAVESTATE: {saved['message']}")
     assert saved["status"] == "ok" and saved["paused"] is False, saved
@@ -1489,15 +1490,15 @@ def test_states_round_trip_headless_through_the_debugger_commands(tmp_path: Path
     assert saved["program"] and saved["saved_at"] and saved["version"].startswith("DOSBox-X")
     assert server.write(ref=_MARK_AT, data_hex="55")["verified"] is True
     assert _byte_at(_MARK_AT) == "55", "the control: the byte changed after the save"
-    loaded = cast(dict[str, Any], server.state_load(name="live"))
+    loaded = cast(dict[str, Any], server.state_write("load", name="live"))
     assert loaded["status"] == "ok" and loaded["paused"] is False, loaded
     assert loaded["session"]["altered"] is True
     assert _byte_at(_MARK_AT) == "AA", "the load brought the saved machine back"
     released = cast(dict[str, Any], server.resume())
     assert "pc" not in released, released
-    running = cast(dict[str, Any], server.state_save(name="running"))
+    running = cast(dict[str, Any], server.state_write("save", name="running"))
     assert running["status"] == "ok" and running["paused"] is True, running
-    again = cast(dict[str, Any], server.state_load(name="running"))
+    again = cast(dict[str, Any], server.state_write("load", name="running"))
     assert again["status"] == "ok" and again["paused"] is True, again
     shot = cast(dict[str, Any], server.snapshot(dest=str(tmp_path / "shot.png")))
     assert shot["status"] == "ok" and (tmp_path / "shot.png").stat().st_size > 0, shot
@@ -1541,37 +1542,37 @@ def test_scan_narrows_to_every_zero_cell_and_closes_once() -> None:
     segment is aliased high and `MEMFIND` refuses its range, which `find`
     does not mind because `MEMDUMPBIN` reads it."""
     start_ok(session_seconds=90)
-    opened = cast(dict[str, Any], server.scan_start(ref="0000:00000400", length=256))
+    opened = cast(dict[str, Any], server.scan("start", ref="0000:00000400", length=256))
     assert opened["status"] == "ok", opened
     assert opened["hits_total"] == 256 and opened["cell_bytes"] == 1, opened
-    again = cast(dict[str, Any], server.scan_start(ref="0000:00000400", length=16))
+    again = cast(dict[str, Any], server.scan("start", ref="0000:00000400", length=16))
     assert again["status"] == "INVALID" and "one is open" in again["message"], again
-    kept = cast(dict[str, Any], server.scan_filter(operator="=", value=0, limit=400))
+    kept = cast(dict[str, Any], server.scan("filter", operator="=", value=0, limit=400))
     assert kept["status"] == "ok", kept
     assert kept["hits_total"] == 256 and kept["closed"] is False, kept
     assert len(kept["hits"]) == 256, kept["summary"]
     assert kept["hits_total"] == 256 and kept["truncated"] is False, kept["summary"]
     assert kept["hits"][0] == {"seg_off": "0000:00000400", "addr": "0x00000400", "value": "0x00"}
     assert kept["hits"][-1]["seg_off"] == "0000:000004FF"
-    wide = cast(dict[str, Any], server.scan_filter(operator="=", value=0x1FF))
+    wide = cast(dict[str, Any], server.scan("filter", operator="=", value=0x1FF))
     assert wide["status"] == "INVALID" and "is wider than the open scan's" in wide["message"], wide
     # THE DEBUGGER'S OWN COUNT after the refused filter: a filter that does not close prints
     # it, so this is the check that a refusal did not move it, which the server's arithmetic
     # on the close could not show.
-    again = cast(dict[str, Any], server.scan_filter(operator="=", value=0))
+    again = cast(dict[str, Any], server.scan("filter", operator="=", value=0))
     assert again["iterations"] == kept["iterations"] + 1, (kept["iterations"], again)
-    gone = cast(dict[str, Any], server.scan_filter(operator="!", value=0))
+    gone = cast(dict[str, Any], server.scan("filter", operator="!", value=0))
     assert gone["status"] == "ok" and gone["closed"] is True and gone["hits_total"] == 0, gone
     # THE CLOSING LINE CARRIES NO COUNT, so the server's own: one past the last it read (the
     # refused filter above reached no count).
     assert gone["iterations"] == again["iterations"] + 1, (again["iterations"], gone)
-    nothing = cast(dict[str, Any], server.scan_clear())
+    nothing = cast(dict[str, Any], server.scan("clear"))
     assert nothing["status"] == "ok" and nothing["cleared"] is False, nothing
-    orphan = cast(dict[str, Any], server.scan_filter(operator="=", value=0))
-    assert orphan["status"] == "INVALID" and "scan_start" in orphan["message"], orphan
-    reopened = cast(dict[str, Any], server.scan_start(ref="0000:00000400", length=16))
+    orphan = cast(dict[str, Any], server.scan("filter", operator="=", value=0))
+    assert orphan["status"] == "INVALID" and 'scan(method="start")' in orphan["message"], orphan
+    reopened = cast(dict[str, Any], server.scan("start", ref="0000:00000400", length=16))
     assert reopened["status"] == "ok", reopened
-    cleared = cast(dict[str, Any], server.scan_clear())
+    cleared = cast(dict[str, Any], server.scan("clear"))
     assert cleared["status"] == "ok" and cleared["cleared"] is True, cleared
 
 
@@ -1582,14 +1583,14 @@ def test_a_filter_with_no_value_compares_with_the_scan_as_it_opened() -> None:
     reset vector, written here, so every value is known."""
     start_ok(session_seconds=90)
     assert server.write(ref="0050:0200", data_hex="1111111122222222")["verified"] is True
-    opened = cast(dict[str, Any], server.scan_start(ref="0050:0200", length=8, cell_bytes=4))
+    opened = cast(dict[str, Any], server.scan("start", ref="0050:0200", length=8, cell_bytes=4))
     assert opened["hits_total"] == 2, opened
     server.write(ref="0050:0200", data_hex="33333333")
-    once = cast(dict[str, Any], server.scan_filter(operator="!"))
+    once = cast(dict[str, Any], server.scan("filter", operator="!"))
     assert once["hits_total"] == 1 and once["hits"][0]["seg_off"] == "0050:00000200", once
-    still = cast(dict[str, Any], server.scan_filter(operator="!"))
+    still = cast(dict[str, Any], server.scan("filter", operator="!"))
     assert still["hits_total"] == 1 and still["iterations"] == once["iterations"] + 1, still
     server.write(ref="0050:0200", data_hex="11111111")
-    back = cast(dict[str, Any], server.scan_filter(operator="!"))
+    back = cast(dict[str, Any], server.scan("filter", operator="!"))
     assert back["closed"] is True and back["hits_total"] == 0, back
     assert back["iterations"] == still["iterations"] + 1, back

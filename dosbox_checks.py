@@ -1,6 +1,6 @@
 """The argument checks a step passes BEFORE any step runs: one registry, by operation name,
 pointing at the SAME functions each tool runs first when it is called on its own. The check is
-per tool, so a tool no batch dispatches (`find`, `scan_start`, `debug`) has its entry too.
+per tool, so a tool no batch dispatches (`find`, `scan(method="start")`, `debug`) has its entry too.
 
 A batch (`perform`, `start(plan=)`, `drive`'s act) is a list of the server's own operations,
 and a value that one of them would refuse mid-list (a key name no route knows, a pattern that
@@ -109,12 +109,12 @@ def comment_text(text: object) -> None:
         raise ds.Invalid("bad_argument", f"a comment's text {fault}")
 
 
-def _comment_add(ref: object, text: object, **_: Any) -> None:
+def check_add_comment(ref: object, text: object, **_: Any) -> None:
     comment_ref(ref)
     comment_text(text)
 
 
-def _comment_delete(ref: object, **_: Any) -> None:
+def check_delete_comment(ref: object, **_: Any) -> None:
     comment_ref(ref)
 
 
@@ -138,11 +138,11 @@ def clear_scope(ref: str = "", all: bool = False, **_: Any) -> None:
                          "an empty ref clears nothing: name one, or `all=True` to clear every one")
 
 
-def _comment_save(dest: object, **_: Any) -> None:
+def check_save_comments(dest: object, **_: Any) -> None:
     paths.absolute("dest", dest)
 
 
-def _comment_load(path: object, **_: Any) -> None:
+def check_load_comments(path: object, **_: Any) -> None:
     paths.absolute("path", path)
 
 
@@ -206,15 +206,15 @@ def _send_mouse(x: int | None = None, y: int | None = None, button: str = "",
                        target or None)
 
 
-def _map_load(path: str = "", **_: Any) -> None:
+def check_load_map(path: str = "", **_: Any) -> None:
     screen_map.check_path("path", path)
 
 
-def _map_add(screen: str = "", match: Any = None, controls: Any = None, **_: Any) -> None:
+def check_add_map(screen: str = "", match: Any = None, controls: Any = None, **_: Any) -> None:
     screen_map.check_add(screen, match, controls)
 
 
-def _map_save(dest: str = "", overwrite: bool = False, **_: Any) -> None:
+def check_save_map(dest: str = "", overwrite: bool = False, **_: Any) -> None:
     screen_map.check_save(dest, overwrite)
 
 
@@ -375,12 +375,12 @@ def _find(ref: str, data_hex: str, length: int, **_: Any) -> None:
     finder.check_find_length(length, finder.check_pattern(data_hex))
 
 
-def _scan_start(ref: str, length: int, cell_bytes: int = 1, **_: Any) -> None:
+def check_start_scan(ref: str, length: int, cell_bytes: int = 1, **_: Any) -> None:
     address_shape(ref)
     finder.check_scan_range(length, cell_bytes)
 
 
-def _scan_filter(operator: str = "=", value: object = None, **rest: Any) -> None:
+def check_filter_scan(operator: str = "=", value: object = None, **rest: Any) -> None:
     # The default is read at the call: importing `dosbox_find` reaches this module (through
     # `dosbox_dump`), so its names are not there yet while this one is being defined.
     finder.check_filter(operator, None if value is None else number("value", value),
@@ -393,7 +393,7 @@ def _machine_map(sections: list[str] | None = None, dest: str = "", **_: Any) ->
         paths.fresh_dest("dest", dest)
 
 
-def _state(name: str, seconds: float = ds.STATE_WAIT_S, **_: Any) -> None:
+def check_state(name: str, seconds: float = ds.STATE_WAIT_S, **_: Any) -> None:
     dlaunch.check_state_name(name)
     vocab.check_wait(seconds)
 
@@ -574,6 +574,15 @@ def _debug(command: object, **_: Any) -> None:
             f"stop before it. Release through {instead}: it reports the stop it reaches")
 
 
+def _folded(name: str) -> Check:
+    """A fold's judge (`dosbox_folds.CHECKS`), read at the call: that module takes each
+    method's judge from this one."""
+    def check(**given: Any) -> None:
+        import dosbox_folds
+        dosbox_folds.CHECKS[name](**given)
+    return check
+
+
 # The registry: an operation with no entry has nothing to judge before its step (it takes
 # no values, or every value it takes needs the machine).
 BY_OP: dict[str, Check] = {
@@ -586,19 +595,16 @@ BY_OP: dict[str, Check] = {
     "memdump": _memdump,
     "write": _write, "set_register": _set_register,
     "symbols_load": _symbols_load, "symbols_find": _symbols_find,
-    "capture_frame": _capture_frame, "find": _find, "scan_start": _scan_start,
+    "capture_frame": _capture_frame, "find": _find,
     "debug": _debug, "interrupt_vectors": _interrupt_vectors,
     "palette": _palette, "screen_view": _screen_view, "screen_wait": _screen_wait,
     "screen_signature": _screen_signature, "series_capture": media.check_series_capture,
     # The media file tools' judges are scry-core's, beside their bodies.
     **{name: media_tools.TOOLS[name].check for name in media.MEDIA_TOOLS},
-    "snapshot": _snapshot, "scan_filter": _scan_filter, "state_save": _state,
-    "state_load": _state, "perform": _perform, "drive": _drive, "start": _start,
-    "comment_add": _comment_add, "comment_delete": _comment_delete,
-    "comment_save": _comment_save, "comment_load": _comment_load,
-    "breakpoint_clear": clear_scope, "watch_clear": clear_scope,
+    "snapshot": _snapshot, "perform": _perform, "drive": _drive, "start": _start,
     "machine_map": _machine_map,
-    "map_load": _map_load, "map_save": _map_save, "map_add": _map_add,
+    **{name: _folded(name) for name in ("declaration_list", "declaration_clear", "comment_write",
+                                        "map_write", "scan", "state_write")},
 }
 
 #: The two tools whose steps ARE the calls: a list, and one act with its expectation.
@@ -610,14 +616,13 @@ SEQUENCES = frozenset({"perform", "drive"})
 NOT_STEPS = SEQUENCES | {"build_check", "start", "close", "perform_export"}
 
 #: TOOLS DELIBERATELY WITHOUT AN ENTRY, named so an absent entry and a forgotten one cannot look
-#: alike. They take no argument at all (`status`, `stop`, `scan_clear`, `state_list`,
-#: `breakpoint_list`, `watch_list`, `captures`, `call_stack`, `comment_list`, `map_find`); or a
+#: alike. They take no argument at all (`status`, `stop`, `state_list`, `captures`,
+#: `call_stack`, `comment_list`, `map_find`); or a
 #: flag every value of which is valid (`registers`); or they are no step
 #: and have no half here (`build_check`'s binary and `perform_export`'s `dest`, judged by their
 #: bodies first; `close`).
 MACHINE_JUDGES = frozenset({
-    "status", "stop", "registers", "scan_clear", "state_list", "breakpoint_list",
-    "watch_list", "captures", "call_stack", "comment_list",
+    "status", "stop", "registers", "state_list", "captures", "call_stack", "comment_list",
     "map_find",
 }) | (NOT_STEPS - BY_OP.keys())
 

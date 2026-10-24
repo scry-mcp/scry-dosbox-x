@@ -9,19 +9,14 @@
 set_register(name, value)
 ```
 
-Write one register, READ IT BACK off the pane, and mark the session `altered` for
-good: every later reading is of a forced state, and the flag on every reply is how a reader
-three questions later knows. `name` is a register the debugger's `SR` takes (`eax`, `ax`,
-`ip`, ...); `value` is an integer or a `0x` hex string within the register's width, refused
-before anything is sent when negative or wider. Needs the machine stopped.
+Write one register and read it back off the pane; marks the session `altered`. Needs the
+machine stopped.
 
-Reply: `register` (the name as `SR` takes it), `regs` (the pane after the write), `value`
-(what was sent) and `readback` (the register asked for as the pane shows it now), both `0x`
-at the register's own width (eight digits for a 32-bit name, four for a segment register,
-and four for a 16-bit name, read as the low half of its 32-bit register, `ax` in `EAX`),
-`verified` (readback equals what was sent; false is not always a failure: a register the
-debugger masks is doing its job). INVALID when no pane, or a pane without that register,
-came back to read.
+`name` is a register the debugger's `SR` takes (`eax`, `ax`, `ip`); a negative or too wide
+`value` is refused unsent.
+
+Reply: `register`, `regs`, `value`, `readback` (both `0x` at the register's width),
+`verified`. INVALID when no pane came back.
 
 | argument | type | default |
 |---|---|---|
@@ -74,6 +69,12 @@ Example, from a live run:
 ```
 <!-- scry-reference:end set_register -->
 
+**Why the session stays `altered`.** Every later reading is of a forced state, and the flag on each reply is how a reader several questions later knows.
+
+**Why a 16-bit name reads four digits.** It is read as the low half of its 32-bit register (`ax` in `EAX`).
+
+**Why `verified: false` is not always a failure.** A register the debugger masks is doing its job.
+
 <!-- scry-reference:begin write -->
 ## `write`
 
@@ -83,20 +84,13 @@ Example, from a live run:
 write(ref, data_hex)
 ```
 
-Write bytes at a SYMBOL or a `SEG:OFF` and READ THEM BACK. MODIFIES the machine:
-every later reply says so in `altered`.
+Write bytes at a symbol or `SEG:OFF` and read them back. Modifies the machine; needs it
+stopped.
 
-`data_hex` is whole hex bytes, two digits each, up to 128 (the data view's reach for the
-readback; a region is not a write). The bytes go through the debugger's `SM` and the
-range is read back off the data view. Needs the machine stopped; an absent or ambiguous
-symbol is refused.
+`data_hex` is whole hex bytes, up to 128. An absent or ambiguous symbol, and a
+real-mode ROM address, are refused unsent.
 
-Reply: `ref`, `seg_off`, `bytes_written` (sent), `readback` (hex read back from
-the same range), `verified` (readback equals what was sent). `verified: false` is not
-always a failure: a memory-mapped register answers what it answers; for RAM the read-back
-differs from what was sent (the write did not land, or the view did not repaint). A
-real-mode address in the ROM range is REFUSED with nothing sent: the debugger's `SM` into
-ROM ends the emulator instead of writing.
+Reply: `ref`, `seg_off`, `bytes_written`, `readback`, `verified`.
 
 | argument | type | default |
 |---|---|---|
@@ -133,3 +127,9 @@ Example, from a live run:
 }
 ```
 <!-- scry-reference:end write -->
+
+**Why ROM is refused.** The debugger's `SM` into ROM ends the emulator instead of writing.
+
+**Why `verified: false` is not always a failure.** A memory-mapped register answers what it answers; for RAM the write did not land or the view did not repaint.
+
+**Why the width is bounded.** `the read ceiling` is the data view's reach for the readback; a region is not a write.

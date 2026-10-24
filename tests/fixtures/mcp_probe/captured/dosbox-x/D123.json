@@ -2,27 +2,103 @@
  "task": {
   "id": "D123",
   "prompt": "Clear every breakpoint this session has declared, whatever it is.",
-  "tool": "breakpoint_clear",
+  "tool": "declaration_clear",
   "args": {
+   "kind": "breakpoint",
    "all": true
-  }
+  },
+  "grammar": [
+   "breakpoint"
+  ]
  },
  "runs": [
   {
    "lines": [
-    "D123: {\"tool\": \"breakpoint_clear\", \"args\": {\"all\": true}}"
+    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D123: {\"tool\": \"breakpoint_clear\", \"args\": {\"all\": true}}"
+    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D123: {\"tool\": \"breakpoint_clear\", \"args\": {\"all\": true}}"
+    "D123: {\"tool\":\"declaration_clear\",\"args\":{\"kind\":\"breakpoint\",\"all\":true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D123: {\"tool\":\"declaration_clear\",\"args\":{\"kind\":\"breakpoint\",\"all\":true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D123: {\"tool\": \"declaration_clear\", \"args\": {\"kind\": \"breakpoint\", \"all\": true}}"
    ],
    "right": true
   }

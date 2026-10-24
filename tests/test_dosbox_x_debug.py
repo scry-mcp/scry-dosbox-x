@@ -43,6 +43,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
 
+import fold_calls
 import pytest
 from scry_core import log_wait as core_wait
 from scry_core import progress as mprogress
@@ -984,7 +985,7 @@ def test_the_tools_hand_the_sessions_own_answer_back_whole(
         args["pattern"] = "start version"
     else:
         dstate.STATE.session = cast(ds.Session, Debugger(panes))
-    reply = cast(dict[str, Any], getattr(server, tool)(**args))
+    reply = cast(dict[str, Any], fold_calls.of(server, tool)(**args))
     assert reply["status"] == "ok", reply
     missing = TOOL_FIELDS[tool] - set(reply)
     assert not missing, f"{tool} dropped {sorted(missing)} on the way through _answer"
@@ -2701,7 +2702,7 @@ def test_an_expiry_consults_the_debugger_before_saying_still_running(
 
 
 def test_a_resume_reads_only_what_the_f5_produced_not_the_previous_ops_repaint() -> None:
-    """A plan of `breakpoint_clear` + `breakpoint_at` + `resume` would bring
+    """A plan of `declaration_clear(kind="breakpoint")` + `breakpoint_at` + `resume` would bring
     "Breakpoint list:" seven times in the resume's `screen`, because the delta begins
     where the last READ left the terminal and the console ops before it leave their
     repaints unconsumed. The worse half: a console op's repaint ENDS with the debugger's

@@ -45,21 +45,93 @@
  "runs": [
   {
    "lines": [
-    "D51: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"], \"expect\": \"^MENU\", \"seconds\": 12}, {\"op\": \"log\", \"pattern\": \"MENU|KEY\", \"channel\": \"guest\", \"limit\": 30}], \"settle_seconds\": 18}}"
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D51: {\"tool\":\"drive\",\"args\":{\"act\":[{\"op\":\"send_keys\",\"keys\":[\"enter\"]}],\"expect\":\"^MENU\",\"seconds\":12,\"pattern\":\"MENU|KEY\",\"limit\":30,\"settle_seconds\":18}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D51: {\"tool\":\"drive\",\"args\":{\"act\":[{\"op\":\"send_keys\",\"keys\":[\"enter\"]}],\"expect\":\"^MENU\",\"seconds\":12,\"pattern\":\"MENU|KEY\",\"limit\":30,\"settle_seconds\":18}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"], \"settle_seconds\": 18}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
    ],
    "right": false
-  },
-  {
-   "lines": [
-    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D51: {\"tool\": \"drive\", \"args\": {\"act\": [{\"op\": \"send_keys\", \"keys\": [\"enter\"]}], \"expect\": \"^MENU\", \"seconds\": 12, \"pattern\": \"MENU|KEY\", \"limit\": 30, \"settle_seconds\": 18}}"
-   ],
-   "right": true
   }
  ]
 }

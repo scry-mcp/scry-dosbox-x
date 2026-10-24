@@ -131,7 +131,8 @@ class State:
         # (`dosbox_declarations.raw_staleness`). Dropped with the table.
         self.map_batches: list[dec.Build] = []
         self.start_seq = 0     # starts in this process, so two within one second differ
-        # THE SCREEN MAPS, for the life of the server: the file layer a `map_load` read stays
+        # THE SCREEN MAPS, for the life of the server: the file layer a `map_write(method="load")`
+        # read stays
         # across sessions, the session layer and the last identification go with a `start`.
         self.maps = screen_map.Maps()
 
@@ -183,7 +184,8 @@ class State:
         # prints none, so the closing reply is this plus one. None when no scan this server
         # opened or filtered is open.
         self.scan_iterations: int | None = None
-        # THE OPEN SCAN'S CELL, in bytes, recorded when `scan_start` opens it: a filter value
+        # THE OPEN SCAN'S CELL, in bytes, recorded when `scan(method="start")` opens it: a filter
+        # value
         # wider than the cell is refused before `MEMS` is typed. None when no scan this server
         # opened is open.
         self.scan_cell_bytes: int | None = None

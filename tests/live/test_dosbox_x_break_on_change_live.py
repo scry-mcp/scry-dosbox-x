@@ -48,9 +48,10 @@ def test_a_real_mode_change_watch_stops_the_machine_when_the_memory_changes(
     assert "caveat" not in w, w
 
     # Clear the walk's interrupt breakpoint (reach_realmode left INT 21 armed), so the only
-    # thing that can stop the next resume is the change-watch. breakpoint_clear takes the
+    # thing that can stop the next resume is the change-watch. declaration_clear breakpoint takes
+    # the
     # interrupt family too now.
-    server.breakpoint_clear(all=True)
+    server.declaration_clear("breakpoint", all=True)
 
     out = cast(dict[str, Any], server.resume())
     assert out["status"] == "ok", out

@@ -167,14 +167,14 @@ drive(act=[{"op": "send_keys", "keys": ["right"], "expect": "KEY R", "seconds": 
 ```
 
 ```
-state_save(name="bricks")
+state_write(method="save", name="bricks")
 -> {
   "name": "bricks"
 }
 ```
 
 ```
-state_load(name="bricks")
+state_write(method="load", name="bricks")
 -> {
   "name": "bricks"
 }

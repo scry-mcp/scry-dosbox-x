@@ -8,7 +8,6 @@ from scry_core import docs, judges, log_marks, picture, recording, screen_map, s
 from scry_core import vocabulary as vocab
 
 import dosbox_checks as checks
-import dosbox_code as code
 import dosbox_comment_file as comment_file
 import dosbox_console as console
 import dosbox_inputs as inputs
@@ -28,11 +27,10 @@ STOP_FIELDS = (
 DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES,
               **recording.DOC_VALUES,
               "STOP_FIELDS": STOP_FIELDS,
-              "DROPPED_SHOWN": str(recording.DROPPED_SHOWN),
               "RECORD_MAX": str(sequence.RECORD_MAX),
               **log_marks.DOC_VALUES,
               "LOG_LIMIT_MAX": str(logs.LOG_LIMIT_MAX), "WAIT_MAX_S": f"{vocab.WAIT_MAX_S:g}",
-              "READ_MAX": str(console.DATA_VIEW_BYTES), "DISASM_MAX": str(code.LENGTH_MAX),
+              "READ_MAX": str(console.DATA_VIEW_BYTES),
               "CHANGE_WATCH_MAX": str(checks.CHANGE_WATCH_MAX),
               "INSTRUCTIONS_MAX": str(trace.INSTRUCTIONS_MAX),
               "SYMBOLS_LIMIT_MAX": str(placement.SYMBOLS_LIMIT_MAX),
@@ -41,7 +39,6 @@ DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES
               "SETTLE_S": f"{sequence.SETTLE_DEFAULT_S:g}",
               "EFFECT_WAIT_S": f"{inputs.EFFECT_WAIT_DEFAULT_S:g}",
               "KEYS_MAX": str(inputs.MAX_KEYS_PER_CALL),
-              "SESSION_MAX_S": str(launch.MAX_SECONDS),
               "INPUT_PORT_MIN": str(launch.INPUT_PORT_MIN),
               "INPUT_PORT_MAX": str(launch.INPUT_PORT_MAX),
               "STATE_NAME_MAX": str(launch.STATE_NAME_MAX),
@@ -49,8 +46,7 @@ DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES
               "DEBUG_TEXT_KEEP": str(st.DEBUG_TEXT_KEEP),
               "DETAIL_TEXT_KEEP": str(st.DETAIL_TEXT_KEEP),
               "SCREEN_TEXT_MAX": str(checks.SCREEN_TEXT_MAX),
-              "SYMBOLS_SHOWN": str(trace.SYMBOLS_SHOWN),
-              "ROWS_SHOWN": str(st.ROWS_SHOWN)}
+              "SYMBOLS_SHOWN": str(trace.SYMBOLS_SHOWN)}
 
 
 def filled(name: str, doc: str) -> str:

@@ -63,7 +63,7 @@ def test_a_pointer_watch_is_resolved_when_armed_and_the_reply_says_through_what(
     out = server.watch_add(ref="_g_engine->sync_delta", mode="show")
     assert out["status"] == "ok", out
     assert out["fmt"] == "i16" and out["length"] == 2 and out["pointer"]["field"] == "sync_delta"
-    listed = {w["ref"]: w for w in server.watch_list()["watches"]}
+    listed = {w["ref"]: w for w in server.declaration_list("watch")["watches"]}
     assert listed["_g_engine->sync_delta"]["pointer"]["target"] == f"00AF:{HEAP + 4:08X}"
     # An explicit `SEG:OFF` as the base, and a real-mode machine reads a two-byte pointer.
     out = server.watch_add(ref="[00AF:1000]", mode="show", length=4)
@@ -90,7 +90,7 @@ def test_a_pointer_watch_is_re_resolved_at_every_stop_and_a_change_watch_follows
     (w,) = arming.evaluate_watches(fake)  # type: ignore[arg-type]
     assert "moved" not in w
     # A SHOW watch through the pointer reads where it points NOW.
-    server.watch_clear(ref="_g_engine->sync_delta")
+    server.declaration_clear("watch", ref="_g_engine->sync_delta")
     server.watch_add(ref="_g_engine->sync_delta", mode="show")
     (w,) = arming.evaluate_watches(fake)  # type: ignore[arg-type]
     assert w["state"] == "evaluated" and w["value"] == 9, w
@@ -192,7 +192,7 @@ def test_a_class_on_the_pointer_type_is_the_siblings_and_changes_nothing_here(
     fake = _pointing(tmp_path)
     plain = server.watch_add(ref="_g_engine->sync_delta", mode="show")
     assert plain["status"] == "ok", plain
-    server.watch_clear(all=True)
+    server.declaration_clear("watch", all=True)
     dstate.STATE.symbol_types.update(
         {"_G_ENGINE": "ptr32@DATA{rate:u32,sync_delta:i16,flags:u8}"})
     typed = server.watch_add(ref="_g_engine->sync_delta", mode="show")
@@ -211,8 +211,8 @@ def test_an_address_inside_a_pointer_ref_matches_in_any_spelling_too(tmp_path: P
     first = server.watch_add(ref="[00AF:1000]", mode="show", length=4)
     assert first["status"] == "ok", first
     again = server.watch_add(ref="[00af:1000]", mode="show", length=4)
-    assert again["already_stored"] is True and again["ref"] == "[00AF:1000]", again
-    assert server.watch_clear(ref="[ 0af:1000 ]")["declarations_cleared"] == 1
+    assert again.get("already_stored", False) is True and again["ref"] == "[00AF:1000]", again
+    assert server.declaration_clear("watch", ref="[ 0af:1000 ]")["declarations_cleared"] == 1
     assert dec.canonical_ref("_g_engine->sync_delta", "pointer") == "_g_engine->sync_delta"
 
 

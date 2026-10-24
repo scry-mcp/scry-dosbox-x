@@ -221,7 +221,8 @@ def resolve_ref(decl: dec.Declaration, reg: str, session: ds.Session, *,
     if decl.by == "address":
         # A STORED ADDRESS THE PARSER REFUSES IS A STATE, NOT A WEDGE: the file is the one
         # input the tools never validated (a hand edit, an older format), and raising here
-        # made `breakpoint_list` and every `breakpoint_clear` die on that one row, so nothing
+        # made `declaration_list(kind="breakpoint")` and every
+        # `declaration_clear(kind="breakpoint")` die on that one row, so nothing
         # could list or remove it. `unarmable` with the parser's words lets both work.
         try:
             seg, off = parse_seg_off(decl.ref)

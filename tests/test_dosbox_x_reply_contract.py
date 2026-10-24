@@ -17,6 +17,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
+import fold_calls
 import pytest
 from scry_core import media_tools
 from scry_core import reply_contract as contract
@@ -33,20 +34,15 @@ SOURCES = sorted(p for p in PACKAGE.glob("*.py") if p.name != "mapsweep.py")
 # The arguments a tool needs to be CALLED at all; the gate refuses before any is judged.
 _ARGS: dict[str, dict[str, Any]] = {
     "series_capture": {"at_frames": [0]},
-    "map_load": {"path": "/nonexistent/x.scry-map.json"},
-    "map_save": {"dest": "/nonexistent/x.scry-map.json"},
-    "map_add": {"screen": "s", "match": [[0, 0, 1, 1]]},
-    "image_diff": {"a": "/nonexistent/a.png", "b": "/nonexistent/b.png"},
-    "series_diff": {"a": "/nonexistent/a.json", "b": "/nonexistent/b.json"},
-    "region_track": {"manifest": "/nonexistent/m.json"},
-    "golden_check": {"manifest": "/nonexistent/m.json", "checksums": "/nonexistent/g.sha256"},
+    "map_write": {"method": "save", "dest": "/nonexistent/x.scry-map.json"},
+    "image_compare": {"method": "image", "a": "/nonexistent/a.png", "b": "/nonexistent/b.png"},
     "start": {"conf": "/nonexistent.conf", "cwd": "rel", "session_seconds": 10},
     "log": {"pattern": ".", "channel": "guest"},
-    "breakpoint_clear": {"all": True}, "watch_clear": {"all": True},
+    "declaration_clear": {"kind": "watch", "all": True},
     "log_wait": {"pattern": ".", "channel": "guest", "seconds": 0.01},
     "memdump": {"ref": "0100:0000", "length": 16, "dest": "/nonexistent-dir/dump.bin"},
     "find": {"ref": "0100:0000", "length": 16, "data_hex": "00"},
-    "scan_start": {"ref": "0100:0000", "length": 16},
+    "scan": {"method": "start", "ref": "0100:0000", "length": 16},
     "read_memory": {"ref": "0100:0000"},
     "disassemble": {"ref": "0100:0000"},
     "call_stack": {},
@@ -65,15 +61,11 @@ _ARGS: dict[str, dict[str, Any]] = {
     "send_keys": {"keys": ["enter"]},
     "send_mouse": {"button": "left"},
     "capture_frame": {"frame": 1, "dest": "/nonexistent-dir/x.png"},
-    "state_save": {"name": "x"},
-    "state_load": {"name": "x"},
+    "state_write": {"method": "load", "name": "x"},
     "perform": {"steps": [{"op": "status"}]},
     "perform_export": {"dest": "/nonexistent/session.json"},
     "drive": {"act": [{"op": "status"}], "pattern": "."},
-    "comment_add": {"ref": "x", "text": "t"},
-    "comment_delete": {"ref": "x"},
-    "comment_save": {"dest": "/tmp/dosbox-x-contract-never-written.comments.tsv"},
-    "comment_load": {"path": "/nonexistent.comments.tsv"},
+    "comment_write": {"method": "add", "ref": "x", "text": "t"},
 }
 
 
@@ -93,15 +85,14 @@ def test_every_tool_answers_the_contract_with_no_machine(
     monkeypatch.setattr(shutil, "which", lambda name: None)
     # NO MACHINE IS THIS CASE'S PREMISE, set here rather than inherited from the case before it.
     monkeypatch.setattr(dstate.STATE, "session", None)
-    reply = getattr(server, name)(**_ARGS.get(name, {}))
+    reply = fold_calls.of(server, name)(**_ARGS.get(name, {}))
     if name in ("status", "close"):
         assert reply["status"] == "ok" and "code" not in reply and "message" not in reply, reply
         return
     # A media file tool needs no machine: it refuses the missing file it was handed. A map's
-    # file tools need none either: a load refuses the missing file, a save the empty map.
+    # file methods need none either: a save refuses the empty map.
     expected = {"start": "bad_argument", "build_check": "host_failed",
-                "perform_export": "bad_argument", "map_load": "bad_argument",
-                "map_save": "needs_call",
+                "perform_export": "bad_argument", "map_write": "needs_call",
                 **dict.fromkeys(media_tools.IMAGE_TOOLS, "bad_argument")}.get(name, "no_session")
     contract.check_refusal(name, reply, expected)
 
@@ -137,16 +128,15 @@ class _Running:
 # The readers whose FIRST gate is the machine. `breakpoint_interrupt` asks the declaration
 # store first and `symbols_load` reads its file first, by their own contracts, so a running
 # machine is not the refusal they answer with here.
-_READERS = ["registers", "read_memory", "memdump", "find", "scan_start", "scan_filter",
-            "scan_clear", "debug", "step", "run_to", "run_for", "trace", "write",
-            "set_register"]
+_READERS = ["registers", "read_memory", "memdump", "find", "scan", "debug", "step", "run_to",
+            "run_for", "trace", "write", "set_register"]
 
 
 @pytest.mark.parametrize("name", _READERS)
 def test_every_reader_refuses_a_running_machine_with_the_contract(name: str) -> None:
     """THE SECOND GATE: `not_stopped`, with the two context fields beside the envelope."""
     dstate.STATE.session = _Running()  # type: ignore[assignment]
-    reply = getattr(server, name)(**_ARGS.get(name, {}))
+    reply = fold_calls.of(server, name)(**_ARGS.get(name, {}))
     contract.check_refusal(name, reply, "not_stopped")
     assert "last_stop" in reply and "answers_while_running" in reply, reply
 

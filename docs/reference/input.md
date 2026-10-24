@@ -30,24 +30,16 @@ The stub announces itself on the E9 (`STUB  . inject device=present proto=3`), a
 send_keys(keys, modifiers=null, expect="", seconds=null)
 ```
 
-Send KEYSTROKES into the RUNNING guest, inside the machine, and, with `expect`, PROVE
-the program took them. The wait for the reaction reports its progress.
+Send keystrokes to the running guest; with `expect`, prove the program took them.
 
-Arguments: `keys`, key names (`a`, `1`, `enter`, `esc`, `space`, `up`, `f1`..`f12`,
-punctuation names), at most 64 per call; `modifiers` (`shift`, `ctrl`, `alt`), held
-across them; `expect`, a regex over the guest's E9 log that only the program's REACTION
-writes, waited for up to `seconds` (default 10).
+`keys`: at most 64. `expect`: a regex over the E9 log the program's
+reaction writes, waited up to `seconds` (default 10).
 
-Refused before anything is sent: an unknown key or modifier name; `seconds` without
-`expect`; a machine stopped at the debugger (the keys would land at the next resume); a
-guest whose log shows no stub announce, or an older stub (`no_channel`, naming the conf
-line); with no `logfile` there is no announce to read and the keys go out.
+Refused: an unknown key or modifier, `seconds` without `expect`, a stopped machine, no
+stub (`no_channel`).
 
-Reply: `route: "guest"`, `posted`, `bytes`, `ticks`, and `verify`: `verdict` `TARGET`
-with `seen`, `line`, `waited_s`, `seen_before_waiting`, `lines_before`, `lines_total`, or
-`TIMEOUT` (a miss, the program did not react) with `arrived_during` and a `note`; or
-`checked: false` with no `expect`. A stop that lands DURING the wait is INVALID
-(`wait_stopped`) with `last_stop`. Timing is "now", on a running guest.
+Reply: `route`, `posted`, `bytes`, `ticks`, `verify` (`verdict` `TARGET` or `TIMEOUT`,
+`seen`).
 
 Reference: REFERENCE.md, Input and the screen.
 
@@ -170,6 +162,8 @@ Example, from a live run:
 
 `send_keys` composes scan code set 1 on the host; a DOS keyboard has no command key, and `cmd` is refused by name. The 64-key ceiling is because every scan byte waits a timer tick under the session's lock. A key sent to a stopped machine is refused because the bytes would land, unannounced, at the next resume.
 
+A stop during the `expect` wait is INVALID (`wait_stopped`) with `last_stop`. `verify` also carries `line`, `note`, `waited_s`, `seen_before_waiting`, `lines_before`, `lines_total` and, on a `TIMEOUT`, `arrived_during`; `checked: false` when no `expect` was given. With no `logfile` there is no stub announce to read, so the keys go out unchecked.
+
 <!-- scry-reference:begin send_mouse -->
 ## `send_mouse`
 
@@ -179,33 +173,18 @@ Example, from a live run:
 send_mouse(x=null, y=null, button="", action="click", units="screen", expect="", seconds=null, target="")
 ```
 
-Move the guest's MOUSE POINTER and press its buttons, inside the machine, and read the
-pointer back. With `expect`, PROVE the program reacted, as `send_keys` does.
+Move the guest's mouse pointer, press buttons, and read the pointer back; `expect`
+proves the program reacted, as in `send_keys`.
 
-`x`, `y`: where the pointer goes, both or neither, in `units`: `screen` (default), the
-screen's own units as `screen_view` counts them (character cells in a text mode, pixels in
-a graphics one; the standard BIOS modes), or `mouse`, the DOS driver's own coordinates (for
-a VESA or custom mode). `target`: instead of `x`, `y`, a control of the screen the latest
-`map_find` matched, its centre in `screen` units. `button` and `action` (`double`: two
-clicks a tick apart; a drag is `down`, a move, `up`). A button with no `x`, `y` acts where the
-pointer is, so `down` alone holds it for the calls that follow. A move and a button in one
-call: the move goes first.
+`x`, `y`: both or neither, in `units`. `target`: a control of the latest `map_find` screen,
+instead of `x`, `y`. A drag is `down`, a move, `up`.
 
-Refused before anything is sent: no move and no button, half a move, a place off the
-screen or outside the driver's range, `screen` units in a mode this server does not map, a
-stopped machine, no stub (with no `logfile` there is no announce to read and the mouse goes in).
-A `target` beside `x`, `y` or `units="mouse"` (`bad_argument`); no `map_find` match since
-the start, or a guest no longer showing that screen's kind and size (`needs_call`); a
-control that screen lacks (`unknown_ref`).
+Refused: no move and no button, half a move, a place off the screen, a stopped machine, no
+stub; `target` beside `x`, `y` or `units="mouse"` (`bad_argument`); no `map_find` match
+(`needs_call`); an unknown control (`unknown_ref`).
 
-Reply: `route` (`guest`), `pointer` read back (`screen` with `x`, `y`,
-`width`, `height`, or unavailable in an unmapped mode; `mouse` with the driver's `x`, `y`,
-`max_x`, `max_y`; `buttons` held; `bios_mode`), `arrived` (the read-back is where it was
-asked; when it is not, `asked` says where in the driver's coordinates: a text mode snaps to
-its cell, a program's own range clamps), the arguments, `verify` as `send_keys`'; with a
-`target`, `target`, `screen` and `identified_at_stop` (`map_find`'s stop). A
-read-back that fails after the commands went in is INVALID with `delivered: true`, so
-nothing is sent twice.
+Reply: `route`, `pointer`, `arrived` (else `asked`), `verify`; with `target`: `target`,
+`screen`, `identified_at_stop`.
 
 Reference: REFERENCE.md, Input and the screen.
 
@@ -285,6 +264,8 @@ Example, from a live run:
 
 `target` is explained in [Screen maps](files.md#screen-maps).
 
+`pointer` carries `screen` (`x`, `y`, `width`, `height`; unavailable in an unmapped mode), `mouse` (`x`, `y`, `max_x`, `max_y`), `buttons`, `bios_mode`. `arrived` is false when a text mode snaps to its cell or a program's own range clamps; `asked` then gives the driver coordinates. `screen` units are character cells in a text mode and pixels in a graphics one. `double` is two clicks a tick apart; a button with no `x`, `y` acts where the pointer is, and a move and a button in one call move first. A read-back that fails after the commands went in is INVALID with `delivered: true`, so nothing is sent twice. With no `logfile` the mouse goes in unchecked.
+
 <!-- scry-reference:begin drive -->
 ## `drive`
 
@@ -294,33 +275,19 @@ Example, from a live run:
 drive(act, expect="", seconds=null, pattern=".", limit=40, settle_seconds=30.0, summaries=false)
 ```
 
-LOOK, ACT, VERIFY in one call: the way a browser is driven, for a DOS program. The
-waits inside (for a stop between steps, for `expect`) report their progress.
+Look, act and verify in one call. Marks the E9 log, runs `act` (steps in `perform`'s
+vocabulary), then with `expect` waits up to `seconds` (default 5, at most
+600) for a new matching line. Needs a `logfile`.
 
-The E9 log is MARKED first; `act` (a list of steps in `perform`'s vocabulary, typically
-`send_keys`/`send_mouse` each with its own `expect`) runs with `perform`'s rules; with
-`expect` (a regex; empty for none) the call then waits up to `seconds` (default
-5, at most 600) for a NEW matching line from that mark, the act's
-overall effect; and `looked.guest` is what the guest wrote since the mark, filtered by
-`pattern` (a regex) and cut to the LAST `limit`: `pattern`
-only filters what is SHOWN and proves nothing, so it is never the `expect`. An act that
-ended stopped at the debugger has the log read once, not waited on: a stopped guest cannot
-write. `settle_seconds` and `summaries` are `perform`'s. `seconds` with no `expect` is
-refused. Needs a session with `logfile`.
+`pattern` and `limit` only filter the lines shown; `settle_seconds` is the call's, as in
+`perform`. Refused: `seconds` without `expect`.
 
-Reply: `act` (`ran`, `steps_completed`, `failed_at`, `failed` when a step did, `perform`'s
-tail), `verify` (`checked`; `verdict` `TARGET` with `seen`, `line`, `seen_before_waiting`,
-`lines_before`, `waited_s`, `lines_total`, or `TIMEOUT`, the expectation not met, with
-`arrived_during` and a `note`; `checked: false` with `why` when no `expect` was given;
-`available: false` when `act.verdict` is `TIMEOUT`), and `looked.guest` (`lines_written`,
-`lines_total`, `truncated`, `lines`, `since_mark`, `pattern`). INVALID with the same `act`,
-`verify` and `looked` when a step failed (`step_failed`), when the act itself was refused or
-its emulator went (its own code: `not_stopped`, `session_broken`, `diverged`...), when a
-stopped machine lacks the line (`wait_stopped`), or when the verify itself refused (its
-`code`). No screen in the look: a still is `capture_frame`.
+Reply: `act` (`ran`, `steps_completed`, `failed_at`), `verify` (`verdict` `TARGET` or
+`TIMEOUT`, `seen`, `line`; `checked: false`), `looked.guest` (`lines`, `truncated`).
+INVALID with the same fields on `step_failed`, `wait_stopped`, or the act's own refusal.
+No screen: use `capture_frame`.
 
-`checked` is whether a check ran at all, `seen` whether the line arrived; neither is
-`verified`, which everywhere else means a readback equal to what was sent.
+Reference: REFERENCE.md, Input and the screen.
 
 | argument | type | default |
 |---|---|---|
@@ -332,7 +299,7 @@ stopped machine lacks the line (`wait_stopped`), or when the verify itself refus
 | `settle_seconds` | number (>= 0, <= 600.0) | `30.0` |
 | `summaries` | boolean | `false` |
 
-- `summaries`: True keeps a long list readable (an argument of the call, never of a step): each step but the one the list ended on becomes a compact row (a failed one stays whole under `failed`); `ran` shows the first 24 (`truncated`, of `steps_total`), `ran_path` and `replies_path` hold all, and `stops` counts the stops.
+- `summaries`: True (of the call, never of a step) makes each step but the last a compact row; `ran` shows the first 24 (`truncated`), `ran_path` and `replies_path` hold all; `stops` counts the stops.
 
 | reply field | type |
 |---|---|
@@ -364,23 +331,20 @@ Example, from a live run:
         "reply": {
           "summary": "status: alive, stopped",
           "status": "ok",
-          "pid": 42881,
-          "conf": "$TMPDIR/dosbox-x-live-job-tcl53hm5/A/tests/guest/probe.conf",
+          "pid": 74310,
+          "conf": "$TMPDIR/dosbox-x-live-job-tkj8_x5o/A/tests/guest/probe.conf",
           "conf_digest": "78bdc38f360b9b4a",
-          "conf_changed_on_disk": false,
-          "watched": false,
           "bound_s": 1200,
-          "elapsed_s": 54.8,
-          "terminal_bytes_dropped": 0,
+          "elapsed_s": 54.6,
           "drain_alive": true,
           "captures": "off",
-          "state_dir": "$TMPDIR/dosbox-x-live-matrix-f9cacb318bc7/jobs-scratch/A/n632-save",
+          "state_dir": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n632-save",
           "last_stop": {
             "stop_seq": 9,
             "pc": "0814:00000130",
             "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
             "since_s": 8.8,
-            "wall_at": "2026-10-24T16:10:36+00:00"
+            "wall_at": "2026-10-24T22:13:18+00:00"
           },
           "pending": {
             "arm": [],
@@ -433,3 +397,5 @@ Example, from a live run:
 <!-- scry-reference:end drive -->
 
 The log is marked once, before anything moves, because that one mark keeps both halves honest: a verification reading from the top would find the cue that fired ten seconds ago. A screen is not part of the look: a still needs a recording and `ffmpeg`, and `capture_frame` offers it on its own.
+
+A stopped guest cannot write, so an act that ended stopped has the log read once, not waited on. `checked` is whether a check ran at all and `seen` whether the line arrived; neither is `verified`, which everywhere else means a readback equal to what was sent. `verify` also carries `waited_s`, `seen_before_waiting`, `lines_before`, `lines_total`, and on a `TIMEOUT` `arrived_during` and `note`; `why` explains `checked: false`, and `available: false` means the act timed out. `looked.guest` also carries `lines_written`, `lines_total`, `since_mark`, `pattern`. The act's own INVALID codes (`not_stopped`, `session_broken`, `diverged`) pass through.

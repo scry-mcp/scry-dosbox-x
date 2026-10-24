@@ -8,19 +8,91 @@
  "runs": [
   {
    "lines": [
-    "D53: CANNOT The log tool refuses the `process` channel by name, so the emulator's stdout cannot be read."
+    "D53: CANNOT No tool reads DOSBox-X's process stdout; stdout_tail is returned only by close, which ends the session."
    ],
    "right": true
   },
   {
    "lines": [
-    "D53: CANNOT The log tool refuses the emulator's stdout by name, and no other tool reads it."
+    "D53: CANNOT The log tools read only the guest and emulator channels from the logfile, and the debugger's stdout is not captured by any tool."
    ],
    "right": true
   },
   {
    "lines": [
-    "D53: CANNOT The log tool refuses the emulator's stdout channel by name, and no other tool reads it."
+    "D53: CANNOT No tool reads DOSBox-X's stdout; `log` reads only the logfile's guest and emulator channels."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D53: CANNOT No tool reads DOSBox-X's stdout while the session is live; stdout_tail comes back only from close, which ends the session."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D53: CANNOT The debugger's stdout is returned only by close, which would end the session before the lines could be read on a live session."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D53: CANNOT The log channels cover only the guest and the emulator, and the stdout of the DOSBox-X process is refused by name; stdout_tail appears only on close."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D53: CANNOT The server reads only the log channels (guest, emulator) and refuses the process output, so DOSBox-X's stdout is not reachable."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D53: CANNOT No tool reads DOSBox-X's stdout; stdout appears only in close's reply, which would end the session."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D53: CANNOT No tool in this server reads DOSBox-X's live stdout; only `close` reports a stdout tail, and it would end the session."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D53: CANNOT DOSBox-X's stdout is reported only as `stdout_tail` by `close`, which would end the session, and no log channel carries it."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D53: CANNOT The server exposes no stdout channel while a session runs; stdout_tail is only returned by close after the session ends."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D53: CANNOT No tool reads DOSBox-X's process stdout; the log tool refuses the `process` channel and stdout is only returned by `close` on an unclean end."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D53: CANNOT The log channels are only guest and emulator, and the debugger's stdout is not readable except as stdout_tail in a close reply."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D53: CANNOT No tool reads DOSBox-X's process stdout; the log channels hold the guest and emulator logs, and stdout appears only in close's tail on an unclean end."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D53: CANNOT The log channels cover only the guest and the emulator, and the `process` channel is refused, so DOSBox-X's own stdout is not readable."
    ],
    "right": true
   }

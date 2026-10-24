@@ -2,28 +2,104 @@
  "task": {
   "id": "D121",
   "prompt": "Write this session's screen maps to /tmp/maps/bricks.scry-map.json, replacing the file that is there.",
-  "tool": "map_save",
+  "tool": "map_write",
   "args": {
+   "method": "save",
    "dest": "/tmp/maps/bricks.scry-map.json",
    "overwrite": true
-  }
+  },
+  "grammar": [
+   "save"
+  ]
  },
  "runs": [
   {
    "lines": [
-    "D121: {\"tool\": \"map_save\", \"args\": {\"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D121: {\"tool\": \"map_save\", \"args\": {\"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D121: {\"tool\": \"map_save\", \"args\": {\"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+    "D121: {\"tool\":\"map_write\",\"args\":{\"method\":\"save\",\"dest\":\"/tmp/maps/bricks.scry-map.json\",\"overwrite\":true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D121: {\"tool\":\"map_write\",\"args\":{\"method\":\"save\",\"dest\":\"/tmp/maps/bricks.scry-map.json\",\"overwrite\":true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
    ],
    "right": true
   }

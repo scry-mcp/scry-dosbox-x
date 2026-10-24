@@ -22,6 +22,78 @@
   },
   {
    "lines": [
+    "D111: {\"tool\":\"perform_export\",\"args\":{\"dest\":\"/tmp/bench/bricks.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D111: {\"tool\":\"perform_export\",\"args\":{\"dest\":\"/tmp/bench/bricks.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D111: {\"tool\": \"perform_export\", \"args\": {\"dest\": \"/tmp/bench/bricks.json\"}}"
    ],
    "right": true

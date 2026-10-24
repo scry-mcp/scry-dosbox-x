@@ -30,6 +30,78 @@
   },
   {
    "lines": [
+    "D09: {\"tool\":\"read_memory\",\"args\":{\"ref\":\"1A2B:0040\",\"length\":24}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D09: {\"tool\": \"read_memory\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 24}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D09: {\"tool\": \"read_memory\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 24}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D09: {\"tool\": \"read_memory\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 24}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D09: {\"tool\": \"read_memory\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 24}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D09: {\"tool\": \"read_memory\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 24}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D09: {\"tool\": \"read_memory\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 24}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D09: {\"tool\": \"read_memory\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 24}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D09: {\"tool\": \"read_memory\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 24}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D09: {\"tool\": \"read_memory\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 24}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D09: {\"tool\":\"read_memory\",\"args\":{\"ref\":\"1A2B:0040\",\"length\":24}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D09: {\"tool\": \"read_memory\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 24}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
     "D09: {\"tool\": \"read_memory\", \"args\": {\"ref\": \"1A2B:0040\", \"length\": 24}}"
    ],
    "right": true

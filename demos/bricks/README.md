@@ -74,10 +74,10 @@ Give this to an MCP client with this server connected:
 | Advance | `resume` to a stop, `run_for` by retraces on the conf's fixed clock, `stop` |
 | Names | `symbols_load` at the measured segment |
 | Read | `disassemble`, `read_memory` by symbol, `screen_view` |
-| Declarations | `breakpoint_at` by name, `breakpoint_clear`, `watch_add` (`score` in view at every stop), `watch_clear` |
+| Declarations | `breakpoint_at` by name, `declaration_clear(kind="breakpoint")`, `watch_add` (`score` in view at every stop), `declaration_clear(kind="watch")` |
 | Input | `send_keys`, `send_mouse` |
 | Sequences | `drive` (three keys and their proof in one call) |
-| States | `state_save`, `state_load` |
+| States | `state_write(method="save")`, `state_write(method="load")` |
 
 ## The transcript
 
@@ -109,11 +109,9 @@ DOSBox-X `<volatile>`.
   "pid": "<volatile>",
   "conf": "./demos/bricks/bricks.conf",
   "conf_digest": "6a91a7cd8d6ac7c3",
-  "conf_changed_on_disk": false,
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
-  "terminal_bytes_dropped": 0,
   "drain_alive": true,
   "captures": "off",
   "state_dir": "./tmp/demos/bricks/bricks-states",
@@ -404,11 +402,9 @@ DOSBox-X `<volatile>`.
   "ref": "brick_hit",
   "by": "symbol",
   "stored": true,
-  "already_stored": false,
   "armed": true,
   "state": "armed",
   "entry": "BP 08AF:02C8",
-  "marked": false,
   "session": {
     "alive": true,
     "running": false,
@@ -441,7 +437,6 @@ DOSBox-X `<volatile>`.
   "fmt": "u16",
   "length": 2,
   "stored": true,
-  "already_stored": false,
   "armed": false,
   "state": "evaluated",
   "session": {
@@ -704,25 +699,25 @@ Also attached: image/png.
 
 </details>
 
-**11. `breakpoint_clear`**: OK unbreak: breakpoint cleared
+**11. `declaration_clear`**: OK unbreak: breakpoint cleared
 
 <details><summary>call and reply</summary>
 
 ```json
 {
+  "kind": "breakpoint",
   "all": true
 }
 ```
 
 ```json
 {
-  "summary": "breakpoint_clear all: 1 cleared",
+  "summary": "declaration_clear breakpoint all: 1 cleared",
   "status": "ok",
   "declarations_cleared": 1,
   "disarmed": [
     "BP 08AF:02C8"
   ],
-  "pending_disarm": [],
   "session": {
     "alive": true,
     "running": false,
@@ -1375,12 +1370,13 @@ Also attached: image/png.
 
 </details>
 
-**25. `state_save`**: OK save: state saved as bricks.sav
+**25. `state_write`**: OK save: state saved as bricks.sav
 
 <details><summary>call and reply</summary>
 
 ```json
 {
+  "method": "save",
   "name": "bricks"
 }
 ```
@@ -1455,12 +1451,13 @@ Also attached: image/png.
 
 </details>
 
-**27. `state_load`**: OK load: state loaded from bricks.sav
+**27. `state_write`**: OK load: state loaded from bricks.sav
 
 <details><summary>call and reply</summary>
 
 ```json
 {
+  "method": "load",
   "name": "bricks"
 }
 ```
@@ -1625,23 +1622,23 @@ Also attached: image/png.
 
 </details>
 
-**32. `watch_clear`**: OK unwatch: watch cleared
+**32. `declaration_clear`**: OK unwatch: watch cleared
 
 <details><summary>call and reply</summary>
 
 ```json
 {
+  "kind": "watch",
   "all": true
 }
 ```
 
 ```json
 {
-  "summary": "watch_clear all: 1 cleared",
+  "summary": "declaration_clear watch all: 1 cleared",
   "status": "ok",
   "declarations_cleared": 1,
   "disarmed": [],
-  "pending_disarm": [],
   "session": {
     "alive": true,
     "running": true,
@@ -1668,11 +1665,9 @@ Also attached: image/png.
   "pid": "<volatile>",
   "conf": "./demos/bricks/bricks.conf",
   "conf_digest": "6a91a7cd8d6ac7c3",
-  "conf_changed_on_disk": false,
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
-  "terminal_bytes_dropped": 0,
   "drain_alive": true,
   "captures": "off",
   "state_dir": "./tmp/demos/bricks/bricks-states",

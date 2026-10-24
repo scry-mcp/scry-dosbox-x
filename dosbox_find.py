@@ -11,9 +11,11 @@ anything is found.
 
 So `find` is answered from a BINARY DUMP of the range (the same `MEMDUMPBIN` route `memdump`
 takes, its windows past offset 0xFFFF included, into a scratch file this module owns), searched
-in Python: exact, console only. And the scanner is exposed as its own family, `scan_start` /
-`scan_filter` / `scan_clear`, because the debugger holds ONE instance at a time and the state
-is its own: a `scan_start` while one is open is refused in the debugger's own words rather
+in Python: exact, console only. And the scanner is exposed as its own family, `scan(method="start")`
+/
+`scan(method="filter")` / `scan(method="clear")`, because the debugger holds ONE instance at a time
+and the state
+is its own: a `scan(method="start")` while one is open is refused in the debugger's own words rather
 than silently replacing it.
 
 WHAT THE CONSOLE PRINTS IS THE CONTRACT, read off `src/debug/debug.cpp` (the `MEMFIND` and
@@ -63,7 +65,7 @@ SCAN_NONE_TO_CANCEL = "No active search instances to cancel."
 SCAN_NONE_TO_LIST = "No active search instances to list from."
 #: The cells a scan reads, by their size in bytes, and the letter the debugger takes for each.
 CELLS = {1: "B", 2: "W", 4: "D"}
-#: The cell sizes, as `scan_start` takes them.
+#: The cell sizes, as `scan(method="start")` takes them.
 CELL_BYTES = tuple(CELLS)
 OPERATORS = ("=", "!", ">", ">=", "<", "<=")
 
@@ -162,7 +164,8 @@ def _refuse(line: str, what: str) -> None:
     if SCAN_ACTIVE in line:
         raise ds.Invalid("needs_call",
             "the debugger holds one search instance at a time and one is open: "
-                         "`scan_clear` it first, or keep filtering it with `scan_filter`")
+                         "`scan(method=\"clear\")` it first, or keep filtering it with "
+                         "`scan(method=\"filter\")`")
     if SCAN_BAD_SEGMENT in line:
         raise ds.Invalid("bad_argument", f"the debugger refused the segment: {SCAN_BAD_SEGMENT}")
     if m := SCAN_RANGE.search(line):
@@ -172,7 +175,8 @@ def _refuse(line: str, what: str) -> None:
     if SCAN_NOT_ACTIVE in line:
         STATE.scan_forget()                 # whatever was counted belongs to a scan now gone
         raise ds.Invalid("needs_call",
-            f"no search instance is open, so there is nothing to {what}: `scan_start` one")
+            f"no search instance is open, so there is nothing to {what}: `scan(method=\"start\")` "
+            "one")
     if SCAN_TOO_WIDE in line:
         raise ds.Invalid("bad_argument",
             "the value does not fit the instance's width: the debugger refused the filter")
@@ -259,7 +263,8 @@ def unlisted_note() -> str:
 
 
 #: Why a filter with no `value` answers none: it compared each cell with the scan's opening.
-NO_VALUE_WHY = "no `value` was given, so each cell was compared with its value at `scan_start`"
+NO_VALUE_WHY = ("no `value` was given, so each cell was compared with its value at "
+                "`scan(method=\"start\")`")
 
 
 def check_filter(operator: str, value: int | None, limit: int = judges.HITS_DEFAULT) -> None:
@@ -277,7 +282,7 @@ def check_filter(operator: str, value: int | None, limit: int = judges.HITS_DEFA
             f"unsigned")
 
 
-def scan_start(session: ds.Session, seg: int, off: int, length: int,
+def start_scan(session: ds.Session, seg: int, off: int, length: int,
                cell_bytes: int) -> dict[str, Any]:
     """Open the debugger's search instance over `length` bytes from `seg:off`, in cells of
     `cell_bytes` (1, 2 or 4). Every cell starts as a candidate."""
@@ -290,7 +295,8 @@ def scan_start(session: ds.Session, seg: int, off: int, length: int,
     if opened is None:
         raise _unexpected(session, out, "a search instance")
     if int(opened.group(4), 16) != length:
-        # IT OPENED ONE, just not this one: closed before the refusal, or the next `scan_start`
+        # IT OPENED ONE, just not this one: closed before the refusal, or the next
+        # `scan(method="start")`
         # would be told a scan is open that this server does not hold.
         with contextlib.suppress(ds.Invalid):
             session.command("MEMFIND !")
@@ -347,7 +353,7 @@ def _listing(session: ds.Session, survivors: int) -> list[dict[str, Any]]:
         f"the end of the listing within {survivors // SCAN_PAGE_ROWS + 2} pages")
 
 
-def scan_filter(session: ds.Session, operator: str, value: int | None,
+def filter_scan(session: ds.Session, operator: str, value: int | None,
                 limit: int = judges.HITS_DEFAULT) -> dict[str, Any]:
     """Keep the cells whose current content satisfies `operator` against `value`, or, with
     no value, against what each cell held when the scan was opened (a cell changed
@@ -397,7 +403,7 @@ def scan_filter(session: ds.Session, operator: str, value: int | None,
             **({} if listable else {"note": unlisted_note()})}
 
 
-def scan_clear(session: ds.Session) -> dict[str, Any]:
+def clear_scan(session: ds.Session) -> dict[str, Any]:
     """Cancel the debugger's search instance. Nothing open is a no-op that says so."""
     out = session.command("MEMFIND !")
     last = _last_scan_line(out)

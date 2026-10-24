@@ -42,7 +42,7 @@ def test_a_change_watch_arms_a_row_for_every_byte_it_covers(tmp_path: Path) -> N
 def test_a_change_watch_is_cleared_whole(tmp_path: Path) -> None:
     fake = _names(tmp_path, ds_="00AF")
     server.watch_add(ref="00AF:6024", mode="change", length=2)
-    gone = cast(dict[str, Any], server.watch_clear(ref="00AF:6024"))
+    gone = cast(dict[str, Any], server.declaration_clear("watch", ref="00AF:6024"))
     assert fake.rows == [] and len(gone["disarmed"]) == 2, (gone, fake.rows)
 
 

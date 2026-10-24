@@ -9,27 +9,17 @@
 breakpoint_at(ref, by="auto")
 ```
 
-Declare a code breakpoint at a SYMBOL or a `SEG:OFF`, and arm it if it can be.
+Declare a code breakpoint at a symbol or `SEG:OFF`, and arm it if it can be. Stored, and
+re-armed on `symbols_load`; a raw `SEG:OFF` goes `stale` over another build.
 
-The declaration is STORED on disk keyed by the conf, stamped with this session as its
-`origin`, so it survives a rebuild: on every `symbols_load` a symbol re-resolves and
-re-arms, while a raw `SEG:OFF` re-arms per BUILD, whoever declared it: at `start` when it
-was declared before any map was loaded, after a `symbols_load` of the same map when it was
-declared over that map, and `stale` over another build (declaring it again adopts it). A
-symbol absent from THIS
-build is stored `unresolved`, not refused (it may be inlined this time). A name matching
-several symbols is refused, nothing stored; so is an address another declaration of
-this store already holds, naming that ref (one breakpoint row is one declaration:
-clear that ref or use it). `by` is `auto` (symbol or address by shape)
-unless you must force `symbol` or `address`. Arming needs the machine stopped and the
-debugger to take the `BP`; the entry is read back from its list.
+Refused: a name matching several symbols; an address another declaration holds, naming it.
+A symbol absent from this build is stored `unresolved`.
 
-Reply: `ref` (the string that clears it), `by`, `stored`, `already_stored` (a no-op
-re-declaration, adopted by this session), `armed`, `entry` (the debugger's row, e.g.
-`BP 00AF:0017A6EC`), `state` (`armed`, `unresolved`, `unarmable`, `pending` when the
-guest is running: stored now, armed at the next stop and said so in `applied_on_stop`
-with `why`), `marked` and `note` when the symbol carries the linker's mark (a fact, not a
-refusal: whether such an address fires is an open question).
+Reply: `ref`, `stored`, `already_stored`, `armed`, `entry`, `state` (`armed`,
+`unresolved`, `unarmable`, `pending` while the guest runs), `why`, `marked` and `note` for
+a linker-marked symbol.
+
+Reference: REFERENCE.md, Declarations.
 
 | argument | type | default |
 |---|---|---|
@@ -64,11 +54,9 @@ Example, from a live run:
   "ref": "0000:0002",
   "by": "address",
   "stored": true,
-  "already_stored": false,
   "armed": true,
   "state": "armed",
-  "entry": "BP 0000:0002",
-  "marked": false
+  "entry": "BP 0000:0002"
 }
 ```
 <!-- scry-reference:end breakpoint_at -->
@@ -77,133 +65,7 @@ A code breakpoint in ROM is acknowledged and never fires, though the same comman
 fires first time. It is neither the dynamic core nor a missing feature. Arming happens after the
 machine is released, so it cannot be detected in advance; `run_to`'s non-arrival note names it.
 
-<!-- scry-reference:begin breakpoint_list -->
-## `breakpoint_list`
-
-*List the breakpoint declarations*
-
-```text
-breakpoint_list()
-```
-
-Every breakpoint DECLARATION with its state, cross-referenced with the debugger's
-own list. Answers on a RUNNING guest too: then the debugger cannot be asked, so the
-states are those of the last stop's survey, `debugger_read` is false and `last_stop` dates
-the answer by that stop (`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`); with no
-stop yet, `last_stop` is unavailable and a symbol's state is `unarmable`. Stopped: read
-live, `debugger_read` true.
-
-Reply: `breakpoints`, each with `ref` (the string that clears it), `by`, `cpu`, `created_at`,
-`origin` (the session that declared or last adopted it), `inherited` (true for one an earlier
-session left), `age_s` (whole seconds since `created_at`), `entry`, `state` -- `armed` (its
-entry is in the debugger's list), `unresolved` (the symbol table loaded now, or none, has no
-such name), `gone` (armable, and the debugger's list has no such row now: it may never have
-been armed in this session), `unarmable` (it cannot be placed now: why says),
-`ambiguous` (a name this build defines more than once: nothing is armed for it), `pending`
-(declared while the guest ran, applied at the next stop), `stale` (a raw address declared
-with no map held now that vouches for it: kept, never re-armed here; declare it again to
-adopt it), `orphan` (no origin recorded, where it would otherwise say `gone` or `stale`;
-every such row also carries `orphan: true` whatever its state: nobody's, clear it by its
-`ref` or declare it again) -- plus `marked` for symbols; and `foreign`, entries the
-debugger holds that no declaration of this store resolves to now (a `run_to` whose cleanup
-could not be confirmed leaves one), listed and never deleted. `breakpoint_clear` is this
-family's broom and never touches a watch; `watch_clear` is the other, and the two together
-empty the store.
-
-Takes no argument.
-
-| reply field | type |
-|---|---|
-| `breakpoints` | array |
-| `debugger_read` | boolean |
-| `foreign` | array |
-
-Example, from a live run:
-
-```json
-{}
-```
-
-```json
-{
-  "summary": "breakpoint_list: 1 declared",
-  "status": "ok",
-  "breakpoints": [
-    {
-      "ref": "0000:0002",
-      "by": "address",
-      "cpu": {
-        "available": false,
-        "why": "a DOS machine has one cpu, and every row acts on it"
-      },
-      "created_at": "2026-10-24T16:10:41+00:00",
-      "origin": "2026-10-24T16:09:51+00:00#42835.1",
-      "inherited": false,
-      "age_s": 2,
-      "entry": "BP 0000:0002",
-      "marked": false,
-      "state": "armed"
-    }
-  ],
-  "foreign": [],
-  "debugger_read": true
-}
-```
-<!-- scry-reference:end breakpoint_list -->
-
-<!-- scry-reference:begin breakpoint_clear -->
-## `breakpoint_clear`
-
-*Clear breakpoint declarations*
-
-```text
-breakpoint_clear(ref="", all=false)
-```
-
-Clear breakpoint declarations: all of them with `all=True`, or the one named by the
-exact `ref` its declaring reply carried (a symbol, a `SEG:OFF`, or a `BPINT NN` /
-`BPINT NN AH=NN` row). Removes from the debugger ONLY what this store armed, and only
-while the machine is stopped; the declarations themselves are dropped either way. A
-`foreign` entry is never deleted, only reported as left.
-
-Reply: `declarations_cleared`, `disarmed` (the debugger rows removed), `pending_disarm`
-(rows queued for removal at the next stop because the guest is running: the
-declarations are gone now, the rows go then), `note`. A `ref` that matches no
-breakpoint declaration is INVALID, naming the refs the store holds; `all=True` on an empty
-store is `ok` with 0; neither `ref` nor `all`, or both, is `bad_argument`.
-
-| argument | type | default |
-|---|---|---|
-| `ref` | string | `""` |
-| `all` | boolean | `false` |
-
-| reply field | type |
-|---|---|
-| `declarations_cleared` | integer |
-| `disarmed` | array |
-| `note` | string |
-| `pending_disarm` | array |
-
-Example, from a live run:
-
-```json
-{
-  "ref": "0000:0002"
-}
-```
-
-```json
-{
-  "summary": "breakpoint_clear 0000:0002: 1 cleared",
-  "status": "ok",
-  "declarations_cleared": 1,
-  "disarmed": [
-    "BP 0000:0002"
-  ],
-  "pending_disarm": []
-}
-```
-<!-- scry-reference:end breakpoint_clear -->
+The declaration is stored on disk keyed by the conf and stamped with this session as its `origin`, so it survives a rebuild; a raw `SEG:OFF` re-arms per build, whoever declared it: at `start` when declared before any map was loaded, after a `symbols_load` of the same map when declared over that map, and `stale` over another build (declaring it again adopts it). A symbol is stored `unresolved` rather than refused because it may be inlined this time. `by` is `auto` unless a symbol or address must be forced. Arming needs the machine stopped and the debugger to take the `BP`, and the entry is read back from its list. `pending` rows are armed at the next stop, said in `applied_on_stop`. `marked` is a fact about the linker's mark, not a refusal: whether such an address fires is open. `already_stored` is a no-op re-declaration adopted by this session.
 
 <!-- scry-reference:begin breakpoint_interrupt -->
 ## `breakpoint_interrupt`
@@ -214,23 +76,13 @@ Example, from a live run:
 breakpoint_interrupt(number, ah=null, detail=false)
 ```
 
-Break on an interrupt, optionally on one `ah` function: `BPINT <number> [<ah>]`.
+Break on an interrupt, optionally one `ah` function. Arm it before `resume`. `number` and
+`ah` are hex given as integers: `0x21` for DOS, not `21`. Pending while the guest runs.
 
-`number` and `ah` are the debugger's HEX values given as integers: pass `0x21` (33) for
-DOS, not `21`, which would arm INT 0x15; a DJGPP program's is `0x31` with `ah=2`. It
-brings a running guest back AT that interrupt (`stop` brings it back wherever it is; a
-host keypress cannot): arm it BEFORE `resume`. While the guest runs it is queued `pending`,
-as below. The
-declaration is STORED under its `BPINT ..` spelling, so `breakpoint_list` shows it and
-`breakpoint_clear(ref="BPINT 21")` removes it; arming the same interrupt again is a no-op
-that says `already_stored`.
+Reply: `ref` (e.g. `BPINT 21 AH=4B`, what `declaration_clear` takes), `stored`,
+`already_stored`, `armed`, `state`, `entry`; with `detail=True` also `screen_delta`.
 
-Reply: `ref`, the exact string `breakpoint_clear` takes for it (`BPINT 21`,
-`BPINT 21 AH=4B`: the debugger's own row spelling, hex, `AH=` included when `ah` was
-given), `stored`, `already_stored`, `entry`; with `detail=True` the acknowledgement's
-`screen_delta` (capped, with `screen_chars`/`clipped`), else `omitted` names them: a
-fresh arm only, since a pending or already armed one typed nothing. While the
-guest runs it is stored `pending` and armed at the next stop.
+Reference: REFERENCE.md, Declarations.
 
 | argument | type | default |
 |---|---|---|
@@ -266,7 +118,6 @@ Example, from a live run:
   "status": "ok",
   "ref": "BPINT 21 AH=4C",
   "stored": true,
-  "already_stored": false,
   "entry": "BPINT 21 AH=4C",
   "omitted": [
     "screen_delta",
@@ -282,6 +133,8 @@ It is stored under its `BPINT` spelling and not cleared through the console's in
 whichever row sits there. Re-arming is a no-op checked against the live list, because `BPINT` sent
 twice stacks a second row that a later clear leaves behind as `foreign`.
 
+It brings a running guest back at that interrupt, where `stop` brings it back wherever it is and a host keypress cannot. A DJGPP program's DOS call is `0x31` with `ah=2`. The declaration is stored under its `BPINT ..` spelling, so `declaration_list` shows it and `declaration_clear` removes it by `ref`; arming the same one again is a no-op that says `already_stored`. With `detail=True` the acknowledgement's `screen_delta` is capped (`screen_chars`, `clipped`), else `omitted` names them; a fresh arm only, since a pending or already armed one typed nothing.
+
 <!-- scry-reference:begin watch_add -->
 ## `watch_add`
 
@@ -291,33 +144,19 @@ twice stacks a second row that a later clear leaves behind as `foreign`.
 watch_add(ref, mode, length=0, fmt="auto", by="auto")
 ```
 
-Declare a WATCH by symbol, by `SEG:OFF`, or at a place reached THROUGH a pointer, read as
-`fmt` (little-endian), in one of two modes. The declaration persists like a breakpoint's and
+Declare a watch by symbol, `SEG:OFF` or through a pointer, read as `fmt`. Persists and
 re-resolves on `symbols_load`.
 
-Arguments:
-- `mode`: `show` (read at each stop: nothing is armed, the value rides in `watches`)
-  or `change` (the machine stops when the bytes change, and each stop reads them as `show`
-  does; trusted in REAL mode, while under a DJGPP program's paging the reply says its firing
-  is not to be trusted).
-- `ref`: a symbol, a `SEG:OFF`, or `[base]`, `[base]+0x28`, `[base]-0x4`, `base->field`, with
-  `base` a symbol or address holding a POINTER (read at its type's width, else four bytes in
-  protected mode and two in real), re-resolved at every stop.
-- `fmt`: the value grammar: a scalar (`u8` .. `f64`), an array (`u16[8]`), a string
-  (`char[16]`) or a struct (`{x:i16,y:i16}`). With no `fmt` a typed symbol reads as its type,
-  else the widest unsigned scalar `length` divides.
-- `length`: TOTAL bytes, a whole number of `fmt` values; a sized format needs none. A show
-  watch is at most 128 bytes; a change watch at most 16, a debugger
-  row per byte (`entries`), `armed` while every row is held.
-- `by`: `auto` (by shape) unless you must force `symbol`, `address` or `pointer`.
+`mode`: `show` (read at each stop) or `change` (stops when the bytes change). `ref`: a
+symbol, `SEG:OFF`, or `[base]+0x28`, `base->field`. `fmt`: a scalar (`u8` .. `f64`), an
+array (`u16[8]`), a string (`char[16]`) or a struct (`{x:i16,y:i16}`). `length`: total
+bytes; at most 128 for show, 16 for change (a debugger row per byte,
+`entries`).
 
-Refused: one ref as both show and change; a length over the ceiling; a pointer base the
-table lacks (most likely a stack local).  Reply: `ref` (the string `watch_clear` takes),
-`by`, `mode`, `stored`, `already_stored`, `state` (`evaluated` for a placed show watch,
-`unresolved`, `unarmable`, `null_pointer`; a change watch adds `armed`, or `pending` while
-the guest runs, armed at the next stop and said in `applied_on_stop`), `pointer` through a
-pointer (`at`, `length`, `value`, `offset`, `field`), and `entry`/`command` for a change
-watch.
+Refused: one ref as both modes; a length over the ceiling; a pointer base the table lacks.
+
+Reply: `ref`, `stored`, `already_stored`, `state` (`evaluated`, `unresolved`, `unarmable`,
+`null_pointer`, `pending`), `armed`, `pointer`, `entry`, `caveat`.
 
 Reference: REFERENCE.md, Declarations.
 
@@ -368,7 +207,6 @@ Example, from a live run:
   "fmt": "u32",
   "length": 4,
   "stored": true,
-  "already_stored": false,
   "armed": false,
   "state": "evaluated"
 }
@@ -407,95 +245,96 @@ width its type declares (`ptr16{...}`/`ptr32{...}` in the `types` file) or else 
 class after the width (`ptr16@CODE`) parses and is applied to nothing. A change watch moves with the
 pointer (`moved: {from, to}`), and a null pointer is `null_pointer`, never a watch at zero.
 
-<!-- scry-reference:begin watch_list -->
-## `watch_list`
+A pointer base is read as a near pointer at its type's width, else four bytes in protected mode and two in real; a pointer base the table lacks is most likely a stack local. A change watch is trusted in real mode, while under a DJGPP program's paging the reply says its firing is not to be trusted (`caveat`); `command` is the debugger command sent for it. With no `fmt` a typed symbol reads as its type, else the widest unsigned scalar `length` divides; a sized format needs no `length`, which otherwise is a whole number of `fmt` values. `pending` is stored now, armed at the next stop, said in `applied_on_stop`. A change watch moves with its pointer and a null pointer is `null_pointer`, never a watch at zero.
 
-*List the watch declarations*
+<!-- scry-reference:begin declaration_list -->
+## `declaration_list`
+
+*List the declarations*
 
 ```text
-watch_list()
+declaration_list(kind="")
 ```
 
-Every watch DECLARATION and its state, on a stopped OR a running guest (running:
-states as of the last stop's survey, `debugger_read` false, `last_stop` dating the answer;
-see `breakpoint_list`). Reply: `watches`, each with `ref`, `by`,
-`cpu`, `created_at`, `origin` (the session that declared or last adopted it), `inherited`,
-`age_s`, `mode`,
-`length`, `fmt`, `state` (a show watch: `evaluated` once placed, its value in each stop's
-reply and not here, or `unresolved`/`ambiguous`/`unarmable`/`null_pointer`; a change watch
-additionally
-`armed` or `gone`; either `orphan` when it comes from a store that kept no origin: it is
-nobody's, clear it by its `ref` or declare it again to adopt it), and `foreign`, memory
-breakpoints the debugger holds that no declaration of this store resolves to now. No
-watch is re-armed
-across sessions, so none is ever `stale`; the origin says whose it is. `watch_clear` is
-this family's broom; `breakpoint_clear` never touches a watch, and the two together
-empty the store.
+List the declarations of `kind` (empty: every kind) with their state, cross-referenced
+with the debugger's own list. On a running guest the states are the last stop's survey
+(`debugger_read` false).
 
-Takes no argument.
+Reply: `breakpoints`, `watches` (each kind asked; each row `ref`, `by`, `cpu`,
+`created_at`, `origin`, `inherited`, `age_s`, `state`, plus its kind's fields), `foreign`
+(debugger entries no declaration resolves to), `debugger_read`.
+
+Reference: REFERENCE.md, Declarations.
+
+| argument | type | default |
+|---|---|---|
+| `kind` | one of `""`, `"breakpoint"`, `"watch"` | `""` |
 
 | reply field | type |
 |---|---|
+| `breakpoints` | array |
 | `debugger_read` | boolean |
-| `foreign` | array |
+| `foreign` | object |
 | `watches` | array |
 
 Example, from a live run:
 
 ```json
-{}
+{
+  "kind": "breakpoint"
+}
 ```
 
 ```json
 {
-  "summary": "watch_list: 1 declared",
+  "summary": "declaration_list breakpoint: 1 breakpoints declared",
   "status": "ok",
-  "watches": [
+  "breakpoints": [
     {
-      "ref": "0040:006C",
+      "ref": "0000:0002",
       "by": "address",
       "cpu": {
         "available": false,
         "why": "a DOS machine has one cpu, and every row acts on it"
       },
-      "created_at": "2026-10-24T16:10:44+00:00",
-      "origin": "2026-10-24T16:09:51+00:00#42835.1",
+      "created_at": "2026-10-24T22:13:23+00:00",
+      "origin": "2026-10-24T22:12:33+00:00#74274.1",
       "inherited": false,
-      "age_s": 0,
-      "mode": "show",
-      "length": 4,
-      "fmt": "u32",
-      "state": "evaluated"
+      "age_s": 2,
+      "entry": "BP 0000:0002",
+      "marked": false,
+      "state": "armed"
     }
   ],
-  "foreign": [],
   "debugger_read": true
 }
 ```
-<!-- scry-reference:end watch_list -->
+<!-- scry-reference:end declaration_list -->
 
-<!-- scry-reference:begin watch_clear -->
-## `watch_clear`
+<!-- scry-reference:begin declaration_clear -->
+## `declaration_clear`
 
-*Clear watch declarations*
+*Clear declarations*
 
 ```text
-watch_clear(ref="", all=false)
+declaration_clear(kind, ref="", all=false)
 ```
 
-Clear watch declarations: all with `all=True`, or the one named by the exact `ref`
-its `watch_add` reply carried. Disarms from the debugger only the change-watches this
-store armed (show watches armed nothing), and only while the machine is stopped;
-declarations are dropped either way. A foreign memory breakpoint is never deleted, only
-reported as left.
+Clear the declarations of `kind`: all with `all=True`, or the one named by the exact `ref`
+its declaring reply carried. Removes only what this store armed, and only while the
+machine is stopped; a `foreign` entry is never deleted.
 
-Reply: `declarations_cleared`, `disarmed`, `pending_disarm` (rows queued for removal
-at the next stop because the guest is running), `note`. A `ref` that matches no watch
-declaration is INVALID, naming the refs the store holds; `all=True` on an empty store is
-`ok` with 0; neither `ref` nor `all`, or both, is `bad_argument`.
+Refused: a `ref` matching none, naming the refs held; neither `ref` nor `all`, or both
+(`bad_argument`).
+
+Reply: `declarations_cleared`, `disarmed`, `pending_disarm` (removed at the next stop),
+`note`.
+
+Reference: REFERENCE.md, Declarations.
 
 | argument | type | default |
 |---|---|---|
+| `kind` | one of `"breakpoint"`, `"watch"` | required |
 | `ref` | string | `""` |
 | `all` | boolean | `false` |
 
@@ -510,17 +349,19 @@ Example, from a live run:
 
 ```json
 {
-  "ref": "0040:006C"
+  "kind": "breakpoint",
+  "ref": "0000:0002"
 }
 ```
 
 ```json
 {
-  "summary": "watch_clear 0040:006C: 1 cleared",
+  "summary": "declaration_clear breakpoint 0000:0002: 1 cleared",
   "status": "ok",
   "declarations_cleared": 1,
-  "disarmed": [],
-  "pending_disarm": []
+  "disarmed": [
+    "BP 0000:0002"
+  ]
 }
 ```
-<!-- scry-reference:end watch_clear -->
+<!-- scry-reference:end declaration_clear -->
