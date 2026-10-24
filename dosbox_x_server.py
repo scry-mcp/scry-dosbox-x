@@ -95,6 +95,7 @@ from scry_core import (  # noqa: E402
     narrowing,
     process_name,
     recording,
+    reference,
     reply_schema,  # noqa: E402
     screen_map,
 )
@@ -139,7 +140,7 @@ import dosbox_state as st  # noqa: E402
 import dosbox_summaries as one_line  # noqa: E402
 import dosbox_trace as tracing  # noqa: E402
 import dosbox_vga as vga  # noqa: E402
-from dosbox_mcp import LOCK, RECORDER, registered_tools, tool  # noqa: E402
+from dosbox_mcp import LOCK, RECORDER, ROSTER, registered_tools, tool  # noqa: E402
 from dosbox_mcp import mcp as mcp  # noqa: E402  (the probe and the clients read `server.mcp`)
 from dosbox_running import live  # noqa: E402
 from dosbox_state import STATE  # noqa: E402
@@ -1965,6 +1966,13 @@ def drive(act: list[dict[str, Any]], expect: str = "",
 
 strict.strict_arguments(mcp)
 reply_schema.declare(mcp, dosbox_replies.MODELS)
+
+#: What the reference pages are generated from
+#: (`python -m scry_core.reference dosbox_x_server:REFERENCE`) and held to
+#: (`tests/test_dosbox_x_reference_pages.py`).
+REFERENCE = reference.Registry(server=mcp, models=dosbox_replies.MODELS, roster=ROSTER,
+                               envelope=dosbox_replies.DosboxEnvelope,
+                               root=Path(__file__).resolve().parent)
 
 
 #: The signals that end a server whose client went away abruptly (a SIGTERM, the SIGHUP of a
