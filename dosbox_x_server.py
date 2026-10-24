@@ -423,7 +423,8 @@ def registers(from_last_stop: bool = False) -> dict[str, Any]:
     last stop, never as the current value; INVALID before any stop.
 
     Reply: `regs` (`EAX`, `EIP`, `CS`, `DS`, ... as hex strings), and from the last stop
-    `superseded` (true) with `last_stop`.
+    `superseded` (true) with `last_stop`. The control registers (CR0, CR3) and the descriptor
+    tables' registers are not in the pane: `machine_map(sections=["control"])` reads them.
     """
     if from_last_stop:
         live()
