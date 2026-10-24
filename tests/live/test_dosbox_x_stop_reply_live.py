@@ -53,7 +53,7 @@ def test_a_stop_carries_the_registers_watches_attribution_and_e9(
     watch = real_address(load_seg, REAL_VARIABLE)
     assert load_seg >= 0
 
-    # A SHOW WATCH (decision 29 arms nothing), by address so no symbol is assumed.
+    # A SHOW WATCH (it arms nothing), by address so no symbol is assumed.
     w = cast(dict[str, Any], server.watch_add(ref=watch, mode="show", length=4, fmt="u32"))
     assert w["status"] == "ok" and w["mode"] == "show", w
 

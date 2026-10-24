@@ -1,8 +1,8 @@
 B_P_L_I_S_T__ooooRegister OverviewoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooEAX=00000800  ESI=0000023C  DS=0814   ES=0814   FS=0814   GS=0814   SS=0814 VM86
 EBX=00000239  EDI=00000380  CS=0814   EIP=00000221  C1 Z0 S0 O0 A0 P0 D0 I0 T0
-ECX=0000A515  EBP=0000091CNOPGPG  IOPL3  CPL3
-EDX=000000BA  ESP=00000610cc=14050207  RUN
-ST0=00000.00  ST1=00000.00  ST2=00000.00  ST3=00000.00pfi=1410.000100000
+ECX=00001F9A  EBP=0000091CNOPGPG  IOPL3  CPL3
+EDX=000000B9  ESP=00000610cc=14149917  RUN
+ST0=00000.00  ST1=00000.00  ST2=00000.00  ST3=00000.00pfi=1420.000100000
 ST4=00000.00  ST5=00000.00  ST6=00000.00  ST7=00000.00
 ooooData view (segmented)ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo0000:00000000 60 CA 00 F0 0E 00 70 00 0E 00 70 00 0E 00 70 00  `.....p...p...p.
 0000:00000010 0E 00 70 00 54 FF 00 F0 60 CA 00 F0 60 CA 00 F0  ..p.T...`...`...

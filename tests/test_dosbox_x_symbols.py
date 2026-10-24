@@ -371,7 +371,7 @@ def test_encode_refuses_when_nothing_says_where_the_program_was_loaded() -> None
 
 
 def test_encode_refuses_a_flat_base_and_a_section_table_together() -> None:
-    """Decision 26: passing both leaves which one wins undecided, and a field that is
+    """Passing both leaves which one wins undecided, and a field that is
     sometimes a number and sometimes a table cannot be declared honestly in an MCP
     tool's schema. The refusal makes the ambiguity impossible rather than documented."""
     p = sym.plan([sym.Symbol("_x", 0x10)])
@@ -396,7 +396,7 @@ def test_an_empty_section_table_is_refused_rather_than_read_as_a_flat_program() 
 
 
 def test_two_sections_at_the_same_offset_land_at_different_addresses() -> None:
-    """THE WHOLE POINT OF DECISION 36, and the case a shared base cannot express.
+    """THE WHOLE POINT OF THE CALLER'S SECTION BASES, and the case a shared base cannot express.
 
     MEASURED on the real Borland 32-bit map, whose section table reads `{1: 0, 2: 0,
     3: 0}`: with the old model every section folded onto one address space and three
@@ -1109,7 +1109,7 @@ def _declared_sections(text: str) -> dict[int, int]:
 
 
 def test_a_32_bit_row_keeps_its_section_and_is_placed_by_the_callers_table() -> None:
-    """DECISION 36 IN ONE CASE: the reader keeps what the file said, and placement is a
+    """The reader keeps what the file said, and placement is a
     later step that DEMANDS its bases.
 
     Resolving the row against the map's own `Start` column while reading does not survive

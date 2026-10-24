@@ -675,7 +675,7 @@ class DeclarationStore:
         held -- then ADOPTED by the caller's origin and stamp, not a refusal.
 
         AN EXACT DUPLICATE IS A NO-OP, not a refusal. The store persists across a
-        rebuild by design (decisions 7 and 9), so whoever re-runs their declaration
+        rebuild by design, so whoever re-runs their declaration
         script after every compile -- the very workflow the store exists for -- would
         otherwise meet their own earlier declarations as a hard INVALID and have to clear
         before declaring. Nothing is stored twice; the caller learns it was already there and

@@ -23,24 +23,24 @@ F000:0000FFFF 55push bp
 F000:00010000 0000add  [bx+si],alds:[0000]=0000
 F000:00010002 0000add  [bx+si],alds:[0000]=0000
 F000:00010004 0000add  [bx+si],alds:[0000]=0000
-ooooOutputooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooBreakpoint list:
--------------------------------------------------------------------------
+ooooOutputooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooDEBUG: Set memory breakpoint at 0000:0501
 Breakpoint list:
 -------------------------------------------------------------------------
-DEBUG: Set memory breakpoint at 0000:0500
+00. BPMEM 0000:0501 (00)
+01. BPMEM 0000:0500 (00)
 Breakpoint list:
 -------------------------------------------------------------------------
-00. BPMEM 0000:0500 (00)
+00. BPMEM 0000:0501 (00)
+01. BPMEM 0000:0500 (00)
 Breakpoint list:
 -------------------------------------------------------------------------
-00. BPMEM 0000:0500 (00)
-Breakpoint list:
--------------------------------------------------------------------------
-00. BPMEM 0000:0500 (00)
+00. BPMEM 0000:0501 (00)
+01. BPMEM 0000:0500 (00)
 DEBUG: Set data overview to 0000:0500
 DEBUG: Set linear memory breakpoint at 00000600
 Breakpoint list:
 -------------------------------------------------------------------------
 00. BPLM 00000600 (00)
-01. BPMEM 0000:0500 (00)
+01. BPMEM 0000:0501 (00)
+02. BPMEM 0000:0500 (00)
 I-> _

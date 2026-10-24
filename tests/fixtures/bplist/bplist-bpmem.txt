@@ -23,16 +23,7 @@ F000:0000FFFF 55push bp
 F000:00010000 0000add  [bx+si],alds:[0000]=0000
 F000:00010002 0000add  [bx+si],alds:[0000]=0000
 F000:00010004 0000add  [bx+si],alds:[0000]=0000
-ooooOutputooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooWriting code to fce40
-Writing code to fce60
-***| TYPE HELP (+ENTER) TO GET AN OVERVIEW OF ALL COMMANDS |***
-Breakpoint list:
--------------------------------------------------------------------------
-Breakpoint list:
--------------------------------------------------------------------------
-DEBUG: Memory changed (2 bytes)
-DEBUG: Set data overview to 0000:0500
-Breakpoint list:
+ooooOutputooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooBreakpoint list:
 -------------------------------------------------------------------------
 Breakpoint list:
 -------------------------------------------------------------------------
@@ -43,4 +34,13 @@ Breakpoint list:
 Breakpoint list:
 -------------------------------------------------------------------------
 00. BPMEM 0000:0500 (00)
+DEBUG: Set memory breakpoint at 0000:0501
+Breakpoint list:
+-------------------------------------------------------------------------
+00. BPMEM 0000:0501 (00)
+01. BPMEM 0000:0500 (00)
+Breakpoint list:
+-------------------------------------------------------------------------
+00. BPMEM 0000:0501 (00)
+01. BPMEM 0000:0500 (00)
 I-> _

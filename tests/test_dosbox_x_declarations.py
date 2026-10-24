@@ -109,7 +109,7 @@ def test_a_rebuild_that_moves_a_symbol_re_resolves_to_the_new_offset(tmp_path: P
 
 
 def test_a_vanished_symbol_is_kept_unresolved_not_dropped(tmp_path: Path) -> None:
-    """Decision 8: a symbol that -O3 inlined away, or that was removed on purpose, STAYS
+    """A symbol that -O3 inlined away, or that was removed on purpose, STAYS
     in the list, resolves to nothing, and is said out loud -- it may come back."""
     s = _store(tmp_path)
     s.add(dec.Declaration("breakpoint", "symbol", "ensure_soundfont"))
@@ -150,7 +150,7 @@ def test_an_ambiguous_name_resolves_to_the_lowest_offset_and_reports_the_count(
 
 def test_resolve_name_is_the_single_source_used_by_resolve_and_the_server(
         tmp_path: Path) -> None:
-    """The owner's QA call: ONE name->offset resolver. `resolve()` (plural, for
+    """ONE name->offset resolver. `resolve()` (plural, for
     symbols_load's re-resolution) delegates to `resolve_name`, and the server's live
     resolver consumes the same routine -- so this pins its contract directly: a by-address
     decl is `address`, an absent name `unresolved`, a match carries offset/matches, and the
@@ -175,7 +175,7 @@ def test_resolve_name_is_the_single_source_used_by_resolve_and_the_server(
 # -------------------------------------------------------------- isolation by conf (dec. 24)
 
 def test_two_confs_do_not_see_each_others_declarations(tmp_path: Path) -> None:
-    """Decision 24: keyed by conf identity over one file. A symbol from another binary
+    """Keyed by conf identity over one file. A symbol from another binary
     would arm at a plausible and wrong address, so the two lists never mix."""
     path = tmp_path / "declarations.json"
     a = dec.DeclarationStore("dos-djgpp32.conf", path=path)
@@ -226,7 +226,7 @@ def test_an_exact_duplicate_is_a_no_op_that_says_so(
 def test_an_interrupt_breakpoint_is_a_declaration_by_number(tmp_path: Path) -> None:
     """An interrupt breakpoint has no symbol to resolve and is held by the debugger's own
     spelling, so it is declared `by="address"` and refuses a symbol or any watch field.
-    It clears with the breakpoint family (decision 10's "without touching watches")."""
+    It clears with the breakpoint family."""
     s = _store(tmp_path)
     # THE REF IS THE DEBUGGER'S ROW SPELLING, not `INT 21`: the server matches it against
     # the live BPLIST by equality and parses it back to clear it.
@@ -264,7 +264,7 @@ def test_one_address_may_not_be_both_show_and_change_watch(tmp_path: Path) -> No
 
 
 def test_remove_clears_all_by_ref_or_by_kind_and_the_two_compose(tmp_path: Path) -> None:
-    """Decision 10: clear one by name, clear all, and clear breakpoints WITHOUT touching
+    """Clear one by name, clear all, and clear breakpoints WITHOUT touching
     watches (and the reverse)."""
     s = _store(tmp_path)
     s.add(dec.Declaration("breakpoint", "symbol", "_main"))
@@ -303,7 +303,7 @@ def test_remove_with_an_unknown_kind_is_refused(tmp_path: Path) -> None:
 
 def test_default_path_is_a_durable_state_dir_not_the_project(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """Decision 9 wants the declarations to survive a session; a cache dir or the
+    """The declarations survive a session, so a cache dir or the
     emulator's working directory (the caller's project) would be the wrong home."""
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
     p = dec.default_path()

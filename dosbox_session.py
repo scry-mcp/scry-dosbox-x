@@ -1921,12 +1921,20 @@ class Session(dprocess.Process):
         -- MEASURED, an attempt to watch a static in a DJGPP binary that way fired on
         unrelated code and never on the app. The raw tool that offered it was retired.
         """
+        return Session.watch_places(self, [(segment, offset)])[0]
+
+    def watch_places(self, places: list[tuple[int, int]]) -> list[dict[str, object]]:
+        """`watch` at every one of `places`, a row each (a memory breakpoint compares one byte),
+        in one reading of the mode, a command per row and ONE read of the list back: a change
+        watch over several bytes costs its rows' commands, not three round trips a byte. Every
+        place is judged before anything is typed, and the list read back must hold every row."""
         # THE MACHINE IS READ FIRST: a command typed at a running guest is a refusal with
         # a side effect, and `command()` appends a carriage return that `resume`'s own
         # docstring says must never land on a running machine.
         cpu = self.where()["mode"]
-        check_segment(segment)
-        dcons.check_offset(offset, cpu)
+        for segment, offset in places:
+            check_segment(segment)
+            dcons.check_offset(offset, cpu)
         # THE THREE LIST SPELLINGS ARE MEASURED, NOT DERIVED. What the debugger
         # PRINTS in `BPLIST` is not what you SEND, and it is not uniform:
         #
@@ -1939,30 +1947,37 @@ class Session(dprocess.Process):
         # message blaming the one cause that was not it; and a test fixture AUTHORED
         # from the same belief as the code cannot see it, which is why these three
         # came off a real debugger.
-        if cpu.startswith("Pr"):
-            command = f"BPPM {segment:04X}:{offset:04X}"
-            entry = f"BPPM {segment:04X}:{offset:08X}"
-        else:
-            command = f"BPM {segment:04X}:{offset:04X}"
-            entry = f"BPMEM {segment:04X}:{offset:04X}"
+        sent: list[tuple[str, str]] = []
+        for segment, offset in places:
+            if cpu.startswith("Pr"):
+                sent.append((f"BPPM {segment:04X}:{offset:04X}",
+                             f"BPPM {segment:04X}:{offset:08X}"))
+            else:
+                sent.append((f"BPM {segment:04X}:{offset:04X}",
+                             f"BPMEM {segment:04X}:{offset:04X}"))
         # SAME AS `run_to`: arming is a write, and a watch is NEVER removed by this
         # method, so the mark is if anything more owed here than there.
         self.altered = True
-        self.command(command)
+        for command, _ in sent:
+            self.command(command)
         # READ BACK, for the same reason `run_to` does: the acknowledgement is printed
         # into a scrolling pane and can be a repaint of an older one. The list entry's
         # trailing byte count is not compared -- what is being confirmed is that a
         # watch on THIS address exists, not how this build formats its widths.
         held = self.breakpoints()
-        if not any(b["entry"].startswith(entry) for b in held):
+        missing = [(command, entry) for command, entry in sent
+                   if not any(b["entry"].startswith(entry) for b in held)]
+        if missing:
             raise Invalid("readback_refused",
-                f"the debugger does not list a watch matching `{entry}` after `{command}`. "
-                f"What it holds: {[b['entry'] for b in held]}. A watch that was never "
-                f"armed and one that never fires are the same silence")
+                f"the debugger does not list a watch matching "
+                f"{', '.join(f'`{e}`' for _, e in missing)} after "
+                f"{', '.join(f'`{c}`' for c, _ in missing)}. What it holds: "
+                f"{[b['entry'] for b in held]}. A watch that was never armed and one that "
+                f"never fires are the same silence")
         # `mode` IS THE MACHINE'S CPU MODE, the reading the command was chosen from.
-        return {"command": command, "mode": cpu, "armed": entry, "breakpoints": held,
-                "fires_on": "a CHANGE to the value, never a read and never a write of "
-                            "the value already there"}
+        return [{"command": command, "mode": cpu, "armed": entry, "breakpoints": held,
+                 "fires_on": "a CHANGE to the value, never a read and never a write of the "
+                             "value already there"} for command, entry in sent]
 
     # -------------------------------------------------------- staged code breakpoints
 

@@ -4,7 +4,7 @@ the breakpoint it was heading for.
 
 This is the "one call" shape the plan is measured against, minus the keystroke: reach the
 client, then a SINGLE `perform` that loads symbols, declares a show watch and a breakpoint
-BY NAME, and resumes. `perform` waits for the stop the resume was heading for (decision 37)
+BY NAME, and resumes. `perform` waits for the stop the resume was heading for
 and hands back the ENRICHED reply at it -- the watch evaluated, the attribution naming the
 symbol. R1's full CUE A sequence adds `send_keys`, which is deferred behind the driver
 design, so this proves everything the sequence does that needs no keystroke.
@@ -30,7 +30,7 @@ def test_a_perform_sequence_runs_by_name_and_stops_where_it_was_headed(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Reach the client, then ONE `perform`: load the symbols, add a show watch and a
     breakpoint BY NAME, resume. The sequence runs the steps in order; the resume leaves the
-    machine running, so `perform` WAITS for the stop the breakpoint produces (decision 37)
+    machine running, so `perform` WAITS for the stop the breakpoint produces
     and returns the enriched reply at it -- the watch read to a value, the attribution
     naming the symbol. The steps say only names; the server did the seg:off and mode work."""
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))

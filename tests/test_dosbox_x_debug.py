@@ -691,7 +691,7 @@ def test_run_to_with_a_control_counts_its_hits_and_releases_the_machine_again() 
 
 
 def test_run_to_with_a_control_that_never_fires_reports_zero_hits_and_neither_armed() -> None:
-    """The silence decision 12 exists for: neither fired within the bound. The session
+    """The silence the control exists for: neither fired within the bound. The session
     interrupts the run and reports the account (`hits: 0`, both removed) and the server turns
     it into INVALID; a single reply saying "it did not arrive" would be the wrong verdict."""
     both = pane_with(["00. BP F000:FFF0", "01. BP F000:E05B"])
@@ -953,7 +953,7 @@ def test_the_tools_hand_the_sessions_own_answer_back_whole(
     """
     # step and run_to STOP, so their reply is the enriched one (Phase 4): after the tool's
     # own reads, `_stop_reply` reads `where` and `registers` from ONE survey now
-    # (`stop_survey`, decision 35), so it needs ONE more pane, not two. The store is
+    # (`stop_survey`), so it needs ONE more pane, not two. The store is
     # empty here (no `start`), so no watch read and no attribution survey follow. Exactly one
     # enrich pane is deliberate: a regression to two separate surveys starves the second pop
     # and reddens this, so this provisioning is itself the guard on the fold.
@@ -994,7 +994,7 @@ def test_the_tools_hand_the_sessions_own_answer_back_whole(
 
 
 def test_where_and_registers_surveys_once_and_matches_the_two_calls() -> None:
-    """Decision 35: `where_and_registers` reads where AND registers off ONE survey. This
+    """`where_and_registers` reads where AND registers off ONE survey. This
     pins the AXIS the fold exists on -- the number of console round trips -- not just the
     values: a regression to two surveys keeps the values right and only this `sent` count
     moves. Value-equivalence is checked beside it, against the same fixture read the old
@@ -1581,9 +1581,9 @@ def test_an_interrupt_breakpoint_is_confirmed_from_the_list_not_from_the_word() 
 def test_arming_a_breakpoint_marks_the_session_altered() -> None:
     """`altered` said false on a session holding breakpoints. The debugger arms a code
     breakpoint by writing a trap byte into memory -- `run_to`'s own non-arrival note
-    says so -- and `watch` never removes its own. Only `set_register` set the flag, so
-    a `read_memory` over a watched address could return the trap as program bytes under
-    a header stating the session had not been written to."""
+    says so. Only `set_register` set the flag, so a `read_memory` over a breakpoint's
+    address could return the trap as program bytes under a header stating the session had
+    not been written to."""
     dbg = Debugger([pane_with(["00. BP F000:FFF0"]), pane_with(["00. BP F000:FFF0"]),
                     pane_with([])])
     # READ INTO LOCALS RATHER THAN ASSERTING ON THE ATTRIBUTE. mypy narrows a member

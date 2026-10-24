@@ -404,7 +404,7 @@ Every tool ends one of three ways, and one that declares no end ends `none`:
 
 | End | What the cancel leaves | Tools |
 |---|---|---|
-| `stop` | the guest back at the debugger by `BREAK`, as `stop` does (the cancelled call answers nothing, so that stop is read in the next reply's `last_stop`, its `cause` "a cancelled call's stop at SSSS:OOOO" when no declaration is at that address), or a stop it had already reached recorded as its own; a `run_to` removes the breakpoints it armed; a CPU log still open (a `trace`'s) is moved aside to `trace-cancelled-<n>.trace` in the session's captures directory (the working directory when there is none to write in) and closed | `stop`, `run_to`, `run_for`, `trace`, `screen_wait`, `perform` |
+| `stop` | the guest back at the debugger by `BREAK`, as `stop` does (the cancelled call answers nothing, so that stop is read in the next reply's `last_stop`, its `cause` "a cancelled call's stop at SSSS:OOOOOOOO" when no declaration is at that address), or a stop it had already reached recorded as its own; a `run_to` removes the breakpoints it armed; a CPU log still open (a `trace`'s) is moved aside to `trace-cancelled-<n>.trace` in the session's captures directory (the working directory when there is none to write in) and closed | `stop`, `run_to`, `run_for`, `trace`, `screen_wait`, `perform` |
 | `kill` | the emulator closed; a close cancelled half-way still finishes | `start`, `close` |
 | `none` | the guest as the call found it | `build_check`, `status`, `log`, `log_wait`, `registers`, `read_memory`, `disassemble`, `call_stack`, `memdump`, `find`, `scan_start`, `scan_filter`, `scan_clear`, `debug`, `set_register`, `write`, `resume`, `step`, `state_save`, `state_load`, `snapshot`, `state_list`, `breakpoint_interrupt`, `symbols_load`, `symbols_find`, `comment_add`, `comment_list`, `comment_delete`, `comment_save`, `comment_load`, `machine_map`, `interrupt_vectors`, `palette`, `screen_view`, `screen_signature`, `map_load`, `map_add`, `map_find`, `map_save`, `series_capture`, `image_diff`, `series_diff`, `region_track`, `golden_check`, `breakpoint_at`, `breakpoint_list`, `breakpoint_clear`, `watch_add`, `watch_list`, `watch_clear`, `send_keys`, `send_mouse`, `captures`, `capture_frame`, `perform_export`, `drive` |
 
@@ -679,7 +679,8 @@ declaration written by a store from before origins were kept is listed `orphan`,
 is cleared or re-declared.
 
 **A watch has two halves, and one ref may not be both.** A show watch (`mode="show"`) arms NOTHING:
-it is a plain memory read at every stop, rendered in its declared width and format, and it is at
+it is a plain memory read at every stop, rendered in its declared width and format (a NaN or an
+infinite `f32`/`f64` is the text `nan`, `inf` or `-inf`, which JSON has no number for), and it is at
 most 128 bytes: a region is `memdump`'s job. A change watch is read at every stop too (its
 memory breakpoint writes nothing into the bytes it watches), its state `armed` or `gone` by
 whether the debugger still holds it, and one ref is one watch: the other half on the same ref

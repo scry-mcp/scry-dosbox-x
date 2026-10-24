@@ -281,7 +281,7 @@ def tool(
     and which errors become replies is `_invoke`'s.
 
     A reader here also declares what changes what the server holds (`symbols_load`, a
-    declaration) as not read-only. ONE CAVEAT, decided by the owner: the first contact after a
+    declaration) as not read-only. ONE CAVEAT: the first contact after a
     stop applies what was DECLARED while the guest ran (`running.drain_if_stopped`), so a reader
     can be the call that arms a breakpoint. That write belongs to the declaring call, which was
     not read-only and said `pending`; the reader only delivers it, and its reply says so in

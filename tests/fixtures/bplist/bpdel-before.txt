@@ -23,11 +23,9 @@ F000:0000FFFF 55push bp
 F000:00010000 0000add  [bx+si],alds:[0000]=0000
 F000:00010002 0000add  [bx+si],alds:[0000]=0000
 F000:00010004 0000add  [bx+si],alds:[0000]=0000
-ooooOutputoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-------------------------------------------------------------------------
-00. BP F000:0200
-01. BP F000:0100
-02. BPLM 00000600 (00)
-03. BPMEM 0000:0500 (00)
+ooooOutputoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo02. BPLM 00000600 (00)
+03. BPMEM 0000:0501 (00)
+04. BPMEM 0000:0500 (00)
 DEBUG: Set breakpoint at F000:0300
 Breakpoint list:
 -------------------------------------------------------------------------
@@ -35,12 +33,14 @@ Breakpoint list:
 01. BP F000:0200
 02. BP F000:0100
 03. BPLM 00000600 (00)
-04. BPMEM 0000:0500 (00)
+04. BPMEM 0000:0501 (00)
+05. BPMEM 0000:0500 (00)
 Breakpoint list:
 -------------------------------------------------------------------------
 00. BP F000:0300
 01. BP F000:0200
 02. BP F000:0100
 03. BPLM 00000600 (00)
-04. BPMEM 0000:0500 (00)
+04. BPMEM 0000:0501 (00)
+05. BPMEM 0000:0500 (00)
 I-> _

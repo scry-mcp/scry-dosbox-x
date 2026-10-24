@@ -12,6 +12,12 @@
  "state": "armed",
  "command": "BPPM 00AF:19A14",
  "entry": "BPPM 00AF:00019A14",
+ "entries": [
+  "BPPM 00AF:00019A14",
+  "BPPM 00AF:00019A15",
+  "BPPM 00AF:00019A16",
+  "BPPM 00AF:00019A17"
+ ],
  "caveat": "this is a protected-mode watch (BPPM); under a paged DPMI program it fires on the paging host, not the program, so a stop here is not to be trusted. Break-on-change is reliable in real mode",
  "session": {
   "alive": true,

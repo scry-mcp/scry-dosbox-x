@@ -23,11 +23,11 @@ def rows(name: str) -> list[dict[str, str]]:
 
 
 def test_each_kind_of_row_is_read_as_the_debugger_prints_it() -> None:
-    assert rows("bplist-bpmem.txt") == [{"index": "00", "entry": "BPMEM 0000:0500 (00)"}]
-    assert rows("bplist-bplm.txt") == [{"index": "00", "entry": "BPLM 00000600 (00)"},
-                                      {"index": "01", "entry": "BPMEM 0000:0500 (00)"}]
-    assert rows("bplist-bppm.txt") == [{"index": "00", "entry": "BPPM 00AF:00019A14 (00)"},
-                                      {"index": "01", "entry": "BPINT 31 AH=02"}]
+    two = ["BPMEM 0000:0501 (00)", "BPMEM 0000:0500 (00)"]      # a two-byte watch, a row a byte
+    assert [r["entry"] for r in rows("bplist-bpmem.txt")] == two
+    assert [r["entry"] for r in rows("bplist-bplm.txt")] == ["BPLM 00000600 (00)", *two]
+    assert [r["entry"] for r in rows("bplist-bppm.txt")] == [
+        *(f"BPPM 00AF:{0x19A17 - i:08X} (00)" for i in range(4)), "BPINT 31 AH=02"]  # four bytes
     assert rows("bplist-vm86.txt") == [{"index": "00", "entry": "BP 0814:0221"},
                                       {"index": "01", "entry": "BP 0000:0001"}]
     assert dcons.bp_row_target("BPMEM 0000:0500 (00)") == ("BPMEM", 0, 0x500)
@@ -36,15 +36,16 @@ def test_each_kind_of_row_is_read_as_the_debugger_prints_it() -> None:
 
 
 def test_the_list_is_newest_first_and_a_delete_renumbers_what_is_left() -> None:
-    """Three code rows armed at F000:0100, 0200 and 0300 in that order are listed newest first, the
-    memory rows after them; deleting the middle one moves every later row up one index, which is
-    why an index is never kept from the arming."""
+    """Rows armed in turn (a two-byte change watch, a linear watch, then code rows at F000:0100,
+    0200 and 0300) are listed newest first; deleting the middle code row moves every later row up
+    one index, which is why an index is never kept from the arming."""
+    memory = ["BPLM 00000600 (00)", "BPMEM 0000:0501 (00)", "BPMEM 0000:0500 (00)"]
     before = rows("bpdel-before.txt")
     assert [r["entry"] for r in before] == ["BP F000:0300", "BP F000:0200", "BP F000:0100",
-                                            "BPLM 00000600 (00)", "BPMEM 0000:0500 (00)"]
+                                            *memory]
     after = rows("bpdel-after.txt")
     assert after == [{"index": f"{i:02d}", "entry": e} for i, e in enumerate(
-        ["BP F000:0300", "BP F000:0100", "BPLM 00000600 (00)", "BPMEM 0000:0500 (00)"])]
+        ["BP F000:0300", "BP F000:0100", *memory])]
 
 
 def test_a_clear_deletes_the_row_at_its_index_now_and_reads_it_gone(tmp_path: Path) -> None:
@@ -100,7 +101,7 @@ def test_the_watches_a_live_run_armed_answer_as_it_did(tmp_path: Path) -> None:
     import dosbox_x_server as server
     # `command` and `entry` are the session's own spellings, judged by the next case against the
     # real `Session.watch`; these are what the server makes of them.
-    keys = ("status", "by", "mode", "fmt", "length", "armed", "state")
+    keys = ("status", "by", "mode", "fmt", "length", "armed", "state", "entries")
     _names(tmp_path, mode="Real", cs="0000", ds_="0000")
     _same(server.watch_add(ref="0000:0500", mode="change", length=2),
           _captured("real-change-watch.json")["watch_add"], keys)

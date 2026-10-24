@@ -843,7 +843,7 @@ def test_a_reading_of_somewhere_else_is_refused(tmp_path: Path) -> None:
 
 
 def test_read_memory_with_a_cached_mode_does_not_survey_for_it(tmp_path: Path) -> None:
-    """Decision 35 part 2: a passed `mode` is the offset ceiling's source, so `read_memory`
+    """A passed `mode` is the offset ceiling's source, so `read_memory`
     must NOT call `where()` for it -- that is the per-watch re-survey the fold removes. Pinned
     by a double whose `where()` RAISES: with `mode` given the rows come back (where was not
     consulted); the control with `mode=None` raises (where WAS consulted). A regression that
@@ -873,7 +873,7 @@ def test_read_memory_with_a_cached_mode_does_not_survey_for_it(tmp_path: Path) -
 
 
 def test_read_memory_takes_a_32_bit_offset_in_protected_mode(tmp_path: Path) -> None:
-    """Decision 38: the shipped `read_memory` clamped the offset flat to 0xFFFF, so it
+    """The shipped `read_memory` clamped the offset flat to 0xFFFF, so it
     refused every 32-bit DJGPP address while `run_to` and `watch` took one. Seen RED: at
     0x16DF20 on a Pr32 machine it must be REFUSED before the fix and read after, and in
     real mode the same offset must still be refused (there it addresses nothing).

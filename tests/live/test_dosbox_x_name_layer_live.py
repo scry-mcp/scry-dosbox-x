@@ -45,11 +45,11 @@ def test_the_name_layer_arms_lists_and_clears_against_a_real_program(
     watch = real_address(load_seg, REAL_VARIABLE)
     assert load_seg >= 0
 
-    # BY NAME -> armed, and stored (decision 6/17: the caller said only a name).
+    # BY NAME -> armed, and stored.
     named = cast(dict[str, Any], server.breakpoint_at(ref=REAL_LOOP))
     assert named["status"] == "ok" and named["armed"] is True, named
 
-    # A MARKED public says so in the reply (decision 26/S3), and is not refused.
+    # A MARKED public says so in the reply, and is not refused.
     marked = cast(dict[str, Any], server.breakpoint_at(ref=REAL_MARKED))
     assert marked["status"] == "ok", marked
     assert marked["marked"] is True and "linker's mark" in str(marked["note"]), marked

@@ -27,6 +27,10 @@
   "state": "armed",
   "command": "BPM 0000:0500",
   "entry": "BPMEM 0000:0500",
+  "entries": [
+   "BPMEM 0000:0500",
+   "BPMEM 0000:0501"
+  ],
   "session": {
    "alive": true,
    "running": false,

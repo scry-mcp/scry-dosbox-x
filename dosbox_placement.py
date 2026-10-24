@@ -203,7 +203,7 @@ def resolve_ref(decl: dec.Declaration, reg: str, session: ds.Session, *,
     declarations has to tell them apart:
 
     * `armable` -- resolved to one address that can be worked out right now.
-    * `unresolved` -- no such symbol in THIS build; kept, it may be back next build (dec 8).
+    * `unresolved` -- no such symbol in THIS build; kept, it may be back next build.
     * `ambiguous` -- the name matches several symbols, so arming one would be a guess at the
       wrong address. Carries `matches` and a `why`. This is a REFUSAL to arm, not a state
       that resolves itself, and `breakpoint_at` turns it into an `Invalid` before storing.

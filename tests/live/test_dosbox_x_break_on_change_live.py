@@ -1,4 +1,4 @@
-"""Phase 6bis, break-on-change against a REAL real-mode guest (decision 5's second half).
+"""Phase 6bis, break-on-change against a REAL real-mode guest.
 
 A change-watch armed on memory the guest writes STOPS the machine when that memory changes,
 in real mode (BPM). This is the example S2 the plan measures against, and it is the one

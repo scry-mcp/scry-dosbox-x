@@ -213,9 +213,9 @@ class FakeSession:
         return True
 
     def where(self) -> dict[str, str]:
-        """The real `read_memory` needs the CPU mode now (decision 38, to take the
-        offset ceiling from it); this stands in with a real-mode reading, which is what
-        these fixed screens are. A case needing protected mode passes `mode`."""
+        """The real `read_memory` needs the CPU mode (it takes the offset ceiling from it);
+        this stands in with a real-mode reading, which is what these fixed screens are. A case
+        needing protected mode passes `mode`."""
         return {"cs": "F000", "eip": "0000FFF0", "mode": self.mode}
 
     def where_and_registers(self) -> tuple[dict[str, str], dict[str, str]]:
@@ -322,6 +322,9 @@ class FakeSession:
                 "waited_s": 0.25, "breakpoint_removed": True, "note": "",
                 "control": contract.unavailable("no control was named") if control is None else
                 {"at": f"{control[0]:04X}:{control[1]:04X}", "hits": 0, "removed": True}}
+
+    def watch_places(self, places: list[tuple[int, int]]) -> list[dict[str, object]]:
+        return [self.watch(seg, off) for seg, off in places]
 
     def watch(self, segment: int, offset: int) -> dict[str, object]:
         return {"command": "BPM 0040:006C", "mode": "Real",
@@ -2416,7 +2419,9 @@ def test_each_double_returns_the_field_set_the_real_method_returns() -> None:
     not values: a stub's values are its own business, and its field set is a contract.
     """
     for name in ("step", "run_to", "watch", "log_wait"):
-        branches = returned_key_sets(getattr(ds.Session, name))
+        # `watch` is the one-row case of `watch_places`, whose element is its reply.
+        branches = returned_key_sets(getattr(ds.Session, "watch_places" if name == "watch"
+                                             else name))
         double = returned_key_sets(getattr(FakeSession, name))
         assert branches, f"nothing was read off the real {name}: this measured nothing"
         assert len(double) == 1, f"the {name} double should have one return"
@@ -2500,8 +2505,13 @@ def returned_key_sets(fn: object) -> list[frozenset[str]]:
         spread = any(k is None and isinstance(v, ast.Call) and isinstance(v.func, ast.Attribute)
                      and v.func.attr == "fields" for k, v in zip(d.keys, d.values, strict=True))
         return frozenset(named | (found if spread else set()))
-    return [keys(node.value) for node in ast.walk(ast.parse(src))
-            if isinstance(node, ast.Return) and isinstance(node.value, ast.Dict)]
+    # A LIST OF REPLIES (`watch_places`, one per row) is read at the dict each element is.
+    def returned(node: ast.AST) -> ast.Dict | None:
+        if not isinstance(node, ast.Return):
+            return None
+        value = node.value.elt if isinstance(node.value, ast.ListComp) else node.value
+        return value if isinstance(value, ast.Dict) else None
+    return [keys(d) for node in ast.walk(ast.parse(src)) if (d := returned(node)) is not None]
 
 def test_the_status_docstring_names_every_field_its_reply_carries() -> None:
     """An MCP caller reads this docstring and NOT the README, which `status`'s own
@@ -3188,6 +3198,9 @@ class NamesFake:
         # the real method's four keys, the D/B bit of a 32-bit DJGPP code segment among them
         return {"base": 0x00400000, "limit": 0x0023FFFF, "type": 0x1B, "big": 1}
 
+    def watch_places(self, places: list[tuple[int, int]]) -> list[dict[str, object]]:
+        return [self.watch(segment=seg, offset=off) for seg, off in places]
+
     def watch(self, segment: int | None = None, offset: int | None = None,
               linear: int | None = None) -> dict[str, object]:
         self._console()
@@ -3229,7 +3242,7 @@ def test_a_bare_linear_address_is_refused_it_has_no_segment() -> None:
 
 
 def test_target_for_takes_the_selector_in_protected_mode_and_the_paragraph_in_real() -> None:
-    """The heart of decision 17: the caller gives an offset, the server gives the seg:off,
+    """The heart of placement: the caller gives an offset, the server gives the seg:off,
     and which it is turns on the mode. Protected: the selector CS, offset unchanged. Real:
     the load paragraph, and a high offset split so it still fits 16 bits."""
     prot = NamesFake(mode="Pr32", cs="00A7")
@@ -3262,7 +3275,7 @@ def test_breakpoint_at_a_symbol_arms_stores_and_says_when_it_is_marked(
 
 def test_re_declaring_a_breakpoint_is_a_no_op_that_re_arms_a_lost_row(
         tmp_path: Path) -> None:
-    """The owner's QA call: re-declaring is a no-op, not a refusal, so a declaration script
+    """Re-declaring is a no-op, not a refusal, so a declaration script
     survives a re-run after a rebuild. `already_stored` says which. AND the arm still runs,
     so a declaration whose debugger row was LOST (a new session cleared BPLIST) is re-armed
     rather than reported armed while absent -- the gone-then-rearm path no live case reaches
@@ -3350,7 +3363,7 @@ def test_an_interrupt_breakpoint_is_stored_listed_cleared_and_not_double_armed(
 
 def test_perform_runs_steps_in_order_and_stops_at_the_first_failure(
         tmp_path: Path) -> None:
-    """Decisions 2 and 3: a list of the server's own ops runs in order, and a failing step
+    """A list of the server's own ops runs in order, and a failing step
     STOPS the sequence with a full account -- the steps that ran, which failed and why, and
     nothing after it. Here an ambiguous name fails the second step; the third never runs."""
     syms = [dsym.Symbol("_main", 0x1000, kind="T"),
@@ -3687,7 +3700,7 @@ def test_send_mouse_takes_the_same_expectation(tmp_path: Path) -> None:
 
 
 def test_perform_stops_at_a_send_keys_step_whose_expectation_missed(tmp_path: Path) -> None:
-    """Decision 3 meets the driver: a sequence whose key was swallowed ENDS there with the
+    """A sequence whose key was swallowed ENDS there with the
     wait's TIMEOUT, naming the step, rather than carrying on as if the program had taken the
     key; the step is in `ran`, with its post and its miss."""
     fake = _names(tmp_path, watched=True)
@@ -3702,7 +3715,7 @@ def test_perform_stops_at_a_send_keys_step_whose_expectation_missed(tmp_path: Pa
 
 
 def test_run_to_takes_a_symbol_or_an_address_like_the_readers_do(tmp_path: Path) -> None:
-    """Decision 11 reaches `run_to`: a symbol resolves through the same path the breakpoint
+    """A symbol resolves through the same path the breakpoint
     and reader tools use (the code selector in protected mode, the paragraph in real mode),
     a raw SEG:OFF is taken as written, and a name absent from this build is refused before
     anything runs. The reply names the ref and the target it resolved to."""
@@ -4013,7 +4026,7 @@ def test_perform_a_running_ok_step_leaves_the_machine_as_it_found_it(tmp_path: P
 
 def test_perform_waits_for_a_stop_before_a_console_step_after_a_resume(
         tmp_path: Path) -> None:
-    """Decision 37: a `resume` that leaves the machine running ends the console-driven part.
+    """A `resume` that leaves the machine running ends the console-driven part.
     A running-OK op (`status`) may follow at once; a CONSOLE op (`registers`) makes the
     sequence WAIT for the next stop first. The fake stays running, so the wait runs out: the
     list ends there with a TIMEOUT naming the boundary, the console step never dispatched into
@@ -4024,7 +4037,7 @@ def test_perform_waits_for_a_stop_before_a_console_step_after_a_resume(
     # a running-OK op after resume is fine (it does not touch the console)
     ok = server.perform(steps=[{"op": "resume"}, {"op": "status"}], settle_seconds=0.5)
     assert ok["status"] == "ok", ok
-    # a console op after resume, with the machine never stopping, ends the list (decision 37)
+    # a console op after resume, with the machine never stopping, ends the list
     blocked = server.perform(steps=[{"op": "resume"}, {"op": "registers"}], settle_seconds=0.5)
     assert blocked["status"] == "ok" and blocked["verdict"] == "TIMEOUT", blocked
     assert "still running" in blocked["note"] and blocked["steps_completed"] == 1, blocked
@@ -4064,7 +4077,7 @@ def test_perform_tail_says_so_if_the_machine_never_stops(tmp_path: Path) -> None
 
 def test_perform_console_step_after_resume_runs_once_the_machine_stops(
         tmp_path: Path) -> None:
-    """Decision 37's WIN, mid-sequence: resume leaves the machine running, and a CONSOLE op
+    """The win, mid-sequence: resume leaves the machine running, and a CONSOLE op
     that follows waits for the stop and THEN runs. `where()` refuses twice (running) then
     succeeds (a breakpoint fired), so the wait bridges the resume and `registers` dispatches.
     Without the wait clearing `running`, the console op would be refused or sent into the
@@ -4078,7 +4091,7 @@ def test_perform_console_step_after_resume_runs_once_the_machine_stops(
 
 
 def test_run_to_with_a_cold_control_and_an_expired_bound_is_invalid(tmp_path: Path) -> None:
-    """Decision 12 of the emulator roadmap: with a control armed, a bound that ran out and a
+    """With a control armed, a bound that ran out and a
     control that NEVER fired proves nothing about the target, so the reply is INVALID
     (`control_silent`) with the account and the interrupted stop's survey attached, and no
     verdict. A control that DID fire keeps the TIMEOUT, because then the silence is a
@@ -4295,7 +4308,7 @@ def test_perform_bad_arguments_for_a_step_are_reported_not_crashed(tmp_path: Pat
 
 
 def test_start_with_a_plan_runs_it_on_the_fresh_session(tmp_path: Path) -> None:
-    """Decision 2's other moment: `start(plan=...)` runs the plan through the SAME executor,
+    """`start(plan=...)` runs the plan through the SAME executor,
     and folds the started-reply in under `start` so a caller sees both the boot and the plan.
     Driven with a FakeSession installed by hand, since `start` itself boots an emulator."""
     conf = tmp_path / "g.conf"
@@ -4414,7 +4427,7 @@ def test_start_with_a_plan_keeps_session_as_the_last_key(tmp_path: Path,
 
 def test_breakpoint_clear_by_ref_takes_the_family_without_touching_watches(
         tmp_path: Path) -> None:
-    """`breakpoint_clear` clears breakpoints AND interrupts (decision 10's family), and a
+    """`breakpoint_clear` clears breakpoints AND interrupts, and a
     watch of the same session is left alone -- that is `watch_clear`'s job."""
     syms = [dsym.Symbol("_uicue_apply", 0x3D5E0, kind="T")]
     fake = _names(tmp_path, symbols=syms)
@@ -4447,7 +4460,7 @@ def test_breakpoint_at_an_unresolved_name_is_kept_not_armed(tmp_path: Path) -> N
 
 
 def test_breakpoint_list_shows_armed_unresolved_and_foreign(tmp_path: Path) -> None:
-    """Decision 33: a declaration is armed/unresolved/gone, and a BP the store did not put
+    """A declaration is armed/unresolved/gone, and a BP the store did not put
     there is foreign, listed and never deleted."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("_main", 0x16DD80, kind="T")])
     server.breakpoint_at(ref="_main")            # armed
@@ -4472,7 +4485,7 @@ def test_breakpoint_clear_disarms_only_its_own_and_leaves_the_foreign(
 
 
 def test_symbols_load_rearms_a_declaration_at_its_new_address(tmp_path: Path) -> None:
-    """Decision 7 / example R4: a breakpoint declared by name, then a rebuild moves the
+    """A breakpoint declared by name, then a rebuild moves the
     symbol; symbols_load re-resolves and re-arms it at the new address by itself."""
     nm = tmp_path / "one.nm"
     nm.write_text("0016dd80 T _main\n", encoding="utf-8")
@@ -4487,7 +4500,7 @@ def test_symbols_load_rearms_a_declaration_at_its_new_address(tmp_path: Path) ->
 
 
 def test_watch_add_refuses_show_and_change_on_one_address(tmp_path: Path) -> None:
-    """Decision 29 at the tool: one address may not be both a show and a
+    """One address may not be both a show and a
     change watch."""
     _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
     r = server.watch_add(ref="g_rate", mode="show", length=4, fmt="u32")
@@ -4844,7 +4857,7 @@ def test_watch_clear_skips_an_unresolvable_change_and_still_clears_the_store(
 
 
 def test_read_memory_takes_a_symbol_or_a_seg_off_ref(tmp_path: Path) -> None:
-    """Decision 11 reaches the readers as ONE spelling (owner's QA call): `read_memory`
+    """The readers take ONE spelling: `read_memory`
     locates its address from a symbol OR a raw SEG:OFF `ref`, and both read the same place.
     The numeric segment/offset pair a reader once also took is gone -- one way to say one
     address. A protected-mode data symbol resolves against the live DS selector."""
@@ -8195,7 +8208,7 @@ def test_a_queued_raw_breakpoint_a_stop_cannot_survey_blames_the_survey_not_the_
 
 def test_a_show_watch_under_a_queued_ref_arms_nothing(tmp_path: Path) -> None:
     """A show watch arms nothing ever: a breakpoint queued under its ref while the guest runs
-    arms the breakpoint alone at the stop, never a memory trap the watch would then read."""
+    arms the breakpoint alone at the stop, never a memory watch beside it."""
     fake = _names(tmp_path, mode="Real")
     _ok(server.watch_add(ref="0814:0100", mode="show", length=2))
     server.status()

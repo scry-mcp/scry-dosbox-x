@@ -24,23 +24,23 @@ ooooCode Overviewooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 00A7:0001174B C3ret
 00A7:0001174C 90nop
 ooooOutputoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-------------------------------------------------------------------------
-00. BPINT 31 AH=02
+00. BPPM 00AF:00019A16 (00)
+01. BPPM 00AF:00019A15 (00)
+02. BPPM 00AF:00019A14 (00)
+03. BPINT 31 AH=02
+DEBUG: Set prot-mode memory breakpoint at 00AF:00019A17
 Breakpoint list:
 -------------------------------------------------------------------------
-00. BPINT 31 AH=02
+00. BPPM 00AF:00019A17 (00)
+01. BPPM 00AF:00019A16 (00)
+02. BPPM 00AF:00019A15 (00)
+03. BPPM 00AF:00019A14 (00)
+04. BPINT 31 AH=02
 Breakpoint list:
 -------------------------------------------------------------------------
-00. BPINT 31 AH=02
-Breakpoint list:
--------------------------------------------------------------------------
-00. BPINT 31 AH=02
-DEBUG: Set prot-mode memory breakpoint at 00AF:00019A14
-Breakpoint list:
--------------------------------------------------------------------------
-00. BPPM 00AF:00019A14 (00)
-01. BPINT 31 AH=02
-Breakpoint list:
--------------------------------------------------------------------------
-00. BPPM 00AF:00019A14 (00)
-01. BPINT 31 AH=02
+00. BPPM 00AF:00019A17 (00)
+01. BPPM 00AF:00019A16 (00)
+02. BPPM 00AF:00019A15 (00)
+03. BPPM 00AF:00019A14 (00)
+04. BPINT 31 AH=02
 I-> _
