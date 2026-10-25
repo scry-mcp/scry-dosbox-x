@@ -15,8 +15,8 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
+from dosbox_x_server_support import FakeSession, clean_session, install  # noqa: F401
 from test_dosbox_x_machine import Bench
-from test_dosbox_x_server import FakeSession, clean_session, install  # noqa: F401
 
 import dosbox_collect as dcollect
 import dosbox_dump as dumping

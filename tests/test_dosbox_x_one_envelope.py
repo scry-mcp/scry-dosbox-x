@@ -13,7 +13,7 @@ import pytest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from test_dosbox_x_server import clean_session, install  # noqa: E402,F401  (the autouse teardown)
+from dosbox_x_server_support import clean_session, install  # noqa: E402,F401  (the autouse teardown)
 
 import dosbox_checks as checks  # noqa: E402
 import dosbox_mcp  # noqa: E402

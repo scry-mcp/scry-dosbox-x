@@ -11,9 +11,7 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
-from test_dosbox_x_code import pr32_machine
-from test_dosbox_x_running_table import _running
-from test_dosbox_x_server import (  # noqa: F401
+from dosbox_x_server_support import (  # noqa: F401
     FakeSession,
     NamesFake,
     _Booted,
@@ -23,6 +21,8 @@ from test_dosbox_x_server import (  # noqa: F401
     documented,
     install,
 )
+from test_dosbox_x_code import pr32_machine
+from test_dosbox_x_running_table import _running
 
 import dosbox_arming as arming
 import dosbox_comment_file as cf

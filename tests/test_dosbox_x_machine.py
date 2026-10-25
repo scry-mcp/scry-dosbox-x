@@ -13,7 +13,7 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
-from test_dosbox_x_server import FakeSession, clean_session, install  # noqa: F401
+from dosbox_x_server_support import FakeSession, clean_session, install  # noqa: F401
 
 import dosbox_console as dcons
 import dosbox_logs as dlogs

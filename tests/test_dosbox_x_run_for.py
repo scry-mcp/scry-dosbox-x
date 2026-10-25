@@ -7,10 +7,10 @@ from types import SimpleNamespace
 from typing import Any, TypeVar, cast
 
 import pytest
+from dosbox_x_server_support import clean_session, install  # noqa: F401  (the autouse teardown)
 from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 from test_dosbox_x_debug import RESUME_HALTED, Debugger
-from test_dosbox_x_server import clean_session, install  # noqa: F401  (the autouse teardown)
 
 import dosbox_arming as arming
 import dosbox_console as dcons

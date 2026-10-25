@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from test_dosbox_x_server import _names, clean_session, install  # noqa: F401
+from dosbox_x_server_support import _names, clean_session, install  # noqa: F401
 
 import dosbox_state as dstate
 import dosbox_symbols as dsym

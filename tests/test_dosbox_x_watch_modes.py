@@ -11,8 +11,8 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
+from dosbox_x_server_support import _start_over_a_store, clean_session  # noqa: F401
 from test_dosbox_x_comments import _ParkedInRealMode, ok
-from test_dosbox_x_server import _start_over_a_store, clean_session  # noqa: F401
 
 import dosbox_arming as arming
 import dosbox_code as code

@@ -175,7 +175,7 @@ class Ledger:
         tag = f"[{sec.letter}] {sec.title}" if sec else "(none)"
         with (self.made() / self.transcript.name).open("a", encoding="utf-8") as fh:
             for rec in self.calls:
-                fh.write(json.dumps({"section": tag, "cell": label, "verdict": verdict, **rec},
+                fh.write(json.dumps({"section": tag, "label": label, "verdict": verdict, **rec},
                                     default=str) + "\n")
         self.calls.clear()
 

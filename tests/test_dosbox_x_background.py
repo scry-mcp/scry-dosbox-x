@@ -49,7 +49,7 @@ def test_the_session_spawns_the_emulator_with_the_launch_s_answer(
 
 def test_start_says_what_the_process_was_told(tmp_path: Path,
                                               monkeypatch: pytest.MonkeyPatch) -> None:
-    from test_dosbox_x_server import _start_on_a_booted_fake
+    from dosbox_x_server_support import _start_on_a_booted_fake
     got = _start_on_a_booted_fake(tmp_path, monkeypatch)
     assert got["status"] == "ok" and got["background"] is True, got
     server.close()
@@ -60,7 +60,7 @@ def test_start_says_what_the_process_was_told(tmp_path: Path,
 
 def test_a_shared_start_goes_in_front_unless_told_otherwise(tmp_path: Path,
                                                            monkeypatch: pytest.MonkeyPatch) -> None:
-    from test_dosbox_x_server import _start_on_a_booted_fake, placed_by
+    from dosbox_x_server_support import _start_on_a_booted_fake, placed_by
     placed_by(tmp_path, monkeypatch, "-set\nsdl display=1\n")
     shared = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True)
     assert shared["status"] == "ok" and shared["background"] is False, shared

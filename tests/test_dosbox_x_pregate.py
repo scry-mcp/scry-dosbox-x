@@ -12,7 +12,7 @@ from unittest import mock
 
 import fold_calls
 import pytest
-from test_dosbox_x_server import _names, clean_session, install  # noqa: F401
+from dosbox_x_server_support import _names, clean_session, install  # noqa: F401
 
 import dosbox_find as finder
 import dosbox_launch as dlaunch

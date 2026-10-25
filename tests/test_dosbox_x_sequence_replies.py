@@ -10,8 +10,8 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
+from dosbox_x_server_support import _names, clean_session  # noqa: F401
 from scry_core import sequence as executor
-from test_dosbox_x_server import _names, clean_session  # noqa: F401
 
 import dosbox_running as running
 import dosbox_sequence as sequence

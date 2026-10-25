@@ -13,7 +13,7 @@ from scry_core import recording
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from test_dosbox_x_server import clean_session, install  # noqa: E402,F401
+from dosbox_x_server_support import clean_session, install  # noqa: E402,F401
 
 import dosbox_mcp  # noqa: E402
 import dosbox_x_server as server  # noqa: E402
@@ -135,7 +135,7 @@ def test_a_start_refused_over_the_live_session_keeps_its_recording(
 def test_a_start_with_a_plan_is_exported_and_its_document_replays_on_the_same_double(
         tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """`start(plan=)` steps are recorded; the document replays through `perform`."""
-    from test_dosbox_x_server import _start_on_a_booted_fake
+    from dosbox_x_server_support import _start_on_a_booted_fake
 
     got = _start_on_a_booted_fake(tmp_path, monkeypatch, settle_seconds=0,
                                   plan=[{"op": "write", "ref": "F000:0000", "data_hex": "aa"},

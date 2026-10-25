@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
-from test_dosbox_x_server import _guest, _names
+from dosbox_x_server_support import _guest, _names
 
 import dosbox_inputs as inputs
 import dosbox_launch as dlaunch

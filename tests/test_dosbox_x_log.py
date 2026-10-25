@@ -15,8 +15,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from dosbox_x_server_support import clean_session, install  # noqa: F401  (the autouse teardown)
 from test_dosbox_x_debug import E9_BOOT, E9_HELP, LogSession
-from test_dosbox_x_server import clean_session, install  # noqa: F401  (the autouse teardown)
 
 import dosbox_logs as dlogs
 import dosbox_session as ds

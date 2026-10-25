@@ -17,10 +17,10 @@ from typing import Any, cast
 
 import fold_calls
 import pytest
+from dosbox_x_server_support import returned_key_sets
 from scry_core import log_wait as core_wait
 from scry_core import progress as mprogress
 from scry_core import vocabulary as vocab
-from test_dosbox_x_server import returned_key_sets
 
 import dosbox_console as dcons
 import dosbox_session as ds

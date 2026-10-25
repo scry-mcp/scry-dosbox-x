@@ -8,8 +8,8 @@ from typing import Any
 
 import fold_calls
 import pytest
+from dosbox_x_server_support import NM_TEXT, _names, clean_session  # noqa: F401
 from scry_core import roster
-from test_dosbox_x_server import NM_TEXT, _names, clean_session  # noqa: F401
 
 import dosbox_declarations as dec
 import dosbox_inputs as inputs

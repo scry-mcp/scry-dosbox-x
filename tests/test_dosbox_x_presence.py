@@ -143,7 +143,7 @@ def test_frames_reads_the_count_and_nothing_else() -> None:
 
 def test_a_start_plan_lights_the_window_while_it_runs(monkeypatch: pytest.MonkeyPatch,
                                                       tmp_path: Path) -> None:
-    from test_dosbox_x_server import _start_on_a_booted_fake
+    from dosbox_x_server_support import _start_on_a_booted_fake
 
     import dosbox_state as dstate
     shown: list[str] = []

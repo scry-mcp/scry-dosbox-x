@@ -6,7 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
-from test_dosbox_x_server import _names, clean_session  # noqa: F401
+from dosbox_x_server_support import _names, clean_session  # noqa: F401
 
 import dosbox_arming as arming
 import dosbox_console as dcons

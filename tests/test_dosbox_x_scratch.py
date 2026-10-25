@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 from typing import Any, cast
 
-from test_dosbox_x_server import clean_session, install  # noqa: F401  (the autouse teardown)
+from dosbox_x_server_support import clean_session, install  # noqa: F401  (the autouse teardown)
 
 import dosbox_state as dstate
 import dosbox_x_server as server
@@ -52,7 +52,7 @@ def test_a_server_process_leaves_neither_its_batches_nor_an_unclosed_session_beh
 
 
 def test_the_suites_declaration_store_goes_with_the_test_run(tmp_path: Path) -> None:
-    made = _exits(tmp_path, "import test_dosbox_x_server as t\nt.install()\n"
+    made = _exits(tmp_path, "import dosbox_x_server_support as t\nt.install()\n"
                             "print(__import__('pathlib').Path(t._STORE_TMP).parent)\n")
     assert made.split() == [str(tmp_path)], "the store was not made where it is looked for"
     assert _left(tmp_path, "dosbox-x-") == []

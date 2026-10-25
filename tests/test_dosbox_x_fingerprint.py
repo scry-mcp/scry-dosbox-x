@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from test_dosbox_x_server import _names, build_of, clean_session, install  # noqa: F401
+from dosbox_x_server_support import _names, build_of, clean_session, install  # noqa: F401
 
 import dosbox_declarations as dec
 import dosbox_launch as dlaunch

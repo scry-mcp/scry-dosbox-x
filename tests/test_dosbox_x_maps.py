@@ -9,9 +9,9 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
+from dosbox_x_server_support import clean_session, install  # noqa: F401  (the autouse teardown)
 from scry_core import screen_map
 from test_dosbox_x_screen import screen_bench
-from test_dosbox_x_server import clean_session, install  # noqa: F401  (the autouse teardown)
 
 import dosbox_inputs as inputs
 import dosbox_session as ds
@@ -77,7 +77,7 @@ def test_saved_screens_become_the_file_layer_and_load_back(tmp_path: Path) -> No
 def test_a_start_empties_the_session_layer_and_keeps_the_file(tmp_path: Path,
                                                               monkeypatch: pytest.MonkeyPatch,
                                                               ) -> None:
-    from test_dosbox_x_server import _start_on_a_booted_fake
+    from dosbox_x_server_support import _start_on_a_booted_fake
 
     screen_bench("probe-booted", tmp_path)
     _ok(server.map_write("add", screen="prompt", match=[PROMPT]))

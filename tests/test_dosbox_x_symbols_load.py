@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
-from test_dosbox_x_server import NamesFake, _names, clean_session  # noqa: F401
+from dosbox_x_server_support import NamesFake, _names, clean_session  # noqa: F401
 
 import dosbox_placement as placement
 import dosbox_session as ds

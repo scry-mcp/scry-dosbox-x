@@ -10,7 +10,7 @@ from scry_core import demo, replay
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from test_dosbox_x_server import clean_session, install  # noqa: E402,F401
+from dosbox_x_server_support import clean_session, install  # noqa: E402,F401
 
 import dosbox_x_server as server  # noqa: E402
 

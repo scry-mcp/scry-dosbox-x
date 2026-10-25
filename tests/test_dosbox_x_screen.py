@@ -20,11 +20,11 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
+from dosbox_x_server_support import clean_session, documented, install  # noqa: F401
 from scry_core import png
 from test_dosbox_x_machine import Bench, Logfile, listing
 from test_dosbox_x_run_for import Retraces
 from test_dosbox_x_run_for import cap as cap_vrt
-from test_dosbox_x_server import clean_session, documented, install  # noqa: F401
 
 import dosbox_arming as arming
 import dosbox_checks as checks

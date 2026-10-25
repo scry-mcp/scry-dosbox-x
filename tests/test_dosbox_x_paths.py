@@ -12,8 +12,8 @@ from unittest import mock
 
 import fold_calls
 import pytest
+from dosbox_x_server_support import clean_session, install  # noqa: F401
 from test_dosbox_x_dump import debugger
-from test_dosbox_x_server import clean_session, install  # noqa: F401
 
 import dosbox_launch as dlaunch
 import dosbox_paths as paths
@@ -409,7 +409,7 @@ def test_an_empty_dest_means_none_where_that_is_its_default() -> None:
 
 def test_a_map_with_a_code_page_byte_loads_and_one_the_host_will_not_read_is_refused(
         tmp_path: Path) -> None:
-    from test_dosbox_x_server import _names
+    from dosbox_x_server_support import _names
     nm = tmp_path / "cp437.nm"
     nm.write_bytes(b"0016dd80 T _main\n0016dd90 T _caf\x82\n")
     _names(tmp_path)

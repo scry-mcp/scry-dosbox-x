@@ -17,9 +17,9 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
+from dosbox_x_server_support import SELINFO_SCREEN, clean_session, install  # noqa: F401
 from test_dosbox_x_debug import Debugger
 from test_dosbox_x_run_for import live
-from test_dosbox_x_server import SELINFO_SCREEN, clean_session, install  # noqa: F401
 
 import dosbox_arming as arming
 import dosbox_binary as binaries

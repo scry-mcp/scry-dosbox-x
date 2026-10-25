@@ -17,6 +17,12 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from dosbox_x_server_support import (  # noqa: F401
+    FakeSession,
+    _start_over_a_store,
+    clean_session,
+    install,
+)
 from test_dosbox_x_comments import (
     STAMP,
     Protected,
@@ -27,12 +33,6 @@ from test_dosbox_x_comments import (
     ok,
     probe_table,
     refused,
-)
-from test_dosbox_x_server import (  # noqa: F401
-    FakeSession,
-    _start_over_a_store,
-    clean_session,
-    install,
 )
 
 import dosbox_comment_file as cf

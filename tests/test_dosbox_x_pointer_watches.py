@@ -11,8 +11,8 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from dosbox_x_server_support import NamesFake, _names, clean_session  # noqa: F401
 from scry_core import value_format as vf
-from test_dosbox_x_server import NamesFake, _names, clean_session  # noqa: F401
 
 import dosbox_arming as arming
 import dosbox_declarations as dec
