@@ -63,6 +63,12 @@ the placement helper `WINDOW_APP` names where to put it (the [bricks demo's
 README](demos/bricks/README.md) says what the helper prints). Everything about your project
 comes from you; the server carries no default that points anywhere.
 
+## Platforms
+
+macOS. The server reads DOSBox-X's debugger through a POSIX pseudo-terminal, which Windows does not
+have: there it loads, and `start` and `build_check` refuse, saying why. Windows comes once a channel
+that replaces the terminal is in place. Linux is not supported: nothing here has run on it.
+
 ## See it run
 
 [`demos/bricks/`](demos/bricks/) is a small game this repository builds to be debugged, and a
