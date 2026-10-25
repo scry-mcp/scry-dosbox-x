@@ -99,7 +99,7 @@ class Process:
     """The emulator's process, terminal and sockets."""
 
     #: The guardian beside the emulator (`scry_core.guardian`).
-    guard: subprocess.Popen[bytes] | None = None
+    guard: guardian.Guard | None = None
     launch: dlaunch.Launch
     proc: subprocess.Popen[bytes]
 

@@ -20,5 +20,5 @@ def build(where: Path, *, version: str = f"sys.stderr.write({BANNER!r}); sys.exi
                              f"if sys.argv[1:2] == ['-helpdebug']:\n    {helpdebug}\n")
     if exe.suffix == ".cmd":           # read from the file the host runs
         with exe.open("a", encoding="utf-8") as fh:
-            fh.write(f"rem {mark}\r\n")
+            fh.write(f"@rem {mark}\r\n")
     return exe

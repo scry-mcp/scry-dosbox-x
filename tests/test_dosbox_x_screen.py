@@ -20,7 +20,7 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
-from dosbox_x_server_support import clean_session, documented, install  # noqa: F401
+from dosbox_x_server_support import MODE_BITS, NO_SUCH_HOME, clean_session, documented, install  # noqa: F401
 from scry_core import png
 from test_dosbox_x_machine import Bench, Logfile, listing
 from test_dosbox_x_run_for import Retraces
@@ -383,6 +383,7 @@ def test_palette_refuses_an_argument_before_anything_is_typed(
     assert s.asked == []
 
 
+@NO_SUCH_HOME
 def test_perform_refuses_a_home_that_does_not_resolve_before_any_step_runs(
         tmp_path: Path) -> None:
     """`~somebody` naming no account cannot become a path: judged with the whole list, so the
@@ -412,6 +413,7 @@ def test_a_dest_from_home_passes_the_gate_expanded(monkeypatch: pytest.MonkeyPat
         checks.check("palette", dest="pal.png")
 
 
+@MODE_BITS
 def test_a_dest_under_a_directory_nobody_may_search_is_refused_not_raised(
         tmp_path: Path) -> None:
     s = bench("probe-booted", tmp_path)

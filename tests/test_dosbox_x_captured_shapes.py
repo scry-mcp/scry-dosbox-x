@@ -119,7 +119,8 @@ def test_a_build_without_the_debugger_lists_the_option_too_and_is_refused_by_its
         assert got["status"] == status == said["status"], (record, got)
         assert got.get("code") == said["code"], (record, got)
         if said["message"] is not None:
-            assert got["message"] == said["message"].replace("<dir>", str(binary.parent)), got
+            # the record spells the build as POSIX names it; this host's own spelling stands in
+            assert got["message"] == said["message"].replace("<dir>/dosbox-x", str(binary)), got
         else:
             assert (got["debugger"], got["heavy_debug"]) == (said["debugger"],
                                                              said["heavy_debug"]), got

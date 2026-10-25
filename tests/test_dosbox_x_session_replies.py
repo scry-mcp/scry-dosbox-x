@@ -14,6 +14,7 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
+from dosbox_x_server_support import CASED_PATHS
 from scry_core.host_program import absolute as _abs
 from test_dosbox_x_debug import REAL_PANE, Debugger
 from test_dosbox_x_session import _writer
@@ -267,7 +268,7 @@ def test_the_step_and_register_checks_say_the_value_and_its_bound() -> None:
             ds.check_step("over", count)
     with pytest.raises(ds.Invalid) as dest:
         ds.check_frame_args(0, Path(_abs("x", "shot%03d.png")))
-    assert "'/x/shot%03d.png'" in str(dest.value), dest.value
+    assert repr(_abs("x", "shot%03d.png")) in str(dest.value), dest.value
 
 
 def test_a_gone_emulator_says_how_far_into_which_wait(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -517,6 +518,7 @@ def _dumper(tmp_path: Path, said: str, writes: bool, sub: str = "out") -> Any:
                            command=command, _memdump_candidates=lambda: list(cands))
 
 
+@CASED_PATHS
 def test_a_dump_refusal_names_dest_and_quotes_what_the_debugger_showed(
         tmp_path: Path) -> None:
     there = tmp_path / "out" / "d.bin"
@@ -537,6 +539,7 @@ def test_a_dump_refusal_names_dest_and_quotes_what_the_debugger_showed(
     assert str(tmp_path / ds.MEMDUMP_NAME) in str(nowhere.value), nowhere.value
 
 
+@CASED_PATHS
 def test_a_dump_the_host_could_not_place_says_whether_its_file_was_removed(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     def failed(*_: Any) -> Path:

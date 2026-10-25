@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 from typing import Any, cast
@@ -31,7 +32,9 @@ def test_build_check_answers_the_three_fields_and_asks_the_build_it_resolved(
     assert (got["binary"], got["binary_origin"], got["version"]) == (str(mine), "argument",
                                                                      BANNER)
     plain = cast(dict[str, Any], server.build_check())
-    assert (plain["binary"], plain["binary_origin"]) == (str(on_path), "PATH"), plain
+    # Windows' lookup spells the extension as PATHEXT does, so names are compared by the host's case
+    assert (os.path.normcase(plain["binary"]), plain["binary_origin"]) == (
+        os.path.normcase(on_path), "PATH"), plain
 
 
 def test_build_check_on_a_build_with_no_version_still_answers(tmp_path: Path) -> None:

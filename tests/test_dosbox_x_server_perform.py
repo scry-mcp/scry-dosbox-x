@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 import json
+import os
 import shutil
 import subprocess
 import time
@@ -762,8 +763,9 @@ def test_start_from_the_path_with_a_plan_says_which_build_under_start(
     got = _start_on_a_booted_fake(tmp_path, monkeypatch, plan=[{"op": "status"}], settle_seconds=0,
                                   which=False)
     assert got["status"] == "ok", got
-    assert (got["start"]["binary"], got["start"]["binary_origin"], got["start"]["version"]) == (
-        str(on_path), "PATH", "DOSBox-X version path"), got
+    assert (os.path.normcase(got["start"]["binary"]), got["start"]["binary_origin"],
+            got["start"]["version"]) == (os.path.normcase(on_path), "PATH",
+                                         "DOSBox-X version path"), got
 
 
 def test_start_with_a_plan_keeps_session_as_the_last_key(tmp_path: Path,

@@ -22,6 +22,7 @@ from dosbox_x_server_support import (
     _NOPG_LINE,
     _PAGE_LINE,
     FFMPEG_FIX,
+    NO_SUCH_HOME,
     POSIX_SESSION,  # noqa: E402
     FakeSession,
     NamesFake,
@@ -34,7 +35,6 @@ from dosbox_x_server_support import (
     _tools_called_in_tests,
     _typed_into,
     clean_session,  # noqa: E402, F401
-    in_tmp,
     install,
     live_callers,
     returned_key_sets,
@@ -47,6 +47,7 @@ from scry_core import (
     reply_schema,
 )
 from scry_core.host_program import absolute as _abs
+from scry_core.host_program import temporary as _tmp
 
 import dosbox_arming as arming
 import dosbox_binary as binaries
@@ -308,17 +309,17 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         "map_write add": lambda: server.map_write("add", screen="s", match=[[0, 0, 1, 1]]),
         "map_find": server.map_find,
         "read_memory": lambda: server.read_memory(ref="0000:00000000"),
-        "memdump": lambda: server.memdump(ref="0000:00000000", length=8, dest=in_tmp("x")),
+        "memdump": lambda: server.memdump(ref="0000:00000000", length=8, dest=_tmp("x")),
         "find": lambda: server.find(ref="0000:00000000", length=8, data_hex="00"),
         "scan start": lambda: server.scan("start", ref="0000:00000000", length=8),
         "scan filter": lambda: server.scan("filter", operator="=", value=0),
         "scan clear": lambda: server.scan("clear"),
         "captures": server.captures,
-        "capture_frame": lambda: server.capture_frame(frame=0, dest=in_tmp("x.png")),
+        "capture_frame": lambda: server.capture_frame(frame=0, dest=_tmp("x.png")),
         "log_wait": lambda: server.log_wait(channel="guest", pattern="x", seconds=1.0),
         "run_to": lambda: server.run_to(ref="0000:0000", control="0000:0020", seconds=1.0),
         "run_for": lambda: server.run_for(frames=1),
-        "trace": lambda: server.trace(instructions=1, dest=in_tmp("x.trace")),
+        "trace": lambda: server.trace(instructions=1, dest=_tmp("x.trace")),
         "step": lambda: server.step(mode="over", count=1),
         "symbols_find": lambda: server.symbols_find(name="_main"),
         "disassemble": lambda: server.disassemble(ref="0814:0100"),
@@ -348,7 +349,7 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         "comment_list": server.comment_list,
         "comment_write delete": lambda: server.comment_write("delete", ref="_main"),
         "comment_write save": lambda: server.comment_write(
-            "save", dest=in_tmp("x.comments.tsv")),
+            "save", dest=_tmp("x.comments.tsv")),
         "comment_write load": lambda: server.comment_write("load", path=str(nm)),
     }
     callers = live_callers()
@@ -757,10 +758,11 @@ def test_an_omitted_capture_source_stays_absent_rather_than_becoming_a_path(
 
     fake.frame = frame  # type: ignore[method-assign]
     server.capture_frame(5, str(tmp_path / "shot.png"))
-    assert seen == [Path(_abs("caps", "run_001.avi"))], "the default source is the largest capture"
+    # the double's own capture, spelled as it is in `install`
+    assert seen == [Path("/caps/run_001.avi")], "the default source is the largest capture"
 
 
-@pytest.mark.parametrize("bad", ["~nosuchuser-here/x", "~\x00/x"])
+@pytest.mark.parametrize("bad", [pytest.param("~nosuchuser-here/x", marks=NO_SUCH_HOME), "~\x00/x"])
 def test_a_tilde_user_or_a_nul_is_a_refusal_and_not_a_traceback(
         tmp_path: Path, bad: str) -> None:
     got = cast(dict[str, Any], server.start(conf=bad, cwd=str(tmp_path), session_seconds=30))
@@ -1125,7 +1127,7 @@ def test_capture_frame_replies_with_the_source_it_read_and_the_frame_asked(
         tmp_path: Path) -> None:
     install()
     got = server.capture_frame(frame=3, dest=str(tmp_path / "f.png"))
-    assert got["frame"] == 3 and got["capture_path"] == _abs("caps", "run_001.avi"), got
+    assert got["frame"] == 3 and got["capture_path"] == str(Path("/caps/run_001.avi")), got
     assert "at_frame" not in got
     own = tmp_path / "run_000.avi"
     own.write_bytes(b"RIFF")

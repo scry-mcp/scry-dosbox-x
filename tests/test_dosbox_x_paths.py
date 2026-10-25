@@ -12,7 +12,7 @@ from unittest import mock
 
 import fold_calls
 import pytest
-from dosbox_x_server_support import clean_session, install  # noqa: F401
+from dosbox_x_server_support import MODE_BITS, clean_session, install  # noqa: F401
 from scry_core.host_program import absolute as _abs
 from test_dosbox_x_dump import debugger
 
@@ -107,6 +107,7 @@ def test_an_input_file_is_a_regular_file_there(tmp_path: Path) -> None:
             paths.input_file("source", value, "symbol file")
 
 
+@MODE_BITS
 def test_a_path_the_host_will_not_look_at_or_read_is_refused_not_raised(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Before 3.14 a stat can raise rather than answer, a resolve can raise on a loop, and a
@@ -408,6 +409,7 @@ def test_an_empty_dest_means_none_where_that_is_its_default() -> None:
 # ------------------------------------------------------------------ the readers
 
 
+@MODE_BITS
 def test_a_map_with_a_code_page_byte_loads_and_one_the_host_will_not_read_is_refused(
         tmp_path: Path) -> None:
     from dosbox_x_server_support import _names

@@ -18,7 +18,7 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
-from dosbox_x_server_support import POSIX_SESSION
+from dosbox_x_server_support import CASED_PATHS, MODE_BITS, POSIX_SESSION
 from scry_core import guardian
 from scry_core import vocabulary as vocab
 from scry_core.host_program import absolute as _abs
@@ -432,8 +432,9 @@ def test_a_still_whose_destination_already_exists_is_refused_before_ffmpeg_runs(
 
 
 def test_a_destination_that_is_a_numbering_template_is_refused(
-        tmp_path: Path) -> None:
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """`-f image2` reads the path as a printf TEMPLATE."""
+    monkeypatch.setattr("shutil.which", lambda name: name)   # an ffmpeg, never run
     fake = SimpleNamespace(captures=lambda: [{"path": str(tmp_path / "cap.avi")}])
     with pytest.raises(ds.Invalid, match="containing `%` is refused"):
         ds.Session.frame(fake, 7, tmp_path / "shot%03d.png")  # type: ignore[arg-type]
@@ -443,8 +444,9 @@ def test_a_destination_that_is_a_numbering_template_is_refused(
 
 
 def test_a_destination_with_no_directory_is_a_refusal_not_a_traceback(
-        tmp_path: Path) -> None:
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """`tool()` translates only `Invalid`."""
+    monkeypatch.setattr("shutil.which", lambda name: name)   # an ffmpeg, never run
     missing = tmp_path / "missing"
     fake = SimpleNamespace(captures=lambda: [{"path": str(tmp_path / "cap.avi")}])
     with pytest.raises(ds.Invalid, match="is not a directory"):
@@ -468,6 +470,7 @@ def test_a_destination_with_no_directory_is_a_refusal_not_a_traceback(
     assert not missing.exists()
 
 
+@CASED_PATHS
 def test_the_dump_is_looked_for_in_the_working_directory_first(tmp_path: Path) -> None:
     """The one property the whole `memdump` defect was about, asserted by name."""
     conf = tmp_path / "g.conf"
@@ -890,7 +893,9 @@ def test_the_capture_cache_keeps_one_entry_per_file(tmp_path: Path,
     assert len(reads) == 3, "a file replaced at the same size was served from the cache"
 
 
-def test_a_negative_frame_is_refused(tmp_path: Path) -> None:
+def test_a_negative_frame_is_refused(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("shutil.which", lambda name: name)   # an ffmpeg, never run
     with pytest.raises(ds.Invalid, match="not a frame"):
         ds.Session.frame(
             stopped(captures_dir=tmp_path, capture_video=True), -1, tmp_path / "x.png")
@@ -1307,6 +1312,7 @@ def test_a_dangling_symlink_at_either_name_is_refused(tmp_path: Path) -> None:
     assert not victim.exists(), "it wrote through the link, outside the directory"
 
 
+@MODE_BITS
 def test_an_unwritable_working_directory_is_a_refusal_and_not_a_traceback(
         tmp_path: Path) -> None:
     """`tool()` translates only `Invalid`."""

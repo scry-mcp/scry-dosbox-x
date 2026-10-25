@@ -1007,10 +1007,17 @@ _PAGE_LINE = "ECX=000000A7  EBP=002B8690PAGEPSE IOPL3  CPL3\r\n"
 POSIX_SESSION = pytest.mark.skipif(sys.platform == "win32",
                                    reason="a session's terminal and process group are POSIX's")
 
-
-def in_tmp(name: str) -> str:
-    """`name` in a directory every host has, as an absolute path."""
-    return str(Path(tempfile.gettempdir(), name))
+#: Cases a file's mode decides: Windows keeps no mode bit that refuses a read or a write.
+MODE_BITS = pytest.mark.skipif(sys.platform == "win32", reason="Windows keeps no mode bit")
+#: Cases whose file name holds a colon or a newline, which Windows refuses to create.
+POSIX_NAMES = pytest.mark.skipif(sys.platform == "win32",
+                                 reason="Windows forbids a colon or a newline in a file name")
+#: Cases about a dump's two spellings, which Windows compares as one path.
+CASED_PATHS = pytest.mark.skipif(sys.platform == "win32",
+                                 reason="Windows compares paths without their case")
+#: Cases about a `~user` naming no account, which Windows expands to a profile path regardless.
+NO_SUCH_HOME = pytest.mark.skipif(sys.platform == "win32",
+                                  reason="Windows expands any `~user` without asking for it")
 
 def runnable(path: Path) -> Path:
     """`path` named as this host finds a program by name: with `.exe` on Windows."""

@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
+from dosbox_x_server_support import MODE_BITS, POSIX_NAMES
 from scry_core import cancel
 
 import dosbox_inputs as inputs
@@ -377,6 +378,7 @@ def test_snapshot_sends_the_stub_s_command_and_hands_back_the_new_png_or_moves_i
         ds.Session.snapshot(as_session(fake), Path("shot.png"), 5.0)
 
 
+@MODE_BITS
 def test_a_snapshot_that_cannot_be_moved_is_host_failed_naming_where_the_png_is(
         tmp_path: Path) -> None:
     fake = ShotFake(tmp_path / "save")
@@ -503,6 +505,7 @@ def test_a_break_in_that_fails_sends_nothing_and_releases_nothing(tmp_path: Path
     assert fake.control.sent == [] and fake.moves == []
 
 
+@POSIX_NAMES
 def test_a_path_of_two_lines_is_refused_before_the_break_in(tmp_path: Path) -> None:
     fake = StateFake(tmp_path / "sa\nve", parked=False)
     with pytest.raises(ds.Invalid) as exc:
@@ -783,6 +786,7 @@ def test_a_snapshot_waits_for_a_new_whole_png_and_only_for_one(tmp_path: Path) -
     assert Path(str(got["path"])).name == "g_001.png", got
 
 
+@MODE_BITS
 def test_a_state_file_that_cannot_be_opened_is_a_row_with_a_note_never_a_failed_list(
         tmp_path: Path) -> None:
     fake = StateFake(tmp_path / "save")

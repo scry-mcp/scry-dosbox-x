@@ -17,7 +17,7 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
-from dosbox_x_server_support import SELINFO_SCREEN, clean_session, install, runnable  # noqa: F401
+from dosbox_x_server_support import MODE_BITS, SELINFO_SCREEN, clean_session, install, runnable  # noqa: F401
 from test_dosbox_x_debug import Debugger
 from test_dosbox_x_run_for import live
 
@@ -689,6 +689,7 @@ def test_a_dangling_link_where_the_log_opens_is_refused_before_anything_is_typed
     assert link.is_symlink() and not landed.exists() and not dest.exists()
 
 
+@MODE_BITS
 @pytest.mark.parametrize(("mode", "left_open"), [(0o555, False), (0o555, True), (0o666, False)])
 def test_a_working_directory_the_emulator_cannot_write_is_refused_before_anything_is_typed(
         tmp_path: Path, mode: int, left_open: bool) -> None:

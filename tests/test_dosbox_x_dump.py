@@ -15,7 +15,14 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
-from dosbox_x_server_support import FakeSession, clean_session, install  # noqa: F401
+from dosbox_x_server_support import (  # noqa: F401
+    CASED_PATHS,
+    MODE_BITS,
+    POSIX_NAMES,
+    FakeSession,
+    clean_session,
+    install,
+)
 from test_dosbox_x_machine import Bench
 
 import dosbox_collect as dcollect
@@ -97,6 +104,7 @@ def test_the_double_reads_one_command_across_offset_ffff_as_the_debugger_did(
     assert written == (MEMDUMP / "probe-0814-FFF0-wrapped.bin").read_bytes()
 
 
+@POSIX_NAMES
 def test_the_takes_name_double_writes_the_files_the_captured_build_wrote(
         tmp_path: Path) -> None:
     """A named dump lands under that name, an unnamed one under its argument tail."""
@@ -252,6 +260,7 @@ def test_a_dest_under_a_file_is_refused_before_anything_is_typed(tmp_path: Path)
     assert "is not a directory" in got["message"] and s.typed == []
 
 
+@MODE_BITS
 def test_a_dest_that_cannot_be_created_is_the_callers_and_leaves_no_piece(
         tmp_path: Path) -> None:
     """The caller named the path, so a directory that will not take it is `bad_argument`."""
@@ -505,6 +514,7 @@ def test_a_command_that_breaks_after_the_debugger_wrote_leaves_no_file(tmp_path:
     assert got["code"] == "unexpected_answer" and list(s.launch.cwd.iterdir()) == [], got
 
 
+@MODE_BITS
 def test_a_dump_that_cannot_be_moved_is_removed_and_the_reply_says_so(tmp_path: Path) -> None:
     s = debugger(tmp_path)
     shut = tmp_path / "shut"
@@ -538,6 +548,7 @@ def test_a_copy_cut_short_on_another_volume_leaves_no_partial_dest(
     assert list(s.launch.cwd.iterdir()) == []
 
 
+@CASED_PATHS
 @pytest.mark.parametrize("takes_name", [False, True])
 def test_a_dump_on_either_build_is_the_memory_asked_for_and_leaves_no_file(
         tmp_path: Path, takes_name: bool) -> None:
@@ -630,6 +641,7 @@ def test_a_host_error_after_the_debugger_wrote_leaves_no_file_to_refuse_the_next
     assert got["status"] == "ok", got
 
 
+@MODE_BITS
 def test_a_dump_file_that_could_not_be_removed_is_never_said_removed(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     s = debugger(tmp_path)
@@ -652,6 +664,7 @@ def test_a_dump_file_that_could_not_be_removed_is_never_said_removed(
     assert any(s.launch.cwd.iterdir())       # the file is there, as the reply says
 
 
+@MODE_BITS
 def test_a_dump_file_that_could_not_be_removed_is_named_once_under_two_spellings(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Where the filesystem folds case the two spellings are one file, named once on failure."""

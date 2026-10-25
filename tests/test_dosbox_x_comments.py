@@ -12,6 +12,7 @@ from typing import Any, cast
 
 import pytest
 from dosbox_x_server_support import (  # noqa: F401
+    MODE_BITS,
     FakeSession,
     NamesFake,
     _Booted,
@@ -406,6 +407,7 @@ def test_a_running_guest_lists_and_saves_but_add_delete_and_load_refuse(tmp_path
 
 # ----------------------------------------------------------------------------- comment_write save
 
+@MODE_BITS
 def test_save_writes_the_comment_file_sorted_whole(tmp_path: Path) -> None:
     install()
     probe_table()
@@ -429,6 +431,7 @@ def test_an_empty_store_saves_the_header_alone(tmp_path: Path) -> None:
     assert (tmp_path / "e.tsv").read_bytes() == (cf.HEADER + "\n").encode()
 
 
+@MODE_BITS
 def test_save_over_a_comment_file_names_what_it_drops_and_keeps_its_mode(tmp_path: Path) -> None:
     install()
     dest = tmp_path / "c.tsv"

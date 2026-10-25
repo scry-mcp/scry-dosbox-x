@@ -9,10 +9,10 @@ from typing import Any
 
 import fold_calls
 import pytest
-from dosbox_x_server_support import in_tmp
 from scry_core import media_tools
 from scry_core import reply_contract as contract
 from scry_core.host_program import absolute as _abs
+from scry_core.host_program import temporary as _tmp
 
 import dosbox_mcp
 import dosbox_session as ds
@@ -43,7 +43,7 @@ _ARGS: dict[str, dict[str, Any]] = {
     "write": {"ref": "0100:0000", "data_hex": "00"},
     "run_to": {"ref": "0100:0000", "control": "0100:0020"},
     "run_for": {"frames": 1},
-    "trace": {"instructions": 1, "dest": in_tmp("dosbox-x-contract-never-written.trace")},
+    "trace": {"instructions": 1, "dest": _tmp("dosbox-x-contract-never-written.trace")},
     "screen_wait": {"text": "C:"},
     "breakpoint_interrupt": {"number": 0x21},
     "symbols_load": {"path": _abs("nonexistent.nm")},
