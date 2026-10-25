@@ -13,6 +13,7 @@ import time
 from typing import Any
 
 import pytest
+from dosbox_x_server_support import POSIX_SESSION
 from scry_core import guardian
 
 import dosbox_process as dprocess
@@ -108,6 +109,7 @@ def test_an_unreaped_child_is_reported_with_the_wait_it_had(
     assert p.reap_failed == said, p.reap_failed
 
 
+@POSIX_SESSION
 def test_a_close_reports_both_waits_in_its_own_words(monkeypatch: pytest.MonkeyPatch) -> None:
     clock = _Clock(monkeypatch)
     p = _process(_Deaf(clock, None, 1.5))
@@ -118,6 +120,7 @@ def test_a_close_reports_both_waits_in_its_own_words(monkeypatch: pytest.MonkeyP
     assert p.ended_how == "killed" and p.reap_failed == ""
 
 
+@POSIX_SESSION
 def test_a_cancelled_close_still_reaps_and_is_not_run_again(
         monkeypatch: pytest.MonkeyPatch) -> None:
     from scry_core import cancel
@@ -230,6 +233,7 @@ def _until(cond: Any) -> None:
         time.sleep(0.01)
 
 
+@POSIX_SESSION
 def test_the_drain_gathers_while_idle_and_says_how_it_ended() -> None:
     p, w, t = _draining()
     try:
@@ -253,6 +257,7 @@ def test_the_drain_gathers_while_idle_and_says_how_it_ended() -> None:
     os.close(p._master)
 
 
+@POSIX_SESSION
 def test_the_drain_names_a_select_or_a_read_that_failed(
         monkeypatch: pytest.MonkeyPatch) -> None:
     p = dprocess.Process()
@@ -272,6 +277,7 @@ def test_the_drain_names_a_select_or_a_read_that_failed(
     os.close(p._master)
 
 
+@POSIX_SESSION
 def test_the_drain_keeps_the_newest_bytes_and_counts_what_it_dropped(
         monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(dprocess, "DRAIN_KEEP", 8)

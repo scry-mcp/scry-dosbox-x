@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
+from scry_core.host_program import absolute as _abs
 
 import dosbox_checks as checks
 import dosbox_session as ds
@@ -38,7 +39,7 @@ def _refused(tool: str, **given: Any) -> str:
     ("set_register", {"name": "eax", "value": "zz"}, "value='zz'"),
     ("screen_signature", {"crop": [1, 2]}, "crop=[1, 2]"),
     ("screen_view", {"crop": [1, 2]}, "crop=[1, 2]"),
-    ("symbols_load", {"path": "/abs/x.map", "base": "zz"}, "base is 'zz'"),
+    ("symbols_load", {"path": _abs("abs", "x.map"), "base": "zz"}, "base is 'zz'"),
     ("write", {"ref": "0000:0000", "data_hex": "zz"}, "data_hex='zz'"),
     ("send_mouse", {"target": "t", "x": 1},
      "`target` names where the pointer goes: give it, or `x` and `y`, not both"),
@@ -61,7 +62,7 @@ def test_a_refusal_opens_with_the_argument_it_refuses(
     ("run_for", {"milliseconds": 1, "frames": 1}, "exactly one of milliseconds and frames"),
     ("start", {"settle_seconds": 5},
      "`settle_seconds` bounds the waits of a `plan`, and there is no plan"),
-    ("symbols_load", {"path": "/abs/x.map", "base": "0x0", "section_bases": {"a": "0x0"}},
+    ("symbols_load", {"path": _abs("abs", "x.map"), "base": "0x0", "section_bases": {"a": "0x0"}},
      "`base` and `section_bases` are the two kinds of table"),
     ("write", {"ref": "0000:0000", "data_hex": ""}, "data_hex is empty: nothing to write"),
     ("send_keys", {"keys": ["a"], "seconds": 5},

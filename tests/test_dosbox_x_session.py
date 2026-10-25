@@ -18,7 +18,10 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
+from dosbox_x_server_support import POSIX_SESSION
+from scry_core import guardian
 from scry_core import vocabulary as vocab
+from scry_core.host_program import absolute as _abs
 from test_dosbox_x_spawn import Child
 from test_dosbox_x_stub_link import REPORT, Stub
 
@@ -180,6 +183,7 @@ def test_a_port_something_else_holds_is_refused_before_the_emulator_exists() -> 
         held.close()
 
 
+@POSIX_SESSION
 def test_a_dial_that_never_comes_kills_the_child_it_spawned(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """THE ARM THAT MATTERS"""
@@ -194,7 +198,7 @@ def test_a_dial_that_never_comes_kills_the_child_it_spawned(
     with pytest.raises(ds.Invalid, match="never dialled"):
         ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=port))
     dlaunch.listen_input(port).close()
-    assert signalled == [signal.SIGKILL] and len(child.waits) == 1, (signalled, child.waits)
+    assert signalled == [guardian.KILL] and len(child.waits) == 1, (signalled, child.waits)
 
 
 def test_the_program_reaches_the_emulator_as_one_argv_element(conf: Path) -> None:
@@ -365,7 +369,7 @@ def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
     assert fake.reap_failed.startswith("SIGKILL was sent"), (
         f"the session reported nothing about a child it could not reap: "
         f"{fake.reap_failed!r}")
-    assert sent == [signal.SIGTERM, signal.SIGKILL], sent
+    assert sent == [signal.SIGTERM, guardian.KILL], sent
 
     class IgnoresTermDiesOnKill:
         returncode = -9
@@ -393,7 +397,7 @@ def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
         proc=proc, reap_failed="", drain_ended="", _drainer=None,
         _master=-1, _stop=threading.Event(), _signal_group=ok_sent.append)
     assert ds.Session._close(ok) == -9  # type: ignore[arg-type]
-    assert ok_sent == [signal.SIGTERM, signal.SIGKILL], ok_sent
+    assert ok_sent == [signal.SIGTERM, guardian.KILL], ok_sent
     assert proc.stretches == 2, "the control never reached the SIGKILL wait"
     assert ok.reap_failed == "", (
         "a child that WAS reaped after SIGKILL was reported as unreapable, which is "
@@ -412,7 +416,7 @@ def test_a_still_whose_destination_already_exists_is_refused_before_ffmpeg_runs(
         ran.append(argv)
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
-    monkeypatch.setattr(shutil, "which", lambda name: "/usr/bin/ffmpeg")
+    monkeypatch.setattr(shutil, "which", lambda name: _abs("usr", "bin", "ffmpeg"))
     monkeypatch.setattr(subprocess, "run", record_run)
     with pytest.raises(ds.Invalid, match="already exists"):
         ds.Session.frame(fake, 9999, mine)  # type: ignore[arg-type]
@@ -1073,7 +1077,7 @@ def test_an_ack_naming_a_truncated_filename_is_not_an_ack() -> None:
 
     failed = "DEBUG: Variable list save (/PRIVATE/TMP) : failure.\n"
     with pytest.raises(ds.Invalid, match="did not acknowledge"):
-        ds.Session._acked(failed, ds.SYM_SAVE_ECHO, "/private/tmp/x.bin")
+        ds.Session._acked(failed, ds.SYM_SAVE_ECHO, _abs("private", "tmp", "x.bin"))
 
 
 def test_an_ok_from_an_earlier_call_does_not_acknowledge_this_one() -> None:
@@ -1792,7 +1796,7 @@ def test_a_shredded_or_glued_set_is_refused(conf: Path, flags: list[str]) -> Non
     ["-set", "sdl videodriver=cocoa"], ["-set", "log logfile=elsewhere.log"],
     ["-set", "dos  break on int3=false"], ["-set", "serial serial1=disabled"],
     ["-set", "cpu integration device=false"], ["-set", "dosbox captures=/tmp/x"],
-    ["-savedir", "/tmp/states"], ["-c", "GAME.EXE"]])
+    ["-savedir", _abs("tmp", "states")], ["-c", "GAME.EXE"]])
 def test_flags_may_not_retune_what_a_named_argument_owns(conf: Path, flags: list[str]) -> None:
     """`flags` carries the emulator's options, never one a named argument owns."""
     with pytest.raises(ds.Invalid, match="owns"):
@@ -1830,6 +1834,7 @@ def test_the_paging_mark_is_the_stop_surveys_and_a_later_survey_does_not_move_it
     assert session.paging is True, "a later survey moved the stop's paging mark"
 
 
+@POSIX_SESSION
 def test_a_stranger_that_takes_the_port_after_the_check_never_receives_the_input(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A port taken by another process after the check must never receive the input."""
@@ -1894,6 +1899,7 @@ def test_port_0_is_the_kernels_pick_held_from_the_moment_it_is_picked(conf: Path
     dlaunch.validate(launch(conf, input_port=0))
 
 
+@POSIX_SESSION
 def test_a_spawn_that_fails_lets_the_port_go(tmp_path: Path,
                                             monkeypatch: pytest.MonkeyPatch) -> None:
     conf = tmp_path / "g.conf"
@@ -2012,6 +2018,7 @@ def test_the_conf_is_hashed_again_only_when_it_moves(tmp_path: Path) -> None:
         dl.digest = dl_digest
 
 
+@POSIX_SESSION
 def test_the_session_spawns_a_named_guardian_with_its_wall_clock_bound(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     from scry_core import guardian

@@ -5,8 +5,6 @@ the same ending with the guardian withheld, where the emulator outlives it."""
 from __future__ import annotations
 
 import contextlib
-import os
-import signal
 import subprocess
 import sys
 import threading
@@ -15,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from scry_core import guardian
 from test_dosbox_x_server_exit_live import ANSWER_WITHIN_S, BRICKS, ROOT, _alive, _rpc
 
 import dosbox_process as dprocess
@@ -79,7 +78,7 @@ def _end(proc: subprocess.Popen[bytes], pid: int | None) -> None:
     proc.wait()
     if pid is not None and _alive(pid):
         with contextlib.suppress(ProcessLookupError):
-            os.killpg(os.getpgid(pid), signal.SIGKILL)
+            dprocess.signal_group(pid, guardian.KILL)
 
 
 @pytest.mark.parametrize("mode", ["guarded", "bare"])
@@ -92,7 +91,7 @@ def test_a_sigkilled_server_takes_its_emulator_with_it_only_with_the_guardian(
     pid = None
     try:
         pid = _start(proc, 300)
-        proc.send_signal(signal.SIGKILL)
+        proc.kill()
         proc.wait()
         gone = _gone_within(pid, GONE_WITHIN_S)
         assert gone is (mode == "guarded"), (

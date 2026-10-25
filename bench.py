@@ -287,8 +287,15 @@ def stamp() -> dict[str, object]:
                              check=False)
     return {"machine": (machine.stdout + machine.stderr).strip(), "emulator": ver,
             "binary": found.path, "binary_origin": found.origin,
-            "load_average": os.getloadavg()}
+            "load_average": _load_average()}
 
+
+
+def _load_average() -> tuple[float, float, float] | None:
+    if sys.platform == "win32":
+        return None
+    else:
+        return os.getloadavg()
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)

@@ -26,10 +26,12 @@ from dosbox_x_server_support import (  # noqa: E402
     clean_session,  # noqa: E402, F401
     install,
 )
+from scry_core import host_program
 from scry_core import reply_contract as contract
 from scry_core import sequence_account as account
 from scry_core import steps as step_judge
 from scry_core import vocabulary as vocab
+from scry_core.host_program import absolute as _abs
 
 import dosbox_checks as checks
 import dosbox_console as dcons
@@ -107,7 +109,8 @@ def test_input_reaches_a_headless_session_and_the_mouse_needs_no_log(tmp_path: P
     fake = _guest(tmp_path)
     assert cast(dict[str, Any], server.send_keys(keys=["a"]))["route"] == "guest"
     assert cast(dict[str, Any], server.send_mouse(button="left"))["route"] == "guest"
-    fake.launch = dlaunch.Launch(conf=Path("/x.conf"), cwd=Path("/"), seconds=60, logfile=None)
+    fake.launch = dlaunch.Launch(conf=Path(_abs("x.conf")), cwd=Path(_abs()), seconds=60,
+                                 logfile=None)
     nolog = cast(dict[str, Any], server.send_mouse(button="left"))
     assert nolog["status"] == "ok" and nolog["pointer"], nolog
 
@@ -753,10 +756,8 @@ def test_start_with_a_plan_runs_it_on_the_fresh_session(tmp_path: Path) -> None:
 
 def test_start_from_the_path_with_a_plan_says_which_build_under_start(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    on_path = tmp_path / "bin" / "dosbox-x"
-    on_path.parent.mkdir()
-    on_path.write_text('#!/bin/sh\necho "DOSBox-X version path" >&2; exit 1\n', encoding="utf-8")
-    on_path.chmod(0o755)
+    on_path = host_program.write(tmp_path / "bin" / "dosbox-x", "import sys\n"
+                                 "sys.stderr.write('DOSBox-X version path\\n')\nsys.exit(1)\n")
     monkeypatch.setenv("PATH", str(on_path.parent))
     got = _start_on_a_booted_fake(tmp_path, monkeypatch, plan=[{"op": "status"}], settle_seconds=0,
                                   which=False)
@@ -1205,23 +1206,24 @@ def test_the_modifier_vocabulary_is_the_dos_keyboard_s() -> None:
     ("watch_add", {"ref": "_g", "mode": "show", "length": 2, "fmt": "u32"},
      {"ref": "_g", "mode": "change", "length": 4}),
     ("read_memory", {"ref": "00A7:zz"}, {"ref": "00A7:0100"}),
-    ("memdump", {"ref": "_g", "length": 0, "dest": "/x/d.bin"},
-     {"ref": "_g", "length": 8, "dest": "/x/d.bin"}),
+    ("memdump", {"ref": "_g", "length": 0, "dest": _abs("x", "d.bin")},
+     {"ref": "_g", "length": 8, "dest": _abs("x", "d.bin")}),
     ("memdump", {"ref": "_g", "length": 8, "dest": "d.bin"},
-     {"ref": "_g", "length": 8, "dest": "/x/d.bin"}),
+     {"ref": "_g", "length": 8, "dest": _abs("x", "d.bin")}),
     ("write", {"ref": "_g", "data_hex": "abc"}, {"ref": "_g", "data_hex": "abcd"}),
     ("set_register", {"name": "xyz", "value": 1}, {"name": "ax", "value": 1}),
     ("set_register", {"name": "ax", "value": "1"}, {"name": "ax", "value": 0x1234}),
-    ("symbols_load", {"path": "/x/m.map", "base": "1", "section_bases": {"1": "1"}},
-     {"path": "/x/m.map", "base": "1"}),
-    ("symbols_load", {"path": "/x/m.map", "base": 4096},
-     {"path": "/x/m.map", "base": "0x1000"}),
-    ("symbols_load", {"path": "m.map"}, {"path": "/x/m.map"}),
-    ("symbols_load", {"path": "/x/m.map", "types": "t"},
-     {"path": "/x/m.map", "types": "/x/t"}),
-    ("capture_frame", {"frame": -1, "dest": "/x/s.png"}, {"frame": 3, "dest": "/x/s.png"}),
-    ("capture_frame", {"frame": 3, "dest": "/x/s.png", "capture_path": "c.avi"},
-     {"frame": 3, "dest": "/x/s.png", "capture_path": "/x/c.avi"}),
+    ("symbols_load", {"path": _abs("x", "m.map"), "base": "1", "section_bases": {"1": "1"}},
+     {"path": _abs("x", "m.map"), "base": "1"}),
+    ("symbols_load", {"path": _abs("x", "m.map"), "base": 4096},
+     {"path": _abs("x", "m.map"), "base": "0x1000"}),
+    ("symbols_load", {"path": "m.map"}, {"path": _abs("x", "m.map")}),
+    ("symbols_load", {"path": _abs("x", "m.map"), "types": "t"},
+     {"path": _abs("x", "m.map"), "types": _abs("x", "t")}),
+    ("capture_frame", {"frame": -1, "dest": _abs("x", "s.png")},
+     {"frame": 3, "dest": _abs("x", "s.png")}),
+    ("capture_frame", {"frame": 3, "dest": _abs("x", "s.png"), "capture_path": "c.avi"},
+     {"frame": 3, "dest": _abs("x", "s.png"), "capture_path": _abs("x", "c.avi")}),
 ])
 def test_every_registry_entry_refuses_its_bad_value_and_passes_its_good_one(
         op: str, bad: dict[str, Any], good: dict[str, Any]) -> None:

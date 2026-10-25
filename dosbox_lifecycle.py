@@ -19,6 +19,7 @@ import dosbox_launch as dlaunch
 import dosbox_paths as paths
 import dosbox_placement as placement
 import dosbox_presence as dpresence
+import dosbox_process as dprocess
 import dosbox_running as running
 import dosbox_sequence as sequence
 import dosbox_session as ds
@@ -58,6 +59,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         paths.absolute("binary", binary)
     window.check_display(shared, display)
     shown_display = window.shared_display(shared, display)
+    dprocess.refuse_without_a_terminal()
     if STATE.session is not None:
         if STATE.session.alive():
             raise ds.Invalid("session_live", "a session is already live. `close` it first: two "

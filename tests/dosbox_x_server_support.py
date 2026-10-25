@@ -10,6 +10,7 @@ import itertools
 import json
 import re
 import shutil
+import sys
 import tempfile
 import textwrap
 import time
@@ -19,11 +20,12 @@ from typing import Any, cast
 from unittest import mock
 
 import pytest
-from scry_core import log_wait as core_wait
-from scry_core import reply_contract as contract
 from scry_core import (
+    host_program,
     screen_map,
 )
+from scry_core import log_wait as core_wait
+from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 
 import dosbox_console as dcons
@@ -999,12 +1001,27 @@ _NOPG_LINE = "ECX=00000000  EBP=00000000NOPG  IOPL0  CPL0\r\n"
 _PAGE_LINE = "ECX=000000A7  EBP=002B8690PAGEPSE IOPL3  CPL3\r\n"
 
 
+
+#: The cases a real session's own plumbing decides: its pseudo-terminal, the descriptor the drain
+#: selects on, its process group. Windows has none of them, and no session starts there.
+POSIX_SESSION = pytest.mark.skipif(sys.platform == "win32",
+                                   reason="a session's terminal and process group are POSIX's")
+
+
+def in_tmp(name: str) -> str:
+    """`name` in a directory every host has, as an absolute path."""
+    return str(Path(tempfile.gettempdir(), name))
+
+def runnable(path: Path) -> Path:
+    """`path` named as this host finds a program by name: with `.exe` on Windows."""
+    return path.with_name(path.name + ".exe") if sys.platform == "win32" else path
+
 def placed_by(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, said: str) -> Path:
     """A placement helper at `WINDOW_APP` that prints `said` and records how it was asked."""
     asked = tmp_path / "helper-asked.txt"
-    exe = tmp_path / "place-window"
-    exe.write_text(f'#!/bin/sh\necho "$@" >> "{asked}"\nprintf %s "{said}"\n', encoding="utf-8")
-    exe.chmod(0o755)
+    exe = host_program.write(tmp_path / "place-window", "import sys\n"
+                             f"open({str(asked)!r}, 'a').write(' '.join(sys.argv[1:]) + '\\n')\n"
+                             f"sys.stdout.buffer.write({said.encode()!r})\n")
     monkeypatch.setenv("WINDOW_APP", str(exe))
     monkeypatch.delenv("WINDOW_SHARED_DISPLAY", raising=False)
     return asked

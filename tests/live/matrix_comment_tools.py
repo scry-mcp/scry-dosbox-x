@@ -12,6 +12,7 @@ from __future__ import annotations
 import contextlib
 import os
 import re
+import sys
 import time
 from collections.abc import Iterator
 from pathlib import Path
@@ -230,7 +231,8 @@ def _refusals() -> None:
             all(refused(r, "bad_argument") for r in got), "; ".join(said(r, 40) for r in got))
     store = Path(str(must(M.call(server.comment_list), "the store's path")["declarations"]["path"]))
     fifo = Path(M.fresh(".fifo"))
-    os.mkfifo(fifo)
+    if sys.platform != "win32":
+        os.mkfifo(fifo)
     notes = Path(M.fresh(".txt"))
     notes.write_bytes(b"somebody's notes\n")
     before = store.read_bytes()

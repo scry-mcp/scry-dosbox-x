@@ -14,6 +14,7 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
+from scry_core.host_program import absolute as _abs
 from test_dosbox_x_debug import REAL_PANE, Debugger
 from test_dosbox_x_session import _writer
 
@@ -265,7 +266,7 @@ def test_the_step_and_register_checks_say_the_value_and_its_bound() -> None:
         with pytest.raises(ds.Invalid, match="a step count is 1 to"):
             ds.check_step("over", count)
     with pytest.raises(ds.Invalid) as dest:
-        ds.check_frame_args(0, Path("/x/shot%03d.png"))
+        ds.check_frame_args(0, Path(_abs("x", "shot%03d.png")))
     assert "'/x/shot%03d.png'" in str(dest.value), dest.value
 
 
@@ -650,7 +651,7 @@ def test_a_frame_is_taken_from_the_capture_the_caller_named(
     def record_run(argv: list[str], **_k: object) -> SimpleNamespace:
         ran.append(argv)
         return SimpleNamespace(returncode=1, stdout="", stderr="no")
-    monkeypatch.setattr(shutil, "which", lambda name: "/usr/bin/ffmpeg")
+    monkeypatch.setattr(shutil, "which", lambda name: _abs("usr", "bin", "ffmpeg"))
     monkeypatch.setattr(subprocess, "run", record_run)
     fake = SimpleNamespace(captures=lambda: [{"path": str(tmp_path / "cap.avi")}])
     other = tmp_path / "other.avi"

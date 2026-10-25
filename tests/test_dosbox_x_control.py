@@ -11,6 +11,7 @@ from collections.abc import Callable, Iterable
 from typing import Any
 
 import pytest
+from dosbox_x_server_support import POSIX_SESSION
 from scry_core import cancel
 from scry_core.reply_contract import Invalid
 
@@ -266,6 +267,7 @@ class _Recording:
         self.closed = True
 
 
+@POSIX_SESSION
 def test_a_spawn_that_fails_closes_the_channel_and_the_argv_named_its_port(
         tmp_path: object, monkeypatch: pytest.MonkeyPatch) -> None:
     import subprocess
@@ -286,6 +288,7 @@ def test_a_spawn_that_fails_closes_the_channel_and_the_argv_named_its_port(
     assert "dosbox mcp_server=40999" in seen[0]
 
 
+@POSIX_SESSION
 def test_a_pty_that_cannot_be_opened_closes_the_channel(
         tmp_path: object, monkeypatch: pytest.MonkeyPatch) -> None:
     import pty

@@ -10,7 +10,7 @@ import os
 import re
 import socket
 import subprocess
-import termios
+import sys
 import threading
 import time
 from pathlib import Path
@@ -22,6 +22,12 @@ from scry_core import guardian
 import dosbox_control as control
 import dosbox_launch as dlaunch
 import dosbox_session as ds
+
+if sys.platform != "win32":
+    import termios
+
+pytestmark = pytest.mark.skipif(sys.platform == "win32",
+                                reason="a session spawns on a pseudo-terminal, which Windows lacks")
 
 
 class Child:
@@ -102,34 +108,35 @@ def _done(ses: ds.Session) -> None:
 
 def test_a_spawn_runs_the_emulator_in_its_own_group_on_the_terminal(
         conf: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    emu = Emulator(monkeypatch)
-    seen: list[list[Any]] = []
-    real = termios.tcsetattr
+    if sys.platform != "win32":  # the module is skipped there; this is what mypy reads
+        emu = Emulator(monkeypatch)
+        seen: list[list[Any]] = []
+        real = termios.tcsetattr
 
-    def recorded(fd: int, when: int, attrs: list[Any]) -> None:
-        seen.append([list(termios.tcgetattr(fd)), list(attrs)])
-        real(fd, when, attrs)
-    monkeypatch.setattr(termios, "tcsetattr", recorded)
-    ses = ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=0))
-    try:
-        port = ses.launch.input_port
-        assert port and f"port:{port}" in " ".join(emu.argv), emu.argv
-        kw = emu.kw
-        assert kw["cwd"] == str(tmp_path) and kw["start_new_session"] is True
-        assert kw["close_fds"] is True and kw["stdin"] == kw["stdout"] == kw["stderr"]
-        assert isinstance(kw["stdin"], int)
-        (before, after), = seen
-        mask = termios.ECHO | termios.ECHONL | termios.ECHOE | termios.ECHOK
-        assert after[3] == before[3] & ~mask, (before, after)
-        assert after[:3] + after[4:] == before[:3] + before[4:], (before, after)
-        assert emu.guarded == [emu.child] and cast(Any, ses.guard) == "guard"
-        assert ses._drainer is not None and ses._drainer.is_alive()
-        assert ses._drainer.daemon is True and ses._drainer.name == "dosbox-drain"
-        assert ses._input is not None and ses._link is not None and ses._link.sock is ses._input
-        assert ses._input.getpeername() == emu.dialled[0].getsockname()
-    finally:
-        _done(ses)
-        emu.close()
+        def recorded(fd: int, when: int, attrs: list[Any]) -> None:
+            seen.append([list(termios.tcgetattr(fd)), list(attrs)])
+            real(fd, when, attrs)
+        monkeypatch.setattr(termios, "tcsetattr", recorded)
+        ses = ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=0))
+        try:
+            port = ses.launch.input_port
+            assert port and f"port:{port}" in " ".join(emu.argv), emu.argv
+            kw = emu.kw
+            assert kw["cwd"] == str(tmp_path) and kw["start_new_session"] is True
+            assert kw["close_fds"] is True and kw["stdin"] == kw["stdout"] == kw["stderr"]
+            assert isinstance(kw["stdin"], int)
+            (before, after), = seen
+            mask = termios.ECHO | termios.ECHONL | termios.ECHOE | termios.ECHOK
+            assert after[3] == before[3] & ~mask, (before, after)
+            assert after[:3] + after[4:] == before[:3] + before[4:], (before, after)
+            assert emu.guarded == [emu.child] and cast(Any, ses.guard) == "guard"
+            assert ses._drainer is not None and ses._drainer.is_alive()
+            assert ses._drainer.daemon is True and ses._drainer.name == "dosbox-drain"
+            assert ses._input is not None and ses._link is not None and ses._link.sock is ses._input
+            assert ses._input.getpeername() == emu.dialled[0].getsockname()
+        finally:
+            _done(ses)
+            emu.close()
 
 
 def test_a_fixed_port_is_kept_and_no_port_means_no_route(
@@ -175,35 +182,36 @@ def test_a_start_whose_control_channel_fails_raises_that_and_frees_the_port(
 
 def test_a_failed_start_stops_the_drain_before_closing_its_terminal(
         conf: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    emu = Emulator(monkeypatch, dial=False)
-    monkeypatch.setattr(dlaunch, "INPUT_CONNECT_S", 0.3)
-    ended = threading.Event()
+    if sys.platform != "win32":  # the module is skipped there; this is what mypy reads
+        emu = Emulator(monkeypatch, dial=False)
+        monkeypatch.setattr(dlaunch, "INPUT_CONNECT_S", 0.3)
+        ended = threading.Event()
 
-    def drain(self: ds.Session) -> None:
-        self._stop.wait()
-        time.sleep(0.3)
-        ended.set()
-    monkeypatch.setattr(ds.Session, "_drain", drain)
-    master_closed_after_drain: list[bool] = []
-    real_close = os.close
-    fds: dict[str, int] = {}
-    real_openpty = os.openpty
+        def drain(self: ds.Session) -> None:
+            self._stop.wait()
+            time.sleep(0.3)
+            ended.set()
+        monkeypatch.setattr(ds.Session, "_drain", drain)
+        master_closed_after_drain: list[bool] = []
+        real_close = os.close
+        fds: dict[str, int] = {}
+        real_openpty = os.openpty
 
-    def openpty() -> tuple[int, int]:
-        m, s = real_openpty()
-        fds["master"] = m
-        return m, s
-    monkeypatch.setattr("pty.openpty", openpty)
+        def openpty() -> tuple[int, int]:
+            m, s = real_openpty()
+            fds["master"] = m
+            return m, s
+        monkeypatch.setattr("pty.openpty", openpty)
 
-    def closing(fd: int) -> None:
-        if fd == fds.get("master"):
-            master_closed_after_drain.append(ended.is_set())
-        real_close(fd)
-    monkeypatch.setattr(os, "close", closing)
-    with pytest.raises(ds.Invalid):
-        ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=0))
-    assert master_closed_after_drain == [True], master_closed_after_drain
-    assert emu.child.waits == [5], emu.child.waits
+        def closing(fd: int) -> None:
+            if fd == fds.get("master"):
+                master_closed_after_drain.append(ended.is_set())
+            real_close(fd)
+        monkeypatch.setattr(os, "close", closing)
+        with pytest.raises(ds.Invalid):
+            ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=0))
+        assert master_closed_after_drain == [True], master_closed_after_drain
+        assert emu.child.waits == [5], emu.child.waits
 
 
 def test_a_failed_start_of_an_emulator_already_gone_sends_no_kill(
@@ -250,26 +258,27 @@ def test_a_failed_start_whose_drain_will_not_stop_still_returns(
 
 def test_a_terminal_that_will_not_close_neither_masks_a_failure_nor_fails_a_start(
         conf: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    real_close = os.close
-    opened: list[int] = []
-    real_openpty = os.openpty
+    if sys.platform != "win32":  # the module is skipped there; this is what mypy reads
+        real_close = os.close
+        opened: list[int] = []
+        real_openpty = os.openpty
 
-    def openpty() -> tuple[int, int]:
-        m, s = real_openpty()
-        opened[:] = [m, s]
-        return m, s
-    monkeypatch.setattr("pty.openpty", openpty)
+        def openpty() -> tuple[int, int]:
+            m, s = real_openpty()
+            opened[:] = [m, s]
+            return m, s
+        monkeypatch.setattr("pty.openpty", openpty)
 
-    def refusing(fd: int) -> None:
-        real_close(fd)
-        if fd in opened:
-            raise OSError(9, "EBADF")
-    monkeypatch.setattr(os, "close", refusing)
-    emu = Emulator(monkeypatch)
-    ses = ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=30))
-    _done(ses)
-    emu.close()
-    Emulator(monkeypatch, dial=False)
-    monkeypatch.setattr(dlaunch, "INPUT_CONNECT_S", 0.3)
-    with pytest.raises(ds.Invalid, match="never dialled the serial input port"):
-        ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=0))
+        def refusing(fd: int) -> None:
+            real_close(fd)
+            if fd in opened:
+                raise OSError(9, "EBADF")
+        monkeypatch.setattr(os, "close", refusing)
+        emu = Emulator(monkeypatch)
+        ses = ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=30))
+        _done(ses)
+        emu.close()
+        Emulator(monkeypatch, dial=False)
+        monkeypatch.setattr(dlaunch, "INPUT_CONNECT_S", 0.3)
+        with pytest.raises(ds.Invalid, match="never dialled the serial input port"):
+            ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=0))

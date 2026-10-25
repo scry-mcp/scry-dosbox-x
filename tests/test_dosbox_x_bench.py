@@ -224,7 +224,7 @@ def test_the_stamp_names_the_build_the_ladder_found_and_refuses_one_with_no_vers
                         lambda found, _s: {"version": f"DOSBox-X at {found.path}"})
     monkeypatch.setattr("subprocess.run", lambda cmd, **kw: SimpleNamespace(stdout="Mac16,10",
                                                                             stderr=""))
-    monkeypatch.setattr("os.getloadavg", lambda: (1.0, 2.0, 3.0))
+    monkeypatch.setattr(bench, "_load_average", lambda: (1.0, 2.0, 3.0))
     got = bench.stamp()
     assert got == {"machine": "Mac16,10", "emulator": "DOSBox-X at /opt/dosbox-x",
                    "binary": "/opt/dosbox-x", "binary_origin": "DOSBOX_X_BINARY",

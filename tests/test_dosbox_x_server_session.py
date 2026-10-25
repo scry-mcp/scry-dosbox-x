@@ -18,10 +18,11 @@ from unittest import mock
 
 import fold_calls
 import pytest
-from dosbox_x_server_support import (  # noqa: E402
+from dosbox_x_server_support import (
     _NOPG_LINE,
     _PAGE_LINE,
     FFMPEG_FIX,
+    POSIX_SESSION,  # noqa: E402
     FakeSession,
     NamesFake,
     _ffmpeg_record,
@@ -33,16 +34,19 @@ from dosbox_x_server_support import (  # noqa: E402
     _tools_called_in_tests,
     _typed_into,
     clean_session,  # noqa: E402, F401
+    in_tmp,
     install,
     live_callers,
     returned_key_sets,
 )
 from scry_core import (
+    host_program,
     log_marks,
     media_tools,
     recording,
     reply_schema,
 )
+from scry_core.host_program import absolute as _abs
 
 import dosbox_arming as arming
 import dosbox_binary as binaries
@@ -52,6 +56,7 @@ import dosbox_folds as folds
 import dosbox_launch as dlaunch
 import dosbox_mcp
 import dosbox_placement as placement
+import dosbox_process as dprocess
 import dosbox_replies
 import dosbox_session as ds
 import dosbox_state as dstate
@@ -161,7 +166,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
     src.write_bytes(b"RIFF")
     fake = SimpleNamespace(captures=lambda: [{"path": str(src)}])
     with (mock.patch("dosbox_frames.subprocess.run", hangs),
-          mock.patch("dosbox_frames.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
+          mock.patch("dosbox_frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg")),
           pytest.raises(ds.Invalid, match="did not return within")):
         ds.Session.frame(fake, 0, tmp_path / "out.png")  # type: ignore[arg-type]
 
@@ -176,7 +181,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
         return SimpleNamespace(stdout="", stderr="", returncode=0)
 
     with (mock.patch("dosbox_frames.subprocess.run", writes),
-          mock.patch("dosbox_frames.shutil.which", lambda _n: "/usr/bin/ffmpeg")):
+          mock.patch("dosbox_frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg"))):
         got = ds.Session.frame(fake, 0, dest)  # type: ignore[arg-type]
     assert got == dest and dest.stat().st_size > 1000
     # Without the forced format ffmpeg picks the encoder from the extension and writes a frameless
@@ -192,7 +197,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
                                returncode=past_end["returncode"])
 
     with (mock.patch("dosbox_frames.subprocess.run", writes_nothing),
-          mock.patch("dosbox_frames.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
+          mock.patch("dosbox_frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg")),
           pytest.raises(ds.Invalid, match="ffmpeg exited 0 but no image")):
         ds.Session.frame(fake, 99999, tmp_path / "never.png")  # type: ignore[arg-type]
 
@@ -208,7 +213,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
     # The two refusals differ: a non-zero exit carries ffmpeg's reason, an empty output at
     # exit 0 is a guess.
     with (mock.patch("dosbox_frames.subprocess.run", fails_but_writes),
-          mock.patch("dosbox_frames.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
+          mock.patch("dosbox_frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg")),
           pytest.raises(ds.Invalid, match=f"ffmpeg exited {corrupt['returncode']}")):
         ds.Session.frame(fake, 5, bad)  # type: ignore[arg-type]
 
@@ -223,7 +228,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
         return SimpleNamespace(stdout="", stderr="", returncode=0)
 
     with (mock.patch("dosbox_frames.subprocess.run", writes_a_container),
-          mock.patch("dosbox_frames.shutil.which", lambda _n: "/usr/bin/ffmpeg"),
+          mock.patch("dosbox_frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg")),
           pytest.raises(ds.Invalid, match="is not a PNG")):
         ds.Session.frame(fake, 99999, container)  # type: ignore[arg-type]
 
@@ -271,7 +276,7 @@ def test_every_tool_this_server_promises_is_actually_registered() -> None:
 
 @pytest.mark.parametrize("old", [{"mode": "headless"}, {"seconds": 60}, {"plan_wait": 5}])
 def test_starts_old_words_are_refused_by_name(old: dict[str, Any]) -> None:
-    res = asyncio.run(server.mcp.call_tool("start", {"conf": "/x.conf", "cwd": "/",
+    res = asyncio.run(server.mcp.call_tool("start", {"conf": _abs("x.conf"), "cwd": _abs(),
                                                     "session_seconds": 60, **old}))
     reply = json.loads("".join(c.text for c in res.content if getattr(c, "text", None)))
     assert reply["code"] == "bad_argument" and next(iter(old)) in reply["message"], reply
@@ -303,17 +308,17 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         "map_write add": lambda: server.map_write("add", screen="s", match=[[0, 0, 1, 1]]),
         "map_find": server.map_find,
         "read_memory": lambda: server.read_memory(ref="0000:00000000"),
-        "memdump": lambda: server.memdump(ref="0000:00000000", length=8, dest="/tmp/x"),
+        "memdump": lambda: server.memdump(ref="0000:00000000", length=8, dest=in_tmp("x")),
         "find": lambda: server.find(ref="0000:00000000", length=8, data_hex="00"),
         "scan start": lambda: server.scan("start", ref="0000:00000000", length=8),
         "scan filter": lambda: server.scan("filter", operator="=", value=0),
         "scan clear": lambda: server.scan("clear"),
         "captures": server.captures,
-        "capture_frame": lambda: server.capture_frame(frame=0, dest="/tmp/x.png"),
+        "capture_frame": lambda: server.capture_frame(frame=0, dest=in_tmp("x.png")),
         "log_wait": lambda: server.log_wait(channel="guest", pattern="x", seconds=1.0),
         "run_to": lambda: server.run_to(ref="0000:0000", control="0000:0020", seconds=1.0),
         "run_for": lambda: server.run_for(frames=1),
-        "trace": lambda: server.trace(instructions=1, dest="/tmp/x.trace"),
+        "trace": lambda: server.trace(instructions=1, dest=in_tmp("x.trace")),
         "step": lambda: server.step(mode="over", count=1),
         "symbols_find": lambda: server.symbols_find(name="_main"),
         "disassemble": lambda: server.disassemble(ref="0814:0100"),
@@ -342,7 +347,8 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         "comment_write add": lambda: server.comment_write("add", ref="_main", text="x"),
         "comment_list": server.comment_list,
         "comment_write delete": lambda: server.comment_write("delete", ref="_main"),
-        "comment_write save": lambda: server.comment_write("save", dest="/tmp/x.comments.tsv"),
+        "comment_write save": lambda: server.comment_write(
+            "save", dest=in_tmp("x.comments.tsv")),
         "comment_write load": lambda: server.comment_write("load", path=str(nm)),
     }
     callers = live_callers()
@@ -376,7 +382,7 @@ def test_start_over_a_dead_session_collects_it_first_and_refuses_over_a_live_one
 
     def spawn(launch: Any) -> Any:
         raise ds.Invalid("session_broken", "not starting anything")
-    monkeypatch.setattr("scry_core.binaries.shutil.which", lambda _n: "/somewhere/dosbox-x")
+    monkeypatch.setattr("scry_core.binaries.shutil.which", lambda _n: _abs("somewhere", "dosbox-x"))
     monkeypatch.setattr("dosbox_x_server.ds.Session", spawn)
     kw = {"conf": str(conf), "cwd": str(tmp_path), "session_seconds": 60}
     live_one = install()
@@ -689,7 +695,7 @@ def test_start_expands_a_tilde_in_every_path_and_makes_nothing_at_a_literal_one(
     def build(launch: dlaunch.Launch) -> None:
         built.append(launch)
         raise ds.Invalid("host_failed", "built: the case ends here")
-    with mock.patch("scry_core.binaries.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
+    with mock.patch("scry_core.binaries.shutil.which", lambda _n: _abs("somewhere", "dosbox-x")), \
          mock.patch("dosbox_x_server.ds.Session", build):
         got = cast(dict[str, Any], server.start(**kw))
     assert "built: the case ends here" in got["message"], got
@@ -751,7 +757,7 @@ def test_an_omitted_capture_source_stays_absent_rather_than_becoming_a_path(
 
     fake.frame = frame  # type: ignore[method-assign]
     server.capture_frame(5, str(tmp_path / "shot.png"))
-    assert seen == [Path("/caps/run_001.avi")], "the default source is the largest capture"
+    assert seen == [Path(_abs("caps", "run_001.avi"))], "the default source is the largest capture"
 
 
 @pytest.mark.parametrize("bad", ["~nosuchuser-here/x", "~\x00/x"])
@@ -848,7 +854,7 @@ def test_build_check_is_invalid_and_not_ok_when_there_is_no_binary() -> None:
 
 def test_build_check_is_invalid_when_the_build_has_no_debugger() -> None:
     """The precondition it exists for."""
-    with (mock.patch("scry_core.binaries.shutil.which", lambda _n: "/usr/bin/dosbox-x"),
+    with (mock.patch("scry_core.binaries.shutil.which", lambda _n: _abs("usr", "bin", "dosbox-x")),
           mock.patch("dosbox_x_server.subprocess.run",
                      lambda *_a, **_k: SimpleNamespace(stdout="usage: ...", stderr=""))):
         got = cast(dict[str, Any], server.build_check())
@@ -888,13 +894,30 @@ def test_build_check_refuses_to_start_a_second_emulator_beside_a_live_one() -> N
         spawned.append(list(cmd))
         return SimpleNamespace(stdout="-break-start\n", stderr="")
 
-    with (mock.patch("scry_core.binaries.shutil.which", lambda _n: "/usr/bin/dosbox-x"),
+    with (mock.patch("scry_core.binaries.shutil.which", lambda _n: _abs("usr", "bin", "dosbox-x")),
           mock.patch("dosbox_x_server.subprocess.run", watched)):
         got = cast(dict[str, Any], server.build_check())
     assert got["status"] == "INVALID", got
     assert "second emulator" in str(got["message"]) and "`close`" in str(got["message"])
     assert spawned == [], f"it started one anyway: {spawned}"
 
+
+
+def test_without_a_terminal_build_check_and_start_refuse_naming_it_and_start_nothing(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The server loads on Windows, which has no terminal for a session, so both say why before
+    anything runs."""
+    ran: list[object] = []
+    monkeypatch.setattr(dprocess, "HAS_TERMINAL", False)
+    monkeypatch.setattr(subprocess, "run", lambda *a, **_k: ran.append(a))
+    monkeypatch.setattr(subprocess, "Popen", lambda *a, **_k: ran.append(a))
+    checked = cast(dict[str, Any], server.build_check())
+    started = cast(dict[str, Any], server.start(conf=str(tmp_path / "g.conf"), cwd=str(tmp_path),
+                                                session_seconds=30))
+    for got in (checked, started):
+        assert (got["status"], got["code"]) == ("INVALID", "host_failed"), got
+        assert "pseudo-terminal, which Windows does not have" in got["message"], got
+    assert ran == [] and dstate.STATE.session is None, ran
 
 def test_a_read_memory_reply_carries_the_whole_data_view_and_not_just_the_row_asked_for(
 ) -> None:
@@ -989,10 +1012,8 @@ def test_start_launches_the_binary_it_resolved_and_says_which(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
-    mine = tmp_path / "dev" / "dosbox-x"
-    mine.parent.mkdir()
-    mine.write_text('#!/bin/sh\necho "DOSBox-X version dev" >&2; exit 1\n', encoding="utf-8")
-    mine.chmod(0o755)
+    mine = host_program.write(tmp_path / "dev" / "dosbox-x", "import sys\n"
+                              "sys.stderr.write('DOSBox-X version dev\\n')\nsys.exit(1)\n")
     launched: list[dlaunch.Launch] = []
 
     class Booted(NamesFake):
@@ -1067,7 +1088,7 @@ def test_a_file_where_the_default_state_directory_goes_is_refused_naming_the_def
     (tmp_path / "save").write_text("a file, not a directory", encoding="utf-8")
     (tmp_path / "g.conf").write_text("[sdl]\n", encoding="utf-8")
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
-    monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
+    monkeypatch.setattr("shutil.which", lambda _b: _abs("usr", "bin", "dosbox-x"))
     got = server.start(conf=str(tmp_path / "g.conf"), cwd=str(tmp_path), session_seconds=60)
     assert got["status"] == "INVALID" and got["code"] == "host_failed", got
     assert got["message"].startswith(
@@ -1104,7 +1125,7 @@ def test_capture_frame_replies_with_the_source_it_read_and_the_frame_asked(
         tmp_path: Path) -> None:
     install()
     got = server.capture_frame(frame=3, dest=str(tmp_path / "f.png"))
-    assert got["frame"] == 3 and got["capture_path"] == "/caps/run_001.avi", got
+    assert got["frame"] == 3 and got["capture_path"] == _abs("caps", "run_001.avi"), got
     assert "at_frame" not in got
     own = tmp_path / "run_000.avi"
     own.write_bytes(b"RIFF")
@@ -1424,7 +1445,7 @@ def test_a_state_dir_the_caller_gave_is_named_as_theirs_when_a_file_holds_it(
     (tmp_path / "mine").write_text("a file", encoding="utf-8")
     (tmp_path / "g.conf").write_text("[sdl]\n", encoding="utf-8")
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
-    monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
+    monkeypatch.setattr("shutil.which", lambda _b: _abs("usr", "bin", "dosbox-x"))
     got = server.start(conf=str(tmp_path / "g.conf"), cwd=str(tmp_path), session_seconds=60,
                        state_dir=str(tmp_path / "mine"))
     assert got["status"] == "INVALID" and got["message"].startswith("state_dir: "), got
@@ -1452,7 +1473,7 @@ def test_start_takes_the_version_probe_out_of_the_ready_bound(
         time.sleep(0.3)
         return {"binary": resolved.path, "binary_origin": resolved.origin, "version": "v"}
 
-    monkeypatch.setattr(shutil, "which", lambda _: "/bin/true")
+    monkeypatch.setattr(shutil, "which", lambda _: _abs("bin", "true"))
     monkeypatch.setattr(dlaunch, "binary_facts", slow_facts)
     monkeypatch.setattr(ds, "Session", Recorder)
     dstate.STATE.session = None
@@ -1464,6 +1485,7 @@ def test_start_takes_the_version_probe_out_of_the_ready_bound(
     assert ready <= ds.READY_TIMEOUT_S - 0.3, waited
 
 
+@POSIX_SESSION
 def test_close_carries_the_last_words_of_both_channels_when_the_end_was_not_clean(
         tmp_path: Path) -> None:
     log = tmp_path / "s.log"
@@ -1473,7 +1495,7 @@ def test_close_carries_the_last_words_of_both_channels_when_the_end_was_not_clea
         def __init__(self, how: str, code: int, logfile: Path | None) -> None:
             super().__init__()
             self._how, self._code = how, code
-            self.launch = SimpleNamespace(cwd=Path("/"), logfile=logfile, watched=False)
+            self.launch = SimpleNamespace(cwd=Path(_abs()), logfile=logfile, watched=False)
 
         def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
             self.ended_how, self._alive = self._how, False

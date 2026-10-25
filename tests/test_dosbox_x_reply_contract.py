@@ -9,8 +9,10 @@ from typing import Any
 
 import fold_calls
 import pytest
+from dosbox_x_server_support import in_tmp
 from scry_core import media_tools
 from scry_core import reply_contract as contract
+from scry_core.host_program import absolute as _abs
 
 import dosbox_mcp
 import dosbox_session as ds
@@ -23,13 +25,14 @@ SOURCES = sorted(p for p in PACKAGE.glob("*.py") if p.name != "mapsweep.py")
 
 _ARGS: dict[str, dict[str, Any]] = {
     "series_capture": {"at_frames": [0]},
-    "map_write": {"method": "save", "dest": "/nonexistent/x.scry-map.json"},
-    "image_compare": {"method": "image", "a": "/nonexistent/a.png", "b": "/nonexistent/b.png"},
-    "start": {"conf": "/nonexistent.conf", "cwd": "rel", "session_seconds": 10},
+    "map_write": {"method": "save", "dest": _abs("nonexistent", "x.scry-map.json")},
+    "image_compare": {"method": "image", "a": _abs("nonexistent", "a.png"),
+                      "b": _abs("nonexistent", "b.png")},
+    "start": {"conf": _abs("nonexistent.conf"), "cwd": "rel", "session_seconds": 10},
     "log": {"pattern": ".", "channel": "guest"},
     "declaration_clear": {"kind": "watch", "all": True},
     "log_wait": {"pattern": ".", "channel": "guest", "seconds": 0.01},
-    "memdump": {"ref": "0100:0000", "length": 16, "dest": "/nonexistent-dir/dump.bin"},
+    "memdump": {"ref": "0100:0000", "length": 16, "dest": _abs("nonexistent-dir", "dump.bin")},
     "find": {"ref": "0100:0000", "length": 16, "data_hex": "00"},
     "scan": {"method": "start", "ref": "0100:0000", "length": 16},
     "read_memory": {"ref": "0100:0000"},
@@ -40,19 +43,19 @@ _ARGS: dict[str, dict[str, Any]] = {
     "write": {"ref": "0100:0000", "data_hex": "00"},
     "run_to": {"ref": "0100:0000", "control": "0100:0020"},
     "run_for": {"frames": 1},
-    "trace": {"instructions": 1, "dest": "/tmp/dosbox-x-contract-never-written.trace"},
+    "trace": {"instructions": 1, "dest": in_tmp("dosbox-x-contract-never-written.trace")},
     "screen_wait": {"text": "C:"},
     "breakpoint_interrupt": {"number": 0x21},
-    "symbols_load": {"path": "/nonexistent.nm"},
+    "symbols_load": {"path": _abs("nonexistent.nm")},
     "symbols_find": {"name": "x"},
     "breakpoint_at": {"ref": "x"},
     "watch_add": {"ref": "x", "mode": "show", "length": 2},
     "send_keys": {"keys": ["enter"]},
     "send_mouse": {"button": "left"},
-    "capture_frame": {"frame": 1, "dest": "/nonexistent-dir/x.png"},
+    "capture_frame": {"frame": 1, "dest": _abs("nonexistent-dir", "x.png")},
     "state_write": {"method": "load", "name": "x"},
     "perform": {"steps": [{"op": "status"}]},
-    "perform_export": {"dest": "/nonexistent/session.json"},
+    "perform_export": {"dest": _abs("nonexistent", "session.json")},
     "drive": {"act": [{"op": "status"}], "pattern": "."},
     "comment_write": {"method": "add", "ref": "x", "text": "t"},
 }
@@ -89,7 +92,8 @@ class _Running:
     altered = False
     reap_failed = ""
     ended_how = "none"
-    launch = SimpleNamespace(cwd=Path("/"), logfile=None, watched=False, conf=Path("/x.conf"))
+    launch = SimpleNamespace(cwd=Path(_abs()), logfile=None, watched=False,
+                             conf=Path(_abs("x.conf")))
 
     def alive(self) -> bool:
         return True

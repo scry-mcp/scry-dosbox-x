@@ -5,7 +5,6 @@ import atexit
 import contextlib
 import os
 import re
-import signal
 import socket
 import subprocess
 import sys
@@ -18,8 +17,10 @@ sys.path.insert(0, str(PKG))
 
 from live_private import guest_dir  # noqa: E402
 from matrix_ledger import Cell, Ledger  # noqa: E402
+from scry_core import guardian  # noqa: E402
 from scry_core import reply_contract as contract  # noqa: E402
 
+import dosbox_process as dprocess  # noqa: E402
 import dosbox_session as ds  # noqa: E402
 import dosbox_state as dstate  # noqa: E402
 import dosbox_x_server as server  # noqa: E402
@@ -172,7 +173,7 @@ def kill_spawned() -> list[int]:
     left = [p for p in SPAWNED if p.poll() is None]
     for proc in left:
         with contextlib.suppress(OSError):
-            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+            dprocess.signal_group(proc.pid, guardian.KILL)
         with contextlib.suppress(subprocess.TimeoutExpired):
             proc.wait(timeout=5)
     return [p.pid for p in left]

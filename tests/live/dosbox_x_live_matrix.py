@@ -78,7 +78,7 @@ def _pool(workers: int) -> Callable[[list[Section]], live_pool.PoolResult]:
 
 
 def main() -> int:
-    for sig in (signal.SIGTERM, signal.SIGHUP):
+    for sig in (signal.SIGTERM, getattr(signal, "SIGHUP", signal.SIGTERM)):
         signal.signal(sig, _leave)
     try:
         return _main()

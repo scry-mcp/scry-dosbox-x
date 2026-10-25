@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import contextlib
 import os
-import pty
 import select
 import signal
 import socket
 import subprocess
-import termios
+import sys
 import threading
 import time
 from dataclasses import replace
@@ -15,11 +14,48 @@ from typing import Any
 
 from scry_core import cancel, guardian, live_host
 from scry_core.progress import PROGRESS_EVERY_S, Progress, no_progress
+from scry_core.reply_contract import Invalid
 
 import dosbox_control as control
 import dosbox_launch as dlaunch
 import dosbox_presence as dpresence
 import dosbox_stub_link as stub_link
+
+#: Why no session starts on Windows: the debugger's screen is read through a POSIX terminal.
+NO_TERMINAL = ("no DOSBox-X session can start on Windows: this server reads the emulator's "
+               "debugger through a POSIX pseudo-terminal, which Windows does not have, and the "
+               "channel that would take its place there is not implemented yet")
+
+
+#: Whether this host gives a session its terminal; the unit suite's doubles stand in for one.
+HAS_TERMINAL = sys.platform != "win32"
+
+
+def refuse_without_a_terminal() -> None:
+    """`host_failed` on a host with no pseudo-terminal, before anything is started."""
+    if not HAS_TERMINAL:
+        raise Invalid("host_failed", NO_TERMINAL)
+
+
+def _terminal() -> tuple[int, int]:
+    """A pseudo-terminal's two ends, the emulator's with its echo off."""
+    if sys.platform == "win32":
+        raise Invalid("host_failed", NO_TERMINAL)
+    else:
+        import pty
+        import termios
+
+        master, slave = pty.openpty()
+        try:
+            attrs = termios.tcgetattr(slave)
+            attrs[3] &= ~(termios.ECHO | termios.ECHONL | termios.ECHOE | termios.ECHOK)
+            termios.tcsetattr(slave, termios.TCSANOW, attrs)
+        except BaseException:
+            os.close(master)
+            os.close(slave)
+            raise
+        return master, slave
+
 
 #: Names in the host's process list.
 PROCESS_NAME = "scry-dosbox-x"
@@ -98,7 +134,7 @@ class Process:
         try:
             self.control = control.ControlChannel(lambda: self.proc.poll())
             launch = self.launch = replace(launch, control_port=self.control.port)
-            self._master, slave = pty.openpty()
+            self._master, slave = _terminal()
         except BaseException:
             if listener is not None:
                 listener.close()
@@ -106,9 +142,6 @@ class Process:
                 self.control.close()
             raise
         try:
-            attrs = termios.tcgetattr(slave)
-            attrs[3] &= ~(termios.ECHO | termios.ECHONL | termios.ECHOE | termios.ECHOK)
-            termios.tcsetattr(slave, termios.TCSANOW, attrs)
             self.argv = dlaunch.build_argv(launch)
             self.proc = subprocess.Popen(
                 self.argv, cwd=str(launch.cwd), stdin=slave, stdout=slave,
@@ -137,7 +170,7 @@ class Process:
             with contextlib.suppress(Exception):
                 proc = getattr(self, "proc", None)
                 if proc is not None and proc.poll() is None:
-                    self._signal_group(signal.SIGKILL)
+                    self._signal_group(guardian.KILL)
                     proc.wait(timeout=5)
             self._stop.set()
             drainer = getattr(self, "_drainer", None)
@@ -232,7 +265,7 @@ class Process:
                     self.ended_how = "quit"
                 else:
                     self.ended_how = "killed"
-                    self._signal_group(signal.SIGKILL)
+                    self._signal_group(guardian.KILL)
                     # Floored: `grace=0` would drop an unreaped child.
                     if wait_exit(self.proc, max(grace, 1.0), progress,
                                  "close: waiting for the SIGKILLed emulator to be reaped") is None:
@@ -270,6 +303,12 @@ class Process:
         return self.proc.returncode
 
     def _signal_group(self, sig: int) -> None:
-        with contextlib.suppress(ProcessLookupError, PermissionError, OSError):
-            os.killpg(os.getpgid(self.proc.pid), sig)
+        signal_group(self.proc.pid, sig)
+
+
+def signal_group(pid: int, sig: int) -> None:
+    """`sig` to the process group `pid` belongs to, if there still is one."""
+    with contextlib.suppress(ProcessLookupError, PermissionError, OSError):
+        if sys.platform != "win32":
+            os.killpg(os.getpgid(pid), sig)
 

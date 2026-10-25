@@ -8,6 +8,7 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
+from dosbox_x_server_support import runnable
 
 import dosbox_binary as binaries
 import dosbox_saved_states as states
@@ -98,7 +99,7 @@ def test_the_record_shows_a_killed_emulator_reaped_and_said_to_have_died() -> No
 def _build_answering(tmp_path: Path, record: str, carries: bool) -> tuple[Path, Any]:
     """A binary with or without the debugger marks, and `subprocess.run` replaying `-helpdebug`."""
     help_text = json.loads((FIX / "build_check" / record).read_text("utf-8"))["helpdebug"]
-    binary = tmp_path / record / "dosbox-x"
+    binary = runnable(tmp_path / record / "dosbox-x")
     binary.parent.mkdir()
     marks = binaries.DEBUGGER_MARK + b"\x00" + binaries.HEAVY_DEBUG_MARK if carries else b"none"
     binary.write_bytes(b"\x00" + marks + b"\x00")

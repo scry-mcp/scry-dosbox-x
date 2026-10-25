@@ -10,7 +10,6 @@ never merely that it returned.
 from __future__ import annotations
 
 import os
-import signal
 import subprocess
 import time
 from pathlib import Path
@@ -18,6 +17,7 @@ from typing import Any, cast
 
 import pytest
 from _live_teardown import no_session_left_behind  # noqa: F401  (registers the autouse teardown)
+from scry_core import guardian
 from test_dosbox_x_live import (  # noqa: E402
     _OWN,
     CONF,
@@ -363,7 +363,7 @@ def test_a_close_after_the_emulator_died_carries_the_last_words_of_both_channels
     """Why it ended, in the reply that ends it, on the real emulator:"""
     log = tmp_path / "s.log"
     started = start_ok(session_seconds=60, logfile=str(log))
-    os.killpg(os.getpgid(int(started["pid"])), signal.SIGKILL)
+    dprocess.signal_group(int(started["pid"]), guardian.KILL)
     assert wait_for(lambda: not server.status()["session"]["alive"], seconds=10)
     gone = cast(dict[str, Any], server.close())
     assert gone["ended_by"] == "died", gone

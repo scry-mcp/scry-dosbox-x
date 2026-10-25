@@ -2,30 +2,17 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from typing import Any, cast
 
 import pytest
+from stub_builds import BANNER, build
 
 import dosbox_binary as binaries
 import dosbox_launch as dlaunch
 import dosbox_session as ds
 import dosbox_x_server as server
-
-BANNER = "DOSBox-X version 0.0.0 SDL2, a stub build"
-
-
-def build(where: Path, *, version: str = f'echo "{BANNER}" >&2; exit 1',
-          name: str = "dosbox-x") -> Path:
-    """A stub build at `where/name`: `version` is the shell answering `-version`."""
-    where.mkdir(parents=True, exist_ok=True)
-    path = where / name
-    path.write_text("#!/bin/sh\n"
-                    f"# {binaries.DEBUGGER_MARK.decode()}\n"
-                    f'case "$1" in -version) {version} ;; -helpdebug) echo "-break-start" ;; '
-                    "esac\n", encoding="utf-8")
-    path.chmod(0o755)
-    return path
 
 
 @pytest.fixture
@@ -48,7 +35,7 @@ def test_build_check_answers_the_three_fields_and_asks_the_build_it_resolved(
 
 
 def test_build_check_on_a_build_with_no_version_still_answers(tmp_path: Path) -> None:
-    mine = build(tmp_path, version="exit 1")
+    mine = build(tmp_path, version="sys.exit(1)")
     got = cast(dict[str, Any], server.build_check(binary=str(mine)))
     assert got["status"] == "ok" and got["version"]["available"] is False, got
 
@@ -62,13 +49,11 @@ def test_both_probes_of_a_build_spawn_it_behind_as_a_session_does(
     """Both probes run behind, as a session does: an unknown option starts the emulator."""
     monkeypatch.delenv(dlaunch.BACKGROUND_VAR, raising=False)
     seen = tmp_path / "seen"
-    mine = build(tmp_path, version=f'echo "v=${dlaunch.BACKGROUND_VAR}" >> {seen}; '
-                                    f'echo "{BANNER}" >&2; exit 1')
-    text = mine.read_text().replace(
-        '-helpdebug) echo "-break-start"',
-        f'-helpdebug) echo "h=${dlaunch.BACKGROUND_VAR}" >> {seen}; echo "-break-start"')
-    assert text != mine.read_text(), "the -helpdebug arm was not found to record its env"
-    mine.write_text(text)
+    def records(tag: str) -> str:
+        return (f"open({str(seen)!r}, 'a').write("
+                f"'{tag}=' + os.environ.get({dlaunch.BACKGROUND_VAR!r}, '') + '\\n')")
+    mine = build(tmp_path, version=f"{records('v')}; sys.stderr.write({BANNER!r}); sys.exit(1)",
+                 helpdebug=f"{records('h')}; print('-break-start')")
     got = cast(dict[str, Any], server.build_check(binary=str(mine)))
     assert got["status"] == "ok", got
     assert sorted(seen.read_text().split()) == ["h=1", "v=1"], seen.read_text()
@@ -93,6 +78,7 @@ def test_build_check_with_nothing_resolvable_is_host_failed_and_names_no_binary(
     assert "no DOSBox-X binary resolves from the PATH rung" in got["message"], got
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Windows runs no file by a mode bit")
 def test_build_check_on_an_executable_the_host_cannot_run_is_host_failed(
         tmp_path: Path) -> None:
     empty = tmp_path / "dosbox-x"

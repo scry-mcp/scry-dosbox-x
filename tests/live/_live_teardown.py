@@ -2,15 +2,15 @@
 from __future__ import annotations
 
 import contextlib
-import os
-import signal
 import subprocess
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any, cast
 
 import pytest
+from scry_core import guardian
 
+import dosbox_process as dprocess
 import dosbox_state as dstate
 import dosbox_x_server as server
 
@@ -41,7 +41,7 @@ def _kill_if_still_there(proc: subprocess.Popen[bytes]) -> str:
     if proc.poll() is not None:
         return ""
     with contextlib.suppress(ProcessLookupError, PermissionError, OSError):
-        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+        dprocess.signal_group(proc.pid, guardian.KILL)
     try:
         proc.wait(timeout=5)
     except subprocess.TimeoutExpired:

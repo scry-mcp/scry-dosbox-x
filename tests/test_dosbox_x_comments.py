@@ -21,6 +21,7 @@ from dosbox_x_server_support import (  # noqa: F401
     documented,
     install,
 )
+from scry_core import host_program
 from test_dosbox_x_code import pr32_machine
 from test_dosbox_x_running_table import _running
 
@@ -452,7 +453,7 @@ def test_save_refuses_and_leaves_alone_what_is_not_a_comment_file_to_replace(
     link = tmp_path / "link.tsv"
     link.symlink_to(notes)
     fifo = tmp_path / "fifo.tsv"
-    os.mkfifo(fifo)
+    host_program.fifo(fifo)
     for dest, said in ((notes, "not a comment file"), (latin, "not UTF-8"), (link, "is a link"),
                        (tmp_path, "not a regular file"), (fifo, "not a regular file"),
                        (tmp_path / "no" / "c.tsv", "not a directory")):

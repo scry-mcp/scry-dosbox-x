@@ -13,6 +13,7 @@ from unittest import mock
 import fold_calls
 import pytest
 from dosbox_x_server_support import clean_session, install  # noqa: F401
+from scry_core.host_program import absolute as _abs
 from test_dosbox_x_dump import debugger
 
 import dosbox_launch as dlaunch
@@ -59,7 +60,7 @@ NTPATH = "ntpath expands any ~user"
                  marks=pytest.mark.skipif(sys.platform == "win32", reason=NTPATH)),
     ("rel/x.bin", "absolute path or start with `~`"), ("x.bin", "absolute path or"),
     ("./x", "absolute path or"),
-    ("", "empty"), ("/a\x00b", "NUL"), ("/a\udc80b", "surrogate"), (None, "not a path"),
+    ("", "empty"), (_abs("a\x00b"), "NUL"), (_abs("a\udc80b"), "surrogate"), (None, "not a path"),
 ])
 def test_a_path_that_is_not_absolute_is_refused_naming_the_argument(
         value: object, words: str) -> None:
@@ -77,7 +78,7 @@ def test_a_tilde_path_is_expanded_as_a_person_means_it(monkeypatch: pytest.Monke
 
 
 def test_an_absolute_path_is_taken_as_written() -> None:
-    assert paths.absolute("dest", "/tmp/x.bin") == Path("/tmp/x.bin")
+    assert paths.absolute("dest", _abs("tmp", "x.bin")) == Path(_abs("tmp", "x.bin"))
 
 
 def test_a_fresh_dest_has_its_directory_and_nothing_at_it(tmp_path: Path) -> None:
@@ -151,7 +152,7 @@ def _start_stubbed(**kw: Any) -> dict[str, Any]:
     """`start` as far as it goes before a process: the emulator is never spawned."""
     def build(launch: dlaunch.Launch) -> Any:
         raise ds.Invalid("session_broken", "not starting anything")
-    with mock.patch("scry_core.binaries.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
+    with mock.patch("scry_core.binaries.shutil.which", lambda _n: _abs("somewhere", "dosbox-x")), \
          mock.patch("dosbox_x_server.ds.Session", build):
         reply: Any = server.start(**kw)
     return cast(dict[str, Any], reply)
@@ -297,9 +298,9 @@ def test_a_directory_start_names_is_created_with_its_parents(tmp_path: Path, arg
 
 
 def test_start_takes_no_savedir_argument() -> None:
-    res = asyncio.run(server.mcp.call_tool("start", {"conf": "/x.conf", "cwd": "/",
+    res = asyncio.run(server.mcp.call_tool("start", {"conf": _abs("x.conf"), "cwd": _abs(),
                                                     "session_seconds": 60,
-                                                    "savedir": "/tmp/states"}))
+                                                    "savedir": _abs("tmp", "states")}))
     reply = json.loads("".join(c.text for c in res.content if getattr(c, "text", None)))
     _refused(reply, "bad_argument", "savedir")
 
@@ -340,12 +341,12 @@ def test_start_judges_a_path_before_a_live_session_or_the_binary(tmp_path: Path)
     """A path as wrong with a session live as with none, and with no emulator installed: the
     path is the refusal, and nothing of the live session is touched."""
     live = install()
-    got = cast(dict[str, Any], server.start(conf="/x.conf", cwd="rel/x", session_seconds=60))
+    got = cast(dict[str, Any], server.start(conf=_abs("x.conf"), cwd="rel/x", session_seconds=60))
     _refused(got, "bad_argument", "cwd='rel/x'")
     assert cast(object, dstate.STATE.session) is live
     dstate.STATE.session = None
     with mock.patch("scry_core.binaries.shutil.which", lambda _n: None):
-        got = cast(dict[str, Any], server.start(conf="rel.conf", cwd="/", session_seconds=60))
+        got = cast(dict[str, Any], server.start(conf="rel.conf", cwd=_abs(), session_seconds=60))
     _refused(got, "bad_argument", "conf='rel.conf'")
 
 
@@ -354,14 +355,14 @@ def test_start_judges_the_binary_s_shape_before_a_live_or_expired_session(
     """`binary` is a path like the others: a relative one is the refusal whatever the session
     is, and an expired session is neither closed nor its symbols forgotten for it."""
     live = install()
-    got = cast(dict[str, Any], server.start(conf="/x.conf", cwd="/", session_seconds=60,
+    got = cast(dict[str, Any], server.start(conf=_abs("x.conf"), cwd=_abs(), session_seconds=60,
                                             binary="rel/dosbox-x"))
     _refused(got, "bad_argument", "binary='rel/dosbox-x'")
     assert cast(object, dstate.STATE.session) is live
     expired = install(alive=False)
     closed: list[bool] = []
     expired.close = lambda **_k: closed.append(True)   # type: ignore[method-assign]
-    got = cast(dict[str, Any], server.start(conf="/x.conf", cwd="/", session_seconds=60,
+    got = cast(dict[str, Any], server.start(conf=_abs("x.conf"), cwd=_abs(), session_seconds=60,
                                             binary="bin/dosbox-x"))
     _refused(got, "bad_argument", "binary='bin/dosbox-x'")
     assert closed == [] and cast(object, dstate.STATE.session) is expired

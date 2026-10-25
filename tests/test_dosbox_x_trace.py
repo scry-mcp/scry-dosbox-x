@@ -17,7 +17,7 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
-from dosbox_x_server_support import SELINFO_SCREEN, clean_session, install  # noqa: F401
+from dosbox_x_server_support import SELINFO_SCREEN, clean_session, install, runnable  # noqa: F401
 from test_dosbox_x_debug import Debugger
 from test_dosbox_x_run_for import live
 
@@ -59,7 +59,7 @@ class Tracer(Debugger):
         # THE SESSION'S OWN BUILD is what `trace` reads, so a case's session carries one that
         # has the CPU log, whatever is installed on the host running the suite.
         if binary is None:
-            binary = cwd.parent / "heavy-dosbox-x"
+            binary = runnable(cwd.parent / "heavy-dosbox-x")
             binary.write_bytes(b"\x00help\x00" + binaries.HEAVY_DEBUG_MARK + b"\x00")
             binary.chmod(0o755)
         self.launch = SimpleNamespace(logfile=None, watched=False, input_port=None, cwd=cwd,
@@ -627,7 +627,7 @@ def test_a_running_guest_is_refused_not_stopped(tmp_path: Path) -> None:
 
 def test_a_build_without_the_cpu_log_is_refused_before_anything_is_typed(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    plain = tmp_path / "plain"
+    plain = runnable(tmp_path / "plain")
     plain.write_bytes(b"\x00help\x00LOG? no\x00")
     plain.chmod(0o755)
     dbg = settle(tmp_path, binary=plain)
@@ -639,7 +639,7 @@ def test_a_hand_built_launch_s_bare_name_is_found_on_the_path(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A `Launch` built without `start` carries the bare name; `trace` reads the build the PATH
     gives it, as the session itself was spawned."""
-    heavy = tmp_path / "bin" / "dosbox-x"
+    heavy = runnable(tmp_path / "bin" / "dosbox-x")
     heavy.parent.mkdir()
     heavy.write_bytes(b"\x00help\x00" + binaries.HEAVY_DEBUG_MARK + b"\x00")
     heavy.chmod(0o755)

@@ -159,6 +159,7 @@ def build_check(binary: str = "") -> dict[str, Any]:
     """
     if binary:          # the shape first, as every path's, whatever the session is
         paths.absolute("binary", binary)
+    dprocess.refuse_without_a_terminal()
     if STATE.session is not None and STATE.session.alive():
         # ANSWERING MEANS A SECOND EMULATOR from the same binary, which `start` refuses for
         # the same reason: two emulators on one machine make every timing on it a measurement

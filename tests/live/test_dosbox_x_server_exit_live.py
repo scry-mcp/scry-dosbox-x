@@ -14,6 +14,9 @@ from typing import Any
 
 import live_private  # isort: skip -- first: a pooled job's working copies
 import pytest
+from scry_core import guardian
+
+import dosbox_process as dprocess
 
 pytestmark = pytest.mark.live
 
@@ -47,7 +50,7 @@ def _alive(pid: int) -> bool:
 
 @pytest.mark.skipif(sys.platform == "win32", reason="POSIX signals and process sessions")
 @pytest.mark.parametrize("ended_by, code", [("stdin", 0), ("SIGTERM", 128 + signal.SIGTERM),
-                                             ("SIGHUP", 128 + signal.SIGHUP)])
+                                             ("SIGHUP", 128 + getattr(signal, "SIGHUP", 0))])
 def test_the_emulator_ends_with_the_server(ended_by: str, code: int, tmp_path: Path) -> None:
     errors = tmp_path / "server.stderr"
     with errors.open("wb") as err:
@@ -86,6 +89,6 @@ def test_the_emulator_ends_with_the_server(ended_by: str, code: int, tmp_path: P
         silent.cancel()
         if pid is not None and _alive(pid):
             with contextlib.suppress(ProcessLookupError):
-                os.killpg(os.getpgid(pid), signal.SIGKILL)
+                dprocess.signal_group(pid, guardian.KILL)
         if proc.poll() is None:
             proc.kill()
