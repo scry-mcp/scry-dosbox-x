@@ -22,6 +22,14 @@ def compiled(pattern: str) -> re.Pattern[str]:
         raise Invalid("bad_argument", f"that is not a usable pattern: {e}") from None
 
 
+def check_pattern(pattern: str) -> None:
+    """A log tool's pattern: non-empty, as `drive`'s, and compiling."""
+    if not pattern:
+        raise Invalid("bad_argument",
+                      "pattern is a non-empty regular expression ('.' for every line)")
+    compiled(pattern)
+
+
 def count_e9(text: str) -> int:
     """E9 lines in the log, whatever the pattern: tells "no match" from a silent channel."""
     return sum(1 for ln in text.splitlines() if E9_LINE.match(ln))

@@ -180,6 +180,9 @@ def build_check(binary: str = "") -> dict[str, Any]:
             f"`{resolved.path} -helpdebug` did not return in 20 s: a build that does not "
             f"know the option hangs on it rather than failing, and a slow or wedged start "
             f"looks the same") from None
+    except OSError as e:
+        raise ds.Invalid("host_failed",
+            f"`{resolved.path} -helpdebug` could not be run: {e}") from None
     text = got.stdout + got.stderr
     has_debugger = "-break-start" in text
     if not has_debugger:

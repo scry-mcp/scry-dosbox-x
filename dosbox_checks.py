@@ -186,7 +186,7 @@ def check_save_map(dest: str = "", overwrite: bool = False, **_: Any) -> None:
 
 
 def _log(pattern: str, channel: str, limit: int = 40, since_mark: int = 0, **_: Any) -> None:
-    dlogs.compiled(pattern)
+    dlogs.check_pattern(pattern)
     dlogs.check_e9_limit(limit)
     dlogs.check_channel(channel)
     log_marks.check_position(since_mark, channel)
@@ -195,7 +195,7 @@ def _log(pattern: str, channel: str, limit: int = 40, since_mark: int = 0, **_: 
 def _log_wait(pattern: str, channel: str, seconds: float = 30.0, since_mark: int = 0,
               **_: Any) -> None:
     vocab.check_wait(seconds)
-    dlogs.compiled(pattern)
+    dlogs.check_pattern(pattern)
     dlogs.check_channel(channel)
     log_marks.check_position(since_mark, channel)
 

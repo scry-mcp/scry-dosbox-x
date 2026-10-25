@@ -91,3 +91,13 @@ def test_build_check_with_nothing_resolvable_is_host_failed_and_names_no_binary(
     got = cast(dict[str, Any], server.build_check())
     assert got["code"] == "host_failed" and "binary" not in got, got
     assert "no DOSBox-X binary resolves from the PATH rung" in got["message"], got
+
+
+def test_build_check_on_an_executable_the_host_cannot_run_is_host_failed(
+        tmp_path: Path) -> None:
+    empty = tmp_path / "dosbox-x"
+    empty.write_bytes(b"")
+    empty.chmod(0o755)
+    got = cast(dict[str, Any], server.build_check(binary=str(empty)))
+    assert got["code"] == "host_failed", got
+    assert str(empty) in got["message"], got

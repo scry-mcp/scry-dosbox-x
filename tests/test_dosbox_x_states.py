@@ -789,3 +789,20 @@ def test_a_snapshot_waits_for_a_new_whole_png_and_only_for_one(tmp_path: Path) -
     fake.send_commands = late  # type: ignore[method-assign]
     got = ds.Session.snapshot(as_session(fake), None, 5.0)
     assert Path(str(got["path"])).name == "g_001.png", got
+
+
+def test_a_state_file_that_cannot_be_opened_is_a_row_with_a_note_never_a_failed_list(
+        tmp_path: Path) -> None:
+    fake = StateFake(tmp_path / "save")
+    write_state(tmp_path / "save" / "boot.sav")
+    locked = tmp_path / "save" / "locked.sav"
+    write_state(locked)
+    locked.chmod(0)
+    try:
+        out = ds.Session.state_list(as_session(fake))
+    finally:
+        locked.chmod(0o644)
+    by = {s["name"]: s for s in cast(list[dict[str, Any]], out["states"])}
+    assert by["boot"]["program"] == "PROBE"
+    assert "Permission denied" in str(by["locked"]["note"]), by["locked"]
+    assert cast(dict[str, Any], by["locked"]["program"])["available"] is False, by["locked"]

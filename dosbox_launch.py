@@ -19,6 +19,7 @@ import os
 import re
 import socket
 import zipfile
+import zlib
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -427,4 +428,7 @@ def state_meta(path: Path) -> dict[str, object]:
     except zipfile.BadZipFile:
         out["note"] = NOT_A_STATE
         return {**out, **{key: contract.unavailable(NOT_A_STATE) for key in STATE_META}}
+    except (OSError, zlib.error, NotImplementedError, RuntimeError) as e:
+        why = f"the file could not be read: {e}"
+        return {**out, "note": why, **{key: contract.unavailable(why) for key in STATE_META}}
     return {**out, **state_fields(read)}
