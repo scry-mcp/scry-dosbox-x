@@ -1,21 +1,11 @@
-"""WHAT THE DOS MACHINE IS RIGHT NOW, read from the debugger's own listings: who is resident in
-the MCB chain and where, the devices, the kernel's blocks, the XMS and EMS handles, the BIOS's
-and the emulator's own blocks, the cpu's control registers and, in protected mode, the
-descriptor tables and the page mapping.
+"""The DOS machine as the debugger's own listings print it: MCB chain, devices, kernel blocks,
+XMS/EMS handles, BIOS and emulator blocks, control registers, descriptor tables, page runs.
 
-EVERY SECTION IS ONE DEBUGGER COMMAND, read whole off the session's logfile
-(`Session.listing`), and each parser accepts only the row shapes those listings were captured
-printing (`tests/fixtures/machine/`). A line no shape matches makes its WHOLE section absent,
-quoted in `coverage_note`, because a chain with one block skipped reads as the whole chain.
-
-THE NAMES ARE THE DEBUGGER'S: a section is its command's word, a field its column's heading,
-lower-cased with spaces as `_` and a unit kept as a suffix. Hex is kept as the text the debugger
-printed; a size or a count is an integer.
-
-THE INTERRUPT VECTORS come from a FILE, not a listing: `INTVEC` writes the table
-(`Session.intvec`), and each handler is placed in the row of these listings that holds it,
-through the descriptor tables and the page runs in protected mode, and named through the
-loaded symbol table (`dosbox_placement`).
+Each section is one debugger command read whole off the logfile (`Session.listing`); a parser
+accepts only the row shapes captured in `tests/fixtures/machine/`. A line no shape matches makes
+the WHOLE section absent, quoted in `coverage_note`: a chain with one block skipped reads as
+complete. Names are the debugger's: a command's word, a column heading lower-cased with `_`.
+Interrupt vectors come from the file `INTVEC` writes and are placed through these listings.
 """
 from __future__ import annotations
 
@@ -36,8 +26,7 @@ import dosbox_state as st
 
 
 class Unreadable(Exception):
-    """A listing that is not one of the captured shapes: `line` is the line the note quotes and
-    `why` the clause before it, a line no shape matches unless the parser says otherwise."""
+    """A listing that is not a captured shape: `line` is what the note quotes, `why` its clause."""
 
     def __init__(self, line: str, why: str = "printed a line no known shape matches") -> None:
         super().__init__(line)
@@ -49,8 +38,7 @@ class Unreadable(Exception):
         return f"`{command}` {self.why}: {self.line!r}"
 
 
-# The sentence the debugger answers a DOS listing with when there is nothing to enumerate:
-# every one before DOS booted names the kernel, and `DOS EMS` on a machine without EMS names EMS.
+# What a DOS listing answers when there is nothing to enumerate (DOS not booted, or no EMS).
 REFUSAL = re.compile(r"^Cannot enumerate [^\n]+ while [^\n]+ is inactive\.$")
 
 
@@ -61,9 +49,8 @@ def refusal(text: str) -> str | None:
 
 
 def listing_lines(text: str) -> list[str]:
-    """The listing's lines, its trailing blank ones dropped. Split at the newline the emulator
-    writes and nowhere else: a name DOS keeps can hold a byte (0x85, an accented letter in the
-    DOS code page) that `splitlines` would take for a line break."""
+    """The listing's lines, trailing blanks dropped. Not `splitlines`: a DOS name can hold 0x85,
+    which it takes for a line break."""
     lines = [line.removesuffix("\r") for line in text.split("\n")]
     while lines and not lines[-1].strip():
         lines.pop()
@@ -71,7 +58,7 @@ def listing_lines(text: str) -> list[str]:
 
 
 def _after(text: str, *heading: str) -> list[str]:
-    """The listing's lines after its fixed heading lines, which have to be there verbatim."""
+    """The lines after the fixed heading lines, which must be there verbatim."""
     lines = listing_lines(text)
     for i, want in enumerate(heading):
         got = lines[i] if i < len(lines) else ""
@@ -90,13 +77,9 @@ def _each(lines: list[str], row: re.Pattern[str]) -> list[re.Match[str]]:
     return out
 
 
-# ------------------------------------------------------------------ DOS
-
-
 MCB_HEADING = "MCB Seg  Size (bytes)  PSP Seg (notes)  Filename"
 MCB_MEMORY = re.compile(r"^(Conventional|Upper) memory:$")
-# The notes column is a fixed width, `(DOS)`, `(free)` or blank, and the filename starts after
-# it: any other text there is a row this was not written against, not part of a name.
+# The notes column is fixed width; other text there is an unseen row, not part of a name.
 MCB_NOTES = {"(DOS)    ": "DOS", "(free)   ": "free"}
 MCB_ROW = re.compile(
     r"^   ([0-9A-F]{4}) +(\d+)     ([0-9A-F]{4}) "
@@ -104,29 +87,23 @@ MCB_ROW = re.compile(
 MCB_END = re.compile(r"^   ([0-9A-F]{4})  END OF CHAIN$")
 #: Bytes in a paragraph, the unit of a segment and of an MCB's header and size.
 PARAGRAPH_BYTES = 16
-# Printed where the debugger's DATA VIEW points into a block: a fact about the debugger's view,
-# which `read_memory` moves, and not about the chain, so it is known and dropped.
+# Printed where the debugger's data view points into a block: about the view, not the chain.
 MCB_DATA_NOTE = re.compile(
     r"^   \(data addr [0-9A-F]{4}:[0-9A-F]{4} is \d+ bytes past this MCB\)$")
 
 
 def next_mcb(mcb_seg: int, size_bytes: int) -> int:
-    """The segment right past a block, where the next block's header sits: the block's own
-    header paragraph, then its size."""
+    """The segment where the next block's header sits: header paragraph, then the size."""
     return mcb_seg + 1 + size_bytes // PARAGRAPH_BYTES
 
 
 def parse_mcbs(text: str) -> list[dict[str, Any]]:
-    """`DOS MCBS`: one row per block, `memory` from the heading it sits under. The debugger
-    walks each chain by the sizes and prints its END OF CHAIN at the segment right past the
-    last block, so a chain is read whole or not at all: every block after a chain's first
-    starts right past the one above it, every size is whole paragraphs, the END OF CHAIN
-    line sits right past the last block, and a chain lists at least one block. A chain's first
-    block has nothing in the listing to check it against. A free block keeps the stale name
-    the debugger prints; its `psp_seg` of `0000` is what says it is free."""
+    """`DOS MCBS`: one row per block, `memory` from its heading. A chain is read whole or not at
+    all: blocks contiguous, sizes whole paragraphs, END OF CHAIN right past the last block, at
+    least one block. A free block keeps a stale name; its `psp_seg` of `0000` says it is free."""
     rows: list[dict[str, Any]] = []
-    memory = None   # the heading whose chain is open, None between chains
-    next_seg: int | None = None   # where the open chain's next header sits, None before its first
+    memory = None
+    next_seg: int | None = None
     lines = _after(text, MCB_HEADING)
     for line in lines:
         if MCB_DATA_NOTE.match(line):
@@ -174,7 +151,7 @@ DEVS_ROW = re.compile(
 
 
 def parse_devs(text: str) -> list[dict[str, Any]]:
-    """`DOS DEVS`: the device chain, each driver's header address and its words."""
+    """`DOS DEVS`: the device chain."""
     return [{"header": m[1], "attr": m[2], "strat": m[3], "intr": m[4], "name": m[5]}
             for m in _each(_after(text, "Header    Attr  Strat Intr  Name"), DEVS_ROW)]
 
@@ -183,7 +160,7 @@ KERN_ROW = re.compile(r"^([0-9a-fA-F]{4}) +(\d+) +(.*?) *$")
 
 
 def parse_kern(text: str) -> list[dict[str, Any]]:
-    """`DOS KERN`: the kernel's own blocks (its segments print in lower case)."""
+    """`DOS KERN`: the kernel's blocks (segments print in lower case)."""
     lines = _after(text, "DOS kernel memory blocks:", "Seg      Size (bytes)     What")
     return [{"seg": m[1], "size_bytes": int(m[2]), "what": m[3]} for m in _each(lines, KERN_ROW)]
 
@@ -192,7 +169,7 @@ XMS_ROW = re.compile(r"^ +(\d+) (\S+) +(0x[0-9a-fA-F]+) (\d+)$")
 
 
 def parse_xms(text: str) -> list[dict[str, Any]]:
-    """`DOS XMS`: the allocated handles; the heading with no row is an empty list."""
+    """`DOS XMS`: the allocated handles; a heading with no row is an empty list."""
     lines = _after(text, "XMS memory handles:", "Handle Status Location Size (bytes)")
     return [{"handle": int(m[1]), "status": m[2], "location": m[3], "size_bytes": int(m[4])}
             for m in _each(lines, XMS_ROW)]
@@ -206,9 +183,7 @@ EMS_PAGE = re.compile(r"^(\S+) +(\d+/\d*) +([0-9a-fA-F]{8})-([0-9a-fA-F]{8})$")
 
 
 def parse_ems(text: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    """`DOS EMS`: the handles, and the page frame's pages. The listing prints a handle's size
-    in HEX under `Size (bytes)`, and it is handed back as the integer it is. The frame's own
-    line is dropped: its pages are the second list."""
+    """`DOS EMS`: the handles and the page frame's pages. A handle's size prints in hex."""
     lines = listing_lines(text)
     if not lines or not EMS_TITLE.match(lines[0]):
         raise Unreadable(lines[0] if lines else "")
@@ -233,14 +208,11 @@ def parse_ems(text: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     return handles, pages
 
 
-# ------------------------------------------------------------------ BIOS and emulator
-
-
 BIOS_ROW = re.compile(r"^([0-9a-fA-F]{8})-([0-9a-fA-F]{8}) (FREE|ALLOC +[A-Z]+) *(.*?) *$")
 
 
 def parse_bios_mem(text: str) -> list[dict[str, Any]]:
-    """`BIOS MEM`: the BIOS's blocks, free ones included; `status` with its words single-spaced."""
+    """`BIOS MEM`: the BIOS's blocks, free ones included."""
     lines = _after(text, "BIOS memory blocks:", "Region            Status What")
     return [{"start": m[1], "end": m[2], "status": " ".join(m[3].split()), "what": m[4]}
             for m in _each(lines, BIOS_ROW)]
@@ -251,8 +223,7 @@ CALLBACK_END = re.compile(r"^-+$")
 
 
 def parse_callbacks(text: str) -> list[dict[str, Any]]:
-    """`CALLBACKS`: the emulator's callback slots as printed, an empty one included. The host
-    function pointer is dropped: it differs every run and names nothing in the guest."""
+    """`CALLBACKS`: the callback slots, empty ones included; the host pointer differs every run."""
     lines = _after(text, "Callbacks")
     if not lines or not CALLBACK_END.match(lines[-1]):
         raise Unreadable(lines[-1] if lines else "")
@@ -263,8 +234,7 @@ EMU_MEM_ROW = re.compile(r"^([A-Za-z0-9 ]+?): +(\S+)( bytes)?$")
 
 
 def parse_emu_mem(text: str) -> dict[str, Any]:
-    """`EMU MEM`: each `label: value` line under its label's words; a decimal number is an
-    integer, anything else (`ON`, a mask) the text printed."""
+    """`EMU MEM`: each `label: value` line; a decimal is an integer, anything else stays text."""
     out: dict[str, Any] = {}
     for m in _each(_after(text, "Emulator memory:"), EMU_MEM_ROW):
         key = m[1].lower().replace(" ", "_") + ("_bytes" if m[3] else "")
@@ -284,9 +254,6 @@ def parse_emu_machine(text: str) -> str:
     return rows[0][1]
 
 
-# ------------------------------------------------------------------ the cpu
-
-
 CPU_ROWS = (
     re.compile(r"^cr0:([0-9A-F]{8}) cr2:([0-9A-F]{8}) cr3:([0-9A-F]{8})  cpl=(\d)$"),
     re.compile(r"^eflags:([0-9A-F]{8}) \[vm=(\d) iopl=(\d) nt=(\d)\]$"),
@@ -298,8 +265,7 @@ CPU_ROWS = (
 
 
 def parse_cpu(text: str) -> dict[str, Any]:
-    """`CPU`: the control registers, the flags the debugger breaks out, and the four tables'
-    registers; a limit keeps the debugger's `*n` granularity suffix."""
+    """`CPU`: control registers, flags and table registers; a limit keeps its `*n` suffix."""
     lines = listing_lines(text)
     if len(lines) != len(CPU_ROWS):
         raise Unreadable(lines[len(CPU_ROWS)] if len(lines) > len(CPU_ROWS) else
@@ -311,8 +277,7 @@ def parse_cpu(text: str) -> dict[str, Any]:
     cr, fl, gdt, idt, tr, ldt = (x for x in m if x is not None)
     return {"cr0": cr[1], "cr2": cr[2], "cr3": cr[3], "cpl": int(cr[4]),
             "eflags": fl[1], "vm": int(fl[2]), "iopl": int(fl[3]), "nt": int(fl[4]),
-            # THE TABLE REGISTERS TAKE INTEL'S NAMES, `gdtr` and `ldtr`: `gdt` and `ldt` are the
-            # descriptor lists of the same reply, and one word names one thing.
+            # `gdt` and `ldt` already name the descriptor lists of the same reply.
             "gdtr": {"base": gdt[1], "limit": gdt[2]}, "idt": {"base": idt[1], "limit": idt[2]},
             "tr": {"selector": tr[1], "base": tr[2], "limit": tr[3]},
             "ldtr": {"selector": ldt[1], "base": ldt[2], "limit": ldt[3]}}
@@ -327,9 +292,8 @@ REAL_SEGMENT_MODES = frozenset({"real", dcons.V86_MODE})
 
 
 def cpu_mode(cpu: dict[str, Any]) -> str:
-    """`real`, `protected` or `paged`, read off this listing's own cr0 so the sections it gates
-    come from the same moment (a `VM86` stop reads protected here: `interrupt_vectors` takes the
-    stop's own word for it)."""
+    """`real`, `protected` or `paged` from this listing's cr0, so gated sections share its moment.
+    A `VM86` stop reads protected here; `interrupt_vectors` takes the stop's own word."""
     cr0 = int(cpu["cr0"], 16)
     if not cr0 & CR0_PE:
         return "real"
@@ -341,8 +305,7 @@ DESC_BOTTOM = re.compile(r"^ +l:([0-9A-F]{8}) dpl : (\d)  ([01]{5})$")
 
 
 def parse_descriptors(text: str, table: str) -> list[dict[str, Any]]:
-    """`GDT` or `LDT`: each descriptor's two lines as one row, its `parbg` digits under their
-    letters. An all-zero slot (base, limit, type and bits) is a slot nothing set up, dropped."""
+    """`GDT` or `LDT`: each descriptor's two lines as one row; all-zero slots are dropped."""
     lines = listing_lines(text)
     title = re.compile(rf"^{table} Base:[0-9A-F]{{8}} Limit:[0-9A-F]{{8}}$")
     if not lines or not title.match(lines[0]):
@@ -371,9 +334,8 @@ PAGE_SIZE = 0x1000
 
 
 def parse_paging(text: str) -> list[dict[str, Any]]:
-    """`PAGING`: the present pages, merged into runs contiguous in linear AND physical memory
-    with identical flags, `d` and `a`, so expanding a run page by page gives the listing back.
-    `start` and `end` are the run's linear bytes, `phy` the physical address of its start."""
+    """`PAGING`: present pages merged into runs contiguous in linear and physical memory with
+    equal flags, `d` and `a`. `start`/`end` are linear bytes, `phy` the run's physical start."""
     runs: list[dict[str, Any]] = []
     last: tuple[int, int, str, int, int] | None = None
     for m in _each(listing_lines(text), PAGE_ROW):
@@ -391,15 +353,11 @@ def parse_paging(text: str) -> list[dict[str, Any]]:
     return runs
 
 
-# ------------------------------------------------------------------ the map
-
-
 Parser = Callable[[str], Any]
 
 
 class Section(NamedTuple):
-    """One debugger command and the reply keys it fills; `DOS EMS` fills two, and its parser
-    returns one value per name."""
+    """One debugger command and the reply keys it fills, one parsed value per name."""
     names: tuple[str, ...]
     command: str
     parse: Parser
@@ -416,13 +374,11 @@ EVERY_MODE: tuple[Section, ...] = (
     Section(("callbacks",), "CALLBACKS", parse_callbacks),
     Section(("emu_mem",), "EMU MEM", parse_emu_mem),
     Section(("machine",), "EMU MACHINE", parse_emu_machine),
-    # `control`, never `cpu`: the listing is the cpu's control registers, and `cpu` already
-    # names a field of a declaration's row.
+    # Not `cpu`: that already names a field of a declaration's row.
     Section(("control",), "CPU", parse_cpu),
 )
 
-#: Only in protected mode: in real mode the debugger reads the interrupt vector table as
-#: descriptors.
+#: Protected mode only: in real mode the debugger reads the vector table as descriptors.
 DESCRIPTOR_TABLES: tuple[Section, ...] = (
     Section(("gdt",), "GDT", functools.partial(parse_descriptors, table="GDT")),
     Section(("ldt",), "LDT", functools.partial(parse_descriptors, table="LDT")),
@@ -433,8 +389,7 @@ PAGE_TABLE = Section(("paging",), "PAGING", parse_paging)
 
 @dataclasses.dataclass
 class Reading:
-    """What one pass over the listings found, whole: each section present, the command behind
-    it, why each absent one is absent, and the mode the `CPU` listing put the machine in."""
+    """What one pass found: sections present, their commands, why the rest are absent, the mode."""
     mode: str | None = None
     found: dict[str, Any] = dataclasses.field(default_factory=dict)
     sources: dict[str, list[str]] = dataclasses.field(default_factory=dict)
@@ -465,8 +420,7 @@ class Reading:
 
 
 def read(session: ds.Session, wanted: frozenset[str] | None = None) -> Reading:
-    """Every section this machine's mode has, read live and whole, one command each; with
-    `wanted`, only the sections named there (and always `control`, which says the mode)."""
+    """Every section this mode has, one command each; `wanted` limits it."""
     reading = Reading()
 
     def take(section: Section) -> None:
@@ -496,9 +450,7 @@ def read(session: ds.Session, wanted: frozenset[str] | None = None) -> Reading:
 
 def add_section(reply: dict[str, Any], name: str, value: Any, sources: list[str],
                 why: str) -> None:
-    """A section read outside `read` put into `machine_map`'s reply the way `read`'s own are:
-    `value` under `name` with its `sources`, or, when `value` is None, absent and `why` added to
-    `coverage_note`."""
+    """Put a section read outside `read` into the reply; None makes it absent, `why` noted."""
     if value is None:
         reply["coverage_note"] += f". `{name}` is absent: {why}"
         return
@@ -510,9 +462,8 @@ def add_section(reply: dict[str, Any], name: str, value: Any, sources: list[str]
 SECTION_NAMES: tuple[str, ...] = (
     *(n for s in EVERY_MODE for n in s.names), *(n for s in DESCRIPTOR_TABLES for n in s.names),
     *PAGE_TABLE.names, "vga")
-#: What a map answers when it is asked for no section: the DOS machine, the cpu and, in protected
-#: mode, the descriptor tables. Left out: the BIOS's blocks and callbacks, the VGA's registers and
-#: the page runs, which together are most of a whole map and are seldom the question.
+#: The default map; left out are BIOS blocks, callbacks, VGA registers and page runs: most of a
+#: whole map and seldom the question.
 DEFAULT_SECTIONS = frozenset({"mcbs", "devs", "kern", "xms", "ems", "ems_pages", "emu_mem",
                               "machine", "control", "gdt", "ldt"})
 
@@ -524,17 +475,15 @@ MAP_CUT_HOW = "dest=<absolute path> writes every row of every section read"
 
 
 def sections_of(mode: str | None) -> list[str]:
-    """The sections a machine in `mode` has: no descriptor table in real mode or when the mode
-    is unknown, and page runs only with paging on."""
+    """The sections `mode` has: no descriptor tables in real or unknown mode."""
     absent = {"gdt", "ldt", "paging"} if mode in (None, "real") else (
         set() if mode == "paged" else {"paging"})
     return [n for n in SECTION_NAMES if n not in absent]
 
 
 def machine_map(session: ds.Session, chosen: list[str]) -> dict[str, Any]:
-    """`read` of the `chosen` sections (and `CPU`, which says the mode), then the reply:
-    `cpu_mode`, the sections, `counts` (each list's full length), `sources` and `coverage_note`.
-    `vga` is the caller's to add. Lists are WHOLE here: cutting them is the reply's business."""
+    """The reply for the `chosen` sections: `cpu_mode`, sections, `counts`, `sources`,
+    `coverage_note`. Lists are whole here and `vga` is the caller's to add."""
     reading = read(session, frozenset(chosen))
     found = {n: v for n, v in reading.found.items() if n in chosen}
     return {"cpu_mode": contract.or_unavailable(reading.mode, NO_MODE_WHY), **found,
@@ -544,14 +493,10 @@ def machine_map(session: ds.Session, chosen: list[str]) -> dict[str, Any]:
 
 
 def cut_lists(whole: dict[str, Any]) -> dict[str, Any]:
-    """`whole` with each list cut at the server's list ceiling, and `truncated` saying whether
-    any was."""
+    """`whole` with each list cut at the list ceiling; `truncated` says whether any was."""
     ceiling = dlogs.LOG_LIMIT_MAX
     return {**{n: (v[:ceiling] if n in whole["counts"] else v) for n, v in whole.items()},
             "truncated": any(n > ceiling for n in whole["counts"].values())}
-
-
-# ------------------------------------------------------------------ the interrupt vectors
 
 
 INTVEC_ROW = re.compile(r"^INT ([0-9A-F]{2}):  ([0-9A-F]{4}):([0-9A-F]{4,8})$")
@@ -559,8 +504,7 @@ VECTOR_COUNT = 256
 
 
 def parse_intvec(text: str) -> list[dict[str, Any]]:
-    """The file `INTVEC` writes: every vector, `INT nn:  SSSS:OOOO`, in order. A file that is
-    not the whole table, in order, is not the table."""
+    """The file `INTVEC` writes: every vector in order; anything less is not the table."""
     rows = _each(listing_lines(text), INTVEC_ROW)
     if [int(m[1], 16) for m in rows] != list(range(VECTOR_COUNT)):
         raise Unreadable(f"{len(rows)} rows, not vectors 00 to FF in order")
@@ -568,21 +512,17 @@ def parse_intvec(text: str) -> list[dict[str, Any]]:
             for m in rows]
 
 
-#: The sections whose rows can hold a handler, asked in this order, and the ones a vector is
-#: placed through (the mode comes with the `CPU` listing, which `read` always takes).
+#: Sections whose rows can hold a handler, in lookup order, and those a vector is placed through.
 HOLDER_SECTIONS = ("mcbs", "kern", "bios_mem")
 PLACEMENT_SECTIONS = frozenset({*HOLDER_SECTIONS, "gdt", "ldt", "paging"})
 
-#: A selector's table-indicator bit and its requested-privilege mask: the descriptor listings
-#: print a selector with the indicator kept and the privilege cleared.
+#: The listings print a selector with the table indicator kept and the privilege cleared.
 SELECTOR_TI_BIT = 0x4
 SELECTOR_RPL_MASK = 0x3
 
 
 def _held_range(section: str, row: dict[str, Any]) -> tuple[int, int]:
-    """The bytes a row of a holder section covers, `[start, end)`. An MCB's block is its header
-    paragraph and the `size_bytes` after it; a kernel block its `size_bytes` from its segment;
-    a BIOS region its inclusive `start`-`end`."""
+    """The bytes a holder row covers, `[start, end)`; an MCB's include its header paragraph."""
     if section == "mcbs":
         seg = int(row["mcb_seg"], 16)
         return seg * PARAGRAPH_BYTES, next_mcb(seg, int(row["size_bytes"])) * PARAGRAPH_BYTES
@@ -598,18 +538,15 @@ def table_of(sel: int) -> str:
 
 
 def descriptor(found: dict[str, Any], sel: int) -> dict[str, Any] | None:
-    """The row of `table_of(sel)` the selector names, its requested privilege cleared (the
-    listing prints a selector with RPL 0); None when the table carries no such row. What a
-    caller requires of the row (present, code, a privilege) is the caller's to judge."""
+    """The row of `table_of(sel)` the selector names (RPL cleared), or None."""
     want = f"{sel & ~SELECTOR_RPL_MASK:04X}"
     rows: list[dict[str, Any]] = found.get(table_of(sel)) or []
     return next((r for r in rows if r["selector"] == want), None)
 
 
 def vector_linear(addr: str, mode: str | None, found: dict[str, Any]) -> tuple[int | None, str]:
-    """Where a vector's handler is, as a linear address, and why not when it cannot be said. In
-    real mode `segment*16 + offset`; in protected mode the base of the descriptor the selector
-    names, in the LDT when its table indicator is set, plus the offset."""
+    """A vector handler's linear address, or None and why. Real mode `segment*16 + offset`;
+    protected mode the selector's descriptor base plus the offset."""
     seg_text, off_text = addr.split(":")
     sel, off = int(seg_text, 16), int(off_text, 16)
     if mode in REAL_SEGMENT_MODES:
@@ -654,11 +591,10 @@ NO_LOGFILE_WHY = (" read off the session's logfile and this session was started 
 
 
 def interrupt_vectors(session: ds.Session, number: int | None) -> dict[str, Any]:
-    """The table `INTVEC` writes, each vector with its handler's linear address, the row of the
-    MCB chain, the kernel's blocks or the BIOS's that holds it, and the nearest symbol; one
-    vector when `number` is given. Without a logfile there are no listings: no row has a
-    holder, in protected mode none has an `addr` or a `symbol` either (the descriptor tables
-    are listings too), and the mode is the one `status` reports."""
+    """Each vector with its handler's linear address, the MCB, kernel or BIOS row holding it and
+    the nearest symbol; one vector when `number` is given. Without a logfile there are no
+    listings: no holders, in protected mode no `addr` or `symbol` either, and the mode is
+    `status`'s."""
     try:
         rows = parse_intvec(session.intvec())
     except Unreadable as e:

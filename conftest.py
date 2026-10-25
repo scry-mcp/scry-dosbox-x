@@ -1,6 +1,4 @@
-"""The root conftest: it keeps the developer's own `DOSBOX_X_BINARY` out of every unit case, so
-the binary ladder a case climbs is the one the case sets up. A LIVE case keeps it: it runs the
-emulator the developer named, as the live matrix does."""
+"""Unit cases never see the developer's DOSBOX_X_BINARY; live cases keep it."""
 
 from collections.abc import Iterator
 from pathlib import Path

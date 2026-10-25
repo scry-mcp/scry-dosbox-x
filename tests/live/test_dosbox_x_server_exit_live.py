@@ -1,7 +1,4 @@
-"""However the server ends, its DOSBox-X ends with it: the server started over stdio as a client
-starts it, bricks started headless, then the server ended one way (its stdin closed, a SIGTERM,
-a SIGHUP) and the emulator's process looked for after the close's grace. DOSBox-X runs in a
-process session of its own, so nothing but the server can end it."""
+"""However the server ends (stdin closed, SIGTERM, SIGHUP), its DOSBox-X ends with it."""
 from __future__ import annotations
 
 import contextlib
@@ -24,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[2]
 BRICKS = live_private.bricks_dir()
 #: Past the close's own grace (`Session.close`), with room for the server to get there.
 GONE_WITHIN_S = 20.0
-#: The bound on the server's answers, past which a silent server is this case's FAIL, never a hang.
+#: A silent server fails the case instead of hanging it.
 ANSWER_WITHIN_S = 90.0
 
 
@@ -56,7 +53,7 @@ def test_the_emulator_ends_with_the_server(ended_by: str, code: int, tmp_path: P
     with errors.open("wb") as err:
         proc = subprocess.Popen([sys.executable, str(ROOT / "dosbox_x_server.py")], cwd=ROOT,
                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=err)
-    silent = threading.Timer(ANSWER_WITHIN_S, proc.kill)    # a server that never answers ends
+    silent = threading.Timer(ANSWER_WITHIN_S, proc.kill)
     silent.start()
     pid = None
     try:
@@ -78,9 +75,7 @@ def test_the_emulator_ends_with_the_server(ended_by: str, code: int, tmp_path: P
         deadline = time.monotonic() + GONE_WITHIN_S
         while _alive(pid) and time.monotonic() < deadline:
             time.sleep(0.2)
-        # WHAT WAS STILL THERE IS SAID, so a case that fails once under load leaves the evidence
-        # it needs: a zombie (`Z`) is an emulator gone and not yet reaped, a server still alive
-        # is a close that has not finished.
+        # `Z` in ps is an emulator gone and not yet reaped; a live server is an unfinished close.
         seen = subprocess.run(["ps", "-o", "pid=,stat=,etime=", "-p", f"{pid},{proc.pid}"],
                               capture_output=True, text=True, check=False).stdout.strip()
         assert not _alive(pid), (f"DOSBox-X {pid} outlived a server ended by {ended_by} by "

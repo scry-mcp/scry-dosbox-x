@@ -1,5 +1,4 @@
-"""The VGA's DAC, read off the debugger (`VGA DAC`, `VGA DACPAL`): its six-bit entries as colours,
-and the palette tool's swatch of them."""
+"""The VGA DAC read off the debugger, and the palette tool's swatch of it."""
 
 from __future__ import annotations
 
@@ -24,14 +23,13 @@ DACPAL_TITLE = "VGA DAC palette (RGB):"
 DAC_ENTRIES = 256
 
 
-#: The DAC width the colours are widened from, as `VGA DAC` prints it.
 DAC_BITS = 6
 
 
 SIX_BIT_MAX = (1 << DAC_BITS) - 1
 
 
-#: A row: its first index, then two groups of four entries split by a `-`.
+#: A row: first index, then two groups of four entries split by `-`.
 DACPAL_GROUP = r"((?:[0-9a-f]{6} ){3}[0-9a-f]{6})"
 
 
@@ -42,8 +40,7 @@ DACPAL_PER_ROW = 8
 
 
 def parse_dacpal(text: str) -> list[str]:
-    """`VGA DACPAL`: the 256 entries in order, each as printed, six hex digits of three six-bit
-    components (`00002a`); a component past six bits is not a six-bit DAC's."""
+    """`VGA DACPAL`: the 256 entries as printed (`00002a`); a component past six bits is refused."""
     lines = machine.listing_lines(text)
     if not lines or lines[0].rstrip() != DACPAL_TITLE:
         raise machine.Unreadable(lines[0] if lines else "")
@@ -63,13 +60,12 @@ def parse_dacpal(text: str) -> list[str]:
 
 
 def channel(six_bits: int) -> int:
-    """A six-bit DAC component as the eight-bit channel the emulator renders: its two top bits
-    repeated below."""
+    """A six-bit component as the emulator's eight-bit channel: top two bits repeated below."""
     return (six_bits << 2) | (six_bits >> 4)
 
 
 def rgb8(entry: str) -> tuple[int, int, int]:
-    """An entry as `VGA DACPAL` prints it (`00002a`) to its eight-bit `(r, g, b)`."""
+    """An entry (`00002a`) to its eight-bit `(r, g, b)`."""
     r, g, b = (channel(int(entry[i:i + 2], 16)) for i in (0, 2, 4))
     return r, g, b
 
@@ -78,7 +74,6 @@ def color(entry: str) -> str:
     return "#{:02x}{:02x}{:02x}".format(*rgb8(entry))
 
 
-#: One entry's square in `palette`'s picture, and the squares a row.
 SWATCH_PX = 16
 
 
@@ -86,10 +81,8 @@ SWATCHES_PER_ROW = 16
 
 
 def swatches(first: int, count: int, dac: list[str]) -> tuple[png.Raster, int | None]:
-    """`palette`'s picture of entries `first` to `first + count - 1`: one square per entry,
-    sixteen a row, each pixel the entry's index into the whole DAC; and the index drawn
-    transparent, for the squares past the last entry of a short last row, which stand for an
-    index the reply did not return (None when the last row is full)."""
+    """One square per entry, each pixel its index into the whole DAC; plus the filler index
+    drawn transparent for a short last row (None when full)."""
     cols, rows = min(count, SWATCHES_PER_ROW), math.ceil(count / SWATCHES_PER_ROW)
     short = cols * rows > count
     filler = first + count if first + count < DAC_ENTRIES else first - 1
@@ -104,8 +97,7 @@ def swatches(first: int, count: int, dac: list[str]) -> tuple[png.Raster, int | 
 
 
 def read_dac(session: ds.Session) -> tuple[dict[str, Any], list[str]]:
-    """`VGA DAC` (its width and mask) and `VGA DACPAL` (its 256 entries). A DAC not in its
-    six-bit mode is refused: every colour here is widened from six bits."""
+    """`VGA DAC` (width, mask) and `VGA DACPAL`; a DAC not in six-bit mode is refused."""
     command = vga.COMMAND_OF["dac"]
     dac = vga.listed(session, command)
     if dac.get("bits") != str(DAC_BITS):
@@ -117,8 +109,7 @@ def read_dac(session: ds.Session) -> tuple[dict[str, Any], list[str]]:
 
 def palette(session: ds.Session, first: int, count: int, scale: int, dest: Path | None,
             scratch: Path) -> dict[str, Any]:
-    """The body of `palette`: the DAC's width, mask and entries, and their picture, written to
-    `dest` or the session's scratch and attached. `count` 0 is every entry from `first`."""
+    """The body of `palette`; `count` 0 is every entry from `first`."""
     picture.check_scale(scale)
     if dest is not None:
         paths.fresh_dest("dest", dest)

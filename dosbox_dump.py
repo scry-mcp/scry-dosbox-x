@@ -1,22 +1,15 @@
 """A range of guest memory to a file, in pieces the debugger reads without wrapping.
 
-`MEMDUMPBIN seg:off len` writes byte `x` of the range from the debugger's `GetAddress(seg,
-off + x)` (upstream `src/debug/debug.cpp`, `SaveMemoryBin`). Two things in that function make a
-long dump wrong while it still answers success with the length asked:
+Upstream `SaveMemoryBin` reads byte `x` through `GetAddress(seg, off + x)`, which makes a long
+dump wrong while it still answers success with the length asked:
 
-* A 16-bit segment masks the offset to sixteen bits: always in real mode and at a `VM86` stop,
-  and in
-  protected mode when the descriptor's D/B bit is clear. A dump that runs past offset 0xFFFF
-  reads the start of its own segment again.
-* In protected mode a byte past the descriptor's limit has no address, and the dump writes a
-  zero for it (the selector in CS excepted: the debugger reads it through its cached base).
+* A 16-bit segment (real mode, `VM86`, or protected with D/B clear) masks the offset to sixteen
+  bits, so a dump past 0xFFFF rereads the start of its own segment.
+* In protected mode a byte past the descriptor's limit is written as zero.
 
-So a range that stays inside offsets 0 to 0xFFFF is one command (a 16-bit and a 32-bit segment
-address it alike, and its limit is not judged there). A longer one costs something only where
-the wrap can happen: in real mode it is cut into windows that each sit inside one segment's 64
-KiB, the pieces joined in order; in protected mode the selector's descriptor is read and the
-range is refused on a 16-bit segment or past the limit (CS included, judged like the rest).
-At a `VM86` stop the range is cut into windows as in real mode: its segments are real-mode ones.
+A range inside offsets 0 to 0xFFFF is one command; a longer one is cut into per-segment
+windows in real mode and `VM86`, and refused in protected mode on a 16-bit segment or past
+the limit.
 """
 
 from __future__ import annotations
@@ -35,22 +28,16 @@ import dosbox_session as ds
 
 WINDOW_BYTES = 0x10000
 SEGMENT_MAX = 0xFFFF
-# THE LAST BYTE A REAL-MODE ADDRESS CAN NAME, `FFFF:FFFF` (0xFFFF paragraphs plus 0xFFFF).
-# Past it there is no `SEG:OFF` to ask the debugger for, so a range reaching beyond it is
-# refused rather than cut short. Written out, not derived from `machine.PARAGRAPH_BYTES`:
-# this module is imported while `dosbox_machine` is still loading (through `dosbox_find`),
-# so nothing of that module may be read at import time; a test holds the two together.
+# `FFFF:FFFF`, the last byte a real-mode address names. Written out, not derived from
+# `machine.PARAGRAPH_BYTES`: this module is imported while `dosbox_machine` is still loading.
 REAL_REACH_LAST = 0x10FFEF
-# Descriptor type bits: S (a code or data segment, not a system one), code, and on a data
-# segment expand-down.
 _TYPE_S = 0x10
 _TYPE_CODE = 0x08
 _TYPE_EXPAND_DOWN = 0x04
 
 
 class Dump(NamedTuple):
-    """Where the bytes landed, and whether they were read in real mode past offset 0xFFFF, where
-    an address inside them is spelled from its own paragraph (`real_address`)."""
+    """Where the bytes landed, and whether real mode read them past offset 0xFFFF."""
     path: Path
     real_past_ffff: bool
 
@@ -61,23 +48,18 @@ def real_linear(seg: int, off: int) -> int:
 
 
 def real_address(linear: int) -> tuple[int, int]:
-    """The real-mode `(segment, offset)` of a linear byte from its own paragraph, the segment
-    held to 0xFFFF so the HMA's bytes are `FFFF:` offsets."""
+    """The real-mode `(segment, offset)` of a linear byte, the segment capped at 0xFFFF."""
     seg = min(linear // machine.PARAGRAPH_BYTES, SEGMENT_MAX)
     return seg, linear - seg * machine.PARAGRAPH_BYTES
 
 
 def crosses(off: int, length: int) -> bool:
-    """Whether the range runs past offset 0xFFFF, where a 16-bit segment wraps."""
+    """Whether the range runs past offset 0xFFFF."""
     return off + length > WINDOW_BYTES
 
 
 def dump_windows(seg: int, off: int, length: int) -> list[tuple[int, int, int]]:
-    """The real-mode `(segment, offset, length)` commands that read `length` bytes from
-    `seg:off` without wrapping, in order. The range is linear (`seg * 16 + off` onward); a
-    range inside one segment's 64 KiB is asked as given, a longer one from each piece's own
-    paragraph, so no command crosses its segment's end. Refused when its last byte lies past
-    `FFFF:FFFF`, the farthest byte a real-mode address names."""
+    """The real-mode `(segment, offset, length)` commands reading the range without wrapping."""
     start = real_linear(seg, off)
     last = start + length - 1
     if start > REAL_REACH_LAST:
@@ -103,8 +85,7 @@ def dump_windows(seg: int, off: int, length: int) -> list[tuple[int, int, int]]:
 
 
 def addressable(found: dict[str, Any], sel: int) -> dict[str, Any] | None:
-    """The descriptor `sel` names, or None where upstream gives its bytes no address: a selector
-    below 8 (the null one, and the LDT's first slot), no such row, or a row of type 0."""
+    """The descriptor `sel` names, or None where its bytes have no address."""
     if sel < 8:
         return None
     row = machine.descriptor(found, sel)
@@ -113,10 +94,8 @@ def addressable(found: dict[str, Any], sel: int) -> dict[str, Any] | None:
 
 def judge_protected(session: ds.Session, sel: int, off: int, length: int,
                     found: dict[str, Any] | None = None) -> None:
-    """A protected-mode range past offset 0xFFFF, judged against its descriptor before anything
-    is dumped: refused on a 16-bit segment (the debugger wraps it), past the limit (the debugger
-    reads zeros there), and for a selector with no descriptor (no address at all). `found`: the
-    descriptor listings a caller already read at this stop, so they are not read twice."""
+    """Refuse a protected-mode range past 0xFFFF on a 16-bit segment, past the limit, or with
+    no descriptor. `found`: listings already read at this stop."""
     if session.launch.logfile is None:
         raise ds.Invalid("no_channel",
             f"{length} bytes from {dcons.canonical_seg_off(sel, off)} run past offset 0xFFFF, "
@@ -159,20 +138,14 @@ def judge_protected(session: ds.Session, sel: int, off: int, length: int,
 
 def dump_range(session: ds.Session, seg: int, off: int, length: int, dest: Path,
                found: dict[str, Any] | None = None) -> Dump:
-    """`length` bytes from `seg:off` to `dest`, read without a wrap or a zero standing in for
-    memory. Within offsets 0 to 0xFFFF: one `Session.memdump`. Past them the stop's mode is read
-    (one survey): in real mode the windows of `dump_windows`, each dumped to a scratch file of
-    this call's own and joined into `dest`, written once and never over anything; in protected
-    mode `judge_protected` (over `found`, listings the caller already read at a stop it knows to
-    be protected, so the mode is not surveyed again), then one `Session.memdump`. A `VM86` stop
-    takes the real-mode windows."""
+    """`length` bytes from `seg:off` to `dest` with no wrap or stand-in zeros.
+
+    `found`: listings read at a stop known to be protected, so the mode is not surveyed again."""
     ds.check_segment(seg)
     ds.check_dump_length(length)
     if not crosses(off, length):
         return Dump(session.memdump(seg, off, length, dest), False)
-    # WHAT NEEDS NO MACHINE BEFORE THE SURVEY that reads the mode, which is a console command:
-    # `dest` the way `Session.memdump` judges its own (the pieces go to a scratch directory,
-    # so their checks never see it), and a leftover where the debugger writes.
+    # Before the mode survey: the pieces go to a scratch directory, so their checks miss `dest`.
     candidates = session._memdump_candidates()
     dcollect.judge_collection(dest, session.launch.cwd, candidates, "dump")
     dcollect.refuse_leftover(candidates, "dump")

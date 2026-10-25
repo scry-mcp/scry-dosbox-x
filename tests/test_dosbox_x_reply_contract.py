@@ -1,14 +1,4 @@
-"""The reply contract of a refusal, fixed for every tool: `status`, `code`, `message`.
-
-A contract test and not a grep, because a grep reads the source text rather than the reply
-a caller actually receives. This one walks every tool this server registers through the two
-gates every tool crosses (no machine, a running machine) and fixes the envelope those gates
-produce; the class that holds the contract is `scry_core.reply_contract.Invalid`, and the exception
-family here (`NotStopped`, `E9Stopped`) carries
-its code in the constructor so a site cannot raise one under the wrong word.
-
-Every case here was written to go RED against the server before the contract existed.
-"""
+"""The reply contract of a refusal, fixed for every tool: `status`, `code`, `message`."""
 
 from __future__ import annotations
 
@@ -31,7 +21,6 @@ PACKAGE = Path(__file__).resolve().parent.parent
 # `mapsweep.py` is a command-line tool with a refusal type of its own, outside the reply.
 SOURCES = sorted(p for p in PACKAGE.glob("*.py") if p.name != "mapsweep.py")
 
-# The arguments a tool needs to be CALLED at all; the gate refuses before any is judged.
 _ARGS: dict[str, dict[str, Any]] = {
     "series_capture": {"at_frames": [0]},
     "map_write": {"method": "save", "dest": "/nonexistent/x.scry-map.json"},
@@ -79,18 +68,15 @@ def _tools() -> list[str]:
 def test_every_tool_answers_the_contract_with_no_machine(
     name: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """THE FIRST GATE. With no machine, every tool that needs one refuses `no_session`;
-    `start` refuses its argument before spawning anything; `build_check` on a host with no
-    emulator says the host failed it; `status` and `close` answer `ok` about the absence."""
+    """First gate: with no machine each tool refuses `no_session` or its own argument."""
     monkeypatch.setattr(shutil, "which", lambda name: None)
-    # NO MACHINE IS THIS CASE'S PREMISE, set here rather than inherited from the case before it.
+    # set here rather than inherited from the previous case
     monkeypatch.setattr(dstate.STATE, "session", None)
     reply = fold_calls.of(server, name)(**_ARGS.get(name, {}))
     if name in ("status", "close"):
         assert reply["status"] == "ok" and "code" not in reply and "message" not in reply, reply
         return
-    # A media file tool needs no machine: it refuses the missing file it was handed. A map's
-    # file methods need none either: a save refuses the empty map.
+    # media tools refuse their missing file; a map save refuses the empty map
     expected = {"start": "bad_argument", "build_check": "host_failed",
                 "perform_export": "bad_argument", "map_write": "needs_call",
                 **dict.fromkeys(media_tools.IMAGE_TOOLS, "bad_argument")}.get(name, "no_session")
@@ -98,8 +84,7 @@ def test_every_tool_answers_the_contract_with_no_machine(
 
 
 class _Running:
-    """A machine that RUNS and nothing else: every question of the session is refused the
-    way the real one refuses it, so what is fixed here is the envelope and not the gate."""
+    """A machine that runs and refuses every question the way the real one does."""
 
     altered = False
     reap_failed = ""
@@ -125,16 +110,14 @@ class _Running:
         return refuse
 
 
-# The readers whose FIRST gate is the machine. `breakpoint_interrupt` asks the declaration
-# store first and `symbols_load` reads its file first, by their own contracts, so a running
-# machine is not the refusal they answer with here.
+# `breakpoint_interrupt` and `symbols_load` consult their own store or file first
 _READERS = ["registers", "read_memory", "memdump", "find", "scan", "debug", "step", "run_to",
             "run_for", "trace", "write", "set_register"]
 
 
 @pytest.mark.parametrize("name", _READERS)
 def test_every_reader_refuses_a_running_machine_with_the_contract(name: str) -> None:
-    """THE SECOND GATE: `not_stopped`, with the two context fields beside the envelope."""
+    """Second gate: `not_stopped`, with its two context fields."""
     dstate.STATE.session = _Running()  # type: ignore[assignment]
     reply = fold_calls.of(server, name)(**_ARGS.get(name, {}))
     contract.check_refusal(name, reply, "not_stopped")
@@ -142,7 +125,7 @@ def test_every_reader_refuses_a_running_machine_with_the_contract(name: str) -> 
 
 
 def test_the_exception_family_carries_its_code_in_the_constructor() -> None:
-    """A site that raises `NotStopped` cannot put it under another word."""
+    """A raised `NotStopped` cannot carry another code."""
     assert ds.NotStopped("x").code == "not_stopped"
     assert ds.E9Stopped("x", waited_s=1.0, arrived=0).code == "wait_stopped"
     assert isinstance(ds.NotStopped("x"), contract.Invalid)
@@ -164,9 +147,7 @@ def test_the_envelope_refuses_a_malformed_refusal() -> None:
 
 
 def test_every_code_written_in_the_sources_is_in_the_table() -> None:
-    """The class checks at RUNTIME; the contract's own scan reads the sources so a code typed
-    wrong in a branch no test reaches is caught here, and a code cannot be computed from a
-    string at runtime."""
+    """A code typed wrong in a branch no test reaches is caught by reading the sources."""
     seen = contract.codes_written_in(SOURCES)
     assert len(seen) > 100, "the scan found almost no refusals, so it examined nothing"
     wrong = [(f, n, c) for f, n, c in seen if c not in contract.CODES]

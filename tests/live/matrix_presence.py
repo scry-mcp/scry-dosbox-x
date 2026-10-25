@@ -1,23 +1,7 @@
-"""Section R of the live matrix: the presence edge, drawn by DOSBox-X into the window and never
-into the evidence, on the screen guest (`tests/guest/screen.asm`), whose screen holds still at
-its mode 13h stop and in the spin after its last one. Why it cannot reach the evidence is in
-REFERENCE.md, The presence indicator; this section proves each claim with a control that can go
-red.
-
-DRAWN: the emulator's own count of frames drawn with the overlay, in its answer to `PRESENCE`,
-rises while the guest runs lit and when a stopped machine is repainted. SEEN: the host's capture
-of the window with the edge `acting` against the same stopped machine with it `off` differs on
-all four sides and nowhere deeper than the edge, towards orange; a host that does not grant the
-capture BLOCKS that cell.
-
-NEVER IN THE EVIDENCE: `screen_view` and `screen_signature` at the stop, and `snapshot`,
-`capture_frame` and `series_capture` of the still spin, with the edge `off` and `acting`; the
-state is set by hand over the channel, the session's own writer stopped. The red: a scratch build
-that paints the same rim where capture reads (`DOSBOX_X_LEAK_BINARY`) must change `snapshot` and
-`capture_frame`. The screen readers have no red of their own: they read the guest's memory,
-which no host-side drawing reaches, so their cell confirms where they read. A stock build answers
-presence unavailable naming the command it lacks (`DOSBOX_X_STOCK_BINARY`), and a session with no
-window says it has none.
+"""Section R of the live matrix: the presence edge is drawn into the window, never into the
+evidence, on the screen guest (`tests/guest/screen.asm`). Why: REFERENCE.md, The presence
+indicator. The red for the capture cells is a scratch build that paints the rim where capture
+reads (`DOSBOX_X_LEAK_BINARY`); the screen readers have no red, since they read guest memory.
 """
 from __future__ import annotations
 
@@ -51,17 +35,13 @@ LEAK_VAR = "DOSBOX_X_LEAK_BINARY"
 STOCK_VAR = "DOSBOX_X_STOCK_BINARY"
 SCREEN_CONF = GUEST / "screen.conf"
 SCREEN_PROGRAM = "SCREEN.COM"
-#: The screen guest's stops up to its mode 13h picture, and the rest up to its last one.
 TO_13H, TO_LAST = 4, 2
-#: Long enough for the session's writer to land a state it had pending, and for a stopped
-#: machine's loop to repaint a state it was sent.
+#: Long enough for the writer to land a pending state and a stopped machine to repaint.
 QUIET_S = 0.5
-#: How long each stretch of the spin is recorded with the edge in one state.
 STRETCH_S = 2.0
-#: The most of the window the arrow alone may span: a sprite, nothing like the edge's frame.
+#: The most of the window the arrow alone may span.
 ARROW_SPAN = 0.25
-#: A bound on the captures a settled frame may take, so a window that never holds still blocks
-#: the cell instead of stalling it; two in a row alike end it sooner, `SETTLE_GAP_S` apart.
+#: Bounds the captures a settled frame may take, so an unsettled window blocks the cell.
 SETTLE_CAPTURES = 6
 SETTLE_GAP_S = 0.5
 E9_OPEN = ["-set", "dosbox bochs debug port e9=true"]
@@ -99,8 +79,7 @@ def _digest(path: Path) -> str:
 
 @contextmanager
 def _by_hand() -> Iterator[dpresence.ChannelAdapter]:
-    """The session's writer stopped, so nothing it retries lands over the block, which sends
-    states itself through an adapter of its own; a fresh one is opened after."""
+    """The session's writer stopped, so nothing it retries lands over states sent by hand."""
     session = STATE.session
     assert session is not None
     session.presence.close()
@@ -113,8 +92,7 @@ def _by_hand() -> Iterator[dpresence.ChannelAdapter]:
 
 
 def _put(adapter: dpresence.ChannelAdapter, state: str) -> int | None:
-    """`state` sent by hand (`off` included, which the session itself never sends), and the
-    emulator's frame count once a stopped machine has had time to repaint it."""
+    """`state` sent by hand (`off` too, which the session never sends); the frame count after."""
     if state == "off":
         ok_, lines = _channel().request("PRESENCE off")
         adapter.answer = lines[0] if ok_ and lines else ""
@@ -125,7 +103,7 @@ def _put(adapter: dpresence.ChannelAdapter, state: str) -> int | None:
 
 
 def _count(adapter: dpresence.ChannelAdapter) -> int | None:
-    """The emulator's frame count now, asked without changing what is drawn."""
+    """The emulator's frame count now, without changing what is drawn."""
     state = adapter.answer.split()[1] if len(adapter.answer.split()) > 1 else "off"
     ok_, lines = _channel().request(f"PRESENCE {state}")
     return dpresence.frames(lines[0]) if ok_ and lines else None
@@ -173,14 +151,12 @@ def _series_of(capture: str, frames: list[int]) -> list[str]:
 
 
 def _recorded() -> int:
-    """The frames the capture being written holds so far."""
     capture = _latest_capture()
     return avi.count(Path(capture).read_bytes()) if capture else 0
 
 
 def _spin_record(adapter: dpresence.ChannelAdapter) -> dict[str, Any]:
-    """The guest released into its still spin, recorded with the edge off, then acting: the
-    snapshot of each stretch and frames from each, read back once it is stopped again."""
+    """The guest released into its still spin, recorded with the edge off, then acting."""
     must(M.call(server.resume), "releasing the screen guest into its spin")
     out: dict[str, Any] = {}
     _put(adapter, "off")
@@ -195,8 +171,7 @@ def _spin_record(adapter: dpresence.ChannelAdapter) -> dict[str, Any]:
     on_to = _recorded()
     on_shot = Path(M.fresh(".png"))
     on_snap = M.call(server.snapshot, dest=str(on_shot))
-    # A FADE WHILE IT RUNS: a still screen is not drawn again until the overlay itself moves, so
-    # the count is read across one, from acting back to held.
+    # A still screen is redrawn only when the overlay moves, so count across a fade.
     lit = _count(adapter)
     _put(adapter, "held")
     time.sleep(presence.LOOK.fade_s)
@@ -208,7 +183,6 @@ def _spin_record(adapter: dpresence.ChannelAdapter) -> dict[str, Any]:
     listed = videos()
     total = max((int(c.get("avi_frames") or 0) for c in listed
                  if isinstance(c, dict) and str(c.get("path")) == capture), default=0)
-    # A frame from the middle of each stretch, by the frames recorded at its two ends.
     off_at, on_at = (off_from + off_to) // 2, (on_from + on_to) // 2
     out["capture_frame"] = (_frame_of(capture, off_at), _frame_of(capture, on_at))
     out["series_capture"] = tuple(_series_of(capture, [off_at, on_at]))
@@ -219,8 +193,7 @@ def _spin_record(adapter: dpresence.ChannelAdapter) -> dict[str, Any]:
 
 
 def _start(**kw: Any) -> dict[str, Any]:
-    # E9 OPEN, which the screen guest's conf leaves shut: `snapshot` needs the input stub's
-    # announcement there.
+    # The screen guest's conf leaves port e9 shut; `snapshot` needs the stub's announcement.
     return boot(conf=SCREEN_CONF, program=SCREEN_PROGRAM, break_on_int3=True, shared=True,
                 background=True, capture_video=True,
                 captures_dir=M.fresh("-cap"), flags=E9_OPEN, **kw)
@@ -299,20 +272,18 @@ def section_r() -> None:
 
 
 def _arrow(label: str) -> None:
-    """The mouse guest running in a window, captured after a mouse move and again with the arrow
-    turned off: the difference is the arrow, inside the picture where the edge never reaches."""
+    """Captures after a mouse move and again with the arrow off: the difference is the arrow."""
     boot(conf=MOUSE_CONF, program=MOUSE_PROGRAM, shared=True, background=True, presence=True)
     must(M.call(server.resume), "releasing the mouse guest")
     time.sleep(QUIET_S)
     moved = M.call(server.send_mouse, x=40, y=12, units="screen")    # a text cell
-    # The edge back to held before either capture, so the two differ by the arrow alone.
+    # Edge back to held first, so the two captures differ by the arrow alone.
     time.sleep(presence.LOOK.fade_s + QUIET_S)
     after = _settled("after-mouse")
     shown = dpresence.of(STATE.session)
     adapter = shown.adapter if isinstance(shown.adapter, dpresence.ChannelAdapter) else None
     answer = adapter.answer if adapter is not None else ""
-    # THE CONTROL: the same screen with the arrow turned off. Whatever the guest drew of its own
-    # for the move is in both captures, so what differs is the arrow alone.
+    # The control: the same screen with the arrow off.
     if adapter is not None and shown.held is not None:
         adapter.pointer = False
         shown.held.redeliver()
@@ -336,9 +307,7 @@ def _arrow(label: str) -> None:
 
 
 def _settled(tag: str) -> window_capture.Image | str:
-    """The window once two captures in a row are alike, within `SETTLE_CAPTURES`: a frame half
-    drawn under load is not judged, and a window that never holds still says so as the block's
-    reason rather than as a FAIL of what it shows; a capture the host refuses is its reason."""
+    """The window once two captures in a row are alike, else the reason it cannot be judged."""
     last = _window(f"{tag}-1")
     for n in range(2, SETTLE_CAPTURES + 1):
         if isinstance(last, str):

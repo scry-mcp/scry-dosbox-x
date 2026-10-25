@@ -1,12 +1,4 @@
-"""The RUNNING guest: what a stop is, and what the server does at the first contact after one.
-
-A guest that runs answers no console command, so this module is about the two moments
-around that: a stop the machine reached on its own is RECORDED by the first tool that
-finds it and the queue of what was asked meanwhile is drained (`observe_stop`,
-`drain_if_stopped`); and a stop a tool produced comes back as ONE survey of the screen
-(`stop_reply`): where, the instruction there, by which declaration, the watches evaluated,
-the registers and the E9 block.
-"""
+"""The running guest: recording a stop found at first contact, and the reply a stop returns."""
 
 from __future__ import annotations
 
@@ -26,18 +18,9 @@ from dosbox_state import STATE
 
 
 def observe_stop(session: ds.Session) -> None:
-    """A STOP THE GUEST REACHED ON ITS OWN IS RECORDED BY THE FIRST CONTACT THAT FINDS IT.
-    The session counts every transition to "at the debugger"; when that count is not the
-    one the last recorded stop carries, the machine has stopped since without any stop
-    tool reporting it (a breakpoint fired during a wait or a key), so this surveys it once
-    and remembers it, and `last_stop` and `registers(from_last_stop=True)` then
-    describe the stop the machine is IN rather than the one before (otherwise `last_stop`
-    names one stop while `registers` reads the address of the next)."""
-    # THE TERMINAL IS LOOKED AT FIRST. The peek is what counts a stop nobody has read (the
-    # prompt sitting in the drain), so a count read before it is the count as of the LAST
-    # contact, and comparing that with the record says "nothing new" about a machine that
-    # stopped minutes ago: `status` keeps naming the previous
-    # stop while the memory breakpoint's own line sits unread in the buffer.
+    """Record a stop the guest reached on its own, once, at the first contact that finds it."""
+    # Peek first: the peek is what counts a stop nobody has read, so a count read before it
+    # compares stale state and `status` keeps naming the previous stop.
     if not session.at_debugger():
         return
     count = getattr(session, "stop_count", None)
@@ -51,30 +34,23 @@ def observe_stop(session: ds.Session) -> None:
     STATE.remember_stop(session, where, registers, held,
                    arming.attribute_stop(session, where=where, machine=machine,
                                          retrace_may_stop=True, held=held))
-    # The account rides on THIS contact's reply, once.
     STATE.found_stop_last = {"stop_seq": STATE.last_stop["seq"], "pc": STATE.last_stop["at"],
                              "cause": st.cause(STATE.last_stop["attribution"])}
 
 
 def drain_if_stopped(session: ds.Session) -> None:
-    """THE FIRST CONTACT AFTER A STOP APPLIES WHAT WAS PENDING. A breakpoint can fire while
-    the caller is doing running-guest things (a wait, a key), so the stop is not always a
-    stop TOOL's reply; whichever tool comes next finds the machine at the debugger
-    (passively: no console round trip) and drains the queue, and its reply carries
-    `applied_on_stop`. A stop tool still drains it itself, in `stop_reply`."""
-    observe_stop(session)                  # a stop nobody reported is recorded first
+    """Apply the pending queue at the first contact after a stop (`applied_on_stop`)."""
+    observe_stop(session)
     waiting = (STATE.pending["arm"] or STATE.pending["disarm"] or STATE.pending["remeasure"]
                or STATE.pending["load"] is not None)
     fresh = STATE.pending["dirty"] or STATE.pending["drained_seq"] != STATE.last_stop.get("seq", 0)
     if waiting and fresh and session.at_debugger():
-        arming.apply_pending(session)             # accumulates into `STATE.applied_last`
+        arming.apply_pending(session)
 
 
 def e9_block(session: ds.Session) -> dict[str, Any]:
-    """The guest's E9 lines since the previous stop, as every stop reply shows them
-    (`log_marks.stop_block`, the guest channel's): the count whole, the newest few, and the mark
-    they start at, from which `log` reads the rest. Unavailable with why when there is no log
-    to read; a log rewritten shorter is read from its start."""
+    """The guest's E9 lines since the previous stop (`log_marks.stop_block`); a log rewritten
+    shorter is read from its start."""
     mark = STATE.e9_offset
     try:
         fresh, offset = session.e9_new_since(mark)
@@ -90,49 +66,31 @@ def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
                made_by: dict[str, str] | None = None,
                asked_by: Literal["stop", "cancel"] | None = None,
                **base: Any) -> dict[str, Any]:
-    """What a stop ALWAYS returns, on top of the tool's own fields in `base`:
-    where it stopped and by which declaration (its `cause`: a declaration matched by address, or
-    why none can be named), the watches already evaluated, the registers, and the guest's E9
-    lines since the previous stop (`e9_block`). `made_by`, a
-    stop the calling tool made itself (`run_to`'s target, whose breakpoint is gone by now),
-    is attributed to it rather than looked for among the declarations; `asked_by`, a stop the
-    caller asked for (its own `stop`, or the end a cancelled call made), names that when no
-    declaration is at the address. `altered`
-    rides in the standard `session` block `st.reply` adds, so it is carried the same way here.
-    """
-    # ONE SURVEY for where AND registers (a round trip costs most of a second): they
-    # read the same stopped screen, so taking two was one avoidable console round trip a stop.
-    # ONE repaint for the three things a stop reads: where, registers and the list the
-    # watches check against: separate reads cost a `BPLIST` round trip each, twice for the
-    # same screen.
-    arming.apply_pending(session)      # what the running guest kept the console from; the reply
-    where, registers, held = session.stop_survey()   # carries the account via `st.reply`
+    """What a stop always returns on top of `base`: position, `cause`, watches, registers, E9.
+    `made_by` attributes a stop the calling tool made itself; `asked_by` names the cause when
+    no declaration is at the address."""
+    # One survey and one repaint serve where, registers and the watches' list.
+    arming.apply_pending(session)
+    where, registers, held = session.stop_survey()
     machine = (where["mode"], registers)
     watches = arming.evaluate_watches(session, machine=machine, held=held)
     attribution = arming.attribute_stop(session, where=where, machine=machine,
                                         retrace_may_stop=retrace_may_stop and made_by is None,
                                         held=held)
     if made_by is not None:
-        # THE TOOL'S OWN STOP, and any declaration resolving to the same place named beside it.
         also = (attribution.get("refs") or [attribution["ref"]]
                 if attribution.get("attributed") else [])
         attribution = {"attributed": True, **made_by, "at": attribution["at"],
                        **({"refs": also} if also else {})}
     elif asked_by is not None and not attribution.get("attributed"):
-        # A STOP THE CALLER ASKED FOR, by `stop` or by cancelling a call, with no declaration at
-        # its address: that is the cause. One that is there keeps its name, since the guest may
-        # have reached it as BREAK went.
         attribution = {"attributed": True, "ref": asked_by, "by": asked_by,
                        "at": attribution["at"]}
     STATE.remember_stop(session, where, registers, held, attribution)
-    # THIS STOP'S DRAIN IS THE ONE ABOVE: marked under the number the stop has just been given,
-    # or the next contact would take it for a stop nobody drained and drain again.
+    # Marked under the new number, or the next contact drains this stop again.
     STATE.pending["drained_seq"] = STATE.last_stop["seq"]
     picture = STATE.last_stop["picture"] = code.stop_instruction(session, where, registers,
                                                                  session.survey_text)
     e9 = e9_block(session)
-    # THE STOP'S NUMBER rides on its reply: it is what a batch with `summaries`
-    # counts its stops by, and what `last_stop.stop_seq` later names.
     return st.reply(**{**base, **position(where, getattr(session, "paging", None))},
                     regs=st.shown_regs(registers), watches=watches,
                     cause=st.cause(attribution),
@@ -140,10 +98,8 @@ def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
 
 
 def recorded_stop_reply(session: ds.Session, recorded: dict[str, Any]) -> dict[str, Any]:
-    """The enriched stop for one already recorded (`STATE.as_of_current`), built off that
-    record: its registers, the watches evaluated and the E9 block read now, and the
-    instruction it is on, decoded here off the screen its survey read when no reply has yet.
-    Never surveyed again, which would number the same stop twice."""
+    """The enriched stop for one already recorded; never surveyed again, which would number
+    it twice."""
     stop = STATE.last_stop
     machine = (str(stop["where"]["mode"]), dict(stop["registers"]))
     watches = arming.evaluate_watches(session, machine=machine, held=list(stop["held"]))
@@ -159,11 +115,9 @@ def stop_or_base(session: ds.Session, stopped: bool, base: dict[str, Any], *,
                  retrace_may_stop: bool = False,
                  made_by: dict[str, str] | None = None,
                  asked_by: Literal["stop", "cancel"] | None = None) -> dict[str, Any]:
-    """The enriched stop reply when the machine STOPPED, else just the tool's base answer.
-    A halt whose POSITION cannot be read (a cut pane leaves `where` refusing, which `resume`'s
-    read-back meets as a stop with no position) is not discarded: the halt is a real
-    observation, so the base fields stand and the enrichment is marked unavailable with why,
-    rather than the whole reply becoming INVALID for a read that could not be made."""
+    """The enriched stop reply when the machine stopped, else the tool's base answer.
+    A halt whose position cannot be read (a cut pane) keeps the base fields and marks the
+    enrichment unavailable."""
     if not stopped:
         return st.reply(**base)
     try:
@@ -174,9 +128,7 @@ def stop_or_base(session: ds.Session, stopped: bool, base: dict[str, Any], *,
 
 
 def cpu_mode_of(mode: str, paging: bool | None) -> str | dict[str, Any]:
-    """The cpu mode of a stop in `status`'s words, `real`, `protected`, `paged` or the pane's own
-    `VM86`, off the pane's mode word and its paging mark; unavailable when the two do not place
-    it."""
+    """The cpu mode in `status`'s words (`real`, `protected`, `paged`, `VM86`), or unavailable."""
     if mode == dcons.REAL_MODE:
         return "real"
     if mode == dcons.V86_MODE:
@@ -189,13 +141,11 @@ def cpu_mode_of(mode: str, paging: bool | None) -> str | dict[str, Any]:
         f"it as real, protected or paged")
 
 
-#: Why a stop's position is unavailable: the survey that would place it came back cut.
 CUT_POSITION_WHY = "the stop's survey came back cut, so its position could not be read"
 
 
 def position(where: dict[str, str] | None, paging: bool | None) -> dict[str, Any]:
-    """Where a machine stopped, as every stop reply says it: `pc`, the `SSSS:OOOOOOOO` every
-    DOS ref takes, and `cpu_mode` (`cpu_mode_of`); both unavailable when no survey placed it."""
+    """Where a machine stopped: `pc` (`SSSS:OOOOOOOO`) and `cpu_mode`."""
     if where is None:
         return {"pc": contract.unavailable(CUT_POSITION_WHY),
                 "cpu_mode": contract.unavailable(CUT_POSITION_WHY)}
@@ -203,26 +153,19 @@ def position(where: dict[str, str] | None, paging: bool | None) -> dict[str, Any
 
 
 def recorded_head(recorded: dict[str, Any]) -> dict[str, Any]:
-    """The head of a stop reply built off the record rather than a survey of its own: the
-    record as `STATE.as_of_current` names it, and the `position` of the stop it names."""
+    """The head of a stop reply built off the record rather than a survey."""
     stop = STATE.last_stop
     return {**recorded, **position(dict(stop["where"]), stop.get("paging"))}
 
 
-#: Why `status` has no `pc`, one text per cause, so its summary can say which without a second
-#: field: `alive` and `running` are the session block's.
 PC_RUNNING_WHY = ("the guest is running: `pc` is read off a stopped machine's register pane, and "
                   "`last_stop` says where it was last seen")
 PC_GONE_WHY = "DOSBox-X has exited: `last_stop` says where the guest was last seen"
 
 
 def status_facts(session: ds.Session | None) -> dict[str, Any]:
-    """What `status` adds about the MACHINE: `pc`, where it is NOW, read off the pane at a stop
-    (one console round trip), so a command that moved CS:IP
-    inside the stop (`INTT`, `set_register`) is seen, the stop's own pc staying in `last_stop`;
-    `cpu_mode` (`stop_cpu_mode`); and `declarations`, this server's own declarations counted
-    per family in any state, which are records and so present on a running machine too. No
-    session: none of them."""
+    """What `status` adds about the machine: `pc` now (read off the pane, so a `set_register`
+    inside the stop shows), `cpu_mode`, and `declarations` counted per family."""
     if session is None:
         return {}
     facts: dict[str, Any] = {"cpu_mode": stop_cpu_mode(session)}
@@ -244,17 +187,13 @@ def status_facts(session: ds.Session | None) -> dict[str, Any]:
 
 
 def stop_cpu_mode(session: ds.Session) -> str | dict[str, Any]:
-    """The cpu mode of the stop the machine is in, off its recorded survey (no console round
-    trip: a command inside a stop does not switch the mode); unavailable while the guest runs,
-    when that stop's survey was cut, or when the pane does not place it."""
+    """The cpu mode of the stop the machine is in, off its recorded survey."""
     if not (session.alive() and session.at_debugger()):
         return contract.unavailable(
             "the guest is running (or gone): the mode is read off a stopped machine's "
             "register pane, and `last_stop` says where it was last seen")
     if STATE.as_of_current(session) is None:
-        # THE RECORD IS NOT THIS STOP'S: its survey was cut, so the record still holds the
-        # previous one, and naming that as the stop the machine is in would be a confident
-        # wrong answer of the right shape.
+        # The survey was cut, so the record is still the previous stop's.
         return contract.unavailable(
             "the stop the machine is in was not readable yet (a cut pane; the next contact "
             "retries), and `last_stop` is the one before it")
@@ -263,13 +202,10 @@ def stop_cpu_mode(session: ds.Session) -> str | dict[str, Any]:
 
 
 def live() -> ds.Session:
-    """The session, or INVALID: `no_session` with none, `session_broken` with `exit_code` for
-    one whose emulator died under it.
+    """The session, or INVALID: `no_session`, or `session_broken` with `exit_code`.
 
-    A DEAD SESSION IS KEPT UNTIL `close`: its `session` block still says whether
-    it was written to (`altered`), which a caller measuring a forced state must not lose, and
-    `close` collects the exit before the scratch goes. Every call that needs the machine answers
-    `session_broken` until then; a `start` closes it first."""
+    A dead session is kept until `close`, so its `session` block still says whether it was
+    written to (`altered`)."""
     ses = STATE.session
     if ses is None:
         raise ds.Invalid("no_session", "there is no live session. `start` one first; a reply from "

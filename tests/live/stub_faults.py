@@ -1,22 +1,16 @@
-"""A faulty line between the server and the guest's stub, put in at the session's own seam
-(`dosbox_session.INPUT_LINE`): it holds the real input socket and, on its first frame or its
-first acknowledgement, does ONE thing to it, so each of the stub's recovery paths can be
-provoked live. It counts what crossed it, which is what the cells judge."""
+"""A faulty line at the session's `INPUT_LINE` seam: one fault on the first frame or ack."""
 
 from __future__ import annotations
 
 import socket
 import time
 
-#: A timer tick of the guest's, the pace the stub reads at.
+#: One guest timer tick: the pace the stub reads at.
 TICK_S = 1 / 18.2
 
 
 class FaultyLine:
-    """`fault` is one of `lose_ack` (the stub's first acknowledgement never reaches the host),
-    `dribble` (every frame sent a byte at a time, a tick and a half apart), `short` (the first
-    frame cut after its sequence byte, the rest never sent) or `close` (the first frame cut
-    half-way and the socket closed)."""
+    """`fault`: `lose_ack`, `dribble`, `short` or `close`."""
 
     def __init__(self, sock: socket.socket, fault: str) -> None:
         self.sock, self.fault = sock, fault
@@ -38,7 +32,7 @@ class FaultyLine:
                 time.sleep(TICK_S * 1.5)
             return
         if self.fault == "short" and first:
-            self.sock.sendall(data[:2])          # SYNC and the sequence byte, then nothing
+            self.sock.sendall(data[:2])
             return
         if self.fault == "close" and first:
             self.sock.sendall(data[:len(data) // 2])
@@ -54,6 +48,6 @@ class FaultyLine:
                 self._dropping = False
                 self.acks_dropped += 1
                 got = got[:at] + got[at + 4:]
-                if not got:              # nothing else came with it: wait for what does
+                if not got:
                     got = self.sock.recv(size)
         return got

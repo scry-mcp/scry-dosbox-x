@@ -1,12 +1,8 @@
-"""The symbols a DJGPP executable carries in its own COFF table, and what they say of a text table
-loaded for it.
+"""The symbols a DJGPP executable carries in its COFF table, checked against a loaded text table.
 
-A text table (`nm` output, a `.sym`) is a second copy of what the linker knew, and it goes stale
-the moment the program is relinked without it: every name still resolves, each one a few bytes
-off, and nothing in the table can say so. The executable can. A go32 image is a small MZ stub
-followed by a COFF file whose symbol table the linker wrote in the same run as the code, so its
-global code symbols are the build's own answer, exact, and a table that disagrees with them is
-another build's. Real-mode executables carry no such table, and then nothing here can check.
+A text table goes stale when the program is relinked without it: every name still resolves, a
+few bytes off. The linker wrote the image's symbols in the same run as the code, so they are
+exact. Real-mode executables carry none, and then nothing here can check.
 """
 
 from __future__ import annotations
@@ -20,14 +16,10 @@ from scry_core import reply_contract as contract
 import dosbox_session as ds
 import dosbox_symbols as sym
 
-#: The COFF machine word of an i386 object, the one a DJGPP link writes.
 I386_MAGIC = 0x14C
-#: One COFF symbol table entry, and the storage class of an external (global) symbol.
 ENTRY_BYTES = 18
 C_EXT = 2
-#: The section number COFF gives `.text`, the first section of a DJGPP image.
 TEXT_SECTION = 1
-#: How many disagreements a refusal names before it counts the rest.
 NAMED_MAX = 3
 
 
@@ -40,8 +32,7 @@ class Stripped(Exception):
 
 
 def _coff_start(data: bytes) -> int:
-    """Where the COFF file starts: after the go32 stub when the image opens with one, whose
-    size the MZ header gives in pages and the bytes of its last page."""
+    """Where the COFF file starts: after the go32 stub, if the image opens with one."""
     if data[:2] != b"MZ":
         return 0
     if len(data) < 6:
@@ -51,21 +42,17 @@ def _coff_start(data: bytes) -> int:
 
 
 def global_code_symbols(exe: Path) -> dict[str, int] | None:
-    """The image's global `.text` symbols, name to value, or None when it is not a COFF image
-    (a real-mode executable, or anything else); `CutImage` when it is one cut short, `Stripped`
-    when it is one with no symbol table."""
+    """The image's global `.text` symbols, name to value; None when it is not a COFF image;
+    `CutImage` when cut short, `Stripped` when it has no symbol table."""
     try:
         return _symbols(exe.read_bytes())
     except (struct.error, ValueError, IndexError) as e:
         raise CutImage(str(e)) from None
-    # `Stripped` passes through: the image is whole, it only names no table.
 
 
 def _symbols(data: bytes) -> dict[str, int] | None:
     start = _coff_start(data)
     if len(data) < start:
-        # A REAL-MODE IMAGE ENDS WHERE ITS MZ HEADER SAYS, a go32 one carries its COFF file past
-        # it: a file shorter than its own header is neither, it is cut.
         raise CutImage(f"the file is {len(data)} bytes, shorter than its MZ header says "
                        f"({start})")
     if len(data) < start + 20:
@@ -96,8 +83,7 @@ def _symbols(data: bytes) -> dict[str, int] | None:
 
 
 def executable_beside(table: Path) -> Path | None:
-    """The executable a table is kept for: the file beside it under its stem, the name in any
-    case as DOS reads it (`GAME.SYM` beside `GAME.exe`)."""
+    """The executable beside a table under its stem, matched in any case as DOS does."""
     want = f"{table.stem}.exe".lower()
     try:
         return next((c for c in sorted(table.parent.iterdir())
@@ -108,8 +94,7 @@ def executable_beside(table: Path) -> Path | None:
 
 def check(table: Path, symbols: list[sym.Symbol]) -> dict[str, Any]:
     """The table's global code symbols against the executable beside it: `against` and `agree`
-    when every one it shares with the image holds the image's value, unavailable with why when
-    nothing can be compared, and a refusal naming the disagreements when any differs."""
+    when all match, unavailable when nothing can be compared, a refusal when any differs."""
     exe = executable_beside(table)
     if exe is None:
         return contract.unavailable(f"no executable named {table.stem}.exe beside the table, "

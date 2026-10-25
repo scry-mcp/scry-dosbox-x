@@ -1,6 +1,4 @@
-"""The media tools through the server against a real DOSBox-X: the screen guest
-(`tests/guest/screen.asm`) recorded with `capture_video`, its 13h screen attached, a series cut
-out of its capture and every file tool asked about that series, headless."""
+"""The screen guest recorded with `capture_video`, cut into a series every file tool reads."""
 from __future__ import annotations
 
 import hashlib
@@ -17,7 +15,6 @@ import dosbox_x_server as server
 pytestmark = pytest.mark.live
 
 GUEST = guest_dir()
-#: The screen guest's steps up to its 13h picture, each ending in `int 3`.
 TO_13H = ("text", "start80", "dac01", "13h")
 
 

@@ -1,13 +1,4 @@
-"""Stale is decided by the build a raw address was declared against, not by which session.
-
-A raw address re-resolves against nothing, so re-arming it blind on a program that was
-rebuilt lands it on whatever the linker put there. Calling a raw address stale whenever
-ANOTHER session has declared it throws away every declaration of a program that has not
-changed at all. The rule is the owner's: a raw declaration is stamped with the one batch of
-the map that describes its address (the conf alone where none does); a session holding that
-batch unchanged re-arms it, one where another batch describes the address leaves it stale (a
-name re-resolves as always). The whole rule, as one table, is `test_dosbox_x_comment_builds`.
-"""
+"""A raw address is stale by the build it was declared against, not by which session."""
 
 from __future__ import annotations
 
@@ -56,16 +47,16 @@ def test_symbols_load_re_arms_a_raw_address_over_the_same_map_and_leaves_it_over
         return got
 
     a_session("s1")
-    server.breakpoint_at(ref="00A7:5C6F0")          # inside the map's span: its batch stamps it
+    server.breakpoint_at(ref="00A7:5C6F0")
     server.breakpoint_at(ref="_main")
     (raw,) = [d for d in dstate.STATE.store.declarations()   # type: ignore[union-attr]
               if d.by == "address"]
     assert raw.fingerprint == build_of(conf, nm.read_text(encoding="utf-8"))
-    # A NEW SESSION over the SAME conf and map: everything comes back, whoever declared it.
+    # same conf and map: everything re-arms, whoever declared it
     got = a_session("s2")
     assert got["declarations"]["stale"] == [], got["declarations"]
     assert {r["ref"] for r in got["declarations"]["rearmed"]} == {"_main", "00A7:5C6F0"}
-    # The map is RELINKED: the raw address is stale, the name re-resolves.
+    # relinked: the raw address is stale, the name re-resolves
     nm.write_text("00001000 T _start\n0016dd90 T _main\n", encoding="utf-8")
     got = a_session("s3")
     assert [r["ref"] for r in got["declarations"]["stale"]] == ["00A7:5C6F0"], \

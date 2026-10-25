@@ -1,6 +1,4 @@
-"""The tools that let the guest run and say where it came back: `resume` and `run_to`. The bodies
-of the two tools, which the server registers; its own module because how a run is released,
-waited on and judged changes for reasons the tool registrations do not."""
+"""The bodies of the `resume` and `run_to` tools."""
 
 from __future__ import annotations
 
@@ -18,12 +16,9 @@ from dosbox_running import live
 
 def resume(seconds: float, detail: bool,
            progress: ds.Progress) -> dict[str, Any]:
-    """The body of the `resume` tool. With a bound it waits for a stop: `OTHER_STOP` with the
-    stop's survey, or `TIMEOUT` with the machine LEFT RUNNING; with none it waits for nothing
-    and carries no verdict, though an F5 that never left the debugger is still a stop."""
+    """Release the guest; with a bound, wait for a stop or leave it running."""
     session = live()
-    # A GUEST ALREADY RUNNING IS REFUSED BEFORE ANY CHECK THAT NEEDS THE MACHINE: an F5 there
-    # does nothing, and an `ok` for it reads exactly like the release of a stopped machine.
+    # Refused first: an F5 on a running guest does nothing, yet an `ok` would read as a release.
     if not session.at_debugger():
         raise ds.NotStopped("the guest is already running, so there is nothing to resume")
     out = session.resume()
@@ -37,9 +32,7 @@ def resume(seconds: float, detail: bool,
                                                       "resume", progress, label="resume")
             if expired:
                 break
-            # AN ANNOUNCED STOP IS READ BACK: a machine not at rest when asked still runs, so
-            # the wait listens on for the rest of its bound. A pane cut another way is a stop
-            # whose position could not be read, said by the stop reply's own enrichment.
+            # A machine not at rest when asked still runs, so keep listening.
             try:
                 stopped_at = session.where()
                 halted = True
@@ -53,21 +46,15 @@ def resume(seconds: float, detail: bool,
                             "the console tools refuse until it stops")
         base = {"verdict": contract.OTHER_STOP if halted else contract.TIMEOUT, **base}
     if halted:
-        # NO PAGE/NOPG MARK HERE: `where()` reads none, and the one the session holds is the stop
-        # before's; the stop's own survey (`stop_reply`) replaces this with the mark it read.
+        # `where()` reads no page mark; the held one is stale until `stop_reply` replaces it.
         base.update(running.position(stopped_at, None))
-    # A HALT IS A STOP, so it carries the full stop reply: registers, the
-    # watches evaluated, its `cause` and the E9 block. A machine still running has
-    # nothing to read, so it comes back with just the base.
     return running.stop_or_base(session, halted, base, retrace_may_stop=True)
 
 
 def run_to(ref: str, control: str, seconds: float, progress: ds.Progress) -> dict[str, Any]:
-    """The body of the `run_to` tool."""
+    """Run to `ref`, with `control` as the place that proves the run was hot."""
     session = live()
-    # ONE SURVEY for the resolution: a symbol needs the mode and the CS
-    # selector, and reading them as two round trips before the run's own third was two
-    # avoidable console trips per `run_to` by name. A raw SEG:OFF reads nothing here.
+    # One survey resolves both refs; a raw SEG:OFF reads nothing.
     by_address = (placement.decide_by(ref) == "address"
                   and placement.decide_by(control) == "address")
     machine = None if by_address else session.where_and_registers()
@@ -78,7 +65,6 @@ def run_to(ref: str, control: str, seconds: float, progress: ds.Progress) -> dic
     armed = out.pop("control")
     hits = int(armed["hits"])
     verdict = out.pop("verdict")
-    # `target` is the session's own spelling of the place, `ref` the caller's.
     fields: dict[str, Any] = {
         "verdict": verdict, "target": out["target"], "ref": ref,
         **running.position(out["stopped_at"], None),      # the survey's mark replaces it
@@ -86,9 +72,7 @@ def run_to(ref: str, control: str, seconds: float, progress: ds.Progress) -> dic
         "controls": [{"ref": control, "at": armed["at"], "hits_in_run": hits,
                       "removed": armed["removed"]}],
         "note": out["note"]}
-    # A RUN THAT SAW NOTHING OF ITS CONTROL proves nothing about its target: the bound
-    # ran out with the control never fired, or another stop ended the run before it could
-    # fire. Both are refused, with the stop the run left surveyed beside the refusal.
+    # A run that never saw its control proves nothing about its target.
     if verdict != contract.TARGET and not hits:
         code: contract.Code = ("control_silent" if verdict == contract.TIMEOUT
                                else "cut_by_other_stop")
@@ -101,8 +85,7 @@ def run_to(ref: str, control: str, seconds: float, progress: ds.Progress) -> dic
         return running.stop_or_base(session, True,
                                     {"status": "INVALID", "code": code, "message": message,
                                      **refused}, retrace_may_stop=True)
-    # AN ARRIVAL IS THE STOP `run_to` MADE, attributed to its target although the breakpoint
-    # that made it is removed by now; a stop elsewhere may be a retrace `run_for` left.
+    # An arrival is attributed to its target though that breakpoint is removed by now.
     arrived = verdict == contract.TARGET
     return running.stop_or_base(session, True, fields, retrace_may_stop=not arrived,
                                 made_by={"ref": ref, "by": "run_to"} if arrived else None)

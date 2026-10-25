@@ -1,19 +1,4 @@
-"""Section Q of the live matrix: the media layer's scenarios, each asked twice over one answer, on
-the screen guest (`tests/guest/screen.asm`) recorded with `capture_video`.
-
-THE PAIR IS THE POINT. A new tool has no "before" of its own, so each scenario is answered the
-way a session answers it with the tools it had and the new way, from the same files, and both
-must reach the same answer. What each way cost (calls, the text units of its replies, the
-visual tokens of the pictures they attached) is in the cell's detail.
-
-S1, "which frames of the capture changed in region R": the hand way extracts each AVI frame with
-`capture_frame` and compares the region's pixels here, with this file's own comparison; the new
-way is `series_capture` and `image_compare(method="region")` over the same frames of the same file.
-S2, "is this
-screen the golden": the golden is the 13h picture at the guest's 13h stop; the hand way looks at
-the screen again and compares pixels, the new way compares one string; its control is the same
-question at the next stop, where the guest moved the display start, which must come out no.
-"""
+"""Section Q of the live matrix: each media scenario answered by hand and with the new tools."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -23,8 +8,7 @@ from matrix_common import M, boot, cells, ok, server, videos
 from matrix_screen import SCREEN_CONF, SCREEN_PROGRAM
 from scry_core import png, raster, traffic
 
-#: The region S1 asks about: the top of the 13h picture, where the guest's display start move
-#: shows; and the most frames of the capture it reads.
+#: The top of the 13h picture, where the guest's display start move shows.
 S1_CROP = [0, 0, 320, 8]
 S1_FRAMES_MAX = 24
 
@@ -44,7 +28,7 @@ Q_CELLS = cells(
 
 
 def _cost(since: int) -> dict[str, int]:
-    """Calls, text units and image tokens of the replies recorded since `since`."""
+    """Cost of the replies recorded since `since`."""
     replies = [c["reply"] for c in M.calls[since:]]
     return {"calls": len(replies), "units": sum(traffic.json_units(r) for r in replies),
             "image_tokens": sum(traffic.image_tokens(r) for r in replies)}
@@ -65,15 +49,13 @@ def section_q() -> None:
     M.setup()
     for name in ("text", "start80", "dac01", "13h"):
         _to_stop(name)
-    # S2 at the 13h stop: the golden, then the two ways.
     golden = M.fresh(".png")
     made = M.call(server.screen_view, scale=1, dest=golden)
     want = png.decode(Path(golden).read_bytes()) if ok(made) else None
     start = len(M.calls)
     look = M.call(server.screen_view)
     image = look.get("image") or {}
-    # The attached picture is the screen enlarged; the golden enlarged by the same factor is
-    # the same picture, pixel for pixel, when the screen is the golden.
+    # screen_view attaches the screen enlarged, so enlarge the golden by the same factor.
     hand_ok = (want is not None and ok(look) and image.get("inline") is True
                and png.decode(Path(image["path"]).read_bytes())
                == png.enlarged(want, int(image.get("scale", 1))))
@@ -91,7 +73,7 @@ def section_q() -> None:
             f"cost {new_s2}")
     M.judge(Q_CELLS[5].label, new_s2["image_tokens"] == 0 < hand_s2["image_tokens"],
             f"hand {hand_s2}, new {new_s2}")
-    # S1 over the capture the 13h steps wrote: the newest file, by its number.
+    # The newest capture, by its number.
     caps = videos()
     last: dict[str, Any] = max(caps, key=lambda c: str(c.get("path")), default={})
     count = min(int(last.get("avi_frames") or 0), S1_FRAMES_MAX)
@@ -116,12 +98,11 @@ def section_q() -> None:
              if ok(series) else series)
     new = [f for f, _ in track.get("transitions", [])] if ok(track) else []
     new_s1 = _cost(start)
-    # The guest moves the display start inside the capture, so the crop changes: an answer of no
-    # change on either side is a missed crop, never agreement.
+    # No change on either side is a missed crop, never agreement.
     M.judge(Q_CELLS[1].label, ok(series) and bool(hand) and new == hand
             and new_s1["image_tokens"] == 0,
             f"changes at {new} (hand {hand}); cost {new_s1}; {track.get('summary')}")
-    # Cheaper only counts when the new way answered: a refused series is one call too.
+    # A refused series is one call too, so cheaper counts only when the new way answered.
     M.judge(Q_CELLS[2].label, ok(series) and ok(track) and new_s1["calls"] < hand_s1["calls"],
             f"hand {hand_s1}, new {new_s1}")
     M.call(server.close)

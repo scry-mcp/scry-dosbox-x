@@ -1,10 +1,4 @@
-"""What `scry_core.probe` judges with this server's own surface: the task set and its captures,
-the server's pre-gate check, and the texts the client delivers.
-
-The engine and the checks every server runs (`scry_core.probe_checks`) are the core's; what is
-dosbox-x's own (its `check`) is judged here on the real server. `captured/dosbox-x/` holds every
-task as real runs answered it, one file per task.
-"""
+"""The dosbox-x task set, its captures and its own pre-gate check, judged on the real server."""
 
 import json
 import sys

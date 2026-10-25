@@ -1,15 +1,10 @@
 """The emulator's two local TCP routes, and the debugger channel that is one of them.
 
-Both routes have the same shape: the SESSION listens before the emulator exists, and the
-emulator dials it. The other way round, with the emulator listening, loses: a
-process that took the port between the server's check and the emulator's bind was left listening
-beside it, and the session's connect reached THAT process. A port the kernel picks and the
-session holds from that moment cannot be taken in between. `listen_local` and `await_dial` are
-that shape, once; the serial input route (`dosbox_launch.listen_input`) and the debugger channel
-word their own refusals around them.
+The session listens before the emulator exists and the emulator dials it, so no other process
+can take the port between a check and the bind.
 
-THE DEBUGGER CHANNEL is upstream's (`[dosbox] mcp_server=<port>`, off at 0): at start the emulator
-dials 127.0.0.1:<port> and serves one request per line,
+The debugger channel is upstream's (`[dosbox] mcp_server=<port>`): the emulator dials the
+session and serves one request per line,
 
     REQ <id> PING | BREAK | EXEC <debugger command>
 
@@ -19,13 +14,9 @@ answered by
     <the lines the debugger printed while it ran>
     END <id>
 
-polled from a timer tick as well as from the debugger's own loop, so it answers while the guest
-RUNS. That is what makes it the way back into a running guest: `BREAK` is the debugger hotkey
-without a window, a key nobody has to press on a screen nobody has to own. The dial is accepted
-LAZILY, at the first request: the emulator dials from its init and the kernel's backlog keeps the
-connection until then, so a session that never breaks in pays nothing for the channel. The
-listener stays open for the session's life, because the emulator redials a second after it loses
-the connection, and a closed port would make that loss permanent.
+It answers while the guest RUNS, so `BREAK` is the way into a running guest. The dial is accepted
+lazily, at the first request, and the listener stays open for the session's life because the
+emulator redials a second after losing the connection.
 """
 
 from __future__ import annotations
@@ -39,22 +30,17 @@ from collections.abc import Callable
 from scry_core.reply_contract import Invalid
 
 LOCAL_HOST = "127.0.0.1"
-ACCEPT_SLICE_S = 0.1      # how often a wait for a dial looks up to see whether the emulator runs
-# The dial happens at the emulator's init, long before anyone asks, so by the first request it
-# is in the backlog: the bound only has to cover a request sent in the first second of a start,
-# or the redial a second after a dropped connection.
+ACCEPT_SLICE_S = 0.1
 CONTROL_ACCEPT_S = 5.0
-REPLY_S = 5.0             # one request's reply; every command it carries is short
+REPLY_S = 5.0
 RECV_SLICE_S = 0.1
 
 
 def listen_local(port: int) -> socket.socket:
-    """A socket listening on `port` of the loopback (0: the kernel's pick, held from the moment
-    it is picked). OSError when the port cannot be had; the caller says what for."""
+    """A loopback socket listening on `port` (0: the kernel's pick). OSError if unavailable."""
     sock = socket.socket()
     try:
-        # EXCLUSIVE where the platform has the word for it (Windows), and on POSIX the
-        # TIME_WAIT of a port an earlier session used is not "in use".
+        # POSIX: REUSEADDR so a TIME_WAIT port is not "in use".
         exclusive = getattr(socket, "SO_EXCLUSIVEADDRUSE", None)
         sock.setsockopt(socket.SOL_SOCKET, exclusive or socket.SO_REUSEADDR, 1)
         sock.bind((LOCAL_HOST, port))
@@ -67,10 +53,7 @@ def listen_local(port: int) -> socket.socket:
 
 def await_dial(listener: socket.socket, seconds: float,
                exited: Callable[[], int | None]) -> socket.socket | int | None:
-    """The emulator's dial on `listener` within `seconds`: the connected socket, or the
-    emulator's exit code if it died first (said at once, not after the whole bound), or None
-    when the bound passed. The first connection is taken as the emulator's: the port is the
-    kernel's pick, so a stranger would have to dial it inside the emulator's start."""
+    """The emulator's dial within `seconds`: the socket, its exit code if it died first, or None."""
     deadline = time.monotonic() + seconds
     listener.settimeout(ACCEPT_SLICE_S)
     while True:
@@ -87,9 +70,7 @@ def await_dial(listener: socket.socket, seconds: float,
 def parse_reply(buf: bytes, rid: str) -> tuple[bool, list[str], bytes] | None:
     """`(ok, lines, rest)` once `buf` holds the whole reply to `rid`, else None.
 
-    A reply starts at its `BEGIN <id>` line and ends at `END <id>`; anything before the
-    `BEGIN` is a reply to an earlier request nobody waited for (dropped), and anything after
-    the `END` stays in `rest` for the next read."""
+    Anything before its `BEGIN` is an abandoned earlier reply (dropped); after `END` is `rest`."""
     text = buf.decode("utf-8", errors="replace")
     begin = f"BEGIN {rid} "
     start = text.find(begin)
@@ -113,13 +94,11 @@ def parse_reply(buf: bytes, rid: str) -> tuple[bool, list[str], bytes] | None:
 
 
 def _no_poll() -> None:
-    """A request with nothing to poll while it waits."""
+    """No-op poll."""
 
 
 class ControlChannel:
-    """One session's end of the debugger channel: a listener for the session's life, a
-    connection from the first request on, one request in flight at a time. A lock holds that,
-    since the tools and the presence's writer send on it from different threads."""
+    """One session's end of the debugger channel; a lock keeps one request in flight."""
 
     def __init__(self, exited: Callable[[], int | None]) -> None:
         try:
@@ -153,7 +132,7 @@ class ControlChannel:
         return got
 
     def _dropped(self, why: str) -> Invalid:
-        """The connection is gone; the next request accepts the emulator's redial."""
+        """The connection is gone; the next request accepts the redial."""
         conn, self._conn = self._conn, None
         if conn is not None:
             conn.close()
@@ -162,11 +141,10 @@ class ControlChannel:
 
     def request(self, command: str, seconds: float = REPLY_S,
                 poll: Callable[[], None] = _no_poll) -> tuple[bool, list[str]]:
-        """Send `PING`, `BREAK` or `EXEC <cmd>` and return `(ok, lines)` as the debugger
-        answered them. A reply that does not end within `seconds` is `host_failed`: the
-        request may or may not have acted, and saying which would be a guess. `poll` runs at
-        each slice of the wait (a long command's caller passes `cancel.check`); a reply left
-        unread by it is dropped by the next request's (`parse_reply`)."""
+        """Send `PING`, `BREAK` or `EXEC <cmd>`; return `(ok, lines)`.
+
+        No reply within `seconds` is `host_failed`, and whether the request acted is unknown.
+        `poll` runs at each slice of the wait."""
         if not command.strip() or "\n" in command or "\r" in command:
             raise Invalid("bad_argument", f"a channel request is one non-empty line; got "
                           f"{command!r}")
@@ -202,7 +180,7 @@ class ControlChannel:
         return ok, lines
 
     def close(self) -> None:
-        """Both sockets, quietly: the emulator's end is dying or dead by the time this runs."""
+        """Close both sockets; the emulator's end is already dying."""
         for sock in (self._conn, self._listener):
             if sock is not None:
                 with contextlib.suppress(OSError):

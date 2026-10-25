@@ -1,10 +1,8 @@
 """`memdump` past a segment's 64 KiB, and the debugger's own dump file around it.
 
-The debugger reads byte `x` of a dump at its `GetAddress(seg, off + x)` (upstream
-`src/debug/debug.cpp`), which masks the offset to sixteen bits on a 16-bit segment and gives no
-address past a protected-mode limit. `Debugger` below is that rule over a memory image, with the
-probe guest's own bytes (`fixtures/memdump/`, captured live) placed where they were read; the
-descriptor tables are dos-djgpp32's captured listings (`fixtures/machine/dos-djgpp32-GDT`, `-LDT`).
+Upstream reads byte `x` at `GetAddress(seg, off + x)`: the offset masked to sixteen bits on a
+16-bit segment, no address past a protected-mode limit. `Debugger` is that rule over an image
+holding the captured probe bytes (`fixtures/memdump/`).
 """
 from __future__ import annotations
 
@@ -33,15 +31,13 @@ PROBE_PSP_LINEAR = 0x8140                # 0814:0000
 AFTER_PSP_LINEAR = 0x18130               # 1813:0000, the bytes that really follow 0814:FFFF
 DUMP_COMMAND = re.compile(
     r"MEMDUMPBIN (?P<seg>[0-9A-F]{4}):(?P<off>[0-9A-F]+) (?P<len>[0-9A-F]+)(?: (?P<name>\S+))?$")
-# Where the build that reads a name, given none, took it from in the one captured case:
-# `MEMDUMPBIN 0000:0000 20` wrote `00:0000 20`, the line from this offset on.
+# Captured: `MEMDUMPBIN 0000:0000 20` wrote `00:0000 20`, the line from this offset on.
 ARGS_TAIL_FROM = len("MEMDUMPBIN 00")
 REAL_MEMORY = 0x110000                   # the megabyte and the HMA, A20 on as on the probe
 
 
 def image() -> bytearray:
-    """A memory image in which no 64 KiB window repeats another, with the captured bytes of
-    the probe guest at the linear addresses they were read from."""
+    """A memory image in which no 64 KiB window repeats another, with the captured bytes."""
     mem = bytearray((a * 7 + (a >> 8) * 13 + (a >> 16) * 101) & 0xFF for a in range(REAL_MEMORY))
     for at, name in ((PROBE_PSP_LINEAR, "probe-0814-0000.bin"),
                      (AFTER_PSP_LINEAR, "probe-1813-0000.bin")):
@@ -51,15 +47,12 @@ def image() -> bytearray:
 
 
 class Debugger(FakeSession):
-    """A stopped real-mode machine whose `MEMDUMPBIN` is upstream's: the file the debugger names,
-    in the working directory, each byte at `seg * 16 + ((off + x) & 0xFFFF)`. `Session.memdump`
-    runs for real against it.
+    """A stopped real-mode machine whose `MEMDUMPBIN` is upstream's; `Session.memdump` runs
+    for real against it.
 
-    Two builds, captured live through `Session.command` on the probe guest. The default takes
-    no file name and writes `MEMDUMP.BIN` whatever follows the length. `takes_name` is the build
-    whose parser reads an optional name: given one, it writes that name; given none, it names
-    the file after the tail of the argument text (`ARGS_TAIL_FROM`), which no candidate
-    matches."""
+    The default build writes `MEMDUMP.BIN` whatever follows the length. `takes_name` reads an
+    optional name: given none, it names the file after the argument tail (`ARGS_TAIL_FROM`),
+    which no candidate matches."""
 
     def __init__(self, cwd: Path, *, says: str = "DEBUG: Memory dump binary success.",
                  writes: bool = True, takes_name: bool = False) -> None:
@@ -71,11 +64,11 @@ class Debugger(FakeSession):
         self.writes = writes
         self.takes_name = takes_name
         self.typed: list[str] = []
-        self.wrote: list[str] = []          # the name each dump was written under
+        self.wrote: list[str] = []
 
     def command(self, text: str, **_: object) -> str:
         self.typed.append(text)
-        line = text.upper()                 # `ParseCommand` upper-cases the whole line
+        line = text.upper()                 # `ParseCommand` upper-cases the line
         m = DUMP_COMMAND.match(line)
         assert m, text
         seg, off, n = (int(m[g], 16) for g in ("seg", "off", "len"))
@@ -97,8 +90,7 @@ class Debugger(FakeSession):
 
 def test_the_double_reads_one_command_across_offset_ffff_as_the_debugger_did(
         tmp_path: Path) -> None:
-    """The double is checked against the emulator before it judges anything: one command from
-    0814:FFF0 gives exactly the bytes the debugger wrote live, wrap included."""
+    """One command from 0814:FFF0 gives the bytes the debugger wrote live, wrap included."""
     s = Debugger(tmp_path)
     s.command("MEMDUMPBIN 0814:FFF0 20")
     written = (tmp_path / ds.MEMDUMP_NAME.upper()).read_bytes()
@@ -107,9 +99,7 @@ def test_the_double_reads_one_command_across_offset_ffff_as_the_debugger_did(
 
 def test_the_takes_name_double_writes_the_files_the_captured_build_wrote(
         tmp_path: Path) -> None:
-    """The `takes_name` double against the two commands captured live, typed and expected as
-    literals because they are the capture: a named dump lands under that name, an unnamed one
-    under the tail of its own argument text."""
+    """A named dump lands under that name, an unnamed one under its argument tail."""
     s = Debugger(tmp_path, takes_name=True)
     s.command("MEMDUMPBIN 0000:0000 10 MCPDUMP.BIN")
     s.command("MEMDUMPBIN 0000:0000 20")
@@ -130,7 +120,6 @@ def dumped(ref: str, length: int, dest: Path) -> dict[str, Any]:
     return cast(dict[str, Any], server.memdump(ref=ref, length=length, dest=str(dest)))
 
 
-# ------------------------------------------------------------------ the windows, pure
 
 
 @pytest.mark.parametrize(("seg", "off", "length", "windows"), [
@@ -206,8 +195,7 @@ def test_a_megabyte_from_0000_is_the_memory_there_and_not_window_0_sixteen_times
 
 
 def test_a_dump_across_offset_ffff_holds_the_next_segments_bytes(tmp_path: Path) -> None:
-    """The probe guest's case: one command from 0814:FFF0 reads 0814:0000 again after
-    sixteen bytes; the window from 1813:0000 holds what lies there."""
+    """One command from 0814:FFF0 wraps to 0814:0000; the window from 1813:0000 holds the rest."""
     debugger(tmp_path)
     got = dumped("0814:FFF0", 0x20, tmp_path / "x.bin")
     assert got["status"] == "ok", got
@@ -266,8 +254,7 @@ def test_a_dest_under_a_file_is_refused_before_anything_is_typed(tmp_path: Path)
 
 def test_a_dest_that_cannot_be_created_is_the_callers_and_leaves_no_piece(
         tmp_path: Path) -> None:
-    """The caller named the path, so a directory that will not take it is theirs to change
-    (`bad_argument`, scry-core's one rule for a file a caller names)."""
+    """The caller named the path, so a directory that will not take it is `bad_argument`."""
     s = debugger(tmp_path)
     shut = tmp_path / "shut"
     shut.mkdir()
@@ -330,8 +317,8 @@ def test_a_range_past_ffff_ffff_is_refused_before_anything_is_typed(tmp_path: Pa
 
 def test_find_across_offset_ffff_spells_a_hit_past_it_by_its_own_paragraph(
         tmp_path: Path) -> None:
-    """A real-mode address cannot carry an offset past 0xFFFF (the debugger masks it), so a
-    hit in the second window is named from its own paragraph."""
+    """A real-mode offset cannot pass 0xFFFF, so a hit in the second window is named from its
+    own paragraph."""
     s = debugger(tmp_path)
     needle = bytes(s.mem[AFTER_PSP_LINEAR + 0x14:AFTER_PSP_LINEAR + 0x1C])
     got = cast(dict[str, Any], server.find(data_hex=needle.hex(), ref="0814:FFF0", length=0x20))
@@ -411,9 +398,7 @@ def test_a_protected_range_past_ffff_without_a_logfile_names_start_logfile(
 
 def test_an_expand_down_segment_is_judged_above_its_limit(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    """No bench has one, so the row is written from the descriptor format (type 16h: data,
-    writable, expand-down): its offsets lie ABOVE the limit, as upstream's `LinMakeProt` has
-    them."""
+    """No bench has one, so the row is hand-written (type 16h): offsets lie above the limit."""
     found = {"gdt": [{"selector": "0050", "base": "00000000", "limit": "0000FFFF",
                       "type": "16", "b": 1}]}
     reading = SimpleNamespace(found=found, notes=["read"])
@@ -459,8 +444,7 @@ def test_a_table_that_could_not_be_read_says_so_and_why(
 
 def test_a_dump_of_the_wrong_size_leaves_no_file_and_the_next_dump_is_not_refused(
         tmp_path: Path) -> None:
-    """A failure after `MEMDUMPBIN` takes the debugger's file away, or the next call would
-    refuse this call's own file as somebody's."""
+    """A failure after `MEMDUMPBIN` removes the debugger's file, or the next call refuses it."""
     s = debugger(tmp_path)
     real = s.command
 
@@ -479,8 +463,7 @@ def test_a_dump_of_the_wrong_size_leaves_no_file_and_the_next_dump_is_not_refuse
 
 def test_a_failed_dump_is_read_off_the_last_dump_line_and_its_file_removed(
         tmp_path: Path) -> None:
-    """The screen still holds an earlier dump's success line; the line this command printed is
-    the binary dump's failure (`Memory binary dump failed.`, upstream's own words)."""
+    """The screen holds an earlier success line; this command's own line is the failure."""
     s = debugger(tmp_path, says="DEBUG: Memory dump binary success.\r\n"
                                 "DEBUG: Memory binary dump failed.")
     got = dumped("0814:0000", 0x20, tmp_path / "a.bin")
@@ -538,8 +521,8 @@ def test_a_dump_that_cannot_be_moved_is_removed_and_the_reply_says_so(tmp_path: 
 
 def test_a_copy_cut_short_on_another_volume_leaves_no_partial_dest(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """`collect` falls back to a copy when a rename cannot cross volumes; a copy that dies
-    part-way left its half of the file at `dest`, refused as somebody's next time."""
+    """`collect` copies when a rename cannot cross volumes; a copy dying part-way leaves no
+    half file at `dest`."""
     s = debugger(tmp_path)
 
     def no_rename(self: Path, target: Any) -> Path:
@@ -583,9 +566,7 @@ def test_a_file_there_before_the_command_is_never_removed(tmp_path: Path) -> Non
 @pytest.mark.parametrize("shape", ["missing_directory", "free_name"])
 def test_a_dangling_link_where_the_debugger_writes_is_refused_and_nothing_written_through(
         tmp_path: Path, name: str, shape: str) -> None:
-    """A link where the debugger writes is somebody's file: without the guard, one into a
-    missing directory has the command typed and its failure misread, and one to a free name
-    has the dump written there and `dest` come back a link."""
+    """A link where the debugger writes is somebody's file: refused before the command is typed."""
     s = debugger(tmp_path)
     target = (tmp_path / "nowhere" / "x" if shape == "missing_directory"
               else tmp_path / "elsewhere.bin")
@@ -608,8 +589,7 @@ def test_the_leftover_guard_sees_a_dangling_link(tmp_path: Path) -> None:
 
 def test_a_leftover_refuses_a_windowed_dump_before_anything_is_typed_or_surveyed(
         tmp_path: Path) -> None:
-    """A range past offset 0xFFFF reads the stop's mode before it is cut, and that survey is a
-    console command: the leftover is judged before it, like everything that needs no machine."""
+    """The mode survey is a console command, so the leftover is judged before it."""
     s = debugger(tmp_path)
     surveyed: list[str] = []
 
@@ -674,9 +654,7 @@ def test_a_dump_file_that_could_not_be_removed_is_never_said_removed(
 
 def test_a_dump_file_that_could_not_be_removed_is_named_once_under_two_spellings(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Where the filesystem folds case the debugger's two spellings are one file, and an unlink
-    the directory refuses fails under both: the reply names that file once. The refusal is
-    the host's own (the working directory made read-only once the debugger has written)."""
+    """Where the filesystem folds case the two spellings are one file, named once on failure."""
     s = debugger(tmp_path)
     shut = tmp_path / "shut"
     shut.mkdir()
@@ -712,9 +690,7 @@ def test_a_windowed_dump_leaves_no_scratch_directory_behind(
 @pytest.mark.parametrize("kind", ["1E", "06"])
 def test_bit_2_outside_a_data_segment_is_not_expand_down(
         monkeypatch: pytest.MonkeyPatch, kind: str) -> None:
-    """Bit 2 of the type means expand-down only on a data segment: on a code segment it is
-    conforming (1Eh: code, conforming, readable), on a system descriptor (S clear, 06h) part of
-    its kind. Either way the offsets lie up to the limit like any other."""
+    """Bit 2 means expand-down only on a data segment (1Eh conforming code, 06h system)."""
     found = {"gdt": [{"selector": "0050", "base": "00000000", "limit": "0001FFFF",
                       "type": kind, "b": 1}]}
     reading = SimpleNamespace(found=found, notes=["read"])

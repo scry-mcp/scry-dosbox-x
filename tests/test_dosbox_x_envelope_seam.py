@@ -1,8 +1,4 @@
-"""A wrong-typed argument is refused by the schema before the tool runs, and the refusal still
-arrives in this server's envelope: `summary`, `status: INVALID`, `code: bad_argument`, a
-`message` naming the argument, `session` last. ONE seam in the dispatch and no validation of
-our own: the schema keeps judging the type, the seam only gives the refusal the shape every
-other refusal has, so a caller reads one shape and not two."""
+"""A schema refusal of a wrong-typed argument arrives in this server's envelope."""
 
 from __future__ import annotations
 
@@ -48,13 +44,11 @@ def test_the_tools_own_refusal_still_flows_through_the_seam_unchanged() -> None:
 
 @pytest.mark.parametrize("defect", [
     AttributeError("a real defect"),
-    # A body's own validation failing is a defect too, though its cause is the type the
-    # schema's refusal carries: what tells them apart is the SDK's wrapper, not the cause.
+    # Same cause type as the schema's refusal; the SDK's wrapper is what tells them apart.
     pytest.param(None, id="a-validation-error-of-the-body"),
 ])
 def test_a_genuine_defect_is_not_dressed_up_as_a_refusal(defect: Exception | None) -> None:
-    """The seam translates the SCHEMA's refusal only: an exception out of a tool body keeps
-    the SDK's error path, so a broken instrument is never read as a clean refusal."""
+    """Only the schema's refusal is translated; a tool body's exception keeps the SDK path."""
 
     async def boom() -> dict[str, Any]:
         if defect is None:
@@ -67,8 +61,7 @@ def test_a_genuine_defect_is_not_dressed_up_as_a_refusal(defect: Exception | Non
             asyncio.run(s.mcp.call_tool("boom", {}))
     finally:
         s.mcp._tool_manager._tools.pop("boom", None)
-    # The SDK keeps a crash's own text off the wire and hangs it on the cause, so the defect is
-    # found there and nowhere in the message: a client reads the generic line, the log the cause.
+    # The SDK hangs a crash's text on the cause, not on the message.
     assert "a real defect" not in str(raised.value), raised.value
     assert isinstance(raised.value.__cause__, (type(defect) if defect else ValidationError)), \
         raised.value.__cause__
@@ -79,18 +72,12 @@ if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))
 
 
-# ------------------------------------------------------------ strict arguments at the surface
-#
-# The SDK builds each tool's argument model LAX: a convertible type is coerced, an unknown
-# name dropped, and a JSON string parsed into the list or object it spells before the model
-# sees it. The contract says a wrong type or an unknown name is REFUSED, so the server swaps
-# in a strict model and turns that rescue off; these cases hold the swap to the SDK it rides.
+# The SDK builds argument models lax (coerces, drops unknown names, parses JSON strings); the
+# server swaps in a strict model, and these cases hold the swap to the SDK it rides.
 
 
 def test_the_sdk_hooks_the_strict_arguments_ride_on_still_exist() -> None:
-    """The swap reads three things off the SDK: a tool's `fn_metadata`, its `arg_model`, and
-    `validate_arguments` going through `pre_parse_json` before the model. An SDK that moves
-    any of them fails HERE, by name, instead of leaving the surface lax in silence."""
+    """An SDK that moves the hooks the strict swap reads fails here, not silently lax."""
     import inspect as _inspect
 
     from mcp.server.mcpserver.utilities.func_metadata import FuncMetadata
@@ -101,7 +88,7 @@ def test_the_sdk_hooks_the_strict_arguments_ride_on_still_exist() -> None:
     for t in s.mcp._tool_manager.list_tools():
         config = t.fn_metadata.arg_model.model_config
         assert config.get("strict") is True and config.get("extra") == "forbid", t.name
-    # And what a client is TOLD is what is enforced: the published schema closes too.
+    # The published schema closes too.
     published = asyncio.run(s.mcp.list_tools())
     assert published and all(
         t.input_schema.get("additionalProperties") is False for t in published), [
@@ -127,9 +114,7 @@ _SAMPLE: dict[Any, Any] = {str: "0", int: 2, float: 1.0, bool: False, list[str]:
 
 
 def test_every_tool_that_takes_ctx_still_accepts_a_valid_call() -> None:
-    """THE INJECTED-ARGUMENT HAZARD: `ctx` is handed in by the SDK and kept out of the model,
-    so a model that forbids unknown names must still let every such tool through. With no
-    session a valid call is the tool's own answer, never the schema's refusal."""
+    """`ctx` is injected by the SDK, so a model forbidding unknown names must still admit it."""
     import inspect as _inspect
 
     seen = []
@@ -141,7 +126,6 @@ def test_every_tool_that_takes_ctx_still_accepts_a_valid_call() -> None:
         for p in params.values():
             if p.name == "ctx" or p.default is not _inspect.Parameter.empty:
                 continue
-            # A RANGED OR CLOSED ARGUMENT is its scalar under `Annotated`'s schema half.
             ann = (get_args(p.annotation)[0] if get_origin(p.annotation) is Annotated
                    else p.annotation)
             args[p.name] = _SAMPLE.get(ann, [{"op": "status"}])
@@ -151,18 +135,13 @@ def test_every_tool_that_takes_ctx_still_accepts_a_valid_call() -> None:
     assert seen, "no tool takes ctx, so this case examined nothing"
 
 
-# ------------------------------------------ the refusal waits for the machine like any call
-#
-# Building the refusal is a write to what the machine's calls share, so it waits for the
-# machine like any call (`dosbox_mcp.refusal` says why).
+# Building the refusal writes shared state, so it waits for the machine (`dosbox_mcp.refusal`).
 
 _WRONG_TYPE = ("read_memory", {"ref": "F000:0000", "length": "dieciseis"})
 
 
 class _AnotherCall:
-    """A second thread holding `LOCK` as a tool body does, until `release`. Another THREAD is
-    the point: `LOCK` is an `RLock`, so a hold taken on this one would prove nothing about a
-    second call."""
+    """A second thread holds `LOCK` until `release`; `LOCK` is an `RLock`, so it must be another."""
 
     def __init__(self) -> None:
         self._taken, self._release = Event(), Event()
@@ -198,9 +177,7 @@ def test_a_schema_refusal_waits_while_another_call_holds_the_machine() -> None:
 
 
 def test_the_event_loop_keeps_turning_while_a_refusal_waits() -> None:
-    """AND THE WAIT IS NOT A PLAIN `with LOCK:` IN THE COROUTINE, which deadlocks
-    (`scry_core.envelope.Envelope.call_tool` says why): the loop still turning while the
-    refusal is pending is what shows the wait is elsewhere."""
+    """A loop still turning while the refusal waits shows the wait is not a `with LOCK:` here."""
     other = _AnotherCall()
     turns: list[float] = []
 
@@ -238,9 +215,7 @@ def _free_elsewhere() -> bool:
 def test_the_refusal_reply_is_built_while_the_machine_is_held(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """WAITING FOR THE LOCK IS NOT HOLDING IT: a refusal that took and let go of `LOCK` before
-    building its reply passes both cases above, so this one looks at the moment `st.reply`
-    runs, which is the write."""
+    """The lock is held at the moment `st.reply` runs, not merely waited for."""
     held: list[bool] = []
     real = st.reply
 

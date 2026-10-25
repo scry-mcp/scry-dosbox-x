@@ -1,7 +1,4 @@
-"""The emulator's saved states, written and read through the debugger channel's own
-SAVESTATE and LOADSTATE, and listed off their directory. Its own module because the state
-files and their commands change for reasons of their own; each function is a session method's
-body, and `Session` delegates to it."""
+"""Saved states over the debugger channel's SAVESTATE and LOADSTATE; `Session` delegates here."""
 
 from __future__ import annotations
 
@@ -27,13 +24,9 @@ def _state_dir(ses: ds.Session) -> Path:
 
 
 def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> dict[str, object]:
-    """`SAVESTATE` or `LOADSTATE` of `path` over the debugger channel, with the debugger
-    stopped as the commands need it: a RUNNING guest is broken in on first and released
-    again after, so the machine is left the way it was found. The reply's part:
-    `paused` (it had to be stopped); whether it runs after the call is the session block's to
-    say."""
-    # WHETHER THE COMMAND WENT DOWN THE CHANNEL, which a load cut short reads (one cancelled
-    # in the break-in sent nothing and replaced nothing), and whether it was answered ok.
+    """`SAVESTATE` or `LOADSTATE` of `path`; a running guest is broken in on and released after.
+    Returns `paused` (it had to be stopped)."""
+    # a load cancelled in the break-in sent nothing and replaced nothing
     ses.state_sent = ses.state_answered = False
     if "\n" in str(path) or "\r" in str(path):
         raise Invalid("bad_argument", f"a state path is one line; got {str(path)!r}")
@@ -45,22 +38,17 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
             ses.break_in()
             began = time.monotonic()
         if verb == "LOADSTATE":
-            # THE MARK IS TAKEN WITH THE GUEST PARKED AND THE LOAD NOT YET SENT: nothing is
-            # written in between, so everything after it is the loaded machine's.
+            # parked and not yet sent: everything logged after the mark is the loaded machine's
             marked = {"mark": channel_marks(ses)}
         ses.state_sent = True
         ok, lines = ses.control.request(f"EXEC {verb} {path}", seconds, poll=cancel.check)
         ses.state_answered = ok
     except BaseException as e:
-        # AN EMULATOR THAT DIED UNDER THE COMMAND closes the channel, which reads as a drop the
-        # channel redials: said as what it is, since nothing will answer again.
+        # a death under the command closes the channel, which reads as a drop it redials
         if isinstance(e, Invalid) and not ses.alive():
             ds.gone_if_dead(ses, began, seconds, f"`{verb}`")
-        # A COMMAND THAT ENDS EARLY, refused or cancelled (its waits poll, the break-in's
-        # included), releases the guest it stopped, as its bound would. Best effort: the
-        # command's own refusal or the cancellation is the answer, and one from the release
-        # (a refusal, or the host's channel gone under it) would hide it; the end reads what
-        # the machine was left as.
+        # release the guest this call stopped; best effort, so a failure of the release
+        # does not hide the refusal or cancellation that is the answer
         if paused and (isinstance(e, Invalid) or cancel.is_cancellation(e)):
             with cancel.shielded(), contextlib.suppress(Invalid, OSError):
                 if cancel.is_cancellation(e) and not ses.at_debugger():
@@ -85,8 +73,6 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
             f"`{verb}` came back without the debugger's own answer to it "
                       f"({said or 'nothing came back'}): saved states need a build whose "
                       f"debugger carries `{verb}` (REFERENCE.md, Saved states)")
-    # WHAT A REFUSAL CAN MEAN IS THE VERB'S: a load refuses a state of another build or machine,
-    # a save one the host would not take (a full volume answers `SAVE_FAILED`).
     why = (" A state of another DOSBox-X version, program, memory size or machine type is "
            "refused rather than asked about." if verb == "LOADSTATE" else
            " The host would not take the file (a full volume answers `SAVE_FAILED`).")
@@ -96,10 +82,7 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
 
 
 def channel_marks(ses: ds.Session) -> dict[str, object]:
-    """`state_write(method="load")`'s `mark`: where the log ends now, one number per channel `log`
-    takes, all
-    equal because one file holds the three (`scry_core.log_marks`); unavailable with no logfile,
-    or when the host could not size it."""
+    """`state_write(method="load")`'s `mark`: the log's end, equal on every channel (one file)."""
     if ses.launch.logfile is None:
         return contract.unavailable("this session was started without a logfile, so there is "
                                     "no log to mark")
@@ -111,12 +94,8 @@ def channel_marks(ses: ds.Session) -> dict[str, object]:
 
 
 def save_state(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, object]:
-    """Save the machine under `name` as `<state_dir>/<name>.sav`, by the debugger's own
-    `SAVESTATE` (`_state_command`), and read the file back for what it says about
-    itself. Running or parked, headless or windowed. Never overwrites, and a save that
-    failed leaves no file behind: the emulator removes the old one and writes the new one
-    in place, so a failure part-way would otherwise hold the name with a broken state.
-    Saving alters nothing."""
+    """Save the machine as `<state_dir>/<name>.sav`. Never overwrites; a failed save leaves no
+    file, since the emulator writes in place and would otherwise hold the name broken."""
     dlaunch.check_state_name(name)
     vocab.check_wait(seconds)
     state_dir = ses._state_dir()
@@ -141,20 +120,15 @@ def save_state(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
 
 
 def _replaced(ses: ds.Session) -> None:
-    """The machine is the loaded one, whole or in part: altered, its stub's report unproved,
-    and `machine_replaced` set for the server, which measures the table's base again."""
+    """The machine is the loaded one, whole or in part."""
     ses.altered = ses.machine_replaced = True
     _stub_replaced(ses)
 
 
 def load_state(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, object]:
-    """Load the state `name` from `<state_dir>/<name>.sav` by the debugger's own
-    `LOADSTATE`. Running or parked: a running guest is stopped for it and released again,
-    a parked one stays parked, at the loaded machine's position, which counts as a stop
-    of its own: the record of the stop before describes a machine that is gone. It
-    REPLACES the machine, so the session is altered from here on, and after any refusal
-    but a missing channel too, since a load refused part-way may have replaced some of
-    it."""
+    """Load `<state_dir>/<name>.sav`. A parked guest stays parked and the load counts as a stop
+    of its own. The session is altered from here on, also after a refusal other than a missing
+    channel, since a load refused part-way may have replaced some of the machine."""
     ses.machine_replaced = False
     dlaunch.check_state_name(name)
     vocab.check_wait(seconds)
@@ -170,9 +144,7 @@ def load_state(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
     try:
         outcome = ses._state_command("LOADSTATE", source, seconds)
     except BaseException as e:
-        # CUT SHORT AFTER IT WAS SENT, refused or cancelled: some of it may be loaded, so the
-        # session is altered and, parked, the stop record before it may describe a machine
-        # that is gone, as a load that answered does. Cut short before, it replaced nothing.
+        # sent, then refused or cancelled: part of it may be loaded
         if ses.state_sent and not (isinstance(e, Invalid)
                                     and e.code in ("no_channel", "bad_argument")):
             _replaced(ses)
@@ -187,8 +159,7 @@ def load_state(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> 
 
 
 def _stub_replaced(ses: ds.Session) -> None:
-    """The guest's memory was loaded, the input stub's last sequence with it: the session's link
-    proves its sequence again before it counts on it (`Session.stub_replaced`)."""
+    """The input stub's last sequence went with the loaded memory (`Session.stub_replaced`)."""
     ds.Session.stub_replaced(ses)
 
 
@@ -201,12 +172,10 @@ def _listed(path: Path) -> dict[str, object] | None:
 
 
 def state_list(ses: ds.Session) -> dict[str, object]:
-    """Every `.sav` under the state directory with what it says about itself. A reading
-    of a directory: no window, no console, works while the machine runs."""
+    """Every `.sav` under the state directory; works while the machine runs."""
     state_dir = ses._state_dir()
     files = sorted(state_dir.glob("*.sav")) if state_dir.is_dir() else []
-    # THE WORKING SLOT IS NOT A NAMED STATE: the emulator's own numbered file sits
-    # beside the copies, and listed among them it counts one state too many.
+    # the emulator's own numbered slot is not a named state
     named = [m for p in files if not p.stem.isdigit() and (m := _listed(p)) is not None]
     slots = [m for p in files if p.stem.isdigit() and (m := _listed(p)) is not None]
     return {"state_dir": str(state_dir), "states": named,

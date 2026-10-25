@@ -1,8 +1,3 @@
-"""Which DOSBox-X a session runs: scry-core's ladder (`scry_core.binaries`) with this server's
-rungs, climbed once per `start` or `build_check`; the canary that proves the host can start it;
-and whether the build carries the debugger and the CPU log, read off its own bytes.
-"""
-
 from __future__ import annotations
 
 import os
@@ -11,8 +6,7 @@ from pathlib import Path
 from scry_core import binaries
 from scry_core.reply_contract import Invalid
 
-#: The ladder is scry-core's (`scry_core.binaries`); this server names its rungs. The executable
-#: name is also what a `ps` line of a session started with no `binary` carries.
+#: `ps` shows this name when `start` gets no `binary`.
 LADDER = binaries.Ladder(product="DOSBox-X", executable="dosbox-x", variable="DOSBOX_X_BINARY")
 EXECUTABLE_NAME, VARIABLE = LADDER.executable, LADDER.variable
 ARGUMENT, PATH_RUNG = binaries.ARGUMENT, binaries.PATH_RUNG
@@ -23,10 +17,7 @@ VERSION_TIMEOUT_S = binaries.VERSION_TIMEOUT_S
 
 
 def canary_for(binary: str = "") -> list[str] | None:
-    """The DOSBox-X the ladder resolves for `binary`, in a form that initialises SDL as a
-    headless session does and ENDS BY ITSELF: the built-in conf, no window, `-exit` once its
-    autoexec (which runs nothing) is done (`scry_core.live_host.canary`). None when nothing
-    resolves: the session's own `start` refuses that, naming the ladder."""
+    """Argv of a headless DOSBox-X that exits by itself; None if unresolved."""
     try:
         found = resolve(binary).path
     except Invalid:
@@ -34,13 +25,9 @@ def canary_for(binary: str = "") -> list[str] | None:
     return [found, "-defaultconf", "-fastlaunch", "-set", "sdl videodriver=dummy", "-exit"]
 
 
-# THE HELP LINE THE DEBUGGER COMPILES ONLY UNDER `C_HEAVY_DEBUG`, beside the `LOG` family it
-# documents: a build that carries it has the CPU log. Read off the binary's bytes, never by
-# typing `LOG` to find out (a command the debugger does not know poisons its input line).
+# Compiled only under `C_HEAVY_DEBUG`. Read from bytes: an unknown command poisons input.
 HEAVY_DEBUG_MARK = b"LOGS/LOGL/LOGC [num]"
-# AND THE DEBUGGER'S OWN ANSWER to a command it does not know, compiled only with `C_DEBUG`: a
-# build configured `--disable-debug` still lists `-break-start` in `-helpdebug` (the option
-# parser is there either way), so the help text alone cannot say the debugger is.
+# Compiled only with `C_DEBUG`; `-helpdebug` lists `-break-start` regardless.
 DEBUGGER_MARK = b"Debugger command not recognized"
 
 
@@ -48,8 +35,7 @@ _marks_seen: dict[tuple[str, int, int, bytes], bool] = {}
 
 
 def _carries(binary: str, mark: bytes, what: str) -> bool:
-    """Whether the build at `binary` holds `mark`, cached per (real path, size, mtime) so a
-    rebuilt binary is read again."""
+    """Whether the build holds `mark`; cached by path, size, mtime."""
     real = os.path.realpath(binary)
     try:
         st = os.stat(real)

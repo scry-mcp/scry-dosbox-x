@@ -1,17 +1,12 @@
 """The control `disassemble` is held to: the debugger's own code pane, line by line.
 
 Two decoders print one instruction in two syntaxes, so text equality proves nothing. A line
-agrees when both start an instruction at the same address, of the same length (where the pane
-printed all its bytes), with the same bytes as far as the pane printed them, the same mnemonic,
-and operand by operand in order the same signed numbers and register names, with no size word on
-the pane's side that capstone's lacks (the pane leaves one out where a register already fixes the
-size; capstone always prints it). The pane's own annotations are dropped first: `($+n)`,
-`($-n)`, `(no jmp)`, `(down)`, `(up)` and the `ds:[015A]=3030` note of what an operand holds now.
+agrees when both decode the same address to the same length, bytes and mnemonic, and per operand
+the same signed numbers and register names. A size word on the pane's side must appear on
+capstone's too (the pane omits it where a register fixes the size).
 
-The synonyms and the exceptions were captured, not authored: each is a disagreement met on a real
-pane (the package's guests, dos-real16, dos-djgpp32), kept with the opcode it was met on and judged
-against the Intel SDM. A synonym is one instruction spelled two ways; an exception is a line the
-pane gets wrong about x86 and is not compared.
+Synonyms (one instruction spelled two ways) and exceptions (lines the pane gets wrong, not
+compared) were captured on real panes and judged against the Intel SDM.
 """
 from __future__ import annotations
 
@@ -32,12 +27,9 @@ REGISTERS = frozenset({"al", "ah", "ax", "eax", "bl", "bh", "bx", "ebx", "cl", "
 
 @dataclass(frozen=True)
 class Synonym:
-    """One instruction the two decoders spell differently, keyed by its opcode: `pane` and
-    `capstone` are the mnemonics each prints; `implicit` says capstone also prints the operands
-    the opcode implies, which the pane leaves out, so operands are not compared; `registers`
-    pairs a register name each side prints for the same operand; `sizes` says the pane's size
-    word names half of the operand, so sizes are not compared; `pointer` says one side prints a
-    far pointer as `seg:off` and the other as two operands, so its numbers are compared whole."""
+    """One instruction spelled two ways, keyed by opcode. `implicit`: capstone prints operands
+    the pane omits. `registers`: name pairs for one operand. `sizes` False: the pane's size
+    word names half the operand. `pointer`: far pointer as `seg:off` vs two operands."""
     opcode: Callable[[bytes], bool]
     pane: str
     capstone: str
@@ -52,7 +44,7 @@ _PREFIXES = frozenset(b"\x26\x2e\x36\x3e\x64\x65\x66\x67\xf0\xf2\xf3")
 
 
 def _opcode(data: bytes) -> bytes:
-    """The instruction's bytes from its opcode on, its legacy prefixes skipped."""
+    """The bytes from the opcode on, legacy prefixes skipped."""
     at = 0
     while at < len(data) and data[at] in _PREFIXES:
         at += 1
@@ -94,7 +86,7 @@ SYNONYMS = (
 
 @dataclass(frozen=True)
 class PaneWrong:
-    """A line the pane decodes wrongly for x86, with the reason; its bytes are not compared."""
+    """A line the pane decodes wrongly for x86, with the reason."""
     opcode: Callable[[bytes], bool]
     why: str
 
@@ -111,7 +103,7 @@ def _operands(text: str) -> list[str]:
 
 
 def _signed(tokens: list[tuple[str, str]], read: Callable[[str], int | None]) -> list[int]:
-    """The numbers among one operand's tokens, each negative when a `-` stands before it."""
+    """Numbers among an operand's tokens, negative after a `-`."""
     out = []
     for sign, tok in tokens:
         value = read(tok)
@@ -123,7 +115,6 @@ def _signed(tokens: list[tuple[str, str]], read: Callable[[str], int | None]) ->
 _PANE_PART = re.compile(r"(-?)\s*([A-Za-z_$.@?][\w$.@?~]*|[0-9A-Fa-f]+)")
 _CAPSTONE_PART = re.compile(r"(-?)\s*(0x[0-9a-f]+|[A-Za-z_]\w*|\d+)")
 
-#: One operand as compared: its numbers (signed), its register names, its size words.
 Operand = tuple[list[int], list[str], set[str]]
 
 
@@ -161,8 +152,6 @@ def _capstone_view(insn: disasm.Insn) -> tuple[str, list[Operand]]:
 
 @dataclass
 class Verdict:
-    """What a comparison examined and what it found: `compared` lines agreed or not,
-    `disagreements` one sentence each, `excepted` the lines an exception took out."""
     compared: int
     disagreements: list[str]
     excepted: list[str]
@@ -170,9 +159,8 @@ class Verdict:
 
 def compare(pane: list[code.PaneLine], segment: str, insns: list[disasm.Insn],
             names: dict[str, int] | None = None) -> Verdict:
-    """Every pane line of `segment` against the capstone line that starts at its address.
-    `insns` is capstone's own listing over the bytes, decoded from a known instruction
-    boundary, so a line capstone never starts is a disagreement and not a fresh decode.
+    """Every pane line of `segment` against the capstone line at its address.
+    `insns` is decoded from a known boundary, so a line capstone never starts disagrees.
     `names` maps a name the pane prints in an operand to its value."""
     names = names or {}
     at = {i.offset: i for i in insns}
@@ -201,8 +189,7 @@ def compare(pane: list[code.PaneLine], segment: str, insns: list[disasm.Insn],
 
 def _differences(p: code.PaneLine, raw: bytes, ins: disasm.Insn,
                  names: dict[str, int]) -> list[str]:
-    """Why a pane line and capstone's line at its address are not one instruction, operand by
-    operand in order; empty when they agree."""
+    """Why the two lines differ; empty when they agree."""
     why = []
     if p.data is not None and len(p.data) != len(ins.data):
         why.append(f"length {len(p.data)} against {len(ins.data)}")

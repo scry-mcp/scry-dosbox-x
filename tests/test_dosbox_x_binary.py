@@ -1,9 +1,4 @@
-"""The binary ladder as this server climbs it: the rungs it names (`DOSBOX_X_BINARY`, the PATH's
-`dosbox-x`) and what `start` and `build_check` do with the build they land on. The ladder's own
-cases, each rung and the version probe, are scry-core's (`tests/test_binaries.py`).
-
-The builds are small shell programs of each case's own, run for real.
-"""
+"""The binary ladder as this server climbs it; the ladder's own cases are scry-core's."""
 
 from __future__ import annotations
 
@@ -17,15 +12,12 @@ import dosbox_launch as dlaunch
 import dosbox_session as ds
 import dosbox_x_server as server
 
-# The stub answers as the real build does (`dosbox_binary.version`).
 BANNER = "DOSBox-X version 0.0.0 SDL2, a stub build"
 
 
 def build(where: Path, *, version: str = f'echo "{BANNER}" >&2; exit 1',
           name: str = "dosbox-x") -> Path:
-    """An executable at `where/name` answering `-version` with the shell in `version` and
-    `-helpdebug` with the line a debugger build lists, carrying the debugger's own text as a
-    debugger build does."""
+    """A stub build at `where/name`: `version` is the shell answering `-version`."""
     where.mkdir(parents=True, exist_ok=True)
     path = where / name
     path.write_text("#!/bin/sh\n"
@@ -38,7 +30,7 @@ def build(where: Path, *, version: str = f'echo "{BANNER}" >&2; exit 1',
 
 @pytest.fixture
 def on_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    """A `dosbox-x` the PATH finds, and nothing else on the PATH."""
+    """A `dosbox-x` the PATH finds, and nothing else."""
     found = build(tmp_path / "path-bin")
     monkeypatch.setenv("PATH", str(found.parent))
     return found
@@ -67,9 +59,7 @@ def test_build_check_on_a_build_with_no_version_still_answers(tmp_path: Path) ->
 
 def test_both_probes_of_a_build_spawn_it_behind_as_a_session_does(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """An option this build does not know starts the emulator, so its `-version` and
-    `-helpdebug` probes are launched as a session is, behind, whatever the server's own
-    environment holds."""
+    """Both probes run behind, as a session does: an unknown option starts the emulator."""
     monkeypatch.delenv(dlaunch.BACKGROUND_VAR, raising=False)
     seen = tmp_path / "seen"
     mine = build(tmp_path, version=f'echo "v=${dlaunch.BACKGROUND_VAR}" >> {seen}; '
@@ -82,7 +72,6 @@ def test_both_probes_of_a_build_spawn_it_behind_as_a_session_does(
     got = cast(dict[str, Any], server.build_check(binary=str(mine)))
     assert got["status"] == "ok", got
     assert sorted(seen.read_text().split()) == ["h=1", "v=1"], seen.read_text()
-    # AND `start`'s own probe, before it spawns the session.
     seen.unlink()
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
@@ -96,8 +85,7 @@ def test_both_probes_of_a_build_spawn_it_behind_as_a_session_does(
 
 def test_build_check_with_nothing_resolvable_is_host_failed_and_names_no_binary(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The ladder's refusal passes through whole: an INVALID reply carries no `binary`, which
-    would read as a build that was found."""
+    """An INVALID reply carries no `binary`, which would read as a build found."""
     monkeypatch.delenv(binaries.VARIABLE, raising=False)
     monkeypatch.setenv("PATH", str(tmp_path / "empty"))
     got = cast(dict[str, Any], server.build_check())

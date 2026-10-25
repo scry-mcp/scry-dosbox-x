@@ -1,7 +1,4 @@
-"""`perform_export`: the session since its `start`, written as `perform`'s own document, on the
-doubles a session runs on here. The rules of the export are scry-core's (`scry_core.recording`);
-what is this server's is what each tool is declared to become, the machine it reads around a
-call, and the tool's own reply."""
+"""`perform_export` on the session doubles: each tool's declared export, the machine, the reply."""
 
 from __future__ import annotations
 
@@ -24,7 +21,7 @@ import dosbox_x_server as server  # noqa: E402
 
 @pytest.fixture
 def recorder(monkeypatch: pytest.MonkeyPatch) -> Iterator[recording.Recorder]:
-    """The server's recorder as a `start` that succeeded leaves it: a recording begun."""
+    """The recorder as a successful `start` leaves it."""
     monkeypatch.setattr(dosbox_mcp.RECORDER, "recording",
                         recording.Recording({"conf": "/x.conf"}))
     yield dosbox_mcp.RECORDER
@@ -56,9 +53,7 @@ def test_a_session_on_the_double_is_exported_as_steps_checks_and_named_drops(
 
 
 def test_the_machine_around_a_call_is_the_sessions_stop_count_and_never_a_frame() -> None:
-    """The count is the session's, which every return to the prompt moves, never the record of
-    the last stop, which a stop nobody surveyed yet (a parked `state_write(method="load")`) leaves
-    behind."""
+    """The count is the session's, never the last stop's record."""
     ses = install()
     ses.stop_count = 4  # type: ignore[attr-defined]
     got = dosbox_mcp._machine()
@@ -74,9 +69,7 @@ def test_a_stop_the_session_counted_before_its_record_moves_no_later_call(
     sent = ses.command
 
     def counted(text: str, **kw: object) -> str:
-        # INSIDE a call, as a parked `state_write(method="load")` counts its stop: counted, not
-        # surveyed. A count
-        # that moved between two calls would be motion outside the recording, a cut.
+        # Inside a call, as a parked `state_write(method="load")` counts its stop unsurveyed.
         ses.stop_count = 2  # type: ignore[attr-defined]
         return sent(text, **kw)
     ses.command = counted  # type: ignore[method-assign]
@@ -96,8 +89,7 @@ def test_the_export_and_the_lifecycle_are_never_recorded_and_never_a_step() -> N
     assert dosbox_mcp.RECORDER.plan == "plan"
 
 
-#: What each tool's calls become in an export, stated here a second time so a declaration that
-#: moves is seen: a check of fields, a run the wall clock ends, a drop, or (absent) a step.
+#: Stated twice so a moved declaration is seen: fields checked, a wall-clock run, a drop, or a step.
 DECLARED = {
     "read_memory": ("hex",), "registers": ("regs",), "screen_signature": ("signature",),
     "image_compare": {"image": "drop", "series": "drop", "region": "drop",
@@ -108,9 +100,7 @@ DECLARED = {
     **dict.fromkeys(("memdump", "scan", "snapshot", "capture_frame", "series_capture",
                      "comment_write", "machine_map", "interrupt_vectors", "palette",
                      "screen_view"), "drop"),
-    # A replay knows the map an identification was made against, and holds the find to it.
     "map_find": ("matched", "screen"),
-    # The readers dropped by default, named so a reader that turns into a step is seen.
     **dict.fromkeys(("declaration_list", "build_check", "call_stack", "captures",
                      "comment_list", "disassemble", "find", "log", "log_wait", "state_list",
                      "status", "symbols_find"), "drop"),
@@ -130,8 +120,6 @@ def test_each_tool_is_exported_as_it_is_declared_and_the_rest_as_steps_or_droppe
 @pytest.mark.parametrize("conf", ["relative.conf", "absolute"])
 def test_a_start_refused_over_the_live_session_keeps_its_recording(
         tmp_path: pathlib.Path, recorder: recording.Recorder, conf: str) -> None:
-    """Refused while the session is live, whether by the session or by an argument judged
-    before it: the start touched nothing, and the recording stays the live session's."""
     install()
     server.write(ref="F000:0000", data_hex="aa")
     given = tmp_path / "x.conf"
@@ -146,9 +134,7 @@ def test_a_start_refused_over_the_live_session_keeps_its_recording(
 
 def test_a_start_with_a_plan_is_exported_and_its_document_replays_on_the_same_double(
         tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """THE PLAN THROUGH THE BOUNDARY, END TO END: `start(plan=)` runs its steps as a sequence's,
-    the recording keeps them after the start (whose own arguments drop `plan`), and the document
-    plays back through this server's `perform`, every `recorded` step held."""
+    """`start(plan=)` steps are recorded; the document replays through `perform`."""
     from test_dosbox_x_server import _start_on_a_booted_fake
 
     got = _start_on_a_booted_fake(tmp_path, monkeypatch, settle_seconds=0,
@@ -160,7 +146,6 @@ def test_a_start_with_a_plan_is_exported_and_its_document_replays_on_the_same_do
     assert out["status"] == "ok" and out["cut"]["available"] is False, out
     doc = json.loads((tmp_path / "s.json").read_text())
     assert "plan" not in doc["start"] and doc["entry"] == "dosbox_x_server.py"
-    # ...nor the bound of the plan's waits: a `start` given it with no plan is refused.
     assert "settle_seconds" not in doc["start"], doc["start"]
     assert [step["op"] for step in doc["steps"]] == ["write", "registers", "read_memory"]
     played = server.perform(steps=doc["steps"])
@@ -169,9 +154,7 @@ def test_a_start_with_a_plan_is_exported_and_its_document_replays_on_the_same_do
 
 
 def test_the_declarations_the_recorder_reads_are_the_refs_the_list_tools_answer() -> None:
-    """THE REPLAY'S PRECONDITION: the runner holds the replayed store, read through each list tool
-    the recorder names, to what `_declared` read at the recorded start, so the two readings are one
-    for every kind a `start` re-arms."""
+    """Each list tool the recorder names answers with the refs `_declared` read at the start."""
     install()
     assert server.breakpoint_at(ref="F000:0010")["status"] == "ok"
     assert server.breakpoint_interrupt(number=0x21)["status"] == "ok"

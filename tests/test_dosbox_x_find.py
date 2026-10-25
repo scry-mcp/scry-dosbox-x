@@ -1,7 +1,5 @@
-"""`find` and the scan family, against the debugger's OWN output tails, captured
-(`fixtures/memfind/`), never typed from memory of the source: the pane is a scrollback, so
-every fixture carries an earlier command's line above the one under test, which is the
-property that made the first parser read the wrong answer."""
+"""`find` and the scan family, against the debugger's own output tails (`fixtures/memfind/`).
+Each fixture carries an earlier command's line above the one under test (scrollback)."""
 
 from __future__ import annotations
 
@@ -28,9 +26,7 @@ def tail(name: str) -> str:
 
 
 class Console:
-    """A session double whose console answers from a SCRIPT of (command, tail) pairs in
-    order, and refuses a command the script did not foresee: a scan driven off the wrong
-    command is the defect, not a detail."""
+    """A session double answering from a script of (command, tail) pairs, refusing any other."""
 
     def __init__(self, script: list[tuple[str, str]], dump: bytes = b"") -> None:
         self.script = list(script)
@@ -55,16 +51,12 @@ def session(script: list[tuple[str, str]], dump: bytes = b"") -> Any:
     return Console(script, dump)
 
 
-# ------------------------------------------------------------------------- find
-
 def test_find_reports_every_offset_the_pattern_starts_at_and_leaves_no_file() -> None:
     dump = b"\x00\x12\x34\x12\x34\x00\x12\x34"
     s = session([], dump)
     got = finder.find(s, 0x00A7, 0x100, len(dump), b"\x12\x34")
     assert got["hits"] == ["00A7:00000101", "00A7:00000103", "00A7:00000106"]
     assert got["hits_total"] == 3 and got["truncated"] is False
-    # THE SPAN EXAMINED IS IN THE REPLY: a zero count says over which bytes it was zero.
-    # Here the only range source is the caller's own, so `source` is always `ref+length`.
     assert got["span"] == {"from": "00A7:00000100", "length": len(dump), "source": "ref+length"}
     assert not s.dumped.exists() and not s.dumped.parent.exists(), s.dumped
 
@@ -88,9 +80,7 @@ def test_find_refuses_a_pattern_longer_than_the_range_before_dumping() -> None:
     ("zz", "whole number of hex bytes"),
 ])
 def test_check_pattern_refuses_what_is_not_whole_hex_bytes(bad: str, says: str) -> None:
-    """EMPTY HAS ITS OWN SENTENCE: nothing is the matter with an empty string's digits, there are
-    none, and empty is what a substitution that matched nothing hands you, which is worth saying
-    out loud rather than describing as malformed."""
+    """Empty has its own sentence: it is what a substitution that matched nothing hands you."""
     with pytest.raises(ds.Invalid, match=says):
         finder.check_pattern(bad)
 
@@ -101,13 +91,9 @@ def test_check_pattern_refuses_what_is_not_whole_hex_bytes(bad: str, says: str) 
     ("12 34 ab cd", b"\x12\x34\xab\xcd"),
 ])
 def test_whitespace_between_the_bytes_is_accepted(good: str, want: bytes) -> None:
-    """One parser, `bytes.fromhex`, which IGNORES ASCII whitespace by documented design: a line
-    pasted out of a dump works wherever hex is taken.
-    """
+    """`bytes.fromhex` ignores ASCII whitespace, so a line pasted out of a dump works."""
     assert finder.check_pattern(good) == want
 
-
-# ------------------------------------------------------------------- scan start
 
 def test_scan_start_reads_the_opened_line_past_an_earlier_refusal() -> None:
     s = session([("MEMFIND 0000:400 100 B", "memfind_opened_0400")])
@@ -136,25 +122,18 @@ def test_scan_start_refuses_its_own_arguments_before_typing(length: int, cell_by
     assert s.sent == []
 
 
-# ------------------------------------------------------------------ scan filter
-
 def test_scan_filter_refuses_a_listing_whose_rows_do_not_add_up() -> None:
-    """The captured page is twenty rows and the captured end two more, against a count
-    of 256: fewer rows than the count is a listing that did not all cross the screen."""
+    """22 captured rows against a count of 256: a listing that did not all cross the screen."""
     s = session([("MEMS =0", "mems_matches"), ("MEMFIND L", "memfind_list_page"),
                  ("", "memfind_list_last"), ("", "memfind_cancelled")])
-    # 0x100 survivors are what the machine said; the two captured pages hold 22 rows, so
-    # the whole-listing check must REFUSE rather than hand back a partial table.
     with pytest.raises(ds.Invalid, match="a whole listing"):
         finder.filter_scan(s, "=", 0, judges.HITS_MAX)
-    # The last ENTER is the refusal clearing the command line: a refusal that leaves it
-    # dirty costs the whole session.
+    # the last ENTER clears the command line; a dirty one costs the whole session
     assert s.sent == ["MEMS =0", "MEMFIND L", "", ""]
 
 
 def twenty_two() -> Any:
-    """The captured page and the captured end carry 22 rows between them, so the count the
-    debugger reports is rewritten to 22 in both places it prints it."""
+    """The captured 22 rows, with the debugger's count rewritten to 22 where it prints it."""
     s = session([("MEMS =0", "mems_matches"), ("MEMFIND L", "memfind_list_page"),
                  ("", "memfind_list_last")])
     orig: Callable[..., str] = s.command
@@ -167,9 +146,7 @@ def twenty_two() -> Any:
 
 
 def test_scan_filter_hands_back_a_whole_listing_when_the_rows_match_the_count() -> None:
-    """The captured page and the captured end carry 22 rows between them, so the count
-    the debugger reports is rewritten to 22 in both places it prints it and the listing
-    is then whole: first row, last row, every row keyed once."""
+    """Rows matching the count make a whole listing: first row, last row, every row keyed once."""
     s = twenty_two()
     got = finder.filter_scan(s, "=", 0)
     assert got["hits_total"] == 22 and got["closed"] is False and got["iterations"] == 1
@@ -179,8 +156,7 @@ def test_scan_filter_hands_back_a_whole_listing_when_the_rows_match_the_count() 
 
 
 def test_scan_filter_shows_the_first_limit_survivors_and_says_more_survive() -> None:
-    """22 survivors against a limit of 5: the listing is read and the first five come back,
-    never an empty list, with `truncated` saying they are not all of them."""
+    """22 survivors, limit 5: the first five come back with `truncated`, never an empty list."""
     s = twenty_two()
     got = finder.filter_scan(s, "=", 0, 5)
     assert got["hits_total"] == 22 and len(got["hits"]) == 5 and got["truncated"] is True, got
@@ -198,7 +174,7 @@ def test_scan_filter_refuses_a_limit_outside_its_range_before_typing(limit: obje
 @pytest.mark.parametrize("limit, whole", [(22, True), (21, False)])
 def test_scan_filter_lists_exactly_at_its_limit_and_cuts_one_above(limit: int,
                                                                    whole: bool) -> None:
-    """22 survivors: a limit of 22 shows them all, a limit of 21 the first 21, truncated."""
+    """22 survivors: a limit of 22 shows all, 21 cuts one."""
     s = twenty_two()
     got = finder.filter_scan(s, "=", 0, limit)
     assert len(got["hits"]) == limit and got["truncated"] is not whole, got
@@ -238,8 +214,7 @@ def test_scan_filter_refuses_its_own_arguments_before_typing(op: str, value: int
 
 
 def test_scan_filter_does_not_list_above_the_cap(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Above the ceiling the list is cut whole: `hits: []`, `hits_total` beside it and
-    `truncated: true`, the words `find` uses for the same idea; `listed` is gone."""
+    """Above the ceiling the list is cut whole: `hits: []` with `hits_total` and `truncated`."""
     monkeypatch.setattr(judges, "HITS_MAX", 0xFF)
     s = session([("MEMS =0", "mems_matches")])
     got = finder.filter_scan(s, "=", 0, 0xFF)
@@ -278,8 +253,7 @@ def test_a_listed_reply_says_it_is_whole(no_scan_count: None) -> None:
 
 def test_the_closing_reply_carries_the_count_one_past_the_last_filter(
         no_scan_count: None) -> None:
-    """The debugger's finish line carries no count, so the server counts: the filter that
-    closes the scan is the one after the last count the debugger printed."""
+    """The debugger's finish line has no count, so the server counts one past the last."""
     s = session([("MEMS =0", "mems_matches"), ("MEMFIND L", "memfind_list_page"),
                  ("", "memfind_list_last"), ("MEMS !0", "mems_finished")])
     _listed_22(s)
@@ -291,24 +265,21 @@ def test_the_closing_reply_carries_the_count_one_past_the_last_filter(
 
 
 def test_a_close_with_no_count_held_says_so_rather_than_guessing(no_scan_count: None) -> None:
-    """A scan opened past the server (`debug("MEMFIND ...")`) leaves no count here: the
-    closing reply says `iterations: null` and why, never a number made up."""
+    """A scan opened through `debug` leaves no count: the reply says why, never a made-up number."""
     got = finder.filter_scan(session([("MEMS !0", "mems_finished")]), "!", 0)
     assert got["iterations"]["available"] is False, got
 
 
 def test_scan_start_and_scan_clear_reset_the_count(no_scan_count: None) -> None:
-    dstate.STATE.scan_iterations = 7                    # an earlier scan's count
+    dstate.STATE.scan_iterations = 7
     finder.start_scan(session([("MEMFIND 0000:400 100 B", "memfind_opened_0400")]),
                       0, 0x400, 0x100, 1)
     got = finder.filter_scan(session([("MEMS !0", "mems_finished")]), "!", 0)
-    assert got["iterations"] == 1, got                  # the first filter closed it
+    assert got["iterations"] == 1, got
     dstate.STATE.scan_iterations = 7
     finder.clear_scan(session([("MEMFIND !", "memfind_cancelled")]))
     assert dstate.STATE.scan_iterations is None
 
-
-# ------------------------------------------------------------------- scan clear
 
 def test_scan_clear_reads_the_last_line_not_the_stale_one_above_it() -> None:
     s = session([("MEMFIND !", "memfind_cancelled")])
@@ -342,9 +313,7 @@ def test_scan_start_reads_past_two_stacked_stale_lines_and_checks_the_echoed_ran
 
 
 def test_scan_start_accepts_an_offset_wider_than_sixteen_bits() -> None:
-    """The debugger echoes the offset as `%04X`, so past 16 bits it simply grows; a
-    protected-mode global is exactly that address, and a four-digit pattern would have
-    read a successful open as no open at all."""
+    """The debugger echoes the offset as `%04X`, which grows past 16 bits."""
     s = session([("MEMFIND 0023:16DF20 100 B", "memfind_opened_0400")])
     orig: Callable[..., str] = s.command
 
@@ -357,17 +326,14 @@ def test_scan_start_accepts_an_offset_wider_than_sixteen_bits() -> None:
 
 
 def test_listing_rows_are_read_across_a_page_with_another_pane_spliced_in() -> None:
-    """The captured second page carries a torn row, two whole rows, a repaint of the
-    register pane, then more rows: the torn line is not a row, the rest are."""
+    """A torn row and a repainted register pane in the captured page are not rows."""
     rows = finder.SCAN_ROW.findall(tail("memfind_list_next_page"))
     assert [r[1] for r in rows] == ["000422", "000423", "000428", "000429", "00042A"]
 
 
 def test_listing_ignores_the_previous_listings_closing_line_and_rows_above_the_summary() -> None:
-    """A scan listed once and filtered again: the first page of the new listing still
-    shows the OLD closing count and old rows above the filter's own summary line, and
-    only what follows that summary belongs to the new listing."""
-    stale = tail("memfind_list_last")            # old rows 4FE, 4FF and "Matched ... 000100"
+    """Only what follows the filter's own summary belongs to the new listing."""
+    stale = tail("memfind_list_last")
     fresh_summary = tail("mems_matches").replace("(000100) matches", "(000002) matches")
     page = stale + fresh_summary + tail("memfind_list_last").replace(
         "instance: 000100", "instance: 000002")
@@ -379,17 +345,9 @@ def test_listing_ignores_the_previous_listings_closing_line_and_rows_above_the_s
         "0000:000004FE", "0000:000004FF"]
 
 
-# ------------------------------------------------ a page left unturned corrupts the line
-
 def test_a_listing_that_ends_with_a_page_still_waiting_turns_it_before_returning() -> None:
-    """THE DEFECT. A listing that returns the moment it sees its closing count can leave the
-    debugger STILL holding a paged-content prompt. That prompt then eats the next command
-    character by character, one page per keystroke: `MEMS ` is swallowed and `=FF` is left
-    typed on the command line, so the debugger answers "command not recognized" and every
-    later call concatenates onto the same line (`=FFMEMFIND !BPLISTBPLISTBPLIST`). Only
-    `close` recovers from that."""
-    # Two captured rows and a closing count of two, so the whole-listing check passes and
-    # the case is about the PAGE alone; the page mark is the captured one, appended.
+    """A page prompt left waiting eats the next command a keystroke per page and leaves the
+    line dirty for every later call, so the listing must turn it before returning."""
     closing = "\n".join(tail("memfind_list_last").splitlines()[-4:]).replace(
         "instance: 000100", "instance: 000002")
     still_paged = closing + "\n" + tail("memfind_list_page").splitlines()[-1]
@@ -411,10 +369,7 @@ def test_a_listing_that_ends_with_a_page_still_waiting_turns_it_before_returning
 
 
 def test_an_unreadable_answer_clears_the_command_line_before_it_refuses() -> None:
-    """THE NET, whatever leaves the line dirty. An `unexpected_answer` returning with
-    whatever the debugger half-typed still on its command line makes every later call
-    concatenate instead of run. So the line is cleared before the refusal goes back, and
-    the refusal says the session is still usable."""
+    """The line is cleared before an `unexpected_answer` refusal goes back."""
     typed: list[str] = []
 
     class Dirty:
@@ -430,11 +385,7 @@ def test_an_unreadable_answer_clears_the_command_line_before_it_refuses() -> Non
 
 
 def test_an_idle_prompt_answers_a_bare_enter_with_nothing_and_that_counts_as_cleared() -> None:
-    """The idle behaviour, pinned. A bare ENTER at an idle prompt produces NO
-    output at all (against the probe guest, even three in a row, and the last command
-    is not repeated), so an empty delta is what a successful clear looks like. A recovery
-    reading emptiness as failure would spend its whole bound and then declare a healthy
-    session unusable."""
+    """A bare ENTER at an idle prompt prints nothing, so an empty delta is a successful clear."""
     typed: list[str] = []
 
     def command(text: str, **_: object) -> str:
@@ -446,8 +397,7 @@ def test_an_idle_prompt_answers_a_bare_enter_with_nothing_and_that_counts_as_cle
 
 
 def test_a_tail_the_debugger_did_not_take_is_emptied_with_escape_not_run_again() -> None:
-    """A page turned can leave a stranded tail on the line, which an ENTER submits and the
-    debugger does not take: a second ENTER would run it again, so ESC empties it."""
+    """A stranded tail is emptied with ESC: a second ENTER would run it again."""
     typed: list[str] = []
 
     class Stranded:
@@ -457,15 +407,14 @@ def test_a_tail_the_debugger_did_not_take_is_emptied_with_escape_not_run_again()
 
         def clear_line(self) -> str:
             typed.append("ESC")
-            return "_"                  # the live answer: the cursor alone, no prompt repainted
+            return "_"
 
     assert finder._clear_line(cast(Any, Stranded()))
     assert typed == ["", "ESC"], typed
 
 
 def test_a_scan_the_debugger_says_is_gone_leaves_no_count_to_add_to(no_scan_count: None) -> None:
-    """The debugger said no scan is open, so whatever this server counted belongs to a scan
-    that ended past it: the next close answers null with why, never the stale sum."""
+    """A scan the debugger says is gone leaves no stale sum for the next close."""
     dstate.STATE.scan_iterations = 2
     with pytest.raises(ds.Invalid, match=r'scan\(method="start"\)'):
         finder.filter_scan(session([("MEMS =12", "mems_not_active")]), "=", 0x12)
@@ -475,8 +424,7 @@ def test_a_scan_the_debugger_says_is_gone_leaves_no_count_to_add_to(no_scan_coun
 
 @pytest.mark.parametrize("command", ["MEMS =0", "memfind 0000:400 10 B", "MEMFIND !"])
 def test_a_raw_scan_command_drops_the_count(tmp_path: Any, command: str) -> None:
-    """A `MEMS` or `MEMFIND` typed through `debug` moves the debugger's own count past this
-    server's, so the server stops claiming one."""
+    """A raw `MEMS` or `MEMFIND` moves the debugger's count past ours, so ours is dropped."""
     import dosbox_x_server as server
 
     class Raw:
@@ -523,8 +471,7 @@ def test_a_clear_with_nothing_open_drops_the_count_too(no_scan_count: None, fixt
     (1, "B", 0xFF), (2, "W", 0xFFFF), (4, "D", 0xFFFFFFFF)])
 def test_a_scan_opened_at_a_width_takes_a_value_of_exactly_that_many_bytes(
         size: int, letter: str, top: int) -> None:
-    """The opening line names its cell (upstream `debug.cpp` at the pinned tag prints `1 byte`,
-    `2 bytes` or `4 bytes specified.`); the captured byte opening is rewritten to the width."""
+    """The opening line names its cell width; the captured byte opening is rewritten to it."""
     said = "1 byte" if size == 1 else f"{size} bytes"
     s = session([(f"MEMFIND 0000:400 100 {letter}", "memfind_opened_0400"),
                  (f"MEMS ={top:X}", "mems_finished")])
@@ -543,9 +490,7 @@ def test_a_scan_opened_at_a_width_takes_a_value_of_exactly_that_many_bytes(
 @pytest.mark.parametrize("line", [finder.SCAN_ACTIVE, finder.SCAN_NOT_ACTIVE],
                          ids=["one already open", "none open"])
 def test_a_scan_that_needs_another_call_first_says_needs_call(line: str) -> None:
-    """The shared table's `needs_call`: another call has to come first (`scan(method="clear")`, or
-    `scan(method="start")`), named in the message, where `bad_argument` would ask for another
-    value."""
+    """`needs_call`, not `bad_argument`: another call has to come first, named in the message."""
     with pytest.raises(ds.Invalid) as e:
         finder._refuse(line, "filter")
     assert e.value.code == "needs_call" and "`scan(method=" in str(e.value)
@@ -553,8 +498,7 @@ def test_a_scan_that_needs_another_call_first_says_needs_call(line: str) -> None
 
 def test_a_filter_with_no_value_says_what_it_compared_with_instead_of_a_null(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    """No `value`: each cell is compared with its value when the scan opened, and the reply's
-    `value` says so as the unavailable datum, never a null."""
+    """No `value`: cells compare with their value at open, and the reply says so, not null."""
     monkeypatch.setattr(judges, "HITS_MAX", 0xFF)      # the 256 survivors are not listed
     s = session([("MEMS =", "mems_matches")])
     got = finder.filter_scan(s, "=", None)
@@ -563,8 +507,7 @@ def test_a_filter_with_no_value_says_what_it_compared_with_instead_of_a_null(
 
 
 def test_find_keeps_no_more_hits_than_it_answers() -> None:
-    """A pattern that matches everywhere counts every hit and keeps the highest `HITS_MAX`,
-    never a list of every one: a long range of zeros is a common thing to search."""
+    """A pattern matching everywhere counts every hit but keeps only `HITS_MAX` of them."""
     import tracemalloc
     dump = bytes(0xFFFF)
     s = session([], dump)
@@ -577,8 +520,7 @@ def test_find_keeps_no_more_hits_than_it_answers() -> None:
 
 
 def test_a_scan_opened_over_another_range_is_cancelled_before_it_is_refused() -> None:
-    """The debugger opened an instance, just not the one asked for: refused, and closed, so the
-    next `scan(method="start")` is not told one is already open by a scan nobody holds."""
+    """An instance of another range is closed before the refusal, so no scan is held by nobody."""
     s = session([("MEMFIND 0000:400 80 B", "memfind_opened_0400"),
                  ("MEMFIND !", "memfind_cancelled"), ("", "memfind_cancelled")])
     with pytest.raises(ds.Invalid, match="the range asked for"):
@@ -588,8 +530,7 @@ def test_a_scan_opened_over_another_range_is_cancelled_before_it_is_refused() ->
 
 
 def test_the_scan_judges_take_their_edges_and_refuse_one_past() -> None:
-    """A filter's `limit` at 1 and at `HITS_MAX`, a value that is no number (a bool), a scan
-    range of one cell; and `find` with exactly `HITS_MAX` hits is all of them, not cut."""
+    """The edges of `limit`, a bool value, a one-cell range, and `find` at exactly `HITS_MAX`."""
     op = finder.OPERATORS[0]
     for limit in (1, judges.HITS_MAX):
         finder.check_filter(op, None, limit)

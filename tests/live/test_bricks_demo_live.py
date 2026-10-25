@@ -1,12 +1,4 @@
-"""The bricks demo, run whole, still passes and its README still shows what the server answers:
-the transcript a fresh run writes is compared line for line with the block `--update-readme`
-wrote, and the picture with `screen.png`.
-
-The demo opens a WINDOW, to be watched, and asks the placement helper named by `WINDOW_APP`
-where it goes, so this SKIPS without one, as the tier's other window cases skip without their
-flags: where a window goes is not this package's decision. Its saved states need a
-build carrying SAVESTATE and LOADSTATE (`DOSBOX_X_BINARY`).
-"""
+"""A fresh run of the bricks demo matches the README transcript and screen.png."""
 from __future__ import annotations
 
 import os
@@ -22,7 +14,7 @@ pytestmark = pytest.mark.live
 ROOT = Path(__file__).resolve().parents[2]
 DEMO = ROOT / "demos" / "bricks"
 RUN = ROOT / "tmp" / "demos" / "bricks"
-#: The whole demo, above the runner's own bound on one call, so a hung call ends as its FAIL.
+# Above the runner's own per-call bound, so a hang ends as its FAIL.
 TIMEOUT_S = 1800
 
 

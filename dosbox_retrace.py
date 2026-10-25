@@ -1,10 +1,7 @@
-"""`run_for` and `screen_wait`: the machine advanced by display retraces.
+"""`run_for` and `screen_wait`: the machine advanced by display retraces (the debugger's `VRT`).
 
-A frame is one vertical retrace, the debugger's `VRT` (run, then stop at the next retrace), sent
-as a release and heard by the prompt the way `run_to` hears its stop. The register pane's own
-clock (`pfi=`, emulated milliseconds) says how far the machine went. A `VRT` that a breakpoint
-stops first stays armed in the debugger, so `STATE.retrace_pending` follows it frame by frame and
-the first stop a later release makes is named for it (`dosbox_arming.attribute_stop`).
+A `VRT` that a breakpoint stops first stays armed in the debugger, so `STATE.retrace_pending`
+follows it and the first stop a later release makes is named for it.
 """
 from __future__ import annotations
 
@@ -32,17 +29,17 @@ UNCUT_NOTE = ("a code breakpoint is declared, and on a dynamic core one can fail
               "honour it")
 UNTOLD_NOTE = ("a change-watch or an interrupt breakpoint is declared, and its stop cannot be told "
                "from a retrace, so it is taken for one")
-#: The pane prints `pfi=` to this many decimals: a difference is compared at that resolution, so
-#: a clock that lands exactly on the mark is not a float's rounding short of it.
+#: The pane prints `pfi=` to this many decimals; compare at that resolution, not at float noise.
 PANE_CLOCK_DECIMALS = 9
 
 
 def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
             progress: ds.Progress) -> dict[str, Any]:
-    """`frames` retraces, or as many as cover `milliseconds` of the pane's clock, within
-    `seconds`, as the reply `run_for` publishes. The bound starts once the opening survey has
-    read the clock, so a short one still reaches the first frame. By milliseconds every frame
-    is surveyed, because its clock is what says whether to go on."""
+    """`frames` retraces, or as many as cover `milliseconds` of the pane's clock, within `seconds`.
+
+    The bound starts once the opening survey has read the clock, so a short one still reaches the
+    first frame.
+    """
     session.where_and_registers()
     before = session.pane_clock_ms
     if milliseconds and before is None:
@@ -52,34 +49,31 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
     timed = milliseconds > 0
     began = time.monotonic()
     deadline = began + seconds
-    # THE LINE IS THE RUN'S, frames or emulated milliseconds done of those asked. A retrace's own
-    # wait reports only when that retrace is slow to come, on wall time, through the same line,
-    # so a frame that never comes still says the run is alive; it polls for the cancel either way.
+    # A retrace's own wait reports through the same line, so a frame that never comes still
+    # says the run is alive.
     clock = mprogress.Ticker(seconds, progress)
     asked = f"{milliseconds} ms" if timed else f"{frames} frame{'s' * (frames != 1)}"
     polls = 0
 
     def report_slow_retrace(_elapsed: float, _total: float | None, _message: str) -> None:
-        clock.expired()                       # the run's clock read now, not at the frame's start
+        clock.expired()
         done = "" if timed else f"frame {polls} of {frames}, "
         clock.tick("run_for {asked}: {done}waiting for its retrace, {elapsed:.0f}s of {bound:g}s",
                    asked=asked, done=done, bound=seconds)
 
     cuttable = arming.declares_code_breakpoint()
     verdict = contract.ELAPSED
-    last = before                             # the clock at the last stop that painted one
+    last = before
     stalled_at: float | None = None
     while not (frames and polls >= frames):
-        clock.expired()                       # the call's cancellation, and the line's clock
+        clock.expired()
         if time.monotonic() >= deadline:
             verdict = contract.TIMEOUT
             break
         if _advance(session, began, deadline, report_slow_retrace):
-            # THE BOUND INTERRUPTS: a `VRT` still out leaves the machine running, so it is
-            # brought back where it stands and surveyed there, as every bounded run hands the
-            # machine back stopped. The `VRT` stays armed, and the next release meets it. A stop
-            # that landed before the interrupt looked is the retrace's, which spends it, unless a
-            # declared breakpoint made it (`_cut`), which ends the run as inside the loop.
+            # A `VRT` still out leaves the machine running: stop it where it stands. A stop that
+            # landed before the interrupt is the retrace's and spends it, unless a declared
+            # breakpoint made it.
             STATE.retrace_pending = ds.Session.stop_at_bound(session)
             verdict = contract.TIMEOUT
             if not STATE.retrace_pending and cuttable and _cut(session) is not None:
@@ -91,17 +85,17 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
                          "{elapsed:.0f}s of {bound:g}s", asked=asked, done=polls, frames=frames,
                          bound=seconds)
         if not (timed or (cuttable and polls < frames)):
-            continue                          # the stop reply surveys the last frame
+            continue
         try:
             where, registers, held = session.stop_survey()
         except ds.Invalid:
-            continue                          # a cut repaint: the next frame's survey reads it
+            continue                          # a cut repaint
         if cuttable and _cut(session, (where, registers, held)) is not None:
             verdict = contract.OTHER_STOP
             break
         now = session.pane_clock_ms
         if not timed or now is None or last is None or before is None:
-            continue                          # no clock on this repaint: read at the next
+            continue
         if now <= last:
             stalled_at = now
             break
@@ -115,18 +109,17 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
     try:
         reply = running.stop_reply(session, **fields)
         stopped_at: dict[str, str] | None = dict(STATE.last_stop["where"])
-    except ds.Invalid as exc:                 # a cut pane: the account stands without the stop
+    except ds.Invalid as exc:
         reply = st.reply(enrichment={"available": False, "why": str(exc)}, **fields)
         stopped_at = None
     if verdict == contract.ELAPSED and STATE.last_stop.get("attribution", {}).get("attributed") \
             and stopped_at is not None:
-        STATE.retrace_pending = True          # the last frame, cut: named by its own survey
+        STATE.retrace_pending = True
         verdict = contract.OTHER_STOP
     after = session.pane_clock_ms if stopped_at else (last if timed else None)
     extra: dict[str, Any] = {**_clock(before, after), **_counts(),
-                             # A cut survey's reply has no position of its own to carry.
                              **({} if stopped_at else running.position(None, None))}
-    pending = STATE.retrace_pending           # every cut and every interrupt leaves it armed
+    pending = STATE.retrace_pending
     notes = [note for note, holds in ((PENDING_NOTE, pending),
                                       (UNCUT_NOTE, cuttable),
                                       (UNTOLD_NOTE, arming.declares_untold_stopper()))
@@ -150,14 +143,11 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
 
 
 def _advance(session: ds.Session, began: float, deadline: float, tick: ds.Progress) -> bool:
-    """One retrace, the step both waits take each frame: `VRT` released and its stop heard by the
-    prompt. True when the bound expired with it out: the debugger still holds it, and the next
-    release meets it (`STATE.retrace_pending`); a stop that answered it spends any earlier one."""
+    """One retrace. True when the bound expired with the `VRT` still out."""
     try:
         expired, _ = session.retrace(began, deadline, tick)
     except BaseException as e:
-        # A CANCELLED WAIT leaves its `VRT` out, as an expired one does, unless its stop was
-        # already heard: the next release meets it.
+        # A cancelled wait leaves its `VRT` out unless its stop was already heard.
         if cancel.is_cancellation(e):
             STATE.retrace_pending = not _heard(session)
         raise
@@ -168,9 +158,8 @@ def _advance(session: ds.Session, began: float, deadline: float, tick: ds.Progre
 def _cut(session: ds.Session,
          survey: tuple[dict[str, str], dict[str, str], list[dict[str, str]]] | None = None,
          ) -> dict[str, Any] | None:
-    """The attribution when a declared code breakpoint made this stop rather than the retrace,
-    whose `VRT` then stays armed; None for a retrace, or a repaint too cut to place. Surveys the
-    stop, its list read off the same repaint, unless the caller already has."""
+    """The attribution when a declared code breakpoint made this stop, leaving the `VRT` armed;
+    None for a retrace or a repaint too cut to place."""
     if survey is None:
         try:
             survey = session.stop_survey()
@@ -185,15 +174,13 @@ def _cut(session: ds.Session,
     return attribution
 
 
-#: Why a clock reading is not there, and why a DOS machine has no frame reading at all.
 NO_CLOCK_WHY = "the pane painted no `pfi=` on that survey"
 NO_FRAME_WHY = ("a DOS machine keeps no frame counter a server could read: `polls` counts the "
                 "retraces")
 
 
 def _clock(before: float | None, after: float | None) -> dict[str, Any]:
-    """The pane's emulated milliseconds as seconds, unavailable where no survey painted
-    `pfi=`."""
+    """The pane's emulated milliseconds as seconds."""
     return {"emulated_before_s": contract.or_unavailable(
                 None if before is None else before / 1000, NO_CLOCK_WHY),
             "emulated_after_s": contract.or_unavailable(
@@ -208,15 +195,12 @@ def _counts() -> dict[str, Any]:
 
 def screen_wait(session: ds.Session, text: str, seconds: float,
                 progress: ds.Progress) -> dict[str, Any]:
-    """Retrace by retrace until `text` is inside one row of the text screen. `seconds` counts
-    from once the opening read has looked at the screen, so a short bound still reaches the
-    first frame, and is read before each retrace, so a frame's read and the stop reply under
-    way when it passes are finished. Already there: answered at once, the machine not moved.
-    Found: the stop reply, the find kept when its survey comes back cut. A frame in a mode that
-    is not text is examined as no match. A declared code breakpoint that cuts a frame ends the
-    wait `wait_stopped`; the bound, a `TIMEOUT` at a stop (`_expired`); a frame laid out in a way
-    the reader refuses, that `no_channel`. Each that ends at a stop of its own records it, as every
-    stop tool does."""
+    """Retrace by retrace until `text` is inside one row of the text screen.
+
+    `seconds` counts from once the opening read has looked at the screen. Already there: answered
+    at once, the machine not moved. A non-text frame is no match. A declared code breakpoint that
+    cuts a frame ends the wait `wait_stopped`; the bound, a `TIMEOUT` (`_expired`).
+    """
     watch = TextWatch(session)
     rows = watch.rows()
     examined, not_text = 1, int(rows is None)
@@ -232,7 +216,7 @@ def screen_wait(session: ds.Session, text: str, seconds: float,
     polls = 0
     while hit is None:
         seen = {} if last is None else {"text": last}
-        clock.expired()                       # the call's cancellation, and the line's clock
+        clock.expired()
         if time.monotonic() >= deadline:
             return _expired(session, text, seconds, polls, f"{not_text} of {examined}", seen,
                             out=False, began=began)
@@ -250,8 +234,7 @@ def screen_wait(session: ds.Session, text: str, seconds: float,
         try:
             rows = watch.rows()
         except ds.Invalid as e:
-            # A screen laid out in a way this does not read is a verdict on a console that
-            # answered; any other refusal is about the console itself, which is not asked more.
+            # Any other refusal is about the console itself, which is not asked more.
             if e.code != "no_channel":
                 raise
             raise ds.Invalid(e.code, f"{e}; the wait had stopped the machine at retrace {polls}",
@@ -274,21 +257,17 @@ def screen_wait(session: ds.Session, text: str, seconds: float,
 
 
 def _stop_reply(session: ds.Session, base: dict[str, Any]) -> dict[str, Any]:
-    """The stop reply with `base` in it; a survey that comes back cut keeps `base`, its
-    enrichment marked unavailable, and records no stop."""
+    """The stop reply with `base` in it; a cut survey keeps `base` and records no stop."""
     return running.stop_or_base(session, True, base)
 
 
-#: What a refused wait carries of the stop reply that recorded its stop: the stop's number, or
-#: the enrichment marked unavailable when its survey came back cut, and the accounts that reply
-#: delivered (a stop the guest reached on its own, declarations applied on it), which would
-#: otherwise be spent on a reply nobody sees.
+#: What a refused wait carries of the stop reply that recorded its stop; otherwise those accounts
+#: would be spent on a reply nobody sees.
 ENDED_KEYS = ("stop_seq", "cause", "enrichment", "stopped_on_its_own", "applied_on_stop")
 
 
 def _heard(session: ds.Session) -> bool:
-    """Whether the guest is at the debugger, read under the shield while a cancel unwinds; a
-    terminal that cannot answer is taken as not heard, which leaves the retrace pending."""
+    """Whether the guest is at the debugger; a terminal that cannot answer is not heard."""
     with cancel.shielded():
         try:
             return session.at_debugger()
@@ -297,8 +276,7 @@ def _heard(session: ds.Session) -> bool:
 
 
 def _ended_at(session: ds.Session) -> dict[str, Any]:
-    """The stop a refused wait ends at, recorded by the stop reply, as the fields of
-    `ENDED_KEYS` the refusal carries."""
+    """The stop a refused wait ends at, as the `ENDED_KEYS` fields."""
     stop = _stop_reply(session, {})
     return {key: stop[key] for key in ENDED_KEYS if key in stop}
 
@@ -306,13 +284,7 @@ def _ended_at(session: ds.Session) -> dict[str, Any]:
 def _expired(session: ds.Session, text: str, seconds: float, polls: int, not_text: str,
              seen: dict[str, Any], *, out: bool, began: float,
              cuttable: bool = False) -> dict[str, Any]:
-    """`screen_wait`'s bound, a `TIMEOUT` at a stop: with a `VRT` still `out` the machine is
-    interrupted where it stands, and the retrace stays armed for the next release; stopped at a
-    retrace of its own, that stop is surveyed. Stopped before any, nothing was typed and the
-    reply carries no stop."""
-    # A `VRT` typed and still out is interrupted; one whose stop landed first is spent, and
-    # that stop is surveyed like any other, unless a declared breakpoint made it: then the wait
-    # ends as a cut inside it does.
+    """`screen_wait`'s bound, a `TIMEOUT` at a stop; stopped before any retrace, no stop."""
     pending = out and ds.Session.stop_at_bound(session)
     if out and not pending and cuttable and (cut := _cut(session)) is not None:
         raise ds.Invalid("wait_stopped",
@@ -336,13 +308,13 @@ def _expired(session: ds.Session, text: str, seconds: float, polls: int, not_tex
 
 
 class TextWatch:
-    """The text screen read stop after stop, at the cost a wait can pay each frame: `VGA MODE`
-    (the mode word and the display start), `VGA DRAW` (the size the screen renders), `VGA GC`
-    (where the page lies: the switch to the monochrome mode moves it to B0000 and leaves the
-    other two as they were), `CPU` (how it is reached), and one dump. `VGA CRTC` is read once,
-    as it places only the cursor, which a wait does not return; the descriptor tables are
-    re-read only when the cpu mode, or whether a virtual-8086 task runs, changes: a guest can
-    enter protected mode under an unchanged text screen."""
+    """The text screen read stop after stop at the least cost per frame.
+
+    `VGA CRTC` is read once, as it places only the cursor. The descriptor tables are re-read only
+    when the cpu mode or the virtual-8086 state changes: a guest can enter protected mode under
+    an unchanged text screen. `VGA GC` is read each time because the monochrome switch moves the
+    page to B0000.
+    """
 
     def __init__(self, session: ds.Session) -> None:
         self.session = session

@@ -1,9 +1,5 @@
-"""The stub's recovery paths, each provoked live through a faulty line put in at the session's
-seam (`stub_faults.FaultyLine`): a lost acknowledgement, a frame dribbled across ticks, a short
-frame aged out; and a line closed mid-send, which is the host's own recovery, not the stub's.
-Each of the first three is seen red against a scratch build of the stub with that recovery taken
-out, by pointing `STUB_FAULTS_GUEST_DIR` at it; left unset, the package's own `guest/INJECT.COM`
-is the one under test."""
+"""The stub's recovery paths, each provoked through a faulty line put in at the session's seam.
+`STUB_FAULTS_GUEST_DIR` points at a scratch stub with a recovery removed, to see a case red."""
 
 from __future__ import annotations
 
@@ -23,14 +19,11 @@ import dosbox_x_server as server
 pytestmark = pytest.mark.live
 
 GUEST = Path(__file__).resolve().parent.parent / "guest"
-#: How long one guest line may take to come, a margin over the stub's own pace.
 WAIT_S = 20
 KEY_A = r"MOUSE \. key=97$"
 
 
 def _start(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, fault: str) -> list[Any]:
-    """The mouse guest running headless with the stub behind a `fault` line; the lines made,
-    one per session, for the case to read what crossed them."""
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
     scratch = os.environ.get("STUB_FAULTS_GUEST_DIR")
     if scratch:
@@ -79,9 +72,7 @@ def test_a_frame_dribbled_across_ticks_is_assembled_and_carried(
 
 def test_a_short_frame_ages_out_and_the_next_send_is_carried(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The first frame stops after its sequence byte: the stub drops it once it has been short
-    for its ticks, and the host's second send of that frame, with no acknowledgement, is the one
-    carried out."""
+    """The stub drops the cut first frame; the host's unacknowledged resend is the one run."""
     [line] = _start(tmp_path, monkeypatch, "short")
     got = cast(dict[str, Any], server.send_keys(keys=["a"], expect=KEY_A, seconds=WAIT_S))
     assert got["status"] == "ok", got

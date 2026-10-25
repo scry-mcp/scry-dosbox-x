@@ -1,8 +1,4 @@
-"""WHAT THE DOS MACHINE'S SCREEN SHOWS at a stop (`screen_view`, `screen_signature`), in a text mode
-or the chained 256-colour mode: the screen's place and size from the VGA's listings
-(`dosbox_vga`), its colours from the DAC (`dosbox_dac`), its cells from one dump of video memory.
-`screen_wait` reads the text screen frame by frame through `dosbox_retrace`'s watch.
-"""
+"""What the DOS machine's screen shows at a stop, in a text mode or the chained 256-colour mode."""
 from __future__ import annotations
 
 from collections.abc import Sequence
@@ -17,8 +13,7 @@ import dosbox_paths as paths
 import dosbox_session as ds
 import dosbox_vga as vga
 
-# ------------------------------------------------------------------ what the screen shows
-#: What code page 437 draws for the control bytes: the IBM PC's glyphs for 01-1F, and 7F.
+#: The IBM PC's glyphs for the control bytes 01-1F.
 CONTROL_GLYPHS = "☺☻♥♦♣♠•◘○◙♂♀♪♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼"
 #: 00 and FF draw as blank cells, so they read as the space a blank cell is.
 CP437 = [" ", *CONTROL_GLYPHS,
@@ -27,20 +22,16 @@ CP437 = [" ", *CONTROL_GLYPHS,
 
 
 def text_rows(page: bytes, width: int, height: int) -> list[str]:
-    """Each row as the screen shows it: the character bytes through code page 437's glyphs,
-    trailing blanks dropped; the attribute bytes are not text."""
+    """Each row as text through code page 437's glyphs, trailing blanks dropped."""
     unit = vga.UNIT_BYTES[vga.TEXT]
     return ["".join(CP437[page[(r * width + c) * unit]] for c in range(width)).rstrip(" ")
             for r in range(height)]
 
 
 def text_cells(page: bytes, ac: dict[str, Any], dac: list[str]) -> bytes:
-    """Each character cell of a text page as `scry_core.raster` hashes it: its code page 437
-    byte, then the RGB of its foreground and of its background as the VGA resolves them. An
-    attribute's nibble picks an Attribute Controller palette register; with `mode_control` bit
-    7 the register's low four bits take `color-select`'s bits 0-1 above them, else its six bits
-    stand; `color-select`'s bits 2-3 are the top two; the DAC entry there is the colour. With
-    `mode_control` bit 3 (blink) the background has three bits and the fourth blinks."""
+    """Each text cell as `scry_core.raster` hashes it: CP437 byte, then foreground and
+    background RGB as the VGA resolves them (AC palette register, `color-select`, then the DAC).
+    With `mode_control` bit 3 (blink) the background has three bits and the fourth blinks."""
     try:
         regs = [int(r, 16) for r in ac["palette"]]
         mode_control, select = vga.hex_word(ac["mode_control"]), vga.hex_word(ac["color_select"])
@@ -64,17 +55,15 @@ def text_cells(page: bytes, ac: dict[str, Any], dac: list[str]) -> bytes:
 
 
 def _crop(crop: Sequence[int] | None, shape: vga.Geometry) -> list[int]:
-    """`crop` on the screen, in its own units (characters or pixels), judged inside it."""
+    """`crop` judged inside the screen, in characters or pixels."""
     unit = "characters" if shape.source == vga.TEXT else "pixels"
     return list(raster.inside(crop, shape.width, shape.height, f"the screen ({unit})"))
 
 
 def screen_view(session: ds.Session, crop: Sequence[int] | None, scale: int, dest: Path | None,
                 scratch: Path, attach: bool = True) -> dict[str, Any]:
-    """The body of `screen_view`: the text a text mode shows, or the 256-colour picture,
-    written to `dest` or the scratch and attached unless `attach` is false; `crop` in characters
-    or pixels. What `dest`, `scale` and `attach` may be is judged on the mode alone, before the
-    other listings are typed."""
+    """The body of `screen_view`; `dest`, `scale` and `attach` are judged on the mode alone,
+    before the other listings are typed."""
     picture.check_scale(scale)
     picture.check_attach(attach)
     if crop is not None:
@@ -112,9 +101,7 @@ def screen_view(session: ds.Session, crop: Sequence[int] | None, scale: int, des
 
 
 def screen_signature(session: ds.Session, crop: Sequence[int] | None) -> dict[str, Any]:
-    """The body of `screen_signature`: `scry_core.raster`'s signature of the screen, or of
-    `crop` of it, a text cell resolved through the Attribute Controller and the DAC
-    (`text_cells`), a pixel through the DAC."""
+    """The body of `screen_signature`: the signature of the screen or of `crop` of it."""
     if crop is not None:
         judges.rect("crop", crop)
     read, shape = grid(session)
@@ -125,9 +112,7 @@ def screen_signature(session: ds.Session, crop: Sequence[int] | None) -> dict[st
 
 
 def grid(session: ds.Session) -> tuple[screen_map.Grid, vga.Geometry]:
-    """ONE read of the screen as `scry_core.raster` signs it, and its shape: a text cell resolved
-    through the Attribute Controller and the DAC (`text_cells`), a pixel through the DAC. What
-    `screen_signature` hashes and what a screen map is matched against."""
+    """ONE read of the screen as `scry_core.raster` signs it, and its shape."""
     shape = vga.geometry(vga.read_listings(session))
     data = vga.read_screen(session, shape)
     _, dac = vgadac.read_dac(session)

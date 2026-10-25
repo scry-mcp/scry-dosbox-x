@@ -1,11 +1,4 @@
-"""The live tier's teardown, exercised WITHOUT an emulator: a session whose `close` leaves
-its process on the machine is killed by the fixture, and the case is told.
-
-It sits in `tests/live/` because that is where `_live_teardown` is importable from (pytest
-puts each test file's own directory on the path), and it carries NO `live` marker on
-purpose: nothing here launches DOSBox-X, the process is a `sleep`, so it belongs to the
-default tier that every commit runs.
-"""
+"""The live teardown without an emulator (a `sleep`): no `live` marker, runs in the default tier."""
 from __future__ import annotations
 
 import subprocess
@@ -19,8 +12,7 @@ import dosbox_state as dstate
 
 
 class _ClosesWithoutEnding:
-    """A session whose `close` reports a clean quit while its process runs on: the shape a
-    signal that never reached the group leaves behind."""
+    """A close that reports a clean quit while its process runs on."""
 
     def __init__(self, proc: subprocess.Popen[bytes]) -> None:
         self.proc = proc

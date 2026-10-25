@@ -1,27 +1,9 @@
-"""Searching the guest's memory on DOSBox-X: a byte PATTERN, and a VALUE narrowed by
-successive comparisons.
+"""Memory search on DOSBox-X: `find` for a byte pattern, `scan` for a value narrowed by filters.
 
-TWO SEARCHES, BECAUSE THE DEBUGGER HAS ONE AND A CALLER NEEDS BOTH. A byte-pattern search
-answers every address holding a pattern; the DOSBox-X debugger has no such command. What it
-has is `MEMFIND`/`MEMS`, a value SCANNER in the cheat-search tradition: open an instance over
-a range in cells of 1, 2 or 4 bytes, then filter it again and again against a value or
-against what each cell held when the scan opened, until the cells that survive are the ones
-that move the way the program does. For a program with no map, that narrowing is how
-anything is found.
-
-So `find` is answered from a BINARY DUMP of the range (the same `MEMDUMPBIN` route `memdump`
-takes, its windows past offset 0xFFFF included, into a scratch file this module owns), searched
-in Python: exact, console only. And the scanner is exposed as its own family, `scan(method="start")`
-/
-`scan(method="filter")` / `scan(method="clear")`, because the debugger holds ONE instance at a time
-and the state
-is its own: a `scan(method="start")` while one is open is refused in the debugger's own words rather
-than silently replacing it.
-
-WHAT THE CONSOLE PRINTS IS THE CONTRACT, read off `src/debug/debug.cpp` (the `MEMFIND` and
-`MEMS` branches) and then captured from the live emulator into the tests' doubles. The
-scanner's per-cell listing (`MEMFIND L`) is paged content on the ncurses screen, so it is
-asked for only when the survivors are few enough to fit one reply.
+The debugger has no byte-pattern search, so `find` searches a `MEMDUMPBIN` dump of the range in
+Python. `scan` wraps its `MEMFIND`/`MEMS` value scanner, which holds one instance at a time.
+The console's printed lines are the contract (read off `src/debug/debug.cpp`); its per-cell
+listing is paged, so it is asked for only when the survivors fit one reply.
 """
 
 from __future__ import annotations
@@ -43,7 +25,7 @@ import dosbox_session as ds
 import dosbox_state as st
 from dosbox_state import STATE
 
-# The lines the debugger prints, verbatim from debug.cpp. `%06X` fields are hex.
+# Verbatim from debug.cpp; `%06X` fields are hex.
 SCAN_CREATED = "Created memory search instance."
 SCAN_ACTIVE = "Memory search instance is already active."
 SCAN_BAD_SEGMENT = "Invalid selector/segment, cancelling."
@@ -63,23 +45,17 @@ SCAN_ROW = re.compile(
 SCAN_CANCELLED = "Memory search instance cancelled."
 SCAN_NONE_TO_CANCEL = "No active search instances to cancel."
 SCAN_NONE_TO_LIST = "No active search instances to list from."
-#: The cells a scan reads, by their size in bytes, and the letter the debugger takes for each.
+#: Cell size in bytes to the letter the debugger takes.
 CELLS = {1: "B", 2: "W", 4: "D"}
-#: The cell sizes, as `scan(method="start")` takes them.
 CELL_BYTES = tuple(CELLS)
 OPERATORS = ("=", "!", ">", ">=", "<", "<=")
 
 
 def hex_bytes(name: str, value: str, *, verb: str) -> bytes:
-    """The bytes a caller wrote as hex, or the refusal. THE ONLY HEX PARSER THIS SERVER HAS.
-
-    `bytes.fromhex`: it IGNORES ASCII WHITESPACE by documented
-    design, so a line pasted out of a dump works. `verb` is the one thing the callers differ on --
-    what the bytes are FOR.
-    """
+    """The bytes a caller wrote as hex, or the refusal. The only hex parser this server has."""
     try:
         data = bytes.fromhex(value)
-    except (ValueError, TypeError):      # a non-string arrives from a hand-written step
+    except (ValueError, TypeError):      # non-string from a hand-written step
         raise ds.Invalid("bad_argument", f"{name}={value!r} is not a whole number of hex "
                                          "bytes (two digits per byte)") from None
     if not data:
@@ -100,16 +76,13 @@ def check_find_length(length: int, pattern: bytes) -> None:
 
 
 def find(session: ds.Session, seg: int, off: int, length: int, pattern: bytes) -> dict[str, Any]:
-    """Every offset in `length` bytes from `seg:off` where `pattern` starts. The bytes come
-    from `memdump`'s route (`dosbox_dump.dump_range`) into a scratch directory of this call's
-    own, never the caller's tree: the same size check, and the same windows past offset
-    0xFFFF, so a range longer than a segment is searched in the memory really there."""
+    """Every offset in `length` bytes from `seg:off` where `pattern` starts, searched in a
+    `dump_range` dump (windows past 0xFFFF included) kept in a scratch directory."""
     check_find_length(length, pattern)
     with tempfile.TemporaryDirectory(prefix="dosbox-find-") as scratch:
         dumped = dumping.dump_range(session, seg, off, length, Path(scratch) / "range.bin")
         data = dumped.path.read_bytes()
-    # COUNTED WHOLE, KEPT AT THE TOP: a pattern that matches everywhere (a range of zeros)
-    # would otherwise hold one number per byte to answer with the highest `HITS_MAX`.
+    # a pattern matching everywhere would otherwise hold one number per byte
     hits: collections.deque[int] = collections.deque(maxlen=judges.HITS_MAX)
     total = 0
     at = data.find(pattern)
@@ -117,8 +90,7 @@ def find(session: ds.Session, seg: int, off: int, length: int, pattern: bytes) -
         hits.append(off + at)
         total += 1
         at = data.find(pattern, at + 1)
-    # THE SPAN EXAMINED RIDES ON THE REPLY, so a zero says over which bytes it is a zero.
-    # The only range source here is the caller's own, so `source` is always `ref+length`.
+    # the span rides on the reply so a zero says over which bytes it is a zero
     return {"seg_off": st.seg_off(seg, off), "length": length,
             "span": {"from": st.seg_off(seg, off), "length": length, "source": "ref+length"},
             "hits": [_spelled(seg, o, dumped.real_past_ffff) for o in hits],
@@ -126,28 +98,21 @@ def find(session: ds.Session, seg: int, off: int, length: int, pattern: bytes) -
 
 
 def _spelled(seg: int, off: int, real_past_ffff: bool) -> str:
-    """A hit as `SEG:OFF`. In real mode an offset past 0xFFFF names nothing (the debugger
-    masks it to sixteen bits), so a hit there is spelled from its own paragraph."""
+    """A hit as `SEG:OFF`; in real mode an offset past 0xFFFF is respelled from its paragraph."""
     if real_past_ffff and off >= dumping.WINDOW_BYTES:
         seg, off = dumping.real_address(dumping.real_linear(seg, off))
     return st.seg_off(seg, off)
 
 
-# THE OUTPUT PANE IS A SCROLLBACK, NOT AN ANSWER. Every `command` delta is a repaint of the
-# whole ncurses screen, and its Output pane still shows what EARLIER commands printed (a
-# `MEMFIND !` delta carries the previous `MEMS`'s "not active" line above its own). So a
-# reply is read off the LAST line the pane holds that belongs to this family, never the first
-# match in the text; a family line that is not the last one is somebody else's answer.
+# The Output pane is a scrollback: a delta still shows earlier commands' lines, so a reply is
+# the LAST family line, never the first.
 SCAN_LINES = (SCAN_OPENED, SCAN_MATCHES, SCAN_FINISHED, SCAN_RANGE,
               re.compile(re.escape(SCAN_ACTIVE)), re.compile(re.escape(SCAN_BAD_SEGMENT)),
               re.compile(re.escape(SCAN_NOT_ACTIVE)), re.compile(re.escape(SCAN_TOO_WIDE)),
               re.compile(re.escape(SCAN_CANCELLED)), re.compile(re.escape(SCAN_NONE_TO_CANCEL)),
               re.compile(re.escape(SCAN_NONE_TO_LIST)))
-# The listing is PAGED by the debugger (`dcons.PAGER_MARK`), this many rows and then a prompt that
-# any key continues (a command typed while a page waits is eaten character by
-# character, one page per keystroke, and the rows in between never cross the screen). Its
-# rows reach only the screen, so the pages are turned with a bare ENTER, one at a time, and
-# the rows are read off each delta, where a listing read off the logfile leaves with `Q`.
+# The listing is paged (`dcons.PAGER_MARK`) and its rows reach only the screen, so pages are
+# turned with a bare ENTER and the rows read off each delta.
 SCAN_LISTED = re.compile(r"\[MEMFIND\] Matched values during current instance: ([0-9A-F]{6})")
 SCAN_PAGE_ROWS = 20
 
@@ -182,42 +147,24 @@ def _refuse(line: str, what: str) -> None:
             "the value does not fit the instance's width: the debugger refused the filter")
 
 
-# How many bare ENTERs a recovery will spend. The debugger pages a listing at
-# `SCAN_PAGE_ROWS` rows, and a recovery that has to turn more pages than a whole listing
-# holds is not recovering: it says so rather than typing for ever.
+# More ENTERs than a whole listing has pages means the recovery is not recovering.
 RECOVER_ENTERS_MAX = 8
 
 
 def _clear_line(session: ds.Session) -> bool:
-    """Leave the debugger's command line EMPTY and its paging finished, and say whether it
-    got there.
+    """Leave the debugger's command line empty and its paging finished; say whether it did.
 
-    WHY THIS EXISTS. The debugger eats a command CHARACTER BY CHARACTER while a paged-content
-    prompt waits, one page per keystroke (see the scrollback note above). So a page
-    left unturned swallows the front of the next command and strands its tail on the command
-    line (`MEMS ` eaten, `=FF` left typed), and from there every later call
-    concatenates onto the same line (`=FFMEMFIND !BPLISTBPLISTBPLIST`) instead of running.
-    Nothing but `close` recovers.
-
-    A bare ENTER is the one keystroke that is safe either way: it turns a waiting page, and
-    at an IDLE prompt it submits whatever is typed there and clears it. That second half is
-    the one this whole recovery rests on, and it holds against the probe guest: several bare
-    ENTERs in a row at an idle prompt produce no output at all and do NOT repeat the last
-    command (a convention some interactive debuggers do follow, which here would re-issue a
-    `MEMFIND` or a `MEMS` instead of clearing anything).
-    The price of that silence is that the collect waits out its own bound with nothing to
-    settle on, which a refusal path can afford and a hot path could not.
-
-    It is spent until the screen stops showing a page mark, under a bound. A tail the ENTER
-    submitted and the debugger did not take stays on the line, and a second ENTER would only
-    run it again, so that line is emptied with `Session.clear_line`, which runs nothing."""
+    While a paged-content prompt waits, the debugger eats a command one character per page and
+    strands the tail on the line, and every later call concatenates onto it until `close`.
+    A bare ENTER is safe either way: it turns a waiting page, and at an idle prompt it submits
+    and clears the line without repeating the last command. A tail the debugger did not take is
+    emptied with `Session.clear_line`, which runs nothing."""
     for _ in range(RECOVER_ENTERS_MAX):
         try:
             out = session.command("")
             if dcons.PAGER_MARK not in out:
                 if dcons.input_line(out):
-                    # ESC REPAINTS NO PROMPT, only the cursor, and the line is empty after it
-                    # (the next command is taken whole): a delta with no prompt is a clear.
+                    # ESC repaints no prompt: a delta with none is a clear
                     out = session.clear_line()
                 return not dcons.input_line(out)
         except ds.Invalid:
@@ -226,9 +173,7 @@ def _clear_line(session: ds.Session) -> bool:
 
 
 def _unexpected(session: ds.Session, out: str, wanted: str) -> ds.Invalid:
-    """The refusal, with the command line LEFT CLEAN. Whatever the debugger showed, the line
-    it showed it on is the caller's next command's line, and a refusal that hands back a
-    dirty one costs the whole session."""
+    """The refusal, with the command line left clean for the caller's next command."""
     recovered = _clear_line(session)
     return ds.Invalid("unexpected_answer",
         f"the debugger did not report {wanted}. What it showed: {out.strip()[-300:]!r}",
@@ -240,8 +185,7 @@ def _unexpected(session: ds.Session, out: str, wanted: str) -> ds.Invalid:
 
 
 def check_scan_range(length: int, cell_bytes: int) -> None:
-    """A scan's range as the debugger takes it: a cell of a size it reads, and a length of whole
-    cells within the six hex digits the debugger reads."""
+    """A scan's range as the debugger takes it: a known cell size, whole cells, six hex digits."""
     vocab.one_of("cell_bytes", cell_bytes, CELL_BYTES)
     if not isinstance(length, int) or isinstance(length, bool):
         raise ds.Invalid("bad_argument", f"length is a byte count; got {length!r}")
@@ -257,22 +201,17 @@ def check_scan_range(length: int, cell_bytes: int) -> None:
 
 
 def unlisted_note() -> str:
-    """Why a filter past the listing ceiling (`judges.HITS_MAX`) lists none: the debugger pages
-    its listing a screen at a time, so listing them costs a console round trip per page, to show
-    `limit` of them."""
+    """Why a filter past `judges.HITS_MAX` lists none: each page costs a console round trip."""
     return (f"more than {judges.HITS_MAX} survive, and the debugger lists them a page at a "
             f"time: filter again to list them")
 
 
-#: Why a filter with no `value` answers none: it compared each cell with the scan's opening.
 NO_VALUE_WHY = ("no `value` was given, so each cell was compared with its value at "
                 "`scan(method=\"start\")`")
 
 
 def check_filter(operator: str, value: int | None, limit: int = judges.HITS_DEFAULT) -> None:
-    """A filter as the debugger takes it, judged with no machine: one of its operators, a
-    value that is absent or a whole number of zero or more (it compares unsigned), and a
-    `limit` of survivors to list, 1 to `HITS_MAX`."""
+    """A filter as the debugger takes it, judged with no machine (it compares unsigned)."""
     if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= judges.HITS_MAX:
         raise ds.Invalid("bad_argument", f"limit={limit!r} is outside 1..{judges.HITS_MAX}, how "
                          f"many survivors a filter lists; above {judges.HITS_MAX}, filter again")
@@ -286,8 +225,7 @@ def check_filter(operator: str, value: int | None, limit: int = judges.HITS_DEFA
 
 def start_scan(session: ds.Session, seg: int, off: int, length: int,
                cell_bytes: int) -> dict[str, Any]:
-    """Open the debugger's search instance over `length` bytes from `seg:off`, in cells of
-    `cell_bytes` (1, 2 or 4). Every cell starts as a candidate."""
+    """Open the debugger's search instance over `length` bytes from `seg:off`."""
     check_scan_range(length, cell_bytes)
     letter, size = CELLS[cell_bytes], cell_bytes
     out = session.command(f"MEMFIND {seg:04X}:{off:X} {length:X} {letter}")
@@ -297,9 +235,7 @@ def start_scan(session: ds.Session, seg: int, off: int, length: int,
     if opened is None:
         raise _unexpected(session, out, "a search instance")
     if int(opened.group(4), 16) != length:
-        # IT OPENED ONE, just not this one: closed before the refusal, or the next
-        # `scan(method="start")`
-        # would be told a scan is open that this server does not hold.
+        # close the stray instance, or the next start is told one is open that we do not hold
         with contextlib.suppress(ds.Invalid):
             session.command("MEMFIND !")
         raise _unexpected(session, out,
@@ -312,13 +248,10 @@ def start_scan(session: ds.Session, seg: int, off: int, length: int,
 
 
 def _listing(session: ds.Session, survivors: int) -> list[dict[str, Any]]:
-    """`MEMFIND L`, page by page, until the debugger's closing count; the rows are keyed by
-    address so a line the terminal repainted twice counts once."""
+    """`MEMFIND L` page by page to the closing count, rows keyed by address."""
     rows: dict[str, dict[str, Any]] = {}
     out = session.command("MEMFIND L")
-    # THE FIRST PAGE STILL SHOWS THE PREVIOUS LISTING ABOVE IT when the scan was listed
-    # before (the pane is a scrollback): only what comes after the filter's own summary
-    # line, the newest non-row line, belongs to this listing.
+    # the first page still shows the previous listing above it
     summaries = list(SCAN_MATCHES.finditer(out))
     if summaries:
         out = out[summaries[-1].end():]
@@ -334,13 +267,8 @@ def _listing(session: ds.Session, survivors: int) -> list[dict[str, Any]]:
                 raise _unexpected(session, out,
                     f"a whole listing: it counted {survivors} survivors, closed the listing "
                     f"at {int(listed.group(1), 16)} and {len(rows)} rows crossed the screen")
-            # THE CLOSING COUNT IS NOT THE END OF THE PAGING. A delta can carry the count
-            # AND a paged-content prompt still waiting behind it, and returning there leaves
-            # that prompt to eat the front of the caller's next command.
+            # the count can arrive with a page prompt still waiting behind it
             if dcons.PAGER_MARK in out[listed.end():] and not _clear_line(session):
-                # A CLEAR THAT DID NOT CLEAR IS NOT A SUCCESS. Handing the rows back with
-                # the prompt still armed is the same defect, on the success path and silent:
-                # the caller's next command would be eaten and the session lost.
                 raise ds.Invalid("unexpected_answer",
                     "the listing ended with a paged-content prompt this could not turn in "
                     f"{RECOVER_ENTERS_MAX} ENTERs, so the debugger's command line is still "
@@ -357,19 +285,12 @@ def _listing(session: ds.Session, survivors: int) -> list[dict[str, Any]]:
 
 def filter_scan(session: ds.Session, operator: str, value: int | None,
                 limit: int = judges.HITS_DEFAULT) -> dict[str, Any]:
-    """Keep the cells whose current content satisfies `operator` against `value`, or, with
-    no value, against what each cell held when the scan was opened (a cell changed
-    once and then left alone keeps passing `!` filter after filter, and written back to its
-    opening value it stops). The first `limit` survivors are listed with their current values
-    (`truncated` when more survive), up to `HITS_MAX` survivors, past which the listing would
-    cost a console page per screenful and none is listed; a step that leaves none CLOSES the
-    instance, which is what the debugger does, and the reply says so.
+    """Keep the cells satisfying `operator` against `value`, or against their value at the scan's
+    opening when there is none. Lists the first `limit` survivors, none past `HITS_MAX`; a step
+    leaving none closes the instance, as the debugger does.
 
-    `iterations` is the debugger's own count, printed on every filter but the closing one,
-    whose line carries none: the server keeps the last one it read (`STATE.scan_iterations`)
-    and answers it plus one there, or unavailable with why when no count it can stand behind is
-    held (the scan was opened, filtered or ended through `debug`, or the debugger said none
-    was open)."""
+    `iterations` is the debugger's count, absent from its closing line: the server answers the
+    last one it read plus one, or unavailable when it holds none it can stand behind."""
     check_filter(operator, value, limit)
     cell = STATE.scan_cell_bytes
     if value is not None and cell is not None and value >= 1 << (8 * cell):
@@ -419,17 +340,16 @@ def clear_scan(session: ds.Session) -> dict[str, Any]:
 
 
 def _cell_bits(cell: int | None) -> int:
-    """The bits a value of the open scan's cell is shown at; a byte when the cell is unknown (a
-    scan opened through `debug`), the narrowest a value of any cell takes."""
+    """Display width in bits; a byte when the cell is unknown (a scan opened through `debug`)."""
     return 8 * (cell or 1)
 
 
 def _asked(value: int | None, cell: int | None) -> str | dict[str, Any]:
-    """The `value` a filter compared with, `0x` at the cell's width, or why there is none."""
+    """The value a filter compared with, or why there is none."""
     return (contract.unavailable(NO_VALUE_WHY) if value is None
             else judges.hex_at_width(value, _cell_bits(cell)))
 
 
 def _shown(row: dict[str, Any], cell: int | None) -> dict[str, Any]:
-    """A survivor's row with its value `0x` at the cell's width."""
+    """A survivor's row with its value at the cell's width."""
     return {**row, "value": judges.hex_at_width(int(row["value"]), _cell_bits(cell))}

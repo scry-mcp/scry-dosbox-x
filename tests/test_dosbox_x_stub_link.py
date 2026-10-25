@@ -1,9 +1,5 @@
-"""The host half of protocol 3 (`dosbox_stub_link`) against a stub double that ports the guest's
-tick handler byte for byte (`guest/inject.asm`): a UART queue drained once a tick, the hunt for
-SYNC, a frame aged out after `STALE_TICKS` ticks with nothing arriving, an unknown opcode
-dropped, one frame carried out a tick, a repeat acknowledged and not carried out. The real stub
-answers in the live input tier; what the double cannot drift from, the constants, is read off
-the asm."""
+"""The host half of protocol 3 against a double of the guest's tick handler (`guest/inject.asm`).
+The constants are read off the asm so the double cannot drift from them."""
 
 from __future__ import annotations
 
@@ -22,8 +18,7 @@ import dosbox_inputs as inputs
 import dosbox_stub_link as link
 
 ASM = (Path(link.__file__).parent / "guest" / "inject.asm").read_text(encoding="utf-8")
-#: Each opcode's frame length after SYNC (sequence byte, opcode, payload, check), as `.len`
-#: holds it.
+#: Each opcode's frame length after SYNC (sequence, opcode, payload, check).
 LENGTHS = {ord("K"): 4, ord("B"): 4, ord("M"): 7, ord("R"): 3, ord("S"): 3}
 STALE_TICKS = int(re.search(r"^STALE_TICKS\s+equ\s+(\d+)", ASM, re.M).group(1))  # type: ignore[union-attr]
 TICK_S = 0.005
@@ -31,9 +26,8 @@ REPORT = b"STUB  . mouse x=1 y=2 buttons=0 max=639,199 mode=19 screen=320x200\r\
 
 
 class Stub:
-    """The tick handler, ported. `dribble` sends what it writes a byte at a time, as a UART
-    would; `ack_late` acknowledges those frames (counted from 0, as carried out or repeated)
-    only after `late_s`."""
+    """The tick handler, ported. `dribble` writes a byte at a time; `ack_late` holds the
+    acknowledgement of those frames (counted from 0) for `late_s`."""
 
     def __init__(self, sock: socket.socket, last_seq: int = 0, dribble: bool = False,
                  ack_late: frozenset[int] = frozenset(), late_s: float = 0.0,
@@ -83,18 +77,18 @@ class Stub:
                 continue
             length = LENGTHS.get(self.frame[1])
             if length is None:
-                self.hunting = True              # an opcode it does not know: dropped
+                self.hunting = True
                 continue
             if self.have < length:
                 continue
             self.hunting = True
             whole = bytes(self.frame[:length])
             if link.frame(whole[0], whole[1:-1])[1:] != whole:
-                continue                         # it does not add up: dropped, unacknowledged
+                continue
             self._carry(whole[:-1])
-            return                               # one frame a tick
+            return
         if not self.hunting:
-            self.stale += 1                      # a frame still short, its SYNC alone included
+            self.stale += 1
             if self.stale >= self.stale_ticks:
                 self.hunting = True
 
@@ -124,8 +118,7 @@ class Stub:
 
 
 class Lossy:
-    """The host's socket, losing bytes of chosen frames on the way: `keep` maps a frame's index
-    (counted from 0, resends included) to the slice of it that arrives."""
+    """The host's socket; `keep` maps a frame index (resends counted) to the slice that arrives."""
 
     def __init__(self, sock: socket.socket, keep: dict[int, slice]) -> None:
         self.sock, self.keep, self.frames = sock, keep, 0
@@ -140,7 +133,7 @@ class Lossy:
 
 
 def _acks_with_no_line(guest: socket.socket) -> None:
-    """A stub that acknowledges the first frame it reads and sends nothing after it."""
+    """Acknowledge the first frame read, send nothing after."""
     def ack_only() -> None:
         frame = guest.recv(16)
         guest.sendall(bytes((link.ACK, frame[1], frame[2], 1)))
@@ -190,9 +183,8 @@ def test_a_report_comes_back_after_its_acknowledgement_even_a_byte_at_a_time(
                          ids=["nothing", "its SYNC alone", "SYNC and sequence", "short"])
 def test_a_frame_cut_on_the_way_is_sent_again_and_runs_nothing_else(
         pair: Any, arrives: slice) -> None:
-    """Whatever part of a frame arrives, the stub drops it once nothing more comes, and the
-    resend is read as itself: never its SYNC as a sequence byte and its sequence as an opcode.
-    The frame cut is the one numbered 75, `K`, where that misreading would run a key."""
+    """The resend is read as itself, never its SYNC as a sequence byte; frame 75 is cut because
+    that misreading would run a key."""
     host, guest = pair
     stub = Stub(guest)
     keys = [bytes((ord("K"), n)) for n in range(80)]
@@ -202,8 +194,7 @@ def test_a_frame_cut_on_the_way_is_sent_again_and_runs_nothing_else(
 
 def test_a_frame_short_its_tail_on_a_slow_guest_is_never_completed_by_the_resend(
         pair: Any) -> None:
-    """A guest too slow to age the short frame before the resend arrives takes the resend's
-    first bytes as the short frame's tail: that frame does not add up and runs nothing."""
+    """The resend's first bytes complete the short frame, which fails its check and runs nothing."""
     host, guest = pair
     stub = Stub(guest, stale_ticks=10_000)
     link.Link(Lossy(host, {1: slice(0, -1)})).send(KEYS)  # type: ignore[arg-type]
@@ -219,8 +210,7 @@ def test_a_lost_acknowledgement_is_answered_by_the_repeat_and_never_carried_out_
 
 
 def test_a_late_twin_acknowledgement_is_passed_over(pair: Any) -> None:
-    """The first acknowledgement lands after the host gave up on it, beside the repeat's: the
-    next command waits for its own and is not answered by the twin."""
+    """The next command waits for its own acknowledgement, not the late twin's."""
     host, guest = pair
     stub = Stub(guest, ack_late=frozenset({0}), late_s=link.ACK_WAIT_S * 1.5)
     link.Link(host).send(KEYS)
@@ -229,8 +219,7 @@ def test_a_late_twin_acknowledgement_is_passed_over(pair: Any) -> None:
 
 def test_a_first_send_answered_as_a_repeat_goes_again_under_the_next_sequence(
         pair: Any) -> None:
-    """A stub whose last sequence is the host's first (a state loaded from another session)
-    would take the new command for the old one's repeat: it is sent again, renumbered."""
+    """A stub holding the host's first sequence takes it for a repeat: sent again, renumbered."""
     host, guest = pair
     stub = Stub(guest, last_seq=1)
     link.Link(host).send([b"K\x1e"])
@@ -293,9 +282,7 @@ def test_a_report_acknowledged_with_no_line_counts_its_command_as_acknowledged(
 
 def test_an_acknowledgement_already_on_the_line_is_read_before_a_stop_is_named(
         pair: Any) -> None:
-    """The stub acknowledged on the tick just before a breakpoint parked the guest: the
-    acknowledgement is on the line, so the command is carried and not refused as stopped,
-    which a caller would answer by sending it again."""
+    """An ack already on the line means carried, not refused as stopped (a caller would resend)."""
     host, guest = pair
 
     def ack_then_park() -> None:
@@ -316,10 +303,8 @@ def test_an_acknowledgement_already_on_the_line_is_read_before_a_stop_is_named(
 
 def test_a_dropped_first_frame_to_a_stub_whose_last_sequence_is_its_own_is_still_carried(
         pair: Any) -> None:
-    """A stub whose last sequence is the host's next (a state loaded from another session), and
-    the first frame lost on the line: the resend is answered as a repeat, which after a loss
-    cannot say whether the command ran. The link proves the sequence before it counts on it, so
-    the command is carried out once."""
+    """After a loss a repeat answer cannot say whether the command ran; the link proves the
+    sequence first, so the command is carried out once."""
     host, guest = pair
     stub = Stub(guest, last_seq=1)
     loaded = link.Link(cast(Any, Lossy(host, {0: slice(0, 0)})))

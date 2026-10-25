@@ -1,25 +1,10 @@
-"""One live case per TOOL, driven through the server exactly as an MCP caller drives it.
+"""One live case per tool, driven through the server as an MCP caller drives it.
 
-WHY THIS FILE EXISTS BESIDE `test_dosbox_x_live.py`, WHICH ALREADY DRIVES A REAL
-EMULATOR. That file exercises `Session`, the class. This one exercises EVERY tool the
-server actually publishes -- the population comes from the MCP registry and is gated by
-`test_every_tool_has_a_live_case_naming_it`, so the invariant is quoted here rather than
-a count, which expires on its own the next time a tool is added. Until this file
-existed NOT ONE live case went through them: the reply envelope, the `Invalid` to
-`INVALID` translation, `live()`'s handling of a session that has gone, and the
-`_SESSION` global's whole life cycle had been seen only against a fake.
-
-THE GAP IS NOT A HYPOTHETICAL. A `memdump` that collects the debugger's file from the
-captures directory, when the file lands in the emulator's working directory, returns
-INVALID on every dump while the contract tests stay green over it, because a fake
-session puts the file wherever the fake says. The rule that follows is the one this
-file is built on: **a tool with no live case is a tool whose green means nothing**,
-and choosing which tools "need" one by eye is how that one gets through. So it is
-ALL of them, including the ones that look too simple to break.
-
-WHAT EACH CASE ASSERTS IS THE TOOL'S OWN GUARANTEE, never merely that it returned.
-`status: ok` was what `read_memory` reported while handing back a screen its own cap
-had cut the requested address out of.
+A tool with no live case is a tool whose green means nothing: fakes put files and replies
+wherever the fake says (a `memdump` collecting from the wrong directory passed every
+contract test). The population comes from the MCP registry, gated by
+`test_every_tool_has_a_live_case_naming_it`. Each case asserts the tool's own guarantee,
+never merely that it returned.
 """
 
 from __future__ import annotations
@@ -33,31 +18,14 @@ from typing import Any, cast
 
 import pytest
 from _live_teardown import no_session_left_behind  # noqa: F401  (registers the autouse teardown)
-
-# THE PATCHED CONF IS THE SIBLING FILE'S, and it is imported rather than copied. It
-# strips a run-and-exit out of the caller's own config and REQUIRES the substitution
-# to match, which is the property a second hand-written copy would silently lose the
-# day the config's shape changes: a patch that quietly changed nothing leaves a case
-# measuring the original under the patched one's name.
-# THE PACKAGE'S OWN GUEST IS THE DEFAULT, and pointing the tier at a project is the
-# override rather than the requirement.
-#
-# Requiring a project's config would make the tier FAIL, not skip, for anyone else. The
-# dependency is not on any project's name; it is that the guest RUNS after a `resume`
-# and EMITS instrumentation, which `resume`, `e9`, `e9_wait`, `step`-on-a-running-
-# machine and the bound cases all rest on. `tests/guest/` holds a tiny guest that does
-# exactly that and nothing else.
-# IMPORTED, NOT REDEFINED: a second copy of the overrides would leave two definitions
-# of each, one of them dead. `conf_that_does_not_exit` already crosses this boundary
-# (below), so the one-owner shape costs nothing.
 from test_dosbox_x_live import (  # noqa: E402
-    _HALF_A_PAIR,
     _OWN,
     CONF,
     CWD,
     GUEST_LATE,
     GUEST_MARK,
     GUEST_PROGRAM,
+    LIVE_MARKS,
     conf_that_does_not_exit,
 )
 
@@ -70,50 +38,28 @@ import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_x_server as server
 
-# WHERE A WATCHED WINDOW GOES IS NOT THIS PACKAGE'S TO DECIDE, and it is not this
-# test's either: the server asks the host's helper and refuses a watched session without
-# one rather than inventing a geometry, and a test that hardcoded a position would be
-# putting that private layout back in, one layer down, in a package meant to be published.
-#: The placement helper a watched start asks (`scry_core.placement`), and what it answers here.
+# Window placement is the host helper's call; the server refuses a watched start without one.
 HELPER = os.environ.get("WINDOW_APP", "").strip()
 
-pytestmark = [
-    pytest.mark.live,
-    pytest.mark.skipif(
-        bool(_HALF_A_PAIR), reason=_HALF_A_PAIR or "the pair is consistent"),
-    pytest.mark.skipif(
-        not Path(CONF).is_file(), reason=f"the live config {CONF} is not a file"),
-    pytest.mark.skipif(
-        str(_OWN / "probe.conf") == CONF and not (_OWN / "probe.com").is_file(),
-        reason=f"the package's own guest {_OWN / 'probe.com'} is missing"),
-]
+pytestmark = LIVE_MARKS
 
-# How long a case waits for the guest to reach a milestone of its own. It is a
-# CEILING and not a sleep: every wait below polls and leaves the moment the property
-# it is waiting on holds, so a fast machine pays nothing for it.
+# A ceiling, not a sleep: every wait polls and leaves as soon as its property holds.
 GUEST_WAIT = 45.0
 
-# The two caps the server passes to `_delta`, named here because a case asserting
-# `clipped` against them has to know which one its tool uses. They are the SERVER's
-# numbers; a case comparing a reply's fields only with each other cannot fail.
+# The server's own caps for `_delta`: a case comparing a reply only with itself cannot fail.
 DEBUG_CAP = 4000
 SMALL_CAP = 2000
 
 
 def start_ok(**kw: Any) -> dict[str, Any]:
-    """`start` with this fixture's conf, REFUSING to continue if it did not come up.
-
-    The status is asserted here rather than in each case because an INVALID `start`
-    makes every later assertion in that case a statement about nothing, and the
-    reason string is the only thing that says why.
-    """
+    """`start` with this fixture's conf, REFUSING to continue if it did not come up."""
     reply = cast(dict[str, Any], server.start(conf=CONF or "", cwd=CWD, **kw))
     assert reply["status"] == "ok", reply
     return reply
 
 
 def wait_for(predicate: Any, seconds: float = GUEST_WAIT) -> bool:
-    """Poll until it holds or the ceiling is reached. Never touches the session."""
+    """Poll until it holds or the ceiling is reached."""
     deadline = time.monotonic() + seconds
     while time.monotonic() < deadline:
         if predicate():
@@ -124,10 +70,7 @@ def wait_for(predicate: Any, seconds: float = GUEST_WAIT) -> bool:
 
 def a_running_guest_that_has_logged(tmp_path: Path, seconds: int = 120,
                                     lines: int = 6) -> None:
-    """Start with a log, release the guest until close (headless, nothing armed: the log
-    is the way back), and wait until it has written `lines` instrumentation lines. Every
-    E9 case opens this way, and a window in which the guest wrote nothing is INVALID, not
-    a channel to measure against."""
+    """Start with a log, release the guest until close (headless, nothing armed:"""
     log = tmp_path / "guest.log"
     start_ok(session_seconds=seconds, logfile=str(log))
     server.resume()
@@ -136,27 +79,12 @@ def a_running_guest_that_has_logged(tmp_path: Path, seconds: int = 120,
         "the guest emitted no instrumentation: this window measured nothing, INVALID"
 
 
-# --------------------------------------------------------------- no session needed
-
 def test_build_check_answers_about_this_build_and_names_the_whole_surface() -> None:
-    """The one tool whose job is examining preconditions, asked of the real binary.
-
-    IT ASSERTS THE SURFACE, not just that a binary was found. `registered_tools()`
-    reads the MCP layer's own registry, so a case that only checked `debugger: true`
-    would stay green over a server exposing nothing at all: `mcp.tool()` returns the
-    function unchanged, which is what makes that break invisible to every ordinary
-    test. Here the assertion runs against the process that would really serve them.
-    """
+    """The one tool whose job is examining preconditions, asked of the real binary."""
     reply = cast(dict[str, Any], server.build_check())
     assert reply["status"] == "ok", reply
     assert reply["debugger"] is True
     assert Path(str(reply["binary"])).is_file()
-    # THE LIST IS SPELLED OUT rather than compared with `dosbox_mcp.registered_tools()`,
-    # which is what `build_check` reads: that comparison would be the registry agreeing
-    # with itself. Its twin lives in the contract file's
-    # `test_every_tool_this_server_promises_is_actually_registered`, and NOTHING ties
-    # the two literals together -- adding a tool means editing both, and forgetting one
-    # is a red rather than a silent gap, which is the acceptable direction.
     assert set(reply["tools"]) == {
         "start", "status", "close", "log", "log_wait", "debug", "registers", "set_register",
         "write", "read_memory", "disassemble", "call_stack", "memdump", "find", "scan",
@@ -167,29 +95,16 @@ def test_build_check_answers_about_this_build_and_names_the_whole_surface() -> N
         "symbols_load", "symbols_find", "send_keys", "send_mouse", "perform", "perform_export",
         "drive", "comment_list", "comment_write", "series_capture", "image_compare", "map_find",
         "map_write"}
-    # NO SESSION, so the envelope must say so rather than omitting the key or printing a
-    # null: a caller distinguishing "no session" from "the field is missing" cannot do it
-    # if the two print the same thing.
     assert reply["session"] == {"alive": False, "running": False, "altered": False}
 
 
-# ------------------------------------------------------------------------- opening
-
 def test_start_headless_reaches_the_debugger_and_declares_what_it_launched() -> None:
-    """A run that cannot say which run it was is not attributable to anything.
-
-    The three tokens asserted are the three that decide what this session IS: the
-    stop at the debugger (without it there is nothing to ask), the bound (without it
-    an abandoned emulator runs until the machine is rebooted) and the emulator's own
-    headless property (without it a window opens on somebody's desk).
-    """
+    """A run that cannot say which run it was is not attributable to anything."""
     reply = start_ok(session_seconds=60)
     argv = cast(list[str], reply["argv"])
     assert reply.get("shared", False) is False
     assert "-break-start" in argv
     assert argv[argv.index("-time-limit") + 1] == "60"
-    # ADJACENCY, not mere presence: a `-set` pair that arrives split is an argument
-    # this emulator neither refuses nor honours.
     assert argv[argv.index("sdl videodriver=dummy") - 1] == "-set"
     assert cast(float, reply["ready_after_s"]) > 0
     assert reply["session"]["alive"] is True and reply.get("watched", False) is False, reply
@@ -200,20 +115,7 @@ def test_start_headless_reaches_the_debugger_and_declares_what_it_launched() -> 
 @pytest.mark.skipif(not HELPER, reason="set WINDOW_APP to the placement helper "
                                        "(`place-window`) to exercise the watched path")
 def test_start_shared_takes_the_helper_s_flags_and_adds_no_dummy_driver() -> None:
-    """The WATCHED path, on the real emulator, bounded to seconds.
-
-    WHAT THIS COVERS IS THE MECHANISM AND NOT THE MODE'S INTENT, and the difference
-    is worth stating because the case would otherwise look like it was validating
-    something it cannot. `shared` means somebody is watching; nobody is watching this.
-    What is checked is that the helper's tokens reach argv intact and adjacent, that
-    the headless property is NOT added on top of them, and that a window session
-    really comes up and answers. Where the window lands is the helper's decision and
-    is not re-derived here.
-
-    It is short and bounded for the same reason: the run's display is the secondary unless
-    `WINDOW_SHARED_DISPLAY` says otherwise, off whatever the person is using, and it is gone
-    in seconds either way.
-    """
+    """The WATCHED path, on the real emulator, bounded to seconds."""
     reply = start_ok(session_seconds=30, shared=True)
     argv = cast(list[str], reply["argv"])
     asked = subprocess.run([HELPER, "dosbox", "--shared", "--display", str(reply.get("display",
@@ -222,26 +124,18 @@ def test_start_shared_takes_the_helper_s_flags_and_adds_no_dummy_driver() -> Non
     window_flags = [ln for ln in asked.stdout.splitlines() if ln.strip()]
     assert reply.get("shared", False) is True
     assert "sdl videodriver=dummy" not in argv, "a watched session was forced headless"
-    # THE TOKENS SURVIVE AS A RUN, in order: reversing them or gluing a pair is
-    # exactly what an unrecognised argument is made of.
     joined, want = "\x00".join(argv), "\x00".join(window_flags)
     assert want in joined, f"the placement flags did not arrive intact: {argv}"
     assert reply.get("watched", False) is True, reply
-    # AND IT REALLY CAME UP: a windowed session that reaches its debugger answers with
-    # a value, which is the only evidence the flags were accepted rather than hung on.
     regs = cast(dict[str, Any], server.registers())
     assert regs["status"] == "ok", regs
     assert regs["regs"]["CS"] == "0xf000"
 
 
 def test_stop_brings_a_running_headless_guest_back_through_the_debugger_channel() -> None:
-    """`stop` sends BREAK down the emulator's own debugger channel: a headless guest released
-    with nothing armed runs, `stop` brings it back and surveys the stop, and a second `stop`
-    says it was already stopped. The release is checked running first, so a `stop` that
-    found the machine parked could not pass for one that broke in."""
+    """`stop` sends BREAK down the emulator's own debugger channel:"""
     start_ok(session_seconds=60)
     released = cast(dict[str, Any], server.resume())
-    # `seconds` left at 0 gives no verdict: the reply says whether it stopped by carrying `pc`.
     assert released["status"] == "ok" and "pc" not in released, released
     assert released["session"]["running"] is True, released
     back = cast(dict[str, Any], server.stop())
@@ -251,16 +145,8 @@ def test_stop_brings_a_running_headless_guest_back_through_the_debugger_channel(
     assert again["interrupted"] is False
 
 
-# ------------------------------------------------------------------- what it is
-
 def test_status_reports_the_live_session_and_not_a_remembered_one() -> None:
-    """The fields a caller reasons with, read off a machine that really exists.
-
-    `elapsed_s` is asserted to MOVE, which is the one thing a remembered state
-    cannot do, and `drain_alive` to hold: a drain thread killed by a transient error
-    makes every later read return nothing forever while `alive` still says true, so a
-    session that has become a broken instrument reports itself as a quiet machine.
-    """
+    """The fields a caller reasons with, read off a machine that really exists."""
     start_ok(session_seconds=60)
     first = cast(dict[str, Any], server.status())
     assert first["status"] == "ok"
@@ -274,25 +160,17 @@ def test_status_reports_the_live_session_and_not_a_remembered_one() -> None:
     assert later.get("terminal_bytes_dropped", 0) == 0, (
         "the terminal overflowed on an idle session, so a screen delta had a hole "
         "in it and the drain is not keeping up")
-    # THE MACHINE FACTS, read off the park: the reset vector, in real mode, nothing declared.
     assert first["pc"] == "F000:0000FFF0" and first["cpu_mode"] == "real", first
     assert first["declarations"] == {"breakpoints": 0, "watches": 0}, first
 
 
-# An `int 3` placed in free conventional memory after a `nop`: the debugger does not check a
-# breakpoint on the FIRST instruction it runs after a resume (it would stop where it already
-# is), so a trap placed there is stepped over whichever way the key is set, and the `nop` is
-# what puts the trap second. `jmp $` keeps a guest that did not stop busy and harmless.
 _TRAP_AT = "0050:00F0"
 _TRAP = "90CCEBFE"
 
 
 @pytest.mark.parametrize("key", [True, False], ids=["key_on", "key_off"])
 def test_break_on_int3_stops_the_guests_own_int3_and_only_with_the_key(key: bool) -> None:
-    """`start(break_on_int3=True)` stops the machine at the guest's own `int 3`, at the trap
-    itself; without it the same trap runs through the guest's vector and the machine keeps
-    running. The trap is reached once DOS is up: the key arms its breakpoint during DOS's
-    start, and before that an `int 3` has no vector to go to."""
+    """`start(break_on_int3=True)` stops the machine at the guest's own `int 3`, at the trap."""
     start_ok(session_seconds=120, break_on_int3=key)
     server.breakpoint_interrupt(number=0x21)
     booted = cast(dict[str, Any], server.resume(seconds=30))
@@ -310,44 +188,24 @@ def test_break_on_int3_stops_the_guests_own_int3_and_only_with_the_key(key: bool
         assert ran.get("verdict") == "OTHER_STOP", ran
         stop_cs, stop_eip = ran["pc"].split(":")
         assert stop_cs == f"{seg:04X}", ran
-        assert int(stop_eip, 16) == off + 1, ran     # at the trap, not past it
+        assert int(stop_eip, 16) == off + 1, ran
     else:
         assert ran["verdict"] == "TIMEOUT" and "pc" not in ran, ran
         assert ran["session"]["running"] is True, ran
 
 
-# ----------------------------------------------------------------- reading it
-
 def test_registers_returns_a_value_the_caller_did_not_supply() -> None:
-    """The reply a terminal echo cannot fabricate.
-
-    An acknowledgement contains only words the caller typed. The reset vector does
-    not: `CS=F000 EIP=0000FFF0` is where an x86 starts and it comes from the machine.
-    A probe looking for its own command words scores TRUE with no emulator running
-    at all.
-    """
+    """The reply a terminal echo cannot fabricate."""
     start_ok(session_seconds=60)
     reply = cast(dict[str, Any], server.registers())
     assert reply["status"] == "ok", reply
     regs = cast(dict[str, str], reply["regs"])
     assert regs["CS"] == "0xf000" and regs["EIP"] == "0x0000fff0"
-    # EAX IS NAMED DELIBERATELY. The register pane is painted with the alternate
-    # character set, so a name abuts the run of fill in front of it; when the pattern
-    # carried a word boundary, every register whose name followed a space was read and
-    # EAX was the one that never matched. A case asserting "some registers came back"
-    # is green over exactly that.
     assert "EAX" in regs
 
 
 def test_set_register_takes_and_its_mark_survives_into_every_later_reply() -> None:
-    """Two guarantees, and the second is the one a caller cannot recover for itself.
-
-    The write is READ BACK, so a name this build does not expose cannot be reported
-    as a successful write. And `altered` is then carried by EVERYTHING afterwards,
-    the INVALID replies included: a measurement taken on a forced state is not a
-    measurement of the program, and three questions later there is no other way to
-    know the machine was pushed.
-    """
+    """Two guarantees, and the second is the one a caller cannot recover for itself."""
     start_ok(session_seconds=60)
     assert cast(dict[str, Any], server.status())["session"]["altered"] is False
     reply = cast(dict[str, Any], server.set_register(name="ax", value=0x1234))
@@ -355,8 +213,6 @@ def test_set_register_takes_and_its_mark_survives_into_every_later_reply() -> No
     assert reply["regs"]["EAX"] == "0x00001234"
     assert reply["readback"] == "0x1234" and reply["verified"] is True
     assert reply["session"]["altered"] is True
-    # ON A LATER REPLY, and on an INVALID one, which is the reply a caller reasons
-    # hardest about and the easiest place to drop it.
     assert cast(dict[str, Any], server.status())["session"]["altered"] is True
     invalid = cast(dict[str, Any], server.step(count=0))
     assert invalid["status"] == "INVALID"
@@ -365,118 +221,48 @@ def test_set_register_takes_and_its_mark_survives_into_every_later_reply() -> No
 
 
 def test_read_memory_answers_about_the_address_that_was_asked_for() -> None:
-    """The answer is IN the answer: the row for the requested address is returned.
-
-    A reply sliced to its last 2000 characters would drop it, because the debugger's
-    screen carries its Output log BELOW its Data view: the cap would keep the
-    emulator's boot chatter, throw away the memory, and the tool would say `ok`
-    (`read_memory(0xF000, 0xE000)` would hand back a first surviving data row of
-    `E040`).
-
-    Nothing but a check that the answer is IN the answer sees that shape, the same one
-    as `memdump`.
-    """
+    """The answer is IN the answer:"""
     start_ok(session_seconds=60)
     seg, off = 0xF000, 0xE000
     reply = cast(dict[str, Any], server.read_memory(ref=f"{seg:04X}:{off:08X}"))
     assert reply["status"] == "ok", reply
     assert reply["seg_off"] == f"{seg:04X}:{off:08X}"
     rows = cast(list[str], reply["rows"])
-    # THE ROW FOR THE ADDRESS THAT WAS ASKED FOR, AND IT IS THE FIRST: `D` starts its
-    # data view at the address it was given, so anything else means the reply is about
-    # somewhere near where the caller asked rather than where they asked.
     assert rows and rows[0].startswith(f"{seg:04X}:{off:08X}"), (
         f"the rows do not begin at {seg:04X}:{off:04X}, which is the address asked "
         f"about. They begin: {rows[:1]}")
-    # NOT A SCREEN, and asserted by what is ABSENT rather than by re-matching the
-    # pattern against its own output. `all(DATA_ROW.fullmatch(r))` cannot fail: every
-    # element IS a `group(0)` of that pattern, so it fullmatches by construction, and
-    # it stays green over rows that have swallowed a pane header.
     joined = " ".join(rows)
     for stray in ("Overview", "Data view", "Output", "I->", "DEBUG:"):
         assert stray not in joined, f"{stray!r} came back inside the rows: {rows}"
-    # AND THE COUNT IS THE SHAPE: `D` paints eight rows of sixteen bytes on this
-    # build, so anything less means rows were dropped and anything more means the
-    # delta carried a second repaint.
     assert len(rows) == 8, f"expected eight data rows, got {len(rows)}: {rows}"
-    # AND IT IS REAL MEMORY, not a buffer of zeros: this build's BIOS names itself
-    # here, which a wrong segment and an unmapped read cannot both produce.
     body = "\n".join(rows)
     assert "DOSBox-X BIOS" in body or "COMPATIBLE BIO" in body, body[:300]
-    # THE ADDRESS IS RANGE-CHECKED, because out of range it would not fit the format
-    # and the debugger would be sent a command nobody wrote.
     bad = cast(dict[str, Any], server.read_memory(ref="10000:00000000"))
     assert bad["status"] == "INVALID" and "segment" in str(bad["message"])
 
 
 def test_debug_hands_back_a_delta_and_says_whether_it_kept_all_of_it() -> None:
-    """The one tool with no server-side guardrail, so its honesty IS its contract.
-
-    A general command cannot be reduced by MEANING, because the server does not know
-    what the caller asked. So the cap stays, and what this asserts is that the reply
-    DECLARES it: a caller must be able to tell a whole delta from a slice, and while
-    the cap was undeclared the docstring above it boasted about handing back the
-    honest thing.
-    """
+    """The one tool with no server-side guardrail, so its honesty IS its contract."""
     start_ok(session_seconds=60)
     reply = cast(dict[str, Any], server.debug(command="BPLIST"))
     assert reply["status"] == "ok", reply
     assert reply["command"] == "BPLIST"
     assert "Breakpoint list" in str(reply["screen_delta"])
-    # THE TWO FIELDS THAT MAKE THE CAP READABLE, ASSERTED AGAINST THE CAP and not
-    # against each other. Comparing `screen_chars` with `len(screen_delta)` and
-    # recomputing `clipped` from the same two holds for EVERY input by construction:
-    # `len(out[-keep:]) == min(len(out), keep)`. So the exact defect the docstring
-    # names -- reporting the SLICE length as `screen_chars` -- would be green, and so
-    # would breaking the cap.
     delta, chars = str(reply["screen_delta"]), cast(int, reply["screen_chars"])
     assert len(delta) <= DEBUG_CAP
     assert reply.get("clipped", False) is (chars > DEBUG_CAP), (
         f"clipped={reply['clipped']} with {chars} characters against a {DEBUG_CAP} cap")
     if not reply.get("clipped", False):
-        # UNCLIPPED, `screen_chars` MUST BE THE WHOLE DELTA. That is the assertion the
-        # slice-length defect fails, and it can only be made on this branch.
         assert chars == len(delta), (
             f"screen_chars {chars} is not the length of an unclipped delta ({len(delta)})")
     resumed = cast(dict[str, Any], server.resume(detail=True))
     assert resumed.get("clipped", False) is (
         cast(int, resumed["screen_chars"]) > SMALL_CAP), resumed["screen_chars"]
 
-    # WHERE THE `clipped: True` BRANCH IS COVERED, AND WHY IT IS NOT COVERED HERE.
-    #
-    # Delegating it to `resume` or `breakpoint_interrupt` (whose cap is smaller than
-    # `debug`'s) does not work: `resume` never sees the BPLIST repaint, it sees its
-    # own, and against a QUIET guest that is under its cap. `debug("BPLIST")` and
-    # `debug("HELP")` -- the longest listing this debugger prints -- are under their
-    # cap too, so BOTH assertions above take the FALSE branch, every run, and neither
-    # can fail for the reason it names.
-    #
-    # AND THE OBVIOUS REPAIR IS A TRAP. Asking `HELP` again HERE, after the `resume`
-    # above, does come back `clipped: True` -- and it is not the command's answer at
-    # all: the machine is RUNNING, the console swallows the command, and what comes
-    # back is the guest's own instrumentation chatter (`"BPLIST"` and `"EIP="` are
-    # absent from the delta; the text is E9 trace lines). An
-    # assertion there would go green on a delta that answers nothing, and it would do
-    # so only because THIS guest is a chatty instrumented application -- which is the
-    # live tier's project dependency wearing a different hat.
-    #
-    # SO IT IS DECLARED RATHER THAN FAKED. On a STOPPED machine on this build no
-    # ordinary command reaches `debug`'s cap, so the true branch is not reachable from
-    # here honestly. It is covered at CONTRACT tier, on a screen built to exceed the
-    # cap, in `test_a_delta_longer_than_the_cap_is_cut_and_says_so`. What is asserted
-    # live is the relation on the branch that IS reachable, above.
-
 
 def test_memdump_lands_the_exact_bytes_and_leaves_nothing_behind(
         tmp_path: Path) -> None:
-    """Through the tool, the layer that runs it against a machine.
-
-    THE ADDRESS IS OBSERVED, not reasoned. The session is stopped at the reset
-    vector, before the BIOS has initialised anything, so the obvious choice is
-    worthless: 256 bytes at `0000:0400` hold ONE distinct value on this build and so
-    do 256 at `F000:0000`, while `F000:E000` holds many. Only the third can tell a real
-    read from a buffer of zeros, which is the whole reason for looking at the content.
-    """
+    """Through the tool, the layer that runs it against a machine."""
     start_ok(session_seconds=90)
     dest = tmp_path / "dump.bin"
     reply = cast(dict[str, Any], server.memdump(
@@ -487,24 +273,13 @@ def test_memdump_lands_the_exact_bytes_and_leaves_nothing_behind(
     body = dest.read_bytes()
     assert len(set(body)) > 1, ("every byte is identical, which is what a wrong "
                                 "segment and a truncated write both look like")
-    # THE LIST OF PLACES IS ASKED OF THE MODULE and never written out here: a
-    # hand-copied pair of names silently stops covering a third location the day one
-    # is added, which is precisely how the original defect was framed.
     left = [p for p in cast(ds.Session, dstate.STATE.session)._memdump_candidates()
             if p.exists()]
     assert not left, f"the dump was left behind at {left}"
 
 
-# --------------------------------------------------------------- letting it run
-
 def test_breakpoint_interrupt_arms_the_interrupt_it_was_given_and_not_another() -> None:
-    """The hex-for-decimal trap, asserted against the debugger's own acknowledgement.
-
-    `number` is the debugger's HEX value, so DOS is 33 and passing 21 arms interrupt
-    0x15 instead, silently. A case that only checked "it was acknowledged" is green
-    over that, because the debugger acknowledges the wrong breakpoint just as
-    cheerfully. What is asserted is the interrupt NAMED BACK.
-    """
+    """The hex-for-decimal trap, asserted against the debugger's own acknowledgement."""
     start_ok(session_seconds=60)
     reply = cast(dict[str, Any], server.breakpoint_interrupt(number=0x21, ah=0x4C, detail=True))
     assert reply["status"] == "ok", reply
@@ -512,18 +287,10 @@ def test_breakpoint_interrupt_arms_the_interrupt_it_was_given_and_not_another() 
 
 
 def test_resume_lets_the_guest_advance() -> None:
-    """The guest genuinely RUNS, evidenced by text that cannot appear while stopped.
-
-    THE INDEPENDENT EVIDENCE IS KEPT, and that is deliberate now that `resume` answers
-    for itself (#382). the absence of `pc` is this tool's own reading, so resting the case
-    on it alone would let the tool mark its own homework -- a reply that never carried
-    `pc` would pass. DOS bringing up COMMAND.COM is something only a running machine
-    produces, and the two must AGREE.
-    """
+    """The guest genuinely RUNS, evidenced by text that cannot appear while stopped."""
     start_ok(session_seconds=90)
     reply = cast(dict[str, Any], server.resume(detail=True))
     assert reply["status"] == "ok", reply
-    # Headless with nothing armed: the guest is read through its log until `close`.
     ran = str(reply["screen_delta"])
     assert any(m in ran for m in ("COMMAND.COM", "EMS page frame", "XMS:")), ran[-400:]
     assert "pc" not in reply, reply
@@ -532,21 +299,7 @@ def test_resume_lets_the_guest_advance() -> None:
 
 
 def test_e9_returns_matching_lines_and_counts_all_of_them(tmp_path: Path) -> None:
-    """THE POSITIVE PATH, which no live case had ever exercised.
-
-    Both live cases this channel had were INVALID branches: no logfile, and a log
-    with no instrumentation. Neither ever saw a line come back. So the tool's actual
-    job -- filtering at the source so what crosses into the conversation is the
-    answer and not the haystack -- rested on fixtures, which is the shape `memdump`
-    shipped broken in.
-
-    AND THE COUNT IS THE POINT, not merely that lines arrived. `lines_total` is how many
-    matched and `lines` is what came back; reporting the slice's length under
-    the first name meant a caller asking "how many times did this fire" got their own
-    limit back and could not tell a genuine 40 from a truncated 5000. It is asserted
-    with a limit DELIBERATELY SMALLER than the number of hits, because with limit at
-    or above the total the two are equal and the break is invisible.
-    """
+    """THE POSITIVE PATH, which no live case had ever exercised."""
     a_running_guest_that_has_logged(tmp_path)
 
     reply = cast(dict[str, Any], server.log(channel="guest", pattern="Bochs port E9h", limit=2))
@@ -558,8 +311,6 @@ def test_e9_returns_matching_lines_and_counts_all_of_them(tmp_path: Path) -> Non
         f"case cannot tell the total from the slice")
     assert reply["truncated"] is True
     assert all(ln.startswith("Bochs port E9h:") for ln in lines), lines
-    # AN EMPTY MATCH IS AN ANSWER AND NOT AN INVALID, which is the distinction this
-    # whole channel exists to keep. The pattern is one the guest cannot emit.
     empty = cast(dict[str, Any], server.log(channel="guest", pattern="zzz-no-guest-emits-this",
                                             limit=5))
     assert empty["status"] == "ok", empty
@@ -567,21 +318,7 @@ def test_e9_returns_matching_lines_and_counts_all_of_them(tmp_path: Path) -> Non
 
 
 def test_captures_and_a_still_come_out_of_a_real_recording(tmp_path: Path) -> None:
-    """Both halves, on one recording, because a still is an EXTRACTION from the video.
-
-    They share a session deliberately: the still cannot exist without the video, so
-    splitting them would mean recording twice to assert one thing each.
-
-    IT WAITS ON THE PROPERTY IT ASSERTS, not on a proxy. Waiting for the file to reach
-    a SIZE and then asserting its FRAME COUNT is two thresholds that can disagree, and
-    they did: a loop broke at 200 KB with 89 frames against an assertion of 100.
-
-    The conf is the caller's with its run-and-exit removed, and the removal is
-    REQUIRED to match: `program` is passed with `-c`, which runs AFTER `[autoexec]`,
-    so a conf ending in `exit` quits before it is reached, and a patch that quietly
-    changed nothing would leave this measuring the original conf under the patched
-    one's name.
-    """
+    """Both halves, on one recording, because a still is an EXTRACTION from the video."""
     caps = tmp_path / "caps"
     caps.mkdir()
     conf = conf_that_does_not_exit(tmp_path)
@@ -605,9 +342,6 @@ def test_captures_and_a_still_come_out_of_a_real_recording(tmp_path: Path) -> No
     biggest = files[-1]
     assert biggest["riff_avi"] is True, files
     assert cast(int, biggest["avi_frames"]) > 100, files
-    # LARGEST LAST is a guarantee and not an accident: a program that boots in text
-    # and then goes graphical leaves a small first file and the real one after it, so
-    # a caller taking "the capture" takes the wrong one if this order flips.
     assert [f["bytes"] for f in files] == sorted(f["bytes"] for f in files), files
 
     shot = tmp_path / "shot.png"
@@ -616,22 +350,6 @@ def test_captures_and_a_still_come_out_of_a_real_recording(tmp_path: Path) -> No
     assert frame["path"] == str(shot)
     assert shot.read_bytes()[:8] == b"\x89PNG\r\n\x1a\n", "that is not a PNG"
     assert frame["bytes"] == shot.stat().st_size > 1000
-    # `frame` IS NOT EVIDENCE: the server echoes back the number it was given, so
-    # asserting it is asserting a value this test supplied.
-    #
-    # WHAT TIES THE STILL TO THE FRAME ASKED FOR is that a DIFFERENT frame gives a
-    # DIFFERENT image.
-    #
-    # `probe.com` writes to port 0xE9 and never touches the screen, so the difference is
-    # not an animation. The control the case cannot run for itself: frames 60 and 61
-    # come back BYTE-IDENTICAL, 60 and 180 differ, and frame 60 reproduces
-    # byte-identically across two SEPARATE sessions. So the frame is stable, `frame=`
-    # really reaches the frame asked for, and the difference between 60 and 180 is
-    # content and not noise.
-    #
-    # Without this assertion, `select='eq(n\,{at})'` hardcoded to frame 0 -- or
-    # defaulting to the wrong capture -- is green every time, and the whole extraction
-    # guarantee has no coverage on either tier.
     other = tmp_path / "shot2.png"
     second = cast(dict[str, Any], server.capture_frame(frame=180, dest=str(other)))
     assert second["status"] == "ok", second
@@ -640,13 +358,9 @@ def test_captures_and_a_still_come_out_of_a_real_recording(tmp_path: Path) -> No
         "any frame number would return this same image")
 
 
-# ------------------------------------------------------------------------ closing
-
 def test_a_close_after_the_emulator_died_carries_the_last_words_of_both_channels(
         tmp_path: Path) -> None:
-    """Why it ended, in the reply that ends it, on the real emulator: killed under the session,
-    its `close` says `died` and carries the console's last words and the logfile's, neither
-    empty; a clean quit names them in `omitted`, and `detail` brings them back."""
+    """Why it ended, in the reply that ends it, on the real emulator:"""
     log = tmp_path / "s.log"
     started = start_ok(session_seconds=60, logfile=str(log))
     os.killpg(os.getpgid(int(started["pid"])), signal.SIGKILL)
@@ -664,72 +378,29 @@ def test_a_close_after_the_emulator_died_carries_the_last_words_of_both_channels
 
 
 def test_close_clears_the_session_so_the_next_tool_says_there_is_none() -> None:
-    """Closing is TWO things, and the second is the one that had no live case.
-
-    The emulator ends, and the server stops pointing at it. Leaving the global set
-    made `status` keep reporting a corpse and made the next `start` leak its terminal
-    rather than reclaim it, and the reply carrying `closed: true` looks identical
-    either way.
-
-    THE REPLY CARRIES THE STATE AS IT WAS, deliberately: a caller needs to know what
-    they just ended, and `_reply` cannot say it afterwards because there is nothing
-    left to ask.
-    """
+    """Closing is TWO things, and the second is the one that had no live case."""
     start_ok(session_seconds=60)
     reply = cast(dict[str, Any], server.close())
     assert reply["status"] == "ok" and reply["closed"] is True
     assert "pid" in reply, "it did not say what it had just closed"
     assert dstate.STATE.session is None, "the server is still pointing at a dead session"
-    # WHAT A CALLER SEES NEXT, which is the half that matters: every tool needing a
-    # machine must now refuse, rather than reading nothing and calling it an answer.
     after = cast(dict[str, Any], server.registers())
     assert after["status"] == "INVALID" and "no live session" in str(after["message"])
     gone = cast(dict[str, Any], server.status())
     assert gone["session"]["alive"] is False and "alive" not in gone, gone
-    # CLOSING TWICE IS NOT A FAILURE: the bound can have got there first, and a
-    # caller told to always close what they opened must be able to.
     again = cast(dict[str, Any], server.close())
     assert again["status"] == "ok" and again["closed"] is False
 
 
 def test_closing_a_running_session_does_not_wait_out_a_signal_it_ignores() -> None:
-    """The cost of ending a session that was actually USED, which is every real one, and
-    the SHAPE of that ending, given that `start` turns the quit warning off.
-
-    THAT IS WHAT THIS CASE WATCHES FOR REGRESSION. With the warning on, a running session
-    would ignore the SIGTERM -- the emulator opens its "Quit anyway?" dialog and sits
-    behind it until the SIGKILL, so a resumed session closes by signal death (a negative
-    exit code) after spending the whole grace. With the warning off it ANSWERS the TERM
-    and exits cleanly: `ended_by: quit`, exit code 0, in a fraction of a second. So the
-    ending to assert is a clean quit and not a kill, and the timing bar is headroom
-    rather than a knife edge.
-
-    THE BAR IS 5 s AND IT STILL BITES on the one regression it can: delete the signalling
-    entirely and `Session.close` returns in ~0.05 s with the emulator running on to its
-    bound -- so `proc.poll()` being non-None is what proves the process was really ended,
-    and `took < 5` that the close did not sit waiting on a dialog nobody answers (which is
-    what a quit warning left back on would reintroduce).
-
-    ONLY A REAL EMULATOR CAN FAIL THIS. A fake session's `close` returns at once, so
-    neither the ending's shape nor how long the process takes to answer a signal is a
-    property any contract test has access to.
-    """
+    """The cost of ending a session that was actually USED, which is every real one, and the."""
     start_ok(session_seconds=90)
     resumed = cast(dict[str, Any], server.resume(detail=True))
-    # IT MUST REALLY HAVE RUN, or this measures the stopped path under the running
-    # path's name and passes for the wrong reason. Since #382 `resume` answers that
-    # itself, and the independent evidence stays beside it: a tool's own reading is not
-    # what a case about somebody else's timing should rest on.
     assert any(m in str(resumed["screen_delta"])
                for m in ("COMMAND.COM", "EMS page frame", "XMS:")), resumed
     assert "pc" not in resumed and resumed["session"]["running"] is True, resumed
     assert cast(dict[str, Any], server.status())["session"]["alive"] is True
 
-    # THE PROCESS IS HELD ONTO BEFORE CLOSING, because `closed: True` is set by the
-    # server whenever a session existed and is not a fact about the emulator. Without
-    # this, the case's BEST pass was `Session.close` doing nothing at all: delete the
-    # signalling entirely and `took` drops to ~0.05 s, `closed` is still True, the case
-    # goes green FASTER than before, and the emulator runs on to its bound.
     proc = cast(ds.Session, dstate.STATE.session).proc
     t0 = time.monotonic()
     reply = cast(dict[str, Any], server.close())
@@ -738,10 +409,6 @@ def test_closing_a_running_session_does_not_wait_out_a_signal_it_ignores() -> No
     assert proc.poll() is not None, (
         "the emulator is STILL RUNNING after close returned. `closed: true` says a "
         "session was there, not that it ended")
-    # A CLEAN QUIT, not a kill: with the quit warning off the running emulator answers
-    # the TERM and exits 0, which is the whole point of forcing it off. `ended_by: killed`
-    # here would mean the warning came back (a conf overriding the server's `-set`) or
-    # the guest wedged.
     assert reply["ended_by"] == "quit", (
         f"close ended a running session by {reply['ended_by']!r}, not a clean quit: the "
         f"emulator ignored the TERM, so the quit warning is back on")
@@ -755,18 +422,9 @@ def test_closing_a_running_session_does_not_wait_out_a_signal_it_ignores() -> No
         f"join ({dprocess.DRAIN_JOIN_SECS}s)")
 
 
-# ----------------------------------------------------------------- symbols_load / find
-
 def test_a_real_mode_session_refuses_rather_than_placing_at_base_zero(
         tmp_path: Path) -> None:
-    """The guard, against the machine that really produces the trap.
-
-    A session at `-break-start` is in real mode, where there are no descriptors to measure
-    a base from; taken as `base = 0`, every symbol would be placed at its raw offset --
-    loading cleanly, reporting `ok`, naming whatever occupies low memory. The refusal is
-    read off the register pane before `SELINFO` is asked, and names `base` as the remedy.
-    Only a real emulator can show that the pane really says real mode here.
-    """
+    """The guard, against the machine that really produces the trap."""
     start_ok(session_seconds=60)
     regs = cast(dict[str, Any], server.registers())["regs"]
     assert regs["CS"] == "0xf000", (
@@ -780,24 +438,9 @@ def test_a_real_mode_session_refuses_rather_than_placing_at_base_zero(
 
 def test_symbols_load_places_a_real_list_through_the_whole_chain(
         tmp_path: Path) -> None:
-    """Descriptor refused, base supplied, file written, `LV`, `SV`, decode, lookup.
-
-    IT IS DELIBERATELY NOT DJGPP-SPECIFIC. This package serves every DOS project, so a
-    live case needing one toolchain's runtime would be testing the caller. The base is
-    passed explicitly -- which the case above establishes is the honest thing to do on a
-    real-mode session -- and 0xF0000 is CS=F000's, so the linear addresses it produces
-    are real addresses on this machine.
-
-    WHAT ONLY A REAL EMULATOR CAN SHOW, and the reason this exists beside the contract
-    cases: that a file written into the emulator's working directory is the one `LV`
-    opens, that the debugger holds what it was given, and that the filename survives a
-    command which truncates it to twelve characters and reports `ok` for whatever it
-    used.
-    """
+    """Descriptor refused, base supplied, file written, `LV`, `SV`, decode, lookup."""
     start_ok(session_seconds=90)
     src = tmp_path / "probe.sym"
-    # `nm` output in `nm`'s shape. The offsets sit inside the ROM segment, so with the
-    # base below they name real addresses.
     src.write_text("00000000 T _rom_start\n"
                    "0000fff0 T _reset_vector\n"
                    "0000abcd t _somewhere_in_rom\n", encoding="utf-8")
@@ -805,7 +448,6 @@ def test_symbols_load_places_a_real_list_through_the_whole_chain(
     got = cast(dict[str, Any], server.symbols_load(path=str(src), base="F0000"))
     assert got["status"] == "ok", got
     assert got["parsed"] == 3 and got["kept"] == 3, got
-    # THE ROUND TRIP IS THE ASSERTION. `ok` is not evidence from this emulator.
     assert got["loaded"] == 3, (
         f"the debugger reported ok and holds {got['loaded']} records. Those disagree, "
         f"so nothing here is a reading of what it loaded")
@@ -814,43 +456,23 @@ def test_symbols_load_places_a_real_list_through_the_whole_chain(
     assert found["status"] == "ok", found
     assert found["symbols"][0]["addr"] == "0x000ffff0", found
 
-    # AND BACK THE OTHER WAY, which is the question you actually have when stopped:
-    # what am I inside? `F000:FFF0` is where this session is parked.
     where = cast(dict[str, Any], server.symbols_find(linear="000FFFF2"))
     assert (where["name"], where["delta"]) == ("_reset_vector", 2), where
 
 
 def test_symbols_load_leaves_no_file_behind_in_the_working_directory(
         tmp_path: Path) -> None:
-    """The two files live in the emulator's WORKING DIRECTORY, which is somebody's
-    project. A debugger cannot be told a path -- its filename argument survives twelve
-    characters -- so the files have to go there, and they have to leave.
-
-    A `SV` to a long absolute path answers
-    `failure` and a `SV` to a long relative one answers `ok` for a DIFFERENT file. The
-    working directory is the only place this can put them, so cleaning up is the whole
-    of the contract.
-    """
+    """The two files live in the emulator's WORKING DIRECTORY, which is somebody's project."""
     start_ok(session_seconds=60)
     cwd = Path(CWD)
-    # THE SOURCE GOES IN `tmp_path`. Only `SYMS.BIN`/`SYMSBK.BIN` have to be in the
-    # emulator's working directory -- the debugger's filename argument survives twelve
-    # characters -- and this file is read host-side. Putting it in the caller's project
-    # was ironic in the one case whose whole point is that nothing is left there.
     src = tmp_path / "probe.sym"
     src.write_text("00001000 T _x\n", encoding="utf-8")
     try:
-        # The base is explicit because this session is in real mode, where reading one
-        # is correctly refused. What this case is about is the FILES, not the base.
         got = cast(dict[str, Any], server.symbols_load(path=str(src),
                                                        base="F0000"))
         assert got["status"] == "ok", got
     finally:
         src.unlink(missing_ok=True)
-    # ASSERT FIRST, THEN CLEAN UP WHATEVER IS THERE. A RED here means a file is sitting
-    # in the caller's repository, and leaving it would poison every later run of this
-    # case with a refusal about a file the NEXT run did not put there, so the following
-    # live case would fail for the wrong reason.
     left = [n for n in (ds.SYM_LOAD_NAME, ds.SYM_SAVE_NAME) if (cwd / n).exists()]
     for name in left:
         (cwd / name).unlink()
@@ -860,11 +482,7 @@ def test_symbols_load_leaves_no_file_behind_in_the_working_directory(
 @pytest.mark.parametrize("which", ["load", "save"])
 def test_a_file_already_sitting_at_either_name_is_refused_not_overwritten(
         which: str, tmp_path: Path) -> None:
-    """The mirror of the case above, and the one that stops "delete on the way in"
-    passing it: a file of that name that this did not put there is the caller's.
-
-    BOTH NAMES, because the docstring says "either" and only one was exercised.
-    """
+    """The mirror of the case above, and the one that stops "delete on the way in" passing it:"""
     start_ok(session_seconds=60)
     cwd = Path(CWD)
     intruder = cwd / (ds.SYM_LOAD_NAME if which == "load" else ds.SYM_SAVE_NAME)
@@ -881,42 +499,15 @@ def test_a_file_already_sitting_at_either_name_is_refused_not_overwritten(
         intruder.unlink(missing_ok=True)
 
 
-# ------------------------------------------------------------------- the debugging
-
-# WHERE A FRESH SESSION IS STOPPED, and what the instruction there does. Every case
-# below is anchored on it because it is the one point in a DOS machine's life that is
-# the same on every host and every conf: the reset vector, whose five bytes are
-# `EA 5B E0 00 F0` -- `jmp F000:E05B`. That makes the target of ONE step a fact about
-# the x86 and not about this build, which is what a live assertion needs.
 RESET_CS, RESET_EIP = "F000", "0000FFF0"
 AFTER_ONE_STEP = "0000E05B"
 
-# ONLY HALF OF THAT IS ARCHITECTURAL. The reset ADDRESS `F000:FFF0` is the x86's and is the same
-# everywhere. The
-# DESTINATION `E05B` is DOSBox-X's own BIOS reset entry -- its `BIOS_DEFAULT_RESET_
-# LOCATION`, following the IBM PC POST convention -- so it is a property of THIS
-# emulator's ROM image. If this constant ever stops matching, the emulator changed;
-# `step` is not the thing to go and audit.
 
-# How many `INT 21` calls `a_return_address_in_ram` will walk past looking for one made
-# from RAM. It is a CEILING on a search, not a count: the early calls of a boot come
-# from the BIOS in ROM, and how many there are before a program makes one is the
-# guest's business. Reaching it is a failure that says so, never a silent pass.
 BIOS_CALLS_TO_SKIP = 40
 
 
 def test_step_advances_by_exactly_one_instruction_and_says_where_it_landed() -> None:
-    """A step is only a step if the machine MOVED, and moved to the right place.
-
-    The reset vector is `jmp F000:E05B`, so one step over it lands at E05B and nowhere
-    else. Asserting the destination rather than "the address changed" is the difference
-    between proving the keystroke executed THAT instruction and proving the emulator
-    did something.
-
-    THE MODE COMES BACK TOO, and it is `Real` here: the same sixteen bits after `CS=`
-    would be a selector three seconds later in the boot, and an address quoted without
-    its mode is not an address.
-    """
+    """A step is only a step if the machine MOVED, and moved to the right place."""
     start_ok(session_seconds=60)
     reply = cast(dict[str, Any], server.step(mode="over", count=1))
     assert reply["status"] == "ok", reply
@@ -927,58 +518,19 @@ def test_step_advances_by_exactly_one_instruction_and_says_where_it_landed() -> 
 
 def test_stepping_a_running_machine_refuses_instead_of_pressing_keys_at_nobody(
         ) -> None:
-    """THE REFUSAL, against a machine that is really running.
-
-    WHAT ONLY THIS TIER SHOWS is narrow. That the tool sends NOTHING is
-    asserted at contract tier, on the keys the double records. What a double cannot
-    produce is the CONSEQUENCE of not refusing: a real running guest swallows a
-    keystroke with no error anywhere, so the reply would have described a machine the
-    tool never touched, and only a real emulator is silent in that particular way.
-    """
+    """THE REFUSAL, against a machine that is really running."""
     start_ok(session_seconds=60)
     server.resume()
     reply = cast(dict[str, Any], server.step(mode="over", count=1))
     assert reply["status"] == "INVALID", reply
-    # THE CODE FIRST, because it is the declared half of the refusal and `message` is the
-    # half written for a human, so a rewording moves the one a caller must not be coupled
-    # to. But `not_stopped` is shared: `where`'s register-pane refusal carries it too, and
-    # a test one tier down exists precisely to stop `step` handing back THAT wording. So
-    # the code alone would let the very regression its neighbour guards pass here. The
-    # phrase below is the one only `step`'s own message has, and it is the same one pinned
-    # in `test_dosbox_x_debug.py`.
     assert reply["code"] == "not_stopped", reply
     assert "a step is a KEYSTROKE" in reply["message"], reply
 
 
 def a_return_address_in_ram() -> tuple[int, int]:
-    """Stop the guest at one of its own `INT 21` calls, and give back where that call
-    RETURNS to. Leaves the machine stopped with no breakpoints armed.
-
-    IT HAS TO BE RAM, and that is the whole reason this helper exists rather than a
-    literal. A code breakpoint in ROM is acknowledged,
-    is listed by `BPLIST`, and NEVER FIRES -- `F000:E05B` and `F000:C9B0` are both
-    provably executed (the reset vector jumps to the first, which jumps to the second),
-    and neither stops the machine. So a case anchored on the reset
-    vector would test `run_to`'s failure path while claiming to test its success one.
-
-    AND IT HAS TO BE A FUTURE ADDRESS, which is the harder half: any address a stopped
-    machine can name is one it has already reached. `INT` is what solves it without
-    disassembling anything -- `CD 21` is two bytes and an interrupt returns to the
-    instruction after it, so EIP+2 is a genuine future address, exactly reachable, and
-    the arithmetic is the x86's rather than this guest's. The alternative was a literal
-    from one project's boot, in a package that serves every DOS project.
-
-    THE ASSUMPTION, said out loud: the first `INT 21` this catches is not `AH=4C`,
-    which terminates and never returns. A boot's first DOS call is not a terminate, and
-    if it ever were, this fails visibly rather than passing.
-    """
+    """Stop the guest at one of its own `INT 21` calls, and give back where that call RETURNS to."""
     reply = cast(dict[str, Any], server.breakpoint_interrupt(number=0x21))
     assert reply["status"] == "ok", reply
-    # THE EARLY `INT 21`s COME FROM THE BIOS ITSELF, in ROM -- the first one
-    # of a boot is called from F000:0000DAC6 -- so this walks forward until one is
-    # called from RAM, which is a program rather than the firmware. The bound is a
-    # bound and not a guess about the count: if a guest never reaches one, this says so
-    # instead of looping.
     seg = eip = 0
     for _ in range(BIOS_CALLS_TO_SKIP):
         server.resume()
@@ -994,11 +546,6 @@ def a_return_address_in_ram() -> tuple[int, int]:
             f"ROM segment (last: {seg:04X}:{eip:08X}). A code breakpoint there is "
             f"acknowledged and never fires, so this case cannot measure what it is "
             f"named for: INVALID, not a pass")
-    # THE TWO BYTES ARE READ, not assumed. `eip + 2` is the return address only for the
-    # two-byte `CD 21` form, and `BPINT 21` fires on ANY entry to the vector -- including
-    # the `pushf` + far-`CALL` form a TSR or DPMI hook chain uses, where the return
-    # address is not eip+2 at all. Checking turns a wrong guess into a visible refusal
-    # instead of a case that mysteriously never arrives.
     rows = cast(dict[str, Any], server.read_memory(ref=f"{seg:04X}:{eip:08X}"))
     assert rows["status"] == "ok", rows
     row = next(r for r in cast(list[str], rows["rows"])
@@ -1008,18 +555,12 @@ def a_return_address_in_ram() -> tuple[int, int]:
         f"the stop at {seg:04X}:{eip:08X} is not a two-byte `CD 21` (it reads "
         f"{opcode}), so eip+2 is not the return address and this case would be "
         f"measuring an address the machine never reaches: INVALID, not a pass")
-    # ONLY A CODE BREAKPOINT MAY STOP IT AFTER THIS. Left armed, the interrupt
-    # breakpoint would stop the machine at the very next DOS call and `run_to` would
-    # report an arrival it had nothing to do with -- a green for the wrong reason,
-    # which is worse than a red.
     server.debug(command="BPDEL *")
     return seg, eip + 2
 
 
 def a_hot_address() -> str:
-    """The timer interrupt's handler, read off the guest's own vector table (INT 8 at
-    `0000:0020`): it runs eighteen times a second whatever the program does, which is what
-    a CONTROL has to be. Read rather than assumed, so the address is this guest's."""
+    """The timer interrupt's handler, read off the guest's own vector table (INT 8 at."""
     vec = cast(dict[str, Any], server.read_memory(ref="0000:0020", length=4))
     assert vec["status"] == "ok", vec
     raw = bytes.fromhex(vec["hex"])
@@ -1028,38 +569,15 @@ def a_hot_address() -> str:
 
 
 def test_run_to_arrives_at_a_real_address_and_takes_its_breakpoint_away() -> None:
-    """The whole chain against a real debugger: arm, read the list back, resume, stop,
-    and REMOVE what was armed.
-
-    The removal is asserted through the debugger's own list rather than through the
-    reply's own field, because `target_disarmed` is this tool's claim and the list
-    is the machine's answer. A `BP` is persistent, so a leftover would silently stop
-    the next `resume` at an address the caller had finished with.
-    """
+    """The whole chain against a real debugger:"""
     start_ok(session_seconds=120)
     seg, off = a_return_address_in_ram()
-    # The control is REQUIRED and its silence is irrelevant when the target ARRIVES: at the
-    # park the BIOS has not filled the vector table yet, so there is no hot address to read,
-    # and a RAM byte the boot never executes serves as the control of an arriving run.
     reply = cast(dict[str, Any], server.run_to(ref=f"{seg:04X}:{off:04X}", seconds=30,
                                                control="0000:0001"))
     assert reply["status"] == "ok", reply
     assert reply["verdict"] == "TARGET", reply
     assert reply["pc"] == f"{seg:04X}:{off:08X}", reply
     assert reply["target_disarmed"] is True, reply
-    # READ THE LAST LISTING, not the screen. A substring search over the delta is what
-    # this case did first and it FAILED against a correct removal: the Output pane
-    # SCROLLS, so `run_to`'s own earlier listings are still on it, and the row was found
-    # in a repaint of the state before the delete. That is the hazard
-    # `parse_breakpoints` exists for, met by the test written to check it.
-    #
-    # AND A SENTINEL, because `not in []` is true. `parse_breakpoints` returns an empty
-    # list when the header is absent -- its own docstring says every caller must check
-    # for the header rather than reading "no rows" as "nothing armed" -- and
-    # `screen_delta` is a POSITIONAL tail, so a listing whose header falls outside the
-    # window certifies a removal off a read that never happened. Arming a second
-    # breakpoint and requiring it to be PRESENT in the same listing makes an empty
-    # answer red.
     server.debug(command="BP F000:E05B")
     left = cast(dict[str, Any], server.debug(command="BPLIST"))
     held = [b["entry"] for b in dcons.parse_breakpoints(str(left["screen_delta"]))]
@@ -1069,17 +587,12 @@ def test_run_to_arrives_at_a_real_address_and_takes_its_breakpoint_away() -> Non
     assert f"BP {seg:04X}:{off:04X}" not in held, held
 
 
-#: How many frames a guest is given, a slice at a time, to be loaded into the MCB chain.
 BOOT_SLICE_FRAMES = 10
 BOOT_SLICES_MAX = 6
 
 
 def test_machine_map_is_honest_before_dos_and_finds_the_guest_after(tmp_path: Path) -> None:
-    """At the park `start` leaves, DOS has not booted, so the chain is ABSENT with the
-    debugger's own sentence rather than an empty list; a few frames later the guest's program
-    is a block of the chain, the descriptor lists are there exactly when the mode is not
-    real, and the console still answers a command after the paged listings (`Q` left the
-    input line empty)."""
+    """At the park `start` leaves, DOS has not booted, so the chain is ABSENT with the."""
     start_ok(session_seconds=180, logfile=str(tmp_path / "guest.log"))
     park = cast(dict[str, Any], server.machine_map(sections=list(machine.SECTION_NAMES)))
     assert park["status"] == "ok" and "mcbs" not in park, park
@@ -1101,10 +614,7 @@ def test_machine_map_is_honest_before_dos_and_finds_the_guest_after(tmp_path: Pa
 
 
 def test_palette_reads_the_dac_before_and_after_the_bios_sets_it(tmp_path: Path) -> None:
-    """At the park no video mode is set and the DAC is all zero; once the guest runs in a text
-    mode the BIOS has loaded its standard set, whose entry 1 is blue (00, 00, 2A). The picture
-    comes back as the file it names, the console still answers a command after the paged
-    `VGA DACPAL`, and an entry past the DAC is refused before anything is typed."""
+    """At the park no video mode is set and the DAC is all zero; once the guest runs in a text."""
     start_ok(session_seconds=180, logfile=str(tmp_path / "guest.log"))
     park = cast(dict[str, Any], server.palette())
     assert park["status"] == "ok" and park["entries"] == 256, park
@@ -1123,9 +633,7 @@ def test_palette_reads_the_dac_before_and_after_the_bios_sets_it(tmp_path: Path)
 
 
 def test_screen_view_reads_the_text_the_guest_was_launched_from(tmp_path: Path) -> None:
-    """Before the BIOS sets a mode there is no screen to read, and the refusal names the mode and
-    the capture route; once the guest runs in text, the line DOS echoed to launch it is on the
-    screen, the cursor is on it, and the same screen folds to the same number twice."""
+    """Before the BIOS sets a mode there is no screen to read, and the refusal names the mode."""
     start_ok(session_seconds=180, logfile=str(tmp_path / "guest.log"))
     park = cast(dict[str, Any], server.screen_view())
     assert park["status"] == "INVALID" and park["code"] == "no_channel", park
@@ -1147,9 +655,7 @@ def test_screen_view_reads_the_text_the_guest_was_launched_from(tmp_path: Path) 
 
 
 def test_screen_wait_runs_until_the_launch_line_is_on_screen(tmp_path: Path) -> None:
-    """From the park, where no mode is set, the wait runs retrace by retrace until DOS has echoed
-    the guest's launch line, and stops there; a string the guest never prints expires with what
-    it examined."""
+    """From the park, where no mode is set, the wait runs retrace by retrace until DOS has."""
     start_ok(session_seconds=180, logfile=str(tmp_path / "guest.log"))
     program = Path(GUEST_PROGRAM).name.upper()
     found = cast(dict[str, Any], server.screen_wait(text=program, seconds=120))
@@ -1164,10 +670,7 @@ def test_screen_wait_runs_until_the_launch_line_is_on_screen(tmp_path: Path) -> 
 
 
 def test_interrupt_vectors_places_the_dos_handler_and_leaves_no_file(tmp_path: Path) -> None:
-    """Once DOS runs, INT 21h points into a block one of the listings holds and the table is
-    every vector; the file the debugger wrote is gone from the working directory, and one
-    planted there is refused and left alone. Without a logfile the table still comes back,
-    in the mode `status` reports, and no vector has a holder."""
+    """Once DOS runs, INT 21h points into a block one of the listings holds and the table is."""
     start_ok(session_seconds=180, logfile=str(tmp_path / "guest.log"))
     assert server.run_for(frames=BOOT_SLICE_FRAMES)["verdict"] == "ELAPSED"
     one = cast(dict[str, Any], server.interrupt_vectors(number=0x21))
@@ -1201,11 +704,7 @@ def status_mode() -> Any:
 
 
 def test_run_for_lands_its_retraces_and_the_pane_clock_says_how_far() -> None:
-    """Frames are the debugger's retraces, and the known answer is the display's own rate: the
-    probe guest's text mode refreshes at 70 Hz, so two frames move the pane's emulated clock
-    by two of its periods. The first call starts at the park, whose first retrace comes
-    part of a period in, which is why the rate is judged on the second. A timed run lands on
-    the first retrace at or past its mark, so it overshoots by under one period."""
+    """Frames are the debugger's retraces, and the known answer is the display's own rate:"""
     start_ok(session_seconds=120)
     first = cast(dict[str, Any], server.run_for(frames=3))
     assert first["status"] == "ok", first
@@ -1228,11 +727,7 @@ def test_run_for_lands_its_retraces_and_the_pane_clock_says_how_far() -> None:
 
 def test_disassemble_decodes_what_memory_holds_and_names_the_probes_calls(
         tmp_path: Path) -> None:
-    """The probe's `start` decoded on the host: every line's bytes are the bytes `read_memory`
-    reads there, the debugger's own pane after `C` starts its lines at the same addresses with
-    the same bytes, and with `probe.sym` loaded the two calls name `emit` and `bump` and the
-    counter's operand names `cnt` one byte in. A length the tool does not take is refused
-    before anything is read."""
+    """The probe's `start` decoded on the host:"""
     start_ok(session_seconds=180, logfile=str(tmp_path / "guest.log"))
     parked = cast(dict[str, Any], server.run_for(frames=1))
     assert parked["status"] == "ok" and parked["pc"].endswith(":00000106"), parked
@@ -1256,12 +751,7 @@ def test_disassemble_decodes_what_memory_holds_and_names_the_probes_calls(
 
 def test_comments_follow_the_symbol_one_per_place_and_round_trip_through_a_file(
         tmp_path: Path) -> None:
-    """On the probe with `probe.sym` at 8140: a comment by `start` lands where `symbols_find`
-    places it, `0824:000B` (the same byte) replaces its text and keeps its ref, `status` counts
-    no comment as a declaration, and the file `comment_write(method="save")` writes is the one
-    `comment_write(method="load")`
-    reads back into a second save byte for byte. Every comment made here is deleted again, so
-    the probe conf's store is left as it was found."""
+    """On the probe with `probe.sym` at 8140:"""
     start_ok(session_seconds=120, logfile=str(tmp_path / "guest.log"))
     assert cast(dict[str, Any], server.run_for(frames=1))["status"] == "ok"
     assert cast(dict[str, Any], server.symbols_load(path=str(_OWN / "probe.sym"),
@@ -1296,9 +786,7 @@ def test_comments_follow_the_symbol_one_per_place_and_round_trip_through_a_file(
 
 def test_call_stack_at_the_probes_settle_loop_lists_the_stop_and_why_it_ended(
         tmp_path: Path) -> None:
-    """The probe keeps no frame pointer, so the walk at its settle `loop` has the stop as its
-    row 0 and whatever its BP leads to, says why it ended and is marked heuristic; the code
-    guest's frames are section M's known answers."""
+    """The probe keeps no frame pointer, so the walk at its settle `loop` has the stop as its."""
     start_ok(session_seconds=120, logfile=str(tmp_path / "guest.log"))
     parked = cast(dict[str, Any], server.run_for(frames=1))
     assert parked["status"] == "ok", parked
@@ -1308,10 +796,7 @@ def test_call_stack_at_the_probes_settle_loop_lists_the_stop_and_why_it_ended(
 
 
 def test_trace_executes_the_count_it_was_asked_and_hands_the_log_over(tmp_path: Path) -> None:
-    """At the probe guest's settle loop `loop` takes one off ECX per instruction it executes,
-    so a trace of n instructions there moves ECX by exactly n: the guest's own arithmetic, not
-    the emulator's account of it. The file holds n + 1 lines, the last the instruction it
-    stopped at; nothing is left in the working directory; `debug` refuses the `LOG` family."""
+    """At the probe guest's settle loop `loop` takes one off ECX per instruction it executes, so."""
     start_ok(session_seconds=180)
     parked = cast(dict[str, Any], server.run_for(frames=2))
     assert parked["status"] == "ok" and parked["pc"].endswith(":00000106"), parked
@@ -1329,34 +814,21 @@ def test_trace_executes_the_count_it_was_asked_and_hands_the_log_over(tmp_path: 
 
 
 def test_run_to_arrives_at_an_aliased_real_mode_spelling_of_the_same_byte() -> None:
-    """MANY SEG:OFF PAIRS NAME ONE BYTE IN REAL MODE, and the symbol layer arms through the
-    load paragraph while the CPU stops with the program's own CS:IP. The breakpoint is armed
-    one paragraph DOWN from the address the machine will stop at (`seg-1:off+16`, the same
-    linear byte): the debugger fires it -- so it matches the linear address -- and the reply
-    must read `TARGET`, with `pc` in the CPU's spelling and the breakpoint disarmed.
-    Seen red with the string compare: "stopped elsewhere", breakpoint left armed."""
+    """MANY SEG:OFF PAIRS NAME ONE BYTE IN REAL MODE, and the symbol layer arms through the load."""
     start_ok(session_seconds=120)
     seg, off = a_return_address_in_ram()
     alias = f"{seg - 1:04X}:{off + 16:04X}"
     reply = cast(dict[str, Any], server.run_to(ref=alias, seconds=30, control="0000:0001"))
     assert reply["status"] == "ok" and reply["target"] == alias, reply
     assert reply["verdict"] == "TARGET", reply
-    assert reply["pc"] == f"{seg:04X}:{off:08X}", reply      # the CPU's own spelling
+    assert reply["pc"] == f"{seg:04X}:{off:08X}", reply
     assert reply["target_disarmed"] is True, reply
 
 
 def test_a_bound_that_expires_reports_a_machine_at_rest_and_its_breakpoint_gone(
         ) -> None:
-    """THE NEGATIVE, on the same tool, in the same session shape.
-
-    Without it "arrived" and "the harness never looked" print the same `ok`. The
-    address is one the boot does not execute, and the wait is short, so the bound is
-    reached rather than waited out -- and the reply must then say what is true: the
-    machine is back at rest, and the breakpoint it armed is gone.
-    """
+    """THE NEGATIVE, on the same tool, in the same session shape."""
     start_ok(session_seconds=90)
-    # Into the program first, so the BIOS has filled the vector table and the timer
-    # handler, read off it, is a control that fires whatever the program does.
     seg, off = a_return_address_in_ram()
     into = cast(dict[str, Any], server.run_to(ref=f"{seg:04X}:{off:04X}", seconds=30,
                                               control="0000:0001"))
@@ -1367,17 +839,12 @@ def test_a_bound_that_expires_reports_a_machine_at_rest_and_its_breakpoint_gone(
     assert reply["status"] == "ok", reply
     assert reply["control_hits"] > 0, "the timer handler fired: the silence is a measurement"
     assert reply["verdict"] == "TIMEOUT", reply
-    # At the bound the machine is at rest ON the control (the
-    # last hit was not released again), so the session is not running and `pc` is the
-    # control's address; the target's breakpoint is removed on this outcome too.
     assert reply["session"]["running"] is False and reply["pc"].split(":")[0] == hot[:4], reply
     assert reply["target_disarmed"] is True, reply
     assert "was removed" in str(reply["note"]), reply
 
 def test_e9_wait_answers_a_line_that_had_already_gone_past(tmp_path: Path) -> None:
-    """THE QUERY HALF, against a real guest. The boot trace fires within a second of the
-    program starting, so by the time this asks it is HISTORY -- and a tool that only
-    waited would sit out its whole bound and then report that it never happened."""
+    """THE QUERY HALF, against a real guest."""
     a_running_guest_that_has_logged(tmp_path)
 
     reply = cast(dict[str, Any], server.log_wait(channel="guest", pattern=GUEST_MARK, seconds=30))
@@ -1390,23 +857,7 @@ def test_e9_wait_answers_a_line_that_had_already_gone_past(tmp_path: Path) -> No
 
 def test_e9_wait_really_waits_for_a_line_that_has_not_happened_yet(
         tmp_path: Path) -> None:
-    """THE WAIT HALF, and it must REQUIRE the wait, not accept either outcome.
-
-    Branching on `already` and asserting something in each arm would prove nothing: both
-    assertions are entailed by the field they branch on (`already: False` is produced at
-    one site that always sets a `waited_s` past one poll; `already: True` at one site
-    that sets the literal 0.0). It could not fail on the property it is named for, and
-    if the guest happened to have logged the line already it would pass through the other
-    arm having examined NOTHING, with nobody told.
-
-    IT ESTABLISHES ITS OWN PRECONDITION instead: `e9` must report the pattern is not
-    there YET. If it already is, this window cannot demonstrate a wait, and that is
-    INVALID rather than a pass. There is a small race between that check and the call --
-    if the line lands in between, this goes RED, which is the acceptable direction.
-    """
-    # A LATE milestone of this guest's own boot, asked for while the guest is still
-    # early in it, so the wait here is for the FIRST line only. `e9` is the control: it
-    # says whether there is anything to wait for.
+    """THE WAIT HALF, and it must REQUIRE the wait, not accept either outcome."""
     a_running_guest_that_has_logged(tmp_path, seconds=180, lines=1)
     late = GUEST_LATE
     before = cast(dict[str, Any], server.log(channel="guest", pattern=late, limit=1))
@@ -1424,26 +875,18 @@ def test_e9_wait_really_waits_for_a_line_that_has_not_happened_yet(
 
 def test_e9_wait_says_a_bound_expired_rather_than_answering_nothing(
         tmp_path: Path) -> None:
-    """A TIMEOUT verdict, not an empty answer, and the note names what it examined -- against a
-    real channel that really has instrumentation in it, which is the only way to show
-    the refusal is about the BOUND and not about the channel."""
+    """A TIMEOUT verdict, not an empty answer, and the note names what it examined -- against a."""
     a_running_guest_that_has_logged(tmp_path)
 
     reply = cast(dict[str, Any], server.log_wait(
         channel="guest", pattern="a_string_this_guest_will_never_log", seconds=3))
     assert reply["status"] == "ok" and reply["verdict"] == "TIMEOUT", reply
-    # THE TWO COUNTS ARE DIFFERENT FACTS and the answer must give both: what arrived
-    # DURING the window, and what the log holds altogether. Reporting the second under
-    # the first's name read, to anyone diagnosing a silent guest, as a live channel.
     assert "arrived DURING the wait" in reply["note"], reply
     assert "in the log altogether" in reply["note"], reply
 
 
 def test_write_lands_in_ram_and_is_read_back_and_a_write_into_rom_is_refused() -> None:
-    """The readback on the real debugger: bytes written into RAM come back as sent,
-    `verified: true`, and every later reply carries `altered` from the first write on. A
-    write into the BIOS ROM is refused before anything is sent, and the emulator is still
-    there afterwards: `SM` into that range ends the emulator, exit code 1."""
+    """The readback on the real debugger:"""
     start_ok(session_seconds=60)
     ram = cast(dict[str, Any], server.write(ref="0040:0100", data_hex="1234abcd"))
     assert ram["status"] == "ok" and ram["verified"] is True, ram
@@ -1456,7 +899,6 @@ def test_write_lands_in_ram_and_is_read_back_and_a_write_into_rom_is_refused() -
     assert cast(dict[str, Any], server.status())["session"]["alive"] is True
 
 
-#: A byte of the BIOS data area's inter-application block (0040:00F0), free for a test to own.
 _MARK_AT = "0000:000004F0"
 
 
@@ -1467,11 +909,7 @@ def _byte_at(ref: str) -> str:
 
 
 def test_states_round_trip_headless_through_the_debugger_commands(tmp_path: Path) -> None:
-    """A state saved and loaded with no window, by the debugger's own SAVESTATE and LOADSTATE
-    (a build that carries them: `DOSBOX_X_BINARY` names one; any other is BLOCKED here, by
-    its own refusal). The known answer is a byte: written AA, saved, written 55 (the control,
-    read back as 55), loaded, read back AA. Parked, the machine stays parked; running, it is
-    stopped for the command and released again (`paused`), and `stop` still reaches it."""
+    """A state saved and loaded with no window, by the debugger's own SAVESTATE and LOADSTATE (a."""
     state_dir = tmp_path / "states"
     started = cast(dict[str, Any], server.start(
         conf=str(conf_that_does_not_exit(tmp_path)), cwd=CWD, session_seconds=120,
@@ -1509,13 +947,8 @@ def test_states_round_trip_headless_through_the_debugger_commands(tmp_path: Path
     assert back["status"] == "ok" and back["interrupted"] is True, back
 
 
-# ------------------------------------------------------------- searching memory
-
 def test_find_locates_the_bytes_a_dump_of_the_same_range_starts_with(tmp_path: Path) -> None:
-    """Through the tool, against the range `memdump`'s case uses, which holds many distinct
-    values: the first four bytes of a dump of it are searched for, so the expected hit is
-    KNOWN from the machine and not reasoned, and a pattern LONGER than the range is the
-    refusal that proves the tool looked at its arguments before the debugger."""
+    """Through the tool, against the range `memdump`'s case uses, which holds many distinct."""
     start_ok(session_seconds=90)
     dest = tmp_path / "range.bin"
     dump = cast(dict[str, Any], server.memdump(ref="F000:0000E000", length=256, dest=str(dest)))
@@ -1533,14 +966,7 @@ def test_find_locates_the_bytes_a_dump_of_the_same_range_starts_with(tmp_path: P
 
 
 def test_scan_narrows_to_every_zero_cell_and_closes_once() -> None:
-    """The debugger's own scanner, driven end to end over the range that holds ONE value at
-    the reset vector (`0000:0400`, the BIOS data area,
-    all zero), so every count below is known from the machine: 256 candidates, 256
-    survivors of `= 0` listed whole across the pages the tool turns, none of `!= 0`
-    (which closes the scan), a second instance refused while one is open, and a clear
-    that says nothing was open. `F000:E000` is NOT used: at the reset vector the BIOS
-    segment is aliased high and `MEMFIND` refuses its range, which `find`
-    does not mind because `MEMDUMPBIN` reads it."""
+    """The debugger's own scanner, driven end to end over the range that holds ONE value at the."""
     start_ok(session_seconds=90)
     opened = cast(dict[str, Any], server.scan("start", ref="0000:00000400", length=256))
     assert opened["status"] == "ok", opened
@@ -1556,15 +982,10 @@ def test_scan_narrows_to_every_zero_cell_and_closes_once() -> None:
     assert kept["hits"][-1]["seg_off"] == "0000:000004FF"
     wide = cast(dict[str, Any], server.scan("filter", operator="=", value=0x1FF))
     assert wide["status"] == "INVALID" and "is wider than the open scan's" in wide["message"], wide
-    # THE DEBUGGER'S OWN COUNT after the refused filter: a filter that does not close prints
-    # it, so this is the check that a refusal did not move it, which the server's arithmetic
-    # on the close could not show.
     again = cast(dict[str, Any], server.scan("filter", operator="=", value=0))
     assert again["iterations"] == kept["iterations"] + 1, (kept["iterations"], again)
     gone = cast(dict[str, Any], server.scan("filter", operator="!", value=0))
     assert gone["status"] == "ok" and gone["closed"] is True and gone["hits_total"] == 0, gone
-    # THE CLOSING LINE CARRIES NO COUNT, so the server's own: one past the last it read (the
-    # refused filter above reached no count).
     assert gone["iterations"] == again["iterations"] + 1, (again["iterations"], gone)
     nothing = cast(dict[str, Any], server.scan("clear"))
     assert nothing["status"] == "ok" and nothing["cleared"] is False, nothing
@@ -1577,10 +998,7 @@ def test_scan_narrows_to_every_zero_cell_and_closes_once() -> None:
 
 
 def test_a_filter_with_no_value_compares_with_the_scan_as_it_opened() -> None:
-    """`!` with no value is "changed since the scan OPENED", not since the previous filter:
-    of two cells, the one changed once and then left alone keeps passing `!`, and written
-    back to its opening value it stops, which closes the scan. The cells are free RAM at the
-    reset vector, written here, so every value is known."""
+    """`!` with no value is "changed since the scan OPENED", not since the previous filter:"""
     start_ok(session_seconds=90)
     assert server.write(ref="0050:0200", data_hex="1111111122222222")["verified"] is True
     opened = cast(dict[str, Any], server.scan("start", ref="0050:0200", length=8, cell_bytes=4))

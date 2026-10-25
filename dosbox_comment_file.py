@@ -1,16 +1,6 @@
-"""THE COMMENT FILE: one line per comment, the record a project versions beside its symbol file.
+"""This server's half of the version 1 comment file format (`scry_core.comment_file`).
 
-    # comments v1: ref<TAB>cpu<TAB>created_at<TAB>text
-    0814:010B<TAB><TAB>2026-10-03T06:00:00+00:00<TAB>the counter's first store
-    start<TAB><TAB>2026-10-03T06:00:12+00:00<TAB>entry point: sets up the counter
-
-The format is `scry_core.comment_file`'s, which every reader of version 1 shares; this module is
-this server's half of it: a ref as a file spells it here (a symbol or a raw `SEG:OFF`) and the cpu
-column. The column belongs to the format, which also serves machines with more than one
-processor; this server drives one, writes it empty, and refuses a file that fills it, since a row
-for a processor it does not have could only be placed somewhere it was not meant. What a ref
-names, where it lands and whether two spellings alias one place are the server's, which holds the
-table and the machine.
+The cpu column is always empty here: this server drives one processor and refuses a filled one.
 """
 
 from __future__ import annotations
@@ -30,18 +20,11 @@ from scry_core.comment_file import (
 __all__ = ["HEADER", "TEXT_MAX_BYTES", "CommentFileError", "Row", "cpu_fault", "parse",
            "ref_fault", "render", "stamp_fault", "text_fault"]
 
-#: A raw address: hex digits either side of the one colon, each half with or without `0x`, the
-#: spelling `registers` reads a segment back in.
 _SEG_OFF = re.compile(r"(?:0[xX])?([0-9A-Fa-f]+):(?:0[xX])?([0-9A-Fa-f]+)")
 
 
 def ref_fault(ref: str) -> str | None:
-    """What a ref breaks, or None. A ref is a symbol or a raw `SEG:OFF`, and the colon is what
-    tells them apart without the table: with one, hex digits either side and the segment within
-    sixteen bits; without one, a name. Either way no whitespace or unprintable character, no
-    leading `#` (a reader skips that line as a comment), and none of the forms a place that
-    moves at run time is written in: a pointer (`[` `]`, `->`), an offset added (`+`), or a
-    bare `0x` number, since an address here always carries its segment."""
+    """What a ref breaks, or None: a symbol or a raw `SEG:OFF`, never a run-time place."""
     if ref == "":
         return "is empty"
     if ref[0] == "#":
@@ -70,7 +53,7 @@ def ref_fault(ref: str) -> str | None:
 
 
 def cpu_fault(cpu: str) -> str | None:
-    """What the cpu column breaks, or None: this server writes it empty and reads it empty."""
+    """What the cpu column breaks, or None."""
     return None if cpu == "" else (f"column is {cpu!r}; this server drives one processor and "
                                    "writes the column empty")
 
@@ -78,5 +61,4 @@ def cpu_fault(cpu: str) -> str | None:
 POLICY = core.Policy(ref_fault=ref_fault, cpu_fault=cpu_fault)
 
 
-#: A comment file's rows read, and written, held to this server's columns.
 parse, render = POLICY.parse, POLICY.render

@@ -1,16 +1,7 @@
-"""Section O of the live matrix: whether DOSBox-X came to the front, or any display's Space
-moved, during the run, sampled from outside it (`scry_core.focus_watch`) for its whole length.
+"""Section O of the live matrix: DOSBox-X never came to the front and no Space moved during the run.
 
-It is two sections under one letter: the CONTROL opens the run and the VERDICT closes it, so the
-watch the control starts samples every section between. The control, in the same harness the
-verdict is taken in: one shared start forced in front, which the watch must see in front, and
-one behind, which it must not, and the owner's Space moved and put back on purpose, which it
-must see move; a watch that does not hold all three clears nothing, so without
-the control the verdict is BLOCKED, as it is when too little ran or the watch could not sample:
-never green, and never counted as the server's FAIL. Judged by process name, so another
-DOSBox-X in front would count. Nothing is excluded: no tool clicks a menu any more, and section
-G's windows open behind. The control's front start takes the owner's focus for a few seconds
-and its Space control moves the owner's Space and back: a run with this section is announced.
+The control opens the run and the verdict closes it; without a control that held, the verdict is
+BLOCKED, never green. The control briefly takes the owner's focus and Space, so announce the run.
 """
 from __future__ import annotations
 
@@ -46,13 +37,12 @@ O_VERDICT = cells(
      "REFERENCE.md, Input and the screen: nothing about the host is touched"),
 )
 
-#: The watch the control started, and its start of the judged window.
 WATCH: list[focus_watch.FocusWatch] = []
 SINCE: list[int] = []
 
 
 def _hold(background: bool) -> tuple[int, int]:
-    """One shared probe start, launched as asked, held, closed: its window, in ms."""
+    """Start a shared probe, hold it, close it; return its window in ms."""
     began = focus_watch.now_ms()
     boot(conf=conf_without_launch(PROBE_CONF, "PROBE.COM"), cwd=GUEST, shared=True,
          program="PROBE.COM", background=background)

@@ -1,17 +1,13 @@
-"""Code at an address, read off the machine and decoded on the host: `disassemble` and the
-operands it can name, and the instruction every stop reply carries.
+"""Code at an address, decoded on the host: `disassemble` and the instruction every stop reply
+carries.
 
-The bytes come by `memdump`'s route (`dosbox_dump.dump_range`) into a scratch directory of the
-call's own, so every refusal and every window that route has applies unchanged, and `length`
-plus the longest instruction is read so the last line completes. The width they are decoded in
-is the D bit of the segment the address is in, as the code pane's own decoder takes it:
-real mode is 16-bit; in protected mode the register pane's `Pr32`/`Pr16` is CS's D bit, `SELINFO`
-prints it for a selector another segment register holds, and the descriptor listings carry it
-for one no register holds. Taking it from the stop's mode alone would decode a 16-bit DPMI
-stub as 32-bit code while the machine sits in the client.
+The bytes come by `memdump`'s route (`dosbox_dump.dump_range`), so its refusals and windows apply
+unchanged; `length` plus the longest instruction is read so the last line completes. The decode
+width is the D bit of the segment the address is in, never the stop's mode alone, which would
+decode a 16-bit DPMI stub as 32-bit while the machine sits in the client.
 
 A 16-bit segment ends at offset 0xFFFF and the CPU wraps IP inside it, so a listing that would
-run past the end is refused rather than read on into memory the code never reaches.
+run past the end is refused.
 """
 
 from __future__ import annotations
@@ -33,27 +29,24 @@ import dosbox_state as st
 import dosbox_symbols as sym
 from dosbox_state import STATE
 
-#: The most bytes one `disassemble` lists: a routine at a time, a listing a reply can carry whole.
+#: The most bytes one `disassemble` lists, so a reply carries the listing whole.
 LENGTH_MAX = 1024
-#: Where a 16-bit segment ends: an offset past it wraps to the segment's start.
+#: Where a 16-bit segment ends; an offset past it wraps.
 SEGMENT_END_16 = 0x10000
-#: A selector whose index is 0: the null selector, which addresses nothing.
+#: The null selector's highest value (index 0).
 NULL_SELECTOR_MAX = 3
 
 
 def check_length(length: object) -> None:
-    """`length`, a whole number of bytes, 1 to `LENGTH_MAX`."""
+    """`length` is a whole number of bytes, 1 to `LENGTH_MAX`."""
     if isinstance(length, bool) or not isinstance(length, int) \
             or not 1 <= length <= LENGTH_MAX:
         raise ds.Invalid("bad_argument",
             f"length={length!r} is not a whole number of bytes from 1 to {LENGTH_MAX}")
 
 
-# ------------------------------------------------------------------------ the code pane
-
 class PaneLine(NamedTuple):
-    """One line of the debugger's code pane: where, the bytes when it printed all of them
-    (None when it cut them with `..` or could not read one, `pf` or `na`), and its text."""
+    """One code pane line; `data` is None when the pane cut the bytes (`..`) or printed pf/na."""
     segment: str
     offset: int
     data: bytes | None
@@ -67,10 +60,9 @@ _PANE_LINE = re.compile(
 
 
 def pane_lines(screen: str) -> list[PaneLine]:
-    """The code pane's lines, off the last pane the screen painted: a delta carries every
-    repaint of the command, and an earlier one may be a partial update whose cells, with the
-    cursor moves gone, run several lines together. The pane's first line follows its header's
-    rule with no line break."""
+    """The code pane's lines, off the last pane painted: an earlier repaint may be a partial
+    update whose cells run several lines together. The first line follows the header rule with
+    no line break."""
     blocks = list(_PANE_HEADER.finditer(screen))
     if not blocks:
         return []
@@ -88,12 +80,9 @@ def pane_lines(screen: str) -> list[PaneLine]:
     return out
 
 
-# ------------------------------------------------------------------- the stop's segments
-
 class Segments:
-    """The segments of the machine at a stop, each fact asked of it once: a segment's width and
-    base, from the register pane, `SELINFO`, or the descriptor listings, whichever answers
-    first without a round trip it has not already paid."""
+    """The segments at a stop: width and base from the register pane, `SELINFO` or the
+    descriptor listings, whichever answers without a new round trip."""
 
     def __init__(self, session: ds.Session, where: dict[str, str],
                  registers: dict[str, str]) -> None:
@@ -115,7 +104,7 @@ class Segments:
         return self._selinfo[reg]
 
     def found(self) -> dict[str, Any]:
-        """The GDT and LDT listings, read once, off the session's logfile."""
+        """The GDT and LDT listings, read once off the logfile."""
         if self._reading is None:
             if self.session.launch.logfile is None:
                 raise ds.Invalid("no_channel",
@@ -176,22 +165,19 @@ class Segments:
 
 
 def segments_at_stop(session: ds.Session) -> Segments:
-    """The stop the machine is in, off one survey; refused before anything is typed when the
-    console is not listening."""
+    """The stop's segments off one survey; refused before typing when the console is not
+    listening."""
     ds.console_listening(session, "a read of its code")
     where, registers = session.where_and_registers()
     return Segments(session, where, registers)
 
 
-# ------------------------------------------------------------------------ disassemble
-
 def read_code(segs: Segments, seg: int, off: int, length: int, bits: int) -> bytes:
-    """`length` bytes from `seg:off` and up to `disasm.INSN_MAX` more, cut at the segment's
-    end; a `length` that runs past the end of a 16-bit segment is refused. In protected mode a
-    range that runs past offset FFFF is judged against the selector's limit, off the listings;
-    the extra bytes alone never make a range cross: the dump stops at FFFF and the few bytes
-    past it that complete the last instruction come off one `D`, which needs no listing, and
-    never past the selector's limit."""
+    """`length` bytes from `seg:off` plus up to `disasm.INSN_MAX` more, cut at the segment's end;
+    a `length` past the end of a 16-bit segment is refused. In protected mode a range past FFFF
+    is judged against the selector's limit off the listings; the extra bytes alone never make
+    it cross: the dump stops at FFFF and the few bytes completing the last instruction come off
+    one `D`, never past the limit."""
     want = length + disasm.INSN_MAX
     found: dict[str, Any] | None = None
     past_end = 0
@@ -224,9 +210,8 @@ def read_code(segs: Segments, seg: int, off: int, length: int, bits: int) -> byt
 
 
 def resolve(segs: Segments, seg: int, insns: list[disasm.Insn]) -> list[dict[str, Any]]:
-    """Every direct target and direct memory operand of the listing, placed and named: a
-    near target in the line's own segment, a far one in the segment it names, a memory
-    operand under the segment register it is read through, valued at this stop."""
+    """Every direct target and memory operand of the listing, placed and named; a memory
+    operand is read through its segment register's value at this stop."""
     span = placement.symbol_span()
     rows: list[dict[str, Any]] = []
     for i, insn in enumerate(insns):
@@ -249,17 +234,15 @@ def resolve(segs: Segments, seg: int, insns: list[disasm.Insn]) -> list[dict[str
     return rows
 
 
-#: Why a place has no symbol: no table is loaded, or it lies outside the table's span, where
-#: the nearest symbol below names memory the table does not describe.
+#: Why a place has no symbol; outside the span the nearest symbol below would be misleading.
 NO_TABLE_WHY = "no symbol table is loaded"
 OUTSIDE_SPAN_WHY = "outside the loaded table's span"
 
 
 def _named(row: dict[str, Any], linear: int | None, span: tuple[int, int] | None,
            unplaced: str = "its segment's base could not be read") -> dict[str, Any]:
-    """A row's `addr` (its linear address), `symbol` and `delta`, each unavailable with its
-    reason where it does not apply: no linear address when `unplaced` says why, no symbol with
-    no table loaded or outside its span."""
+    """A row's `addr`, `symbol` and `delta`, each unavailable with its reason: `unplaced` when
+    there is no linear address, else no table or outside its span."""
     if linear is None:
         gone = unavailable(unplaced)
         row.update(addr=gone, symbol=gone, delta=gone)
@@ -281,8 +264,7 @@ def _placed(segs: Segments, span: tuple[int, int] | None, row: dict[str, Any], s
 
 
 def disassemble(session: ds.Session, ref: str, length: int) -> dict[str, Any]:
-    """`length` bytes from `ref` decoded one instruction a line, the reply `disassemble`
-    hands back."""
+    """The `disassemble` reply: `length` bytes from `ref`, one instruction a line."""
     segs = segments_at_stop(session)
     seg, off = placement.read_target(ref, "CS", session, machine=(segs.mode, segs.registers))
     bits, bits_from = segs.bits(seg)
@@ -296,21 +278,15 @@ def disassemble(session: ds.Session, ref: str, length: int) -> dict[str, Any]:
     return reply
 
 
-# ------------------------------------------------------------------- the stop's instruction
-
 def stop_instruction(session: ds.Session, where: dict[str, str], registers: dict[str, str],
                      screen: str) -> dict[str, Any]:
-    """The instruction a stop is on, for its reply: `instruction` with its bytes, text, flow and
-    nearest symbol, or `instruction` unavailable with its `why`. `screen` is that stop's own
-    survey.
+    """The stop's `instruction` for its reply, or unavailable with its `why`; `screen` is the
+    stop's own survey.
 
-    The bytes come off the survey the stop already read when they can: the debugger moves its
-    code pane to CS:EIP whenever a stop lands outside it, so the pane's line there is on the
-    stop's screen, and it is taken when the pane printed all its bytes and they decode as
-    exactly one instruction. Otherwise (a `C` left the pane holding the stop's address
-    elsewhere, a repaint was cut, or the pane decoded the line in a width that is not the
-    segment's, as it does in real mode for a segment number a descriptor answers) one `D` reads
-    them off the data view, never past the end of a 16-bit segment."""
+    The bytes come off the pane's line at CS:EIP when it printed all of them and they decode as
+    exactly one instruction. Otherwise (a `C` moved the pane, a repaint was cut, or the pane
+    decoded in a width that is not the segment's) one `D` reads them, never past the end of a
+    16-bit segment."""
     segs = Segments(session, where, registers)
     cs, eip = int(where["cs"], 16), int(where["eip"], 16)
     bits = segs.bits(cs)[0]
@@ -342,9 +318,9 @@ def _no_instruction(at: str, data: bytes) -> dict[str, Any]:
 
 
 def _stop_symbol(segs: Segments, cs: int, eip: int) -> dict[str, Any]:
-    """`symbol` and `delta` of the stop's address, unavailable with no table or outside its
-    span; in protected mode CS's base costs one `SELINFO CS`, asked only with a table loaded.
-    A table that cannot place its symbols names nothing here: the stop is still a stop."""
+    """`symbol` and `delta` of the stop's address; in protected mode CS's base costs one
+    `SELINFO CS`, asked only with a table loaded. A table that cannot place its symbols names
+    nothing: the stop still stands."""
     try:
         span = placement.symbol_span()
     except sym.BadSymbolText:
@@ -362,22 +338,18 @@ def _stop_symbol(segs: Segments, cs: int, eip: int) -> dict[str, Any]:
     return {"symbol": named["symbol"], "delta": named["delta"]}
 
 
-# ------------------------------------------------------------------------ the call stack
-
-#: How many rows a walk lists before it stops and says `truncated`.
+#: Rows a walk lists before it says `truncated`.
 CALL_STACK_MAX = 16
-#: The longest and the shortest call instruction a return address is checked against.
+#: Longest and shortest call instruction checked against a return address.
 CALL_LONGEST, CALL_SHORTEST = 7, 2
-#: What one `D` is asked for: the view paints eight rows from the address's own row, so from an
-#: address inside a row it promises one row less.
+#: What one `D` is asked for: the view paints eight rows from the address's own row.
 VIEW_READ = dcons.DATA_VIEW_BYTES - 16
 
 
 class _Views:
-    """Memory off the data view, each `D` read once and reused while it covers what is asked;
-    a read never runs past `end`, the end of a 16-bit segment, and hands back only the bytes
-    before it: the view runs on past FFFF painting the segment's first bytes again, which the
-    CPU reaches only by wrapping an offset, so the walk wraps its offsets itself."""
+    """Memory off the data view, each `D` reused while it covers a read; a read stops at `end`
+    because the view runs on past FFFF repainting the segment's first bytes, so the walk wraps
+    its offsets itself."""
 
     def __init__(self, session: ds.Session, mode: str, end: int) -> None:
         self.session, self.mode, self.end = session, mode, end
@@ -395,9 +367,7 @@ class _Views:
 
 def call_ending_at(views: _Views, seg: int, ret: int, bits: int,
                    far: bool) -> disasm.Insn | None:
-    """The call that ends exactly at `seg:ret`, near or far as asked: the longest of two to
-    seven bytes before it, and none before the segment's start, that decodes as one call of
-    that kind."""
+    """The longest call, near or far as asked, that ends exactly at `seg:ret`."""
     reach = min(CALL_LONGEST, ret)
     if reach < CALL_SHORTEST:
         return None
@@ -411,7 +381,7 @@ def call_ending_at(views: _Views, seg: int, ret: int, bits: int,
 
 
 class _Walk:
-    """One walk of the frame chain, at the stop the machine is in."""
+    """One walk of the frame chain at the current stop."""
 
     def __init__(self, session: ds.Session) -> None:
         self.segs = segments_at_stop(session)
@@ -436,9 +406,8 @@ class _Walk:
 
     def row(self, seg: int, off: int, via: str, call: disasm.Insn | None,
             frame: int | None) -> dict[str, Any]:
-        """A row at `seg:off`; for a return address, named by the routine its call is in (a
-        call that ends a routine returns to the next one's first byte), `delta` the return's
-        distance from that routine."""
+        """A row at `seg:off`; a return address is named by the routine its call is in (a call
+        ending a routine returns to the next one's first byte), `delta` from that routine."""
         out: dict[str, Any] = {
             "seg_off": st.seg_off(seg, off), "via": via,
             "call": unavailable("the stop itself: no call leads to it") if call is None
@@ -462,9 +431,8 @@ class _Walk:
         return int.from_bytes(self.views.read(self.ss, off, self.slot), "little")
 
     def returned(self, at: int, frame: int | None, via: str) -> dict[str, Any] | None:
-        """The row for the return address at SS:`at`, read as near first and as far second,
-        each kept only when a call of that kind ends there; no far reading when its segment's
-        slot would lie past the end of the stack segment."""
+        """The row for the return address at SS:`at`, read near then far, each kept only when a
+        call of that kind ends there."""
         ret = self.word(at)
         near = call_ending_at(self.views, self.code_seg, ret, self.bits, far=False)
         if near is not None:
@@ -479,11 +447,8 @@ class _Walk:
         return self.row(far_seg, ret, via, far, frame)
 
     def entry(self, stop: dict[str, Any]) -> int | None:
-        """Where the caller's return address is when the stop is outside its routine's frame:
-        at SP on `push bp` or `enter` at the routine's own address, one slot up on the
-        `mov bp, sp` right after that `push bp` (wrapped as the stack pointer wraps), and at SP
-        on the `ret` that leaves it, the frame already undone. One read covers the byte before
-        the stop and the instruction."""
+        """Where the caller's return address is when the stop is outside its routine's frame: at
+        SP on `push bp`/`enter` or on `ret`, one slot up on the `mov bp, sp` after `push bp`."""
         start = max(self.eip - 1, 0)
         code_bytes = self.views.read(self.cs, start, disasm.INSN_MAX + 1)
         first = disasm.decode(code_bytes[self.eip - start:], self.eip, self.bits)[:1]
@@ -504,7 +469,7 @@ class _Walk:
             and not self.span[0] <= int(row["addr"], 16) <= self.span[1]
 
     def chain(self, calls: list[dict[str, Any]]) -> str:
-        """The rows of the frame chain from BP, appended to `calls`; why the walk ended."""
+        """Append the frame chain from BP to `calls`; returns why the walk ended."""
         frame = self.bp
         while len(calls) < CALL_STACK_MAX:
             if frame == 0:
@@ -528,9 +493,8 @@ class _Walk:
 
 
 def call_stack(session: ds.Session) -> dict[str, Any]:
-    """The chain of callers of the routine the stop is in, the reply `call_stack` hands back:
-    guessed from the frame pointers, a row kept only where its return address follows a real
-    call instruction."""
+    """The `call_stack` reply: callers guessed from frame pointers, a row kept only where its
+    return address follows a real call."""
     walk = _Walk(session)
     calls = [walk.row(walk.cs, walk.eip, "stop", None, None)]
     try:

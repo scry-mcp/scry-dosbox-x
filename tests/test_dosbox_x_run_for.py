@@ -1,9 +1,4 @@
-"""`run_for` by display retraces, against a debugger double that replays what a real one printed.
-
-Every `VRT` delta and every survey the double hands back is a file under `fixtures/vrt/`,
-captured from live sessions (its PROVENANCE says which): the position, the pane's `pfi` clock and
-the prompt a stop announces itself with are the debugger's, not an opinion of this file.
-"""
+"""`run_for` by display retraces, against a double replaying captures from `fixtures/vrt/`."""
 from __future__ import annotations
 
 import time
@@ -33,10 +28,8 @@ def cap(name: str) -> str:
 
 
 class Retraces(Debugger):
-    """The debugger's side of a `VRT`: each one typed makes its captured delta what the
-    terminal offers next, `lag` empty polls later (a retrace the host is slow to reach), and a
-    delta takes `delay_s` of wall clock to arrive; the surveys come off `panes` like every
-    nudge. `running` is a machine the console does not answer."""
+    """The debugger's side of a `VRT`: a typed one queues its captured delta after `lag` empty
+    polls, taking `delay_s` to arrive. `running` is a machine the console does not answer."""
 
     def __init__(self, panes: list[str], vrts: list[str], *, lag: int = 0,
                  delay_s: float = 0.0, running: bool = False, survey_s: float = 0.0,
@@ -56,7 +49,7 @@ class Retraces(Debugger):
 
     def _read(self, seconds: float = 0.0) -> str:
         chunk = self.reads.pop(0) if self.reads else ""
-        time.sleep(self.delay_s if chunk else seconds)   # an empty poll waits its slice
+        time.sleep(self.delay_s if chunk else seconds)
         return chunk
 
     @property
@@ -68,7 +61,7 @@ class Retraces(Debugger):
 
     def command(self, text: str, **k: object) -> str:
         if text == ds.NUDGE:
-            time.sleep(self.survey_s)    # the settle a real survey pays
+            time.sleep(self.survey_s)
         return super().command(text, **k)
 
     def retrace(self, began: float, deadline: float,
@@ -80,9 +73,7 @@ Double = TypeVar("Double", bound=Debugger)
 
 
 def live(double: Double) -> Double:
-    """The double as `start` leaves a session: its store, and its park already recorded as the
-    last stop, so the first contact has no unreported stop to survey. Shared with the trace
-    doubles, which park where these do."""
+    """The double as `start` leaves a session, its park already recorded as the last stop."""
     install()
     dstate.STATE.session = cast(ds.Session, double)
     dstate.STATE.remember_stop(cast(ds.Session, double),
@@ -97,7 +88,7 @@ def three_frames() -> Retraces:
 
 
 def _real_bp(ref: str) -> None:
-    """A raw breakpoint declared at the real-mode stop the probe guest sits at."""
+    """A raw breakpoint at the real-mode stop the probe guest sits at."""
     assert dstate.STATE.store is not None
     dstate.STATE.store.add(arming.declare("breakpoint", "address", ref, cpu=dcons.REAL_MODE))
 
@@ -109,7 +100,6 @@ def test_three_frames_land_three_retraces_with_the_whole_stop_reply() -> None:
     assert got["verdict"] == "ELAPSED" and got["polls"] == 3, got
     assert dbg.keys == [ds.RETRACE_COMMAND] * 3, "one VRT per frame, typed as a release"
     assert got["pc"].endswith(":00000106"), got
-    # The pane's clock, read off the surveys before and after: milliseconds, as seconds.
     assert got["emulated_before_s"] == pytest.approx(0.005708)
     assert got["emulated_after_s"] == pytest.approx(0.0485122)
     assert got["frame_before"]["available"] is False and got["frame_after"]["available"] is False
@@ -120,8 +110,7 @@ def test_three_frames_land_three_retraces_with_the_whole_stop_reply() -> None:
 
 
 def test_the_stop_run_for_lands_on_carries_the_e9_block_even_with_no_log() -> None:
-    """The block is on for every stop, `run_for`'s included: this session has no logfile, so
-    it is the unavailable shape naming why (the served shape is the stop reply's own test)."""
+    """With no logfile the block is the unavailable shape, naming why."""
     live(three_frames())
     got = cast(dict[str, Any], server.run_for(frames=3))
     assert got["status"] == "ok" and got["e9"]["available"] is False, got["e9"]
@@ -129,8 +118,7 @@ def test_the_stop_run_for_lands_on_carries_the_e9_block_even_with_no_log() -> No
 
 
 def test_with_nothing_that_can_cut_it_no_frame_is_surveyed() -> None:
-    """The fast path: with nothing declared that can stop the machine, every stop IS a
-    retrace, so the only surveys are the one before and the stop reply's."""
+    """Fast path: nothing declared can cut a frame, so only the opening and closing surveys run."""
     dbg = live(three_frames())
     server.run_for(frames=3)
     assert dbg.sent.count(ds.NUDGE) == 2, dbg.sent
@@ -146,8 +134,7 @@ def cut_on_the_second_frame() -> Retraces:
 
 
 def test_a_breakpoint_that_cuts_a_frame_ends_it_other_stop_and_leaves_the_retrace_pending() -> None:
-    """A `VRT` a breakpoint stops first stays armed in the debugger, and the next release stops
-    at the next retrace: the reply says so and the server remembers it."""
+    """A `VRT` a breakpoint stops first stays armed, and the reply and the server say so."""
     cut_on_the_second_frame()
     got = cast(dict[str, Any], server.run_for(frames=5, seconds=2))
     assert got["status"] == "ok", got
@@ -173,10 +160,7 @@ def test_the_next_unattributed_stop_is_named_as_the_pending_retrace_and_forgets_
 
 
 def test_a_bound_that_expires_while_a_retrace_is_out_interrupts_the_run() -> None:
-    """THE BOUND INTERRUPTS: a `VRT` still out when the bound runs out leaves the machine
-    running, so it is brought back with `BREAK` and surveyed where it stands, a TIMEOUT
-    with the stop's reply; the retrace stays armed in the debugger and the next release
-    meets it."""
+    """A `VRT` still out at the bound is interrupted with `BREAK`; the retrace stays armed."""
     dbg = live(Retraces([cap("probe-survey-0"), cap("probe-survey-1"), cap("probe-survey-1")],
                         [cap("probe-vrt-1")], lag=40))
     got = cast(dict[str, Any], server.run_for(frames=3, seconds=0.3))
@@ -188,8 +172,7 @@ def test_a_bound_that_expires_while_a_retrace_is_out_interrupts_the_run() -> Non
 
 
 def test_a_bound_reached_between_frames_is_a_timeout_at_rest() -> None:
-    """Each retrace arrives inside one read slice, and the second lands after the bound: the
-    check before the third `VRT` finds it spent, with the machine at rest."""
+    """The check before the third `VRT` finds the bound spent, with the machine at rest."""
     live(Retraces([cap("probe-survey-0"), cap("probe-survey-2")],
                   [cap("probe-vrt-1"), cap("probe-vrt-2")], delay_s=0.15))
     got = cast(dict[str, Any], server.run_for(frames=3, seconds=0.2))
@@ -208,8 +191,7 @@ def test_a_pane_clock_that_did_not_move_is_no_progress() -> None:
 
 
 def test_a_protected_mode_frame_reads_its_position_off_the_survey() -> None:
-    """dos-djgpp32: the survey after the retrace names the DPMI client's selector and a 32-bit
-    offset, and the stop reply carries them as the debugger printed them."""
+    """dos-djgpp32: the DPMI client's selector and 32-bit offset ride on the stop reply."""
     live(Retraces([cap("dos-djgpp32-survey-4"), cap("dos-djgpp32-survey-5")],
                   [cap("dos-djgpp32-vrt-5")]))
     got = cast(dict[str, Any], server.run_for(frames=1))
@@ -236,8 +218,7 @@ def test_a_running_guest_is_refused_and_nothing_is_typed() -> None:
 
 
 def test_a_sequence_reads_whether_run_for_left_the_machine_running() -> None:
-    """Off the step's own reply: a release that came back with a stop, surveyed or cut, left
-    the machine stopped; one with none left it running."""
+    """A release that came back with a stop left the machine stopped; one without, running."""
     assert _leaves_running("run_for", {"verdict": "ELAPSED"}) is True
     assert _leaves_running("run_for", {"verdict": "TIMEOUT", "stop_seq": 3}) is False
     assert _leaves_running("run_for", {"enrichment": {"available": False, "why": "cut"}}) is False
@@ -245,8 +226,7 @@ def test_a_sequence_reads_whether_run_for_left_the_machine_running() -> None:
 
 
 def test_perform_goes_on_at_once_after_a_run_for_its_bound_interrupted() -> None:
-    """A timed-out `run_for` hands the machine back stopped, so the sequence's next console
-    step runs at once, with no wait for the retrace still armed in the debugger."""
+    """A timed-out `run_for` hands the machine back stopped, so the next step runs at once."""
     live(Retraces([cap("probe-survey-0"), cap("probe-survey-1"), cap("probe-survey-1"),
                    cap("probe-survey-1")], [cap("probe-vrt-1")], lag=40))
     dbg = cast(Retraces, dstate.STATE.session)
@@ -258,8 +238,7 @@ def test_perform_goes_on_at_once_after_a_run_for_its_bound_interrupted() -> None
 
 
 def test_a_declared_code_breakpoint_carries_the_dynamic_core_limit() -> None:
-    """On a dynamic core a code breakpoint armed after its code ran under `VRT` can fail to cut
-    a frame, so a run with one declared says an `ELAPSED` does not prove it was not reached."""
+    """On a dynamic core a late code breakpoint can miss, so `ELAPSED` does not prove unreached."""
     live(Retraces([cap("probe-survey-0"), cap("probe-survey-1")], [cap("probe-vrt-1")]))
     _real_bp("0000:0002")
     got = cast(dict[str, Any], server.run_for(frames=1))
@@ -281,9 +260,8 @@ def test_a_resume_that_stops_where_nothing_is_declared_names_the_pending_retrace
 
 
 def test_the_opening_survey_is_not_charged_to_the_frames() -> None:
-    """A bound shorter than the survey that reads the clock still lands a frame: the deadline
-    starts once the machine is placed, and the pending retrace is forgotten only when a `VRT`
-    has actually gone out."""
+    """The deadline starts once the machine is placed; the pending retrace is forgotten only
+    when a `VRT` has gone out."""
     dbg = live(Retraces([cap("probe-survey-0"), cap("probe-survey-1")], [cap("probe-vrt-1")],
                         survey_s=0.4))
     dstate.STATE.retrace_pending = True
@@ -294,8 +272,7 @@ def test_the_opening_survey_is_not_charged_to_the_frames() -> None:
 
 
 def test_a_cut_is_remembered_even_when_the_final_survey_is_cut() -> None:
-    """The cut is known the moment the frame's survey names the breakpoint; a pane that does
-    not come back whole at the end keeps the account, as every stop tool's does."""
+    """The cut is known once the frame's survey names the breakpoint."""
     cut_on_the_second_frame()
     dbg = cast(Retraces, dstate.STATE.session)
     dbg.panes[-1] = ""                           # the stop reply's survey comes back empty
@@ -306,8 +283,7 @@ def test_a_cut_is_remembered_even_when_the_final_survey_is_cut() -> None:
 
 
 def test_a_retrace_is_a_release_the_session_follows() -> None:
-    """`VRT` lets the machine run, so sending it clears the stopped flag the way a run key does:
-    a later `status` or console tool does not type into a running guest."""
+    """Sending `VRT` clears the stopped flag, as a run key does."""
     dbg = live(three_frames())
     dbg._at_debugger = True
     ds.Session._release(cast(ds.Session, dbg), ds.RETRACE_COMMAND)
@@ -359,8 +335,7 @@ def test_perform_refuses_a_bad_run_for_step_before_anything_is_typed() -> None:
 
 
 def test_milliseconds_run_retrace_by_retrace_until_the_pane_clock_has_risen_that_far() -> None:
-    """By the captured clock the second retrace leaves it under 30 ms past the start and the
-    third over it, so the run stops at the third."""
+    """The captured clock is under 30 ms after the second retrace and over it after the third."""
     dbg = live(Retraces([cap("probe-survey-0"), cap("probe-survey-1"), cap("probe-survey-2"),
                          cap("probe-survey-3"), cap("probe-survey-3")],
                         [cap("probe-vrt-1"), cap("probe-vrt-2"), cap("probe-vrt-3")]))
@@ -383,8 +358,7 @@ def test_a_retrace_that_did_not_move_the_clock_ends_a_timed_run_no_progress() ->
 
 
 def test_a_timed_run_needs_a_clock_to_start_from() -> None:
-    """A survey whose pane painted no `pfi=` leaves nothing to count milliseconds from: refused
-    before any retrace goes out."""
+    """With no `pfi=` to count from, the run is refused before any retrace goes out."""
     no_clock = cap("probe-survey-0").replace("pfi=", "pfx=")
     dbg = live(Retraces([no_clock], [cap("probe-vrt-1")]))
     got = cast(dict[str, Any], server.run_for(milliseconds=30, seconds=2))
@@ -393,8 +367,7 @@ def test_a_timed_run_needs_a_clock_to_start_from() -> None:
 
 
 def test_a_timed_run_that_stalls_after_moving_says_where_the_clock_stopped() -> None:
-    """The clock moved on the first retrace and not on the second: the refusal names the frame
-    that did not move it, and does not claim that nothing was emulated."""
+    """The refusal names the frame that did not move the clock, not "nothing was emulated"."""
     live(Retraces([cap("probe-survey-0"), cap("probe-survey-1"), cap("probe-survey-1"),
                    cap("probe-survey-1")], [cap("probe-vrt-1"), cap("probe-vrt-2")]))
     got = cast(dict[str, Any], server.run_for(milliseconds=100, seconds=2))
@@ -405,8 +378,7 @@ def test_a_timed_run_that_stalls_after_moving_says_where_the_clock_stopped() -> 
 
 
 def test_a_frame_whose_survey_painted_no_clock_is_read_at_the_next() -> None:
-    """One repaint without `pfi=` in the middle of a timed run does not end it: the clock is
-    read again at the next retrace."""
+    """One repaint without `pfi=` mid-run does not end it."""
     no_clock = cap("probe-survey-2").replace("pfi=", "pfx=")
     live(Retraces([cap("probe-survey-0"), cap("probe-survey-1"), no_clock,
                    cap("probe-survey-3"), cap("probe-survey-3")],
@@ -435,8 +407,7 @@ def test_a_timed_run_surveys_each_frame_once_and_the_stop_once() -> None:
 
 
 class LandsAtTheBound(Retraces):
-    """The race the bound can lose: the wait gives up with the `VRT` out, and its stop lands
-    before the interrupt looks, so nothing is interrupted and the retrace is spent."""
+    """The wait gives up with the `VRT` out, but its stop lands before the interrupt looks."""
 
     def retrace(self, began: float, deadline: float,
                 progress: ds.Progress = ds.no_progress) -> tuple[bool, float]:
@@ -452,8 +423,7 @@ def test_a_retrace_that_lands_as_the_bound_expires_is_spent_not_pending() -> Non
 
 
 class CutAtTheBound(Retraces):
-    """The race the bound can lose, the other way: a declared breakpoint, not the retrace, stops
-    the machine after the wait gave up, so the `VRT` is still armed."""
+    """A declared breakpoint stops the machine after the wait gave up, so the `VRT` stays armed."""
 
     def retrace(self, began: float, deadline: float,
                 progress: ds.Progress = ds.no_progress) -> tuple[bool, float]:

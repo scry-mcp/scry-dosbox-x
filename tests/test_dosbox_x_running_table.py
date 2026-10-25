@@ -1,7 +1,4 @@
-"""What answers on a running guest is ONE table, proven tool by tool rather than listed: every
-tool a sequence can take is called on a machine that is not at the debugger, and the table
-holds exactly the ones that answer without `not_stopped`. The reply's `answers_while_running`
-and `perform`'s step vocabulary are read off the same table and the same registry."""
+"""The running-guest table holds exactly the tools that answer without `not_stopped`."""
 from __future__ import annotations
 
 import tempfile
@@ -24,10 +21,8 @@ import dosbox_state as dstate
 import dosbox_symbols as dsym
 import dosbox_x_server as server
 
-#: What a session does WITHOUT the debugger's console: the log file, the guest's input,
-#: the debugger channel, the capture directory, the state directory. Everything else it
-#: does is a console command, and a running guest's console drops a command typed at it: it is
-#: not run at the next stop either.
+#: What a session does without the debugger's console; a running guest's console drops
+#: anything typed at it, and it is not run at the next stop either.
 NO_CONSOLE = {"alive", "state", "at_debugger", "log", "log_wait", "e9", "e9_mark",
               "e9_new_since", "e9_since_mark", "e9_wait", "send_commands",
               "break_in", "save_state", "load_state",
@@ -35,9 +30,7 @@ NO_CONSOLE = {"alive", "state", "at_debugger", "log", "log_wait", "e9", "e9_mark
 
 
 class RunningGuest:
-    """A session whose guest RUNS: `at_debugger()` is False, every console method refuses
-    `NotStopped` the way the real one comes back empty, and what needs no console answers.
-    A method this double does not know fails the test by name rather than passing."""
+    """A session whose guest runs: console methods refuse `NotStopped`, the rest answer."""
 
     def __init__(self, tmp_path: Path) -> None:
         self.altered = False
@@ -73,7 +66,6 @@ class RunningGuest:
     stub_protocol = inputs.STUB_PROTOCOL
 
     def send_commands(self, commands: list[bytes]) -> list[str]:
-        """The stub's answer: one report line per `R`, as the real link hands back."""
         return ["STUB  . mouse x=0 y=0 buttons=0 max=639,199 mode=3 screen=720x400"
                 for c in commands if c == b"R"]
 
@@ -109,7 +101,6 @@ class RunningGuest:
     def e9_new_since(self, offset: int) -> tuple[list[str], int]:
         return [], offset
 
-    # AT A STOP (after `stop`'s break-in) the survey answers, like the real one.
     def where(self) -> dict[str, str]:
         if not self.stopped:
             self.asked.append("where")
@@ -134,7 +125,7 @@ class RunningGuest:
     def stop_survey(self) -> tuple[dict[str, str], dict[str, str], list[dict[str, str]]]:
         return self.where(), self.registers(), []
 
-    survey_text = ""          # its survey paints no screen, so a stop's code pane is absent
+    survey_text = ""
 
     def read_bytes(self, seg: int, off: int, n: int, mode: str | None = None) -> bytes:
         if not self.stopped:
@@ -163,13 +154,11 @@ def _running(tmp_path: Path) -> RunningGuest:
     dstate.STATE.session = fake  # type: ignore[assignment]
     return fake
 
-#: The tools that are not steps: the session's own life, the two sequence tools, the export.
 NOT_STEPS = {"build_check", "start", "close", "perform", "drive", "perform_export"}
 
 
 def _args(tmp_path: Path) -> dict[str, dict[str, Any]]:
-    """Arguments each step tool accepts, valid by its own rules, so what the call meets is the
-    machine's state and nothing before it."""
+    """Valid arguments per step tool, so a refusal can only come from the machine's state."""
     source = tmp_path / "prog.sym"
     source.write_text(NM_TEXT, encoding="utf-8")
     return {
@@ -212,7 +201,6 @@ def _args(tmp_path: Path) -> dict[str, dict[str, Any]]:
     }
 
 
-#: Every step a list may take, a fold by each of its methods (`fold_calls`).
 with tempfile.TemporaryDirectory() as _scratch:
     PROBES = sorted(_args(Path(_scratch)))
 
@@ -241,8 +229,7 @@ def test_the_table_holds_exactly_what_answers_on_a_running_guest(
 @pytest.mark.parametrize("probe", [p for p in PROBES if _answers(p)])
 def test_no_tool_of_the_table_types_at_a_running_guests_console(
         probe: str, tmp_path: Path) -> None:
-    """The table's own claim: a running guest's console drops what is typed at it, after its
-    survey has sat out the whole wait for a pane that does not come."""
+    """No table tool types at the console of a running guest."""
     fake = _running(tmp_path)
     fold_calls.of(server, probe)(**_args(tmp_path)[probe])
     assert fake.asked == [], (probe, fake.asked)
@@ -259,9 +246,7 @@ def test_perform_takes_every_registered_tool_but_the_lifecycle() -> None:
 
 
 def test_a_stop_step_ends_the_run(tmp_path: Path) -> None:
-    """After a release a `stop` runs at once and brings the guest back, and the next console
-    step goes out without waiting for a stop that already happened: the session says it
-    stopped, never the op's name."""
+    """After a release a `stop` ends the run, and the next console step does not wait."""
     fake = _names(tmp_path, watched=True)
     server.status()
     stops: list[int] = []
@@ -281,21 +266,19 @@ def test_a_stop_step_ends_the_run(tmp_path: Path) -> None:
     assert got["status"] == "ok", got
     assert [r["op"] for r in got["ran"]] == ["resume", "stop", "registers"], got
     assert stops == [1]
-    # A LIST ENDING IN THE `stop` ends stopped: no tail reports a guest still running.
     got = sequence.run_steps(fake, [{"op": "resume"}, {"op": "stop"}],  # type: ignore[arg-type]
                              0.2, ops, lambda *_: None, False)
     assert got["status"] == "ok" and "still_running" not in got and "stopped" in got, got
 
 
 def test_a_declaration_after_a_release_answers_pending(tmp_path: Path) -> None:
-    """A declaration step after a release does not wait for a stop: it queues `pending`, as
-    the same call outside a sequence does, and the guest stays running."""
+    """A declaration after a release queues `pending` and the guest stays running."""
     fake = _names(tmp_path, watched=True)
     server.status()
     released = fake.resume
 
     def _resume() -> dict[str, object]:
-        fake.running = True              # the F5 went out and the guest runs
+        fake.running = True
         return released()
 
     fake.resume = _resume  # type: ignore[method-assign]
@@ -309,8 +292,7 @@ def test_a_declaration_after_a_release_answers_pending(tmp_path: Path) -> None:
 
 def test_the_last_stops_registers_answer_in_a_list_without_waiting_for_a_stop(
         tmp_path: Path) -> None:
-    """`registers(from_last_stop=True)` is in the instructions' running table, and a list sends
-    it to a running guest at once, as a direct call answers."""
+    """`registers(from_last_stop=True)` goes to a running guest at once."""
     fake = _names(tmp_path, watched=True)
     server.status()
     server.registers()                       # a stop surveyed, so there is a last one
@@ -342,8 +324,7 @@ def test_a_live_emulator_refusing_during_the_wait_is_its_own_answer_never_gone(
 
 def test_the_wait_names_an_emulator_gone_at_its_bound_or_under_a_read_and_nothing_else(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """At the bound, a dead emulator is `gone` and a live one `running`; a read that failed on
-    a dead pty is `gone`, and on a live one the error goes on."""
+    """At the bound dead is `gone`, live is `running`; a failed read is `gone` only if dead."""
     fake = _names(tmp_path, watched=True)
     monkeypatch.setattr(ds.Session, "await_stop", lambda *_a, **_k: (True, 0.0))
     assert sequence._wait_for_stop(fake, 1.0) == "running"  # type: ignore[arg-type]
@@ -362,23 +343,17 @@ def test_the_wait_names_an_emulator_gone_at_its_bound_or_under_a_read_and_nothin
 @pytest.mark.parametrize("ref", ["g_rate", "[g_rate]", "[0000:0400]"])
 def test_a_declaration_by_name_on_a_running_guest_types_nothing(
         tmp_path: Path, ref: str) -> None:
-    """Placing a symbol or a pointer needs the registers; a running guest's console drops the
-    nudge that asks for them. So nothing is typed, and the declaration is queued as it would
-    be after typing."""
+    """A symbol or pointer needs registers, so nothing is typed and the declaration queues."""
     fake = _running(tmp_path)
     dstate.STATE.install_table([dsym.Symbol("g_rate", 0x1000, kind="d")])
     got = (server.breakpoint_at(ref=ref) if not ref.startswith("[")
            else server.watch_add(ref=ref, mode="show", length=2))
-    # A symbol queues for the next stop; a pointer is read at each stop, so it waits as
-    # `unarmable` with the reason. Either way the console was not asked.
     assert got["status"] == "ok" and got["state"] in ("pending", "unarmable"), got
     assert fake.asked == [], fake.asked
 
 
 def test_a_stop_the_stop_step_surveyed_is_not_numbered_again(tmp_path: Path) -> None:
-    """The `stop` tool hands back its own stop; the tail names that one, and a second survey
-    would number the same stop twice. It is still the ENRICHED stop REFERENCE promises when the
-    last step met one: that survey's registers, watches and E9 block."""
+    """The tail reuses the `stop` tool's own stop, enriched, rather than surveying again."""
     fake = _names(tmp_path, watched=True)
     server.status()
     released = fake.resume
@@ -399,8 +374,7 @@ def test_a_stop_the_stop_step_surveyed_is_not_numbered_again(tmp_path: Path) -> 
 
 
 def test_a_queued_declaration_is_not_a_stopper_the_tail_waits_for(tmp_path: Path) -> None:
-    """A declaration answered `pending` is armed only at a stop, so it cannot produce one:
-    with nothing else declared the list returns at once, still running, and says why."""
+    """A `pending` declaration cannot produce a stop, so the list returns at once."""
     fake = _names(tmp_path, watched=True)
     server.status()
     released = fake.resume
@@ -420,9 +394,7 @@ def test_a_queued_declaration_is_not_a_stopper_the_tail_waits_for(tmp_path: Path
 
 def test_a_stop_a_running_guest_step_met_ends_the_run_whatever_the_step(
         tmp_path: Path) -> None:
-    """A breakpoint can fire while a key goes in: the session says the guest stopped, so the
-    list ends at that stop although the step was no `stop` and nothing declared could have
-    been asked to produce it."""
+    """A stop met during any step ends the list there."""
     fake = _names(tmp_path, watched=True)
     server.status()
 
@@ -431,7 +403,7 @@ def test_a_stop_a_running_guest_step_met_ends_the_run_whatever_the_step(
         return {"status": "ok", "summary": "resume", "halted": False}
 
     def _keys(**_: Any) -> dict[str, Any]:
-        fake.running = False             # the guest stopped while the key went in
+        fake.running = False
         return {"status": "ok", "summary": "keys"}
 
     ops = {**server._step_ops(), "resume": _resume, "send_keys": _keys}
@@ -445,8 +417,7 @@ def test_a_stop_a_running_guest_step_met_ends_the_run_whatever_the_step(
 @pytest.mark.parametrize("cleared", ["breakpoint", "watch"])
 def test_clearing_one_family_keeps_the_queued_arm_of_the_other_at_the_same_ref(
         tmp_path: Path, cleared: str) -> None:
-    """The arm queue holds refs, and a breakpoint and a change watch may share one: clearing
-    one family's declaration while the guest runs leaves the other's arm queued."""
+    """Clearing one family at a shared ref leaves the other's queued arm."""
     _running(tmp_path)
     w = server.watch_add(ref="0814:0100", mode="change", length=2)
     b = server.breakpoint_at(ref="0814:0100")
@@ -455,12 +426,12 @@ def test_clearing_one_family_keeps_the_queued_arm_of_the_other_at_the_same_ref(
     c = server.declaration_clear(cleared, ref="0814:0100")
     assert c["status"] == "ok" and c["declarations_cleared"] == 1, c
     assert dstate.STATE.pending["arm"] == ["0814:0100"], dstate.STATE.pending
-    server.declaration_clear(other, all=True)   # the other family cleared too: nothing to arm
+    server.declaration_clear(other, all=True)
     assert dstate.STATE.pending["arm"] == [], dstate.STATE.pending
 
 
 def test_a_list_is_judged_once_a_call(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The pre-gate judges the list whole before the machine; the run does not judge it again."""
+    """The pre-gate judges the list once; the run does not judge it again."""
     _names(tmp_path)
     calls: list[int] = []
     real = sequence.preflight

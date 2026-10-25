@@ -1,6 +1,4 @@
-"""A step's `recorded`: what a session's reply said, which the replay's `perform` holds the step's
-own reply to. A mismatch stops the list there as INVALID `diverged`, naming the field, what was
-recorded and what came back (`failed_at`, as any step failure); a match is an ordinary step."""
+"""A step's `recorded` is held to the replay reply; a mismatch is INVALID `diverged`."""
 
 from __future__ import annotations
 
@@ -44,9 +42,7 @@ def test_a_step_that_does_not_hold_stops_the_list_as_diverged() -> None:
 
 
 def test_the_replay_runner_reads_this_servers_own_diverged_reply(tmp_path: pathlib.Path) -> None:
-    """The contract between this server's `perform` and the runner (`scry_core.replay`): the
-    reply a diverged step gives is the one the runner names the step and the field from, never
-    an exit 3 for a reply it cannot read."""
+    """The replay runner names the step and field from this server's diverged reply."""
     install()
     regs = server.registers()["regs"]
     steps = [_regs({"regs": regs}), _regs({"regs": {**regs, "EAX": "DEADBEEF"}})]

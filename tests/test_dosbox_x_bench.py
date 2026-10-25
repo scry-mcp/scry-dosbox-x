@@ -1,18 +1,4 @@
-"""The shipped measuring instrument's own guards, at the contract tier.
-
-`bench.py` is INFRASTRUCTURE, not a scratch script: it publishes the figures this
-server's cost claims rest on. It carries its own known-answer validation, and until
-this file existed NOTHING RAN IT except a live bench somebody launched by hand -- so
-the instrument that exists to stop a number lying would be ungated.
-
-What is here is the half a contract tier can reach: the timer's known answer with its
-negative, the refusal that stops a session which answered NOTHING being published
-as a fast one, the rate's arithmetic (`window_rates`), and the refusals of the two runs that
-only call a program (`batch_cost`, `stamp`, with that program doubled). The emulator-driving
-half (`reach_the_state`, `per_question`, `advance_rate`'s sampling) is out of reach by
-construction and is not faked, because a double for the thing being measured measures the
-double.
-"""
+"""The bench's own guards; the emulator-driving half is not faked, a double measures itself."""
 
 from __future__ import annotations
 
@@ -34,13 +20,7 @@ import dosbox_launch as dlaunch
 
 
 def test_the_timer_reads_true_and_its_negative_reads_zero() -> None:
-    """The known answer, through the SAME timer every figure comes from.
-
-    Both halves are needed and neither substitutes for the other: without the known
-    answer every number below is a reading with no evidence the clock is honest, and
-    without the negative a call that DID NOTHING and a call that was genuinely fast
-    print the same thing.
-    """
+    """The known answer through the same timer, and its negative reads zero."""
     got = bench.validate_timer()
     assert got["ok"] is True, got
     assert isinstance(got["error_pct"], float) and got["error_pct"] < 5.0, got
@@ -50,13 +30,7 @@ def test_the_timer_reads_true_and_its_negative_reads_zero() -> None:
 def test_a_call_that_answered_nothing_is_not_timed_as_a_fast_answer(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """`answered` is REQUIRED, and this is why.
-
-    `Session.command` returns "" when the screen said nothing at all -- not an
-    exception, so nothing else refuses it. A bench without this guard times a session
-    that answered nothing and publishes the result as a SPEED, which is the fastest
-    number the instrument can possibly produce and the only one that means nothing.
-    """
+    """A session that answered nothing is refused, not published as the fastest speed."""
     with pytest.raises(SystemExit) as caught:
         bench.bench("silent", lambda: "", 3, answered=bool)
     assert caught.value.code == bench.INVALID_RC, caught.value.code
@@ -64,18 +38,11 @@ def test_a_call_that_answered_nothing_is_not_timed_as_a_fast_answer(
 
 
 def test_a_call_that_did_answer_is_timed() -> None:
-    """The control. A refusal test on its own passes when the guard refuses EVERYTHING.
-
-    It also pins the SHAPE of a result: the spread is published beside the median,
-    because one number with no spread cannot be told from one sample.
-    """
+    """The control for the refusal, and the result shape: spread beside the median."""
     got = bench.bench("speaks", lambda: "EAX=00000000", 3, answered=bool)
     assert got["n"] == 3
     assert set(got) == {"median_ms", "min_ms", "max_ms", "n"}, got
-    # EACH OF THE THREE IS TYPE-ASSERTED. An `isinstance` on a subscript narrows:
-    # `assert isinstance(d["a"], float)` then `reveal_type(d["a"])` gives `float` while
-    # an unchecked key gives `object`, so a key left unchecked is the one mypy reports.
-    # The locals are for readability; the `isinstance` per key is the narrowing.
+    # `isinstance` on each subscript narrows it for mypy; an unchecked key stays `object`.
     lo, mid, hi = got["min_ms"], got["median_ms"], got["max_ms"]
     assert isinstance(lo, float) and isinstance(mid, float) and isinstance(hi, float), got
     assert lo <= mid <= hi, got
@@ -83,26 +50,16 @@ def test_a_call_that_did_answer_is_timed() -> None:
 
 def test_the_guests_clock_is_read_as_the_maximum_and_not_the_last(
         tmp_path: Path) -> None:
-    """THE LOG IS NOT MONOTONE, so "the last stamp" is not "the latest time".
-
-    This guest emits its boot self-checks before the profiler's clock starts, so a
-    reader taking the final line goes BACKWARDS at boot. That is also why
-    `advance_rate` may not quote monotonicity as evidence of anything -- taking the
-    maximum makes a sequence of these non-decreasing by construction.
-    """
+    """The log is not monotone (boot self-checks precede the clock), so the maximum is read."""
     log = tmp_path / "guest.log"
     log.write_text("[+ 12.500] later\nnoise\n[+  0.125] a boot self-check\n")
     assert bench.newest(log) == 12.5
 
 
 def test_a_log_that_is_not_there_is_not_a_zero(tmp_path: Path) -> None:
-    """An absent or unreadable log answers None, never a time.
-
-    A 0.0 would read as "the guest's clock is at zero", which is a MEASUREMENT, and
-    the caller would subtract it from something.
-    """
+    """An absent or unreadable log answers None, never a 0.0 that would be subtracted."""
     assert bench.newest(tmp_path / "nothing.log") is None
-    assert bench.newest(tmp_path) is None          # a directory: OSError, not a crash
+    assert bench.newest(tmp_path) is None          # a directory
     (tmp_path / "empty.log").write_text("no stamps here\n")
     assert bench.newest(tmp_path / "empty.log") is None
 
@@ -110,18 +67,13 @@ def test_a_log_that_is_not_there_is_not_a_zero(tmp_path: Path) -> None:
 def test_the_bench_refuses_without_its_two_inputs_and_names_the_flags(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """THE REFUSAL NAMES WHAT THE CALLER TYPED. Both inputs are flags like the parser's
-    others: environment variables would let a caller who misspelled one get a run against
-    somebody else's program instead of a refusal, and a refusal that named variables
-    would send them looking in the wrong place. It fires BEFORE the timer's known
-    answer, so a run with no program to measure costs no emulator."""
+    """The refusal names the flags, not variables, and fires before the timer costs an emulator."""
     monkeypatch.setattr(sys, "argv", ["bench.py"])
     assert bench.main() == 3
     said = capsys.readouterr().err
     assert said.startswith("INVALID"), said
     assert "--conf" in said and "--cwd" in said, said
-    # AND THE VARIABLES ARE GONE: setting them does not arm the run any more, which is the
-    # whole point of the move. Without this the old door could stay open unnoticed.
+    # The old environment variables must not arm the run.
     monkeypatch.setenv("DOSBOX_X_LIVE_CONF", __file__)
     monkeypatch.setenv("DOSBOX_X_LIVE_CWD", str(Path(__file__).parent))
     assert bench.main() == 3, "the environment must no longer arm this bench"
@@ -130,21 +82,15 @@ def test_the_bench_refuses_without_its_two_inputs_and_names_the_flags(
 def test_one_flag_without_the_other_is_refused_too(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], tmp_path: Path,
 ) -> None:
-    """THE CONTROL FOR THE CASE ABOVE, and it is what stops the guard passing on either
-    input alone: both are required, and a bench given a config with no working directory
-    would run it from wherever the caller happened to stand."""
+    """Control: either flag alone is refused, and both are named."""
     conf = tmp_path / "probe.conf"
     conf.write_text("[sdl]\n")
     for argv in (["bench.py", "--conf", str(conf)], ["bench.py", "--cwd", str(tmp_path)]):
         monkeypatch.setattr(sys, "argv", argv)
         assert bench.main() == 3, argv
         said = capsys.readouterr().err
-        # THE MESSAGE IS ASSERTED HERE TOO, not just the code: half a pair is the case where a
-        # caller is most likely to have typed the OTHER flag wrong, so the refusal has to name
-        # both of them rather than only the one that is missing.
         assert said.startswith("INVALID") and "--conf" in said and "--cwd" in said, (argv, said)
-    # AND A --conf THAT IS NOT A FILE is refused as surely as a missing one: the check is
-    # what the path IS, not that the caller typed something.
+    # A --conf that is not a file is refused too.
     monkeypatch.setattr(sys, "argv", ["bench.py", "--conf", str(tmp_path / "nope.conf"),
                                       "--cwd", str(tmp_path)])
     assert bench.main() == 3
@@ -154,24 +100,14 @@ def test_one_flag_without_the_other_is_refused_too(
 def test_every_invalid_in_this_file_leaves_with_one_exit_code(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """ONE SPELLING PER CONCEPT. A `main` guard returning 3 beside an INVALID that raises
-    `SystemExit` with a STRING would give two answers to one question, because CPython
-    prints the string and exits 1 (`SystemExit(3)` gives 3, `SystemExit("...")` gives 1).
-
-    The message goes to STDERR, because a diagnostic that shares a channel with the figures
-    is a diagnostic somebody's parser reads as data."""
+    """Every INVALID leaves with one exit code, and its message goes to stderr."""
     with pytest.raises(SystemExit) as caught:
         bench.no_measurement("a probe")
     assert caught.value.code == bench.INVALID_RC == 3, caught.value.code
     said = capsys.readouterr()
-    # THE PREFIX IS THE HELPER'S: sites writing it by hand are chances to spell it
-    # differently, and a caller grepping for it finding all but one.
     assert said.err.strip() == "INVALID: a probe", said
     assert said.out == "", "a refusal does not go out with the figures"
-    # AND NO RAW `SystemExit` SURVIVES: a site added later would be the drift again,
-    # and this is the only thing that would notice. READ AS SYNTAX, not as text, for the
-    # reason this package's own code scan is an AST walk: a substring count answers about a
-    # docstring that QUOTES the old shape, and misses a live one wrapped across two lines.
+    # Read as syntax: a substring count matches a docstring quoting the old shape.
     tree = ast.parse(Path(bench.__file__).read_text())
     raises = [n.lineno for n in ast.walk(tree)
               if isinstance(n, ast.Raise) and isinstance(n.exc, ast.Call)
@@ -179,19 +115,12 @@ def test_every_invalid_in_this_file_leaves_with_one_exit_code(
     assert raises, "the control: the helper itself still raises one, so this can see one"
     assert len(raises) == 1, (
         f"every stop leaves through `no_measurement`; raises at lines {raises}")
-    # AND THE NAME IS NOT THE CONTRACT'S. `Invalid`, `invalid` and `refusal` are what the
-    # reply contract's source scan reads as a refusal carrying a code from its table; a
-    # function here wearing one is read as one, and the scan said so when it did.
+    # The reply contract's source scan reads `invalid` and `refusal` as its own.
     assert not hasattr(bench, "invalid"), "that name belongs to the reply contract"
 
 
 def test_the_stamp_pattern_matches_what_this_guest_actually_prints() -> None:
-    """The one literal in the instrument that a rename elsewhere can silently break.
-
-    A pattern that matches nothing makes `newest` answer None forever, which the
-    caller reads as "no log", and the bench then measures a guest it believes is not
-    running.
-    """
+    """The stamp pattern matches what the guest prints; a miss makes `newest` answer None."""
     assert bench.STAMP.findall("[+  1.250] something") == ["1.250"]
     assert bench.STAMP.findall("[+1] something") == [], "an integer is not a stamp"
     assert isinstance(bench.STAMP, re.Pattern)
@@ -225,8 +154,7 @@ def test_a_failed_timer_publishes_nothing(tmp_path: Path, monkeypatch: pytest.Mo
 
 def test_the_published_medians_are_the_runs_medians(tmp_path: Path,
                                                     monkeypatch: pytest.MonkeyPatch) -> None:
-    """The instrument's wiring, its measurements doubled: the headline figures are the medians
-    of what the runs answered."""
+    """The headline figures are the medians of what the runs answered."""
     out = tmp_path / "bench.json"
     _runnable(tmp_path, monkeypatch, "--reps", "3", "--json", str(out), "--song", "S")
     monkeypatch.setattr(bench, "validate_timer", lambda: {
@@ -247,8 +175,7 @@ def test_the_published_medians_are_the_runs_medians(tmp_path: Path,
 
 
 def test_the_rate_is_the_median_of_the_windows_after_the_settling_sample() -> None:
-    """The first sample is dropped (the log is backed up after the boot burst), each window
-    between the rest is a rate, and the median, minimum and maximum are of those."""
+    """The first sample is dropped; the rate is the median of the windows between the rest."""
     samples = [(0.06, 0.0), (3.06, 3.0), (6.06, 4.0), (9.06, 6.0), (12.06, 8.2)]
     got = bench.window_rates(samples)
     assert (got["rate_median"], got["rate_min"], got["rate_max"]) == (0.667, 0.333, 0.733), got
@@ -263,7 +190,7 @@ def _run_writing(log: Path, text: str | None) -> Any:
         assert kw["stdout"] == kw["stderr"] == subprocess.DEVNULL, kw
         if text is not None:
             log.parent.mkdir(parents=True, exist_ok=True)
-            log.write_bytes(text.encode("utf-8", "surrogateescape"))  # a byte no UTF-8 reads
+            log.write_bytes(text.encode("utf-8", "surrogateescape"))  # not valid UTF-8
         return SimpleNamespace(returncode=0, stdout="", stderr="")
     return run
 
@@ -273,10 +200,10 @@ def _run_writing(log: Path, text: str | None) -> Any:
     ids=["answered", "no-marker", "nothing-written"])
 def test_a_batch_is_timed_only_when_it_answered(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
                                                 written: str | None, measured: bool) -> None:
-    """A stale log left by an earlier run is removed first, so it cannot answer for this one."""
+    """A stale log is removed first; a batch is timed only when it answered."""
     log = tmp_path / "build" / "PROF.E9.log"
     log.parent.mkdir()
-    log.write_text(f"{bench.MARKER}\n", encoding="utf-8")       # an earlier run's answer
+    log.write_text(f"{bench.MARKER}\n", encoding="utf-8")       # stale
     monkeypatch.setattr("subprocess.run", _run_writing(log, written))
     monkeypatch.setattr(bench, "timed", lambda fn: (9994.0, fn()))
     if measured:
@@ -289,8 +216,7 @@ def test_a_batch_is_timed_only_when_it_answered(tmp_path: Path, monkeypatch: pyt
 
 def test_the_stamp_names_the_build_the_ladder_found_and_refuses_one_with_no_version(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    """The bench measures the build the server's own ladder lands on, named with its rung and
-    its version as the server reads it, and a build with no version is no measurement."""
+    """The stamp names the ladder's build; a build with no version is refused."""
     bench.build.cache_clear()
     monkeypatch.setattr(dbinary, "resolve",
                         lambda binary: dbinary.Resolved("/opt/dosbox-x", "DOSBOX_X_BINARY"))
@@ -314,8 +240,7 @@ def test_the_stamp_names_the_build_the_ladder_found_and_refuses_one_with_no_vers
 
 def test_with_no_song_the_batch_is_not_run_and_the_result_says_why(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The batch plays the caller's own song through the caller's own `make prof-log`: with none
-    named there is nothing of theirs to time, and a default would time somebody else's file."""
+    """With no song named the batch is not run; a default would time somebody else's file."""
     out = tmp_path / "bench.json"
     _runnable(tmp_path, monkeypatch, "--reps", "1", "--json", str(out))
     monkeypatch.setattr(bench, "validate_timer", lambda: {

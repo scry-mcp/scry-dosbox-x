@@ -1,22 +1,14 @@
-"""The live pytest tier through `scry_core.live_pool`: every live test that opens no window runs
-as a job of its own, at most `DOSBOX_X_LIVE_JOBS` at once (unset, half the host's CPUs), and the
-`windowed` ones after them, together and one after another, because a window that opens in
-front takes the focus and would judge its neighbours.
+"""Runs the live pytest tier through `scry_core.live_pool`.
+
+Windowless tests run as jobs, `DOSBOX_X_LIVE_JOBS` at once (unset: half the CPUs); `windowed`
+ones follow in turn, because a window that opens takes the focus.
 
     timeout 3600 uv run python tests/live/run_live_pytest.py      # from the clone's root
 
-The emulator is `DOSBOX_X_BINARY`'s, else the PATH's `dosbox-x`; the saved-state case needs one
-that carries SAVESTATE and LOADSTATE and is BLOCKED by any
-other, by that build's own refusal.
-
-Each job is pytest run in its own process on its tests, which records every test's outcome by
-node id (passed OK, failed or errored FAIL, skipped BLOCKED with the reason) and declares them
-as the job's summary. One line per job as it ends, then every test that did not pass and the
-count. Before any of it, a canary refuses a host that cannot start DOSBox-X; after it, every
-DOSBox-X the tests launched (recorded in a ledger of the run's own, `scry_core.live_bench`) is
-proved gone, and one still alive is killed and FAILS the run. Exit 0 with every test OK or
-BLOCKED, 1 with any FAIL, 3 when nothing was collected, the host refused or the merge cannot be
-believed, 2 for an argument (it takes none) or a job count that is none.
+The emulator is `DOSBOX_X_BINARY`'s, else the PATH's `dosbox-x`. A canary refuses a host that
+cannot start it; one alive afterwards is killed and FAILS the run. Exit 0 with every test
+OK or BLOCKED, 1 with any FAIL, 3 when nothing was collected, the host refused or the merge
+cannot be believed, 2 for an argument or a job count that is none.
 """
 from __future__ import annotations
 
@@ -42,7 +34,6 @@ import dosbox_binary  # isort: skip -- a module of the repository root, installe
 ROOT = Path(__file__).resolve().parents[2]
 JOBS_VAR = "DOSBOX_X_LIVE_JOBS"
 SUMMARY_VAR = "DOSBOX_X_LIVE_SUMMARY"
-# The node ids a child runs, one per line; set by the parent, never by hand.
 NODES_VAR = "DOSBOX_X_LIVE_PYTEST_NODES"
 PYTEST_ARGS = ["-q", "--no-cov", "-p", "no:cacheprovider", "-m", "live"]
 
@@ -50,7 +41,7 @@ SCRATCH_PREFIX = "dosbox-x-live-pytest-"
 
 
 class _Outcomes:
-    """The pytest plugin a child runs with: each test's outcome, from its own reports."""
+    """Records each test's outcome."""
 
     def __init__(self) -> None:
         self.outcomes: dict[str, live_pool.Outcome] = {}
@@ -71,15 +62,12 @@ class _Outcomes:
 
 
 def _child(summary: Path, nodes: list[str]) -> int:
-    os.chdir(ROOT)      # the node ids are the root's, whatever directory the run began in
+    os.chdir(ROOT)
     began = time.monotonic()
     seen = _Outcomes()
-    # A BASETEMP OF THE JOB'S OWN: pytest keeps only the newest few `pytest-<n>` directories
-    # under its user's root in the temporary directory every job shares, so a job starting
-    # beside others deletes a running job's `tmp_path`.
+    # Own basetemp: pytest prunes the shared root's dirs under a running job.
     basetemp = Path(tempfile.mkdtemp(prefix="dosbox-x-live-pytest-tmp-"))
-    # THE NODE IDS GO LAST: the repository's `addopts` ends in `--cov`, whose value is optional,
-    # so a node id right after it is taken as the coverage source and pytest runs every test.
+    # Node ids last: `addopts` ends in `--cov`, which would swallow one.
     try:
         rc = pytest.main([*PYTEST_ARGS, "--basetemp", str(basetemp), *nodes], plugins=[seen])
     finally:
@@ -93,7 +81,7 @@ def _child(summary: Path, nodes: list[str]) -> int:
 
 
 def _collect(marks: str) -> list[str] | None:
-    """The node ids pytest collects under `marks`, or None when collecting failed."""
+    """Node ids collected under `marks`, None when collecting failed."""
     done = subprocess.run([sys.executable, "-m", "pytest", "--collect-only", "-q", "--no-cov",
                            "-p", "no:cacheprovider", "-m", marks], cwd=ROOT,
                           capture_output=True, text=True, check=False)
@@ -114,13 +102,11 @@ def _jobs(nodes: list[str], prefix: str, together: bool,
 
 
 def _leave(signum: int, _frame: object) -> None:
-    """`timeout` ends a run with SIGTERM and a closed terminal with SIGHUP: turned into an exit,
-    the pool's stop reaches the children, which run in process groups of their own."""
+    """Turn SIGTERM/SIGHUP into an exit so the pool's stop reaches the children."""
     raise SystemExit(128 + signum)
 
 
 def main() -> int:
-    # SIGHUP is POSIX's; Windows has SIGTERM alone.
     for sig in (signal.SIGTERM, getattr(signal, "SIGHUP", signal.SIGTERM)):
         signal.signal(sig, _leave)
     if sys.argv[1:]:
@@ -139,9 +125,7 @@ def main() -> int:
     if why := run.begin(dosbox_binary.canary_for(), "DOSBox-X"):
         print(f"==> LIVE PYTEST INVALID: {why}", flush=True)
         return EXIT_INVALID
-    # EVERY EXIT GOES THROUGH THE RUN'S END: one that never reached its verdict (a collection
-    # that failed, an exception, a signal made an exit) still proves its emulators gone and keeps
-    # its logs, named.
+    # Every exit still proves the emulators gone.
     try:
         return _run(run, workers)
     finally:
@@ -191,7 +175,6 @@ def _run(run: live_host.LiveRun, workers: int) -> int:
         print(line, flush=True)
         count["FAIL"] += 1
     run.finished = True
-    # THE LOGS ARE THE EVIDENCE OF A RED RUN, kept and named; a green one leaves nothing.
     run.leave(kept=bool(invalid or count["FAIL"]))
     if invalid:
         print(f"==> LIVE PYTEST INVALID: {invalid}")

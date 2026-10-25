@@ -1,23 +1,12 @@
 """The argument checks a step passes BEFORE any step runs: one registry, by operation name,
-pointing at the SAME functions each tool runs first when it is called on its own. The check is
-per tool, so a tool no batch dispatches (`find`, `scan(method="start")`, `debug`) has its entry too.
+pointing at the same functions each tool runs first when called on its own.
 
-A batch (`perform`, `start(plan=)`, `drive`'s act) is a list of the server's own operations,
-and a value that one of them would refuse mid-list (a key name no route knows, a pattern that
-does not compile, a step count past the ceiling) must be refused before the first step has
-posted a key or released the machine: a half-run sequence leaves the guest in a state the
-caller has to undo by hand. So what enters the queue goes through the checks the synchronous
-call makes, and the reply lists EVERY refused step, so a caller fixes the batch once.
+A value one step would refuse mid-list must be refused before the first step posts a key or
+releases the machine, and the reply lists every refused step. Not checkable here, because it
+depends on earlier steps or on the machine: symbol names, file existence, mode, selectors, live
+addresses. Those refuse at their step, with `failed_at` and `ran`.
 
-WHAT CANNOT BE CHECKED HERE, and the docstring of `perform` says so: a symbol name is judged
-against the table loaded at the time its step runs (a `symbols_load` may be an earlier step of
-the same list), a file's existence at the step (an earlier step may write it), and whatever
-needs the machine (its mode, a selector, a live address). Those refuse at their step, with
-`failed_at` and `ran` as the honest account.
-
-The functions here take the step's arguments BY NAME and ignore what they do not judge, so a
-registry entry is called with the step's own dict; `serial` says which input route the
-session has, the one fact of the session a value check depends on.
+The functions take the step's arguments by name and ignore what they do not judge.
 """
 from __future__ import annotations
 
@@ -53,15 +42,13 @@ Check = Callable[..., None]
 
 
 def address_shape(ref: object, by: str = "auto") -> None:
-    """`placement.address_shape` for a step, whose ref may not even be a string: one that is not
-    is refused here, not deferred to a step that would die on `.strip()` after earlier steps ran."""
+    """`placement.address_shape` for a step whose ref may not be a string."""
     if not isinstance(ref, str):
         raise ds.Invalid("bad_argument", f"ref={ref!r} is not a string: a symbol or a SEG:OFF")
     placement.address_shape(ref, None if by == "auto" else by)
 
 
-#: How a ref is taken, per family: a breakpoint is never declared through a pointer (code does
-#: not move behind one), a watch may be.
+#: A breakpoint is never declared through a pointer (code does not move behind one).
 BREAKPOINT_BY = ("auto", "symbol", "address")
 WATCH_BY = (*BREAKPOINT_BY, "pointer")
 
@@ -71,10 +58,7 @@ def by_choice(by: object, family: tuple[str, ...]) -> None:
 
 
 def declared(kind: str, ref: object, by: str) -> str:
-    """The ref as the store will take it, judged by the store's own rules on a declaration
-    built and dropped: an address that parses, a pointer only for a watch and only in a pointer's
-    shape. A `by` of `auto` is decided from the ref first, so `[g_p]` is a pointer here as it is
-    at the call. The `by` it was taken as is handed back."""
+    """The `by` the store will take the ref as, judged on a declaration built and dropped."""
     address_shape(ref, by)
     assert isinstance(ref, str)
     chosen = placement.decide_by(ref) if by == "auto" else by
@@ -87,11 +71,7 @@ def declared(kind: str, ref: object, by: str) -> str:
 
 
 def comment_ref(ref: object) -> None:
-    """A comment's ref, held to the comment file's rule for one, so a call and a file refuse
-    the same refs: a symbol, or a hex `SEG:OFF` with its segment in sixteen bits (no pointer,
-    no `+`, no bare `0x` number, nothing that is not one visible word). The placement parser
-    makes the numbers when the ref is placed, and every address this rule takes is one it
-    parses."""
+    """A comment's ref by the comment file's rule, so a call and a file refuse the same refs."""
     if not isinstance(ref, str):
         raise ds.Invalid("bad_argument", f"ref={ref!r} is not a string: a symbol or a SEG:OFF")
     fault = cf.ref_fault(ref)
@@ -100,8 +80,7 @@ def comment_ref(ref: object) -> None:
 
 
 def comment_text(text: object) -> None:
-    """A comment's text, by the comment file's rule: one visible line, at most the bytes a
-    file of the format holds."""
+    """A comment's text by the comment file's rule."""
     if not isinstance(text, str):
         raise ds.Invalid("bad_argument", f"text={text!r} is not text")
     fault = cf.text_fault(text)
@@ -123,14 +102,12 @@ NUMBER_BITS = 32
 
 
 def number(name: str, value: object) -> int:
-    """`value` as the integer it is or spells in hex (`scry_core.judges.number`), at most
-    `NUMBER_BITS` wide; the tool's own range is judged after, on the integer."""
+    """`value` as an integer or hex spelling, at most `NUMBER_BITS` wide."""
     return judges.number(name, value, NUMBER_BITS, "this debugger")
 
 
 def clear_scope(ref: str = "", all: bool = False, **_: Any) -> None:
-    """A clear names what it clears: one `ref`, or `all=True` for every one, never both and
-    never neither (an empty `ref` clearing everything was one slip from a wiped store)."""
+    """A clear names one `ref` or `all=True`, never both and never neither."""
     if isinstance(all, bool) and all and ref:
         raise ds.Invalid("bad_argument", f"ref={ref!r} and all=True: name one, or clear all")
     if not all and not ref:
@@ -146,14 +123,10 @@ def check_load_comments(path: object, **_: Any) -> None:
     paths.absolute("path", path)
 
 
-# THE DATA VIEW'S REACH bounds three values a caller passes, and each bound lives here: a bound
-# kept in a tool body is one the whole-list check of a sequence cannot see, so a list would run
-# the steps before it and refuse mid-way.
+# Bounds live here, not in a tool body, so the whole-list check of a sequence sees them.
 
 def write_data(value: str) -> bytes:
-    """A caller's hex bytes, judged and PARSED by the server's one hex parser, handed back so the
-    tool that writes them never parses the text a second time. Up to the data view's reach,
-    which is what the readback can cover in one read."""
+    """A caller's hex bytes, parsed once, up to the data view's reach (the readback's span)."""
     data = finder.hex_bytes("data_hex", value, verb="write")
     if len(data) > dcons.DATA_VIEW_BYTES:
         raise ds.Invalid("bad_argument",
@@ -163,25 +136,19 @@ def write_data(value: str) -> bytes:
 
 
 def read_length(length: int) -> None:
-    """`read_memory`'s span: 1 to the data view's reach. Its type is judged before this, by the
-    tool's schema or by a sequence's signature check."""
+    """`read_memory`'s span: 1 to the data view's reach."""
     if not 1 <= length <= dcons.DATA_VIEW_BYTES:
         raise ds.Invalid("bad_argument",
             f"length={length!r} is not 1 to {dcons.DATA_VIEW_BYTES}; above that the answer is "
             "`memdump`, which writes exactly the bytes asked for")
 
 
-# A CHANGE WATCH ARMS ONE DEBUGGER ROW PER BYTE (each memory breakpoint compares one byte), and
-# the debugger checks every memory row at every instruction it runs, so its bytes are a cost the
-# guest pays on each one: this many covers a scalar or a small struct, and a wider place is a
-# show watch, or several change watches on the fields that matter.
+# A change watch arms one debugger row per byte, each checked at every guest instruction.
 CHANGE_WATCH_MAX = 16
 
 
 def watch_width(mode: str, width: int) -> None:
-    """A show watch reads its bytes off the data view at every stop, so it is at most the view's
-    reach; wider, it would be stored only to report 'unreadable' at each stop. A change watch
-    arms a row per byte, at most `CHANGE_WATCH_MAX` of them."""
+    """A show watch is at most the data view's reach; a change watch at most `CHANGE_WATCH_MAX`."""
     if mode == "show" and width > dcons.DATA_VIEW_BYTES:
         raise ds.Invalid("bad_argument",
             f"a show watch reads up to {dcons.DATA_VIEW_BYTES} bytes at a stop (the data "
@@ -240,8 +207,6 @@ def _step(count: int = 1, mode: str = "into", **_: Any) -> None:
 def _run_to(ref: str, control: str = "", seconds: float = 30.0, **_: Any) -> None:
     vocab.check_wait(seconds)
     address_shape(ref)
-    # THE CONTROL IS REQUIRED (the schema says so), and an empty one is no control: a list is
-    # checked WHOLE before its first step runs, so a step without one is refused here.
     if not control:
         raise ds.Invalid("bad_argument",
             "no control is named: `run_to` measures nothing without one. A `control` is a "
@@ -258,12 +223,12 @@ def _count(name: str, value: object) -> int:
     return value
 
 
-#: The largest integer a double holds exactly: the pane's clock is compared as one.
+#: The largest integer a double holds exactly (the pane's clock is one).
 RUN_FOR_MS_MAX = 2 ** 53
 
 
 def optional_path(name: str, value: object) -> None:
-    """A path argument whose empty string means none: when given, it is absolute."""
+    """A path argument whose empty string means none."""
     if value != "":
         paths.absolute(name, value)
 
@@ -309,20 +274,15 @@ def _watch_add(ref: str, mode: str, length: int = 0, fmt: str = "auto", by: str 
     chosen = declared("watch", ref, by)
     _count("length", length)
     if fmt == "auto":
-        # THE SIZE COMES FROM THE TABLE when the caller gave none, and a raw address has no
-        # table entry: it needs a length or a fmt here, while a name's type is the tool's to
-        # look up once the session answers.
+        # A raw address has no table entry to take a size from.
         if chosen == "address" and length == 0:
             raise ds.Invalid("bad_argument",
                              f"a {mode} watch at an address needs a length in bytes, or a fmt "
                              f"that names its size (u16[8], char[16], {{x:i16,y:i16}}); "
                              f"{ref} was given neither")
-        # A symbol with no length takes its width from the table at its step; a length given
-        # is the width, whatever scalar the tool then picks for it.
+        # A symbol with no length takes its width from the table at its step.
         watch_width(mode, length)
         return
-    # THE DECLARATION'S OWN VALIDATION, on a declaration that is built and dropped: the
-    # format and the length against it are the model's rules, judged once there.
     placement.to_invalid(lambda: dec.Declaration("watch", "address", "0000:0000",
                                                  width=length, fmt=fmt, watch_mode=mode))
     watch_width(mode, vf.parse(fmt).width_for(length))
@@ -381,8 +341,8 @@ def check_start_scan(ref: str, length: int, cell_bytes: int = 1, **_: Any) -> No
 
 
 def check_filter_scan(operator: str = "=", value: object = None, **rest: Any) -> None:
-    # The default is read at the call: importing `dosbox_find` reaches this module (through
-    # `dosbox_dump`), so its names are not there yet while this one is being defined.
+    # Read at the call: importing `dosbox_find` reaches this module, so its names are not yet
+    # there at definition.
     finder.check_filter(operator, None if value is None else number("value", value),
                         rest.get("limit", judges.HITS_DEFAULT))
 
@@ -402,20 +362,18 @@ def _resume(seconds: float = 0.0, **_: Any) -> None:
     vocab.check_wait(seconds, zero_means="no wait")
 
 
-#: The server's step vocabulary, handed in by the server once its tools exist (`take_step_ops`):
-#: a list is judged against the tools a step dispatches to, which this module cannot import.
+#: Handed in by the server once its tools exist: this module cannot import the tools.
 STEP_OPS: Callable[[], dict[str, Callable[..., Any]]] | None = None
 
 
 def take_step_ops(ops: Callable[[], dict[str, Callable[..., Any]]]) -> None:
-    """The server's step vocabulary, the one thing this module takes from it."""
+    """Register the server's step vocabulary."""
     global STEP_OPS
     STEP_OPS = ops
 
 
 def steps_whole(name: str, steps: object) -> None:
-    """A list of the server's operations judged whole, every step's op, argument names and
-    values, before the first one runs; every refusal is listed, as the sequence lists them."""
+    """A list of steps judged whole before the first runs; every refusal is listed."""
     if not isinstance(steps, list):
         raise ds.Invalid("bad_argument",
             f"{name} is a LIST of steps ({{'op': <name>, ...}}); got {steps!r}")
@@ -438,8 +396,7 @@ def _perform(steps: list[dict[str, Any]], settle_seconds: float = 30.0,
 
 def _start(plan: list[dict[str, Any]] | None = None, settle_seconds: float | None = None,
            **_: Any) -> None:
-    """`start` judges its paths and its launch itself, before anything starts; its plan is a
-    list like `perform`'s, refused whole before the emulator boots rather than after it."""
+    """The plan is refused whole before the emulator boots."""
     if settle_seconds is not None and not plan:
         raise ds.Invalid("bad_argument", "`settle_seconds` bounds the waits of a `plan`, and "
                          "there is no plan: it would be silently ignored")
@@ -525,8 +482,7 @@ def _screen_wait(text: object, seconds: float = 30.0, **_: Any) -> None:
         raise ds.Invalid("bad_argument",
             f"text={text!r} is not 1 to {SCREEN_TEXT_MAX} printable characters: it is matched "
             f"inside one row of the screen")
-    # A ROW IS READ WITHOUT ITS TRAILING BLANKS, and drawn in code page 437: a text ending in a
-    # blank, or holding a character the screen cannot draw, could never be found.
+    # A row is read without trailing blanks and drawn in code page 437.
     undrawable = sorted(set(text) - set(screen.CP437))
     if text.endswith(" ") or undrawable:
         raise ds.Invalid("bad_argument",
@@ -542,15 +498,11 @@ def _symbols_find(name: str = "", offset: int | None = None,
     placement.check_find_args(name or None, offset, linear or None, limit)
 
 
-# THE CONSOLE COMMANDS THAT LET THE GUEST RUN, by their first word. A run key goes through
-# `Session._release`, which clears the stopped flag; a typed command does not, so after one the
-# session goes on naming the stop before it. `VRT` runs to the next retrace, `RUNWATCH` runs on
-# repainting, `INT` runs a handler to its return, the `LOG` family runs with the CPU log on;
-# `INTT`, `TIMERIRQ` and `HEAVYLOG` stay at the debugger.
+# Console commands that let the guest run, by first word. A typed one does not clear the stopped
+# flag as `Session._release` does, so `last_stop` would keep naming the stop before it.
 DEBUG_RELEASES = re.compile(r"\s*(" + "|".join(("VRT", "RUNWATCH", "INT", *ds.LOG_WORDS))
                             + r")(?:\s|$)", re.IGNORECASE)
-# The whole string reaches the terminal, so a line break would type a second command past the
-# classifier and an escape is a key (the run key among them).
+# A line break would type a second command past the classifier; an escape is a key.
 _CONTROL_CHARACTER = re.compile(r"[\x00-\x1f\x7f]")
 
 
@@ -575,16 +527,14 @@ def _debug(command: object, **_: Any) -> None:
 
 
 def _folded(name: str) -> Check:
-    """A fold's judge (`dosbox_folds.CHECKS`), read at the call: that module takes each
-    method's judge from this one."""
+    """A fold's judge (`dosbox_folds.CHECKS`), read at the call: that module imports this one."""
     def check(**given: Any) -> None:
         import dosbox_folds
         dosbox_folds.CHECKS[name](**given)
     return check
 
 
-# The registry: an operation with no entry has nothing to judge before its step (it takes
-# no values, or every value it takes needs the machine).
+# An operation with no entry takes no values, or every value it takes needs the machine.
 BY_OP: dict[str, Check] = {
     "send_keys": _send_keys, "send_mouse": _send_mouse,
     "log": _log, "log_wait": _log_wait,
@@ -599,7 +549,6 @@ BY_OP: dict[str, Check] = {
     "debug": _debug, "interrupt_vectors": _interrupt_vectors,
     "palette": _palette, "screen_view": _screen_view, "screen_wait": _screen_wait,
     "screen_signature": _screen_signature, "series_capture": media.check_series_capture,
-    # The media file tools' judges are scry-core's, beside their bodies.
     **{name: media_tools.TOOLS[name].check for name in media.MEDIA_TOOLS},
     "snapshot": _snapshot, "perform": _perform, "drive": _drive, "start": _start,
     "machine_map": _machine_map,
@@ -607,20 +556,13 @@ BY_OP: dict[str, Check] = {
                                         "map_write", "scan", "state_write")},
 }
 
-#: The two tools whose steps ARE the calls: a list, and one act with its expectation.
 SEQUENCES = frozenset({"perform", "drive"})
-#: THE TOOLS THAT ARE NO STEP OF A SEQUENCE, named once: the session's own life (`build_check`,
-#: `start`, `close`), the sequences themselves, and the export of the session a list belongs to.
-#: What a list may not call, what the recording keeps out, what answers while the guest runs and
-#: the pre-gate's no-entry set below are each read off it.
+#: The tools that are no step of a sequence, named once; other sets are read off it.
 NOT_STEPS = SEQUENCES | {"build_check", "start", "close", "perform_export"}
 
-#: TOOLS DELIBERATELY WITHOUT AN ENTRY, named so an absent entry and a forgotten one cannot look
-#: alike. They take no argument at all (`status`, `stop`, `state_list`, `captures`,
-#: `call_stack`, `comment_list`, `map_find`); or a
-#: flag every value of which is valid (`registers`); or they are no step
-#: and have no half here (`build_check`'s binary and `perform_export`'s `dest`, judged by their
-#: bodies first; `close`).
+#: Tools deliberately without an entry, so an absent entry and a forgotten one differ: no
+#: arguments, only valid values (`registers`), or no step (`build_check`, `perform_export`,
+#: `close`).
 MACHINE_JUDGES = frozenset({
     "status", "stop", "registers", "state_list", "captures", "call_stack", "comment_list",
     "map_find",
@@ -628,10 +570,8 @@ MACHINE_JUDGES = frozenset({
 
 
 def check(tool: str, /, **given: Any) -> None:
-    """The machine-independent half of one tool's checks, asked BEFORE the server asks for
-    the session: a value as wrong with no session as with one is refused without booting
-    a machine to hear it. A tool in `MACHINE_JUDGES` passes straight through; a name this
-    registry has never heard of is a programmer's error here, raised as such."""
+    """The machine-independent checks of one tool, asked before the server asks for the session.
+    An unknown name is a programmer's error, raised as an AssertionError."""
     if tool not in BY_OP and tool not in MACHINE_JUDGES:
         raise AssertionError(f"no such tool for a pre-gate check: {tool!r}")
     judge = BY_OP.get(tool)
@@ -640,15 +580,12 @@ def check(tool: str, /, **given: Any) -> None:
 
 
 def probe_check(tool: str, given: dict[str, Any], effective: dict[str, Any]) -> None:
-    """`check` in the shape `scry_core.probe.Check` takes: the server's `tool()` wrapper judges
-    the arguments the caller GAVE, so the probe does the same and `effective` is not used."""
+    """`check` in the shape `scry_core.probe.Check` takes; judges what the caller gave."""
     check(tool, **given)
 
 
 def preflight(op: str, args: dict[str, Any]) -> None:
-    """Run the operation's value checks on a step's arguments, raising the refusal the
-    synchronous tool would have raised. Called by the sequence over every step before the
-    first one runs."""
+    """Run the operation's value checks on a step's arguments, as the synchronous tool would."""
     check = BY_OP.get(op)
     if check is None:
         return

@@ -62,8 +62,7 @@ def at(insns: list[disasm.Insn], offset: int) -> disasm.Insn:
 # ------------------------------------------------------------------- the decoder alone
 
 def test_the_dump_is_the_committed_guest() -> None:
-    """The bytes the session read are the bytes `code.com` holds: the captures are of this
-    guest and not of an older build of it."""
+    """The bytes the session read are the bytes `code.com` holds."""
     com = (GUEST / "code.com").read_bytes()
     assert code_guest()[:len(com)] == com
 
@@ -81,8 +80,7 @@ def test_every_routine_of_the_code_guest_starts_a_line() -> None:
 
 @pytest.mark.skipif(shutil.which("nasm") is None, reason="no `nasm` on PATH for the listing")
 def test_the_code_guest_decodes_on_every_boundary_of_its_listing(tmp_path: Path) -> None:
-    """The assembler's listing is a referee neither decoder controls: every instruction it
-    placed in the code starts a line with the same bytes."""
+    """The assembler's listing is a referee neither decoder controls."""
     listing = tmp_path / "code.lst"
     r = subprocess.run(["nasm", "-f", "bin", "-l", str(listing), str(GUEST / "code.asm"),
                         "-o", str(tmp_path / "code.com")], capture_output=True, text=True,
@@ -137,16 +135,14 @@ def test_the_386_prefixes_are_decoded_in_a_16_bit_segment() -> None:
 
 
 def test_a_listing_completes_the_instruction_that_straddles_its_end() -> None:
-    """`length` 1 on the probe's three-byte `mov si, 0156` at 010B is one line of three bytes:
-    the extra bytes read are for that line and no further one."""
+    """`length` 1 on the probe's three-byte `mov si, 0156` at 010B is one line of three bytes."""
     probe = probe_guest()
     insns = disasm.decode(probe[0x0B:0x0B + 1 + disasm.INSN_MAX], 0x10B, 16, 1)
     assert [(i.offset, i.data.hex().upper()) for i in insns] == [(0x10B, "BE5601")]
 
 
 def test_a_near_target_wraps_inside_a_16_bit_segment() -> None:
-    """IP wraps at 64 KiB and capstone's sum does not: `E8 00 10` at FFF0 goes to 0FF3. The
-    bytes are the SDM's encoding of a near call, written out because no guest sits at FFF0."""
+    """IP wraps at 64 KiB and capstone's sum does not."""
     line = disasm.decode(bytes.fromhex("E80010"), 0xFFF0, 16)[0]
     assert line.targets[0].offset == 0x0FF3 and line.text == "call 0xff3"
 
@@ -162,8 +158,7 @@ def test_the_operands_a_name_can_be_claimed_for() -> None:
 
 
 def test_a_16_bit_displacement_past_7fff_is_an_offset_not_a_negative_number() -> None:
-    """`mov bx, [8004]` (8B 1E 04 80, the SDM's ModRM form; capstone hands its displacement back
-    sign-extended): the operand is offset 8004 of the segment, as the moffs form A1 says."""
+    """`mov bx, [8004]` (8B 1E 04 80, the SDM's ModRM form)."""
     modrm = disasm.decode(bytes.fromhex("8B1E0480"), 0x100, 16)[0]
     moffs = disasm.decode(bytes.fromhex("A10480"), 0x100, 16)[0]
     assert modrm.memory[0].offset == moffs.memory[0].offset == 0x8004
@@ -179,8 +174,7 @@ def test_a_far_pointer_names_its_segment_and_an_offset_as_wide_as_its_operand() 
 
 
 def test_an_instruction_starting_at_the_end_is_not_listed() -> None:
-    """`length` 3 on `mov si, 0156` then `call`: the call starts at the end and is not asked
-    for, though its bytes were read."""
+    """`length` 3 on `mov si, 0156` then `call`."""
     insns = disasm.decode(probe_guest()[0x0B:0x0B + 3 + disasm.INSN_MAX], 0x10B, 16, 3)
     assert [i.offset for i in insns] == [0x10B]
 
@@ -195,8 +189,7 @@ def test_the_pane_is_read_off_the_last_repaint_its_first_line_glued_to_its_heade
 
 
 def test_two_repaints_in_one_delta_read_as_the_later() -> None:
-    """Two captured deltas joined, as one command's delta carries every repaint it caused: the
-    pane is the one painted last."""
+    """Two captured deltas joined, as one command's delta carries every repaint it caused."""
     screen = text(FIX / "code-C-00-00000100.txt") + text(FIX / "code-C-02-00000149.txt")
     assert code.pane_lines(screen)[0].offset == 0x149
 
@@ -250,8 +243,7 @@ def _one_line(segment: str, offset: int, data: str, pane: str) -> list[code.Pane
 
 
 def test_a_segment_load_from_a_16_bit_register_agrees_in_16_bit_code() -> None:
-    """`mov ds, ax` (8E D8) as both decoders print it in real mode: the 8E synonym, captured in
-    32-bit code where capstone names the 32-bit register, is no reason to rename it here."""
+    """`mov ds, ax` (8E D8) as both decoders print it in real mode."""
     v = control.compare(_one_line("0814", 0x100, "8ED8", "mov  ds,ax"), "0814",
                         disasm.decode(bytes.fromhex("8ED8"), 0x100, 16))
     assert v.compared == 1 and v.disagreements == [], v
@@ -274,9 +266,7 @@ def test_the_control_sees_an_operand_that_differs(pane: str, why: str) -> None:
 
 
 def test_a_direct_far_call_agrees_though_the_two_spell_its_pointer_apart() -> None:
-    """dos-real16's `call 0895:0006` (9A 06 00 95 08) as its pane printed it in the live matrix:
-    capstone's `lcall 0x895, 6` is the same pointer; the same line with the offset changed is
-    not."""
+    """dos-real16's `call 0895:0006` (9A 06 00 95 08) as its pane printed it in the live matrix."""
     insns = disasm.decode(bytes.fromhex("9A06009508"), 0xE, 16)
     good = [code.PaneLine("0892", 0xE, bytes.fromhex("9A06009508"), "call 0895:0006")]
     assert control.compare(good, "0892", insns).disagreements == []
@@ -285,9 +275,7 @@ def test_a_direct_far_call_agrees_though_the_two_spell_its_pointer_apart() -> No
 
 
 def test_a_32_bit_popa_agrees_though_the_pane_says_popad_and_capstone_popal() -> None:
-    """The DPMI guest's `_tick` at 00A7:2081 as its pane printed it in the live matrix: byte 61
-    in 32-bit code is POPAD, which capstone spells `popal`. The same line against a 16-bit decode
-    (`popaw`) still disagrees, so the synonym is keyed on the pair and not on the opcode alone."""
+    """The DPMI guest's `_tick` at 00A7:2081 as its pane printed it in the live matrix."""
     pane = [code.PaneLine("00A7", 0x2081, bytes.fromhex("61"), "popad")]
     v = control.compare(pane, "00A7", disasm.decode(bytes.fromhex("61"), 0x2081, 32))
     assert v.disagreements == [], v
@@ -296,10 +284,7 @@ def test_a_32_bit_popa_agrees_though_the_pane_says_popad_and_capstone_popal() ->
 
 
 def test_in_real_mode_the_pane_decodes_segment_0000_as_32_bit_code() -> None:
-    """The second way the pane is wrong about x86: `C 0000:0000` at a real-mode stop, where the
-    vector table's first byte 60 is `pusha` to a 16-bit decoder and the pane says `pushad`,
-    because it looked the segment number up as a selector. The control reports it, which is why
-    the pane is never the control for such a segment."""
+    """The second way the pane is wrong about x86."""
     pane = [p for p in code.pane_lines(text(FIX / "code-C-elsewhere.txt")) if p.offset == 0]
     assert pane and pane[0].text.startswith("pushad"), pane
     v = control.compare(pane, "0000", disasm.decode(cast(bytes, pane[0].data), 0, 16))
@@ -307,8 +292,7 @@ def test_in_real_mode_the_pane_decodes_segment_0000_as_32_bit_code() -> None:
 
 
 def test_the_control_sees_a_byte_that_differs() -> None:
-    """One byte of the dump changed (the immediate of `mov ax, 1234` at 0104): the comparison
-    names that line, so a green above is a comparison that could have gone red."""
+    """One byte of the dump changed (the immediate of `mov ax, 1234` at 0104)."""
     blob = bytearray(code_guest())
     blob[0x105 - COM_START] ^= 0xFF
     v = control.compare(code.pane_lines(text(FIX / "code-C-00-00000100.txt")), "0814",
@@ -411,9 +395,7 @@ def test_without_a_table_there_is_nothing_resolved_and_outside_its_span_no_name(
 
 
 def test_an_operand_above_the_last_symbol_is_not_named_after_it() -> None:
-    """`probe.sym` without its data rows, so the table ends at `bump`: the counter's operand
-    lies past the table, and the nearest symbol below (`bump`) would be a name for memory the
-    table does not describe."""
+    """`probe.sym` without its data rows, so the table ends at `bump`."""
     probe_machine()
     load_probe_symbols()
     dstate.STATE.install_table([s for s in dstate.STATE.table if s.name in
@@ -441,9 +423,7 @@ def test_a_length_out_of_its_range_is_refused_with_no_machine(length: object) ->
 
 
 def pr32_machine(logfile: Path | None = None) -> CodeMachine:
-    """dos-djgpp32's registers at its `_engine_pos` stop (the committed trace capture's pane); the
-    `SELINFO` answers are the captured CS line's, DS's with the big digit changed where a case
-    says so."""
+    """dos-djgpp32's registers at its `_engine_pos` stop (the committed trace capture's pane)."""
     regs = {"EAX": "00000000", "ESI": "0048D908", "DS": "00AF", "ES": "00AF", "FS": "00AF",
             "GS": "00BF", "SS": "00AF", "EBX": "00000000", "EDI": "00000000", "CS": "00A7",
             "EIP": "0005E9C0", "ECX": "FFFFFFFF", "EBP": "002B86C8", "EDX": "00000000",
@@ -516,8 +496,7 @@ def test_disassemble_in_pr32_past_offset_ffff_needs_the_logfile() -> None:
 
 
 def test_only_the_range_asked_for_needs_the_listings_past_offset_ffff() -> None:
-    """At 00A7:FFF0 eight bytes stay below 64 KiB while the read-ahead would cross: the read is
-    cut at FFFF instead of asking for the listings, so no `logfile` is needed."""
+    """At 00A7:FFF0 eight bytes stay below 64 KiB while the read-ahead would cross."""
     s = pr32_machine()
     r = cast(dict[str, Any], server.disassemble(ref="00A7:0000FFF0", length=8))
     assert r["status"] == "ok", r
@@ -549,9 +528,7 @@ def test_a_straddle_whose_bytes_past_ffff_cannot_be_read_is_refused_not_decoded_
 
 
 def test_a_32_bit_line_is_not_completed_past_a_selectors_limit_of_ffff() -> None:
-    """The straddle above in a 32-bit CS whose limit is FFFF: the bytes past FFFF are past the
-    segment, so no `D` is asked for them and the `mov eax, imm32` at FFFC is not completed off
-    them; the limit costs one `SELINFO CS`, asked only because the read-ahead runs past FFFF."""
+    """The straddle above in a 32-bit CS whose limit is FFFF."""
     s = pr32_machine()
     s.selectors["CS"] = {**s.selectors["CS"], "limit": 0xFFFF}
     s.mem[0x400000 + 0xFFF8:0x400000 + 0x10001] = bytes.fromhex("90909090B878563412")
@@ -576,9 +553,7 @@ def test_a_32_bit_listing_is_cut_at_the_selectors_limit(
 
 def test_a_protected_mode_segment_is_judged_by_what_holds_it(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """A `Pr16` pane makes CS 16-bit; a selector two registers hold is asked once, of the first;
-    the null selector addresses nothing; a table the listings could not give is said so, not
-    blamed on the selector."""
+    """A `Pr16` pane makes CS 16-bit."""
     s = pr32_machine()
     narrow = code.Segments(cast(ds.Session, s), {**s.where(), "mode": "Pr16"}, s.registers())
     assert narrow.bits(0xA7) == (16, "the pane's Pr16")
@@ -595,8 +570,7 @@ def test_a_protected_mode_segment_is_judged_by_what_holds_it(
 
 
 def test_a_memory_operand_through_a_register_the_pane_did_not_show_is_unplaced() -> None:
-    """The probe's pane with no GS (a cut repaint keeps CS and EIP): `mov al, gs:[0010]`
-    (65 A0 10 00, the SDM's encoding) is a row with no linear and a reason, not a crash."""
+    """The probe's pane with no GS (a cut repaint keeps CS and EIP)."""
     s = probe_machine()
     del s.regs["GS"]
     s.mem[LOAD * 16 + 0x200:LOAD * 16 + 0x204] = bytes.fromhex("65A01000")
@@ -645,8 +619,7 @@ def test_disassemble_is_a_step_of_perform_and_its_length_is_judged_with_the_list
 # ------------------------------------------------------------------- the stop's instruction
 
 class StoppedCode(CodeMachine):
-    """The code guest at one of its captured stops: that stop's survey screen and registers,
-    and the guest's bytes in memory for the data view; it counts the `D` reads."""
+    """The code guest at one of its captured stops."""
 
     def __init__(self, stop: str, screen: str | None = None) -> None:
         regs = json.loads((FIX / f"{stop}-registers.json").read_text(encoding="utf-8"))
@@ -663,8 +636,7 @@ class StoppedCode(CodeMachine):
         return self.where(), self.registers(), []
 
     def read_bytes(self, seg: int, off: int, n: int, mode: str | None = None) -> bytes:
-        """The data view's reach as the live debugger shows it: from an address inside a row
-        it paints fewer bytes than the full 128."""
+        """The data view's reach as the live debugger shows it."""
         self.d_reads.append((seg, off, n))
         if off > 0xFFFF:
             raise ds.Invalid("bad_argument", f"an offset is 0x0 to 0xFFFF; got 0x{off:X}")
@@ -739,8 +711,7 @@ def test_a_pane_line_decoded_in_another_width_is_read_again_off_the_data_view() 
 
 
 def test_a_line_at_the_stops_offset_in_another_segment_is_not_the_stops() -> None:
-    """The first stop's survey with its CS:EIP line's segment spelled 0815: the same offset in
-    another segment is other memory, so the stop reads its own bytes off the data view."""
+    """The first stop's survey with its CS:EIP line's segment spelled 0815."""
     screen = text(FIX / "code-stop1-survey.txt").replace("0814:00000102 CD03",
                                                          "0815:00000102 CD03")
     s = StoppedCode("code-stop1", screen)
@@ -774,8 +745,7 @@ def test_a_stop_on_a_byte_no_instruction_starts_with_says_so() -> None:
 
 
 def test_a_pr16_stop_decodes_16_bit_from_the_panes_word() -> None:
-    """The first stop's survey read as a `Pr16` stop (its mode changed): the width is the
-    pane's, 16-bit, and asks nothing."""
+    """The first stop's survey read as a `Pr16` stop (its mode changed)."""
     s = StoppedCode("code-stop1")
     where, regs, _held = s.stop_survey()
     got = code.stop_instruction(cast(ds.Session, s), {**where, "mode": "Pr16"}, regs,
@@ -793,8 +763,7 @@ def test_the_stop_names_its_routine_in_real_mode_and_asks_nothing_for_it() -> No
 
 
 def test_in_protected_mode_the_stop_asks_selinfo_only_with_a_table() -> None:
-    """dos-djgpp32's `_engine_pos` stop from the committed trace capture: one `SELINFO CS` with a
-    table loaded, none without."""
+    """dos-djgpp32's `_engine_pos` stop from the committed trace capture."""
     s = pr32_machine()
     where = {"cs": "00A7", "eip": "0005E9C0", "mode": "Pr32"}
     screen = text(TRACE / "dos-djgpp32-engine-survey-before.txt")
@@ -821,8 +790,7 @@ def test_every_stop_reply_carries_the_instruction_and_its_record_too() -> None:
 
 
 def test_a_stop_found_on_its_own_pays_for_its_instruction_only_when_a_reply_needs_it() -> None:
-    """A stop `status` meets surveys its screen and reads nothing more; the tail that names it
-    decodes the instruction off that same screen, with no `D`."""
+    """A stop `status` meets surveys its screen and reads nothing more."""
     s = StoppedCode("code-stop1")
     install()
     dstate.STATE.session = cast(ds.Session, s)
@@ -903,8 +871,7 @@ def test_three_frames_deep_the_walk_lists_the_routines_the_guest_entered() -> No
 
 
 def test_at_a_routines_first_byte_the_caller_is_read_off_the_stack_pointer() -> None:
-    """At the breakpoint on `middle`'s `enter`, before its frame exists: the caller `outer` is
-    the return at SS:SP (`entry`), and the chain from BP goes on to the main line."""
+    """At the breakpoint on `middle`'s `enter`, before its frame exists."""
     walking("middle-bp")
     r = cast(dict[str, Any], server.call_stack())
     assert rows(r) == [("0814:0000014F", "middle", "stop"),
@@ -913,8 +880,7 @@ def test_at_a_routines_first_byte_the_caller_is_read_off_the_stack_pointer() -> 
 
 
 def test_a_return_is_named_by_the_routine_its_call_is_in() -> None:
-    """`call [ptr_outer]` is the last instruction of `known` and returns to `park`'s first
-    byte: the caller is `known`, at the return's distance from it."""
+    """`call [ptr_outer]` is the last instruction of `known` and returns to `park`'s first byte."""
     walking("code-stop2")
     last = cast(dict[str, Any], server.call_stack())["calls"][-1]
     assert (last["symbol"], last["delta"], last["addr"]) == ("known", 0x13A - 0x104, "0x0000827a")
@@ -948,8 +914,7 @@ def test_the_entry_rule_holds_with_no_table_and_not_at_a_wrong_delta() -> None:
 
 
 def test_a_far_return_is_placed_in_the_segment_its_pointer_named() -> None:
-    """`middle`'s far return rewritten as 0813:015D, the same byte as 0814:014D: the row is in
-    0813, where no near call ends at 015D."""
+    """`middle`'s far return rewritten as 0813:015D, the same byte as 0814:014D."""
     s = walking("code-stop2")
     s.mem[LOAD * 16 + 0xFFF6:LOAD * 16 + 0xFFFA] = bytes.fromhex("5D011308")
     r = cast(dict[str, Any], server.call_stack())
@@ -986,9 +951,7 @@ def test_a_frame_whose_slots_end_exactly_at_ffff_is_walked() -> None:
 
 
 def test_a_far_reading_whose_segment_slot_is_past_the_stack_end_is_no_call() -> None:
-    """BP at FFFC, its return 015A at FFFE (inside `leave`, after no call): a far return's
-    segment would sit at 10000, past the 16-bit stack segment, so there is no far reading to
-    try, and the walk ends on the missing call without asking for a byte past FFFF."""
+    """BP at FFFC, its return 015A at FFFE (inside `leave`, after no call)."""
     s = walking("code-stop1")
     s.regs["EBP"] = "0000FFFC"
     s.mem[LOAD * 16 + 0xFFFC:LOAD * 16 + 0x10000] = bytes.fromhex("00005A01")
@@ -997,9 +960,7 @@ def test_a_far_reading_whose_segment_slot_is_past_the_stack_end_is_no_call() -> 
 
 
 def test_an_entry_return_one_slot_past_ffff_wraps_to_the_segments_start() -> None:
-    """At `outer`'s `mov bp, sp` after its `push bp` with SP at FFFE: the return is one slot up,
-    and a 16-bit stack pointer wraps there, so the call pushed it at SS:0000, which holds 013A
-    (after the call in `known`)."""
+    """At `outer`'s `mov bp, sp` after its `push bp` with SP at FFFE."""
     s = walking("code-stop1")
     s.regs.update(EIP="00000141", ESP="0000FFFE", EBP="00000000")
     s.mem[LOAD * 16:LOAD * 16 + 2] = (0x13A).to_bytes(2, "little")
@@ -1057,9 +1018,7 @@ def test_a_return_outside_the_table_is_listed_and_ends_the_walk() -> None:
 
 
 def test_an_entry_return_outside_the_table_is_listed_and_ends_the_walk() -> None:
-    """At `outer`'s first byte with the table cut to `outer`, `middle` and `inner`: the
-    caller's call lies below the table, so its row is listed unnamed and the walk ends there,
-    as a chain row would."""
+    """At `outer`'s first byte with the table cut to `outer`, `middle` and `inner`."""
     s = walking("code-stop1")
     s.regs.update(EIP="00000140", ESP="0000FFF0")
     s.mem[LOAD * 16 + 0xFFF0:LOAD * 16 + 0xFFF2] = (0x13A).to_bytes(2, "little")
@@ -1085,8 +1044,7 @@ def test_a_walk_that_never_ends_stops_at_its_bound() -> None:
 
 
 def test_a_call_site_is_checked_in_32_bit_code_as_well() -> None:
-    """`call rel32` (E8, the SDM's encoding) ending at the return: found near; the same bytes
-    asked for a far call are not one."""
+    """`call rel32` (E8, the SDM's encoding) ending at the return."""
     memory = {0x1000 - code.CALL_LONGEST + i: b for i, b in
               enumerate(bytes.fromhex("9090E810000000"))}
 
@@ -1113,8 +1071,7 @@ def test_when_two_calls_end_at_a_return_the_longer_is_the_one_named() -> None:
 
 
 def test_a_call_at_the_very_start_of_a_segment_is_found() -> None:
-    """`call far 0895:0006` (9A, the SDM's ptr16:16 form) at offset 0000 returns to 0005:
-    fewer than seven bytes lie before the return, and the call is there all the same."""
+    """`call far 0895:0006` (9A, the SDM's ptr16:16 form) at offset 0000 returns to 0005."""
     memory = dict(enumerate(bytes.fromhex("9A06009508")))
 
     def read_bytes(seg: int, off: int, n: int, mode: str | None = None) -> bytes:
@@ -1125,9 +1082,7 @@ def test_a_call_at_the_very_start_of_a_segment_is_found() -> None:
 
 
 def test_a_view_is_never_asked_past_the_end_of_its_segment() -> None:
-    """Sixteen bytes asked at FFF8 of a 16-bit segment: the view runs on past FFFF painting the
-    segment's first bytes again, so the read stops at the end and hands back the eight bytes
-    the segment has there."""
+    """Sixteen bytes asked at FFF8 of a 16-bit segment."""
     asked: list[tuple[int, int]] = []
 
     def read_bytes(seg: int, off: int, n: int, mode: str | None = None) -> bytes:

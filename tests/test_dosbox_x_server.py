@@ -99,18 +99,12 @@ MEASURED_BASE = 0x00400000
 
 def _log_wait_as_guest(self: Any, pattern: str, seconds: float, channel: str, mark: int = 0,
                        progress: ds.Progress = ds.no_progress) -> dict[str, object]:
-    """A double's `log_wait`: the guest channel through its own `e9_wait`, once for the
-    three doubles that only ever answer the guest."""
     got: dict[str, object] = self.e9_wait(pattern, seconds, mark=mark, progress=progress)
     return got
 
 
 class FakeSession:
-    """The narrowest faithful stand-in for a session: it does what the contract says.
-
-    Deliberately NOT a stand-in for the emulator. Nothing here tests what DOSBox-X
-    does; it exists so the server's own promises can be exercised without one.
-    """
+    """The narrowest faithful stand-in for a session: it does what the contract says."""
 
     def __init__(self, *, alive: bool = True, screen: str = "some screen",
                  mode: str = "Real") -> None:
@@ -147,10 +141,6 @@ class FakeSession:
         return self._alive
 
     def wait_ready(self, timeout: float = 30.0, progress: Any = None) -> float:
-        """Found MISSING the moment the drift check stopped looking only for the
-        literal spelling `live().name`. `start` calls it, and no contract case had
-        ever reached it against this double because every `start` case tests a refusal
-        that fires before a process exists."""
         return 0.0
 
     def break_in(self, seconds: float = 5.0) -> float:
@@ -223,9 +213,6 @@ class FakeSession:
         return True
 
     def where(self) -> dict[str, str]:
-        """The real `read_memory` needs the CPU mode (it takes the offset ceiling from it);
-        this stands in with a real-mode reading, which is what these fixed screens are. A case
-        needing protected mode passes `mode`."""
         return {"cs": "F000", "eip": "0000FFF0", "mode": self.mode}
 
     def where_and_registers(self) -> tuple[dict[str, str], dict[str, str]]:
@@ -235,14 +222,7 @@ class FakeSession:
         return self.where(), self.registers(), self.breakpoints()
 
     def read_memory(self, seg: int, off: int, mode: str | None = None) -> list[str]:
-        """THE REAL METHOD, run against this double's screen.
-
-        It is delegated rather than reimplemented because the thing worth exercising
-        here is the parsing and the "is the address I asked for actually in this"
-        check, and a double that reimplemented them would be agreeing with itself. It
-        works because the real method reaches only for `command`, `where` and `alive`,
-        all of which this stands in for.
-        """
+        """THE REAL METHOD, run against this double's screen."""
         return ds.Session.read_memory(self, seg, off, mode)  # type: ignore[arg-type]
 
     def read_bytes(self, seg: int, off: int, n: int, mode: str | None = None) -> bytes:
@@ -411,13 +391,7 @@ class FakeSession:
         return ""
 
     def selector(self, reg: str) -> dict[str, int]:
-        """THE REAL METHOD, run against a CAPTURED descriptor screen.
-
-        Delegated for the same reason `read_memory` is: what is worth exercising here
-        is the anchoring on this command's own echo, and a double that reimplemented it
-        would be agreeing with itself. `SELINFO_SCREEN` carries the register-pane
-        overlay that makes the anchoring necessary in the first place.
-        """
+        """THE REAL METHOD, run against a CAPTURED descriptor screen."""
         # SAVED AND RESTORED. `command()` returns `self._screen` for EVERY command, so
         # replacing it outright left any case that read a screen AFTER `symbols_load`
         # parsing the descriptor capture instead of its own fixture. No case does that
@@ -431,31 +405,14 @@ class FakeSession:
             self._screen = was
 
     def load_symbols(self, data: bytes) -> list[tuple[str, int]]:
-        """What the debugger would hold afterwards, INCLUDING what it already held.
-
-        `LV` APPENDS (tests/fixtures/symbols-lv: a second load leaves both), so the
-        double accumulates. A stub that returned only the last load would let the
-        server claim `loaded` is the size of this load, which is the one property the
-        real command does not have.
-        """
+        """What the debugger would hold afterwards, INCLUDING what it already held."""
         self.loaded += dsym.decode(data)
         return list(self.loaded)
 
 
 @pytest.fixture(autouse=True)
 def clean_session() -> Any:
-    """No live session before a case, and NONE LEFT BEHIND after one.
-
-    The teardown half was missing and its docstring claimed it anyway. It matters
-    because the whole suite shares ONE process: a stub left in a module global outlives the
-    file that set it.
-
-    THE SYMBOL TABLE IS A MODULE GLOBAL TOO, and leaving it does exactly
-    what this warns about: `test_find_refuses_before_anything_is_loaded` comes back `ok`
-    with zero matches when an earlier case in this file has left a table installed.
-    It is only ever cleared in production by `start`, `close` and a cancel that kills the
-    session -- and `install()` reaches past all three.
-    """
+    """No live session before a case, and NONE LEFT BEHIND after one."""
     dstate.STATE.session = None
     dstate.STATE.store = None
     dstate.STATE.session_origin = None
@@ -498,21 +455,10 @@ def install(**kw: Any) -> FakeSession:
 # ------------------------------------------------------------------- the surface
 
 def test_the_server_reports_the_name_it_is_installed_as() -> None:
-    """The name it declares must equal the name it is registered as, which is also
-    what namespaces its tools. That exact mismatch has happened on this fleet before:
-    a server declared one name, was installed as another, and the first was by then
-    the name of a different thing entirely."""
     assert server.mcp.name == "dosbox-x"
 
 
 def test_a_cap_of_zero_would_lie_and_is_refused() -> None:
-    """`out[-0:]` is the WHOLE string, so a cap of zero returns everything while
-    declaring itself a tail. It is a `ValueError` rather than an `Invalid`: `keep` is
-    never a caller's (three call sites, all literals), so a bad one is a bug in this
-    module, and `Invalid` would dress it as a statement about the caller's request.
-
-    This guard shipped with no test at all, in the commit whose own headline finding
-    was that a guard nothing can turn red is not a guard."""
     for bad in (0, -1):
         with pytest.raises(ValueError, match="is not a cap"):
             dstate.delta("abcdef", bad)
@@ -524,9 +470,6 @@ def test_a_cap_of_zero_would_lie_and_is_refused() -> None:
 
 
 def test_a_dead_session_that_had_been_written_to_says_so_in_its_block() -> None:
-    """A session whose emulator died is kept until `close`, so its `session` block still
-    says it was written to, as a field: a caller who forced a register and whose emulator
-    then hit its bound is never left with a refusal that hides it."""
     written = install()
     written.altered, written._alive = True, False
     got = cast(dict[str, Any], server.registers())
@@ -539,13 +482,7 @@ def test_a_dead_session_that_had_been_written_to_says_so_in_its_block() -> None:
 
 
 def test_a_close_that_could_not_reap_the_child_says_so_in_its_reply() -> None:
-    """The field REACHING A CALLER, which is a different claim from it being set.
-
-    `close`'s reply captures the session state BEFORE closing, and every call site
-    discards the session immediately afterwards, so the reap failure is read after the
-    close and said where the exit code would be: unavailable, with why. So this asserts
-    the REPLY, not the object.
-    """
+    """The field REACHING A CALLER, which is a different claim from it being set."""
     class Unreapable(FakeSession):
         def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
             self.reap_failed = "SIGKILL was sent and the process had not been reaped"
@@ -566,27 +503,9 @@ def test_a_close_that_could_not_reap_the_child_says_so_in_its_reply() -> None:
 
 
 def test_a_start_that_left_an_unreapable_emulator_says_so(tmp_path: Path) -> None:
-    """The ONE path besides `close` where an unreaped child can be seen.
-
-    `reap_failed` is set inside `close()`'s `if self.proc.poll() is None:` block, so it
-    exists only when a LIVE session is closed. A consumer on the dead branch, where
-    `poll()` is non-None and the signals never run, could never fire: closing an
-    already-exited session leaves the field empty.
-
-    This arm is where it matters. `wait_ready` raising with the child still running is
-    exactly the case where SIGKILL can fail to reap, and the reply is a refusal that
-    would otherwise say nothing about the emulator it left behind.
-    """
+    """The ONE path besides `close` where an unreaped child can be seen."""
     class Unreapable:
-        """THE FIELD IS EARNED BY BEING CLOSED, not preset.
-
-        Setting `reap_failed` as a class attribute would make `if
-        session.reap_failed:` fire whether or not `close()` had run, and deleting the
-        `session.close()` above it would leave the whole battery green, restoring the
-        very defect the comment there names. A real `Session` cannot present a
-        non-empty `reap_failed` before `close()` has run, so a double that does is a
-        "state the real class cannot occupy".
-        """
+        """THE FIELD IS EARNED BY BEING CLOSED, not preset."""
 
         argv = ["dosbox-x"]
         unreapable = True
@@ -641,18 +560,6 @@ def test_a_start_that_left_an_unreapable_emulator_says_so(tmp_path: Path) -> Non
 
 
 def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
-    """`tool()` translates only `Invalid`, so a `TimeoutExpired` out of `frame()`
-    escaped raw -- losing BOTH of this module's contracts at once: the reply stops
-    saying which nothing it found, and stops carrying the session's state.
-
-    `build_check` catches the same exception twelve lines of comment deep, for the same
-    reason. This one shipped without a test.
-
-    A LIMIT SAID OUT LOUD: `dosbox_frames.subprocess` IS the stdlib module, so these
-    patches are process-wide for the duration of the block. That is safe here because
-    the blocks are two statements long, but this suite runs in ONE pytest process,
-    which is the same hazard `clean_session`'s
-    docstring is about. Keep them short."""
     def hangs(*_a: object, **_k: object) -> None:
         raise subprocess.TimeoutExpired(cmd="ffmpeg", timeout=ds.FFMPEG_SECS)
 
@@ -756,13 +663,7 @@ def _ffmpeg_record(case: str) -> dict[str, Any]:
 
 
 def _tools_called_in_tests(source: str) -> set[str]:
-    """The tools a test file CALLS THROUGH THE SERVER from inside its `test_*` functions.
-
-    Only a call inside a test function is a case. A helper that starts or closes the
-    session for every case calls `server.start` and `server.close` too, and counting
-    those made both tools "covered" by plumbing that asserts nothing about them. And
-    only `server.<tool>(...)` counts: not a Session method that shares the name, and
-    not the words in a comment."""
+    """The tools a test file CALLS THROUGH THE SERVER from inside its `test_*` functions."""
     called: set[str] = set()
     for fn in ast.walk(ast.parse(source)):
         if not isinstance(fn, ast.FunctionDef) or not fn.name.startswith("test_"):
@@ -777,9 +678,6 @@ def _tools_called_in_tests(source: str) -> set[str]:
 
 
 def test_the_live_case_counter_ignores_helpers_comments_and_session_methods() -> None:
-    """The control for the contract below: a tool called only from a helper, only in a
-    comment, or only as a Session method is NOT a live case, and one called inside a
-    `test_*` function is. Without this the contract could go green on plumbing."""
     source = (
         "def start_ok():\n    return server.start()\n"
         "def test_one():\n    s = start_ok()\n    server.registers()  # server.debug()\n"
@@ -789,34 +687,7 @@ def test_the_live_case_counter_ignores_helpers_comments_and_session_methods() ->
 
 
 def test_every_tool_has_a_live_case_naming_it() -> None:
-    """The "every tool has a live case" claim, GATED instead of asserted in prose.
-
-    It was a sentence in a file header, and a sentence cannot notice a case being
-    skipped: the watched-mode case skips when its placement flags are absent, so on a
-    host whose display topology cannot be read the live file reports "22 passed" and a
-    reader takes the whole surface as covered. A skip and a pass print the same
-    thing without `-rs`.
-
-    NO COUNT IS WRITTEN DOWN HERE. A docstring that names a number of tools, or a number
-    of contract tests, is stale prose inside the gate that exists to stop prose going
-    stale, which is the sharpest form the defect takes. A number in a durable text expires
-    by itself and nobody re-reads it to notice; the INVARIANT (every registered tool has a
-    live case) does not.
-
-    IT RUNS AT CONTRACT TIER ON PURPOSE. This is the one assertion about live coverage
-    that must not itself depend on an emulator, a display or an environment variable --
-    otherwise the check meant to catch a silent skip can be silently skipped.
-
-    THE POPULATION COMES FROM THE MCP REGISTRY, not from a list here, so a tool added
-    tomorrow turns this red until it has a live case, and a list nobody maintains
-    cannot quietly fall behind the surface.
-
-    IT PARSES THE SOURCE, it does not search it. A text search counts a tool as covered
-    if ANY dotted call of that name appears anywhere, including inside a COMMENT, and
-    including `s.memdump(...)` on a `Session` object, which is not the tool at all:
-    deleting the only real call to the `debug` tool and leaving the words in a comment
-    would keep the gate green. An AST cannot be satisfied by prose.
-    """
+    """The "every tool has a live case" claim, GATED instead of asserted in prose."""
     live = Path(str(server.__file__)).parent / "tests" / "live"
     called: set[str] = set()
     for path in sorted(live.glob("test_*.py")):
@@ -830,9 +701,6 @@ def test_every_tool_has_a_live_case_naming_it() -> None:
 
 
 def test_every_tool_this_server_promises_is_actually_registered() -> None:
-    """`mcp.tool()` returns the function unchanged, so dropping the
-    registration leaves every other test green while the server exposes NOTHING.
-    Nothing asserted the surface existed, only that individual functions behaved."""
     expected = {
         "start", "status", "close", "log", "log_wait", "debug", "registers", "set_register",
         "write", "read_memory", "disassemble", "call_stack", "memdump", "find", "scan",
@@ -856,9 +724,6 @@ def test_every_tool_this_server_promises_is_actually_registered() -> None:
 
 @pytest.mark.parametrize("old", [{"mode": "headless"}, {"seconds": 60}, {"plan_wait": 5}])
 def test_starts_old_words_are_refused_by_name(old: dict[str, Any]) -> None:
-    """`mode`, `seconds` and `plan_wait` are `shared`, `session_seconds` and `settle_seconds`:
-    the old word is the schema's refusal naming it, never a call that ran on a default (and
-    never a launch: the refusal comes before the binary is looked for)."""
     res = asyncio.run(server.mcp.call_tool("start", {"conf": "/x.conf", "cwd": "/",
                                                     "session_seconds": 60, **old}))
     reply = json.loads("".join(c.text for c in res.content if getattr(c, "text", None)))
@@ -876,17 +741,7 @@ def test_a_second_session_is_refused_while_the_first_is_alive(tmp_path: Path) ->
 
 
 def live_callers() -> set[str]:
-    """The tools that CALL `live()`, asked of the source rather than remembered.
-
-    A list here is a list that falls behind the surface, which is what happened: it
-    named ten of the sixteen, under a docstring reading "THE POPULATION, not a sample
-    of three". What a hand-written population misses is the NEWEST tools, which is
-    exactly the direction that kind of list fails in.
-
-    IT PARSES, it does not search, for the same reason
-    `test_every_tool_has_a_live_case_naming_it` does: `"live()" in text` is satisfied
-    by a comment.
-    """
+    """The tools that CALL `live()`, asked of the source rather than remembered."""
     def asks(node: ast.AST) -> bool:
         return any(isinstance(sub, ast.Call) and isinstance(sub.func, ast.Name)
                    and sub.func.id == "live" for sub in ast.walk(node))
@@ -903,14 +758,6 @@ def live_callers() -> set[str]:
 
 def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         tmp_path: Path) -> None:
-    """THE POPULATION, DERIVED. Each of these calls `live()`, and a tool that stopped
-    doing so would answer from a corpse.
-
-    THE ARGUMENTS CANNOT BE DERIVED -- a parser cannot invent a valid `segment` -- so
-    they stay written here, and the check that they COVER the population is what is
-    derived. A tool added tomorrow turns this red until it has a row, which is the one
-    thing the old hand-written dict could not do.
-    """
     nm = tmp_path / "s.nm"
     nm.write_text("00001000 T _main\n", encoding="utf-8")
     calls: dict[str, Callable[[], dict[str, Any]]] = {
@@ -984,9 +831,6 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
 
 def test_the_block_carries_each_alarm_while_it_holds_and_the_process_facts_ride_at_the_top(
         ) -> None:
-    """Every reply's block carries `alive`, `running`, `altered` and each alarm WHILE IT HOLDS;
-    what the process is rides at the top of `start`, `status` and `close` and nowhere else. Read
-    on a session whose alarms all hold, then on its quiet twin."""
     fake = install()
     quiet = fake.state()
     loud = {**quiet, "conf_changed_on_disk": True, "terminal_bytes_dropped": 4096,
@@ -1005,8 +849,6 @@ def test_the_block_carries_each_alarm_while_it_holds_and_the_process_facts_ride_
 
 
 def test_a_dead_session_answers_broken_until_close_collects_it() -> None:
-    """A machine that died under the session is `session_broken` with its `exit_code`, the
-    session kept (its block, its `altered`) until `close`, which collects it."""
     dead = install(alive=False)
     got = cast(dict[str, Any], server.registers())
     assert got["code"] == "session_broken" and got["exit_code"] == -15, got
@@ -1039,8 +881,7 @@ def test_start_over_a_dead_session_collects_it_first_and_refuses_over_a_live_one
 # ------------------------------------------------------------------- the answers
 
 def test_the_success_path_of_each_reader_returns_a_result(tmp_path: Path) -> None:
-    """THE GREEN BESIDE THE REDS. Without it a reader could raise INVALID
-    unconditionally and every refusal test above would still pass."""
+    """THE GREEN BESIDE THE REDS."""
     # THE SCREEN IS BUILT FROM THE ADDRESS BEING ASKED FOR, not pasted: `read_memory`
     # refuses a reply that does not contain the row it asked about, so a hand-written
     # row would have to be edited in step with the arguments below and would go stale
@@ -1069,8 +910,6 @@ def test_a_reader_that_got_an_empty_screen_says_so(tmp_path: Path) -> None:
 
 
 def test_log_reports_how_many_matched_not_how_many_came_back() -> None:
-    """Different answers. Reporting the slice's length under the name `matched` meant
-    a caller asking "how many times did this fire" got the limit back."""
     install()
     got = server.log(channel="guest", pattern="loudness", limit=1)
     assert got["lines_total"] == 500
@@ -1085,8 +924,6 @@ def test_log_passes_the_callers_pattern_limit_and_channel_through() -> None:
 
 
 def test_a_dump_returns_the_path_the_bytes_actually_landed_at(tmp_path: Path) -> None:
-    """The success path, which had NO test: the only case was one where the file was
-    absent, so the size half of the guard could be deleted and stay green."""
     install()
     dest = tmp_path / "out" / "mem.bin"
     got = server.memdump(ref="0749:00000000", length=16, dest=str(dest))
@@ -1106,8 +943,6 @@ def test_every_reply_carries_whether_the_machine_was_written_to() -> None:
 
 
 def test_an_invalid_reply_carries_it_too() -> None:
-    """The one a caller reasons hardest about, and the easiest to hand back with no
-    trace that the machine has been forced."""
     install(screen="   \n")                 # nothing but whitespace comes back
     server.set_register(name="ax", value=0x10)
     got = server.debug(command="BPLIST")
@@ -1116,18 +951,7 @@ def test_an_invalid_reply_carries_it_too() -> None:
 
 
 def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
-    """The contract belongs to the real object, so the real function is what runs here.
-
-    `Session.state` is called UNBOUND against a minimal object carrying only the four
-    attributes it reads, which exercises the actual code without a process existing.
-    With only a hand-written stub in play, `altered` could be deleted from the real
-    `state()` and the whole suite stay green -- the headline guarantee gated by a
-    double written to agree with it.
-
-    EVERY VALUE IS ASSERTED, not just the key set: breaking `"alive": self.alive()` to a
-    hardcoded `True`, or `"terminal_bytes_dropped"` to a hardcoded `0`, would otherwise
-    leave everything green, including the counter the whole drain is about.
-    """
+    """The contract belongs to the real object, so the real function is what runs here."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     dead = threading.Thread(target=lambda: None)
@@ -1183,8 +1007,6 @@ def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
 
 
 def test_the_double_has_not_drifted_from_what_it_stands_in_for(tmp_path: Path) -> None:
-    """A stub that has fallen behind the real shape is how a test starts agreeing with
-    a bug instead of with a contract."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     fake = SimpleNamespace(
@@ -1282,8 +1104,6 @@ def test_closing_when_there_was_nothing_is_not_a_failure() -> None:
 
 
 def test_closing_a_live_session_closes_it_and_clears_it() -> None:
-    """The real path, which had no test: removing `_SESSION = None` left the session
-    installed and every later `start` refusing "a session is already live"."""
     s = install()
     got = server.close()
     assert got["closed"] is True and got["exit_code"] == 0
@@ -1297,9 +1117,7 @@ def test_closing_a_live_session_closes_it_and_clears_it() -> None:
 # ------------------------------------------------------------------ the wrapper
 
 def test_invalid_is_surfaced_and_not_swallowed(monkeypatch: pytest.MonkeyPatch) -> None:
-    """The wrapper turns `Invalid` into a reply that SAYS INVALID. Letting it escape
-    as an exception, or flattening it to an empty result, are the two ways an
-    instrument that examined nothing gets read as one that found nothing."""
+    """The wrapper turns `Invalid` into a reply that SAYS INVALID."""
 
     # A throwaway tool the pre-gate registry has never heard of: named as machine-judged
     # for the test, since an unknown name there is a programmer's error by design.
@@ -1320,10 +1138,7 @@ def test_invalid_is_surfaced_and_not_swallowed(monkeypatch: pytest.MonkeyPatch) 
 
 
 def test_a_real_bug_is_not_dressed_up_as_invalid(monkeypatch: pytest.MonkeyPatch) -> None:
-    """The EXCEPTION IDENTITY axis. Widening the wrapper to `except Exception` leaves
-    the case above green while every genuine defect -- an AttributeError, a timeout --
-    starts reporting itself as "I examined nothing", which is a broken instrument
-    calling itself clean."""
+    """The EXCEPTION IDENTITY axis."""
 
     # A throwaway tool the pre-gate registry has never heard of: named as machine-judged
     # for the test, since an unknown name there is a programmer's error by design.
@@ -1342,13 +1157,7 @@ def test_a_real_bug_is_not_dressed_up_as_invalid(monkeypatch: pytest.MonkeyPatch
 
 
 def test_both_halves_of_the_capture_come_back(tmp_path: Path) -> None:
-    """BOTH, and they are not symmetric. The VIDEO is the emulator's own doing and
-    needs no keypress; the STILL is an EXTRACTION from it, because the emulator's own
-    screenshot is a mapper action with no non-interactive trigger at all.
-
-    The bug this closes: `capture_video=True` started a recording and NO tool handed
-    back the file. It recorded and did not say so.
-    """
+    """BOTH, and they are not symmetric."""
     fake = install()
     caps_dir = tmp_path / "caps"
     caps_dir.mkdir()
@@ -1377,14 +1186,6 @@ def test_both_halves_of_the_capture_come_back(tmp_path: Path) -> None:
 
 def test_a_dump_of_the_wrong_size_is_not_the_dump_that_was_asked_for(
         tmp_path: Path) -> None:
-    """The size is the ONLY thing tying those bytes to this request, so it is checked
-    for EQUALITY.
-
-    `> 0` would accept a truncated write, a wrong segment that landed short, and any
-    leftover file with a byte in it, with `length` in hand the whole time.
-    `Session.memdump` runs UNBOUND here against a stand-in whose `command` writes the file
-    the debugger would have written -- the real method, the real check, no emulator.
-    """
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     work = tmp_path / "work"
@@ -1415,9 +1216,7 @@ def test_a_dump_of_the_wrong_size_is_not_the_dump_that_was_asked_for(
 
 def test_a_dump_refuses_rather_than_deleting_what_is_already_there(
         tmp_path: Path) -> None:
-    """It will not delete from the emulator's working directory, which is somebody's
-    project. Unlinking every candidate with the error SUPPRESSED would leave the
-    staleness guarantee resting on an error nobody reads."""
+    """It will not delete from the emulator's working directory, which is somebody's project."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     work = tmp_path / "work"
@@ -1436,11 +1235,7 @@ def test_a_dump_refuses_rather_than_deleting_what_is_already_there(
 # ------------------------------------ a caller's path is absolute or `~`-led, `~` expanded
 
 def _launch_of(**kw: Any) -> dlaunch.Launch:
-    """Run `start` far enough to capture the `Launch` it built, and no further.
-
-    `ds.Session` is replaced by a builder that records its argument and then refuses,
-    so nothing is spawned and `start` returns INVALID. `shutil.which` is stubbed, so these
-    cases need no DOSBox-X installed."""
+    """Run `start` far enough to capture the `Launch` it built, and no further."""
     seen: list[dlaunch.Launch] = []
 
     def build(launch: dlaunch.Launch) -> Any:
@@ -1455,8 +1250,6 @@ def _launch_of(**kw: Any) -> dlaunch.Launch:
 
 
 def test_start_takes_every_path_as_written(tmp_path: Path) -> None:
-    """Each of `start`'s paths asserted SEPARATELY: they are separate arguments, so one
-    assertion over one of them would leave the others free to regress."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     launch = _launch_of(conf=str(conf), cwd=str(tmp_path), session_seconds=30,
@@ -1472,9 +1265,6 @@ def test_start_takes_every_path_as_written(tmp_path: Path) -> None:
     ("state_dir", "states")])
 def test_start_expands_a_tilde_in_every_path_and_makes_nothing_at_a_literal_one(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch, arg: str, under_home: str) -> None:
-    """`Path("~/g.conf")` is a RELATIVE path whose first component is `~`: the judge expands
-    it, so the session is built on the home directory's path and nothing is made at a
-    literal `~`."""
     monkeypatch.chdir(tmp_path)
     monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setenv("USERPROFILE", str(tmp_path))
@@ -1496,9 +1286,6 @@ def test_start_expands_a_tilde_in_every_path_and_makes_nothing_at_a_literal_one(
 
 
 def test_the_two_optional_paths_stay_absent_when_the_caller_omits_them(tmp_path: Path) -> None:
-    """`captures_dir` and `logfile` are absent unless given: "the caller said nothing" never
-    turns into a path (a captures directory at the working directory, an `e9` channel
-    reading a directory, both `ok`)."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     launch = _launch_of(conf=str(conf), cwd=str(tmp_path), session_seconds=30)
@@ -1508,8 +1295,6 @@ def test_the_two_optional_paths_stay_absent_when_the_caller_omits_them(tmp_path:
 
 def test_memdump_expands_a_tilde_dest_and_makes_no_literal_one(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """`~/dump.bin` taken as written would put the bytes in a directory literally named `~`:
-    the judge expands it, so the bytes land in the home directory and no `~` is made."""
     monkeypatch.chdir(tmp_path)
     monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setenv("USERPROFILE", str(tmp_path))
@@ -1544,8 +1329,6 @@ def test_capture_frame_expands_a_tilde_in_either_path(
 
 def test_an_omitted_capture_source_stays_absent_rather_than_becoming_a_path(
         tmp_path: Path) -> None:
-    """The source defaults to "the largest capture", decided inside the session; an omitted
-    one is handed down as absent, never as a path."""
     fake = install()
     seen: list[Path | None] = []
 
@@ -1562,8 +1345,6 @@ def test_an_omitted_capture_source_stays_absent_rather_than_becoming_a_path(
 @pytest.mark.parametrize("bad", ["~nosuchuser-here/x", "~\x00/x"])
 def test_a_tilde_user_or_a_nul_is_a_refusal_and_not_a_traceback(
         tmp_path: Path, bad: str) -> None:
-    """`tool()` translates only `Invalid`, so both spellings are refused cleanly, through three
-    tools, each reply carrying its session block."""
     got = cast(dict[str, Any], server.start(conf=bad, cwd=str(tmp_path), session_seconds=30))
     assert got["code"] == "bad_argument" and "session" in got, got
     install()
@@ -1592,13 +1373,7 @@ def _source(tmp_path: Path, text: str = NM_TEXT) -> str:
 
 
 def test_the_base_is_measured_off_the_machine_and_not_assumed(tmp_path: Path) -> None:
-    """The one fact a symbol file cannot be built without, and the one place it lives.
-
-    A toolchain emits OFFSETS; this debugger's var list stores LINEAR addresses. Under
-    a DPMI host the difference is decided at load time, so it is read from the running
-    machine -- and the LIMIT comes back beside it because that is the independent thing
-    a caller can check the base against.
-    """
+    """The one fact a symbol file cannot be built without, and the one place it lives."""
     install(mode="Pr32")
     got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path)))
     assert got["status"] == "ok", got
@@ -1609,13 +1384,6 @@ def test_the_base_is_measured_off_the_machine_and_not_assumed(tmp_path: Path) ->
 
 def test_the_base_is_read_from_this_commands_echo_and_not_the_first_on_screen(
         tmp_path: Path) -> None:
-    """The debugger overlays `ss: b:00008240` into the register pane, so a reader that
-    takes the first `b:` on the screen answers about the STACK selector.
-
-    This is the case that makes the anchoring load-bearing rather than tidy: the stack
-    base is in the captured screen, above the answer, and it is a perfectly plausible
-    number.
-    """
     install(mode="Pr32")
     got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path),
                                                    base_from="DS"))
@@ -1625,8 +1393,6 @@ def test_the_base_is_read_from_this_commands_echo_and_not_the_first_on_screen(
 
 def test_an_explicit_base_reports_no_limit_rather_than_inventing_one(
         tmp_path: Path) -> None:
-    """The limit is what lets a caller check the base is really this program's, so a
-    fabricated one would hand their own assumption back as evidence for itself."""
     install()
     got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path),
                                                    base="100000"))
@@ -1648,15 +1414,6 @@ def test_every_parsed_symbol_is_accounted_for_in_the_reply(tmp_path: Path) -> No
 
 def test_the_accounting_still_sums_when_the_unencodable_list_is_truncated(
         tmp_path: Path) -> None:
-    """`unencodable` is a POSITIONAL SLICE, so it needs a count beside it or the
-    reply's own arithmetic stops adding up -- and the caller's conservation check fails
-    silently, over a reply whose whole purpose is that the counts are what you read
-    instead of the names.
-
-    THE FIXTURE HAS TO EXCEED THE CAP. The other case has four symbols and at most one
-    unencodable, so it could never reach it: the sum held there while it was broken,
-    and the assertion was written against `len(...)`, which encoded the break.
-    """
     install(mode="Pr32")
     text = "".join(f"0000{i:04x} T _caf\u00e9{i}\n" for i in range(12)) + "00009999 T _ok\n"
     got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path, text)))
@@ -1669,12 +1426,7 @@ def test_the_accounting_still_sums_when_the_unencodable_list_is_truncated(
 
 def test_loaded_is_read_back_out_of_the_debugger_and_lv_appends(
         tmp_path: Path) -> None:
-    """`ok` is not evidence: this emulator prints it for a filename it truncated.
-
-    And `LV` appends (tests/fixtures/symbols-lv), so a second load leaves BOTH lists --
-    `loaded` is the debugger's whole holding, not the size of this call. A tool reporting the latter
-    would be describing something the real command does not do.
-    """
+    """`ok` is not evidence: this emulator prints it for a filename it truncated."""
     install(mode="Pr32")
     src = _source(tmp_path)
     first = cast(dict[str, Any], server.symbols_load(path=src))
@@ -1686,8 +1438,6 @@ def test_loaded_is_read_back_out_of_the_debugger_and_lv_appends(
 
 def test_the_bytes_that_went_in_carry_the_measured_linear_address(
         tmp_path: Path) -> None:
-    """End to end through the server: `nm`'s 0x16DF20 plus the machine's 0x400000 is
-    the 0x56DF20 the live debugger holds for `_main`."""
     s = install(mode="Pr32")
     server.symbols_load(path=_source(tmp_path))
     assert ("_main", 0x0056DF20) in s.loaded, s.loaded
@@ -1704,9 +1454,6 @@ def test_a_source_that_is_not_a_symbol_list_is_refused_by_name(tmp_path: Path) -
 
 def test_a_register_this_debugger_does_not_report_is_refused_not_sent(
         tmp_path: Path) -> None:
-    """`SELINFO` answers an argument it does not know with an EMPTY name and an all-zero
-    descriptor rather than an error (tests/fixtures/selinfo/break-start-af.txt), which
-    reads exactly like a real selector based at 0."""
     install(mode="Pr32")
     got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path),
                                                    base_from="AX"))
@@ -1740,17 +1487,7 @@ TLINK_TEXT = (
 
 def test_an_overlay_symbol_reaches_the_caller_flagged_and_counted(tmp_path: Path)\
         -> None:
-    """CONDITIONALITY AT THE BOUNDARY, which is the only place it is worth anything.
-
-    TLINK writes `idle` beside a public in an overlay it has not made resident, so that
-    address holds whatever is swapped in when you look. The reader carries the flag now;
-    this is the case that says an MCP caller SEES it -- both as a count of how much of
-    the table is like that, and per symbol, because a total cannot answer about the one
-    name you asked for.
-
-    THE BASE IS PASSED. A Borland map is real-mode `SEG:OFFS` and `base_from` measures a
-    DPMI selector that does not exist there, which is the tool's own documented refusal.
-    """
+    """CONDITIONALITY AT THE BOUNDARY, which is the only place it is worth anything."""
     install()
     src = tmp_path / "real16.map"
     src.write_text(TLINK_TEXT, encoding="utf-8")
@@ -1776,9 +1513,6 @@ def test_an_overlay_symbol_reaches_the_caller_flagged_and_counted(tmp_path: Path
 
 
 def test_an_nm_table_is_reported_with_no_overlay_symbols(tmp_path: Path) -> None:
-    """THE CONTROL FOR THE FORMAT: `nm` has no such concept, so anything but zero here
-    would be this server inventing one. Without it, a hardcoded 1 passes the case
-    above."""
     install(mode="Pr32")
     got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path)))
     assert got["overlay_idle"] == 0, got
@@ -1794,21 +1528,6 @@ ILINK32_BASES = {"1": "0x401000", "2": "0x423000", "3": "0x4289B8"}
 
 
 def test_a_32_bit_map_reaches_the_caller_through_the_tool(tmp_path: Path) -> None:
-    """THE WHOLE SEAM, which nothing exercised: every 32-bit assertion lived one layer
-    down, against `sym.parse` directly.
-
-    `symbols_load` -> `parse` -> the 32-bit path -> `plan` -> `encode` -> the debugger ->
-    `_placed` is where the arithmetic a caller actually sees is decided.
-
-    `section_bases` IS THE POINT OF THE CASE, not `base=0`: a real ILINK32 map prints zeros
-    in its `Start` column, so `base=0` would mean "put everything at its raw offset". A
-    sectioned map is placed from a table the CALLER supplies, because the bases are not in
-    the file.
-
-    THE BASES ARE DISTINCT, which is what lets this fail at all: with one base, or with the
-    section index ignored, `_main` and `_errno` come back at addresses that read exactly as
-    right and are not.
-    """
     install()
     src = ILINK32_MAP
     got = cast(dict[str, Any], server.symbols_load(
@@ -1829,8 +1548,6 @@ def test_a_32_bit_map_reaches_the_caller_through_the_tool(tmp_path: Path) -> Non
 
 def test_a_sectioned_map_refuses_a_section_the_caller_did_not_position(
         tmp_path: Path) -> None:
-    """The refusal a caller most needs, through the layer they meet it at: it NAMES the
-    section nobody positioned rather than reporting a row as lost."""
     install()
     src = ILINK32_MAP
     # THE TOOL DECORATOR TRANSLATES A REFUSAL INTO A REPLY rather than letting it
@@ -1845,12 +1562,7 @@ def test_a_sectioned_map_refuses_a_section_the_caller_did_not_position(
 
 def test_section_bases_keys_arrive_as_json_strings_and_are_read_as_numbers(
         tmp_path: Path) -> None:
-    """JSON HAS NO INTEGER KEYS, so the table reaches this tool keyed on `"1"`.
-
-    Accepted as it comes, it would match NO symbol -- every one of them carries an `int`
-    section -- while looking exactly like a table that does, and the caller would be told
-    their sections are unpositioned about a table naming all of them.
-    """
+    """JSON HAS NO INTEGER KEYS, so the table reaches this tool keyed on `"1"`."""
     install()
     src = ILINK32_MAP
     got = cast(dict[str, Any], server.symbols_load(
@@ -1874,8 +1586,6 @@ def test_find_refuses_before_anything_is_loaded() -> None:
 
 
 def test_find_answers_with_both_addresses(tmp_path: Path) -> None:
-    """The offset is what the toolchain printed and the linear is what the debugger
-    shows; quoting one makes the reader do the arithmetic this tool got right once."""
     install(mode="Pr32")
     server.symbols_load(path=_source(tmp_path))
     got = cast(dict[str, Any], server.symbols_find(name="_main"))
@@ -1893,9 +1603,6 @@ def test_find_by_linear_takes_the_base_back_off(tmp_path: Path) -> None:
 
 
 def test_find_by_linear_takes_hex_text_and_refuses_a_number(tmp_path: Path) -> None:
-    """`linear` is hex TEXT, so no caller converts hex to decimal: a number is
-    refused naming the argument, never read as hex digits or coerced, and so is text that is
-    not a hex address."""
     install(mode="Pr32")
     server.symbols_load(path=_source(tmp_path))
     prefixed = cast(dict[str, Any], server.symbols_find(linear="0x56DF24"))
@@ -1916,13 +1623,7 @@ def test_find_wants_exactly_one_question(tmp_path: Path) -> None:
 
 
 def test_the_table_is_forgotten_when_the_session_goes(tmp_path: Path) -> None:
-    """THE STALE-BASE GUARD, and it is the reason the table is cleared at all.
-
-    A base belongs to ONE loaded process. Kept across a close, `symbols_find` goes on
-    adding the old base to its offsets and hands back a confident linear address for a
-    program that is no longer running -- which this package treats as worse than a
-    refusal, because a refusal is visible.
-    """
+    """THE STALE-BASE GUARD, and it is the reason the table is cleared at all."""
     install(mode="Pr32")
     server.symbols_load(path=_source(tmp_path))
     assert cast(dict[str, Any], server.symbols_find(name="_main"))["status"] == "ok"
@@ -1934,13 +1635,7 @@ def test_the_table_is_forgotten_when_the_session_goes(tmp_path: Path) -> None:
 
 def test_a_session_that_died_on_its_bound_takes_the_table_with_it(
         tmp_path: Path) -> None:
-    """THE MOST DANGEROUS OF THE THREE CLEARING SITES, and the one no test reached.
-
-    `_forget_symbols` runs when the session OBJECT changes. A session that expires on
-    its own bound changes no object until `close` collects it, so `symbols_find` asks
-    `live()` first and is `session_broken` meanwhile: without the call it would answer `ok`
-    with a linear address for a program that is gone.
-    """
+    """THE MOST DANGEROUS OF THE THREE CLEARING SITES, and the one no test reached."""
     s = install()
     server.symbols_load(path=_source(tmp_path))
     s._alive = False                      # what a bound expiring looks like from here
@@ -1952,14 +1647,7 @@ def test_a_session_that_died_on_its_bound_takes_the_table_with_it(
 
 def test_a_new_session_does_not_inherit_the_previous_ones_table(
         tmp_path: Path) -> None:
-    """The second untested site. `start` clears ABOVE every validation, so it is
-    reached with no previous session and on every failure path -- but nothing asserted
-    it, and deleting that one call would leave the whole suite green.
-
-    IT CLEARS EVEN WHEN `start` GOES ON TO REFUSE, which is the direction that matters:
-    the clear sits above every validation, so a `start` that fails for any reason still
-    does not leave the previous program's base behind.
-    """
+    """The second untested site."""
     s = install(mode="Pr32")
     server.symbols_load(path=_source(tmp_path))
     assert dstate.STATE.table, "precondition: a table is installed"
@@ -1972,9 +1660,6 @@ def test_a_new_session_does_not_inherit_the_previous_ones_table(
 
 def test_a_start_refused_because_a_session_is_live_keeps_the_table(
         tmp_path: Path) -> None:
-    """The mirror, and it is what stops "clear on every start" being the whole answer:
-    a `start` refused because the machine is still up has changed nothing, and the
-    table still describes the program that is still running."""
     install(mode="Pr32")
     server.symbols_load(path=_source(tmp_path))
     got = cast(dict[str, Any], server.start(conf=str(tmp_path / "x.conf"),
@@ -2004,11 +1689,6 @@ SELINFO_REAL_MODE_IN_A_PROGRAM = "SelectorInfo CS:\r\n\n\nI-> _"
 
 def test_a_real_mode_map_with_no_base_is_refused_before_selinfo_is_asked(
         tmp_path: Path) -> None:
-    """In real mode there are no descriptors to measure a base from, and this build's
-    `SELINFO` there prints no descriptor line at all inside a program, so asking it could only
-    give the parser's refusal, which names the wrong cause. The register pane already says the
-    mode, so the refusal comes first and names the cause and the remedy: `base` as hex text,
-    the load segment times 16. A 16-bit protected-mode pane has descriptors and is measured."""
     class RealModeProgram(FakeSession):
         asked: list[str] = []
 
@@ -2033,18 +1713,7 @@ def test_a_real_mode_map_with_no_base_is_refused_before_selinfo_is_asked(
 
 def test_an_absent_descriptor_is_refused_rather_than_placed_at_base_zero(
         tmp_path: Path) -> None:
-    """THE GUARD THAT MATTERS MOST, because its failure mode is silent and plausible.
-
-    A zeroed descriptor (the shape `SELINFO` gives at the reset vector, and for a selector
-    nothing has set up) taken at face value is `base = 0`, which places every symbol at its
-    raw offset -- a table that loads without complaint, reports `ok`, and names whatever
-    occupies low memory. Real mode is refused before it is asked; this is the guard that is
-    left, for a protected-mode selector with no present descriptor.
-
-    The type field is what separates it from a real descriptor, and it separates it from
-    NOTHING ELSE: base 0 alone is not the signal, because a base of 0 is a legal thing
-    for a descriptor to have.
-    """
+    """THE GUARD THAT MATTERS MOST, because its failure mode is silent and plausible."""
     class Unset(FakeSession):
         """The double with the zeroed descriptor, on a protected-mode pane."""
 
@@ -2071,8 +1740,6 @@ def test_an_absent_descriptor_is_refused_rather_than_placed_at_base_zero(
 
 
 def test_an_empty_name_is_a_listing_and_not_a_lookup(tmp_path: Path) -> None:
-    """`startswith("")` is true of every symbol, so an empty name matched all of them
-    under `status: ok` -- honest arithmetic, and not the question anybody asked."""
     install()
     server.symbols_load(path=_source(tmp_path))
     got = cast(dict[str, Any], server.symbols_find(name=""))
@@ -2081,13 +1748,7 @@ def test_an_empty_name_is_a_listing_and_not_a_lookup(tmp_path: Path) -> None:
 
 def test_a_failed_load_does_not_replace_a_table_that_was_working(
         tmp_path: Path) -> None:
-    """A REFUSAL THAT ALSO CORRUPTS STATE inverts this module's one rule.
-
-    `load_symbols` refuses on many paths, and the count is not the point, which is why
-    this does not quote one. Installing the table before calling it meant a refused load
-    still replaced a good one: the caller got INVALID from `symbols_load` and `ok` from
-    `symbols_find`, answering out of a table the debugger does not hold.
-    """
+    """A REFUSAL THAT ALSO CORRUPTS STATE inverts this module's one rule."""
     s = install(mode="Pr32")
     server.symbols_load(path=_source(tmp_path))
     good = cast(dict[str, Any], server.symbols_find(name="_main"))["symbols"][0]
@@ -2106,8 +1767,6 @@ def test_a_failed_load_does_not_replace_a_table_that_was_working(
 
 def test_the_descriptor_type_is_reported_so_a_caller_can_see_what_was_read(
         tmp_path: Path) -> None:
-    """`1B` is a 32-bit code segment and `13` is data; an explicit base reports `-1`
-    because there was no descriptor to read at all."""
     install(mode="Pr32")
     measured = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path)))
     assert measured["descriptor"] == 0x1B, measured
@@ -2118,8 +1777,6 @@ def test_the_descriptor_type_is_reported_so_a_caller_can_see_what_was_read(
 
 def test_a_source_that_cannot_be_read_is_a_refusal_and_not_a_traceback(
         tmp_path: Path) -> None:
-    """`tool()` translates only `Invalid`, and a mistyped path is this tool's likeliest first
-    call: it is refused naming the file it did not find, with the session block."""
     install()
     got = cast(dict[str, Any], server.symbols_load(path=str(tmp_path / "nope.sym")))
     assert got["status"] == "INVALID", got
@@ -2140,9 +1797,6 @@ def test_a_source_that_cannot_be_read_is_a_refusal_and_not_a_traceback(
 
 
 def test_memdump_forwards_the_address_the_caller_asked_for(tmp_path: Path) -> None:
-    """`live().memdump(0, 0, length, ...)` passed every case: the double ignored the
-    segment and the offset, so nothing could tell a tool that forwards its caller's
-    address from one that dumps low memory and reports `ok`."""
     fake = install()
     dest = tmp_path / "d.bin"
     # Inside one segment's 64 KiB, so it is one command whatever the mode; a range past offset
@@ -2157,8 +1811,6 @@ def test_memdump_forwards_the_address_the_caller_asked_for(tmp_path: Path) -> No
 
 
 def test_set_register_writes_the_value_it_was_given() -> None:
-    """`live().set_register(name, 0)` was green: the only case asserted `altered` and
-    the session block, never the mapping that comes back, so the VALUE was unwatched."""
     fake = install()
     got = cast(dict[str, Any], server.set_register(name="EAX", value=0xDEADBEEF))
     assert got["regs"]["EAX"] == "0xdeadbeef", got["regs"]
@@ -2179,15 +1831,6 @@ def test_set_register_writes_the_value_it_was_given() -> None:
 
 
 def test_the_central_distinctness_guarantee_is_gated_and_not_merely_written() -> None:
-    """`Plan.check()`'s own docstring says the guarantee "was measurably FALSE for a
-    while, and a guarantee that lives only in a test is one that holds until somebody
-    edits the function without running that test" -- and then NOTHING tested the check
-    itself. Removing its uniqueness raise passed the whole tier.
-
-    All three of its refusals are exercised here, each built by hand rather than by
-    `plan()`, because `plan()` cannot produce an invalid one and a check that can only
-    be fed valid input is not being checked.
-    """
     two = [dsym.Symbol("_a", 1), dsym.Symbol("_b", 2)]
     with pytest.raises(dsym.BadSymbolText, match="belonging to another symbol"):
         dsym.Plan(parsed=2, symbols=two, short=["x", "x"]).check()
@@ -2203,14 +1846,6 @@ def test_the_central_distinctness_guarantee_is_gated_and_not_merely_written() ->
 # ------------------------------------------------ the verification pass
 
 def test_build_check_is_invalid_and_not_ok_when_there_is_no_binary() -> None:
-    """`build_check` is INVALID and not `ok` with `binary: None` when there is no binary:
-    the one tool whose purpose is examining preconditions must not report a clean result
-    for a missing tool. This contract case is what pins it on a commit; the live tier
-    runs it only with an emulator.
-
-    THE PATH IS PATCHED, NOT THE ANSWER: `shutil.which` is what decides, so that is
-    what the double stands in for, and the real body runs.
-    """
     with mock.patch("scry_core.binaries.shutil.which", lambda _n: None):
         got = cast(dict[str, Any], server.build_check())
     assert got["status"] == "INVALID", got
@@ -2219,9 +1854,7 @@ def test_build_check_is_invalid_and_not_ok_when_there_is_no_binary() -> None:
 
 
 def test_build_check_is_invalid_when_the_build_has_no_debugger() -> None:
-    """The precondition it exists for. A build without the debugger starts fine and
-    then hangs `start` until its timeout, so a `build_check` that could not tell them
-    apart would send a caller looking at their config."""
+    """The precondition it exists for."""
     with (mock.patch("scry_core.binaries.shutil.which", lambda _n: "/usr/bin/dosbox-x"),
           mock.patch("dosbox_x_server.subprocess.run",
                      lambda *_a, **_k: SimpleNamespace(stdout="usage: ...", stderr=""))):
@@ -2232,9 +1865,6 @@ def test_build_check_is_invalid_when_the_build_has_no_debugger() -> None:
 
 def test_a_build_that_lists_the_option_but_carries_no_debugger_is_refused(
         tmp_path: Path) -> None:
-    """A build configured with `--disable-debug` (tests/fixtures/build_check) still
-    lists `-break-start` in `-helpdebug`, because the option parser is there either way. What
-    tells the two apart is the debugger's own text in the binary."""
     binary = tmp_path / "dosbox-x"
     binary.write_bytes(b"\x00a build with the option and no debugger\x00")
     with (mock.patch("scry_core.binaries.shutil.which", lambda _n: str(binary)),
@@ -2245,9 +1875,7 @@ def test_a_build_that_lists_the_option_but_carries_no_debugger_is_refused(
 
 
 def test_build_check_says_ok_and_names_the_surface_on_a_good_build(tmp_path: Path) -> None:
-    """THE GREEN BESIDE THE TWO REDS. Without it both cases above pass over a
-    `build_check` that raises unconditionally. The binary is a file of this case's own,
-    carrying the help line a heavy-debug build compiles, and one without it says false."""
+    """THE GREEN BESIDE THE TWO REDS."""
     binary = tmp_path / "dosbox-x"
     binary.write_bytes(b"\x00" + binaries.DEBUGGER_MARK + b"\x00" + binaries.HEAVY_DEBUG_MARK
                        + b"\x00")
@@ -2271,17 +1899,6 @@ def test_build_check_says_ok_and_names_the_surface_on_a_good_build(tmp_path: Pat
 
 
 def test_build_check_refuses_to_start_a_second_emulator_beside_a_live_one() -> None:
-    """It answers by running `dosbox-x -helpdebug`, which is a SECOND process of the
-    same binary -- and on a build without the debugger that is not a help listing, it
-    is a full emulator for the whole 20 s bound, because this build does not refuse an
-    option it does not know: it starts.
-
-    `start` refuses exactly this, in as many words, and `build_check` refuses in the
-    same state: it must not spawn the binary with `-helpdebug` under a live session.
-
-    THE SPAWN IS WATCHED, not merely the status: asserting INVALID alone would pass
-    over a refusal raised AFTER the process had already been started.
-    """
     install(alive=True)
     spawned: list[list[str]] = []
 
@@ -2299,12 +1916,6 @@ def test_build_check_refuses_to_start_a_second_emulator_beside_a_live_one() -> N
 
 def test_a_limit_means_nothing_where_one_symbol_comes_back_and_is_not_refused_there(
 ) -> None:
-    """`limit <= 0` is refused only where it means something, not for `offset` and
-    `linear` -- which answer with exactly one symbol and never slice.
-
-    On the offset branch `limit=1` and `limit=10` return byte-identical replies (the
-    proof it is not read) and `limit=0` is not refused.
-    """
     install(alive=True)
     dstate.STATE.install_table([dsym.Symbol(name="_main", offset=0x1000, kind="T"),
                                 dsym.Symbol(name="_next", offset=0x2000, kind="T")])
@@ -2334,14 +1945,6 @@ def test_a_limit_means_nothing_where_one_symbol_comes_back_and_is_not_refused_th
 
 
 def test_a_bad_pattern_is_a_refusal_and_not_a_traceback(tmp_path: Path) -> None:
-    """`dosbox_symbols.plan` compiled the caller's regex bare, and `symbols_load`'s
-    only guard is `except BadSymbolText`.
-
-    End to end through the tool, that lets
-    `re.PatternError: missing ), unterminated subpattern at position 0` come OUT of
-    `symbols_load` -- no `status`, no `reason`, no session block. The reader that takes a
-    pattern is the layer that owes the guard, and `dosbox_logs.compiled` carries it.
-    """
     install(alive=True)
     src = tmp_path / "s.nm"
     src.write_text("00001000 T _main\n00002000 T _next\n", encoding="utf-8")
@@ -2367,14 +1970,7 @@ def test_a_bad_pattern_is_a_refusal_and_not_a_traceback(tmp_path: Path) -> None:
 
 def test_a_read_memory_reply_carries_the_whole_data_view_and_not_just_the_row_asked_for(
 ) -> None:
-    """A fixture of ONE row is not enough: the reply's whole value is that EIGHT come back.
-
-    This tool returns rows instead of a screen precisely because the debugger's data
-    view holds eight of them and a positional cut falls inside them -- so the answer
-    would begin at E040 for a caller who asked about E000. Reducing `read_memory` to
-    return only the row asked for would leave the ENTIRE contract tier green over the
-    exact defect the tool exists to prevent.
-    """
+    """A fixture of ONE row is not enough: the reply's whole value is that EIGHT come back."""
     seg, off = 0x0749, 0
     rows = [f"{seg:04X}:{off + 16 * i:08X} " + " ".join([f"{i:02X}"] * 16)
             + "  " + "." * 16 for i in range(8)]
@@ -2388,9 +1984,6 @@ def test_a_read_memory_reply_carries_the_whole_data_view_and_not_just_the_row_as
 
 
 def test_read_memory_refuses_a_segment_that_will_not_fit_the_command() -> None:
-    """The range check needs its own contract case: removing it would leave the
-    whole contract tier green, with its only other cover one assertion in the LIVE
-    tier -- the tier that skips itself on a machine with no conf."""
     seg, off = 0x0749, 0
     row = f"{seg:04X}:{off:08X} " + " ".join(["00"] * 16) + "  " + "." * 16
     install(screen=f"some screen\r\n{row}\r\n")
@@ -2403,16 +1996,6 @@ def test_read_memory_refuses_a_segment_that_will_not_fit_the_command() -> None:
 
 
 def test_each_double_returns_the_field_set_the_real_method_returns() -> None:
-    """The comment above the four debugging doubles claims exactly this, and the claim is
-    held here, by AST: a double that drops a field the real method returns (`step`'s
-    `moved` or `stalled`) or invents one it never does is caught when either moves.
-
-    A DOUBLE IS CAPTURED FROM THE REAL THING, NEVER AUTHORED FROM WHAT SOMEBODY
-    BELIEVES IT LOOKS LIKE, and these four were authored. A comment saying they agree
-    is a reminder, and reminders are what fail; this reads BOTH sides and compares
-    them, so the claim cannot go stale again in either direction. It compares NAMES and
-    not values: a stub's values are its own business, and its field set is a contract.
-    """
     for name in ("step", "run_to", "watch", "log_wait"):
         # `watch` is the one-row case of `watch_places`, whose element is its reply.
         branches = returned_key_sets(getattr(ds.Session, "watch_places" if name == "watch"
@@ -2446,20 +2029,7 @@ def test_each_double_returns_the_field_set_the_real_method_returns() -> None:
 
 
 def test_a_delta_longer_than_the_cap_is_cut_and_says_so() -> None:
-    """The `clipped: True` branch, owned by a case that NAMES it.
-
-    It was a tail-end assertion inside `test_a_cap_of_zero_would_lie_and_is_refused`,
-    which is a case about a different guard -- so the live tier, looking for somewhere
-    to delegate this branch to, delegated it to a TOOL instead and got it wrong.
-
-    Against a real emulator, on a STOPPED machine no ordinary
-    command on this build reaches a cap: `debug("BPLIST")` and
-    `debug("HELP")`, the longest listing the debugger prints, are both under the
-    4000 `debug` passes. So on a STOPPED machine this branch is not reachable live (a
-    running guest's `resume` reaches its own cap, its Output pane scrolling through the
-    settle, and the tool's contract says so), and it is covered HERE, on a screen built to
-    exceed the cap.
-    """
+    """The `clipped: True` branch, owned by a case that NAMES it."""
     out = "x" * 5000
     got = dstate.delta(out, 4000)
     assert got.get("clipped", False) is True
@@ -2471,16 +2041,7 @@ def test_a_delta_longer_than_the_cap_is_cut_and_says_so() -> None:
 
 
 def returned_key_sets(fn: object) -> list[frozenset[str]]:
-    """The literal keys of EACH dict a function returns, one set per `return`.
-
-    PER BRANCH and never unioned: a union cannot see a field dropped from one return of
-    several, which is the shape `run_to` and `e9_wait` are most exposed to (two and four
-    dict returns respectively).
-
-    A LIMIT, said out loud: it reads dict LITERALS. A reply assembled into a variable
-    and returned by name, or built with `**`, comes back short or empty -- which the
-    callers guard against by asserting the result is non-empty rather than trusting it.
-    """
+    """The literal keys of EACH dict a function returns, one set per `return`."""
     src = textwrap.dedent(inspect.getsource(cast(Any, fn)))
     # A METHOD THAT DELEGATES (`return frames.frame(self, ...)`, a seam of the session) is read
     # at the body it hands the call to, which is where its returns are.
@@ -2509,8 +2070,6 @@ def returned_key_sets(fn: object) -> list[frozenset[str]]:
     return [keys(d) for node in ast.walk(ast.parse(src)) if (d := returned(node)) is not None]
 
 def documented(tool: str) -> str:
-    """What a reader finds for `tool` past its description: its family's page and REFERENCE.md,
-    their wrapped lines joined."""
     import dosbox_mcp
     root = Path(__file__).resolve().parent.parent
     family = next(f for f, tools in dosbox_mcp.ROSTER.families if tool in tools)
@@ -2519,17 +2078,6 @@ def documented(tool: str) -> str:
 
 
 def test_the_status_docstring_names_every_field_its_reply_carries() -> None:
-    """An MCP caller reads this docstring and NOT the README, which `status`'s own
-    docstring says -- so it must describe every field.
-
-    A field left out would include `conf_changed_on_disk`, the one field that says the
-    session no longer reproduces the config it was started from.
-
-    IT IS DERIVED AND NOT REMEMBERED, which is the point: a docstring brought up to
-    date once falls behind at the next field, and nothing notices. This reads the
-    REPLY and requires each key to appear in the text, so the next field added turns it
-    red until it is described.
-    """
     install(alive=True)
     got = cast(dict[str, Any], server.status())
     doc = server.status.__doc__ or ""
@@ -2551,14 +2099,6 @@ def test_the_status_docstring_names_every_field_its_reply_carries() -> None:
 
 
 def test_read_memory_refuses_an_offset_that_will_not_fit_the_command() -> None:
-    """The guard immediately below the segment one, and it was in the state the segment
-    guard was FOUND in: no contract case at all, so removing it left the
-    whole tier green.
-
-    Without it the call formats `D 0000:10000` and falls through to the row-match
-    refusal, whose message blames the SCREEN -- so a caller is told the debugger
-    answered about somewhere else when what was wrong was their own argument.
-    """
     seg, off = 0x0749, 0
     row = f"{seg:04X}:{off:08X} " + " ".join(["00"] * 16) + "  " + "." * 16
     install(screen=f"some screen\r\n{row}\r\n")
@@ -2599,21 +2139,7 @@ NM_FRAGMENT = (
     "000003f8 A _port\n")
 
 def test_the_caller_is_told_about_every_bucket_the_plan_carries(tmp_path: Path) -> None:
-    """CONSERVATION AT THE BOUNDARY, which is the only place it is worth anything.
-
-    `Plan.check()`'s sum grew a term and `symbols_load`'s reply did not, so an MCP
-    caller got a report whose buckets do not add up to `parsed` and no field explaining
-    the gap -- the exact failure `Plan`'s docstring says cannot happen.
-
-    IT IS DERIVED FROM THE DATACLASS, not listed by hand, so a future bucket is caught
-    rather than the test edited when one arrives.
-
-    AND BY EXCLUSION, NOT BY TYPE: a filter keeping the fields typed `int` would drop a
-    counter retyped `int | None` (`f.type` is a STRING here) and stop requiring it to reach
-    the caller at all. A filter on the SHAPE of a field standing in for a claim about the
-    POPULATION is exactly the wrong way round, so every field must be reported unless it is
-    named below, and a retyped counter forces a red or an explicit exception.
-    """
+    """CONSERVATION AT THE BOUNDARY, which is the only place it is worth anything."""
     import dataclasses
     # THE THREE THAT TRAVEL BY ANOTHER ROUTE, each named with its reason: `unencodable`
     # goes out truncated to eight PLUS its own length, and `symbols`/`short` are the
@@ -2709,13 +2235,7 @@ def test_the_caller_is_told_about_every_bucket_the_plan_carries(tmp_path: Path) 
 
 def test_a_sectioned_table_answers_a_linear_address_without_being_told_the_section(
         tmp_path: Path) -> None:
-    """THE BRANCH A CALLER WHO HAS STOPPED SOMEWHERE ACTUALLY USES.
-
-    A linear address answers the section question itself: it falls inside exactly one
-    section's base, and picking the greatest base at or below it is the encoder's own
-    arithmetic run backwards. Making the caller work the section out first would hand
-    back the sum they came here to have computed.
-    """
+    """THE BRANCH A CALLER WHO HAS STOPPED SOMEWHERE ACTUALLY USES."""
     install()
     src = ILINK32_MAP
     server.symbols_load(path=str(src), section_bases=ILINK32_BASES)
@@ -2732,9 +2252,7 @@ def test_a_sectioned_table_answers_a_linear_address_without_being_told_the_secti
 
 
 def test_an_offset_alone_is_refused_on_a_sectioned_table(tmp_path: Path) -> None:
-    """The sections OVERLAP, so a bare offset exists in every one of them. Answering it
-    would mean picking one silently -- which is exactly the confident wrong answer this
-    package treats as worse than a refusal."""
+    """The sections OVERLAP, so a bare offset exists in every one of them."""
     install()
     src = ILINK32_MAP
     server.symbols_load(path=str(src), section_bases=ILINK32_BASES)
@@ -2751,8 +2269,6 @@ def test_an_offset_alone_is_refused_on_a_sectioned_table(tmp_path: Path) -> None
 
 def test_an_address_below_every_section_is_refused_rather_than_folded(
         tmp_path: Path) -> None:
-    """Below every base there is no section to subtract, and choosing one anyway would
-    produce a negative offset and then the nearest symbol of whatever section that was."""
     install()
     src = ILINK32_MAP
     server.symbols_load(path=str(src), section_bases=ILINK32_BASES)
@@ -2763,9 +2279,6 @@ def test_an_address_below_every_section_is_refused_rather_than_folded(
 
 def test_a_flat_table_refuses_a_question_about_a_section_it_does_not_have(
         tmp_path: Path) -> None:
-    """A flat table has exactly one section, so naming a different one is a question
-    about something that is not there -- and answering it with the flat symbols would be
-    agreeing with a mistaken premise."""
     install()
     src = tmp_path / "prog.sym"
     src.write_text(NM_FRAGMENT, encoding="utf-8")
@@ -2780,9 +2293,6 @@ def test_a_flat_table_refuses_a_question_about_a_section_it_does_not_have(
 
 def test_nothing_below_the_asked_offset_names_the_section_it_looked_in(
         tmp_path: Path) -> None:
-    """"Nothing in the table" is a statement about the TABLE, and on a sectioned load it
-    has to say WHICH section it examined -- otherwise a caller reads it as a statement
-    about the whole program."""
     install()
     src = ILINK32_MAP
     server.symbols_load(path=str(src), section_bases=ILINK32_BASES)
@@ -2792,16 +2302,7 @@ def test_nothing_below_the_asked_offset_names_the_section_it_looked_in(
 
 
 def test_the_server_declares_instructions_and_they_name_what_a_caller_needs() -> None:
-    """The `instructions` field is how the PROTOCOL hands a session the server's own contract.
-
-    Nothing else asserts it: deleting the `instructions=` argument, or truncating it to "",
-    leaves the suite green while every session loses the text. The failure direction is silence,
-    which is what a compliant server looks like.
-
-    It asserts the CLAIMS, not the wording, and the claims it pins are the ones easiest to get
-    FALSE: `build_check` described as validating a reading, which it does not, and the console
-    reader described as taking a `pattern`, which it does not have.
-    """
+    """The `instructions` field is how the PROTOCOL hands a session the server's own contract."""
     text = server.mcp.instructions
     assert text, "the server declares no instructions at all"
     # ABSENCE, not just presence: a phrase that must not be there is not checked by
@@ -2829,11 +2330,6 @@ def test_the_server_declares_instructions_and_they_name_what_a_caller_needs() ->
 # ============================ the name layer: breakpoints and watches ============
 
 class NamesFake:
-    """A session double for the name-layer tools: it holds a mutable BPLIST so arming and
-    clearing are visible to `declaration_list(kind="breakpoint")`, and answers `where`/`registers`
-    so the
-    server can derive a seg:off. Real vs protected mode and the CS/DS selectors are set by
-    the test, since they are exactly what the derivation turns on."""
 
     survey_text = ""      # its stop survey paints no screen, so no code pane
 
@@ -2927,11 +2423,6 @@ class NamesFake:
                 f"screen=720x400")
 
     def send_commands(self, commands: list[bytes]) -> list[str]:
-        """The stub of the real guest, carried out on this double's own state: `K` is a scan
-        byte, `B` a button, `M` the pointer placed (snapped to `pointer_snaps`, as a text
-        mode does), `R` the report line, handed back. THE GUEST REACTS to a post that is not
-        only a report, when the test says so, by writing `input_effect` and then
-        `after_effect`."""
         self.commands_sent.append(list(commands))
         reports: list[str] = []
         keys = b"".join(c[1:] for c in commands if c[:1] == b"K")
@@ -2959,8 +2450,6 @@ class NamesFake:
         return reports
 
     def break_in(self, seconds: float = 5.0) -> float:
-        """The channel route of the real one, headless or windowed: the machine is at the
-        debugger a moment later, which the running flag's setter counts as a stop."""
         self.break_ins += 1
         self.running = False
         return 0.12
@@ -3059,8 +2548,6 @@ class NamesFake:
         return self.where(), self.registers()
 
     def stop_survey(self) -> tuple[dict[str, str], dict[str, str], list[dict[str, str]]]:
-        """ONE repaint's worth, like the real one: the list comes with the pane, so this
-        counts as a survey and NOT as a `breakpoints()` read (`bp_calls` stays)."""
         self.survey_calls += 1
         return self.where(), self.registers(), [dict(r) for r in self.rows]
 
@@ -3091,8 +2578,6 @@ class NamesFake:
         return self.mem.get((seg, off), bytes(n))[:n]
 
     def memdump(self, seg: int, off: int, length: int, dest: Path) -> Path:
-        """What was asked, recorded BEFORE the console check, so a case can tell a dump
-        refused by the tool from one the session was handed and turned down."""
         self.memdump_calls = getattr(self, "memdump_calls", []) + [(seg, off, length)]
         self._console()
         dest.parent.mkdir(parents=True, exist_ok=True)
@@ -3144,8 +2629,6 @@ class NamesFake:
         return ""
 
     def _relist(self, rows: list[dict[str, str]]) -> None:
-        """The list as the debugger prints it after a change: newest first, numbered from 00
-        down, so a delete moves every later row up one index (tests/fixtures/bplist)."""
         self.rows[:] = [{**r, "index": f"{i:02d}"} for i, r in enumerate(rows)]
 
     def _listed(self, entry: str) -> None:
@@ -3246,9 +2729,6 @@ def test_a_bare_linear_address_is_refused_it_has_no_segment() -> None:
 
 
 def test_target_for_takes_the_selector_in_protected_mode_and_the_paragraph_in_real() -> None:
-    """The heart of placement: the caller gives an offset, the server gives the seg:off,
-    and which it is turns on the mode. Protected: the selector CS, offset unchanged. Real:
-    the load paragraph, and a high offset split so it still fits 16 bits."""
     prot = NamesFake(mode="Pr32", cs="00A7")
     assert placement.target_for(0x16DD80, "CS", prot) == (0xA7, 0x16DD80)  # type: ignore[arg-type]
     dstate.STATE.base.clear()
@@ -3262,8 +2742,6 @@ def test_target_for_takes_the_selector_in_protected_mode_and_the_paragraph_in_re
 
 def test_breakpoint_at_a_symbol_arms_stores_and_says_when_it_is_marked(
         tmp_path: Path) -> None:
-    """S3: arming on a linker-marked public SAYS so (a fact, not a refusal), and the
-    declaration is stored so it survives a rebuild."""
     syms = [dsym.Symbol("_uicue_apply", 0x3D5E0, kind="T"),
             dsym.Symbol("ATRCT_RUN", 0x599, kind="T", idle=True)]     # one marked public
     _names(tmp_path, symbols=syms)
@@ -3279,11 +2757,6 @@ def test_breakpoint_at_a_symbol_arms_stores_and_says_when_it_is_marked(
 
 def test_re_declaring_a_breakpoint_is_a_no_op_that_re_arms_a_lost_row(
         tmp_path: Path) -> None:
-    """Re-declaring is a no-op, not a refusal, so a declaration script
-    survives a re-run after a rebuild. `already_stored` says which. AND the arm still runs,
-    so a declaration whose debugger row was LOST (a new session cleared BPLIST) is re-armed
-    rather than reported armed while absent -- the gone-then-rearm path no live case reaches
-    because the live one re-declares a still-armed row."""
     syms = [dsym.Symbol("_uicue_apply", 0x3D5E0, kind="T", idle=True)]  # marked, for note
     fake = _names(tmp_path, symbols=syms)
     first = server.breakpoint_at(ref="_uicue_apply")
@@ -3305,8 +2778,6 @@ def test_re_declaring_a_breakpoint_is_a_no_op_that_re_arms_a_lost_row(
 
 def test_re_declaring_a_change_watch_is_a_no_op_and_keeps_the_pr_caveat(
         tmp_path: Path) -> None:
-    """A change-watch re-declared after a rebuild must not stack a second BPPM, and the
-    protected-mode caveat rides the no-op reply too."""
     syms = [dsym.Symbol("_g_rate", 0x1234, kind="D")]
     fake = _names(tmp_path, symbols=syms, mode="Pr32")
     first = server.watch_add(ref="_g_rate", mode="change", length=4)
@@ -3320,10 +2791,6 @@ def test_re_declaring_a_change_watch_is_a_no_op_and_keeps_the_pr_caveat(
 
 def test_a_by_address_declaration_on_a_running_machine_is_kept_unarmed_not_invalid(
         tmp_path: Path) -> None:
-    """REGRESSION GUARD: the already-armed check reads the live list, which refuses a
-    running machine -- so it must sit inside the try that answers `unarmed`, or a
-    by-address ref (which reaches arming without touching the machine) escapes as INVALID
-    with the declaration already stored and no `stored` in the reply."""
     fake = _names(tmp_path, arm_fails=True)
     fake.bp_raises = True                         # the running machine refuses a list read
     bp = server.breakpoint_at(ref="00A7:0100")
@@ -3339,10 +2806,6 @@ def test_a_by_address_declaration_on_a_running_machine_is_kept_unarmed_not_inval
 
 def test_an_interrupt_breakpoint_is_stored_listed_cleared_and_not_double_armed(
         tmp_path: Path) -> None:
-    """The whole interrupt-in-store path at the SERVER level, which the live tier alone
-    covered (and it is env-gated): stored on arm, shown armed in the list, a foreign BPINT
-    surfaced, re-arm is a no-op that does not stack a row, and clear removes it and disarms
-    the debugger row -- by text, since the row carries no seg:off."""
     fake = _names(tmp_path)
     armed = server.breakpoint_interrupt(number=0x21)
     assert armed["stored"] is True and armed.get("already_stored", False) is False
@@ -3367,9 +2830,6 @@ def test_an_interrupt_breakpoint_is_stored_listed_cleared_and_not_double_armed(
 
 def test_perform_runs_steps_in_order_and_stops_at_the_first_failure(
         tmp_path: Path) -> None:
-    """A list of the server's own ops runs in order, and a failing step
-    STOPS the sequence with a full account -- the steps that ran, which failed and why, and
-    nothing after it. Here an ambiguous name fails the second step; the third never runs."""
     syms = [dsym.Symbol("_main", 0x1000, kind="T"),
             dsym.Symbol("dup", 0x2000, kind="t"), dsym.Symbol("dup", 0x3000, kind="t")]
     _names(tmp_path, symbols=syms)
@@ -3386,9 +2846,7 @@ def test_perform_runs_steps_in_order_and_stops_at_the_first_failure(
 
 
 def test_perform_refuses_an_unknown_op(tmp_path: Path) -> None:
-    """The vocabulary is the server's own op names. An unknown op is refused naming it once, in
-    the refusal's own `operations`, as MAME's does; each step's message points there instead of
-    repeating the list, which every copy of the message (`errors`, the joined refusal) would."""
+    """The vocabulary is the server's own op names."""
     _names(tmp_path)
     unknown = server.perform(steps=[{"op": "warp_core"}, {"op": "nope"}])
     assert unknown["status"] == "INVALID" and "not a step" in unknown["message"]
@@ -3408,8 +2866,6 @@ def test_perform_refuses_an_unknown_op(tmp_path: Path) -> None:
 
 
 def _guest(tmp_path: Path) -> Any:
-    """A running guest whose session has a logfile, as the mouse reads its pointer back
-    through it and the stub's announce is read off it."""
     fake = _names(tmp_path, watched=False)
     fake.launch = dataclasses.replace(fake.launch, logfile=Path("/e9.log"))
     fake.running = True
@@ -3417,9 +2873,6 @@ def _guest(tmp_path: Path) -> Any:
 
 
 def test_input_reaches_a_headless_session_and_the_mouse_needs_no_log(tmp_path: Path) -> None:
-    """Every input goes into the guest, so a headless session takes keys and clicks like a
-    windowed one; the mouse reads its pointer back off the stub's own line, so a session with
-    no log takes it too."""
     fake = _guest(tmp_path)
     assert cast(dict[str, Any], server.send_keys(keys=["a"]))["route"] == "guest"
     assert cast(dict[str, Any], server.send_mouse(button="left"))["route"] == "guest"
@@ -3429,9 +2882,6 @@ def test_input_reaches_a_headless_session_and_the_mouse_needs_no_log(tmp_path: P
 
 
 def test_send_keys_composes_the_scan_bytes_as_key_commands(tmp_path: Path) -> None:
-    """The keys go down as one `K` command per scan byte, the modifiers' makes first and their
-    breaks last; the reply counts what went and names the route, and a list given as a bare
-    string is refused rather than splatted into characters."""
     fake = _names(tmp_path, watched=False)
     fake.running = True
     got = cast(dict[str, Any], server.send_keys(keys=["a", "enter"],
@@ -3450,9 +2900,6 @@ def test_send_keys_composes_the_scan_bytes_as_key_commands(tmp_path: Path) -> No
 
 
 def test_send_mouse_moves_presses_and_reads_the_pointer_back(tmp_path: Path) -> None:
-    """A move (`x`, `y`), a button, or a move then a button, in one call: the pointer is read
-    before (to map the screen's units onto the driver's range) and after (to prove where it
-    went), and the reply carries the read-back in both units."""
     fake = _guest(tmp_path)
     fake.video_mode, fake.mouse_max = 0x13, (639, 199)
     moved = cast(dict[str, Any], server.send_mouse(x=100, y=50))
@@ -3481,8 +2928,6 @@ def test_send_mouse_moves_presses_and_reads_the_pointer_back(tmp_path: Path) -> 
 
 
 def test_a_move_the_driver_placed_elsewhere_is_said_never_rounded_away(tmp_path: Path) -> None:
-    """A text mode puts the pointer on its cell and a program's own range clamps it: the
-    read-back is what the reply reports, `arrived` false and `asked` beside it."""
     fake = _guest(tmp_path)
     fake.pointer_snaps = 8
     exact = cast(dict[str, Any], server.send_mouse(x=10, y=3))         # cell (10, 3)
@@ -3493,8 +2938,6 @@ def test_a_move_the_driver_placed_elsewhere_is_said_never_rounded_away(tmp_path:
 
 
 def test_send_mouse_refuses_before_anything_is_sent(tmp_path: Path) -> None:
-    """Every refusal arrives before a byte goes down: the shape, the numbers, the vocabularies,
-    a target off the screen, a mode whose units this server does not map."""
     fake = _guest(tmp_path)
     cases: list[tuple[Callable[[], dict[str, Any]], str]] = [
         (lambda: server.send_mouse(), "name a move"),
@@ -3531,9 +2974,6 @@ def test_send_mouse_refuses_before_anything_is_sent(tmp_path: Path) -> None:
 
 def test_a_stub_that_never_reports_is_named_and_a_malformed_report_refused(
         tmp_path: Path) -> None:
-    """The pointer's read-back is the stub's line: a stub that stopped reading the port is the
-    instrument broken (`host_failed`), never a pointer that did not move; and a report in
-    another shape is refused rather than half-read."""
     fake = _guest(tmp_path)
     fake.reports_lost = {1}
     got = cast(dict[str, Any], server.send_mouse(button="left"))
@@ -3545,9 +2985,6 @@ def test_a_stub_that_never_reports_is_named_and_a_malformed_report_refused(
 
 def test_the_stub_must_have_announced_its_protocol_before_anything_is_sent(
         tmp_path: Path) -> None:
-    """An older stub reads every byte as a scan code, so a mouse command would type
-    keystrokes: the announce is read off the log once, and an absent, deviceless or older
-    stub is refused naming the fix. Found once, it is not searched for again."""
     fake = _guest(tmp_path)
     fake.stub_protocol = ""
     fake.log = ["Bochs port E9h: BOOT  . start"]
@@ -3574,11 +3011,6 @@ E9_KEY_ACT = "Bochs port E9h: [+  66.628] ACT   . key_cue_a=0 b=-1 on=0"
 
 
 def test_send_keys_with_an_expectation_confirms_the_guest_reacted(tmp_path: Path) -> None:
-    """THE TWO-CHANNEL HALF: a key is not delivered because it was posted, it is delivered
-    because the GUEST reacted. With `expect` the tool marks the log BEFORE the post, posts,
-    and waits for a NEW line matching it; the reply then says the effect was SEEN and quotes
-    the line. The mark is asserted to be the pre-post position, because a mark taken after
-    the post would hide a reaction that landed at once."""
     fake = _names(tmp_path, watched=True)
     fake.running = True                      # input goes to a RUNNING guest
     fake.log = ["Bochs port E9h: [+   0.000] BOOT  . start"]
@@ -3601,12 +3033,7 @@ def test_send_keys_with_an_expectation_confirms_the_guest_reacted(tmp_path: Path
 
 
 def test_send_keys_reports_a_swallowed_key_as_a_miss_not_a_success(tmp_path: Path) -> None:
-    """THE FALSE SUCCESS THIS EXISTS TO REFUSE. The guest swallows the key (a modal had the
-    focus) and writes nothing, AND an earlier line already matches the pattern -- the cue
-    fired at some point before this post. The wait's verdict is TIMEOUT, its note says the
-    guest did not react, the reply still reports the post that happened (a miss is not
-    'nothing was sent'), and the stale line is NOT served as the reaction: the wait was asked
-    from the mark, past it."""
+    """THE FALSE SUCCESS THIS EXISTS TO REFUSE."""
     fake = _names(tmp_path, watched=True)
     fake.running = True                      # input goes to a RUNNING guest
     fake.log = ["Bochs port E9h: [+   0.000] BOOT  . start", E9_KEY_ACT]   # a STALE match
@@ -3623,11 +3050,7 @@ def test_send_keys_reports_a_swallowed_key_as_a_miss_not_a_success(tmp_path: Pat
 
 def test_send_keys_an_instrument_that_broke_is_not_reported_as_a_miss(
         tmp_path: Path) -> None:
-    """ONLY AN EXPIRED BOUND IS A MISS. The wait also refuses when the emulator is GONE or
-    the log SHRUNK, and those are the instrument breaking, not the guest ignoring the key:
-    the reply says the effect could NOT be verified, leads with the wait's own words, and
-    never claims the program swallowed anything. Seen red: catching the base class turned a
-    dead emulator into "the guest did not react ... the emulator is GONE"."""
+    """ONLY AN EXPIRED BOUND IS A MISS."""
     fake = _names(tmp_path, watched=True)
     fake.running = True                      # input goes to a RUNNING guest
     fake.wait_raises = ds.Invalid("session_broken", "the emulator is GONE, 0.2s into a 10.0s wait")
@@ -3640,9 +3063,6 @@ def test_send_keys_an_instrument_that_broke_is_not_reported_as_a_miss(
 
 
 def test_send_keys_without_an_expectation_says_it_did_not_verify(tmp_path: Path) -> None:
-    """No `expect`, no verification -- and the reply SAYS so instead of letting `posted`
-    read as delivered. `verify.checked` is False with the reason, so a caller cannot take
-    the ok for a landing. And `seconds` with nothing to bound is REFUSED, not ignored."""
     fake = _names(tmp_path, watched=True)
     fake.running = True                      # input goes to a RUNNING guest
     got = cast(dict[str, Any], server.send_keys(keys=["a"]))
@@ -3656,11 +3076,6 @@ def test_send_keys_without_an_expectation_says_it_did_not_verify(tmp_path: Path)
 
 def test_send_keys_expectation_that_cannot_be_checked_is_refused_before_the_post(
         tmp_path: Path) -> None:
-    """A post cannot be taken back, so everything that would make the verification
-    impossible is refused BEFORE it: no logfile (no channel to see a reaction in), a
-    pattern that is empty or not a regex, a wait that is not a bound or not a number (a
-    `perform` step hands values over untyped). `commands_sent` stays empty -- the key was NOT
-    sent and then reported unverifiable."""
     fake = _names(tmp_path, watched=True)
     fake.running = True                      # input goes to a RUNNING guest
     fake.log = None                                   # a session with no logfile
@@ -3685,9 +3100,6 @@ def test_send_keys_expectation_that_cannot_be_checked_is_refused_before_the_post
 
 
 def test_send_mouse_takes_the_same_expectation(tmp_path: Path) -> None:
-    """The mouse half verifies through the same path: a click OR a move with `expect` is
-    confirmed or reported missed exactly as a key is, and a miss still carries the
-    pointer's read-back."""
     fake = _guest(tmp_path)
     fake.input_effect = "Bochs port E9h: [+   1.000] UI    . ask via CLICK on button 0"
     hit = cast(dict[str, Any], server.send_mouse(button="left", expect="via CLICK"))
@@ -3704,9 +3116,6 @@ def test_send_mouse_takes_the_same_expectation(tmp_path: Path) -> None:
 
 
 def test_perform_stops_at_a_send_keys_step_whose_expectation_missed(tmp_path: Path) -> None:
-    """A sequence whose key was swallowed ENDS there with the
-    wait's TIMEOUT, naming the step, rather than carrying on as if the program had taken the
-    key; the step is in `ran`, with its post and its miss."""
     fake = _names(tmp_path, watched=True)
     fake.running = True                      # input goes to a RUNNING guest
     out = cast(dict[str, Any], server.perform(steps=[
@@ -3719,10 +3128,6 @@ def test_perform_stops_at_a_send_keys_step_whose_expectation_missed(tmp_path: Pa
 
 
 def test_run_to_takes_a_symbol_or_an_address_like_the_readers_do(tmp_path: Path) -> None:
-    """A symbol resolves through the same path the breakpoint
-    and reader tools use (the code selector in protected mode, the paragraph in real mode),
-    a raw SEG:OFF is taken as written, and a name absent from this build is refused before
-    anything runs. The reply names the ref and the target it resolved to."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("_uicue_apply", 0x3D5E0, kind="T"),
                                      dsym.Symbol("twice", 0x10, kind="t"),
                                      dsym.Symbol("twice", 0x20, kind="t")])
@@ -3750,9 +3155,6 @@ def test_run_to_takes_a_symbol_or_an_address_like_the_readers_do(tmp_path: Path)
 
 
 def test_scan_sequence_composes_set1_makes_and_breaks_in_order() -> None:
-    """The serial route's bytes: modifiers' makes, each key's make and break, the
-    modifiers' breaks in reverse; an extended key repeats its E0 prefix on the break; an
-    unknown name or a modifier a DOS keyboard lacks is refused with nothing composed."""
     assert inputs.scan_sequence(["a"], "-") == bytes([0x1E, 0x9E])
     assert inputs.scan_sequence(["a", "enter"], "-") == bytes([0x1E, 0x9E, 0x1C, 0x9C])
     assert inputs.scan_sequence(["a"], "shift") == bytes([0x2A, 0x1E, 0x9E, 0xAA])
@@ -3767,8 +3169,6 @@ def test_scan_sequence_composes_set1_makes_and_breaks_in_order() -> None:
 
 def test_send_keys_refuses_a_stopped_machine_and_the_cap_and_a_miss_blames_no_window(
         tmp_path: Path) -> None:
-    """A stopped machine is refused, not fed bytes that would land at the next resume; a long
-    text goes in several calls; and a miss names the program, not a focus it never needed."""
     fake = _names(tmp_path, watched=False)
     fake.running = True
     fake.input_effect = E9_KEY_ACT
@@ -3790,18 +3190,12 @@ def test_send_keys_refuses_a_stopped_machine_and_the_cap_and_a_miss_blames_no_wi
 
 
 def test_the_key_vocabulary_is_the_scan_table_s() -> None:
-    """One table names every key the route can send, and every entry composes a make and a
-    break: an extended key carries its E0 prefix on both."""
     for name, code in inputs.SCAN_SET1.items():
         seq = inputs.scan_sequence([name], "-")
         assert seq == bytes(code) + bytes(code[:-1]) + bytes([code[-1] | 0x80]), name
 
 
 def test_the_shipped_stub_matches_its_source(tmp_path: Path) -> None:
-    """`guest/INJECT.COM` is the assembled `guest/inject.asm`, byte for byte: a COM edited by
-    hand, or a source edited without reassembling, is what this turns red on. It needs NASM
-    to reassemble and SKIPS without it, saying so, rather than reporting a match it never
-    checked."""
     nasm = shutil.which("nasm")
     if nasm is None:
         pytest.skip("nasm is not on PATH, so the stub cannot be reassembled to compare")
@@ -3814,10 +3208,6 @@ def test_the_shipped_stub_matches_its_source(tmp_path: Path) -> None:
 
 
 def test_drive_marks_acts_verifies_and_looks_from_the_mark(tmp_path: Path) -> None:
-    """The Chrome-driver shape for a DOS program: the log is marked BEFORE the act, the act
-    runs as `perform` runs it, the overall `expect` is waited for from that mark, and the
-    LOOK is what the guest wrote since it (filtered, last N). A stale line before the mark
-    is neither the verification nor part of the look."""
     fake = _names(tmp_path, watched=True)
     fake.running = True                      # input goes to a RUNNING guest
     fake.where_raises = True              # a RUNNING guest, as a key is sent to
@@ -3864,11 +3254,6 @@ def test_drive_marks_acts_verifies_and_looks_from_the_mark(tmp_path: Path) -> No
 
 def test_drive_reports_a_miss_a_failed_act_and_refuses_what_it_cannot_do(
         tmp_path: Path) -> None:
-    """A guest that did not do what was expected is the verify's TIMEOUT, with the account of
-    what ran and the look beside it; a step whose own expect missed ends the act, and the
-    overall expect is then not waited for (`verify` unavailable); and
-    everything the call cannot honour -- no logfile, an empty act, a bad look or bound,
-    seconds with no expect -- is refused before the act moves anything."""
     fake = _names(tmp_path, watched=True)
     fake.running = True                      # input goes to a RUNNING guest
     fake.where_raises = True              # a RUNNING guest, as a key is sent to
@@ -3922,10 +3307,6 @@ def test_drive_reports_a_miss_a_failed_act_and_refuses_what_it_cannot_do(
 
 def test_drive_carries_the_verify_refusals_own_code_when_the_instrument_broke(
         tmp_path: Path) -> None:
-    """The act ran and the VERIFY could not be made because the wait's instrument broke (the
-    emulator GONE, the log SHRUNK): the reply's `code` is the wait's own, not a word invented
-    here, and `verify` carries it too, so a caller can tell a broken instrument from a miss
-    without parsing prose."""
     fake = _names(tmp_path, watched=True)
     fake.running = True
     fake.where_raises = True
@@ -3939,10 +3320,6 @@ def test_drive_carries_the_verify_refusals_own_code_when_the_instrument_broke(
 
 
 def test_drive_verifies_a_stopped_guest_with_one_read_and_no_wait(tmp_path: Path) -> None:
-    """A guest stopped at the debugger cannot write a line, so an act that ended at a stop is
-    verified with ONE read since the mark: seen if the line is already there, a miss that
-    SAYS the machine is stopped otherwise -- never a wait that burns the bound on a machine
-    that could not act and then blames the program. Seen red: the wait ran its whole bound."""
     fake = _names(tmp_path, watched=True)
     fake.halted = True                    # a resume that halts at once: the act ends stopped
     fake.log = ["Bochs port E9h: [+   0.000] BOOT  . start"]
@@ -3960,9 +3337,6 @@ def test_drive_verifies_a_stopped_guest_with_one_read_and_no_wait(tmp_path: Path
 
 def test_drive_takes_the_act_s_own_ending_over_the_session_flag(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """An act that says it ended running is waited on even when the flag reads stopped, and one
-    that says it ended at a stop is read once even when the flag reads running: the act's tail
-    saw the machine last."""
     fake = _names(tmp_path, watched=True)
     fake.log = ["Bochs port E9h: [+   0.000] BOOT  . start"]
 
@@ -3988,12 +3362,6 @@ def test_a_log_that_cannot_be_read_at_a_stop_is_the_verify_s_refusal_never_a_che
 
 
 def test_perform_a_running_ok_step_leaves_the_machine_as_it_found_it(tmp_path: Path) -> None:
-    """R1's shape, `resume` then `send_keys`: the key step runs on the RUNNING guest and
-    must not make the executor believe the machine stopped. Two consequences, both red
-    if a running-OK op overwrites `running`: the TAIL still waits for the stop the resume was
-    heading for and hands back the enriched reply; and a CONSOLE step after `[resume, status]`
-    is held at the "still running" boundary rather than dispatched into a
-    running machine and failing on a cut pane."""
     fake = _names(tmp_path, watched=True)
     fake.input_effect = E9_KEY_ACT
     fake.halted = False              # the resume leaves the machine running...
@@ -4030,11 +3398,7 @@ def test_perform_a_running_ok_step_leaves_the_machine_as_it_found_it(tmp_path: P
 
 def test_perform_waits_for_a_stop_before_a_console_step_after_a_resume(
         tmp_path: Path) -> None:
-    """A `resume` that leaves the machine running ends the console-driven part.
-    A running-OK op (`status`) may follow at once; a CONSOLE op (`registers`) makes the
-    sequence WAIT for the next stop first. The fake stays running, so the wait runs out: the
-    list ends there with a TIMEOUT naming the boundary, the console step never dispatched into
-    the void; with no wait asked the step is refused `not_stopped`."""
+    """A `resume` that leaves the machine running ends the console-driven part."""
     fake = _names(tmp_path)
     fake.halted = False                 # resume leaves it running
     fake.where_raises = True            # ...and the running machine refuses where()
@@ -4052,11 +3416,6 @@ def test_perform_waits_for_a_stop_before_a_console_step_after_a_resume(
 
 def test_perform_tail_waits_for_the_stop_and_returns_the_enriched_reply(
         tmp_path: Path) -> None:
-    """When the sequence ends with the machine RUNNING, perform waits for the stop it was
-    heading for and hands back the ENRICHED reply at it (registers, watches, attribution) --
-    the value R1/R3 want. Here resume leaves it running and `where()` refuses twice then
-    succeeds, modelling a breakpoint that fires a moment later. The reply carries `stopped`
-    and NOT a stray `base` field (the tail called `_stop_reply` with no base fields)."""
     fake = _names(tmp_path)
     fake.halted = False                 # resume leaves it running
     fake.where_refusals = 2             # ...then the machine stops (a breakpoint fires)
@@ -4068,8 +3427,6 @@ def test_perform_tail_waits_for_the_stop_and_returns_the_enriched_reply(
 
 
 def test_perform_tail_says_so_if_the_machine_never_stops(tmp_path: Path) -> None:
-    """The honest other half: a sequence that ends running and does NOT stop within `wait`
-    reports still_running rather than pretending it reached a stop."""
     fake = _names(tmp_path)
     fake.halted = False
     fake.where_raises = True            # never stops
@@ -4081,11 +3438,6 @@ def test_perform_tail_says_so_if_the_machine_never_stops(tmp_path: Path) -> None
 
 def test_perform_console_step_after_resume_runs_once_the_machine_stops(
         tmp_path: Path) -> None:
-    """The win, mid-sequence: resume leaves the machine running, and a CONSOLE op
-    that follows waits for the stop and THEN runs. `where()` refuses twice (running) then
-    succeeds (a breakpoint fired), so the wait bridges the resume and `registers` dispatches.
-    Without the wait clearing `running`, the console op would be refused or sent into the
-    void; this proves it is neither."""
     fake = _names(tmp_path)
     fake.halted = False                 # resume leaves it running
     fake.where_refusals = 2             # ...then the machine stops
@@ -4095,11 +3447,6 @@ def test_perform_console_step_after_resume_runs_once_the_machine_stops(
 
 
 def test_run_to_with_a_cold_control_and_an_expired_bound_is_invalid(tmp_path: Path) -> None:
-    """With a control armed, a bound that ran out and a
-    control that NEVER fired proves nothing about the target, so the reply is INVALID
-    (`control_silent`) with the account and the interrupted stop's survey attached, and no
-    verdict. A control that DID fire keeps the TIMEOUT, because then the silence is a
-    measurement. A stop of another's before the control fired is `cut_by_other_stop`."""
     fake = _names(tmp_path)
     fake.runto_running = True
     cold = cast(dict[str, Any], server.run_to(ref="0000:0010", control="0000:0020", seconds=1))
@@ -4132,10 +3479,6 @@ def test_run_to_with_a_cold_control_and_an_expired_bound_is_invalid(tmp_path: Pa
 
 def test_run_to_resolves_a_symbolic_control_and_perform_passes_one_through(
         tmp_path: Path) -> None:
-    """A symbol as the control resolves through the same layer as a symbol as the target,
-    even beside a raw-address target (which alone would skip the survey); and a `perform`
-    step carries `control` to `run_to` like any other argument, since the step is bound
-    against the live signature."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("_hot", 0x3D5E0, kind="T")])
     fake.control_hits = 2
     got = cast(dict[str, Any], server.run_to(ref="00A7:00000010", control="_hot", seconds=1))
@@ -4150,10 +3493,6 @@ def test_run_to_resolves_a_symbolic_control_and_perform_passes_one_through(
 
 
 def test_every_reply_opens_with_a_summary_and_closes_with_the_session(tmp_path: Path) -> None:
-    """The line the client paints is the tool's name, its arguments and its reply, so the
-    reply's FIRST field is the one-line summary, on an ok reply and on an INVALID one alike,
-    and the `session` block stays last. Read from a live-shaped double through the wrapper,
-    which is the only place the order is decided."""
     fake = _names(tmp_path)
     ok = cast(dict[str, Any], server.registers())
     assert list(ok)[0] == "summary" and list(ok)[-1] == "session", list(ok)
@@ -4165,9 +3504,7 @@ def test_every_reply_opens_with_a_summary_and_closes_with_the_session(tmp_path: 
 
 
 def test_every_tool_declares_a_title_and_the_readers_a_read_only_hint() -> None:
-    """`title` is what the client shows; `readOnlyHint` is what lets it run readers in
-    parallel. A reader without the hint is merely slower; a WRITER with it is a lie a client
-    would act on, so the writers are pinned as not read-only by name."""
+    """`title` is what the client shows; `readOnlyHint` is what lets it run readers in parallel."""
     tools = {t.name: t for t in server.mcp._tool_manager.list_tools()}
     untitled = sorted(n for n, t in tools.items() if not t.title)
     assert not untitled, f"tools with no title: {untitled}"
@@ -4185,10 +3522,6 @@ def test_every_tool_declares_a_title_and_the_readers_a_read_only_hint() -> None:
 
 
 def test_perform_after_a_run_to_that_timed_out_needs_no_tail(tmp_path: Path) -> None:
-    """A `run_to` whose bound ran out hands the machine back STOPPED, interrupted where it
-    stood, so the list neither waits at its tail nor at the boundary before the next console
-    step: the release steps that leave the machine running are `resume`, a `step` that ran
-    away and a `run_for` cut short of its stop."""
     fake = _names(tmp_path)
     fake.runto_running = True           # run_to bound expired: interrupted, stopped
     fake.control_hits = 1          # the control fired: the TIMEOUT is a measurement
@@ -4200,10 +3533,6 @@ def test_perform_after_a_run_to_that_timed_out_needs_no_tail(tmp_path: Path) -> 
 
 def test_perform_reports_a_gone_emulator_as_gone_not_still_running(
         tmp_path: Path) -> None:
-    """A dead emulator makes where() refuse exactly as a running one does, so `_wait_for_stop`
-    checks alive() and the sequence says GONE, not 'still running' -- the confident wrong
-    answer that would otherwise contradict the session.alive:False in the same reply. Both
-    the boundary and the tail are covered."""
     # TAIL: resume leaves running, the emulator dies during the run, the wait finds it gone.
     fake = _names(tmp_path)
     fake.halted = False
@@ -4223,9 +3552,6 @@ def test_perform_reports_a_gone_emulator_as_gone_not_still_running(
 
 def test_perform_a_deep_type_error_in_a_tool_is_not_masked_as_bad_arguments(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A genuine TypeError raised INSIDE a tool must escape as the bug it is, not be relabeled
-    'bad arguments' -- the anti-pattern tool() forbids. Args are bound against the real
-    signature first (a true bad-arg name IS reported), and only then is the tool called."""
     _names(tmp_path)
     # a real bad-argument name is still reported as such (bound before dispatch)
     bad = server.perform(steps=[{"op": "registers", "nope": 1}])
@@ -4238,9 +3564,6 @@ def test_perform_a_deep_type_error_in_a_tool_is_not_masked_as_bad_arguments(
 
 def test_perform_tail_keeps_the_account_when_the_final_enrichment_refuses(
         tmp_path: Path) -> None:
-    """A cut pane at the final stop must not throw away the whole sequence: `_stop_reply` is
-    guarded, so a refusal there marks the enrichment unavailable while `ran`/`completed`
-    stand. Here where() succeeds for the wait then registers() refuses inside `_stop_reply`."""
     fake = _names(tmp_path)
     fake.halted = False                 # resume leaves running
     fake.where_refusals = 1             # the wait succeeds on the next poll
@@ -4253,9 +3576,6 @@ def test_perform_tail_keeps_the_account_when_the_final_enrichment_refuses(
 
 def test_start_with_a_plan_runs_it_on_the_fresh_session_and_folds_the_boot_in(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """`start(plan=...)` runs the plan on the fresh session through the SAME executor, and
-    folds the boot reply in under `start` (stripped of status/session). A failing plan leaves
-    the session OPEN. Driven with ds.Session mocked, since start itself boots an emulator."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
 
@@ -4302,17 +3622,12 @@ def test_start_with_a_plan_runs_it_on_the_fresh_session_and_folds_the_boot_in(
 
 
 def test_perform_bad_arguments_for_a_step_are_reported_not_crashed(tmp_path: Path) -> None:
-    """A wrong argument name for an op is the sequence's to report -- the tool never sees the
-    call, so it cannot translate it -- rather than a TypeError escaping."""
     _names(tmp_path)
     out = server.perform(steps=[{"op": "registers", "bogus": 1}])
     assert out["status"] == "INVALID" and "bad arguments" in out["message"], out
 
 
 def test_start_with_a_plan_runs_it_on_the_fresh_session(tmp_path: Path) -> None:
-    """`start(plan=...)` runs the plan through the SAME executor,
-    and folds the started-reply in under `start` so a caller sees both the boot and the plan.
-    Driven with a FakeSession installed by hand, since `start` itself boots an emulator."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     dstate.STATE.store = dec.DeclarationStore(str(conf), path=tmp_path / "decl.json")
@@ -4327,8 +3642,6 @@ def test_start_with_a_plan_runs_it_on_the_fresh_session(tmp_path: Path) -> None:
 
 def _start_on_a_booted_fake(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
                             which: bool = True, **kw: Any) -> dict[str, Any]:
-    """`start` driven whole without an emulator: the session is faked at the seam `start`
-    builds it through, and the boot is answered as ready at once."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
 
@@ -4355,8 +3668,6 @@ def _start_on_a_booted_fake(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 
 def test_start_launches_the_binary_it_resolved_and_says_which(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The ladder's answer is the emulator the session runs, and the reply names it: the path,
-    the rung it came from and the build's own version line, never a choice made in silence."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     mine = tmp_path / "dev" / "dosbox-x"
@@ -4401,8 +3712,6 @@ def test_start_with_no_rung_resolving_is_refused_before_anything_starts(
 
 def test_start_from_the_path_with_a_plan_says_which_build_under_start(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The PATH rung through the tool itself, and the plan's account carrying the three fields
-    under `start` with the rest of the start facts."""
     on_path = tmp_path / "bin" / "dosbox-x"
     on_path.parent.mkdir()
     on_path.write_text('#!/bin/sh\necho "DOSBox-X version path" >&2; exit 1\n', encoding="utf-8")
@@ -4417,11 +3726,6 @@ def test_start_from_the_path_with_a_plan_says_which_build_under_start(
 
 def test_start_with_a_plan_keeps_session_as_the_last_key(tmp_path: Path,
                                                          monkeypatch: pytest.MonkeyPatch) -> None:
-    """THE ENVELOPE CLOSES WITH `session` on every reply, and the one reply with a plan did
-    not: the start facts were appended AFTER it, so a reader taking the last key as the
-    session block read the start facts instead. Found by a repository's session driving
-    the server. The session is faked at the seam `start` builds it through, so the plan
-    path runs whole without an emulator."""
     got = _start_on_a_booted_fake(tmp_path, monkeypatch, plan=[{"op": "status"}], settle_seconds=0)
     assert got["status"] == "ok" and "start" in got, got
     assert list(got)[-1] == "session", f"the reply ends in {list(got)[-1]!r}, not `session`"
@@ -4429,8 +3733,6 @@ def test_start_with_a_plan_keeps_session_as_the_last_key(tmp_path: Path,
 
 def test_breakpoint_clear_by_ref_takes_the_family_without_touching_watches(
         tmp_path: Path) -> None:
-    """`declaration_clear(kind="breakpoint")` clears breakpoints AND interrupts, and a
-    watch of the same session is left alone -- that is `declaration_clear(kind="watch")`'s job."""
     syms = [dsym.Symbol("_uicue_apply", 0x3D5E0, kind="T")]
     fake = _names(tmp_path, symbols=syms)
     server.breakpoint_at(ref="_uicue_apply")
@@ -4462,8 +3764,6 @@ def test_breakpoint_at_an_unresolved_name_is_kept_not_armed(tmp_path: Path) -> N
 
 
 def test_breakpoint_list_shows_armed_unresolved_and_foreign(tmp_path: Path) -> None:
-    """A declaration is armed/unresolved/gone, and a BP the store did not put
-    there is foreign, listed and never deleted."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("_main", 0x16DD80, kind="T")])
     server.breakpoint_at(ref="_main")            # armed
     server.breakpoint_at(ref="gone_symbol")      # unresolved
@@ -4487,8 +3787,6 @@ def test_breakpoint_clear_disarms_only_its_own_and_leaves_the_foreign(
 
 
 def test_symbols_load_rearms_a_declaration_at_its_new_address(tmp_path: Path) -> None:
-    """A breakpoint declared by name, then a rebuild moves the
-    symbol; symbols_load re-resolves and re-arms it at the new address by itself."""
     nm = tmp_path / "one.nm"
     nm.write_text("0016dd80 T _main\n", encoding="utf-8")
     fake = _names(tmp_path)
@@ -4502,8 +3800,7 @@ def test_symbols_load_rearms_a_declaration_at_its_new_address(tmp_path: Path) ->
 
 
 def test_watch_add_refuses_show_and_change_on_one_address(tmp_path: Path) -> None:
-    """One address may not be both a show and a
-    change watch."""
+    """One address may not be both a show and a change watch."""
     _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
     r = server.watch_add(ref="g_rate", mode="show", length=4, fmt="u32")
     assert r["status"] == "ok" and r["armed"] is False
@@ -4513,8 +3810,6 @@ def test_watch_add_refuses_show_and_change_on_one_address(tmp_path: Path) -> Non
 
 
 def test_a_protected_mode_change_watch_carries_the_paging_caveat(tmp_path: Path) -> None:
-    """Phase 1's BPPM finding, surfaced: a change-watch in protected mode is armed but its
-    reply says the firing is not to be trusted under paging."""
     _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")], mode="Pr32")
     got = server.watch_add(ref="g_rate", mode="change", length=4, fmt="u32")
     assert got["status"] == "ok" and got["armed"] is True
@@ -4522,9 +3817,7 @@ def test_a_protected_mode_change_watch_carries_the_paging_caveat(tmp_path: Path)
 
 
 def test_watch_list_matches_a_watch_despite_its_trailing_hit_count(tmp_path: Path) -> None:
-    """A memory-watch BPLIST row carries a `(00)` hit count a code breakpoint's does not.
-    declaration_list watch must match by PREFIX or the armed watch reads as `gone` AND its own entry
-    reappears as `foreign` -- which a live run caught before this case existed."""
+    """A memory-watch BPLIST row carries a `(00)` hit count a code breakpoint's does not."""
     _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")], mode="Pr32")
     server.watch_add(ref="g_rate", mode="change", length=4, fmt="u32")
     got = server.declaration_list("watch")
@@ -4618,9 +3911,6 @@ def test_rearm_counts_unresolved_and_ambiguous(tmp_path: Path) -> None:
 
 
 def test_real_mode_placement_at_its_exact_edges() -> None:
-    """Linear 0x100000 is the first address past real mode's reach and is refused; 0xFFFFF is
-    the last and is taken; an offset of exactly 0x10000 is folded to a seg:off whose offset
-    fits, never handed on as a 17-bit offset."""
     real = NamesFake(mode="Real")
     dstate.STATE.base.clear()
     dstate.STATE.base.update({"base": 0xF0000, "limit": -1, "type": -1})
@@ -4635,9 +3925,6 @@ def test_real_mode_placement_at_its_exact_edges() -> None:
 
 def test_a_sectioned_table_places_by_base_says_it_has_no_flat_one_and_counts_what_it_skipped(
         tmp_path: Path) -> None:
-    """The section a linear address is in is the one with the greatest base below it, whatever
-    the sections' numbers; a sectioned load answers the flat base's sentinel and a real-mode
-    target refuses it."""
     fake = install()
     src = ILINK32_MAP
     got = cast(dict[str, Any], server.symbols_load(
@@ -4652,8 +3939,6 @@ def test_a_sectioned_table_places_by_base_says_it_has_no_flat_one_and_counts_wha
 
 
 def test_a_load_somewhere_else_replaces_the_table_and_its_types(tmp_path: Path) -> None:
-    """A line the parser could not read is counted; a load at another base replaces the table
-    and drops the types the earlier one carried."""
     one = tmp_path / "one.nm"
     one.write_text("00001000 D _rate\n         U _undefined\n", encoding="utf-8")
     _names(tmp_path)
@@ -4665,10 +3950,6 @@ def test_a_load_somewhere_else_replaces_the_table_and_its_types(tmp_path: Path) 
 
 
 def test_target_for_refuses_a_real_mode_symbol_that_folds_past_1mb() -> None:
-    """A real-mode offset high enough that base+offset crosses 0x100000 cannot be split to
-    seg:off without dropping bit 20, so it is REFUSED rather than armed at a wrong
-    paragraph. base 0xF0000 + offset 0x20000 = linear 0x110000 -> the split would return
-    seg 0x1000, off 0, which folds back to 0x10000, not 0x110000."""
     real = NamesFake(mode="Real")
     dstate.STATE.base.clear()
     dstate.STATE.base.update({"base": 0xF0000, "limit": -1, "type": -1})
@@ -4678,11 +3959,7 @@ def test_target_for_refuses_a_real_mode_symbol_that_folds_past_1mb() -> None:
 
 def test_breakpoint_list_tells_unarmable_from_ambiguous_from_unresolved(
         tmp_path: Path) -> None:
-    """The three non-armed states are DISTINCT and must not collapse. A real-mode table
-    with no flat base makes a resolvable symbol `unarmable` (the address cannot be worked
-    out now), NEVER `ambiguous` (which would lie that the name is defined twice). A name
-    defined twice is `ambiguous`; a name absent is `unresolved`. A single
-    `except Invalid` would label the no-base case `ambiguous` too."""
+    """The three non-armed states are DISTINCT and must not collapse."""
     dup = [dsym.Symbol("twice", 0x100, kind="T"), dsym.Symbol("twice", 0x200, kind="T")]
     one = dsym.Symbol("once", 0x300, kind="T")
     _names(tmp_path, symbols=[*dup, one], mode="Real")
@@ -4699,9 +3976,6 @@ def test_breakpoint_list_tells_unarmable_from_ambiguous_from_unresolved(
 
 
 def test_watch_held_matches_by_value_across_widths_and_never_a_code_bp() -> None:
-    """A watch is recognised by its numbers, so the debugger's varying offset width does
-    not make an armed watch read as gone. A code breakpoint at the same address is NOT a
-    match: clearing a watch must never delete a code breakpoint."""
     rows = [{"index": "00", "entry": "BPPM 00AF:6024 (00)"},        # narrow width
             {"index": "01", "entry": "BP 00AF:00006024"}]           # a code BP, same addr
     hit = arming.watch_held(rows, 0xAF, 0x6024)
@@ -4711,9 +3985,7 @@ def test_watch_held_matches_by_value_across_widths_and_never_a_code_bp() -> None
 
 def test_watch_clear_reports_disarmed_only_after_reading_the_removal_back(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """`disarmed` is the machine's answer read back, not a claim that a BPDEL must have
-    taken. If the debugger still lists the watch after the delete, the tool does not say it
-    was disarmed."""
+    """`disarmed` is the machine's answer read back, not a claim that a BPDEL must have taken."""
     fake = _names(tmp_path)
     server.watch_add(ref="0040:006C", mode="change", length=4)     # arms a BPPM row
     monkeypatch.setattr(fake, "command", lambda *_a, **_k: "")    # BPDEL is a no-op now
@@ -4724,9 +3996,6 @@ def test_watch_clear_reports_disarmed_only_after_reading_the_removal_back(
 
 def test_start_refuses_a_corrupt_declaration_file_before_launching(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A corrupt or hand-edited declarations file fails as a clean INVALID BEFORE the
-    emulator boots, never a traceback after it is already up. The store is built and
-    validated before the session, so `ds.Session` is never even constructed here."""
     state = tmp_path / "state"
     (state / "dosbox-x-debug").mkdir(parents=True)
     (state / "dosbox-x-debug" / "declarations.json").write_text(
@@ -4747,8 +4016,6 @@ def test_start_refuses_a_corrupt_declaration_file_before_launching(
 
 
 def test_store_requires_a_started_session() -> None:
-    """Every tool that reaches the store gets a named refusal, not an AttributeError, when
-    no session has keyed one yet."""
     dstate.STATE.store = None
     with pytest.raises(ds.Invalid, match="no declaration store"):
         arming.current_store()
@@ -4760,8 +4027,6 @@ def test_parse_seg_off_refuses_a_non_hex_pair() -> None:
 
 
 def test_breakpoint_at_a_symbol_with_no_flat_base_is_stored_unarmed(tmp_path: Path) -> None:
-    """A real-mode symbol whose table has no flat base cannot be placed right now, so it is
-    STORED and reported `unarmed` with the reason -- not refused, not armed at a guess."""
     _names(tmp_path, symbols=[dsym.Symbol("_x", 0x100, kind="T")], mode="Real")
     dstate.STATE.base.clear()
     dstate.STATE.base.update({"base": -1, "limit": -1, "type": -1})
@@ -4771,9 +4036,6 @@ def test_breakpoint_at_a_symbol_with_no_flat_base_is_stored_unarmed(tmp_path: Pa
 
 
 def test_rearm_counts_ambiguous_and_unarmable_apart(tmp_path: Path) -> None:
-    """`symbols_load`'s re-arm reports each non-armed reason under its OWN name: a duplicate
-    name is `ambiguous`, a resolvable name with no base yet is `unarmable`, and neither is
-    counted as the other."""
     dup = [dsym.Symbol("dup", 0x1, kind="T"), dsym.Symbol("dup", 0x2, kind="T")]
     _names(tmp_path, symbols=[*dup, dsym.Symbol("one", 0x3, kind="T")], mode="Real")
     st = dstate.STATE.store
@@ -4789,8 +4051,6 @@ def test_rearm_counts_ambiguous_and_unarmable_apart(tmp_path: Path) -> None:
 
 
 def test_watch_flows_in_real_mode_arm_list_and_clear(tmp_path: Path) -> None:
-    """The real-mode watch path: a change watch lists as a `BPMEM` row (the display spelling
-    `_watch_entry` gives real mode), reads back `armed`, and clears."""
     _names(tmp_path, mode="Real")
     dstate.STATE.base.clear()
     dstate.STATE.base.update({"base": 0x7DF0, "limit": -1, "type": -1})
@@ -4805,8 +4065,6 @@ def test_watch_flows_in_real_mode_arm_list_and_clear(tmp_path: Path) -> None:
 
 
 def test_watch_list_reports_gone_and_foreign(tmp_path: Path) -> None:
-    """A declared change watch the debugger no longer holds is `gone`; a memory-watch row
-    the store never placed is `foreign` and listed, never silently taken as one of ours."""
     fake = _names(tmp_path, mode="Real")
     dstate.STATE.base.clear()
     dstate.STATE.base.update({"base": 0, "limit": -1, "type": -1})
@@ -4820,8 +4078,6 @@ def test_watch_list_reports_gone_and_foreign(tmp_path: Path) -> None:
 
 
 def test_watch_list_states_unresolved_and_ambiguous(tmp_path: Path) -> None:
-    """A watch on a name absent this build is `unresolved`; a name defined twice is
-    `ambiguous` with its reason -- the same vocabulary the breakpoint list uses."""
     dup = [dsym.Symbol("two", 0x1, kind="d"), dsym.Symbol("two", 0x2, kind="d")]
     _names(tmp_path, symbols=dup)
     st = dstate.STATE.store
@@ -4835,8 +4091,6 @@ def test_watch_list_states_unresolved_and_ambiguous(tmp_path: Path) -> None:
 
 def test_watch_add_change_that_cannot_arm_is_kept_unarmed(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A change watch that resolves but cannot arm (the machine moved) is STORED and
-    reported `unarmed`, its intent kept for a later stop."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("g_x", 0x1000, kind="d")])
 
     def boom(**_k: object) -> dict[str, object]:
@@ -4848,9 +4102,6 @@ def test_watch_add_change_that_cannot_arm_is_kept_unarmed(
 
 def test_watch_clear_skips_an_unresolvable_change_and_still_clears_the_store(
         tmp_path: Path) -> None:
-    """A change watch that no longer resolves armed nothing to remove, so
-    `declaration_clear(kind="watch")`
-    skips the debugger for it but still drops the declaration (it is the store's)."""
     _names(tmp_path, symbols=[])          # empty table: the name will not resolve
     st = dstate.STATE.store
     assert st is not None
@@ -4861,10 +4112,6 @@ def test_watch_clear_skips_an_unresolvable_change_and_still_clears_the_store(
 
 
 def test_read_memory_takes_a_symbol_or_a_seg_off_ref(tmp_path: Path) -> None:
-    """The readers take ONE spelling: `read_memory`
-    locates its address from a symbol OR a raw SEG:OFF `ref`, and both read the same place.
-    The numeric segment/offset pair a reader once also took is gone -- one way to say one
-    address. A protected-mode data symbol resolves against the live DS selector."""
     _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")], ds_="00AF")
     by_name = cast(dict[str, Any], server.read_memory(ref="g_rate", length=4))
     assert by_name["status"] == "ok" and by_name["seg_off"].startswith("00AF:")
@@ -4875,8 +4122,6 @@ def test_read_memory_takes_a_symbol_or_a_seg_off_ref(tmp_path: Path) -> None:
 
 
 def test_read_memory_refuses_an_unlocatable_or_ambiguous_target(tmp_path: Path) -> None:
-    """A read needs a concrete address, so an absent name or a doubly-defined name is a
-    named refusal -- never a read at a guessed address."""
     _names(tmp_path, symbols=[dsym.Symbol("dup", 0x1, kind="d"),
                               dsym.Symbol("dup", 0x2, kind="d")])
     absent = cast(dict[str, Any], server.read_memory(ref="nope"))
@@ -4891,8 +4136,6 @@ def test_read_memory_refuses_an_unlocatable_or_ambiguous_target(tmp_path: Path) 
 
 
 def test_render_watch_reads_the_bytes_as_little_endian_values() -> None:
-    """N bytes read as the declared format, x86 little-endian: one scalar is one value, a
-    width of several is a list, and the grammar's shapes decode to theirs."""
     import struct as _s
     assert arming.render_watch(bytes([0x78, 0x56, 0x34, 0x12]), 4, "u32") == 0x12345678
     assert arming.render_watch(bytes([0xFF, 0xFF, 0xFF, 0xFF]), 4, "i32") == -1
@@ -4907,9 +4150,6 @@ def test_render_watch_reads_the_bytes_as_little_endian_values() -> None:
 
 def test_evaluate_watches_reads_read_mode_together_and_bytes_for_a_struct(
         tmp_path: Path) -> None:
-    """R2 and R5: the three rate globals come back TOGETHER in one evaluation, each rendered
-    as its declared u32, and a struct declared as u8 comes back as its bytes with no fields
-    invented. A protected-mode data symbol resolves against the live DS selector."""
     fake = _names(tmp_path, symbols=[
         dsym.Symbol("g_eng_rate", 0x1000, kind="d"),
         dsym.Symbol("g_eng_samples_tick", 0x1004, kind="d"),
@@ -4937,10 +4177,6 @@ def test_evaluate_watches_reads_read_mode_together_and_bytes_for_a_struct(
 
 
 def test_evaluate_watches_reads_a_change_watch_s_value_beside_its_state(tmp_path: Path) -> None:
-    """A break-on-change watch writes nothing into the memory it watches (a live read under an
-    armed `BPMEM` returns the program's bytes, tests/fixtures/bplist/real-change-watch.json), so
-    each stop reports its value beside whether it is still armed. Unresolved and unreadable
-    watches carry why, never a guessed value."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("g_x", 0x1000, kind="d")], ds_="00AF")
     fake.mem[(0xAF, 0x1000)] = (7).to_bytes(4, "little")
     st = dstate.STATE.store
@@ -4956,8 +4192,6 @@ def test_evaluate_watches_reads_a_change_watch_s_value_beside_its_state(tmp_path
 
 
 def test_stop_reply_carries_registers_watches_cause_and_the_e9_block(tmp_path: Path) -> None:
-    """A stop reply always carries the registers, the watches evaluated, its `cause`, and the
-    E9 block: the guest's lines since the previous stop, whole when they fit."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x1000, kind="d")], ds_="00AF")
     fake.mem[(0xAF, 0x1000)] = (48000).to_bytes(4, "little")
     fake.log = ["boot", "rate=48000", "tick"]
@@ -4974,8 +4208,7 @@ def test_stop_reply_carries_registers_watches_cause_and_the_e9_block(tmp_path: P
 
 
 def test_attribution_names_a_breakpoint_at_the_stop_or_says_it_cannot(tmp_path: Path) -> None:
-    """Attribution is by ADDRESS COMPARISON. A code breakpoint declared at CS:EIP is named;
-    a stop elsewhere is an honest cannot-say, naming the reason (no hit flag)."""
+    """Attribution is by ADDRESS COMPARISON."""
     fake = _names(tmp_path)
     fake.cs, fake.eip = "00A7", "00001A27"
     st = dstate.STATE.store
@@ -4991,9 +4224,6 @@ def test_attribution_names_a_breakpoint_at_the_stop_or_says_it_cannot(tmp_path: 
 
 
 def test_a_stop_names_no_declaration_the_debugger_holds_no_row_for(tmp_path: Path) -> None:
-    """A declaration at the stop's address whose row the debugger does not hold (queued, a
-    stale raw address of another build, one waiting for its mode) cannot have made the stop:
-    the stop reply does not name it. The control: the same declaration armed is named."""
     fake = _names(tmp_path)
     fake.cs, fake.eip = "00A7", "00001A27"
     store = dstate.STATE.store
@@ -5026,8 +4256,6 @@ def test_a_cancelled_calls_stop_names_the_cancel_unless_a_declaration_is_there(
 
 
 def test_the_stop_a_cancelled_calls_end_made_is_last_stops_cause(tmp_path: Path) -> None:
-    """End to end: the end brings a running guest back, and the stop it made is what `status`
-    then names as the last stop, by the cancelled call."""
     fake = _names(tmp_path)
     fake.cs, fake.eip = "00A7", "00001A27"
     fake.running = True
@@ -5037,9 +4265,6 @@ def test_the_stop_a_cancelled_calls_end_made_is_last_stops_cause(tmp_path: Path)
 
 
 def test_resume_enriches_a_halt_and_leaves_a_running_machine_bare(tmp_path: Path) -> None:
-    """The wiring: a resume that HALTED carries the full stop reply (watches, E9, ...); one
-    that left the machine running carries only its base, because a running machine has
-    nothing to read and `where` would refuse it."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x1000, kind="d")], ds_="00AF")
     fake.mem[(0xAF, 0x1000)] = (60).to_bytes(4, "little")
     fake.log = ["a", "b"]
@@ -5059,9 +4284,6 @@ def test_resume_enriches_a_halt_and_leaves_a_running_machine_bare(tmp_path: Path
 
 def test_step_and_run_to_enrich_a_stop_but_not_a_still_running_machine(
         tmp_path: Path) -> None:
-    """step carries the full stop reply when it STOPPED, and only the base answer when the
-    machine ran on (a CALL that never returned) -- a running machine has nothing to read; a
-    `run_to` always stops, its bound interrupting the run, so it always carries one."""
     fake = _names(tmp_path)
     stopped_step = cast(dict[str, Any], server.step(mode="over"))
     assert "regs" in stopped_step and "e9" in stopped_step
@@ -5079,9 +4301,6 @@ def test_step_and_run_to_enrich_a_stop_but_not_a_still_running_machine(
 
 def test_evaluate_watches_skips_a_breakpoint_and_reports_why_and_unreadable(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The evaluator walks only watch declarations (a breakpoint in the store is skipped), an
-    ambiguous watch carries its why, and a read whose bytes cannot be fetched is `unreadable`
-    with the reason -- never a value at a guessed address."""
     dup = [dsym.Symbol("two", 0x1, kind="d"), dsym.Symbol("two", 0x2, kind="d")]
     fake = _names(tmp_path, symbols=[*dup, dsym.Symbol("ok", 0x1000, kind="d")], ds_="00AF")
     st = dstate.STATE.store
@@ -5102,8 +4321,6 @@ def test_evaluate_watches_skips_a_breakpoint_and_reports_why_and_unreadable(
 
 
 def test_attribution_in_real_mode_compares_the_linear_address(tmp_path: Path) -> None:
-    """Real-mode attribution compares LINEAR addresses, so a breakpoint declared at one
-    seg:off matches a stop the debugger reports through a different aliasing paragraph."""
     fake = _names(tmp_path, mode="Real")
     fake.cs, fake.eip = "1000", "00000010"        # linear 0x10010
     st = dstate.STATE.store
@@ -5118,9 +4335,7 @@ def test_attribution_in_real_mode_compares_the_linear_address(tmp_path: Path) ->
 
 def test_a_halt_whose_position_is_unreadable_keeps_the_halt(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A halt is a real observation. If the position cannot be read (a cut pane, where()
-    refusing), the halt and its base fields stand and the enrichment is marked unavailable --
-    the whole reply is NOT thrown away for a read that could not be made."""
+    """A halt is a real observation."""
     fake = _names(tmp_path)
     fake.halted = True
 
@@ -5134,8 +4349,6 @@ def test_a_halt_whose_position_is_unreadable_keeps_the_halt(
 
 
 def test_a_show_watch_on_bytes_a_change_watch_covers_is_read_as_any_other(tmp_path: Path) -> None:
-    """Two refs can alias one address, a show watch and a change watch: the change watch writes
-    nothing there, so the show watch reads the program's bytes as it would anywhere."""
     fake = _names(tmp_path, ds_="00AF")
     fake.rows.append({"index": "00", "entry": "BPPM 00AF:00006024 (00)"})   # armed elsewhere
     fake.mem[(0xAF, 0x6024)] = (999).to_bytes(4, "little")
@@ -5148,8 +4361,6 @@ def test_a_show_watch_on_bytes_a_change_watch_covers_is_read_as_any_other(tmp_pa
 
 
 def test_a_stop_a_sequence_found_moves_the_mark_its_block_starts_from(tmp_path: Path) -> None:
-    """A stop recorded by the contact that found it (`recorded_stop_reply`) shows the lines since
-    the previous stop and moves the mark, so the next stop shows only what came after it."""
     fake = _names(tmp_path)
     fake.log = ["L1", "L2"]
     dstate.STATE.e9_offset = 0
@@ -5167,9 +4378,6 @@ def test_a_stop_a_sequence_found_moves_the_mark_its_block_starts_from(tmp_path: 
 
 def test_every_stop_shows_its_guest_lines_since_the_previous_one_bounded(
         tmp_path: Path) -> None:
-    """ON AND BOUNDED: whole up to `STOP_LINES_SHOWN`, one past it the newest ones with
-    `truncated` and a `how` naming `log` from the block's own mark, arguments `log` takes; the
-    tools that stop take no display argument; no log is unavailable with why."""
     fake = _names(tmp_path)
     fake.halted = True
     shown = log_marks.STOP_LINES_SHOWN
@@ -5210,8 +4418,6 @@ def test_stop_on_a_parked_machine_never_names_a_previous_stop(
 
 
 def test_a_read_watch_wider_than_128_bytes_is_refused_at_declaration(tmp_path: Path) -> None:
-    """A width no stop could ever serve is refused up front, pointing at memdump, rather than
-    stored only to report `unreadable` at every stop."""
     _names(tmp_path)
     got = cast(dict[str, Any], server.watch_add(ref="0040:0000", mode="show", length=256,
                                                 fmt="u8"))
@@ -5221,12 +4427,6 @@ def test_a_read_watch_wider_than_128_bytes_is_refused_at_declaration(tmp_path: P
 # ----------------------------------------------------- the ref you clear with
 
 def test_every_declaration_reply_carries_the_ref_that_clears_it(tmp_path: Path) -> None:
-    """`breakpoint_interrupt(0x21, ah=0x4B)` answers with an `entry` and a `ref`: without
-    the spelling that clears it -- the debugger's own `BPINT 21 AH=4B` -- in a reply,
-    the caller's `declaration_clear(kind="breakpoint", ref="BPINT 21 4B")` would clear nothing. The
-    reply of every
-    tool that
-    creates a declaration carries `ref`, and that string clears it."""
     fake = _names(tmp_path)
     armed = server.breakpoint_interrupt(number=0x21, ah=0x4B)
     assert armed["ref"] == "BPINT 21 AH=4B", armed
@@ -5241,10 +4441,6 @@ def test_every_declaration_reply_carries_the_ref_that_clears_it(tmp_path: Path) 
 
 def test_clearing_a_ref_that_matches_nothing_is_refused_naming_what_there_is(
         tmp_path: Path) -> None:
-    """A zero in green is indistinguishable from "nothing to clear" for a caller who spelt
-    the ref wrong, and that caller leaves a breakpoint armed. A `ref`
-    that matches no declaration is INVALID and names the refs the store holds; clearing
-    ALL of an empty store stays `ok` with 0, because there the zero is the answer."""
     _names(tmp_path)
     server.breakpoint_interrupt(number=0x21, ah=0x4B)
     wrong = server.declaration_clear("breakpoint", ref="BPINT 21 4B")
@@ -5262,11 +4458,6 @@ def test_clearing_a_ref_that_matches_nothing_is_refused_naming_what_there_is(
 
 def test_symbols_load_leaves_another_builds_raw_address_stale_and_names_what_it_rearmed(
         tmp_path: Path) -> None:
-    """The same defect at the server: a raw-address breakpoint from session s1 over an OLDER
-    build must NOT re-arm itself in session s2 (per build: kept, listed `stale`, not armed,
-    because it re-resolves against nothing), a
-    by-symbol one must, and `symbols_load` names WHICH refs it re-armed and which it left
-    stale rather than handing back a count. Re-declaring the raw address in s2 adopts it."""
     nm = tmp_path / "one.nm"
     nm.write_text("0016dd80 T _main\n", encoding="utf-8")
     fake = _names(tmp_path)
@@ -5313,11 +4504,6 @@ def build_of(conf: Path, nm_text: str, base: int = 0x400000) -> str:
 def _start_over_a_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
                         stamped: dict[str, str | None], double: type[NamesFake] = _Booted,
                         conf_text: str = "[sdl]\n") -> tuple[dict[str, Any], NamesFake]:
-    """`start` driven whole over a store an earlier session left: each raw address in
-    `stamped` declared as a breakpoint with that build fingerprint (None: this start's own,
-    the conf alone), placed at a stop of the mode the double parks in. The store lives under a
-    state directory of the case's own; the conf holds `conf_text`, so a case can edit the conf
-    between two sessions."""
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
     conf = tmp_path / "g.conf"
     conf.write_text(conf_text, encoding="utf-8")
@@ -5337,11 +4523,6 @@ def _start_over_a_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 
 def test_start_re_arms_a_raw_address_left_over_the_same_build_and_not_another_builds(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """PER BUILD: a raw-address breakpoint an earlier session declared over the build a start
-    has (the conf, no map loaded yet) is re-armed at `start` and listed `armed`, because over
-    an unchanged program it still names the same instruction. One declared over another
-    build, and one declared over a map (which waits for that map's `symbols_load`), stay
-    `stale` and are not armed."""
     mapf = tmp_path / "prog.map"
     mapf.write_text("0016dd80 T _main\n", encoding="utf-8")
     (tmp_path / "g.conf").write_text("[sdl]\n", encoding="utf-8")
@@ -5360,10 +4541,6 @@ def test_start_re_arms_a_raw_address_left_over_the_same_build_and_not_another_bu
 
 def test_a_re_arm_at_start_that_cannot_read_the_list_is_said_not_fatal(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The re-arm at `start` runs once the session is installed, so a refusal there must not
-    turn the whole `start` INVALID over a live emulator (the next `start` would then be
-    refused as already live). The session comes up, and the reply says the re-arm was
-    refused and why; the declaration stays stored."""
     class CutList(_Booted):
         def breakpoints(self) -> list[dict[str, str]]:
             raise ds.Invalid("unexpected_answer", "no BPLIST header came back")
@@ -5380,8 +4557,6 @@ def test_a_re_arm_at_start_that_cannot_read_the_list_is_said_not_fatal(
 
 def test_start_with_nothing_to_re_arm_does_not_read_the_list(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """With no raw address of this build stored (only another build's), the re-arm at `start`
-    reads no list: a start costs no console round trip for declarations it would not arm."""
     got, booted = _start_over_a_store(tmp_path, monkeypatch,
                                       {"00A7:0200": "fp-of-another-build"})
     assert got["status"] == "ok" and "rearm_refused" not in got, got
@@ -5390,10 +4565,6 @@ def test_start_with_nothing_to_re_arm_does_not_read_the_list(
 
 def test_start_answers_each_stored_breakpoint_as_a_row_saying_whose_and_how_old(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """`start`'s re-arm account is a list of rows per bucket, each the row the lists give, so a
-    declaration an earlier session left says whose it is as it re-arms, and one of another build
-    says it is stale. Both paths: the park that reads the list and arms, and the
-    one that has nothing to arm and reads nothing."""
     got, _ = _start_over_a_store(tmp_path, monkeypatch, {
         "00A7:0100": None, "00A7:0200": "fp-of-another-build"})
     rearm = got["declarations"]["rearm"]
@@ -5414,8 +4585,6 @@ def test_start_answers_each_stored_breakpoint_as_a_row_saying_whose_and_how_old(
 
 def test_a_listed_row_carries_its_age_from_the_servers_clock_and_whose_it_is(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """`age_s` is whole seconds since `created_at` on this server's clock, and this session's own
-    row is not `inherited`: the half of a row a caller cannot read off `origin`."""
     then = datetime(2026, 1, 1, tzinfo=UTC)
     monkeypatch.setattr(dstate, "utc_now", lambda: then)
     _names(tmp_path)
@@ -5428,9 +4597,6 @@ def test_a_listed_row_carries_its_age_from_the_servers_clock_and_whose_it_is(
 
 def test_a_file_where_the_default_state_directory_goes_is_refused_naming_the_default(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """With no `state_dir` the session's saves go to `<cwd>/save`; a FILE there refuses `start`
-    `host_failed` (the host's filesystem refused), naming the default and the argument that
-    moves it, never `state_dir` as if the caller had given one."""
     (tmp_path / "save").write_text("a file, not a directory", encoding="utf-8")
     (tmp_path / "g.conf").write_text("[sdl]\n", encoding="utf-8")
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
@@ -5443,12 +4609,6 @@ def test_a_file_where_the_default_state_directory_goes_is_refused_naming_the_def
 
 
 def test_a_stored_address_the_parser_refuses_is_listed_and_clearable(tmp_path: Path) -> None:
-    """A hand-edited or older declaration file is the one input the tools do not get to
-    validate, and one unreadable address in it would make `declaration_list(kind="breakpoint")` and
-    every
-    `declaration_clear(kind="breakpoint")` die on that row, so nothing could list or remove it. It
-    is
-    `unarmable` with the parser's words, and its own ref clears it."""
     _names(tmp_path)
     dstate.STATE.store.add(dec.Declaration("breakpoint", "address", "0x1234"))  # type: ignore[union-attr]
     rows = server.declaration_list("breakpoint")["breakpoints"]
@@ -5460,9 +4620,6 @@ def test_a_stored_address_the_parser_refuses_is_listed_and_clearable(tmp_path: P
 
 def test_a_relative_path_is_refused_and_an_absolute_one_names_the_file_it_looked_at(
         tmp_path: Path) -> None:
-    """A relative path is judged against one directory and used in another (the server's
-    own, the emulator's `cwd`), so it is refused before anything reads it, `cwd` included;
-    an absolute path stands, and a refusal names the absolute path it looked at."""
     nm = tmp_path / "one.nm"
     nm.write_text("0016dd80 T _main\n", encoding="utf-8")
     fake = _names(tmp_path)
@@ -5484,14 +4641,6 @@ def test_a_relative_path_is_refused_and_an_absolute_one_names_the_file_it_looked
 
 def test_perform_does_not_wait_for_a_stop_when_the_last_step_was_a_running_guest_op(
         tmp_path: Path) -> None:
-    """`perform([..., resume, e9_wait, send_keys, e9])` must not come back after the FULL
-    30 s `wait` with "did not stop within 30.0s" -- a stop nobody asked for, because the
-    list ends in `e9`. The tail waits only when the LAST step is
-    the one that released the machine, or something declared can still produce a stop (a
-    breakpoint, an interrupt, a change-watch: R1 arms one before it resumes and wants the
-    stop). With nothing declared, the sequence returns at once, still running, and says why
-    no stop was waited for. Two controls beside it: a list ending in `resume` still waits,
-    and the same list with a breakpoint declared waits too."""
     fake = _names(tmp_path)
     fake.halted = False
     fake.where_raises = True            # never stops
@@ -5550,10 +4699,6 @@ def test_perform_does_not_wait_for_a_stop_when_the_last_step_was_a_running_guest
 
 def test_a_declaration_from_a_store_that_kept_no_origin_is_listed_as_an_orphan(
         tmp_path: Path) -> None:
-    """A show watch from an older store would sit in every stop reply with no origin and
-    nothing to tell it from this session's, and the breakpoint broom would leave it. Both families
-    list such a row as `orphan` with the ref that clears it,
-    and each broom sweeps only its own family."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
     dstate.STATE.session_origin = "s2"
     store = dstate.STATE.store
@@ -5600,10 +4745,6 @@ def test_a_declaration_from_a_store_that_kept_no_origin_is_listed_as_an_orphan(
 # ------------------------------------------- a stop reads the list once
 
 def test_a_stop_reads_the_breakpoint_list_once_and_shares_it(tmp_path: Path) -> None:
-    """A `resume` that stops must not cost four `BPLIST` round trips, two of them for the
-    same screen, by the watches re-reading the list the stop's own repaint already
-    carried. A stop takes ONE survey (where, registers, list) and evaluates
-    the watches against it; `breakpoints()` is not read again on the way."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
     server.watch_add(ref="g_rate", mode="show", length=4, fmt="u32")
     fake.halted = True                   # the resume stops again at once
@@ -5618,12 +4759,6 @@ def test_a_stop_reads_the_breakpoint_list_once_and_shares_it(tmp_path: Path) -> 
 
 def test_the_lists_answer_from_the_store_and_the_last_stop_while_the_guest_runs(
         tmp_path: Path) -> None:
-    """`declaration_list(kind="breakpoint")` with the guest running must not answer INVALID with
-    `registers`'
-    own text, when its description promises rows from the store.
-    The server HOLDS the answer: the declarations, and the debugger's list as the last stop's
-    survey saw it. Running, the lists answer from those two, say `debugger_read: false` and
-    `last_stop` the last stop; stopped, they read the debugger and say `debugger_read: true`."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("_main", 0x1000, kind="T"),
                                      dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
     server.breakpoint_at(ref="_main")
@@ -5660,10 +4795,6 @@ def test_the_lists_answer_from_the_store_and_the_last_stop_while_the_guest_runs(
 
 def test_what_is_asked_while_the_guest_runs_is_applied_at_the_next_stop(
         tmp_path: Path) -> None:
-    """The running-guest contract (the owner's decision): a declaration, a clear or a symbol
-    load asked while the guest runs answers `pending`, and the next stop applies it before
-    evaluating anything and says so in `applied_on_stop`. Before this, `unarmable` and "the
-    debugger's list was left as it was" were the answers, and nobody applied them later."""
     nm = tmp_path / "one.nm"
     nm.write_text("00001000 T _main\n0017a6ec d g_rate\n", encoding="utf-8")
     fake = _names(tmp_path, symbols=[dsym.Symbol("_old", 0x2000, kind="T")])
@@ -5708,11 +4839,6 @@ def test_what_is_asked_while_the_guest_runs_is_applied_at_the_next_stop(
 # ---------------------------------------------- last_stop where it helps (T3)
 
 def test_status_and_a_running_refusal_carry_the_last_stop(tmp_path: Path) -> None:
-    """A reader refused because the guest runs, and saying only that, leaves the caller not
-    knowing where the machine is or since when. `status` carries `last_stop` (null before any
-    stop), every such refusal carries it too and names the readers that DO answer while
-    running, and `registers(from_last_stop=True)` hands the last stop's registers marked
-    stale, never by default."""
     fake = _names(tmp_path)
     park = server.status()["last_stop"]          # the machine is found at the debugger
     assert park["stop_seq"] == 1 and park["pc"] == "00A7:00000000", park
@@ -5735,10 +4861,6 @@ def test_status_and_a_running_refusal_carry_the_last_stop(tmp_path: Path) -> Non
 
 def test_memdump_on_a_running_guest_is_refused_before_the_session_is_asked(
         tmp_path: Path) -> None:
-    """`memdump` is one of the readers the running-guest contract refuses: a dump command
-    typed at a console that is not listening is dropped. So it refuses
-    `not_stopped` with `last_stop`, the way `find` does, before the session is handed
-    anything."""
     fake = _names(tmp_path)
     server.status()                              # the park, on record
     fake.running = True
@@ -5752,10 +4874,6 @@ def test_memdump_on_a_running_guest_is_refused_before_the_session_is_asked(
 
 def test_resume_on_a_running_guest_is_refused_before_any_other_check(
         tmp_path: Path) -> None:
-    """An `ok` from a `resume` that found the guest already running cannot be told from one
-    that released it, so it is refused `not_stopped` like every other tool that needs the
-    machine stopped. A value wrong with no machine at all, a negative `seconds`, is refused
-    before the gate."""
     # Without the gate this is where an F5 would go out and answer `ok` with `halted: false`.
     fake = _names(tmp_path, watched=True)
     server.status()                              # the park, on record
@@ -5777,8 +4895,6 @@ def test_resume_on_a_running_guest_is_refused_before_any_other_check(
 
 
 def test_a_stop_the_caller_asked_for_is_named_as_its_cause(tmp_path: Path) -> None:
-    """`stop`'s own stop names the call as its cause, never "which declaration fired cannot be
-    told": nothing is at that address to tell apart, and the caller knows what stopped it."""
     fake = _names(tmp_path, watched=True)
     server.status()
     fake.running = True
@@ -5787,9 +4903,6 @@ def test_a_stop_the_caller_asked_for_is_named_as_its_cause(tmp_path: Path) -> No
 
 
 def test_stop_keeps_the_envelope_on_both_branches(tmp_path: Path) -> None:
-    """Every reply opens with `summary` and closes with `session`, on both branches of `stop`:
-    the one that interrupts a windowed guest, which adds `stopped_at` to a reply already
-    built, and the one that finds the machine at rest."""
     fake = _names(tmp_path, watched=True)
     server.status()                              # the park, on record
     fake.running = True
@@ -5806,11 +4919,6 @@ def test_stop_keeps_the_envelope_on_both_branches(tmp_path: Path) -> None:
 
 def test_a_stop_nobody_read_is_counted_by_status_alone_and_said_once(
         tmp_path: Path) -> None:
-    """A caller driving an unwatched run with `status` and `captures` only must learn
-    that the guest has stopped: the first contact finds the prompt in the drain, counts
-    the stop THEN, records it, and its reply says `stopped_on_its_own`; the next reply does
-    not repeat it. With the count read before the peek, `status` would keep naming the
-    previous stop and only `registers` would move it."""
     fake = _names(tmp_path)
     before = server.status()["last_stop"]["stop_seq"]    # the park, on record
     fake.running = True                                  # released
@@ -5825,10 +4933,6 @@ def test_a_stop_nobody_read_is_counted_by_status_alone_and_said_once(
 
 def test_a_stop_that_came_on_its_own_still_applies_the_queue_at_the_next_contact(
         tmp_path: Path) -> None:
-    """A breakpoint fires while the caller is waiting on the log or sending a key, so the
-    stop is nobody's reply. The next tool that finds the machine at the debugger (here
-    `status`, passively) applies what was pending and says so, so a declaration made while
-    the guest ran is never left waiting for a stop TOOL to be called."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("_main", 0x1000, kind="T")])
     fake.running = True
     assert server.breakpoint_at(ref="_main")["state"] == "pending"
@@ -5853,10 +4957,6 @@ def test_a_stop_that_came_on_its_own_still_applies_the_queue_at_the_next_contact
 
 def test_the_queue_covers_interrupts_and_change_watches_and_says_what_it_could_not_apply(
         tmp_path: Path) -> None:
-    """The other kinds the queue carries: an interrupt and a change-watch cleared while the
-    guest runs are removed at the stop; a declaration cleared before the stop is simply not
-    armed; and an arm the stop cannot resolve (the table changed meanwhile) is reported
-    under `still_pending` and stays queued rather than vanishing."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d"),
                                      dsym.Symbol("_gone", 0x3000, kind="T"),
                                      dsym.Symbol("_late", 0x4000, kind="T")])
@@ -5888,10 +4988,6 @@ def test_the_queue_covers_interrupts_and_change_watches_and_says_what_it_could_n
 
 
 def test_the_states_a_listing_still_gives_when_nothing_is_held(tmp_path: Path) -> None:
-    """The branches a live list reaches when the debugger holds nothing: an interrupt
-    declaration whose row is gone, an orphan raw breakpoint that is not held, and a
-    breakpoint that cannot be armed for a reason that is NOT the guest running (a
-    real-mode table with no flat base), which stays `unarmed` with the reason."""
     fake = _names(tmp_path)
     dstate.STATE.session_origin = "s2"
     server.breakpoint_interrupt(number=0x21)         # this session's: gone once its row is
@@ -5908,12 +5004,6 @@ def test_the_states_a_listing_still_gives_when_nothing_is_held(tmp_path: Path) -
 
 
 def test_the_running_guest_contract_holds_at_its_edges(tmp_path: Path) -> None:
-    """The fresh-eyes findings on the contract, each pinned: a pending load re-arms the
-    declarations it resolves; a clear of a ref that was itself pending queues no phantom
-    disarm; a reload that armed a symbol twice clears BOTH rows; the lists show a queued
-    ref as `pending` and do not call a queued row `foreign`; an interrupt declared while
-    running is pending too; a reader refused by symbol carries `last_stop`; and `close`
-    takes the running state with it."""
     nm = tmp_path / "one.nm"
     nm.write_text("00001000 T _main\n", encoding="utf-8")
     fake = _names(tmp_path)
@@ -5963,9 +5053,6 @@ def test_the_running_guest_contract_holds_at_its_edges(tmp_path: Path) -> None:
 
 
 def test_perform_checks_every_op_before_running_any(tmp_path: Path) -> None:
-    """`[send_keys, close, status]` must not SEND the key and then refuse at step 1
-    because `close` is not a step. A refusal for the vocabulary comes
-    before anything runs."""
     fake = _names(tmp_path, watched=True)
     out = server.perform(steps=[{"op": "send_keys", "keys": ["a"]}, {"op": "close"},
                                 {"op": "status"}])
@@ -5976,11 +5063,6 @@ def test_perform_checks_every_op_before_running_any(tmp_path: Path) -> None:
 
 def test_send_keys_names_a_stop_that_landed_during_the_wait_not_still_running(
         tmp_path: Path) -> None:
-    """A key posted by serial just before a breakpoint fires: the wait's expiry must not
-    say "the guest wrote NOTHING ... The emulator is still running" -- the PROCESS --
-    blaming the program, while the debugger holds the machine and the next `send_keys`
-    refuses for exactly that. The miss names the stop the machine
-    is in, says where the key went, and carries `last_stop` so the caller can act on it."""
     fake = _names(tmp_path, watched=False, input_port=5555)
     fake.running = True                      # a RUNNING guest, as a key is sent to
     fake.input_effect = None
@@ -6004,10 +5086,6 @@ def test_send_keys_names_a_stop_that_landed_during_the_wait_not_still_running(
 
 def test_input_to_a_machine_stopped_at_the_debugger_is_refused_before_the_post(
         tmp_path: Path) -> None:
-    """A key or a click to a machine parked at the debugger is never a delivery: the
-    bytes would sit in the serial buffer and land at the next resume. Keys and clicks are
-    refused before posting, with or without `expect`, naming the stop and `resume` as the
-    way forward."""
     fake = _guest(tmp_path)
     fake.running = False                           # stopped, as a fresh session is
     fake.input_effect = None
@@ -6030,10 +5108,6 @@ def test_input_to_a_machine_stopped_at_the_debugger_is_refused_before_the_post(
 
 def test_a_stop_whose_survey_refused_is_not_named_with_the_previous_stops_address(
         tmp_path: Path) -> None:
-    """A cut pane at survey time leaves the record on the PREVIOUS stop, and the reply used to
-    print that stop's address and attribution as this wait's (an audit found it): a
-    confident wrong answer of the right shape. The reply says the position could not be read
-    yet, and carries no `last_stop`, rather than the stale one."""
     fake = _names(tmp_path, watched=False, input_port=5555)
     assert cast(dict[str, Any], server.status())["last_stop"]["pc"] == "00A7:00000000"
     fake.running = True
@@ -6048,9 +5122,6 @@ def test_a_stop_whose_survey_refused_is_not_named_with_the_previous_stops_addres
 
 
 def test_drive_names_a_stop_that_landed_during_its_verify(tmp_path: Path) -> None:
-    """`drive`'s VERIFY on a running guest is the same wait; a stop during it is the stop's
-    miss, named with `last_stop`, and not "the guest did not do what was expected" (auditor,
-    the wording removed from `send_keys` survived here)."""
     fake = _names(tmp_path, watched=True)
     fake.running = True                            # the act is sent to a RUNNING guest
     fake.input_effect = None
@@ -6069,8 +5140,6 @@ def test_drive_names_a_stop_that_landed_during_its_verify(tmp_path: Path) -> Non
 
 def test_the_sdk_injects_the_context_into_the_waiting_tools_and_hides_it(
         tmp_path: Path) -> None:
-    """`ctx` is found by its type through the wrapper, is not an argument the client can
-    pass, and stays out of the summary; the tools with no wait take none."""
     for name in ("run_to", "log_wait", "perform", "drive", "send_keys", "send_mouse", "resume",
                  "start", "close"):
         tool = server.mcp._tool_manager.get_tool(name)
@@ -6083,8 +5152,6 @@ def test_the_sdk_injects_the_context_into_the_waiting_tools_and_hides_it(
 
 def test_the_sequences_wait_for_a_stop_reports_its_progress(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The tail of `perform` waits for a stop after a step left the machine running; that
-    wait is bounded and says where it is, like every other."""
     fake = _names(tmp_path)
     fake.halted = False
     fake.where_raises = True                    # running, and it stays running
@@ -6099,14 +5166,6 @@ def test_the_sequences_wait_for_a_stop_reports_its_progress(
 
 def test_the_sequences_wait_for_a_stop_listens_for_the_prompt_and_types_nothing(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The wait between a step that left the machine running and the next console step
-    must not POLL by typing `BPLIST` and reading the position: that queues keystrokes for
-    the stop, and paces a progress tick by the console's timeout on a quiet machine (up to
-    six seconds instead of the one every other wait keeps). It listens for the debugger's
-    prompt on the terminal the way `run_to` does. The proof is a `where()` that REFUSES
-    throughout (a typed poll would read the machine as running) beside a prompt on the
-    terminal: the passive wait hears it and answers `stopped`; with nothing on the terminal
-    it answers `running` at the bound (the control), ticking every PROGRESS_EVERY_S."""
     fake = _names(tmp_path)
     fake.halted = False
     fake.where_raises = True
@@ -6133,8 +5192,6 @@ def test_the_sequences_wait_for_a_stop_listens_for_the_prompt_and_types_nothing(
 
 
 def test_a_step_carrying_ctx_is_refused_before_it_runs(tmp_path: Path) -> None:
-    """`ctx` is the SDK's; a step that names it would hand a stray value to the progress bridge,
-    which would blow up at the first tick, an escape the wrapper does not translate."""
     _names(tmp_path)
     out = server.perform(steps=[{"op": "status"}, {"op": "resume", "ctx": "bogus"}])
     assert out["status"] == "INVALID" and out["failed_at"] == 1, out
@@ -6184,8 +5241,6 @@ def test_perform_carries_the_clients_context_to_its_wait(
 
 
 def test_send_keys_hands_its_progress_to_the_wait_for_the_reaction() -> None:
-    """The wait for `expect` after a posted key is the longest wait this server makes in
-    ordinary use, and it reports like every other bounded wait."""
     class _Route:
         launch = SimpleNamespace(watched=False, input_port=5555, logfile=None)
         stub_protocol = inputs.STUB_PROTOCOL
@@ -6220,9 +5275,6 @@ def test_send_keys_hands_its_progress_to_the_wait_for_the_reaction() -> None:
 
 def test_two_refs_on_one_address_do_not_share_a_change_watch_in_silence(
         tmp_path: Path) -> None:
-    """Two declarations resolving to one seg:off would share ONE BPPM row, and clearing
-    either would disarm the other without a word. One watchpoint is one declaration: the
-    second is refused naming the first."""
     _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
     first = server.watch_add(ref="g_rate", mode="change", length=4)
     assert first["status"] == "ok" and first["armed"] is True
@@ -6234,9 +5286,6 @@ def test_two_refs_on_one_address_do_not_share_a_change_watch_in_silence(
 
 def test_an_aliased_change_watch_declared_while_running_stays_pending_and_says_why(
         tmp_path: Path) -> None:
-    """The alias refusal holds while the guest runs (the last stop's machine resolves the
-    range) and on the pending path: a change watch queued for a range that ANOTHER ref
-    armed before the stop came is not armed at the stop, and the account names the ref."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")])
     first = server.watch_add(ref="g_rate", mode="change", length=4)
     assert first["armed"] is True
@@ -6260,9 +5309,6 @@ def test_an_aliased_change_watch_declared_while_running_stays_pending_and_says_w
 
 
 def test_the_front_door_sends_the_reader_to_the_generated_index_and_keeps_no_table() -> None:
-    """The roster a stranger reads is REFERENCE.md's index, generated from the registry and held
-    to it by the reference pages' drift test; a table typed into the front door is a second copy
-    that falls behind the day a tool is added, so the front door links the index and holds none."""
     readme = (Path(__file__).parents[1] / "README.md").read_text()
     assert "## The tools" in readme, "the front door lost its tools section"
     tools = readme.split("## The tools", 1)[1].split("\n## ", 1)[0]
@@ -6271,18 +5317,11 @@ def test_the_front_door_sends_the_reader_to_the_generated_index_and_keeps_no_tab
 
 
 def test_every_registered_tool_is_named_in_the_instructions() -> None:
-    """The `instructions` string is the one channel a session receives at connection, and a
-    tool registered but not named there is one the session never learns exists. Asked of
-    the MCP layer, never of a list kept beside it."""
     assert dosbox_mcp.ROSTER.unlisted(dosbox_mcp.registered_tools()) == []
     assert dosbox_mcp.ROSTER.text() in (server.mcp.instructions or ""), "the roster is missing"
 
 
 def test_perform_checks_every_steps_arguments_before_any_step_runs(tmp_path: Path) -> None:
-    """The contract says a bad step refuses before anything runs, and the up-front pass
-    checked the op NAMES only: a `resume` ran, an irreversible act, before the next
-    step's misspelt argument was seen. Every step is bound against its tool's signature
-    first, and `ctx` is refused there too."""
     fake = _names(tmp_path)
     fake.halted = False
     out = server.perform(steps=[{"op": "resume"}, {"op": "status", "bogus": 1}], settle_seconds=1.0)
@@ -6294,10 +5333,6 @@ def test_perform_checks_every_steps_arguments_before_any_step_runs(tmp_path: Pat
 
 
 def test_two_pending_declarations_on_one_address_arm_one_row_at_the_stop(tmp_path: Path) -> None:
-    """The drain read the debugger's list ONCE before its loop and never refreshed it, so
-    two refs resolving to one address (a store from before the one-row rule holds them)
-    both passed the 'already held' check and the second `BP` stacked a second row. The
-    list learns each row as it is armed."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("foo", 0x100, kind="T"),
                                      dsym.Symbol("bar", 0x100, kind="T")])
     fake.halted = True
@@ -6317,13 +5352,7 @@ def test_two_pending_declarations_on_one_address_arm_one_row_at_the_stop(tmp_pat
 
 def test_one_breakpoint_row_is_one_declaration_and_an_old_store_is_attributed_whole(
         tmp_path: Path) -> None:
-    """ONE ROW, ONE DECLARATION. A second declaration resolving to an address another
-    breakpoint declaration already holds (a name and the SEG:OFF it sits at, or two names
-    on one address) would be stored over the same row, so clearing either would send the
-    removal and leave the other declared over a row the debugger no longer has. It is
-    refused naming the holder. A store from before the rule can still hold two: the
-    stop's attribution then names every declaration at the address instead of the first
-    in silence."""
+    """ONE ROW, ONE DECLARATION."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("foo", 0x100, kind="T"),
                                      dsym.Symbol("bar", 0x100, kind="T")])
     assert server.breakpoint_at(ref="foo")["armed"] is True
@@ -6345,10 +5374,6 @@ def test_one_breakpoint_row_is_one_declaration_and_an_old_store_is_attributed_wh
 
 
 def test_watch_add_refuses_an_ambiguous_name_and_stores_nothing(tmp_path: Path) -> None:
-    """`breakpoint_at` refuses a name that matches several symbols before storing it;
-    `watch_add` stored it and then, in change mode, read `seg` off a resolution that has
-    none, escaping as a KeyError with no session block. Both modes refuse naming the
-    count, with nothing stored, as the breakpoint does."""
     _names(tmp_path, symbols=[dsym.Symbol("dup", 0x100, kind="T"),
                               dsym.Symbol("dup", 0x200, kind="T")])
     for mode in ("change", "show"):
@@ -6358,9 +5383,6 @@ def test_watch_add_refuses_an_ambiguous_name_and_stores_nothing(tmp_path: Path) 
 
 
 def test_a_declaring_reply_names_its_state_in_the_lists_own_words(tmp_path: Path) -> None:
-    """An armed `breakpoint_at`/`watch_add` carried no `state` at all, and the state a
-    declaration could not arm in was spelt `unarmed` here and `unarmable` in the lists:
-    one word per concept, and a caller reading `state` finds one on every reply."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("foo", 0x100, kind="T"),
                                      dsym.Symbol("var", 0x200, kind="D")])
     assert server.breakpoint_at(ref="foo")["state"] == "armed"
@@ -6374,9 +5396,6 @@ def test_a_declaring_reply_names_its_state_in_the_lists_own_words(tmp_path: Path
 
 def test_capture_frame_replies_with_the_source_it_read_and_the_frame_asked(
         tmp_path: Path) -> None:
-    """The docstring promised `source` and `at`; the reply carried `at_frame` and no
-    source, so a caller could not tell which capture the still came out of when the
-    default (the largest) was taken."""
     install()
     got = server.capture_frame(frame=3, dest=str(tmp_path / "f.png"))
     assert got["frame"] == 3 and got["capture_path"] == "/caps/run_001.avi", got
@@ -6388,11 +5407,6 @@ def test_capture_frame_replies_with_the_source_it_read_and_the_frame_asked(
 
 
 def test_close_says_how_the_session_ended() -> None:
-    """An exit code is not a word for the ENDING, and the reply names it in `ended_by`:
-    `quit` (the emulator took the signal and left on its own), `killed`
-    (SIGKILL after it ignored the first signal, which every session under a pty does),
-    `died` (it had already exited when `close` was called), `none`. Read off the session
-    after the close."""
     class Ended(FakeSession):
         def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
             self.ended_how = "killed"
@@ -6418,11 +5432,6 @@ def test_close_says_how_the_session_ended() -> None:
 
 
 def test_write_puts_bytes_at_a_name_or_an_address_and_reads_them_back(tmp_path: Path) -> None:
-    """`write`: bytes to a symbol or a `SEG:OFF`, read back off the data view, `verified`
-    saying whether what memory holds is what was sent, and the
-    session altered from then on. A write into ROM is taken and changes nothing, which the
-    readback says under `ok`; a running machine, an odd or empty hex string and an unknown
-    name are refused with nothing sent."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("var", 0x200, kind="D")])
     got = cast(dict[str, Any], server.write(ref="var", data_hex="deadbeef"))
     assert got["status"] == "ok" and got["bytes_written"] == 4 and got["verified"] is True, got
@@ -6456,8 +5465,6 @@ def test_write_puts_bytes_at_a_name_or_an_address_and_reads_them_back(tmp_path: 
 
 
 def test_a_stop_reads_only_what_the_guest_wrote_since_the_previous_stop(tmp_path: Path) -> None:
-    """Every stop carries the E9 block, so it reads only what is new since the previous stop,
-    never the whole log: a session's cost per stop does not grow with its log."""
     fake = _names(tmp_path)
     fake.halted = True
     fake.log = [f"line{i}" for i in range(10)]
@@ -6475,11 +5482,6 @@ def test_a_stop_reads_only_what_the_guest_wrote_since_the_previous_stop(tmp_path
 
 
 def test_start_leaves_the_park_at_the_debugger_recorded_as_stop_one(tmp_path: Path) -> None:
-    """`start` records the park at the debugger as the session's first stop and THEN cleared
-    the running state, which took the record it had just made: right after `start` the
-    server held no last stop, so a `breakpoint_at` declared before any other contact read
-    no machine mode and compared addresses without their real-mode aliases. The clearing
-    comes first; the record survives it."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
 
@@ -6501,9 +5503,6 @@ def test_start_leaves_the_park_at_the_debugger_recorded_as_stop_one(tmp_path: Pa
 @pytest.mark.parametrize("watched", [False, True])
 def test_stop_brings_a_running_guest_back_headless_or_windowed(tmp_path: Path,
                                                                watched: bool) -> None:
-    """`stop` breaks in through the debugger channel, which every session has: a running
-    guest comes back with the full stop reply, `via: break` and the seconds it took, headless
-    or windowed; an already-stopped one says so with `last_stop`."""
     fake = _names(tmp_path, watched=watched)
     fake.running = True
     out = cast(dict[str, Any], server.stop())
@@ -6519,8 +5518,6 @@ def test_stop_brings_a_running_guest_back_headless_or_windowed(tmp_path: Path,
 
 
 def test_a_headless_resume_with_nothing_declared_is_released(tmp_path: Path) -> None:
-    """With `stop` reaching a headless guest there is always a way back, so a `resume` needs
-    no stopper declared first: it goes out and leaves the machine running."""
     _names(tmp_path, watched=False)
     released = cast(dict[str, Any], server.resume())
     assert released["status"] == "ok" and "stop_seq" not in released, released
@@ -6528,9 +5525,6 @@ def test_a_headless_resume_with_nothing_declared_is_released(tmp_path: Path) -> 
 
 def test_an_interrupt_breakpoint_from_another_session_does_not_count_as_a_stopper(
         tmp_path: Path) -> None:
-    """An interrupt breakpoint is never re-armed across sessions and lists as `gone`, yet
-    the stopper check (which decides whether a `perform` ending on a running step waits for
-    a stop) counted it. Only an interrupt this session declared can stop the machine."""
     _names(tmp_path, watched=False)
     dstate.STATE.session_origin = "this-session"
     st = dstate.STATE.store
@@ -6545,11 +5539,6 @@ def test_an_interrupt_breakpoint_from_another_session_does_not_count_as_a_stoppe
 
 def test_a_bad_value_in_a_later_step_runs_nothing_and_every_refusal_is_listed(
         tmp_path: Path) -> None:
-    """A batch is checked WHOLE before its first step runs, with the same checks each tool
-    runs on its own: a key name no route knows, a pattern that does not compile. Nothing
-    is posted, and the reply lists every refused step so a caller fixes the batch once.
-    Otherwise the first key would go in and the program react before the second step's
-    unknown name was seen."""
     fake = _names(tmp_path, watched=True)
     fake.running = True
     out = cast(dict[str, Any], server.perform(steps=[
@@ -6567,9 +5556,6 @@ def test_a_bad_value_in_a_later_step_runs_nothing_and_every_refusal_is_listed(
 
 def test_send_keys_refuses_an_unknown_name_before_the_window_is_touched(
         tmp_path: Path) -> None:
-    """The same check, on the tool itself: an unknown key name is refused by the server
-    before the helper is asked to take the focus and post, so the refusal costs no focus
-    switch and reads the same whichever route would have answered."""
     fake = _names(tmp_path, watched=True)
     fake.running = True
     out = cast(dict[str, Any], server.send_keys(keys=["a", "not_a_real_key_xyz"]))
@@ -6579,8 +5565,6 @@ def test_send_keys_refuses_an_unknown_name_before_the_window_is_touched(
 
 
 def test_the_modifier_vocabulary_is_the_dos_keyboard_s() -> None:
-    """The modifiers are the ones a DOS keyboard has, judged before anything is sent: the
-    command key is refused by name, an unknown one with the list."""
     inputs.check_keys(["a"], ["shift", "CTRL", "alt", "option", "control"])
     with pytest.raises(ds.Invalid, match="no command key"):
         inputs.check_keys(["a"], ["cmd"])
@@ -6640,9 +5624,6 @@ def test_the_modifier_vocabulary_is_the_dos_keyboard_s() -> None:
 ])
 def test_every_registry_entry_refuses_its_bad_value_and_passes_its_good_one(
         op: str, bad: dict[str, Any], good: dict[str, Any]) -> None:
-    """One bad value and one good one per registry entry, so a check that stopped judging
-    (an entry pointing at a function that accepts everything) is seen: the bad value must
-    raise the tool's own refusal and the good one must pass in silence."""
     with pytest.raises(ds.Invalid):
         checks.preflight(op, bad)
     checks.preflight(op, good)
@@ -6650,9 +5631,7 @@ def test_every_registry_entry_refuses_its_bad_value_and_passes_its_good_one(
 
 
 def test_wait_ready_and_close_report_their_progress() -> None:
-    """The boot and the close are the waits the owner watches longest, and they painted
-    nothing. The control: a prompt that is already there, and a process already gone, report
-    nothing."""
+    """The boot and the close are the waits the owner watches longest, and they painted nothing."""
     import time
 
     class _Booting:
@@ -6704,9 +5683,6 @@ def test_wait_ready_and_close_report_their_progress() -> None:
 
 def test_read_memory_length_is_bounded_and_resume_takes_the_siblings_bound(
         tmp_path: Path) -> None:
-    """Two rows of the symmetry audit: `read_memory(length)` answers `hex` and refuses a
-    length the data view cannot hold; `resume(seconds)` waits for a stop the way
-    `run_to` listens, and leaves the machine running when the bound expires."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")], ds_="00AF")
     for bad in (0, dcons.DATA_VIEW_BYTES + 1):
         out = cast(dict[str, Any], server.read_memory(ref="g_rate", length=bad))
@@ -6737,8 +5713,6 @@ def test_read_memory_length_is_bounded_and_resume_takes_the_siblings_bound(
 
 def test_resume_with_a_bound_comes_back_with_the_stop_when_the_prompt_lands(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The prompt arrives inside the bound: the reply is the full stop; and a prompt seen
-    with the machine not at rest when asked is said as such, the machine still running."""
     fake = _names(tmp_path)
     fake.launch.watched = True
     monkeypatch.setattr(fake, "_read", lambda timeout: dcons.PROMPT, raising=False)
@@ -6756,8 +5730,6 @@ def test_resume_with_a_bound_comes_back_with_the_stop_when_the_prompt_lands(
 
 def test_perform_refuses_a_run_to_step_without_a_control_before_the_list_runs(
         tmp_path: Path) -> None:
-    """A list is checked WHOLE before its first step: a `run_to` with no control (required by
-    its signature) or an empty one is found here, not five steps in, and nothing was sent."""
     fake = _names(tmp_path)
     out = cast(dict[str, Any], server.perform(steps=[{"op": "status"},
                                                      {"op": "run_to", "ref": "0000:0000"}]))
@@ -6780,8 +5752,6 @@ def _tail(name: str) -> str:
 
 
 def test_find_through_the_tool_searches_the_dump_and_reports_the_sibling_shape() -> None:
-    """The double's dump is all zeros, so a zero pattern hits at every offset and a
-    non-zero one nowhere: both counts are known from the double, not reasoned."""
     s = install()
     got = server.find(ref="0749:00000010", length=4, data_hex="0000")
     assert got["status"] == "ok", got
@@ -6824,9 +5794,6 @@ def test_scan_clear_through_the_tool_reports_both_outcomes() -> None:
 
 def test_run_to_summary_spells_a_control_that_never_counted_as_a_count_not_a_prefix(
         tmp_path: Path) -> None:
-    """`control fired 0x` reads as a hex prefix with nothing after it, which is what a
-    target reached before the control's first frame produces: the count is a number, so
-    the summary spells it as one."""
     fake = _names(tmp_path)
     fake.runto_running = False
     fake.control_hits = 0
@@ -6838,11 +5805,6 @@ def test_run_to_summary_spells_a_control_that_never_counted_as_a_count_not_a_pre
 
 
 def test_perform_checks_a_symbols_find_step_before_any_step_runs(tmp_path: Path) -> None:
-    """`symbols_find` had no entry in the preflight registry, so a list carrying one with a
-    `limit` past the ceiling, or with no question at all, pressed the keys of the steps
-    before it and refused only when its own step ran (the audit of the pointer watches
-    found it). The checks the tool runs on its own arguments run over the list first, so
-    `ran` is empty and nothing was posted."""
     fake = _names(tmp_path, watched=True, symbols=[dsym.Symbol("_main", 0x100, kind="T")])
     fake.running = True
     fake.where_raises = True
@@ -6878,9 +5840,6 @@ def test_perform_checks_a_symbols_find_step_before_any_step_runs(tmp_path: Path)
 ])
 def test_perform_checks_the_data_view_ceilings_before_any_step_runs(
         tmp_path: Path, bad: dict[str, Any]) -> None:
-    """`read_memory`'s length, `write`'s bytes and a show watch's width are each bounded by
-    the data view, and the bounds live in the registry the whole-list check reads, so a list
-    with the bad value at step 1 is refused whole with `ran` empty, like any other value."""
     _names(tmp_path)
     out = server.perform(steps=[{"op": "status"}, bad])
     assert out["status"] == "INVALID" and out["ran"] == [], (bad, out)
@@ -6888,8 +5847,6 @@ def test_perform_checks_the_data_view_ceilings_before_any_step_runs(
 
 
 def test_the_data_view_ceilings_pass_at_the_maximum_on_both_paths(tmp_path: Path) -> None:
-    """THE BOUNDARY, on the registry itself: the maximum passes, one past it does not, and
-    so does the synchronous call, which reads the same registry."""
     _names(tmp_path)
     checks.preflight("read_memory", {"ref": "0000:0000", "length": 128})
     checks.preflight("write", {"ref": "0000:0000", "data_hex": "00" * 128})
@@ -6903,9 +5860,6 @@ def test_the_data_view_ceilings_pass_at_the_maximum_on_both_paths(tmp_path: Path
 
 def test_drives_lines_ceiling_is_logs_ceiling_and_not_a_second_constant(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """`drive` capped `lines` with a constant of its own that happened to equal `log`'s
-    `LOG_LIMIT_MAX` (the audit of #69 found the copy): two numbers for one ceiling drift.
-    With the one ceiling moved, `drive` follows it, refusing one past it and taking it."""
     fake = _names(tmp_path, watched=True)
     fake.running = True
     fake.where_raises = True
@@ -6919,9 +5873,6 @@ def test_drives_lines_ceiling_is_logs_ceiling_and_not_a_second_constant(
 
 
 def test_an_address_ref_has_one_spelling_and_a_clear_takes_any_of_them(tmp_path: Path) -> None:
-    """A `SEG:OFF` is one address in many spellings (case, padding), so it is stored in
-    ONE, the reply carries it, a
-    re-declaration in another is adopted, and a clear matches any of them."""
     fake = _names(tmp_path)
     out = server.breakpoint_at(ref="00a7:100")
     assert out["status"] == "ok" and out["ref"] == "00a7:100", out
@@ -6935,15 +5886,6 @@ def test_an_address_ref_has_one_spelling_and_a_clear_takes_any_of_them(tmp_path:
 
 def test_a_second_load_with_a_narrower_pattern_keeps_what_the_first_one_placed(
         tmp_path: Path) -> None:
-    """The debugger's `LV` APPENDS, and `loaded` says so, so a server table REPLACED by
-    every load contradicts it: after a second `symbols_load` with a disjoint `pattern`,
-    `symbols_find` answers 0 matches for a symbol of the first load, `run_to` on it is
-    `unknown_ref`, and a breakpoint armed on it is listed `unresolved` with the debugger's
-    real row stranded in `foreign`, impossible to clear by name.
-
-    Loading in narrow batches is the reasonable thing to do with thousands of symbols, so
-    the two halves are aligned the way the debugger already behaves: the table ACCUMULATES.
-    """
     install(mode="Pr32")
     src = _source(tmp_path)
     first = cast(dict[str, Any], server.symbols_load(path=src, pattern="_engine_create"))
@@ -6960,11 +5902,6 @@ def test_a_second_load_with_a_narrower_pattern_keeps_what_the_first_one_placed(
 
 def test_a_types_name_the_table_lacks_is_refused_before_anything_is_written(
         tmp_path: Path) -> None:
-    """A REFUSAL MAY NOT ALSO CORRUPT STATE, which is this module's one rule and the reason
-    the debugger is written to before the table is. The `types` check sat AFTER both, so a
-    single typo refused the call with the debugger's list already grown by `LV` and this
-    side's table already replaced: the caller was told it failed and the session had moved.
-    """
     s = install(mode="Pr32")
     src = _source(tmp_path)
     first = cast(dict[str, Any], server.symbols_load(path=src, pattern="_engine_create"))
@@ -6985,10 +5922,6 @@ def test_a_types_name_the_table_lacks_is_refused_before_anything_is_written(
 
 def test_perform_a_step_missing_a_value_or_carrying_the_wrong_type_is_refused_not_crashed(
         tmp_path: Path) -> None:
-    """The whole list is judged before its first step runs, and that judgement covers a
-    value left out (`watch_add` without `length`) and a value of the wrong type (`length`
-    as a string) the same way it covers a bad name: a refusal naming the argument, never
-    a TypeError out of the checker."""
     _names(tmp_path)
     out = server.perform(steps=[{"op": "step", "count": 1, "mode": "over"},
                                 {"op": "watch_add", "ref": "F000:C9B0", "mode": "show"}])
@@ -7002,8 +5935,6 @@ def test_perform_a_step_missing_a_value_or_carrying_the_wrong_type_is_refused_no
 
 
 def test_an_invalid_summary_is_cut_at_a_word_and_says_so() -> None:
-    """The summary is one line a person reads without the JSON, so a long refusal is cut
-    there: at a word, with a mark that says the rest is in `message`, never mid-word."""
     message = "a RELATIVE path is not a place: " + "give the dump an absolute path " * 6
     line = dosbox_mcp.BOUNDARY.line("memdump", {}, {"status": "INVALID", "code": "bad_argument",
                                            "message": message})
@@ -7019,9 +5950,6 @@ def test_an_invalid_summary_is_cut_at_a_word_and_says_so() -> None:
 
 
 def test_every_step_check_takes_what_its_tool_takes_with_the_same_defaults() -> None:
-    """A check is called with a STEP's arguments, which are the tool's: a value the tool
-    defaults and the check requires is a TypeError out of the checker, and a default the
-    two spell differently judges a call the tool would never make."""
     ops = server._step_ops()
     for op, check in checks.BY_OP.items():
         fn = ops.get(op) or getattr(server, op)      # a tool that is not a batch step
@@ -7040,9 +5968,6 @@ def test_every_step_check_takes_what_its_tool_takes_with_the_same_defaults() -> 
 
 
 def test_watch_add_judges_the_mode_before_the_size(tmp_path: Path) -> None:
-    """A bogus `mode` with no `fmt` and no `length` was refused for the size, and the mode
-    surfaced only on the second call: the mode is a word of the vocabulary and is judged
-    first, in the tool and in a batch step alike."""
     _names(tmp_path)
     got = server.watch_add(ref="00AF:0100", mode="bogus")
     assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
@@ -7052,9 +5977,6 @@ def test_watch_add_judges_the_mode_before_the_size(tmp_path: Path) -> None:
 
 
 def test_a_breakpoint_left_armed_by_run_to_counts_as_a_stopper(tmp_path: Path) -> None:
-    """A `run_to` target whose removal could not be confirmed stays in the debugger with no
-    declaration behind it, and `resume` must not refuse to run a machine that row could
-    stop: the debugger's own list at the last stop is what says what is armed."""
     fake = _names(tmp_path, watched=False)
     assert arming.something_can_stop_it() is False
     # THE ROW IS THE DEBUGGER'S: it sits in the list the next stop's survey reads, and in
@@ -7068,17 +5990,12 @@ def test_a_breakpoint_left_armed_by_run_to_counts_as_a_stopper(tmp_path: Path) -
 
 def test_start_with_an_input_port_keeps_session_as_the_last_key(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The stub's whereabouts were appended after the envelope was built, so a reader
-    taking the last key as the session block read `input_port` instead."""
     got = _start_on_a_booted_fake(tmp_path, monkeypatch, input_port=5555)
     assert got["status"] == "ok" and got["input_port"] == 5555 and "stub" in got, got
     assert list(got)[-1] == "session", f"the reply ends in {list(got)[-1]!r}, not `session`"
 
 
 def test_a_machine_independent_argument_is_refused_before_the_session_gate() -> None:
-    """A segment past sixteen bits, a channel outside the vocabulary and a hex pattern that
-    is not hex are as wrong with no session as with one, so they are refused cold as
-    `bad_argument`; a ref the table has to resolve still answers `no_session` (the control)."""
     dstate.STATE.session = None
     calls: tuple[Callable[[], Any], ...] = (
                  lambda: server.breakpoint_at(ref="12345:0010"),
@@ -7112,8 +6029,6 @@ def _typed_into(s: FakeSession, monkeypatch: pytest.MonkeyPatch) -> list[str]:
     ("INT 21", "`resume`"), ("int 10", "`resume`")])
 def test_debug_refuses_a_typed_command_that_lets_the_guest_run(
         command: str, tool: str, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Refused before anything reaches the terminal, naming the tool that releases the machine
-    and reports the stop."""
     typed = _typed_into(install(), monkeypatch)
     got = cast(dict[str, Any], server.debug(command=command))
     assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
@@ -7125,10 +6040,6 @@ def test_debug_refuses_a_typed_command_that_lets_the_guest_run(
                                      "BPINT 21", "BPLIST INT", "HEAVYLOG", "LOGX"])
 def test_debug_passes_a_command_that_keeps_the_machine_at_the_debugger(
         command: str, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The control: the classifier reads the FIRST WORD, anchored, so `INTT` (which enters the
-    handler and stays at the debugger), a longer word starting with a releasing one, and a
-    releasing word further along the line all go through; so does `HEAVYLOG`, which toggles a
-    ring of the CPU log and does not release the guest."""
     typed = _typed_into(install(), monkeypatch)
     got = cast(dict[str, Any], server.debug(command=command))
     assert got["status"] == "ok", got
@@ -7139,9 +6050,6 @@ def test_debug_passes_a_command_that_keeps_the_machine_at_the_debugger(
                                      "BPLIST\tx"])
 def test_debug_refuses_a_command_carrying_a_control_character(
         command: str, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The classifier reads the first word, and the whole string reaches the terminal: a line
-    break would type a second command after it, and an escape is a key (`\x1b[15~` is the run
-    key itself). `debug` is one command of printable text."""
     typed = _typed_into(install(), monkeypatch)
     got = cast(dict[str, Any], server.debug(command=command))
     assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
@@ -7149,8 +6057,6 @@ def test_debug_refuses_a_command_carrying_a_control_character(
 
 
 def test_debug_refuses_a_command_that_is_not_text() -> None:
-    """The schema refuses it from a client; a direct call or a probe's replayed arguments
-    reach the check, which answers `bad_argument` rather than raising."""
     install()
     got = cast(dict[str, Any], server.debug(command=cast(Any, 5)))
     assert got["code"] == "bad_argument", got
@@ -7166,8 +6072,6 @@ def test_debug_refuses_a_typed_release_with_no_session() -> None:
 
 
 def test_every_tool_has_a_pre_gate_check_or_is_named_as_judged_by_the_machine() -> None:
-    """An absent entry and a forgotten one look identical, so the tools deliberately without
-    a check are named, and the two sets together are the registry: no more, no less."""
     registered = {t.name for t in server.mcp._tool_manager.list_tools()}
     assert registered == set(checks.BY_OP) | checks.MACHINE_JUDGES, (
         sorted(registered ^ (set(checks.BY_OP) | checks.MACHINE_JUDGES)))
@@ -7186,16 +6090,12 @@ def test_the_instructions_say_a_wrong_type_is_the_schemas_refusal() -> None:
 def test_a_step_takes_null_for_an_optional_scalar_and_judges_anything_else(
     ah: Any, refusal: str | None,
 ) -> None:
-    """`breakpoint_interrupt`'s `ah` is `int | None`: a step may pass it null explicitly,
-    which the schema of the tool itself accepts, and any other value is judged as an int."""
     said = step_judge.wrong_type(server.breakpoint_interrupt, {"number": 0x21, "ah": ah})
     assert (said is None) if refusal is None else (said or "").startswith(refusal), said
 
 
 def test_start_hands_the_callers_flags_to_a_headless_launch(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """At the tool: `flags` and `break_on_int3` reach the launch of a HEADLESS session, where
-    there is no window for `window_flags` to place."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     seen: list[dlaunch.Launch] = []
@@ -7226,8 +6126,6 @@ def test_start_hands_the_callers_flags_to_a_headless_launch(
 
 @pytest.mark.parametrize("spelled", ["0x1000", "1000", "0X1000"])
 def test_symbols_load_takes_its_base_as_hex_text(tmp_path: Path, spelled: str) -> None:
-    """A caller holds a load address in hex, so the base is hex text and no conversion is left
-    to the caller."""
     install()
     src = tmp_path / "real16.map"
     src.write_text(TLINK_TEXT, encoding="utf-8")
@@ -7238,8 +6136,6 @@ def test_symbols_load_takes_its_base_as_hex_text(tmp_path: Path, spelled: str) -
 
 @pytest.mark.parametrize("bad", [4096, "-1000", "10_00", "0xZZ", ""])
 def test_symbols_load_refuses_a_base_that_is_not_hex_text(tmp_path: Path, bad: object) -> None:
-    """An integer is refused, not coerced: a caller passing one has done the conversion this
-    argument exists to take away."""
     install()
     src = tmp_path / "real16.map"
     src.write_text(TLINK_TEXT, encoding="utf-8")
@@ -7248,8 +6144,6 @@ def test_symbols_load_refuses_a_base_that_is_not_hex_text(tmp_path: Path, bad: o
 
 
 def test_section_bases_are_hex_text_too(tmp_path: Path) -> None:
-    """The sectioned form: a base per section index, each hex text; an integer
-    value is refused naming the section."""
     install()
     src = ILINK32_MAP
     got = cast(dict[str, Any], server.symbols_load(
@@ -7261,9 +6155,6 @@ def test_section_bases_are_hex_text_too(tmp_path: Path) -> None:
 
 
 def test_every_tool_names_its_summary_and_declares_both_hints() -> None:
-    """`tool()` takes `summary=` (required) and `idempotent=`: every tool
-    the MCP layer serves has its own line in `dosbox_summaries`, and its annotations carry
-    BOTH hints as booleans, so a client never reads an absent hint as a guess."""
     served = dosbox_mcp.registered_tools()
     assert served and set(served) <= set(dosbox_mcp.BOUNDARY.summaries), sorted(
         set(served) - set(dosbox_mcp.BOUNDARY.summaries))
@@ -7275,8 +6166,6 @@ def test_every_tool_names_its_summary_and_declares_both_hints() -> None:
 
 
 def test_a_stop_reply_carries_its_own_number(tmp_path: Path) -> None:
-    """Every stop names the number the server gave it, `stop_seq`: what a batch with
-    `summaries` counts by, and the same number `last_stop.stop_seq` names afterwards."""
     _names(tmp_path)
     got = cast(dict[str, Any], server.step(mode="over"))
     assert got["stop_seq"] == dstate.STATE.last_stop["seq"], got
@@ -7286,8 +6175,6 @@ def test_a_stop_reply_carries_its_own_number(tmp_path: Path) -> None:
 
 def test_perform_with_summaries_cuts_every_step_but_the_last_and_counts_the_stops(
         tmp_path: Path) -> None:
-    """`summaries=True`: compact rows for every step but the one
-    that matters, both files holding all of them, and the stops counted by the server."""
     _names(tmp_path)
     out = cast(dict[str, Any], server.perform(
         steps=[{"op": "step", "count": 1, "mode": "over"},
@@ -7315,8 +6202,6 @@ def test_perform_with_summaries_cuts_every_step_but_the_last_and_counts_the_stop
 
 
 def test_perform_with_summaries_shows_the_first_rows_and_says_it_cut(tmp_path: Path) -> None:
-    """Past `ROWS_SHOWN` the reply shows the first rows and the kept step, `truncated` says so,
-    and the files still hold every step."""
     _names(tmp_path)
     n = dstate.ROWS_SHOWN + 3
     out = cast(dict[str, Any], server.perform(steps=[{"op": "registers"}] * n, summaries=True))
@@ -7355,8 +6240,6 @@ def test_the_paging_mark_is_read_off_the_pane_and_absent_is_not_off() -> None:
     ("Pr16", False, "protected"), ("Pr32", False, "protected"), ("Pr32", None, None)])
 def test_status_names_the_cpu_mode_of_the_stop_it_is_in(
         tmp_path: Path, mode: str, paging: bool | None, want: str | None) -> None:
-    """`real`, `protected` or `paged`, from the pane's mode word and its PAGE/NOPG mark; a
-    protected pane with no mark is not guessed: unavailable, with why."""
     fake = _names(tmp_path, mode=mode)
     server.registers()                          # a contact that finds the park and records it
     dstate.STATE.last_stop["paging"] = paging
@@ -7372,8 +6255,6 @@ def test_status_names_the_cpu_mode_of_the_stop_it_is_in(
 
 
 def test_status_counts_the_declarations_as_the_lists_list_them(tmp_path: Path) -> None:
-    """`declarations` counts this server's own declarations per family, in any state, and each
-    count equals the rows its `_list` tool returns: interrupts are breakpoints there too."""
     _names(tmp_path, mode="Real", cs="0749", ds_="0749")
     assert server.status()["declarations"] == {"breakpoints": 0, "watches": 0}
     server.breakpoint_at(ref="0749:0010")
@@ -7393,8 +6274,6 @@ def test_status_with_no_session_adds_no_machine_facts() -> None:
 
 
 def test_status_summarises_the_session_it_answers_about() -> None:
-    """The summary is built from the body's reply, whose block is the short one: it reads the
-    reply's own facts, so a live session is never summarised as none."""
     install()
     got = cast(dict[str, Any], server.status())
     assert got["session"]["alive"] and got["summary"] == "status: alive, stopped", got["summary"]
@@ -7405,9 +6284,6 @@ def test_status_summarises_the_session_it_answers_about() -> None:
 
 def test_status_does_not_name_a_stop_it_could_not_read_as_the_one_it_is_in(
         tmp_path: Path) -> None:
-    """The guest stopped again and the survey of that stop was cut: the record still holds the
-    PREVIOUS stop, so `pc` and `cpu_mode` are unavailable with why, never the old stop's values
-    given as the current one's."""
     fake = _names(tmp_path, mode="Real")
     server.registers()                              # the park, recorded
     before = dict(dstate.STATE.last_stop)
@@ -7423,8 +6299,6 @@ def test_status_does_not_name_a_stop_it_could_not_read_as_the_one_it_is_in(
 
 
 def test_status_pc_is_where_the_machine_is_now_after_a_command_moved_it(tmp_path: Path) -> None:
-    """A command that moves CS:IP inside a stop (`INTT`, `set_register`) makes no new stop:
-    `status.pc` reads the pane now, and the stop's own pc stays in `last_stop`."""
     fake = _names(tmp_path, mode="Real", cs="0814", ds_="0814")
     server.registers()                              # the park, recorded
     stop_pc = dstate.STATE.last_stop["at"]
@@ -7444,9 +6318,6 @@ def test_status_counts_the_declarations_on_a_running_machine_too(tmp_path: Path)
 
 
 def test_the_stop_count_survives_a_session_closed_mid_batch() -> None:
-    """A session closed mid-list clears the stop record, so the
-    server's counter reads 0 afterwards: the count still covers every stop the replies carry,
-    rather than coming back empty beside rows that show them."""
     dstate.STATE.last_stop.clear()
     ran = [{"op": "resume", "reply": {"summary": "s", "status": "ok", "stop_seq": n,
                                       "cause": dstate.cause({"attributed": False,
@@ -7483,9 +6354,6 @@ def test_a_batch_writes_both_files_or_neither_and_remakes_a_vanished_scratch(
 
 def test_a_bare_step_is_one_step_into_and_find_takes_the_pattern_first(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The default and the order are the contract a caller relies on without naming them: a
-    bare `step()` reaches the session as ONE step INTO, and `find` and `step` take their
-    arguments in the published order."""
     fake = _names(tmp_path)
     asked: list[dict[str, Any]] = []
     real = fake.step
@@ -7520,8 +6388,6 @@ def test_drive_hands_summaries_to_its_act(tmp_path: Path) -> None:
     {"op": "symbols_load", "path": "x.map", "section_bases": {"1": 4096}}])
 def test_a_list_refuses_a_bad_hex_address_before_its_first_step_runs(
         tmp_path: Path, bad_step: dict[str, Any]) -> None:
-    """The hex text of `linear` and of `section_bases` is judged with the rest of the list,
-    before anything runs, like every other value a step carries."""
     _names(tmp_path)
     got = cast(dict[str, Any], server.perform(steps=[{"op": "registers"}, bad_step]))
     assert got["status"] == "INVALID" and got["ran"] == [], got
@@ -7529,8 +6395,6 @@ def test_a_list_refuses_a_bad_hex_address_before_its_first_step_runs(
 
 
 def test_every_tool_is_summarised_by_its_own_line() -> None:
-    """Each line is the tool's own: this server's function of its name, or, for a media file
-    tool or a screen map tool, scry-core's line of that tool."""
     from scry_core import screen_map
     lines = dosbox_mcp.BOUNDARY.summaries
     folded = {"comment_write": folds.COMMENT, "map_write": folds.MAP, "scan": folds.SCAN,
@@ -7585,9 +6449,6 @@ def test_a_boot_whose_call_is_cancelled_stops_waiting_for_the_prompt(
 
 def test_a_wait_step_that_ran_out_ends_the_list_and_a_run_that_did_goes_on(
         tmp_path: Path) -> None:
-    """A `log_wait` whose line never came is the list's premise failing: the list ends there,
-    TIMEOUT, the steps after it unsent. A run whose bound ran out hands the machine back
-    stopped and surveyed, so the list goes on from there."""
     fake = _names(tmp_path, watched=True)
     fake.running = True
     out = cast(dict[str, Any], server.perform(steps=[
@@ -7604,8 +6465,6 @@ def test_a_wait_step_that_ran_out_ends_the_list_and_a_run_that_did_goes_on(
 
 def test_a_list_that_waited_mid_way_and_ends_running_carries_no_target(
         tmp_path: Path) -> None:
-    """`TARGET` says every wait ended at a stop; a list that waited mid-way and then ended
-    with the machine running, with nothing to wait for, is `still_running` and no verdict."""
     fake = _names(tmp_path)
     fake.halted = False
     fake.where_refusals = 2                     # the first resume's stop lands a moment later
@@ -7625,8 +6484,6 @@ def test_a_list_that_waited_mid_way_and_ends_running_carries_no_target(
 
 
 def test_a_log_rewritten_between_two_stops_is_counted_from_its_start(tmp_path: Path) -> None:
-    """A log rewritten shorter between two stops is read from its start, and the block says so
-    with its mark at zero, rather than counting from a place in a file that no longer exists."""
     fake = _names(tmp_path)
     fake.halted = True
     fake.log = [f"line{i}" for i in range(10)]
@@ -7639,8 +6496,6 @@ def test_a_log_rewritten_between_two_stops_is_counted_from_its_start(tmp_path: P
 
 def test_a_bounded_resume_whose_f5_never_left_is_a_stop_with_its_verdict(
         tmp_path: Path) -> None:
-    """A caller who gave `seconds` reads a verdict whatever came: an F5 that never left the
-    debugger is that stop, OTHER_STOP, not a stop with no word."""
     fake = _names(tmp_path)
     fake.halted = True
     got = cast(dict[str, Any], server.resume(seconds=5))
@@ -7648,8 +6503,6 @@ def test_a_bounded_resume_whose_f5_never_left_is_a_stop_with_its_verdict(
 
 
 def test_drive_says_its_check_was_not_made_when_the_act_ran_out(tmp_path: Path) -> None:
-    """An act whose own expect missed ends there and the overall `expect` is not checked: the
-    summary says so, never "no expectation" for a call that passed one."""
     fake = _names(tmp_path, watched=True)
     fake.running = True
     fake.input_effect = None
@@ -7662,8 +6515,6 @@ def test_drive_says_its_check_was_not_made_when_the_act_ran_out(tmp_path: Path) 
 
 def test_drive_says_its_act_ended_after_its_last_step_when_the_emulator_went(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """An act that ran every step and left the machine running, whose emulator was gone by the
-    tail's wait, failed at no step: the refusal says after which, never a dict's repr."""
     _names(tmp_path, watched=True)
     server.breakpoint_interrupt(number=0x21)            # something declared: the tail waits
     monkeypatch.setattr(sequence, "_wait_for_stop", lambda *a, **k: "gone")
@@ -7674,8 +6525,6 @@ def test_drive_says_its_act_ended_after_its_last_step_when_the_emulator_went(
 
 
 def test_a_step_whose_survey_came_back_cut_is_not_said_to_be_running(tmp_path: Path) -> None:
-    """A step that stopped but whose stop survey came back cut has no `pc` to name: its summary
-    says the position was not read, never that a parked machine runs."""
     fake = _names(tmp_path)
     fake.registers_raises = True
     got = cast(dict[str, Any], server.step())
@@ -7685,8 +6534,6 @@ def test_a_step_whose_survey_came_back_cut_is_not_said_to_be_running(tmp_path: P
 
 def test_a_stop_whose_survey_came_back_cut_names_no_mode_off_the_stop_before(
         tmp_path: Path) -> None:
-    """The PAGE/NOPG mark is read off a stop's own survey: when that survey comes back cut, the
-    mark the session holds is the stop before's, and a mode built on it would be a guess."""
     fake = _names(tmp_path, mode="Pr32")
     fake.paging = True  # type: ignore[attr-defined]   # the previous stop's mark
     fake.halted = True
@@ -7720,8 +6567,6 @@ def test_starts_line_names_how_the_session_is_watched(
 @pytest.mark.parametrize("kw", [{}, {"ref": ""}, {"ref": "x", "all": True}])
 def test_a_clear_names_what_it_clears_even_past_the_pre_gate(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch, tool: str, kw: dict[str, Any]) -> None:
-    """Neither a `ref` nor `all`, or both, is refused: by the pre-gate, and by the tool itself,
-    so no path to the body can take an empty `ref` for "every declaration"."""
     _names(tmp_path)
     server.watch_add(ref="00AF:0100", mode="change", length=4)
     server.breakpoint_interrupt(number=0x21)
@@ -7743,8 +6588,6 @@ def test_a_number_a_caller_spells_in_hex_reaches_the_tool_as_the_integer(tmp_pat
 
 
 def test_drive_carries_its_acts_own_code_when_no_step_failed(tmp_path: Path) -> None:
-    """A list the executor refused (a console step after a release with `settle_seconds` 0) is
-    `not_stopped`, not a failed step: `drive` answers the act's own code."""
     fake = _names(tmp_path, watched=True)
     fake.halted = False                         # the resume leaves the guest running
     fake.where_raises = True                    # ...and it stays running: no prompt to hear
@@ -7763,8 +6606,7 @@ def test_start_names_no_stop_of_its_own_beside_the_park(
 
 def test_start_refuses_a_settle_bound_with_no_plan_to_bound(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """`settle_seconds` bounds a plan's waits: with no plan it would be silently ignored. The
-    launch is replaced, so a regression of the refusal fails here and never starts an emulator."""
+    """`settle_seconds` bounds a plan's waits: with no plan it would be silently ignored."""
     def launched(*_a: Any, **_k: Any) -> dict[str, Any]:
         raise AssertionError("the start was not refused: it reached the launch")
     monkeypatch.setattr(dosbox_lifecycle, "start", launched)
@@ -7776,16 +6618,12 @@ def test_start_refuses_a_settle_bound_with_no_plan_to_bound(
 
 
 def test_a_refused_list_answers_the_contracts_shape(tmp_path: Path) -> None:
-    """A list refused part-way is a refusal like any other: `summary`, `status`, `code`,
-    `message` first."""
     _names(tmp_path)
     contract.check_refusal("perform", cast(dict[str, Any], server.perform(
         steps=[{"op": "registers"}, {"op": "write", "ref": "nowhere", "data_hex": "00"}])))
 
 
 def test_the_pointer_names_the_bios_mode_and_the_screen_its_vga_mode(tmp_path: Path) -> None:
-    """`vga_mode` is the VGA listing's word wherever it is spelled; the mouse driver's video mode
-    is the BIOS mode number, its own word."""
     fake = _guest(tmp_path)
     moved = cast(dict[str, Any], server.send_mouse(x=1, y=1, units="mouse"))
     assert moved["pointer"]["bios_mode"].startswith("0x") and "vga_mode" not in moved["pointer"]
@@ -7793,8 +6631,6 @@ def test_the_pointer_names_the_bios_mode_and_the_screen_its_vga_mode(tmp_path: P
 
 
 def test_drive_waits_for_its_expect_five_seconds_by_default(tmp_path: Path) -> None:
-    """The default bound on `drive`'s wait for `expect` is the one both servers name, and it is
-    the bound the wait is handed when `seconds` is left out."""
     assert inputs.DRIVE_EXPECT_WAIT_S == 5.0
     assert dosbox_docs.DOC_VALUES["EXPECT_WAIT_S"] == "5"
     fake = _names(tmp_path, watched=True)
@@ -7814,9 +6650,6 @@ def test_log_waits_stop_refusal_names_the_pattern_and_the_stop(tmp_path: Path) -
 
 
 def test_the_instructions_families_are_the_registered_tools_and_the_running_ones_answer() -> None:
-    """The roster's families name every registered tool once and nothing else (a misspelt name
-    would be a tool the session looks for and never finds), and every tool the running sentence
-    names, a whole family's included, is one a running guest is answered by."""
     assert dosbox_mcp.ROSTER.unlisted(dosbox_mcp.registered_tools()) == []
     answering = (roster.by_method(sequence.RUNNING_OK_OPS, sequence.RUNNING_METHODS)
                  | (checks.NOT_STEPS - {"start", "build_check"}))
@@ -7827,8 +6660,6 @@ def test_the_instructions_families_are_the_registered_tools_and_the_running_ones
 
 def test_a_plans_wait_is_held_to_the_one_wait_bound_before_anything_is_spawned(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """`start(plan=..., settle_seconds=...)` is a wait like every other: one past `WAIT_MAX_S`
-    is refused before the emulator exists, in the one wait judge's sentence."""
     spawned: list[Any] = []
     monkeypatch.setattr(subprocess, "Popen", lambda *a, **k: spawned.append(a))
     conf = tmp_path / "x.conf"
@@ -7843,9 +6674,6 @@ def test_a_plans_wait_is_held_to_the_one_wait_bound_before_anything_is_spawned(
 
 
 def test_a_raw_command_that_writes_the_guest_marks_the_session_altered() -> None:
-    """A command that writes the guest's memory, registers, ports, PIC or
-    DOS clock marks the session as `write` and `set_register` do, so every later reply says the
-    machine was written to; a breakpoint or a listing writes no guest state and does not."""
     fake = install()
     for command in ("BPLIST", "BP 0000:0009", "BPDEL *", "MEMDUMPBIN 0:0 10", "IV 0:0 X"):
         server.debug(command=command)
@@ -7859,8 +6687,6 @@ def test_a_raw_command_that_writes_the_guest_marks_the_session_altered() -> None
 
 
 def test_debug_empties_a_line_the_debugger_did_not_take_and_says_so() -> None:
-    """A command the debugger does not recognise stays on its input line, and every later
-    command would be appended to it: `debug` empties the line and names what it held."""
     fake = install()
     fake._screen = "*** Debugger command not recognized\nI-> VGA_"
     got = cast(dict[str, Any], server.debug(command="VGA"))
@@ -7873,8 +6699,6 @@ def test_debug_empties_a_line_the_debugger_did_not_take_and_says_so() -> None:
 
 
 def test_debug_pages_a_listing_out_and_returns_the_rest_of_it() -> None:
-    """A listing that pages leaves the pager waiting; `debug` ends it with `Q` alone and the
-    rest of the listing is in the delta it returns."""
     fake = install()
     fake._screen = "page one\nI-> HELP_\n^ Paged content: Hit ENTER to continue, Q to exit paging"
     fake.after_pager = "page two\nI-> _"
@@ -7885,9 +6709,6 @@ def test_debug_pages_a_listing_out_and_returns_the_rest_of_it() -> None:
 
 def test_two_loads_queued_while_the_guest_runs_reach_the_debugger_together(
         tmp_path: Path) -> None:
-    """Two batches loaded at one place while the guest runs accumulate in the table, so the
-    debugger takes both at the next stop: a queue of one would leave the first batch named here
-    and unknown there."""
     one, two = tmp_path / "one.nm", tmp_path / "two.nm"
     one.write_text("00001000 T _main\n", encoding="utf-8")
     two.write_text("00002000 T _second\n", encoding="utf-8")
@@ -7942,8 +6763,6 @@ def test_one_map_loaded_again_is_held_once_and_a_forgotten_table_takes_its_bases
 
 def test_a_load_at_a_stop_replaces_a_queued_batch_the_debugger_refused(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A batch queued while the guest ran and refused at the stop stays queued for the next
-    one; a load made at the stop supersedes it, so it is never applied over the new table."""
     one = tmp_path / "one.nm"
     one.write_text("00001000 T _main\n", encoding="utf-8")
     fake = _names(tmp_path)
@@ -7976,8 +6795,6 @@ def test_a_state_dir_the_caller_gave_is_named_as_theirs_when_a_file_holds_it(
 
 def test_a_breakpoint_and_a_change_watch_queued_at_one_ref_are_both_armed_at_the_stop(
         tmp_path: Path) -> None:
-    """The queue holds a ref once, and both families declared under it while the guest ran
-    are armed at the next stop: the account names the ref, and the debugger holds both rows."""
     fake = _names(tmp_path, watched=True, mode="Real")
     server.status()
     fake.running = True
@@ -7992,10 +6809,6 @@ def test_a_breakpoint_and_a_change_watch_queued_at_one_ref_are_both_armed_at_the
 
 
 def test_an_arrival_is_attributed_to_run_tos_own_target_and_recorded_so(tmp_path: Path) -> None:
-    """The breakpoint `run_to` armed is removed before the stop is surveyed, and no declaration
-    sits there: the reply that says TARGET names the target as what made the stop, and so does
-    `last_stop`, instead of saying no declared breakpoint did. A stop elsewhere is still looked
-    for among the declarations."""
     fake = _names(tmp_path, symbols=[dsym.Symbol("_engine_load_midi", 0x3D5E0, kind="T")])
     got = cast(dict[str, Any],
                server.run_to(ref="_engine_load_midi", control="0000:0020", seconds=5))
@@ -8014,9 +6827,6 @@ def _ok(reply: dict[str, Any]) -> dict[str, Any]:
 
 
 def test_a_stored_declaration_follows_its_names_into_a_rebuilt_map(tmp_path: Path) -> None:
-    """Nothing a declaration keeps was resolved when it was made: a name is stored as typed and
-    placed again against the map loaded now, so over a rebuild that moved `_main` and `g_rate`
-    the breakpoint is armed and the watch listed at the new places, never the old."""
     old, new = tmp_path / "old.nm", tmp_path / "new.nm"
     old.write_text("0016dd80 T _main\n00200000 D g_rate\n", encoding="utf-8")
     new.write_text("0017ee90 T _main\n00210040 D g_rate\n", encoding="utf-8")
@@ -8041,9 +6851,6 @@ def test_a_stored_declaration_follows_its_names_into_a_rebuilt_map(tmp_path: Pat
 
 
 def test_a_change_watch_that_cannot_be_placed_says_why_and_is_stored(tmp_path: Path) -> None:
-    """A real-mode table with no flat base places no symbol: the change watch is kept and
-    answered `unarmable` with the resolution's own reason, never a traceback; a name the loaded
-    table does not define says the table, not the build."""
     real = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x1000, kind="D")], mode="Real",
                   base=-1)
     got = server.watch_add(ref="g_rate", mode="change", length=2)
@@ -8054,8 +6861,6 @@ def test_a_change_watch_that_cannot_be_placed_says_why_and_is_stored(tmp_path: P
 
 
 def _deferred_load_with(tmp_path: Path, declare: Any) -> tuple[NamesFake, Path]:
-    """A table with `foo`, a breakpoint on it, the guest released, `declare` run while it runs,
-    and a second load of the same map queued for the stop."""
     nm = tmp_path / "foo.nm"
     nm.write_text("00001000 T foo\n", encoding="utf-8")
     fake = _names(tmp_path)
@@ -8070,9 +6875,6 @@ def _deferred_load_with(tmp_path: Path, declare: Any) -> tuple[NamesFake, Path]:
 
 def test_a_load_leaves_a_breakpoint_the_debugger_holds_armed_and_out_of_its_account(
         tmp_path: Path) -> None:
-    """The re-arm's account is what this load armed or could not: a breakpoint the debugger
-    already holds stays armed as it is, listed in no bucket (`declaration_list(kind="breakpoint")`
-    shows it)."""
     nm = tmp_path / "foo.nm"
     nm.write_text("00001000 T foo\n", encoding="utf-8")
     fake = _names(tmp_path, mode="Real")
@@ -8086,9 +6888,6 @@ def test_a_load_leaves_a_breakpoint_the_debugger_holds_armed_and_out_of_its_acco
 
 def test_a_breakpoint_cleared_and_declared_again_while_a_load_waits_is_armed_at_the_stop(
         tmp_path: Path) -> None:
-    """Cleared and declared again while the guest runs, with a load queued: at the stop the
-    clear's row goes first and the declaration is armed after, so the breakpoint is held, never
-    reported armed over a row the same stop deleted."""
     fake, _ = _deferred_load_with(tmp_path, lambda: None)
     fake.running = False
     server.status()
@@ -8103,8 +6902,6 @@ def test_a_breakpoint_cleared_and_declared_again_while_a_load_waits_is_armed_at_
 
 
 def test_a_deferred_load_the_debuggers_list_cannot_hold_is_dropped_once(tmp_path: Path) -> None:
-    """A load queued while the guest ran that would carry the debugger's list past what its save
-    holds can never be taken in this session: the stop drops it and says so, once."""
     fake, _ = _deferred_load_with(tmp_path, lambda: None)
     fake.vars_held = dsym.COUNT_MAX
     loads = getattr(fake, "loads", 0)
@@ -8116,8 +6913,6 @@ def test_a_deferred_load_the_debuggers_list_cannot_hold_is_dropped_once(tmp_path
 
 
 def test_a_watch_queued_under_a_ref_the_load_re_arms_is_armed_too(tmp_path: Path) -> None:
-    """The load's re-arm covers breakpoints only: a change watch queued under the same ref is
-    armed at the stop on its own, not dropped from the queue with the breakpoint's ref."""
     fake, _ = _deferred_load_with(
         tmp_path, lambda: server.watch_add(ref="foo", mode="change", length=2))
     fake.running = False
@@ -8144,8 +6939,6 @@ def test_a_re_arm_that_fails_after_a_deferred_load_is_armed_from_the_queue(
 @pytest.mark.parametrize("family", ["breakpoint", "watch"])
 def test_a_clear_the_store_cannot_write_disarms_nothing(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch, family: str) -> None:
-    """The store is written before any row is taken out: a write that fails is the whole
-    refusal, the declaration is kept and its row stays armed."""
     fake = _names(tmp_path, mode="Real")
     ref = "0814:0100" if family == "breakpoint" else "0814:0200"
     if family == "breakpoint":
@@ -8172,8 +6965,6 @@ def test_a_clear_the_store_cannot_write_disarms_nothing(
 
 
 def test_a_watch_clear_that_cannot_read_the_mode_changes_nothing(tmp_path: Path) -> None:
-    """With no record of its row the clear reads the machine to name it; a cut pane there is
-    refused before the store is written, so the declaration stays to clear again."""
     fake = _names(tmp_path, mode="Real")
     _ok(server.watch_add(ref="0814:0200", mode="change", length=2))
     dstate.STATE.armed.clear()
@@ -8197,8 +6988,6 @@ def test_an_interrupt_breakpoint_the_store_cannot_keep_is_not_armed(tmp_path: Pa
 
 def test_a_queued_raw_breakpoint_a_stop_cannot_survey_blames_the_survey_not_the_row(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A stop whose survey is refused cannot give a queued raw row its mode: the row stays
-    queued, and what is pending says the survey failed, not that no stop has placed it."""
     fake = _names(tmp_path, mode="Real")
     server.status()
     fake.running = True
@@ -8220,8 +7009,6 @@ def test_a_queued_raw_breakpoint_a_stop_cannot_survey_blames_the_survey_not_the_
 
 
 def test_a_show_watch_under_a_queued_ref_arms_nothing(tmp_path: Path) -> None:
-    """A show watch arms nothing ever: a breakpoint queued under its ref while the guest runs
-    arms the breakpoint alone at the stop, never a memory watch beside it."""
     fake = _names(tmp_path, mode="Real")
     _ok(server.watch_add(ref="0814:0100", mode="show", length=2))
     server.status()
@@ -8234,8 +7021,6 @@ def test_a_show_watch_under_a_queued_ref_arms_nothing(tmp_path: Path) -> None:
 
 def test_a_failed_re_arm_after_a_load_queues_only_what_the_re_arm_would_arm(
         tmp_path: Path) -> None:
-    """A raw address another build left is never re-armed: the re-arm a deferred load owes
-    queues this build's breakpoints, not every stored one."""
     def stale() -> None:
         store, session = dstate.STATE.store, dstate.STATE.session
         assert store is not None and session is not None
@@ -8301,8 +7086,6 @@ def test_a_queued_raw_breakpoint_whose_place_cannot_be_written_is_said_at_the_st
 def test_what_can_stop_the_guest_is_what_would_be_armed(tmp_path: Path,
                                                         decl: dec.Declaration,
                                                         can: bool) -> None:
-    """A show watch arms nothing, an interrupt of an earlier session is not re-armed, a name the
-    table does not define arms nothing: none of them can bring a running guest back."""
     _names(tmp_path, symbols=[dsym.Symbol("_main", 0x1000, kind="T")], mode="Real")
     dstate.STATE.session_origin = "s-now"
     dstate.STATE.last_stop["held"] = []
@@ -8322,9 +7105,6 @@ def _protected_table(tmp_path: Path) -> NamesFake:
 
 
 def test_a_stop_outside_the_program_says_so_for_every_symbol(tmp_path: Path) -> None:
-    """A stop in a real-mode BIOS handler the program called into has no selector to place a
-    protected-mode symbol through: readers, a breakpoint and a scan answer that the machine
-    stopped outside the program, never the segment check's own number."""
     fake = _protected_table(tmp_path)
     fake.mode, fake.cs, fake.ds = "Real", "F000", "0040"
     read = server.read_memory(ref="_g_eng_rate", length=4)
@@ -8336,8 +7116,6 @@ def test_a_stop_outside_the_program_says_so_for_every_symbol(tmp_path: Path) -> 
 
 def test_a_protected_stop_in_another_selector_places_by_the_programs_own(
         tmp_path: Path) -> None:
-    """A stop in a DPMI host's 16-bit code holds the host's selectors: a symbol is placed
-    through the selector its table was measured against, not the one the stop holds."""
     fake = _protected_table(tmp_path)
     fake.cs, fake.ds = "0018", "0020"
     bp = _ok(server.breakpoint_at(ref="_main"))
@@ -8345,8 +7123,6 @@ def test_a_protected_stop_in_another_selector_places_by_the_programs_own(
 
 
 def test_a_table_of_another_build_is_refused_and_the_loaded_one_stays(tmp_path: Path) -> None:
-    """The executable beside a table is the build's own record: a table that disagrees with it
-    is refused before the debugger takes anything, and the table loaded before stays."""
     guest = Path(__file__).resolve().parent / "guest"
     fake = _names(tmp_path)
     good = tmp_path / "good" / "dpmi.sym"
@@ -8371,8 +7147,6 @@ def test_a_table_of_another_build_is_refused_and_the_loaded_one_stays(tmp_path: 
 
 def test_a_second_batch_at_the_same_base_accumulates_whatever_stop_it_is_loaded_at(
         tmp_path: Path) -> None:
-    """The program's selectors are a fact about the table, not about where it sits: a second
-    batch at the same base, loaded at a real-mode stop, adds to the first."""
     first, second = tmp_path / "a.nm", tmp_path / "b.nm"
     first.write_text("0016dd80 T _main\n", encoding="utf-8")
     second.write_text("0017ee90 T _other\n", encoding="utf-8")
@@ -8386,8 +7160,6 @@ def test_a_second_batch_at_the_same_base_accumulates_whatever_stop_it_is_loaded_
 
 def test_a_table_loaded_while_the_guest_runs_takes_no_selectors_from_the_last_stop(
         tmp_path: Path) -> None:
-    """The last stop may be another program's: a real-mode table loaded while the guest runs
-    keeps no selectors, and is placed by its paragraph at the real-mode stop that follows."""
     nm = tmp_path / "rm.nm"
     nm.write_text("00000100 T _start\n", encoding="utf-8")
     fake = _names(tmp_path)
@@ -8401,8 +7173,6 @@ def test_a_table_loaded_while_the_guest_runs_takes_no_selectors_from_the_last_st
 
 def test_symbols_load_hands_keep_noise_on_and_reads_a_map_with_a_byte_no_utf8_reads(
         tmp_path: Path) -> None:
-    """`keep_noise` reaches the plan (a section label kept or excluded by it), and the map is
-    read leniently: a code-page byte in a line counts that line unread, never a refusal."""
     nm = tmp_path / "prog.nm"
     nm.write_bytes(b"00001000 t .text\n0016dd80 T _main\n\xb0 not a row\n")
     _names(tmp_path)
@@ -8414,8 +7184,6 @@ def test_symbols_load_hands_keep_noise_on_and_reads_a_map_with_a_byte_no_utf8_re
 
 
 def test_a_stop_named_while_the_machine_is_in_it_names_its_declaration_too() -> None:
-    """The words a `wait_stopped` refusal names the stop with carry the declaration it is at,
-    read off the record, not only its address."""
     state = dstate.State()
     session = SimpleNamespace(stop_count=3)
     state.remember_stop(cast(ds.Session, session), {"cs": "0814", "eip": "00001A27"}, {}, [],
@@ -8427,8 +7195,6 @@ def test_a_stop_named_while_the_machine_is_in_it_names_its_declaration_too() -> 
 
 def test_start_takes_the_version_probe_out_of_the_ready_bound(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The `-version` probe is part of the start: what it spends comes off the wait for the
-    debugger's prompt, so a build that hangs on it costs no more than the start's own bound."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     waited: list[float] = []
@@ -8463,10 +7229,6 @@ def test_start_takes_the_version_probe_out_of_the_ready_bound(
 
 def test_close_carries_the_last_words_of_both_channels_when_the_end_was_not_clean(
         tmp_path: Path) -> None:
-    """Why it ended, in the reply that ends it: the console's last words (the debugger's
-    terminal, escapes stripped) and the logfile's, each the newest `TAIL_CHARS`, on an end
-    that was not a clean quit, or when `detail` asks; a clean quit names them in `omitted`.
-    With no logfile the log's tail is unavailable, saying why."""
     log = tmp_path / "s.log"
     log.write_text("x" * 2000 + "LOG: the end\n", encoding="utf-8")
 
@@ -8500,9 +7262,6 @@ def test_close_carries_the_last_words_of_both_channels_when_the_end_was_not_clea
 
 def test_the_process_facts_ride_at_the_top_of_status_and_close_and_the_block_keeps_the_rest(
         ) -> None:
-    """What the process is (`pid`, the conf and its digest, the bound) is asked for: it rides at
-    the top of `status`, `start` and `close`. The block keeps what every reply
-    must carry: alive, running, altered and each alarm while it holds."""
     install()
     st = cast(dict[str, Any], server.status())
     assert st["pid"] == 4242 and "conf_digest" in st and "bound_s" in st, st
@@ -8516,9 +7275,6 @@ def test_the_process_facts_ride_at_the_top_of_status_and_close_and_the_block_kee
 
 def test_a_watched_window_is_placed_by_the_host_s_helper_on_the_display_asked(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A watched session's window goes where `WINDOW_APP` says, asked as `dosbox --shared` and
-    the display; its flags reach the command line one token per line, a `-set` pair included,
-    and the reply says which display it went to."""
     asked = placed_by(tmp_path, monkeypatch, "-set\nsdl display=1\n")
     seen: list[dlaunch.Launch] = []
 
@@ -8541,8 +7297,6 @@ def test_a_watched_window_is_placed_by_the_host_s_helper_on_the_display_asked(
 
 def test_a_watched_start_with_no_helper_is_refused_and_a_display_needs_a_watched_run(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """No helper, no window placed: a watched start is the host's to fix, never given a geometry
-    invented here. A `display` on a headless run is refused: nobody looks at a display there."""
     monkeypatch.delenv("WINDOW_APP", raising=False)
     got = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True)
     assert got["code"] == "host_failed" and "WINDOW_APP" in got["message"], got
@@ -8555,9 +7309,6 @@ def test_a_watched_start_with_no_helper_is_refused_and_a_display_needs_a_watched
 
 def test_a_list_begun_on_a_running_guest_waits_for_its_stop_before_a_console_step(
         tmp_path: Path) -> None:
-    """The executor's rule on both servers: a list begun on a running machine waits for its
-    stop before its first step that needs one, as one that released the machine itself does,
-    never sending the step to be refused at once."""
     fake = _names(tmp_path)
     fake._running = True
     out = cast(dict[str, Any], server.perform(steps=[{"op": "registers"}], settle_seconds=0.3))
@@ -8567,8 +7318,6 @@ def test_a_list_begun_on_a_running_guest_waits_for_its_stop_before_a_console_ste
 
 def test_a_terminal_that_overflows_while_the_list_waits_ends_it_with_what_ran(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The keys were posted and the machine released before the wait's read found a hole in
-    the terminal: the reply carries those steps, the overflow as the list's end."""
     fake = _names(tmp_path)
     fake._running = True
 
@@ -8585,9 +7334,6 @@ def test_a_terminal_that_overflows_while_the_list_waits_ends_it_with_what_ran(
 
 def test_a_raw_breakpoint_stored_before_modes_were_kept_is_adopted_by_the_stop_that_places_it(
         tmp_path: Path) -> None:
-    """A raw row with no cpu mode (a store written before modes were kept) was never placed
-    under any map, so the first stop that can place it arms it, writes its place and its mode,
-    and makes it this session's (the owner's decision)."""
     fake = _names(tmp_path, mode="Real")
     dstate.STATE.session_origin = "this-session"
     st = dstate.STATE.store
@@ -8603,9 +7349,6 @@ def test_a_raw_breakpoint_stored_before_modes_were_kept_is_adopted_by_the_stop_t
 
 def test_a_state_load_keeps_the_table_and_its_base_is_measured_again_at_the_next_stop(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The restored machine may hold the program at another base: the table is kept (no load
-    again), and the first stop after the load measures the base the load measured, through the
-    same register, moving the symbols' places and the breakpoints armed by name with it."""
     fake = _names(tmp_path)
     mapf = tmp_path / "prog.map"
     mapf.write_text("00001000 T _tick\n", encoding="utf-8")
@@ -8624,8 +7367,6 @@ def test_a_state_load_keeps_the_table_and_its_base_is_measured_again_at_the_next
 
 def test_a_state_load_asks_the_next_stop_to_measure_a_measured_base_again(
         tmp_path: Path) -> None:
-    """Only a base the load measured off the machine is measured again: one the caller gave is
-    the caller's, and no table means nothing to place."""
     _names(tmp_path, symbols=[dsym.Symbol("_tick", 0x1000, kind="T")])
     dstate.STATE.base_measured_from = "CS"
     dstate.STATE.machine_replaced()
@@ -8638,8 +7379,6 @@ def test_a_state_load_asks_the_next_stop_to_measure_a_measured_base_again(
 
 def _loaded_then_restored(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *,
                           cs: str = "00B7") -> NamesFake:
-    """A table loaded off CS at a program stop, then a state load: the restored machine holds the
-    program at another base under the selector `cs`."""
     fake = _names(tmp_path)
     mapf = tmp_path / "prog.map"
     mapf.write_text("00001000 T _tick\n", encoding="utf-8")
@@ -8654,8 +7393,6 @@ def _loaded_then_restored(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *,
 
 def test_the_base_measured_again_takes_the_program_s_selectors_with_it(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The restored run's host gave the program other selectors: a breakpoint armed by name
-    goes through the new one, never the selector of the run the table was loaded in."""
     fake = _loaded_then_restored(tmp_path, monkeypatch)
     out = arming.apply_pending(cast(Any, fake))
     assert dstate.STATE.base["selector_CS"] == 0xB7, dstate.STATE.base
@@ -8665,8 +7402,6 @@ def test_the_base_measured_again_takes_the_program_s_selectors_with_it(
 
 def test_a_stop_outside_the_program_s_code_leaves_the_base_to_measure_at_the_next(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A real-mode stop (a BIOS or DOS handler the program called into) holds no selector of the
-    program's: measured there, the table would move to whatever CS holds."""
     fake = _loaded_then_restored(tmp_path, monkeypatch)
     asked: list[str] = []
 
@@ -8687,8 +7422,6 @@ def test_a_stop_outside_the_program_s_code_leaves_the_base_to_measure_at_the_nex
 
 def test_a_re_arm_that_fails_after_the_base_moved_queues_what_it_would_arm(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The base has moved whatever the re-arm answers: the account says so, the failure is
-    pending, and the drain goes on to the queues it was there for."""
     fake = _loaded_then_restored(tmp_path, monkeypatch)
 
     def cut(_session: Any) -> dict[str, Any]:
@@ -8702,8 +7435,6 @@ def test_a_re_arm_that_fails_after_the_base_moved_queues_what_it_would_arm(
 
 def test_a_pending_measure_is_said_by_status_and_drained_by_the_next_contact(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A parked load leaves the machine at the loaded position: the next reader measures there,
-    not the next stop tool wherever it lands."""
     fake = _loaded_then_restored(tmp_path, monkeypatch)
     assert dstate.STATE.pending_summary()["base_remeasure"] is True
     import dosbox_running as running
@@ -8713,8 +7444,6 @@ def test_a_pending_measure_is_said_by_status_and_drained_by_the_next_contact(
 
 
 def test_a_load_refused_before_it_was_sent_replaced_nothing(tmp_path: Path) -> None:
-    """`machine_replaced` is the last load's: a refusal before anything went down the channel
-    leaves it False whatever an earlier state command left behind."""
     import dosbox_saved_states as saved
     ses = SimpleNamespace(machine_replaced=True, state_sent=True,
                           _state_dir=lambda: tmp_path)
@@ -8725,8 +7454,6 @@ def test_a_load_refused_before_it_was_sent_replaced_nothing(tmp_path: Path) -> N
 
 def test_one_row_that_cannot_be_adopted_is_that_row_s_answer(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Two rows stored before modes were kept: the first refuses to arm, the second is adopted
-    all the same, and the re-arm answers both."""
     fake = _names(tmp_path, mode="Real")
     dstate.STATE.session_origin = "this-session"
     st = dstate.STATE.store
@@ -8749,8 +7476,6 @@ def test_one_row_that_cannot_be_adopted_is_that_row_s_answer(
 
 def test_a_row_armed_whose_place_could_not_be_written_is_queued_for_the_next_stop(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The breakpoint is armed, so the re-arm would skip it as held and never write its place:
-    the row is queued, and its account says so."""
     fake = _names(tmp_path, mode="Real")
     dstate.STATE.session_origin = "this-session"
     st = dstate.STATE.store
@@ -8770,8 +7495,6 @@ def test_a_row_armed_whose_place_could_not_be_written_is_queued_for_the_next_sto
 
 def test_a_base_that_moved_clears_the_rows_armed_by_name_at_the_old_place(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The debugger's rows outlive a state load, and on the restored machine the old place is
-    someone else's bytes: the breakpoint declared by name is cleared there and armed anew."""
     fake = _loaded_then_restored(tmp_path, monkeypatch)
     fake.cs = "00A7"                                   # declared before the load, at the old place
     dstate.STATE.pending["remeasure"] = False
@@ -8793,9 +7516,6 @@ def test_a_base_that_moved_clears_the_rows_armed_by_name_at_the_old_place(
 
 def test_a_state_load_through_the_server_asks_the_next_stop_for_the_base(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """End to end through `state_write(method="load")`: a load the session says replaced the machine
-    queues the
-    base's measure; one it says did not (refused before it was sent) queues nothing."""
     fake = _names(tmp_path)
     mapf = tmp_path / "prog.map"
     mapf.write_text("00001000 T _tick\n", encoding="utf-8")
@@ -8829,9 +7549,6 @@ def test_a_base_the_caller_gave_is_never_measured_again(tmp_path: Path) -> None:
 
 
 def test_drive_with_an_expect_leaves_the_wait_to_it_on_a_running_guest(tmp_path: Path) -> None:
-    """The verify is the wait: an act on a running guest does not first sit out
-    `settle_seconds` for a stop at its tail, or its effect would be judged after the wait ran
-    out and never looked for."""
     fake = _names(tmp_path, watched=True, mode="Real")
     declared = cast(dict[str, Any], server.breakpoint_at(ref="0814:0100"))
     assert declared["status"] == "ok", declared        # something that can stop the guest
@@ -8846,8 +7563,6 @@ def test_drive_with_an_expect_leaves_the_wait_to_it_on_a_running_guest(tmp_path:
 
 def test_a_stop_already_parked_is_heard_by_a_wait_of_no_seconds(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """`settle_seconds=0` waits for nothing, but a stop that already came is a stop: the one look
-    at the terminal after the bound hears it, and the console step runs."""
     fake = _names(tmp_path)
     fake.halted = False                 # resume leaves it running
     fake.where_raises = True
@@ -8864,8 +7579,6 @@ def test_a_stop_already_parked_is_heard_by_a_wait_of_no_seconds(
 
 def test_the_stop_a_list_ends_on_may_be_the_retrace_a_run_for_left_armed(
         tmp_path: Path) -> None:
-    """A stop no tool made is one a release reached: a retrace `run_for` left armed is named as
-    its likeliest cause, and the flag is spent, as for a bounded `resume`."""
     fake = _names(tmp_path)
     declared = cast(dict[str, Any], server.breakpoint_at(ref="0814:0100"))
     assert declared["status"] == "ok", declared
@@ -8878,8 +7591,6 @@ def test_the_stop_a_list_ends_on_may_be_the_retrace_a_run_for_left_armed(
 
 def test_a_stop_tool_s_drain_is_not_repeated_by_the_next_contact(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The stop reply drains what was pending before it reads; the next contact finds the same
-    stop and nothing new asked, so it drains nothing again (a console round trip a stop)."""
     import dosbox_running as running
     fake = _names(tmp_path)
     running.stop_reply(cast(Any, fake))

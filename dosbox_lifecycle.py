@@ -1,6 +1,4 @@
-"""A session's life: its `start` judged, launched, made ready, re-armed and its plan run, and its
-`close`. The bodies of the two tools, which the server registers; its own module because how a
-session comes up and goes down changes for reasons the tool registrations do not."""
+"""The bodies of the `start` and `close` tools, which the server registers."""
 
 from __future__ import annotations
 
@@ -27,16 +25,13 @@ import dosbox_session as ds
 import dosbox_state as st
 from dosbox_state import STATE
 
-#: How a refusal names the state directory `start` chose when the caller gave none.
+#: How a refusal names the default state directory.
 DEFAULT_STATE_DIR = (f"the default state directory (`<cwd>/{dlaunch.DEFAULT_STATE_SUBDIR}`; "
                      "`state_dir` names another)")
 
 
 def _window_flags(shared: bool, display: str) -> list[str]:
-    """Where a watched window goes, as the host's placement helper says (`scry_core.placement`);
-    a headless session has no window. No flags is an answer on a one-display host; no helper,
-    or one that failed, refuses a watched start: inventing a geometry here is how windows end up
-    off-screen or on the display nobody is looking at."""
+    """The watched window's flags from the host placement helper; none for a headless session."""
     if not shared:
         return []
     placed = window.ask("dosbox", True, display)
@@ -52,10 +47,8 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
           plan: list[dict[str, Any]] | None, settle_seconds: float | None, input_port: int,
           state_dir: str, binary: str, background: bool | None, presence: bool,
           progress: ds.Progress, ops: Callable[[], sequence.Ops]) -> dict[str, Any]:
-    """The body of the `start` tool; `ops` is the server's step vocabulary, for a `plan`. An
-    optional text left empty is not given."""
-    # THE PATHS FIRST: a path as wrong with a session live as with none is refused before
-    # anything here acts (an expired session closed, the symbol table forgotten).
+    """The body of the `start` tool; `ops` is the server's step vocabulary, for a `plan`."""
+    # Paths first: refused before anything acts (an expired session closed, symbols forgotten).
     cwd_given = paths.absolute("cwd", cwd)
     conf_path = paths.absolute("conf", conf)
     captures_path = paths.absolute("captures_dir", captures_dir) if captures_dir else None
@@ -70,20 +63,13 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
             raise ds.Invalid("session_live", "a session is already live. `close` it first: two "
                              "emulators sharing one machine make every timing on it "
                              "a measurement of the neighbour as much as of the guest")
-        # An EXPIRED session still owns its terminal. Dropping the object on the floor
-        # leaked one descriptor per cycle in a process designed to be long-lived, and
-        # restarting after a bound expires is the normal way to use this.
-        #
-        # AND THIS ONE CANNOT REPORT A REAP FAILURE, deliberately. It is reached only
-        # under `not alive()`, so `close()` takes its dead branch, the signals never
-        # run and `reap_failed` is never set: a consumer here would be unreachable.
+        # An expired session still owns its terminal. Not consuming `reap_failed` is deliberate:
+        # under `not alive()` `close()` never signals, so it is never set.
         STATE.session.close()
         STATE.session = None
         STATE.clear_running_state()     # its stop and its queue, whatever this start then does
-    # A NEW SESSION IS A NEW PROCESS AT A NEW BASE, so the previous one's table may not
-    # survive into it. It is cleared here rather than only on the dead-session branch
-    # above, because `start` is reached with no session at all far more often than with
-    # an expired one, and that is precisely the path a stale table would ride through.
+    # A new process at a new base: the previous table must not survive, and `start` mostly
+    # arrives with no session at all, so clearing only on the expired branch would miss it.
     STATE.forget_symbols()
     resolved = binaries.resolve(binary)
 
@@ -98,8 +84,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         capture_video=capture_video,
         captures_dir=captures_path,
         logfile=logfile_path,
-        # EVERY SESSION HAS THE INPUT ROUTE: input reaches the guest through that socket alone,
-        # so a session started without a port could take no key and no click at all.
+        # Input reaches the guest through this socket alone.
         input_port=input_port,
         state_dir=state_path if state_path is not None else cwd_path / dlaunch.DEFAULT_STATE_SUBDIR,
         binary=resolved.path,
@@ -108,24 +93,15 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     dlaunch.validate(launch)
     if launch.program and launch.input_port is not None:
         launch = replace(launch, stub_drive=dlaunch.stub_drive(launch.conf))
-    # KEY AND VALIDATE THE DECLARATION STORE BEFORE THE EMULATOR BOOTS. Its constructor
-    # reads and parses the persisted file, and a corrupt or hand-edited one raises a
-    # `DeclarationError` -- which, done after the session was up, escaped as a traceback
-    # with the emulator running and no `session` block, and the next `start` then refused
-    # "already live". Built here it fails as a clean INVALID with nothing started to clean
-    # up. Keyed by the RESOLVED conf path so two spellings of one file are one identity and
-    # two guests are two; `STATE.store` itself is assigned only once the session is ready, below.
+    # Built before the emulator boots: a corrupt persisted file then fails as a clean INVALID
+    # with nothing to clean up. Keyed by the resolved conf path, so two spellings are one identity.
     store = placement.to_invalid(lambda: dec.DeclarationStore(str(launch.conf.resolve())))
-    # EVERYTHING ELSE JUDGED, then the two directories this server writes into, with their
-    # parents: the emulator creates neither (a save into a missing state directory is logged as
-    # `SAVE_FAILED`). A refusal past this point (a busy port) leaves them made.
-    # A DEFAULT IS NAMED AS ONE: a caller who passed no `state_dir` is told which place was
-    # chosen for them and which argument moves it, not handed an argument they never gave.
+    # The emulator creates neither directory (a save into a missing one logs `SAVE_FAILED`).
     state_name = "state_dir" if state_path is not None else DEFAULT_STATE_DIR
     for name, made in (("captures_dir", launch.captures_dir), (state_name, launch.state_dir)):
         if made is not None:
             paths.make_directory(name, made)
-    # THE PROBE IS PART OF THE START: what it spends comes off the wait for the prompt.
+    # The probe is part of the start: what it spends comes off the wait for the prompt.
     asked = time.monotonic()
     binary_facts = dlaunch.binary_facts(resolved, binaries.VERSION_TIMEOUT_S)
     session = ds.Session(launch)
@@ -134,24 +110,8 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         ready = session.wait_ready(
             timeout=max(ds.READY_TIMEOUT_S - (time.monotonic() - asked), 0.0), progress=progress)
     except ds.Invalid as e:
-        # IT IS CLOSED BEFORE THE REFUSAL GOES OUT. Assigning first and waiting after
-        # left a real emulator running behind an INVALID reply, with nothing in the
-        # message telling the caller to close it and the next `start` refusing with a
-        # different message that named neither problem.
-        #
-        # FOUR OF THE SIX `close()` SITES CAN TAKE THE LIVE BRANCH, and two of them
-        # report a reap failure: this one, and the `close` tool in its `exit_code`. The
-        # other two drop it deliberately and the reasons differ -- the `except
-        # BaseException` arm below is already carrying an escaping exception with nowhere
-        # to put a second message, and `main()`'s `finally` runs at process exit where
-        # there is no reply left to write to. It is set inside `close()`'s `if self.proc.poll() is
-        # None:` block, so it can only be produced by closing a session that is ALIVE: a
-        # consumer on the DEAD branch, where `poll()` is non-None and the signals never run,
-        # would read a field that closing an already-exited session leaves empty.
-        #
-        # `wait_ready` raising with the child still running is exactly the case where
-        # SIGKILL can fail to reap, so this arm is where a stray emulator is most
-        # likely and least visible.
+        # Closed before the refusal goes out, or an emulator keeps running behind an INVALID.
+        # `wait_ready` raising with the child alive is where a stray emulator is most likely.
         session.close(progress=progress)
         if session.reap_failed:
             raise ds.Invalid("session_broken", f"{e} -- and worse, {session.reap_failed}, so an "
@@ -165,20 +125,15 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         STATE.starting = None
     STATE.session = session
     STATE.maps.started()
-    # The store was built and validated above, before the emulator started; it becomes the
-    # live one only now the session is ready, so `STATE.store` is never set without a session.
     STATE.store = store
     STATE.session_origin = STATE.origin()
     STATE.conf_fingerprint = dlaunch.fingerprint(launch.conf)
-    # THE RUNNING STATE IS CLEARED BEFORE THE FIRST STOP IS RECORDED, or the clearing
-    # takes the record with it and the server holds no stop until the next contact.
+    # Cleared first, or the clearing takes the first stop record with it.
     STATE.clear_running_state()
     rearm = arming.arm_at_start(session)   # before the park's survey, so the first stop lists them
     running.observe_stop(session)     # the park at the debugger is the session's first stop
     STATE.found_stop_last = {}        # ...its own, and never a stop "on its own" beside it
     session.presence = dpresence.open_shown(session, presence, shared)
-    # WHERE THE STUB IS, said in the reply: a conf's autoexec that runs its own program has to
-    # run the stub first, and a wheel install puts it wherever the package landed.
     started = st.reply(**st.process_facts(), shared=shared, display=shown_display,
                        ready_after_s=ready,
                        argv=session.argv, **binary_facts,
@@ -189,10 +144,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
                        **rearm)
     if not plan:
         return started
-    # A PLAN RUNS ON THE FRESH SESSION, through the SAME executor `perform`
-    # uses, so the two moments cannot drift. The started-reply is folded in under `start`
-    # so a caller sees BOTH that the session came up and what the plan did; a plan that
-    # fails leaves the session open at wherever it stopped, exactly as `perform` does.
+    # A failing plan leaves the session open where it stopped, as `perform` does.
     settle = sequence.SETTLE_DEFAULT_S if settle_seconds is None else settle_seconds
     # A PLAN DRIVES THE MACHINE as `perform` does, so the window is lit while it runs.
     with dpresence.of(session).driving():
@@ -211,7 +163,6 @@ def presence_shown(session: ds.Session | None) -> bool | dict[str, Any]:
     return dpresence.of(session).reply()
 
 
-#: How a clean close's reply names the tails it left out.
 CLOSE_HOW = ("close(detail=True) keeps the channels' last words on a clean quit too; once a close "
              "has answered the console's are gone (the logfile stays at its path)")
 
@@ -222,8 +173,7 @@ def _log_tail(session: ds.Session) -> str | dict[str, Any]:
     if logfile is None:
         return contract.unavailable("this session was started without a logfile")
     try:
-        # THE END ONLY: a guest's log can run to hundreds of megabytes, and four bytes a
-        # character covers any UTF-8 the tail holds.
+        # A guest log can run to hundreds of megabytes; 4 bytes covers any UTF-8 character.
         with Path(logfile).open("rb") as f:
             f.seek(max(f.seek(0, 2) - 4 * log_marks.TAIL_CHARS, 0))
             return f.read().decode("utf-8", errors="replace")[-log_marks.TAIL_CHARS:]
@@ -235,19 +185,15 @@ def close(progress: ds.Progress, detail: bool = False) -> dict[str, Any]:
     """The body of the `close` tool."""
     if STATE.session is None:
         return st.reply(closed=False, ended_by="none", note="there was no session")
-    # THE SESSION'S LAST ACCOUNT, read before it ends: what the process was, at the top, so its
-    # `pid` is the process this call ended, and the block as it stood.
+    # Read before the session ends, so `pid` is the process this call ended.
     facts, was = st.process_facts(), st.session_block()
     rc = STATE.session.close(progress=progress)
-    # THE LAST WORDS ARE READ AFTER THE EXIT, so they hold what the emulator said on its way
-    # out; the console's are what the drain still holds, the log's are the file's.
+    # Read after the exit so the tails hold what the emulator said on the way out.
     clean = STATE.session.ended_how == "quit" and rc == 0
     tails = ({"stdout_tail": STATE.session.console_tail(log_marks.TAIL_CHARS),
               "errorlog_tail": _log_tail(STATE.session)} if detail or not clean
              else narrowing.omission(["stdout_tail", "errorlog_tail"], CLOSE_HOW))
-    # READ AFTER THE CLOSE, because that is when it can be set: a child SIGKILLed and never
-    # reaped has no exit code, and `exit_code` says why in its place (an emulator may still
-    # be on the machine). Not in `state()`: `was` is captured before `close()` runs.
+    # Set only by the close: a SIGKILLed, unreaped child has no exit code.
     unreaped = STATE.session.reap_failed
     ended_by = STATE.session.ended_how
     STATE.session = None

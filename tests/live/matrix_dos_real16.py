@@ -135,11 +135,10 @@ def section_d() -> None:
 
 
 def dos_real16_main_loop(wait: float = 30, exempt: str = "", **kw: Any) -> dict[str, Any]:
-    """Booted, the program found through DOS (its EXEC, its first INT 21h, its block in the MCB
-    chain), its map loaded at the load segment, and stopped at ATRCT_RUN in the main loop:
-    COMPOSE_FRAME already runs during the start-up, so its stops alone say nothing about where
-    the program is, and ATRCT_RUN is the attract cycle the main loop enters. The replies and the
-    segments, for the caller to judge."""
+    """Boot, load the map at the program's segment, stop at ATRCT_RUN; return replies and segments.
+
+    COMPOSE_FRAME also runs during start-up, so only ATRCT_RUN proves the main loop was entered.
+    """
     mapf = bp.DOS_REAL16.root / bp.DOS_REAL16.map
     boot(conf=bp.session_conf(bp.DOS_REAL16, Path(M.fresh("-conf"))), cwd=bp.DOS_REAL16.root,
          program=bp.DOS_REAL16.launch, input_port=free_port(), **kw)
@@ -156,9 +155,7 @@ def dos_real16_main_loop(wait: float = 30, exempt: str = "", **kw: Any) -> dict[
 
 
 def _machine(psp: int, mapf: Path) -> tuple[bool, str]:
-    """The program's own block in the chain: the one whose owner is its PSP and whose MCB sits
-    the paragraph below it, and DOS gave it the free memory, so it covers the PSP and every
-    segment the map declares rather than equalling them."""
+    """The program's MCB covers its PSP and the map's image; DOS gave it all free memory."""
     r = M.call(server.machine_map)
     rows = [b for b in r.get("mcbs") or [] if b.get("filename") == bp.DOS_REAL16.process
             and hexint(b.get("psp_seg")) == psp and hexint(b.get("mcb_seg")) == psp - 1]
@@ -168,8 +165,7 @@ def _machine(psp: int, mapf: Path) -> tuple[bool, str]:
 
 
 def _vectors() -> None:
-    """The game hooks the timer and the keyboard with handlers its map names, and the serial
-    stub, resident before it, the timer tick."""
+    """The game hooks INT 08/09 with mapped handlers; the serial stub hooks the timer tick."""
     r = M.call(server.interrupt_vectors)
     rows = {v.get("number"): v for v in r.get("vectors") or []}
     hooked = [(rows.get(n, {}).get("mcbs") or {}).get("filename") for n in (0x08, 0x09)]
@@ -184,13 +180,12 @@ def _vectors() -> None:
 
 
 def _retraces(load: int) -> None:
-    """The game's own pace against the display's, then ten retraces with nothing armed. With
-    COMPOSE_FRAME armed each `run_for(frames=1)` either lands a retrace or is cut by a frame the
-    game composed (`OTHER_STOP`, which leaves that retrace pending for the next call to land),
-    so the calls count both until ten retraces have passed. The game runs at its own rate, not
-    the display's, so the hits are quoted and never required to equal ten. The breakpoint is
-    armed BEFORE any retrace run, because on a dynamic core one armed after its code ran under
-    `VRT` can fail to cut a frame (REFERENCE, Advancing the machine)."""
+    """Count COMPOSE_FRAME hits over ten retraces, then run ten retraces unarmed.
+
+    An `OTHER_STOP` frame leaves its retrace pending, so both outcomes are counted. The hits are
+    quoted, never required to equal ten: the game paces itself. The breakpoint is armed before
+    any retrace run because on a dynamic core a later one can fail to cut a frame.
+    """
     must(M.call(server.breakpoint_at, ref="COMPOSE_FRAME"), "arming COMPOSE_FRAME")
     retraces = hits = calls = 0
     replies: list[dict[str, Any]] = []
@@ -218,10 +213,10 @@ def _retraces(load: int) -> None:
 
 
 def _scan() -> tuple[bool, str]:
-    """The cheat-search loop with values the map makes known: a word scan whose cells line up
-    with TOTALTIME's odd offset, `=` its value now, frames until it moves, `!`, then `=` its
-    new value, each value read off the machine at its symbol. COMPOSE_FRAME is the stop between
-    frames, a code breakpoint, so the bytes scanned carry no trap of the debugger's."""
+    """Cheat-search loop: word scan on TOTALTIME's odd offset, `=`, `!`, `=`.
+
+    COMPOSE_FRAME is a code breakpoint, so the scanned bytes carry no debugger trap.
+    """
     seg, off = sym("TOTALTIME")
     at = f"{seg:04X}:{off:04X}"
     opened = M.call(server.scan, method="start", ref=f"{seg:04X}:{off - 0x100:04X}", length=0x200,
@@ -249,10 +244,7 @@ def _scan() -> tuple[bool, str]:
 
 
 def _coin() -> None:
-    """The game reads the keyboard through its own INT 9 handler
-    and the serial stub injects scan codes into the emulator's keyboard controller. Whether the
-    key reaches that handler is the INT 9 stop; whether the game counted it, its own CREDITOS
-    read before and a few frames after."""
+    """Tab reaches the game's INT 9 (the stop), and CREDITOS rises a few frames later."""
     seg, off = sym("CREDITOS")
     before = read_word(f"{seg:04X}:{off:04X}")
     try:

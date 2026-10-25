@@ -1,6 +1,4 @@
-"""The debugger's breakpoint list as a live run printed it (tests/fixtures/bplist/PROVENANCE.txt),
-read by the server's own parsers: the rows of every kind of declaration, the order the debugger
-lists them in, how `BPDEL` renumbers what is left, and which rows can stop a running guest."""
+"""The breakpoint list as a live run printed it (tests/fixtures/bplist/PROVENANCE.txt)."""
 
 from __future__ import annotations
 
@@ -23,11 +21,11 @@ def rows(name: str) -> list[dict[str, str]]:
 
 
 def test_each_kind_of_row_is_read_as_the_debugger_prints_it() -> None:
-    two = ["BPMEM 0000:0501 (00)", "BPMEM 0000:0500 (00)"]      # a two-byte watch, a row a byte
+    two = ["BPMEM 0000:0501 (00)", "BPMEM 0000:0500 (00)"]
     assert [r["entry"] for r in rows("bplist-bpmem.txt")] == two
     assert [r["entry"] for r in rows("bplist-bplm.txt")] == ["BPLM 00000600 (00)", *two]
     assert [r["entry"] for r in rows("bplist-bppm.txt")] == [
-        *(f"BPPM 00AF:{0x19A17 - i:08X} (00)" for i in range(4)), "BPINT 31 AH=02"]  # four bytes
+        *(f"BPPM 00AF:{0x19A17 - i:08X} (00)" for i in range(4)), "BPINT 31 AH=02"]
     assert rows("bplist-vm86.txt") == [{"index": "00", "entry": "BP 0814:0221"},
                                       {"index": "01", "entry": "BP 0000:0001"}]
     assert dcons.bp_row_target("BPMEM 0000:0500 (00)") == ("BPMEM", 0, 0x500)
@@ -36,9 +34,7 @@ def test_each_kind_of_row_is_read_as_the_debugger_prints_it() -> None:
 
 
 def test_the_list_is_newest_first_and_a_delete_renumbers_what_is_left() -> None:
-    """Rows armed in turn (a two-byte change watch, a linear watch, then code rows at F000:0100,
-    0200 and 0300) are listed newest first; deleting the middle code row moves every later row up
-    one index, which is why an index is never kept from the arming."""
+    """Deleting the middle row moves every later row up one index, so an index is never kept."""
     memory = ["BPLM 00000600 (00)", "BPMEM 0000:0501 (00)", "BPMEM 0000:0500 (00)"]
     before = rows("bpdel-before.txt")
     assert [r["entry"] for r in before] == ["BP F000:0300", "BP F000:0200", "BP F000:0100",
@@ -49,8 +45,7 @@ def test_the_list_is_newest_first_and_a_delete_renumbers_what_is_left() -> None:
 
 
 def test_a_clear_deletes_the_row_at_its_index_now_and_reads_it_gone(tmp_path: Path) -> None:
-    """The first row armed is listed last, at 02, never at the 00 it would have had when armed;
-    its list after the delete is the captured one with that row taken out."""
+    """The first row armed is listed last, at 02, never at the 00 it had when armed."""
     after = [r for r in rows("bpdel-before.txt") if r["entry"] != "BP F000:0100"]
     lists = [rows("bpdel-before.txt"), [{**r, "index": f"{i:02d}"} for i, r in enumerate(after)]]
     sent: list[str] = []
@@ -87,7 +82,7 @@ def test_a_breakpoint_declared_at_a_vm86_stop_arms_and_names_the_stop_as_a_live_
     fake.eip = "00000221"
     got = server.breakpoint_at(ref="0814:0221")
     keys = ("status", "by", "armed", "state", "marked")
-    # `marked` false is left out of a reply now (`OmitEmpty`); the capture still carries it.
+    # `OmitEmpty` drops a false `marked` from the reply; the capture still carries it.
     assert {k: got.get(k, False) for k in keys} == {k: live["breakpoint_at"][k] for k in keys}, got
     stop = running.stop_reply(fake)  # type: ignore[arg-type]
     assert stop["cause"] == live["resume"]["cause"] and stop["cpu_mode"] == "VM86", stop
@@ -100,8 +95,6 @@ def _same(got: Any, live: Any, keys: tuple[str, ...]) -> None:
 def test_the_watches_a_live_run_armed_answer_as_it_did(tmp_path: Path) -> None:
     import dosbox_symbols as dsym
     import dosbox_x_server as server
-    # `command` and `entry` are the session's own spellings, judged by the next case against the
-    # real `Session.watch`; these are what the server makes of them.
     keys = ("status", "by", "mode", "fmt", "length", "armed", "state", "entries")
     _names(tmp_path, mode="Real", cs="0000", ds_="0000")
     _same(server.watch_add(ref="0000:0500", mode="change", length=2),
@@ -114,16 +107,14 @@ def test_the_watches_a_live_run_armed_answer_as_it_did(tmp_path: Path) -> None:
 def test_a_pointer_watch_on_a_null_head_answers_as_a_live_run_did(tmp_path: Path) -> None:
     import dosbox_x_server as server
     live = _captured("pointer-watches.json")
-    _names(tmp_path, mode="Real", cs="0000", ds_="0040")             # the head reads zero
+    _names(tmp_path, mode="Real", cs="0000", ds_="0040")
     keys = ("status", "by", "mode", "fmt", "length", "armed", "state", "why", "pointer")
     _same(server.watch_add(ref="[0040:001A]", mode="show", length=2), live["show"], keys)
     _same(server.watch_add(ref="[0040:001C]", mode="change", length=2), live["change"], keys)
 
 
 def test_a_saved_comment_keeps_the_width_its_offset_was_read_with(tmp_path: Path) -> None:
-    """An offset past FFFF keeps its eight digits through a load and a save, a 16-bit one its
-    four, as the format's known answer spells them; a live `comment_write(method="save")` wrote
-    `00A7:45F880`."""
+    """An offset past FFFF keeps its eight digits through a load and a save, a 16-bit one four."""
     import dosbox_declarations as dec
     assert dec.canonical_ref("00A7:0045F880", "address") == "00A7:0045F880"
     assert dec.canonical_ref("00a7:45f880", "address") == "00A7:0045F880"
@@ -155,8 +146,7 @@ def test_the_session_arms_a_change_watch_with_the_command_and_row_a_live_run_saw
 
 
 def test_memory_under_an_armed_change_watch_reads_as_the_program_wrote_it() -> None:
-    """The reason a change watch's value is read at every stop: the bytes a live read returned
-    under an armed `BPMEM` are the ones written just before, not a trap."""
+    """The bytes a live read returned under an armed `BPMEM` are the ones written, not a trap."""
     live = _captured("real-change-watch.json")
     assert live["watch_add"]["armed"] is True and live["watch_add"]["entry"].startswith("BPMEM ")
     assert live["read_memory"]["hex"] == live["write"]["readback"] == "5aa5", live
@@ -164,8 +154,7 @@ def test_memory_under_an_armed_change_watch_reads_as_the_program_wrote_it() -> N
 
 def test_two_stale_rows_of_a_moved_watch_are_both_deleted_whatever_the_renumbering(
         tmp_path: Path) -> None:
-    """A delete renumbers every row below it, so the second stale row's index is read after the
-    first one goes, never from the list before it."""
+    """A delete renumbers the rows below it, so the second index is read after the first goes."""
     fake = _names(tmp_path, mode="Real", cs="0000", ds_="0000")
     for off in (0x500, 0x600, 0x700):
         fake.watch(segment=0, offset=off)        # listed newest first, as the debugger does
@@ -178,8 +167,7 @@ def test_two_stale_rows_of_a_moved_watch_are_both_deleted_whatever_the_renumberi
 
 def test_a_console_linear_watch_at_a_server_watch_s_place_is_neither_taken_nor_deleted(
         tmp_path: Path) -> None:
-    """`BPLM 600` and a server change watch at 0000:0600 name one byte; the linear row is
-    somebody else's, so a clear deletes the server's row and leaves it, and it stays foreign."""
+    """`BPLM 600` and a server watch at 0000:0600 name one byte; the linear row stays foreign."""
     import dosbox_x_server as server
     fake = _names(tmp_path, mode="Real", cs="0000", ds_="0000")
     added = server.watch_add(ref="0000:0600", mode="change", length=1)

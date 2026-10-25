@@ -1,19 +1,11 @@
 """`trace`: the machine run a counted number of instructions with the debugger's CPU log on.
 
-The `LOG` family (one word per line shape) opens `LOGCPU.TXT` in the emulator's working
-directory, releases the guest, and writes one line per instruction with the state BEFORE it
-runs. The count it takes is hex, and the last line it writes is the instruction it stops at,
-logged and not executed: so `n` executed instructions are asked as `n + 1` lines. A stop that
-comes first (a breakpoint, a watch, an interrupt breakpoint) leaves the log open. The file moves
-first, to the caller's `dest` or to the session's captures directory, and `LOGC 0` then closes
-the log without executing anything (`_collected` says why in that order).
+The log writes one line per instruction with the state BEFORE it runs, and its last line is the
+instruction it stops at, logged and not executed: `n` executed are asked as `n + 1` lines.
 
-THE LINE COUNT IS AN INSTRUCTION COUNT ONLY ON AN INTERPRETING CORE, where the pane's `cc=`
-moves by one per instruction, across mode switches too. A dynamic core writes one entry per
-translated block, and its `cc=` moves only for what it hands an interpreting core, so the two
-disagree. This server cannot read which core runs, so every trace proves its own count
-against `cc=`. A proved log is then joined to the loaded symbols (`join`), and its executed
-addresses written beside it, one JSON line each.
+The line count is an instruction count only on an interpreting core; a dynamic core writes one
+entry per translated block. The server cannot read which core runs, so every trace proves its
+count against the pane's `cc=`.
 """
 from __future__ import annotations
 
@@ -46,45 +38,30 @@ from dosbox_state import STATE
 
 T = TypeVar("T")
 
-#: The four shapes, by the debugger's word for each, in its own order.
 SHAPE_WORDS = ("normal", "short", "long", "cs_ip")
 SHAPES = dict(zip(SHAPE_WORDS, ds.LOG_WORDS, strict=True))
-#: The file the debugger writes, in the emulator's working directory.
 LOG_FILE = "LOGCPU.TXT"
-#: The most instructions one call executes, chosen from the heaviest shape's cost so
-#: that one call's file stays under a gibibyte and its wall time under half the wait ceiling.
+#: Sized from the heaviest shape: a file under a gibibyte, wall time under half the wait ceiling.
 INSTRUCTIONS_MAX = 3_000_000
-#: How long the close of a log is given: it executes nothing.
 CLOSE_WAIT_S = 10.0
-#: How many characters of a refused line its refusal quotes.
 LINE_QUOTED_CHARS = 120
-#: How much of a file one read takes: the log and the session's logfile can be long.
 READ_CHUNK_BYTES = 1 << 20
-#: How much of a line's end its tail pattern is searched in: past the registers' free width.
 TAIL_BYTES = 64
-#: `cc=` is painted as a 32-bit unsigned number, so a run that crosses its wrap reads lower.
+#: `cc=` is a 32-bit unsigned number.
 CYCLES_WRAP = 1 << 32
-#: How many per-routine rows the reply carries; the rest are counted, and every address is in
-#: the set file.
 SYMBOLS_SHOWN = 64
-#: The set file beside a trace: one JSON line per executed address.
 SET_SUFFIX = ".set.jsonl"
-#: A code segment's descriptor types as the listing prints them (the S bit and the executable
-#: bit set): conforming or not, readable or not, accessed or not.
+#: Descriptor types with the S and executable bits set.
 CODE_TYPES = range(0x18, 0x20)
-#: A linear address is 32 bits: a base and an offset that sum past it wrap, as the cpu's do.
 LINEAR_MASK = 0xFFFFFFFF
-#: The words a note carries when a line was given no linear address.
 NO_LINEAR = "no linear address"
-#: The line the debugger writes to the session's logfile when it cannot create its log. It then
-#: runs nothing and answers `command not recognized`, which leaves that command on its input line,
-#: where every command typed after it is appended and fails with it (REFERENCE.md, The console).
+#: Written to the logfile when the debugger cannot create its log; the refused command then stays
+#: on the input line and every later command is appended to it (REFERENCE.md, The console).
 NOT_CREATED_LINE = "DEBUG: Logfile couldn't be created."
 
 DYNAMIC_CORE = ("a dynamic core writes one entry per translated block, and `cc=` counts only "
                 "what the normal core runs; trace on the normal core, "
                 "`start(flags=[\"-set\", \"cpu core=normal\"])`")
-#: Who closes the log under a running machine, in the words every reply that meets it uses.
 MACHINE_CLOSES = "a BIOS power-on self test closes the log"
 AT_ITS_START = ("the machine stopped where the trace began without executing anything: the log "
                 "writes its line before the breakpoints are checked, so a code breakpoint at "
@@ -93,7 +70,7 @@ AT_ITS_START = ("the machine stopped where the trace began without executing any
 
 
 def check_arguments(instructions: object, shape: object) -> None:
-    """The two values only this tool takes, judged before the session is asked for."""
+    """Judge `instructions` and `shape` before the session is asked for."""
     if isinstance(instructions, bool) or not isinstance(instructions, int) \
             or not 1 <= instructions <= INSTRUCTIONS_MAX:
         raise ds.Invalid("bad_argument",
@@ -113,16 +90,14 @@ def log_places(cwd: Path) -> list[Path]:
 
 
 def target(session: ds.Session, dest: Path | None) -> Path:
-    """Where the file ends: `dest`, judged, or the first `trace-<n>.trace` free in the
-    session's captures directory. Refused when there is nowhere to write it."""
+    """`dest`, judged, or the first free `trace-<n>.trace` in the captures directory."""
     if dest is not None:
         path = paths.fresh_dest("dest", dest)
         cwd = session.launch.cwd
         dcollect.judge_collection(path, cwd, log_places(cwd), "trace")
     else:
-        # A NAME PICKED HERE IS NEVER ONE THE DEBUGGER WRITES, so the rule on where a caller's
-        # name may point does not bind it: a captures directory that is the working directory
-        # still takes the trace.
+        # A name picked here is never one the debugger writes, so a captures directory that is
+        # the working directory still takes the trace.
         captures = session.launch.captures_dir
         if captures is None:
             raise ds.Invalid("bad_argument",
@@ -142,7 +117,7 @@ def target(session: ds.Session, dest: Path | None) -> Path:
 
 
 def cycles_moved(before: int, after: int) -> int:
-    """How far the pane's counter moved, across its wrap: a trace is far shorter than one."""
+    """How far the pane's counter moved, across its wrap."""
     return (after - before) % CYCLES_WRAP
 
 
@@ -153,19 +128,16 @@ Address = tuple[str, str, bool | None]
 
 @dataclass
 class Parsed:
-    """One file read whole: how many lines, and each EXECUTED line's address counted, which is
-    every line but the last (the instruction the trace stopped at). An address is
-    `(cs, eip, flat)`, `eip` as the file prints it and `flat` a `long` line's own mode: True in
-    real or virtual-8086 mode (CS x 16 + EIP is the address), None where the shape does not say."""
+    """Line count and the count per executed address (every line but the last). An address is
+    `(cs, eip, flat)`; `flat` is True in real or virtual-8086 mode, None where the shape does
+    not say."""
 
     line_count: int = 0
     executed: Counter[Address] = field(default_factory=Counter)
     last: Address | None = None
 
 
-# EACH SHAPE IS READ BY ITS HEAD AND ITS TAIL, never by a column: the disassembly between them is
-# free text whose width moves with the instruction. `short` prints EIP with at least four digits
-# and no padding above that.
+# Read by head and tail, never by column: the disassembly between them is free-width text.
 _HEAD = {
     "cs_ip": re.compile(rb"([0-9A-F]{4}):([0-9A-F]{8})\Z"),
     "short": re.compile(rb"([0-9A-F]{4}):([0-9A-F]{4,8})  "),
@@ -180,8 +152,7 @@ _TAIL = {
 
 
 def parse(path: Path, shape: str) -> Parsed:
-    """The file at `path` read line by line in `shape`; a line no pattern reads is refused
-    naming its number, the file left where it is."""
+    """Read `path` in `shape`; a line no pattern reads is refused naming its number."""
     head, tail = _HEAD[shape], _TAIL.get(shape)
     out = Parsed()
     with path.open("rb") as f:
@@ -206,7 +177,7 @@ def parse(path: Path, shape: str) -> Parsed:
 
 
 def count_lines(path: Path) -> int:
-    """Lines in the file, a last one without its newline counted too."""
+    """Lines in the file, an unterminated last one included."""
     lines = 0
     tail = b""
     with path.open("rb") as f:
@@ -220,13 +191,11 @@ def count_lines(path: Path) -> int:
 
 def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None, seconds: float,
           progress: ds.Progress) -> dict[str, Any]:
-    """`instructions` executed with the `shape` log on, within `seconds`, as the reply `trace`
-    publishes. A refusal before the release leaves the machine where it was and no file of its
-    own behind."""
+    """`instructions` executed with the `shape` log on, within `seconds`. A refusal before the
+    release leaves the machine and the filesystem as they were."""
     path = target(session, dest)
     ds.console_listening(session, "a trace")
-    # THE SESSION'S OWN BUILD, never the PATH's: with the binary ladder they can differ. `which`
-    # keeps an absolute one as it is and finds a hand-built `Launch`'s bare name on the PATH.
+    # The session's own build, never the PATH's: with the binary ladder they can differ.
     binary = shutil.which(session.launch.binary)
     if binary is None:
         raise ds.Invalid("host_failed",
@@ -238,7 +207,7 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
             f"compiles the `LOG` family), so there is nothing to trace with; `build_check` says "
             f"`heavy_debug`")
     cwd = session.launch.cwd
-    # JUDGED BEFORE ANYTHING IS TYPED, the close of a log left open included (NOT_CREATED_LINE).
+    # Judged before anything is typed, the close of a left-open log included.
     if not os.access(cwd, os.W_OK | os.X_OK):
         raise ds.Invalid("no_channel",
             f"{cwd} is not writable, and the debugger opens its log there: nothing was typed. "
@@ -256,16 +225,12 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
     asked = instructions + 1
     says = _logfile_reader(session)
     began = time.monotonic()
-    # THE LOG IS OPEN FROM THE RELEASE UNTIL SOMETHING PROVES IT CLOSED: its count running out, a
-    # close that answered, or the logfile saying the machine closed it. Whatever leaves this call
-    # before then leaves the next trace to close it, or that trace's own `LOG` lands on the open
-    # stream and what it runs is written nowhere.
+    # Open from the release until something proves it closed; else the next trace's own `LOG`
+    # lands on the open stream and what it runs is written nowhere.
     STATE.log_open = True
     expired, _ = session.log_cpu(SHAPES[shape], asked, began, began + seconds, progress)
     if expired:
-        # THE BOUND INTERRUPTS: the machine is brought back where it stands, and what the log
-        # holds up to there is collected as a stop that cut it would be, a TIMEOUT. A log the
-        # machine closed first is not what ran, and the collect refuses it as such.
+        # The bound interrupts; what the log holds is collected as a cut stop, a TIMEOUT.
         try:
             expired = ds.Session.stop_at_bound(session)   # False: it came to rest on its own
         except ds.Invalid as e:
@@ -280,7 +245,7 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
 def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: list[Path],
                before: int, armed_real: bool,
                says: Callable[[str], bool], *, interrupted: bool = False) -> dict[str, Any]:
-    """The machine is stopped: the log moved, closed if a stop cut it, and its count proved."""
+    """With the machine stopped: move the log, close it if a stop cut it, prove its count."""
     source = _written(places)
     if source is None:
         raise _no_log(session, says)
@@ -292,9 +257,8 @@ def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: 
     ran_out = lines == asked
     if ran_out:
         STATE.log_open = False
-    # MOVED BEFORE THE CLOSE, because the close cannot tell an open log from a closed one: on a
-    # log the machine already closed (a BIOS power-on self test closes it) `LOGC 0` opens a fresh
-    # file over this name, and a file it creates in the working directory is how that shows.
+    # Moved before the close, which cannot tell an open log from a closed one: on a log the
+    # machine already closed, `LOGC 0` opens a fresh file, and that file is how it shows.
     collected = dcollect.collect(source, path, "trace")
     closed_early = False
     if not ran_out:
@@ -324,8 +288,8 @@ def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: 
             f"the pane painted no `cc=` at the stop, so the {executed} instructions the log says "
             f"executed cannot be proved; the log is at {collected}", trace=kept, **stop)
     moved = cycles_moved(before, after)
-    # AN INTERRUPT BREAKPOINT STOPS INSIDE ITS INT, after the counter took it and before it ran,
-    # so a cut run may count one instruction more than it executed; a count that ran out may not.
+    # An interrupt breakpoint stops inside its INT, counted but not run: a cut run may read one
+    # more than executed.
     if moved != executed and (ran_out or moved != executed + 1):
         raise ds.Invalid("no_channel",
             f"the pane's `cc=` moved by {moved} while the log holds {executed} entries, so the "
@@ -355,16 +319,15 @@ def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: 
 
 @dataclass
 class Coverage:
-    """The executed addresses placed: one set-file row per address, one row per routine."""
+    """One set-file row per address, one row per routine."""
 
     rows: list[dict[str, Any]]
     symbols: list[dict[str, Any]]
 
 
 def join(session: ds.Session, parsed: Parsed, armed_real: bool, notes: list[str]) -> Coverage:
-    """Each executed address as a linear one where its mode allows, and inside the loaded
-    table's span the nearest symbol: a `long` line by its own mode, any other by the mode of the
-    window's two ends (REFERENCE.md, Advancing the machine, says the rule and its limits)."""
+    """Each executed address as a linear one where its mode allows, plus the nearest symbol
+    (REFERENCE.md, Advancing the machine, has the rule)."""
     stop_real = dcons.real_segments(STATE.last_stop["where"]["mode"])
     window_flat = armed_real and stop_real
     flat_of = {a: (a[2] if a[2] is not None else window_flat) for a in parsed.executed}
@@ -414,8 +377,7 @@ def _set_order(row: dict[str, Any]) -> tuple[bool, str, str]:
 
 def _selector_bases(session: ds.Session, selectors: set[str],
                     notes: list[str]) -> dict[str, int | None]:
-    """The base of each selector that qualifies, read off one `GDT` and `LDT` listing at the
-    stop; None for one that does not."""
+    """Base of each qualifying selector from one `GDT`/`LDT` listing; None for the rest."""
     if session.launch.logfile is None:
         notes.append(f"the protected-mode lines have {NO_LINEAR}: the descriptor tables are "
                      f"read off the session's logfile, so `start` with `logfile`")
@@ -441,9 +403,8 @@ def _selector_bases(session: ds.Session, selectors: set[str],
 
 
 def _write_set(path: Path, rows: list[dict[str, Any]], notes: list[str]) -> str | None:
-    """The set file, line by line; one the host refuses part-way is removed, never left looking
-    whole, and one somebody made while the trace ran is theirs and left alone. Either way the
-    trace stands without it."""
+    """Write the set file; one failed part-way is removed, one that already existed is left
+    alone. The trace stands without it."""
     refused = f"the set file {path} could not be written"
     try:
         f = path.open("x", encoding="utf-8")
@@ -462,7 +423,7 @@ def _write_set(path: Path, rows: list[dict[str, Any]], notes: list[str]) -> str 
 
 
 def _host(read: Callable[[], T], path: Path) -> T:
-    """A read of the log the host may fail, refused naming the file rather than escaping."""
+    """`read()`, with a host failure refused naming the file."""
     try:
         return read()
     except OSError as exc:
@@ -471,14 +432,12 @@ def _host(read: Callable[[], T], path: Path) -> T:
 
 
 def _no_log(session: ds.Session, says: Callable[[str], bool]) -> ds.Invalid:
-    """The refusal for a stop with no log in the working directory. It clears `STATE.log_open`
-    and empties the input line the refused `LOG` was left on only when the logfile says the
-    debugger was refused the file, so no log opened; otherwise something may have removed the
-    file while the log was open, and the log stays remembered."""
+    """The refusal for a stop with no log. `STATE.log_open` clears only when the logfile says
+    the debugger was refused the file; otherwise the log may still be open."""
     cwd = session.launch.cwd
     if says(NOT_CREATED_LINE):
         STATE.log_open = False
-        with contextlib.suppress(ds.Invalid):       # the refusal below is the answer either way
+        with contextlib.suppress(ds.Invalid):
             session.clear_line()
         return ds.Invalid("host_failed",
             f"the debugger could not create {LOG_FILE} in {cwd} (the logfile says "
@@ -497,8 +456,7 @@ def _no_log(session: ds.Session, says: Callable[[str], bool]) -> ds.Invalid:
 
 
 def _logfile_reader(session: ds.Session) -> Callable[[str], bool]:
-    """A reader of whether the session's logfile holds a line of the debugger's written from now
-    on; it answers False without a logfile, where nothing can be read."""
+    """Whether the logfile gains a given debugger line from now on; False without a logfile."""
     logfile = session.launch.logfile
     if logfile is None:
         return lambda _line: False
@@ -507,9 +465,8 @@ def _logfile_reader(session: ds.Session) -> Callable[[str], bool]:
 
 
 def _logfile_says(logfile: Path, mark: int, line: str) -> bool:
-    """Whether the session's logfile, past byte `mark`, holds the debugger's `line` at the start
-    of a line (a guest's own lines carry their channel's prefix). One the host cannot read says
-    nothing, which the caller reports as not seen."""
+    """Whether the logfile past byte `mark` holds `line` at the start of a line (a guest's own
+    lines carry a channel prefix). Unreadable counts as not seen."""
     needle = b"\n" + line.encode()
     carry = b"\n"
     try:
@@ -530,9 +487,9 @@ def _written(places: list[Path]) -> Path | None:
 
 
 def _close_log(session: ds.Session, places: list[Path], what: str, **extra: Any) -> bool:
-    """`LOGC 0` on a log that may still be open: it closes it, executing nothing, and the flag
-    clears. Whether the machine had already closed it: the close then writes an empty file,
-    which this call made and removes. Refused naming `what` when the close does not answer."""
+    """`LOGC 0` on a log that may be open, executing nothing. Returns whether the machine had
+    already closed it (the empty file the close then makes is removed). Refused naming `what`
+    when the close does not answer."""
     began = time.monotonic()
     expired, _ = session.log_cpu("LOGC", 0, began, began + CLOSE_WAIT_S)
     if expired:
@@ -545,11 +502,8 @@ def _close_log(session: ds.Session, places: list[Path], what: str, **extra: Any)
 
 
 def close_log_left_open(session: ds.Session) -> None:
-    """A CPU log a cancelled call left open, closed by its `stop` end with the guest at the
-    debugger, so the next trace starts on a closed log. What it wrote is moved aside first, to
-    the first free `trace-cancelled-<n>.trace` where a trace with no `dest` goes, the session's
-    captures directory (the working directory for a session started with none): on a log the
-    machine already closed, `LOGC 0` opens a fresh file over its name."""
+    """Close a CPU log a cancelled call left open. What it wrote is first moved to the first
+    free `trace-cancelled-<n>.trace` in the captures directory (else the working directory)."""
     cwd = session.launch.cwd
     captures = session.launch.captures_dir
     home = captures if captures is not None and captures.is_dir() else cwd

@@ -1,8 +1,4 @@
-"""ONE SEAM CLOSES EVERY REPLY: `summary` first, the tool's own fields, `session` last, and the
-`session` block composed by the `tool` decorator AFTER the body, from the state the server holds.
-A body that changed the machine once its envelope was built cannot leave a block describing the
-machine before it did, and `close` keeps the block of the machine it ended.
-"""
+"""Every reply closes with `session`, composed by the `tool` decorator after the body."""
 
 from __future__ import annotations
 
@@ -27,8 +23,7 @@ import dosbox_x_server as s  # noqa: E402
 
 @pytest.fixture
 def late_tool(monkeypatch: pytest.MonkeyPatch) -> Iterator[Any]:
-    """A tool whose body writes to the machine and adds a field AFTER its envelope was built;
-    the pre-gate, which judges only the tools it knows, is told to let this one through."""
+    """A tool whose body writes to the machine after its envelope was built."""
     monkeypatch.setattr(checks, "check", lambda name, **given: None)
     def late_body() -> dict[str, Any]:
         reply = st.reply(first=1)

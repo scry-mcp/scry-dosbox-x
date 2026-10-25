@@ -1,17 +1,4 @@
-"""The symbol PLACEMENT: a name or a raw `SEG:OFF` to the address the debugger wants.
-
-The caller says the SAME thing for a DJGPP protected-mode program and a 16-bit real-mode
-one: a symbol name, or a raw address, and NOTHING about mode or selectors.
-The server does the dirty work below -- deciding which the ref is, resolving a name to an
-offset, and turning that offset into the seg:off the debugger's own command wants, which
-depends on the machine's mode and is exactly the number the plan exists to stop a caller
-having to work out by hand.
-
-The table itself is held in `dosbox_state` (it is cleared with the session); this module
-is what reads it: which spelling a `ref` is, the offset a name resolves to, the seg:off
-that offset arms at in THIS machine's mode, and the two tools that fill and query the
-table, `symbols_load` and `symbols_find`.
-"""
+"""Symbol placement: a name or a raw `SEG:OFF` to the seg:off the debugger wants, per mode."""
 
 from __future__ import annotations
 
@@ -35,40 +22,28 @@ from dosbox_state import STATE
 
 
 def decide_by(ref: str) -> str:
-    """`address` when the ref is a raw `SEG:OFF`, `symbol` otherwise. A C or ASM public is
-    letters, digits and underscores and never carries a colon, so the shape decides and the
-    caller never has to declare which they meant.
+    """`address` for a raw `SEG:OFF`, `symbol` otherwise.
 
-    THE COLON IS THE ONLY TELL, so a name that does carry one (a C++ demangled `ns::fn`)
-    would be read as an address and then refused by the seg:off parser. That is a confusing
-    refusal rather than a wrong action, and the escape is already there: pass `by="symbol"`
-    to force a name lookup. The nm single-token column this reads never demangles, so the
-    case does not arise on today's inputs; the override is the answer if it ever does."""
+    The colon is the only tell: a demangled `ns::fn` would be refused by the seg:off parser,
+    and `by="symbol"` forces the lookup."""
     if vf.parse_pointer(ref) is not None:
         return "pointer"
     return "address" if ":" in ref.strip() else "symbol"
 
 
 def address_shape(ref: str, by: str | None = None) -> None:
-    """A ref declared (or decided) as a raw address must parse as one, segment included, BEFORE it
-    is stored: a malformed address that reaches the store is carried as `unarmable` forever, since
-    the store deliberately tolerates what it already holds. A symbol is judged at its step."""
+    """Refuse an unparseable raw address before it is stored, or it stays `unarmable`."""
     chosen = decide_by(ref) if by is None else by
     if chosen == "address":
         parse_seg_off(ref)
 
 
-#: A hex address as a caller writes one: digits, with or without `0x`, and nothing else.
 _HEX_ADDR = re.compile(r"(?:0[xX])?[0-9a-fA-F]+")
 
 
 def hex_arg(name: str, value: object) -> int:
-    """A hex address argument, or a refusal that names the ARGUMENT.
-
-    `int(value, 16)` alone accepts a sign and underscores, so `-400` would read as a negative
-    base and `4_00` as 0x400, both in silence. AN INTEGER IS REFUSED, not coerced: the argument
-    is text so that no caller has to convert hex to decimal.
-    """
+    """A hex address argument, or a refusal naming it. `int(value, 16)` alone takes a sign and
+    underscores; an integer is refused, not coerced, so no caller converts hex to decimal."""
     if not isinstance(value, str) or not _HEX_ADDR.fullmatch(value.strip()):
         raise ds.Invalid("bad_argument",
             f"{name} is {value!r}, which is not a hex address like `1000` or `0x1000` "
@@ -85,32 +60,26 @@ def hex_bases(section_bases: dict[str, str]) -> dict[str, int]:
 
 
 def parse_seg_off(ref: str) -> tuple[int, int]:
-    """A raw `SEG:OFF` in hex into a pair. A bare linear number is refused: without a
-    segment there is nothing to arm at, which is the whole reason symbols carry offsets."""
+    """A raw `SEG:OFF` in hex into a pair; a bare linear number has no segment to arm at."""
     r = ref.strip()
     if ":" not in r:
         raise ds.Invalid("bad_argument",
             f"a raw address is SEG:OFF in hex (e.g. 00A7:0016DD80); got {ref!r}. A bare "
             f"linear address has no segment to arm at -- use a symbol, which carries one")
     seg_s, off_s = r.split(":", 1)
-    # EACH HALF IS A HEX ADDRESS AS EVERY ADDRESS ARGUMENT WRITES ONE: `int(..., 16)` alone also
-    # takes a sign and underscores, and `0038:-10` would reach every address tool as offset -16.
+    # `int(..., 16)` alone takes `0038:-10` as offset -16.
     if not (_HEX_ADDR.fullmatch(seg_s.strip()) and _HEX_ADDR.fullmatch(off_s.strip())):
         raise ds.Invalid("bad_argument", f"{ref!r} is not a hex SEG:OFF: hex digits each side, "
                          "with or without `0x`, no sign")
     seg, off = int(seg_s, 16), int(off_s, 16)
-    # THE SEGMENT IS JUDGED HERE, where every raw ref becomes numbers, so no tool can take one it
-    # cannot address: a segment past sixteen bits written by `memdump` lands nowhere the caller
-    # meant, and armed by `breakpoint_at` persists a declaration nothing can ever clear. The
-    # offset's ceiling depends on the cpu mode and waits for the machine.
+    # Judged here so no tool takes a segment it cannot address (an armed one could never be
+    # cleared); the offset's ceiling depends on the cpu mode and waits for the machine.
     ds.check_segment(seg)
     return seg, off
 
 
 def _listening(session: ds.Session) -> None:
-    """Refuse, before anything is typed, a placement that would ask a console that is not
-    listening: a running guest's console drops its nudge, and the declaration waits for the
-    next stop anyway."""
+    """Refuse a placement before typing at a console that is not listening (a running guest)."""
     if not session.at_debugger():
         raise ds.NotStopped("the guest is running, so nothing can be placed against its "
                             "registers now")
@@ -118,10 +87,8 @@ def _listening(session: ds.Session) -> None:
 
 def _program_selectors(session: ds.Session, desc: dict[str, int],
                        measured_by_cs: bool) -> dict[str, int]:
-    """CS and DS as this stop holds them when they are the program's: a live protected-mode
-    stop whose CS has the table's base (by construction when the base was measured off CS,
-    asked of `SELINFO CS` otherwise). Nothing at a real-mode stop, while the guest runs (the
-    last stop may be another program's), or in a DPMI host's own code."""
+    """CS and DS of this stop when they are the program's (protected mode, CS on the table's
+    base); nothing at a real-mode stop, a running guest, or a DPMI host's code."""
     if not session.at_debugger():
         return {}
     where, regs = session.where_and_registers()
@@ -132,7 +99,6 @@ def _program_selectors(session: ds.Session, desc: dict[str, int],
     return {f"selector_{reg}": int(regs[reg], 16) for reg in ("CS", "DS")}
 
 
-#: What says where a table sits; the program's selectors are carried beside it, not part of it.
 PLACE_KEYS = ("base", "limit", "type")
 
 
@@ -148,23 +114,12 @@ def target_for(offset: int, reg: str, session: ds.Session, *,
                 machine: tuple[str, dict[str, str]] | None = None) -> tuple[int, int]:
     """The seg:off to arm at a symbol OFFSET, derived from the machine's mode.
 
-    `machine` is an optional cached `(mode, registers)` read ONCE by the caller. It exists
-    for the stop reply: resolving N watches and M breakpoints there would
-    otherwise read `where` and `registers` N+M times, at a console round trip apiece, for a
-    state that does not change across one stopped instant. Given it, this reads neither.
+    `machine` is a `(mode, registers)` pair the caller read once, saving a console round trip
+    per declaration in a stop reply.
 
-    Protected mode: the selector in `reg` (CS for code, DS for data) has the same base the
-    symbols were placed against, so the symbol's own offset IS the breakpoint offset. Real
-    mode: there are no selectors, so the address is the load paragraph plus the folded
-    offset, split so the offset still fits the 16 bits a real-mode command allows.
-
-    THE PROTECTED-MODE DATA PATH ASSUMES DS AND CS SHARE A BASE, which is true of the flat
-    DPMI layout DJGPP builds (`symbols_load` documents it), and is what lets a data symbol
-    placed against CS be armed through the live DS selector. A non-flat protected program
-    where DS and CS have different bases would arm a data watch at DS_base+offset while the
-    symbol's linear is CS_base+offset -- a wrong address this derivation does not detect.
-    Break-on-change under paging is already the honest limit `watch_add` carries; a non-flat
-    data layout is the same class and, if this server ever meets one, wants its own probe.
+    Protected mode: the offset is the breakpoint offset. Real mode: the load paragraph plus
+    the folded offset, split to fit 16 bits. Assumes DS and CS share a base (DJGPP's flat
+    layout); a non-flat program would arm a data watch at the wrong address undetected.
     """
     if machine is None:
         _listening(session)
@@ -198,42 +153,26 @@ def resolve_ref(decl: dec.Declaration, reg: str, session: ds.Session, *,
                  machine: tuple[str, dict[str, str]] | None = None) -> dict[str, Any]:
     """A declaration -> what the debugger needs to arm it, or the state that is not armable.
 
-    Returns `state`, and when `armable` also `seg`, `off` and whether the symbol carries
-    the linker's mark. The four states are DISTINCT on purpose, because a caller listing
-    declarations has to tell them apart:
+    Returns `state` (and `seg`, `off`, the linker's mark when `armable`); never raises:
 
-    * `armable` -- resolved to one address that can be worked out right now.
-    * `unresolved` -- no such symbol in THIS build; kept, it may be back next build.
-    * `ambiguous` -- the name matches several symbols, so arming one would be a guess at the
-      wrong address. Carries `matches` and a `why`. This is a REFUSAL to arm, not a state
-      that resolves itself, and `breakpoint_at` turns it into an `Invalid` before storing.
-    * `unarmable` -- resolved to a symbol, but its address cannot be derived at this instant:
-      the machine is not stopped, or a real-mode table has no flat base, or it folds past
-      the 1 MB a real-mode seg:off can reach. Carries a `why`. The intent is kept; it arms
-      when the obstacle lifts.
-
-    It does NOT raise for these: raising `Invalid` for ambiguity AND for every
-    `target_for` obstacle would make a listing count a running machine and a missing base
-    as `ambiguous` -- a state word that lies about what happened.
+    * `armable` -- one address, workable now.
+    * `unresolved` -- no such symbol in this build; kept for the next one.
+    * `ambiguous` -- several matches (`matches`, `why`); `breakpoint_at` refuses it.
+    * `unarmable` -- resolved, but no address now (`why`): guest running, no flat base, or
+      past the 1 MB real mode reaches. The intent is kept.
     """
     if decl.by == "pointer":
         return _resolve_pointer(decl, reg, session, machine)
     if decl.by == "address":
-        # A STORED ADDRESS THE PARSER REFUSES IS A STATE, NOT A WEDGE: the file is the one
-        # input the tools never validated (a hand edit, an older format), and raising here
-        # made `declaration_list(kind="breakpoint")` and every
-        # `declaration_clear(kind="breakpoint")` die on that one row, so nothing
-        # could list or remove it. `unarmable` with the parser's words lets both work.
+        # The file is the one unvalidated input; raising here would make list and clear die
+        # on one bad row, so it could never be removed.
         try:
             seg, off = parse_seg_off(decl.ref)
         except ds.Invalid as e:
             return {"state": "unarmable", "why": f"stored address {decl.ref!r} cannot be "
                                                   f"read: {e}. Clear it by this ref"}
         return {"state": "armable", "seg": seg, "off": off, "marked": False}
-    # ONE SOURCE OF NAMES: the name->offset half goes through the store's
-    # `resolve_name`, the same routine `symbols_load`'s re-resolution uses, so a symbol
-    # resolves one way everywhere. This layer adds only the live seg:off (`target_for`),
-    # which the store cannot know because it never touches the machine.
+    # Same `resolve_name` as `symbols_load`'s re-resolution; only the live seg:off is added here.
     r = dec.DeclarationStore.resolve_name(decl, STATE.table, STATE.name_index)
     if r.state == "unresolved":
         return {"state": "unresolved"}
@@ -250,9 +189,7 @@ def resolve_ref(decl: dec.Declaration, reg: str, session: ds.Session, *,
 
 
 def to_invalid(fn: Callable[[], Any]) -> Any:
-    """Run a store call, translating its `DeclarationError` into an `Invalid` the way
-    symbols_load already wraps `BadSymbolText` -- the server's `tool()` catches only
-    `Invalid`, so a store refusal must become one or it escapes as a traceback."""
+    """Run a store call, turning `DeclarationError` into the `Invalid` `tool()` catches."""
     try:
         return fn()
     except dec.DeclarationError as e:
@@ -261,13 +198,9 @@ def to_invalid(fn: Callable[[], Any]) -> Any:
 
 def _resolve_pointer(decl: dec.Declaration, reg: str, session: ds.Session,
                      machine: tuple[str, dict[str, str]] | None) -> dict[str, Any]:
-    """A pointer ref against the machine NOW: the base placed like any data symbol (or read
-    as a `SEG:OFF`), the pointer read there as a NEAR pointer in the base's own segment (its
-    width from the base's `ptr16`/`ptr32` type, else the cpu mode's: four bytes in
-    protected mode, two in real), plus the offset (a field's from the type). `armable` with
-    the place and a `pointer` block, `null_pointer` when it holds zero (a state, never a
-    watch at zero), `unresolved` with `why` for a base that is no global, `unarmable` for
-    a machine that cannot be asked."""
+    """A pointer ref against the machine now: a NEAR pointer read at the base in its segment
+    (width from `ptr16`/`ptr32`, else 4 bytes protected, 2 real) plus the offset.
+    `null_pointer` when it holds zero, never a watch at zero."""
     pr = vf.parse_pointer(decl.ref)
     assert pr is not None
     if machine is None:
@@ -336,20 +269,13 @@ def _resolve_pointer(decl: dec.Declaration, reg: str, session: ds.Session,
 
 def read_target(ref: str, reg: str, session: ds.Session, *,
                  machine: tuple[str, dict[str, str]] | None = None) -> tuple[int, int]:
-    """The seg:off a reader (`read_memory`, `memdump`) should read at, from a `ref`: a symbol
-    name or a raw `SEG:OFF`. ONE spelling: a numeric segment/offset pair is
-    not a second way to say the same address.
+    """The seg:off a reader (`read_memory`, `memdump`) reads at, from a symbol or a `SEG:OFF`.
 
-    A read needs a concrete address NOW, so unlike a breakpoint it cannot keep an unresolved
-    or ambiguous intent: an absent or doubly-defined name is REFUSED here, not stored.
-    Resolution goes through the SAME `resolve_ref` the breakpoint and watch tools use, so a
-    symbol resolves one way across the whole surface.
+    A read needs an address now, so an absent or ambiguous name is refused, not stored.
     """
     if decide_by(ref) == "address":
         return parse_seg_off(ref)
-    # THE DECLARATION'S OWN REFUSALS (an empty ref) are translated like everywhere else: the
-    # constructor raises `DeclarationError`, which the tool wrapper does not catch, so an
-    # untranslated one escaped `read_memory(ref="")` as a traceback with no session block.
+    # An empty ref raises `DeclarationError`, which the tool wrapper does not catch.
     decl = to_invalid(lambda: dec.Declaration("breakpoint", "symbol", ref))
     res = resolve_ref(decl, reg, session, machine=machine)
     if res["state"] == "armable":
@@ -367,42 +293,22 @@ def read_target(ref: str, reg: str, session: ds.Session, *,
 
 
 def _placed(s: sym.Symbol) -> dict[str, Any]:
-    """One symbol: its name, what KIND the toolchain called it, both addresses, and
-    whether that address is CONDITIONAL.
-
-    Both addresses, because the caller needs whichever it needs.
-
-    The offset is what the toolchain printed and the linear is what the debugger shows,
-    and quoting only one of them makes the reader do the arithmetic that this tool
-    exists to have got right once.
-    """
-    # `STATE.base["base"]`, never `.get(..., 0)`: base 0 is the exact value `selector`
-    # refuses by name ("would place every symbol at its raw offset"), so defaulting to
-    # it would dress a server bug as an answer. The read three lines away already
-    # subscripts. A bug escapes as a bug.
-    # `idle` IS THE ONE FIELD HERE THAT IS NOT AN ADDRESS: it is Borland's mark on that
-    # row, passed through. What it MEANS is unknown; the evidence is on `Symbol.idle`. Reported
-    # per symbol as
-    # well as counted in `symbols_load`'s `overlay_idle`, because a total cannot tell
-    # you whether THIS name carries it. False for every `nm` and GNU-map symbol:
-    # neither format prints such a column.
-    # THE SAME PLACEMENT THE ENCODER USED, asked of the same function. Adding
-    # `STATE.base["base"]` here regardless would answer with the `-1` sentinel for every
-    # symbol of a sectioned load -- a number, plausible, and wrong.
+    """One symbol: name, kind, the toolchain's offset and the debugger's linear address (so
+    the reader does no arithmetic), and whether the address is conditional (`idle`)."""
+    # `idle` is Borland's overlay mark passed through, per symbol because the `overlay_idle`
+    # total cannot say whether this name carries it; false for `nm` and GNU-map symbols.
     return {"name": s.name, "kind": s.kind, "offset": s.offset, "section": s.section,
             "addr": st.flat(linear_of(s)), "idle": s.idle}
 
 
 def linear_of(s: sym.Symbol) -> int:
-    """A symbol's linear address against the table loaded now: the one placement `symbols_find`
-    answers and a comment by name lands on."""
+    """A symbol's linear address against the table loaded now."""
     bases = STATE.section_bases if STATE.section_bases else {sym.FLAT: STATE.base["base"]}
     return sym.place(s, bases)
 
 
 def read_types(value: str) -> dict[str, str]:
-    """A `types` file for `symbols_load`, named by an absolute path: the grammar's reader over
-    the file's UTF-8 text, with a refusal that names the file and the line."""
+    """A `types` file for `symbols_load`, by absolute path; a refusal names file and line."""
     text = paths.read_text("types", value, "types file")
     try:
         return vf.read_types(text, value)
@@ -415,60 +321,30 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
          rearm_declarations: Callable[[ds.Session], dict[str, Any]],
          take_the_map: Callable[[ds.Session], str | None],
          types: dict[str, str] | None = None) -> dict[str, Any]:
-    """The body of the `symbols_load` tool: parse `src` (the caller's `source`, judged a file
-    there), place it, install the table here and in the
-    debugger (or queue the debugger's half while the guest runs), then `rearm` the stored
-    declarations against the new table and stamp this session's raw comments the new batch
-    describes (`take_the_map`, the store's write error or None). Both are handed in because
-    the layers above import this one, not the other way round."""
-    # THE MAP IS READ LENIENTLY: a DOS toolchain's map may carry code page 437 bytes in a path
-    # or a comment, and the parser counts the lines it cannot read (a `types` file is strict).
+    """The body of `symbols_load`: parse, place, install the table here and in the debugger
+    (queued while the guest runs), re-arm stored declarations, stamp raw comments
+    (`take_the_map`: the store's write error or None). Callbacks avoid an import cycle."""
+    # Lenient: a DOS map may carry code page 437 bytes.
     try:
         text = src.read_text(encoding="utf-8", errors="replace")
     except OSError as exc:
-        # `tool()` translates only `Invalid`, so a file the host will not read (its mode, a
-        # race) would come back as a bare `OSError` with no session block.
         raise ds.Invalid("bad_argument",
             f"cannot read {src}: {exc!r}. That is the symbol list this "
                          f"was asked to load, so there is nothing to load") from None
     try:
-        # `parse` rather than the two halves by hand: it sniffs the format AND counts
-        # the lines it could not read, and that count has to travel with the symbols to
-        # be worth anything. Choosing the parser here and calling the counting one
-        # separately would be two walks that can disagree.
         syms, unreadable = sym.parse(text)
     except sym.BadSymbolText as e:
         raise ds.Invalid("bad_argument", f"{source}: {e}") from None
-    # THE TABLE IS CHECKED AGAINST ITS BUILD BEFORE ANYTHING IS LOADED: a stale one resolves
-    # every name a few bytes off and nothing in it can say so (`dosbox_coff`).
+    # A stale table resolves every name a few bytes off and nothing in it says so.
     checked = coff.check(src, syms)
-    # `plan` IS OUTSIDE THAT BLOCK, and the prefix is why. `BadSymbolText`'s own
-    # docstring says the MCP layer translates it into "a refusal that NAMES THE
-    # CALLER'S FILE", which is right for text that could not be parsed and WRONG for a
-    # `pattern` that will not compile: that refusal came back as
-    # `INVALID: /path/to/prog.sym: that is not a usable pattern: ...`, blaming a file
-    # that is perfectly fine for an argument typed at the tool. The un-prefixed form is
-    # the one `encode`'s refusal ten lines below already uses, for the same reason.
+    # No file prefix: a pattern that will not compile is not the file's fault.
     try:
         plan = sym.plan(syms, pattern=pattern, keep_noise=keep_noise,
                         unreadable=unreadable)
     except sym.BadSymbolText as e:
         raise ds.Invalid("bad_argument", str(e)) from None
-    # AN EXPLICIT BASE COMES WITH NO LIMIT, and `-1` says so rather than inventing one.
-    # The limit is the independent fact that lets a caller check the base is really this
-    # program's -- it bracketed the binary's own top `nm` address, which is how the
-    # measured base was identified at all -- so a fabricated limit would hand the
-    # caller's own assumption back to them as evidence for itself.
-    # A SECTIONED MAP IS PLACED FROM A TABLE, AND NOTHING IS PROBED FOR IT. There is
-    # no descriptor to read: the bases come from the caller because they are not in the
-    # file and this server does not parse the binary that has them. So `base_from` is
-    # not consulted, and the reply says `caller` for the same reason it does with an
-    # explicit `base`.
-    #
-    # THE KEYS ARRIVE AS STRINGS because JSON has no integer keys, and they are
-    # converted HERE rather than being accepted as they come: a section index is a
-    # number in every one of these formats, and a table keyed on `"1"` would match no
-    # symbol while looking exactly like one that does.
+    # An explicit base has limit -1, not an invented one. A sectioned map probes nothing, so
+    # `base_from` is not consulted. JSON keys arrive as strings; a `"1"` key matches no symbol.
     bases: dict[int, int] | None = None
     if section_bases is not None:
         try:
@@ -480,9 +356,8 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
                 f"shape") from None
         desc = {"base": -1, "limit": -1, "type": -1}
     else:
-        # REAL MODE HAS NO DESCRIPTOR TO MEASURE, and the pane already says so: asked there,
-        # this build's `SELINFO` prints no descriptor line at all inside a program, so the
-        # refusal would be the parser's and name the wrong cause.
+        # `SELINFO` prints no descriptor line in real mode, so the parser's refusal would
+        # name the wrong cause.
         if base is None and dcons.real_segments(session.where()["mode"]):
             raise ds.Invalid("bad_argument",
                 "the machine is in real mode, where there is no descriptor to measure a base "
@@ -491,9 +366,7 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
                 "every symbol would sit at its raw offset")
         desc = (session.selector(base_from) if base is None
                 else {"base": base, "limit": -1, "type": -1})
-        # A TABLE LOADED AT A PROTECTED-MODE STOP KEEPS THE PROGRAM'S SELECTORS: a later stop
-        # may hold another program's (a DPMI host's 16-bit code) or none (a BIOS handler), and
-        # a symbol is placed through the program's own, never through what the stop holds.
+        # A later stop may hold another program's selectors or none; symbols keep the program's.
         desc.update(_program_selectors(session, desc,
                                        base is None and base_from.upper() == "CS"))
     try:
@@ -501,43 +374,19 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
                 else sym.encode(plan, desc["base"]))
     except sym.BadSymbolText as e:
         raise ds.Invalid("bad_argument", str(e)) from None
-    # THE TABLE IS INSTALLED ONLY AFTER THE DEBUGGER HAS TAKEN THE FILE, and the order
-    # is the whole of it. `load_symbols` refuses on SEVEN paths at the time of writing
-    # -- a pre-existing file, a console not listening, an unwritable directory, `LV`
-    # unacknowledged, `SV` unacknowledged, the saved file missing, the saved file
-    # undecodable -- and that is what has been seen rather than a closed list, which is
-    # the point: a count of them goes stale, and a count is not what the ordering rests on.
-    # Installing first meant a REFUSED load still replaced a table that was working:
-    # the caller got INVALID from here and `ok` from `symbols_find`, answering out of a
-    # table the debugger does not hold. A refusal that also corrupts state inverts this
-    # module's one rule, that a refusal is visible and a wrong answer is not.
-    # THE TABLE ACCUMULATES, the way the debugger's own `LV` does. Loading in narrow
-    # batches is the reasonable thing to do with thousands of symbols, and a table
-    # REPLACED by every load would drop the first batch's symbols out of `symbols_find`
-    # and orphan any breakpoint armed on them: the debugger keeps its row, this side
-    # no longer knows the name, and nothing can clear it.
-    #
-    # IT ACCUMULATES ONLY WHILE THE PLACEMENT HOLDS. The table stores OFFSETS and the base
-    # places them, so carrying earlier symbols across a load that moved the base would
-    # silently re-place them at addresses nobody measured. A load that changes the base or
-    # the section bases REPLACES, and the reply says which of the two happened.
+    # Installed only after the debugger has taken the file, which can refuse. It accumulates
+    # like `LV` (or batches orphan earlier breakpoints) while the placement holds; a moved
+    # base or section bases REPLACES, as old offsets would re-place unmeasured.
     same_place = (bool(STATE.table)
                   and all(STATE.base.get(k) == desc.get(k) for k in PLACE_KEYS)
                   and dict(STATE.section_bases) == dict(bases or {}))
     if same_place:
-        # A BATCH ADDED WHERE THE TABLE SITS keeps the selectors it was measured with when this
-        # stop could not give them (a real-mode stop, a running guest).
+        # Keep the selectors it was measured with when this stop cannot give them.
         for key in ("selector_CS", "selector_DS"):
             if key in STATE.base and key not in desc:
                 desc[key] = STATE.base[key]
-    # THE TYPES ARE JUDGED BEFORE ANYTHING IS WRITTEN, and that ordering is the whole of it.
-    # A name typed that the table will not carry is a refusal, because a type nothing
-    # carries would be honoured by nothing. Judged AFTER the debugger has taken the file
-    # and the table is installed, one typo in a `types` name would refuse the call with
-    # the debugger's list already grown and this side's table already changed: a refusal
-    # that also corrupts state, which is the one thing the ordering above exists to
-    # prevent. The names judged against are the ones
-    # the table WILL hold, which for an accumulating load includes an earlier batch's.
+    # Types are judged before anything is written, against the names the table will hold
+    # (an accumulating load includes the earlier batches).
     known = {s.name.upper() for s in plan.symbols}
     if same_place:
         known |= {s.name.upper() for s in STATE.table}
@@ -545,8 +394,7 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
     if unknown:
         raise ds.Invalid("bad_argument",
                          f"types are named for symbols the table lacks: {unknown[:5]}")
-    # A BATCH STILL QUEUED is the debugger's to take as well when this one accumulates onto it,
-    # and superseded when this one replaces it; dropped only once this load has gone through.
+    # A queued batch is joined when this one accumulates, superseded when it replaces.
     queued = STATE.pending["load"]
     if queued and same_place:
         try:
@@ -558,40 +406,26 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
         STATE.pending["load"] = None
         pending = False
     else:
-        # THE GUEST RUNS: the table is held here at once (so `symbols_find` and the name
-        # layer answer), and the debugger's list is loaded at the next stop, with the
-        # re-arm that follows a load. Reached only with an explicit base: measuring one
-        # needs the console and refuses above. Decided by the passive check, because the
-        # session's own refusal for a running load is a plain `Invalid`.
+        # Guest running: held here now, loaded into the debugger at the next stop.
         STATE.pending["load"] = data
         STATE.pending["dirty"] = True
         held, pending = [], True
     STATE.install_table(plan.symbols, accumulate=same_place)
     table_mode = "accumulated" if same_place else "replaced"
-    # THE TYPES ACCUMULATE WITH THE TABLE, or a type declared on the first batch would be
-    # lost while its symbol stayed: the same silent degradation, one layer up.
     if not same_place:
         STATE.symbol_types.clear()
     STATE.symbol_types.update(types or {})
     STATE.base.clear()
     STATE.base.update(desc)
     STATE.base_measured_from = base_from.upper() if base is None and bases is None else None
-    # THE TABLE IS KEPT TOO, so `symbols_find` reports the same linear address the
-    # debugger holds. Without it that tool would fall back to `STATE.base["base"]`, which for
-    # a sectioned load is the `-1` sentinel above -- a number, plausible, and wrong for
-    # every symbol.
+    # `symbols_find` places by these; the flat base is the `-1` sentinel for a sectioned load.
     STATE.section_bases.clear()
     if bases is not None:
         STATE.section_bases.update(bases)
-    # RE-RESOLVE every stored declaration against the NEW table and re-arm the
-    # code ones that resolve. This is what makes a rebuild free -- relaunch, symbols_load
-    # the new map, and the breakpoints follow the program to their new addresses without
-    # being sent again. It runs here because this is the moment the map changed.
-    # THE BATCH IS HELD BEFORE THE RE-ARM judges which raw addresses are stale against it.
+    # Breakpoints follow a rebuild's new map. The batch is held before the re-arm judges
+    # raw addresses stale against it.
     take_the_batch(plan.symbols, accumulate=same_place)
-    # THIS SESSION'S ROWS NO STOP PLACED ARE TAKEN FIRST, so the re-arm that follows arms what
-    # the load placed; a load while the guest runs places nothing, since a row is placed only
-    # at a stop.
+    # Taken first so the re-arm arms what the load placed; a running guest places nothing.
     unwritten = None if pending else take_the_map(session)
     rearm = ({"deferred": True,
               "note": "the re-arm runs at the next stop, after the debugger takes the load"}
@@ -612,41 +446,28 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
                   unencodable_total=len(plan.unencodable),
                   truncated_names=plan.truncated_names,
                   disambiguated=plan.disambiguated,
-                  # `renamed` is the one a caller actually wants and `truncated_names`
-                  # is not it: that one counts names LONGER than the field, while a
-                  # name that fitted is mutilated too when it has to carry a `~n`.
-                  # `unreadable` is how many lines of the file matched no format at
-                  # all -- the population was cut before any of these buckets saw it.
+                  # `truncated_names` misses a name that fitted but carries a `~n`.
                   renamed=plan.renamed, unreadable=plan.unreadable,
-                  # `overlay_idle` is a SUBSET of `kept`, not a bucket beside it, which
-                  # is why it does not disturb the sum the four fields above make with
-                  # `parsed`. It is here because it is the one number that says how much
-                  # of the table you just loaded names a CONDITIONAL address.
+                  # A subset of `kept`, not a bucket beside it.
                   overlay_idle=plan.overlay_idle,
-                  # WHAT HAPPENED TO THE TABLE, said out loud rather than left to be
-                  # discovered by a `symbols_find` that comes back empty.
                   table_mode=table_mode, table_total=len(STATE.table),
                   loaded=len(held), bytes=len(data), symbols_typed=len(types or {}))
 
 
 def take_the_batch(symbols: list[sym.Symbol], accumulate: bool) -> None:
-    """Hold the batch a load of `symbols` placed, over this session's conf: beside the batches
-    before it (`accumulate`), as the debugger's list keeps them, or alone after a replace."""
+    """Hold the batch a load placed, beside earlier ones (`accumulate`) or alone."""
     conf = STATE.conf_fingerprint
     if conf is None:
         return
     batch = dec.Build.of(conf, [(s.name, linear_of(s)) for s in symbols])
-    # ONE MAP LOADED AGAIN IS ONE BATCH, now the latest: the debugger's list holds its names
-    # once, and every stamp walks the batches held.
+    # A map loaded again replaces its own batch.
     kept = [held for held in STATE.map_batches if held.stamp != batch.stamp]
     STATE.map_batches = [*kept, batch] if accumulate else [batch]
 
 
 def stamp_at(linear: int | None, raw: bool) -> str | None:
-    """The stamp a row placed at `linear` takes now: the most recently loaded batch whose span
-    holds it, or the conf alone where no batch describes it. A raw code row (`raw`) whose place
-    is not known now while a batch is held is `dec.PENDING_STAMP`, and takes its batch when a
-    load of its session places it."""
+    """The stamp a row at `linear` takes: the latest batch whose span holds it, else the conf.
+    A raw code row with no known place while a batch is held is `dec.PENDING_STAMP`."""
     cover = next((b for b in reversed(STATE.map_batches)
                   if linear is not None and b.covers(linear)), None)
     if cover is not None:
@@ -657,11 +478,8 @@ def stamp_at(linear: int | None, raw: bool) -> str | None:
 
 
 def staleness(decl: dec.Declaration, place_now: Callable[[], int | None]) -> str | None:
-    """Why a raw row is not known to be this build's, judged by the batch that describes it
-    (`dec.raw_staleness`), or None. `place_now` gives its linear address at this instant.
-    A pending row of this session is judged by the stamp it takes where it is placed now,
-    since within one session a held batch is the running program; only a load writes that
-    stamp, so a session that loads no map after it leaves the row pending."""
+    """Why a raw row is not known to be this build's (`dec.raw_staleness`), or None.
+    A pending row of this session is judged by the stamp it takes where it is placed now."""
     if decl.fingerprint == dec.PENDING_STAMP and decl.origin == STATE.session_origin \
             and STATE.session_origin is not None:
         linear = place_now()
@@ -675,30 +493,25 @@ def is_stale(decl: dec.Declaration, place_now: Callable[[], int | None]) -> bool
 
 
 def mode_word(cpu: str | None) -> str | None:
-    """A stop's cpu mode as a raw row records it (`dec.CPU_MODES`), from the debugger's
-    spelling (`Real`, `Pr16`, `Pr32`, `VM86`, whose SEG:OFF is a real-mode one); None for a mode
-    not known."""
+    """A stop's cpu mode as a raw row records it (`dec.CPU_MODES`); VM86 is real; else None."""
     if cpu is not None and dcons.real_segments(cpu):
         return "real"
     return "protected" if cpu is not None and cpu.startswith("Pr") else None
 
 
-#: A name the symbol table held now does not define: kept, and placed when a table does.
 NOT_IN_TABLE = ("is not in the symbol table loaded now (none is loaded, or it does not define "
                 "the name)")
 
 
 def waits(decl: dec.Declaration, cpu: Callable[[], str | None]) -> str | None:
-    """`dec.waits` at this stop, whose mode `cpu` gives in the debugger's spelling: the mode a
-    raw row waits for, `dec.UNPLACED` for one no stop placed, None when it is judged here. Such
-    a row is neither judged nor armed: it is `unarmable`, named by `waits_why`."""
+    """`dec.waits` at this stop: the mode a raw row waits for, `dec.UNPLACED`, or None when
+    judged here. A waiting row is `unarmable`, named by `waits_why`."""
     return dec.waits(decl, lambda: mode_word(cpu()))
 
 
 def waits_why(mode: str, again: str, here: bool = True) -> str:
-    """Why a row placed in `mode` waits at a stop of the other mode, or one no stop placed
-    (`dec.UNPLACED`) waits at any; `again` is the gesture that places it, offered for this stop
-    only when `here` (the machine is stopped and this stop can place the address)."""
+    """Why a row placed in `mode` (or `dec.UNPLACED`) waits; `again` is the gesture that
+    places it, offered only when `here` (this stop can place the address)."""
     if mode == dec.UNPLACED:
         return ("no stop has placed it (declared while the guest ran, declared or loaded where "
                 "its stop could not place it, or stored before modes were kept), and a SEG:OFF "
@@ -711,17 +524,13 @@ def waits_why(mode: str, again: str, here: bool = True) -> str:
     return f"{said}. {again} at this stop to place it in this mode"
 
 
-# THE CEILING ON A NAME LOOKUP: a `limit` with no top hands a whole table back under the
-# name of a lookup.
 SYMBOLS_LIMIT_MAX = 50
 
 
 def check_find_args(name: str | None, offset: int | None, linear: str | None,
                     limit: int) -> None:
-    """The refusals `symbols_find` makes on its ARGUMENTS alone, before the table is looked
-    at: one question per call, a `linear` that is hex text, and on the name question a
-    `limit` inside the ceiling and a name that is not empty. One function, so the preflight of
-    a list refuses the same step `find` would, before an earlier step has pressed a key."""
+    """The refusals `symbols_find` makes on its arguments alone; shared so a list's preflight
+    refuses the same step before an earlier one has pressed a key."""
     given = [x is not None for x in (name, offset, linear)]
     if sum(given) != 1:
         raise ds.Invalid("bad_argument", "ask for exactly one of `name`, `offset` or `linear`. Two "
@@ -732,14 +541,8 @@ def check_find_args(name: str | None, offset: int | None, linear: str | None,
     if name is None:
         return
     if isinstance(limit, bool) or not isinstance(limit, int):
-        # A step of a list delivers its values untyped: a string here is a refusal, not a
-        # TypeError out of the comparison below that the tool wrapper does not translate.
+        # A list step delivers untyped values; a string would be an untranslated TypeError.
         raise ds.Invalid("bad_argument", f"limit is a number of symbols; got {limit!r}")
-    # THE REFUSAL IS ON THE BRANCH THAT READS IT. Above the split it would fire for
-    # `offset` and `linear` too, branches that answer with one symbol and never slice:
-    # there `limit=1` and `limit=10` return byte-identical replies, so refusing
-    # `limit=0` would correct a caller about an argument the code they reached never
-    # looked at.
     if limit <= 0:
         raise ds.Invalid("bad_argument",
             f"a limit of {limit} would return nothing and call it a "
@@ -768,19 +571,9 @@ def find(name: str | None, offset: int | None, section: int | None,
         return st.reply(query=name, symbols_total=len(hits),
                       symbols=[_placed(s) for s in hits[:limit]],
                       truncated=len(hits) > limit)
-    # `linear` is what the DEBUGGER shows and this table holds OFFSETS, so the base
-    # comes back off here. It is the base the table was PLACED against, which is why
-    # `_forget_symbols` runs on every session change: against a stale base this
-    # subtraction is silently wrong rather than absent, and a wrong answer of the right
-    # shape is the one thing worse than a refusal.
-    # WHICH SECTION THE QUESTION IS ABOUT, because offsets in different sections are
-    # different addresses and this table can hold both: an offset compared across sections
-    # answers with whichever
-    # symbol of ANY section sat highest below it -- a symbol from another selector, with
-    # a plausible delta and no error.
+    # The table holds offsets, so the base comes off `linear`; a stale base answers silently
+    # wrong, hence `_forget_symbols` on every session change.
     if not STATE.section_bases:
-        # A FLAT TABLE HAS EXACTLY ONE SECTION, so naming it would be ceremony -- and
-        # naming a DIFFERENT one is a question about a section this table does not have.
         if section is not None and section != sym.FLAT:
             raise ds.Invalid("bad_argument",
                 f"this table was loaded FLAT, so it has no section {section}. Ask "
@@ -790,11 +583,7 @@ def find(name: str | None, offset: int | None, section: int | None,
     elif section is not None:
         want_section = section
     elif linear is not None:
-        # A LINEAR ADDRESS ANSWERS THE QUESTION ITSELF: it falls inside exactly one
-        # section's base, and picking the greatest base at or below it is the same
-        # arithmetic the encoder did in the other direction. This is the branch a caller
-        # who has stopped somewhere actually uses, so making them work out the section
-        # first would be handing back the sum they came here to have computed.
+        # A linear address names its section: the greatest base at or below it.
         want_section = _linear_section(linear)
     else:
         raise ds.Invalid("bad_argument",
@@ -812,8 +601,7 @@ def find(name: str | None, offset: int | None, section: int | None,
 
 
 def _linear_section(linear: int) -> int:
-    """The section of a SECTIONED table a linear address falls in: the greatest base at or
-    below it."""
+    """The section of a sectioned table a linear address falls in."""
     under = [i for i, b in STATE.section_bases.items() if b <= linear]
     if not under:
         raise ds.Invalid("unknown_ref",
@@ -824,9 +612,8 @@ def _linear_section(linear: int) -> int:
 
 
 def _nearest_offset(want: int, section: int) -> dict[str, Any]:
-    """The nearest symbol of `section` at or below offset `want`, as `symbols_find` answers it:
-    by bisection over the table sorted once (`_offset_index`). Among symbols at one offset the
-    first in the table wins."""
+    """The nearest symbol of `section` at or below offset `want`, by bisection over
+    `_offset_index`; the first in the table wins at one offset."""
     offsets, symbols = _offset_index().get(section, ([], []))
     i = bisect.bisect_right(offsets, want) - 1
     if i < 0:
@@ -843,8 +630,8 @@ _index: tuple[int, OffsetIndex] | None = None
 
 
 def _offset_index() -> OffsetIndex:
-    """Per section, the table's distinct offsets ascending and the first symbol at each, built
-    once per table (`STATE.table_generation`) rather than walked per address."""
+    """Per section, the distinct offsets ascending and the first symbol at each, built once per
+    table generation."""
     global _index
     if _index is None or _index[0] != STATE.table_generation:
         sections: OffsetIndex = {}
@@ -858,9 +645,7 @@ def _offset_index() -> OffsetIndex:
 
 
 def nearest_symbol(linear: int) -> dict[str, Any] | None:
-    """What `symbols_find(linear=)` answers for `linear`, without the reply around it: the
-    nearest symbol at or below, its fields and `delta`; None where it would refuse (below
-    every section, or below the lowest symbol of its own section)."""
+    """What `symbols_find(linear=)` answers, without the reply; None where it would refuse."""
     try:
         section = _linear_section(linear) if STATE.section_bases else sym.FLAT
         if section not in _offset_index():
@@ -875,9 +660,8 @@ _span: tuple[object, tuple[int, int]] | None = None
 
 
 def symbol_span() -> tuple[int, int] | None:
-    """The lowest and highest linear address the loaded table places a symbol at, None with
-    no table: past either end the nearest symbol names memory the table does not describe.
-    Computed once per table and placement, since every stop reply asks."""
+    """The lowest and highest linear address the table places a symbol at, None with no table;
+    past either end the nearest symbol names memory the table does not describe."""
     global _span
     if not STATE.table:
         return None

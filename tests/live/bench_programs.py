@@ -1,16 +1,5 @@
-"""The DOS programs the live tier runs from the bench: their copies, pinned by
-`scry_core.live_bench` in the bench's own `bench.json`, one directory per program under the
-bench's root, which `_root` resolves, each in its project's own layout; and `missing`, which says
-why one cannot run. Shared by the matrix and the pytest live files; importing it reads the bench's
-`identity.json` once and runs nothing.
-
-A PROGRAM IS NAMED HERE BY ITS LABEL, never by its own name: what the case covers (`dos-real16`,
-real mode with a Borland map) is what this tree says, and whatever names the program lives in
-the bench's `identity.json`, beside the manifest, and nowhere tracked.
-
-A program's session conf is DERIVED from its project's own run conf at run time, into a scratch
-directory, so the bench pins what the project wrote and no file naming a path of this machine.
-"""
+"""The DOS programs the live tier runs from the bench; their real names live only in the
+bench's untracked `identity.json`."""
 from __future__ import annotations
 
 import json
@@ -31,30 +20,22 @@ def _root() -> Path:
     return Path.home() / ".local" / "share" / "scry-bench" / "dosbox-x"
 
 
-#: The bench, with the manifest of every file the live tier reads from it.
 BENCH = bench.Bench(_root())
-#: What each label stands for on this machine: `{label: {key: value}}`, every value a string.
 IDENTITY = BENCH.root / "identity.json"
-#: The labels, and the keys each one's identity carries: `dir`, its directory under the bench;
-#: `exe` and `map`, its build inside it; `launch`, the line its run conf starts it with;
-#: `process`, the name DOS gives its memory block; `e9_line`, the line it logs on the E9 port at
-#: start.
 LABELS = ("dos-real16", "dos-real16-alt")
 IDENTITY_KEYS = ("dir", "exe", "map", "launch", "process", "e9_line")
 PATH_KEYS = ("exe", "map")
-#: The serial stub's directory, mounted and run by every derived conf: the guest half of the
-#: serial route.
 STUB_DIR = Path(__file__).resolve().parents[2] / "guest"
 
 
 def _known(label: str, key: str = "dir") -> None:
-    """A label or key the code does not declare is the code's mistake, on every host alike."""
+    """Refuse an undeclared label or key."""
     if label not in LABELS or key not in IDENTITY_KEYS:
         raise KeyError(f"no identity key {label}.{key}: declare it in LABELS and IDENTITY_KEYS")
 
 
 def _identity() -> tuple[dict[str, dict[str, str]], str]:
-    """Every label's values, and why the file cannot be read (empty when it can)."""
+    """Every label's values, and why the file cannot be read."""
     remedy = (f"write {IDENTITY} beside bench.json: one object per label ({', '.join(LABELS)}), "
               f"each with {', '.join(IDENTITY_KEYS)} as strings")
     try:
@@ -72,7 +53,7 @@ _DOC, _DOC_WHY = _identity()
 
 
 def identity_missing(label: str) -> str:
-    """Why `label`'s identity cannot be used, or empty when it carries every key as a string."""
+    """Why `label`'s identity cannot be used, or empty."""
     _known(label)
     if _DOC_WHY:
         return _DOC_WHY
@@ -87,8 +68,7 @@ def identity_missing(label: str) -> str:
     if Path(held["dir"]).name != held["dir"] or held["dir"] in (".", ".."):
         return (f"identity {label}.dir is {held['dir']!r}, not one directory name: set it in "
                 f"{IDENTITY}")
-    # DOS spells a memory block's name in capitals, at most eight, and the E9 line is matched
-    # as Latin-1 bytes in the build
+    # the build matches the E9 line as Latin-1
     if held["process"] != held["process"].upper() or len(held["process"]) > 8:
         return (f"identity {label}.process is {held['process']!r}, not a DOS name of at most "
                 f"eight capitals: set it in {IDENTITY}")
@@ -100,18 +80,14 @@ def identity_missing(label: str) -> str:
 
 
 def value(label: str, key: str) -> str:
-    """`label`'s `key`, or empty when its identity cannot be used, which `missing` reports: a
-    value read here is used only on a program that is not BLOCKED."""
+    """`label`'s `key`, or empty when its identity is unusable."""
     _known(label, key)
     return "" if identity_missing(label) else str(_DOC[label][key])
 
 
 @dataclass(frozen=True)
 class Program:
-    """A program on the bench: its label, its project's run conf and the conf whose fixed
-    `cycles` a session takes when the run conf plays at another clock (empty: the run conf's own
-    clock is the session's). The rest is its identity's; `launch` is what a session's
-    `program=` types instead."""
+    """A program on the bench; a non-empty `clock_conf` supplies the session's fixed `cycles`."""
     label: str
     run_conf: str
     clock_conf: str = ""
@@ -141,26 +117,21 @@ class Program:
         return value(self.label, "e9_line")
 
 
-# real mode, built by TASM, a Borland map with publics
 DOS_REAL16 = Program("dos-real16", "SCRIPTS/dosbox-run.conf")
-# real mode, a map with a segment table and no publics. Its run conf plays at `cycles = max`, and
-# its project's own session conf takes the fixed clock its goldens are judged at instead: a
-# session asks questions whose answer is the guest's clock.
+# its run conf plays at `cycles = max`, but a session's answers depend on the guest clock
 DOS_REAL16_ALT = Program("dos-real16-alt", "SCRIPTS/dosbox-x-run.conf",
                  clock_conf="SCRIPTS/dosbox-x-gold.conf")
 
 
 def opened(program: Program) -> list[str]:
-    """Every file the live code opens for `program`, relative to the bench: its build and its
-    map, its run conf and, where it has one, its clock conf."""
+    """Every file opened for `program`, relative to the bench."""
     files = [value(program.label, k) for k in PATH_KEYS]
     files += [f for f in (program.run_conf, program.clock_conf) if f]
     return [f"{value(program.label, 'dir')}/{f}" for f in files]
 
 
 def _unpinned(program: Program) -> str:
-    """The first file `program` opens that the manifest does not pin, as a reason, or empty: a
-    file opened unpinned would be read unchecked."""
+    """Why an opened file is unpinned, or empty."""
     try:
         pinned = BENCH.pinned
     except verdict.Invalid as e:
@@ -172,25 +143,18 @@ def _unpinned(program: Program) -> str:
 
 
 def missing(program: Program) -> str:
-    """Why `program` cannot run here, or empty: its identity, then its copies (naming the first
-    absent or wrong one), then whether every file it opens is one the manifest pins."""
+    """Why `program` cannot run here, or empty."""
     return (identity_missing(program.label)
             or BENCH.missing(f"{value(program.label, 'dir')}/") or _unpinned(program))
 
 
 def session_conf(program: Program, into: Path) -> Path:
-    """`program`'s run conf made a session's, written to `into`: the serial stub mounted and run
-    just before its first `set PATH` (which drops Z:, where MOUNT lives, so a stub after it
-    never runs), its launch line and its `exit` removed, so `start(program=...)` runs it, and,
-    where the program names one, its `cycles` line taken from its clock conf. The launch line,
-    the `exit` and the `cycles` line must each match exactly once, and a `set PATH` at least
-    once, or this refuses: an edit that matched nothing would run the project's conf unchanged
-    under the session's name."""
+    """`program`'s run conf made a session's, written to `into`; raises unless each edit matches.
+
+    The stub goes before the first `set PATH`, which drops Z: (where MOUNT lives)."""
     text = (program.root / program.run_conf).read_text(encoding="utf-8")
     stub = f'mount g "{STUB_DIR}"\nG:\\INJECT.COM\n'
-    # Functions, never template strings: `re` reads a backslash in a replacement as an escape,
-    # and a DOS path carries one.
-    # (pattern, replacement, how many to replace: every one, or the first `set PATH` only)
+    # functions, not strings: `re` reads a backslash in a replacement as an escape
     edits: list[tuple[str, Callable[[re.Match[str]], str], int]] = [
         (rf"(?im)^{re.escape(program.launch)}\s*$", lambda _m: "", 0),
         (r"(?im)^exit\s*$", lambda _m: "", 0),
@@ -212,7 +176,7 @@ def session_conf(program: Program, into: Path) -> Path:
 
 
 def _fixed_clock(program: Program) -> str:
-    """The one `cycles` line of `program`'s clock conf, refused unless it is a fixed clock."""
+    """The clock conf's one fixed `cycles` line."""
     lines = re.findall(r"(?im)^cycles\s*=.*$",
                        (program.root / program.clock_conf).read_text(encoding="utf-8"))
     if len(lines) != 1 or "fixed" not in lines[0]:
@@ -221,13 +185,11 @@ def _fixed_clock(program: Program) -> str:
     return str(lines[0])
 
 
-#: A Borland map's public: `SSSS:OOOOO`, the linker's `idle` mark when it has one, the name.
 _PUBLIC = re.compile(r"^\s*([0-9A-F]{4}):([0-9A-F]{5})\s+(idle)?\s*(\S+)\s*$")
 
 
 def public(program: Program, name: str) -> tuple[int, int, bool]:
-    """The frame and offset `program`'s map gives the public `name`, and whether it carries the
-    linker's mark."""
+    """The frame, offset and `idle` mark `program`'s map gives the public `name`."""
     for line in (program.root / program.map).read_text(encoding="latin-1").splitlines():
         if (m := _PUBLIC.match(line)) and m.group(4) == name:
             return int(m.group(1), 16), int(m.group(2), 16), m.group(3) is not None

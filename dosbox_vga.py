@@ -1,16 +1,13 @@
-"""The VGA's own listings, read off the debugger: their grammar, the screen's geometry they give,
-and where its memory lies for a dump (the real-mode window or a descriptor's selector).
+"""The VGA's listings read off the debugger: their grammar, the screen geometry they give,
+and where video memory lies for a dump.
 
-EVERY READING IS A LISTING OFF THE SESSION'S LOGFILE (`Session.listing`) or one dump of video
-memory (`Session.memdump`), never a command that changes the machine. Never typed here: `VGA`
-alone or with a subcommand outside `VGA_LISTINGS` and `dosbox_dac.DACPAL` (the console keeps an
-unknown command on its input line), `VRD` (it redraws by restarting the VGA's frame timing,
-which the guest can observe), `VGA DS` (it moves the display start) and `VGA FONTDUMP` (it writes
-a file where the emulator runs).
+Every reading is a listing off the session's logfile or one dump, never a command that changes
+the machine. Never typed: bare `VGA` or an unknown subcommand (the console keeps it on its input
+line), `VRD` (restarts the frame timing, which the guest can observe), `VGA DS` (moves the
+display start) and `VGA FONTDUMP` (writes a file where the emulator runs).
 
-THE NAMES ARE THE DEBUGGER'S: each listing's `key=value` words, the key lower-cased with `-` as
-`_` and its `[RGB]` suffix dropped, the value the text it printed (`5fh`, `70.087Hz`, `M_TEXT`).
-The parsers accept only the shapes the listings were captured printing (`tests/fixtures/vga/`).
+Keys are the debugger's `key=value` words, lower-cased, `-` as `_`, `[RGB]` dropped; values stay
+the text printed. The parsers accept only shapes captured in `tests/fixtures/vga/`.
 """
 
 from __future__ import annotations
@@ -25,8 +22,7 @@ from typing import Any
 import dosbox_machine as machine
 import dosbox_session as ds
 
-#: The listings that describe the VGA, in the order they are read: the section key, the
-#: command, and the title the debugger opens the listing with.
+#: Section key, command and the title the debugger opens the listing with, in read order.
 VGA_LISTINGS: tuple[tuple[str, str, str], ...] = (
     ("mode", "VGA MODE", "VGA mode info:"),
     ("crtc", "VGA CRTC", "VGA CRTC info:"),
@@ -41,8 +37,7 @@ VGA_LISTINGS: tuple[tuple[str, str, str], ...] = (
 TITLES = {command: title for _, command, title in VGA_LISTINGS}
 
 
-#: The Attribute Controller's sixteen palette registers, the one value printed with spaces:
-#: four groups of four, a `-` between groups.
+#: The AC's sixteen palette registers: the one value printed with spaces, groups split by `-`.
 AC_GROUP = r"(?:[0-9a-f]{2} ){3}[0-9a-f]{2}"
 
 
@@ -54,10 +49,8 @@ def _key(word: str) -> str:
 
 
 def parse_listing(text: str, title: str) -> dict[str, Any]:
-    """One `VGA` listing as the mapping of its `key=value` words, the title line's included. The
-    AC's `palette={ ... }` is the list of its sixteen hex texts. A word that is not `key=value`,
-    a key printed twice, or a listing with no word at all is a shape this was not written
-    against."""
+    """One `VGA` listing as its `key=value` mapping; the AC's `palette` is a list of hex texts.
+    A word that is not `key=value`, a repeated key or an empty listing is refused."""
     lines = machine.listing_lines(text)
     if not lines or not lines[0].startswith(title):
         raise machine.Unreadable(lines[0] if lines else "")
@@ -89,8 +82,7 @@ def _unreadable(command: str, e: machine.Unreadable) -> str:
 
 
 def read_parsed(session: ds.Session, command: str, parse: Callable[[str], Any]) -> Any:
-    """One listing, live, parsed; one that printed nothing, or a line no shape matches, is
-    refused saying which."""
+    """One listing, live, parsed; empty or unmatched output is refused saying which."""
     text = session.listing(command)
     if not machine.listing_lines(text):
         raise ds.Invalid("unexpected_answer", f"`{command}` printed nothing")
@@ -107,9 +99,8 @@ def listed(session: ds.Session, command: str) -> dict[str, Any]:
 
 
 def vga_section(session: ds.Session) -> tuple[dict[str, Any] | None, list[str], str]:
-    """`machine_map`'s `vga` section: the seven listings under their keys and the commands they
-    came from, or None and why. One listing that printed nothing, or a line no shape matches,
-    makes the whole section absent, and the listings after it are not typed."""
+    """`machine_map`'s `vga` section: the listings by key and their commands, or None and why.
+    One bad listing makes the section absent and the later ones are not typed."""
     found: dict[str, Any] = {}
     for key, command, title in VGA_LISTINGS:
         text = session.listing(command)
@@ -122,7 +113,7 @@ def vga_section(session: ds.Session) -> tuple[dict[str, Any] | None, list[str], 
     return found, [command for _, command, _ in VGA_LISTINGS], ""
 
 
-#: The reply's `source`: what a decoded screen is made of.
+#: The reply's `source`.
 TEXT = "text"
 
 
@@ -136,9 +127,7 @@ LINEAR_WORDS = frozenset({"M_LIN8", "M_LIN15", "M_LIN16", "M_LIN24", "M_LIN32"})
 
 
 def source_of(mode: dict[str, Any]) -> str:
-    """`text` for the text modes, `indices` for the chained 256-colour mode (13h's family), off
-    `VGA MODE`'s own `mode` and `chained` words; every other mode is refused naming the word and
-    why its picture is out of this reader's reach."""
+    """`text` or `indices` (chained 256-colour) off `VGA MODE`; any other mode is refused."""
     word = mode.get("mode")
     if word == "M_TEXT":
         return TEXT
@@ -161,11 +150,11 @@ def source_of(mode: dict[str, Any]) -> str:
 
 
 def hex_word(text: str) -> int:
-    """A value the `VGA` listings print in hex with an `h` after it (`0140h`, `4fh`, `0h`)."""
+    """A listing value printed in hex with a trailing `h` (`0140h`)."""
     return int(text.removesuffix("h"), 16)
 
 
-#: The Graphics Controller's memory map select (misc bits 2-3): where the CPU window lies.
+#: The Graphics Controller's memory map select (misc bits 2-3).
 MEMORY_MAP_SHIFT = 2
 
 
@@ -175,17 +164,14 @@ TEXT_BASES = {0b11: 0xB8000, 0b10: 0xB0000}
 INDEXED_BASES = {0b00: 0xA0000, 0b01: 0xA0000}
 
 
-#: How far each family's window reaches from its base: 32 KiB of text, 64 KiB of pixels.
 WINDOW_BYTES = {TEXT: 0x8000, INDICES: 0x10000}
 
 
-#: The bytes one character cell, or one pixel, takes in its window: a character byte and its
-#: attribute, or the pixel's index.
+#: Bytes per character cell (char + attribute) or per pixel (index).
 UNIT_BYTES = {TEXT: 2, INDICES: 1}
 
 
-#: The listings that place the screen, by their section key; `mode` first, because it alone
-#: says whether there is a screen this reads.
+#: The listings that place the screen; `mode` first, as it alone says whether there is one.
 SHAPE_KEYS = ("mode", "crtc", "gc", "draw")
 
 
@@ -194,9 +180,7 @@ COMMAND_OF = {key: command for key, command, _ in VGA_LISTINGS}
 
 @dataclasses.dataclass(frozen=True)
 class Geometry:
-    """What the listings say the screen is: its `source`, its size in characters or pixels, the
-    linear address its first byte lies at, how many bytes it is, and, in a text mode, where the
-    cursor stands."""
+    """What the listings say the screen is: source, size, linear address, byte length, cursor."""
     word: str
     source: str
     width: int
@@ -207,20 +191,16 @@ class Geometry:
     cursor: list[int] | None
 
     def head(self) -> dict[str, Any]:
-        """The reply's account of the screen: its VGA mode word, what it is made of (`kind`, the
-        signature's word: `text` cells or `pixel`s), its size."""
+        """The reply's account of the screen."""
         return {"vga_mode": self.word, "kind": "text" if self.source == TEXT else "pixel",
                 "width": self.width, "height": self.height}
 
 
 def geometry(listings: dict[str, dict[str, Any]]) -> Geometry:
-    """The screen's shape from the debugger's own words, `listings` keyed as `SHAPE_KEYS`. A row
-    of characters (or of pixels, in 13h) is the draw state's `addrline-total` scan lines of
-    the `height` it renders: the CRTC's cell height, doubled when it double-scans (`maxscnl`
-    bit 7, INT 10h's 200-line text), which its low five bits alone do not say; addresses go to
-    bytes by the mode's own `addr-shift`; the window lies where the memory map select puts it.
-    A layout this does not decode is refused rather than read wrong: a logical row wider than
-    the screen, a split screen, pixel panning."""
+    """The screen's shape from `listings` keyed as `SHAPE_KEYS`. Rows come from the draw state's
+    `addrline-total` (the CRTC cell height, doubled on double-scan, which `maxscnl`'s low five
+    bits alone do not say); addresses go to bytes by `addr-shift`. A wider logical row, a split
+    screen or pixel panning is refused rather than read wrong."""
     mode, crtc, gc, draw = (listings[key] for key in SHAPE_KEYS)
     source = source_of(mode)
     try:
@@ -261,15 +241,13 @@ def geometry(listings: dict[str, dict[str, Any]]) -> Geometry:
                     str(mode["disp_start"]), cursor)
 
 
-#: A data segment's descriptor type, read/write or read-only, expand-up, accessed or not.
+#: Data-segment descriptor types: expand-up, read-only or read/write, accessed or not.
 DATA_TYPES = range(0x10, 0x14)
 
 
 @dataclasses.dataclass(frozen=True)
 class Tables:
-    """How an address is reached at this stop: the cpu mode `CPU` says, whether the cpu runs a
-    virtual-8086 task (whose segments are paragraphs), and the descriptor tables and page runs
-    a selector is chosen from."""
+    """How an address is reached at this stop: cpu mode, virtual-8086 or not, and the tables."""
     cpu_mode: str
     v86: bool
     found: dict[str, Any]
@@ -280,8 +258,7 @@ def in_v86(reading: machine.Reading) -> bool:
 
 
 def tables_from(reading: machine.Reading) -> Tables:
-    """A reading of the cpu's listings as the `Tables` a selector is chosen from; one whose `CPU`
-    listing could not be read says nothing about how the screen is reached."""
+    """A reading as `Tables`; an unreadable `CPU` listing is refused."""
     if reading.mode is None:
         raise ds.Invalid("unexpected_answer", "the `CPU` listing could not be read, so the cpu "
                          "mode the screen is reached through is unknown")
@@ -294,11 +271,9 @@ def read_tables(session: ds.Session) -> Tables:
 
 
 def selector_for(linear: int, length: int, tables: Tables) -> tuple[int, int]:
-    """The `SEG:OFF` a dump of `length` bytes at `linear` is asked through. In real mode, and in
-    a virtual-8086 task, the segment is the paragraph. In protected mode it is the lowest
-    selector, the GDT's first, of a present data segment whose base and limit cover the bytes.
-    With paging on, only if every page of them maps to the same physical address: a linear
-    address that pages elsewhere would be RAM read as the screen."""
+    """The `SEG:OFF` a dump of `length` bytes at `linear` is asked through: the paragraph in real
+    mode or v86, else the lowest selector (GDT first) of a present data segment covering the
+    bytes. With paging on, only if every page maps to itself, else RAM would be read as screen."""
     if tables.cpu_mode == "paged":
         pages = tables.found.get("paging")
         if pages is None:
@@ -324,15 +299,13 @@ def selector_for(linear: int, length: int, tables: Tables) -> tuple[int, int]:
 
 
 def dump(session: ds.Session, seg: int, off: int, length: int) -> bytes:
-    """`length` bytes at `SEG:OFF` through the debugger's dump, into a scratch directory of this
-    call's own that is gone before it returns."""
+    """`length` bytes at `SEG:OFF` through the debugger's dump, via a throwaway directory."""
     with tempfile.TemporaryDirectory(prefix="dosbox-x-screen-") as scratch:
         return session.memdump(seg, off, length, Path(scratch) / "screen.bin").read_bytes()
 
 
 def read_listings(session: ds.Session) -> dict[str, dict[str, Any]]:
-    """The four listings that place the screen, `VGA MODE` first, so a mode this does not read
-    is refused before the other three are typed."""
+    """The listings that place the screen, `VGA MODE` first so an unread mode stops early."""
     listings = {SHAPE_KEYS[0]: listed(session, COMMAND_OF[SHAPE_KEYS[0]])}
     source_of(listings[SHAPE_KEYS[0]])
     for key in SHAPE_KEYS[1:]:

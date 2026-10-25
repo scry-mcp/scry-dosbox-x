@@ -3,29 +3,9 @@
 
     python bench.py --conf your.conf --cwd /path/to/it [--json out.json]
 
-WHY IT SHIPS HERE: a measurement with no artefact is a claim about a session that
-ended. A reader cannot re-take it, cannot see what was actually timed, and therefore
-cannot see which of the numbers are about this code and which are about the machine or
-about a constant somebody chose. A script that lives in a scratch directory and is
-thrown away leaves its figures published with nothing behind them.
-
-WHAT IT VALIDATES ABOUT ITSELF, before any figure is believed (Abrash: an instrument
-lies until proven against a known answer):
-
-* a KNOWN-ANSWER on the timer -- a sleep of a known length, measured through the same
-  path as everything else, must come back within a few percent;
-* a NEGATIVE on the timer -- a call that does nothing must come back at essentially
-  zero, so "fast" and "not measured" cannot print the same thing;
-* every benched call is CHECKED for having returned an answer, because three of the
-  five raise on failure and `debug` does not: `command()` returns "" on total silence
-  and that is not an error, so a bench could happily time a session saying nothing.
-
-WHAT IT DELIBERATELY EXCLUDES: the caller's latency. The per-question figures are timed
-in this process, around the call, so they price THE SERVER. An agent timing its own
-round trips reads seconds for the same work; both are real and only one is about this
-code.
-
-AND THE ONE FIGURE IT REFUSES TO PUBLISH AS A RATIO. See `advance_rate`.
+The timer is checked against a known answer (a sleep) and a negative (a do-nothing call),
+and every benched call must return an answer. Figures price the server, not the caller's
+round trip. A run that is not a measurement prints INVALID on stderr and exits 3.
 """
 
 from __future__ import annotations
@@ -54,28 +34,16 @@ import dosbox_session as ds  # noqa: E402
 
 STAMP = re.compile(r"\[\+\s*([0-9]+\.[0-9]+)\]")
 
-# The guest milestone every "reaching the state" figure waits for. It is the
-# application's own first line, so it is the guest saying it is up rather than a fixed
-# wait chosen here.
+# The application's own first line: the guest saying it is up, not a fixed wait.
 MARKER = "BOOT  . start"
 
-# THE SAMPLING STEP IS `WINDOW_SECS / WINDOW_SAMPLES`, and that is the only thing
-# either constant names directly. Two spans follow from it and they are NOT equal: the loop
-# RUNS for `(WINDOW_SAMPLES + SETTLE_SAMPLES) * step` and the rates it REPORTS cover
-# `(WINDOW_SAMPLES - 1) * step`. With the values below that is 35 s of running for 25 s
-# of reported span. Neither is `WINDOW_SECS`, and the coincidence that first-to-last
-# equals it holds only while `SETTLE_SAMPLES` is 1. With the
-# values below the loop takes 7 samples 5 s apart, so it RUNS for 35 s and the rates it
-# reports cover the 25 s between the 6 samples it keeps. Six kept samples give five
-# intervals, the smallest number from which a SPREAD is worth quoting.
+# Step is WINDOW_SECS / WINDOW_SAMPLES. The loop runs (WINDOW_SAMPLES + SETTLE_SAMPLES) * step;
+# the rates span (WINDOW_SAMPLES - 1) * step, five intervals being the least worth a spread.
 WINDOW_SECS = 30.0
 WINDOW_SAMPLES = 6
 
-# The first sample after `resume` is DISCARDED, and the reason is the LOG PIPELINE, not
-# a baseline: the earliest rate here is already between two real samples. The first
-# interval after `resume`
-# begins with the guest's boot burst still draining, so it reads fast; the discard costs
-# one sample of the seven and removes that transient from the median.
+# The first interval after `resume` still has the boot burst draining through the log
+# pipeline and reads fast, so that sample is discarded.
 SETTLE_SAMPLES = 1
 
 
@@ -87,12 +55,7 @@ def timed(fn: Callable[[], Any]) -> tuple[float, Any]:
 
 
 def validate_timer() -> dict[str, object]:
-    """A known answer and a negative, through the SAME timer everything else uses.
-
-    Without the known answer, every figure below is a number with no evidence that the
-    clock reads true. Without the negative, a call that did nothing and a call that was
-    genuinely fast print the same thing.
-    """
+    """A known answer and a negative, through the same timer everything else uses."""
     known_ms = 250.0
     got, _ = timed(lambda: time.sleep(known_ms / 1000.0))
     err = abs(got - known_ms) / known_ms
@@ -103,31 +66,19 @@ def validate_timer() -> dict[str, object]:
             "ok": ok}
 
 
-#: WHAT A RUN THAT IS NOT A MEASUREMENT EXITS WITH, and it is 3 everywhere in this package: a
-#: figure that could not be taken is not a failure of the thing being measured. `SystemExit`
-#: with a STRING does not give that -- CPython prints the string and exits 1 -- so both halves
-#: are done by hand here rather than by an argument that looks as though it would.
+#: `SystemExit` with a string exits 1, not 3, so the exit code is set by hand.
 INVALID_RC = 3
 
 
 def invalid_line(why: str) -> None:
-    """Say that this run is not a measurement, in ONE spelling, on stderr.
-
-    THE WORD IS THE HELPER'S AND NOT THE CALLER'S: nine sites wrote the prefix by hand, which
-    is nine chances to spell it differently, and a caller grepping for it would find eight.
-    Stderr because a diagnostic sharing a channel with the figures is one somebody's parser
-    reads as data.
-    """
+    """Say that this run is not a measurement, on stderr, in the one spelling."""
     print(f"INVALID: {why}", file=sys.stderr)
 
 
 def no_measurement(why: str) -> NoReturn:
     """Say it and stop, with `INVALID_RC`.
 
-    IT IS NOT CALLED `invalid`, and that is not taste: the reply contract's own source scan
-    reserves `Invalid`, `invalid` and `refusal` for a refusal carrying a code from its table,
-    and a function here wearing one of those names is read as one of those. It was, and the
-    scan said so.
+    Not named `invalid`: the reply contract's source scan reserves that name.
     """
     invalid_line(why)
     raise SystemExit(INVALID_RC)
@@ -137,9 +88,7 @@ def bench(label: str, fn: Callable[[], Any], n: int,
           answered: Callable[[Any], bool]) -> dict[str, object]:
     """`n` calls of one thing, with the median and the spread.
 
-    `answered` is REQUIRED and is not decoration: `Session.command` returns "" when the
-    screen said nothing at all, which is not an exception, so a bench without it times
-    a session that answered nothing and publishes the result as a speed.
+    `answered` is required: `Session.command` returns "" on total silence without raising.
     """
     times: list[float] = []
     for _ in range(n):
@@ -154,15 +103,11 @@ def bench(label: str, fn: Callable[[], Any], n: int,
 
 
 def newest(log: Path) -> float | None:
-    """The guest's own clock, off the LOGFILE on disk, never through the session.
+    """The guest's own clock, off the logfile on disk, never through the session.
 
-    Every read through the session drains the terminal, which is the exact condition
-    under which the defect this measures does not occur. Asking would create it.
-
-    IT TAKES THE MAXIMUM because this guest's log is not monotone: its boot self-checks
-    are emitted before the profiler's clock starts. That also means a sequence of these
-    CANNOT DECREASE, which is why `advance_rate` does not quote monotonicity as
-    evidence of anything (see there).
+    A read through the session drains the terminal, which hides the measured defect.
+    The maximum is taken: boot self-checks are stamped before the profiler's clock
+    starts, so the log is not monotone.
     """
     try:
         found = [float(x) for x in STAMP.findall(log.read_text(errors="replace"))]
@@ -172,17 +117,13 @@ def newest(log: Path) -> float | None:
 
 
 def batch_cost(cwd: Path, song: str) -> dict[str, float]:
-    """What one question costs run as a BATCH: launch, reach the state, read, tear down.
+    """What one question costs run as a batch: launch, reach the state, read, tear down.
 
-    IT TIMES THE COMMAND AND CHECKS THE ANSWER AFTERWARDS rather than during. That
-    file is written at the END, so polling `build/PROF.E9.log` while the run is in flight
-    to split out "reaching the state" would report INVALID. The honest split lives in
-    `reach_the_state`, on the path whose log
-    really is progressive.
+    The log is written at the end, so it is checked afterwards, not polled.
     """
     log = cwd / "build" / "PROF.E9.log"
     if log.exists():
-        log.unlink()          # so a STALE log cannot be read as this run's answer
+        log.unlink()          # a stale log must not read as this run's answer
     ms, _ = timed(lambda: subprocess.run(
         ["make", "prof-log", f"SONG={song}", "SECS=30"], cwd=str(cwd),
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False))
@@ -193,11 +134,7 @@ def batch_cost(cwd: Path, song: str) -> dict[str, float]:
 
 
 def reach_the_state(conf: Path, cwd: Path) -> dict[str, float]:
-    """Two costs, because the criterion needs the second and they are not the same.
-
-    The debugger prompt is when the SESSION can be asked things; the marker is when the
-    APPLICATION is up. Both are the guest saying so rather than a wait chosen here.
-    """
+    """Debugger prompt (the session can be asked) and application up (the marker appears)."""
     log = Path("/tmp/dosbox-bench-reach.log")
     if log.exists():
         log.unlink()
@@ -224,11 +161,8 @@ def reach_the_state(conf: Path, cwd: Path) -> dict[str, float]:
 def per_question(conf: Path, cwd: Path) -> dict[str, object]:
     """What each tool costs against a session already stopped where you want it.
 
-    THE GRACE IS SWEPT, and that is the difference between a measurement of this
-    emulator and a measurement of a constant this package chose. A console reply that ends
-    in the debugger's last words breaks after `REPLY_GRACE_S` of QUIET, so part of a console
-    question's cost is that parameter rather than the machine. Publishing the default alone
-    invites the reader to attribute all of it to DOSBox-X.
+    The reply grace is swept: a console reply ending in the debugger's last words breaks
+    after `REPLY_GRACE_S` of quiet, so part of its cost is that parameter, not the machine.
     """
     log = Path("/tmp/dosbox-bench-q.log")
     if log.exists():
@@ -249,8 +183,6 @@ def per_question(conf: Path, cwd: Path) -> dict[str, object]:
         out["debug"] = bench("debug", lambda: s.command("BPLIST"), 7,
                              lambda r: bool(str(r).strip()))
 
-        # THE SWEEP: the same call at three graces, so a reader can see how much of the
-        # figure is ours. Each still checks it got a real pane back.
         sweep: dict[str, object] = {}
         default = ds.REPLY_GRACE_S
         try:
@@ -269,9 +201,7 @@ def per_question(conf: Path, cwd: Path) -> dict[str, object]:
             if log.exists() and dlogs.count_e9(log.read_text(errors="replace")) > 5:
                 break
             time.sleep(0.5)
-        # `e9`'s COST IS A FUNCTION OF LOG SIZE: it reads the whole file and counts
-        # every line. Publishing one figure without the size makes a property of a
-        # six-line file read as a property of the tool.
+        # e9 reads and counts the whole log, so its cost needs the size beside it.
         e9_lines = dlogs.count_e9(log.read_text(errors="replace"))
         out["e9"] = bench("e9", lambda: s.log("Bochs", 10, "guest"), 15,
                           lambda r: bool(r[0]))
@@ -284,18 +214,12 @@ def per_question(conf: Path, cwd: Path) -> dict[str, object]:
 
 
 def advance_rate(conf: Path, cwd: Path) -> dict[str, object]:
-    """How fast the guest runs while NOBODY is asking it anything.
+    """How fast the guest runs while nobody is asking it anything.
 
-    THE FIGURE PUBLISHED IS THE MEDIAN OF THE PER-WINDOW RATES, not the ratio of the
-    whole span, and the first window is DISCARDED. The ratio of the whole span can read
-    above 1.0, the guest running FASTER than real time: the entire surplus lives in the
-    FIRST window, taken when the log pipeline is at its most backed up after the boot
-    burst. The later windows give a MEDIAN below real time, which is what `cycles=fixed`
-    should produce.
-
-    AND MONOTONICITY IS NOT REPORTED AS EVIDENCE, because `newest()` is a MAXIMUM over
-    a growing file and therefore cannot decrease: it would hold if the guest had frozen
-    solid. What IS evidence is the SPREAD, so that is what is published.
+    Published is the median of the per-window rates with the first window discarded: the
+    whole-span ratio can read above 1.0 because the surplus sits in the first window, taken
+    while the log pipeline is backed up after the boot burst. Monotonicity is not evidence,
+    since `newest()` is a maximum over a growing file; the spread is.
     """
     log = Path("/tmp/dosbox-bench-rate.log")
     if log.exists():
@@ -330,9 +254,7 @@ def advance_rate(conf: Path, cwd: Path) -> dict[str, object]:
 
 
 def window_rates(samples: list[tuple[float, float]]) -> dict[str, object]:
-    """`advance_rate`'s figures off its (wall seconds, guest seconds) samples: the first
-    `SETTLE_SAMPLES` dropped, one rate per window between the samples left, and their median,
-    minimum and maximum (the spread is the evidence, see `advance_rate`)."""
+    """`advance_rate`'s figures off its (wall seconds, guest seconds) samples."""
     used = samples[SETTLE_SAMPLES:]
     rates = [(g1 - g0) / (w1 - w0)
              for (w0, g0), (w1, g1) in zip(used, used[1:], strict=False)]
@@ -347,8 +269,7 @@ def window_rates(samples: list[tuple[float, float]]) -> dict[str, object]:
 
 @functools.cache
 def build() -> dbinary.Resolved:
-    """The DOSBox-X this bench measures: the one the server's own ladder lands on
-    (`dosbox_binary`), so a bench and a session never run two different builds."""
+    """The build the server's own ladder lands on, so bench and session never differ."""
     try:
         return dbinary.resolve("")
     except Invalid as e:
@@ -356,9 +277,7 @@ def build() -> dbinary.Resolved:
 
 
 def stamp() -> dict[str, object]:
-    """The machine and the emulator build, READ BACK rather than assumed: the build's path, the
-    rung it came from and its version as `start` reads it (`dosbox_launch.binary_facts`, launched
-    as a session is, stderr read too: this build writes its banner there)."""
+    """The machine and emulator build, read back; stderr is read too, the banner lands there."""
     found = build()
     ver = dlaunch.binary_facts(found, dbinary.VERSION_TIMEOUT_S)["version"]
     if not isinstance(ver, str):
@@ -373,8 +292,7 @@ def stamp() -> dict[str, object]:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    # REQUIRED, AND SAID IN THE HELP RATHER THAN BY `required=True`: argparse would refuse
-    # in its own words at its own exit code, and the refusal below is this tool's, at 3.
+    # Not `required=True`: argparse would refuse at its own exit code, and the refusal below is 3.
     ap.add_argument("--conf", type=Path, help="(required) the config file to measure")
     ap.add_argument("--cwd", type=Path,
                     help="(required) the working directory that config runs in")
@@ -384,11 +302,6 @@ def main() -> int:
                                    "the batch figure is not taken")
     args = ap.parse_args()
 
-    # BOTH ARE REQUIRED AND BOTH ARE FLAGS. They arrived by environment while this same
-    # parser already took `--json`, `--reps` and `--song`: two equally required inputs
-    # coming through a different door is an incoherence, not a need, and a caller who
-    # spells one of them wrong in a shell gets a run on somebody else's program rather
-    # than a refusal. The refusal names the FLAGS, because those are what the caller typed.
     conf, cwd = args.conf, args.cwd
     if not (conf and cwd and conf.is_file() and cwd.is_dir()):
         invalid_line("pass --conf a config file and --cwd the working directory it "

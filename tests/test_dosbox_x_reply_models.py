@@ -1,7 +1,3 @@
-"""Every tool's reply is judged against its declared model (`scry_core.reply_schema`): each tool
-has one, the published schema names its fields and constrains none, and a reply with a field its
-model does not name fails the battery."""
-
 from __future__ import annotations
 
 import asyncio
@@ -32,10 +28,7 @@ def test_a_real_tools_reply_with_a_field_its_model_does_not_name_fails() -> None
 
 ROWS = ("ref", "by", "cpu", "created_at", "origin", "inherited", "age_s", "state")
 
-#: What each tool's `Reply` paragraphs quote that is no field of its reply: a row's own field,
-#: a value it holds, an option or a program it names, BY TOOL, so a word allowed for one tool
-#: never hides a field another tool's model lacks. A name in neither its model nor its row here
-#: fails; a word kept here that its tool no longer quotes fails too.
+#: Words a tool's `Reply` text quotes that are no field of its reply, per tool.
 REPLY_WORDS: dict[str, tuple[str, ...]] = {
     "close": ("quit", "why"),
     "step": ("over",),
@@ -54,8 +47,6 @@ def test_every_field_a_reply_sentence_names_is_in_its_model() -> None:
 
 
 def test_every_tool_that_answers_with_a_stop_names_its_fields() -> None:
-    """The stop's fields reach a description through `STOP_FIELDS`, after a colon the sentence
-    check reads as a list's: each is held to the model of every tool that quotes it."""
     tools = asyncio.run(server.mcp.list_tools())
     lacks = reply_schema.stop_fields_lacking(tools, replies.MODELS, docs.STOP_FIELDS)
     assert not lacks, lacks

@@ -1,17 +1,9 @@
 """`series_capture`: frames out of the session's video capture, written as a `scry-series/1`
-series (`scry_core.series`): PNGs and one manifest, no picture in the reply.
+series (`scry_core.series`).
 
-WHY FROM THE AVI. DOS has no frame counter a stop can read, and a stop per retrace has no
-route, so the one headless record of frames is the capture `start(capture_video=True)` writes. Its
-frames are numbered by the file's own index from 0: what the series calls frame N is the AVI's
-N-th frame, not an emulated frame number, and the reply's `frame_source` says so.
-
-ONE FFMPEG PASS. A `select` over the frame numbers keeps the frames asked for, a `crop` filter
-cuts the region, and ffmpeg writes the PNGs itself (`-f image2`), each read back here through
-`scry_core.png` for its signature and its hash. The pixels are written RGB with no row
-prediction (`-pix_fmt rgb24 -pred none`), so a palette AVI and a direct-colour one come out
-alike and every frame decodes at the cost of a copy. The crop is judged against the size the
-AVI's own header (`avih`, `scry_core.avi`) declares, before ffmpeg runs.
+Frames come from the AVI because DOS has no frame counter a stop can read: frame N is the
+AVI's N-th frame from 0, not an emulated frame number. Pixels are written RGB with no row
+prediction so palette and direct-colour AVIs come out alike.
 """
 
 from __future__ import annotations
@@ -26,19 +18,15 @@ from scry_core import avi, fresh, judges, media_tools, raster, series
 import dosbox_paths as paths
 import dosbox_session as ds
 
-#: How long the one ffmpeg pass may take: a thousand frames of a DOS screen, with room.
 SERIES_FFMPEG_SECS = 300
-#: The media file tools this server publishes, named once for its registration, its sequences and
-#: its pre-gate: the image layer's; the sound layer's join the day a session records a WAV.
+#: The media file tools this server publishes; the sound layer's join once a session records a WAV.
 MEDIA_TOOLS = media_tools.IMAGE_TOOLS
-#: What a series' frame numbers count here: the capture file's own frames, from 0.
 FRAME_SOURCE = "avi"
 
 def check_series_capture(at_frames: list[int] | None = None, first: int | None = None,
                          last: int | None = None, step: int = 1, crop: list[int] | None = None,
                          dest: str = "", capture_path: str = "", **_: Any) -> None:
-    """`series_capture`'s machine-independent half: the frames, the crop's shape, and the two
-    paths absolute, with no `%` (ffmpeg's image2 muxer reads one as a numbering template)."""
+    """`series_capture`'s machine-independent half; `%` is refused (image2 template)."""
     series.frame_list(at_frames, first, last, step)
     if crop is not None:
         judges.rect("crop", crop)
@@ -53,8 +41,7 @@ def check_series_capture(at_frames: list[int] | None = None, first: int | None =
 
 
 def select_expression(wanted: list[int]) -> str:
-    """ffmpeg's `select` expression keeping exactly the frames `wanted`, its commas escaped
-    as a filter graph needs them."""
+    """ffmpeg's `select` expression keeping exactly the frames `wanted`."""
     return "+".join(f"eq(n\\,{f})" for f in wanted)
 
 
@@ -67,7 +54,6 @@ def series_capture(session: ds.Session, scratch: Path, at_frames: list[int] | No
         raise ds.Invalid("host_failed", "a series is extracted from the capture with `ffmpeg`, "
                          "and there is none on PATH")
     wanted = series.frame_list(at_frames, first, last, step)
-    # A FRAME PAST THE END is told by ffmpeg, which reads the file's frames.
     src = (paths.input_file("capture_path", capture_path, "capture") if capture_path
            else Path(str(session.captures()[-1]["path"])))
     width, height = avi.size("capture_path", src)
@@ -83,8 +69,7 @@ def series_capture(session: ds.Session, scratch: Path, at_frames: list[int] | No
 
 def _extract(src: Path, folder: Path, wanted: list[int],
              area: tuple[int, int, int, int] | None) -> None:
-    """The one ffmpeg pass, its PNGs renamed by the frame each one is; a pass that wrote fewer
-    than asked is refused naming how many came out."""
+    """The one ffmpeg pass, its PNGs renamed by frame; fewer than asked is refused."""
     graph = f"select='{select_expression(wanted)}'"
     if area is not None:
         x, y, w, h = area

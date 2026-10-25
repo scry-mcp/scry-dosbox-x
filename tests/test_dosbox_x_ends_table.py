@@ -1,6 +1,4 @@
-"""REFERENCE's table of how a cancelled call ends is the tools' own declarations, read back: every
-tool that declares an `on_cancel` sits in the row of that end, and every tool a row names declares
-it (`scry_core.ends_table`)."""
+"""Declared ends equal REFERENCE's table."""
 
 from __future__ import annotations
 
@@ -12,7 +10,7 @@ from scry_core import ends_table
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import dosbox_mcp  # noqa: E402
-import dosbox_x_server  # noqa: E402,F401  (registers the tools)
+import dosbox_x_server  # noqa: E402,F401
 
 ROOT = Path(__file__).resolve().parent.parent
 

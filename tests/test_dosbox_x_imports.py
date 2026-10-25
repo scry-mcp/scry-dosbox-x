@@ -1,6 +1,4 @@
-"""Every module of the server imports on its own, in a fresh interpreter: the modules import each
-other in a cycle that only works while no module reads another's names at import time, and the
-suite always enters through the server, so an order that breaks is seen only here."""
+"""Each module imports first in a fresh interpreter: the import cycle breaks by order."""
 from __future__ import annotations
 
 import subprocess

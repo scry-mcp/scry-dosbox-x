@@ -1,8 +1,7 @@
-"""From an investigation to a bench, on bricks: a headless session at a fixed cycle count
-exported with `perform_export`, replayed twice by the runner with no model (both hold), and
-replayed once more with one recorded value edited (it diverges at that step and field). The
-`resume` releases the guest, whose run ends wherever a stop finds it, which no replayed advance
-reaches, so the export cuts at the release: the steps before it are the bench."""
+"""A bricks session exports, replays twice with no model, and an edited copy diverges.
+
+The export cuts at `resume`: the released run ends wherever a stop finds it, which no replayed
+advance reaches."""
 from __future__ import annotations
 
 import json
@@ -20,7 +19,6 @@ pytestmark = pytest.mark.live
 
 ROOT = Path(__file__).resolve().parents[2]
 BRICKS = live_private.bricks_dir()
-#: One replay, start to close: well past the steps' own bounds.
 REPLAY_WITHIN_S = 600
 
 

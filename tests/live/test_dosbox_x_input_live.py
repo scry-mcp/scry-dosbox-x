@@ -1,16 +1,6 @@
-"""The input route against a REAL guest: send_keys puts a key into a running program and the
-program acts on it, and send_mouse puts the guest's pointer somewhere and clicks there, the
-program reporting where. All of it HEADLESS: the route is inside the guest, so these open no
-window, take no focus and never touch the host's pointer.
+"""Input route against a real headless guest (dpmi_guest): keys and clicks the program acts on.
 
-They run on the package's DPMI guest (`dpmi_guest`), whose marks `dpmi.c` writes itself: the
-cue key's answer, every key's arrival, a button press with the driver's position, and a periodic
-line once its INPUT LOOP is up, which every case waits for before its first key or click (the
-boot line is written in the program's first instant, and a key posted before the loop reads
-input is swallowed without a trace). The conf runs the package's stub, and `start` loads its own
-before the program too, so every case also proves the second copy stays out.
-
-  DOSBOX_X_WALK_MAX            ceiling on the resume-walk to the client (see the entry routes)
+  DOSBOX_X_WALK_MAX            ceiling on the resume-walk to the client
 """
 from __future__ import annotations
 
@@ -29,16 +19,15 @@ pytestmark = pytest.mark.live
 
 KEY_MARK, ARRIVAL_MARK, MOUSE_MARK = guest.KEY_MARK, guest.ARRIVAL_MARK, guest.MOUSE_MARK
 BOOT_MARK, SETTLED_MARK = guest.BOOT_MARK, guest.SETTLED_MARK
-LOOK_LINES = 400          # the drive case's look, wide enough to hold a short act's lines
-#: Two driver positions on the 8-unit cell a text mode keeps, so either mode lands them exactly.
+LOOK_LINES = 400
+#: On the 8-unit cell a text mode keeps, so either mode lands them exactly.
 CLICKS = ((200, 96), (400, 160))
 BOOT_WAIT_S = 60
 SETTLED_WAIT_S = 90
 
 
 def _start(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, seconds: int = 180) -> Path:
-    """ONE headless session on the DPMI build, the store isolated, the log in tmp_path, the
-    guest released to run until `close`. Every input case shares this boot exactly."""
+    """Start one headless DPMI session, store isolated, log in tmp_path."""
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
     log = tmp_path / "guest.log"
     r = cast(dict[str, Any], server.start(
@@ -51,9 +40,7 @@ def _start(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, seconds: int = 180) 
 
 
 def _input_loop_live() -> None:
-    """Wait, on the guest's OWN log, until its input loop is up: the boot line, then the
-    settled mark. Shared by every case that posts a key or a click, on either route, so none of
-    them can post into the gap between the program starting and the program listening."""
+    """Wait until the guest's input loop is up; a key posted earlier is swallowed."""
     boot = cast(dict[str, Any], server.log_wait(channel="guest", pattern=BOOT_MARK,
                                                 seconds=BOOT_WAIT_S))
     assert boot["status"] == "ok", boot
@@ -64,16 +51,11 @@ def _input_loop_live() -> None:
 
 def test_send_keys_reaches_the_running_guest_and_it_acts(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """R1's CUE A half: let the guest run, send the cue key, and confirm the PROGRAM acted on
-    it -- the E9 mark the app writes only from that key's handler. The key goes to a RUNNING
-    guest (no breakpoint), which is the route AUTOTYPE and the console cannot serve."""
+    """A key sent to the running guest makes the program act, and an ignored key does not."""
     _start(tmp_path, monkeypatch)
     server.resume()
     _input_loop_live()
 
-    # THE KEY, to the running guest, WITH ITS EXPECTATION: `a` is the guest's cue key and the
-    # mark is written only by the app's own handler for it. The tool marks the log, posts,
-    # and confirms a NEW matching line -- the program ACTED, in the same reply.
     sent = cast(dict[str, Any], server.send_keys(keys=["a"], expect=KEY_MARK, seconds=30))
     assert sent["status"] == "ok", (
         f"the guest did not act on the key ({KEY_MARK} never logged): the host event did not "
@@ -81,33 +63,20 @@ def test_send_keys_reaches_the_running_guest_and_it_acts(
     assert sent["posted"] == 1 and sent["route"] == "guest", sent
     assert sent["verify"]["seen"] is True and re.search(KEY_MARK, sent["verify"]["line"]), sent
 
-    # THE CONTROL, through the same route on the same run, and it is the MARK that it pins:
-    # the cue line now sits in the log, so a key the program IGNORES (F11 is bound to
-    # nothing) posted with the SAME expectation must come back a MISS. A wait from byte 0
-    # would find the stale cue line and pass; only a wait from the mark misses. Without this
-    # red beside the green, "verified" and "the verifier never looked" print the same thing.
+    # Control: from byte 0 the stale cue line would match; from the mark it misses.
     missed = cast(dict[str, Any], server.send_keys(keys=["f11"], expect=KEY_MARK, seconds=3))
     assert missed["status"] == "ok" and missed["verify"]["verdict"] == "TIMEOUT", missed
     assert "miss on the pattern" in missed["verify"]["note"], missed
     assert missed["posted"] == 1 and missed["verify"]["seen"] is False, missed
-    # AND THE MISS IS THE PROGRAM'S, NOT THE ROUTE'S: when the guest announces every key it
-    # receives (its `key down <NAME>` arrival line), the ignored key is shown to have
-    # ARRIVED -- so "did not react" above means "took it and did nothing", which is the two
-    # facts this tool exists to keep apart.
+    # The ignored key arrived: "no reaction" means "took it and did nothing".
     arrived = cast(dict[str, Any], server.send_keys(keys=["f11"], expect=ARRIVAL_MARK, seconds=5))
     assert arrived["status"] == "ok" and arrived["verify"]["seen"] is True, arrived
 
 
 def test_a_sequence_sends_a_verified_key_to_the_running_guest(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """R1 as ONE `perform`: resume the fresh session, wait for the program to be up, send
-    the cue key with its expectation, and read the log after it. `resume` leaves the guest
-    running and every later step is a running-OK op, so the sequence runs to the end without
-    a stop -- and the key step's reply carries the program's own reaction. This is the
-    `[resume, send_keys]` shape the contract tier models with a double; here it is real."""
+    """One `perform` of resume, wait, verified key and log runs to the end without a stop."""
     _start(tmp_path, monkeypatch)
-    # THE SAME "INPUT LOOP IS LIVE" WAIT AS THE OTHER CASES, spelled as sequence steps: the
-    # boot line, then the settled mark.
     steps: list[dict[str, Any]] = [
         {"op": "resume"},
         {"op": "log_wait", "pattern": BOOT_MARK, "channel": "guest", "seconds": BOOT_WAIT_S},
@@ -120,19 +89,13 @@ def test_a_sequence_sends_a_verified_key_to_the_running_guest(
     out = cast(dict[str, Any], server.perform(steps=steps, settle_seconds=5.0))
     assert out["status"] == "ok" and out["steps_completed"] == len(steps), out
     assert out["ran"][key_step]["reply"]["verify"]["seen"] is True, out["ran"][key_step]
-    # WHAT THE TAIL SAYS IS `resume`'S READING OF A STOP (its reply carries `pc`), not this
-    # case's subject: a boot repaint can read as a halt (the open card on resume's two-step
-    # boot), in which case the executor takes the machine as stopped and writes no tail.
-    # Either shape is accepted here; the four steps ran and the key was seen, which is what
-    # this proves.
+    # A boot repaint can read as a halt: then no tail is written.
     assert out.get("still_running") is True or "pc" in out["ran"][0]["reply"], out
 
 
 def test_drive_looks_acts_and_verifies_in_one_call(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The loop an autonomous session runs: ONE `drive` sends the cue key, verifies the
-    program's reaction from a mark taken before the act, and hands back what the guest wrote
-    since -- the cue line among them, and nothing from before the mark."""
+    """One `drive` sends the cue key, verifies it and returns the lines after the mark."""
     _start(tmp_path, monkeypatch)
     server.resume()
     _input_loop_live()
@@ -145,9 +108,7 @@ def test_drive_looks_acts_and_verifies_in_one_call(
     e9 = out["looked"]["guest"]
     assert e9["available"] is True and e9["lines_written"] >= 1, e9
     assert any(re.search(KEY_MARK, ln) for ln in e9["lines"]), e9
-    # THE CONTROL ON THE MARK, with the filter wide open: the boot line was written before
-    # the mark, so a look that reached before it would carry it. `lines` is wide enough that
-    # the cut cannot be what hides it (the boot line sits first, the cut keeps the last).
+    # Control: the boot line predates the mark.
     assert e9["lines_written"] <= LOOK_LINES, "raise LOOK_LINES: the cut would hide the control"
     assert not any(re.search(BOOT_MARK, ln) for ln in e9["lines"]), \
         "the look reached before the mark"
@@ -155,10 +116,7 @@ def test_drive_looks_acts_and_verifies_in_one_call(
 
 def test_the_stub_announces_itself_once_and_ignored_keys_arrive(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The conf runs the stub and `start` loads its own before the program: the first announces
-    the device and its protocol, the second says it is already resident, and a key the program
-    ignores still ARRIVES (its arrival line) while the cue's line does not, so "did not react"
-    means "took it and did nothing"."""
+    """The stub announces once, a second copy stays out, and an ignored key still arrives."""
     _start(tmp_path, monkeypatch)
     server.resume()
     stub = cast(dict[str, Any], server.log_wait(channel="guest", pattern="STUB  . inject device=",
@@ -180,10 +138,7 @@ def test_the_stub_announces_itself_once_and_ignored_keys_arrive(
 
 def test_send_mouse_puts_the_pointer_where_asked_and_the_program_clicks_there(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """THE MOUSE, END TO END, as the guest sees it: the pointer set at a driver position and a
-    click there, which the program announces with the position the driver gave IT. Two places,
-    so a pointer that did not move cannot pass, and the reply's read-back agrees with the
-    program's own line each time."""
+    """A click at two driver positions is announced by the program at the same positions."""
     _start(tmp_path, monkeypatch)
     server.resume()
     _input_loop_live()
@@ -193,9 +148,7 @@ def test_send_mouse_puts_the_pointer_where_asked_and_the_program_clicks_there(
         assert got["status"] == "ok" and got["arrived"] is True, got
         assert got["pointer"]["mouse"]["x"] == x and got["pointer"]["mouse"]["y"] == y, got
         assert _guest_xy(got["verify"]["line"]) == (x, y), got["verify"]
-    # A CONTROL BY NAME IS HELD TO THE SCREEN THE STUB REPORTS: this program runs a VESA mode
-    # this server does not map, so a control of any mapped screen is refused before anything
-    # is sent, and the pointer stays where the last click left it.
+    # An unmapped VESA mode: a named control is refused before anything is sent.
     from scry_core import screen_map
 
     import dosbox_state as dstate
@@ -209,11 +162,10 @@ def test_send_mouse_puts_the_pointer_where_asked_and_the_program_clicks_there(
         assert "a mode this server does not map now" in aimed["message"], aimed
     after = cast(dict[str, Any], server.send_mouse(x=0, y=0, units="mouse"))
     assert after["status"] == "ok", after
-    # THE REPORTS RODE THE STUB'S OWN LINE: none reached the program's channel, where one once
-    # landed inside a line the program was writing.
+    # Reports ride the stub's line, not the program's.
     seen = cast(dict[str, Any], server.log(pattern=r"STUB  \. mouse", channel="guest"))
     assert seen["status"] == "ok" and seen["lines_total"] == 0, seen
-    # THE CONTROL, off the same log: the stub's own announce is there to be found.
+    # Control: the stub's announce is found.
     said = cast(dict[str, Any], server.log(pattern=r"STUB  \. inject device=present",
                                            channel="guest"))
     assert said["status"] == "ok" and said["lines_total"] >= 1, said

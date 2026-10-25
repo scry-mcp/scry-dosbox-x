@@ -1,28 +1,16 @@
-"""COMMENTS: a note on a place in the program, kept with the conf's declarations and carried to and
-from the comment file a project versions beside its symbol file.
+"""COMMENTS: notes on places in the program, kept with the conf's declarations and carried to
+and from the comment file versioned beside the symbol file.
 
-A comment is declared by a symbol or by a raw `SEG:OFF`. By symbol it is placed against whatever
-table is loaded when it is read, so it follows the symbol through a rebuild; by address it stays
-where it was put and is `stale` while the batch that described it is not held unchanged
-(`dosbox_declarations.raw_staleness`).
-Nothing is armed: the debugger has no comment of its own, so a comment is placed when it is
-listed or matched and never fed to the machine.
+By symbol a comment follows the symbol through a rebuild; by `SEG:OFF` it stays where it was put
+and is `stale` while the batch that described it is not held unchanged. Nothing is armed.
 
-THE PLACE IS THE LINEAR ADDRESS, so two spellings that alias one byte are one place: `start`, its
-`0824:000B` and `0814:010B` all name the same comment. A symbol's linear is what `symbols_find`
-answers for it; a raw `SEG:OFF` is read in the mode the machine is in, as every `SEG:OFF` this
-server takes, real mode by arithmetic and protected mode through the selector's base. A place this
-instant cannot work out (a name this table lacks, a selector whose base is not readable now) is
-identified by its ref, so it still has exactly one comment.
+The place is the linear address, so aliasing spellings (`start`, `0824:000B`, `0814:010B`) are
+one comment. A place this instant cannot work out is identified by its ref.
 
-WHICH REFS ALIAS ONE BYTE, AND WHETHER A RAW ONE LANDS AT ALL, DEPENDS ON THE INSTANT: the table
-loaded and the mode of the stop. So a save refuses two comments at one place only where it can
-place both, and a load refuses a file for neither: a file saved before `symbols_load`, or on a
-running guest, holds rows a later stop finds at one place, and they are kept, as a rebuild keeps
-them, and named; a row saved in protected mode is past FFFF at the real-mode park every session
-starts at (and an interrupt vector's segment is the null selector in protected mode), so it is
-kept `unarmable`, named, and placed at a stop whose mode holds it. A call is answered at this
-stop, so `comment_write(method="add")` still refuses such an address.
+Aliasing, and whether a raw ref lands at all, depend on the table loaded and the stop's mode. So
+a save refuses two comments at one place only where it can place both, and a load refuses a file
+for neither: such rows are kept and named, and a row saved in protected mode is kept `unarmable`
+until a stop whose mode holds it. `comment_write(method="add")` still refuses such an address.
 """
 from __future__ import annotations
 
@@ -77,10 +65,8 @@ _RUNNING_WHY = ("the machine runs: a selector's base is read at a stop, so this 
 
 
 class _Places:
-    """Where each comment lands at this instant, asking the machine at most once: the survey
-    that names the mode (and, in protected mode, the selectors' bases) is taken only when a raw
-    address needs it and only while the machine is stopped, so a listing on a running guest
-    types nothing."""
+    """Where each comment lands at this instant; the machine is surveyed at most once, only for
+    a raw address and only while stopped, so a listing on a running guest types nothing."""
 
     def __init__(self, session: ds.Session) -> None:
         self.session = session
@@ -98,11 +84,8 @@ class _Places:
         return None if last is None else last[0]
 
     def of(self, decl: dec.Declaration) -> dict[str, Any]:
-        """A held comment's place: `where` its ref lands, then `stale` for a raw address over
-        another build, still with the `linear` it was given. One this stop cannot place (a
-        load keeps those) keeps `refuse` and says it waits for a stop that can. One placed in
-        the other cpu mode is not placed here at all: it waits for a stop of its own; one no
-        stop has placed waits for a call that places it."""
+        """A held comment's place: `where` its ref lands, `stale` for a raw address over another
+        build. One this stop cannot place keeps `refuse` and says what it waits for."""
         again = "Comment it again, or load its file,"
         if (mode := placement.waits(decl, self.mode)) not in (None, dec.UNPLACED):
             return {"state": "unarmable", "why": placement.waits_why(mode, again)}
@@ -110,7 +93,7 @@ class _Places:
         if "refuse" in place:
             place["why"] = f"{place['refuse']}; {place['waits']}"
         elif mode == dec.UNPLACED and "linear" in place:
-            # This stop could place it, but no stop has: placing is a write, made by a call.
+            # Placing is a write, made by a call.
             return {"state": "unarmable", "why": placement.waits_why(mode, again)}
         if "linear" in place and (stale := placement.staleness(
                 decl, lambda: place["linear"])) is not None:
@@ -118,10 +101,8 @@ class _Places:
         return place
 
     def where(self, by: str, ref: str) -> dict[str, Any]:
-        """`state` and, once placed, `linear` (an int) for a ref; `why` where the state is not
-        `resolved`. A place that breaks a rule a call must refuse (an offset past what its
-        segment holds) comes back with `refuse` set to the words of that refusal, and `waits`
-        to the stop a held row of it waits for."""
+        """`state`, `linear` once placed, `why` unless `resolved`. A place a call must refuse
+        carries `refuse` (the refusal's words) and `waits` (the stop a held row waits for)."""
         if by == "symbol":
             return _symbol_place(ref)
         seg, off = placement.parse_seg_off(ref)
@@ -143,8 +124,8 @@ class _Places:
         try:
             base, limit = self._segs.base(seg), self._segs.limit(seg)
         except ds.Invalid as e:
-            # A SELECTOR THAT ADDRESSES NOTHING (null, or no descriptor) is the caller's to fix
-            # and refused; only a base this stop cannot read now leaves the place for later.
+            # A selector that addresses nothing is the caller's to fix; only an unreadable base
+            # leaves the place for later.
             if e.code == "bad_argument":
                 return {"state": "unarmable", "why": str(e), "refuse": str(e),
                         "waits": _waits_for_a_selector(seg, off)}
@@ -161,8 +142,7 @@ class _Places:
 
 
 def _waits_for_a_selector(seg: int, off: int) -> str:
-    """The stop a raw row waits for when this protected-mode stop has no descriptor for its
-    selector: a real-mode one reads the selector as a paragraph, up to offset FFFF."""
+    """The stop a raw row waits for when this protected-mode stop has no descriptor for it."""
     real = off <= dcons.offset_ceiling(dcons.REAL_MODE)
     if seg <= code.NULL_SELECTOR_MAX:
         return (f"kept for a real-mode stop, where {seg:04X} is a paragraph" if real else
@@ -173,8 +153,7 @@ def _waits_for_a_selector(seg: int, off: int) -> str:
 
 
 def _symbol_place(name: str) -> dict[str, Any]:
-    """A symbol's place against the table loaded now: the linear `symbols_find` answers for
-    it, or why there is none."""
+    """A symbol's place against the table loaded now, or why there is none."""
     if not STATE.table:
         return {"state": "unresolved", "why": "no symbol table is loaded: `symbols_load` one and "
                                               "this comment is placed against it"}
@@ -221,9 +200,8 @@ def _row(decl: dec.Declaration, place: dict[str, Any]) -> dict[str, Any]:
 
 def _new(places: _Places, by: str, ref: str, text: str,
          created_at: str | None = None) -> dec.Declaration:
-    """A comment of this session, of the batch that describes its place at this stop and of
-    this stop's mode, with the conf it was placed over; stamped now unless the stamp is carried
-    over (from a file, or kept through a move to this build)."""
+    """A comment of this session, batch, stop mode and conf; stamped now unless `created_at`
+    is carried over."""
     linear = places.where(by, ref).get("linear")
     decl = dataclasses.replace(arming.declare("comment", by, ref, linear,
                                               cpu=places.mode() if linear is not None else None,
@@ -236,10 +214,9 @@ def _new(places: _Places, by: str, ref: str, text: str,
 
 def _taken(places: _Places, old: dec.Declaration, text: str,
            created_at: str | None) -> dec.Declaration:
-    """A held comment given `text` at this stop: placed here, as a new one is. A raw row placed
-    in the other cpu mode that this stop cannot place keeps that mode, for the stop of its own
-    that places it; with a map held, where it would be stamped `pending` and lost to the next
-    session, it keeps its whole record and only its text and date change."""
+    """A held comment given `text` at this stop, placed as a new one is. A row this stop cannot
+    place keeps its cpu mode; one that would be stamped `pending` keeps its whole record and
+    changes only text and date."""
     new = _new(places, old.by, old.ref, text, created_at=created_at)
     if placement.waits(old, places.mode) in (None, dec.UNPLACED) \
             or "linear" in places.where(old.by, old.ref):
@@ -250,23 +227,17 @@ def _taken(places: _Places, old: dec.Declaration, text: str,
 
 
 def _this_sessions(decl: dec.Declaration, places: _Places) -> bool:
-    """Whether a raw comment already carries what this stop would give it (`_taken`): this
-    session, the batch that describes its place, this stop's mode, so a load giving it the
-    text it holds has nothing to take."""
+    """Whether a raw comment already carries what `_taken` would give it at this stop."""
     new = _taken(places, decl, decl.text, decl.created_at)
     return (decl.origin, decl.fingerprint, decl.conf_fingerprint, decl.cpu_mode) == (
         new.origin, new.fingerprint, new.conf_fingerprint, new.cpu_mode)
 
 
 def park_rows_take_the_map(session: ds.Session) -> str | None:
-    """Stamp this session's raw comments that no batch described when they were placed, and
-    its raw comments and breakpoints declared where their place was not known
-    (`dec.PENDING_STAMP`), with what describes them now, so the next session judges them by it
-    like any raw row: a protected-mode program parks in real mode, where its comment file
-    loads, and its map can only be loaded at the protected-mode stop that follows, so the
-    batch that arrives is what those rows never had, not another build. Another session's row
-    is not taken: nothing says which map it was placed under. The store's write error, if it
-    could not be written (nothing taken), else None."""
+    """Stamp this session's raw comments and breakpoints that no batch described when placed
+    (`dec.PENDING_STAMP`) with what describes them now: a protected-mode program parks in real
+    mode, where its comment file loads, and its map arrives only at the later protected-mode
+    stop. Another session's rows are left. Returns the store's write error, else None."""
     store, conf = STATE.store, STATE.conf_fingerprint
     if store is None or STATE.session_origin is None or conf is None \
             or not session.at_debugger():
@@ -306,16 +277,13 @@ def _apply(store: dec.DeclarationStore, **changes: Any) -> None:
 
 
 def _own_ref(decl: dec.Declaration) -> str:
-    """A held comment's ref as a call spells it: a store edited by hand may hold an address
-    short."""
+    """A held comment's ref as a call spells it (a hand-edited store may hold one short)."""
     return dec.canonical_ref(decl.ref, decl.by)
 
 
 def _reach(held: list[tuple[dec.Declaration, dict[str, Any]]], canonical: str,
            key: tuple[str, Any]) -> tuple[dec.Declaration, dict[str, Any]] | None:
-    """The comment a call reaches: the one whose own ref it spells, else the first held at the
-    place it names. Several comments a rebuild brought to one place are all kept, and a call
-    that spells one of their refs reaches that one."""
+    """The comment a call reaches: the one whose ref it spells, else the first at its place."""
     own = next((h for h in held if _own_ref(h[0]) == canonical), None)
     if own is not None:
         return own
@@ -328,8 +296,7 @@ def _placed_comments(places: _Places,
 
 
 def _the_ref(ref: str, places: _Places) -> tuple[str, str, dict[str, Any]]:
-    """A caller's ref as stored (`by`, canonical spelling) and its place now; an ambiguous name
-    or a place that breaks a rule is refused here, before anything is stored."""
+    """A caller's ref as stored (`by`, canonical) and its place now; refused here if bad."""
     by = placement.decide_by(ref)
     canonical = dec.canonical_ref(ref, by)
     place = places.where(by, canonical)
@@ -372,8 +339,7 @@ def add_comment(session: ds.Session, ref: str, text: str) -> dict[str, Any]:
 
 
 def _store_fields(store: dec.DeclarationStore) -> dict[str, Any]:
-    """The declaration store a comment call read or changed, in one block: `path` alone names a
-    file a tool wrote, so the store's own file sits one level down."""
+    """The declaration store a call read or changed; `path` alone names a file a tool wrote."""
     return {"declarations": {"persistent": True, "path": str(store.path)}}
 
 
@@ -410,9 +376,8 @@ def delete_comment(session: ds.Session, ref: str) -> dict[str, Any]:
 # ------------------------------------------------------------------------------- the file
 
 def _judged_dest(dest: str, store: dec.DeclarationStore) -> tuple[Path, list[cf.Row] | None]:
-    """`dest` as a file this call may write, and the rows of the comment file already there
-    (None when there is none). Refused, and left as it is: a link, anything but a regular
-    file, a file that is not a whole comment file, and the store's own file."""
+    """`dest` as a file this call may write, and the comment rows already there (None if none);
+    a link, a non-regular file, a non-comment file and the store's own file are refused."""
     path = paths.absolute("dest", dest)
     try:
         if path.is_symlink():
@@ -466,9 +431,7 @@ def _sharing(placed: list[tuple[dec.Declaration, dict[str, Any]]]) -> list[tuple
 
 
 def _one_per_place(placed: list[tuple[dec.Declaration, dict[str, Any]]]) -> None:
-    """A file names each place once, so two comments this instant places at one byte (a
-    rebuild brings a raw address and a symbol together) are refused by name before anything
-    is written."""
+    """A file names each place once: two comments at one byte are refused before any write."""
     if sharing := _sharing(placed):
         other, ref = sharing[0]
         raise ds.Invalid("bad_argument",
@@ -526,9 +489,7 @@ def load_comments(session: ds.Session, given: str) -> dict[str, Any]:
     replaced: list[dict[str, Any]] = []
     unchanged = 0
     for decl, place in incoming:
-        # A ROW REACHES THE COMMENT ITS REF SPELLS before an alias of it can, and each held
-        # comment is reached once: two rows at one place are two comments, never two
-        # replacements of one.
+        # A row reaches the comment its ref spells before an alias can; each is reached once.
         open_ = [h for h in held if id(h[0]) not in reached_ids
                  and (_own_ref(h[0]) == decl.ref or _own_ref(h[0]) not in spelled)]
         reached = _reach(open_, decl.ref, _key(decl.ref, place))
@@ -543,11 +504,8 @@ def load_comments(session: ds.Session, given: str) -> dict[str, Any]:
             continue
         unchanged += 1
         if old.by == "address" and not _this_sessions(old, places):
-            # TAKEN INTO THIS SESSION, ref and stamp kept: the file says this place holds this
-            # text in the build it is loaded into, so a row of another build is brought to this
-            # one, and a row an earlier session left at the park becomes this session's, which
-            # the map that follows then takes. Judged by the record and not by the listed
-            # state, which a row this stop cannot place never reaches.
+            # The file vouches for this text in this build: adopt the row into this session.
+            # Judged by the record, not the listed state, which an unplaceable row never reaches.
             replaces.append((old, _taken(places, old, old.text, old.created_at)))
     adds = [d for d, _ in added]
     _apply(store, adds=adds, replaces=replaces)

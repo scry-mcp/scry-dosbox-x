@@ -1,28 +1,15 @@
-"""How a session is launched: what it is launched with (`Launch`), judged before anything runs, the
-command line built from it, the environment and the input listener it is given, and the files a
-saved state carries beside it.
+"""How a session is launched: `Launch`, its command line and environment, the input listener,
+and the files a saved state carries.
 
-HEADLESS IS THE APPLICATION'S OWN SETTING, not an environment variable reached around
-it with.  `videodriver` is a DOSBox-X `[sdl]` config property whose own description
-reads "Forces a video driver (e.g. windib/windows, directx, x11, fbcon, dummy, etc)
-for the SDL library to use", so `-set "sdl videodriver=dummy"` is the sanctioned
-mechanism.  It alone yields `SDL: version 2.32.70, Video dummy, Audio
-coreaudio` -- note it keeps REAL AUDIO, which `-silent` does not, and `-silent` also
-exits after AUTOEXEC.BAT and so cannot host a session at all.
+Headless is `-set "sdl videodriver=dummy"`: unlike `-silent` it keeps real audio, and
+`-silent` exits after AUTOEXEC.BAT.
 
-EVERY LAUNCH IS BOUNDED, and that is not belt-and-braces.  DOSBox-X does
-NOT refuse an option it does not know -- `-loadstate 1` never returns at all.
-So a session handed a bad flag does not fail, it hangs, and the bound is what stands
-between that and an emulator running until the machine is rebooted.
+Every launch is bounded: DOSBox-X does not refuse an option it does not know (`-loadstate 1`
+never returns), so a bad flag hangs, and the bound is all that ends it.
 
-THE COMMAND-LINE VOCABULARY IS FIXED; THE VALUES IN IT ARE THE CALLER'S.  Caller strings
-land in argv: the flags, the program, the logfile, the captures and state directories.
-`validate` checks the conf, the cwd, the logfile's directory, the flags and the bound; `start`
-has judged every path absolute and created the two directories first; `program` is a DOS
-command line and is not inspected.  No shell is involved (`Popen`
-takes a list), so a caller string reaches the emulator as one argument and never as a
-command; that is the whole of the guarantee, said here because this is the paragraph a
-reviewer reads to decide exactly that question.
+Caller strings land in argv. `validate` checks the conf, cwd, logfile directory, flags and
+bound; `start` has made the two directories absolute and created them; `program` is a DOS
+command line and is not inspected. No shell is involved, so a caller string is one argument.
 """
 
 from __future__ import annotations
@@ -45,33 +32,21 @@ import dosbox_binary as binaries
 import dosbox_control as control
 import dosbox_paths as paths
 
-# A bound so large it bounds nothing is the failure this exists to prevent, so there
-# is a ceiling as well as a floor. Four hours is far past any interactive session and
-# still finite.
+# A ceiling as well as a floor: a bound so large it bounds nothing is no bound.
 MAX_SECONDS = 4 * 60 * 60
-# THE PORTS COM1 MAY DIAL: past the privileged range, which an unprivileged emulator cannot bind.
 INPUT_PORT_MIN, INPUT_PORT_MAX = 1024, 65535
 
 
 @dataclass
 class Launch:
-    """Everything a session needs to be reproducible, resolved by the CALLER.
-
-    Nothing here defaults to a path inside anyone's home directory. The conf, the
-    working directory and the window flags all come from outside, because this server
-    is meant to be published and a default that only works on its author's machine is
-    a private layout leaking into somebody else's install.
-    """
+    """Everything a session needs to be reproducible, resolved by the caller."""
 
     conf: Path
     cwd: Path
     seconds: int
     watched: bool = False
-    # WHERE A WATCHED WINDOW GOES, as the host's placement helper answered (`start` asks it).
     window_flags: list[str] = field(default_factory=list)
-    # THE CALLER'S EMULATOR FLAGS (a `-set` of a fixed clock, the quit warning back), in any
-    # mode. Placement is `window_flags`; these are everything else, so a headless session
-    # carries them too.
+    # Every flag but placement, so a headless session carries them too.
     flags: list[str] = field(default_factory=list)
     # `[dos] break on int3`: a guest's own `int 3` stops at the debugger.
     break_on_int3: bool = False
@@ -79,31 +54,21 @@ class Launch:
     capture_video: bool = False
     captures_dir: Path | None = None
     logfile: Path | None = None
-    # THE EMULATOR, the absolute path `start` resolved (`dosbox_binary`); the bare name is the
-    # default a hand-built `Launch` runs, the PATH's.
+    # The absolute path `start` resolved; the bare name is the PATH's.
     binary: str = binaries.EXECUTABLE_NAME
-    # THE INPUT ROUTE: a TCP port the session listens on and the emulator's COM1 dials
-    # (`serial1=nullmodem server:`), which the resident stub in `guest/INJECT.COM` reads its
-    # commands from; 0 has the session's listener take a free one, which the session's
-    # `launch` then carries. The conf's autoexec
-    # runs the stub before its program, or `program` has it loaded first.
+    # TCP port the emulator's COM1 dials, read by `guest/INJECT.COM`; 0 takes a free one.
     input_port: int | None = None
-    # THE DRIVE A `program` SESSION MOUNTS THE STUB ON (`stub_drive`), chosen once at `start` so
-    # what the session says later is the drive it used, whatever the conf holds by then.
+    # Chosen once at `start`, so later replies name the drive used.
     stub_drive: str = ""
-    # WHETHER THE LAUNCH STAYS BEHIND the owner's front app (`judge_background`).
     background: bool = True
-    # WHERE THE SAVE STATES LIVE: the slot directory the build's `-savedir` option names, and
-    # the directory the state tools write `<name>.sav` into. None: `save/` under `cwd`, the
-    # emulator's own default, which the session names to the commands in full.
+    # The `-savedir` slot directory, where state tools write; None: `save/` under `cwd`.
     state_dir: Path | None = None
-    # THE DEBUGGER CHANNEL'S PORT (`dosbox_control`), the session's own listener's, set by the
-    # session and never by a caller: it is how a running guest is broken in on.
+    # The session's own debugger listener, never a caller's.
     control_port: int | None = None
 
 
 def digest(path: Path) -> str:
-    """A short content digest, so a session can say the conf changed under it."""
+    """A short content digest of the conf."""
     return hashlib.sha256(path.read_bytes()).hexdigest()[:16]
 
 
@@ -111,9 +76,7 @@ _digests: dict[Path, tuple[tuple[int, int, int], str]] = {}
 
 
 def current_digest(path: Path) -> str:
-    """`digest`, read again only when the file's size, mtime or inode moved: every reply
-    carries whether the conf changed, and a hash per reply is a read of the whole file per
-    call, twice per call a list steps through."""
+    """`digest`, re-read only when the file's size, mtime or inode moved: every reply carries it."""
     st = path.stat()
     key = (st.st_size, st.st_mtime_ns, st.st_ino)
     seen = _digests.get(path)
@@ -123,42 +86,23 @@ def current_digest(path: Path) -> str:
 
 
 def fingerprint(conf: Path) -> str:
-    """The stamp of the conf, the build before any map: a batch's stamp hashes it in
-    (`dosbox_declarations.Build.stamp`)."""
+    """The stamp of the conf."""
     return hashlib.sha256(conf.read_bytes() if conf.exists()
                           else str(conf).encode()).hexdigest()[:16]
 
 
 def build_argv(launch: Launch) -> list[str]:
-    """The command line: our options with the caller's values, then the caller's own `flags`.
-
-    `validate` judges the values first (`program`, a DOS command line, and the two directories
-    `start` creates excepted), because
-    an argv token DOSBox-X does not recognise does not fail, it hangs; and `flags` may name no
-    option a named argument owns (`OWNED_OPTIONS`, `OWNED_SETS`), so a caller cannot undo one
-    argument through another.
-    """
+    """The command line: our options with the caller's values, then the caller's `flags`."""
     argv = [launch.binary, "-conf", str(launch.conf),
             "-time-limit", str(launch.seconds),
             "-break-start", "-fastlaunch",
-            # NO QUIT-WARNING DIALOG: with a program loaded the emulator answers a TERM by
-            # asking whether to quit anyway, and a session nobody is watching then sits
-            # behind that question until the SIGKILL. The setting is `auto` by default and
-            # a conf does not carry it, so it goes here, BEFORE the caller's flags: a later
-            # `-set` wins, for the one caller who wants the dialog back.
+            # With a program loaded a TERM raises a quit dialog nobody answers.
             "-set", "dosbox quit warning=false"]
-    # THE REMARK DIALOG IS OFF IN EVERY SESSION, for the same reason and in the same place:
-    # with `saveremark` at its default a `Save state` opens a dialog asking for
-    # a remark, the dialog takes the SDL window with it (no window, no menu bar, the
-    # process spinning) and nothing is written, stopped or running alike. Before the
-    # caller's flags, so a later `-set` wins. The slot directory is the caller's when they
-    # named one.
+    # With `saveremark` on, `Save state` opens a dialog that hangs the window.
     argv += ["-set", "dosbox saveremark=false"]
     if launch.state_dir is not None:
         argv += ["-savedir", str(launch.state_dir)]
     if not launch.watched:
-        # The application's own headless setting. See this module's docstring for why
-        # it is this and not SDL_VIDEODRIVER, and not -silent.
         argv += ["-set", "sdl videodriver=dummy"]
     else:
         argv += launch.window_flags
@@ -167,13 +111,8 @@ def build_argv(launch: Launch) -> list[str]:
     if launch.logfile is not None:
         argv += ["-set", f"log logfile={launch.logfile}"]
     if launch.input_port is not None:
-        # THE INPUT ROUTE'S TWO SWITCHES, as `-set` overrides so the caller's conf need not
-        # carry them: the integration device lives in the `[cpu]` section (upstream's own
-        # Windows notes say so; under `[dosbox]` it is silently ignored), and
-        # COM1 becomes a TCP client of the session's own listener. TRANSPARENT, because
-        # otherwise the nullmodem reads a 0xFF from the socket as the escape of its own
-        # line-status protocol, and a pointer coordinate holding that byte would arrive changed.
-        # The stub is the conf's to run, or `program`'s.
+        # The integration device is read from `[cpu]`; under `[dosbox]` it is ignored.
+        # `transparent`: else the nullmodem takes a 0xFF as its own escape.
         argv += ["-set", "cpu integration device=true",
                  "-set", f"serial serial1=nullmodem server:{INPUT_HOST} port:{launch.input_port} "
                          "transparent:1"]
@@ -181,44 +120,28 @@ def build_argv(launch: Launch) -> list[str]:
         argv += ["-set", f"dosbox captures={launch.captures_dir}"]
     if launch.control_port is not None:
         argv += ["-set", f"dosbox mcp_server={launch.control_port}"]
-    # THE CALLER'S FLAGS COME AFTER EVERY `-set` OF OUR OWN, so one of the same key wins.
+    # After every `-set` of ours, so the caller's of the same key wins.
     argv += launch.flags
     if launch.program:
-        # DX-CAPTURE runs the program WITH video capture and stops when it exits,
-        # which is the only screen capture DOSBox-X offers with nobody at the
-        # keyboard: the still screenshot is a mapper action and needs a keypress.
-        #
-        # A CONSTRAINT ON THE CONF: `-c` runs AFTER the
-        # conf's `[autoexec]` section, so a conf whose autoexec ends in `exit` quits
-        # the emulator before this command is ever reached. Both ways hold --
-        # `-c "ECHO ran > C:\DASHC.TXT"` against such a conf leaves no file, and the
-        # same command with `-noautoexec` leaves none either, because then C: is not
-        # mounted. So `program` needs a conf that mounts what it needs and does NOT
-        # run-and-exit; `captures()` says this when nothing appears, because the
-        # symptom is an empty directory and the cause is three files away.
+        # DX-CAPTURE is the only capture with nobody at the keyboard. `-c` runs after the
+        # conf's `[autoexec]`, so a conf ending in `exit` never reaches `program`.
         cmd = f"DX-CAPTURE /V {launch.program}" if launch.capture_video else launch.program
         if launch.input_port is not None:
-            # THE STUB GOES IN FIRST, by the same `-c` route: these run in order after the
-            # conf's autoexec, so the program this launches finds it resident. A conf that runs
-            # its own program from the autoexec never reaches here and carries the stub line.
+            # The stub goes in first so the program finds it resident.
             drive = launch.stub_drive or stub_drive(launch.conf)
             argv += ["-c", f'mount {drive} "{GUEST_DIR}"', "-c", f"{drive}:\\INJECT.COM"]
         argv += ["-c", cmd]
     return argv
 
 
-# THE STUB'S HOME, shipped beside this module, and the drives a `program` session may mount it
-# on: late in the alphabet first, where a conf is least likely to mount, and never one the conf's
-# `[autoexec]` already mounted, since `-c` runs after it and would run whatever is there.
+# Drives for the stub: late first, where a conf rarely mounts, never one its `[autoexec]` mounted.
 GUEST_DIR = Path(__file__).resolve().with_name("guest")
 STUB_DRIVES = "YXWVUTSRQPONMLKJIHGFED"
 MOUNTING = frozenset({"mount", "imgmount", "subst"})
 
 
 def conf_mounts(conf: Path) -> list[str]:
-    """The drive letters the conf's `[autoexec]` mounts (`mount`, `imgmount`, `subst`), in its
-    order: each command's first argument that is a letter alone, with or without `:`, so an
-    option and its value before it (`mount -t cdrom d ...`) are passed over."""
+    """The drive letters the conf's `[autoexec]` mounts, in order."""
     found: list[str] = []
     section = ""
     try:
@@ -238,8 +161,7 @@ def conf_mounts(conf: Path) -> list[str]:
 
 
 def stub_drive(conf: Path) -> str:
-    """The drive `program` mounts the stub on: the first of `STUB_DRIVES` the conf leaves free,
-    or a refusal naming the conf's mounts."""
+    """The first of `STUB_DRIVES` the conf leaves free, else a refusal."""
     mounted = conf_mounts(conf)
     free = [d for d in STUB_DRIVES if d not in mounted]
     if not free:
@@ -251,27 +173,23 @@ def stub_drive(conf: Path) -> str:
     return free[0]
 
 
-INPUT_CONNECT_S = 8.0     # how long a session waits for the emulator's serial port to dial it
+INPUT_CONNECT_S = 8.0     # seconds to wait for the emulator's serial port to dial
 
 
 INPUT_HOST = control.LOCAL_HOST
 
 
-# THE BACKGROUND LAUNCH (`live_host.BACKGROUND_VAR` says why). It reaches SDL3 through the
-# sdl2-compat layer this build links: a shared window launched with it never comes to the front.
+# A shared window launched with it never comes to the front (`live_host.BACKGROUND_VAR`).
 BACKGROUND_VAR = live_host.BACKGROUND_VAR
 
 
 def judge_background(background: bool | None, watched: bool) -> bool:
-    """Whether the emulator is launched behind: `background` when given, else behind for a
-    session nobody watches and in front for a shared one."""
+    """`background` when given, else behind unless the session is watched."""
     return not watched if background is None else background
 
 
 def launch_environment(background: bool) -> dict[str, str]:
-    """The environment the emulator is spawned with: this server's, the terminal the debugger
-    draws in, and the background hint set or REMOVED, never inherited, so a server started with
-    the hint in its own environment cannot launch a `background=False` session behind."""
+    """The spawn environment; the background hint is set or removed, never inherited."""
     spawned = dict(os.environ, TERM="xterm-256color", LINES="50", COLUMNS="132")
     if background:
         spawned[BACKGROUND_VAR] = "1"
@@ -281,16 +199,12 @@ def launch_environment(background: bool) -> dict[str, str]:
 
 
 def binary_facts(resolved: binaries.Resolved, seconds: float) -> dict[str, Any]:
-    """The build's facts (`scry_core.binaries.facts`), its `-version` probe spawned as a session
-    is (this build starts on an option it does not know, so the probe launches behind) and
-    bounded by `seconds`."""
+    """The build's facts, its `-version` probe spawned behind and bounded."""
     return binaries.facts(resolved, env=launch_environment(True), seconds=seconds)
 
 
 def listen_input(port: int) -> socket.socket:
-    """The session's end of the serial input route, LISTENING before the emulator exists
-    (`dosbox_control.listen_local`, which says why that way round): 0 takes the kernel's pick;
-    a port already taken is refused before anything is spawned."""
+    """The input route's listener, up before the emulator exists; 0 takes any free port."""
     try:
         return control.listen_local(port)
     except OSError as e:
@@ -304,10 +218,7 @@ def listen_input(port: int) -> socket.socket:
 
 def accept_input(listener: socket.socket, seconds: float,
                   exited: Callable[[], int | None]) -> socket.socket:
-    """The emulator's dial on the input route, accepted within the bound, then the listener
-    closed. A refusal here is raised INTO `Session.__init__`'s `except BaseException`, which
-    kills the child it has just spawned: a session on this route with no socket is one whose
-    guest will block the moment its stub polls the port."""
+    """The emulator's dial, accepted within the bound, then the listener closed."""
     port = listener.getsockname()[1]
     try:
         got = control.await_dial(listener, seconds, exited)
@@ -325,8 +236,7 @@ def accept_input(listener: socket.socket, seconds: float,
     return got
 
 
-# WHAT A NAMED ARGUMENT OWNS, so `flags` cannot retune it: the options this server passes,
-# and the `-set` keys it derives from an argument, each with the argument that sets it.
+# What a named argument owns, so `flags` cannot retune it, each with the argument that sets it.
 OWNED_OPTIONS = {"-conf": "conf", "-time-limit": "session_seconds", "-break-start": "start",
                  "-savedir": "state_dir", "-c": "program"}
 
@@ -336,15 +246,13 @@ OWNED_SETS = {"sdl videodriver": "shared", "dos break on int3": "break_on_int3",
               "cpu integration device": "input_port", "dosbox captures": "captures_dir"}
 
 
-# THE `-set` KEYS THE SESSION ITSELF OWNS, with no argument behind them: a caller's value would
-# point the debugger channel somewhere the session is not listening.
+# Keys the session owns with no argument behind them: a caller's value would point the debugger
+# channel where the session is not listening.
 SESSION_SETS = {"dosbox mcp_server"}
 
 
 def _set_key(token: str) -> str:
-    """The `section key` a `-set` token names, however the value is joined to it: DOSBox-X
-    takes `section key=value` and also `section key value`, so the key is the longest owned
-    one the words start with, else the words before an `=`."""
+    """The `section key` a `-set` token names; DOSBox-X also takes `section key value`."""
     words = token.split("=", 1)[0].lower().split()
     for n in range(len(words), 1, -1):
         key = " ".join(words[:n])
@@ -354,18 +262,13 @@ def _set_key(token: str) -> str:
 
 
 def check_flags(name: str, flags: list[str]) -> None:
-    """Argv tokens a caller hands in, each a separate non-empty string, never a glued option
-    and value, and a `-set` never shredded. Both malformations fail SILENTLY in DOSBox-X."""
+    """Argv tokens are separate non-empty strings, never a glued option and value; DOSBox-X
+    hangs or ignores both."""
     for i, flag in enumerate(flags):
         if not isinstance(flag, str) or not flag:
             raise Invalid("bad_argument",
                 f"{name} must be separate non-empty strings; got {flag!r}")
-        # AND THE GLUED PAIR, WHICH THE CHECK ABOVE CANNOT SEE: `['-set "sdl display=1"']` is
-        # a non-empty `str`. The rule is exact rather than a heuristic about quotes: an OPTION
-        # is one word, a VALUE may hold spaces. `-set` and `sdl display=1` are two tokens and
-        # both are fine; `-set sdl display=1` as one token is not an argument DOSBox-X
-        # recognises, and it HANGS on those rather than refusing them, so the only
-        # thing that would end that session is its own bound.
+        # An option is one word, a value may hold spaces.
         if flag.startswith("-") and flag.split() != [flag]:
             raise Invalid("bad_argument",
                 f"{flag!r} is an option and a value GLUED into one token. "
@@ -395,27 +298,22 @@ def check_flags(name: str, flags: list[str]) -> None:
 
 
 def _judge_files(launch: Launch) -> None:
-    """The launch's files on the filesystem: the conf there, the working directory there, the
-    logfile's directory there and the logfile neither a directory, nor the conf, nor one of the
-    directories `start` creates."""
+    """The conf, cwd and logfile directory exist; the logfile collides with none of them."""
     if not launch.conf.is_file():
         raise Invalid("bad_argument", f"conf: no conf at {launch.conf}: a session that cannot be "
                       f"reproduced is refused before it exists")
     if not launch.cwd.is_dir():
-        # It is guarded HERE for the same reason the conf is. A missing cwd makes
-        # `Popen` raise, and that raise lands after the pseudo-terminal has been
-        # opened -- two leaked descriptors on an object nothing can reach to close.
+        # A missing cwd makes `Popen` raise after the pty is opened.
         raise Invalid("bad_argument",
             f"cwd: no working directory at {launch.cwd}: a DOSBox-X conf mounts "
                       f"relative paths, so the directory is part of what makes the "
                       f"session reproducible")
     logfile = launch.logfile
     if logfile is not None:
-        # A LINK IS JUDGED BY THE FILE IT NAMES, the one the emulator opens.
+        # A link is judged by the file it names, the one the emulator opens.
         log = paths.resolved("logfile", logfile)
         if not log.parent.is_dir() or log.is_dir():
-            # The emulator opens its log afresh and says nothing when it cannot: a log under a
-            # missing directory surfaced later as "no log", never as the path that was wrong.
+            # The emulator says nothing when it cannot open its log.
             named = f" (a link to {log})" if logfile.is_symlink() else ""
             raise Invalid("bad_argument",
                 f"logfile: {logfile}{named} " + ("is a directory" if log.is_dir() else
@@ -432,18 +330,8 @@ def _judge_files(launch: Launch) -> None:
 
 
 def validate(launch: Launch) -> None:
-    """Everything that makes a session refusable, decided BEFORE any process exists.
-
-    IT IS A FUNCTION OF ITS OWN AND NOT A FEW LINES INSIDE `Session.__init__`, because
-    guards in the constructor can only be tested by CONSTRUCTING a session -- fine while
-    they hold, and a disaster the moment one is removed: the break that deletes a
-    guard makes the same test START a real emulator that nothing then closes, and the
-    missing-bound case would carry `-time-limit 0`, which is not a short bound but NO
-    bound at all.
-
-    As a pure function it is testable without a process existing, so the break that
-    removes a guard makes a test FAIL rather than spawn.
-    """
+    """Everything that makes a session refusable, decided before any process exists, so a
+    removed guard fails a test instead of starting a real emulator."""
     try:
         _judge_files(launch)
     except (OSError, ValueError) as e:     # a stat refused (before 3.14 it raises, not answers)
@@ -473,18 +361,14 @@ def validate(launch: Launch) -> None:
                       f"{INPUT_PORT_MIN} and {INPUT_PORT_MAX}; got {launch.input_port}")
 
 
-# A STATE'S NAME is a file name under the state directory, so it is held whole (`fullmatch`: a
-# `$` would let a trailing newline through) and to a length a file system takes everywhere.
+# A file name under the state directory: `fullmatch`, since `$` lets a trailing newline through.
 STATE_NAME_MAX = 64
 
 
 STATE_NAME = re.compile(rf"[A-Za-z0-9][A-Za-z0-9_-]{{0,{STATE_NAME_MAX - 1}}}")
 
 
-# The members of a state ZIP that identify it without loading it, as a real
-# one carries them: the emulator's version, the program, the machine, the memory size in megabytes
-# (the
-# conf's `memsize`), and the local time it was saved at, as the emulator stamps it.
+# Members of a state ZIP that identify it without loading it; memory is in megabytes.
 STATE_META = {"version": "DOSBox-X_Version", "program": "Program_Name",
               "machine": "Machine_Type", "memory_mb": "Memory_Size",
               "saved_at": "Time_Stamp"}
@@ -497,8 +381,7 @@ NOT_A_STATE = "not a save state: the file is not a ZIP the emulator wrote"
 
 
 def state_fields(meta: dict[str, object]) -> dict[str, object]:
-    """`STATE_META`'s fields of a read state as a reply carries them: each the member's text,
-    `memory_mb` a whole number, and a member the file lacks unavailable with its name."""
+    """`STATE_META`'s fields as a reply carries them."""
     out: dict[str, object] = {}
     for key, member in STATE_META.items():
         value = meta.get(key)
@@ -519,19 +402,15 @@ def check_state_name(name: object) -> None:
                       f"digit, at most {STATE_NAME_MAX} of them; got {name!r}. It becomes a "
                       f"file name under the state directory")
     if name.isdigit():
-        # The emulator's own slot files are `<n>.sav` in the same directory, and a state
-        # named `1` would be its working slot's file, written by the slot as well as by name.
+        # A state named `1` would be the emulator's own slot file.
         raise Invalid("bad_argument",
             f"a state name of digits only, {name!r}, is the emulator's own slot file name "
             f"(`{name}.sav`): add a letter")
 
 
 def state_meta(path: Path) -> dict[str, object]:
-    """What a state file says about itself, read off the ZIP without loading it. A file
-    that is not a state ZIP gets a `note` rather than a refusal, because `state_list` is a
-    reading of a directory and a stray file in it is information; so does a name held by
-    something that is no file at all (`scry_core.state_files`: a dangling link, a directory,
-    a FIFO), judged before anything opens it, every reading unavailable saying what is there."""
+    """What a state file says about itself, read off the ZIP. Anything that is no state ZIP
+    gets a `note`, not a refusal."""
     if (why := state_files.not_a_state(path)) is not None:
         gone = contract.unavailable(why)
         return {"name": path.stem, "path": str(path), "bytes": gone, "note": why,
