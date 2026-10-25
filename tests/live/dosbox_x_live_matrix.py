@@ -28,6 +28,7 @@ import matrix_mouse  # noqa: F401
 import matrix_presence  # noqa: F401
 import matrix_probe  # noqa: F401
 import matrix_screen  # noqa: F401
+import matrix_stock  # noqa: F401
 import matrix_trace  # noqa: F401
 import matrix_v86  # noqa: F401
 import matrix_window  # noqa: F401

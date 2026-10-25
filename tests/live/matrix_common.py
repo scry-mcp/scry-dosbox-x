@@ -42,6 +42,9 @@ NEVER_RUNS_CONTROL = "0000:0005"
 
 #: At or above this segment a code breakpoint is acknowledged and never fires (video memory, ROM).
 CONVENTIONAL_TOP = 0xA000
+#: Windows expands any `~user` to a profile path without asking whether the account exists.
+NO_SUCH_HOME_WHY = "Windows expands any `~user`, so no home is unknown there" \
+    if sys.platform == "win32" else ""
 
 
 def cells(*pairs: tuple[str, str]) -> list[Cell]:

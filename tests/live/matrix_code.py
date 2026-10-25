@@ -319,9 +319,12 @@ def dos_real16_code() -> None:
     held, why = memory_holds(r)
     M.judge(labels[0], held, f"{name} at {r['seg_off']}: {why}")
     target = next(sym for sym in table if sym.name == call["symbol"])
-    M.judge(labels[1], call["delta"] == 0 and int(str(call["seg_off"]).split(":")[1], 16)
-            == target.offset and (r.get("flow") or [])[int(call["line"])] == "call",
-            f"{name} line {call['line']} calls {call['symbol']} at {call['seg_off']}")
+    base = int(dstate.STATE.base.get("base") or 0)
+    linear = int(str(call.get("addr", "0x-1")), 16) if isinstance(call.get("addr"), str) else -1
+    M.judge(labels[1], call["delta"] == 0 and linear == base + target.offset
+            and (r.get("flow") or [])[int(call["line"])] == "call",
+            f"{name} line {call['line']} calls {call['symbol']} at {call['seg_off']} "
+            f"({call.get('addr')}; the table places it at {base + target.offset:#010x})")
 
 
 def dpmi_code() -> None:

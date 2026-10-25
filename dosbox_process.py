@@ -129,6 +129,7 @@ class Process:
                 self.control.close()
             raise
         streams: dict[str, Any] = {}
+        terminal = False
         if ends is not None:
             self._out = ends[0]
             terminal = os.isatty(ends[1])
@@ -139,7 +140,8 @@ class Process:
             try:
                 self.proc = subprocess.Popen(
                     self.argv, cwd=str(launch.cwd),
-                    env=dlaunch.launch_environment(launch.background), close_fds=True,
+                    env=dlaunch.launch_environment(launch.background, terminal=terminal),
+                    close_fds=True,
                     **streams, **_console())
             finally:
                 # The child holds its own copy: closed here, the drain reads end of file the

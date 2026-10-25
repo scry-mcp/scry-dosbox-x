@@ -4,6 +4,7 @@ from __future__ import annotations
 import contextlib
 import os
 import shutil
+from collections.abc import Callable
 from pathlib import Path
 
 from scry_core.reply_contract import Invalid
@@ -53,14 +54,24 @@ def refuse_leftover(written: list[Path], what: str) -> None:
             f"those paths is the emulator's working directory, which is somebody's project")
 
 
-def collect(source: Path, dest: Path, what: str) -> Path:
-    """Move the debugger's file to `dest`, falling back to copy and unlink across volumes."""
+def collect(source: Path, dest: Path, what: str,
+            release: Callable[[], None] | None = None) -> Path:
+    """Move the debugger's file to `dest`, falling back to copy and unlink across volumes.
+
+    `release` lets go of a file the debugger still holds: Windows copies an open file and
+    refuses to delete it, so the copy is made, `release` called, and the delete retried."""
     try:
         source.replace(dest)
     except OSError as exc:
         try:
             shutil.copyfile(source, dest)
-            source.unlink()
+            try:
+                source.unlink()
+            except PermissionError:
+                if release is None:
+                    raise
+                release()
+                source.unlink()
         except OSError as exc2:
             # A partial copy would be refused as somebody's next time.
             with contextlib.suppress(OSError):

@@ -392,6 +392,37 @@ def test_a_close_that_does_not_answer_names_the_moved_log_as_maybe_open(
     assert "`close` ends the emulator" in got["message"] and dstate.STATE.log_open is True
 
 
+def test_a_cut_log_the_host_holds_while_open_is_closed_then_collected(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Windows will neither move nor delete a file the debugger holds open; a copy it allows.
+    So the log is copied, closed (it was open, so the machine had not closed it) and removed."""
+    machine = cut(tmp_path)
+    cwd = cast(Path, machine.cwd)
+    real_replace, real_unlink = Path.replace, Path.unlink
+
+    def held(path: Path) -> bool:
+        return path.parent == cwd and path.name.upper() == tracing.LOG_FILE \
+            and "EXEC LOGC 0" not in machine.sent
+
+    def replace(self: Path, target: Any) -> Path:
+        if held(self):
+            raise PermissionError(13, "The process cannot access the file")
+        return real_replace(self, target)
+
+    def unlink(self: Path, missing_ok: bool = False) -> None:
+        if held(self):
+            raise PermissionError(13, "The process cannot access the file")
+        real_unlink(self, missing_ok=missing_ok)
+    monkeypatch.setattr(Path, "replace", replace)
+    monkeypatch.setattr(Path, "unlink", unlink)
+    dest = tmp_path / "w.trace"
+    got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip", dest=str(dest)))
+    assert got["status"] == "ok" and got["verdict"] == "OTHER_STOP", got
+    assert got["trace"]["instructions"] == 5506 and dest.exists(), got["trace"]
+    assert released(machine) == ["LOGC 186A1", "LOGC 0"] and no_log_left(cwd)
+    assert not log_open()
+
+
 def test_a_bound_that_runs_out_interrupts_the_trace_and_collects_what_ran(
         tmp_path: Path) -> None:
     """THE BOUND INTERRUPTS: the stop the count waits for never comes, so at the bound the
@@ -1110,7 +1141,7 @@ def test_a_cut_run_whose_read_fails_remembers_the_log_it_left_open(
 
 def test_a_cut_run_whose_move_fails_remembers_the_log_it_left_open(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    def refused(source: Path, dest: Path, what: str) -> Path:
+    def refused(source: Path, dest: Path, what: str, release: Any = None) -> Path:
         raise ds.Invalid("host_failed", f"the {what} at {source} could not be moved to {dest}")
     monkeypatch.setattr(dcollect, "collect", refused)
     machine = cut(tmp_path)

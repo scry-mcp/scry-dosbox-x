@@ -22,6 +22,7 @@ from typing import Any
 
 from matrix_common import (
     GUEST,
+    NO_SUCH_HOME_WHY,
     PROBE_CONF,
     M,
     boot,
@@ -187,12 +188,17 @@ def _start_refusals() -> None:
     """With no session yet, so each refusal is the path's and never `session_live`; a start
     that came up instead of refusing is closed at once, so the next cell judges its own call."""
     # A `~` IS EXPANDED, so the refusal left to judge is a home this host cannot find.
-    r = M.call(server.start, conf=str(PROBE_CONF), cwd=f"{UNKNOWN_HOME}/x", session_seconds=60)
-    _close_if_up(r)
-    M.judge("L start with cwd from an unknown ~user is refused naming cwd, nothing started",
-            refused(r, "bad_argument") and "cwd=" in str(r.get("message"))
-            and "home directory this host cannot find" in str(r.get("message"))
-            and no_session(r), said(r))
+    if NO_SUCH_HOME_WHY:
+        M.block("L start with cwd from an unknown ~user is refused naming cwd, nothing started",
+                NO_SUCH_HOME_WHY)
+    else:
+        r = M.call(server.start, conf=str(PROBE_CONF), cwd=f"{UNKNOWN_HOME}/x",
+                   session_seconds=60)
+        _close_if_up(r)
+        M.judge("L start with cwd from an unknown ~user is refused naming cwd, nothing started",
+                refused(r, "bad_argument") and "cwd=" in str(r.get("message"))
+                and "home directory this host cannot find" in str(r.get("message"))
+                and no_session(r), said(r))
     r = M.call(server.start, conf="probe.conf", cwd=str(GUEST), session_seconds=60)
     _close_if_up(r)
     M.judge("L start with a relative conf is refused naming conf, nothing started",
@@ -308,7 +314,9 @@ def _state_dir_named(state_dir: Path) -> None:
 
 def _dests() -> None:
     refusals: list[str] = []
-    for spelled in ("relative.out", f"{UNKNOWN_HOME}/matrix-tilde.out"):
+    spellings = ("relative.out",) if NO_SUCH_HOME_WHY else (
+        "relative.out", f"{UNKNOWN_HOME}/matrix-tilde.out")
+    for spelled in spellings:
         for tool, kw in DEST_TOOLS:
             r = M.call(getattr(server, tool), **kw, dest=spelled)
             if not refused(r, "bad_argument") or f"dest='{spelled}'" not in str(r.get("message")):

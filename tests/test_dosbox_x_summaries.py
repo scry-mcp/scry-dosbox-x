@@ -20,6 +20,12 @@ def test_a_count_takes_its_noun_in_its_number(states: int, said: str) -> None:
     assert one_line.state_list({}, reply) == said
 
 
+def test_a_read_says_how_many_bytes_it_read_and_where() -> None:
+    reply = {"seg_off": "00AF:0017A6EC", "length": 4, "hex": "00112233"}
+    assert one_line.read_memory({"ref": "g_rate"}, reply) == \
+        "read_memory g_rate: 4 bytes at 00AF:0017A6EC"
+
+
 def test_an_irregular_plural_is_said_as_english_says_it() -> None:
     for n, said in ((1, "at 1 address,"), (2, "at 2 addresses,")):
         reply = {"verdict": "ELAPSED", "trace": {"instructions": 3, "addresses": n}}

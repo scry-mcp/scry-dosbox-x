@@ -20,6 +20,7 @@ from matrix_common import (
     NEVER_RUNS_CONTROL,
     NEVER_RUNS_STOPPER,
     NEVER_RUNS_TARGET,
+    NO_SUCH_HOME_WHY,
     PKG,
     PROBE_CONF,
     SESSION_S,
@@ -833,11 +834,14 @@ def section_b() -> None:
     r = M.call(server.memdump, ref=f"{SCRATCH}:0000", length=16, dest=there)
     judged("B memdump dest exists", reply=r,
            holds=refused(r) and Path(there).read_bytes() == b"keep")
-    r = M.call(server.memdump, ref=f"{SCRATCH}:0000", length=16,
-               dest="~matrix_no_such_user/x.bin")
-    judged("B memdump dest ~nosuchuser", reply=r,
-           holds=refused(r, "bad_argument")
-           and "home directory this host cannot find" in str(r.get("message")))
+    if NO_SUCH_HOME_WHY:
+        M.block("B memdump dest ~nosuchuser", NO_SUCH_HOME_WHY)
+    else:
+        r = M.call(server.memdump, ref=f"{SCRATCH}:0000", length=16,
+                   dest="~matrix_no_such_user/x.bin")
+        judged("B memdump dest ~nosuchuser", reply=r,
+               holds=refused(r, "bad_argument")
+               and "home directory this host cannot find" in str(r.get("message")))
     inside = GUEST / "matrix-dump-inside-cwd.bin"
     r = M.call(server.memdump, ref=f"{SCRATCH}:0000", length=16, dest=str(inside))
     judged("B memdump dest in the emulator's cwd", reply=r,
@@ -965,9 +969,9 @@ C_CELLS = cells(
     ("C altered false after start and reads", REF_DOC + "What every reply carries: altered"),
     ("C altered true after a write, and stays", REF_DOC + "What every reply carries: altered"),
     ("C read_memory and memdump agree", "known: both read the bytes `write` put there"),
-    ("C debug of a command the debugger does not take empties the line and names it",
-     REF_DOC + "The console: `debug` leaves the console clean"),
-    ("C the command after it runs on its own", REF_DOC + "The console: emptied with ESC"),
+    ("C debug of a command the debugger does not take says so in its note",
+     "debug docstring: `note`"),
+    ("C the command after it runs on its own", REF_DOC + "The debugger channel"),
     ("C find finds what write wrote", "known: the bytes `write` put there, once"),
     ("C scan start while a scan is open", "scan start: docstring, one scan at a time"),
     ("C scan ! keeps the one cell written", REF_DOC + "Reading and writing: `!` since the open"),
@@ -1033,8 +1037,8 @@ def _c_memory() -> None:
 
 def _c_console() -> None:
     left = M.call(server.debug, command="VGA")
-    judged("C debug of a command the debugger does not take empties the line and names it",
-           reply=left, holds=ok(left) and "did not take 'VGA'" in str(left.get("note", "")))
+    judged("C debug of a command the debugger does not take says so in its note",
+           reply=left, holds=ok(left) and "did not take it" in str(left.get("note", "")))
     after = M.call(server.debug, command="BPLIST")
     regs = M.call(server.registers)
     judged("C the command after it runs on its own", reply=after,
@@ -1309,7 +1313,8 @@ H_CELLS = cells(
      REF_DOC + "Advancing: OTHER_STOP, cause; known: probe.asm `.s1` and `.spin`"),
     ("H the next release stops at the pending retrace, named",
      REF_DOC + "Advancing: retrace_pending, the first stop no declaration explains"),
-    ("H debug VRT is refused naming run_for", REF_DOC + "The console: a typed release"),
+    ("H debug VRT is refused naming run_for", "debug docstring: a command that lets the guest "
+     "run"),
     ("H a running guest is refused", "run_for docstring: needs the machine stopped"),
 )
 
@@ -1392,8 +1397,8 @@ I_CELLS = cells(
      REF_DOC + "Reading and writing: an absent section says why"),
     ("I machine_map with the probe resident: PROBE and COMMAND blocks, real mode, no gdt",
      "machine_map docstring; known: COMMAND.COM runs PROBE.COM, real mode"),
-    ("I the console takes a command after the listings",
-     REF_DOC + "Reading and writing: the reader answers the pager with `Q` alone"),
+    ("I the debugger takes a command after the listings",
+     REF_DOC + "The debugger channel: one request, the lines it printed"),
     ("I interrupt_vectors at the park: every vector 0000:0000, the debugger's sentence quoted",
      "interrupt_vectors docstring: before DOS has filled the table"),
     ("I interrupt_vectors number=0x21: F000:D100 in the DOSBox callback area",
@@ -1407,8 +1412,8 @@ I_CELLS = cells(
     ("I machine_map on a running guest is refused", "machine_map docstring: not_stopped"),
     ("I interrupt_vectors on a running guest is refused",
      "interrupt_vectors docstring: not_stopped"),
-    ("I machine_map without a logfile is refused naming it",
-     "machine_map docstring: no_channel"),
+    ("I machine_map without a logfile reads its listings all the same",
+     "REFERENCE.md, The debugger channel: every reading goes through it"),
 )
 
 
@@ -1454,7 +1459,7 @@ def section_i() -> None:
     finally:
         planted.unlink()
     r = M.call(server.debug, command="BPLIST")
-    judged("I the console takes a command after the listings", reply=r,
+    judged("I the debugger takes a command after the listings", reply=r,
            holds=ok(r) and "not recognized" not in str(r.get("output"))
            and "Breakpoint list:" in str(r.get("output")))
     release_running()
@@ -1469,6 +1474,6 @@ def section_i() -> None:
     boot(logfile="")
     M.setup()
     r = M.call(server.machine_map)
-    judged("I machine_map without a logfile is refused naming it", reply=r,
-           holds=refused(r, "no_channel") and "logfile" in str(r.get("message")))
+    judged("I machine_map without a logfile reads its listings all the same", reply=r,
+           holds=ok(r) and "logfile" not in str(r.get("coverage_note")))
     close_whatever()

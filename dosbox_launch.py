@@ -197,9 +197,14 @@ def judge_background(background: bool | None, watched: bool) -> bool:
     return not watched if background is None else background
 
 
-def launch_environment(background: bool) -> dict[str, str]:
-    """The spawn environment; the background hint is set or removed, never inherited."""
-    spawned = dict(os.environ, TERM="xterm-256color", LINES="50", COLUMNS="132")
+def launch_environment(background: bool, terminal: bool = False) -> dict[str, str]:
+    """The spawn environment; the background hint is set or removed, never inherited.
+
+    The terminal and its size go only to a debugger that draws on the terminal nobody reads:
+    Windows' release build, handed `LINES` and `COLUMNS`, resizes its console and dies."""
+    spawned = {k: v for k, v in os.environ.items() if k not in ("LINES", "COLUMNS")}
+    if terminal:
+        spawned.update(TERM="xterm-256color", LINES="50", COLUMNS="132")
     if background:
         spawned[BACKGROUND_VAR] = "1"
     else:

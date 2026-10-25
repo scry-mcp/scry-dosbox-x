@@ -236,12 +236,17 @@ def _refusals() -> None:
     notes = Path(M.fresh(".txt"))
     notes.write_bytes(b"somebody's notes\n")
     before = store.read_bytes()
-    got = [M.call(server.comment_write, method="save", dest=str(p)) for p in (store, fifo, notes)]
-    M.judge("N save refuses the store's own file, a FIFO and a file that is not a comment file, "
-            "leaving each as it was",
-            all(refused(r, "bad_argument") for r in got) and store.read_bytes() == before
-            and notes.read_bytes() == b"somebody's notes\n" and fifo.is_fifo(),
-            "; ".join(said(r, 40) for r in got))
+    label = ("N save refuses the store's own file, a FIFO and a file that is not a comment file, "
+             "leaving each as it was")
+    if sys.platform == "win32":
+        M.block(label, "Windows has no FIFO")
+    else:
+        got = [M.call(server.comment_write, method="save", dest=str(p))
+               for p in (store, fifo, notes)]
+        M.judge(label, all(refused(r, "bad_argument") for r in got)
+                and store.read_bytes() == before
+                and notes.read_bytes() == b"somebody's notes\n" and fifo.is_fifo(),
+                "; ".join(said(r, 40) for r in got))
 
 
 @contextlib.contextmanager
@@ -269,7 +274,7 @@ def _running() -> None:
     they send the debugger counted, the run-state question aside, against a stopped reader that
     must send one (the counter's control); add, delete and load refused."""
     with _typed() as control:
-        M.call(server.registers)
+        M.call(server.read_memory, ref="0000:0400", length=2)
     release_running()
     M.setup()
     timed: list[tuple[dict[str, Any], float, int]] = []

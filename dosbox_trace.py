@@ -268,12 +268,18 @@ def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: 
         STATE.log_open = False
     # Moved before the close, which cannot tell an open log from a closed one: on a log the
     # machine already closed, `LOGC 0` opens a fresh file, and that file is how it shows.
-    collected = dcollect.collect(source, path, "trace")
+    cut_what = f"a stop cut the trace, and its log (moved to {path})"
+    cut_extra = {"trace": {"path": str(path), "closed": False}}
+    released: list[bool] = []
+
+    def release() -> None:
+        # Held open, so the machine had not closed it: no fresh file to judge.
+        _send_close(session, cut_what, **cut_extra)
+        released.append(True)
+    collected = dcollect.collect(source, path, "trace", release=None if ran_out else release)
     closed_early = False
-    if not ran_out:
-        closed_early = _close_log(session, places,
-                                  f"a stop cut the trace, and its log (moved to {collected})",
-                                  trace={"path": str(collected), "closed": False})
+    if not ran_out and not released:
+        closed_early = _close_log(session, places, cut_what, **cut_extra)
     kept = {"path": str(collected), "bytes": collected.stat().st_size, "shape": shape}
     try:
         reply = running.stop_reply(session, retrace_may_stop=not ran_out)
@@ -452,6 +458,11 @@ def _close_log(session: ds.Session, places: list[Path], what: str, **extra: Any)
     """`LOGC 0` on a log that may be open, executing nothing. Returns whether the machine had
     already closed it (the empty file the close then makes is removed). Refused naming `what`
     when the close does not answer."""
+    _send_close(session, what, **extra)
+    return _remove_fresh(places)
+
+
+def _send_close(session: ds.Session, what: str, **extra: Any) -> None:
     began = time.monotonic()
     expired, _ = session.log_cpu("LOGC", 0, began, began + CLOSE_WAIT_S)
     if expired:
@@ -460,7 +471,6 @@ def _close_log(session: ds.Session, places: list[Path], what: str, **extra: Any)
             f"open and the machine may be running. `close` ends the emulator and the log with it",
             **extra)
     STATE.log_open = False
-    return _remove_fresh(places)
 
 
 def close_log_left_open(session: ds.Session) -> None:
@@ -471,11 +481,18 @@ def close_log_left_open(session: ds.Session) -> None:
     home = captures if captures is not None and captures.is_dir() else cwd
     places = log_places(cwd)
     source = _written(places)
+    what = "the CPU log a cancelled call left open"
+    released: list[bool] = []
+
+    def release() -> None:
+        _send_close(session, what)
+        released.append(True)
     if source is not None:
         aside = next(home / f"trace-cancelled-{n}.trace" for n in itertools.count(1)
                      if not paths.taken(home / f"trace-cancelled-{n}.trace"))
-        dcollect.collect(source, aside, "trace")
-    _close_log(session, places, "the CPU log a cancelled call left open")
+        dcollect.collect(source, aside, "trace", release=release)
+    if not released:
+        _close_log(session, places, what)
 
 
 def _remove_fresh(places: list[Path]) -> bool:

@@ -48,10 +48,11 @@ J_CELLS = cells(
      "machine_map docstring: `vga`, one key per listing"),
     ("J palette first=256 is refused before anything is typed", "palette docstring: 0 to 255"),
     ("J palette with a relative dest is refused", "palette docstring: an absolute `dest`"),
-    ("J the console takes a command after VGA DACPAL",
-     "REFERENCE.md, Reading and writing: the pager answered with `Q` alone"),
+    ("J the debugger takes a command after VGA DACPAL",
+     "REFERENCE.md, The debugger channel: one request, the lines it printed"),
     ("J palette on a running guest is refused", "palette docstring: not_stopped"),
-    ("J palette without a logfile is refused naming it", "palette docstring: no_channel"),
+    ("J palette without a logfile reads its listings all the same",
+     "REFERENCE.md, The debugger channel: every reading goes through it"),
     ("J the screen guest stops at its own int 3, six times",
      "start docstring: break_on_int3; known: screen.asm ends each step in `int 3`"),
     ("J the DAC write changes entry 1 to 3F 00 00 and no other",
@@ -78,7 +79,8 @@ J_CELLS = cells(
     ("J screen_view with a dest in a text mode is refused", "screen_view docstring"),
     ("J screen_view and screen_signature on a running guest are refused",
      "screen_view and screen_signature docstrings: not_stopped"),
-    ("J screen_view without a logfile is refused naming it", "screen_view docstring"),
+    ("J screen_view without a logfile is refused only for the screen it finds",
+     "REFERENCE.md, The debugger channel: every reading goes through it"),
     ("J the text stop reads the guest's two lines, the cursor under them",
      "known: screen.asm step 1 prints two lines through DOS"),
     ("J the start-address stop shows the page from its second row",
@@ -180,7 +182,7 @@ def _probe() -> None:
     judged("J palette once booted: entry 1 is the BIOS's 00 00 2A, #0000aa", reply=r,
            holds=ok(r) and r.get("rgb") == ["00002a"] and r.get("colors") == ["#0000aa"])
     r = M.call(server.debug, command="BPLIST")
-    judged("J the console takes a command after VGA DACPAL", reply=r,
+    judged("J the debugger takes a command after VGA DACPAL", reply=r,
            holds=ok(r) and "not recognized" not in str(r.get("output"))
            and dcons.BPLIST_HEADER in str(r.get("output")))
     r = M.call(server.machine_map, sections=["vga"])
@@ -209,11 +211,12 @@ def _probe() -> None:
     boot(logfile="")
     M.setup()
     r = M.call(server.palette)
-    judged("J palette without a logfile is refused naming it", reply=r,
-           holds=refused(r, "no_channel") and "logfile" in str(r.get("message")))
+    judged("J palette without a logfile reads its listings all the same", reply=r,
+           holds=ok(r) and r.get("entries") == 256)
+    # At the reset park no video mode is set, which is the refusal it may give.
     r = M.call(server.screen_view)
-    judged("J screen_view without a logfile is refused naming it", reply=r,
-           holds=refused(r, "no_channel") and "logfile" in str(r.get("message")))
+    judged("J screen_view without a logfile is refused only for the screen it finds", reply=r,
+           holds=(ok(r) or refused(r, "no_channel")) and "logfile" not in str(r.get("message")))
     must(M.call(server.close), "closing the probe without a logfile")
 
 

@@ -26,7 +26,35 @@ def test_the_hint_is_set_or_removed_never_inherited(monkeypatch: pytest.MonkeyPa
     assert dlaunch.BACKGROUND_VAR not in dlaunch.launch_environment(False)
     monkeypatch.delenv(dlaunch.BACKGROUND_VAR)
     assert dlaunch.launch_environment(True)[dlaunch.BACKGROUND_VAR] == "1"
-    assert dlaunch.launch_environment(True)["TERM"] == "xterm-256color"
+    assert dlaunch.launch_environment(True, terminal=True)["TERM"] == "xterm-256color"
+
+
+def test_the_terminal_size_is_set_only_for_a_terminal_the_debugger_draws_on(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """Windows' release build, handed `LINES` and `COLUMNS`, resizes its own console and dies at
+    the debugger's first request: the size goes only to the terminal nobody reads, and an
+    inherited one is never passed on."""
+    monkeypatch.setenv("LINES", "50")
+    monkeypatch.setenv("COLUMNS", "132")
+    plain = dlaunch.launch_environment(True)
+    assert "LINES" not in plain and "COLUMNS" not in plain, plain
+    drawn = dlaunch.launch_environment(True, terminal=True)
+    assert (drawn["LINES"], drawn["COLUMNS"]) == ("50", "132")
+
+
+def test_a_headless_session_spawns_with_no_terminal_size(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    seen: list[dict[str, str]] = []
+
+    def spawn(*_a: Any, **kw: Any) -> None:
+        seen.append(dict(kw["env"]))
+        raise OSError("not spawned in a unit test")
+    monkeypatch.setattr(subprocess, "Popen", spawn)
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    with pytest.raises(OSError, match="not spawned"):
+        ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, headless=True))
+    assert "LINES" not in seen[-1] and "COLUMNS" not in seen[-1], seen[-1]
 
 
 def test_the_session_spawns_the_emulator_with_the_launch_s_answer(

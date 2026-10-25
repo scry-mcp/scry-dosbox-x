@@ -134,8 +134,8 @@ def registers(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 def read_memory(args: dict[str, Any], reply: dict[str, Any]) -> str:
     at = _at(reply.get("seg_off"))
-    rows = _said(len(reply.get("rows") or []), "row")
-    return f"read_memory {args.get('ref', '')}: {rows} at {at}"
+    read = _said(len(str(reply.get("hex") or "")) // 2, "byte")
+    return f"read_memory {args.get('ref', '')}: {read} at {at}"
 
 
 def disassemble(args: dict[str, Any], reply: dict[str, Any]) -> str:
