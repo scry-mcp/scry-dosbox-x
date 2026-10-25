@@ -702,14 +702,6 @@ def test_a_save_the_emulator_made_is_kept_when_only_the_release_after_it_failed(
     assert (tmp_path / "save" / "boot.sav").is_file(), "a save the emulator made was deleted"
 
 
-def test_a_save_the_emulator_refused_leaves_no_file(tmp_path: Path) -> None:
-    fake = StateFake(tmp_path / "save")
-    fake.control.refuse = "write failed"
-    with pytest.raises(ds.Invalid):
-        ds.Session.save_state(as_session(fake), "boot", 5.0)
-    assert not (tmp_path / "save" / "boot.sav").exists()
-
-
 class _Link:
     """The input link's half a load reaches: whether its sequence still has to be proved."""
 

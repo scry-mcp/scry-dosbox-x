@@ -19,6 +19,7 @@ from typing import Any, cast
 
 import pytest
 from scry_core import vocabulary as vocab
+from test_dosbox_x_spawn import Child
 from test_dosbox_x_stub_link import REPORT, Stub
 
 import dosbox_console as dcons
@@ -129,7 +130,7 @@ def test_the_serial_socket_is_the_emulators_dial_and_a_dial_that_never_comes_is_
     listener = dlaunch.listen_input(_free_port())
     port = listener.getsockname()[1]
     emulator = socket.socket()
-    threading.Timer(0.2, lambda: emulator.connect(("127.0.0.1", port))).start()
+    emulator.connect(("127.0.0.1", port))       # the listener's backlog holds the dial
     try:
         client = dlaunch.accept_input(listener, 3.0, lambda: None)
         peer = emulator
@@ -184,20 +185,6 @@ def test_a_dial_that_never_comes_kills_the_child_it_spawned(
     """THE ARM THAT MATTERS"""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
-
-    class Child:
-        pid = 4242
-
-        def __init__(self) -> None:
-            self.waited = 0
-
-        def poll(self) -> None:
-            return None
-
-        def wait(self, timeout: float | None = None) -> int:
-            self.waited += 1
-            return -9
-
     child = Child()
     signalled: list[int] = []
     monkeypatch.setattr(subprocess, "Popen", lambda *_a, **_k: child)
@@ -207,7 +194,7 @@ def test_a_dial_that_never_comes_kills_the_child_it_spawned(
     with pytest.raises(ds.Invalid, match="never dialled"):
         ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=30, input_port=port))
     dlaunch.listen_input(port).close()
-    assert signalled == [signal.SIGKILL] and child.waited == 1, (signalled, child.waited)
+    assert signalled == [signal.SIGKILL] and len(child.waits) == 1, (signalled, child.waits)
 
 
 def test_the_program_reaches_the_emulator_as_one_argv_element(conf: Path) -> None:
@@ -1851,15 +1838,6 @@ def test_a_stranger_that_takes_the_port_after_the_check_never_receives_the_input
     port = _free_port()
     stranger: list[socket.socket] = []
     dialled: list[socket.socket] = []
-
-    class Child:
-        pid = 4242
-
-        def poll(self) -> None:
-            return None
-
-        def wait(self, timeout: float | None = None) -> int:
-            return 0
 
     def spawn(*_a: object, **_k: object) -> Child:
         s = socket.socket()

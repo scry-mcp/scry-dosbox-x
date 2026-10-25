@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import contextlib
 import signal
 import threading
 import time
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from typing import Any
 
 import pytest
@@ -46,6 +47,36 @@ def ending(monkeypatch: pytest.MonkeyPatch) -> Iterator[dict[str, Any]]:
         signal.signal(s, handler if handler is not None else signal.SIG_DFL)
 
 
+@contextlib.contextmanager
+def _lock_held_elsewhere() -> Iterator[None]:
+    """The server's lock held by another thread for as long as the block runs."""
+    held, release = threading.Event(), threading.Event()
+
+    def hold() -> None:
+        with dosbox_mcp.LOCK:
+            held.set()
+            release.wait(10.0)
+    holder = threading.Thread(target=hold)
+    holder.start()
+    assert held.wait(5.0), "the holder never took the lock"
+    try:
+        yield
+    finally:
+        release.set()
+        holder.join()
+
+
+def _bare_session(monkeypatch: pytest.MonkeyPatch, body: Callable[..., int]) -> Any:
+    """A `Session` with only what its `close` reads, its close body replaced by `body`."""
+    import dosbox_session as ds
+
+    ses = ds.Session.__new__(ds.Session)
+    ses._closing, ses._closed, ses.reap_failed = threading.Lock(), False, ""
+    ses.proc = type("Proc", (), {"returncode": 0})()
+    monkeypatch.setattr(ds.Session, "_close", body)
+    return ses
+
+
 def test_a_server_whose_client_left_closes_the_session(monkeypatch: pytest.MonkeyPatch,
                                                        ending: dict[str, Any]) -> None:
     ses = _Live()
@@ -79,22 +110,10 @@ def test_the_signalled_end_waits_for_a_held_lock_only_so_long(
     ses = _Live()
     monkeypatch.setattr(dstate.STATE, "session", ses)
     monkeypatch.setattr(server, "LOCK_WAIT_S", 0.2)
-    held, release = threading.Event(), threading.Event()
-
-    def hold() -> None:
-        with dosbox_mcp.LOCK:
-            held.set()
-            release.wait(10.0)
-    holder = threading.Thread(target=hold)
-    holder.start()
-    held.wait(5.0)
     began = time.monotonic()
-    try:
+    with _lock_held_elsewhere():
         server._exit_on(signal.SIGTERM, None)
         assert ending["left"].wait(5.0), "the end waited on the lock for ever"
-    finally:
-        release.set()
-        holder.join()
     assert time.monotonic() - began < 3.0 and ses.closed == 1
 
 
@@ -115,51 +134,38 @@ def test_a_signal_while_start_waits_for_its_emulator_ends_that_emulator(
     monkeypatch.setattr(dstate.STATE, "session", None)
     monkeypatch.setattr(dstate.STATE, "starting", starting)
     monkeypatch.setattr(server, "LOCK_WAIT_S", 0.2)
-    held, release = threading.Event(), threading.Event()
-
-    def hold() -> None:
-        with dosbox_mcp.LOCK:
-            held.set()
-            release.wait(10.0)
-    holder = threading.Thread(target=hold)
-    holder.start()
-    held.wait(5.0)
-    try:
+    with _lock_held_elsewhere():
         server._exit_on(signal.SIGTERM, None)
         assert ending["left"].wait(5.0)
-    finally:
-        release.set()
-        holder.join()
     assert starting.closed == 1
 
 
 def test_the_servers_end_and_a_signalled_one_close_the_session_once(
         monkeypatch: pytest.MonkeyPatch, ending: dict[str, Any]) -> None:
     """Two threads reach one session; its close body runs once (a second would re-signal)."""
-    import dosbox_session as ds
-
     bodies: list[float] = []
+    closing = threading.Event()
 
-    def slow_close(self: ds.Session, grace: float = 8.0, progress: Any = None) -> int:
+    def slow_close(self: Any, grace: float = 8.0, progress: Any = None) -> int:
         bodies.append(time.monotonic())
+        closing.set()
         time.sleep(0.5)
         return 0
 
-    ses = ds.Session.__new__(ds.Session)
-    ses._closing, ses._closed, ses.reap_failed = threading.Lock(), False, ""
-    ses.proc = type("Proc", (), {"returncode": 0})()
-    monkeypatch.setattr(ds.Session, "_close", slow_close)
-    monkeypatch.setattr(dstate.STATE, "session", ses)
+    monkeypatch.setattr(dstate.STATE, "session", _bare_session(monkeypatch, slow_close))
     monkeypatch.setattr(server, "LOCK_WAIT_S", 0.2)
-    # the signal must land while `main`'s end holds the lock, else it closes first
-    later = threading.Timer(0.1, server._end_signalled, args=(128 + signal.SIGTERM,))
+
+    def signal_once_main_closes() -> None:
+        assert closing.wait(5.0), "main's end never reached the close"
+        server._end_signalled(128 + signal.SIGTERM)
+    # the signal lands while `main`'s end holds the lock and runs the close body
+    later = threading.Thread(target=signal_once_main_closes)
     monkeypatch.setattr(server.mcp, "run", later.start)
     try:
         server.main()
     finally:
         # a signalled end still running at teardown would reach the real `_leave`
-        later.join()
-        ending["left"].wait(5.0)
+        later.join(10.0)
     assert ending["left"].wait(5.0), "the signalled end never left"
     assert len(bodies) == 1, f"{len(bodies)} closes of one session"
 
@@ -167,19 +173,14 @@ def test_the_servers_end_and_a_signalled_one_close_the_session_once(
 def test_a_close_whose_reap_failed_is_finished_by_the_next_one(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """A close whose emulator was not reaped (`reap_failed`) is retried by the next one."""
-    import dosbox_session as ds
-
     bodies: list[int] = []
 
-    def close_once_unreaped(self: ds.Session, grace: float = 8.0, progress: Any = None) -> int:
+    def close_once_unreaped(self: Any, grace: float = 8.0, progress: Any = None) -> int:
         bodies.append(1)
         self.reap_failed = "not reaped" if len(bodies) == 1 else ""
         return 0
 
-    ses = ds.Session.__new__(ds.Session)
-    ses._closing, ses._closed, ses.reap_failed = threading.Lock(), False, ""
-    ses.proc = type("Proc", (), {"returncode": 0})()
-    monkeypatch.setattr(ds.Session, "_close", close_once_unreaped)
+    ses = _bare_session(monkeypatch, close_once_unreaped)
     ses.close()
     ses.close()
     ses.close()
