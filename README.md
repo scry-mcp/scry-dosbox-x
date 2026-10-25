@@ -66,8 +66,8 @@ comes from you; the server carries no default that points anywhere.
 ## Platforms
 
 macOS. The server reads DOSBox-X's debugger through a POSIX pseudo-terminal, which Windows does not
-have: there it loads, and `start` and `build_check` refuse, saying why. Windows comes once a channel
-that replaces the terminal is in place. Linux is not supported: nothing here has run on it.
+have: there it loads, and `start` and `build_check` refuse, saying why. Linux is not supported:
+nothing here has run on it.
 
 ## See it run
 

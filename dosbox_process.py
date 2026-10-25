@@ -24,7 +24,8 @@ import dosbox_stub_link as stub_link
 #: Why no session starts on Windows: the debugger's screen is read through a POSIX terminal.
 NO_TERMINAL = ("no DOSBox-X session can start on Windows: this server reads the emulator's "
                "debugger through a POSIX pseudo-terminal, which Windows does not have, and the "
-               "channel that would take its place there is not implemented yet")
+               "channel that would take its place there is not implemented yet; on macOS a "
+               "session starts")
 
 
 #: Whether this host gives a session its terminal; the unit suite's doubles stand in for one.

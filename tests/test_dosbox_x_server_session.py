@@ -919,6 +919,7 @@ def test_without_a_terminal_build_check_and_start_refuse_naming_it_and_start_not
     for got in (checked, started):
         assert (got["status"], got["code"]) == ("INVALID", "host_failed"), got
         assert "pseudo-terminal, which Windows does not have" in got["message"], got
+        assert got["message"].endswith("on macOS a session starts"), "where it does run"
     assert ran == [] and dstate.STATE.session is None, ran
 
 def test_a_read_memory_reply_carries_the_whole_data_view_and_not_just_the_row_asked_for(
