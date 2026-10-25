@@ -422,10 +422,7 @@ def _drive_arguments(act: list[dict[str, Any]], expect: str, seconds: float | No
         raise ds.Invalid("bad_argument",
             "act is a non-empty LIST of steps ({'op': <name>, ...}), the same shape `perform` "
             "takes")
-    if not isinstance(pattern, str) or not pattern:
-        raise ds.Invalid("bad_argument",
-            "pattern is a non-empty regular expression over the E9 log ('.' for everything)")
-    dlogs.compiled(pattern)
+    dlogs.check_pattern(pattern)
     dlogs.check_e9_limit(limit)
     inputs.check_expectation(expect or None, seconds)
     sequence.validate_wait(settle_seconds)

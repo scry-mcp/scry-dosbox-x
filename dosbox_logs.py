@@ -22,9 +22,9 @@ def compiled(pattern: str) -> re.Pattern[str]:
         raise Invalid("bad_argument", f"that is not a usable pattern: {e}") from None
 
 
-def check_pattern(pattern: str) -> None:
-    """A log tool's pattern: non-empty, as `drive`'s, and compiling."""
-    if not pattern:
+def check_pattern(pattern: object) -> None:
+    """A caller's log pattern: a non-empty string that compiles."""
+    if not isinstance(pattern, str) or not pattern:
         raise Invalid("bad_argument",
                       "pattern is a non-empty regular expression ('.' for every line)")
     compiled(pattern)

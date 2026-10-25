@@ -806,3 +806,20 @@ def test_a_state_file_that_cannot_be_opened_is_a_row_with_a_note_never_a_failed_
     assert by["boot"]["program"] == "PROBE"
     assert "Permission denied" in str(by["locked"]["note"]), by["locked"]
     assert cast(dict[str, Any], by["locked"]["program"])["available"] is False, by["locked"]
+
+
+def test_a_state_removed_while_the_list_is_read_is_left_out_not_noted(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    fake = StateFake(tmp_path / "save")
+    write_state(tmp_path / "save" / "boot.sav")
+    write_state(tmp_path / "save" / "gone.sav")
+    real = zipfile.ZipFile
+
+    def vanishing(path: Any, *args: Any, **kwargs: Any) -> zipfile.ZipFile:
+        if Path(path).name == "gone.sav":
+            raise FileNotFoundError(2, "No such file or directory", str(path))
+        return real(path, *args, **kwargs)
+
+    monkeypatch.setattr(zipfile, "ZipFile", vanishing)
+    out = ds.Session.state_list(as_session(fake))
+    assert [s["name"] for s in cast(list[dict[str, Any]], out["states"])] == ["boot"], out

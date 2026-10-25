@@ -428,6 +428,8 @@ def state_meta(path: Path) -> dict[str, object]:
     except zipfile.BadZipFile:
         out["note"] = NOT_A_STATE
         return {**out, **{key: contract.unavailable(NOT_A_STATE) for key in STATE_META}}
+    except FileNotFoundError:
+        raise      # gone since it was listed: the caller leaves it out
     except (OSError, zlib.error, NotImplementedError, RuntimeError) as e:
         why = f"the file could not be read: {e}"
         return {**out, "note": why, **{key: contract.unavailable(why) for key in STATE_META}}

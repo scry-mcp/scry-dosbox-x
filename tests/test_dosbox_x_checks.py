@@ -23,7 +23,7 @@ def _refused(tool: str, **given: Any) -> str:
 
 @pytest.mark.parametrize(("tool", "given", "starts"), [
     ("drive", {"act": [{"op": "status"}], "pattern": ""},
-     "pattern is a non-empty regular expression over the E9 log ('.' for everything)"),
+     "pattern is a non-empty regular expression ('.' for every line)"),
     ("drive", {"act": []}, "act is a non-empty LIST of steps"),
     ("log", {"pattern": "", "channel": "guest"},
      "pattern is a non-empty regular expression ('.' for every line)"),
