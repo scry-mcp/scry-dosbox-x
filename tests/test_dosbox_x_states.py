@@ -16,8 +16,8 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
-from dosbox_x_server_support import MODE_BITS, POSIX_NAMES
 from scry_core import cancel
+from scry_core.host_program import MODE_BITS, POSIX_NAMES
 
 import dosbox_inputs as inputs
 import dosbox_launch as dlaunch

@@ -18,9 +18,10 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
-from dosbox_x_server_support import CASED_PATHS, MODE_BITS, POSIX_SESSION
+from dosbox_x_server_support import CASED_PATHS, POSIX_SESSION
 from scry_core import guardian
 from scry_core import vocabulary as vocab
+from scry_core.host_program import MODE_BITS
 from scry_core.host_program import absolute as _abs
 from test_dosbox_x_spawn import Child
 from test_dosbox_x_stub_link import REPORT, Stub

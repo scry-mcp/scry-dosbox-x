@@ -20,8 +20,9 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
-from dosbox_x_server_support import MODE_BITS, NO_SUCH_HOME, clean_session, documented, install  # noqa: F401
+from dosbox_x_server_support import NO_SUCH_HOME, clean_session, documented, install  # noqa: F401
 from scry_core import png
+from scry_core.host_program import MODE_BITS
 from test_dosbox_x_machine import Bench, Logfile, listing
 from test_dosbox_x_run_for import Retraces
 from test_dosbox_x_run_for import cap as cap_vrt

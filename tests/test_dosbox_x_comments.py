@@ -12,7 +12,6 @@ from typing import Any, cast
 
 import pytest
 from dosbox_x_server_support import (  # noqa: F401
-    MODE_BITS,
     FakeSession,
     NamesFake,
     _Booted,
@@ -23,6 +22,7 @@ from dosbox_x_server_support import (  # noqa: F401
     install,
 )
 from scry_core import host_program
+from scry_core.host_program import MODE_BITS
 from test_dosbox_x_code import pr32_machine
 from test_dosbox_x_running_table import _running
 

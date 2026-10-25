@@ -12,7 +12,8 @@ from unittest import mock
 
 import fold_calls
 import pytest
-from dosbox_x_server_support import MODE_BITS, clean_session, install  # noqa: F401
+from dosbox_x_server_support import clean_session, install  # noqa: F401
+from scry_core.host_program import MODE_BITS
 from scry_core.host_program import absolute as _abs
 from test_dosbox_x_dump import debugger
 

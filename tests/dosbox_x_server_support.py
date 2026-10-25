@@ -1007,11 +1007,6 @@ _PAGE_LINE = "ECX=000000A7  EBP=002B8690PAGEPSE IOPL3  CPL3\r\n"
 POSIX_SESSION = pytest.mark.skipif(sys.platform == "win32",
                                    reason="a session's terminal and process group are POSIX's")
 
-#: Cases a file's mode decides: Windows keeps no mode bit that refuses a read or a write.
-MODE_BITS = pytest.mark.skipif(sys.platform == "win32", reason="Windows keeps no mode bit")
-#: Cases whose file name holds a colon or a newline, which Windows refuses to create.
-POSIX_NAMES = pytest.mark.skipif(sys.platform == "win32",
-                                 reason="Windows forbids a colon or a newline in a file name")
 #: Cases about a dump's two spellings, which Windows compares as one path.
 CASED_PATHS = pytest.mark.skipif(sys.platform == "win32",
                                  reason="Windows compares paths without their case")

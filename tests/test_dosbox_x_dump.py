@@ -17,12 +17,11 @@ from typing import Any, cast
 import pytest
 from dosbox_x_server_support import (  # noqa: F401
     CASED_PATHS,
-    MODE_BITS,
-    POSIX_NAMES,
     FakeSession,
     clean_session,
     install,
 )
+from scry_core.host_program import MODE_BITS, POSIX_NAMES
 from test_dosbox_x_machine import Bench
 
 import dosbox_collect as dcollect

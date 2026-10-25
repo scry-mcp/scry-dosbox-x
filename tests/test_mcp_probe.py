@@ -7,6 +7,7 @@ from typing import Any
 
 import pytest
 from scry_core import probe, probe_checks
+from scry_core.host_program import POSIX_TASKS
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -25,11 +26,6 @@ def _tasks() -> list[dict[str, Any]]:
 
 def _judge(task_id: str, line: str) -> probe.Verdict:
     return probe_checks.judge_line(SURFACE, _tasks(), task_id, line)
-
-
-#: The task file spells POSIX paths, as the answers captured with it do; a probe runs on macOS.
-POSIX_TASKS = pytest.mark.skipif(sys.platform == "win32",
-                                 reason="the task file spells POSIX paths")
 
 
 @POSIX_TASKS
