@@ -2,8 +2,8 @@
 survey a stop is read through. `Session` delegates here.
 
 Every reading is a command that PRINTS its answer (`EXEC`): the debugger's screen reaches no
-client of the channel. Whether the machine is stopped, which only the screen showed, is the
-`RUNSTATE` command a build may carry.
+client of the channel. Whether the machine is stopped is the `RUNSTATE` command a build may
+carry.
 """
 
 from __future__ import annotations
@@ -146,9 +146,3 @@ def survey(session: ds.Session) -> tuple[dict[str, str], dict[str, str], bool]:
         mode = "Pr32" if session.selector("CS")["big"] else "Pr16"
     where = {"cs": registers["CS"], "eip": registers["EIP"], "mode": mode}
     return where, registers, paging
-
-
-def registers(session: ds.Session) -> dict[str, str]:
-    """The registers alone, at their stop-reply widths."""
-    got = _ev(session, dcons.REGISTER_NAMES)
-    return {name: _spelled(name, value) for name, value in got.items()}

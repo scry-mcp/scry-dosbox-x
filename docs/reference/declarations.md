@@ -129,7 +129,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end breakpoint_interrupt -->
 
-It is stored under its `BPINT` spelling and not cleared through the console's index, which deletes
+It is stored under its `BPINT` spelling and not cleared through the list's index, which deletes
 whichever row sits there. Re-arming is a no-op checked against the live list, because `BPINT` sent
 twice stacks a second row that a later clear leaves behind as `foreign`.
 

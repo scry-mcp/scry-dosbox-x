@@ -354,7 +354,7 @@ class FakeSession(SessionGates):
         self.ended_how = "quit"
         return 0
 
-    def console_tail(self, chars: int) -> str:
+    def stdout_tail(self, chars: int) -> str:
         return ""
 
     def output_tail(self, chars: int) -> str:
@@ -755,7 +755,7 @@ class NamesFake(SessionGates):
         return 0
 
 
-    def console_tail(self, chars: int) -> str:
+    def stdout_tail(self, chars: int) -> str:
         return ""
     def where_and_registers(self) -> tuple[dict[str, str], dict[str, str]]:
         return self.where(), self.registers()

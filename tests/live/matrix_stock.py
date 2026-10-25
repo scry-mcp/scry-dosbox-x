@@ -27,8 +27,8 @@ S_CELLS = cells(
      "machine back to readings", "REFERENCE.md, Debugger commands: stop brings it back"),
 )
 
-#: What each refusal names; a release built without the CPU log refuses `trace` for that first.
 WAIT_S = 20
+#: What each refusal names; a release built without the CPU log refuses `trace` for that first.
 _NEEDS = {"run_to": ("RUNSTATE",), "run_for": ("RUNSTATE",), "trace": ("RUNSTATE", "heavy_debug"),
           "screen_wait": ("RUNSTATE",), "step": ("STEPIN",), "resume": ("RUNSTATE",)}
 

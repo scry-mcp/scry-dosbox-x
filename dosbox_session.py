@@ -262,9 +262,9 @@ import dosbox_symbol_file as symbol_file  # noqa: E402
 
 #: How long `start` waits for the debugger to answer stopped, the `-version` probe's time included.
 READY_TIMEOUT_S = 30.0
-#: The commands that leave the stopped machine's registers as they were, so a survey taken at the
-#: stop still holds after them; any other (a register written, a state loaded, an `INTT`) drops it.
-READS_ONLY = frozenset({"EV", "BPLIST", "BP", "BPDEL", "BPINT", "BPM", "BPPM", "MEMDUMPBIN",
+#: The commands after which a survey taken at the stop still holds: they leave the registers, the
+#: flags and CR0 as they were (memory and breakpoints they may write); any other drops it.
+KEEPS_SURVEY = frozenset({"EV", "BPLIST", "BP", "BPDEL", "BPINT", "BPM", "BPPM", "MEMDUMPBIN",
                         "SELINFO", "RUNSTATE", "INTVEC", "SM", "SV", "LV", "MEMFIND", "MEMS",
                         "CPU", "GDT", "LDT", "IDT", "PAGING", "DOS", "BIOS", "EMU",
                         "CALLBACKS", "VGA", "PRESENCE"})
@@ -323,7 +323,7 @@ class Session(dprocess.Process):
 
     def exec(self, command: str, seconds: float | None = None) -> tuple[bool, list[str]]:
         """One debugger command: whether it was taken and every line it printed."""
-        if command.split()[:1] and command.split()[0].upper() not in READS_ONLY:
+        if command.split()[:1] and command.split()[0].upper() not in KEEPS_SURVEY:
             self._surveyed = None
         return dbg.exec_lines(self, command, seconds)
 
@@ -436,7 +436,12 @@ class Session(dprocess.Process):
     def _release(self, command: str) -> list[str]:
         """Let the machine run with `command` (`RUN`, `VRT`, the `LOG` family, `STEPIN`); a
         command the debugger refused released nothing."""
-        ok, lines = self.exec(command)
+        try:
+            ok, lines = self.exec(command)
+        except BaseException:
+            # sent, with no answer to say it was not taken: the next contact asks `RUNSTATE`
+            self.forget_stop()
+            raise
         if not ok:
             raise Invalid("unexpected_answer",
                 f"the debugger refused `{command}`: {' / '.join(lines) or 'no reason given'}")
@@ -635,11 +640,13 @@ class Session(dprocess.Process):
             position_before = after
             try:
                 sent += 1
-                landed = self._one_step(after, mode)
-                if landed is None:
-                    running = True
-                    break
+                landed, interrupted = self._one_step(after, mode)
                 after = landed
+                if interrupted:
+                    # stopped by the bound inside what it stepped over: no further step
+                    completed += 1
+                    stalled += after == position_before
+                    break
             except NotStopped:
                 if not self.alive():
                     raise
@@ -661,8 +668,8 @@ class Session(dprocess.Process):
                 "stalled": stalled,
                 "before": before, "after": after}
 
-    def _one_step(self, at: dict[str, str], mode: str) -> dict[str, str] | None:
-        """One step from `at`; where it landed, or None when the machine ran on past the bound.
+    def _one_step(self, at: dict[str, str], mode: str) -> tuple[dict[str, str], bool]:
+        """One step from `at`: where it landed, and whether the bound interrupted it there.
 
         Into is `STEPIN`. Over is composed: an instruction that would run on past the next one (a
         CALL, an INT, a LOOP, a REP) gets a breakpoint at the next instruction and a `RUN`, and
@@ -671,24 +678,25 @@ class Session(dprocess.Process):
         if nxt is None:
             self._release("STEPIN")
             self.mark_stopped()     # `STEPIN` answers once its instruction ran, stopped
-            return self.where()
+            return self.where(), False
         target = f"{int(at['cs'], 16):04X}:{nxt:04X}"
         armed = any(dcons.bp_row_target(b["entry"]) == ("BP", int(at["cs"], 16), nxt)
                     for b in self.breakpoints())
         if not armed:
             self.command(f"BP {target}")
         began = time.monotonic()
+        expired = False
         try:
             self._release("RUN")
             expired, _ = Session.await_stop(self, began, began + STEP_WAIT_S, target,
                                             label="step over")
             if expired:
                 self.stop_at_bound()
-                return None
         finally:
-            if not armed and self.at_debugger():
-                Session._remove_own(self, [target])
-        return self.where()
+            with cancel.shielded():
+                if not armed and self.at_debugger():
+                    Session._remove_own(self, [target])
+        return self.where(), expired
 
     def _step_over_target(self, at: dict[str, str]) -> int | None:
         """The offset after the instruction at `at` when a step over must run past it, else None."""
@@ -700,7 +708,9 @@ class Session(dprocess.Process):
         if not first:
             return None
         insn = first[0]
-        runs_on = insn.flow == disasm.CALL or insn.mnemonic.startswith(STEP_OVER_WORDS)
+        # a `rep ret` returns: nothing after it is reached
+        runs_on = insn.flow == disasm.CALL or (insn.flow != disasm.RETURN
+                                               and insn.mnemonic.startswith(STEP_OVER_WORDS))
         return eip + len(insn.data) if runs_on else None
 
     def run_to(self, seg: int, off: int, seconds: float,
@@ -1242,10 +1252,6 @@ class Session(dprocess.Process):
         return self._link.send(commands)
 
     # ------------------------------------------------------------------ closing
-
-    def console_tail(self, chars: int) -> str:
-        """The last `chars` of what the emulator printed on its output."""
-        return self.output_tail(chars)
 
     def state(self) -> dict[str, object]:
         """Everything the server says about the session."""

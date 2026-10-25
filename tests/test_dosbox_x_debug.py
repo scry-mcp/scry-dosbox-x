@@ -214,15 +214,66 @@ def test_a_step_over_keeps_a_breakpoint_the_caller_had_at_the_next_instruction(
     assert "EXEC BP 0814:0108" not in machine.sent
 
 
-def test_a_step_over_that_runs_past_its_bound_is_brought_back_and_says_so(
+def test_a_step_over_that_runs_past_its_bound_is_brought_back_and_says_where(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The bound's `BREAK` stops the machine inside the callee: the reply says it is stopped
+    there, and the steps after it are not sent."""
     monkeypatch.setattr(ds, "STEP_WAIT_S", 0.05)
     machine = _step_guest(releases=[None])
     machine.regs["EIP"] = 0x105
     s = session_over(machine, tmp_path)
-    got = s.step(count=1, mode="over")
-    assert got["running"] is True and got["completed"] == 0, got
+    original = machine.request
+
+    def inside_the_callee(command: str, *a: Any, **k: Any) -> tuple[bool, list[str]]:
+        if command == "BREAK":
+            machine.regs["EIP"] = 0x11F
+        return original(command, *a, **k)
+    machine.request = inside_the_callee  # type: ignore[method-assign]
+    got = cast(dict[str, Any], s.step(count=3, mode="over"))
+    assert got["running"] is False and got["completed"] == 1, got
+    assert got["after"]["eip"] == "0000011F" and s.parked, got
     assert "BREAK" in machine.sent and machine.breakpoints == []
+    assert machine.sent.count("EXEC RUN") == 1, "a step was sent after the interrupted one"
+
+
+def test_a_release_whose_reply_fails_is_not_believed_stopped(tmp_path: Path) -> None:
+    """The release went out; a reply that broke off cannot say it stayed at the debugger."""
+    machine = Machine(regs=dict(REAL_STOP))
+    s = session_over(machine, tmp_path)
+
+    def dropped(command: str) -> tuple[bool, list[str]] | None:
+        raise ds.Invalid("session_broken", "the debugger channel dropped")
+    machine.hooks["RUN"] = dropped
+    with pytest.raises(ds.Invalid):
+        s._release("RUN")
+    assert not s.parked
+
+
+def test_a_rep_ret_is_stepped_into_as_the_return_it_is(tmp_path: Path) -> None:
+    """`F3 C3` returns: a breakpoint after it would never be reached."""
+    machine = _step_guest(steps=[{"EIP": 0x200}])
+    base = (0x814 << 4) + 0x105
+    machine.memory.update({base: 0xF3, base + 1: 0xC3})
+    machine.regs["EIP"] = 0x105
+    s = session_over(machine, tmp_path)
+    s.step(count=1, mode="over")
+    assert "EXEC STEPIN" in machine.sent and "EXEC RUN" not in machine.sent, machine.sent
+
+
+def test_a_loaded_state_is_read_afresh(tmp_path: Path) -> None:
+    """A load replaces the machine: the survey of the stop before it is no reading of it."""
+    machine = Machine(regs=dict(REAL_STOP))
+    s = session_over(machine, tmp_path)
+    assert s.where()["eip"] == "00000130"
+
+    def loaded(command: str) -> tuple[bool, list[str]]:
+        machine.regs["EIP"] = 0x777
+        return True, ["DEBUG: LOADSTATE ok"]
+    machine.hooks["LOADSTATE"] = loaded
+    state = tmp_path / "a.sav"
+    state.write_bytes(b"state")
+    s._state_command("LOADSTATE", state, 5.0)
+    assert s.where()["eip"] == "00000777"
 
 
 def test_moved_is_asked_per_step_and_not_of_the_endpoints(tmp_path: Path) -> None:

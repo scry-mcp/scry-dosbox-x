@@ -2,8 +2,8 @@ What the debugger channel answered to every command this server sends, captured 
 the Mac mini M4, one launch per file, by a script that sent each request through
 the channel and recorded the reply whole (`REQ`/`BEGIN`/`END`, no screen read).
 
-Builds: `scry-*` the fork's scry branch at 92d913050 (upstream main-ai d321e1e92 with the
-RUNSTATE and PRESENCE debugger commands), run with `debugger headless=true` and no terminal;
+Builds: `scry-*` a build of upstream main-ai d321e1e92 carrying the RUNSTATE and PRESENCE
+debugger commands, run with `debugger headless=true` and no terminal;
 `official-*` the Homebrew 2026.10.01 release, run on a pseudo-terminal nobody read.
 
 Scenarios: `real` the probe guest (`tests/guest/probe.conf`) broken into while it ticks;

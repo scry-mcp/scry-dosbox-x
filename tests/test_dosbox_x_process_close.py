@@ -218,6 +218,22 @@ def test_a_drainer_that_will_not_stop_leaves_the_descriptor_open_and_says_so(
         os.close(w)
 
 
+def test_an_output_no_stream_carried_is_unavailable_and_says_why() -> None:
+    """Windows' own console keeps what the emulator printed: no tail is an empty string."""
+    p = dprocess.Process()
+    tail = p.stdout_tail(10)
+    assert isinstance(tail, dict) and tail["available"] is False, tail
+    assert "console" in tail["why"], tail
+    p, w, t = _draining()
+    os.write(w, b"said")
+    _until(lambda: p.output_tail(10) == "said")
+    assert p.stdout_tail(10) == "said"
+    os.close(w)
+    t.join(1)
+    assert p._out is not None
+    os.close(p._out)
+
+
 # ------------------------------------------------------------- the drain over a pipe
 
 def _draining() -> tuple[dprocess.Process, int, threading.Thread]:

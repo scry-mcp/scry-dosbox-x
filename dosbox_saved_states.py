@@ -11,6 +11,7 @@ from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Invalid
 
+import dosbox_debugger as dbg
 import dosbox_launch as dlaunch
 import dosbox_logs as dlogs
 import dosbox_paths as paths
@@ -30,6 +31,8 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
     ses.state_sent = ses.state_answered = False
     if "\n" in str(path) or "\r" in str(path):
         raise Invalid("bad_argument", f"a state path is one line; got {str(path)!r}")
+    if not ses.has(verb):
+        raise dbg.missing(verb, "a saved state")
     paused = not ses.at_debugger()
     began = time.monotonic()
     marked: dict[str, object] = {}
@@ -41,7 +44,8 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
             # parked and not yet sent: everything logged after the mark is the loaded machine's
             marked = {"mark": channel_marks(ses)}
         ses.state_sent = True
-        ok, lines = ses.control.request(f"EXEC {verb} {path}", seconds, poll=cancel.check)
+        # through `exec`: a load replaces the machine, so the stop's survey is dropped
+        ok, lines = ses.exec(f"{verb} {path}", seconds)
         ses.state_answered = ok
     except BaseException as e:
         # a death under the command closes the channel, which reads as a drop it redials

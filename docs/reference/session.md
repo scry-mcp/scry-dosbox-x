@@ -233,7 +233,7 @@ Example, from a live run:
 
 **`shared` is explicit, with no detection behind it.** Headless uses `videodriver=dummy`, not `SDL_VIDEODRIVER` and not `-silent`, which exits after `AUTOEXEC.BAT` and cannot host a session.
 
-**`session_seconds` is a hard bound** because a DOSBox-X nobody reads freezes under its terminal. The emulator's `-time-limit` counts emulated time, which a machine held at the debugger never advances, so a guardian (`scry-dosbox-x-guardian` in the process list) also keeps the host's clock, ending the emulator a few seconds past the bound or within one poll of this server dying.
+**`session_seconds` is a hard bound** because a DOSBox-X held at its debugger never reaches its own time limit. The emulator's `-time-limit` counts emulated time, which a machine held at the debugger never advances, so a guardian (`scry-dosbox-x-guardian` in the process list) also keeps the host's clock, ending the emulator a few seconds past the bound or within one poll of this server dying.
 
 **The server never decides where a window goes**: no helper, or a failing one, refuses a shared `start` `host_failed` rather than invent a geometry. No flags is an answer (one display).
 
@@ -317,9 +317,9 @@ Example, from a live run:
 ```
 <!-- scry-reference:end status -->
 
-**The alarms** are `conf_changed_on_disk` (the file changed since start; `false` also if gone), `terminal_bytes_dropped`, `drain_alive` (the terminal reader runs) and `drain_ended` (why it stopped, present once it has). They ride in `session` only while they hold.
+**The alarms** are `conf_changed_on_disk` (the file changed since start; `false` also if gone), and `output_bytes_dropped` (the emulator's output overflowed what the server keeps). They ride in `session` only while they hold.
 
-**`pc` is read off the pane**, so it is unavailable while the guest runs; `cpu_mode` is `real`, `protected`, `paged` or `VM86`. `last_stop` is unavailable with no session or a cut survey. `presence` is `true` drawn, `false` off or no session, or why not. `declarations` is this server's own count.
+**`pc` is read from the debugger at a stop**, so it is unavailable while the guest runs; `cpu_mode` is `real`, `protected`, `paged` or `VM86`. `last_stop` is unavailable with no session or a cut survey. `presence` is `true` drawn, `false` off or no session, or why not. `declarations` is this server's own count.
 
 <!-- scry-reference:begin close -->
 ## `close`

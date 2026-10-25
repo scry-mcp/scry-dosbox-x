@@ -28,7 +28,7 @@ class _ClosesWithoutEnding:
         self.ended_how = "quit"
         return 0
 
-    def console_tail(self, chars: int) -> str:
+    def stdout_tail(self, chars: int) -> str:
         return ""
 
 

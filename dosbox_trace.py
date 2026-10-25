@@ -47,7 +47,7 @@ CLOSE_WAIT_S = 10.0
 LINE_QUOTED_CHARS = 120
 READ_CHUNK_BYTES = 1 << 20
 TAIL_BYTES = 64
-#: `RUNSTATE`'s cycle count is printed as a 64-bit unsigned number.
+#: `RUNSTATE` prints the core's `cycle_count`, a `Bitu`: 64 bits on a 64-bit build.
 CYCLES_WRAP = 1 << 64
 SYMBOLS_SHOWN = 64
 SET_SUFFIX = ".set.jsonl"
@@ -206,10 +206,10 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
             f"compiles the `LOG` family), so there is nothing to trace with; `build_check` says "
             f"`heavy_debug`")
     cwd = session.launch.cwd
-    # Judged before anything is typed, the close of a left-open log included.
+    # Judged before anything is sent, the close of a left-open log included.
     if not os.access(cwd, os.W_OK | os.X_OK):
         raise ds.Invalid("no_channel",
-            f"{cwd} is not writable, and the debugger opens its log there: nothing was typed. "
+            f"{cwd} is not writable, and the debugger opens its log there: nothing was sent. "
             f"`start` with a working directory the emulator can write")
     places = log_places(cwd)
     dcollect.refuse_leftover(places, "trace")

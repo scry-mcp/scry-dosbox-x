@@ -239,7 +239,7 @@ def filter_scan(session: ds.Session, operator: str, value: int | None,
     if value is not None and cell is not None and value >= 1 << (8 * cell):
         raise ds.Invalid("bad_argument",
             f"value={value:#x} is wider than the open scan's {cell}-byte cell (at most "
-            f"{(1 << (8 * cell)) - 1:#x}): nothing was typed")
+            f"{(1 << (8 * cell)) - 1:#x}): nothing was sent")
     arg = "" if value is None else f"{value:X}"
     out = session.command(f"MEMS {operator}{arg}")
     last = _last_scan_line(out)

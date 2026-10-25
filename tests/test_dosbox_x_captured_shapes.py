@@ -11,6 +11,7 @@ import pytest
 from dosbox_x_server_support import runnable
 
 import dosbox_binary as binaries
+import dosbox_debugger as dbg
 import dosbox_saved_states as states
 import dosbox_session as ds
 import dosbox_x_server as server
@@ -69,7 +70,10 @@ def test_a_state_the_emulator_refused_is_named_in_its_own_words(fixture: str, ve
     """A refusal is the emulator's own, and a save's names no cause of a load's."""
     answer = json.loads((FIX / "states" / fixture).read_text(encoding="utf-8"))
     session = SimpleNamespace(at_debugger=lambda: True, control=_channel_answering(answer),
-                              alive=lambda: True, launch=SimpleNamespace(logfile=None))
+                              alive=lambda: True, launch=SimpleNamespace(logfile=None),
+                              has=lambda _c: True)
+    session.exec = lambda command, seconds=None: dbg.exec_lines(
+        cast(ds.Session, session), command, seconds)
     with pytest.raises(ds.Invalid) as e:
         states._state_command(cast(ds.Session, session), verb, Path("/dir/x.sav"), 5.0)
     said = str(e.value)

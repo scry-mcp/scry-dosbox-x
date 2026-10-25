@@ -124,7 +124,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end perform -->
 
-**A `resume` inside a sequence drains what the console steps before it left in the terminal**, so their prompt does not read as the resume's halt. Its `screen_delta` (`detail=True`) is a tail capped at 2000 characters because the repaint replays the debugger's Output pane: an earlier `declaration_list(kind="breakpoint")` shows up in it however long the machine sat quiet. That is the pane, not the log (`log` reads the log).
+**A `resume` inside a sequence is followed by asking `RUNSTATE`**, so whether it stopped again is the debugger's answer. Its `output` (`detail=True`) is what the debugger printed for `RUN`, capped at 2000 characters; the guest's own lines are the log's (`log` reads the log).
 
 **A stopper that fires in a loop ends a key sequence early, and correctly**: the next key's `expect` is refused for a stopped machine. Clear it ahead of the `resume`, in the same `perform`.
 

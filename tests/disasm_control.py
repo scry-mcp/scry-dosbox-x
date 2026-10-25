@@ -1,5 +1,5 @@
 """The control `disassemble` is held to: the debugger's own code pane, line by line, off screens
-a terminal session captured (`fixtures/code/`), which the channel no longer carries.
+a terminal session captured (`fixtures/code/`): the channel carries no pane.
 
 Two decoders print one instruction in two syntaxes, so text equality proves nothing. A line
 agrees when both decode the same address to the same length, bytes and mnemonic, and per operand

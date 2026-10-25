@@ -520,7 +520,7 @@ def _debug(command: object, **_: Any) -> None:
                    "`step`, which reads where each instruction landed" if word == "STEPIN" else
                    "`resume`, with a breakpoint where the machine should stop")
         raise ds.Invalid("bad_argument",
-            f"`{word}` lets the guest run, and a typed release leaves `last_stop` naming the "
+            f"`{word}` lets the guest run, and a release sent here leaves `last_stop` naming the "
             f"stop before it. Release through {instead}: it reports the stop it reaches")
 
 

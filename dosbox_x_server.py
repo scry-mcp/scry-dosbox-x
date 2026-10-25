@@ -457,7 +457,7 @@ DEBUG_WRITES = frozenset({"SM", "SMV", "SR", "INTT", "TIMERIRQ", "LOADSTATE", "O
                           "OUTW", "OUTD", "TIME", "DATE"})
 
 
-@tool("Debugger console command", summary=one_line.debug)
+@tool("Raw debugger command", summary=one_line.debug)
 def debug(command: str) -> dict[str, Any]:
     """One raw `command` to the debugger; the last resort. For a value use `registers`,
     `read_memory` or `memdump`; for the log `log`.
@@ -470,13 +470,12 @@ def debug(command: str) -> dict[str, Any]:
     """
     session = live()
     session.require_stopped(repr(command))
-    # A SCAN COMMAND TYPED HERE moves the debugger's own count past the one `scan(method="filter")`
-    # keeps,
-    # and may open a scan at another width, so both are dropped rather than answered stale.
+    # A SCAN COMMAND SENT HERE moves the debugger's own count past the one `scan(method="filter")`
+    # keeps, and may open a scan at another width, so both are dropped rather than answered stale.
     if command.strip().upper().startswith(("MEMS", "MEMFIND")):
         STATE.scan_forget()
     # A COMMAND THAT WRITES THE GUEST (`DEBUG_WRITES`) marks the session as `write` and
-    # `set_register` do, before it is typed: what reaches the machine has been written.
+    # `set_register` do, before it is sent: what reaches the machine has been written.
     if command.split()[:1] and command.split()[0].upper() in DEBUG_WRITES:
         session.altered = True
     ok, lines = session.exec(command)
@@ -527,8 +526,9 @@ def write(ref: str, data_hex: str) -> dict[str, Any]:
 @tool("Resume the machine", summary=one_line.resume, on_cancel="none", replay="wall")
 def resume(seconds: Annotated[float, vocab.WAIT_FROM_ZERO_BOUNDS] = 0.0, detail: bool = False,
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Let the machine run. `seconds` 0 (the default) returns at once; a bound up to {WAIT_MAX_S}
-    waits for a stop and, if none comes, leaves it running. Needs a stopped machine.
+    """Let the machine run. `seconds` 0 (the default) returns after a one-second look for a
+    stop; a bound up to {WAIT_MAX_S} waits for a stop and, if none comes, leaves it running. Needs
+    a stopped machine.
 
     Reply: with a bound, `verdict` (`OTHER_STOP` with the stop reply of `run_to`; `TIMEOUT`,
     `waited_s`, `note`). `output` (with `detail=True`: the last {DETAIL_TEXT_KEEP} characters
@@ -544,7 +544,8 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Bring a running guest back to the debugger and survey the stop, headless or windowed.
 
     Reply: `interrupted` (`true` with the stop reply and `via: "break"`; `false` when already
-    stopped, with a `note`). INVALID `not_settled`: the `BREAK` got no prompt; ask again.
+    stopped, with a `note`). INVALID `not_settled`: after the `BREAK`, `RUNSTATE` did not say
+    stopped; ask again.
 
     Reference: REFERENCE.md, Advancing the machine.
     """
@@ -565,12 +566,13 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
 @tool("Step instructions", summary=one_line.step)
 def step(count: Annotated[int, vocab.bounds(1, ds.STEP_MAX)] = 1,
          mode: Annotated[str, vocab.enum(ds.STEP_MODES)] = "into") -> dict[str, Any]:
-    """`count` instructions, each read back; `mode` `into` (F11) or `over` (F10). Needs the machine
+    """`count` instructions, each read back; `mode` `into` (the debugger's `STEPIN`) or `over` (a
+    CALL, INT, LOOP or REP run to the next instruction, which needs `RUNSTATE`). Needs the machine
     stopped.
 
     Reply: `mode`, `asked`, `before`, `after`, `instructions_completed`, `moved`, `stalled`
-    (CS:EIP unchanged after a step), and the stop reply; an `over` whose call never returns
-    leaves the guest running, with no stop reply. For longer runs `run_to`.
+    (CS:EIP unchanged after a step), and the stop reply; an `over` that does not come back within
+    its bound is stopped where it stands, and no later step is sent. For longer runs `run_to`.
     """
     session = live()
     out = cast(dict[str, Any], session.step(mode=mode, count=count))
@@ -648,19 +650,19 @@ def screen_wait(text: str, seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
                 ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run the machine retrace by retrace until `text` is on the TEXT screen, and stop there.
     `text` (1 to {SCREEN_TEXT_MAX} code page 437 characters) is matched literally,
-    case-sensitive, inside one row as `screen_view` reads it. Needs a stopped machine. Already
-    on screen: answered at once. Each retrace costs a
-    stop and five round trips, so `run_for` first for a distant string.
+    case-sensitive, inside one row as `screen_view` reads it. Needs a stopped machine and
+    `RUNSTATE`. Already on screen: answered at once. Each retrace costs a stop and a reading of the
+    screen, so `run_for` first for a distant string.
 
     Reply: `verdict` `TARGET` (`already`, `waited_s`, `polls`, `point` `[column, row]`, `line`)
     or `TIMEOUT` (`waited_s`, `polls`, `text`, `retrace_pending`), `note`, the stop reply of
     `run_to`. Refused: `bad_argument`, `wait_stopped` (a declared breakpoint stopped it),
-    `no_channel` (a screen it cannot read).
+    `no_channel` (a screen it cannot read, or a build with no `RUNSTATE`).
 
     Reference: REFERENCE.md, Input and the screen.
     """
     session = live()
-    session.require_stopped("a listing")
+    session.require_stopped("screen_wait")
     return retrace.screen_wait(session, text, seconds, bridge(ctx))
 
 

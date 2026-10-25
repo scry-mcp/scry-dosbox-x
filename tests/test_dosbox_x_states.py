@@ -19,6 +19,8 @@ import pytest
 from scry_core import cancel
 from scry_core.host_program import MODE_BITS, POSIX_NAMES
 
+import dosbox_binary as binaries
+import dosbox_debugger as dbg
 import dosbox_inputs as inputs
 import dosbox_launch as dlaunch
 import dosbox_mcp
@@ -98,9 +100,17 @@ class StateFake:
         self.release_raises: BaseException | None = None
         self.break_raises: ds.Invalid | None = None
         self.lives = True
+        self.commands = frozenset(binaries.COMMANDS)
+
+    def has(self, command: str) -> bool:
+        return command in self.commands
 
     def at_debugger(self) -> bool:
         return self.parked
+
+    def exec(self, command: str, seconds: float | None = None) -> tuple[bool, list[str]]:
+        """The real `exec`'s own request, its survey cache aside."""
+        return dbg.exec_lines(cast(ds.Session, self), command, seconds)
 
     def break_in(self, seconds: float = 5.0) -> float:
         if self.break_raises is not None:
@@ -221,6 +231,20 @@ def test_a_build_without_the_commands_is_no_channel_naming_the_command(tmp_path:
     with pytest.raises(ds.Invalid) as exc:
         ds.Session.load_state(as_session(fake), "boot", 5.0)
     assert exc.value.code == "no_channel"
+
+
+@pytest.mark.parametrize("verb", ["SAVESTATE", "LOADSTATE"])
+def test_a_build_whose_binary_lacks_the_command_is_refused_before_the_guest_is_stopped(
+        tmp_path: Path, verb: str) -> None:
+    fake = StateFake(tmp_path / "save", parked=False)
+    fake.commands = frozenset(binaries.COMMANDS) - {verb}
+    if verb == "LOADSTATE":
+        write_state(tmp_path / "save" / "boot.sav")
+    act = ds.Session.save_state if verb == "SAVESTATE" else ds.Session.load_state
+    with pytest.raises(ds.Invalid) as exc:
+        act(as_session(fake), "boot", 5.0)
+    assert exc.value.code == "no_channel" and f"`{verb}`" in str(exc.value), exc.value
+    assert "Debugger commands" in str(exc.value) and fake.moves == [], fake.moves
 
 
 def test_the_emulators_own_refusal_is_unexpected_answer_saying_why(tmp_path: Path) -> None:

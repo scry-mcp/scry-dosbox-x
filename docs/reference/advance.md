@@ -133,7 +133,7 @@ because `BPDEL` renumbers.
 ROM breakpoint that never fires (`breakpoint_at`). A cold target beside a hot control fires the
 control and never the target; with the roles swapped the target arrives.
 
-The server derives the debugger's address from the machine's own mode, arms a `BP`, verifies it by reading the list back, and interrupts at the bound. Pick a control that fires a few times a run: each hit costs a round trip. `OTHER_STOP` means another breakpoint got there first. The `target_disarmed` breakpoint is removed on every outcome (false when that could not be confirmed). `control_silent` is a TIMEOUT with no control hit and `cut_by_other_stop` another stop before the control fired, each with the stop surveyed; `not_settled` is an interrupt that found no prompt.
+The server derives the debugger's address from the machine's own mode, arms a `BP`, verifies it by reading the list back, and interrupts at the bound. Pick a control that fires a few times a run: each hit costs a round trip. `OTHER_STOP` means another breakpoint got there first. The `target_disarmed` breakpoint is removed on every outcome (false when that could not be confirmed). `control_silent` is a TIMEOUT with no control hit and `cut_by_other_stop` another stop before the control fired, each with the stop surveyed; `not_settled` is an interrupt after which `RUNSTATE` did not say stopped.
 
 <!-- scry-reference:begin run_for -->
 ## `run_for`
@@ -263,7 +263,7 @@ breakpoint armed after its code already ran can fail to cut the frames after it,
 does not prove its address was not reached; and a change-watch or interrupt breakpoint cannot be
 told from a retrace, so its stop counts as a frame.
 
-By milliseconds it surveys every frame to read the register pane's emulated clock. A `TIMEOUT` with a `VRT` still out is interrupted where it stands, its retrace left pending. `retrace_pending: true` means the debugger still holds a retrace stop, which the next release meets. The `note` states what the reply cannot prove (a declared breakpoint or watch, an unread clock). Advancing is not altering.
+By milliseconds it reads the emulated clock off each retrace stop's `RUNSTATE`. A `TIMEOUT` with a `VRT` still out is interrupted where it stands, its retrace left pending. `retrace_pending: true` means the debugger still holds a retrace stop, which the next release meets. The `note` states what the reply cannot prove (a declared breakpoint or watch, an unread clock). Advancing is not altering.
 
 <!-- scry-reference:begin trace -->
 ## `trace`
@@ -393,13 +393,13 @@ exits, so that question is answered by a trace forward from an earlier stop.
 The working directory is only the file's passing place, because the debugger writes nowhere else.
 
 **A trace proves its own count**: the line count is an instruction count only on the normal core,
-so the pane's `cc=` must have moved by the entries the file holds. An interrupt breakpoint stops
+so the cycle count `RUNSTATE` gives must have moved by the entries the file holds. An interrupt breakpoint stops
 inside its INT, after the counter took it and before it ran, so a cut run may count one more than
 it executed; and the log writes each line before breakpoints are checked, so a trace started on a
 breakpoint's address stops there again with nothing executed. The machine can close the log itself
 (the BIOS's power-on self test does, so a trace from the reset park meets it).
 
-`verdict`: `ELAPSED` means all ran and the file holds one line more, the stop; `OTHER_STOP` a declared stopper or pending retrace first (`cause`); `TIMEOUT` the run was interrupted where it stood and what ran up to there collected. `instructions` is executed, `addresses` distinct, `unplaced` those no symbol places; `set_path` is a JSON line per address, unavailable when it could not be written (said in `note`). `no_channel`: the count is proved against the pane's `cc=` counter, which moves one per instruction on the normal core only. `readback_refused`: the log closed early (the machine closed it before the trace stopped, so its lines are not what ran), is empty, or would not close. `host_failed`: the debugger was refused its file, nothing ran and the line it left is emptied.
+`verdict`: `ELAPSED` means all ran and the file holds one line more, the stop; `OTHER_STOP` a declared stopper or pending retrace first (`cause`); `TIMEOUT` the run was interrupted where it stood and what ran up to there collected. `instructions` is executed, `addresses` distinct, `unplaced` those no symbol places; `set_path` is a JSON line per address, unavailable when it could not be written (said in `note`). `no_channel`: the count is proved against `RUNSTATE`'s cycle count, which moves one per instruction on the normal core only. `readback_refused`: the log closed early (the machine closed it before the trace stopped, so its lines are not what ran), is empty, or would not close. `host_failed`: the debugger was refused its file, and nothing ran.
 
 <!-- scry-reference:begin screen_wait -->
 ## `screen_wait`
@@ -412,14 +412,14 @@ screen_wait(text, seconds=30.0)
 
 Run the machine retrace by retrace until `text` is on the TEXT screen, and stop there.
 `text` (1 to 132 code page 437 characters) is matched literally,
-case-sensitive, inside one row as `screen_view` reads it. Needs a stopped machine. Already
-on screen: answered at once. Each retrace costs a
-stop and five round trips, so `run_for` first for a distant string.
+case-sensitive, inside one row as `screen_view` reads it. Needs a stopped machine and
+`RUNSTATE`. Already on screen: answered at once. Each retrace costs a stop and a reading of the
+screen, so `run_for` first for a distant string.
 
 Reply: `verdict` `TARGET` (`already`, `waited_s`, `polls`, `point` `[column, row]`, `line`)
 or `TIMEOUT` (`waited_s`, `polls`, `text`, `retrace_pending`), `note`, the stop reply of
 `run_to`. Refused: `bad_argument`, `wait_stopped` (a declared breakpoint stopped it),
-`no_channel` (a screen it cannot read).
+`no_channel` (a screen it cannot read, or a build with no `RUNSTATE`).
 
 Reference: REFERENCE.md, Input and the screen.
 
@@ -486,12 +486,13 @@ Example, from a live run:
 step(count=1, mode="into")
 ```
 
-`count` instructions, each read back; `mode` `into` (F11) or `over` (F10). Needs the machine
+`count` instructions, each read back; `mode` `into` (the debugger's `STEPIN`) or `over` (a
+CALL, INT, LOOP or REP run to the next instruction, which needs `RUNSTATE`). Needs the machine
 stopped.
 
 Reply: `mode`, `asked`, `before`, `after`, `instructions_completed`, `moved`, `stalled`
-(CS:EIP unchanged after a step), and the stop reply; an `over` whose call never returns
-leaves the guest running, with no stop reply. For longer runs `run_to`.
+(CS:EIP unchanged after a step), and the stop reply; an `over` that does not come back within
+its bound is stopped where it stands, and no later step is sent. For longer runs `run_to`.
 
 | argument | type | default |
 |---|---|---|
@@ -572,13 +573,14 @@ Example, from a live run:
 ```
 <!-- scry-reference:end step -->
 
-Stepping OVER a `CALL` is run-until-it-returns, so a call that never returns leaves the machine
-running and the remaining keystrokes go nowhere; the position is re-established after every key.
-`stalled` is counted per step because comparing only the endpoints misreads a two-instruction loop
-(`L: nop` / `jmp L`) as a swallowed key. `count` is a cost bound, not a safety one: past it the
-question is `run_to`, which pays the settle once.
+Stepping into is the debugger's `STEPIN`. Stepping OVER a `CALL`, an `INT`, a `LOOP` or a `REP` is
+composed: a breakpoint on the next instruction, `RUN`, the wait for the stop (`RUNSTATE`), the
+breakpoint removed; so a call that never returns leaves the machine running and the remaining
+steps are not sent. `stalled` is counted per step because comparing only the endpoints misreads a
+two-instruction loop (`L: nop` / `jmp L`) as a step that went nowhere. `count` is a cost bound, not
+a safety one: past it the question is `run_to`.
 
-`instructions_completed` can be fewer than asked when the machine left the debugger (an `over` across a call that never returns, which `session.running` says), so the remaining steps were not sent. `stalled` is a swallowed keystroke, a `rep` iteration, a jump to itself or a halt. The per-step settle is why `count` is a cost bound.
+`instructions_completed` can be fewer than asked when the machine left the debugger (an `over` across a call that never returns, which `session.running` says), so the remaining steps were not sent. `stalled` is a `rep` iteration, a jump to itself or a halt.
 
 <!-- scry-reference:begin resume -->
 ## `resume`
@@ -589,8 +591,9 @@ question is `run_to`, which pays the settle once.
 resume(seconds=0.0, detail=false)
 ```
 
-Let the machine run. `seconds` 0 (the default) returns at once; a bound up to 600
-waits for a stop and, if none comes, leaves it running. Needs a stopped machine.
+Let the machine run. `seconds` 0 (the default) returns after a one-second look for a
+stop; a bound up to 600 waits for a stop and, if none comes, leaves it running. Needs
+a stopped machine.
 
 Reply: with a bound, `verdict` (`OTHER_STOP` with the stop reply of `run_to`; `TIMEOUT`,
 `waited_s`, `note`). `output` (with `detail=True`: the last 2000 characters
@@ -641,7 +644,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end resume -->
 
-It listens for the debugger's prompt as `run_to` does and reports progress. A refused running guest is because an F5 there does nothing and an `ok` would read like a release. Nothing has to be declared first: `stop` brings a running guest back, headless or windowed. An F5 that never left the debugger is a stop too.
+It asks `RUNSTATE` as `run_to` does and reports progress. A running guest is refused because a `RUN` there does nothing and an `ok` would read like a release. Nothing has to be declared first: `stop` brings a running guest back, headless or windowed. A release that stopped at once is a stop too.
 
 <!-- scry-reference:begin stop -->
 ## `stop`
@@ -655,7 +658,8 @@ stop()
 Bring a running guest back to the debugger and survey the stop, headless or windowed.
 
 Reply: `interrupted` (`true` with the stop reply and `via: "break"`; `false` when already
-stopped, with a `note`). INVALID `not_settled`: the `BREAK` got no prompt; ask again.
+stopped, with a `note`). INVALID `not_settled`: after the `BREAK`, `RUNSTATE` did not say
+stopped; ask again.
 
 Reference: REFERENCE.md, Advancing the machine.
 

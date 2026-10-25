@@ -100,7 +100,7 @@ def listed(session: ds.Session, command: str) -> dict[str, Any]:
 
 def vga_section(session: ds.Session) -> tuple[dict[str, Any] | None, list[str], str]:
     """`machine_map`'s `vga` section: the listings by key and their commands, or None and why.
-    One bad listing makes the section absent and the later ones are not typed."""
+    One bad listing makes the section absent and the later ones are not asked."""
     found: dict[str, Any] = {}
     for key, command, title in VGA_LISTINGS:
         text = session.listing(command)

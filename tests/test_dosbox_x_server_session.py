@@ -1457,7 +1457,7 @@ def test_close_carries_the_last_words_of_both_channels_when_the_end_was_not_clea
             self.ended_how, self._alive = self._how, False
             return self._code
 
-        def console_tail(self, chars: int) -> str:
+        def stdout_tail(self, chars: int) -> str:
             return ("y" * 3000 + "Exit to error: the console's own words")[-chars:]
 
     dstate.STATE.session = Ended("killed", -9, log)  # type: ignore[assignment]

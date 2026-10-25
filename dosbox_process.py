@@ -12,6 +12,7 @@ from dataclasses import replace
 from typing import Any
 
 from scry_core import cancel, guardian, live_host
+from scry_core import reply_contract as contract
 from scry_core.progress import PROGRESS_EVERY_S, Progress, no_progress
 
 import dosbox_control as control
@@ -47,6 +48,8 @@ def _console() -> dict[str, Any]:
         return {"start_new_session": True}
 
 
+NO_OUTPUT_WHY = ("the emulator wrote to a console of its own, which this server does not read "
+                 "(Windows, a build whose debugger draws a screen)")
 #: Names in the host's process list.
 PROCESS_NAME = "scry-dosbox-x"
 GUARDIAN_NAME = guardian.name_of(PROCESS_NAME)
@@ -97,6 +100,8 @@ class Process:
         self._lock = threading.Lock()
         self.dropped = 0
         self._out: int | None = None
+        # False when the emulator writes to a console of its own, which nothing here reads
+        self.captures_output = False
         # Why it ended: else a transient error reads as a quiet machine while `alive` is true.
         self._drainer: threading.Thread | None = None
         self.drain_ended = ""
@@ -132,6 +137,7 @@ class Process:
         terminal = False
         if ends is not None:
             self._out = ends[0]
+            self.captures_output = True
             terminal = os.isatty(ends[1])
             streams = {"stdin": ends[1] if terminal else subprocess.DEVNULL,
                        "stdout": ends[1], "stderr": ends[1]}
@@ -213,6 +219,12 @@ class Process:
         with self._lock:
             got = bytes(self._buf[-4 * chars:])
         return got.decode("utf-8", errors="replace")[-chars:]
+
+    def stdout_tail(self, chars: int) -> str | dict[str, Any]:
+        """`output_tail`, or unavailable with why when no stream carried the output."""
+        if not (self.captures_output or self._out is not None):
+            return contract.unavailable(NO_OUTPUT_WHY)
+        return self.output_tail(chars)
 
     # ------------------------------------------------------------------ closing
 

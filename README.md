@@ -42,10 +42,11 @@ driven by look, act, verify, and so is this.
 
 You need git, Python 3.11 or newer, [uv](https://docs.astral.sh/uv/), and a DOSBox-X built with
 the debugger (`build_check` says whether yours is): the `dosbox-x` on your `PATH`, or another
-named by `DOSBOX_X_BINARY` or by `start`'s `binary`. The saved states need two debugger
-commands, `SAVESTATE` and `LOADSTATE`, that DOSBox-X has merged into its `main-ai` branch but not
-yet into a release: name a build that carries them with `DOSBOX_X_BINARY`. A missing piece is
-named by the tool that needs it, never worked around.
+named by `DOSBOX_X_BINARY` or by `start`'s `binary`. Some tools need debugger commands a
+release does not carry: waiting for a stop (`run_to`, `run_for`, `trace`, `screen_wait`, a step
+over, a bounded `resume`) needs `RUNSTATE`; stepping needs `STEPIN`; the saved states need
+`SAVESTATE` and `LOADSTATE` ([Platforms](#platforms)). Name a build that carries them with
+`DOSBOX_X_BINARY`. A missing piece is named by the tool that needs it, never worked around.
 
 ```sh
 git clone https://github.com/scry-mcp/scry-dosbox-x

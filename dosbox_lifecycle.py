@@ -195,7 +195,7 @@ def close(progress: ds.Progress, detail: bool = False) -> dict[str, Any]:
     rc = STATE.session.close(progress=progress)
     # Read after the exit so the tails hold what the emulator said on the way out.
     clean = STATE.session.ended_how == "quit" and rc == 0
-    tails = ({"stdout_tail": STATE.session.console_tail(log_marks.TAIL_CHARS),
+    tails = ({"stdout_tail": STATE.session.stdout_tail(log_marks.TAIL_CHARS),
               "errorlog_tail": _log_tail(STATE.session)} if detail or not clean
              else narrowing.omission(["stdout_tail", "errorlog_tail"], CLOSE_HOW))
     # Set only by the close: a SIGKILLed, unreaped child has no exit code.

@@ -80,7 +80,7 @@ K_CELLS = cells(
     ("K a dest already there is refused and kept", "trace docstring: not there yet"),
     ("K a dest in the working directory is refused", "trace docstring: outside the working "
      "directory"),
-    ("K debug LOG 10 is refused naming trace", "REFERENCE.md, The console"),
+    ("K debug LOG 10 is refused naming trace", "REFERENCE.md, The debugger channel"),
     ("K perform runs a trace step", "REFERENCE.md, Sequences in one call"),
     ("K no dest: trace-1 then trace-2 in the captures directory",
      "trace docstring: the next free trace-<n>.trace"),

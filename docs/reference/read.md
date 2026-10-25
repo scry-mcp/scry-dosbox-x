@@ -1,6 +1,6 @@
 # The Read tools
 
-The typed tools parse what the debugger console paints, read its lists back and refuse a shape they were not captured answering; `debug` is the raw command for the rest.
+The typed tools parse what the debugger prints for each command, read its lists back and refuse a shape they were not captured answering; `debug` is the raw command for the rest.
 
 ### The picture attached
 
@@ -61,7 +61,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end registers -->
 
-A refusal for lack of a pane carries `last_stop` and names the tools that do answer while the guest runs.
+A refusal because the guest runs carries `last_stop` and names the tools that do answer while the guest runs.
 
 <!-- scry-reference:begin read_memory -->
 ## `read_memory`
@@ -112,14 +112,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end read_memory -->
 
-It hands back ROWS rather than a screen: the debugger paints its Output log BELOW its Data view, so
-a positional cut of the terminal's tail can return a read beginning at another address with the
-reply saying `ok`. It reduces by MEANING. An escape sequence can straddle two reads, so its head is
-held and prepended to the next (at offset zero too), or a fragment stripped alone injects its final
-byte into a row's hex; the hold is bounded by length, or an unterminated OSC would swallow the
-stream and go blind while reporting nothing wrong.
-
-The bytes come from the debugger's data-view rows, and the reply is INVALID unless the address asked for is among them, so a cut repaint is refused rather than handed back shifted.
+The bytes come from the debugger's `MEMDUMPBIN` of exactly that span, and the reply is INVALID unless the file it writes holds exactly the bytes asked for, so a short dump is refused rather than handed back shifted.
 
 <!-- scry-reference:begin disassemble -->
 ## `disassemble`
@@ -193,7 +186,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end disassemble -->
 
-The debugger has no disassembly command, hence capstone on the host. The width is the segment's own D bit: real mode 16-bit; in protected mode the pane's `Pr32`/`Pr16` for CS, `SELINFO` for a selector another segment register holds, the descriptor listings (which need `logfile`) for one no register holds. `lines` are `SSSS:OOOOOOOO BYTES TEXT`; a byte no instruction starts with is `.byte 0x..` with flow `unknown`. In a 16-bit segment IP wraps at its end, which is why a longer range is refused, naming the most bytes from there. `resolved` rows carry the segment register a memory operand is read through at this stop; an address unavailable outside the table's span.
+The debugger has no disassembly command, hence capstone on the host. The width is the segment's own D bit: real mode 16-bit; in protected mode the stop's `Pr32`/`Pr16` for CS, `SELINFO` for a selector another segment register holds, the descriptor listings for one no register holds. `lines` are `SSSS:OOOOOOOO BYTES TEXT`; a byte no instruction starts with is `.byte 0x..` with flow `unknown`. In a 16-bit segment IP wraps at its end, which is why a longer range is refused, naming the most bytes from there. `resolved` rows carry the segment register a memory operand is read through at this stop; an address unavailable outside the table's span.
 
 <!-- scry-reference:begin call_stack -->
 ## `call_stack`
@@ -463,7 +456,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end log -->
 
-`guest` is the program's own 0xE9 instrumentation, one line per write; `emulator` is DOSBox-X's own lines; `all` is the file in order, each line tagged `[guest] ` or `[emulator] `. `labels` counts returned lines by first word (BOOT, PERF, UI...), one glance at who is talking. `lines_total` counts all matches, not those returned, and an empty `lines` is an answer. One file holds the three channels, so one mark position serves each. `process` is the emulator's stdout, which here is the debugger's terminal. Queued work applies on a stop, saying so in `applied_on_stop`.
+`guest` is the program's own 0xE9 instrumentation, one line per write; `emulator` is DOSBox-X's own lines; `all` is the file in order, each line tagged `[guest] ` or `[emulator] `. `labels` counts returned lines by first word (BOOT, PERF, UI...), one glance at who is talking. `lines_total` counts all matches, not those returned, and an empty `lines` is an answer. One file holds the three channels, so one mark position serves each. `process` is the emulator's own stdout. Queued work applies on a stop, saying so in `applied_on_stop`.
 
 <!-- scry-reference:begin log_wait -->
 ## `log_wait`
@@ -539,7 +532,7 @@ A tool that only waited would sit out its bound for a line that went past before
 
 **A `TIMEOUT` is never an empty answer.** `arrived_during` and `lines_examined` are different facts: the second under the first's name makes a silent guest on a log of old traces look like a live channel.
 
-No breakpoint can be armed on a log line: the guest is usually still running and the console takes no commands then. The nearest is a change watch on the variable whose change produces the line.
+No breakpoint can be armed on a log line: the guest is usually still running then. The nearest is a change watch on the variable whose change produces the line.
 
 It reads what the log already holds first, so a line that went past before the call is found. A log that does not exist yet is not refused: that is the state right after `resume`. The moment it returns is for choosing an address to `run_to` or `watch_add` on the next run; the guest is usually still running then, and console tools refuse. `expect` on `send_keys`/`drive` is this wait on the guest channel, from a mark taken before the act. `already` marks history rather than something you were present for.
 
@@ -819,11 +812,8 @@ Example, from a live run:
 ```
 <!-- scry-reference:end machine_map -->
 
-The rows come from the logfile and never from the screen, where the repaint draws columns with
-cursor moves the escape strip removes, so a segment and a size run together. A listing longer than
-the Output pane pages, and the pager eats every key, a command included; so the reader answers with
-`Q` alone, and an input line still holding text after that is refused `unexpected_answer`, because
-the next command would be appended to it.
+The rows come from the lines the debugger printed for each listing, whole; a listing longer than
+the channel keeps of one reply is refused, never read as complete.
 
 **Which sections exist depends on the mode, and an absent one says why.** `cpu_mode` is read off the
 `CPU` listing's cr0, which cannot tell VM86 from protected mode: at a VM86 stop it says `protected`
@@ -837,7 +827,7 @@ leaves in it, and its `psp_seg` of `0000` says it is free. The MCB chain is chec
 (each block starts right past the one above, `END OF CHAIN` right past the last); a chain that
 breaks that walk is cut, and `mcbs` is absent.
 
-Each listing costs a console round trip. `cpu_mode` is `real`, `protected` or `paged`, unavailable when the `CPU` listing is unreadable. `gdt` and `ldt` exist in protected mode. Row fields per section: `mcbs` (`memory`, `mcb_seg`, `size_bytes`, `psp_seg`, `notes`, `filename`), `devs` (`header`, `attr`, `strat`, `intr`, `name`), `kern` (`seg`, `size_bytes`, `what`), `xms` (`handle`, `status`, `location`, `size_bytes`), `ems` (`handle`, `addr`, `size_bytes`, `name`), `ems_pages` (`handle`, `page`, `start`, `end`), `bios_mem` (`start`, `end`, `status`, `what`), `callbacks` (`number`, `desc`), `control` (control registers, flags, `gdtr`, `idt`, `tr`, `ldtr`), `gdt`/`ldt` (`selector`, `base`, `limit`, `type`, `dpl`, `p`, `a`, `r`, `b`, `g`), `paging` runs (`start`, `end`, `phy`, `flags`, `d`, `a`), `vga` (`mode`, `crtc`, `seq`, `gc`, `ac`, `dac`, `draw`). `omitted` and `how` name the sections of this mode that were not read. A logfile that shrank is `session_broken`. A section the debugger refused or printed in no known shape is absent rather than partial.
+Each listing costs one round trip. `cpu_mode` is `real`, `protected` or `paged`, unavailable when the `CPU` listing is unreadable. `gdt` and `ldt` exist in protected mode. Row fields per section: `mcbs` (`memory`, `mcb_seg`, `size_bytes`, `psp_seg`, `notes`, `filename`), `devs` (`header`, `attr`, `strat`, `intr`, `name`), `kern` (`seg`, `size_bytes`, `what`), `xms` (`handle`, `status`, `location`, `size_bytes`), `ems` (`handle`, `addr`, `size_bytes`, `name`), `ems_pages` (`handle`, `page`, `start`, `end`), `bios_mem` (`start`, `end`, `status`, `what`), `callbacks` (`number`, `desc`), `control` (control registers, flags, `gdtr`, `idt`, `tr`, `ldtr`), `gdt`/`ldt` (`selector`, `base`, `limit`, `type`, `dpl`, `p`, `a`, `r`, `b`, `g`), `paging` runs (`start`, `end`, `phy`, `flags`, `d`, `a`), `vga` (`mode`, `crtc`, `seq`, `gc`, `ac`, `dac`, `draw`). `omitted` and `how` name the sections of this mode that were not read. A section the debugger refused or printed in no known shape is absent rather than partial.
 
 <!-- scry-reference:begin interrupt_vectors -->
 ## `interrupt_vectors`
@@ -931,7 +921,7 @@ The holder row says which program
 hooked a vector without comparing against an earlier table; a table taken at `start` is all zeros,
 since the park comes before DOS fills it.
 
-Without `logfile` no vector has a holder. The debugger writes `MCPIVT.TXT` into the emulator's working directory, which this reads and removes; with `logfile` it then reads the listings `machine_map` reads, a console round trip each. The whole table is read either way. The holder is the first match in the order mcbs, kern, bios_mem; `symbol` is given only between the table's lowest and highest symbol, as `symbols_find(linear=)` answers it. Before DOS fills the table every vector is 0000:0000, as read. `cpu_mode` has `VM86` among its words.
+The debugger writes `MCPIVT.TXT` into the emulator's working directory, which this reads and removes; it then reads the listings `machine_map` reads, a round trip each. The whole table is read either way. The holder is the first match in the order mcbs, kern, bios_mem; `symbol` is given only between the table's lowest and highest symbol, as `symbols_find(linear=)` answers it. Before DOS fills the table every vector is 0000:0000, as read. `cpu_mode` has `VM86` among its words.
 
 <!-- scry-reference:begin palette -->
 ## `palette`
@@ -1014,7 +1004,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end palette -->
 
-Each six-bit component is widened as the emulator renders it, its two top bits repeated below; `rgb` is each entry as `VGA DACPAL` printed it, three six-bit components in hex. Every pixel of the swatch is the entry's index into the DAC. The PNG is attached after the JSON when within the inline ceiling (1568 px a side, 1568 tiles of 28 px); `image` names it either way, with `indexed` and `border`. The listing costs a console round trip, and one more for `VGA DACPAL`'s pager.
+Each six-bit component is widened as the emulator renders it, its two top bits repeated below; `rgb` is each entry as `VGA DACPAL` printed it, three six-bit components in hex. Every pixel of the swatch is the entry's index into the DAC. The PNG is attached after the JSON when within the inline ceiling (1568 px a side, 1568 tiles of 28 px); `image` names it either way, with `indexed` and `border`. The listings cost a round trip each.
 
 <!-- scry-reference:begin screen_view -->
 ## `screen_view`
@@ -1316,7 +1306,7 @@ Units are cells in a text mode and pixels in 256 colours.
 <!-- scry-reference:begin debug -->
 ## `debug`
 
-*Debugger console command*
+*Raw debugger command*
 
 ```text
 debug(command)
@@ -1361,8 +1351,8 @@ Example, from a live run:
 ```
 <!-- scry-reference:end debug -->
 
-**A command that lets the guest run is refused before it is typed**, because it leaves the debugger without the session knowing and `last_stop` and `status` would go on naming the stop before it. A control character is refused: a line break would type a second command past that check, and an escape is a key.
+**A command that lets the guest run is refused before it is sent**, because it leaves the debugger without the session knowing and `last_stop` and `status` would go on naming the stop before it. A control character is refused: a line break would carry a second command past that check.
 
-**`debug` leaves the console clean.** A command the console does not recognise stays on its input line, and the next command is typed onto it and fails too. So when the line still holds text once the prompt is back, `debug` empties it with ESC, which runs nothing whatever the line's length (a bare return would run it again). A listing that pages is answered with `Q`; `trace` empties the line the same way for a `LOG` the debugger refused.
+**A command the debugger does not take says so**: its printed reason comes back in `output` and `note` says it was not taken.
 
-A command that lets the guest run is refused because it leaves the debugger without the session knowing, and `last_stop` and `status` would go on naming the stop before it; the refusal names the tool that does it. A control character is refused: a line break would type a second command past that check, and an escape is a key. An unrecognised command stays on the input line and the next one is typed onto it, so `debug` empties the line with ESC when the prompt is back (a bare return would run it again); a listing that pages is answered with `Q`; `trace` empties the line the same way for a `LOG` the debugger refused.
+The refusal names the tool that does what the command would.
