@@ -1,0 +1,179 @@
+{
+ "provenance": {
+  "exe": "scry branch build 92d913050 (main-ai d321e1e92 + RUNSTATE + PRESENCE)",
+  "launch": "notty",
+  "headless": true,
+  "host": "darwin",
+  "scenario": "step",
+  "conf": "step.conf"
+ },
+ "exchanges": [
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": true,
+   "lines": [
+    "DEBUG: RUNSTATE stopped cycles=0 ms=0.700000000"
+   ]
+  },
+  {
+   "request": "EXEC RUN",
+   "ok": true,
+   "lines": [
+    "OK"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": true,
+   "lines": [
+    "DEBUG: RUNSTATE stopped cycles=1241 ms=0.824200000"
+   ]
+  },
+  {
+   "request": "EXEC EV CS EIP",
+   "ok": true,
+   "lines": [
+    "EV of 'CS EIP' is:",
+    "814 100"
+   ]
+  },
+  {
+   "request": "EXEC BP 0814:0102",
+   "ok": true,
+   "lines": [
+    "DEBUG: Set breakpoint at 0814:0102"
+   ]
+  },
+  {
+   "request": "EXEC RUN",
+   "ok": true,
+   "lines": [
+    "OK"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": true,
+   "lines": [
+    "DEBUG: RUNSTATE stopped cycles=1243 ms=0.824600000"
+   ]
+  },
+  {
+   "request": "EXEC BPDEL *",
+   "ok": true,
+   "lines": [
+    "DEBUG: Breakpoints deleted."
+   ]
+  },
+  {
+   "request": "EXEC STEPIN",
+   "ok": true,
+   "lines": [
+    "DEBUG: STEPIN CS:IP=0814:0105 AX=1234 BX=0000 CX=00FF DX=0814"
+   ]
+  },
+  {
+   "request": "EXEC EV EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0",
+   "ok": true,
+   "lines": [
+    "EV of 'EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0' is:",
+    "1234 0 ff 814 100 fffe 91c fffe 105 814 814 814 0 0 814 7202 10"
+   ]
+  },
+  {
+   "request": "EXEC STEPIN",
+   "ok": true,
+   "lines": [
+    "DEBUG: STEPIN CS:IP=0814:011F AX=1234 BX=0000 CX=00FF DX=0814"
+   ]
+  },
+  {
+   "request": "EXEC EV EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0",
+   "ok": true,
+   "lines": [
+    "EV of 'EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0' is:",
+    "1234 0 ff 814 100 fffe 91c fffc 11f 814 814 814 0 0 814 7202 10"
+   ]
+  },
+  {
+   "request": "EXEC STEPIN",
+   "ok": true,
+   "lines": [
+    "DEBUG: STEPIN CS:IP=0814:0108 AX=1234 BX=0000 CX=00FF DX=0814"
+   ]
+  },
+  {
+   "request": "EXEC EV EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0",
+   "ok": true,
+   "lines": [
+    "EV of 'EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0' is:",
+    "1234 0 ff 814 100 fffe 91c fffe 108 814 814 814 0 0 814 7202 10"
+   ]
+  },
+  {
+   "request": "EXEC STEPIN",
+   "ok": true,
+   "lines": [
+    "DEBUG: STEPIN CS:IP=0814:010A AX=3034 BX=0000 CX=00FF DX=0814"
+   ]
+  },
+  {
+   "request": "EXEC EV EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0",
+   "ok": true,
+   "lines": [
+    "EV of 'EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0' is:",
+    "3034 0 ff 814 100 fffe 91c fffe 10a 814 814 814 0 0 814 7202 10"
+   ]
+  },
+  {
+   "request": "EXEC MEMDUMPBIN 0814:0108 10 MCPDUMP.BIN",
+   "ok": true,
+   "lines": [
+    "DEBUG: Memory dump binary success."
+   ]
+  },
+  {
+   "request": "EXEC BP 0814:010C",
+   "ok": true,
+   "lines": [
+    "DEBUG: Set breakpoint at 0814:010C"
+   ]
+  },
+  {
+   "request": "EXEC RUN",
+   "ok": true,
+   "lines": [
+    "OK"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": true,
+   "lines": [
+    "DEBUG: RUNSTATE running cycles=1248 ms=0.825600000"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": true,
+   "lines": [
+    "DEBUG: RUNSTATE stopped cycles=1251 ms=0.826000000"
+   ]
+  },
+  {
+   "request": "EXEC EV CS EIP",
+   "ok": true,
+   "lines": [
+    "EV of 'CS EIP' is:",
+    "814 10c"
+   ]
+  },
+  {
+   "request": "EXEC BPDEL *",
+   "ok": true,
+   "lines": [
+    "DEBUG: Breakpoints deleted."
+   ]
+  }
+ ]
+}

@@ -61,7 +61,7 @@ N_CELLS = cells(
     ("N save refuses the store's own file, a FIFO and a file that is not a comment file, "
      "leaving each as it was", "comment_write save docstring"),
     ("N perform runs comment steps", "REFERENCE.md, Sequences in one call"),
-    ("N on a running guest list and save answer at once, typing nothing",
+    ("N on a running guest list and save answer at once, asking the debugger nothing",
      "comment_list and comment_write save docstrings: they answer on a running guest"),
     ("N on a running guest add, delete and load are refused not_stopped",
      "their docstrings: they need the machine stopped"),
@@ -245,29 +245,29 @@ def _refusals() -> None:
 
 
 @contextlib.contextmanager
-def _typed() -> Iterator[list[bytes]]:
-    """Every write the block makes to the debugger's console, through the session's one writer
-    of its terminal."""
+def _typed() -> Iterator[list[str]]:
+    """Every request the block sends the debugger, through the session's one channel to it."""
     session = dstate.STATE.session
     if session is None:
-        raise RuntimeError("no session to count the console writes of")
-    real = session._write
-    writes: list[bytes] = []
+        raise RuntimeError("no session to count the requests of")
+    channel = session.control
+    real = channel.request
+    sent: list[str] = []
 
-    def counted(data: bytes) -> None:
-        writes.append(data)
-        real(data)
-    session._write = counted  # type: ignore[method-assign]
+    def counted(command: str, *args: Any, **kwargs: Any) -> tuple[bool, list[str]]:
+        sent.append(command)
+        return real(command, *args, **kwargs)
+    channel.request = counted  # type: ignore[method-assign]
     try:
-        yield writes
+        yield sent
     finally:
-        del session._write
+        del channel.request
 
 
 def _running() -> None:
-    """The guest released with a stopper that never runs: list and save timed and their console
-    writes counted, against a stopped reader that must write (the counter's control); add,
-    delete and load refused."""
+    """The guest released with a stopper that never runs: list and save timed and the requests
+    they send the debugger counted, the run-state question aside, against a stopped reader that
+    must send one (the counter's control); add, delete and load refused."""
     with _typed() as control:
         M.call(server.registers)
     release_running()
@@ -278,12 +278,13 @@ def _running() -> None:
         t0 = time.monotonic()
         with _typed() as writes:
             r = M.call(fn, **kw)
-        timed.append((r, time.monotonic() - t0, len(writes)))
-    M.judge("N on a running guest list and save answer at once, typing nothing",
+        timed.append((r, time.monotonic() - t0,
+                      sum(1 for w in writes if w != "EXEC RUNSTATE")))
+    M.judge("N on a running guest list and save answer at once, asking the debugger nothing",
             bool(control) and all(ok(r) and dt < UNTYPED_S and n == 0 for r, dt, n in timed)
             and timed[0][0]["session"]["running"] is True,
-            f"control typed {len(control)}; "
-            + "; ".join(f"{said(r, 40)} in {dt:.2f}s, typed {n}" for r, dt, n in timed))
+            f"control sent {len(control)}; "
+            + "; ".join(f"{said(r, 40)} in {dt:.2f}s, sent {n}" for r, dt, n in timed))
     got = [M.call(server.comment_write, method="add", ref="bump", text="x"),
            M.call(server.comment_write, method="delete", ref="start"),
            M.call(server.comment_write, method="load", path=str(GUEST / "probe.sym"))]

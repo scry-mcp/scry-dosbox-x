@@ -126,20 +126,20 @@ def check_load_comments(path: object, **_: Any) -> None:
 # Bounds live here, not in a tool body, so the whole-list check of a sequence sees them.
 
 def write_data(value: str) -> bytes:
-    """A caller's hex bytes, parsed once, up to the data view's reach (the readback's span)."""
+    """A caller's hex bytes, parsed once, up to one read's reach (the readback's span)."""
     data = finder.hex_bytes("data_hex", value, verb="write")
-    if len(data) > dcons.DATA_VIEW_BYTES:
+    if len(data) > dcons.READ_BYTES_MAX:
         raise ds.Invalid("bad_argument",
-            f"a write carries up to {dcons.DATA_VIEW_BYTES} bytes, the data view's reach for the "
-            f"readback; {len(data)} is a region")
+            f"a write carries up to {dcons.READ_BYTES_MAX} bytes, what one read takes back for "
+            f"the readback; {len(data)} is a region")
     return data
 
 
 def read_length(length: int) -> None:
-    """`read_memory`'s span: 1 to the data view's reach."""
-    if not 1 <= length <= dcons.DATA_VIEW_BYTES:
+    """`read_memory`'s span: 1 to one read's reach."""
+    if not 1 <= length <= dcons.READ_BYTES_MAX:
         raise ds.Invalid("bad_argument",
-            f"length={length!r} is not 1 to {dcons.DATA_VIEW_BYTES}; above that the answer is "
+            f"length={length!r} is not 1 to {dcons.READ_BYTES_MAX}; above that the answer is "
             "`memdump`, which writes exactly the bytes asked for")
 
 
@@ -148,11 +148,11 @@ CHANGE_WATCH_MAX = 16
 
 
 def watch_width(mode: str, width: int) -> None:
-    """A show watch is at most the data view's reach; a change watch at most `CHANGE_WATCH_MAX`."""
-    if mode == "show" and width > dcons.DATA_VIEW_BYTES:
+    """A show watch is at most one read's reach; a change watch at most `CHANGE_WATCH_MAX`."""
+    if mode == "show" and width > dcons.READ_BYTES_MAX:
         raise ds.Invalid("bad_argument",
-            f"a show watch reads up to {dcons.DATA_VIEW_BYTES} bytes at a stop (the data "
-            f"view's reach); {width} is a region, and it would be stored only to report "
+            f"a show watch reads up to {dcons.READ_BYTES_MAX} bytes at a stop (what one read "
+            f"takes); {width} is a region, and it would be stored only to report "
             f"'unreadable' at every stop. Use memdump for a region, or a smaller length")
     if mode == "change" and width > CHANGE_WATCH_MAX:
         raise ds.Invalid("bad_argument",
@@ -223,7 +223,7 @@ def _count(name: str, value: object) -> int:
     return value
 
 
-#: The largest integer a double holds exactly (the pane's clock is one).
+#: The largest integer a double holds exactly (the emulated clock is one).
 RUN_FOR_MS_MAX = 2 ** 53
 
 
@@ -245,7 +245,7 @@ def _run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
     ms, n = _count("milliseconds", milliseconds), _count("frames", frames)
     if ms > RUN_FOR_MS_MAX:
         raise ds.Invalid("bad_argument",
-            f"milliseconds={ms} is past what the pane's floating-point clock counts exactly")
+            f"milliseconds={ms} is past what the floating-point emulated clock counts exactly")
     if (ms > 0) == (n > 0):
         raise ds.Invalid("bad_argument",
             f"exactly one of milliseconds and frames is above zero; got milliseconds={ms}, "
@@ -495,11 +495,12 @@ def _symbols_find(name: str = "", offset: int | None = None,
     placement.check_find_args(name or None, offset, linear or None, limit)
 
 
-# Console commands that let the guest run, by first word. A typed one does not clear the stopped
-# flag as `Session._release` does, so `last_stop` would keep naming the stop before it.
-DEBUG_RELEASES = re.compile(r"\s*(" + "|".join(("VRT", "RUNWATCH", "INT", *ds.LOG_WORDS))
+# Debugger commands that let the guest run, by first word. One sent through `debug` does not clear
+# the stopped flag as `Session._release` does, so `last_stop` would keep naming the stop before it.
+DEBUG_RELEASES = re.compile(r"\s*(" + "|".join(("RUN", "VRT", "RUNWATCH", "INT", "STEPIN",
+                                                *ds.LOG_WORDS))
                             + r")(?:\s|$)", re.IGNORECASE)
-# A line break would type a second command past the classifier; an escape is a key.
+# A line break would send a second request past the classifier.
 _CONTROL_CHARACTER = re.compile(r"[\x00-\x1f\x7f]")
 
 
@@ -508,15 +509,15 @@ def _debug(command: object, **_: Any) -> None:
         raise ds.Invalid("bad_argument", f"command={command!r} is not text: one debugger command")
     if _CONTROL_CHARACTER.search(command):
         raise ds.Invalid("bad_argument",
-            f"command={command!r} carries a control character: `debug` types one command of "
-            f"printable text, and a line break or an escape reaches the console as a second "
-            f"command or a key")
+            f"command={command!r} carries a control character: `debug` sends one command of "
+            f"printable text, and a line break would be a second request on the channel")
     released = DEBUG_RELEASES.match(command)
     if released is not None:
         word = released.group(1).upper()
         instead = ("`run_for(frames=1)`, which runs to the next retrace" if word == "VRT" else
                    "`trace`, which runs a counted number of instructions with the log on"
                    if word in ds.LOG_WORDS else
+                   "`step`, which reads where each instruction landed" if word == "STEPIN" else
                    "`resume`, with a breakpoint where the machine should stop")
         raise ds.Invalid("bad_argument",
             f"`{word}` lets the guest run, and a typed release leaves `last_stop` naming the "

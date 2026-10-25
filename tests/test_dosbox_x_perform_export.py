@@ -68,10 +68,10 @@ def test_a_stop_the_session_counted_before_its_record_moves_no_later_call(
     ses.stop_count = 1  # type: ignore[attr-defined]
     sent = ses.command
 
-    def counted(text: str, **kw: object) -> str:
+    def counted(text: str, seconds: float | None = None) -> str:
         # Inside a call, as a parked `state_write(method="load")` counts its stop unsurveyed.
         ses.stop_count = 2  # type: ignore[attr-defined]
-        return sent(text, **kw)
+        return sent(text, seconds)
     ses.command = counted  # type: ignore[method-assign]
     server.write(ref="F000:0000", data_hex="aa")
     ses.command = sent  # type: ignore[method-assign]

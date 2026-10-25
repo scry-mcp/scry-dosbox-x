@@ -96,11 +96,6 @@ def judge_protected(session: ds.Session, sel: int, off: int, length: int,
                     found: dict[str, Any] | None = None) -> None:
     """Refuse a protected-mode range past 0xFFFF on a 16-bit segment, past the limit, or with
     no descriptor. `found`: listings already read at this stop."""
-    if session.launch.logfile is None:
-        raise ds.Invalid("no_channel",
-            f"{length} bytes from {dcons.canonical_seg_off(sel, off)} run past offset 0xFFFF, "
-            f"where the selector's descriptor decides whether they wrap or end at its limit, and "
-            f"the descriptor tables are read off the session's logfile: `start` with `logfile`")
     notes: list[str] = []
     if found is None:
         reading = machine.read(session, frozenset({"gdt", "ldt"}))

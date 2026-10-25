@@ -1,3 +1,0 @@
-DEBUG: [MEMFIND] Matched values during current instance: 000100
-DEBUG: Memory search failed. Value is larger than specified size range.
-I-> _

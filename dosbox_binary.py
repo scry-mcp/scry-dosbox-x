@@ -27,32 +27,47 @@ def canary_for(binary: str = "") -> list[str] | None:
 
 # Compiled only under `C_HEAVY_DEBUG`. Read from bytes: an unknown command poisons input.
 HEAVY_DEBUG_MARK = b"LOGS/LOGL/LOGC [num]"
-# Compiled only with `C_DEBUG`; `-helpdebug` lists `-break-start` regardless.
+# Compiled only with `C_DEBUG`; `-helpdebug` would list `-break-start` regardless.
 DEBUGGER_MARK = b"Debugger command not recognized"
+#: Commands a build may lack, found as the parser's NUL-bounded literals, not the help text's.
+COMMANDS = ("RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE")
+#: The debugger with no screen, which needs no terminal or console.
+HEADLESS_MARK = b"\0debugger headless\0"
+MARKS = (HEAVY_DEBUG_MARK, DEBUGGER_MARK, HEADLESS_MARK,
+         *(b"\0" + name.encode() + b"\0" for name in COMMANDS))
 
 
-_marks_seen: dict[tuple[str, int, int, bytes], bool] = {}
+_marks_seen: dict[tuple[str, int, int], frozenset[bytes]] = {}
 
 
 def _carries(binary: str, mark: bytes, what: str) -> bool:
-    """Whether the build holds `mark`; cached by path, size, mtime."""
+    """Whether the build holds `mark`; all marks are read in one pass, cached by path and stat."""
     real = os.path.realpath(binary)
     try:
         st = os.stat(real)
-        key = (real, st.st_size, st.st_mtime_ns, mark)
+        key = (real, st.st_size, st.st_mtime_ns)
         if key not in _marks_seen:
-            _marks_seen[key] = mark in Path(real).read_bytes()
+            data = Path(real).read_bytes()
+            _marks_seen[key] = frozenset(m for m in MARKS if m in data)
     except OSError as exc:
         raise Invalid("host_failed", f"{real} could not be read to see whether it carries "
                       f"{what}: {exc!r}") from None
-    return _marks_seen[key]
+    return mark in _marks_seen[key]
 
 
 def heavy_debug(binary: str) -> bool:
-    """Whether the build at `binary` carries the CPU log."""
     return _carries(binary, HEAVY_DEBUG_MARK, "the CPU log")
 
 
 def debugger(binary: str) -> bool:
-    """Whether the build at `binary` carries the debugger."""
     return _carries(binary, DEBUGGER_MARK, "the debugger")
+
+
+def headless(binary: str) -> bool:
+    return _carries(binary, HEADLESS_MARK, "`debugger headless`")
+
+
+def debugger_commands(binary: str) -> list[str]:
+    """Which of `COMMANDS` the build's debugger parses, in `COMMANDS`' order."""
+    return [name for name in COMMANDS
+            if _carries(binary, b"\0" + name.encode() + b"\0", f"the `{name}` command")]

@@ -15,8 +15,8 @@ A view's PNG goes to the session's scratch (`close` deletes it; `dest` keeps one
 registers(from_last_stop=false)
 ```
 
-The register pane. `from_last_stop=True` returns the registers of the last stop, never the
-current value; refused before any stop.
+The registers at this stop. `from_last_stop=True` returns the registers of the last stop,
+never the current value; refused before any stop.
 
 Reply: `regs` (hex strings), `superseded`. CR0, CR3 and descriptor tables:
 `machine_map(sections=["control"])`.
@@ -42,20 +42,20 @@ Example, from a live run:
   "status": "ok",
   "regs": {
     "EAX": "0x00000000",
+    "EBX": "0x00000124",
+    "ECX": "0x0000a97e",
+    "EDX": "0x00000814",
     "ESI": "0x00000100",
+    "EDI": "0x0000fffe",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fff8",
+    "EIP": "0x0000fea5",
+    "CS": "0xf000",
     "DS": "0x0814",
     "ES": "0x0814",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x0814",
-    "EBX": "0x00000124",
-    "EDI": "0x0000fffe",
-    "CS": "0xf000",
-    "EIP": "0x0000fea5",
-    "ECX": "0x0000a97e",
-    "EBP": "0x0000091c",
-    "EDX": "0x00000814",
-    "ESP": "0x0000fff8"
+    "SS": "0x0814"
   }
 }
 ```
@@ -75,9 +75,8 @@ read_memory(ref, length=16)
 `length` bytes (1..128) at `ref`, a symbol or `SEG:OFF` (a bare number is read as a
 symbol).
 
-Reply: `hex`, `length`, `rows` (the data view's), `seg_off`, `ref`. A view holding fewer
-bytes than asked is `readback_refused`; above it use `memdump`. An absent or ambiguous
-symbol is refused.
+Reply: `hex`, `length`, `seg_off`, `ref`; above 128 bytes use `memdump`. Needs the
+machine stopped. An absent or ambiguous symbol is refused.
 
 | argument | type | default |
 |---|---|---|
@@ -103,21 +102,12 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "read_memory 0000:0020: 8 rows at 0000:00000020",
+  "summary": "read_memory 0000:0020: 0 rows at 0000:00000020",
   "status": "ok",
   "ref": "0000:0020",
   "seg_off": "0000:00000020",
   "length": 4,
-  "hex": "a5fe00f0",
-  "rows": [
-    "0000:00000020 A5 FE 00 F0 87 E9 00 F0 55 FF 00 F0 80 CE 00 F0  ........U.......",
-    "0000:00000030 80 CE 00 F0 80 CE 00 F0 E0 CC 00 F0 0E 00 70 00  ..............p.",
-    "0000:00000040 EE 00 00 C0 20 CB 00 F0 40 CB 00 F0 60 CF 00 F0  .... ...@...`...",
-    "0000:00000050 80 CB 00 F0 A0 CB 00 F0 C0 CF 00 F0 C0 CB 00 F0  ................",
-    "0000:00000060 00 CD 00 F0 60 CC 00 F0 E0 CB 00 F0 C0 D1 00 F0  ....`...........",
-    "0000:00000070 00 CC 00 F0 58 C9 00 F0 02 00 94 FC E9 05 00 C0  ....X...........",
-    "... 2 more"
-  ]
+  "hex": "a5fe00f0"
 }
 ```
 <!-- scry-reference:end read_memory -->
@@ -219,8 +209,8 @@ bp`/`mov bp, sp`, `enter`), each return kept only when a call instruction ends t
 is the stop.
 
 Reply: `heuristic`, `code_bits`, `calls` (innermost first: `seg_off`, `addr`, `symbol`,
-`delta`, `via`, `call`, `bp`), `truncated`, `ended_why`. Refused when the register pane
-shows no SS, ESP or EBP. A routine with no frame pointer is invisible.
+`delta`, `via`, `call`, `bp`), `truncated`, `ended_why`. Refused when the registers come
+back without SS, ESP or EBP. A routine with no frame pointer is invisible.
 
 Reference: REFERENCE.md, Reading and writing.
 
@@ -290,8 +280,7 @@ memdump(ref, length, dest)
 
 Reply: `ref`, `seg_off`, `length`, `path`, `bytes`. Refused: a dump file already where the
 debugger writes or at `dest`, a `dest` directly in that directory, an absent or ambiguous
-symbol; in protected mode a 16-bit segment, a range past its limit, or no descriptor (needs
-`logfile`).
+symbol; in protected mode a 16-bit segment, a range past its limit, or no descriptor.
 
 | argument | type | default |
 |---|---|---|
@@ -313,18 +302,18 @@ Example, from a live run:
 {
   "ref": "0000:0400",
   "length": 16,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n733.bin"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n733.bin"
 }
 ```
 
 ```json
 {
-  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n733.bin",
+  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n733.bin",
   "status": "ok",
   "ref": "0000:0400",
   "seg_off": "0000:00000400",
   "length": 16,
-  "path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n733.bin",
+  "path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n733.bin",
   "bytes": 16
 }
 ```
@@ -455,17 +444,17 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "log emulator /./: 40 of 134 lines",
+  "summary": "log emulator /./: 40 of 123 lines",
   "status": "ok",
   "pattern": ".",
   "channel": "emulator",
-  "lines_total": 134,
+  "lines_total": 123,
   "truncated": true,
   "lines": [
-    "00. BPINT 21 AH=4B",
-    "DEBUG: Breakpoint deletion success.",
-    "Breakpoint list:",
-    "-------------------------------------------------------------------------",
+    "DEBUG: RUNSTATE running cycles=319 ms=0.732100000",
+    "DEBUG: RUNSTATE stopped cycles=1253 ms=0.825500000",
+    "EV of 'EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0' is:",
+    "4b00 5fe 2026 61e 0 0 0 5fe dac6 f000 71b 71b 0 0 71b 7002 10",
     "Breakpoint list:",
     "-------------------------------------------------------------------------",
     "... 34 more"
@@ -563,15 +552,14 @@ It reads what the log already holds first, so a line that went past before the c
 machine_map(sections=null, dest="")
 ```
 
-What the DOS machine is at this stop: one section per debugger listing, read off the logfile
-(needs `logfile`). `sections` left out reads the DOS machine and `control`; `bios_mem`,
-`callbacks`, `vga`, `paging` only when named. `dest` (absolute, new) writes all sections
-whole as JSON. Writes nothing to the guest.
+What the DOS machine is at this stop: one section per debugger listing. `sections` left
+out reads the DOS machine and `control`; `bios_mem`, `callbacks`, `vga`, `paging` only when
+named. `dest` (absolute, new) writes all sections whole as JSON. Writes nothing to the guest.
 
 Reply: `cpu_mode`, one key per section read as rows, `counts`, `truncated` (cut at
 400 rows), `sources`, `coverage_note` (why a section is absent), `path`.
-Refused: bad `sections` or an existing `dest` (`bad_argument`); no `logfile` (`no_channel`);
-a running guest (`not_stopped`); no prompt after a listing (`unexpected_answer`: `close`).
+Refused: bad `sections` or an existing `dest` (`bad_argument`); a running guest
+(`not_stopped`).
 
 Reference: REFERENCE.md, Reading and writing.
 
@@ -819,7 +807,7 @@ Example, from a live run:
       "CPU"
     ]
   },
-  "coverage_note": "read from the debugger's own listings at this stop, through the session's logfile. `gdt` and `ldt` are absent: the cpu is in real mode, where the debugger reads the interrupt vector table as descriptors. `paging` is absent: paging is off",
+  "coverage_note": "read from the debugger's own listings at this stop. `gdt` and `ldt` are absent: the cpu is in real mode, where the debugger reads the interrupt vector table as descriptors. `paging` is absent: paging is off",
   "truncated": false,
   "omitted": [
     "bios_mem",
@@ -934,7 +922,7 @@ Example, from a live run:
       "CPU"
     ]
   },
-  "coverage_note": "read from the debugger's own listings at this stop, through the session's logfile. `gdt` and `ldt` are absent: the cpu is in real mode, where the debugger reads the interrupt vector table as descriptors. `paging` is absent: paging is off"
+  "coverage_note": "read from the debugger's own listings at this stop. `gdt` and `ldt` are absent: the cpu is in real mode, where the debugger reads the interrupt vector table as descriptors. `paging` is absent: paging is off"
 }
 ```
 <!-- scry-reference:end interrupt_vectors -->
@@ -954,8 +942,8 @@ Without `logfile` no vector has a holder. The debugger writes `MCPIVT.TXT` into 
 palette(first=0, count=0, scale=0, dest="")
 ```
 
-The VGA DAC's 256 colours at this stop, read off the `VGA DAC` listings in the logfile
-(needs `logfile`), with an indexed PNG swatch. `first` and `count` (0 for all from `first`)
+The VGA DAC's 256 colours at this stop, read off the `VGA DAC` listings, with an indexed
+PNG swatch. `first` and `count` (0 for all from `first`)
 choose entries, `first + count` at most 256. `scale` 0 fits the largest enlargement up to 8;
 `dest` a new path, else a scratch gone at `close`.
 
@@ -963,8 +951,8 @@ Reply: `entries`, `first`, `count`, `colors` (`#rrggbb`), `rgb`, `bits`, `pel_ma
 `image`.
 
 Refused: an entry past 255, a bad `scale`, a relative or existing `dest` (`bad_argument`);
-no `logfile` (`no_channel`); a running guest (`not_stopped`); a DAC not six-bit
-(`unexpected_answer`); a picture not taken whole (`host_failed`).
+a running guest (`not_stopped`); a DAC not six-bit (`unexpected_answer`); a picture not
+taken whole (`host_failed`).
 
 Reference: REFERENCE.md, Media files.
 
@@ -1013,7 +1001,7 @@ Example, from a live run:
   "bits": 6,
   "pel_mask": "ffh",
   "image": {
-    "path": "$TMPDIR/dosbox-x-session-9rhds9vj/gfx/palette-1.png",
+    "path": "$TMPDIR/dosbox-x-session-6nzxwtl8/gfx/palette-1.png",
     "bytes": 1009,
     "sha256": "a5dff617e307a60f3bf521d96fed8809cc0f3b38409a74c904cfa5c1ad4371e1",
     "width": 256,
@@ -1037,7 +1025,7 @@ Each six-bit component is widened as the emulator renders it, its two top bits r
 screen_view(crop=null, scale=0, dest="", attach=true)
 ```
 
-What the screen shows at this stop, read from video memory (needs `logfile`): text as text,
+What the screen shows at this stop, read from video memory: text as text,
 the chained 256-colour mode (13h) as a PNG. `crop` is `[x, y, width, height]` in characters
 or pixels. `scale` 0 fits the largest up to 8x; `dest` a new path (else a scratch); `attach`
 false leaves it unattached.
@@ -1046,8 +1034,8 @@ Reply: `vga_mode`, `kind`, `width`, `height`, `crop`, `display_start`; in text `
 `cursor`; in 256 colours `image`.
 
 Refused: a relative or existing `dest`, a bad `scale` or `crop`, `dest`/`scale`/`attach` in
-text (`bad_argument`); another mode (naming `capture_frame`), an undecodable layout or no
-`logfile` (`no_channel`); a running guest (`not_stopped`); a DAC not six-bit
+text (`bad_argument`); another mode (naming `capture_frame`) or an undecodable layout
+(`no_channel`); a running guest (`not_stopped`); a DAC not six-bit
 (`unexpected_answer`).
 
 Reference: REFERENCE.md, Media files.
@@ -1126,7 +1114,7 @@ screen_signature(crop=null)
 
 One hex string for what is on screen or on `crop` `[x, y, width, height]`: the `scry-sig/1`
 signature of a series row (text cells by byte and colours, 256-colour pixels by DAC colour;
-no cursor). Reads what `screen_view` reads (needs `logfile`).
+no cursor). Reads what `screen_view` reads.
 
 Reply: `signature`, `kind`, `width`, `height`, `crop`, `vga_mode`. Refusals as
 `screen_view`, `dest` and `scale` aside.
@@ -1240,7 +1228,7 @@ regions, and their controls, in a session layer and a file layer.
 
 `add`: the screen shown now as `screen` in the session layer, one read signing each `match`
 crop ([x, y, width, height], 1..16), `controls` ([{"name", "rect"}]) in the screen's own
-units; needs `logfile`. Reply: `screen`, `kind`, `size`, `match`, `controls`, `replaced`,
+units. Reply: `screen`, `kind`, `size`, `match`, `controls`, `replaced`,
 `shadows_file`.
 
 `load`: `path` (`<application>.scry-map.json`, absolute or `~`-led) as the file layer. Reply:
@@ -1334,14 +1322,14 @@ Units are cells in a text mode and pixels in 256 colours.
 debug(command)
 ```
 
-One raw `command` to the debugger console; the last resort. For a value use `registers`,
+One raw `command` to the debugger; the last resort. For a value use `registers`,
 `read_memory` or `memdump`; for the log `log`.
 
-Reply: `screen_delta` (the last 4000 characters of the screen's repaint),
-`screen_chars`, `clipped`, `command`, `note`.
+Reply: `output` (the last 4000 characters of what the debugger printed),
+`output_chars`, `clipped`, `command`, `note` (when the debugger did not take the command).
 
-Refused `bad_argument`: a command that lets the guest run (`VRT`, `RUNWATCH`, `INT`, the
-`LOG` family) and a control character.
+Refused `bad_argument`: a command that lets the guest run (`RUN`, `VRT`, `RUNWATCH`, `INT`,
+`STEPIN`, the `LOG` family) and a control character.
 
 | argument | type | default |
 |---|---|---|
@@ -1352,8 +1340,8 @@ Refused `bad_argument`: a command that lets the guest run (`VRT`, `RUNWATCH`, `I
 | `clipped` | boolean |
 | `command` | string |
 | `note` | string |
-| `screen_chars` | integer |
-| `screen_delta` | string |
+| `output` | string |
+| `output_chars` | integer |
 
 Example, from a live run:
 
@@ -1365,11 +1353,10 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "debug 'BPLIST': 3231 chars",
-  "status": "ok",
-  "command": "BPLIST",
-  "screen_delta": "B_P_L_I_S_T__ooooRegister OverviewoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooEAX=00000000  ESI=00000100  DS=0814   ES=0814   FS=0000   GS=0000   SS=0814 Real\r\nEBX=00000124  ... (3231 characters)",
-  "screen_chars": 3231
+  "summary": "debug: INVALID (no_session), there is no live session. `start` one first; a reply from a dead session would be a reading of nothing.",
+  "status": "INVALID",
+  "code": "no_session",
+  "message": "there is no live session. `start` one first; a reply from a dead session would be a reading of nothing."
 }
 ```
 <!-- scry-reference:end debug -->

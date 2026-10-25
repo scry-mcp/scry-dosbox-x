@@ -1,4 +1,5 @@
-"""The control `disassemble` is held to: the debugger's own code pane, line by line.
+"""The control `disassemble` is held to: the debugger's own code pane, line by line, off screens
+a terminal session captured (`fixtures/code/`), which the channel no longer carries.
 
 Two decoders print one instruction in two syntaxes, so text equality proves nothing. A line
 agrees when both decode the same address to the same length, bytes and mnemonic, and per operand
@@ -13,9 +14,44 @@ from __future__ import annotations
 import re
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import NamedTuple
 
-import dosbox_code as code
 import dosbox_disasm as disasm
+
+
+class PaneLine(NamedTuple):
+    """One code pane line; `data` is None when the pane cut the bytes (`..`) or printed pf/na."""
+    segment: str
+    offset: int
+    data: bytes | None
+    text: str
+
+
+_PANE_HEADER = re.compile(r"Code Overview(?:o+)")
+_PANE_END = re.compile(r"o{4}(?:Output|Variable)")
+_PANE_LINE = re.compile(
+    r"^([0-9A-F]{4}):([0-9A-F]{8}) ((?:[0-9A-F]{2}|pf|na)*)(\.\.)?\s*(.*?)\s*$")
+
+
+def pane_lines(screen: str) -> list[PaneLine]:
+    """The code pane's lines, off the last pane painted (an earlier repaint may be partial); the
+    first line follows the header rule with no line break."""
+    blocks = list(_PANE_HEADER.finditer(screen))
+    if not blocks:
+        return []
+    rest = screen[blocks[-1].end():]
+    end = _PANE_END.search(rest)
+    out: list[PaneLine] = []
+    for raw in (rest[:end.start()] if end else rest).splitlines():
+        m = _PANE_LINE.match(raw)
+        if m is None:
+            continue
+        pairs, cut = m.group(3), m.group(4)
+        whole = not cut and "pf" not in pairs and "na" not in pairs and bool(pairs)
+        out.append(PaneLine(m.group(1), int(m.group(2), 16),
+                            bytes.fromhex(pairs) if whole else None, m.group(5)))
+    return out
+
 
 _ANNOTATION = re.compile(r"\s*(?:\(\$[+-][0-9a-f]+\)|\(no jmp\)|\(down\)|\(up\))")
 _VALUE_NOTE = re.compile(r"[a-z]s:\[[0-9A-F]+\]=[0-9A-F]+$")
@@ -157,7 +193,7 @@ class Verdict:
     excepted: list[str]
 
 
-def compare(pane: list[code.PaneLine], segment: str, insns: list[disasm.Insn],
+def compare(pane: list[PaneLine], segment: str, insns: list[disasm.Insn],
             names: dict[str, int] | None = None) -> Verdict:
     """Every pane line of `segment` against the capstone line at its address.
     `insns` is decoded from a known boundary, so a line capstone never starts disagrees.
@@ -187,7 +223,7 @@ def compare(pane: list[code.PaneLine], segment: str, insns: list[disasm.Insn],
     return verdict
 
 
-def _differences(p: code.PaneLine, raw: bytes, ins: disasm.Insn,
+def _differences(p: PaneLine, raw: bytes, ins: disasm.Insn,
                  names: dict[str, int]) -> list[str]:
     """Why the two lines differ; empty when they agree."""
     why = []

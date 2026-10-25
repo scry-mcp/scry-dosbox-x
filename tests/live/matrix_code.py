@@ -3,23 +3,21 @@
 and the DPMI guest.
 
 The known answers are the guests' own: the code guest's bytes are `code.com` and its routines
-`code.sym` (both the assembler's), the probe's names are `probe.sym`. The debugger's code pane is
-the control `disassemble` is held to, through the comparison the offline tests use
-(`tests/disasm_control.py`), and the pane is never what decides a known answer.
+`code.sym` (both the assembler's), the probe's names are `probe.sym`. The bytes a listing shows
+are held to the machine's memory as `read_memory` reads it; the decoder itself is held to the
+debugger's code pane by the offline tests (`tests/disasm_control.py`), over panes a terminal
+session captured, since the debugger channel carries no pane.
 """
 from __future__ import annotations
 
-import re
 import shutil
 import subprocess
-import sys
 import tempfile
 from pathlib import Path
 from typing import Any
 
 from matrix_common import (
     GUEST,
-    PKG,
     M,
     boot,
     cells,
@@ -32,14 +30,9 @@ from matrix_common import (
     server,
 )
 
-import dosbox_state as dstate
-
-sys.path.insert(0, str(PKG / "tests"))
-
-import disasm_control as control  # noqa: E402
-
 import dosbox_code as code  # noqa: E402
-import dosbox_disasm as disasm  # noqa: E402
+import dosbox_console as dcons  # noqa: E402
+import dosbox_state as dstate
 
 CODE_CONF = GUEST / "code.conf"
 #: Where DOS loads both guests, and the base their `nm` tables are placed at.
@@ -47,8 +40,6 @@ LOAD = "0814"
 GUEST_BASE = "8140"
 #: The code guest's code, from `start` to its first data label.
 CODE_GUEST_CODE = 0x75
-#: How many panes a walk takes at most: eleven lines each, far past any routine judged here.
-PANE_WALK_MAX = 40
 #: How many publics the dos-real16 rule tries before it is a FAIL rather than a search.
 DOS_REAL16_PUBLICS_TRIED = 40
 
@@ -59,10 +50,10 @@ M_CELLS = cells(
      "known: code.asm's `mov ecx, [ebx*4+dword_v]`, 67h and 66h"),
     ("M FE /7 is a line of its own, unknown, and decoding resumes after it",
      "disassemble docstring: `.byte`, `flow` unknown; known: code.asm after `park`"),
-    ("M the code guest's pane agrees with disassemble, FE /7 excepted",
-     "REFERENCE.md, Reading and writing: the pane is the control"),
-    ("M disassemble(start, 32) on the probe agrees with the pane",
-     "REFERENCE.md, Reading and writing: the pane is the control"),
+    ("M the code guest's listing holds the bytes memory holds",
+     "disassemble docstring: decoded from memory; known: read_memory over the same span"),
+    ("M disassemble(start, 32) on the probe holds the bytes memory holds",
+     "disassemble docstring: decoded from memory; known: read_memory over the same span"),
     ("M resolved on the probe: emit and bump at delta 0, cnt at delta 1",
      "disassemble docstring: resolved; known: probe.sym"),
     ("M no resolved without a table", "disassemble docstring: with a symbol table loaded"),
@@ -72,12 +63,12 @@ M_CELLS = cells(
     ("M a 16-bit range past FFFF is refused naming the bytes that fit",
      "disassemble docstring: past the end of a 16-bit segment"),
     ("M perform runs disassemble as a step", "REFERENCE.md, Sequences in one call"),
-    ("M the first int 3's stop carries its instruction off the pane, as disassemble reads it",
+    ("M the first int 3's stop carries its instruction from memory, as disassemble reads it",
      "REFERENCE.md, What a stop returns: `instruction`; known: code.asm's first int 3"),
     ("M the int 3 in inner names inner and its delta",
      "REFERENCE.md, What a stop returns: the nearest symbol; known: code.sym"),
-    ("M after a C elsewhere, the next stop's instruction is still the park's jmp",
-     "REFERENCE.md, What a stop returns: the pane or one `D`; known: code.asm's `park`"),
+    ("M the next stop's instruction is the park's jmp",
+     "REFERENCE.md, What a stop returns: read from memory; known: code.asm's `park`"),
     ("M call_stack at the frameless int 3 lists the stop alone and why",
      "call_stack docstring; known: code.asm's first int 3, BP zeroed"),
     ("M call_stack at middle's first byte reads outer off SP, via entry",
@@ -95,16 +86,17 @@ M_CELLS = cells(
 
 #: The program cells, declared in their sections.
 DOS_REAL16_CODE_CELLS = (
-    ("D the first routine calling another public, disassembled, agrees with the pane",
-     "REFERENCE.md, Reading and writing: the pane is the control"),
-    ("D its call carries the callee's name, the pane calling the same offset",
-     "disassemble docstring: resolved; the pane is the control"),
+    ("D the first routine calling another public, disassembled, holds the bytes memory holds",
+     "disassemble docstring: decoded from memory; known: memdump over the same span"),
+    ("D its call carries the callee's name at delta 0, a `call` the decoder flows as one",
+     "disassemble docstring: resolved; known: the program's own map"),
 )
 DPMI_CODE_CELLS = (
-    ("F disassemble(_tick, 64) agrees with the pane in Pr32, 32-bit operands among it",
-     "REFERENCE.md, Reading and writing: the width is CS's D bit, the pane the control"),
-    ("F disassemble just below offset FFFF completes the line that straddles it, as one `D` reads",
-     "REFERENCE.md, Reading and writing: past FFFF in a 32-bit segment the read-ahead is a `D`"),
+    ("F disassemble(_tick, 64) holds memory's bytes in Pr32, 32-bit operands among it",
+     "REFERENCE.md, Reading and writing: the width is CS's D bit; known: read_memory"),
+    ("F disassemble just below offset FFFF completes the line that straddles it, as memory "
+     "holds it",
+     "REFERENCE.md, Reading and writing: past FFFF in a 32-bit segment the bytes go on"),
 )
 
 
@@ -112,50 +104,24 @@ def _bytes_of(lines: list[str]) -> bytes:
     return b"".join(bytes.fromhex(line.split()[1]) for line in lines)
 
 
-def walk_pane(segment: int, start: int, end: int) -> list[code.PaneLine]:
-    """The pane after `C`, at `start` and then at the last line each pane showed, until a pane
-    reaches `end`; every line of the segment, each address once."""
-    seen: dict[int, code.PaneLine] = {}
-    at = start
-    for _ in range(PANE_WALK_MAX):
-        r = must(M.call(server.debug, command=f"C {segment:04X}:{at:08X}"), "moving the pane")
-        mine = [p for p in code.pane_lines(str(r.get("screen_delta")))
-                if p.segment == f"{segment:04X}"]
-        for p in mine:
-            seen.setdefault(p.offset, p)
-        later = [p.offset for p in mine if p.offset > at]
-        if not later or max(later) >= end:
-            break
-        at = max(later)
-    return [seen[o] for o in sorted(seen)]
-
-
-def against_the_pane(reply: dict[str, Any], names: dict[str, int]) -> control.Verdict:
-    """`disassemble`'s listing, as the reply wrote it, against the pane walked over the same
-    bytes; a line of the reply the walk never showed is a disagreement, so a short walk cannot
-    pass for a whole one."""
+def memory_holds(reply: dict[str, Any]) -> tuple[bool, str]:
+    """Whether the listing's bytes are the machine's over the same span, read as many bytes
+    at a time as it takes through `read_memory`; with what was compared."""
+    lines = list(reply.get("lines") or [])
+    listed = _bytes_of(lines)
+    if not ok(reply) or not listed:
+        return False, said(reply)
     seg_text, off_text = str(reply["seg_off"]).split(":")
-    seg, off, length = int(seg_text, 16), int(off_text, 16), int(reply["length"])
-    said_lines = [_said(line, flow) for line, flow in
-                  zip(reply.get("lines") or [], reply.get("flow") or [], strict=False)]
-    pane = walk_pane(seg, off, off + length)
-    verdict = control.compare(pane, f"{seg:04X}", said_lines, names)
-    shown = {p.offset for p in pane}
-    # A line the pane got wrong covers its own bytes, where the decoder's lines are not compared.
-    shown |= {o for p in pane if p.data and any(e.opcode(p.data) for e in control.EXCEPTIONS)
-              for o in range(p.offset, p.offset + len(p.data))}
-    verdict.disagreements += [f"{seg:04X}:{i.offset:08X}: not in the pane walked"
-                              for i in said_lines if i.offset not in shown]
-    return verdict
-
-
-def _said(line: str, flow: str) -> disasm.Insn:
-    """One line of the reply read back into the decoder's record: its address, its bytes, its
-    text and its flow, so the comparison judges what the reply said and not a second decoding."""
-    where, raw, *rest = line.split(None, 2)
-    mnemonic, _, operands = (rest[0] if rest else "").partition(" ")
-    return disasm.Insn(int(where.split(":")[1], 16), bytes.fromhex(raw), mnemonic, operands,
-                       flow)
+    off = int(off_text, 16)
+    seen = b""
+    while len(seen) < len(listed):
+        n = min(dcons.READ_BYTES_MAX, len(listed) - len(seen))
+        r = M.call(server.read_memory, ref=f"{seg_text}:{off + len(seen):08X}", length=n)
+        if not ok(r):
+            return False, f"read_memory at {seg_text}:{off + len(seen):08X}: {said(r)}"
+        seen += bytes.fromhex(str(r["hex"]))
+    return listed == seen, (f"{len(lines)} lines, {len(listed)} bytes "
+                            f"{'equal to' if listed == seen else 'differing from'} memory's")
 
 
 @M.section("M", "the code tools on the package's guests", M_CELLS)
@@ -197,10 +163,8 @@ def _code_guest() -> None:
     M.judge("M FE /7 is a line of its own, unknown, and decoding resumes after it",
             by_at.get(0x13C, "").endswith(".byte 0xfe") and flows.get(0x13C) == "unknown"
             and by_at.get(0x13D, "").endswith("clc"), f"{by_at.get(0x13C)} / {by_at.get(0x13D)}")
-    v = against_the_pane(r, {}) if ok(r) else control.Verdict(0, [said(r)], [])
-    M.judge("M the code guest's pane agrees with disassemble, FE /7 excepted",
-            v.compared > 0 and not v.disagreements and v.excepted == ["0814:0000013C"],
-            f"{v.compared} compared, excepted {v.excepted}, {v.disagreements[:2]}")
+    held, why = memory_holds(r)
+    M.judge("M the code guest's listing holds the bytes memory holds", held, why)
     must(M.call(server.symbols_load, path=str(GUEST / "code.sym"), base=GUEST_BASE),
          "loading code.sym")
     must(M.call(server.breakpoint_at, ref="middle"), "arming middle")
@@ -216,12 +180,12 @@ def _code_guest() -> None:
     M.judge("M the int 3 in inner names inner and its delta",
             ok(inner) and pic.get("seg_off") == "0814:00000167" and pic.get("text") == "int 3"
             and (pic.get("symbol"), pic.get("delta")) == ("inner", 0x167 - 0x15E), str(pic))
-    must(M.call(server.debug, command="C 0000:0000"), "moving the pane away")
     parked = M.call(server.run_for, frames=1)
     pic = parked.get("instruction") or {}
-    M.judge("M after a C elsewhere, the next stop's instruction is still the park's jmp",
+    M.judge("M the next stop's instruction is the park's jmp",
             ok(parked) and pic.get("seg_off") == parked.get("pc") == "0814:0000013A"
-            and pic.get("bytes") == "EBFE" and pic.get("symbol") == "park",
+            and pic.get("bytes") == "EBFE" and pic.get("symbol") == "park"
+            and pic.get("bytes_from") == "memory",
             f"{pic.get('seg_off')} {pic.get('bytes')} {pic.get('bytes_from')} {pic.get('symbol')}")
     must(M.call(server.close), "closing the code guest")
 
@@ -250,9 +214,9 @@ def _inner_stack() -> None:
 def _first_stop(stop: dict[str, Any]) -> None:
     pic = stop.get("instruction") or {}
     one = M.call(server.disassemble, ref=str(pic.get("seg_off", f"{LOAD}:0102")), length=1)
-    M.judge("M the first int 3's stop carries its instruction off the pane, as disassemble "
+    M.judge("M the first int 3's stop carries its instruction from memory, as disassemble "
             "reads it", ok(stop) and pic.get("seg_off") == stop.get("pc")
-            and pic.get("bytes_from") == "code pane"
+            and pic.get("bytes_from") == "memory"
             and [ln.split(None, 2)[-1] for ln in one.get("lines") or []] == [pic.get("text")],
             f"{pic} / {one.get('lines')}")
 
@@ -287,10 +251,8 @@ def _probe() -> None:
     must(M.call(server.symbols_load, path=str(GUEST / "probe.sym"), base=GUEST_BASE),
          "loading probe.sym")
     r = M.call(server.disassemble, ref="start", length=32)
-    v = against_the_pane(r, {}) if ok(r) else control.Verdict(0, [said(r)], [])
-    M.judge("M disassemble(start, 32) on the probe agrees with the pane",
-            v.compared > 0 and not v.disagreements and not v.excepted,
-            f"{v.compared} compared, {v.disagreements[:2]}")
+    held, why = memory_holds(r)
+    M.judge("M disassemble(start, 32) on the probe holds the bytes memory holds", held, why)
     named = {(row.get("line"), row.get("kind")): (row.get("symbol"), row.get("delta"))
              for row in r.get("resolved") or []}
     M.judge("M resolved on the probe: emit and bump at delta 0, cnt at delta 1",
@@ -328,23 +290,9 @@ def _probe() -> None:
 
 # -------------------------------------------------------------------- the program cells
 
-def _debugger_names() -> dict[str, int]:
-    """The names the pane prints in an operand, to the offset they stand for in a flat table
-    (code and data share one base, so a symbol's offset is the operand's): the debugger keeps
-    fifteen characters of a name, so a shortened name two symbols share stands for neither."""
-    out: dict[str, int] = {}
-    clash: set[str] = set()
-    for s in dstate.STATE.table:
-        short = s.name[:15]
-        if short in out:
-            clash.add(short)
-        out[short] = s.offset
-    return {k: v for k, v in out.items() if k not in clash}
-
-
 def dos_real16_code() -> None:
     """The first public, by address, whose code up to the next public (at most 1024 bytes) holds
-    a direct call to another public; disassembled and held to the pane."""
+    a direct call to another public; disassembled and its bytes held to memory's."""
     labels = [c[0] for c in DOS_REAL16_CODE_CELLS]
     table = sorted(dstate.STATE.table, key=lambda s: s.offset)
     publics = {s.name for s in table}
@@ -368,33 +316,24 @@ def dos_real16_code() -> None:
                     f"no public of the first {DOS_REAL16_PUBLICS_TRIED} calls another")
         return
     name, r, call = chosen
-    v = against_the_pane(r, {})
-    M.judge(labels[0], v.compared > 0 and not v.disagreements,
-            f"{name} at {r['seg_off']}, {v.compared} compared, "
-            f"{v.disagreements[:2]}")
-    at = int(r["lines"][int(call["line"])].split()[0].split(":")[1], 16)
-    segment = int(str(r["seg_off"]).split(":")[0], 16)
-    pane = [p for p in walk_pane(segment, at, at + 1) if p.offset == at]
-    shown = {int(n, 16) for n in re.findall(r"[0-9A-F]+", pane[0].text)} if pane else set()
-    calls_there = bool(pane) and pane[0].text.startswith("call") \
-        and int(str(call["seg_off"]).split(":")[1], 16) in shown
-    M.judge(labels[1], calls_there, f"{name} line {call['line']} calls {call['symbol']}; the "
-            f"pane there: {pane[0].text if pane else 'not shown'}")
+    held, why = memory_holds(r)
+    M.judge(labels[0], held, f"{name} at {r['seg_off']}: {why}")
+    target = next(sym for sym in table if sym.name == call["symbol"])
+    M.judge(labels[1], call["delta"] == 0 and int(str(call["seg_off"]).split(":")[1], 16)
+            == target.offset and (r.get("flow") or [])[int(call["line"])] == "call",
+            f"{name} line {call['line']} calls {call['symbol']} at {call['seg_off']}")
 
 
 def dpmi_code() -> None:
-    """`_tick` decoded from the stop in the client, against the pane in `Pr32`."""
+    """`_tick` decoded from the stop in the client, its bytes held to memory's in `Pr32`."""
     r = M.call(server.disassemble, ref="_tick", length=64)
-    v = against_the_pane(r, _debugger_names()) if ok(r) else control.Verdict(
-        0, [said(r)], [])
+    held, why = memory_holds(r)
     wide = [ln for ln in r.get("lines") or [] if any(
         w in ln.split(None, 2)[-1] for w in ("eax", "ebp", "esp", "dword"))]
-    M.judge(DPMI_CODE_CELLS[0][0], ok(r) and r.get("code_bits") == 32 and v.compared > 0
-            and not v.disagreements and bool(wide),
-            f"{r.get('code_bits_from')}, {v.compared} compared, {v.disagreements[:2]}, "
-            f"{len(wide)} lines with a 32-bit operand")
+    M.judge(DPMI_CODE_CELLS[0][0], ok(r) and r.get("code_bits") == 32 and held and bool(wide),
+            f"{r.get('code_bits_from')}, {why}, {len(wide)} lines with a 32-bit operand")
     # The code segment runs on past 64 KiB, so a listing ending just below FFFF has a last line
-    # that straddles it: its bytes are held against one data-view read of the same span.
+    # that straddles it: its bytes are held against one read of the same span.
     seg = int(str(r["seg_off"]).split(":")[0], 16) if ok(r) else None
     near = M.call(server.disassemble, ref=f"{seg:04X}:0000FFF0", length=16) \
         if seg is not None else {}
@@ -405,4 +344,4 @@ def dpmi_code() -> None:
     M.judge(DPMI_CODE_CELLS[1][0], ok(near) and "unknown" not in (near.get("flow") or [])
             and len(got) > 0x10 and got == seen,
             f"{(near.get('lines') or [said(near)])[-1:]}, {len(got)} bytes, "
-            f"{'equal' if got == seen else 'differ from'} the data view's")
+            f"{'equal to' if got == seen else 'differing from'} memory's")

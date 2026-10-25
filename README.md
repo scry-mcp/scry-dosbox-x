@@ -65,9 +65,16 @@ comes from you; the server carries no default that points anywhere.
 
 ## Platforms
 
-macOS. The server reads DOSBox-X's debugger through a POSIX pseudo-terminal, which Windows does not
-have: there it loads, and `start` and `build_check` refuse, saying why. Linux is not supported:
-nothing here has run on it.
+macOS and Windows. The server talks to DOSBox-X's debugger over its debugger channel on both, the
+same requests and the same replies; on Windows the emulator runs in a console of its own, hidden.
+Linux is not supported: nothing here has run on it.
+
+What a session can do depends on the debugger commands its build carries, and `build_check` lists
+them. Any DOSBox-X with the debugger starts a session and answers every reading at the stop it
+parks at. Waiting for a stop (`run_to`, `run_for`, `trace`, `screen_wait`, a step over, a bounded
+`resume`) needs `RUNSTATE`, which tells whether the debugger holds the machine; stepping needs
+`STEPIN`; saved states need `SAVESTATE` and `LOADSTATE`. A tool whose command is missing says so
+and does nothing ([REFERENCE.md](REFERENCE.md#debugger-commands)).
 
 ## See it run
 

@@ -13,7 +13,6 @@ import shutil
 import sys
 import tempfile
 import textwrap
-import time
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
@@ -28,6 +27,7 @@ from scry_core import log_wait as core_wait
 from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 
+import dosbox_binary as binaries
 import dosbox_console as dcons
 import dosbox_declarations as dec
 import dosbox_folds as folds
@@ -39,20 +39,13 @@ import dosbox_state as dstate
 import dosbox_symbols as dsym
 import dosbox_x_server as server
 
-# AUTHORED, no capture kept. Whole because the property is the NOISE: the debugger overlays
-# a descriptor line (`ss: b:00008240`) into the register pane, so a first-`b:` search returns
-# the stack selector's base for a code-selector question.
-SELINFO_SCREEN = (
-    "ooooRegister Overviewoooooooooooooooooooooooooooooooooooooooooo\r\n"
-    "EAX=0000000A  ESI=00400000  DS=00AF   ES=00AF   FS=008F   SS=008F Pr32\r\n"
-    "ECX=00000001  EBP=0000091C  ss: b:00008240 type:12 parbg    PAGEPSE IOPL3\r\n"
-    "EDX=001798A6  ESP=00000760l:0000FFFF dpl : 3 10010    cc=237868    RUN\r\n"
-    "ooooOutputoooooooooooooooooooooooooooooooooooooooooooooooooooooo"
-    "SelectorInfo CS:\r\n"
-    "CS: b:00400000 type:1B parbg\nl:0023FFFF dpl : 3 10011\r\n"
-    "SelectorInfo DS:\r\n"
-    "DS: b:00400000 type:13 parbg\nl:0023FFFF dpl : 3 10011\r\n"
-    "I-> _")
+#: What the DJGPP guest's debugger printed to `SELINFO <reg>` over the channel
+#: (`fixtures/channel/scry-dpmi.json`), by register.
+SELINFO_CAPTURED = {
+    e["request"].split()[-1]: e["lines"]
+    for e in json.loads((Path(__file__).parent / "fixtures" / "channel" / "scry-dpmi.json")
+                        .read_text(encoding="utf-8"))["exchanges"]
+    if e["request"].startswith("EXEC SELINFO ")}
 
 MEASURED_BASE = 0x00400000
 
@@ -63,25 +56,75 @@ def _log_wait_as_guest(self: Any, pattern: str, seconds: float, channel: str, ma
     return got
 
 
-class FakeSession:
+def stub_build(monkeypatch: pytest.MonkeyPatch, headless: bool = True,
+               commands: tuple[str, ...] = binaries.COMMANDS) -> None:
+    """What a faked build carries, read at `start` off a path that holds no file."""
+    monkeypatch.setattr(binaries, "headless", lambda _b: headless)
+    monkeypatch.setattr(binaries, "debugger_commands", lambda _b: list(commands))
+
+
+def stubbed_build() -> Any:
+    """`stub_build` for a case with no monkeypatch at hand."""
+    return mock.patch.multiple(binaries, headless=lambda _b: True,
+                               debugger_commands=lambda _b: list(binaries.COMMANDS))
+
+class RunStateOnly:
+    """A fake's debugger channel: `RUNSTATE` answered from the fake's own `run_state`, else its
+    `at_debugger`, which is what the real stop wait polls; any other request is a fake that fell
+    behind."""
+
+    def __init__(self, fake: Any) -> None:
+        self.fake = fake
+
+    def request(self, command: str, seconds: float = 5.0,
+                poll: Any = None) -> tuple[bool, list[str]]:
+        assert command == "EXEC RUNSTATE", f"the fake's channel takes only RUNSTATE: {command!r}"
+        stopped = getattr(self.fake, "run_state", self.fake.at_debugger)()
+        state = "stopped" if stopped else "running"
+        return True, [f"DEBUG: RUNSTATE {state} cycles=0 ms=0.000000000"]
+
+
+class SessionGates:
+    """The real session's stop and build gates, run against a fake's own `at_debugger`."""
+
+    @property
+    def control(self) -> RunStateOnly:
+        return RunStateOnly(self)
+
+    def mark_stopped(self) -> None:
+        """A fake is stopped as long as its `at_debugger` says."""
+
+    def forget_stop(self) -> None:
+        """A fake is stopped as long as its `at_debugger` says."""
+
+    commands = frozenset(binaries.COMMANDS)
+    has = ds.Session.has
+    require_stopped = ds.Session.require_stopped
+    require_run_state = ds.Session.require_run_state
+    delete_rows = ds.Session.delete_rows
+    gone_if_dead = ds.Session.gone_if_dead
+
+
+class FakeSession(SessionGates):
     """The narrowest faithful stand-in for a session: it does what the contract says."""
 
-    def __init__(self, *, alive: bool = True, screen: str = "some screen",
+    def __init__(self, *, alive: bool = True, answer: str = "some output", took: bool = True,
                  mode: str = "Real") -> None:
         self.altered = False
         # the data-view screens are real-mode; a case on the protected-mode `SELINFO` capture says
         # `Pr32`
         self.mode = mode
         self._alive = alive
-        self._screen = screen
+        # what every debugger command prints, and whether the debugger took it
+        self.answer, self.took = answer, took
+        self.executed: list[str] = []
+        self.memory: dict[int, int] = {}
         self.closed = 0
         self.proc = SimpleNamespace(poll=lambda: None if self._alive else -15, pid=4242)
         self.launch = SimpleNamespace(cwd=Path("/"), logfile=None, watched=False)
         self._avi_facts: dict[tuple[str, int, int], dict[str, object]] = {}
         self.e9_calls: list[tuple[str, int]] = []
         self.log_calls: list[tuple[str, int, str]] = []
-        self.console_keys: list[str] = []
-        self.after_pager = "I-> _"
         self.since_marks: list[int] = []
         self.loaded: list[tuple[str, int]] = []
         # what the address-taking tools were handed: tells a forwarded address from a forwarded zero
@@ -124,19 +167,17 @@ class FakeSession:
                 "altered": self.altered,
                 "conf": "/x/g.conf", "conf_digest": "abc123", "conf_changed_on_disk": False,
                 "watched": False, "bound_s": 60, "elapsed_s": 1.0,
-                "terminal_bytes_dropped": 0, "drain_alive": True, "captures": "off",
+                "output_bytes_dropped": 0, "captures": "off",
                 "state_dir": "the emulator's own save/ under its working directory"}
 
-    def command(self, text: str, **_: object) -> str:
-        return self._screen
+    def exec(self, command: str, seconds: float | None = None) -> tuple[bool, list[str]]:
+        self.executed.append(command)
+        if command.upper().startswith("SELINFO "):
+            return True, SELINFO_CAPTURED[command.split()[-1].upper()]
+        return self.took, self.answer.splitlines()
 
-    def end_pager(self) -> str:
-        self.console_keys.append("end_pager")
-        return self.after_pager
-
-    def clear_line(self) -> str:
-        self.console_keys.append("clear_line")
-        return ""
+    def command(self, text: str, seconds: float | None = None) -> str:
+        return "\n".join(self.exec(text, seconds)[1])
 
     def await_stop(self, began: float, deadline: float, target: str,
                    progress: ds.Progress = ds.no_progress, label: str = "") -> tuple[bool, float]:
@@ -170,12 +211,8 @@ class FakeSession:
     def stop_survey(self) -> tuple[dict[str, str], dict[str, str], list[dict[str, str]]]:
         return self.where(), self.registers(), self.breakpoints()
 
-    def read_memory(self, seg: int, off: int, mode: str | None = None) -> list[str]:
-        """THE REAL METHOD, run against this double's screen."""
-        return ds.Session.read_memory(self, seg, off, mode)  # type: ignore[arg-type]
-
     def read_bytes(self, seg: int, off: int, n: int, mode: str | None = None) -> bytes:
-        """THE REAL METHOD too, over this double's screen: it reaches only `read_memory`."""
+        """THE REAL METHOD, over this double's `memdump`."""
         return ds.Session.read_bytes(self, seg, off, n, mode)  # type: ignore[arg-type]
 
     def breakpoints(self) -> list[dict[str, str]]:
@@ -222,7 +259,7 @@ class FakeSession:
 
     def resume(self) -> dict[str, object]:
         # a constant: what `halted` is read off is exercised against captured deltas
-        return {"screen": "", "halted": False, "stopped_at": None}
+        return {"output": "", "halted": False, "stopped_at": None}
 
     def resume_after_command(self) -> dict[str, object]:
         return self.resume()
@@ -292,9 +329,11 @@ class FakeSession:
         return ["one line"], 500
 
     def memdump(self, seg: int, off: int, length: int, dest: Path) -> Path:
+        """`memory` by real-mode linear address, zeros where it holds nothing."""
         self.memdump_calls.append((seg, off, length))
         dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_bytes(b"\x00" * length)
+        base = (seg << 4) + off
+        dest.write_bytes(bytes(self.memory.get(base + i, 0) for i in range(length)))
         return dest
 
     def captures(self) -> list[dict[str, object]]:
@@ -318,16 +357,12 @@ class FakeSession:
     def console_tail(self, chars: int) -> str:
         return ""
 
+    def output_tail(self, chars: int) -> str:
+        return ""
+
     def selector(self, reg: str) -> dict[str, int]:
-        """THE REAL METHOD, run against a CAPTURED descriptor screen."""
-        # restored: `command()` returns `self._screen` for every command, so a later screen read
-        # would parse the descriptor capture
-        was = self._screen
-        try:
-            self._screen = SELINFO_SCREEN
-            return ds.Session.selector(self, reg)      # type: ignore[arg-type]
-        finally:
-            self._screen = was
+        """THE REAL METHOD, over the CAPTURED descriptor replies."""
+        return ds.Session.selector(self, reg)      # type: ignore[arg-type]
 
     def load_symbols(self, data: bytes) -> list[tuple[str, int]]:
         """What the debugger would hold afterwards, INCLUDING what it already held."""
@@ -422,7 +457,7 @@ def _launch_of(**kw: Any) -> dlaunch.Launch:
         raise ds.Invalid("session_broken", "not starting anything: this case wants the Launch only")
 
     with mock.patch("scry_core.binaries.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
-         mock.patch("dosbox_x_server.ds.Session", build):
+         mock.patch("dosbox_x_server.ds.Session", build), stubbed_build():
         server.start(**kw)
     assert seen, "`start` never reached the Launch"
     return seen[0]
@@ -462,19 +497,10 @@ ILINK32_MAP = Path(__file__).parent / "fixtures" / "borland-ilink32" / "sections
 ILINK32_BASES = {"1": "0x401000", "2": "0x423000", "3": "0x4289B8"}
 
 
-# authored; indistinguishable from an unset selector's reply, so the type field decides
-SELINFO_ZEROED = (
-    "ooooRegister Overviewoooooooooooooooooooooooooooooooooooooooooo\r\n"
-    "EAX=00000000  ESI=00000000  DS=0000   ES=0000   SS=0000 Real\r\n"
-    "EBX=00000000  EDI=00000000  CS=F000   EIP=0000FFF0  C0 Z0 S0 O0\r\n"
-    "ooooOutputoooooooooooooooooooooooooooooooooooooooooooooooooooooo"
-    "SelectorInfo CS:\r\n"
-    "CS: b:00000000 type:00 parbg\nl:00000000 dpl : 0 00000\r\n"
-    "I-> _")
-
-
-# a real-mode stop inside a program, captured: the echo and no descriptor line
-SELINFO_REAL_MODE_IN_A_PROGRAM = "SelectorInfo CS:\r\n\n\nI-> _"
+#: A descriptor that is not present, as the probe guest's real-mode stop printed it for FS
+#: (`fixtures/channel/scry-real.json`), respelled for CS: the type field is what decides.
+SELINFO_ZEROED = ["SelectorInfo CS:", "CS: b:000EF000 type:00 parbg",
+                  "    l:0000CA60 dpl : 0 01110"]
 
 
 def returned_key_sets(fn: object) -> list[frozenset[str]]:
@@ -531,7 +557,7 @@ NM_FRAGMENT = (
 
 
 
-class NamesFake:
+class NamesFake(SessionGates):
 
     survey_text = ""
 
@@ -590,23 +616,19 @@ class NamesFake:
         self.launch = dlaunch.Launch(conf=conf or Path("/x.conf"), cwd=Path("/"), seconds=60,
                                 watched=watched, input_port=input_port)
 
+    def listing(self, command: str) -> str:
+        """A debugger whose listings print nothing a parser takes."""
+        return ""
+
     def alive(self) -> bool:
         return self.alive_flag
 
-    # derived from the state `where()` answers from, so the sequence wait can hear a stop
-    _screen = ""
-
-    def _read(self, timeout: float) -> str:
+    def run_state(self) -> bool:
+        """What `RUNSTATE` says, off the state `where()` answers from."""
         if self.where_refusals > 0:
             self.where_refusals -= 1
-            return ""
-        if self.where_raises or self.running:
-            time.sleep(min(timeout, 0.05))
-            return ""
-        return dcons.PROMPT
-
-    def _mark_stopped(self) -> None:
-        pass
+            return False
+        return not (self.where_raises or self.running)
 
     def state(self) -> dict[str, object]:
         return {"alive": self.alive_flag, "running": self._running, "altered": False}
@@ -788,7 +810,7 @@ class NamesFake:
             self.log.extend(self.resume_effect)
         return {"halted": self.halted,
                 "stopped_at": {"cs": self.cs, "eip": self.eip, "mode": self.mode},
-                "screen": "ooooOutputoooo\r\nI-> _"}
+                "output": "OK"}
 
     def step(self, mode: str = "over", count: int = 1) -> dict[str, object]:
         self.running = self.step_running
@@ -928,6 +950,8 @@ def _start_on_a_booted_fake(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
         monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
         # and its version, or the host's own `-version` would run
         monkeypatch.setattr("scry_core.binaries.version", lambda *_a, **_k: "DOSBox-X (a stub)")
+        stub_build(monkeypatch)
+
     def booted(launch: dlaunch.Launch) -> Booted:
         fake = Booted(conf=conf)
         fake.launch.input_port = launch.input_port
@@ -967,6 +991,7 @@ def _start_over_a_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
                                   fingerprint=fp or dlaunch.fingerprint(conf.resolve()),
                                   cpu_mode=mode))
     monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
+    stub_build(monkeypatch)
     with mock.patch("dosbox_x_server.ds.Session", lambda _l: booted):
         got = cast(dict[str, Any], server.start(
             conf=str(conf), cwd=str(tmp_path), session_seconds=60))
@@ -974,38 +999,21 @@ def _start_over_a_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 
 
 
-_MEMFIND = Path(__file__).resolve().parent / "fixtures" / "memfind"
-
-
-def _tail(name: str) -> str:
-    text = (_MEMFIND / f"{name}.txt").read_text(encoding="utf-8")
-    assert text.strip(), f"fixture {name} is empty, so this case would examine nothing"
-    return text
-
-
 def _typed_into(s: FakeSession, monkeypatch: pytest.MonkeyPatch) -> list[str]:
-    """What reaches the terminal through `command`, recorded; each answer is a bare prompt."""
+    """What reaches the debugger through `exec`, recorded; each prints nothing."""
     typed: list[str] = []
 
-    def command(text: str, **_: object) -> str:
+    def exec_(text: str, seconds: float | None = None) -> tuple[bool, list[str]]:
         typed.append(text)
-        return "I-> _"
+        return True, []
 
-    monkeypatch.setattr(s, "command", command)
+    monkeypatch.setattr(s, "exec", exec_)
     return typed
 
 
-# the register pane's paging mark after EBP's value; `_PAGE_LINE` is dos-djgpp32's, from
-# a client stopped by `BPINT 31 AH=02`
-_NOPG_LINE = "ECX=00000000  EBP=00000000NOPG  IOPL0  CPL0\r\n"
-_PAGE_LINE = "ECX=000000A7  EBP=002B8690PAGEPSE IOPL3  CPL3\r\n"
 
 
 
-#: The cases a real session's own plumbing decides: its pseudo-terminal, the descriptor the drain
-#: selects on, its process group. Windows has none of them, and no session starts there.
-POSIX_SESSION = pytest.mark.skipif(sys.platform == "win32",
-                                   reason="a session's terminal and process group are POSIX's")
 
 #: Cases about a dump's two spellings, which Windows compares as one path.
 CASED_PATHS = pytest.mark.skipif(sys.platform == "win32",

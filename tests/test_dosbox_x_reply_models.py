@@ -33,7 +33,6 @@ REPLY_WORDS: dict[str, tuple[str, ...]] = {
     "close": ("quit", "why"),
     "step": ("over",),
     "log_wait": ("logfile",),
-    "machine_map": ("logfile",),
     "status": ("alive", "running", "altered"),
     "screen_signature": ("dest", "scale"),
     "captures": ("bytes",),

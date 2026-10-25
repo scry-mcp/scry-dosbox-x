@@ -15,7 +15,6 @@ from dosbox_x_server_support import (  # noqa: E402
     ILINK32_MAP,
     MEASURED_BASE,
     NM_FRAGMENT,
-    SELINFO_REAL_MODE_IN_A_PROGRAM,
     SELINFO_ZEROED,
     TLINK_TEXT,
     FakeSession,
@@ -51,7 +50,7 @@ def test_the_base_is_measured_off_the_machine_and_not_assumed(tmp_path: Path) ->
     got = cast(dict[str, Any], server.symbols_load(path=_source(tmp_path)))
     assert got["status"] == "ok", got
     assert got["base"] == MEASURED_BASE, got
-    assert got["limit"] == 0x0023FFFF, got
+    assert got["limit"] == 0x0009FFFF, got
     assert got["base_from"] == "CS", got
 
 
@@ -308,7 +307,6 @@ def test_a_real_mode_map_with_no_base_is_refused_before_selinfo_is_asked(
 
         def selector(self, reg: str) -> dict[str, int]:
             self.asked.append(reg)
-            self._screen = SELINFO_REAL_MODE_IN_A_PROGRAM
             return ds.Session.selector(self, reg)      # type: ignore[arg-type]
 
     s = RealModeProgram()
@@ -334,9 +332,8 @@ def test_an_absent_descriptor_is_refused_rather_than_placed_at_base_zero(
         def where(self) -> dict[str, str]:
             return {"cs": "00A7", "eip": "00000000", "mode": "Pr32"}
 
-        def selector(self, reg: str) -> dict[str, int]:
-            self._screen = SELINFO_ZEROED
-            return ds.Session.selector(self, reg)      # type: ignore[arg-type]
+        def exec(self, command: str, seconds: float | None = None) -> tuple[bool, list[str]]:
+            return True, SELINFO_ZEROED
 
     s = Unset()
     dstate.STATE.session = s                                # type: ignore[assignment]
@@ -440,15 +437,13 @@ def test_a_bad_pattern_is_a_refusal_and_not_a_traceback(tmp_path: Path) -> None:
 
 
 def test_read_memory_refuses_an_offset_that_will_not_fit_the_command() -> None:
-    seg, off = 0x0749, 0
-    row = f"{seg:04X}:{off:08X} " + " ".join(["00"] * 16) + "  " + "." * 16
-    install(screen=f"some screen\r\n{row}\r\n")
+    fake = install()
     got = cast(dict[str, Any], server.read_memory(ref="0000:00010000"))
     assert got["status"] == "INVALID", got
-    # The ceiling is mode-aware; in the real mode this double reports,
-    # 0x10000 still addresses nothing, and the refusal says so rather than blaming the
-    # screen.
+    # The ceiling is mode-aware; in the real mode this double reports, 0x10000 still
+    # addresses nothing, and the refusal says so before anything is sent.
     assert "past 0xFFFF addresses nothing" in str(got["message"]), got["message"]
+    assert fake.memdump_calls == []
 
 def test_the_caller_is_told_about_every_bucket_the_plan_carries(tmp_path: Path) -> None:
     """CONSERVATION AT THE BOUNDARY, which is the only place it is worth anything."""
@@ -732,7 +727,8 @@ def test_target_for_refuses_a_real_mode_symbol_that_folds_past_1mb() -> None:
 
 
 def test_read_memory_takes_a_symbol_or_a_seg_off_ref(tmp_path: Path) -> None:
-    _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")], ds_="00AF")
+    fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")], ds_="00AF")
+    fake.mem[(0x00AF, 0x17A6EC)] = bytes.fromhex("00112233")
     by_name = cast(dict[str, Any], server.read_memory(ref="g_rate", length=4))
     assert by_name["status"] == "ok" and by_name["seg_off"].startswith("00AF:")
     assert by_name["hex"] == "00112233" and by_name["length"] == 4, by_name

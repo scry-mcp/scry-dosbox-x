@@ -70,8 +70,9 @@ def await_dial(listener: socket.socket, seconds: float,
 def parse_reply(buf: bytes, rid: str) -> tuple[bool, list[str], bytes] | None:
     """`(ok, lines, rest)` once `buf` holds the whole reply to `rid`, else None.
 
-    Anything before its `BEGIN` is an abandoned earlier reply (dropped); after `END` is `rest`."""
-    text = buf.decode("utf-8", errors="replace")
+    Anything before its `BEGIN` is an abandoned earlier reply (dropped); after `END` is `rest`.
+    Read a byte to a character: a listing carries the guest's own code-page bytes."""
+    text = buf.decode("latin-1")
     begin = f"BEGIN {rid} "
     start = text.find(begin)
     if start < 0:
@@ -89,7 +90,7 @@ def parse_reply(buf: bytes, rid: str) -> tuple[bool, list[str], bytes] | None:
         raise Invalid("unexpected_answer",
                       f"the debugger channel answered request {rid} with {head!r}, which is "
                       f"neither OK nor ERR")
-    rest = text[after:].lstrip("\r\n").encode("utf-8")
+    rest = text[after:].lstrip("\r\n").encode("latin-1")
     return verdict == "OK", lines, rest
 
 

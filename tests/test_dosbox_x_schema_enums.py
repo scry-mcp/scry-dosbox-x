@@ -56,7 +56,7 @@ FOLDED: list[tuple[str, str, tuple[str, ...]]] = [
 RANGES: list[tuple[str, str, int, int]] = [
     ("log", "limit", 1, dlogs.LOG_LIMIT_MAX), ("drive", "limit", 1, dlogs.LOG_LIMIT_MAX),
     ("scan", "limit", 1, judges.HITS_MAX),
-    ("read_memory", "length", 1, dcons.DATA_VIEW_BYTES),
+    ("read_memory", "length", 1, dcons.READ_BYTES_MAX),
     ("disassemble", "length", 1, code.LENGTH_MAX),
     ("symbols_find", "limit", 1, placement.SYMBOLS_LIMIT_MAX),
     ("step", "count", 1, ds.STEP_MAX), ("trace", "instructions", 1, tracing.INSTRUCTIONS_MAX),

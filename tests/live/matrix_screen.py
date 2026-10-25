@@ -181,8 +181,8 @@ def _probe() -> None:
            holds=ok(r) and r.get("rgb") == ["00002a"] and r.get("colors") == ["#0000aa"])
     r = M.call(server.debug, command="BPLIST")
     judged("J the console takes a command after VGA DACPAL", reply=r,
-           holds=ok(r) and "not recognized" not in str(r.get("screen_delta"))
-           and dcons.BPLIST_HEADER in str(r.get("screen_delta")))
+           holds=ok(r) and "not recognized" not in str(r.get("output"))
+           and dcons.BPLIST_HEADER in str(r.get("output")))
     r = M.call(server.machine_map, sections=["vga"])
     vga = r.get("vga") or {}
     judged("J machine_map's vga once booted: M_TEXT, the seven listings named", reply=r,

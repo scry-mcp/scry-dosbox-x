@@ -72,7 +72,7 @@ class Debugger(FakeSession):
         self.typed: list[str] = []
         self.wrote: list[str] = []
 
-    def command(self, text: str, **_: object) -> str:
+    def command(self, text: str, seconds: float | None = None) -> str:
         self.typed.append(text)
         line = text.upper()                 # `ParseCommand` upper-cases the line
         m = DUMP_COMMAND.match(line)
@@ -224,8 +224,8 @@ def test_a_window_that_fails_leaves_nothing_at_dest_and_no_piece_behind(tmp_path
     real = s.command
     calls = iter(range(100))
 
-    def second_fails(text: str, **kw: object) -> str:
-        out = real(text, **kw)
+    def second_fails(text: str, seconds: float | None = None) -> str:
+        out = real(text, seconds)
         return "DEBUG: Memory binary dump failed.\r\nI-> _" if next(calls) == 1 else out
     s.command = second_fails  # type: ignore[method-assign]
     dest = tmp_path / "x.bin"
@@ -241,10 +241,10 @@ def test_a_dest_that_appears_while_the_windows_are_read_is_refused_and_kept(
     dest = tmp_path / "x.bin"
     real = s.command
 
-    def plants(text: str, **kw: object) -> str:
+    def plants(text: str, seconds: float | None = None) -> str:
         if len(s.typed) == 1:
             dest.write_bytes(b"theirs")
-        return real(text, **kw)
+        return real(text, seconds)
     s.command = plants  # type: ignore[method-assign]
     got = dumped("0000:0000", 0x20000, dest)
     assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
@@ -396,12 +396,12 @@ def test_find_through_a_32_bit_selector_keeps_its_offsets_past_ffff(tmp_path: Pa
     assert "0038:0001FFFE" in got["hits"]
 
 
-def test_a_protected_range_past_ffff_without_a_logfile_names_start_logfile(
+def test_a_protected_range_past_ffff_without_a_logfile_is_judged_off_the_listings(
         tmp_path: Path) -> None:
     s = protected(tmp_path, logfile=False)
     got = dumped("0038:00000000", 0x20000, tmp_path / "x.bin")
-    assert got["status"] == "INVALID" and got["code"] == "no_channel", got
-    assert "`start` with `logfile`" in got["message"] and s.memdump_calls == []
+    assert got["status"] == "ok" and got["bytes"] == 0x20000, got
+    assert s.memdump_calls and s.asked, (s.memdump_calls, s.asked)
 
 
 def test_an_expand_down_segment_is_judged_above_its_limit(
@@ -456,8 +456,8 @@ def test_a_dump_of_the_wrong_size_leaves_no_file_and_the_next_dump_is_not_refuse
     s = debugger(tmp_path)
     real = s.command
 
-    def short(text: str, **kw: object) -> str:
-        out = real(text, **kw)
+    def short(text: str, seconds: float | None = None) -> str:
+        out = real(text, seconds)
         (s.launch.cwd / ds.MEMDUMP_NAME.upper()).write_bytes(b"\0" * 3)
         return out
     s.command = short  # type: ignore[method-assign]
@@ -492,8 +492,8 @@ def test_a_dump_longer_than_asked_is_refused_too(tmp_path: Path) -> None:
     s = debugger(tmp_path)
     real = s.command
 
-    def long(text: str, **kw: object) -> str:
-        out = real(text, **kw)
+    def long(text: str, seconds: float | None = None) -> str:
+        out = real(text, seconds)
         (s.launch.cwd / ds.MEMDUMP_NAME.upper()).write_bytes(b"\0" * 0x21)
         return out
     s.command = long  # type: ignore[method-assign]
@@ -505,8 +505,8 @@ def test_a_command_that_breaks_after_the_debugger_wrote_leaves_no_file(tmp_path:
     s = debugger(tmp_path)
     real = s.command
 
-    def breaks(text: str, **kw: object) -> str:
-        real(text, **kw)
+    def breaks(text: str, seconds: float | None = None) -> str:
+        real(text, seconds)
         raise ds.Invalid("unexpected_answer", "the console stopped answering")
     s.command = breaks  # type: ignore[method-assign]
     got = dumped("0814:0000", 0x20, tmp_path / "a.bin")
@@ -628,8 +628,8 @@ def test_a_host_error_after_the_debugger_wrote_leaves_no_file_to_refuse_the_next
     s = debugger(tmp_path)
     real = s.command
 
-    def breaks(text: str, **kw: object) -> str:
-        real(text, **kw)
+    def breaks(text: str, seconds: float | None = None) -> str:
+        real(text, seconds)
         raise OSError(5, "Input/output error")
     s.command = breaks  # type: ignore[method-assign]
     with pytest.raises(OSError):
@@ -673,8 +673,8 @@ def test_a_dump_file_that_could_not_be_removed_is_named_once_under_two_spellings
     shut.chmod(0o555)
     typed = s.command
 
-    def then_read_only(text: str, **kw: object) -> str:
-        out = typed(text, **kw)
+    def then_read_only(text: str, seconds: float | None = None) -> str:
+        out = typed(text, seconds)
         s.launch.cwd.chmod(0o555)
         return out
     monkeypatch.setattr(s, "command", then_read_only)

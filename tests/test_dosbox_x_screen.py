@@ -20,12 +20,12 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
+from channel_double import REAL_STOP, Machine, Stop, session_over
 from dosbox_x_server_support import NO_SUCH_HOME, clean_session, documented, install  # noqa: F401
 from scry_core import png
 from scry_core.host_program import MODE_BITS
-from test_dosbox_x_machine import Bench, Logfile, listing
-from test_dosbox_x_run_for import Retraces
-from test_dosbox_x_run_for import cap as cap_vrt
+from test_dosbox_x_machine import Bench, listing
+from test_dosbox_x_run_for import FRAME_MS
 
 import dosbox_arming as arming
 import dosbox_checks as checks
@@ -171,23 +171,14 @@ def test_a_dacpal_missing_its_last_row_is_unreadable() -> None:
         vgadac.parse_dacpal(text[:text.rindex("f8: ")])
 
 
-def test_the_dacpal_pager_is_answered_with_q_alone_and_read_whole(tmp_path: Path) -> None:
-    """`VGA DACPAL` pages after row 90: the first page leaves the command on the input line and
-    the marker under it; `Q` prints the rest, from row 98, and empties the line."""
-    log = (VGA / "probe-booted-VGA_DACPAL.log.txt").read_bytes()
-    cut = log.index(b"\n98: ") + 1
-    ses = Logfile(tmp_path, [(VGA / "probe-booted-VGA_DACPAL.screen.txt").read_text(),
-                             (VGA / "probe-booted-VGA_DACPAL.q.txt").read_text()],
-                  [log[:cut], log[cut:]])
-    assert ses.listing("VGA DACPAL") == log.decode("latin-1")
-    assert ses.typed == [b"VGA DACPAL\r", b"Q"]
-
-
-def test_vga_mode_does_not_page_and_is_read_with_one_command(tmp_path: Path) -> None:
-    log = (VGA / "probe-booted-VGA_MODE.log.txt").read_bytes()
-    ses = Logfile(tmp_path, [(VGA / "probe-booted-VGA_MODE.screen.txt").read_text()], [log])
-    assert ses.listing("VGA MODE") == log.decode("latin-1")
-    assert ses.typed == [b"VGA MODE\r"]
+def test_a_listing_that_pages_on_the_screen_comes_back_whole_from_one_command(
+        tmp_path: Path) -> None:
+    """`VGA DACPAL` pages after row 90 on the debugger's screen; over the channel the command
+    prints every row at once, so it is read with one request and nothing typed after it."""
+    machine = waiting(["probe-booted"], 0, tmp_path)
+    s = cast(ds.Session, dstate.STATE.session)
+    assert s.listing("VGA DACPAL") == vga("probe-booted", "VGA DACPAL")
+    assert machine.sent == ["EXEC VGA DACPAL"]
 
 
 @pytest.mark.parametrize(("entry", "want"), [
@@ -458,12 +449,12 @@ def test_palette_refuses_a_dest_already_there_or_with_no_directory(tmp_path: Pat
     assert there.read_bytes() == b"mine" and s.asked == []
 
 
-def test_palette_without_a_logfile_is_refused_naming_it(tmp_path: Path) -> None:
+def test_palette_without_a_logfile_reads_its_listings_all_the_same(tmp_path: Path) -> None:
     s = Bench("probe-booted", None)
     install()
     dstate.STATE.session = cast(ds.Session, s)
     r = cast(dict[str, Any], server.palette())
-    assert r["status"] == "INVALID" and r["code"] == "no_channel" and "logfile" in r["message"]
+    assert r["status"] == "ok" and r["entries"] == 256 and "VGA DACPAL" in s.asked, r
 
 
 def test_palette_on_a_running_guest_is_refused_not_stopped(tmp_path: Path) -> None:
@@ -1039,7 +1030,7 @@ def test_the_screen_tools_without_a_logfile_or_on_a_running_guest(tmp_path: Path
     install()
     dstate.STATE.session = cast(ds.Session, s)
     for r in (server.screen_view(), server.screen_signature()):
-        assert r["status"] == "INVALID" and r["code"] == "no_channel" and "logfile" in r["message"]
+        assert r["status"] == "ok" and r["kind"] == "text", r
     s = screen_bench("probe-booted", tmp_path)
     s.at_debugger = lambda: False  # type: ignore[method-assign]
     for r in (server.screen_view(), server.screen_signature()):
@@ -1220,72 +1211,118 @@ def test_perform_runs_the_screen_tools(tmp_path: Path) -> None:
 # ------------------------------------------------------------------ screen_wait
 
 
-class Frames(Retraces):
-    """A machine stepped retrace by retrace through captured stops: `VRT` and its survey come off
-    `fixtures/vrt/` as `run_for`'s double has them, and after `k` retraces every listing and the
-    screen's bytes are those captured at `stops[k]` (the last one held), the `CPU` listing that
-    stop's machine bench's."""
+VIDEO_START, VIDEO_END = 0xA0000, 0xC0000
+
+
+class Frames(Machine):
+    """A machine stepped retrace by retrace through captured stops: after `k` `VRT`s every
+    listing and the screen's bytes are those captured at `stops[k]` (the last one held), the
+    `CPU` listing that stop's machine bench's. `vrts` retraces come back; the next never does."""
 
     MACHINE = {"probe-park": "probe-reset", "dos-djgpp32-startup": "dos-djgpp32"}
 
-    def __init__(self, stops: list[str], vrts: int, logfile: Path) -> None:
-        super().__init__([cap_vrt("probe-survey-0")] * (vrts + 2),
-                         [cap_vrt(f"probe-vrt-{1 + i % 3}") for i in range(vrts)])
+    def __init__(self, stops: list[str], vrts: int) -> None:
+        super().__init__(regs=dict(REAL_STOP), releases=[Stop(ms=FRAME_MS)] * vrts)
         self.stops = stops
-        self.launch = SimpleNamespace(cwd=Path("/"), logfile=logfile, watched=False,
-                                      input_port=None)
         self.asked: list[str] = []
         self.dumps: list[tuple[int, int, int]] = []
 
     @property
     def stop(self) -> str:
-        done = self.keys.count(ds.RETRACE_COMMAND)
-        return self.stops[min(done, len(self.stops) - 1)]
+        return self.stops[min(len(vrts(self)), len(self.stops) - 1)]
 
-    def listing(self, command: str) -> str:
-        self.asked.append(command)
+    def text(self, command: str) -> str:
         if command.startswith("VGA "):
             return vga(self.stop, command)
         return listing(self.MACHINE.get(self.stop, "probe-booted"), command)
 
-    def memdump(self, seg: int, off: int, length: int, dest: Path) -> Path:
-        self.dumps.append((seg, off, length))
-        dest.write_bytes(page(self.stop))
-        return dest
+    def _listed(self, word: str, args: list[str]) -> tuple[bool, list[str]]:
+        command = " ".join([word, *args])
+        self.asked.append(command)
+        return True, self.text(command).split("\n")
+
+    def _do_vga(self, args: list[str]) -> tuple[bool, list[str]]:
+        return self._listed("VGA", args)
+
+    def _do_cpu(self, args: list[str]) -> tuple[bool, list[str]]:
+        return self._listed("CPU", args)
+
+    def _do_gdt(self, args: list[str]) -> tuple[bool, list[str]]:
+        return self._listed("GDT", args)
+
+    def _do_ldt(self, args: list[str]) -> tuple[bool, list[str]]:
+        return self._listed("LDT", args)
+
+    def _do_paging(self, args: list[str]) -> tuple[bool, list[str]]:
+        return self._listed("PAGING", args)
+
+    def page_at(self, seg: int, off: int, length: int) -> bytes:
+        return page(self.stop)
+
+    def _do_memdumpbin(self, args: list[str]) -> tuple[bool, list[str]]:
+        """Video memory from the stop's captured page, counted in `dumps`; any other dump (the
+        stop reply's instruction bytes) zeros."""
+        seg, off = (int(x, 16) for x in args[0].split(":"))
+        length = int(args[1], 16)
+        video = VIDEO_START <= (off if self.regs["CR0"] & 1 else (seg << 4) + off) < VIDEO_END
+        if video:
+            self.dumps.append((seg, off, length))
+        assert self.cwd is not None
+        (self.cwd / args[2]).write_bytes(self.page_at(seg, off, length) if video
+                                         else bytes(length))
+        return True, ["DEBUG: Memory dump binary success."]
 
 
 def waiting(stops: list[str], vrts: int, tmp_path: Path,
             kind: type[Frames] = Frames) -> Frames:
-    dbg = kind(stops, vrts, tmp_path / "x.log")
+    machine = kind(stops, vrts)
     install()
-    dstate.STATE.session = cast(ds.Session, dbg)
-    dstate.STATE.remember_stop(cast(ds.Session, dbg),
-                               {"cs": "F000", "eip": "0000FFF0", "mode": "Real"}, {}, [],
+    cwd = tmp_path / "cwd"
+    cwd.mkdir(exist_ok=True)
+    s = session_over(machine, cwd, logfile=tmp_path / "x.log")
+    dstate.STATE.session = s
+    dstate.STATE.remember_stop(s, {"cs": "F000", "eip": "0000FFF0", "mode": "Real"}, {}, [],
                                {"attributed": False})
-    return dbg
+    return machine
+
+
+def vrts(machine: Machine) -> list[str]:
+    return [c for c in machine.sent if c == f"EXEC {ds.RETRACE_COMMAND}"]
+
+
+def cut_surveys(machine: Machine, cut: int = 1) -> None:
+    """The first `cut` surveys answer an `EV` with no values: a stop that cannot be placed."""
+    left = [cut]
+
+    def ev(command: str) -> tuple[bool, list[str]] | None:
+        if left[0] <= 0:
+            return None
+        left[0] -= 1
+        return True, [f"EV of '{command.removeprefix('EV ')}' is:", ""]
+    machine.hooks["EV"] = ev
 
 
 def test_a_string_that_appears_after_a_retrace_is_found_with_the_stop_reply(
         tmp_path: Path) -> None:
     """From the probe's park (no mode set: examined as no match) one retrace lands in the
     booted probe, whose screen holds the launch line."""
-    dbg = waiting(["probe-park", "probe-booted"], 1, tmp_path)
+    machine = waiting(["probe-park", "probe-booted"], 1, tmp_path)
     r = cast(dict[str, Any], server.screen_wait(text="PROBE.COM", seconds=10))
     assert r["status"] == "ok", r
     assert r["already"] is False and r["polls"] == 1 and r["point"] == [4, 3], r
     assert r["line"] == "C:\\>PROBE.COM" and isinstance(r["waited_s"], float)
     assert r["regs"] and "cause" in r and "stop_seq" in r
-    assert dbg.keys == [ds.RETRACE_COMMAND] and dbg.dumps == [(0xB800, 0, 4000)]
-    assert dbg.asked.count("VGA MODE") == 2 and dbg.asked.count("VGA CRTC") == 1
+    assert len(vrts(machine)) == 1 and machine.dumps == [(0xB800, 0, 4000)]
+    assert machine.asked.count("VGA MODE") == 2 and machine.asked.count("VGA CRTC") == 1
     assert r["summary"] == "screen_wait 'PROBE.COM': found at 4,3 after 1 retrace(s)"
 
 
 def test_a_string_already_on_screen_is_answered_without_moving_the_machine(
         tmp_path: Path) -> None:
-    dbg = waiting(["probe-booted"], 0, tmp_path)
+    machine = waiting(["probe-booted"], 0, tmp_path)
     r = cast(dict[str, Any], server.screen_wait(text="mounted as local", seconds=10))
     assert r["status"] == "ok" and r["already"] is True and r["polls"] == 0, r
-    assert r["waited_s"] == 0.0 and r["point"] == [11, 1] and dbg.keys == []
+    assert r["waited_s"] == 0.0 and r["point"] == [11, 1] and vrts(machine) == []
     assert r["line"] == "Drive C is mounted as local directory ./"
 
 
@@ -1294,13 +1331,13 @@ def test_each_frame_reads_where_the_page_lies_and_the_cursor_listing_once(
     """Three retraces on the booted probe's still page, the fourth `VRT` never answered and so
     interrupted at the bound: each frame costs `VGA MODE`, `VGA DRAW`, `VGA GC`, `CPU` and a
     dump; `VGA CRTC` comes once."""
-    dbg = waiting(["probe-booted"], 3, tmp_path)
+    machine = waiting(["probe-booted"], 3, tmp_path)
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5))
     assert r["status"] == "ok" and r["verdict"] == "TIMEOUT", r
-    assert r["polls"] == 3 and "BREAK" in dbg.sent and len(dbg.dumps) == 4, r
-    assert dbg.asked.count("VGA CRTC") == 1
+    assert r["polls"] == 3 and "BREAK" in machine.sent and len(machine.dumps) == 4, r
+    assert machine.asked.count("VGA CRTC") == 1
     for each in ("VGA MODE", "VGA DRAW", "VGA GC", "CPU"):
-        assert dbg.asked.count(each) == len(dbg.dumps), each
+        assert machine.asked.count(each) == len(machine.dumps), each
 
 
 class ByAddress(Frames):
@@ -1310,10 +1347,8 @@ class ByAddress(Frames):
 
     AT = {0xB8000: "probe-booted", 0xB0000: "probe-mono"}
 
-    def memdump(self, seg: int, off: int, length: int, dest: Path) -> Path:
-        self.dumps.append((seg, off, length))
-        dest.write_bytes(page(self.AT[(seg << 4) + off]))
-        return dest
+    def page_at(self, seg: int, off: int, length: int) -> bytes:
+        return page(self.AT[(seg << 4) + off])
 
 
 def test_a_switch_to_the_monochrome_page_under_the_same_draw_state_is_followed(
@@ -1321,10 +1356,10 @@ def test_a_switch_to_the_monochrome_page_under_the_same_draw_state_is_followed(
     """One retrace from the booted probe lands in mode 7 (`probe-mono`): the mode word and the
     draw state are the colour mode's, and GC `misc` alone moves the page to B0000, where `QZQ`
     is."""
-    dbg = waiting(["probe-booted", "probe-mono"], 1, tmp_path, ByAddress)
+    machine = waiting(["probe-booted", "probe-mono"], 1, tmp_path, ByAddress)
     r = cast(dict[str, Any], server.screen_wait(text="QZQ", seconds=2))
     assert r["status"] == "ok" and r["point"] == [0, 0] and r["line"] == "QZQ", r
-    assert dbg.dumps == [(0xB800, 0, 4000), (0xB000, 0, 4000)]
+    assert machine.dumps == [(0xB800, 0, 4000), (0xB000, 0, 4000)]
 
 
 class EditedAfterRetrace(Frames):
@@ -1333,9 +1368,9 @@ class EditedAfterRetrace(Frames):
 
     EDITS: dict[str, tuple[str, str]] = {}
 
-    def listing(self, command: str) -> str:
-        text = super().listing(command)
-        if command in self.EDITS and self.keys.count(ds.RETRACE_COMMAND):
+    def text(self, command: str) -> str:
+        text = super().text(command)
+        if command in self.EDITS and vrts(self):
             old, new = self.EDITS[command]
             assert old in text, (command, old)
             text = text.replace(old, new, 1)
@@ -1348,26 +1383,25 @@ class Resized(EditedAfterRetrace):
 
     EDITS = {"VGA DRAW": ("addrline-total=16", "addrline-total=8")}
 
-    def memdump(self, seg: int, off: int, length: int, dest: Path) -> Path:
-        path = super().memdump(seg, off, length, dest)
-        path.write_bytes(path.read_bytes().ljust(length, b"\x00"))
-        return path
+    def page_at(self, seg: int, off: int, length: int) -> bytes:
+        return super().page_at(seg, off, length).ljust(length, b"\x00")
 
 
 def test_a_screen_resized_under_the_same_mode_word_is_placed_again(tmp_path: Path) -> None:
-    dbg = waiting(["probe-booted"], 1, tmp_path, Resized)
+    machine = waiting(["probe-booted"], 1, tmp_path, Resized)
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5))
     assert r["verdict"] == "TIMEOUT", r
-    assert dbg.asked.count("VGA CRTC") == 1 and [d[2] for d in dbg.dumps][:2] == [4000, 8000]
+    assert machine.asked.count("VGA CRTC") == 1
+    assert [d[2] for d in machine.dumps][:2] == [4000, 8000]
     assert len(r["text"]) == 50
 
 
 def test_protected_mode_frames_read_the_tables_once(tmp_path: Path) -> None:
-    dbg = waiting(["dos-djgpp32-startup"], 2, tmp_path)
+    machine = waiting(["dos-djgpp32-startup"], 2, tmp_path)
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5))
     assert r["verdict"] == "TIMEOUT", r
-    assert dbg.asked.count("GDT") == 1 and len(dbg.dumps) >= 2
-    assert set(dbg.dumps) == {(0x38, 0xB8000, 4000)}
+    assert machine.asked.count("GDT") == 1 and len(machine.dumps) >= 2
+    assert set(machine.dumps) == {(0x38, 0xB8000, 4000)}
 
 
 class Costly(Frames):
@@ -1376,9 +1410,9 @@ class Costly(Frames):
     cost = 0.0
     ahead: list[float]
 
-    def listing(self, command: str) -> str:
+    def text(self, command: str) -> str:
         self.ahead[0] += self.cost
-        return super().listing(command)
+        return super().text(command)
 
 
 @pytest.fixture
@@ -1394,20 +1428,20 @@ def ahead(monkeypatch: pytest.MonkeyPatch) -> list[float]:
 
 def costly(stops: list[str], vrts: int, tmp_path: Path, ahead: list[float],
            cost: float) -> Costly:
-    dbg = cast(Costly, waiting(stops, vrts, tmp_path, Costly))
-    dbg.ahead, dbg.cost = ahead, cost
-    return dbg
+    machine = cast(Costly, waiting(stops, vrts, tmp_path, Costly))
+    machine.ahead, machine.cost = ahead, cost
+    return machine
 
 
-def test_an_expiry_before_any_retrace_types_nothing_and_leaves_the_stop(tmp_path: Path) -> None:
+def test_an_expiry_before_any_retrace_sends_nothing_and_leaves_the_stop(tmp_path: Path) -> None:
     """A bound spent before the first `VRT` goes out: nothing moved, so the stop is not recorded
     again, and a retrace an earlier cut run left armed is still armed, and said so."""
-    dbg = waiting(["probe-booted"], 3, tmp_path)
+    machine = waiting(["probe-booted"], 3, tmp_path)
     dstate.STATE.retrace_pending = True
     before = dstate.STATE.last_stop["seq"]
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=1e-9))
-    assert r["verdict"] == "TIMEOUT" and r["polls"] == 0 and dbg.keys == [], r
-    assert "BREAK" not in dbg.sent and r["retrace_pending"] is True and "stop_seq" not in r
+    assert r["verdict"] == "TIMEOUT" and r["polls"] == 0 and vrts(machine) == [], r
+    assert "BREAK" not in machine.sent and r["retrace_pending"] is True and "stop_seq" not in r
     assert dstate.STATE.retrace_pending is True and dstate.STATE.last_stop["seq"] == before
     assert r["text"][3] == "C:\\>PROBE.COM"
 
@@ -1418,31 +1452,43 @@ def test_a_short_bound_still_reaches_the_first_frame_and_records_the_stop_it_exp
     first read, as `run_for`'s after its first survey, so one `VRT` goes out; the read of its
     frame is finished past the bound, and the wait expires stopped at that retrace, which is
     recorded. The description says when the bound starts."""
-    dbg = costly(["probe-booted"], 3, tmp_path, ahead, 1.0)
+    machine = costly(["probe-booted"], 3, tmp_path, ahead, 1.0)
     before = dstate.STATE.last_stop["seq"]
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5))
-    assert r["verdict"] == "TIMEOUT" and r["polls"] == 1 and "BREAK" not in dbg.sent, r
-    assert r["retrace_pending"] is False and dbg.keys == [ds.RETRACE_COMMAND]
+    assert r["verdict"] == "TIMEOUT" and r["polls"] == 1 and "BREAK" not in machine.sent, r
+    assert r["retrace_pending"] is False and len(vrts(machine)) == 1
     assert r["stop_seq"] == dstate.STATE.last_stop["seq"] == before + 1
     assert "counted from after the first read so that a short one still reaches the first " \
         "frame" in documented("screen_wait")
 
 
+def test_screen_wait_on_a_build_without_runstate_is_refused_naming_itself_before_a_read(
+        tmp_path: Path) -> None:
+    machine = waiting(["probe-park", "probe-booted"], 1, tmp_path)
+    machine.commands = ()
+    cast(ds.Session, dstate.STATE.session).commands = frozenset()
+    r = cast(dict[str, Any], server.screen_wait(text="PROBE.COM", seconds=5))
+    assert r["status"] == "INVALID" and r["code"] == "no_channel", r
+    assert "screen_wait" in r["message"] and "RUNSTATE" in r["message"], r["message"]
+    assert machine.asked == [] and vrts(machine) == []
+
+
 def test_screen_wait_on_a_running_guest_is_refused_not_stopped(tmp_path: Path) -> None:
-    dbg = waiting(["probe-booted"], 1, tmp_path)
-    dbg.running = True
+    machine = waiting(["probe-booted"], 1, tmp_path)
+    machine.stopped = False
+    cast(ds.Session, dstate.STATE.session).forget_stop()
     r = cast(dict[str, Any], server.screen_wait(text="PROBE", seconds=5))
     assert r["status"] == "INVALID" and r["code"] == "not_stopped", r
-    assert dbg.asked == [] and dbg.keys == []
+    assert machine.asked == [] and vrts(machine) == []
 
 
 def test_an_expired_wait_says_what_it_examined(tmp_path: Path) -> None:
-    dbg = waiting(["probe-park", "probe-park", "probe-booted"], 3, tmp_path)
+    machine = waiting(["probe-park", "probe-park", "probe-booted"], 3, tmp_path)
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=1.0))
     assert r["status"] == "ok" and r["verdict"] == "TIMEOUT", r
-    # A `VRT` still out at the bound is typed and unanswered: interrupted, one key past polls.
-    out = "BREAK" in dbg.sent
-    assert len(dbg.keys) == r["polls"] + int(out) and r["polls"] >= 2
+    # A `VRT` still out at the bound is sent and unanswered: interrupted, one past polls.
+    out = "BREAK" in machine.sent
+    assert len(vrts(machine)) == r["polls"] + int(out) and r["polls"] >= 2
     assert r["retrace_pending"] is out
     assert "were not in a text mode" in r["note"]
     assert r["text"][3] == "C:\\>PROBE.COM"
@@ -1450,11 +1496,11 @@ def test_an_expired_wait_says_what_it_examined(tmp_path: Path) -> None:
 
 def cut_by_breakpoint(tmp_path: Path) -> Frames:
     """The booted probe whose first `VRT` is cut by a declared breakpoint at 0814:0108."""
-    dbg = waiting(["probe-booted"], 2, tmp_path)
-    dbg.panes = [cap_vrt("probe-survey-cut-by-bp-0108")] * 3
-    dbg.vrts = [cap_vrt("probe-vrt-cut-by-bp-0108")]
+    machine = waiting(["probe-booted"], 2, tmp_path)
+    machine.releases = [Stop({"EIP": 0x108}, ms=3.0), Stop(ms=FRAME_MS)]
     _real_bp("0814:0108")
-    return dbg
+    machine.breakpoints.insert(0, "BP 0814:0108")
+    return machine
 
 
 def test_a_breakpoint_that_cuts_a_frame_ends_the_wait_naming_it(tmp_path: Path) -> None:
@@ -1470,12 +1516,12 @@ def test_a_breakpoint_that_cuts_a_frame_ends_the_wait_naming_it(tmp_path: Path) 
     {"text": ""}, {"text": "x" * 133}, {"text": "a\nb"}, {"text": 3}, {"text": "Name: "},
     {"text": "   "}, {"text": "€uro"},
     {"text": "C:", "seconds": 0}, {"text": "C:", "seconds": 601}])
-def test_screen_wait_refuses_an_argument_before_anything_is_typed(
+def test_screen_wait_refuses_an_argument_before_anything_is_sent(
         tmp_path: Path, kw: dict[str, Any]) -> None:
-    dbg = waiting(["probe-booted"], 1, tmp_path)
+    machine = waiting(["probe-booted"], 1, tmp_path)
     r = cast(dict[str, Any], server.screen_wait(**kw))
     assert r["status"] == "INVALID" and r["code"] == "bad_argument", r
-    assert dbg.asked == [] and dbg.keys == []
+    assert machine.asked == [] and vrts(machine) == []
 
 
 def test_a_cpu_mode_change_under_the_same_text_screen_reads_the_tables_again(
@@ -1483,22 +1529,22 @@ def test_a_cpu_mode_change_under_the_same_text_screen_reads_the_tables_again(
     """From the booted probe (real mode) one retrace lands at dos-djgpp32's DPMI client (paged, the
     shell's text page unchanged in mode): the page is then read through GDT 0038, not through
     the paragraph the real-mode frame used."""
-    dbg = waiting(["probe-booted", "dos-djgpp32-startup"], 1, tmp_path)
+    machine = waiting(["probe-booted", "dos-djgpp32-startup"], 1, tmp_path)
     r = cast(dict[str, Any], server.screen_wait(text="DJGPP32.EXE", seconds=10))
     assert r["status"] == "ok" and r["point"] == [4, 13], r
-    assert dbg.dumps == [(0xB800, 0, 4000), (0x38, 0xB8000, 4000)]
-    assert dbg.asked.count("VGA CRTC") == 1 and "GDT" in dbg.asked
+    assert machine.dumps == [(0xB800, 0, 4000), (0x38, 0xB8000, 4000)]
+    assert machine.asked.count("VGA CRTC") == 1 and "GDT" in machine.asked
 
 
 def test_perform_runs_screen_wait_and_checks_it_first(tmp_path: Path) -> None:
-    dbg = waiting(["probe-booted"], 0, tmp_path)
+    machine = waiting(["probe-booted"], 0, tmp_path)
     r = cast(dict[str, Any], server.perform(steps=[
         {"op": "screen_wait", "text": "PROBE.COM", "seconds": 5}, {"op": "screen_signature"}]))
     assert r["status"] == "ok" and r["steps_completed"] == 2, r
     bad = cast(dict[str, Any], server.perform(steps=[{"op": "screen_signature"},
                                                      {"op": "screen_wait", "text": ""}]))
     assert bad["status"] == "INVALID" and [e["step"] for e in bad["errors"]] == [1], bad
-    assert dbg.keys == []
+    assert vrts(machine) == []
 
 
 def test_a_found_wait_says_a_watch_or_interrupt_stop_could_pass_for_a_retrace(
@@ -1510,21 +1556,23 @@ def test_a_found_wait_says_a_watch_or_interrupt_stop_could_pass_for_a_retrace(
     assert r["status"] == "ok" and r["note"] == retrace.UNTOLD_NOTE, r
 
 
-def test_a_cut_repaint_after_a_retrace_is_not_taken_for_a_breakpoint(tmp_path: Path) -> None:
-    """With a code breakpoint declared every frame is surveyed; a survey that comes back with no
-    pane (an empty repaint) cannot place the stop, so the wait reads the screen and goes on."""
-    dbg = waiting(["probe-park", "probe-booted"], 1, tmp_path)
-    dbg.panes = ["", *[cap_vrt("probe-survey-0")] * 3]
+def test_a_survey_that_cannot_place_a_retrace_stop_is_not_taken_for_a_breakpoint(
+        tmp_path: Path) -> None:
+    """With a code breakpoint declared every frame is surveyed; a survey that cannot place the
+    stop is no cut, so the wait reads the screen and goes on."""
+    machine = waiting(["probe-park", "probe-booted"], 1, tmp_path)
+    cut_surveys(machine)
     _real_bp("0814:0108")
     r = cast(dict[str, Any], server.screen_wait(text="PROBE.COM", seconds=10))
     assert r["status"] == "ok" and r["polls"] == 1 and r["point"] == [4, 3], r
 
 
-def test_a_find_whose_stop_survey_comes_back_cut_keeps_the_find(tmp_path: Path) -> None:
-    """The text is found at the first retrace, and the stop reply's survey repaints nothing: the
-    find stands with its enrichment marked unavailable, as `run_for` keeps its account."""
-    dbg = waiting(["probe-park", "probe-booted"], 1, tmp_path)
-    dbg.panes = ["", *[cap_vrt("probe-survey-0")] * 3]
+def test_a_find_whose_stop_survey_fails_keeps_the_find(tmp_path: Path) -> None:
+    """The text is found at the first retrace, and the stop reply's survey cannot place the
+    stop: the find stands with its enrichment marked unavailable, as `run_for` keeps its
+    account."""
+    machine = waiting(["probe-park", "probe-booted"], 1, tmp_path)
+    cut_surveys(machine)
     r = cast(dict[str, Any], server.screen_wait(text="PROBE.COM", seconds=10))
     assert r["status"] == "ok" and r["point"] == [4, 3] and r["line"] == "C:\\>PROBE.COM", r
     assert r["enrichment"]["available"] is False and "regs" not in r
@@ -1539,11 +1587,11 @@ class PannedAfterRetrace(EditedAfterRetrace):
 
 def test_a_frame_refused_after_a_retrace_records_the_stop_the_wait_ends_at(
         tmp_path: Path) -> None:
-    dbg = waiting(["probe-booted"], 2, tmp_path, PannedAfterRetrace)
+    machine = waiting(["probe-booted"], 2, tmp_path, PannedAfterRetrace)
     before = dstate.STATE.last_stop["seq"]
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=5))
     assert r["status"] == "INVALID" and r["code"] == "no_channel" and "panning" in r["message"]
-    assert r["polls"] == 1 and dbg.keys == [ds.RETRACE_COMMAND], r
+    assert r["polls"] == 1 and len(vrts(machine)) == 1, r
     assert r["stop_seq"] == dstate.STATE.last_stop["seq"] == before + 1
 
 
@@ -1575,9 +1623,9 @@ def test_a_wait_ended_at_a_stop_carries_what_that_stops_reply_delivered(
 def test_an_expired_wait_counts_the_frames_that_were_not_text(tmp_path: Path) -> None:
     """The park, the park again after one retrace, the booted text page after the second, and a
     third `VRT` never answered, interrupted: two of the three frames examined were not text."""
-    dbg = waiting(["probe-park", "probe-park", "probe-booted"], 2, tmp_path)
+    machine = waiting(["probe-park", "probe-park", "probe-booted"], 2, tmp_path)
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=1.0))
-    assert r["verdict"] == "TIMEOUT" and r["polls"] == 2 and "BREAK" in dbg.sent, r
+    assert r["verdict"] == "TIMEOUT" and r["polls"] == 2 and "BREAK" in machine.sent, r
     assert "; 2 of 3 frames examined were not in a text mode" in r["note"]
 
 
@@ -1591,10 +1639,10 @@ class V86AfterRetrace(EditedAfterRetrace):
 
 def test_a_virtual_8086_task_entered_under_the_same_cpu_mode_reads_through_the_paragraph(
         tmp_path: Path) -> None:
-    dbg = waiting(["dos-djgpp32-startup"], 1, tmp_path, V86AfterRetrace)
+    machine = waiting(["dos-djgpp32-startup"], 1, tmp_path, V86AfterRetrace)
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5))
     assert r["verdict"] == "TIMEOUT", r
-    assert dbg.dumps == [(0x38, 0xB8000, 4000), (0xB800, 0, 4000)]
+    assert machine.dumps == [(0x38, 0xB8000, 4000), (0xB800, 0, 4000)]
 
 
 #: What a reply can carry whatever the tool, described once for all rather than in each tool.
@@ -1604,14 +1652,13 @@ ENVELOPE = {"summary", "status", "code", "message", "session", "stopped_on_its_o
 
 def test_the_screen_wait_description_names_every_key_its_replies_carry(
         tmp_path: Path, ahead: list[float]) -> None:
-    """Found with its stop reply, found with that reply's survey cut, stopped by a breakpoint,
-    and expired at a retrace of its own: each key beside the envelope's is named in the
-    description or on its family page, in backticks."""
+    """Found with its stop reply, found with that reply's survey failing, stopped by a
+    breakpoint, and expired at a retrace of its own: each key beside the envelope's is named in
+    the description or on its family page, in backticks."""
     replies: list[dict[str, Any]] = []
     waiting(["probe-park", "probe-booted"], 1, tmp_path)
     replies.append(cast(dict[str, Any], server.screen_wait(text="PROBE.COM", seconds=10)))
-    dbg = waiting(["probe-park", "probe-booted"], 1, tmp_path)
-    dbg.panes = ["", *[cap_vrt("probe-survey-0")] * 3]
+    cut_surveys(waiting(["probe-park", "probe-booted"], 1, tmp_path))
     replies.append(cast(dict[str, Any], server.screen_wait(text="PROBE.COM", seconds=10)))
     cut_by_breakpoint(tmp_path)
     replies.append(cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=5)))
@@ -1626,31 +1673,31 @@ def test_the_screen_wait_description_names_every_key_its_replies_carry(
 
 
 class ConsoleFailsAfterRetrace(Frames):
-    """The booted probe whose console, after the first retrace, answers `VGA DRAW` with nothing
-    the reader can take: a refusal about the console, not about the screen."""
+    """The booted probe whose debugger, after the first retrace, answers `VGA DRAW` with nothing
+    the reader can take: a refusal about the debugger, not about the screen."""
 
-    def listing(self, command: str) -> str:
-        if command == "VGA DRAW" and self.keys.count(ds.RETRACE_COMMAND):
-            self.asked.append(command)
-            raise ds.Invalid("unexpected_answer", "`VGA DRAW` printed nothing")
-        return super().listing(command)
+    def _do_vga(self, args: list[str]) -> tuple[bool, list[str]]:
+        if args == ["DRAW"] and vrts(self):
+            self.asked.append("VGA DRAW")
+            return True, []
+        return super()._do_vga(args)
 
 
-def test_a_refusal_about_the_console_mid_wait_is_passed_on_and_nothing_more_is_typed(
+def test_a_refusal_about_the_debugger_mid_wait_is_passed_on_and_nothing_more_is_sent(
         tmp_path: Path) -> None:
-    dbg = waiting(["probe-booted"], 2, tmp_path, ConsoleFailsAfterRetrace)
+    machine = waiting(["probe-booted"], 2, tmp_path, ConsoleFailsAfterRetrace)
     before = dstate.STATE.last_stop["seq"]
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=5))
     assert r["code"] == "unexpected_answer" and "stop_seq" not in r and "polls" not in r, r
-    assert dstate.STATE.last_stop["seq"] == before and dbg.asked[-1] == "VGA DRAW"
+    assert dstate.STATE.last_stop["seq"] == before and machine.asked[-1] == "VGA DRAW"
 
 
-def test_a_refused_wait_whose_stop_survey_comes_back_cut_says_so_and_records_nothing(
+def test_a_refused_wait_whose_stop_survey_fails_says_so_and_records_nothing(
         tmp_path: Path, ahead: list[float]) -> None:
-    """Ended by the bound at a retrace of its own, the stop reply's survey repainting nothing:
-    no stop is recorded, so no `stop_seq`; `enrichment` says why."""
-    dbg = costly(["probe-booted"], 3, tmp_path, ahead, 1.0)
-    dbg.panes = ["", *[cap_vrt("probe-survey-0")] * 3]
+    """Ended by the bound at a retrace of its own, the stop reply's survey failing: no stop is
+    recorded, so no `stop_seq`; `enrichment` says why."""
+    machine = costly(["probe-booted"], 3, tmp_path, ahead, 1.0)
+    cut_surveys(machine)
     before = dstate.STATE.last_stop["seq"]
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=0.5))
     assert r["verdict"] == "TIMEOUT" and r["polls"] == 1 and "stop_seq" not in r, r
@@ -1739,20 +1786,24 @@ def test_an_attribute_controller_listing_of_another_shape_is_an_unexpected_answe
     assert e.value.code == "unexpected_answer"
 
 
-class LandsAtTheBound(Frames):
+def lands_at_the_bound(machine: Frames) -> Frames:
     """The race the bound can lose: the wait gives up with the `VRT` out, and its stop lands
     before the interrupt looks, so nothing is interrupted and the retrace is spent."""
+    session = cast(ds.Session, dstate.STATE.session)
+    real = session.retrace
 
-    def retrace(self, began: float, deadline: float,
+    def gave_up(began: float, deadline: float,
                 progress: ds.Progress = ds.no_progress) -> tuple[bool, float]:
-        super().retrace(began, deadline, progress)
+        real(began, deadline, progress)
         return True, 0.0
+    session.retrace = gave_up  # type: ignore[method-assign]
+    return machine
 
 
 def test_a_retrace_that_lands_as_the_wait_expires_is_spent_not_pending(tmp_path: Path) -> None:
-    dbg = waiting(["probe-park", "probe-park"], 1, tmp_path, kind=LandsAtTheBound)
+    machine = lands_at_the_bound(waiting(["probe-park", "probe-park"], 1, tmp_path))
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=5))
-    assert r["verdict"] == "TIMEOUT" and "BREAK" not in dbg.sent, (r, dbg.sent)
+    assert r["verdict"] == "TIMEOUT" and "BREAK" not in machine.sent, (r, machine.sent)
     assert r["retrace_pending"] is False and dstate.STATE.retrace_pending is False, r
     assert "stop_seq" in r, "the retrace's stop landed: it is surveyed"
 
@@ -1760,11 +1811,10 @@ def test_a_retrace_that_lands_as_the_wait_expires_is_spent_not_pending(tmp_path:
 def test_a_breakpoint_that_lands_as_the_wait_expires_ends_it_naming_it(tmp_path: Path) -> None:
     """The bound's race lost to a declared breakpoint: the `VRT` is still armed, and the wait
     ends as a cut inside it does."""
-    dbg = cut_by_breakpoint(tmp_path)
-    dbg.__class__ = LandsAtTheBound
+    machine = lands_at_the_bound(cut_by_breakpoint(tmp_path))
     r = cast(dict[str, Any], server.screen_wait(text="NEVER ON SCREEN", seconds=5))
     assert r["code"] == "wait_stopped" and r["retrace_pending"] is True, r
-    assert "breakpoint 0814:0108 " in r["cause"] and "BREAK" not in dbg.sent, r
+    assert "breakpoint 0814:0108 " in r["cause"] and "BREAK" not in machine.sent, r
 
 
 def test_a_wait_refused_at_a_retrace_carries_the_stop_it_ended_at_with_its_cause(

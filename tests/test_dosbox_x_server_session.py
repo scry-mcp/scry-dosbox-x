@@ -8,7 +8,6 @@ import dataclasses
 import json
 import shutil
 import subprocess
-import threading
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -19,11 +18,8 @@ from unittest import mock
 import fold_calls
 import pytest
 from dosbox_x_server_support import (
-    _NOPG_LINE,
-    _PAGE_LINE,
     FFMPEG_FIX,
     NO_SUCH_HOME,
-    POSIX_SESSION,  # noqa: E402
     FakeSession,
     NamesFake,
     _ffmpeg_record,
@@ -31,13 +27,13 @@ from dosbox_x_server_support import (
     _launch_of,
     _names,
     _source,
-    _tail,
     _tools_called_in_tests,
     _typed_into,
     clean_session,  # noqa: E402, F401
     install,
     live_callers,
     returned_key_sets,
+    stub_build,
 )
 from scry_core import (
     host_program,
@@ -48,21 +44,26 @@ from scry_core import (
 )
 from scry_core.host_program import absolute as _abs
 from scry_core.host_program import temporary as _tmp
+from test_dosbox_x_find import reply
 
 import dosbox_arming as arming
 import dosbox_binary as binaries
 import dosbox_checks as checks
-import dosbox_console as dcons
 import dosbox_folds as folds
 import dosbox_launch as dlaunch
 import dosbox_mcp
 import dosbox_placement as placement
-import dosbox_process as dprocess
 import dosbox_replies
 import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_symbols as dsym
 import dosbox_x_server as server
+
+
+@pytest.fixture(autouse=True)
+def _faked_builds(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Every build these cases start is a path that holds no file: what it carries is stubbed."""
+    stub_build(monkeypatch)
 
 
 def test_the_server_reports_the_name_it_is_installed_as() -> None:
@@ -74,9 +75,9 @@ def test_a_cap_of_zero_would_lie_and_is_refused() -> None:
         with pytest.raises(ValueError, match="is not a cap"):
             dstate.delta("abcdef", bad)
     assert dstate.delta("abcdef", 6) == {
-        "screen_delta": "abcdef", "screen_chars": 6, "clipped": False}
+        "output": "abcdef", "output_chars": 6, "clipped": False}
     assert dstate.delta("abcdef", 4) == {
-        "screen_delta": "cdef", "screen_chars": 6, "clipped": True}
+        "output": "cdef", "output_chars": 6, "clipped": True}
 
 
 def test_a_dead_session_that_had_been_written_to_says_so_in_its_block() -> None:
@@ -400,26 +401,20 @@ def test_start_over_a_dead_session_collects_it_first_and_refuses_over_a_live_one
 def test_the_success_path_of_each_reader_returns_a_result(tmp_path: Path) -> None:
     """THE GREEN BESIDE THE REDS."""
     seg, off = 0x0749, 0
-    row = f"{seg:04X}:{off:08X} " + " ".join(["00"] * 16) + "  " + "." * 16
-    install(screen=f"some screen\r\n{row}\r\n")
+    fake = install(answer="DEBUG: Set interrupt breakpoint at INT 21")
+    fake.memory.update({(seg << 4) + off + i: i for i in range(16)})
     assert server.registers()["regs"]["EAX"] == "0x00001234"
     assert server.debug(command="BPLIST")["status"] == "ok"
     got = server.read_memory(ref=f"{seg:04X}:{off:08X}")
-    assert got["status"] == "ok"
-    assert got["rows"] == [row], got
-    assert "INT 21" in server.breakpoint_interrupt(number=0x21, detail=True)["screen_delta"]
+    assert got["status"] == "ok" and got["hex"] == bytes(range(16)).hex(), got
+    assert "INT 21" in server.breakpoint_interrupt(number=0x21, detail=True)["output"]
     short = server.breakpoint_interrupt(number=0x10)
-    assert "screen_delta" not in short and "screen_chars" not in short, short
-    assert short["omitted"] == list(dstate.REPAINT_FIELDS) and short["how"] == dstate.REPAINT_HOW
+    assert "output" not in short and "output_chars" not in short, short
+    assert short["omitted"] == list(dstate.OUTPUT_FIELDS) and short["how"] == dstate.OUTPUT_HOW
     resumed = server.resume()
-    assert resumed["status"] == "ok" and "screen_delta" not in resumed, resumed
-    assert resumed["omitted"] == list(dstate.REPAINT_FIELDS) and "detail=True" in resumed["how"]
+    assert resumed["status"] == "ok" and "output" not in resumed, resumed
+    assert resumed["omitted"] == list(dstate.OUTPUT_FIELDS) and "detail=True" in resumed["how"]
 
-
-def test_a_reader_that_got_an_empty_screen_says_so(tmp_path: Path) -> None:
-    install(screen="   \n")
-    assert server.debug(command="BPLIST")["status"] == "INVALID"
-    assert server.read_memory(ref="0000:00000000")["status"] == "INVALID"
 
 
 def test_log_reports_how_many_matched_not_how_many_came_back() -> None:
@@ -449,9 +444,9 @@ def test_every_reply_carries_whether_the_machine_was_written_to() -> None:
 
 
 def test_an_invalid_reply_carries_it_too() -> None:
-    install(screen="   \n")                 # nothing but whitespace comes back
+    install()
     server.set_register(name="ax", value=0x10)
-    got = server.debug(command="BPLIST")
+    got = server.read_memory(ref="no_such_symbol")
     assert got["status"] == "INVALID"
     assert got["session"]["altered"] is True
 
@@ -460,19 +455,16 @@ def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
     """The contract belongs to the real object, so the real function is what runs here."""
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
-    dead = threading.Thread(target=lambda: None)
     fake = SimpleNamespace(
         proc=SimpleNamespace(pid=4242),
         alive=lambda: False, altered=True, conf_digest=dlaunch.digest(conf),
         started_at=time.monotonic() - 3.0, dropped=4096, _at_debugger=True,
-        _drainer=dead, drain_ended="reading the terminal failed: OSError()",
         launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, watched=True,
                          window_flags=["-set", "sdl display=1"]))
     got = ds.Session.state(fake)  # type: ignore[arg-type]
     assert set(got) == {"pid", "alive", "running", "altered", "conf", "conf_digest",
                         "conf_changed_on_disk", "watched", "bound_s",
-                        "elapsed_s", "terminal_bytes_dropped",
-                        "drain_alive", "drain_ended", "captures", "state_dir"}
+                        "elapsed_s", "output_bytes_dropped", "captures", "state_dir"}
     assert got["captures"] == "off"
     fake.launch = dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, capture_video=True,
                             program="X.EXE", captures_dir=tmp_path / "caps")
@@ -487,9 +479,7 @@ def test_the_real_state_is_the_one_asserted(tmp_path: Path) -> None:
     assert got["conf"] == str(conf)
     assert got["bound_s"] == 60
     assert cast(float, got["elapsed_s"]) >= 3.0
-    assert got.get("terminal_bytes_dropped", 0) == 4096
-    assert got["drain_alive"] is False
-    assert got["drain_ended"] == "reading the terminal failed: OSError()"
+    assert got.get("output_bytes_dropped", 0) == 4096
     assert got.get("conf_changed_on_disk", False) is False
     conf.write_text("[sdl]\nchanged\n", encoding="utf-8")
     assert ds.Session.state(fake).get("conf_changed_on_disk", False) is True  # type: ignore[arg-type]
@@ -506,13 +496,12 @@ def test_the_double_has_not_drifted_from_what_it_stands_in_for(tmp_path: Path) -
         proc=SimpleNamespace(pid=4242),
         alive=lambda: True, altered=False, conf_digest="x",
         started_at=time.monotonic(), dropped=0, _at_debugger=False,
-        _drainer=None, drain_ended="",
         launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60))
     real = ds.Session.state(fake)  # type: ignore[arg-type]
     assert set(FakeSession().state()) == set(real)
     # THE BLOCK'S ALARMS NAME KEYS OF THIS SHAPE: a renamed key would leave a dead rule and
     # the alarm would ride as a fixed fact, omitted.
-    fake.drain_ended = "EIO"
+    fake.dropped = 1
     assert {*dstate._ALARM_WHEN, *dstate._ALWAYS} <= set(ds.Session.state(fake))  # type: ignore[arg-type]
     # The method surface: a method the server calls and the double lacks dies with an
     # AttributeError, which `tool()` does not translate. Derived by AST from the whole package,
@@ -530,7 +519,7 @@ def test_the_double_has_not_drifted_from_what_it_stands_in_for(tmp_path: Path) -
                  and not (isinstance(n.value, ast.Name) and n.value.id in modules)}
     called = {n for n in used
               if not n.startswith("_") and callable(getattr(ds.Session, n, None))}
-    for sentinel in ("registers", "read_memory", "memdump", "log",
+    for sentinel in ("registers", "read_bytes", "memdump", "log",
                      "alive", "close", "state", "wait_ready"):
         assert sentinel in called, (
             f"the derivation no longer sees `{sentinel}`, which the server plainly "
@@ -854,14 +843,14 @@ def test_build_check_is_invalid_and_not_ok_when_there_is_no_binary() -> None:
     assert got.get("binary") is None, "an INVALID reply may not carry a binary"
 
 
-def test_build_check_is_invalid_when_the_build_has_no_debugger() -> None:
+def test_build_check_is_invalid_when_the_build_has_no_debugger(tmp_path: Path) -> None:
     """The precondition it exists for."""
-    with (mock.patch("scry_core.binaries.shutil.which", lambda _n: _abs("usr", "bin", "dosbox-x")),
-          mock.patch("dosbox_x_server.subprocess.run",
-                     lambda *_a, **_k: SimpleNamespace(stdout="usage: ...", stderr=""))):
+    binary = tmp_path / "dosbox-x"
+    binary.write_bytes(b"\x00usage: ...\x00")
+    with mock.patch("scry_core.binaries.shutil.which", lambda _n: str(binary)):
         got = cast(dict[str, Any], server.build_check())
     assert got["status"] == "INVALID", got
-    assert "which a build with the debugger does" in str(got["message"])
+    assert "carries no debugger" in str(got["message"])
 
 
 def test_build_check_says_ok_and_names_the_surface_on_a_good_build(tmp_path: Path) -> None:
@@ -869,10 +858,7 @@ def test_build_check_says_ok_and_names_the_surface_on_a_good_build(tmp_path: Pat
     binary = tmp_path / "dosbox-x"
     binary.write_bytes(b"\x00" + binaries.DEBUGGER_MARK + b"\x00" + binaries.HEAVY_DEBUG_MARK
                        + b"\x00")
-    with (mock.patch("scry_core.binaries.shutil.which", lambda _n: str(binary)),
-          mock.patch("dosbox_x_server.subprocess.run",
-                     lambda *_a, **_k: SimpleNamespace(stdout="-break-start\n",
-                                                       stderr=""))):
+    with mock.patch("scry_core.binaries.shutil.which", lambda _n: str(binary)):
         got = cast(dict[str, Any], server.build_check())
         binary.write_bytes(b"\x00" + binaries.DEBUGGER_MARK + b"\x00LOGS only\x00")
         plain = cast(dict[str, Any], server.build_check())
@@ -897,7 +883,7 @@ def test_build_check_refuses_to_start_a_second_emulator_beside_a_live_one() -> N
         return SimpleNamespace(stdout="-break-start\n", stderr="")
 
     with (mock.patch("scry_core.binaries.shutil.which", lambda _n: _abs("usr", "bin", "dosbox-x")),
-          mock.patch("dosbox_x_server.subprocess.run", watched)):
+          mock.patch("subprocess.run", watched)):
         got = cast(dict[str, Any], server.build_check())
     assert got["status"] == "INVALID", got
     assert "second emulator" in str(got["message"]) and "`close`" in str(got["message"])
@@ -905,48 +891,24 @@ def test_build_check_refuses_to_start_a_second_emulator_beside_a_live_one() -> N
 
 
 
-def test_without_a_terminal_build_check_and_start_refuse_naming_it_and_start_nothing(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """The server loads on Windows, which has no terminal for a session, so both say why before
-    anything runs."""
-    ran: list[object] = []
-    monkeypatch.setattr(dprocess, "HAS_TERMINAL", False)
-    monkeypatch.setattr(subprocess, "run", lambda *a, **_k: ran.append(a))
-    monkeypatch.setattr(subprocess, "Popen", lambda *a, **_k: ran.append(a))
-    checked = cast(dict[str, Any], server.build_check())
-    started = cast(dict[str, Any], server.start(conf=str(tmp_path / "g.conf"), cwd=str(tmp_path),
-                                                session_seconds=30))
-    for got in (checked, started):
-        assert (got["status"], got["code"]) == ("INVALID", "host_failed"), got
-        assert "pseudo-terminal, which Windows does not have" in got["message"], got
-        assert got["message"].endswith("on macOS a session starts"), "where it does run"
-    assert ran == [] and dstate.STATE.session is None, ran
 
-def test_a_read_memory_reply_carries_the_whole_data_view_and_not_just_the_row_asked_for(
-) -> None:
-    """A fixture of ONE row is not enough: the reply's whole value is that EIGHT come back."""
+def test_a_read_memory_reply_is_exactly_the_bytes_asked_for() -> None:
+    """Asked 128, the most it takes, the reply's `hex` holds those 128 and nothing beside."""
     seg, off = 0x0749, 0
-    rows = [f"{seg:04X}:{off + 16 * i:08X} " + " ".join([f"{i:02X}"] * 16)
-            + "  " + "." * 16 for i in range(8)]
-    install(screen="some screen\r\n" + "\r\n".join(rows) + "\r\n")
-    got = cast(dict[str, Any], server.read_memory(ref=f"{seg:04X}:{off:08X}"))
-    assert got["status"] == "ok", got
-    assert got["rows"] == rows, got
-    assert len(got["rows"]) == 8, (
-        f"the data view paints eight rows and {len(got['rows'])} came back: a reply "
-        f"holding only the row asked for is the defect this tool was built against")
+    fake = install()
+    fake.memory.update({(seg << 4) + off + i: i for i in range(256)})
+    got = cast(dict[str, Any], server.read_memory(ref=f"{seg:04X}:{off:08X}", length=128))
+    assert got["status"] == "ok" and got["hex"] == bytes(range(128)).hex(), got
+    assert fake.memdump_calls == [(seg, off, 128)]
 
 
 def test_read_memory_refuses_a_segment_that_will_not_fit_the_command() -> None:
-    seg, off = 0x0749, 0
-    row = f"{seg:04X}:{off:08X} " + " ".join(["00"] * 16) + "  " + "." * 16
-    install(screen=f"some screen\r\n{row}\r\n")
+    fake = install()
     got = cast(dict[str, Any], server.read_memory(ref="10000:00000000"))
     assert got["status"] == "INVALID", got
-    # THE MESSAGE IS ABOUT THE ARGUMENT, not about the screen. Without the check the
-    # call falls through to the row-match refusal, whose text blames the reply -- so
-    # asserting only INVALID would pass over the defect.
+    # THE MESSAGE IS ABOUT THE ARGUMENT, and nothing reached the debugger for it.
     assert "a segment is 0x0000 to 0xFFFF" in str(got["message"]), got["message"]
+    assert fake.memdump_calls == [] and fake.executed == []
 
 
 def test_each_double_returns_the_field_set_the_real_method_returns() -> None:
@@ -977,11 +939,11 @@ def test_a_delta_longer_than_the_cap_is_cut_and_says_so() -> None:
     out = "x" * 5000
     got = dstate.delta(out, 4000)
     assert got.get("clipped", False) is True
-    assert len(cast(str, got["screen_delta"])) == 4000, "the delta is cut to the cap"
-    assert got["screen_chars"] == 5000, (
-        "`screen_chars` is the WHOLE screen and not the slice -- reporting the slice's "
+    assert len(cast(str, got["output"])) == 4000, "the output is cut to the cap"
+    assert got["output_chars"] == 5000, (
+        "`output_chars` is the WHOLE output and not the slice -- reporting the slice's "
         "length is the defect the field exists to make visible")
-    assert cast(str, got["screen_delta"]) == out[-4000:], "it keeps the TAIL"
+    assert cast(str, got["output"]) == out[-4000:], "it keeps the TAIL"
 
 
 def test_the_status_docstring_names_every_field_its_reply_carries() -> None:
@@ -1204,7 +1166,7 @@ def test_find_through_the_tool_searches_the_dump_and_reports_the_sibling_shape()
 
 
 def test_scan_start_through_the_tool_reports_the_opened_instance() -> None:
-    install(screen=_tail("memfind_opened_0400"))
+    install(answer=reply("opened_0400"))
     got = server.scan("start", ref="0000:00000400", length=256)
     assert got["status"] == "ok", got
     assert got["hits_total"] == 256 and got["cell_bytes"] == 1 and got["addr"] == "0x00000400"
@@ -1212,7 +1174,7 @@ def test_scan_start_through_the_tool_reports_the_opened_instance() -> None:
 
 
 def test_scan_filter_through_the_tool_reports_a_finished_scan_and_says_so() -> None:
-    install(screen=_tail("mems_finished"))
+    install(answer=reply("finished"))
     got = server.scan("filter", operator="!", value=0)
     assert got["status"] == "ok", got
     assert got["hits_total"] == 0 and got["closed"] is True and got["hits"] == []
@@ -1220,11 +1182,11 @@ def test_scan_filter_through_the_tool_reports_a_finished_scan_and_says_so() -> N
 
 
 def test_scan_clear_through_the_tool_reports_both_outcomes() -> None:
-    install(screen=_tail("memfind_cancelled"))
+    install(answer=reply("cancelled"))
     got = server.scan("clear")
     assert got["status"] == "ok" and got["cleared"] is True, got
     assert got["summary"] == "scan clear: cleared"
-    install(screen=_tail("memfind_cancel_none"))
+    install(answer=reply("cancel_none"))
     none = server.scan("clear")
     assert none["status"] == "ok" and none["cleared"] is False, none
     assert none["summary"] == "scan clear: nothing was open"
@@ -1331,12 +1293,6 @@ def test_the_instructions_say_a_wrong_type_is_the_schemas_refusal() -> None:
     assert "wrong TYPE" in (server.mcp.instructions or ""), "the sentence is missing"
 
 
-def test_the_paging_mark_is_read_off_the_pane_and_absent_is_not_off() -> None:
-    assert dcons.parse_paging(_NOPG_LINE) is False
-    assert dcons.parse_paging(_PAGE_LINE) is True
-    assert dcons.parse_paging(_NOPG_LINE + _PAGE_LINE) is True       # the newest pane wins
-    assert dcons.parse_paging("Output: PAGE fault, NOPG here too") is None
-
 
 def test_status_with_no_session_adds_no_machine_facts() -> None:
     dstate.STATE.session = None
@@ -1431,16 +1387,14 @@ def test_a_raw_command_that_writes_the_guest_marks_the_session_altered() -> None
         assert fake.altered is True and got["session"]["altered"] is True, command
 
 
-def test_debug_empties_a_line_the_debugger_did_not_take_and_says_so() -> None:
-    fake = install()
-    fake._screen = "*** Debugger command not recognized\nI-> VGA_"
+def test_debug_says_when_the_debugger_did_not_take_the_command() -> None:
+    fake = install(answer="*** Debugger command not recognized", took=False)
     got = cast(dict[str, Any], server.debug(command="VGA"))
-    assert fake.console_keys == ["clear_line"], fake.console_keys
-    assert "did not take 'VGA'" in got["note"], got
-    fake.console_keys.clear()
-    fake._screen = "Breakpoint list:\nI-> _"
+    assert got["status"] == "ok" and "did not take it" in got["note"], got
+    assert got["output"] == "*** Debugger command not recognized" and fake.executed == ["VGA"]
+    fake.answer, fake.took = "Breakpoint list:", True
     got = cast(dict[str, Any], server.debug(command="BPLIST"))
-    assert fake.console_keys == [] and "note" not in got, got
+    assert "note" not in got, got
 
 
 def test_a_state_dir_the_caller_gave_is_named_as_theirs_when_a_file_holds_it(
@@ -1488,11 +1442,10 @@ def test_start_takes_the_version_probe_out_of_the_ready_bound(
     assert ready <= ds.READY_TIMEOUT_S - 0.3, waited
 
 
-@POSIX_SESSION
 def test_close_carries_the_last_words_of_both_channels_when_the_end_was_not_clean(
         tmp_path: Path) -> None:
     log = tmp_path / "s.log"
-    log.write_text("x" * 2000 + "LOG: the end\n", encoding="utf-8")
+    log.write_bytes(b"x" * 2000 + b"LOG: the end\n")
 
     class Ended(FakeSession):
         def __init__(self, how: str, code: int, logfile: Path | None) -> None:

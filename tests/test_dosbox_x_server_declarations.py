@@ -20,6 +20,7 @@ from dosbox_x_server_support import (  # noqa: E402
     clean_session,  # noqa: E402, F401
     install,
     placed_by,
+    stub_build,
 )
 from scry_core import (
     declaration_rows,
@@ -43,14 +44,13 @@ def test_the_block_carries_each_alarm_while_it_holds_and_the_process_facts_ride_
         ) -> None:
     fake = install()
     quiet = fake.state()
-    loud = {**quiet, "conf_changed_on_disk": True, "terminal_bytes_dropped": 4096,
-            "drain_alive": False, "drain_ended": "EIO"}
-    alarms = ("conf_changed_on_disk", "terminal_bytes_dropped", "drain_alive", "drain_ended")
+    loud = {**quiet, "conf_changed_on_disk": True, "output_bytes_dropped": 4096}
+    alarms = ("conf_changed_on_disk", "output_bytes_dropped")
     fake.state = lambda: loud  # type: ignore[method-assign]
     short = cast(dict[str, Any], server.registers())["session"]
     assert all(short[k] == loud[k] for k in alarms) and "pid" not in short, short
     status = cast(dict[str, Any], server.status())
-    assert status["pid"] == 4242 and status["drain_ended"] == "EIO", status
+    assert status["pid"] == 4242 and status["output_bytes_dropped"] == 4096, status
     fake.state = lambda: quiet  # type: ignore[method-assign]
     short = cast(dict[str, Any], server.registers())["session"]
     assert set(short) == {"alive", "running", "altered"}, short
@@ -409,6 +409,7 @@ def test_start_refuses_a_corrupt_declaration_file_before_launching(
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
+    stub_build(monkeypatch)
 
     def no_session(*_a: object, **_k: object) -> object:
         raise AssertionError("ds.Session must not be built when the store is corrupt")
@@ -1397,6 +1398,7 @@ def test_a_watched_window_is_placed_by_the_host_s_helper_on_the_display_asked(
         raise ds.Invalid("session_broken", "recorded, not started")
 
     monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
+    stub_build(monkeypatch)
     monkeypatch.setattr("scry_core.binaries.version", lambda *_a, **_k: "DOSBox-X (a stub)")
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")

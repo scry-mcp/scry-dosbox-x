@@ -185,7 +185,7 @@ def clear_scan(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def debug(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    return f"debug {args.get('command', '')!r}: {_said(reply.get('screen_chars'), 'char')}"
+    return f"debug {args.get('command', '')!r}: {_said(reply.get('output_chars'), 'char')}"
 
 
 def set_register(args: dict[str, Any], reply: dict[str, Any]) -> str:

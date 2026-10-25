@@ -12,7 +12,7 @@ from unittest import mock
 
 import fold_calls
 import pytest
-from dosbox_x_server_support import _names, clean_session, install  # noqa: F401
+from dosbox_x_server_support import _names, clean_session, install, stubbed_build  # noqa: F401
 
 import dosbox_find as finder
 import dosbox_launch as dlaunch
@@ -203,7 +203,7 @@ def test_a_start_plan_is_judged_whole_before_anything_starts(tmp_path: Path) -> 
         raise ds.Invalid("session_broken", "not starting anything")
     kw: dict[str, Any] = {"conf": str(conf), "cwd": str(tmp_path), "session_seconds": 60}
     with mock.patch("scry_core.binaries.shutil.which", lambda _n: "/somewhere/dosbox-x"), \
-         mock.patch("dosbox_x_server.ds.Session", boot):
+         mock.patch("dosbox_x_server.ds.Session", boot), stubbed_build():
         planned = _refused(server.start(**kw, plan=[{"op": "nope"}]), "bad_argument", "nope")
         assert "resume" in planned["operations"], planned
         _refused(server.start(**kw, plan=[{"op": "registers"}], settle_seconds=-1), "bad_argument",

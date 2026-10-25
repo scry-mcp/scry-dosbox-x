@@ -1,7 +1,7 @@
 """The DOS machine as the debugger's own listings print it: MCB chain, devices, kernel blocks,
 XMS/EMS handles, BIOS and emulator blocks, control registers, descriptor tables, page runs.
 
-Each section is one debugger command read whole off the logfile (`Session.listing`); a parser
+Each section is one debugger command, printed whole (`Session.listing`); a parser
 accepts only the row shapes captured in `tests/fixtures/machine/`. A line no shape matches makes
 the WHOLE section absent, quoted in `coverage_note`: a chain with one block skipped reads as
 complete. Names are the debugger's: a command's word, a column heading lower-cased with `_`.
@@ -394,7 +394,7 @@ class Reading:
     found: dict[str, Any] = dataclasses.field(default_factory=dict)
     sources: dict[str, list[str]] = dataclasses.field(default_factory=dict)
     notes: list[str] = dataclasses.field(default_factory=lambda: [
-        "read from the debugger's own listings at this stop, through the session's logfile"])
+        "read from the debugger's own listings at this stop"])
 
     def take(self, session: ds.Session, section: Section) -> None:
         """One command's sections, or the reason they are absent."""
@@ -583,39 +583,24 @@ def holder(address: int, found: dict[str, Any]) -> tuple[str, dict[str, Any]] | 
 
 #: `cpu_mode` when the `CPU` listing could not be read or placed the mode nowhere.
 NO_MODE_WHY = "the `CPU` listing was unreadable, so the mode is not known"
-NO_LOGFILE_BLOCKS = "no vector has a holder: the blocks are"
-NO_LOGFILE_TABLES = ("no vector has a holder, an `addr` or a `symbol`: the blocks and the "
-                     "descriptor tables are")
-NO_LOGFILE_WHY = (" read off the session's logfile and this session was started without one "
-                  "(`start` with `logfile`)")
 
 
 def interrupt_vectors(session: ds.Session, number: int | None) -> dict[str, Any]:
     """Each vector with its handler's linear address, the MCB, kernel or BIOS row holding it and
-    the nearest symbol; one vector when `number` is given. Without a logfile there are no
-    listings: no holders, in protected mode no `addr` or `symbol` either, and the mode is
-    `status`'s."""
+    the nearest symbol; one vector when `number` is given."""
     try:
         rows = parse_intvec(session.intvec())
     except Unreadable as e:
         raise ds.Invalid("unexpected_answer",
             f"`INTVEC` wrote a file that is not the vector table: {e.line}") from None
-    tables_unread = False
-    if session.launch.logfile is None:
-        facts = running.stop_cpu_mode(session)
-        mode = facts if isinstance(facts, str) else None       # unavailable: the mode unknown
-        tables_unread = mode in PROTECTED_MODES
-        reading = Reading(mode=mode, notes=[
-            (NO_LOGFILE_TABLES if tables_unread else NO_LOGFILE_BLOCKS) + NO_LOGFILE_WHY])
-    else:
-        reading = read(session, PLACEMENT_SECTIONS)
-        # cr0 says protected at a VM86 stop, and the vectors there are still SEG:OFF.
-        if running.stop_cpu_mode(session) == dcons.V86_MODE:
-            reading.mode = dcons.V86_MODE
+    reading = read(session, PLACEMENT_SECTIONS)
+    # cr0 says protected at a VM86 stop, and the vectors there are still SEG:OFF.
+    if running.stop_cpu_mode(session) == dcons.V86_MODE:
+        reading.mode = dcons.V86_MODE
     reading.sources = {"vectors": ["INTVEC"], **reading.sources}
     if all(r["seg_off"] == st.seg_off(0, 0) for r in rows):
         reading.notes.append("every vector is 0000:0000: nothing has filled the table yet")
-    elif not tables_unread:
+    else:
         reading.notes.extend(_place(rows, reading))
     chosen = [r for r in rows if number is None or r["number"] == number]
     return {"cpu_mode": contract.or_unavailable(reading.mode, NO_MODE_WHY), "vectors": chosen,

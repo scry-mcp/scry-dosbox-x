@@ -229,9 +229,6 @@ BREAK_STOP = {key: "the stop lands wherever the game is when the break arrives"
 INPUT_TIMING = {key: "it depends on when the host delivered the input"
                 for key in ("lines_before", "seen_before_waiting", "lines_total", "lines_written",
                             "since_mark")}
-#: The data view around the paddle, which holds the frame counter a `stop` catches anywhere.
-MOUSE_PLACED = {"rows": "the data view around the paddle holds the frame counter, which a "
-                        "`stop` catches at any frame"}
 
 STEPS = [
     Step("start", "start", boot, started, options=frozenset({"binary"}),
@@ -267,9 +264,7 @@ STEPS = [
                            "pattern": "KEY|PLAYER"}, keys_taken, volatile=INPUT_TIMING,
          shown=("looked",)),
     Step("pause", "stop", {}, stopped, volatile=BREAK_STOP),
-    Step("paddle", "read_memory", {"ref": "paddle_x", "length": 2}, paddle,
-         volatile={"rows": "the data view around the paddle holds the frame counter, which "
-                           "a `stop` catches at any frame"}),
+    Step("paddle", "read_memory", {"ref": "paddle_x", "length": 2}, paddle),
     Step("again", "resume", {}, lambda reply, run: "the game runs"),
     Step("mouse on", "send_keys", {"keys": ["m"], "expect": "MOUSE ON$", "seconds": 10},
          seen("M handed the paddle to the mouse: the game logged MOUSE ON"),
@@ -281,8 +276,7 @@ STEPS = [
          seen("M took the paddle back, so the pointer moves nothing from here on"),
          volatile=INPUT_TIMING),
     Step("mark", "stop", {}, stopped, volatile=BREAK_STOP),
-    Step("before save", "read_memory", {"ref": "paddle_x", "length": 2}, moved,
-         volatile=MOUSE_PLACED),
+    Step("before save", "read_memory", {"ref": "paddle_x", "length": 2}, moved),
     Step("on again", "resume", {}, lambda reply, run: "the game runs"),
     Step("save", "state_write", {"method": "save", "name": "bricks"},
          lambda reply, run: f"state saved as {Path(str(reply['path'])).name}",
@@ -299,7 +293,6 @@ STEPS = [
          shown=("name",)),
     Step("halt", "stop", {}, stopped, volatile=BREAK_STOP),
     Step("restored", "read_memory", {"ref": "paddle_x", "length": 2}, restored,
-         volatile=MOUSE_PLACED,
          shown=("summary", "hex")),
     Step("play on", "resume", {}, lambda reply, run: "the game runs"),
     Step("serve", "send_keys", {"keys": ["space"], "expect": "SERVE$", "seconds": 10},
@@ -325,9 +318,9 @@ DEMO = Demo(
               "input_port": "the free port the host picked for the input route",
               "binary_origin": "how the host's DOSBox-X was found",
               "version": "the host's DOSBox-X build",
-              "screen_delta": "the debugger's repaint, a positional tail the server says to "
-                              "read a stop from and never a value",
-              "screen_chars": "the length of that repaint", "clipped": "whether it was cut",
+              "output": "what the debugger printed for the command, which the server says to "
+                        "read a stop from and never a value",
+              "output_chars": "the length of that output", "clipped": "whether it was cut",
               })
 
 

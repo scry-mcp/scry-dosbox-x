@@ -26,9 +26,9 @@ def test_the_cpu_mode_says_paged_protected_or_which_mark_left_it_unplaced() -> N
     assert running.cpu_mode_of("Pr32", True) == "paged"
     assert running.cpu_mode_of("Pr32", False) == "protected"
     none = cast(dict[str, Any], running.cpu_mode_of("Pr32", None))
-    assert none["available"] is False and "no PAGE/NOPG mark" in none["why"], none
+    assert none["available"] is False and "no paging bit" in none["why"], none
     marked = cast(dict[str, Any], running.cpu_mode_of("Xyz", False))
-    assert "a paging mark" in marked["why"] and "no PAGE" not in marked["why"], marked
+    assert "a paging bit" in marked["why"] and "no paging" not in marked["why"], marked
 
 
 def test_a_stop_no_survey_placed_has_neither_pc_nor_mode() -> None:
@@ -220,7 +220,6 @@ def test_a_reply_off_a_record_with_no_picture_decodes_it_from_that_stop(
     running.stop_reply(fake)  # type: ignore[arg-type]
     stop = dstate.STATE.last_stop
     del stop["picture"]
-    fake.survey_text = "THE SURVEY"
     asked: list[tuple[Any, ...]] = []
 
     def decoded(*a: Any) -> dict[str, Any]:
@@ -228,7 +227,7 @@ def test_a_reply_off_a_record_with_no_picture_decodes_it_from_that_stop(
         return {"instruction": {"text": "DECODED"}}
     monkeypatch.setattr(code, "stop_instruction", decoded)
     got = running.recorded_stop_reply(fake, {})  # type: ignore[arg-type]
-    assert asked == [(fake, dict(stop["where"]), dict(stop["registers"]), "THE SURVEY")], asked
+    assert asked == [(fake, dict(stop["where"]), dict(stop["registers"]))], asked
     assert got["instruction"] == {"text": "DECODED"} and stop["picture"] == {
         "instruction": {"text": "DECODED"}}, (got, stop)
 

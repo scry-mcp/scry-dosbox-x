@@ -2,7 +2,7 @@
 
 The debugger has no byte-pattern search, so `find` searches a `MEMDUMPBIN` dump of the range in
 Python. `scan` wraps its `MEMFIND`/`MEMS` value scanner, which holds one instance at a time.
-The console's printed lines are the contract (read off `src/debug/debug.cpp`); its per-cell
+The debugger's printed lines are the contract (read off `src/debug/debug.cpp`); its per-cell
 listing is paged, so it is asked for only when the survivors fit one reply.
 """
 
@@ -19,7 +19,6 @@ from scry_core import judges
 from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 
-import dosbox_console as dcons
 import dosbox_dump as dumping
 import dosbox_session as ds
 import dosbox_state as st
@@ -104,17 +103,13 @@ def _spelled(seg: int, off: int, real_past_ffff: bool) -> str:
     return st.seg_off(seg, off)
 
 
-# The Output pane is a scrollback: a delta still shows earlier commands' lines, so a reply is
-# the LAST family line, never the first.
+# A reply is the LAST family line, never the first: one command can print several.
 SCAN_LINES = (SCAN_OPENED, SCAN_MATCHES, SCAN_FINISHED, SCAN_RANGE,
               re.compile(re.escape(SCAN_ACTIVE)), re.compile(re.escape(SCAN_BAD_SEGMENT)),
               re.compile(re.escape(SCAN_NOT_ACTIVE)), re.compile(re.escape(SCAN_TOO_WIDE)),
               re.compile(re.escape(SCAN_CANCELLED)), re.compile(re.escape(SCAN_NONE_TO_CANCEL)),
               re.compile(re.escape(SCAN_NONE_TO_LIST)))
-# The listing is paged (`dcons.PAGER_MARK`) and its rows reach only the screen, so pages are
-# turned with a bare ENTER and the rows read off each delta.
 SCAN_LISTED = re.compile(r"\[MEMFIND\] Matched values during current instance: ([0-9A-F]{6})")
-SCAN_PAGE_ROWS = 20
 
 
 def _last_scan_line(out: str) -> str:
@@ -147,41 +142,10 @@ def _refuse(line: str, what: str) -> None:
             "the value does not fit the instance's width: the debugger refused the filter")
 
 
-# More ENTERs than a whole listing has pages means the recovery is not recovering.
-RECOVER_ENTERS_MAX = 8
-
-
-def _clear_line(session: ds.Session) -> bool:
-    """Leave the debugger's command line empty and its paging finished; say whether it did.
-
-    While a paged-content prompt waits, the debugger eats a command one character per page and
-    strands the tail on the line, and every later call concatenates onto it until `close`.
-    A bare ENTER is safe either way: it turns a waiting page, and at an idle prompt it submits
-    and clears the line without repeating the last command. A tail the debugger did not take is
-    emptied with `Session.clear_line`, which runs nothing."""
-    for _ in range(RECOVER_ENTERS_MAX):
-        try:
-            out = session.command("")
-            if dcons.PAGER_MARK not in out:
-                if dcons.input_line(out):
-                    # ESC repaints no prompt: a delta with none is a clear
-                    out = session.clear_line()
-                return not dcons.input_line(out)
-        except ds.Invalid:
-            return False
-    return False
-
-
-def _unexpected(session: ds.Session, out: str, wanted: str) -> ds.Invalid:
-    """The refusal, with the command line left clean for the caller's next command."""
-    recovered = _clear_line(session)
+def _unexpected(out: str, wanted: str) -> ds.Invalid:
+    """The refusal naming what the debugger printed instead."""
     return ds.Invalid("unexpected_answer",
-        f"the debugger did not report {wanted}. What it showed: {out.strip()[-300:]!r}",
-        line_recovered=recovered,
-        note=("the debugger's command line was empty when checked after this"
-              if recovered else
-              "the debugger's command line was not confirmed empty: later commands may be "
-              "eaten by a pager or typed onto what it holds, so `close` this session"))
+        f"the debugger did not report {wanted}. What it printed: {out.strip()[-300:]!r}")
 
 
 def check_scan_range(length: int, cell_bytes: int) -> None:
@@ -201,9 +165,9 @@ def check_scan_range(length: int, cell_bytes: int) -> None:
 
 
 def unlisted_note() -> str:
-    """Why a filter past `judges.HITS_MAX` lists none: each page costs a console round trip."""
-    return (f"more than {judges.HITS_MAX} survive, and the debugger lists them a page at a "
-            f"time: filter again to list them")
+    """Why a filter past `judges.HITS_MAX` lists none."""
+    return (f"more than {judges.HITS_MAX} survive, more than a reply lists: filter again to list "
+            f"them")
 
 
 NO_VALUE_WHY = ("no `value` was given, so each cell was compared with its value at "
@@ -233,12 +197,12 @@ def start_scan(session: ds.Session, seg: int, off: int, length: int,
     _refuse(last, "open")
     opened = SCAN_OPENED.search(last)
     if opened is None:
-        raise _unexpected(session, out, "a search instance")
+        raise _unexpected(out, "a search instance")
     if int(opened.group(4), 16) != length:
         # close the stray instance, or the next start is told one is open that we do not hold
         with contextlib.suppress(ds.Invalid):
             session.command("MEMFIND !")
-        raise _unexpected(session, out,
+        raise _unexpected(out,
             f"the range asked for: {length:#x} bytes were asked and it opened a search over "
             f"{int(opened.group(4), 16):#x}")
     STATE.scan_iterations = 0           # a scan this server opened: no filter yet
@@ -248,39 +212,18 @@ def start_scan(session: ds.Session, seg: int, off: int, length: int,
 
 
 def _listing(session: ds.Session, survivors: int) -> list[dict[str, Any]]:
-    """`MEMFIND L` page by page to the closing count, rows keyed by address."""
-    rows: dict[str, dict[str, Any]] = {}
+    """`MEMFIND L`, whole in one reply, rows keyed by address and held to the closing count."""
     out = session.command("MEMFIND L")
-    # the first page still shows the previous listing above it
-    summaries = list(SCAN_MATCHES.finditer(out))
-    if summaries:
-        out = out[summaries[-1].end():]
-    for _ in range(survivors // SCAN_PAGE_ROWS + 2):
-        for s, o, lin, v in SCAN_ROW.findall(out):
-            at = st.seg_off(int(s, 16), int(o, 16))
-            rows[at] = {"seg_off": at, "addr": st.flat(int(lin, 16)), "value": int(v, 16)}
-        closings = list(SCAN_LISTED.finditer(out))
-        last_row = max((m.end() for m in SCAN_ROW.finditer(out)), default=-1)
-        if closings and closings[-1].end() > last_row:
-            listed = closings[-1]
-            if int(listed.group(1), 16) != survivors or len(rows) != survivors:
-                raise _unexpected(session, out,
-                    f"a whole listing: it counted {survivors} survivors, closed the listing "
-                    f"at {int(listed.group(1), 16)} and {len(rows)} rows crossed the screen")
-            # the count can arrive with a page prompt still waiting behind it
-            if dcons.PAGER_MARK in out[listed.end():] and not _clear_line(session):
-                raise ds.Invalid("unexpected_answer",
-                    "the listing ended with a paged-content prompt this could not turn in "
-                    f"{RECOVER_ENTERS_MAX} ENTERs, so the debugger's command line is still "
-                    "waiting: every later command would be eaten by it rather than run. "
-                    "`close` this session",
-                    line_recovered=False, survivors=survivors, rows=len(rows))
-            return list(rows.values())
-        if dcons.PAGER_MARK not in out:
-            raise _unexpected(session, out, "the listing's next page nor its end")
-        out = session.command("")
-    raise _unexpected(session, out,
-        f"the end of the listing within {survivors // SCAN_PAGE_ROWS + 2} pages")
+    rows: dict[str, dict[str, Any]] = {}
+    for s, o, lin, v in SCAN_ROW.findall(out):
+        at = st.seg_off(int(s, 16), int(o, 16))
+        rows[at] = {"seg_off": at, "addr": st.flat(int(lin, 16)), "value": int(v, 16)}
+    listed = SCAN_LISTED.search(out)
+    if listed is None or int(listed.group(1), 16) != survivors or len(rows) != survivors:
+        raise _unexpected(out,
+            f"a whole listing: it counted {survivors} survivors, and the listing closed at "
+            f"{int(listed.group(1), 16) if listed else 'no count'} with {len(rows)} rows")
+    return list(rows.values())
 
 
 def filter_scan(session: ds.Session, operator: str, value: int | None,
@@ -314,7 +257,7 @@ def filter_scan(session: ds.Session, operator: str, value: int | None,
         return closing
     summary = SCAN_MATCHES.search(last)
     if summary is None:
-        raise _unexpected(session, out, "survivors or a finished search")
+        raise _unexpected(out, "survivors or a finished search")
     survivors = int(summary.group(1), 16)
     iterations = int(summary.group(2), 16)
     STATE.scan_iterations = iterations
@@ -336,7 +279,7 @@ def clear_scan(session: ds.Session) -> dict[str, Any]:
         return {"cleared": True}
     if SCAN_NONE_TO_CANCEL in last:
         return {"cleared": False, "note": "no search instance was open"}
-    raise _unexpected(session, out, "a cancelled instance nor that none was open")
+    raise _unexpected(out, "a cancelled instance nor that none was open")
 
 
 def _cell_bits(cell: int | None) -> int:

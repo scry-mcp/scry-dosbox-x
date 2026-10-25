@@ -27,7 +27,6 @@ FIRMWARE_SEG = 0xF000
 NO_STUB = ("no STUB line in the log: the conf did not run the serial stub, so the "
            "serial route has no guest half and no key can be measured through it")
 
-_ESCAPES = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\x1b[78()][0-9A-Z]?")
 
 
 def carries(exe: Path, marker: bytes) -> bool:
@@ -35,9 +34,9 @@ def carries(exe: Path, marker: bytes) -> bool:
 
 
 def mcb_psp(name: str) -> int:
-    """The PSP segment of `name`'s block; in the ncurses repaint only the PSP stays whole."""
+    """The PSP segment of `name`'s block, off the `DOS MCBS` listing."""
     r = M.call(server.debug, command="DOS MCBS")
-    text = _ESCAPES.sub("", str(r.get("screen_delta")))
+    text = str(r.get("output"))
     rows = re.findall(r"([0-9A-F]{4})\s*" + re.escape(name), text, flags=re.IGNORECASE)
     if not ok(r) or not rows:
         raise RuntimeError(f"no {name} block in DOS MCBS: {said(r)}")

@@ -1,3 +1,0 @@
-DEBUG: RAM search from 0000:0400 (lin 00000400) with range: 000100
-DEBUG: (000100) matches found with value EQUAL TO (00). Iterations: 000001
-I-> _

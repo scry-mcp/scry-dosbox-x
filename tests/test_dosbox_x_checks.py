@@ -58,7 +58,7 @@ def test_a_refusal_opens_with_the_argument_it_refuses(
     ("palette", {"count": 257}, "count=257 is not a whole number from 0 to 256"),
     ("palette", {"first": 200, "count": 100},
      "first=200 and count=100 reach entry 299: the DAC holds entries 0 to 255"),
-    ("run_for", {"milliseconds": 2 ** 53 + 1}, "floating-point clock"),
+    ("run_for", {"milliseconds": 2 ** 53 + 1}, "floating-point emulated clock"),
     ("run_for", {"milliseconds": 1, "frames": 1}, "exactly one of milliseconds and frames"),
     ("start", {"settle_seconds": 5},
      "`settle_seconds` bounds the waits of a `plan`, and there is no plan"),

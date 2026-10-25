@@ -1,0 +1,15 @@
+What the debugger channel answered to every command this server sends, captured live on
+the Mac mini M4, one launch per file, by a script that sent each request through
+the channel and recorded the reply whole (`REQ`/`BEGIN`/`END`, no screen read).
+
+Builds: `scry-*` the fork's scry branch at 92d913050 (upstream main-ai d321e1e92 with the
+RUNSTATE and PRESENCE debugger commands), run with `debugger headless=true` and no terminal;
+`official-*` the Homebrew 2026.10.01 release, run on a pseudo-terminal nobody read.
+
+Scenarios: `real` the probe guest (`tests/guest/probe.conf`) broken into while it ticks;
+`dpmi` the DJGPP guest (`dpmi.conf`, `DPMI.EXE D:\DPMI.C`) stopped at its INT 31h AH=02h in
+protected mode; `step` the step guest (`step.conf`, break on int3) stepped from 0814:0102.
+
+A reply longer than 41 lines (the real-mode GDT and LDT, HELP, CALLBACKS) keeps its first 40
+lines and, when there is one, its last (the channel's discard marker); `lines_total` is the
+count it had and `cut_here` marks the cut. Nothing else was edited but the build's path.

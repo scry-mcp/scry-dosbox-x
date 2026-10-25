@@ -15,10 +15,11 @@ import time
 from collections.abc import Callable
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any, cast
+from typing import Any
 
 import pytest
-from dosbox_x_server_support import CASED_PATHS, POSIX_SESSION
+from channel_double import Machine, protected, session_over
+from dosbox_x_server_support import CASED_PATHS
 from scry_core import guardian
 from scry_core import vocabulary as vocab
 from scry_core.host_program import MODE_BITS
@@ -184,7 +185,6 @@ def test_a_port_something_else_holds_is_refused_before_the_emulator_exists() -> 
         held.close()
 
 
-@POSIX_SESSION
 def test_a_dial_that_never_comes_kills_the_child_it_spawned(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """THE ARM THAT MATTERS"""
@@ -323,32 +323,6 @@ def test_the_two_nothings_are_counted_apart() -> None:
     assert dlogs.count_e9(NOISE + REPLAY) == 0
 
 
-REAL_PANE = ("ooooooooooooooooooooooooooooooooooooooo"
-             "EAX=00001234  ESI=00000000  DS=0000   ES=0000   FS=0000   GS=0000\n"
-             "EBX=00004321  EDI=00000000  CS=F000   EIP=0000DAC6\n")
-
-
-def test_a_register_name_that_abuts_the_pane_fill_is_still_read() -> None:
-    regs = dcons.parse_registers(REAL_PANE)
-    assert regs["EAX"] == "00001234"
-    assert regs["EBX"] == "00004321"
-    assert regs["EIP"] == "0000DAC6"
-
-
-def test_the_newest_repaint_wins() -> None:
-    """The RECENCY axis, which no assertion on values can reach."""
-    older = "EAX=00000001  EIP=00000010\n"
-    newer = "EAX=000000FF  EIP=000000F0\n"
-    regs = dcons.parse_registers(older + newer)
-    assert regs["EAX"] == "000000FF"
-    assert regs["EIP"] == "000000F0"
-
-
-def test_a_screen_with_no_pane_parses_to_nothing() -> None:
-    """So `registers()` can raise INVALID rather than return an empty mapping."""
-    assert dcons.parse_registers("DEBUG: Set Register success.\nI-> _") == {}
-
-
 def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
 ) -> None:
     """SIGKILL cannot be ignored."""
@@ -364,7 +338,7 @@ def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
     sent: list[int] = []
     fake = SimpleNamespace(
         proc=NeverDies(), reap_failed="", drain_ended="", _drainer=None,
-        _master=-1, _stop=threading.Event(), _signal_group=sent.append)
+        _out=None, _signal_group=sent.append)
     rc = ds.Session._close(fake, grace=0)  # type: ignore[arg-type]
     assert rc is None, "a child that was never reaped has no exit code"
     assert fake.reap_failed.startswith("SIGKILL was sent"), (
@@ -396,7 +370,7 @@ def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
     ok_sent: list[int] = []
     ok = SimpleNamespace(
         proc=proc, reap_failed="", drain_ended="", _drainer=None,
-        _master=-1, _stop=threading.Event(), _signal_group=ok_sent.append)
+        _out=None, _signal_group=ok_sent.append)
     assert ds.Session._close(ok) == -9  # type: ignore[arg-type]
     assert ok_sent == [signal.SIGTERM, guardian.KILL], ok_sent
     assert proc.stretches == 2, "the control never reached the SIGKILL wait"
@@ -492,148 +466,21 @@ def test_the_dump_is_looked_for_in_the_working_directory_first(tmp_path: Path) -
     assert ds.Session._memdump_candidates(bare)  # type: ignore[arg-type]
 
 
-REAL_DATA_VIEW = (
-    "ooooData view (segmented)oooooooooooooooooooooooooo"
-    "F000:0000E000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 49 42  ..............IB\r\n"
-    "F000:0000E010 4D 20 43 4F 4D 50 41 54 49 42 4C 45 20 42 49 4F  M COMPATIBLE BIO\r\n"
-    "ooooCode Overviewoooooooooooooooooooooooooooooooooo"
-    "F000:0000FFF0 EA5BE000F0          jmp  F000:E05B\r\n"
-    "F000:0000FFF5 3031xor  [bx+di],dhds:[0000]=0000\r\n"
-    "ooooOutputooooooooooooooooooooooooooooooooooooooooo"
-    "DEBUG: Set data overview to F000:E000\r\nI-> _")
-
-
-def test_a_data_row_that_abuts_the_pane_header_is_still_read() -> None:
-    """THE ROW THE CALLER ASKED ABOUT IS THE FIRST ONE, and the first one is the one that abuts."""
-    rows = dcons.parse_data_view(REAL_DATA_VIEW)
-    assert rows[0].startswith("F000:0000E000"), rows
-    assert rows[0].endswith("..............IB"), "the ASCII gutter was cut off"
-    assert len(rows) == 2, rows
-
-
-def test_a_code_row_is_not_a_data_row() -> None:
-    """The discrimination the shape rests on, asserted rather than assumed."""
-    rows = dcons.parse_data_view(REAL_DATA_VIEW)
-    assert [r.split()[0] for r in rows] == ["F000:0000E000", "F000:0000E010"], rows
-    assert not any("jmp" in r or "xor" in r for r in rows), rows
-
-
-def test_two_rows_on_one_line_both_come_back() -> None:
-    """The rows are glued to each other, not only to the pane header."""
-    glued = ("F000:0000E000" + " 00" * 16 + "  ................"
-             "F000:0000E010" + " 11" * 16 + "  xxxxxxxxxxxxxxxx")
-    rows = dcons.parse_data_view(glued)
-    assert [r.split()[0] for r in rows] == ["F000:0000E000", "F000:0000E010"], rows
-
-
-@pytest.mark.parametrize("gutter", range(17))
-def test_a_gutter_cannot_swallow_the_address_of_the_row_behind_it(gutter: int) -> None:
-    """The case for the lookahead."""
-    line = ("F000:0000E000" + " 00" * 16 + "  " + "." * gutter
-            + "F000:0000E010" + " 11" * 16 + "  " + "." * 16)
-    rows = dcons.parse_data_view(line)
-    assert [r.split()[0] for r in rows] == ["F000:0000E000", "F000:0000E010"], (
-        f"gutter of {gutter}: {rows}")
-    assert "F000:0000E010" not in rows[0], f"the gutter ate the next address: {rows[0]}"
-
-
-def test_a_gutter_cannot_reach_into_the_row_below() -> None:
-    """The ASCII gutter is bounded and excludes the line endings."""
-    short = ("F000:0000E000" + " 00" * 16 + "  ab\r\n"
-             "F000:0000E010" + " 11" * 16 + "  cd\r\n")
-    rows = dcons.parse_data_view(short)
-    assert len(rows) == 2, rows
-    assert "\n" not in rows[0] and "\r" not in rows[0], rows[0]
-    assert rows[1].startswith("F000:0000E010")
-
-
-def test_a_reading_of_somewhere_else_is_refused(tmp_path: Path) -> None:
-    """THE GUARD ON THE ADDRESS IS GATED, which is the whole point of this case."""
-    conf = tmp_path / "g.conf"
-    conf.write_text("[sdl]\n", encoding="utf-8")
-    elsewhere = "F000:0000E040" + " 00" * 16 + "  ................"
-    fake = SimpleNamespace(
-        launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60),
-        command=lambda _t, **_k: elsewhere,
-        where=lambda: {"cs": "F000", "eip": "0000E000", "mode": "Real"},
-        alive=lambda: True)
-    with pytest.raises(ds.Invalid, match="none of them is F000:0000E000"):
-        ds.Session.read_memory(fake, 0xF000, 0xE000)  # type: ignore[arg-type]
-
-    got = ds.Session.read_memory(fake, 0xF000, 0xE040)  # type: ignore[arg-type]
-    assert got == [elsewhere]
-
-
 def test_read_memory_with_a_cached_mode_does_not_survey_for_it(tmp_path: Path) -> None:
-    """A passed `mode` is the offset ceiling's source."""
-    conf = tmp_path / "g.conf"
-    conf.write_text("[sdl]\n", encoding="utf-8")
-    row = "00A7:0016DF20" + " 8D" * 16 + "  ................"
-
-    def where_boom() -> dict[str, str]:
-        raise ds.NotStopped("where() must not be called when the mode is cached")
-    fake = SimpleNamespace(
-        launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60),
-        command=lambda _t, **_k: row, where=where_boom, alive=lambda: True)
-    fake.read_memory = lambda seg, off, mode=None: ds.Session.read_memory(
-        fake, seg, off, mode)  # type: ignore[arg-type]
-    got = ds.Session.read_memory(fake, 0x00A7, 0x16DF20, mode="Pr32")  # type: ignore[arg-type]
-    assert got == [row]
-    b = ds.Session.read_bytes(fake, 0x00A7, 0x16DF20, 4, mode="Pr32")  # type: ignore[arg-type]
-    assert b == bytes([0x8D] * 4)
-    with pytest.raises(ds.Invalid, match="must not be called"):
-        ds.Session.read_memory(fake, 0x00A7, 0x16DF20)  # type: ignore[arg-type]
+    """A passed `mode` is the offset ceiling's source: no survey goes out for it."""
+    machine = protected(Machine(memory={0x16DF20 + i: 0x8D for i in range(4)}))
+    s = session_over(machine, tmp_path)
+    assert s.read_bytes(0x00A7, 0x16DF20, 4, mode="Pr32") == bytes([0x8D] * 4)
+    assert [c for c in machine.sent if c.startswith("EXEC EV")] == [], machine.sent
 
 
 def test_read_memory_takes_a_32_bit_offset_in_protected_mode(tmp_path: Path) -> None:
     """A flat clamp of the offset to 0xFFFF would refuse every 32-bit DJGPP address."""
-    conf = tmp_path / "g.conf"
-    conf.write_text("[sdl]\n", encoding="utf-8")
-    row = "00A7:0016DF20" + " 8D" * 16 + "  ................"
-
-    pr32 = SimpleNamespace(
-        launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60),
-        command=lambda _t, **_k: row,
-        where=lambda: {"cs": "00A7", "eip": "0016DF20", "mode": "Pr32"},
-        alive=lambda: True)
-    assert ds.Session.read_memory(pr32, 0x00A7, 0x16DF20) == [row]  # type: ignore[arg-type]
-
-    real = SimpleNamespace(
-        launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60),
-        command=lambda _t, **_k: row,
-        where=lambda: {"cs": "F000", "eip": "0000FFF0", "mode": "Real"},
-        alive=lambda: True)
+    pr32 = session_over(protected(Machine(memory={0x16DF20: 0x8D})), tmp_path)
+    assert pr32.read_bytes(0x00A7, 0x16DF20, 1) == b"\x8d"
+    real = session_over(Machine(), tmp_path)
     with pytest.raises(ds.Invalid, match="past 0xFFFF addresses nothing"):
-        ds.Session.read_memory(real, 0x00A7, 0x16DF20)  # type: ignore[arg-type]
-
-
-def test_read_memory_hands_back_one_view_when_the_pane_repainted_twice(
-        tmp_path: Path) -> None:
-    """On a stopped Pr32 machine `D 00AF:179784` answers with the eight data rows TWICE."""
-    conf = tmp_path / "g.conf"
-    conf.write_text("[sdl]\n", encoding="utf-8")
-    seg, off = 0x00AF, 0x179784
-    rows = [f"{seg:04X}:{off + 16 * i:08X} " + " ".join([f"{i:02X}"] * 16)
-            + "  " + "." * 16 for i in range(8)]
-    twice = "DEBUG: Set data overview to 00AF:179784\r\n" + "\r\n".join(rows) \
-        + "\r\n" + "\r\n".join(rows) + "\r\nI-> _"
-    fake = SimpleNamespace(
-        launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60),
-        command=lambda _t, **_k: twice,
-        where=lambda: {"cs": "00A7", "eip": "0016DF20", "mode": "Pr32"},
-        alive=lambda: True)
-    got = ds.Session.read_memory(fake, seg, off)  # type: ignore[arg-type]
-    assert got == rows, f"{len(got)} rows for an eight-row pane: {got}"
-
-
-def test_the_gutter_stops_at_sixteen_characters() -> None:
-    """The bound itself, which the lookahead alone does not assert."""
-    long_gutter = "F000:0000E000" + " 00" * 16 + "  " + "x" * 40
-    rows = dcons.parse_data_view(long_gutter)
-    assert len(rows) == 1, rows
-    assert rows[0].endswith("x" * 16), rows[0]
-    assert "x" * 17 not in rows[0], (
-        f"the gutter ran past sixteen characters: {rows[0]!r}")
+        real.read_bytes(0x00A7, 0x16DF20, 1)
 
 
 def test_a_dump_destination_inside_the_debuggers_own_place_is_refused(
@@ -758,12 +605,6 @@ def test_a_dump_destination_that_already_exists_is_refused_before_the_debugger_i
     assert asked == [] and not (tmp_path / "elsewhere" / "victim.bin").exists()
     got = ds.Session.memdump(d, 0, 0, 16, tmp_path / "fresh.bin")  # type: ignore[arg-type]
     assert got.read_bytes() == b"\xAB" * 16
-
-
-def test_a_screen_with_no_data_view_parses_to_nothing() -> None:
-    """So `read_memory` can raise INVALID rather than return an empty list."""
-    assert dcons.parse_data_view("DEBUG: Set Register success.\nI-> _") == []
-    assert dcons.parse_data_view(REAL_PANE) == []
 
 
 def test_only_the_names_this_debugger_sets_are_accepted() -> None:
@@ -902,94 +743,9 @@ def test_a_negative_frame_is_refused(
             stopped(captures_dir=tmp_path, capture_video=True), -1, tmp_path / "x.png")
 
 
-class FakeDrain:
-    """The drain's state, as `Session._read` reaches for it, with the fields TYPED."""
-
-    def __init__(self, chunks: list[str]) -> None:
-        self.dropped = 0
-        self._pending = ""
-        self._screen = ""
-        self._raw_tail, self._raw_reads = "", 0
-        self._eof = threading.Event()
-        self._left = list(chunks)
-        self._take: Callable[[], bytes] = self._next_chunk
-
-    def _next_chunk(self) -> bytes:
-        return self._left.pop(0).encode() if self._left else b""
-
-
-class Reader:
-    """`Session._read` bound to a `FakeDrain`, callable, carrying its own session."""
-
-    def __init__(self, chunks: list[str]) -> None:
-        self.session = FakeDrain(chunks)
-
-    def __call__(self, seconds: float = 0.0) -> str:
-        return ds.Session._read(self.session, seconds)   # type: ignore[arg-type]
-
-
-def reader(chunks: list[str]) -> Reader:
-    return Reader(chunks)
-
-
 MID_ROW = (
     "F000:0000E000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 49 42  ..............IB")
 SPLIT_AT = 20
-
-
-@pytest.mark.parametrize("chunks", [
-    pytest.param([MID_ROW[:SPLIT_AT] + "\x1b[1;2" + "m" + MID_ROW[SPLIT_AT:]],
-                 id="whole-escape-in-one-read"),
-    pytest.param([MID_ROW[:SPLIT_AT] + "\x1b[1;2", "m" + MID_ROW[SPLIT_AT:]],
-                 id="split-with-text-before-the-escape"),
-    pytest.param([MID_ROW[:SPLIT_AT], "\x1b[1;2", "m" + MID_ROW[SPLIT_AT:]],
-                 id="split-with-the-escape-as-the-first-byte"),
-])
-def test_a_repaint_escape_survives_wherever_the_read_boundary_falls(
-        chunks: list[str]) -> None:
-    """WHERE THE CHUNK BOUNDARY FELL MAY NOT CHANGE WHAT WAS READ."""
-    read = reader(chunks)
-    text = "".join(read() for _ in chunks)
-    assert "\x1b" not in text, f"an escape survived into the reading: {text!r}"
-    rows = dcons.parse_data_view(text)
-    assert len(rows) == 1, f"the row did not survive the boundary: {text!r}"
-    assert rows[0] == MID_ROW, rows
-
-
-def test_a_head_that_never_terminates_is_given_up_rather_than_held_forever() -> None:
-    """THE BOUND IS WHAT LETS THE HOLD BE UNCONDITIONAL, so it is tested, not assumed."""
-    read = reader(["\x1b]" + "x" * (ds.PENDING_MAX * 2)])
-    text = read()
-    assert len(text) > ds.PENDING_MAX, "the head was held past its bound"
-    assert read.session._pending == "", (
-        "the reader is still holding a head it has already emitted")
-
-
-def test_a_well_formed_head_is_still_held_at_the_bound() -> None:
-    """The control for the case above"""
-    read = reader(["EAX=0000\x1b[1;2", "m rest"])
-    first = read()
-    assert first == "EAX=0000", f"the head was not held: {first!r}"
-    assert read.session._pending == "\x1b[1;2"
-    assert read() == " rest"
-
-
-def test_a_read_the_drain_dropped_bytes_out_of_is_refused() -> None:
-    """The overflow refusal, which nothing asserted although the code has it."""
-    read = reader(["EAX=00001234"])
-    read.session._pending = "\x1b[1;2"
-    read.session._eof.set()
-    orig = read.session._take
-
-    def drops() -> bytes:
-        read.session.dropped += 7
-        return orig()
-
-    read.session._take = drops
-    with pytest.raises(ds.Invalid, match="not a reading"):
-        read()
-    assert read.session._pending == "", (
-        "a head from a stream with a hole in it was kept for the next read")
 
 
 def test_a_name_that_is_not_a_register_never_reaches_the_debugger() -> None:
@@ -1014,19 +770,21 @@ def test_set_register_refuses_a_value_its_register_cannot_hold_before_sending() 
     assert sent == [] and fake.altered is False, sent
 
 
-def test_set_register_whose_pane_lacks_the_register_is_refused_and_still_altered() -> None:
-    """The readback is a repaint."""
-    sent: list[str] = []
-    fake = SimpleNamespace(altered=False, command=sent.append, registers=lambda: {"EBX": "0"})
+def test_set_register_whose_pane_lacks_the_register_is_refused_and_still_altered(
+        tmp_path: Path) -> None:
+    """The readback is a reading of the register, after the `SR`."""
+    machine = Machine()
+    s = session_over(machine, tmp_path)
+    s.registers = lambda: {"EBX": "0"}  # type: ignore[method-assign]
     with pytest.raises(ds.Invalid, match="without EAX after `SR`"):
-        ds.Session.set_register(fake, "eax", 1)   # type: ignore[arg-type]
-    assert sent == ["SR eax 1"], sent
-    assert fake.altered is True
-    fake.registers = lambda: {"EAX": "00000001"}
-    ok = ds.Session.set_register(fake, "eax", 1)   # type: ignore[arg-type]
+        s.set_register("eax", 1)
+    assert machine.sent == ["EXEC SR eax 1"], machine.sent
+    assert s.altered is True
+    del s.registers
+    ok = s.set_register("eax", 1)
     assert ok["readback"] == "0x00000001" and ok["verified"] is True
-    fake.registers = lambda: {"EAX": "00000002"}
-    assert ds.Session.set_register(fake, "eax", 1)["verified"] is False   # type: ignore[arg-type]
+    machine.hooks["SR"] = lambda _c: (True, ["DEBUG: Set Register success."])
+    assert s.set_register("eax", 2)["verified"] is False
 
 
 def _pane_after_sr(pane: dict[str, str]) -> SimpleNamespace:
@@ -1034,26 +792,32 @@ def _pane_after_sr(pane: dict[str, str]) -> SimpleNamespace:
     return SimpleNamespace(altered=False, command=lambda _text: "", registers=lambda: pane)
 
 
-def test_a_segment_register_reads_back_under_its_own_name() -> None:
-    """A segment register has no 32-bit form"""
-    fake = _pane_after_sr({"EAX": "00000000", "CS": "0050", "DS": "0040"})
-    got = ds.Session.set_register(fake, "cs", 0x50)   # type: ignore[arg-type]
+def test_a_segment_register_reads_back_under_its_own_name(tmp_path: Path) -> None:
+    """A segment register has no 32-bit form."""
+    s = session_over(Machine(), tmp_path)
+    got = s.set_register("cs", 0x50)
     assert got["readback"] == "0x0050" and got["verified"] is True, got
-    assert fake.altered is True
-    assert ds.Session.set_register(fake, "ds", 0x50)["verified"] is False   # type: ignore[arg-type]
+    assert s.altered is True
 
 
-def test_a_16_bit_name_is_read_back_as_the_low_half_of_its_register() -> None:
-    """`ax` is the low half of `EAX`, and the pane shows only `EAX`"""
-    fake = _pane_after_sr({"EAX": "ABCD1234", "EIP": "00010100", "CS": "0050"})
-    got = ds.Session.set_register(fake, " AX", 0x1234)   # type: ignore[arg-type]
+def test_a_16_bit_name_is_read_back_as_the_low_half_of_its_register(tmp_path: Path) -> None:
+    """`ax` is the low half of `EAX`, which is what the reading carries."""
+    machine = Machine()
+    machine.regs["EAX"] = 0xABCD0000
+    s = session_over(machine, tmp_path)
+    def low_half(command: str) -> tuple[bool, list[str]] | None:
+        _, name, value = command.split()
+        if name != "ax":
+            return None
+        machine.regs["EAX"] = (machine.regs["EAX"] & 0xFFFF0000) | int(value, 16)
+        return True, ["DEBUG: Set Register success."]
+    machine.hooks["SR"] = low_half
+    got = s.set_register(" AX", 0x1234)
     assert got["readback"] == "0x1234" and got["verified"] is True, got
     assert got["register"] == "ax", got
-    ip = ds.Session.set_register(fake, "ip", 0x0100)   # type: ignore[arg-type]
+    assert machine.regs["EAX"] == 0xABCD1234
+    ip = s.set_register("ip", 0x0100)
     assert ip["readback"] == "0x0100" and ip["verified"] is True, ip
-    assert ds.Session.set_register(fake, "ax", 0x5678)["verified"] is False   # type: ignore[arg-type]
-    wide = ds.Session.set_register(fake, "eax", 0xABCD1234)   # type: ignore[arg-type]
-    assert wide["readback"] == "0xabcd1234" and wide["verified"] is True, wide
 
 
 def test_every_settable_name_has_the_pane_register_and_width_it_is_read_back_at() -> None:
@@ -1113,10 +877,8 @@ def _loader(tmp_path: Path, reply: Callable[[str], str] | None = None) -> Any:
         (tmp_path / ds.SYM_SAVE_NAME).write_bytes(GOOD_LIST)
         return f"DEBUG: {ds.SYM_SAVE_ECHO} ({ds.SYM_SAVE_NAME}{ds.SYM_OK}\n"
 
-    pane = "CS=0000  EIP=00000100  Real"
     return SimpleNamespace(launch=SimpleNamespace(cwd=tmp_path),
                            command=reply or default,
-                           _survey=lambda: (pane, dcons.parse_registers(pane)),
                            alive=lambda: True, vars_held=0,
                            _acked=ds.Session._acked)
 
@@ -1184,43 +946,6 @@ def test_the_ceiling_is_judged_before_the_file_is_written(tmp_path: Path) -> Non
         tmp_path.chmod(0o755)
 
 
-def test_a_running_machine_is_refused_before_a_byte_is_written(tmp_path: Path) -> None:
-    """`LV` GOES THROUGH THE CONSOLE, and a running machine's console takes no commands."""
-    sent: list[str] = []
-
-    def never(text: str) -> str:
-        sent.append(text)
-        return ""
-
-    fake = _loader(tmp_path, never)
-    fake._survey = _running
-    with pytest.raises(ds.Invalid, match=GUARD_MARK):
-        ds.Session.load_symbols(fake, GOOD_LIST)
-    assert sent == [], f"it sent {sent} into a console that takes none"
-
-    ro = tmp_path / "ro"
-    ro.mkdir()
-    ro.chmod(0o555)
-    try:
-        try:
-            (ro / "probe").write_bytes(b"")
-        except OSError:
-            pass
-        else:
-            (ro / "probe").unlink()
-            pytest.skip("this filesystem/user ignores 0o555, so the case cannot bite")
-        readonly = _loader(ro, never)
-        readonly._survey = _running
-        with pytest.raises(ds.Invalid) as caught:
-            ds.Session.load_symbols(readonly, GOOD_LIST)
-        assert "could not write" not in str(caught.value), (
-            "it tried to write the symbol file BEFORE asking whether the machine "
-            "could take the command at all")
-        assert GUARD_MARK in str(caught.value)
-    finally:
-        ro.chmod(0o755)
-
-
 def test_a_file_already_there_is_named_before_the_machine_is_read(
         tmp_path: Path) -> None:
     """THE OTHER DIRECTION OF THE SAME ORDER, and it was not gated at all."""
@@ -1229,55 +954,6 @@ def test_a_file_already_there_is_named_before_the_machine_is_read(
     fake._survey = _running
     with pytest.raises(ds.Invalid, match="already exists"):
         ds.Session.load_symbols(fake, GOOD_LIST)
-
-
-def test_a_gone_emulator_is_not_told_to_arm_a_breakpoint(tmp_path: Path) -> None:
-    """`NotStopped` HAS MORE THAN ONE CAUSE, and the refusal may not pick one."""
-    fake = _loader(tmp_path)
-    fake._survey = _running
-    fake.alive = lambda: False
-    with pytest.raises(ds.Invalid) as caught:
-        ds.Session.load_symbols(fake, GOOD_LIST)
-    said = str(caught.value)
-    assert "GONE" in said, said
-    assert "breakpoint" not in said, (
-        "it prescribed a breakpoint to a caller with no emulator to arm one in")
-    assert "No file was written" in said
-
-
-def test_the_console_guard_catches_only_the_cause_it_names(tmp_path: Path) -> None:
-    """THE EXCEPTION IDENTITY"""
-    sent: list[str] = []
-
-    def other() -> tuple[str, dict[str, str]]:
-        raise ds.Invalid("unexpected_answer",
-            "bytes were dropped, so this is not a reading of anything")
-
-    def never(text: str) -> str:
-        sent.append(text)
-        return ""
-
-    fake = _loader(tmp_path, never)
-    fake._survey = other
-    with pytest.raises(ds.Invalid) as caught:
-        ds.Session.load_symbols(fake, GOOD_LIST)
-    said = str(caught.value)
-    assert "bytes were dropped" in said, said
-    assert GUARD_MARK not in said, (
-        "a refusal about the terminal was reported as a refusal about the console")
-    assert sent == [], "it went on to send `LV` after a refusal it did not understand"
-
-
-def test_the_guard_mark_names_no_other_refusal(tmp_path: Path) -> None:
-    """A PROBE THAT MATCHES A SIBLING BRANCH IS NOT A PROBE, and this one nearly was."""
-    with pytest.raises(ds.Invalid) as acked:
-        ds.Session._acked("nothing like an ok", ds.SYM_LOAD_ECHO, ds.SYM_LOAD_NAME)
-    assert GUARD_MARK not in str(acked.value)
-
-    (tmp_path / ds.SYM_LOAD_NAME).write_bytes(b"")
-    with pytest.raises(ds.Invalid) as exists:
-        ds.Session.load_symbols(_loader(tmp_path), GOOD_LIST)
-    assert GUARD_MARK not in str(exists.value)
 
 
 def test_the_acknowledgement_refusal_keeps_the_tail_and_not_the_head() -> None:
@@ -1388,12 +1064,14 @@ def _bp_fake(tmp_path: Path, *, mode: str = "Pr32",
              held: list[dict[str, str]] | None = None) -> SimpleNamespace:
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
-    return SimpleNamespace(
+    fake = SimpleNamespace(
         launch=dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60),
         where=lambda: {"cs": "00A7", "eip": "0", "mode": mode},
         command=lambda _t, **_k: "",
         breakpoints=lambda: list(held or []),
         alive=lambda: True, altered=False)
+    fake.delete_rows = lambda picks: ds.Session.delete_rows(fake, picks)  # type: ignore[arg-type]
+    return fake
 
 
 def test_arm_code_breakpoint_reads_the_list_back_and_refuses_a_wrong_mode(
@@ -1520,53 +1198,23 @@ def test_arm_and_clear_recognise_a_breakpoint_by_value_not_by_printed_width(
     assert gone["removed"] is True and gone["entry"] == "BP 00A7:100"
 
 
-def test_read_bytes_returns_the_exact_n_bytes_at_the_address() -> None:
-    """A watch needs the bytes themselves, not the screen."""
-    rows = [
-        "0749:00000000 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F",
-        "0749:00000010 10 11 12 13 14 15 16 17 18 19 1A 1B 1C 1D 1E 1F",
-    ]
-    fake = SimpleNamespace(read_memory=lambda _s, _o, mode=None: list(rows))
-    assert ds.Session.read_bytes(fake, 0x749, 0, 4) == bytes([0, 1, 2, 3])  # type: ignore[arg-type]
-    assert ds.Session.read_bytes(fake, 0x749, 0, 1) == bytes([0])  # type: ignore[arg-type]
-    assert ds.Session.read_bytes(fake, 0x749, 0x0E, 4) == bytes([0x0E, 0x0F, 0x10, 0x11])  # type: ignore[arg-type]
+def test_read_bytes_returns_the_exact_n_bytes_at_the_address(tmp_path: Path) -> None:
+    """A watch needs the bytes themselves, from the dump of exactly that span."""
+    machine = Machine(memory={0x7490 + i: i for i in range(32)})
+    s = session_over(machine, tmp_path)
+    assert s.read_bytes(0x749, 0, 4) == bytes([0, 1, 2, 3])
+    assert s.read_bytes(0x749, 0x0E, 4) == bytes([0x0E, 0x0F, 0x10, 0x11])
+    assert machine.sent[-1] == "EXEC MEMDUMPBIN 0749:000E 4 MCPDUMP.BIN", machine.sent
     with pytest.raises(ds.Invalid, match="region"):
-        ds.Session.read_bytes(fake, 0x749, 0, 200)  # type: ignore[arg-type]
+        s.read_bytes(0x749, 0, 200)
     with pytest.raises(ds.Invalid, match="positive length"):
-        ds.Session.read_bytes(fake, 0x749, 0, 0)  # type: ignore[arg-type]
-
-
-def test_a_survey_that_saw_no_pane_names_a_dead_reader_before_blaming_the_machine() -> None:
-    """The refusal read "emulator running" off `alive()` alone"""
-    import threading
-    from types import SimpleNamespace
-
-    s = ds.Session.__new__(ds.Session)
-    s.command = lambda text, **k: ""  # type: ignore[method-assign]
-    s.proc = SimpleNamespace(poll=lambda: None)  # type: ignore[assignment]
-    dead = threading.Thread(target=lambda: None)
-    dead.start()
-    dead.join()
-    s._drainer = dead
-    s.drain_ended = "select failed: EBADF"
-    with pytest.raises(ds.NotStopped, match="reader has DIED.*EBADF"):
-        s._survey()
-    hold = threading.Event()
-    live = threading.Thread(target=hold.wait, daemon=True)
-    live.start()
-    s._drainer = live
-    s.drain_ended = ""
-    try:
-        with pytest.raises(ds.NotStopped, match="emulator running"):
-            s._survey()
-    finally:
-        hold.set()
+        s.read_bytes(0x749, 0, 0)
+    assert not list(tmp_path.glob("*.BIN")), "a read left its dump in the working directory"
 
 
 def test_close_records_which_ending_it_got() -> None:
     """Three endings, told apart on the object the server reads after the close"""
     import subprocess
-    import threading
     from types import SimpleNamespace
 
     def bare(poll_answers: list[int | None], wait_raises: int) -> ds.Session:
@@ -1590,8 +1238,7 @@ def test_close_records_which_ending_it_got() -> None:
         s.proc = SimpleNamespace(poll=poll, wait=wait, pid=1, returncode=0)  # type: ignore[assignment]
         s._signal_group = lambda sig: None  # type: ignore[method-assign]
         s._drainer = None
-        s._stop = threading.Event()
-        s._master = -1
+        s._out = None
         s.drain_ended = ""
         s.reap_failed = ""
         s.ended_how = "none"
@@ -1621,7 +1268,7 @@ def test_close_records_which_ending_it_got() -> None:
         mp.setattr(cancel, "check", check)
         mp.setattr(os, "close", closed.append)
         s = bare([None, 0], 0)
-        s._master = 99
+        s._out = 99
         with pytest.raises(asyncio.CancelledError):
             s.close()
     assert raised == [True] and s.ended_how == "quit" and closed == [99], (s.ended_how, closed)
@@ -1629,12 +1276,12 @@ def test_close_records_which_ending_it_got() -> None:
 
 def _writer(memory: dict[str, bytes], mode: str = "Real",
             asked: list[tuple[Any, ...]] | None = None) -> tuple[ds.Session, list[str]]:
-    """A session stopped in `mode` whose console records what `write_memory` sends."""
+    """A session stopped in `mode` that records what `write_memory` sends."""
     sent: list[str] = []
     s = ds.Session.__new__(ds.Session)
     s.altered = False
 
-    def command(text: str, settle: float = 0.6, timeout: float = 6.0) -> str:
+    def command(text: str, seconds: float | None = None) -> str:
         sent.append(text)
         return ""
 
@@ -1684,18 +1331,6 @@ def test_write_memory_refuses_the_rom_range_and_a_dead_pty_is_named() -> None:
     assert ds.Session.write_memory(s, 0x0040, 0xFF80, bytes(128))["verified"] is True
     with pytest.raises(ds.Invalid, match="a segment is 0x0000 to 0xFFFF"):
         ds.Session.write_memory(s, 0x10000, 0x0000, b"\x99")
-    dead = ds.Session.__new__(ds.Session)
-    dead.proc = SimpleNamespace(poll=lambda: 1)  # type: ignore[assignment]
-    dead._master = -1
-    dead._release = lambda data: None  # type: ignore[method-assign]
-    with pytest.raises(ds.Invalid, match="GONE"):
-        ds.Session._write(dead, b"x\r")
-    alive = ds.Session.__new__(ds.Session)
-    alive.proc = SimpleNamespace(poll=lambda: None)  # type: ignore[assignment]
-    alive._master = -1
-    alive._release = lambda data: None  # type: ignore[method-assign]
-    with pytest.raises(OSError):
-        ds.Session._write(alive, b"x\r")
 
 
 def test_the_stop_surveys_e9_reader_refuses_a_log_that_is_not_there_yet(tmp_path: Path) -> None:
@@ -1726,57 +1361,28 @@ def test_a_byte_that_spells_a_flag_name_is_sent_as_a_number() -> None:
     assert out["verified"] is True
 
 
-def test_bytes_of_rows_reads_the_rows_by_their_own_offsets() -> None:
-    """`read_memory(length)` hands back `hex` from the data view"""
-    rows = dcons.parse_data_view(REAL_DATA_VIEW)
-    assert dcons.bytes_of_rows(rows, 0xE000, 4) == "00000000"
-    assert dcons.bytes_of_rows(rows, 0xE00E, 4) == "49424d20", "across the row boundary"
-    with pytest.raises(ds.Invalid, match="holds"):
-        dcons.bytes_of_rows(rows, 0xE000, 1000)
-    with pytest.raises(ds.Invalid, match="holds 0 bytes"):
-        dcons.bytes_of_rows(rows, 0x1000, 1)
-
-
 def test_step_refuses_a_running_machine_in_its_own_words_not_a_register_reads(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """`step`'s first act is to read the position."""
-    session = cast(Any, ds.Session.__new__(ds.Session))
-    monkeypatch.setattr(type(session), "where", lambda self: _running())
-    monkeypatch.setattr(type(session), "alive", lambda self: True)
+        tmp_path: Path) -> None:
+    """`step`'s first act is to read the position, and a running machine refuses it as a step."""
+    machine = Machine(stopped=False)
+    session = session_over(machine, tmp_path)
     with pytest.raises(ds.NotStopped) as caught:
         session.step(mode="over", count=1)
     said = str(caught.value)
     assert "register read" not in said, f"step is still using `registers`' words: {said!r}"
     assert "step" in said.lower(), said
+    assert not {"EXEC STEPIN", "EXEC RUN"} & set(machine.sent), machine.sent
 
 
 def test_step_on_a_dead_emulator_escapes_as_itself_not_as_a_running_machine(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """THE OTHER HALF OF `step`'s OWN REFUSAL."""
-    gone = ds.NotStopped("no register pane came back from `BPLIST` (emulator GONE)")
-    session = cast(Any, ds.Session.__new__(ds.Session))
-    monkeypatch.setattr(type(session), "where", lambda self: (_ for _ in ()).throw(gone))
-    monkeypatch.setattr(type(session), "alive", lambda self: False)
-    with pytest.raises(ds.NotStopped) as caught:
+        tmp_path: Path) -> None:
+    """THE OTHER HALF OF `step`'s OWN REFUSAL: a channel to a dead emulator is not a run."""
+    machine = Machine(stopped=False)
+    session = session_over(machine, tmp_path)
+    machine.alive = False
+    with pytest.raises(ds.Invalid) as caught:
         session.step(mode="over", count=1)
-    assert caught.value is gone, f"the dead-emulator refusal was rewritten: {caught.value}"
-
-
-def test_step_with_a_dead_reader_escapes_as_itself_not_as_a_running_machine(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """A reader thread that ended answers nothing while the process is up"""
-    dead = ds.NotStopped("no register pane came back from `BPLIST`, and the terminal reader "
-                         "has DIED (EOF): nothing can come back from this session")
-    session = cast(Any, ds.Session.__new__(ds.Session))
-    session._drainer = SimpleNamespace(is_alive=lambda: False)
-    monkeypatch.setattr(type(session), "where", lambda self: (_ for _ in ()).throw(dead))
-    monkeypatch.setattr(type(session), "alive", lambda self: True)
-    with pytest.raises(ds.NotStopped) as caught:
-        session.step(mode="over", count=1)
-    assert caught.value is dead, f"the dead-reader refusal was rewritten: {caught.value}"
+    assert caught.value.code == "session_broken", caught.value
 
 
 def test_a_headless_caller_flag_reaches_argv(conf: Path) -> None:
@@ -1817,31 +1423,22 @@ def test_flags_may_still_retune_the_defaults_no_argument_owns(conf: Path) -> Non
 
 
 def test_the_paging_mark_is_the_stop_surveys_and_a_later_survey_does_not_move_it(
-        conf: Path) -> None:
-    """The mark a stop is recorded with comes from the SAME repaint as its position"""
-    session = object.__new__(ds.Session)
-    head = "ooooRegister Overviewoooooooooooooooooooooooooooooooooooooooooo"
-    top = "EAX=00000000  ESI=00000000  DS=00AF   ES=00AF   FS=008F   GS=00BF   SS=00AF Pr32\r\n"
-    paged = (head + top +
-             "EBX=00000000  EDI=00000000  CS=00A7   EIP=0015A694  C0 Z0 S0 O0 A0 P1 D0 I1 T0\r\n"
-             "ECX=000000A7  EBP=002B8690PAGEPSE IOPL3  CPL3\r\n"
-             f"ooooOutputoooooooooooooooooooooooooooooooo{dcons.BPLIST_HEADER}\r\n"
-             "-------------------------------------------------------------------------\r\n")
-    cut = head + top
-    screens = iter([paged, cut])
-    def command(_cmd: str, *_: Any, **__: Any) -> str:
-        return next(screens)
-
-    session.command = command  # type: ignore[method-assign,assignment]
-    session._mark_stopped = lambda: None  # type: ignore[method-assign]
+        tmp_path: Path) -> None:
+    """The paging bit a stop is recorded with is read by the same survey as its position."""
+    machine = protected(Machine())
+    session = session_over(machine, tmp_path)
     session.stop_survey()
     assert session.paging is True
-    with contextlib.suppress(ds.Invalid):
-        session._survey()
-    assert session.paging is True, "a later survey moved the stop's paging mark"
+    machine.regs["CR0"] = 0x11
+    session.registers()
+    session.stop_survey()
+    assert session.paging is True, "a later reading at the same stop moved its paging bit"
+    session.forget_stop()
+    session.mark_stopped()
+    session.stop_survey()
+    assert session.paging is False, "the next stop kept the previous one's paging bit"
 
 
-@POSIX_SESSION
 def test_a_stranger_that_takes_the_port_after_the_check_never_receives_the_input(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A port taken by another process after the check must never receive the input."""
@@ -1880,10 +1477,8 @@ def test_a_stranger_that_takes_the_port_after_the_check_never_receives_the_input
     finally:
         for s in stranger + dialled:
             s.close()
-        if ses is not None:
-            ses._stop.set()
-            if ses._input is not None:
-                ses._input.close()
+        if ses is not None and ses._input is not None:
+            ses._input.close()
 
 
 def test_an_emulator_that_exits_before_it_dials_is_said_at_once() -> None:
@@ -1906,7 +1501,6 @@ def test_port_0_is_the_kernels_pick_held_from_the_moment_it_is_picked(conf: Path
     dlaunch.validate(launch(conf, input_port=0))
 
 
-@POSIX_SESSION
 def test_a_spawn_that_fails_lets_the_port_go(tmp_path: Path,
                                             monkeypatch: pytest.MonkeyPatch) -> None:
     conf = tmp_path / "g.conf"
@@ -1924,80 +1518,6 @@ def test_a_spawn_that_fails_lets_the_port_go(tmp_path: Path,
 
 RECORDED = json.loads((Path(__file__).parent / "fixtures" / "console_replies" / "recorded.json")
                       .read_text(encoding="utf-8"))
-
-
-def _replaying(chunks: list[tuple[float, str]]) -> ds.Session:
-    """A session whose terminal hands back `chunks`, each once its offset has passed."""
-    ses = ds.Session.__new__(ds.Session)
-    ses._eof, ses.dropped = threading.Event(), 0
-    ses._pending, ses._raw_tail, ses._screen, ses._raw_reads = "", "", "", 0
-    left, began = list(chunks), [0.0]
-
-    def take() -> bytes:
-        now = time.monotonic()
-        if not began[0]:
-            began[0] = now
-        due = [c for c in left if now - began[0] >= c[0]]
-        for c in due:
-            left.remove(c)
-        return "".join(raw for _, raw in due).encode("latin-1")
-    ses._take = take  # type: ignore[method-assign]
-    return ses
-
-
-def _recorded(name: str) -> list[tuple[float, str]]:
-    """A recorded reply, its first piece moved to arrive at once"""
-    chunks = [(c["after_s"], c["raw"]) for c in RECORDED[name]["chunks"]]
-    return [(at - chunks[0][0], raw) for at, raw in chunks]
-
-
-def _collected(chunks: list[tuple[float, str]], settle: float = ds.SETTLE_S) -> tuple[str, float]:
-    ses = _replaying(chunks)
-    began = time.monotonic()
-    got = ses._collect(settle, ds.REPLY_TIMEOUT_S, early=True)
-    return got, time.monotonic() - began
-
-
-def test_a_reply_ending_in_the_empty_input_line_is_whole_after_the_grace_not_the_settle(
-        ) -> None:
-    chunks = _recorded("prompt")
-    got, took = _collected(chunks)
-    assert got == dcons.ANSI.sub("", "".join(raw for _, raw in chunks))
-    assert ds.REPLY_GRACE_S <= took < ds.REPLY_GRACE_S + 0.25, took
-
-
-def test_a_piece_inside_the_grace_after_the_ending_is_still_this_replys() -> None:
-    [(_, raw)] = _recorded("prompt")
-    inside, _ = _collected([(0.0, raw), (ds.REPLY_GRACE_S / 2 + ds.COLLECT_SLICE_S, "tail")])
-    assert inside.endswith("tail"), "the grace closed before a piece that arrived inside it"
-    after, _ = _collected([(0.0, raw), (ds.REPLY_GRACE_S + 0.3, "tail")])
-    assert not after.endswith("tail"), "the reply did not end at its terminator plus the grace"
-
-
-def test_a_paged_listing_is_not_ended_by_its_input_line_which_still_holds_the_command(
-        ) -> None:
-    """A listing that pages draws the input line still holding the command, then the pager's line"""
-    [(_, raw)] = _recorded("paged")
-    cut = raw.index("Paged content")
-    assert "I-> " in raw[:cut] and dcons.REPLY_END.search(raw[:cut]) is None
-    got, _ = _collected([(0.0, raw[:cut]), (ds.REPLY_GRACE_S + 0.15, raw[cut:])])
-    assert "Paged content: Hit ENTER to continue" in got
-
-
-def test_a_reply_with_no_debugger_ending_keeps_the_settle() -> None:
-    chunks = _recorded("running")
-    assert dcons.REPLY_END.search("".join(raw for _, raw in chunks)) is None
-    got, took = _collected(chunks, settle=0.3)
-    assert got and took >= chunks[-1][0] + 0.3, took
-
-
-def test_only_a_commands_reply_ends_early() -> None:
-    """`resume` and `step` collect a repaint with a settle no recording shows ending early."""
-    [(_, raw)] = _recorded("prompt")
-    ses = _replaying([(0.0, raw)])
-    began = time.monotonic()
-    ses._collect(0.4, ds.REPLY_TIMEOUT_S)
-    assert time.monotonic() - began >= 0.4
 
 
 def test_the_conf_is_hashed_again_only_when_it_moves(tmp_path: Path) -> None:
@@ -2025,7 +1545,6 @@ def test_the_conf_is_hashed_again_only_when_it_moves(tmp_path: Path) -> None:
         dl.digest = dl_digest
 
 
-@POSIX_SESSION
 def test_the_session_spawns_a_named_guardian_with_its_wall_clock_bound(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     from scry_core import guardian

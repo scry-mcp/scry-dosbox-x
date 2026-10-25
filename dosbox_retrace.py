@@ -13,6 +13,7 @@ from scry_core import progress as mprogress
 from scry_core import reply_contract as contract
 
 import dosbox_arming as arming
+import dosbox_debugger as dbg
 import dosbox_machine as machine
 import dosbox_running as running
 import dosbox_screen as screen
@@ -21,7 +22,7 @@ import dosbox_state as st
 import dosbox_vga as vga
 from dosbox_state import STATE
 
-CYCLES_WHY = ("the pane's `cc=` counts cycles only on the normal core, and which core runs is not "
+CYCLES_WHY = ("the cycle count counts only on the normal core, and which core runs is not "
               "something this server can read, so no count is given")
 PENDING_NOTE = "a retrace stop is still armed: the next release stops at the next retrace"
 UNCUT_NOTE = ("a code breakpoint is declared, and on a dynamic core one can fail to cut a frame: "
@@ -29,23 +30,26 @@ UNCUT_NOTE = ("a code breakpoint is declared, and on a dynamic core one can fail
               "honour it")
 UNTOLD_NOTE = ("a change-watch or an interrupt breakpoint is declared, and its stop cannot be told "
                "from a retrace, so it is taken for one")
-#: The pane prints `pfi=` to this many decimals; compare at that resolution, not at float noise.
-PANE_CLOCK_DECIMALS = 9
+#: `RUNSTATE` prints its clock to this many decimals; compare at that resolution, not at float
+#: noise.
+CLOCK_DECIMALS = 9
 
 
 def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
             progress: ds.Progress) -> dict[str, Any]:
-    """`frames` retraces, or as many as cover `milliseconds` of the pane's clock, within `seconds`.
+    """`frames` retraces, or as many as cover `milliseconds` of emulated time, within `seconds`.
 
-    The bound starts once the opening survey has read the clock, so a short one still reaches the
+    The bound starts once the opening read has taken the clock, so a short one still reaches the
     first frame.
     """
+    session.require_run_state("run_for")
     session.where_and_registers()
-    before = session.pane_clock_ms
+    dbg.read_run_state(session)
+    before = session.clock_ms
     if milliseconds and before is None:
         raise ds.Invalid("unexpected_answer",
-            "the pane painted no `pfi=` on the survey before the first frame, so there is no "
-            "clock to count milliseconds from; nothing was run")
+            "`RUNSTATE` gave no clock before the first frame, so there is no clock to count "
+            "milliseconds from; nothing was run")
     timed = milliseconds > 0
     began = time.monotonic()
     deadline = began + seconds
@@ -84,16 +88,17 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
             clock.report(polls, frames, "run_for {asked}: frame {done} of {frames}, "
                          "{elapsed:.0f}s of {bound:g}s", asked=asked, done=polls, frames=frames,
                          bound=seconds)
-        if not (timed or (cuttable and polls < frames)):
-            continue
-        try:
-            where, registers, held = session.stop_survey()
-        except ds.Invalid:
-            continue                          # a cut repaint
-        if cuttable and _cut(session, (where, registers, held)) is not None:
-            verdict = contract.OTHER_STOP
-            break
-        now = session.pane_clock_ms
+        # The clock comes with the stop's `RUNSTATE`; only a frame something declared can cut
+        # is surveyed, to tell its stop from a retrace.
+        if cuttable and (timed or polls < frames):
+            try:
+                where, registers, held = session.stop_survey()
+            except ds.Invalid:
+                continue                      # a reading the stop could not give
+            if _cut(session, (where, registers, held)) is not None:
+                verdict = contract.OTHER_STOP
+                break
+        now = session.clock_ms
         if not timed or now is None or last is None or before is None:
             continue
         if now <= last:
@@ -103,7 +108,7 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
         clock.report(now - before, milliseconds, "run_for {asked}: {done:.0f} ms of {asked} "
                      "emulated, {elapsed:.0f}s of {bound:g}s", asked=asked, done=now - before,
                      bound=seconds)
-        if round(now - before, PANE_CLOCK_DECIMALS) >= milliseconds:
+        if round(now - before, CLOCK_DECIMALS) >= milliseconds:
             break
     fields: dict[str, Any] = {"verdict": verdict, "polls": polls}
     try:
@@ -116,7 +121,7 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
             and stopped_at is not None:
         STATE.retrace_pending = True
         verdict = contract.OTHER_STOP
-    after = session.pane_clock_ms if stopped_at else (last if timed else None)
+    after = session.clock_ms if stopped_at else (last if timed else None)
     extra: dict[str, Any] = {**_clock(before, after), **_counts(),
                              **({} if stopped_at else running.position(None, None))}
     pending = STATE.retrace_pending
@@ -129,10 +134,10 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
     if notes:
         extra["note"] = "; ".join(notes)
     if stalled_at is not None:
-        stuck = (f"retrace stop {polls} left the pane's clock at {stalled_at} ms, where the stop "
+        stuck = (f"retrace stop {polls} left the emulated clock at {stalled_at} ms, where the stop "
                  f"before it had put it: the machine stopped advancing")
     elif polls and before is not None and after is not None and after <= before:
-        stuck = (f"the pane's clock read {before} ms before and {after} ms after {polls} retrace "
+        stuck = (f"the emulated clock read {before} ms before and {after} ms after {polls} retrace "
                  f"stop(s): nothing was emulated")
     else:
         stuck = ""
@@ -159,7 +164,7 @@ def _cut(session: ds.Session,
          survey: tuple[dict[str, str], dict[str, str], list[dict[str, str]]] | None = None,
          ) -> dict[str, Any] | None:
     """The attribution when a declared code breakpoint made this stop, leaving the `VRT` armed;
-    None for a retrace or a repaint too cut to place."""
+    None for a retrace or a stop that could not be read."""
     if survey is None:
         try:
             survey = session.stop_survey()
@@ -174,13 +179,13 @@ def _cut(session: ds.Session,
     return attribution
 
 
-NO_CLOCK_WHY = "the pane painted no `pfi=` on that survey"
+NO_CLOCK_WHY = "`RUNSTATE` gave no clock at that stop"
 NO_FRAME_WHY = ("a DOS machine keeps no frame counter a server could read: `polls` counts the "
                 "retraces")
 
 
 def _clock(before: float | None, after: float | None) -> dict[str, Any]:
-    """The pane's emulated milliseconds as seconds."""
+    """`RUNSTATE`'s emulated milliseconds as seconds."""
     return {"emulated_before_s": contract.or_unavailable(
                 None if before is None else before / 1000, NO_CLOCK_WHY),
             "emulated_after_s": contract.or_unavailable(
@@ -201,6 +206,7 @@ def screen_wait(session: ds.Session, text: str, seconds: float,
     at once, the machine not moved. A non-text frame is no match. A declared code breakpoint that
     cuts a frame ends the wait `wait_stopped`; the bound, a `TIMEOUT` (`_expired`).
     """
+    session.require_run_state("screen_wait")
     watch = TextWatch(session)
     rows = watch.rows()
     examined, not_text = 1, int(rows is None)
@@ -234,7 +240,7 @@ def screen_wait(session: ds.Session, text: str, seconds: float,
         try:
             rows = watch.rows()
         except ds.Invalid as e:
-            # Any other refusal is about the console itself, which is not asked more.
+            # Any other refusal is about the debugger itself, which is not asked more.
             if e.code != "no_channel":
                 raise
             raise ds.Invalid(e.code, f"{e}; the wait had stopped the machine at retrace {polls}",
@@ -267,7 +273,7 @@ ENDED_KEYS = ("stop_seq", "cause", "enrichment", "stopped_on_its_own", "applied_
 
 
 def _heard(session: ds.Session) -> bool:
-    """Whether the guest is at the debugger; a terminal that cannot answer is not heard."""
+    """Whether the guest is at the debugger; a channel that cannot answer is not heard."""
     with cancel.shielded():
         try:
             return session.at_debugger()

@@ -85,7 +85,7 @@ mcp = envelope.Envelope(
     refusal=refusal,
 )
 
-# One machine: the lock keeps two questions from interleaving on a terminal.
+# One machine: the lock keeps two questions from interleaving on its debugger.
 LOCK = boundary.ServerLock()
 
 
@@ -117,8 +117,8 @@ def _end_cancelled(name: str, on_cancel: cancel.OnCancel
             elif on_cancel == "stop" and ses is not None and ses.alive():
                 broke_in = False
                 if STATE.log_open:
-                    # Closed before the stop is recorded: the close is itself a release and
-                    # return to the prompt, which would read as a stop nobody made.
+                    # Closed before the stop is recorded: the close is itself a release and a
+                    # stop, which would read as a stop nobody made.
                     if not ses.at_debugger():
                         ses.break_in()
                         broke_in = True
@@ -174,13 +174,13 @@ def _keep_cancelled(record: cancel.Cancelled) -> None:
 
 
 def _machine() -> recording.Machine:
-    """Whether the guest runs and how many times the session has come back to the prompt."""
+    """Whether the guest runs and how many times the session has come back to the debugger."""
     ses = STATE.session
     if ses is None:
         return recording.Machine(running=False, seq=None)
     if not ses.alive():
         return recording.UNREAD
-    # The flag, never a peek: a peek would consume the prompt a sequence step waits on.
+    # The flag, never a question to the debugger: recording a call must not cost a round trip.
     return recording.Machine(running=not ses.parked, seq=getattr(ses, "stop_count", None))
 
 

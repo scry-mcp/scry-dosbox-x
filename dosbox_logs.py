@@ -37,8 +37,7 @@ def count_e9(text: str) -> int:
 
 def check_channel(channel: str) -> None:
     vocab.one_of("channel", channel, LOG_CHANNELS, ". There is no `process` channel: the "
-                 "emulator's stdout is the debugger's own terminal (`debug` reads it) and not a "
-                 "log")
+                 "emulator's own output is not a log (`close(detail=True)` gives its tail)")
 
 
 def channel_of(line: str) -> str:

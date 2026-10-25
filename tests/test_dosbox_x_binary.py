@@ -47,9 +47,21 @@ def test_build_check_on_a_build_with_no_version_still_answers(tmp_path: Path) ->
 
 
 
-def test_both_probes_of_a_build_spawn_it_behind_as_a_session_does(
+def test_build_check_judges_the_build_by_its_bytes_and_never_waits_on_helpdebug(
+        tmp_path: Path) -> None:
+    """Windows' GUI build prints `-helpdebug` to no stream and does not exit: a build whose
+    option never returns is answered off its bytes, at once."""
+    import time
+    mine = build(tmp_path, helpdebug="import time; time.sleep(60)")
+    began = time.monotonic()
+    got = cast(dict[str, Any], server.build_check(binary=str(mine)))
+    assert got["status"] == "ok" and got["debugger"] is True, got
+    assert time.monotonic() - began < 10, "it waited on `-helpdebug`"
+
+
+def test_the_version_probe_of_a_build_spawns_it_behind_as_a_session_does(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Both probes run behind, as a session does: an unknown option starts the emulator."""
+    """The probe runs behind, as a session does: an unknown option starts the emulator."""
     monkeypatch.delenv(dlaunch.BACKGROUND_VAR, raising=False)
     seen = tmp_path / "seen"
     def records(tag: str) -> str:
@@ -59,7 +71,7 @@ def test_both_probes_of_a_build_spawn_it_behind_as_a_session_does(
                  helpdebug=f"{records('h')}; print('-break-start')")
     got = cast(dict[str, Any], server.build_check(binary=str(mine)))
     assert got["status"] == "ok", got
-    assert sorted(seen.read_text().split()) == ["h=1", "v=1"], seen.read_text()
+    assert seen.read_text().split() == ["v=1"], "`-helpdebug` was run: " + seen.read_text()
     seen.unlink()
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")

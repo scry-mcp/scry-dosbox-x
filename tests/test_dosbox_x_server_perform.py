@@ -35,7 +35,7 @@ from scry_core import vocabulary as vocab
 from scry_core.host_program import absolute as _abs
 
 import dosbox_checks as checks
-import dosbox_console as dcons
+import dosbox_debugger as dbg
 import dosbox_declarations as dec
 import dosbox_docs
 import dosbox_inputs as inputs
@@ -62,9 +62,7 @@ def test_a_build_that_lists_the_option_but_carries_no_debugger_is_refused(
         tmp_path: Path) -> None:
     binary = tmp_path / "dosbox-x"
     binary.write_bytes(b"\x00a build with the option and no debugger\x00")
-    with (mock.patch("scry_core.binaries.shutil.which", lambda _n: str(binary)),
-          mock.patch("dosbox_x_server.subprocess.run",
-                     lambda *_a, **_k: SimpleNamespace(stdout="-break-start\n", stderr=""))):
+    with mock.patch("scry_core.binaries.shutil.which", lambda _n: str(binary)):
         got = cast(dict[str, Any], server.build_check())
     assert got["status"] == "INVALID" and "carries no debugger" in str(got["message"]), got
 
@@ -1010,8 +1008,7 @@ def test_the_sequences_wait_for_a_stop_reports_its_progress(
     fake = _names(tmp_path)
     fake.halted = False
     fake.where_raises = True                    # running, and it stays running
-    monkeypatch.setattr(fake, "_read", lambda timeout: "", raising=False)
-    monkeypatch.setattr(ds, "PROGRESS_EVERY_S", 0.0)
+    monkeypatch.setattr(dbg, "PROGRESS_EVERY_S", 0.0)
     ticks: list[str] = []
     out = sequence.run_steps(fake, [{"op": "resume"}], 0.3, server._step_ops(),  # type: ignore[arg-type]
                              lambda p, t, m: ticks.append(m))
@@ -1019,25 +1016,15 @@ def test_the_sequences_wait_for_a_stop_reports_its_progress(
     assert ticks and ticks[0].startswith("waiting for the machine to stop: ")
 
 
-def test_the_sequences_wait_for_a_stop_listens_for_the_prompt_and_types_nothing(
+def test_the_sequences_wait_for_a_stop_asks_the_run_state_and_sends_nothing_else(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     fake = _names(tmp_path)
     fake.halted = False
-    fake.where_raises = True
-    monkeypatch.setattr(fake, "_read", lambda timeout: dcons.PROMPT, raising=False)
-    monkeypatch.setattr(fake, "_screen", "", raising=False)
     monkeypatch.setattr(fake, "alive", lambda: True)
-    marked: list[bool] = []
-    monkeypatch.setattr(fake, "_mark_stopped", lambda: marked.append(True), raising=False)
     assert sequence._wait_for_stop(fake, 1.0) == "stopped"  # type: ignore[arg-type]
-    assert marked == [True], "the stop heard on the terminal is marked before a reader consumes it"
-
-    def read_nothing(timeout: float) -> str:
-        time.sleep(timeout)
-        return ""
-
-    monkeypatch.setattr(fake, "_read", read_nothing, raising=False)
-    monkeypatch.setattr(ds, "PROGRESS_EVERY_S", 0.0)
+    assert fake.commands_sent == []
+    fake.where_raises = True
+    monkeypatch.setattr(dbg, "PROGRESS_EVERY_S", 0.0)
     ticks: list[str] = []
     assert sequence._wait_for_stop(fake, 0.6, lambda p, t, m: ticks.append(m)) == "running"  # type: ignore[arg-type]
     assert ticks and ticks[0].startswith("waiting for the machine to stop: "), ticks
@@ -1085,7 +1072,7 @@ def test_perform_carries_the_clients_context_to_its_wait(
     fake = _names(tmp_path)
     fake.halted = False
     fake.where_raises = True
-    monkeypatch.setattr(ds, "PROGRESS_EVERY_S", 0.0)
+    monkeypatch.setattr(dbg, "PROGRESS_EVERY_S", 0.0)
 
     async def main() -> None:
         await anyio.to_thread.run_sync(
@@ -1550,14 +1537,6 @@ def test_a_plans_wait_is_held_to_the_one_wait_bound_before_anything_is_spawned(
     assert out["message"].startswith(f"settle_seconds={vocab.WAIT_MAX_S + 1} is not a bound"), out
     assert spawned == [], "refused before anything was spawned"
 
-
-def test_debug_pages_a_listing_out_and_returns_the_rest_of_it() -> None:
-    fake = install()
-    fake._screen = "page one\nI-> HELP_\n^ Paged content: Hit ENTER to continue, Q to exit paging"
-    fake.after_pager = "page two\nI-> _"
-    got = cast(dict[str, Any], server.debug(command="HELP"))
-    assert fake.console_keys == ["end_pager"], fake.console_keys
-    assert got["screen_delta"].endswith("page two\nI-> _") and got["note"] == server.PAGED_NOTE
 
 
 def test_a_list_begun_on_a_running_guest_waits_for_its_stop_before_a_console_step(

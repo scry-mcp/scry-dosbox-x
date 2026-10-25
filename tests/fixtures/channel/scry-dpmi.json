@@ -1,0 +1,899 @@
+{
+ "provenance": {
+  "exe": "scry branch build 92d913050 (main-ai d321e1e92 + RUNSTATE + PRESENCE)",
+  "launch": "notty",
+  "headless": true,
+  "host": "darwin",
+  "scenario": "dpmi",
+  "conf": "dpmi.conf"
+ },
+ "exchanges": [
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": true,
+   "lines": [
+    "DEBUG: RUNSTATE stopped cycles=0 ms=0.970000000"
+   ]
+  },
+  {
+   "request": "EXEC BPINT 31 02",
+   "ok": true,
+   "lines": [
+    "DEBUG: Set interrupt breakpoint at INT 31 AH=02"
+   ]
+  },
+  {
+   "request": "EXEC RUN",
+   "ok": true,
+   "lines": [
+    "OK"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": true,
+   "lines": [
+    "DEBUG: RUNSTATE stopped cycles=21654 ms=14.243520000"
+   ]
+  },
+  {
+   "request": "EXEC EV CS EIP",
+   "ok": true,
+   "lines": [
+    "EV of 'CS EIP' is:",
+    "a7 11734"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": true,
+   "lines": [
+    "DEBUG: RUNSTATE stopped cycles=21654 ms=14.243520000"
+   ]
+  },
+  {
+   "request": "EXEC EV EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0",
+   "ok": true,
+   "lines": [
+    "EV of 'EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0' is:",
+    "90205 9cf24 a7 992c 54 1d048 9cfa0 9cf9c 11734 a7 af af 8f bf af 3206 80000011"
+   ]
+  },
+  {
+   "request": "EXEC EV EAX",
+   "ok": true,
+   "lines": [
+    "EV of 'EAX' is:",
+    "90205"
+   ]
+  },
+  {
+   "request": "EXEC CPU",
+   "ok": true,
+   "lines": [
+    "cr0:80000011 cr2:00000000 cr3:000DE000  cpl=3",
+    "eflags:00003206 [vm=0 iopl=3 nt=0]",
+    "GDT base=000D16FE limit=00000087",
+    "IDT base=000D1B86 limit=000007FF",
+    "TR selector=0060, base=000D377A limit=000000F1*1",
+    "LDT selector=0078, base=000D1786 limit=000003FF*1"
+   ]
+  },
+  {
+   "request": "EXEC BPLIST",
+   "ok": true,
+   "lines": [
+    "Breakpoint list:",
+    "-------------------------------------------------------------------------",
+    "00. BPINT 31 AH=02"
+   ]
+  },
+  {
+   "request": "EXEC SELINFO CS",
+   "ok": true,
+   "lines": [
+    "SelectorInfo CS:",
+    "CS: b:00400000 type:1B parbg",
+    "    l:0009FFFF dpl : 3 10010"
+   ]
+  },
+  {
+   "request": "EXEC SELINFO DS",
+   "ok": true,
+   "lines": [
+    "SelectorInfo DS:",
+    "DS: b:00400000 type:13 parbg",
+    "    l:0009FFFF dpl : 3 10010"
+   ]
+  },
+  {
+   "request": "EXEC SELINFO SS",
+   "ok": true,
+   "lines": [
+    "SelectorInfo SS:",
+    "SS: b:00400000 type:13 parbg",
+    "    l:0009FFFF dpl : 3 10010"
+   ]
+  },
+  {
+   "request": "EXEC SELINFO ES",
+   "ok": true,
+   "lines": [
+    "SelectorInfo ES:",
+    "ES: b:00400000 type:13 parbg",
+    "    l:0009FFFF dpl : 3 10010"
+   ]
+  },
+  {
+   "request": "EXEC SELINFO FS",
+   "ok": true,
+   "lines": [
+    "SelectorInfo FS:",
+    "FS: b:00008240 type:12 parbg",
+    "    l:0000FFFF dpl : 3 10010"
+   ]
+  },
+  {
+   "request": "EXEC SELINFO GS",
+   "ok": true,
+   "lines": [
+    "SelectorInfo GS:",
+    "GS: b:00000000 type:12 parbg",
+    "    l:0010FFFF dpl : 3 10011"
+   ]
+  },
+  {
+   "request": "EXEC MEMDUMPBIN 00A7:11734 10 MCPDUMP.BIN",
+   "ok": true,
+   "lines": [
+    "DEBUG: Memory dump binary success."
+   ]
+  },
+  {
+   "request": "EXEC MEMDUMPBIN 00A7:11734 0 MCPDUMP.BIN",
+   "ok": true,
+   "lines": [
+    "DEBUG: Memory dump binary success."
+   ]
+  },
+  {
+   "request": "EXEC INTVEC MCPIVT.TXT",
+   "ok": true,
+   "lines": [
+    "DEBUG: Interrupt vector table written to MCPIVT.TXT."
+   ]
+  },
+  {
+   "request": "EXEC D 00A7:11734",
+   "ok": true,
+   "lines": [
+    "DEBUG: Set data overview to 00A7:11734"
+   ]
+  },
+  {
+   "request": "EXEC NOSUCHCOMMAND",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC HELP",
+   "ok": true,
+   "lines": [
+    "Debugger commands (enter all values in hex or as register):",
+    "Commands------------------------------------------------",
+    "BP     [segment]:[offset] - Set breakpoint.",
+    "BPINT  [intNr] *          - Set interrupt breakpoint.",
+    "BPINT  [intNr] [ah] *     - Set interrupt breakpoint with ah.",
+    "BPINT  [intNr] [ah] [al]  - Set interrupt breakpoint with ah and al.",
+    "BPM    [segment]:[offset] - Set memory breakpoint (memory change).",
+    "BPPM   [selector]:[offset]- Set pmode-memory breakpoint (memory change).",
+    "BPLM   [linear address]   - Set linear memory breakpoint (memory change).",
+    "BPLIST                    - List breakpoints.",
+    "BPDEL  [bpNr] / *         - Delete breakpoint nr / all.",
+    "C / D  [segment]:[offset] - Set code / data view address.",
+    "DV [addr]                 - Set data view to linear (virtual) address",
+    "DP [addr]                 - Set data view to physical address",
+    "DOS MCBS                  - Show Memory Control Block chain.",
+    "DOS KERN                  - Show DOS kernel memory blocks.",
+    "DOS XMS                   - Show XMS memory handles.",
+    "DOS EMS                   - Show EMS memory handles.",
+    "DOS FNKEY                 - Show PC-98 FnKey mapping.",
+    "BIOS MEM                  - Show BIOS memory blocks.",
+    "CALLBACKS                 - Show callbacks of interrupts.",
+    "INT [nr] / INTT [nr]      - Execute / Trace into interrupt.",
+    "MEMREAD <seg>:<off> <len> - Read 1-256 conventional RAM bytes (external).",
+    "STEPIN                    - Execute exactly one instruction, then stop.",
+    "RUNSTATE                  - Say whether the machine is stopped, its cycles and time.",
+    "SAVESTATE [slot|file]     - Save a state to a slot (1-100) or a .sav file.",
+    "LOADSTATE [slot|file]     - Load a state from a slot (1-100) or a .sav file.",
+    "PRESENCE state [key=val]  - Mark the window a client drives (off, held, acting).",
+    "LOG [num]                 - Write CPU log file.",
+    "LOGS/LOGL/LOGC [num]      - Write short/long/cs:ip-only CPU log file.",
+    "HEAVYLOG                  - Enable/Disable automatic CPU log when DOSBox-X exits.",
+    "ZEROPROTECT               - Enable/Disable zero code execution detection.",
+    "ADDLOG [message]          - Add message to the log file.",
+    "SR [reg] [value]          - Set register value. Multiple pairs allowed.",
+    "SM [seg]:[off] [val] [.]..- Set memory with following values.",
+    "SMV [addr] [val] [.]..    - Set memory with following values at linear (virtual) address.",
+    "FM [seg]:[off]            - Freeze memory value at address.",
+    "EV [value [value] ...]    - Show register value(s).",
+    "IV [seg]:[off] [name]     - Create var name for memory address.",
+    "SV [filename]             - Save var list in file."
+   ],
+   "lines_total": 85,
+   "cut_here": true
+  },
+  {
+   "request": "EXEC BP 00A7:11734",
+   "ok": true,
+   "lines": [
+    "DEBUG: Set breakpoint at 00A7:11734"
+   ]
+  },
+  {
+   "request": "EXEC BPLIST",
+   "ok": true,
+   "lines": [
+    "Breakpoint list:",
+    "-------------------------------------------------------------------------",
+    "00. BP 00A7:11734",
+    "01. BPINT 31 AH=02"
+   ]
+  },
+  {
+   "request": "EXEC BPINT 21 4C",
+   "ok": true,
+   "lines": [
+    "DEBUG: Set interrupt breakpoint at INT 21 AH=4C"
+   ]
+  },
+  {
+   "request": "EXEC BPINT 21",
+   "ok": true,
+   "lines": [
+    "DEBUG: Set interrupt breakpoint at INT 21"
+   ]
+  },
+  {
+   "request": "EXEC BPLIST",
+   "ok": true,
+   "lines": [
+    "Breakpoint list:",
+    "-------------------------------------------------------------------------",
+    "00. BPINT 21",
+    "01. BPINT 21 AH=4C",
+    "02. BP 00A7:11734",
+    "03. BPINT 31 AH=02"
+   ]
+  },
+  {
+   "request": "EXEC BPPM 00A7:11734",
+   "ok": true,
+   "lines": [
+    "DEBUG: Set prot-mode memory breakpoint at 00A7:00011734"
+   ]
+  },
+  {
+   "request": "EXEC BPLIST",
+   "ok": true,
+   "lines": [
+    "Breakpoint list:",
+    "-------------------------------------------------------------------------",
+    "00. BPPM 00A7:00011734 (00)",
+    "01. BPINT 21",
+    "02. BPINT 21 AH=4C",
+    "03. BP 00A7:11734",
+    "04. BPINT 31 AH=02"
+   ]
+  },
+  {
+   "request": "EXEC BPDEL 00",
+   "ok": true,
+   "lines": [
+    "DEBUG: Breakpoint deletion success."
+   ]
+  },
+  {
+   "request": "EXEC BPLIST",
+   "ok": true,
+   "lines": [
+    "Breakpoint list:",
+    "-------------------------------------------------------------------------",
+    "00. BPINT 21",
+    "01. BPINT 21 AH=4C",
+    "02. BP 00A7:11734",
+    "03. BPINT 31 AH=02"
+   ]
+  },
+  {
+   "request": "EXEC BPDEL 7F",
+   "ok": true,
+   "lines": [
+    "DEBUG: Breakpoint deletion failure."
+   ]
+  },
+  {
+   "request": "EXEC BPDEL *",
+   "ok": true,
+   "lines": [
+    "DEBUG: Breakpoints deleted."
+   ]
+  },
+  {
+   "request": "EXEC BPLIST",
+   "ok": true,
+   "lines": [
+    "Breakpoint list:",
+    "-------------------------------------------------------------------------"
+   ]
+  },
+  {
+   "request": "EXEC SR eax 1234",
+   "ok": true,
+   "lines": [
+    "DEBUG: Set Register success."
+   ]
+  },
+  {
+   "request": "EXEC EV EAX",
+   "ok": true,
+   "lines": [
+    "EV of 'EAX' is:",
+    "1234"
+   ]
+  },
+  {
+   "request": "EXEC SR nosuch 1",
+   "ok": true,
+   "lines": [
+    "DEBUG: Set Register failure."
+   ]
+  },
+  {
+   "request": "EXEC SM 00A7:11734 090 090",
+   "ok": true,
+   "lines": [
+    "DEBUG: Memory changed (2 bytes)"
+   ]
+  },
+  {
+   "request": "EXEC MEMDUMPBIN 00A7:11734 2 MCPDUMP.BIN",
+   "ok": true,
+   "lines": [
+    "DEBUG: Memory dump binary success."
+   ]
+  },
+  {
+   "request": "EXEC DOS MCBS",
+   "ok": true,
+   "lines": [
+    "MCB Seg  Size (bytes)  PSP Seg (notes)  Filename",
+    "Conventional memory:",
+    "   0450         10992     0008 (DOS)    \u0002",
+    "   0700          2464     0701          COMMAND",
+    "   079B           720     0701          COMMAND",
+    "   07C9          1168     0814          DPMI",
+    "   0813         16640     0814          DPMI",
+    "   0C24         61440     0000 (free)   DPMI",
+    "   1B25        544144     0000 (free)   ",
+    "   9FFF  END OF CHAIN",
+    "Upper memory:",
+    "   9FFF        180224     0008 (DOS)    SC      ",
+    "   CC00            96     0814          DPMI",
+    "   CC07          1056     0000 (free)   $P$G",
+    "   CC4A         44304     CC4B          CWSDPMI",
+    "   D71C         32304     0814          DPMI",
+    "   DF00          4080     0000 (free)   ",
+    "   E000  END OF CHAIN"
+   ]
+  },
+  {
+   "request": "EXEC DOS DEVS",
+   "ok": true,
+   "lines": [
+    "Header    Attr  Strat Intr  Name",
+    "0071:0048 8004  0000  0000  NUL     ",
+    "00F9:0000 8013  FFFF  FFFF  CON     "
+   ]
+  },
+  {
+   "request": "EXEC DOS KERN",
+   "ok": true,
+   "lines": [
+    "DOS kernel memory blocks:",
+    "Seg      Size (bytes)     What",
+    "0070           16         DOS_IHSEG",
+    "0071          800         DOS_INFOBLOCK_SEG",
+    "00a3         1376         DOS_SDA_SEG",
+    "00f9           64         DOS_CONDRV_SEG",
+    "00fd          256         DOS_CDA_SEG",
+    "010d           64         dos.tables.tempdta",
+    "0111           64         dos.tables.fcbdelete",
+    "0115        11520         SFT secondary table",
+    "03e5          192         dos.tables.dbcs",
+    "03f1           32         dos.tables.filenamechar",
+    "03f3          400         dos.tables.collatingseq",
+    "040c           64         Fake FCB SFT",
+    "0410          864         dos.tables.dpb",
+    "0446           48         External device command packet",
+    "0449           96         Fake disk buffer head",
+    "044f           16         driver.sys.data.list",
+    "0450            0         DOS_MEM_START",
+    "c400           16         xms_callback",
+    "c401           32         ems_baseseg",
+    "c403           16         i33loc"
+   ]
+  },
+  {
+   "request": "EXEC DOS XMS",
+   "ok": true,
+   "lines": [
+    "XMS memory handles:",
+    "Handle Status Location Size (bytes)",
+    "     1 ALLOC  0x00174000 15253504"
+   ]
+  },
+  {
+   "request": "EXEC DOS EMS",
+   "ok": true,
+   "lines": [
+    "EMS memory (type Mixed) handles:",
+    "Handle Address  Size (bytes)    Name",
+    "     0 00110000 00060000 ",
+    "     1 00170000 00004000 ",
+    "EMS page frame 0x000e0000-0x000effff",
+    "Handle Page(p/l) Address",
+    "--        0/     000e0000-000e3fff",
+    "--        1/     000e4000-000e7fff",
+    "--        2/     000e8000-000ebfff",
+    "--        3/     000ec000-000effff"
+   ]
+  },
+  {
+   "request": "EXEC BIOS MEM",
+   "ok": true,
+   "lines": [
+    "BIOS memory blocks:",
+    "Region            Status What",
+    "000f0000-000f8daf FREE        ",
+    "000f8db0-000f8db5 ALLOC  FIX  IBM ROM BASIC entry point",
+    "000f8db6-000fac78 FREE        ",
+    "000fac79-000fac7e ALLOC  FIX  IBM ROM BASIC entry point",
+    "000fac7f-000fc88b FREE        ",
+    "000fc88c-000fc8c2 ALLOC  DYN  AMIS signature",
+    "000fc8c3-000fc8ff ALLOC  DYN  AMIS signature",
+    "000fc900-000fc920 ALLOC  DYN  ISA Plug & Play BIOS struct",
+    "000fc921-000fc92c FREE        ",
+    "000fc92d-000fc92f ALLOC  DYN  AMIS hooks",
+    "000fc930-000fc93f ALLOC  DYN  BIOS configuration (INT 15h AH=0xC0)",
+    "000fc940-000fc941 FREE        ",
+    "000fc942-000fc957 ALLOC  DYN  BIOS Floppy parameter tables",
+    "000fc958-000fc9af ALLOC  DYN  BIOS video table (INT 1Dh)",
+    "000fc9b0-000fc9ef ALLOC  DYN  BIOS default reset location (CODE)",
+    "000fc9f0-000fc9fd ALLOC  DYN  DOSBox vm86 hack",
+    "000fc9fe-000fc9ff FREE        ",
+    "000fca00-000fdfff ALLOC  DYN  DOSBox callback area",
+    "000fe000-000fe00d FREE        ",
+    "000fe00e-000fe02f ALLOC  FIX  BIOS ID string",
+    "000fe030-000fe05a FREE        ",
+    "000fe05b-000fe05d ALLOC  FIX  BIOS default reset location (JMP)",
+    "000fe05e-000fe060 FREE        ",
+    "000fe061-000fe074 ALLOC  FIX  BIOS version string",
+    "000fe075-000fe87f FREE        ",
+    "000fe880-000fe888 ALLOC  FIX  BIOS default IRQ8-15 location",
+    "000fe889-000fe986 FREE        ",
+    "000fe987-000fe9a6 ALLOC  FIX  BIOS default IRQ1 location",
+    "000fe9a7-000ffa6d FREE        ",
+    "000ffa6e-000ffe6d ALLOC  FIX  BIOS 8x8 font (first 128 chars)",
+    "000ffe6e-000ffea4 FREE        ",
+    "000ffea5-000ffeb7 ALLOC  FIX  BIOS default IRQ0 location",
+    "000ffeb8-000fff52 FREE        ",
+    "000fff53-000fff53 ALLOC  FIX  BIOS default handler location",
+    "000fff54-000fff54 ALLOC  FIX  BIOS default INT5 location",
+    "000fff55-000fff5b ALLOC  FIX  BIOS default IRQ2-7 location",
+    "000fff5c-000fffef FREE        "
+   ]
+  },
+  {
+   "request": "EXEC CALLBACKS",
+   "ok": true,
+   "lines": [
+    "Callbacks",
+    "  [0] func=0x0 desc=''",
+    "  [1] func=0x102c7d27c desc='stop'",
+    "  [2] func=0x102c7d27c desc='idle'",
+    "  [3] func=0x102c7d284 desc='default'",
+    "  [4] func=0x0 desc=''",
+    "  [5] func=0x102638270 desc='debugger'",
+    "  [6] func=0x102dc78f8 desc='internal program'",
+    "  [7] func=0x102b9655c desc='PCI PM'",
+    "  [8] func=0x1028890f8 desc='IRQ 0 Clock'",
+    "  [9] func=0x102889380 desc='Int 11 Equipment'",
+    "  [10] func=0x1028893cc desc='Int 12 Memory'",
+    "  [11] func=0x1028893f4 desc='INT 4B'",
+    "  [12] func=0x1028894cc desc='Int 14 COM-port'",
+    "  [13] func=0x10287bd18 desc='Int 15 Bios'",
+    "  [14] func=0x1028896fc desc='Int 17 Printer'",
+    "  [15] func=0x1028897b4 desc='Int 1a Time'",
+    "  [16] func=0x10288a0e8 desc='Int 1c Timer'",
+    "  [17] func=0x10288a0f0 desc='Int 70 RTC'",
+    "  [18] func=0x0 desc='irq 9 bios'",
+    "  [19] func=0x10288a1e0 desc='int 19'",
+    "  [20] func=0x10287b32c desc='BIOS 1Bh stock CTRL+BREAK handler'",
+    "  [21] func=0x10288a204 desc='irq 14 ide'",
+    "  [22] func=0x10288a20c desc='irq 15 ide'",
+    "  [23] func=0x10288a20c desc='irq 6 floppy'",
+    "  [24] func=0x10288a214 desc='int 18'",
+    "  [25] func=0x0 desc='bios irq 0-7 default handler'",
+    "  [26] func=0x0 desc='bios irq 8-15 default handler'",
+    "  [27] func=0x10288a278 desc='BIOS POST'",
+    "  [28] func=0x10288d8f8 desc='BIOS Scan Video BIOS'",
+    "  [29] func=0x10288da0c desc='BIOS Adapter ROM scan'",
+    "  [30] func=0x10288dbac desc='BIOS Startup screen'",
+    "  [31] func=0x102890810 desc='BIOS BOOT'",
+    "  [32] func=0x102890a94 desc='BIOS BOOT FAIL'",
+    "  [33] func=0x102890b0c desc='IBM ROM BASIC entry'",
+    "  [34] func=0x10287bd18 desc='APM BIOS protected mode entry point'",
+    "  [35] func=0x10287d390 desc='APM BIOS suspend/standby loop'",
+    "  [36] func=0x102894394 desc='irq default'",
+    "  [37] func=0x10285bc74 desc='Int 10 video'",
+    "  [38] func=0x102868f4c desc='VGA ROM BIOS boot up entry point'"
+   ],
+   "lines_total": 81,
+   "cut_here": true
+  },
+  {
+   "request": "EXEC EMU MEM",
+   "ok": true,
+   "lines": [
+    "Emulator memory:",
+    "A20 gate:                    ON",
+    "CPU address bits:            32",
+    "CPU address mask:            0xffffffff",
+    "CPU address mask current:    0xffffffff",
+    "Memory reported size:        16777216 bytes"
+   ]
+  },
+  {
+   "request": "EXEC EMU MACHINE",
+   "ok": true,
+   "lines": [
+    "Emulator machine:",
+    "Machine: VGA S3 Trio"
+   ]
+  },
+  {
+   "request": "EXEC GDT",
+   "ok": true,
+   "lines": [
+    "GDT Base:000D16FE Limit:00000087",
+    "0000: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "0008: b:000D16FE type: 12 parbg",
+    "      l:00000087 dpl : 0  10000",
+    "0010: b:000D1B86 type: 12 parbg",
+    "      l:000007FF dpl : 0  10000",
+    "0018: b:000CC5B0 type: 1A parbg",
+    "      l:0000FFFF dpl : 0  10000",
+    "0020: b:000D12E0 type: 12 parbg",
+    "      l:0000FFFF dpl : 0  10010",
+    "0028: b:000CC5B0 type: 1A parbg",
+    "      l:0000FFFF dpl : 3  10000",
+    "0030: b:000D12E0 type: 12 parbg",
+    "      l:0000FFFF dpl : 3  10010",
+    "0038: b:00000000 type: 12 parbg",
+    "      l:FFFFFFFF dpl : 3  10011",
+    "0040: b:00000400 type: 12 parbg",
+    "      l:0000FFFF dpl : 3  10000",
+    "0048: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "0050: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "0058: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "0060: b:000D377A type: 0B parbg",
+    "      l:000000F1 dpl : 0  10010",
+    "0068: b:000D3688 type: 09 parbg",
+    "      l:000000F1 dpl : 3  10010",
+    "0070: b:000D4E8C type: 09 parbg",
+    "      l:000000F1 dpl : 3  10010",
+    "0078: b:000D1786 type: 02 parbg",
+    "      l:000003FF dpl : 0  10010",
+    "0080: b:00000018 type: 0C parbg",
+    "      l:000011FC dpl : 3  10000"
+   ]
+  },
+  {
+   "request": "EXEC LDT",
+   "ok": true,
+   "lines": [
+    "LDT Base:000D1786 Limit:000003FF",
+    "0004: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "000C: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "0014: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "001C: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "0024: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "002C: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "0034: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "003C: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "0044: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "004C: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "0054: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "005C: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "0064: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "006C: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "0074: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "007C: b:00000000 type: 00 parbg",
+    "      l:00000000 dpl : 0  00000",
+    "0084: b:00008240 type: 1A parbg",
+    "      l:0000FFFF dpl : 3  10000",
+    "008C: b:00008240 type: 12 parbg",
+    "      l:0000FFFF dpl : 3  10010",
+    "0094: b:00008140 type: 12 parbg",
+    "      l:0000FFFF dpl : 3  10000",
+    "009C: b:00007CA0 type: 12 parbg"
+   ],
+   "lines_total": 257,
+   "cut_here": true
+  },
+  {
+   "request": "EXEC PAGING",
+   "ok": true,
+   "lines": [
+    "page 00000xxx -> 0000xxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 00001xxx -> 0001xxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 00002xxx -> 0002xxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 00003xxx -> 0003xxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 00004xxx -> 0004xxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 00005xxx -> 0005xxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 00006xxx -> 0006xxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 00007xxx -> 0007xxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 00008xxx -> 0008xxx  flags [uw] 1:1::1:1 [d=1|a=1]",
+    "page 00009xxx -> 0009xxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 0000Axxx -> 000Axxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 0000Bxxx -> 000Bxxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 0000Cxxx -> 000Cxxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 0000Dxxx -> 000Dxxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 0000Exxx -> 000Exxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 0000Fxxx -> 000Fxxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 00010xxx -> 0010xxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 00011xxx -> 0011xxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 00012xxx -> 0012xxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 00013xxx -> 0013xxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 00014xxx -> 0014xxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 00015xxx -> 0015xxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 00016xxx -> 0016xxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 00017xxx -> 0017xxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 00018xxx -> 0018xxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 00019xxx -> 0019xxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 0001Axxx -> 001Axxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 0001Bxxx -> 001Bxxx  flags [uw] 1:1::1:1 [d=0|a=1]",
+    "page 0001Cxxx -> 001Cxxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 0001Dxxx -> 001Dxxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 0001Exxx -> 001Exxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 0001Fxxx -> 001Fxxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 00020xxx -> 0020xxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 00021xxx -> 0021xxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 00022xxx -> 0022xxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 00023xxx -> 0023xxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 00024xxx -> 0024xxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 00025xxx -> 0025xxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 00026xxx -> 0026xxx  flags [uw] 1:1::1:1 [d=0|a=0]",
+    "page 00027xxx -> 0027xxx  flags [uw] 1:1::1:1 [d=0|a=0]"
+   ],
+   "lines_total": 303,
+   "cut_here": true
+  },
+  {
+   "request": "EXEC IDT",
+   "ok": true,
+   "lines": [
+    "0000: sel:0018 off:3A20",
+    "0001: sel:0018 off:3A24",
+    "0002: sel:0018 off:3A28",
+    "0003: sel:0018 off:3A2C",
+    "0004: sel:0018 off:3A30",
+    "0005: sel:0018 off:3A34",
+    "0006: sel:0018 off:3A38",
+    "0007: sel:0018 off:402B",
+    "0008: sel:0018 off:3A40",
+    "0009: sel:0018 off:3A44",
+    "000A: sel:0018 off:3A48",
+    "000B: sel:0018 off:3A4C",
+    "000C: sel:0018 off:3A50",
+    "000D: sel:0018 off:3A54",
+    "000E: sel:0018 off:3A58",
+    "000F: sel:0018 off:3A5C",
+    "0010: sel:002B off:3A60",
+    "0011: sel:002B off:3A64",
+    "0012: sel:002B off:3A68",
+    "0013: sel:002B off:3A6C",
+    "0014: sel:002B off:3A70",
+    "0015: sel:002B off:3A74",
+    "0016: sel:002B off:3A78",
+    "0017: sel:002B off:3A7C",
+    "0018: sel:002B off:3A80",
+    "0019: sel:002B off:3A84",
+    "001A: sel:002B off:3A88",
+    "001B: sel:002B off:3A8C",
+    "001C: sel:002B off:3A90",
+    "001D: sel:002B off:3A94",
+    "001E: sel:002B off:3A98",
+    "001F: sel:002B off:3A9C",
+    "0020: sel:002B off:3AA0",
+    "0021: sel:002B off:3AA4",
+    "0022: sel:002B off:3AA8",
+    "0023: sel:002B off:3AAC",
+    "0024: sel:002B off:3AB0",
+    "0025: sel:002B off:3AB4",
+    "0026: sel:002B off:3AB8",
+    "0027: sel:002B off:3ABC"
+   ],
+   "lines_total": 256,
+   "cut_here": true
+  },
+  {
+   "request": "EXEC VGA MODE",
+   "ok": true,
+   "lines": [
+    "VGA mode info:",
+    "mode=M_TEXT vref=70.087Hz href=31468.880Hz chrclk=3146888.000Hz dotclk=28322000.000Hz",
+    "disp-start=0h real-start=0h retrace=0 scanlen=40 cursor-start=320h",
+    "line-compare=1023 chained=0 compat-chain4=1 pel-pan=0 hline-skip=0",
+    "byte-skip=0 addr-shift=1 rd-mode=0 wr-mode=0 rdmap-sel=0",
+    "col-dont-care=15 color-compare=0 data-rotate=0 raster-op=00h",
+    "fbmsk=ffffffff fmmsk=ffff fnmmsk=ffff0000 fsr=0 fnesr=ffffffff fesr=0 feasr=0",
+    "complexity-flags=0x4=oddeven|"
+   ]
+  },
+  {
+   "request": "EXEC VGA CRTC",
+   "ok": true,
+   "lines": [
+    "VGA CRTC info: index=0fh readonly=1",
+    "htotal=5fh hdend=4fh strhb=50h endhb=82h strrt=55h endrt=81h",
+    "vtotal=bfh overflow=1fh prerwscn=00h maxscnl=4fh offset=28h",
+    "curs-st=0dh curs-en=0eh start-addr=0000h curs-loc=0320h",
+    "strvrt=9ch endvrt=8eh vdend=8fh underline=1fh modectrl=a3h",
+    "strvhb=96h endvhb=b9h linecomp=ffh"
+   ]
+  },
+  {
+   "request": "EXEC VGA SEQ",
+   "ok": true,
+   "lines": [
+    "VGA Sequencer info: index=01h",
+    "reset=03h clockmode=00h map_mask=03h charmapsel=00h memmode=03h"
+   ]
+  },
+  {
+   "request": "EXEC VGA GC",
+   "ok": true,
+   "lines": [
+    "VGA Graphics controller info: index=06h setreset=00h",
+    "enablesetreset=00h color-comp=00h data-rotate=00h rdmapsel=00h",
+    "mode=10h misc=0eh color-dont-care=0fh bitmask=ffh"
+   ]
+  },
+  {
+   "request": "EXEC VGA AC",
+   "ok": true,
+   "lines": [
+    "VGA Attribute Controller info: attrindexmode=0",
+    "mode_control=0ch horz-pel-pan=08h overscan-color=00h",
+    "color-plane-en=0fh color-select=00h index=00h",
+    "disabled-by-index=0 disabled-by-idx1-bit5=0 index-written=0",
+    "palette={ 00 01 02 03-04 05 14 07-38 39 3a 3b-3c 3d 3e 3f }"
+   ]
+  },
+  {
+   "request": "EXEC VGA DAC",
+   "ok": true,
+   "lines": [
+    "VGA DAC info: bits=6 pel_mask=ffh pel_index[RGB]=00h",
+    "state=01h write_index=00h read_index=ffh first_changed=256",
+    "hidac_counter=0 reg02=00h"
+   ]
+  },
+  {
+   "request": "EXEC VGA DRAW",
+   "ok": true,
+   "lines": [
+    "VGA draw info: resizing=0 width=720 height=400 blocks=80",
+    "address=a00h panning=0 bytes-skip=0 lin-mask=3ffff pln-mask=ffff",
+    "addr-add=a0h line-length=2880 addrline-total=16 addrline=5",
+    "line-total=400 vblank-skip=0 lines-done=261 split-line=1024",
+    "byte-pan-shft=2 render-stop=0 render-max=1 scrn-ratio=1.333",
+    "blinking=1 blink=0 char9dot=1 has-split=0 vret-trig=0",
+    "bpp=32 curs-addr=640h curs-s=13 curs-e=14 curs-c=1 curs-d=0 curs-en=1"
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND 0000:0400 100 B",
+   "ok": true,
+   "lines": [
+    "DEBUG: Invalid selector/segment, cancelling."
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND 0000:0400 100 B",
+   "ok": true,
+   "lines": [
+    "DEBUG: Invalid selector/segment, cancelling."
+   ]
+  },
+  {
+   "request": "EXEC MEMS =0",
+   "ok": true,
+   "lines": [
+    "DEBUG: MEMFIND Memory search is not active."
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND L",
+   "ok": true,
+   "lines": [
+    "DEBUG: No active search instances to list from."
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND !",
+   "ok": true,
+   "lines": [
+    "DEBUG: No active search instances to cancel."
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND !",
+   "ok": true,
+   "lines": [
+    "DEBUG: No active search instances to cancel."
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND L",
+   "ok": true,
+   "lines": [
+    "DEBUG: No active search instances to list from."
+   ]
+  },
+  {
+   "request": "EXEC SV SYMSBK.BIN",
+   "ok": true,
+   "lines": [
+    "DEBUG: Variable list save (SYMSBK.BIN) : ok."
+   ]
+  },
+  {
+   "request": "EXEC LV SYMSBK.BIN",
+   "ok": true,
+   "lines": [
+    "DEBUG: Variable list load (SYMSBK.BIN) : ok."
+   ]
+  },
+  {
+   "request": "EXEC LV NOSUCH.BIN",
+   "ok": true,
+   "lines": [
+    "DEBUG: Variable list load (NOSUCH.BIN) : failure."
+   ]
+  }
+ ]
+}

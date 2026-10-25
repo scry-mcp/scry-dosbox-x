@@ -104,7 +104,7 @@ class RawPlaces:
 
 
 def _last_cpu() -> str | None:
-    """The last stop's cpu mode, read from the record so nothing types at the console."""
+    """The last stop's cpu mode, read from the record, with no round trip to the debugger."""
     last = STATE.last_machine()
     return None if last is None else last[0]
 
@@ -389,19 +389,22 @@ def _follow(session: ds.Session, decl: dec.Declaration, seg: int, off: int,
     return where
 
 
+def _watch_row_at(place: tuple[int, int]) -> Callable[[str], bool]:
+    """A pick for `Session.delete_rows`: the memory-watch row at `place`."""
+    return lambda entry: watch_held([{"entry": entry, "index": "00"}], *place) is not None
+
+
 def delete_watch_rows(session: ds.Session,
                       places: list[tuple[int, int]]) -> tuple[list[str], list[tuple[int, int]]]:
     """The memory-watch rows at `places` deleted: one list read, a `BPDEL` each from the highest
     index down (a delete renumbers only the rows below), one read back. Returns the rows gone
     and the places still listed."""
-    listed = session.breakpoints()
-    found = [(place, row) for place in dict.fromkeys(places)
-             if (row := watch_held(listed, *place)) is not None]
-    for _, row in sorted(found, key=lambda pr: int(pr[1]["index"]), reverse=True):
-        session.command(f"BPDEL {row['index']}")
-    after = session.breakpoints() if found else listed
-    gone = [str(row["entry"]) for place, row in found if watch_held(after, *place) is None]
-    return gone, [place for place, _ in found if watch_held(after, *place) is not None]
+    wanted = list(dict.fromkeys(places))
+    deleted = session.delete_rows([_watch_row_at(p) for p in wanted])
+    gone = [str(row["entry"]) for row, absent in deleted if row is not None and absent]
+    kept = [p for p, (row, absent) in zip(wanted, deleted, strict=True)
+            if row is not None and not absent]
+    return gone, kept
 
 
 def _drop_stale(session: ds.Session, rows: list[dict[str, Any]],
@@ -493,8 +496,8 @@ def arm_at_start(session: ds.Session) -> dict[str, Any]:
 
 
 def _unarmed_at_start(refused: str = "") -> dict[str, Any]:
-    """The account of a park that armed nothing, read without the console: a name waits for the
-    table, a raw address of another build is stale, one of this build is unarmable with
+    """The account of a park that armed nothing, read without asking the debugger: a name waits
+    for the table, a raw address of another build is stale, one of this build is unarmable with
     `refused`."""
     out: dict[str, Any] = {key: [] for key in REARM_BUCKETS}
     for decl in STATE.store.declarations() if STATE.store is not None else []:
@@ -515,7 +518,7 @@ NO_TABLE_WHY = "no symbol table is loaded yet: `symbols_load` re-arms it"
 
 
 def apply_pending(session: ds.Session) -> dict[str, Any]:
-    """At a stop, do what the guest's running kept the console from doing: load held symbols,
+    """At a stop, do what the guest's running kept the debugger from doing: load held symbols,
     remove rows a clear left, arm what was declared. Each half is attempted on its own; what
     could not be applied stays pending. Empty when nothing was pending."""
     if not (STATE.pending["arm"] or STATE.pending["disarm"] or STATE.pending["load"] is not None
@@ -885,7 +888,7 @@ def declares_untold_stopper() -> bool:
 
 
 def something_can_stop_it() -> bool:
-    """Whether anything can bring the running machine back to the debugger, without the console:
+    """Whether anything can bring the running machine back to the debugger, without asking it:
     the debugger's list at the last stop (it holds a row whoever armed it) and the store minus
     what is known not to be armed. Doubt errs on the side of waiting."""
     held = STATE.last_stop.get("held") or []
@@ -948,7 +951,7 @@ def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:
     # One row is one declaration: a second ref resolving to a held row's address would leave the
     # other declared over a row the debugger no longer has after a clear.
     if res["state"] == "armable":
-        # The mode is the last stop's, from the record: a console round trip per declaration is not
+        # The mode is the last stop's, from the record: a channel round trip per declaration is not
         # worth a fact the survey holds.
         last = STATE.last_machine()
         others = _bp_holders(session, last[0] if last else "", (res["seg"], res["off"]),
@@ -1000,7 +1003,7 @@ def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:
     # has not touched it yet.
     want = ("BP", res["seg"], res["off"])
     try:
-        placement._listening(session)     # a running console drops what is typed at it
+        placement._listening(session)     # a placement reads a stopped machine's registers
         existing = next((b for b in session.breakpoints()
                          if dcons.bp_row_target(b["entry"]) == want), None)
         if existing is not None and moved:
@@ -1296,7 +1299,7 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
     # Already armed? A re-declared change watch must not stack a second BPPM/BPM; check and arm are
     # inside the try as in `breakpoint_at`.
     try:
-        placement._listening(session)     # a running console drops what is typed at it
+        placement._listening(session)     # a placement reads a stopped machine's registers
         mode = session.where()["mode"]
         covered = reachable_bytes(res["seg"], res["off"], width, mode)
         if moved:

@@ -25,8 +25,8 @@ import dosbox_session as ds
 import dosbox_symbols as sym
 
 NO_STOP_YET_WHY = "this session has not stopped yet"
-UNREAD_STOP_WHY = ("the stop the machine is in was not readable yet (a cut pane; the next "
-                   "contact retries)")
+UNREAD_STOP_WHY = ("the stop the machine is in was not readable yet (its survey failed; the "
+                   "next contact retries)")
 
 ROWS_SHOWN = 24
 
@@ -80,7 +80,7 @@ class State:
 
         # What the server can still say while the guest runs. Empty: no stop yet.
         self.last_stop: dict[str, Any] = {}
-        # Owed to the console at the next stop (`apply_pending`); the store holds the intent.
+        # Owed to the debugger at the next stop (`apply_pending`); the store holds the intent.
         self.pending: dict[str, Any] = {"arm": [], "disarm": [], "load": None,
                                         "remeasure": False, "dirty": False, "drained_seq": -1}
         # A clear removes THAT row even when the name no longer resolves after a table reload.
@@ -161,7 +161,8 @@ class State:
         stop = self.as_of_current(session)
         if stop is None:
             return (contract.unavailable(UNREAD_STOP_WHY),
-                    ", its position not readable yet (a cut pane; the next contact retries)")
+                    ", its position not readable yet (its survey failed; the next contact "
+                    "retries)")
         who = self.last_stop.get("attribution") or {}
         by = f" ({who['ref']})" if who.get("attributed") else ""
         return stop, f" at {stop['pc']}{by}"
@@ -180,7 +181,7 @@ class State:
                     (str(self.last_stop["where"]["mode"]), dict(self.last_stop["registers"])))
 
     def last_machine(self) -> tuple[str, dict[str, str]] | None:
-        """The last stop's mode and registers, for resolving names while the console is busy."""
+        """The last stop's mode and registers, for resolving names while the machine runs."""
         if not self.last_stop:
             return None
         return str(self.last_stop["where"]["mode"]), dict(self.last_stop["registers"])
@@ -310,9 +311,7 @@ NO_SESSION_BLOCK: dict[str, Any] = {"alive": False, "running": False, "altered":
 
 _ALARM_WHEN: dict[str, Callable[[Any], bool]] = {
     "conf_changed_on_disk": lambda v: v is not False,
-    "terminal_bytes_dropped": lambda v: bool(v),
-    "drain_alive": lambda v: v is False,
-    "drain_ended": lambda v: True,
+    "output_bytes_dropped": lambda v: bool(v),
 }
 _ALWAYS = ("alive", "running", "altered")
 
@@ -347,32 +346,28 @@ def answer(fields: dict[str, object]) -> dict[str, Any]:
     return reply(**cast(dict[str, Any], fields))
 
 
-#: Tail kept of the console text `debug` returns, and of the one `detail=True` adds.
+#: Tail kept of the text `debug` returns, and of the one `detail=True` adds.
 DEBUG_TEXT_KEEP = 4000
 DETAIL_TEXT_KEEP = 2000
 
 
 def delta(out: str, keep: int) -> dict[str, Any]:
-    """The tail of a repaint, saying it is a slice (`clipped`).
-
-    The caps are headroom on a stopped machine; a chatty running guest reaches them.
-    """
+    """The tail of what the debugger printed for a command, saying it is a slice (`clipped`)."""
     # `out[-0:]` is the whole string. Not `Invalid`: `keep` is never a caller's, so a bad one
     # is a bug here.
     if keep <= 0:
         raise ValueError(f"a cap of {keep} is not a cap: it would return the whole "
-                         f"screen while reporting itself clipped")
-    return {"screen_delta": out[-keep:], "screen_chars": len(out),
-            "clipped": len(out) > keep}
+                         f"text while reporting itself clipped")
+    return {"output": out[-keep:], "output_chars": len(out), "clipped": len(out) > keep}
 
 
-REPAINT_FIELDS = ("screen_delta", "screen_chars", "clipped")
-REPAINT_HOW = "detail=True adds the debugger's repaint for this command"
+OUTPUT_FIELDS = ("output", "output_chars", "clipped")
+OUTPUT_HOW = "detail=True adds what the debugger printed for this command"
 
 
 def delta_if_asked(out: str, keep: int, detail: bool) -> dict[str, Any]:
-    """`delta` with `detail`; without it, the note that the repaint was left out."""
-    return delta(out, keep) if detail else narrowing.omission(list(REPAINT_FIELDS), REPAINT_HOW)
+    """`delta` with `detail`; without it, the note that the output was left out."""
+    return delta(out, keep) if detail else narrowing.omission(list(OUTPUT_FIELDS), OUTPUT_HOW)
 
 
 _CAUSE_AT = re.compile(r" at [0-9A-Fa-f]{4}:[0-9A-Fa-f]{4,8}")
@@ -408,6 +403,6 @@ def cause_key(text: str) -> str:
 
 
 def shown_regs(registers: dict[str, str]) -> dict[str, str]:
-    """Register values as `0x` at the pane's width, the spelling `judges.number` takes back."""
+    """Register values as `0x` at their width, the spelling `judges.number` takes back."""
     return {name: judges.hex_at_width(int(digits, 16), 4 * len(digits))
             for name, digits in registers.items()}

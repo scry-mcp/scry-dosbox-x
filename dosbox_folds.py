@@ -84,7 +84,7 @@ def map_read(session: ds.Session) -> screen_map.Read:
 def _add_map(screen: str, match: list[list[int]],
              controls: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     session = live()
-    ds.console_listening(session, "a listing")
+    session.require_stopped("a listing")
     return st.reply(**STATE.maps.add(screen, match, controls, map_read(session)))
 
 
@@ -105,7 +105,7 @@ MAP = {
 
 def _start_scan(ref: str, length: int, cell_bytes: int = 1) -> dict[str, Any]:
     session = live()
-    ds.console_listening(session, "a search")
+    session.require_stopped("a search")
     seg, off = placement.read_target(ref, "DS", session)
     return st.reply(ref=ref, **finder.start_scan(session, seg, off, length, cell_bytes))
 
@@ -113,14 +113,14 @@ def _start_scan(ref: str, length: int, cell_bytes: int = 1) -> dict[str, Any]:
 def _filter_scan(operator: str = "=", value: judges.NumberArg | None = None,
                  limit: int = judges.HITS_DEFAULT) -> dict[str, Any]:
     session = live()
-    ds.console_listening(session, "a search")
+    session.require_stopped("a search")
     number = None if value is None else checks.number("value", value)
     return st.reply(**finder.filter_scan(session, operator, number, limit))
 
 
 def _clear_scan() -> dict[str, Any]:
     session = live()
-    ds.console_listening(session, "a search")
+    session.require_stopped("a search")
     return st.reply(**finder.clear_scan(session))
 
 

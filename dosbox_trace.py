@@ -5,11 +5,10 @@ instruction it stops at, logged and not executed: `n` executed are asked as `n +
 
 The line count is an instruction count only on an interpreting core; a dynamic core writes one
 entry per translated block. The server cannot read which core runs, so every trace proves its
-count against the pane's `cc=`.
+count against the cycle count `RUNSTATE` prints before the release and at the stop.
 """
 from __future__ import annotations
 
-import contextlib
 import itertools
 import json
 import os
@@ -28,6 +27,7 @@ from scry_core import vocabulary as vocab
 import dosbox_binary as binaries
 import dosbox_collect as dcollect
 import dosbox_console as dcons
+import dosbox_debugger as dbg
 import dosbox_machine as machine
 import dosbox_paths as paths
 import dosbox_placement as placement
@@ -47,20 +47,19 @@ CLOSE_WAIT_S = 10.0
 LINE_QUOTED_CHARS = 120
 READ_CHUNK_BYTES = 1 << 20
 TAIL_BYTES = 64
-#: `cc=` is a 32-bit unsigned number.
-CYCLES_WRAP = 1 << 32
+#: `RUNSTATE`'s cycle count is printed as a 64-bit unsigned number.
+CYCLES_WRAP = 1 << 64
 SYMBOLS_SHOWN = 64
 SET_SUFFIX = ".set.jsonl"
 #: Descriptor types with the S and executable bits set.
 CODE_TYPES = range(0x18, 0x20)
 LINEAR_MASK = 0xFFFFFFFF
 NO_LINEAR = "no linear address"
-#: Written to the logfile when the debugger cannot create its log; the refused command then stays
-#: on the input line and every later command is appended to it (REFERENCE.md, The console).
+#: What the debugger prints, refusing the `LOG`, when it cannot create its log.
 NOT_CREATED_LINE = "DEBUG: Logfile couldn't be created."
 
-DYNAMIC_CORE = ("a dynamic core writes one entry per translated block, and `cc=` counts only "
-                "what the normal core runs; trace on the normal core, "
+DYNAMIC_CORE = ("a dynamic core writes one entry per translated block, and the cycle count "
+                "counts only what the normal core runs; trace on the normal core, "
                 "`start(flags=[\"-set\", \"cpu core=normal\"])`")
 MACHINE_CLOSES = "a BIOS power-on self test closes the log"
 AT_ITS_START = ("the machine stopped where the trace began without executing anything: the log "
@@ -117,7 +116,7 @@ def target(session: ds.Session, dest: Path | None) -> Path:
 
 
 def cycles_moved(before: int, after: int) -> int:
-    """How far the pane's counter moved, across its wrap."""
+    """How far the cycle count moved, across its wrap."""
     return (after - before) % CYCLES_WRAP
 
 
@@ -194,7 +193,7 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
     """`instructions` executed with the `shape` log on, within `seconds`. A refusal before the
     release leaves the machine and the filesystem as they were."""
     path = target(session, dest)
-    ds.console_listening(session, "a trace")
+    session.require_stopped("a trace")
     # The session's own build, never the PATH's: with the binary ladder they can differ.
     binary = shutil.which(session.launch.binary)
     if binary is None:
@@ -216,19 +215,29 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
     dcollect.refuse_leftover(places, "trace")
     if STATE.log_open:
         _close_log(session, places, "the log an earlier trace left open")
+    session.require_run_state("a trace")
     armed_at, _ = session.where_and_registers()
-    before = session.pane_cycles
+    dbg.read_run_state(session)              # the cycle count the trace proves itself against
+    before = session.cycles
     if before is None:
         raise ds.Invalid("unexpected_answer",
-            "the pane painted no `cc=` on the survey before the trace, so the count it proves "
-            "itself against cannot be read; nothing was run")
+            "`RUNSTATE` gave no cycle count before the trace, so the count it proves itself "
+            "against cannot be read; nothing was run")
     asked = instructions + 1
-    says = _logfile_reader(session)
     began = time.monotonic()
     # Open from the release until something proves it closed; else the next trace's own `LOG`
     # lands on the open stream and what it runs is written nowhere.
     STATE.log_open = True
-    expired, _ = session.log_cpu(SHAPES[shape], asked, began, began + seconds, progress)
+    try:
+        expired, _ = session.log_cpu(SHAPES[shape], asked, began, began + seconds, progress)
+    except ds.Invalid as e:
+        if NOT_CREATED_LINE not in str(e):
+            raise
+        STATE.log_open = False
+        raise ds.Invalid("host_failed",
+            f"the debugger could not create {LOG_FILE} in {cwd} (it answered "
+            f"`{NOT_CREATED_LINE}`), so nothing ran; to trace, `start` with a working directory "
+            f"the emulator can write") from None
     if expired:
         # The bound interrupts; what the log holds is collected as a cut stop, a TIMEOUT.
         try:
@@ -239,16 +248,16 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
                 f"while that file sits there, and once it is moved closes the log before "
                 f"opening its own", trace={"path": str(places[0]), "closed": False}) from None
     return _collected(session, shape, asked, path, places, before,
-                      dcons.real_segments(armed_at["mode"]), says, interrupted=expired)
+                      dcons.real_segments(armed_at["mode"]), interrupted=expired)
 
 
 def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: list[Path],
                before: int, armed_real: bool,
-               says: Callable[[str], bool], *, interrupted: bool = False) -> dict[str, Any]:
+               *, interrupted: bool = False) -> dict[str, Any]:
     """With the machine stopped: move the log, close it if a stop cut it, prove its count."""
     source = _written(places)
     if source is None:
-        raise _no_log(session, says)
+        raise _no_log(session)
     lines = _host(lambda: count_lines(source), source)
     if lines > asked:
         raise ds.Invalid("unexpected_answer",
@@ -282,17 +291,17 @@ def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: 
         raise ds.Invalid("readback_refused",
             f"the log at {collected} holds no line: nothing was traced", trace=kept, **stop)
     executed = lines - 1
-    after = session.pane_cycles
+    after = session.cycles
     if after is None:
         raise ds.Invalid("unexpected_answer",
-            f"the pane painted no `cc=` at the stop, so the {executed} instructions the log says "
-            f"executed cannot be proved; the log is at {collected}", trace=kept, **stop)
+            f"`RUNSTATE` gave no cycle count at the stop, so the {executed} instructions the log "
+            f"says executed cannot be proved; the log is at {collected}", trace=kept, **stop)
     moved = cycles_moved(before, after)
     # An interrupt breakpoint stops inside its INT, counted but not run: a cut run may read one
     # more than executed.
     if moved != executed and (ran_out or moved != executed + 1):
         raise ds.Invalid("no_channel",
-            f"the pane's `cc=` moved by {moved} while the log holds {executed} entries, so the "
+            f"the cycle count moved by {moved} while the log holds {executed} entries, so the "
             f"log is not a count of executed instructions ({DYNAMIC_CORE}). The log is at "
             f"{collected}", trace=kept, **stop)
     parsed = _host(lambda: parse(collected, shape), collected)
@@ -378,10 +387,6 @@ def _set_order(row: dict[str, Any]) -> tuple[bool, str, str]:
 def _selector_bases(session: ds.Session, selectors: set[str],
                     notes: list[str]) -> dict[str, int | None]:
     """Base of each qualifying selector from one `GDT`/`LDT` listing; None for the rest."""
-    if session.launch.logfile is None:
-        notes.append(f"the protected-mode lines have {NO_LINEAR}: the descriptor tables are "
-                     f"read off the session's logfile, so `start` with `logfile`")
-        return {}
     try:
         found = machine.read(session, frozenset({"gdt", "ldt"})).found
     except ds.Invalid as exc:
@@ -431,55 +436,12 @@ def _host(read: Callable[[], T], path: Path) -> T:
                          trace={"path": str(path)}) from None
 
 
-def _no_log(session: ds.Session, says: Callable[[str], bool]) -> ds.Invalid:
-    """The refusal for a stop with no log. `STATE.log_open` clears only when the logfile says
-    the debugger was refused the file; otherwise the log may still be open."""
-    cwd = session.launch.cwd
-    if says(NOT_CREATED_LINE):
-        STATE.log_open = False
-        with contextlib.suppress(ds.Invalid):
-            session.clear_line()
-        return ds.Invalid("host_failed",
-            f"the debugger could not create {LOG_FILE} in {cwd} (the logfile says "
-            f"`{NOT_CREATED_LINE}`), so nothing ran. It answered `command not recognized` and "
-            f"the `LOG` it left on the input line was emptied, so the console takes commands "
-            f"again; to trace, `start` with a working directory the emulator can write")
-    seen = ("the session's logfile does not say it was refused" if session.launch.logfile
-            is not None else "with no `logfile`, where the debugger says when it is refused the "
-            "file, the two cannot be told apart")
+def _no_log(session: ds.Session) -> ds.Invalid:
+    """The refusal for a stop with no log: the log may still be open."""
     return ds.Invalid("unexpected_answer",
-        f"the trace stopped and no {LOG_FILE} is in {cwd}: the debugger was refused the file, "
-        f"or something removed it while the log was open, and {seen}. Refused, the `LOG` stays "
-        f"on the input line and the next command is appended to it and fails with it until "
-        f"the line is emptied (`debug` empties a line the debugger did not take); removed, "
-        f"the log is still open and the next trace closes it before its own")
-
-
-def _logfile_reader(session: ds.Session) -> Callable[[str], bool]:
-    """Whether the logfile gains a given debugger line from now on; False without a logfile."""
-    logfile = session.launch.logfile
-    if logfile is None:
-        return lambda _line: False
-    mark = session.e9_mark()
-    return lambda line: _logfile_says(logfile, mark, line)
-
-
-def _logfile_says(logfile: Path, mark: int, line: str) -> bool:
-    """Whether the logfile past byte `mark` holds `line` at the start of a line (a guest's own
-    lines carry a channel prefix). Unreadable counts as not seen."""
-    needle = b"\n" + line.encode()
-    carry = b"\n"
-    try:
-        with logfile.open("rb") as f:
-            f.seek(mark)
-            while chunk := f.read(READ_CHUNK_BYTES):
-                seen = carry + chunk
-                if needle in seen:
-                    return True
-                carry = seen[-(len(needle) - 1):]
-    except OSError:
-        return False
-    return False
+        f"the trace stopped and no {LOG_FILE} is in {session.launch.cwd}: something removed it "
+        f"while the log was open, so the log is still open and the next trace closes it before "
+        f"its own")
 
 
 def _written(places: list[Path]) -> Path | None:

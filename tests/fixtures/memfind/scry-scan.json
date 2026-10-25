@@ -1,0 +1,414 @@
+{
+ "provenance": {
+  "exe": "scry branch build 92d913050 (main-ai d321e1e92 + RUNSTATE + PRESENCE)",
+  "launch": "notty",
+  "headless": true,
+  "host": "darwin",
+  "scenario": "scan",
+  "conf": "probe.conf"
+ },
+ "exchanges": [
+  {
+   "request": "EXEC RUN",
+   "ok": true,
+   "lines": [
+    "OK"
+   ]
+  },
+  {
+   "request": "BREAK",
+   "ok": true,
+   "lines": []
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": true,
+   "lines": [
+    "DEBUG: RUNSTATE stopped cycles=50034900 ms=5019.000100000"
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND L",
+   "ok": true,
+   "lines": [
+    "DEBUG: No active search instances to list from."
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND !",
+   "ok": true,
+   "lines": [
+    "DEBUG: No active search instances to cancel."
+   ]
+  },
+  {
+   "request": "EXEC MEMS =12",
+   "ok": true,
+   "lines": [
+    "DEBUG: MEMFIND Memory search is not active."
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND 0000:0 FFFFFF B",
+   "ok": true,
+   "lines": [
+    "DEBUG: Created memory search instance.",
+    "DEBUG: 1 byte specified.",
+    "DEBUG: RAM search from 0000:0000 (lin 00000000) with range: FFFFFF"
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND !",
+   "ok": true,
+   "lines": [
+    "DEBUG: Memory search instance cancelled."
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND 0000:0 FFFFFE B",
+   "ok": true,
+   "lines": [
+    "DEBUG: Created memory search instance.",
+    "DEBUG: 1 byte specified.",
+    "DEBUG: RAM search from 0000:0000 (lin 00000000) with range: FFFFFE"
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND !",
+   "ok": true,
+   "lines": [
+    "DEBUG: Memory search instance cancelled."
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND 0000:400 100 B",
+   "ok": true,
+   "lines": [
+    "DEBUG: Created memory search instance.",
+    "DEBUG: 1 byte specified.",
+    "DEBUG: RAM search from 0000:0400 (lin 00000400) with range: 000100"
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND 0000:400 100 B",
+   "ok": true,
+   "lines": [
+    "DEBUG: Memory search instance is already active."
+   ]
+  },
+  {
+   "request": "EXEC MEMS =FFF",
+   "ok": true,
+   "lines": [
+    "DEBUG: Memory search failed. Value is larger than specified size range."
+   ]
+  },
+  {
+   "request": "EXEC MEMS =0",
+   "ok": true,
+   "lines": [
+    "DEBUG: (0000D2) matches found with value EQUAL TO (00). Iterations: 000001"
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND L",
+   "ok": true,
+   "lines": [
+    "DEBUG: [MEMFIND] Address: 0000:000404 (lin 00000404) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000405 (lin 00000405) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000406 (lin 00000406) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000407 (lin 00000407) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00040A (lin 0000040A) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00040B (lin 0000040B) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00040C (lin 0000040C) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00040D (lin 0000040D) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00040E (lin 0000040E) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00040F (lin 0000040F) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000412 (lin 00000412) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000415 (lin 00000415) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000416 (lin 00000416) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000417 (lin 00000417) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000418 (lin 00000418) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000419 (lin 00000419) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00041B (lin 0000041B) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00041D (lin 0000041D) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00041E (lin 0000041E) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00041F (lin 0000041F) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000420 (lin 00000420) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000421 (lin 00000421) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000422 (lin 00000422) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000423 (lin 00000423) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000424 (lin 00000424) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000425 (lin 00000425) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000426 (lin 00000426) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000427 (lin 00000427) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000428 (lin 00000428) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000429 (lin 00000429) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00042A (lin 0000042A) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00042B (lin 0000042B) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00042C (lin 0000042C) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00042D (lin 0000042D) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00042E (lin 0000042E) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00042F (lin 0000042F) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000430 (lin 00000430) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000431 (lin 00000431) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000432 (lin 00000432) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000433 (lin 00000433) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000434 (lin 00000434) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000435 (lin 00000435) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000436 (lin 00000436) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000437 (lin 00000437) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000438 (lin 00000438) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000439 (lin 00000439) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00043A (lin 0000043A) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00043B (lin 0000043B) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00043C (lin 0000043C) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00043D (lin 0000043D) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00043E (lin 0000043E) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00043F (lin 0000043F) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000440 (lin 00000440) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000441 (lin 00000441) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000442 (lin 00000442) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000443 (lin 00000443) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000444 (lin 00000444) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000445 (lin 00000445) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000446 (lin 00000446) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000447 (lin 00000447) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000448 (lin 00000448) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00044B (lin 0000044B) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00044C (lin 0000044C) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00044E (lin 0000044E) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00044F (lin 0000044F) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000450 (lin 00000450) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000452 (lin 00000452) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000453 (lin 00000453) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000454 (lin 00000454) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000455 (lin 00000455) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000456 (lin 00000456) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000457 (lin 00000457) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000458 (lin 00000458) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000459 (lin 00000459) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00045A (lin 0000045A) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00045B (lin 0000045B) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00045C (lin 0000045C) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00045D (lin 0000045D) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00045E (lin 0000045E) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00045F (lin 0000045F) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000462 (lin 00000462) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000467 (lin 00000467) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000468 (lin 00000468) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000469 (lin 00000469) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00046A (lin 0000046A) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00046B (lin 0000046B) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00046F (lin 0000046F) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000470 (lin 00000470) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000471 (lin 00000471) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000472 (lin 00000472) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000473 (lin 00000473) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000474 (lin 00000474) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000476 (lin 00000476) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000477 (lin 00000477) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00047B (lin 0000047B) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000481 (lin 00000481) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000483 (lin 00000483) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000486 (lin 00000486) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00048B (lin 0000048B) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00048C (lin 0000048C) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00048D (lin 0000048D) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00048E (lin 0000048E) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00048F (lin 0000048F) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000490 (lin 00000490) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000491 (lin 00000491) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000492 (lin 00000492) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000493 (lin 00000493) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000494 (lin 00000494) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000495 (lin 00000495) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000498 (lin 00000498) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:000499 (lin 00000499) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00049A (lin 0000049A) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00049B (lin 0000049B) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00049C (lin 0000049C) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00049D (lin 0000049D) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00049E (lin 0000049E) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:00049F (lin 0000049F) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004A0 (lin 000004A0) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004A1 (lin 000004A1) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004A2 (lin 000004A2) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004A3 (lin 000004A3) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004A4 (lin 000004A4) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004A5 (lin 000004A5) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004A6 (lin 000004A6) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004A7 (lin 000004A7) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004AA (lin 000004AA) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004AC (lin 000004AC) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004AD (lin 000004AD) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004AE (lin 000004AE) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004AF (lin 000004AF) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004B0 (lin 000004B0) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004B1 (lin 000004B1) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004B2 (lin 000004B2) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004B3 (lin 000004B3) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004B4 (lin 000004B4) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004B5 (lin 000004B5) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004B6 (lin 000004B6) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004B7 (lin 000004B7) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004B8 (lin 000004B8) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004B9 (lin 000004B9) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004BA (lin 000004BA) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004BB (lin 000004BB) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004BC (lin 000004BC) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004BD (lin 000004BD) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004BE (lin 000004BE) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004BF (lin 000004BF) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004C0 (lin 000004C0) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004C1 (lin 000004C1) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004C2 (lin 000004C2) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004C3 (lin 000004C3) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004C4 (lin 000004C4) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004C5 (lin 000004C5) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004C6 (lin 000004C6) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004C7 (lin 000004C7) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004C8 (lin 000004C8) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004C9 (lin 000004C9) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004CA (lin 000004CA) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004CB (lin 000004CB) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004CC (lin 000004CC) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004CD (lin 000004CD) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004CE (lin 000004CE) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004CF (lin 000004CF) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004D0 (lin 000004D0) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004D1 (lin 000004D1) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004D2 (lin 000004D2) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004D3 (lin 000004D3) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004D4 (lin 000004D4) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004D5 (lin 000004D5) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004D6 (lin 000004D6) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004D7 (lin 000004D7) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004D8 (lin 000004D8) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004D9 (lin 000004D9) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004DA (lin 000004DA) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004DB (lin 000004DB) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004DC (lin 000004DC) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004DD (lin 000004DD) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004DE (lin 000004DE) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004DF (lin 000004DF) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004E0 (lin 000004E0) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004E1 (lin 000004E1) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004E2 (lin 000004E2) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004E3 (lin 000004E3) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004E4 (lin 000004E4) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004E5 (lin 000004E5) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004E6 (lin 000004E6) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004E7 (lin 000004E7) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004E8 (lin 000004E8) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004E9 (lin 000004E9) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004EA (lin 000004EA) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004EB (lin 000004EB) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004EC (lin 000004EC) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004ED (lin 000004ED) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004EE (lin 000004EE) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004EF (lin 000004EF) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004F0 (lin 000004F0) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004F1 (lin 000004F1) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004F2 (lin 000004F2) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004F3 (lin 000004F3) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004F4 (lin 000004F4) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004F5 (lin 000004F5) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004F6 (lin 000004F6) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004F7 (lin 000004F7) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004F8 (lin 000004F8) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004F9 (lin 000004F9) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004FA (lin 000004FA) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004FB (lin 000004FB) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004FC (lin 000004FC) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004FD (lin 000004FD) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004FE (lin 000004FE) Current Value: 00",
+    "DEBUG: [MEMFIND] Address: 0000:0004FF (lin 000004FF) Current Value: 00",
+    "DEBUG: [MEMFIND] Matched values during current instance: 0000D2"
+   ]
+  },
+  {
+   "request": "EXEC MEMS !0",
+   "ok": true,
+   "lines": [
+    "DEBUG: No more matches found with value NOT EQUAL TO (00). Memory search instance finished."
+   ]
+  },
+  {
+   "request": "EXEC MEMS =0",
+   "ok": true,
+   "lines": [
+    "DEBUG: MEMFIND Memory search is not active."
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND !",
+   "ok": true,
+   "lines": [
+    "DEBUG: No active search instances to cancel."
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND 0000:400 80 B",
+   "ok": true,
+   "lines": [
+    "DEBUG: Created memory search instance.",
+    "DEBUG: 1 byte specified.",
+    "DEBUG: RAM search from 0000:0400 (lin 00000400) with range: 000080"
+   ]
+  },
+  {
+   "request": "EXEC MEMS =",
+   "ok": true,
+   "lines": [
+    "DEBUG: No value was entered. Comparing with previous values.",
+    "DEBUG: (000080) addresses matching EQUAL TO their previous values. Iterations: 000001"
+   ]
+  },
+  {
+   "request": "EXEC MEMS >",
+   "ok": true,
+   "lines": [
+    "DEBUG: No value was entered. Comparing with previous values.",
+    "DEBUG: No more matches found when comparing GREATER THAN previous value. Memory search instance finished."
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND !",
+   "ok": true,
+   "lines": [
+    "DEBUG: No active search instances to cancel."
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND F000:E000 100 B",
+   "ok": true,
+   "lines": [
+    "DEBUG: Created memory search instance.",
+    "DEBUG: 1 byte specified.",
+    "DEBUG: RAM search from F000:E000 (lin 000FE000) with range: 000100"
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND !",
+   "ok": true,
+   "lines": [
+    "DEBUG: Memory search instance cancelled."
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND 0000:0 1000001 B",
+   "ok": true,
+   "lines": [
+    "DEBUG: Range exceeds configured memory (1000000 bytes), cancelling."
+   ]
+  },
+  {
+   "request": "EXEC MEMFIND !",
+   "ok": true,
+   "lines": [
+    "DEBUG: No active search instances to cancel."
+   ]
+  }
+ ]
+}

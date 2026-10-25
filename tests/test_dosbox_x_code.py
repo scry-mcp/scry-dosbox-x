@@ -19,6 +19,7 @@ from typing import Any, cast
 import disasm_control as control
 import pytest
 from dosbox_x_server_support import FakeSession, clean_session, install  # noqa: F401
+from test_dosbox_x_machine import listing
 
 import dosbox_code as code
 import dosbox_console as dcons
@@ -182,23 +183,23 @@ def test_an_instruction_starting_at_the_end_is_not_listed() -> None:
 # --------------------------------------------------------------------------- the pane
 
 def test_the_pane_is_read_off_the_last_repaint_its_first_line_glued_to_its_header() -> None:
-    lines = code.pane_lines(text(FIX / "code-C-00-00000100.txt"))
+    lines = control.pane_lines(text(FIX / "code-C-00-00000100.txt"))
     assert len(lines) == 11
-    assert lines[0] == code.PaneLine("0814", 0x100, bytes.fromhex("31ED"), "xor  bp,bp")
+    assert lines[0] == control.PaneLine("0814", 0x100, bytes.fromhex("31ED"), "xor  bp,bp")
     assert lines[-1].offset == 0x122 and lines[-1].data == bytes.fromhex("67668B0C9D79010000")
 
 
 def test_two_repaints_in_one_delta_read_as_the_later() -> None:
     """Two captured deltas joined, as one command's delta carries every repaint it caused."""
     screen = text(FIX / "code-C-00-00000100.txt") + text(FIX / "code-C-02-00000149.txt")
-    assert code.pane_lines(screen)[0].offset == 0x149
+    assert control.pane_lines(screen)[0].offset == 0x149
 
 
 def test_a_pane_line_whose_bytes_were_cut_has_none() -> None:
     """The capture's line at 0122 with its last byte replaced by the pane's `..` mark."""
     screen = text(FIX / "code-C-00-00000100.txt").replace("67668B0C9D79010000",
                                                           "67668B0C9D790100..")
-    line = [p for p in code.pane_lines(screen) if p.offset == 0x122][0]
+    line = [p for p in control.pane_lines(screen) if p.offset == 0x122][0]
     assert line.data is None and line.text.startswith("mov")
 
 
@@ -208,7 +209,7 @@ def test_the_code_pane_agrees_with_capstone_over_the_whole_code_guest() -> None:
     insns = disasm.decode(code_guest(), COM_START, 16)
     compared, excepted, wrong = 0, [], []
     for path in sorted(FIX.glob("code-C-0*.txt")):
-        v = control.compare(code.pane_lines(text(path)), "0814", insns)
+        v = control.compare(control.pane_lines(text(path)), "0814", insns)
         compared += v.compared
         excepted += v.excepted
         wrong += v.disagreements
@@ -221,7 +222,7 @@ def test_the_code_pane_agrees_with_capstone_on_the_probe() -> None:
     probe = probe_guest()
     insns = disasm.decode(probe[0x0B:], 0x10B, 16)
     for name in ("probe-C-start.txt", "probe-C-emit.txt"):
-        v = control.compare(code.pane_lines(text(FIX / name)), "0814", insns)
+        v = control.compare(control.pane_lines(text(FIX / name)), "0814", insns)
         assert v.compared == 11 and v.disagreements == [], (name, v)
 
 
@@ -229,7 +230,7 @@ def test_a_32_bit_pane_agrees_decoded_32_bit_and_not_16() -> None:
     """dos-djgpp32's `_engine_pos` in `Pr32`, from the committed trace capture, its bytes the pane's
     own (every line printed all of them). Decoded 16-bit the same bytes disagree: the width is
     what the control is checking, not a formality."""
-    pane = code.pane_lines(text(TRACE / "dos-djgpp32-engine-survey-before.txt"))
+    pane = control.pane_lines(text(TRACE / "dos-djgpp32-engine-survey-before.txt"))
     assert all(p.data for p in pane), "a cut line: the bytes are not all there"
     data = b"".join(cast(bytes, p.data) for p in pane)
     wide = control.compare(pane, "00A7", disasm.decode(data, pane[0].offset, 32))
@@ -238,8 +239,8 @@ def test_a_32_bit_pane_agrees_decoded_32_bit_and_not_16() -> None:
     assert narrow.disagreements, "decoded 16-bit it agreed: the comparison is blind to width"
 
 
-def _one_line(segment: str, offset: int, data: str, pane: str) -> list[code.PaneLine]:
-    return [code.PaneLine(segment, offset, bytes.fromhex(data), pane)]
+def _one_line(segment: str, offset: int, data: str, pane: str) -> list[control.PaneLine]:
+    return [control.PaneLine(segment, offset, bytes.fromhex(data), pane)]
 
 
 def test_a_segment_load_from_a_16_bit_register_agrees_in_16_bit_code() -> None:
@@ -268,15 +269,15 @@ def test_the_control_sees_an_operand_that_differs(pane: str, why: str) -> None:
 def test_a_direct_far_call_agrees_though_the_two_spell_its_pointer_apart() -> None:
     """dos-real16's `call 0895:0006` (9A 06 00 95 08) as its pane printed it in the live matrix."""
     insns = disasm.decode(bytes.fromhex("9A06009508"), 0xE, 16)
-    good = [code.PaneLine("0892", 0xE, bytes.fromhex("9A06009508"), "call 0895:0006")]
+    good = [control.PaneLine("0892", 0xE, bytes.fromhex("9A06009508"), "call 0895:0006")]
     assert control.compare(good, "0892", insns).disagreements == []
-    bad = [code.PaneLine("0892", 0xE, bytes.fromhex("9A06009508"), "call 0895:0007")]
+    bad = [control.PaneLine("0892", 0xE, bytes.fromhex("9A06009508"), "call 0895:0007")]
     assert control.compare(bad, "0892", insns).disagreements
 
 
 def test_a_32_bit_popa_agrees_though_the_pane_says_popad_and_capstone_popal() -> None:
     """The DPMI guest's `_tick` at 00A7:2081 as its pane printed it in the live matrix."""
-    pane = [code.PaneLine("00A7", 0x2081, bytes.fromhex("61"), "popad")]
+    pane = [control.PaneLine("00A7", 0x2081, bytes.fromhex("61"), "popad")]
     v = control.compare(pane, "00A7", disasm.decode(bytes.fromhex("61"), 0x2081, 32))
     assert v.disagreements == [], v
     v16 = control.compare(pane, "00A7", disasm.decode(bytes.fromhex("61"), 0x2081, 16))
@@ -285,7 +286,7 @@ def test_a_32_bit_popa_agrees_though_the_pane_says_popad_and_capstone_popal() ->
 
 def test_in_real_mode_the_pane_decodes_segment_0000_as_32_bit_code() -> None:
     """The second way the pane is wrong about x86."""
-    pane = [p for p in code.pane_lines(text(FIX / "code-C-elsewhere.txt")) if p.offset == 0]
+    pane = [p for p in control.pane_lines(text(FIX / "code-C-elsewhere.txt")) if p.offset == 0]
     assert pane and pane[0].text.startswith("pushad"), pane
     v = control.compare(pane, "0000", disasm.decode(cast(bytes, pane[0].data), 0, 16))
     assert v.disagreements, v
@@ -295,7 +296,7 @@ def test_the_control_sees_a_byte_that_differs() -> None:
     """One byte of the dump changed (the immediate of `mov ax, 1234` at 0104)."""
     blob = bytearray(code_guest())
     blob[0x105 - COM_START] ^= 0xFF
-    v = control.compare(code.pane_lines(text(FIX / "code-C-00-00000100.txt")), "0814",
+    v = control.compare(control.pane_lines(text(FIX / "code-C-00-00000100.txt")), "0814",
                         disasm.decode(bytes(blob), COM_START, 16))
     assert [d.split(":")[0] + ":" + d.split(":")[1][:8] for d in v.disagreements] \
         == ["0814:00000104"]
@@ -432,7 +433,8 @@ def pr32_machine(logfile: Path | None = None) -> CodeMachine:
                "DS": {"base": 0x400000, "limit": 0x2CFFFF, "type": 0x13, "big": 1},
                "GS": {"base": 0x8240, "limit": 0xFFFF, "type": 0x13, "big": 0}}
     s = CodeMachine(regs, mode="Pr32", selectors=selinfo, logfile=logfile, memory=0x500000)
-    pane = code.pane_lines(text(TRACE / "dos-djgpp32-engine-survey-before.txt"))
+    s.listing = lambda command: listing("dos-djgpp32", command)  # type: ignore[method-assign]
+    pane = control.pane_lines(text(TRACE / "dos-djgpp32-engine-survey-before.txt"))
     data = b"".join(cast(bytes, p.data) for p in pane)
     s.mem[0x400000 + 0x5E9C0:0x400000 + 0x5E9C0 + len(data)] = data
     install()
@@ -443,12 +445,10 @@ def pr32_machine(logfile: Path | None = None) -> CodeMachine:
 def test_the_width_of_a_segment_is_read_where_it_is_held() -> None:
     s = pr32_machine()
     stop = code.Segments(cast(ds.Session, s), s.where(), s.registers())
-    assert stop.bits(0xA7) == (32, "the pane's Pr32")
+    assert stop.bits(0xA7) == (32, "the stop's Pr32")
     assert stop.bits(0xBF) == (16, "SELINFO GS")
     assert s.asked_selinfo == ["GS"]                       # CS's width cost no round trip
-    with pytest.raises(ds.Invalid, match="logfile") as e:
-        stop.bits(0x8F)
-    assert e.value.code == "no_channel"
+    assert stop.bits(0x8F) == (32, "the LDT listing")
 
 
 def test_a_selector_no_register_holds_takes_its_width_from_the_listing(
@@ -488,11 +488,11 @@ def test_disassemble_in_pr32_decodes_32_bit_past_offset_ffff_through_the_listing
     assert len(reads) == 1, "the listings were read more than once for one listing"
 
 
-def test_disassemble_in_pr32_past_offset_ffff_needs_the_logfile() -> None:
+def test_disassemble_in_pr32_past_offset_ffff_reads_the_descriptor_listings() -> None:
     s = pr32_machine()
     r = cast(dict[str, Any], server.disassemble(ref="00A7:0005E9C0", length=8))
-    assert r["status"] == "INVALID" and r["code"] == "no_channel", r
-    assert "logfile" in r["message"] and s.memdump_calls == []
+    assert r["status"] == "ok" and r["lines"][0].endswith("push ebp"), r
+    assert [c[:2] for c in s.memdump_calls] == [(0xA7, 0x5E9C0)], s.memdump_calls
 
 
 def test_only_the_range_asked_for_needs_the_listings_past_offset_ffff() -> None:
@@ -556,14 +556,13 @@ def test_a_protected_mode_segment_is_judged_by_what_holds_it(
     """A `Pr16` pane makes CS 16-bit."""
     s = pr32_machine()
     narrow = code.Segments(cast(ds.Session, s), {**s.where(), "mode": "Pr16"}, s.registers())
-    assert narrow.bits(0xA7) == (16, "the pane's Pr16")
+    assert narrow.bits(0xA7) == (16, "the stop's Pr16")
     segs = code.Segments(cast(ds.Session, s), s.where(), s.registers())
     assert segs.bits(0xAF) == (32, "SELINFO DS") and s.asked_selinfo == ["DS"]
     with pytest.raises(ds.Invalid, match="null selector"):
         segs.bits(0)
     monkeypatch.setattr(machine, "read", lambda *_a, **_k: SimpleNamespace(
         found={"gdt": []}, notes=["`ldt` is absent: `LDT` answered nothing"]))
-    s.launch.logfile = tmp_path / "x.log"
     with pytest.raises(ds.Invalid, match="could not be read") as e:
         code.Segments(cast(ds.Session, s), s.where(), s.registers()).bits(0x8F)
     assert e.value.code == "unexpected_answer" and "answered nothing" in str(e.value)
@@ -584,7 +583,7 @@ def test_in_protected_mode_an_operand_is_placed_through_its_selectors_base() -> 
     """`mov eax, [00062340]` and `jmp 008F:00001000` (A1 and EA with a 32-bit offset, the SDM's
     encodings) written at the double's `_engine_pos`: the memory operand is placed under DS's
     base as `SELINFO DS` gives it and named; the far target's selector no register holds needs
-    the listings, so with no `logfile` its row says why instead of a linear."""
+    the listings, which place it."""
     s = pr32_machine()
     at = 0x400000 + 0x5E9C0
     s.mem[at:at + 12] = bytes.fromhex("A140230600EA00100000" "8F00")
@@ -599,11 +598,11 @@ def test_in_protected_mode_an_operand_is_placed_through_its_selectors_base() -> 
     assert (memory["symbol"], memory["delta"], memory["addr"], memory["register"]) \
         == ("_g_eng_rate", 0, "0x00462340", "DS")
     far = [x for x in rows if x["kind"] == "target"][0]
-    assert far["seg_off"].startswith("008F:") and "logfile" in far["addr"]["why"], far
+    assert far["seg_off"].startswith("008F:") and far["addr"].startswith("0x"), far
 
 
 def test_a_screen_with_no_pane_has_no_lines() -> None:
-    assert code.pane_lines(text(FIX / "probe-C-start.txt").split("Code Overview")[0]) == []
+    assert control.pane_lines(text(FIX / "probe-C-start.txt").split("Code Overview")[0]) == []
 
 
 def test_disassemble_is_a_step_of_perform_and_its_length_is_judged_with_the_list() -> None:
@@ -621,105 +620,43 @@ def test_disassemble_is_a_step_of_perform_and_its_length_is_judged_with_the_list
 class StoppedCode(CodeMachine):
     """The code guest at one of its captured stops."""
 
-    def __init__(self, stop: str, screen: str | None = None) -> None:
+    def __init__(self, stop: str) -> None:
         regs = json.loads((FIX / f"{stop}-registers.json").read_text(encoding="utf-8"))
         super().__init__(regs)
         data = code_guest()
         self.mem[LOAD * 16 + COM_START:LOAD * 16 + COM_START + len(data)] = data
-        self.screen_text = text(FIX / f"{stop}-survey.txt") if screen is None else screen
-        self.d_reads: list[tuple[int, int, int]] = []
-        self.survey_text = ""
         self.stop_count = 1
 
     def stop_survey(self) -> tuple[dict[str, str], dict[str, str], list[dict[str, str]]]:
-        self.survey_text = self.screen_text
         return self.where(), self.registers(), []
-
-    def read_bytes(self, seg: int, off: int, n: int, mode: str | None = None) -> bytes:
-        """The data view's reach as the live debugger shows it."""
-        self.d_reads.append((seg, off, n))
-        if off > 0xFFFF:
-            raise ds.Invalid("bad_argument", f"an offset is 0x0 to 0xFFFF; got 0x{off:X}")
-        if off % 16 and n > dcons.DATA_VIEW_BYTES - 16:
-            raise ds.Invalid("unexpected_answer", f"the data view did not cover all {n} bytes")
-        return bytes(self.mem[seg * 16 + off:seg * 16 + off + n])
 
 
 def picture(s: StoppedCode) -> dict[str, Any]:
     where, regs, _held = s.stop_survey()
-    return code.stop_instruction(cast(ds.Session, s), where, regs, s.survey_text)
+    return code.stop_instruction(cast(ds.Session, s), where, regs)
 
 
-def test_a_stop_takes_its_instruction_off_the_pane_it_surveyed() -> None:
+def test_a_stop_takes_its_instruction_from_memory() -> None:
     s = StoppedCode("code-stop1")
     got = picture(s)["instruction"]
     assert got == {"seg_off": "0814:00000102", "bytes": "CD03", "text": "int 3", "flow": "call",
-                   "code_bits": 16, "bytes_from": "code pane",
+                   "code_bits": 16, "bytes_from": "memory",
                    "symbol": {"available": False, "why": "no symbol table is loaded"},
                    "delta": {"available": False, "why": "no symbol table is loaded"}}
-    assert s.d_reads == [], "the pane held the line, and a `D` was read anyway"
+    assert s.d_reads == [(LOAD, 0x102, disasm.INSN_MAX)]
 
 
-def test_a_pane_moved_elsewhere_sends_the_stop_to_the_data_view() -> None:
-    """The survey captured after `C 0000:0000` at the second stop: no line at CS:EIP."""
-    s = StoppedCode("code-stop2", text(FIX / "code-survey-after-C-elsewhere.txt"))
-    got = picture(s)["instruction"]
-    assert (got["seg_off"], got["bytes"], got["bytes_from"]) == ("0814:00000167", "CD03",
-                                                                  "data view")
-    assert s.d_reads == [(LOAD, 0x167, disasm.INSN_MAX)]
-
-
-@pytest.mark.parametrize(("bytes_", "why"), [
-    ("CD..", "the pane cut the line's bytes"),
-    ("CD0390", "the bytes the pane printed are not one instruction"),
-])
-def test_a_pane_line_that_cannot_be_trusted_is_read_again_off_the_data_view(
-        bytes_: str, why: str) -> None:
-    """The first stop's captured survey with its CS:EIP line's bytes changed."""
-    screen = text(FIX / "code-stop1-survey.txt").replace("0814:00000102 CD03",
-                                                         f"0814:00000102 {bytes_}")
-    s = StoppedCode("code-stop1", screen)
-    got = picture(s)["instruction"]
-    assert got["bytes"] == "CD03" and got["bytes_from"] == "data view", why
-
-
-def test_a_whole_pane_line_no_instruction_starts_is_read_again_and_still_starts_none() -> None:
-    """The first stop's captured survey and registers moved to the guest's `FE /7` at 013C,
-    whose pane line printed all its bytes: the pane's width is not always the segment's, so
-    the data view is asked, and says the same."""
-    screen = text(FIX / "code-stop1-survey.txt").replace("0814:00000102 CD03int  03",
-                                                         "0814:0000013C FEF89090callback 9090")
-    s = StoppedCode("code-stop1", screen)
-    s.regs["EIP"] = "0000013C"
-    got = picture(s)
-    assert "start no instruction" in got["instruction"]["why"], got
-    assert s.d_reads == [(LOAD, 0x13C, disasm.INSN_MAX)]
-
-
-def test_a_pane_line_decoded_in_another_width_is_read_again_off_the_data_view() -> None:
-    """The first stop's CS:EIP line replaced by a 32-bit reading of `8B 06 34 12` (the SDM's
-    `8B /r` with a 16-bit displacement): the pane printed two bytes as a whole instruction,
-    which they are not in this 16-bit segment, so the data view gives the instruction."""
-    screen, n = re.subn(r"0814:00000102 CD03[^\n]*", "0814:00000102 8B06mov  eax,[esi]",
-                        text(FIX / "code-stop1-survey.txt"))
-    assert n == 1, "the stop's line is not in the captured survey"
-    s = StoppedCode("code-stop1", screen)
+def test_a_stop_reads_its_bytes_in_the_segments_own_width() -> None:
+    """`8B 06 34 12` (the SDM's `8B /r` with a 16-bit displacement) at the first stop: in this
+    16-bit segment it is one four-byte instruction, never `mov eax, [esi]`."""
+    s = StoppedCode("code-stop1")
     s.mem[LOAD * 16 + 0x102:LOAD * 16 + 0x106] = bytes.fromhex("8B063412")
     got = picture(s)["instruction"]
-    assert got is not None, picture(s)
-    assert (got["text"], got["bytes_from"]) == ("mov ax, word ptr [0x1234]", "data view"), got
-
-
-def test_a_line_at_the_stops_offset_in_another_segment_is_not_the_stops() -> None:
-    """The first stop's survey with its CS:EIP line's segment spelled 0815."""
-    screen = text(FIX / "code-stop1-survey.txt").replace("0814:00000102 CD03",
-                                                         "0815:00000102 CD03")
-    s = StoppedCode("code-stop1", screen)
-    assert picture(s)["instruction"]["bytes_from"] == "data view"
+    assert (got["text"], got["bytes"]) == ("mov ax, word ptr [0x1234]", "8B063412"), got
 
 
 def test_a_stop_near_the_end_of_a_16_bit_segment_reads_no_byte_past_it() -> None:
-    s = StoppedCode("code-stop2", text(FIX / "code-survey-after-C-elsewhere.txt"))
+    s = StoppedCode("code-stop2")
     s.regs["EIP"] = "0000FFFE"
     s.mem[LOAD * 16 + 0xFFFE:LOAD * 16 + 0x10000] = bytes.fromhex("CD03")
     got = picture(s)["instruction"]
@@ -727,29 +664,29 @@ def test_a_stop_near_the_end_of_a_16_bit_segment_reads_no_byte_past_it() -> None
 
 
 def test_a_stop_with_no_bytes_to_read_says_why() -> None:
-    s = StoppedCode("code-stop2", text(FIX / "code-survey-after-C-elsewhere.txt"))
+    s = StoppedCode("code-stop2")
 
     def refused(seg: int, off: int, n: int, mode: str | None = None) -> bytes:
-        raise ds.Invalid("unexpected_answer", "no data view came back")
+        raise ds.Invalid("unexpected_answer", "the debugger did not report a successful dump")
     s.read_bytes = refused  # type: ignore[method-assign]
     got = picture(s)
-    assert "no data view came back" in got["instruction"]["why"], got
+    assert "did not report a successful dump" in got["instruction"]["why"], got
 
 
 def test_a_stop_on_a_byte_no_instruction_starts_with_says_so() -> None:
-    """The second stop's registers moved to 013C, the guest's `FE /7`, its pane elsewhere."""
-    s = StoppedCode("code-stop2", text(FIX / "code-survey-after-C-elsewhere.txt"))
+    """The second stop's registers moved to 013C, the guest's `FE /7`."""
+    s = StoppedCode("code-stop2")
     s.regs["EIP"] = "0000013C"
     got = picture(s)
     assert "start no instruction" in got["instruction"]["why"], got
 
 
-def test_a_pr16_stop_decodes_16_bit_from_the_panes_word() -> None:
-    """The first stop's survey read as a `Pr16` stop (its mode changed)."""
+def test_a_pr16_stop_decodes_16_bit_from_the_stops_mode() -> None:
+    """The first stop read as a `Pr16` stop (its mode changed)."""
     s = StoppedCode("code-stop1")
     where, regs, _held = s.stop_survey()
-    got = code.stop_instruction(cast(ds.Session, s), {**where, "mode": "Pr16"}, regs,
-                                s.survey_text)["instruction"]
+    got = code.stop_instruction(cast(ds.Session, s), {**where, "mode": "Pr16"},
+                                regs)["instruction"]
     assert (got["text"], got["code_bits"]) == ("int 3", 16) and s.asked_selinfo == []
 
 
@@ -759,22 +696,22 @@ def test_the_stop_names_its_routine_in_real_mode_and_asks_nothing_for_it() -> No
     dstate.STATE.base = {"base": LOAD * 16}
     got = picture(s)["instruction"]
     assert (got["symbol"], got["delta"]) == ("inner", 0x167 - 0x15E)
-    assert s.asked_selinfo == [] and s.d_reads == []
+    assert s.asked_selinfo == []
 
 
 def test_in_protected_mode_the_stop_asks_selinfo_only_with_a_table() -> None:
-    """dos-djgpp32's `_engine_pos` stop from the committed trace capture."""
+    """dos-djgpp32's `_engine_pos` stop, its first byte `push ebp` written where it lies."""
     s = pr32_machine()
     where = {"cs": "00A7", "eip": "0005E9C0", "mode": "Pr32"}
-    screen = text(TRACE / "dos-djgpp32-engine-survey-before.txt")
-    bare = code.stop_instruction(cast(ds.Session, s), where, s.registers(), screen)["instruction"]
+    s.mem[0x400000 + 0x5E9C0] = 0x55
+    bare = code.stop_instruction(cast(ds.Session, s), where, s.registers())["instruction"]
     assert (bare["text"], bare["code_bits"]) == ("push ebp", 32)
     assert bare["symbol"] == {"available": False, "why": "no symbol table is loaded"}, bare
     assert s.asked_selinfo == []
     dstate.STATE.install_table([sym.Symbol("_engine_pos", 0x5E9C0),
                                 sym.Symbol("_engine_end", 0x5EA00)])
     dstate.STATE.base = {"base": 0x400000}
-    named = code.stop_instruction(cast(ds.Session, s), where, s.registers(), screen)["instruction"]
+    named = code.stop_instruction(cast(ds.Session, s), where, s.registers())["instruction"]
     assert (named["symbol"], named["delta"]) == ("_engine_pos", 0) and s.asked_selinfo == ["CS"]
 
 
@@ -790,7 +727,7 @@ def test_every_stop_reply_carries_the_instruction_and_its_record_too() -> None:
 
 
 def test_a_stop_found_on_its_own_pays_for_its_instruction_only_when_a_reply_needs_it() -> None:
-    """A stop `status` meets surveys its screen and reads nothing more."""
+    """A stop `status` meets is surveyed and nothing more is read."""
     s = StoppedCode("code-stop1")
     install()
     dstate.STATE.session = cast(ds.Session, s)
@@ -798,7 +735,8 @@ def test_a_stop_found_on_its_own_pays_for_its_instruction_only_when_a_reply_need
     running.observe_stop(cast(ds.Session, s))
     assert not {"picture", "instruction"} & set(dstate.STATE.last_stop) and s.d_reads == []
     recorded = running.recorded_stop_reply(cast(ds.Session, s), {"stop_seq": 1})
-    assert recorded["instruction"]["bytes_from"] == "code pane" and s.d_reads == []
+    assert recorded["instruction"]["bytes_from"] == "memory"
+    assert s.d_reads == [(LOAD, 0x102, disasm.INSN_MAX)]
 
 
 def test_a_stop_found_on_its_own_after_a_replied_stop_carries_its_own_instruction() -> None:
@@ -810,7 +748,6 @@ def test_a_stop_found_on_its_own_after_a_replied_stop_carries_its_own_instructio
     dstate.STATE.session = cast(ds.Session, s)
     assert running.stop_reply(cast(ds.Session, s))["instruction"]["seg_off"] == "0814:00000102"
     s.regs = json.loads((FIX / "code-stop2-registers.json").read_text(encoding="utf-8"))
-    s.screen_text = text(FIX / "code-stop2-survey.txt")
     s.stop_count = 2
     running.observe_stop(cast(ds.Session, s))
     recorded = running.recorded_stop_reply(cast(ds.Session, s), {"stop_seq": 2})

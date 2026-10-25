@@ -1,3 +1,0 @@
-DEBUG: Memory search failed. Value is larger than specified size range.
-DEBUG: No more matches found with value NOT EQUAL TO (00). Memory search instance finished.
-I-> _

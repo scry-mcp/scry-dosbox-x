@@ -15,7 +15,8 @@ Whether a DOSBox-X binary resolves and carries the debugger. Run before `start`;
 refuses while a session is live. `binary`: omitted, `DOSBOX_X_BINARY`, else the PATH's
 `dosbox-x`; a named build that fails is refused.
 
-Reply: `binary`, `binary_origin`, `version`, `debugger`, `heavy_debug` (`trace` needs it).
+Reply: `binary`, `binary_origin`, `version`, `debugger`, `heavy_debug` (`trace` needs it),
+`debugger_commands` (which of `RUNSTATE`, `STEPIN`, `SAVESTATE`, `LOADSTATE`, `PRESENCE` the build's debugger has; omitted when none).
 
 | argument | type | default |
 |---|---|---|
@@ -26,6 +27,7 @@ Reply: `binary`, `binary_origin`, `version`, `debugger`, `heavy_debug` (`trace` 
 | `binary` | string |
 | `binary_origin` | string |
 | `debugger` | boolean |
+| `debugger_commands` | array |
 | `heavy_debug` | boolean |
 | `tools` | array |
 | `version` | string or object |
@@ -38,13 +40,20 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "build_check: ~/.local/state/dosbox-x-builds/scry-f06aa5d26/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
+  "summary": "build_check: ~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
   "status": "ok",
-  "binary": "~/.local/state/dosbox-x-builds/scry-f06aa5d26/dosbox-x",
+  "binary": "~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
   "debugger": true,
   "heavy_debug": true,
+  "debugger_commands": [
+    "RUNSTATE",
+    "STEPIN",
+    "SAVESTATE",
+    "LOADSTATE",
+    "PRESENCE"
+  ],
   "tools": [
     "breakpoint_at",
     "breakpoint_interrupt",
@@ -58,7 +67,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end build_check -->
 
-A build without the debugger starts fine and then hangs `start` until its timeout. The debugger is read off the binary itself, since `-helpdebug` listing `-break-start` also happens in a build configured without the debugger. It refuses while a session is live because `-helpdebug` starts the emulator, which a build that does not know the option runs for the whole bound.
+A build without the debugger starts fine and then hangs `start` until its timeout. The debugger and its optional commands (`debugger_commands`) are read off the binary itself, never asked of it: `-helpdebug` lists `-break-start` in a build configured without the debugger too, and on Windows it prints to no stream and never exits. It refuses while a session is live because its version probe starts the emulator, which a build that does not know the option runs until the probe's bound.
 
 **`heavy_debug: false` is an answer, not a failure**: it is `trace` that refuses such a build. The tool is about the build, never about a reading. `binary_origin` is `argument`, `DOSBOX_X_BINARY` or `PATH`; `version` is the build's first line, or `{available: false, why}`.
 
@@ -141,10 +150,9 @@ Reference: REFERENCE.md, The session.
 | `conf` | string |
 | `conf_changed_on_disk` | boolean or object |
 | `conf_digest` | string |
+| `debugger_commands` | array |
 | `declarations` | object |
 | `display` | string |
-| `drain_alive` | boolean |
-| `drain_ended` | string |
 | `elapsed_s` | number |
 | `input_port` | integer or object |
 | `operations` | array |
@@ -156,7 +164,7 @@ Reference: REFERENCE.md, The session.
 | `start` | object |
 | `state_dir` | string |
 | `stub` | string |
-| `terminal_bytes_dropped` | integer |
+| `output_bytes_dropped` | integer |
 | `version` | string or object |
 | `watched` | boolean |
 
@@ -164,49 +172,52 @@ Example, from a live run:
 
 ```json
 {
-  "conf": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n2.conf",
+  "conf": "/path/to/scry-dosbox-x/tests/guest/probe.conf",
   "cwd": "/path/to/scry-dosbox-x/tests/guest",
   "session_seconds": 1200,
-  "shared": true,
-  "program": "PROBE.COM",
-  "background": false,
-  "logfile": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n3.log",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n4-save",
-  "presence": false
+  "logfile": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n631.log",
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n632-save"
 }
 ```
 
 ```json
 {
-  "summary": "start n2.conf: shared on ~/.local/state/dosbox-x-builds/scry-f06aa5d26/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.205s",
+  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.115s",
   "status": "ok",
-  "pid": 74107,
-  "conf": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n2.conf",
-  "conf_digest": "33a4a905f64a2a65",
-  "watched": true,
+  "pid": 44567,
+  "conf": "/path/to/scry-dosbox-x/tests/guest/probe.conf",
+  "conf_digest": "78bdc38f360b9b4a",
   "bound_s": 1200,
-  "elapsed_s": 0.9,
-  "drain_alive": true,
+  "elapsed_s": 0.4,
   "captures": "off",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n4-save",
-  "shared": true,
-  "display": "secondary",
-  "ready_after_s": 0.205,
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n632-save",
+  "ready_after_s": 0.115,
   "argv": [
-    "~/.local/state/dosbox-x-builds/scry-f06aa5d26/dosbox-x",
+    "~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x",
     "-conf",
-    "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n2.conf",
+    "/path/to/scry-dosbox-x/tests/guest/probe.conf",
     "-time-limit",
     "1200",
     "-break-start",
-    "... 25 more"
+    "... 19 more"
   ],
-  "binary": "~/.local/state/dosbox-x-builds/scry-f06aa5d26/dosbox-x",
+  "binary": "~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
+  "debugger_commands": [
+    "LOADSTATE",
+    "PRESENCE",
+    "RUNSTATE",
+    "SAVESTATE",
+    "STEPIN"
+  ],
   "stub": "/path/to/scry-dosbox-x/guest/INJECT.COM",
-  "input_port": 53048,
-  "background": false,
+  "input_port": 50546,
+  "background": true,
+  "presence": {
+    "available": false,
+    "why": "a session started without `shared` has no window to draw on"
+  },
   "declarations": {
     "rearm": {
       "rearmed": [],
@@ -253,12 +264,11 @@ What the session is right now. It records a stop no tool has reported
 (`stopped_on_its_own`) and applies what was queued while the guest ran
 (`applied_on_stop`).
 
-Reply: `pid`, `conf`, `conf_digest`, `conf_changed_on_disk`, `watched`, `bound_s`,
-`elapsed_s`, `terminal_bytes_dropped`, `drain_alive`, `drain_ended`, `captures`,
-`state_dir`, `pending` (`arm` refs, a `disarm` count, `symbols_load`, `base_remeasure`),
-`presence`, `declarations`, and with a session `pc` and `cpu_mode`. Also `last_stop`
-(`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`). `session` carries `alive`, `running`,
-`altered` and each alarm while it holds.
+Reply: `pid`, `conf`, `conf_digest`, `conf_changed_on_disk`, `watched`, `bound_s`, `elapsed_s`,
+`output_bytes_dropped`, `captures`, `state_dir`, `pending` (`arm` refs, a `disarm` count,
+`symbols_load`, `base_remeasure`), `presence`, `declarations`, and with a session `pc` and
+`cpu_mode`. Also `last_stop` (`stop_seq`, `pc`, `cause`, `since_s`, `wall_at`). `session`
+carries `alive`, `running`, `altered` and each alarm while it holds.
 
 Reference: REFERENCE.md, What every reply carries.
 
@@ -273,15 +283,13 @@ Takes no argument.
 | `conf_digest` | string |
 | `cpu_mode` | string or object |
 | `declarations` | object |
-| `drain_alive` | boolean |
-| `drain_ended` | string |
 | `elapsed_s` | number |
 | `pc` | string or object |
 | `pending` | object |
 | `pid` | integer |
 | `presence` | boolean or object |
 | `state_dir` | string |
-| `terminal_bytes_dropped` | integer |
+| `output_bytes_dropped` | integer |
 | `watched` | boolean |
 
 Example, from a live run:
@@ -303,7 +311,8 @@ Example, from a live run:
     "disarm": 0,
     "symbols_load": false,
     "base_remeasure": false
-  }
+  },
+  "presence": false
 }
 ```
 <!-- scry-reference:end status -->
@@ -339,8 +348,6 @@ an integer or unavailable with its `why`. `session` is the block before closing.
 | `conf` | string |
 | `conf_changed_on_disk` | boolean or object |
 | `conf_digest` | string |
-| `drain_alive` | boolean |
-| `drain_ended` | string |
 | `elapsed_s` | number |
 | `ended_by` | string |
 | `errorlog_tail` | string or object |
@@ -348,7 +355,7 @@ an integer or unavailable with its `why`. `session` is the block before closing.
 | `pid` | integer |
 | `state_dir` | string |
 | `stdout_tail` | string |
-| `terminal_bytes_dropped` | integer |
+| `output_bytes_dropped` | integer |
 | `watched` | boolean |
 
 Example, from a live run:
@@ -359,25 +366,11 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "close: quit, exit code 0",
+  "summary": "close: there was no session",
   "status": "ok",
-  "closed": true,
-  "pid": 74107,
-  "conf": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n2.conf",
-  "conf_digest": "33a4a905f64a2a65",
-  "watched": true,
-  "bound_s": 1200,
-  "elapsed_s": 6.0,
-  "drain_alive": true,
-  "captures": "off",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n4-save",
-  "ended_by": "quit",
-  "exit_code": 0,
-  "omitted": [
-    "stdout_tail",
-    "errorlog_tail"
-  ],
-  "how": "close(detail=True) keeps the channels' last words on a clean quit too; once a close has answered the console's are gone (the logfile stays at its path)"
+  "closed": false,
+  "ended_by": "none",
+  "note": "there was no session"
 }
 ```
 <!-- scry-reference:end close -->

@@ -1,8 +1,0 @@
- 00000421) Current Value: 00
-DEBUG: [MEMFIND] Address: 0000:000422 (lin 00000422) Current Value: 00
-DEBUG: [MEMFIND] Address: 0000:000423 (lin 00000423) Current Value: 00
-^ Paged content: Hit ENTER to continue, Q to exit pagingooooRegister OverviewooooooooooooooooooooooooEAX=00000000  ESI=00000000  DS=0000   ES=0000   FS=0000   GS=0000   SS=0000 Real
-ooooOutputooooooooooooooooooooooooooooooooooooooooooooooooooDEBUG: [MEMFIND] Address: 0000:000428 (lin 00000428) Current Value: 00
-DEBUG: [MEMFIND] Address: 0000:000429 (lin 00000429) Current Value: 00
-DEBUG: [MEMFIND] Address: 0000:00042A (lin 0000042A) Current Value: 00
-^ Paged content: Hit ENTER to continue, Q to exit paging

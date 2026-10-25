@@ -159,14 +159,16 @@ _NEEDS_STOP = ("registers", "read_memory", "disassemble", "call_stack", "memdump
                "screen_signature", "screen_wait", "comment_write add", "comment_write delete",
                "comment_write load", "map_write add", "map_find")
 _NO_CAPTURE = ("capture_frame", "series_capture")
+#: A directory no host has, spelled absolute on this one.
+_ABSENT = Path(Path.cwd().anchor) / "nonexistent"
 #: The media file tools read files and no machine, so they answer in every state alike; each is
 #: asked about files that are not there, which its judge refuses by name.
 MEDIA_ABSENT: dict[str, dict[str, Any]] = {
-    "image_compare image": {"a": "/nonexistent/a.png", "b": "/nonexistent/b.png"},
-    "image_compare series": {"a": "/nonexistent/a.json", "b": "/nonexistent/b.json"},
-    "image_compare region": {"manifest": "/nonexistent/m.json"},
-    "image_compare golden": {"manifest": "/nonexistent/m.json",
-                             "checksums": "/nonexistent/g.sha256"},
+    "image_compare image": {"a": str(_ABSENT / "a.png"), "b": str(_ABSENT / "b.png")},
+    "image_compare series": {"a": str(_ABSENT / "a.json"), "b": str(_ABSENT / "b.json")},
+    "image_compare region": {"manifest": str(_ABSENT / "m.json")},
+    "image_compare golden": {"manifest": str(_ABSENT / "m.json"),
+                             "checksums": str(_ABSENT / "g.sha256")},
 }
 
 
@@ -235,7 +237,7 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "comment_write delete": {"ref": COMMENT_REF},
         "comment_write save": {"dest": M.fresh(".comments.tsv")},
         "comment_write load": {"path": _header_only()},
-        "map_write load": {"path": "/nonexistent/probe.scry-map.json"},
+        "map_write load": {"path": str(_ABSENT / "probe.scry-map.json")},
         "map_write add": {"screen": f"probe_{state}", "match": [[0, 0, 8, 1]]},
         "map_find": {},
         "map_write save": {"dest": M.fresh(f"-{state}.scry-map.json"), "overwrite": True},
@@ -316,7 +318,7 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                         "scan filter: docstring, `=` alone keeps cells unchanged since the "
                         "open; the machine stayed stopped"),
         "scan clear": (lambda r: ok(r) and r.get("cleared") is True, "scan clear docstring"),
-        "debug": (lambda r: ok(r) and bool(r.get("screen_delta")), "debug docstring"),
+        "debug": (lambda r: ok(r) and bool(r.get("output")), "debug docstring"),
         "machine_map": (lambda r: ok(r) and r.get("cpu_mode") == "real"
                         and "PROBE" in {b.get("filename") for b in r.get("mcbs") or []},
                         "machine_map docstring; known: PROBE resident, real mode"),
@@ -1036,7 +1038,7 @@ def _c_console() -> None:
     after = M.call(server.debug, command="BPLIST")
     regs = M.call(server.registers)
     judged("C the command after it runs on its own", reply=after,
-           holds=ok(after) and "Breakpoint list" in str(after.get("screen_delta", ""))
+           holds=ok(after) and "Breakpoint list" in str(after.get("output", ""))
            and "note" not in after and ok(regs))
 
 
@@ -1200,7 +1202,7 @@ def _c_two_families(p: Probe) -> None:
         if found.get("stopped_on_its_own"):
             break
         time.sleep(0.5)
-    listing = str(M.call(server.debug, command="BPLIST").get("screen_delta", ""))
+    listing = str(M.call(server.debug, command="BPLIST").get("output", ""))
     judged("C a breakpoint and a change watch at one ref, declared while running, both armed",
            reply=found, holds=w.get("state") == "pending" and b.get("state") == "pending"
            and ref in [str(a) for a in (found.get("applied_on_stop") or {}).get("armed") or []]
@@ -1453,8 +1455,8 @@ def section_i() -> None:
         planted.unlink()
     r = M.call(server.debug, command="BPLIST")
     judged("I the console takes a command after the listings", reply=r,
-           holds=ok(r) and "not recognized" not in str(r.get("screen_delta"))
-           and "Breakpoint list:" in str(r.get("screen_delta")))
+           holds=ok(r) and "not recognized" not in str(r.get("output"))
+           and "Breakpoint list:" in str(r.get("output")))
     release_running()
     M.setup()
     r = M.call(server.machine_map)

@@ -1,11 +1,7 @@
-# Output-pane tails of the debugger's `MEMFIND` / `MEMS` commands
+# What the debugger printed to the scan family over its channel
 
-Captured from a live DOSBox-X (Homebrew build, `probe.conf`, parked at the reset vector)
-through the server's own `debug` tool, one file per command, the Output pane's tail as the
-screen delta carried it. The whole delta is a repaint of the ncurses screen, so each file
-holds the pane's LAST lines including what EARLIER commands printed: that is the property the
-parser is tested against, and why it reads the last matching line rather than the first.
-
-`memfind_list_page.txt` is the first page of a paged `MEMFIND L` (the marker at its end is
-the debugger's own); `memfind_list_last.txt` is what the final page shows with the closing
-`Matched values` line.
+`scry-scan.json` is one live run of the probe guest (`probe.conf`), broken into while it ticks,
+on the scry branch build with `debugger headless=true` and no terminal: every `MEMFIND` and
+`MEMS` the scan tools send, and the ones they refuse, sent through the debugger channel in order
+and each reply recorded whole. Each command's reply holds only its own lines, so a parser that
+reads the last line of the family reads the one this command printed.

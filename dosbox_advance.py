@@ -7,6 +7,7 @@ from typing import Any, cast
 
 from scry_core import reply_contract as contract
 
+import dosbox_debugger as dbg
 import dosbox_placement as placement
 import dosbox_running as running
 import dosbox_session as ds
@@ -18,13 +19,20 @@ def resume(seconds: float, detail: bool,
            progress: ds.Progress) -> dict[str, Any]:
     """Release the guest; with a bound, wait for a stop or leave it running."""
     session = live()
-    # Refused first: an F5 on a running guest does nothing, yet an `ok` would read as a release.
+    # Refused first: a `RUN` on a running guest does nothing, yet an `ok` would read as a release.
     if not session.at_debugger():
+        if not session.has(dbg.RUNSTATE):
+            raise dbg.unknown_after_release("a resume")
         raise ds.NotStopped("the guest is already running, so there is nothing to resume")
+    if seconds > 0:
+        session.require_run_state("a resume with a bound")
     out = session.resume()
-    halted = bool(out["halted"])
+    halted = out["halted"] is True
     stopped_at = cast(dict[str, str] | None, out["stopped_at"])
-    base: dict[str, Any] = st.delta_if_asked(cast(str, out["screen"]), st.DETAIL_TEXT_KEEP, detail)
+    base: dict[str, Any] = st.delta_if_asked(cast(str, out["output"]), st.DETAIL_TEXT_KEEP, detail)
+    if isinstance(out["halted"], dict):
+        base["note"] = (f"the machine was released; {out['halted']['why']}, so `stop` is how it "
+                        f"comes back")
     if seconds > 0:
         began = time.monotonic()
         while not halted:
@@ -43,7 +51,7 @@ def resume(seconds: float, detail: bool,
         base["waited_s"] = round(time.monotonic() - began, 3)
         if not halted:
             base["note"] = (f"no stop within {seconds:g} s; the machine is STILL RUNNING, and "
-                            "the console tools refuse until it stops")
+                            "the debugger's tools refuse until it stops")
         base = {"verdict": contract.OTHER_STOP if halted else contract.TIMEOUT, **base}
     if halted:
         # `where()` reads no page mark; the held one is stale until `stop_reply` replaces it.

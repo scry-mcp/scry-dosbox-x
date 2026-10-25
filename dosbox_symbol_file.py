@@ -37,27 +37,6 @@ def load_symbols(ses: ds.Session, data: bytes) -> list[tuple[str, int]]:
             f"{[str(p) for p in present]} already exists in the emulator's working "
             f"directory, which is somebody's project. This will not overwrite it: "
             f"move it aside and ask again")
-    # A console not listening swallows `LV` silently, which `_acked` would blame on filenames.
-    # Reads the pane, not `where()`, whose extra refusals do not stop a console taking commands.
-    # Fails open: one stray register token satisfies `_survey`. Stays after the cheap checks.
-    try:
-        ses._survey()
-    except ds.NotStopped as exc:
-        # `_survey` raises for several causes; `alive()` separates them. The remedy named
-        # must be carryable from here: arming a breakpoint goes through this same deaf console.
-        if not ses.alive():
-            raise Invalid("session_broken",
-                f"the emulator is GONE, so there is no console to take `LV` and "
-                f"nothing to hold a symbol table. Start a session again. No file "
-                f"was written. What the pane said: {exc}") from None
-        raise Invalid("unexpected_answer",
-            f"no register pane came back, so this console is not taking commands: "
-            f"`LV` would be swallowed without a word, and that arrives here as an "
-            f"acknowledgement that never came. The ordinary cause is a machine "
-            f"that is RUNNING. AND A BREAKPOINT CANNOT BE ARMED FROM HERE TO STOP "
-            f"IT: arming goes through this same console, so what stops the machine "
-            f"is a breakpoint armed BEFORE it was released, or a fresh session. "
-            f"No file was written. What the pane said: {exc}") from None
     try:
         try:
             into.write_bytes(data)
@@ -108,7 +87,7 @@ def vars_overflow(ses: ds.Session, data: bytes) -> str | None:
 def _acked(out: str, echo: str, name: str) -> None:
     """The debugger said ok for this file on this call.
 
-    Reads the LAST line naming the file: the pane scrolls an earlier load's `ok` back in.
+    Reads the LAST line naming the file, the one this call's command printed.
     """
     head = f"{echo} ({name}"
     at = out.rfind(head)

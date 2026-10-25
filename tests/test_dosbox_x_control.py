@@ -11,7 +11,6 @@ from collections.abc import Callable, Iterable
 from typing import Any
 
 import pytest
-from dosbox_x_server_support import POSIX_SESSION
 from scry_core import cancel
 from scry_core.reply_contract import Invalid
 
@@ -67,6 +66,15 @@ def test_a_reply_is_read_between_its_begin_and_its_end() -> None:
     assert control.parse_reply(b"BEGIN 3 ERR\nunknown\nEND 3\nBEGIN 4", "3") == (
         False, ["unknown"], b"BEGIN 4")
     assert control.parse_reply(b"BEGIN 3 OK\nEND 3", "3") == (True, [], b"")
+
+
+def test_a_guest_byte_above_ascii_comes_back_as_itself() -> None:
+    """A DOS name is code-page bytes: 0x85 is an accented letter, and a listing that carries it
+    must give it back as that byte, never as a replacement character."""
+    got = control.parse_reply(b"BEGIN 5 OK\n   0814  PR\x85BE\nEND 5", "5")
+    assert got == (True, ["   0814  PR\x85BE"], b""), got
+    assert control.parse_reply(b"BEGIN 6 OK\n\xff\nEND 6\nBEGIN 7 OK\n\xfe", "6") == (
+        True, ["\xff"], b"BEGIN 7 OK\n\xfe")
 
 
 def test_a_reply_not_yet_whole_is_not_a_reply() -> None:
@@ -184,30 +192,38 @@ def test_an_owned_key_is_found_with_its_value_after_a_space() -> None:
 
 
 class _Channel:
-    def __init__(self, ok: bool) -> None:
-        self.ok = ok
+    """`BREAK` answered `ok`, and `RUNSTATE` stopped once `parks`."""
+
+    def __init__(self, ok: bool, parks: bool) -> None:
+        self.ok, self.parks = ok, parks
         self.sent: list[str] = []
 
-    def request(self, command: str, seconds: float = control.REPLY_S) -> tuple[bool, list[str]]:
+    def request(self, command: str, seconds: float = control.REPLY_S,
+                poll: Any = None) -> tuple[bool, list[str]]:
         self.sent.append(command)
+        if command == "EXEC RUNSTATE":
+            state = "stopped" if self.parks else "running"
+            return True, [f"DEBUG: RUNSTATE {state} cycles=0 ms=0.000000000"]
         return self.ok, [] if self.ok else ["not now"]
 
 
 def _session(ok: bool, parks: bool, alive: bool = True) -> ds.Session:
     s = ds.Session.__new__(ds.Session)
-    s.control = _Channel(ok)  # type: ignore[assignment]
-    s.at_debugger = lambda: parks  # type: ignore[method-assign]
+    s.control = _Channel(ok, parks)  # type: ignore[assignment]
+    s.commands = frozenset({"RUNSTATE"})
+    s._at_debugger, s._surveyed, s.stop_count = False, None, 0
     s.alive = lambda: alive  # type: ignore[method-assign]
     return s
 
 
-def test_break_in_sends_break_and_waits_for_the_prompt() -> None:
+def test_break_in_sends_break_and_waits_for_the_debugger_to_say_stopped() -> None:
     parked = _session(ok=True, parks=True)
     assert ds.Session.break_in(parked, seconds=1.0) >= 0
-    assert parked.control.sent == ["BREAK"]  # type: ignore[attr-defined]
+    assert parked.control.sent == ["BREAK", "EXEC RUNSTATE"]  # type: ignore[attr-defined]
+    assert parked.at_debugger()
 
 
-def test_break_in_says_when_the_prompt_never_comes() -> None:
+def test_break_in_says_when_the_stop_never_comes() -> None:
     with pytest.raises(Invalid) as e:
         ds.Session.break_in(_session(ok=True, parks=False), seconds=0.1)
     assert e.value.code == "not_settled" and "still be running" in str(e.value)
@@ -267,7 +283,6 @@ class _Recording:
         self.closed = True
 
 
-@POSIX_SESSION
 def test_a_spawn_that_fails_closes_the_channel_and_the_argv_named_its_port(
         tmp_path: object, monkeypatch: pytest.MonkeyPatch) -> None:
     import subprocess
@@ -288,21 +303,20 @@ def test_a_spawn_that_fails_closes_the_channel_and_the_argv_named_its_port(
     assert "dosbox mcp_server=40999" in seen[0]
 
 
-@POSIX_SESSION
-def test_a_pty_that_cannot_be_opened_closes_the_channel(
+def test_an_output_pipe_that_cannot_be_opened_closes_the_channel(
         tmp_path: object, monkeypatch: pytest.MonkeyPatch) -> None:
-    import pty
+    import os
     from pathlib import Path
     root = Path(str(tmp_path))
     (root / "g.conf").write_text("[sdl]\n", encoding="utf-8")
     _Recording.made.clear()
 
-    def no_pty() -> tuple[int, int]:
-        raise OSError("out of ptys")
+    def no_pipe() -> tuple[int, int]:
+        raise OSError("out of descriptors")
     monkeypatch.setattr(control, "ControlChannel", _Recording)
-    monkeypatch.setattr(pty, "openpty", no_pty)
-    with pytest.raises(OSError, match="out of ptys"):
-        ds.Session(dlaunch.Launch(conf=root / "g.conf", cwd=root, seconds=30))
+    monkeypatch.setattr(os, "pipe", no_pipe)
+    with pytest.raises(OSError, match="out of descriptors"):
+        ds.Session(dlaunch.Launch(conf=root / "g.conf", cwd=root, seconds=30, headless=True))
     assert [r.closed for r in _Recording.made] == [True]
 
 
@@ -315,8 +329,7 @@ def test_close_closes_the_channel() -> None:
                              pid=1, returncode=0)
     s._signal_group = lambda sig: None  # type: ignore[method-assign]
     s._drainer = None
-    s._stop = threading.Event()
-    s._master = -1
+    s._out = None
     s.drain_ended = s.reap_failed = ""
     s.ended_how = "none"
     channel = _Recording(lambda: None)

@@ -7,6 +7,7 @@ not an opinion of this file.
 """
 from __future__ import annotations
 
+import dataclasses
 import json
 import os
 import re
@@ -17,10 +18,9 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
-from dosbox_x_server_support import SELINFO_SCREEN, clean_session, install, runnable  # noqa: F401
+from channel_double import NOT_RECOGNIZED, Machine, Stop, protected, session_over
+from dosbox_x_server_support import clean_session, install, runnable  # noqa: F401
 from scry_core.host_program import MODE_BITS
-from test_dosbox_x_debug import Debugger
-from test_dosbox_x_run_for import live
 
 import dosbox_arming as arming
 import dosbox_binary as binaries
@@ -44,53 +44,189 @@ def cap(name: str) -> str:
     return (TRACE / f"{name}.txt").read_text()
 
 
-class Tracer(Debugger):
-    """The debugger's side of a `LOG` command: each one typed takes the next scripted answer,
-    the captured log it leaves in the working directory (None: the file is left as it is) and
-    the captured delta the terminal offers next (None: the stop never comes). The surveys come
-    off `panes` like every nudge. `running` is a machine the console does not answer."""
+@dataclasses.dataclass
+class TraceMachine(Machine):
+    """The debugger's side of a `LOG` command, over the channel double: each `LOG` takes the next
+    scripted `(log, how)`, leaves the captured log in the working directory (None: the file is
+    left as it is) and stops where the log's last line is, its cycle count moved by `how`:
+    `ran` the instructions the log executed, `int` one more (an interrupt counted and not run),
+    `two` two more, `dynamic` none, `close` none and no move, `refused` the debugger refusing the
+    file, None no stop at all. `appends` is written to the session's logfile at each `LOG`."""
 
-    def __init__(self, panes: list[str], cwd: Path,
-                 logs: list[tuple[str | None, str | None]], *,
-                 captures_dir: Path | None = None, running: bool = False,
-                 binary: Path | None = None) -> None:
-        super().__init__(panes)
-        self.logs = list(logs)
-        self.running = running
-        # THE SESSION'S OWN BUILD is what `trace` reads, so a case's session carries one that
-        # has the CPU log, whatever is installed on the host running the suite.
-        if binary is None:
-            binary = runnable(cwd.parent / "heavy-dosbox-x")
-            binary.write_bytes(b"\x00help\x00" + binaries.HEAVY_DEBUG_MARK + b"\x00")
-            binary.chmod(0o755)
-        self.launch = SimpleNamespace(logfile=None, watched=False, input_port=None, cwd=cwd,
-                                      captures_dir=captures_dir, binary=str(binary))
+    logs: list[tuple[str | None, str | None]] = dataclasses.field(default_factory=list)
+    logfile: Path | None = None
+    appends: str = ""
 
-    def _write(self, data: bytes) -> None:
-        super()._write(data)
-        if ds.LOG_COMMAND.fullmatch(data) and self.logs:
-            log, delta = self.logs.pop(0)
-            if log is not None:
-                shutil.copyfile(TRACE / f"{log}.trace", self.launch.cwd / tracing.LOG_FILE)
-            if delta is not None:
-                self.reads.append(cap(delta))
+    def _do_log(self, _: list[str]) -> tuple[bool, list[str]]:
+        name, how = self.logs.pop(0) if self.logs else (None, "close")
+        if self.logfile is not None and self.appends:
+            with self.logfile.open("a", encoding="latin-1") as f:
+                f.write(cap(self.appends))
+        if how == "refused":
+            return False, ["DEBUG: Starting log", tracing.NOT_CREATED_LINE, NOT_RECOGNIZED]
+        assert self.cwd is not None
+        log = self.cwd / tracing.LOG_FILE
+        if name is not None:
+            shutil.copyfile(TRACE / f"{name}.trace", log)
+        self.stopped, self._polls, self._pending = False, 0, None
+        if how is not None:
+            lines = log.read_text().splitlines() if log.exists() and name is not None else []
+            executed = max(len(lines) - 1, 0)
+            moved = {"ran": executed, "int": executed + 1, "two": executed + 2,
+                     "dynamic": 0, "close": 0}[how]
+            regs: dict[str, int] = {}
+            if lines and how != "close":
+                cs, eip = lines[-1].split()[0].split(":")
+                regs = {"CS": int(cs, 16), "EIP": int(eip, 16)}
+            self._pending = Stop(regs, ms=0.1, cycles=moved)
+        return True, ["DEBUG: Starting log"]
 
-    @property
-    def parked(self) -> bool:
-        return self.at_debugger()
+    _do_logs = _do_logl = _do_logc = _do_log
 
-    def at_debugger(self) -> bool:
-        return not self.running and self._at_debugger
 
-    def log_cpu(self, word: str, count: int, began: float, deadline: float,
-                progress: ds.Progress = ds.no_progress) -> tuple[bool, float]:
-        return ds.Session.log_cpu(cast(ds.Session, self), word, count, began, deadline, progress)
+def heavy_build(where: Path) -> Path:
+    """A build that carries the CPU log, whatever is installed on the host running the suite."""
+    binary = runnable(where)
+    binary.parent.mkdir(parents=True, exist_ok=True)
+    binary.write_bytes(b"\x00help\x00" + binaries.HEAVY_DEBUG_MARK + b"\x00")
+    binary.chmod(0o755)
+    return binary
 
-    def e9_mark(self) -> int:
-        return ds.Session.e9_mark(cast(ds.Session, self))
 
-    def _e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
-        return ds.Session._e9_since(cast(ds.Session, self), offset, channel)
+def tracer(tmp_path: Path, logs: list[tuple[str | None, str | None]], *,
+           captures_dir: Path | None = None, running: bool = False,
+           binary: Path | None = None, logfile: Path | None = None, cycles: int = 0,
+           protected_mode: bool = False, at: tuple[int, int] = (0x814, 0x106)) -> TraceMachine:
+    """A live session over a `TraceMachine` stopped at `at`, installed as `start` leaves one."""
+    cwd = cwd_of(tmp_path)
+    machine = TraceMachine(logs=list(logs), logfile=logfile, stopped=not running, cycles=cycles)
+    if protected_mode:
+        protected(machine)
+    machine.regs.update(CS=at[0], EIP=at[1])
+    s = session_over(machine, cwd, logfile=logfile)
+    s.launch = dataclasses.replace(
+        s.launch, captures_dir=captures_dir,
+        binary=str(binary if binary is not None else heavy_build(cwd.parent / "heavy-dosbox-x")))
+    install()
+    dstate.STATE.session = s
+    dstate.STATE.remember_stop(s, {"cs": f"{at[0]:04X}", "eip": f"{at[1]:08X}",
+                                   "mode": "Pr32" if protected_mode else "Real"}, {}, [],
+                               {"attributed": False})
+    return machine
+
+
+def released(machine: Machine) -> list[str]:
+    """The `LOG` family commands the session sent, each a release."""
+    return [c.removeprefix("EXEC ") for c in machine.sent
+            if c.startswith("EXEC ") and c.split()[1] in ds.LOG_WORDS]
+
+
+def session_of(machine: Machine) -> ds.Session:
+    return cast(ds.Session, dstate.STATE.session)
+
+
+def test_a_stop_with_no_log_names_its_cause_and_keeps_the_log_open(tmp_path: Path) -> None:
+    """With no file at the stop it was removed while open, so the log stays remembered."""
+    tracer(tmp_path, [(None, "ran")])
+    got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
+                                            dest=str(tmp_path / "m.trace")))
+    assert got["status"] == "INVALID" and got["code"] == "unexpected_answer", got
+    assert "something removed it while the log was open" in got["message"], got["message"]
+    assert log_open(), got["message"]
+
+
+def test_a_build_without_the_cpu_log_is_refused_before_anything_is_sent(
+        tmp_path: Path) -> None:
+    plain = runnable(tmp_path / "plain")
+    plain.write_bytes(b"\x00help\x00LOG? no\x00")
+    plain.chmod(0o755)
+    machine = settle(tmp_path, binary=plain)
+    got = cast(dict[str, Any], server.trace(instructions=16, dest=str(tmp_path / "h.trace")))
+    refused_quietly(machine, got, "no_channel", "heavy_debug")
+
+
+def test_a_build_without_runstate_is_refused_before_anything_is_sent(tmp_path: Path) -> None:
+    machine = settle(tmp_path)
+    machine.commands = ()
+    session_of(machine).commands = frozenset()
+    got = cast(dict[str, Any], server.trace(instructions=16, dest=str(tmp_path / "s.trace")))
+    refused_quietly(machine, got, "no_channel", "RUNSTATE")
+
+
+def test_a_session_build_that_is_gone_is_refused_before_anything_is_sent(
+        tmp_path: Path) -> None:
+    gone = tmp_path / "gone" / "dosbox-x"
+    machine = settle(tmp_path, binary=gone)
+    got = cast(dict[str, Any], server.trace(instructions=16, dest=str(tmp_path / "g.trace")))
+    refused_quietly(machine, got, "host_failed", "not an executable file")
+
+
+@pytest.mark.parametrize("shape", ["missing_directory", "free_name", "relative"])
+def test_a_dangling_link_where_the_log_opens_is_refused_before_anything_is_sent(
+        tmp_path: Path, shape: str) -> None:
+    """Three links at the place the log opens, each somebody's file and refused like one:
+    without the guard, into a missing directory the debugger is refused its file; to a free name
+    elsewhere it writes the log there and `trace.path` comes back a link; a relative one,
+    collected at another depth, breaks the reply."""
+    machine = settle(tmp_path)
+    cwd = cast(Path, machine.cwd)
+    link = cwd / tracing.LOG_FILE
+    far = {"missing_directory": tmp_path / "nowhere" / "LOG.TXT",
+           "free_name": tmp_path / "elsewhere.txt", "relative": Path("rel.txt")}[shape]
+    link.symlink_to(far)
+    dest = tmp_path / "deeper" / "still" / "l.trace"
+    dest.parent.mkdir(parents=True)
+    got = cast(dict[str, Any], server.trace(instructions=16, dest=str(dest)))
+    refused_quietly(machine, got, "bad_argument", "already sitting at")
+    landed = far if far.is_absolute() else cwd / far
+    assert link.is_symlink() and not landed.exists() and not dest.exists()
+
+
+@MODE_BITS
+@pytest.mark.parametrize(("mode", "left_open"), [(0o555, False), (0o555, True), (0o666, False)])
+def test_a_working_directory_the_emulator_cannot_write_is_refused_before_anything_is_sent(
+        tmp_path: Path, mode: int, left_open: bool) -> None:
+    """Neither the trace's command nor the close of a log an earlier trace left open may be sent
+    there, and that log stays remembered: nothing here proved it closed. A directory that can be
+    written and not searched takes no file either."""
+    machine = settle(tmp_path)
+    cwd = cast(Path, machine.cwd)
+    dstate.STATE.log_open = left_open
+    cwd.chmod(mode)
+    try:
+        got = cast(dict[str, Any], server.trace(instructions=16, dest=str(tmp_path / "u.trace")))
+    finally:
+        cwd.chmod(0o755)
+    refused_quietly(machine, got, "no_channel", f"{cwd} is not writable")
+    assert log_open() is left_open
+
+
+def djgpp_tracer(tmp_path: Path, *, refuse: bool = False) -> TraceMachine:
+    """The dos-djgpp32 window over the double, answering the descriptor listings from their
+    captures, or refusing them when `refuse` is set."""
+    machine = tracer(tmp_path, [("dos-djgpp32-engine-cs_ip-200", "ran")], protected_mode=True,
+                     at=(0xA7, 0x11734), logfile=tmp_path / "guest.log")
+    listings = Listings(None, refuse=refuse)
+
+    def listed(command: str) -> tuple[bool, list[str]]:
+        return True, listings.listing(command.split()[0]).split("\n")
+    for word in ("CPU", "GDT", "LDT"):
+        machine.hooks[word] = listed
+    return machine
+
+
+def test_an_interrupt_that_found_no_stop_names_the_log_left_open(tmp_path: Path) -> None:
+    """The bound's `BREAK` that never brought a stop is `not_settled`, and the debugger's log is
+    still open: the refusal names its path and what the next trace does about it."""
+    machine = tracer(tmp_path, [("probe-int-mid-cs_ip", None)])
+
+    def unsettled(seconds: float = 5.0) -> float:
+        raise ds.Invalid("not_settled", "`RUNSTATE` did not say stopped")
+    session_of(machine).break_in = unsettled  # type: ignore[method-assign]
+    got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",
+                                            dest=str(tmp_path / "u.trace"), seconds=0.3))
+    assert got["code"] == "not_settled" and got["trace"]["closed"] is False, got
+    assert "still open" in got["message"] and log_open(), got["message"]
 
 
 def cwd_of(tmp_path: Path) -> Path:
@@ -99,11 +235,9 @@ def cwd_of(tmp_path: Path) -> Path:
     return cwd
 
 
-def settle(tmp_path: Path, **kw: Any) -> Tracer:
-    """`LOGC 11` at the probe's settle loop: sixteen instructions, `cc=` sixteen on."""
-    return live(Tracer([cap("probe-settle-survey-before"), cap("probe-settle-survey-after")],
-                       cwd_of(tmp_path),
-                       [("probe-settle-cs_ip-16", "probe-settle-cs_ip-16-delta")], **kw))
+def settle(tmp_path: Path, **kw: Any) -> TraceMachine:
+    """`LOGC 11` at the probe's settle loop: sixteen instructions, the cycle count sixteen on."""
+    return tracer(tmp_path, [("probe-settle-cs_ip-16", "ran")], **kw)
 
 
 def no_log_left(cwd: Path) -> bool:
@@ -169,21 +303,6 @@ def test_a_line_cut_short_is_refused_where_it_is(tmp_path: Path) -> None:
     assert got.value.code == "unexpected_answer"
 
 
-@pytest.mark.parametrize(("name", "cycles"), [
-    ("probe-settle-survey-before", 192333), ("probe-settle-survey-after", 192349),
-    ("probe-dynamic-survey-before", 238), ("dos-djgpp32-engine-survey-before", 1963039200),
-    ("dos-djgpp32-engine-survey-after", 1963039400)])
-def test_the_pane_counter_is_read_off_a_survey(name: str, cycles: int) -> None:
-    """`dos-djgpp32-engine-survey-after` is the repaint that glued other text over `ESP=`: the
-    counter is anchored on its tail, the run state after it."""
-    assert dcons.parse_pane_cycles(cap(name)) == cycles
-
-
-def test_the_last_pane_on_the_screen_gives_the_counter() -> None:
-    both = cap("probe-settle-survey-before") + cap("probe-settle-survey-after")
-    assert dcons.parse_pane_cycles(both) == 192349
-
-
 def test_the_counter_is_read_across_its_wrap() -> None:
     """`cc=` is painted as a 32-bit unsigned number: a run that crosses the wrap reads lower."""
     assert tracing.cycles_moved(tracing.CYCLES_WRAP - 5, 11) == 16
@@ -198,44 +317,37 @@ def test_lines_are_counted_whole_a_last_one_unterminated_included(tmp_path: Path
         assert tracing.count_lines(path) == lines, (len(data), lines)
 
 
-def test_a_screen_with_no_counter_reads_none() -> None:
-    assert dcons.parse_pane_cycles(cap("probe-settle-cs_ip-16-delta")[:200]) is None
-
-
 # ------------------------------------------------------------------------------- the run
 
 def test_sixteen_instructions_ask_seventeen_lines_in_hex_and_come_back_elapsed(
         tmp_path: Path) -> None:
-    dbg = settle(tmp_path)
+    machine = settle(tmp_path)
     dest = tmp_path / "a.trace"
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip", dest=str(dest)))
     assert got["status"] == "ok", got
-    assert dbg.keys == [b"LOGC 11\r"], "one command, the count one more than executed, in hex"
+    assert released(machine) == ["LOGC 11"], "one command, the count one more than executed"
     assert got["verdict"] == "ELAPSED" and got["pc"].endswith(":00000106"), got
     assert {k: got["trace"][k] for k in ("path", "bytes", "shape", "instructions",
                                          "addresses")} == {
         "path": str(dest), "bytes": dest.stat().st_size, "shape": "cs_ip",
         "instructions": 16, "addresses": 1}, got["trace"]
     assert dest.read_bytes() == (TRACE / "probe-settle-cs_ip-16.trace").read_bytes()
-    assert no_log_left(dbg.launch.cwd), "the log stayed in the working directory"
+    assert no_log_left(cast(Path, machine.cwd)), "the log stayed in the working directory"
     assert got["regs"] and "cause" in got and "stop_seq" in got and "e9" in got
     assert got["session"]["altered"] is False, "advancing is not writing"
     assert got["summary"].startswith("trace 16 cs_ip: ELAPSED, 16 executed at 1 address")
 
 
 def test_the_default_shape_is_the_familys_bare_command(tmp_path: Path) -> None:
-    dbg = live(Tracer([cap("probe-settle-survey-after"), cap("probe-settle-normal-survey-after")],
-                      cwd_of(tmp_path),
-                      [("probe-settle-normal-16", "probe-settle-normal-16-delta")]))
+    machine = tracer(tmp_path, [("probe-settle-normal-16", "ran")])
     got = cast(dict[str, Any], server.trace(instructions=16, dest=str(tmp_path / "n.trace")))
     assert got["status"] == "ok" and got["trace"]["shape"] == "normal", got
-    assert dbg.keys == [b"LOG 11\r"]
+    assert released(machine) == ["LOG 11"]
 
 
 def test_a_dynamic_core_is_refused_by_its_counter_and_the_file_is_kept(tmp_path: Path) -> None:
-    """The negative of the per-call proof: seventeen lines while `cc=` did not move."""
-    live(Tracer([cap("probe-dynamic-survey-before"), cap("probe-dynamic-survey-after")],
-                cwd_of(tmp_path), [("probe-dynamic-cs_ip-16", "probe-dynamic-cs_ip-16-delta")]))
+    """The negative of the per-call proof: seventeen lines while the cycle count did not move."""
+    tracer(tmp_path, [("probe-dynamic-cs_ip-16", "dynamic")])
     dest = tmp_path / "d.trace"
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip", dest=str(dest)))
     assert got["status"] == "INVALID" and got["code"] == "no_channel", got
@@ -245,40 +357,38 @@ def test_a_dynamic_core_is_refused_by_its_counter_and_the_file_is_kept(tmp_path:
     assert got["stop_seq"] and got["pc"].endswith(":00000106"), got
 
 
-def cut(tmp_path: Path, close: str | None = "probe-cut-close-delta",
-        kind: type[Tracer] = Tracer) -> Tracer:
+def cut(tmp_path: Path, close: str | None = "close") -> TraceMachine:
     """A breakpoint at the `dec bx` after the settle loop, and a trace asked past it."""
-    dbg = live(kind([cap("probe-cut-survey-before"), cap("probe-cut-survey-after-close")],
-                      cwd_of(tmp_path),
-                      [("probe-cut-open", "probe-cut-open-delta"), (None, close)]))
+    machine = tracer(tmp_path, [("probe-cut-open", "ran"), (None, close)])
     _real_bp("0814:0108")
-    return dbg
+    machine.breakpoints.insert(0, "BP 0814:0108")
+    return machine
 
 
 def test_a_breakpoint_that_cuts_the_trace_is_other_stop_and_the_log_is_closed_first(
         tmp_path: Path) -> None:
-    dbg = cut(tmp_path)
+    machine = cut(tmp_path)
     dest = tmp_path / "c.trace"
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip", dest=str(dest)))
     assert got["status"] == "ok", got
-    assert dbg.keys == [b"LOGC 186A1\r", b"LOGC 0\r"], "the open log closed before it moved"
+    assert released(machine) == ["LOGC 186A1", "LOGC 0"], "the open log closed before it moved"
     assert got["verdict"] == "OTHER_STOP" and "breakpoint 0814:0108 " in got["cause"], got
     assert got["trace"]["instructions"] == 5506 and got["trace"]["addresses"] == 1, got["trace"]
     assert got["pc"].endswith(":00000108") and dest.exists() and no_log_left(
-        dbg.launch.cwd)
+        cast(Path, machine.cwd))
     assert not log_open(), "a close that answered leaves no log to close"
 
 
 def test_a_close_that_does_not_answer_names_the_moved_log_as_maybe_open(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The log moves before the close is typed, so the refusal names it at `dest`."""
+    """The log moves before the close is sent, so the refusal names it at `dest`."""
     monkeypatch.setattr(tracing, "CLOSE_WAIT_S", 0.2)
-    dbg = cut(tmp_path, close=None)
+    machine = cut(tmp_path, close=None)
     dest = tmp_path / "c.trace"
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip", dest=str(dest)))
     assert got["status"] == "INVALID" and got["code"] == "readback_refused", got
     assert got["trace"] == {"path": str(dest), "closed": False}
-    assert dest.exists() and no_log_left(dbg.launch.cwd)
+    assert dest.exists() and no_log_left(cast(Path, machine.cwd))
     assert "`close` ends the emulator" in got["message"] and dstate.STATE.log_open is True
 
 
@@ -286,28 +396,33 @@ def test_a_bound_that_runs_out_interrupts_the_trace_and_collects_what_ran(
         tmp_path: Path) -> None:
     """THE BOUND INTERRUPTS: the stop the count waits for never comes, so at the bound the
     machine is brought back with `BREAK` where it stands, and what the log holds up to there is
-    collected as a stop that cut it would be (moved, closed, counted against `cc=`): a TIMEOUT,
-    the log closed and nothing left in the working directory."""
-    dbg = live(Tracer([cap("probe-int-mid-survey-before"),
-                       cap("probe-int-mid-survey-after-close")], cwd_of(tmp_path),
-                      [("probe-int-mid-cs_ip", None),
-                       (None, "probe-int-mid-close-delta")]))
+    collected as a stop that cut it would be (moved, closed, counted against the cycles): a
+    TIMEOUT, the log closed and nothing left in the working directory."""
+    machine = tracer(tmp_path, [("probe-int-mid-cs_ip", None), (None, "close")])
+    machine.hooks["BREAK"] = None  # type: ignore[assignment]
+    original = machine.request
+
+    def at_the_break(command: str, *a: Any, **k: Any) -> tuple[bool, list[str]]:
+        if command == "BREAK":
+            machine.cycles += 6               # what ran before the interrupt
+        return original(command, *a, **k)
+    machine.request = at_the_break  # type: ignore[method-assign]
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",
                                             dest=str(tmp_path / "t.trace"), seconds=0.3))
     assert got["status"] == "ok" and got["verdict"] == "TIMEOUT", got
-    assert "BREAK" in dbg.sent and got["trace"]["instructions"] == 6, got
-    assert dbg.keys == [b"LOGC 186A1\r", b"LOGC 0\r"] and no_log_left(dbg.launch.cwd)
+    assert "BREAK" in machine.sent and got["trace"]["instructions"] == 6, got
+    assert released(machine) == ["LOGC 186A1", "LOGC 0"] and no_log_left(cast(Path, machine.cwd))
     assert not log_open()
 
 
 def test_the_running_check_comes_before_the_leftover(tmp_path: Path) -> None:
     """After an expired bound the machine runs with the log open: a trace asked then is told the
     machine runs, not to move a file the debugger is still writing."""
-    dbg = settle(tmp_path, running=True)
-    (dbg.launch.cwd / tracing.LOG_FILE).write_bytes(b"0814:00000106\n")
+    machine = settle(tmp_path, running=True)
+    (cast(Path, machine.cwd) / tracing.LOG_FILE).write_bytes(b"0814:00000106\n")
     dstate.STATE.log_open = True
     got = cast(dict[str, Any], server.trace(instructions=16, dest=str(tmp_path / "o.trace")))
-    refused_quietly(dbg, got, "not_stopped", "running")
+    refused_quietly(machine, got, "not_stopped", "running")
 
 
 def log_open() -> bool:
@@ -316,17 +431,20 @@ def log_open() -> bool:
     return dstate.STATE.log_open
 
 
-@pytest.mark.parametrize(("typed", "released"), [
-    (b"LOGC 11\r", True), (b"LOG 186A1\r", True), (b"LOGL C9\r", True), (b"LOGS 0\r", True),
-    (b"BPLIST\r", False), (b"HEAVYLOG\r", False), (b"LOGC\r", False)])
+@pytest.mark.parametrize("command", ["LOGC 11", "LOG 186A1", "LOGL C9", "LOGS 0"])
 def test_a_log_command_is_a_release_and_clears_the_stopped_flag(
-        typed: bytes, released: bool) -> None:
-    """A typed command that lets the guest run has to clear the flag a run key clears, or the
-    next contact reads a running machine as parked and types into a console that is not
-    listening."""
-    s = SimpleNamespace(_at_debugger=True, _peek_carry="I->", _read=lambda _s=0.0: "")
-    ds.Session._release(cast(ds.Session, s), typed)
-    assert s._at_debugger is (not released) and (s._peek_carry == "") is released
+        tmp_path: Path, command: str) -> None:
+    """A command that lets the guest run clears the stopped flag, or the next contact reads a
+    running machine as parked; a `LOG` the debugger refused released nothing."""
+    machine = TraceMachine(logs=[(None, None)])
+    s = session_over(machine, cwd_of(tmp_path))
+    s._release(command)
+    assert s.parked is False
+    refused = TraceMachine(logs=[(None, "refused")])
+    kept = session_over(refused, cwd_of(tmp_path))
+    with pytest.raises(ds.Invalid, match="refused"):
+        kept._release(command)
+    assert kept.parked is True
 
 
 def test_close_forgets_a_log_left_open() -> None:
@@ -338,27 +456,24 @@ def test_close_forgets_a_log_left_open() -> None:
 
 # ------------------------------------------------------- stops the trace did not ask for
 
-def cut_by(tmp_path: Path, scenario: str) -> Tracer:
+def cut_by(tmp_path: Path, scenario: str) -> TraceMachine:
     """A capture of the probe's DOS boot with `BPINT 21` armed: the log moved out, then
-    `LOGC 0`, then the survey after the close."""
-    return live(Tracer([cap(f"probe-{scenario}-survey-before"),
-                        cap(f"probe-{scenario}-survey-after-close")], cwd_of(tmp_path),
-                       [(f"probe-{scenario}-cs_ip", f"probe-{scenario}-cs_ip-delta"),
-                        (None if scenario != "post" else "probe-post-close",
-                         f"probe-{scenario}-close-delta")]))
+    `LOGC 0`, then the stop after the close."""
+    return tracer(tmp_path, [(f"probe-{scenario}-cs_ip", "int"),
+                             (None if scenario != "post" else "probe-post-close", "close")])
 
 
 def test_an_interrupt_breakpoint_counts_its_int_without_running_it(tmp_path: Path) -> None:
-    """The counter takes the INT and the machine stops before running it, so `cc=` moved one
-    more than the six instructions that executed; the trace is whole, not a dynamic core."""
-    dbg = cut_by(tmp_path, "int-mid")
+    """The counter takes the INT and the machine stops before running it, so the cycle count
+    moved one more than the six instructions that executed; the trace is whole."""
+    machine = cut_by(tmp_path, "int-mid")
     dest = tmp_path / "i.trace"
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip", dest=str(dest)))
     assert got["status"] == "ok" and got["verdict"] == "OTHER_STOP", got
     assert got["trace"]["instructions"] == 6, got["trace"]
     assert tracing.AT_ITS_START not in got["trace"]["note"], got["trace"]
     assert got["pc"] == "0814:00000108" and got["cpu_mode"] == "real", got
-    assert dbg.keys == [b"LOGC 186A1\r", b"LOGC 0\r"] and no_log_left(dbg.launch.cwd)
+    assert released(machine) == ["LOGC 186A1", "LOGC 0"] and no_log_left(cast(Path, machine.cwd))
 
 
 def test_a_trace_started_on_an_interrupt_breakpoint_stops_there_again_and_says_so(
@@ -375,8 +490,7 @@ def test_a_trace_started_on_an_interrupt_breakpoint_stops_there_again_and_says_s
 def test_a_count_that_ran_out_is_held_exact(tmp_path: Path) -> None:
     """The INT allowance is for a cut run only: the same seven lines asked as six instructions
     ran out at their count, and a counter one past them is refused."""
-    live(Tracer([cap("probe-int-mid-survey-before"), cap("probe-int-mid-survey-after-close")],
-                cwd_of(tmp_path), [("probe-int-mid-cs_ip", "probe-int-mid-cs_ip-delta")]))
+    tracer(tmp_path, [("probe-int-mid-cs_ip", "int")])
     got = cast(dict[str, Any], server.trace(instructions=6, shape="cs_ip",
                                             dest=str(tmp_path / "e.trace")))
     assert got["status"] == "INVALID" and got["code"] == "no_channel", got
@@ -386,13 +500,13 @@ def test_a_log_the_bios_closed_before_the_stop_is_refused_and_kept(tmp_path: Pat
     """The power-on self test closes the log while the machine runs on: the close then writes a
     fresh empty file, which is how it shows, and that file is removed; the three lines are
     kept, moved before the close could write over them."""
-    dbg = cut_by(tmp_path, "post")
+    machine = cut_by(tmp_path, "post")
     dest = tmp_path / "p.trace"
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip", dest=str(dest)))
     assert got["status"] == "INVALID" and got["code"] == "readback_refused", got
     assert "closed the debugger's log" in got["message"], got["message"]
     assert dest.read_bytes() == (TRACE / "probe-post-cs_ip.trace").read_bytes()
-    assert no_log_left(dbg.launch.cwd) and got["stop_seq"], got
+    assert no_log_left(cast(Path, machine.cwd)) and got["stop_seq"], got
 
 
 def test_a_pending_retrace_is_left_by_a_count_and_taken_by_an_unexplained_stop(
@@ -410,9 +524,8 @@ def test_a_pending_retrace_is_left_by_a_count_and_taken_by_an_unexplained_stop(
 
 
 def test_addresses_count_the_distinct_executed_places(tmp_path: Path) -> None:
-    live(Tracer([cap("dos-djgpp32-engine-survey-before"), cap("dos-djgpp32-engine-survey-after")],
-                cwd_of(tmp_path),
-                [("dos-djgpp32-engine-cs_ip-200", "dos-djgpp32-engine-cs_ip-200-delta")]))
+    tracer(tmp_path, [("dos-djgpp32-engine-cs_ip-200", "ran")], protected_mode=True,
+           at=(0xA7, 0x11734))
     got = cast(dict[str, Any], server.trace(instructions=200, shape="cs_ip",
                                             dest=str(tmp_path / "x.trace")))
     lines = (TRACE / "dos-djgpp32-engine-cs_ip-200.trace").read_bytes().splitlines()
@@ -422,15 +535,14 @@ def test_addresses_count_the_distinct_executed_places(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize("shape", list(tracing.SHAPES))
 def test_every_shape_types_its_own_word(shape: str, tmp_path: Path) -> None:
-    dbg = settle(tmp_path)
+    machine = settle(tmp_path)
     server.trace(instructions=16, shape=shape, dest=str(tmp_path / "w.trace"))
-    word = {"normal": b"LOG", "short": b"LOGS", "long": b"LOGL", "cs_ip": b"LOGC"}[shape]
-    assert dbg.keys == [word + b" 11\r"]
+    word = {"normal": "LOG", "short": "LOGS", "long": "LOGL", "cs_ip": "LOGC"}[shape]
+    assert released(machine) == [f"{word} 11"]
 
 
 def test_more_lines_than_asked_is_not_this_log(tmp_path: Path) -> None:
-    live(Tracer([cap("probe-settle-survey-before"), cap("probe-settle-survey-after")],
-                cwd_of(tmp_path), [("probe-settle-cs_ip-64", "probe-settle-cs_ip-16-delta")]))
+    tracer(tmp_path, [("probe-settle-cs_ip-64", "ran")])
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
                                             dest=str(tmp_path / "m.trace")))
     assert got["status"] == "INVALID" and got["code"] == "unexpected_answer", got
@@ -438,9 +550,7 @@ def test_more_lines_than_asked_is_not_this_log(tmp_path: Path) -> None:
 
 
 def test_an_empty_log_is_refused_and_kept(tmp_path: Path) -> None:
-    live(Tracer([cap("probe-settle-survey-before"), cap("probe-settle-survey-after")],
-                cwd_of(tmp_path), [("probe-post-close", "probe-settle-cs_ip-16-delta"),
-                                   (None, "probe-cut-close-delta")]))
+    tracer(tmp_path, [("probe-post-close", "ran"), (None, "close")])
     dest = tmp_path / "z.trace"
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip", dest=str(dest)))
     assert got["status"] == "INVALID" and got["code"] == "readback_refused", got
@@ -461,45 +571,15 @@ def test_a_read_the_host_refuses_is_named_not_raised(
 def test_a_log_the_debugger_could_not_create_is_named_and_not_remembered_open(
         tmp_path: Path) -> None:
     """The working directory judged writable and the file refused all the same (it changed
-    under the call): the prompt comes back with no log, and the session's logfile says why."""
-    dbg = live(LogfileTracer([cap("probe-settle-survey-before")], cwd_of(tmp_path),
-                             [(None, "probe-unwritable-cs_ip-16-delta")]))
-    dbg.appends = "probe-unwritable-logfile"
-    dbg.launch.logfile = tmp_path / "guest.log"
-    dbg.launch.logfile.write_text("an earlier line\n")
+    under the call): the debugger's own answer to the `LOG` says so, and nothing ran."""
+    machine = tracer(tmp_path, [(None, "refused")])
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
                                             dest=str(tmp_path / "n.trace")))
     assert got["status"] == "INVALID" and got["code"] == "host_failed", got
     assert "could not create LOGCPU.TXT" in got["message"], got["message"]
     assert "Logfile couldn't be created." in got["message"], got["message"]
-    assert "was emptied, so the console takes commands again" in got["message"], got["message"]
-    assert not log_open() and dbg.keys == [b"LOGC 11\r", dcons.CLEAR_LINE_KEY], dbg.keys
-
-
-@pytest.mark.parametrize(("earlier", "words"), [
-    (None, "cannot be told apart"),
-    ("", "does not say it was refused"),
-    (cap("probe-unwritable-logfile"), "does not say it was refused")],
-    ids=["no logfile", "logfile", "an earlier refusal before the mark"])
-def test_a_stop_with_no_log_and_no_word_why_names_both_causes_and_keeps_the_log_open(
-        tmp_path: Path, earlier: str | None, words: str) -> None:
-    """Without the debugger's own words since the release the file may have been refused or
-    removed while open, so the log stays remembered: a refusal written before the trace began is
-    another call's. The logfile gains a count's own lines, which are not a refusal either."""
-    panes = [cap("probe-settle-survey-before")]
-    logs: list[tuple[str | None, str | None]] = [(None, "probe-settle-cs_ip-16-delta")]
-    if earlier is None:
-        live(Tracer(panes, cwd_of(tmp_path), logs))
-    else:
-        dbg = live(LogfileTracer(panes, cwd_of(tmp_path), logs))
-        dbg.appends = "probe-count-logfile"
-        dbg.launch.logfile = tmp_path / "guest.log"
-        dbg.launch.logfile.write_text(earlier)
-    got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
-                                            dest=str(tmp_path / "m.trace")))
-    assert got["status"] == "INVALID" and got["code"] == "unexpected_answer", got
-    assert "was refused the file, or something removed it" in got["message"], got["message"]
-    assert words in got["message"] and log_open(), got["message"]
+    assert not log_open() and released(machine) == ["LOGC 11"], machine.sent
+    assert session_of(machine).parked is True, "a refused `LOG` released nothing"
 
 
 # ------------------------------------------------------------- refusals that arm nothing
@@ -537,39 +617,39 @@ def test_the_bound_itself_is_accepted() -> None:
     checks.check("trace", instructions=tracing.INSTRUCTIONS_MAX, seconds=600)
 
 
-def refused_quietly(dbg: Tracer, got: dict[str, Any], code: str, words: str) -> None:
+def refused_quietly(machine: Machine, got: dict[str, Any], code: str, words: str) -> None:
     assert got["status"] == "INVALID" and got["code"] == code, got
     assert words in got["message"], got["message"]
-    assert dbg.keys == [] and dbg.sent == [], "a refusal reached the terminal"
+    assert set(machine.sent) <= {"EXEC RUNSTATE"}, "a refusal sent the debugger a command"
 
 
 def test_a_dest_already_there_is_refused_and_kept(tmp_path: Path) -> None:
-    dbg = settle(tmp_path)
+    machine = settle(tmp_path)
     mine = tmp_path / "mine.trace"
     mine.write_bytes(b"the caller's")
     got = cast(dict[str, Any], server.trace(instructions=16, dest=str(mine)))
-    refused_quietly(dbg, got, "bad_argument", "already exists")
+    refused_quietly(machine, got, "bad_argument", "already exists")
     assert mine.read_bytes() == b"the caller's"
 
 
 def test_a_dest_in_the_working_directory_is_refused(tmp_path: Path) -> None:
-    dbg = settle(tmp_path)
+    machine = settle(tmp_path)
     got = cast(dict[str, Any], server.trace(
-        instructions=16, dest=str(dbg.launch.cwd / "x.trace")))
-    refused_quietly(dbg, got, "bad_argument", "working directory")
+        instructions=16, dest=str(cast(Path, machine.cwd) / "x.trace")))
+    refused_quietly(machine, got, "bad_argument", "working directory")
 
 
 def test_a_dest_whose_directory_is_missing_is_refused(tmp_path: Path) -> None:
-    dbg = settle(tmp_path)
+    machine = settle(tmp_path)
     got = cast(dict[str, Any], server.trace(instructions=16,
                                             dest=str(tmp_path / "nowhere" / "x.trace")))
-    refused_quietly(dbg, got, "bad_argument", "not a directory")
+    refused_quietly(machine, got, "bad_argument", "not a directory")
 
 
 def test_no_dest_and_no_captures_directory_is_refused_naming_both(tmp_path: Path) -> None:
-    dbg = settle(tmp_path)
+    machine = settle(tmp_path)
     got = cast(dict[str, Any], server.trace(instructions=16))
-    refused_quietly(dbg, got, "bad_argument", "start(captures_dir=)")
+    refused_quietly(machine, got, "bad_argument", "start(captures_dir=)")
 
 
 def test_no_dest_takes_the_next_free_number_in_the_captures_directory(tmp_path: Path) -> None:
@@ -588,9 +668,9 @@ def test_no_dest_takes_the_next_free_number_in_the_captures_directory(tmp_path: 
 
 
 def test_a_captures_directory_that_is_not_there_is_named(tmp_path: Path) -> None:
-    dbg = settle(tmp_path, captures_dir=tmp_path / "missing")
+    machine = settle(tmp_path, captures_dir=tmp_path / "missing")
     got = cast(dict[str, Any], server.trace(instructions=16))
-    refused_quietly(dbg, got, "bad_argument", "is not there")
+    refused_quietly(machine, got, "bad_argument", "is not there")
 
 
 def test_a_dest_from_the_home_directory_is_written_there(
@@ -604,10 +684,10 @@ def test_a_dest_from_the_home_directory_is_written_there(
 
 
 def test_a_set_file_already_there_is_refused_and_the_counter_skips_one(tmp_path: Path) -> None:
-    dbg = settle(tmp_path)
+    machine = settle(tmp_path)
     (tmp_path / "s.trace.set.jsonl").write_text("the caller's")
     got = cast(dict[str, Any], server.trace(instructions=16, dest=str(tmp_path / "s.trace")))
-    refused_quietly(dbg, got, "bad_argument", "already exists")
+    refused_quietly(machine, got, "bad_argument", "already exists")
     caps = tmp_path / "caps"
     caps.mkdir()
     (caps / "trace-1.trace.set.jsonl").write_text("an earlier set")
@@ -621,91 +701,32 @@ def test_the_log_is_looked_for_under_both_spellings(tmp_path: Path) -> None:
 
 
 def test_a_running_guest_is_refused_not_stopped(tmp_path: Path) -> None:
-    dbg = settle(tmp_path, running=True)
+    machine = settle(tmp_path, running=True)
     got = cast(dict[str, Any], server.trace(instructions=16, dest=str(tmp_path / "r.trace")))
-    refused_quietly(dbg, got, "not_stopped", "running")
-
-
-def test_a_build_without_the_cpu_log_is_refused_before_anything_is_typed(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    plain = runnable(tmp_path / "plain")
-    plain.write_bytes(b"\x00help\x00LOG? no\x00")
-    plain.chmod(0o755)
-    dbg = settle(tmp_path, binary=plain)
-    got = cast(dict[str, Any], server.trace(instructions=16, dest=str(tmp_path / "h.trace")))
-    refused_quietly(dbg, got, "no_channel", "heavy_debug")
+    refused_quietly(machine, got, "not_stopped", "running")
 
 
 def test_a_hand_built_launch_s_bare_name_is_found_on_the_path(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A `Launch` built without `start` carries the bare name; `trace` reads the build the PATH
     gives it, as the session itself was spawned."""
-    heavy = runnable(tmp_path / "bin" / "dosbox-x")
-    heavy.parent.mkdir()
-    heavy.write_bytes(b"\x00help\x00" + binaries.HEAVY_DEBUG_MARK + b"\x00")
-    heavy.chmod(0o755)
+    heavy = heavy_build(tmp_path / "bin" / "dosbox-x")
     monkeypatch.setenv("PATH", str(heavy.parent))
-    dbg = settle(tmp_path, binary=Path("dosbox-x"))
+    machine = settle(tmp_path, binary=Path("dosbox-x"))
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
                                             dest=str(tmp_path / "b.trace")))
     assert got["status"] == "ok", got
-    assert dbg.launch.binary == "dosbox-x"
-
-
-def test_a_session_build_that_is_gone_is_refused_before_anything_is_typed(
-        tmp_path: Path) -> None:
-    gone = tmp_path / "gone" / "dosbox-x"
-    dbg = settle(tmp_path, binary=gone)
-    got = cast(dict[str, Any], server.trace(instructions=16, dest=str(tmp_path / "g.trace")))
-    refused_quietly(dbg, got, "host_failed", "not an executable file")
+    assert session_of(machine).launch.binary == "dosbox-x"
 
 
 def test_a_log_already_in_the_working_directory_is_refused_never_read_or_deleted(
         tmp_path: Path) -> None:
-    dbg = settle(tmp_path)
-    theirs = dbg.launch.cwd / tracing.LOG_FILE.lower()
+    machine = settle(tmp_path)
+    theirs = cast(Path, machine.cwd) / tracing.LOG_FILE.lower()
     theirs.write_bytes(b"somebody's log")
     got = cast(dict[str, Any], server.trace(instructions=16, dest=str(tmp_path / "l.trace")))
-    refused_quietly(dbg, got, "bad_argument", "already sitting at")
+    refused_quietly(machine, got, "bad_argument", "already sitting at")
     assert theirs.read_bytes() == b"somebody's log"
-
-
-@pytest.mark.parametrize("shape", ["missing_directory", "free_name", "relative"])
-def test_a_dangling_link_where_the_log_opens_is_refused_before_anything_is_typed(
-        tmp_path: Path, shape: str) -> None:
-    """Three links at the place the log opens, each somebody's file and refused like one:
-    without the guard, into a missing directory the debugger is refused its file and the
-    console spoiled; to a free name elsewhere it writes the log there and `trace.path` comes
-    back a link; a relative one, collected at another depth, breaks the reply."""
-    dbg = settle(tmp_path)
-    link = dbg.launch.cwd / tracing.LOG_FILE
-    far = {"missing_directory": tmp_path / "nowhere" / "LOG.TXT",
-           "free_name": tmp_path / "elsewhere.txt", "relative": Path("rel.txt")}[shape]
-    link.symlink_to(far)
-    dest = tmp_path / "deeper" / "still" / "l.trace"
-    dest.parent.mkdir(parents=True)
-    got = cast(dict[str, Any], server.trace(instructions=16, dest=str(dest)))
-    refused_quietly(dbg, got, "bad_argument", "already sitting at")
-    landed = far if far.is_absolute() else dbg.launch.cwd / far
-    assert link.is_symlink() and not landed.exists() and not dest.exists()
-
-
-@MODE_BITS
-@pytest.mark.parametrize(("mode", "left_open"), [(0o555, False), (0o555, True), (0o666, False)])
-def test_a_working_directory_the_emulator_cannot_write_is_refused_before_anything_is_typed(
-        tmp_path: Path, mode: int, left_open: bool) -> None:
-    """Neither the trace's command nor the close of a log an earlier trace left open may be
-    typed there (PROVENANCE, `probe-unwritable-*`), and that log stays remembered: nothing here
-    proved it closed. A directory that can be written and not searched takes no file either."""
-    dbg = settle(tmp_path)
-    dstate.STATE.log_open = left_open
-    dbg.launch.cwd.chmod(mode)
-    try:
-        got = cast(dict[str, Any], server.trace(instructions=16, dest=str(tmp_path / "u.trace")))
-    finally:
-        dbg.launch.cwd.chmod(0o755)
-    refused_quietly(dbg, got, "no_channel", f"{dbg.launch.cwd} is not writable")
-    assert log_open() is left_open
 
 
 # ------------------------------------------------------------------- the build, the console
@@ -727,10 +748,10 @@ def test_debug_refuses_the_log_family_naming_trace(command: str) -> None:
 
 
 def test_perform_checks_a_trace_step_with_the_list_and_runs_one(tmp_path: Path) -> None:
-    dbg = settle(tmp_path)
+    machine = settle(tmp_path)
     bad = cast(dict[str, Any], server.perform(steps=[{"op": "trace", "instructions": 0}]))
     assert bad["status"] == "INVALID" and bad["errors"][0]["op"] == "trace", bad
-    assert dbg.keys == []
+    assert released(machine) == []
     dest = tmp_path / "p.trace"
     got = cast(dict[str, Any], server.perform(steps=[
         {"op": "trace", "instructions": 16, "shape": "cs_ip", "dest": str(dest)}]))
@@ -799,8 +820,7 @@ def per_routine(rows: list[dict[str, Any]]) -> dict[str, int]:
 
 def test_the_probe_start_window_joins_to_its_three_routines(tmp_path: Path) -> None:
     """The known answer is the guest's own: 200 instructions from `start` split 51, 144, 5."""
-    live(Tracer([cap("probe-start-survey-before"), cap("probe-start-survey-after")],
-                cwd_of(tmp_path), [("probe-start-normal-200", "probe-start-normal-200-delta")]))
+    tracer(tmp_path, [("probe-start-normal-200", "ran")])
     load(str(GUEST / "probe.sym"), PROBE_BASE)
     dest = tmp_path / "start.trace"
     got = cast(dict[str, Any], server.trace(instructions=200, dest=str(dest)))
@@ -828,15 +848,13 @@ def test_a_long_line_is_placed_by_its_own_mode_whatever_the_window_ends_say() ->
     assert per_routine(got.symbols) == PROBE_START_200 and notes == [], (got.symbols, notes)
 
 
-def test_without_a_logfile_the_protected_lines_get_no_linear_and_the_note_says_why() -> None:
+def test_without_a_logfile_the_protected_lines_are_placed_off_the_listings() -> None:
     load(str(GUEST / "probe.sym"), PROBE_BASE)
     stopped_in("Pr32")
     notes: list[str] = []
-    got = tracing.join(cast(ds.Session, Listings(None)),
-                       tracing.parse(TRACE / "probe-start-normal-200.trace", "normal"), True,
-                       notes)
-    assert got.symbols == [] and all("addr" not in r for r in got.rows), got.rows[:2]
-    assert any("`logfile`" in n for n in notes), notes
+    tracing.join(cast(ds.Session, Listings(None)),
+                 tracing.parse(TRACE / "probe-start-normal-200.trace", "normal"), True, notes)
+    assert not any("logfile" in n for n in notes), notes
 
 
 def test_a_cs_that_names_no_code_descriptor_of_its_privilege_gets_no_linear() -> None:
@@ -887,32 +905,10 @@ def test_no_table_loaded_names_no_routine_and_says_so() -> None:
     assert any("no symbol table" in n for n in notes), notes
 
 
-class ListingTracer(Tracer):
-    """The dos-djgpp32 window's double, answering the descriptor listings as `Listings` does, or
-    refusing them when `refuse` is set."""
-
-    refuse = False
-
-    def listing(self, command: str) -> str:
-        return Listings(None, refuse=self.refuse).listing(command)
-
-    def e9_new_since(self, offset: int) -> tuple[list[str], int]:
-        raise ds.Invalid("no_channel", "the guest's log is not what this case reads")
-
-    def selector(self, reg: str) -> dict[str, int]:
-        """The real reader over the captured dos-djgpp32 `SELINFO` screen."""
-        screen = SimpleNamespace(command=lambda _text: SELINFO_SCREEN, alive=lambda: True)
-        return ds.Session.selector(cast(ds.Session, screen), reg)
-
-
 def test_the_reply_shows_sixty_four_routines_and_counts_the_rest(tmp_path: Path) -> None:
     """A table with a symbol at every address the dos-djgpp32 window executed: one routine each,
     the first sixty-four in the reply and every address in the set file."""
-    dbg = live(ListingTracer([cap("dos-djgpp32-engine-survey-before"),
-                              cap("dos-djgpp32-engine-survey-after")], cwd_of(tmp_path),
-                             [("dos-djgpp32-engine-cs_ip-200",
-                               "dos-djgpp32-engine-cs_ip-200-delta")]))
-    dbg.launch.logfile = tmp_path / "guest.log"
+    djgpp_tracer(tmp_path)
     lines = (TRACE / "dos-djgpp32-engine-cs_ip-200.trace").read_text().splitlines()
     offsets = sorted({int(x.split(":")[1], 16) for x in lines[:-1]})
     dstate.STATE.section_bases.clear()
@@ -1024,12 +1020,7 @@ def test_a_window_armed_protected_and_stopped_real_reads_no_selector() -> None:
 def test_tables_that_cannot_be_read_leave_a_note_and_the_trace_whole(tmp_path: Path) -> None:
     """A descriptor listing that fails after the log has moved costs the join, never the
     proved trace or where its file went."""
-    dbg = live(ListingTracer([cap("dos-djgpp32-engine-survey-before"),
-                              cap("dos-djgpp32-engine-survey-after")], cwd_of(tmp_path),
-                             [("dos-djgpp32-engine-cs_ip-200",
-                               "dos-djgpp32-engine-cs_ip-200-delta")]))
-    dbg.launch.logfile = tmp_path / "guest.log"
-    dbg.refuse = True
+    djgpp_tracer(tmp_path, refuse=True)
     dest = tmp_path / "r.trace"
     got = cast(dict[str, Any], server.trace(instructions=200, shape="cs_ip", dest=str(dest)))
     assert got["status"] == "ok" and got["trace"]["path"] == str(dest), got
@@ -1046,8 +1037,7 @@ def test_a_set_file_the_host_refuses_part_way_is_removed_and_said(
         return "{}"
     # The trace's own writer alone: the rest of the process (the session block's cost) keeps json.
     monkeypatch.setattr(tracing, "json", SimpleNamespace(dumps=full))
-    live(Tracer([cap("probe-start-survey-before"), cap("probe-start-survey-after")],
-                cwd_of(tmp_path), [("probe-start-normal-200", "probe-start-normal-200-delta")]))
+    tracer(tmp_path, [("probe-start-normal-200", "ran")])
     dest = tmp_path / "f.trace"
     got = cast(dict[str, Any], server.trace(instructions=200, dest=str(dest)))
     assert got["status"] == "ok" and got["trace"]["set_path"]["available"] is False, got["trace"]
@@ -1111,11 +1101,11 @@ def test_a_cut_run_whose_read_fails_remembers_the_log_it_left_open(
     def denied(_path: Path) -> int:
         raise PermissionError(13, "Permission denied")
     monkeypatch.setattr(tracing, "count_lines", denied)
-    dbg = cut(tmp_path)
+    machine = cut(tmp_path)
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",
                                             dest=str(tmp_path / "c.trace")))
     assert got["status"] == "INVALID" and got["code"] == "host_failed", got
-    assert dbg.keys == [b"LOGC 186A1\r"] and log_open()
+    assert released(machine) == ["LOGC 186A1"] and log_open()
 
 
 def test_a_cut_run_whose_move_fails_remembers_the_log_it_left_open(
@@ -1123,26 +1113,26 @@ def test_a_cut_run_whose_move_fails_remembers_the_log_it_left_open(
     def refused(source: Path, dest: Path, what: str) -> Path:
         raise ds.Invalid("host_failed", f"the {what} at {source} could not be moved to {dest}")
     monkeypatch.setattr(dcollect, "collect", refused)
-    dbg = cut(tmp_path)
+    machine = cut(tmp_path)
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",
                                             dest=str(tmp_path / "c.trace")))
     assert got["status"] == "INVALID" and got["code"] == "host_failed", got
-    assert dbg.keys == [b"LOGC 186A1\r"] and log_open()
+    assert released(machine) == ["LOGC 186A1"] and log_open()
 
 
 def test_a_wait_that_breaks_off_remembers_the_log_it_released(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The log opens with the release: a wait that leaves by an exception (a client that went
     away, a read that failed) leaves it open, and the next trace has to know."""
-    monkeypatch.setattr(ds, "PROGRESS_EVERY_S", 0.0)
-    dbg = live(Tracer([cap("probe-settle-survey-before")], cwd_of(tmp_path),
-                      [("probe-settle-cs_ip-16", None)]))
+    import dosbox_debugger as dbg
+    monkeypatch.setattr(dbg, "PROGRESS_EVERY_S", 0.0)
+    machine = tracer(tmp_path, [("probe-settle-cs_ip-16", None)])
 
     def gone(*_args: object) -> None:
         raise RuntimeError("the client went away")
     with pytest.raises(RuntimeError):
-        tracing.trace(cast(ds.Session, dbg), 16, "cs_ip", tmp_path / "g.trace", 5.0, gone)
-    assert dbg.keys == [b"LOGC 11\r"] and log_open()
+        tracing.trace(session_of(machine), 16, "cs_ip", tmp_path / "g.trace", 5.0, gone)
+    assert released(machine) == ["LOGC 11"] and log_open()
 
 
 def test_a_count_that_ran_out_closed_its_own_log(tmp_path: Path) -> None:
@@ -1156,93 +1146,31 @@ def test_a_log_left_open_is_closed_and_its_empty_file_removed_before_anything_el
         tmp_path: Path) -> None:
     """A refusal that comes after the close of a log an expired trace left leaves no file of this
     call's behind, or the next trace would be refused over it."""
-    dbg = live(Tracer([], cwd_of(tmp_path), [("probe-post-close", "probe-post-close-delta")]))
+    machine = tracer(tmp_path, [("probe-post-close", "close")])
+    session = session_of(machine)
 
     def cut_survey() -> Any:
         raise ds.Invalid("unexpected_answer", "the survey came back cut")
-    dbg.where_and_registers = cut_survey  # type: ignore[method-assign]
+    session.where_and_registers = cut_survey  # type: ignore[method-assign]
     dstate.STATE.log_open = True
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
                                             dest=str(tmp_path / "o.trace")))
-    assert got["code"] == "unexpected_answer" and dbg.keys == [b"LOGC 0\r"], got
-    assert no_log_left(dbg.launch.cwd) and not log_open()
+    assert got["code"] == "unexpected_answer" and released(machine) == ["LOGC 0"], got
+    assert no_log_left(cast(Path, machine.cwd)) and not log_open()
 
 
 # --------------------------------------------------------------------- the bound expiring
-
-class LogfileTracer(Tracer):
-    """A capture of the session's logfile, appended as the emulator wrote it when the `LOG`
-    command was typed: the lines the reset park's run wrote, or a count's."""
-
-    appends = "probe-post-logfile"
-
-    def _write(self, data: bytes) -> None:
-        super()._write(data)
-        if ds.LOG_COMMAND.fullmatch(data):
-            with self.launch.logfile.open("a", encoding="latin-1") as f:
-                f.write(cap(self.appends))
-
-
-def expired_with_logfile(tmp_path: Path, earlier: str, appends: str) -> dict[str, Any]:
-    """A trace from the reset park bounded short, its logfile holding `earlier` before the
-    trace and gaining the capture `appends` while it waits."""
-    dbg = live(LogfileTracer([cap("probe-post-survey-before")], cwd_of(tmp_path),
-                             [("probe-post-cs_ip", None)]))
-    dbg.appends = appends
-    logfile = tmp_path / "guest.log"
-    logfile.write_text(earlier, encoding="latin-1")
-    dbg.launch.logfile = logfile
-    return cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
-                                             dest=str(tmp_path / "p.trace"), seconds=0.3))
 
 
 def test_a_log_the_machine_closed_before_the_bound_is_not_what_ran(tmp_path: Path) -> None:
     """From the reset park the BIOS closes the debugger's log before its count: the bound
     interrupts the run, and the collect finds the log already closed, so its lines are not what
     ran and the trace is refused, with the stop it ended at."""
-    dbg = live(Tracer([cap("probe-post-survey-before"), cap("probe-post-survey-after-close")],
-                      cwd_of(tmp_path),
-                      [("probe-post-cs_ip", None),
-                       ("probe-post-close", "probe-post-close-delta")]))
+    machine = tracer(tmp_path, [("probe-post-cs_ip", None), ("probe-post-close", "close")])
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
                                             dest=str(tmp_path / "p.trace"), seconds=0.3))
-    assert got["code"] == "readback_refused" and "BREAK" in dbg.sent, got
+    assert got["code"] == "readback_refused" and "BREAK" in machine.sent, got
     assert "are not what ran" in got["message"] and "stop_seq" in got, got
-
-
-def test_the_logfile_is_read_in_chunks_and_a_line_across_two_is_found(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A guest's own line carrying the words is not the debugger's: only a line that starts
-    with them is."""
-    monkeypatch.setattr(tracing, "READ_CHUNK_BYTES", 7)
-    logfile = tmp_path / "guest.log"
-    logfile.write_text("x\nBochs port E9h: " + tracing.NOT_CREATED_LINE + "\n")
-    assert not tracing._logfile_says(logfile, 2, tracing.NOT_CREATED_LINE)
-    logfile.write_text("x\n" + tracing.NOT_CREATED_LINE + "\n")
-    assert tracing._logfile_says(logfile, 2, tracing.NOT_CREATED_LINE)
-
-
-def test_a_logfile_the_host_cannot_read_says_nothing(tmp_path: Path) -> None:
-    assert not tracing._logfile_says(tmp_path, 0, tracing.NOT_CREATED_LINE), \
-        "a directory read as a logfile"
-
-
-def test_the_line_is_found_across_every_split_of_a_chunk(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Down to a chunk of one byte, so the carry has to hold all but the line's last byte."""
-    logfile = tmp_path / "guest.log"
-    logfile.write_text("x\n" + tracing.NOT_CREATED_LINE + "\n")
-    for size in range(1, len(tracing.NOT_CREATED_LINE) + 3):
-        monkeypatch.setattr(tracing, "READ_CHUNK_BYTES", size)
-        assert tracing._logfile_says(logfile, 0, tracing.NOT_CREATED_LINE), size
-
-
-def test_a_line_that_begins_at_the_mark_is_at_a_line_start(tmp_path: Path) -> None:
-    """The mark is where the logfile ended at the release, which is a line's start."""
-    earlier = "an earlier line\n"
-    logfile = tmp_path / "guest.log"
-    logfile.write_text(earlier + tracing.NOT_CREATED_LINE + "\n")
-    assert tracing._logfile_says(logfile, len(earlier), tracing.NOT_CREATED_LINE)
 
 
 class ReadSizes(type(Path())):  # type: ignore[misc]
@@ -1261,17 +1189,6 @@ class ReadSizes(type(Path())):  # type: ignore[misc]
         return f
 
 
-def test_the_logfile_is_read_a_chunk_at_a_time(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """The logfile grows for the whole session, so it is never read whole into memory."""
-    monkeypatch.setattr(tracing, "READ_CHUNK_BYTES", 5)
-    logfile = ReadSizes(tmp_path / "guest.log")
-    logfile.write_text("x\n" * 40)
-    ReadSizes.asked = []
-    assert not tracing._logfile_says(logfile, 0, tracing.NOT_CREATED_LINE)
-    assert ReadSizes.asked and set(ReadSizes.asked) == {5}, ReadSizes.asked
-
-
 # ------------------------------------------------------------------- the reply's other keys
 
 def test_a_set_file_that_appeared_during_the_wait_is_left_alone(tmp_path: Path) -> None:
@@ -1285,12 +1202,10 @@ def test_a_set_file_that_appeared_during_the_wait_is_left_alone(tmp_path: Path) 
 
 def test_the_e9_block_names_the_tool_that_reads_the_lines_not_an_argument_trace_lacks(
         tmp_path: Path) -> None:
-    dbg = live(LogfileTracer([cap("probe-settle-survey-before"),
-                              cap("probe-settle-survey-after")], cwd_of(tmp_path),
-                             [("probe-settle-cs_ip-16", "probe-settle-cs_ip-16-delta")]))
-    dbg.appends = "probe-count-logfile"
-    dbg.launch.logfile = tmp_path / "guest.log"
-    dbg.launch.logfile.write_text("")
+    logfile = tmp_path / "guest.log"
+    logfile.write_text("")
+    machine = tracer(tmp_path, [("probe-settle-cs_ip-16", "ran")], logfile=logfile)
+    machine.appends = "probe-count-logfile"
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
                                             dest=str(tmp_path / "e.trace")))
     assert got["status"] == "ok" and got["e9"] == {"lines_total": 0, "truncated": False,
@@ -1299,22 +1214,19 @@ def test_the_e9_block_names_the_tool_that_reads_the_lines_not_an_argument_trace_
 
 def test_with_the_captures_directory_the_working_directory_the_default_lands_there(
         tmp_path: Path) -> None:
-    dbg = settle(tmp_path, captures_dir=cwd_of(tmp_path))
+    machine = settle(tmp_path, captures_dir=cwd_of(tmp_path))
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip"))
     assert got["status"] == "ok", got
-    assert got["trace"]["path"] == str(dbg.launch.cwd / "trace-1.trace"), got["trace"]
-    assert no_log_left(dbg.launch.cwd)
+    assert got["trace"]["path"] == str(cast(Path, machine.cwd) / "trace-1.trace"), got["trace"]
+    assert no_log_left(cast(Path, machine.cwd))
 
 
 def test_a_trace_started_on_a_code_breakpoint_stops_there_again_and_says_so(
         tmp_path: Path) -> None:
-    """The log is the live run's (PROVENANCE); the surveys and deltas around it are the cut
-    scenario's at the same stop, 0814:0108 with the log open, then closed, which is the state
-    that run was in: no capture of its own surveys was kept."""
-    live(Tracer([cap("probe-cut-survey-after-close"), cap("probe-cut-survey-after-close")],
-                cwd_of(tmp_path), [("probe-on-bp-cs_ip", "probe-cut-open-delta"),
-                                   (None, "probe-cut-close-delta")]))
+    """The log is the live run's (PROVENANCE), at 0814:0108 with a breakpoint there."""
+    machine = tracer(tmp_path, [("probe-on-bp-cs_ip", "ran"), (None, "close")], at=(0x814, 0x108))
     _real_bp("0814:0108")
+    machine.breakpoints.insert(0, "BP 0814:0108")
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",
                                             dest=str(tmp_path / "b.trace")))
     assert got["status"] == "ok" and got["verdict"] == "OTHER_STOP", got
@@ -1328,8 +1240,7 @@ def test_unplaced_counts_the_executed_addresses_no_symbol_places(tmp_path: Path)
     code_only = tmp_path / "code.sym"
     code_only.write_text("".join(x + "\n" for x in (GUEST / "probe.sym").read_text().splitlines()
                                  if " T " in x))
-    live(Tracer([cap("probe-start-survey-before"), cap("probe-start-survey-after")],
-                cwd_of(tmp_path), [("probe-start-normal-200", "probe-start-normal-200-delta")]))
+    tracer(tmp_path, [("probe-start-normal-200", "ran")])
     load(str(code_only), PROBE_BASE)
     got = cast(dict[str, Any], server.trace(instructions=200, dest=str(tmp_path / "u.trace")))
     rows = [json.loads(x) for x in Path(got["trace"]["set_path"]).read_text().splitlines()]
@@ -1346,18 +1257,9 @@ def test_no_table_leaves_every_executed_address_unplaced(tmp_path: Path) -> None
 
 # --------------------------------------------------------------------- the counter's proof
 
-def survey_with_counter(name: str, cycles: int) -> str:
-    """A captured survey with its `cc=` value replaced, the one field changed: no capture
-    crosses the counter's 32-bit wrap or shows a core that overcounts a cut run."""
-    text, n = re.subn(r"cc=[0-9]+", f"cc={cycles}", cap(name))
-    assert n == 1, f"{name}: {n} counters"
-    return text
-
 
 def test_the_counter_is_read_across_its_wrap_by_the_call(tmp_path: Path) -> None:
-    live(Tracer([survey_with_counter("probe-settle-survey-before", tracing.CYCLES_WRAP - 5),
-                 survey_with_counter("probe-settle-survey-after", 11)], cwd_of(tmp_path),
-                [("probe-settle-cs_ip-16", "probe-settle-cs_ip-16-delta")]))
+    settle(tmp_path, cycles=tracing.CYCLES_WRAP - 5)
     got = cast(dict[str, Any], server.trace(instructions=16, shape="cs_ip",
                                             dest=str(tmp_path / "w.trace")))
     assert got["status"] == "ok" and got["trace"]["instructions"] == 16, got
@@ -1366,20 +1268,15 @@ def test_the_counter_is_read_across_its_wrap_by_the_call(tmp_path: Path) -> None
 def test_a_cut_run_that_counted_two_more_is_refused(tmp_path: Path) -> None:
     """The allowance is one, the INT an interrupt breakpoint counted and did not run: two more
     is a counter that does not follow the log."""
-    before = dcons.parse_pane_cycles(cap("probe-cut-survey-before"))
     executed = tracing.count_lines(TRACE / "probe-cut-open.trace") - 1
-    assert before is not None
-    dbg = live(Tracer([cap("probe-cut-survey-before"),
-                       survey_with_counter("probe-cut-survey-after-close", before + executed + 2)],
-                      cwd_of(tmp_path),
-                      [("probe-cut-open", "probe-cut-open-delta"),
-                       (None, "probe-cut-close-delta")]))
+    machine = tracer(tmp_path, [("probe-cut-open", "two"), (None, "close")])
     _real_bp("0814:0108")
+    machine.breakpoints.insert(0, "BP 0814:0108")
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",
                                             dest=str(tmp_path / "c.trace")))
     assert got["status"] == "INVALID" and got["code"] == "no_channel", got
     assert f"moved by {executed + 2} while the log holds {executed} entries" in got["message"]
-    assert dbg.keys == [b"LOGC 186A1\r", b"LOGC 0\r"]
+    assert released(machine) == ["LOGC 186A1", "LOGC 0"]
 
 
 # ------------------------------------------------------------------ the modes of the join
@@ -1466,34 +1363,18 @@ def test_a_binary_rebuilt_at_the_same_size_is_read_again(tmp_path: Path) -> None
     assert binaries.heavy_debug(str(binary)) is False
 
 
-def test_an_interrupt_that_found_no_prompt_names_the_log_left_open(tmp_path: Path) -> None:
-    """The bound's `BREAK` whose prompt never came is `not_settled`, and the debugger's log is
-    still open: the refusal names its path and what the next trace does about it."""
-    class Unsettled(Tracer):
-        def break_in(self, seconds: float = 5.0) -> float:
-            raise ds.Invalid("not_settled", "the prompt did not appear")
-
-    live(Unsettled([cap("probe-int-mid-survey-before")], cwd_of(tmp_path),
-                   [("probe-int-mid-cs_ip", None)]))
-    got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",
-                                            dest=str(tmp_path / "u.trace"), seconds=0.3))
-    assert got["code"] == "not_settled" and got["trace"]["closed"] is False, got
-    assert "still open" in got["message"] and log_open(), got["message"]
-
-
-
-class StopsAsTheBoundExpires(Tracer):
+def test_a_trace_cut_as_the_bound_expires_is_another_stop_not_a_timeout(tmp_path: Path) -> None:
     """The race the bound can lose: a stop cuts the count after the wait gave up and before the
     interrupt looks, so nothing is interrupted and the run ended at another's stop."""
+    machine = cut(tmp_path)
+    session = session_of(machine)
+    real = session.log_cpu
 
-    def log_cpu(self, word: str, count: int, began: float, deadline: float,
+    def gave_up(word: str, count: int, began: float, deadline: float,
                 progress: ds.Progress = ds.no_progress) -> tuple[bool, float]:
-        expired, saw = super().log_cpu(word, count, began, deadline, progress)
+        expired, saw = real(word, count, began, deadline, progress)
         return (True if count else expired), saw     # the close (`LOGC 0`) answers as it does
-
-
-def test_a_trace_cut_as_the_bound_expires_is_another_stop_not_a_timeout(tmp_path: Path) -> None:
-    dbg = cut(tmp_path, kind=StopsAsTheBoundExpires)
+    session.log_cpu = gave_up  # type: ignore[method-assign]
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",
                                             dest=str(tmp_path / "t.trace")))
-    assert "BREAK" not in dbg.sent and got["verdict"] == "OTHER_STOP", (got, dbg.sent)
+    assert "BREAK" not in machine.sent and got["verdict"] == "OTHER_STOP", (got, machine.sent)

@@ -19,7 +19,6 @@ import dosbox_launch as dlaunch
 import dosbox_paths as paths
 import dosbox_placement as placement
 import dosbox_presence as dpresence
-import dosbox_process as dprocess
 import dosbox_running as running
 import dosbox_sequence as sequence
 import dosbox_session as ds
@@ -59,13 +58,12 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         paths.absolute("binary", binary)
     window.check_display(shared, display)
     shown_display = window.shared_display(shared, display)
-    dprocess.refuse_without_a_terminal()
     if STATE.session is not None:
         if STATE.session.alive():
             raise ds.Invalid("session_live", "a session is already live. `close` it first: two "
                              "emulators sharing one machine make every timing on it "
                              "a measurement of the neighbour as much as of the guest")
-        # An expired session still owns its terminal. Not consuming `reap_failed` is deliberate:
+        # An expired session still owns its channel. Not consuming `reap_failed` is deliberate:
         # under `not alive()` `close()` never signals, so it is never set.
         STATE.session.close()
         STATE.session = None
@@ -90,6 +88,8 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         input_port=input_port,
         state_dir=state_path if state_path is not None else cwd_path / dlaunch.DEFAULT_STATE_SUBDIR,
         binary=resolved.path,
+        headless=binaries.headless(resolved.path),
+        debugger_commands=frozenset(binaries.debugger_commands(resolved.path)),
         background=dlaunch.judge_background(background, shared),
     )
     dlaunch.validate(launch)
@@ -103,7 +103,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     for name, made in (("captures_dir", launch.captures_dir), (state_name, launch.state_dir)):
         if made is not None:
             paths.make_directory(name, made)
-    # The probe is part of the start: what it spends comes off the wait for the prompt.
+    # The probe is part of the start: what it spends comes off the wait for the debugger.
     asked = time.monotonic()
     binary_facts = dlaunch.binary_facts(resolved, binaries.VERSION_TIMEOUT_S)
     session = ds.Session(launch)
@@ -136,9 +136,12 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     running.observe_stop(session)     # the park at the debugger is the session's first stop
     STATE.found_stop_last = {}        # ...its own, and never a stop "on its own" beside it
     session.presence = dpresence.open_shown(session, presence, shared)
+    commands: dict[str, Any] = ({"debugger_commands": sorted(session.commands)}
+                                if session.commands else {})
     started = st.reply(**st.process_facts(), shared=shared, display=shown_display,
                        ready_after_s=ready,
                        argv=session.argv, **binary_facts,
+                       **commands,
                        stub=str(dlaunch.GUEST_DIR / "INJECT.COM"),
                        input_port=contract.or_unavailable(session.launch.input_port,
                                                           "no input route was opened"),
@@ -165,8 +168,8 @@ def presence_shown(session: ds.Session | None) -> bool | dict[str, Any]:
     return dpresence.of(session).reply()
 
 
-CLOSE_HOW = ("close(detail=True) keeps the channels' last words on a clean quit too; once a close "
-             "has answered the console's are gone (the logfile stays at its path)")
+CLOSE_HOW = ("close(detail=True) keeps the emulator's last words on a clean quit too; once a close "
+             "has answered its output is gone (the logfile stays at its path)")
 
 
 def _log_tail(session: ds.Session) -> str | dict[str, Any]:

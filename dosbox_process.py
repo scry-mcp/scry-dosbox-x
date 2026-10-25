@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import contextlib
 import os
-import select
 import signal
 import socket
 import subprocess
@@ -14,48 +13,38 @@ from typing import Any
 
 from scry_core import cancel, guardian, live_host
 from scry_core.progress import PROGRESS_EVERY_S, Progress, no_progress
-from scry_core.reply_contract import Invalid
 
 import dosbox_control as control
 import dosbox_launch as dlaunch
 import dosbox_presence as dpresence
 import dosbox_stub_link as stub_link
 
-#: Why no session starts on Windows: the debugger's screen is read through a POSIX terminal.
-NO_TERMINAL = ("no DOSBox-X session can start on Windows: this server reads the emulator's "
-               "debugger through a POSIX pseudo-terminal, which Windows does not have, and the "
-               "channel that would take its place there is not implemented yet; on macOS a "
-               "session starts")
 
+def _streams(headless: bool) -> tuple[int, int] | None:
+    """The read and write ends the emulator's output goes to; None for a console of its own.
 
-#: Whether this host gives a session its terminal; the unit suite's doubles stand in for one.
-HAS_TERMINAL = sys.platform != "win32"
-
-
-def refuse_without_a_terminal() -> None:
-    """`host_failed` on a host with no pseudo-terminal, before anything is started."""
-    if not HAS_TERMINAL:
-        raise Invalid("host_failed", NO_TERMINAL)
-
-
-def _terminal() -> tuple[int, int]:
-    """A pseudo-terminal's two ends, the emulator's with its echo off."""
+    A debugger with a screen never stops unless all three streams are a terminal (POSIX) or it
+    has a console (Windows): it gets a terminal nobody reads, or the hidden console's streams.
+    A headless debugger's output is a pipe."""
+    if headless:
+        return os.pipe()
     if sys.platform == "win32":
-        raise Invalid("host_failed", NO_TERMINAL)
+        return None
     else:
         import pty
-        import termios
 
-        master, slave = pty.openpty()
-        try:
-            attrs = termios.tcgetattr(slave)
-            attrs[3] &= ~(termios.ECHO | termios.ECHONL | termios.ECHOE | termios.ECHOK)
-            termios.tcsetattr(slave, termios.TCSANOW, attrs)
-        except BaseException:
-            os.close(master)
-            os.close(slave)
-            raise
-        return master, slave
+        return pty.openpty()
+
+
+def _console() -> dict[str, Any]:
+    """Windows: the emulator in a console of its own, hidden. Without one it dies at start."""
+    if sys.platform == "win32":
+        shown = subprocess.STARTUPINFO()
+        shown.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        shown.wShowWindow = 0                                  # SW_HIDE
+        return {"creationflags": subprocess.CREATE_NEW_CONSOLE, "startupinfo": shown}
+    else:
+        return {"start_new_session": True}
 
 
 #: Names in the host's process list.
@@ -64,9 +53,8 @@ GUARDIAN_NAME = guardian.name_of(PROCESS_NAME)
 #: Guardian deadline past the bound, on the host's clock (`-time-limit` counts emulated time).
 GUARDIAN_GRACE_S = 10.0
 
-# A thread drains the terminal: a full pty buffer blocks the emulator in the kernel, freezing
-# the machine between questions. DRAIN_KEEP is a memory ceiling, larger than
-# `dosbox_session.SCREEN_KEEP`; reaching it is reported (`_read` refuses the reading).
+# A full pipe or terminal blocks the emulator in the kernel, so a thread drains it; past
+# DRAIN_KEEP the oldest bytes go, counted in `dropped`.
 DRAIN_KEEP = 4 * 1024 * 1024
 
 DRAIN_JOIN_SECS = 2.0
@@ -97,9 +85,8 @@ def wait_exit(proc: subprocess.Popen[Any], seconds: float, progress: Progress,
 
 
 class Process:
-    """The emulator's process, terminal and sockets."""
+    """The emulator's process, its output and its sockets."""
 
-    #: The guardian beside the emulator (`scry_core.guardian`).
     guard: guardian.Guard | None = None
     launch: dlaunch.Launch
     proc: subprocess.Popen[bytes]
@@ -108,9 +95,8 @@ class Process:
         # `dropped` is how a caller tells a whole stream from one with a hole in it.
         self._buf = bytearray()
         self._lock = threading.Lock()
-        self._stop = threading.Event()
-        self._eof = threading.Event()
         self.dropped = 0
+        self._out: int | None = None
         # Why it ended: else a transient error reads as a quiet machine while `alive` is true.
         self._drainer: threading.Thread | None = None
         self.drain_ended = ""
@@ -122,40 +108,54 @@ class Process:
         self.reap_failed = ""
 
     def _linked(self, sock: socket.socket) -> stub_link.Link:
-        """The stub's link over the input socket, as the session speaks it."""
         raise NotImplementedError
 
     def _spawn(self, launch: dlaunch.Launch) -> None:
-        """Bring up the terminal, emulator, guardian, drain thread and input socket."""
+        """Bring up the emulator, its guardian, the output drain and the input socket."""
         # Nothing can reach `close()` if this raises, so cleanup is local.
         listener = (dlaunch.listen_input(launch.input_port) if launch.input_port is not None
                     else None)                        # before any process exists
         if listener is not None:
             launch = self.launch = replace(launch, input_port=listener.getsockname()[1])
+        ends: tuple[int, int] | None = None
         try:
             self.control = control.ControlChannel(lambda: self.proc.poll())
             launch = self.launch = replace(launch, control_port=self.control.port)
-            self._master, slave = _terminal()
+            ends = _streams(launch.headless)
         except BaseException:
             if listener is not None:
                 listener.close()
             if getattr(self, "control", None) is not None:
                 self.control.close()
             raise
+        streams: dict[str, Any] = {}
+        if ends is not None:
+            self._out = ends[0]
+            terminal = os.isatty(ends[1])
+            streams = {"stdin": ends[1] if terminal else subprocess.DEVNULL,
+                       "stdout": ends[1], "stderr": ends[1]}
         try:
             self.argv = dlaunch.build_argv(launch)
-            self.proc = subprocess.Popen(
-                self.argv, cwd=str(launch.cwd), stdin=slave, stdout=slave,
-                stderr=slave, env=dlaunch.launch_environment(launch.background),
-                start_new_session=True, close_fds=True)
+            try:
+                self.proc = subprocess.Popen(
+                    self.argv, cwd=str(launch.cwd),
+                    env=dlaunch.launch_environment(launch.background), close_fds=True,
+                    **streams, **_console())
+            finally:
+                # The child holds its own copy: closed here, the drain reads end of file the
+                # moment nobody writes any more.
+                if ends is not None:
+                    with contextlib.suppress(OSError):
+                        os.close(ends[1])
             if (ledger := live_host.EmulatorLedger.from_environment()) is not None:
                 ledger.record(self.proc.pid, self.argv[0])
             self.guard = guardian.spawn(self.proc, PROCESS_NAME,
                                         deadline=time.time() + launch.seconds + GUARDIAN_GRACE_S)
-            # Not lazy: boot chatter fills the buffer before the first question.
-            self._drainer = threading.Thread(target=self._drain, name="dosbox-drain",
-                                             daemon=True)
-            self._drainer.start()
+            if self._out is not None:
+                # Not lazy: boot chatter fills the pipe before the first question.
+                self._drainer = threading.Thread(target=self._drain, name="dosbox-drain",
+                                                 daemon=True)
+                self._drainer.start()
             # Before the guest runs: it polling a serial port with no peer blocks the emulator.
             self._input: socket.socket | None = None
             self._link: stub_link.Link | None = None
@@ -173,37 +173,28 @@ class Process:
                 if proc is not None and proc.poll() is None:
                     self._signal_group(guardian.KILL)
                     proc.wait(timeout=5)
-            self._stop.set()
-            drainer = getattr(self, "_drainer", None)
-            if drainer is not None:
-                drainer.join(timeout=2.0)
-            with contextlib.suppress(OSError):
-                os.close(self._master)
+            if self._drainer is not None:
+                self._drainer.join(timeout=DRAIN_JOIN_SECS)
+            if self._out is not None:
+                with contextlib.suppress(OSError):
+                    os.close(self._out)
             raise
-        finally:
-            with contextlib.suppress(OSError):
-                os.close(slave)
 
     # ------------------------------------------------------------------ reading
 
     def _drain(self) -> None:
-        """Read the terminal while it lives, recording how it ended.
+        """Read the emulator's output while it lives, recording how it ended.
 
-        Overflow drops the oldest bytes, counted; `_read` refuses the reading it lands in.
+        It ends at end of file, which is the emulator gone; overflow drops the oldest bytes,
+        counted.
         """
+        assert self._out is not None
         ended = "the descriptor reached end of file"
-        while not self._stop.is_set():
+        while True:
             try:
-                ready, _, _ = select.select([self._master], [], [], 0.05)
-            except (OSError, ValueError) as exc:
-                ended = f"select on the terminal failed: {exc!r}"
-                break
-            if not ready:
-                continue
-            try:
-                chunk = os.read(self._master, 65536)
+                chunk = os.read(self._out, 65536)
             except OSError as exc:
-                ended = f"reading the terminal failed: {exc!r}"
+                ended = f"reading the emulator's output failed: {exc!r}"
                 break
             if not chunk:
                 break
@@ -213,16 +204,13 @@ class Process:
                 if over > 0:
                     del self._buf[:over]
                     self.dropped += over
-        else:
-            ended = "stopped deliberately by close()"
         self.drain_ended = ended
-        self._eof.set()
 
-    def _take(self) -> bytes:
+    def output_tail(self, chars: int) -> str:
+        """The last `chars` of what the emulator printed; empty when its console kept it."""
         with self._lock:
-            got = bytes(self._buf)
-            self._buf.clear()
-        return got
+            got = bytes(self._buf[-4 * chars:])
+        return got.decode("utf-8", errors="replace")[-chars:]
 
     # ------------------------------------------------------------------ closing
 
@@ -283,20 +271,18 @@ class Process:
             channel = getattr(self, "control", None)
             if channel is not None:
                 channel.close()
-            # Stop the thread before closing the descriptor; if the join expires, leak the
-            # descriptor on purpose rather than let a stale drainer read a recycled one.
-            self._stop.set()
+            # The drain ends at the emulator's end of file; if the join expires, the descriptor
+            # is leaked on purpose rather than recycled under a live reader.
             if self._drainer is not None:
                 self._drainer.join(timeout=DRAIN_JOIN_SECS)
             if self._drainer is not None and self._drainer.is_alive():
                 self.drain_ended = (f"the drain thread did not stop within "
-                                    f"{DRAIN_JOIN_SECS} s; the terminal descriptor was "
-                                    f"left open on purpose rather than recycled under "
-                                    f"a live reader")
-            elif not getattr(self, "_master_closed", False):
-                self._master_closed = True
+                                    f"{DRAIN_JOIN_SECS} s; its descriptor was left open on "
+                                    f"purpose rather than recycled under a live reader")
+            elif self._out is not None:
                 with contextlib.suppress(OSError):
-                    os.close(self._master)
+                    os.close(self._out)
+                self._out = None
             # Only once reaped: stopped earlier, a dying server would leave it unwatched.
             if self.proc.poll() is not None:
                 guardian.stop(self.guard)
@@ -308,8 +294,10 @@ class Process:
 
 
 def signal_group(pid: int, sig: int) -> None:
-    """`sig` to the process group `pid` belongs to, if there still is one."""
+    """`sig` to the process group `pid` belongs to, if there still is one; on Windows, where
+    there are no signals to send, the process is terminated (its job object takes the rest)."""
     with contextlib.suppress(ProcessLookupError, PermissionError, OSError):
-        if sys.platform != "win32":
+        if sys.platform == "win32":
+            os.kill(pid, signal.SIGTERM)
+        else:
             os.killpg(os.getpgid(pid), sig)
-

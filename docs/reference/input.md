@@ -66,69 +66,6 @@ Example, from a live run:
 ```json
 {
   "keys": [
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
     "a"
   ]
 }
@@ -136,26 +73,10 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "send_keys (guest): posted, unverified",
-  "status": "ok",
-  "keys": [
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "... 58 more"
-  ],
-  "modifiers": [],
-  "route": "guest",
-  "posted": 64,
-  "bytes": 128,
-  "ticks": 128,
-  "verify": {
-    "checked": false,
-    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
-  }
+  "summary": "send_keys: INVALID (no_session), there is no live session. `start` one first; a reply from a dead session would be a reading of nothing.",
+  "status": "INVALID",
+  "code": "no_session",
+  "message": "there is no live session. `start` one first; a reply from a dead session would be a reading of nothing."
 }
 ```
 <!-- scry-reference:end send_keys -->
@@ -220,40 +141,16 @@ Example, from a live run:
 
 ```json
 {
-  "x": 0,
-  "y": 0
+  "button": "left"
 }
 ```
 
 ```json
 {
-  "summary": "send_mouse: pointer at 0,0; posted, unverified",
-  "status": "ok",
-  "x": 0,
-  "y": 0,
-  "units": "screen",
-  "route": "guest",
-  "pointer": {
-    "screen": {
-      "x": 0,
-      "y": 0,
-      "width": 80,
-      "height": 25
-    },
-    "mouse": {
-      "x": 0,
-      "y": 0,
-      "max_x": 639,
-      "max_y": 199
-    },
-    "buttons": [],
-    "bios_mode": "0x03"
-  },
-  "arrived": true,
-  "verify": {
-    "checked": false,
-    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
-  }
+  "summary": "send_mouse: INVALID (no_session), there is no live session. `start` one first; a reply from a dead session would be a reading of nothing.",
+  "status": "INVALID",
+  "code": "no_session",
+  "message": "there is no live session. `start` one first; a reply from a dead session would be a reading of nothing."
 }
 ```
 <!-- scry-reference:end send_mouse -->
@@ -331,20 +228,19 @@ Example, from a live run:
         "reply": {
           "summary": "status: alive, stopped",
           "status": "ok",
-          "pid": 74310,
-          "conf": "$TMPDIR/dosbox-x-live-job-tkj8_x5o/A/tests/guest/probe.conf",
+          "pid": 44567,
+          "conf": "/path/to/scry-dosbox-x/tests/guest/probe.conf",
           "conf_digest": "78bdc38f360b9b4a",
           "bound_s": 1200,
-          "elapsed_s": 54.6,
-          "drain_alive": true,
+          "elapsed_s": 12.4,
           "captures": "off",
-          "state_dir": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n632-save",
+          "state_dir": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n632-save",
           "last_stop": {
             "stop_seq": 9,
             "pc": "0814:00000130",
             "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-            "since_s": 8.8,
-            "wall_at": "2026-10-24T22:13:18+00:00"
+            "since_s": 1.0,
+            "wall_at": "2026-10-25T21:14:23+00:00"
           },
           "pending": {
             "arm": [],
@@ -384,7 +280,7 @@ Example, from a live run:
   "looked": {
     "guest": {
       "available": true,
-      "since_mark": 36825,
+      "since_mark": 37703,
       "lines_written": 0,
       "lines_total": 0,
       "truncated": false,

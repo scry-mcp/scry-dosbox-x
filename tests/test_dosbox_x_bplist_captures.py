@@ -55,6 +55,7 @@ def test_a_clear_deletes_the_row_at_its_index_now_and_reads_it_gone(tmp_path: Pa
         return ""
     s = SimpleNamespace(where=lambda: {"cs": "F000", "eip": "0", "mode": "Real"},
                         command=command, breakpoints=lambda: lists.pop(0))
+    s.delete_rows = lambda picks: ds.Session.delete_rows(s, picks)  # type: ignore[arg-type]
     got = ds.Session.clear_code_breakpoint(s, 0xF000, 0x100)  # type: ignore[arg-type]
     assert sent == ["BPDEL 02"] and got == {"entry": "BP F000:0100", "removed": True}, got
 

@@ -28,24 +28,31 @@
    "stored": true,
    "entry": "BPINT 21 AH=4C",
    "omitted": [
-    "screen_delta",
-    "screen_chars",
+    "output",
+    "output_chars",
     "clipped"
    ],
-   "how": "detail=True adds the debugger's repaint for this command"
+   "how": "detail=True adds what the debugger printed for this command"
   }
  },
  "build_check": {
   "from": "[A] every tool in every machine state, on the probe guest: A none    build_check",
   "call": {},
   "reply": {
-   "summary": "build_check: ~/.local/state/dosbox-x-builds/scry-f06aa5d26/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
+   "summary": "build_check: ~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
    "status": "ok",
-   "binary": "~/.local/state/dosbox-x-builds/scry-f06aa5d26/dosbox-x",
+   "binary": "~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x",
    "binary_origin": "DOSBOX_X_BINARY",
    "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
    "debugger": true,
    "heavy_debug": true,
+   "debugger_commands": [
+    "RUNSTATE",
+    "STEPIN",
+    "SAVESTATE",
+    "LOADSTATE",
+    "PRESENCE"
+   ],
    "tools": [
     "breakpoint_at",
     "breakpoint_interrupt",
@@ -93,20 +100,16 @@
   }
  },
  "capture_frame": {
-  "from": "[J] the screen from the VGA's listings and video memory, on the package's guests: J the 13h picture equals the emulator's own capture of that frame, pixel for pixel",
+  "from": "[A] every tool in every machine state, on the probe guest: A none    capture_frame",
   "call": {
-   "frame": 2,
-   "dest": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/J/n11.png",
-   "capture_path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/J/n6-cap/screen_001.avi"
+   "frame": 0,
+   "dest": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n46.png"
   },
   "reply": {
-   "summary": "capture_frame 2: 5072 bytes to $TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/J/n11.png",
-   "status": "ok",
-   "path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/J/n11.png",
-   "bytes": 5072,
-   "sha256": "aee93b1749a9c93112b4fca12509d5ad9da94fc94b41bf781612e590a0a4342b",
-   "capture_path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/J/n6-cap/screen_001.avi",
-   "frame": 2
+   "summary": "capture_frame: INVALID (no_session), there is no live session. `start` one first; a reply from a dead session would be a reading of nothing.",
+   "status": "INVALID",
+   "code": "no_session",
+   "message": "there is no live session. `start` one first; a reply from a dead session would be a reading of nothing."
   }
  },
  "captures": {
@@ -118,31 +121,31 @@
    "captures": [
     {
      "kind": "bin",
-     "path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n733.bin",
+     "path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n733.bin",
      "present": true,
      "bytes": 16
     },
     {
      "kind": "png",
-     "path": "$TMPDIR/dosbox-x-session-9rhds9vj/gfx/palette-1.png",
+     "path": "$TMPDIR/dosbox-x-session-6nzxwtl8/gfx/palette-1.png",
      "present": true,
      "bytes": 1009
     },
     {
      "kind": "json",
-     "path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n880-stopped.scry-map.json",
+     "path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n880-stopped.scry-map.json",
      "present": true,
      "bytes": 312
     },
     {
      "kind": "trace",
-     "path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n954.trace",
+     "path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n954.trace",
      "present": true,
      "bytes": 238
     },
     {
      "kind": "tsv",
-     "path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n1058.comments.tsv",
+     "path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n1058.comments.tsv",
      "present": true,
      "bytes": 85
     }
@@ -150,28 +153,14 @@
   }
  },
  "close": {
-  "from": "[O] the focus gate's control, opening the run: O the control: a shared start forced in front is seen in front",
+  "from": "[A] every tool in every machine state, on the probe guest: A none    close",
   "call": {},
   "reply": {
-   "summary": "close: quit, exit code 0",
+   "summary": "close: there was no session",
    "status": "ok",
-   "closed": true,
-   "pid": 74107,
-   "conf": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n2.conf",
-   "conf_digest": "33a4a905f64a2a65",
-   "watched": true,
-   "bound_s": 1200,
-   "elapsed_s": 6.0,
-   "drain_alive": true,
-   "captures": "off",
-   "state_dir": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n4-save",
-   "ended_by": "quit",
-   "exit_code": 0,
-   "omitted": [
-    "stdout_tail",
-    "errorlog_tail"
-   ],
-   "how": "close(detail=True) keeps the channels' last words on a clean quit too; once a close has answered the console's are gone (the logfile stays at its path)"
+   "closed": false,
+   "ended_by": "none",
+   "note": "there was no session"
   }
  },
  "comment_list": {
@@ -188,8 +177,8 @@
       "available": false,
       "why": "a DOS machine has one cpu, and every row acts on it"
      },
-     "created_at": "2026-10-24T22:13:22+00:00",
-     "origin": "2026-10-24T22:12:33+00:00#74274.1",
+     "created_at": "2026-10-25T21:14:24+00:00",
+     "origin": "2026-10-25T21:14:12+00:00#44557.1",
      "inherited": false,
      "age_s": 0,
      "text": "matrix A",
@@ -201,7 +190,7 @@
    "truncated": false,
    "declarations": {
     "persistent": true,
-    "path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/dosbox-x-live-matrix-A-ygambp28/dosbox-x-debug/declarations.json"
+    "path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/dosbox-x-live-matrix-A-p7a8nwap/dosbox-x-debug/declarations.json"
    }
   }
  },
@@ -222,8 +211,8 @@
      "available": false,
      "why": "a DOS machine has one cpu, and every row acts on it"
     },
-    "created_at": "2026-10-24T22:13:22+00:00",
-    "origin": "2026-10-24T22:12:33+00:00#74274.1",
+    "created_at": "2026-10-25T21:14:24+00:00",
+    "origin": "2026-10-25T21:14:12+00:00#44557.1",
     "inherited": false,
     "age_s": 0,
     "text": "matrix A",
@@ -233,21 +222,20 @@
    "replaced_comments": [],
    "declarations": {
     "persistent": true,
-    "path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/dosbox-x-live-matrix-A-ygambp28/dosbox-x-debug/declarations.json"
+    "path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/dosbox-x-live-matrix-A-p7a8nwap/dosbox-x-debug/declarations.json"
    }
   }
  },
  "debug": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped debug",
+  "from": "[A] every tool in every machine state, on the probe guest: A none    debug",
   "call": {
    "command": "BPLIST"
   },
   "reply": {
-   "summary": "debug 'BPLIST': 3231 chars",
-   "status": "ok",
-   "command": "BPLIST",
-   "screen_delta": "B_P_L_I_S_T__ooooRegister OverviewoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooEAX=00000000  ESI=00000100  DS=0814   ES=0814   FS=0000   GS=0000   SS=0814 Real\r\nEBX=00000124  ... (3231 characters)",
-   "screen_chars": 3231
+   "summary": "debug: INVALID (no_session), there is no live session. `start` one first; a reply from a dead session would be a reading of nothing.",
+   "status": "INVALID",
+   "code": "no_session",
+   "message": "there is no live session. `start` one first; a reply from a dead session would be a reading of nothing."
   }
  },
  "declaration_clear": {
@@ -281,10 +269,10 @@
       "available": false,
       "why": "a DOS machine has one cpu, and every row acts on it"
      },
-     "created_at": "2026-10-24T22:13:23+00:00",
-     "origin": "2026-10-24T22:12:33+00:00#74274.1",
+     "created_at": "2026-10-25T21:14:24+00:00",
+     "origin": "2026-10-25T21:14:12+00:00#44557.1",
      "inherited": false,
-     "age_s": 2,
+     "age_s": 0,
      "entry": "BP 0000:0002",
      "marked": false,
      "state": "armed"
@@ -339,20 +327,19 @@
       "reply": {
        "summary": "status: alive, stopped",
        "status": "ok",
-       "pid": 74310,
-       "conf": "$TMPDIR/dosbox-x-live-job-tkj8_x5o/A/tests/guest/probe.conf",
+       "pid": 44567,
+       "conf": "/path/to/scry-dosbox-x/tests/guest/probe.conf",
        "conf_digest": "78bdc38f360b9b4a",
        "bound_s": 1200,
-       "elapsed_s": 54.6,
-       "drain_alive": true,
+       "elapsed_s": 12.4,
        "captures": "off",
-       "state_dir": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n632-save",
+       "state_dir": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n632-save",
        "last_stop": {
         "stop_seq": 9,
         "pc": "0814:00000130",
         "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-        "since_s": 8.8,
-        "wall_at": "2026-10-24T22:13:18+00:00"
+        "since_s": 1.0,
+        "wall_at": "2026-10-25T21:14:23+00:00"
        },
        "pending": {
         "arm": [],
@@ -392,7 +379,7 @@
    "looked": {
     "guest": {
      "available": true,
-     "since_mark": 36825,
+     "since_mark": 37703,
      "lines_written": 0,
      "lines_total": 0,
      "truncated": false,
@@ -434,37 +421,17 @@
   }
  },
  "image_compare": {
-  "from": "[Q] the media layer: each scenario the hand way and the new way, over one answer: Q S1 new: series_capture and image_compare region find the same frames, with no picture",
+  "from": "[A] every tool in every machine state, on the probe guest: A none    image_compare image",
   "call": {
-   "method": "region",
-   "manifest": "$TMPDIR/dosbox-x-session-xgqgp8b6/series/series-1/manifest.json",
-   "measure": "changed_pixels"
+   "method": "image",
+   "a": "/nonexistent/a.png",
+   "b": "/nonexistent/b.png"
   },
   "reply": {
-   "summary": "image_compare region: changed_pixels, 1 transition over 5 frames",
-   "status": "ok",
-   "measure": "changed_pixels",
-   "crop": [
-    0,
-    0,
-    320,
-    8
-   ],
-   "frames": 5,
-   "start": {
-    "available": false,
-    "why": "`changed_pixels` counts a change from the frame before, and the first frame has none"
-   },
-   "transitions": [
-    [
-     4,
-     2560
-    ]
-   ],
-   "gaps": [],
-   "transitions_total": 1,
-   "path": "$TMPDIR/dosbox-x-session-xgqgp8b6/series/series-1/track-1.json",
-   "manifest": "$TMPDIR/dosbox-x-session-xgqgp8b6/series/series-1/manifest.json"
+   "summary": "image_compare: INVALID (bad_argument), a: /nonexistent/a.png is not a file",
+   "status": "INVALID",
+   "code": "bad_argument",
+   "message": "a: /nonexistent/a.png is not a file"
   }
  },
  "interrupt_vectors": {
@@ -511,7 +478,7 @@
      "CPU"
     ]
    },
-   "coverage_note": "read from the debugger's own listings at this stop, through the session's logfile. `gdt` and `ldt` are absent: the cpu is in real mode, where the debugger reads the interrupt vector table as descriptors. `paging` is absent: paging is off"
+   "coverage_note": "read from the debugger's own listings at this stop. `gdt` and `ldt` are absent: the cpu is in real mode, where the debugger reads the interrupt vector table as descriptors. `paging` is absent: paging is off"
   }
  },
  "log": {
@@ -521,17 +488,17 @@
    "channel": "emulator"
   },
   "reply": {
-   "summary": "log emulator /./: 40 of 134 lines",
+   "summary": "log emulator /./: 40 of 123 lines",
    "status": "ok",
    "pattern": ".",
    "channel": "emulator",
-   "lines_total": 134,
+   "lines_total": 123,
    "truncated": true,
    "lines": [
-    "00. BPINT 21 AH=4B",
-    "DEBUG: Breakpoint deletion success.",
-    "Breakpoint list:",
-    "-------------------------------------------------------------------------",
+    "DEBUG: RUNSTATE running cycles=319 ms=0.732100000",
+    "DEBUG: RUNSTATE stopped cycles=1253 ms=0.825500000",
+    "EV of 'EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0' is:",
+    "4b00 5fe 2026 61e 0 0 0 5fe dac6 f000 71b 71b 0 0 71b 7002 10",
     "Breakpoint list:",
     "-------------------------------------------------------------------------",
     "... 34 more"
@@ -771,7 +738,7 @@
      "CPU"
     ]
    },
-   "coverage_note": "read from the debugger's own listings at this stop, through the session's logfile. `gdt` and `ldt` are absent: the cpu is in real mode, where the debugger reads the interrupt vector table as descriptors. `paging` is absent: paging is off",
+   "coverage_note": "read from the debugger's own listings at this stop. `gdt` and `ldt` are absent: the cpu is in real mode, where the debugger reads the interrupt vector table as descriptors. `paging` is absent: paging is off",
    "truncated": false,
    "omitted": [
     "bios_mem",
@@ -842,15 +809,15 @@
   "call": {
    "ref": "0000:0400",
    "length": 16,
-   "dest": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n733.bin"
+   "dest": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n733.bin"
   },
   "reply": {
-   "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n733.bin",
+   "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n733.bin",
    "status": "ok",
    "ref": "0000:0400",
    "seg_off": "0000:00000400",
    "length": 16,
-   "path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n733.bin",
+   "path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n733.bin",
    "bytes": 16
   }
  },
@@ -877,7 +844,7 @@
    "bits": 6,
    "pel_mask": "ffh",
    "image": {
-    "path": "$TMPDIR/dosbox-x-session-9rhds9vj/gfx/palette-1.png",
+    "path": "$TMPDIR/dosbox-x-session-6nzxwtl8/gfx/palette-1.png",
     "bytes": 1009,
     "sha256": "a5dff617e307a60f3bf521d96fed8809cc0f3b38409a74c904cfa5c1ad4371e1",
     "width": 256,
@@ -906,20 +873,19 @@
      "reply": {
       "summary": "status: alive, stopped",
       "status": "ok",
-      "pid": 74310,
-      "conf": "$TMPDIR/dosbox-x-live-job-tkj8_x5o/A/tests/guest/probe.conf",
+      "pid": 44567,
+      "conf": "/path/to/scry-dosbox-x/tests/guest/probe.conf",
       "conf_digest": "78bdc38f360b9b4a",
       "bound_s": 1200,
-      "elapsed_s": 54.4,
-      "drain_alive": true,
+      "elapsed_s": 12.4,
       "captures": "off",
-      "state_dir": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n632-save",
+      "state_dir": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n632-save",
       "last_stop": {
        "stop_seq": 9,
        "pc": "0814:00000130",
        "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-       "since_s": 8.5,
-       "wall_at": "2026-10-24T22:13:18+00:00"
+       "since_s": 1.0,
+       "wall_at": "2026-10-25T21:14:23+00:00"
       },
       "pending": {
        "arm": [],
@@ -956,12 +922,12 @@
  "perform_export": {
   "from": "[A] every tool in every machine state, on the probe guest: A stopped perform_export",
   "call": {
-   "dest": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n1257.json"
+   "dest": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n1257.json"
   },
   "reply": {
-   "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n1257.json",
+   "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n1257.json",
    "status": "ok",
-   "path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n1257.json",
+   "path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n1257.json",
    "steps": 1,
    "checks": 0,
    "dropped": [],
@@ -971,7 +937,7 @@
     "op": "resume",
     "why": "its run was stopped by the wall clock or by the machine itself, at a place inside its frame that no replayed advance reaches"
    },
-   "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n1257.json"
+   "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n1257.json"
   }
  },
  "read_memory": {
@@ -981,21 +947,12 @@
    "length": 4
   },
   "reply": {
-   "summary": "read_memory 0000:0020: 8 rows at 0000:00000020",
+   "summary": "read_memory 0000:0020: 0 rows at 0000:00000020",
    "status": "ok",
    "ref": "0000:0020",
    "seg_off": "0000:00000020",
    "length": 4,
-   "hex": "a5fe00f0",
-   "rows": [
-    "0000:00000020 A5 FE 00 F0 87 E9 00 F0 55 FF 00 F0 80 CE 00 F0  ........U.......",
-    "0000:00000030 80 CE 00 F0 80 CE 00 F0 E0 CC 00 F0 0E 00 70 00  ..............p.",
-    "0000:00000040 EE 00 00 C0 20 CB 00 F0 40 CB 00 F0 60 CF 00 F0  .... ...@...`...",
-    "0000:00000050 80 CB 00 F0 A0 CB 00 F0 C0 CF 00 F0 C0 CB 00 F0  ................",
-    "0000:00000060 00 CD 00 F0 60 CC 00 F0 E0 CB 00 F0 C0 D1 00 F0  ....`...........",
-    "0000:00000070 00 CC 00 F0 58 C9 00 F0 02 00 94 FC E9 05 00 C0  ....X...........",
-    "... 2 more"
-   ]
+   "hex": "a5fe00f0"
   }
  },
  "registers": {
@@ -1006,35 +963,35 @@
    "status": "ok",
    "regs": {
     "EAX": "0x00000000",
+    "EBX": "0x00000124",
+    "ECX": "0x0000a97e",
+    "EDX": "0x00000814",
     "ESI": "0x00000100",
+    "EDI": "0x0000fffe",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fff8",
+    "EIP": "0x0000fea5",
+    "CS": "0xf000",
     "DS": "0x0814",
     "ES": "0x0814",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x0814",
-    "EBX": "0x00000124",
-    "EDI": "0x0000fffe",
-    "CS": "0xf000",
-    "EIP": "0x0000fea5",
-    "ECX": "0x0000a97e",
-    "EBP": "0x0000091c",
-    "EDX": "0x00000814",
-    "ESP": "0x0000fff8"
+    "SS": "0x0814"
    }
   }
  },
  "resume": {
-  "from": "[O] the focus gate's control, opening the run: O the control: a shared start forced in front is seen in front",
+  "from": "[A] every tool in every machine state, on the probe guest: A stopped resume",
   "call": {},
   "reply": {
    "summary": "resume: running",
    "status": "ok",
    "omitted": [
-    "screen_delta",
-    "screen_chars",
+    "output",
+    "output_chars",
     "clipped"
    ],
-   "how": "detail=True adds the debugger's repaint for this command"
+   "how": "detail=True adds what the debugger printed for this command"
   }
  },
  "run_for": {
@@ -1051,20 +1008,20 @@
    "cpu_mode": "real",
    "regs": {
     "EAX": "0x00000000",
+    "EBX": "0x000002bc",
+    "ECX": "0x0000c132",
+    "EDX": "0x00000814",
     "ESI": "0x00000173",
+    "EDI": "0x0000015d",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fffe",
+    "EIP": "0x00000130",
+    "CS": "0x0814",
     "DS": "0x0814",
     "ES": "0x0814",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x0814",
-    "EBX": "0x000002bc",
-    "EDI": "0x0000015d",
-    "CS": "0x0814",
-    "EIP": "0x00000130",
-    "ECX": "0x0000c12e",
-    "EBP": "0x0000091c",
-    "EDX": "0x00000814",
-    "ESP": "0x0000fffe"
+    "SS": "0x0814"
    },
    "watches": [],
    "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
@@ -1072,7 +1029,7 @@
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 32972
+    "mark": 34480
    },
    "stop_seq": 7,
    "instruction": {
@@ -1081,7 +1038,7 @@
     "text": "loop 0x130",
     "flow": "branch",
     "code_bits": 16,
-    "bytes_from": "code pane",
+    "bytes_from": "memory",
     "symbol": {
      "available": false,
      "why": "no symbol table is loaded"
@@ -1091,7 +1048,7 @@
      "why": "no symbol table is loaded"
     }
    },
-   "emulated_before_s": 1.9730911,
+   "emulated_before_s": 1.9730917,
    "emulated_after_s": 1.9747000000000001,
    "frame_before": {
     "available": false,
@@ -1103,7 +1060,7 @@
    },
    "cycles": {
     "available": false,
-    "why": "the pane's `cc=` counts cycles only on the normal core, and which core runs is not something this server can read, so no count is given"
+    "why": "the cycle count counts only on the normal core, and which core runs is not something this server can read, so no count is given"
    }
   }
  },
@@ -1115,7 +1072,7 @@
    "control": "0814:0130"
   },
   "reply": {
-   "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 3",
+   "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 5",
    "status": "ok",
    "verdict": "TIMEOUT",
    "target": "0000:0003",
@@ -1123,32 +1080,32 @@
    "pc": "0814:00000130",
    "cpu_mode": "real",
    "target_disarmed": true,
-   "control_hits": 3,
+   "control_hits": 5,
    "controls": [
     {
      "ref": "0814:0130",
      "at": "0814:0130",
-     "hits_in_run": 3,
+     "hits_in_run": 5,
      "removed": true
     }
    ],
-   "note": "it came to rest ON the control 0814:0130 (its hit number 3) when the bound ran out, and not at 0000:0003. The breakpoint at 0000:0003 was removed.",
+   "note": "it came to rest ON the control 0814:0130 (its hit number 5) when the bound ran out, and not at 0000:0003. The breakpoint at 0000:0003 was removed.",
    "regs": {
     "EAX": "0x00000000",
+    "EBX": "0x000002bc",
+    "ECX": "0x0000fffc",
+    "EDX": "0x00000814",
     "ESI": "0x00000173",
+    "EDI": "0x0000015d",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fffe",
+    "EIP": "0x00000130",
+    "CS": "0x0814",
     "DS": "0x0814",
     "ES": "0x0814",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x0814",
-    "EBX": "0x000002bc",
-    "EDI": "0x0000015d",
-    "CS": "0x0814",
-    "EIP": "0x00000130",
-    "ECX": "0x0000fffe",
-    "EBP": "0x0000091c",
-    "EDX": "0x00000814",
-    "ESP": "0x0000fffe"
+    "SS": "0x0814"
    },
    "watches": [],
    "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
@@ -1158,7 +1115,7 @@
     "lines": [
      "Bochs port E9h: [+ 00000.000] PROBE . tick"
     ],
-    "mark": 31673
+    "mark": 31238
    },
    "stop_seq": 6,
    "instruction": {
@@ -1167,7 +1124,7 @@
     "text": "loop 0x130",
     "flow": "branch",
     "code_bits": 16,
-    "bytes_from": "code pane",
+    "bytes_from": "memory",
     "symbol": {
      "available": false,
      "why": "no symbol table is loaded"
@@ -1269,165 +1226,42 @@
   }
  },
  "send_keys": {
-  "from": "[B] argument edges: the maximum, one past it, the overflow: B send_keys 64 keys",
+  "from": "[A] every tool in every machine state, on the probe guest: A none    send_keys",
   "call": {
    "keys": [
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
     "a"
    ]
   },
   "reply": {
-   "summary": "send_keys (guest): posted, unverified",
-   "status": "ok",
-   "keys": [
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "... 58 more"
-   ],
-   "modifiers": [],
-   "route": "guest",
-   "posted": 64,
-   "bytes": 128,
-   "ticks": 128,
-   "verify": {
-    "checked": false,
-    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
-   }
+   "summary": "send_keys: INVALID (no_session), there is no live session. `start` one first; a reply from a dead session would be a reading of nothing.",
+   "status": "INVALID",
+   "code": "no_session",
+   "message": "there is no live session. `start` one first; a reply from a dead session would be a reading of nothing."
   }
  },
  "send_mouse": {
-  "from": "[P] the input route inside the guest: keys and the mouse, headless: P text mode: x=0 y=0 arrives, the driver at 0,0",
+  "from": "[A] every tool in every machine state, on the probe guest: A none    send_mouse",
   "call": {
-   "x": 0,
-   "y": 0
+   "button": "left"
   },
   "reply": {
-   "summary": "send_mouse: pointer at 0,0; posted, unverified",
-   "status": "ok",
-   "x": 0,
-   "y": 0,
-   "units": "screen",
-   "route": "guest",
-   "pointer": {
-    "screen": {
-     "x": 0,
-     "y": 0,
-     "width": 80,
-     "height": 25
-    },
-    "mouse": {
-     "x": 0,
-     "y": 0,
-     "max_x": 639,
-     "max_y": 199
-    },
-    "buttons": [],
-    "bios_mode": "0x03"
-   },
-   "arrived": true,
-   "verify": {
-    "checked": false,
-    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
-   }
+   "summary": "send_mouse: INVALID (no_session), there is no live session. `start` one first; a reply from a dead session would be a reading of nothing.",
+   "status": "INVALID",
+   "code": "no_session",
+   "message": "there is no live session. `start` one first; a reply from a dead session would be a reading of nothing."
   }
  },
  "series_capture": {
-  "from": "[Q] the media layer: each scenario the hand way and the new way, over one answer: Q S1 new: series_capture and image_compare region find the same frames, with no picture",
+  "from": "[A] every tool in every machine state, on the probe guest: A none    series_capture",
   "call": {
    "first": 0,
-   "last": 4,
-   "crop": [
-    0,
-    0,
-    320,
-    8
-   ],
-   "capture_path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/Q/n1-cap/screen_001.avi"
+   "last": 1
   },
   "reply": {
-   "summary": "series_capture: 5 AVI frames 0..4, 2 distinct, manifest $TMPDIR/dosbox-x-session-xgqgp8b6/series/series-1/manifest.json",
-   "status": "ok",
-   "manifest": "$TMPDIR/dosbox-x-session-xgqgp8b6/series/series-1/manifest.json",
-   "count": 5,
-   "first": 0,
-   "last": 4,
-   "distinct": 2,
-   "frames_asked": 5,
-   "kept_after_close": false,
-   "frame_source": "avi",
-   "capture_path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/Q/n1-cap/screen_001.avi",
-   "crop": [
-    0,
-    0,
-    320,
-    8
-   ]
+   "summary": "series_capture: INVALID (no_session), there is no live session. `start` one first; a reply from a dead session would be a reading of nothing.",
+   "status": "INVALID",
+   "code": "no_session",
+   "message": "there is no live session. `start` one first; a reply from a dead session would be a reading of nothing."
   }
  },
  "set_register": {
@@ -1443,83 +1277,84 @@
    "register": "eax",
    "regs": {
     "EAX": "0x00000000",
+    "EBX": "0x00000124",
+    "ECX": "0x0000a97e",
+    "EDX": "0x00000814",
     "ESI": "0x00000100",
+    "EDI": "0x0000fffe",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fff8",
+    "EIP": "0x0000fea5",
+    "CS": "0xf000",
     "DS": "0x0814",
     "ES": "0x0814",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x0814",
-    "EBX": "0x00000124",
-    "EDI": "0x0000fffe",
-    "CS": "0xf000",
-    "EIP": "0x0000fea5",
-    "ECX": "0x0000a97e",
-    "EBP": "0x0000091c",
-    "EDX": "0x00000814",
-    "ESP": "0x0000fff8"
+    "SS": "0x0814"
    },
    "readback": "0x00000000",
    "verified": true
   }
  },
  "snapshot": {
-  "from": "[P] the input route inside the guest: keys and the mouse, headless: P snapshot headless: the stub's command writes a PNG, no window and no menu",
+  "from": "[A] every tool in every machine state, on the probe guest: A none    snapshot",
   "call": {
-   "dest": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/P/n4.png",
-   "seconds": 20
+   "dest": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n515.png",
+   "seconds": 10
   },
   "reply": {
-   "summary": "snapshot: 885 bytes at $TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/P/n4.png",
-   "status": "ok",
-   "route": "guest",
-   "path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/P/n4.png",
-   "bytes": 885,
-   "sha256": "5053cd8f49a0d5bea6531db5520c7dfb0c06340f05b59d4baff51012d24313f5"
+   "summary": "snapshot: INVALID (no_session), there is no live session. `start` one first; a reply from a dead session would be a reading of nothing.",
+   "status": "INVALID",
+   "code": "no_session",
+   "message": "there is no live session. `start` one first; a reply from a dead session would be a reading of nothing."
   }
  },
  "start": {
-  "from": "[O] the focus gate's control, opening the run: O the control: a shared start forced in front is seen in front",
+  "from": "[A] every tool in every machine state, on the probe guest: A none    start",
   "call": {
-   "conf": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n2.conf",
+   "conf": "/path/to/scry-dosbox-x/tests/guest/probe.conf",
    "cwd": "/path/to/scry-dosbox-x/tests/guest",
    "session_seconds": 1200,
-   "shared": true,
-   "program": "PROBE.COM",
-   "background": false,
-   "logfile": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n3.log",
-   "state_dir": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n4-save",
-   "presence": false
+   "logfile": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n631.log",
+   "state_dir": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n632-save"
   },
   "reply": {
-   "summary": "start n2.conf: shared on ~/.local/state/dosbox-x-builds/scry-f06aa5d26/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.205s",
+   "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.115s",
    "status": "ok",
-   "pid": 74107,
-   "conf": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n2.conf",
-   "conf_digest": "33a4a905f64a2a65",
-   "watched": true,
+   "pid": 44567,
+   "conf": "/path/to/scry-dosbox-x/tests/guest/probe.conf",
+   "conf_digest": "78bdc38f360b9b4a",
    "bound_s": 1200,
-   "elapsed_s": 0.9,
-   "drain_alive": true,
+   "elapsed_s": 0.4,
    "captures": "off",
-   "state_dir": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n4-save",
-   "shared": true,
-   "display": "secondary",
-   "ready_after_s": 0.205,
+   "state_dir": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n632-save",
+   "ready_after_s": 0.115,
    "argv": [
-    "~/.local/state/dosbox-x-builds/scry-f06aa5d26/dosbox-x",
+    "~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x",
     "-conf",
-    "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/n2.conf",
+    "/path/to/scry-dosbox-x/tests/guest/probe.conf",
     "-time-limit",
     "1200",
     "-break-start",
-    "... 25 more"
+    "... 19 more"
    ],
-   "binary": "~/.local/state/dosbox-x-builds/scry-f06aa5d26/dosbox-x",
+   "binary": "~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x",
    "binary_origin": "DOSBOX_X_BINARY",
    "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
+   "debugger_commands": [
+    "LOADSTATE",
+    "PRESENCE",
+    "RUNSTATE",
+    "SAVESTATE",
+    "STEPIN"
+   ],
    "stub": "/path/to/scry-dosbox-x/guest/INJECT.COM",
-   "input_port": 53048,
-   "background": false,
+   "input_port": 50546,
+   "background": true,
+   "presence": {
+    "available": false,
+    "why": "a session started without `shared` has no window to draw on"
+   },
    "declarations": {
     "rearm": {
      "rearmed": [],
@@ -1535,19 +1370,19 @@
   "from": "[A] every tool in every machine state, on the probe guest: A stopped state_list",
   "call": {},
   "reply": {
-   "summary": "state_list: 1 state in $TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n632-save",
+   "summary": "state_list: 1 state in $TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n632-save",
    "status": "ok",
-   "state_dir": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n632-save",
+   "state_dir": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n632-save",
    "states": [
     {
      "name": "matrix_a_stopped",
-     "path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n632-save/matrix_a_stopped.sav",
-     "bytes": 81212,
+     "path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n632-save/matrix_a_stopped.sav",
+     "bytes": 81380,
      "version": "DOSBox-X 2026.10.01 (SDL2)",
      "program": "PROBE",
      "machine": "MCH_VGA",
      "memory_mb": 4096,
-     "saved_at": "2026-10-25 00:13"
+     "saved_at": "2026-10-25 22:14"
     }
    ],
    "working_slot": {
@@ -1564,16 +1399,16 @@
    "seconds": 10
   },
   "reply": {
-   "summary": "state_write save: matrix_a_stopped, 81212 bytes, PROBE 2026-10-25 00:13",
+   "summary": "state_write save: matrix_a_stopped, 81380 bytes, PROBE 2026-10-25 22:14",
    "status": "ok",
    "name": "matrix_a_stopped",
-   "path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n632-save/matrix_a_stopped.sav",
-   "bytes": 81212,
+   "path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n632-save/matrix_a_stopped.sav",
+   "bytes": 81380,
    "version": "DOSBox-X 2026.10.01 (SDL2)",
    "program": "PROBE",
    "machine": "MCH_VGA",
    "memory_mb": 4096,
-   "saved_at": "2026-10-25 00:13",
+   "saved_at": "2026-10-25 22:14",
    "paused": false
   }
  },
@@ -1592,7 +1427,8 @@
     "disarm": 0,
     "symbols_load": false,
     "base_remeasure": false
-   }
+   },
+   "presence": false
   }
  },
  "step": {
@@ -1614,20 +1450,20 @@
    "cpu_mode": "real",
    "regs": {
     "EAX": "0x00000000",
+    "EBX": "0x00000124",
+    "ECX": "0x0000a97e",
+    "EDX": "0x00000814",
     "ESI": "0x00000100",
+    "EDI": "0x0000fffe",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fff8",
+    "EIP": "0x0000fea6",
+    "CS": "0xf000",
     "DS": "0x0814",
     "ES": "0x0814",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x0814",
-    "EBX": "0x00000124",
-    "EDI": "0x0000fffe",
-    "CS": "0xf000",
-    "EIP": "0x0000fea6",
-    "ECX": "0x0000a97e",
-    "EBP": "0x0000091c",
-    "EDX": "0x00000814",
-    "ESP": "0x0000fff8"
+    "SS": "0x0814"
    },
    "watches": [],
    "cause": "no declared code breakpoint at F000:0000FEA6: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
@@ -1635,7 +1471,7 @@
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 4820
+    "mark": 5384
    },
    "stop_seq": 5,
    "instruction": {
@@ -1655,8 +1491,8 @@
     "stop_seq": 4,
     "pc": "F000:0000FEA5",
     "cause": "no declared code breakpoint at F000:0000FEA5: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-    "since_s": 24.8,
-    "wall_at": "2026-10-24T22:12:43+00:00"
+    "since_s": 4.3,
+    "wall_at": "2026-10-25T21:14:14+00:00"
    },
    "note": "the machine was already stopped"
   }
@@ -1733,30 +1569,30 @@
   "call": {
    "instructions": 16,
    "shape": "cs_ip",
-   "dest": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n954.trace",
+   "dest": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n954.trace",
    "seconds": 30
   },
   "reply": {
-   "summary": "trace 16 cs_ip: ELAPSED, 16 executed at 1 address, at 0814:00000130, to $TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n954.trace",
+   "summary": "trace 16 cs_ip: ELAPSED, 16 executed at 1 address, at 0814:00000130, to $TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n954.trace",
    "status": "ok",
    "pc": "0814:00000130",
    "cpu_mode": "real",
    "regs": {
     "EAX": "0x00000000",
+    "EBX": "0x000002bc",
+    "ECX": "0x0000c122",
+    "EDX": "0x00000814",
     "ESI": "0x00000173",
+    "EDI": "0x0000015d",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fffe",
+    "EIP": "0x00000130",
+    "CS": "0x0814",
     "DS": "0x0814",
     "ES": "0x0814",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x0814",
-    "EBX": "0x000002bc",
-    "EDI": "0x0000015d",
-    "CS": "0x0814",
-    "EIP": "0x00000130",
-    "ECX": "0x0000c11e",
-    "EBP": "0x0000091c",
-    "EDX": "0x00000814",
-    "ESP": "0x0000fffe"
+    "SS": "0x0814"
    },
    "watches": [],
    "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
@@ -1764,7 +1600,7 @@
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 33154
+    "mark": 34921
    },
    "stop_seq": 8,
    "instruction": {
@@ -1773,7 +1609,7 @@
     "text": "loop 0x130",
     "flow": "branch",
     "code_bits": 16,
-    "bytes_from": "code pane",
+    "bytes_from": "memory",
     "symbol": {
      "available": false,
      "why": "no symbol table is loaded"
@@ -1785,13 +1621,13 @@
    },
    "verdict": "ELAPSED",
    "trace": {
-    "path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n954.trace",
+    "path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n954.trace",
     "bytes": 238,
     "shape": "cs_ip",
     "instructions": 16,
     "addresses": 1,
     "unplaced": 1,
-    "set_path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n954.trace.set.jsonl",
+    "set_path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n954.trace.set.jsonl",
     "symbols": [],
     "symbols_total": 0,
     "truncated": false,

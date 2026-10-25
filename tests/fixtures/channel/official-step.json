@@ -1,0 +1,305 @@
+{
+ "provenance": {
+  "exe": "Homebrew dosbox-x 2026.10.01",
+  "launch": "pty",
+  "headless": false,
+  "host": "darwin",
+  "scenario": "step",
+  "conf": "step.conf"
+ },
+ "exchanges": [
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUN",
+   "ok": true,
+   "lines": [
+    "OK"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC EV CS EIP",
+   "ok": true,
+   "lines": [
+    "EV of 'CS EIP' is:",
+    "814 100"
+   ]
+  },
+  {
+   "request": "EXEC BP 0814:0102",
+   "ok": true,
+   "lines": [
+    "DEBUG: Set breakpoint at 0814:0102"
+   ]
+  },
+  {
+   "request": "EXEC RUN",
+   "ok": true,
+   "lines": [
+    "OK"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC BPDEL *",
+   "ok": true,
+   "lines": [
+    "DEBUG: Breakpoints deleted."
+   ]
+  },
+  {
+   "request": "EXEC STEPIN",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC EV EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0",
+   "ok": true,
+   "lines": [
+    "EV of 'EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0' is:",
+    "0 0 ff 814 100 fffe 91c fffe 102 814 814 814 0 0 814 7202 10"
+   ]
+  },
+  {
+   "request": "EXEC STEPIN",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC EV EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0",
+   "ok": true,
+   "lines": [
+    "EV of 'EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0' is:",
+    "0 0 ff 814 100 fffe 91c fffe 102 814 814 814 0 0 814 7202 10"
+   ]
+  },
+  {
+   "request": "EXEC STEPIN",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC EV EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0",
+   "ok": true,
+   "lines": [
+    "EV of 'EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0' is:",
+    "0 0 ff 814 100 fffe 91c fffe 102 814 814 814 0 0 814 7202 10"
+   ]
+  },
+  {
+   "request": "EXEC STEPIN",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC EV EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0",
+   "ok": true,
+   "lines": [
+    "EV of 'EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0' is:",
+    "0 0 ff 814 100 fffe 91c fffe 102 814 814 814 0 0 814 7202 10"
+   ]
+  },
+  {
+   "request": "EXEC MEMDUMPBIN 0814:0108 10 MCPDUMP.BIN",
+   "ok": true,
+   "lines": [
+    "DEBUG: Memory dump binary success."
+   ]
+  },
+  {
+   "request": "EXEC BP 0814:010C",
+   "ok": true,
+   "lines": [
+    "DEBUG: Set breakpoint at 0814:010C"
+   ]
+  },
+  {
+   "request": "EXEC RUN",
+   "ok": true,
+   "lines": [
+    "OK"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC RUNSTATE",
+   "ok": false,
+   "lines": [
+    "*** Debugger command not recognized"
+   ]
+  },
+  {
+   "request": "EXEC EV CS EIP",
+   "ok": true,
+   "lines": [
+    "EV of 'CS EIP' is:",
+    "814 10c"
+   ]
+  },
+  {
+   "request": "EXEC BPDEL *",
+   "ok": true,
+   "lines": [
+    "DEBUG: Breakpoints deleted."
+   ]
+  }
+ ]
+}

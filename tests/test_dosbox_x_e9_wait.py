@@ -1,0 +1,530 @@
+"""`e9_wait` and `log_wait` over a growing logfile: what a wait answers, refuses and reports.
+
+None launches DOSBox-X: a double owns a real logfile and drives the real waits on it.
+"""
+
+from __future__ import annotations
+
+import re
+import threading
+import time
+from pathlib import Path
+from types import SimpleNamespace
+from typing import cast
+
+import pytest
+from scry_core import log_wait as core_wait
+from scry_core import progress as mprogress
+from scry_core import vocabulary as vocab
+
+import dosbox_session as ds
+
+# Two instrumentation lines verbatim from a real guest; the third string only quotes one.
+E9_BOOT = ("Bochs port E9h: [+   0.000] BOOT  . start version=1.0 gfx=1024x768x8 "
+           "rate=44100 buf=2048")
+
+
+E9_HELP = "Bochs port E9h: [+  19.715] UI    . info_open base=HELP"
+
+
+E9_QUOTED = "make: src/loudness.c: info_open base=HELP is not an E9 line"
+
+
+class LogSession:
+    """A session that owns a growing logfile and drives the real `e9_wait`."""
+
+    def __init__(self, log: Path, *, alive: bool = True) -> None:
+        self.launch = SimpleNamespace(logfile=log, watched=False)
+        self._alive = alive
+
+    def alive(self) -> bool:
+        return self._alive
+
+    @property
+    def parked(self) -> bool:
+        return self.at_debugger()
+
+    def at_debugger(self) -> bool:
+        return False
+
+    def state(self) -> dict[str, object]:
+        return {"alive": self._alive, "running": False, "altered": False}
+
+    def _e9_text(self) -> str:
+        return ds.Session._e9_text(cast(ds.Session, self))
+
+    def e9_new_since(self, offset: int) -> tuple[list[str], int]:
+        return ds.Session.e9_new_since(cast(ds.Session, self), offset)
+
+    def _log_text(self) -> str:
+        return ds.Session._log_text(cast(ds.Session, self))
+
+    def log(self, pattern: str, limit: int, channel: str,
+            since_mark: int = 0) -> tuple[list[str], int]:
+        return ds.Session.log(cast(ds.Session, self), pattern, limit, channel, since_mark)
+
+    def _e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
+        return ds.Session._e9_since(cast(ds.Session, self), offset, channel)
+
+    def e9_wait(self, pattern: str, seconds: float, mark: int = 0,
+                progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+        return ds.Session.e9_wait(cast(ds.Session, self), pattern, seconds, mark=mark,
+                                  progress=progress)
+
+    def log_wait(self, pattern: str, seconds: float, channel: str, mark: int = 0,
+                 progress: ds.Progress = ds.no_progress) -> dict[str, object]:
+        return ds.Session.log_wait(cast(ds.Session, self), pattern, seconds, channel,
+                                   mark=mark, progress=progress)
+
+    def e9_mark(self) -> int:
+        return ds.Session.e9_mark(cast(ds.Session, self))
+
+
+def test_a_wait_from_a_mark_does_not_answer_with_what_was_written_before_it(
+        tmp_path: Path) -> None:
+    """The control: the same wait from mark 0 finds the line at once."""
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n{E9_HELP}\n", encoding="utf-8")
+    s = LogSession(log)
+    mark = s.e9_mark()
+    assert mark == log.stat().st_size
+    # With a mark the count names the region since the mark, not the whole log.
+    expired = s.e9_wait("info_open", seconds=0.3, mark=mark)
+    assert expired["verdict"] == "TIMEOUT", expired
+    assert re.search(r"0 since the mark at byte \d+", str(expired["note"])), expired
+    assert "altogether" not in str(expired["note"])
+    assert s.e9_wait("info_open", seconds=0.3)["already"] is True
+    later = "Bochs port E9h: [+  40.000] UI    . info_open base=ABOUT"
+    with log.open("a", encoding="utf-8") as fh:
+        fh.write(f"{later}\n")
+    got = s.e9_wait("info_open", seconds=0.3, mark=mark)
+    assert got["line"] == later and got["lines_total"] == 1, got
+    assert got["lines_examined"] == 1 and "since_mark" not in got, got
+    assert LogSession(tmp_path / "absent.log").e9_mark() == 0
+
+
+def test_a_mark_inside_a_half_written_line_does_not_serve_that_line_as_new(
+        tmp_path: Path) -> None:
+    """The mark is the file size, so it can land inside a line begun before it."""
+    log = tmp_path / "guest.log"
+    half = "Bochs port E9h: [+   1.000] ACT   . key_cue"
+    log.write_text(f"{E9_BOOT}\n{half}", encoding="utf-8")
+    s = LogSession(log)
+    mark = s.e9_mark()
+    with log.open("a", encoding="utf-8") as fh:
+        fh.write("_a=0 b=-1 on=0\n")
+    assert s.e9_wait("key_cue_a", seconds=0.3, mark=mark)["verdict"] == "TIMEOUT"
+    whole = "Bochs port E9h: [+   2.000] ACT   . key_cue_a=1 b=-1 on=1"
+    with log.open("a", encoding="utf-8") as fh:
+        fh.write(f"{whole}\n")
+    got = s.e9_wait("key_cue_a", seconds=0.3, mark=mark)
+    assert got["line"] == whole and got["lines_total"] == 1, got
+
+
+def test_a_line_that_already_happened_is_answered_at_once(tmp_path: Path) -> None:
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n{E9_HELP}\n", encoding="utf-8")
+    got = LogSession(log).e9_wait("info_open", seconds=2)
+    assert got["already"] is True
+    assert got["line"] == E9_HELP
+    assert got["waited_s"] == 0.0, "it waited for something it already had"
+
+
+def test_the_first_occurrence_is_the_answer_and_the_count_says_there_were_more(
+        tmp_path: Path) -> None:
+    log = tmp_path / "guest.log"
+    first = "Bochs port E9h: [+   1.000] UI    . info_open base=HELP"
+    log.write_text(f"{first}\n{E9_BOOT}\n{E9_HELP}\n", encoding="utf-8")
+    got = LogSession(log).e9_wait("info_open", seconds=2)
+    assert got["line"] == first and got["lines_total"] == 2
+
+
+def test_a_line_that_arrives_during_the_wait_is_the_other_answer(
+        tmp_path: Path) -> None:
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+
+    def append_later() -> None:
+        time.sleep(0.4)
+        with log.open("a", encoding="utf-8") as fh:
+            fh.write(f"{E9_HELP}\n")
+
+    writer = threading.Thread(target=append_later)
+    writer.start()
+    try:
+        got = LogSession(log).e9_wait("info_open", seconds=30)
+    finally:
+        writer.join()
+    assert got["already"] is False, got
+    assert got["line"] == E9_HELP
+    # Both bounds: a lower one alone is satisfied by echoing the bound asked for.
+    assert 0.3 <= cast(float, got["waited_s"]) < 5.0, got
+    assert cast(int, got["lines_examined"]) >= 2, got
+
+
+def test_a_bound_that_expires_is_invalid_and_says_what_it_examined(
+        tmp_path: Path) -> None:
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+    got = LogSession(log).e9_wait("never_going_to_appear", seconds=0.4)
+    assert got["verdict"] == "TIMEOUT" and "a bound that expired" in str(got["note"]), got
+    assert got["lines_examined"] == 1 and got["arrived_during"] == 0, got
+
+
+def test_only_a_session_with_no_channel_at_all_is_refused_outright() -> None:
+    """A missing log, or one with no instrumentation yet, is normal for a just-resumed guest."""
+    with pytest.raises(ds.Invalid, match="without a logfile"):
+        LogSession(cast(Path, None)).e9_wait("x", seconds=1)
+
+
+def test_it_waits_for_the_guests_very_first_trace(tmp_path: Path) -> None:
+    log = tmp_path / "not-yet.log"
+
+    def write_later() -> None:
+        time.sleep(0.3)
+        log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+
+    writer = threading.Thread(target=write_later)
+    writer.start()
+    try:
+        got = LogSession(log).e9_wait("start version", seconds=30)
+    finally:
+        writer.join()
+    assert got["already"] is False, got
+    assert got["line"] == E9_BOOT
+
+
+def test_a_line_still_being_written_is_not_reported_and_is_not_lost(
+        tmp_path: Path) -> None:
+    """A fragment must neither be returned as the trace nor consume a line index."""
+    log = tmp_path / "guest.log"
+    partial = "Bochs port E9h: [+  19.715] UI    . info_open"
+    log.write_text(f"{E9_BOOT}\n{partial}", encoding="utf-8")
+
+    def finish_the_line() -> None:
+        time.sleep(0.3)
+        with log.open("a", encoding="utf-8") as fh:
+            fh.write(" base=HELP\n")
+
+    writer = threading.Thread(target=finish_the_line)
+    writer.start()
+    try:
+        got = LogSession(log).e9_wait("info_open", seconds=30)
+    finally:
+        writer.join()
+    assert got["line"] == f"{partial} base=HELP", got
+    assert got["already"] is False, got
+
+
+def test_a_log_rewritten_underneath_the_wait_is_read_from_its_start(tmp_path: Path) -> None:
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n" * 40, encoding="utf-8")
+    fresh = "Bochs port E9h: [+   1.000] UI    . info_open base=FRESH"
+
+    def rewrite_later() -> None:
+        time.sleep(0.3)
+        log.write_text(f"{fresh}\n", encoding="utf-8")
+
+    writer = threading.Thread(target=rewrite_later)
+    writer.start()
+    try:
+        got = LogSession(log).e9_wait("info_open", seconds=5)
+    finally:
+        writer.join()
+    assert got["verdict"] == "TARGET" and got["line"] == fresh, got
+
+
+def test_a_session_that_dies_mid_wait_says_so_without_burning_the_bound(
+        tmp_path: Path) -> None:
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+    session = LogSession(log)
+
+    def die_later() -> None:
+        time.sleep(0.3)
+        session._alive = False
+
+    writer = threading.Thread(target=die_later)
+    writer.start()
+    began = time.monotonic()
+    try:
+        with pytest.raises(ds.Invalid, match="GONE"):
+            session.e9_wait("never_appears", seconds=30)
+    finally:
+        writer.join()
+    assert time.monotonic() - began < 5.0, "it waited out the bound for a dead session"
+
+
+def test_the_count_of_what_arrived_during_the_wait_is_not_the_logs_total(
+        tmp_path: Path) -> None:
+    log = tmp_path / "guest.log"
+    # Forty-one and the `\b`: `match=` is an unanchored search, and "40 ... arrived DURING"
+    # contains the "0 ..." form.
+    log.write_text(f"{E9_BOOT}\n" * 41, encoding="utf-8")
+    began = time.monotonic()
+    got = LogSession(log).e9_wait("never_appears", seconds=0.4)
+    assert re.search(r"\b0 lines arrived DURING", str(got["note"])), got
+    # The bound is honoured: `deadline = began + seconds * 2` would stay green otherwise.
+    assert 0.35 <= time.monotonic() - began < 2.0, "the bound was not the bound"
+
+
+def test_the_match_count_of_a_waited_answer_is_not_hardcoded(tmp_path: Path) -> None:
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+
+    def burst() -> None:
+        time.sleep(0.3)
+        with log.open("a", encoding="utf-8") as fh:
+            for i in range(7):
+                fh.write(f"Bochs port E9h: [+ {i}.000] UI    . info_open base=HELP\n")
+
+    writer = threading.Thread(target=burst)
+    writer.start()
+    try:
+        got = LogSession(log).e9_wait("info_open", seconds=30)
+    finally:
+        writer.join()
+    assert got["lines_total"] == 7, got
+    assert got["arrived_during"] == 7, got
+
+
+def test_a_line_that_only_quotes_an_e9_trace_is_not_one(tmp_path: Path) -> None:
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_QUOTED}\n{E9_BOOT}\n{E9_HELP}\n", encoding="utf-8")
+    got = LogSession(log).e9_wait("info_open", seconds=2)
+    assert got["line"] == E9_HELP, got
+
+
+def test_e9_wait_refuses_a_wait_that_is_not_a_bound(tmp_path: Path) -> None:
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+    assert vocab.WAIT_MAX_S == 600, "the ceiling moved; decide it deliberately and edit here"
+    for bad in (0, -1, 601):
+        with pytest.raises(ds.Invalid, match="not a bound"):
+            LogSession(log).e9_wait("x", seconds=bad)
+
+
+def test_e9_wait_refuses_a_pattern_that_is_not_a_pattern(tmp_path: Path) -> None:
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+    with pytest.raises(ds.Invalid, match="not a usable pattern"):
+        LogSession(log).e9_wait("(unclosed", seconds=1)
+
+
+class DyingLog(LogSession):
+    """Writes its exit trace on its way out; `e9_wait` asks `alive()` first and reads last."""
+
+    def __init__(self, log: Path, *, write_after: int, line: str) -> None:
+        super().__init__(log)
+        self.polls = 0
+        self.write_after = write_after
+        self.line = line
+        self.log_path = log
+        self.gone = False
+
+    def alive(self) -> bool:
+        return not self.gone
+
+    def _e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
+        self.polls += 1
+        # The read answers first, and only then does the guest write and die; otherwise the
+        # ordinary match path answers and the death path never runs.
+        got = super()._e9_since(offset, channel)
+        if self.polls == self.write_after:
+            with self.log_path.open("a", encoding="utf-8") as fh:
+                fh.write(self.line + "\n")
+            self.gone = True
+        return got
+
+
+def test_the_guests_last_line_is_read_before_a_death_is_reported(
+        tmp_path: Path) -> None:
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+    exit_line = "Bochs port E9h: [+   9.000] PERF  . exit code=0"
+    got = DyingLog(log, write_after=2, line=exit_line).e9_wait("exit", seconds=5)
+    assert got["line"] == exit_line, got
+    assert got["already"] is False
+
+
+def test_a_death_with_nothing_in_the_log_is_still_a_refusal(tmp_path: Path) -> None:
+    """The red beside the case above."""
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+    with pytest.raises(ds.Invalid, match="the emulator is GONE"):
+        DyingLog(log, write_after=2, line="nothing to match here").e9_wait(
+            "exit", seconds=5)
+
+
+class LateLog(LogSession):
+    """Burns the rest of the bound inside the read, so the expiry path certainly runs."""
+
+    def __init__(self, log: Path, *, line: str, burn: float) -> None:
+        super().__init__(log)
+        self.polls = 0
+        self.line = line
+        self.log_path = log
+        self.burn = burn
+        self.wrote = False
+
+    def _e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
+        self.polls += 1
+        got = super()._e9_since(offset, channel)
+        if self.polls >= 2 and not self.wrote:
+            # Written after this read answered, then the bound is spent.
+            self.wrote = True
+            with self.log_path.open("a", encoding="utf-8") as fh:
+                fh.write(self.line + "\n")
+            time.sleep(self.burn)
+        return got
+
+
+def test_a_line_written_in_the_tail_of_the_window_is_not_lost_to_the_clock(
+        tmp_path: Path) -> None:
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+    late = "Bochs port E9h: [+   3.000] PERF  . audio play=1"
+    sess = LateLog(log, line=late, burn=0.4)
+    got = sess.e9_wait("audio", seconds=0.25)
+    assert got["line"] == late, got
+    assert got["already"] is False
+
+
+def test_an_expired_bound_with_nothing_matching_is_still_a_refusal(
+        tmp_path: Path) -> None:
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+    got = LateLog(log, line="Bochs port E9h: [+   3.000] UI    . nothing",
+                  burn=0.4).e9_wait("audio", seconds=0.25)
+    assert got["verdict"] == "TIMEOUT" and "nothing matched" in str(got["note"]), got
+
+
+class StoppedLogSession(LogSession):
+    """A `LogSession` that can say it is parked at the debugger."""
+
+    def __init__(self, log: Path, *, at_debugger: bool) -> None:
+        super().__init__(log)
+        self._parked = at_debugger
+
+    @property
+    def parked(self) -> bool:
+        return self.at_debugger()
+
+    def at_debugger(self) -> bool:
+        return self._parked
+
+
+def test_a_wait_on_a_machine_stopped_at_the_debugger_refuses_at_once(tmp_path: Path) -> None:
+    """A stopped guest writes nothing; what the log already holds is still answered first."""
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+    parked = StoppedLogSession(log, at_debugger=True)
+    began = time.monotonic()
+    with pytest.raises(ds.Invalid, match="stopped at the debugger"):
+        parked.e9_wait("never_going_to_appear", seconds=30)
+    assert time.monotonic() - began < 1.0, "it sat out the bound on a stopped machine"
+    assert parked.e9_wait("BOOT", seconds=30)["already"] is True
+    running = StoppedLogSession(log, at_debugger=False)
+    assert running.e9_wait("never_going_to_appear", seconds=0.3)["verdict"] == "TIMEOUT"
+
+
+def test_a_waited_answer_says_how_many_lines_sat_before_the_match(tmp_path: Path) -> None:
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n{E9_HELP}\n", encoding="utf-8")
+    assert LogSession(log).e9_wait("info_open", seconds=1)["lines_before"] == 1
+
+    def append_later() -> None:
+        time.sleep(0.3)
+        with log.open("a", encoding="utf-8") as fh:
+            fh.write("Bochs port E9h: [+ 1.000] MISC  . filler\n")
+            fh.write("Bochs port E9h: [+ 1.100] ACT   . key down SPACE mods=0\n")
+
+    writer = threading.Thread(target=append_later)
+    writer.start()
+    try:
+        got = LogSession(log).e9_wait("key down SPACE", seconds=10)
+    finally:
+        writer.join()
+    assert got["already"] is False and got["lines_before"] == 3, got
+
+
+class LateStopLogSession(LogSession):
+    """Says running to the first `running_answers` questions and stopped from then on."""
+
+    def __init__(self, log: Path, *, running_answers: int) -> None:
+        super().__init__(log)
+        self.asked = 0
+        self.running_answers = running_answers
+
+    @property
+    def parked(self) -> bool:
+        return self.at_debugger()
+
+    def at_debugger(self) -> bool:
+        self.asked += 1
+        return self.asked > self.running_answers
+
+
+def test_an_expiry_consults_the_debugger_before_saying_still_running(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A stop landing after the last poll must not read as the process still running."""
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+    monkeypatch.setattr(core_wait, "POLL_S", 0.3)
+    late = LateStopLogSession(log, running_answers=1)
+    with pytest.raises(ds.E9Stopped, match="stopped at the debugger"):
+        late.e9_wait("never_going_to_appear", seconds=0.2)
+    assert late.asked == 2, late.asked
+    still = LateStopLogSession(log, running_answers=99)
+    got = still.e9_wait("never_going_to_appear", seconds=0.2)
+    assert got["verdict"] == "TIMEOUT" and "still running" in str(got["note"]), got
+    assert still.asked == 2, still.asked
+
+
+class StopsAfterWriting(LogSession):
+    """Writes the awaited line and parks at the debugger inside one poll interval."""
+
+    def __init__(self, log: Path, *, line: str) -> None:
+        super().__init__(log)
+        self.line, self.polls, self.parks = line, 0, False
+
+    def at_debugger(self) -> bool:
+        return self.parks
+
+    def _e9_since(self, offset: int, channel: str = "guest") -> tuple[list[str], int]:
+        self.polls += 1
+        got = super()._e9_since(offset, channel)
+        if self.polls == 2:
+            with self.launch.logfile.open("a", encoding="utf-8") as f:
+                f.write(self.line + "\n")
+            self.parks = True
+        return got
+
+
+def test_a_reaction_written_just_before_the_stop_is_found_not_refused(tmp_path: Path) -> None:
+    """The loop checks the debugger first and reads the log last, so a last read is due."""
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+    line = "Bochs port E9h: [+   9.000] ACT   . key_cue_a=1"
+    got = StopsAfterWriting(log, line=line).e9_wait("key_cue_a", seconds=5)
+    assert got["line"] == line and got["already"] is False, got
+    with pytest.raises(ds.E9Stopped, match="stopped at the debugger"):
+        StopsAfterWriting(log, line="Bochs port E9h: [+   9.000] UI    . other").e9_wait(
+            "key_cue_b", seconds=5)
+
+
+def test_e9_wait_reports_its_progress_while_it_waits(tmp_path: Path,
+                                                     monkeypatch: pytest.MonkeyPatch) -> None:
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+    monkeypatch.setattr(mprogress, "PROGRESS_EVERY_S", 0.0)
+    ticks: list[tuple[float, float | None, str]] = []
+    LogSession(log).e9_wait("never", seconds=0.25,
+                            progress=lambda p, t, m: ticks.append((p, t, m)))
+    assert ticks, "the wait reported nothing"
+    # A wait measured in time has no total: a bar towards the bound reads as progress to failure.
+    assert all(t is None and m.startswith("log_wait guest /never/") for _p, t, m in ticks)
+    assert ticks[-1][0] > 0 and "0 lines arrived" in ticks[-1][2]
+    ticks.clear()
+    LogSession(log).e9_wait("BOOT", seconds=0.25, progress=lambda p, t, m: ticks.append((p, t, m)))
+    assert ticks == []

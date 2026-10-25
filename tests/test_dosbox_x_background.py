@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from dosbox_x_server_support import POSIX_SESSION
 
 import dosbox_launch as dlaunch
 import dosbox_session as ds
@@ -30,7 +29,6 @@ def test_the_hint_is_set_or_removed_never_inherited(monkeypatch: pytest.MonkeyPa
     assert dlaunch.launch_environment(True)["TERM"] == "xterm-256color"
 
 
-@POSIX_SESSION
 def test_the_session_spawns_the_emulator_with_the_launch_s_answer(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Read at the one place the process is made, so no start can bypass it."""
@@ -72,7 +70,6 @@ def test_a_shared_start_goes_in_front_unless_told_otherwise(tmp_path: Path,
     server.close()
 
 
-@POSIX_SESSION
 def test_a_live_runs_ledger_learns_the_emulator_the_session_spawned(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The run's proof that no emulator outlived it reads this ledger, written at the one place
@@ -99,5 +96,5 @@ def test_a_live_runs_ledger_learns_the_emulator_the_session_spawned(
             monkeypatch.delenv(live_host.LEDGER_VAR)
             ledger.unlink()
         with pytest.raises(RuntimeError, match="new thread"):
-            ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60))
+            ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, headless=True))
         assert (live_host.EmulatorLedger(ledger).recorded() == {4321: "dosbox-x"}) is named

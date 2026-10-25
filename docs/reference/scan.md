@@ -27,8 +27,7 @@ left closes the scan. Reply: `operator`, `value`, `iterations`, `closed`, `hits`
 `clear`: cancel the open scan. Reply: `cleared`.
 
 Refused: an argument the method does not take; a scan already open, in the debugger's
-words; a `value` wider than the cell. An answer this cannot read clears the debugger's
-command line before refusing (`line_recovered`).
+words; a `value` wider than the cell.
 
 Reference: REFERENCE.md, Reading and writing.
 
@@ -52,7 +51,6 @@ Reference: REFERENCE.md, Reading and writing.
 | `hits_total` | integer |
 | `iterations` | integer or object |
 | `length` | integer |
-| `line_recovered` | boolean |
 | `note` | string |
 | `operator` | string |
 | `ref` | string |

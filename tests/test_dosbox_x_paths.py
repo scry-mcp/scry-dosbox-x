@@ -12,7 +12,7 @@ from unittest import mock
 
 import fold_calls
 import pytest
-from dosbox_x_server_support import clean_session, install  # noqa: F401
+from dosbox_x_server_support import clean_session, install, stub_build  # noqa: F401
 from scry_core.host_program import MODE_BITS
 from scry_core.host_program import absolute as _abs
 from test_dosbox_x_dump import debugger
@@ -40,6 +40,12 @@ INVENTORY = frozenset({
     ("series_capture", "capture_path"), ("map_write", "path"), ("map_write", "dest"),
     ("perform_export", "dest"),
 })
+
+
+@pytest.fixture(autouse=True)
+def _faked_builds(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Every build these cases start is a path that holds no file: what it carries is stubbed."""
+    stub_build(monkeypatch)
 
 
 def _refused(reply: Any, code: str, *words: str) -> None:

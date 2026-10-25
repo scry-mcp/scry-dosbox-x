@@ -8,7 +8,7 @@ from typing import Any
 
 import fold_calls
 import pytest
-from dosbox_x_server_support import NM_TEXT, _names, clean_session  # noqa: F401
+from dosbox_x_server_support import NM_TEXT, SessionGates, _names, clean_session  # noqa: F401
 from scry_core import roster
 
 import dosbox_declarations as dec
@@ -29,7 +29,7 @@ NO_CONSOLE = {"alive", "state", "at_debugger", "log", "log_wait", "e9", "e9_mark
               "state_list", "snapshot", "captures", "frame"}
 
 
-class RunningGuest:
+class RunningGuest(SessionGates):
     """A session whose guest runs: console methods refuse `NotStopped`, the rest answer."""
 
     def __init__(self, tmp_path: Path) -> None:

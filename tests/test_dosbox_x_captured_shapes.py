@@ -96,31 +96,31 @@ def test_the_record_shows_a_killed_emulator_reaped_and_said_to_have_died() -> No
     assert (closed["ended_by"], closed["exit_code"], closed["closed"]) == ("died", -9, True)
 
 
-def _build_answering(tmp_path: Path, record: str, carries: bool) -> tuple[Path, Any]:
-    """A binary with or without the debugger marks, and `subprocess.run` replaying `-helpdebug`."""
-    help_text = json.loads((FIX / "build_check" / record).read_text("utf-8"))["helpdebug"]
+def _build_answering(tmp_path: Path, record: str, carries: bool) -> Path:
+    """A binary with or without the debugger marks."""
     binary = runnable(tmp_path / record / "dosbox-x")
     binary.parent.mkdir()
     marks = binaries.DEBUGGER_MARK + b"\x00" + binaries.HEAVY_DEBUG_MARK if carries else b"none"
     binary.write_bytes(b"\x00" + marks + b"\x00")
     binary.chmod(0o755)
-    return binary, lambda *_a, **_k: SimpleNamespace(stdout=help_text, stderr="")
+    return binary
 
 
 def test_a_build_without_the_debugger_lists_the_option_too_and_is_refused_by_its_bytes(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A build without the debugger still lists `-break-start`, so the binary's bytes decide."""
+    """A build without the debugger still lists `-break-start` (the records' `helpdebug`), so the
+    binary's bytes decide and the option is never asked."""
     for record, carries, status in (("no-debugger.json", False, "INVALID"),
                                     ("debugger.json", True, "ok")):
-        binary, run = _build_answering(tmp_path, record, carries)
-        monkeypatch.setattr("subprocess.run", run)
+        held = json.loads((FIX / "build_check" / record).read_text("utf-8"))
+        assert "-break-start" in held["helpdebug"], record
+        binary = _build_answering(tmp_path, record, carries)
         got = server.build_check(binary=str(binary))
-        said = json.loads((FIX / "build_check" / record).read_text("utf-8"))["build_check"]
+        said = held["build_check"]
         assert got["status"] == status == said["status"], (record, got)
         assert got.get("code") == said["code"], (record, got)
         if said["message"] is not None:
-            # the record spells the build as POSIX names it; this host's own spelling stands in
-            assert got["message"] == said["message"].replace("<dir>/dosbox-x", str(binary)), got
+            assert got["message"].startswith(f"{binary} carries no debugger"), got
         else:
             assert (got["debugger"], got["heavy_debug"]) == (said["debugger"],
                                                              said["heavy_debug"]), got

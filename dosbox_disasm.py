@@ -53,7 +53,7 @@ class Insn:
         return f"{self.mnemonic} {self.operands}".rstrip()
 
     def line(self, segment: int) -> str:
-        """`SSSS:OOOOOOOO BYTES TEXT`, the pane's own address spelling."""
+        """`SSSS:OOOOOOOO BYTES TEXT`, the debugger's own address spelling."""
         return (f"{segment:04X}:{self.offset:08X} {self.data.hex().upper():<{BYTES_COLUMN}} "
                 f"{self.text}").rstrip()
 

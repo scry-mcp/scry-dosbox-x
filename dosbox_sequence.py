@@ -30,7 +30,7 @@ RECORD_MAX = 5000
 #: Default wait for a stop, per step.
 SETTLE_DEFAULT_S = 30.0
 
-#: Tools that answer on a running guest (none types at the debugger console); any other waits
+#: Tools that answer on a running guest (none needs the debugger to hold it); any other waits
 #: for the next stop. Membership is proven per tool against a live session; `symbols_load` is
 #: out because without a `base` it measures one off the machine.
 RUNNING_OK_OPS = frozenset({
@@ -73,20 +73,18 @@ def _leaves_running(op: str, reply: dict[str, Any]) -> bool:
 
 def _wait_for_stop(session: ds.Session, seconds: float,
                    progress: ds.Progress = ds.no_progress) -> executor.Waited:
-    """`stopped` | `running` | `gone`, heard from the debugger's prompt (`Session.await_stop`).
-
-    Nothing is typed: a command sent to a running guest spins to the console's timeout."""
+    """`stopped` | `running` | `gone`, asked of the debugger's run state (`Session.await_stop`)."""
     began = time.monotonic()
     try:
         expired, _saw_at = ds.Session.await_stop(
-            session, began, began + seconds, "the next console step", progress,
+            session, began, began + seconds, "the next step", progress,
             label="waiting for the machine to stop", look_once=True)
     except ds.Invalid:
         if session.alive():
             raise
         return "gone"
     except OSError:
-        # a read from a dead pty
+        # a channel to a dead emulator
         if not session.alive():
             return "gone"
         raise
@@ -228,7 +226,7 @@ def _recorded_stop(session: ds.Session, recorded: dict[str, Any]) -> dict[str, A
 def _final_stop(session: ds.Session) -> dict[str, Any]:
     """The enriched reply at the stop a sequence ends on.
 
-    Guarded: a partial repaint can make `guest.stop_reply` refuse, which must not lose the
+    Guarded: an unreadable stop can make `guest.stop_reply` refuse, which must not lose the
     account. The tail adds no fields, so no `base` is passed (`base={}` would land a literal
     `base` field). A retrace a `run_for` left armed may be this stop."""
     try:
@@ -326,8 +324,7 @@ def drive(session: ds.Session, ops: Ops, act: list[dict[str, Any]], expect: str 
         checked = executor.act_ran_out()
     elif expect is not None:
         # A stopped guest cannot write a line: read the log once rather than burn the bound.
-        # The act's own tail says which it is; else the session flag (a console command to a
-        # running guest waits out its whole timeout and is dropped).
+        # The act's own tail says which it is; else the session flag.
         if "still_running" in ran:
             ended_running = True
         elif "stopped" in ran:

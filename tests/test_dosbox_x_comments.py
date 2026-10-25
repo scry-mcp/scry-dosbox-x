@@ -58,7 +58,7 @@ def probe_table(extra: list[tuple[str, int]] | None = None) -> None:
 
 class Protected(FakeSession):
     """A stop in a 32-bit protected-mode program whose CS and DS are the selectors the captured
-    `SELINFO` screen describes (base 00400000, limit 0023FFFF), as on dos-djgpp32."""
+    `SELINFO` replies describe (base 00400000, limit 0009FFFF), as on dos-djgpp32."""
 
     def __init__(self) -> None:
         super().__init__(mode="Pr32")
@@ -315,7 +315,7 @@ def test_a_protected_mode_address_is_placed_through_its_selectors_base() -> None
     assert got["comment"]["addr"] == "0x00401000"
     alias = ok(server.comment_write("add", ref="00AF:1000", text="same byte through DS"))
     assert alias["comment"]["ref"] == "00A7:1000"
-    assert "limit 23FFFF" in refused(server.comment_write("add", ref="00A7:00240000", text="x"),
+    assert "limit 9FFFF" in refused(server.comment_write("add", ref="00A7:00240000", text="x"),
                                      "bad_argument")
 
 
@@ -330,7 +330,7 @@ def test_a_selector_whose_base_cannot_be_read_is_stored_by_its_ref_and_said_so()
     install_store()
     got = ok(server.comment_write("add", ref="0038:000B8000", text="the text page"))
     assert got["comment"]["state"] == "unarmable" and "addr" not in got["comment"]
-    assert "logfile" in got["note"]
+    assert "cannot be read at this stop" in got["note"], got["note"]
     same = ok(server.comment_write("add", ref="38:B8000", text="again"))
     assert [r["text"] for r in same["replaced_comments"]] == ["the text page"]
 
@@ -578,7 +578,7 @@ def _rows_by_ref() -> dict[str, dict[str, Any]]:
 
 @pytest.mark.parametrize("protected, fine, ref, said, waits", [
     (False, "0814:0106", "0814:00010000", "past FFFF", "kept for a protected-mode stop"),
-    (True, "00A7:00001000", "00A7:00240000", "limit 23FFFF",
+    (True, "00A7:00001000", "00A7:00240000", "limit 9FFFF",
      "kept for a stop at which 00A7's limit reaches it"),
     (True, "00A7:00001000", "0000:0100", "null selector", "kept for a real-mode stop"),
     (True, "00A7:00001000", "0000:00010000", "null selector", "no stop places it"),

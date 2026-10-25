@@ -320,7 +320,7 @@ def _shown(rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], bool]:
 def add_comment(session: ds.Session, ref: str, text: str) -> dict[str, Any]:
     """The body of the `comment_write(method="add")` tool."""
     store = arming.current_store()
-    ds.console_listening(session, "a comment, whose raw address is read in the mode of a stop")
+    session.require_stopped("a comment, whose raw address is read in the mode of a stop")
     places = _Places(session)
     by, canonical, place = _the_ref(ref, places)
     held = _reach(_placed_comments(places, store), canonical, _key(canonical, place))
@@ -357,7 +357,7 @@ def comment_list(session: ds.Session) -> dict[str, Any]:
 def delete_comment(session: ds.Session, ref: str) -> dict[str, Any]:
     """The body of the `comment_write(method="delete")` tool."""
     store = arming.current_store()
-    ds.console_listening(session, "a comment's place, read in the mode of a stop")
+    session.require_stopped("a comment's place, read in the mode of a stop")
     places = _Places(session)
     by = placement.decide_by(ref)
     canonical = dec.canonical_ref(ref, by)
@@ -462,7 +462,7 @@ def save_comments(session: ds.Session, dest: str) -> dict[str, Any]:
 def load_comments(session: ds.Session, given: str) -> dict[str, Any]:
     """The body of the `comment_write(method="load")` tool."""
     store = arming.current_store()
-    ds.console_listening(session, "comments, whose raw addresses are read in the mode of a stop")
+    session.require_stopped("comments, whose raw addresses are read in the mode of a stop")
     path = paths.input_file("path", given, "comment file")
     try:
         raw = path.read_bytes()

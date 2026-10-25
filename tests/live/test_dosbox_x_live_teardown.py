@@ -2,12 +2,12 @@
 from __future__ import annotations
 
 import subprocess
+import sys
 from types import SimpleNamespace
 from typing import Any
 
 import pytest
 from _live_teardown import _drop
-from dosbox_x_server_support import POSIX_SESSION
 
 import dosbox_state as dstate
 
@@ -32,7 +32,7 @@ class _ClosesWithoutEnding:
         return ""
 
 
-@POSIX_SESSION
+@pytest.mark.skipif(sys.platform == "win32", reason="the stray is POSIX's `sleep` in a group")
 def test_a_process_close_left_running_is_killed_and_the_case_is_told() -> None:
     proc = subprocess.Popen(["sleep", "60"], start_new_session=True)
     try:

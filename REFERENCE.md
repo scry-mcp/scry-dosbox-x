@@ -124,9 +124,9 @@ protected mode (a DJGPP `_main` sits past `0xFFFF`); in real mode anything past 
 nothing and is refused rather than accepted and never firing.
 
 One debugger row is one declaration, because a clear of either of two sharing a row would disarm
-both in silence. Every arming is confirmed by **reading the debugger's list back**, never by its
-acknowledgement (a repaint of an earlier one), parsed from the **last** `Breakpoint list:` of a
-delta, since a delete leaves the previous populated listing on screen above the new empty one.
+both in silence. Every arming is confirmed by **reading the debugger's list back** with one
+`BPLIST` after the change, never by its acknowledgement, which says only that the command was
+parsed.
 
 ### What the store holds
 
@@ -172,14 +172,14 @@ The tools: [Advance](docs/reference/advance.md).
 
 Every stop (`resume`, `step`, `run_to`, `run_for`, `trace`, `stop`, `screen_wait`, and the tail of
 a `perform`) carries the same block: `stop_seq` (the one `last_stop` names), `pc`, `cpu_mode`
-(`real`, `protected`, `paged` or `VM86`, off the pane's mode word and its PAGE/NOPG mark), the
-`instruction`, `regs`, the watches, `cause` and `e9`.
+(`real`, `protected`, `paged` or `VM86`, off CR0's protection and paging bits and EFLAGS' VM bit),
+the `instruction`, `regs`, the watches, `cause` and `e9`.
 
-The `instruction` is decoded as `disassemble` decodes it. Its bytes come off the code pane the
-stop's survey painted, which the debugger moves to CS:EIP when a stop lands outside it, or off one
-`D` when the pane does not hold that line whole as one instruction (it decodes in its own width,
-not always the segment's). The nearest symbol in protected mode costs one `SELINFO CS` and only
-with a table loaded. The block is unavailable, with why, when no bytes could be read.
+The stop is read with one `EV` of every register, the flags and CR0, plus `SELINFO CS` in
+protected mode, whose D bit says `Pr16` or `Pr32`. The `instruction` is decoded as `disassemble`
+decodes it, from the bytes at CS:EIP read out of memory, never past the end of a 16-bit segment.
+The nearest symbol in protected mode costs one `SELINFO CS` and only with a table loaded. The
+block is unavailable, with why, when no bytes could be read.
 
 `cause` names the declaration whose address it stopped at (several at one address are all named),
 a `run_to`'s own target, the caller's `stop`, or a retrace stop a `run_for` left armed. Else it is
@@ -198,9 +198,9 @@ has no sizes, so a routine's body above its highest symbol stays unplaced unless
 lists the data after the code, as `nm` prints a program. A `long` line says its own mode (CR0's
 protection bit and VM), so each is placed by it: CS x 16 + EIP in real or virtual-8086 mode, the
 base of selector CS otherwise. The other shapes do not say, so a window is read in the mode the
-pane shows at its two ends: both real, every line by its paragraph; otherwise every line through
+stop shows at its two ends: both real, every line by its paragraph; otherwise every line through
 selector CS, which qualifies only as a present code descriptor at its own requested privilege, read
-off one `GDT` and `LDT` listing at the stop (a session started with `logfile`). A window that
+off one `GDT` and `LDT` listing at the stop. A window that
 starts and stops in real mode but passes through protected mode is read by paragraphs, and a line
 whose CS does not qualify gets no linear, which `note` says.
 
@@ -215,17 +215,16 @@ the `expect` waits; `resume`'s `seconds` and every `settle_seconds` also take 0,
 wait holds the server's lock throughout, so every other tool, `status` included, is unanswerable
 until it ends; the ceiling stops one abandoned question from wedging a session.
 
-- **An announced stop is read back before it counts**: a nudge that comes back cut means the
-  machine still runs, and the wait listens on, sending nothing.
-- **It hears the prompt, not only a register repaint**: the debugger repaints only the cells that
-  changed, so a machine that stops again redraws its code pane while the register labels stay put.
-- **It consults the emulator, and scans only what is new**, else a session that died at release
-  burns the whole bound with the lock held, and each poll re-parses the whole terminal.
+- **A wait asks the debugger, one request at a time**: `RUNSTATE` says whether the machine is
+  stopped, with its cycle count and emulated clock, and the wait asks again until it says so or
+  the bound runs out. A bound that runs out with the machine running sends `BREAK`.
+- **It consults the emulator at every ask**, else a session that died at release burns the whole
+  bound with the lock held.
 
 ### While the guest runs
 
-The debugger's console answers only while the machine is stopped. The server neither turns every
-"the console cannot be asked" into an INVALID while holding the answer, nor refuses to apply what it
+The debugger reads the machine only while it is stopped. The server neither turns every "the
+debugger cannot be asked" into an INVALID while holding the answer, nor refuses to apply what it
 was asked to do while the guest ran.
 
 - **The lists answer from what the server holds**, dated by `last_stop`, and say
@@ -233,8 +232,8 @@ was asked to do while the guest ran.
 - **What is asked while running is applied at the next stop**, before anything is read
   (`applied_on_stop`). A stop that happened on its own is recorded once, by the first tool that
   finds the machine at the debugger, `status` and `captures` included (`stopped_on_its_own`).
-- **`status` reads `pc` off the pane**, since a command that moves CS:IP inside a stop makes no new
-  stop. A reader refused because the guest runs names the tools that do answer in
+- **`status` reads `pc` from the debugger at a stop**, since a command that moves CS:IP inside a
+  stop makes no new stop. A reader refused because the guest runs names the tools that do answer in
   `answers_while_running`; `registers(from_last_stop=True)` hands back the stop's registers marked
   `superseded`, never as a value.
 
@@ -248,7 +247,7 @@ A segmented address is `SSSS:OOOOOOOO` (`seg_off` under its own key) and a linea
 and eight digits, so the same place is one string. A **ref** a caller gives is matched, and a
 comment stored, in the spelling its offset needs: `SSSS:OOOO` within `FFFF`, `SSSS:OOOOOOOO` past
 it, upper case (`814:10b` is `0814:010B`). A row carries `addr` only where the server already knows
-it, never bought with another console round trip. One spelling stays the debugger's own: a
+it, never bought with another round trip. One spelling stays the debugger's own: a
 breakpoint as `BPLIST` lists it (`run_to`'s `target`, a row's `entry`), which is what the server
 matches against.
 
@@ -256,28 +255,29 @@ matches against.
 
 The tools: [Read](docs/reference/read.md), [Write](docs/reference/write.md) and [Scan](docs/reference/scan.md).
 
-### The pane is the control
+### The code pane is the control
 
-`disassemble` decodes on the host because the debugger has no disassembly command. The width is the
-segment's own D bit, as the pane's decoder takes it: CS's, read from `Pr32`/`Pr16`, `SELINFO` or
-the descriptor listing, and `code_bits_from` says which.
+`disassemble` decodes on the host because the debugger has no disassembly command it prints. The
+width is the segment's own D bit: CS's, read from the stop's `Pr32`/`Pr16`, `SELINFO` or the
+descriptor listing, and `code_bits_from` says which.
 
-The pane is the control the decoder is checked against, line by line; the two may differ in
-spelling alone (`jc` for `jb`, a string instruction's implicit operands, a size word, a symbol in
-place of an operand). Where the pane is wrong about x86 it is
-right about itself: it reads `FE /7`, which no x86 decodes, as `callback` with a word after it,
-because that is how DOSBox's own code is entered from the guest; and in real mode it looks a
-segment number up as a selector, so `C 0000:0000` decodes the vector table 32-bit.
+The debugger's code pane, captured from terminal sessions, is the control the decoder is checked
+against offline, line by line; the two may differ in spelling alone (`jc` for `jb`, a string
+instruction's implicit operands, a size word, a symbol in place of an operand). Where the pane is
+wrong about x86 it is right about itself: it reads `FE /7`, which no x86 decodes, as `callback`
+with a word after it, because that is how DOSBox's own code is entered from the guest; and in real
+mode it looks a segment number up as a selector, so `C 0000:0000` decodes the vector table 32-bit.
+Live, the bytes a listing shows are held to the memory `read_memory` reads.
 
 ## The log
 
-`log` reads one `channel` of the logfile; the listings `machine_map`, `interrupt_vectors`, `palette` and the screen tools ask the debugger for land in the same file, among the `emulator` lines. The tools: [Read](docs/reference/read.md) (`log`, `log_wait`).
+`log` reads one `channel` of the logfile: the guest's E9 lines and the emulator's own. The tools: [Read](docs/reference/read.md) (`log`, `log_wait`).
 
 **`since_mark` asks "after Y".** A guest replaying a saved timeline writes lines identical to the ones before the load, so content cannot tell them apart and a position can. `state_write(method="load")` answers `mark`, one number per channel, all equal because one file holds them. It is a position in the file, not a moment: a line the emulator had not flushed when the load was sent lands after it.
 
 **Only whole lines are read, from a byte offset**. A log written through stdio ends mid-line between flushes, and a reader indexing by line number consumes an index on the fragment, so the completed line is never tested. Every ending of a wait takes one last read, since a line written between the emulator check and the deadline would never be looked for.
 
-**A wait on a machine stopped at the debugger ends at once**, refused with the position: a stopped guest writes nothing, and expiry would blame the program. The check is passive (the prompt the stop prints) and made at every poll, so a stop landing during the wait comes back as the stop, not "still running", which would have the next key refused for it.
+**A wait on a machine stopped at the debugger ends at once**, refused with the position: a stopped guest writes nothing, and expiry would blame the program. The check is the debugger's `RUNSTATE`, asked at every poll, so a stop landing during the wait comes back as the stop, not "still running", which would have the next key refused for it.
 
 ## Sequences in one call
 
@@ -285,7 +285,7 @@ segment number up as a selector, so `C 0000:0000` decodes the vector table 32-bi
 
 **The list is checked whole before its first step runs**, and before the session gate, so with no session a bad step answers `bad_argument` and a mistake in step 4 does not press the keys of steps 1 to 3. A step naming no operation is refused pointing at `operations`, carried once at the top level (inside `act` in a `drive`).
 
-**The one table.** A `resume` ends the console-driven part of a sequence. After it, what answers on a running guest runs at once: the table a running-guest refusal lists in `answers_while_running`, plus the five it adds for a caller outside a list (`registers(from_last_stop=True)`, `close`, `drive`, `perform`, `perform_export`). A declaration there answers `pending` and is armed at the next stop. Whether a step stopped the machine is the session's to say, never the step's name.
+**The one table.** A `resume` ends the part of a sequence that needs the machine stopped. After it, what answers on a running guest runs at once: the table a running-guest refusal lists in `answers_while_running`, plus the five it adds for a caller outside a list (`registers(from_last_stop=True)`, `close`, `drive`, `perform`, `perform_export`). A declaration there answers `pending` and is armed at the next stop. Whether a step stopped the machine is the session's to say, never the step's name.
 
 **Waiting for the stop.** Before any other step (`symbols_load` included, even with a `base`) the sequence waits, bounded, for the stop a breakpoint produces. A list ending with the guest still running waits only while something declared can still produce a stop; with nothing declared it returns at once and says why. `settle_seconds` runs from 0 to 600.
 
@@ -301,7 +301,7 @@ uv run python -m scry_core.replay <document> [--binary PATH] [--transcript PATH]
 
 It exits 0 when every step held; 1 when a step diverged or failed; 2 on a usage error; 3 when nothing was demonstrated (not a document, no `recorded` answer, a start refused, a saved state or declarations the replay lacks, a server that broke). A replay is deterministic on a conf with fixed cycles (`cycles=fixed <n>`); under `cycles=max` the guest's clock follows the host's.
 
-A step that left the guest at a new stop holds to the `regs` its reply carries (a `state_write(method="load")` answers none, so it holds to nothing); a `debug` line is never held to its answer, which is the console's. The document ends where no replay can reach what follows: whatever ends a run stops the guest at a place no replayed advance reaches, and every later stop inherits the shift; a step that wrote a file the session named (`dest`) would find it there on replay. `needs.states` lists the saved states it loads and does not save, checked before anything plays; `needs.declarations` what the store held as the recorded `start` began, since a `start` re-arms what it finds stored for the conf. The document carries the `start`'s arguments as given, host paths included.
+A step that left the guest at a new stop holds to the `regs` its reply carries (a `state_write(method="load")` answers none, so it holds to nothing); a `debug` line is never held to its answer, which is the debugger's. The document ends where no replay can reach what follows: whatever ends a run stops the guest at a place no replayed advance reaches, and every later stop inherits the shift; a step that wrote a file the session named (`dest`) would find it there on replay. `needs.states` lists the saved states it loads and does not save, checked before anything plays; `needs.declarations` what the store held as the recorded `start` began, since a `start` re-arms what it finds stored for the conf. The document carries the `start`'s arguments as given, host paths included.
 
 The tool: [Lists](docs/reference/lists.md) (`perform_export`).
 
@@ -323,6 +323,19 @@ A screen map names an application's screens and their controls, so a caller says
 
 DOSBox-X merged SAVESTATE and LOADSTATE into its `main-ai` branch, joncampbell123/dosbox-x#6682 and #6683, not yet in `master` or a release. A build without them answers an unknown command, and both tools say so as `no_channel`, naming it. The tools: [States](docs/reference/states.md).
 
-## The console
+## The debugger channel
 
-Everything the typed tools do goes through the debugger console, and `debug` is the raw command that hands you its paint instead. The tool: [Read](docs/reference/read.md) (`debug`).
+Every reading and every command goes to the debugger through its channel (`[dosbox] mcp_server`): one request, the lines the command printed, one at a time, on every host. The debugger's screen is never read; a build whose debugger can run with no screen (`[dosbox] debugger headless`) is started that way, and one that cannot gets a terminal nobody reads on macOS, or a hidden console of its own on Windows. A reply longer than the channel keeps (it drops lines past its cap and says how many) is refused, never read as whole. `debug` is the raw command, its printed lines handed back. The tool: [Read](docs/reference/read.md) (`debug`).
+
+### Debugger commands
+
+Some tools need a debugger command a build may lack; `build_check` lists the ones a build has as `debugger_commands`, and a tool that needs a missing one is refused `no_channel` naming it, before anything acts.
+
+| Command | What it gives | The tools that need it |
+| --- | --- | --- |
+| `RUNSTATE` | whether the debugger holds the machine, its cycle count and its emulated clock | `run_to`, `run_for`, `trace`, `screen_wait`, `step` with `mode="over"`, `resume` with a bound, and any reading after a release |
+| `STEPIN` | one instruction run, synchronously | `step` |
+| `SAVESTATE`, `LOADSTATE` | a saved state | `state_write` |
+| `PRESENCE` | the orange edge drawn by the emulator | the presence indicator |
+
+On a build without `RUNSTATE` a session starts, every reading answers at the stop `start` leaves, and input, captures and declarations work; `resume` with no bound releases the machine and says that nothing will tell when it stops again, and `stop` brings it back to the debugger wherever it is. No DOSBox-X release carries `RUNSTATE` yet.

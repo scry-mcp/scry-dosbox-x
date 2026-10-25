@@ -80,7 +80,7 @@ Break on an interrupt, optionally one `ah` function. Arm it before `resume`. `nu
 `ah` are hex given as integers: `0x21` for DOS, not `21`. Pending while the guest runs.
 
 Reply: `ref` (e.g. `BPINT 21 AH=4B`, what `declaration_clear` takes), `stored`,
-`already_stored`, `armed`, `state`, `entry`; with `detail=True` also `screen_delta`.
+`already_stored`, `armed`, `state`, `entry`; with `detail=True` also `output`.
 
 Reference: REFERENCE.md, Declarations.
 
@@ -98,8 +98,8 @@ Reference: REFERENCE.md, Declarations.
 | `entry` | string |
 | `note` | string |
 | `ref` | string |
-| `screen_chars` | integer |
-| `screen_delta` | string |
+| `output` | string |
+| `output_chars` | integer |
 | `state` | string |
 | `stored` | boolean |
 
@@ -120,11 +120,11 @@ Example, from a live run:
   "stored": true,
   "entry": "BPINT 21 AH=4C",
   "omitted": [
-    "screen_delta",
-    "screen_chars",
+    "output",
+    "output_chars",
     "clipped"
   ],
-  "how": "detail=True adds the debugger's repaint for this command"
+  "how": "detail=True adds what the debugger printed for this command"
 }
 ```
 <!-- scry-reference:end breakpoint_interrupt -->
@@ -297,10 +297,10 @@ Example, from a live run:
         "available": false,
         "why": "a DOS machine has one cpu, and every row acts on it"
       },
-      "created_at": "2026-10-24T22:13:23+00:00",
-      "origin": "2026-10-24T22:12:33+00:00#74274.1",
+      "created_at": "2026-10-25T21:14:24+00:00",
+      "origin": "2026-10-25T21:14:12+00:00#44557.1",
       "inherited": false,
-      "age_s": 2,
+      "age_s": 0,
       "entry": "BP 0000:0002",
       "marked": false,
       "state": "armed"

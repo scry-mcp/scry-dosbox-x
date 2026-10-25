@@ -79,10 +79,8 @@ def parse_seg_off(ref: str) -> tuple[int, int]:
 
 
 def _listening(session: ds.Session) -> None:
-    """Refuse a placement before typing at a console that is not listening (a running guest)."""
-    if not session.at_debugger():
-        raise ds.NotStopped("the guest is running, so nothing can be placed against its "
-                            "registers now")
+    """Refuse a placement against the registers of a machine that is not stopped."""
+    session.require_stopped("a placement against its registers")
 
 
 def _program_selectors(session: ds.Session, desc: dict[str, int],
@@ -114,7 +112,7 @@ def target_for(offset: int, reg: str, session: ds.Session, *,
                 machine: tuple[str, dict[str, str]] | None = None) -> tuple[int, int]:
     """The seg:off to arm at a symbol OFFSET, derived from the machine's mode.
 
-    `machine` is a `(mode, registers)` pair the caller read once, saving a console round trip
+    `machine` is a `(mode, registers)` pair the caller read once, saving a channel round trip
     per declaration in a stop reply.
 
     Protected mode: the offset is the breakpoint offset. Real mode: the load paragraph plus

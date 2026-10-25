@@ -9,14 +9,14 @@
 set_register(name, value)
 ```
 
-Write one register and read it back off the pane; marks the session `altered`. Needs the
-machine stopped.
+Write one register and read it back; marks the session `altered`. Needs the machine
+stopped.
 
 `name` is a register the debugger's `SR` takes (`eax`, `ax`, `ip`); a negative or too wide
 `value` is refused unsent.
 
 Reply: `register`, `regs`, `value`, `readback` (both `0x` at the register's width),
-`verified`. INVALID when no pane came back.
+`verified`. INVALID when the registers did not come back.
 
 | argument | type | default |
 |---|---|---|
@@ -48,20 +48,20 @@ Example, from a live run:
   "register": "eax",
   "regs": {
     "EAX": "0x00000000",
+    "EBX": "0x00000124",
+    "ECX": "0x0000a97e",
+    "EDX": "0x00000814",
     "ESI": "0x00000100",
+    "EDI": "0x0000fffe",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fff8",
+    "EIP": "0x0000fea5",
+    "CS": "0xf000",
     "DS": "0x0814",
     "ES": "0x0814",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x0814",
-    "EBX": "0x00000124",
-    "EDI": "0x0000fffe",
-    "CS": "0xf000",
-    "EIP": "0x0000fea5",
-    "ECX": "0x0000a97e",
-    "EBP": "0x0000091c",
-    "EDX": "0x00000814",
-    "ESP": "0x0000fff8"
+    "SS": "0x0814"
   },
   "readback": "0x00000000",
   "verified": true

@@ -27,7 +27,6 @@ sys.path.append(str(Path(__file__).resolve().parent))
 from scry_core.reply_contract import Invalid  # noqa: E402
 
 import dosbox_binary as dbinary  # noqa: E402
-import dosbox_console as dcons  # noqa: E402
 import dosbox_launch as dlaunch  # noqa: E402
 import dosbox_logs as dlogs  # noqa: E402
 import dosbox_session as ds  # noqa: E402
@@ -88,7 +87,7 @@ def bench(label: str, fn: Callable[[], Any], n: int,
           answered: Callable[[Any], bool]) -> dict[str, object]:
     """`n` calls of one thing, with the median and the spread.
 
-    `answered` is required: `Session.command` returns "" on total silence without raising.
+    `answered` is required: `Session.command` returns "" for a command that printed nothing.
     """
     times: list[float] = []
     for _ in range(n):
@@ -105,7 +104,6 @@ def bench(label: str, fn: Callable[[], Any], n: int,
 def newest(log: Path) -> float | None:
     """The guest's own clock, off the logfile on disk, never through the session.
 
-    A read through the session drains the terminal, which hides the measured defect.
     The maximum is taken: boot self-checks are stamped before the profiler's clock
     starts, so the log is not monotone.
     """
@@ -133,14 +131,20 @@ def batch_cost(cwd: Path, song: str) -> dict[str, float]:
     return {"total_s": round(ms / 1000.0, 2)}
 
 
+def launch(conf: Path, cwd: Path, seconds: int, logfile: Path) -> dlaunch.Launch:
+    """A launch of the build this bench measures, read as `start` reads it."""
+    found = build().path
+    return dlaunch.Launch(binary=found, headless=dbinary.headless(found), conf=conf, cwd=cwd,
+                          seconds=seconds, logfile=logfile)
+
+
 def reach_the_state(conf: Path, cwd: Path) -> dict[str, float]:
-    """Debugger prompt (the session can be asked) and application up (the marker appears)."""
+    """The debugger answering (the session can be asked) and application up (the marker)."""
     log = Path("/tmp/dosbox-bench-reach.log")
     if log.exists():
         log.unlink()
     t0 = time.perf_counter()
-    s = ds.Session(dlaunch.Launch(binary=build().path, conf=conf,
-                                  cwd=cwd, seconds=180, logfile=log))
+    s = ds.Session(launch(conf, cwd, seconds=180, logfile=log))
     try:
         s.wait_ready()
         prompt = time.perf_counter() - t0
@@ -159,16 +163,11 @@ def reach_the_state(conf: Path, cwd: Path) -> dict[str, float]:
 
 
 def per_question(conf: Path, cwd: Path) -> dict[str, object]:
-    """What each tool costs against a session already stopped where you want it.
-
-    The reply grace is swept: a console reply ending in the debugger's last words breaks
-    after `REPLY_GRACE_S` of quiet, so part of its cost is that parameter, not the machine.
-    """
+    """What each tool costs against a session already stopped where you want it."""
     log = Path("/tmp/dosbox-bench-q.log")
     if log.exists():
         log.unlink()
-    s = ds.Session(dlaunch.Launch(binary=build().path, conf=conf,
-                                  cwd=cwd, seconds=300, logfile=log))
+    s = ds.Session(launch(conf, cwd, seconds=300, logfile=log))
     out: dict[str, object] = {}
     try:
         ms, _ = timed(s.wait_ready)
@@ -179,21 +178,9 @@ def per_question(conf: Path, cwd: Path) -> dict[str, object]:
 
         out["registers"] = bench("registers", s.registers, 7, nonempty)
         out["read_memory"] = bench(
-            "read_memory", lambda: s.read_memory(0xF000, 0xE000), 7, nonempty)
+            "read_memory", lambda: s.read_bytes(0xF000, 0xE000, 16), 7, nonempty)
         out["debug"] = bench("debug", lambda: s.command("BPLIST"), 7,
                              lambda r: bool(str(r).strip()))
-
-        sweep: dict[str, object] = {}
-        default = ds.REPLY_GRACE_S
-        try:
-            for grace in (0.6, 0.3, default):
-                ds.REPLY_GRACE_S = grace
-                sweep[str(grace)] = bench(f"registers@grace={grace}",
-                                          lambda: dcons.parse_registers(s.command(ds.NUDGE)),
-                                          5, nonempty)
-        finally:
-            ds.REPLY_GRACE_S = default
-        out["grace_sweep"] = sweep
 
         s.resume()
         deadline = time.perf_counter() + 60
@@ -224,8 +211,7 @@ def advance_rate(conf: Path, cwd: Path) -> dict[str, object]:
     log = Path("/tmp/dosbox-bench-rate.log")
     if log.exists():
         log.unlink()
-    s = ds.Session(dlaunch.Launch(binary=build().path, conf=conf,
-                                  cwd=cwd, seconds=240, logfile=log))
+    s = ds.Session(launch(conf, cwd, seconds=240, logfile=log))
     try:
         s.wait_ready()
         s.resume()

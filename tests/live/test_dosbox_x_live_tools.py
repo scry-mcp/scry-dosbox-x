@@ -29,7 +29,6 @@ from test_dosbox_x_live import (  # noqa: E402
     conf_that_does_not_exit,
 )
 
-import dosbox_code as code
 import dosbox_console as dcons
 import dosbox_logs as dlogs
 import dosbox_machine as machine
@@ -108,7 +107,6 @@ def test_start_headless_reaches_the_debugger_and_declares_what_it_launched() -> 
     assert argv[argv.index("sdl videodriver=dummy") - 1] == "-set"
     assert cast(float, reply["ready_after_s"]) > 0
     assert reply["session"]["alive"] is True and reply.get("watched", False) is False, reply
-    assert reply["drain_alive"] is True, "the terminal reader never started"
 
 
 @pytest.mark.windowed
@@ -155,11 +153,9 @@ def test_status_reports_the_live_session_and_not_a_remembered_one() -> None:
         "the elapsed time did not move: this is not a reading of a live session"
     later = cast(dict[str, Any], server.status())
     assert later["session"]["alive"] is True
-    assert later["drain_alive"] is True and "drain_ended" not in later
     assert later["session"]["altered"] is False, "nothing wrote to this machine"
-    assert later.get("terminal_bytes_dropped", 0) == 0, (
-        "the terminal overflowed on an idle session, so a screen delta had a hole "
-        "in it and the drain is not keeping up")
+    assert later.get("output_bytes_dropped", 0) == 0, (
+        "the emulator's output overflowed on an idle session: the drain is not keeping up")
     assert first["pc"] == "F000:0000FFF0" and first["cpu_mode"] == "real", first
     assert first["declarations"] == {"breakpoints": 0, "watches": 0}, first
 
@@ -224,40 +220,33 @@ def test_read_memory_answers_about_the_address_that_was_asked_for() -> None:
     """The answer is IN the answer:"""
     start_ok(session_seconds=60)
     seg, off = 0xF000, 0xE000
-    reply = cast(dict[str, Any], server.read_memory(ref=f"{seg:04X}:{off:08X}"))
+    reply = cast(dict[str, Any], server.read_memory(ref=f"{seg:04X}:{off:08X}", length=128))
     assert reply["status"] == "ok", reply
-    assert reply["seg_off"] == f"{seg:04X}:{off:08X}"
-    rows = cast(list[str], reply["rows"])
-    assert rows and rows[0].startswith(f"{seg:04X}:{off:08X}"), (
-        f"the rows do not begin at {seg:04X}:{off:04X}, which is the address asked "
-        f"about. They begin: {rows[:1]}")
-    joined = " ".join(rows)
-    for stray in ("Overview", "Data view", "Output", "I->", "DEBUG:"):
-        assert stray not in joined, f"{stray!r} came back inside the rows: {rows}"
-    assert len(rows) == 8, f"expected eight data rows, got {len(rows)}: {rows}"
-    body = "\n".join(rows)
-    assert "DOSBox-X BIOS" in body or "COMPATIBLE BIO" in body, body[:300]
+    assert reply["seg_off"] == f"{seg:04X}:{off:08X}" and reply["length"] == 128
+    body = bytes.fromhex(str(reply["hex"])).decode("latin-1")
+    assert len(body) == 128, f"asked 128 bytes, the reply holds {len(body)}"
+    assert "DOSBox-X BIOS" in body or "COMPATIBLE BIO" in body, body
     bad = cast(dict[str, Any], server.read_memory(ref="10000:00000000"))
     assert bad["status"] == "INVALID" and "segment" in str(bad["message"])
 
 
-def test_debug_hands_back_a_delta_and_says_whether_it_kept_all_of_it() -> None:
+def test_debug_hands_back_its_output_and_says_whether_it_kept_all_of_it() -> None:
     """The one tool with no server-side guardrail, so its honesty IS its contract."""
     start_ok(session_seconds=60)
     reply = cast(dict[str, Any], server.debug(command="BPLIST"))
     assert reply["status"] == "ok", reply
     assert reply["command"] == "BPLIST"
-    assert "Breakpoint list" in str(reply["screen_delta"])
-    delta, chars = str(reply["screen_delta"]), cast(int, reply["screen_chars"])
-    assert len(delta) <= DEBUG_CAP
+    assert "Breakpoint list" in str(reply["output"])
+    output, chars = str(reply["output"]), cast(int, reply["output_chars"])
+    assert len(output) <= DEBUG_CAP
     assert reply.get("clipped", False) is (chars > DEBUG_CAP), (
         f"clipped={reply['clipped']} with {chars} characters against a {DEBUG_CAP} cap")
     if not reply.get("clipped", False):
-        assert chars == len(delta), (
-            f"screen_chars {chars} is not the length of an unclipped delta ({len(delta)})")
+        assert chars == len(output), (
+            f"output_chars {chars} is not the length of an unclipped output ({len(output)})")
     resumed = cast(dict[str, Any], server.resume(detail=True))
     assert resumed.get("clipped", False) is (
-        cast(int, resumed["screen_chars"]) > SMALL_CAP), resumed["screen_chars"]
+        cast(int, resumed["output_chars"]) > SMALL_CAP), resumed["output_chars"]
 
 
 def test_memdump_lands_the_exact_bytes_and_leaves_nothing_behind(
@@ -283,19 +272,20 @@ def test_breakpoint_interrupt_arms_the_interrupt_it_was_given_and_not_another() 
     start_ok(session_seconds=60)
     reply = cast(dict[str, Any], server.breakpoint_interrupt(number=0x21, ah=0x4C, detail=True))
     assert reply["status"] == "ok", reply
-    assert "INT 21 AH=4C" in str(reply["screen_delta"]), reply["screen_delta"][-400:]
+    assert "INT 21 AH=4C" in str(reply["output"]), reply["output"][-400:]
 
 
 def test_resume_lets_the_guest_advance() -> None:
-    """The guest genuinely RUNS, evidenced by text that cannot appear while stopped."""
+    """The guest genuinely RUNS, evidenced by a stop away from the reset vector it parked at."""
     start_ok(session_seconds=90)
     reply = cast(dict[str, Any], server.resume(detail=True))
-    assert reply["status"] == "ok", reply
-    ran = str(reply["screen_delta"])
-    assert any(m in ran for m in ("COMMAND.COM", "EMS page frame", "XMS:")), ran[-400:]
+    assert reply["status"] == "ok" and reply["output"] == "OK", reply
     assert "pc" not in reply, reply
     assert reply["session"]["running"] is True, reply
     assert cast(dict[str, Any], server.status())["session"]["alive"] is True
+    assert wait_for(lambda: cast(dict[str, Any], server.status())["elapsed_s"] > 1.0, seconds=10)
+    stopped = cast(dict[str, Any], server.stop())
+    assert stopped["status"] == "ok" and stopped["pc"] != "F000:0000FFF0", stopped
 
 
 def test_e9_returns_matching_lines_and_counts_all_of_them(tmp_path: Path) -> None:
@@ -396,8 +386,7 @@ def test_closing_a_running_session_does_not_wait_out_a_signal_it_ignores() -> No
     """The cost of ending a session that was actually USED, which is every real one, and the."""
     start_ok(session_seconds=90)
     resumed = cast(dict[str, Any], server.resume(detail=True))
-    assert any(m in str(resumed["screen_delta"])
-               for m in ("COMMAND.COM", "EMS page frame", "XMS:")), resumed
+    assert resumed["status"] == "ok" and resumed["output"] == "OK", resumed
     assert "pc" not in resumed and resumed["session"]["running"] is True, resumed
     assert cast(dict[str, Any], server.status())["session"]["alive"] is True
 
@@ -546,11 +535,9 @@ def a_return_address_in_ram() -> tuple[int, int]:
             f"ROM segment (last: {seg:04X}:{eip:08X}). A code breakpoint there is "
             f"acknowledged and never fires, so this case cannot measure what it is "
             f"named for: INVALID, not a pass")
-    rows = cast(dict[str, Any], server.read_memory(ref=f"{seg:04X}:{eip:08X}"))
-    assert rows["status"] == "ok", rows
-    row = next(r for r in cast(list[str], rows["rows"])
-               if r.startswith(f"{seg:04X}:{eip:08X}"))
-    opcode = row.split()[1:3]
+    read = cast(dict[str, Any], server.read_memory(ref=f"{seg:04X}:{eip:08X}", length=2))
+    assert read["status"] == "ok", read
+    opcode = [read["hex"][:2].upper(), read["hex"][2:4].upper()]
     assert opcode == ["CD", "21"], (
         f"the stop at {seg:04X}:{eip:08X} is not a two-byte `CD 21` (it reads "
         f"{opcode}), so eip+2 is not the return address and this case would be "
@@ -580,7 +567,7 @@ def test_run_to_arrives_at_a_real_address_and_takes_its_breakpoint_away() -> Non
     assert reply["target_disarmed"] is True, reply
     server.debug(command="BP F000:E05B")
     left = cast(dict[str, Any], server.debug(command="BPLIST"))
-    held = [b["entry"] for b in dcons.parse_breakpoints(str(left["screen_delta"]))]
+    held = [b["entry"] for b in dcons.parse_breakpoints(str(left["output"]))]
     assert "BP F000:E05B" in held, (
         f"the sentinel is not in the listing, so this read examined nothing and its "
         f"verdict about the removal is worth nothing: {held}")
@@ -609,8 +596,8 @@ def test_machine_map_is_honest_before_dos_and_finds_the_guest_after(tmp_path: Pa
     assert ("gdt" in booted) == (booted["cpu_mode"] != "real"), booted["coverage_note"]
     assert booted["counts"]["mcbs"] == len(booted["mcbs"]) and booted["sources"]["mcbs"]
     after = cast(dict[str, Any], server.debug(command="BPLIST"))
-    assert dcons.BPLIST_HEADER in after["screen_delta"] \
-        and "not recognized" not in after["screen_delta"], after["screen_delta"][-200:]
+    assert dcons.BPLIST_HEADER in after["output"] \
+        and "not recognized" not in after["output"], after["output"][-200:]
 
 
 def test_palette_reads_the_dac_before_and_after_the_bios_sets_it(tmp_path: Path) -> None:
@@ -626,8 +613,8 @@ def test_palette_reads_the_dac_before_and_after_the_bios_sets_it(tmp_path: Path)
     assert one["rgb"] == ["00002a"] and one["colors"] == ["#0000aa"], one
     assert one["image"]["path"] == str(dest) and dest.stat().st_size > 0
     after = cast(dict[str, Any], server.debug(command="BPLIST"))
-    assert dcons.BPLIST_HEADER in after["screen_delta"] \
-        and "not recognized" not in after["screen_delta"], after["screen_delta"][-200:]
+    assert dcons.BPLIST_HEADER in after["output"] \
+        and "not recognized" not in after["output"], after["output"][-200:]
     bad = cast(dict[str, Any], server.palette(first=256))
     assert bad["status"] == "INVALID" and bad["code"] == "bad_argument", bad
 
@@ -737,11 +724,10 @@ def test_disassemble_decodes_what_memory_holds_and_names_the_probes_calls(
     got = cast(dict[str, Any], server.disassemble(ref="start", length=16))
     assert got["status"] == "ok" and got["code_bits"] == 16, got
     listed = [(ln.split()[0], ln.split()[1]) for ln in got["lines"]]
-    raw = cast(dict[str, Any], server.read_memory(ref="0814:010B", length=16))["hex"]
-    assert "".join(b for _a, b in listed).upper().startswith(raw.upper()), (listed, raw)
-    pane = cast(dict[str, Any], server.debug(command="C 0814:010B"))["screen_delta"]
-    shown = {f"{p.segment}:{p.offset:08X}": p.data for p in code.pane_lines(pane)}
-    assert all(shown.get(a) == bytes.fromhex(b) for a, b in listed), (listed, shown)
+    listed_bytes = "".join(b for _a, b in listed)
+    raw = cast(dict[str, Any], server.read_memory(ref="0814:010B",
+                                                  length=len(listed_bytes) // 2))["hex"]
+    assert listed_bytes.upper() == raw.upper(), (listed, raw)
     named = {(r["line"], r["kind"]): (r["symbol"], r["delta"]) for r in got["resolved"]}
     assert named[(1, "target")] == ("emit", 0) and named[(2, "target")] == ("bump", 0)
     assert named[(3, "memory")] == ("cnt", 1), named
@@ -892,8 +878,8 @@ def test_write_lands_in_ram_and_is_read_back_and_a_write_into_rom_is_refused() -
     assert ram["status"] == "ok" and ram["verified"] is True, ram
     assert ram["readback"] == "1234abcd" and ram["bytes_written"] == 4
     assert ram["session"]["altered"] is True
-    rows = cast(dict[str, Any], server.read_memory(ref="0040:0100"))["rows"]
-    assert rows[0].split()[1:5] == ["12", "34", "AB", "CD"], rows[0]
+    back = cast(dict[str, Any], server.read_memory(ref="0040:0100", length=4))["hex"]
+    assert back == "1234abcd", back
     rom = cast(dict[str, Any], server.write(ref="F000:E05B", data_hex="99"))
     assert rom["status"] == "INVALID" and "ENDS the emulator" in rom["message"], rom
     assert cast(dict[str, Any], server.status())["session"]["alive"] is True

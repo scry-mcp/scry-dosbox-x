@@ -1,2 +1,0 @@
-DEBUG: MEMFIND Memory search is not active.
-I-> _

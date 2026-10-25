@@ -15,7 +15,6 @@ from typing import Any, cast
 import pytest
 from dosbox_x_server_support import FakeSession, clean_session, install  # noqa: F401
 
-import dosbox_console as dcons
 import dosbox_logs as dlogs
 import dosbox_machine as machine
 import dosbox_session as ds
@@ -281,125 +280,6 @@ def test_the_debuggers_refusal_before_dos_booted_is_a_refusal_not_a_listing() ->
 # ------------------------------------------------------------------ the reader
 
 
-class Logfile:
-    """The two halves a listing arrives in, as a real session sees them: the screen `command`
-    returns (and the repaint a key returns), and the bytes the emulator appends to its logfile
-    for that command. `shrink` truncates the file during the command, as a rotated log would."""
-
-    def __init__(self, tmp: Path, screens: list[str], logged: list[bytes], *,
-                 logfile: bool = True, shrink: bool = False) -> None:
-        self.path = tmp / "session.log"
-        self.path.write_bytes(b"what the boot already wrote\n")
-        self.launch = SimpleNamespace(logfile=self.path if logfile else None, cwd=tmp)
-        self.screens = list(screens)
-        self.logged = list(logged)
-        self.typed: list[bytes] = []
-        self.shrink = shrink
-
-    def _keys(self, data: bytes, settle: float = ds.SETTLE_S,
-              timeout: float = ds.REPLY_TIMEOUT_S) -> str:
-        self.typed.append(data)
-        if self.shrink:
-            self.path.write_bytes(b"")
-        if self.logged:
-            with self.path.open("ab") as f:
-                f.write(self.logged.pop(0))
-        return self.screens.pop(0)
-
-    def command(self, text: str, settle: float = ds.SETTLE_S,
-                timeout: float = ds.REPLY_TIMEOUT_S) -> str:
-        return self._keys(text.encode() + b"\r", settle, timeout)
-
-    def listing(self, command: str) -> str:
-        return ds.Session.listing(cast(ds.Session, self), command)
-
-
-def test_a_listing_that_fits_is_read_off_the_logfile_from_where_the_command_began(
-        tmp_path: Path) -> None:
-    log = (MACHINE / "probe-booted-DOS_MCBS.log.txt").read_bytes()
-    ses = Logfile(tmp_path, [cap("probe-booted-DOS_MCBS.screen.txt")], [log])
-    assert ses.listing("DOS MCBS") == log.decode("latin-1")
-    assert ses.typed == [b"DOS MCBS\r"]
-
-
-def test_a_paged_listing_is_answered_with_q_alone_and_read_whole(tmp_path: Path) -> None:
-    """The first page leaves the command on the input line and the pager's marker under it;
-    `Q` with no carriage return prints the rest and empties the line. Nothing else is typed."""
-    log = (MACHINE / "probe-booted-DOS_KERN.log.txt").read_bytes()
-    first, rest = log[:845], log[845:]
-    ses = Logfile(tmp_path, [cap("probe-booted-DOS_KERN.screen.txt"),
-                             cap("probe-booted-DOS_KERN.q.txt")], [first, rest])
-    assert ses.listing("DOS KERN") == log.decode("latin-1")
-    assert ses.typed == [b"DOS KERN\r", b"Q"]
-
-
-def test_an_input_line_that_still_holds_a_command_is_refused_and_nothing_more_is_typed(
-        tmp_path: Path) -> None:
-    """A repaint whose input line still holds text means the next command would be appended to
-    it rather than run: refused, naming what the line holds."""
-    paged = cap("probe-booted-CALLBACKS.screen.txt")
-    held = paged[:paged.rindex("^ Paged content")]
-    ses = Logfile(tmp_path, [held], [b""])
-    with pytest.raises(ds.Invalid) as got:
-        ses.listing("CALLBACKS")
-    assert got.value.code == "unexpected_answer" and "CALLBACKS" in str(got.value)
-    assert ses.typed == [b"CALLBACKS\r"]
-
-
-def test_a_pager_still_waiting_after_q_is_refused_and_q_is_not_typed_twice(
-        tmp_path: Path) -> None:
-    paged = cap("probe-booted-DOS_KERN.screen.txt")
-    ses = Logfile(tmp_path, [paged, paged], [b"", b""])
-    with pytest.raises(ds.Invalid) as got:
-        ses.listing("DOS KERN")
-    assert got.value.code == "unexpected_answer" and "close" in str(got.value)
-    assert ses.typed == [b"DOS KERN\r", b"Q"]
-
-
-def test_a_session_without_a_logfile_is_refused_before_anything_is_typed(tmp_path: Path) -> None:
-    ses = Logfile(tmp_path, [], [], logfile=False)
-    with pytest.raises(ds.Invalid) as got:
-        ses.listing("DOS MCBS")
-    assert got.value.code == "no_channel" and "logfile" in str(got.value)
-    assert ses.typed == []
-
-
-def test_no_prompt_back_is_not_a_listing_and_says_to_close(tmp_path: Path) -> None:
-    """The screen's first page, cut before its prompt (an edited capture): what the file holds
-    is not known to be whole, and the pager may still be waiting."""
-    paged = cap("probe-booted-DOS_KERN.screen.txt")
-    ses = Logfile(tmp_path, [paged[:paged.rindex(dcons.PROMPT)]], [b""])
-    with pytest.raises(ds.Invalid) as got:
-        ses.listing("DOS KERN")
-    assert got.value.code == "unexpected_answer" and "close" in str(got.value)
-    assert ses.typed == [b"DOS KERN\r"]
-
-
-def test_a_logfile_that_shrank_under_the_read_is_refused(tmp_path: Path) -> None:
-    ses = Logfile(tmp_path, [cap("probe-booted-DOS_MCBS.screen.txt")], [b""], shrink=True)
-    with pytest.raises(ds.Invalid) as got:
-        ses.listing("DOS MCBS")
-    assert got.value.code == "session_broken"
-
-
-def test_a_name_byte_above_ascii_survives_the_read_and_the_parse(tmp_path: Path) -> None:
-    """A block's name is guest bytes: 0x85 (an accented letter in the DOS code page) comes back
-    as itself, and is not taken for a line break that would cut the row (an edited capture)."""
-    log = (MACHINE / "probe-booted-DOS_MCBS.log.txt").read_bytes().replace(b"PROBE", b"PR\x85BE")
-    ses = Logfile(tmp_path, [cap("probe-booted-DOS_MCBS.screen.txt")], [log])
-    rows = machine.parse_mcbs(ses.listing("DOS MCBS"))
-    assert [r["filename"] for r in rows if r["psp_seg"] == "0814"] == ["PR\x85BE", "PR\x85BE"]
-
-
-def test_the_pager_and_the_input_line_are_read_at_the_last_prompt() -> None:
-    """A marker an earlier listing left in the scrollback above a clean prompt is not this
-    reply's pager (the paged capture, then the `Q` repaint after it)."""
-    paged, rest = cap("probe-booted-DOS_KERN.screen.txt"), cap("probe-booted-DOS_KERN.q.txt")
-    assert dcons.at_pager(paged) and not dcons.at_pager(paged + rest)
-    assert dcons.input_line(paged + rest) == "" and dcons.input_line("no prompt") is None
-    assert dcons.input_line(paged[:paged.rindex("^ Paged")]) == "DOS KERN"
-
-
 # ------------------------------------------------------------------ the tool
 
 
@@ -419,8 +299,6 @@ class Bench(FakeSession):
         return ds.Session._memdump_candidates(cast(ds.Session, self))
 
     def listing(self, command: str) -> str:
-        if self.launch.logfile is None:
-            return ds.Session.listing(cast(ds.Session, self), command)
         self.asked.append(command)
         return listing(self.bench, command)
 
@@ -560,13 +438,6 @@ def test_an_unknown_mode_omits_no_table_it_cannot_say_the_machine_has(tmp_path: 
     assert r["status"] == "ok" and not {"gdt", "ldt"} & set(r.get("omitted", [])), r
 
 
-def test_without_a_logfile_an_unknown_mode_reads_no_table_and_says_so(tmp_path: Path) -> None:
-    """A protected pane that painted no PAGE/NOPG mark leaves the mode unknown: the vectors are
-    answered with no holder, never a crash on the unknown mode."""
-    _, r = _vectors_with_no_logfile(tmp_path, None)
-    assert r["status"] == "ok" and r["cpu_mode"]["available"] is False, r
-    assert "no vector has a holder:" in r["coverage_note"], r["coverage_note"]
-
 
 def test_real_mode_says_why_each_table_is_absent(tmp_path: Path) -> None:
     note = mapped("probe-booted", tmp_path)["coverage_note"]
@@ -574,13 +445,14 @@ def test_real_mode_says_why_each_table_is_absent(tmp_path: Path) -> None:
     assert "`paging` is absent: paging is off" in note
 
 
-def test_without_a_logfile_machine_map_is_refused_naming_it(tmp_path: Path) -> None:
+def test_without_a_logfile_machine_map_reads_its_listings_all_the_same(tmp_path: Path) -> None:
+    """The listings come back on the debugger channel, so a session with no logfile maps too."""
     s = Bench("probe-booted", None)
     install()
     dstate.STATE.session = cast(ds.Session, s)
     r = cast(dict[str, Any], server.machine_map())
-    assert r["status"] == "INVALID" and r["code"] == "no_channel"
-    assert "logfile" in r["message"] and s.asked == []
+    assert r["status"] == "ok" and r["mcbs"], r
+    assert "logfile" not in r["coverage_note"] and "DOS MCBS" in s.asked
 
 
 def test_a_running_guest_is_refused_not_stopped(tmp_path: Path) -> None:
@@ -669,10 +541,12 @@ def test_an_intvec_file_that_is_not_the_whole_table_is_not_the_table() -> None:
         machine.parse_intvec("\n".join([lines[1], lines[0], *lines[2:]]))
 
 
+INTVEC_SAID = "DEBUG: Interrupt vector table written to MCPIVT.TXT."
+
+
 class IntvecBench(Bench):
-    """A bench whose `INTVEC` writes the captured file into its working directory, with the
-    captured end of the screen that answered it (`probe-booted-INTVEC.screen.txt`, the same
-    line on every bench)."""
+    """A bench whose `INTVEC` writes the captured file into its working directory, with the line
+    the debugger printed for it (`tests/fixtures/channel/scry-real.json`)."""
 
     def __init__(self, bench: str, logfile: Path | None, cwd: Path, *,
                  writes: bool = True, says: bool = True) -> None:
@@ -682,13 +556,13 @@ class IntvecBench(Bench):
         self.says = says
         self.typed: list[str] = []
 
-    def command(self, text: str, **_: object) -> str:
+    def command(self, text: str, seconds: float | None = None) -> str:
         self.typed.append(text)
         if text == f"INTVEC {ds.INTVEC_FILE}" and self.writes:
             (self.launch.cwd / ds.INTVEC_FILE).write_bytes(
                 (MACHINE / f"{self.bench}-INTVEC.txt").read_bytes())
-            return cap("probe-booted-INTVEC.screen.txt") if self.says else "I-> _"
-        return "I-> _"
+            return INTVEC_SAID if self.says else ""
+        return ""
 
     def intvec(self) -> str:
         return ds.Session.intvec(cast(ds.Session, self))
@@ -760,8 +634,7 @@ def test_before_dos_booted_the_table_is_all_zero_and_nothing_is_placed(tmp_path:
     assert "Cannot enumerate MCB list while DOS kernel is inactive." in r["coverage_note"]
 
 
-def test_without_a_logfile_the_table_comes_back_and_no_vector_has_a_holder(
-        tmp_path: Path) -> None:
+def test_without_a_logfile_the_vectors_are_placed_all_the_same(tmp_path: Path) -> None:
     s = IntvecBench("probe-booted", None, tmp_path)
     install()
     dstate.STATE.session = cast(ds.Session, s)
@@ -769,10 +642,8 @@ def test_without_a_logfile_the_table_comes_back_and_no_vector_has_a_holder(
                                                      "mode": "Real"}, {}, [], {"attributed": False})
     r = cast(dict[str, Any], server.interrupt_vectors(number=0x21))
     assert r["status"] == "ok" and [v["seg_off"] for v in r["vectors"]] == ["F000:0000D100"]
-    assert r["cpu_mode"] == "real" and r["vectors"][0]["addr"] == "0x000fd100", r
-    assert r["summary"] == "interrupt_vectors INT 21: F000:0000D100, held by no block read"
-    assert not any(k in r["vectors"][0] for k in ("mcbs", "kern", "bios_mem"))
-    assert "logfile" in r["coverage_note"] and s.asked == []
+    assert "no block read" not in r["summary"] and "logfile" not in r["coverage_note"], r
+    assert s.asked, "the holders are read off the listings"
 
 
 def test_a_leftover_file_is_refused_and_left_where_it_is(tmp_path: Path) -> None:
@@ -924,7 +795,7 @@ def test_the_one_line_says_a_free_block_is_free_and_a_table_with_no_chain_read_s
 class Breaks(IntvecBench):
     """`INTVEC` writes the file and then the console call fails."""
 
-    def command(self, text: str, **_: object) -> str:
+    def command(self, text: str, seconds: float | None = None) -> str:
         super().command(text)
         raise ds.Invalid("session_broken", "the emulator went away after writing")
 
@@ -933,7 +804,7 @@ class Unmapped(IntvecBench):
     """dos-djgpp32's table with INT 60 pointed through the program's LDT code selector at the
     page just below the program's first mapped one."""
 
-    def command(self, text: str, **_: object) -> str:
+    def command(self, text: str, seconds: float | None = None) -> str:
         out = super().command(text)
         written = self.launch.cwd / ds.INTVEC_FILE
         if written.exists():
@@ -963,7 +834,7 @@ class Rewritten(IntvecBench):
         super().__init__(bench, logfile, cwd)
         self.edit = (old, new)
 
-    def command(self, text: str, **_: object) -> str:
+    def command(self, text: str, seconds: float | None = None) -> str:
         out = super().command(text)
         written = self.launch.cwd / ds.INTVEC_FILE
         if written.exists():
@@ -1084,31 +955,6 @@ def test_protected_mode_without_paging_places_a_handler_at_its_linear_address(
     assert rows[0x08]["addr"] == "0x000cfff0" and rows[0x08]["mcbs"]["filename"] == "CWSDPMI"
 
 
-def _vectors_with_no_logfile(tmp_path: Path, paging: bool | None) -> tuple[Any, dict[str, Any]]:
-    """`interrupt_vectors(0x08)` at a Pr32 stop of a session started with no logfile, its pane's
-    PAGE/NOPG mark `paging` (None: the pane painted none)."""
-    s = IntvecBench("dos-djgpp32", None, tmp_path)
-    s.paging = paging  # type: ignore[attr-defined]
-    install()
-    dstate.STATE.session = cast(ds.Session, s)
-    dstate.STATE.remember_stop(cast(ds.Session, s), {"cs": "00A7", "eip": "00001234",
-                                                     "mode": "Pr32"}, {}, [], {"attributed": False})
-    return s, cast(dict[str, Any], server.interrupt_vectors(number=0x08))
-
-
-@pytest.mark.parametrize("paging", [False, True], ids=["protected", "paged"])
-def test_without_a_logfile_in_protected_mode_the_note_says_no_linear_and_why(
-        tmp_path: Path, paging: bool) -> None:
-    s, r = _vectors_with_no_logfile(tmp_path, paging)
-    assert r["status"] == "ok" and r["cpu_mode"] == ("paged" if paging else "protected"), r
-    assert set(r["vectors"][0]) == {"number", "seg_off"}
-    note = r["coverage_note"]
-    assert "no vector has a holder, an `addr` or a `symbol`" in note, note
-    assert "descriptor tables" in note and "is absent" not in note, note
-    assert r["summary"] == ("interrupt_vectors INT 08: 0018:00003A40, not placed "
-                            "(see `coverage_note`)")
-    assert s.asked == []
-
 
 class CpuUnknown(IntvecBench):
     """dos-djgpp32 with its `CPU` listing's cr0 edited to no known shape, so the mode is unknown."""
@@ -1142,8 +988,6 @@ def test_with_the_chain_read_a_vector_not_placed_gives_no_program_block_count(
     whole = vectors_of(IntvecBench("dos-djgpp32", tmp_path / "x.log", tmp_path))
     assert whole["summary"] == ("interrupt_vectors: 256 vectors, 256 in program blocks "
                                 "(CWSDPMI 256)"), "the same bench with every listing read counts"
-
-
 
 
 # ------------------------------------------------------------------ narrowing the map

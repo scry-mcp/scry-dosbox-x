@@ -1,5 +1,5 @@
 """The emulator's process as `close` meets it: the wait for its exit and what that wait reports, a
-real `Process` from its defaults, the terminal's drain over a pipe, and what a close takes down
+real `Process` from its defaults, the output's drain over a pipe, and what a close takes down
 (the presence writer, the guardian, the input socket, a drainer that will not stop)."""
 
 from __future__ import annotations
@@ -8,16 +8,19 @@ import asyncio
 import os
 import socket
 import subprocess
+import sys
 import threading
 import time
 from typing import Any
 
 import pytest
-from dosbox_x_server_support import POSIX_SESSION
 from scry_core import guardian
 
 import dosbox_process as dprocess
 import dosbox_session as ds
+
+#: Cases about a SIGTERM and then a SIGKILL; Windows has no SIGKILL, and both terminate there.
+NO_SIGKILL = pytest.mark.skipif(sys.platform == "win32", reason="Windows has no SIGKILL")
 
 
 class _Clock:
@@ -60,7 +63,6 @@ class _Deaf:
 def _process(proc: Any, **fields: Any) -> dprocess.Process:
     p = dprocess.Process()
     p.proc = proc
-    p._master = -1
     p._signal_group = proc.signal  # type: ignore[method-assign]
     for k, v in fields.items():
         setattr(p, k, v)
@@ -88,7 +90,7 @@ def test_a_new_process_holds_nothing_and_closes_once(monkeypatch: pytest.MonkeyP
     child = _Deaf(clock, 0.0, None)
     p = _process(child)
     assert (p.dropped, p.drain_ended, p.reap_failed, p._closed) == (0, "", "", False)
-    assert p._take() == b"" and p.ended_how == "none"
+    assert p.output_tail(10) == "" and p.ended_how == "none"
     p.close()
     assert p.ended_how == "quit" and child.sent == [15], child.sent
     p.close()
@@ -109,7 +111,7 @@ def test_an_unreaped_child_is_reported_with_the_wait_it_had(
     assert p.reap_failed == said, p.reap_failed
 
 
-@POSIX_SESSION
+@NO_SIGKILL
 def test_a_close_reports_both_waits_in_its_own_words(monkeypatch: pytest.MonkeyPatch) -> None:
     clock = _Clock(monkeypatch)
     p = _process(_Deaf(clock, None, 1.5))
@@ -120,7 +122,7 @@ def test_a_close_reports_both_waits_in_its_own_words(monkeypatch: pytest.MonkeyP
     assert p.ended_how == "killed" and p.reap_failed == ""
 
 
-@POSIX_SESSION
+@NO_SIGKILL
 def test_a_cancelled_close_still_reaps_and_is_not_run_again(
         monkeypatch: pytest.MonkeyPatch) -> None:
     from scry_core import cancel
@@ -186,7 +188,7 @@ def test_a_socket_that_will_not_close_does_not_stop_the_close(
     r, w = os.pipe()
     os.close(w)
     p = _process(_Deaf(clock, 0.0, None), _input=Stuck())
-    p._master = r
+    p._out = r
     p._close()
     with pytest.raises(OSError):
         os.fstat(r)
@@ -202,7 +204,7 @@ def test_a_drainer_that_will_not_stop_leaves_the_descriptor_open_and_says_so(
     r, w = os.pipe()
     try:
         p = _process(_Deaf(clock, 0.0, None), _drainer=stuck)
-        p._master = r
+        p._out = r
         worker = threading.Thread(target=p._close, daemon=True)
         began = time.perf_counter()
         worker.start()
@@ -221,7 +223,7 @@ def test_a_drainer_that_will_not_stop_leaves_the_descriptor_open_and_says_so(
 def _draining() -> tuple[dprocess.Process, int, threading.Thread]:
     p = dprocess.Process()
     r, w = os.pipe()
-    p._master = r
+    p._out = r
     t = threading.Thread(target=p._drain, daemon=True)
     t.start()
     return p, w, t
@@ -233,67 +235,52 @@ def _until(cond: Any) -> None:
         time.sleep(0.01)
 
 
-@POSIX_SESSION
-def test_the_drain_gathers_while_idle_and_says_how_it_ended() -> None:
+def test_the_drain_gathers_while_idle_and_ends_at_end_of_file() -> None:
     p, w, t = _draining()
     try:
         os.write(w, b"ab")
-        _until(lambda: bytes(p._buf) == b"ab")
-        time.sleep(0.2)                               # idle, longer than a select slice
+        _until(lambda: p.output_tail(10) == "ab")
+        time.sleep(0.2)                               # idle, the read blocked
         os.write(w, b"cd")
-        _until(lambda: bytes(p._buf) == b"abcd")
-        assert p._take() == b"abcd" and t.is_alive() and not p._eof.is_set()
-        p._stop.set()
-        t.join(0.5)
-        assert not t.is_alive() and p.drain_ended == "stopped deliberately by close()"
-        assert p._eof.is_set()
+        _until(lambda: p.output_tail(10) == "abcd")
+        assert p.output_tail(10) == "abcd" and t.is_alive() and p.drain_ended == ""
     finally:
         os.close(w)
-        os.close(p._master)
-    p, w, t = _draining()
-    os.close(w)
     t.join(1)
-    assert p.drain_ended == "the descriptor reached end of file" and p._eof.is_set()
-    os.close(p._master)
+    assert not t.is_alive() and p.drain_ended == "the descriptor reached end of file"
+    assert p._out is not None
+    os.close(p._out)
 
 
-@POSIX_SESSION
-def test_the_drain_names_a_select_or_a_read_that_failed(
-        monkeypatch: pytest.MonkeyPatch) -> None:
-    p = dprocess.Process()
-    p._master = -1
-    p._drain()
-    assert p.drain_ended.startswith("select on the terminal failed") and p._eof.is_set()
-
+def test_the_drain_names_a_read_that_failed(monkeypatch: pytest.MonkeyPatch) -> None:
     def broken(fd: int, n: int) -> bytes:
         raise OSError(5, "EIO")
-    p, w, t = _draining()
     with monkeypatch.context() as failing:
         failing.setattr(os, "read", broken)
-        os.write(w, b"x")
+        p, w, t = _draining()
         t.join(1)
-    assert p.drain_ended.startswith("reading the terminal failed") and p._eof.is_set()
+    assert p.drain_ended.startswith("reading the emulator's output failed"), p.drain_ended
     os.close(w)
-    os.close(p._master)
+    assert p._out is not None
+    os.close(p._out)
 
 
-@POSIX_SESSION
 def test_the_drain_keeps_the_newest_bytes_and_counts_what_it_dropped(
         monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(dprocess, "DRAIN_KEEP", 8)
     p, w, t = _draining()
     try:
         os.write(w, b"12345678")
-        _until(lambda: len(p._buf) == 8)
+        _until(lambda: len(p.output_tail(100)) == 8)
         assert p.dropped == 0
         os.write(w, b"9")
         _until(lambda: p.dropped == 1)
         assert p.dropped == 1
         os.write(w, b"ABCDE")
         _until(lambda: p.dropped == 6)
-        assert p.dropped == 6 and p._take() == b"789ABCDE"
+        assert p.dropped == 6 and p.output_tail(100) == "789ABCDE"
     finally:
-        p._stop.set()
-        t.join(1)
         os.close(w)
-        os.close(p._master)
+        t.join(1)
+        assert p._out is not None
+        os.close(p._out)

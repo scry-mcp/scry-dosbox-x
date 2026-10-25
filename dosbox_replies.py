@@ -46,8 +46,8 @@ class BreakpointInterruptReply(DosboxEnvelope, total=False):
     entry: str
     note: str
     ref: str
-    screen_chars: int
-    screen_delta: str
+    output: str
+    output_chars: int
     state: str
     stored: bool
 
@@ -56,6 +56,7 @@ class BuildCheckReply(DosboxEnvelope, total=False):
     binary: str
     binary_origin: str
     debugger: bool
+    debugger_commands: Annotated[list[Any], OmitEmpty]
     heavy_debug: bool
     tools: list[Any]
     version: str | dict[str, Any]
@@ -88,8 +89,6 @@ class CloseReply(DosboxEnvelope, total=False):
     conf: str
     conf_changed_on_disk: Annotated[bool | dict[str, Any], OmitEmpty]
     conf_digest: str
-    drain_alive: bool
-    drain_ended: str
     elapsed_s: float
     ended_by: str
     errorlog_tail: str | dict[str, Any]
@@ -97,7 +96,7 @@ class CloseReply(DosboxEnvelope, total=False):
     pid: int
     state_dir: str
     stdout_tail: str
-    terminal_bytes_dropped: Annotated[int, OmitEmpty]
+    output_bytes_dropped: Annotated[int, OmitEmpty]
     watched: Annotated[bool, OmitEmpty]
 
 
@@ -112,8 +111,8 @@ class DebugReply(DosboxEnvelope, total=False):
     clipped: Annotated[bool, OmitEmpty]
     command: str
     note: str
-    screen_chars: int
-    screen_delta: str
+    output: str
+    output_chars: int
 
 
 class DisassembleReply(DosboxEnvelope, total=False):
@@ -269,8 +268,8 @@ class ResumeReply(DosboxEnvelope, total=False):
     note: str
     pc: str
     regs: dict[str, Any]
-    screen_chars: int
-    screen_delta: str
+    output: str
+    output_chars: int
     stop_seq: int
     verdict: str
     waited_s: float
@@ -425,10 +424,9 @@ class StartReply(DosboxEnvelope, account.SequenceFields, total=False):
     conf: str
     conf_changed_on_disk: Annotated[bool | dict[str, Any], OmitEmpty]
     conf_digest: str
+    debugger_commands: Annotated[list[Any], OmitEmpty]
     declarations: dict[str, Any]
     display: Annotated[str, OmitEmpty]
-    drain_alive: bool
-    drain_ended: str
     elapsed_s: float
     input_port: int | dict[str, Any]
     operations: list[Any]
@@ -440,7 +438,7 @@ class StartReply(DosboxEnvelope, account.SequenceFields, total=False):
     start: dict[str, Any]
     state_dir: str
     stub: str
-    terminal_bytes_dropped: Annotated[int, OmitEmpty]
+    output_bytes_dropped: Annotated[int, OmitEmpty]
     version: str | dict[str, Any]
     watched: Annotated[bool, OmitEmpty]
 
@@ -459,15 +457,13 @@ class StatusReply(DosboxEnvelope, total=False):
     conf_digest: str
     cpu_mode: str | dict[str, Any]
     declarations: dict[str, Any]
-    drain_alive: bool
-    drain_ended: str
     elapsed_s: float
     pc: str | dict[str, Any]
     pending: dict[str, Any]
     pid: int
     presence: bool | dict[str, Any]
     state_dir: str
-    terminal_bytes_dropped: Annotated[int, OmitEmpty]
+    output_bytes_dropped: Annotated[int, OmitEmpty]
     watched: Annotated[bool, OmitEmpty]
 
 
@@ -641,7 +637,6 @@ class ScanReply(DosboxEnvelope, total=False):
     hits_total: int
     iterations: int | dict[str, Any]
     length: int
-    line_recovered: bool
     note: str
     operator: str
     ref: str

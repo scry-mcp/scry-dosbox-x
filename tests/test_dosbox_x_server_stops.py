@@ -21,6 +21,7 @@ from dosbox_x_server_support import (  # noqa: E402
     _protected_table,
     _start_on_a_booted_fake,
     clean_session,  # noqa: E402, F401
+    stub_build,
 )
 from scry_core import (
     log_marks,
@@ -463,21 +464,18 @@ def test_stop_brings_a_running_guest_back_headless_or_windowed(tmp_path: Path,
 
 def test_wait_ready_and_close_report_their_progress() -> None:
     """The boot and the close are the waits the owner watches longest, and they painted nothing."""
-    import time
 
     class _Booting:
-        def __init__(self, prompt_after: float) -> None:
-            self.at = time.monotonic() + prompt_after
-            self._screen = ""
+        """A debugger that answers stopped `stops_after` seconds into the boot."""
+
+        def __init__(self, stops_after: float) -> None:
+            self.at = time.monotonic() + stops_after
             self.proc = SimpleNamespace(poll=lambda: None)
 
-        def _read(self, timeout: float) -> str:
-            time.sleep(timeout)
-            if time.monotonic() >= self.at:
-                self._screen += dcons.PROMPT
-            return ""
+        def _first_stop(self) -> bool:
+            return time.monotonic() >= self.at
 
-        def _mark_stopped(self) -> None:
+        def mark_stopped(self) -> None:
             pass
 
     ticks: list[str] = []
@@ -488,7 +486,7 @@ def test_wait_ready_and_close_report_their_progress() -> None:
         numbers.append((p, t))
 
     ds.Session.wait_ready(_Booting(2.2), 5.0, record)  # type: ignore[arg-type]
-    assert ticks and "waiting for the debugger prompt" in ticks[0], ticks
+    assert ticks and "start: waiting for the debugger" in ticks[0], ticks
     # Measured in time, so no total: a bar filling towards the bound reads as progress towards
     # failure.
     assert all(t is None and 0 < p < 5.0 for p, t in numbers), numbers
@@ -515,7 +513,7 @@ def test_wait_ready_and_close_report_their_progress() -> None:
 def test_read_memory_length_is_bounded_and_resume_takes_the_siblings_bound(
         tmp_path: Path) -> None:
     fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")], ds_="00AF")
-    for bad in (0, dcons.DATA_VIEW_BYTES + 1):
+    for bad in (0, dcons.READ_BYTES_MAX + 1):
         out = cast(dict[str, Any], server.read_memory(ref="g_rate", length=bad))
         assert out["status"] == "INVALID" and "memdump" in out["message"], out
     out = cast(dict[str, Any], server.resume(seconds=-1))
@@ -523,13 +521,8 @@ def test_read_memory_length_is_bounded_and_resume_takes_the_siblings_bound(
     past = cast(dict[str, Any], server.resume(seconds=vocab.WAIT_MAX_S + 1))
     assert past["code"] == "bad_argument" and f"at most {vocab.WAIT_MAX_S:g}," in past["message"]
     fake.launch.watched = True                   # a windowed session needs no stopper
-    def read_nothing(timeout: float) -> str:
-        time.sleep(timeout)
-        return ""
-
+    fake.where_raises = True                     # it runs, and nothing stops it
     monkeypatch = pytest.MonkeyPatch()
-    monkeypatch.setattr(fake, "_read", read_nothing, raising=False)
-    monkeypatch.setattr(fake, "_screen", "", raising=False)
     monkeypatch.setattr(fake, "alive", lambda: True)
     ticks: list[str] = []
     monkeypatch.setattr(server, "bridge", lambda ctx: (lambda p, t, m: ticks.append(m)))
@@ -542,17 +535,14 @@ def test_read_memory_length_is_bounded_and_resume_takes_the_siblings_bound(
     assert ticks and ticks[0].startswith("resume: running "), ticks
 
 
-def test_resume_with_a_bound_comes_back_with_the_stop_when_the_prompt_lands(
+def test_resume_with_a_bound_comes_back_with_the_stop_when_the_run_state_says_stopped(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     fake = _names(tmp_path)
     fake.launch.watched = True
-    monkeypatch.setattr(fake, "_read", lambda timeout: dcons.PROMPT, raising=False)
-    monkeypatch.setattr(fake, "_screen", "", raising=False)
     monkeypatch.setattr(fake, "alive", lambda: True)
-    monkeypatch.setattr(fake, "_mark_stopped", lambda: None, raising=False)
     out = cast(dict[str, Any], server.resume(seconds=2.0))
     assert out["status"] == "ok" and out["verdict"] == "OTHER_STOP" and "pc" in out, out
-    # A PROMPT SEEN WITH THE MACHINE NOT AT REST is no stop: the wait listens on to its bound.
+    # A RUN STATE THAT SAYS RUNNING is no stop: the wait asks on to its bound.
     fake.where_raises = True
     out = cast(dict[str, Any], server.resume(seconds=0.5))
     assert out["status"] == "ok" and out["verdict"] == "TIMEOUT", out
@@ -589,6 +579,7 @@ def test_start_hands_the_callers_flags_to_a_headless_launch(
             pass
 
     monkeypatch.setattr(shutil, "which", lambda _: "/bin/true")
+    stub_build(monkeypatch)
     monkeypatch.setattr(ds, "Session", Recorder)
     dstate.STATE.session = None
     got = cast(dict[str, Any], server.start(
@@ -654,7 +645,6 @@ def test_a_recorded_stop_keeps_the_paging_mark_its_survey_read(tmp_path: Path) -
 def test_a_boot_whose_call_is_cancelled_stops_waiting_for_the_prompt(
         monkeypatch: pytest.MonkeyPatch) -> None:
     import asyncio
-    import time
 
     from scry_core import cancel
 
@@ -748,11 +738,11 @@ def test_a_stop_already_parked_is_heard_by_a_wait_of_no_seconds(
     fake.halted = False                 # resume leaves it running
     fake.where_raises = True
 
-    def parked(timeout: float) -> str:
-        fake.where_raises = False       # the prompt already sits in the drain
-        return dcons.PROMPT
+    def parked() -> bool:
+        fake.where_raises = False       # it had stopped before the first look
+        return True
 
-    monkeypatch.setattr(fake, "_read", parked, raising=False)
+    monkeypatch.setattr(fake, "run_state", parked)
     out = cast(dict[str, Any], server.perform(
         steps=[{"op": "resume"}, {"op": "registers"}], settle_seconds=0))
     assert out["status"] == "ok" and out["steps_completed"] == 2, out

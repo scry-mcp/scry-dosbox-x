@@ -100,8 +100,10 @@ def _counting(rows: list[dict[str, str]]) -> Any:
             del rows[int(text.split()[1])]
         rows[:] = [{**r, "index": f"{i:02d}"} for i, r in enumerate(rows)]
         return ""
-    return SimpleNamespace(where=where, breakpoints=breakpoints, command=command, calls=calls,
-                           sent=sent, rows=rows, altered=False)
+    s = SimpleNamespace(where=where, breakpoints=breakpoints, command=command, calls=calls,
+                        sent=sent, rows=rows, altered=False)
+    s.delete_rows = lambda picks: ds.Session.delete_rows(s, picks)  # type: ignore[arg-type]
+    return s
 
 
 def test_a_watch_of_several_bytes_costs_its_commands_and_one_read_back() -> None:

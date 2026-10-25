@@ -12,10 +12,9 @@ run past the end is refused.
 
 from __future__ import annotations
 
-import re
 import tempfile
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any
 
 from scry_core.reply_contract import unavailable
 
@@ -45,43 +44,8 @@ def check_length(length: object) -> None:
             f"length={length!r} is not a whole number of bytes from 1 to {LENGTH_MAX}")
 
 
-class PaneLine(NamedTuple):
-    """One code pane line; `data` is None when the pane cut the bytes (`..`) or printed pf/na."""
-    segment: str
-    offset: int
-    data: bytes | None
-    text: str
-
-
-_PANE_HEADER = re.compile(r"Code Overview(?:o+)")
-_PANE_END = re.compile(r"o{4}(?:Output|Variable)")
-_PANE_LINE = re.compile(
-    r"^([0-9A-F]{4}):([0-9A-F]{8}) ((?:[0-9A-F]{2}|pf|na)*)(\.\.)?\s*(.*?)\s*$")
-
-
-def pane_lines(screen: str) -> list[PaneLine]:
-    """The code pane's lines, off the last pane painted: an earlier repaint may be a partial
-    update whose cells run several lines together. The first line follows the header rule with
-    no line break."""
-    blocks = list(_PANE_HEADER.finditer(screen))
-    if not blocks:
-        return []
-    rest = screen[blocks[-1].end():]
-    end = _PANE_END.search(rest)
-    out: list[PaneLine] = []
-    for raw in (rest[:end.start()] if end else rest).splitlines():
-        m = _PANE_LINE.match(raw)
-        if m is None:
-            continue
-        pairs, cut = m.group(3), m.group(4)
-        whole = not cut and "pf" not in pairs and "na" not in pairs and bool(pairs)
-        out.append(PaneLine(m.group(1), int(m.group(2), 16),
-                            bytes.fromhex(pairs) if whole else None, m.group(5)))
-    return out
-
-
 class Segments:
-    """The segments at a stop: width and base from the register pane, `SELINFO` or the
+    """The segments at a stop: width and base from the stop's own reading, `SELINFO` or the
     descriptor listings, whichever answers without a new round trip."""
 
     def __init__(self, session: ds.Session, where: dict[str, str],
@@ -104,13 +68,8 @@ class Segments:
         return self._selinfo[reg]
 
     def found(self) -> dict[str, Any]:
-        """The GDT and LDT listings, read once off the logfile."""
+        """The GDT and LDT listings, read once."""
         if self._reading is None:
-            if self.session.launch.logfile is None:
-                raise ds.Invalid("no_channel",
-                    "the descriptor listings this needs (a range past offset FFFF, or a "
-                    "selector no segment register holds) come off the session's logfile: "
-                    "`start` with `logfile`")
             self._reading = machine.read(self.session, frozenset({"gdt", "ldt"}))
         return self._reading.found
 
@@ -140,7 +99,7 @@ class Segments:
         self._addressed(sel)
         reg = self.holder(sel)
         if reg == "CS":
-            return (32 if self.mode == "Pr32" else 16), f"the pane's {self.mode}"
+            return (32 if self.mode == "Pr32" else 16), f"the stop's {self.mode}"
         if reg is not None and self._reading is None:
             return (32 if self.selinfo(reg)["big"] else 16), f"SELINFO {reg}"
         row = self.descriptor(sel)
@@ -165,9 +124,9 @@ class Segments:
 
 
 def segments_at_stop(session: ds.Session) -> Segments:
-    """The stop's segments off one survey; refused before typing when the console is not
-    listening."""
-    ds.console_listening(session, "a read of its code")
+    """The stop's segments off one survey; refused before anything is sent unless the machine
+    is stopped."""
+    session.require_stopped("a read of its code")
     where, registers = session.where_and_registers()
     return Segments(session, where, registers)
 
@@ -176,8 +135,8 @@ def read_code(segs: Segments, seg: int, off: int, length: int, bits: int) -> byt
     """`length` bytes from `seg:off` plus up to `disasm.INSN_MAX` more, cut at the segment's end;
     a `length` past the end of a 16-bit segment is refused. In protected mode a range past FFFF
     is judged against the selector's limit off the listings; the extra bytes alone never make
-    it cross: the dump stops at FFFF and the few bytes completing the last instruction come off
-    one `D`, never past the limit."""
+    it cross: the dump stops at FFFF and the few bytes completing the last instruction come from
+    one more read, never past the limit."""
     want = length + disasm.INSN_MAX
     found: dict[str, Any] | None = None
     past_end = 0
@@ -225,7 +184,7 @@ def resolve(segs: Segments, seg: int, insns: list[disasm.Insn]) -> list[dict[str
             row = {"line": i, "operand": m.operand, "kind": "memory",
                    "register": m.segment_register}
             if held is None:
-                gone = f"the register pane showed no {m.segment_register}, so the operand has " \
+                gone = f"the stop's registers carry no {m.segment_register}, so the operand has " \
                        f"no segment"
                 rows.append(_named({**row, "seg_off": unavailable(gone)}, None, span, gone))
                 continue
@@ -278,37 +237,26 @@ def disassemble(session: ds.Session, ref: str, length: int) -> dict[str, Any]:
     return reply
 
 
-def stop_instruction(session: ds.Session, where: dict[str, str], registers: dict[str, str],
-                     screen: str) -> dict[str, Any]:
-    """The stop's `instruction` for its reply, or unavailable with its `why`; `screen` is the
-    stop's own survey.
-
-    The bytes come off the pane's line at CS:EIP when it printed all of them and they decode as
-    exactly one instruction. Otherwise (a `C` moved the pane, a repaint was cut, or the pane
-    decoded in a width that is not the segment's) one `D` reads them, never past the end of a
-    16-bit segment."""
+def stop_instruction(session: ds.Session, where: dict[str, str],
+                     registers: dict[str, str]) -> dict[str, Any]:
+    """The stop's `instruction` for its reply, or unavailable with its `why`: the bytes at CS:EIP
+    read from memory, never past the end of a 16-bit segment, decoded as one instruction."""
     segs = Segments(session, where, registers)
     cs, eip = int(where["cs"], 16), int(where["eip"], 16)
     bits = segs.bits(cs)[0]
     at = f"{where['cs']}:{where['eip']}"
-    line = next((p for p in pane_lines(screen)
-                 if p.segment == where["cs"] and p.offset == eip and p.data is not None), None)
-    insn = disasm.one(line.data, eip, bits) if line is not None and line.data else None
-    source = "code pane"
-    if insn is None:
-        source = "data view"
-        n = disasm.INSN_MAX if bits == 32 else min(disasm.INSN_MAX, SEGMENT_END_16 - eip)
-        try:
-            raw = session.read_bytes(cs, eip, n, mode=segs.mode)
-        except ds.Invalid as e:
-            return {"instruction": unavailable(f"no bytes at {at}: {e}")}
-        first = disasm.decode(raw, eip, bits)[:1]
-        if not first or first[0].flow == disasm.UNKNOWN:
-            return _no_instruction(at, raw)
-        insn = first[0]
+    n = disasm.INSN_MAX if bits == 32 else min(disasm.INSN_MAX, SEGMENT_END_16 - eip)
+    try:
+        raw = session.read_bytes(cs, eip, n, mode=segs.mode)
+    except ds.Invalid as e:
+        return {"instruction": unavailable(f"no bytes at {at}: {e}")}
+    first = disasm.decode(raw, eip, bits)[:1]
+    if not first or first[0].flow == disasm.UNKNOWN:
+        return _no_instruction(at, raw)
+    insn = first[0]
     picture: dict[str, Any] = {"seg_off": at, "bytes": insn.data.hex().upper(),
                                "text": insn.text, "flow": insn.flow, "code_bits": bits,
-                               "bytes_from": source}
+                               "bytes_from": "memory"}
     return {"instruction": {**picture, **_stop_symbol(segs, cs, eip)}}
 
 
@@ -342,14 +290,13 @@ def _stop_symbol(segs: Segments, cs: int, eip: int) -> dict[str, Any]:
 CALL_STACK_MAX = 16
 #: Longest and shortest call instruction checked against a return address.
 CALL_LONGEST, CALL_SHORTEST = 7, 2
-#: What one `D` is asked for: the view paints eight rows from the address's own row.
-VIEW_READ = dcons.DATA_VIEW_BYTES - 16
+#: What one read of the walk takes, reused while it covers the reads after it.
+VIEW_READ = dcons.READ_BYTES_MAX
 
 
 class _Views:
-    """Memory off the data view, each `D` reused while it covers a read; a read stops at `end`
-    because the view runs on past FFFF repainting the segment's first bytes, so the walk wraps
-    its offsets itself."""
+    """Memory read in pieces of `VIEW_READ`, each reused while it covers a read; a read stops at
+    `end`, the segment's, so the walk wraps its offsets itself."""
 
     def __init__(self, session: ds.Session, mode: str, end: int) -> None:
         self.session, self.mode, self.end = session, mode, end
@@ -389,8 +336,8 @@ class _Walk:
         missing = [r for r in ("SS", "ESP", "EBP") if r not in regs]
         if missing:
             raise ds.Invalid("unexpected_answer",
-                f"the register pane showed no {', '.join(missing)} at this stop (a cut "
-                f"repaint), so there is no stack to walk: ask again")
+                f"the registers read at this stop carry no {', '.join(missing)}, so there is no "
+                f"stack to walk: ask again")
         self.cs, self.ss = int(regs["CS"], 16), int(regs["SS"], 16)
         self.bits = self.segs.bits(self.cs)[0]
         self.slot = self.bits // 8

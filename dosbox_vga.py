@@ -1,10 +1,10 @@
 """The VGA's listings read off the debugger: their grammar, the screen geometry they give,
 and where video memory lies for a dump.
 
-Every reading is a listing off the session's logfile or one dump, never a command that changes
-the machine. Never typed: bare `VGA` or an unknown subcommand (the console keeps it on its input
-line), `VRD` (restarts the frame timing, which the guest can observe), `VGA DS` (moves the
-display start) and `VGA FONTDUMP` (writes a file where the emulator runs).
+Every reading is a listing or one dump, never a command that changes the machine. Never sent:
+bare `VGA` or an unknown subcommand, `VRD` (restarts the frame timing, which the guest can
+observe), `VGA DS` (moves the display start) and `VGA FONTDUMP` (writes a file where the emulator
+runs).
 
 Keys are the debugger's `key=value` words, lower-cased, `-` as `_`, `[RGB]` dropped; values stay
 the text printed. The parsers accept only shapes captured in `tests/fixtures/vga/`.

@@ -58,7 +58,7 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 3",
+  "summary": "run_to 0000:0003: TIMEOUT at 0814:00000130, control counted 5",
   "status": "ok",
   "verdict": "TIMEOUT",
   "target": "0000:0003",
@@ -66,32 +66,32 @@ Example, from a live run:
   "pc": "0814:00000130",
   "cpu_mode": "real",
   "target_disarmed": true,
-  "control_hits": 3,
+  "control_hits": 5,
   "controls": [
     {
       "ref": "0814:0130",
       "at": "0814:0130",
-      "hits_in_run": 3,
+      "hits_in_run": 5,
       "removed": true
     }
   ],
-  "note": "it came to rest ON the control 0814:0130 (its hit number 3) when the bound ran out, and not at 0000:0003. The breakpoint at 0000:0003 was removed.",
+  "note": "it came to rest ON the control 0814:0130 (its hit number 5) when the bound ran out, and not at 0000:0003. The breakpoint at 0000:0003 was removed.",
   "regs": {
     "EAX": "0x00000000",
+    "EBX": "0x000002bc",
+    "ECX": "0x0000fffc",
+    "EDX": "0x00000814",
     "ESI": "0x00000173",
+    "EDI": "0x0000015d",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fffe",
+    "EIP": "0x00000130",
+    "CS": "0x0814",
     "DS": "0x0814",
     "ES": "0x0814",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x0814",
-    "EBX": "0x000002bc",
-    "EDI": "0x0000015d",
-    "CS": "0x0814",
-    "EIP": "0x00000130",
-    "ECX": "0x0000fffe",
-    "EBP": "0x0000091c",
-    "EDX": "0x00000814",
-    "ESP": "0x0000fffe"
+    "SS": "0x0814"
   },
   "watches": [],
   "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
@@ -101,7 +101,7 @@ Example, from a live run:
     "lines": [
       "Bochs port E9h: [+ 00000.000] PROBE . tick"
     ],
-    "mark": 31673
+    "mark": 31238
   },
   "stop_seq": 6,
   "instruction": {
@@ -110,7 +110,7 @@ Example, from a live run:
     "text": "loop 0x130",
     "flow": "branch",
     "code_bits": 16,
-    "bytes_from": "code pane",
+    "bytes_from": "memory",
     "symbol": {
       "available": false,
       "why": "no symbol table is loaded"
@@ -198,20 +198,20 @@ Example, from a live run:
   "cpu_mode": "real",
   "regs": {
     "EAX": "0x00000000",
+    "EBX": "0x000002bc",
+    "ECX": "0x0000c132",
+    "EDX": "0x00000814",
     "ESI": "0x00000173",
+    "EDI": "0x0000015d",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fffe",
+    "EIP": "0x00000130",
+    "CS": "0x0814",
     "DS": "0x0814",
     "ES": "0x0814",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x0814",
-    "EBX": "0x000002bc",
-    "EDI": "0x0000015d",
-    "CS": "0x0814",
-    "EIP": "0x00000130",
-    "ECX": "0x0000c12e",
-    "EBP": "0x0000091c",
-    "EDX": "0x00000814",
-    "ESP": "0x0000fffe"
+    "SS": "0x0814"
   },
   "watches": [],
   "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
@@ -219,7 +219,7 @@ Example, from a live run:
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 32972
+    "mark": 34480
   },
   "stop_seq": 7,
   "instruction": {
@@ -228,7 +228,7 @@ Example, from a live run:
     "text": "loop 0x130",
     "flow": "branch",
     "code_bits": 16,
-    "bytes_from": "code pane",
+    "bytes_from": "memory",
     "symbol": {
       "available": false,
       "why": "no symbol table is loaded"
@@ -238,7 +238,7 @@ Example, from a live run:
       "why": "no symbol table is loaded"
     }
   },
-  "emulated_before_s": 1.9730911,
+  "emulated_before_s": 1.9730917,
   "emulated_after_s": 1.9747000000000001,
   "frame_before": {
     "available": false,
@@ -250,7 +250,7 @@ Example, from a live run:
   },
   "cycles": {
     "available": false,
-    "why": "the pane's `cc=` counts cycles only on the normal core, and which core runs is not something this server can read, so no count is given"
+    "why": "the cycle count counts only on the normal core, and which core runs is not something this server can read, so no count is given"
   }
 }
 ```
@@ -314,33 +314,33 @@ Example, from a live run:
 {
   "instructions": 16,
   "shape": "cs_ip",
-  "dest": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n954.trace",
+  "dest": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n954.trace",
   "seconds": 30
 }
 ```
 
 ```json
 {
-  "summary": "trace 16 cs_ip: ELAPSED, 16 executed at 1 address, at 0814:00000130, to $TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n954.trace",
+  "summary": "trace 16 cs_ip: ELAPSED, 16 executed at 1 address, at 0814:00000130, to $TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n954.trace",
   "status": "ok",
   "pc": "0814:00000130",
   "cpu_mode": "real",
   "regs": {
     "EAX": "0x00000000",
+    "EBX": "0x000002bc",
+    "ECX": "0x0000c122",
+    "EDX": "0x00000814",
     "ESI": "0x00000173",
+    "EDI": "0x0000015d",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fffe",
+    "EIP": "0x00000130",
+    "CS": "0x0814",
     "DS": "0x0814",
     "ES": "0x0814",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x0814",
-    "EBX": "0x000002bc",
-    "EDI": "0x0000015d",
-    "CS": "0x0814",
-    "EIP": "0x00000130",
-    "ECX": "0x0000c11e",
-    "EBP": "0x0000091c",
-    "EDX": "0x00000814",
-    "ESP": "0x0000fffe"
+    "SS": "0x0814"
   },
   "watches": [],
   "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
@@ -348,7 +348,7 @@ Example, from a live run:
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 33154
+    "mark": 34921
   },
   "stop_seq": 8,
   "instruction": {
@@ -357,7 +357,7 @@ Example, from a live run:
     "text": "loop 0x130",
     "flow": "branch",
     "code_bits": 16,
-    "bytes_from": "code pane",
+    "bytes_from": "memory",
     "symbol": {
       "available": false,
       "why": "no symbol table is loaded"
@@ -369,13 +369,13 @@ Example, from a live run:
   },
   "verdict": "ELAPSED",
   "trace": {
-    "path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n954.trace",
+    "path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n954.trace",
     "bytes": 238,
     "shape": "cs_ip",
     "instructions": 16,
     "addresses": 1,
     "unplaced": 1,
-    "set_path": "$TMPDIR/dosbox-x-live-matrix-9126ae8a0c29/jobs-scratch/A/n954.trace.set.jsonl",
+    "set_path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n954.trace.set.jsonl",
     "symbols": [],
     "symbols_total": 0,
     "truncated": false,
@@ -412,14 +412,14 @@ screen_wait(text, seconds=30.0)
 
 Run the machine retrace by retrace until `text` is on the TEXT screen, and stop there.
 `text` (1 to 132 code page 437 characters) is matched literally,
-case-sensitive, inside one row as `screen_view` reads it. Needs a stopped machine and a
-session started with `logfile`. Already on screen: answered at once. Each retrace costs a
+case-sensitive, inside one row as `screen_view` reads it. Needs a stopped machine. Already
+on screen: answered at once. Each retrace costs a
 stop and five round trips, so `run_for` first for a distant string.
 
 Reply: `verdict` `TARGET` (`already`, `waited_s`, `polls`, `point` `[column, row]`, `line`)
 or `TIMEOUT` (`waited_s`, `polls`, `text`, `retrace_pending`), `note`, the stop reply of
 `run_to`. Refused: `bad_argument`, `wait_stopped` (a declared breakpoint stopped it),
-`no_channel` (no `logfile`).
+`no_channel` (a screen it cannot read).
 
 Reference: REFERENCE.md, Input and the screen.
 
@@ -540,20 +540,20 @@ Example, from a live run:
   "cpu_mode": "real",
   "regs": {
     "EAX": "0x00000000",
+    "EBX": "0x00000124",
+    "ECX": "0x0000a97e",
+    "EDX": "0x00000814",
     "ESI": "0x00000100",
+    "EDI": "0x0000fffe",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fff8",
+    "EIP": "0x0000fea6",
+    "CS": "0xf000",
     "DS": "0x0814",
     "ES": "0x0814",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x0814",
-    "EBX": "0x00000124",
-    "EDI": "0x0000fffe",
-    "CS": "0xf000",
-    "EIP": "0x0000fea6",
-    "ECX": "0x0000a97e",
-    "EBP": "0x0000091c",
-    "EDX": "0x00000814",
-    "ESP": "0x0000fff8"
+    "SS": "0x0814"
   },
   "watches": [],
   "cause": "no declared code breakpoint at F000:0000FEA6: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
@@ -561,7 +561,7 @@ Example, from a live run:
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 4820
+    "mark": 5384
   },
   "stop_seq": 5,
   "instruction": {
@@ -593,8 +593,8 @@ Let the machine run. `seconds` 0 (the default) returns at once; a bound up to 60
 waits for a stop and, if none comes, leaves it running. Needs a stopped machine.
 
 Reply: with a bound, `verdict` (`OTHER_STOP` with the stop reply of `run_to`; `TIMEOUT`,
-`waited_s`, `note`). `screen_delta` (with `detail=True`: the repaint's last
-2000 characters; else `omitted`).
+`waited_s`, `note`). `output` (with `detail=True`: the last 2000 characters
+the debugger printed for `RUN`; else `omitted`).
 
 Reference: REFERENCE.md, Advancing the machine.
 
@@ -614,8 +614,8 @@ Reference: REFERENCE.md, Advancing the machine.
 | `note` | string |
 | `pc` | string |
 | `regs` | object |
-| `screen_chars` | integer |
-| `screen_delta` | string |
+| `output` | string |
+| `output_chars` | integer |
 | `stop_seq` | integer |
 | `verdict` | string |
 | `waited_s` | number |
@@ -632,11 +632,11 @@ Example, from a live run:
   "summary": "resume: running",
   "status": "ok",
   "omitted": [
-    "screen_delta",
-    "screen_chars",
+    "output",
+    "output_chars",
     "clipped"
   ],
-  "how": "detail=True adds the debugger's repaint for this command"
+  "how": "detail=True adds what the debugger printed for this command"
 }
 ```
 <!-- scry-reference:end resume -->
@@ -690,8 +690,8 @@ Example, from a live run:
     "stop_seq": 4,
     "pc": "F000:0000FEA5",
     "cause": "no declared code breakpoint at F000:0000FEA5: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-    "since_s": 24.8,
-    "wall_at": "2026-10-24T22:12:43+00:00"
+    "since_s": 4.3,
+    "wall_at": "2026-10-25T21:14:14+00:00"
   },
   "note": "the machine was already stopped"
 }

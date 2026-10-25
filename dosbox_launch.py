@@ -66,6 +66,10 @@ class Launch:
     state_dir: Path | None = None
     # The session's own debugger listener, never a caller's.
     control_port: int | None = None
+    # Whether the build's debugger runs with no screen (`binaries.headless`), and which optional
+    # debugger commands it has (`binaries.debugger_commands`), read once at `start`.
+    headless: bool = False
+    debugger_commands: frozenset[str] = frozenset()
 
 
 def digest(path: Path) -> str:
@@ -99,6 +103,10 @@ def build_argv(launch: Launch) -> list[str]:
             "-break-start", "-fastlaunch",
             # With a program loaded a TERM raises a quit dialog nobody answers.
             "-set", "dosbox quit warning=false"]
+    # A debugger with no screen needs no terminal or console to stop at `-break-start`; a build
+    # without the option is given one (`dosbox_process`).
+    if launch.headless:
+        argv += ["-set", "dosbox debugger headless=true"]
     # With `saveremark` on, `Save state` opens a dialog that hangs the window.
     argv += ["-set", "dosbox saveremark=false"]
     if launch.state_dir is not None:
@@ -248,8 +256,8 @@ OWNED_SETS = {"sdl videodriver": "shared", "dos break on int3": "break_on_int3",
 
 
 # Keys the session owns with no argument behind them: a caller's value would point the debugger
-# channel where the session is not listening.
-SESSION_SETS = {"dosbox mcp_server"}
+# channel where the session is not listening, or give a debugger that has no terminal a screen.
+SESSION_SETS = {"dosbox mcp_server", "dosbox debugger headless"}
 
 
 def _set_key(token: str) -> str:
@@ -290,7 +298,7 @@ def check_flags(name: str, flags: list[str]) -> None:
                 if key in SESSION_SETS:
                     raise Invalid("bad_argument",
                         f"flags: the `-set` at {i} sets `{key}`, which every session sets "
-                        f"to its own debugger channel; it is not the caller's to change")
+                        f"for its own debugger channel; it is not the caller's to change")
             if owner is not None:
                 raise Invalid("bad_argument",
                     f"flags: {flag!r} at {i} sets what `{owner}` owns. Placed after this "
