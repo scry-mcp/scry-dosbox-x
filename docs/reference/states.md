@@ -44,19 +44,19 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "state_list: 1 state in $TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/A/n632-save",
+  "summary": "state_list: 1 state in $TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n632-save",
   "status": "ok",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/A/n632-save",
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n632-save",
   "states": [
     {
       "name": "matrix_a_stopped",
-      "path": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/A/n632-save/matrix_a_stopped.sav",
-      "bytes": 81413,
+      "path": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n632-save/matrix_a_stopped.sav",
+      "bytes": 81745,
       "version": "DOSBox-X 2026.10.01 (SDL2)",
       "program": "PROBE",
       "machine": "MCH_VGA",
       "memory_mb": 4096,
-      "saved_at": "2026-10-26 08:35"
+      "saved_at": "2026-10-26 12:06"
     }
   ],
   "working_slot": {
@@ -125,16 +125,16 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "state_write save: matrix_a_stopped, 81413 bytes, PROBE 2026-10-26 08:35",
+  "summary": "state_write save: matrix_a_stopped, 81745 bytes, PROBE 2026-10-26 12:06",
   "status": "ok",
   "name": "matrix_a_stopped",
-  "path": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/A/n632-save/matrix_a_stopped.sav",
-  "bytes": 81413,
+  "path": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n632-save/matrix_a_stopped.sav",
+  "bytes": 81745,
   "version": "DOSBox-X 2026.10.01 (SDL2)",
   "program": "PROBE",
   "machine": "MCH_VGA",
   "memory_mb": 4096,
-  "saved_at": "2026-10-26 08:35",
+  "saved_at": "2026-10-26 12:06",
   "paused": false
 }
 ```

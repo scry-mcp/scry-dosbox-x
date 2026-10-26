@@ -316,37 +316,34 @@ Example, from a live run:
     {
       "op": "status"
     }
-  ],
-  "expect": "PROBE \\. tick",
-  "seconds": 15,
-  "pattern": "PROBE"
+  ]
 }
 ```
 
 ```json
 {
-  "summary": "drive: effect seen",
+  "summary": "drive: no expectation",
   "status": "ok",
   "act": {
     "ran": [
       {
         "op": "status",
         "reply": {
-          "summary": "status: alive, running",
+          "summary": "status: alive, stopped",
           "status": "ok",
-          "pid": 46899,
-          "conf": "$TMPDIR/dosbox-x-live-job-og6cg2yw/C/tests/guest/probe.conf",
+          "pid": 33388,
+          "conf": "$TMPDIR/dosbox-x-live-job-spxko1ca/A/tests/guest/probe.conf",
           "conf_digest": "78bdc38f360b9b4a",
           "bound_s": 1200,
-          "elapsed_s": 2.6,
+          "elapsed_s": 12.0,
           "captures": "off",
-          "state_dir": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/C/n10-save",
+          "state_dir": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n632-save",
           "last_stop": {
-            "stop_seq": 2,
-            "pc": "F000:0000DAC6",
-            "cause": "no declared code breakpoint at F000:0000DAC6: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-            "since_s": 1.7,
-            "wall_at": "2026-10-26T07:35:59+00:00"
+            "stop_seq": 9,
+            "pc": "0814:00000130",
+            "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+            "since_s": 0.9,
+            "wall_at": "2026-10-26T11:06:06+00:00"
           },
           "pending": {
             "arm": [],
@@ -354,22 +351,19 @@ Example, from a live run:
             "symbols_load": false,
             "base_remeasure": false
           },
-          "cpu_mode": {
-            "available": false,
-            "why": "the guest is running (or gone): the mode is read off a stopped machine, and `last_stop` says where it was last seen"
-          },
-          "pc": {
-            "available": false,
-            "why": "the guest is running: `pc` is read off a stopped machine's registers, and `last_stop` says where it was last seen"
-          },
+          "cpu_mode": "real",
+          "pc": "0814:00000130",
           "declarations": {
-            "breakpoints": 2,
+            "breakpoints": 0,
             "watches": 0
           },
-          "presence": false,
+          "presence": {
+            "available": false,
+            "why": "a session started without `shared` has no window to draw on"
+          },
           "session": {
             "alive": true,
-            "running": true,
+            "running": false,
             "altered": true
           }
         }
@@ -380,32 +374,21 @@ Example, from a live run:
       "available": false,
       "why": "no step failed"
     },
-    "still_running": true,
-    "note": "the act ended with the machine running; `drive`'s wait for `expect` is the wait",
     "held": 0
   },
   "verify": {
-    "checked": true,
-    "seen": true,
-    "expected": "PROBE \\. tick",
-    "verdict": "TARGET",
-    "line": "Bochs port E9h: [+ 00000.000] PROBE . tick",
-    "seen_before_waiting": false,
-    "lines_before": 0,
-    "waited_s": 0.8,
-    "lines_total": 1
+    "checked": false,
+    "why": "no `expect` given; the act's own steps carried whatever verification they asked for"
   },
   "looked": {
     "guest": {
       "available": true,
-      "since_mark": 5220,
-      "lines_written": 1,
-      "lines_total": 1,
+      "since_mark": 37603,
+      "lines_written": 0,
+      "lines_total": 0,
       "truncated": false,
-      "lines": [
-        "Bochs port E9h: [+ 00000.000] PROBE . tick"
-      ],
-      "pattern": "PROBE"
+      "lines": [],
+      "pattern": "."
     }
   }
 }

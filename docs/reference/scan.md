@@ -64,16 +64,22 @@ Example, from a live run:
 
 ```json
 {
-  "method": "clear"
+  "method": "start",
+  "ref": "8000:0000",
+  "length": 16
 }
 ```
 
 ```json
 {
-  "summary": "scan clear: nothing was open",
+  "summary": "scan start: 8000:0000, 16 cells of 1 byte",
   "status": "ok",
-  "cleared": false,
-  "note": "no search instance was open"
+  "ref": "8000:0000",
+  "seg_off": "8000:00000000",
+  "length": 16,
+  "cell_bytes": 1,
+  "addr": "0x00080000",
+  "hits_total": 16
 }
 ```
 <!-- scry-reference:end scan -->

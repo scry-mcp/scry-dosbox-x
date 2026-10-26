@@ -42,31 +42,31 @@ Example, from a live run:
   "captures": [
     {
       "kind": "bin",
-      "path": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/A/n733.bin",
+      "path": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n733.bin",
       "present": true,
       "bytes": 16
     },
     {
       "kind": "png",
-      "path": "$TMPDIR/dosbox-x-session-u7mhfxh8/gfx/palette-1.png",
+      "path": "$TMPDIR/dosbox-x-session-nfkctry0/gfx/palette-1.png",
       "present": true,
       "bytes": 1009
     },
     {
       "kind": "json",
-      "path": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/A/n880-stopped.scry-map.json",
+      "path": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n880-stopped.scry-map.json",
       "present": true,
       "bytes": 312
     },
     {
       "kind": "trace",
-      "path": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/A/n954.trace",
+      "path": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n954.trace",
       "present": true,
       "bytes": 238
     },
     {
       "kind": "tsv",
-      "path": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/A/n1058.comments.tsv",
+      "path": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n1058.comments.tsv",
       "present": true,
       "bytes": 85
     }
@@ -111,19 +111,19 @@ Example, from a live run:
 ```json
 {
   "frame": 2,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/J/n11.png",
-  "capture_path": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/J/n6-cap/screen_001.avi"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/J/n11.png",
+  "capture_path": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/J/n6-cap/screen_001.avi"
 }
 ```
 
 ```json
 {
-  "summary": "capture_frame 2: 5072 bytes to $TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/J/n11.png",
+  "summary": "capture_frame 2: 5072 bytes to $TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/J/n11.png",
   "status": "ok",
-  "path": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/J/n11.png",
+  "path": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/J/n11.png",
   "bytes": 5072,
   "sha256": "aee93b1749a9c93112b4fca12509d5ad9da94fc94b41bf781612e590a0a4342b",
-  "capture_path": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/J/n6-cap/screen_001.avi",
+  "capture_path": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/J/n6-cap/screen_001.avi",
   "frame": 2
 }
 ```
@@ -186,15 +186,15 @@ Example, from a live run:
     320,
     8
   ],
-  "capture_path": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/Q/n1-cap/screen_001.avi"
+  "capture_path": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/Q/n1-cap/screen_001.avi"
 }
 ```
 
 ```json
 {
-  "summary": "series_capture: 5 AVI frames 0..4, 2 distinct, manifest $TMPDIR/dosbox-x-session-vmasdt9z/series/series-1/manifest.json",
+  "summary": "series_capture: 5 AVI frames 0..4, 2 distinct, manifest $TMPDIR/dosbox-x-session-2xhgnlcu/series/series-1/manifest.json",
   "status": "ok",
-  "manifest": "$TMPDIR/dosbox-x-session-vmasdt9z/series/series-1/manifest.json",
+  "manifest": "$TMPDIR/dosbox-x-session-2xhgnlcu/series/series-1/manifest.json",
   "count": 5,
   "first": 0,
   "last": 4,
@@ -202,7 +202,7 @@ Example, from a live run:
   "frames_asked": 5,
   "kept_after_close": false,
   "frame_source": "avi",
-  "capture_path": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/Q/n1-cap/screen_001.avi",
+  "capture_path": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/Q/n1-cap/screen_001.avi",
   "crop": [
     0,
     0,
@@ -246,17 +246,17 @@ Example, from a live run:
 
 ```json
 {
-  "dest": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/P/n4.png",
+  "dest": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/P/n4.png",
   "seconds": 20
 }
 ```
 
 ```json
 {
-  "summary": "snapshot: 885 bytes at $TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/P/n4.png",
+  "summary": "snapshot: 885 bytes at $TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/P/n4.png",
   "status": "ok",
   "route": "guest",
-  "path": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/P/n4.png",
+  "path": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/P/n4.png",
   "bytes": 885,
   "sha256": "5053cd8f49a0d5bea6531db5520c7dfb0c06340f05b59d4baff51012d24313f5"
 }

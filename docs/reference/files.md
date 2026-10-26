@@ -121,7 +121,7 @@ Example, from a live run:
 ```json
 {
   "method": "region",
-  "manifest": "$TMPDIR/dosbox-x-session-vmasdt9z/series/series-1/manifest.json",
+  "manifest": "$TMPDIR/dosbox-x-session-2xhgnlcu/series/series-1/manifest.json",
   "measure": "changed_pixels"
 }
 ```
@@ -150,8 +150,8 @@ Example, from a live run:
   ],
   "gaps": [],
   "transitions_total": 1,
-  "path": "$TMPDIR/dosbox-x-session-vmasdt9z/series/series-1/track-1.json",
-  "manifest": "$TMPDIR/dosbox-x-session-vmasdt9z/series/series-1/manifest.json"
+  "path": "$TMPDIR/dosbox-x-session-2xhgnlcu/series/series-1/track-1.json",
+  "manifest": "$TMPDIR/dosbox-x-session-2xhgnlcu/series/series-1/manifest.json"
 }
 ```
 <!-- scry-reference:end image_compare -->
