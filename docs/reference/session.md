@@ -172,59 +172,172 @@ Example, from a live run:
 
 ```json
 {
-  "conf": "/path/to/scry-dosbox-x/tests/guest/probe.conf",
-  "cwd": "/path/to/scry-dosbox-x/tests/guest",
+  "conf": "$TMPDIR/dosbox-x-live-job-og6cg2yw/C/tests/guest/probe.conf",
+  "cwd": "$TMPDIR/dosbox-x-live-job-og6cg2yw/C/tests/guest",
   "session_seconds": 1200,
-  "logfile": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n631.log",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n632-save"
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/C/n11-save",
+  "plan": [
+    {
+      "op": "status"
+    },
+    {
+      "op": "registers"
+    }
+  ],
+  "presence": false
 }
 ```
 
 ```json
 {
-  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.115s",
+  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.104s, then 2 of 2 steps",
   "status": "ok",
-  "pid": 44567,
-  "conf": "/path/to/scry-dosbox-x/tests/guest/probe.conf",
-  "conf_digest": "78bdc38f360b9b4a",
-  "bound_s": 1200,
-  "elapsed_s": 0.4,
-  "captures": "off",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n632-save",
-  "ready_after_s": 0.115,
-  "argv": [
-    "~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x",
-    "-conf",
-    "/path/to/scry-dosbox-x/tests/guest/probe.conf",
-    "-time-limit",
-    "1200",
-    "-break-start",
-    "... 19 more"
+  "ran": [
+    {
+      "op": "status",
+      "reply": {
+        "summary": "status: alive, stopped",
+        "status": "ok",
+        "pid": 46953,
+        "conf": "$TMPDIR/dosbox-x-live-job-og6cg2yw/C/tests/guest/probe.conf",
+        "conf_digest": "78bdc38f360b9b4a",
+        "bound_s": 1200,
+        "elapsed_s": 0.6,
+        "captures": "off",
+        "state_dir": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/C/n11-save",
+        "last_stop": {
+          "stop_seq": 1,
+          "pc": "F000:0000FFF0",
+          "cause": "no declared code breakpoint at F000:0000FFF0: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+          "since_s": 0.0,
+          "wall_at": "2026-10-26T07:36:06+00:00"
+        },
+        "pending": {
+          "arm": [],
+          "disarm": 0,
+          "symbols_load": false,
+          "base_remeasure": false
+        },
+        "cpu_mode": "real",
+        "pc": "F000:0000FFF0",
+        "declarations": {
+          "breakpoints": 2,
+          "watches": 0
+        },
+        "presence": false,
+        "session": {
+          "alive": true,
+          "running": false,
+          "altered": true
+        }
+      }
+    },
+    {
+      "op": "registers",
+      "reply": {
+        "summary": "registers: 15 registers",
+        "status": "ok",
+        "regs": {
+          "EAX": "0x00000000",
+          "EBX": "0x00000000",
+          "ECX": "0x00000000",
+          "EDX": "0x00000000",
+          "ESI": "0x00000000",
+          "EDI": "0x00000000",
+          "EBP": "0x00000000",
+          "ESP": "0x00000000",
+          "EIP": "0x0000fff0",
+          "CS": "0xf000",
+          "DS": "0x0000",
+          "ES": "0x0000",
+          "FS": "0x0000",
+          "GS": "0x0000",
+          "SS": "0x0000"
+        },
+        "session": {
+          "alive": true,
+          "running": false,
+          "altered": true
+        }
+      }
+    }
   ],
-  "binary": "~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x",
-  "binary_origin": "DOSBOX_X_BINARY",
-  "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
-  "debugger_commands": [
-    "LOADSTATE",
-    "PRESENCE",
-    "RUNSTATE",
-    "SAVESTATE",
-    "STEPIN"
-  ],
-  "stub": "/path/to/scry-dosbox-x/guest/INJECT.COM",
-  "input_port": 50546,
-  "background": true,
-  "presence": {
+  "steps_completed": 2,
+  "failed_at": {
     "available": false,
-    "why": "a session started without `shared` has no window to draw on"
+    "why": "no step failed"
   },
-  "declarations": {
-    "rearm": {
-      "rearmed": [],
-      "stale": [],
-      "unresolved": [],
-      "ambiguous": [],
-      "unarmable": []
+  "held": 0,
+  "start": {
+    "pid": 46953,
+    "conf": "$TMPDIR/dosbox-x-live-job-og6cg2yw/C/tests/guest/probe.conf",
+    "conf_digest": "78bdc38f360b9b4a",
+    "conf_changed_on_disk": false,
+    "watched": false,
+    "bound_s": 1200,
+    "elapsed_s": 0.6,
+    "output_bytes_dropped": 0,
+    "captures": "off",
+    "state_dir": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/C/n11-save",
+    "shared": false,
+    "display": "",
+    "ready_after_s": 0.104,
+    "argv": [
+      "~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x",
+      "-conf",
+      "$TMPDIR/dosbox-x-live-job-og6cg2yw/C/tests/guest/probe.conf",
+      "-time-limit",
+      "1200",
+      "-break-start",
+      "... 18 more"
+    ],
+    "binary": "~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x",
+    "binary_origin": "DOSBOX_X_BINARY",
+    "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
+    "debugger_commands": [
+      "LOADSTATE",
+      "PRESENCE",
+      "RUNSTATE",
+      "SAVESTATE",
+      "STEPIN"
+    ],
+    "stub": "/path/to/scry-dosbox-x/guest/INJECT.COM",
+    "input_port": 55437,
+    "background": true,
+    "presence": false,
+    "declarations": {
+      "rearm": {
+        "rearmed": [
+          {
+            "ref": "0000:0006",
+            "by": "address",
+            "cpu": {
+              "available": false,
+              "why": "a DOS machine has one cpu, and every row acts on it"
+            },
+            "created_at": "2026-10-26T07:35:58+00:00",
+            "origin": "2026-10-26T07:35:57+00:00#46519.2",
+            "inherited": true,
+            "age_s": 8
+          },
+          {
+            "ref": "0000:0001",
+            "by": "address",
+            "cpu": {
+              "available": false,
+              "why": "a DOS machine has one cpu, and every row acts on it"
+            },
+            "created_at": "2026-10-26T07:36:00+00:00",
+            "origin": "2026-10-26T07:35:59+00:00#46519.4",
+            "inherited": true,
+            "age_s": 6
+          }
+        ],
+        "stale": [],
+        "unresolved": [],
+        "ambiguous": [],
+        "unarmable": []
+      }
     }
   }
 }
@@ -300,17 +413,33 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "status: no session",
+  "summary": "status: alive, stopped",
   "status": "ok",
+  "pid": 47100,
+  "conf": "$TMPDIR/dosbox-x-live-job-og6cg2yw/N/tests/guest/probe.conf",
+  "conf_digest": "78bdc38f360b9b4a",
+  "bound_s": 1200,
+  "elapsed_s": 0.9,
+  "captures": "off",
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/N/n2-save",
   "last_stop": {
-    "available": false,
-    "why": "this session has not stopped yet"
+    "stop_seq": 2,
+    "pc": "0814:00000106",
+    "cause": "no declared code breakpoint at 0814:00000106: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+    "since_s": 0.2,
+    "wall_at": "2026-10-26T07:36:15+00:00"
   },
   "pending": {
     "arm": [],
     "disarm": 0,
     "symbols_load": false,
     "base_remeasure": false
+  },
+  "cpu_mode": "real",
+  "pc": "0814:00000106",
+  "declarations": {
+    "breakpoints": 0,
+    "watches": 0
   },
   "presence": false
 }
@@ -367,11 +496,23 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "close: there was no session",
+  "summary": "close: quit, exit code 0",
   "status": "ok",
-  "closed": false,
-  "ended_by": "none",
-  "note": "there was no session"
+  "closed": true,
+  "pid": 46899,
+  "conf": "$TMPDIR/dosbox-x-live-job-og6cg2yw/C/tests/guest/probe.conf",
+  "conf_digest": "78bdc38f360b9b4a",
+  "bound_s": 1200,
+  "elapsed_s": 6.7,
+  "captures": "off",
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/C/n10-save",
+  "ended_by": "quit",
+  "exit_code": 0,
+  "omitted": [
+    "stdout_tail",
+    "errorlog_tail"
+  ],
+  "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)"
 }
 ```
 <!-- scry-reference:end close -->

@@ -43,20 +43,20 @@ Example, from a live run:
 
 ```json
 {
-  "ref": "0000:0002"
+  "ref": "0000:0010"
 }
 ```
 
 ```json
 {
-  "summary": "breakpoint_at 0000:0002: armed",
+  "summary": "breakpoint_at 0000:0010: armed",
   "status": "ok",
-  "ref": "0000:0002",
+  "ref": "0000:0010",
   "by": "address",
   "stored": true,
   "armed": true,
   "state": "armed",
-  "entry": "BP 0000:0002"
+  "entry": "BP 0000:0010"
 }
 ```
 <!-- scry-reference:end breakpoint_at -->
@@ -108,17 +108,17 @@ Example, from a live run:
 ```json
 {
   "number": 33,
-  "ah": 76
+  "ah": 61
 }
 ```
 
 ```json
 {
-  "summary": "breakpoint_interrupt BPINT 21 AH=4C: stored",
+  "summary": "breakpoint_interrupt BPINT 21 AH=3D: stored",
   "status": "ok",
-  "ref": "BPINT 21 AH=4C",
+  "ref": "BPINT 21 AH=3D",
   "stored": true,
-  "entry": "BPINT 21 AH=4C",
+  "entry": "BPINT 21 AH=3D",
   "omitted": [
     "output",
     "output_chars",
@@ -191,21 +191,21 @@ Example, from a live run:
 
 ```json
 {
-  "ref": "0040:006C",
+  "ref": "0814:0159",
   "mode": "show",
-  "length": 4
+  "fmt": "char[5]"
 }
 ```
 
 ```json
 {
-  "summary": "watch_add 0040:006C: evaluated",
+  "summary": "watch_add 0814:0159: evaluated",
   "status": "ok",
-  "ref": "0040:006C",
+  "ref": "0814:0159",
   "by": "address",
   "mode": "show",
-  "fmt": "u32",
-  "length": 4,
+  "fmt": "char[5]",
+  "length": 5,
   "stored": true,
   "armed": false,
   "state": "evaluated"
@@ -289,25 +289,9 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "declaration_list breakpoint: 1 breakpoints declared",
+  "summary": "declaration_list breakpoint: 0 breakpoints declared",
   "status": "ok",
-  "breakpoints": [
-    {
-      "ref": "0000:0002",
-      "by": "address",
-      "cpu": {
-        "available": false,
-        "why": "a DOS machine has one cpu, and every row acts on it"
-      },
-      "created_at": "2026-10-25T21:14:24+00:00",
-      "origin": "2026-10-25T21:14:12+00:00#44557.1",
-      "inherited": false,
-      "age_s": 0,
-      "entry": "BP 0000:0002",
-      "marked": false,
-      "state": "armed"
-    }
-  ],
+  "breakpoints": [],
   "debugger_read": true
 }
 ```
@@ -353,17 +337,17 @@ Example, from a live run:
 ```json
 {
   "kind": "breakpoint",
-  "ref": "0000:0002"
+  "all": true
 }
 ```
 
 ```json
 {
-  "summary": "declaration_clear breakpoint 0000:0002: 1 cleared",
+  "summary": "declaration_clear breakpoint all: 1 cleared",
   "status": "ok",
   "declarations_cleared": 1,
   "disarmed": [
-    "BP 0000:0002"
+    "BP 0000:0001"
   ]
 }
 ```

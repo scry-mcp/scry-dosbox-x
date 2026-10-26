@@ -1273,7 +1273,8 @@ def test_close_records_which_ending_it_got() -> None:
         s._out = 99
         with pytest.raises(asyncio.CancelledError):
             s.close()
-    assert raised == [True] and s.ended_how == "quit" and closed == [99], (s.ended_how, closed)
+    assert raised == [True] and closed == [99], closed
+    assert s.ended_how == ("killed" if dprocess.TERMINATES else "quit"), s.ended_how
 
 
 def _writer(memory: dict[str, bytes], mode: str = "Real",

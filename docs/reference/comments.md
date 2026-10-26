@@ -39,30 +39,14 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "comment_list: 1 comment",
+  "summary": "comment_list: 0 comments",
   "status": "ok",
-  "comments": [
-    {
-      "ref": "8000:0100",
-      "by": "address",
-      "cpu": {
-        "available": false,
-        "why": "a DOS machine has one cpu, and every row acts on it"
-      },
-      "created_at": "2026-10-25T21:14:24+00:00",
-      "origin": "2026-10-25T21:14:12+00:00#44557.1",
-      "inherited": false,
-      "age_s": 0,
-      "text": "matrix A",
-      "addr": "0x00080100",
-      "state": "resolved"
-    }
-  ],
-  "comments_total": 1,
+  "comments": [],
+  "comments_total": 0,
   "truncated": false,
   "declarations": {
     "persistent": true,
-    "path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/dosbox-x-live-matrix-A-p7a8nwap/dosbox-x-debug/declarations.json"
+    "path": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/N/dosbox-x-live-matrix-N-56609c3p/dosbox-x-debug/declarations.json"
   }
 }
 ```
@@ -144,34 +128,34 @@ Example, from a live run:
 ```json
 {
   "method": "add",
-  "ref": "8000:0100",
-  "text": "matrix A"
+  "ref": "start",
+  "text": "entry"
 }
 ```
 
 ```json
 {
-  "summary": "comment_write add: 8000:0100 at 0x00080100, stored",
+  "summary": "comment_write add: start at 0x0000824b, stored",
   "status": "ok",
   "comment": {
-    "ref": "8000:0100",
-    "by": "address",
+    "ref": "start",
+    "by": "symbol",
     "cpu": {
       "available": false,
       "why": "a DOS machine has one cpu, and every row acts on it"
     },
-    "created_at": "2026-10-25T21:14:24+00:00",
-    "origin": "2026-10-25T21:14:12+00:00#44557.1",
+    "created_at": "2026-10-26T07:36:15+00:00",
+    "origin": "2026-10-26T07:36:15+00:00#47090.1",
     "inherited": false,
     "age_s": 0,
-    "text": "matrix A",
-    "addr": "0x00080100",
+    "text": "entry",
+    "addr": "0x0000824b",
     "state": "resolved"
   },
   "replaced_comments": [],
   "declarations": {
     "persistent": true,
-    "path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/dosbox-x-live-matrix-A-p7a8nwap/dosbox-x-debug/declarations.json"
+    "path": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/N/dosbox-x-live-matrix-N-56609c3p/dosbox-x-debug/declarations.json"
   }
 }
 ```

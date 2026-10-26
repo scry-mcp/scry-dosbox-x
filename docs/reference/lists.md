@@ -60,7 +60,13 @@ Example, from a live run:
 {
   "steps": [
     {
-      "op": "status"
+      "op": "comment_write",
+      "method": "add",
+      "ref": "emit",
+      "text": "out"
+    },
+    {
+      "op": "comment_list"
     }
   ]
 }
@@ -68,53 +74,108 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "perform: 1 of 1 step",
+  "summary": "perform: 2 of 2 steps",
   "status": "ok",
   "ran": [
     {
-      "op": "status",
+      "op": "comment_write",
       "reply": {
-        "summary": "status: alive, stopped",
+        "summary": "comment_write add: emit at 0x00008277, stored",
         "status": "ok",
-        "pid": 44567,
-        "conf": "/path/to/scry-dosbox-x/tests/guest/probe.conf",
-        "conf_digest": "78bdc38f360b9b4a",
-        "bound_s": 1200,
-        "elapsed_s": 12.4,
-        "captures": "off",
-        "state_dir": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n632-save",
-        "last_stop": {
-          "stop_seq": 9,
-          "pc": "0814:00000130",
-          "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-          "since_s": 1.0,
-          "wall_at": "2026-10-25T21:14:23+00:00"
+        "comment": {
+          "ref": "emit",
+          "by": "symbol",
+          "cpu": {
+            "available": false,
+            "why": "a DOS machine has one cpu, and every row acts on it"
+          },
+          "created_at": "2026-10-26T07:36:15+00:00",
+          "origin": "2026-10-26T07:36:15+00:00#47090.1",
+          "inherited": false,
+          "age_s": 0,
+          "text": "out",
+          "addr": "0x00008277",
+          "state": "resolved"
         },
-        "pending": {
-          "arm": [],
-          "disarm": 0,
-          "symbols_load": false,
-          "base_remeasure": false
-        },
-        "cpu_mode": "real",
-        "pc": "0814:00000130",
+        "replaced_comments": [],
         "declarations": {
-          "breakpoints": 0,
-          "watches": 0
-        },
-        "presence": {
-          "available": false,
-          "why": "a session started without `shared` has no window to draw on"
+          "persistent": true,
+          "path": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/N/dosbox-x-live-matrix-N-56609c3p/dosbox-x-debug/declarations.json"
         },
         "session": {
           "alive": true,
           "running": false,
-          "altered": true
+          "altered": false
+        }
+      }
+    },
+    {
+      "op": "comment_list",
+      "reply": {
+        "summary": "comment_list: 3 comments",
+        "status": "ok",
+        "comments": [
+          {
+            "ref": "start",
+            "by": "symbol",
+            "cpu": {
+              "available": false,
+              "why": "a DOS machine has one cpu, and every row acts on it"
+            },
+            "created_at": "2026-10-26T07:36:15+00:00",
+            "origin": "2026-10-26T07:36:15+00:00#47090.1",
+            "inherited": false,
+            "age_s": 0,
+            "text": "entry, aliased",
+            "addr": "0x0000824b",
+            "state": "resolved"
+          },
+          {
+            "ref": "0814:0106",
+            "by": "address",
+            "cpu": {
+              "available": false,
+              "why": "a DOS machine has one cpu, and every row acts on it"
+            },
+            "created_at": "2026-10-26T07:36:15+00:00",
+            "origin": "2026-10-26T07:36:15+00:00#47090.1",
+            "inherited": false,
+            "age_s": 0,
+            "text": "the settle loop",
+            "addr": "0x00008246",
+            "state": "resolved"
+          },
+          {
+            "ref": "emit",
+            "by": "symbol",
+            "cpu": {
+              "available": false,
+              "why": "a DOS machine has one cpu, and every row acts on it"
+            },
+            "created_at": "2026-10-26T07:36:15+00:00",
+            "origin": "2026-10-26T07:36:15+00:00#47090.1",
+            "inherited": false,
+            "age_s": 0,
+            "text": "out",
+            "addr": "0x00008277",
+            "state": "resolved"
+          }
+        ],
+        "comments_total": 3,
+        "truncated": false,
+        "declarations": {
+          "persistent": true,
+          "path": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/N/dosbox-x-live-matrix-N-56609c3p/dosbox-x-debug/declarations.json"
+        },
+        "session": {
+          "alive": true,
+          "running": false,
+          "altered": false
         }
       }
     }
   ],
-  "steps_completed": 1,
+  "steps_completed": 2,
   "failed_at": {
     "available": false,
     "why": "no step failed"
@@ -171,15 +232,15 @@ Example, from a live run:
 
 ```json
 {
-  "dest": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n1257.json"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/A/n1257.json"
 }
 ```
 
 ```json
 {
-  "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n1257.json",
+  "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/A/n1257.json",
   "status": "ok",
-  "path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n1257.json",
+  "path": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/A/n1257.json",
   "steps": 1,
   "checks": 0,
   "dropped": [],
@@ -189,7 +250,7 @@ Example, from a live run:
     "op": "resume",
     "why": "its run was stopped by the wall clock or by the machine itself, at a place inside its frame that no replayed advance reaches"
   },
-  "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n1257.json"
+  "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/A/n1257.json"
 }
 ```
 <!-- scry-reference:end perform_export -->

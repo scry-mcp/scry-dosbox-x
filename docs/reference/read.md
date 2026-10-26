@@ -95,19 +95,19 @@ Example, from a live run:
 
 ```json
 {
-  "ref": "0000:0020",
-  "length": 4
+  "ref": "8000:2000",
+  "length": 8
 }
 ```
 
 ```json
 {
-  "summary": "read_memory 0000:0020: 0 rows at 0000:00000020",
+  "summary": "read_memory 8000:2000: 8 bytes at 8000:00002000",
   "status": "ok",
-  "ref": "0000:0020",
-  "seg_off": "0000:00000020",
-  "length": 4,
-  "hex": "a5fe00f0"
+  "ref": "8000:2000",
+  "seg_off": "8000:00002000",
+  "length": 8,
+  "hex": "0000000000000000"
 }
 ```
 <!-- scry-reference:end read_memory -->
@@ -293,21 +293,21 @@ Example, from a live run:
 
 ```json
 {
-  "ref": "0000:0400",
-  "length": 16,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n733.bin"
+  "ref": "8000:2000",
+  "length": 8,
+  "dest": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/C/n3.bin"
 }
 ```
 
 ```json
 {
-  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n733.bin",
+  "summary": "memdump 8000:2000: 8 bytes to $TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/C/n3.bin",
   "status": "ok",
-  "ref": "0000:0400",
-  "seg_off": "0000:00000400",
-  "length": 16,
-  "path": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n733.bin",
-  "bytes": 16
+  "ref": "8000:2000",
+  "seg_off": "8000:00002000",
+  "length": 8,
+  "path": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/C/n3.bin",
+  "bytes": 8
 }
 ```
 <!-- scry-reference:end memdump -->
@@ -353,34 +353,28 @@ Example, from a live run:
 
 ```json
 {
-  "data_hex": "00",
-  "ref": "8000:0000",
+  "data_hex": "DEADBEEFDE",
+  "ref": "8000:3000",
   "length": 16
 }
 ```
 
 ```json
 {
-  "summary": "find 8000:0000: 16 hits of 00 in 16 bytes",
+  "summary": "find 8000:3000: 1 hit of DEADBEEFDE in 16 bytes",
   "status": "ok",
-  "ref": "8000:0000",
-  "seg_off": "8000:00000000",
+  "ref": "8000:3000",
+  "seg_off": "8000:00003000",
   "length": 16,
   "span": {
-    "from": "8000:00000000",
+    "from": "8000:00003000",
     "length": 16,
     "source": "ref+length"
   },
   "hits": [
-    "8000:00000000",
-    "8000:00000001",
-    "8000:00000002",
-    "8000:00000003",
-    "8000:00000004",
-    "8000:00000005",
-    "... 10 more"
+    "8000:00003000"
   ],
-  "hits_total": 16,
+  "hits_total": 1,
   "truncated": false
 }
 ```
@@ -504,18 +498,18 @@ Example, from a live run:
 
 ```json
 {
-  "pattern": "PROBE",
+  "pattern": "PROBE \\. tick",
   "channel": "guest",
-  "seconds": 10
+  "seconds": 5
 }
 ```
 
 ```json
 {
-  "summary": "log_wait guest /PROBE/: matched already in the log",
+  "summary": "log_wait guest /PROBE \\. tick/: matched already in the log",
   "status": "ok",
   "verdict": "TARGET",
-  "pattern": "PROBE",
+  "pattern": "PROBE \\. tick",
   "channel": "guest",
   "line": "Bochs port E9h: [+ 00000.000] PROBE . tick",
   "already": true,
@@ -991,7 +985,7 @@ Example, from a live run:
   "bits": 6,
   "pel_mask": "ffh",
   "image": {
-    "path": "$TMPDIR/dosbox-x-session-6nzxwtl8/gfx/palette-1.png",
+    "path": "$TMPDIR/dosbox-x-session-u7mhfxh8/gfx/palette-1.png",
     "bytes": 1009,
     "sha256": "a5dff617e307a60f3bf521d96fed8809cc0f3b38409a74c904cfa5c1ad4371e1",
     "width": 256,
@@ -1337,16 +1331,18 @@ Example, from a live run:
 
 ```json
 {
-  "command": "BPLIST"
+  "command": "VGA"
 }
 ```
 
 ```json
 {
-  "summary": "debug: INVALID (no_session), there is no live session. `start` one first; a reply from a dead session would be a reading of nothing.",
-  "status": "INVALID",
-  "code": "no_session",
-  "message": "there is no live session. `start` one first; a reply from a dead session would be a reading of nothing."
+  "summary": "debug 'VGA': 35 chars",
+  "status": "ok",
+  "command": "VGA",
+  "output": "*** Debugger command not recognized",
+  "output_chars": 35,
+  "note": "the debugger did not take it: an unknown command, or one it refused with the reason it printed"
 }
 ```
 <!-- scry-reference:end debug -->

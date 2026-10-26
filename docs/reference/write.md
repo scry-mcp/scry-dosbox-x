@@ -110,19 +110,19 @@ Example, from a live run:
 
 ```json
 {
-  "ref": "8000:0100",
-  "data_hex": "A55A"
+  "ref": "8000:2000",
+  "data_hex": "0102030405060708"
 }
 ```
 
 ```json
 {
-  "summary": "write 8000:0100: 2 bytes, verified True",
+  "summary": "write 8000:2000: 8 bytes, verified True",
   "status": "ok",
-  "ref": "8000:0100",
-  "seg_off": "8000:00000100",
-  "bytes_written": 2,
-  "readback": "a55a",
+  "ref": "8000:2000",
+  "seg_off": "8000:00002000",
+  "bytes_written": 8,
+  "readback": "0102030405060708",
   "verified": true
 }
 ```

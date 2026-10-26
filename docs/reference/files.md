@@ -120,18 +120,38 @@ Example, from a live run:
 
 ```json
 {
-  "method": "image",
-  "a": "/nonexistent/a.png",
-  "b": "/nonexistent/b.png"
+  "method": "region",
+  "manifest": "$TMPDIR/dosbox-x-session-vmasdt9z/series/series-1/manifest.json",
+  "measure": "changed_pixels"
 }
 ```
 
 ```json
 {
-  "summary": "image_compare: INVALID (bad_argument), a: /nonexistent/a.png is not a file",
-  "status": "INVALID",
-  "code": "bad_argument",
-  "message": "a: /nonexistent/a.png is not a file"
+  "summary": "image_compare region: changed_pixels, 1 transition over 5 frames",
+  "status": "ok",
+  "measure": "changed_pixels",
+  "crop": [
+    0,
+    0,
+    320,
+    8
+  ],
+  "frames": 5,
+  "start": {
+    "available": false,
+    "why": "`changed_pixels` counts a change from the frame before, and the first frame has none"
+  },
+  "transitions": [
+    [
+      4,
+      2560
+    ]
+  ],
+  "gaps": [],
+  "transitions_total": 1,
+  "path": "$TMPDIR/dosbox-x-session-vmasdt9z/series/series-1/track-1.json",
+  "manifest": "$TMPDIR/dosbox-x-session-vmasdt9z/series/series-1/manifest.json"
 }
 ```
 <!-- scry-reference:end image_compare -->

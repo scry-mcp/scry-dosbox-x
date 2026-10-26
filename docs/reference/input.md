@@ -66,6 +66,69 @@ Example, from a live run:
 ```json
 {
   "keys": [
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
     "a"
   ]
 }
@@ -73,10 +136,26 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "send_keys: INVALID (no_session), there is no live session. `start` one first; a reply from a dead session would be a reading of nothing.",
-  "status": "INVALID",
-  "code": "no_session",
-  "message": "there is no live session. `start` one first; a reply from a dead session would be a reading of nothing."
+  "summary": "send_keys (guest): posted, unverified",
+  "status": "ok",
+  "keys": [
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "... 58 more"
+  ],
+  "modifiers": [],
+  "route": "guest",
+  "posted": 64,
+  "bytes": 128,
+  "frames": 128,
+  "verify": {
+    "checked": false,
+    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
+  }
 }
 ```
 <!-- scry-reference:end send_keys -->
@@ -141,16 +220,40 @@ Example, from a live run:
 
 ```json
 {
-  "button": "left"
+  "x": 0,
+  "y": 0
 }
 ```
 
 ```json
 {
-  "summary": "send_mouse: INVALID (no_session), there is no live session. `start` one first; a reply from a dead session would be a reading of nothing.",
-  "status": "INVALID",
-  "code": "no_session",
-  "message": "there is no live session. `start` one first; a reply from a dead session would be a reading of nothing."
+  "summary": "send_mouse: pointer at 0,0; posted, unverified",
+  "status": "ok",
+  "x": 0,
+  "y": 0,
+  "units": "screen",
+  "route": "guest",
+  "pointer": {
+    "screen": {
+      "x": 0,
+      "y": 0,
+      "width": 80,
+      "height": 25
+    },
+    "mouse": {
+      "x": 0,
+      "y": 0,
+      "max_x": 639,
+      "max_y": 199
+    },
+    "buttons": [],
+    "bios_mode": "0x03"
+  },
+  "arrived": true,
+  "verify": {
+    "checked": false,
+    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
+  }
 }
 ```
 <!-- scry-reference:end send_mouse -->
@@ -213,34 +316,37 @@ Example, from a live run:
     {
       "op": "status"
     }
-  ]
+  ],
+  "expect": "PROBE \\. tick",
+  "seconds": 15,
+  "pattern": "PROBE"
 }
 ```
 
 ```json
 {
-  "summary": "drive: no expectation",
+  "summary": "drive: effect seen",
   "status": "ok",
   "act": {
     "ran": [
       {
         "op": "status",
         "reply": {
-          "summary": "status: alive, stopped",
+          "summary": "status: alive, running",
           "status": "ok",
-          "pid": 44567,
-          "conf": "/path/to/scry-dosbox-x/tests/guest/probe.conf",
+          "pid": 46899,
+          "conf": "$TMPDIR/dosbox-x-live-job-og6cg2yw/C/tests/guest/probe.conf",
           "conf_digest": "78bdc38f360b9b4a",
           "bound_s": 1200,
-          "elapsed_s": 12.4,
+          "elapsed_s": 2.6,
           "captures": "off",
-          "state_dir": "$TMPDIR/dosbox-x-live-matrix-3da5a8d2baff/n632-save",
+          "state_dir": "$TMPDIR/dosbox-x-live-matrix-253332ee682a/jobs-scratch/C/n10-save",
           "last_stop": {
-            "stop_seq": 9,
-            "pc": "0814:00000130",
-            "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-            "since_s": 1.0,
-            "wall_at": "2026-10-25T21:14:23+00:00"
+            "stop_seq": 2,
+            "pc": "F000:0000DAC6",
+            "cause": "no declared code breakpoint at F000:0000DAC6: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+            "since_s": 1.7,
+            "wall_at": "2026-10-26T07:35:59+00:00"
           },
           "pending": {
             "arm": [],
@@ -248,19 +354,22 @@ Example, from a live run:
             "symbols_load": false,
             "base_remeasure": false
           },
-          "cpu_mode": "real",
-          "pc": "0814:00000130",
+          "cpu_mode": {
+            "available": false,
+            "why": "the guest is running (or gone): the mode is read off a stopped machine, and `last_stop` says where it was last seen"
+          },
+          "pc": {
+            "available": false,
+            "why": "the guest is running: `pc` is read off a stopped machine's registers, and `last_stop` says where it was last seen"
+          },
           "declarations": {
-            "breakpoints": 0,
+            "breakpoints": 2,
             "watches": 0
           },
-          "presence": {
-            "available": false,
-            "why": "a session started without `shared` has no window to draw on"
-          },
+          "presence": false,
           "session": {
             "alive": true,
-            "running": false,
+            "running": true,
             "altered": true
           }
         }
@@ -271,21 +380,32 @@ Example, from a live run:
       "available": false,
       "why": "no step failed"
     },
+    "still_running": true,
+    "note": "the act ended with the machine running; `drive`'s wait for `expect` is the wait",
     "held": 0
   },
   "verify": {
-    "checked": false,
-    "why": "no `expect` given; the act's own steps carried whatever verification they asked for"
+    "checked": true,
+    "seen": true,
+    "expected": "PROBE \\. tick",
+    "verdict": "TARGET",
+    "line": "Bochs port E9h: [+ 00000.000] PROBE . tick",
+    "seen_before_waiting": false,
+    "lines_before": 0,
+    "waited_s": 0.8,
+    "lines_total": 1
   },
   "looked": {
     "guest": {
       "available": true,
-      "since_mark": 37703,
-      "lines_written": 0,
-      "lines_total": 0,
+      "since_mark": 5220,
+      "lines_written": 1,
+      "lines_total": 1,
       "truncated": false,
-      "lines": [],
-      "pattern": "."
+      "lines": [
+        "Bochs port E9h: [+ 00000.000] PROBE . tick"
+      ],
+      "pattern": "PROBE"
     }
   }
 }

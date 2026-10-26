@@ -66,16 +66,16 @@ Example, from a live run:
 
 ```json
 {
-  "path": "/path/to/scry-dosbox-x/tests/fixtures/borland-tlink16/MAPDEMO.MAP",
-  "base": "8000"
+  "path": "$TMPDIR/dosbox-x-live-job-og6cg2yw/N/tests/guest/probe.sym",
+  "base": "8140"
 }
 ```
 
 ```json
 {
-  "summary": "symbols_load: 5 loaded of 5 parsed, base 32768",
+  "summary": "symbols_load: 6 loaded of 6 parsed, base 33088",
   "status": "ok",
-  "base": 32768,
+  "base": 33088,
   "limit": -1,
   "descriptor": -1,
   "declarations": {
@@ -88,25 +88,25 @@ Example, from a live run:
   "pending": false,
   "checked": {
     "available": false,
-    "why": "no executable named MAPDEMO.exe beside the table, so it could not be checked against its build"
+    "why": "no executable named probe.exe beside the table, so it could not be checked against its build"
   },
   "base_from": "caller",
-  "parsed": 5,
-  "kept": 5,
+  "parsed": 6,
+  "kept": 6,
   "excluded_sections": 0,
   "excluded_pattern": 0,
   "excluded_unplaceable": 0,
   "unencodable": [],
   "unencodable_total": 0,
-  "truncated_names": 4,
-  "disambiguated": 1,
-  "renamed": 4,
+  "truncated_names": 0,
+  "disambiguated": 0,
+  "renamed": 0,
   "unreadable": 0,
-  "overlay_idle": 3,
+  "overlay_idle": 0,
   "table_mode": "replaced",
-  "table_total": 5,
-  "loaded": 5,
-  "bytes": 102,
+  "table_total": 6,
+  "loaded": 6,
+  "bytes": 122,
   "symbols_typed": 0
 }
 ```
