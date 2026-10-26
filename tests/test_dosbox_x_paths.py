@@ -13,6 +13,7 @@ from unittest import mock
 import fold_calls
 import pytest
 from dosbox_x_server_support import clean_session, install, stub_build  # noqa: F401
+from scry_core import judges
 from scry_core.host_program import MODE_BITS
 from scry_core.host_program import absolute as _abs
 from test_dosbox_x_dump import debugger
@@ -108,10 +109,10 @@ def test_a_fresh_dest_has_its_directory_and_nothing_at_it(tmp_path: Path) -> Non
 def test_an_input_file_is_a_regular_file_there(tmp_path: Path) -> None:
     f = tmp_path / "x.sym"
     f.write_text("x")
-    assert paths.input_file("source", str(f), "symbol file") == f
+    assert judges.existing_file("source", str(f), "symbol file") == f
     for value in (str(tmp_path / "absent.sym"), str(tmp_path)):
         with pytest.raises(ds.Invalid, match="no symbol file at"):
-            paths.input_file("source", value, "symbol file")
+            judges.existing_file("source", value, "symbol file")
 
 
 @MODE_BITS
@@ -124,7 +125,7 @@ def test_a_path_the_host_will_not_look_at_or_read_is_refused_not_raised(
     f.chmod(0)
     try:
         with pytest.raises(ds.Invalid, match="types: .* cannot be read"):
-            paths.read_text("types", str(f), "types file")
+            judges.read_text("types", str(f), "types file")
     finally:
         f.chmod(0o644)
 
@@ -139,14 +140,14 @@ def test_a_path_the_host_will_not_look_at_or_read_is_refused_not_raised(
         raise PermissionError(13, "Permission denied", str(self))
     monkeypatch.setattr(Path, "is_file", denied)
     with pytest.raises(ds.Invalid, match="source: .* cannot be looked at"):
-        paths.input_file("source", str(f), "symbol file")
+        judges.existing_file("source", str(f), "symbol file")
 
 
 def test_a_text_file_that_is_not_utf8_is_refused_where_it_broke(tmp_path: Path) -> None:
     f = tmp_path / "t.types"
     f.write_bytes(b"pos: u32\nname: char[8] \x82 cp437\n")
     with pytest.raises(ds.Invalid) as e:
-        paths.read_text("types", str(f), "types file")
+        judges.read_text("types", str(f), "types file")
     assert e.value.code == "bad_argument" and str(f) in str(e.value) and "byte 23" in str(e.value)
     with pytest.raises(ds.Invalid) as e:
         placement.read_types(str(f))

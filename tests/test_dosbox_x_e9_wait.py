@@ -481,6 +481,17 @@ def test_an_expiry_consults_the_debugger_before_saying_still_running(
     assert still.asked == 2, still.asked
 
 
+def test_a_stop_met_during_the_wait_is_said_as_one_and_a_parked_machine_as_parked(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    log = tmp_path / "guest.log"
+    log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
+    monkeypatch.setattr(core_wait, "POLL_S", 0.05)
+    with pytest.raises(ds.E9Stopped, match="STOPPED during the wait"):
+        LateStopLogSession(log, running_answers=1).e9_wait("never_going_to_appear", seconds=5)
+    with pytest.raises(ds.E9Stopped, match="STOPPED at the debugger"):
+        StoppedLogSession(log, at_debugger=True).e9_wait("never_going_to_appear", seconds=5)
+
+
 class StopsAfterWriting(LogSession):
     """Writes the awaited line and parks at the debugger inside one poll interval."""
 

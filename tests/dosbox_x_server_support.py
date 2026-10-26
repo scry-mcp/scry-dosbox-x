@@ -700,9 +700,7 @@ class NamesFake(SessionGates):
             raise self.wait_raises
         if self.stops_during_wait:
             self.running = False
-            raise ds.E9Stopped(f"the machine is stopped at the debugger, so a wait for "
-                               f"{pattern!r} cannot end: a stopped guest writes nothing",
-                               waited_s=0.4, arrived=0)
+            raise ds._wait_stopped(pattern, 0, 0.4, parked=False, at_bound=False)
         # the real method's answers: bad pattern or bound is `Invalid`, expiry the `TIMEOUT` verdict
         rx = dlogs.compiled(pattern)
         if not 0 < seconds <= vocab.WAIT_MAX_S:

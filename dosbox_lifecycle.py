@@ -34,8 +34,8 @@ DEFAULT_STATE_DIR = (f"the default state directory (`<cwd>/{dlaunch.DEFAULT_STAT
 
 def _window_flags(shared: bool, display: str) -> list[str]:
     """The watched window's flags from the host placement helper; none for a headless session.
-    No flags is a one-display host's answer: DOSBox-X sizes its own window, where MAME's server,
-    which would have to invent a size, refuses it."""
+    No flags is a one-display host's answer: DOSBox-X sizes its own window, so it opens
+    unplaced."""
     if not shared:
         return []
     placed = window.ask("dosbox", True, display)

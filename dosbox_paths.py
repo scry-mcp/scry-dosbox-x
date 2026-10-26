@@ -13,7 +13,6 @@ PATH_PARAMETERS = frozenset({"cwd", "conf", "logfile", "captures_dir", "state_di
 
 
 def absolute(name: str, value: object) -> Path:
-    """`value` as an absolute path, `~` expanded, or a refusal."""
     return judges.absolute(name, value)
 
 
@@ -23,7 +22,6 @@ def taken(path: Path) -> bool:
 
 
 def fresh_dest(name: str, value: str | Path) -> Path:
-    """A file to write: its directory exists, nothing is at it."""
     return judges.fresh_file(name, str(value))
 
 
@@ -46,28 +44,3 @@ def make_directory(name: str, path: Path) -> None:
         path.mkdir(parents=True, exist_ok=True)
     except OSError as e:
         raise Invalid("host_failed", f"{name}: {path} cannot be created: {e}") from None
-
-
-def input_file(name: str, value: object, thing: str) -> Path:
-    """A file this tool reads: absolute and a regular file there now."""
-    path = absolute(name, value)
-    try:
-        there = path.is_file()
-    except (OSError, ValueError) as e:
-        raise Invalid("bad_argument", f"{name}: {path} cannot be looked at: {e}") from None
-    if not there:
-        raise Invalid("bad_argument", f"{name}: no {thing} at {path}")
-    return path
-
-
-def read_text(name: str, value: object, thing: str) -> str:
-    """A caller's text file as UTF-8; `utf-8-sig` drops a leading BOM."""
-    path = input_file(name, value, thing)
-    try:
-        return path.read_text(encoding="utf-8-sig")
-    except UnicodeDecodeError as e:
-        raise Invalid("bad_argument",
-            f"{name}: {path} is not UTF-8 text: byte {e.start} ({e.object[e.start:e.start + 1]!r}) "
-            f"{e.reason}") from None
-    except OSError as e:
-        raise Invalid("bad_argument", f"{name}: {path} cannot be read: {e}") from None

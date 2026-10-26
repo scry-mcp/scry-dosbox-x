@@ -505,7 +505,7 @@ def load_comments(session: ds.Session, given: str) -> dict[str, Any]:
     notes = [f"the file won at {prose.counted(len(replaced), 'place')}: the store's old text is in "
              "`replaced_comments`"] if replaced else []
     if waiting := [d.ref for d, place in incoming if "refuse" in place]:
-        notes.append(f"{prose.counted(len(waiting), 'row')} this stop cannot place kept "
+        notes.append(f"{prose.counted(len(waiting), 'row')} this stop cannot place, kept "
                      f"`unarmable`, each `why` naming the stop it waits for: "
                      f"{waiting[:st.ROWS_SHOWN]}")
     if sharing := _sharing([*held, *added]):

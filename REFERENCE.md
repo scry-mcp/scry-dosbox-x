@@ -62,6 +62,8 @@ While a session holds the window, an orange edge tells whoever sits at the host 
 
 **A session whose emulator died is kept until `close`**: every call that needs the machine answers `session_broken`, and `altered` survives, which a caller measuring a forced state must not lose.
 
+**A signal to the server ends its emulator first.** A SIGTERM, a SIGHUP or a Ctrl-C closes the session, after the tool holding the lock returns or a bounded wait for it, before the server leaves.
+
 **A refusal is one contract.** An INVALID carries `code`, one word from a fixed table, and `message`, flat beside the context (`last_stop`, `posted`, `route`, `failed_at`); a code outside the table or an empty message is refused where it is written. A bad argument is a refusal, not an execution failure: `isError` is for a bug. The schema is strict: a wrong type or an unknown argument name is refused as `bad_argument` naming it, and nothing is coerced (`"16"` is not 16), except that an integer stands for a number. `outputSchema` constrains no value, because any datum may come back as `unavailable(why)`.
 
 **A value as wrong with no machine as with one is judged before the session gate**, so with no session it answers `bad_argument`, never `no_session`.

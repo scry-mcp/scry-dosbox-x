@@ -683,7 +683,7 @@ def index_by_name(symbols: list[Symbol]) -> NameIndex:
 
 def find_by_name(symbols: list[Symbol], name: str, index: NameIndex | None = None) -> list[Symbol]:
     """Symbols whose full name matches: exact outright, else by prefix, in the linker's case,
-    where `_x` and `_X` are two symbols (MAME's server folds case, as its expressions do)."""
+    where `_x` and `_X` are two symbols."""
     exact = list(index[name]) if index is not None and name in index else (
         [s for s in symbols if s.name == name])
     if exact:

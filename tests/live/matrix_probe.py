@@ -495,7 +495,7 @@ def _running(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
 def _expect(tool: str, state: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
     if tool in MEDIA_ABSENT:
         live = state in ("stopped", "running")
-        return ((lambda r: refused(r, "bad_argument") and "is not a file" in str(r.get("message"))
+        return ((lambda r: refused(r, "bad_argument") and "no file at" in str(r.get("message"))
                  and (alive(r) if live else no_session(r))),
                 f"{tool} docstring: reads files, in any state; a missing one refused by name")
     if tool == "map_write load":

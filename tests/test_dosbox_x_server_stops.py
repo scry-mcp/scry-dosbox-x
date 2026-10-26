@@ -25,13 +25,13 @@ from dosbox_x_server_support import (  # noqa: E402
 )
 from scry_core import (
     log_marks,
-    roster,
 )
 from scry_core import vocabulary as vocab
 
 import dosbox_arming as arming
 import dosbox_checks as checks
 import dosbox_declarations as dec
+import dosbox_folds as folds
 import dosbox_grammar as grammar
 import dosbox_launch as dlaunch
 import dosbox_mcp
@@ -704,7 +704,7 @@ def test_start_names_no_stop_of_its_own_beside_the_park(
 
 def test_the_instructions_families_are_the_registered_tools_and_the_running_ones_answer() -> None:
     assert dosbox_mcp.ROSTER.unlisted(dosbox_mcp.registered_tools()) == []
-    answering = (roster.by_method(sequence.RUNNING_OK_OPS, sequence.RUNNING_METHODS)
+    answering = (sequence.GATE.listed(folds.METHODS)
                  | (checks.NOT_STEPS - {"start", "build_check"}))
     named = dosbox_mcp.ROSTER.answering_named() - {"registers(from_last_stop=True)"}
     assert named <= answering, sorted(named - answering)

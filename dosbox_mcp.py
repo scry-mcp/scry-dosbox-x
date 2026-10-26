@@ -16,6 +16,7 @@ import dosbox_arming as arming
 import dosbox_captures as caps
 import dosbox_checks as checks
 import dosbox_docs as docs
+import dosbox_folds as folds
 import dosbox_presence as dpresence
 import dosbox_running as running
 import dosbox_sequence as sequence
@@ -36,7 +37,7 @@ def refusal(name: str, arguments: dict[str, Any], cause: ValidationError) -> dic
 
 #: What a refusal for a running guest names as answering.
 _ANSWERS_WHILE_RUNNING = roster.answers_while_running(
-    sequence.GATE.listed(), checks.NOT_STEPS,
+    sequence.GATE.listed(folds.METHODS), checks.NOT_STEPS,
     {"start", "build_check"})
 
 

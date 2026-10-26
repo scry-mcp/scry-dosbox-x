@@ -43,7 +43,7 @@ def test_a_stop_during_the_wait_keeps_the_echo_and_the_waits_own_words(tmp_path:
     got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a", seconds=5))
     assert (got["keys"], got["modifiers"]) == (["a"], []), got
     assert got["verify"]["expected"] == "key_cue_a", got["verify"]
-    assert got["verify"]["why"].startswith("the machine is stopped at the debugger"), got["verify"]
+    assert got["verify"]["why"].startswith("the machine STOPPED during the wait"), got["verify"]
 
 
 def test_the_pointer_names_every_button_held() -> None:

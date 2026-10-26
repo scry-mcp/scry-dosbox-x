@@ -80,7 +80,7 @@ state_write(method, name, seconds=30.0)
 
 Save or load the machine as `<state_dir>/<name>.sav` through the debugger's `SAVESTATE` and
 `LOADSTATE`; no window or focus needed. A running guest is stopped for it and released
-again. `name`: letters, digits, `_`, `-`, a letter or digit first, at most 64,
+again. `name`: letters, digits, `_`, `-`, never `-` first, at most 64,
 not digits only. `seconds` bounds the command's reply.
 
 `save`: never overwrites. Reply: `name`, `path`, `bytes`, `version`, `program`, `machine`,

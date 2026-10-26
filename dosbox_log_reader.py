@@ -135,14 +135,21 @@ def log_wait(ses: ds.Session, pattern: str, seconds: float, channel: str, mark: 
         lines, offset = ses._e9_since(offset, channel)
         return lines
 
-    got = core_wait.wait(rx, fresh, seconds=seconds, stopped=ses.at_debugger,
+    asked: list[bool] = []
+
+    def stopped() -> bool:
+        asked.append(ses.at_debugger())
+        return asked[-1]
+
+    got = core_wait.wait(rx, fresh, seconds=seconds, stopped=stopped,
                          alive=ses.alive, progress=progress,
                          label=f"log_wait {channel} /{pattern}/")
     if isinstance(got, core_wait.Found):
         return {"verdict": contract.TARGET, "pattern": pattern, "channel": channel,
                 **got.fields()}
     if got.ending == "STOPPED":
-        raise ds._wait_stopped(pattern, got.arrived_during, got.waited_s, got.at_bound)
+        raise ds._wait_stopped(pattern, got.arrived_during, got.waited_s,
+                               parked=asked[:1] == [True], at_bound=got.at_bound)
     if got.ending == "GONE":
         raise Invalid("session_broken", core_wait.gone_message(pattern, got, seconds))
     region = "in the log altogether" if mark == 0 else f"since the mark at byte {mark}"

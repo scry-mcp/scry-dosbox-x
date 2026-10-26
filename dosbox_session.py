@@ -102,13 +102,12 @@ class NotStopped(Invalid):
         super().__init__("not_stopped", message, **fields)
 
 
-def _wait_stopped(pattern: str, arrived: int, waited_s: float,
-                  at_bound: bool = False) -> Invalid:
-    """The one refusal a wait gives for a machine at the debugger, found by a poll or as the bound
-    ran out."""
+def _wait_stopped(pattern: str, arrived: int, waited_s: float, *, parked: bool,
+                  at_bound: bool) -> Invalid:
+    """The one refusal a wait gives for a machine at the debugger: `parked` there at its first
+    poll, else stopped during the wait or as its bound ran out."""
     return E9Stopped(
-        log_wait.stopped_message(pattern, arrived, waited_s, parked=not at_bound,
-                                 at_bound=at_bound)
+        log_wait.stopped_message(pattern, arrived, waited_s, parked=parked, at_bound=at_bound)
         + ". The emulator flushes its log in its own time, so `log` may show more",
         waited_s=waited_s, arrived=arrived)
 

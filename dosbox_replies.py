@@ -42,7 +42,7 @@ class BreakpointAtReply(DosboxEnvelope, total=False):
 class BreakpointInterruptReply(DosboxEnvelope, total=False):
     already_stored: Annotated[bool, OmitEmpty]
     armed: bool
-    clipped: Annotated[bool, OmitEmpty]
+    clipped: bool
     entry: str
     note: str
     ref: str
@@ -108,7 +108,7 @@ class CommentListReply(DosboxEnvelope, total=False):
 
 
 class DebugReply(DosboxEnvelope, total=False):
-    clipped: Annotated[bool, OmitEmpty]
+    clipped: bool
     command: str
     note: str
     output: str
@@ -260,7 +260,7 @@ class RegistersReply(DosboxEnvelope, total=False):
 
 class ResumeReply(DosboxEnvelope, total=False):
     cause: str
-    clipped: Annotated[bool, OmitEmpty]
+    clipped: bool
     cpu_mode: str | dict[str, Any]
     e9: dict[str, Any]
     enrichment: dict[str, Any]

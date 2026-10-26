@@ -712,7 +712,7 @@ def state_write(method: Annotated[str, vocab.enum(tuple(folds.STATE_METHODS))], 
                 ) -> dict[str, Any]:
     """Save or load the machine as `<state_dir>/<name>.sav` through the debugger's `SAVESTATE` and
     `LOADSTATE`; no window or focus needed. A running guest is stopped for it and released
-    again. `name`: letters, digits, `_`, `-`, a letter or digit first, at most {STATE_NAME_MAX},
+    again. `name`: letters, digits, `_`, `-`, never `-` first, at most {STATE_NAME_MAX},
     not digits only. `seconds` bounds the command's reply.
 
     `save`: never overwrites. Reply: `name`, `path`, `bytes`, `version`, `program`, `machine`,

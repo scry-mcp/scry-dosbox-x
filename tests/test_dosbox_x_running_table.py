@@ -9,9 +9,9 @@ from typing import Any
 import fold_calls
 import pytest
 from dosbox_x_server_support import NM_TEXT, SessionGates, _names, clean_session  # noqa: F401
-from scry_core import roster
 
 import dosbox_declarations as dec
+import dosbox_folds as folds
 import dosbox_inputs as inputs
 import dosbox_launch as dlaunch
 import dosbox_mcp
@@ -237,7 +237,7 @@ def test_no_tool_of_the_table_types_at_a_running_guests_console(
 
 
 def test_answers_while_running_is_the_table_and_the_five_that_answer_outside_a_list() -> None:
-    table = [*sorted(roster.by_method(sequence.RUNNING_OK_OPS, sequence.RUNNING_METHODS)),
+    table = [*sorted(sequence.GATE.listed(folds.METHODS)),
              "registers(from_last_stop=True)", "close", "drive", "perform", "perform_export"]
     assert table == dosbox_mcp._ANSWERS_WHILE_RUNNING
 
