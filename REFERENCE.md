@@ -10,7 +10,7 @@ The [README](README.md) is the front door. This page holds the index, the envelo
 - [Scan](docs/reference/scan.md): [`scan`](docs/reference/scan.md#scan)
 - [Write](docs/reference/write.md): [`set_register`](docs/reference/write.md#set_register), [`write`](docs/reference/write.md#write)
 - [Advance](docs/reference/advance.md): [`run_to`](docs/reference/advance.md#run_to), [`run_for`](docs/reference/advance.md#run_for), [`trace`](docs/reference/advance.md#trace), [`screen_wait`](docs/reference/advance.md#screen_wait), [`step`](docs/reference/advance.md#step), [`resume`](docs/reference/advance.md#resume), [`stop`](docs/reference/advance.md#stop)
-- [Declarations](docs/reference/declarations.md): [`breakpoint_at`](docs/reference/declarations.md#breakpoint_at), [`breakpoint_interrupt`](docs/reference/declarations.md#breakpoint_interrupt), [`watch_add`](docs/reference/declarations.md#watch_add), [`declaration_list`](docs/reference/declarations.md#declaration_list), [`declaration_clear`](docs/reference/declarations.md#declaration_clear)
+- [Declarations](docs/reference/declarations.md): [`breakpoint_at`](docs/reference/declarations.md#breakpoint_at), [`breakpoint_interrupt`](docs/reference/declarations.md#breakpoint_interrupt), [`regpoint_add`](docs/reference/declarations.md#regpoint_add), [`watch_add`](docs/reference/declarations.md#watch_add), [`declaration_list`](docs/reference/declarations.md#declaration_list), [`declaration_clear`](docs/reference/declarations.md#declaration_clear)
 - [States](docs/reference/states.md): [`state_list`](docs/reference/states.md#state_list), [`state_write`](docs/reference/states.md#state_write)
 - [Names](docs/reference/names.md): [`symbols_load`](docs/reference/names.md#symbols_load), [`symbols_find`](docs/reference/names.md#symbols_find)
 - [Comments](docs/reference/comments.md): [`comment_list`](docs/reference/comments.md#comment_list), [`comment_write`](docs/reference/comments.md#comment_write)
@@ -93,7 +93,7 @@ Every tool ends one of three ways, and one that declares no end ends `none`:
 |---|---|---|
 | `stop` | the guest back at the debugger by `BREAK`, as `stop` does (the cancelled call answers nothing, so that stop is read in the next reply's `last_stop`, its `cause` "a cancelled call's stop at SSSS:OOOOOOOO" when no declaration is at that address), or a stop it had already reached recorded as its own; a `run_to` removes the breakpoints it armed; a CPU log still open (a `trace`'s) is moved aside to `trace-cancelled-<n>.trace` in the session's captures directory (the working directory when there is none to write in) and closed | `stop`, `run_to`, `run_for`, `trace`, `screen_wait`, `perform` |
 | `kill` | the emulator closed; a close cancelled half-way still finishes | `start`, `close` |
-| `none` | the guest as the call found it | `build_check`, `status`, `log`, `log_wait`, `registers`, `read_memory`, `disassemble`, `call_stack`, `memdump`, `find`, `scan`, `debug`, `set_register`, `write`, `resume`, `step`, `state_write`, `snapshot`, `state_list`, `breakpoint_interrupt`, `symbols_load`, `symbols_find`, `comment_write`, `comment_list`, `machine_map`, `interrupt_vectors`, `palette`, `screen_view`, `screen_signature`, `map_write`, `map_find`, `series_capture`, `image_compare`, `breakpoint_at`, `declaration_list`, `declaration_clear`, `watch_add`, `send_keys`, `send_mouse`, `captures`, `capture_frame`, `perform_export`, `drive` |
+| `none` | the guest as the call found it | `build_check`, `status`, `log`, `log_wait`, `registers`, `read_memory`, `disassemble`, `call_stack`, `memdump`, `find`, `scan`, `debug`, `set_register`, `write`, `resume`, `step`, `state_write`, `snapshot`, `state_list`, `breakpoint_interrupt`, `regpoint_add`, `symbols_load`, `symbols_find`, `comment_write`, `comment_list`, `machine_map`, `interrupt_vectors`, `palette`, `screen_view`, `screen_signature`, `map_write`, `map_find`, `series_capture`, `image_compare`, `breakpoint_at`, `declaration_list`, `declaration_clear`, `watch_add`, `send_keys`, `send_mouse`, `captures`, `capture_frame`, `perform_export`, `drive` |
 
 Any other tool that meets a cancel ends `none`.
 
@@ -124,6 +124,14 @@ from the machine's own CPU mode (a selector in protected mode, a paragraph in re
 is hex with or without `0x`, never signed. **An offset is as wide as the CPU mode**: 32-bit in
 protected mode (a DJGPP `_main` sits past `0xFFFF`); in real mode anything past `0xFFFF` addresses
 nothing and is refused rather than accepted and never firing.
+
+**A registerpoint stops on a condition bound to no address** (`regpoint_add`: "who puts this
+value in this register"), through the debugger's `BPIF`, which compiles its terms once and checks
+them before every instruction, and fires as they come TRUE: one set while it already holds waits
+until it has not, and a resumed machine does not stop again at once. The debugger keeps no hit
+flag, and a condition can also hold at a stop something else made, so a stop is never attributed
+to one: `attribution.regpoints_holding` names those that hold, and `cause` calls them the likely
+maker.
 
 One debugger row is one declaration, because a clear of either of two sharing a row would disarm
 both in silence. Every arming is confirmed by **reading the debugger's list back** with one
@@ -179,7 +187,8 @@ the `instruction`, `regs`, the watches, `cause` and `e9`.
 
 The stop is read with one `EV` of every register, the flags and CR0, plus `SELINFO CS` in
 protected mode, whose D bit says `Pr16` or `Pr32`. The `instruction` is decoded as `disassemble`
-decodes it, from the bytes at CS:EIP read out of memory, never past the end of a 16-bit segment.
+decodes it, from the bytes at CS:EIP read out of memory, never past the end of a 16-bit segment,
+with `comment` when a comment is placed there.
 The nearest symbol in protected mode costs one `SELINFO CS` and only with a table loaded. The
 block is unavailable, with why, when no bytes could be read.
 
@@ -311,6 +320,13 @@ The tool: [Lists](docs/reference/lists.md) (`perform_export`).
 
 Every input goes in inside the machine and nothing about the host is touched: no window comes to the front, the host pointer never moves, no Accessibility grant is asked for, and the window's scale changes nothing the guest sees. The tools: [Input](docs/reference/input.md), [Captures](docs/reference/captures.md), [Read](docs/reference/read.md) (`screen_view`, `screen_signature`, `palette`) and [Advance](docs/reference/advance.md) (`screen_wait`).
 
+**The screen is read from video memory**: text and 13h's chained bytes through the CPU's window,
+and every mode that window cannot read whole (planar 16-colour, unchained 256-colour, 8-, 15-,
+16- and 32-bit linear) from the video RAM itself through the debugger's `VGAMEMDUMP`, which writes
+it with the four planes of each plane address interleaved and touches no register, latch or frame
+timing, so reading the screen never changes it. A 15- or 16-bit pixel's channels are widened to
+eight bits by repeating their high bits.
+
 ## Media files
 
 The tools that answer about pictures follow one order: a signature or a number first ("is it the same screen" is two strings compared, never two pictures sent), the full picture last and only from a tool whose purpose is to show. Every tool that signs or compares takes a `crop`, `[x, y, width, height]` inside the picture: one that leaves it is refused, never padded, since a padded crop compares pixels nobody drew. The tools: [Captures](docs/reference/captures.md), [Files](docs/reference/files.md), [Read](docs/reference/read.md) (`screen_view`, `screen_signature`, `palette`).
@@ -339,5 +355,7 @@ Some tools need a debugger command a build may lack; `build_check` lists the one
 | `STEPIN` | one instruction run, synchronously | `step` |
 | `SAVESTATE`, `LOADSTATE` | a saved state | `state_write` |
 | `PRESENCE` | the orange edge drawn by the emulator | the presence indicator |
+| `BPIF` | a stop when a condition on the registers comes true | `regpoint_add` |
+| `VGAMEMDUMP` | the video RAM as the VGA holds it, planes interleaved | `screen_view` and `screen_signature` in a planar, unchained or linear mode |
 
 On a build without `RUNSTATE` a session starts, every reading answers at the stop `start` leaves, and input, captures and declarations work; `resume` with no bound releases the machine and says that nothing will tell when it stops again, and `stop` brings it back to the debugger wherever it is. No DOSBox-X release carries `RUNSTATE` yet.

@@ -219,7 +219,8 @@ def test_a_stored_comment_leaves_status_declarations_unchanged() -> None:
     probe_table()
     ok(server.comment_write("add", ref="start", text="entry"))
     ok(server.comment_write("add", ref="0814:0106", text="the loop"))
-    assert ok(server.status())["declarations"] == before == {"breakpoints": 0, "watches": 0}
+    assert ok(server.status())["declarations"] == before == {
+        "breakpoints": 0, "watches": 0, "regpoints": 0}
 
 
 def test_with_only_a_comment_nothing_can_stop_the_guest(tmp_path: Path) -> None:

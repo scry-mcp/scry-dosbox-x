@@ -1,0 +1,8 @@
+VGA mode info:
+mode=M_LIN15 vref=70.007Hz href=36753.750Hz chrclk=7350750.000Hz dotclk=29403000.000Hz
+disp-start=0h real-start=0h retrace=0 scanlen=160 cursor-start=0h
+line-compare=1023 chained=1 compat-chain4=0 pel-pan=0 hline-skip=0
+byte-skip=0 addr-shift=2 rd-mode=0 wr-mode=0 rdmap-sel=0
+col-dont-care=15 color-compare=0 data-rotate=0 raster-op=00h
+fbmsk=ffffffff fmmsk=ffffffff fnmmsk=0 fsr=0 fnesr=ffffffff fesr=0 feasr=0
+complexity-flags=0x0=

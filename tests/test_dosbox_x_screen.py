@@ -10,11 +10,13 @@ from __future__ import annotations
 import asyncio
 import gzip
 import hashlib
+import importlib.util
 import os
 import re
 import struct
 import time
 import zlib
+from collections.abc import Callable
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
@@ -45,6 +47,9 @@ VGA = Path(__file__).parent / "fixtures" / "vga"
 BENCHES = ("probe-park", "probe-booted", "dos-real16", "dos-djgpp32-startup", "dos-djgpp32-ui",
            "screen-text", "screen-start80", "screen-dac01", "screen-13h", "screen-13h-start80",
            "screen-12h")
+#: The planes guest's stops, and the mode word each is in.
+PLANES = {"planes-12h": "M_EGA", "planes-modex": "M_VGA", "planes-lin8": "M_LIN8",
+          "planes-lin15": "M_LIN15", "planes-lin16": "M_LIN16", "planes-lin32": "M_LIN32"}
 
 #: Every section a map can read, for the cases that judge the whole map.
 EVERY = list(machine.SECTION_NAMES)
@@ -205,24 +210,23 @@ def test_the_13h_window_is_the_guests_diagonal_ramp() -> None:
 
 @pytest.mark.parametrize(("bench", "want"), [
     ("probe-booted", "text"), ("screen-text", "text"), ("dos-djgpp32-startup", "text"),
-    ("screen-13h", "indices"), ("screen-13h-start80", "indices")])
-def test_text_and_the_chained_256_colour_mode_are_read(bench: str, want: str) -> None:
+    ("screen-13h", "indices"), ("screen-13h-start80", "indices"),
+    ("screen-12h", "planar"), ("planes-12h", "planar"), ("planes-modex", "unchained"),
+    ("dos-real16", "linear"), ("dos-djgpp32-ui", "linear"), ("planes-lin8", "linear"),
+    ("planes-lin15", "linear"), ("planes-lin16", "linear"), ("planes-lin32", "linear")])
+def test_every_mode_with_a_decoder_names_where_it_is_read(bench: str, want: str) -> None:
     assert dvga.source_of(parsed(bench, "VGA MODE")) == want
 
 
 @pytest.mark.parametrize(("bench", "old", "new", "word", "why"), [
-    ("screen-12h", None, None, "M_EGA", "planar"),
-    ("dos-real16", None, None, "M_LIN15", "linear-frame-buffer"),
-    ("dos-djgpp32-ui", None, None, "M_LIN8", "linear-frame-buffer"),
     ("probe-park", None, None, "M_ERROR", "no video mode is set"),
-    ("screen-13h", "chained=1", "chained=0", "M_VGA", "unchained"),
-    ("screen-12h", "mode=M_EGA", "mode=M_LIN4", "M_LIN4", "planar"),
+    ("dos-real16", "mode=M_LIN15", "mode=M_LIN24", "M_LIN24", "no decoder here"),
     ("screen-12h", "mode=M_EGA", "mode=M_CGA4", "M_CGA4", "no decoder here"),
 ])
 def test_every_other_mode_is_refused_naming_its_word_and_the_capture_route(
         bench: str, old: str | None, new: str | None, word: str, why: str) -> None:
-    """The captured modes as they are, and three edited captures (the word named) for the
-    families no bench draws."""
+    """The captured mode as it is, and two edited captures (the word named) for the families no
+    bench draws."""
     text = vga(bench, "VGA MODE")
     if old is not None and new is not None:
         assert old in text
@@ -616,8 +620,8 @@ def test_the_256_colour_screen_is_320_by_200_and_its_start_moves_it_four_bytes_a
 
 
 @pytest.mark.parametrize(("bench_name", "key", "old", "new", "why"), [
-    ("screen-13h", "mode", "disp-start=0h", "disp-start=181h", "past the window"),
-    ("screen-text", "mode", "disp-start=0h", "disp-start=3831h", "past the window"),
+    ("screen-13h", "mode", "real-start=0h", "real-start=181h", "past the window"),
+    ("screen-text", "mode", "real-start=0h", "real-start=3831h", "past the window"),
     ("screen-13h", "gc", "misc=05h", "misc=0dh", "memory map select 11"),
     ("screen-text", "gc", "misc=0eh", "misc=06h", "memory map select 01"),
     ("screen-13h", "draw", "height=400", "height=0", "320 x 0"),
@@ -644,7 +648,7 @@ def test_a_screen_this_cannot_place_is_refused_rather_than_misread(
 def test_a_screen_ending_exactly_at_its_windows_end_is_read(
         bench_name: str, start: str, base: int, window: int) -> None:
     """The start one unit before the refused one: the screen's last byte is the window's."""
-    got = shape_of(bench_name, mode=("disp-start=0h", f"disp-start={start}"))
+    got = shape_of(bench_name, mode=("real-start=0h", f"real-start={start}"))
     assert got.linear - base + got.length == window
 
 
@@ -866,12 +870,20 @@ class ScreenBench(Bench):
     def __init__(self, name: str, logfile: Path | None) -> None:
         super().__init__(name, logfile)
         self.dumps: list[tuple[int, int, int]] = []
+        self.vga_dumps: list[tuple[int, int]] = []
 
     def listing(self, command: str) -> str:
         if self.launch.logfile is None or command.startswith("VGA "):
             return super().listing(command)
         self.asked.append(command)
         return listing(self.MACHINE.get(self.bench, "probe-booted"), command)
+
+    def vgamemdump(self, offset: int, length: int, dest: Path) -> Path:
+        self.vga_dumps.append((offset, length))
+        data = window(f"{self.bench}-vgamem.bin.gz")[offset:offset + length]
+        assert len(data) == length, (len(data), length)
+        dest.write_bytes(data)
+        return dest
 
     def memdump(self, seg: int, off: int, length: int, dest: Path) -> Path:
         self.dumps.append((seg, off, length))
@@ -990,16 +1002,146 @@ def test_an_attach_that_is_no_yes_or_no_is_refused_before_anything_is_typed(
     assert s.asked == [] and s.dumps == []
 
 
-@pytest.mark.parametrize(("bench_name", "word"), [
-    ("screen-12h", "M_EGA"), ("dos-real16", "M_LIN15"), ("dos-djgpp32-ui", "M_LIN8"),
-    ("probe-park", "M_ERROR")])
 def test_screen_view_and_signature_refuse_a_mode_they_do_not_read_after_one_listing(
-        tmp_path: Path, bench_name: str, word: str) -> None:
-    s = screen_bench(bench_name, tmp_path)
+        tmp_path: Path) -> None:
+    s = screen_bench("probe-park", tmp_path)
     for r in (server.screen_view(), server.screen_signature()):
         assert r["status"] == "INVALID" and r["code"] == "no_channel", r
-        assert f"`{word}`" in r["message"] and "capture_frame" in r["message"]
+        assert "`M_ERROR`" in r["message"] and "capture_frame" in r["message"]
     assert s.asked == ["VGA MODE", "VGA MODE"] and s.dumps == []
+
+
+@pytest.mark.parametrize(("bench_name", "word"), [
+    ("screen-12h", "M_EGA"), ("dos-real16", "M_LIN15"), ("dos-djgpp32-ui", "M_LIN8")])
+def test_a_mode_read_from_video_memory_is_refused_by_a_build_without_vgamemdump(
+        tmp_path: Path, bench_name: str, word: str) -> None:
+    s = screen_bench(bench_name, tmp_path)
+    s.commands = frozenset(s.commands - {dvga.VGAMEMDUMP})
+    for r in (server.screen_view(), server.screen_signature()):
+        assert r["status"] == "INVALID" and r["code"] == "no_channel", r
+        assert f"`{word}`" in r["message"] and "`VGAMEMDUMP`" in r["message"]
+        assert "`start`'s reply" in r["message"] and "build_check" not in r["message"]
+        assert "capture_frame" in r["message"]
+    assert s.dumps == [] and s.vga_dumps == []
+
+
+def _planes_known() -> Callable[[str, int, int], int | tuple[int, int, int]]:
+    """The live tier's copy of the planes guest's arithmetic, loaded by its path."""
+    spec = importlib.util.spec_from_file_location(
+        "planes_known", Path(__file__).resolve().parent / "live" / "planes_known.py")
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return cast(Callable[[str, int, int], int | tuple[int, int, int]], module.known)
+
+
+_KNOWN = _planes_known()
+
+
+def _known(bench: str, x: int, y: int) -> int | tuple[int, int, int]:
+    return _KNOWN(PLANES[bench], x, y)
+
+
+@pytest.mark.parametrize(("bench_name", "key", "old", "new", "why"), [
+    ("planes-modex", "mode", "hline-skip=0", "hline-skip=3", "panning"),
+    ("planes-12h", "mode", "pel-pan=0", "pel-pan=1", "panning"),
+    ("planes-12h", "draw", "has-split=0", "has-split=1", "a split screen"),
+    ("planes-12h", "mode", "scanlen=40", "scanlen=39", "rows of 78"),
+    ("planes-12h", "mode", "real-start=0h", "real-start=6a01h", "wraps"),
+    ("planes-modex", "mode", "real-start=0h", "real-start=f00dh", "wraps"),
+    ("planes-lin32", "mode", "real-start=0h", "real-start=35001h", "wraps"),
+    ("planes-12h", "mode", "mode=M_EGA", "mode=M_LIN4", "`M_LIN4`"),
+])
+def test_a_screen_in_video_memory_this_cannot_place_is_refused_rather_than_misread(
+        bench_name: str, key: str, old: str, new: str, why: str) -> None:
+    """A capture with one word edited: vertical panning, pixel panning, a split screen, a row
+    narrower than the screen, a frame running past the end where the CRTC wraps (one plane
+    address, or one byte, past the last that fits), a planar mode no capture measured."""
+    with pytest.raises(ds.Invalid) as got:
+        shape_of(bench_name, **{key: (old, new)})
+    assert got.value.code == "no_channel" and why in str(got.value), str(got.value)
+
+
+@pytest.mark.parametrize(("bench_name", "start", "end"), [
+    ("planes-12h", "6a00h", 0x10000 * 4), ("planes-lin32", "35000h", 0x200000)])
+def test_a_frame_ending_exactly_where_the_crtc_wraps_is_read(
+        bench_name: str, start: str, end: int) -> None:
+    """The start one unit before the refused one: 12h's 480 rows of 80 plane addresses end at
+    the 64 K `pln-mask` spans, the 32-bit frame at the 2 MB of `lin-mask`."""
+    got = shape_of(bench_name, mode=("real-start=0h", f"real-start={start}"))
+    assert got.linear + got.length == end, got
+
+
+def test_the_frame_starts_where_the_crtc_latched_it_and_steps_by_the_logical_row() -> None:
+    """`real-start` is what the frame is drawn from (`disp-start` waits for the next retrace),
+    and a logical row wider than the screen is stepped over whole."""
+    got = shape_of("planes-12h", mode=("real-start=0h", "real-start=10h"))
+    assert got.linear == 0x10 * 4, got
+    got = shape_of("planes-12h", mode=("scanlen=40", "scanlen=50"))
+    assert (got.stride, got.length) == (100 * 4, 100 * 4 * 479 + 80 * 4), got
+
+
+def test_a_mode_listing_with_no_chain_word_is_refused_not_read_as_unchained() -> None:
+    with pytest.raises(ds.Invalid) as got:
+        shape_of("screen-13h", mode=("chained=1", "nochain=1"))
+    assert got.value.code == "unexpected_answer", str(got.value)
+
+
+def test_a_16_colour_pixel_goes_through_the_colour_plane_enable_first() -> None:
+    """The emulator indexes the palette register with the pixel AND `color_plane_enable`."""
+    ac = parsed("planes-12h", "VGA AC")
+    whole = screen.ac_indices(ac)
+    two = screen.ac_indices({**ac, "color_plane_en": "03h"})
+    assert [two[n] for n in range(16)] == [whole[n & 3] for n in range(16)], two
+
+
+def test_an_indexed_picture_takes_its_colours_through_the_pel_mask(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The DAC is looked up at the index AND `pel_mask`: the pixels stay the guest's bytes and
+    the PLTE carries the colour each one shows."""
+    s = screen_bench("planes-lin8", tmp_path)
+    shape = dvga.geometry(dvga.read_listings(cast(ds.Session, s)))
+    whole = screen.pixels(cast(ds.Session, s), shape, dvga.read_screen(cast(ds.Session, s), shape))
+    info, dac = vgadac.read_dac(cast(ds.Session, s))
+    monkeypatch.setattr(vgadac, "read_dac", lambda _s: ({**info, "pel_mask": "0fh"}, dac))
+    masked = screen.pixels(cast(ds.Session, s), shape,
+                           dvga.read_screen(cast(ds.Session, s), shape))
+    assert masked.pixels == whole.pixels and masked.palette is not None
+    assert whole.palette is not None
+    assert [masked.palette[i] for i in range(256)] == [whole.palette[i & 0x0F] for i in range(256)]
+
+
+@pytest.mark.parametrize("bench", PLANES)
+def test_each_mode_read_from_video_memory_is_the_guests_own_arithmetic(
+        tmp_path: Path, bench: str) -> None:
+    s = screen_bench(bench, tmp_path)
+    shape = dvga.geometry(dvga.read_listings(cast(ds.Session, s)))
+    assert (shape.word, shape.width, shape.height) == (
+        PLANES[bench], 320 if bench == "planes-modex" else 640,
+        200 if bench == "planes-modex" else 480)
+    pic = screen.pixels(cast(ds.Session, s), shape, dvga.read_screen(cast(ds.Session, s), shape))
+    assert s.vga_dumps == [(shape.linear, shape.length)]
+    resolved = screen.ac_indices(parsed(bench, "VGA AC"))
+    for y in range(0, shape.height, 17):
+        for x in range(0, shape.width, 13):
+            want = _known(bench, x, y)
+            if pic.palette is None:
+                at = (y * shape.width + x) * 3
+                assert tuple(pic.pixels[at:at + 3]) == want, (x, y)
+            else:
+                assert isinstance(want, int)
+                got = pic.pixels[y * shape.width + x]
+                assert got == (resolved[want] if bench == "planes-12h" else want), (x, y)
+
+
+@pytest.mark.parametrize("bench", PLANES)
+def test_screen_view_and_signature_answer_in_every_mode_read_from_video_memory(
+        tmp_path: Path, bench: str) -> None:
+    screen_bench(bench, tmp_path)
+    view = cast(dict[str, Any], server.screen_view(dest=str(tmp_path / "s.png")))
+    assert view["status"] == "ok" and view["vga_mode"] == PLANES[bench], view
+    sig = cast(dict[str, Any], server.screen_signature())
+    assert sig["status"] == "ok" and sig["kind"] == "pixel" and len(sig["signature"]) == 16
 
 
 def test_screen_view_refuses_a_dest_or_a_scale_in_text_and_a_dest_already_there(
@@ -1098,13 +1240,16 @@ def test_the_attribute_controller_decides_the_colour_of_a_cell() -> None:
     bits 2-3 (10) put 0x80 on top, 0x9e. With blink (bit 3) the background's fourth bit blinks."""
     dac = [f"{i % 64:02x}0000" for i in range(256)]
     regs = ["00", "3e"] + ["00"] * 14
-    plain = {"palette": regs, "mode_control": "00h", "color_select": "00h"}
+    plain = {"palette": regs, "mode_control": "00h", "color_select": "00h",
+             "color_plane_en": "0fh"}
     assert screen.text_cells(bytes([0x41, 0x01]), plain, dac)[1:4] == bytes(
         vgadac.rgb8(dac[0x3E]))
-    selected = {"palette": regs, "mode_control": "80h", "color_select": "09h"}
+    selected = {"palette": regs, "mode_control": "80h", "color_select": "09h",
+                "color_plane_en": "0fh"}
     assert screen.text_cells(bytes([0x41, 0x01]), selected, dac)[1:4] == bytes(
         vgadac.rgb8(dac[0x9E]))
-    blink = {"palette": regs, "mode_control": "08h", "color_select": "00h"}
+    blink = {"palette": regs, "mode_control": "08h", "color_select": "00h",
+             "color_plane_en": "0fh"}
     assert screen.text_cells(bytes([0x41, 0x90]), blink, dac)[4:7] == bytes(
         vgadac.rgb8(dac[0x3E])), "background 9 blinks: register 1 shows"
     assert screen.text_cells(bytes([0x41, 0x90]), plain, dac)[4:7] == bytes(

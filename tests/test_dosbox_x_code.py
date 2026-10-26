@@ -22,6 +22,7 @@ from dosbox_x_server_support import FakeSession, clean_session, install  # noqa:
 from test_dosbox_x_machine import listing
 
 import dosbox_code as code
+import dosbox_comments as dcomments
 import dosbox_disasm as disasm
 import dosbox_grammar as grammar
 import dosbox_machine as machine
@@ -384,6 +385,17 @@ def test_disassemble_lists_start_and_names_its_calls_and_its_counter() -> None:
     assert r["summary"] == "disassemble start: 5 lines at 0814:0000010B, 16-bit"
 
 
+def test_a_comment_ends_the_disassembly_line_it_is_placed_on() -> None:
+    probe_machine()
+    load_probe_symbols()
+    assert cast(dict[str, Any], server.comment_write("add", ref="start", text="entry"))[
+        "status"] == "ok"
+    r = cast(dict[str, Any], server.disassemble(ref="start", length=16))
+    assert r["status"] == "ok", r
+    assert r["lines"][0].endswith("mov si, 0x156 // entry"), r["lines"][0]
+    assert not any(" // " in line for line in r["lines"][1:]), r["lines"]
+
+
 def test_without_a_table_there_is_nothing_resolved_and_outside_its_span_no_name() -> None:
     probe_machine()
     bare = cast(dict[str, Any], server.disassemble(ref="0814:0106", length=8))
@@ -644,6 +656,29 @@ def test_a_stop_takes_its_instruction_from_memory() -> None:
                    "symbol": {"available": False, "why": "no symbol table is loaded"},
                    "delta": {"available": False, "why": "no symbol table is loaded"}}
     assert s.d_reads == [(LOAD, 0x102, disasm.INSN_MAX)]
+
+
+def test_comments_that_cannot_be_placed_leave_the_listing_and_the_stop_whole(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    probe_machine()
+    load_probe_symbols()
+
+    def cannot(_segs: Any) -> dict[int, str]:
+        raise ds.Invalid("unexpected_answer", "no SELINFO came back")
+
+    monkeypatch.setattr(dcomments, "notes", cannot)
+    r = cast(dict[str, Any], server.disassemble(ref="start", length=4))
+    assert r["status"] == "ok" and r["lines"], r
+
+
+def test_a_stop_on_a_commented_instruction_carries_the_comment() -> None:
+    s = StoppedCode("code-stop1")
+    install()
+    dstate.STATE.session = cast(ds.Session, s)
+    assert cast(dict[str, Any], server.comment_write("add", ref="0814:0102", text="the trap"))[
+        "status"] == "ok"
+    assert running.stop_reply(cast(ds.Session, s))["instruction"]["comment"] == "the trap"
+    assert "comment" not in picture(s)["instruction"], "a bare decode knows no comment"
 
 
 def test_a_stop_reads_its_bytes_in_the_segments_own_width() -> None:

@@ -129,6 +129,7 @@ class FakeSession(SessionGates):
         self.loaded: list[tuple[str, int]] = []
         # what the address-taking tools were handed: tells a forwarded address from a forwarded zero
         self.memdump_calls: list[tuple[int, int, int]] = []
+        self.conditions: list[str] = []
 
     reap_failed = ""
     drain_ended = "the descriptor reached end of file"
@@ -325,6 +326,20 @@ class FakeSession(SessionGates):
         self.log_calls.append((pattern, limit, channel))
         self.since_marks.append(since_mark)
         return ["one line"], 500
+
+    def condition_breakpoint(self, row: str) -> str:
+        """`BPIF`, which this stand-in records and lists nothing for."""
+        self.conditions.append(row)
+        return f"DEBUG: Set conditional breakpoint: {row}"
+
+    def clear_condition_breakpoint(self, row: str) -> dict[str, object]:
+        return {"entry": f"BPIF {row}", "removed": False, "note": "no such breakpoint to remove"}
+
+    def vgamemdump(self, offset: int, length: int, dest: Path) -> Path:
+        """Video memory, which this stand-in holds none of: zeros."""
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(bytes(length))
+        return dest
 
     def memdump(self, seg: int, off: int, length: int, dest: Path) -> Path:
         """`memory` by real-mode linear address, zeros where it holds nothing."""
@@ -877,6 +892,17 @@ class NamesFake(SessionGates):
         self._relist([r for r in self.rows if r["entry"] != entry])
         return {"entry": entry, "removed": len(self.rows) < before}
 
+    def condition_breakpoint(self, row: str) -> str:
+        self._console()
+        self._listed(f"BPIF {row}")
+        return f"DEBUG: Set conditional breakpoint: {row}"
+
+    def clear_condition_breakpoint(self, row: str) -> dict[str, object]:
+        self._console()
+        before = len(self.rows)
+        self._relist([r for r in self.rows if r["entry"] != f"BPIF {row}"])
+        return {"entry": f"BPIF {row}", "removed": len(self.rows) < before}
+
     def load_symbols(self, data: bytes) -> list[tuple[str, int]]:
         if self.running:
             raise ds.Invalid("unexpected_answer",
@@ -976,7 +1002,8 @@ def build_of(conf: Path, nm_text: str, base: int = 0x400000) -> str:
 
 def _start_over_a_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
                         stamped: dict[str, str | None], double: type[NamesFake] = _Booted,
-                        conf_text: str = "[sdl]\n") -> tuple[dict[str, Any], NamesFake]:
+                        conf_text: str = "[sdl]\n",
+                        regpoints: tuple[str, ...] = ()) -> tuple[dict[str, Any], NamesFake]:
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
     conf = tmp_path / "g.conf"
     conf.write_text(conf_text, encoding="utf-8")
@@ -987,6 +1014,8 @@ def _start_over_a_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
         store.add(dec.Declaration("breakpoint", "address", ref, created_at="t0", origin="s1",
                                   fingerprint=fp or dlaunch.fingerprint(conf.resolve()),
                                   cpu_mode=mode))
+    for row in regpoints:
+        store.add(dec.Declaration("regpoint", "expr", row, created_at="t0", origin="s1"))
     monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
     stub_build(monkeypatch)
     with mock.patch("dosbox_x_server.ds.Session", lambda _l: booted):

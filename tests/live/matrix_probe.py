@@ -224,6 +224,9 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "symbols_find": {"name": FIXTURE_SYMBOL},
         "breakpoint_at": {"ref": "0000:0002"},
         "declaration_clear breakpoint": {"ref": "0000:0002"},
+        "regpoint_add": {"condition": "AX==4C00"},
+        "declaration_list regpoint": {},
+        "declaration_clear regpoint": {"ref": "AX==4C00"},
         "watch_add": {"ref": "0040:006C", "mode": "show", "length": 4},
         "declaration_clear watch": {"ref": "0040:006C"},
         "send_keys": {"keys": ["a"]},
@@ -381,6 +384,15 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                             "declaration_list breakpoint docstring: stopped, read live"),
         "declaration_clear breakpoint": (lambda r: ok(r) and r.get("declarations_cleared") == 1,
                              "declaration_clear breakpoint docstring"),
+        "regpoint_add": (lambda r: ok(r) and r.get("ref") == "AX==4C00"
+                         and r.get("state") == "armed" and r.get("entry") == "BPIF AX==4C00",
+                         "regpoint_add docstring: armed, its row read back"),
+        "declaration_list regpoint": (lambda r: ok(r) and any(
+                                          g.get("ref") == "AX==4C00" and g.get("state") == "armed"
+                                          for g in r.get("regpoints") or []),
+                                      "declaration_list regpoint docstring: stopped, read live"),
+        "declaration_clear regpoint": (lambda r: ok(r) and r.get("declarations_cleared") == 1,
+                                       "declaration_clear regpoint docstring"),
         "watch_add": (lambda r: ok(r) and r.get("state") == "evaluated",
                       "watch_add docstring: a show watch is evaluated"),
         "declaration_list watch": (lambda r: ok(r) and any(w.get("ref") == "0040:006C"
@@ -471,6 +483,12 @@ def _running(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                             "declaration_list breakpoint docstring: running, debugger_read false"),
         "declaration_clear breakpoint": (lambda r: ok(r) and r.get("declarations_cleared") == 1,
                              "declaration_clear breakpoint docstring"),
+        "regpoint_add": (lambda r: ok(r) and r.get("state") == "pending",
+                         "regpoint_add docstring: pending while the guest runs"),
+        "declaration_list regpoint": (lambda r: ok(r) and r.get("debugger_read") is False,
+                                      "declaration_list regpoint docstring: running"),
+        "declaration_clear regpoint": (lambda r: ok(r) and r.get("declarations_cleared") == 1,
+                                       "declaration_clear regpoint docstring"),
         "watch_add": (lambda r: ok(r), "watch_add docstring"),
         "declaration_list watch": (lambda r: ok(r) and r.get("debugger_read") is False,
                        "declaration_list watch docstring: running, debugger_read false"),
@@ -579,7 +597,8 @@ _STOPPED_ORDER = [
     "breakpoint_interrupt", "symbols_load", "symbols_find", "comment_write add", "comment_list",
     "comment_write save", "comment_write load", "comment_write delete", "breakpoint_at",
                   "declaration_list breakpoint",
-    "declaration_clear breakpoint", "watch_add", "declaration_list watch",
+    "declaration_clear breakpoint", "regpoint_add", "declaration_list regpoint",
+    "declaration_clear regpoint", "watch_add", "declaration_list watch",
                   "declaration_clear watch", "send_keys", "send_mouse",
     "captures", "capture_frame", "series_capture", *MEDIA_ABSENT, "perform", "drive",
     "perform_export"]
@@ -984,6 +1003,10 @@ C_CELLS = cells(
     ("C declaration_clear breakpoint of an unknown ref",
      REF_DOC + "Declarations: a ref matching nothing"),
     ("C status counts the declarations", REF_DOC + "Advancing the machine: declarations"),
+    ("C regpoint_add refuses a term the debugger does not take, naming its shape",
+     "regpoint_add docstring: Refused"),
+    ("C a registerpoint stops the guest as its condition comes true, and the stop names it",
+     "regpoint_add docstring; known: probe.asm's pause counts BX down from 700"),
     ("C run_to arrives in the probe and removes its breakpoint",
      REF_DOC + "Advancing the machine; known: probe.asm `emit`"),
     ("C a show watch rides the stop with the counter's digits",
@@ -1096,6 +1119,22 @@ def _c_declarations(p: Probe) -> None:
             holds=ok(r) and r.get("verdict") == "TARGET" and r.get("target_disarmed") is True
             and hexint(str(r.get("pc")).split(":")[-1]) == p.emit and ok(listed)
             and not any(f"{p.emit:04X}" in f and f"{p.seg:04X}" in f for f in left))
+
+
+def _c_regpoints() -> None:
+    bad = M.call(server.regpoint_add, condition="AX=13")
+    judged("C regpoint_add refuses a term the debugger does not take, naming its shape",
+           reply=bad, holds=refused(bad, "bad_argument") and "&&" in str(bad.get("message")))
+    armed = M.call(server.regpoint_add, condition="bx == 0x100")
+    r = M.call(server.resume, seconds=30)
+    regs = r.get("regs") or {}
+    cause = str(r.get("cause"))
+    judged("C a registerpoint stops the guest as its condition comes true, and the stop names it",
+           reply=r, holds=ok(armed) and armed.get("ref") == "BX==100" and ok(r)
+           and r.get("verdict") == "OTHER_STOP" and (hexint(regs.get("EBX")) or 0) & 0xFFFF == 0x100
+           and "BX==100" in cause)
+    M.call(server.declaration_clear, kind="regpoint", all=True)
+    M.setup()
 
 
 def _c_stops(p: Probe) -> None:
@@ -1270,6 +1309,7 @@ def section_c() -> None:
     _c_console()
     _c_scan()
     _c_declarations(p)
+    _c_regpoints()
     _c_stops(p)
     _c_sequences()
     _c_pending(p)

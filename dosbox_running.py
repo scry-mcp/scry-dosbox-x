@@ -10,6 +10,7 @@ from scry_core import reply_contract as contract
 
 import dosbox_arming as arming
 import dosbox_code as code
+import dosbox_comments as comments
 import dosbox_debugger as dbg
 import dosbox_grammar as grammar
 import dosbox_logs as dlogs
@@ -91,7 +92,8 @@ def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
     STATE.remember_stop(session, where, registers, held, attribution)
     # Marked under the new number, or the next contact drains this stop again.
     STATE.pending["drained_seq"] = STATE.last_stop["seq"]
-    picture = STATE.last_stop["picture"] = code.stop_instruction(session, where, registers)
+    picture = STATE.last_stop["picture"] = code.stop_instruction(session, where, registers,
+                                                                 comments.notes)
     e9 = e9_block(session)
     return st.reply(**{**base, **position(where, getattr(session, "paging", None))},
                     regs=st.shown_regs(registers), watches=watches,
@@ -107,7 +109,7 @@ def recorded_stop_reply(session: ds.Session, recorded: dict[str, Any]) -> dict[s
     watches = arming.evaluate_watches(session, machine=machine, held=list(stop["held"]))
     if "picture" not in stop:
         stop["picture"] = code.stop_instruction(session, dict(stop["where"]),
-                                                dict(stop["registers"]))
+                                                dict(stop["registers"]), comments.notes)
     return {**recorded_head(recorded), "regs": st.shown_regs(stop["registers"]),
             "watches": watches,
             "e9": e9_block(session), **copy.deepcopy(stop["picture"])}
@@ -188,9 +190,9 @@ def status_facts(session: ds.Session | None, stopped: bool) -> dict[str, Any]:
     else:
         facts["pc"] = contract.unavailable(PC_RUNNING_WHY if session.has(dbg.RUNSTATE)
                                            else PC_UNKNOWN_WHY)
-    families = {"breakpoints": 0, "watches": 0}
+    families = {"breakpoints": 0, "watches": 0, "regpoints": 0}
     for decl in (STATE.store.declarations() if STATE.store is not None else []):
-        families["watches" if decl.kind == "watch" else "breakpoints"] += 1
+        families[{"watch": "watches", "regpoint": "regpoints"}.get(decl.kind, "breakpoints")] += 1
     facts["declarations"] = families
     return facts
 

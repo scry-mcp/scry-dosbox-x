@@ -76,19 +76,19 @@ Example, from a live run:
       "reply": {
         "summary": "status: alive, stopped",
         "status": "ok",
-        "pid": 33388,
-        "conf": "$TMPDIR/dosbox-x-live-job-spxko1ca/A/tests/guest/probe.conf",
+        "pid": 25568,
+        "conf": "$TMPDIR/dosbox-x-live-job-h9lf9tcm/A/tests/guest/probe.conf",
         "conf_digest": "78bdc38f360b9b4a",
         "bound_s": 1200,
-        "elapsed_s": 12.0,
+        "elapsed_s": 12.5,
         "captures": "off",
-        "state_dir": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n632-save",
+        "state_dir": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n662-save",
         "last_stop": {
           "stop_seq": 9,
           "pc": "0814:00000130",
           "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-          "since_s": 0.9,
-          "wall_at": "2026-10-26T11:06:06+00:00"
+          "since_s": 1.3,
+          "wall_at": "2026-10-26T13:39:35+00:00"
         },
         "pending": {
           "arm": [],
@@ -100,7 +100,8 @@ Example, from a live run:
         "pc": "0814:00000130",
         "declarations": {
           "breakpoints": 0,
-          "watches": 0
+          "watches": 0,
+          "regpoints": 0
         },
         "presence": {
           "available": false,
@@ -171,15 +172,15 @@ Example, from a live run:
 
 ```json
 {
-  "dest": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n1257.json"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n1317.json"
 }
 ```
 
 ```json
 {
-  "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n1257.json",
+  "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n1317.json",
   "status": "ok",
-  "path": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n1257.json",
+  "path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n1317.json",
   "steps": 1,
   "checks": 0,
   "dropped": [],
@@ -189,7 +190,7 @@ Example, from a live run:
     "op": "resume",
     "why": "its run was stopped by the wall clock or by the machine itself, at a place inside its frame that no replayed advance reaches"
   },
-  "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n1257.json"
+  "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n1317.json"
 }
 ```
 <!-- scry-reference:end perform_export -->

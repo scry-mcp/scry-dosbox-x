@@ -20,8 +20,8 @@ S_CELLS = cells(
     ("S registers, read_memory, disassemble, machine_map and screen_view answer at the park",
      "REFERENCE.md, Debugger commands: every reading answers at the stop start leaves"),
     ("S send_keys goes in to the released guest", "REFERENCE.md, Debugger commands: input works"),
-    ("S run_to, run_for, trace, screen_wait, step and a bounded resume are refused naming "
-     "their command, before anything acts",
+    ("S run_to, run_for, trace, screen_wait, step, regpoint_add and a bounded resume are "
+     "refused naming their command, before anything acts",
      "REFERENCE.md, Debugger commands: refused `no_channel` naming it"),
     ("S resume with no bound releases, a reading after it is refused, and stop brings the "
      "machine back to readings", "REFERENCE.md, Debugger commands: stop brings it back"),
@@ -30,7 +30,8 @@ S_CELLS = cells(
 WAIT_S = 20
 #: What each refusal names; a release built without the CPU log refuses `trace` for that first.
 _NEEDS = {"run_to": ("RUNSTATE",), "run_for": ("RUNSTATE",), "trace": ("RUNSTATE", "heavy_debug"),
-          "screen_wait": ("RUNSTATE",), "step": ("STEPIN",), "resume": ("RUNSTATE",)}
+          "screen_wait": ("RUNSTATE",), "step": ("STEPIN",), "resume": ("RUNSTATE",),
+          "regpoint_add": ("BPIF",)}
 
 
 def _refused_naming(r: dict[str, Any], names: tuple[str, ...]) -> bool:
@@ -70,6 +71,7 @@ def section_s() -> None:
                                        seconds=1),
                  "screen_wait": M.call(server.screen_wait, text="C:", seconds=1),
                  "step": M.call(server.step),
+                 "regpoint_add": M.call(server.regpoint_add, condition="AX==1"),
                  "resume": M.call(server.resume, seconds=1)}
     finally:
         Session.exec = channel  # type: ignore[method-assign]

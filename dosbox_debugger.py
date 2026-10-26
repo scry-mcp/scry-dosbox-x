@@ -59,7 +59,7 @@ def missing(command: str, what: str) -> Invalid:
     """The refusal for a build whose debugger lacks `command`."""
     return Invalid("no_channel",
         f"{what} needs the debugger's `{command}` command, and this build's debugger has none "
-        f"({COMMANDS_SECTION}); `build_check` lists the ones it has as `debugger_commands`")
+        f"({COMMANDS_SECTION}); `start`'s reply lists the ones it has as `debugger_commands`")
 
 
 def no_run_state(what: str) -> Invalid:

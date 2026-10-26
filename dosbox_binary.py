@@ -34,7 +34,7 @@ HEAVY_DEBUG_MARK = b"LOGS/LOGL/LOGC [num]"
 # Compiled only with `C_DEBUG`; `-helpdebug` would list `-break-start` regardless.
 DEBUGGER_MARK = b"Debugger command not recognized"
 #: Commands a build may lack, found as the parser's NUL-bounded literals, not the help text's.
-COMMANDS = ("RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE")
+COMMANDS = ("RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMDUMP", "BPIF")
 #: The debugger with no screen, which needs no terminal or console.
 HEADLESS_MARK = b"\0debugger headless\0"
 MARKS = (HEAVY_DEBUG_MARK, DEBUGGER_MARK, HEADLESS_MARK,

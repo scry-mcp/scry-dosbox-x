@@ -16,6 +16,7 @@ import dosbox_checks as checks
 import dosbox_comments as comments
 import dosbox_find as finder
 import dosbox_placement as placement
+import dosbox_regpoints as regpoints
 import dosbox_screen as dscreen
 import dosbox_session as ds
 import dosbox_state as st
@@ -24,8 +25,10 @@ from dosbox_running import live
 from dosbox_state import STATE
 
 KINDS = tuple(one_line.DECLARATION_ROWS)
-_LISTS = {"breakpoint": arming.list_breakpoints, "watch": arming.list_watches}
-_CLEARS = {"breakpoint": arming.clear_breakpoints, "watch": arming.clear_watches}
+_LISTS = {"breakpoint": arming.list_breakpoints, "regpoint": regpoints.list_regpoints,
+          "watch": arming.list_watches}
+_CLEARS = {"breakpoint": arming.clear_breakpoints, "regpoint": regpoints.clear_regpoints,
+           "watch": arming.clear_watches}
 
 
 def check_list_declarations(kind: str = "", **_: Any) -> None:

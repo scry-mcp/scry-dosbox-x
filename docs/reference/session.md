@@ -16,7 +16,7 @@ refuses while a session is live. `binary`: omitted, `DOSBOX_X_BINARY`, else the 
 `dosbox-x`; a named build that fails is refused.
 
 Reply: `binary`, `binary_origin`, `version`, `debugger`, `heavy_debug` (`trace` needs it),
-`debugger_commands` (which of `RUNSTATE`, `STEPIN`, `SAVESTATE`, `LOADSTATE`, `PRESENCE` the build's debugger has; omitted when none).
+`debugger_commands` (which of `RUNSTATE`, `STEPIN`, `SAVESTATE`, `LOADSTATE`, `PRESENCE`, `VGAMEMDUMP`, `BPIF` the build's debugger has; omitted when none).
 
 | argument | type | default |
 |---|---|---|
@@ -40,9 +40,9 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "build_check: ~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
+  "summary": "build_check: ~/.local/state/dosbox-x-builds/scry-0198e7c32/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
   "status": "ok",
-  "binary": "~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x",
+  "binary": "~/.local/state/dosbox-x-builds/scry-0198e7c32/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
   "debugger": true,
@@ -52,7 +52,9 @@ Example, from a live run:
     "STEPIN",
     "SAVESTATE",
     "LOADSTATE",
-    "PRESENCE"
+    "PRESENCE",
+    "VGAMEMDUMP",
+    "... 1 more"
   ],
   "tools": [
     "breakpoint_at",
@@ -61,7 +63,7 @@ Example, from a live run:
     "call_stack",
     "capture_frame",
     "captures",
-    "... 45 more"
+    "... 46 more"
   ]
 }
 ```
@@ -172,47 +174,49 @@ Example, from a live run:
 
 ```json
 {
-  "conf": "$TMPDIR/dosbox-x-live-job-spxko1ca/A/tests/guest/probe.conf",
-  "cwd": "$TMPDIR/dosbox-x-live-job-spxko1ca/A/tests/guest",
+  "conf": "$TMPDIR/dosbox-x-live-job-h9lf9tcm/A/tests/guest/probe.conf",
+  "cwd": "$TMPDIR/dosbox-x-live-job-h9lf9tcm/A/tests/guest",
   "session_seconds": 1200,
-  "logfile": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n631.log",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n632-save"
+  "logfile": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n661.log",
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n662-save"
 }
 ```
 
 ```json
 {
-  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.159s",
+  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry-0198e7c32/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.106s",
   "status": "ok",
-  "pid": 33388,
-  "conf": "$TMPDIR/dosbox-x-live-job-spxko1ca/A/tests/guest/probe.conf",
+  "pid": 25568,
+  "conf": "$TMPDIR/dosbox-x-live-job-h9lf9tcm/A/tests/guest/probe.conf",
   "conf_digest": "78bdc38f360b9b4a",
   "bound_s": 1200,
-  "elapsed_s": 0.5,
+  "elapsed_s": 0.4,
   "captures": "off",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n632-save",
-  "ready_after_s": 0.159,
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n662-save",
+  "ready_after_s": 0.106,
   "argv": [
-    "~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x",
+    "~/.local/state/dosbox-x-builds/scry-0198e7c32/dosbox-x",
     "-conf",
-    "$TMPDIR/dosbox-x-live-job-spxko1ca/A/tests/guest/probe.conf",
+    "$TMPDIR/dosbox-x-live-job-h9lf9tcm/A/tests/guest/probe.conf",
     "-time-limit",
     "1200",
     "-break-start",
     "... 20 more"
   ],
-  "binary": "~/.local/state/dosbox-x-builds/scry-92d913050/dosbox-x",
+  "binary": "~/.local/state/dosbox-x-builds/scry-0198e7c32/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
   "debugger_commands": [
+    "BPIF",
     "LOADSTATE",
     "PRESENCE",
     "RUNSTATE",
     "SAVESTATE",
-    "STEPIN"
+    "STEPIN",
+    "... 1 more"
   ],
   "stub": "/path/to/scry-dosbox-x/guest/INJECT.COM",
-  "input_port": 61873,
+  "input_port": 49237,
   "background": true,
   "presence": {
     "available": false,

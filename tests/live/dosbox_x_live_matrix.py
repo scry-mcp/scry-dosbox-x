@@ -31,6 +31,7 @@ import matrix_screen  # noqa: F401
 import matrix_stock  # noqa: F401
 import matrix_trace  # noqa: F401
 import matrix_v86  # noqa: F401
+import matrix_video_memory  # noqa: F401
 import matrix_window  # noqa: F401
 from matrix_common import ENV, M, close_whatever, isolate
 from matrix_ledger import EXIT_INVALID, SUMMARY_VAR, Section

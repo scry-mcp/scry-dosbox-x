@@ -46,6 +46,16 @@ screen-13h-a000.bin.gz       64000 bytes from A000:0000, gzip.
 screen-13h-start80-a000.bin.gz  64000 bytes from A000:0140, where the display starts, gzip.
 probe-mono-page.bin          4000 bytes from B000:0000 at the probe-mono stop.
 
+THE MODES READ FROM VIDEO MEMORY, captured the same way from a build whose debugger has
+`VGAMEMDUMP` (`--version` 2026.10.01): the planes guest (`screen.conf`, `program="PLANES.COM"`,
+`break_on_int3=True`, the logfile beside the session) at its six `int 3` stops, 08BC:0000015D,
+01B3, 01C3, 01D3, 01DE and 01EE, real mode: `12h` (step 1, `M_EGA`), `modex` (2, `M_VGA`
+unchained), `lin8` (3, `M_LIN8`), `lin15` (4, `M_LIN15`), `lin16` (5, `M_LIN16`) and `lin32` (6,
+`M_LIN32`). Each `planes-<stop>-VGA_<SUB>.log.txt` is a listing as above, `VGA DACPAL` among
+them (cut to start at its own title, since the palette is read after `VGA DAC` in one
+call); each `planes-<stop>-vgamem.bin.gz` is `VGAMEMDUMP` from offset 0 over the bytes the
+stop's picture spans, the four planes of a plane address interleaved, gzip.
+
 THE TERMINAL, for the pager (probe guest, booted, a separate session with the same DAC):
 
 probe-booted-VGA_DACPAL.screen.txt  the terminal text of `VGA DACPAL` (after the ANSI strip): the

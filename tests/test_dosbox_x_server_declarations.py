@@ -172,6 +172,123 @@ def test_an_interrupt_breakpoint_is_stored_listed_cleared_and_not_double_armed(
     assert dstate.STATE.store.declarations() == []   # type: ignore[union-attr]
 
 
+def test_a_registerpoint_is_stored_listed_cleared_and_not_double_armed(tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    armed = server.regpoint_add(condition="ax == 0x13 && bl!=0")
+    assert armed["ref"] == "AX==13 && BL!=0" and armed["entry"] == "BPIF AX==13 && BL!=0", armed
+    assert [r["entry"] for r in fake.rows] == ["BPIF AX==13 && BL!=0"]
+    again = server.regpoint_add(condition="AX==13&&BL!=0")
+    assert again["already_stored"] is True and [r["entry"] for r in fake.rows] == [
+        "BPIF AX==13 && BL!=0"], "one row a condition, whatever its spelling"
+    fake.rows.append({"index": "09", "entry": "BPIF CX==1"})
+    listed = server.declaration_list("regpoint")
+    assert [(g["ref"], g["state"]) for g in listed["regpoints"]] == [
+        ("AX==13 && BL!=0", "armed")] and listed["foreign"] == {"regpoints": ["BPIF CX==1"]}, listed
+    cleared = server.declaration_clear("regpoint", all=True)
+    assert cleared["declarations_cleared"] == 1 and cleared["disarmed"] == [
+        "BPIF AX==13 && BL!=0"], cleared
+    assert [r["entry"] for r in fake.rows] == ["BPIF CX==1"]
+
+
+@pytest.mark.parametrize(("condition", "says"), [
+    ("AL==100", "AL holds 8 bits"), ("AX==10000", "AX holds 16 bits"),
+    ("CS==10000", "CS holds 16 bits"), ("ES==10000", "ES holds 16 bits"),
+    ("AX=13", "not a term"),
+    ("AX==1 && BX==2 && CX==3 && DX==4 && SI==5", "at most 4 terms"),
+    ("AX==-1", "not a term"), ("", "not a term")])
+def test_a_condition_the_debugger_would_never_meet_is_refused_before_anything_is_armed(
+        tmp_path: Path, condition: str, says: str) -> None:
+    fake = _names(tmp_path)
+    got = server.regpoint_add(condition=condition)
+    assert got["status"] == "INVALID" and says in str(got["message"]), got
+    assert fake.rows == [] and arming.current_store().declarations() == []
+
+
+@pytest.mark.parametrize("condition", ["AL==FF", "AX==FFFF", "EAX==FFFFFFFF",
+                                       "FLAGS==FFFFFFFF", "EIP==0x10000"])
+def test_a_value_at_its_registers_width_is_taken(tmp_path: Path, condition: str) -> None:
+    _names(tmp_path)
+    assert server.regpoint_add(condition=condition)["status"] == "ok"
+
+
+def test_the_flags_term_is_judged_on_all_32_bits_as_the_debugger_compares_them() -> None:
+    from dosbox_grammar import condition_holds
+    regs = {"EFLAGS": "00020202", "EAX": "00001234"}
+    assert condition_holds("FLAGS==20202", regs) is True
+    assert condition_holds("FLAGS==202", regs) is False
+    assert condition_holds("AH==12 && AL==34", regs) is True
+
+
+def test_a_holding_registerpoint_is_named_but_never_taken_for_the_stops_maker(
+        tmp_path: Path) -> None:
+    """`BPIF` keeps no hit flag and a condition can hold at a stop something else made, so the
+    stop stays unattributed: what reads `attributed` (a retrace cut, `run_to`'s arrival) must
+    not see a declared stop, and `cause` names the registerpoint as the likely one."""
+    fake = _names(tmp_path)
+    held = [{"index": "00", "entry": "BPIF DS!=0"}]
+    where = {"cs": "0814", "eip": "00000106", "mode": "real"}
+    got = arming.attribute_stop(cast(ds.Session, fake), where=where,
+                                machine=("real", {"DS": "0814"}), held=held)
+    assert got["attributed"] is False and got["regpoints_holding"] == ["DS!=0"], got
+    assert "registerpoint DS!=0" in dstate.cause(got), dstate.cause(got)
+    dstate.STATE.retrace_pending = True
+    got = arming.attribute_stop(cast(ds.Session, fake), where=where,
+                                machine=("real", {"DS": "0814"}), held=held,
+                                retrace_may_stop=True)
+    assert got["retrace_pending"] is True and got["regpoints_holding"] == ["DS!=0"], got
+    assert "registerpoint DS!=0" in dstate.cause(got), dstate.cause(got)
+
+
+def test_a_registerpoint_declared_while_running_is_armed_at_the_next_stop_and_cleared_queued(
+        tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    fake.halted = True
+    server.resume()
+    fake.running, fake.halted = True, False
+    queued = server.regpoint_add(condition="DX==3DA")
+    assert queued["state"] == "pending" and fake.rows == [], queued
+    fake.running, fake.halted = False, True
+    stop = server.resume()
+    assert stop["applied_on_stop"]["armed"] == ["DX==3DA"], stop["applied_on_stop"]
+    assert [r["entry"] for r in fake.rows] == ["BPIF DX==3DA"]
+    server.resume()
+    fake.running, fake.halted = True, False
+    cleared = server.declaration_clear("regpoint", ref="DX==3DA")
+    assert cleared["pending_disarm"] == ["DX==3DA"], cleared
+    fake.running, fake.halted = False, True
+    stop = server.resume()
+    assert stop["applied_on_stop"]["disarmed"] == ["BPIF DX==3DA"] and fake.rows == [], stop
+
+
+def test_a_registerpoint_is_cleared_by_any_spelling_regpoint_add_takes(tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    server.regpoint_add(condition="AX==13")
+    unknown = server.declaration_clear("regpoint", ref="AX==14")
+    assert unknown["status"] == "INVALID" and "regpoint" in str(unknown["message"]) \
+        and "watch" not in str(unknown["message"]), unknown
+    cleared = server.declaration_clear("regpoint", ref="ax == 0x13")
+    assert cleared["declarations_cleared"] == 1 and fake.rows == [], cleared
+
+
+def test_a_registerpoint_the_debugger_refused_is_not_kept(tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+
+    def refuse(row: str) -> str:
+        raise ds.Invalid("unexpected_answer", "no BPIF row came back")
+
+    fake.condition_breakpoint = refuse  # type: ignore[method-assign]
+    assert server.regpoint_add(condition="AX==1")["status"] == "INVALID"
+    assert server.declaration_list("regpoint")["regpoints"] == []
+
+
+def test_a_build_without_bpif_refuses_a_registerpoint_naming_it(tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    fake.commands = frozenset(c for c in fake.commands if c != "BPIF")
+    got = server.regpoint_add(condition="AX==1")
+    assert got["status"] == "INVALID" and got["code"] == "no_channel" and "BPIF" in str(
+        got["message"]), got
+
+
 def test_every_tool_declares_a_title_and_the_readers_a_read_only_hint() -> None:
     """`title` is what the client shows; `readOnlyHint` is what lets it run readers in parallel."""
     tools = {t.name: t for t in server.mcp._tool_manager.list_tools()}
@@ -738,14 +855,27 @@ def test_a_re_arm_at_start_that_cannot_read_the_list_is_said_not_fatal(
         def breakpoints(self) -> list[dict[str, str]]:
             raise ds.Invalid("unexpected_answer", "no BPLIST header came back")
 
-    got, _ = _start_over_a_store(tmp_path, monkeypatch, {"00A7:0100": None}, CutList)
+    got, _ = _start_over_a_store(tmp_path, monkeypatch, {"00A7:0100": None}, CutList,
+                                 regpoints=("AX==13",))
     assert got["status"] == "ok", got
     assert "no BPLIST header" in got["rearm_refused"], got
     rearm = got["declarations"]["rearm"]
-    assert rearm["stale"] == [] and [r["ref"] for r in rearm["unarmable"]] == ["00A7:0100"], rearm
+    assert rearm["stale"] == [] and [r["ref"] for r in rearm["unarmable"]] == [
+        "00A7:0100", "AX==13"], rearm
     assert "no BPLIST header" in rearm["unarmable"][0]["why"], rearm
     assert dstate.STATE.session is not None
-    assert [d.ref for d in dstate.STATE.store.declarations()] == ["00A7:0100"]  # type: ignore[union-attr]
+    assert [d.ref for d in dstate.STATE.store.declarations()] == [  # type: ignore[union-attr]
+        "00A7:0100", "AX==13"]
+
+
+def test_start_arms_a_stored_registerpoint_again(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A condition names no address, so no build makes it stale: `start` arms it as it parks."""
+    got, booted = _start_over_a_store(tmp_path, monkeypatch, {}, regpoints=("AX==13",))
+    assert got["status"] == "ok", got
+    assert [r["entry"] for r in booted.rows] == ["BPIF AX==13"], booted.rows
+    listed = server.declaration_list("regpoint")["regpoints"]
+    assert [(g["ref"], g["state"]) for g in listed] == [("AX==13", "armed")], listed
 
 
 def test_start_with_nothing_to_re_arm_does_not_read_the_list(
@@ -1018,14 +1148,15 @@ def test_every_tool_names_its_summary_and_declares_both_hints() -> None:
 
 def test_status_counts_the_declarations_as_the_lists_list_them(tmp_path: Path) -> None:
     _names(tmp_path, mode="Real", cs="0749", ds_="0749")
-    assert server.status()["declarations"] == {"breakpoints": 0, "watches": 0}
+    assert server.status()["declarations"] == {"breakpoints": 0, "watches": 0, "regpoints": 0}
     server.breakpoint_at(ref="0749:0010")
     server.breakpoint_interrupt(number=0x21)
     server.watch_add(ref="0749:0020", mode="show", length=2)
     got = cast(dict[str, Any], server.status())["declarations"]
     assert got == {"breakpoints": len(server.declaration_list("breakpoint")["breakpoints"]),
-                   "watches": len(server.declaration_list("watch")["watches"])} == {
-                       "breakpoints": 2, "watches": 1}, got
+                   "watches": len(server.declaration_list("watch")["watches"]),
+                   "regpoints": len(server.declaration_list("regpoint")["regpoints"])} == {
+                       "breakpoints": 2, "watches": 1, "regpoints": 0}, got
 
 
 def test_status_counts_the_declarations_on_a_running_machine_too(tmp_path: Path) -> None:
@@ -1034,7 +1165,7 @@ def test_status_counts_the_declarations_on_a_running_machine_too(tmp_path: Path)
     fake.running = True
     got = cast(dict[str, Any], server.status())
     assert got["pc"]["available"] is False, got
-    assert got["declarations"] == {"breakpoints": 1, "watches": 0}, got
+    assert got["declarations"] == {"breakpoints": 1, "watches": 0, "regpoints": 0}, got
 
 
 @pytest.mark.parametrize(("shared", "said"), [(False, "headless"), (True, "shared")])

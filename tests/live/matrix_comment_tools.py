@@ -47,6 +47,8 @@ N_CELLS = cells(
      "comment_write add: docstring at one comment per place"),
     ("N a raw 0814:0106 comment lands at 00008246", "REFERENCE.md, Declarations: real mode"),
     ("N comment_list holds the two, each resolved", "comment_list docstring"),
+    ("N disassemble ends each commented line with its text, and only those",
+     "disassemble docstring: a line a comment is placed on ends ` // <text>`"),
     ("N status declarations do not count a comment", "REFERENCE.md, Declarations"),
     ("N comment_write save writes the header and the two rows the contract spells",
      "REFERENCE.md, Declarations: the comment file"),
@@ -189,6 +191,13 @@ def _known_answers(counted: object) -> None:
     rows = [r for r in _listed() if r["ref"] in ("start", "0814:0106")]
     M.judge("N comment_list holds the two, each resolved",
             len(rows) == 2 and all(r.get("state") == "resolved" for r in rows), str(rows)[:160])
+    d = M.call(server.disassemble, ref="0814:0106", length=8)
+    lines = [str(x) for x in d.get("lines") or []]
+    # The eight bytes are the settle loop's three instructions and `start`'s first.
+    judged("N disassemble ends each commented line with its text, and only those", reply=d,
+           holds=ok(d) and len(lines) == 4 and lines[0].endswith(" // the settle loop")
+           and lines[3].endswith(" // entry, aliased")
+           and not any(" // " in x for x in lines[1:3]))
     s = M.call(server.status)
     judged("N status declarations do not count a comment", reply=s,
            holds=ok(s) and s.get("declarations") == counted)

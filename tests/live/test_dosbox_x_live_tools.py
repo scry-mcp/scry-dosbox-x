@@ -157,7 +157,34 @@ def test_status_reports_the_live_session_and_not_a_remembered_one() -> None:
     assert later.get("output_bytes_dropped", 0) == 0, (
         "the emulator's output overflowed on an idle session: the drain is not keeping up")
     assert first["pc"] == "F000:0000FFF0" and first["cpu_mode"] == "real", first
-    assert first["declarations"] == {"breakpoints": 0, "watches": 0}, first
+    assert first["declarations"] == {"breakpoints": 0, "watches": 0, "regpoints": 0}, first
+
+
+def test_a_registerpoint_stops_the_guest_as_its_condition_comes_true() -> None:
+    """`regpoint_add` arms the debugger's `BPIF`: the stop comes with the register at the value
+    and its cause names the registerpoint; the clear takes the row out of the debugger."""
+    start_ok(session_seconds=120)
+    armed = cast(dict[str, Any], server.regpoint_add(condition="bx == 0x100"))
+    assert armed["status"] == "ok" and armed["ref"] == "BX==100", armed
+    stop = cast(dict[str, Any], server.resume(seconds=60))
+    assert stop.get("verdict") == "OTHER_STOP", stop
+    assert int(stop["regs"]["EBX"], 16) & 0xFFFF == 0x100 and "BX==100" in str(stop["cause"])
+    cleared = cast(dict[str, Any], server.declaration_clear("regpoint", all=True))
+    assert cleared["declarations_cleared"] == 1 and cleared["disarmed"] == ["BPIF BX==100"]
+
+
+def test_a_registerpoint_at_the_most_terms_and_digits_is_listed_back_whole() -> None:
+    """Four terms of eight digits, the longest condition `BPIF` takes: its `BPLIST` row must
+    come back as sent, or the arm is refused and the debugger keeps a row nothing declared."""
+    start_ok(session_seconds=60)
+    widest = "EAX==FFFFFFFF && EBX==FFFFFFFF && ECX==FFFFFFFF && EDX==FFFFFFFF"
+    armed = cast(dict[str, Any], server.regpoint_add(condition=widest))
+    assert armed["status"] == "ok" and armed["entry"] == f"BPIF {widest}", armed
+    listed = cast(dict[str, Any], server.declaration_list("regpoint"))
+    assert [g["state"] for g in listed["regpoints"]] == ["armed"] and not listed.get(
+        "foreign"), listed
+    assert cast(dict[str, Any], server.declaration_clear("regpoint", all=True))[
+        "disarmed"] == [f"BPIF {widest}"]
 
 
 _TRAP_AT = "0050:00F0"

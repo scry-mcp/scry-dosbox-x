@@ -120,33 +120,46 @@ TEXT = "text"
 INDICES = "indices"
 
 
-PLANAR_WORDS = frozenset({"M_EGA", "M_LIN4"})
+#: The sources read from video memory itself (`VGAMEMDUMP`), not through the CPU's window.
+PLANAR, UNCHAINED, LINEAR = "planar", "unchained", "linear"
+MEMORY_SOURCES = frozenset({PLANAR, UNCHAINED, LINEAR})
+#: The command those sources are read through, which a build may lack.
+VGAMEMDUMP = "VGAMEMDUMP"
 
 
-LINEAR_WORDS = frozenset({"M_LIN8", "M_LIN15", "M_LIN16", "M_LIN24", "M_LIN32"})
+PLANAR_WORDS = frozenset({"M_EGA"})
+
+
+#: The linear modes decoded, by bytes a pixel; `M_LIN24` has no decoder.
+LINEAR_BYTES = {"M_LIN8": 1, "M_LIN15": 2, "M_LIN16": 2, "M_LIN32": 4}
 
 
 def source_of(mode: dict[str, Any]) -> str:
-    """`text` or `indices` (chained 256-colour) off `VGA MODE`; any other mode is refused."""
+    """Where `VGA MODE`'s mode is read from: `text` and `indices` (chained 256-colour) through
+    the CPU's window, `planar`, `unchained` and `linear` from video memory; any other mode is
+    refused."""
     word = mode.get("mode")
     if word == "M_TEXT":
         return TEXT
-    if word == "M_VGA" and mode.get("chained") == "1":
-        return INDICES
-    if word in PLANAR_WORDS or word == "M_VGA":
-        why = ("a planar or unchained mode: the CPU window answers one plane per read, and "
-               "choosing the plane writes a Graphics Controller register")
-    elif word in LINEAR_WORDS:
-        why = ("a linear-frame-buffer mode: the debugger's segmented dump does not reach the "
-               "buffer in real mode, and no route to it is offered here in protected mode")
-    elif word == "M_ERROR":
+    if word == "M_VGA":
+        if "chained" not in mode:
+            raise ds.Invalid("unexpected_answer",
+                "`VGA MODE` says M_VGA with no `chained` word, so whether 256 colours are read "
+                "chained or unchained cannot be told")
+        return INDICES if mode["chained"] == "1" else UNCHAINED
+    if word in PLANAR_WORDS:
+        return PLANAR
+    if word in LINEAR_BYTES:
+        return LINEAR
+    if word == "M_ERROR":
         why = "no video mode is set yet, as before the BIOS sets one"
     else:
         why = "a mode no decoder here is written for"
     raise ds.Invalid("no_channel",
-        f"the screen is in `{word}`, {why}. The screen is read from video memory only in a text "
-        f"mode and in the chained 256-colour mode (13h's); the image of what was displayed is "
-        f"`capture_frame`, on a session started with `start(capture_video=True, program=...)`")
+        f"the screen is in `{word}`, {why}. The screen is read in text, 256-colour (chained or "
+        f"not), 16-colour planar and 8-, 15-, 16- and 32-bit linear modes; the image of what was "
+        f"displayed is `capture_frame`, on a session started with "
+        f"`start(capture_video=True, program=...)`")
 
 
 def hex_word(text: str) -> int:
@@ -189,6 +202,8 @@ class Geometry:
     length: int
     display_start: str
     cursor: list[int] | None
+    #: Dump bytes from one row's first to the next's, for a source read from video memory.
+    stride: int = 0
 
     def head(self) -> dict[str, Any]:
         """The reply's account of the screen."""
@@ -208,17 +223,24 @@ def geometry(listings: dict[str, dict[str, Any]]) -> Geometry:
         height = int(draw["height"]) // lines_per_row if lines_per_row > 0 else 0
         width = int(draw["blocks"]) if source == TEXT else int(draw["width"])
         shift = int(mode["addr_shift"])
-        start = hex_word(mode["disp_start"]) << shift
+        start = hex_word(mode["real_start"]) << shift
         row_bytes = int(mode["scanlen"]) << (shift + 1)
         memory_map = (hex_word(gc["misc"]) >> MEMORY_MAP_SHIFT) & 0b11
         cursor_at = hex_word(crtc["curs_loc"]) - hex_word(mode["disp_start"])
         cursor_on = draw["curs_en"] == "1"
-        plain = (draw["has_split"], mode["pel_pan"], mode["byte_skip"]) == ("0", "0", "0")
+        plain = (draw["has_split"], mode["pel_pan"], mode["byte_skip"],
+                 mode["hline_skip"]) == ("0", "0", "0", "0")
+        wraps_at = {LINEAR: int(draw["lin_mask"], 16) + 1,
+                    PLANAR: int(draw["pln_mask"], 16) + 1,
+                    UNCHAINED: int(draw["pln_mask"], 16) + 1}.get(source, 0)
     except (KeyError, ValueError) as e:
         raise ds.Invalid("unexpected_answer",
             f"the `VGA` listings lack a word the screen is placed by, or print it in another "
             f"shape: {e}") from None
     word = str(mode.get("mode"))
+    if source in MEMORY_SOURCES:
+        return _in_memory(word, source, width, height, start, row_bytes, plain,
+                          str(mode["disp_start"]), wraps_at)
     bases = TEXT_BASES if source == TEXT else INDEXED_BASES
     if memory_map not in bases or width <= 0 or height <= 0:
         raise ds.Invalid("no_channel",
@@ -239,6 +261,43 @@ def geometry(listings: dict[str, dict[str, Any]]) -> Geometry:
         cursor = [cursor_at % width, cursor_at // width]
     return Geometry(word, source, width, height, bases[memory_map] + start, length,
                     str(mode["disp_start"]), cursor)
+
+
+#: Pixels one plane address holds across its planes: eight in a planar mode, four unchained.
+PIXELS_PER_ADDRESS = {PLANAR: 8, UNCHAINED: 4}
+#: Plane addresses hold one byte of each of the four planes, interleaved in the dump.
+PLANES = 4
+
+
+def _in_memory(word: str, source: str, width: int, height: int, start: int, row: int,
+               plain: bool, display_start: str, wraps_at: int) -> Geometry:
+    """The span of video memory a planar, unchained or linear screen occupies: in a planar or
+    unchained mode `start` and `row` count plane addresses, four dump bytes each; in a linear
+    mode they count bytes. A logical row wider than the screen is read; a narrower one, a split
+    screen, panning or a frame running past `wraps_at` (where the CRTC's address wraps, in the
+    same units) is refused."""
+    if source == LINEAR:
+        unit, per_row = 1, width * LINEAR_BYTES[word]
+    else:
+        per = PIXELS_PER_ADDRESS[source]
+        if width % per:
+            raise ds.Invalid("no_channel",
+                f"`{word}` is {width} pixels wide, not a whole number of plane addresses of "
+                f"{per}, so its bytes are not read as a picture they would misplace")
+        unit, per_row = PLANES, width // per
+    if width <= 0 or height <= 0 or row < per_row or not plain:
+        raise ds.Invalid("no_channel",
+            f"`{word}` is laid out in a way this does not decode (rows of {row} for a screen "
+            f"needing {per_row}, a split screen, or panning), so its bytes are not read as a "
+            f"picture they would misplace")
+    end = start + row * (height - 1) + per_row
+    if end > wraps_at:
+        raise ds.Invalid("no_channel",
+            f"`{word}`'s frame starts at {start:X} and runs to {end:X}, past {wraps_at:X} where "
+            f"the CRTC's address wraps: where it wraps is not read here")
+    stride = row * unit
+    return Geometry(word, source, width, height, start * unit,
+                    stride * (height - 1) + per_row * unit, display_start, None, stride)
 
 
 #: Data-segment descriptor types: expand-up, read-only or read/write, accessed or not.
@@ -314,6 +373,17 @@ def read_listings(session: ds.Session) -> dict[str, dict[str, Any]]:
 
 
 def read_screen(session: ds.Session, shape: Geometry) -> bytes:
-    """The screen's bytes, reached through the address `selector_for` chooses at this stop."""
+    """The screen's bytes: from video memory itself for a planar, unchained or linear mode, else
+    through the address `selector_for` chooses at this stop."""
+    if shape.source in MEMORY_SOURCES:
+        if not session.has(VGAMEMDUMP):
+            raise ds.Invalid("no_channel",
+                f"the screen is in `{shape.word}`, read from video memory through the debugger's "
+                f"`{VGAMEMDUMP}` command, and this build's debugger has none; `start`'s reply "
+                f"lists the ones it has as `debugger_commands`, and `capture_frame` is the image "
+                f"of what was displayed")
+        with tempfile.TemporaryDirectory(prefix="dosbox-x-screen-") as scratch:
+            return session.vgamemdump(shape.linear, shape.length,
+                                      Path(scratch) / "screen.bin").read_bytes()
     seg, off = selector_for(shape.linear, shape.length, read_tables(session))
     return dump(session, seg, off, shape.length)

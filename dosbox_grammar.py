@@ -103,6 +103,84 @@ def parse_interrupt_row(row: str) -> tuple[int, int | None]:
     return int(m.group(1), 16), (int(m.group(2), 16) if m.group(2) is not None else None)
 
 
+#: The registers `BPIF` compares, as the debugger spells them, and its comparisons.
+CONDITION_REGISTERS = ("EAX", "EBX", "ECX", "EDX", "ESI", "EDI", "EBP", "ESP", "EIP",
+                       "AX", "BX", "CX", "DX", "SI", "DI", "BP", "SP", "IP",
+                       "AL", "BL", "CL", "DL", "AH", "BH", "CH", "DH",
+                       "CS", "DS", "ES", "FS", "GS", "SS", "FLAGS")
+CONDITION_OPS = ("==", "!=", "<=", ">=", "<", ">")
+CONDITION_TERMS_MAX = 4
+#: A `BPLIST` row of a condition breakpoint opens with this.
+CONDITION_ROW = "BPIF "
+
+
+def condition_bits(register: str) -> int:
+    """How wide `BPIF` reads a register: the flags are `reg_flags` whole."""
+    if register == "FLAGS" or (len(register) == 3 and register[0] == "E"):
+        return 32
+    return 8 if register[1] in "LH" and register[0] in "ABCD" else 16
+
+
+_TERM = re.compile(r"\s*([A-Za-z]+)\s*(==|!=|<=|>=|<|>)\s*(?:0[xX])?([0-9A-Fa-f]{1,8})\s*$")
+
+
+def condition_row(text: str) -> str:
+    """`text` as `BPIF` prints it back (`AX==13 && BX!=0`: registers upper-cased, values bare
+    hex), or a refusal saying what it takes."""
+    terms = text.split("&&")
+    shown: list[str] = []
+    for term in terms:
+        m = _TERM.fullmatch(term)
+        if m is None or m.group(1).upper() not in CONDITION_REGISTERS:
+            raise Invalid("bad_argument",
+                f"{term.strip()!r} is not a term `BPIF` takes: a register "
+                f"({', '.join(CONDITION_REGISTERS)}), a comparison "
+                f"({' '.join(CONDITION_OPS)}) and a hex value, terms joined by `&&`")
+        register, value = m.group(1).upper(), int(m.group(3), 16)
+        if value >> (bits := condition_bits(register)):
+            raise Invalid("bad_argument", f"{term.strip()!r} can never hold: {register} holds "
+                          f"{bits} bits, and {value:X} is wider")
+        shown.append(f"{register}{m.group(2)}{value:X}")
+    if len(shown) > CONDITION_TERMS_MAX:
+        raise Invalid("bad_argument", f"a condition holds at most {CONDITION_TERMS_MAX} terms; "
+                      f"got {len(shown)}")
+    return " && ".join(shown)
+
+
+def _register(regs: dict[str, str], name: str) -> int | None:
+    """`name`'s value from a stop's 32-bit registers, its 16- or 8-bit part named; None when the
+    stop carries no such register."""
+    if name in regs:
+        return int(regs[name], 16)
+    if name == "FLAGS":
+        flags = regs.get("EFLAGS")
+        return None if flags is None else int(flags, 16)
+    if len(name) == 2 and name[0] in "ABCD" and name[1] in "LH":
+        wide = regs.get(f"E{name[0]}X")
+        if wide is None:
+            return None
+        return int(wide, 16) >> (8 if name[1] == "H" else 0) & 0xFF
+    wide = regs.get(f"E{name}")
+    return None if wide is None else int(wide, 16) & 0xFFFF
+
+
+def condition_holds(row: str, regs: dict[str, str]) -> bool | None:
+    """Whether a canonical condition holds for a stop's registers; None when one it names is
+    not among them."""
+    for term in row.split(" && "):
+        m = _TERM.fullmatch(term)
+        if m is None:
+            return None
+        value = _register(regs, m.group(1))
+        if value is None:
+            return None
+        want, op = int(m.group(3), 16), m.group(2)
+        if not {"==": value == want, "!=": value != want, "<=": value <= want,
+                ">=": value >= want, "<": value < want, ">": value > want}[op]:
+            return False
+    return True
+
+
 def bp_row_target(entry: str) -> tuple[str, int, int] | None:
     """A BPLIST row as `(kind, seg, off)`, by value: one offset prints at several widths."""
     m = _BP_ROW_ADDR.match(entry.strip())

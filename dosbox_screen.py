@@ -1,4 +1,4 @@
-"""What the DOS machine's screen shows at a stop, in a text mode or the chained 256-colour mode."""
+"""What the DOS machine's screen shows at a stop, in a text mode or a graphics mode."""
 from __future__ import annotations
 
 from collections.abc import Sequence
@@ -12,6 +12,7 @@ import dosbox_dac as vgadac
 import dosbox_paths as paths
 import dosbox_session as ds
 import dosbox_vga as vga
+import dosbox_video_memory as video
 
 #: The IBM PC's glyphs for the control bytes 01-1F.
 CONTROL_GLYPHS = "☺☻♥♦♣♠•◘○◙♂♀♪♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼"
@@ -28,22 +29,34 @@ def text_rows(page: bytes, width: int, height: int) -> list[str]:
             for r in range(height)]
 
 
-def text_cells(page: bytes, ac: dict[str, Any], dac: list[str]) -> bytes:
-    """Each text cell as `scry_core.raster` hashes it: CP437 byte, then foreground and
-    background RGB as the VGA resolves them (AC palette register, `color-select`, then the DAC).
-    With `mode_control` bit 3 (blink) the background has three bits and the fourth blinks."""
+def ac_indices(ac: dict[str, Any]) -> bytes:
+    """The DAC entry each of the sixteen colours resolves to: the colour masked by
+    `color-plane-en`, its AC palette register, then `color-select` (bits 5-4 replacing the
+    register's when `mode_control` bit 7 says so)."""
     try:
         regs = [int(r, 16) for r in ac["palette"]]
         mode_control, select = vga.hex_word(ac["mode_control"]), vga.hex_word(ac["color_select"])
+        enabled = vga.hex_word(ac["color_plane_en"]) & 0x0F
     except (KeyError, ValueError) as e:
-        raise ds.Invalid("unexpected_answer", f"`VGA AC` lacks a word a text cell's colour is "
-                         f"resolved by, or prints it in another shape: {e}") from None
-    blink = bool(mode_control & 0x08)
+        raise ds.Invalid("unexpected_answer", f"`VGA AC` lacks a word a colour is resolved "
+                         f"by, or prints it in another shape: {e}") from None
 
     def index(nibble: int) -> int:
-        reg = regs[nibble]
+        reg = regs[nibble & enabled]
         low = ((select & 0x03) << 4 | reg & 0x0F) if mode_control & 0x80 else reg & 0x3F
         return (select & 0x0C) << 4 | low
+    return bytes(index(n) for n in range(16))
+
+
+def text_cells(page: bytes, ac: dict[str, Any], dac: list[str]) -> bytes:
+    """Each text cell as `scry_core.raster` hashes it: CP437 byte, then foreground and
+    background RGB as the VGA resolves them (`ac_indices`, then the DAC). With `mode_control`
+    bit 3 (blink) the background has three bits and the fourth blinks."""
+    resolved = ac_indices(ac)
+    blink = bool(vga.hex_word(ac["mode_control"]) & 0x08)
+
+    def index(nibble: int) -> int:
+        return resolved[nibble]
 
     lut = vgadac.dac_colours(dac)
     out = bytearray()
@@ -92,8 +105,7 @@ def screen_view(session: ds.Session, crop: Sequence[int] | None, scale: int, des
                      and x0 <= cursor[0] < x0 + w and y0 <= cursor[1] < y0 + h else
                      unavailable("the cursor is hidden or outside the crop"))
     else:
-        _, dac = vgadac.read_dac(session)
-        whole = png.Raster(shape.width, shape.height, data, tuple(vgadac.rgb8(e) for e in dac))
+        whole = pixels(session, shape, data)
         reply["image"] = picture.publish(raster.cropped(whole, area), scale, dest, scratch,
                                          "screen", attach=attach)
     reply["display_start"] = shape.display_start
@@ -111,15 +123,37 @@ def screen_signature(session: ds.Session, crop: Sequence[int] | None) -> dict[st
             "kind": read.kind, **shape.head(), "crop": area}
 
 
+def shown_dac(session: ds.Session) -> list[str]:
+    """The DAC entry each index shows: the DAC is looked up at the index AND the PEL mask."""
+    info, dac = vgadac.read_dac(session)
+    mask = vga.hex_word(info.get("pel_mask", "ffh"))
+    return [dac[i & mask] for i in range(len(dac))]
+
+
 def grid(session: ds.Session) -> tuple[screen_map.Grid, vga.Geometry]:
     """ONE read of the screen as `scry_core.raster` signs it, and its shape."""
     shape = vga.geometry(vga.read_listings(session))
     data = vga.read_screen(session, shape)
-    _, dac = vgadac.read_dac(session)
     if shape.source == vga.TEXT:
+        dac = shown_dac(session)
         return screen_map.Grid("text", shape.width, shape.height,
                                text_cells(data, vga.listed(session, vga.COMMAND_OF["ac"]),
                                           dac)), shape
-    lut = vgadac.dac_colours(dac)
     return screen_map.Grid("pixel", shape.width, shape.height,
-                           b"".join(lut[i] for i in data)), shape
+                           raster.rgb(pixels(session, shape, data))), shape
+
+
+def pixels(session: ds.Session, shape: vga.Geometry, data: bytes) -> png.Raster:
+    """The picture `data` holds in `shape`'s mode: indices with the DAC as their palette, or
+    RGB in a 15-, 16- or 32-bit linear mode, which uses no palette."""
+    if shape.source == vga.LINEAR and vga.LINEAR_BYTES[shape.word] > 1:
+        return png.Raster(shape.width, shape.height, video.rgb(shape, data))
+    dac = shown_dac(session)
+    if shape.source == vga.PLANAR:
+        resolved = ac_indices(vga.listed(session, vga.COMMAND_OF["ac"]))
+        indices = video.planar(shape, data).translate(resolved + bytes(range(16, 256)))
+    elif shape.source in vga.MEMORY_SOURCES:
+        indices = video.indices(shape, data)
+    else:
+        indices = data
+    return png.Raster(shape.width, shape.height, indices, tuple(vgadac.rgb8(e) for e in dac))

@@ -13,6 +13,7 @@ run past the end is refused.
 from __future__ import annotations
 
 import tempfile
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -222,15 +223,41 @@ def _placed(segs: Segments, span: tuple[int, int] | None, row: dict[str, Any], s
         return _named(row, None, span, str(e))
 
 
-def disassemble(session: ds.Session, ref: str, length: int) -> dict[str, Any]:
-    """The `disassemble` reply: `length` bytes from `ref`, one instruction a line."""
+#: The comments placed at a stop, by linear address (`dosbox_comments.notes`).
+Notes = Callable[["Segments"], dict[int, str]]  # noqa: UP037 -- defined below
+
+
+def _comments_at(segs: Segments, seg: int,
+                 notes: Notes | None) -> tuple[dict[int, str], int | None]:
+    """The comments at this stop and `seg`'s base, or none: a comment is an aside, so one that
+    cannot be placed never costs the listing or the stop it sits beside."""
+    if notes is None:
+        return {}, None
+    try:
+        noted = notes(segs)
+        return noted, (segs.base(seg) if noted else None)
+    except ds.Invalid:
+        return {}, None
+
+
+def _note_at(noted: dict[int, str], base: int | None, offset: int) -> str | None:
+    return None if base is None else noted.get((base + offset) & 0xFFFFFFFF)
+
+
+def disassemble(session: ds.Session, ref: str, length: int,
+                notes: Notes | None = None) -> dict[str, Any]:
+    """The `disassemble` reply: `length` bytes from `ref`, one instruction a line; a line a
+    comment is placed on ends ` // <text>`, the text where the instruction is read."""
     segs = segments_at_stop(session)
     seg, off = placement.read_target(ref, "CS", session, machine=(segs.mode, segs.registers))
     bits, bits_from = segs.bits(seg)
     insns = disasm.decode(read_code(segs, seg, off, length, bits), off, bits, length)
+    noted, base = _comments_at(segs, seg, notes)
+    lines = [i.line(seg) + (f" // {text}" if (text := _note_at(noted, base, i.offset)) else "")
+             for i in insns]
     reply: dict[str, Any] = {
         "seg_off": st.seg_off(seg, off), "length": length, "code_bits": bits,
-        "code_bits_from": bits_from, "lines": [i.line(seg) for i in insns],
+        "code_bits_from": bits_from, "lines": lines,
         "flow": [i.flow for i in insns], "flow_source": disasm.SOURCE}
     if STATE.table:
         reply["resolved"] = resolve(segs, seg, insns)
@@ -238,9 +265,10 @@ def disassemble(session: ds.Session, ref: str, length: int) -> dict[str, Any]:
 
 
 def stop_instruction(session: ds.Session, where: dict[str, str],
-                     registers: dict[str, str]) -> dict[str, Any]:
+                     registers: dict[str, str], notes: Notes | None = None) -> dict[str, Any]:
     """The stop's `instruction` for its reply, or unavailable with its `why`: the bytes at CS:EIP
-    read from memory, never past the end of a 16-bit segment, decoded as one instruction."""
+    read from memory, never past the end of a 16-bit segment, decoded as one instruction; with
+    `comment` when one is placed there."""
     segs = Segments(session, where, registers)
     cs, eip = int(where["cs"], 16), int(where["eip"], 16)
     bits = segs.bits(cs)[0]
@@ -257,6 +285,8 @@ def stop_instruction(session: ds.Session, where: dict[str, str],
     picture: dict[str, Any] = {"seg_off": at, "bytes": insn.data.hex().upper(),
                                "text": insn.text, "flow": insn.flow, "code_bits": bits,
                                "bytes_from": "memory"}
+    if text := _note_at(*_comments_at(segs, cs, notes), eip):
+        picture["comment"] = text
     return {"instruction": {**picture, **_stop_symbol(segs, cs, eip)}}
 
 

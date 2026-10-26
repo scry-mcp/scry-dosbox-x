@@ -23,12 +23,13 @@ driven by look, act, verify, and so is this.
 - **Read the code and the machine.** `disassemble` decodes at any address in the segment's own
   width with targets named from your symbols; `call_stack` guesses the callers, marked
   heuristic; `machine_map` and `interrupt_vectors` say what the DOS machine is right now.
-- **Read the screen without a window.** `screen_view` gives the screen at this stop as text or,
-  in mode 13h, as a picture; `screen_signature` answers "is it the same screen" with one string;
-  `screen_wait` runs until a string appears.
+- **Read the screen without a window.** `screen_view` gives the screen at this stop as text or
+  as a picture in any VGA mode (13h, planar 16 colours, mode X, VESA linear up to 32 bits),
+  read from video memory without touching the card; `screen_signature` answers "is it the same
+  screen" with one string; `screen_wait` runs until a string appears.
 - **Stop where you mean to.** Run to a symbol and be told whether you arrived, stopped elsewhere
-  or ran out of time; break on an interrupt, on the program's own `int 3`, or when a variable
-  changes; step with every step read back; run by frames of the display or by emulated time.
+  or ran out of time; break on an interrupt, on the program's own `int 3`, when a variable
+  changes, or when a register takes a value wherever the code is; step with every step read back; run by frames of the display or by emulated time.
 - **Press its keys, move its mouse, and prove it.** `send_keys` and `send_mouse` go in inside
   the machine, so no window comes to the front and your own pointer never moves. Give `expect`
   and the reply says whether the program acted; a swallowed key is reported as a miss.
@@ -45,7 +46,8 @@ the debugger (`build_check` says whether yours is): the `dosbox-x` on your `PATH
 named by `DOSBOX_X_BINARY` or by `start`'s `binary`. Some tools need debugger commands a
 release does not carry: waiting for a stop (`run_to`, `run_for`, `trace`, `screen_wait`, a step
 over, a bounded `resume`) needs `RUNSTATE`; stepping needs `STEPIN`; the saved states need
-`SAVESTATE` and `LOADSTATE` ([Platforms](#platforms)). Name a build that carries them with
+`SAVESTATE` and `LOADSTATE`; a register condition needs `BPIF`; a picture in a mode past 13h's
+needs `VGAMEMDUMP` ([Platforms](#platforms)). Name a build that carries them with
 `DOSBOX_X_BINARY`. A missing piece is named by the tool that needs it, never worked around.
 
 ```sh
@@ -74,7 +76,8 @@ What a session can do depends on the debugger commands its build carries, and `b
 them. Any DOSBox-X with the debugger starts a session and answers every reading at the stop it
 parks at. Waiting for a stop (`run_to`, `run_for`, `trace`, `screen_wait`, a step over, a bounded
 `resume`) needs `RUNSTATE`, which tells whether the debugger holds the machine; stepping needs
-`STEPIN`; saved states need `SAVESTATE` and `LOADSTATE`. A tool whose command is missing says so
+`STEPIN`; saved states need `SAVESTATE` and `LOADSTATE`; a stop on a register condition needs
+`BPIF`; the screen in a planar, unchained or linear mode needs `VGAMEMDUMP`. A tool whose command is missing says so
 and does nothing ([REFERENCE.md](REFERENCE.md#debugger-commands)).
 
 ## See it run

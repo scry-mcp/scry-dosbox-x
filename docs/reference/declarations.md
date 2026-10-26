@@ -135,6 +135,71 @@ twice stacks a second row that a later clear leaves behind as `foreign`.
 
 It brings a running guest back at that interrupt, where `stop` brings it back wherever it is and a host keypress cannot. A DJGPP program's DOS call is `0x31` with `ah=2`. The declaration is stored under its `BPINT ..` spelling, so `declaration_list` shows it and `declaration_clear` removes it by `ref`; arming the same one again is a no-op that says `already_stored`. With `detail=True` the acknowledgement's `screen_delta` is capped (`screen_chars`, `clipped`), else `omitted` names them; a fresh arm only, since a pending or already armed one typed nothing.
 
+<!-- scry-reference:begin regpoint_add -->
+## `regpoint_add`
+
+*Declare a registerpoint*
+
+```text
+regpoint_add(condition)
+```
+
+Declare a registerpoint: the machine stops when `condition` comes true, wherever in the
+program ("who puts this value in this register"). Stored, re-armed at `start`; pending while
+the guest runs. Needs the debugger's `BPIF`.
+
+`condition`: up to four terms joined by `&&`, each a register (`AX`, `EAX`, `AL`, `CS`, ...,
+`FLAGS`), a comparison (`==`, `!=`, `<`, `<=`, `>`, `>=`) and a hex value (`AX==3B`,
+`0x` allowed); compares, never assigns.
+
+Refused: a term not in that shape (`bad_argument`); a build without `BPIF` (`no_channel`).
+
+Reply: `ref` (the condition as the debugger prints it back, what `declaration_clear` takes),
+`stored`, `already_stored`, `armed`, `state`, `while_running`, `entry`, `note`.
+
+Reference: REFERENCE.md, Declarations.
+
+| argument | type | default |
+|---|---|---|
+| `condition` | string | required |
+
+| reply field | type |
+|---|---|
+| `already_stored` | boolean |
+| `armed` | boolean |
+| `by` | string |
+| `condition` | string |
+| `entry` | string |
+| `note` | string |
+| `ref` | string |
+| `state` | string |
+| `stored` | boolean |
+| `while_running` | boolean |
+
+Example, from a live run:
+
+```json
+{
+  "condition": "AX==4C00"
+}
+```
+
+```json
+{
+  "summary": "regpoint_add AX==4C00: armed",
+  "status": "ok",
+  "ref": "AX==4C00",
+  "by": "expr",
+  "condition": "AX==4C00",
+  "stored": true,
+  "while_running": false,
+  "armed": true,
+  "state": "armed",
+  "entry": "BPIF AX==4C00"
+}
+```
+<!-- scry-reference:end regpoint_add -->
+
 <!-- scry-reference:begin watch_add -->
 ## `watch_add`
 
@@ -262,7 +327,7 @@ List the declarations of `kind` (empty: every kind) with their state, cross-refe
 with the debugger's own list. On a running guest the states are the last stop's survey
 (`debugger_read` false).
 
-Reply: `breakpoints`, `watches` (each kind asked; each row `ref`, `by`, `cpu`,
+Reply: `breakpoints`, `regpoints`, `watches` (each kind asked; each row `ref`, `by`, `cpu`,
 `created_at`, `origin`, `inherited`, `age_s`, `state`, plus its kind's fields), `foreign`
 (debugger entries no declaration resolves to), `debugger_read`.
 
@@ -270,13 +335,14 @@ Reference: REFERENCE.md, Declarations.
 
 | argument | type | default |
 |---|---|---|
-| `kind` | one of `""`, `"breakpoint"`, `"watch"` | `""` |
+| `kind` | one of `""`, `"breakpoint"`, `"regpoint"`, `"watch"` | `""` |
 
 | reply field | type |
 |---|---|
 | `breakpoints` | array |
 | `debugger_read` | boolean |
 | `foreign` | object |
+| `regpoints` | array |
 | `watches` | array |
 
 Example, from a live run:
@@ -299,8 +365,8 @@ Example, from a live run:
         "available": false,
         "why": "a DOS machine has one cpu, and every row acts on it"
       },
-      "created_at": "2026-10-26T11:06:07+00:00",
-      "origin": "2026-10-26T11:05:55+00:00#33352.1",
+      "created_at": "2026-10-26T13:39:35+00:00",
+      "origin": "2026-10-26T13:39:24+00:00#25537.1",
       "inherited": false,
       "age_s": 0,
       "entry": "BP 0000:0002",
@@ -337,7 +403,7 @@ Reference: REFERENCE.md, Declarations.
 
 | argument | type | default |
 |---|---|---|
-| `kind` | one of `"breakpoint"`, `"watch"` | required |
+| `kind` | one of `"breakpoint"`, `"regpoint"`, `"watch"` | required |
 | `ref` | string | `""` |
 | `all` | boolean | `false` |
 

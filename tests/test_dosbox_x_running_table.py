@@ -176,6 +176,7 @@ def _args(tmp_path: Path) -> dict[str, dict[str, Any]]:
         "trace": {"instructions": 1, "dest": str(tmp_path / "t.log")}, "screen_wait": {"text": "A"},
         "state_write save": {"name": "boot"}, "state_write load": {"name": "boot"}, "snapshot": {},
         "state_list": {}, "breakpoint_interrupt": {"number": 0x21},
+        "regpoint_add": {"condition": "AX==13"},
         "symbols_load": {"path": str(source)}, "symbols_find": {"name": "x"},
         "machine_map": {}, "interrupt_vectors": {}, "palette": {}, "screen_view": {},
         "screen_signature": {}, "breakpoint_at": {"ref": "0000:0400"},

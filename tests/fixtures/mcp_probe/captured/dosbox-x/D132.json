@@ -1,0 +1,42 @@
+{
+ "task": {
+  "id": "D132",
+  "prompt": "Stop the machine whenever AH becomes 4Ch, wherever in the program that happens, whoever puts it there.",
+  "tool": "regpoint_add",
+  "args": {
+   "condition": {
+    "any_of": [
+     "AH==4C",
+     "AH==0x4C",
+     "AH==4c",
+     "ah==4c",
+     "ah==0x4c",
+     "AH == 4C",
+     "AH == 0x4C",
+     "ah == 0x4c",
+     "ah == 4c"
+    ]
+   }
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D132: {\"tool\":\"regpoint_add\",\"args\":{\"condition\":\"AH==4C\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D132: {\"tool\": \"regpoint_add\", \"args\": {\"condition\": \"AH==4C\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

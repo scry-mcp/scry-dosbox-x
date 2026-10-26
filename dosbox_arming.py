@@ -312,6 +312,13 @@ def _bp_holders(session: ds.Session, mode: str, at: tuple[int, int], *, but: str
     return out
 
 
+def _conditions_met(registers: dict[str, str], held: list[dict[str, str]]) -> list[str]:
+    """The held registerpoints whose condition holds for a stop's registers."""
+    rows = [b["entry"][len(grammar.CONDITION_ROW):] for b in held
+            if b["entry"].startswith(grammar.CONDITION_ROW)]
+    return [r for r in rows if grammar.condition_holds(r, registers)]
+
+
 def attribute_stop(session: ds.Session, *, where: dict[str, str],
                     machine: tuple[str, dict[str, str]] | None = None,
                     held: list[dict[str, str]],
@@ -337,14 +344,18 @@ def attribute_stop(session: ds.Session, *, where: dict[str, str],
             out["refs"] = [d.ref for d in holders]
             out["note"] = f"{len(holders)} declarations resolve to this address: all are named"
         return out
+    # `BPIF` keeps no hit flag, and a condition can hold at a stop something else made: one
+    # that holds is named as the likely maker, never taken for it.
+    met = _conditions_met(machine[1], held) if machine is not None else []
+    holding = {"regpoints_holding": met} if met else {}
     if retrace_may_stop and STATE.retrace_pending:
         STATE.retrace_pending = False
-        return {"attributed": False, "retrace_pending": True,
+        return {"attributed": False, "retrace_pending": True, **holding,
                 "at": st.seg_off(*stop),
                 "why": "the stop address matches no declared code breakpoint, and a `run_for` "
                        "had left a retrace stop armed, which stops the next release at the next "
                        "retrace: most likely this stop"}
-    return {"attributed": False,
+    return {"attributed": False, **holding,
             "at": st.seg_off(*stop),
             "why": "the stop address matches no declared code breakpoint. The debugger "
                    "keeps no hit flag, and a memory watch stops at the WRITING instruction "
@@ -449,6 +460,23 @@ def _drop_stale(session: ds.Session, rows: list[dict[str, Any]],
 REARM_BUCKETS = ("rearmed", "stale", "unresolved", "ambiguous", "unarmable")
 
 
+def _rearm_condition(session: ds.Session, decl: dec.Declaration, out: dict[str, Any]) -> None:
+    """A stored registerpoint armed again, unless held; one a build cannot arm is `unarmable`."""
+    row, entry = decl_row(decl), f"{grammar.CONDITION_ROW}{decl.ref}"
+    if not session.has("BPIF"):
+        out["unarmable"].append({**row, "why": "this build's debugger has no `BPIF` command"})
+        return
+    if any(b["entry"] == entry for b in session.breakpoints()):
+        return
+    try:
+        session.condition_breakpoint(decl.ref)
+    except ds.Invalid as e:
+        out["unarmable"].append({**row, "why": str(e)})
+        return
+    STATE.note_armed(decl.ref, {"kind": "cond", "row": decl.ref, "entry": entry})
+    out["rearmed"].append(row)
+
+
 def rearm_declarations(session: ds.Session) -> dict[str, Any]:
     """Re-resolve every stored declaration against the just-loaded table and arm the code ones
     that resolve and are not already held. Unresolved or ambiguous names are listed, never
@@ -459,6 +487,9 @@ def rearm_declarations(session: ds.Session) -> dict[str, Any]:
     held = {grammar.bp_row_target(b["entry"]) for b in session.breakpoints()}
     places = RawPlaces(session)
     for decl in STATE.store.declarations():
+        if decl.kind == "regpoint":
+            _rearm_condition(session, decl, out)
+            continue
         if decl.kind != "breakpoint":
             continue
         row = decl_row(decl)
@@ -501,14 +532,15 @@ def rearm_declarations(session: ds.Session) -> dict[str, Any]:
 
 
 def arm_at_start(session: ds.Session) -> dict[str, Any]:
-    """At `start`, arm again the raw addresses an earlier session declared over this build;
-    another build's stay `stale`. With no breakpoint to arm the debugger's list is not read.
+    """At `start`, arm again the raw addresses an earlier session declared over this build, and
+    every registerpoint, which names no address; another build's addresses stay `stale`. With
+    nothing to arm the debugger's list is not read.
 
     The session is already installed, so a refusal is handed back as `rearm_refused`, not
     raised."""
     if STATE.store is None or not any(
-            d.kind == "breakpoint" and d.by == "address"
-            and not placement.is_stale(d, _nowhere)
+            d.kind == "regpoint" or (d.kind == "breakpoint" and d.by == "address"
+                                     and not placement.is_stale(d, _nowhere))
             for d in STATE.store.declarations()):
         return {"declarations": {"rearm": _unarmed_at_start()}}
     try:
@@ -523,6 +555,8 @@ def _unarmed_at_start(refused: str = "") -> dict[str, Any]:
     `refused`."""
     out: dict[str, Any] = {key: [] for key in REARM_BUCKETS}
     for decl in STATE.store.declarations() if STATE.store is not None else []:
+        if decl.kind == "regpoint" and refused:
+            out["unarmable"].append({**decl_row(decl), "why": refused})
         if decl.kind != "breakpoint":
             continue
         row = decl_row(decl)
@@ -559,6 +593,8 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
                 gone = session.clear_code_breakpoint(spec["seg"], spec["off"])
             elif spec["kind"] == "int":
                 gone = session.clear_interrupt_breakpoint(spec["num"], spec["ah"])
+            elif spec["kind"] == "cond":
+                gone = session.clear_condition_breakpoint(spec["row"])
             else:
                 row = watch_held(session.breakpoints(), spec["seg"], spec["off"])
                 if row is not None:
@@ -652,6 +688,11 @@ def _arm_queued(session: ds.Session, decl: dec.Declaration,
             if not any(b["entry"] == decl.ref for b in held):
                 session.breakpoint_interrupt(num, ah)
             STATE.note_armed(ref, {"kind": "int", "num": num, "ah": ah, "entry": decl.ref})
+        elif decl.kind == "regpoint":
+            entry = f"{grammar.CONDITION_ROW}{decl.ref}"
+            if not any(b["entry"] == entry for b in held):
+                session.condition_breakpoint(decl.ref)
+            STATE.note_armed(ref, {"kind": "cond", "row": decl.ref, "entry": entry})
         elif decl.kind == "watch":
             cpu = _waits_at(decl, places)
             res = placement.resolve_ref(decl, "DS", session, machine=machine)
@@ -903,9 +944,10 @@ def declares_code_breakpoint() -> bool:
 
 
 def declares_untold_stopper() -> bool:
-    """Whether an armable stopper is declared whose stop no address names: a change-watch or an
-    interrupt breakpoint."""
-    return any(d.kind == "interrupt" or (d.kind == "watch" and d.watch_mode == "change")
+    """Whether an armable stopper is declared whose stop no address names: a change-watch, an
+    interrupt breakpoint or a registerpoint."""
+    return any(d.kind in ("interrupt", "regpoint")
+               or (d.kind == "watch" and d.watch_mode == "change")
                for d in _armable_declarations())
 
 
@@ -914,7 +956,8 @@ def something_can_stop_it() -> bool:
     the debugger's list at the last stop (it holds a row whoever armed it) and the store minus
     what is known not to be armed. Doubt errs on the side of waiting."""
     held = STATE.last_stop.get("held") or []
-    if any(str(r.get("entry", "")).startswith(("BP ", "BPINT ", "BPMEM ", "BPPM ", "BPLM "))
+    if any(str(r.get("entry", "")).startswith(("BP ", "BPINT ", "BPMEM ", "BPPM ", "BPLM ",
+                                                grammar.CONDITION_ROW))
            for r in held):
         return True
     # A declaration still on the arm queue is armed only AT a stop, so it cannot produce one.
@@ -1114,7 +1157,7 @@ def list_breakpoints(session: ds.Session) -> dict[str, Any]:
                 mine.add(want)
             _held_state(item, decl, listed)
         out.append(item)
-    _pending_states(out)
+    pending_states(out)
     # A row a clear has queued for removal is not foreign.
     queued = {str(sp["entry"]) for sp in STATE.pending["disarm"]}
     foreign = [b["entry"] for b in held
@@ -1128,7 +1171,7 @@ def list_breakpoints(session: ds.Session) -> dict[str, Any]:
     return st.reply(breakpoints=out, foreign=foreign, debugger_read=read, **dated)
 
 
-def _require_a_match(store: dec.DeclarationStore, ref: str | None,
+def require_a_match(store: dec.DeclarationStore, ref: str | None,
                      kinds: tuple[str, ...]) -> str | None:
     """A `ref` that matches no declaration of these kinds is refused, naming the refs the store
     holds: a zero in green is indistinguishable from "nothing to clear" for a caller who
@@ -1140,8 +1183,13 @@ def _require_a_match(store: dec.DeclarationStore, ref: str | None,
     held = store.held_ref(ref, kinds)
     if held is not None:
         return held
-    family = "breakpoint" if "breakpoint" in kinds else "watch"
     have = ", ".join(repr(r) for r in mine) if mine else "none at all"
+    if kinds == ("regpoint",):
+        raise ds.Invalid("unknown_ref",
+            f"{ref!r} matches no regpoint declaration, so nothing was cleared. The regpoint "
+            f"declarations this conf holds: {have}. A condition matches in any spelling "
+            f"`regpoint_add` takes")
+    family = "breakpoint" if "breakpoint" in kinds else "watch"
     raise ds.Invalid("unknown_ref",
         f"{ref!r} matches no {family} declaration, so nothing was cleared. "
                      f"The {family} declarations this conf holds: {have}. A SEG:OFF "
@@ -1150,7 +1198,7 @@ def _require_a_match(store: dec.DeclarationStore, ref: str | None,
 
 
 
-def _pending_note(running: bool, pending: list[str]) -> str | None:
+def pending_note(running: bool, pending: list[str]) -> str | None:
     """Why a row is still on the debugger after a clear: a running guest takes the command at
     the next stop, but a stopped one whose debugger refused it is not "running", which would
     send a caller to wait for a stop that already happened."""
@@ -1167,7 +1215,7 @@ def clear_breakpoints(session: ds.Session, ref: str | None) -> dict[str, Any]:
     """The body of the `declaration_clear(kind="breakpoint")` tool: a `ref` alone (or nothing)
     takes breakpoints and interrupts; watches are a different tool."""
     store = current_store()
-    ref = _require_a_match(store, ref, ("breakpoint", "interrupt"))
+    ref = require_a_match(store, ref, ("breakpoint", "interrupt"))
     disarmed: list[str] = []
     pending_disarm: list[str] = []
     # The guest runs: rows are queued for the next stop and the declarations dropped at once; a name
@@ -1203,14 +1251,14 @@ def clear_breakpoints(session: ds.Session, ref: str | None) -> dict[str, Any]:
             named = str(spec["entry"]) if decl.kind == "breakpoint" else decl.ref
             one = (functools.partial(clear, spec["seg"], spec["off"])
                    if decl.kind == "breakpoint" else clear)
-            _disarm_one(spec, named, running, disarmed, pending_disarm, one)
-    _unqueue_cleared(store)
+            disarm_one(spec, named, running, disarmed, pending_disarm, one)
+    unqueue_cleared(store)
     return st.reply(declarations_cleared=removed, disarmed=disarmed,
                   pending_disarm=pending_disarm,
-                  note=_pending_note(running, pending_disarm))
+                  note=pending_note(running, pending_disarm))
 
 
-def _unqueue_cleared(store: dec.DeclarationStore) -> None:
+def unqueue_cleared(store: dec.DeclarationStore) -> None:
     """The arm queue holds refs a breakpoint and a watch may share: a queued ref stays while any
     family declares it."""
     held = {d.ref for d in store.declarations()}
@@ -1410,7 +1458,7 @@ def list_watches(session: ds.Session) -> dict[str, Any]:
             mine.update(place for place in covered if watch_held(held, *place) is not None)
             _held_state(item, decl, listed)
         out.append(item)
-    _pending_states(out)
+    pending_states(out)
     queued = {(sp["seg"], sp["off"]) for sp in STATE.pending["disarm"] if sp["kind"] == "watch"}
     foreign = [b["entry"] for b in held
                if (t := grammar.bp_row_target(b["entry"])) is not None
@@ -1424,7 +1472,7 @@ def list_watches(session: ds.Session) -> dict[str, Any]:
 def clear_watches(session: ds.Session, ref: str | None) -> dict[str, Any]:
     """The body of the `declaration_clear(kind="watch")` tool."""
     store = current_store()
-    ref = _require_a_match(store, ref, ("watch",))
+    ref = require_a_match(store, ref, ("watch",))
     to_go = [d for d in store.declarations()
              if d.kind == "watch" and (ref is None or d.ref == ref)]
     disarmed: list[str] = []
@@ -1461,10 +1509,10 @@ def clear_watches(session: ds.Session, ref: str | None) -> dict[str, Any]:
                 STATE.pending["disarm"].append(spec)
                 pending_disarm.append(str(spec["entry"]))
             STATE.pending["dirty"] = True
-    _unqueue_cleared(store)
+    unqueue_cleared(store)
     return st.reply(declarations_cleared=removed, disarmed=disarmed,
                   pending_disarm=pending_disarm,
-                  note=_pending_note(running, pending_disarm))
+                  note=pending_note(running, pending_disarm))
 
 
 def _held_state(item: dict[str, Any], decl: dec.Declaration, held: bool) -> None:
@@ -1479,7 +1527,7 @@ def _held_state(item: dict[str, Any], decl: dec.Declaration, held: bool) -> None
         item["state"] = "gone"
 
 
-def _pending_states(rows: list[dict[str, Any]]) -> None:
+def pending_states(rows: list[dict[str, Any]]) -> None:
     """A row asked to arm while the guest ran is `pending` whatever the list says now."""
     for item in rows:
         if item["ref"] in STATE.pending["arm"]:
@@ -1487,7 +1535,7 @@ def _pending_states(rows: list[dict[str, Any]]) -> None:
             item.pop("why", None)
 
 
-def _disarm_one(spec: dict[str, Any], named: str, running: bool, disarmed: list[str],
+def disarm_one(spec: dict[str, Any], named: str, running: bool, disarmed: list[str],
                 pending_disarm: list[str], clear: Callable[[], dict[str, object]]) -> None:
     """One armed row taken out of the debugger, or queued for the next stop: while the guest
     runs, and when the removal refuses, since a row left in is one the next release meets."""

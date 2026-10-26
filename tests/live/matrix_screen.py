@@ -24,6 +24,7 @@ from matrix_common import (
     read_bytes,
     refused,
     release_running,
+    said,
     server,
     videos,
 )
@@ -96,8 +97,8 @@ J_CELLS = cells(
      "REFERENCE.md, Input and the screen: each pixel doubled equals the capture's frame"),
     ("J the 13h start-address stop shows the picture from its next row",
      "known: screen.asm step 5 sets the CRTC start to 80, four bytes a unit"),
-    ("J the 12h stop is refused naming M_EGA and capture_frame",
-     "screen_view docstring: a planar mode is not read"),
+    ("J screen_view and screen_signature read the 12h stop from video memory",
+     "REFERENCE.md, Input and the screen: the screen is read from video memory"),
     ("J the screen guest closes", "close docstring"),
 )
 
@@ -298,11 +299,8 @@ def _screen_cells(stop: str) -> None:
         if stop == "13h":
             _against_the_capture(got)
     elif stop == "12h":
-        view, sig = M.call(server.screen_view), M.call(server.screen_signature)
-        M.judge("J the 12h stop is refused naming M_EGA and capture_frame",
-                all(refused(x, "no_channel") and "`M_EGA`" in str(x.get("message"))
-                    and "capture_frame" in str(x.get("message")) for x in (view, sig)),
-                f"{view.get('code')}, {sig.get('code')}")
+        _from_video_memory("J screen_view and screen_signature read the 12h stop from video "
+                           "memory", "M_EGA")
 
 
 def _against_the_capture(picture: bytes) -> None:
@@ -332,8 +330,8 @@ def program_cells(letter: str, word: str) -> list[tuple[str, str]]:
     """The screen cells a program section declares, for a program drawing in `word`."""
     return [(f"{letter} machine_map's vga says {word}", "machine_map docstring: `vga`; measured"),
             (f"{letter} palette answers the 256 entries of the DAC", "palette docstring"),
-            (f"{letter} screen_view and screen_signature are refused naming {word}",
-             "screen_view docstring: a linear frame buffer is not read; capture_frame named")]
+            (f"{letter} screen_view and screen_signature read {word} from video memory",
+             "REFERENCE.md, Input and the screen: the screen is read from video memory")]
 
 
 def judge_program(letter: str, word: str) -> None:
@@ -344,8 +342,12 @@ def judge_program(letter: str, word: str) -> None:
     r = M.call(server.palette)
     judged(f"{letter} palette answers the 256 entries of the DAC", reply=r,
            holds=ok(r) and r.get("entries") == 256 and len(r.get("colors") or []) == 256)
-    view, sig = M.call(server.screen_view), M.call(server.screen_signature)
-    M.judge(f"{letter} screen_view and screen_signature are refused naming {word}",
-            all(refused(x, "no_channel") and f"`{word}`" in str(x.get("message"))
-                and "capture_frame" in str(x.get("message")) for x in (view, sig)),
-            f"{view.get('code')}: {str(view.get('message'))[:80]}")
+    _from_video_memory(f"{letter} screen_view and screen_signature read {word} from video memory",
+                       word)
+
+
+def _from_video_memory(label: str, word: str) -> None:
+    view = M.call(server.screen_view, dest=M.fresh(".png"), attach=False)
+    sig = M.call(server.screen_signature)
+    M.judge(label, ok(view) and view.get("vga_mode") == word and ok(sig)
+            and sig.get("kind") == "pixel", f"{said(view)}; {said(sig)}")

@@ -46,6 +46,7 @@ _ARGS: dict[str, dict[str, Any]] = {
     "trace": {"instructions": 1, "dest": _tmp("dosbox-x-contract-never-written.trace")},
     "screen_wait": {"text": "C:"},
     "breakpoint_interrupt": {"number": 0x21},
+    "regpoint_add": {"condition": "AX==13"},
     "symbols_load": {"path": _abs("nonexistent.nm")},
     "symbols_find": {"name": "x"},
     "breakpoint_at": {"ref": "x"},

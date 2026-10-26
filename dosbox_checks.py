@@ -254,6 +254,10 @@ def _breakpoint_interrupt(number: int, ah: int | None = None, **_: Any) -> None:
     ds.check_interrupt(number, ah)
 
 
+def _regpoint_add(condition: str, **_: Any) -> None:
+    grammar.condition_row(condition)
+
+
 def _interrupt_vectors(number: int | None = None, **_: Any) -> None:
     if number is not None:
         ds.check_interrupt(number, None)
@@ -531,6 +535,7 @@ BY_OP: dict[str, Check] = {
     "resume": _resume, "step": _step, "run_to": _run_to, "run_for": _run_for,
     "trace": _trace,
     "breakpoint_at": _breakpoint_at, "breakpoint_interrupt": _breakpoint_interrupt,
+    "regpoint_add": _regpoint_add,
     "watch_add": _watch_add, "read_memory": _read_memory, "disassemble": _disassemble,
     "memdump": _memdump,
     "write": _write, "set_register": _set_register,

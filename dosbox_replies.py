@@ -52,6 +52,19 @@ class BreakpointInterruptReply(DosboxEnvelope, total=False):
     stored: bool
 
 
+class RegpointAddReply(DosboxEnvelope, total=False):
+    already_stored: Annotated[bool, OmitEmpty]
+    armed: bool
+    by: str
+    condition: str
+    entry: str
+    note: str
+    ref: str
+    state: str
+    stored: bool
+    while_running: bool
+
+
 class BuildCheckReply(DosboxEnvelope, total=False):
     binary: str
     binary_origin: str
@@ -612,6 +625,7 @@ class DeclarationListReply(DosboxEnvelope, total=False):
     breakpoints: list[Any]
     debugger_read: bool
     foreign: Annotated[dict[str, Any], OmitEmpty]
+    regpoints: list[Any]
     watches: list[Any]
 
 
@@ -671,6 +685,7 @@ MODELS: dict[str, type] = {
     "state_write": StateWriteReply,
     "breakpoint_at": BreakpointAtReply,
     "breakpoint_interrupt": BreakpointInterruptReply,
+    "regpoint_add": RegpointAddReply,
     "build_check": BuildCheckReply,
     "call_stack": CallStackReply,
     "capture_frame": CaptureFrameReply,

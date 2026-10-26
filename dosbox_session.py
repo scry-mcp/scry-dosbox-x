@@ -57,6 +57,9 @@ MEMDUMP_FILE = "MCPDUMP.BIN"
 # The two lines `SaveMemoryBin` prints (upstream `src/debug/debug.cpp`).
 MEMDUMP_OK = "Memory dump binary success"
 MEMDUMP_FAIL = "Memory binary dump failed"
+#: `VGAMEMDUMP`'s every answer opens with this; its success line ends `success`.
+VGAMEMDUMP_SAID = "DEBUG: VGAMEMDUMP"
+VGAMEMDUMP_OK = "success"
 
 # `INTVEC <file>` writes the vector table into the emulator's WORKING DIRECTORY, one line per
 # vector (`INT nn: SSSS:OOOO`).
@@ -239,8 +242,9 @@ import dosbox_symbol_file as symbol_file  # noqa: E402
 
 #: The commands after which a survey taken at the stop still holds: they leave the registers, the
 #: flags and CR0 as they were (memory and breakpoints they may write); any other drops it.
-KEEPS_SURVEY = frozenset({"EV", "BPLIST", "BP", "BPDEL", "BPINT", "BPM", "BPPM", "MEMDUMPBIN",
-                        "SELINFO", "RUNSTATE", "INTVEC", "SM", "SV", "LV", "MEMFIND", "MEMS",
+KEEPS_SURVEY = frozenset({"EV", "BPLIST", "BP", "BPDEL", "BPINT", "BPM", "BPPM", "BPIF",
+                        "MEMDUMPBIN", "VGAMEMDUMP", "SELINFO", "RUNSTATE", "INTVEC", "SM", "SV",
+                        "LV", "MEMFIND", "MEMS",
                         "CPU", "GDT", "LDT", "IDT", "PAGING", "DOS", "BIOS", "EMU",
                         "CALLBACKS", "VGA", "PRESENCE"})
 
@@ -795,6 +799,26 @@ class Session(dprocess.Process):
                     "note": "no such breakpoint to remove"}
         return {"entry": row["entry"], "removed": removed}
 
+    def condition_breakpoint(self, row: str) -> str:
+        """Arm `BPIF row`, a canonical condition (`grammar.condition_row`), and READ THE LIST
+        BACK: a row the list does not hold armed nothing."""
+        out = self.command(f"{grammar.CONDITION_ROW}{row}")
+        want = f"{grammar.CONDITION_ROW}{row}"
+        if not any(b["entry"] == want for b in self.breakpoints()):
+            raise Invalid("readback_refused",
+                f"`{want}` is not in the debugger's breakpoint list, so it was not armed. What it "
+                f"printed: {out.strip()[-300:]!r}")
+        return out
+
+    def clear_condition_breakpoint(self, row: str) -> dict[str, object]:
+        """Remove a condition breakpoint by its own ROW TEXT, and READ THE LIST BACK."""
+        self.where()                      # refuses a running machine before the command
+        want = f"{grammar.CONDITION_ROW}{row}"
+        [(held, removed)] = self.delete_rows([lambda e: e == want])
+        if held is None:
+            return {"entry": want, "removed": False, "note": "no such breakpoint to remove"}
+        return {"entry": want, "removed": removed}
+
     def clear_interrupt_breakpoint(self, number: int,
                                    ah: int | None = None) -> dict[str, object]:
         """Remove an interrupt breakpoint by its own ROW TEXT, and READ THE LIST BACK."""
@@ -845,55 +869,15 @@ class Session(dprocess.Process):
         """Memory to a FILE, returning the path it ended up at."""
         check_segment(seg)
         check_dump_length(length)
-        candidates = self._memdump_candidates()
-        # Judged before the debugger writes anything, so a refusal leaves no dump behind to poison
-        # the next call.
-        dcollect.judge_collection(dest, self.launch.cwd, candidates, "dump")
-        dcollect.refuse_leftover(candidates, "dump")
-        paths.fresh_dest("dest", dest)
-        # EVERY REFUSAL FROM THE COMMAND ON TAKES THIS CALL'S FILE AWAY.
-        try:
-            out = self.command(f"MEMDUMPBIN {seg:04X}:{off:04X} {length:X} {MEMDUMP_FILE}")
-            said = [ln for ln in out.splitlines() if MEMDUMP_OK in ln or MEMDUMP_FAIL in ln]
-            if not said or MEMDUMP_OK not in said[-1]:
-                raise Invalid("unexpected_answer",
-                    f"the debugger did not report a successful dump. What it "
-                              f"printed: {out.strip()[-300:]!r}")
-            source = next((c for c in candidates if c.exists()), None)
-            if source is None:
-                raise Invalid("unexpected_answer", f"the debugger reported success and none of "
-                              f"{[str(c) for c in candidates]} exists. Those disagree, so "
-                              f"this is not a reading")
-            # THE SIZE IS THE ONE THING TYING THESE BYTES TO THIS REQUEST, so it is checked for
-            # EQUALITY and not for being non-empty.
-            got = source.stat().st_size
-            if got != length:
-                raise Invalid("readback_refused",
-                    f"asked the debugger for {length} bytes and {source} holds "
-                              f"{got}. That is not the dump that was asked for")
-            return dcollect.collect(source, dest, "dump")
-        except BaseException as exc:
-            # A HOST ERROR TOO: whatever escapes, the file is this call's.
-            kept: dict[Path, str] = {}
-            for c in candidates:
-                try:
-                    c.unlink()
-                except FileNotFoundError:
-                    pass
-                except OSError as gone:
-                    # One file under both spellings, where the filesystem folds case: named once.
-                    try:
-                        again = any(c.samefile(k) for k in kept)
-                    except OSError:
-                        again = False
-                    if not again:
-                        kept[c] = f"{c} ({gone.strerror})"
-            if isinstance(exc, Invalid) and exc.code == "host_failed":
-                after = (f"That file could not be removed: {', '.join(kept.values())}, so the "
-                         f"next dump is refused over it until it is moved aside" if kept else
-                         "That file was removed, so the next dump is not refused over it")
-                raise Invalid(exc.code, f"{exc}. {after}") from None
-            raise
+        return _dumped(self, f"MEMDUMPBIN {seg:04X}:{off:04X} {length:X} {MEMDUMP_FILE}", length,
+                       dest, (MEMDUMP_OK, MEMDUMP_FAIL), MEMDUMP_OK)
+
+    def vgamemdump(self, offset: int, length: int, dest: Path) -> Path:
+        """Video memory, the four planes of each plane address interleaved, to a FILE through
+        `VGAMEMDUMP`, returning the path it ended up at."""
+        check_dump_length(length)
+        return _dumped(self, f"VGAMEMDUMP {offset:X} {length:X} {MEMDUMP_FILE}", length, dest,
+                       (VGAMEMDUMP_SAID,), VGAMEMDUMP_OK)
 
     def intvec(self) -> str:
         """The interrupt vector table as the debugger's `INTVEC` writes it."""
@@ -1089,3 +1073,58 @@ class Session(dprocess.Process):
             # WHERE `state_write(method="save")` writes and `state_list` reads.
             "state_dir": str(dlaunch.state_dir_of(self.launch)),
         }
+
+
+def _dumped(session: Session, command: str, length: int, dest: Path,
+            said_by: tuple[str, ...], ok: str) -> Path:
+    """The file a dump `command` wrote, collected to `dest`: `said_by` picks the lines that report
+    it, the last of which must hold `ok`, and the file must be `length` bytes."""
+    candidates = session._memdump_candidates()
+    # Judged before the debugger writes anything, so a refusal leaves no dump behind to poison
+    # the next call.
+    dcollect.judge_collection(dest, session.launch.cwd, candidates, "dump")
+    dcollect.refuse_leftover(candidates, "dump")
+    paths.fresh_dest("dest", dest)
+    # EVERY REFUSAL FROM THE COMMAND ON TAKES THIS CALL'S FILE AWAY.
+    try:
+        out = session.command(command)
+        said = [ln for ln in out.splitlines() if any(m in ln for m in said_by)]
+        if not said or ok not in said[-1]:
+            raise Invalid("unexpected_answer",
+                f"the debugger did not report a successful dump. What it "
+                          f"printed: {out.strip()[-300:]!r}")
+        source = next((c for c in candidates if c.exists()), None)
+        if source is None:
+            raise Invalid("unexpected_answer", f"the debugger reported success and none of "
+                          f"{[str(c) for c in candidates]} exists. Those disagree, so "
+                          f"this is not a reading")
+        # THE SIZE IS THE ONE THING TYING THESE BYTES TO THIS REQUEST, so it is checked for
+        # EQUALITY and not for being non-empty.
+        got = source.stat().st_size
+        if got != length:
+            raise Invalid("readback_refused",
+                f"asked the debugger for {length} bytes and {source} holds "
+                          f"{got}. That is not the dump that was asked for")
+        return dcollect.collect(source, dest, "dump")
+    except BaseException as exc:
+        # A HOST ERROR TOO: whatever escapes, the file is this call's.
+        kept: dict[Path, str] = {}
+        for c in candidates:
+            try:
+                c.unlink()
+            except FileNotFoundError:
+                pass
+            except OSError as gone:
+                # One file under both spellings, where the filesystem folds case: named once.
+                try:
+                    again = any(c.samefile(k) for k in kept)
+                except OSError:
+                    again = False
+                if not again:
+                    kept[c] = f"{c} ({gone.strerror})"
+        if isinstance(exc, Invalid) and exc.code == "host_failed":
+            after = (f"That file could not be removed: {', '.join(kept.values())}, so the "
+                     f"next dump is refused over it until it is moved aside" if kept else
+                     "That file was removed, so the next dump is not refused over it")
+            raise Invalid(exc.code, f"{exc}. {after}") from None
+        raise

@@ -377,9 +377,16 @@ def cause(attribution: dict[str, Any]) -> str:
     """What stopped the machine, as every stop reply's `cause`."""
     at = attribution.get("at", "an address the record lacks")
     if not attribution.get("attributed"):
+        holding = attribution.get("regpoints_holding")
+        held_too = (f"; registerpoint {', '.join(holding)} holds here, and `BPIF` stops as "
+                    f"its condition comes true" if holding else "")
         if attribution.get("retrace_pending"):
             return (f"most likely the retrace stop a `run_for` left armed: no declared code "
-                    f"breakpoint at {at}")
+                    f"breakpoint at {at}{held_too}")
+        if holding:
+            return (f"most likely registerpoint {', '.join(holding)}, whose condition holds at "
+                    f"{at}: `BPIF` stops as it comes true, and the debugger keeps no hit flag to "
+                    f"prove it")
         return (f"no declared code breakpoint at {at}: the debugger keeps no hit flag and a memory "
                 f"watch stops at the instruction that wrote, so which declaration fired cannot "
                 f"be told")

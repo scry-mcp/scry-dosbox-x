@@ -50,8 +50,8 @@ ROSTER = roster.Roster(families=(
     ("Scan", ("scan",)),
     ("Write", ("set_register", "write")),
     ("Advance", ("run_to", "run_for", "trace", "screen_wait", "step", "resume", "stop")),
-    ("Declarations", ("breakpoint_at", "breakpoint_interrupt", "watch_add", "declaration_list",
-                      "declaration_clear")),
+    ("Declarations", ("breakpoint_at", "breakpoint_interrupt", "regpoint_add", "watch_add",
+                      "declaration_list", "declaration_clear")),
     ("States", ("state_list", "state_write")),
     ("Names", ("symbols_load", "symbols_find")),
     ("Comments", ("comment_list", "comment_write")),
@@ -188,6 +188,7 @@ def _machine() -> recording.Machine:
 #: Each declaration kind a `start` re-arms: the tool that lists it and the field of its rows.
 _LISTS = {"breakpoint": ("declaration_list", "breakpoints"),
           "interrupt": ("declaration_list", "breakpoints"),
+          "regpoint": ("declaration_list", "regpoints"),
           "watch": ("declaration_list", "watches")}
 
 

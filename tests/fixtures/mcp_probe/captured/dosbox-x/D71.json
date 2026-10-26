@@ -2,97 +2,31 @@
  "task": {
   "id": "D71",
   "prompt": "The guest is stopped in a 16-colour planar mode (12h). Write the screen's pixels from video memory to a picture.",
-  "expect": "CANNOT",
-  "about": "screen_view"
+  "tool": "screen_view",
+  "args": {},
+  "allow": [
+   "dest",
+   "attach",
+   "scale",
+   "crop"
+  ]
  },
  "runs": [
   {
    "lines": [
-    "D71: CANNOT screen_view renders only text and 13h, and refuses the planar 12h mode; no other tool reads video memory as a picture."
+    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D71: CANNOT screen_view reads only text mode and the chained 256-colour mode 13h, and refuses the planar 16-colour mode 12h."
+    "D71: {\"tool\":\"screen_view\",\"args\":{}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D71: CANNOT screen_view renders only text and the chained 256-colour mode 13h; a 16-colour planar mode 12h is refused."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D71: CANNOT screen_view renders only text and the 256-colour mode 13h; the 16-colour planar mode 12h is refused."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D71: CANNOT screen_view renders only text and the 256-colour mode 13h, so the 16-colour planar mode 12h is refused."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D71: CANNOT screen_view reads only text mode and the 256-colour mode 13h, not the planar 16-colour mode 12h."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D71: CANNOT screen_view reads only text and the 256-colour mode 13h, and refuses other modes such as 12h."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D71: CANNOT screen_view reads only text and 256-colour mode 13h; planar mode 12h is refused."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D71: CANNOT screen_view reads only text mode and 256-colour mode 13h; it refuses other modes such as the 16-colour planar mode 12h."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D71: CANNOT screen_view renders only text and the 256-colour mode 13h, and refuses other modes such as 12h."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D71: CANNOT screen_view renders only text and the chained 256-colour mode 13h, and refuses planar mode 12h."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D71: CANNOT screen_view reads only text and the chained 256-colour mode 13h; the 16-colour planar mode 12h is not supported."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D71: CANNOT screen_view renders only text and the chained 256-colour mode 13h; a planar 12h screen is refused."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D71: CANNOT screen_view reads only text and 256-colour mode 13h, not the 16-colour planar mode 12h."
-   ],
-   "right": true
-  },
-  {
-   "lines": [
-    "D71: CANNOT screen_view renders only text mode and the 256-colour mode 13h, so planar mode 12h cannot be turned into a picture."
+    "D71: {\"tool\": \"screen_view\", \"args\": {}}"
    ],
    "right": true
   }

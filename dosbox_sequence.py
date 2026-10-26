@@ -36,7 +36,8 @@ SETTLE_DEFAULT_S = 30.0
 #: out because without a `base` it measures one off the machine.
 RUNNING_OK_OPS = frozenset({
     "status", "log", "log_wait", "symbols_find", "comment_list", "comment_write",
-    "breakpoint_at", "breakpoint_interrupt", "declaration_list", "declaration_clear",
+    "breakpoint_at", "breakpoint_interrupt", "regpoint_add", "declaration_list",
+    "declaration_clear",
     "watch_add", "captures", "capture_frame", "series_capture", "send_keys", "send_mouse",
     "state_write", "state_list", "snapshot", "stop", "map_write",
     *media.MEDIA_TOOLS})

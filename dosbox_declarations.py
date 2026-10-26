@@ -23,11 +23,12 @@ import dosbox_symbols as sym
 
 # An interrupt is declared by the debugger's BPLIST spelling (`BPINT 21`): `BPDEL` indexes are
 # not the arming order.
-COUNTED_KINDS = ("breakpoint", "watch", "interrupt")
+COUNTED_KINDS = ("breakpoint", "watch", "interrupt", "regpoint")
 # A comment stops and watches nothing, so it stays out of `declarations()`.
 KINDS = (*COUNTED_KINDS, "comment")
 # A pointer watch (`[base]+0x28`, `base->field`) re-resolves at every stop; code does not move.
-BY = ("symbol", "address", "pointer")
+# A registerpoint is declared by its condition (`expr`): it names no place.
+BY = ("symbol", "address", "pointer", "expr")
 # Its own regex rather than the session's: this module validates its own stored data.
 INTERRUPT_ROW = re.compile(r"^BPINT [0-9A-Fa-f]{2}(?: AH=[0-9A-Fa-f]{2})?$")
 # Raw row declared where its place is unknown while a map is held; not hex, so it equals no
@@ -124,6 +125,18 @@ class Declaration:
             raise DeclarationError(f"a cpu mode is one of {CPU_MODES}, on a raw breakpoint, "
                                    f"comment or watch; got {self.cpu_mode!r} on a {self.kind} by "
                                    f"{self.by}")
+        if (self.kind == "regpoint") != (self.by == "expr"):
+            raise DeclarationError("a registerpoint, and only a registerpoint, is declared by "
+                                   f"its condition (`expr`); got a {self.kind} by {self.by}")
+        if self.kind == "regpoint":
+            # A wrong spelling would list as `gone` forever and wedge the clear.
+            try:
+                canonical = grammar.condition_row(self.ref)
+            except Invalid as e:
+                raise DeclarationError(str(e)) from None
+            if canonical != self.ref:
+                raise DeclarationError(f"a registerpoint ref is its condition as `BPIF` prints "
+                                       f"it back ({canonical!r}); got {self.ref!r}")
         if self.kind == "comment":
             self._check_comment()
         elif self.text:

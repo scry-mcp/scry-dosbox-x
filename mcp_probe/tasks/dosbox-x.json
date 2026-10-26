@@ -171,7 +171,7 @@
   {"id": "D68", "prompt": "The guest is stopped. Show me the colour of entry 300 of the VGA's DAC.", "expect": "CANNOT", "about": "palette"},
   {"id": "D69", "prompt": "The guest is stopped in a DOS text mode. What text is on the screen right now, and where is the cursor?", "tool": "screen_view", "args": {}},
   {"id": "D70", "prompt": "The guest is stopped in mode 13h. Save what is on the screen as a picture to /tmp/frame.png.", "tool": "screen_view", "args": {"dest": "/tmp/frame.png"}},
-  {"id": "D71", "prompt": "The guest is stopped in a 16-colour planar mode (12h). Write the screen's pixels from video memory to a picture.", "expect": "CANNOT", "about": "screen_view"},
+  {"id": "D71", "prompt": "The guest is stopped in a 16-colour planar mode (12h). Write the screen's pixels from video memory to a picture.", "tool": "screen_view", "args": {}, "allow": ["dest", "attach", "scale", "crop"]},
   {"id": "D72", "prompt": "The guest is stopped. Give me a signature of what is on screen now, so I can tell later whether anything changed.", "tool": "screen_signature", "args": {}},
   {"id": "D73", "prompt": "The guest is stopped in mode 13h, 320 by 200. Give me a signature of the top-left quarter of the screen only, ignoring the rest.", "tool": "screen_signature", "args": {"crop": [0, 0, 160, 100]}},
   {"id": "D74", "prompt": "The guest is stopped. Let it run until the words GAME OVER appear on the text screen, waiting at most 90 seconds, and stop it there.", "tool": "screen_wait", "args": {"text": "GAME OVER", "seconds": 90}},
@@ -190,7 +190,7 @@
   {"id": "D87", "prompt": "The guest is stopped. Remove the note I left at 0814:010B.", "tool": "comment_write", "args": {"method": "delete", "ref": "0814:010B"}, "grammar": ["delete"]},
   {"id": "D88", "prompt": "Write every note I have left on this program to /tmp/game.comments.tsv so I can commit it with the map.", "tool": "comment_write", "args": {"method": "save", "dest": "/tmp/game.comments.tsv"}, "grammar": ["save"]},
   {"id": "D89", "prompt": "The guest is stopped. Bring in the notes the project keeps in /tmp/game.comments.tsv.", "tool": "comment_write", "args": {"method": "load", "path": "/tmp/game.comments.tsv"}, "grammar": ["load"]},
-  {"id": "D90", "prompt": "Show my notes inline on the disassembly of draw_sprite, each beside the instruction it is on.", "expect": "CANNOT", "about": "comment_list"},
+  {"id": "D90", "prompt": "Show my notes inline on the disassembly of draw_sprite, each beside the instruction it is on.", "tool": "disassemble", "args": {"ref": "draw_sprite"}, "allow": ["length"]},
   {"id": "D91", "prompt": "Before I start anything: does the DOSBox-X I built at /opt/dbx-dev/src/dosbox-x carry the debugger? Ask about that build, not the installed one.", "tool": "build_check", "args": {"binary": "/opt/dbx-dev/src/dosbox-x"}},
   {"id": "D92", "prompt": "Open a DOSBox-X session from /opt/dosfury/fury.conf, working directory /opt/dosfury, bounded to 1200 seconds, nobody watching, running the emulator I built at /opt/dbx-dev/src/dosbox-x instead of the installed one.", "tool": "start", "args": {"conf": "/opt/dosfury/fury.conf", "cwd": "/opt/dosfury", "session_seconds": 1200, "binary": "/opt/dbx-dev/src/dosbox-x"}, "allow": ["shared"]},
   {"id": "D93", "prompt": "Hold the left mouse button down on the guest so a drag can follow.",
@@ -238,5 +238,6 @@
   {"id": "D129", "prompt": "The last stop's E9 block was cut: it counted 57 lines from mark 9120 and showed only the newest. Read all 57 of them.",
    "tool": "log", "args": {"channel": "guest", "since_mark": 9120, "limit": {"any_of": [57, 400]}}, "allow": ["pattern", "labels"], "grammar": ["guest"]},
   {"id": "D130", "prompt": "The guest is stopped. I only need the cpu's control registers: cr0, cr3 and the descriptor table registers.", "tool": "machine_map", "args": {"sections": {"any_of": [["control"]]}}, "grammar": ["control"]},
-  {"id": "D131", "prompt": "End the DOSBox-X session, and even if it quits cleanly I want the last words of the console and of the log in the answer.", "tool": "close", "args": {"detail": true}}
+  {"id": "D131", "prompt": "End the DOSBox-X session, and even if it quits cleanly I want the last words of the console and of the log in the answer.", "tool": "close", "args": {"detail": true}},
+  {"id": "D132", "prompt": "Stop the machine whenever AH becomes 4Ch, wherever in the program that happens, whoever puts it there.", "tool": "regpoint_add", "args": {"condition": {"any_of": ["AH==4C", "AH==0x4C", "AH==4c", "ah==4c", "ah==0x4c", "AH == 4C", "AH == 0x4C", "ah == 0x4c", "ah == 4c"]}}}
 ]}

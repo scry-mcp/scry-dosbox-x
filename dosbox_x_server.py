@@ -125,9 +125,10 @@ import dosbox_logs as dlogs  # noqa: E402
 import dosbox_machine as machine  # noqa: E402
 import dosbox_media as media  # noqa: E402
 import dosbox_paths as paths  # noqa: E402
-import dosbox_placement as placement  # noqa: E402
+import dosbox_placement as placement
 import dosbox_presence as dpresence  # noqa: E402
 import dosbox_process as dprocess
+import dosbox_regpoints as regpoints  # noqa: E402
 import dosbox_replies  # noqa: E402
 import dosbox_retrace as retrace  # noqa: E402
 import dosbox_running as running  # noqa: E402
@@ -356,7 +357,8 @@ def read_memory(ref: str,
 def disassemble(ref: str, length: Annotated[int, vocab.bounds(1, code.LENGTH_MAX)] = 16,
                 ) -> dict[str, Any]:
     """Decode `length` bytes from `ref` (a symbol or `SEG:OFF`) as x86, one instruction a line. The
-    last is completed unless the segment ends first.
+    last is completed unless the segment ends first. A line a comment is placed on ends
+    ` // <text>`.
 
     Reply: `seg_off`, `length`, `code_bits`, `code_bits_from`, `lines`, `flow` (per line:
     `call`, `branch`, `return`, `sequential`, `unknown`), `flow_source`, and with symbols loaded
@@ -368,7 +370,7 @@ def disassemble(ref: str, length: Annotated[int, vocab.bounds(1, code.LENGTH_MAX
 
     Reference: REFERENCE.md, Reading and writing.
     """
-    return st.reply(ref=ref, **code.disassemble(live(), ref, length))
+    return st.reply(ref=ref, **code.disassemble(live(), ref, length, comments.notes))
 
 
 @tool("Guess the call stack", summary=one_line.call_stack, read_only=True)
@@ -744,6 +746,26 @@ def breakpoint_interrupt(number: Annotated[int, vocab.bounds(0, ds.BYTE_MAX)],
     return arming.breakpoint_interrupt(live(), number, ah, detail)
 
 
+@tool("Declare a registerpoint", summary=one_line.regpoint_add)
+def regpoint_add(condition: str) -> dict[str, Any]:
+    """Declare a registerpoint: the machine stops when `condition` comes true, wherever in the
+    program ("who puts this value in this register"). Stored, re-armed at `start`; pending while
+    the guest runs. Needs the debugger's `BPIF`.
+
+    `condition`: up to four terms joined by `&&`, each a register (`AX`, `EAX`, `AL`, `CS`, ...,
+    `FLAGS`), a comparison (`==`, `!=`, `<`, `<=`, `>`, `>=`) and a hex value (`AX==3B`,
+    `0x` allowed); compares, never assigns.
+
+    Refused: a term not in that shape (`bad_argument`); a build without `BPIF` (`no_channel`).
+
+    Reply: `ref` (the condition as the debugger prints it back, what `declaration_clear` takes),
+    `stored`, `already_stored`, `armed`, `state`, `while_running`, `entry`, `note`.
+
+    Reference: REFERENCE.md, Declarations.
+    """
+    return regpoints.regpoint_add(live(), condition)
+
+
 # --------------------------------------------------------------- names for addresses
 
 @tool("Load a symbol table", summary=one_line.symbols_load)
@@ -932,18 +954,19 @@ def palette(first: Annotated[int, vocab.bounds(0, vgadac.DAC_ENTRIES - 1)] | str
 @tool("Read the screen", summary=one_line.screen_view, replay="drop")
 def screen_view(crop: list[int] | None = None, scale: int = 0,
                 dest: str = "", attach: bool = True) -> dict[str, Any]:
-    """What the screen shows at this stop, read from video memory: text as text,
-    the chained 256-colour mode (13h) as a PNG. `crop` is `[x, y, width, height]` in characters
-    or pixels. `scale` 0 fits the largest up to 8x; `dest` a new path (else a scratch); `attach`
-    false leaves it unattached.
+    """What the screen shows at this stop, read from video memory: text as text, a graphics mode
+    as a PNG (256 colours chained or not, 16-colour planar, 8-, 15-, 16- or 32-bit linear; all
+    but chained through `VGAMEMDUMP`). `crop` is `[x, y, width, height]` in characters or pixels.
+    `scale` 0 fits the largest up to 8x; `dest` a new path (else a scratch); `attach` false
+    leaves it unattached.
 
     Reply: `vga_mode`, `kind`, `width`, `height`, `crop`, `display_start`; in text `text`,
-    `cursor`; in 256 colours `image`.
+    `cursor`; in graphics `image`.
 
     Refused: a relative or existing `dest`, a bad `scale` or `crop`, `dest`/`scale`/`attach` in
-    text (`bad_argument`); another mode (naming `capture_frame`) or an undecodable layout
-    (`no_channel`); a running guest (`not_stopped`); a DAC not six-bit
-    (`unexpected_answer`).
+    text (`bad_argument`); another mode or a build without `VGAMEMDUMP` (naming
+    `capture_frame`), or an undecodable layout (`no_channel`); a running guest
+    (`not_stopped`); a DAC not six-bit (`unexpected_answer`).
 
     Reference: REFERENCE.md, Media files.
     """
@@ -1072,7 +1095,7 @@ def declaration_list(kind: Annotated[str, vocab.enum(("", *folds.KINDS))] = "",
     with the debugger's own list. On a running guest the states are the last stop's survey
     (`debugger_read` false).
 
-    Reply: `breakpoints`, `watches` (each kind asked; each row `ref`, `by`, `cpu`,
+    Reply: `breakpoints`, `regpoints`, `watches` (each kind asked; each row `ref`, `by`, `cpu`,
     `created_at`, `origin`, `inherited`, `age_s`, `state`, plus its kind's fields), `foreign`
     (debugger entries no declaration resolves to), `debugger_read`.
 

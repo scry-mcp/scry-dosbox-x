@@ -17,6 +17,7 @@ from scry_core import reply_contract as contract
 
 import dosbox_arming as arming
 import dosbox_code as code
+import dosbox_comments as comments
 import dosbox_running as running
 import dosbox_state as dstate
 import dosbox_x_server as server
@@ -227,7 +228,7 @@ def test_a_reply_off_a_record_with_no_picture_decodes_it_from_that_stop(
         return {"instruction": {"text": "DECODED"}}
     monkeypatch.setattr(code, "stop_instruction", decoded)
     got = running.recorded_stop_reply(fake, {})  # type: ignore[arg-type]
-    assert asked == [(fake, dict(stop["where"]), dict(stop["registers"]))], asked
+    assert asked == [(fake, dict(stop["where"]), dict(stop["registers"]), comments.notes)], asked
     assert got["instruction"] == {"text": "DECODED"} and stop["picture"] == {
         "instruction": {"text": "DECODED"}}, (got, stop)
 

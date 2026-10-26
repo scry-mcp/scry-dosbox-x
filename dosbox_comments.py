@@ -67,10 +67,10 @@ class _Places:
     """Where each comment lands at this instant; the machine is surveyed at most once, only for
     a raw address and only while stopped, so a listing on a running guest types nothing."""
 
-    def __init__(self, session: ds.Session) -> None:
+    def __init__(self, session: ds.Session, segs: code.Segments | None = None) -> None:
         self.session = session
         self.stopped = session.at_debugger()
-        self._segs: code.Segments | None = None
+        self._segs: code.Segments | None = segs
 
     def mode(self) -> str | None:
         """This stop's cpu mode as the debugger spells it; the last stop's while the guest
@@ -285,6 +285,17 @@ def _reach(held: list[tuple[dec.Declaration, dict[str, Any]]], canonical: str,
 def _placed_comments(places: _Places,
                      store: dec.DeclarationStore) -> list[tuple[dec.Declaration, dict[str, Any]]]:
     return [(d, places.of(d)) for d in store.comments()]
+
+
+def notes(segs: code.Segments) -> dict[int, str]:
+    """Each comment placed at this stop, by its linear address, the stop's survey reused: what
+    `disassemble` and a stop's `instruction` show beside the code."""
+    store = STATE.store
+    if store is None or not store.comments():
+        return {}
+    places = _Places(segs.session, segs)
+    return {place["linear"] & 0xFFFFFFFF: d.text for d, place in _placed_comments(places, store)
+            if place.get("state") == "resolved" and "linear" in place}
 
 
 def _the_ref(ref: str, places: _Places) -> tuple[str, str, dict[str, Any]]:

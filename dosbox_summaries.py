@@ -344,8 +344,12 @@ def breakpoint_interrupt(args: dict[str, Any], reply: dict[str, Any]) -> str:
             f"{'stored' if reply.get('stored') else 'kept'}")
 
 
+def regpoint_add(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    return f"regpoint_add {reply.get('ref', '')}: {reply.get('state')}"
+
+
 #: Each kind's reply field, in the order a list of every kind names them.
-DECLARATION_ROWS = {"breakpoint": "breakpoints", "watch": "watches"}
+DECLARATION_ROWS = {"breakpoint": "breakpoints", "regpoint": "regpoints", "watch": "watches"}
 
 
 def declaration_list(args: dict[str, Any], reply: dict[str, Any]) -> str:

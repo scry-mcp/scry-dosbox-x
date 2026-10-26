@@ -124,7 +124,8 @@ disassemble(ref, length=16)
 ```
 
 Decode `length` bytes from `ref` (a symbol or `SEG:OFF`) as x86, one instruction a line. The
-last is completed unless the segment ends first.
+last is completed unless the segment ends first. A line a comment is placed on ends
+` // <text>`.
 
 Reply: `seg_off`, `length`, `code_bits`, `code_bits_from`, `lines`, `flow` (per line:
 `call`, `branch`, `return`, `sequential`, `unknown`), `flow_source`, and with symbols loaded
@@ -295,18 +296,18 @@ Example, from a live run:
 {
   "ref": "0000:0400",
   "length": 16,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n733.bin"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n763.bin"
 }
 ```
 
 ```json
 {
-  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n733.bin",
+  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n763.bin",
   "status": "ok",
   "ref": "0000:0400",
   "seg_off": "0000:00000400",
   "length": 16,
-  "path": "$TMPDIR/dosbox-x-live-matrix-182087814816/jobs-scratch/A/n733.bin",
+  "path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n763.bin",
   "bytes": 16
 }
 ```
@@ -991,7 +992,7 @@ Example, from a live run:
   "bits": 6,
   "pel_mask": "ffh",
   "image": {
-    "path": "$TMPDIR/dosbox-x-session-nfkctry0/gfx/palette-1.png",
+    "path": "$TMPDIR/dosbox-x-session-kmxru3wy/gfx/palette-1.png",
     "bytes": 1009,
     "sha256": "a5dff617e307a60f3bf521d96fed8809cc0f3b38409a74c904cfa5c1ad4371e1",
     "width": 256,
@@ -1015,18 +1016,19 @@ Each six-bit component is widened as the emulator renders it, its two top bits r
 screen_view(crop=null, scale=0, dest="", attach=true)
 ```
 
-What the screen shows at this stop, read from video memory: text as text,
-the chained 256-colour mode (13h) as a PNG. `crop` is `[x, y, width, height]` in characters
-or pixels. `scale` 0 fits the largest up to 8x; `dest` a new path (else a scratch); `attach`
-false leaves it unattached.
+What the screen shows at this stop, read from video memory: text as text, a graphics mode
+as a PNG (256 colours chained or not, 16-colour planar, 8-, 15-, 16- or 32-bit linear; all
+but chained through `VGAMEMDUMP`). `crop` is `[x, y, width, height]` in characters or pixels.
+`scale` 0 fits the largest up to 8x; `dest` a new path (else a scratch); `attach` false
+leaves it unattached.
 
 Reply: `vga_mode`, `kind`, `width`, `height`, `crop`, `display_start`; in text `text`,
-`cursor`; in 256 colours `image`.
+`cursor`; in graphics `image`.
 
 Refused: a relative or existing `dest`, a bad `scale` or `crop`, `dest`/`scale`/`attach` in
-text (`bad_argument`); another mode (naming `capture_frame`) or an undecodable layout
-(`no_channel`); a running guest (`not_stopped`); a DAC not six-bit
-(`unexpected_answer`).
+text (`bad_argument`); another mode or a build without `VGAMEMDUMP` (naming
+`capture_frame`), or an undecodable layout (`no_channel`); a running guest
+(`not_stopped`); a DAC not six-bit (`unexpected_answer`).
 
 Reference: REFERENCE.md, Media files.
 
@@ -1087,7 +1089,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end screen_view -->
 
-**Only a text mode and the chained 256-colour mode (13h's) are read.** In a planar or unchained mode the CPU window answers one plane per read and choosing the plane writes a Graphics Controller register; a linear frame buffer lies past the debugger's real-mode dump. A layout the bytes cannot be read straight from is refused rather than read wrong. The 256-colour PNG's pixels are the bytes the guest wrote and its PLTE the DAC, so each pixel, doubled each way as the emulator renders 13h, equals the emulator's own capture.
+**Every VGA mode is read, and none is read by touching the card.** Text and 13h's chained bytes come through the CPU's window; a planar 16-colour mode, an unchained 256-colour one (mode X) and an 8-, 15-, 16- or 32-bit linear mode come from the video RAM itself through the debugger's `VGAMEMDUMP`, since the window answers one plane per read in the first two and is smaller than the frame in the others. A build without that command refuses those modes naming it. A 16-colour pixel goes through the Attribute Controller to its DAC entry; a 15- or 16-bit one is widened to eight bits a channel by repeating its high bits. The 256-colour PNG's pixels are the bytes the guest wrote and its PLTE the DAC, so each pixel, doubled each way as the emulator renders 13h, equals the emulator's own capture.
 
 **In protected mode the screen is read through a data segment that covers it** (the lowest present one of the GDT, then of the LDT), with paging on only when every page maps to the same physical address; none qualifying is `no_channel`.
 
