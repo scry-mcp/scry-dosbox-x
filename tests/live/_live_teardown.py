@@ -1,7 +1,6 @@
 """Autouse teardown for live tests that use the declaration store."""
 from __future__ import annotations
 
-import contextlib
 import subprocess
 from collections.abc import Iterator
 from pathlib import Path
@@ -40,8 +39,7 @@ def _kill_if_still_there(proc: subprocess.Popen[bytes]) -> str:
     """SIGKILL the process group if close left it; return the failure text."""
     if proc.poll() is not None:
         return ""
-    with contextlib.suppress(ProcessLookupError, PermissionError, OSError):
-        dprocess.signal_group(proc.pid, guardian.KILL)
+    dprocess.signal_group(proc.pid, guardian.KILL)
     try:
         proc.wait(timeout=5)
     except subprocess.TimeoutExpired:

@@ -1,7 +1,6 @@
 """However the server ends (stdin closed, SIGTERM, SIGHUP), its DOSBox-X ends with it."""
 from __future__ import annotations
 
-import contextlib
 import json
 import os
 import signal
@@ -88,7 +87,6 @@ def test_the_emulator_ends_with_the_server(ended_by: str, code: int, tmp_path: P
     finally:
         silent.cancel()
         if pid is not None and _alive(pid):
-            with contextlib.suppress(ProcessLookupError):
-                dprocess.signal_group(pid, guardian.KILL)
+            dprocess.signal_group(pid, guardian.KILL)
         if proc.poll() is None:
             proc.kill()

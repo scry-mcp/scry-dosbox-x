@@ -179,8 +179,7 @@ def note_spawn() -> None:
 def kill_spawned() -> list[int]:
     left = [p for p in SPAWNED if p.poll() is None]
     for proc in left:
-        with contextlib.suppress(OSError):
-            dprocess.signal_group(proc.pid, guardian.KILL)
+        dprocess.signal_group(proc.pid, guardian.KILL)
         with contextlib.suppress(subprocess.TimeoutExpired):
             proc.wait(timeout=5)
     return [p.pid for p in left]

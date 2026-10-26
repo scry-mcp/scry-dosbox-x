@@ -77,8 +77,7 @@ def _end(proc: subprocess.Popen[bytes], pid: int | None) -> None:
         proc.kill()
     proc.wait()
     if pid is not None and _alive(pid):
-        with contextlib.suppress(ProcessLookupError):
-            dprocess.signal_group(pid, guardian.KILL)
+        dprocess.signal_group(pid, guardian.KILL)
 
 
 @pytest.mark.parametrize("mode", ["guarded", "bare"])
