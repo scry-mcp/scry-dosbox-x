@@ -8,6 +8,7 @@ import dataclasses
 import json
 import shutil
 import subprocess
+import sys
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -54,6 +55,7 @@ import dosbox_launch as dlaunch
 import dosbox_mcp
 import dosbox_placement as placement
 import dosbox_replies
+import dosbox_run_state as run_state
 import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_symbols as dsym
@@ -110,6 +112,23 @@ def test_a_close_that_could_not_reap_the_child_says_so_in_its_reply() -> None:
     assert clean["exit_code"] == 0 and "reap_failed" not in clean, clean
 
 
+def test_a_close_whose_output_reader_did_not_end_at_end_of_file_says_why() -> None:
+    """A descriptor left open, or a read that failed, is the close's to say; an end of file is
+    not."""
+    class Leaky(FakeSession):
+        def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
+            self.drain_ended = "the drain thread did not stop within 2 s"
+            self._alive = False
+            return 0
+
+    dstate.STATE.session = Leaky()  # type: ignore[assignment]
+    got = cast(dict[str, Any], server.close())
+    assert "the drain thread did not stop" in str(got.get("note")), got
+
+    dstate.STATE.session = FakeSession()  # type: ignore[assignment]
+    assert "note" not in cast(dict[str, Any], server.close())
+
+
 def test_a_start_that_left_an_unreapable_emulator_says_so(tmp_path: Path) -> None:
     """The ONE path besides `close` where an unreaped child can be seen."""
     class Unreapable:
@@ -158,6 +177,23 @@ def test_a_start_that_left_an_unreapable_emulator_says_so(tmp_path: Path) -> Non
             conf=str(conf), cwd=str(tmp_path), session_seconds=30))
     assert "the debugger never appeared" in str(ok["message"])
     assert "may still be running" not in str(ok["message"]), ok
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="the stand-in ffmpeg is a POSIX script")
+def test_an_ffmpeg_that_says_why_in_bytes_that_are_not_utf8_is_still_a_refusal(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    tool = tmp_path / "bin" / "ffmpeg"
+    tool.parent.mkdir()
+    tool.write_text("#!/bin/sh\nprintf 'cannot open \\351t\\351.avi' >&2\nexit 1\n",
+                    encoding="ascii")
+    tool.chmod(0o755)
+    monkeypatch.setenv("PATH", str(tool.parent))
+    src = tmp_path / "cap.avi"
+    src.write_bytes(b"RIFF")
+    fake = SimpleNamespace(captures=lambda: [{"path": str(src)}])
+    with pytest.raises(ds.Invalid) as e:
+        ds.Session.frame(fake, 0, tmp_path / "out.png")  # type: ignore[arg-type]
+    assert e.value.code == "host_failed" and "cannot open" in str(e.value), e.value
 
 
 def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
@@ -1439,7 +1475,7 @@ def test_start_takes_the_version_probe_out_of_the_ready_bound(
     assert got["code"] == "session_broken", got
     asked, ready = waited
     assert asked == binaries.VERSION_TIMEOUT_S, waited
-    assert ready <= ds.READY_TIMEOUT_S - 0.3, waited
+    assert ready <= run_state.READY_TIMEOUT_S - 0.3, waited
 
 
 def test_close_carries_the_last_words_of_both_channels_when_the_end_was_not_clean(

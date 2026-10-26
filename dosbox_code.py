@@ -18,9 +18,9 @@ from typing import Any
 
 from scry_core.reply_contract import unavailable
 
-import dosbox_console as dcons
 import dosbox_disasm as disasm
 import dosbox_dump as dumping
+import dosbox_grammar as grammar
 import dosbox_machine as machine
 import dosbox_placement as placement
 import dosbox_session as ds
@@ -53,7 +53,7 @@ class Segments:
         self.session = session
         self.registers = registers
         self.mode = where["mode"]
-        self.real = dcons.real_segments(self.mode)
+        self.real = grammar.real_segments(self.mode)
         self._selinfo: dict[str, dict[str, int]] = {}
         self._reading: machine.Reading | None = None
 
@@ -144,9 +144,9 @@ def read_code(segs: Segments, seg: int, off: int, length: int, bits: int) -> byt
         room = SEGMENT_END_16 - off
         if length > room:
             raise ds.Invalid("bad_argument",
-                f"{dcons.canonical_seg_off(seg, off)} is in a 16-bit segment, which ends at offset "
-                f"FFFF: the CPU wraps IP to the segment's start there, so the bytes past it are "
-                f"not the next instructions. "
+                f"{grammar.canonical_seg_off(seg, off)} is in a 16-bit segment, which ends at "
+                f"offset FFFF: the CPU wraps IP to the segment's start there, so the bytes past it "
+                f"are not the next instructions. "
                 + (f"Ask for at most {room} bytes from there" if room > 0 else
                    "That offset is past the end"))
         want = min(want, room)
@@ -291,7 +291,7 @@ CALL_STACK_MAX = 16
 #: Longest and shortest call instruction checked against a return address.
 CALL_LONGEST, CALL_SHORTEST = 7, 2
 #: What one read of the walk takes, reused while it covers the reads after it.
-VIEW_READ = dcons.READ_BYTES_MAX
+VIEW_READ = grammar.READ_BYTES_MAX
 
 
 class _Views:

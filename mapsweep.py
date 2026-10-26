@@ -30,9 +30,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import NoReturn
 
+from scry_core import verdict
+
 import dosbox_symbols as sym
 
-OK, RED, USAGE, INVALID = 0, 1, 2, 3
+OK, RED, INVALID = verdict.EXIT_PASS, verdict.EXIT_FAIL, verdict.EXIT_INVALID
+USAGE = 2
 
 NUMERIC = ("symbols", "overlay_idle", "unreadable")
 
@@ -55,8 +58,8 @@ class Result:
     disagreements: list[str] | None = None
 
 
-class Invalid(Exception):
-    """Something could not be examined, which is not a disagreement about a map."""
+#: Something could not be examined, which is not a disagreement about a map.
+Invalid = verdict.Invalid
 
 
 def _expand(path: Path) -> Path:

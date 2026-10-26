@@ -38,6 +38,8 @@ P_CELLS = cells(
      "REFERENCE.md, Input and the screen: `program` needs no conf line"),
     ("P a second copy the conf also runs stays out, and keys still arrive whole",
      "guest/inject.asm: already resident; known: the guest logs `key=97` for a"),
+    ("P a second copy stays out though a TSR took INT 1Ch above the first",
+     "guest/inject.asm: IRQ 4's vector asked too; known: hook1c.com logs its hook"),
     ("P a key reaches the guest: a is logged as key=97",
      "send_keys docstring; known: mouse.asm logs each key's ASCII"),
     ("P text mode: x=0 y=0 arrives, the driver at 0,0",
@@ -131,6 +133,7 @@ def section_p() -> None:
     _timer_owned()
     must(M.call(server.close), "closing")
     _twice()
+    _twice(hooked=True)
     _no_log()
 
 
@@ -204,11 +207,14 @@ def _buttons() -> None:
            and ok(up_r) and (up_r.get("pointer") or {}).get("buttons") == [])
 
 
-def _twice() -> None:
+def _twice(hooked: bool = False) -> None:
     """The conf runs the stub too, and `start` loads its own before the program: one copy
-    stays, the other says so, and a key arrives whole (two parsers would split it)."""
+    stays, the other says so, and a key arrives whole (two parsers would split it). `hooked`
+    loads a TSR that takes INT 1Ch on both sides of the conf's copy, so whichever copy runs
+    first, `start`'s `-c` lines or the autoexec, sits behind a hook when the other asks."""
     text = MOUSE_CONF.read_text(encoding="utf-8")
-    stub = f'mount g "{GUEST.parent.parent / "guest"}"\nG:\\INJECT.COM\nc:\n'
+    hook = "C:\\HOOK1C.COM\n" if hooked else ""
+    stub = f'mount g "{GUEST.parent.parent / "guest"}"\n{hook}G:\\INJECT.COM\n{hook}c:\n'
     conf = M.fresh(".conf")
     with open(conf, "w", encoding="utf-8") as out:
         out.write(text.replace("[autoexec]\nmount c \".\"\nc:\n",
@@ -216,8 +222,11 @@ def _twice() -> None:
     _mouse_boot(conf=conf)
     twice = _guest_line(r"STUB  \. inject already resident")
     r = M.call(server.send_keys, keys=["a", "b"], expect=r"MOUSE \. key=98$", seconds=WAIT_S)
-    judged("P a second copy the conf also runs stays out, and keys still arrive whole",
-           reply=r, holds=ok(twice) and ok(r))
+    name = ("P a second copy stays out though a TSR took INT 1Ch above the first" if hooked
+            else "P a second copy the conf also runs stays out, and keys still arrive whole")
+    copies = _count(r"STUB  \. inject device=present")
+    judged(name, reply=r, holds=ok(twice) and ok(r) and copies == 1
+           and (not hooked or _count(r"HOOK1C \. int 1Ch hooked") == 2))
     must(M.call(server.close), "closing")
 
 

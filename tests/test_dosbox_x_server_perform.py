@@ -123,7 +123,7 @@ def test_send_keys_composes_the_scan_bytes_as_key_commands(tmp_path: Path) -> No
     assert got["modifiers"] == ["ctrl", "shift"]
     want = bytes([0x1D, 0x2A, 0x1E, 0x9E, 0x1C, 0x9C, 0xAA, 0x9D])
     assert fake.commands_sent == [[b"K" + bytes([b]) for b in want]], fake.commands_sent
-    assert (got["route"], got["posted"], got["bytes"], got["ticks"]) == ("guest", 2, 8, 8)
+    assert (got["route"], got["posted"], got["bytes"], got["frames"]) == ("guest", 2, 8, 8)
     assert "activated" not in got and "restored" not in got and "focus" not in got, got
     empty = cast(dict[str, Any], server.send_keys(keys=[]))
     assert empty["status"] == "INVALID" and "at least one key" in empty["message"]
@@ -378,7 +378,7 @@ def test_send_keys_refuses_a_stopped_machine_and_the_cap_and_a_miss_blames_no_wi
     got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a"))
     assert got["status"] == "ok" and got["verify"]["seen"] is True, got
     shifted = cast(dict[str, Any], server.send_keys(keys=["b"], modifiers=["shift"]))
-    assert fake.scancodes_sent[-1] == bytes([0x2A, 0x30, 0xB0, 0xAA]) and shifted["ticks"] == 4
+    assert fake.scancodes_sent[-1] == bytes([0x2A, 0x30, 0xB0, 0xAA]) and shifted["frames"] == 4
     fake.running = False
     stopped = cast(dict[str, Any], server.send_keys(keys=["a"]))
     assert stopped["status"] == "INVALID" and "STOPPED at the debugger" in stopped["message"]

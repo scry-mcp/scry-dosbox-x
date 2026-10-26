@@ -16,9 +16,9 @@ from scry_core import value_format as vf
 
 import dosbox_checks as checks
 import dosbox_code as code
-import dosbox_console as dcons
 import dosbox_declarations as dec
 import dosbox_dump as dumping
+import dosbox_grammar as grammar
 import dosbox_placement as placement
 import dosbox_session as ds
 import dosbox_state as st
@@ -58,14 +58,14 @@ class RawPlaces:
             seg, off = placement.parse_seg_off(ref)
             if self._segs is None and not self.session.at_debugger():
                 last = STATE.last_machine()
-                real = last is not None and dcons.real_segments(last[0])
-                return dumping.real_linear(seg, off) if real and off <= dcons.offset_ceiling(
-                    dcons.REAL_MODE) else None
+                real = last is not None and grammar.real_segments(last[0])
+                return dumping.real_linear(seg, off) if real and off <= grammar.offset_ceiling(
+                    grammar.REAL_MODE) else None
             if self._segs is None:
                 self._segs = code.segments_at_stop(self.session)
             if self._segs.real:
                 return (dumping.real_linear(seg, off)
-                        if off <= dcons.offset_ceiling(dcons.REAL_MODE) else None)
+                        if off <= grammar.offset_ceiling(grammar.REAL_MODE) else None)
             base, limit = self._segs.base(seg), self._segs.limit(seg)
         except ds.Invalid:
             return None
@@ -83,7 +83,7 @@ class RawPlaces:
         cpu = self.cpu()
         if self._segs is None:            # this stop's survey was refused: the mode is not its
             return None
-        if dcons.real_segments(cpu or "") and self.place(by, ref) is None:
+        if grammar.real_segments(cpu or "") and self.place(by, ref) is None:
             return None
         return cpu
 
@@ -172,7 +172,7 @@ def watch_held(held: list[dict[str, str]], seg: int, off: int) -> dict[str, str]
     """The held BPLIST row that is a memory watch at seg:off, by value, or None; a code
     breakpoint there is not a match."""
     for b in held:
-        t = dcons.bp_row_target(b["entry"])
+        t = grammar.bp_row_target(b["entry"])
         if t is not None and t[0] in _OWN_WATCH_KINDS and (t[1], t[2]) == (seg, off):
             return b
     return None
@@ -189,12 +189,12 @@ def reachable_bytes(seg: int, off: int, width: int | None,
     """`change_bytes`, refused whole when its last byte is past the offset `mode` reaches,
     before any row goes in."""
     places = change_bytes(seg, off, width)
-    last, top = places[-1][1], dcons.offset_ceiling(mode)
+    last, top = places[-1][1], grammar.offset_ceiling(mode)
     if last > top:
         raise ds.Invalid("bad_argument",
-            f"a change watch of {len(places)} bytes at {dcons.canonical_seg_off(seg, off)} ends at "
-            f"offset 0x{last:X}, past the 0x{top:X} an offset reaches in {mode} mode: no row was "
-            "armed")
+            f"a change watch of {len(places)} bytes at {grammar.canonical_seg_off(seg, off)} "
+            f"ends at offset 0x{last:X}, past the 0x{top:X} an offset reaches in {mode} mode: no "
+            "row was armed")
     return places
 
 
@@ -327,7 +327,7 @@ def attribute_stop(session: ds.Session, *, where: dict[str, str],
     stop = (int(where["cs"], 16), int(where["eip"], 16))
     mode = where["mode"]
     holders = _bp_holders(session, mode, stop, machine=machine)
-    rows = [t[1:] for t in map(dcons.bp_row_target, (b["entry"] for b in held))
+    rows = [t[1:] for t in map(grammar.bp_row_target, (b["entry"] for b in held))
             if t is not None and t[0] == "BP"]
     if not any(_same_code_addr(mode, stop, row) for row in rows):
         holders = []
@@ -365,8 +365,11 @@ def _follow(session: ds.Session, decl: dec.Declaration, seg: int, off: int,
     except ds.Invalid as e:
         return {"from": st.seg_off(mine[0]["seg"], mine[0]["off"]) if mine else "null",
                 "to": st.seg_off(seg, off), "why": str(e)}
-    stale = [r for r in mine if (r["seg"], r["off"]) not in want]
-    have = {(r["seg"], r["off"]) for r in mine}
+    # A row of the other mode is not this watch's here, at the same numbers or not: the debugger
+    # compares it in this mode's terms.
+    kind = _own_kind(mode)
+    stale = [r for r in mine if (r["seg"], r["off"]) not in want or _row_kind(r) != kind]
+    have = {(r["seg"], r["off"]) for r in mine if r not in stale}
     missing = [place for place in want if place not in have]
     if not missing:
         _drop_stale(session, rows, stale)
@@ -375,6 +378,8 @@ def _follow(session: ds.Session, decl: dec.Declaration, seg: int, off: int,
     # A watch declared while the pointer was NULL armed nothing; it came from null.
     where = {"from": st.seg_off(old["seg"], old["off"]) if old is not None else "null",
              "to": st.seg_off(seg, off)}
+    if where["from"] == where["to"]:
+        where["why"] = OTHER_MODE_ROW
     # New rows first, so a refusal leaves the watch armed where it was.
     try:
         for (s_, o_), armed in zip(missing, session.watch_places(missing), strict=True):
@@ -389,18 +394,37 @@ def _follow(session: ds.Session, decl: dec.Declaration, seg: int, off: int,
     return where
 
 
-def _watch_row_at(place: tuple[int, int]) -> Callable[[str], bool]:
-    """A pick for `Session.delete_rows`: the memory-watch row at `place`."""
-    return lambda entry: watch_held([{"entry": entry, "index": "00"}], *place) is not None
+OTHER_MODE_ROW = ("armed again in this CPU mode: its row was armed in the other one, which the "
+                  "debugger compares in that mode's terms")
 
 
-def delete_watch_rows(session: ds.Session,
-                      places: list[tuple[int, int]]) -> tuple[list[str], list[tuple[int, int]]]:
-    """The memory-watch rows at `places` deleted: one list read, a `BPDEL` each from the highest
-    index down (a delete renumbers only the rows below), one read back. Returns the rows gone
-    and the places still listed."""
-    wanted = list(dict.fromkeys(places))
-    deleted = session.delete_rows([_watch_row_at(p) for p in wanted])
+def _own_kind(mode: str) -> str:
+    """The row kind this server arms a change watch as in `mode` (`Session.watch_places`)."""
+    return "BPPM" if mode.startswith("Pr") else "BPMEM"
+
+
+def _row_kind(row: dict[str, Any]) -> str | None:
+    target = grammar.bp_row_target(str(row.get("entry", "")))
+    return target[0] if target is not None else None
+
+
+def _watch_row_at(place: tuple[int, int], kind: str | None = None) -> Callable[[str], bool]:
+    """A pick for `Session.delete_rows`: the memory-watch row at `place`, of `kind` if named."""
+    def pick(entry: str) -> bool:
+        held = watch_held([{"entry": entry, "index": "00"}], *place)
+        return held is not None and kind in (None, _row_kind(held))
+    return pick
+
+
+def delete_watch_rows(session: ds.Session, places: list[tuple[int, int]],
+                      kinds: list[str | None] | None = None,
+                      ) -> tuple[list[str], list[tuple[int, int]]]:
+    """The memory-watch rows at `places` deleted, each of its `kinds` entry when given: one list
+    read, a `BPDEL` each from the highest index down (a delete renumbers only the rows below),
+    one read back. Returns the rows gone and the places still listed."""
+    pairs = list(dict.fromkeys(zip(places, kinds or [None] * len(places), strict=True)))
+    wanted = [place for place, _ in pairs]
+    deleted = session.delete_rows([_watch_row_at(p, k) for p, k in pairs])
     gone = [str(row["entry"]) for row, absent in deleted if row is not None and absent]
     kept = [p for p, (row, absent) in zip(wanted, deleted, strict=True)
             if row is not None and not absent]
@@ -416,7 +440,8 @@ def _drop_stale(session: ds.Session, rows: list[dict[str, Any]],
     # The list is read when the deletes are made: the debugger lists a row just armed first, so an
     # older list gives every older row the wrong index.
     try:
-        _, kept = delete_watch_rows(session, [(int(r["seg"]), int(r["off"])) for r in stale])
+        _, kept = delete_watch_rows(session, [(int(r["seg"]), int(r["off"])) for r in stale],
+                                    [_row_kind(r) for r in stale])
     except ds.Invalid as e:
         return str(e)
     rows[:] = [r for r in rows if r not in stale or (int(r["seg"]), int(r["off"])) in kept]
@@ -434,7 +459,7 @@ def rearm_declarations(session: ds.Session) -> dict[str, Any]:
     out: dict[str, Any] = {key: [] for key in REARM_BUCKETS}
     if STATE.store is None:
         return out
-    held = {dcons.bp_row_target(b["entry"]) for b in session.breakpoints()}
+    held = {grammar.bp_row_target(b["entry"]) for b in session.breakpoints()}
     places = RawPlaces(session)
     for decl in STATE.store.declarations():
         if decl.kind != "breakpoint":
@@ -626,7 +651,7 @@ def _arm_queued(session: ds.Session, decl: dec.Declaration,
     ref = decl.ref
     try:
         if decl.kind == "interrupt":
-            num, ah = dcons.parse_interrupt_row(decl.ref)
+            num, ah = grammar.parse_interrupt_row(decl.ref)
             if not any(b["entry"] == decl.ref for b in held):
                 session.breakpoint_interrupt(num, ah)
             STATE.note_armed(ref, {"kind": "int", "num": num, "ah": ah, "entry": decl.ref})
@@ -657,7 +682,7 @@ def _arm_queued(session: ds.Session, decl: dec.Declaration,
                 raise ds.Invalid("unknown_ref", str(res.get("why", res["state"])))
             want = ("BP", res["seg"], res["off"])
             entry = f"BP {res['seg']:04X}:{res['off']:04X}"
-            if not any(dcons.bp_row_target(b["entry"]) == want for b in held):
+            if not any(grammar.bp_row_target(b["entry"]) == want for b in held):
                 session.arm_code_breakpoint(res["seg"], res["off"])
                 # The list learns the row: read once before the loop, it would stack a second row on
                 # the same address.
@@ -804,9 +829,9 @@ def _mode_here(decl: dec.Declaration, places: RawPlaces,
     if machine is None:
         return places.mode_here(decl.by, decl.ref)
     cpu = machine[0]
-    if dcons.real_segments(cpu):
+    if grammar.real_segments(cpu):
         _, off = placement.parse_seg_off(decl.ref)
-        return cpu if off <= dcons.offset_ceiling(dcons.REAL_MODE) else None
+        return cpu if off <= grammar.offset_ceiling(grammar.REAL_MODE) else None
     return cpu
 
 
@@ -904,7 +929,7 @@ def something_can_stop_it() -> bool:
 def breakpoint_interrupt(session: ds.Session, number: int, ah: int | None,
                          detail: bool = False) -> dict[str, Any]:
     """The body of the `breakpoint_interrupt` tool."""
-    want = dcons.interrupt_row(number, ah)
+    want = grammar.interrupt_row(number, ah)
     decl = declare("interrupt", "address", want)
     if not session.at_debugger():
         is_new = cast(bool, placement.to_invalid(lambda: current_store().add(decl)))
@@ -925,7 +950,7 @@ def breakpoint_interrupt(session: ds.Session, number: int, ah: int | None,
         if is_new:
             placement.to_invalid(lambda: current_store().remove(ref=want, kind="interrupt"))
         raise
-    num, ah = dcons.parse_interrupt_row(want)
+    num, ah = grammar.parse_interrupt_row(want)
     STATE.note_armed(want, {"kind": "int", "num": num, "ah": ah, "entry": want})
     return st.reply(ref=want, stored=True, already_stored=not is_new, entry=want, **delta)
 
@@ -958,7 +983,7 @@ def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:
                              but=ref)
         if others:
             raise ds.Invalid("ambiguous_ref",
-                f"{dcons.canonical_seg_off(res['seg'], res['off'])} is already declared under "
+                f"{grammar.canonical_seg_off(res['seg'], res['off'])} is already declared under "
                              f"{others[0].ref!r}: one breakpoint row is one declaration, so "
                              f"clear that ref or use it")
     # Declared again in the other mode: the row's address was fixed in that stop's mode, so the same
@@ -1005,7 +1030,7 @@ def breakpoint_at(session: ds.Session, ref: str, by: str) -> dict[str, Any]:
     try:
         placement._listening(session)     # a placement reads a stopped machine's registers
         existing = next((b for b in session.breakpoints()
-                         if dcons.bp_row_target(b["entry"]) == want), None)
+                         if grammar.bp_row_target(b["entry"]) == want), None)
         if existing is not None and moved:
             session.clear_code_breakpoint(res["seg"], res["off"])
             existing = None
@@ -1079,7 +1104,7 @@ def list_breakpoints(session: ds.Session) -> dict[str, Any]:
             mine.add(("BP", res["seg"], res["off"]))
         elif placement.is_stale(decl, places.judged(decl)) and not (
                 state == "armable"
-                and any(dcons.bp_row_target(b["entry"]) == ("BP", res["seg"], res["off"])
+                and any(grammar.bp_row_target(b["entry"]) == ("BP", res["seg"], res["off"])
                         for b in held)):
             item["state"] = "orphan" if orphan(decl) else "stale"
             item["why"] = _ORPHAN_WHY if orphan(decl) else _STALE_WHY
@@ -1087,7 +1112,7 @@ def list_breakpoints(session: ds.Session) -> dict[str, Any]:
             want = ("BP", res["seg"], res["off"])
             item["entry"] = f"BP {res['seg']:04X}:{res['off']:04X}"
             item["marked"] = res["marked"]
-            listed = any(dcons.bp_row_target(b["entry"]) == want for b in held)
+            listed = any(grammar.bp_row_target(b["entry"]) == want for b in held)
             if listed:
                 mine.add(want)
             _held_state(item, decl, listed)
@@ -1096,7 +1121,7 @@ def list_breakpoints(session: ds.Session) -> dict[str, Any]:
     # A row a clear has queued for removal is not foreign.
     queued = {str(sp["entry"]) for sp in STATE.pending["disarm"]}
     foreign = [b["entry"] for b in held
-               if (t := dcons.bp_row_target(b["entry"])) is not None
+               if (t := grammar.bp_row_target(b["entry"])) is not None
                and t[0] == "BP" and t not in mine and b["entry"] not in queued]
     # A BPINT row the store did not place is foreign too, matched by whole text.
     foreign += [b["entry"] for b in held
@@ -1167,7 +1192,7 @@ def clear_breakpoints(session: ds.Session, ref: str | None) -> dict[str, Any]:
                              "entry": f"BP {res['seg']:04X}:{res['off']:04X}"}]
             plan.append((decl, rows, session.clear_code_breakpoint))
         elif decl.kind == "interrupt":
-            num, ah = dcons.parse_interrupt_row(decl.ref)
+            num, ah = grammar.parse_interrupt_row(decl.ref)
             if not rows and not running:
                 rows = [{"kind": "int", "num": num, "ah": ah, "entry": decl.ref}]
             plan.append((decl, rows, functools.partial(session.clear_interrupt_breakpoint,
@@ -1203,7 +1228,7 @@ def _aliased(ref: str, places: list[tuple[int, int]]) -> str | None:
             continue
         for seg, off in places:
             if any(r["kind"] == "watch" and (r["seg"], r["off"]) == (seg, off) for r in rows):
-                return (f"{dcons.canonical_seg_off(seg, off)} is already armed under {other!r}: "
+                return (f"{grammar.canonical_seg_off(seg, off)} is already armed under {other!r}: "
                         "one watchpoint is one declaration, so clear that ref or use it")
     return None
 
@@ -1335,8 +1360,8 @@ def _unarm_moved(session: ds.Session, ref: str, covered: list[tuple[int, int]]) 
     STATE.armed.pop(("watch", ref), None)
     if kept:
         raise ds.Invalid("unexpected_answer", f"the rows the other mode armed at "
-                         f"{', '.join(dcons.canonical_seg_off(*p) for p in kept)} are still listed "
-                         "after their delete: nothing was armed in this mode")
+                         f"{', '.join(grammar.canonical_seg_off(*p) for p in kept)} are still "
+                         "listed after their delete: nothing was armed in this mode")
 
 
 def _stored_watch(ref: str) -> dec.Declaration | None:
@@ -1391,7 +1416,7 @@ def list_watches(session: ds.Session) -> dict[str, Any]:
     _pending_states(out)
     queued = {(sp["seg"], sp["off"]) for sp in STATE.pending["disarm"] if sp["kind"] == "watch"}
     foreign = [b["entry"] for b in held
-               if (t := dcons.bp_row_target(b["entry"])) is not None
+               if (t := grammar.bp_row_target(b["entry"])) is not None
                and t[0] in _WATCH_KINDS
                and (t[0] not in _OWN_WATCH_KINDS
                     or ((t[1], t[2]) not in mine and (t[1], t[2]) not in queued))]

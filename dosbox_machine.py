@@ -17,7 +17,8 @@ from typing import Any, NamedTuple
 
 from scry_core import reply_contract as contract
 
-import dosbox_console as dcons
+import dosbox_debugger as dbg
+import dosbox_grammar as grammar
 import dosbox_logs as dlogs
 import dosbox_placement as placement
 import dosbox_running as running
@@ -283,21 +284,18 @@ def parse_cpu(text: str) -> dict[str, Any]:
             "ldtr": {"selector": ldt[1], "base": ldt[2], "limit": ldt[3]}}
 
 
-#: cr0's protection-enable and paging bits.
-CR0_PE = 1
-CR0_PG = 1 << 31
 #: The `cpu_mode` words whose selectors name descriptors, and those whose segments are paragraphs.
 PROTECTED_MODES = frozenset({"protected", "paged"})
-REAL_SEGMENT_MODES = frozenset({"real", dcons.V86_MODE})
+REAL_SEGMENT_MODES = frozenset({"real", grammar.V86_MODE})
 
 
 def cpu_mode(cpu: dict[str, Any]) -> str:
     """`real`, `protected` or `paged` from this listing's cr0, so gated sections share its moment.
     A `VM86` stop reads protected here; `interrupt_vectors` takes the stop's own word."""
     cr0 = int(cpu["cr0"], 16)
-    if not cr0 & CR0_PE:
+    if not cr0 & dbg.CR0_PE:
         return "real"
-    return "paged" if cr0 & CR0_PG else "protected"
+    return "paged" if cr0 & dbg.CR0_PG else "protected"
 
 
 DESC_TOP = re.compile(r"^([0-9A-F]{4}): b:([0-9A-F]{8}) type: ([0-9A-F]{2}) parbg$")
@@ -595,8 +593,8 @@ def interrupt_vectors(session: ds.Session, number: int | None) -> dict[str, Any]
             f"`INTVEC` wrote a file that is not the vector table: {e.line}") from None
     reading = read(session, PLACEMENT_SECTIONS)
     # cr0 says protected at a VM86 stop, and the vectors there are still SEG:OFF.
-    if running.stop_cpu_mode(session) == dcons.V86_MODE:
-        reading.mode = dcons.V86_MODE
+    if running.stop_cpu_mode(session) == grammar.V86_MODE:
+        reading.mode = grammar.V86_MODE
     reading.sources = {"vectors": ["INTVEC"], **reading.sources}
     if all(r["seg_off"] == st.seg_off(0, 0) for r in rows):
         reading.notes.append("every vector is 0000:0000: nothing has filled the table yet")

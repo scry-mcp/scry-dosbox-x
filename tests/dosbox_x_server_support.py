@@ -28,9 +28,9 @@ from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 
 import dosbox_binary as binaries
-import dosbox_console as dcons
 import dosbox_declarations as dec
 import dosbox_folds as folds
+import dosbox_grammar as grammar
 import dosbox_inputs as inputs
 import dosbox_launch as dlaunch
 import dosbox_logs as dlogs
@@ -59,13 +59,13 @@ def _log_wait_as_guest(self: Any, pattern: str, seconds: float, channel: str, ma
 def stub_build(monkeypatch: pytest.MonkeyPatch, headless: bool = True,
                commands: tuple[str, ...] = binaries.COMMANDS) -> None:
     """What a faked build carries, read at `start` off a path that holds no file."""
-    monkeypatch.setattr(binaries, "headless", lambda _b: headless)
+    monkeypatch.setattr(binaries, "debugger_headless", lambda _b: headless)
     monkeypatch.setattr(binaries, "debugger_commands", lambda _b: list(commands))
 
 
 def stubbed_build() -> Any:
     """`stub_build` for a case with no monkeypatch at hand."""
-    return mock.patch.multiple(binaries, headless=lambda _b: True,
+    return mock.patch.multiple(binaries, debugger_headless=lambda _b: True,
                                debugger_commands=lambda _b: list(binaries.COMMANDS))
 
 class RunStateOnly:
@@ -131,6 +131,7 @@ class FakeSession(SessionGates):
         self.memdump_calls: list[tuple[int, int, int]] = []
 
     reap_failed = ""
+    drain_ended = "the descriptor reached end of file"
     survey_text = ""
     ended_how = "none"
 
@@ -233,7 +234,7 @@ class FakeSession(SessionGates):
 
     def clear_interrupt_breakpoint(self, number: int,
                                    ah: int | None = None) -> dict[str, object]:
-        return {"entry": dcons.interrupt_row(number, ah), "removed": True}
+        return {"entry": grammar.interrupt_row(number, ah), "removed": True}
 
     masks = False
     rom = False
@@ -260,9 +261,6 @@ class FakeSession(SessionGates):
     def resume(self) -> dict[str, object]:
         # a constant: what `halted` is read off is exercised against captured deltas
         return {"output": "", "halted": False, "stopped_at": None}
-
-    def resume_after_command(self) -> dict[str, object]:
-        return self.resume()
 
     # contracts, not behaviour (driven against a debugger double in `test_dosbox_x_debug.py`);
     # each returns its tool's field set, so a tool dropping `running` or `arrived` shows
@@ -573,6 +571,7 @@ class NamesFake(SessionGates):
         self.stop_count = 0
         self.stop_unread = False
         self.reap_failed = ""
+        self.drain_ended = ""
         self.ended_how = "none"
         self.mem: dict[tuple[int, int], bytes] = {}
         self.log: list[str] | None = []
@@ -868,14 +867,14 @@ class NamesFake(SessionGates):
 
     def breakpoint_interrupt(self, number: int, ah: int | None = None) -> str:
         self._console()
-        entry = dcons.interrupt_row(number, ah)
+        entry = grammar.interrupt_row(number, ah)
         self._listed(entry)
         return f"DEBUG: Set interrupt breakpoint at INT {number:02X}"
 
     def clear_interrupt_breakpoint(self, number: int,
                                    ah: int | None = None) -> dict[str, object]:
         self._console()
-        entry = dcons.interrupt_row(number, ah)
+        entry = grammar.interrupt_row(number, ah)
         before = len(self.rows)
         self._relist([r for r in self.rows if r["entry"] != entry])
         return {"entry": entry, "removed": len(self.rows) < before}
@@ -984,7 +983,7 @@ def _start_over_a_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
     conf = tmp_path / "g.conf"
     conf.write_text(conf_text, encoding="utf-8")
     booted = double(conf=conf)
-    mode = "real" if booted.mode == dcons.REAL_MODE else "protected"
+    mode = "real" if booted.mode == grammar.REAL_MODE else "protected"
     store = dec.DeclarationStore(str(conf.resolve()))
     for ref, fp in stamped.items():
         store.add(dec.Declaration("breakpoint", "address", ref, created_at="t0", origin="s1",

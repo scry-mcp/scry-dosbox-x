@@ -87,7 +87,7 @@ def scan_sequence(keys: list[str], mods: str) -> bytes:
 
 # The opcodes `guest/inject.asm` reads; its header is the contract.
 OP_KEY, OP_BUTTON, OP_MOVE, OP_REPORT = b"K", b"B", b"M", b"R"
-STUB_PROTOCOL = "3"
+STUB_PROTOCOL = "4"
 STUB_ANNOUNCE = re.compile(r"STUB  \. inject device=(\w+)(?: proto=(\d+))?")
 REPORT_LINE = re.compile(
     r"STUB  \. mouse x=(\d+) y=(\d+) buttons=(\d+) max=(\d+),(\d+) mode=(\d+) "
@@ -452,7 +452,7 @@ def send_keys(session: ds.Session, keys: list[str], modifiers: list[str] | None,
             _send(session, key_commands(seq))
         except ds.Invalid as e:
             raise _delivered(e) from None
-        return {"route": "guest", "posted": len(keys), "bytes": len(seq), "ticks": len(seq)}
+        return {"route": "guest", "posted": len(keys), "bytes": len(seq), "frames": len(seq)}
     return _post_and_verify(session, "key", post, expect, seconds, progress=progress,
                             keys=keys, modifiers=modifiers or [])
 

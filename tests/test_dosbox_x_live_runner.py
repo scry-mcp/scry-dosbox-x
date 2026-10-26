@@ -340,8 +340,9 @@ def test_the_canary_is_the_resolved_binary_in_a_form_that_ends_by_itself(
         monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(dosbox_binary, "resolve",
                         lambda _b: dosbox_binary.Resolved("/opt/dosbox-x", "PATH"))
-    assert dosbox_binary.canary_for() == ["/opt/dosbox-x", "-defaultconf", "-fastlaunch", "-set",
-                                          "sdl videodriver=dummy", "-exit"]
+    assert dosbox_binary.canary_for() == ["/opt/dosbox-x", "-defaultconf", "-fastlaunch",
+                                          "-nopromptfolder", "-set", "sdl videodriver=dummy",
+                                          "-exit"]
 
 
 def test_no_binary_is_no_canary(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

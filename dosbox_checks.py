@@ -22,10 +22,10 @@ from scry_core import vocabulary as vocab
 
 import dosbox_code as code
 import dosbox_comment_file as cf
-import dosbox_console as dcons
 import dosbox_dac as vgadac
 import dosbox_declarations as dec
 import dosbox_find as finder
+import dosbox_grammar as grammar
 import dosbox_inputs as inputs
 import dosbox_launch as dlaunch
 import dosbox_logs as dlogs
@@ -36,6 +36,7 @@ import dosbox_placement as placement
 import dosbox_screen as screen
 import dosbox_sequence as sequence
 import dosbox_session as ds
+import dosbox_stepping as stepping
 import dosbox_trace as tracing
 
 Check = Callable[..., None]
@@ -128,18 +129,18 @@ def check_load_comments(path: object, **_: Any) -> None:
 def write_data(value: str) -> bytes:
     """A caller's hex bytes, parsed once, up to one read's reach (the readback's span)."""
     data = finder.hex_bytes("data_hex", value, verb="write")
-    if len(data) > dcons.READ_BYTES_MAX:
+    if len(data) > grammar.READ_BYTES_MAX:
         raise ds.Invalid("bad_argument",
-            f"a write carries up to {dcons.READ_BYTES_MAX} bytes, what one read takes back for "
+            f"a write carries up to {grammar.READ_BYTES_MAX} bytes, what one read takes back for "
             f"the readback; {len(data)} is a region")
     return data
 
 
 def read_length(length: int) -> None:
     """`read_memory`'s span: 1 to one read's reach."""
-    if not 1 <= length <= dcons.READ_BYTES_MAX:
+    if not 1 <= length <= grammar.READ_BYTES_MAX:
         raise ds.Invalid("bad_argument",
-            f"length={length!r} is not 1 to {dcons.READ_BYTES_MAX}; above that the answer is "
+            f"length={length!r} is not 1 to {grammar.READ_BYTES_MAX}; above that the answer is "
             "`memdump`, which writes exactly the bytes asked for")
 
 
@@ -149,9 +150,9 @@ CHANGE_WATCH_MAX = 16
 
 def watch_width(mode: str, width: int) -> None:
     """A show watch is at most one read's reach; a change watch at most `CHANGE_WATCH_MAX`."""
-    if mode == "show" and width > dcons.READ_BYTES_MAX:
+    if mode == "show" and width > grammar.READ_BYTES_MAX:
         raise ds.Invalid("bad_argument",
-            f"a show watch reads up to {dcons.READ_BYTES_MAX} bytes at a stop (what one read "
+            f"a show watch reads up to {grammar.READ_BYTES_MAX} bytes at a stop (what one read "
             f"takes); {width} is a region, and it would be stored only to report "
             f"'unreadable' at every stop. Use memdump for a region, or a smaller length")
     if mode == "change" and width > CHANGE_WATCH_MAX:
@@ -201,7 +202,7 @@ def _log_wait(pattern: str, channel: str, seconds: float = 30.0, since_mark: int
 
 
 def _step(count: int = 1, mode: str = "into", **_: Any) -> None:
-    ds.check_step(mode, count)
+    stepping.check_step(mode, count)
 
 
 def _run_to(ref: str, control: str = "", seconds: float = 30.0, **_: Any) -> None:

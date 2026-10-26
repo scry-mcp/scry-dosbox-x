@@ -316,7 +316,8 @@ def test_an_output_pipe_that_cannot_be_opened_closes_the_channel(
     monkeypatch.setattr(control, "ControlChannel", _Recording)
     monkeypatch.setattr(os, "pipe", no_pipe)
     with pytest.raises(OSError, match="out of descriptors"):
-        ds.Session(dlaunch.Launch(conf=root / "g.conf", cwd=root, seconds=30, headless=True))
+        ds.Session(dlaunch.Launch(conf=root / "g.conf", cwd=root, seconds=30,
+                                  debugger_headless=True))
     assert [r.closed for r in _Recording.made] == [True]
 
 

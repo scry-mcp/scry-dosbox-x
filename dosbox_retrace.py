@@ -22,8 +22,8 @@ import dosbox_state as st
 import dosbox_vga as vga
 from dosbox_state import STATE
 
-CYCLES_WHY = ("the cycle count counts only on the normal core, and which core runs is not "
-              "something this server can read, so no count is given")
+CYCLES_WHY = (f"{dbg.NORMAL_CORE_CYCLES}, and which core runs is not something this server "
+              f"can read, so no count is given")
 PENDING_NOTE = "a retrace stop is still armed: the next release stops at the next retrace"
 UNCUT_NOTE = ("a code breakpoint is declared, and on a dynamic core one can fail to cut a frame: "
               "`ELAPSED` does not prove its address was not reached; `run_to` and `resume` "

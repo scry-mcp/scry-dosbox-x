@@ -36,8 +36,8 @@ from test_dosbox_x_comments import (
 )
 
 import dosbox_comment_file as cf
-import dosbox_console as dcons
 import dosbox_declarations as dec
+import dosbox_grammar as grammar
 import dosbox_state as dstate
 import dosbox_x_server as server
 
@@ -47,7 +47,7 @@ import dosbox_x_server as server
 #: a row only the second batch's span holds. CS's base is 00400000, as each map's.
 P, Q, W, V, R = "0814:0106", "00A7:2000", "00A7:00062310", "00A7:00120000", "00A7:00185000"
 SPELLED = {W: "00A7:00062310"}
-MODE = {P: dcons.REAL_MODE, Q: "Pr32", W: "Pr32", V: "Pr32", R: "Pr32"}
+MODE = {P: grammar.REAL_MODE, Q: "Pr32", W: "Pr32", V: "Pr32", R: "Pr32"}
 
 
 class _Sessions:
@@ -93,7 +93,7 @@ class _Sessions:
                                                    conf_text=self.conf_text)
             ok(got)
         elif verb == "add":
-            self.booted.mode = MODE[arg] if arg != P else dcons.REAL_MODE
+            self.booted.mode = MODE[arg] if arg != P else grammar.REAL_MODE
             ok(server.comment_write("add", ref=arg, text="same text"))
         elif verb == "load":
             ok(server.comment_write("load", path=str(_file(self.tmp, (SPELLED.get(arg, arg),
@@ -116,14 +116,14 @@ class _Sessions:
         elif verb in ("realload", "realbp"):
             # A REAL-MODE STOP AFTER THE MAP, where a protected-mode row cannot be placed: the
             # file loads it waiting, and the breakpoint is declared without a place.
-            self.booted.mode = dcons.REAL_MODE
+            self.booted.mode = grammar.REAL_MODE
             ok(server.comment_write("load", path=str(_file(self.tmp, (SPELLED.get(arg, arg),
                                                                "same text"))))
                if verb == "realload" else server.breakpoint_at(ref=arg))
         elif verb in ("runbp", "realrunbp"):
             # DECLARED WHILE THE GUEST RUNS, after a stop of that mode (`runbp` protected,
             # `realrunbp` real): stored and queued, `pending`. The guest is left running.
-            self.booted.mode = "Pr32" if verb == "runbp" else dcons.REAL_MODE
+            self.booted.mode = "Pr32" if verb == "runbp" else grammar.REAL_MODE
             where, regs = self.booted.where_and_registers()
             dstate.STATE.remember_stop(self.booted, where, regs, [], {})
             self.booted.running = True
@@ -131,7 +131,7 @@ class _Sessions:
         elif verb in ("pmstop", "realstop"):
             # THE GUEST STOPS in that mode, and the first call after the stop drains the queue.
             self.booted.running = False
-            self.booted.mode = "Pr32" if verb == "pmstop" else dcons.REAL_MODE
+            self.booted.mode = "Pr32" if verb == "pmstop" else grammar.REAL_MODE
             where, regs = self.booted.where_and_registers()
             dstate.STATE.remember_stop(self.booted, where, regs, [], {})
             ok(server.declaration_list("breakpoint"))
@@ -154,7 +154,7 @@ class _Sessions:
         # `real <key>` and `pm <key>` list the row at a stop of that mode; a bare key lists it
         # in the mode its ref is written for (`MODE`).
         at, _, rest = key.partition(" ")
-        stop = {"real": dcons.REAL_MODE, "pm": "Pr32"}.get(at)
+        stop = {"real": grammar.REAL_MODE, "pm": "Pr32"}.get(at)
         key = rest if stop is not None else key
         verb, _, ref = key.rpartition(" ")
         self.booted.mode = stop or MODE[ref]
@@ -734,7 +734,7 @@ def test_a_held_row_of_another_build_given_another_text_is_this_builds(tmp_path:
 
 
 @pytest.mark.parametrize("ref, held_in, then", [
-    ("00A7:00045F80", dcons.REAL_MODE, "Pr32"), ("0000:0084", "Pr32", dcons.REAL_MODE),
+    ("00A7:00045F80", grammar.REAL_MODE, "Pr32"), ("0000:0084", "Pr32", grammar.REAL_MODE),
     ("00A7:00045F80", "Pr32", "Pr32")])
 def test_a_held_row_of_another_build_given_its_text_where_it_waits_or_not_is_brought(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ref: str, held_in: str,
@@ -744,7 +744,7 @@ def test_a_held_row_of_another_build_given_its_text_where_it_waits_or_not_is_bro
     mode: brought to map A's build, its stamp kept."""
     run = _Sessions(tmp_path, monkeypatch)
     run.step("start")
-    run.booted.mode = "Pr32" if ref.startswith("00A7") else dcons.REAL_MODE
+    run.booted.mode = "Pr32" if ref.startswith("00A7") else grammar.REAL_MODE
     ok(server.comment_write("add", ref=ref, text="same"))
     run.step("map B")
     run.step("start")

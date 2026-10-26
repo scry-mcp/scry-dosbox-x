@@ -19,6 +19,8 @@ import dosbox_launch as dlaunch
 import dosbox_paths as paths
 import dosbox_placement as placement
 import dosbox_presence as dpresence
+import dosbox_process as dprocess
+import dosbox_run_state as run_state
 import dosbox_running as running
 import dosbox_sequence as sequence
 import dosbox_session as ds
@@ -88,7 +90,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         input_port=input_port,
         state_dir=state_path if state_path is not None else cwd_path / dlaunch.DEFAULT_STATE_SUBDIR,
         binary=resolved.path,
-        headless=binaries.headless(resolved.path),
+        debugger_headless=binaries.debugger_headless(resolved.path),
         debugger_commands=frozenset(binaries.debugger_commands(resolved.path)),
         background=dlaunch.judge_background(background, shared),
     )
@@ -110,7 +112,8 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     STATE.starting = session
     try:
         ready = session.wait_ready(
-            timeout=max(ds.READY_TIMEOUT_S - (time.monotonic() - asked), 0.0), progress=progress)
+            timeout=max(run_state.READY_TIMEOUT_S - (time.monotonic() - asked), 0.0),
+            progress=progress)
     except ds.Invalid as e:
         # Closed before the refusal goes out, or an emulator keeps running behind an INVALID.
         # `wait_ready` raising with the child alive is where a stray emulator is most likely.
@@ -200,6 +203,7 @@ def close(progress: ds.Progress, detail: bool = False) -> dict[str, Any]:
              else narrowing.omission(["stdout_tail", "errorlog_tail"], CLOSE_HOW))
     # Set only by the close: a SIGKILLed, unreaped child has no exit code.
     unreaped = STATE.session.reap_failed
+    drained = STATE.session.drain_ended
     ended_by = STATE.session.ended_how
     STATE.session = None
     STATE.forget_symbols()
@@ -209,4 +213,7 @@ def close(progress: ds.Progress, detail: bool = False) -> dict[str, Any]:
         f"the emulator was SIGKILLed and not reaped ({unreaped}): it may still be on the "
         f"machine" if unreaped else "the emulator's exit code could not be read")
     return {"status": "ok", "closed": True, **facts, "ended_by": ended_by,
-            "exit_code": exit_code, **tails, "session": was}
+            "exit_code": exit_code, **tails,
+            **({"note": f"the emulator's output reader: {drained}"}
+               if drained and drained != dprocess.DRAIN_EOF else {}),
+            "session": was}

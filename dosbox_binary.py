@@ -22,8 +22,12 @@ def canary_for(binary: str = "") -> list[str] | None:
         found = resolve(binary).path
     except Invalid:
         return None
-    return [found, "-defaultconf", "-fastlaunch", "-set", "sdl videodriver=dummy", "-exit"]
+    return [found, "-defaultconf", "-fastlaunch", NO_FOLDER_PROMPT, "-set",
+            "sdl videodriver=dummy", "-exit"]
 
+
+#: Else a macOS build asks for its folder in a dialog that SIGTERM cannot end.
+NO_FOLDER_PROMPT = "-nopromptfolder"
 
 # Compiled only under `C_HEAVY_DEBUG`. Read from bytes: an unknown command poisons input.
 HEAVY_DEBUG_MARK = b"LOGS/LOGL/LOGC [num]"
@@ -63,7 +67,7 @@ def debugger(binary: str) -> bool:
     return _carries(binary, DEBUGGER_MARK, "the debugger")
 
 
-def headless(binary: str) -> bool:
+def debugger_headless(binary: str) -> bool:
     return _carries(binary, HEADLESS_MARK, "`debugger headless`")
 
 

@@ -21,13 +21,13 @@ import dosbox_presence as dpresence
 import dosbox_stub_link as stub_link
 
 
-def _streams(headless: bool) -> tuple[int, int] | None:
+def _streams(debugger_headless: bool) -> tuple[int, int] | None:
     """The read and write ends the emulator's output goes to; None for a console of its own.
 
     A debugger with a screen never stops unless all three streams are a terminal (POSIX) or it
     has a console (Windows): it gets a terminal nobody reads, or the hidden console's streams.
     A headless debugger's output is a pipe."""
-    if headless:
+    if debugger_headless:
         return os.pipe()
     if sys.platform == "win32":
         return None
@@ -61,6 +61,10 @@ GUARDIAN_GRACE_S = 10.0
 DRAIN_KEEP = 4 * 1024 * 1024
 
 DRAIN_JOIN_SECS = 2.0
+#: Windows has no SIGTERM to ask with: `signal_group` terminates, a kill and never a quit.
+TERMINATES = sys.platform == "win32"
+#: The output reader's ending when nothing went wrong.
+DRAIN_EOF = "the descriptor reached end of file"
 
 # Small: with the quit warning off a guest answers SIGTERM at once, so what ignores it is deaf.
 TERM_GRACE = 2.0
@@ -126,7 +130,7 @@ class Process:
         try:
             self.control = control.ControlChannel(lambda: self.proc.poll())
             launch = self.launch = replace(launch, control_port=self.control.port)
-            ends = _streams(launch.headless)
+            ends = _streams(launch.debugger_headless)
         except BaseException:
             if listener is not None:
                 listener.close()
@@ -197,7 +201,7 @@ class Process:
         counted.
         """
         assert self._out is not None
-        ended = "the descriptor reached end of file"
+        ended = DRAIN_EOF
         while True:
             try:
                 chunk = os.read(self._out, 65536)
@@ -265,7 +269,7 @@ class Process:
                 self._termed = True
                 if wait_exit(self.proc, TERM_GRACE, progress,
                              "close: waiting for the emulator to leave on SIGTERM") is not None:
-                    self.ended_how = "quit"
+                    self.ended_how = "killed" if TERMINATES else "quit"
                 else:
                     self.ended_how = "killed"
                     self._signal_group(guardian.KILL)

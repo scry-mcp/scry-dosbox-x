@@ -16,8 +16,8 @@ from test_dosbox_x_comments import _ParkedInRealMode, ok
 
 import dosbox_arming as arming
 import dosbox_code as code
-import dosbox_console as dcons
 import dosbox_declarations as dec
+import dosbox_grammar as grammar
 import dosbox_state as dstate
 import dosbox_x_server as server
 
@@ -56,7 +56,7 @@ def test_a_raw_watch_placed_in_real_mode_waits_at_a_protected_mode_stop(
         assert item["state"] == "unarmable", item
         assert "placed at a real-mode stop" in item["why"], item
         assert "value" not in item and "bytes" not in item, item
-    booted.mode = dcons.REAL_MODE
+    booted.mode = grammar.REAL_MODE
     back = _at_stop(booted, AT)
     assert (back["state"], back["value"]) == ("evaluated", "nan"), back
 

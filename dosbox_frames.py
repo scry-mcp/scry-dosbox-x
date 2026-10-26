@@ -82,7 +82,8 @@ def frame(ses: ds.Session, at: int, dest: Path, source: Path | None = None) -> P
             ["ffmpeg", "-v", "error", "-y", "-i", str(src),
              "-vf", f"select='eq(n\\,{at})'", "-fps_mode", "passthrough",
              "-frames:v", "1", "-f", "image2", "-c:v", "png", str(dest)],
-            capture_output=True, text=True, check=False, timeout=ds.FFMPEG_SECS)
+            capture_output=True, text=True, errors="replace", check=False,
+            timeout=ds.FFMPEG_SECS)
     except subprocess.TimeoutExpired:
         # Not a raw traceback: `tool()` translates only `Invalid`.
         raise Invalid("host_failed", f"`ffmpeg` did not return within {ds.FFMPEG_SECS}s pulling "

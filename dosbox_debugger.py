@@ -16,8 +16,8 @@ from scry_core import cancel
 from scry_core.progress import PROGRESS_EVERY_S, Progress, no_progress
 from scry_core.reply_contract import Invalid
 
-import dosbox_console as dcons
 import dosbox_control as control
+import dosbox_grammar as grammar
 
 if TYPE_CHECKING:
     import dosbox_session as ds
@@ -29,12 +29,14 @@ NOT_RECOGNIZED = "*** Debugger command not recognized"
 
 RUNSTATE = "RUNSTATE"
 RUNSTATE_LINE = re.compile(r"^DEBUG: RUNSTATE (stopped|running) cycles=(\d+) ms=(\d+\.\d+)$")
+#: What `RUNSTATE`'s `cycles` holds, as every reply that leans on it says.
+NORMAL_CORE_CYCLES = "the cycle count counts only what the normal core runs"
 COMMANDS_SECTION = "REFERENCE.md, Debugger commands"
 #: The pause between two `RUNSTATE`s of a wait, one request in flight.
 POLL_PAUSE_S = 0.02
 
 #: The survey's one `EV`: every register a stop reply carries, then the flags and CR0.
-SURVEY_NAMES = (*dcons.REGISTER_NAMES, "EFLAGS", "CR0")
+SURVEY_NAMES = (*grammar.REGISTER_NAMES, "EFLAGS", "CR0")
 CR0_PE, CR0_PG, EFLAGS_VM = 1, 1 << 31, 1 << 17
 
 
@@ -129,19 +131,19 @@ def _ev(session: ds.Session, names: tuple[str, ...]) -> dict[str, int]:
 
 
 def _spelled(name: str, value: int) -> str:
-    return f"{value:04X}" if name in dcons.SEGMENT_NAMES else f"{value:08X}"
+    return f"{value:04X}" if name in grammar.SEGMENT_NAMES else f"{value:08X}"
 
 
 def survey(session: ds.Session) -> tuple[dict[str, str], dict[str, str], bool]:
     """Where a stopped machine is, its registers and whether paging is on: one `EV`, plus
     `SELINFO CS` in protected mode, whose code size the window's `Pr16`/`Pr32` is."""
     got = _ev(session, SURVEY_NAMES)
-    registers = {name: _spelled(name, got[name]) for name in dcons.REGISTER_NAMES}
+    registers = {name: _spelled(name, got[name]) for name in grammar.REGISTER_NAMES}
     paging = bool(got["CR0"] & CR0_PG)
     if not got["CR0"] & CR0_PE:
-        mode = dcons.REAL_MODE
+        mode = grammar.REAL_MODE
     elif got["EFLAGS"] & EFLAGS_VM:
-        mode = dcons.V86_MODE
+        mode = grammar.V86_MODE
     else:
         mode = "Pr32" if session.selector("CS")["big"] else "Pr16"
     where = {"cs": registers["CS"], "eip": registers["EIP"], "mode": mode}

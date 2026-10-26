@@ -14,6 +14,14 @@
 ;
 ; ADDRESSES AT A STOP ARE REAL-MODE ONES: CS is the program's own segment, as DOS loaded it.
 ;
+; THE SAME NUMBERS IN TWO MODES. `0010:0000` is the vector table in real mode (INT 40h's offset)
+; and, once the GDT is in, the start of this segment through the data selector, which is 10h. The
+; guest puts `twin_byte`'s offset in both before it leaves real mode, so a watch through the raw
+; pointer `[0010:0000]` resolves to `0010:twin_byte` at a stop of either mode, at `twin` (real)
+; and at `pm` (16-bit protected). The byte there is the same in both places too, so a real-mode
+; row does not fire as the mode switches and the protected stop meets it still listed: the
+; matrix's V section proves a row of one mode is never kept in the other.
+;
 ;     nasm -f bin v86.asm -o v86.com
         cpu     386
         org     0x100
@@ -21,7 +29,13 @@
 start:  cli
         push    word 0x0002             ; NT, IOPL and the rest clear: an IRET under NT is a task return
         popf
-        mov     ax, cs
+        xor     ax, ax
+        mov     es, ax
+        mov     word [es:TWIN * 16], twin_byte      ; nothing raises INT 40h with interrupts off
+        mov     dword [0], twin_byte    ; the PSP's first bytes: this program never exits
+        mov     al, [twin_byte]
+        mov     [es:TWIN * 16 + twin_byte], al      ; an unused vector, interrupts off
+twin:        mov     ax, cs
         movzx   eax, ax
         shl     eax, 4                  ; linear base of this segment
         mov     [base], eax
@@ -120,6 +134,7 @@ fault:  mov     dx, 0xE9
         jmp     .h
         bits    16
 
+twin_byte: db   0x5A
 msg:    db      "V86 "
 digits: db      "0000", 10, 0
 base:   dd      0
@@ -127,6 +142,7 @@ vm_seg: dw      0
 
 SEL_CODE equ gdt_code - gdt
 SEL_DATA equ gdt_data - gdt
+TWIN     equ 0x10                       ; a real segment equal to SEL_DATA
 SEL_TSS  equ gdt_tss - gdt
 SEL_C32  equ gdt_c32 - gdt
 
@@ -160,3 +176,5 @@ tss_end:
 stack0_top:
         times   256 db 0
 vm_stack_top:
+        times   -(SEL_DATA != TWIN) db 0  ; negative, so no assembly, unless the twin is SEL_DATA
+        times   -(TWIN * 16 + (twin_byte - $$) + 0x100 >= 0x400) db 0  ; its real byte a vector

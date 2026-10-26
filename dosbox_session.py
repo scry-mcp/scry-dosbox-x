@@ -25,9 +25,8 @@ from scry_core.progress import no_progress as no_progress
 from scry_core.reply_contract import Invalid as Invalid
 
 import dosbox_collect as dcollect
-import dosbox_console as dcons
 import dosbox_debugger as dbg
-import dosbox_disasm as disasm
+import dosbox_grammar as grammar
 import dosbox_launch as dlaunch
 import dosbox_paths as paths
 import dosbox_process as dprocess
@@ -35,23 +34,16 @@ import dosbox_stub_link as stub_link
 
 # WHERE EACH SETTABLE NAME IS READ BACK, and at what width in bits.
 READBACK: dict[str, tuple[str, int]] = {
-    **{n.lower(): (n, 32) for n in dcons.WIDE_NAMES},
-    **{n.lower(): (n, 16) for n in dcons.SEGMENT_NAMES},
-    **{n: (f"E{n.upper()}", 16) for n in dcons.LOW_HALVES},
+    **{n.lower(): (n, 32) for n in grammar.WIDE_NAMES},
+    **{n.lower(): (n, 16) for n in grammar.SEGMENT_NAMES},
+    **{n: (f"E{n.upper()}", 16) for n in grammar.LOW_HALVES},
 }
 
-#: The ways to step, as `step` takes them.
-STEP_MODES = ("over", "into")
 # `VRT`: run, and stop at the next vertical retrace.
 RETRACE_COMMAND = "VRT"
 # THE `LOG` FAMILY, one word per line shape: typed with its hex count.
 LOG_WORDS = ("LOG", "LOGS", "LOGL", "LOGC")
 
-# THE CEILING ON ONE `step` CALL, and it is a cost bound rather than a safety one.
-STEP_MAX = 64
-#: How long one step may take: `STEPIN` answers once its instruction ran, and a step over runs a
-#: CALL, an INT, a LOOP or a REP to its next instruction.
-STEP_WAIT_S = 6.0
 #: How long `resume` watches for a stop the release ran straight into.
 RESUME_LOOK_S = 1.0
 
@@ -97,15 +89,11 @@ FFMPEG_SECS = 120
 
 SCREENSHOT_COMMAND = b"S"   # the stub's opcode for the device's capture trigger (guest/inject.asm)
 
-BREAK_IN_WAIT_S = 5.0     # from BREAK on the channel to `RUNSTATE` saying stopped
 SNAPSHOT_WAIT_S = 10.0
 # A STATE IS SAVED AND LOADED BY THE DEBUGGER'S OWN COMMANDS, `SAVESTATE <file>` and `LOADSTATE
 # <file>` over the debugger channel.
 STATE_WAIT_S = 30.0
 
-#: The line a build without `debugger headless` gives `BREAK` when it has no terminal to draw on:
-#: its debugger never stops.
-DEBUGGER_UNAVAILABLE = "is not available unless you start DOSBox-X from a terminal"
 
 
 class NotStopped(Invalid):
@@ -159,9 +147,9 @@ def avi_facts(data: bytes) -> dict[str, object]:
 def check_register_name(name: str) -> str:
     """The lower-case register `SR` takes, or the refusal naming the ones it does."""
     key = name.strip().lower()
-    if key not in dcons.SETTABLE:
+    if key not in grammar.SETTABLE:
         raise Invalid("bad_argument", f"{name!r} is not a register this debugger sets. One of: "
-                      f"{', '.join(sorted(dcons.SETTABLE))}")
+                      f"{', '.join(sorted(grammar.SETTABLE))}")
     return key
 
 
@@ -187,15 +175,6 @@ def check_interrupt(number: int, ah: int | None) -> None:
         raise Invalid("bad_argument", f"an interrupt number is 0x00 to 0xFF; got {number}")
     if ah is not None and not 0 <= ah <= BYTE_MAX:
         raise Invalid("bad_argument", f"AH is 0x00 to 0xFF; got {ah}")
-
-
-def check_step(mode: str, count: int) -> None:
-    vocab.one_of("mode", mode, STEP_MODES,
-                 ": `over` runs a CALL to its return, `into` follows it")
-    if not 1 <= count <= STEP_MAX:
-        raise Invalid("bad_argument",
-            f"a step count is 1 to {STEP_MAX}; got {count}. Each step is a command and a "
-            f"reading of where it landed, so the ceiling is a cost bound: past it, use `run_to`")
 
 
 def check_dump_length(length: int) -> None:
@@ -257,11 +236,11 @@ def check_segment(seg: int) -> None:
 # THE SESSION'S SEAMS, each its own module of the methods' bodies, which `Session` delegates to.
 import dosbox_frames as frames  # noqa: E402
 import dosbox_log_reader as log_reader  # noqa: E402
+import dosbox_run_state as run_state  # noqa: E402
 import dosbox_saved_states as saved_states  # noqa: E402
+import dosbox_stepping as stepping  # noqa: E402
 import dosbox_symbol_file as symbol_file  # noqa: E402
 
-#: How long `start` waits for the debugger to answer stopped, the `-version` probe's time included.
-READY_TIMEOUT_S = 30.0
 #: The commands after which a survey taken at the stop still holds: they leave the registers, the
 #: flags and CR0 as they were (memory and breakpoints they may write); any other drops it.
 KEEPS_SURVEY = frozenset({"EV", "BPLIST", "BP", "BPDEL", "BPINT", "BPM", "BPPM", "MEMDUMPBIN",
@@ -269,9 +248,6 @@ KEEPS_SURVEY = frozenset({"EV", "BPLIST", "BP", "BPDEL", "BPINT", "BPM", "BPPM",
                         "CPU", "GDT", "LDT", "IDT", "PAGING", "DOS", "BIOS", "EMU",
                         "CALLBACKS", "VGA", "PRESENCE"})
 
-#: The mnemonics a step over runs past with a breakpoint, beside every CALL and INT (`disasm.CALL`):
-#: a REP repeats its string instruction and a LOOP its body, each before the next instruction.
-STEP_OVER_WORDS = ("rep", "loop")
 
 
 class Session(dprocess.Process):
@@ -368,68 +344,22 @@ class Session(dprocess.Process):
 
     def require_stopped(self, what: str) -> None:
         """Refuse `what` unless the machine is stopped at the debugger."""
-        if self.at_debugger():
-            return
-        if not self.has(dbg.RUNSTATE):
-            raise dbg.unknown_after_release(what)
-        raise NotStopped(f"the guest is running, so the debugger cannot take {what}: it needs "
-                         "the machine stopped. `stop` brings it back, or a breakpoint armed "
-                         "before it was released")
+        run_state.require_stopped(self, what)
 
     def require_run_state(self, what: str) -> None:
         """Refuse, before anything acts, a tool that waits for a stop this build cannot see."""
-        if not self.has(dbg.RUNSTATE):
-            raise dbg.no_run_state(what)
+        run_state.require_run_state(self, what)
 
-    def wait_ready(self, timeout: float = READY_TIMEOUT_S,
+    def wait_ready(self, timeout: float | None = None,
                    progress: Progress = no_progress) -> float:
         """Seconds until the debugger answers that the machine stopped at its first
-        instruction (`-break-start`)."""
-        t0 = time.monotonic()
-        next_tick = t0 + PROGRESS_EVERY_S
-        while True:
-            cancel.check()
-            rc = self.proc.poll()
-            if rc is not None:
-                raise Invalid("session_broken",
-                    f"the emulator exited with code {rc} before its debugger answered. That is "
-                    f"not a slow start: the last thing it printed was "
-                    f"{self.output_tail(400).strip()!r}")
-            try:
-                if self._first_stop():
-                    self.mark_stopped()
-                    return round(time.monotonic() - t0, 3)
-            except Invalid as exc:
-                if exc.code != "no_channel" or time.monotonic() - t0 >= timeout:
-                    raise
-            now = time.monotonic()
-            if now - t0 >= timeout:
-                raise Invalid("session_broken",
-                    f"the debugger did not answer stopped within {timeout}s and the emulator is "
-                    f"still running. The last thing it printed was "
-                    f"{self.output_tail(400).strip()!r}")
-            if now >= next_tick:
-                next_tick = now + PROGRESS_EVERY_S
-                progress(now - t0, None, f"start: waiting for the debugger, "
-                                         f"{now - t0:.0f}s of {timeout:g}s")
-            time.sleep(0.05)
+        instruction (`-break-start`); `timeout` defaults to `run_state.READY_TIMEOUT_S`."""
+        return run_state.wait_ready(
+            self, run_state.READY_TIMEOUT_S if timeout is None else timeout, progress)
 
     def _first_stop(self) -> bool:
-        """Whether the debugger holds the machine now. With no `RUNSTATE` a `BREAK` makes sure of
-        it: the debugger answers it once it holds the machine, and says when it cannot. A build
-        whose binary names `RUNSTATE` and whose debugger does not take it is read as one without."""
-        if self.has(dbg.RUNSTATE):
-            ok, lines = self.exec(dbg.RUNSTATE)
-            if ok or dbg.NOT_RECOGNIZED not in lines:
-                return dbg.take_run_state(self, ok, lines)
-            self.commands = self.commands - {dbg.RUNSTATE}
-        ok, lines = self.control.request("BREAK")
-        said = " / ".join(lines)
-        if not ok or DEBUGGER_UNAVAILABLE in said:
-            raise Invalid("session_broken",
-                f"the debugger cannot stop this machine: `BREAK` answered "
-                f"{said or 'ERR with no reason'}")
-        return True
+        """Whether the debugger holds the machine now."""
+        return run_state.first_stop(self)
 
     # ------------------------------------------------------------------ driving
 
@@ -478,24 +408,24 @@ class Session(dprocess.Process):
     def breakpoints(self) -> list[dict[str, str]]:
         """What the debugger currently holds, READ OFF IT rather than remembered."""
         text = self.command("BPLIST")
-        if dcons.BPLIST_HEADER not in text:
+        if grammar.BPLIST_HEADER not in text:
             raise Invalid("unexpected_answer",
-                f"`BPLIST` printed no {dcons.BPLIST_HEADER!r}: {text.strip()[-200:]!r}. An empty "
+                f"`BPLIST` printed no {grammar.BPLIST_HEADER!r}: {text.strip()[-200:]!r}. An empty "
                 f"list and a listing that never happened both come back as no rows, and only one "
                 f"of them means nothing is armed")
-        return dcons.parse_breakpoints(text)
+        return grammar.parse_breakpoints(text)
 
     def read_bytes(self, seg: int, off: int, n: int, mode: str | None = None) -> bytes:
         """Exactly `n` bytes at seg:off, through `MEMDUMPBIN`, in either CPU mode."""
         if n <= 0:
             raise Invalid("bad_argument", f"a read needs a positive length; got {n}")
-        if n > dcons.READ_BYTES_MAX:
+        if n > grammar.READ_BYTES_MAX:
             raise Invalid("bad_argument",
-                f"read_bytes reads up to {dcons.READ_BYTES_MAX} bytes; {n} is a region -- use "
+                f"read_bytes reads up to {grammar.READ_BYTES_MAX} bytes; {n} is a region -- use "
                 f"memdump")
         check_segment(seg)
         self.require_stopped("a memory read")
-        dcons.check_offset(off, mode if mode is not None else self.where()["mode"])
+        grammar.check_offset(off, mode if mode is not None else self.where()["mode"])
         with tempfile.TemporaryDirectory(prefix="dosbox-read-") as scratch:
             return self.memdump(seg, off, n, Path(scratch) / "read.bin").read_bytes()
 
@@ -514,7 +444,7 @@ class Session(dprocess.Process):
             raise Invalid("bad_argument", "a write needs at least one byte")
         check_segment(seg)
         mode = mode if mode is not None else self.where()["mode"]
-        top = dcons.check_offset(off, mode)
+        top = grammar.check_offset(off, mode)
         # THE LAST BYTE IS BOUNDED TOO.
         if off + len(data) - 1 > top:
             raise Invalid("bad_argument",
@@ -525,7 +455,7 @@ class Session(dprocess.Process):
             lo, hi = seg * 16 + off, seg * 16 + off + len(data) - 1
             if hi >= self.ROM_LINEAR[0] and lo <= self.ROM_LINEAR[1]:
                 raise Invalid("bad_argument",
-                    f"{dcons.canonical_seg_off(seg, off)} is in the ROM range (linear 0x{lo:X}, "
+                    f"{grammar.canonical_seg_off(seg, off)} is in the ROM range (linear 0x{lo:X}, "
                     f"0x{self.ROM_LINEAR[0]:X}-0x{self.ROM_LINEAR[1]:X}): measured on this "
                     f"build, the debugger's `SM` into it does not write and does not "
                     f"refuse, it ENDS the emulator. Nothing was sent")
@@ -564,7 +494,7 @@ class Session(dprocess.Process):
         out = self.command(arg)
         # READ THE LIST BACK, exactly as `run_to` and `watch` do, and for the reason this module
         # states everywhere else.
-        armed = dcons.interrupt_row(number, ah)
+        armed = grammar.interrupt_row(number, ah)
         if not any(row["entry"] == armed for row in self.breakpoints()):
             raise Invalid("readback_refused",
                 f"`{arg}` is not in the debugger's breakpoint list, so it "
@@ -609,109 +539,11 @@ class Session(dprocess.Process):
                 stopped_at = self.where()
         return {"halted": not expired, "stopped_at": stopped_at, "output": output}
 
-    def resume_after_command(self) -> dict[str, object]:
-        """`resume` after a command that ran at a stop the server made for it (a saved state's)."""
-        return self.resume()
-
     # --------------------------------------------------------------- the debugging
 
     def step(self, count: int = 1, mode: str = "into") -> dict[str, object]:
         """Advance the machine one instruction at a time, reading where each one landed."""
-        check_step(mode, count)
-        if not self.has("STEPIN"):
-            raise dbg.missing("STEPIN", "a step")
-        if mode == "over":
-            # `STEPIN` answers once its instruction ran; a step over may RUN past a CALL.
-            self.require_run_state("a step over")
-        # THE REFUSAL IS THIS TOOL'S, not the position reader's.
-        try:
-            before = self.where()
-        except NotStopped:
-            if not self.alive():
-                raise
-            raise NotStopped(
-                "a step needs the machine STOPPED at the debugger, and it is running: no step "
-                "was sent. Bring it back with `stop` or a breakpoint armed before it ran") from None
-        after, completed, running = before, 0, False
-        # COUNTED PER STEP, because comparing only the ENDPOINTS answers a different question than
-        # the one `moved` is asked.
-        stalled, sent = 0, 0
-        for _ in range(count):
-            position_before = after
-            try:
-                sent += 1
-                landed, interrupted = self._one_step(after, mode)
-                after = landed
-                if interrupted:
-                    # stopped by the bound inside what it stepped over: no further step
-                    completed += 1
-                    stalled += after == position_before
-                    break
-            except NotStopped:
-                if not self.alive():
-                    raise
-                running = True
-                break
-            except Invalid as exc:
-                # IT REPORTS THE STEPS SENT, NOT THE ONES READ BACK.
-                raise Invalid(exc.code,
-                    f"{exc} -- and {sent} `{mode}` step(s) of {count} had ALREADY gone to the "
-                    f"machine when this happened, of which {completed} were CONFIRMED landed. "
-                    f"They are irreversible: this debugger has no un-step, so the machine is at "
-                    f"least {completed} step(s) past {before['cs']}:{before['eip']} and this "
-                    f"call could not read where that is") from None
-            if after == position_before:
-                stalled += 1
-            completed += 1
-        return {"mode": mode, "asked": count, "completed": completed,
-                "running": running, "moved": stalled < completed,
-                "stalled": stalled,
-                "before": before, "after": after}
-
-    def _one_step(self, at: dict[str, str], mode: str) -> tuple[dict[str, str], bool]:
-        """One step from `at`: where it landed, and whether the bound interrupted it there.
-
-        Into is `STEPIN`. Over is composed: an instruction that would run on past the next one (a
-        CALL, an INT, a LOOP, a REP) gets a breakpoint at the next instruction and a `RUN`, and
-        any other is a step into."""
-        nxt = self._step_over_target(at) if mode == "over" else None
-        if nxt is None:
-            self._release("STEPIN")
-            self.mark_stopped()     # `STEPIN` answers once its instruction ran, stopped
-            return self.where(), False
-        target = f"{int(at['cs'], 16):04X}:{nxt:04X}"
-        armed = any(dcons.bp_row_target(b["entry"]) == ("BP", int(at["cs"], 16), nxt)
-                    for b in self.breakpoints())
-        if not armed:
-            self.command(f"BP {target}")
-        began = time.monotonic()
-        expired = False
-        try:
-            self._release("RUN")
-            expired, _ = Session.await_stop(self, began, began + STEP_WAIT_S, target,
-                                            label="step over")
-            if expired:
-                self.stop_at_bound()
-        finally:
-            with cancel.shielded():
-                if not armed and self.at_debugger():
-                    Session._remove_own(self, [target])
-        return self.where(), expired
-
-    def _step_over_target(self, at: dict[str, str]) -> int | None:
-        """The offset after the instruction at `at` when a step over must run past it, else None."""
-        bits = 32 if at["mode"] == "Pr32" else 16
-        cs, eip = int(at["cs"], 16), int(at["eip"], 16)
-        n = disasm.INSN_MAX if bits == 32 else min(disasm.INSN_MAX, 0x10000 - eip)
-        raw = self.read_bytes(cs, eip, n, mode=at["mode"])
-        first = disasm.decode(raw, eip, bits)[:1]
-        if not first:
-            return None
-        insn = first[0]
-        # a `rep ret` returns: nothing after it is reached
-        runs_on = insn.flow == disasm.CALL or (insn.flow != disasm.RETURN
-                                               and insn.mnemonic.startswith(STEP_OVER_WORDS))
-        return eip + len(insn.data) if runs_on else None
+        return stepping.step(self, count, mode)
 
     def run_to(self, seg: int, off: int, seconds: float,
                control: tuple[int, int] | None = None,
@@ -723,7 +555,7 @@ class Session(dprocess.Process):
         self.require_run_state("run_to")
         stopped = self.where()      # refuses a running machine BEFORE arming anything
         # THE OFFSET'S WIDTH IS THE CPU MODE'S.
-        top = dcons.check_offset(off, stopped["mode"])
+        top = grammar.check_offset(off, stopped["mode"])
         target = f"{seg:04X}:{off:04X}"
         ctl = None
         if control is not None:
@@ -897,19 +729,16 @@ class Session(dprocess.Process):
                 out.append((True, ""))
         return out
 
-    def watch(self, segment: int, offset: int) -> dict[str, object]:
-        """Break when a piece of memory CHANGES, choosing the command for the caller."""
-        return Session.watch_places(self, [(segment, offset)])[0]
-
     def watch_places(self, places: list[tuple[int, int]]) -> list[dict[str, object]]:
-        """`watch` at every one of `places`, a row each (a memory breakpoint compares one byte), in
-        one reading of the mode, a command per row and ONE read of the list back."""
+        """Break when memory CHANGES at every one of `places`, the command chosen for the caller:
+        a row each (a memory breakpoint compares one byte), in one reading of the mode, a command
+        per row and ONE read of the list back."""
         # THE MACHINE IS READ FIRST: a command sent to a running guest is a refusal with a side
         # effect.
         cpu = self.where()["mode"]
         for segment, offset in places:
             check_segment(segment)
-            dcons.check_offset(offset, cpu)
+            grammar.check_offset(offset, cpu)
         # THE THREE LIST SPELLINGS ARE CAPTURED, NOT DERIVED.
         sent: list[tuple[str, str]] = []
         for segment, offset in places:
@@ -945,13 +774,13 @@ class Session(dprocess.Process):
         """Arm a CODE breakpoint at `seg:off` and LEAVE THE MACHINE STOPPED."""
         stopped = self.where()      # refuses a running machine BEFORE arming
         check_segment(seg)
-        dcons.check_offset(off, stopped["mode"])
+        grammar.check_offset(off, stopped["mode"])
         target = f"{seg:04X}:{off:04X}"
         self.altered = True
         self.command(f"BP {target}")
         held = self.breakpoints()
         want = ("BP", seg, off)
-        listed = next((b for b in held if dcons.bp_row_target(b["entry"]) == want), None)
+        listed = next((b for b in held if grammar.bp_row_target(b["entry"]) == want), None)
         if listed is None:
             raise Invalid("readback_refused",
                 f"the debugger does not list a breakpoint at {target} after being told to "
@@ -963,9 +792,9 @@ class Session(dprocess.Process):
         """Remove a code breakpoint at `seg:off`, by its own text, and READ THE LIST BACK."""
         stopped = self.where()
         check_segment(seg)
-        dcons.check_offset(off, stopped["mode"])
+        grammar.check_offset(off, stopped["mode"])
         want = ("BP", seg, off)
-        [(row, removed)] = self.delete_rows([lambda e: dcons.bp_row_target(e) == want])
+        [(row, removed)] = self.delete_rows([lambda e: grammar.bp_row_target(e) == want])
         if row is None:
             return {"entry": f"BP {seg:04X}:{off:04X}", "removed": False,
                     "note": "no such breakpoint to remove"}
@@ -976,7 +805,7 @@ class Session(dprocess.Process):
         """Remove an interrupt breakpoint by its own ROW TEXT, and READ THE LIST BACK."""
         check_interrupt(number, ah)
         self.where()                      # refuses a running machine before the command
-        want = dcons.interrupt_row(number, ah)
+        want = grammar.interrupt_row(number, ah)
         [(row, removed)] = self.delete_rows([lambda e: e == want])
         if row is None:
             return {"entry": want, "removed": False, "note": "no such breakpoint to remove"}
@@ -1167,33 +996,13 @@ class Session(dprocess.Process):
 
     def stop_at_bound(self) -> bool:
         """A run whose bound ran out, handed back STOPPED; whether this call had to stop it."""
-        if self.at_debugger():
-            return False
-        self.break_in()
-        return True
+        return run_state.stop_at_bound(self)
 
-    def break_in(self, seconds: float = BREAK_IN_WAIT_S) -> float:
-        """Bring a RUNNING guest back to the debugger through its channel's `BREAK`, and wait
-        for `RUNSTATE` to say so; with no `RUNSTATE`, `BREAK`'s own answer says it."""
-        ok, lines = self.control.request("BREAK")
-        said = " / ".join(lines)
-        if not ok or DEBUGGER_UNAVAILABLE in said:
-            raise Invalid("unexpected_answer",
-                f"the debugger channel refused BREAK: {said or 'no reason given'}")
-        began = time.monotonic()
-        if not self.has(dbg.RUNSTATE):
-            self.mark_stopped()
-            return 0.0
-        while time.monotonic() - began < seconds:
-            cancel.check()
-            if dbg.read_run_state(self):
-                return round(time.monotonic() - began, 2)
-            gone_if_dead(self, began, seconds, "the debugger to stop")
-            time.sleep(dbg.POLL_PAUSE_S)
-        raise Invalid("not_settled",
-            f"the debugger channel accepted BREAK and `RUNSTATE` did not say stopped within "
-            f"{seconds} s: the guest may still be running. Asking `stop` again is allowed; if it "
-            f"fails as well, `close` then `start`")
+    def break_in(self, seconds: float | None = None) -> float:
+        """Bring a RUNNING guest back to the debugger; the seconds until it said so. `seconds`
+        defaults to `run_state.BREAK_IN_WAIT_S`."""
+        return run_state.break_in(
+            self, run_state.BREAK_IN_WAIT_S if seconds is None else seconds)
 
     def _state_dir(self) -> Path:
         return saved_states._state_dir(self)
@@ -1283,6 +1092,5 @@ class Session(dprocess.Process):
                          else "on, in the emulator's own directory")
                         if self.launch.capture_video else "off",
             # WHERE `state_write(method="save")` writes and `state_list` reads.
-            "state_dir": str(self.launch.state_dir) if self.launch.state_dir is not None
-                         else "the emulator's own save/ under its working directory",
+            "state_dir": str(dlaunch.state_dir_of(self.launch)),
         }

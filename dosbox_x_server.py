@@ -97,7 +97,7 @@ from scry_core import (  # noqa: E402
     recording,
     reference,
     reply_schema,  # noqa: E402
-    )
+)
 from scry_core import placement as window  # noqa: E402
 from scry_core import presence as scry_presence  # noqa: E402
 from scry_core import sequence_account as account  # noqa: E402
@@ -113,12 +113,12 @@ import dosbox_captures as caps  # noqa: E402
 import dosbox_checks as checks  # noqa: E402
 import dosbox_code as code  # noqa: E402
 import dosbox_comments as comments  # noqa: E402
-import dosbox_console as dcons  # noqa: E402
 import dosbox_dac as vgadac  # noqa: E402
 import dosbox_declarations as dec  # noqa: E402
 import dosbox_dump as dumping  # noqa: E402
 import dosbox_find as finder  # noqa: E402
 import dosbox_folds as folds  # noqa: E402
+import dosbox_grammar as grammar  # noqa: E402
 import dosbox_inputs as inputs  # noqa: E402
 import dosbox_launch as dlaunch  # noqa: E402
 import dosbox_lifecycle as lifecycle  # noqa: E402
@@ -137,6 +137,7 @@ import dosbox_screen as screen  # noqa: E402
 import dosbox_sequence as sequence  # noqa: E402
 import dosbox_session as ds  # noqa: E402
 import dosbox_state as st  # noqa: E402
+import dosbox_stepping as stepping  # noqa: E402
 import dosbox_summaries as one_line  # noqa: E402
 import dosbox_trace as tracing  # noqa: E402
 import dosbox_vga as vga  # noqa: E402
@@ -235,10 +236,13 @@ def status() -> dict[str, Any]:
 
     Reference: REFERENCE.md, What every reply carries.
     """
+    stopped = False
     if STATE.session is not None and STATE.session.alive():
         running.drain_if_stopped(STATE.session)   # `status` asks for no session, but uses one
+        stopped = STATE.session.parked            # what the drain's own reading left
     return st.reply(**st.process_facts(), last_stop=STATE.dated(),
-                    pending=STATE.pending_summary(), **running.status_facts(STATE.session),
+                    pending=STATE.pending_summary(),
+                    **running.status_facts(STATE.session, stopped),
                     presence=lifecycle.presence_shown(STATE.session))
 
 
@@ -335,7 +339,7 @@ def registers(from_last_stop: bool = False) -> dict[str, Any]:
 
 @tool("Read memory", summary=one_line.read_memory, read_only=True, replay=("hex",))
 def read_memory(ref: str,
-                length: Annotated[int, vocab.bounds(1, dcons.READ_BYTES_MAX)] = 16,
+                length: Annotated[int, vocab.bounds(1, grammar.READ_BYTES_MAX)] = 16,
                 ) -> dict[str, Any]:
     """`length` bytes (1..{READ_MAX}) at `ref`, a symbol or `SEG:OFF` (a bare number is read as a
     symbol).
@@ -564,15 +568,16 @@ def stop(ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
 
 
 @tool("Step instructions", summary=one_line.step)
-def step(count: Annotated[int, vocab.bounds(1, ds.STEP_MAX)] = 1,
-         mode: Annotated[str, vocab.enum(ds.STEP_MODES)] = "into") -> dict[str, Any]:
+def step(count: Annotated[int, vocab.bounds(1, stepping.STEP_MAX)] = 1,
+         mode: Annotated[str, vocab.enum(stepping.STEP_MODES)] = "into") -> dict[str, Any]:
     """`count` instructions, each read back; `mode` `into` (the debugger's `STEPIN`) or `over` (a
     CALL, INT, LOOP or REP run to the next instruction, which needs `RUNSTATE`). Needs the machine
     stopped.
 
     Reply: `mode`, `asked`, `before`, `after`, `instructions_completed`, `moved`, `stalled`
-    (CS:EIP unchanged after a step), and the stop reply; an `over` that does not come back within
-    its bound is stopped where it stands, and no later step is sent. For longer runs `run_to`.
+    (CS:EIP unchanged after a step), `note` (a step over's breakpoint left armed), and the stop
+    reply; an `over` that does not come back within its bound is stopped where it stands, and no
+    later step is sent. For longer runs `run_to`.
     """
     session = live()
     out = cast(dict[str, Any], session.step(mode=mode, count=count))
@@ -1146,8 +1151,8 @@ def send_keys(keys: list[str],
     Refused: an unknown key or modifier, `seconds` without `expect`, a stopped machine, no
     stub (`no_channel`).
 
-    Reply: `route`, `posted`, `bytes`, `ticks`, `verify` (`verdict` `TARGET` or `TIMEOUT`,
-    `seen`).
+    Reply: `route`, `posted`, `bytes`, `frames` (stub commands, a BIOS tick apart), `verify`
+    (`verdict` `TARGET` or `TIMEOUT`, `seen`).
 
     Reference: REFERENCE.md, Input and the screen.
     """

@@ -10,8 +10,8 @@ from scry_core import reply_contract as contract
 
 import dosbox_arming as arming
 import dosbox_code as code
-import dosbox_console as dcons
 import dosbox_debugger as dbg
+import dosbox_grammar as grammar
 import dosbox_logs as dlogs
 import dosbox_session as ds
 import dosbox_state as st
@@ -129,10 +129,10 @@ def stop_or_base(session: ds.Session, stopped: bool, base: dict[str, Any], *,
 
 def cpu_mode_of(mode: str, paging: bool | None) -> str | dict[str, Any]:
     """The cpu mode in `status`'s words (`real`, `protected`, `paged`, `VM86`), or unavailable."""
-    if mode == dcons.REAL_MODE:
+    if mode == grammar.REAL_MODE:
         return "real"
-    if mode == dcons.V86_MODE:
-        return dcons.V86_MODE
+    if mode == grammar.V86_MODE:
+        return grammar.V86_MODE
     if mode.startswith("Pr") and paging is not None:
         return "paged" if paging else "protected"
     return contract.unavailable(
@@ -166,13 +166,14 @@ PC_UNKNOWN_WHY = ("the guest was let run, and this build's debugger has no `RUNS
 PC_GONE_WHY = "DOSBox-X has exited: `last_stop` says where the guest was last seen"
 
 
-def status_facts(session: ds.Session | None) -> dict[str, Any]:
+def status_facts(session: ds.Session | None, stopped: bool) -> dict[str, Any]:
     """What `status` adds about the machine: `pc` now (read off the registers, so a
-    `set_register` inside the stop shows), `cpu_mode`, and `declarations` counted per family."""
+    `set_register` inside the stop shows), `cpu_mode`, and `declarations` counted per family.
+    `stopped` is the call's one reading of the run state: a running guest costs one `RUNSTATE`."""
     if session is None:
         return {}
-    facts: dict[str, Any] = {"cpu_mode": stop_cpu_mode(session)}
-    if session.alive() and session.at_debugger():
+    facts: dict[str, Any] = {"cpu_mode": stop_cpu_mode(session, stopped)}
+    if stopped:
         try:
             now = session.where()
         except ds.Invalid as e:
@@ -192,9 +193,12 @@ def status_facts(session: ds.Session | None) -> dict[str, Any]:
     return facts
 
 
-def stop_cpu_mode(session: ds.Session) -> str | dict[str, Any]:
-    """The cpu mode of the stop the machine is in, off its recorded survey."""
-    if not (session.alive() and session.at_debugger()):
+def stop_cpu_mode(session: ds.Session, stopped: bool | None = None) -> str | dict[str, Any]:
+    """The cpu mode of the stop the machine is in, off its recorded survey; `stopped` the
+    caller's reading of the run state, asked here when there is none."""
+    if stopped is None:
+        stopped = session.alive() and session.at_debugger()
+    if not stopped:
         return contract.unavailable(
             "the guest is running (or gone): the mode is read off a stopped machine, and "
             "`last_stop` says where it was last seen")

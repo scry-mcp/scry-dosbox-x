@@ -22,8 +22,8 @@ from dosbox_x_server_support import FakeSession, clean_session, install  # noqa:
 from test_dosbox_x_machine import listing
 
 import dosbox_code as code
-import dosbox_console as dcons
 import dosbox_disasm as disasm
+import dosbox_grammar as grammar
 import dosbox_machine as machine
 import dosbox_running as running
 import dosbox_session as ds
@@ -334,7 +334,7 @@ class CodeMachine(FakeSession):
         return ds.Session._memdump_candidates(cast(ds.Session, self))
 
     def _base(self, seg: int) -> int:
-        return seg * 16 if self.mode == dcons.REAL_MODE else self.selectors.get(
+        return seg * 16 if self.mode == grammar.REAL_MODE else self.selectors.get(
             next(r for r in ds.SELINFO_REGS if int(self.regs[r], 16) == seg), {}).get("base", 0)
 
     def memdump(self, seg: int, off: int, length: int, dest: Path) -> Path:

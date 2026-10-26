@@ -19,8 +19,8 @@ from typing import Any, cast
 from scry_core import cancel, judges, narrowing, screen_map
 from scry_core import reply_contract as contract
 
-import dosbox_console as dcons
 import dosbox_declarations as dec
+import dosbox_grammar as grammar
 import dosbox_session as ds
 import dosbox_symbols as sym
 
@@ -32,7 +32,7 @@ ROWS_SHOWN = 24
 
 
 def seg_off(seg: int, off: int) -> str:
-    return dcons.seg_off(seg, off)
+    return grammar.seg_off(seg, off)
 
 
 def flat(linear: int) -> str:
@@ -204,10 +204,10 @@ class State:
         held = self.last_stop.get("held")
         if held is None:
             return
-        want = dcons.bp_row_target(entry)
+        want = grammar.bp_row_target(entry)
         held[:] = [r for r in held
                    if not (r["entry"] == entry
-                           or (want is not None and dcons.bp_row_target(r["entry"]) == want))]
+                           or (want is not None and grammar.bp_row_target(r["entry"]) == want))]
 
     def queue_arm(self, ref: str) -> dict[str, Any]:
         """Queue a declaration for the next stop and say so."""

@@ -12,8 +12,8 @@ from typing import Any, cast
 from scry_core import value_format as vf
 
 import dosbox_coff as coff
-import dosbox_console as dcons
 import dosbox_declarations as dec
+import dosbox_grammar as grammar
 import dosbox_paths as paths
 import dosbox_session as ds
 import dosbox_state as st
@@ -257,7 +257,7 @@ def _resolve_pointer(decl: dec.Declaration, reg: str, session: ds.Session,
             f"the pointer at {info['at']} is null, so there is nothing to watch yet; the "
             f"declaration is kept and re-resolved at every stop")}
     target = value + offset
-    if not 0 <= target <= dcons.offset_ceiling(mode):
+    if not 0 <= target <= grammar.offset_ceiling(mode):
         return {"state": "unarmable", "pointer": info, "why": (
             f"the pointer plus the offset, {target:#x}, is outside what an offset can be "
             f"in {mode} mode")}
@@ -356,7 +356,7 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
     else:
         # `SELINFO` prints no descriptor line in real mode, so the parser's refusal would
         # name the wrong cause.
-        if base is None and dcons.real_segments(session.where()["mode"]):
+        if base is None and grammar.real_segments(session.where()["mode"]):
             raise ds.Invalid("bad_argument",
                 "the machine is in real mode, where there is no descriptor to measure a base "
                 "from: pass `base` (a flat map) as hex text, the load segment * 16 (segment "
@@ -492,7 +492,7 @@ def is_stale(decl: dec.Declaration, place_now: Callable[[], int | None]) -> bool
 
 def mode_word(cpu: str | None) -> str | None:
     """A stop's cpu mode as a raw row records it (`dec.CPU_MODES`); VM86 is real; else None."""
-    if cpu is not None and dcons.real_segments(cpu):
+    if cpu is not None and grammar.real_segments(cpu):
         return "real"
     return "protected" if cpu is not None and cpu.startswith("Pr") else None
 

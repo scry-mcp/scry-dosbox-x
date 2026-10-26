@@ -31,8 +31,8 @@ from scry_core import vocabulary as vocab
 
 import dosbox_arming as arming
 import dosbox_checks as checks
-import dosbox_console as dcons
 import dosbox_declarations as dec
+import dosbox_grammar as grammar
 import dosbox_launch as dlaunch
 import dosbox_mcp
 import dosbox_process as dprocess
@@ -513,7 +513,7 @@ def test_wait_ready_and_close_report_their_progress() -> None:
 def test_read_memory_length_is_bounded_and_resume_takes_the_siblings_bound(
         tmp_path: Path) -> None:
     fake = _names(tmp_path, symbols=[dsym.Symbol("g_rate", 0x17A6EC, kind="d")], ds_="00AF")
-    for bad in (0, dcons.READ_BYTES_MAX + 1):
+    for bad in (0, grammar.READ_BYTES_MAX + 1):
         out = cast(dict[str, Any], server.read_memory(ref="g_rate", length=bad))
         assert out["status"] == "INVALID" and "memdump" in out["message"], out
     out = cast(dict[str, Any], server.resume(seconds=-1))

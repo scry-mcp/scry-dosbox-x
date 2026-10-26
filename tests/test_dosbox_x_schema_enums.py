@@ -18,24 +18,25 @@ from scry_core.reply_contract import Invalid
 
 import dosbox_checks as checks
 import dosbox_code as code
-import dosbox_console as dcons
 import dosbox_dac as vgadac
 import dosbox_declarations as dec
 import dosbox_find as finder
 import dosbox_folds as folds
+import dosbox_grammar as grammar
 import dosbox_inputs as inputs
 import dosbox_launch as dlaunch
 import dosbox_logs as dlogs
 import dosbox_machine as machine
 import dosbox_placement as placement
 import dosbox_session as ds
+import dosbox_stepping as stepping
 import dosbox_trace as tracing
 import dosbox_x_server as server
 
 CLOSED: list[tuple[str, str, tuple[Any, ...]]] = [
     ("log", "channel", dlogs.LOG_CHANNELS), ("log_wait", "channel", dlogs.LOG_CHANNELS),
     ("scan", "cell_bytes", finder.CELL_BYTES), ("scan", "operator", finder.OPERATORS),
-    ("step", "mode", ds.STEP_MODES), ("trace", "shape", tracing.SHAPE_WORDS),
+    ("step", "mode", stepping.STEP_MODES), ("trace", "shape", tracing.SHAPE_WORDS),
     ("breakpoint_at", "by", checks.BREAKPOINT_BY), ("watch_add", "by", checks.WATCH_BY),
     ("watch_add", "mode", dec.WATCH_MODES),
     ("send_mouse", "button", ("", *inputs.BUTTON_WORDS)),
@@ -56,10 +57,10 @@ FOLDED: list[tuple[str, str, tuple[str, ...]]] = [
 RANGES: list[tuple[str, str, int, int]] = [
     ("log", "limit", 1, dlogs.LOG_LIMIT_MAX), ("drive", "limit", 1, dlogs.LOG_LIMIT_MAX),
     ("scan", "limit", 1, judges.HITS_MAX),
-    ("read_memory", "length", 1, dcons.READ_BYTES_MAX),
+    ("read_memory", "length", 1, grammar.READ_BYTES_MAX),
     ("disassemble", "length", 1, code.LENGTH_MAX),
     ("symbols_find", "limit", 1, placement.SYMBOLS_LIMIT_MAX),
-    ("step", "count", 1, ds.STEP_MAX), ("trace", "instructions", 1, tracing.INSTRUCTIONS_MAX),
+    ("step", "count", 1, stepping.STEP_MAX), ("trace", "instructions", 1, tracing.INSTRUCTIONS_MAX),
     ("breakpoint_interrupt", "number", 0, ds.BYTE_MAX),
     ("breakpoint_interrupt", "ah", 0, ds.BYTE_MAX), ("interrupt_vectors", "number", 0, ds.BYTE_MAX),
     ("send_mouse", "x", 0, inputs.MAX_COORD), ("send_mouse", "y", 0, inputs.MAX_COORD),

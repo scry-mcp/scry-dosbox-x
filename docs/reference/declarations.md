@@ -243,7 +243,9 @@ place's. A watch by symbol or through a pointer is resolved at each stop and kee
 **Through a pointer**, the pointer is read as a NEAR pointer in the base's own segment, at the
 width its type declares (`ptr16{...}`/`ptr32{...}` in the `types` file) or else the CPU mode's. A
 class after the width (`ptr16@CODE`) parses and is applied to nothing. A change watch moves with the
-pointer (`moved: {from, to}`), and a null pointer is `null_pointer`, never a watch at zero.
+pointer (`moved: {from, to}`) and with the CPU mode: a row armed in the other mode is armed again
+in this one at the same place, `moved`'s `why` saying so. A null pointer is `null_pointer`, never a
+watch at zero.
 
 A pointer base is read as a near pointer at its type's width, else four bytes in protected mode and two in real; a pointer base the table lacks is most likely a stack local. A change watch is trusted in real mode, while under a DJGPP program's paging the reply says its firing is not to be trusted (`caveat`); `command` is the debugger command sent for it. With no `fmt` a typed symbol reads as its type, else the widest unsigned scalar `length` divides; a sized format needs no `length`, which otherwise is a whole number of `fmt` values. `pending` is stored now, armed at the next stop, said in `applied_on_stop`. A change watch moves with its pointer and a null pointer is `null_pointer`, never a watch at zero.
 

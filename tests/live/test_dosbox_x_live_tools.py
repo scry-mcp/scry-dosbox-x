@@ -29,7 +29,7 @@ from test_dosbox_x_live import (  # noqa: E402
     conf_that_does_not_exit,
 )
 
-import dosbox_console as dcons
+import dosbox_grammar as grammar
 import dosbox_logs as dlogs
 import dosbox_machine as machine
 import dosbox_process as dprocess
@@ -567,7 +567,7 @@ def test_run_to_arrives_at_a_real_address_and_takes_its_breakpoint_away() -> Non
     assert reply["target_disarmed"] is True, reply
     server.debug(command="BP F000:E05B")
     left = cast(dict[str, Any], server.debug(command="BPLIST"))
-    held = [b["entry"] for b in dcons.parse_breakpoints(str(left["output"]))]
+    held = [b["entry"] for b in grammar.parse_breakpoints(str(left["output"]))]
     assert "BP F000:E05B" in held, (
         f"the sentinel is not in the listing, so this read examined nothing and its "
         f"verdict about the removal is worth nothing: {held}")
@@ -596,7 +596,7 @@ def test_machine_map_is_honest_before_dos_and_finds_the_guest_after(tmp_path: Pa
     assert ("gdt" in booted) == (booted["cpu_mode"] != "real"), booted["coverage_note"]
     assert booted["counts"]["mcbs"] == len(booted["mcbs"]) and booted["sources"]["mcbs"]
     after = cast(dict[str, Any], server.debug(command="BPLIST"))
-    assert dcons.BPLIST_HEADER in after["output"] \
+    assert grammar.BPLIST_HEADER in after["output"] \
         and "not recognized" not in after["output"], after["output"][-200:]
 
 
@@ -613,7 +613,7 @@ def test_palette_reads_the_dac_before_and_after_the_bios_sets_it(tmp_path: Path)
     assert one["rgb"] == ["00002a"] and one["colors"] == ["#0000aa"], one
     assert one["image"]["path"] == str(dest) and dest.stat().st_size > 0
     after = cast(dict[str, Any], server.debug(command="BPLIST"))
-    assert dcons.BPLIST_HEADER in after["output"] \
+    assert grammar.BPLIST_HEADER in after["output"] \
         and "not recognized" not in after["output"], after["output"][-200:]
     bad = cast(dict[str, Any], server.palette(first=256))
     assert bad["status"] == "INVALID" and bad["code"] == "bad_argument", bad

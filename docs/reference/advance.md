@@ -491,8 +491,9 @@ CALL, INT, LOOP or REP run to the next instruction, which needs `RUNSTATE`). Nee
 stopped.
 
 Reply: `mode`, `asked`, `before`, `after`, `instructions_completed`, `moved`, `stalled`
-(CS:EIP unchanged after a step), and the stop reply; an `over` that does not come back within
-its bound is stopped where it stands, and no later step is sent. For longer runs `run_to`.
+(CS:EIP unchanged after a step), `note` (a step over's breakpoint left armed), and the stop
+reply; an `over` that does not come back within its bound is stopped where it stands, and no
+later step is sent. For longer runs `run_to`.
 
 | argument | type | default |
 |---|---|---|
@@ -512,6 +513,7 @@ its bound is stopped where it stands, and no later step is sent. For longer runs
 | `instructions_completed` | integer |
 | `mode` | string |
 | `moved` | boolean |
+| `note` | string |
 | `pc` | string |
 | `regs` | object |
 | `stalled` | integer |

@@ -26,7 +26,7 @@ import dosbox_arming as arming
 import dosbox_binary as binaries
 import dosbox_checks as checks
 import dosbox_collect as dcollect
-import dosbox_console as dcons
+import dosbox_grammar as grammar
 import dosbox_machine as machine
 import dosbox_placement as placement
 import dosbox_session as ds
@@ -220,7 +220,7 @@ def test_an_interrupt_that_found_no_stop_names_the_log_left_open(tmp_path: Path)
     still open: the refusal names its path and what the next trace does about it."""
     machine = tracer(tmp_path, [("probe-int-mid-cs_ip", None)])
 
-    def unsettled(seconds: float = 5.0) -> float:
+    def unsettled(seconds: float | None = None) -> float:
         raise ds.Invalid("not_settled", "`RUNSTATE` did not say stopped")
     session_of(machine).break_in = unsettled  # type: ignore[method-assign]
     got = cast(dict[str, Any], server.trace(instructions=100000, shape="cs_ip",
@@ -261,7 +261,7 @@ STOPPED_AT = {"probe-settle": {s: ("0814", "00000106") for s in tracing.SHAPES} 
 def _real_bp(ref: str) -> None:
     """A raw breakpoint declared at the real-mode stop the probe guest sits at."""
     assert dstate.STATE.store is not None
-    dstate.STATE.store.add(arming.declare("breakpoint", "address", ref, cpu=dcons.REAL_MODE))
+    dstate.STATE.store.add(arming.declare("breakpoint", "address", ref, cpu=grammar.REAL_MODE))
 
 
 @pytest.mark.parametrize(("bench", "shape"), SHAPE_FILES)

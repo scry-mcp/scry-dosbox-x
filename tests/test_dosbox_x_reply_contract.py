@@ -91,6 +91,7 @@ class _Running:
 
     altered = False
     reap_failed = ""
+    drain_ended = ""
     ended_how = "none"
     launch = SimpleNamespace(cwd=Path(_abs()), logfile=None, watched=False,
                              conf=Path(_abs("x.conf")))

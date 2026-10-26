@@ -19,7 +19,7 @@ from scry_core import value_format as vf
 from scry_core.reply_contract import Invalid
 
 import dosbox_comment_file as cf
-import dosbox_console as dcons
+import dosbox_grammar as grammar
 import dosbox_symbols as sym
 
 # An interrupt is declared by the debugger's BPLIST spelling (`BPINT 21`): `BPDEL` indexes are
@@ -79,7 +79,7 @@ def canonical_ref(ref: str, by: str) -> str:
         seg, off = int(seg_s, 16), int(off_s, 16)
     except ValueError:
         return text
-    return dcons.canonical_seg_off(seg, off)
+    return grammar.canonical_seg_off(seg, off)
 
 
 @dataclass(frozen=True)

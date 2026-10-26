@@ -26,8 +26,8 @@ from scry_core import vocabulary as vocab
 
 import dosbox_binary as binaries
 import dosbox_collect as dcollect
-import dosbox_console as dcons
 import dosbox_debugger as dbg
+import dosbox_grammar as grammar
 import dosbox_machine as machine
 import dosbox_paths as paths
 import dosbox_placement as placement
@@ -58,9 +58,9 @@ NO_LINEAR = "no linear address"
 #: What the debugger prints, refusing the `LOG`, when it cannot create its log.
 NOT_CREATED_LINE = "DEBUG: Logfile couldn't be created."
 
-DYNAMIC_CORE = ("a dynamic core writes one entry per translated block, and the cycle count "
-                "counts only what the normal core runs; trace on the normal core, "
-                "`start(flags=[\"-set\", \"cpu core=normal\"])`")
+DYNAMIC_CORE = (f"a dynamic core writes one entry per translated block, and "
+                f"{dbg.NORMAL_CORE_CYCLES}; trace on the normal core, "
+                f"`start(flags=[\"-set\", \"cpu core=normal\"])`")
 MACHINE_CLOSES = "a BIOS power-on self test closes the log"
 AT_ITS_START = ("the machine stopped where the trace began without executing anything: the log "
                 "writes its line before the breakpoints are checked, so a code breakpoint at "
@@ -248,7 +248,7 @@ def trace(session: ds.Session, instructions: int, shape: str, dest: Path | None,
                 f"while that file sits there, and once it is moved closes the log before "
                 f"opening its own", trace={"path": str(places[0]), "closed": False}) from None
     return _collected(session, shape, asked, path, places, before,
-                      dcons.real_segments(armed_at["mode"]), interrupted=expired)
+                      grammar.real_segments(armed_at["mode"]), interrupted=expired)
 
 
 def _collected(session: ds.Session, shape: str, asked: int, path: Path, places: list[Path],
@@ -343,7 +343,7 @@ class Coverage:
 def join(session: ds.Session, parsed: Parsed, armed_real: bool, notes: list[str]) -> Coverage:
     """Each executed address as a linear one where its mode allows, plus the nearest symbol
     (REFERENCE.md, Advancing the machine, has the rule)."""
-    stop_real = dcons.real_segments(STATE.last_stop["where"]["mode"])
+    stop_real = grammar.real_segments(STATE.last_stop["where"]["mode"])
     window_flat = armed_real and stop_real
     flat_of = {a: (a[2] if a[2] is not None else window_flat) for a in parsed.executed}
     bases: dict[str, int | None] = {}

@@ -111,6 +111,17 @@ def test_an_unreaped_child_is_reported_with_the_wait_it_had(
     assert p.reap_failed == said, p.reap_failed
 
 
+@pytest.mark.parametrize(("terminates", "said"), [(False, "quit"), (True, "killed")],
+                         ids=["asked to leave", "terminated, as Windows does"])
+def test_a_close_names_a_terminated_emulator_killed_not_quit(
+        monkeypatch: pytest.MonkeyPatch, terminates: bool, said: str) -> None:
+    clock = _Clock(monkeypatch)
+    monkeypatch.setattr(dprocess, "TERMINATES", terminates)
+    p = _process(_Deaf(clock, 0.0, None))
+    p.close()
+    assert p.ended_how == said
+
+
 @NO_SIGKILL
 def test_a_close_reports_both_waits_in_its_own_words(monkeypatch: pytest.MonkeyPatch) -> None:
     clock = _Clock(monkeypatch)

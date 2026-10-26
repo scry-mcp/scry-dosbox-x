@@ -80,6 +80,22 @@ def test_a_short_frame_ages_out_and_the_next_send_is_carried(
     assert _keys_logged(tmp_path) == 1
 
 
+def test_a_frame_short_its_check_under_a_program_that_owns_the_timer_is_found_in_its_resend(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """No tick ages the short frame, so the resend completes it; the stub reads the failed
+    frame's own bytes again and finds the resend there. `k`'s break is A5h, a SYNC."""
+    [line] = _start(tmp_path, monkeypatch, "tail_sync")
+    owned = cast(dict[str, Any], server.send_keys(keys=["o"], expect=r"MOUSE \. timer=owned",
+                                                  seconds=WAIT_S))
+    assert owned["status"] == "ok", owned
+    got = cast(dict[str, Any], server.send_keys(keys=["k"], expect=r"MOUSE \. key=107$",
+                                                seconds=WAIT_S))
+    assert got["status"] == "ok", got
+    assert line.cut, "the fault was not provoked"
+    after = cast(dict[str, Any], server.send_keys(keys=["a"], expect=KEY_A, seconds=WAIT_S))
+    assert after["status"] == "ok", "the failed frame left the stub framing phantoms"
+
+
 def test_a_line_closed_mid_send_ends_the_call_at_once_as_a_broken_session(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     _start(tmp_path, monkeypatch, "close")

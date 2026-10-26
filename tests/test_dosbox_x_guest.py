@@ -22,7 +22,7 @@ GUEST = Path(__file__).resolve().parent / "guest"
 LIVE = Path(__file__).resolve().parent / "live"
 ASM = GUEST / "probe.asm"
 COM = GUEST / "probe.com"
-GUESTS = {"probe": 144, "screen": 212, "code": 195, "mouse": 397, "v86": 1296}
+GUESTS = {"probe": 144, "screen": 212, "code": 195, "mouse": 397, "v86": 1328, "hook1c": 76}
 
 
 def _declared_strings(asm: Path = ASM) -> list[bytes]:
@@ -80,6 +80,20 @@ def test_the_guest_binary_is_exactly_what_its_source_assembles_to(tmp_path: Path
         f"{name}.com ({com.stat().st_size} bytes) is not the assembly of {name}.asm "
         f"({out.stat().st_size} bytes). Reassemble it: "
         f"nasm -f bin tests/guest/{name}.asm -o tests/guest/{name}.com")
+
+
+@pytest.mark.skipif(shutil.which("nasm") is None,
+                    reason="no `nasm` on PATH, so the stub cannot be reassembled")
+def test_the_packaged_stub_is_exactly_what_its_source_assembles_to(tmp_path: Path) -> None:
+    """The stub ships to every guest, so a binary behind its source runs an older protocol."""
+    stub = GUEST.parent.parent / "guest"
+    out = tmp_path / "INJECT.COM"
+    r = subprocess.run(["nasm", "-f", "bin", str(stub / "inject.asm"), "-o", str(out)],
+                       capture_output=True, text=True, check=False)
+    assert r.returncode == 0, f"inject.asm does not assemble: {r.stderr}"
+    assert out.read_bytes() == (stub / "INJECT.COM").read_bytes(), (
+        "guest/INJECT.COM is not the assembly of guest/inject.asm. Reassemble it: "
+        "nasm -f bin guest/inject.asm -o guest/INJECT.COM")
 
 
 #: A global label in a `nasm -l` listing: offset, bytes, undotted name, then what follows it.

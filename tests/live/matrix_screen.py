@@ -28,7 +28,7 @@ from matrix_common import (
     videos,
 )
 
-import dosbox_console as dcons
+import dosbox_grammar as grammar
 
 SCREEN_CONF = GUEST / "screen.conf"
 SCREEN_PROGRAM = "SCREEN.COM"
@@ -184,7 +184,7 @@ def _probe() -> None:
     r = M.call(server.debug, command="BPLIST")
     judged("J the debugger takes a command after VGA DACPAL", reply=r,
            holds=ok(r) and "not recognized" not in str(r.get("output"))
-           and dcons.BPLIST_HEADER in str(r.get("output")))
+           and grammar.BPLIST_HEADER in str(r.get("output")))
     r = M.call(server.machine_map, sections=["vga"])
     vga = r.get("vga") or {}
     judged("J machine_map's vga once booted: M_TEXT, the seven listings named", reply=r,

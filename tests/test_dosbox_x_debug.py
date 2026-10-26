@@ -25,10 +25,11 @@ from dosbox_x_server_support import returned_key_sets
 from scry_core import vocabulary as vocab
 from test_dosbox_x_e9_wait import E9_BOOT, LogSession
 
-import dosbox_console as dcons
 import dosbox_debugger as dbg
+import dosbox_grammar as grammar
 import dosbox_session as ds
 import dosbox_state as dstate
+import dosbox_stepping as stepping
 import dosbox_x_server as server
 
 #: The step guest's bytes at 0814:0100 (`tests/guest/step.asm`, assembled by nasm).
@@ -79,7 +80,7 @@ def test_registers_are_given_at_the_widths_a_stop_reply_always_had(tmp_path: Pat
     s = session_over(Machine(), tmp_path)
     regs = s.registers()
     assert regs["EAX"] == "00000000" and regs["CS"] == "0814" and regs["EIP"] == "00000130"
-    assert set(regs) == set(dcons.REGISTER_NAMES)
+    assert set(regs) == set(grammar.REGISTER_NAMES)
 
 
 def test_an_ev_that_answers_short_is_refused_rather_than_misread(tmp_path: Path) -> None:
@@ -214,11 +215,23 @@ def test_a_step_over_keeps_a_breakpoint_the_caller_had_at_the_next_instruction(
     assert "EXEC BP 0814:0108" not in machine.sent
 
 
+def test_a_step_over_whose_own_breakpoint_will_not_go_says_it_is_still_armed(
+        tmp_path: Path) -> None:
+    """A `BPDEL` the debugger takes and leaves the row: the reply says the next run stops there."""
+    machine = _step_guest(releases=[Stop({"EIP": 0x108})])
+    machine.regs["EIP"] = 0x105
+    machine.hooks["BPDEL"] = lambda body: (True, [])
+    s = session_over(machine, tmp_path)
+    got = cast(dict[str, Any], s.step(count=1, mode="over"))
+    assert machine.breakpoints == ["BP 0814:0108"]
+    assert "0814:0108 is STILL in the debugger's list" in str(got.get("note")), got
+
+
 def test_a_step_over_that_runs_past_its_bound_is_brought_back_and_says_where(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The bound's `BREAK` stops the machine inside the callee: the reply says it is stopped
     there, and the steps after it are not sent."""
-    monkeypatch.setattr(ds, "STEP_WAIT_S", 0.05)
+    monkeypatch.setattr(stepping, "STEP_WAIT_S", 0.05)
     machine = _step_guest(releases=[None])
     machine.regs["EIP"] = 0x105
     s = session_over(machine, tmp_path)
@@ -288,7 +301,7 @@ def test_a_step_refuses_a_mode_it_does_not_have_and_a_count_it_cannot_afford(
     s = session_over(Machine(), tmp_path)
     with pytest.raises(ds.Invalid, match="mode"):
         s.step(count=1, mode="out")
-    for bad in (0, ds.STEP_MAX + 1):
+    for bad in (0, stepping.STEP_MAX + 1):
         with pytest.raises(ds.Invalid, match="cost bound"):
             s.step(count=bad, mode="into")
 
@@ -428,10 +441,10 @@ def test_a_run_cancelled_in_flight_is_brought_back_and_takes_its_breakpoints_wit
 
 def test_a_watch_chooses_its_command_by_the_machines_mode(tmp_path: Path) -> None:
     real = Machine()
-    got = session_over(real, tmp_path).watch(0x40, 0x6C)
+    got = session_over(real, tmp_path).watch_places([(0x40, 0x6C)])[0]
     assert (got["command"], got["armed"]) == ("BPM 0040:006C", "BPMEM 0040:006C")
     pr32 = protected(Machine())
-    got = session_over(pr32, tmp_path).watch(0xAF, 0x16DF20)
+    got = session_over(pr32, tmp_path).watch_places([(0xAF, 0x16DF20)])[0]
     assert (got["command"], got["armed"]) == ("BPPM 00AF:16DF20", "BPPM 00AF:0016DF20")
 
 
@@ -439,12 +452,12 @@ def test_a_watch_the_debugger_does_not_hold_is_refused(tmp_path: Path) -> None:
     machine = Machine()
     machine.hooks["BPM"] = lambda c: (True, ["DEBUG: Set memory breakpoint at 0040:006C"])
     with pytest.raises(ds.Invalid, match="never fires are the same silence"):
-        session_over(machine, tmp_path).watch(0x40, 0x6C)
+        session_over(machine, tmp_path).watch_places([(0x40, 0x6C)])[0]
 
 
 def test_a_watch_refuses_an_address_its_mode_cannot_carry(tmp_path: Path) -> None:
     with pytest.raises(ds.Invalid, match="past 0xFFFF addresses nothing"):
-        session_over(Machine(), tmp_path).watch(0x40, 0x10000)
+        session_over(Machine(), tmp_path).watch_places([(0x40, 0x10000)])[0]
 
 
 # ------------------------------------------------------------------ resume and BREAK
@@ -466,6 +479,17 @@ def test_a_resume_that_let_the_machine_go_says_that_instead(tmp_path: Path,
     got = s.resume()
     assert got["halted"] is False and got["stopped_at"] is None
     assert s.state()["running"] is True
+
+
+def test_status_on_a_running_guest_asks_runstate_once(tmp_path: Path) -> None:
+    machine = Machine(stopped=False)
+    dstate.STATE.session = session_over(machine, tmp_path)
+    try:
+        got = cast(dict[str, Any], fold_calls.of(server, "status")())
+    finally:
+        dstate.STATE.session = None
+    assert got["status"] == "ok" and got["session"]["running"] is True, got
+    assert machine.sent == ["EXEC RUNSTATE"], machine.sent
 
 
 def test_break_in_waits_for_runstate_to_say_stopped(tmp_path: Path) -> None:

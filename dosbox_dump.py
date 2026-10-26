@@ -21,7 +21,7 @@ from typing import Any, NamedTuple
 from scry_core import fresh
 
 import dosbox_collect as dcollect
-import dosbox_console as dcons
+import dosbox_grammar as grammar
 import dosbox_machine as machine
 import dosbox_paths as paths
 import dosbox_session as ds
@@ -64,9 +64,9 @@ def dump_windows(seg: int, off: int, length: int) -> list[tuple[int, int, int]]:
     last = start + length - 1
     if start > REAL_REACH_LAST:
         raise ds.Invalid("bad_argument",
-            f"{dcons.canonical_seg_off(seg, off)} is linear {start:X}, which starts past FFFF:FFFF "
-            f"({REAL_REACH_LAST:X}), the last byte a real-mode address reaches: no byte from "
-            f"there can be asked for")
+            f"{grammar.canonical_seg_off(seg, off)} is linear {start:X}, which starts past "
+            f"FFFF:FFFF ({REAL_REACH_LAST:X}), the last byte a real-mode address reaches: no byte "
+            f"from there can be asked for")
     if last > REAL_REACH_LAST:
         raise ds.Invalid("bad_argument",
             f"{length} bytes from {seg:04X}:{off:04X} end at linear {last:X}, past "
@@ -126,7 +126,7 @@ def judge_protected(session: ds.Session, sel: int, off: int, length: int,
         span = (f"above its limit {limit:08X} (expand-down)" if down
                 else f"up to its limit {limit:08X}")
         raise ds.Invalid("bad_argument",
-            f"{length} bytes from {dcons.canonical_seg_off(sel, off)} end at offset {last:08X}, "
+            f"{length} bytes from {grammar.canonical_seg_off(sel, off)} end at offset {last:08X}, "
             f"and {sel:04X}'s descriptor covers offsets {span}: past it the debugger writes zeros "
             f"(through the selector in CS, the bytes past the segment), not the segment's memory")
 
@@ -145,7 +145,7 @@ def dump_range(session: ds.Session, seg: int, off: int, length: int, dest: Path,
     dcollect.judge_collection(dest, session.launch.cwd, candidates, "dump")
     dcollect.refuse_leftover(candidates, "dump")
     paths.fresh_dest("dest", dest)
-    if found is not None or not dcons.real_segments(session.where()["mode"]):
+    if found is not None or not grammar.real_segments(session.where()["mode"]):
         judge_protected(session, seg, off, length, found)
         return Dump(session.memdump(seg, off, length, dest), False)
     windows = dump_windows(seg, off, length)

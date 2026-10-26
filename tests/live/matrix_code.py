@@ -31,7 +31,7 @@ from matrix_common import (
 )
 
 import dosbox_code as code  # noqa: E402
-import dosbox_console as dcons  # noqa: E402
+import dosbox_grammar as grammar  # noqa: E402
 import dosbox_state as dstate
 
 CODE_CONF = GUEST / "code.conf"
@@ -115,7 +115,7 @@ def memory_holds(reply: dict[str, Any]) -> tuple[bool, str]:
     off = int(off_text, 16)
     seen = b""
     while len(seen) < len(listed):
-        n = min(dcons.READ_BYTES_MAX, len(listed) - len(seen))
+        n = min(grammar.READ_BYTES_MAX, len(listed) - len(seen))
         r = M.call(server.read_memory, ref=f"{seg_text}:{off + len(seen):08X}", length=n)
         if not ok(r):
             return False, f"read_memory at {seg_text}:{off + len(seen):08X}: {said(r)}"

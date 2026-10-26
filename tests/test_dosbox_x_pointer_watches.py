@@ -96,6 +96,22 @@ def test_a_pointer_watch_is_re_resolved_at_every_stop_and_a_change_watch_follows
     assert w["state"] == "evaluated" and w["value"] == 9, w
 
 
+def test_a_change_watch_through_a_raw_base_re_arms_a_row_of_the_other_mode_in_this_one(
+        tmp_path: Path) -> None:
+    """The pointer resolves to the same numbers after a mode change; the real-mode row is not
+    this mode's, so it is deleted and the watch armed again as a protected-mode one."""
+    fake = _names(tmp_path, mode="Real")
+    fake.mem[(0x814, 0x200)] = (0x300).to_bytes(4, "little")
+    out = server.watch_add(ref="[0814:0200]", mode="change", length=1)
+    assert out["status"] == "ok" and out["state"] == "armed", out
+    assert [r["entry"] for r in fake.rows] == ["BPMEM 0814:0300 (00)"], fake.rows
+    fake.mode = "Pr32"
+    (w,) = arming.evaluate_watches(fake)  # type: ignore[arg-type]
+    assert w["state"] == "armed", w
+    assert [r["entry"] for r in fake.rows] == ["BPPM 0814:00000300 (00)"], fake.rows
+    assert w["moved"]["why"] == arming.OTHER_MODE_ROW, w
+
+
 def test_a_base_that_is_not_a_global_is_refused_naming_the_stack(tmp_path: Path) -> None:
     _pointing(tmp_path)
     bad = server.watch_add(ref="[ur_count]+0x0", mode="show", length=2)

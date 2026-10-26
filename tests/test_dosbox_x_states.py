@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import dataclasses
+import struct
 import threading
 import time
 import zipfile
@@ -126,9 +127,6 @@ class StateFake:
             raise self.release_raises
         self.parked = self.halts_on_release
         return {"halted": self.halts_on_release}
-
-    def resume_after_command(self) -> dict[str, object]:
-        return self.resume()        # its confirmation is `Session`'s own, tested on the wire
 
     def alive(self) -> bool:
         return self.lives
@@ -311,6 +309,22 @@ def test_a_name_that_holds_no_state_is_listed_saying_what_is_there_never_raised(
     with pytest.raises(ds.Invalid, match="a directory, not a state") as exc:
         ds.Session.load_state(as_session(fake), "d", 5.0)
     assert exc.value.code == "unknown_ref"
+
+
+def test_a_state_whose_compressed_member_is_corrupt_is_listed_saying_so(tmp_path: Path) -> None:
+    """A ZIP member stored with LZMA decodes on read; garbage in it is a row's note, not a raise."""
+    path = tmp_path / "cut.sav"
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_LZMA) as z:
+        z.writestr(dlaunch.STATE_META["version"], "DOSBox-X 2026.10.01 " * 200)
+    with zipfile.ZipFile(path) as z:
+        info = z.getinfo(dlaunch.STATE_META["version"])
+    raw = bytearray(path.read_bytes())
+    name_len, extra_len = struct.unpack("<HH", raw[info.header_offset + 26:info.header_offset + 30])
+    data = info.header_offset + 30 + name_len + extra_len
+    raw[data + 12:data + info.compress_size] = b"\xff" * (info.compress_size - 12)
+    path.write_bytes(bytes(raw))
+    row = dlaunch.state_meta(path)
+    assert str(row["note"]).startswith("the file could not be read"), row
 
 
 def test_the_tools_carry_the_envelope_and_the_summaries_name_the_state(tmp_path: Path) -> None:

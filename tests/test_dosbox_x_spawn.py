@@ -104,7 +104,7 @@ def _done(ses: ds.Session) -> None:
 
 
 def launch(conf: Path, tmp_path: Path, **kw: Any) -> dlaunch.Launch:
-    return dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=30, **{"headless": True, **kw})
+    return dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=30, **{"debugger_headless": True, **kw})
 
 
 def test_a_headless_spawn_puts_the_output_on_a_pipe_and_the_emulator_on_its_own(
@@ -138,7 +138,7 @@ def test_a_spawn_without_headless_gets_a_terminal_nobody_reads(
         conf: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A debugger with a screen stops only on a terminal: all three streams are one."""
     emu = Emulator(monkeypatch)
-    ses = ds.Session(launch(conf, tmp_path, headless=False))
+    ses = ds.Session(launch(conf, tmp_path, debugger_headless=False))
     try:
         kw = emu.kw
         assert kw["stdin"] == kw["stdout"] == kw["stderr"] and emu.tty is True, kw
@@ -150,7 +150,7 @@ def test_a_spawn_without_headless_gets_a_terminal_nobody_reads(
 def test_a_spawn_without_headless_on_windows_keeps_the_hidden_console_s_streams(
         conf: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     emu = Emulator(monkeypatch)
-    ses = ds.Session(launch(conf, tmp_path, headless=False))
+    ses = ds.Session(launch(conf, tmp_path, debugger_headless=False))
     try:
         assert not {"stdin", "stdout", "stderr"} & set(emu.kw), emu.kw
         assert emu.kw["startupinfo"].wShowWindow == 0 and ses._drainer is None

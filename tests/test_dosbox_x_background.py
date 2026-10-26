@@ -53,7 +53,7 @@ def test_a_headless_session_spawns_with_no_terminal_size(
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     with pytest.raises(OSError, match="not spawned"):
-        ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, headless=True))
+        ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, debugger_headless=True))
     assert "LINES" not in seen[-1] and "COLUMNS" not in seen[-1], seen[-1]
 
 
@@ -124,5 +124,5 @@ def test_a_live_runs_ledger_learns_the_emulator_the_session_spawned(
             monkeypatch.delenv(live_host.LEDGER_VAR)
             ledger.unlink()
         with pytest.raises(RuntimeError, match="new thread"):
-            ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, headless=True))
+            ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, debugger_headless=True))
         assert (live_host.EmulatorLedger(ledger).recorded() == {4321: "dosbox-x"}) is named

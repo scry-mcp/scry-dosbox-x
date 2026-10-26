@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 
 import dosbox_checks as checks
-import dosbox_console as dcons
 import dosbox_declarations as dec
+import dosbox_grammar as grammar
 import dosbox_session as ds
 import dosbox_x_server as server
 
@@ -55,10 +55,10 @@ def test_a_store_written_with_read_rows_loads_them_as_show_and_persists_show(
 
 
 def test_a_show_watch_is_bounded_by_the_data_view_and_a_change_watch_by_its_rows() -> None:
-    wide = dcons.READ_BYTES_MAX + 1
+    wide = grammar.READ_BYTES_MAX + 1
     with pytest.raises(ds.Invalid, match=f"{wide} is a region"):
         checks.watch_width("show", wide)
-    checks.watch_width("show", dcons.READ_BYTES_MAX)
+    checks.watch_width("show", grammar.READ_BYTES_MAX)
     checks.watch_width("change", checks.CHANGE_WATCH_MAX)
     with pytest.raises(ds.Invalid, match="one debugger row per byte"):
         checks.watch_width("change", checks.CHANGE_WATCH_MAX + 1)

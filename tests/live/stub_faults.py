@@ -10,13 +10,15 @@ TICK_S = 1 / 18.2
 
 
 class FaultyLine:
-    """`fault`: `lose_ack`, `dribble`, `short` or `close`."""
+    """`fault`: `lose_ack`, `dribble`, `short`, `tail_sync` (the first frame whose payload is a
+    SYNC arrives short its check) or `close`."""
 
     def __init__(self, sock: socket.socket, fault: str) -> None:
         self.sock, self.fault = sock, fault
         self.frames_sent = 0
         self.writes = 0
         self.acks_dropped = 0
+        self.cut = False
         self._dropping = fault == "lose_ack"
 
     def settimeout(self, value: float | None) -> None:
@@ -33,6 +35,10 @@ class FaultyLine:
             return
         if self.fault == "short" and first:
             self.sock.sendall(data[:2])
+            return
+        if self.fault == "tail_sync" and not self.cut and data[3] == 0xA5:
+            self.cut = True
+            self.sock.sendall(data[:-1])
             return
         if self.fault == "close" and first:
             self.sock.sendall(data[:len(data) // 2])

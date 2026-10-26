@@ -12,7 +12,7 @@ from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 
 import dosbox_arming as arming
-import dosbox_console as dcons
+import dosbox_grammar as grammar
 import dosbox_retrace as retrace
 import dosbox_session as ds
 import dosbox_state as dstate
@@ -47,7 +47,7 @@ def vrts(machine: Machine) -> list[str]:
 def _real_bp(ref: str) -> None:
     """A raw breakpoint at the real-mode stop the probe guest sits at."""
     assert dstate.STATE.store is not None
-    dstate.STATE.store.add(arming.declare("breakpoint", "address", ref, cpu=dcons.REAL_MODE))
+    dstate.STATE.store.add(arming.declare("breakpoint", "address", ref, cpu=grammar.REAL_MODE))
 
 
 def test_three_frames_land_three_retraces_with_the_whole_stop_reply(tmp_path: Path) -> None:
@@ -264,7 +264,8 @@ def test_a_session_s_end_forgets_its_armed_retrace() -> None:
 def test_an_interrupt_breakpoint_says_its_stop_counts_as_a_frame(tmp_path: Path) -> None:
     live(frames(3), tmp_path)
     assert dstate.STATE.store is not None
-    dstate.STATE.store.add(arming.declare("interrupt", "address", dcons.interrupt_row(0x21, None)))
+    dstate.STATE.store.add(
+        arming.declare("interrupt", "address", grammar.interrupt_row(0x21, None)))
     got = cast(dict[str, Any], server.run_for(frames=3, seconds=2))
     assert retrace.UNTOLD_NOTE in got["note"], got
 

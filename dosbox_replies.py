@@ -361,11 +361,11 @@ class ScreenWaitReply(DosboxEnvelope, total=False):
 class SendKeysReply(DosboxEnvelope, total=False):
     bytes: int
     delivered: bool
+    frames: int
     keys: list[Any]
     modifiers: list[Any]
     posted: int
     route: str
-    ticks: int
     verify: dict[str, Any]
 
 
@@ -479,6 +479,7 @@ class StepReply(DosboxEnvelope, total=False):
     instructions_completed: int
     mode: str
     moved: bool
+    note: str
     pc: str
     regs: dict[str, Any]
     stalled: int

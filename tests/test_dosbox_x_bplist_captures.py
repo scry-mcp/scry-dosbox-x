@@ -9,7 +9,7 @@ from typing import Any
 from dosbox_x_server_support import _names, clean_session  # noqa: F401
 
 import dosbox_arming as arming
-import dosbox_console as dcons
+import dosbox_grammar as grammar
 import dosbox_session as ds
 import dosbox_state as dstate
 
@@ -17,7 +17,7 @@ BPLIST = Path(__file__).parent / "fixtures" / "bplist"
 
 
 def rows(name: str) -> list[dict[str, str]]:
-    return dcons.parse_breakpoints((BPLIST / name).read_text(encoding="utf-8"))
+    return grammar.parse_breakpoints((BPLIST / name).read_text(encoding="utf-8"))
 
 
 def test_each_kind_of_row_is_read_as_the_debugger_prints_it() -> None:
@@ -28,9 +28,9 @@ def test_each_kind_of_row_is_read_as_the_debugger_prints_it() -> None:
         *(f"BPPM 00AF:{0x19A17 - i:08X} (00)" for i in range(4)), "BPINT 31 AH=02"]
     assert rows("bplist-vm86.txt") == [{"index": "00", "entry": "BP 0814:0221"},
                                       {"index": "01", "entry": "BP 0000:0001"}]
-    assert dcons.bp_row_target("BPMEM 0000:0500 (00)") == ("BPMEM", 0, 0x500)
-    assert dcons.bp_row_target("BPPM 00AF:00019A14 (00)") == ("BPPM", 0xAF, 0x19A14)
-    assert dcons.bp_row_target("BPLM 00000600 (00)") == ("BPLM", 0, 0x600)
+    assert grammar.bp_row_target("BPMEM 0000:0500 (00)") == ("BPMEM", 0, 0x500)
+    assert grammar.bp_row_target("BPPM 00AF:00019A14 (00)") == ("BPPM", 0xAF, 0x19A14)
+    assert grammar.bp_row_target("BPLM 00000600 (00)") == ("BPLM", 0, 0x600)
 
 
 def test_the_list_is_newest_first_and_a_delete_renumbers_what_is_left() -> None:
@@ -142,7 +142,7 @@ def test_the_session_arms_a_change_watch_with_the_command_and_row_a_live_run_saw
     s = SimpleNamespace(where=lambda: {"cs": "0000", "eip": "0", "mode": "Real"},
                         command=command, breakpoints=lambda: rows("bplist-bpmem.txt"),
                         altered=False)
-    got = ds.Session.watch(s, 0x0000, 0x0500)  # type: ignore[arg-type]
+    got = ds.Session.watch_places(s, [(0x0000, 0x0500)])[0]  # type: ignore[arg-type]
     assert sent == [live["command"]] and got["armed"] == live["entry"], (sent, got)
 
 

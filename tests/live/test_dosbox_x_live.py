@@ -12,7 +12,7 @@ from typing import cast
 import pytest
 from live_private import guest_dir
 
-import dosbox_console as dcons
+import dosbox_grammar as grammar
 import dosbox_launch as dlaunch
 import dosbox_session as ds
 
@@ -87,7 +87,7 @@ def test_a_breakpoint_gives_control_back(session: ds.Session) -> None:
         f"`resume` said the machine stopped at {stopped['cs']}:{stopped['eip']} and a "
         f"pane read straight afterwards says {again['CS']}:{again['EIP']}. The machine "
         f"cannot have moved, so one of the two is not a reading of it")
-    assert stopped["mode"] in dcons.CPU_MODES, stopped
+    assert stopped["mode"] in grammar.CPU_MODES, stopped
     assert session.set_register("bx", 0x4321)["readback"] == "0x4321"
 
 

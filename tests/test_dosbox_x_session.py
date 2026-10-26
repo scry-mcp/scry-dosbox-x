@@ -27,11 +27,12 @@ from scry_core.host_program import absolute as _abs
 from test_dosbox_x_spawn import Child
 from test_dosbox_x_stub_link import REPORT, Stub
 
-import dosbox_console as dcons
+import dosbox_grammar as grammar
 import dosbox_launch as dlaunch
 import dosbox_logs as dlogs
 import dosbox_process as dprocess
 import dosbox_session as ds
+import dosbox_stepping as stepping
 import dosbox_stub_link as stub_link
 import dosbox_symbols as dsym
 
@@ -69,6 +70,7 @@ def test_the_launch_is_the_binary_the_conf_and_a_stop_at_the_debugger(conf: Path
     assert argv[argv.index("-conf") + 1] == str(conf)
     assert "-break-start" in argv
     assert "-fastlaunch" in argv
+    assert "-nopromptfolder" in argv, "a build prompting for its folder never stops at the debugger"
 
 
 def test_headless_uses_the_emulators_own_video_property(conf: Path) -> None:
@@ -609,9 +611,9 @@ def test_a_dump_destination_that_already_exists_is_refused_before_the_debugger_i
 
 def test_only_the_names_this_debugger_sets_are_accepted() -> None:
     """`SR` takes MULTIPLE pairs and a carriage return is appended."""
-    assert "ax" in dcons.SETTABLE and "eax" in dcons.SETTABLE
-    assert "ax 1\rBPINT 21" not in dcons.SETTABLE
-    assert "eex" not in dcons.SETTABLE
+    assert "ax" in grammar.SETTABLE and "eax" in grammar.SETTABLE
+    assert "ax 1\rBPINT 21" not in grammar.SETTABLE
+    assert "eex" not in grammar.SETTABLE
 
 
 AVI = Path(__file__).parent / "fixtures" / "avi"
@@ -822,9 +824,9 @@ def test_a_16_bit_name_is_read_back_as_the_low_half_of_its_register(tmp_path: Pa
 
 def test_every_settable_name_has_the_pane_register_and_width_it_is_read_back_at() -> None:
     """ONE TABLE says where each name `SR` takes is read back, and it covers `SETTABLE` exactly"""
-    assert set(ds.READBACK) == set(dcons.SETTABLE)
+    assert set(ds.READBACK) == set(grammar.SETTABLE)
     for name, (pane, bits) in ds.READBACK.items():
-        assert pane in dcons.REGISTER_NAMES, (name, pane)
+        assert pane in grammar.REGISTER_NAMES, (name, pane)
         assert bits in (16, 32), (name, bits)
     assert ds.READBACK["cs"] == ("CS", 16) and ds.READBACK["es"] == ("ES", 16)
     assert ds.READBACK["ax"] == ("EAX", 16) and ds.READBACK["ip"] == ("EIP", 16)
@@ -1136,8 +1138,8 @@ def test_clear_interrupt_breakpoint_finds_the_row_by_text_and_reads_removal_back
     gone = ds.Session.clear_interrupt_breakpoint(other_ah, 0x31, 0x05)  # type: ignore[arg-type]
     assert gone["removed"] is False and "no such breakpoint" in str(gone["note"])
     assert other_sent == [], other_sent
-    assert dcons.interrupt_row(0x21, None) == "BPINT 21"
-    assert dcons.interrupt_row(0x31, 0) == "BPINT 31 AH=00"
+    assert grammar.interrupt_row(0x21, None) == "BPINT 21"
+    assert grammar.interrupt_row(0x31, 0) == "BPINT 31 AH=00"
 
 
 def test_clear_interrupt_breakpoint_removed_is_read_back_not_assumed(
@@ -1162,22 +1164,22 @@ def test_interrupt_row_round_trips_through_parse_and_parse_refuses_junk() -> Non
     """`interrupt_row` and `parse_interrupt_row` are exact inverses over every printed value."""
     for n in (0, 0x21, 0xFF):
         for ah in (None, 0, 0x4C, 0xFF):
-            assert dcons.parse_interrupt_row(dcons.interrupt_row(n, ah)) == (n, ah)
+            assert grammar.parse_interrupt_row(grammar.interrupt_row(n, ah)) == (n, ah)
     for junk in ("INT 21", "BPINT 211", "BPINT 21 AH=", "BP 00A7:0100", "BPINT ZZ", ""):
         with pytest.raises(ds.Invalid, match="interrupt breakpoint row"):
-            dcons.parse_interrupt_row(junk)
+            grammar.parse_interrupt_row(junk)
 
 
 def test_bp_row_target_reads_seg_off_by_value_across_widths_and_kinds() -> None:
     """A row is recognised by the NUMBERS it carries, whatever width the debugger printed."""
-    assert dcons.bp_row_target("BP 0087:12345") == ("BP", 0x87, 0x12345)
-    assert dcons.bp_row_target("BP 00A7:0100") == ("BP", 0xA7, 0x100)
-    assert dcons.bp_row_target("BP 00A7:100") == ("BP", 0xA7, 0x100)
-    assert dcons.bp_row_target("BPMEM 0040:006C (00)") == ("BPMEM", 0x40, 0x6C)
-    assert dcons.bp_row_target("BPPM 00AF:00006024 (00)") == ("BPPM", 0xAF, 0x6024)
-    assert dcons.bp_row_target("BPPM 00AF:6024") == ("BPPM", 0xAF, 0x6024)
-    assert dcons.bp_row_target("BPINT 21") is None
-    assert dcons.bp_row_target("BPINT 31 AH=00") is None
+    assert grammar.bp_row_target("BP 0087:12345") == ("BP", 0x87, 0x12345)
+    assert grammar.bp_row_target("BP 00A7:0100") == ("BP", 0xA7, 0x100)
+    assert grammar.bp_row_target("BP 00A7:100") == ("BP", 0xA7, 0x100)
+    assert grammar.bp_row_target("BPMEM 0040:006C (00)") == ("BPMEM", 0x40, 0x6C)
+    assert grammar.bp_row_target("BPPM 00AF:00006024 (00)") == ("BPPM", 0xAF, 0x6024)
+    assert grammar.bp_row_target("BPPM 00AF:6024") == ("BPPM", 0xAF, 0x6024)
+    assert grammar.bp_row_target("BPINT 21") is None
+    assert grammar.bp_row_target("BPINT 31 AH=00") is None
 
 
 def test_arm_and_clear_recognise_a_breakpoint_by_value_not_by_printed_width(
@@ -1620,11 +1622,11 @@ def test_a_wait_bound_takes_its_maximum_and_refuses_one_past_it(from_zero: bool)
 def test_the_argument_judges_take_their_edges_and_refuse_one_past(
 ) -> None:
     """Each judge at its maximum and its minimum, one past each refused `bad_argument`."""
-    for count in (1, ds.STEP_MAX):
-        ds.check_step("into", count)
-    for count in (0, ds.STEP_MAX + 1):
+    for count in (1, stepping.STEP_MAX):
+        stepping.check_step("into", count)
+    for count in (0, stepping.STEP_MAX + 1):
         with pytest.raises(ds.Invalid) as e:
-            ds.check_step("into", count)
+            stepping.check_step("into", count)
         assert e.value.code == "bad_argument"
     for number, ah in ((0, None), (ds.BYTE_MAX, None), (0x21, 0), (0x21, ds.BYTE_MAX)):
         ds.check_interrupt(number, ah)

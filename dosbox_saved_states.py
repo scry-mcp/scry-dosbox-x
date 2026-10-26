@@ -19,9 +19,7 @@ import dosbox_session as ds
 
 
 def _state_dir(ses: ds.Session) -> Path:
-    if ses.launch.state_dir is None:
-        return ses.launch.cwd / dlaunch.DEFAULT_STATE_SUBDIR
-    return ses.launch.state_dir
+    return dlaunch.state_dir_of(ses.launch)
 
 
 def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> dict[str, object]:
@@ -58,7 +56,7 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
                 if cancel.is_cancellation(e) and not ses.at_debugger():
                     ses.break_in()        # a BREAK sent lands; wait for it, then release
                 if ses.at_debugger():
-                    ses.resume_after_command()
+                    ses.resume()
         if isinstance(e, Invalid) and e.code == "no_channel":
             why = str(e).rstrip(".")
             raise Invalid("no_channel",
@@ -68,7 +66,7 @@ def _state_command(ses: ds.Session, verb: str, path: Path, seconds: float) -> di
                           ) from None
         raise
     if paused:
-        ses.resume_after_command()             # `session.running` says where it is left
+        ses.resume()             # `session.running` says where it is left
     if ok:
         return {"paused": paused, **marked}
     said = " / ".join(line.strip() for line in lines if line.strip())

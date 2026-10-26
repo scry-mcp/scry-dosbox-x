@@ -15,6 +15,7 @@ command line and is not inspected. No shell is involved, so a caller string is o
 from __future__ import annotations
 
 import hashlib
+import lzma
 import os
 import re
 import socket
@@ -66,9 +67,9 @@ class Launch:
     state_dir: Path | None = None
     # The session's own debugger listener, never a caller's.
     control_port: int | None = None
-    # Whether the build's debugger runs with no screen (`binaries.headless`), and which optional
-    # debugger commands it has (`binaries.debugger_commands`), read once at `start`.
-    headless: bool = False
+    # Whether the build's debugger runs with no screen (`binaries.debugger_headless`), and which
+    # optional debugger commands it has (`binaries.debugger_commands`), read once at `start`.
+    debugger_headless: bool = False
     debugger_commands: frozenset[str] = frozenset()
 
 
@@ -100,12 +101,12 @@ def build_argv(launch: Launch) -> list[str]:
     """The command line: our options with the caller's values, then the caller's `flags`."""
     argv = [launch.binary, "-conf", str(launch.conf),
             "-time-limit", str(launch.seconds),
-            "-break-start", "-fastlaunch",
+            "-break-start", "-fastlaunch", binaries.NO_FOLDER_PROMPT,
             # With a program loaded a TERM raises a quit dialog nobody answers.
             "-set", "dosbox quit warning=false"]
     # A debugger with no screen needs no terminal or console to stop at `-break-start`; a build
     # without the option is given one (`dosbox_process`).
-    if launch.headless:
+    if launch.debugger_headless:
         argv += ["-set", "dosbox debugger headless=true"]
     # With `saveremark` on, `Save state` opens a dialog that hangs the window.
     argv += ["-set", "dosbox saveremark=false"]
@@ -390,6 +391,12 @@ STATE_META = {"version": "DOSBox-X_Version", "program": "Program_Name",
 
 #: Where the states go when `start` is given no `state_dir`: this directory under `cwd`.
 DEFAULT_STATE_SUBDIR = "save"
+
+
+def state_dir_of(launch: Launch) -> Path:
+    """Where this session's states are written and listed."""
+    return launch.state_dir if launch.state_dir is not None else launch.cwd / DEFAULT_STATE_SUBDIR
+
 #: A file in the state directory that is no state: said in its row, never refused.
 NOT_A_STATE = "not a save state: the file is not a ZIP the emulator wrote"
 
@@ -443,7 +450,9 @@ def state_meta(path: Path) -> dict[str, object]:
         return {**out, **{key: contract.unavailable(NOT_A_STATE) for key in STATE_META}}
     except FileNotFoundError:
         raise      # gone since it was listed: the caller leaves it out
-    except (OSError, zlib.error, NotImplementedError, RuntimeError) as e:
+    # A member's decompressor raises its own: zlib's, LZMA's, and EOFError for a stream cut short.
+    except (OSError, zlib.error, lzma.LZMAError, EOFError, NotImplementedError,
+            RuntimeError) as e:
         why = f"the file could not be read: {e}"
         return {**out, "note": why, **{key: contract.unavailable(why) for key in STATE_META}}
     return {**out, **state_fields(read)}

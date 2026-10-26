@@ -29,9 +29,9 @@ from test_dosbox_x_run_for import FRAME_MS
 
 import dosbox_arming as arming
 import dosbox_checks as checks
-import dosbox_console as dcons
 import dosbox_dac as vgadac
 import dosbox_docs as docs
+import dosbox_grammar as grammar
 import dosbox_machine as machine
 import dosbox_paths as paths
 import dosbox_retrace as retrace
@@ -68,7 +68,7 @@ def window(name: str) -> bytes:
 def _real_bp(ref: str) -> None:
     """A raw breakpoint declared at the real-mode stop the probe guest sits at."""
     assert dstate.STATE.store is not None
-    dstate.STATE.store.add(arming.declare("breakpoint", "address", ref, cpu=dcons.REAL_MODE))
+    dstate.STATE.store.add(arming.declare("breakpoint", "address", ref, cpu=grammar.REAL_MODE))
 
 
 @pytest.mark.parametrize("bench", BENCHES)

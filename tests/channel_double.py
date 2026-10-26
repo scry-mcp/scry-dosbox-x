@@ -15,12 +15,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from types import SimpleNamespace
 
-import dosbox_console as dcons
+import dosbox_binary
+import dosbox_grammar as grammar
 import dosbox_launch as dlaunch
 import dosbox_session as ds
 
 FIXTURES = Path(__file__).parent / "fixtures" / "channel"
-EVERY_COMMAND = ("RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE")
+EVERY_COMMAND = dosbox_binary.COMMANDS
 NOT_RECOGNIZED = "*** Debugger command not recognized"
 RULE = "-" * 73
 #: The real-mode stop the probe guest was broken into at, as the capture read it.
@@ -174,7 +175,7 @@ class Machine:
 
     def _do_sr(self, args: list[str]) -> tuple[bool, list[str]]:
         name = args[0].upper() if args else ""
-        wide = name if name in dcons.WIDE_NAMES or name in dcons.SEGMENT_NAMES else f"E{name}"
+        wide = name if name in grammar.WIDE_NAMES or name in grammar.SEGMENT_NAMES else f"E{name}"
         if wide not in self.regs or len(args) < 2:
             return True, ["DEBUG: Set Register failure."]
         self.regs[wide] = int(args[1], 16)

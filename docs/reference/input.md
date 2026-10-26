@@ -10,7 +10,7 @@ Each command is a numbered, checked frame, acknowledged on the same link before 
 
 The conf owes the route one line: its autoexec runs the stub before the program. A session started with `program` needs none: `start` loads the stub itself, on the first drive from Y: down that `[autoexec]` does not mount (a conf mounting them all is refused). A conf that configures `serial1` itself loses it to the route.
 
-The stub announces itself on the E9 (`STUB  . inject device=present proto=3`), and the first input refuses (`no_channel`) when that line is missing or the protocol differs, because an older stub would read the frames as other commands. Without a `logfile` there is no line to read and input goes out on the conf's word.
+The stub announces itself on the E9 (`STUB  . inject device=present proto=4`), and the first input refuses (`no_channel`) when that line is missing or the protocol differs, because an older stub would read the frames as other commands. Without a `logfile` there is no line to read and input goes out on the conf's word.
 
 ### An input that went in is not one the program took
 
@@ -38,8 +38,8 @@ reaction writes, waited up to `seconds` (default 10).
 Refused: an unknown key or modifier, `seconds` without `expect`, a stopped machine, no
 stub (`no_channel`).
 
-Reply: `route`, `posted`, `bytes`, `ticks`, `verify` (`verdict` `TARGET` or `TIMEOUT`,
-`seen`).
+Reply: `route`, `posted`, `bytes`, `frames` (stub commands, a BIOS tick apart), `verify`
+(`verdict` `TARGET` or `TIMEOUT`, `seen`).
 
 Reference: REFERENCE.md, Input and the screen.
 
@@ -54,11 +54,11 @@ Reference: REFERENCE.md, Input and the screen.
 |---|---|
 | `bytes` | integer |
 | `delivered` | boolean |
+| `frames` | integer |
 | `keys` | array |
 | `modifiers` | array |
 | `posted` | integer |
 | `route` | string |
-| `ticks` | integer |
 | `verify` | object |
 
 Example, from a live run:

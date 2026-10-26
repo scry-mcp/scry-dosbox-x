@@ -14,6 +14,7 @@ import argparse
 import functools
 import json
 import os
+import platform
 import re
 import statistics
 import subprocess
@@ -24,6 +25,7 @@ from pathlib import Path
 from typing import Any, NoReturn
 
 sys.path.append(str(Path(__file__).resolve().parent))
+from scry_core import verdict  # noqa: E402
 from scry_core.reply_contract import Invalid  # noqa: E402
 
 import dosbox_binary as dbinary  # noqa: E402
@@ -44,6 +46,10 @@ WINDOW_SAMPLES = 6
 # The first interval after `resume` still has the boot burst draining through the log
 # pipeline and reads fast, so that sample is discarded.
 SETTLE_SAMPLES = 1
+#: The batch plays `SECS=30` of emulated time: ten times that is an emulator that never ended.
+BATCH_TIMEOUT_S = 300
+#: `sysctl` answers at once; one that does not is a host problem, said rather than waited out.
+PROBE_TIMEOUT_S = 10
 
 
 def timed(fn: Callable[[], Any]) -> tuple[float, Any]:
@@ -66,7 +72,7 @@ def validate_timer() -> dict[str, object]:
 
 
 #: `SystemExit` with a string exits 1, not 3, so the exit code is set by hand.
-INVALID_RC = 3
+INVALID_RC = verdict.EXIT_INVALID
 
 
 def invalid_line(why: str) -> None:
@@ -122,9 +128,13 @@ def batch_cost(cwd: Path, song: str) -> dict[str, float]:
     log = cwd / "build" / "PROF.E9.log"
     if log.exists():
         log.unlink()          # a stale log must not read as this run's answer
-    ms, _ = timed(lambda: subprocess.run(
-        ["make", "prof-log", f"SONG={song}", "SECS=30"], cwd=str(cwd),
-        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False))
+    try:
+        ms, _ = timed(lambda: subprocess.run(
+            ["make", "prof-log", f"SONG={song}", "SECS=30"], cwd=str(cwd),
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
+            timeout=BATCH_TIMEOUT_S))
+    except subprocess.TimeoutExpired:
+        no_measurement(f"the batch did not end within {BATCH_TIMEOUT_S} s, so it timed nothing")
     if not log.exists() or MARKER not in log.read_text(errors="replace"):
         no_measurement(f"the batch produced no {MARKER!r}, so this timed a "
                          f"run that never answered")
@@ -134,8 +144,8 @@ def batch_cost(cwd: Path, song: str) -> dict[str, float]:
 def launch(conf: Path, cwd: Path, seconds: int, logfile: Path) -> dlaunch.Launch:
     """A launch of the build this bench measures, read as `start` reads it."""
     found = build().path
-    return dlaunch.Launch(binary=found, headless=dbinary.headless(found), conf=conf, cwd=cwd,
-                          seconds=seconds, logfile=logfile)
+    return dlaunch.Launch(binary=found, debugger_headless=dbinary.debugger_headless(found),
+                          conf=conf, cwd=cwd, seconds=seconds, logfile=logfile)
 
 
 def reach_the_state(conf: Path, cwd: Path) -> dict[str, float]:
@@ -269,12 +279,22 @@ def stamp() -> dict[str, object]:
     if not isinstance(ver, str):
         no_measurement(f"{found.path} reported no version ({ver['why']}), so this run cannot "
                        "be attributed to a build")
-    machine = subprocess.run(("sysctl", "-n", "hw.model"), capture_output=True, text=True,
-                             check=False)
-    return {"machine": (machine.stdout + machine.stderr).strip(), "emulator": ver,
+    return {"machine": _machine(), "emulator": ver,
             "binary": found.path, "binary_origin": found.origin,
             "load_average": _load_average()}
 
+
+
+def _machine() -> str:
+    """The host's model, as macOS names it, else what Python reads of the platform."""
+    if platform.system() == "Darwin":      # not `sys.platform`: mypy would cut one branch per host
+        try:
+            got = subprocess.run(("sysctl", "-n", "hw.model"), capture_output=True, text=True,
+                                 check=False, timeout=PROBE_TIMEOUT_S)
+        except (OSError, subprocess.TimeoutExpired) as e:
+            return f"unread ({e})"
+        return (got.stdout + got.stderr).strip()
+    return platform.platform()
 
 
 def _load_average() -> tuple[float, float, float] | None:

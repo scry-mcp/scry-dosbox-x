@@ -10,7 +10,7 @@ from scry_core import vocabulary as vocab
 import dosbox_binary as binary
 import dosbox_checks as checks
 import dosbox_comment_file as comment_file
-import dosbox_console as console
+import dosbox_grammar as grammar
 import dosbox_inputs as inputs
 import dosbox_launch as launch
 import dosbox_logs as logs
@@ -31,7 +31,7 @@ DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES
               "RECORD_MAX": str(sequence.RECORD_MAX),
               **log_marks.DOC_VALUES,
               "LOG_LIMIT_MAX": str(logs.LOG_LIMIT_MAX), "WAIT_MAX_S": f"{vocab.WAIT_MAX_S:g}",
-              "READ_MAX": str(console.READ_BYTES_MAX),
+              "READ_MAX": str(grammar.READ_BYTES_MAX),
               "DEBUGGER_COMMANDS": ", ".join(f"`{c}`" for c in binary.COMMANDS),
               "CHANGE_WATCH_MAX": str(checks.CHANGE_WATCH_MAX),
               "INSTRUCTIONS_MAX": str(trace.INSTRUCTIONS_MAX),

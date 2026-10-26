@@ -1,4 +1,4 @@
-"""The host half of protocol 3 against a double of the guest's handler (`guest/inject.asm`).
+"""The host half of protocol 4 against a double of the guest's handler (`guest/inject.asm`).
 The constants are read off the asm so the double cannot drift from them."""
 
 from __future__ import annotations
@@ -18,8 +18,21 @@ import dosbox_inputs as inputs
 import dosbox_stub_link as link
 
 ASM = (Path(link.__file__).parent / "guest" / "inject.asm").read_text(encoding="utf-8")
-#: Each opcode's frame length after SYNC (sequence, opcode, payload, check).
-LENGTHS = {ord("K"): 4, ord("B"): 4, ord("M"): 7, ord("R"): 3, ord("S"): 3}
+
+
+def _lengths() -> dict[int, int]:
+    """Each opcode's frame length after SYNC, as `parse` decides it."""
+    block = ASM[ASM.index("how long is this frame"):ASM.index(".len:")]
+    lengths, length = {}, 0
+    for op in re.finditer(r"mov\s+cl, (\d+)|cmp\s+al, '(.)'", block):
+        if op.group(1):
+            length = int(op.group(1))
+        else:
+            lengths[ord(op.group(2))] = length
+    return lengths
+
+
+LENGTHS = _lengths()
 STALE_TICKS = int(re.search(r"^STALE_TICKS\s+equ\s+(\d+)", ASM, re.M).group(1))  # type: ignore[union-attr]
 TICK_S = 0.005
 SPACING_S = link.FRAME_SPACING_S
@@ -27,71 +40,113 @@ REPORT = b"STUB  . mouse x=1 y=2 buttons=0 max=639,199 mode=19 screen=320x200\r\
 
 
 class Stub:
-    """The stub's `service`, ported, entered on a tick. `dribble` writes a byte at a time;
-    `ack_late` holds the acknowledgement of those frames (counted from 0) for `late_s`."""
+    """The stub's two entries and `service`, ported. IRQ 4 enters as bytes arrive unless
+    `masked`; the tick enters every `TICK_S` unless `timer_owned` (a program that took INT 08h).
+    `dribble` writes a byte at a time; `ack_late` holds the acknowledgement of those frames
+    (counted from 0) for `late_s`; `nested` enters IRQ 4 again under each `M`'s INT 33h."""
 
     def __init__(self, sock: socket.socket, last_seq: int = 0, dribble: bool = False,
                  ack_late: frozenset[int] = frozenset(), late_s: float = 0.0,
-                 deaf: bool = False, stale_ticks: int = STALE_TICKS) -> None:
+                 deaf: bool = False, stale_ticks: int = STALE_TICKS, masked: bool = False,
+                 timer_owned: bool = False, nested: bool = False) -> None:
         self.sock, self.dribble, self.ack_late, self.late_s = sock, dribble, ack_late, late_s
-        self.deaf, self.stale_ticks = deaf, stale_ticks
+        self.stale_ticks, self.nested = stale_ticks, nested
+        self.irq4, self.ticks = not (deaf or masked), not (deaf or timer_owned)
         self.last_seq = last_seq
         self.carried: list[bytes] = []
         self.carried_at: list[float] = []
         self.answered = 0
         self.uart: deque[int] = deque()
-        self.hunting, self.have, self.stale = True, 0, 0
+        self.hunting, self.got, self.have, self.stale = True, 0, 0, 0
+        self.busy = self.ticking = False
+        self.nested_left = 0
         self.frame = bytearray(8)
         self.most_queued = 0
         self.closed = False
-        for target in (self._receive, self._ticks):
+        self._cli = threading.RLock()
+        for target in (self._receive, self._clock):
             threading.Thread(target=target, daemon=True).start()
 
     def _receive(self) -> None:
         try:
             while got := self.sock.recv(4096):
-                self.uart.extend(got)
-                self.most_queued = max(self.most_queued, len(self.uart))
+                with self._cli:
+                    self.uart.extend(got)
+                    self.most_queued = max(self.most_queued, len(self.uart))
+                if self.irq4:
+                    self.serial()
         except OSError:
             pass
         self.closed = True
 
-    def _ticks(self) -> None:
+    def _clock(self) -> None:
         while not self.closed:
             time.sleep(TICK_S)
-            if not self.deaf:
+            if self.ticks:
                 try:
                     self.tick()
                 except OSError:
                     return
 
     def tick(self) -> None:
+        self._enter(ticking=True)
+
+    def serial(self) -> None:
+        self._enter(ticking=False)
+
+    def _enter(self, ticking: bool) -> None:
+        with self._cli:
+            if self.busy:
+                self.nested_left += 1
+                return
+            self.ticking = ticking
+            self._service()
+
+    def _service(self) -> None:
+        self.busy = True
         while self.uart:
             byte = self.uart.popleft()
             if self.hunting:
                 if byte == link.SYNC:
-                    self.hunting, self.have, self.stale = False, 0, 0
+                    self.hunting, self.stale = False, 0
                 continue
             self.stale = 0
-            self.frame[self.have] = byte
+            self.frame[self.got] = byte
+            self.got += 1
+            self._parse()
+        if self.ticking and not self.hunting:
+            self.stale += 1
+            if self.stale >= self.stale_ticks:
+                self.hunting, self.got, self.have = True, 0, 0
+        self.busy = False
+
+    def _parse(self) -> None:
+        while self.have < self.got:
             self.have += 1
             if self.have < 2:
                 continue
             length = LENGTHS.get(self.frame[1])
             if length is None:
-                self.hunting = True
+                self._resync(0)
                 continue
             if self.have < length:
                 continue
-            self.hunting = True
             whole = bytes(self.frame[:length])
             if link.frame(whole[0], whole[1:-1])[1:] != whole:
+                self._resync(0)
                 continue
             self._carry(whole[:-1])
-        if not self.hunting:
-            self.stale += 1
-            if self.stale >= self.stale_ticks:
-                self.hunting = True
+            self._resync(length)
+
+    def _resync(self, at: int) -> None:
+        rest = bytes(self.frame[at:self.got])
+        sync = rest.find(link.SYNC)
+        if sync < 0:
+            self.hunting, self.got, self.have = True, 0, 0
+            return
+        rest = rest[sync + 1:]
+        self.frame[:len(rest)] = rest
+        self.got, self.have, self.stale = len(rest), 0, 0
 
     def _carry(self, frame: bytes) -> None:
         seq, command = frame[0], frame[1:]
@@ -100,6 +155,8 @@ class Stub:
             self.last_seq = seq
             self.carried.append(command)
             self.carried_at.append(time.monotonic())
+            if self.nested and command[0] == ord("M"):
+                self.serial()
         n = self.answered
         self.answered += 1
         out = bytes((link.ACK, seq, command[0], int(carried)))
@@ -167,6 +224,38 @@ def test_the_protocol_constants_are_the_stubs_own() -> None:
     assert f"'SCRY-INJECT-{inputs.STUB_PROTOCOL}'" in ASM
 
 
+def test_the_frame_lengths_are_read_off_the_stubs_parser() -> None:
+    assert {ord("K"): 4, ord("B"): 4, ord("M"): 7, ord("R"): 3, ord("S"): 3} == LENGTHS
+
+
+@pytest.mark.parametrize("entry", [{"timer_owned": True}, {"masked": True}],
+                         ids=["IRQ 4 alone: the program owns the timer",
+                              "the tick alone: the program masked IRQ 4"])
+def test_either_entry_alone_carries_every_command(pair: Any, entry: dict[str, bool]) -> None:
+    host, guest = pair
+    stub = Stub(guest, masked=entry.get("masked", False),
+                timer_owned=entry.get("timer_owned", False))
+    assert link.Link(host).send(KEYS) == []
+    assert stub.carried == KEYS
+
+
+def test_an_entry_under_the_stubs_own_driver_call_leaves_the_bytes_to_the_next(
+        pair: Any) -> None:
+    """IRQ 4 raised inside `M`'s INT 33h finds `service` busy and reads nothing."""
+    host, guest = pair
+    stub = Stub(guest, nested=True)
+    assert link.Link(host).send(KEYS) == []
+    assert stub.carried == KEYS and stub.nested_left == 1
+
+
+def test_a_short_frame_ages_only_on_the_tick(pair: Any) -> None:
+    """Under IRQ 4 alone nothing drops a short frame, so its own bytes are what resync it."""
+    host, guest = pair
+    stub = Stub(guest, timer_owned=True)
+    link.Link(Lossy(host, {0: slice(0, -1)})).send([b"K\x1e"])  # type: ignore[arg-type]
+    assert stub.carried == [b"K\x1e"] and stub.stale == 0
+
+
 def test_each_command_waits_for_its_acknowledgement_and_is_carried_out_once(pair: Any) -> None:
     host, guest = pair
     stub = Stub(guest)
@@ -215,6 +304,18 @@ def test_a_frame_short_its_tail_on_a_slow_guest_is_never_completed_by_the_resend
     stub = Stub(guest, stale_ticks=10_000)
     link.Link(Lossy(host, {1: slice(0, -1)})).send(KEYS)  # type: ignore[arg-type]
     assert stub.carried == KEYS, "the short frame ran with the resend's bytes as its tail"
+
+
+@pytest.mark.parametrize("command", [b"K\xa5", b"M\xa5\x00\xa5\x00"],
+                         ids=["a SYNC as the payload", "two SYNCs in the payload"])
+def test_a_short_frame_holding_a_sync_is_found_again_in_its_own_bytes(
+        pair: Any, command: bytes) -> None:
+    """With no tick to age it, the resend completes the short frame wrongly; the stub reads the
+    failed frame's bytes again from the one after its SYNC and finds the resend there."""
+    host, guest = pair
+    stub = Stub(guest, stale_ticks=10_000)
+    link.Link(Lossy(host, {0: slice(0, -1)})).send([command])  # type: ignore[arg-type]
+    assert stub.carried == [command]
 
 
 def test_a_lost_acknowledgement_is_answered_by_the_repeat_and_never_carried_out_twice(

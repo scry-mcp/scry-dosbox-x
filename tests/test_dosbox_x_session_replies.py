@@ -19,10 +19,11 @@ from scry_core.host_program import absolute as _abs
 from test_dosbox_x_session import _writer
 
 import dosbox_collect as dcollect
-import dosbox_console as dcons
 import dosbox_debugger as dbg
+import dosbox_grammar as grammar
 import dosbox_launch as dlaunch
 import dosbox_session as ds
+import dosbox_stepping as stepping
 
 
 def _writing(mode: str = "Real") -> tuple[Any, list[str], list[tuple[Any, ...]]]:
@@ -92,7 +93,7 @@ def test_the_session_facts_round_the_elapsed_time_and_name_the_drain_and_state_d
     got = ds.Session.state(fake)
     assert got["elapsed_s"] == 3.5 and isinstance(got["elapsed_s"], float), got
     assert got["output_bytes_dropped"] == 0, got
-    assert got["state_dir"] == "the emulator's own save/ under its working directory", got
+    assert got["state_dir"] == str(fake.launch.cwd / dlaunch.DEFAULT_STATE_SUBDIR), got
     fake.launch = dlaunch.Launch(conf=fake.launch.conf, cwd=tmp_path, seconds=60,
                                  state_dir=tmp_path / "st")
     assert ds.Session.state(fake)["state_dir"] == str(tmp_path / "st")
@@ -180,18 +181,18 @@ def test_a_riff_that_is_not_an_avi_and_an_avi_tag_with_no_riff_are_not_avis() ->
 
 def test_the_step_and_register_checks_say_the_value_and_its_bound() -> None:
     with pytest.raises(ds.Invalid) as mode:
-        ds.check_step("sideways", 1)
+        stepping.check_step("sideways", 1)
     assert mode.value.code == "bad_argument", mode.value.code
     said = str(mode.value)
     assert said.startswith("mode is one of ('over', 'into'); got 'sideways'"), said
     assert said.endswith(": `over` runs a CALL to its return, `into` follows it"), said
     for near in ("o", ""):
         with pytest.raises(ds.Invalid):
-            ds.check_step(near, 1)
+            stepping.check_step(near, 1)
     with pytest.raises(ds.Invalid) as name:
         ds.check_register_name("bogus")
     assert str(name.value) == ("'bogus' is not a register this debugger sets. One of: "
-                               + ", ".join(sorted(dcons.SETTABLE))), name.value
+                               + ", ".join(sorted(grammar.SETTABLE))), name.value
     for key, value, said in (
             ("ax", -1, "value=-1 is negative: ax holds 16 bits, 0 to 0xffff; nothing was sent"),
             ("eax", -1, "0 to 0xffffffff"),
@@ -203,10 +204,10 @@ def test_the_step_and_register_checks_say_the_value_and_its_bound() -> None:
         assert said in str(wrong.value), wrong.value
     ds.check_register_value("ax", 0xFFFF)                     # the widest value each takes
     ds.check_register_value("eax", 0xFFFFFFFF)
-    ds.check_step("over", ds.STEP_MAX)
-    for count in (0, ds.STEP_MAX + 1):
+    stepping.check_step("over", stepping.STEP_MAX)
+    for count in (0, stepping.STEP_MAX + 1):
         with pytest.raises(ds.Invalid, match="a step count is 1 to"):
-            ds.check_step("over", count)
+            stepping.check_step("over", count)
     with pytest.raises(ds.Invalid) as dest:
         ds.check_frame_args(0, Path(_abs("x", "shot%03d.png")))
     assert repr(_abs("x", "shot%03d.png")) in str(dest.value), dest.value
