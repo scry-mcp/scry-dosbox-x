@@ -10,6 +10,7 @@ import dpmi_guest as guest
 from matrix_code import DPMI_CODE_CELLS, dpmi_code
 from matrix_comment_tools import DPMI_COMMENT_CELLS, dpmi_comments
 from matrix_common import (
+    CLOSED_BY,
     M,
     boot,
     cells,
@@ -276,4 +277,4 @@ def section_f() -> None:
     holds, detail, closed = dpmi_leave()
     M.judge("F quit by keys: alt+x, right, enter", holds, detail)
     judged("F close after the guest left", reply=closed,
-           holds=ok(closed) and closed.get("ended_by") in ("quit", "died"))
+           holds=ok(closed) and closed.get("ended_by") in (CLOSED_BY, "died"))

@@ -210,8 +210,8 @@ def _buttons() -> None:
 def _twice(hooked: bool = False) -> None:
     """The conf runs the stub too, and `start` loads its own before the program: one copy
     stays, the other says so, and a key arrives whole (two parsers would split it). `hooked`
-    loads a TSR that takes INT 1Ch on both sides of the conf's copy, so whichever copy runs
-    first, `start`'s `-c` lines or the autoexec, sits behind a hook when the other asks."""
+    loads `hook1c.com` on both sides of the conf's copy, so whichever copy runs first sits
+    behind it."""
     text = MOUSE_CONF.read_text(encoding="utf-8")
     hook = "C:\\HOOK1C.COM\n" if hooked else ""
     stub = f'mount g "{GUEST.parent.parent / "guest"}"\n{hook}G:\\INJECT.COM\n{hook}c:\n'

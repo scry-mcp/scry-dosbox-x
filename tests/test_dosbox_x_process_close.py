@@ -92,7 +92,8 @@ def test_a_new_process_holds_nothing_and_closes_once(monkeypatch: pytest.MonkeyP
     assert (p.dropped, p.drain_ended, p.reap_failed, p._closed) == (0, "", "", False)
     assert p.output_tail(10) == "" and p.ended_how == "none"
     p.close()
-    assert p.ended_how == "quit" and child.sent == [15], child.sent
+    assert p.ended_how == ("killed" if dprocess.TERMINATES else "quit") and child.sent == [15], (
+        child.sent)
     p.close()
     assert child.sent == [15], "a closed session was signalled again"
 
@@ -120,6 +121,11 @@ def test_a_close_names_a_terminated_emulator_killed_not_quit(
     p = _process(_Deaf(clock, 0.0, None))
     p.close()
     assert p.ended_how == said
+    # A rerun after a cancelled wait finds the emulator gone after this close's own signal.
+    again = _process(_Deaf(clock, 0.0, None), _termed=True)
+    again.proc.returncode = 0
+    again._close()
+    assert again.ended_how == said
 
 
 @NO_SIGKILL
@@ -221,7 +227,7 @@ def test_a_drainer_that_will_not_stop_leaves_the_descriptor_open_and_says_so(
         worker.start()
         worker.join(5)
         assert not worker.is_alive() and time.perf_counter() - began < 1.0
-        assert p.drain_ended.startswith("the drain thread did not stop within 0.2 s")
+        assert p.drain_ended.startswith("it was still reading 0.2 s after the emulator ended")
         os.fstat(r)                                    # still open, on purpose
     finally:
         hold.set()
@@ -286,7 +292,7 @@ def test_the_drain_names_a_read_that_failed(monkeypatch: pytest.MonkeyPatch) -> 
         failing.setattr(os, "read", broken)
         p, w, t = _draining()
         t.join(1)
-    assert p.drain_ended.startswith("reading the emulator's output failed"), p.drain_ended
+    assert p.drain_ended.startswith("a read failed"), p.drain_ended
     os.close(w)
     assert p._out is not None
     os.close(p._out)

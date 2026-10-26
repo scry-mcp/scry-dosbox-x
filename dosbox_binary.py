@@ -26,7 +26,7 @@ def canary_for(binary: str = "") -> list[str] | None:
             "sdl videodriver=dummy", "-exit"]
 
 
-#: Else a macOS build asks for its folder in a dialog that SIGTERM cannot end.
+#: On every launch: else a macOS build asks for its folder in a dialog SIGTERM cannot end.
 NO_FOLDER_PROMPT = "-nopromptfolder"
 
 # Compiled only under `C_HEAVY_DEBUG`. Read from bytes: an unknown command poisons input.

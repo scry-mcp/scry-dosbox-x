@@ -206,7 +206,7 @@ class Process:
             try:
                 chunk = os.read(self._out, 65536)
             except OSError as exc:
-                ended = f"reading the emulator's output failed: {exc!r}"
+                ended = f"a read failed ({exc!r}), so the tails may be short"
                 break
             if not chunk:
                 break
@@ -263,7 +263,8 @@ class Process:
         dpresence.of(self).close()
         try:
             if self.proc.poll() is not None:
-                self.ended_how = "quit" if getattr(self, "_termed", False) else "died"
+                self.ended_how = (("killed" if TERMINATES else "quit")
+                                  if getattr(self, "_termed", False) else "died")
             else:
                 self._signal_group(signal.SIGTERM)
                 self._termed = True
@@ -294,9 +295,8 @@ class Process:
             if self._drainer is not None:
                 self._drainer.join(timeout=DRAIN_JOIN_SECS)
             if self._drainer is not None and self._drainer.is_alive():
-                self.drain_ended = (f"the drain thread did not stop within "
-                                    f"{DRAIN_JOIN_SECS} s; its descriptor was left open on "
-                                    f"purpose rather than recycled under a live reader")
+                self.drain_ended = (f"it was still reading {DRAIN_JOIN_SECS} s after the "
+                                    f"emulator ended, so the tails may be short")
             elif self._out is not None:
                 with contextlib.suppress(OSError):
                     os.close(self._out)

@@ -1,10 +1,8 @@
 ; HOOK1C.COM -- a resident program that takes INT 1Ch above whatever holds it, and chains it.
 ;
-; WHY IT EXISTS. The input stub knows a copy of itself is already resident by the signature in
-; front of its handlers, read through their vectors. A TSR loaded after the first copy, as a
-; conf's own `[autoexec]` can load one, puts its handler on INT 1Ch, and through that vector the
-; first copy is out of sight: the second would install, and two parsers would split COM1. The
-; matrix's P section loads this between the two copies. It says so on E9 and stays resident.
+; WHY IT EXISTS. It hides a resident input stub behind INT 1Ch, the case `guest/inject.asm`'s
+; already-resident check answers by asking IRQ 4's vector too; the matrix's P section loads it
+; between two copies. It says so on E9 and stays resident.
 ;
 ;     nasm -f bin hook1c.asm -o hook1c.com
         org 100h

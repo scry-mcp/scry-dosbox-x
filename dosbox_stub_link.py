@@ -1,4 +1,4 @@
-"""The host half of the stub's serial protocol 3; the framing contract is `guest/inject.asm`."""
+"""The host half of the stub's serial protocol; the framing contract is `guest/inject.asm`."""
 
 from __future__ import annotations
 

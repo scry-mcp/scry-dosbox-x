@@ -252,7 +252,8 @@ def close(detail: bool = False, ctx: Context[Any, Any] | None = None) -> dict[st
 
     Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid`, `stdout_tail` and
     `errorlog_tail` when the end was not a clean `quit`, or with `detail=True`. `exit_code` is
-    an integer or unavailable with its `why`. `session` is the block before closing.
+    an integer or unavailable with its `why`; `note` when the output was not read to its end.
+    `session` is the block before closing.
     """
     return lifecycle.close(bridge(ctx), detail)
 
@@ -575,9 +576,9 @@ def step(count: Annotated[int, vocab.bounds(1, stepping.STEP_MAX)] = 1,
     stopped.
 
     Reply: `mode`, `asked`, `before`, `after`, `instructions_completed`, `moved`, `stalled`
-    (CS:EIP unchanged after a step), `note` (a step over's breakpoint left armed), and the stop
-    reply; an `over` that does not come back within its bound is stopped where it stands, and no
-    later step is sent. For longer runs `run_to`.
+    (CS:EIP unchanged after a step), `note` (a step over's own breakpoint not confirmed removed),
+    and the stop reply; an `over` that does not come back within its bound is stopped where it
+    stands, and no later step is sent. For longer runs `run_to`.
     """
     session = live()
     out = cast(dict[str, Any], session.step(mode=mode, count=count))

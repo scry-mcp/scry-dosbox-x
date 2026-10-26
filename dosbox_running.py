@@ -45,7 +45,9 @@ def drain_if_stopped(session: ds.Session) -> None:
     waiting = (STATE.pending["arm"] or STATE.pending["disarm"] or STATE.pending["remeasure"]
                or STATE.pending["load"] is not None)
     fresh = STATE.pending["dirty"] or STATE.pending["drained_seq"] != STATE.last_stop.get("seq", 0)
-    if waiting and fresh and session.at_debugger():
+    # The stop `observe_stop` just read, never one reached since: that one is the next contact's
+    # to record first.
+    if waiting and fresh and session.parked:
         arming.apply_pending(session)
 
 

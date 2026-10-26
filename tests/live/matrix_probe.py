@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from matrix_common import (
+    CLOSED_BY,
     GUEST,
     NEVER_RUNS_CONTROL,
     NEVER_RUNS_STOPPER,
@@ -484,8 +485,9 @@ def _running(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
         "send_mouse": (lambda r: refused(r, "no_channel"),
                        "send_mouse docstring: no stub announced, so nothing would receive it"),
         **_SEQUENCES,
-        "close": (lambda r: ok(r) and r.get("closed") is True and r.get("ended_by") == "quit",
-                  "close docstring: `quit`, a session launched here leaves on the signal"),
+        "close": (lambda r: ok(r) and r.get("closed") is True and r.get("ended_by") == CLOSED_BY,
+                  "close docstring: `quit`, a session launched here leaves on the signal; "
+                  "`killed` on Windows, which terminates"),
     }
     return d[tool]
 
@@ -632,8 +634,8 @@ def section_a() -> None:
             _a_one(tool, "closed")
     _a_one("start", "closed")
     r = M.call(server.close)
-    M.judge("A stopped close", ok(r) and r.get("closed") is True and r.get("ended_by") == "quit",
-            said(r))
+    M.judge("A stopped close",
+            ok(r) and r.get("closed") is True and r.get("ended_by") == CLOSED_BY, said(r))
 
 
 # ================================================================ B: argument edges
@@ -668,7 +670,7 @@ B_CELLS = cells(
     ("B scan 41 survivors cut by default", "scan filter: docstring, `limit` defaults to 40"),
     ("B scan start cell_bytes=3", "scan start: docstring, `cell_bytes` 1, 2 or 4"),
     ("B scan filter operator=~", "scan filter: docstring, the six operators"),
-    ("B step count=64", "the ceiling dosbox_session.STEP_MAX declares, REFERENCE's Advancing "
+    ("B step count=64", "the ceiling dosbox_stepping.STEP_MAX declares, REFERENCE's Advancing "
                         "quotes; step docstring: instructions_completed is what landed"),
     ("B step count=65", "the ceiling dosbox_session.STEP_MAX declares"),
     ("B step count=0", "step docstring: a count of instructions"),

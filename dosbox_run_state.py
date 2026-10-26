@@ -79,7 +79,7 @@ def first_stop(ses: ds.Session) -> bool:
         if ok or dbg.NOT_RECOGNIZED not in lines:
             return dbg.take_run_state(ses, ok, lines)
         ses.commands = ses.commands - {dbg.RUNSTATE}
-    send_break(ses, "session_broken", "the debugger cannot stop this machine: `BREAK` answered")
+    send_break(ses, "session_broken", "the debugger cannot stop this machine: `BREAK` was refused")
     return True
 
 
@@ -88,7 +88,7 @@ def send_break(ses: ds.Session, code: Code, refused: str) -> None:
     ok, lines = ses.control.request("BREAK")
     said = " / ".join(lines)
     if not ok or DEBUGGER_UNAVAILABLE in said:
-        raise Invalid(code, f"{refused} {said or 'ERR with no reason'}")
+        raise Invalid(code, f"{refused}: {said or 'no reason given'}")
 
 
 def stop_at_bound(ses: ds.Session) -> bool:
@@ -100,7 +100,7 @@ def stop_at_bound(ses: ds.Session) -> bool:
 
 def break_in(ses: ds.Session, seconds: float) -> float:
     """Wait for `RUNSTATE` to say stopped; with no `RUNSTATE`, `BREAK`'s own answer says it."""
-    send_break(ses, "unexpected_answer", "the debugger channel refused BREAK:")
+    send_break(ses, "unexpected_answer", "the debugger channel refused BREAK")
     began = time.monotonic()
     if not ses.has(dbg.RUNSTATE):
         ses.mark_stopped()

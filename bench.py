@@ -46,8 +46,9 @@ WINDOW_SAMPLES = 6
 # The first interval after `resume` still has the boot burst draining through the log
 # pipeline and reads fast, so that sample is discarded.
 SETTLE_SAMPLES = 1
-#: The batch plays `SECS=30` of emulated time: ten times that is an emulator that never ended.
-BATCH_TIMEOUT_S = 300
+#: The emulated seconds the batch plays; ten times that is an emulator that never ended.
+BATCH_SECS = 30
+BATCH_TIMEOUT_S = 10 * BATCH_SECS
 #: `sysctl` answers at once; one that does not is a host problem, said rather than waited out.
 PROBE_TIMEOUT_S = 10
 
@@ -130,7 +131,7 @@ def batch_cost(cwd: Path, song: str) -> dict[str, float]:
         log.unlink()          # a stale log must not read as this run's answer
     try:
         ms, _ = timed(lambda: subprocess.run(
-            ["make", "prof-log", f"SONG={song}", "SECS=30"], cwd=str(cwd),
+            ["make", "prof-log", f"SONG={song}", f"SECS={BATCH_SECS}"], cwd=str(cwd),
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
             timeout=BATCH_TIMEOUT_S))
     except subprocess.TimeoutExpired:

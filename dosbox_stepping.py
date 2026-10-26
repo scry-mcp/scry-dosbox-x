@@ -117,6 +117,14 @@ def _one_step(ses: ds.Session, at: dict[str, str],
                                            label="step over")
         if expired:
             ses.stop_at_bound()
+    except Invalid as exc:
+        if armed:
+            raise
+        with cancel.shielded():
+            removed = ses.at_debugger() and ds.Session._remove_own(ses, [target])[0][0]
+        if removed:
+            raise
+        raise ds._still_armed(exc, target, began) from None
     finally:
         with cancel.shielded():
             if not armed and ses.at_debugger():

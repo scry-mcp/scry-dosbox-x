@@ -1251,7 +1251,7 @@ def test_close_records_which_ending_it_got() -> None:
     assert s.ended_how == "died"
     s = bare([None, 0], 0)
     s.close()
-    assert s.ended_how == "quit"
+    assert s.ended_how == ("killed" if dprocess.TERMINATES else "quit")
     s = bare([None, 0], 1)
     s.close()
     assert s.ended_how == "killed" and s.reap_failed == ""

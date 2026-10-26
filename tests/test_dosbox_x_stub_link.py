@@ -1,5 +1,5 @@
-"""The host half of protocol 4 against a double of the guest's handler (`guest/inject.asm`).
-The constants are read off the asm so the double cannot drift from them."""
+"""The host half of the stub's protocol against a double of the guest's handler
+(`guest/inject.asm`). The constants are read off the asm so the double cannot drift from them."""
 
 from __future__ import annotations
 
@@ -22,7 +22,8 @@ ASM = (Path(link.__file__).parent / "guest" / "inject.asm").read_text(encoding="
 
 def _lengths() -> dict[int, int]:
     """Each opcode's frame length after SYNC, as `parse` decides it."""
-    block = ASM[ASM.index("how long is this frame"):ASM.index(".len:")]
+    parse = ASM[ASM.index("\nparse:"):]
+    block = parse[parse.index("mov     cl,"):parse.index(".len:")]
     lengths, length = {}, 0
     for op in re.finditer(r"mov\s+cl, (\d+)|cmp\s+al, '(.)'", block):
         if op.group(1):
@@ -248,12 +249,23 @@ def test_an_entry_under_the_stubs_own_driver_call_leaves_the_bytes_to_the_next(
     assert stub.carried == KEYS and stub.nested_left == 1
 
 
-def test_a_short_frame_ages_only_on_the_tick(pair: Any) -> None:
-    """Under IRQ 4 alone nothing drops a short frame, so its own bytes are what resync it."""
+def test_under_irq_4_alone_a_short_frame_is_resynced_by_its_resend(pair: Any) -> None:
+    """With no tick, nothing ages the short frame out: the resend's bytes are what resync it."""
     host, guest = pair
     stub = Stub(guest, timer_owned=True)
     link.Link(Lossy(host, {0: slice(0, -1)})).send([b"K\x1e"])  # type: ignore[arg-type]
     assert stub.carried == [b"K\x1e"] and stub.stale == 0
+
+
+def test_an_unknown_opcode_is_read_past_and_the_frame_behind_it_carried(pair: Any) -> None:
+    """A SYNC and a sequence byte with nothing after: the next frame's SYNC is read as their
+    opcode, unknown, and read again it is the frame it starts."""
+    host, guest = pair
+    stub = Stub(guest, timer_owned=True)
+    host.sendall(bytes((link.SYNC, 7)))
+    line = Lossy(host, {})
+    assert link.Link(line).send([b"K\x1e"]) == []  # type: ignore[arg-type]
+    assert stub.carried == [b"K\x1e"] and line.frames == 1, "it took a resend to be found"
 
 
 def test_each_command_waits_for_its_acknowledgement_and_is_carried_out_once(pair: Any) -> None:

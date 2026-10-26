@@ -93,7 +93,7 @@ def _twin(cs: int) -> None:
     must(M.call(server.breakpoint_at, ref=f"{cs:04X}:{at['twin']:04X}"), "arming twin")
     real = M.call(server.resume, seconds=20)
     w = M.call(server.watch_add, ref="[0010:0000]", mode="change", length=1)
-    # Placed by its linear address: the code descriptor's base is this segment's.
+    # Armed in real mode, a BP matches by linear address: `CS:pm` is where `0008:pm` lands.
     must(M.call(server.breakpoint_at, ref=f"{cs:04X}:{at['pm']:04X}"), "arming pm")
     stops = []
     for _ in range(STOPS_TO_PM):

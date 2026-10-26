@@ -95,7 +95,6 @@ SNAPSHOT_WAIT_S = 10.0
 STATE_WAIT_S = 30.0
 
 
-
 class NotStopped(Invalid):
     """The machine is running, and the reading needs it stopped."""
 
@@ -247,7 +246,6 @@ KEEPS_SURVEY = frozenset({"EV", "BPLIST", "BP", "BPDEL", "BPINT", "BPM", "BPPM",
                         "SELINFO", "RUNSTATE", "INTVEC", "SM", "SV", "LV", "MEMFIND", "MEMS",
                         "CPU", "GDT", "LDT", "IDT", "PAGING", "DOS", "BIOS", "EMU",
                         "CALLBACKS", "VGA", "PRESENCE"})
-
 
 
 class Session(dprocess.Process):
@@ -742,7 +740,7 @@ class Session(dprocess.Process):
         # THE THREE LIST SPELLINGS ARE CAPTURED, NOT DERIVED.
         sent: list[tuple[str, str]] = []
         for segment, offset in places:
-            if cpu.startswith("Pr"):
+            if grammar.watch_kind(cpu) == "BPPM":
                 sent.append((f"BPPM {segment:04X}:{offset:04X}",
                              f"BPPM {segment:04X}:{offset:08X}"))
             else:

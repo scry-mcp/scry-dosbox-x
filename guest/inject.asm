@@ -21,11 +21,13 @@
 ; inside a payload (A5h is the break of a key), so a frame short of a byte can be completed by the
 ; next one's: the check is what makes that frame not add up. One that does not, or whose opcode
 ; is unknown, is READ AGAIN from the byte after its SYNC, because the host's resend may already
-; be inside it: its SYNC went in as the short frame's tail. Every frame is ACKNOWLEDGED on COM1, the line it came in on: 5Ah, its
-; sequence byte, its opcode, then 1 when it was carried out or 0 when it was not because it
+; be inside it: its SYNC went in as the short frame's tail. Every frame is ACKNOWLEDGED on COM1,
+; the line it came in on: 5Ah, its sequence byte, its opcode, then 1 when it was carried out or 0
+; when it was not because it
 ; repeats the last sequence carried out. The host sends the next frame only once the last is
 ; acknowledged, so the UART's queue never holds more than one frame and the guest sets the
-; pace. A byte lost on the way costs one frame and never runs another: a frame still short after
+; pace. A byte lost on the way costs one frame and runs no other, short of a misframed run whose
+; one-byte check happens to add up: a frame still short after
 ; STALE_TICKS ticks with nothing arriving is dropped, the stub hunts for the next SYNC, and the
 ; host, with no acknowledgement, sends the same frame again (under a program that owns the timer
 ; no tick counts, the resent bytes complete the short frame wrongly, and reading its bytes again
@@ -235,7 +237,7 @@ service:
         mov     byte [stale], 0
         jmp     .more
 .take:  mov     byte [stale], 0
-        movzx   bx, byte [got]      ; `parse` leaves every byte read, so this one goes last
+        movzx   bx, byte [got]      ; appended: `parse` has read every byte already there
         mov     [frame+bx], al
         inc     byte [got]
         call    parse

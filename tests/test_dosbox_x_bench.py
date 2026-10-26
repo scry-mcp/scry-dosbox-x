@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import json
+import platform
 import re
 import subprocess
 import sys
@@ -214,6 +215,14 @@ def test_a_batch_is_timed_only_when_it_answered(tmp_path: Path, monkeypatch: pyt
     assert e.value.code == bench.INVALID_RC
 
 
+def test_the_stamp_names_a_host_other_than_macos_by_its_platform(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(platform, "system", lambda: "Windows")
+    monkeypatch.setattr(platform, "platform", lambda: "Windows-11")
+    monkeypatch.setattr("subprocess.run", lambda *a, **k: pytest.fail("sysctl ran off macOS"))
+    assert bench._machine() == "Windows-11"
+
+
 def test_the_stamp_names_the_build_the_ladder_found_and_refuses_one_with_no_version(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """The stamp names the ladder's build; a build with no version is refused."""
@@ -225,6 +234,7 @@ def test_the_stamp_names_the_build_the_ladder_found_and_refuses_one_with_no_vers
     monkeypatch.setattr("subprocess.run", lambda cmd, **kw: SimpleNamespace(stdout="Mac16,10",
                                                                             stderr=""))
     monkeypatch.setattr(bench, "_load_average", lambda: (1.0, 2.0, 3.0))
+    monkeypatch.setattr(platform, "system", lambda: "Darwin")
     got = bench.stamp()
     assert got == {"machine": "Mac16,10", "emulator": "DOSBox-X at /opt/dosbox-x",
                    "binary": "/opt/dosbox-x", "binary_origin": "DOSBOX_X_BINARY",

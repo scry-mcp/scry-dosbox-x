@@ -163,9 +163,8 @@ _PR_WATCH_CAVEAT = ("this is a protected-mode watch (BPPM); under a paged DPMI p
 def _watch_entry(seg: int, off: int, mode: str) -> str:
     """The debugger's BPLIST spelling for a memory watch, for display only; recognition goes
     through `watch_held`, since the debugger's width varies."""
-    if mode.startswith("Pr"):
-        return f"BPPM {seg:04X}:{off:08X}"
-    return f"BPMEM {seg:04X}:{off:04X}"
+    kind = grammar.watch_kind(mode)
+    return f"{kind} {seg:04X}:{off:08X}" if kind == "BPPM" else f"{kind} {seg:04X}:{off:04X}"
 
 
 def watch_held(held: list[dict[str, str]], seg: int, off: int) -> dict[str, str] | None:
@@ -353,11 +352,18 @@ def attribute_stop(session: ds.Session, *, where: dict[str, str],
                    "derived from the stop"}
 
 
+#: A pointer watch's `moved.why` when only the CPU mode changed: the debugger compares a row in
+#: the terms of the mode that armed it.
+OTHER_MODE_ROW = ("armed again in this CPU mode: its old row was armed in the other mode, whose "
+                  "terms the debugger would have compared it in")
+
+
 def _follow(session: ds.Session, decl: dec.Declaration, seg: int, off: int,
             mode: str) -> dict[str, str] | None:
     """A change watch whose pointer now points elsewhere: new rows armed first, old ones deleted
     once those are held. `{from, to}` when it moved, None otherwise; `why` when a row was
-    refused or kept (retried at the next stop)."""
+    refused or kept (retried at the next stop), or armed again at the same place because the
+    old one was the other CPU mode's."""
     rows = STATE.armed.get(("watch", decl.ref), [])
     mine = [r for r in rows if r["kind"] == "watch"]
     try:
@@ -367,7 +373,7 @@ def _follow(session: ds.Session, decl: dec.Declaration, seg: int, off: int,
                 "to": st.seg_off(seg, off), "why": str(e)}
     # A row of the other mode is not this watch's here, at the same numbers or not: the debugger
     # compares it in this mode's terms.
-    kind = _own_kind(mode)
+    kind = grammar.watch_kind(mode)
     stale = [r for r in mine if (r["seg"], r["off"]) not in want or _row_kind(r) != kind]
     have = {(r["seg"], r["off"]) for r in mine if r not in stale}
     missing = [place for place in want if place not in have]
@@ -392,15 +398,6 @@ def _follow(session: ds.Session, decl: dec.Declaration, seg: int, off: int,
         where["why"] = (f"the old row was not deleted ({kept}): the watch is armed at both "
                         "places until the next stop deletes it")
     return where
-
-
-OTHER_MODE_ROW = ("armed again in this CPU mode: its row was armed in the other one, which the "
-                  "debugger compares in that mode's terms")
-
-
-def _own_kind(mode: str) -> str:
-    """The row kind this server arms a change watch as in `mode` (`Session.watch_places`)."""
-    return "BPPM" if mode.startswith("Pr") else "BPMEM"
 
 
 def _row_kind(row: dict[str, Any]) -> str | None:

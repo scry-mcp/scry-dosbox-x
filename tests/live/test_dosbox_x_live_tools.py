@@ -360,8 +360,9 @@ def test_a_close_after_the_emulator_died_carries_the_last_words_of_both_channels
     assert gone["stdout_tail"].strip() and gone["errorlog_tail"].strip(), gone
     start_ok(session_seconds=60, logfile=str(log))
     clean = cast(dict[str, Any], server.close())
-    assert clean["ended_by"] == "quit" and set(clean["omitted"]) == {
-        "stdout_tail", "errorlog_tail"}, clean
+    assert clean["ended_by"] == ("killed" if dprocess.TERMINATES else "quit"), clean
+    if not dprocess.TERMINATES:         # a kill is never clean, so its tails come back
+        assert set(clean["omitted"]) == {"stdout_tail", "errorlog_tail"}, clean
     start_ok(session_seconds=60, logfile=str(log))
     asked = cast(dict[str, Any], server.close(detail=True))
     assert asked["stdout_tail"].strip() and asked["errorlog_tail"].strip(), asked
@@ -398,7 +399,7 @@ def test_closing_a_running_session_does_not_wait_out_a_signal_it_ignores() -> No
     assert proc.poll() is not None, (
         "the emulator is STILL RUNNING after close returned. `closed: true` says a "
         "session was there, not that it ended")
-    assert reply["ended_by"] == "quit", (
+    assert reply["ended_by"] == ("killed" if dprocess.TERMINATES else "quit"), (
         f"close ended a running session by {reply['ended_by']!r}, not a clean quit: the "
         f"emulator ignored the TERM, so the quit warning is back on")
     assert cast(int, reply["exit_code"]) == 0, (

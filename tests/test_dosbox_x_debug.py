@@ -25,8 +25,11 @@ from dosbox_x_server_support import returned_key_sets
 from scry_core import vocabulary as vocab
 from test_dosbox_x_e9_wait import E9_BOOT, LogSession
 
+import dosbox_arming as arming
 import dosbox_debugger as dbg
 import dosbox_grammar as grammar
+import dosbox_run_state as run_state
+import dosbox_running as running
 import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_stepping as stepping
@@ -213,6 +216,24 @@ def test_a_step_over_keeps_a_breakpoint_the_caller_had_at_the_next_instruction(
     s.step(count=1, mode="over")
     assert machine.breakpoints == ["BP 0814:0108"], "the caller's breakpoint was removed"
     assert "EXEC BP 0814:0108" not in machine.sent
+
+
+def test_a_step_over_that_cannot_be_stopped_at_its_bound_says_its_breakpoint_is_armed(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`BREAK` taken and `RUNSTATE` never stopped: the refusal carries the row left behind."""
+    monkeypatch.setattr(stepping, "STEP_WAIT_S", 0.05)
+    monkeypatch.setattr(run_state, "BREAK_IN_WAIT_S", 0.05)
+    machine = _step_guest(releases=[None])
+    machine.regs["EIP"] = 0x105
+    s = session_over(machine, tmp_path)
+    original = machine.request
+
+    def deaf_break(command: str, *a: Any, **k: Any) -> tuple[bool, list[str]]:
+        return (True, []) if command == "BREAK" else original(command, *a, **k)
+    machine.request = deaf_break  # type: ignore[method-assign]
+    with pytest.raises(ds.Invalid) as e:
+        s.step(count=1, mode="over")
+    assert e.value.code == "not_settled" and "0814:0108 is STILL ARMED" in str(e.value), e.value
 
 
 def test_a_step_over_whose_own_breakpoint_will_not_go_says_it_is_still_armed(
@@ -490,6 +511,27 @@ def test_status_on_a_running_guest_asks_runstate_once(tmp_path: Path) -> None:
         dstate.STATE.session = None
     assert got["status"] == "ok" and got["session"]["running"] is True, got
     assert machine.sent == ["EXEC RUNSTATE"], machine.sent
+
+
+def test_what_was_queued_is_applied_only_at_a_stop_the_contact_recorded(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The machine stops between the contact's first `RUNSTATE` and a second: applying the queue
+    there would answer `applied_on_stop` for a stop no reply has named."""
+    machine = Machine(stopped=False, polls_before_stop=1)
+    machine._pending = Stop({"EIP": 0x200})
+    session = session_over(machine, tmp_path)
+    applied: list[bool] = []
+    monkeypatch.setattr(arming, "apply_pending", lambda _s: applied.append(True))
+    dstate.STATE.pending["arm"].append("0000:0009")
+    dstate.STATE.pending["dirty"] = True
+    try:
+        running.drain_if_stopped(session)
+        assert applied == [] or dstate.STATE.last_stop.get("stop_count") == session.stop_count
+        running.drain_if_stopped(session)
+        assert applied == [True] and dstate.STATE.found_stop_last, dstate.STATE.found_stop_last
+    finally:
+        dstate.STATE.pending["arm"].clear()
+        dstate.STATE.pending["dirty"] = False
 
 
 def test_break_in_waits_for_runstate_to_say_stopped(tmp_path: Path) -> None:

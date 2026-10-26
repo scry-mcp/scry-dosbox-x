@@ -66,6 +66,10 @@ def whole(r: dict[str, Any]) -> bool:
             and bool(r.get("message")))
 
 
+#: How a close ends a session this run launched: on SIGTERM, or terminated where there is none.
+CLOSED_BY = "killed" if dprocess.TERMINATES else "quit"
+
+
 def ok(r: dict[str, Any]) -> bool:
     return whole(r) and r.get("status") == "ok"
 

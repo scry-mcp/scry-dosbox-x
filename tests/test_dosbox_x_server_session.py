@@ -117,13 +117,13 @@ def test_a_close_whose_output_reader_did_not_end_at_end_of_file_says_why() -> No
     not."""
     class Leaky(FakeSession):
         def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
-            self.drain_ended = "the drain thread did not stop within 2 s"
+            self.drain_ended = "it was still reading 2 s after the emulator ended"
             self._alive = False
             return 0
 
     dstate.STATE.session = Leaky()  # type: ignore[assignment]
     got = cast(dict[str, Any], server.close())
-    assert "the drain thread did not stop" in str(got.get("note")), got
+    assert "still reading 2 s after" in str(got.get("note")), got
 
     dstate.STATE.session = FakeSession()  # type: ignore[assignment]
     assert "note" not in cast(dict[str, Any], server.close())

@@ -56,10 +56,10 @@ def _log_wait_as_guest(self: Any, pattern: str, seconds: float, channel: str, ma
     return got
 
 
-def stub_build(monkeypatch: pytest.MonkeyPatch, headless: bool = True,
+def stub_build(monkeypatch: pytest.MonkeyPatch, debugger_headless: bool = True,
                commands: tuple[str, ...] = binaries.COMMANDS) -> None:
     """What a faked build carries, read at `start` off a path that holds no file."""
-    monkeypatch.setattr(binaries, "debugger_headless", lambda _b: headless)
+    monkeypatch.setattr(binaries, "debugger_headless", lambda _b: debugger_headless)
     monkeypatch.setattr(binaries, "debugger_commands", lambda _b: list(commands))
 
 

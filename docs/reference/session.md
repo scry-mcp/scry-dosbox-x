@@ -334,7 +334,8 @@ End the session deliberately rather than waiting for its bound.
 
 Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid`, `stdout_tail` and
 `errorlog_tail` when the end was not a clean `quit`, or with `detail=True`. `exit_code` is
-an integer or unavailable with its `why`. `session` is the block before closing.
+an integer or unavailable with its `why`; `note` when the output was not read to its end.
+`session` is the block before closing.
 
 | argument | type | default |
 |---|---|---|
@@ -375,6 +376,6 @@ Example, from a live run:
 ```
 <!-- scry-reference:end close -->
 
-**The `ended_by` values**: `quit` is the emulator leaving on the first signal, which is what a session launched here does, program loaded or not, because `start` turns the quit warning off; `killed` is a conf that puts the warning back or a wedged guest, ended by SIGKILL; `died` is already exited when called; `none` is nothing to close. **`exit_code`** is unavailable when SIGKILLed and still not reaped, since an emulator may still be on the machine.
+**The `ended_by` values**: `quit` is the emulator leaving on the first signal, which is what a session launched here does, program loaded or not, because `start` turns the quit warning off; `killed` is a conf that puts the warning back or a wedged guest, ended by SIGKILL, and every close on Windows, which has no signal to ask with and terminates the process; `died` is already exited when called; `none` is nothing to close. **`exit_code`** is unavailable when SIGKILLed and still not reaped, since an emulator may still be on the machine.
 
-**The reply also carries** what the process was (`status`'s rows, `pid` first), read before the end, so `pid` is the process this call ended.
+**`note`** says how the reader of the emulator's output ended when that was not at the end of its output: it outlived the close, or a read failed, so the tails may be short. **The reply also carries** what the process was (`status`'s rows, `pid` first), read before the end, so `pid` is the process this call ended.

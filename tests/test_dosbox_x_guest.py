@@ -46,7 +46,7 @@ def test_the_committed_guest_carries_what_its_source_declares(name: str) -> None
 
 @pytest.mark.parametrize(("name", "size"), GUESTS.items())
 def test_the_guests_size_is_the_one_every_document_states(name: str, size: int) -> None:
-    """The binary has the size every document quotes."""
+    """The binary has the size it had when its source was last assembled here."""
     com = GUEST / f"{name}.com"
     assert com.stat().st_size == size, com.stat().st_size
 

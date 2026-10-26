@@ -30,6 +30,11 @@ V86_MODE = "VM86"
 CPU_MODES = (REAL_MODE, "Pr16", "Pr32", V86_MODE)
 
 
+def watch_kind(mode: str) -> str:
+    """A change watch's row kind in `mode`; VM86 is real mode's."""
+    return "BPPM" if mode.startswith("Pr") else "BPMEM"
+
+
 def real_segments(mode: str) -> bool:
     return mode in (REAL_MODE, V86_MODE)
 
