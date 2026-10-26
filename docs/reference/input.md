@@ -4,7 +4,7 @@ Every input goes in inside the machine and nothing about the host is touched ([R
 
 ### The route
 
-The emulator's COM1 is a TCP client of a port the session listens on (`input_port`; transparent, so a byte 0xFF is data) and DOSBox-X's integration device is switched on, both as `-set` overrides the conf need not carry. A resident stub, `guest/INJECT.COM` (its header is the protocol), takes one command off the socket per timer tick, the 8042's own pace, and carries it out in the guest.
+The emulator's COM1 is a TCP client of a port the session listens on (`input_port`; transparent, so a byte 0xFF is data) and DOSBox-X's integration device is switched on, both as `-set` overrides the conf need not carry. A resident stub, `guest/INJECT.COM` (its header is the protocol), takes each command off the socket on the UART's own interrupt and carries it out in the guest. A game that takes the timer for itself (INT 08h with no chain to the BIOS, so INT 1Ch never runs again) still gets its input this way, unless it also masks IRQ 4 at the PIC. The host sends the commands a BIOS tick apart, so a game that reads its keys once a frame sees the make before the break.
 
 Each command is a numbered, checked frame, acknowledged on the same link before the next goes, so the guest sets the pace; a lost byte is sent again, a lost acknowledgement never runs a command twice. The pointer's report comes back on the serial link, never on the E9, where it could land inside a line the program was writing.
 
@@ -17,9 +17,9 @@ The stub announces itself on the E9 (`STUB  . inject device=present proto=3`), a
 `expect` tells them apart: a modal popup can capture the cue key while the post succeeds. A miss is `TIMEOUT` beside the post, because a swallowed key and a key never sent are different facts; in a `perform` or a `drive` act it ends the list there.
 
 - **The pattern is matched against what the program literally writes**, so read its log once first: a program logging `key down x mods=4` for alt+x and `key down SPACE` for space is telling you its case.
-- **A machine that stopped during the wait** is refused `wait_stopped`. An undelivered key waits in the serial buffer and lands at the next resume. Whether it landed before the stop is the guest's log to say (a key can go in and its own reaction produce the stop), so `log` since the post is the judge.
+- **A machine that stopped during the wait** is refused `wait_stopped`. A command sent before the stop waits in the serial buffer and lands at the next resume; the ones after it are not sent, so a key whose make parked the machine (at an INT 9 breakpoint, say) stays down until a later post releases it. Whether it landed before the stop is the guest's log to say (a key can go in and its own reaction produce the stop), so `log` since the post is the judge.
 - **An emulator that died** is `verify.checked: false`, never "the program swallowed it"; a program that writes no instrumentation gives `expect` nothing to confirm against.
-- **The mark cannot bracket the post itself** (one command per tick): a line the guest writes in that window is served with `seen_before_waiting: true` as the tell. The field is not called `already`, which would read as "it happened before the key was sent".
+- **The mark cannot bracket the post itself** (the stub carries a frame the moment it is whole): a line the guest writes in that window is served with `seen_before_waiting: true` as the tell. The field is not called `already`, which would read as "it happened before the key was sent".
 
 <!-- scry-reference:begin send_keys -->
 ## `send_keys`
@@ -81,7 +81,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end send_keys -->
 
-`send_keys` composes scan code set 1 on the host; a DOS keyboard has no command key, and `cmd` is refused by name. The 64-key ceiling is because every scan byte waits a timer tick under the session's lock. A key sent to a stopped machine is refused because the bytes would land, unannounced, at the next resume.
+`send_keys` composes scan code set 1 on the host; a DOS keyboard has no command key, and `cmd` is refused by name. The 64-key ceiling is because every scan byte is a frame, a BIOS tick after the last, under the session's lock. A key sent to a stopped machine is refused because the bytes would land, unannounced, at the next resume.
 
 A stop during the `expect` wait is INVALID (`wait_stopped`) with `last_stop`. `verify` also carries `line`, `note`, `waited_s`, `seen_before_waiting`, `lines_before`, `lines_total` and, on a `TIMEOUT`, `arrived_during`; `checked: false` when no `expect` was given. With no `logfile` there is no stub announce to read, so the keys go out unchecked.
 

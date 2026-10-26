@@ -5,7 +5,8 @@
 ; button since the last line, so a click and a double click are both countable. A key writes
 ; `MOUSE . key=<ascii>`, and three keys switch the BIOS mode, so a case can try the pointer in
 ; another one: g -> 13h (320x200), v -> 12h (640x480), t -> 03h (text), each followed by
-; `MOUSE . mode=<n>`. It never returns. Built here from this source, like the other guests:
+; `MOUSE . mode=<n>`. A fourth, o, takes INT 08h the way a game owns the timer: an EOI and an
+; IRET, never chaining the BIOS, so INT 1Ch stops; then `MOUSE . timer=owned`. It never returns. Built here from this source, like the other guests:
 ;
 ;     nasm -f bin mouse.asm -o mouse.com
 ;
@@ -36,12 +37,21 @@ loop_:
         mov     bl, 03h
         cmp     al, 't'
         je      .mode
+        cmp     al, 'o'
+        je      .own
         push    ax                  ; `pr` loads AL with each character it prints
         mov     dx, m_key
         call    pr
         pop     ax
         xor     ah, ah
         call    dec
+        call    nl
+        jmp     .nokey
+.own:   mov     ax, 2508h
+        mov     dx, own8
+        int     21h
+        mov     dx, m_owned
+        call    pr
         call    nl
         jmp     .nokey
 .mode:  xor     ah, ah
@@ -94,6 +104,11 @@ loop_:
         call    nl
         jmp     loop_
 
+own8:   push    ax
+        mov     al, 20h
+        out     20h, al
+        pop     ax
+        iret
 hide:   mov     ah, 01h             ; cursor shape: start line bit 5 set hides it
         mov     cx, 2000h
         int     10h
@@ -136,6 +151,7 @@ ly dw 0
 lb dw 0
 m_reset db "MOUSE . reset buttons=$"
 m_mode db "MOUSE . mode=$"
+m_owned db "MOUSE . timer=owned$"
 m_key db "MOUSE . key=$"
 m_pos db "MOUSE . pos x=$"
 m_y db " y=$"

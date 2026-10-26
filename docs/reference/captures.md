@@ -237,4 +237,4 @@ Example, from a live run:
 ```
 <!-- scry-reference:end snapshot -->
 
-The stub takes commands on the timer tick, so a parked machine cannot take one. Only the log says which stub is resident (the command is the Delete key's scan code to an older stub), hence the `logfile` requirement. No window or menu is needed, so any session works.
+The stub takes commands inside the running machine, so a parked machine cannot take one. Only the log says which stub is resident (the command is the Delete key's scan code to an older stub), hence the `logfile` requirement. No window or menu is needed, so any session works.

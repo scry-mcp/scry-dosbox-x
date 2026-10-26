@@ -62,6 +62,8 @@ P_CELLS = cells(
      "send_mouse docstring: refused before anything is sent"),
     ("P snapshot headless: the stub's command writes a PNG, no window and no menu",
      "snapshot docstring: taken inside the guest, any session"),
+    ("P a guest that owns INT 08 without chaining still takes a key and a click",
+     "guest/inject.asm: the UART's own interrupt; known: mouse.asm's o takes the timer"),
     ("P without a logfile the mouse and a key go in, the pointer off the stub's link",
      "REFERENCE.md, Input and the screen: the report rides the stub's own serial link"),
 )
@@ -126,9 +128,22 @@ def section_p() -> None:
     judged("P snapshot headless: the stub's command writes a PNG, no window and no menu",
            reply=r, holds=ok(r) and r.get("route") == "guest" and Path(shot).is_file()
            and Path(shot).read_bytes()[:8] == PNG_MAGIC)
+    _timer_owned()
     must(M.call(server.close), "closing")
     _twice()
     _no_log()
+
+
+def _timer_owned() -> None:
+    """Many games take INT 08 and never chain the BIOS, so INT 1Ch never runs again."""
+    replies = [M.call(server.send_keys, keys=["o"], expect=r"MOUSE \. timer=owned$",
+                      seconds=WAIT_S),
+               M.call(server.send_keys, keys=["a"], expect=r"MOUSE \. key=97$", seconds=WAIT_S),
+               M.call(server.send_mouse, button="left", expect=r"b=1 presses=1$",
+                      seconds=WAIT_S)]
+    M.judge("P a guest that owns INT 08 without chaining still takes a key and a click",
+            all(ok(r) and (r.get("verify") or {}).get("seen") is True for r in replies),
+            "; ".join(said(r, 60) for r in replies))
 
 
 def _pointer_cells() -> None:

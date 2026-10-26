@@ -93,15 +93,15 @@ point. The demo opens a window so the game can be watched, so it needs the place
 ```
 resume(seconds=60)
 -> {
-  "summary": "resume: OTHER_STOP, stopped at 08AF:00000119",
-  "cause": "no declared code breakpoint at 08AF:00000119: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+  "summary": "resume: OTHER_STOP, stopped at 08B5:00000119",
+  "cause": "no declared code breakpoint at 08B5:00000119: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
   "instruction": {
-    "seg_off": "08AF:00000119",
+    "seg_off": "08B5:00000119",
     "bytes": "CD03",
     "text": "int 3",
     "flow": "call",
     "code_bits": 16,
-    "bytes_from": "code pane",
+    "bytes_from": "memory",
     "symbol": {
       "available": false,
       "why": "no symbol table is loaded"
@@ -115,10 +115,10 @@ resume(seconds=60)
 ```
 
 ```
-symbols_load(path="/path/to/scry-dosbox-x/demos/bricks/bricks.sym", base="8af0")
+symbols_load(path="/path/to/scry-dosbox-x/demos/bricks/bricks.sym", base="8b50")
 -> {
-  "summary": "symbols_load: 65 loaded of 65 parsed, base 35568",
-  "base": 35568
+  "summary": "symbols_load: 65 loaded of 65 parsed, base 35664",
+  "base": 35664
 }
 ```
 
@@ -126,15 +126,15 @@ symbols_load(path="/path/to/scry-dosbox-x/demos/bricks/bricks.sym", base="8af0")
 breakpoint_at(ref="brick_hit")
 -> {
   "summary": "breakpoint_at brick_hit: armed",
-  "entry": "BP 08AF:02C8"
+  "entry": "BP 08B5:02C8"
 }
 ```
 
 ```
 resume(seconds=60)
 -> {
-  "summary": "resume: OTHER_STOP, stopped at 08AF:000002C8",
-  "cause": "breakpoint brick_hit (by symbol) at 08AF:000002C8",
+  "summary": "resume: OTHER_STOP, stopped at 08B5:000002C8",
+  "cause": "breakpoint brick_hit (by symbol) at 08B5:000002C8",
   "watches": [
     {
       "ref": "score",
@@ -153,7 +153,7 @@ resume(seconds=60)
 ```
 read_memory(ref="score", length=2)
 -> {
-  "summary": "read_memory score: 8 rows at 08AF:00000615",
+  "summary": "read_memory score: 2 bytes at 08B5:00000615",
   "hex": "0a00"
 }
 ```
@@ -197,7 +197,7 @@ state_write(method="load", name="bricks")
 ```
 read_memory(ref="paddle_x", length=2)
 -> {
-  "summary": "read_memory paddle_x: 8 rows at 08AF:0000061F",
+  "summary": "read_memory paddle_x: 2 bytes at 08B5:0000061F",
   "hex": "dc00"
 }
 ```

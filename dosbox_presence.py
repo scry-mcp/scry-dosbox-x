@@ -12,6 +12,8 @@ from typing import Protocol
 from scry_core import presence
 from scry_core.reply_contract import unavailable
 
+import dosbox_debugger as dbg
+
 #: Calls during which presence is `acting`; every other tool is `STILL_TOOLS`. Both are written
 #: out so a new tool must be put on one side (the suite checks them against the registry).
 #: `snapshot` is still: its capture trigger changes nothing the guest reads.
@@ -26,7 +28,7 @@ STILL_TOOLS = frozenset({
     "read_memory", "registers", "scan", "screen_signature", "screen_view", "series_capture",
     "snapshot", "start", "state_list", "status", "symbols_find", "symbols_load", "watch_add"})
 
-NO_COMMAND = "this DOSBox-X's debugger channel has no PRESENCE command"
+NO_COMMAND = "this DOSBox-X's debugger has no PRESENCE command"
 NO_OUTPUT = ("this output cannot be drawn on (an 8-bit output, or the TrueType output while it "
              "shows text)")
 NO_WINDOW = "a session started without `shared` has no window to draw on"
@@ -39,31 +41,30 @@ def channel_args(look: presence.Look = presence.LOOK) -> str:
             f"glide={look.pointer_glide_s:g} sprite={'/'.join(look.pointer)}")
 
 
-class Channel(Protocol):
-    def request(self, command: str, seconds: float = ...) -> tuple[bool, list[str]]: ...
-
-
-class HasChannel(Protocol):
-    @property
-    def control(self) -> Channel: ...
+class Debugger(Protocol):
+    def has(self, command: str) -> bool: ...
+    def exec(self, command: str, seconds: float | None = None) -> tuple[bool, list[str]]: ...
 
 
 class ChannelAdapter:
-    """`scry_core.presence.Adapter` over a session's debugger channel, read at each delivery."""
+    """`scry_core.presence.Adapter` over a session's debugger, read at each delivery."""
 
-    def __init__(self, session: HasChannel, look: presence.Look = presence.LOOK) -> None:
+    def __init__(self, session: Debugger, look: presence.Look = presence.LOOK) -> None:
         self._session = session
         self._args = channel_args(look)
         self.pointer = False
         self.answer = ""
 
     def show(self, state: presence.State) -> None:
-        ok, lines = self._session.control.request(
+        if not self._session.has("PRESENCE"):
+            raise presence.Unavailable(NO_COMMAND)
+        ok, lines = self._session.exec(
             f"PRESENCE {state} {self._args} pointer={int(self.pointer)}")
-        said = " / ".join(lines) or "no reason given"
         if not ok:
-            raise (presence.Unavailable(NO_COMMAND) if "unknown request command" in said
-                   else RuntimeError(f"the debugger channel refused PRESENCE: {said}"))
+            if dbg.NOT_RECOGNIZED in lines:
+                raise presence.Unavailable(NO_COMMAND)
+            said = " / ".join(lines) or "no reason given"
+            raise RuntimeError(f"the debugger refused PRESENCE: {said}")
         self.answer = lines[0] if lines else ""
         # `output=none` is not refused: no frame has been drawn yet at the parked start.
         if "output=undrawable" in self.answer.split():
@@ -94,7 +95,7 @@ def of(session: object) -> presence.Shown:
     return shown if isinstance(shown, presence.Shown) else NEVER_DRAWN
 
 
-def open_shown(session: HasChannel, asked: bool, shared: bool) -> presence.Shown:
+def open_shown(session: Debugger, asked: bool, shared: bool) -> presence.Shown:
     """A session's presence, its first state delivered before `start` answers."""
     if not asked:
         return presence.Shown()

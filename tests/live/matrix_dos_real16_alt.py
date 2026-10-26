@@ -14,6 +14,7 @@ from matrix_common import (
     free_port,
     hexint,
     judged,
+    must,
     ok,
     read_word,
     refused,
@@ -37,7 +38,7 @@ from matrix_programs import (
 STARTUP_CELL = "E log_wait finds the line the game logs at start"
 
 KEY_CELLS = ("E a key through the serial stub reaches the game's INT 9",
-             "E Tab is a coin: Credits: N on E9",
+             "E two Tabs are a credit: Credits: N on E9",
              "E a scan with no map finds the credit counter")
 MOVES_CELL = "E a scan with no map keeps what moves without input"
 SURVIVOR_CELL = "E the survivor reads and takes one write"
@@ -51,7 +52,8 @@ E_CELLS = cells(
     ("E the stub announces the serial route", "REFERENCE.md, Input and the screen"),
     (STARTUP_CELL, "known: the game logs its identity's `e9` line at start"),
     (KEY_CELLS[0], "measured; known: the game owns INT 9 and reads its own key table"),
-    (KEY_CELLS[1], "measured; known: an `info` build logs `Credits: N` on a coin"),
+    (KEY_CELLS[1], "measured; known: two coins make a credit, each counted on its release, "
+                   "and an `info` build logs `Credits: N`"),
     (KEY_CELLS[2], "REFERENCE.md, Reading and writing; known: `Credits: N` gives the value"),
     (MOVES_CELL, "the fallback when no key reaches the game; REFERENCE.md, Reading and "
                  "writing: `!` keeps the cells changed since the open"),
@@ -152,8 +154,8 @@ def _moves(control: str, data: int) -> None:
 
 
 def _coin(control: str, data: int) -> None:
-    """With the serial route alive: a coin (Tab), its `Credits: N` on E9, and a scan over the
-    data segment narrowed by that value."""
+    """With the serial route alive: a credit (two Tabs), its `Credits: N` on E9, and a scan over
+    the data segment narrowed by that value."""
     opened = M.call(server.scan, method="start", ref=f"{data:04X}:0000", length=0x8000,
                     cell_bytes=2)
     try:
@@ -168,11 +170,18 @@ def _coin(control: str, data: int) -> None:
             M.block(label, "measured: the key never reached INT 9")
         return
     M.judge(KEY_CELLS[0], True, "the INT 9 breakpoint stopped the machine")
-    run_for(control, 2)
+    # The stop parked the first make before its break went: two whole Tabs release it and add
+    # the second coin.
+    must(M.call(server.resume), "releasing the machine after the INT 9 stop")
+    coins = M.call(server.send_keys, keys=["tab", "tab"], expect=r"Credits: \d+", seconds=10)
+    must(M.call(server.stop), "stopping after the credit")
+    judged(KEY_CELLS[1], reply=coins,
+           holds=ok(coins) and (coins.get("verify") or {}).get("seen") is True)
+    # The counter can move past the line the post saw before the stop: the newest line is the
+    # value memory holds now.
     got = M.call(server.log, pattern=r"Credits: \d+", channel="guest", limit=1)
     lines = got.get("lines") or []
-    credits = re.search(r"Credits: (\d+)", str(lines[-1])) if lines else None
-    judged(KEY_CELLS[1], reply=got, holds=ok(got) and credits is not None)
+    credits = re.search(r"Credits: (\d+)", str(lines[-1])) if ok(got) and lines else None
     if credits is None:
         for label in (KEY_CELLS[2], SURVIVOR_CELL):
             M.block(label, "no `Credits: N` line after the coin, so no value to scan for")

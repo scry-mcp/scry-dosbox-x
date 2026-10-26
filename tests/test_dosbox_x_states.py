@@ -352,7 +352,7 @@ def test_state_list_keeps_the_working_slot_apart_from_the_named_states(tmp_path:
 class ShotFake(StateFake):
     """The screenshot's seam: the stub's `S` command writes `<captures_dir>/<stem>_NNN.png`
     (tests/fixtures/states/snapshot-name.json, whose conf and program share the stem),
-    on a running machine only (parked, the stub never reaches its tick)."""
+    on a running machine only (parked, the guest runs nothing, the stub included)."""
 
     def __init__(self, state_dir: Path, **kw: Any) -> None:
         super().__init__(state_dir, **{"parked": False, **kw})
@@ -420,7 +420,7 @@ def test_a_snapshot_that_cannot_be_moved_is_host_failed_naming_where_the_png_is(
 
 
 def test_snapshot_refuses_parked_and_a_command_that_produced_no_file(tmp_path: Path) -> None:
-    """Parked at the debugger the stub never reaches its tick, so it is refused there with
+    """Parked at the debugger the stub never runs, so it is refused there with
     nothing sent; and a command with no new PNG behind it within the bound is a wait that
     expired, naming the directory watched."""
     parked = ShotFake(tmp_path / "save", parked=True)

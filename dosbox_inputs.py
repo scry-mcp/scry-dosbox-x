@@ -2,7 +2,7 @@
 each one landed.
 
 The session's input port is COM1 as a TCP socket; the resident stub in `guest/INJECT.COM` takes
-one framed command per timer tick off it and carries it out inside the machine (a scan byte into
+each framed command off it as it arrives and carries it out inside the machine (a scan byte into
 the 8042, a button into the integration device, the pointer through INT 33h). No host event is
 involved.
 
@@ -52,7 +52,7 @@ SCAN_SET1: dict[str, tuple[int, ...]] = {
     "down": (0xE0, 0x50), "pagedown": (0xE0, 0x51), "insert": (0xE0, 0x52),
     "delete": (0xE0, 0x53),
 }
-MAX_KEYS_PER_CALL = 64    # each scan byte costs a timer tick under the session's lock
+MAX_KEYS_PER_CALL = 64    # each scan byte is a frame, a BIOS tick apart, under the session's lock
 SCAN_MODIFIERS: dict[str, tuple[int, ...]] = {
     "shift": (0x2A,), "ctrl": (0x1D,), "control": (0x1D,), "alt": (0x38,), "option": (0x38,),
 }
@@ -155,7 +155,7 @@ def key_commands(seq: bytes) -> list[bytes]:
 
 
 def button_commands(button: str, action: str) -> list[bytes]:
-    """The press and release bytes of an action; a double click is two clicks a tick apart."""
+    """The press and release bytes of an action; a double click is two clicks, frames apart."""
     press, release = bytes([0x80 | BUTTONS[button]]), bytes([BUTTONS[button]])
     one = {"down": [press], "up": [release], "click": [press, release]}
     steps = one["click"] * 2 if action == "double" else one[action]

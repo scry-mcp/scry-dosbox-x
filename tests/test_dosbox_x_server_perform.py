@@ -401,7 +401,8 @@ def test_the_shipped_stub_matches_its_source(tmp_path: Path) -> None:
     subprocess.run([nasm, "-f", "bin", str(guest / "inject.asm"), "-o", str(out)], check=True)
     assert out.read_bytes() == (guest / "INJECT.COM").read_bytes(), (
         "guest/INJECT.COM is not the assembled guest/inject.asm: reassemble it")
-    assert out.stat().st_size < 1024, "the stub is meant to be tiny"
+    assert out.stat().st_size < 2048, (
+        "the stub stays resident in the guest's conventional memory, so it is kept tiny")
 
 
 def test_drive_marks_acts_verifies_and_looks_from_the_mark(tmp_path: Path) -> None:

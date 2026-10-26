@@ -14,7 +14,7 @@ from typing import Any
 import pytest
 from scry_core import presence
 
-import dosbox_control as control
+import dosbox_debugger as dbg
 import dosbox_lifecycle as lifecycle
 import dosbox_presence as dpresence
 import dosbox_x_server as server
@@ -39,25 +39,27 @@ def test_the_look_goes_to_the_channel_one_word_per_key_with_its_arrow() -> None:
                      "sprite": "/".join(look.pointer)}
 
 
-class _Channel:
-    def __init__(self, answers: list[tuple[bool, list[str]]]) -> None:
-        self.answers = answers
+class _Session:
+    """The session's debugger: the commands its build parses, and what each `exec` prints."""
+
+    def __init__(self, *answers: tuple[bool, list[str]],
+                 commands: frozenset[str] = frozenset({"PRESENCE"})) -> None:
+        self.answers = list(answers)
+        self.commands = commands
         self.sent: list[str] = []
 
-    def request(self, command: str, seconds: float = control.REPLY_S) -> tuple[bool, list[str]]:
+    def has(self, command: str) -> bool:
+        return command in self.commands
+
+    def exec(self, command: str, seconds: float | None = None) -> tuple[bool, list[str]]:
         self.sent.append(command)
         return self.answers.pop(0)
 
 
-class _Session:
-    def __init__(self, *answers: tuple[bool, list[str]]) -> None:
-        self.control = _Channel(list(answers))
-
-
-def _shown(*answers: tuple[bool, list[str]], asked: bool = True,
-           shared: bool = True) -> tuple[presence.Shown, _Channel]:
-    s = _Session(*answers)
-    return dpresence.open_shown(s, asked, shared), s.control
+def _shown(*answers: tuple[bool, list[str]], asked: bool = True, shared: bool = True,
+           commands: frozenset[str] = frozenset({"PRESENCE"})) -> tuple[presence.Shown, _Session]:
+    s = _Session(*answers, commands=commands)
+    return dpresence.open_shown(s, asked, shared), s
 
 
 DRAWN = (True, ["PRESENCE held frames=3 pointer=0 output=640x400x32"])
@@ -73,15 +75,24 @@ def test_a_build_with_the_command_is_drawn_and_its_answer_kept() -> None:
     shown.close()
 
 
-@pytest.mark.parametrize(("answer", "why"), [
-    ((False, ["unknown request command"]), dpresence.NO_COMMAND),
-    ((False, ["PRESENCE edge=9 is not a value it takes"]), "refused PRESENCE"),
-])
-def test_what_the_emulator_cannot_draw_is_said_in_place_of_true(
-        answer: tuple[bool, list[str]], why: str) -> None:
-    shown, _ = _shown(answer)
+def test_a_build_whose_debugger_has_no_presence_command_is_said_unavailable_unsent() -> None:
+    shown, debugger = _shown(commands=frozenset())
     said = shown.reply()
-    assert isinstance(said, dict) and said["available"] is False and why in said["why"], said
+    assert said == {"available": False, "why": dpresence.NO_COMMAND}, said
+    assert debugger.sent == [] and shown.held is None
+
+
+def test_a_build_naming_presence_whose_debugger_does_not_parse_it_is_said_unavailable() -> None:
+    """The bytes say PRESENCE, as the channel's own verb did; the debugger does not know it."""
+    shown, _ = _shown((False, [dbg.NOT_RECOGNIZED]))
+    assert shown.reply() == {"available": False, "why": dpresence.NO_COMMAND}
+
+
+def test_what_the_command_refuses_is_said_in_place_of_true() -> None:
+    shown, _ = _shown((False, ["PRESENCE edge=9 is not a value it takes"]))
+    said = shown.reply()
+    assert isinstance(said, dict) and said["available"] is False
+    assert "refused PRESENCE" in said["why"], said
     assert shown.held is None
 
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import socket
 import time
 
-#: One guest timer tick: the pace the stub reads at.
+#: One guest timer tick: the pace the stub drops a short frame at.
 TICK_S = 1 / 18.2
 
 

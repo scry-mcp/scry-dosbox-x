@@ -1216,8 +1216,8 @@ class Session(dprocess.Process):
         if self.at_debugger():
             raise Invalid("not_running",
                 "a screenshot is taken of a RUNNING machine only: the stub takes its commands "
-                          "on the timer tick, which a machine parked at the debugger never "
-                          "reaches. `resume`, then snapshot")
+                          "inside the machine, and one parked at the debugger runs nothing. "
+                          "`resume`, then snapshot")
         before = set(folder.glob("*.png")) if folder.is_dir() else set()
         self.send_commands([SCREENSHOT_COMMAND])
         began = time.monotonic()

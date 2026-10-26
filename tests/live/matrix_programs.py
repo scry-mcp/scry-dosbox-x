@@ -116,18 +116,26 @@ KEY_NOT_AT_INT9 = (f"measured: no INT 9 stop within {KEY_ARRIVAL_S:g} s of the p
 
 
 def key_reaches_int9(key: str) -> bool:
-    """Whether `key` stops at INT 9; if not, the machine is left running."""
+    """Whether `key` stops at INT 9, at the vector's own CS:IP; if not, the machine is left
+    running, or stopped elsewhere."""
     must(M.call(server.breakpoint_interrupt, number=0x09), "arming INT 9")
     r = M.call(server.resume)
     if not (ok(r) and "stop_seq" not in r):
         raise RuntimeError(f"the machine did not run: {said(r)}")
-    must(M.call(server.send_keys, keys=[key]), f"posting {key}")
+    posted = M.call(server.send_keys, keys=[key])
+    # The make reaching INT 9 parks the machine before the stub can acknowledge it.
+    if not (ok(posted) or refused(posted, "wait_stopped")):
+        raise RuntimeError(f"posting {key}: {said(posted)}")
     deadline = time.monotonic() + KEY_ARRIVAL_S
     while time.monotonic() < deadline:
-        if isinstance(M.call(server.status).get("cpu_mode"), str):
+        status = M.call(server.status)
+        if isinstance(status.get("cpu_mode"), str):
             must(M.call(server.declaration_clear, kind="breakpoint", ref="BPINT 09"),
                  "clearing INT 9")
-            return True
+            seg, off = vector(0x09)
+            pc = str((status.get("last_stop") or {}).get("pc", ""))
+            at = [hexint(part) for part in pc.split(":")] if ":" in pc else []
+            return at == [seg, off]
         time.sleep(0.25)
     return False
 

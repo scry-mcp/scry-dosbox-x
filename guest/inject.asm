@@ -4,9 +4,17 @@
 ; section) exposes registers that only GUEST code can write, and the serial port, as
 ; `serial1=nullmodem port:N`, is a TCP socket the host connects to. Between the two, a host can
 ; press keys and buttons and place the pointer with no host event at all: nothing takes the
-; owner's focus or moves their pointer, and the window's scale changes nothing. This resident program joins the two: on every timer tick (INT 1Ch, 18.2 Hz) it
-; takes ONE COMMAND off COM1 and carries it out inside the machine. It is what the upstream
+; owner's focus or moves their pointer, and the window's scale changes nothing. This resident
+; program joins the two: whenever COM1 receives a byte (the UART's own interrupt, IRQ 4) it takes
+; what is waiting there and carries each command out inside the machine. It is what the upstream
 ; maintainer suggested in issue #4601 while a first-class control channel does not exist.
+;
+; WHY THE UART'S INTERRUPT AND NOT THE TIMER TICK. A game commonly takes INT 08h for itself, sends
+; the PIC its EOI and IRETs, never chaining the BIOS handler; from then on nothing raises INT 1Ch,
+; and a stub that read COM1 only on the tick would leave every frame there unread. The serial line
+; is not something a game has reason to touch. The tick (INT 1Ch)
+; is still hooked, for what only a clock can do: dropping a frame left short, and draining COM1
+; when a program masked IRQ 4. Both entries run one routine, never at once.
 ;
 ; A FRAME (protocol 3): SYNC (A5h), a sequence byte (1 to 255), then the command, an opcode
 ; byte and a fixed payload, then a CHECK: every byte after SYNC XORed into FFh. A SYNC byte can sit
@@ -17,9 +25,10 @@
 ; acknowledged, so the UART's queue never holds more than one frame and the guest sets the
 ; pace. A byte lost on the way costs one frame and never runs another: a frame still short after
 ; STALE_TICKS ticks with nothing arriving is dropped, the stub hunts for the next SYNC, and the
-; host, with no acknowledgement, sends the same frame again; if it was the acknowledgement that
-; was lost, the repeat is acknowledged with 0 and not carried out twice. An opcode the stub does
-; not know drops its frame the same way, unacknowledged. The commands:
+; host, with no acknowledgement, sends the same frame again (under a program that owns the timer
+; no tick counts, and the resent bytes complete the short frame wrongly, so its check drops it);
+; if it was the acknowledgement that was lost, the repeat is acknowledged with 0 and not carried
+; out twice. An opcode the stub does not know drops its frame the same way, unacknowledged. The commands:
 ;   'K' b              a scan byte into the 8042 keyboard register (the host composes makes,
 ;                      breaks and E0 prefixes, so the stub knows nothing about keys)
 ;   'B' b              a mouse button into the same register's button sub-selector: bit 7
@@ -33,14 +42,15 @@
 ;   'S'                a screenshot, through the device's capture trigger
 ; An unknown opcode is dropped, so a host speaking a newer protocol cannot wedge the stub.
 ;
-; ONE COMMAND PER TICK, and that is measured rather than tidy: the emulated 8042 holds one
-; byte, and a make written back to back with its break lost the make (upstream's own injector
-; spaces them 100 ms apart). A tick apart they arrive whole. A button or a position goes
-; through the same queue, so a click's press and release keep their order with the keys'.
+; ONE FRAME IN FLIGHT is what keeps the keys whole: the emulated 8042 holds one byte, and a make
+; written back to back with its break lost the make (upstream's own injector spaces them 100 ms
+; apart). The host's next frame waits for this one's acknowledgement, so between two injections
+; the guest has returned from this handler and taken the keyboard's IRQ 1. A button or a position
+; goes through the same queue, so a click's press and release keep their order with the keys'.
 ;
 ; THE POINTER IS SET (AX=04h) and read back (AX=03h), never moved by a delta: the server's
-; REFERENCE says why. Calling INT 33h from a timer handler is sound against DOSBox-X's own driver, which is
-; emulator code behind a callback; a mouse driver loaded INSIDE the guest is not reached by
+; REFERENCE says why. Calling INT 33h from an interrupt handler is sound against DOSBox-X's own
+; driver, which is emulator code behind a callback; a mouse driver loaded INSIDE the guest is not reached by
 ; this route and is not supported.
 ;
 ; It announces itself on the E9 port (`STUB  . inject device=present proto=3`) so a host
@@ -111,7 +121,7 @@ start:
 .first:
         mov     dx, msg_present
         call    e9_print
-        ; --- the UART: 8N1, divisor 1, no interrupts; the tick handler polls it ---
+        ; --- the UART: 8N1, divisor 1, an interrupt when a byte arrives ---
         mov     dx, COM1+3
         mov     al, 80h             ; DLAB on
         out     dx, al
@@ -125,15 +135,25 @@ start:
         mov     al, 03h             ; 8N1, DLAB off
         out     dx, al
         mov     dx, COM1+1
-        xor     al, al              ; no UART interrupts
+        xor     al, al              ; no UART interrupts until the handler is in place
         out     dx, al
-        ; THE FIFO IS ON: a make and its break arriving in one burst would otherwise overrun the
-        ; one-byte receiver, and the tick drains the queue a byte at a time anyway.
+        ; THE FIFO IS ON: a frame arriving in one burst would otherwise overrun the one-byte
+        ; receiver. Its trigger level is one byte, so a frame's first byte raises IRQ 4.
         mov     dx, COM1+2
         mov     al, 07h             ; FCR: enable FIFO, clear both
         out     dx, al
         mov     dx, COM1+4
-        mov     al, 03h             ; DTR + RTS
+        mov     al, 0Bh             ; DTR + RTS + OUT2, which gates the UART's IRQ line
+        out     dx, al
+        ; --- hook IRQ 4 (INT 0Ch), unmask it, then let the UART raise it ---
+        mov     ax, 250Ch
+        mov     dx, serial
+        int     21h
+        in      al, 21h
+        and     al, 0EFh            ; IRQ 4 unmasked at the master PIC
+        out     21h, al
+        mov     dx, COM1+1
+        mov     al, 01h             ; IER: received data available
         out     dx, al
         ; --- hook INT 1Ch and stay resident ---
         mov     ax, 351Ch
@@ -147,9 +167,10 @@ start:
         mov     ax, 3100h
         int     21h                 ; TSR
 
-; ---------------------------------------------------------------- the tick handler
-; Bytes are taken off the UART until one frame is whole (or the UART is empty: the rest of the
-; frame waits in `frame` for the next tick), then that one command runs and is acknowledged.
+; ---------------------------------------------------------------- the two entries
+; Each runs with interrupts off and `service` never turns them on, so `busy` is only ever found
+; set by an entry that came in under a driver call of the stub's own (INT 33h): that entry
+; leaves the bytes to the next one.
 signature db 'SCRY-INJECT-3'      ; what the already-resident check reads before `tick`
 SIG_LEN equ $ - signature
 tick:
@@ -161,7 +182,40 @@ tick:
         push    cs
         pop     ds
         cld                         ; the interrupted program's direction flag is not ours
-        mov     byte [tx_dead], 0   ; this tick's line is given its chance afresh
+        cmp     byte [busy], 0
+        jne     .out
+        mov     byte [ticking], 1
+        call    service
+.out:   pop     es
+        pop     ds
+        popad
+        iret
+
+serial:                             ; IRQ 4: COM1 received
+        pushad
+        push    ds
+        push    es
+        push    cs
+        pop     ds
+        cld
+        cmp     byte [busy], 0
+        jne     .eoi
+        mov     byte [ticking], 0
+        call    service
+.eoi:   mov     al, 20h
+        out     20h, al
+        pop     es
+        pop     ds
+        popad
+        iret
+
+; ---------------------------------------------------------------- the commands
+; Bytes are taken off the UART until it is empty, each whole frame carried out and acknowledged
+; as it completes; the rest of a short frame waits in `frame` for the next entry. Draining it all
+; matters on the interrupt: bytes left behind raise no second IRQ 4.
+service:
+        mov     byte [busy], 1
+        mov     byte [tx_dead], 0   ; this entry's line is given its chance afresh
 .more:
         mov     dx, COM1+5
         in      al, dx
@@ -255,23 +309,22 @@ tick:
         mov     al, [carried]
         call    com_tx
         cmp     byte [frame+1], 'R'
-        jne     .done
+        jne     .more
         mov     byte [to_com], 1    ; the report's text goes to COM1, never to E9
         call    report
         mov     byte [to_com], 0
-        jmp     .done
-.empty:                             ; the UART is drained for this tick
+        jmp     .more
+.empty:                             ; the UART is drained
+        cmp     byte [ticking], 0
+        je      .done               ; only a tick counts a short frame's age
         cmp     byte [hunting], 0
         jne     .done
         inc     byte [stale]        ; a frame still short, its SYNC alone included
         cmp     byte [stale], STALE_TICKS
         jb      .done
         mov     byte [hunting], 1   ; dropped: its rest is not coming
-.done:
-        pop     es
-        pop     ds
-        popad
-        iret
+.done:  mov     byte [busy], 0
+        ret
 
 report:
         mov     dx, msg_rep
@@ -437,9 +490,9 @@ com_tx:                             ; al -> COM1, once its holding register is e
         push    cx
         push    ax
         cmp     byte [tx_dead], 0
-        jne     .quit               ; the line gave up once this tick: so does the rest
+        jne     .quit               ; the line gave up once in this entry: so does the rest
         mov     dx, COM1+5
-        mov     cx, 0FFFFh          ; bounded: a line nobody drains never hangs the tick
+        mov     cx, 0FFFFh          ; bounded: a line nobody drains never hangs the handler
 .wait:  in      al, dx
         test    al, 20h
         jnz     .ready
@@ -471,7 +524,9 @@ to_com db 0          ; 1 while a report is written to COM1
 stale db 0           ; ticks the current frame has ended short with nothing arriving
 last_seq db 0        ; the sequence byte last carried out; the host never sends 0
 carried db 0         ; 1 when this frame was carried out, 0 when it repeated the last
-tx_dead db 0         ; 1 once COM1 refused a byte this tick
+tx_dead db 0         ; 1 once COM1 refused a byte in this entry
+busy db 0            ; 1 while `service` runs
+ticking db 0         ; 1 when the tick entered `service`, 0 when IRQ 4 did
 msg_absent  db 'STUB  . inject device=absent', 13, 10, '$'
 msg_twice   db 'STUB  . inject already resident', 13, 10, '$'
 resident_end:

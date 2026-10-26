@@ -1,4 +1,4 @@
-"""The host half of protocol 3 against a double of the guest's tick handler (`guest/inject.asm`).
+"""The host half of protocol 3 against a double of the guest's handler (`guest/inject.asm`).
 The constants are read off the asm so the double cannot drift from them."""
 
 from __future__ import annotations
@@ -22,12 +22,13 @@ ASM = (Path(link.__file__).parent / "guest" / "inject.asm").read_text(encoding="
 LENGTHS = {ord("K"): 4, ord("B"): 4, ord("M"): 7, ord("R"): 3, ord("S"): 3}
 STALE_TICKS = int(re.search(r"^STALE_TICKS\s+equ\s+(\d+)", ASM, re.M).group(1))  # type: ignore[union-attr]
 TICK_S = 0.005
+SPACING_S = link.FRAME_SPACING_S
 REPORT = b"STUB  . mouse x=1 y=2 buttons=0 max=639,199 mode=19 screen=320x200\r\n"
 
 
 class Stub:
-    """The tick handler, ported. `dribble` writes a byte at a time; `ack_late` holds the
-    acknowledgement of those frames (counted from 0) for `late_s`."""
+    """The stub's `service`, ported, entered on a tick. `dribble` writes a byte at a time;
+    `ack_late` holds the acknowledgement of those frames (counted from 0) for `late_s`."""
 
     def __init__(self, sock: socket.socket, last_seq: int = 0, dribble: bool = False,
                  ack_late: frozenset[int] = frozenset(), late_s: float = 0.0,
@@ -36,6 +37,7 @@ class Stub:
         self.deaf, self.stale_ticks = deaf, stale_ticks
         self.last_seq = last_seq
         self.carried: list[bytes] = []
+        self.carried_at: list[float] = []
         self.answered = 0
         self.uart: deque[int] = deque()
         self.hunting, self.have, self.stale = True, 0, 0
@@ -86,7 +88,6 @@ class Stub:
             if link.frame(whole[0], whole[1:-1])[1:] != whole:
                 continue
             self._carry(whole[:-1])
-            return
         if not self.hunting:
             self.stale += 1
             if self.stale >= self.stale_ticks:
@@ -98,6 +99,7 @@ class Stub:
         if carried:
             self.last_seq = seq
             self.carried.append(command)
+            self.carried_at.append(time.monotonic())
         n = self.answered
         self.answered += 1
         out = bytes((link.ACK, seq, command[0], int(carried)))
@@ -151,6 +153,7 @@ def pair() -> Any:
 @pytest.fixture(autouse=True)
 def quick(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(link, "ACK_WAIT_S", 0.2)
+    monkeypatch.setattr(link, "FRAME_SPACING_S", 0.0)
 
 
 KEYS = [b"K\x1e", b"K\x9e", b"M\x10\x00\x20\x00", b"B\x80"]
@@ -170,6 +173,19 @@ def test_each_command_waits_for_its_acknowledgement_and_is_carried_out_once(pair
     assert link.Link(host).send(KEYS) == []
     assert stub.carried == KEYS and stub.most_queued <= 1 + max(LENGTHS.values()), (
         "a frame went before its ack")
+
+
+def test_frames_go_a_spacing_apart_and_the_spacing_outlasts_a_50_hz_frame(
+        pair: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The stub carries a frame the moment it is whole, so the host keeps a make and its break
+    apart long enough for a program that reads its keys once a frame to see the make."""
+    monkeypatch.setattr(link, "FRAME_SPACING_S", SPACING_S)
+    host, guest = pair
+    stub = Stub(guest)
+    link.Link(host).send(KEYS)
+    gaps = [b - a for a, b in zip(stub.carried_at, stub.carried_at[1:], strict=False)]
+    assert len(gaps) == len(KEYS) - 1 and min(gaps) >= link.FRAME_SPACING_S, gaps
+    assert link.FRAME_SPACING_S > 1 / 50
 
 
 def test_a_report_comes_back_after_its_acknowledgement_even_a_byte_at_a_time(

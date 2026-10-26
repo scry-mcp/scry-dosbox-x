@@ -61,7 +61,7 @@ R_CELLS = cells(
     ("R a build that paints the rim where capture reads changes snapshot and capture_frame: "
      "the comparison can fail", "REFERENCE.md, The presence indicator: after the frame was "
      "handed to capture"),
-    ("R a build whose channel has no PRESENCE answers presence unavailable, naming it",
+    ("R a build whose debugger has no PRESENCE answers presence unavailable, naming it",
      "dosbox_presence: NO_COMMAND"),
     ("R a session with no window says it has none, and one asked off says false",
      "dosbox_presence: NO_WINDOW"),
@@ -94,7 +94,7 @@ def _by_hand() -> Iterator[dpresence.ChannelAdapter]:
 def _put(adapter: dpresence.ChannelAdapter, state: str) -> int | None:
     """`state` sent by hand (`off` too, which the session never sends); the frame count after."""
     if state == "off":
-        ok_, lines = _channel().request("PRESENCE off")
+        ok_, lines = _debugger().exec("PRESENCE off")
         adapter.answer = lines[0] if ok_ and lines else ""
     else:
         adapter.show(state)  # type: ignore[arg-type]
@@ -105,13 +105,13 @@ def _put(adapter: dpresence.ChannelAdapter, state: str) -> int | None:
 def _count(adapter: dpresence.ChannelAdapter) -> int | None:
     """The emulator's frame count now, without changing what is drawn."""
     state = adapter.answer.split()[1] if len(adapter.answer.split()) > 1 else "off"
-    ok_, lines = _channel().request(f"PRESENCE {state}")
+    ok_, lines = _debugger().exec(f"PRESENCE {state}")
     return dpresence.frames(lines[0]) if ok_ and lines else None
 
 
-def _channel() -> Any:
+def _debugger() -> Any:
     assert STATE.session is not None
-    return STATE.session.control
+    return STATE.session
 
 
 def _window(tag: str) -> window_capture.Image | str:
