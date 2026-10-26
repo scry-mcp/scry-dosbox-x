@@ -834,7 +834,7 @@ def test_a_stop_reads_the_breakpoint_list_once_and_shares_it(tmp_path: Path) -> 
     got = server.resume()
     assert "stop_seq" in got and got["watches"][0]["state"] == "evaluated", got
     assert fake.survey_calls == 1, fake.survey_calls
-    assert fake.bp_calls == 0, f"the stop re-read the list {fake.bp_calls} time(s)"
+    assert fake.bp_calls == 0, f"the stop re-read the list {fake.bp_calls} times"
 
 
 def test_the_queue_covers_interrupts_and_change_watches_and_says_what_it_could_not_apply(

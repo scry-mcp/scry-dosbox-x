@@ -32,6 +32,7 @@ from matrix_common import (
     said,
     server,
 )
+from scry_core import prose
 
 import dosbox_state as dstate
 
@@ -318,8 +319,9 @@ def dos_real16_comments(mapf: Path, base: str) -> None:
                                           f"{m.group(3)}", text)
     if n != 2 or len(places) != 1:
         for label in labels:
-            M.block(label, f"the map names COMPOSE_FRAME {n} time(s) at {sorted(places)}, not "
-                           "the two lines at one place the copy moves: no rebuild to load")
+            M.block(label, f"the map names COMPOSE_FRAME {prose.counted(n, 'time')} at "
+                           f"{sorted(places)}, not the two lines at one place the copy "
+                           "moves: no rebuild to load")
         return
     moved = M.tmp("dosbox-x-matrix-") / Path(bp.DOS_REAL16.map).name
     moved.write_text(shifted, encoding="latin-1")

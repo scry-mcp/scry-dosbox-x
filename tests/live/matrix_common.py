@@ -198,12 +198,11 @@ def close_whatever() -> None:
         dstate.STATE.store = None
         stray = kill_spawned()
         if stray:
-            print(f"  (teardown) emulator pid(s) {stray} outlived close and were killed",
-                  flush=True)
+            print(f"  (teardown) the emulators {stray} outlived close and were killed", flush=True)
 
 
 M.session_files = session_files
-M.on_hang = lambda: print(f"  (hang) killed emulator pid(s) {kill_spawned()}", flush=True)
+M.on_hang = lambda: print(f"  (hang) killed the emulators {kill_spawned()}", flush=True)
 M.on_end = close_whatever
 atexit.register(close_whatever)
 

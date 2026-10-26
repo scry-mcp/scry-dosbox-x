@@ -11,6 +11,7 @@ from typing import cast
 
 import pytest
 from live_private import guest_dir
+from scry_core import prose
 
 import dosbox_grammar as grammar
 import dosbox_launch as dlaunch
@@ -255,5 +256,5 @@ def test_the_machine_keeps_running_while_nobody_is_asking(tmp_path: Path) -> Non
         f"so does a host with no time to spare. What is certain is that it did not move.")
     steps = sum(1 for (_, a), (_, b) in zip(samples, samples[1:], strict=False) if b > a)
     assert steps >= 2, (
-        f"the clock moved in {steps} step(s) across {len(samples)} samples "
+        f"the clock moved in {prose.counted(steps, 'step')} across {len(samples)} samples "
         f"({samples}): that is a buffer flushing, not a machine running")

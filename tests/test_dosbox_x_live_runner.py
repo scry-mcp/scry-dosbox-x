@@ -156,7 +156,7 @@ def test_an_emulator_that_outlived_the_run_fails_it_by_name_beside_the_verdict(
     assert _run(m) == lm.EXIT_FAIL
     out = "\n".join(_out(capsys))
     assert order == ["close", "reap"]
-    assert "FAIL  1 emulator(s) outlived the run" in out and "pid 77 state U" in out
+    assert "FAIL  1 emulator outlived the run" in out and "pid 77 state U" in out
     assert out.endswith("==> LIVE MATRIX FAILED")
 
 
@@ -290,7 +290,7 @@ def test_the_pytest_tier_fails_on_an_emulator_its_tests_left_alive(
                         lambda _self: live_host.Leftovers(1, 1))
     assert rlp.main() == rlp.EXIT_FAIL
     out = "\n".join(_out(capsys))
-    assert "FAIL  1 emulator(s) outlived the run" in out and "kept: " in out
+    assert "FAIL  1 emulator outlived the run" in out and "kept: " in out
 
 
 def test_the_pytest_tier_green_leaves_nothing(rlp: ModuleType, tmp_path: Path,

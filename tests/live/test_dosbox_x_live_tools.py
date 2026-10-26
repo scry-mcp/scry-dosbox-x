@@ -17,7 +17,7 @@ from typing import Any, cast
 
 import pytest
 from _live_teardown import no_session_left_behind  # noqa: F401  (registers the autouse teardown)
-from scry_core import guardian
+from scry_core import guardian, prose
 from test_dosbox_x_live import (  # noqa: E402
     _OWN,
     CONF,
@@ -850,8 +850,8 @@ def test_e9_wait_really_waits_for_a_line_that_has_not_happened_yet(
     before = cast(dict[str, Any], server.log(channel="guest", pattern=late, limit=1))
     assert before["status"] == "ok", before
     assert before["lines_total"] == 0, (
-        f"{late!r} had ALREADY been logged {before['lines_total']} time(s) before this "
-        f"asked, so this window cannot demonstrate a wait at all: INVALID, not a pass")
+        f"{late!r} had ALREADY been logged {prose.counted(before['lines_total'], 'time')} before "
+        f"this was asked, so this window cannot demonstrate a wait at all: INVALID, not a pass")
 
     reply = cast(dict[str, Any], server.log_wait(channel="guest", pattern=late, seconds=120))
     assert reply["status"] == "ok", reply
