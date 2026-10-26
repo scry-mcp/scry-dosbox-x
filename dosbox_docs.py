@@ -4,12 +4,21 @@ tools' descriptions are scry-core's own values, and a number is the constant tha
 never typed into the text."""
 from __future__ import annotations
 
-from scry_core import docs, judges, log_marks, picture, recording, screen_map, series
+from scry_core import comment_file as core_comments
+from scry_core import (
+    docs,
+    judges,
+    log_marks,
+    picture,
+    recording,
+    screen_map,
+    series,
+    state_files,
+)
 from scry_core import vocabulary as vocab
 
 import dosbox_binary as binary
 import dosbox_checks as checks
-import dosbox_comment_file as comment_file
 import dosbox_grammar as grammar
 import dosbox_inputs as inputs
 import dosbox_launch as launch
@@ -26,6 +35,7 @@ STOP_FIELDS = (
 )
 
 DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES,
+              **core_comments.DOC_VALUES,
               **recording.DOC_VALUES,
               "STOP_FIELDS": STOP_FIELDS,
               "RECORD_MAX": str(sequence.RECORD_MAX),
@@ -36,14 +46,13 @@ DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES
               "CHANGE_WATCH_MAX": str(checks.CHANGE_WATCH_MAX),
               "INSTRUCTIONS_MAX": str(trace.INSTRUCTIONS_MAX),
               "SYMBOLS_LIMIT_MAX": str(placement.SYMBOLS_LIMIT_MAX),
-              "COMMENT_BYTES_MAX": str(comment_file.TEXT_MAX_BYTES),
               "EXPECT_WAIT_S": f"{inputs.DRIVE_EXPECT_WAIT_S:g}",
               "SETTLE_S": f"{sequence.SETTLE_DEFAULT_S:g}",
               "EFFECT_WAIT_S": f"{inputs.EFFECT_WAIT_DEFAULT_S:g}",
               "KEYS_MAX": str(inputs.MAX_KEYS_PER_CALL),
               "INPUT_PORT_MIN": str(launch.INPUT_PORT_MIN),
               "INPUT_PORT_MAX": str(launch.INPUT_PORT_MAX),
-              "STATE_NAME_MAX": str(launch.STATE_NAME_MAX),
+              "STATE_NAME_MAX": str(state_files.STATE_NAME_MAX),
               "HITS_MAX": str(judges.HITS_MAX), "HITS_DEFAULT": str(judges.HITS_DEFAULT),
               "DEBUG_TEXT_KEEP": str(st.DEBUG_TEXT_KEEP),
               "DETAIL_TEXT_KEEP": str(st.DETAIL_TEXT_KEEP),

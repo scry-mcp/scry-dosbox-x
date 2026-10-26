@@ -1535,3 +1535,13 @@ def test_presence_off_is_answered_false_as_on_the_mame_server() -> None:
     import dosbox_replies
     for model in (dosbox_replies.StartReply, dosbox_replies.StatusReply):
         assert "presence" not in reply_schema.omitted_when_empty(model), model
+
+
+def test_close_and_status_with_no_session_say_so_in_the_words_both_servers_use() -> None:
+    from scry_core import session_block
+
+    dstate.STATE.session = None
+    closed = cast(dict[str, Any], server.close())
+    assert closed["summary"] == session_block.NO_SESSION_CLOSE, closed
+    assert closed["note"] == session_block.NO_SESSION_CLOSE_NOTE, closed
+    assert cast(dict[str, Any], server.status())["summary"] == session_block.NO_SESSION_STATUS

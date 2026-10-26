@@ -61,10 +61,7 @@ window flags all come from the caller, so the same server serves every DOS proje
 from __future__ import annotations
 
 import json
-import os
-import signal
 import sys
-import threading
 from collections.abc import Callable
 from pathlib import Path
 from typing import Annotated, Any, cast
@@ -96,7 +93,8 @@ from scry_core import (  # noqa: E402
     process_name,
     recording,
     reference,
-    reply_schema,  # noqa: E402
+    reply_schema,
+    signalled_end,
 )
 from scry_core import placement as window  # noqa: E402
 from scry_core import presence as scry_presence  # noqa: E402
@@ -771,7 +769,7 @@ def symbols_load(path: str, base: str = "",
     Reference: REFERENCE.md, Names for addresses.
     """
     session = live()
-    src = paths.input_file("path", path, "symbol file")
+    src = judges.existing_file("path", path, "symbol file")
     typed = placement.read_types(types) if types else {}
     return placement.load(session, path, src,
                           placement.hex_arg("base", base) if base else None,
@@ -822,19 +820,15 @@ def comment_write(method: Annotated[str, vocab.enum(tuple(folds.COMMENT))], ref:
                   text: str = "", dest: str = "", path: str = "") -> dict[str, Any]:
     """Change this conf's comments.
 
-    `add`: `text` (one printable line, at most {COMMENT_BYTES_MAX} UTF-8 bytes) on `ref`,
+    `add`: `text` (one printable line, at most {COMMENT_TEXT_MAX} UTF-8 bytes) on `ref`,
     a symbol or a `SEG:OFF`; a second there replaces it. Reply: `comment`, `replaced_comments`,
     `declarations`, `note`.
 
     `delete`: the comment `ref` names. Reply: `deleted`, `declarations`, `note`.
 
-    `save`: every comment to `dest`, an absolute path, replacing a comment file there (rows
-    only it held in `dropped_comments`); any other file is refused; answers on a running guest.
-    Reply: `path`, `comments_total`, `dropped_comments`, `dropped_total`, `truncated`, `note`.
+    {COMMENT_SAVE}
 
-    `load`: the comment file at `path`, all or nothing, the file winning. Reply: `path`,
-    `parsed`, `added`, `replaced_comments`, `replaced_total`, `truncated`, `unchanged`,
-    `comments_total`, `declarations`, `note`.
+    {COMMENT_LOAD}
 
     `add`, `delete` and `load` need the machine stopped. Refused: an argument the method
     does not take, a misshapen `ref` or `text` (`bad_argument`), a name defined twice
@@ -984,9 +978,7 @@ def screen_signature(crop: list[int] | None = None) -> dict[str, Any]:
 @tool("Which mapped screen is this", summary=one_line.map_find, read_only=True,
       replay=("matched", "screen"))
 def map_find() -> dict[str, Any]:
-    """Which mapped screen the machine shows. Reply: `matched`; matched, `screen`, `layer`, `kind`,
-    `size`, `controls` (`name`, `rect`, `centre`); else `screens_mapped`, `screens_tried`. None
-    mapped: `needs_call`.
+    """{MAP_FIND}
 
     Reference: REFERENCE.md, Screen maps.
     """
@@ -1012,11 +1004,9 @@ def map_write(method: Annotated[str, vocab.enum(tuple(folds.MAP))], screen: str 
     units. Reply: `screen`, `kind`, `size`, `match`, `controls`, `replaced`,
     `shadows_file`.
 
-    `load`: `path` (`<application>{MAP_SUFFIX}`, absolute or `~`-led) as the file layer. Reply:
-    `path`, `application`, `screens`, `controls`.
+    {MAP_LOAD}
 
-    `save`: both layers as one map to `dest`, refused there without `overwrite`, made the file
-    layer. Reply: `path`, `application`, `screens`, `controls`, `promoted`.
+    {MAP_SAVE}
 
     Refused: an argument the method does not take; a misshapen name, crop, control or file
     (`bad_argument`); nothing mapped to save (`needs_call`); the modes `screen_view` refuses.
@@ -1220,7 +1210,7 @@ def capture_frame(frame: int, dest: str, capture_path: str = "") -> dict[str, An
     """
     session = live()
     return caps.capture_frame(session, frame, paths.absolute("dest", dest),
-                              paths.input_file("capture_path", capture_path, "capture")
+                              judges.existing_file("capture_path", capture_path, "capture")
                               if capture_path else None)
 
 
@@ -1306,6 +1296,7 @@ def drive(act: list[dict[str, Any]], expect: str = "",
 
 strict.strict_arguments(mcp)
 reply_schema.declare(mcp, dosbox_replies.MODELS)
+sequence.GATE.check_folds(folds.METHODS)
 
 #: What the reference pages are generated from
 #: (`python -m scry_core.reference dosbox_x_server:REFERENCE`) and held to
@@ -1313,49 +1304,6 @@ reply_schema.declare(mcp, dosbox_replies.MODELS)
 REFERENCE = reference.Registry(server=mcp, models=dosbox_replies.MODELS, roster=ROSTER,
                                envelope=dosbox_replies.DosboxEnvelope,
                                root=Path(__file__).resolve().parent)
-
-
-#: The signals that end a server whose client went away abruptly (a SIGTERM, the SIGHUP of a
-#: terminal that closed, a Ctrl-C). Their default action would end the server with its `finally`
-#: unrun, and DOSBox-X, in a process session of its own, would outlive it.
-EXIT_SIGNALS: tuple[signal.Signals, ...] = tuple(
-    getattr(signal, name) for name in ("SIGTERM", "SIGHUP", "SIGINT") if hasattr(signal, name))
-#: How long a signalled end waits for a tool to let go of the machine before it closes the
-#: emulator without it: the process is going either way, and the emulator must not outlive it.
-LOCK_WAIT_S = 10.0
-#: How the signalled end leaves once the session and the scratch are gone: at once, because the
-#: transport's reader thread is still blocked on a stdin nobody closed, and the interpreter would
-#: wait for it for ever.
-_leave = os._exit
-
-
-def _exit_on(signum: int, _frame: object) -> None:
-    """A signal from `EXIT_SIGNALS`: the end runs on a thread of its own, never as an exception
-    in whatever frame the event loop was in (a task group would wrap it, and the end would be
-    missed), and the signals after it are ignored, so a second one cannot cut it short."""
-    for sig in EXIT_SIGNALS:
-        signal.signal(sig, signal.SIG_IGN)
-    threading.Thread(target=_end_signalled, args=(128 + signum,), name="signalled-end",
-                     daemon=True).start()
-
-
-def _end_signalled(code: int) -> None:
-    """The session closed (under the lock, or past `LOCK_WAIT_S` without it), the process's
-    scratch removed as the normal exit's `atexit` would, and the process left, whatever failed
-    on the way."""
-    try:
-        took = LOCK.acquire(timeout=LOCK_WAIT_S)
-        try:
-            _close_held_session()
-        except Exception as e:  # noqa: BLE001 -- said, then the end goes on: it must leave
-            print(f"dosbox-x server: the session could not be closed on the way out ({e!r})",
-                  file=sys.stderr, flush=True)
-        finally:
-            if took:
-                LOCK.release()
-        st.remove_scratch()
-    finally:
-        _leave(code)
 
 
 def _close_held_session() -> None:
@@ -1367,10 +1315,14 @@ def _close_held_session() -> None:
     STATE.session = STATE.starting = None
 
 
+#: The end on a signal: the emulator closed, the process's scratch removed, the process left.
+END = signalled_end.SignalledEnd(LOCK, _close_held_session, lambda: st.remove_scratch(),
+                                 "dosbox-x server")
+
+
 def main() -> None:
     process_name.set_title(dprocess.PROCESS_NAME)
-    for sig in EXIT_SIGNALS:
-        signal.signal(sig, _exit_on)
+    END.install()
     try:
         mcp.run()
     finally:

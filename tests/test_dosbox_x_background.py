@@ -8,8 +8,10 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from scry_core import placement as window
 
 import dosbox_launch as dlaunch
+import dosbox_lifecycle as lifecycle
 import dosbox_session as ds
 import dosbox_x_server as server
 
@@ -126,3 +128,13 @@ def test_a_live_runs_ledger_learns_the_emulator_the_session_spawned(
         with pytest.raises(RuntimeError, match="new thread"):
             ds.Session(dlaunch.Launch(conf=conf, cwd=tmp_path, seconds=60, debugger_headless=True))
         assert (live_host.EmulatorLedger(ledger).recorded() == {4321: "dosbox-x"}) is named
+
+
+def test_a_watched_session_with_no_helper_is_refused_and_one_display_opens_unplaced(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(window, "ask", lambda *_a, **_k: window.Placed(None, "no helper is named"))
+    with pytest.raises(ds.Invalid) as e:
+        lifecycle._window_flags(True, "")
+    assert e.value.code == "host_failed" and "needs its window placed" in str(e.value)
+    monkeypatch.setattr(window, "ask", lambda *_a, **_k: window.Placed([]))
+    assert lifecycle._window_flags(True, "") == [] == lifecycle._window_flags(False, "")

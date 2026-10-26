@@ -18,6 +18,7 @@ from typing import Any
 from scry_core import judges
 from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
+from scry_core.prose import counted
 
 import dosbox_dump as dumping
 import dosbox_session as ds
@@ -46,8 +47,8 @@ SCAN_NONE_TO_CANCEL = "No active search instances to cancel."
 SCAN_NONE_TO_LIST = "No active search instances to list from."
 #: Cell size in bytes to the letter the debugger takes.
 CELLS = {1: "B", 2: "W", 4: "D"}
-CELL_BYTES = tuple(CELLS)
-OPERATORS = ("=", "!", ">", ">=", "<", "<=")
+CELL_BYTES = judges.SCAN_CELL_BYTES
+OPERATORS = judges.SCAN_OPERATORS
 
 
 def hex_bytes(name: str, value: str, *, verb: str) -> bytes:
@@ -161,7 +162,7 @@ def check_scan_range(length: int, cell_bytes: int) -> None:
     if length % cell_bytes:
         raise ds.Invalid("bad_argument",
             f"length={length} is not a whole number of {cell_bytes}-byte cells: the last "
-            f"{length % cell_bytes} byte(s) would be no cell")
+            f"{counted(length % cell_bytes, 'byte')} would be no cell")
 
 
 def unlisted_note() -> str:

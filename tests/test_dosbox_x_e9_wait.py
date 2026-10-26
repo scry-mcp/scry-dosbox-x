@@ -420,7 +420,7 @@ def test_a_wait_on_a_machine_stopped_at_the_debugger_refuses_at_once(tmp_path: P
     log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
     parked = StoppedLogSession(log, at_debugger=True)
     began = time.monotonic()
-    with pytest.raises(ds.Invalid, match="stopped at the debugger"):
+    with pytest.raises(ds.Invalid, match="a stopped machine logs nothing"):
         parked.e9_wait("never_going_to_appear", seconds=30)
     assert time.monotonic() - began < 1.0, "it sat out the bound on a stopped machine"
     assert parked.e9_wait("BOOT", seconds=30)["already"] is True
@@ -472,7 +472,7 @@ def test_an_expiry_consults_the_debugger_before_saying_still_running(
     log.write_text(f"{E9_BOOT}\n", encoding="utf-8")
     monkeypatch.setattr(core_wait, "POLL_S", 0.3)
     late = LateStopLogSession(log, running_answers=1)
-    with pytest.raises(ds.E9Stopped, match="stopped at the debugger"):
+    with pytest.raises(ds.E9Stopped, match="a stopped machine logs nothing"):
         late.e9_wait("never_going_to_appear", seconds=0.2)
     assert late.asked == 2, late.asked
     still = LateStopLogSession(log, running_answers=99)
@@ -508,7 +508,7 @@ def test_a_reaction_written_just_before_the_stop_is_found_not_refused(tmp_path: 
     line = "Bochs port E9h: [+   9.000] ACT   . key_cue_a=1"
     got = StopsAfterWriting(log, line=line).e9_wait("key_cue_a", seconds=5)
     assert got["line"] == line and got["already"] is False, got
-    with pytest.raises(ds.E9Stopped, match="stopped at the debugger"):
+    with pytest.raises(ds.E9Stopped, match="a stopped machine logs nothing"):
         StopsAfterWriting(log, line="Bochs port E9h: [+   9.000] UI    . other").e9_wait(
             "key_cue_b", seconds=5)
 

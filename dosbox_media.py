@@ -54,7 +54,7 @@ def series_capture(session: ds.Session, scratch: Path, at_frames: list[int] | No
         raise ds.Invalid("host_failed", "a series is extracted from the capture with `ffmpeg`, "
                          "and there is none on PATH")
     wanted = series.frame_list(at_frames, first, last, step)
-    src = (paths.input_file("capture_path", capture_path, "capture") if capture_path
+    src = (judges.existing_file("capture_path", capture_path, "capture") if capture_path
            else Path(str(session.captures()[-1]["path"])))
     width, height = avi.size("capture_path", src)
     area = raster.inside(crop, width, height, f"the capture's {width}x{height} frames")

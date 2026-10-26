@@ -396,3 +396,7 @@ def test_the_scan_judges_take_their_edges_and_refuse_one_past() -> None:
         finder.check_scan_range(0, 1)
     got = finder.find(session([], b"\xaa" * judges.HITS_MAX), 0, 0, judges.HITS_MAX, b"\xaa")
     assert got["hits_total"] == judges.HITS_MAX and got["truncated"] is False, got["truncated"]
+
+
+def test_every_cell_width_a_scan_takes_has_the_letter_the_debugger_takes() -> None:
+    assert set(finder.CELLS) == set(finder.CELL_BYTES)

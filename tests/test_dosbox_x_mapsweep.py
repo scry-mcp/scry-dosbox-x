@@ -318,7 +318,7 @@ def test_more_unreadable_rows_than_it_quotes_says_how_many_it_withheld(
     rc, out = _run(root, mf)
     assert rc == 0, out
     assert out.count("unread line:") == 3, out
-    assert "and 2 more row(s) not quoted here" in out, out
+    assert "and 2 more rows not quoted here" in out, out
 
 
 def test_a_refused_file_still_quotes_the_rows_it_could_not_place(tmp_path: Path) -> None:
@@ -355,8 +355,8 @@ def test_the_header_says_how_many_rows_the_manifest_held(tmp_path: Path) -> None
                       "YANKEE": {"path": "proj/B.MAP", "expect": {"symbols": 4}}})
     rc, out = _run(root, mf)
     assert rc == 0, out
-    assert "2 of 2 project(s) under" in out, out
-    assert "1 note row(s) skipped" in out, out
+    assert "2 of 2 projects under" in out, out
+    assert "1 note row skipped" in out, out
 
 
 def test_selecting_one_project_says_so_against_the_whole_manifest(
@@ -367,7 +367,7 @@ def test_selecting_one_project_says_so_against_the_whole_manifest(
                       "YANKEE": {"path": "proj/B.MAP", "expect": {"symbols": 999}}})
     rc, out = _run(root, mf, "--project", "ZULU")
     assert rc == 0, out
-    assert "1 of 2 project(s) as the manifest says" in out, out
+    assert "1 of 2 projects as the manifest says" in out, out
 
 
 def test_a_tilde_that_cannot_be_resolved_is_invalid_and_not_a_red(

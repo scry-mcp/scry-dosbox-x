@@ -11,6 +11,7 @@ import time
 
 from scry_core import cancel
 from scry_core import vocabulary as vocab
+from scry_core.prose import counted
 from scry_core.reply_contract import Invalid
 
 import dosbox_debugger as dbg
@@ -80,10 +81,10 @@ def step(ses: ds.Session, count: int, mode: str) -> dict[str, object]:
         except Invalid as exc:
             # IT REPORTS THE STEPS SENT, NOT THE ONES READ BACK.
             raise Invalid(exc.code,
-                f"{exc} -- and {sent} `{mode}` step(s) of {count} had ALREADY gone to the "
-                f"machine when this happened, of which {completed} were CONFIRMED landed. "
+                f"{exc} -- and {sent} of {counted(count, f'`{mode}` step')} had ALREADY gone "
+                f"to the machine when this happened, of which {completed} were CONFIRMED landed. "
                 f"They are irreversible: this debugger has no un-step, so the machine is at "
-                f"least {completed} step(s) past {before['cs']}:{before['eip']} and this "
+                f"least {counted(completed, 'step')} past {before['cs']}:{before['eip']} and this "
                 f"call could not read where that is") from None
         if after == position_before:
             stalled += 1

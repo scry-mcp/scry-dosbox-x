@@ -10,6 +10,7 @@ from collections.abc import Callable, Iterator
 from typing import Any
 
 import pytest
+from scry_core import signalled_end
 
 import dosbox_mcp
 import dosbox_state as dstate
@@ -31,7 +32,7 @@ class _Live:
 
 @pytest.fixture
 def ending(monkeypatch: pytest.MonkeyPatch) -> Iterator[dict[str, Any]]:
-    saved = {s: signal.getsignal(s) for s in server.EXIT_SIGNALS}
+    saved = {s: signal.getsignal(s) for s in signalled_end.EXIT_SIGNALS}
     seen: dict[str, Any] = {"exits": [], "scratch": 0, "left": threading.Event()}
 
     def leave(code: int) -> None:
@@ -40,7 +41,7 @@ def ending(monkeypatch: pytest.MonkeyPatch) -> Iterator[dict[str, Any]]:
 
     def remove_scratch() -> None:
         seen["scratch"] += 1
-    monkeypatch.setattr(server, "_leave", leave)
+    monkeypatch.setattr(server.END, "leave", leave)
     monkeypatch.setattr(dstate, "remove_scratch", remove_scratch)
     yield seen
     for s, handler in saved.items():
@@ -82,10 +83,10 @@ def test_a_server_whose_client_left_closes_the_session(monkeypatch: pytest.Monke
     ses = _Live()
     monkeypatch.setattr(dstate.STATE, "session", ses)
     installed: list[Any] = []
-    monkeypatch.setattr(server.mcp, "run",
-                        lambda: installed.extend(signal.getsignal(s) for s in server.EXIT_SIGNALS))
+    monkeypatch.setattr(server.mcp, "run", lambda: installed.extend(
+        signal.getsignal(s) for s in signalled_end.EXIT_SIGNALS))
     server.main()
-    assert installed and all(h is server._exit_on for h in installed), installed
+    assert installed and all(h == server.END.on_signal for h in installed), installed
     assert ses.closed == 1 and dstate.STATE.session is None
     assert ending["exits"] == []
 
@@ -96,12 +97,12 @@ def test_a_signal_ends_the_session_removes_the_scratch_and_leaves(
     ses = _Live()
     monkeypatch.setattr(dstate.STATE, "session", ses)
     sig = getattr(signal, name)
-    server._exit_on(sig, None)
+    server.END.on_signal(sig, None)
     assert ending["left"].wait(5.0), "the signalled end never left"
     assert ending["exits"] == [(128 + sig, 1)], ending["exits"]
     assert ses.closed == 1 and dstate.STATE.session is None
     # a second signal must not cut the end short
-    assert all(signal.getsignal(s) == signal.SIG_IGN for s in server.EXIT_SIGNALS)
+    assert all(signal.getsignal(s) == signal.SIG_IGN for s in signalled_end.EXIT_SIGNALS)
 
 
 def test_the_signalled_end_waits_for_a_held_lock_only_so_long(
@@ -109,10 +110,10 @@ def test_the_signalled_end_waits_for_a_held_lock_only_so_long(
     """A tool holding the lock does not keep the emulator alive past `LOCK_WAIT_S`."""
     ses = _Live()
     monkeypatch.setattr(dstate.STATE, "session", ses)
-    monkeypatch.setattr(server, "LOCK_WAIT_S", 0.2)
+    monkeypatch.setattr(server.END, "lock_wait_s", 0.2)
     began = time.monotonic()
     with _lock_held_elsewhere():
-        server._exit_on(signal.SIGTERM, None)
+        server.END.on_signal(signal.SIGTERM, None)
         assert ending["left"].wait(5.0), "the end waited on the lock for ever"
     assert time.monotonic() - began < 3.0 and ses.closed == 1
 
@@ -121,7 +122,7 @@ def test_a_close_that_fails_is_said_and_the_end_still_removes_the_scratch_and_le
         monkeypatch: pytest.MonkeyPatch, ending: dict[str, Any],
         capfd: pytest.CaptureFixture[str]) -> None:
     monkeypatch.setattr(dstate.STATE, "session", _Live(raises=True))
-    server._exit_on(signal.SIGTERM, None)
+    server.END.on_signal(signal.SIGTERM, None)
     assert ending["left"].wait(5.0)
     assert ending["exits"] == [(128 + signal.SIGTERM, 1)], ending["exits"]
     assert "could not be closed on the way out" in capfd.readouterr().err
@@ -133,9 +134,9 @@ def test_a_signal_while_start_waits_for_its_emulator_ends_that_emulator(
     starting = _Live()
     monkeypatch.setattr(dstate.STATE, "session", None)
     monkeypatch.setattr(dstate.STATE, "starting", starting)
-    monkeypatch.setattr(server, "LOCK_WAIT_S", 0.2)
+    monkeypatch.setattr(server.END, "lock_wait_s", 0.2)
     with _lock_held_elsewhere():
-        server._exit_on(signal.SIGTERM, None)
+        server.END.on_signal(signal.SIGTERM, None)
         assert ending["left"].wait(5.0)
     assert starting.closed == 1
 
@@ -153,11 +154,11 @@ def test_the_servers_end_and_a_signalled_one_close_the_session_once(
         return 0
 
     monkeypatch.setattr(dstate.STATE, "session", _bare_session(monkeypatch, slow_close))
-    monkeypatch.setattr(server, "LOCK_WAIT_S", 0.2)
+    monkeypatch.setattr(server.END, "lock_wait_s", 0.2)
 
     def signal_once_main_closes() -> None:
         assert closing.wait(5.0), "main's end never reached the close"
-        server._end_signalled(128 + signal.SIGTERM)
+        server.END.end(128 + signal.SIGTERM)
     # the signal lands while `main`'s end holds the lock and runs the close body
     later = threading.Thread(target=signal_once_main_closes)
     monkeypatch.setattr(server.mcp, "run", later.start)
@@ -193,7 +194,7 @@ def test_a_signalled_end_waits_for_the_tool_holding_the_lock_before_closing(
     closed: list[float] = []
     ses = type("Held", (), {"close": lambda self: closed.append(time.monotonic())})()
     monkeypatch.setattr(dstate.STATE, "session", ses)
-    monkeypatch.setattr(server, "LOCK_WAIT_S", 5.0)
+    monkeypatch.setattr(server.END, "lock_wait_s", 5.0)
     released: list[float] = []
     held = threading.Event()
 
@@ -206,7 +207,7 @@ def test_a_signalled_end_waits_for_the_tool_holding_the_lock_before_closing(
     tool.start()
     held.wait(5.0)
     try:
-        server._end_signalled(128 + signal.SIGTERM)
+        server.END.end(128 + signal.SIGTERM)
     finally:
         tool.join()
     assert closed and released and closed[0] >= released[0], (closed, released)

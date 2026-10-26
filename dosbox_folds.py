@@ -29,22 +29,21 @@ _CLEARS = {"breakpoint": arming.clear_breakpoints, "watch": arming.clear_watches
 
 
 def check_list_declarations(kind: str = "", **_: Any) -> None:
-    vocab.one_of("kind", kind, ("", *KINDS))
+    declaration_rows.chosen_kinds(kind, KINDS)
 
 
 def list_declarations(kind: str) -> dict[str, Any]:
     """Each kind's rows under its field, every kind when `kind` is empty
     (`scry_core.declaration_rows.merged`)."""
-    check_list_declarations(kind)
     session = live()
     return declaration_rows.merged({one_line.DECLARATION_ROWS[k]: _LISTS[k](session)
-                                    for k in ((kind,) if kind else KINDS)})
+                                    for k in declaration_rows.chosen_kinds(kind, KINDS)})
 
 
 def check_clear_declarations(kind: str = "", ref: str = "", all: bool = False,
                              **_: Any) -> None:
     vocab.one_of("kind", kind, KINDS)
-    checks.clear_scope(ref, all)
+    vocab.check_clear_scope(ref, all, kind)
 
 
 def clear_declarations(kind: str, ref: str, all: bool) -> dict[str, Any]:
@@ -127,7 +126,7 @@ def _clear_scan() -> dict[str, Any]:
 SCAN = {
     "start": Method(_start_scan, checks.check_start_scan, one_line.start_scan),
     "filter": Method(_filter_scan, checks.check_filter_scan, one_line.filter_scan),
-    "clear": Method(_clear_scan, lambda **_: None, one_line.clear_scan),
+    "clear": Method(_clear_scan, methods.no_check, one_line.clear_scan),
 }
 
 
@@ -151,6 +150,10 @@ STATE_METHODS = {
     "save": Method(_save_state, checks.check_state, one_line.save_state),
     "load": Method(_load_state, checks.check_state, one_line.load_state),
 }
+
+#: Each `method` fold's method names, which the running gate is held to.
+METHODS = {"comment_write": tuple(COMMENT), "map_write": tuple(MAP), "scan": tuple(SCAN),
+           "state_write": tuple(STATE_METHODS)}
 
 #: Each fold's pre-gate judge, as `dosbox_checks.BY_OP` holds it.
 CHECKS = {

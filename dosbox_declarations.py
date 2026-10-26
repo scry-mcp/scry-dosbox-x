@@ -7,14 +7,13 @@ base, so a file from one run cannot be used against another by accident.
 from __future__ import annotations
 
 import hashlib
-import json
 import os
 import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from scry_core import fresh
+from scry_core import declaration_file
 from scry_core import value_format as vf
 from scry_core.reply_contract import Invalid
 
@@ -392,43 +391,10 @@ class DeclarationStore:
             raise DeclarationError("a store needs a non-empty conf identity to key by")
         self._conf = conf_identity
         self._path = path or default_path()
-        raw = self._read_raw()
-        self._items = self._decls_for(raw, conf_identity)
-
-    @staticmethod
-    def _decls_for(raw: dict[str, object], conf: str) -> list[Declaration]:
-        """This conf's declarations out of the whole file, refusing a shape that is not a list
-        of objects (else `from_dict` would raise an `AttributeError`)."""
-        items = raw.get(conf, [])
-        if not isinstance(items, list):
-            raise DeclarationError(
-                f"conf {conf!r} maps to a {type(items).__name__}, not a list of "
-                f"declarations")
-        out: list[Declaration] = []
-        for d in items:
-            if not isinstance(d, dict):
-                raise DeclarationError(
-                    f"a declaration under {conf!r} is a {type(d).__name__}, not an "
-                    f"object: {d!r}")
-            out.append(Declaration.from_dict(d))
-        _one_comment_per_ref(out)
-        return out
-
-    def _read_raw(self) -> dict[str, object]:
-        """The whole file as it is on disk now, or empty when there is none."""
-        try:
-            raw = json.loads(self._path.read_text(encoding="utf-8"))
-        except FileNotFoundError:
-            return {}
-        except (OSError, ValueError) as exc:
-            raise DeclarationError(
-                f"the declaration file {self._path} could not be read: {exc}. It is not "
-                f"discarded -- fix or remove it rather than lose what it holds") from None
-        if not isinstance(raw, dict):
-            raise DeclarationError(
-                f"the declaration file {self._path} is not a mapping of conf to "
-                f"declarations; it holds a {type(raw).__name__}")
-        return raw
+        rows = declaration_file.rows(declaration_file.read(self._path, DeclarationError),
+                                     conf_identity, DeclarationError)
+        self._items = [Declaration.from_dict(d) for d in rows]
+        _one_comment_per_ref(self._items)
 
     def _commit(self, mine: list[Declaration], new: list[Declaration]) -> None:
         """This conf's rows become `new` and are written; a failed write puts them back."""
@@ -445,10 +411,10 @@ class DeclarationStore:
             raise
 
     def _persist(self) -> None:
-        # Replace only this conf's entry. Single writer by design: two processes could lose an
-        # add.
-        raw = self._read_raw()
-        raw[self._conf] = [d.to_dict() for d in self._items]
+        declaration_file.write(self._path, self._conf, [d.to_dict() for d in self._items],
+                               DeclarationError, self._drop_my_builds)
+
+    def _drop_my_builds(self, raw: dict[str, object]) -> None:
         every = raw.get(BUILDS_KEY)
         if isinstance(every, Mapping):
             rest = {k: v for k, v in every.items() if k != self._conf}
@@ -456,9 +422,6 @@ class DeclarationStore:
                 raw[BUILDS_KEY] = rest
             else:
                 raw.pop(BUILDS_KEY)
-        self._path.parent.mkdir(parents=True, exist_ok=True)
-        fresh.replace(self._path, json.dumps(raw, indent=2, sort_keys=True).encode(),
-                      "the declarations file", named_by_caller=False)
 
     def _mine(self) -> list[Declaration]:
         return self._items

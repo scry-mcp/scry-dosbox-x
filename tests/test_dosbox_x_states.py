@@ -342,7 +342,7 @@ def test_the_tools_carry_the_envelope_and_the_summaries_name_the_state(tmp_path:
     for name in ("state_write", "state_list"):
         assert name in dosbox_mcp.registered_tools()
     assert "state_list" in dosbox_mcp._ANSWERS_WHILE_RUNNING
-    assert "state_write" in dosbox_mcp._ANSWERS_WHILE_RUNNING
+    assert "state_write(method=save|load)" in dosbox_mcp._ANSWERS_WHILE_RUNNING
 
 
 def test_state_list_keeps_the_working_slot_apart_from_the_named_states(tmp_path: Path) -> None:

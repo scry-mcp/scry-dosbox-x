@@ -107,15 +107,6 @@ def number(name: str, value: object) -> int:
     return judges.number(name, value, NUMBER_BITS, "this debugger")
 
 
-def clear_scope(ref: str = "", all: bool = False, **_: Any) -> None:
-    """A clear names one `ref` or `all=True`, never both and never neither."""
-    if isinstance(all, bool) and all and ref:
-        raise ds.Invalid("bad_argument", f"ref={ref!r} and all=True: name one, or clear all")
-    if not all and not ref:
-        raise ds.Invalid("bad_argument",
-                         "an empty ref clears nothing: name one, or `all=True` to clear every one")
-
-
 def check_save_comments(dest: object, **_: Any) -> None:
     paths.absolute("dest", dest)
 

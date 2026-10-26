@@ -21,7 +21,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from scry_core import prose, screen_map
+from scry_core import prose, screen_map, session_block
 from scry_core import reply_contract as contract
 
 import dosbox_running as running
@@ -93,7 +93,7 @@ def status(args: dict[str, Any], reply: dict[str, Any]) -> str:
     # THE REPLY'S OWN FACTS, never its block: the summary is read off the body's reply, before
     # the block is added. `declarations` is counted on every session and on none without.
     if "declarations" not in reply:
-        return "status: no session"
+        return session_block.NO_SESSION_STATUS
     why = reply.get("pc", {}).get("why") if isinstance(reply.get("pc"), dict) else None
     if why == running.PC_GONE_WHY:
         return "status: DOSBox-X has exited, `close` it"
@@ -102,7 +102,7 @@ def status(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 def close(args: dict[str, Any], reply: dict[str, Any]) -> str:
     if not reply.get("closed"):
-        return f"close: {reply.get('note')}"
+        return session_block.NO_SESSION_CLOSE
     code = reply.get("exit_code")
     said = (f"exit code {code}" if not isinstance(code, dict)
             else f"no exit code: {code.get('why')}")
@@ -462,12 +462,12 @@ def screen_wait(args: dict[str, Any], reply: dict[str, Any]) -> str:
     point = reply.get("point")
     at = f"{point[0]},{point[1]}" if isinstance(point, list) else "?"
     if reply.get("verdict") == contract.TIMEOUT:
-        return (f"screen_wait {args.get('text')!r}: TIMEOUT after {reply.get('polls')} "
-                f"retrace(s)")
+        return (f"screen_wait {args.get('text')!r}: TIMEOUT after "
+                f"{prose.counted(int(reply.get('polls') or 0), 'retrace')}")
     if reply.get("already"):
         return f"screen_wait {args.get('text')!r}: already on screen at {at}"
-    return (f"screen_wait {args.get('text')!r}: found at {at} after {reply.get('polls')} "
-            f"retrace(s)")
+    return (f"screen_wait {args.get('text')!r}: found at {at} after "
+            f"{prose.counted(int(reply.get('polls') or 0), 'retrace')}")
 
 
 def capture_frame(args: dict[str, Any], reply: dict[str, Any]) -> str:

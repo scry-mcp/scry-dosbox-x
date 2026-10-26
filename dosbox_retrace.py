@@ -11,6 +11,7 @@ from typing import Any
 from scry_core import cancel
 from scry_core import progress as mprogress
 from scry_core import reply_contract as contract
+from scry_core.prose import counted
 
 import dosbox_arming as arming
 import dosbox_debugger as dbg
@@ -137,8 +138,8 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
         stuck = (f"retrace stop {polls} left the emulated clock at {stalled_at} ms, where the stop "
                  f"before it had put it: the machine stopped advancing")
     elif polls and before is not None and after is not None and after <= before:
-        stuck = (f"the emulated clock read {before} ms before and {after} ms after {polls} retrace "
-                 f"stop(s): nothing was emulated")
+        stuck = (f"the emulated clock read {before} ms before and {after} ms after "
+                 f"{counted(polls, 'retrace stop')}: nothing was emulated")
     else:
         stuck = ""
     if stuck:
@@ -306,7 +307,7 @@ def _expired(session: ds.Session, text: str, seconds: float, polls: int, not_tex
         "verdict": contract.TIMEOUT, "polls": polls, **seen,
         "retrace_pending": STATE.retrace_pending,
         "waited_s": round(time.monotonic() - began, 1),
-        "note": f"`{text}` was not on the text screen in {polls} retrace(s) within "
+        "note": f"`{text}` was not on the text screen in {counted(polls, 'retrace')} within "
                 f"{seconds:g} s{skipped}" + (f"; {PENDING_NOTE}" if pending else "")}
     if not (polls or out):
         return st.reply(**base)

@@ -1314,7 +1314,7 @@ def test_a_string_that_appears_after_a_retrace_is_found_with_the_stop_reply(
     assert r["regs"] and "cause" in r and "stop_seq" in r
     assert len(vrts(machine)) == 1 and machine.dumps == [(0xB800, 0, 4000)]
     assert machine.asked.count("VGA MODE") == 2 and machine.asked.count("VGA CRTC") == 1
-    assert r["summary"] == "screen_wait 'PROBE.COM': found at 4,3 after 1 retrace(s)"
+    assert r["summary"] == "screen_wait 'PROBE.COM': found at 4,3 after 1 retrace"
 
 
 def test_a_string_already_on_screen_is_answered_without_moving_the_machine(

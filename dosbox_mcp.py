@@ -36,7 +36,7 @@ def refusal(name: str, arguments: dict[str, Any], cause: ValidationError) -> dic
 
 #: What a refusal for a running guest names as answering.
 _ANSWERS_WHILE_RUNNING = roster.answers_while_running(
-    roster.by_method(sequence.RUNNING_OK_OPS, sequence.RUNNING_METHODS), checks.NOT_STEPS,
+    sequence.GATE.listed(), checks.NOT_STEPS,
     {"start", "build_check"})
 
 

@@ -20,8 +20,7 @@ import stat
 from pathlib import Path
 from typing import Any
 
-from scry_core import fresh, prose
-from scry_core import reply_contract as contract
+from scry_core import fresh, judges, prose
 
 import dosbox_arming as arming
 import dosbox_code as code
@@ -178,15 +177,8 @@ def _key(ref: str, place: dict[str, Any]) -> tuple[str, Any]:
     return ("ref", ref)
 
 
-#: A comment is adopted by commenting it again, not by declaring it, so its row says that.
-NO_ORIGIN_WHY = ("the row names no session it was commented in: delete it by its ref, or "
-                 "comment it again here to adopt it")
-
-
 def _row(decl: dec.Declaration, place: dict[str, Any]) -> dict[str, Any]:
     row = arming.decl_row(decl)
-    if isinstance(row["origin"], dict):
-        row["origin"] = contract.unavailable(NO_ORIGIN_WHY)
     if arming.orphan(decl):
         row["orphan"] = True
     row["text"] = decl.text
@@ -463,7 +455,7 @@ def load_comments(session: ds.Session, given: str) -> dict[str, Any]:
     """The body of the `comment_write(method="load")` tool."""
     store = arming.current_store()
     session.require_stopped("comments, whose raw addresses are read in the mode of a stop")
-    path = paths.input_file("path", given, "comment file")
+    path = judges.existing_file("path", given, "comment file")
     try:
         raw = path.read_bytes()
     except OSError as e:
@@ -510,11 +502,12 @@ def load_comments(session: ds.Session, given: str) -> dict[str, Any]:
     adds = [d for d, _ in added]
     _apply(store, adds=adds, replaces=replaces)
     shown, truncated = _shown(replaced)
-    notes = [f"the file won at {len(replaced)} place(s): the store's old text is in "
+    notes = [f"the file won at {prose.counted(len(replaced), 'place')}: the store's old text is in "
              "`replaced_comments`"] if replaced else []
     if waiting := [d.ref for d, place in incoming if "refuse" in place]:
-        notes.append(f"{len(waiting)} row(s) this stop cannot place are kept `unarmable`, "
-                     f"each `why` naming the stop it waits for: {waiting[:st.ROWS_SHOWN]}")
+        notes.append(f"{prose.counted(len(waiting), 'row')} this stop cannot place kept "
+                     f"`unarmable`, each `why` naming the stop it waits for: "
+                     f"{waiting[:st.ROWS_SHOWN]}")
     if sharing := _sharing([*held, *added]):
         notes.append(f"{prose.counted(len(sharing), 'comment')} share a place with another, "
                      f"{sharing[0][0]!r} and {sharing[0][1]!r} first: a comment file names a "

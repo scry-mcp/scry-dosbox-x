@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from scry_core import reply_contract as contract
+from scry_core import roster
 from scry_core import sequence as executor
 from scry_core import sequence_account as account
 from scry_core import steps as step_judge
@@ -39,16 +40,16 @@ RUNNING_OK_OPS = frozenset({
     "watch_add", "captures", "capture_frame", "series_capture", "send_keys", "send_mouse",
     "state_write", "state_list", "snapshot", "stop", "map_write",
     *media.MEDIA_TOOLS})
-#: Methods of a folded tool that answer on a running guest; its others need a stop.
+#: Methods of a folded tool that answer on a running guest; its others need a stop. Both state
+#: methods go down the debugger channel, breaking in on a running guest and releasing it after.
 RUNNING_METHODS: dict[str, tuple[str, ...]] = {"comment_write": ("save",),
-                                                "map_write": ("load", "save")}
+                                                "map_write": ("load", "save"),
+                                                "state_write": ("save", "load")}
+GATE = roster.RunningGate(ops=RUNNING_OK_OPS, methods=RUNNING_METHODS)
 
 
 def answers_running(op: str, args: dict[str, Any]) -> bool:
-    """Whether this step answers on a running guest."""
-    if op in RUNNING_METHODS:
-        return args.get("method") in RUNNING_METHODS[op]
-    return op in RUNNING_OK_OPS or (op == "registers" and args.get("from_last_stop") is True)
+    return GATE.answers(op, args)
 
 
 _RELEASES = frozenset({"resume", "run_to", "run_for", "step"})

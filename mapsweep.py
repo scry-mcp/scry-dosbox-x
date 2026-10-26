@@ -31,6 +31,7 @@ from pathlib import Path
 from typing import NoReturn
 
 from scry_core import verdict
+from scry_core.prose import counted
 
 import dosbox_symbols as sym
 
@@ -208,7 +209,7 @@ def _render(res: Result, write: Callable[[str], None]) -> None:
         write(f"                 unread line: {row.rstrip()}")
     extra = len(res.rows or []) - QUOTE_MAX
     if extra > 0:
-        write(f"                 ... and {extra} more row(s) not quoted here")
+        write(f"                 ... and {counted(extra, 'more row')} not quoted here")
     for bad in res.disagreements or []:
         write(f"    DISAGREES  {res.name}: {bad}")
 
@@ -285,8 +286,8 @@ def main(argv: Sequence[str] | None = None, *,
         except Invalid as exc:
             invalid.append(str(exc))
 
-    write(f"mapsweep: {len(selected)} of {len(manifest)} project(s) under {root}"
-          + (f" ({notes} note row(s) skipped)" if notes else ""))
+    write(f"mapsweep: {len(selected)} of {counted(len(manifest), 'project')} under {root}"
+          + (f" ({counted(notes, 'note row')} skipped)" if notes else ""))
     for res in results:
         _render(res, write)
     bad = [r for r in results if r.disagreements]
@@ -294,16 +295,16 @@ def main(argv: Sequence[str] | None = None, *,
     for line in invalid:
         write(f"mapsweep: INVALID: {line}")
     if bad:
-        write(f"mapsweep: {len(bad)} of {len(results)} project(s) read DISAGREE with the "
+        write(f"mapsweep: {len(bad)} of {counted(len(results), 'project')} read DISAGREE with the "
               f"manifest")
     if invalid:
-        write(f"mapsweep: {len(invalid)} of {len(selected)} project(s) could NOT be "
+        write(f"mapsweep: {len(invalid)} of {counted(len(selected), 'project')} could NOT be "
               f"examined, so this run is not a verdict about them")
         return INVALID
     if bad:
         return RED
     # State the denominator: `--project X` narrows the scope.
-    write(f"mapsweep: {len(results)} of {len(manifest)} project(s) as the manifest says")
+    write(f"mapsweep: {len(results)} of {counted(len(manifest), 'project')} as the manifest says")
     return OK
 
 

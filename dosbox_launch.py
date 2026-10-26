@@ -17,7 +17,6 @@ from __future__ import annotations
 import hashlib
 import lzma
 import os
-import re
 import socket
 import zipfile
 import zlib
@@ -376,13 +375,6 @@ def validate(launch: Launch) -> None:
                       f"{INPUT_PORT_MIN} and {INPUT_PORT_MAX}; got {launch.input_port}")
 
 
-# A file name under the state directory: `fullmatch`, since `$` lets a trailing newline through.
-STATE_NAME_MAX = 64
-
-
-STATE_NAME = re.compile(rf"[A-Za-z0-9][A-Za-z0-9_-]{{0,{STATE_NAME_MAX - 1}}}")
-
-
 # Members of a state ZIP that identify it without loading it; memory is in megabytes.
 STATE_META = {"version": "DOSBox-X_Version", "program": "Program_Name",
               "machine": "Machine_Type", "memory_mb": "Memory_Size",
@@ -417,13 +409,8 @@ def state_fields(meta: dict[str, object]) -> dict[str, object]:
 
 
 def check_state_name(name: object) -> None:
-    if not isinstance(name, str) or not STATE_NAME.fullmatch(name):
-        raise Invalid("bad_argument",
-            f"a state name is letters, digits, `_` and `-`, starting with a letter or a "
-                      f"digit, at most {STATE_NAME_MAX} of them; got {name!r}. It becomes a "
-                      f"file name under the state directory")
-    if name.isdigit():
-        # A state named `1` would be the emulator's own slot file.
+    name = state_files.check_state_name(name, "a file name under the state directory")
+    if name.isdigit():          # `1` is the emulator's own slot file
         raise Invalid("bad_argument",
             f"a state name of digits only, {name!r}, is the emulator's own slot file name "
             f"(`{name}.sav`): add a letter")

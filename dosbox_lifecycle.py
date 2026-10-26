@@ -8,7 +8,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
-from scry_core import log_marks, narrowing
+from scry_core import log_marks, narrowing, session_block
 from scry_core import placement as window
 from scry_core import reply_contract as contract
 
@@ -33,7 +33,9 @@ DEFAULT_STATE_DIR = (f"the default state directory (`<cwd>/{dlaunch.DEFAULT_STAT
 
 
 def _window_flags(shared: bool, display: str) -> list[str]:
-    """The watched window's flags from the host placement helper; none for a headless session."""
+    """The watched window's flags from the host placement helper; none for a headless session.
+    No flags is a one-display host's answer: DOSBox-X sizes its own window, where MAME's server,
+    which would have to invent a size, refuses it."""
     if not shared:
         return []
     placed = window.ask("dosbox", True, display)
@@ -192,7 +194,7 @@ def _log_tail(session: ds.Session) -> str | dict[str, Any]:
 def close(progress: ds.Progress, detail: bool = False) -> dict[str, Any]:
     """The body of the `close` tool."""
     if STATE.session is None:
-        return st.reply(closed=False, ended_by="none", note="there was no session")
+        return st.reply(closed=False, ended_by="none", note=session_block.NO_SESSION_CLOSE_NOTE)
     # Read before the session ends, so `pid` is the process this call ended.
     facts, was = st.process_facts(), st.session_block()
     rc = STATE.session.close(progress=progress)

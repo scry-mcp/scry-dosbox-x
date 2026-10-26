@@ -140,8 +140,8 @@ def orphan(decl: dec.Declaration) -> bool:
 
 def decl_row(decl: dec.Declaration) -> dict[str, Any]:
     """The fields every listed declaration carries (`scry_core.declaration_rows`)."""
-    return declaration_rows.row(ref=decl.ref, by=decl.by, cpu=None, cpu_why=ONE_CPU_WHY,
-                                created_at=decl.created_at, origin=decl.origin,
+    return declaration_rows.row(kind=decl.kind, ref=decl.ref, by=decl.by, cpu=None,
+                                cpu_why=ONE_CPU_WHY, created_at=decl.created_at, origin=decl.origin,
                                 own_origin=STATE.session_origin, now=st.utc_now())
 
 

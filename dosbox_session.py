@@ -16,7 +16,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from scry_core import avi, cancel, judges, presence
+from scry_core import avi, cancel, judges, log_wait, presence
 from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 from scry_core.progress import PROGRESS_EVERY_S as PROGRESS_EVERY_S
@@ -106,13 +106,11 @@ def _wait_stopped(pattern: str, arrived: int, waited_s: float,
                   at_bound: bool = False) -> Invalid:
     """The one refusal a wait gives for a machine at the debugger, found by a poll or as the bound
     ran out."""
-    when = ("the bound expired and the machine is stopped at the debugger"
-            if at_bound else "the machine is stopped at the debugger")
     return E9Stopped(
-        f"{when}, so a wait for {pattern!r} cannot end: a stopped guest writes nothing. "
-        f"{arrived} line(s) were on disk from the wait's start to this refusal, none "
-        f"matching; the emulator flushes its log in its own time, so `e9` may show more. "
-        f"Resume it rather than waiting", waited_s=waited_s, arrived=arrived)
+        log_wait.stopped_message(pattern, arrived, waited_s, parked=not at_bound,
+                                 at_bound=at_bound)
+        + ". The emulator flushes its log in its own time, so `log` may show more",
+        waited_s=waited_s, arrived=arrived)
 
 
 class E9Stopped(Invalid):

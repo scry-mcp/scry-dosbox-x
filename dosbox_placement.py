@@ -9,12 +9,12 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
 
+from scry_core import judges
 from scry_core import value_format as vf
 
 import dosbox_coff as coff
 import dosbox_declarations as dec
 import dosbox_grammar as grammar
-import dosbox_paths as paths
 import dosbox_session as ds
 import dosbox_state as st
 import dosbox_symbols as sym
@@ -307,7 +307,7 @@ def linear_of(s: sym.Symbol) -> int:
 
 def read_types(value: str) -> dict[str, str]:
     """A `types` file for `symbols_load`, by absolute path; a refusal names file and line."""
-    text = paths.read_text("types", value, "types file")
+    text = judges.read_text("types", value, "types file")
     try:
         return vf.read_types(text, value)
     except vf.FormatError as e:
