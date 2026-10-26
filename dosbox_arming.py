@@ -354,8 +354,8 @@ def attribute_stop(session: ds.Session, *, where: dict[str, str],
 
 #: A pointer watch's `moved.why` when only the CPU mode changed: the debugger compares a row in
 #: the terms of the mode that armed it.
-OTHER_MODE_ROW = ("armed again in this CPU mode: its old row was armed in the other mode, whose "
-                  "terms the debugger would have compared it in")
+OTHER_MODE_ROW = ("armed again in this CPU mode: the old row was the other mode's, and the "
+                  "debugger reads a row in the mode that armed it")
 
 
 def _follow(session: ds.Session, decl: dec.Declaration, seg: int, off: int,
