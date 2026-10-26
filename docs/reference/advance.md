@@ -101,7 +101,7 @@ Example, from a live run:
     "lines": [
       "Bochs port E9h: [+ 00000.000] PROBE . tick"
     ],
-    "mark": 31168
+    "mark": 31206
   },
   "stop_seq": 6,
   "instruction": {
@@ -219,7 +219,7 @@ Example, from a live run:
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 34468
+    "mark": 34504
   },
   "stop_seq": 7,
   "instruction": {
@@ -314,14 +314,14 @@ Example, from a live run:
 {
   "instructions": 16,
   "shape": "cs_ip",
-  "dest": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n984.trace",
+  "dest": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1204.trace",
   "seconds": 30
 }
 ```
 
 ```json
 {
-  "summary": "trace 16 cs_ip: ELAPSED, 16 executed at 1 address, at 0814:00000130, to $TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n984.trace",
+  "summary": "trace 16 cs_ip: ELAPSED, 16 executed at 1 address, at 0814:00000130, to $TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1204.trace",
   "status": "ok",
   "pc": "0814:00000130",
   "cpu_mode": "real",
@@ -348,7 +348,7 @@ Example, from a live run:
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 34909
+    "mark": 34945
   },
   "stop_seq": 8,
   "instruction": {
@@ -369,13 +369,13 @@ Example, from a live run:
   },
   "verdict": "ELAPSED",
   "trace": {
-    "path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n984.trace",
+    "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1204.trace",
     "bytes": 238,
     "shape": "cs_ip",
     "instructions": 16,
     "addresses": 1,
     "unplaced": 1,
-    "set_path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n984.trace.set.jsonl",
+    "set_path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1204.trace.set.jsonl",
     "symbols": [],
     "symbols_total": 0,
     "truncated": false,
@@ -564,7 +564,7 @@ Example, from a live run:
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 5314
+    "mark": 5352
   },
   "stop_seq": 5,
   "instruction": {
@@ -697,7 +697,7 @@ Example, from a live run:
     "pc": "F000:0000FEA5",
     "cause": "no declared code breakpoint at F000:0000FEA5: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
     "since_s": 4.0,
-    "wall_at": "2026-10-26T13:39:26+00:00"
+    "wall_at": "2026-10-26T16:02:59+00:00"
   },
   "note": "the machine was already stopped"
 }

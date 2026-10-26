@@ -34,6 +34,7 @@ METHOD_OF = {"dest": "save", "path": "load"}
 INVENTORY = frozenset({
     ("start", "cwd"), ("start", "conf"), ("start", "logfile"), ("start", "captures_dir"),
     ("start", "state_dir"), ("memdump", "dest"), ("trace", "dest"), ("snapshot", "dest"),
+    ("record", "dest"), ("audio_record", "dest"),
     ("palette", "dest"), ("screen_view", "dest"), ("capture_frame", "dest"),
     ("capture_frame", "capture_path"), ("symbols_load", "path"), ("symbols_load", "types"),
     ("comment_write", "dest"), ("comment_write", "path"), ("start", "binary"),
@@ -177,6 +178,8 @@ def _base(tool: str, tmp_path: Path) -> dict[str, Any]:
         "memdump": {"ref": "0000:0000", "length": 16, "dest": str(tmp_path / "d.bin")},
         "trace": {"instructions": 16, "dest": str(tmp_path / "t.trace")},
         "snapshot": {"dest": str(tmp_path / "s.png")},
+        "record": {"frames": 2, "dest": str(tmp_path / "r.avi")},
+        "audio_record": {"frames": 2, "dest": str(tmp_path / "a.wav")},
         "palette": {"dest": str(tmp_path / "p.png")},
         "screen_view": {"dest": str(tmp_path / "v.png")},
         "capture_frame": {"frame": 0, "dest": str(tmp_path / "f.png"),

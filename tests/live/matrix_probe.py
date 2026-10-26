@@ -156,7 +156,7 @@ _WINDOWED = ("snapshot",)
 _NEEDS_STOP = ("registers", "read_memory", "disassemble", "call_stack", "memdump", "find",
                "scan start",
                "scan filter", "scan clear", "debug", "set_register", "write", "step", "run_to",
-               "run_for", "trace",
+               "run_for", "trace", "record", "audio_record",
                "resume", "machine_map", "interrupt_vectors", "palette", "screen_view",
                "screen_signature", "screen_wait", "comment_write add", "comment_write delete",
                "comment_write load", "map_write add", "map_find")
@@ -219,6 +219,8 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         # load the state the stopped cells saved
         "state_write load": {"name": "matrix_a_stopped", "seconds": 10},
         "snapshot": {"dest": M.fresh(".png"), "seconds": 10},
+        "record": {"frames": 2, "dest": M.fresh(".avi"), "seconds": 30},
+        "audio_record": {"frames": 2, "dest": M.fresh(".wav"), "seconds": 30},
         "breakpoint_interrupt": {"number": 0x21, "ah": 0x4C},
         "symbols_load": {"path": str(FIXTURE_MAP), "base": "8000"},
         "symbols_find": {"name": FIXTURE_SYMBOL},
@@ -368,6 +370,13 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                        "state_write load: docstring, by LOADSTATE, the state the stopped cells "
                        "saved"),
         "snapshot": (lambda r: refused(r), "snapshot docstring: refused parked, windowed"),
+        "record": (lambda r: ok(r) and r.get("verdict") == "ELAPSED" and r.get("ended") is True
+                   and int(r.get("avi_frames") or 0) >= 1 and Path(str(r.get("path"))).is_file(),
+                   "record docstring: two retraces, the AVI checked and moved to `dest`"),
+        "audio_record": (lambda r: ok(r) and r.get("verdict") == "ELAPSED"
+                         and r.get("kind") == "wav" and int(r.get("samples") or 0) > 0
+                         and Path(str(r.get("path"))).is_file(),
+                         "audio_record docstring: the mixer's WAV over two retraces, checked"),
         "state_list": (lambda r: ok(r) and isinstance(r.get("states"), list),
                        "state_list docstring: needs no window"),
         "breakpoint_interrupt": (lambda r: ok(r) and r.get("ref") == "BPINT 21 AH=4C",
@@ -409,9 +418,10 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
         # list is not empty, and a session started without `capture_video` lists no video.
         "captures": (lambda r: ok(r) and isinstance(r.get("captures"), list)
                      and bool(r["captures"])
-                     and not any(c.get("kind") == "avi" for c in r["captures"])
+                     and all(c.get("avi_frames") in (1, 2) for c in r["captures"]
+                             if c.get("kind") == "avi")
                      and all({"kind", "path", "present"} <= set(c) for c in r["captures"]),
-                     "captures docstring: the files the tools wrote, and no video unrecorded"),
+                     "captures docstring: the files the tools wrote, the one video `record`'s"),
         "capture_frame": (lambda r: refused(r), "capture_frame docstring: needs capture_video"),
         "series_capture": (lambda r: refused(r, "no_channel"),
                            "series_capture docstring: needs capture_video"),
@@ -593,7 +603,7 @@ _STOPPED_ORDER = [
     "map_write add", "map_find", "map_write save", "map_write load",
     "set_register", "write", "stop",
     "step", "run_to", "run_for", "trace", "state_write save", "state_write load", "snapshot",
-                  "state_list",
+                  "record", "audio_record", "state_list",
     "breakpoint_interrupt", "symbols_load", "symbols_find", "comment_write add", "comment_list",
     "comment_write save", "comment_write load", "comment_write delete", "breakpoint_at",
                   "declaration_list breakpoint",

@@ -1,0 +1,9 @@
+What the debugger's `TAP` wrote on the tap guest (`tests/guest/tap.asm`), headless, the three taps
+put in at its `int 3` and the machine then run 20 retraces (five BIOS ticks).
+
+count-writes.rows    `TAP W` on `count` with the 4-byte block at `count`: one row per write, each
+                     by `w_inc` (0814:011D), `data` the new count, the block the count before it
+polled-reads.rows    `TAP R` on `polled`: one row per read, by `r_poll` (0814:0129), 42h in its lane
+count-and-pair.tab   `TAP C` over the 8 bytes from `count`: each write's dword, data and mask, by
+                     `w_inc` and by `w_pair` (0814:0126)
+taplist.txt          `TAPLIST`'s answer at that stop

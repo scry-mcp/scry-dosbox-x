@@ -43,6 +43,8 @@ _ARGS: dict[str, dict[str, Any]] = {
     "write": {"ref": "0100:0000", "data_hex": "00"},
     "run_to": {"ref": "0100:0000", "control": "0100:0020"},
     "run_for": {"frames": 1},
+    "record": {"frames": 2},
+    "audio_record": {"frames": 2},
     "trace": {"instructions": 1, "dest": _tmp("dosbox-x-contract-never-written.trace")},
     "screen_wait": {"text": "C:"},
     "breakpoint_interrupt": {"number": 0x21},

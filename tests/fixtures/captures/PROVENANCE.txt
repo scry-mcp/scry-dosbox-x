@@ -1,0 +1,11 @@
+The four kinds the debugger's `CAPTURE` records, from the sound guest (`tests/guest/sound.asm`),
+headless, each turned on at a stop and off at the stop `run_for` reached.
+
+two-frames.wav     the mixer over two retraces: 16-bit stereo at 48000 Hz, not silent (the
+                   guest's 1 kHz square from the PIT, and its OPL voice)
+two-frames.avi     the screen over the same two retraces, a finished ZMBV capture of two frames
+eight-frames.dro   the OPL2 over eight retraces, DRO 2.0: the register state the writer dumps
+                   at its first event (the guest's nonzero registers, by register number, the
+                   voice keyed off), then that event, B0h keyed on again at the BIOS tick
+eight-frames.mid   the MIDI bytes over the same eight retraces: middle C's note-off (a note-on of
+                   velocity 0), then its note-on a BIOS tick later

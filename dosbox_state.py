@@ -85,6 +85,9 @@ class State:
                                         "remeasure": False, "dirty": False, "drained_seq": -1}
         # A clear removes THAT row even when the name no longer resolves after a table reload.
         self.armed: dict[tuple[str, str], list[dict[str, Any]]] = {}
+        # The count and capture watches' taps this session's debugger holds, by ref
+        # (`dosbox_taps.Tap`); a tap lives as long as the emulator.
+        self.taps: dict[str, Any] = {}
         self.applied_last: dict[str, Any] = {}
         self.found_stop_last: dict[str, Any] = {}
         self.cancelled: cancel.Cancelled | None = None
@@ -229,6 +232,7 @@ class State:
         self.pending.update(arm=[], disarm=[], load=None, remeasure=False, dirty=False,
                             drained_seq=-1)
         self.armed.clear()
+        self.taps.clear()
         self.applied_last.clear()
         self.found_stop_last = {}
         self.e9_offset = 0

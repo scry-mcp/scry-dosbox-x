@@ -36,8 +36,12 @@ INTERRUPT_ROW = re.compile(r"^BPINT [0-9A-Fa-f]{2}(?: AH=[0-9A-Fa-f]{2})?$")
 PENDING_STAMP = "pending"
 # One SEG:OFF names another byte per mode.
 CPU_MODES = ("real", "protected")
-# `show` arms nothing; `change` also arms a memory-change breakpoint.
-WATCH_MODES = ("show", "change")
+# `show` arms nothing; `change` also arms a memory-change breakpoint; `count` and `capture` arm
+# the debugger's `TAP`, which records without stopping.
+WATCH_MODES = ("show", "change", "count", "capture")
+TAP_MODES = ("count", "capture")
+#: A capture's trigger is written (`w`) or read (`r`).
+TRIGGER_TYPES = ("w", "r")
 RETIRED_MODES = {"read": "show"}
 
 
@@ -103,6 +107,10 @@ class Declaration:
     conf_fingerprint: str | None = field(default=None, kw_only=True, compare=False)
     cpu_mode: str | None = field(default=None, kw_only=True, compare=False)
     text: str = field(default="", kw_only=True, compare=False)
+    #: A write capture's trigger, the place whose writes it keeps a row of the block at.
+    trigger: str | None = field(default=None, kw_only=True)
+    #: A capture's access side: `w` a write of `trigger`, `r` a read of `ref` itself.
+    trigger_type: str | None = field(default=None, kw_only=True)
 
     def __post_init__(self) -> None:
         if self.kind not in KINDS:
@@ -153,8 +161,10 @@ class Declaration:
                 raise DeclarationError(str(e)) from None
             # A sized format names its own width; every reader of `width` sees that one.
             object.__setattr__(self, "width", width)
+            self._check_tap()
         elif self.kind != "comment":  # breakpoint, interrupt
-            extras = {"width": self.width, "fmt": self.fmt, "watch_mode": self.watch_mode}
+            extras = {"width": self.width, "fmt": self.fmt, "watch_mode": self.watch_mode,
+                      "trigger": self.trigger, "trigger_type": self.trigger_type}
             set_extras = {k: v for k, v in extras.items() if v is not None}
             if set_extras:
                 raise DeclarationError(
@@ -170,6 +180,27 @@ class Declaration:
                         f"an interrupt ref is the debugger's row spelling, `BPINT NN` or "
                         f"`BPINT NN AH=NN` in hex; got {self.ref!r}")
 
+    def _check_tap(self) -> None:
+        """A count names no trigger; a write capture names one; a read capture is its own."""
+        if self.watch_mode not in TAP_MODES:
+            if self.trigger is not None or self.trigger_type is not None:
+                raise DeclarationError(f"a {self.watch_mode} watch carries no trigger")
+            return
+        if self.by not in ("symbol", "address"):
+            raise DeclarationError(f"a {self.watch_mode} watch is declared by symbol or by "
+                                   f"address: its tap sits on one place for its life; got "
+                                   f"{self.by!r}")
+        if self.watch_mode == "count":
+            if self.trigger is not None or self.trigger_type is not None:
+                raise DeclarationError("a count watch carries no trigger")
+            return
+        if self.trigger_type not in TRIGGER_TYPES:
+            raise DeclarationError(f"a capture's trigger_type is one of {TRIGGER_TYPES}; got "
+                                   f"{self.trigger_type!r}")
+        if (self.trigger is None) != (self.trigger_type == "r"):
+            raise DeclarationError("a write capture names its trigger, and a read capture is "
+                                   "of its own ref, with none")
+
     def _check_comment(self) -> None:
         """Hold a comment to the comment file's rules, so a hand-edited store cannot break them."""
         if self.by not in ("symbol", "address"):
@@ -178,7 +209,8 @@ class Declaration:
         if (":" in self.ref) != (self.by == "address"):
             raise DeclarationError(f"a comment by {self.by} cannot have the ref {self.ref!r}: "
                                    "an address carries a colon and a symbol does not")
-        extras = {"width": self.width, "fmt": self.fmt, "watch_mode": self.watch_mode}
+        extras = {"width": self.width, "fmt": self.fmt, "watch_mode": self.watch_mode,
+                  "trigger": self.trigger, "trigger_type": self.trigger_type}
         set_extras = {k: v for k, v in extras.items() if v is not None}
         if set_extras:
             raise DeclarationError(f"a comment carries no watch fields; got {set_extras}")
@@ -195,6 +227,10 @@ class Declaration:
             d["text"] = self.text
         if self.kind == "watch":
             d.update(width=self.width, fmt=self.fmt, watch_mode=self.watch_mode)
+            if self.trigger is not None:
+                d["trigger"] = self.trigger
+            if self.trigger_type is not None:
+                d["trigger_type"] = self.trigger_type
         if self.created_at is not None:
             d["created_at"] = self.created_at
         if self.origin is not None:
@@ -214,7 +250,8 @@ class Declaration:
         return Declaration(self.kind, self.by, self.ref, width=self.width, fmt=self.fmt,
                            watch_mode=self.watch_mode, created_at=created_at, origin=origin,
                            fingerprint=self.fingerprint if held else fingerprint,
-                           cpu_mode=self.cpu_mode if held else cpu_mode)
+                           cpu_mode=self.cpu_mode if held else cpu_mode,
+                           trigger=self.trigger, trigger_type=self.trigger_type)
 
     @staticmethod
     def from_dict(d: dict[str, object]) -> Declaration:
@@ -257,11 +294,14 @@ class Declaration:
         fmt = d.get("fmt")
         wm = d.get("watch_mode")
         mode = RETIRED_MODES.get(str(wm), str(wm)) if wm is not None else None
+        trigger, side = d.get("trigger"), d.get("trigger_type")
         return Declaration(kind=kind, by=by, ref=ref, width=width,
                            fmt=str(fmt) if fmt is not None else None,
                            watch_mode=mode,
                            created_at=created_at, origin=origin, fingerprint=fingerprint,
-                           cpu_mode=cpu_mode)
+                           cpu_mode=cpu_mode,
+                           trigger=str(trigger) if trigger is not None else None,
+                           trigger_type=str(side) if side is not None else None)
 
 
 Entry = tuple[str, int]

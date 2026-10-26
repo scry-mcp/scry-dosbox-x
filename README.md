@@ -30,6 +30,11 @@ driven by look, act, verify, and so is this.
 - **Stop where you mean to.** Run to a symbol and be told whether you arrived, stopped elsewhere
   or ran out of time; break on an interrupt, on the program's own `int 3`, when a variable
   changes, or when a register takes a value wherever the code is; step with every step read back; run by frames of the display or by emulated time.
+- **Record a stretch, and watch without stopping.** `record` and `audio_record` capture the
+  screen to an AVI, the sound to a WAV, the AdLib's register writes to a DRO or the MIDI bytes
+  to a file, over a number of display frames, headless, each file checked before you get it. A
+  count watch tallies every value a variable takes and who wrote it; a capture keeps a row, with
+  the beam's line and the time, for every write or read of a byte, and never stops the machine.
 - **Press its keys, move its mouse, and prove it.** `send_keys` and `send_mouse` go in inside
   the machine, so no window comes to the front and your own pointer never moves. Give `expect`
   and the reply says whether the program acted; a swallowed key is reported as a miss.
@@ -47,7 +52,8 @@ named by `DOSBOX_X_BINARY` or by `start`'s `binary`. Some tools need debugger co
 release does not carry: waiting for a stop (`run_to`, `run_for`, `trace`, `screen_wait`, a step
 over, a bounded `resume`) needs `RUNSTATE`; stepping needs `STEPIN`; the saved states need
 `SAVESTATE` and `LOADSTATE`; a register condition needs `BPIF`; a picture in a mode past 13h's
-needs `VGAMEMDUMP` ([Platforms](#platforms)). Name a build that carries them with
+needs `VGAMEMDUMP`; a recording `CAPTURE`; a count or capture watch `TAP`
+([Platforms](#platforms)). Name a build that carries them with
 `DOSBOX_X_BINARY`. A missing piece is named by the tool that needs it, never worked around.
 
 ```sh
@@ -77,7 +83,8 @@ them. Any DOSBox-X with the debugger starts a session and answers every reading 
 parks at. Waiting for a stop (`run_to`, `run_for`, `trace`, `screen_wait`, a step over, a bounded
 `resume`) needs `RUNSTATE`, which tells whether the debugger holds the machine; stepping needs
 `STEPIN`; saved states need `SAVESTATE` and `LOADSTATE`; a stop on a register condition needs
-`BPIF`; the screen in a planar, unchained or linear mode needs `VGAMEMDUMP`. A tool whose command is missing says so
+`BPIF`; the screen in a planar, unchained or linear mode needs `VGAMEMDUMP`; recording a stretch
+needs `CAPTURE`; a count or capture watch needs `TAP`. A tool whose command is missing says so
 and does nothing ([REFERENCE.md](REFERENCE.md#debugger-commands)).
 
 ## See it run

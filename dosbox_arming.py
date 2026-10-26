@@ -23,6 +23,7 @@ import dosbox_placement as placement
 import dosbox_session as ds
 import dosbox_state as st
 import dosbox_symbol_file as symbol_file
+import dosbox_taps as taps
 from dosbox_state import STATE
 
 
@@ -223,6 +224,7 @@ def evaluate_watches(session: ds.Session, *,
         held = session.breakpoints()
     places = RawPlaces(session)
     out: list[dict[str, Any]] = []
+    counts = _tap_counts(session)
     for decl in STATE.store.declarations():
         if decl.kind != "watch":
             continue
@@ -230,6 +232,9 @@ def evaluate_watches(session: ds.Session, *,
                                 "length": decl.width, "fmt": decl.fmt}
         if orphan(decl):
             item["orphan"] = True       # nobody's: from a store that kept no origin
+        if decl.watch_mode in dec.TAP_MODES:
+            out.append({**item, **_tap_item(decl, counts, at_stop=True)})
+            continue
         if _watch_waits(item, decl, places, machine):
             out.append(item)
             continue
@@ -477,6 +482,29 @@ def _rearm_condition(session: ds.Session, decl: dec.Declaration, out: dict[str, 
     out["rearmed"].append(row)
 
 
+def _rearm_tap(session: ds.Session, decl: dec.Declaration, out: dict[str, Any]) -> None:
+    """A stored count or capture tapped again where it resolves now; one already tapped where it
+    resolves stays."""
+    row = decl_row(decl)
+    held = STATE.taps.get(decl.ref)
+    waits = placement.waits(decl, RawPlaces(session).cpu)
+    if waits is not None:
+        out["unarmable"].append({**row, "why": placement.waits_why(waits, "Declare it again")})
+        return
+    try:
+        if held is not None:
+            if (held.seg, held.off) == taps.place(decl, session) and taps.installed(
+                    session, decl.ref):
+                return
+            taps.drop(session, decl.ref)
+        taps.arm(session, decl)
+    except ds.Invalid as e:
+        state = "unresolved" if e.code == "unknown_ref" else "unarmable"
+        out[state].append({**row, "why": str(e)})
+        return
+    out["rearmed"].append(row)
+
+
 def rearm_declarations(session: ds.Session) -> dict[str, Any]:
     """Re-resolve every stored declaration against the just-loaded table and arm the code ones
     that resolve and are not already held. Unresolved or ambiguous names are listed, never
@@ -489,6 +517,9 @@ def rearm_declarations(session: ds.Session) -> dict[str, Any]:
     for decl in STATE.store.declarations():
         if decl.kind == "regpoint":
             _rearm_condition(session, decl, out)
+            continue
+        if decl.kind == "watch" and decl.watch_mode in dec.TAP_MODES:
+            _rearm_tap(session, decl, out)
             continue
         if decl.kind != "breakpoint":
             continue
@@ -539,8 +570,9 @@ def arm_at_start(session: ds.Session) -> dict[str, Any]:
     The session is already installed, so a refusal is handed back as `rearm_refused`, not
     raised."""
     if STATE.store is None or not any(
-            d.kind == "regpoint" or (d.kind == "breakpoint" and d.by == "address"
-                                     and not placement.is_stale(d, _nowhere))
+            d.kind == "regpoint" or (d.kind == "watch" and d.watch_mode in dec.TAP_MODES)
+            or (d.kind == "breakpoint" and d.by == "address"
+                and not placement.is_stale(d, _nowhere))
             for d in STATE.store.declarations()):
         return {"declarations": {"rearm": _unarmed_at_start()}}
     try:
@@ -595,6 +627,9 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
                 gone = session.clear_interrupt_breakpoint(spec["num"], spec["ah"])
             elif spec["kind"] == "cond":
                 gone = session.clear_condition_breakpoint(spec["row"])
+            elif spec["kind"] == "tap":
+                gone = {"entry": spec["entry"],
+                        "removed": taps.remove(session, spec["ref"], spec["id"]) is not None}
             else:
                 row = watch_held(session.breakpoints(), spec["seg"], spec["off"])
                 if row is not None:
@@ -1279,11 +1314,14 @@ def _aliased(ref: str, places: list[tuple[int, int]]) -> str | None:
 
 
 def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
-              by: str) -> dict[str, Any]:
+              by: str, trigger: str = "", trigger_type: str = "w") -> dict[str, Any]:
     """The body of the `watch_add` tool."""
     placement.to_invalid(lambda: dec.check_watch_mode(mode))
     chosen = placement.decide_by(ref) if by == "auto" else by
     placement.address_shape(ref, chosen)
+    trig, side = checks.tap_fields(mode, trigger, trigger_type, width, fmt)
+    if side == "r":
+        width, fmt = 1, "u8"
     if chosen == "pointer":
         # The base is judged first, so a ref with no pointer to start from is refused for that and
         # not for the format.
@@ -1313,6 +1351,8 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
     except vf.FormatError as e:
         raise ds.Invalid("bad_argument", str(e)) from None
     checks.watch_width(mode, width)
+    if mode in dec.TAP_MODES:
+        return _tap_add(session, chosen, ref, mode, width, fmt, trig, side)
     places = RawPlaces(session)
     decl = declare("watch", chosen, ref,
                    cpu=places.mode_here(chosen, ref) if chosen == "address" else None,
@@ -1396,6 +1436,44 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
                     entries=entries, **sent, **caveat, **extra)
 
 
+def _tap_add(session: ds.Session, chosen: str, ref: str, mode: str, width: int, fmt: str,
+             trigger: str | None, side: str | None) -> dict[str, Any]:
+    """A count or capture watch: stored once its tap is installed, which needs the machine
+    stopped. Declared again unchanged, a tap still installed is a no-op."""
+    places = RawPlaces(session)
+    decl = declare("watch", chosen, ref,
+                   cpu=places.mode_here(chosen, ref) if chosen == "address" else None,
+                   width=width, fmt=fmt, watch_mode=mode, trigger=trigger, trigger_type=side)
+    store = current_store()
+    held = store.held_ref(ref, ("watch",))
+    stored = _stored_watch(held) if held is not None else None
+    if stored is not None and not dec.same_place(stored, decl):
+        raise ds.Invalid("bad_argument",
+                         f"{ref} is already declared as a {stored.watch_mode} watch: one ref is "
+                         "one declaration, so clear it before declaring it another way")
+    reply: dict[str, Any] = {"ref": ref, "by": chosen, "mode": mode, "fmt": fmt, "length": width,
+                             "stored": True}
+    if side is not None:
+        reply.update(trigger_type=side, **({"trigger": trigger} if trigger else {}))
+    if stored is not None and stored.ref in STATE.taps and taps.installed(session, stored.ref):
+        tap = STATE.taps[stored.ref]
+        return st.reply(**{**reply, "ref": stored.ref}, already_stored=True, armed=True,
+                        state="armed", tally_id=str(tap.id), entry=f"TAP {tap.id}")
+    if stored is not None and stored.ref in STATE.taps:
+        taps.drop(session, stored.ref)       # displaced: tapped again as the page is now
+    tap = taps.arm(session, stored or decl)
+    try:
+        already = not cast(bool, placement.to_invalid(lambda: store.add(stored or decl)))
+    except ds.Invalid:
+        taps.drop(session, (stored or decl).ref)
+        raise
+    return st.reply(**reply, already_stored=already, armed=True, state="armed",
+                    tally_id=str(tap.id), entry=f"TAP {tap.id}",
+                    addr=f"{tap.seg:04X}:{tap.off:08X}",
+                    **({"trigger_addr": f"{tap.trigger[0]:04X}:{tap.trigger[1]:08X}"}
+                       if tap.trigger else {}))
+
+
 def _unarm_moved(session: ds.Session, ref: str, covered: list[tuple[int, int]]) -> None:
     """A change watch's rows of the other mode deleted and forgotten; a row still listed refuses
     the arm, since it would be counted as this mode's."""
@@ -1414,6 +1492,23 @@ def _stored_watch(ref: str) -> dec.Declaration | None:
                 None)
 
 
+def _tap_counts(session: ds.Session) -> dict[int, dict[str, int]] | str:
+    """One `TAPLIST` for every tap of a survey, or why it could not be read."""
+    try:
+        return taps.listed(session)
+    except ds.Invalid as e:
+        return str(e)
+
+
+def _tap_item(decl: dec.Declaration, counts: dict[int, dict[str, int]] | str,
+              at_stop: bool) -> dict[str, Any]:
+    """A count or capture's own fields in a survey or a listing."""
+    if isinstance(counts, str):
+        return {"state": "unlisted", "why": counts}
+    item = taps.evaluate(decl, counts, at_stop)
+    return {**({"trigger": decl.trigger} if decl.trigger else {}), **item}
+
+
 def list_watches(session: ds.Session) -> dict[str, Any]:
     """The body of the `declaration_list(kind="watch")` tool."""
     store = current_store()
@@ -1421,11 +1516,15 @@ def list_watches(session: ds.Session) -> dict[str, Any]:
     places = RawPlaces(session)
     out: list[dict[str, Any]] = []
     mine: set[tuple[int, int]] = set()
+    counts = _tap_counts(session)
     for decl in store.declarations():
         if decl.kind != "watch":
             continue
         item: dict[str, Any] = decl_row(decl)
         item.update(mode=decl.watch_mode, length=decl.width, fmt=decl.fmt)
+        if decl.watch_mode in dec.TAP_MODES:
+            out.append({**item, **_tap_item(decl, counts, at_stop=False)})
+            continue
         res = placement.resolve_ref(decl, "DS", session, machine=machine)
         state = res["state"]
         if "pointer" in res:
@@ -1481,6 +1580,12 @@ def clear_watches(session: ds.Session, ref: str | None) -> dict[str, Any]:
     # The rows first, then the store, as in `declaration_clear(kind="breakpoint")`.
     plan: list[list[dict[str, Any]]] = []
     for decl in to_go:
+        if decl.watch_mode in dec.TAP_MODES:
+            tapped = STATE.taps.get(decl.ref)
+            plan.append([] if tapped is None else
+                        [{"kind": "tap", "ref": decl.ref, "id": tapped.id,
+                          "entry": f"TAP {tapped.id}"}])
+            continue
         rows = [] if decl.watch_mode == "show" else list(STATE.armed.get(("watch", decl.ref), []))
         if decl.watch_mode == "change" and not rows and not running:
             res = placement.resolve_ref(decl, "DS", session)
@@ -1498,6 +1603,11 @@ def clear_watches(session: ds.Session, ref: str | None) -> dict[str, Any]:
         try:
             if running:
                 raise ds.NotStopped("the guest is running")
+            if rows[0]["kind"] == "tap":
+                removed_tap = taps.remove(session, decl.ref)
+                if removed_tap is not None:
+                    disarmed.append(removed_tap)
+                continue
             # Read the list back: `disarmed` is the machine's answer, not a claim that a BPDEL must
             # have taken.
             gone, _ = delete_watch_rows(session, [(int(r["seg"]), int(r["off"])) for r in rows])

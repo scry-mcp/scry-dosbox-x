@@ -1,0 +1,38 @@
+{
+ "task": {
+  "id": "D136",
+  "prompt": "The guest is stopped. Save the MIDI bytes the program sends during the next 10 frames to a file.",
+  "tool": "audio_record",
+  "args": {
+   "frames": 10,
+   "kind": "mid"
+  },
+  "allow": [
+   "dest",
+   "seconds"
+  ],
+  "grammar": [
+   "mid"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D136: {\"tool\": \"audio_record\", \"args\": {\"frames\": 10, \"kind\": \"mid\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D136: {\"tool\": \"audio_record\", \"args\": {\"frames\": 10, \"kind\": \"mid\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D136: {\"tool\": \"audio_record\", \"args\": {\"frames\": 10, \"kind\": \"mid\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

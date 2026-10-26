@@ -206,35 +206,47 @@ Example, from a live run:
 *Declare a watch*
 
 ```text
-watch_add(ref, mode, length=0, fmt="auto", by="auto")
+watch_add(ref, mode, length=0, fmt="auto", by="auto", trigger="", trigger_type="w")
 ```
 
 Declare a watch by symbol, `SEG:OFF` or through a pointer, read as `fmt`. Persists and
 re-resolves on `symbols_load`.
 
-`mode`: `show` (read at each stop) or `change` (stops when the bytes change). `ref`: a
-symbol, `SEG:OFF`, or `[base]+0x28`, `base->field`. `fmt`: a scalar (`u8` .. `f64`), an
-array (`u16[8]`), a string (`char[16]`) or a struct (`{x:i16,y:i16}`). `length`: total
-bytes; at most 128 for show, 16 for change (a debugger row per byte,
-`entries`).
+`mode`: `show` (read at each stop), `change` (stops when the bytes change), `count` (tallies
+every write and its writer), `capture` (a row per access of `trigger`, with the beam line
+and the time); count and capture never stop the machine. `ref`: a symbol, `SEG:OFF`, or
+`[base]+0x28`, `base->field`. `fmt`: a scalar (`u8` .. `f64`), an array (`u16[8]`), a string
+(`char[16]`) or a struct (`{x:i16,y:i16}`). `length`: total bytes; at most 128 for
+show, 16 for change (a debugger row per byte, `entries`), 1024
+for count, 128 for capture. `trigger`, `trigger_type`: capture only; a capture
+of reads (`r`) is of `ref` itself, with no `trigger`, `length` or `fmt`. A count or capture
+is declared at a stop, by symbol or `SEG:OFF`, on a build whose debugger has `TAP`; from
+then on it records while the guest runs.
 
-Refused: one ref as both modes; a length over the ceiling; a pointer base the table lacks.
+Refused: one ref declared two ways; a length over the ceiling; a pointer base the table
+lacks; a count or capture through a pointer, on a running machine or with no `TAP`; a write
+capture with no `trigger`; `trigger` or `trigger_type` on another mode.
 
-Reply: `ref`, `stored`, `already_stored`, `state` (`evaluated`, `unresolved`, `unarmable`,
-`null_pointer`, `pending`), `armed`, `pointer`, `entry`, `caveat`.
+Reply: `ref`, `by`, `mode`, `fmt`, `length`, `stored`, `already_stored`, `state`
+(`evaluated`, `unresolved`, `unarmable`, `null_pointer`, `pending`, `armed`), `armed`,
+`pointer`, `entry`, `caveat`; a count or capture's `tally_id`, `addr`, `trigger`,
+`trigger_addr`, `trigger_type`; its account is `declaration_list`'s.
 
 Reference: REFERENCE.md, Declarations.
 
 | argument | type | default |
 |---|---|---|
 | `ref` | string | required |
-| `mode` | one of `"show"`, `"change"` | required |
+| `mode` | one of `"show"`, `"change"`, `"count"`, `"capture"` | required |
 | `length` | integer | `0` |
 | `fmt` | string | `"auto"` |
 | `by` | one of `"auto"`, `"symbol"`, `"address"`, `"pointer"` | `"auto"` |
+| `trigger` | string | `""` |
+| `trigger_type` | one of `"w"`, `"r"` | `"w"` |
 
 | reply field | type |
 |---|---|
+| `addr` | string |
 | `already_stored` | boolean |
 | `armed` | boolean |
 | `by` | string |
@@ -250,6 +262,10 @@ Reference: REFERENCE.md, Declarations.
 | `ref` | string |
 | `state` | string |
 | `stored` | boolean |
+| `tally_id` | string |
+| `trigger` | string |
+| `trigger_addr` | string |
+| `trigger_type` | string |
 | `why` | string |
 
 Example, from a live run:
@@ -278,9 +294,10 @@ Example, from a live run:
 ```
 <!-- scry-reference:end watch_add -->
 
-**A watch has two halves, and one ref may not be both.** A show watch arms NOTHING: it is a plain
-read at every stop (a NaN or infinite `f32`/`f64` is the text `nan`, `inf` or `-inf`, which JSON
-has no number for), and a region is `memdump`'s job. A change watch is read at every stop too.
+**A watch has four modes, and one ref is one declaration.** A show watch arms NOTHING: it is a
+plain read at every stop (a NaN or infinite `f32`/`f64` is the text `nan`, `inf` or `-inf`, which
+JSON has no number for), and a region is `memdump`'s job. A change watch is read at every stop
+too. Count and capture never stop the machine; each is a tap the debugger's `TAP` puts in.
 
 **A change watch breaks when memory changes**, the thing most likely to be misread: a read never
 fires it, nor does a write storing the value already there. The debugger's memory breakpoint
@@ -313,6 +330,49 @@ in this one at the same place, `moved`'s `why` saying so. A null pointer is `nul
 watch at zero.
 
 A pointer base is read as a near pointer at its type's width, else four bytes in protected mode and two in real; a pointer base the table lacks is most likely a stack local. A change watch is trusted in real mode, while under a DJGPP program's paging the reply says its firing is not to be trusted (`caveat`); `command` is the debugger command sent for it. With no `fmt` a typed symbol reads as its type, else the widest unsigned scalar `length` divides; a sized format needs no `length`, which otherwise is a whole number of `fmt` values. `pending` is stored now, armed at the next stop, said in `applied_on_stop`. A change watch moves with its pointer and a null pointer is `null_pointer`, never a watch at zero.
+
+**Count and capture: every access, without a stop.** A change watch stops at the first write, and
+sees only a write that changes a byte; a census of the values a variable takes over a pass, or the
+block as it stood at each write of one byte, needs every access. `TAP` wraps the handler of the
+physical page holding the place and keeps that page's host pointer out of the TLB for the side it
+taps, so every guest access of that side reaches the wrapper, a write storing the value already
+there included; the debugger's own reads and writes go past it unrecorded. A count tallies each
+dword an access touches in its range, by its data and lanes and by writer, so `total` counts a
+write that straddles two dwords twice; a capture of writes keeps one row per write of
+`trigger` with the block at `ref` as it stood BEFORE the write landed (the write's own value is the
+row's `data`); a capture of reads (`trigger_type="r"`) keeps one row per read of `ref` and no
+block. Rows past the cap are counted in `overflow_rows`, values and writers past theirs in
+`overflow_values` and `overflow_pcs`, so a cut table says so.
+
+**A row is the access as a 386 put it on its bus**: `data` and `mask` are the lanes of the dword
+holding the trigger, little-endian, so a word written over the trigger and its neighbour shows both
+lanes and the byte it covered. `pc` is the instruction that made the access, `SSSS:OOOOOOOO`, with
+`symbol` when a table places it. `time_s` is the emulated clock, `line` the beam's line computed as
+the light pen latches it, and `frame` is unavailable: DOS keeps no frame counter, as `run_for`
+says, and `line` is unavailable before the display has timed its first frame. A read capture
+on code also sees the instruction fetches of that byte.
+
+**What a survey and a listing say.** Each count or capture carries `tally_id` (the debugger's
+tap), `addr`, `trigger_addr` and `trigger_type` where it has them, `installed`, `state`
+(`tallied` or `captured`; `displaced`; `unlisted` when `TAPLIST` did not list it; `unarmed` when
+this session holds no tap for it) and `total`. A stop's survey adds `since_last_stop` (with
+`reset` when the total fell) and never the rows or the tables, which would drown every reply.
+`declaration_list` adds a count's `values` (each `at`, `raw_hex`, `count`, and `value` when one
+access covered the range whole, else `partial`), `values_total`, `writers` (`pc`, `count`,
+`symbol`) and `writers_total`, and a capture's `rows_path`, `rows_kept`, `rows_max` and
+`first_rows` (each `n`, `frame`, `line`, `time_s`, `pc`, `data`, `mask`, and a write capture's
+`raw_hex` and `block`, decoded in `fmt`).
+
+**A tap goes in at a stop.** It replaces a page handler, which the debugger does between
+instructions, so a count or capture declared on a running machine is refused `not_stopped`, and
+one is armed again at `start` and after `symbols_load` where its ref resolves. Something that
+replaces the page's handler afterwards (a video mode set remaps video memory) displaces the tap:
+it lists `displaced` and sees nothing more. A dynamic core, which runs code pages through handlers
+of its own, is refused when the tap goes in (a conf whose core is `auto` can switch to it later,
+in protected mode, and a tap then may miss accesses); the HMA is refused because its alias follows the A20 gate, and a range that
+paging splits across non-adjacent pages is refused. Every stop with a tap declared costs one
+`TAPLIST`, which flushes the rows and rewrites the tables; `since_last_stop` counts what came since
+the previous stop, and a list between stops consumes nothing.
 
 <!-- scry-reference:begin declaration_list -->
 ## `declaration_list`
@@ -365,8 +425,8 @@ Example, from a live run:
         "available": false,
         "why": "a DOS machine has one cpu, and every row acts on it"
       },
-      "created_at": "2026-10-26T13:39:35+00:00",
-      "origin": "2026-10-26T13:39:24+00:00#25537.1",
+      "created_at": "2026-10-26T16:03:10+00:00",
+      "origin": "2026-10-26T16:02:57+00:00#76251.1",
       "inherited": false,
       "age_s": 0,
       "entry": "BP 0000:0002",

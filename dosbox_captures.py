@@ -8,6 +8,7 @@ from typing import Any
 
 from scry_core import judges
 
+import dosbox_capture_files as capture_files
 import dosbox_frames as frames
 import dosbox_session as ds
 import dosbox_state as st
@@ -17,6 +18,8 @@ from dosbox_state import STATE
 WRITERS: dict[str, Callable[[dict[str, Any]], object]] = {
     **{tool: (lambda r: r.get("path")) for tool in (
         "capture_frame", "snapshot", "memdump", "machine_map", "perform_export")},
+    # A recording with no file answers `path` unavailable, which is not a string.
+    **{tool: (lambda r: r.get("path")) for tool in ("record", "audio_record")},
     # Only `save` writes; `load` answers the `path` it read.
     "comment_write": lambda r: r.get("path") if "dropped_total" in r else None,
     "map_write": lambda r: r.get("path") if "promoted" in r else None,
@@ -26,6 +29,8 @@ WRITERS: dict[str, Callable[[dict[str, Any]], object]] = {
     "trace": lambda r: (r.get("trace") or {}).get("path"),
 }
 SERIES = "series"
+#: Their `kind` is the reply's, whatever `dest` is called.
+RECORDINGS = ("record", "audio_record")
 
 
 def note_written(tool: str, reply: dict[str, Any]) -> None:
@@ -36,20 +41,29 @@ def note_written(tool: str, reply: dict[str, Any]) -> None:
     path = where(reply)
     if not isinstance(path, str) or not path:
         return
-    kind = SERIES if tool == "series_capture" else Path(path).suffix.lstrip(".") or "file"
+    kind = (SERIES if tool == "series_capture" else str(reply["kind"]) if tool in RECORDINGS
+            else Path(path).suffix.lstrip(".") or "file")
     if (kind, path) not in STATE.written:
         STATE.written.append((kind, path))
 
 
 def _row(kind: str, path: Path) -> dict[str, Any]:
-    """One written file as `captures` lists it: present or not, and its size."""
+    """One written file as `captures` lists it: present or not, its size, and for a recording
+    whether its writer finished it and what it holds, re-read now."""
     try:
         size = path.stat().st_size if path.is_file() else None
     except FileNotFoundError:
         size = None
     if size is None:
         return {"kind": kind, "path": str(path), "present": False}
-    return {"kind": kind, "path": str(path), "present": True, "bytes": size}
+    row: dict[str, Any] = {"kind": kind, "path": str(path), "present": True, "bytes": size}
+    if kind == "avi":
+        try:
+            facts = ds.avi_facts(path.read_bytes())
+        except OSError:
+            return row
+        return {**row, **{k: v for k, v in facts.items() if k != "bytes"}}
+    return {**row, **capture_files.facts(kind, path)}
 
 
 def captures(session: ds.Session) -> dict[str, Any]:

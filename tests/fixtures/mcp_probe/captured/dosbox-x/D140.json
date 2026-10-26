@@ -1,0 +1,28 @@
+{
+ "task": {
+  "id": "D140",
+  "prompt": "Record the next 20 frames of sound as a multi-track AVI, one audio track per mixer channel.",
+  "expect": "CANNOT",
+  "about": "audio_record"
+ },
+ "runs": [
+  {
+   "lines": [
+    "D140: CANNOT audio_record captures one file of WAV, DRO or MIDI per run, and no tool writes a multi-track AVI with one audio track per mixer channel."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D140: CANNOT audio_record writes one file per kind (WAV, DRO or MIDI) and has no multi-track AVI with one audio track per mixer channel."
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D140: CANNOT audio_record writes one file per kind (WAV, DRO or MIDI) and has no multi-track AVI with one audio track per mixer channel."
+   ],
+   "right": true
+  }
+ ]
+}

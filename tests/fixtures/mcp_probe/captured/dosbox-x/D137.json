@@ -1,0 +1,39 @@
+{
+ "task": {
+  "id": "D137",
+  "prompt": "Without ever stopping the machine for it, count every value written into the 2-byte variable _score, and which instructions wrote them.",
+  "tool": "watch_add",
+  "args": {
+   "ref": "_score",
+   "mode": "count"
+  },
+  "allow": [
+   "length",
+   "fmt",
+   "by"
+  ],
+  "grammar": [
+   "count"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"length\": 2}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"length\": 2}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D137: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_score\", \"mode\": \"count\", \"length\": 2, \"fmt\": \"u16\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

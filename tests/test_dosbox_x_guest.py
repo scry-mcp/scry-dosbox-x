@@ -23,7 +23,7 @@ LIVE = Path(__file__).resolve().parent / "live"
 ASM = GUEST / "probe.asm"
 COM = GUEST / "probe.com"
 GUESTS = {"probe": 144, "screen": 212, "code": 195, "mouse": 397, "v86": 1328, "hook1c": 76,
-          "planes": 761}
+          "planes": 761, "sound": 221, "tap": 78}
 
 
 def _declared_strings(asm: Path = ASM) -> list[bytes]:
@@ -185,3 +185,17 @@ def test_the_live_interlock_is_declared_in_the_package() -> None:
         "this package does not deselect the live tier by itself, so a clone runs an emulator "
         "per case")
     assert any(m.startswith("live:") for m in section.get("markers", [])), section
+
+
+#: The tap guest's places the tap tests name, each with the instruction the listing puts there.
+TAP_PLACES = {0x11D: bytes.fromhex("FE063801"), 0x126: bytes.fromhex("A33C01"),
+              0x129: bytes.fromhex("A03E01"), 0x138: bytes.fromhex("00A55AC3")}
+
+
+def test_the_tap_guests_places_are_where_its_tests_say() -> None:
+    """`w_inc`, `w_pair`, `r_poll` and `count` at the offsets the tap tests and fixtures name."""
+    blob = (GUEST / "tap.com").read_bytes()
+    moved = {f"{at:04X}": blob[at - 0x100:at - 0x100 + len(want)].hex()
+             for at, want in TAP_PLACES.items() if blob[at - 0x100:].startswith(want) is False}
+    assert not moved, f"tap.com moved its places: {moved}; the tests and fixtures name the old ones"
+

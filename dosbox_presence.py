@@ -19,7 +19,8 @@ import dosbox_debugger as dbg
 #: `snapshot` is still: its capture trigger changes nothing the guest reads.
 DRIVING_TOOLS = frozenset({
     "resume", "stop", "step", "run_to", "run_for", "trace", "screen_wait", "send_keys",
-    "send_mouse", "drive", "perform", "state_write", "debug", "write", "set_register"})
+    "send_mouse", "drive", "perform", "state_write", "debug", "write", "set_register", "record",
+    "audio_record"})
 STILL_TOOLS = frozenset({
     "breakpoint_at", "breakpoint_interrupt", "build_check", "call_stack", "capture_frame",
     "captures", "close", "comment_list", "comment_write", "declaration_clear",

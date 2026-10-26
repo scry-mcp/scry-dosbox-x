@@ -20,6 +20,7 @@ from scry_core import sequence_account as account
 from scry_core import value_format as vf
 from scry_core import vocabulary as vocab
 
+import dosbox_capture_files as capture_files
 import dosbox_code as code
 import dosbox_comment_file as cf
 import dosbox_dac as vgadac
@@ -137,6 +138,8 @@ def read_length(length: int) -> None:
 
 # A change watch arms one debugger row per byte, each checked at every guest instruction.
 CHANGE_WATCH_MAX = 16
+#: The debugger's `TAP` bounds: a count's range, a capture's block.
+TAP_MAX = {"count": 1024, "capture": 128}
 
 
 def watch_width(mode: str, width: int) -> None:
@@ -146,6 +149,12 @@ def watch_width(mode: str, width: int) -> None:
             f"a show watch reads up to {grammar.READ_BYTES_MAX} bytes at a stop (what one read "
             f"takes); {width} is a region, and it would be stored only to report "
             f"'unreadable' at every stop. Use memdump for a region, or a smaller length")
+    if mode in TAP_MAX and width > TAP_MAX[mode]:
+        raise ds.Invalid("bad_argument",
+            f"a {mode} watch is at most {TAP_MAX[mode]} bytes"
+            + (": each row holds the whole block" if mode == "capture" else
+               ": the debugger's tap takes no longer range")
+            + f"; {width} is a region for memdump")
     if mode == "change" and width > CHANGE_WATCH_MAX:
         raise ds.Invalid("bad_argument",
             f"a change watch is at most {CHANGE_WATCH_MAX} bytes: it arms one debugger row "
@@ -245,6 +254,22 @@ def _run_for(milliseconds: int = 0, frames: int = 0, seconds: float = 30.0,
     vocab.check_wait(seconds)
 
 
+def _record(frames: int, dest: str = "", seconds: float = 60.0, **_: Any) -> None:
+    if _count("frames", frames) < 1:
+        raise ds.Invalid("bad_argument", f"frames={frames!r} is not a whole number of one or "
+                         "more: the retraces the capture is on for")
+    optional_path("dest", dest)
+    vocab.check_wait(seconds)
+
+
+def _audio_record(frames: int, dest: str = "", seconds: float = 60.0, kind: str = "wav",
+                  **_: Any) -> None:
+    if kind not in capture_files.AUDIO_KINDS:
+        raise ds.Invalid("bad_argument",
+                         f"kind={kind!r} is one of {', '.join(capture_files.AUDIO_KINDS)}")
+    _record(frames, dest, seconds)
+
+
 def _breakpoint_at(ref: str, by: str = "auto", **_: Any) -> None:
     by_choice(by, BREAKPOINT_BY)
     declared("breakpoint", ref, by)
@@ -263,12 +288,47 @@ def _interrupt_vectors(number: int | None = None, **_: Any) -> None:
         ds.check_interrupt(number, None)
 
 
+def tap_fields(mode: str, trigger: str, trigger_type: str, length: int, fmt: str
+               ) -> tuple[str | None, str | None]:
+    """A watch's `trigger` and `trigger_type` as stored: a capture's own, nothing on the others,
+    which are refused one given. A read capture keeps the access alone: no length or fmt."""
+    vocab.one_of("trigger_type", trigger_type, dec.TRIGGER_TYPES)
+    if mode != "capture":
+        if trigger or trigger_type != "w":
+            raise ds.Invalid("bad_argument", f"trigger and trigger_type are a capture watch's; "
+                             f"a {mode} watch takes neither")
+        return None, None
+    if trigger_type == "r":
+        if trigger or length or fmt != "auto":
+            raise ds.Invalid("bad_argument",
+                             "a capture of reads keeps each read of `ref` itself, with no block: "
+                             "no trigger, length or fmt")
+        return None, "r"
+    if not trigger:
+        raise ds.Invalid("bad_argument", "a capture of writes names its trigger: each write of "
+                         "`trigger` keeps a row holding the block at `ref`")
+    by = placement.decide_by(trigger)
+    if by == "pointer":
+        raise ds.Invalid("bad_argument", f"trigger={trigger!r} goes through a pointer, and a tap "
+                         "sits on one place for its life: name a symbol or a SEG:OFF")
+    return dec.canonical_ref(trigger, by), "w"
+
+
 def _watch_add(ref: str, mode: str, length: int = 0, fmt: str = "auto", by: str = "auto",
-               **_: Any) -> None:
+               trigger: str = "", trigger_type: str = "w", **_: Any) -> None:
     placement.to_invalid(lambda: dec.check_watch_mode(mode))
     by_choice(by, WATCH_BY)
     chosen = declared("watch", ref, by)
     _count("length", length)
+    trig, side = tap_fields(mode, trigger, trigger_type, length, fmt)
+    if mode in dec.TAP_MODES:
+        placement.to_invalid(lambda: dec.Declaration("watch", chosen, ref, width=1, fmt="u8",
+                                                     watch_mode=mode, trigger=trig,
+                                                     trigger_type=side))
+        if trig is not None:
+            declared("watch", trig, "auto")
+        if side == "r":
+            return
     if fmt == "auto":
         # A raw address has no table entry to take a size from.
         if chosen == "address" and length == 0:
@@ -280,7 +340,8 @@ def _watch_add(ref: str, mode: str, length: int = 0, fmt: str = "auto", by: str 
         watch_width(mode, length)
         return
     placement.to_invalid(lambda: dec.Declaration("watch", "address", "0000:0000",
-                                                 width=length, fmt=fmt, watch_mode=mode))
+                                                 width=length, fmt=fmt, watch_mode=mode,
+                                                 trigger=trig, trigger_type=side))
     watch_width(mode, vf.parse(fmt).width_for(length))
 
 
@@ -533,6 +594,7 @@ BY_OP: dict[str, Check] = {
     "send_keys": _send_keys, "send_mouse": _send_mouse,
     "log": _log, "log_wait": _log_wait,
     "resume": _resume, "step": _step, "run_to": _run_to, "run_for": _run_for,
+    "record": _record, "audio_record": _audio_record,
     "trace": _trace,
     "breakpoint_at": _breakpoint_at, "breakpoint_interrupt": _breakpoint_interrupt,
     "regpoint_add": _regpoint_add,

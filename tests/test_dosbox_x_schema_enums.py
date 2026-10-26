@@ -16,6 +16,7 @@ from scry_core import placement as window
 from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Invalid
 
+import dosbox_capture_files as capture_files
 import dosbox_checks as checks
 import dosbox_code as code
 import dosbox_dac as vgadac
@@ -39,6 +40,7 @@ CLOSED: list[tuple[str, str, tuple[Any, ...]]] = [
     ("step", "mode", stepping.STEP_MODES), ("trace", "shape", tracing.SHAPE_WORDS),
     ("breakpoint_at", "by", checks.BREAKPOINT_BY), ("watch_add", "by", checks.WATCH_BY),
     ("watch_add", "mode", dec.WATCH_MODES),
+    ("watch_add", "trigger_type", dec.TRIGGER_TYPES),
     ("send_mouse", "button", ("", *inputs.BUTTON_WORDS)),
     ("send_mouse", "action", inputs.ACTIONS), ("send_mouse", "units", inputs.UNITS),
     ("machine_map", "sections", machine.SECTION_NAMES),
@@ -48,6 +50,7 @@ CLOSED: list[tuple[str, str, tuple[Any, ...]]] = [
     ("comment_write", "method", tuple(folds.COMMENT)), ("map_write", "method", tuple(folds.MAP)),
     ("scan", "method", tuple(folds.SCAN)), ("state_write", "method", tuple(folds.STATE_METHODS)),
     ("image_compare", "method", tuple(media_tools.IMAGE_METHODS)),
+    ("audio_record", "kind", tuple(capture_files.AUDIO_KINDS)),
 ]
 #: The two taken in any case: a pattern of their words, never an `enum` that would refuse one.
 FOLDED: list[tuple[str, str, tuple[str, ...]]] = [

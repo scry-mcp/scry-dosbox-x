@@ -34,11 +34,19 @@ HEAVY_DEBUG_MARK = b"LOGS/LOGL/LOGC [num]"
 # Compiled only with `C_DEBUG`; `-helpdebug` would list `-break-start` regardless.
 DEBUGGER_MARK = b"Debugger command not recognized"
 #: Commands a build may lack, found as the parser's NUL-bounded literals, not the help text's.
-COMMANDS = ("RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMDUMP", "BPIF")
+COMMANDS = ("RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMDUMP", "BPIF",
+            "CAPTURE", "TAP")
+#: Bare names a release also carries for something else: found by their usage line.
+USAGE_MARKS = {name: b"\0DEBUG: " + name.encode() + b" usage: " for name in ("CAPTURE", "TAP")}
 #: The debugger with no screen, which needs no terminal or console.
 HEADLESS_MARK = b"\0debugger headless\0"
-MARKS = (HEAVY_DEBUG_MARK, DEBUGGER_MARK, HEADLESS_MARK,
-         *(b"\0" + name.encode() + b"\0" for name in COMMANDS))
+
+
+def command_mark(name: str) -> bytes:
+    return USAGE_MARKS.get(name, b"\0" + name.encode() + b"\0")
+
+
+MARKS = (HEAVY_DEBUG_MARK, DEBUGGER_MARK, HEADLESS_MARK, *(command_mark(n) for n in COMMANDS))
 
 
 _marks_seen: dict[tuple[str, int, int], frozenset[bytes]] = {}
@@ -74,4 +82,4 @@ def debugger_headless(binary: str) -> bool:
 def debugger_commands(binary: str) -> list[str]:
     """Which of `COMMANDS` the build's debugger parses, in `COMMANDS`' order."""
     return [name for name in COMMANDS
-            if _carries(binary, b"\0" + name.encode() + b"\0", f"the `{name}` command")]
+            if _carries(binary, command_mark(name), f"the `{name}` command")]

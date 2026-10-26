@@ -18,6 +18,7 @@ from scry_core import (
 from scry_core import vocabulary as vocab
 
 import dosbox_binary as binary
+import dosbox_capture_files as capture_files
 import dosbox_checks as checks
 import dosbox_grammar as grammar
 import dosbox_inputs as inputs
@@ -38,12 +39,15 @@ DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES
               **core_comments.DOC_VALUES,
               **recording.DOC_VALUES,
               "STOP_FIELDS": STOP_FIELDS,
+              "SPAN_TICKS": str(capture_files.SPAN_TICKS),
               "RECORD_MAX": str(sequence.RECORD_MAX),
               **log_marks.DOC_VALUES,
               "LOG_LIMIT_MAX": str(logs.LOG_LIMIT_MAX), "WAIT_MAX_S": f"{vocab.WAIT_MAX_S:g}",
               "READ_MAX": str(grammar.READ_BYTES_MAX),
               "DEBUGGER_COMMANDS": ", ".join(f"`{c}`" for c in binary.COMMANDS),
               "CHANGE_WATCH_MAX": str(checks.CHANGE_WATCH_MAX),
+              "TAP_COUNT_MAX": str(checks.TAP_MAX["count"]),
+              "TAP_BLOCK_MAX": str(checks.TAP_MAX["capture"]),
               "INSTRUCTIONS_MAX": str(trace.INSTRUCTIONS_MAX),
               "SYMBOLS_LIMIT_MAX": str(placement.SYMBOLS_LIMIT_MAX),
               "EXPECT_WAIT_S": f"{inputs.DRIVE_EXPECT_WAIT_S:g}",

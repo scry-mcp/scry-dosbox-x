@@ -4,7 +4,8 @@ models, replayed in order on a machine set to the capture's own stop, comes back
 from __future__ import annotations
 
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+from typing import cast
 
 import pytest
 from channel_double import FIXTURES, PROTECTED_STOP, REAL_STOP, Machine, protected
@@ -81,3 +82,31 @@ def test_the_stepped_landing_is_the_line_stepin_printed(tmp_path: Path) -> None:
     said = next(e["lines"] for e in doc["exchanges"] if e["request"] == "EXEC STEPIN")
     machine = Machine(steps=[{"EIP": 0x105, "EAX": 0x1234, "ECX": 0xFF, "EBX": 0}])
     assert machine.request("EXEC STEPIN")[1] == said
+
+
+def _capture_exchanges() -> list[tuple[str, list[str]]]:
+    """`tests/fixtures/captures/capture-lines.txt`: each request (`## ...`) and what it printed."""
+    out: list[tuple[str, list[str]]] = []
+    for line in (FIXTURES.parent / "captures" / "capture-lines.txt").read_text().splitlines():
+        if line.startswith("## "):
+            out.append((line[3:], []))
+        elif out and not line.startswith("#"):
+            out[-1][1].append(line)
+    return out
+
+
+def test_capture_answers_as_the_debugger_did() -> None:
+    said = dict(_capture_exchanges())
+    machine = Machine(cwd=Path("/"))
+    assert machine.request("EXEC CAPTURE")[1] == said["CAPTURE"]
+    assert machine.request("EXEC CAPTURE OPL ON")[1] == said["CAPTURE OPL ON"]
+    assert machine.request("EXEC CAPTURE WAV ON")[1] == said["CAPTURE WAV ON"]
+    # The capture was made on a POSIX host, whose separators any host's double must print.
+    machine.capturing.update(WAV=cast(Path, PurePosixPath("/captures/sound_000.wav")),
+                             VIDEO=cast(Path, PurePosixPath("/captures/sound_000.avi")))
+    del machine.capturing["OPL"]
+    assert machine.request("EXEC CAPTURE")[1] == said["CAPTURE (while recording)"]
+    assert machine.request("EXEC CAPTURE WAV OFF")[1] == said["CAPTURE WAV OFF"]
+    machine.request("EXEC CAPTURE MIDI ON")
+    assert machine.request("EXEC CAPTURE MIDI OFF")[1] == said[
+        "CAPTURE MIDI OFF (no data arrived)"]

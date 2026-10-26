@@ -32,6 +32,7 @@ from test_dosbox_x_live import (  # noqa: E402
 import dosbox_grammar as grammar
 import dosbox_logs as dlogs
 import dosbox_machine as machine
+import dosbox_mcp
 import dosbox_process as dprocess
 import dosbox_session as ds
 import dosbox_state as dstate
@@ -84,16 +85,7 @@ def test_build_check_answers_about_this_build_and_names_the_whole_surface() -> N
     assert reply["status"] == "ok", reply
     assert reply["debugger"] is True
     assert Path(str(reply["binary"])).is_file()
-    assert set(reply["tools"]) == {
-        "start", "status", "close", "log", "log_wait", "debug", "registers", "set_register",
-        "write", "read_memory", "disassemble", "call_stack", "memdump", "find", "scan",
-        "machine_map", "interrupt_vectors", "palette", "screen_view", "screen_signature",
-        "screen_wait", "breakpoint_interrupt", "stop", "resume", "step", "run_to", "run_for",
-        "trace", "breakpoint_at", "watch_add", "declaration_list", "declaration_clear",
-        "state_write", "state_list", "snapshot", "captures", "capture_frame", "build_check",
-        "symbols_load", "symbols_find", "send_keys", "send_mouse", "perform", "perform_export",
-        "drive", "comment_list", "comment_write", "series_capture", "image_compare", "map_find",
-        "map_write"}
+    assert set(reply["tools"]) == set(dosbox_mcp.registered_tools())
     assert reply["session"] == {"alive": False, "running": False, "altered": False}
 
 

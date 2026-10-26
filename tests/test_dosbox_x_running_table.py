@@ -173,6 +173,7 @@ def _args(tmp_path: Path) -> dict[str, dict[str, Any]]:
         "debug": {"command": "R"}, "set_register": {"name": "ax", "value": 1},
         "write": {"ref": "0000:0400", "data_hex": "41"}, "resume": {}, "stop": {}, "step": {},
         "run_to": {"ref": "0000:0400", "control": "0000:0500"}, "run_for": {"frames": 1},
+        "record": {"frames": 2}, "audio_record": {"frames": 2},
         "trace": {"instructions": 1, "dest": str(tmp_path / "t.log")}, "screen_wait": {"text": "A"},
         "state_write save": {"name": "boot"}, "state_write load": {"name": "boot"}, "snapshot": {},
         "state_list": {}, "breakpoint_interrupt": {"number": 0x21},

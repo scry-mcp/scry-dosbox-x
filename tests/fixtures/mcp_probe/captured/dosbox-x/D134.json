@@ -1,0 +1,37 @@
+{
+ "task": {
+  "id": "D134",
+  "prompt": "The guest is stopped. Record what it sounds like over the next 20 frames to a WAV file.",
+  "tool": "audio_record",
+  "args": {
+   "frames": 20
+  },
+  "allow": [
+   "dest",
+   "seconds"
+  ],
+  "grammar": [
+   "wav"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D134: {\"tool\": \"audio_record\", \"args\": {\"frames\": 20, \"kind\": \"wav\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D134: {\"tool\": \"audio_record\", \"args\": {\"frames\": 20, \"kind\": \"wav\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D134: {\"tool\": \"audio_record\", \"args\": {\"frames\": 20, \"kind\": \"wav\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

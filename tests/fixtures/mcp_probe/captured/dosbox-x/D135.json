@@ -1,0 +1,38 @@
+{
+ "task": {
+  "id": "D135",
+  "prompt": "The guest is stopped. Keep the raw AdLib (OPL) register writes it makes over the next 70 frames in a file.",
+  "tool": "audio_record",
+  "args": {
+   "frames": 70,
+   "kind": "dro"
+  },
+  "allow": [
+   "dest",
+   "seconds"
+  ],
+  "grammar": [
+   "dro"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D135: {\"tool\": \"audio_record\", \"args\": {\"frames\": 70, \"kind\": \"dro\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D135: {\"tool\": \"audio_record\", \"args\": {\"frames\": 70, \"kind\": \"dro\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D135: {\"tool\": \"audio_record\", \"args\": {\"frames\": 70, \"kind\": \"dro\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

@@ -107,6 +107,7 @@ from scry_core.progress import bridge  # noqa: E402
 import dosbox_advance as advance  # noqa: E402
 import dosbox_arming as arming  # noqa: E402
 import dosbox_binary as binaries  # noqa: E402
+import dosbox_capture_files as capture_files  # noqa: E402
 import dosbox_captures as caps  # noqa: E402
 import dosbox_checks as checks  # noqa: E402
 import dosbox_code as code  # noqa: E402
@@ -128,6 +129,7 @@ import dosbox_paths as paths  # noqa: E402
 import dosbox_placement as placement
 import dosbox_presence as dpresence  # noqa: E402
 import dosbox_process as dprocess
+import dosbox_recordings as recordings  # noqa: E402
 import dosbox_regpoints as regpoints  # noqa: E402
 import dosbox_replies  # noqa: E402
 import dosbox_retrace as retrace  # noqa: E402
@@ -695,6 +697,64 @@ def snapshot(dest: str = "", seconds: Annotated[float, vocab.WAIT_BOUNDS] = ds.S
                                       bridge(ctx)))
 
 
+@tool("Record frames to an AVI", summary=one_line.record, on_cancel="stop")
+def record(frames: int, dest: str = "", seconds: Annotated[float, vocab.WAIT_BOUNDS] = 60.0,
+           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
+    """Record exactly `frames` retraces of the screen to an AVI, then stop. Needs the machine
+    STOPPED and a build whose debugger has `CAPTURE`; headless or windowed.
+
+    `dest`: an absolute path not there yet; empty leaves the file where the emulator wrote it.
+    The AVI is checked before its path is given; zero frames is INVALID.
+
+    One frame is written per retrace, but none for the first from the stop `start` leaves. A run
+    cut short (`verdict` `TIMEOUT`, `OTHER_STOP`) is checked for what it holds. A capture that
+    could not be turned off is `ended: false`, no `path`, and records until `close`.
+
+    Refused: `frames` under 1, a video capture already on (`capture_video`), a build with no
+    `CAPTURE`, a running machine.
+
+    Reply: `verdict`, `kind`, `frames`, `began`, `ended`, `path`, `bytes`, `avi_frames`,
+    `note`, the run's fields as `run_for` gives them, {STOP_FIELDS}.
+
+    Reference: REFERENCE.md, Input and the screen.
+    """
+    session = live()
+    return recordings.recording(session, "record", recordings.VIDEO, frames,
+                                paths.absolute("dest", dest) if dest else None, seconds,
+                                bridge(ctx))
+
+
+@tool("Record the sound to a file", summary=one_line.audio_record, on_cancel="stop")
+def audio_record(frames: int, dest: str = "",
+                 seconds: Annotated[float, vocab.WAIT_BOUNDS] = 60.0,
+                 kind: Annotated[str, vocab.enum(tuple(capture_files.AUDIO_KINDS))] = "wav",
+                 ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
+    """Record exactly `frames` retraces of sound, then stop: the mixer to a WAV (`kind`
+    `wav`), the OPL register writes to a DRO (`dro`) or the MIDI bytes to a MIDI file
+    (`mid`). Needs the machine STOPPED and a build whose debugger has `CAPTURE`.
+
+    `dest`: an absolute path not there yet; empty leaves the file where the emulator wrote it.
+    Each file is checked before its path is given; a WAV whose samples miss the run's
+    emulated span by more than {SPAN_TICKS} mixer ticks is INVALID. Silence is reported,
+    never refused; a run with no OPL note or MIDI byte has no file (`path` unavailable). A run cut
+    short is checked for what it holds; a capture that could not be turned off is `ended: false`,
+    no `path`, and records until `close`.
+
+    Refused: `frames` under 1, that kind already on, a build with no `CAPTURE`, a running
+    machine.
+
+    Reply: `verdict`, `kind`, `frames`, `began`, `ended`, `path`, `bytes`; a WAV's `channels`,
+    `sample_rate_hz`, `samples`, `emulated_s`, `sample_min`, `sample_max`; a DRO's
+    `opl_pairs`, `opl_ms`; a MIDI file's `midi_bytes`; `note`, the run's fields, {STOP_FIELDS}.
+
+    Reference: REFERENCE.md, Input and the screen.
+    """
+    session = live()
+    return recordings.recording(session, "audio_record", capture_files.AUDIO_KINDS[kind],
+                                frames, paths.absolute("dest", dest) if dest else None, seconds,
+                                bridge(ctx))
+
+
 @tool("List the saved states", summary=one_line.state_list, read_only=True)
 def state_list() -> dict[str, Any]:
     """List the session's saved states, read off each file without loading it.
@@ -1128,24 +1188,35 @@ def declaration_clear(kind: Annotated[str, vocab.enum(folds.KINDS)], ref: str = 
 @tool("Declare a watch", summary=one_line.watch_add)
 def watch_add(ref: str, mode: Annotated[str, vocab.enum(dec.WATCH_MODES)], length: int = 0,
               fmt: str = "auto", by: Annotated[str, vocab.enum(checks.WATCH_BY)] = "auto",
+              trigger: str = "",
+              trigger_type: Annotated[str, vocab.enum(dec.TRIGGER_TYPES)] = "w",
               ) -> dict[str, Any]:
     """Declare a watch by symbol, `SEG:OFF` or through a pointer, read as `fmt`. Persists and
     re-resolves on `symbols_load`.
 
-    `mode`: `show` (read at each stop) or `change` (stops when the bytes change). `ref`: a
-    symbol, `SEG:OFF`, or `[base]+0x28`, `base->field`. `fmt`: a scalar (`u8` .. `f64`), an
-    array (`u16[8]`), a string (`char[16]`) or a struct (`{x:i16,y:i16}`). `length`: total
-    bytes; at most {READ_MAX} for show, {CHANGE_WATCH_MAX} for change (a debugger row per byte,
-    `entries`).
+    `mode`: `show` (read at each stop), `change` (stops when the bytes change), `count` (tallies
+    every write and its writer), `capture` (a row per access of `trigger`, with the beam line
+    and the time); count and capture never stop the machine. `ref`: a symbol, `SEG:OFF`, or
+    `[base]+0x28`, `base->field`. `fmt`: a scalar (`u8` .. `f64`), an array (`u16[8]`), a string
+    (`char[16]`) or a struct (`{x:i16,y:i16}`). `length`: total bytes; at most {READ_MAX} for
+    show, {CHANGE_WATCH_MAX} for change (a debugger row per byte, `entries`), {TAP_COUNT_MAX}
+    for count, {TAP_BLOCK_MAX} for capture. `trigger`, `trigger_type`: capture only; a capture
+    of reads (`r`) is of `ref` itself, with no `trigger`, `length` or `fmt`. A count or capture
+    is declared at a stop, by symbol or `SEG:OFF`, on a build whose debugger has `TAP`; from
+    then on it records while the guest runs.
 
-    Refused: one ref as both modes; a length over the ceiling; a pointer base the table lacks.
+    Refused: one ref declared two ways; a length over the ceiling; a pointer base the table
+    lacks; a count or capture through a pointer, on a running machine or with no `TAP`; a write
+    capture with no `trigger`; `trigger` or `trigger_type` on another mode.
 
-    Reply: `ref`, `stored`, `already_stored`, `state` (`evaluated`, `unresolved`, `unarmable`,
-    `null_pointer`, `pending`), `armed`, `pointer`, `entry`, `caveat`.
+    Reply: `ref`, `by`, `mode`, `fmt`, `length`, `stored`, `already_stored`, `state`
+    (`evaluated`, `unresolved`, `unarmable`, `null_pointer`, `pending`, `armed`), `armed`,
+    `pointer`, `entry`, `caveat`; a count or capture's `tally_id`, `addr`, `trigger`,
+    `trigger_addr`, `trigger_type`; its account is `declaration_list`'s.
 
     Reference: REFERENCE.md, Declarations.
     """
-    return arming.watch_add(live(), ref, mode, length, fmt, by)
+    return arming.watch_add(live(), ref, mode, length, fmt, by, trigger, trigger_type)
 
 
 
@@ -1214,11 +1285,14 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
 
 @tool("List this session's captures", summary=one_line.captures, read_only=True)
 def captures() -> dict[str, Any]:
-    """Lists the files the session's tools wrote, in write order, re-read now, then the
-    `capture_video` AVIs, largest last. Works on a running guest.
+    """Lists the files the session's tools wrote (`record` and `audio_record` among them), in
+    write order, re-read now, then the `capture_video` AVIs, largest last. Works on a running
+    guest.
 
-    Reply: `captures` (each `kind`, `path`, `present`, `bytes`; an AVI also `riff_avi`,
-    `avi_frames`, `complete`). A file gone has `present: false`, no `bytes`.
+    Reply: `captures` (each `kind`, `path`, `present`, `bytes`; a recording also `complete`, and
+    an AVI `riff_avi`, `avi_frames`, a WAV `samples`, `channels`, `sample_rate_hz`, a DRO
+    `opl_pairs`, `opl_ms`, a MIDI file `midi_bytes`). A file gone has `present: false`, no
+    `bytes`.
     """
     return caps.captures(live())
 

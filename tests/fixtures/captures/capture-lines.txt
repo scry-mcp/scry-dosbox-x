@@ -1,0 +1,23 @@
+# CAPTURE's own lines, as the sound guest's session printed them; the capture folder is spelt
+# /captures here, and the emulator's own messages print in among them.
+## CAPTURE
+DEBUG: CAPTURE WAV off path=-
+DEBUG: CAPTURE OPL off path=-
+DEBUG: CAPTURE MIDI off path=-
+DEBUG: CAPTURE VIDEO off path=-
+## CAPTURE OPL ON
+Preparing to capture Raw OPL, will start with first note played.
+DEBUG: CAPTURE OPL on path=-
+## CAPTURE WAV ON
+DEBUG: CAPTURE WAV on path=-
+## CAPTURE (while recording)
+DEBUG: CAPTURE WAV on path=/captures/sound_000.wav
+DEBUG: CAPTURE OPL off path=-
+DEBUG: CAPTURE MIDI off path=-
+DEBUG: CAPTURE VIDEO on path=/captures/sound_000.avi
+## CAPTURE WAV OFF
+Stopped capturing wave output.
+DEBUG: CAPTURE WAV off path=/captures/sound_000.wav
+## CAPTURE MIDI OFF (no data arrived)
+Stopped capturing raw midi before any data arrived.
+DEBUG: CAPTURE MIDI off path=-

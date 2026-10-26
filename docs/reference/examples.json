@@ -1,4 +1,88 @@
 {
+ "audio_record": {
+  "from": "[A] every tool in every machine state, on the probe guest: A stopped audio_record",
+  "call": {
+   "frames": 2,
+   "dest": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1267.wav",
+   "seconds": 30
+  },
+  "reply": {
+   "summary": "audio_record wav 2 frames: ELAPSED, 1344 samples at 48000 Hz, silent at $TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1267.wav",
+   "status": "ok",
+   "verdict": "ELAPSED",
+   "polls": 2,
+   "pc": "0814:00000130",
+   "cpu_mode": "real",
+   "regs": {
+    "EAX": "0x00000000",
+    "EBX": "0x000002b4",
+    "ECX": "0x000012c1",
+    "EDX": "0x00000814",
+    "ESI": "0x00000173",
+    "EDI": "0x0000015d",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fffe",
+    "EIP": "0x00000130",
+    "CS": "0x0814",
+    "DS": "0x0814",
+    "ES": "0x0814",
+    "FS": "0x0000",
+    "GS": "0x0000",
+    "SS": "0x0814"
+   },
+   "watches": [],
+   "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+   "e9": {
+    "lines_total": 0,
+    "truncated": false,
+    "lines": [],
+    "mark": 37415
+   },
+   "stop_seq": 11,
+   "instruction": {
+    "seg_off": "0814:00000130",
+    "bytes": "E2FE",
+    "text": "loop 0x130",
+    "flow": "branch",
+    "code_bits": 16,
+    "bytes_from": "memory",
+    "symbol": {
+     "available": false,
+     "why": "no symbol table is loaded"
+    },
+    "delta": {
+     "available": false,
+     "why": "no symbol table is loaded"
+    }
+   },
+   "emulated_before_s": 2.003237,
+   "emulated_after_s": 2.0317731,
+   "frame_before": {
+    "available": false,
+    "why": "a DOS machine keeps no frame counter a server could read: `polls` counts the retraces"
+   },
+   "frame_after": {
+    "available": false,
+    "why": "a DOS machine keeps no frame counter a server could read: `polls` counts the retraces"
+   },
+   "cycles": {
+    "available": false,
+    "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
+   },
+   "kind": "wav",
+   "frames": 2,
+   "began": true,
+   "ended": true,
+   "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1267.wav",
+   "bytes": 5420,
+   "channels": 2,
+   "sample_rate_hz": 48000,
+   "samples": 1344,
+   "emulated_s": 0.0285361,
+   "sample_min": 0,
+   "sample_max": 0
+  }
+ },
  "breakpoint_at": {
   "from": "[A] every tool in every machine state, on the probe guest: A stopped breakpoint_at",
   "call": {
@@ -39,9 +123,9 @@
   "from": "[A] every tool in every machine state, on the probe guest: A none    build_check",
   "call": {},
   "reply": {
-   "summary": "build_check: ~/.local/state/dosbox-x-builds/scry-0198e7c32/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
+   "summary": "build_check: ~/.local/state/dosbox-x-builds/scry-bb5aadd5f/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
    "status": "ok",
-   "binary": "~/.local/state/dosbox-x-builds/scry-0198e7c32/dosbox-x",
+   "binary": "~/.local/state/dosbox-x-builds/scry-bb5aadd5f/dosbox-x",
    "binary_origin": "DOSBOX_X_BINARY",
    "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
    "debugger": true,
@@ -53,16 +137,16 @@
     "LOADSTATE",
     "PRESENCE",
     "VGAMEMDUMP",
-    "... 1 more"
+    "... 3 more"
    ],
    "tools": [
+    "audio_record",
     "breakpoint_at",
     "breakpoint_interrupt",
     "build_check",
     "call_stack",
     "capture_frame",
-    "captures",
-    "... 46 more"
+    "... 48 more"
    ]
   }
  },
@@ -105,16 +189,16 @@
   "from": "[J] the screen from the VGA's listings and video memory, on the package's guests: J the 13h picture equals the emulator's own capture of that frame, pixel for pixel",
   "call": {
    "frame": 2,
-   "dest": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/J/n11.png",
-   "capture_path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/J/n6-cap/screen_001.avi"
+   "dest": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/J/n11.png",
+   "capture_path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/J/n6-cap/screen_001.avi"
   },
   "reply": {
-   "summary": "capture_frame 2: 5072 bytes to $TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/J/n11.png",
+   "summary": "capture_frame 2: 5072 bytes to $TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/J/n11.png",
    "status": "ok",
-   "path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/J/n11.png",
+   "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/J/n11.png",
    "bytes": 5072,
    "sha256": "aee93b1749a9c93112b4fca12509d5ad9da94fc94b41bf781612e590a0a4342b",
-   "capture_path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/J/n6-cap/screen_001.avi",
+   "capture_path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/J/n6-cap/screen_001.avi",
    "frame": 2
   }
  },
@@ -122,39 +206,53 @@
   "from": "[A] every tool in every machine state, on the probe guest: A stopped captures",
   "call": {},
   "reply": {
-   "summary": "captures: 5 files",
+   "summary": "captures: 7 files",
    "status": "ok",
    "captures": [
     {
      "kind": "bin",
-     "path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n763.bin",
+     "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n939.bin",
      "present": true,
      "bytes": 16
     },
     {
      "kind": "png",
-     "path": "$TMPDIR/dosbox-x-session-kmxru3wy/gfx/palette-1.png",
+     "path": "$TMPDIR/dosbox-x-session-dwh686df/gfx/palette-1.png",
      "present": true,
      "bytes": 1009
     },
     {
      "kind": "json",
-     "path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n910-stopped.scry-map.json",
+     "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1116-stopped.scry-map.json",
      "present": true,
-     "bytes": 312
+     "bytes": 313
     },
     {
      "kind": "trace",
-     "path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n984.trace",
+     "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1204.trace",
      "present": true,
      "bytes": 238
     },
     {
-     "kind": "tsv",
-     "path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n1088.comments.tsv",
+     "kind": "avi",
+     "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1254.avi",
      "present": true,
-     "bytes": 85
-    }
+     "bytes": 36314,
+     "riff_avi": true,
+     "avi_frames": 1,
+     "complete": true
+    },
+    {
+     "kind": "wav",
+     "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1267.wav",
+     "present": true,
+     "bytes": 5420,
+     "complete": true,
+     "samples": 1344,
+     "channels": 2,
+     "sample_rate_hz": 48000
+    },
+    "... 1 more"
    ]
   }
  },
@@ -183,8 +281,8 @@
       "available": false,
       "why": "a DOS machine has one cpu, and every row acts on it"
      },
-     "created_at": "2026-10-26T13:39:35+00:00",
-     "origin": "2026-10-26T13:39:24+00:00#25537.1",
+     "created_at": "2026-10-26T16:03:10+00:00",
+     "origin": "2026-10-26T16:02:57+00:00#76251.1",
      "inherited": false,
      "age_s": 0,
      "text": "matrix A",
@@ -196,7 +294,7 @@
    "truncated": false,
    "declarations": {
     "persistent": true,
-    "path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/dosbox-x-live-matrix-A-03wosiqy/dosbox-x-debug/declarations.json"
+    "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/dosbox-x-live-matrix-A-a6ub8g6k/dosbox-x-debug/declarations.json"
    }
   }
  },
@@ -217,8 +315,8 @@
      "available": false,
      "why": "a DOS machine has one cpu, and every row acts on it"
     },
-    "created_at": "2026-10-26T13:39:35+00:00",
-    "origin": "2026-10-26T13:39:24+00:00#25537.1",
+    "created_at": "2026-10-26T16:03:10+00:00",
+    "origin": "2026-10-26T16:02:57+00:00#76251.1",
     "inherited": false,
     "age_s": 0,
     "text": "matrix A",
@@ -228,7 +326,7 @@
    "replaced_comments": [],
    "declarations": {
     "persistent": true,
-    "path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/dosbox-x-live-matrix-A-03wosiqy/dosbox-x-debug/declarations.json"
+    "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/dosbox-x-live-matrix-A-a6ub8g6k/dosbox-x-debug/declarations.json"
    }
   }
  },
@@ -277,8 +375,8 @@
       "available": false,
       "why": "a DOS machine has one cpu, and every row acts on it"
      },
-     "created_at": "2026-10-26T13:39:35+00:00",
-     "origin": "2026-10-26T13:39:24+00:00#25537.1",
+     "created_at": "2026-10-26T16:03:10+00:00",
+     "origin": "2026-10-26T16:02:57+00:00#76251.1",
      "inherited": false,
      "age_s": 0,
      "entry": "BP 0000:0002",
@@ -335,19 +433,19 @@
       "reply": {
        "summary": "status: alive, stopped",
        "status": "ok",
-       "pid": 25568,
-       "conf": "$TMPDIR/dosbox-x-live-job-h9lf9tcm/A/tests/guest/probe.conf",
+       "pid": 76292,
+       "conf": "$TMPDIR/dosbox-x-live-job-u2b4gcki/A/tests/guest/probe.conf",
        "conf_digest": "78bdc38f360b9b4a",
        "bound_s": 1200,
-       "elapsed_s": 12.5,
+       "elapsed_s": 14.1,
        "captures": "off",
-       "state_dir": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n662-save",
+       "state_dir": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n818-save",
        "last_stop": {
-        "stop_seq": 9,
+        "stop_seq": 11,
         "pc": "0814:00000130",
         "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-        "since_s": 1.3,
-        "wall_at": "2026-10-26T13:39:35+00:00"
+        "since_s": 1.5,
+        "wall_at": "2026-10-26T16:03:09+00:00"
        },
        "pending": {
         "arm": [],
@@ -388,7 +486,7 @@
    "looked": {
     "guest": {
      "available": true,
-     "since_mark": 38141,
+     "since_mark": 40860,
      "lines_written": 0,
      "lines_total": 0,
      "truncated": false,
@@ -433,7 +531,7 @@
   "from": "[Q] the media layer: each scenario the hand way and the new way, over one answer: Q S1 new: series_capture and image_compare region find the same frames, with no picture",
   "call": {
    "method": "region",
-   "manifest": "$TMPDIR/dosbox-x-session-fcpge16s/series/series-1/manifest.json",
+   "manifest": "$TMPDIR/dosbox-x-session-vkia_h9h/series/series-1/manifest.json",
    "measure": "changed_pixels"
   },
   "reply": {
@@ -459,8 +557,8 @@
    ],
    "gaps": [],
    "transitions_total": 1,
-   "path": "$TMPDIR/dosbox-x-session-fcpge16s/series/series-1/track-1.json",
-   "manifest": "$TMPDIR/dosbox-x-session-fcpge16s/series/series-1/manifest.json"
+   "path": "$TMPDIR/dosbox-x-session-vkia_h9h/series/series-1/track-1.json",
+   "manifest": "$TMPDIR/dosbox-x-session-vkia_h9h/series/series-1/manifest.json"
   }
  },
  "interrupt_vectors": {
@@ -838,15 +936,15 @@
   "call": {
    "ref": "0000:0400",
    "length": 16,
-   "dest": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n763.bin"
+   "dest": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n939.bin"
   },
   "reply": {
-   "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n763.bin",
+   "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n939.bin",
    "status": "ok",
    "ref": "0000:0400",
    "seg_off": "0000:00000400",
    "length": 16,
-   "path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n763.bin",
+   "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n939.bin",
    "bytes": 16
   }
  },
@@ -873,7 +971,7 @@
    "bits": 6,
    "pel_mask": "ffh",
    "image": {
-    "path": "$TMPDIR/dosbox-x-session-kmxru3wy/gfx/palette-1.png",
+    "path": "$TMPDIR/dosbox-x-session-dwh686df/gfx/palette-1.png",
     "bytes": 1009,
     "sha256": "a5dff617e307a60f3bf521d96fed8809cc0f3b38409a74c904cfa5c1ad4371e1",
     "width": 256,
@@ -902,19 +1000,19 @@
      "reply": {
       "summary": "status: alive, stopped",
       "status": "ok",
-      "pid": 25568,
-      "conf": "$TMPDIR/dosbox-x-live-job-h9lf9tcm/A/tests/guest/probe.conf",
+      "pid": 76292,
+      "conf": "$TMPDIR/dosbox-x-live-job-u2b4gcki/A/tests/guest/probe.conf",
       "conf_digest": "78bdc38f360b9b4a",
       "bound_s": 1200,
-      "elapsed_s": 12.5,
+      "elapsed_s": 14.1,
       "captures": "off",
-      "state_dir": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n662-save",
+      "state_dir": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n818-save",
       "last_stop": {
-       "stop_seq": 9,
+       "stop_seq": 11,
        "pc": "0814:00000130",
        "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-       "since_s": 1.3,
-       "wall_at": "2026-10-26T13:39:35+00:00"
+       "since_s": 1.5,
+       "wall_at": "2026-10-26T16:03:09+00:00"
       },
       "pending": {
        "arm": [],
@@ -952,12 +1050,12 @@
  "perform_export": {
   "from": "[A] every tool in every machine state, on the probe guest: A stopped perform_export",
   "call": {
-   "dest": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n1317.json"
+   "dest": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1629.json"
   },
   "reply": {
-   "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n1317.json",
+   "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1629.json",
    "status": "ok",
-   "path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n1317.json",
+   "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1629.json",
    "steps": 1,
    "checks": 0,
    "dropped": [],
@@ -967,7 +1065,7 @@
     "op": "resume",
     "why": "its run was stopped by the wall clock or by the machine itself, at a place inside its frame that no replayed advance reaches"
    },
-   "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n1317.json"
+   "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1629.json"
   }
  },
  "read_memory": {
@@ -983,6 +1081,85 @@
    "seg_off": "0000:00000020",
    "length": 4,
    "hex": "a5fe00f0"
+  }
+ },
+ "record": {
+  "from": "[A] every tool in every machine state, on the probe guest: A stopped record",
+  "call": {
+   "frames": 2,
+   "dest": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1254.avi",
+   "seconds": 30
+  },
+  "reply": {
+   "summary": "record 2 frames: ELAPSED, 1 frame at $TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1254.avi",
+   "status": "ok",
+   "verdict": "ELAPSED",
+   "polls": 2,
+   "pc": "0814:00000130",
+   "cpu_mode": "real",
+   "regs": {
+    "EAX": "0x00000000",
+    "EBX": "0x000002b8",
+    "ECX": "0x00006a03",
+    "EDX": "0x00000814",
+    "ESI": "0x00000173",
+    "EDI": "0x0000015d",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fffe",
+    "EIP": "0x00000130",
+    "CS": "0x0814",
+    "DS": "0x0814",
+    "ES": "0x0814",
+    "FS": "0x0000",
+    "GS": "0x0000",
+    "SS": "0x0814"
+   },
+   "watches": [],
+   "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+   "e9": {
+    "lines_total": 0,
+    "truncated": false,
+    "lines": [],
+    "mark": 35382
+   },
+   "stop_seq": 10,
+   "instruction": {
+    "seg_off": "0814:00000130",
+    "bytes": "E2FE",
+    "text": "loop 0x130",
+    "flow": "branch",
+    "code_bits": 16,
+    "bytes_from": "memory",
+    "symbol": {
+     "available": false,
+     "why": "no symbol table is loaded"
+    },
+    "delta": {
+     "available": false,
+     "why": "no symbol table is loaded"
+    }
+   },
+   "emulated_before_s": 1.9747018,
+   "emulated_after_s": 2.003237,
+   "frame_before": {
+    "available": false,
+    "why": "a DOS machine keeps no frame counter a server could read: `polls` counts the retraces"
+   },
+   "frame_after": {
+    "available": false,
+    "why": "a DOS machine keeps no frame counter a server could read: `polls` counts the retraces"
+   },
+   "cycles": {
+    "available": false,
+    "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
+   },
+   "kind": "avi",
+   "frames": 2,
+   "began": true,
+   "ended": true,
+   "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1254.avi",
+   "bytes": 36314,
+   "avi_frames": 1
   }
  },
  "registers": {
@@ -1077,7 +1254,7 @@
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 34468
+    "mark": 34504
    },
    "stop_seq": 7,
    "instruction": {
@@ -1163,7 +1340,7 @@
     "lines": [
      "Bochs port E9h: [+ 00000.000] PROBE . tick"
     ],
-    "mark": 31168
+    "mark": 31206
    },
    "stop_seq": 6,
    "instruction": {
@@ -1413,12 +1590,12 @@
     320,
     8
    ],
-   "capture_path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/Q/n1-cap/screen_001.avi"
+   "capture_path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/Q/n1-cap/screen_001.avi"
   },
   "reply": {
-   "summary": "series_capture: 5 AVI frames 0..4, 2 distinct, manifest $TMPDIR/dosbox-x-session-fcpge16s/series/series-1/manifest.json",
+   "summary": "series_capture: 5 AVI frames 0..4, 2 distinct, manifest $TMPDIR/dosbox-x-session-vkia_h9h/series/series-1/manifest.json",
    "status": "ok",
-   "manifest": "$TMPDIR/dosbox-x-session-fcpge16s/series/series-1/manifest.json",
+   "manifest": "$TMPDIR/dosbox-x-session-vkia_h9h/series/series-1/manifest.json",
    "count": 5,
    "first": 0,
    "last": 4,
@@ -1426,7 +1603,7 @@
    "frames_asked": 5,
    "kept_after_close": false,
    "frame_source": "avi",
-   "capture_path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/Q/n1-cap/screen_001.avi",
+   "capture_path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/Q/n1-cap/screen_001.avi",
    "crop": [
     0,
     0,
@@ -1470,14 +1647,14 @@
  "snapshot": {
   "from": "[P] the input route inside the guest: keys and the mouse, headless: P snapshot headless: the stub's command writes a PNG, no window and no menu",
   "call": {
-   "dest": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/P/n4.png",
+   "dest": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/P/n4.png",
    "seconds": 20
   },
   "reply": {
-   "summary": "snapshot: 885 bytes at $TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/P/n4.png",
+   "summary": "snapshot: 885 bytes at $TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/P/n4.png",
    "status": "ok",
    "route": "guest",
-   "path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/P/n4.png",
+   "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/P/n4.png",
    "bytes": 885,
    "sha256": "5053cd8f49a0d5bea6531db5520c7dfb0c06340f05b59d4baff51012d24313f5"
   }
@@ -1485,46 +1662,46 @@
  "start": {
   "from": "[A] every tool in every machine state, on the probe guest: A none    start",
   "call": {
-   "conf": "$TMPDIR/dosbox-x-live-job-h9lf9tcm/A/tests/guest/probe.conf",
-   "cwd": "$TMPDIR/dosbox-x-live-job-h9lf9tcm/A/tests/guest",
+   "conf": "$TMPDIR/dosbox-x-live-job-u2b4gcki/A/tests/guest/probe.conf",
+   "cwd": "$TMPDIR/dosbox-x-live-job-u2b4gcki/A/tests/guest",
    "session_seconds": 1200,
-   "logfile": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n661.log",
-   "state_dir": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n662-save"
+   "logfile": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n817.log",
+   "state_dir": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n818-save"
   },
   "reply": {
-   "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry-0198e7c32/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.106s",
+   "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry-bb5aadd5f/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.158s",
    "status": "ok",
-   "pid": 25568,
-   "conf": "$TMPDIR/dosbox-x-live-job-h9lf9tcm/A/tests/guest/probe.conf",
+   "pid": 76292,
+   "conf": "$TMPDIR/dosbox-x-live-job-u2b4gcki/A/tests/guest/probe.conf",
    "conf_digest": "78bdc38f360b9b4a",
    "bound_s": 1200,
-   "elapsed_s": 0.4,
+   "elapsed_s": 0.6,
    "captures": "off",
-   "state_dir": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n662-save",
-   "ready_after_s": 0.106,
+   "state_dir": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n818-save",
+   "ready_after_s": 0.158,
    "argv": [
-    "~/.local/state/dosbox-x-builds/scry-0198e7c32/dosbox-x",
+    "~/.local/state/dosbox-x-builds/scry-bb5aadd5f/dosbox-x",
     "-conf",
-    "$TMPDIR/dosbox-x-live-job-h9lf9tcm/A/tests/guest/probe.conf",
+    "$TMPDIR/dosbox-x-live-job-u2b4gcki/A/tests/guest/probe.conf",
     "-time-limit",
     "1200",
     "-break-start",
     "... 20 more"
    ],
-   "binary": "~/.local/state/dosbox-x-builds/scry-0198e7c32/dosbox-x",
+   "binary": "~/.local/state/dosbox-x-builds/scry-bb5aadd5f/dosbox-x",
    "binary_origin": "DOSBOX_X_BINARY",
    "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
    "debugger_commands": [
     "BPIF",
+    "CAPTURE",
     "LOADSTATE",
     "PRESENCE",
     "RUNSTATE",
     "SAVESTATE",
-    "STEPIN",
-    "... 1 more"
+    "... 3 more"
    ],
    "stub": "/path/to/scry-dosbox-x/guest/INJECT.COM",
-   "input_port": 49237,
+   "input_port": 51309,
    "background": true,
    "presence": {
     "available": false,
@@ -1545,19 +1722,19 @@
   "from": "[A] every tool in every machine state, on the probe guest: A stopped state_list",
   "call": {},
   "reply": {
-   "summary": "state_list: 1 state in $TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n662-save",
+   "summary": "state_list: 1 state in $TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n818-save",
    "status": "ok",
-   "state_dir": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n662-save",
+   "state_dir": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n818-save",
    "states": [
     {
      "name": "matrix_a_stopped",
-     "path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n662-save/matrix_a_stopped.sav",
-     "bytes": 81384,
+     "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n818-save/matrix_a_stopped.sav",
+     "bytes": 81377,
      "version": "DOSBox-X 2026.10.01 (SDL2)",
      "program": "PROBE",
      "machine": "MCH_VGA",
      "memory_mb": 4096,
-     "saved_at": "2026-10-26 14:39"
+     "saved_at": "2026-10-26 17:03"
     }
    ],
    "working_slot": {
@@ -1574,16 +1751,16 @@
    "seconds": 10
   },
   "reply": {
-   "summary": "state_write save: matrix_a_stopped, 81384 bytes, PROBE 2026-10-26 14:39",
+   "summary": "state_write save: matrix_a_stopped, 81377 bytes, PROBE 2026-10-26 17:03",
    "status": "ok",
    "name": "matrix_a_stopped",
-   "path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n662-save/matrix_a_stopped.sav",
-   "bytes": 81384,
+   "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n818-save/matrix_a_stopped.sav",
+   "bytes": 81377,
    "version": "DOSBox-X 2026.10.01 (SDL2)",
    "program": "PROBE",
    "machine": "MCH_VGA",
    "memory_mb": 4096,
-   "saved_at": "2026-10-26 14:39",
+   "saved_at": "2026-10-26 17:03",
    "paused": false
   }
  },
@@ -1646,7 +1823,7 @@
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 5314
+    "mark": 5352
    },
    "stop_seq": 5,
    "instruction": {
@@ -1667,7 +1844,7 @@
     "pc": "F000:0000FEA5",
     "cause": "no declared code breakpoint at F000:0000FEA5: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
     "since_s": 4.0,
-    "wall_at": "2026-10-26T13:39:26+00:00"
+    "wall_at": "2026-10-26T16:02:59+00:00"
    },
    "note": "the machine was already stopped"
   }
@@ -1744,11 +1921,11 @@
   "call": {
    "instructions": 16,
    "shape": "cs_ip",
-   "dest": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n984.trace",
+   "dest": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1204.trace",
    "seconds": 30
   },
   "reply": {
-   "summary": "trace 16 cs_ip: ELAPSED, 16 executed at 1 address, at 0814:00000130, to $TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n984.trace",
+   "summary": "trace 16 cs_ip: ELAPSED, 16 executed at 1 address, at 0814:00000130, to $TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1204.trace",
    "status": "ok",
    "pc": "0814:00000130",
    "cpu_mode": "real",
@@ -1775,7 +1952,7 @@
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 34909
+    "mark": 34945
    },
    "stop_seq": 8,
    "instruction": {
@@ -1796,13 +1973,13 @@
    },
    "verdict": "ELAPSED",
    "trace": {
-    "path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n984.trace",
+    "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1204.trace",
     "bytes": 238,
     "shape": "cs_ip",
     "instructions": 16,
     "addresses": 1,
     "unplaced": 1,
-    "set_path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n984.trace.set.jsonl",
+    "set_path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1204.trace.set.jsonl",
     "symbols": [],
     "symbols_total": 0,
     "truncated": false,

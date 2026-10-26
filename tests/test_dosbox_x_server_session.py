@@ -305,7 +305,7 @@ def test_every_tool_this_server_promises_is_actually_registered() -> None:
         "state_write", "state_list", "snapshot", "captures", "capture_frame", "build_check",
         "symbols_load", "symbols_find", "send_keys", "send_mouse", "perform", "perform_export",
         "drive", "comment_list", "comment_write", "series_capture", "image_compare", "map_find",
-        "map_write"}
+        "map_write", "record", "audio_record"}
     got = dosbox_mcp.registered_tools()
     assert set(got) == expected
     # The registry is a dict keyed by name, so a length check cannot fail.
@@ -374,6 +374,8 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         "state_write load": lambda: server.state_write("load", name="x"),
         "state_list": server.state_list,
         "snapshot": server.snapshot,
+        "record": lambda: server.record(frames=2),
+        "audio_record": lambda: server.audio_record(frames=2),
         "breakpoint_at": lambda: server.breakpoint_at(ref="_main"),
         "declaration_list breakpoint": lambda: server.declaration_list("breakpoint"),
         "declaration_clear breakpoint": lambda: server.declaration_clear("breakpoint", all=True),

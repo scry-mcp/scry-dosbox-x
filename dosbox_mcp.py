@@ -56,7 +56,8 @@ ROSTER = roster.Roster(families=(
     ("Names", ("symbols_load", "symbols_find")),
     ("Comments", ("comment_list", "comment_write")),
     ("Input", ("send_keys", "send_mouse", "drive")),
-    ("Captures", ("captures", "capture_frame", "series_capture", "snapshot")),
+    ("Captures", ("captures", "capture_frame", "series_capture", "snapshot", "record",
+                  "audio_record")),
     ("Files", ("image_compare",)),
     ("Lists", ("perform", "perform_export")),
 ), answering=tuple(_ANSWERS_WHILE_RUNNING))
@@ -73,7 +74,8 @@ mcp = envelope.Envelope(
         '(`not_stopped`, naming `last_stop`); ' + ROSTER.running_sentence() + '\nIt stops at a '
         'breakpoint armed BEFORE the release '
         'or at `stop`. What you\n'
-        'declare while it runs is `pending` until the next stop. After `symbols_load`, a `ref`\n'
+        'declare while it runs is `pending` until the next stop (a count or capture is declared\n'
+        'at a stop, and records as it runs). After `symbols_load`, a `ref`\n'
         'is a symbol or a `SEG:OFF`. A cancel ends a call as its bound would; the next reply\n'
         'says `cancelled`.\n'
         'FOR A VALUE: `registers`, `read_memory`, `memdump`, `log`; `debug` last.\n\n'

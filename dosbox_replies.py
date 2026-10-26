@@ -310,6 +310,34 @@ class RunForReply(DosboxEnvelope, total=False):
     watches: list[Any]
 
 
+class RecordReply(RunForReply, total=False):
+    avi_frames: int
+    began: bool
+    bytes: int
+    ended: bool
+    frames: int
+    kind: str
+    path: str | dict[str, Any]
+
+
+class AudioRecordReply(RunForReply, total=False):
+    began: bool
+    bytes: int
+    channels: int
+    emulated_s: float | dict[str, Any]
+    ended: bool
+    frames: int
+    kind: str
+    midi_bytes: int
+    opl_ms: int
+    opl_pairs: int
+    path: str | dict[str, Any]
+    sample_max: int
+    sample_min: int
+    sample_rate_hz: int
+    samples: int
+
+
 class RunToReply(DosboxEnvelope, total=False):
     cause: str
     control_hits: int
@@ -570,6 +598,7 @@ class TraceReply(DosboxEnvelope, total=False):
 
 
 class WatchAddReply(DosboxEnvelope, total=False):
+    addr: str
     already_stored: Annotated[bool, OmitEmpty]
     armed: bool
     by: str
@@ -585,6 +614,10 @@ class WatchAddReply(DosboxEnvelope, total=False):
     ref: str
     state: str
     stored: bool
+    tally_id: str
+    trigger: str
+    trigger_addr: str
+    trigger_type: str
     why: str
 
 
@@ -709,6 +742,8 @@ MODELS: dict[str, type] = {
     "registers": RegistersReply,
     "resume": ResumeReply,
     "run_for": RunForReply,
+    "record": RecordReply,
+    "audio_record": AudioRecordReply,
     "run_to": RunToReply,
     "screen_signature": ScreenSignatureReply,
     "screen_view": ScreenViewReply,

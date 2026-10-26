@@ -15,7 +15,7 @@ The [README](README.md) is the front door. This page holds the index, the envelo
 - [Names](docs/reference/names.md): [`symbols_load`](docs/reference/names.md#symbols_load), [`symbols_find`](docs/reference/names.md#symbols_find)
 - [Comments](docs/reference/comments.md): [`comment_list`](docs/reference/comments.md#comment_list), [`comment_write`](docs/reference/comments.md#comment_write)
 - [Input](docs/reference/input.md): [`send_keys`](docs/reference/input.md#send_keys), [`send_mouse`](docs/reference/input.md#send_mouse), [`drive`](docs/reference/input.md#drive)
-- [Captures](docs/reference/captures.md): [`captures`](docs/reference/captures.md#captures), [`capture_frame`](docs/reference/captures.md#capture_frame), [`series_capture`](docs/reference/captures.md#series_capture), [`snapshot`](docs/reference/captures.md#snapshot)
+- [Captures](docs/reference/captures.md): [`captures`](docs/reference/captures.md#captures), [`capture_frame`](docs/reference/captures.md#capture_frame), [`series_capture`](docs/reference/captures.md#series_capture), [`snapshot`](docs/reference/captures.md#snapshot), [`record`](docs/reference/captures.md#record), [`audio_record`](docs/reference/captures.md#audio_record)
 - [Files](docs/reference/files.md): [`image_compare`](docs/reference/files.md#image_compare)
 - [Lists](docs/reference/lists.md): [`perform`](docs/reference/lists.md#perform), [`perform_export`](docs/reference/lists.md#perform_export)
 <!-- scry-reference:end index -->
@@ -91,7 +91,7 @@ Every tool ends one of three ways, and one that declares no end ends `none`:
 
 | End | What the cancel leaves | Tools |
 |---|---|---|
-| `stop` | the guest back at the debugger by `BREAK`, as `stop` does (the cancelled call answers nothing, so that stop is read in the next reply's `last_stop`, its `cause` "a cancelled call's stop at SSSS:OOOOOOOO" when no declaration is at that address), or a stop it had already reached recorded as its own; a `run_to` removes the breakpoints it armed; a CPU log still open (a `trace`'s) is moved aside to `trace-cancelled-<n>.trace` in the session's captures directory (the working directory when there is none to write in) and closed | `stop`, `run_to`, `run_for`, `trace`, `screen_wait`, `perform` |
+| `stop` | the guest back at the debugger by `BREAK`, as `stop` does (the cancelled call answers nothing, so that stop is read in the next reply's `last_stop`, its `cause` "a cancelled call's stop at SSSS:OOOOOOOO" when no declaration is at that address), or a stop it had already reached recorded as its own; a `run_to` removes the breakpoints it armed; a CPU log still open (a `trace`'s) is moved aside to `trace-cancelled-<n>.trace` in the session's captures directory (the working directory when there is none to write in) and closed | `stop`, `run_to`, `run_for`, `trace`, `screen_wait`, `record`, `audio_record`, `perform` |
 | `kill` | the emulator closed; a close cancelled half-way still finishes | `start`, `close` |
 | `none` | the guest as the call found it | `build_check`, `status`, `log`, `log_wait`, `registers`, `read_memory`, `disassemble`, `call_stack`, `memdump`, `find`, `scan`, `debug`, `set_register`, `write`, `resume`, `step`, `state_write`, `snapshot`, `state_list`, `breakpoint_interrupt`, `regpoint_add`, `symbols_load`, `symbols_find`, `comment_write`, `comment_list`, `machine_map`, `interrupt_vectors`, `palette`, `screen_view`, `screen_signature`, `map_write`, `map_find`, `series_capture`, `image_compare`, `breakpoint_at`, `declaration_list`, `declaration_clear`, `watch_add`, `send_keys`, `send_mouse`, `captures`, `capture_frame`, `perform_export`, `drive` |
 
@@ -318,7 +318,7 @@ The tool: [Lists](docs/reference/lists.md) (`perform_export`).
 
 ## Input and the screen
 
-Every input goes in inside the machine and nothing about the host is touched: no window comes to the front, the host pointer never moves, no Accessibility grant is asked for, and the window's scale changes nothing the guest sees. The tools: [Input](docs/reference/input.md), [Captures](docs/reference/captures.md), [Read](docs/reference/read.md) (`screen_view`, `screen_signature`, `palette`) and [Advance](docs/reference/advance.md) (`screen_wait`).
+Every input goes in inside the machine and nothing about the host is touched: no window comes to the front, the host pointer never moves, no Accessibility grant is asked for, and the window's scale changes nothing the guest sees. The tools: [Input](docs/reference/input.md), [Captures](docs/reference/captures.md), [Read](docs/reference/read.md) (`screen_view`, `screen_signature`, `palette`) and [Advance](docs/reference/advance.md) (`screen_wait`). A stretch of the screen or the sound is recorded between two stops through the debugger's `CAPTURE` (`record`, `audio_record`), so no window or menu is involved either.
 
 **The screen is read from video memory**: text and 13h's chained bytes through the CPU's window,
 and every mode that window cannot read whole (planar 16-colour, unchained 256-colour, 8-, 15-,
@@ -357,5 +357,7 @@ Some tools need a debugger command a build may lack; `build_check` lists the one
 | `PRESENCE` | the orange edge drawn by the emulator | the presence indicator |
 | `BPIF` | a stop when a condition on the registers comes true | `regpoint_add` |
 | `VGAMEMDUMP` | the video RAM as the VGA holds it, planes interleaved | `screen_view` and `screen_signature` in a planar, unchained or linear mode |
+| `CAPTURE` | a WAV, raw OPL, raw MIDI or video capture turned on or off at a stop, naming its file | `record`, `audio_record` |
+| `TAP` | every write or read of a place recorded without stopping (`TAPLIST`, `TAPDEL` beside it) | `watch_add` with `mode` `count` or `capture` |
 
 On a build without `RUNSTATE` a session starts, every reading answers at the stop `start` leaves, and input, captures and declarations work; `resume` with no bound releases the machine and says that nothing will tell when it stops again, and `stop` brings it back to the debugger wherever it is. No DOSBox-X release carries `RUNSTATE` yet.

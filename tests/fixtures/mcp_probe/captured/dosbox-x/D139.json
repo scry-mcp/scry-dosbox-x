@@ -1,0 +1,46 @@
+{
+ "task": {
+  "id": "D139",
+  "prompt": "Keep a row for every read the program makes of the byte at 1A2B:0040, with the beam line and the time of each, without stopping the machine.",
+  "tool": "watch_add",
+  "args": {
+   "ref": {
+    "any_of": [
+     "1A2B:0040",
+     "1a2b:0040",
+     "1A2B:40",
+     "1a2b:40"
+    ]
+   },
+   "mode": "capture",
+   "trigger_type": "r"
+  },
+  "allow": [
+   "by"
+  ],
+  "grammar": [
+   "capture",
+   "r"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D139: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"1A2B:0040\", \"mode\": \"capture\", \"trigger_type\": \"r\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

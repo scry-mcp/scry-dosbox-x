@@ -296,18 +296,18 @@ Example, from a live run:
 {
   "ref": "0000:0400",
   "length": 16,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n763.bin"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n939.bin"
 }
 ```
 
 ```json
 {
-  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n763.bin",
+  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n939.bin",
   "status": "ok",
   "ref": "0000:0400",
   "seg_off": "0000:00000400",
   "length": 16,
-  "path": "$TMPDIR/dosbox-x-live-matrix-070c91fd599b/jobs-scratch/A/n763.bin",
+  "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n939.bin",
   "bytes": 16
 }
 ```
@@ -992,7 +992,7 @@ Example, from a live run:
   "bits": 6,
   "pel_mask": "ffh",
   "image": {
-    "path": "$TMPDIR/dosbox-x-session-kmxru3wy/gfx/palette-1.png",
+    "path": "$TMPDIR/dosbox-x-session-dwh686df/gfx/palette-1.png",
     "bytes": 1009,
     "sha256": "a5dff617e307a60f3bf521d96fed8809cc0f3b38409a74c904cfa5c1ad4371e1",
     "width": 256,

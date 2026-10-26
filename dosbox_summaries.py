@@ -266,6 +266,26 @@ def snapshot(args: dict[str, Any], reply: dict[str, Any]) -> str:
     return f"snapshot: {_said(reply.get('bytes'), 'byte')} at {reply.get('path')}"
 
 
+def _recording(tool: str, args: dict[str, Any], reply: dict[str, Any], got: str) -> str:
+    head = f"{tool} {_said(args.get('frames'), 'frame')}: {reply.get('verdict')}"
+    path = reply.get("path")
+    if reply.get("ended") is False:
+        return f"{head}, still recording until `close`"
+    return f"{head}, {got} at {path}" if isinstance(path, str) else f"{head}, no file"
+
+
+def record(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    return _recording("record", args, reply, _said(reply.get("avi_frames"), "frame"))
+
+
+def audio_record(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    kind = reply.get("kind") or args.get("kind", "wav")
+    got = (f"{_said(reply.get('samples'), 'sample')} at {reply.get('sample_rate_hz')} Hz"
+           + (", silent" if reply.get("sample_min") == reply.get("sample_max") else "")
+           if kind == "wav" else _said(reply.get("bytes"), "byte"))
+    return _recording(f"audio_record {kind}", args, reply, got)
+
+
 # ---------------------------------------------------------------- names for addresses
 
 def symbols_load(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -392,6 +412,10 @@ def load_comments(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def watch_add(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    entry = str(reply.get("entry", ""))
+    if entry.startswith("TAP "):
+        return (f"watch_add {args.get('ref', '')}: {reply.get('mode')} watch armed as {entry}, "
+                f"{_said(reply.get('length'), 'byte')}")
     return f"watch_add {args.get('ref', '')}: {reply.get('state')}"
 
 

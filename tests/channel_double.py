@@ -36,6 +36,17 @@ PROTECTED_STOP = {"EAX": 0x90205, "EBX": 0x9CF24, "ECX": 0xA7, "EDX": 0x992C, "E
 SELINFO_CODE32 = ("CS: b:00400000 type:1B parbg", "    l:0009FFFF dpl : 3 10010")
 SELINFO_DATA32 = ("{r}: b:00400000 type:13 parbg", "    l:0009FFFF dpl : 3 10010")
 SELINFO_REAL = ("                                  ", "                                  ")
+CAPTURE_KINDS = ("WAV", "OPL", "MIDI", "VIDEO")
+#: What the emulator itself prints as a kind turns on, ahead of `CAPTURE`'s line.
+CAPTURE_SAYS = {"OPL": "Preparing to capture Raw OPL, will start with first note played.",
+                "MIDI": "Preparing for raw midi capture, will start with first data."}
+#: ...and as it turns off, by whether its writer had opened a file.
+CAPTURE_CLOSES = {("WAV", True): "Stopped capturing wave output.",
+                  ("OPL", True): "Stopped Raw OPL capturing.",
+                  ("OPL", False): "Stopped Raw OPL capturing.",
+                  ("MIDI", True): "Stopping raw midi saving and finalizing file.",
+                  ("MIDI", False): "Stopped capturing raw midi before any data arrived.",
+                  ("VIDEO", True): "Stopped capturing video."}
 
 
 @dataclass
@@ -71,6 +82,17 @@ class Machine:
     alive: bool = True
     _pending: Stop | None = None
     _polls: int = 0
+    #: Per `CAPTURE` kind, the file its writer opens at its first data (copied into the capture
+    #: folder at the first release with the kind on), or absent for a kind that gets none.
+    capture_sources: dict[str, Path] = field(default_factory=dict)
+    #: The kinds on, each with the file it writes, None until its first data.
+    capturing: dict[str, Path | None] = field(default_factory=dict)
+    #: Per `TAP` kind (`W`, `R`, `C`), the file the debugger has written for such a tap by the
+    #: time `TAPLIST` flushes it; a kind absent records nothing.
+    tap_sources: dict[str, Path] = field(default_factory=dict)
+    #: The taps installed: id -> kind, physical address, length, file.
+    taps: dict[int, tuple[str, int, int, Path]] = field(default_factory=dict)
+    tap_next: int = 1
     #: A hook the case puts on one command word: called with the command, it may answer instead.
     hooks: dict[str, Callable[[str], tuple[bool, list[str]] | None]] = field(default_factory=dict)
 
@@ -115,6 +137,14 @@ class Machine:
     def _release(self) -> None:
         self.stopped, self._polls = False, 0
         self._pending = self.releases.pop(0) if self.releases else self.then
+        for kind, path in self.capturing.items():
+            source = self.capture_sources.get(kind)
+            if path is None and source is not None and self.cwd is not None:
+                folder = self.cwd / "capture"
+                folder.mkdir(exist_ok=True)
+                made = folder / f"sound_000{source.suffix}"
+                made.write_bytes(source.read_bytes())
+                self.capturing[kind] = made
 
     def _do_runstate(self, _: list[str]) -> tuple[bool, list[str]]:
         if not self.stopped and self._pending is not None:
@@ -145,6 +175,75 @@ class Machine:
         return True, [f"DEBUG: STEPIN CS:IP={r['CS']:04X}:{r['EIP'] & 0xFFFF:04X} "
                       f"AX={r['EAX'] & 0xFFFF:04X} BX={r['EBX'] & 0xFFFF:04X} "
                       f"CX={r['ECX'] & 0xFFFF:04X} DX={r['EDX'] & 0xFFFF:04X}"]
+
+    # ------------------------------------------------------------------ captures
+
+    def _capture_line(self, kind: str, on: bool, path: Path | None) -> str:
+        return f"DEBUG: CAPTURE {kind} {'on' if on else 'off'} path={path or '-'}"
+
+    def _do_capture(self, args: list[str]) -> tuple[bool, list[str]]:
+        if not args:
+            return True, [self._capture_line(k, k in self.capturing, self.capturing.get(k))
+                          for k in CAPTURE_KINDS]
+        kind, word = args[0].upper(), args[1].upper() if len(args) > 1 else ""
+        if kind not in CAPTURE_KINDS or word not in ("ON", "OFF") or len(args) != 2:
+            return False, ["DEBUG: CAPTURE usage: CAPTURE [WAV|OPL|MIDI|VIDEO ON|OFF]"]
+        said = [CAPTURE_SAYS[kind]] if word == "ON" and kind in CAPTURE_SAYS else []
+        if word == "ON":
+            self.capturing.setdefault(kind, None)
+            return True, [*said, self._capture_line(kind, True, self.capturing[kind])]
+        on = kind in self.capturing
+        path = self.capturing.pop(kind, None)
+        said = [CAPTURE_CLOSES[kind, path is not None]] if on and (
+            kind, path is not None) in CAPTURE_CLOSES else []
+        return True, [*said, self._capture_line(kind, False, path)]
+
+    # ------------------------------------------------------------------ taps
+
+    def _do_tap(self, args: list[str]) -> tuple[bool, list[str]]:
+        usage = (False, ["DEBUG: TAP usage: TAP W seg:off [bseg:boff blen] file | TAP R seg:off "
+                         "file | TAP C seg:off len file (hex; len at most 400, blen at most 80)",
+                         NOT_RECOGNIZED])
+        if len(args) < 3 or args[0] not in ("W", "R", "C"):
+            return usage
+        if not self.stopped:
+            return False, ["DEBUG: TAP requires the debugger to be stopped", NOT_RECOGNIZED]
+        seg, off = (int(x, 16) for x in args[1].split(":"))
+        length = int(args[2], 16) if args[0] == "C" else 1
+        path = Path(args[-1])
+        if not path.parent.is_dir():
+            return False, [f"DEBUG: TAP cannot write {path}", NOT_RECOGNIZED]
+        path.write_text("")
+        tap = self.tap_next
+        self.tap_next += 1
+        self.taps[tap] = (args[0], seg * 16 + off, length, path)
+        return True, [f"DEBUG: TAP {tap} {args[0]} PHYS={seg * 16 + off:X} LEN={length:X} "
+                      f"success FILE={path}"]
+
+    def _do_taplist(self, _: list[str]) -> tuple[bool, list[str]]:
+        lines = []
+        for tap, (kind, phys, length, path) in self.taps.items():
+            source = self.tap_sources.get(kind)
+            text = source.read_text() if source is not None else ""
+            path.write_text(text)
+            rows = text.count("\nr ") + text.startswith("r ")
+            values = [ln for ln in text.splitlines() if ln.startswith("v ")]
+            pcs = [ln for ln in text.splitlines() if ln.startswith("p ")]
+            total = sum(int(v.split()[-1]) for v in values) if kind == "C" else rows
+            lines.append(f"DEBUG: TAP {tap} {kind} PHYS={phys:X} LEN={length:X} INSTALLED=1 "
+                         f"TOTAL={total} ROWS={0 if kind == 'C' else rows} OVERFLOW_ROWS=0 "
+                         f"VALUES={len(values)} OVERFLOW_VALUES=0 PCS={len(pcs)} "
+                         f"OVERFLOW_PCS=0")
+        return True, [*lines, f"DEBUG: TAPLIST {len(self.taps)}"]
+
+    def _do_tapdel(self, args: list[str]) -> tuple[bool, list[str]]:
+        every = args == ["*"]
+        gone = list(self.taps) if every else [int(args[0])] if int(args[0]) in self.taps else []
+        if not gone and not every:
+            return False, [f"DEBUG: TAPDEL no tap {args[0]}", NOT_RECOGNIZED]
+        for tap in gone:
+            del self.taps[tap]
+        return True, [f"DEBUG: TAPDEL {len(gone)} removed"]
 
     # ------------------------------------------------------------------ readings
 
