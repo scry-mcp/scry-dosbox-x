@@ -185,8 +185,10 @@ def check_load_map(path: str = "", **_: Any) -> None:
     screen_map.check_path("path", path)
 
 
-def check_add_map(screen: str = "", match: Any = None, controls: Any = None, **_: Any) -> None:
-    screen_map.check_add(screen, match, controls)
+def check_add_map(screen: str = "", match: Any = None, controls: Any = None,
+                  cells: str = "", **_: Any) -> None:
+    vocab.one_of("cells", cells, screen_map.CELLS_WORDS)
+    screen_map.check_add(screen, match, controls, cells)
 
 
 def check_save_map(dest: str = "", overwrite: bool = False, **_: Any) -> None:

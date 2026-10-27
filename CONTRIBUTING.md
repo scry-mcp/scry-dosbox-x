@@ -106,7 +106,8 @@ does; its runs go to the display `WINDOW_SHARED_DISPLAY` names, the secondary wh
 stay off the one somebody works on. Without it those cases skip: where a window goes is not this
 package's decision. The Deluxe Paint demos' cases also need `DELUXE_PAINT_DIR`, the directory holding version 1.0's
 `DP.EXE` (the demos refuse any other build); this repository carries none of the program, and
-without it they skip.
+without it they skip. The LineUp demo's case needs `LINEUP_MSDOS_DIR`, a copy of the game's PC port
+with its symbol map, and skips the same way.
 
 **The matrix.** Around those cases sits `tests/live/dosbox_x_live_matrix.py`, run as a script
 rather than collected: every tool in every machine state, at every argument edge, across the

@@ -94,6 +94,7 @@ from scry_core import (  # noqa: E402
     recording,
     reference,
     reply_schema,
+    screen_map,
     signalled_end,
 )
 from scry_core import placement as window  # noqa: E402
@@ -1192,14 +1193,15 @@ def map_find() -> dict[str, Any]:
       replay={"add": "step", "load": "step", "save": "drop"})
 def map_write(method: Annotated[str, vocab.enum(tuple(folds.MAP))], screen: str = "",
               match: list[list[int]] | None = None, controls: list[dict[str, Any]] | None = None,
+              cells: Annotated[str, vocab.enum(screen_map.CELLS_WORDS)] = "",
               path: str = "", dest: str = "", overwrite: bool | None = None) -> dict[str, Any]:
     """The screen map: an application's screens, each known by the signatures of its stable
     regions, and their controls, in a session layer and a file layer.
 
     `add`: the screen shown now as `screen` in the session layer, one read signing each `match`
     crop ([x, y, width, height], 1..16), `controls` ([{"name", "rect"}]) in the screen's own
-    units. Reply: `screen`, `kind`, `size`, `match`, `controls`, `replaced`,
-    `shadows_file`.
+    units. {MAP_CELLS} Reply: `screen`, `kind`, `size`, `cells`, `match`, `controls`,
+    `replaced`, `shadows_file`.
 
     {MAP_LOAD}
 

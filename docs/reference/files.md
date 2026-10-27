@@ -6,7 +6,7 @@ The file tools (`image_compare(method="image")`, `image_compare(method="series")
 
 ### Screen maps
 
-A screen map is a file, `<application>.scry-map.json`, kept in the application's own repository, in the format `scry-map/1`.
+A screen map is a file, `<application>.scry-map.json`, kept in the application's own repository (a game both servers run keeps one map, beside its script in scry-core), in the format `scry-map/1`.
 
 ```json
 {"format": "scry-map/1", "application": "bricks",
@@ -15,7 +15,7 @@ A screen map is a file, `<application>.scry-map.json`, kept in the application's
               "controls": [{"name": "court", "rect": [200, 80, 80, 40]}]}]}
 ```
 
-Everything is in the screen's own units, as `screen_view` counts them. A screen is known by the signatures of regions that stay still on it, never by the whole screen, which a cursor, a ball or an animated colour changes between stops: bricks' map signs the words `SCORE` and `LIVES` and none of their digits. A screen matches when its `kind` and `size` are the screen's and every region's signature is. A file with a duplicate name or a rectangle off its screen is refused whole.
+Everything is in the screen's own units, as `screen_view` counts them. A screen is known by the signatures of regions that stay still on it, never by the whole screen, which a cursor, a ball or an animated colour changes between stops: bricks' map signs the words `SCORE` and `LIVES` and none of their digits. A screen matches when its `kind` and `size` are the screen's and every region's signature is. A screen may instead say `"cells": "index"` (`map_write(method="add", cells="index")`): its regions are then signed by the palette index each pixel was drawn with, not by the colour it shows, so one map knows a program on two machines whose palettes resolve one index to different colours. That needs a screen drawn through the DAC (a 15-, 16- or 32-bit linear mode has none): on any other it is refused `no_channel`. A screen that says nothing is signed in colour. A file with a duplicate name or a rectangle off its screen is refused whole.
 
 **Two layers, both kept by the server.** The FILE layer (`map_write(method="load")`) survives a `start`; the SESSION layer (`map_write(method="add")`) is emptied by it, since its screens were read off another run. `map_find` tries the session's screens first. `map_write(method="save")` writes both as one file, the session winning, and that file becomes the file layer. `map_write(method="load")` and `map_write(method="save")` touch files only, so they answer while the guest runs.
 

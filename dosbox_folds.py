@@ -80,15 +80,16 @@ COMMENT = {
 
 
 def map_read(session: ds.Session) -> screen_map.Read:
-    """The one screen read a map is matched against, `screen_signature`'s."""
-    return lambda: dscreen.grid(session)[0]
+    """The one screen read a map is matched against, `screen_signature`'s, with the palette
+    indices when a screen signed by index asks for them."""
+    return lambda indices=False: dscreen.grid(session, indices)[0]
 
 
 def _add_map(screen: str, match: list[list[int]],
-             controls: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+             controls: list[dict[str, Any]] | None = None, cells: str = "rgb") -> dict[str, Any]:
     session = live()
     session.require_stopped("a listing")
-    return st.reply(**STATE.maps.add(screen, match, controls, map_read(session)))
+    return st.reply(**STATE.maps.add(screen, match, controls, map_read(session), cells))
 
 
 def _load_map(path: str) -> dict[str, Any]:

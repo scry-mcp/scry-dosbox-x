@@ -225,6 +225,7 @@ class MapFindReply(DosboxEnvelope, total=False):
     screen: str
     screens_mapped: int
     screens_tried: int
+    screens_unjudged: int
     size: list[Any]
 
 
@@ -725,6 +726,7 @@ class DeclarationListReply(DosboxEnvelope, total=False):
 
 class MapWriteReply(DosboxEnvelope, total=False):
     application: str
+    cells: str
     controls: int
     kind: str
     match: list[Any]

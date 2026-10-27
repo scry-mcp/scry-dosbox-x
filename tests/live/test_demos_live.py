@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 # Above the runner's own per-call bound, so a hang ends as its FAIL.
 TIMEOUT_S = 1800
 DPAINT = os.environ.get("DELUXE_PAINT_DIR", "")
+LINEUP = os.environ.get("LINEUP_MSDOS_DIR", "")
 
 
 @pytest.mark.parametrize(("name", "args"), [
@@ -27,7 +28,10 @@ DPAINT = os.environ.get("DELUXE_PAINT_DIR", "")
     *(pytest.param(name, ["--cwd", DPAINT], marks=pytest.mark.skipif(
         not DPAINT, reason="set DELUXE_PAINT_DIR to the directory holding Deluxe Paint II v1.0: "
                            "the repository carries none of the program"))
-      for name in ("dpaint", "dpaint_maps"))])
+      for name in ("dpaint", "dpaint_maps")),
+    pytest.param("lineup", ["--cwd", LINEUP], marks=pytest.mark.skipif(
+        not LINEUP, reason="set LINEUP_MSDOS_DIR to a copy of LineUp's PC port: the repository "
+                           "carries none of the game"))])
 def test_a_demo_passes_and_matches_what_is_committed(name: str, args: list[str]) -> None:
     demo = ROOT / "demos" / name
     ran = subprocess.run([sys.executable, str(demo / "demo.py"), *args], cwd=ROOT,

@@ -1180,8 +1180,8 @@ map_find()
 ```
 
 Which mapped screen the machine shows. Reply: `matched`; matched, `screen`, `layer`, `kind`,
-`size`, `controls` (`name`, `rect`, `centre`); else `screens_mapped`, `screens_tried`. None
-mapped: `needs_call`.
+`size`, `controls` (`name`, `rect`, `centre`); else `screens_mapped`, `screens_tried`,
+`screens_unjudged` (signed by index on a screen with no palette). None mapped: `needs_call`.
 
 Reference: REFERENCE.md, Screen maps.
 
@@ -1196,6 +1196,7 @@ Takes no argument.
 | `screen` | string |
 | `screens_mapped` | integer |
 | `screens_tried` | integer |
+| `screens_unjudged` | integer |
 | `size` | array |
 
 Example, from a live run:
@@ -1229,7 +1230,7 @@ Session layer first, then the file's; a screen matches when its kind and size ar
 *Write the screen map*
 
 ```text
-map_write(method, screen="", match=null, controls=null, path="", dest="", overwrite=null)
+map_write(method, screen="", match=null, controls=null, cells="", path="", dest="", overwrite=null)
 ```
 
 The screen map: an application's screens, each known by the signatures of its stable
@@ -1237,8 +1238,10 @@ regions, and their controls, in a session layer and a file layer.
 
 `add`: the screen shown now as `screen` in the session layer, one read signing each `match`
 crop ([x, y, width, height], 1..16), `controls` ([{"name", "rect"}]) in the screen's own
-units. Reply: `screen`, `kind`, `size`, `match`, `controls`, `replaced`,
-`shadows_file`.
+units. `cells` `index` (a pixel screen; default
+`rgb`) signs the palette indices drawn, not the colours shown, so one map knows a program
+shown through two palettes; a screen with no palette refuses it (`no_channel`). Reply: `screen`, `kind`, `size`, `cells`, `match`, `controls`,
+`replaced`, `shadows_file`.
 
 `load`: `path` (`<application>.scry-map.json`, absolute or `~`-led) as the file layer. Reply:
 `path`, `application`, `screens`, `controls`.
@@ -1257,6 +1260,7 @@ Reference: REFERENCE.md, Screen maps.
 | `screen` | string | `""` |
 | `match` | array of array of integer or null | `null` |
 | `controls` | array of object or null | `null` |
+| `cells` | one of `""`, `"rgb"`, `"index"` | `""` |
 | `path` | string | `""` |
 | `dest` | string | `""` |
 | `overwrite` | boolean or null | `null` |
@@ -1264,6 +1268,7 @@ Reference: REFERENCE.md, Screen maps.
 | reply field | type |
 |---|---|
 | `application` | string |
+| `cells` | string |
 | `controls` | integer |
 | `kind` | string |
 | `match` | array |

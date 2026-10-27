@@ -59,6 +59,18 @@ def test_a_screen_of_another_mode_matches_nothing_and_says_what_it_tried(tmp_pat
         "pixel", [320, 200], 0, 1)
 
 
+def test_a_mode_13h_screen_signed_by_index_is_found_again(tmp_path: Path) -> None:
+    screen_bench("screen-13h", tmp_path)
+    added = _ok(server.map_write("add", screen="board", match=[[0, 0, 320, 8]], cells="index"))
+    assert (added["kind"], added["cells"]) == ("pixel", "index")
+    assert added["match"][0]["signature"] != _ok(server.map_write(
+        "add", screen="board in colour", match=[[0, 0, 320, 8]]))["match"][0]["signature"]
+    found = _ok(server.map_find())
+    assert (found["matched"], found["screen"]) == (True, "board")
+    dstate.STATE.maps.session.pop("board")
+    assert _ok(server.map_find())["screen"] == "board in colour", "the control: in colour too"
+
+
 def test_saved_screens_become_the_file_layer_and_load_back(tmp_path: Path) -> None:
     screen_bench("probe-booted", tmp_path)
     _ok(server.map_write("add", screen="prompt", match=[PROMPT], controls=[CONTROL]))

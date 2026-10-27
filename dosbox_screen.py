@@ -130,8 +130,9 @@ def shown_dac(session: ds.Session) -> list[str]:
     return [dac[i & mask] for i in range(len(dac))]
 
 
-def grid(session: ds.Session) -> tuple[screen_map.Grid, vga.Geometry]:
-    """ONE read of the screen as `scry_core.raster` signs it, and its shape."""
+def grid(session: ds.Session, indices: bool = False) -> tuple[screen_map.Grid, vga.Geometry]:
+    """ONE read of the screen as `scry_core.raster` signs it, and its shape; `indices` adds the
+    DAC indices of a mode drawn through the DAC."""
     shape = vga.geometry(vga.read_listings(session))
     data = vga.read_screen(session, shape)
     if shape.source == vga.TEXT:
@@ -139,8 +140,10 @@ def grid(session: ds.Session) -> tuple[screen_map.Grid, vga.Geometry]:
         return screen_map.Grid("text", shape.width, shape.height,
                                text_cells(data, vga.listed(session, vga.COMMAND_OF["ac"]),
                                           dac)), shape
-    return screen_map.Grid("pixel", shape.width, shape.height,
-                           raster.rgb(pixels(session, shape, data))), shape
+    picture = pixels(session, shape, data)
+    drawn = (raster.index_cells(picture.pixels)
+             if indices and picture.palette is not None else None)
+    return screen_map.Grid("pixel", shape.width, shape.height, raster.rgb(picture), drawn), shape
 
 
 def pixels(session: ds.Session, shape: vga.Geometry, data: bytes) -> png.Raster:
