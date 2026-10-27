@@ -9,6 +9,7 @@ import functools
 import os
 import shutil
 import tempfile
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -115,3 +116,27 @@ def symbols_at(table: Path) -> Any:
         cs = int(str(run.replies["ready"]["pc"]).split(":")[0], 16)
         return {"path": table, "base": f"{cs * 16:x}"}
     return args
+
+
+def run_lengths(pixels: bytes) -> list[tuple[int, int]]:
+    """A row of pixels as (colour, how many) runs."""
+    out: list[tuple[int, int]] = []
+    for b in pixels:
+        if out and out[-1][0] == b:
+            out[-1] = (b, out[-1][1] + 1)
+        else:
+            out.append((b, 1))
+    return out
+
+
+def crossing(colours: dict[str, int], pixels: Callable[[Reply], bytes],
+             *spans: tuple[str, int]) -> Any:
+    """A row, read by `pixels` off the reply, that crosses `colours` in this order, each run
+    exactly as long as the geometry draws it: a shape a pixel short or shifted changes a
+    length."""
+    def check(reply: Reply, run: Run) -> str:
+        want = [(colours[n], k) for n, k in spans]
+        got = run_lengths(pixels(reply))
+        expect(got == want, f"the row runs {got}, not {want}")
+        return "the row reads " + ", then ".join(f"{n} x {k}" for n, k in spans)
+    return check

@@ -1,0 +1,1089 @@
+{
+ "format": "scry-map/1",
+ "application": "dpaint",
+ "screens": [
+  {
+   "name": "paint: freehand",
+   "kind": "pixel",
+   "size": [
+    640,
+    480
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      0,
+      320,
+      11
+     ],
+     "signature": "f32905756748417a"
+    },
+    {
+     "crop": [
+      618,
+      54,
+      22,
+      22
+     ],
+     "signature": "fb51710fe3aadcb3"
+    }
+   ],
+   "controls": [
+    {
+     "name": "pict",
+     "rect": [
+      103,
+      0,
+      33,
+      11
+     ]
+    },
+    {
+     "name": "brush",
+     "rect": [
+      183,
+      0,
+      41,
+      11
+     ]
+    },
+    {
+     "name": "color",
+     "rect": [
+      231,
+      0,
+      41,
+      11
+     ]
+    },
+    {
+     "name": "brush_dot",
+     "rect": [
+      598,
+      20,
+      3,
+      3
+     ]
+    },
+    {
+     "name": "freehand",
+     "rect": [
+      618,
+      54,
+      22,
+      22
+     ]
+    },
+    {
+     "name": "line",
+     "rect": [
+      594,
+      78,
+      22,
+      22
+     ]
+    },
+    {
+     "name": "rect_filled",
+     "rect": [
+      606,
+      138,
+      9,
+      9
+     ]
+    },
+    {
+     "name": "circle_filled",
+     "rect": [
+      630,
+      138,
+      9,
+      9
+     ]
+    },
+    {
+     "name": "brush_grab",
+     "rect": [
+      594,
+      174,
+      22,
+      22
+     ]
+    },
+    {
+     "name": "black",
+     "rect": [
+      596,
+      315,
+      17,
+      16
+     ]
+    },
+    {
+     "name": "blue",
+     "rect": [
+      596,
+      337,
+      17,
+      14
+     ]
+    },
+    {
+     "name": "brown",
+     "rect": [
+      596,
+      441,
+      17,
+      15
+     ]
+    },
+    {
+     "name": "yellow",
+     "rect": [
+      620,
+      441,
+      17,
+      15
+     ]
+    }
+   ]
+  },
+  {
+   "name": "color menu",
+   "kind": "pixel",
+   "size": [
+    640,
+    480
+   ],
+   "match": [
+    {
+     "crop": [
+      236,
+      26,
+      160,
+      110
+     ],
+     "signature": "2a3750e7f653e985"
+    }
+   ],
+   "controls": [
+    {
+     "name": "palette",
+     "rect": [
+      232,
+      13,
+      170,
+      11
+     ]
+    },
+    {
+     "name": "color",
+     "rect": [
+      231,
+      0,
+      41,
+      11
+     ]
+    }
+   ]
+  },
+  {
+   "name": "palette",
+   "kind": "pixel",
+   "size": [
+    640,
+    480
+   ],
+   "match": [
+    {
+     "crop": [
+      2,
+      11,
+      200,
+      10
+     ],
+     "signature": "471edc468fc62e66"
+    },
+    {
+     "crop": [
+      5,
+      123,
+      198,
+      34
+     ],
+     "signature": "1d97e092c139e2e2"
+    }
+   ],
+   "controls": [
+    {
+     "name": "brown",
+     "rect": [
+      91,
+      57,
+      18,
+      4
+     ]
+    },
+    {
+     "name": "red_up",
+     "rect": [
+      4,
+      34,
+      7,
+      10
+     ]
+    },
+    {
+     "name": "green_up",
+     "rect": [
+      18,
+      34,
+      7,
+      10
+     ]
+    },
+    {
+     "name": "blue_up",
+     "rect": [
+      32,
+      34,
+      7,
+      10
+     ]
+    },
+    {
+     "name": "ok",
+     "rect": [
+      10,
+      143,
+      55,
+      12
+     ]
+    },
+    {
+     "name": "cancel",
+     "rect": [
+      138,
+      143,
+      60,
+      12
+     ]
+    }
+   ]
+  },
+  {
+   "name": "paint: rectangle",
+   "kind": "pixel",
+   "size": [
+    640,
+    480
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      0,
+      320,
+      11
+     ],
+     "signature": "f32905756748417a"
+    },
+    {
+     "crop": [
+      594,
+      126,
+      22,
+      22
+     ],
+     "signature": "96719ff1f63fffa7"
+    }
+   ],
+   "controls": [
+    {
+     "name": "pict",
+     "rect": [
+      103,
+      0,
+      33,
+      11
+     ]
+    },
+    {
+     "name": "brush",
+     "rect": [
+      183,
+      0,
+      41,
+      11
+     ]
+    },
+    {
+     "name": "color",
+     "rect": [
+      231,
+      0,
+      41,
+      11
+     ]
+    },
+    {
+     "name": "brush_dot",
+     "rect": [
+      598,
+      20,
+      3,
+      3
+     ]
+    },
+    {
+     "name": "freehand",
+     "rect": [
+      618,
+      54,
+      22,
+      22
+     ]
+    },
+    {
+     "name": "line",
+     "rect": [
+      594,
+      78,
+      22,
+      22
+     ]
+    },
+    {
+     "name": "rect_filled",
+     "rect": [
+      606,
+      138,
+      9,
+      9
+     ]
+    },
+    {
+     "name": "circle_filled",
+     "rect": [
+      630,
+      138,
+      9,
+      9
+     ]
+    },
+    {
+     "name": "brush_grab",
+     "rect": [
+      594,
+      174,
+      22,
+      22
+     ]
+    },
+    {
+     "name": "black",
+     "rect": [
+      596,
+      315,
+      17,
+      16
+     ]
+    },
+    {
+     "name": "blue",
+     "rect": [
+      596,
+      337,
+      17,
+      14
+     ]
+    },
+    {
+     "name": "brown",
+     "rect": [
+      596,
+      441,
+      17,
+      15
+     ]
+    },
+    {
+     "name": "yellow",
+     "rect": [
+      620,
+      441,
+      17,
+      15
+     ]
+    }
+   ]
+  },
+  {
+   "name": "paint: circle",
+   "kind": "pixel",
+   "size": [
+    640,
+    480
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      0,
+      320,
+      11
+     ],
+     "signature": "f32905756748417a"
+    },
+    {
+     "crop": [
+      618,
+      126,
+      22,
+      22
+     ],
+     "signature": "893c4cbef2bd2354"
+    }
+   ],
+   "controls": [
+    {
+     "name": "pict",
+     "rect": [
+      103,
+      0,
+      33,
+      11
+     ]
+    },
+    {
+     "name": "brush",
+     "rect": [
+      183,
+      0,
+      41,
+      11
+     ]
+    },
+    {
+     "name": "color",
+     "rect": [
+      231,
+      0,
+      41,
+      11
+     ]
+    },
+    {
+     "name": "brush_dot",
+     "rect": [
+      598,
+      20,
+      3,
+      3
+     ]
+    },
+    {
+     "name": "freehand",
+     "rect": [
+      618,
+      54,
+      22,
+      22
+     ]
+    },
+    {
+     "name": "line",
+     "rect": [
+      594,
+      78,
+      22,
+      22
+     ]
+    },
+    {
+     "name": "rect_filled",
+     "rect": [
+      606,
+      138,
+      9,
+      9
+     ]
+    },
+    {
+     "name": "circle_filled",
+     "rect": [
+      630,
+      138,
+      9,
+      9
+     ]
+    },
+    {
+     "name": "brush_grab",
+     "rect": [
+      594,
+      174,
+      22,
+      22
+     ]
+    },
+    {
+     "name": "black",
+     "rect": [
+      596,
+      315,
+      17,
+      16
+     ]
+    },
+    {
+     "name": "blue",
+     "rect": [
+      596,
+      337,
+      17,
+      14
+     ]
+    },
+    {
+     "name": "brown",
+     "rect": [
+      596,
+      441,
+      17,
+      15
+     ]
+    },
+    {
+     "name": "yellow",
+     "rect": [
+      620,
+      441,
+      17,
+      15
+     ]
+    }
+   ]
+  },
+  {
+   "name": "paint: line",
+   "kind": "pixel",
+   "size": [
+    640,
+    480
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      0,
+      320,
+      11
+     ],
+     "signature": "f32905756748417a"
+    },
+    {
+     "crop": [
+      594,
+      78,
+      22,
+      22
+     ],
+     "signature": "1f9ad806875b63d2"
+    }
+   ],
+   "controls": [
+    {
+     "name": "pict",
+     "rect": [
+      103,
+      0,
+      33,
+      11
+     ]
+    },
+    {
+     "name": "brush",
+     "rect": [
+      183,
+      0,
+      41,
+      11
+     ]
+    },
+    {
+     "name": "color",
+     "rect": [
+      231,
+      0,
+      41,
+      11
+     ]
+    },
+    {
+     "name": "brush_dot",
+     "rect": [
+      598,
+      20,
+      3,
+      3
+     ]
+    },
+    {
+     "name": "freehand",
+     "rect": [
+      618,
+      54,
+      22,
+      22
+     ]
+    },
+    {
+     "name": "line",
+     "rect": [
+      594,
+      78,
+      22,
+      22
+     ]
+    },
+    {
+     "name": "rect_filled",
+     "rect": [
+      606,
+      138,
+      9,
+      9
+     ]
+    },
+    {
+     "name": "circle_filled",
+     "rect": [
+      630,
+      138,
+      9,
+      9
+     ]
+    },
+    {
+     "name": "brush_grab",
+     "rect": [
+      594,
+      174,
+      22,
+      22
+     ]
+    },
+    {
+     "name": "black",
+     "rect": [
+      596,
+      315,
+      17,
+      16
+     ]
+    },
+    {
+     "name": "blue",
+     "rect": [
+      596,
+      337,
+      17,
+      14
+     ]
+    },
+    {
+     "name": "brown",
+     "rect": [
+      596,
+      441,
+      17,
+      15
+     ]
+    },
+    {
+     "name": "yellow",
+     "rect": [
+      620,
+      441,
+      17,
+      15
+     ]
+    }
+   ]
+  },
+  {
+   "name": "paint: grab",
+   "kind": "pixel",
+   "size": [
+    640,
+    480
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      0,
+      320,
+      11
+     ],
+     "signature": "f32905756748417a"
+    },
+    {
+     "crop": [
+      594,
+      174,
+      10,
+      10
+     ],
+     "signature": "30e9d5b1c3d3b08b"
+    }
+   ],
+   "controls": [
+    {
+     "name": "pict",
+     "rect": [
+      103,
+      0,
+      33,
+      11
+     ]
+    },
+    {
+     "name": "brush",
+     "rect": [
+      183,
+      0,
+      41,
+      11
+     ]
+    },
+    {
+     "name": "color",
+     "rect": [
+      231,
+      0,
+      41,
+      11
+     ]
+    },
+    {
+     "name": "brush_dot",
+     "rect": [
+      598,
+      20,
+      3,
+      3
+     ]
+    },
+    {
+     "name": "freehand",
+     "rect": [
+      618,
+      54,
+      22,
+      22
+     ]
+    },
+    {
+     "name": "line",
+     "rect": [
+      594,
+      78,
+      22,
+      22
+     ]
+    },
+    {
+     "name": "rect_filled",
+     "rect": [
+      606,
+      138,
+      9,
+      9
+     ]
+    },
+    {
+     "name": "circle_filled",
+     "rect": [
+      630,
+      138,
+      9,
+      9
+     ]
+    },
+    {
+     "name": "brush_grab",
+     "rect": [
+      594,
+      174,
+      22,
+      22
+     ]
+    },
+    {
+     "name": "black",
+     "rect": [
+      596,
+      315,
+      17,
+      16
+     ]
+    },
+    {
+     "name": "blue",
+     "rect": [
+      596,
+      337,
+      17,
+      14
+     ]
+    },
+    {
+     "name": "brown",
+     "rect": [
+      596,
+      441,
+      17,
+      15
+     ]
+    },
+    {
+     "name": "yellow",
+     "rect": [
+      620,
+      441,
+      17,
+      15
+     ]
+    }
+   ]
+  },
+  {
+   "name": "paint: custom brush",
+   "kind": "pixel",
+   "size": [
+    640,
+    480
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      0,
+      320,
+      11
+     ],
+     "signature": "f32905756748417a"
+    },
+    {
+     "crop": [
+      594,
+      12,
+      46,
+      40
+     ],
+     "signature": "87848f2332914455"
+    },
+    {
+     "crop": [
+      594,
+      54,
+      22,
+      22
+     ],
+     "signature": "72bd0e87a2cb6272"
+    }
+   ],
+   "controls": [
+    {
+     "name": "pict",
+     "rect": [
+      103,
+      0,
+      33,
+      11
+     ]
+    },
+    {
+     "name": "brush",
+     "rect": [
+      183,
+      0,
+      41,
+      11
+     ]
+    },
+    {
+     "name": "color",
+     "rect": [
+      231,
+      0,
+      41,
+      11
+     ]
+    },
+    {
+     "name": "brush_dot",
+     "rect": [
+      598,
+      20,
+      3,
+      3
+     ]
+    },
+    {
+     "name": "freehand",
+     "rect": [
+      618,
+      54,
+      22,
+      22
+     ]
+    },
+    {
+     "name": "line",
+     "rect": [
+      594,
+      78,
+      22,
+      22
+     ]
+    },
+    {
+     "name": "rect_filled",
+     "rect": [
+      606,
+      138,
+      9,
+      9
+     ]
+    },
+    {
+     "name": "circle_filled",
+     "rect": [
+      630,
+      138,
+      9,
+      9
+     ]
+    },
+    {
+     "name": "brush_grab",
+     "rect": [
+      594,
+      174,
+      22,
+      22
+     ]
+    },
+    {
+     "name": "black",
+     "rect": [
+      596,
+      315,
+      17,
+      16
+     ]
+    },
+    {
+     "name": "blue",
+     "rect": [
+      596,
+      337,
+      17,
+      14
+     ]
+    },
+    {
+     "name": "brown",
+     "rect": [
+      596,
+      441,
+      17,
+      15
+     ]
+    },
+    {
+     "name": "yellow",
+     "rect": [
+      620,
+      441,
+      17,
+      15
+     ]
+    }
+   ]
+  },
+  {
+   "name": "brush menu",
+   "kind": "pixel",
+   "size": [
+    640,
+    480
+   ],
+   "match": [
+    {
+     "crop": [
+      188,
+      26,
+      160,
+      130
+     ],
+     "signature": "af69f3786ed3210d"
+    }
+   ],
+   "controls": [
+    {
+     "name": "flip_horizontal",
+     "rect": [
+      184,
+      13,
+      170,
+      11
+     ]
+    },
+    {
+     "name": "brush",
+     "rect": [
+      183,
+      0,
+      41,
+      11
+     ]
+    }
+   ]
+  },
+  {
+   "name": "pict menu",
+   "kind": "pixel",
+   "size": [
+    640,
+    480
+   ],
+   "match": [
+    {
+     "crop": [
+      110,
+      26,
+      140,
+      140
+     ],
+     "signature": "c2c47ab0d12d3296"
+    }
+   ],
+   "controls": [
+    {
+     "name": "pict",
+     "rect": [
+      103,
+      0,
+      33,
+      11
+     ]
+    }
+   ]
+  }
+ ]
+}

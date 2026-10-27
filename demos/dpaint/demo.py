@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import hashlib
 import sys
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -179,31 +180,20 @@ def row(y: int, x: int, length: int) -> dict[str, Any]:
     return {"ref": f"A000:{y * 320 + x:04X}", "length": length}
 
 
-def runs(reply: Reply) -> list[tuple[int, int]]:
-    """A row of pixels as (colour, how many) runs."""
-    out: list[tuple[int, int]] = []
-    for b in bytes.fromhex(reply["hex"]):
-        if out and out[-1][0] == b:
-            out[-1] = (b, out[-1][1] + 1)
-        else:
-            out.append((b, 1))
-    return out
-
-
 def crossing(*spans: tuple[str, int]) -> Any:
-    """A row that crosses the scene's colours in this order, each run exactly as long as the
-    geometry draws it: a shape a pixel short or shifted changes a length."""
-    def check(reply: Reply, run: Run) -> str:
-        want = [(COLOURS[n], k) for n, k in spans]
-        expect(runs(reply) == want, f"the row runs {runs(reply)}, not {want}")
-        return "the row reads " + ", then ".join(f"{n} x {k}" for n, k in spans)
-    return check
+    """A row of video memory that crosses the scene's colours in this order."""
+    return host.crossing(COLOURS, lambda reply: bytes.fromhex(reply["hex"]), *spans)
+
+
+def opening(boot: Callable[[Run], dict[str, Any]]) -> list[Step]:
+    """Both Deluxe Paint demos' first steps: the session, then the program up and drawn."""
+    return [Step("start", "start", boot, started, options=frozenset({"binary", "cwd"}),
+                 volatile={"summary": "it carries how long the debugger took to answer"}),
+            Step("loaded", "run_for", {"frames": BOOT_FRAMES, "seconds": WAIT_S}, loaded)]
 
 
 STEPS = [
-    Step("start", "start", boot, started, options=frozenset({"binary", "cwd"}),
-         volatile={"summary": "it carries how long the debugger took to answer"}),
-    Step("loaded", "run_for", {"frames": BOOT_FRAMES, "seconds": WAIT_S}, loaded),
+    *opening(boot),
     Step("map", "map_write", {"method": "load", "path": HERE / "dpaint.scry-map.json"},
          lambda reply, run: f"{reply['screens']} screen and {reply['controls']} controls "
                             "loaded"),
@@ -243,13 +233,18 @@ STEPS = [
 ]
 
 
-DEMO = Demo(
-    name="dpaint", root=ROOT, server=[sys.executable, str(ROOT / "dosbox_x_server.py")],
-    readme=HERE / "README.md", steps=STEPS,
-    capture=lambda run: run.dir / "screen.png",
-    offers=frozenset({"cwd", "shared"}), reads=frozenset({"shared"}), precheck=precheck,
-    host_args={"cwd": "the directory of the reader's own copy of the program"},
-    volatile=VOLATILE)
+def declared(name: str, here: Path, steps: list[Step]) -> Demo:
+    """A Deluxe Paint demo: run from the reader's copy, and refused on any other build."""
+    return Demo(
+        name=name, root=ROOT, server=[sys.executable, str(ROOT / "dosbox_x_server.py")],
+        readme=here / "README.md", steps=steps,
+        capture=lambda run: run.dir / "screen.png",
+        offers=frozenset({"cwd", "shared"}), reads=frozenset({"shared"}), precheck=precheck,
+        host_args={"cwd": "the directory of the reader's own copy of the program"},
+        volatile=VOLATILE)
+
+
+DEMO = declared("dpaint", HERE, STEPS)
 
 
 if __name__ == "__main__":

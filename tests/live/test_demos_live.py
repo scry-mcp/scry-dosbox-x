@@ -24,9 +24,10 @@ DPAINT = os.environ.get("DELUXE_PAINT_DIR", "")
 @pytest.mark.parametrize(("name", "args"), [
     ("bricks", []),
     ("mines", []),
-    pytest.param("dpaint", ["--cwd", DPAINT], marks=pytest.mark.skipif(
+    *(pytest.param(name, ["--cwd", DPAINT], marks=pytest.mark.skipif(
         not DPAINT, reason="set DELUXE_PAINT_DIR to your own copy of Deluxe Paint II v1.0: "
-                           "the repository carries none of the program"))])
+                           "the repository carries none of the program"))
+      for name in ("dpaint", "dpaint_maps"))])
 def test_a_demo_passes_and_matches_what_is_committed(name: str, args: list[str]) -> None:
     demo = ROOT / "demos" / name
     ran = subprocess.run([sys.executable, str(demo / "demo.py"), *args], cwd=ROOT,

@@ -382,21 +382,24 @@ def test_a_demo_window_goes_only_where_the_helper_places_it(
     demo_host.unplaced.cache_clear()
 
 
-def test_the_dpaint_demo_refuses_any_copy_but_the_release_it_was_written_for(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+@pytest.mark.parametrize("demo", ["dpaint", "dpaint_maps"])
+def test_the_dpaint_demos_refuse_any_copy_but_the_release_they_were_written_for(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, demo: str) -> None:
     """Checked before the window: no `--cwd`, a relative one, no DP.EXE there, another build."""
-    dpaint = importlib.import_module("demos.dpaint.demo")
+    dpaint = importlib.import_module(f"demos.{demo}.demo")
     monkeypatch.setattr(demo_host, "precheck", lambda _run: "")
     exe = tmp_path / "DP.EXE"
 
     def why(**options: str) -> str:
-        return str(dpaint.precheck(Run(dir=tmp_path, options=options)))
+        assert dpaint.DEMO.precheck is not None
+        return str(dpaint.DEMO.precheck(Run(dir=tmp_path, options=options)))
     assert "pass --cwd" in why()
     assert "absolute or ~-led paths only: --cwd dpaint2" in why(cwd="dpaint2")
     assert "no DP.EXE in" in why(cwd=str(tmp_path))
     exe.write_bytes(b"MZ another build")
     assert "is not the Deluxe Paint II v1.0" in why(cwd=str(tmp_path))
-    monkeypatch.setattr(dpaint, "DP_SHA256", hashlib.sha256(exe.read_bytes()).hexdigest())
+    monkeypatch.setattr(importlib.import_module("demos.dpaint.demo"), "DP_SHA256",
+                        hashlib.sha256(exe.read_bytes()).hexdigest())
     assert why(cwd=str(tmp_path)) == ""
 
 
