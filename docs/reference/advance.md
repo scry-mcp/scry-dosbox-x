@@ -145,7 +145,9 @@ run_for(milliseconds=0, frames=0, seconds=30.0)
 ```
 
 Run for `frames` display frames (one `VRT` each) or `milliseconds` of emulated time (exactly
-one) and come back STOPPED. Reports progress while it waits. Needs the machine stopped.
+one) and come back STOPPED. `milliseconds` runs whole frames, so it ends at the first
+retrace at or past the time asked, up to one frame later. Reports progress while it waits.
+Needs the machine stopped.
 
 Reply: `verdict` (`ELAPSED`, `OTHER_STOP`, `TIMEOUT`), `polls`, `emulated_before_s`,
 `emulated_after_s`, `frame_before`, `frame_after`, `cycles` (unavailable with why),
@@ -263,7 +265,7 @@ breakpoint armed after its code already ran can fail to cut the frames after it,
 does not prove its address was not reached; and a change-watch or interrupt breakpoint cannot be
 told from a retrace, so its stop counts as a frame.
 
-By milliseconds it reads the emulated clock off each retrace stop's `RUNSTATE`. A `TIMEOUT` with a `VRT` still out is interrupted where it stands, its retrace left pending. `retrace_pending: true` means the debugger still holds a retrace stop, which the next release meets. The `note` states what the reply cannot prove (a declared breakpoint or watch, an unread clock). Advancing is not altering.
+By milliseconds it reads the emulated clock off each retrace stop's `RUNSTATE` and stops at the first retrace at or past the time asked, since a stop between retraces is not one a replay can reach again: it runs over by up to one frame. A `TIMEOUT` with a `VRT` still out is interrupted where it stands, its retrace left pending. `retrace_pending: true` means the debugger still holds a retrace stop, which the next release meets. The `note` states what the reply cannot prove (a declared breakpoint or watch, an unread clock). Advancing is not altering.
 
 <!-- scry-reference:begin trace -->
 ## `trace`

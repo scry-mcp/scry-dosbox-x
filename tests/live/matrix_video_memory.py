@@ -58,7 +58,8 @@ def section_w() -> None:
         view = M.call(server.screen_view, dest=M.fresh(".png"), attach=False)
         sig = M.call(server.screen_signature)
         signed = signed and ok(sig) and sig.get("kind") == "pixel"
-        M.judge(cell.label, ok(stop) and ok(view) and view.get("vga_mode") == word
+        M.judge(cell.label, ok(stop) and stop.get("verdict") == "OTHER_STOP" and ok(view)
+                and view.get("vga_mode") == word
                 and (view.get("width"), view.get("height")) == (width, height)
                 and _matches(word, width, height, view), said(view))
     M.judge(W_CELLS[-1].label, signed, "every stop's signature was a pixel one")

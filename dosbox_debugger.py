@@ -32,8 +32,8 @@ RUNSTATE_LINE = re.compile(r"^DEBUG: RUNSTATE (stopped|running) cycles=(\d+) ms=
 #: What `RUNSTATE`'s `cycles` holds, as every reply that leans on it says.
 NORMAL_CORE_CYCLES = "the cycle count counts only what the normal core runs"
 COMMANDS_SECTION = "REFERENCE.md, Debugger commands"
-#: The pause between two `RUNSTATE`s of a wait, one request in flight.
-POLL_PAUSE_S = 0.02
+#: The pause between two `RUNSTATE`s of a wait; longer, a run by retraces lags the guest.
+POLL_PAUSE_S = 0.002
 
 #: The survey's one `EV`: every register a stop reply carries, then the flags and CR0.
 SURVEY_NAMES = (*grammar.REGISTER_NAMES, "EFLAGS", "CR0")

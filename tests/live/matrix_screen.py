@@ -15,6 +15,7 @@ from typing import Any
 from matrix_common import (
     GUEST,
     M,
+    advanced,
     alive,
     boot,
     cells,
@@ -163,7 +164,7 @@ def _probe() -> None:
            reply=r, holds=ok(r) and (r.get("text") or [""] * 4)[3] == "C:\\>PROBE.COM"
            and r.get("cursor") == [0, 4])
     one = M.call(server.screen_signature)
-    must(M.call(server.run_for, frames=1), "one more retrace on the probe")
+    advanced(M.call(server.run_for, frames=1), "one more retrace on the probe")
     two = M.call(server.screen_signature)
     M.judge("J screen_signature is one string for the probe's still page, a retrace apart",
             ok(one) and ok(two) and isinstance(one.get("signature"), str)

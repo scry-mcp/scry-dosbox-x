@@ -467,7 +467,9 @@ Example, from a live run:
 **On the `dos` channel a call is a row, not a line.** `in` and `out` hold the registers DOS took
 and handed back, `out.cf` the carry, and `error` the code with its name for the calls that report
 by the carry (AH 38h and up); an older call answers in AL and gets no `error`. `returned` is false
-for a call DOS has not handed back yet, as at a stop inside it.
+for a call DOS has not handed back yet, as at a stop inside it. `time_s` and `returned_s` are
+seconds of emulated time since power-on, the clock `run_for`'s `emulated_before_s` and
+`emulated_after_s` read.
 
 
 `guest` is the program's own 0xE9 instrumentation, one line per write; `emulator` is DOSBox-X's own lines; `all` is the file in order, each line tagged `[guest] ` or `[emulator] `. `labels` counts returned lines by first word (BOOT, PERF, UI...), one glance at who is talking. `lines_total` counts all matches, not those returned, and an empty `lines` is an answer. One file holds those three channels, so one mark position serves each; `dos` reads the DOS call trace instead and takes no mark. There is no `process` channel: the emulator's own stdout is `close(detail=True)`'s. Queued work applies on a stop, saying so in `applied_on_stop`.

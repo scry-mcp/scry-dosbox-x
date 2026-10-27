@@ -607,9 +607,9 @@ def pic(method: Annotated[str, vocab.enum(tuple(folds.PIC))],
     """The 8259 interrupt controllers, which decide which hardware interrupt reaches the CPU.
     Needs the machine stopped.
 
-    `read`: Reply: `controllers` (each `controller`, `vector_base`, `isr`, `isrr`,
-    `auto_eoi`, ...), `irqs` (each `irq`, `vector`, `requested`, `masked`, `in_service`,
-    `cascade`).
+    `read`: Reply: `controllers` (each `controller`, `vector_base`, `active_irq` (null: none
+    in service), `isr`, `isrr`, `auto_eoi`, ...), `irqs` (each `irq`, `vector`, `requested`,
+    `masked`, `in_service`, `cascade`).
 
     `mask`, `unmask`, `ack` (clear its in-service bit), `raise`, `lower` (its request line):
     `irq` 0 to 15. Marks the session `altered`. The timer is IRQ 0: `raise` it to run its
@@ -727,7 +727,9 @@ def run_for(milliseconds: int = 0, frames: int = 0,
             seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
             ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run for `frames` display frames (one `VRT` each) or `milliseconds` of emulated time (exactly
-    one) and come back STOPPED. Reports progress while it waits. Needs the machine stopped.
+    one) and come back STOPPED. `milliseconds` runs whole frames, so it ends at the first
+    retrace at or past the time asked, up to one frame later. Reports progress while it waits.
+    Needs the machine stopped.
 
     Reply: `verdict` (`ELAPSED`, `OTHER_STOP`, `TIMEOUT`), `polls`, `emulated_before_s`,
     `emulated_after_s`, `frame_before`, `frame_after`, `cycles` (unavailable with why),

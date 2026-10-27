@@ -317,7 +317,8 @@ says `holding` or `not_held`, rather than trusting the row (`gone` when a row wa
 of the stop it is declared at, so a stored freeze is never armed again by `start` or
 `symbols_load`, where those bytes hold something else. The debugger lists a freeze by its
 offset alone, so any freeze already at the same offset refuses a new one: the two rows could not
-be told apart.
+be told apart. For the same reason a reply's `entries` are those rows as the debugger lists them,
+offset and value with no segment; `addr` is where the freeze is.
 
 **A change watch breaks when memory changes**, the thing most likely to be misread: a read never
 fires it, nor does a write storing the value already there. The debugger's memory breakpoint

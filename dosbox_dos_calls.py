@@ -81,6 +81,11 @@ def _regs(names: tuple[str, ...], values: tuple[str, ...]) -> dict[str, str]:
     return {n: f"0x{v}" for n, v in zip(names, values, strict=True)}
 
 
+def _seconds(ms: str) -> float:
+    """`T=` is the emulator's `PIC_FullIndex()`, in milliseconds."""
+    return float(ms) / 1000
+
+
 def _render(call: dict[str, Any]) -> str:
     """The call as one line, which `pattern` is matched against."""
     file = f" {call['file']}" if call.get("file") else ""
@@ -100,7 +105,7 @@ def _entry(found: re.Match[str]) -> dict[str, Any]:
     g = found.groups()
     ah = int(g[6][:2], 16)
     call: dict[str, Any] = {
-        "n": int(g[0]), "time_s": float(g[1]), "cpu_mode": MODES[g[2]],
+        "n": int(g[0]), "time_s": _seconds(g[1]), "cpu_mode": MODES[g[2]],
         "caller": f"{g[3]}:{g[4]}", "psp": f"0x{g[5]}", "function": f"0x{ah:02X}",
         "name": FUNCTIONS.get(ah, "unnamed"),
         "in": _regs(("ax", "bx", "cx", "dx", "si", "di", "ds", "es"), g[6:14]),
@@ -114,7 +119,7 @@ def _entry(found: re.Match[str]) -> dict[str, Any]:
 def _returned(call: dict[str, Any], found: re.Match[str]) -> None:
     g = found.groups()
     call["returned"], call["switched"] = True, g[7] == "1"
-    call["returned_s"] = float(g[1])
+    call["returned_s"] = _seconds(g[1])
     if call["switched"]:
         # The registers and carry are of whatever runs now (a parent, an EXEC's child).
         return

@@ -64,6 +64,7 @@ def test_three_frames_land_three_retraces_with_the_whole_stop_reply(tmp_path: Pa
     assert got["regs"] and "cause" in got and "e9" in got and "stop_seq" in got
     assert got["session"]["altered"] is False, "advancing is not writing"
     assert got["summary"].startswith("run_for 3 frames: ELAPSED"), got["summary"]
+    assert got["cause"] == "the retrace run_for ran to, at 0814:00000106", got["cause"]
 
 
 def test_the_stop_run_for_lands_on_carries_the_e9_block_even_with_no_log(tmp_path: Path) -> None:
@@ -123,6 +124,7 @@ def test_a_bound_that_expires_while_a_retrace_is_out_interrupts_the_run(tmp_path
     assert "BREAK" in machine.sent, machine.sent
     assert got["regs"] and "stop_seq" in got, "interrupted, the stop is surveyed"
     assert got["retrace_pending"] is True and dstate.STATE.retrace_pending is True
+    assert got["cause"].startswith("run_for's 0.3 s bound ran out"), got["cause"]
 
 
 def test_a_bound_reached_between_frames_is_a_timeout_at_rest(tmp_path: Path) -> None:
@@ -268,6 +270,7 @@ def test_an_interrupt_breakpoint_says_its_stop_counts_as_a_frame(tmp_path: Path)
         arming.declare("interrupt", "address", grammar.interrupt_row(0x21, None)))
     got = cast(dict[str, Any], server.run_for(frames=3, seconds=2))
     assert retrace.UNTOLD_NOTE in got["note"], got
+    assert "which declaration fired cannot be told" in got["cause"], "something could stop it"
 
 
 def test_perform_refuses_a_bad_run_for_step_before_anything_is_sent(tmp_path: Path) -> None:

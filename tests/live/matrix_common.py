@@ -128,6 +128,17 @@ def must(r: dict[str, Any], what: str) -> dict[str, Any]:
     return r
 
 
+#: A bounded `resume` that the machine stopped.
+STOPPED = contract.OTHER_STOP
+
+
+def advanced(r: dict[str, Any], what: str, verdict: str = contract.ELAPSED) -> dict[str, Any]:
+    """An advance that ended as `verdict`: a `TIMEOUT` is `status: ok` too."""
+    if not ok(r) or r.get("verdict") != verdict:
+        raise RuntimeError(f"{what}: {r.get('verdict')}, not {verdict}: {said(r)}")
+    return r
+
+
 def reg_ref(regs: dict[str, Any], seg: str, off: str) -> str:
     return f"{regs[seg]}:{(hexint(regs[off]) or 0) & 0xFFFF:04X}"
 
@@ -254,6 +265,10 @@ def exec_of(name: str, limit: int = 12) -> None:
 def release_running(stopper: str = NEVER_RUNS_STOPPER) -> None:
     must(M.call(server.breakpoint_at, ref=stopper), "arming the stopper")
     r = M.call(server.resume)
+    # A wait whose bound ran out with its `VRT` still out leaves that retrace stop armed, and
+    # the first release meets it.
+    if ok(r) and str(r.get("cause")).startswith("most likely the retrace stop"):
+        r = M.call(server.resume)
     if not (ok(r) and "stop_seq" not in r):
         raise RuntimeError(f"the machine did not run: {said(r)}")
 

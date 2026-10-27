@@ -391,6 +391,8 @@ def cause(attribution: dict[str, Any]) -> str:
     """What stopped the machine, as every stop reply's `cause`."""
     at = attribution.get("at", "an address the record lacks")
     if not attribution.get("attributed"):
+        if attribution.get("own"):
+            return f"{attribution['own']}, at {at}"
         holding = attribution.get("regpoints_holding")
         held_too = (f"; registerpoint {', '.join(holding)} holds here, and `BPIF` stops as "
                     f"its condition comes true" if holding else "")

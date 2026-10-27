@@ -18,7 +18,9 @@ from typing import Any
 import bench_programs as bp
 from matrix_common import (
     GUEST,
+    STOPPED,
     M,
+    advanced,
     boot,
     cells,
     hexint,
@@ -117,7 +119,7 @@ def section_k() -> None:
     captures = Path(M.fresh("-captures"))
     captures.mkdir()
     boot(flags=NORMAL_CORE_FLAGS, captures_dir=str(captures))
-    settle = must(M.call(server.run_for, frames=2), "into the settle loop")
+    settle = advanced(M.call(server.run_for, frames=2), "into the settle loop")
     if hexint(str(settle.get("pc")).split(":")[-1]) != SETTLE_LOOP:
         M.block_rest(f"run_for(frames=2) did not land on the settle loop: {said(settle)}")
         return
@@ -249,7 +251,7 @@ def _linear_of(name: str) -> str:
 def _window(ref: str, instructions: int, shape: str) -> dict[str, Any]:
     """A trace from `ref`'s breakpoint, armed for the one stop and cleared before the trace."""
     must(M.call(server.breakpoint_at, ref=ref), f"arming {ref}")
-    must(M.call(server.resume, seconds=TRACE_S), f"running to {ref}")
+    advanced(M.call(server.resume, seconds=TRACE_S), f"running to {ref}", STOPPED)
     must(M.call(server.declaration_clear, kind="breakpoint", all=True), f"clearing {ref}")
     M.setup()
     return M.call(server.trace, instructions=instructions, shape=shape, dest=M.fresh(".trace"),
@@ -359,7 +361,7 @@ def _expiry() -> None:
 
 def _dynamic() -> None:
     boot(flags=DYNAMIC_CORE_FLAGS)
-    must(M.call(server.run_for, frames=2), "into the settle loop, dynamic core")
+    advanced(M.call(server.run_for, frames=2), "into the settle loop, dynamic core")
     M.setup()
     dest = M.fresh(".trace")
     r = M.call(server.trace, instructions=16, dest=dest, seconds=TRACE_S)

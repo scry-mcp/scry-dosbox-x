@@ -8,7 +8,9 @@ import bench_programs as bp
 from matrix_code import DOS_REAL16_CODE_CELLS, dos_real16_code
 from matrix_comment_tools import DOS_REAL16_COMMENT_CELLS, dos_real16_comments
 from matrix_common import (
+    STOPPED,
     M,
+    advanced,
     boot,
     cells,
     clock_moved,
@@ -226,7 +228,7 @@ def _scan() -> tuple[bool, str]:
     must(M.call(server.breakpoint_at, ref="COMPOSE_FRAME"), "arming COMPOSE_FRAME")
     value = first_value
     for _ in range(FRAMES_FOR_A_CHANGE):
-        M.call(server.resume, seconds=10)
+        advanced(M.call(server.resume, seconds=10), "resume(seconds=10)", STOPPED)
         value = read_word(at)
         if value != first_value:
             break
@@ -261,7 +263,7 @@ def _coin() -> None:
             "the INT 9 breakpoint stopped the machine")
     must(M.call(server.breakpoint_at, ref="COMPOSE_FRAME"), "arming COMPOSE_FRAME")
     for _ in range(5):
-        M.call(server.resume, seconds=10)
+        advanced(M.call(server.resume, seconds=10), "resume(seconds=10)", STOPPED)
     after = read_word(f"{seg:04X}:{off:04X}")
     must(M.call(server.declaration_clear, kind="breakpoint", all=True), "clearing COMPOSE_FRAME")
     M.judge("D the coin adds to CREDITOS", after > before, f"CREDITOS {before} -> {after}")

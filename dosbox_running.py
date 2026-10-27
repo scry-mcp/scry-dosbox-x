@@ -69,10 +69,12 @@ def e9_block(session: ds.Session) -> dict[str, Any]:
 def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
                made_by: dict[str, str] | None = None,
                asked_by: Literal["stop", "cancel"] | None = None,
+               own: str = "",
                **base: Any) -> dict[str, Any]:
     """What a stop always returns on top of `base`: position, `cause`, watches, registers, E9.
     `made_by` attributes a stop the calling tool made itself; `asked_by` names the cause when
-    no declaration is at the address."""
+    no declaration is at the address; `own` is the cause of a stop nothing declared could make,
+    left unattributed."""
     # One survey serves where, registers and the watches' list.
     arming.apply_pending(session)
     where, registers, held = session.stop_survey()
@@ -89,6 +91,8 @@ def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
     elif asked_by is not None and not attribution.get("attributed"):
         attribution = {"attributed": True, "ref": asked_by, "by": asked_by,
                        "at": attribution["at"]}
+    elif own and not attribution.get("attributed"):
+        attribution = {"attributed": False, "own": own, "at": attribution["at"]}
     STATE.remember_stop(session, where, registers, held, attribution)
     # Marked under the new number, or the next contact drains this stop again.
     STATE.pending["drained_seq"] = STATE.last_stop["seq"]

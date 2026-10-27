@@ -25,6 +25,7 @@ from matrix_common import (
     NO_SUCH_HOME_WHY,
     PROBE_CONF,
     M,
+    advanced,
     boot,
     cells,
     dump_to_file,
@@ -160,7 +161,7 @@ def section_l() -> None:
     _no_machine_needed()
     state_dir = Path(M.fresh("-states"))
     boot(state_dir=str(state_dir))
-    settle = must(M.call(server.run_for, frames=2), "into the settle loop")
+    settle = advanced(M.call(server.run_for, frames=2), "into the settle loop")
     if hexint(str(settle.get("pc")).split(":")[0]) != PROBE_SEG:
         M.block_rest(f"run_for(frames=2) did not stop in the probe's segment: {said(settle)}")
         return

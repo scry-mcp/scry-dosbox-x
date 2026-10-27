@@ -30,7 +30,7 @@ def test_the_dos_guest_through_the_machine_tools_and_its_channels(tmp_path: Path
     _ok(server.start(conf=str(tmp_path / "dosio.conf"), cwd=str(tmp_path), session_seconds=120,
                      program="DOSIO.COM W", dos_calls=True, guest_files=[str(out)],
                      logfile=str(tmp_path / "s.log"), presence=False))
-    _ok(server.run_for(milliseconds=3000))
+    assert _ok(server.run_for(milliseconds=3000))["verdict"] == "ELAPSED"
     missing = _ok(server.log(pattern="MISSING", channel="dos"))["calls"]
     assert missing[0]["error"] == {"code": 2, "name": "file not found"}, missing
     psp = missing[0]["psp"][2:]
@@ -40,6 +40,7 @@ def test_the_dos_guest_through_the_machine_tools_and_its_channels(tmp_path: Path
     assert isinstance(_ok(server.a20(method="read"))["enabled"], bool)
     frozen = _ok(server.watch_add(ref=f"{psp}:018F", mode="freeze", length=1))
     stop = _ok(server.run_for(milliseconds=500))
+    assert stop["verdict"] == "ELAPSED", stop
     held = next(w for w in stop["watches"] if w["ref"] == f"{psp}:018F")
     assert held["state"] == "holding" and held["bytes"] == frozen["frozen_hex"], held
     assert _ok(server.guest_file(path=str(out)))["state"] == "written"

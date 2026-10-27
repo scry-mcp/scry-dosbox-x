@@ -8,7 +8,19 @@ import re
 from pathlib import Path
 from typing import Any
 
-from matrix_common import GUEST, M, boot, cells, close_whatever, ok, refused, said, server
+from matrix_common import (
+    GUEST,
+    STOPPED,
+    M,
+    advanced,
+    boot,
+    cells,
+    close_whatever,
+    ok,
+    refused,
+    said,
+    server,
+)
 
 import dosbox_capture_files as capture_files
 
@@ -57,7 +69,7 @@ def _dro_holds_the_table(r: dict[str, Any]) -> bool:
 @M.section("T", "sound and screen recorded at a stop, on the package's sound guest", T_CELLS)
 def section_t() -> None:
     boot(conf=SOUND_CONF, captures_dir=M.fresh("-cap"))
-    M.call(server.run_for, frames=20)
+    advanced(M.call(server.run_for, frames=20), "run_for(frames=20)")
     wav = M.call(server.audio_record, seconds=30, frames=70, dest=M.fresh(".wav"))
     span = float(wav.get("emulated_s") or 0)
     M.judge(T_CELLS[0].label, ok(wav) and wav.get("kind") == "wav"
@@ -108,7 +120,7 @@ def _watch(ref: str) -> dict[str, Any]:
 @M.section("U", "accesses kept without stopping, on the package's tap guest", U_CELLS)
 def section_u() -> None:
     boot(conf=TAP_CONF, break_on_int3=True)
-    M.call(server.resume, seconds=30)
+    advanced(M.call(server.resume, seconds=30), "resume(seconds=30)", STOPPED)
     M.call(server.declaration_clear, kind="watch", all=True)
     count = M.call(server.watch_add, ref=COUNT, mode="count", length=8)
     block = M.call(server.watch_add, ref="0814:013C", mode="capture", trigger=COUNT, length=2,
@@ -134,7 +146,8 @@ def section_u() -> None:
     first = surveyed.get(COUNT, {})
     again = M.call(server.run_for, frames=8)
     later = {w.get("ref"): w for w in again.get("watches") or []}.get(COUNT, {})
-    M.judge(U_CELLS[3].label, ok(stop) and first.get("since_last_stop") == first.get("total")
+    M.judge(U_CELLS[3].label, ok(stop) and stop.get("verdict") == again.get("verdict") == "ELAPSED"
+            and first.get("since_last_stop") == first.get("total")
             and int(later.get("since_last_stop") or 0) == int(later.get("total") or 0)
             - int(first.get("total") or 0) and "first_rows" not in first, str(later)[:140])
     M.call(server.resume)

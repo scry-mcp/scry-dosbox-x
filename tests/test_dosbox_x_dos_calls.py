@@ -31,6 +31,13 @@ def test_each_call_is_paired_with_its_return_and_the_missing_file_carries_error_
     assert missing["line"].endswith("MISSING.TXT -> error 2 file not found"), missing["line"]
 
 
+def test_a_call_is_timed_in_seconds_on_run_for_s_clock() -> None:
+    """`T=` is `PIC_FullIndex()`, milliseconds, as `RUNSTATE`'s `ms=` is."""
+    missing = next(c for c in _read(TRACE).calls if c.get("file") == "MISSING.TXT")
+    assert missing["time_s"] == pytest.approx(0.0013521), missing
+    assert missing["time_s"] <= missing["returned_s"] < 0.01, missing
+
+
 def test_a_call_that_does_not_return_to_its_caller_says_so_and_claims_no_result() -> None:
     shell = next(c for c in _read(TRACE).calls if c["n"] == 1)
     assert shell["switched"] is True and "out" not in shell and "error" not in shell, shell

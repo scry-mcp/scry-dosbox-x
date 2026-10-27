@@ -18,7 +18,9 @@ from typing import Any
 
 from matrix_common import (
     GUEST,
+    STOPPED,
     M,
+    advanced,
     boot,
     cells,
     judged,
@@ -133,7 +135,7 @@ def section_m() -> None:
 def _code_guest() -> None:
     boot(conf=CODE_CONF, break_on_int3=True)
     M.setup()
-    first = must(M.call(server.resume, seconds=30), "the first int 3")
+    first = advanced(M.call(server.resume, seconds=30), "the first int 3", STOPPED)
     _first_stop(first)
     flat = M.call(server.call_stack)
     M.judge("M call_stack at the frameless int 3 lists the stop alone and why",
@@ -168,7 +170,7 @@ def _code_guest() -> None:
     must(M.call(server.symbols_load, path=str(GUEST / "code.sym"), base=GUEST_BASE),
          "loading code.sym")
     must(M.call(server.breakpoint_at, ref="middle"), "arming middle")
-    must(M.call(server.resume, seconds=30), "running to middle")
+    advanced(M.call(server.resume, seconds=30), "running to middle", STOPPED)
     entry = M.call(server.call_stack)
     rows = [(c.get("symbol"), c.get("via")) for c in entry.get("calls") or []]
     M.judge("M call_stack at middle's first byte reads outer off SP, via entry",
@@ -183,7 +185,8 @@ def _code_guest() -> None:
     parked = M.call(server.run_for, frames=1)
     pic = parked.get("instruction") or {}
     M.judge("M the next stop's instruction is the park's jmp",
-            ok(parked) and pic.get("seg_off") == parked.get("pc") == "0814:0000013A"
+            ok(parked) and parked.get("verdict") == "ELAPSED"
+            and pic.get("seg_off") == parked.get("pc") == "0814:0000013A"
             and pic.get("bytes") == "EBFE" and pic.get("symbol") == "park"
             and pic.get("bytes_from") == "memory",
             f"{pic.get('seg_off')} {pic.get('bytes')} {pic.get('bytes_from')} {pic.get('symbol')}")
@@ -245,7 +248,7 @@ def _listing_boundaries() -> set[int] | None:
 def _probe() -> None:
     boot()
     M.setup()
-    must(M.call(server.run_for, frames=1), "a retrace into the probe's settle loop")
+    advanced(M.call(server.run_for, frames=1), "a retrace into the probe's settle loop")
     bare = M.call(server.disassemble, ref=f"{LOAD}:010B", length=32)
     judged("M no resolved without a table", reply=bare, holds=ok(bare) and "resolved" not in bare)
     must(M.call(server.symbols_load, path=str(GUEST / "probe.sym"), base=GUEST_BASE),

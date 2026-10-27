@@ -36,6 +36,14 @@ PIC_ROW = re.compile(r"^\s*(\d+) 0x([0-9A-F]{2})   ([R ])    ([M ])    ([S ])   
 A20_LINE = re.compile(r"^A20 gate is (ON|OFF)$")
 
 
+#: What `pic.cpp` writes as the active line when its in-service register is empty.
+NONE_IN_SERVICE = 8
+
+
+def _in_service(line: int) -> int | None:
+    return None if line == NONE_IN_SERVICE else line
+
+
 def _hex(value: int, bits: int) -> str:
     return f"0x{value:0{bits // 4}X}"
 
@@ -147,8 +155,8 @@ def parse_pic(lines: list[str]) -> dict[str, Any]:
                 icw_index=int(g[0]), icw_words=int(g[1]), special=g[2] == "1",
                 auto_eoi=g[3] == "1", rotate_eoi=g[4] == "1", single=g[5] == "1",
                 request_issr=g[6] == "1", vector_base=f"0x{g[7].upper()}",
-                active_irq=int(g[8]), isr=f"0x{g[9].upper()}", isrr=f"0x{g[10].upper()}",
-                isr_ignore=f"0x{g[11].upper()}")
+                active_irq=_in_service(int(g[8])), isr=f"0x{g[9].upper()}",
+                isrr=f"0x{g[10].upper()}", isr_ignore=f"0x{g[11].upper()}")
         elif (row := PIC_ROW.match(line)) is not None:
             irqs.append({"irq": int(row.group(1)), "vector": f"0x{row.group(2)}",
                          "requested": row.group(3) == "R", "masked": row.group(4) == "M",

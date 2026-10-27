@@ -15,7 +15,9 @@ from typing import Any
 from matrix_common import (
     ENV,
     GUEST,
+    STOPPED,
     M,
+    advanced,
     boot,
     cells,
     close_whatever,
@@ -211,14 +213,14 @@ def section_r() -> None:
     M.judge(R_CELLS[0].label, started.get("presence") is True and status.get("presence") is True,
             f"start {started.get('presence')!r}, status {status.get('presence')!r}")
     for _ in range(TO_13H):
-        must(M.call(server.resume, seconds=30), "walking to the mode 13h stop")
+        advanced(M.call(server.resume, seconds=30), "walking to the mode 13h stop", STOPPED)
     with _by_hand() as adapter:
         dark = _put(adapter, "off")
         off_stills, off_window = _stills(), _window("off")
         lit = _put(adapter, "acting")
         on_stills, on_window = _stills(), _window("acting")
         for _ in range(TO_LAST):
-            must(M.call(server.resume, seconds=30), "walking to the last stop")
+            advanced(M.call(server.resume, seconds=30), "walking to the last stop", STOPPED)
         spin = _spin_record(adapter)
     repainted = None if dark is None or lit is None else lit - dark
     M.judge(R_CELLS[1].label, (repainted or 0) >= 1 and (spin["frames_drawn_running"] or 0) >= 10,
@@ -242,7 +244,8 @@ def section_r() -> None:
     else:
         _start(presence=True, binary=leak)
         for _ in range(TO_13H + TO_LAST):
-            must(M.call(server.resume, seconds=30), "walking the leaking build to the last stop")
+            advanced(M.call(server.resume, seconds=30),
+                     "walking the leaking build to the last stop", STOPPED)
         with _by_hand() as adapter:
             spun = _spin_record(adapter)
         M.judge(R_CELLS[5].label, all(spun[k][0] and spun[k][1] and spun[k][0] != spun[k][1]

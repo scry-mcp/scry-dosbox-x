@@ -9,7 +9,19 @@ import shutil
 from pathlib import Path
 from typing import Any
 
-from matrix_common import GUEST, M, boot, cells, close_whatever, ok, refused, said, server
+from matrix_common import (
+    GUEST,
+    STOPPED,
+    M,
+    advanced,
+    boot,
+    cells,
+    close_whatever,
+    ok,
+    refused,
+    said,
+    server,
+)
 
 DOSIO_FILES = ("dosio.com", "dosio.conf", "in.txt")
 #: `dosio.asm`'s counter, at this offset of the segment DOS loads it at (its listing).
@@ -29,7 +41,7 @@ def dosio_dir() -> Path:
 def boot_dosio(where: Path, tail: str = "W", **kw: Any) -> dict[str, Any]:
     started = boot(conf=where / "dosio.conf", cwd=where,
                    program=f"DOSIO.COM {tail}".strip(), **kw)
-    M.call(server.run_for, milliseconds=3000)
+    advanced(M.call(server.run_for, milliseconds=3000), "run_for(milliseconds=3000)")
     return started
 
 
@@ -112,22 +124,22 @@ def section_x() -> None:
             f"{said(no_device, 60)} / {said(wide, 40)} / {said(written, 40)}")
     t0 = _ticks(psp)
     masked = M.call(server.pic, method="mask", irq=0)
-    M.call(server.run_for, milliseconds=1000)
+    advanced(M.call(server.run_for, milliseconds=1000), "run_for(milliseconds=1000)")
     t1 = _ticks(psp)
     unmasked = M.call(server.pic, method="unmask", irq=0)
-    M.call(server.run_for, milliseconds=1000)
+    advanced(M.call(server.run_for, milliseconds=1000), "run_for(milliseconds=1000)")
     t2 = _ticks(psp)
     M.judge(X_CELLS[6].label, ok(masked) and ok(unmasked) and t0 == t1 >= 0 and t2 != t1,
             f"ticks {t0:#x} masked -> {t1:#x}, unmasked -> {t2:#x}")
     ref = f"{psp[2:]}:{TICKS_OFFSET:04X}"
     frozen = M.call(server.watch_add, ref=ref, mode="freeze", length=1)
     held_at = _ticks(psp)
-    stop = M.call(server.run_for, milliseconds=1000)
+    stop = advanced(M.call(server.run_for, milliseconds=1000), "run_for over the freeze")
     surveyed: dict[str, Any] = next(
         (w for w in stop.get("watches") or [] if w.get("ref") == ref), {})
     still = _ticks(psp)
     cleared = M.call(server.declaration_clear, kind="watch", ref=ref)
-    M.call(server.run_for, milliseconds=1000)
+    advanced(M.call(server.run_for, milliseconds=1000), "run_for(milliseconds=1000)")
     moved = _ticks(psp)
     M.judge(X_CELLS[7].label, ok(frozen) and frozen.get("state") == "armed"
             and surveyed.get("state") == "holding" and held_at == still and ok(cleared)
@@ -135,7 +147,7 @@ def section_x() -> None:
             f"{said(frozen, 50)}; {held_at:#x} -> {still:#x} -> {moved:#x}; {surveyed}"[:200])
     close_whatever()
     boot(conf=GUEST / "tap.conf", break_on_int3=True)
-    M.call(server.resume, seconds=30)
+    advanced(M.call(server.resume, seconds=30), "resume(seconds=30)", STOPPED)
     M.call(server.breakpoint_at, ref=TAP_R_POLL)
     pinned = M.call(server.watch_add, ref=TAP_PAIR, mode="freeze", length=2)
     stop = M.call(server.resume, seconds=10)

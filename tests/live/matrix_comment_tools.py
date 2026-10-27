@@ -22,6 +22,7 @@ import bench_programs as bp
 from matrix_common import (
     GUEST,
     M,
+    advanced,
     boot,
     cells,
     judged,
@@ -132,7 +133,7 @@ def _round_trip(refs: set[str]) -> tuple[bool, str]:
 def section_n() -> None:
     boot()
     M.setup()
-    must(M.call(server.run_for, frames=1), "a retrace into the probe's settle loop")
+    advanced(M.call(server.run_for, frames=1), "a retrace into the probe's settle loop")
     must(M.call(server.symbols_load, path=str(GUEST / "probe.sym"), base="8140"),
          "loading probe.sym")
     taken = _taken({"start", "0814:0106", "emit"}, {0x824B, 0x8246, 0x8277})

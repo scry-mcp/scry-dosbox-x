@@ -67,6 +67,7 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
                    asked=asked, done=done, bound=seconds)
 
     cuttable = arming.declares_code_breakpoint()
+    alone = not arming.something_can_stop_it()
     verdict = contract.ELAPSED
     last = before
     stalled_at: float | None = None
@@ -112,8 +113,11 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
         if round(now - before, CLOCK_DECIMALS) >= milliseconds:
             break
     fields: dict[str, Any] = {"verdict": verdict, "polls": polls}
+    own = "" if not alone else (
+        "the retrace run_for ran to" if verdict == contract.ELAPSED
+        else f"run_for's {seconds:g} s bound ran out where the machine stood")
     try:
-        reply = running.stop_reply(session, **fields)
+        reply = running.stop_reply(session, own=own, **fields)
         stopped_at: dict[str, str] | None = dict(STATE.last_stop["where"])
     except ds.Invalid as exc:
         reply = st.reply(enrichment={"available": False, "why": str(exc)}, **fields)
