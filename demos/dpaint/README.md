@@ -163,7 +163,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
 
 </details>
 
-**2. `run_for`**: OK loaded: 400 retraces: Deluxe Paint is up, its data segment at 0x3198
+**2. `run_for`**: OK loaded: 400 retraces: Deluxe Paint is up, its data segment at 0x31b0
 
 <details><summary>call and reply</summary>
 
@@ -176,11 +176,11 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
 
 ```json
 {
-  "summary": "run_for 400 frames: ELAPSED, 400 polls, at 0B7A:00000241",
+  "summary": "run_for 400 frames: ELAPSED, 400 polls, at 0B92:00000241",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 400,
-  "pc": "0B7A:00000241",
+  "pc": "0B92:00000241",
   "cpu_mode": "real",
   "frame": 400,
   "regs": {
@@ -193,26 +193,26 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
     "EBP": "0x00009ffc",
     "ESP": "0x00009ff8",
     "EIP": "0x00000241",
-    "CS": "0x0b7a",
-    "DS": "0x3198",
+    "CS": "0x0b92",
+    "DS": "0x31b0",
     "ES": "0x0000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x3198"
+    "SS": "0x31b0"
   },
   "watches": [],
-  "cause": "the retrace run_for ran to, at 0B7A:00000241",
+  "cause": "the retrace run_for ran to, at 0B92:00000241",
   "e9": {
     "lines_total": 1,
     "truncated": false,
     "lines": [
-      "Bochs port E9h: STUB  . scry device=present proto=5 motion=1"
+      "Bochs port E9h: STUB  . scry device=present proto=6 motion=1"
     ],
     "mark": "<volatile>"
   },
   "stop_seq": 2,
   "instruction": {
-    "seg_off": "0B7A:00000241",
+    "seg_off": "0B92:00000241",
     "bytes": "8B4708",
     "text": "mov ax, word ptr [bx + 8]",
     "flow": "sequential",
@@ -545,11 +545,11 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
     "ESP": "0x00009ff8",
     "EIP": "0x0000cfc5",
     "CS": "0xf000",
-    "DS": "0x3198",
+    "DS": "0x31b0",
     "ES": "0x0000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x3198"
+    "SS": "0x31b0"
   },
   "watches": [],
   "cause": "the retrace the input's post ran to, at F000:0000CFC5",
@@ -584,7 +584,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
 ```json
 {
   "method": "start",
-  "ref": "3198:0000",
+  "ref": "31B0:0000",
   "length": 65535,
   "cell_bytes": 1
 }
@@ -592,13 +592,13 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
 
 ```json
 {
-  "summary": "scan start: 3198:0000, 65535 cells of 1 byte",
+  "summary": "scan start: 31B0:0000, 65535 cells of 1 byte",
   "status": "ok",
-  "ref": "3198:0000",
-  "seg_off": "3198:00000000",
+  "ref": "31B0:0000",
+  "seg_off": "31B0:00000000",
   "length": 65535,
   "cell_bytes": 1,
-  "addr": "0x00031980",
+  "addr": "0x00031b00",
   "hits_total": 65535,
   "session": {
     "alive": true,
@@ -610,7 +610,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
 
 </details>
 
-**7. `scan`**: OK is blue: 71 bytes hold 0x09 now
+**7. `scan`**: OK is blue: 75 bytes hold 0x09 now
 
 <details><summary>call and reply</summary>
 
@@ -624,7 +624,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
 
 ```json
 {
-  "summary": "scan filter: = 9, 71 survivors, the first 8 listed",
+  "summary": "scan filter: = 9, 75 survivors, the first 8 listed",
   "status": "ok",
   "operator": "=",
   "value": "0x09",
@@ -632,47 +632,47 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
   "closed": false,
   "hits": [
     {
-      "seg_off": "3198:0000017C",
-      "addr": "0x00031afc",
+      "seg_off": "31B0:0000017C",
+      "addr": "0x00031c7c",
       "value": "0x09"
     },
     {
-      "seg_off": "3198:000001AE",
-      "addr": "0x00031b2e",
+      "seg_off": "31B0:000001AE",
+      "addr": "0x00031cae",
       "value": "0x09"
     },
     {
-      "seg_off": "3198:00000370",
-      "addr": "0x00031cf0",
+      "seg_off": "31B0:00000370",
+      "addr": "0x00031e70",
       "value": "0x09"
     },
     {
-      "seg_off": "3198:00000470",
-      "addr": "0x00031df0",
+      "seg_off": "31B0:00000470",
+      "addr": "0x00031f70",
       "value": "0x09"
     },
     {
-      "seg_off": "3198:00000597",
-      "addr": "0x00031f17",
+      "seg_off": "31B0:00000597",
+      "addr": "0x00032097",
       "value": "0x09"
     },
     {
-      "seg_off": "3198:000006B3",
-      "addr": "0x00032033",
+      "seg_off": "31B0:000006B3",
+      "addr": "0x000321b3",
       "value": "0x09"
     },
     {
-      "seg_off": "3198:000008F9",
-      "addr": "0x00032279",
+      "seg_off": "31B0:000008F9",
+      "addr": "0x000323f9",
       "value": "0x09"
     },
     {
-      "seg_off": "3198:00000919",
-      "addr": "0x00032299",
+      "seg_off": "31B0:00000919",
+      "addr": "0x00032419",
       "value": "0x09"
     }
   ],
-  "hits_total": 71,
+  "hits_total": 75,
   "truncated": true,
   "session": {
     "alive": true,
@@ -723,15 +723,15 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
   },
   "arrived": true,
   "polls": 25,
-  "pc": "F000:0000CFC5",
+  "pc": "13F6:00000220",
   "cpu_mode": "real",
   "stop_seq": 48,
   "frame": 446,
   "instruction": {
-    "seg_off": "F000:0000CFC5",
-    "bytes": "CF",
-    "text": "iret",
-    "flow": "return",
+    "seg_off": "13F6:00000220",
+    "bytes": "83EC06",
+    "text": "sub sp, 6",
+    "flow": "sequential",
     "code_bits": 16,
     "bytes_from": "memory",
     "symbol": {
@@ -744,24 +744,24 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
     }
   },
   "regs": {
-    "EAX": "0x0000011c",
+    "EAX": "0x0000a01c",
     "EBX": "0x00001094",
     "ECX": "0x005b0000",
     "EDX": "0x000000fe",
-    "ESI": "0x0000ffff",
+    "ESI": "0x0000a030",
     "EDI": "0x0000a0ae",
     "EBP": "0x0000a00c",
-    "ESP": "0x00009ff8",
-    "EIP": "0x0000cfc5",
-    "CS": "0xf000",
-    "DS": "0x3198",
+    "ESP": "0x0000a00c",
+    "EIP": "0x00000220",
+    "CS": "0x13f6",
+    "DS": "0x31b0",
     "ES": "0x0000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x3198"
+    "SS": "0x31b0"
   },
   "watches": [],
-  "cause": "the retrace the input's post ran to, at F000:0000CFC5",
+  "cause": "the retrace the input's post ran to, at 13F6:00000220",
   "e9": {
     "lines_total": 0,
     "truncated": false,
@@ -786,7 +786,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
 
 </details>
 
-**9. `scan`**: OK is orange: 7 bytes followed both clicks: 3 in the stack's frames above 9FF8, and 4 static ones from 3198:017C
+**9. `scan`**: OK is orange: 7 bytes followed both clicks: 3 in the stack's frames above A00C, and 4 static ones from 31B0:017C
 
 <details><summary>call and reply</summary>
 
@@ -807,38 +807,38 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
   "closed": false,
   "hits": [
     {
-      "seg_off": "3198:0000017C",
-      "addr": "0x00031afc",
+      "seg_off": "31B0:0000017C",
+      "addr": "0x00031c7c",
       "value": "0x37"
     },
     {
-      "seg_off": "3198:000001AE",
-      "addr": "0x00031b2e",
+      "seg_off": "31B0:000001AE",
+      "addr": "0x00031cae",
       "value": "0x37"
     },
     {
-      "seg_off": "3198:00000470",
-      "addr": "0x00031df0",
+      "seg_off": "31B0:00000470",
+      "addr": "0x00031f70",
       "value": "0x37"
     },
     {
-      "seg_off": "3198:000010B0",
-      "addr": "0x00032a30",
+      "seg_off": "31B0:000010B0",
+      "addr": "0x00032bb0",
       "value": "0x37"
     },
     {
-      "seg_off": "3198:0000A57E",
-      "addr": "0x0003befe",
+      "seg_off": "31B0:0000A57E",
+      "addr": "0x0003c07e",
       "value": "0x37"
     },
     {
-      "seg_off": "3198:0000A57F",
-      "addr": "0x0003beff",
+      "seg_off": "31B0:0000A57F",
+      "addr": "0x0003c07f",
       "value": "0x37"
     },
     {
-      "seg_off": "3198:0000A580",
-      "addr": "0x0003bf00",
+      "seg_off": "31B0:0000A580",
+      "addr": "0x0003c080",
       "value": "0x37"
     }
   ],
@@ -885,7 +885,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
 
 ```json
 {
-  "ref": "3198:017C",
+  "ref": "31B0:017C",
   "mode": "show",
   "fmt": "u8"
 }
@@ -893,9 +893,9 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
 
 ```json
 {
-  "summary": "watch_add 3198:017C: evaluated",
+  "summary": "watch_add 31B0:017C: evaluated",
   "status": "ok",
-  "ref": "3198:017C",
+  "ref": "31B0:017C",
   "by": "address",
   "mode": "show",
   "fmt": "u8",
@@ -964,7 +964,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 306,77; posted, unverified, 25 retraces to frame 471",
         "status": "ok",
         "stop_seq": 73,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 1009:00000326"
       }
     },
     {
@@ -974,7 +974,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 317,169; posted, unverified, 25 retraces to frame 496",
         "status": "ok",
         "stop_seq": 98,
-        "cause": "the retrace the input's post ran to, at 0FF1:0000032D"
+        "cause": "the retrace the input's post ran to, at 1009:00000240"
       }
     },
     {
@@ -984,7 +984,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 2,14; posted, unverified, 20 retraces to frame 516",
         "status": "ok",
         "stop_seq": 118,
-        "cause": "the retrace the input's post ran to, at 093D:00000035"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -994,7 +994,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 294,112; posted, unverified, 15 retraces to frame 531",
         "status": "ok",
         "stop_seq": 133,
-        "cause": "the retrace the input's post ran to, at 093D:00000058"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -1025,15 +1025,15 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         },
         "arrived": true,
         "polls": 15,
-        "pc": "0E6B:0000014B",
+        "pc": "F000:0000CFC5",
         "cpu_mode": "real",
         "stop_seq": 148,
         "frame": 546,
         "instruction": {
-          "seg_off": "0E6B:0000014B",
-          "bytes": "56",
-          "text": "push si",
-          "flow": "sequential",
+          "seg_off": "F000:0000CFC5",
+          "bytes": "CF",
+          "text": "iret",
+          "flow": "return",
           "code_bits": 16,
           "bytes_from": "memory",
           "symbol": {
@@ -1046,25 +1046,25 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
           }
         },
         "regs": {
-          "EAX": "0x00006e42",
-          "EBX": "0x000003e4",
+          "EAX": "0x0000011c",
+          "EBX": "0x00000000",
           "ECX": "0x005b0000",
-          "EDX": "0x00000cdb",
-          "ESI": "0x00000008",
+          "EDX": "0x00000cf3",
+          "ESI": "0x0000ffff",
           "EDI": "0x0000a0ae",
-          "EBP": "0x00009ffc",
-          "ESP": "0x00009ffa",
-          "EIP": "0x0000014b",
-          "CS": "0x0e6b",
-          "DS": "0x3198",
+          "EBP": "0x0000a00c",
+          "ESP": "0x00009ff8",
+          "EIP": "0x0000cfc5",
+          "CS": "0xf000",
+          "DS": "0x31b0",
           "ES": "0x0000",
           "FS": "0x0000",
           "GS": "0x0000",
-          "SS": "0x3198"
+          "SS": "0x31b0"
         },
         "watches": [
           {
-            "ref": "3198:017C",
+            "ref": "31B0:017C",
             "by": "address",
             "mode": "show",
             "length": 1,
@@ -1074,7 +1074,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
             "bytes": "34"
           }
         ],
-        "cause": "the retrace the input's post ran to, at 0E6B:0000014B",
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5",
         "e9": {
           "lines_total": 0,
           "truncated": false,
@@ -1173,7 +1173,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 317,77; posted, unverified, 25 retraces to frame 571",
         "status": "ok",
         "stop_seq": 173,
-        "cause": "the retrace the input's post ran to, at 093D:0000002D"
+        "cause": "the retrace the input's post ran to, at 13F6:00000228"
       }
     },
     {
@@ -1183,7 +1183,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 300,189; posted, unverified, 25 retraces to frame 596",
         "status": "ok",
         "stop_seq": 198,
-        "cause": "the retrace the input's post ran to, at 0FF1:000002D2"
+        "cause": "the retrace the input's post ran to, at 1009:0000032D"
       }
     },
     {
@@ -1193,7 +1193,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 210,112; posted, unverified, 20 retraces to frame 616",
         "status": "ok",
         "stop_seq": 218,
-        "cause": "the retrace the input's post ran to, at 0E6B:000004E7"
+        "cause": "the retrace the input's post ran to, at 0E83:00000970"
       }
     },
     {
@@ -1203,7 +1203,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 238,112; posted, unverified, 15 retraces to frame 631",
         "status": "ok",
         "stop_seq": 233,
-        "cause": "the retrace the input's post ran to, at 0FF1:000001C9"
+        "cause": "the retrace the input's post ran to, at 1009:00000239"
       }
     },
     {
@@ -1234,15 +1234,15 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         },
         "arrived": true,
         "polls": 15,
-        "pc": "0E6B:00000A14",
+        "pc": "1009:0000023F",
         "cpu_mode": "real",
         "stop_seq": 248,
         "frame": 646,
         "instruction": {
-          "seg_off": "0E6B:00000A14",
-          "bytes": "CB",
-          "text": "retf",
-          "flow": "return",
+          "seg_off": "1009:0000023F",
+          "bytes": "56",
+          "text": "push si",
+          "flow": "sequential",
           "code_bits": 16,
           "bytes_from": "memory",
           "symbol": {
@@ -1255,25 +1255,25 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
           }
         },
         "regs": {
-          "EAX": "0x00006e42",
-          "EBX": "0x000003e4",
+          "EAX": "0x00000000",
+          "EBX": "0x00000000",
           "ECX": "0x005b0000",
-          "EDX": "0x00000cdb",
+          "EDX": "0x00000cf3",
           "ESI": "0x00000008",
           "EDI": "0x0000a0ae",
-          "EBP": "0x0000a006",
-          "ESP": "0x00009ffe",
-          "EIP": "0x00000a14",
-          "CS": "0x0e6b",
-          "DS": "0x3198",
+          "EBP": "0x0000a024",
+          "ESP": "0x0000a022",
+          "EIP": "0x0000023f",
+          "CS": "0x1009",
+          "DS": "0x31b0",
           "ES": "0x0000",
           "FS": "0x0000",
           "GS": "0x0000",
-          "SS": "0x3198"
+          "SS": "0x31b0"
         },
         "watches": [
           {
-            "ref": "3198:017C",
+            "ref": "31B0:017C",
             "by": "address",
             "mode": "show",
             "length": 1,
@@ -1283,7 +1283,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
             "bytes": "0e"
           }
         ],
-        "cause": "the retrace the input's post ran to, at 0E6B:00000A14",
+        "cause": "the retrace the input's post ran to, at 1009:0000023F",
         "e9": {
           "lines_total": 0,
           "truncated": false,
@@ -1382,7 +1382,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 306,77; posted, unverified, 25 retraces to frame 671",
         "status": "ok",
         "stop_seq": 273,
-        "cause": "the retrace the input's post ran to, at 0FF1:00000240"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -1392,7 +1392,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 300,163; posted, unverified, 25 retraces to frame 696",
         "status": "ok",
         "stop_seq": 298,
-        "cause": "the retrace the input's post ran to, at 0FF1:00000346"
+        "cause": "the retrace the input's post ran to, at 13F6:0000023B"
       }
     },
     {
@@ -1402,7 +1402,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 2,113; posted, unverified, 20 retraces to frame 716",
         "status": "ok",
         "stop_seq": 318,
-        "cause": "the retrace the input's post ran to, at 0E6B:000004FE"
+        "cause": "the retrace the input's post ran to, at 1009:000002CE"
       }
     },
     {
@@ -1412,7 +1412,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 294,198; posted, unverified, 15 retraces to frame 731",
         "status": "ok",
         "stop_seq": 333,
-        "cause": "the retrace the input's post ran to, at 0FF1:0000025E"
+        "cause": "the retrace the input's post ran to, at 0955:00000057"
       }
     },
     {
@@ -1443,15 +1443,15 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         },
         "arrived": true,
         "polls": 15,
-        "pc": "093D:00000058",
+        "pc": "F000:0000CFC5",
         "cpu_mode": "real",
         "stop_seq": 348,
         "frame": 746,
         "instruction": {
-          "seg_off": "093D:00000058",
-          "bytes": "5E",
-          "text": "pop si",
-          "flow": "sequential",
+          "seg_off": "F000:0000CFC5",
+          "bytes": "CF",
+          "text": "iret",
+          "flow": "return",
           "code_bits": 16,
           "bytes_from": "memory",
           "symbol": {
@@ -1464,25 +1464,25 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
           }
         },
         "regs": {
-          "EAX": "0x00000001",
+          "EAX": "0x0000011c",
           "EBX": "0x00000000",
           "ECX": "0x005b0000",
-          "EDX": "0x00000cdb",
-          "ESI": "0x00000190",
+          "EDX": "0x00000cf3",
+          "ESI": "0x0000ffff",
           "EDI": "0x0000a0ae",
-          "EBP": "0x0000a014",
-          "ESP": "0x0000a012",
-          "EIP": "0x00000058",
-          "CS": "0x093d",
-          "DS": "0x3198",
+          "EBP": "0x0000a00c",
+          "ESP": "0x00009ff8",
+          "EIP": "0x0000cfc5",
+          "CS": "0xf000",
+          "DS": "0x31b0",
           "ES": "0x0000",
           "FS": "0x0000",
           "GS": "0x0000",
-          "SS": "0x3198"
+          "SS": "0x31b0"
         },
         "watches": [
           {
-            "ref": "3198:017C",
+            "ref": "31B0:017C",
             "by": "address",
             "mode": "show",
             "length": 1,
@@ -1492,7 +1492,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
             "bytes": "01"
           }
         ],
-        "cause": "the retrace the input's post ran to, at 093D:00000058",
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5",
         "e9": {
           "lines_total": 0,
           "truncated": false,
@@ -1586,7 +1586,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 300,173; posted, unverified, 25 retraces to frame 771",
         "status": "ok",
         "stop_seq": 373,
-        "cause": "the retrace the input's post ran to, at 093D:0000003C"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -1596,7 +1596,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 60,150; posted, unverified, 20 retraces to frame 791",
         "status": "ok",
         "stop_seq": 393,
-        "cause": "the retrace the input's post ran to, at 0E6B:00000B0F"
+        "cause": "the retrace the input's post ran to, at 0955:0000004F"
       }
     },
     {
@@ -1606,7 +1606,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 112,158; posted, unverified, 15 retraces to frame 806",
         "status": "ok",
         "stop_seq": 408,
-        "cause": "the retrace the input's post ran to, at 0FF1:000001D4"
+        "cause": "the retrace the input's post ran to, at 0E83:00000A6D"
       }
     },
     {
@@ -1637,15 +1637,15 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         },
         "arrived": true,
         "polls": 15,
-        "pc": "F000:0000CFC5",
+        "pc": "0E83:00000146",
         "cpu_mode": "real",
         "stop_seq": 423,
         "frame": 821,
         "instruction": {
-          "seg_off": "F000:0000CFC5",
-          "bytes": "CF",
-          "text": "iret",
-          "flow": "return",
+          "seg_off": "0E83:00000146",
+          "bytes": "8BEC",
+          "text": "mov bp, sp",
+          "flow": "sequential",
           "code_bits": 16,
           "bytes_from": "memory",
           "symbol": {
@@ -1658,25 +1658,25 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
           }
         },
         "regs": {
-          "EAX": "0x0000011c",
-          "EBX": "0x00000000",
+          "EAX": "0x00006e42",
+          "EBX": "0x000003e4",
           "ECX": "0x005b0000",
-          "EDX": "0x00000cdb",
-          "ESI": "0x0000ffff",
+          "EDX": "0x00000cf3",
+          "ESI": "0x00000008",
           "EDI": "0x0000a0ae",
-          "EBP": "0x0000a00c",
-          "ESP": "0x00009ff8",
-          "EIP": "0x0000cfc5",
-          "CS": "0xf000",
-          "DS": "0x3198",
+          "EBP": "0x0000a006",
+          "ESP": "0x00009ffc",
+          "EIP": "0x00000146",
+          "CS": "0x0e83",
+          "DS": "0x31b0",
           "ES": "0x0000",
           "FS": "0x0000",
           "GS": "0x0000",
-          "SS": "0x3198"
+          "SS": "0x31b0"
         },
         "watches": [
           {
-            "ref": "3198:017C",
+            "ref": "31B0:017C",
             "by": "address",
             "mode": "show",
             "length": 1,
@@ -1686,7 +1686,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
             "bytes": "06"
           }
         ],
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5",
+        "cause": "the retrace the input's post ran to, at 0E83:00000146",
         "e9": {
           "lines_total": 0,
           "truncated": false,
@@ -1819,7 +1819,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 302,51; posted, unverified, 25 retraces to frame 846",
         "status": "ok",
         "stop_seq": 448,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 0955:0000004C"
       }
     },
     {
@@ -1829,7 +1829,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 300,191; posted, unverified, 25 retraces to frame 871",
         "status": "ok",
         "stop_seq": 473,
-        "cause": "the retrace the input's post ran to, at 0FF1:00000324"
+        "cause": "the retrace the input's post ran to, at 0955:00000051"
       }
     },
     {
@@ -1839,7 +1839,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 86,149; posted, unverified, 20 retraces to frame 891",
         "status": "ok",
         "stop_seq": 493,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 0E83:000001AB"
       }
     },
     {
@@ -1849,7 +1849,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 86,118; posted, unverified, 15 retraces to frame 906",
         "status": "ok",
         "stop_seq": 508,
-        "cause": "the retrace the input's post ran to, at 0FF1:0000033B"
+        "cause": "the retrace the input's post ran to, at 1009:00000382"
       }
     },
     {
@@ -1859,7 +1859,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 86,118; posted, unverified, 15 retraces to frame 921",
         "status": "ok",
         "stop_seq": 523,
-        "cause": "the retrace the input's post ran to, at 0E6B:00000B1F"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
@@ -1869,7 +1869,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 86,118; posted, unverified, 20 retraces to frame 941",
         "status": "ok",
         "stop_seq": 543,
-        "cause": "the retrace the input's post ran to, at 093D:0000004F"
+        "cause": "the retrace the input's post ran to, at 0B92:000001FF"
       }
     },
     {
@@ -1879,7 +1879,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 108,146; posted, unverified, 15 retraces to frame 956",
         "status": "ok",
         "stop_seq": 558,
-        "cause": "the retrace the input's post ran to, at 0E6B:00000970"
+        "cause": "the retrace the input's post ran to, at F000:0000CFC1"
       }
     },
     {
@@ -1889,7 +1889,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 108,146; posted, unverified, 15 retraces to frame 971",
         "status": "ok",
         "stop_seq": 573,
-        "cause": "the retrace the input's post ran to, at 0E6B:0000098E"
+        "cause": "the retrace the input's post ran to, at 1009:000001D4"
       }
     },
     {
@@ -1899,7 +1899,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 108,146; posted, unverified, 20 retraces to frame 991",
         "status": "ok",
         "stop_seq": 593,
-        "cause": "the retrace the input's post ran to, at 0E6B:00000AF2"
+        "cause": "the retrace the input's post ran to, at 0E83:00000A90"
       }
     },
     {
@@ -1909,7 +1909,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 86,146; posted, unverified, 15 retraces to frame 1006",
         "status": "ok",
         "stop_seq": 608,
-        "cause": "the retrace the input's post ran to, at 0E6B:00000B28"
+        "cause": "the retrace the input's post ran to, at 0E83:000004F3"
       }
     },
     {
@@ -1940,15 +1940,15 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         },
         "arrived": true,
         "polls": 15,
-        "pc": "0E6B:00000B85",
+        "pc": "0E83:00000A14",
         "cpu_mode": "real",
         "stop_seq": 623,
         "frame": 1021,
         "instruction": {
-          "seg_off": "0E6B:00000B85",
-          "bytes": "7404",
-          "text": "je 0xb8b",
-          "flow": "branch",
+          "seg_off": "0E83:00000A14",
+          "bytes": "CB",
+          "text": "retf",
+          "flow": "return",
           "code_bits": 16,
           "bytes_from": "memory",
           "symbol": {
@@ -1961,25 +1961,25 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
           }
         },
         "regs": {
-          "EAX": "0x00000092",
-          "EBX": "0x00000000",
+          "EAX": "0x00000000",
+          "EBX": "0x000003e4",
           "ECX": "0x005b0000",
           "EDX": "0x0000a5ea",
           "ESI": "0x00000008",
           "EDI": "0x0000a0ae",
-          "EBP": "0x0000a010",
-          "ESP": "0x0000a010",
-          "EIP": "0x00000b85",
-          "CS": "0x0e6b",
-          "DS": "0x3198",
+          "EBP": "0x0000a006",
+          "ESP": "0x00009ffe",
+          "EIP": "0x00000a14",
+          "CS": "0x0e83",
+          "DS": "0x31b0",
           "ES": "0x0000",
           "FS": "0x0000",
           "GS": "0x0000",
-          "SS": "0x3198"
+          "SS": "0x31b0"
         },
         "watches": [
           {
-            "ref": "3198:017C",
+            "ref": "31B0:017C",
             "by": "address",
             "mode": "show",
             "length": 1,
@@ -1989,7 +1989,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
             "bytes": "0f"
           }
         ],
-        "cause": "the retrace the input's post ran to, at 0E6B:00000B85",
+        "cause": "the retrace the input's post ran to, at 0E83:00000A14",
         "e9": {
           "lines_total": 0,
           "truncated": false,
@@ -2089,7 +2089,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 314,98; posted, unverified, 25 retraces to frame 1046",
         "status": "ok",
         "stop_seq": 648,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "cause": "the retrace the input's post ran to, at 0955:00000037"
       }
     },
     {
@@ -2099,7 +2099,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_mouse: pointer at 20,180; posted, unverified, 25 retraces to frame 1071",
         "status": "ok",
         "stop_seq": 673,
-        "cause": "the retrace the input's post ran to, at 0FF1:00000239"
+        "cause": "the retrace the input's post ran to, at 1483:000005E7"
       }
     },
     {
@@ -2109,7 +2109,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         "summary": "send_keys (guest): posted, unverified, 50 retraces to frame 1121",
         "status": "ok",
         "stop_seq": 723,
-        "cause": "the retrace the input's post ran to, at 0E6B:000001AC"
+        "cause": "the retrace the input's post ran to, at 0955:0000002A"
       }
     },
     {
@@ -2142,15 +2142,15 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
         },
         "arrived": true,
         "polls": 25,
-        "pc": "F000:0000CFC0",
+        "pc": "F000:0000CFC5",
         "cpu_mode": "real",
         "stop_seq": 748,
         "frame": 1146,
         "instruction": {
-          "seg_off": "F000:0000CFC0",
-          "bytes": "FB",
-          "text": "sti",
-          "flow": "sequential",
+          "seg_off": "F000:0000CFC5",
+          "bytes": "CF",
+          "text": "iret",
+          "flow": "return",
           "code_bits": 16,
           "bytes_from": "memory",
           "symbol": {
@@ -2166,22 +2166,22 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
           "EAX": "0x0000011c",
           "EBX": "0x0000105c",
           "ECX": "0x005b0000",
-          "EDX": "0x00000baf",
+          "EDX": "0x00000bc7",
           "ESI": "0x0000ffff",
           "EDI": "0x0000a0ae",
           "EBP": "0x0000a00c",
           "ESP": "0x00009ff8",
-          "EIP": "0x0000cfc0",
+          "EIP": "0x0000cfc5",
           "CS": "0xf000",
-          "DS": "0x3198",
+          "DS": "0x31b0",
           "ES": "0x0000",
           "FS": "0x0000",
           "GS": "0x0000",
-          "SS": "0x3198"
+          "SS": "0x31b0"
         },
         "watches": [
           {
-            "ref": "3198:017C",
+            "ref": "31B0:017C",
             "by": "address",
             "mode": "show",
             "length": 1,
@@ -2191,7 +2191,7 @@ and where it put the window) is `<volatile>`, and the directory of your copy is 
             "bytes": "0f"
           }
         ],
-        "cause": "the retrace the input's post ran to, at F000:0000CFC0",
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5",
         "e9": {
           "lines_total": 0,
           "truncated": false,

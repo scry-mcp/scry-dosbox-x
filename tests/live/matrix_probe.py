@@ -169,6 +169,8 @@ _ABSENT = Path(Path.cwd().anchor) / "nonexistent"
 #: asked about files that are not there, which its judge refuses by name.
 MEDIA_ABSENT: dict[str, dict[str, Any]] = {
     "image_compare image": {"a": str(_ABSENT / "a.png"), "b": str(_ABSENT / "b.png")},
+    "audio_compare measure": {"path": str(_ABSENT / "s.wav")},
+    "audio_compare diff": {"a": str(_ABSENT / "a.wav"), "b": str(_ABSENT / "b.wav")},
     "image_compare series": {"a": str(_ABSENT / "a.json"), "b": str(_ABSENT / "b.json")},
     "image_compare region": {"manifest": str(_ABSENT / "m.json")},
     "image_compare golden": {"manifest": str(_ABSENT / "m.json"),

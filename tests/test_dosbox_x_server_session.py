@@ -304,8 +304,9 @@ def test_every_tool_this_server_promises_is_actually_registered() -> None:
         "declaration_clear",
         "state_write", "state_list", "snapshot", "captures", "capture_frame", "build_check",
         "symbols_load", "symbols_find", "send_keys", "send_mouse", "perform", "perform_export",
-        "drive", "comment_list", "comment_write", "series_capture", "image_compare", "map_find",
-        "map_write", "record", "audio_record", "port", "pic", "a20", "guest_file"}
+        "drive", "comment_list", "comment_write", "series_capture", "image_compare",
+        "audio_compare", "map_find", "map_write", "record", "audio_record", "port", "pic", "a20",
+        "guest_file"}
     got = dosbox_mcp.registered_tools()
     assert set(got) == expected
     # The registry is a dict keyed by name, so a length check cannot fail.

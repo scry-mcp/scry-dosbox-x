@@ -5,6 +5,7 @@ own: the OPL table and the notes its source plays, the counter and the pcs its l
 from __future__ import annotations
 
 import re
+import wave
 from pathlib import Path
 from typing import Any
 
@@ -53,7 +54,35 @@ T_CELLS = cells(
      "record and audio_record docstrings: Refused"),
     ("T captures lists each recording, each complete",
      "captures docstring"),
+    ("T audio_compare hears the WAV, finds it exact against itself and different from silence",
+     "audio_compare docstring; known: sound.asm's tone, and a silent copy of the WAV's format"),
 )
+
+
+def _silent_twin(path: Path) -> Path:
+    """A WAV of `path`'s format and length holding only zeros: the control the tone must
+    differ from."""
+    with wave.open(str(path), "rb") as src:
+        params, frames = src.getparams(), src.getnframes()
+    twin = Path(M.fresh(".wav"))
+    with wave.open(str(twin), "wb") as out:
+        out.setparams(params)
+        out.writeframes(bytes(frames * params.nchannels * params.sampwidth))
+    return twin
+
+
+def _compared(wav: dict[str, Any]) -> tuple[bool, str]:
+    if not ok(wav):
+        return False, said(wav)
+    path = Path(str(wav.get("path")))
+    heard = M.call(server.audio_compare, method="measure", path=str(path))
+    same = M.call(server.audio_compare, method="diff", a=str(path), b=str(path))
+    other = M.call(server.audio_compare, method="diff", a=str(_silent_twin(path)), b=str(path))
+    measures = heard.get("measures") or [{}]
+    holds = (ok(heard) and all(m.get("silent") is False for m in measures)
+             and ok(same) and same.get("exact") is True
+             and ok(other) and other.get("exact") is False and other.get("class") == "different")
+    return holds, f"{said(heard, 60)}; {said(same, 40)}; {said(other, 60)}"
 
 
 def _dro_holds_the_table(r: dict[str, Any]) -> bool:
@@ -91,6 +120,7 @@ def section_t() -> None:
     recorded = [c for c in listed if c.get("kind") in ("wav", "dro", "mid", "avi")]
     M.judge(T_CELLS[5].label, sorted(c["kind"] for c in recorded) == ["avi", "dro", "mid", "wav"]
             and all(c.get("complete") is True for c in recorded), str(recorded)[:140])
+    M.judge(T_CELLS[6].label, *_compared(wav))
     close_whatever()
 
 

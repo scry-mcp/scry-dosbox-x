@@ -4,7 +4,8 @@
 
 Exit 0 no FAIL, 1 FAIL, 3 invalid, 2 argument. Env:
 DOSBOX_X_BINARY, DOSBOX_X_LIVE_BENCH, WINDOW_APP, DOSBOX_X_LEAK_BINARY, DOSBOX_X_STOCK_BINARY,
-DOSBOX_X_LIVE_SECTIONS (letters), DOSBOX_X_LIVE_JOBS (default half the CPUs).
+RECHIP_DIR (a ReChip build, for section P's private VESA case), DOSBOX_X_LIVE_SECTIONS
+(letters), DOSBOX_X_LIVE_JOBS (default half the CPUs).
 """
 from __future__ import annotations
 

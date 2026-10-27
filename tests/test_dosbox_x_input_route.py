@@ -21,14 +21,21 @@ import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_x_server as server
 
-#: In the format the stub's source prints (authored; no capture of these two lines is kept):
+#: Authored in the format the stub's source prints:
 #: text mode 3, then mode 13h with the left button held.
-REAL_TEXT = "STUB  . mouse x=16 y=8 buttons=0 max=639,199 mode=3 screen=720x400"
-REAL_13H = "STUB  . mouse x=200 y=50 buttons=1 max=639,199 mode=19 screen=320x400"
+AUTHORED_TEXT = ("STUB  . mouse x=16 y=8 buttons=0 max=639,199 mode=3 screen=720x400 "
+             "vbe=3 attr=0 res=0x0")
+AUTHORED_13H = ("STUB  . mouse x=200 y=50 buttons=1 max=639,199 mode=19 screen=320x400 "
+            "vbe=19 attr=0 res=0x0")
+#: Captured off the stub on the mouse guest, VBE 103h and 108h.
+REAL_VBE_103H = ("STUB  . mouse x=400 y=300 buttons=0 max=799,599 mode=107 screen=800x600 "
+                 "vbe=259 attr=155 res=800x600")
+REAL_VBE_108H = ("STUB  . mouse x=320 y=240 buttons=0 max=639,479 mode=112 screen=640x480 "
+                 "vbe=264 attr=15 res=80x60")
 
 
 def test_a_real_report_parses_into_its_fields() -> None:
-    text, held = inputs.parse_report(REAL_TEXT), inputs.parse_report(REAL_13H)
+    text, held = inputs.parse_report(AUTHORED_TEXT), inputs.parse_report(AUTHORED_13H)
     assert (text.x, text.y, text.buttons, text.max_x, text.max_y, text.mode) == (
         16, 8, 0, 639, 199, 3)
     assert text.drawn == (720, 400) and held.drawn == (320, 400)
@@ -71,12 +78,51 @@ def test_no_screen_unit_maps_past_the_driver_s_top() -> None:
         assert max(inputs.to_driver(u, size, top) for u in range(size)) <= top, (size, top)
 
 
+@pytest.mark.parametrize(("line", "units", "kind"), [
+    (REAL_VBE_103H, (800, 600), "pixel"),
+    (REAL_VBE_108H, (80, 60), "text")])
+def test_a_vbe_mode_s_units_are_its_own_resolution(line: str, units: tuple[int, int],
+                                                   kind: str) -> None:
+    """The BIOS mode byte under a VBE mode is the emulated card's own number, which no table
+    maps; the units are the resolution VBE itself reports for the mode, in pixels or cells."""
+    report = inputs.parse_report(line)
+    assert (report.units(), report.kind()) == (units, kind)
+
+
+def test_a_report_cut_short_is_never_read_for_the_whole_one_after_it() -> None:
+    """A report whose line lost its end runs into the next acknowledgement and report; the cut
+    number must not parse, so the whole report after it is the one read."""
+    cut = REAL_VBE_103H.rsplit("600", 1)[0] + "6"
+    joined = cut + "Z\x01R\x01" + REAL_VBE_103H
+    assert inputs.parse_report(joined).resolution == (800, 600)
+
+
+def test_a_vbe_mode_whose_size_vbe_did_not_say_maps_no_units() -> None:
+    """4F01h failing leaves `res=0x0`; the BIOS byte is then the card's own number, which a
+    table of BIOS modes could misread, so the screen's units are unknown."""
+    report = inputs.parse_report(AUTHORED_TEXT.replace("vbe=3 attr=0", "vbe=259 attr=0"))
+    assert report.units() is None
+
+
+def test_a_vbe_mode_s_pixel_lands_one_to_one_and_is_said(tmp_path: Path) -> None:
+    fake = _guest(tmp_path)
+    fake.video_mode, fake.vbe = 0x6B, (0x103, 0x9B, 800, 600)
+    fake.mouse_max = (799, 599)
+    got = cast(dict[str, Any], server.send_mouse(x=799, y=599))
+    assert got["status"] == "ok" and got["arrived"] is True, got
+    assert fake.commands_sent[-2] == [inputs.move_command(799, 599)]
+    assert got["pointer"]["screen"] == {"x": 799, "y": 599, "width": 800, "height": 600}, got
+    assert got["pointer"]["vbe_mode"] == "0x103", got
+    off = cast(dict[str, Any], server.send_mouse(x=800, y=0))
+    assert off["status"] == "INVALID" and "800 x 600" in off["message"], off
+
+
 def test_a_text_mode_s_rows_and_columns_come_from_the_driver_s_range() -> None:
     """Mode 3 is 80 x 25 or 80 x 50 by the font, and the BIOS mode byte is 3 for both: the
     driver's range says which, eight units a cell."""
-    fifty = dataclasses.replace(inputs.parse_report(REAL_TEXT), max_y=399)
+    fifty = dataclasses.replace(inputs.parse_report(AUTHORED_TEXT), max_y=399)
     assert fifty.units() == (80, 50)
-    assert inputs.parse_report(REAL_TEXT).units() == (80, 25)
+    assert inputs.parse_report(AUTHORED_TEXT).units() == (80, 25)
 
 
 def test_both_axes_are_bounded_on_the_screen_and_in_the_driver(tmp_path: Path) -> None:
@@ -171,7 +217,7 @@ def test_a_reaction_pattern_that_cannot_be_composed_is_refused_before_anything_i
 
 
 def test_a_forty_column_text_mode_has_forty_cells_whatever_the_driver_s_range() -> None:
-    forty = dataclasses.replace(inputs.parse_report(REAL_TEXT), mode=1)
+    forty = dataclasses.replace(inputs.parse_report(AUTHORED_TEXT), mode=1)
     assert forty.units() == (40, 25)
 
 

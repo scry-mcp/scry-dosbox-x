@@ -1,0 +1,34 @@
+{
+ "task": {
+  "id": "D156",
+  "prompt": "Measure the whole recording /tmp/rec/menu.wav, every channel.",
+  "tool": "audio_compare",
+  "args": {
+   "method": "measure",
+   "path": "/tmp/rec/menu.wav"
+  },
+  "grammar": [
+   "measure"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D156: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/menu.wav\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D156: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/menu.wav\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D156: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/menu.wav\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

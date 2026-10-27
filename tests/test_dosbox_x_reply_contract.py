@@ -28,6 +28,8 @@ _ARGS: dict[str, dict[str, Any]] = {
     "map_write": {"method": "save", "dest": _abs("nonexistent", "x.scry-map.json")},
     "image_compare": {"method": "image", "a": _abs("nonexistent", "a.png"),
                       "b": _abs("nonexistent", "b.png")},
+    "audio_compare": {"method": "diff", "a": _abs("nonexistent", "a.wav"),
+                      "b": _abs("nonexistent", "b.wav")},
     "start": {"conf": _abs("nonexistent.conf"), "cwd": "rel", "session_seconds": 10},
     "log": {"pattern": ".", "channel": "guest"},
     "declaration_clear": {"kind": "watch", "all": True},
@@ -91,7 +93,8 @@ def test_every_tool_answers_the_contract_with_no_machine(
                 "perform_export": "bad_argument", "map_write": "needs_call",
                 # reads a host file, no machine: one `start` did not fingerprint is refused
                 "guest_file": "bad_argument",
-                **dict.fromkeys(media_tools.IMAGE_TOOLS, "bad_argument")}.get(name, "no_session")
+                **dict.fromkeys(media_tools.IMAGE_TOOLS + media_tools.AUDIO_TOOLS,
+                                "bad_argument")}.get(name, "no_session")
     contract.check_refusal(name, reply, expected)
 
 

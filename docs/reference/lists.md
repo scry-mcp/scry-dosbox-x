@@ -82,19 +82,19 @@ Example, from a live run:
       "reply": {
         "summary": "status: alive, stopped",
         "status": "ok",
-        "pid": 18391,
-        "conf": "$TMPDIR/dosbox-x-live-job-vpw7rzm6/A/tests/guest/probe.conf",
+        "pid": 1871,
+        "conf": "$TMPDIR/dosbox-x-live-job-o4x17vod/A/tests/guest/probe.conf",
         "conf_digest": "78bdc38f360b9b4a",
         "bound_s": 1200,
-        "elapsed_s": 4.3,
+        "elapsed_s": 4.1,
         "captures": "off",
-        "state_dir": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n962-save",
+        "state_dir": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n986-save",
         "last_stop": {
           "stop_seq": 11,
           "pc": "0814:00000130",
           "cause": "the retrace run_for ran to, at 0814:00000130",
           "since_s": 0.1,
-          "wall_at": "2026-10-27T06:58:03+00:00"
+          "wall_at": "2026-10-27T11:18:26+00:00"
         },
         "pending": {
           "arm": [],
@@ -178,15 +178,15 @@ Example, from a live run:
 
 ```json
 {
-  "dest": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n1773.json"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1821.json"
 }
 ```
 
 ```json
 {
-  "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n1773.json",
+  "summary": "perform_export: 1 step, 0 checks, 0 dropped, cut at call 2 to $TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1821.json",
   "status": "ok",
-  "path": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n1773.json",
+  "path": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1821.json",
   "steps": 1,
   "checks": 0,
   "dropped": [],
@@ -196,7 +196,7 @@ Example, from a live run:
     "op": "resume",
     "why": "its run was stopped by the wall clock or by the machine itself, at a place inside its frame that no replayed advance reaches; it stopped inside frame 0, the one it began in"
   },
-  "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n1773.json"
+  "replay": "uv run python -m scry_core.replay $TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1821.json"
 }
 ```
 <!-- scry-reference:end perform_export -->

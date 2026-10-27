@@ -16,7 +16,7 @@
 ; is still hooked, for what only a clock can do: dropping a frame left short, and draining COM1
 ; when a program masked IRQ 4. Both entries run one routine, never at once.
 ;
-; A FRAME (protocol 5): SYNC (A5h), a sequence byte (1 to 255), then the command, an opcode
+; A FRAME (protocol 6): SYNC (A5h), a sequence byte (1 to 255), then the command, an opcode
 ; byte and a fixed payload, then a CHECK: every byte after SYNC XORed into FFh. A SYNC byte can sit
 ; inside a payload (A5h is the break of a key), so a frame short of a byte can be completed by the
 ; next one's: the check is what makes that frame not add up. One that does not, or whose opcode
@@ -42,8 +42,10 @@
 ;   'R'                report, on COM1 after its acknowledgement (a repeat too: it reads,
 ;                      it changes nothing), one line ending CR LF:
 ;                      INT 33h AX=03h (position, buttons), AX=26h (the driver's range), the
-;                      BIOS video mode, the display size. On COM1, never on E9: the program's
-;                      own lines go to E9, and a report there could split one of them.
+;                      BIOS video mode, the display size, then VBE's own word on the mode
+;                      (INT 10h 4F03h; for a mode from 100h up, 4F01h's ModeAttributes and
+;                      resolution). On COM1, never on E9: the program's own lines go to E9,
+;                      and a report there could split one of them.
 ;   'S'                a screenshot, through the device's capture trigger
 ; An unknown opcode is never carried out, so a host speaking a newer protocol cannot wedge the stub.
 ;
@@ -60,9 +62,11 @@
 ; once at load (`motion`): a build that lacks it flags the device's error bit, and the stub
 ; still places the pointer. Calling INT 33h from an interrupt handler is sound against DOSBox-X's
 ; own driver, which is emulator code behind a callback; a mouse driver loaded INSIDE the guest is
-; not reached by this route and is not supported.
+; not reached by this route and is not supported. The same holds for the report's INT 10h, which
+; DOSBox-X's video BIOS answers behind a callback: under a VBE mode the BIOS mode byte holds the
+; emulated card's own number, and only VBE says which mode that is and how large.
 ;
-; It announces itself on the E9 port (`STUB  . scry device=present proto=5 motion=1`) so a host
+; It announces itself on the E9 port (`STUB  . scry device=present proto=6 motion=1`) so a host
 ; reading the log can tell whether the device answered, which protocol it speaks and whether a move
 ; carries motion, before it trusts the route. A build whose device does not answer exits with a
 ; code and stays out of memory.
@@ -207,7 +211,7 @@ start:
 ; Each runs with interrupts off and `service` never turns them on, so `busy` is only ever found
 ; set by an entry that came in under a driver call of the stub's own (INT 33h): that entry
 ; leaves the bytes to the next one.
-signature db 'SCRY-INJECT-5'      ; what the already-resident check reads before the entries
+signature db 'SCRY-INJECT-6'      ; what the already-resident check reads before the entries
 SIG_LEN equ $ - signature
 tick:
         pushf
@@ -507,6 +511,48 @@ report:
         pop     eax
         shr     eax, 16
         call    e9_dec
+        mov     dx, msg_vbe
+        call    e9_print
+        mov     ax, 4F03h
+        int     10h
+        cmp     ax, 004Fh
+        je      .vbe
+        xor     bx, bx              ; no VBE: mode 0
+.vbe:   and     bx, 3FFFh           ; bits 14 and 15 are the frame buffer and the clear, not the mode
+        mov     ax, bx
+        call    e9_dec
+        xor     si, si              ; ModeAttributes, then the resolution: 0 unless VBE says
+        xor     cx, cx
+        xor     dx, dx
+        cmp     bx, 100h
+        jb      .tail
+        push    cs
+        pop     es
+        mov     di, vbe_mode_info
+        mov     cx, bx
+        mov     ax, 4F01h
+        int     10h
+        xor     cx, cx
+        xor     dx, dx
+        cmp     ax, 004Fh
+        jne     .tail
+        mov     si, [vbe_mode_info]
+        mov     cx, [vbe_mode_info+12h]
+        mov     dx, [vbe_mode_info+14h]
+.tail:  push    dx
+        push    cx
+        mov     dx, msg_attr
+        call    e9_print
+        mov     ax, si
+        call    e9_dec
+        mov     dx, msg_res
+        call    e9_print
+        pop     ax
+        call    e9_dec
+        mov     al, 'x'
+        call    e9_char
+        pop     ax
+        call    e9_dec
         mov     al, 13
         call    e9_char
         mov     al, 10
@@ -645,13 +691,16 @@ com_tx:                             ; al -> COM1, once its holding register is e
 ; ---------------------------------------------------------------- data
 old1c       dd 0
 ; No timestamp: a stamp is the guest program's own clock, and this is not the program.
-msg_present db 'STUB  . scry device=present proto=5 motion=$'
+msg_present db 'STUB  . scry device=present proto=6 motion=$'
 msg_rep db 'STUB  . mouse x=$'
 msg_y db ' y=$'
 msg_b db ' buttons=$'
 msg_max db ' max=$'
 msg_mode db ' mode=$'
 msg_scr db ' screen=$'
+msg_vbe db ' vbe=$'
+msg_attr db ' attr=$'
+msg_res db ' res=$'
 hunting db 1         ; between frames: every byte until a SYNC is dropped
 got db 0             ; bytes in `frame`, all after the current frame's SYNC
 have db 0            ; of those, the bytes `parse` has read
@@ -666,4 +715,5 @@ busy db 0            ; 1 while `service` runs
 ticking db 0         ; 1 when the tick entered `service`, 0 when IRQ 4 did
 msg_absent  db 'STUB  . scry device=absent', 13, 10, '$'
 msg_twice   db 'STUB  . scry already resident', 13, 10, '$'
+vbe_mode_info times 256 db 0    ; INT 10h 4F01h writes the mode's information block here
 resident_end:

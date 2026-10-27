@@ -16,21 +16,17 @@ device carries relative motion; without it a drag paints nothing between its but
 
 from __future__ import annotations
 
-import atexit
 import hashlib
-import os
-import shutil
 import sys
-import tempfile
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import Demo, Reply, Run, Step, StepFailed, main
+from scry_core.demo import Demo, Reply, Run, Step, main
 from scry_core.verdict import Invalid
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos import host  # noqa: E402
-from demos.host import display  # noqa: E402
+from demos.host import VOLATILE, display, expect, isolated_store, pictured  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -54,11 +50,6 @@ SAIL = [((86, 149), (86, 118)), ((86, 118), (108, 146)), ((108, 146), (86, 146))
 TEXT_AT = (20, 180)
 WORD = "SCRY"
 WAIT_S = 60
-
-
-def expect(holds: bool, why: str) -> None:
-    if not holds:
-        raise StepFailed(why)
 
 
 def ds_segment(run: Run) -> int:
@@ -209,11 +200,6 @@ def crossing(*spans: tuple[str, int]) -> Any:
     return check
 
 
-def pictured(reply: Reply, run: Run) -> str:
-    expect(Path(reply["image"]["path"]).is_file(), f"no picture at {reply['image']['path']}")
-    return f"mode {reply['vga_mode']}, {reply['width']}x{reply['height']} by palette index"
-
-
 STEPS = [
     Step("start", "start", boot, started, options=frozenset({"binary", "cwd"}),
          volatile={"summary": "it carries how long the debugger took to answer"}),
@@ -263,34 +249,9 @@ DEMO = Demo(
     capture=lambda run: run.dir / "screen.png",
     offers=frozenset({"cwd", "shared"}), reads=frozenset({"shared"}), precheck=precheck,
     host_args={"cwd": "the directory of the reader's own copy of the program"},
-    volatile={"argv": "the emulator's command line, which carries the host's window placement",
-              "elapsed_s": "wall-clock time since the session started",
-              "waited_s": "wall-clock time a wait took", "ready_after_s": "wall-clock time "
-              "the debugger took to answer",
-              "window": "where the host put the emulator's window",
-              "binary": "where the host installed DOSBox-X",
-              "mark": "a byte position in the session's log, which also holds the debugger's "
-              "answers to as many polls as the host's clock let a wait send",
-              "input_port": "the free port the host picked for the input route",
-              "binary_origin": "how the host's DOSBox-X was found",
-              "version": "the host's DOSBox-X build",
-              "output": "what the debugger printed for the command, which the server says to "
-                        "read a stop from and never a value",
-              "output_chars": "the length of that output", "clipped": "whether it was cut",
-              "ran_path": "a file in the session's own temporary directory",
-              "replies_path": "a file in the session's own temporary directory",
-              })
-
-
-def isolated_store() -> None:
-    """The server keeps watches on disk, keyed by the conf, and re-arms them on the next start:
-    a run that failed half-way would arm its watch for the next one. So each run gets a store of
-    its own, gone when it ends."""
-    store = tempfile.mkdtemp(prefix="dpaint-demo-state-")
-    atexit.register(shutil.rmtree, store, ignore_errors=True)
-    os.environ["XDG_STATE_HOME"] = store
+    volatile=VOLATILE)
 
 
 if __name__ == "__main__":
-    isolated_store()
+    isolated_store("dpaint")
     sys.exit(main(DEMO))

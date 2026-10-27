@@ -67,8 +67,8 @@ class RunningGuest(SessionGates):
     stub_protocol = inputs.STUB_PROTOCOL
 
     def send_commands(self, commands: list[bytes]) -> list[str]:
-        return ["STUB  . mouse x=0 y=0 buttons=0 max=639,199 mode=3 screen=720x400"
-                for c in commands if c == b"R"]
+        return ["STUB  . mouse x=0 y=0 buttons=0 max=639,199 mode=3 screen=720x400 "
+                "vbe=3 attr=0 res=0x0" for c in commands if c == b"R"]
 
     def break_in(self, seconds: float = 5.0, progress: object = None) -> float:
         self.stopped = True
@@ -198,6 +198,8 @@ def _args(tmp_path: Path) -> dict[str, dict[str, Any]]:
         "image_compare region": {"manifest": "/nonexistent/m.json"},
         "image_compare golden": {"manifest": "/nonexistent/m.json",
                                  "checksums": "/nonexistent/g.sha256"},
+        "audio_compare measure": {"path": "/nonexistent/s.wav"},
+        "audio_compare diff": {"a": "/nonexistent/a.wav", "b": "/nonexistent/b.wav"},
         "map_write load": {"path": str(tmp_path / "none.scry-map.json")},
         "map_write save": {"dest": str(tmp_path / "x.scry-map.json")},
         "map_write add": {"screen": "s", "match": [[0, 0, 1, 1]]}, "map_find": {},

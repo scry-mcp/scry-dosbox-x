@@ -12,7 +12,7 @@ Each command is a numbered, checked frame, acknowledged on the same link before 
 
 The conf owes the route one line: its autoexec runs the stub before the program. A session started with `program` needs none: `start` loads the stub itself, on the first drive from Y: down that `[autoexec]` does not mount (a conf mounting them all is refused). A conf that configures `serial1` itself loses it to the route.
 
-The stub announces itself on the E9 (`STUB  . scry device=present proto=5 motion=1`), and the first input refuses (`no_channel`) when that line is missing or the protocol differs, because an older stub would read the frames as other commands. `motion` says whether the build's device takes relative motion (below). Without a `logfile` there is no line to read and input goes out on the conf's word.
+The stub announces itself on the E9 (`STUB  . scry device=present proto=6 motion=1`), and the first input refuses (`no_channel`) when that line is missing or the protocol differs, because an older stub would read the frames as other commands. `motion` says whether the build's device takes relative motion (below). Without a `logfile` there is no line to read and input goes out on the conf's word.
 
 ### An input that went in is not one the program took
 
@@ -248,29 +248,32 @@ Example, from a live run:
 
 ```json
 {
-  "x": 0,
-  "y": 0
+  "x": 96,
+  "y": 48,
+  "units": "mouse",
+  "expect": "MOUSE \\. pos x=96 y=48 ",
+  "seconds": 20
 }
 ```
 
 ```json
 {
-  "summary": "send_mouse: pointer at 0,0; posted, unverified",
+  "summary": "send_mouse: pointer at 12,6; effect seen, 15 retraces to frame 114",
   "status": "ok",
-  "x": 0,
-  "y": 0,
-  "units": "screen",
+  "x": 96,
+  "y": 48,
+  "units": "mouse",
   "route": "guest",
   "pointer": {
     "screen": {
-      "x": 0,
-      "y": 0,
+      "x": 12,
+      "y": 6,
       "width": 80,
       "height": 25
     },
     "mouse": {
-      "x": 0,
-      "y": 0,
+      "x": 96,
+      "y": 48,
       "max_x": 639,
       "max_y": 199
     },
@@ -278,10 +281,65 @@ Example, from a live run:
     "bios_mode": "0x03"
   },
   "arrived": true,
+  "polls": 15,
+  "pc": "F000:0000CFC5",
+  "cpu_mode": "real",
+  "stop_seq": 44,
+  "frame": 114,
+  "instruction": {
+    "seg_off": "F000:0000CFC5",
+    "bytes": "CF",
+    "text": "iret",
+    "flow": "return",
+    "code_bits": 16,
+    "bytes_from": "memory",
+    "symbol": {
+      "available": false,
+      "why": "no symbol table is loaded"
+    },
+    "delta": {
+      "available": false,
+      "why": "no symbol table is loaded"
+    }
+  },
+  "regs": {
+    "EAX": "0x00000103",
+    "EBX": "0x00000000",
+    "ECX": "0x005b0060",
+    "EDX": "0x00000030",
+    "ESI": "0x00000100",
+    "EDI": "0x0000fffe",
+    "EBP": "0x0000091c",
+    "ESP": "0x0000fff8",
+    "EIP": "0x0000cfc5",
+    "CS": "0xf000",
+    "DS": "0x08dd",
+    "ES": "0x08dd",
+    "FS": "0x0000",
+    "GS": "0x0000",
+    "SS": "0x08dd"
+  },
+  "watches": [],
+  "cause": "the retrace the input's post ran to, at F000:0000CFC5",
+  "e9": {
+    "lines_total": 1,
+    "truncated": false,
+    "lines": [
+      "Bochs port E9h: MOUSE . pos x=96 y=48 b=0 presses=0"
+    ],
+    "mark": 35246
+  },
   "motion": true,
   "verify": {
-    "checked": false,
-    "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
+    "checked": true,
+    "seen": true,
+    "expected": "MOUSE \\. pos x=96 y=48 ",
+    "verdict": "TARGET",
+    "line": "Bochs port E9h: MOUSE . pos x=96 y=48 b=0 presses=0",
+    "seen_before_waiting": true,
+    "lines_before": 0,
+    "waited_s": 0.0,
+    "lines_total": 1
   }
 }
 ```
@@ -293,7 +351,9 @@ Example, from a live run:
 
 `target` is explained in [Screen maps](files.md#screen-maps).
 
-`pointer` carries `screen` (`x`, `y`, `width`, `height`; unavailable in an unmapped mode), `mouse` (`x`, `y`, `max_x`, `max_y`), `buttons`, `bios_mode`. `screen` units are character cells in a text mode and pixels in a graphics one, each a span of the driver's coordinates: the move aims at the middle of the span, because the driver rounds to its own granularity and a program divides its range back out (Deluxe Paint sets eight coordinates a pixel and divides by eight), so the span's first coordinate can land in the unit before. `arrived` is judged in the units asked: any coordinate in the span is the unit, and it is false when the driver's rounding or a program's own range put the pointer in another one; `asked` then gives the driver coordinates sent. `double` is two clicks a tick apart; a button with no `x`, `y` acts where the pointer is, and a move and a button in one call move first. A read-back that fails after the commands went in is INVALID with `delivered: true`, so nothing is sent twice. With no `logfile` the mouse goes in unchecked.
+`pointer` carries `screen` (`x`, `y`, `width`, `height`; unavailable in an unmapped mode), `mouse` (`x`, `y`, `max_x`, `max_y`), `buttons`, `bios_mode`, and under a VBE mode `vbe_mode`. `screen` units are character cells in a text mode and pixels in a graphics one. Under a VBE mode the BIOS mode byte holds the emulated card's own number, which says nothing portable, so the stub asks VBE itself for the mode and its resolution (INT 10h 4F03h, 4F01h) and the units are that resolution, in pixels or, for a VBE text mode, in cells. Each unit is a span of the driver's coordinates: the move aims at the middle of the span, because the driver rounds to its own granularity and a program divides its range back out (Deluxe Paint sets eight coordinates a pixel and divides by eight), so the span's first coordinate can land in the unit before. `arrived` is judged in the units asked: any coordinate in the span is the unit, and it is false when the driver's rounding or a program's own range put the pointer in another one; `asked` then gives the driver coordinates sent. `double` is two clicks a tick apart; a button with no `x`, `y` acts where the pointer is, and a move and a button in one call move first. A read-back that fails after the commands went in is INVALID with `delivered: true`, so nothing is sent twice. With no `logfile` the mouse goes in unchecked.
+
+**The driver's pointer is the one placed.** A program that keeps its own pointer from the motion counters alone moves with the motion but never reads the driver's position, so its pointer starts where it already was and stops at the edge of its own range: `arrived` judges the driver's pointer and cannot see the program's. Allegro's default DOS mouse driver works that way; with `mouse = I33` in the program's `allegro.cfg` it reads the driver and sets the range to its screen, eight coordinates a pixel, and is pointed at by pixel like any other.
 
 <!-- scry-reference:begin drive -->
 ## `drive`
@@ -360,19 +420,19 @@ Example, from a live run:
         "reply": {
           "summary": "status: alive, stopped",
           "status": "ok",
-          "pid": 18391,
-          "conf": "$TMPDIR/dosbox-x-live-job-vpw7rzm6/A/tests/guest/probe.conf",
+          "pid": 1871,
+          "conf": "$TMPDIR/dosbox-x-live-job-o4x17vod/A/tests/guest/probe.conf",
           "conf_digest": "78bdc38f360b9b4a",
           "bound_s": 1200,
-          "elapsed_s": 4.3,
+          "elapsed_s": 4.1,
           "captures": "off",
-          "state_dir": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n962-save",
+          "state_dir": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n986-save",
           "last_stop": {
             "stop_seq": 11,
             "pc": "0814:00000130",
             "cause": "the retrace run_for ran to, at 0814:00000130",
             "since_s": 0.1,
-            "wall_at": "2026-10-27T06:58:03+00:00"
+            "wall_at": "2026-10-27T11:18:26+00:00"
           },
           "pending": {
             "arm": [],
@@ -413,7 +473,7 @@ Example, from a live run:
   "looked": {
     "guest": {
       "available": true,
-      "since_mark": 99428,
+      "since_mark": 95797,
       "lines_written": 0,
       "lines_total": 0,
       "truncated": false,

@@ -1,0 +1,201 @@
+{
+ "format": "scry-map/1",
+ "application": "mines",
+ "screens": [
+  {
+   "name": "title",
+   "kind": "pixel",
+   "size": [
+    800,
+    600
+   ],
+   "match": [
+    {
+     "crop": [
+      224,
+      180,
+      352,
+      64
+     ],
+     "signature": "7ae073725549969e"
+    }
+   ],
+   "controls": [
+    {
+     "name": "start",
+     "rect": [
+      216,
+      300,
+      368,
+      32
+     ]
+    }
+   ]
+  },
+  {
+   "name": "menu",
+   "kind": "pixel",
+   "size": [
+    800,
+    600
+   ],
+   "match": [
+    {
+     "crop": [
+      8,
+      28,
+      120,
+      92
+     ],
+     "signature": "c2c961fbe62eccf2"
+    }
+   ],
+   "controls": [
+    {
+     "name": "new game",
+     "rect": [
+      2,
+      26,
+      164,
+      24
+     ]
+    },
+    {
+     "name": "beginner",
+     "rect": [
+      2,
+      50,
+      164,
+      24
+     ]
+    },
+    {
+     "name": "intermediate",
+     "rect": [
+      2,
+      74,
+      164,
+      24
+     ]
+    },
+    {
+     "name": "expert",
+     "rect": [
+      2,
+      98,
+      164,
+      24
+     ]
+    }
+   ]
+  },
+  {
+   "name": "win",
+   "kind": "pixel",
+   "size": [
+    800,
+    600
+   ],
+   "match": [
+    {
+     "crop": [
+      252,
+      226,
+      64,
+      16
+     ],
+     "signature": "51f7a04b5436c6be"
+    }
+   ],
+   "controls": [
+    {
+     "name": "ok",
+     "rect": [
+      360,
+      316,
+      80,
+      28
+     ]
+    }
+   ]
+  },
+  {
+   "name": "lose",
+   "kind": "pixel",
+   "size": [
+    800,
+    600
+   ],
+   "match": [
+    {
+     "crop": [
+      252,
+      226,
+      40,
+      16
+     ],
+     "signature": "6fcefbe1e5cc6961"
+    }
+   ],
+   "controls": [
+    {
+     "name": "ok",
+     "rect": [
+      360,
+      316,
+      80,
+      28
+     ]
+    }
+   ]
+  },
+  {
+   "name": "board",
+   "kind": "pixel",
+   "size": [
+    800,
+    600
+   ],
+   "match": [
+    {
+     "crop": [
+      8,
+      4,
+      40,
+      16
+     ],
+     "signature": "368962d80da2fcbe"
+    },
+    {
+     "crop": [
+      12,
+      580,
+      88,
+      16
+     ],
+     "signature": "67fa555949a6282e"
+    },
+    {
+     "crop": [
+      100,
+      60,
+      60,
+      40
+     ],
+     "signature": "b1c6c7564402683d"
+    }
+   ],
+   "controls": [
+    {
+     "name": "game",
+     "rect": [
+      4,
+      0,
+      48,
+      24
+     ]
+    }
+   ]
+  }
+ ]
+}

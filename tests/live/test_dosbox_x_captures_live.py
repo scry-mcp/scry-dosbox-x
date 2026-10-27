@@ -1,5 +1,6 @@
 """The sound guest recorded at a stop, through the server: a WAV, a DRO, a MIDI file and an AVI,
-each checked against what the guest plays (`tests/guest/sound.asm`)."""
+each checked against what the guest plays (`tests/guest/sound.asm`), the WAV through
+`audio_compare` as well."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -29,6 +30,9 @@ def test_the_sound_guest_is_recorded_in_every_kind(tmp_path: Path) -> None:
     _ok(server.run_for(frames=20))
     wav = _ok(server.audio_record(frames=35, dest=str(tmp_path / "a.wav")))
     assert wav["sample_min"] < wav["sample_max"] and wav["channels"] == 2, wav
+    heard = _ok(server.audio_compare("measure", path=wav["path"]))
+    assert all(m["silent"] is False for m in heard["measures"]), heard
+    assert _ok(server.audio_compare("diff", a=wav["path"], b=wav["path"]))["exact"] is True
     dro = _ok(server.audio_record(frames=35, kind="dro", dest=str(tmp_path / "a.dro")))
     stream = capture_files.dro(Path(dro["path"]))
     assert stream is not None and dro["opl_pairs"] == stream.pairs >= 2, dro

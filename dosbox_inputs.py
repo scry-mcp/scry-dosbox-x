@@ -90,13 +90,13 @@ def scan_sequence(keys: list[str], mods: str) -> bytes:
 
 # The opcodes `guest/scry.asm` reads; its header is the contract.
 OP_KEY, OP_BUTTON, OP_MOVE, OP_REPORT = b"K", b"B", b"M", b"R"
-STUB_PROTOCOL = "5"
+STUB_PROTOCOL = "6"
 # The old stub's name is still matched, so its announce reads as another protocol, not as none.
 STUB_ANNOUNCE = re.compile(r"STUB  \. (?:scry|inject) device=(\w+)(?: proto=(\d+))?"
                            r"(?: motion=([01]))?")
 REPORT_LINE = re.compile(
     r"STUB  \. mouse x=(\d+) y=(\d+) buttons=(\d+) max=(\d+),(\d+) mode=(\d+) "
-    r"screen=(\d+)x(\d+)")
+    r"screen=(\d+)x(\d+) vbe=(\d+) attr=(\d+) res=(\d+)x(\d+)(?=\s|$)")
 
 BUTTONS = {"left": 0, "right": 1, "middle": 2}
 MAX_COORD = 0x7FFF      # INT 33h takes a coordinate in a signed 16-bit register
@@ -110,9 +110,12 @@ UNITS = ("screen", "mouse")
 # The units `screen_view` answers in per BIOS mode: cells for text, pixels for graphics. The
 # drawn size is not it (200 lines are drawn scan-doubled), so the mode decides and a mode outside
 # this table is refused; `units="mouse"` reaches it. Text rows are the font's (25 or 50 under one
-# mode byte), read off the driver's range, which spans eight units a row.
+# mode byte), read off the driver's range, which spans eight units a row. Under a VBE mode the
+# BIOS byte is the emulated card's own number, so the stub asks VBE (4F03h, 4F01h) instead.
 TEXT_COLUMNS = {0x00: 40, 0x01: 40, 0x02: 80, 0x03: 80, 0x07: 80}
 DRIVER_UNITS_PER_ROW = 8
+FIRST_VBE_MODE = 0x100
+VBE_GRAPHICS = 0x10       # ModeAttributes bit 4: a graphics mode, else text
 SCREEN_UNITS: dict[int, tuple[int, int]] = {
     0x04: (320, 200), 0x05: (320, 200), 0x0D: (320, 200), 0x13: (320, 200),
     0x06: (640, 200), 0x0E: (640, 200),
@@ -131,19 +134,33 @@ class Report:
     max_y: int
     mode: int
     drawn: tuple[int, int]
+    vbe: int = 0
+    vbe_attributes: int = 0
+    resolution: tuple[int, int] = (0, 0)
+
+    def is_vbe(self) -> bool:
+        return self.vbe >= FIRST_VBE_MODE
 
     def units(self) -> tuple[int, int] | None:
+        if self.is_vbe():
+            # 4F01h failing leaves 0x0, and the BIOS byte is then no mode a table can read.
+            return self.resolution if min(self.resolution) > 0 else None
         if self.mode in TEXT_COLUMNS:
             return TEXT_COLUMNS[self.mode], (self.max_y + 1) // DRIVER_UNITS_PER_ROW
         return SCREEN_UNITS.get(self.mode)
+
+    def kind(self) -> str:
+        if self.is_vbe():
+            return "pixel" if self.vbe_attributes & VBE_GRAPHICS else "text"
+        return "text" if self.mode in TEXT_COLUMNS else "pixel"
 
 
 def parse_report(line: str) -> Report:
     m = REPORT_LINE.search(line)
     if m is None:
         raise ds.Invalid("host_failed", f"the stub's report is not in its shape: {line!r}")
-    x, y, b, mx, my, mode, w, h = (int(g) for g in m.groups())
-    return Report(x, y, b, mx, my, mode, (w, h))
+    x, y, b, mx, my, mode, w, h, vbe, attr, rw, rh = (int(g) for g in m.groups())
+    return Report(x, y, b, mx, my, mode, (w, h), vbe, attr, (rw, rh))
 
 
 def per_unit(size: int, top: int) -> int | None:
@@ -549,13 +566,15 @@ def _target(report: Report, x: int, y: int, units: str) -> tuple[int, int]:
     size = report.units()
     if size is None:
         raise ds.Invalid("bad_argument",
-            f"the guest is in BIOS mode {report.mode:#04x}, whose screen units this server does "
-            f"not map (a VESA or custom mode); pass `units='mouse'` with the driver's own "
-            f"coordinates (range 0..{report.max_x}, 0..{report.max_y}). Nothing was sent")
+            f"the guest is in {_mode_name(report)}, whose size "
+            f"{'VBE did not report' if report.is_vbe() else UNMAPPED}, so the screen's units "
+            f"are unknown; pass "
+            f"`units='mouse'` with the driver's own coordinates (range 0..{report.max_x}, "
+            f"0..{report.max_y}). Nothing was sent")
     if x >= size[0] or y >= size[1]:
         raise ds.Invalid("bad_argument",
-            f"({x}, {y}) is outside the screen, {size[0]} x {size[1]} in mode "
-            f"{report.mode:#04x}; nothing was sent")
+            f"({x}, {y}) is outside the screen, {size[0]} x {size[1]} in {_mode_name(report)}; "
+            f"nothing was sent")
     return to_driver(x, size[0], report.max_x), to_driver(y, size[1], report.max_y)
 
 
@@ -574,6 +593,13 @@ def _motion(session: ds.Session) -> bool | dict[str, Any]:
     return True if motion else unavailable(NO_MOTION_WHY)
 
 
+UNMAPPED = "this server does not map (a custom mode)"
+
+
+def _mode_name(report: Report) -> str:
+    return f"VBE mode {report.vbe:#05x}" if report.is_vbe() else f"BIOS mode {report.mode:#04x}"
+
+
 def _pointer(report: Report) -> dict[str, Any]:
     size = report.units()
     screen = unavailable("an unmapped mode: the screen's size in its own units is not known") \
@@ -584,7 +610,8 @@ def _pointer(report: Report) -> dict[str, Any]:
     return {"screen": screen, "mouse": {"x": report.x, "y": report.y,
                                         "max_x": report.max_x, "max_y": report.max_y},
             "buttons": [name for name, bit in BUTTONS.items() if report.buttons >> bit & 1],
-            "bios_mode": f"{report.mode:#04x}"}
+            "bios_mode": f"{report.mode:#04x}",
+            **({"vbe_mode": f"{report.vbe:#05x}"} if report.is_vbe() else {})}
 
 
 def send_mouse_at(session: ds.Session, aimed: dict[str, Any], button: str | None, action: str,
@@ -603,8 +630,7 @@ def _still_the_screen(report: Report, aimed: dict[str, Any]) -> None:
     mode is the caller's to catch with `map_find` at a stop."""
     kind, (width, height) = aimed["kind"], aimed["size"]
     units = report.units()
-    now = (None if units is None
-           else ("text" if report.mode in TEXT_COLUMNS else "pixel", units))
+    now = None if units is None else (report.kind(), units)
     if now != (kind, (width, height)):
         said = ("a mode this server does not map" if now is None
                 else f"a {now[0]} {now[1][0]}x{now[1][1]} screen")

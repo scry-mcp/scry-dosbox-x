@@ -1240,6 +1240,7 @@ def series_capture(at_frames: list[int] | None = None, first: int | None = None,
 # every other tool.
 _MEDIA = media_tools.register(tool, media.MEDIA_TOOLS, lambda body: st.reply(**body))
 image_compare = _MEDIA["image_compare"]
+audio_compare = _MEDIA["audio_compare"]
 
 
 # --------------------------------------------------- declarations: breakpoints, watches

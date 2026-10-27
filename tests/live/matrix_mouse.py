@@ -7,6 +7,8 @@ Every pointer cell is judged twice over: the reply's read-back, and the guest's 
 the driver wrote independently of the server's report."""
 from __future__ import annotations
 
+import os
+import shutil
 import time
 from pathlib import Path
 from typing import Any
@@ -52,6 +54,14 @@ P_CELLS = cells(
     ("P mode 12h: pixel 639,479 arrives one to one", "send_mouse docstring: 640x480 pixels"),
     ("P mode 12h: a coordinate pair of 0xFF bytes arrives whole, the driver at 255,255",
      "dosbox_session: the nullmodem is transparent, so 0xFF is data"),
+    ("P VBE 103h: pixel 799,599 arrives one to one, the reply naming the VBE mode",
+     "docs/reference/input.md: under a VBE mode the units are VBE's resolution"),
+    ("P VBE 103h: pixel 420,310 arrives, and the guest's driver agrees",
+     "send_mouse docstring; known: the driver's range after a reset is the mode's size"),
+    ("P VBE 103h: a pixel past 800x600 is refused, naming the VBE mode",
+     "send_mouse docstring: refused before anything is sent"),
+    ("P VBE 108h, a text mode: cell 79,59 arrives on the driver's range",
+     "docs/reference/input.md: a VBE text mode counts cells"),
     ("P a left click is seen by the guest: pressed once, then released",
      "send_mouse docstring: `click`; known: mouse.asm counts AX=05h presses"),
     ("P the right button is the driver's second bit, held and released",
@@ -68,7 +78,48 @@ P_CELLS = cells(
      "guest/scry.asm: the UART's own interrupt; known: mouse.asm's o takes the timer"),
     ("P without a logfile the mouse and a key go in, the pointer off the stub's link",
      "REFERENCE.md, Input and the screen: the report rides the stub's own serial link"),
+    ("P ReChip, VBE 105h in protected mode: pixel 800,600 arrives, eight coordinates a pixel",
+     "docs/reference/input.md: Allegro's I33 driver sets its range to the screen"),
+    ("P ReChip: Allegro draws its arrow with its focus on the pixel asked",
+     "known: Allegro 4's default arrow has its focus at (1, 1), src/mouse.c mouse_x_focus"),
+    ("P ReChip: audio_record takes its AY render off the SB16, and audio_compare hears it",
+     "audio_record and audio_compare docstrings; known: a PT3 song plays from the start"),
 )
+#: The directory of a ReChip build (RECHIP.EXE, CWSDPMI.EXE and their data), a private bench.
+RECHIP_VAR = "RECHIP_DIR"
+RECHIP_SONG = "PT3\\ZHARA.PT3"
+#: Allegro's own config, beside the program: its INT 33h driver reads the driver's position.
+ALLEGRO_CFG = "[mouse]\r\nmouse = I33\r\n"
+#: A clock the host holds in real time: past it DOSBox-X's mixer drops whole blocks, and
+#: `audio_record` refuses a file shorter than its run.
+RECHIP_CONF = """[sdl]
+autolock=false
+
+[dosbox]
+machine=svga_s3
+memsize=64
+bochs debug port e9 = true
+
+[video]
+vmemsize=8
+
+[cpu]
+core=normal
+cputype=pentium_iii
+cycles=fixed 100000
+
+[sblaster]
+sbtype=sb16
+irq=7
+dma=1
+hdma=5
+sbbase=220
+
+[autoexec]
+mount c "rechip"
+c:
+set BLASTER=A220 I7 D1 H5 T6
+"""
 
 
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
@@ -135,6 +186,7 @@ def section_p() -> None:
     _twice()
     _twice(hooked=True)
     _no_log()
+    _rechip()
 
 
 def _timer_owned() -> None:
@@ -173,8 +225,36 @@ def _pointer_cells() -> None:
     r = M.call(server.send_mouse, x=255, y=255, units="mouse")
     judged("P mode 12h: a coordinate pair of 0xFF bytes arrives whole, the driver at 255,255",
            reply=r, holds=ok(r) and r.get("arrived") is True)
+    _vbe_cells()
     _mode("g", 0x13)
     must(M.call(server.send_mouse, x=100, y=50), "the pointer back at 100,50")
+
+
+def _vbe(key: str, number: int) -> None:
+    must(M.call(server.send_keys, keys=[key], expect=rf"MOUSE \. vbe={number}$",
+                seconds=WAIT_S), f"switching the guest to VBE mode {number:#x}")
+
+
+def _vbe_cells() -> None:
+    _vbe("s", 0x103)
+    r = M.call(server.send_mouse, x=799, y=599)
+    judged("P VBE 103h: pixel 799,599 arrives one to one, the reply naming the VBE mode",
+           reply=r, holds=_arrived(r, (799, 599), (799, 599))
+           and (r.get("pointer") or {}).get("vbe_mode") == "0x103")
+    # Off the centre, where the reset leaves the pointer and the guest has already logged it.
+    r = M.call(server.send_mouse, x=420, y=310)
+    seen = _guest_line(POS.format(x=420, y=310))
+    judged("P VBE 103h: pixel 420,310 arrives, and the guest's driver agrees", reply=r,
+           holds=_arrived(r, (420, 310), (420, 310)) and ok(seen))
+    r = M.call(server.send_mouse, x=800, y=0)
+    judged("P VBE 103h: a pixel past 800x600 is refused, naming the VBE mode", reply=r,
+           holds=refused(r, "bad_argument") and "800 x 600 in VBE mode 0x103" in str(
+               r.get("message")))
+    _vbe("w", 0x108)
+    r = M.call(server.send_mouse, x=79, y=59)
+    # The middle of the cell's span: the driver snaps a BIOS text mode to its cell, not this one.
+    judged("P VBE 108h, a text mode: cell 79,59 arrives on the driver's range", reply=r,
+           holds=_arrived(r, (79, 59), (636, 476)))
 
 
 def _buttons() -> None:
@@ -238,3 +318,99 @@ def _no_log() -> None:
            reply=r, holds=ok(r) and bool(r.get("pointer")) and ok(key)
            and key.get("route") == "guest")
     must(M.call(server.close), "closing")
+
+
+def _rechip() -> None:
+    """ReChip (DJGPP, Allegro 4, VBE 105h through CWSDPMI), a private program: a copy of the
+    build the variable names runs in this run's scratch, since it writes its settings beside
+    itself, with Allegro told to read the driver (`ALLEGRO_CFG`)."""
+    labels = [c.label for c in P_CELLS if c.label.startswith("P ReChip")]
+    held = os.environ.get(RECHIP_VAR, "")
+    if not held or not (Path(held) / "RECHIP.EXE").is_file():
+        for label in labels:
+            M.block(label, f"{RECHIP_VAR} names no directory holding RECHIP.EXE: ReChip is a "
+                           f"private program, run only where its build is named")
+        return
+    place = Path(M.fresh("-rechip"))
+    shutil.copytree(held, place / "rechip")
+    (place / "rechip" / "ALLEGRO.CFG").write_text(ALLEGRO_CFG, encoding="ascii")
+    conf = place / "rechip.conf"
+    conf.write_text(RECHIP_CONF, encoding="ascii")
+    boot(conf=conf, cwd=place, program=f"RECHIP.EXE {RECHIP_SONG}", captures_dir=M.fresh("-cap"))
+    must(M.call(server.resume), "letting ReChip start")
+    _rechip_pointer()
+    _rechip_sound()
+    must(M.call(server.close), "closing")
+
+
+def _allegro_ready() -> dict[str, Any]:
+    """Allegro sets the driver's range to its screen, eight coordinates a pixel, once it is up."""
+    for _ in range(90):
+        r = M.call(server.send_mouse, x=0, y=0, units="mouse")
+        if ok(r) and ((r.get("pointer") or {}).get("mouse") or {}).get("max_x") == 1023 * 8:
+            return r
+        time.sleep(1)
+    raise RuntimeError(f"ReChip's Allegro never set the driver's range: {said(r)}")
+
+
+#: A still stretch of ReChip's screen, the menu bar's empty middle: the arrow is the only change.
+STILL = [580, 0, 48, 40]
+TIP = (600, 4)
+#: Allegro 4 draws its default arrow from one pixel up and left of the pointer.
+ALLEGRO_FOCUS = (1, 1)
+
+
+def _crop(name: str) -> str:
+    must(M.call(server.stop), f"stopping for {name}")
+    dest = M.fresh(f"-{name}.png")
+    must(M.call(server.screen_view, crop=STILL, scale=1, dest=dest, attach=False),
+         f"reading {name}")
+    must(M.call(server.resume), "running ReChip again")
+    return dest
+
+
+def _same(a: str, b: str) -> bool:
+    r = M.call(server.image_compare, method="image", a=a, b=b)
+    return ok(r) and r.get("differing_pixels") == 0
+
+
+def _main_screen() -> str:
+    """The still stretch once ReChip has left its loading screen (the first crop, taken as
+    Allegro came up) and holds still: two crops a second apart, alike, and unlike the first."""
+    loading = previous = _crop("away")
+    for _ in range(60):
+        time.sleep(1)
+        now = _crop("away")
+        if not _same(now, loading) and _same(now, previous):
+            return now
+        previous = now
+    raise RuntimeError("ReChip's main screen never held still")
+
+
+def _rechip_pointer() -> None:
+    _allegro_ready()
+    away = _main_screen()
+    r = M.call(server.send_mouse, x=800, y=600)
+    judged("P ReChip, VBE 105h in protected mode: pixel 800,600 arrives, eight coordinates a "
+           "pixel", reply=r, holds=_arrived(r, (800, 600), (6404, 4804))
+           and (r.get("pointer") or {}).get("vbe_mode") == "0x105")
+    must(M.call(server.send_mouse, x=TIP[0], y=TIP[1]), "the pointer to the still stretch")
+    there = _crop("there")
+    diff = M.call(server.image_compare, method="image", a=away, b=there)
+    box = diff.get("bbox")
+    M.judge("P ReChip: Allegro draws its arrow with its focus on the pixel asked",
+            ok(diff) and isinstance(box, list)
+            and (STILL[0] + box[0] + ALLEGRO_FOCUS[0], STILL[1] + box[1] + ALLEGRO_FOCUS[1])
+            == TIP, said(diff))
+
+
+def _rechip_sound() -> None:
+    must(M.call(server.stop), "stopping for the recording")
+    wav = M.call(server.audio_record, seconds=30, frames=140, dest=M.fresh(".wav"))
+    heard = (M.call(server.audio_compare, method="measure", path=str(wav.get("path")))
+             if ok(wav) else wav)
+    measures = heard.get("measures") or [{}]
+    M.judge("P ReChip: audio_record takes its AY render off the SB16, and audio_compare hears it",
+            ok(wav) and ok(heard) and all(m.get("silent") is False for m in measures),
+            f"{said(wav, 60)}; {said(heard, 80)}")
+    must(M.call(server.resume), "running ReChip again")

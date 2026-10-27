@@ -614,6 +614,8 @@ class NamesFake(SessionGates):
         self.buttons = 0
         self.mouse_max = (639, 199)
         self.video_mode = 3
+        # VBE's own word on the mode: its number, ModeAttributes and resolution (0 when none)
+        self.vbe = (0, 0, 0, 0)
         self.pointer_snaps = 1
         self.reports_lost: set[int] = set()
         self.reports = 0
@@ -651,7 +653,8 @@ class NamesFake(SessionGates):
         x, y = self.pointer
         return (f"STUB  . mouse x={x} y={y} buttons={self.buttons} "
                 f"max={self.mouse_max[0]},{self.mouse_max[1]} mode={self.video_mode} "
-                f"screen=720x400")
+                f"screen=720x400 vbe={self.vbe[0]} attr={self.vbe[1]} "
+                f"res={self.vbe[2]}x{self.vbe[3]}")
 
     def send_commands(self, commands: list[bytes]) -> list[str]:
         self.commands_sent.append(list(commands))

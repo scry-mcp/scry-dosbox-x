@@ -264,5 +264,19 @@ def test_the_media_tools_are_named_once_for_the_registration_the_sequences_and_t
     assert set(media.MEDIA_TOOLS) <= set(checks.BY_OP)
     root = Path(media.__file__).parent
     spelled = [f.name for f in sorted(root.glob("*.py"))
-               if f.name != "dosbox_media.py" and "IMAGE_TOOLS" in f.read_text(encoding="utf-8")]
+               if f.name != "dosbox_media.py"
+               and any(t in f.read_text(encoding="utf-8") for t in ("IMAGE_TOOLS", "AUDIO_TOOLS"))]
     assert spelled == [], f"{spelled} name the tools a second time instead of MEDIA_TOOLS"
+
+
+def test_audio_compare_answers_here_since_this_server_records_a_wav(tmp_path: Path) -> None:
+    """`audio_record` writes WAV, so the sound layer's tool is this server's too: a model cannot
+    listen, and the numbers are how it judges what it recorded."""
+    wav = tmp_path / "tone.wav"
+    frames = b"".join(struct.pack("<h", 8000 if i % 40 < 20 else -8000) for i in range(4410))
+    wav.write_bytes(b"RIFF" + struct.pack("<I", 36 + len(frames)) + b"WAVEfmt "
+                    + struct.pack("<IHHIIHH", 16, 1, 1, 44100, 88200, 2, 16)
+                    + b"data" + struct.pack("<I", len(frames)) + frames)
+    assert "audio_compare" in media.MEDIA_TOOLS
+    r = cast(dict[str, Any], server.audio_compare("diff", a=str(wav), b=str(wav)))
+    assert r["status"] == "ok" and r["exact"] is True and "session" in r, r

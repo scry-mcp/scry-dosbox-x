@@ -38,7 +38,8 @@ LENGTHS = _lengths()
 STALE_TICKS = int(re.search(r"^STALE_TICKS\s+equ\s+(\d+)", ASM, re.M).group(1))  # type: ignore[union-attr]
 TICK_S = 0.005
 SPACING_S = link.FRAME_SPACING_S
-REPORT = b"STUB  . mouse x=1 y=2 buttons=0 max=639,199 mode=19 screen=320x200\r\n"
+REPORT = (b"STUB  . mouse x=1 y=2 buttons=0 max=639,199 mode=19 screen=320x200 "
+          b"vbe=19 attr=0 res=0x0\r\n")
 
 
 class Stub:

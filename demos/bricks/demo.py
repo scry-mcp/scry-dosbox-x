@@ -12,18 +12,27 @@ goes is `demos/host.py`'s to decide.
 
 from __future__ import annotations
 
-import atexit
-import os
 import shutil
 import sys
-import tempfile
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import Demo, Reply, Run, Step, StepFailed, main
+from scry_core.demo import Demo, Reply, Run, Step, main
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
-from demos.host import display, precheck  # noqa: E402
+from demos.host import (  # noqa: E402
+    INPUT_TIMING,
+    VOLATILE,
+    display,
+    expect,
+    isolated_store,
+    loaded,
+    pictured,
+    precheck,
+    seen,
+    started,
+    symbols_at,
+)
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -37,11 +46,6 @@ PADDLE_HOME, PADDLE_STEP, RIGHTS, PADDLE_W = 140, 8, 3, 40
 #: Where the demo puts the pointer, in screen pixels: the paddle centres itself under it.
 MOUSE_AT = (240, 100)
 WAIT_S = 60
-
-
-def expect(holds: bool, why: str) -> None:
-    if not holds:
-        raise StepFailed(why)
 
 
 def low_byte(reply: Reply, register: str) -> int:
@@ -68,26 +72,10 @@ def boot(run: Run) -> dict[str, Any]:
             "state_dir": states}
 
 
-def started(reply: Reply, run: Run) -> str:
-    watched = "shared" if reply.get("shared", False) else "headless"
-    return f"{watched} DOSBox-X, parked at the debugger before DOS boots"
-
-
 def at_ready(reply: Reply, run: Run) -> str:
     expect(reply["instruction"]["text"] == "int 3", f"stopped at {reply['instruction']}")
     cs, eip = str(reply["pc"]).split(":")
     return f"the program's own int 3 at {cs}:{eip[-4:]}: loaded at {cs}"
-
-
-def symbols(run: Run) -> dict[str, Any]:
-    """The table is offsets from the program's segment, so its base is that segment * 16."""
-    cs = int(str(run.replies["ready"]["pc"]).split(":")[0], 16)
-    return {"path": HERE / "bricks.sym", "base": f"{cs * 16:x}"}
-
-
-def loaded(reply: Reply, run: Run) -> str:
-    expect(reply["kept"] == reply["parsed"] > 0, f"{reply['kept']} of {reply['parsed']} kept")
-    return f"{reply['kept']} symbols placed at base {reply['base']:#x}"
 
 
 def listing(reply: Reply, run: Run) -> str:
@@ -110,11 +98,6 @@ def score_is(points: int) -> Any:
         expect(word(reply) == points, f"score {word(reply)}, not {points}")
         return f"score {points}, read by name"
     return check
-
-
-def pictured(reply: Reply, run: Run) -> str:
-    expect(Path(reply["image"]["path"]).is_file(), f"no picture at {reply['image']['path']}")
-    return f"mode {reply['vga_mode']}, {reply['width']}x{reply['height']} by palette index"
 
 
 def frames(reply: Reply, run: Run) -> str:
@@ -148,13 +131,6 @@ def paddle(reply: Reply, run: Run) -> str:
     return f"the paddle at x {want}: the middle, then {RIGHTS} steps right"
 
 
-def seen(what: str) -> Any:
-    def check(reply: Reply, run: Run) -> str:
-        expect(reply["verify"]["seen"] is True, f"verify {reply['verify']}")
-        return what
-    return check
-
-
 def moved(reply: Reply, run: Run) -> str:
     want = MOUSE_AT[0] - PADDLE_W // 2
     # Right of where the keys left it by more than a step, so the left arrow that follows can
@@ -184,18 +160,13 @@ def restored(reply: Reply, run: Run) -> str:
 BREAK_STOP = {key: "the stop lands wherever the game is when the break arrives"
              for key in ("summary", "regs", "instruction", "pc", "frame", "cause",
                          "watches", "e9")}
-#: Counts an input step reports that depend on when the host delivered the input, not on what
-#: the game did with it.
-INPUT_TIMING = {key: "it depends on when the host delivered the input"
-                for key in ("lines_before", "seen_before_waiting", "lines_total", "lines_written",
-                            "since_mark")}
 
 STEPS = [
     Step("start", "start", boot, started, options=frozenset({"binary"}),
          volatile={"summary": "it carries how long the debugger took to answer"}),
     Step("ready", "resume", {"seconds": WAIT_S}, at_ready,
          shown=("summary", "cause", "instruction")),
-    Step("symbols", "symbols_load", symbols, loaded,
+    Step("symbols", "symbols_load", symbols_at(HERE / "bricks.sym"), loaded,
          shown=("summary", "base")),
     Step("look", "disassemble", {"ref": "brick_hit", "length": 32}, listing),
     Step("break", "breakpoint_at", {"ref": "brick_hit"},
@@ -268,33 +239,9 @@ DEMO = Demo(
     readme=HERE / "README.md", front=ROOT / "README.md", steps=STEPS,
     capture=lambda run: run.dir / "screen.png",
     offers=frozenset({"shared"}), reads=frozenset({"shared"}), precheck=precheck,
-    volatile={"argv": "the emulator's command line, which carries the host's window placement",
-              "elapsed_s": "wall-clock time since the session started",
-              "waited_s": "wall-clock time a wait took", "ready_after_s": "wall-clock time "
-              "the debugger took to answer",
-              "saved_at": "the wall-clock time a state was saved at",
-              "window": "where the host put the emulator's window",
-              "binary": "where the host installed DOSBox-X",
-              "mark": "a byte position in the session's log, which also holds the debugger's "
-              "answers to as many polls as the host's clock let a wait send",
-              "input_port": "the free port the host picked for the input route",
-              "binary_origin": "how the host's DOSBox-X was found",
-              "version": "the host's DOSBox-X build",
-              "output": "what the debugger printed for the command, which the server says to "
-                        "read a stop from and never a value",
-              "output_chars": "the length of that output", "clipped": "whether it was cut",
-              })
-
-
-def isolated_store() -> None:
-    """The server keeps breakpoints and watches on disk, keyed by the conf, and re-arms them on
-    the next start: a run that failed half-way would arm its breakpoint for the next one. So
-    each run gets a store of its own, gone when it ends."""
-    store = tempfile.mkdtemp(prefix="bricks-demo-state-")
-    atexit.register(shutil.rmtree, store, ignore_errors=True)
-    os.environ["XDG_STATE_HOME"] = store
+    volatile={**VOLATILE, "saved_at": "the wall-clock time a state was saved at"})
 
 
 if __name__ == "__main__":
-    isolated_store()
+    isolated_store("bricks")
     sys.exit(main(DEMO))

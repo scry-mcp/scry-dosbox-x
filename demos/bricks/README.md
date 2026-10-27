@@ -158,7 +158,7 @@ and where it put the window) is `<volatile>`.
 
 </details>
 
-**2. `resume`**: OK ready: the program's own int 3 at 08C5:0119: loaded at 08C5
+**2. `resume`**: OK ready: the program's own int 3 at 08DD:0119: loaded at 08DD
 
 <details><summary>call and reply</summary>
 
@@ -170,7 +170,7 @@ and where it put the window) is `<volatile>`.
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08C5:00000119",
+  "summary": "resume: OTHER_STOP, stopped at 08DD:00000119",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": [
@@ -180,7 +180,7 @@ and where it put the window) is `<volatile>`.
   ],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08C5:00000119",
+  "pc": "08DD:00000119",
   "cpu_mode": "real",
   "frame": 1,
   "regs": {
@@ -193,27 +193,27 @@ and where it put the window) is `<volatile>`.
     "EBP": "0x0000091c",
     "ESP": "0x0000fffe",
     "EIP": "0x00000119",
-    "CS": "0x08c5",
-    "DS": "0x08c5",
+    "CS": "0x08dd",
+    "DS": "0x08dd",
     "ES": "0xa000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x08c5"
+    "SS": "0x08dd"
   },
   "watches": [],
-  "cause": "no declared code breakpoint at 08C5:00000119: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+  "cause": "no declared code breakpoint at 08DD:00000119: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
   "e9": {
     "lines_total": 2,
     "truncated": false,
     "lines": [
-      "Bochs port E9h: STUB  . scry device=present proto=5 motion=1",
+      "Bochs port E9h: STUB  . scry device=present proto=6 motion=1",
       "Bochs port E9h: BRICKS ready"
     ],
     "mark": "<volatile>"
   },
   "stop_seq": 2,
   "instruction": {
-    "seg_off": "08C5:00000119",
+    "seg_off": "08DD:00000119",
     "bytes": "CD03",
     "text": "int 3",
     "flow": "call",
@@ -238,22 +238,22 @@ and where it put the window) is `<volatile>`.
 
 </details>
 
-**3. `symbols_load`**: OK symbols: 65 symbols placed at base 0x8c50
+**3. `symbols_load`**: OK symbols: 65 symbols placed at base 0x8dd0
 
 <details><summary>call and reply</summary>
 
 ```json
 {
   "path": "./demos/bricks/bricks.sym",
-  "base": "8c50"
+  "base": "8dd0"
 }
 ```
 
 ```json
 {
-  "summary": "symbols_load: 65 loaded of 65 parsed, base 35920",
+  "summary": "symbols_load: 65 loaded of 65 parsed, base 36304",
   "status": "ok",
-  "base": 35920,
+  "base": 36304,
   "limit": -1,
   "descriptor": -1,
   "declarations": {
@@ -309,28 +309,28 @@ and where it put the window) is `<volatile>`.
 
 ```json
 {
-  "summary": "disassemble brick_hit: 14 lines at 08C5:000002C8, 16-bit",
+  "summary": "disassemble brick_hit: 14 lines at 08DD:000002C8, 16-bit",
   "status": "ok",
   "ref": "brick_hit",
-  "seg_off": "08C5:000002C8",
+  "seg_off": "08DD:000002C8",
   "length": 32,
   "code_bits": 16,
   "code_bits_from": "real mode",
   "lines": [
-    "08C5:000002C8 88DF                 mov bh, bl",
-    "08C5:000002CA 88C3                 mov bl, al",
-    "08C5:000002CC E81FFF               call 0x1ee",
-    "08C5:000002CF C6842C0600           mov byte ptr [si + 0x62c], 0",
-    "08C5:000002D4 FE0E2B06             dec byte ptr [0x62b]",
-    "08C5:000002D8 53                   push bx",
-    "08C5:000002D9 30C0                 xor al, al",
-    "08C5:000002DB E81BFF               call 0x1f9",
-    "08C5:000002DE 5B                   pop bx",
-    "08C5:000002DF B006                 mov al, 6",
-    "08C5:000002E1 28D8                 sub al, bl",
-    "08C5:000002E3 B40A                 mov ah, 0xa",
-    "08C5:000002E5 F6E4                 mul ah",
-    "08C5:000002E7 01061506             add word ptr [0x615], ax"
+    "08DD:000002C8 88DF                 mov bh, bl",
+    "08DD:000002CA 88C3                 mov bl, al",
+    "08DD:000002CC E81FFF               call 0x1ee",
+    "08DD:000002CF C6842C0600           mov byte ptr [si + 0x62c], 0",
+    "08DD:000002D4 FE0E2B06             dec byte ptr [0x62b]",
+    "08DD:000002D8 53                   push bx",
+    "08DD:000002D9 30C0                 xor al, al",
+    "08DD:000002DB E81BFF               call 0x1f9",
+    "08DD:000002DE 5B                   pop bx",
+    "08DD:000002DF B006                 mov al, 6",
+    "08DD:000002E1 28D8                 sub al, bl",
+    "08DD:000002E3 B40A                 mov ah, 0xa",
+    "08DD:000002E5 F6E4                 mul ah",
+    "08DD:000002E7 01061506             add word ptr [0x615], ax"
   ],
   "flow": [
     "sequential",
@@ -354,8 +354,8 @@ and where it put the window) is `<volatile>`.
       "line": 2,
       "operand": "0x1ee",
       "kind": "target",
-      "seg_off": "08C5:000001EE",
-      "addr": "0x00008e3e",
+      "seg_off": "08DD:000001EE",
+      "addr": "0x00008fbe",
       "symbol": "brick_index",
       "delta": 0
     },
@@ -364,8 +364,8 @@ and where it put the window) is `<volatile>`.
       "operand": "byte ptr [0x62b]",
       "kind": "memory",
       "register": "DS",
-      "seg_off": "08C5:0000062B",
-      "addr": "0x0000927b",
+      "seg_off": "08DD:0000062B",
+      "addr": "0x000093fb",
       "symbol": "bricks_left",
       "delta": 0
     },
@@ -373,8 +373,8 @@ and where it put the window) is `<volatile>`.
       "line": 7,
       "operand": "0x1f9",
       "kind": "target",
-      "seg_off": "08C5:000001F9",
-      "addr": "0x00008e49",
+      "seg_off": "08DD:000001F9",
+      "addr": "0x00008fc9",
       "symbol": "brick_rect",
       "delta": 0
     },
@@ -383,8 +383,8 @@ and where it put the window) is `<volatile>`.
       "operand": "word ptr [0x615]",
       "kind": "memory",
       "register": "DS",
-      "seg_off": "08C5:00000615",
-      "addr": "0x00009265",
+      "seg_off": "08DD:00000615",
+      "addr": "0x000093e5",
       "symbol": "score",
       "delta": 0
     }
@@ -399,7 +399,7 @@ and where it put the window) is `<volatile>`.
 
 </details>
 
-**5. `breakpoint_at`**: OK break: breakpoint BP 08C5:02C8
+**5. `breakpoint_at`**: OK break: breakpoint BP 08DD:02C8
 
 <details><summary>call and reply</summary>
 
@@ -418,7 +418,7 @@ and where it put the window) is `<volatile>`.
   "stored": true,
   "armed": true,
   "state": "armed",
-  "entry": "BP 08C5:02C8",
+  "entry": "BP 08DD:02C8",
   "session": {
     "alive": true,
     "running": false,
@@ -475,7 +475,7 @@ and where it put the window) is `<volatile>`.
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08C5:000002C8",
+  "summary": "resume: OTHER_STOP, stopped at 08DD:000002C8",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": [
@@ -485,7 +485,7 @@ and where it put the window) is `<volatile>`.
   ],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08C5:000002C8",
+  "pc": "08DD:000002C8",
   "cpu_mode": "real",
   "frame": 36,
   "regs": {
@@ -498,12 +498,12 @@ and where it put the window) is `<volatile>`.
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
     "EIP": "0x000002c8",
-    "CS": "0x08c5",
-    "DS": "0x08c5",
+    "CS": "0x08dd",
+    "DS": "0x08dd",
     "ES": "0xa000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x08c5"
+    "SS": "0x08dd"
   },
   "watches": [
     {
@@ -517,7 +517,7 @@ and where it put the window) is `<volatile>`.
       "bytes": "0000"
     }
   ],
-  "cause": "breakpoint brick_hit (by symbol) at 08C5:000002C8",
+  "cause": "breakpoint brick_hit (by symbol) at 08DD:000002C8",
   "e9": {
     "lines_total": 0,
     "truncated": false,
@@ -526,7 +526,7 @@ and where it put the window) is `<volatile>`.
   },
   "stop_seq": 3,
   "instruction": {
-    "seg_off": "08C5:000002C8",
+    "seg_off": "08DD:000002C8",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -557,7 +557,7 @@ and where it put the window) is `<volatile>`.
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08C5:000002C8",
+  "summary": "resume: OTHER_STOP, stopped at 08DD:000002C8",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": [
@@ -567,7 +567,7 @@ and where it put the window) is `<volatile>`.
   ],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08C5:000002C8",
+  "pc": "08DD:000002C8",
   "cpu_mode": "real",
   "frame": 140,
   "regs": {
@@ -580,12 +580,12 @@ and where it put the window) is `<volatile>`.
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
     "EIP": "0x000002c8",
-    "CS": "0x08c5",
-    "DS": "0x08c5",
+    "CS": "0x08dd",
+    "DS": "0x08dd",
     "ES": "0xa000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x08c5"
+    "SS": "0x08dd"
   },
   "watches": [
     {
@@ -599,7 +599,7 @@ and where it put the window) is `<volatile>`.
       "bytes": "0a00"
     }
   ],
-  "cause": "breakpoint brick_hit (by symbol) at 08C5:000002C8",
+  "cause": "breakpoint brick_hit (by symbol) at 08DD:000002C8",
   "e9": {
     "lines_total": 1,
     "truncated": false,
@@ -610,7 +610,7 @@ and where it put the window) is `<volatile>`.
   },
   "stop_seq": 4,
   "instruction": {
-    "seg_off": "08C5:000002C8",
+    "seg_off": "08DD:000002C8",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -642,10 +642,10 @@ and where it put the window) is `<volatile>`.
 
 ```json
 {
-  "summary": "read_memory score: 2 bytes at 08C5:00000615",
+  "summary": "read_memory score: 2 bytes at 08DD:00000615",
   "status": "ok",
   "ref": "score",
-  "seg_off": "08C5:00000615",
+  "seg_off": "08DD:00000615",
   "length": 2,
   "hex": "0a00",
   "session": {
@@ -722,7 +722,7 @@ Also attached: image/png.
   "status": "ok",
   "declarations_cleared": 1,
   "disarmed": [
-    "BP 08C5:02C8"
+    "BP 08DD:02C8"
   ],
   "session": {
     "alive": true,
@@ -809,10 +809,10 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory ball_x: 8 bytes at 08C5:00000621",
+  "summary": "read_memory ball_x: 8 bytes at 08DD:00000621",
   "status": "ok",
   "ref": "ball_x",
-  "seg_off": "08C5:00000621",
+  "seg_off": "08DD:00000621",
   "length": 8,
   "hex": "bc005200feff0200",
   "session": {
@@ -1074,10 +1074,10 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory paddle_x: 2 bytes at 08C5:0000061F",
+  "summary": "read_memory paddle_x: 2 bytes at 08DD:0000061F",
   "status": "ok",
   "ref": "paddle_x",
-  "seg_off": "08C5:0000061F",
+  "seg_off": "08DD:0000061F",
   "length": 2,
   "hex": "a400",
   "session": {
@@ -1318,10 +1318,10 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory paddle_x: 2 bytes at 08C5:0000061F",
+  "summary": "read_memory paddle_x: 2 bytes at 08DD:0000061F",
   "status": "ok",
   "ref": "paddle_x",
-  "seg_off": "08C5:0000061F",
+  "seg_off": "08DD:0000061F",
   "length": 2,
   "hex": "dc00",
   "session": {
@@ -1523,10 +1523,10 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory paddle_x: 2 bytes at 08C5:0000061F",
+  "summary": "read_memory paddle_x: 2 bytes at 08DD:0000061F",
   "status": "ok",
   "ref": "paddle_x",
-  "seg_off": "08C5:0000061F",
+  "seg_off": "08DD:0000061F",
   "length": 2,
   "hex": "dc00",
   "session": {

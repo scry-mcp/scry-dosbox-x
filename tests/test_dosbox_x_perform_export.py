@@ -99,7 +99,7 @@ DECLARED = {
     "resume": "wall", "stop": "wall", "screen_wait": "wall",
     **dict.fromkeys(("memdump", "scan", "snapshot", "capture_frame", "series_capture",
                      "comment_write", "machine_map", "interrupt_vectors", "palette",
-                     "screen_view"), "drop"),
+                     "screen_view", "audio_compare"), "drop"),
     "map_find": ("matched", "screen"),
     "guest_file": ("state",),
     **dict.fromkeys(("declaration_list", "build_check", "call_stack", "captures",

@@ -1,5 +1,5 @@
 """`series_capture`: frames out of the session's video capture, written as a `scry-series/1`
-series (`scry_core.series`).
+series (`scry_core.series`); and `MEDIA_TOOLS`, the file tools of scry-core this server publishes.
 
 Frames come from the AVI: frame N is the AVI's N-th frame from 0, not the display frame a
 stop's `frame` counts since power-on. Pixels are written RGB with no row
@@ -19,8 +19,9 @@ import dosbox_paths as paths
 import dosbox_session as ds
 
 SERIES_FFMPEG_SECS = 300
-#: The media file tools this server publishes; the sound layer's join once a session records a WAV.
-MEDIA_TOOLS = media_tools.IMAGE_TOOLS
+#: The media file tools this server publishes: the image layer's, and the sound layer's, since
+#: `audio_record` writes WAV.
+MEDIA_TOOLS = media_tools.IMAGE_TOOLS + media_tools.AUDIO_TOOLS
 FRAME_SOURCE = "avi"
 
 def check_series_capture(at_frames: list[int] | None = None, first: int | None = None,

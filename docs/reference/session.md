@@ -59,12 +59,12 @@ Example, from a live run:
   ],
   "tools": [
     "a20",
+    "audio_compare",
     "audio_record",
     "breakpoint_at",
     "breakpoint_interrupt",
     "build_check",
-    "call_stack",
-    "... 52 more"
+    "... 53 more"
   ]
 }
 ```
@@ -187,30 +187,30 @@ Example, from a live run:
 
 ```json
 {
-  "conf": "$TMPDIR/dosbox-x-live-job-vpw7rzm6/A/tests/guest/probe.conf",
-  "cwd": "$TMPDIR/dosbox-x-live-job-vpw7rzm6/A/tests/guest",
+  "conf": "$TMPDIR/dosbox-x-live-job-o4x17vod/A/tests/guest/probe.conf",
+  "cwd": "$TMPDIR/dosbox-x-live-job-o4x17vod/A/tests/guest",
   "session_seconds": 1200,
-  "logfile": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n961.log",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n962-save"
+  "logfile": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n985.log",
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n986-save"
 }
 ```
 
 ```json
 {
-  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry-778a87333/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.159s",
+  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry-778a87333/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.163s",
   "status": "ok",
-  "pid": 18391,
-  "conf": "$TMPDIR/dosbox-x-live-job-vpw7rzm6/A/tests/guest/probe.conf",
+  "pid": 1871,
+  "conf": "$TMPDIR/dosbox-x-live-job-o4x17vod/A/tests/guest/probe.conf",
   "conf_digest": "78bdc38f360b9b4a",
   "bound_s": 1200,
-  "elapsed_s": 0.7,
+  "elapsed_s": 0.4,
   "captures": "off",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n962-save",
-  "ready_after_s": 0.159,
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n986-save",
+  "ready_after_s": 0.163,
   "argv": [
     "~/.local/state/dosbox-x-builds/scry-778a87333/dosbox-x",
     "-conf",
-    "$TMPDIR/dosbox-x-live-job-vpw7rzm6/A/tests/guest/probe.conf",
+    "$TMPDIR/dosbox-x-live-job-o4x17vod/A/tests/guest/probe.conf",
     "-time-limit",
     "1200",
     "-break-start",
@@ -229,7 +229,7 @@ Example, from a live run:
     "... 5 more"
   ],
   "stub": "/path/to/scry-dosbox-x/guest/SCRY.COM",
-  "input_port": 57966,
+  "input_port": 61425,
   "background": true,
   "presence": {
     "available": false,

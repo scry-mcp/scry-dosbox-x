@@ -447,8 +447,8 @@ Example, from a live run:
         "available": false,
         "why": "a DOS machine has one cpu, and every row acts on it"
       },
-      "created_at": "2026-10-27T06:58:03+00:00",
-      "origin": "2026-10-27T06:57:59+00:00#18331.1",
+      "created_at": "2026-10-27T11:18:26+00:00",
+      "origin": "2026-10-27T11:18:22+00:00#1818.1",
       "inherited": false,
       "age_s": 0,
       "entry": "BP 0000:0002",

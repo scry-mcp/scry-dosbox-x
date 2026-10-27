@@ -296,18 +296,18 @@ Example, from a live run:
 {
   "ref": "0000:0400",
   "length": 16,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n1083.bin"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1107.bin"
 }
 ```
 
 ```json
 {
-  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n1083.bin",
+  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1107.bin",
   "status": "ok",
   "ref": "0000:0400",
   "seg_off": "0000:00000400",
   "length": 16,
-  "path": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n1083.bin",
+  "path": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1107.bin",
   "bytes": 16
 }
 ```
@@ -445,11 +445,11 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "log emulator /./: 40 of 137 lines",
+  "summary": "log emulator /./: 40 of 135 lines",
   "status": "ok",
   "pattern": ".",
   "channel": "emulator",
-  "lines_total": 137,
+  "lines_total": 135,
   "truncated": true,
   "lines": [
     "-------------------------------------------------------------------------",
@@ -1009,7 +1009,7 @@ Example, from a live run:
   "bits": 6,
   "pel_mask": "ffh",
   "image": {
-    "path": "$TMPDIR/dosbox-x-session-l1o_xbzc/gfx/palette-1.png",
+    "path": "$TMPDIR/dosbox-x-session-nm2kjpvk/gfx/palette-1.png",
     "bytes": 1009,
     "sha256": "a5dff617e307a60f3bf521d96fed8809cc0f3b38409a74c904cfa5c1ad4371e1",
     "width": 256,

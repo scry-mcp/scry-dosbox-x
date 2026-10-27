@@ -23,6 +23,7 @@ DPAINT = os.environ.get("DELUXE_PAINT_DIR", "")
 
 @pytest.mark.parametrize(("name", "args"), [
     ("bricks", []),
+    ("mines", []),
     pytest.param("dpaint", ["--cwd", DPAINT], marks=pytest.mark.skipif(
         not DPAINT, reason="set DELUXE_PAINT_DIR to your own copy of Deluxe Paint II v1.0: "
                            "the repository carries none of the program"))])

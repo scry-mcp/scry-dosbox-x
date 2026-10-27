@@ -22,8 +22,8 @@ DRIVING_TOOLS = frozenset({
     "send_mouse", "drive", "perform", "state_write", "debug", "write", "set_register", "record",
     "audio_record", "port", "pic", "a20"})
 STILL_TOOLS = frozenset({
-    "breakpoint_at", "breakpoint_interrupt", "build_check", "call_stack", "capture_frame",
-    "captures", "close", "comment_list", "comment_write", "declaration_clear",
+    "audio_compare", "breakpoint_at", "breakpoint_interrupt", "build_check", "call_stack",
+    "capture_frame", "captures", "close", "comment_list", "comment_write", "declaration_clear",
     "declaration_list", "disassemble", "find", "guest_file", "image_compare",
     "interrupt_vectors", "log",
     "log_wait", "machine_map", "map_find", "map_write", "memdump", "palette", "perform_export",

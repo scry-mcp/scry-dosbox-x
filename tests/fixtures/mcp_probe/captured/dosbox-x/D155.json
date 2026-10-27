@@ -1,0 +1,39 @@
+{
+ "task": {
+  "id": "D155",
+  "prompt": "Measure the Sound Blaster recording /tmp/rec/fanfare.wav between 0.5 and 2 seconds, only its left channel: did it sound, how loud, and when did it start?",
+  "tool": "audio_compare",
+  "args": {
+   "method": "measure",
+   "path": "/tmp/rec/fanfare.wav",
+   "window": [
+    0.5,
+    2
+   ],
+   "channel": 0
+  },
+  "grammar": [
+   "measure"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D155: {\"tool\": \"audio_compare\", \"args\": {\"method\": \"measure\", \"path\": \"/tmp/rec/fanfare.wav\", \"window\": [0.5, 2], \"channel\": 0}}"
+   ],
+   "right": true
+  }
+ ]
+}

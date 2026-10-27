@@ -5,7 +5,8 @@
 ; button since the last line, so a click and a double click are both countable. A key writes
 ; `MOUSE . key=<ascii>`, and three keys switch the BIOS mode, so a case can try the pointer in
 ; another one: g -> 13h (320x200), v -> 12h (640x480), t -> 03h (text), each followed by
-; `MOUSE . mode=<n>`. A fourth, o, takes INT 08h the way a game owns the timer: an EOI and an
+; `MOUSE . mode=<n>`; two more set a VBE mode, s -> 103h (800x600, 256 colours) and w -> 108h
+; (80x60 text), each followed by `MOUSE . vbe=<n>`, the mode VBE then reports (4F03h). A fourth, o, takes INT 08h the way a game owns the timer: an EOI and an
 ; IRET, never chaining the BIOS, so INT 1Ch stops; then `MOUSE . timer=owned`. It never returns. Built here from this source, like the other guests:
 ;
 ;     nasm -f bin mouse.asm -o mouse.com
@@ -37,6 +38,12 @@ loop_:
         mov     bl, 03h
         cmp     al, 't'
         je      .mode
+        mov     bx, 103h
+        cmp     al, 's'
+        je      .vbe
+        mov     bx, 108h
+        cmp     al, 'w'
+        je      .vbe
         cmp     al, 'o'
         je      .own
         push    ax                  ; `pr` loads AL with each character it prints
@@ -65,6 +72,20 @@ loop_:
         mov     ah, 0Fh             ; the mode the BIOS now holds (INT 33h's reset took BL)
         int     10h
         xor     ah, ah
+        call    dec
+        call    nl
+        mov     word [lx], 0FFFFh
+        jmp     .nokey
+.vbe:   mov     ax, 4F02h
+        int     10h
+        call    hide
+        xor     ax, ax
+        int     33h
+        mov     dx, m_vbe
+        call    pr
+        mov     ax, 4F03h
+        int     10h
+        mov     ax, bx
         call    dec
         call    nl
         mov     word [lx], 0FFFFh
@@ -151,6 +172,7 @@ ly dw 0
 lb dw 0
 m_reset db "MOUSE . reset buttons=$"
 m_mode db "MOUSE . mode=$"
+m_vbe db "MOUSE . vbe=$"
 m_owned db "MOUSE . timer=owned$"
 m_key db "MOUSE . key=$"
 m_pos db "MOUSE . pos x=$"

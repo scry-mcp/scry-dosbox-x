@@ -59,7 +59,7 @@ ROSTER = roster.Roster(families=(
     ("Input", ("send_keys", "send_mouse", "drive")),
     ("Captures", ("captures", "capture_frame", "series_capture", "snapshot", "record",
                   "audio_record")),
-    ("Files", ("image_compare", "guest_file")),
+    ("Files", ("image_compare", "audio_compare", "guest_file")),
     ("Lists", ("perform", "perform_export")),
 ), answering=tuple(_ANSWERS_WHILE_RUNNING))
 

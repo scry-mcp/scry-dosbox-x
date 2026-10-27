@@ -2,7 +2,7 @@
 
 ### The file tools
 
-The file tools (`image_compare(method="image")`, `image_compare(method="series")`, `image_compare(method="region")`, `image_compare(method="golden")`) read files and touch no machine, so they answer with the guest running or with none. Every comparison carries its control, because a result that cannot come out the other way is no result: a series whose frames never change says nothing about another (`control_silent`), two series with no frame in common compare nothing, a region whose measure never moves was missed, goldens meeting no file examined nothing. A manifest is re-hashed and re-signed on reading, so a frame changed since, or a row edited by hand, is refused.
+The file tools (`image_compare(method="image")`, `image_compare(method="series")`, `image_compare(method="region")`, `image_compare(method="golden")`, `audio_compare(method="measure")`, `audio_compare(method="diff")`) read files and touch no machine, so they answer with the guest running or with none. Every comparison carries its control, because a result that cannot come out the other way is no result: a series whose frames never change says nothing about another (`control_silent`), two series with no frame in common compare nothing, a region whose measure never moves was missed, goldens meeting no file examined nothing, and two silent recordings are refused (`control_silent`) rather than called equal. A manifest is re-hashed and re-signed on reading, so a frame changed since, or a row edited by hand, is refused.
 
 ### Screen maps
 
@@ -19,9 +19,9 @@ Everything is in the screen's own units, as `screen_view` counts them. A screen 
 
 **Two layers, both kept by the server.** The FILE layer (`map_write(method="load")`) survives a `start`; the SESSION layer (`map_write(method="add")`) is emptied by it, since its screens were read off another run. `map_find` tries the session's screens first. `map_write(method="save")` writes both as one file, the session winning, and that file becomes the file layer. `map_write(method="load")` and `map_write(method="save")` touch files only, so they answer while the guest runs.
 
-**A control is named against the identification it came from.** The guest has to run for the pointer to move and a running guest cannot be read, so the click acts on the screen as last identified. A guest showing a screen of another kind or size is `needs_call`; what is drawn is not reported, so a changed screen of the same mode is yours to catch: `map_find` again after anything that may have changed it.
+**A control is named against the identification it came from.** The click acts on the screen `map_find` last identified. Before the pointer moves, only the kind and size of what the guest shows are read again, off the stub's report, which answers whether the guest runs or is parked; a guest showing a screen of another kind or size is `needs_call`. What is drawn is not compared again, so a changed screen of the same mode is yours to catch: `map_find` again, at a stop, after anything that may have changed it.
 
-**In an export**, `map_write(method="load")` and `map_write(method="add")` are steps, so a replay knows the map an identification was made against; `map_find` is a check; `map_write(method="save")` is dropped, since a replay would find its file there. A `send_mouse` never reaches an export: it needs the guest running, and the export cuts at the release before it.
+**In an export**, `map_write(method="load")` and `map_write(method="add")` are steps, so a replay knows the map an identification was made against; `map_find` is a check; `map_write(method="save")` is dropped, since a replay would find its file there. A `send_mouse` sent to a stopped machine is a step like any input to one ([Input and the screen](input.md), *The route*); one sent while the guest runs never reaches an export, which cuts at the release before it.
 
 
 
@@ -121,7 +121,7 @@ Example, from a live run:
 ```json
 {
   "method": "region",
-  "manifest": "$TMPDIR/dosbox-x-session-9hti87sy/series/series-1/manifest.json",
+  "manifest": "$TMPDIR/dosbox-x-session-7i6u0qfm/series/series-1/manifest.json",
   "measure": "changed_pixels"
 }
 ```
@@ -150,13 +150,134 @@ Example, from a live run:
   ],
   "gaps": [],
   "transitions_total": 1,
-  "path": "$TMPDIR/dosbox-x-session-9hti87sy/series/series-1/track-1.json",
-  "manifest": "$TMPDIR/dosbox-x-session-9hti87sy/series/series-1/manifest.json"
+  "path": "$TMPDIR/dosbox-x-session-7i6u0qfm/series/series-1/track-1.json",
+  "manifest": "$TMPDIR/dosbox-x-session-7i6u0qfm/series/series-1/manifest.json"
 }
 ```
 <!-- scry-reference:end image_compare -->
 
 Replies echo the arguments they were given (`a`, `b`, `crop`, `shift`, `tolerance`, `manifest`, `dir`, `checksums`).
+
+<!-- scry-reference:begin audio_compare -->
+## `audio_compare`
+
+*Measure or compare WAV recordings*
+
+```text
+audio_compare(method, path="", a="", b="", window=null, channel=null, align=null)
+```
+
+Measure a WAV or compare two, in numbers. 8- or 16-bit PCM; `window` [from_s, to_s],
+seconds, default the whole file.
+
+`measure`: `path`, every channel or `channel` (0 the first). Reply: `measures`, per channel
+`channel`, `peak_dbfs`, `rms_dbfs`, `silent` (RMS under 0.5% of full scale),
+`silence_spans` (under -60 dBFS for 50 ms or more), `onset_s` (over 2% of the peak),
+`clipping_run` (flat at 95% of the peak or above), `clipped` (a run past 8); then
+`sample_rate_hz`, `channels`, `bits`, `pcm_sha256`.
+
+`diff`: `a` against the reference `b`, of one format; `align` (default true) meets the
+onsets. Reply: `exact`, `snr_db`, `class` (`exact`; `inaudible` 60 dB or more; `audible` 30
+to 60; `different`), `envelope_correlation` (64-window envelopes), `onset_delta_ms`,
+`length_delta_samples`, `aligned_by_samples`.
+
+Refused: an argument the method does not take; `control_silent` when both are silent.
+
+Reads files only: it needs no machine and alters nothing. Every path is absolute or starts with `~`.
+
+Reference: REFERENCE.md, Media files.
+
+| argument | type | default |
+|---|---|---|
+| `method` | one of `"measure"`, `"diff"` | required |
+| `path` | string | `""` |
+| `a` | string | `""` |
+| `b` | string | `""` |
+| `window` | array of number or null | `null` |
+| `channel` | integer or null | `null` |
+| `align` | boolean or null | `null` |
+
+| reply field | type |
+|---|---|
+| `a` | string |
+| `b` | string |
+| `aligned_by_samples` | integer |
+| `bits` | integer |
+| `channels` | integer |
+| `envelope_correlation` | number |
+| `exact` | boolean |
+| `length_delta_samples` | integer |
+| `measures` | array |
+| `onset_delta_ms` | number |
+| `path` | string |
+| `pcm_sha256` | string |
+| `sample_rate_hz` | integer |
+| `snr_db` | number or object |
+| `window` | array |
+| `class` | string |
+
+Example, from a live run:
+
+```json
+{
+  "method": "measure",
+  "path": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/T/n4.wav"
+}
+```
+
+```json
+{
+  "summary": "audio_compare measure: ch0 peak -6.97 dBFS, onset 0.0 s, ch1 peak -6.97 dBFS, onset 0.0 s",
+  "status": "ok",
+  "sample_rate_hz": 48000,
+  "channels": 2,
+  "bits": 16,
+  "window": [
+    0.0,
+    0.999
+  ],
+  "measures": [
+    {
+      "channel": 0,
+      "peak_dbfs": -6.97,
+      "rms_dbfs": -14.86,
+      "silent": false,
+      "silence_spans": {
+        "count": 0,
+        "first": {
+          "available": false,
+          "why": "no silence in the window"
+        }
+      },
+      "onset_s": 0.0,
+      "clipping_run": 5,
+      "clipped": false
+    },
+    {
+      "channel": 1,
+      "peak_dbfs": -6.97,
+      "rms_dbfs": -14.86,
+      "silent": false,
+      "silence_spans": {
+        "count": 0,
+        "first": {
+          "available": false,
+          "why": "no silence in the window"
+        }
+      },
+      "onset_s": 0.0,
+      "clipping_run": 5,
+      "clipped": false
+    }
+  ],
+  "pcm_sha256": "e60ff11bce0c03f6caa4a04e9e3654b9e40a70a8c156d9e6d2ec7c33a3703a62",
+  "path": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/T/n4.wav"
+}
+```
+<!-- scry-reference:end audio_compare -->
+
+A model cannot listen, so a recording `audio_record` wrote is judged by these numbers. Each channel is measured and compared on its own, never mixed down first: a channel in antiphase would cancel, and two swapped channels would average to the same sound. `diff` meets the two onsets unless `align` is false, so a recording that starts a few samples later is not called different; with `align` false a recording made from the same stop on the same fixed clock is held sample for sample. Replies echo `path`, `a`, `b` and `window`; the sound itself never comes back.
+
 <!-- scry-reference:begin guest_file -->
 ## `guest_file`
 
@@ -194,15 +315,15 @@ Example, from a live run:
 
 ```json
 {
-  "path": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/Y/n1-dosio/OUT.TXT"
+  "path": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/Y/n1-dosio/OUT.TXT"
 }
 ```
 
 ```json
 {
-  "summary": "guest_file $TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/Y/n1-dosio/OUT.TXT: written, 4 bytes",
+  "summary": "guest_file $TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/Y/n1-dosio/OUT.TXT: written, 4 bytes",
   "status": "ok",
-  "path": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/Y/n1-dosio/OUT.TXT",
+  "path": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/Y/n1-dosio/OUT.TXT",
   "state": "written",
   "before": {
     "exists": false

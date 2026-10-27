@@ -304,7 +304,8 @@ def test_every_tool_declares_a_title_and_the_readers_a_read_only_hint() -> None:
                          "disassemble", "call_stack",
                          "symbols_find",
                          "declaration_list", "captures", "build_check", "state_list",
-                         "comment_list", "screen_signature", "map_find", "guest_file"}, read_only
+                         "comment_list", "screen_signature", "map_find", "guest_file",
+                         "audio_compare"}, read_only
 
 
 def test_breakpoint_clear_by_ref_takes_the_family_without_touching_watches(

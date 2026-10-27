@@ -51,6 +51,7 @@ CLOSED: list[tuple[str, str, tuple[Any, ...]]] = [
     ("comment_write", "method", tuple(folds.COMMENT)), ("map_write", "method", tuple(folds.MAP)),
     ("scan", "method", tuple(folds.SCAN)), ("state_write", "method", tuple(folds.STATE_METHODS)),
     ("image_compare", "method", tuple(media_tools.IMAGE_METHODS)),
+    ("audio_compare", "method", tuple(media_tools.AUDIO_METHODS)),
     ("audio_record", "kind", tuple(capture_files.AUDIO_KINDS)),
     ("port", "method", tuple(folds.PORT)), ("port", "bits", tuple(hardware.BITS)),
     ("pic", "method", tuple(folds.PIC)), ("a20", "method", tuple(folds.A20)),

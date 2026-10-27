@@ -829,4 +829,5 @@ MODELS: dict[str, type] = {
     "watch_add": WatchAddReply,
     "write": WriteReply,
     "image_compare": media_replies.MODELS["image_compare"],
+    "audio_compare": media_replies.MODELS["audio_compare"],
 }
