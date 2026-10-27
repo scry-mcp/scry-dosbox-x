@@ -25,7 +25,7 @@ DPAINT = os.environ.get("DELUXE_PAINT_DIR", "")
     ("bricks", []),
     ("mines", []),
     *(pytest.param(name, ["--cwd", DPAINT], marks=pytest.mark.skipif(
-        not DPAINT, reason="set DELUXE_PAINT_DIR to your own copy of Deluxe Paint II v1.0: "
+        not DPAINT, reason="set DELUXE_PAINT_DIR to the directory holding Deluxe Paint II v1.0: "
                            "the repository carries none of the program"))
       for name in ("dpaint", "dpaint_maps"))])
 def test_a_demo_passes_and_matches_what_is_committed(name: str, args: list[str]) -> None:

@@ -104,8 +104,9 @@ Nothing checks that for you. Three more things the overrides expect:
 `WINDOW_APP` names the placement helper the cases that open a watched window ask, as `start`
 does; its runs go to the display `WINDOW_SHARED_DISPLAY` names, the secondary when unset, so they
 stay off the one somebody works on. Without it those cases skip: where a window goes is not this
-package's decision. The Deluxe Paint demos' cases also need `DELUXE_PAINT_DIR`, the directory holding `DP.EXE`,
-which this repository does not carry; without it, they skip.
+package's decision. The Deluxe Paint demos' cases also need `DELUXE_PAINT_DIR`, the directory holding version 1.0's
+`DP.EXE` (the demos refuse any other build); this repository carries none of the program, and
+without it they skip.
 
 **The matrix.** Around those cases sits `tests/live/dosbox_x_live_matrix.py`, run as a script
 rather than collected: every tool in every machine state, at every argument edge, across the

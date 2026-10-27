@@ -1,19 +1,21 @@
-# Deluxe Paint by screen maps: menus, a dialog and the tool in hand, all by name
+# Deluxe Paint by screen maps: menus, a dialog and the tool in hand, found by name
 
 ![A sunset painted in Deluxe Paint II at 640 x 480 through the server: an orange sky mixed in the Palette dialog, the sun on the horizon, and a boat stamped mirrored across the bay](screen.png)
 
-Electronic Arts' Deluxe Paint II, the 1988 PC version, at VGA 640 x 480 in 16 colours, driven
-entirely by the names a screen map gives its interface. Its menus drop only while the button is
-held, so the demo opens one with a press on its title and chooses with the release over an item;
-before every next name it asks the map which screen this is, and the map knows each menu open,
-the Palette dialog, and the painting screen in the state of whichever tool is in hand. In the
-dialog it mixes an orange out of the brown slot and reads it back off the VGA DAC; then it paints
-a sunset, lifts the boat it drew as a brush, flips it with the Brush menu and stamps the mirror
-image across the bay. The picture is checked by reading rows of it back out of the four bit
-planes, so a shape a pixel short, or a boat that did not flip, fails the run.
+Electronic Arts' Deluxe Paint II, the 1988 PC version, at VGA 640 x 480 in 16 colours: every
+menu, dialog button, tool and colour is picked by the name a screen map gives it, and the shapes
+are dragged at pixels. Its menus drop only while the button is held, so the demo opens one with a
+press on its title and chooses with the release over an item; after every move to another screen
+it asks the map where it landed, and the map knows each open menu, the Palette dialog, and the
+painting screen in the state of whichever tool is in hand. In the dialog it mixes an orange out of
+the brown slot and reads it back off the VGA DAC; then it paints a sunset, lifts the boat it drew
+as a brush, flips it with the Brush menu and stamps the mirror image across the bay. Last it opens
+the Pict menu and lets go over its title, which chooses nothing and leaves the painting screen as
+it was. The picture is checked by reading rows of it back out of the four bit planes, so a shape a
+pixel short, or a boat that did not flip, fails the run.
 
-The first Deluxe Paint demo, [`demos/dpaint/`](../dpaint/README.md), paints at 320 x 200 and
-stops halfway for a value scan; this one stays on the screen maps.
+The first Deluxe Paint demo, [`demos/dpaint/`](../dpaint/README.md), maps one screen at 320 x 200
+and stops halfway for a value scan; this one maps ten, the menus and the dialog among them.
 
 ## The program
 
@@ -42,19 +44,19 @@ demo](../bricks/README.md): the server asks the placement helper named by `WINDO
 secondary display on a run nobody watches, and the demo refuses to start rather than open the
 window on top of your work when the helper cannot place it.
 
-- `--cwd PATH` (absolute or `~`-led) is the directory holding `DP.EXE`, which the session runs from and mounts
-  as C:. It is hidden in the transcript as `<host>`.
+- `--cwd PATH` (absolute or `~`-led) is the directory holding `DP.EXE`, which the session runs
+  from and mounts as C:. It is hidden in the transcript as `<host>`.
 - `--shared` says somebody is watching: the window opens on the main display.
-- `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start; left out, `DOSBOX_X_BINARY`, else the
-  `dosbox-x` on your `PATH`.
+- `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start; left out,
+  `DOSBOX_X_BINARY`, else the `dosbox-x` on your `PATH`.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
 - `--update-readme` rewrites the block below and `screen.png` from a run where every step
   passed.
 
 Each step prints one `OK <step>: <summary>` or `FAIL <step>: <why>` line, then a `DEMO` verdict
 line and the paths of the two transcripts. Exit codes: 0 every step passed, 1 a step failed, 2
-a usage error, 3 nothing was demonstrated (no copy, another build of it, no placement for the
-window, a DOSBox-X without relative motion, a server that did not start).
+a usage error, 3 nothing was demonstrated (no program directory, another build of it, no
+placement for the window, a DOSBox-X without relative motion, a server that did not start).
 
 ## The map
 
@@ -63,13 +65,15 @@ that stay still on it:
 
 | Screen | Known by | Its names |
 |---|---|---|
-| `paint: freehand`, `paint: rectangle`, `paint: circle`, `paint: line`, `paint: grab` | the menu bar at rest and that tool's cell, inverted | the three menu titles, the tools, the 16 colour swatches, the one-pixel brush |
-| `paint: custom brush` | the same, with no built-in brush lit: a brush lifted off the picture is in hand | the same |
-| `color menu`, `brush menu`, `pict menu` | the body of the open menu | `palette`, `flip_horizontal` |
-| `palette` | the dialog's title and its buttons | the 16 colour slots, the red, green and blue arrows, `ok`, `cancel` |
+| `paint: freehand`, `paint: rectangle`, `paint: circle`, `paint: line`, `paint: grab` | the menu bar at rest and that tool's cell, inverted | `pict`, `brush`, `color`; `freehand`, `line`, `rect_filled`, `circle_filled`, `brush_grab`; `black`, `blue`, `brown`, `yellow`; `brush_dot`, the one-pixel brush |
+| `paint: custom brush` | the menu bar at rest, the dotted freehand tool lit and no built-in brush lit: a brush lifted off the picture is in hand | the same |
+| `color menu` | the body of the open menu | `palette`, `color` |
+| `brush menu` | the body of the open menu | `flip_horizontal`, `brush` |
+| `pict menu` | the body of the open menu | `pict` |
+| `palette` | the dialog's title and its buttons | `brown`, the slot; `red_up`, `green_up`, `blue_up`; `ok`, `cancel` |
 
-The swatches keep the default palette's names, so the slot the dialog mixes to orange is still
-`brown`. The pointer is parked over the toolbox before a painting screen is read, because on the
+The map names only what the demo uses. The swatches keep the default palette's names, so the slot
+the dialog mixes to orange is still `brown`. The pointer is parked over the toolbox before a painting screen is read, because on the
 canvas a shape tool draws it as a crosshair across the whole screen, through the regions the
 map signs.
 
@@ -78,17 +82,18 @@ map signs.
 Give this to an MCP client with this server connected:
 
 > Start DOSBox-X windowed on `demos/dpaint_maps/dpaint_maps.conf`, placed where my placement
-> helper says, running from `/path/to/your/dpaint2`, with
-> `DP.EXE k` as the program and the log in a file. Run 400 retraces, load the screen map
-> `dpaint.scry-map.json` beside the conf, and from then on use only the names it gives: tell me
-> which screen this is before every next name. Hold the button on Color, choose Palette, pick
-> the brown slot and hold the red arrow down until red tops out, read that slot off the DAC, and
-> press OK. Paint a sunset, one call a shape, each tool and colour picked by name: a sky in the
+> helper says, running from `/path/to/your/dpaint2`, with `DP.EXE k` as the program and the log
+> in a file. Run 400 retraces and load the screen map `dpaint.scry-map.json` beside the conf. Pick
+> menus, dialog buttons, tools and colours by the names it gives, drag the shapes at pixels, and
+> after every move to another screen tell me which screen the map says it is. Hold the button on
+> Color, choose Palette, pick the brown slot and hold the red arrow down until red tops out, read
+> that slot off the DAC, and press OK. Paint a sunset, a few shapes a call: a sky in the
 > brown slot as a filled rectangle, a yellow sun as a filled circle on the horizon, a blue sea
 > over its lower half, three yellow glints as lines, a black hull, a black mast and a yellow
 > sail. Lift the boat with the brush tool, hold Brush and choose Flip Horizontal, stamp it
-> across the bay, then hold Pict and let go over its title. Put down the lifted brush, read
-> rows across the sun, the glints, the sails and the hulls, show me the screen and close.
+> across the bay, then hold Pict and let go over its title, which chooses nothing. Put the lifted
+> brush down by picking the one-pixel brush and the freehand tool, read rows across the sun, the
+> glints, the sails and the hulls, show me the screen and close.
 
 ## What it walks
 
@@ -99,7 +104,7 @@ Give this to an MCP client with this server connected:
 | Files | `map_write(method="load")`, `map_find` after every move between screens |
 | Input | `send_mouse` by control name off the map (a press to open a menu, a release to choose), at screen pixels, and as drags |
 | Read | `palette` for the mixed colour, `screen_view` for rows of the picture and the screen |
-| Sequences | `perform` (a tool and its colour with the map's word on the tool in hand; a shape's drags) |
+| Sequences | `perform` (each move with the map's word on where it landed; a shape's tool, colour and drags) |
 
 ## The transcript
 
@@ -131,7 +136,7 @@ and where it put the window) is `<volatile>`, and the program's directory is `<h
   "status": "ok",
   "pid": "<volatile>",
   "conf": "./demos/dpaint_maps/dpaint_maps.conf",
-  "conf_digest": "ed93ffa692570e15",
+  "conf_digest": "daae6ab9a0232442",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
@@ -3748,7 +3753,7 @@ Also attached: image/png.
   "closed": true,
   "pid": "<volatile>",
   "conf": "./demos/dpaint_maps/dpaint_maps.conf",
-  "conf_digest": "ed93ffa692570e15",
+  "conf_digest": "daae6ab9a0232442",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",

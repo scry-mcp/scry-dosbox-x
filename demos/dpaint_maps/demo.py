@@ -1,10 +1,10 @@
 """The Deluxe Paint screen-map demo: Deluxe Paint II (1988) at VGA 640 x 480 in 16 colours,
-driven through its menus, a dialog and its toolbox by screen-map names, each answer checked.
-`--help` says how to run it.
+its menus, dialog buttons, tools and colours picked by screen-map names and its shapes dragged at
+pixels, each answer checked. `--help` says how to run it.
 
 Its menus drop only while the button is held: a press on a title opens one, the release over an
-item chooses. The map knows each menu open, the Palette dialog, and the painting screen per tool
-in hand, which the toolbox shows inverted; every move ends with `map_find`.
+item chooses. The map knows each open menu, the Palette dialog, and the painting screen per tool
+in hand, which the toolbox shows inverted; every move to another screen ends with `map_find`.
 """
 
 from __future__ import annotations
@@ -17,15 +17,16 @@ from typing import Any
 
 from scry_core import png
 from scry_core.demo import Reply, Run, Step, main
+from scry_core.verdict import Invalid
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos import host  # noqa: E402
-from demos.dpaint.demo import declared, drag, opening  # noqa: E402
+from demos.dpaint.program import click, declared, drag, opening  # noqa: E402
 from demos.host import display, expect, isolated_store, pictured  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parents[1]
-#: The 16 colours by the attribute index a pixel holds; the brown slot holds orange once mixed.
+#: The colours the checked rows cross, by palette index; the brown slot holds orange once mixed,
+#: and the frame is the white canvas left around the scene.
 COLOURS = {"orange": 6, "blue": 1, "black": 0, "yellow": 14, "frame": 15}
 #: The orange the dialog mixes, as the DAC holds it in six bits a channel: brown's red raised to
 #: the top, its green and blue left as they were.
@@ -68,15 +69,24 @@ def found(name: str) -> Any:
     return check
 
 
+def completed(reply: Reply) -> None:
+    expect(reply["failed_at"].get("available") is False,
+           f"{reply['steps_completed']} steps, failed at {reply['failed_at']}")
+
+
 def landed(*screens: str) -> Any:
     """Every `map_find` of a `perform` names the screen its move was meant to land on, in
     order. The rows `ran` shows are summaries, so the check reads the whole replies, which the
     call keeps in a file beside them."""
     def check(reply: Reply, run: Run) -> str:
-        expect(reply["failed_at"].get("available") is False,
-               f"{reply['steps_completed']} steps, failed at {reply['failed_at']}")
+        completed(reply)
+        if not isinstance(reply["replies_path"], str):
+            raise Invalid(f"the call kept no replies to check: {reply['replies_path']}")
         rows = [json.loads(line) for line in
                 Path(reply["replies_path"]).read_text(encoding="utf-8").splitlines()]
+        short = [r["reply"]["verdict"] for r in rows
+                 if r["op"] == "run_for" and r["reply"]["verdict"] != "ELAPSED"]
+        expect(not short, f"a wait ended {short}, before its retraces")
         named = [r["reply"].get("screen", "no screen") for r in rows if r["op"] == "map_find"]
         expect(named == list(screens), f"the map named {named}, not {list(screens)}")
         return "the map named " + ", then ".join(screens)
@@ -84,8 +94,7 @@ def landed(*screens: str) -> Any:
 
 
 def held(reply: Reply, run: Run) -> str:
-    expect(reply["failed_at"].get("available") is False,
-           f"{reply['steps_completed']} steps, failed at {reply['failed_at']}")
+    completed(reply)
     return (f"the brown slot picked, and red's arrow held {HOLD_FRAMES} retraces until the "
             "channel tops out")
 
@@ -100,12 +109,6 @@ def orange_swatch(run: Run) -> dict[str, Any]:
     dest = run.dir / "orange.png"
     dest.unlink(missing_ok=True)
     return {"first": COLOURS["orange"], "count": 1, "dest": dest}
-
-
-def click(target: str, action: str = "") -> dict[str, Any]:
-    """A click on control `target`, or with `action` a press or a release there."""
-    return {"op": "send_mouse", "target": target, "button": "left",
-            **({"action": action} if action else {})}
 
 
 def frames(n: int) -> dict[str, Any]:

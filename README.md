@@ -222,9 +222,9 @@ read_memory(ref="paddle_x", length=2)
 
 [`demos/dpaint/`](demos/dpaint/) paints a sunset in Electronic Arts' Deluxe Paint II and
 stops halfway to find with a value scan the byte where the program keeps its current colour.
-[`demos/dpaint_maps/`](demos/dpaint_maps/) drives it at 640 x 480 by screen-map names alone: each menu opened and chosen from, the Palette dialog
-mixing an orange, the tool in hand read off the toolbox, and a boat lifted as a brush, flipped and
-stamped.
+[`demos/dpaint_maps/`](demos/dpaint_maps/) drives it at 640 x 480, every menu, dialog button,
+tool and colour picked by a screen-map name: the Palette dialog mixing an orange, the tool in hand
+read off the toolbox, and a boat lifted as a brush, flipped and stamped.
 
 [`demos/mines/`](demos/mines/) plays a Minesweeper this repository builds at VESA 800 x 600:
 every screen recognised off a screen map before a click, the mines read out of the game's memory

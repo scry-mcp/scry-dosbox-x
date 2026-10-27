@@ -1,4 +1,4 @@
-"""The Deluxe Paint demo: Electronic Arts' Deluxe Paint II (1988), from the reader's own copy,
+"""The Deluxe Paint demo: Electronic Arts' Deluxe Paint II (1988)
 painting a sunset through the calls the README's prompt asks an MCP client to make, each answer
 checked. `--help` says how to run it.
 
@@ -7,7 +7,7 @@ stops once in the middle to do what no mouse macro can: two clicks on the palett
 scan between them find the byte where the program keeps its current colour, and a watch then
 shows it at every stop. Each shape is checked by reading the pixels back out of video memory.
 
-Nothing of the program is in this repository: `--cwd` names the directory of the reader's copy,
+Nothing of the program is in this repository: `--cwd` names the directory holding `DP.EXE`,
 which the session runs from and mounts as C:, and the demo refuses any `DP.EXE` other than the
 release it was written for, because the colour's address and the picture are that build's.
 Deluxe Paint takes the mouse as movement events, so the DOSBox-X has to be one whose input
@@ -16,23 +16,18 @@ device carries relative motion; without it a drag paints nothing between its but
 
 from __future__ import annotations
 
-import hashlib
 import sys
-from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from scry_core.demo import Demo, Reply, Run, Step, main
-from scry_core.verdict import Invalid
+from scry_core.demo import Reply, Run, Step, main
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos import host  # noqa: E402
-from demos.host import VOLATILE, display, expect, isolated_store, pictured  # noqa: E402
+from demos.dpaint.program import click, declared, drag, opening  # noqa: E402
+from demos.host import display, expect, isolated_store, pictured  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parents[1]
-#: Deluxe Paint II v1.0's `DP.EXE`, the 1988 release on one 720k disk.
-DP_SHA256 = "ab40db116de1235e330e7df398b4b90425925972c2553775e997c9aa25ae3a4b"
 #: The palette indices of the swatches the screen map names.
 COLOURS = {"navy": 1, "brown": 6, "blue": 9, "yellow": 14, "white": 15, "peach": 52,
            "orange": 55}
@@ -40,8 +35,6 @@ COLOURS = {"navy": 1, "brown": 6, "blue": 9, "yellow": 14, "white": 15, "peach":
 #: pick of a colour rewrites. A scan also keeps copies in the stack's frames, above the stack
 #: pointer, which move with where the stop lands.
 COLOUR_STATICS = (0x017C, 0x01AE, 0x0470, 0x10B0)
-#: Retraces from the start to the painting screen, with the program loaded and drawn.
-BOOT_FRAMES = 400
 #: The scene, in screen pixels: the sky and the sea as rectangles corner to corner, the sun as a
 #: centre and a point on its rim, the boat's hull and its mast and sail as line segments.
 SKY, SEA = ((2, 14), (294, 112)), ((2, 113), (294, 198))
@@ -50,57 +43,19 @@ HULL = ((60, 150), (112, 158))
 SAIL = [((86, 149), (86, 118)), ((86, 118), (108, 146)), ((108, 146), (86, 146))]
 TEXT_AT = (20, 180)
 WORD = "SCRY"
-WAIT_S = 60
 
 
 def ds_segment(run: Run) -> int:
     return int(run.replies["loaded"]["regs"]["DS"], 16)
 
 
-def copy_check(run: Run) -> str:
-    """Why the reader's copy cannot be used: no `--cwd`, a relative one, no `DP.EXE` there, or
-    another build's."""
-    where = run.options.get("cwd")
-    if not where:
-        return ("pass --cwd with the directory of your own copy of Deluxe Paint II, the one "
-                "holding DP.EXE; this repository carries none of the program")
-    if not Path(where).expanduser().is_absolute():
-        return f"the server takes absolute or ~-led paths only: --cwd {where}"
-    exe = Path(where).expanduser() / "DP.EXE"
-    if not exe.is_file():
-        return f"no DP.EXE in {where}: --cwd names the directory the program runs from"
-    digest = hashlib.sha256(exe.read_bytes()).hexdigest()
-    if digest != DP_SHA256:
-        return (f"{exe} is not the Deluxe Paint II v1.0 this demo was written for (sha256 "
-                f"{digest}); the address of its colour and its picture are that release's")
-    return ""
-
-
-def precheck(run: Run) -> str:
-    return copy_check(run) or host.precheck(run)
-
-
 def boot(run: Run) -> dict[str, Any]:
     """A fresh log of this demo's own under the run's, so nothing an earlier run left is read,
-    and the saved states there too: left out, they would go into the reader's copy."""
+    and the saved states there too: left out, they would go into the program's directory."""
     (run.dir / "dpaint-e9.log").unlink(missing_ok=True)
     return {"conf": HERE / "dpaint.conf", "session_seconds": 900, "shared": True,
             "display": display(run), "program": "DP.EXE f",
             "logfile": run.dir / "dpaint-e9.log", "state_dir": run.dir / "dpaint-states"}
-
-
-def started(reply: Reply, run: Run) -> str:
-    return "DOSBox-X in a window, parked at the debugger before DOS boots"
-
-
-def loaded(reply: Reply, run: Run) -> str:
-    expect(reply["verdict"] == "ELAPSED", f"verdict {reply['verdict']}")
-    stub = next((ln for ln in reply["e9"]["lines"] if "scry device=" in ln), "")
-    if "motion=1" not in stub:
-        raise Invalid("this DOSBox-X's input device takes no relative motion (the stub said "
-                      f"{stub.split(': ', 1)[-1] or 'nothing'}), and Deluxe Paint draws a drag "
-                      "from movement events: pass --binary with a build that carries it")
-    return f"{BOOT_FRAMES} retraces: Deluxe Paint is up, its data segment at {reply['regs']['DS']}"
 
 
 def found(reply: Reply, run: Run) -> str:
@@ -145,18 +100,6 @@ def colour_ref(run: Run) -> str:
     return f"{ds_segment(run):04X}:{COLOUR_STATICS[0]:04X}"
 
 
-def click(target: str) -> dict[str, Any]:
-    return {"op": "send_mouse", "target": target, "button": "left"}
-
-
-def drag(start: tuple[int, int], end: tuple[int, int]) -> list[dict[str, Any]]:
-    """A drag as Deluxe Paint takes one: press, move, release."""
-    return [{"op": "send_mouse", "x": start[0], "y": start[1], "button": "left",
-             "action": "down"},
-            {"op": "send_mouse", "x": end[0], "y": end[1]},
-            {"op": "send_mouse", "button": "left", "action": "up"}]
-
-
 def shape(name: str, tool: str | None, colour: str | None,
           strokes: list[tuple[tuple[int, int], tuple[int, int]]]) -> Step:
     """One shape in one call: its tool and colour picked by name off the map, then its drags."""
@@ -183,13 +126,6 @@ def row(y: int, x: int, length: int) -> dict[str, Any]:
 def crossing(*spans: tuple[str, int]) -> Any:
     """A row of video memory that crosses the scene's colours in this order."""
     return host.crossing(COLOURS, lambda reply: bytes.fromhex(reply["hex"]), *spans)
-
-
-def opening(boot: Callable[[Run], dict[str, Any]]) -> list[Step]:
-    """Both Deluxe Paint demos' first steps: the session, then the program up and drawn."""
-    return [Step("start", "start", boot, started, options=frozenset({"binary", "cwd"}),
-                 volatile={"summary": "it carries how long the debugger took to answer"}),
-            Step("loaded", "run_for", {"frames": BOOT_FRAMES, "seconds": WAIT_S}, loaded)]
 
 
 STEPS = [
@@ -231,17 +167,6 @@ STEPS = [
          lambda reply, run: "watch cleared"),
     Step("close", "close", {}, lambda reply, run: f"closed: {reply['ended_by']}"),
 ]
-
-
-def declared(name: str, here: Path, steps: list[Step]) -> Demo:
-    """A Deluxe Paint demo: run from the reader's copy, and refused on any other build."""
-    return Demo(
-        name=name, root=ROOT, server=[sys.executable, str(ROOT / "dosbox_x_server.py")],
-        readme=here / "README.md", steps=steps,
-        capture=lambda run: run.dir / "screen.png",
-        offers=frozenset({"cwd", "shared"}), reads=frozenset({"shared"}), precheck=precheck,
-        host_args={"cwd": "the directory of the reader's own copy of the program"},
-        volatile=VOLATILE)
 
 
 DEMO = declared("dpaint", HERE, STEPS)

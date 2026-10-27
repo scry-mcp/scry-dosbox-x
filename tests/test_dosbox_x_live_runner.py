@@ -398,7 +398,7 @@ def test_the_dpaint_demos_refuse_any_copy_but_the_release_they_were_written_for(
     assert "no DP.EXE in" in why(cwd=str(tmp_path))
     exe.write_bytes(b"MZ another build")
     assert "is not the Deluxe Paint II v1.0" in why(cwd=str(tmp_path))
-    monkeypatch.setattr(importlib.import_module("demos.dpaint.demo"), "DP_SHA256",
+    monkeypatch.setattr(importlib.import_module("demos.dpaint.program"), "DP_SHA256",
                         hashlib.sha256(exe.read_bytes()).hexdigest())
     assert why(cwd=str(tmp_path)) == ""
 

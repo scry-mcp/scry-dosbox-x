@@ -10,6 +10,9 @@ palette with a value scan between the clicks, finds the bytes where the program 
 current colour, tells the four static ones from the copies in the stack's frames, and watches
 the first, so every later pick shows its colour at the stop it lands on.
 
+[`demos/dpaint_maps/`](../dpaint_maps/README.md) drives the same program at 640 x 480 through
+its menus and a dialog, every screen found off a map of ten.
+
 ## The program
 
 Deluxe Paint II is Electronic Arts' commercial software, and nothing of it is in this
@@ -39,19 +42,19 @@ demo](../bricks/README.md): the server asks the placement helper named by `WINDO
 secondary display on a run nobody watches, and the demo refuses to start rather than open the
 window on top of your work when the helper cannot place it.
 
-- `--cwd PATH` (absolute or `~`-led) is the directory holding `DP.EXE`, which the session runs from and mounts
-  as C:. It is hidden in the transcript as `<host>`.
+- `--cwd PATH` (absolute or `~`-led) is the directory holding `DP.EXE`, which the session runs
+  from and mounts as C:. It is hidden in the transcript as `<host>`.
 - `--shared` says somebody is watching: the window opens on the main display.
-- `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start; left out, `DOSBOX_X_BINARY`, else the
-  `dosbox-x` on your `PATH`.
+- `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start; left out,
+  `DOSBOX_X_BINARY`, else the `dosbox-x` on your `PATH`.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
 - `--update-readme` rewrites the block below and `screen.png` from a run where every step
   passed.
 
 Each step prints one `OK <step>: <summary>` or `FAIL <step>: <why>` line, then a `DEMO` verdict
 line and the paths of the two transcripts. Exit codes: 0 every step passed, 1 a step failed, 2
-a usage error, 3 nothing was demonstrated (no copy, another build of it, no placement for the
-window, a DOSBox-X without relative motion, a server that did not start).
+a usage error, 3 nothing was demonstrated (no program directory, another build of it, no
+placement for the window, a DOSBox-X without relative motion, a server that did not start).
 
 ## The prompt
 
@@ -114,7 +117,7 @@ and where it put the window) is `<volatile>`, and the program's directory is `<h
   "status": "ok",
   "pid": "<volatile>",
   "conf": "./demos/dpaint/dpaint.conf",
-  "conf_digest": "cd9edac1f1a515a6",
+  "conf_digest": "5d4d6cc4851520a5",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
@@ -2390,7 +2393,7 @@ Also attached: image/png.
   "closed": true,
   "pid": "<volatile>",
   "conf": "./demos/dpaint/dpaint.conf",
-  "conf_digest": "cd9edac1f1a515a6",
+  "conf_digest": "5d4d6cc4851520a5",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
