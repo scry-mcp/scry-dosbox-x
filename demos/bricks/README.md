@@ -108,7 +108,7 @@ DOSBox-X `<volatile>`.
   "status": "ok",
   "pid": "<volatile>",
   "conf": "./demos/bricks/bricks.conf",
-  "conf_digest": "6a91a7cd8d6ac7c3",
+  "conf_digest": "e899fd4a6b5ec942",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",
@@ -122,13 +122,19 @@ DOSBox-X `<volatile>`.
   "binary_origin": "<volatile>",
   "version": "<volatile>",
   "debugger_commands": [
+    "BPIF",
+    "CAPTURE",
+    "DOSTRACE",
     "LOADSTATE",
+    "PORTINFO",
     "PRESENCE",
     "RUNSTATE",
     "SAVESTATE",
-    "STEPIN"
+    "STEPIN",
+    "TAP",
+    "VGAMEMDUMP"
   ],
-  "stub": "./guest/INJECT.COM",
+  "stub": "./guest/SCRY.COM",
   "input_port": "<volatile>",
   "background": false,
   "presence": true,
@@ -151,7 +157,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**2. `resume`**: OK ready: the program's own int 3 at 08BC:0119: loaded at 08BC
+**2. `resume`**: OK ready: the program's own int 3 at 08C5:0119: loaded at 08C5
 
 <details><summary>call and reply</summary>
 
@@ -163,7 +169,7 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08BC:00000119",
+  "summary": "resume: OTHER_STOP, stopped at 08C5:00000119",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": [
@@ -173,10 +179,11 @@ DOSBox-X `<volatile>`.
   ],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08BC:00000119",
+  "pc": "08C5:00000119",
   "cpu_mode": "real",
+  "frame": 1,
   "regs": {
-    "EAX": "0xd05b0e0a",
+    "EAX": "0x00000e0a",
     "EBX": "0x0000000f",
     "ECX": "0x005b0004",
     "EDX": "0x00000000",
@@ -185,27 +192,27 @@ DOSBox-X `<volatile>`.
     "EBP": "0x0000091c",
     "ESP": "0x0000fffe",
     "EIP": "0x00000119",
-    "CS": "0x08bc",
-    "DS": "0x08bc",
+    "CS": "0x08c5",
+    "DS": "0x08c5",
     "ES": "0xa000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x08bc"
+    "SS": "0x08c5"
   },
   "watches": [],
-  "cause": "no declared code breakpoint at 08BC:00000119: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+  "cause": "no declared code breakpoint at 08C5:00000119: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
   "e9": {
     "lines_total": 2,
     "truncated": false,
     "lines": [
-      "Bochs port E9h: STUB  . inject device=present proto=4",
+      "Bochs port E9h: STUB  . scry device=present proto=5 motion=1",
       "Bochs port E9h: BRICKS ready"
     ],
-    "mark": 0
+    "mark": "<volatile>"
   },
   "stop_seq": 2,
   "instruction": {
-    "seg_off": "08BC:00000119",
+    "seg_off": "08C5:00000119",
     "bytes": "CD03",
     "text": "int 3",
     "flow": "call",
@@ -230,22 +237,22 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**3. `symbols_load`**: OK symbols: 65 symbols placed at base 0x8bc0
+**3. `symbols_load`**: OK symbols: 65 symbols placed at base 0x8c50
 
 <details><summary>call and reply</summary>
 
 ```json
 {
   "path": "./demos/bricks/bricks.sym",
-  "base": "8bc0"
+  "base": "8c50"
 }
 ```
 
 ```json
 {
-  "summary": "symbols_load: 65 loaded of 65 parsed, base 35776",
+  "summary": "symbols_load: 65 loaded of 65 parsed, base 35920",
   "status": "ok",
-  "base": 35776,
+  "base": 35920,
   "limit": -1,
   "descriptor": -1,
   "declarations": {
@@ -301,28 +308,28 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "disassemble brick_hit: 14 lines at 08BC:000002C8, 16-bit",
+  "summary": "disassemble brick_hit: 14 lines at 08C5:000002C8, 16-bit",
   "status": "ok",
   "ref": "brick_hit",
-  "seg_off": "08BC:000002C8",
+  "seg_off": "08C5:000002C8",
   "length": 32,
   "code_bits": 16,
   "code_bits_from": "real mode",
   "lines": [
-    "08BC:000002C8 88DF                 mov bh, bl",
-    "08BC:000002CA 88C3                 mov bl, al",
-    "08BC:000002CC E81FFF               call 0x1ee",
-    "08BC:000002CF C6842C0600           mov byte ptr [si + 0x62c], 0",
-    "08BC:000002D4 FE0E2B06             dec byte ptr [0x62b]",
-    "08BC:000002D8 53                   push bx",
-    "08BC:000002D9 30C0                 xor al, al",
-    "08BC:000002DB E81BFF               call 0x1f9",
-    "08BC:000002DE 5B                   pop bx",
-    "08BC:000002DF B006                 mov al, 6",
-    "08BC:000002E1 28D8                 sub al, bl",
-    "08BC:000002E3 B40A                 mov ah, 0xa",
-    "08BC:000002E5 F6E4                 mul ah",
-    "08BC:000002E7 01061506             add word ptr [0x615], ax"
+    "08C5:000002C8 88DF                 mov bh, bl",
+    "08C5:000002CA 88C3                 mov bl, al",
+    "08C5:000002CC E81FFF               call 0x1ee",
+    "08C5:000002CF C6842C0600           mov byte ptr [si + 0x62c], 0",
+    "08C5:000002D4 FE0E2B06             dec byte ptr [0x62b]",
+    "08C5:000002D8 53                   push bx",
+    "08C5:000002D9 30C0                 xor al, al",
+    "08C5:000002DB E81BFF               call 0x1f9",
+    "08C5:000002DE 5B                   pop bx",
+    "08C5:000002DF B006                 mov al, 6",
+    "08C5:000002E1 28D8                 sub al, bl",
+    "08C5:000002E3 B40A                 mov ah, 0xa",
+    "08C5:000002E5 F6E4                 mul ah",
+    "08C5:000002E7 01061506             add word ptr [0x615], ax"
   ],
   "flow": [
     "sequential",
@@ -346,8 +353,8 @@ DOSBox-X `<volatile>`.
       "line": 2,
       "operand": "0x1ee",
       "kind": "target",
-      "seg_off": "08BC:000001EE",
-      "addr": "0x00008dae",
+      "seg_off": "08C5:000001EE",
+      "addr": "0x00008e3e",
       "symbol": "brick_index",
       "delta": 0
     },
@@ -356,8 +363,8 @@ DOSBox-X `<volatile>`.
       "operand": "byte ptr [0x62b]",
       "kind": "memory",
       "register": "DS",
-      "seg_off": "08BC:0000062B",
-      "addr": "0x000091eb",
+      "seg_off": "08C5:0000062B",
+      "addr": "0x0000927b",
       "symbol": "bricks_left",
       "delta": 0
     },
@@ -365,8 +372,8 @@ DOSBox-X `<volatile>`.
       "line": 7,
       "operand": "0x1f9",
       "kind": "target",
-      "seg_off": "08BC:000001F9",
-      "addr": "0x00008db9",
+      "seg_off": "08C5:000001F9",
+      "addr": "0x00008e49",
       "symbol": "brick_rect",
       "delta": 0
     },
@@ -375,8 +382,8 @@ DOSBox-X `<volatile>`.
       "operand": "word ptr [0x615]",
       "kind": "memory",
       "register": "DS",
-      "seg_off": "08BC:00000615",
-      "addr": "0x000091d5",
+      "seg_off": "08C5:00000615",
+      "addr": "0x00009265",
       "symbol": "score",
       "delta": 0
     }
@@ -391,7 +398,7 @@ DOSBox-X `<volatile>`.
 
 </details>
 
-**5. `breakpoint_at`**: OK break: breakpoint BP 08BC:02C8
+**5. `breakpoint_at`**: OK break: breakpoint BP 08C5:02C8
 
 <details><summary>call and reply</summary>
 
@@ -410,7 +417,7 @@ DOSBox-X `<volatile>`.
   "stored": true,
   "armed": true,
   "state": "armed",
-  "entry": "BP 08BC:02C8",
+  "entry": "BP 08C5:02C8",
   "session": {
     "alive": true,
     "running": false,
@@ -467,7 +474,7 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08BC:000002C8",
+  "summary": "resume: OTHER_STOP, stopped at 08C5:000002C8",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": [
@@ -477,10 +484,11 @@ DOSBox-X `<volatile>`.
   ],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08BC:000002C8",
+  "pc": "08C5:000002C8",
   "cpu_mode": "real",
+  "frame": 36,
   "regs": {
-    "EAX": "0xd05b0005",
+    "EAX": "0x00000005",
     "EBX": "0x00000707",
     "ECX": "0x005b0020",
     "EDX": "0x00000000",
@@ -489,12 +497,12 @@ DOSBox-X `<volatile>`.
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
     "EIP": "0x000002c8",
-    "CS": "0x08bc",
-    "DS": "0x08bc",
+    "CS": "0x08c5",
+    "DS": "0x08c5",
     "ES": "0xa000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x08bc"
+    "SS": "0x08c5"
   },
   "watches": [
     {
@@ -508,16 +516,16 @@ DOSBox-X `<volatile>`.
       "bytes": "0000"
     }
   ],
-  "cause": "breakpoint brick_hit (by symbol) at 08BC:000002C8",
+  "cause": "breakpoint brick_hit (by symbol) at 08C5:000002C8",
   "e9": {
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 3292
+    "mark": "<volatile>"
   },
   "stop_seq": 3,
   "instruction": {
-    "seg_off": "08BC:000002C8",
+    "seg_off": "08C5:000002C8",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -548,7 +556,7 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "resume: OTHER_STOP, stopped at 08BC:000002C8",
+  "summary": "resume: OTHER_STOP, stopped at 08C5:000002C8",
   "status": "ok",
   "verdict": "OTHER_STOP",
   "omitted": [
@@ -558,10 +566,11 @@ DOSBox-X `<volatile>`.
   ],
   "how": "detail=True adds what the debugger printed for this command",
   "waited_s": "<volatile>",
-  "pc": "08BC:000002C8",
+  "pc": "08C5:000002C8",
   "cpu_mode": "real",
+  "frame": 140,
   "regs": {
-    "EAX": "0xd05b0005",
+    "EAX": "0x00000005",
     "EBX": "0x00000606",
     "ECX": "0x005b0020",
     "EDX": "0x00000000",
@@ -570,12 +579,12 @@ DOSBox-X `<volatile>`.
     "EBP": "0x0000091c",
     "ESP": "0x0000fffa",
     "EIP": "0x000002c8",
-    "CS": "0x08bc",
-    "DS": "0x08bc",
+    "CS": "0x08c5",
+    "DS": "0x08c5",
     "ES": "0xa000",
     "FS": "0x0000",
     "GS": "0x0000",
-    "SS": "0x08bc"
+    "SS": "0x08c5"
   },
   "watches": [
     {
@@ -589,18 +598,18 @@ DOSBox-X `<volatile>`.
       "bytes": "0a00"
     }
   ],
-  "cause": "breakpoint brick_hit (by symbol) at 08BC:000002C8",
+  "cause": "breakpoint brick_hit (by symbol) at 08C5:000002C8",
   "e9": {
     "lines_total": 1,
     "truncated": false,
     "lines": [
       "Bochs port E9h: HIT 5 7"
     ],
-    "mark": 4609
+    "mark": "<volatile>"
   },
   "stop_seq": 4,
   "instruction": {
-    "seg_off": "08BC:000002C8",
+    "seg_off": "08C5:000002C8",
     "bytes": "88DF",
     "text": "mov bh, bl",
     "flow": "sequential",
@@ -632,10 +641,10 @@ DOSBox-X `<volatile>`.
 
 ```json
 {
-  "summary": "read_memory score: 2 bytes at 08BC:00000615",
+  "summary": "read_memory score: 2 bytes at 08C5:00000615",
   "status": "ok",
   "ref": "score",
-  "seg_off": "08BC:00000615",
+  "seg_off": "08C5:00000615",
   "length": 2,
   "hex": "0a00",
   "session": {
@@ -712,7 +721,7 @@ Also attached: image/png.
   "status": "ok",
   "declarations_cleared": 1,
   "disarmed": [
-    "BP 08BC:02C8"
+    "BP 08C5:02C8"
   ],
   "session": {
     "alive": true,
@@ -743,6 +752,7 @@ Also attached: image/png.
   "polls": 3,
   "pc": "<volatile>",
   "cpu_mode": "real",
+  "frame": 143,
   "regs": "<volatile>",
   "watches": [
     {
@@ -763,20 +773,14 @@ Also attached: image/png.
     "lines": [
       "Bochs port E9h: HIT 5 6"
     ],
-    "mark": 6156
+    "mark": "<volatile>"
   },
   "stop_seq": 5,
   "instruction": "<volatile>",
   "emulated_before_s": 2.0022688,
   "emulated_after_s": 2.0317822000000003,
-  "frame_before": {
-    "available": false,
-    "why": "a DOS machine keeps no frame counter a server could read: `polls` counts the retraces"
-  },
-  "frame_after": {
-    "available": false,
-    "why": "a DOS machine keeps no frame counter a server could read: `polls` counts the retraces"
-  },
+  "frame_before": 140,
+  "frame_after": 143,
   "cycles": {
     "available": false,
     "why": "the cycle count counts only what the normal core runs, and which core runs is not something this server can read, so no count is given"
@@ -804,10 +808,10 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory ball_x: 8 bytes at 08BC:00000621",
+  "summary": "read_memory ball_x: 8 bytes at 08C5:00000621",
   "status": "ok",
   "ref": "ball_x",
-  "seg_off": "08BC:00000621",
+  "seg_off": "08C5:00000621",
   "length": 8,
   "hex": "bc005200feff0200",
   "session": {
@@ -1039,6 +1043,7 @@ Also attached: image/png.
   "via": "break",
   "pc": "<volatile>",
   "cpu_mode": "real",
+  "frame": "<volatile>",
   "regs": "<volatile>",
   "watches": "<volatile>",
   "cause": "<volatile>",
@@ -1068,10 +1073,10 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory paddle_x: 2 bytes at 08BC:0000061F",
+  "summary": "read_memory paddle_x: 2 bytes at 08C5:0000061F",
   "status": "ok",
   "ref": "paddle_x",
-  "seg_off": "08BC:0000061F",
+  "seg_off": "08C5:0000061F",
   "length": 2,
   "hex": "a400",
   "session": {
@@ -1197,6 +1202,7 @@ Also attached: image/png.
     "bios_mode": "0x13"
   },
   "arrived": true,
+  "motion": true,
   "verify": {
     "checked": true,
     "seen": true,
@@ -1281,6 +1287,7 @@ Also attached: image/png.
   "via": "break",
   "pc": "<volatile>",
   "cpu_mode": "real",
+  "frame": "<volatile>",
   "regs": "<volatile>",
   "watches": "<volatile>",
   "cause": "<volatile>",
@@ -1310,10 +1317,10 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory paddle_x: 2 bytes at 08BC:0000061F",
+  "summary": "read_memory paddle_x: 2 bytes at 08C5:0000061F",
   "status": "ok",
   "ref": "paddle_x",
-  "seg_off": "08BC:0000061F",
+  "seg_off": "08C5:0000061F",
   "length": 2,
   "hex": "dc00",
   "session": {
@@ -1485,6 +1492,7 @@ Also attached: image/png.
   "via": "break",
   "pc": "<volatile>",
   "cpu_mode": "real",
+  "frame": "<volatile>",
   "regs": "<volatile>",
   "watches": "<volatile>",
   "cause": "<volatile>",
@@ -1514,10 +1522,10 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory paddle_x: 2 bytes at 08BC:0000061F",
+  "summary": "read_memory paddle_x: 2 bytes at 08C5:0000061F",
   "status": "ok",
   "ref": "paddle_x",
-  "seg_off": "08BC:0000061F",
+  "seg_off": "08C5:0000061F",
   "length": 2,
   "hex": "dc00",
   "session": {
@@ -1647,7 +1655,7 @@ Also attached: image/png.
   "closed": true,
   "pid": "<volatile>",
   "conf": "./demos/bricks/bricks.conf",
-  "conf_digest": "6a91a7cd8d6ac7c3",
+  "conf_digest": "e899fd4a6b5ec942",
   "watched": true,
   "bound_s": 900,
   "elapsed_s": "<volatile>",

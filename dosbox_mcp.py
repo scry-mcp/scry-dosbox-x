@@ -185,7 +185,9 @@ def _machine() -> recording.Machine:
     if not ses.alive():
         return recording.UNREAD
     # The flag, never a question to the debugger: recording a call must not cost a round trip.
-    return recording.Machine(running=not ses.parked, seq=getattr(ses, "stop_count", None))
+    # A parked machine's last `RUNSTATE` is its stop's, so its frame is that stop's.
+    return recording.Machine(running=not ses.parked, seq=getattr(ses, "stop_count", None),
+                             frame=getattr(ses, "frames", None) if ses.parked else None)
 
 
 #: Each declaration kind a `start` re-arms: the tool that lists it and the field of its rows.
@@ -199,7 +201,7 @@ RECORDER = recording.Recorder("dosbox-x", "dosbox_x_server.py", sequence.RECORD_
                               lambda: STATE.session is not None and STATE.session.alive(),
                               declarations=lambda: arming.current_store().declarations(),
                               kinds=_LISTS,
-                              stop_fields=("regs",),
+                              stop_fields=("regs", "frame"),
                               outside=checks.NOT_STEPS - checks.SEQUENCES - {"start"},
                               sequences=checks.SEQUENCES, start_tool="start",
                               states=recording.States("state_write", "save", "load", "name"),

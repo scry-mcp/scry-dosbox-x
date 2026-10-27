@@ -110,10 +110,10 @@ point. The demo opens a window so the game can be watched, so it needs the place
 ```
 resume(seconds=60)
 -> {
-  "summary": "resume: OTHER_STOP, stopped at 08BC:00000119",
-  "cause": "no declared code breakpoint at 08BC:00000119: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
+  "summary": "resume: OTHER_STOP, stopped at 08C5:00000119",
+  "cause": "no declared code breakpoint at 08C5:00000119: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
   "instruction": {
-    "seg_off": "08BC:00000119",
+    "seg_off": "08C5:00000119",
     "bytes": "CD03",
     "text": "int 3",
     "flow": "call",
@@ -132,10 +132,10 @@ resume(seconds=60)
 ```
 
 ```
-symbols_load(path="/path/to/scry-dosbox-x/demos/bricks/bricks.sym", base="8bc0")
+symbols_load(path="/path/to/scry-dosbox-x/demos/bricks/bricks.sym", base="8c50")
 -> {
-  "summary": "symbols_load: 65 loaded of 65 parsed, base 35776",
-  "base": 35776
+  "summary": "symbols_load: 65 loaded of 65 parsed, base 35920",
+  "base": 35920
 }
 ```
 
@@ -143,15 +143,15 @@ symbols_load(path="/path/to/scry-dosbox-x/demos/bricks/bricks.sym", base="8bc0")
 breakpoint_at(ref="brick_hit")
 -> {
   "summary": "breakpoint_at brick_hit: armed",
-  "entry": "BP 08BC:02C8"
+  "entry": "BP 08C5:02C8"
 }
 ```
 
 ```
 resume(seconds=60)
 -> {
-  "summary": "resume: OTHER_STOP, stopped at 08BC:000002C8",
-  "cause": "breakpoint brick_hit (by symbol) at 08BC:000002C8",
+  "summary": "resume: OTHER_STOP, stopped at 08C5:000002C8",
+  "cause": "breakpoint brick_hit (by symbol) at 08C5:000002C8",
   "watches": [
     {
       "ref": "score",
@@ -170,7 +170,7 @@ resume(seconds=60)
 ```
 read_memory(ref="score", length=2)
 -> {
-  "summary": "read_memory score: 2 bytes at 08BC:00000615",
+  "summary": "read_memory score: 2 bytes at 08C5:00000615",
   "hex": "0a00"
 }
 ```
@@ -214,7 +214,7 @@ state_write(method="load", name="bricks")
 ```
 read_memory(ref="paddle_x", length=2)
 -> {
-  "summary": "read_memory paddle_x: 2 bytes at 08BC:0000061F",
+  "summary": "read_memory paddle_x: 2 bytes at 08C5:0000061F",
   "hex": "dc00"
 }
 ```

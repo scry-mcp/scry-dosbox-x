@@ -1,4 +1,4 @@
-; INJECT.COM -- the guest half of the server's input route: keys, mouse buttons, the pointer.
+; SCRY.COM -- the guest half of the server's input route: keys, mouse buttons, the pointer.
 ;
 ; WHAT IT JOINS. DOSBox-X's own INTEGRATION DEVICE (`integration device=true`, in the `[cpu]`
 ; section) exposes registers that only GUEST code can write, and the serial port, as
@@ -16,7 +16,7 @@
 ; is still hooked, for what only a clock can do: dropping a frame left short, and draining COM1
 ; when a program masked IRQ 4. Both entries run one routine, never at once.
 ;
-; A FRAME (protocol 4): SYNC (A5h), a sequence byte (1 to 255), then the command, an opcode
+; A FRAME (protocol 5): SYNC (A5h), a sequence byte (1 to 255), then the command, an opcode
 ; byte and a fixed payload, then a CHECK: every byte after SYNC XORed into FFh. A SYNC byte can sit
 ; inside a payload (A5h is the break of a key), so a frame short of a byte can be completed by the
 ; next one's: the check is what makes that frame not add up. One that does not, or whose opcode
@@ -37,7 +37,8 @@
 ;                      breaks and E0 prefixes, so the stub knows nothing about keys)
 ;   'B' b              a mouse button into the same register's button sub-selector: bit 7
 ;                      pressed or released, the low bits which button (0 left, 1 right, 2 middle)
-;   'M' xl xh yl yh    INT 33h AX=04h: the pointer AT these driver coordinates, exactly
+;   'M' xl xh yl yh    the pointer AT these driver coordinates, exactly (INT 33h AX=04h),
+;                      reached first as motion through the device where the build takes it
 ;   'R'                report, on COM1 after its acknowledgement (a repeat too: it reads,
 ;                      it changes nothing), one line ending CR LF:
 ;                      INT 33h AX=03h (position, buttons), AX=26h (the driver's range), the
@@ -52,22 +53,26 @@
 ; the guest has returned from this handler and taken the keyboard's IRQ 1. A button or a position
 ; goes through the same queue, so a click's press and release keep their order with the keys'.
 ;
-; THE POINTER IS SET (AX=04h) and read back (AX=03h), never moved by a delta: the server's
-; REFERENCE says why. Calling INT 33h from an interrupt handler is sound against DOSBox-X's own
-; driver, which is emulator code behind a callback; a mouse driver loaded INSIDE the guest is not reached by
-; this route and is not supported.
+; THE POINTER IS SET (AX=04h) and read back (AX=03h). AX=04h alone moves it without motion, so a
+; program that reads the motion counters (AX=0Bh) or a PS/2 mouse of its own would see the pointer
+; jump and nothing move; the device's relative motion, signed bytes in the driver's units, goes
+; first wherever the build takes it, and AX=04h then lands it exactly. Whether it does is asked
+; once at load (`motion`): a build that lacks it flags the device's error bit, and the stub
+; still places the pointer. Calling INT 33h from an interrupt handler is sound against DOSBox-X's
+; own driver, which is emulator code behind a callback; a mouse driver loaded INSIDE the guest is
+; not reached by this route and is not supported.
 ;
-; It announces itself on the E9 port (`STUB  . inject device=present proto=4`) so a host
-; reading the log can tell whether the device answered, and which protocol it speaks, before
-; it trusts the route. A build whose device does not answer exits with a code and stays out
-; of memory.
+; It announces itself on the E9 port (`STUB  . scry device=present proto=5 motion=1`) so a host
+; reading the log can tell whether the device answered, which protocol it speaks and whether a move
+; carries motion, before it trusts the route. A build whose device does not answer exits with a
+; code and stays out of memory.
 ;
 ; Device protocol (upstream include/iglib.h): index port = base+0, data = base+1, command =
 ; base+2; a register select is a RESET_LATCH command then four byte writes to the index port
 ; LSB first; a data write is a RESET_LATCH then four byte writes to the data port LSB first.
 ; The base port is 0x28.
 ;
-; Build: nasm -f bin inject.asm -o INJECT.COM
+; Build: nasm -f bin scry.asm -o SCRY.COM
 
         org 100h
         cpu 386
@@ -77,10 +82,14 @@ IDX     equ BASE+0
 DAT     equ BASE+1
 CMD     equ BASE+2
 CMD_RESET_LATCH  equ 00h
+CMD_CLEAR_ERROR  equ 0FEh
+STATUS_ERROR     equ 02h            ; the status register (CMD read): the last write was refused
 REG_IDENTIFY     equ 00000000h
 ID_MAGIC         equ 0D05B0740h
 REG_KB_INJECT    equ 00804200h      ; sub-selector KB is 0 << 8: the low byte is the scan byte
 INJECT_MOUSEBTN  equ 0800h          ; sub-selector 8: bit 7 press, low bits the button
+INJECT_MOTION    equ 0C00h          ; sub-selector 12: X in bits 16-23, Y in 24-31, signed
+MOTION_STEP      equ 127            ; the most one signed byte of motion carries
 REG_VGA_SIZE     equ 006845C0h      ; height << 16 | width, as the display draws it
 REG_SCREENSHOT   equ 00C54010h      ; bit 0: take a screenshot
 BIOS_VIDEO_MODE  equ 0449h          ; the BIOS data area's current mode byte (segment 0)
@@ -125,8 +134,29 @@ start:
         mov     ax, 4C00h
         int     21h
 .first:
+        ; --- does the device take relative motion? A build that does not flags an error ---
+        mov     al, CMD_CLEAR_ERROR
+        mov     dx, CMD
+        out     dx, al
+        mov     eax, REG_KB_INJECT
+        call    write_regsel
+        mov     eax, INJECT_MOTION  ; no motion at all: a build that takes it moves nothing
+        call    write_data
+        mov     dx, CMD
+        in      al, dx
+        test    al, STATUS_ERROR
+        setz    byte [motion]
+        mov     al, CMD_CLEAR_ERROR
+        out     dx, al
         mov     dx, msg_present
         call    e9_print
+        mov     al, [motion]
+        add     al, '0'
+        call    e9_char
+        mov     al, 13
+        call    e9_char
+        mov     al, 10
+        call    e9_char
         ; --- the UART: 8N1, divisor 1, an interrupt when a byte arrives ---
         mov     dx, COM1+3
         mov     al, 80h             ; DLAB on
@@ -177,7 +207,7 @@ start:
 ; Each runs with interrupts off and `service` never turns them on, so `busy` is only ever found
 ; set by an entry that came in under a driver call of the stub's own (INT 33h): that entry
 ; leaves the bytes to the next one.
-signature db 'SCRY-INJECT-4'      ; what the already-resident check reads before the entries
+signature db 'SCRY-INJECT-5'      ; what the already-resident check reads before the entries
 SIG_LEN equ $ - signature
 tick:
         pushf
@@ -354,7 +384,10 @@ carry:
         jmp     .acked
 .notb:  cmp     al, 'M'
         jne     .notm
-        mov     ax, 4
+        cmp     byte [motion], 0
+        je      .place
+        call    glide
+.place: mov     ax, 4
         mov     cx, [frame+2]
         mov     dx, [frame+4]
         int     33h
@@ -380,6 +413,42 @@ carry:
         call    report
         mov     byte [to_com], 0
 .out:   ret
+
+; The motion from the driver's pointer to the frame's target, in steps a signed byte holds.
+glide:
+        mov     ax, 3
+        int     33h                 ; cx, dx = where the driver has the pointer
+        mov     si, [frame+2]
+        sub     si, cx              ; si = x still to go
+        mov     di, [frame+4]
+        sub     di, dx              ; di = y still to go
+.step:  mov     ax, si
+        or      ax, di
+        jz      .done
+        mov     ax, si
+        call    clamp
+        sub     si, ax
+        movzx   ebx, al
+        mov     ax, di
+        call    clamp
+        sub     di, ax
+        movzx   eax, al
+        shl     eax, 8
+        or      eax, ebx
+        shl     eax, 16
+        or      eax, INJECT_MOTION
+        call    inject_reg
+        jmp     .step
+.done:  ret
+
+clamp:                              ; ax, signed, held to one step either way
+        cmp     ax, MOTION_STEP
+        jle     .low
+        mov     ax, MOTION_STEP
+.low:   cmp     ax, -MOTION_STEP
+        jge     .ok
+        mov     ax, -MOTION_STEP
+.ok:    ret
 
 ; es:bx = a vector, cx = its handler's distance from the signature: ZF set when it is this stub's.
 resident:
@@ -576,7 +645,7 @@ com_tx:                             ; al -> COM1, once its holding register is e
 ; ---------------------------------------------------------------- data
 old1c       dd 0
 ; No timestamp: a stamp is the guest program's own clock, and this is not the program.
-msg_present db 'STUB  . inject device=present proto=4', 13, 10, '$'
+msg_present db 'STUB  . scry device=present proto=5 motion=$'
 msg_rep db 'STUB  . mouse x=$'
 msg_y db ' y=$'
 msg_b db ' buttons=$'
@@ -590,10 +659,11 @@ frame times 8 db 0    ; the current frame: sequence byte, opcode, payload, check
 to_com db 0          ; 1 while a report is written to COM1
 stale db 0           ; ticks the current frame has ended short with nothing arriving
 last_seq db 0        ; the sequence byte last carried out; the host never sends 0
+motion db 0          ; 1 when the device takes relative motion
 carried db 0         ; 1 when this frame was carried out, 0 when it repeated the last
 tx_dead db 0         ; 1 once COM1 refused a byte in this entry
 busy db 0            ; 1 while `service` runs
 ticking db 0         ; 1 when the tick entered `service`, 0 when IRQ 4 did
-msg_absent  db 'STUB  . inject device=absent', 13, 10, '$'
-msg_twice   db 'STUB  . inject already resident', 13, 10, '$'
+msg_absent  db 'STUB  . scry device=absent', 13, 10, '$'
+msg_twice   db 'STUB  . scry already resident', 13, 10, '$'
 resident_end:

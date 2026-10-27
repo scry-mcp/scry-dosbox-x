@@ -82,9 +82,9 @@ pic(method, irq=null)
 The 8259 interrupt controllers, which decide which hardware interrupt reaches the CPU.
 Needs the machine stopped.
 
-`read`: Reply: `controllers` (each `controller`, `vector_base`, `active_irq` (null: none
-in service), `isr`, `isrr`, `auto_eoi`, ...), `irqs` (each `irq`, `vector`, `requested`,
-`masked`, `in_service`, `cascade`).
+`read`: Reply: `controllers` (each `controller`, `vector_base`, `active_irq` (unavailable
+with none in service), `isr`, `isrr`, `auto_eoi`, ...), `irqs` (each `irq`, `vector`,
+`requested`, `masked`, `in_service`, `cascade`).
 
 `mask`, `unmask`, `ack` (clear its in-service bit), `raise`, `lower` (its request line):
 `irq` 0 to 15. Marks the session `altered`. The timer is IRQ 0: `raise` it to run its
@@ -133,7 +133,10 @@ Example, from a live run:
       "single": false,
       "request_issr": false,
       "vector_base": "0x08",
-      "active_irq": 8,
+      "active_irq": {
+        "available": false,
+        "why": "no line is in service"
+      },
       "isr": "0x00",
       "isrr": "0xFF",
       "isr_ignore": "0x00"
@@ -148,7 +151,10 @@ Example, from a live run:
       "single": false,
       "request_issr": false,
       "vector_base": "0x70",
-      "active_irq": 8,
+      "active_irq": {
+        "available": false,
+        "why": "no line is in service"
+      },
       "isr": "0x00",
       "isrr": "0xFF",
       "isr_ignore": "0x00"
@@ -208,8 +214,8 @@ Example, from a live run:
 before anything is sent, and a slave line on a machine with one controller is refused as such.
 Only a mask is a state the listing has to show after; a raised line on an unmasked input may
 already have been taken by the CPU when the listing is read. A controller's `active_irq` is its
-own line 0 to 7 in service, or `null` with none: the emulator writes 8 for that, which would read
-as a ninth line.
+own line 0 to 7 in service, or unavailable with none: the emulator writes 8 for that, which would
+read as a ninth line.
 
 <!-- scry-reference:begin a20 -->
 ## `a20`

@@ -7,6 +7,7 @@ from __future__ import annotations
 from scry_core import comment_file as core_comments
 from scry_core import (
     docs,
+    frame_window,
     judges,
     log_marks,
     picture,
@@ -32,8 +33,8 @@ import dosbox_trace as trace
 
 #: What every stop reply carries, named once for every tool that stops the machine.
 STOP_FIELDS = (
-    "the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `instruction`, `regs`, `watches`, "
-    "`cause` and `e9`"
+    "the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, "
+    "`watches`, `cause` and `e9`"
 )
 
 DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES,
@@ -42,6 +43,7 @@ DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES
               "STOP_FIELDS": STOP_FIELDS,
               "SPAN_TICKS": str(capture_files.SPAN_TICKS),
               "RECORD_MAX": str(sequence.RECORD_MAX),
+              "UNTIL_STEPS_MAX": str(frame_window.UNTIL_STEPS_MAX),
               **log_marks.DOC_VALUES,
               "LOG_LIMIT_MAX": str(logs.LOG_LIMIT_MAX), "WAIT_MAX_S": f"{vocab.WAIT_MAX_S:g}",
               "READ_MAX": str(grammar.READ_BYTES_MAX),

@@ -178,7 +178,7 @@ def matrix(monkeypatch: pytest.MonkeyPatch) -> ModuleType:
 
 @pytest.mark.parametrize(("argv", "env", "code"), [
     (["m", "extra"], {}, 2),
-    (["m"], {"DOSBOX_X_LIVE_SECTIONS": "Z"}, 3),
+    (["m"], {"DOSBOX_X_LIVE_SECTIONS": "9"}, 3),
     (["m"], {"DOSBOX_X_LIVE_JOBS": "none"}, 2),
 ], ids=["an argument", "a section that is none", "a job count that is none"])
 def test_a_matrix_that_stops_before_its_start_leaves_nothing(

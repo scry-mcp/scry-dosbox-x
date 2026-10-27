@@ -10,7 +10,7 @@ change.
 `instructions`, the roster of tools by family). Each `dosbox_*.py` holds one concern, and its
 docstring opens with what it holds and why: read that before changing it. What both Scry servers
 share (the reply contract, the reference generator, the demo runner, the probe, the live bench)
-is the scry-core package, pinned by tag in `pyproject.toml`. `guest/` holds the resident input stub the server loads into the guest (`inject.asm`, built to `INJECT.COM`), `demos/` the demo game, and `bench.py` and `mapsweep.py` are the development scripts below. `tests/` holds the
+is the scry-core package, pinned by tag in `pyproject.toml`. `guest/` holds the resident input stub the server loads into the guest (`scry.asm`, built to `SCRY.COM`), `demos/` the demo game, and `bench.py` and `mapsweep.py` are the development scripts below. `tests/` holds the
 contract tests and `tests/live/` the tiers that drive a real emulator.
 
 ## The battery

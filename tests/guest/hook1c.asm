@@ -1,6 +1,6 @@
 ; HOOK1C.COM -- a resident program that takes INT 1Ch above whatever holds it, and chains it.
 ;
-; WHY IT EXISTS. It hides a resident input stub behind INT 1Ch, the case `guest/inject.asm`'s
+; WHY IT EXISTS. It hides a resident input stub behind INT 1Ch, the case `guest/scry.asm`'s
 ; already-resident check answers by asking IRQ 4's vector too; the matrix's P section loads it
 ; between two copies. It says so on E9 and stays resident.
 ;

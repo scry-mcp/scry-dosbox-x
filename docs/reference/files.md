@@ -121,7 +121,7 @@ Example, from a live run:
 ```json
 {
   "method": "region",
-  "manifest": "$TMPDIR/dosbox-x-session-2ny4oml_/series/series-1/manifest.json",
+  "manifest": "$TMPDIR/dosbox-x-session-9hti87sy/series/series-1/manifest.json",
   "measure": "changed_pixels"
 }
 ```
@@ -150,8 +150,8 @@ Example, from a live run:
   ],
   "gaps": [],
   "transitions_total": 1,
-  "path": "$TMPDIR/dosbox-x-session-2ny4oml_/series/series-1/track-1.json",
-  "manifest": "$TMPDIR/dosbox-x-session-2ny4oml_/series/series-1/manifest.json"
+  "path": "$TMPDIR/dosbox-x-session-9hti87sy/series/series-1/track-1.json",
+  "manifest": "$TMPDIR/dosbox-x-session-9hti87sy/series/series-1/manifest.json"
 }
 ```
 <!-- scry-reference:end image_compare -->
@@ -194,15 +194,15 @@ Example, from a live run:
 
 ```json
 {
-  "path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/Y/n1-dosio/OUT.TXT"
+  "path": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/Y/n1-dosio/OUT.TXT"
 }
 ```
 
 ```json
 {
-  "summary": "guest_file $TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/Y/n1-dosio/OUT.TXT: written, 4 bytes",
+  "summary": "guest_file $TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/Y/n1-dosio/OUT.TXT: written, 4 bytes",
   "status": "ok",
-  "path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/Y/n1-dosio/OUT.TXT",
+  "path": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/Y/n1-dosio/OUT.TXT",
   "state": "written",
   "before": {
     "exists": false

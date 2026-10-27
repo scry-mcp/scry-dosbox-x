@@ -88,7 +88,7 @@ def section_s() -> None:
     close_whatever()
     boot(binary=stock, conf=MOUSE_CONF, program=MOUSE_PROGRAM)
     must(M.call(server.resume), "releasing the mouse guest")
-    must(M.call(server.log_wait, pattern=r"STUB  \. inject", channel="guest", seconds=WAIT_S),
+    must(M.call(server.log_wait, pattern=r"STUB  \. scry", channel="guest", seconds=WAIT_S),
          "the input stub announcing itself")
     keys = M.call(server.send_keys, keys=["a"], expect=r"MOUSE \. key=97$", seconds=WAIT_S)
     M.judge(S_CELLS[3].label, ok(keys) and keys.get("verify", {}).get("seen") is True, said(keys))

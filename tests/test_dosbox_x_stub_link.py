@@ -1,8 +1,9 @@
 """The host half of the stub's protocol against a double of the guest's handler
-(`guest/inject.asm`). The constants are read off the asm so the double cannot drift from them."""
+(`guest/scry.asm`). The constants are read off the asm so the double cannot drift from them."""
 
 from __future__ import annotations
 
+import math
 import re
 import socket
 import threading
@@ -17,7 +18,7 @@ from scry_core.reply_contract import Invalid
 import dosbox_inputs as inputs
 import dosbox_stub_link as link
 
-ASM = (Path(link.__file__).parent / "guest" / "inject.asm").read_text(encoding="utf-8")
+ASM = (Path(link.__file__).parent / "guest" / "scry.asm").read_text(encoding="utf-8")
 
 
 def _lengths() -> dict[int, int]:
@@ -221,7 +222,7 @@ def test_the_protocol_constants_are_the_stubs_own() -> None:
     for name, value in (("SYNC", link.SYNC), ("ACK", link.ACK)):
         found = re.search(rf"^{name}\s+equ\s+0?([0-9A-Fa-f]+)h", ASM, re.M)
         assert found and int(found.group(1), 16) == value, name
-    assert f"proto={inputs.STUB_PROTOCOL}'" in ASM
+    assert f"proto={inputs.STUB_PROTOCOL} motion=$'" in ASM
     assert f"'SCRY-INJECT-{inputs.STUB_PROTOCOL}'" in ASM
 
 
@@ -287,6 +288,71 @@ def test_frames_go_a_spacing_apart_and_the_spacing_outlasts_a_50_hz_frame(
     gaps = [b - a for a, b in zip(stub.carried_at, stub.carried_at[1:], strict=False)]
     assert len(gaps) == len(KEYS) - 1 and min(gaps) >= link.FRAME_SPACING_S, gaps
     assert link.FRAME_SPACING_S > 1 / 50
+
+
+class Retraces:
+    """A parked machine: the stub runs only when the host advances it, once per retrace."""
+
+    FRAME_MS = 14.27
+
+    def __init__(self, stub: Stub) -> None:
+        self.stub, self.clock_ms, self.carried_ms, self.run = stub, 0.0, list[float](), 0
+
+    def __call__(self) -> float:
+        time.sleep(0.01)                  # the bytes reach the emulated UART before it runs
+        before = len(self.stub.carried)
+        self.stub.serial()
+        self.clock_ms += self.FRAME_MS
+        self.run += 1
+        self.carried_ms += [self.clock_ms] * (len(self.stub.carried) - before)
+        return self.clock_ms
+
+
+def test_a_parked_machine_takes_each_frame_by_retraces_a_guest_tick_apart(pair: Any) -> None:
+    host, guest = pair
+    stub = Stub(guest, deaf=True)
+    run = Retraces(stub)
+    assert link.Link(host).send(KEYS + [b"R"], run) == [REPORT[:-2].decode()]
+    assert stub.carried == KEYS + [b"R"], stub.carried
+    gaps = [b - a for a, b in zip(run.carried_ms, run.carried_ms[1:], strict=False)]
+    assert min(gaps) >= link.FRAME_SPACING_MS, gaps
+
+
+@pytest.mark.parametrize("gap_s", [0.0, 0.1], ids=["back to back", "a client's pause apart"])
+def test_two_parked_posts_take_the_retraces_their_guest_time_needs_whatever_the_wall_clock(
+        pair: Any, gap_s: float) -> None:
+    """A replay sends the two posts back to back; the session that recorded them did not."""
+    host, guest = pair
+    run = Retraces(Stub(guest, deaf=True))
+    line = link.Link(host)
+    line.send([b"K\x1e"], run)
+    first = run.run
+    time.sleep(gap_s)
+    line.send([b"K\x9e"], run)
+    spacing = math.ceil(link.FRAME_SPACING_MS / Retraces.FRAME_MS)
+    assert (first, run.run - first) == (1, spacing + 1), (first, run.run)
+
+
+def test_a_clock_that_went_back_is_no_frame_to_wait_after(pair: Any) -> None:
+    """A state load puts the guest's clock behind the last frame's: nothing is waited out."""
+    host, guest = pair
+    run = Retraces(Stub(guest, deaf=True))
+    line = link.Link(host)
+    line.send([b"K\x1e"], run)
+    run.clock_ms -= 1000
+    before = run.run
+    line.send([b"K\x9e"], run)
+    assert run.run - before == 1, run.run - before
+
+
+def test_a_parked_stub_that_never_answers_is_refused_in_retraces(pair: Any) -> None:
+    host, guest = pair
+    stub = Stub(guest, deaf=True)
+    stub.serial = lambda: None  # type: ignore[method-assign]
+    run = Retraces(stub)
+    with pytest.raises(Invalid, match=f"{link.ACK_RETRACES} retraces each"):
+        link.Link(host).send([b"K\x1e"], run)
+    assert run.run == link.SENDS * link.ACK_RETRACES
 
 
 def test_a_report_comes_back_after_its_acknowledgement_even_a_byte_at_a_time(

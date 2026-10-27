@@ -1586,7 +1586,7 @@ def test_the_stub_takes_the_first_drive_from_y_down_that_the_conf_does_not_mount
     conf.write_text("[sdl]\nfullscreen=false\n[autoexec]\nmount c .\n@MOUNT y /tmp\n"
                     "imgmount x disk.img -t hdd\nsubst W: C:\\TOOLS\n", encoding="utf-8")
     argv = dlaunch.build_argv(launch(conf, program="APP.EXE", input_port=5555))
-    assert f'mount V "{dlaunch.GUEST_DIR}"' in argv and "V:\\INJECT.COM" in argv, argv
+    assert f'mount V "{dlaunch.GUEST_DIR}"' in argv and "V:\\SCRY.COM" in argv, argv
     every = "\n".join(f"mount {d} ." for d in "DEFGHIJKLMNOPQRSTUVWXY")
     conf.write_text(f"[autoexec]\n{every}\n", encoding="utf-8")
     with pytest.raises(ds.Invalid, match=r"no drive from Y: to D: is free.*mounts D:, E:"):

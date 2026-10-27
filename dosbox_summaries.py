@@ -429,7 +429,16 @@ def watch_add(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 def send_keys(args: dict[str, Any], reply: dict[str, Any]) -> str:
     return (f"send_keys ({reply.get('route')}): "
-            f"{_effect(_block(reply, 'verify'), 'posted, unverified')}")
+            f"{_effect(_block(reply, 'verify'), 'posted, unverified')}{_parked(reply)}")
+
+
+def _parked(reply: dict[str, Any]) -> str:
+    """A post to a stopped machine: the retraces it ran and the frame it left it in."""
+    if "polls" not in reply:
+        return ""
+    frame = reply.get("frame")
+    return f", {_said(reply['polls'], 'retrace')}" + (
+        f" to frame {frame}" if isinstance(frame, int) else "")
 
 
 def send_mouse(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -439,7 +448,7 @@ def send_mouse(args: dict[str, Any], reply: dict[str, Any]) -> str:
           f"{mouse['x']},{mouse['y']} (driver)" if isinstance(mouse, dict) else "unread")
     arrived = "" if reply.get("arrived", True) else ", NOT where asked"
     return (f"send_mouse: pointer at {at}{arrived}; "
-            f"{_effect(_block(reply, 'verify'), 'posted, unverified')}")
+            f"{_effect(_block(reply, 'verify'), 'posted, unverified')}{_parked(reply)}")
 
 
 def captures(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -522,6 +531,10 @@ def perform(args: dict[str, Any], reply: dict[str, Any]) -> str:
         return f"{done}, stopped" + (f" (stop {seq})" if seq is not None else "")
     if reply.get("still_running"):
         return f"{done}, still running"
+    if "until_frame" in reply:
+        reached = reply.get("frame_reached")
+        done += (f", frame {reached} of {reply['until_frame']}" if isinstance(reached, int)
+                 else f", no frame read of {reply['until_frame']}")
     return f"{done}, {reply['verdict']}" if "verdict" in reply else done
 
 

@@ -5,6 +5,7 @@ None launches DOSBox-X: a double owns a real logfile and drives the real waits o
 
 from __future__ import annotations
 
+import math
 import re
 import threading
 import time
@@ -17,6 +18,7 @@ from scry_core import log_wait as core_wait
 from scry_core import progress as mprogress
 from scry_core import vocabulary as vocab
 
+import dosbox_log_reader as log_reader
 import dosbox_session as ds
 
 # Two instrumentation lines verbatim from a real guest; the third string only quotes one.
@@ -539,3 +541,34 @@ def test_e9_wait_reports_its_progress_while_it_waits(tmp_path: Path,
     ticks.clear()
     LogSession(log).e9_wait("BOOT", seconds=0.25, progress=lambda p, t, m: ticks.append((p, t, m)))
     assert ticks == []
+
+
+class _Clock:
+    """A parked machine one retrace a call; its clock in the guest's milliseconds."""
+
+    FRAME_MS = 14.27
+
+    def __init__(self) -> None:
+        self.clock_ms, self.run = 0.0, 0
+
+    def __call__(self) -> float:
+        self.run += 1
+        self.clock_ms += self.FRAME_MS
+        return self.clock_ms
+
+
+def test_a_parked_miss_runs_the_retraces_the_guest_s_seconds_need_and_no_more() -> None:
+    clock = _Clock()
+    got = log_reader._parked_wait(re.compile("NEVER"), "NEVER", "guest", 1.0, lambda: ["x"],
+                                  clock)
+    assert got["verdict"] == "TIMEOUT" and clock.run == math.ceil(1000 / _Clock.FRAME_MS), got
+    assert "of the guest's time" in str(got["note"])
+
+
+def test_a_parked_hit_ends_the_wait_at_the_retrace_that_wrote_it() -> None:
+    clock = _Clock()
+    looks = iter([["a"], ["b"], ["key=97"], ["c"]])
+    got = log_reader._parked_wait(re.compile("key="), "key=", "guest", 5.0,
+                                  lambda: next(looks), clock)
+    assert (got["verdict"], got["line"], clock.run, got["already"]) == (
+        "TARGET", "key=97", 2, False), got

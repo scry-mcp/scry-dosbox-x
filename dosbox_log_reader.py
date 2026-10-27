@@ -1,16 +1,21 @@
 from __future__ import annotations
 
+import re
+import time
+from collections.abc import Callable
 from pathlib import Path
 
-from scry_core import log_marks
+from scry_core import cancel, log_marks
 from scry_core import log_wait as core_wait
 from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 from scry_core.progress import Progress, no_progress
+from scry_core.prose import counted
 from scry_core.reply_contract import Invalid
 
 import dosbox_logs as dlogs
 import dosbox_session as ds
+import dosbox_stub_link as stub_link
 
 
 def e9(ses: ds.Session, pattern: str, limit: int = 40) -> tuple[list[str], int]:
@@ -109,18 +114,58 @@ def e9_mark(ses: ds.Session) -> int:
 
 
 def e9_wait(ses: ds.Session, pattern: str, seconds: float, mark: int = 0,
-            progress: Progress = no_progress) -> dict[str, object]:
-    """`log_wait` on the guest channel."""
-    return ses.log_wait(pattern, seconds, "guest", mark, progress)
+            progress: Progress = no_progress,
+            advance: stub_link.Advance | None = None) -> dict[str, object]:
+    """`log_wait` on the guest channel; `advance` runs a parked machine a retrace per look."""
+    if advance is None:
+        return ses.log_wait(pattern, seconds, "guest", mark, progress)
+    return log_wait(ses, pattern, seconds, "guest", mark, progress, advance)
+
+
+def _parked_wait(rx: re.Pattern[str], pattern: str, channel: str, seconds: float,
+                 fresh: Callable[[], list[str]], advance: stub_link.Advance) -> dict[str, object]:
+    """A parked machine run a retrace before each look after the first, until a line matches or
+    `seconds` of the GUEST's time have passed, so a replay takes the retraces this one did. A
+    host too slow to run them within the longest wait is refused, never read as a miss."""
+    began, start = time.monotonic(), advance.clock_ms
+    first = fresh()
+    total, new = len(first), first
+    while True:
+        hits = [ln for ln in new if rx.search(ln)]
+        if hits:
+            return {"verdict": contract.TARGET, "pattern": pattern, "channel": channel,
+                    "line": hits[0], "already": new is first, "lines_total": len(hits),
+                    "lines_before": total - len(new) + new.index(hits[0]),
+                    "arrived_during": total - len(first),
+                    "waited_s": round(time.monotonic() - began, 1), "lines_examined": total}
+        if advance.clock_ms - start >= seconds * 1000:
+            break
+        cancel.check()
+        if time.monotonic() - began > vocab.WAIT_MAX_S:
+            raise Invalid("not_settled",
+                f"{seconds:g} s of the guest's time did not pass in {vocab.WAIT_MAX_S:g} s of "
+                f"the host's, run a retrace at a time: the wait for /{pattern}/ is no answer")
+        advance()
+        new = fresh()
+        total += len(new)
+    arrived = total - len(first)
+    return {"verdict": contract.TIMEOUT, "pattern": pattern, "channel": channel,
+            "arrived_during": arrived, "lines_examined": total,
+            "waited_s": round(time.monotonic() - began, 1),
+            "note": f"nothing matched /{pattern}/ in {seconds:g} s of the guest's time, run a "
+                    f"retrace at a time: {counted(arrived, 'line')} arrived during the wait. The "
+                    f"machine is stopped where the wait ended"}
 
 
 def log_wait(ses: ds.Session, pattern: str, seconds: float, channel: str, mark: int = 0,
-             progress: Progress = no_progress) -> dict[str, object]:
+             progress: Progress = no_progress,
+             advance: stub_link.Advance | None = None) -> dict[str, object]:
     """WHEN a line of `channel` matching `pattern` happened (`scry_core.log_wait`).
 
     `verdict` is `TARGET` with the FIRST such line, or `TIMEOUT`; a stopped machine writes
-    nothing, so waiting on one is refused (`E9Stopped`), as is a vanished emulator. `mark`
-    (`e9_mark`) makes "already" mean "written since the mark".
+    nothing, so waiting on one is refused (`E9Stopped`), as is a vanished emulator, unless
+    `advance` runs it, bounded by the guest's own time (`_parked_wait`). `mark` (`e9_mark`) makes
+    "already" mean "written since the mark".
     """
     vocab.check_wait(seconds)
     rx = dlogs.compiled(pattern)
@@ -135,6 +180,8 @@ def log_wait(ses: ds.Session, pattern: str, seconds: float, channel: str, mark: 
         lines, offset = ses._e9_since(offset, channel)
         return lines
 
+    if advance is not None:
+        return _parked_wait(rx, pattern, channel, seconds, fresh, advance)
     asked: list[bool] = []
 
     def stopped() -> bool:

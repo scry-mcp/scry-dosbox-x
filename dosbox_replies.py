@@ -13,6 +13,7 @@ from scry_core import media_replies
 from scry_core import sequence_account as account
 from scry_core.reply_contract import OmitEmpty
 from scry_core.reply_schema import ReplyEnvelope
+from typing_extensions import TypedDict
 
 
 class DosboxEnvelope(ReplyEnvelope, total=False):
@@ -249,7 +250,9 @@ class PaletteReply(DosboxEnvelope, total=False):
 class PerformReply(DosboxEnvelope, account.SequenceFields, total=False):
     """The sequence's fields (`scry_core.sequence_account.SequenceFields`), and `operations` on
     a refusal for a step naming no operation."""
+    frame_reached: int | dict[str, Any]
     operations: list[Any]
+    until_frame: int
 
 
 class PerformExportReply(DosboxEnvelope, total=False):
@@ -281,6 +284,7 @@ class ResumeReply(DosboxEnvelope, total=False):
     cpu_mode: str | dict[str, Any]
     e9: dict[str, Any]
     enrichment: dict[str, Any]
+    frame: int | dict[str, Any]
     instruction: dict[str, Any]
     note: str
     pc: str
@@ -301,8 +305,9 @@ class RunForReply(DosboxEnvelope, total=False):
     emulated_after_s: float | dict[str, Any]
     emulated_before_s: float
     enrichment: dict[str, Any]
-    frame_after: dict[str, Any]
-    frame_before: dict[str, Any]
+    frame: int | dict[str, Any]
+    frame_after: int | dict[str, Any]
+    frame_before: int | dict[str, Any]
     instruction: dict[str, Any]
     note: str
     pc: str | dict[str, Any]
@@ -349,6 +354,7 @@ class RunToReply(DosboxEnvelope, total=False):
     cpu_mode: str | dict[str, Any]
     e9: dict[str, Any]
     enrichment: dict[str, Any]
+    frame: int | dict[str, Any]
     instruction: dict[str, Any]
     note: str
     pc: str
@@ -388,6 +394,7 @@ class ScreenWaitReply(DosboxEnvelope, total=False):
     cpu_mode: str
     e9: dict[str, Any]
     enrichment: dict[str, Any]
+    frame: int | dict[str, Any]
     instruction: dict[str, Any]
     line: str
     note: str
@@ -403,7 +410,21 @@ class ScreenWaitReply(DosboxEnvelope, total=False):
     watches: list[Any]
 
 
-class SendKeysReply(DosboxEnvelope, total=False):
+class ParkedPost(TypedDict, total=False):
+    """What an input sent to a parked machine adds: the retraces it ran and the stop it left."""
+    cause: str
+    cpu_mode: str | dict[str, Any]
+    e9: dict[str, Any]
+    frame: int | dict[str, Any]
+    instruction: dict[str, Any]
+    pc: str | dict[str, Any]
+    polls: int
+    regs: dict[str, Any]
+    stop_seq: int
+    watches: list[Any]
+
+
+class SendKeysReply(DosboxEnvelope, ParkedPost, total=False):
     bytes: int
     delivered: bool
     frames: int
@@ -414,13 +435,14 @@ class SendKeysReply(DosboxEnvelope, total=False):
     verify: dict[str, Any]
 
 
-class SendMouseReply(DosboxEnvelope, total=False):
+class SendMouseReply(DosboxEnvelope, ParkedPost, total=False):
     action: str
     arrived: bool
     asked: dict[str, Any]
     button: str
     delivered: bool
     identified_at_stop: int | dict[str, Any]
+    motion: bool | dict[str, Any]
     pointer: dict[str, Any]
     route: str
     screen: str
@@ -523,6 +545,7 @@ class StepReply(DosboxEnvelope, total=False):
     cpu_mode: str | dict[str, Any]
     e9: dict[str, Any]
     enrichment: dict[str, Any]
+    frame: int | dict[str, Any]
     instruction: dict[str, Any]
     instructions_completed: int
     mode: str
@@ -539,6 +562,7 @@ class StopReply(DosboxEnvelope, total=False):
     cause: str
     cpu_mode: str | dict[str, Any]
     e9: dict[str, Any]
+    frame: int | dict[str, Any]
     instruction: dict[str, Any]
     interrupted: bool
     note: str
@@ -595,6 +619,7 @@ class TraceReply(DosboxEnvelope, total=False):
     cause: str
     cpu_mode: str | dict[str, Any]
     e9: dict[str, Any]
+    frame: int | dict[str, Any]
     instruction: dict[str, Any]
     pc: str
     regs: dict[str, Any]

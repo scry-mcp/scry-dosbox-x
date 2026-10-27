@@ -1,8 +1,8 @@
 """`series_capture`: frames out of the session's video capture, written as a `scry-series/1`
 series (`scry_core.series`).
 
-Frames come from the AVI because DOS has no frame counter a stop can read: frame N is the
-AVI's N-th frame from 0, not an emulated frame number. Pixels are written RGB with no row
+Frames come from the AVI: frame N is the AVI's N-th frame from 0, not the display frame a
+stop's `frame` counts since power-on. Pixels are written RGB with no row
 prediction so palette and direct-colour AVIs come out alike.
 """
 

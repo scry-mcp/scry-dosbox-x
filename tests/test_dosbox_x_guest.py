@@ -88,13 +88,13 @@ def test_the_guest_binary_is_exactly_what_its_source_assembles_to(tmp_path: Path
 def test_the_packaged_stub_is_exactly_what_its_source_assembles_to(tmp_path: Path) -> None:
     """The stub ships to every guest, so a binary behind its source runs an older protocol."""
     stub = GUEST.parent.parent / "guest"
-    out = tmp_path / "INJECT.COM"
-    r = subprocess.run(["nasm", "-f", "bin", str(stub / "inject.asm"), "-o", str(out)],
+    out = tmp_path / "SCRY.COM"
+    r = subprocess.run(["nasm", "-f", "bin", str(stub / "scry.asm"), "-o", str(out)],
                        capture_output=True, text=True, check=False)
-    assert r.returncode == 0, f"inject.asm does not assemble: {r.stderr}"
-    assert out.read_bytes() == (stub / "INJECT.COM").read_bytes(), (
-        "guest/INJECT.COM is not the assembly of guest/inject.asm. Reassemble it: "
-        "nasm -f bin guest/inject.asm -o guest/INJECT.COM")
+    assert r.returncode == 0, f"scry.asm does not assemble: {r.stderr}"
+    assert out.read_bytes() == (stub / "SCRY.COM").read_bytes(), (
+        "guest/SCRY.COM is not the assembly of guest/scry.asm. Reassemble it: "
+        "nasm -f bin guest/scry.asm -o guest/SCRY.COM")
 
 
 #: A global label in a `nasm -l` listing: offset, bytes, undotted name, then what follows it.

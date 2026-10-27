@@ -4,6 +4,7 @@ and the progress a mouse wait is given, and the stub's refusal before anything i
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
@@ -11,7 +12,9 @@ from typing import Any, cast
 import pytest
 from dosbox_x_server_support import _names, clean_session  # noqa: F401
 
+import dosbox_debugger as dbg
 import dosbox_inputs as inputs
+import dosbox_retrace as retrace
 import dosbox_session as ds
 import dosbox_x_server as server
 
@@ -91,13 +94,13 @@ def test_a_stub_that_never_announced_is_refused_naming_the_line_and_the_way_in(
     with pytest.raises(ds.Invalid) as refused:
         inputs.require_stub(ses)
     said = str(refused.value)
-    assert "`STUB  . inject` on E9" in said and "[autoexec]" in said, said
+    assert "`STUB  . scry` on E9" in said and "[autoexec]" in said, said
     assert "or `start(program=...)` loads it by itself" in said, said
     assert "mounted it on" not in said, said
 
 
 def test_a_stub_announced_in_the_log_is_read_from_its_start(tmp_path: Path) -> None:
-    ses = _stub_session(tmp_path, [f"Bochs port E9h: STUB  . inject device=present "
+    ses = _stub_session(tmp_path, [f"Bochs port E9h: STUB  . scry device=present "
                                    f"proto={inputs.STUB_PROTOCOL}"], None)
     inputs.require_stub(ses)
     assert ses.stub_protocol == inputs.STUB_PROTOCOL and ses.asked == [0], ses
@@ -107,3 +110,25 @@ def test_no_keys_is_refused_saying_send_keys_needs_one() -> None:
     with pytest.raises(ds.Invalid) as none:
         inputs.check_keys([], None)
     assert str(none.value) == "send_keys needs at least one key name", none.value
+
+
+def test_a_cancel_among_a_parked_posts_retraces_leaves_the_machine_stopped(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The post found the machine stopped; a cancel that meets one of its retraces with the `VRT`
+    out stops it where it stands rather than leave it running."""
+    stopped: list[object] = []
+
+    def cancelled(*_: object, **__: object) -> dict[str, object]:
+        raise asyncio.CancelledError
+
+    monkeypatch.setattr(retrace, "run_for", cancelled)
+    def stop_at_bound(session: object) -> bool:
+        stopped.append(session)
+        return True
+
+    monkeypatch.setattr(ds.Session, "stop_at_bound", stop_at_bound)
+    monkeypatch.setattr(dbg, "read_run_state", lambda _s: True)
+    session = SimpleNamespace(clock_ms=0.0)
+    with pytest.raises(asyncio.CancelledError):
+        inputs.Retraces(session)()  # type: ignore[arg-type]
+    assert stopped == [session]

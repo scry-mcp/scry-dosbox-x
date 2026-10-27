@@ -296,18 +296,18 @@ Example, from a live run:
 {
   "ref": "0000:0400",
   "length": 16,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n1083.bin"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n1083.bin"
 }
 ```
 
 ```json
 {
-  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n1083.bin",
+  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n1083.bin",
   "status": "ok",
   "ref": "0000:0400",
   "seg_off": "0000:00000400",
   "length": 16,
-  "path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n1083.bin",
+  "path": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n1083.bin",
   "bytes": 16
 }
 ```
@@ -445,19 +445,19 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "log emulator /./: 40 of 123 lines",
+  "summary": "log emulator /./: 40 of 137 lines",
   "status": "ok",
   "pattern": ".",
   "channel": "emulator",
-  "lines_total": 123,
+  "lines_total": 137,
   "truncated": true,
   "lines": [
-    "DEBUG: RUNSTATE running cycles=319 ms=0.732100000",
-    "DEBUG: RUNSTATE stopped cycles=1253 ms=0.825500000",
-    "EV of 'EAX EBX ECX EDX ESI EDI EBP ESP EIP CS DS ES FS GS SS EFLAGS CR0' is:",
-    "4b00 5fe 2026 61e 0 0 0 5fe dac6 f000 71b 71b 0 0 71b 7002 10",
+    "-------------------------------------------------------------------------",
+    "00. BPINT 21 AH=4B",
+    "DEBUG: Breakpoint deletion success.",
     "Breakpoint list:",
     "-------------------------------------------------------------------------",
+    "Breakpoint list:",
     "... 34 more"
   ]
 }
@@ -1009,7 +1009,7 @@ Example, from a live run:
   "bits": 6,
   "pel_mask": "ffh",
   "image": {
-    "path": "$TMPDIR/dosbox-x-session-acy0tq47/gfx/palette-1.png",
+    "path": "$TMPDIR/dosbox-x-session-l1o_xbzc/gfx/palette-1.png",
     "bytes": 1009,
     "sha256": "a5dff617e307a60f3bf521d96fed8809cc0f3b38409a74c904cfa5c1ad4371e1",
     "width": 256,

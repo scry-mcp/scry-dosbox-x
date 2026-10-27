@@ -37,16 +37,17 @@ CLOCK_DECIMALS = 9
 
 
 def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
-            progress: ds.Progress) -> dict[str, Any]:
+            progress: ds.Progress, who: str = "run_for") -> dict[str, Any]:
     """`frames` retraces, or as many as cover `milliseconds` of emulated time, within `seconds`.
 
     The bound starts once the opening read has taken the clock, so a short one still reaches the
-    first frame.
+    first frame. `who` names the run in the cause of a stop it made itself.
     """
     session.require_run_state("run_for")
     session.where_and_registers()
     dbg.read_run_state(session)
     before = session.clock_ms
+    first_frame = session.frames
     if milliseconds and before is None:
         raise ds.Invalid("unexpected_answer",
             "`RUNSTATE` gave no clock before the first frame, so there is no clock to count "
@@ -71,11 +72,13 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
     verdict = contract.ELAPSED
     last = before
     stalled_at: float | None = None
+    frame_at_release: int | None = None
     while not (frames and polls >= frames):
         clock.expired()
         if time.monotonic() >= deadline:
             verdict = contract.TIMEOUT
             break
+        frame_at_release = session.frames
         if _advance(session, began, deadline, report_slow_retrace):
             # A `VRT` still out leaves the machine running: stop it where it stands. A stop that
             # landed before the interrupt is the retrace's and spends it, unless a declared
@@ -113,9 +116,14 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
         if round(now - before, CLOCK_DECIMALS) >= milliseconds:
             break
     fields: dict[str, Any] = {"verdict": verdict, "polls": polls}
+    # Only a frame that moved proves a retrace: an INT 3 the conf breaks on, or a row typed
+    # through `debug`, stops it too and is nothing declared.
+    crossed = (session.frames is not None and frame_at_release is not None
+               and session.frames > frame_at_release)
     own = "" if not alone else (
-        "the retrace run_for ran to" if verdict == contract.ELAPSED
-        else f"run_for's {seconds:g} s bound ran out where the machine stood")
+        (f"the retrace {who} ran to" if crossed else "")
+        if verdict == contract.ELAPSED
+        else f"{who}'s {seconds:g} s bound ran out where the machine stood")
     try:
         reply = running.stop_reply(session, own=own, **fields)
         stopped_at: dict[str, str] | None = dict(STATE.last_stop["where"])
@@ -127,7 +135,8 @@ def run_for(session: ds.Session, frames: int, milliseconds: int, seconds: float,
         STATE.retrace_pending = True
         verdict = contract.OTHER_STOP
     after = session.clock_ms if stopped_at else (last if timed else None)
-    extra: dict[str, Any] = {**_clock(before, after), **_counts(),
+    extra: dict[str, Any] = {**_clock(before, after),
+                             **_counts(first_frame, reply.get("frame") if stopped_at else None),
                              **({} if stopped_at else running.position(None, None))}
     pending = STATE.retrace_pending
     notes = [note for note, holds in ((PENDING_NOTE, pending),
@@ -185,8 +194,7 @@ def _cut(session: ds.Session,
 
 
 NO_CLOCK_WHY = "`RUNSTATE` gave no clock at that stop"
-NO_FRAME_WHY = ("a DOS machine keeps no frame counter a server could read: `polls` counts the "
-                "retraces")
+NO_STOP_FRAME_WHY = "the run ended at no stop the server could read"
 
 
 def _clock(before: float | None, after: float | None) -> dict[str, Any]:
@@ -197,9 +205,11 @@ def _clock(before: float | None, after: float | None) -> dict[str, Any]:
                 None if after is None else after / 1000, NO_CLOCK_WHY)}
 
 
-def _counts() -> dict[str, Any]:
-    return {"frame_before": contract.unavailable(NO_FRAME_WHY),
-            "frame_after": contract.unavailable(NO_FRAME_WHY),
+def _counts(before: int | None, after: Any) -> dict[str, Any]:
+    """The frames the run began and ended in, as each stop reply's `frame` reads them."""
+    return {"frame_before": contract.or_unavailable(before, dbg.NO_FRAMES_WHY),
+            "frame_after": after if after is not None
+            else contract.unavailable(NO_STOP_FRAME_WHY),
             "cycles": contract.unavailable(CYCLES_WHY)}
 
 

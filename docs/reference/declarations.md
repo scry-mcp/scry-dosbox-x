@@ -369,8 +369,9 @@ block. Rows past the cap are counted in `overflow_rows`, values and writers past
 holding the trigger, little-endian, so a word written over the trigger and its neighbour shows both
 lanes and the byte it covered. `pc` is the instruction that made the access, `SSSS:OOOOOOOO`, with
 `symbol` when a table places it. `time_s` is the emulated clock, `line` the beam's line computed as
-the light pen latches it, and `frame` is unavailable: DOS keeps no frame counter, as `run_for`
-says, and `line` is unavailable before the display has timed its first frame. A read capture
+the light pen latches it, and `frame` is unavailable: the debugger's `TAP` writes a row's time
+and line but not the frame count a stop reads, and `line` is unavailable before the display has
+timed its first frame. A read capture
 on code also sees the instruction fetches of that byte.
 
 **What a survey and a listing say.** Each count or capture carries `tally_id` (the debugger's
@@ -446,8 +447,8 @@ Example, from a live run:
         "available": false,
         "why": "a DOS machine has one cpu, and every row acts on it"
       },
-      "created_at": "2026-10-27T01:04:36+00:00",
-      "origin": "2026-10-27T01:04:23+00:00#16647.1",
+      "created_at": "2026-10-27T06:58:03+00:00",
+      "origin": "2026-10-27T06:57:59+00:00#18331.1",
       "inherited": false,
       "age_s": 0,
       "entry": "BP 0000:0002",

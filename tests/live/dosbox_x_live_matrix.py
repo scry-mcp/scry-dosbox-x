@@ -20,6 +20,7 @@ import matrix_arguments  # noqa: F401
 import matrix_captures  # noqa: F401
 import matrix_code  # noqa: F401
 import matrix_comment_tools  # noqa: F401
+import matrix_control  # noqa: F401
 import matrix_dos_real16  # noqa: F401
 import matrix_dos_real16_alt  # noqa: F401
 import matrix_dpmi  # noqa: F401

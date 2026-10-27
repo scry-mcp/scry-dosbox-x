@@ -153,7 +153,7 @@ def session_conf(program: Program, into: Path) -> Path:
 
     The stub goes before the first `set PATH`, which drops Z: (where MOUNT lives)."""
     text = (program.root / program.run_conf).read_text(encoding="utf-8")
-    stub = f'mount g "{STUB_DIR}"\nG:\\INJECT.COM\n'
+    stub = f'mount g "{STUB_DIR}"\nG:\\SCRY.COM\n'
     # functions, not strings: `re` reads a backslash in a replacement as an escape
     edits: list[tuple[str, Callable[[re.Match[str]], str], int]] = [
         (rf"(?im)^{re.escape(program.launch)}\s*$", lambda _m: "", 0),

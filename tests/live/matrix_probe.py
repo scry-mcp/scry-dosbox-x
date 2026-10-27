@@ -422,10 +422,11 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                        "declaration_list watch docstring"),
         "declaration_clear watch": (lambda r: ok(r) and r.get("declarations_cleared") == 1,
                         "declaration_clear watch docstring"),
-        "send_keys": (lambda r: refused(r, "not_running"),
-                      "send_keys docstring: refused on a machine stopped at the debugger"),
-        "send_mouse": (lambda r: refused(r, "not_running"),
-                       "send_mouse docstring: refused on a machine stopped at the debugger"),
+        # A stopped machine is posted to by retraces, through the stub this guest never loads.
+        "send_keys": (lambda r: refused(r, "no_channel") and "STUB" in str(r.get("message")),
+                      "send_keys docstring: Refused: no stub"),
+        "send_mouse": (lambda r: refused(r, "no_channel") and "STUB" in str(r.get("message")),
+                       "send_mouse docstring: Refused: no stub"),
         # Before it, this state's order has `memdump`, `map_write(method="save")` and others write
         # files, so the
         # list is not empty, and a session started without `capture_video` lists no video.
@@ -849,7 +850,7 @@ def _b_serial() -> None:
     boot(conf=conf_with_stub(PROBE_CONF, "PROBE.COM"), input_port=free_port())
     into_dos()
     release_running()
-    must(M.call(server.log_wait, pattern=r"STUB  \. inject device=present", channel="guest",
+    must(M.call(server.log_wait, pattern=r"STUB  \. scry device=present", channel="guest",
                 seconds=30), "the stub's announce")
     M.setup()
     r = M.call(server.send_keys, keys=["a"] * 64)
@@ -1001,10 +1002,10 @@ def section_b() -> None:
     judged("B breakpoint_interrupt number=0x100", reply=r, holds=_bad(r))
     r = M.call(server.breakpoint_interrupt, number=0x21, ah=0x100)
     judged("B breakpoint_interrupt ah=0x100", reply=r, holds=_bad(r))
-    # THE TOP passes the argument check and meets the machine (stopped here); one past it and
+    # THE TOP passes the argument check and meets the session (no stub here); one past it and
     # the overflow are refused before anything is asked of it.
     r = M.call(server.send_mouse, x=32767, y=0, units="mouse")
-    judged("B send_mouse x=32767", reply=r, holds=refused(r, "not_running"))
+    judged("B send_mouse x=32767", reply=r, holds=refused(r, "no_channel"))
     for x, label in ((32768, "B send_mouse x=32768"), (HUGE, "B send_mouse x=2**31")):
         r = M.call(server.send_mouse, x=x, y=0, units="mouse")
         judged(label, reply=r, holds=_bad(r))

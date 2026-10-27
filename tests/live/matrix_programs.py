@@ -98,7 +98,7 @@ def refused_on_the_dynamic_core(label: str) -> None:
 
 def stub_cell(label: str) -> bool:
     """No STUB line means the conf never ran it: BLOCKED."""
-    r = M.call(server.log, pattern=r"STUB\s+\.\s+inject device=", channel="guest", limit=5)
+    r = M.call(server.log, pattern=r"STUB\s+\.\s+scry device=", channel="guest", limit=5)
     lines = [str(x) for x in r.get("lines") or []]
     if ok(r) and not lines:
         M.block(label, NO_STUB)

@@ -63,7 +63,7 @@ def test_a_session_conf_runs_the_stub_before_the_path_and_launches_nothing(
     out = bp.session_conf(bp.DOS_REAL16, tmp_path / "scratch")
     assert out.parent == tmp_path / "scratch"
     assert out.read_text().split("[autoexec]\n")[1] == (
-        f'mount c "."\nmount g "{bp.STUB_DIR}"\nG:\\INJECT.COM\nset PATH=C:\\UTILS\nc:\n'
+        f'mount c "."\nmount g "{bp.STUB_DIR}"\nG:\\SCRY.COM\nset PATH=C:\\UTILS\nc:\n'
         "cd SOURCE\n\n")
 
 

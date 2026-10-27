@@ -124,8 +124,9 @@ def test_the_listing_is_read_into_both_controllers_and_sixteen_lines() -> None:
     read = hardware.parse_pic(PIC_LISTING)
     assert [c["controller"] for c in read["controllers"]] == ["master", "slave"]
     assert read["controllers"][1]["vector_base"] == "0x70"
-    # `pic.cpp` writes 8 when its in-service register is empty: no line, never a ninth one.
-    assert [c["active_irq"] for c in read["controllers"]] == [None, None], read["controllers"]
+    # `pic.cpp` writes 8 when its in-service register is empty: no line, never a ninth one, and
+    # no reply carries a null.
+    assert all(c["active_irq"]["available"] is False for c in read["controllers"]), read
     by = {r["irq"]: r for r in read["irqs"]}
     assert len(by) == 16 and by[0]["requested"] and by[0]["masked"] and by[2]["cascade"]
     assert [i for i, r in by.items() if r["masked"]] == [0, 3, 5, 6, 7, 10, 11]

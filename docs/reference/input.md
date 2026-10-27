@@ -4,13 +4,15 @@ Every input goes in inside the machine and nothing about the host is touched ([R
 
 ### The route
 
-The emulator's COM1 is a TCP client of a port the session listens on (`input_port`; transparent, so a byte 0xFF is data) and DOSBox-X's integration device is switched on, both as `-set` overrides the conf need not carry. A resident stub, `guest/INJECT.COM` (its header is the protocol), takes each command off the socket on the UART's own interrupt and carries it out in the guest. A game that takes the timer for itself (INT 08h with no chain to the BIOS, so INT 1Ch never runs again) still gets its input this way, unless it also masks IRQ 4 at the PIC. The host sends the commands a BIOS tick apart, so a game that reads its keys once a frame sees the make before the break.
+The emulator's COM1 is a TCP client of a port the session listens on (`input_port`; transparent, so a byte 0xFF is data) and DOSBox-X's integration device is switched on, both as `-set` overrides the conf need not carry. A resident stub, `guest/SCRY.COM` (its header is the protocol), takes each command off the socket on the UART's own interrupt and carries it out in the guest. A game that takes the timer for itself (INT 08h with no chain to the BIOS, so INT 1Ch never runs again) still gets its input this way, unless it also masks IRQ 4 at the PIC. The host sends the commands a BIOS tick apart, so a game that reads its keys once a frame sees the make before the break.
+
+**A stopped machine is run by retraces until the stub takes each command.** An input sent while the guest runs lands at whatever instant the wall clock delivers it, which no replay can find again. Sent to a parked machine, each command goes down the link and the machine runs one retrace at a time until the stub acknowledges it, the commands a BIOS tick of the guest's own clock apart, and it is left stopped at a retrace: the reply counts those retraces in `polls`, as `run_for` does, and carries the stop, its `frame` among it and its `e9` holding what the guest wrote on every retrace (the watches as the last one read them), so a session's export keeps the input as a step its replay holds to. A declared code breakpoint that stops one of those retraces ends the post there (`wait_stopped`, with the commands acknowledged before it in); a change-watch's or an interrupt breakpoint's stop cannot be told from a retrace, as with `run_for`, and counts as one. An `expect` is then waited for the same way, a retrace per look, and its `seconds` are the guest's own, so a replay that misses runs the same retraces the session did.
 
 Each command is a numbered, checked frame, acknowledged on the same link before the next goes, so the guest sets the pace; a lost byte is sent again, a lost acknowledgement never runs a command twice. The pointer's report comes back on the serial link, never on the E9, where it could land inside a line the program was writing.
 
 The conf owes the route one line: its autoexec runs the stub before the program. A session started with `program` needs none: `start` loads the stub itself, on the first drive from Y: down that `[autoexec]` does not mount (a conf mounting them all is refused). A conf that configures `serial1` itself loses it to the route.
 
-The stub announces itself on the E9 (`STUB  . inject device=present proto=4`), and the first input refuses (`no_channel`) when that line is missing or the protocol differs, because an older stub would read the frames as other commands. Without a `logfile` there is no line to read and input goes out on the conf's word.
+The stub announces itself on the E9 (`STUB  . scry device=present proto=5 motion=1`), and the first input refuses (`no_channel`) when that line is missing or the protocol differs, because an older stub would read the frames as other commands. `motion` says whether the build's device takes relative motion (below). Without a `logfile` there is no line to read and input goes out on the conf's word.
 
 ### An input that went in is not one the program took
 
@@ -30,16 +32,19 @@ The stub announces itself on the E9 (`STUB  . inject device=present proto=4`), a
 send_keys(keys, modifiers=null, expect="", seconds=null)
 ```
 
-Send keystrokes to the running guest; with `expect`, prove the program took them.
+Send keystrokes to the guest; with `expect`, prove the program took them.
 
 `keys`: at most 64. `expect`: a regex over the E9 log the program's
-reaction writes, waited up to `seconds` (default 10).
+reaction writes, waited up to `seconds` (default 10). A stopped machine is
+run retrace by retrace until the stub takes each key, and left stopped at a retrace; its
+`expect` waits `seconds` of the guest's own time.
 
-Refused: an unknown key or modifier, `seconds` without `expect`, a stopped machine, no
-stub (`no_channel`).
+Refused: an unknown key or modifier, `seconds` without `expect`, no stub, a stopped
+machine on a build with no `RUNSTATE` (`no_channel`).
 
 Reply: `route`, `posted`, `bytes`, `frames` (stub commands, a BIOS tick apart), `verify`
-(`verdict` `TARGET` or `TIMEOUT`, `seen`).
+(`verdict` `TARGET` or `TIMEOUT`, `seen`); from a stopped machine `polls` and the stop
+it was left at (the stop: `pc` (`SSSS:OOOOOOOO`), `cpu_mode`, `stop_seq`, `frame`, `instruction`, `regs`, `watches`, `cause` and `e9`).
 
 Reference: REFERENCE.md, Input and the screen.
 
@@ -52,6 +57,16 @@ Reference: REFERENCE.md, Input and the screen.
 
 | reply field | type |
 |---|---|
+| `cause` | string |
+| `cpu_mode` | string or object |
+| `e9` | object |
+| `frame` | integer or object |
+| `instruction` | object |
+| `pc` | string or object |
+| `polls` | integer |
+| `regs` | object |
+| `stop_seq` | integer |
+| `watches` | array |
 | `bytes` | integer |
 | `delivered` | boolean |
 | `frames` | integer |
@@ -160,7 +175,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end send_keys -->
 
-`send_keys` composes scan code set 1 on the host; a DOS keyboard has no command key, and `cmd` is refused by name. The 64-key ceiling is because every scan byte is a frame, a BIOS tick after the last, under the session's lock. A key sent to a stopped machine is refused because the bytes would land, unannounced, at the next resume.
+`send_keys` composes scan code set 1 on the host; a DOS keyboard has no command key, and `cmd` is refused by name. The 64-key ceiling is because every scan byte is a frame, a BIOS tick after the last, under the session's lock. A key sent to a stopped machine runs it by retraces until the stub takes it (The route, above), rather than leaving the bytes to land, unannounced, at the next resume.
 
 A stop during the `expect` wait is INVALID (`wait_stopped`) with `last_stop`. `verify` also carries `line`, `note`, `waited_s`, `seen_before_waiting`, `lines_before`, `lines_total` and, on a `TIMEOUT`, `arrived_during`; `checked: false` when no `expect` was given. With no `logfile` there is no stub announce to read, so the keys go out unchecked.
 
@@ -177,14 +192,16 @@ Move the guest's mouse pointer, press buttons, and read the pointer back; `expec
 proves the program reacted, as in `send_keys`.
 
 `x`, `y`: both or neither, in `units`. `target`: a control of the latest `map_find` screen,
-instead of `x`, `y`. A drag is `down`, a move, `up`.
+instead of `x`, `y`. A drag is `down`, a move, `up`. A stopped machine is run as for
+`send_keys`.
 
-Refused: no move and no button, half a move, a place off the screen, a stopped machine, no
-stub; `target` beside `x`, `y` or `units="mouse"` (`bad_argument`); no `map_find` match
-(`needs_call`); an unknown control (`unknown_ref`).
+Refused: no move and no button, half a move, a place off the screen, no stub, a stopped
+machine with no `RUNSTATE`; `target` beside `x`, `y` or `units="mouse"` (`bad_argument`);
+no `map_find` match (`needs_call`); an unknown control (`unknown_ref`).
 
-Reply: `route`, `pointer`, `arrived` (else `asked`), `verify`; with `target`: `target`,
-`screen`, `identified_at_stop`.
+Reply: `route`, `pointer`, `arrived` (else `asked`), `motion` (a move reached the motion
+counters too), `verify`; with `target`: `target`, `screen`, `identified_at_stop`; from a
+stopped machine, `send_keys`' `polls` and stop.
 
 Reference: REFERENCE.md, Input and the screen.
 
@@ -201,12 +218,23 @@ Reference: REFERENCE.md, Input and the screen.
 
 | reply field | type |
 |---|---|
+| `cause` | string |
+| `cpu_mode` | string or object |
+| `e9` | object |
+| `frame` | integer or object |
+| `instruction` | object |
+| `pc` | string or object |
+| `polls` | integer |
+| `regs` | object |
+| `stop_seq` | integer |
+| `watches` | array |
 | `action` | string |
 | `arrived` | boolean |
 | `asked` | object |
 | `button` | string |
 | `delivered` | boolean |
 | `identified_at_stop` | integer or object |
+| `motion` | boolean or object |
 | `pointer` | object |
 | `route` | string |
 | `screen` | string |
@@ -250,6 +278,7 @@ Example, from a live run:
     "bios_mode": "0x03"
   },
   "arrived": true,
+  "motion": true,
   "verify": {
     "checked": false,
     "why": "no `expect` was given, so the reply says what went into the guest and NOT that the program took it; pass expect=<E9 pattern> to confirm its reaction"
@@ -258,9 +287,9 @@ Example, from a live run:
 ```
 <!-- scry-reference:end send_mouse -->
 
-**The pointer is set and read back, not moved.** The device's motion registers feed DOSBox-X's relative motion, which the driver scales by its mickey ratio and sensitivity, so one delta lands at a different distance per mode and axis. INT 33h AX=04h places the pointer where asked, and the reply reports the guest's answer rather than rounding it away: a text mode snaps to its cell and a program's own range clamps.
+**The pointer is moved, then set.** Many games never ask where the pointer is: they read the driver's motion counters (INT 33h AX=0Bh), take its movement events (a handler installed with AX=0Ch), or drive a PS/2 mouse of their own through the BIOS. Setting the pointer (AX=04h) moves none of them, and DOSBox-X counts the host's motion only while the host mouse is captured, which no session does. So the stub first injects the move as relative motion through the integration device, in steps of a signed byte in the driver's units, which reaches a PS/2 mouse the program drives or, with none, the counters, the movement events and the position, whether or not anything is captured; AX=04h then lands the pointer exactly (a PS/2 mouse gets the motion as DOSBox-X scales it for its resolution, so a step of a few units can reach it as none), and the reply reports the guest's answer rather than rounding it away: a text mode snaps to its cell and a program's own range clamps. `motion` is `true` when the move went in as motion too; a build whose device takes none (the stub asks it once, at load) places the pointer only, and `motion` says why a program that reads motion saw nothing.
 
-**Not reached:** a mouse driver loaded inside the guest, a program reading the PS/2 port directly, and one reading the driver's motion counters (INT 33h AX=0Bh): setting the pointer produces no motion, and DOSBox-X counts motion only while the host mouse is captured.
+**Not reached:** a mouse driver loaded inside the guest, which reads its own hardware rather than DOSBox-X's driver.
 
 `target` is explained in [Screen maps](files.md#screen-maps).
 
@@ -331,19 +360,19 @@ Example, from a live run:
         "reply": {
           "summary": "status: alive, stopped",
           "status": "ok",
-          "pid": 16691,
-          "conf": "$TMPDIR/dosbox-x-live-job-2pzcvbld/A/tests/guest/probe.conf",
+          "pid": 18391,
+          "conf": "$TMPDIR/dosbox-x-live-job-vpw7rzm6/A/tests/guest/probe.conf",
           "conf_digest": "78bdc38f360b9b4a",
           "bound_s": 1200,
-          "elapsed_s": 14.1,
+          "elapsed_s": 4.3,
           "captures": "off",
-          "state_dir": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n962-save",
+          "state_dir": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n962-save",
           "last_stop": {
             "stop_seq": 11,
             "pc": "0814:00000130",
-            "cause": "no declared code breakpoint at 0814:00000130: the debugger keeps no hit flag and a memory watch stops at the instruction that wrote, so which declaration fired cannot be told",
-            "since_s": 1.5,
-            "wall_at": "2026-10-27T01:04:36+00:00"
+            "cause": "the retrace run_for ran to, at 0814:00000130",
+            "since_s": 0.1,
+            "wall_at": "2026-10-27T06:58:03+00:00"
           },
           "pending": {
             "arm": [],
@@ -384,7 +413,7 @@ Example, from a live run:
   "looked": {
     "guest": {
       "available": true,
-      "since_mark": 40918,
+      "since_mark": 99428,
       "lines_written": 0,
       "lines_total": 0,
       "truncated": false,

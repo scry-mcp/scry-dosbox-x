@@ -24,7 +24,7 @@ TAP = "TAP"
 #: The debugger's `TAP_ROWS_MAX`: past it a row is counted only.
 ROWS_MAX = 100_000
 DATA_WIDTH, ENDIANNESS = 32, "little"
-NO_FRAME_WHY = "a DOS machine keeps no frame counter a tap could read"
+NO_FRAME_WHY = "the debugger's `TAP` writes a row's time and line, not its frame"
 NO_LINE_WHY = "the display had timed no frame yet when the access was made"
 DISPLACED_WHY = ("the page's handler was replaced since the tap went in (a video mode set remaps "
                  "video memory): the tap sees nothing more; declare it again to tap the page as it "

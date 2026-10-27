@@ -60,10 +60,20 @@ def test_three_frames_land_three_retraces_with_the_whole_stop_reply(tmp_path: Pa
     assert got["emulated_before_s"] == pytest.approx(0.0007)
     assert got["emulated_after_s"] == pytest.approx(0.0007 + 3 * FRAME_MS / 1000)
     assert got["frame_before"]["available"] is False and got["frame_after"]["available"] is False
+    assert "prints no `frames=`" in got["frame"]["why"], got["frame"]
     assert "normal core" in got["cycles"]["why"], got
     assert got["regs"] and "cause" in got and "e9" in got and "stop_seq" in got
     assert got["session"]["altered"] is False, "advancing is not writing"
     assert got["summary"].startswith("run_for 3 frames: ELAPSED"), got["summary"]
+    assert "cannot be told" in got["cause"], "with no frame counted, no retrace is proved"
+
+
+def test_a_build_that_counts_frames_places_the_run_and_its_stop_by_frame(tmp_path: Path) -> None:
+    machine = frames(3)
+    machine.frames = 100
+    live(machine, tmp_path)
+    got = cast(dict[str, Any], server.run_for(frames=3))
+    assert (got["frame_before"], got["frame_after"], got["frame"]) == (100, 103, 103), got
     assert got["cause"] == "the retrace run_for ran to, at 0814:00000106", got["cause"]
 
 
@@ -186,6 +196,54 @@ def test_a_sequence_reads_whether_run_for_left_the_machine_running() -> None:
     assert _leaves_running("run_for", {"verdict": "TIMEOUT", "stop_seq": 3}) is False
     assert _leaves_running("run_for", {"enrichment": {"available": False, "why": "cut"}}) is False
     assert _leaves_running("registers", {}) is False
+
+
+def _counting(n: int, at: int, tmp_path: Path) -> Machine:
+    machine = frames(n)
+    machine.frames = at
+    return live(machine, tmp_path)
+
+
+def test_a_stop_that_crossed_no_frame_is_not_named_the_retrace(tmp_path: Path) -> None:
+    """An INT 3 under `break_on_int3`, or a raw `BP`, stops it short of the frame: no
+    declaration explains it, and the frame that did not move says it was no retrace."""
+    machine = frames(0)
+    machine.releases = [Stop(ms=FRAME_MS, frames=0)]
+    machine.frames = 100
+    live(machine, tmp_path)
+    got = cast(dict[str, Any], server.run_for(frames=1))
+    assert got["frame"] == 100 and "ran to" not in got["cause"], got["cause"]
+
+
+def test_a_stop_recorded_without_its_reply_carries_no_earlier_stop_s_frame(
+        tmp_path: Path) -> None:
+    _counting(3, 100, tmp_path)
+    assert server.run_for(frames=1)["frame"] == 101
+    session = dstate.STATE.session
+    assert session is not None
+    dstate.STATE.remember_stop(session, {"cs": "0814", "eip": "00000108", "mode": "Real"}, {},
+                               [], {"attributed": False})
+    assert "frame" not in dstate.STATE.last_stop, dstate.STATE.last_stop["frame"]
+
+
+def test_until_frame_repeats_the_list_until_a_stop_reads_the_frame(tmp_path: Path) -> None:
+    _counting(10, 100, tmp_path)
+    got = cast(dict[str, Any], server.perform(steps=[{"op": "run_for", "frames": 1}],
+                                              summaries=True, until_frame=104))
+    assert got["status"] == "ok", got
+    assert (got["until_frame"], got["frame_reached"], got["steps_completed"]) == (104, 104, 4)
+    assert "frame 104 of 104" in got["summary"], got["summary"]
+
+
+def test_until_frame_refuses_a_frame_behind_and_a_build_that_counts_none(tmp_path: Path) -> None:
+    _counting(3, 100, tmp_path)
+    behind = cast(dict[str, Any], server.perform(steps=[{"op": "run_for", "frames": 1}],
+                                                 summaries=True, until_frame=100))
+    assert behind["code"] == "bad_argument" and "stands at frame 100" in behind["message"]
+    live(frames(3), tmp_path)
+    blind = cast(dict[str, Any], server.perform(steps=[{"op": "run_for", "frames": 1}],
+                                                summaries=True, until_frame=5))
+    assert blind["code"] == "no_channel" and "frames=" in blind["message"], blind
 
 
 def test_perform_goes_on_at_once_after_a_run_for_its_bound_interrupted(tmp_path: Path) -> None:

@@ -1,10 +1,11 @@
-"""The host half of the stub's serial protocol; the framing contract is `guest/inject.asm`."""
+"""The host half of the stub's serial protocol; the framing contract is `guest/scry.asm`."""
 
 from __future__ import annotations
 
 import socket
 import time
 from collections.abc import Callable
+from typing import Protocol
 
 from scry_core import cancel
 from scry_core.reply_contract import Invalid
@@ -20,6 +21,19 @@ SENDS = 3
 FRAME_SPACING_S = 0.055
 #: Read slice, so a cancel is noticed between reads.
 READ_SLICE_S = 0.1
+#: A parked machine, run by retraces: the most a frame's acknowledgement may take, the same tick
+#: in the guest's clock, and the read after each retrace.
+ACK_RETRACES = 8
+FRAME_SPACING_MS = FRAME_SPACING_S * 1000
+AFTER_RETRACE_S = 0.02
+
+
+class Advance(Protocol):
+    """One retrace of the parked machine, returning `clock_ms`, its emulated milliseconds."""
+
+    clock_ms: float
+
+    def __call__(self) -> float: ...
 
 
 def frame(seq: int, command: bytes) -> bytes:
@@ -33,7 +47,8 @@ def frame(seq: int, command: bytes) -> bytes:
 
 class Link:
     """One session's serial link to the stub. `parked` says whether the machine is at the
-    debugger, where the guest runs nothing and so no acknowledgement can come."""
+    debugger, where the guest runs nothing and so no acknowledgement comes unless a send's
+    `advance` runs it."""
 
     def __init__(self, sock: socket.socket, parked: Callable[[], bool] = lambda: False) -> None:
         self.sock = sock
@@ -43,13 +58,30 @@ class Link:
         self._acked_at = -FRAME_SPACING_S
         # False after a state load: the stub's sequence is unknown, so a report proves it first.
         self.proved = True
+        self._advance: Advance | None = None
+        self._clock_ms = 0.0
+        self._acked_ms: float | None = None
 
     def unprove(self) -> None:
         """The stub's memory was replaced (a state loaded)."""
         self.proved = False
 
-    def send(self, commands: list[bytes]) -> list[str]:
-        """Send in order; return the `R` report lines. A refusal says how many were acked."""
+    def send(self, commands: list[bytes], advance: Advance | None = None) -> list[str]:
+        """Send in order; return the `R` report lines. A refusal says how many were acked.
+        `advance` runs a parked machine until each is acknowledged."""
+        self._advance = advance
+        if advance is not None:
+            # The guest's clock alone, so a replay takes these retraces; one behind the last
+            # frame's was put back by a load, with nothing to wait out.
+            self._clock_ms = advance.clock_ms
+            if self._acked_ms is not None and self._clock_ms < self._acked_ms:
+                self._acked_ms = None
+        try:
+            return self._send(commands)
+        finally:
+            self._advance = None
+
+    def _send(self, commands: list[bytes]) -> list[str]:
         reports: list[str] = []
         acknowledged = 0
         if not self.proved:
@@ -70,9 +102,7 @@ class Link:
     def _deliver(self, command: bytes) -> None:
         """Return once the command has run (by this send or an earlier one); else refuse."""
         seq = self._next()
-        while (left := self._acked_at + FRAME_SPACING_S - time.monotonic()) > 0:
-            cancel.check()
-            time.sleep(min(left, READ_SLICE_S))
+        self._space()
         for sent in range(SENDS):
             self._write(frame(seq, command))
             carried = self._acknowledged(seq, command[0])
@@ -80,13 +110,25 @@ class Link:
                 continue
             if carried or sent:
                 self._acked_at = time.monotonic()
+                self._acked_ms = self._clock_ms if self._advance is not None else None
                 return
             # First send answered as a repeat (state loaded from another session): resend.
             seq = self._next()
+        each = (f"{ACK_RETRACES} retraces" if self._advance is not None else f"{ACK_WAIT_S}s")
         raise Invalid("host_failed",
             f"no acknowledgement of a {chr(command[0])!r} command after {SENDS} sends, "
-            f"{ACK_WAIT_S}s each: a guest that masked IRQ 4 and its timer, a stub "
+            f"{each} each: a guest that masked IRQ 4 and its timer, a stub "
             f"that dropped every frame, or one that is gone, which this cannot tell apart")
+
+    def _space(self) -> None:
+        """A frame's distance from the last one."""
+        if self._advance is not None:
+            while self._acked_ms is not None and self._clock_ms - self._acked_ms < FRAME_SPACING_MS:
+                self._clock_ms = self._advance()
+            return
+        while (left := self._acked_at + FRAME_SPACING_S - time.monotonic()) > 0:
+            cancel.check()
+            time.sleep(min(left, READ_SLICE_S))
 
     def _next(self) -> int:
         """1 to 255: the stub starts at 0, which no frame carries."""
@@ -104,6 +146,7 @@ class Link:
     def _acknowledged(self, seq: int, op: int) -> bool | None:
         """Whether the frame was carried out, None if no acknowledgement came in time."""
         deadline = time.monotonic() + ACK_WAIT_S
+        retraces = 0
         while True:
             at = self._pending.find(ACK)
             if at >= 0 and len(self._pending) >= at + 4:
@@ -113,22 +156,40 @@ class Link:
                     return bool(got[3])
                 del self._pending[:at + 1]               # a late twin of an earlier ack
                 continue
+            if self._advance is not None:
+                if retraces == ACK_RETRACES:
+                    return None
+                self._clock_ms = self._advance()
+                retraces += 1
+                self._read(time.monotonic() + AFTER_RETRACE_S, parked_ok=True)
+                continue
             if not self._read(deadline):
                 return None
 
     def _line(self) -> str:
-        """The report line that follows an acknowledgement."""
+        """The report line after an acknowledgement; a parked stop can fall mid-line."""
         deadline = time.monotonic() + ACK_WAIT_S
+        retraces = 0
         while (end := self._pending.find(b"\r\n")) < 0:
-            if not self._read(deadline):
-                raise Invalid("host_failed",
-                    f"the stub acknowledged a report and sent no line within {ACK_WAIT_S}s")
+            if self._advance is not None:
+                if self._read(time.monotonic() + AFTER_RETRACE_S, parked_ok=True):
+                    continue
+                if retraces < ACK_RETRACES:
+                    self._clock_ms = self._advance()
+                    retraces += 1
+                    continue
+            elif self._read(deadline):
+                continue
+            raise Invalid("host_failed", "the stub acknowledged a report and sent no line "
+                          "within " + (f"{ACK_RETRACES} retraces" if self._advance is not None
+                                       else f"{ACK_WAIT_S}s"))
         line = bytes(self._pending[:end]).decode("ascii", "replace")
         del self._pending[:end + 2]
         return line
 
-    def _read(self, deadline: float) -> bool:
-        """Append what the stub sent; False once `deadline` passed with nothing new."""
+    def _read(self, deadline: float, parked_ok: bool = False) -> bool:
+        """Append what the stub sent; False once `deadline` passed with nothing new.
+        `parked_ok`: the caller advances the parked machine itself."""
         while (left := deadline - time.monotonic()) > 0:
             cancel.check()
             self.sock.settimeout(min(left, READ_SLICE_S))
@@ -137,7 +198,7 @@ class Link:
             except TimeoutError:
                 # Park is named only once the line is empty: an ack sent just before the park
                 # is read first, or its command would be resent.
-                if self.parked():
+                if not parked_ok and self.parked():
                     raise Invalid("wait_stopped", "the machine stopped at the debugger while "
                                   "the stub's answer was awaited: the stub runs inside the "
                                   "machine, and a stopped machine runs nothing") from None

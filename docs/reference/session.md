@@ -41,9 +41,9 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "build_check: ~/.local/state/dosbox-x-builds/scry-5bebee01b/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
+  "summary": "build_check: ~/.local/state/dosbox-x-builds/scry-778a87333/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
   "status": "ok",
-  "binary": "~/.local/state/dosbox-x-builds/scry-5bebee01b/dosbox-x",
+  "binary": "~/.local/state/dosbox-x-builds/scry-778a87333/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
   "debugger": true,
@@ -187,36 +187,36 @@ Example, from a live run:
 
 ```json
 {
-  "conf": "$TMPDIR/dosbox-x-live-job-2pzcvbld/A/tests/guest/probe.conf",
-  "cwd": "$TMPDIR/dosbox-x-live-job-2pzcvbld/A/tests/guest",
+  "conf": "$TMPDIR/dosbox-x-live-job-vpw7rzm6/A/tests/guest/probe.conf",
+  "cwd": "$TMPDIR/dosbox-x-live-job-vpw7rzm6/A/tests/guest",
   "session_seconds": 1200,
-  "logfile": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n961.log",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n962-save"
+  "logfile": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n961.log",
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n962-save"
 }
 ```
 
 ```json
 {
-  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry-5bebee01b/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.161s",
+  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry-778a87333/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.159s",
   "status": "ok",
-  "pid": 16691,
-  "conf": "$TMPDIR/dosbox-x-live-job-2pzcvbld/A/tests/guest/probe.conf",
+  "pid": 18391,
+  "conf": "$TMPDIR/dosbox-x-live-job-vpw7rzm6/A/tests/guest/probe.conf",
   "conf_digest": "78bdc38f360b9b4a",
   "bound_s": 1200,
-  "elapsed_s": 0.5,
+  "elapsed_s": 0.7,
   "captures": "off",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n962-save",
-  "ready_after_s": 0.161,
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-82ee6fdd8370/jobs-scratch/A/n962-save",
+  "ready_after_s": 0.159,
   "argv": [
-    "~/.local/state/dosbox-x-builds/scry-5bebee01b/dosbox-x",
+    "~/.local/state/dosbox-x-builds/scry-778a87333/dosbox-x",
     "-conf",
-    "$TMPDIR/dosbox-x-live-job-2pzcvbld/A/tests/guest/probe.conf",
+    "$TMPDIR/dosbox-x-live-job-vpw7rzm6/A/tests/guest/probe.conf",
     "-time-limit",
     "1200",
     "-break-start",
     "... 20 more"
   ],
-  "binary": "~/.local/state/dosbox-x-builds/scry-5bebee01b/dosbox-x",
+  "binary": "~/.local/state/dosbox-x-builds/scry-778a87333/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
   "debugger_commands": [
@@ -228,8 +228,8 @@ Example, from a live run:
     "PRESENCE",
     "... 5 more"
   ],
-  "stub": "/path/to/scry-dosbox-x/guest/INJECT.COM",
-  "input_port": 54204,
+  "stub": "/path/to/scry-dosbox-x/guest/SCRY.COM",
+  "input_port": 57966,
   "background": true,
   "presence": {
     "available": false,

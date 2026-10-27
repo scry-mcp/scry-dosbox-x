@@ -96,7 +96,7 @@ Every tool ends one of three ways, and one that declares no end ends `none`:
 | `kill` | the emulator closed; a close cancelled half-way still finishes | `start`, `close` |
 | `none` | the guest as the call found it | `build_check`, `status`, `log`, `log_wait`, `registers`, `read_memory`, `disassemble`, `call_stack`, `memdump`, `find`, `scan`, `debug`, `set_register`, `write`, `resume`, `step`, `state_write`, `snapshot`, `state_list`, `breakpoint_interrupt`, `regpoint_add`, `symbols_load`, `symbols_find`, `comment_write`, `comment_list`, `machine_map`, `interrupt_vectors`, `palette`, `screen_view`, `screen_signature`, `map_write`, `map_find`, `series_capture`, `image_compare`, `breakpoint_at`, `declaration_list`, `declaration_clear`, `watch_add`, `send_keys`, `send_mouse`, `captures`, `capture_frame`, `perform_export`, `drive`, `port`, `pic`, `a20`, `guest_file` |
 
-Any other tool that meets a cancel ends `none`.
+Any other tool that meets a cancel ends `none`. A `send_keys` or `send_mouse` sent to a stopped machine runs it by retraces, and a cancel among them leaves it stopped where it stands, with the commands acknowledged by then in.
 
 ## Names for addresses
 
@@ -184,7 +184,8 @@ The tools: [Advance](docs/reference/advance.md).
 Every stop (`resume`, `step`, `run_to`, `run_for`, `trace`, `stop`, `screen_wait`, and the tail of
 a `perform`) carries the same block: `stop_seq` (the one `last_stop` names), `pc`, `cpu_mode`
 (`real`, `protected`, `paged` or `VM86`, off CR0's protection and paging bits and EFLAGS' VM bit),
-the `instruction`, `regs`, the watches, `cause` and `e9`.
+`frame` (the display frames since power-on), the `instruction`, `regs`, the watches, `cause` and
+`e9`.
 
 The stop is read with one `EV` of every register, the flags and CR0, plus `SELINFO CS` in
 protected mode, whose D bit says `Pr16` or `Pr32`. The `instruction` is decoded as `disassemble`
@@ -194,7 +195,9 @@ The nearest symbol in protected mode costs one `SELINFO CS` and only with a tabl
 block is unavailable, with why, when no bytes could be read.
 
 `cause` names the declaration whose address it stopped at (several at one address are all named),
-a `run_to`'s own target, the caller's `stop`, or a retrace stop a `run_for` left armed. Else it is
+a `run_to`'s own target, the caller's `stop`, a retrace stop a `run_for` left armed, or, with
+nothing declared that could have stopped it, the bound a run ended at or the retrace it ran to
+(where the frame moved). Else it is
 an honest cannot-say: the debugger keeps no hit flag, and a memory watch stops at the instruction
 that WROTE.
 
@@ -289,7 +292,7 @@ Live, the bytes a listing shows are held to the memory `read_memory` reads.
 
 **Only whole lines are read, from a byte offset**. A log written through stdio ends mid-line between flushes, and a reader indexing by line number consumes an index on the fragment, so the completed line is never tested. Every ending of a wait takes one last read, since a line written between the emulator check and the deadline would never be looked for.
 
-**A wait on a machine stopped at the debugger ends at once**, refused with the position: a stopped guest writes nothing, and expiry would blame the program. The check is the debugger's `RUNSTATE`, asked at every poll, so a stop landing during the wait comes back as the stop, not "still running", which would have the next key refused for it.
+**A wait on a machine stopped at the debugger ends at once**, refused with the position: a stopped guest writes nothing, and expiry would blame the program. The check is the debugger's `RUNSTATE`, asked at every poll, so a stop landing during the wait comes back as the stop, not "still running".
 
 **The emulator's own categories are chosen at `start`** (`log_categories`, a `[log]` category and its level) and land in the `emulator` channel. They say what the emulator did, in its words; a category at `debug` writes a line per event (`files` one per read call), so turn on what the question needs.
 
@@ -331,7 +334,7 @@ uv run python -m scry_core.replay <document> [--binary PATH] [--transcript PATH]
 
 It exits 0 when every step held; 1 when a step diverged or failed; 2 on a usage error; 3 when nothing was demonstrated (not a document, no `recorded` answer, a start refused, a saved state or declarations the replay lacks, a server that broke). A replay is deterministic on a conf with fixed cycles (`cycles=fixed <n>`); under `cycles=max` the guest's clock follows the host's.
 
-A step that left the guest at a new stop holds to the `regs` its reply carries (a `state_write(method="load")` answers none, so it holds to nothing); a `debug` line is never held to its answer, which is the debugger's. The document ends where no replay can reach what follows: whatever ends a run stops the guest at a place no replayed advance reaches, and every later stop inherits the shift; a step that wrote a file the session named (`dest`) would find it there on replay. `needs.states` lists the saved states it loads and does not save, checked before anything plays; `needs.declarations` what the store held as the recorded `start` began, since a `start` re-arms what it finds stored for the conf. The document carries the `start`'s arguments as given, host paths included.
+A step that left the guest at a new stop holds to the `regs` and the `frame` its reply carries (a `state_write(method="load")` answers none, so it holds to nothing); a `debug` line is never held to its answer, which is the debugger's. The document ends where no replay can reach what follows: whatever ends a run stops the guest at a place no replayed advance reaches, and every later stop inherits the shift, so the cut says how many frames that run took: `run_for` with that many frames replays it up to the start of the frame it stopped in; input sent to a stopped machine runs it by retraces instead, and stays in; a step that wrote a file the session named (`dest`) would find it there on replay. `needs.states` lists the saved states it loads and does not save, checked before anything plays; `needs.declarations` what the store held as the recorded `start` began, since a `start` re-arms what it finds stored for the conf. The document carries the `start`'s arguments as given, host paths included.
 
 The tool: [Lists](docs/reference/lists.md) (`perform_export`).
 
@@ -370,7 +373,7 @@ Some tools need a debugger command a build may lack; `build_check` lists the one
 
 | Command | What it gives | The tools that need it |
 | --- | --- | --- |
-| `RUNSTATE` | whether the debugger holds the machine, its cycle count and its emulated clock | `run_to`, `run_for`, `trace`, `screen_wait`, `step` with `mode="over"`, `resume` with a bound, and any reading after a release |
+| `RUNSTATE` | whether the debugger holds the machine, its cycle count, its emulated clock and the display frames since power-on (`frames=`) | `run_to`, `run_for`, `trace`, `screen_wait`, `step` with `mode="over"`, `resume` with a bound, input to a stopped machine, and any reading after a release; `frames=` gives every stop its `frame` and `perform` its `until_frame` |
 | `STEPIN` | one instruction run, synchronously | `step` |
 | `SAVESTATE`, `LOADSTATE` | a saved state | `state_write` |
 | `PRESENCE` | the orange edge drawn by the emulator | the presence indicator |
@@ -382,3 +385,5 @@ Some tools need a debugger command a build may lack; `build_check` lists the one
 | `DOSTRACE` | every INT 21h at entry and return, into a file | `log` and `log_wait` on the `dos` channel, `start(dos_calls=True)` |
 
 On a build without `RUNSTATE` a session starts, every reading answers at the stop `start` leaves, and input, captures and declarations work; `resume` with no bound releases the machine and says that nothing will tell when it stops again, and `stop` brings it back to the debugger wherever it is. No DOSBox-X release carries `RUNSTATE` yet.
+
+**One input capability is the integration device's, not the debugger's**: relative mouse motion (its inject register's sub-selector 0Ch), which the stub asks for at load and announces as `motion`. A build without it places the pointer and moves nothing a program that reads motion would see ([Input](docs/reference/input.md)).

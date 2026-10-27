@@ -40,8 +40,8 @@ A20_LINE = re.compile(r"^A20 gate is (ON|OFF)$")
 NONE_IN_SERVICE = 8
 
 
-def _in_service(line: int) -> int | None:
-    return None if line == NONE_IN_SERVICE else line
+def _in_service(line: int) -> int | dict[str, Any]:
+    return unavailable("no line is in service") if line == NONE_IN_SERVICE else line
 
 
 def _hex(value: int, bits: int) -> str:

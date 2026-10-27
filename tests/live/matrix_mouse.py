@@ -28,7 +28,7 @@ from matrix_common import (
 
 MOUSE_CONF = GUEST / "mouse.conf"
 MOUSE_PROGRAM = "MOUSE.COM"
-ANNOUNCE = rf"STUB  \. inject device=present proto={inputs.STUB_PROTOCOL}"
+ANNOUNCE = rf"STUB  \. scry device=present proto={inputs.STUB_PROTOCOL}"
 WAIT_S = 20
 #: The guest's line for a pointer at (x, y) in the driver's coordinates.
 POS = r"MOUSE \. pos x={x} y={y} "
@@ -37,9 +37,9 @@ P_CELLS = cells(
     ("P start loads the stub before the program, which announces our protocol",
      "REFERENCE.md, Input and the screen: `program` needs no conf line"),
     ("P a second copy the conf also runs stays out, and keys still arrive whole",
-     "guest/inject.asm: already resident; known: the guest logs `key=97` for a"),
+     "guest/scry.asm: already resident; known: the guest logs `key=97` for a"),
     ("P a second copy stays out though a TSR took INT 1Ch above the first",
-     "guest/inject.asm: IRQ 4's vector asked too; known: hook1c.com logs its hook"),
+     "guest/scry.asm: IRQ 4's vector asked too; known: hook1c.com logs its hook"),
     ("P a key reaches the guest: a is logged as key=97",
      "send_keys docstring; known: mouse.asm logs each key's ASCII"),
     ("P text mode: x=0 y=0 arrives, the driver at 0,0",
@@ -65,7 +65,7 @@ P_CELLS = cells(
     ("P snapshot headless: the stub's command writes a PNG, no window and no menu",
      "snapshot docstring: taken inside the guest, any session"),
     ("P a guest that owns INT 08 without chaining still takes a key and a click",
-     "guest/inject.asm: the UART's own interrupt; known: mouse.asm's o takes the timer"),
+     "guest/scry.asm: the UART's own interrupt; known: mouse.asm's o takes the timer"),
     ("P without a logfile the mouse and a key go in, the pointer off the stub's link",
      "REFERENCE.md, Input and the screen: the report rides the stub's own serial link"),
 )
@@ -214,17 +214,17 @@ def _twice(hooked: bool = False) -> None:
     behind it."""
     text = MOUSE_CONF.read_text(encoding="utf-8")
     hook = "C:\\HOOK1C.COM\n" if hooked else ""
-    stub = f'mount g "{GUEST.parent.parent / "guest"}"\n{hook}G:\\INJECT.COM\n{hook}c:\n'
+    stub = f'mount g "{GUEST.parent.parent / "guest"}"\n{hook}G:\\SCRY.COM\n{hook}c:\n'
     conf = M.fresh(".conf")
     with open(conf, "w", encoding="utf-8") as out:
         out.write(text.replace("[autoexec]\nmount c \".\"\nc:\n",
                                "[autoexec]\nmount c \".\"\n" + stub, 1))
     _mouse_boot(conf=conf)
-    twice = _guest_line(r"STUB  \. inject already resident")
+    twice = _guest_line(r"STUB  \. scry already resident")
     r = M.call(server.send_keys, keys=["a", "b"], expect=r"MOUSE \. key=98$", seconds=WAIT_S)
     name = ("P a second copy stays out though a TSR took INT 1Ch above the first" if hooked
             else "P a second copy the conf also runs stays out, and keys still arrive whole")
-    copies = _count(r"STUB  \. inject device=present")
+    copies = _count(r"STUB  \. scry device=present")
     judged(name, reply=r, holds=ok(twice) and ok(r) and copies == 1
            and (not hooked or _count(r"HOOK1C \. int 1Ch hooked") == 2))
     must(M.call(server.close), "closing")

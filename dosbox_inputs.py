@@ -1,7 +1,7 @@
 """The INPUT route: keys, mouse buttons and the pointer, carried INTO the guest, and the proof
 each one landed.
 
-The session's input port is COM1 as a TCP socket; the resident stub in `guest/INJECT.COM` takes
+The session's input port is COM1 as a TCP socket; the resident stub in `guest/SCRY.COM` takes
 each framed command off it as it arrives and carries it out inside the machine (a scan byte into
 the 8042, a button into the integration device, the pointer through INT 33h). No host event is
 involved.
@@ -17,12 +17,15 @@ import re
 from dataclasses import dataclass
 from typing import Any, cast
 
+from scry_core import cancel
 from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Code, unavailable
 
+import dosbox_debugger as dbg
 import dosbox_launch as dlaunch
 import dosbox_logs as dlogs
+import dosbox_retrace as retrace
 import dosbox_running as running
 import dosbox_session as ds
 import dosbox_state as st
@@ -85,10 +88,12 @@ def scan_sequence(keys: list[str], mods: str) -> bytes:
 
 
 
-# The opcodes `guest/inject.asm` reads; its header is the contract.
+# The opcodes `guest/scry.asm` reads; its header is the contract.
 OP_KEY, OP_BUTTON, OP_MOVE, OP_REPORT = b"K", b"B", b"M", b"R"
-STUB_PROTOCOL = "4"
-STUB_ANNOUNCE = re.compile(r"STUB  \. inject device=(\w+)(?: proto=(\d+))?")
+STUB_PROTOCOL = "5"
+# The old stub's name is still matched, so its announce reads as another protocol, not as none.
+STUB_ANNOUNCE = re.compile(r"STUB  \. (?:scry|inject) device=(\w+)(?: proto=(\d+))?"
+                           r"(?: motion=([01]))?")
 REPORT_LINE = re.compile(
     r"STUB  \. mouse x=(\d+) y=(\d+) buttons=(\d+) max=(\d+),(\d+) mode=(\d+) "
     r"screen=(\d+)x(\d+)")
@@ -178,10 +183,10 @@ def require_stub(session: ds.Session) -> None:
                   f"after the conf's [autoexec], which may have exited or run the program first"
                   if session.launch.stub_drive else "or `start(program=...)` loads it by itself")
         raise ds.Invalid("no_channel",
-            "the guest has not announced the input stub (`STUB  . inject` on E9), so nothing "
+            "the guest has not announced the input stub (`STUB  . scry` on E9), so nothing "
             "would receive the input: the conf's [autoexec] runs it before the program, "
-            f"`mount g \"{dlaunch.GUEST_DIR}\"` then `G:\\INJECT.COM`; {loaded}")
-    device, proto = found[-1].groups()
+            f"`mount g \"{dlaunch.GUEST_DIR}\"` then `G:\\{dlaunch.STUB_FILE}`; {loaded}")
+    device, proto, motion = found[-1].groups()
     if device != "present":
         raise ds.Invalid("no_channel",
             f"the stub's device probe did not answer the expected identification "
@@ -191,9 +196,9 @@ def require_stub(session: ds.Session) -> None:
     if proto != STUB_PROTOCOL:
         raise ds.Invalid("no_channel",
             f"the resident stub announces protocol {proto or 'none'} and this server speaks "
-            f"{STUB_PROTOCOL}: the conf mounts another INJECT.COM. Mount this package's "
+            f"{STUB_PROTOCOL}: the conf mounts another stub. Mount this package's "
             f"`{dlaunch.GUEST_DIR}`")
-    session.stub_protocol = proto
+    session.stub_protocol, session.stub_motion = proto, motion == "1"
 
 
 class Delivered(ds.Invalid):
@@ -204,15 +209,73 @@ class Delivered(ds.Invalid):
         self.fields = fields
 
 
-def _delivered(e: ds.Invalid) -> Delivered:
+def _delivered(e: ds.Invalid, parked: Retraces | None = None) -> Delivered:
     """A send that failed part-way: some of it may have gone in, so it is not to be resent."""
-    return Delivered(e.code, str(e), {"route": "guest"})
+    return Delivered(e.code, str(e), {"route": "guest", **_parked_fields(parked)})
 
 
-def _send(session: ds.Session, commands: list[bytes]) -> list[str]:
+def _parked_fields(parked: Retraces | None) -> dict[str, Any]:
+    return {} if parked is None else parked.fields()
+
+
+class Retraces:
+    """A parked machine run one retrace at a time while the stub takes the commands; its last
+    stop becomes the reply's."""
+
+    def __init__(self, session: ds.Session) -> None:
+        self.session = session
+        self.run = 0
+        self.last: dict[str, Any] = {}
+        dbg.read_run_state(session)
+        self.clock_ms = session.clock_ms or 0.0
+        self.e9_mark = STATE.e9_offset
+
+    def __call__(self) -> float:
+        try:
+            reply = retrace.run_for(self.session, 1, 0, RETRACE_BOUND_S, ds.no_progress,
+                                    who="the input's post")
+        except BaseException as e:
+            # The machine was stopped when the post began: a cancel leaves it stopped too.
+            if cancel.is_cancellation(e):
+                with cancel.shielded():
+                    ds.Session.stop_at_bound(self.session)
+            raise
+        self.run += 1
+        self.last = reply
+        if reply.get("verdict") == contract.OTHER_STOP:
+            raise ds.Invalid("wait_stopped",
+                f"a declared breakpoint stopped the machine short of retrace {self.run} of the "
+                f"post: {reply.get('cause')}. Clear it, or `resume` past it, and send the rest")
+        if reply.get("status") != "ok" or reply.get("verdict") != contract.ELAPSED:
+            raise ds.Invalid("unexpected_answer",
+                f"retrace {self.run} of the post did not come "
+                f"({reply.get('code') or reply.get('verdict')}): "
+                f"{reply.get('message') or reply.get('note')}")
+        self.clock_ms = self.session.clock_ms or 0.0
+        return self.clock_ms
+
+    def fields(self) -> dict[str, Any]:
+        """What the post ran, and the stop it left the machine at, with the guest's lines of
+        every retrace; the watches are as the last one read them."""
+        out = {"polls": self.run, **{k: self.last[k] for k in STOP_KEYS if k in self.last}}
+        if "e9" in out:
+            out["e9"] = running.e9_block(self.session, self.e9_mark)
+        return out
+
+
+#: A retrace normally comes in a frame's time; this bounds one that does not.
+RETRACE_BOUND_S = 5.0
+#: The stop a parked post leaves, as `run_for` reads it.
+STOP_KEYS = ("pc", "cpu_mode", "stop_seq", "frame", "instruction", "regs", "watches", "cause",
+             "e9")
+
+
+def _send(session: ds.Session, commands: list[bytes],
+          advance: Retraces | None = None) -> list[str]:
     """The commands down the stub's link, its report lines back."""
     try:
-        return session.send_commands(commands)
+        return (session.send_commands(commands) if advance is None
+                else session.send_commands(commands, advance))
     except ds.Invalid as e:
         if e.code == "wait_stopped":
             running.observe_stop(session)
@@ -235,12 +298,17 @@ def program_reaction(expect: str) -> str:
     return rf"{head}^(?!.*{STUB_LINE})(?=.*?(?:{body}))"
 
 
-def _ready(session: ds.Session, what: str, expect: str | None) -> None:
-    """A running machine, a log for `expect`, a stub of this protocol."""
-    _refuse_stopped(session, what)
+def _ready(session: ds.Session, what: str, expect: str | None) -> Retraces | None:
+    """A log for `expect`, a stub of this protocol; on a parked machine, the retraces the post
+    will run it by, which needs `RUNSTATE`."""
+    parked = session.at_debugger()
+    if parked:
+        running.observe_stop(session)
+        session.require_run_state(what)
     if expect is not None:
         _expect_mark(session)
     require_stub(session)
+    return Retraces(session) if parked else None
 
 
 def _expect_mark(session: ds.Session) -> int:
@@ -252,22 +320,9 @@ def _expect_mark(session: ds.Session) -> int:
                          f"anything, because a post cannot be taken back") from None
 
 
-def _refuse_stopped(session: ds.Session, what: str) -> None:
-    # A stopped machine would hold the bytes until the next resume. Passive check, not
-    # `where()`: on a running guest its nudge is swallowed and the collect stays open for its
-    # whole timeout, a window where a stop's prompt was consumed unrecorded.
-    if session.at_debugger():
-        running.observe_stop(session)
-        _, where = STATE.stop_named(session)
-        # Not `NotStopped`: that class names a machine that is not stopped.
-        raise ds.Invalid("not_running",
-            f"the machine is STOPPED at the debugger{where}, so {what} sent now would sit in "
-            f"the serial buffer and land at the next resume. `resume` first, then send")
-
-
-def _report(session: ds.Session) -> Report:
+def _report(session: ds.Session, advance: Retraces | None = None) -> Report:
     # On the stub's own line: on E9 it could land inside one of the program's lines.
-    return parse_report(_send(session, [OP_REPORT])[0])
+    return parse_report(_send(session, [OP_REPORT], advance)[0])
 
 def verify_block(expect: str, reaction: dict[str, object]) -> dict[str, Any]:
     """The `verify` block shared by `send_keys`, `send_mouse` and `drive`. `seen_before_waiting`
@@ -300,7 +355,7 @@ def drive_wait_s(seconds: float | None) -> float:
 
 def _post_and_verify(session: ds.Session, kind: str, post: Any, expect: str | None,
                      seconds: float | None, *, progress: ds.Progress = ds.no_progress,
-                     **fields: Any) -> dict[str, Any]:
+                     parked: Retraces | None = None, **fields: Any) -> dict[str, Any]:
     """Post one input and say whether the PROGRAM REACTED. `post()` sends the commands and
     returns the reply's own fields.
 
@@ -314,7 +369,7 @@ def _post_and_verify(session: ds.Session, kind: str, post: Any, expect: str | No
     verification impossible is refused before the post, which cannot be taken back.
     """
     try:
-        return _verify(session, kind, post, expect, seconds, progress, fields)
+        return _verify(session, kind, post, expect, seconds, progress, fields, parked)
     except Delivered as e:
         return st.reply(status="INVALID", code=e.code, **fields, **e.fields, delivered=True,
                         verify={"checked": False, "why": "the send failed part-way"},
@@ -323,7 +378,7 @@ def _post_and_verify(session: ds.Session, kind: str, post: Any, expect: str | No
 
 def _verify(session: ds.Session, kind: str, post: Any, expect: str | None,
             seconds: float | None, progress: ds.Progress,
-            fields: dict[str, Any]) -> dict[str, Any]:
+            fields: dict[str, Any], parked: Retraces | None = None) -> dict[str, Any]:
     if expect is None:
         return st.reply(**fields, **post(), verify={
             "checked": False,
@@ -333,8 +388,13 @@ def _verify(session: ds.Session, kind: str, post: Any, expect: str | None,
     mark = _expect_mark(session)
     host = dict(fields, **post())
     try:
-        reaction = session.e9_wait(program_reaction(expect), wait_s, mark=mark,
-                                   progress=progress)
+        if parked is None:
+            reaction = session.e9_wait(program_reaction(expect), wait_s, mark=mark,
+                                       progress=progress)
+        else:
+            reaction = session.e9_wait(program_reaction(expect), wait_s, mark=mark,
+                                       progress=progress, advance=parked)
+            host.update(parked.fields())
     except ds.E9Stopped as e:
         running.observe_stop(session)
         stop, where = STATE.stop_named(session)
@@ -444,17 +504,18 @@ def send_keys(session: ds.Session, keys: list[str], modifiers: list[str] | None,
               progress: ds.Progress = ds.no_progress) -> dict[str, Any]:
     """The body of the `send_keys` tool."""
     check_keys(keys, modifiers, expect, seconds)
-    _ready(session, "a key", expect)
+    parked = _ready(session, "a key", expect)
     seq = scan_sequence(keys, "+".join(modifiers) if modifiers else "-")
 
     def post() -> dict[str, Any]:
         try:
-            _send(session, key_commands(seq))
+            _send(session, key_commands(seq), parked)
         except ds.Invalid as e:
-            raise _delivered(e) from None
-        return {"route": "guest", "posted": len(keys), "bytes": len(seq), "frames": len(seq)}
+            raise _delivered(e, parked) from None
+        return {"route": "guest", "posted": len(keys), "bytes": len(seq), "frames": len(seq),
+                **_parked_fields(parked)}
     return _post_and_verify(session, "key", post, expect, seconds, progress=progress,
-                            keys=keys, modifiers=modifiers or [])
+                            parked=parked, keys=keys, modifiers=modifiers or [])
 
 
 def _target(report: Report, x: int, y: int, units: str) -> tuple[int, int]:
@@ -476,6 +537,21 @@ def _target(report: Report, x: int, y: int, units: str) -> tuple[int, int]:
             f"({x}, {y}) is outside the screen, {size[0]} x {size[1]} in mode "
             f"{report.mode:#04x}; nothing was sent")
     return to_driver(x, size[0], report.max_x), to_driver(y, size[1], report.max_y)
+
+
+NO_MOTION_WHY = ("this build's integration device takes no relative motion, so the pointer was "
+                 "placed without any: a program that reads the motion counters (INT 33h AX=0Bh), "
+                 "takes movement events (AX=0Ch) or drives a PS/2 mouse saw nothing move")
+UNREAD_MOTION_WHY = ("the session has no log, where the stub says whether the build takes "
+                     "relative motion")
+
+
+def _motion(session: ds.Session) -> bool | dict[str, Any]:
+    """Whether the move reached the motion counters as well as the pointer."""
+    motion = getattr(session, "stub_motion", None)
+    if motion is None:
+        return unavailable(UNREAD_MOTION_WHY)
+    return True if motion else unavailable(NO_MOTION_WHY)
 
 
 def _pointer(report: Report) -> dict[str, Any]:
@@ -524,8 +600,8 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
     """The body of the `send_mouse` tool. `aimed` is the control a `target` named
     (`screen_map.Maps.target`)."""
     check_mouse(x, y, button, action, units, expect, seconds)
-    _ready(session, "a mouse event", expect)
-    before = _report(session)
+    parked = _ready(session, "a mouse event", expect)
+    before = _report(session, parked)
     if aimed is not None:
         _still_the_screen(before, aimed)
     target = None if x is None or y is None else _target(before, x, y, units)
@@ -534,13 +610,15 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
         commands = [] if target is None else [move_command(*target)]
         commands += [] if button is None else button_commands(button, action)
         try:
-            _send(session, commands)
-            after = _report(session)
+            _send(session, commands, parked)
+            after = _report(session, parked)
         except ds.Invalid as e:
-            raise _delivered(e) from None
+            raise _delivered(e, parked) from None
         landed = target is None or (after.x, after.y) == target
         fields: dict[str, Any] = {"route": "guest", "pointer": _pointer(after),
-                                  "arrived": landed}
+                                  "arrived": landed, **_parked_fields(parked)}
+        if target is not None:
+            fields["motion"] = _motion(session)
         if target is not None and not landed:
             # A text mode snaps to its cell, a program's own range (INT 33h AX=07h/08h) clamps.
             fields["asked"] = {"x": target[0], "y": target[1]}
@@ -548,4 +626,4 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
     asked = {**({"x": x, "y": y} if x is not None and y is not None else {}), "units": units,
              **({"button": button, "action": action} if button is not None else {})}
     return _post_and_verify(session, "mouse event", post, expect, seconds, progress=progress,
-                            **asked)
+                            parked=parked, **asked)

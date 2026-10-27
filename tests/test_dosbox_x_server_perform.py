@@ -222,18 +222,18 @@ def test_the_stub_must_have_announced_its_protocol_before_anything_is_sent(
     fake.stub_protocol = ""
     fake.log = ["Bochs port E9h: BOOT  . start"]
     none = cast(dict[str, Any], server.send_keys(keys=["a"]))
-    assert none["status"] == "INVALID" and "INJECT.COM" in none["message"], none
-    fake.log.append("Bochs port E9h: STUB  . inject device=absent")
+    assert none["status"] == "INVALID" and "SCRY.COM" in none["message"], none
+    fake.log.append("Bochs port E9h: STUB  . scry device=absent")
     absent = cast(dict[str, Any], server.send_keys(keys=["a"]))
     assert "integration device=true" in absent["message"], absent
-    fake.log.append("Bochs port E9h: STUB  . inject device=present")
+    fake.log.append("Bochs port E9h: STUB  . scry device=present")
     old = cast(dict[str, Any], server.send_mouse(button="left"))
-    assert "protocol none" in old["message"] and "another INJECT.COM" in old["message"], old
+    assert "protocol none" in old["message"] and "another stub" in old["message"], old
     assert fake.commands_sent == []
-    fake.log.append("Bochs port E9h: STUB  . inject device=present proto=2")
+    fake.log.append("Bochs port E9h: STUB  . scry device=present proto=2")
     stale = cast(dict[str, Any], server.send_keys(keys=["a"]))
     assert "protocol 2" in stale["message"] and fake.commands_sent == [], stale
-    fake.log.append(f"Bochs port E9h: STUB  . inject device=present proto={inputs.STUB_PROTOCOL}")
+    fake.log.append(f"Bochs port E9h: STUB  . scry device=present proto={inputs.STUB_PROTOCOL}")
     assert cast(dict[str, Any], server.send_keys(keys=["a"]))["status"] == "ok"
     assert fake.stub_protocol == inputs.STUB_PROTOCOL
     fake.log.clear()
@@ -242,7 +242,7 @@ def test_the_stub_must_have_announced_its_protocol_before_anything_is_sent(
 
 def test_send_keys_with_an_expectation_confirms_the_guest_reacted(tmp_path: Path) -> None:
     fake = _names(tmp_path, watched=True)
-    fake.running = True                      # input goes to a RUNNING guest
+    fake.running = True                      # the input goes to a RUNNING guest here
     fake.log = ["Bochs port E9h: [+   0.000] BOOT  . start"]
     fake.input_effect = E9_KEY_ACT
     got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a", seconds=5))
@@ -265,7 +265,7 @@ def test_send_keys_with_an_expectation_confirms_the_guest_reacted(tmp_path: Path
 def test_send_keys_reports_a_swallowed_key_as_a_miss_not_a_success(tmp_path: Path) -> None:
     """THE FALSE SUCCESS THIS EXISTS TO REFUSE."""
     fake = _names(tmp_path, watched=True)
-    fake.running = True                      # input goes to a RUNNING guest
+    fake.running = True                      # the input goes to a RUNNING guest here
     fake.log = ["Bochs port E9h: [+   0.000] BOOT  . start", E9_KEY_ACT]   # a STALE match
     fake.input_effect = None                                              # the guest is silent
     got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a", seconds=2))
@@ -282,7 +282,7 @@ def test_send_keys_an_instrument_that_broke_is_not_reported_as_a_miss(
         tmp_path: Path) -> None:
     """ONLY AN EXPIRED BOUND IS A MISS."""
     fake = _names(tmp_path, watched=True)
-    fake.running = True                      # input goes to a RUNNING guest
+    fake.running = True                      # the input goes to a RUNNING guest here
     fake.wait_raises = ds.Invalid("session_broken", "the emulator is GONE, 0.2s into a 10.0s wait")
     got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a"))
     assert got["status"] == "INVALID" and got["posted"] == 1, got
@@ -294,7 +294,7 @@ def test_send_keys_an_instrument_that_broke_is_not_reported_as_a_miss(
 
 def test_send_keys_without_an_expectation_says_it_did_not_verify(tmp_path: Path) -> None:
     fake = _names(tmp_path, watched=True)
-    fake.running = True                      # input goes to a RUNNING guest
+    fake.running = True                      # the input goes to a RUNNING guest here
     got = cast(dict[str, Any], server.send_keys(keys=["a"]))
     assert got["status"] == "ok" and got["posted"] == 1, got
     assert got["verify"]["checked"] is False and "expect" in got["verify"]["why"], got
@@ -307,7 +307,7 @@ def test_send_keys_without_an_expectation_says_it_did_not_verify(tmp_path: Path)
 def test_send_keys_expectation_that_cannot_be_checked_is_refused_before_the_post(
         tmp_path: Path) -> None:
     fake = _names(tmp_path, watched=True)
-    fake.running = True                      # input goes to a RUNNING guest
+    fake.running = True                      # the input goes to a RUNNING guest here
     fake.log = None                                   # a session with no logfile
     nolog = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a"))
     assert nolog["status"] == "INVALID" and "logfile" in nolog["message"], nolog
@@ -347,7 +347,7 @@ def test_send_mouse_takes_the_same_expectation(tmp_path: Path) -> None:
 
 def test_perform_stops_at_a_send_keys_step_whose_expectation_missed(tmp_path: Path) -> None:
     fake = _names(tmp_path, watched=True)
-    fake.running = True                      # input goes to a RUNNING guest
+    fake.running = True                      # the input goes to a RUNNING guest here
     out = cast(dict[str, Any], server.perform(steps=[
         {"op": "send_keys", "keys": ["a"], "expect": "key_cue_a", "seconds": 1},
         {"op": "status"}]))
@@ -370,8 +370,7 @@ def test_scan_sequence_composes_set1_makes_and_breaks_in_order() -> None:
         inputs.scan_sequence(["a"], "cmd")
 
 
-def test_send_keys_refuses_a_stopped_machine_and_the_cap_and_a_miss_blames_no_window(
-        tmp_path: Path) -> None:
+def test_send_keys_refuses_the_cap_and_a_miss_blames_no_window(tmp_path: Path) -> None:
     fake = _names(tmp_path, watched=False)
     fake.running = True
     fake.input_effect = E9_KEY_ACT
@@ -379,10 +378,6 @@ def test_send_keys_refuses_a_stopped_machine_and_the_cap_and_a_miss_blames_no_wi
     assert got["status"] == "ok" and got["verify"]["seen"] is True, got
     shifted = cast(dict[str, Any], server.send_keys(keys=["b"], modifiers=["shift"]))
     assert fake.scancodes_sent[-1] == bytes([0x2A, 0x30, 0xB0, 0xAA]) and shifted["frames"] == 4
-    fake.running = False
-    stopped = cast(dict[str, Any], server.send_keys(keys=["a"]))
-    assert stopped["status"] == "INVALID" and "STOPPED at the debugger" in stopped["message"]
-    fake.running = True
     capped = cast(dict[str, Any], server.send_keys(keys=["a"] * 65))
     assert capped["status"] == "INVALID" and "at most 64" in capped["message"], capped
     assert len(fake.scancodes_sent) == 2
@@ -397,18 +392,18 @@ def test_the_shipped_stub_matches_its_source(tmp_path: Path) -> None:
     if nasm is None:
         pytest.skip("nasm is not on PATH, so the stub cannot be reassembled to compare")
     guest = Path(str(server.__file__)).parent / "guest"
-    out = tmp_path / "INJECT.COM"
-    subprocess.run([nasm, "-f", "bin", str(guest / "inject.asm"), "-o", str(out)], check=True)
-    assert out.read_bytes() == (guest / "INJECT.COM").read_bytes(), (
-        "guest/INJECT.COM is not the assembled guest/inject.asm: reassemble it")
+    out = tmp_path / "SCRY.COM"
+    subprocess.run([nasm, "-f", "bin", str(guest / "scry.asm"), "-o", str(out)], check=True)
+    assert out.read_bytes() == (guest / "SCRY.COM").read_bytes(), (
+        "guest/SCRY.COM is not the assembled guest/scry.asm: reassemble it")
     assert out.stat().st_size < 2048, (
         "the stub stays resident in the guest's conventional memory, so it is kept tiny")
 
 
 def test_drive_marks_acts_verifies_and_looks_from_the_mark(tmp_path: Path) -> None:
     fake = _names(tmp_path, watched=True)
-    fake.running = True                      # input goes to a RUNNING guest
-    fake.where_raises = True              # a RUNNING guest, as a key is sent to
+    fake.running = True                      # the input goes to a RUNNING guest here
+    fake.where_raises = True              # a RUNNING guest, as this key is sent to
     fake.log = ["Bochs port E9h: [+   0.000] BOOT  . start", E9_KEY_ACT]   # a STALE cue
     fake.input_effect = "Bochs port E9h: [+   9.000] ACT   . key_cue_a=1 b=-1 on=1"
     asked: list[bool] = []
@@ -453,8 +448,8 @@ def test_drive_marks_acts_verifies_and_looks_from_the_mark(tmp_path: Path) -> No
 def test_drive_reports_a_miss_a_failed_act_and_refuses_what_it_cannot_do(
         tmp_path: Path) -> None:
     fake = _names(tmp_path, watched=True)
-    fake.running = True                      # input goes to a RUNNING guest
-    fake.where_raises = True              # a RUNNING guest, as a key is sent to
+    fake.running = True                      # the input goes to a RUNNING guest here
+    fake.where_raises = True              # a RUNNING guest, as this key is sent to
     fake.input_effect = None
     miss = cast(dict[str, Any], server.drive(act=[{"op": "send_keys", "keys": ["a"]}],
                                               expect="key_cue_a", seconds=1))
@@ -948,7 +943,7 @@ def test_perform_checks_every_op_before_running_any(tmp_path: Path) -> None:
 def test_send_keys_names_a_stop_that_landed_during_the_wait_not_still_running(
         tmp_path: Path) -> None:
     fake = _names(tmp_path, watched=False, input_port=5555)
-    fake.running = True                      # a RUNNING guest, as a key is sent to
+    fake.running = True                      # a RUNNING guest, as this key is sent to
     fake.input_effect = None
     fake.stops_during_wait = True
     got = cast(dict[str, Any], server.send_keys(keys=["a"], expect="key_cue_a", seconds=5))
@@ -962,16 +957,14 @@ def test_send_keys_names_a_stop_that_landed_during_the_wait_not_still_running(
     assert got["verify"]["waited_s"] == 0.4 and got["verify"]["lines_on_disk"] == 0, got["verify"]
     assert got["last_stop"]["pc"] == "00A7:00000000", got["last_stop"]
     assert fake.survey_calls == 1, "the stop is surveyed ONCE, by this reply"
-    # THE NEXT KEY IS REFUSED AS STOPPED, in the same words: the two replies agree.
-    nxt = cast(dict[str, Any], server.send_keys(keys=["a"]))
-    assert nxt["status"] == "INVALID" and "STOPPED at the debugger" in nxt["message"], nxt
-    assert len(fake.scancodes_sent) == 1, "a refused key must not have sent bytes"
 
 
-def test_input_to_a_machine_stopped_at_the_debugger_is_refused_before_the_post(
+def test_input_to_a_stopped_machine_on_a_build_with_no_run_state_is_refused_before_the_post(
         tmp_path: Path) -> None:
+    """A parked post runs the machine retrace by retrace, which needs `RUNSTATE` to see them."""
     fake = _guest(tmp_path)
     fake.running = False                           # stopped, as a fresh session is
+    fake.commands = frozenset(c for c in fake.commands if c != "RUNSTATE")
     fake.input_effect = None
     calls: list[Callable[[], dict[str, Any]]] = [
         lambda: server.send_keys(keys=["a"]),
@@ -979,12 +972,8 @@ def test_input_to_a_machine_stopped_at_the_debugger_is_refused_before_the_post(
         lambda: server.send_mouse(button="left")]
     for call in calls:
         got = call()
-        assert got["status"] == "INVALID" and "STOPPED at the debugger" in got["message"], got
-        assert "`resume` first" in got["message"] and "00A7:0000" in got["message"]
-        # A STOPPED machine is the opposite of the running one `NotStopped` names, so the
-        # refusal is a plain INVALID: the running-guest envelope's `answers_while_running`
-        # would tell a caller which tools answer while the guest RUNS, about a guest that
-        # is stopped.
+        assert got["status"] == "INVALID" and got["code"] == "no_channel", got
+        assert "RUNSTATE" in got["message"], got["message"]
         assert "answers_while_running" not in got, got
     assert fake.commands_sent == [], "nothing was posted to a stopped machine"
     assert "posted" not in got

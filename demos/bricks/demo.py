@@ -222,7 +222,7 @@ def restored(reply: Reply, run: Run) -> str:
 
 #: Values a `stop` shows, which land wherever the game is when the break arrives.
 BREAK_STOP = {key: "the stop lands wherever the game is when the break arrives"
-             for key in ("summary", "regs", "instruction", "pc", "cause",
+             for key in ("summary", "regs", "instruction", "pc", "frame", "cause",
                          "watches", "e9")}
 #: Counts an input step reports that depend on when the host delivered the input, not on what
 #: the game did with it.
@@ -315,6 +315,8 @@ DEMO = Demo(
               "saved_at": "the wall-clock time a state was saved at",
               "window": "where the host put the emulator's window",
               "binary": "where the host installed DOSBox-X",
+              "mark": "a byte position in the session's log, which also holds the debugger's "
+              "answers to as many polls as the host's clock let a wait send",
               "input_port": "the free port the host picked for the input route",
               "binary_origin": "how the host's DOSBox-X was found",
               "version": "the host's DOSBox-X build",

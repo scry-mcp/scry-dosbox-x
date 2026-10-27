@@ -50,7 +50,7 @@ D_CELLS = cells(
      "machine_map docstring; known: DOS gives the program all free memory"),
     ("D INT 08 and INT 09 lie in the REAL16 block, named NEW_IRQ_VIDEO and NEW_KEY_PC",
      "interrupt_vectors docstring; known: the map's publics, the handlers the game installs"),
-    ("D INT 1C lies in the INJECT block", "known: the serial stub hooks the timer tick"),
+    ("D INT 1C lies in the SCRY block", "known: the serial stub hooks the timer tick"),
     ("D trace on the conf's dynamic core is refused naming the core",
      "trace docstring: the count is proved per call"),
     ("D log_wait Entering main loop", "known: the game logs `Entering main loop` at start"),
@@ -177,7 +177,7 @@ def _vectors() -> None:
             ok(r) and hooked == [bp.DOS_REAL16.process] * 2
             and named == [("NEW_IRQ_VIDEO", 0), ("NEW_KEY_PC", 0)], f"{hooked} {named}")
     tick = (rows.get(0x1C, {}).get("mcbs") or {}).get("filename")
-    M.judge("D INT 1C lies in the INJECT block", ok(r) and tick == "INJECT",
+    M.judge("D INT 1C lies in the SCRY block", ok(r) and tick == "SCRY",
             f"INT 1C {rows.get(0x1C, {}).get('seg_off')} in {tick}")
 
 

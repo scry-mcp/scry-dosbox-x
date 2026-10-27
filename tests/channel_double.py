@@ -56,6 +56,7 @@ class Stop:
     regs: dict[str, int] = field(default_factory=dict)
     ms: float = 1.0
     cycles: int = 1000
+    frames: int = 1
 
 
 @dataclass
@@ -79,6 +80,8 @@ class Machine:
     sent: list[str] = field(default_factory=list)
     cycles: int = 0
     clock_ms: float = 0.7
+    #: The display frames since power-on `RUNSTATE` prints; None, a build that prints none.
+    frames: int | None = None
     alive: bool = True
     _pending: Stop | None = None
     _polls: int = 0
@@ -105,7 +108,7 @@ class Machine:
             raise ds.Invalid("session_broken", "the debugger channel dropped (the emulator "
                              "closed it)")
         if command == "BREAK":
-            self._stop_here(Stop(ms=0.0, cycles=0))
+            self._stop_here(Stop(ms=0.0, cycles=0, frames=0))
             return True, []
         if command == "PING":
             return True, ["PONG"]
@@ -133,6 +136,8 @@ class Machine:
         self.stopped, self._pending = True, None
         self.cycles += stop.cycles
         self.clock_ms += stop.ms
+        if self.frames is not None:
+            self.frames += stop.frames
 
     def _release(self) -> None:
         self.stopped, self._polls = False, 0
@@ -152,7 +157,9 @@ class Machine:
                 self._stop_here(self._pending)
             self._polls += 1
         state = "stopped" if self.stopped else "running"
-        return True, [f"DEBUG: RUNSTATE {state} cycles={self.cycles} ms={self.clock_ms:.9f}"]
+        frames = "" if self.frames is None else f" frames={self.frames}"
+        return True, [f"DEBUG: RUNSTATE {state} cycles={self.cycles} "
+                      f"ms={self.clock_ms:.9f}{frames}"]
 
     def _do_run(self, _: list[str]) -> tuple[bool, list[str]]:
         self._release()

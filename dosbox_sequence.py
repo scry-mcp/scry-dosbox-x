@@ -7,8 +7,8 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from scry_core import frame_window, roster
 from scry_core import reply_contract as contract
-from scry_core import roster
 from scry_core import sequence as executor
 from scry_core import sequence_account as account
 from scry_core import steps as step_judge
@@ -16,6 +16,7 @@ from scry_core import vocabulary as vocab
 
 import dosbox_arming as arming
 import dosbox_checks as checks
+import dosbox_debugger as dbg
 import dosbox_inputs as inputs
 import dosbox_logs as dlogs
 import dosbox_media as media
@@ -199,15 +200,24 @@ class _Dosbox(executor.SequenceMachine):
 def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
               ops: Ops, progress: ds.Progress = ds.no_progress,
               summaries: bool = False, name: str = "perform",
-              tail_wait: bool = True) -> dict[str, Any]:
+              tail_wait: bool = True, until_frame: int = 0) -> dict[str, Any]:
     """Execute steps in order (`scry_core.sequence.run`), stopping at the first failure.
 
     A step is `{"op": <name>, ...args}`; the list arrives judged whole by
     `dosbox_checks.steps_whole`. `tail_wait` is False when the caller waits for the list's
-    effect its own way (`drive` with an `expect`)."""
+    effect its own way (`drive` with an `expect`); with `until_frame` the list repeats
+    (`frame_window.Window`)."""
     account.check_summaries(summaries)
+    frame_window.check_arguments(until_frame, summaries)
+    window = None
+    if until_frame:
+        here = _until_from(session)
+        frame_window.check_until(steps, until_frame, here, here is None)
+        window = frame_window.Window(until_frame, here, here is None, progress)
     ended = executor.run(_Dosbox(session, summaries), steps, ops, wait, progress, name,
-                         tail_wait=tail_wait)
+                         tail_wait=tail_wait, cycle=window)
+    if window is not None:
+        window.last_line()
     if ended.code is not None:
         return st.reply(status="INVALID", code=ended.code, message=ended.message,
                         **ended.fields, held=ended.held)
@@ -215,6 +225,17 @@ def run_steps(session: ds.Session, steps: list[dict[str, Any]], wait: float,
 
 
 _ENRICHED = ("regs", "watches", "e9", "instruction")
+
+
+def _until_from(session: ds.Session) -> int | None:
+    """The frame a stopped machine stands in, None on a running one; a build whose `RUNSTATE`
+    counts no frames is refused."""
+    session.require_run_state("until_frame")
+    stopped = dbg.read_run_state(session)
+    if session.frames is None:
+        raise ds.Invalid("no_channel", f"until_frame needs a frame counter: {dbg.NO_FRAMES_WHY}; "
+                         f"`run_for(frames=)` counts retraces from where the machine stands")
+    return session.frames if stopped else None
 
 
 def _recorded_stop(session: ds.Session, recorded: dict[str, Any]) -> dict[str, Any]:
@@ -269,9 +290,10 @@ def _verify_at_a_stop(session: ds.Session, expect: str, mark: int) -> dict[str, 
     if not hits:
         return {"checked": True, "seen": False, "expected": expect,
                 "waited_s": 0.0, "lines_on_disk": len(since),
-                "why": f"no line matching {expect!r} since the mark, and the machine is "
-                       f"STOPPED at the debugger, so nothing more will be written until it "
-                       f"is resumed: waiting would not change the answer"}
+                "why": f"no line matching {expect!r} since the mark, and the act left the "
+                       f"machine STOPPED at the debugger, where it writes nothing: this look "
+                       f"is one read. `send_keys` or `send_mouse` with `expect` waits on a "
+                       f"stopped machine retrace by retrace"}
     return inputs.verify_block(expect, {"verdict": contract.TARGET, "line": hits[0],
                                     "already": True, "lines_before": since.index(hits[0]),
                                     "waited_s": 0.0, "lines_total": len(hits)})

@@ -10,9 +10,10 @@ from __future__ import annotations
 
 import re
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from scry_core import cancel
+from scry_core import reply_contract as contract
 from scry_core.progress import PROGRESS_EVERY_S, Progress, no_progress
 from scry_core.reply_contract import Invalid
 
@@ -28,11 +29,16 @@ DISCARDED = re.compile(r"^\[(\d+) debug output lines discarded\]$")
 NOT_RECOGNIZED = "*** Debugger command not recognized"
 
 RUNSTATE = "RUNSTATE"
-RUNSTATE_LINE = re.compile(r"^DEBUG: RUNSTATE (stopped|running) cycles=(\d+) ms=(\d+\.\d+)$")
+RUNSTATE_LINE = re.compile(r"^DEBUG: RUNSTATE (stopped|running) cycles=(\d+) ms=(\d+\.\d+)"
+                           r"(?: frames=(\d+))?$")
+#: Why a stop has no `frame`: the counter is printed by `RUNSTATE`, on builds that count frames.
+NO_FRAMES_WHY = (f"this build's `{RUNSTATE}` prints no `frames=`, the count of display frames "
+                 f"since power-on")
 #: What `RUNSTATE`'s `cycles` holds, as every reply that leans on it says.
 NORMAL_CORE_CYCLES = "the cycle count counts only what the normal core runs"
 COMMANDS_SECTION = "REFERENCE.md, Debugger commands"
-#: The pause between two `RUNSTATE`s of a wait; longer, a run by retraces lags the guest.
+#: The pause between two `RUNSTATE`s of a wait: shorter than a frame takes the emulator, or a
+#: run by retraces waits on the pause rather than on the guest.
 POLL_PAUSE_S = 0.002
 
 #: The survey's one `EV`: every register a stop reply carries, then the flags and CR0.
@@ -86,13 +92,22 @@ def take_run_state(session: ds.Session, ok: bool, lines: list[str]) -> bool:
     if found is None:
         raise Invalid("unexpected_answer",
             f"`{RUNSTATE}` answered {' / '.join(lines) or 'nothing'}, not its one line "
-            f"`DEBUG: RUNSTATE stopped|running cycles=<n> ms=<t>`")
+            f"`DEBUG: RUNSTATE stopped|running cycles=<n> ms=<t> frames=<n>`")
     session.cycles, session.clock_ms = int(found.group(2)), float(found.group(3))
+    session.frames = None if found.group(4) is None else int(found.group(4))
     if found.group(1) == "stopped":
         session.mark_stopped()
         return True
     session.forget_stop()
     return False
+
+
+def frame_at_stop(session: ds.Session) -> int | dict[str, Any]:
+    """The display frame a stopped machine is in, asked of `RUNSTATE`, or why there is none."""
+    if not session.has(RUNSTATE):
+        return contract.unavailable(f"this build's debugger has no `{RUNSTATE}`")
+    take_run_state(session, *exec_lines(session, RUNSTATE))
+    return contract.or_unavailable(session.frames, NO_FRAMES_WHY)
 
 
 def await_stop(session: ds.Session, began: float, deadline: float, target: str,

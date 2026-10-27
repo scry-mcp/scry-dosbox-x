@@ -9,9 +9,9 @@ decision needs it, and the measure lives in the commit that took it: a tool's co
 number of requests it sends, each answered whole before the next goes.
 
 WHAT IT DELIBERATELY DOES NOT DO.  A golden, or any byte-for-byte comparison, stays
-in a batch run: a batch reaches an EXACT frame, identical across runs, and a live
-session sits wherever the last question left it.  That is not a gap to be closed
-later, it is the reason both exist.
+in a batch run: a batch replays from power-on, so its frames are the same in every
+run, and a live session's frame depends on every question asked before it.  That is
+not a gap to be closed later, it is the reason both exist.
 
 SAVE STATES.  The state tools (`state_write(method="save")`, `state_write(method="load")`) are the
 debugger's own SAVESTATE
@@ -607,9 +607,9 @@ def pic(method: Annotated[str, vocab.enum(tuple(folds.PIC))],
     """The 8259 interrupt controllers, which decide which hardware interrupt reaches the CPU.
     Needs the machine stopped.
 
-    `read`: Reply: `controllers` (each `controller`, `vector_base`, `active_irq` (null: none
-    in service), `isr`, `isrr`, `auto_eoi`, ...), `irqs` (each `irq`, `vector`, `requested`,
-    `masked`, `in_service`, `cascade`).
+    `read`: Reply: `controllers` (each `controller`, `vector_base`, `active_irq` (unavailable
+    with none in service), `isr`, `isrr`, `auto_eoi`, ...), `irqs` (each `irq`, `vector`,
+    `requested`, `masked`, `in_service`, `cascade`).
 
     `mask`, `unmask`, `ack` (clear its in-service bit), `raise`, `lower` (its request line):
     `irq` 0 to 15. Marks the session `altered`. The timer is IRQ 0: `raise` it to run its
@@ -714,8 +714,8 @@ def run_to(ref: str, control: str, seconds: Annotated[float, vocab.WAIT_BOUNDS] 
     did not arrive". Needs a stopped machine. Refused: an absent or ambiguous name.
 
     Reply: `verdict` (`TARGET`, `OTHER_STOP`, `TIMEOUT`), `target_disarmed`, `control_hits`,
-    `controls` (`ref`, `at`, `hits_in_run`), `note`, the stop (`pc`, `regs`, `cause`). INVALID:
-    `control_silent`, `cut_by_other_stop`, `not_settled`.
+    `controls` (`ref`, `at`, `hits_in_run`), `note`, the stop (`pc`, `frame`, `regs`, `cause`).
+    INVALID: `control_silent`, `cut_by_other_stop`, `not_settled`.
 
     Reference: REFERENCE.md, Advancing the machine.
     """
@@ -777,8 +777,8 @@ def screen_wait(text: str, seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
 
     Reply: `verdict` `TARGET` (`already`, `waited_s`, `polls`, `point` `[column, row]`, `line`)
     or `TIMEOUT` (`waited_s`, `polls`, `text`, `retrace_pending`), `note`, the stop reply of
-    `run_to`. Refused: `bad_argument`, `wait_stopped` (a declared breakpoint stopped it),
-    `no_channel` (a screen it cannot read, or a build with no `RUNSTATE`).
+    `run_to` with its `frame`. Refused: `bad_argument`, `wait_stopped` (a declared breakpoint
+    stopped it), `no_channel` (a screen it cannot read, or a build with no `RUNSTATE`).
 
     Reference: REFERENCE.md, Input and the screen.
     """
@@ -1342,23 +1342,26 @@ def watch_add(ref: str, mode: Annotated[str, vocab.enum(dec.WATCH_MODES)], lengt
 
 
 
-# ------------------------------------------------------------ input to a running guest
+# ------------------------------------------------------------ input into the guest
 
 @tool("Send keystrokes", summary=one_line.send_keys, on_cancel="none")
 def send_keys(keys: list[str],
               modifiers: list[Annotated[str, vocab.folded(inputs.MODIFIER_WORDS)]] | None = None,
               expect: str = "", seconds: Annotated[float, vocab.WAIT_BOUNDS] | None = None,
               ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Send keystrokes to the running guest; with `expect`, prove the program took them.
+    """Send keystrokes to the guest; with `expect`, prove the program took them.
 
     `keys`: at most {KEYS_MAX}. `expect`: a regex over the E9 log the program's
-    reaction writes, waited up to `seconds` (default {EFFECT_WAIT_S}).
+    reaction writes, waited up to `seconds` (default {EFFECT_WAIT_S}). A stopped machine is
+    run retrace by retrace until the stub takes each key, and left stopped at a retrace; its
+    `expect` waits `seconds` of the guest's own time.
 
-    Refused: an unknown key or modifier, `seconds` without `expect`, a stopped machine, no
-    stub (`no_channel`).
+    Refused: an unknown key or modifier, `seconds` without `expect`, no stub, a stopped
+    machine on a build with no `RUNSTATE` (`no_channel`).
 
     Reply: `route`, `posted`, `bytes`, `frames` (stub commands, a BIOS tick apart), `verify`
-    (`verdict` `TARGET` or `TIMEOUT`, `seen`).
+    (`verdict` `TARGET` or `TIMEOUT`, `seen`); from a stopped machine `polls` and the stop
+    it was left at ({STOP_FIELDS}).
 
     Reference: REFERENCE.md, Input and the screen.
     """
@@ -1377,14 +1380,16 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
     proves the program reacted, as in `send_keys`.
 
     `x`, `y`: both or neither, in `units`. `target`: a control of the latest `map_find` screen,
-    instead of `x`, `y`. A drag is `down`, a move, `up`.
+    instead of `x`, `y`. A drag is `down`, a move, `up`. A stopped machine is run as for
+    `send_keys`.
 
-    Refused: no move and no button, half a move, a place off the screen, a stopped machine, no
-    stub; `target` beside `x`, `y` or `units="mouse"` (`bad_argument`); no `map_find` match
-    (`needs_call`); an unknown control (`unknown_ref`).
+    Refused: no move and no button, half a move, a place off the screen, no stub, a stopped
+    machine with no `RUNSTATE`; `target` beside `x`, `y` or `units="mouse"` (`bad_argument`);
+    no `map_find` match (`needs_call`); an unknown control (`unknown_ref`).
 
-    Reply: `route`, `pointer`, `arrived` (else `asked`), `verify`; with `target`: `target`,
-    `screen`, `identified_at_stop`.
+    Reply: `route`, `pointer`, `arrived` (else `asked`), `motion` (a move reached the motion
+    counters too), `verify`; with `target`: `target`, `screen`, `identified_at_stop`; from a
+    stopped machine, `send_keys`' `polls` and stop.
 
     Reference: REFERENCE.md, Input and the screen.
     """
@@ -1485,6 +1490,7 @@ SUMMARIES_ARGUMENT = account.summaries_argument(st.ROWS_SHOWN)
 def perform(steps: list[dict[str, Any]],
             settle_seconds: Annotated[float, vocab.WAIT_FROM_ZERO_BOUNDS] = 30.0,
             summaries: Annotated[bool, Field(description=SUMMARIES_ARGUMENT)] = False,
+            until_frame: int = 0,
             ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run this server's operations in order on the open session, stopping at the first
     failure.
@@ -1494,14 +1500,18 @@ def perform(steps: list[dict[str, Any]],
     misses ends the list `TIMEOUT`. A step's `recorded` must hold, else INVALID `diverged`.
     The whole list is checked first: INVALID `errors` (`step`, `op`, `code`, `message`),
     nothing run. `settle_seconds` bounds each wait for a stop before a step that needs one (0:
-    never wait).
+    never wait). `until_frame=F` (with `summaries`, `run_for`) repeats the list until a stop
+    reads frame F, counted since power-on, within {UNTIL_STEPS_MAX} steps and {WAIT_MAX_S} s;
+    `no_channel` if the build counts no frames.
 
     Reply: `ran`, `steps_completed`, `held`, `failed_at`, `failed` (INVALID `step_failed`),
-    `verdict` (`TARGET` adds `stopped`, `TIMEOUT` `note`), else `still_running`.
+    `verdict` (`TARGET` adds `stopped`, `TIMEOUT` `note`), else `still_running`;
+    `frame_reached`.
 
     Reference: REFERENCE.md, Sequences in one call.
     """
-    return sequence.run_steps(live(), steps, settle_seconds, _step_ops(), bridge(ctx), summaries)
+    return sequence.run_steps(live(), steps, settle_seconds, _step_ops(), bridge(ctx), summaries,
+                              until_frame=until_frame)
 
 
 @tool("Drive an input and verify it", summary=one_line.drive, on_cancel="none")

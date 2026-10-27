@@ -68,7 +68,7 @@ class Launch:
     log_categories: dict[str, str] = field(default_factory=dict)
     # The absolute path `start` resolved; the bare name is the PATH's.
     binary: str = binaries.EXECUTABLE_NAME
-    # TCP port the emulator's COM1 dials, read by `guest/INJECT.COM`; 0 takes a free one.
+    # TCP port the emulator's COM1 dials, read by `guest/SCRY.COM`; 0 takes a free one.
     input_port: int | None = None
     # Chosen once at `start`, so later replies name the drive used.
     stub_drive: str = ""
@@ -151,13 +151,15 @@ def build_argv(launch: Launch) -> list[str]:
         if launch.input_port is not None:
             # The stub goes in first so the program finds it resident.
             drive = launch.stub_drive or stub_drive(launch.conf)
-            argv += ["-c", f'mount {drive} "{GUEST_DIR}"', "-c", f"{drive}:\\INJECT.COM"]
+            argv += ["-c", f'mount {drive} "{GUEST_DIR}"', "-c", f"{drive}:\\{STUB_FILE}"]
         argv += ["-c", cmd]
     return argv
 
 
 # Drives for the stub: late first, where a conf rarely mounts, never one its `[autoexec]` mounted.
 GUEST_DIR = Path(__file__).resolve().with_name("guest")
+#: The resident stub the input route runs in the guest (`guest/scry.asm`).
+STUB_FILE = "SCRY.COM"
 STUB_DRIVES = "YXWVUTSRQPONMLKJIHGFED"
 MOUNTING = frozenset({"mount", "imgmount", "subst"})
 
@@ -190,7 +192,7 @@ def stub_drive(conf: Path) -> str:
         raise Invalid("bad_argument",
             f"no drive from {STUB_DRIVES[0]}: to {STUB_DRIVES[-1]}: is free for the input stub: "
             f"the conf's [autoexec] mounts {', '.join(f'{d}:' for d in mounted)}. Leave one "
-            f"unmounted, or load the stub from the conf (`G:\\INJECT.COM` after mounting this "
+            f"unmounted, or load the stub from the conf (`G:\\{STUB_FILE}` after mounting this "
             f"package's guest directory) and run the program from there")
     return free[0]
 

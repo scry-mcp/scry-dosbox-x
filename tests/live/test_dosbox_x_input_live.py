@@ -119,12 +119,12 @@ def test_the_stub_announces_itself_once_and_ignored_keys_arrive(
     """The stub announces once, a second copy stays out, and an ignored key still arrives."""
     _start(tmp_path, monkeypatch)
     server.resume()
-    stub = cast(dict[str, Any], server.log_wait(channel="guest", pattern="STUB  . inject device=",
+    stub = cast(dict[str, Any], server.log_wait(channel="guest", pattern="STUB  . scry device=",
                                                 seconds=60))
     announce = f"device=present proto={inputs.STUB_PROTOCOL}"
     assert stub["status"] == "ok" and announce in stub["line"], stub
     twice = cast(dict[str, Any], server.log_wait(channel="guest",
-                                                 pattern="STUB  . inject already resident",
+                                                 pattern="STUB  . scry already resident",
                                                  seconds=30))
     assert twice["status"] == "ok", twice
     _input_loop_live()
@@ -166,7 +166,7 @@ def test_send_mouse_puts_the_pointer_where_asked_and_the_program_clicks_there(
     seen = cast(dict[str, Any], server.log(pattern=r"STUB  \. mouse", channel="guest"))
     assert seen["status"] == "ok" and seen["lines_total"] == 0, seen
     # Control: the stub's announce is found.
-    said = cast(dict[str, Any], server.log(pattern=r"STUB  \. inject device=present",
+    said = cast(dict[str, Any], server.log(pattern=r"STUB  \. scry device=present",
                                            channel="guest"))
     assert said["status"] == "ok" and said["lines_total"] >= 1, said
 

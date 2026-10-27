@@ -1,0 +1,115 @@
+{
+ "task": {
+  "id": "D154",
+  "prompt": "The DOS machine is stopped in display frame 400, counted since it powered on. In one call, advance one frame at a time until a stop reads frame 470, keeping every stop a watch or breakpoint makes on the way and letting the server count the steps; I cannot know in advance how many steps that takes.",
+  "tool": "perform",
+  "args": {
+   "steps": [
+    {
+     "op": "run_for",
+     "frames": 1
+    }
+   ],
+   "summaries": true,
+   "until_frame": 470
+  },
+  "allow": [
+   "settle_seconds"
+  ],
+  "grammar": [
+   "run_for"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"run_for\", \"args\": {\"frames\": 70}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"run_for\", \"args\": {\"frames\": 70}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D154: {\"tool\":\"perform\",\"args\":{\"steps\":[{\"op\":\"run_for\",\"frames\":1}],\"until_frame\":470}}"
+   ],
+   "right": false
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470, \"summaries\": true}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D154: {\"tool\": \"perform\", \"args\": {\"steps\": [{\"op\": \"run_for\", \"frames\": 1}], \"until_frame\": 470}}"
+   ],
+   "right": false
+  }
+ ]
+}

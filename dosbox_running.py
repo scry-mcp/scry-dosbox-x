@@ -52,10 +52,10 @@ def drain_if_stopped(session: ds.Session) -> None:
         arming.apply_pending(session)
 
 
-def e9_block(session: ds.Session) -> dict[str, Any]:
-    """The guest's E9 lines since the previous stop (`log_marks.stop_block`); a log rewritten
-    shorter is read from its start."""
-    mark = STATE.e9_offset
+def e9_block(session: ds.Session, mark: int | None = None) -> dict[str, Any]:
+    """The guest's E9 lines since the previous stop, or since `mark` (`log_marks.stop_block`);
+    a log rewritten shorter is read from its start."""
+    mark = STATE.e9_offset if mark is None else mark
     try:
         fresh, offset = session.e9_new_since(mark)
     except ds.Invalid as exc:
@@ -99,8 +99,9 @@ def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
     picture = STATE.last_stop["picture"] = code.stop_instruction(session, where, registers,
                                                                  comments.notes)
     e9 = e9_block(session)
+    frame = STATE.last_stop["frame"] = dbg.frame_at_stop(session)
     return st.reply(**{**base, **position(where, getattr(session, "paging", None))},
-                    regs=st.shown_regs(registers), watches=watches,
+                    frame=frame, regs=st.shown_regs(registers), watches=watches,
                     cause=st.cause(attribution),
                     e9=e9, stop_seq=STATE.last_stop["seq"], **picture)
 
@@ -163,7 +164,8 @@ def position(where: dict[str, str] | None, paging: bool | None) -> dict[str, Any
 def recorded_head(recorded: dict[str, Any]) -> dict[str, Any]:
     """The head of a stop reply built off the record rather than a survey."""
     stop = STATE.last_stop
-    return {**recorded, **position(dict(stop["where"]), stop.get("paging"))}
+    return {**recorded, **position(dict(stop["where"]), stop.get("paging")),
+            **({"frame": stop["frame"]} if "frame" in stop else {})}
 
 
 PC_RUNNING_WHY = ("the guest is running: `pc` is read off a stopped machine's registers, and "

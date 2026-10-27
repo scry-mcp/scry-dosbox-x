@@ -26,7 +26,7 @@ import dosbox_x_server as server
 NO_CONSOLE = {"alive", "state", "at_debugger", "log", "log_wait", "e9", "e9_mark",
               "e9_new_since", "e9_since_mark", "e9_wait", "send_commands",
               "break_in", "save_state", "load_state",
-              "state_list", "snapshot", "captures", "frame"}
+              "state_list", "snapshot", "captures", "frame", "run_state"}
 
 
 class RunningGuest(SessionGates):

@@ -298,7 +298,7 @@ def _rewrite(conf: Path, program_line: str, into: str, drop_exit: bool) -> Path:
 
 def conf_with_stub(conf: Path, program_line: str) -> Path:
     """`conf` running the serial stub before the guest (REFERENCE.md, Input and the screen)."""
-    stub = f'mount g "{PKG / "guest"}"\nG:\\INJECT.COM\nc:\n{program_line}'
+    stub = f'mount g "{PKG / "guest"}"\nG:\\SCRY.COM\nc:\n{program_line}'
     return _rewrite(conf, program_line, stub, drop_exit=False)
 
 

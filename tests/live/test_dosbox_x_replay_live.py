@@ -1,7 +1,7 @@
 """A bricks session exports, replays twice with no model, and an edited copy diverges.
 
 The export cuts at `resume`: the released run ends wherever a stop finds it, which no replayed
-advance reaches."""
+advance reaches. Keys posted while the machine is parked are steps a replay holds to."""
 from __future__ import annotations
 
 import json
@@ -61,3 +61,33 @@ def test_a_bricks_session_replays_twice_and_an_edited_one_diverges(tmp_path: Pat
     assert played.returncode == 1, played.stdout[-600:]
     assert f"diverged at step {at + 1} of " in played.stdout
     assert f": {field} recorded 'edited'" in played.stdout
+
+
+def test_keys_sent_to_the_parked_machine_replay_and_the_release_after_cuts_naming_its_frames(
+        tmp_path: Path) -> None:
+    """A key posted while parked runs the machine by retraces, so its stop replays to the frame;
+    the `resume` after it still cuts, its `why` naming the frames up to the `stop`."""
+    started = cast(dict[str, Any], server.start(conf=str(BRICKS / "bricks.conf"),
+                                                cwd=str(BRICKS), session_seconds=300,
+                                                logfile=str(tmp_path / "bricks-e9.log")))
+    assert started["status"] == "ok", started.get("summary")
+    try:
+        assert server.run_for(frames=30)["verdict"] == "ELAPSED"
+        keyed = server.send_keys(keys=["right"])
+        assert keyed["status"] == "ok" and keyed["polls"] >= 1, keyed
+        assert server.run_for(frames=10)["verdict"] == "ELAPSED"
+        assert server.registers()["status"] == "ok"
+        assert server.resume()["status"] == "ok"
+        assert server.stop()["status"] == "ok"
+        document = tmp_path / "parked-keys.json"
+        exported = server.perform_export(dest=str(document))
+    finally:
+        server.close()
+    assert exported["status"] == "ok", exported.get("summary")
+    ops = [step["op"] for step in json.loads(document.read_text())["steps"]]
+    assert ops == ["run_for", "send_keys", "run_for", "registers"], ops
+    assert exported["cut"]["op"] == "resume", exported["cut"]
+    assert "`run_for` with `frames: " in exported["cut"]["why"], exported["cut"]
+    for n in (1, 2):
+        played = _replay(document, tmp_path / f"replay-{n}" / "t.md")
+        assert played.returncode == 0, (n, played.stdout[-600:], played.stderr[-300:])

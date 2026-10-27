@@ -131,8 +131,10 @@ class State:
     def remember_stop(self, session: ds.Session, where: dict[str, str],
                       registers: dict[str, str], held: list[dict[str, str]],
                       attribution: dict[str, Any]) -> None:
-        # The previous stop's decoded instruction is not this one's (`recorded_stop_reply`).
+        # The previous stop's decoded instruction and frame are not this one's
+        # (`recorded_stop_reply`); `stop_reply` reads this stop's frame after it.
         self.last_stop.pop("picture", None)
+        self.last_stop.pop("frame", None)
         self.last_stop.update(seq=int(self.last_stop.get("seq", 0)) + 1,
                               at=f"{where['cs']}:{where['eip']}", where=dict(where),
                               registers=dict(registers), held=[dict(r) for r in held],

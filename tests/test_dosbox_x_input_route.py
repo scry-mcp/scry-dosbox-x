@@ -77,8 +77,8 @@ def test_the_stub_s_own_line_is_never_the_program_s_reaction(tmp_path: Path) -> 
     served as the program having reacted. It is not: the program is silent, and that is a
     miss."""
     fake = _guest(tmp_path)
-    fake.input_effect = "Bochs port E9h: STUB  . inject already resident"
-    for pattern in ("already", "STUB", "(?i)inject", "resident$"):
+    fake.input_effect = "Bochs port E9h: STUB  . scry already resident"
+    for pattern in ("already", "STUB", "(?i)scry", "resident$"):
         got = cast(dict[str, Any], server.send_mouse(button="left", action="down",
                                                      expect=pattern, seconds=0.5))
         assert got["status"] == "ok" and got["verify"]["verdict"] == "TIMEOUT", (pattern, got)
@@ -114,7 +114,7 @@ def test_a_stub_of_a_newer_protocol_is_refused_too(tmp_path: Path) -> None:
     fake = _guest(tmp_path)
     fake.stub_protocol = ""
     newer = int(inputs.STUB_PROTOCOL) + 1
-    fake.log = [f"Bochs port E9h: STUB  . inject device=present proto={newer}"]
+    fake.log = [f"Bochs port E9h: STUB  . scry device=present proto={newer}"]
     got = cast(dict[str, Any], server.send_keys(keys=["a"]))
     assert got["status"] == "INVALID" and f"protocol {newer}" in got["message"], got
     assert fake.commands_sent == []
@@ -122,7 +122,7 @@ def test_a_stub_of_a_newer_protocol_is_refused_too(tmp_path: Path) -> None:
 
 #: A line on the program's channel from the stub, carrying every word the patterns below look
 #: for, so only its being the stub's keeps it out.
-STUB_ON_E9 = "Bochs port E9h: STUB  . inject cue MENU open aa UI x mouse down # the click"
+STUB_ON_E9 = "Bochs port E9h: STUB  . scry cue MENU open aa UI x mouse down # the click"
 
 
 @pytest.mark.parametrize(("pattern", "program", "hit"), [
@@ -223,7 +223,7 @@ def test_drive_at_a_stop_never_takes_the_stub_s_line_for_the_program_s() -> None
 
     class Since:
         def e9_since_mark(self, mark: int) -> list[str]:
-            return ["Bochs port E9h: STUB  . inject already resident",
+            return ["Bochs port E9h: STUB  . scry already resident",
                     "Bochs port E9h: UI    . clicked"]
     stub_only = sequence._verify_at_a_stop(cast(ds.Session, Since()), "resident", 0)
     assert stub_only["seen"] is False, stub_only

@@ -160,7 +160,6 @@
    "allow": ["settle_seconds"], "grammar": ["send_keys", "enter"]},
   {"id": "D58", "prompt": "Keep only the scanned cells whose value changed since the scan was opened.", "tool": "scan", "args": {"method": "filter", "operator": "!"}, "grammar": ["!", "filter"]},
   {"id": "D59", "prompt": "Advance the guest by 12 frames of the display and stop there, within 20 seconds, and show me the E9 lines it wrote since the previous stop.", "tool": "run_for", "args": {"frames": 12, "seconds": 20}},
-  {"id": "D60", "prompt": "Run the guest until the display's own absolute frame counter reads 5000.", "expect": "CANNOT", "about": "run_for"},
   {"id": "D61", "prompt": "Let the guest run for 250 milliseconds of its own emulated time and stop there, allowing up to 40 seconds of wall clock.", "tool": "run_for", "args": {"milliseconds": 250, "seconds": 40}},
   {"id": "D62", "prompt": "The guest is stopped. Tell me what the DOS machine is right now: which memory blocks each resident program owns and where, the device drivers, and the XMS and EMS handles.", "tool": "machine_map", "args": {}, "allow": ["sections"]},
   {"id": "D63", "prompt": "The guest is running and must not be stopped: list the DOS memory control blocks it holds at this moment.", "expect": "CANNOT", "about": "machine_map"},
@@ -260,5 +259,6 @@
   {"id": "D150", "prompt": "Did the guest write /opt/build/OUT.TXT during this run, leave it empty, or leave the old one untouched?", "tool": "guest_file", "args": {"path": "/opt/build/OUT.TXT"}},
   {"id": "D151", "prompt": "Keep the byte at the symbol _lives at its current value while the game runs, whatever the game writes to it.", "tool": "watch_add", "args": {"ref": "_lives", "mode": "freeze"}, "allow": ["length", "fmt", "by"], "grammar": ["freeze"]},
   {"id": "D152", "prompt": "Which file did the program fail to open? List the DOS open calls it made that came back with an error.", "tool": "log", "args": {"channel": "dos", "pattern": {"any_of": ["open", "open.*error", "(?i)open.*error", "error.*open", "-> error", "open.*-> error", "3D", "0x3D", "open .*-> error", "3D.*error", "0x3D.*error", "(?i)open"]}}, "allow": ["limit", "labels"], "grammar": ["dos"]},
-  {"id": "D153", "prompt": "For every INT 10h video BIOS call the program has made, give me the AX it returned.", "expect": "CANNOT", "about": "log"}
+  {"id": "D153", "prompt": "For every INT 10h video BIOS call the program has made, give me the AX it returned.", "expect": "CANNOT", "about": "log"},
+  {"id": "D154", "prompt": "The DOS machine is stopped in display frame 400, counted since it powered on. In one call, advance one frame at a time until a stop reads frame 470, keeping every stop a watch or breakpoint makes on the way and letting the server count the steps; I cannot know in advance how many steps that takes.", "tool": "perform", "args": {"steps": [{"op": "run_for", "frames": 1}], "summaries": true, "until_frame": 470}, "allow": ["settle_seconds"], "grammar": ["run_for"]}
 ]}

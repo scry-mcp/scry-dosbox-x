@@ -90,7 +90,7 @@ SYM_SAVE_NAME = "SYMSBK.BIN"
 # How long `ffmpeg` is given to pull one frame out of a capture.
 FFMPEG_SECS = 120
 
-SCREENSHOT_COMMAND = b"S"   # the stub's opcode for the device's capture trigger (guest/inject.asm)
+SCREENSHOT_COMMAND = b"S"   # the stub's opcode for the device's capture trigger (guest/scry.asm)
 
 SNAPSHOT_WAIT_S = 10.0
 # A STATE IS SAVED AND LOADED BY THE DEBUGGER'S OWN COMMANDS, `SAVESTATE <file>` and `LOADSTATE
@@ -259,6 +259,7 @@ class Session(dprocess.Process):
         self.altered = False
         # THE STUB'S PROTOCOL once the guest announced it (`dosbox_inputs.require_stub`).
         self.stub_protocol = ""
+        self.stub_motion: bool | None = None    # whether a move carries motion; None: unread
         self.vars_held = 0          # the names the debugger's list held at the last read-back
         self.started_at = time.monotonic()
         # WHICH OF THE DEBUGGER'S OPTIONAL COMMANDS THIS BUILD PARSES, as `start` read them.
@@ -271,6 +272,7 @@ class Session(dprocess.Process):
         self._surveyed: tuple[dict[str, str], dict[str, str], bool] | None = None
         self.clock_ms: float | None = None  # `RUNSTATE`'s emulated milliseconds, last read
         self.cycles: int | None = None      # `RUNSTATE`'s cycle count, last read
+        self.frames: int | None = None      # `RUNSTATE`'s display frames since power-on
 
         self._avi_facts: dict[tuple[str, int, int], dict[str, object]] = {}
         self.state_sent = False   # whether the last state command went down the channel
@@ -858,8 +860,9 @@ class Session(dprocess.Process):
         return log_reader.e9_mark(self)
 
     def e9_wait(self, pattern: str, seconds: float, mark: int = 0,
-                progress: Progress = no_progress) -> dict[str, object]:
-        return log_reader.e9_wait(self, pattern, seconds, mark, progress)
+                progress: Progress = no_progress,
+                advance: stub_link.Advance | None = None) -> dict[str, object]:
+        return log_reader.e9_wait(self, pattern, seconds, mark, progress, advance)
 
     def log_wait(self, pattern: str, seconds: float, channel: str, mark: int = 0,
                  progress: Progress = no_progress) -> dict[str, object]:
@@ -1030,14 +1033,15 @@ class Session(dprocess.Process):
     def state_list(self) -> dict[str, object]:
         return saved_states.state_list(self)
 
-    def send_commands(self, commands: list[bytes]) -> list[str]:
-        """The input route's post."""
+    def send_commands(self, commands: list[bytes],
+                      advance: stub_link.Advance | None = None) -> list[str]:
+        """The input route's post; `advance` runs a parked machine until each is taken."""
         if self._link is None:
             raise Invalid("no_channel", "this session has no input route: its socket was "
                           "never connected")
         if not commands:
             raise Invalid("bad_argument", "nothing to send")
-        return self._link.send(commands)
+        return self._link.send(commands, advance)
 
     # ------------------------------------------------------------------ closing
 
