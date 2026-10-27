@@ -137,16 +137,17 @@ def test_send_mouse_moves_presses_and_reads_the_pointer_back(tmp_path: Path) -> 
     fake.video_mode, fake.mouse_max = 0x13, (639, 199)
     moved = cast(dict[str, Any], server.send_mouse(x=100, y=50))
     assert moved["status"] == "ok" and moved["route"] == "guest", moved
-    # 320 x 200 pixels over a 640 x 200 driver range: x doubles, y stays.
-    assert fake.commands_sent == [[b"R"], [b"M" + (200).to_bytes(2, "little")
+    # 320 x 200 pixels over a 640 x 200 driver range: x doubles to the middle of its
+    # two coordinates, y stays.
+    assert fake.commands_sent == [[b"R"], [b"M" + (201).to_bytes(2, "little")
                                           + (50).to_bytes(2, "little")], [b"R"]]
     assert moved["arrived"] is True and "asked" not in moved
     assert moved["pointer"]["screen"] == {"x": 100, "y": 50, "width": 320, "height": 200}
-    assert moved["pointer"]["mouse"] == {"x": 200, "y": 50, "max_x": 639, "max_y": 199}
+    assert moved["pointer"]["mouse"] == {"x": 201, "y": 50, "max_x": 639, "max_y": 199}
     assert moved["pointer"]["bios_mode"] == "0x13" and moved["pointer"]["buttons"] == []
     fake.commands_sent.clear()
     both = cast(dict[str, Any], server.send_mouse(x=0, y=0, button="right"))
-    assert fake.commands_sent[1] == [b"M\x00\x00\x00\x00", b"B\x81", b"B\x01"], fake.commands_sent
+    assert fake.commands_sent[1] == [b"M\x01\x00\x00\x00", b"B\x81", b"B\x01"], fake.commands_sent
     assert both["button"] == "right" and both["action"] == "click"
     fake.commands_sent.clear()
     held = cast(dict[str, Any], server.send_mouse(button="left", action="down"))
@@ -168,6 +169,19 @@ def test_a_move_the_driver_placed_elsewhere_is_said_never_rounded_away(tmp_path:
     off = cast(dict[str, Any], server.send_mouse(x=21, y=3, units="mouse"))
     assert off["status"] == "ok" and off["arrived"] is False, off
     assert off["asked"] == {"x": 21, "y": 3} and off["pointer"]["mouse"]["x"] == 16, off
+    fake.pointer_snaps = 16                                             # cell 11 snaps into 10
+    missed = cast(dict[str, Any], server.send_mouse(x=11, y=3))
+    assert missed["arrived"] is False and missed["pointer"]["screen"]["x"] == 10, missed
+    assert missed["asked"] == {"x": 92, "y": 28}, missed
+
+
+def test_a_program_s_own_range_is_landed_on_through_the_tool(tmp_path: Path) -> None:
+    """Deluxe Paint's 0..2552 x 0..1592 in mode 13h, x kept even by the driver."""
+    fake = _guest(tmp_path)
+    fake.video_mode, fake.mouse_max, fake.pointer_snaps = 0x13, (2552, 1592), 2
+    got = cast(dict[str, Any], server.send_mouse(x=40, y=60))
+    assert got["arrived"] is True and got["pointer"]["screen"]["x"] == 40, got
+    assert (got["pointer"]["mouse"]["x"] // 8, got["pointer"]["mouse"]["y"] // 8) == (40, 60), got
 
 
 def test_send_mouse_refuses_before_anything_is_sent(tmp_path: Path) -> None:
@@ -336,13 +350,13 @@ def test_send_mouse_takes_the_same_expectation(tmp_path: Path) -> None:
     assert hit["status"] == "ok" and hit["verify"]["seen"] is True, hit
     moved = cast(dict[str, Any], server.send_mouse(x=10, y=20, expect="via CLICK"))
     assert moved["status"] == "ok" and moved["verify"]["seen"] is True, moved
-    assert fake.commands_sent[-2] == [b"M" + (80).to_bytes(2, "little")
-                                      + (160).to_bytes(2, "little")]
+    assert fake.commands_sent[-2] == [b"M" + (84).to_bytes(2, "little")
+                                      + (164).to_bytes(2, "little")]
     fake.input_effect = None
     miss = cast(dict[str, Any], server.send_mouse(button="left", expect="via CLICK",
                                                   seconds=1))
     assert miss["status"] == "ok" and miss["verify"]["verdict"] == "TIMEOUT", miss
-    assert miss["pointer"]["mouse"]["x"] == 80 and miss["route"] == "guest", miss
+    assert miss["pointer"]["mouse"]["x"] == 84 and miss["route"] == "guest", miss
 
 
 def test_perform_stops_at_a_send_keys_step_whose_expectation_missed(tmp_path: Path) -> None:

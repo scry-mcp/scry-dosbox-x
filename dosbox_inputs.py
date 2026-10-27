@@ -146,12 +146,32 @@ def parse_report(line: str) -> Report:
     return Report(x, y, b, mx, my, mode, (w, h))
 
 
+def per_unit(size: int, top: int) -> int | None:
+    """How many driver coordinates make one screen unit, when the range is a whole number of
+    them: set as `size * k - 1` (the driver's own) or as `(size - 1) * k` (a program that
+    multiplies its last unit, as Deluxe Paint does). None when neither divides."""
+    if (top + 1) % size == 0:
+        return (top + 1) // size
+    if size > 1 and top % (size - 1) == 0 and top >= size - 1:
+        return top // (size - 1)
+    return None
+
+
 def to_driver(unit: int, size: int, top: int) -> int:
-    """A screen unit to the driver's coordinate: the driver spans `0..top` over `size` units."""
-    return unit * (top + 1) // size
+    """A screen unit to the driver's coordinate, at the middle of the unit's span: the driver
+    snaps to its granularity, and a span's first coordinate can snap into the unit before."""
+    k = per_unit(size, top)
+    if k is not None:
+        return min(unit * k + k // 2, top)
+    first = -(-unit * (top + 1) // size)
+    last = max(first, -(-(unit + 1) * (top + 1) // size) - 1)
+    return min((first + last) // 2, top)
 
 
 def to_screen(coord: int, size: int, top: int) -> int:
+    k = per_unit(size, top)
+    if k is not None:
+        return min(coord // k, size - 1)
     return coord * size // (top + 1)
 
 
@@ -593,6 +613,17 @@ def _still_the_screen(report: Report, aimed: dict[str, Any]) -> None:
                          f"shows {said} now: `map_find` again at a stop")
 
 
+def _landed(after: Report, target: tuple[int, int], x: int | None, y: int | None,
+            units: str) -> bool:
+    """Whether the pointer is where it was asked to be, in the units it was asked in: a screen
+    unit is a span of driver coordinates, any of which is that unit."""
+    if units == "mouse":
+        return (after.x, after.y) == target
+    size = after.units()
+    return size is not None and (to_screen(after.x, size[0], after.max_x),
+                                 to_screen(after.y, size[1], after.max_y)) == (x, y)
+
+
 def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | None,
                action: str, units: str, expect: str | None, seconds: float | None,
                progress: ds.Progress = ds.no_progress,
@@ -614,13 +645,13 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
             after = _report(session, parked)
         except ds.Invalid as e:
             raise _delivered(e, parked) from None
-        landed = target is None or (after.x, after.y) == target
+        landed = target is None or _landed(after, target, x, y, units)
         fields: dict[str, Any] = {"route": "guest", "pointer": _pointer(after),
                                   "arrived": landed, **_parked_fields(parked)}
         if target is not None:
             fields["motion"] = _motion(session)
         if target is not None and not landed:
-            # A text mode snaps to its cell, a program's own range (INT 33h AX=07h/08h) clamps.
+            # The driver's granularity or a program's own range (INT 33h AX=07h/08h) moved it out.
             fields["asked"] = {"x": target[0], "y": target[1]}
         return fields
     asked = {**({"x": x, "y": y} if x is not None and y is not None else {}), "units": units,

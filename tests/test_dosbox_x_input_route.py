@@ -36,13 +36,32 @@ def test_a_real_report_parses_into_its_fields() -> None:
 
 
 @pytest.mark.parametrize(("unit", "size", "top", "driver"), [
-    (0, 320, 639, 0), (1, 320, 639, 2), (319, 320, 639, 638),
+    (0, 320, 639, 1), (1, 320, 639, 3), (319, 320, 639, 639),
     (0, 200, 199, 0), (199, 200, 199, 199),
-    (79, 80, 639, 632), (24, 25, 199, 192), (49, 50, 399, 392)])
+    (79, 80, 639, 636), (24, 25, 199, 196), (49, 50, 399, 396)])
 def test_a_screen_unit_maps_onto_the_driver_and_back(unit: int, size: int, top: int,
                                                     driver: int) -> None:
     assert inputs.to_driver(unit, size, top) == driver
     assert inputs.to_screen(driver, size, top) == unit
+
+
+@pytest.mark.parametrize(("size", "top", "snap"), [(320, 2552, 0xFFFE), (200, 1592, 0xFFFF)])
+def test_a_program_s_own_range_lands_on_the_pixel_asked(size: int, top: int, snap: int) -> None:
+    """Deluxe Paint sets 0..2552 x 0..1592, eight units a pixel that it divides back out, and
+    the driver keeps x even in mode 13h, so the aim has to sit inside the span, past its first
+    coordinate."""
+    for unit in range(size):
+        landed = inputs.to_driver(unit, size, top) & snap
+        assert (landed // 8, inputs.to_screen(landed, size, top)) == (unit, unit), unit
+
+
+@pytest.mark.parametrize(("size", "top"), [(320, 351), (320, 399), (320, 479), (200, 1592),
+                                          (80, 639), (350, 399)])
+def test_every_unit_maps_back_to_itself_on_a_range_at_least_as_fine(size: int, top: int) -> None:
+    """A range that does not divide the screen evenly still has a coordinate inside every unit;
+    the aim has to land in it, not in the unit before."""
+    assert [u for u in range(size)
+            if inputs.to_screen(inputs.to_driver(u, size, top), size, top) != u] == []
 
 
 def test_no_screen_unit_maps_past_the_driver_s_top() -> None:
@@ -68,7 +87,7 @@ def test_both_axes_are_bounded_on_the_screen_and_in_the_driver(tmp_path: Path) -
         assert got["status"] == "INVALID" and words in got["message"], (kw, got)
     edge = cast(dict[str, Any], server.send_mouse(x=79, y=24))
     assert edge["status"] == "ok" and edge["arrived"] is True, edge
-    assert fake.commands_sent[-2] == [inputs.move_command(632, 192)]
+    assert fake.commands_sent[-2] == [inputs.move_command(636, 196)]
 
 
 def test_the_stub_s_own_line_is_never_the_program_s_reaction(tmp_path: Path) -> None:
@@ -98,7 +117,7 @@ def test_commands_that_went_in_are_said_when_the_read_back_fails(tmp_path: Path)
     assert got["delivered"] is True and got["route"] == "guest", got
     assert "no acknowledgement" in got["message"], got
     acted = [c for c in fake.commands_sent if c != [inputs.OP_REPORT]]
-    assert acted == [[inputs.move_command(80, 40), b"B\x80", b"B\x00"]], fake.commands_sent
+    assert acted == [[inputs.move_command(84, 44), b"B\x80", b"B\x00"]], fake.commands_sent
 
 
 def test_without_a_log_the_keys_go_out_on_the_conf_s_word(tmp_path: Path) -> None:
@@ -252,7 +271,7 @@ def test_a_target_is_held_to_the_screen_the_guest_shows_before_anything_is_sent(
                                   "file", 3)
     got = cast(dict[str, Any], server.send_mouse(target="prompt"))
     assert got["status"] == "ok" and got["identified_at_stop"] == 3, got
-    assert fake.commands_sent[-2] == [inputs.move_command(16, 24)]
+    assert fake.commands_sent[-2] == [inputs.move_command(20, 28)]
 
 
 def test_a_program_session_whose_stub_never_announced_names_the_drive_it_used(
