@@ -81,7 +81,7 @@ An argument held to a vocabulary lists its words as its schema's `enum`, a scala
 
 - `pc` is `SSSS:OOOOOOOO` with `cpu_mode` beside it: a DOS place is segmented.
 - `run_for` counts frames as vertical retraces; `trace(instructions)` counts instructions run, `step(count)` steps taken.
-- `snapshot` refuses a machine parked at the debugger (the guest's own stub takes the command).
+- `snapshot` refuses a machine parked at the debugger: it captures the next frame drawn, which only a run draws, and a tool that only looks does not move the machine; `screen_view` reads the stop's screen.
 - A breakpoint keeps the debugger's spelling (`target`, `controls[].at`, `entry`): it is the string `BPLIST` is matched against.
 
 ### A long wait, and a cancelled call

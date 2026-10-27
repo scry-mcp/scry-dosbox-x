@@ -799,6 +799,7 @@ def snapshot(dest: str = "", seconds: Annotated[float, vocab.WAIT_BOUNDS] = ds.S
     Reply: `route`, `path`, `bytes`, `sha256`.
     """
     session = live()
+    ds.refuse_parked_snapshot(session)
     if session.launch.logfile is None:
         # `S` IS ALSO THE DELETE KEY'S SCAN CODE: an older stub would press it, and with no log
         # there is no announce to tell the two apart.

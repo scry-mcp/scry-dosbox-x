@@ -438,7 +438,7 @@ def test_snapshot_refuses_parked_and_a_command_that_produced_no_file(tmp_path: P
     nothing sent; and a command with no new PNG behind it within the bound is a wait that
     expired, naming the directory watched."""
     parked = ShotFake(tmp_path / "save", parked=True)
-    with pytest.raises(ds.Invalid, match="RUNNING") as exc:
+    with pytest.raises(ds.Invalid, match="draws none.*`screen_view`") as exc:
         ds.Session.snapshot(as_session(parked), None, 5.0)
     assert exc.value.code == "not_running" and parked.sent == [], "nothing is sent parked"
     silent = ShotFake(tmp_path / "save")

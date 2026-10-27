@@ -249,6 +249,16 @@ KEEPS_SURVEY = frozenset({"EV", "BPLIST", "BP", "BPDEL", "BPINT", "BPM", "BPPM",
                         "CALLBACKS", "VGA", "PRESENCE"})
 
 
+
+def refuse_parked_snapshot(session: Any) -> None:
+    """A screenshot is of a frame drawn after it is asked, which only a run draws."""
+    if session.at_debugger():
+        raise Invalid("not_running",
+            "a screenshot is the emulator's own capture of the next frame it draws, and a "
+            "machine stopped at the debugger draws none: taking one would run it. "
+            "`screen_view` reads the screen at this stop without moving it; or `resume`, "
+            "then snapshot")
+
 class Session(dprocess.Process):
     """A DOSBox-X process that stays put between questions."""
 
@@ -1004,11 +1014,7 @@ class Session(dprocess.Process):
         vocab.check_wait(seconds)
         folder = frames.folder(self)
         target = None if dest is None else paths.fresh_dest("dest", dest)
-        if self.at_debugger():
-            raise Invalid("not_running",
-                "a screenshot is taken of a RUNNING machine only: the stub takes its commands "
-                          "inside the machine, and one parked at the debugger runs nothing. "
-                          "`resume`, then snapshot")
+        refuse_parked_snapshot(self)
         before = set(folder.glob("*.png")) if folder.is_dir() else set()
         self.send_commands([SCREENSHOT_COMMAND])
         began = time.monotonic()

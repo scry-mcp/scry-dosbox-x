@@ -384,3 +384,12 @@ def test_a_timed_run_reads_each_frame_s_clock_from_the_stop_it_waited_for(
     got = cast(dict[str, Any], server.run_for(milliseconds=30, seconds=2))
     assert sum(c.startswith("EXEC EV ") for c in machine.sent) == 2, machine.sent
     assert got["polls"] == 3
+
+
+def test_a_snapshot_of_a_stopped_machine_is_refused_pointing_at_the_screen_read_here(
+        tmp_path: Path) -> None:
+    """It would have to run the machine to draw a frame; `screen_view` reads this stop's."""
+    machine = live(frames(1), tmp_path)
+    got = cast(dict[str, Any], server.snapshot())
+    assert got["code"] == "not_running" and "`screen_view`" in got["message"], got
+    assert vrts(machine) == [] and "EXEC RUN" not in machine.sent, "nothing ran"
