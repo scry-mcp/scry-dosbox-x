@@ -1,0 +1,106 @@
+{
+ "task": {
+  "id": "D147",
+  "prompt": "Fire the timer interrupt once by hand, so its handler runs at the next instruction.",
+  "tool": "pic",
+  "args": {
+   "method": "raise",
+   "irq": 0
+  },
+  "grammar": [
+   "raise"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D147: {\"tool\": \"pic\", \"args\": {\"method\": \"raise\", \"irq\": 0}}"
+   ],
+   "right": true
+  }
+ ]
+}

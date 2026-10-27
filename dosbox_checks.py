@@ -140,6 +140,8 @@ def read_length(length: int) -> None:
 CHANGE_WATCH_MAX = 16
 #: The debugger's `TAP` bounds: a count's range, a capture's block.
 TAP_MAX = {"count": 1024, "capture": 128}
+# A freeze arms one `FM` row per byte, each compared and written back after every instruction.
+FREEZE_MAX = 16
 
 
 def watch_width(mode: str, width: int) -> None:
@@ -155,6 +157,11 @@ def watch_width(mode: str, width: int) -> None:
             + (": each row holds the whole block" if mode == "capture" else
                ": the debugger's tap takes no longer range")
             + f"; {width} is a region for memdump")
+    if mode == "freeze" and width > FREEZE_MAX:
+        raise ds.Invalid("bad_argument",
+            f"a freeze watch is at most {FREEZE_MAX} bytes: it arms one debugger row per byte, "
+            f"each written back after every instruction the guest runs; freeze the fields that "
+            f"matter")
     if mode == "change" and width > CHANGE_WATCH_MAX:
         raise ds.Invalid("bad_argument",
             f"a change watch is at most {CHANGE_WATCH_MAX} bytes: it arms one debugger row "
@@ -321,7 +328,7 @@ def _watch_add(ref: str, mode: str, length: int = 0, fmt: str = "auto", by: str 
     chosen = declared("watch", ref, by)
     _count("length", length)
     trig, side = tap_fields(mode, trigger, trigger_type, length, fmt)
-    if mode in dec.TAP_MODES:
+    if mode in dec.KEPT_MODES:
         placement.to_invalid(lambda: dec.Declaration("watch", chosen, ref, width=1, fmt="u8",
                                                      watch_mode=mode, trigger=trig,
                                                      trigger_type=side))
@@ -568,6 +575,11 @@ def _debug(command: object, **_: Any) -> None:
         raise ds.Invalid("bad_argument",
             f"command={command!r} carries a control character: `debug` sends one command of "
             f"printable text, and a line break would be a second request on the channel")
+    words = command.split()
+    if len(words) > 1 and words[0].upper() == "DOSTRACE":
+        raise ds.Invalid("bad_argument",
+            "`DOSTRACE` with a file or `OFF` would move or end the trace the `dos` channel "
+            "reads, which `start(dos_calls=True)` opened; `DOSTRACE` alone lists it")
     released = DEBUG_RELEASES.match(command)
     if released is not None:
         word = released.group(1).upper()
@@ -579,6 +591,10 @@ def _debug(command: object, **_: Any) -> None:
         raise ds.Invalid("bad_argument",
             f"`{word}` lets the guest run, and a release sent here leaves `last_stop` naming the "
             f"stop before it. Release through {instead}: it reports the stop it reaches")
+
+
+def _guest_file(path: str, **_: Any) -> None:
+    paths.absolute("path", path)
 
 
 def _folded(name: str) -> Check:
@@ -610,7 +626,9 @@ BY_OP: dict[str, Check] = {
     "snapshot": _snapshot, "perform": _perform, "drive": _drive, "start": _start,
     "machine_map": _machine_map,
     **{name: _folded(name) for name in ("declaration_list", "declaration_clear", "comment_write",
-                                        "map_write", "scan", "state_write")},
+                                        "map_write", "scan", "state_write", "port", "pic",
+                                        "a20")},
+    "guest_file": _guest_file,
 }
 
 SEQUENCES = frozenset({"perform", "drive"})

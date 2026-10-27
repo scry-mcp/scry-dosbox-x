@@ -296,18 +296,18 @@ Example, from a live run:
 {
   "ref": "0000:0400",
   "length": 16,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n939.bin"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n1083.bin"
 }
 ```
 
 ```json
 {
-  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n939.bin",
+  "summary": "memdump 0000:0400: 16 bytes to $TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n1083.bin",
   "status": "ok",
   "ref": "0000:0400",
   "seg_off": "0000:00000400",
   "length": 16,
-  "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n939.bin",
+  "path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n1083.bin",
   "bytes": 16
 }
 ```
@@ -398,32 +398,39 @@ The debugger has no pattern search, so the range is dumped by the `memdump` rout
 log(pattern, channel, limit=40, labels=false, since_mark=0)
 ```
 
-The session's log, one `channel` (`guest`, `emulator`, `all`) filtered by the Python regex
-`pattern`; `limit` keeps the newest matches; `labels=True` adds `labels`. `since_mark` (a
-byte position, from a `mark`) reads only what follows. Needs a session with `logfile`; works
-on a running guest.
+The session's log, one `channel` (`guest`, `emulator`, `all`, `dos`) filtered by the
+Python regex `pattern`; `limit` keeps the newest matches; `labels=True` adds `labels`.
+`since_mark` (a byte position, from a `mark`) reads only what follows. Needs a session with
+`logfile`. `dos`, the guest's INT 21h calls and no other interrupt, instead needs a session
+started with `dos_calls`, matches `pattern` against each call's `line`, counts calls where
+the others count lines, and takes no `since_mark` or `labels`. Works on a running guest.
 
-Reply: `channel`, `lines`, `lines_total`, `truncated`, `labels`, `pattern`. INVALID with
-`code`: no `logfile`, no log yet, no guest instrumentation, `limit` out of range, a bad
-pattern, an unknown channel (`process` is refused by name), a `since_mark` naming no
-position. To wait for a line use `log_wait`.
+Reply: `channel`, `lines`, `lines_total`, `truncated`, `labels`, `pattern`, `note`; on the
+DOS channel `calls` instead of `lines` (each `n`, `time_s`, `cpu_mode`, `caller`, `psp`,
+`function`, `name`, `file`, `in`, `out`, `error`, `returned`, `returned_s`, `switched`,
+`line`). INVALID with `code`: no
+`logfile`, no log yet, no guest instrumentation, `limit` out of range, a bad pattern, an
+unknown channel (`process` is refused by name), a `since_mark` naming no position.
+To wait for a line use `log_wait`.
 
 Reference: REFERENCE.md, The log.
 
 | argument | type | default |
 |---|---|---|
 | `pattern` | string | required |
-| `channel` | one of `"guest"`, `"emulator"`, `"all"` | required |
+| `channel` | one of `"guest"`, `"emulator"`, `"all"`, `"dos"` | required |
 | `limit` | integer (>= 1, <= 400) | `40` |
 | `labels` | boolean | `false` |
 | `since_mark` | integer (>= 0) | `0` |
 
 | reply field | type |
 |---|---|
+| `calls` | array |
 | `channel` | string |
 | `labels` | object |
 | `lines` | array |
 | `lines_total` | integer |
+| `note` | string |
 | `pattern` | string |
 | `truncated` | boolean |
 
@@ -457,7 +464,13 @@ Example, from a live run:
 ```
 <!-- scry-reference:end log -->
 
-`guest` is the program's own 0xE9 instrumentation, one line per write; `emulator` is DOSBox-X's own lines; `all` is the file in order, each line tagged `[guest] ` or `[emulator] `. `labels` counts returned lines by first word (BOOT, PERF, UI...), one glance at who is talking. `lines_total` counts all matches, not those returned, and an empty `lines` is an answer. One file holds the three channels, so one mark position serves each. `process` is the emulator's own stdout. Queued work applies on a stop, saying so in `applied_on_stop`.
+**On the `dos` channel a call is a row, not a line.** `in` and `out` hold the registers DOS took
+and handed back, `out.cf` the carry, and `error` the code with its name for the calls that report
+by the carry (AH 38h and up); an older call answers in AL and gets no `error`. `returned` is false
+for a call DOS has not handed back yet, as at a stop inside it.
+
+
+`guest` is the program's own 0xE9 instrumentation, one line per write; `emulator` is DOSBox-X's own lines; `all` is the file in order, each line tagged `[guest] ` or `[emulator] `. `labels` counts returned lines by first word (BOOT, PERF, UI...), one glance at who is talking. `lines_total` counts all matches, not those returned, and an empty `lines` is an answer. One file holds those three channels, so one mark position serves each; `dos` reads the DOS call trace instead and takes no mark. There is no `process` channel: the emulator's own stdout is `close(detail=True)`'s. Queued work applies on a stop, saying so in `applied_on_stop`.
 
 <!-- scry-reference:begin log_wait -->
 ## `log_wait`
@@ -471,7 +484,8 @@ log_wait(pattern, channel, seconds=30.0, since_mark=0)
 When a line of `channel` matching `pattern` was logged: at once if the log already holds it,
 else wait up to `seconds`. `channel` and `since_mark` as in `log`. Works on a running guest.
 
-Reply: `verdict` `TARGET`, `pattern`, `channel`, `line` (the first match), `already`,
+Reply: `verdict` `TARGET`, `pattern`, `channel`, `line` (the first match; `call` on `dos`),
+`already`,
 `waited_s`, `lines_before`, `lines_total`, `arrived_during`, `lines_examined`; on timeout
 `verdict` `TIMEOUT` with `note`, `arrived_during`, `lines_examined`, `waited_s`. `status:
 INVALID`: `wait_stopped` on a stopped machine whose log lacks the line, `session_broken`
@@ -483,7 +497,7 @@ Reference: REFERENCE.md, The log.
 | argument | type | default |
 |---|---|---|
 | `pattern` | string | required |
-| `channel` | one of `"guest"`, `"emulator"`, `"all"` | required |
+| `channel` | one of `"guest"`, `"emulator"`, `"all"`, `"dos"` | required |
 | `seconds` | number (> 0, <= 600.0) | `30.0` |
 | `since_mark` | integer (>= 0) | `0` |
 
@@ -491,6 +505,7 @@ Reference: REFERENCE.md, The log.
 |---|---|
 | `already` | boolean |
 | `arrived_during` | integer |
+| `call` | object |
 | `channel` | string |
 | `line` | string |
 | `lines_before` | integer |
@@ -992,7 +1007,7 @@ Example, from a live run:
   "bits": 6,
   "pel_mask": "ffh",
   "image": {
-    "path": "$TMPDIR/dosbox-x-session-dwh686df/gfx/palette-1.png",
+    "path": "$TMPDIR/dosbox-x-session-acy0tq47/gfx/palette-1.png",
     "bytes": 1009,
     "sha256": "a5dff617e307a60f3bf521d96fed8809cc0f3b38409a74c904cfa5c1ad4371e1",
     "width": 256,

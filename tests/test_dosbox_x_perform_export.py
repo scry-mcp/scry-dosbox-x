@@ -101,6 +101,7 @@ DECLARED = {
                      "comment_write", "machine_map", "interrupt_vectors", "palette",
                      "screen_view"), "drop"),
     "map_find": ("matched", "screen"),
+    "guest_file": ("state",),
     **dict.fromkeys(("declaration_list", "build_check", "call_stack", "captures",
                      "comment_list", "disassemble", "find", "log", "log_wait", "state_list",
                      "status", "symbols_find"), "drop"),

@@ -1,0 +1,22 @@
+Master interrupt controller state
+ICW 0/0 special=0 auto-eoi=0 rotate-eoi=0 single=0 request_issr=0 vectorbase=0x08 active_irq=8 isr=00 isrr=ff isrignore=00
+IRQ INT#  Req /Mask/Serv
+  0 0x08   R    M        
+  1 0x09                 
+  2 0x0A                 CASCADE
+  3 0x0B        M        
+  4 0x0C                 
+  5 0x0D        M        
+  6 0x0E        M        
+  7 0x0F        M        
+Slave interrupt controller state
+ICW 0/0 special=0 auto-eoi=0 rotate-eoi=0 single=0 request_issr=0 vectorbase=0x70 active_irq=8 isr=00 isrr=ff isrignore=00
+IRQ INT#  Req /Mask/Serv
+  8 0x70                 
+  9 0x71                 
+ 10 0x72        M        
+ 11 0x73        M        
+ 12 0x74                 
+ 13 0x75                 
+ 14 0x76                 
+ 15 0x77                 

@@ -45,31 +45,31 @@ Example, from a live run:
   "captures": [
     {
       "kind": "bin",
-      "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n939.bin",
+      "path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n1083.bin",
       "present": true,
       "bytes": 16
     },
     {
       "kind": "png",
-      "path": "$TMPDIR/dosbox-x-session-dwh686df/gfx/palette-1.png",
+      "path": "$TMPDIR/dosbox-x-session-acy0tq47/gfx/palette-1.png",
       "present": true,
       "bytes": 1009
     },
     {
       "kind": "json",
-      "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1116-stopped.scry-map.json",
+      "path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n1260-stopped.scry-map.json",
       "present": true,
       "bytes": 313
     },
     {
       "kind": "trace",
-      "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1204.trace",
+      "path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n1348.trace",
       "present": true,
       "bytes": 238
     },
     {
       "kind": "avi",
-      "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1254.avi",
+      "path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n1398.avi",
       "present": true,
       "bytes": 36314,
       "riff_avi": true,
@@ -78,7 +78,7 @@ Example, from a live run:
     },
     {
       "kind": "wav",
-      "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1267.wav",
+      "path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n1411.wav",
       "present": true,
       "bytes": 5420,
       "complete": true,
@@ -128,19 +128,19 @@ Example, from a live run:
 ```json
 {
   "frame": 2,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/J/n11.png",
-  "capture_path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/J/n6-cap/screen_001.avi"
+  "dest": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/J/n11.png",
+  "capture_path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/J/n6-cap/screen_001.avi"
 }
 ```
 
 ```json
 {
-  "summary": "capture_frame 2: 5072 bytes to $TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/J/n11.png",
+  "summary": "capture_frame 2: 5072 bytes to $TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/J/n11.png",
   "status": "ok",
-  "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/J/n11.png",
+  "path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/J/n11.png",
   "bytes": 5072,
   "sha256": "aee93b1749a9c93112b4fca12509d5ad9da94fc94b41bf781612e590a0a4342b",
-  "capture_path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/J/n6-cap/screen_001.avi",
+  "capture_path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/J/n6-cap/screen_001.avi",
   "frame": 2
 }
 ```
@@ -203,15 +203,15 @@ Example, from a live run:
     320,
     8
   ],
-  "capture_path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/Q/n1-cap/screen_001.avi"
+  "capture_path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/Q/n1-cap/screen_001.avi"
 }
 ```
 
 ```json
 {
-  "summary": "series_capture: 5 AVI frames 0..4, 2 distinct, manifest $TMPDIR/dosbox-x-session-vkia_h9h/series/series-1/manifest.json",
+  "summary": "series_capture: 5 AVI frames 0..4, 2 distinct, manifest $TMPDIR/dosbox-x-session-2ny4oml_/series/series-1/manifest.json",
   "status": "ok",
-  "manifest": "$TMPDIR/dosbox-x-session-vkia_h9h/series/series-1/manifest.json",
+  "manifest": "$TMPDIR/dosbox-x-session-2ny4oml_/series/series-1/manifest.json",
   "count": 5,
   "first": 0,
   "last": 4,
@@ -219,7 +219,7 @@ Example, from a live run:
   "frames_asked": 5,
   "kept_after_close": false,
   "frame_source": "avi",
-  "capture_path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/Q/n1-cap/screen_001.avi",
+  "capture_path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/Q/n1-cap/screen_001.avi",
   "crop": [
     0,
     0,
@@ -263,17 +263,17 @@ Example, from a live run:
 
 ```json
 {
-  "dest": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/P/n4.png",
+  "dest": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/P/n4.png",
   "seconds": 20
 }
 ```
 
 ```json
 {
-  "summary": "snapshot: 885 bytes at $TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/P/n4.png",
+  "summary": "snapshot: 885 bytes at $TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/P/n4.png",
   "status": "ok",
   "route": "guest",
-  "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/P/n4.png",
+  "path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/P/n4.png",
   "bytes": 885,
   "sha256": "5053cd8f49a0d5bea6531db5520c7dfb0c06340f05b59d4baff51012d24313f5"
 }
@@ -348,14 +348,14 @@ Example, from a live run:
 ```json
 {
   "frames": 2,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1254.avi",
+  "dest": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n1398.avi",
   "seconds": 30
 }
 ```
 
 ```json
 {
-  "summary": "record 2 frames: ELAPSED, 1 frame at $TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1254.avi",
+  "summary": "record 2 frames: ELAPSED, 1 frame at $TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n1398.avi",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 2,
@@ -384,7 +384,7 @@ Example, from a live run:
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 35382
+    "mark": 35440
   },
   "stop_seq": 10,
   "instruction": {
@@ -421,7 +421,7 @@ Example, from a live run:
   "frames": 2,
   "began": true,
   "ended": true,
-  "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1254.avi",
+  "path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n1398.avi",
   "bytes": 36314,
   "avi_frames": 1
 }
@@ -505,14 +505,14 @@ Example, from a live run:
 ```json
 {
   "frames": 2,
-  "dest": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1267.wav",
+  "dest": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n1411.wav",
   "seconds": 30
 }
 ```
 
 ```json
 {
-  "summary": "audio_record wav 2 frames: ELAPSED, 1344 samples at 48000 Hz, silent at $TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1267.wav",
+  "summary": "audio_record wav 2 frames: ELAPSED, 1344 samples at 48000 Hz, silent at $TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n1411.wav",
   "status": "ok",
   "verdict": "ELAPSED",
   "polls": 2,
@@ -541,7 +541,7 @@ Example, from a live run:
     "lines_total": 0,
     "truncated": false,
     "lines": [],
-    "mark": 37415
+    "mark": 37473
   },
   "stop_seq": 11,
   "instruction": {
@@ -578,7 +578,7 @@ Example, from a live run:
   "frames": 2,
   "began": true,
   "ended": true,
-  "path": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n1267.wav",
+  "path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n1411.wav",
   "bytes": 5420,
   "channels": 2,
   "sample_rate_hz": 48000,

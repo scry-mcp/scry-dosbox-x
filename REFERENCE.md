@@ -9,6 +9,7 @@ The [README](README.md) is the front door. This page holds the index, the envelo
 - [Read](docs/reference/read.md): [`registers`](docs/reference/read.md#registers), [`read_memory`](docs/reference/read.md#read_memory), [`disassemble`](docs/reference/read.md#disassemble), [`call_stack`](docs/reference/read.md#call_stack), [`memdump`](docs/reference/read.md#memdump), [`find`](docs/reference/read.md#find), [`log`](docs/reference/read.md#log), [`log_wait`](docs/reference/read.md#log_wait), [`machine_map`](docs/reference/read.md#machine_map), [`interrupt_vectors`](docs/reference/read.md#interrupt_vectors), [`palette`](docs/reference/read.md#palette), [`screen_view`](docs/reference/read.md#screen_view), [`screen_signature`](docs/reference/read.md#screen_signature), [`map_find`](docs/reference/read.md#map_find), [`map_write`](docs/reference/read.md#map_write), [`debug`](docs/reference/read.md#debug)
 - [Scan](docs/reference/scan.md): [`scan`](docs/reference/scan.md#scan)
 - [Write](docs/reference/write.md): [`set_register`](docs/reference/write.md#set_register), [`write`](docs/reference/write.md#write)
+- [Hardware](docs/reference/hardware.md): [`port`](docs/reference/hardware.md#port), [`pic`](docs/reference/hardware.md#pic), [`a20`](docs/reference/hardware.md#a20)
 - [Advance](docs/reference/advance.md): [`run_to`](docs/reference/advance.md#run_to), [`run_for`](docs/reference/advance.md#run_for), [`trace`](docs/reference/advance.md#trace), [`screen_wait`](docs/reference/advance.md#screen_wait), [`step`](docs/reference/advance.md#step), [`resume`](docs/reference/advance.md#resume), [`stop`](docs/reference/advance.md#stop)
 - [Declarations](docs/reference/declarations.md): [`breakpoint_at`](docs/reference/declarations.md#breakpoint_at), [`breakpoint_interrupt`](docs/reference/declarations.md#breakpoint_interrupt), [`regpoint_add`](docs/reference/declarations.md#regpoint_add), [`watch_add`](docs/reference/declarations.md#watch_add), [`declaration_list`](docs/reference/declarations.md#declaration_list), [`declaration_clear`](docs/reference/declarations.md#declaration_clear)
 - [States](docs/reference/states.md): [`state_list`](docs/reference/states.md#state_list), [`state_write`](docs/reference/states.md#state_write)
@@ -16,7 +17,7 @@ The [README](README.md) is the front door. This page holds the index, the envelo
 - [Comments](docs/reference/comments.md): [`comment_list`](docs/reference/comments.md#comment_list), [`comment_write`](docs/reference/comments.md#comment_write)
 - [Input](docs/reference/input.md): [`send_keys`](docs/reference/input.md#send_keys), [`send_mouse`](docs/reference/input.md#send_mouse), [`drive`](docs/reference/input.md#drive)
 - [Captures](docs/reference/captures.md): [`captures`](docs/reference/captures.md#captures), [`capture_frame`](docs/reference/captures.md#capture_frame), [`series_capture`](docs/reference/captures.md#series_capture), [`snapshot`](docs/reference/captures.md#snapshot), [`record`](docs/reference/captures.md#record), [`audio_record`](docs/reference/captures.md#audio_record)
-- [Files](docs/reference/files.md): [`image_compare`](docs/reference/files.md#image_compare)
+- [Files](docs/reference/files.md): [`image_compare`](docs/reference/files.md#image_compare), [`guest_file`](docs/reference/files.md#guest_file)
 - [Lists](docs/reference/lists.md): [`perform`](docs/reference/lists.md#perform), [`perform_export`](docs/reference/lists.md#perform_export)
 <!-- scry-reference:end index -->
 
@@ -93,7 +94,7 @@ Every tool ends one of three ways, and one that declares no end ends `none`:
 |---|---|---|
 | `stop` | the guest back at the debugger by `BREAK`, as `stop` does (the cancelled call answers nothing, so that stop is read in the next reply's `last_stop`, its `cause` "a cancelled call's stop at SSSS:OOOOOOOO" when no declaration is at that address), or a stop it had already reached recorded as its own; a `run_to` removes the breakpoints it armed; a CPU log still open (a `trace`'s) is moved aside to `trace-cancelled-<n>.trace` in the session's captures directory (the working directory when there is none to write in) and closed | `stop`, `run_to`, `run_for`, `trace`, `screen_wait`, `record`, `audio_record`, `perform` |
 | `kill` | the emulator closed; a close cancelled half-way still finishes | `start`, `close` |
-| `none` | the guest as the call found it | `build_check`, `status`, `log`, `log_wait`, `registers`, `read_memory`, `disassemble`, `call_stack`, `memdump`, `find`, `scan`, `debug`, `set_register`, `write`, `resume`, `step`, `state_write`, `snapshot`, `state_list`, `breakpoint_interrupt`, `regpoint_add`, `symbols_load`, `symbols_find`, `comment_write`, `comment_list`, `machine_map`, `interrupt_vectors`, `palette`, `screen_view`, `screen_signature`, `map_write`, `map_find`, `series_capture`, `image_compare`, `breakpoint_at`, `declaration_list`, `declaration_clear`, `watch_add`, `send_keys`, `send_mouse`, `captures`, `capture_frame`, `perform_export`, `drive` |
+| `none` | the guest as the call found it | `build_check`, `status`, `log`, `log_wait`, `registers`, `read_memory`, `disassemble`, `call_stack`, `memdump`, `find`, `scan`, `debug`, `set_register`, `write`, `resume`, `step`, `state_write`, `snapshot`, `state_list`, `breakpoint_interrupt`, `regpoint_add`, `symbols_load`, `symbols_find`, `comment_write`, `comment_list`, `machine_map`, `interrupt_vectors`, `palette`, `screen_view`, `screen_signature`, `map_write`, `map_find`, `series_capture`, `image_compare`, `breakpoint_at`, `declaration_list`, `declaration_clear`, `watch_add`, `send_keys`, `send_mouse`, `captures`, `capture_frame`, `perform_export`, `drive`, `port`, `pic`, `a20`, `guest_file` |
 
 Any other tool that meets a cancel ends `none`.
 
@@ -290,6 +291,24 @@ Live, the bytes a listing shows are held to the memory `read_memory` reads.
 
 **A wait on a machine stopped at the debugger ends at once**, refused with the position: a stopped guest writes nothing, and expiry would blame the program. The check is the debugger's `RUNSTATE`, asked at every poll, so a stop landing during the wait comes back as the stop, not "still running", which would have the next key refused for it.
 
+**The emulator's own categories are chosen at `start`** (`log_categories`, a `[log]` category and its level) and land in the `emulator` channel. They say what the emulator did, in its words; a category at `debug` writes a line per event (`files` one per read call), so turn on what the question needs.
+
+**The `dos` channel is every INT 21h the guest made, with its result** (`start(dos_calls=True)`, a build whose debugger has `DOSTRACE`). The emulator's own `int21` and `fileio` lines are written before DOS runs the call, so they never say whether it worked; the trace keeps a row as DOS takes a call and one as DOS hands it back, paired here into a call with the registers DOS took and AX to DX as it handed them back, the carry, the error's name, the caller's `CS:IP` and the PSP. The caller and the PSP are what tell a DPMI host's calls, or the shell's, from the program's. A call that does not come back to its caller's stack (a terminate, an EXEC whose child now runs) says `switched` and claims no result, since the registers are then someone else's. It reads its own file, so `since_mark` is refused there and `pattern` narrows it: each call is matched as one line (`#<n> <caller> psp <psp> <function> <name> <file> -> <result>`).
+
+## The machine's hardware
+
+`port`, `pic` and `a20` type the debugger's own `IN`/`OUT`, `PIC` and `A20` commands. The tools: [Hardware](docs/reference/hardware.md).
+
+**A port no device answers is refused, not read.** The emulator answers such a read with all ones and swallows such a write in silence, which reads exactly like a device that answered `0xFF`; the debugger's `PORTINFO` says which accesses of a port reach a device, by width and side, before the access is made. Every port access marks the session `altered`, a read too: reading a port is a bus cycle the device sees.
+
+**The timer is IRQ 0**, so `pic(method="raise", irq=0)` runs its handler on demand, as the debugger's `TIMERIRQ` does. A mask is read back off the listing; a raise, a lower and an acknowledgement answer the line as it is after, since a raised line the CPU takes at once is no longer requested by the time anything reads it.
+
+## The guest's files
+
+A DOS program hands a result back the DOS way: a file on a mounted drive. `start(guest_files=[...])` takes each file's size, time and digest before the emulator boots; `guest_file` and `close` then say what the guest left. The tool: [Files](docs/reference/files.md) (`guest_file`).
+
+**Absent, empty and unchanged are three failures, and existence catches none of the third.** A file left by an earlier run passes any "is it there" test; compared against its own fingerprint from before the boot it is `unchanged`, refused, and only bytes or a time the run gave it make it `written`. The verdict reads the host's file, so a file the guest still holds open may not have its bytes yet: the emulator buffers a handle until DOS closes it.
+
 ## Sequences in one call
 
 `perform(steps)` runs a list of the server's own operations in order and stops at the first failure with a full account; `start(plan=...)` runs the same list on the fresh session. The tools: [Lists](docs/reference/lists.md) (`perform`, `perform_export`) and [Input](docs/reference/input.md) (`drive`).
@@ -359,5 +378,7 @@ Some tools need a debugger command a build may lack; `build_check` lists the one
 | `VGAMEMDUMP` | the video RAM as the VGA holds it, planes interleaved | `screen_view` and `screen_signature` in a planar, unchained or linear mode |
 | `CAPTURE` | a WAV, raw OPL, raw MIDI or video capture turned on or off at a stop, naming its file | `record`, `audio_record` |
 | `TAP` | every write or read of a place recorded without stopping (`TAPLIST`, `TAPDEL` beside it) | `watch_add` with `mode` `count` or `capture` |
+| `PORTINFO` | which reads and writes of a port, at each width, reach a device | `port` |
+| `DOSTRACE` | every INT 21h at entry and return, into a file | `log` and `log_wait` on the `dos` channel, `start(dos_calls=True)` |
 
 On a build without `RUNSTATE` a session starts, every reading answers at the stop `start` leaves, and input, captures and declarations work; `resume` with no bound releases the machine and says that nothing will tell when it stops again, and `stop` brings it back to the debugger wherever it is. No DOSBox-X release carries `RUNSTATE` yet.

@@ -24,6 +24,7 @@ import dosbox_declarations as dec
 import dosbox_find as finder
 import dosbox_folds as folds
 import dosbox_grammar as grammar
+import dosbox_hardware as hardware
 import dosbox_inputs as inputs
 import dosbox_launch as dlaunch
 import dosbox_logs as dlogs
@@ -51,6 +52,8 @@ CLOSED: list[tuple[str, str, tuple[Any, ...]]] = [
     ("scan", "method", tuple(folds.SCAN)), ("state_write", "method", tuple(folds.STATE_METHODS)),
     ("image_compare", "method", tuple(media_tools.IMAGE_METHODS)),
     ("audio_record", "kind", tuple(capture_files.AUDIO_KINDS)),
+    ("port", "method", tuple(folds.PORT)), ("port", "bits", tuple(hardware.BITS)),
+    ("pic", "method", tuple(folds.PIC)), ("a20", "method", tuple(folds.A20)),
 ]
 #: The two taken in any case: a pattern of their words, never an `enum` that would refuse one.
 FOLDED: list[tuple[str, str, tuple[str, ...]]] = [
@@ -70,6 +73,7 @@ RANGES: list[tuple[str, str, int, int]] = [
     ("start", "session_seconds", 1, dlaunch.MAX_SECONDS),
     ("start", "input_port", 0, dlaunch.INPUT_PORT_MAX),
     ("palette", "first", 0, vgadac.DAC_ENTRIES - 1), ("palette", "count", 0, vgadac.DAC_ENTRIES),
+    ("pic", "irq", 0, hardware.IRQ_MAX),
 ]
 WAITS = ("seconds", "settle_seconds")
 #: The waits whose 0 means no wait at all, so their floor is closed.

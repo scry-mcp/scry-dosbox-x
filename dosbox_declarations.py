@@ -37,9 +37,11 @@ PENDING_STAMP = "pending"
 # One SEG:OFF names another byte per mode.
 CPU_MODES = ("real", "protected")
 # `show` arms nothing; `change` also arms a memory-change breakpoint; `count` and `capture` arm
-# the debugger's `TAP`, which records without stopping.
-WATCH_MODES = ("show", "change", "count", "capture")
+# the debugger's `TAP`, which records without stopping; `freeze` pins each byte with `FM`.
+WATCH_MODES = ("show", "change", "count", "capture", "freeze")
 TAP_MODES = ("count", "capture")
+#: The modes whose debugger object the server keeps by ref: armed at a stop, on one place.
+KEPT_MODES = (*TAP_MODES, "freeze")
 #: A capture's trigger is written (`w`) or read (`r`).
 TRIGGER_TYPES = ("w", "r")
 RETIRED_MODES = {"read": "show"}
@@ -185,11 +187,14 @@ class Declaration:
         if self.watch_mode not in TAP_MODES:
             if self.trigger is not None or self.trigger_type is not None:
                 raise DeclarationError(f"a {self.watch_mode} watch carries no trigger")
-            return
+            if self.watch_mode != "freeze":
+                return
         if self.by not in ("symbol", "address"):
             raise DeclarationError(f"a {self.watch_mode} watch is declared by symbol or by "
-                                   f"address: its tap sits on one place for its life; got "
+                                   f"address: it sits on one place for its life; got "
                                    f"{self.by!r}")
+        if self.watch_mode == "freeze":
+            return
         if self.watch_mode == "count":
             if self.trigger is not None or self.trigger_type is not None:
                 raise DeclarationError("a count watch carries no trigger")

@@ -132,7 +132,8 @@ under fixed names into the emulator's working directory (`tests/live/live_privat
 
 The protected-mode cases need no other project: they run on a second guest the package owns,
 `tests/guest/dpmi.c`, a DJGPP program built into the committed `dpmi.exe` and its `nm` table
-`dpmi.sym`, under the DPMI host DOSBox-X provides.
+`dpmi.sym`, under the DPMI host DOSBox-X provides, CWSDPMI, which the program's stub loads
+resident.
 
 The real-mode cases and the matrix's program sections run `dos-real16` and `dos-real16-alt` from
 a bench: copies of each program, its map, the data it opens and its project's own run conf,

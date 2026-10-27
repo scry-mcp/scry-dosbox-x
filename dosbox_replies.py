@@ -105,6 +105,7 @@ class CloseReply(DosboxEnvelope, total=False):
     elapsed_s: float
     ended_by: str
     errorlog_tail: str | dict[str, Any]
+    guest_files: list[Any]
     note: str
     pid: int
     state_dir: str
@@ -166,10 +167,12 @@ class InterruptVectorsReply(DosboxEnvelope, total=False):
 
 
 class LogReply(DosboxEnvelope, total=False):
+    calls: list[Any]
     channel: str
     labels: dict[str, Any]
     lines: list[Any]
     lines_total: int
+    note: str
     pattern: str
     truncated: bool
 
@@ -177,6 +180,7 @@ class LogReply(DosboxEnvelope, total=False):
 class LogWaitReply(DosboxEnvelope, total=False):
     already: bool
     arrived_during: int
+    call: dict[str, Any]
     channel: str
     line: str
     lines_before: int
@@ -468,8 +472,11 @@ class StartReply(DosboxEnvelope, account.SequenceFields, total=False):
     debugger_commands: Annotated[list[Any], OmitEmpty]
     declarations: dict[str, Any]
     display: Annotated[str, OmitEmpty]
+    dos_calls: str
     elapsed_s: float
+    guest_files: list[Any]
     input_port: int | dict[str, Any]
+    log_categories: dict[str, Any]
     operations: list[Any]
     pid: int
     presence: bool | dict[str, Any]
@@ -607,6 +614,7 @@ class WatchAddReply(DosboxEnvelope, total=False):
     entries: list[Any]
     entry: str
     fmt: str
+    frozen_hex: str
     length: int
     mode: str
     note: str
@@ -619,6 +627,34 @@ class WatchAddReply(DosboxEnvelope, total=False):
     trigger_addr: str
     trigger_type: str
     why: str
+
+
+class PortReply(DosboxEnvelope, total=False):
+    bits: int
+    port: str
+    readback: dict[str, Any]
+    value: str
+
+
+class PicReply(DosboxEnvelope, total=False):
+    controllers: list[Any]
+    irq: int
+    irqs: list[Any]
+    line: dict[str, Any]
+    method: str
+
+
+class A20Reply(DosboxEnvelope, total=False):
+    enabled: bool
+
+
+class GuestFileReply(DosboxEnvelope, total=False):
+    before: dict[str, Any]
+    bytes: int
+    path: str
+    same_bytes: Annotated[bool, OmitEmpty]
+    sha256: str
+    state: str
 
 
 class WriteReply(DosboxEnvelope, total=False):
@@ -711,6 +747,10 @@ class StateWriteReply(DosboxEnvelope, total=False):
 #: Each tool's reply model, by the tool's name.
 MODELS: dict[str, type] = {
     "comment_write": CommentWriteReply,
+    "port": PortReply,
+    "pic": PicReply,
+    "a20": A20Reply,
+    "guest_file": GuestFileReply,
     "declaration_clear": DeclarationClearReply,
     "declaration_list": DeclarationListReply,
     "map_write": MapWriteReply,

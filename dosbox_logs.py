@@ -10,8 +10,10 @@ from scry_core.reply_contract import Invalid
 E9_LINE = re.compile(r"^Bochs port E9h: ")
 
 
-# Guest E9 lines and emulator log lines share one file, so a channel is a selection of it.
-LOG_CHANNELS = ("guest", "emulator", "all")
+# Guest E9 lines and emulator log lines share one file, so each of these is a selection of it.
+FILE_CHANNELS = ("guest", "emulator", "all")
+#: `dos` reads the DOS call trace instead (`dosbox_dos_calls`).
+LOG_CHANNELS = (*FILE_CHANNELS, "dos")
 
 
 def compiled(pattern: str) -> re.Pattern[str]:

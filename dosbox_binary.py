@@ -35,7 +35,7 @@ HEAVY_DEBUG_MARK = b"LOGS/LOGL/LOGC [num]"
 DEBUGGER_MARK = b"Debugger command not recognized"
 #: Commands a build may lack, found as the parser's NUL-bounded literals, not the help text's.
 COMMANDS = ("RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMDUMP", "BPIF",
-            "CAPTURE", "TAP")
+            "CAPTURE", "TAP", "PORTINFO", "DOSTRACE")
 #: Bare names a release also carries for something else: found by their usage line.
 USAGE_MARKS = {name: b"\0DEBUG: " + name.encode() + b" usage: " for name in ("CAPTURE", "TAP")}
 #: The debugger with no screen, which needs no terminal or console.

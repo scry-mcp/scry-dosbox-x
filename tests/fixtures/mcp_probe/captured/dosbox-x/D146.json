@@ -1,0 +1,106 @@
+{
+ "task": {
+  "id": "D146",
+  "prompt": "Mask the timer interrupt, IRQ 0, at the interrupt controller.",
+  "tool": "pic",
+  "args": {
+   "method": "mask",
+   "irq": 0
+  },
+  "grammar": [
+   "mask"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D146: {\"tool\": \"pic\", \"args\": {\"method\": \"mask\", \"irq\": 0}}"
+   ],
+   "right": true
+  }
+ ]
+}

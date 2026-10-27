@@ -24,6 +24,7 @@ import matrix_dos_real16  # noqa: F401
 import matrix_dos_real16_alt  # noqa: F401
 import matrix_dpmi  # noqa: F401
 import matrix_focus  # noqa: F401
+import matrix_machine  # noqa: F401
 import matrix_media  # noqa: F401
 import matrix_mouse  # noqa: F401
 import matrix_presence  # noqa: F401

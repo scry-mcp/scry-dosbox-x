@@ -1,0 +1,113 @@
+{
+ "task": {
+  "id": "D145",
+  "prompt": "Read the 16-bit word at I/O port 220h.",
+  "tool": "port",
+  "args": {
+   "method": "read",
+   "port": {
+    "any_of": [
+     544,
+     "0x220"
+    ]
+   },
+   "bits": 16
+  },
+  "grammar": [
+   "read",
+   16
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x220\", \"bits\": 16}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": 544, \"bits\": 16}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x220\", \"bits\": 16}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": 544, \"bits\": 16}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x220\", \"bits\": 16}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x220\", \"bits\": 16}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": 544, \"bits\": 16}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x220\", \"bits\": 16}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x220\", \"bits\": 16}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x220\", \"bits\": 16}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x220\", \"bits\": 16}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x220\", \"bits\": 16}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x220\", \"bits\": 16}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x220\", \"bits\": 16}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D145: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": 544, \"bits\": 16}}"
+   ],
+   "right": true
+  }
+ ]
+}

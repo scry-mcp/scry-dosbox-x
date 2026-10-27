@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import Any
 
 import bench_programs as bp
 from matrix_common import (
@@ -36,6 +37,7 @@ from matrix_programs import (
 )
 
 STARTUP_CELL = "E log_wait finds the line the game logs at start"
+DOS_CELL = "E log dos lists the sound files the game opens, each from the game's own PSP"
 
 KEY_CELLS = ("E a key through the serial stub reaches the game's INT 9",
              "E two Tabs are a credit: Credits: N on E9",
@@ -51,6 +53,8 @@ E_CELLS = cells(
      "REFERENCE.md, Advancing the machine: at the bound the machine rests on the control"),
     ("E the stub announces the serial route", "REFERENCE.md, Input and the screen"),
     (STARTUP_CELL, "known: the game logs its identity's `e9` line at start"),
+    (DOS_CELL, "log docstring: the DOS channel; measured: the game opens AUDIO\\*.IMA as it "
+               "loads"),
     (KEY_CELLS[0], "measured; known: the game owns INT 9 and reads its own key table"),
     (KEY_CELLS[1], "measured; known: two coins make a credit, each counted on its release, "
                    "and an `info` build logs `Credits: N`"),
@@ -81,7 +85,7 @@ def section_e() -> None:
     else:
         M.block("E the program carries its E9 channel", "prod build, no E9")
     boot(conf=bp.session_conf(program, Path(M.fresh("-conf"))), cwd=program.root,
-         program=bp.DOS_REAL16_ALT.launch, input_port=free_port())
+         program=bp.DOS_REAL16_ALT.launch, input_port=free_port(), dos_calls=True)
     M.setup()
     r = M.call(server.symbols_load, path=str(mapf), base="0")
     judged("E symbols_load refuses a map with no publics", reply=r,
@@ -102,6 +106,7 @@ def section_e() -> None:
         judged(STARTUP_CELL, reply=r, holds=ok(r))
     else:
         M.block(STARTUP_CELL, "prod build, no E9")
+    _sound_files(psp, timer)
     control = slow_control(psp) or timer
     if stub and e9:
         M.block(MOVES_CELL, "the key route exists, so this section judges the key path instead")
@@ -114,6 +119,21 @@ def section_e() -> None:
     M.call(server.scan, method="clear")
     r = M.call(server.close)
     judged("E close", reply=r, holds=ok(r) and r.get("closed") is True)
+
+
+def _sound_files(psp: int, control: str) -> None:
+    """The game's opens of its sound files, run for until the first is traced: each from the
+    game's PSP, none refused by DOS."""
+    opened: list[dict[str, Any]] = []
+    for _ in range(5):
+        opened = M.call(server.log, channel="dos", pattern=r"open AUDIO\\",
+                        limit=400).get("calls") or []
+        if opened:
+            break
+        run_for(control, 4)
+    M.judge(DOS_CELL, bool(opened) and all(c.get("psp") == f"0x{psp:04X}" and "error" not in c
+                                           and c.get("returned") for c in opened),
+            f"{len(opened)} opens, first {str(opened[:1])[:100]}")
 
 
 def _confirm(at: str, value: int) -> None:

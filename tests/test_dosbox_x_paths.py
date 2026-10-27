@@ -34,7 +34,7 @@ METHOD_OF = {"dest": "save", "path": "load"}
 INVENTORY = frozenset({
     ("start", "cwd"), ("start", "conf"), ("start", "logfile"), ("start", "captures_dir"),
     ("start", "state_dir"), ("memdump", "dest"), ("trace", "dest"), ("snapshot", "dest"),
-    ("record", "dest"), ("audio_record", "dest"),
+    ("record", "dest"), ("audio_record", "dest"), ("guest_file", "path"),
     ("palette", "dest"), ("screen_view", "dest"), ("capture_frame", "dest"),
     ("capture_frame", "capture_path"), ("symbols_load", "path"), ("symbols_load", "types"),
     ("comment_write", "dest"), ("comment_write", "path"), ("start", "binary"),
@@ -192,6 +192,7 @@ def _base(tool: str, tmp_path: Path) -> dict[str, Any]:
         "map_write path": {"method": "load", "path": str(tmp_path / "m.scry-map.json")},
         "map_write dest": {"method": "save", "dest": str(tmp_path / "m.scry-map.json")},
         "perform_export": {"dest": str(tmp_path / "p.json")},
+        "guest_file": {"path": str(tmp_path / "OUT.TXT")},
         "series_capture": {"at_frames": [0], "dest": str(tmp_path / "series"),
                            "capture_path": str(tmp_path / "c.avi")},
     }

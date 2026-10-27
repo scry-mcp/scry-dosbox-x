@@ -1,0 +1,13 @@
+What the debugger printed for the machine tools and the DOS channel, captured from live runs of
+the DOS guest (`tests/guest/dosio.asm`, started as `DOSIO.COM W`) and of the dos-real16-alt bench,
+headless, on the fork's build carrying `PORTINFO` and `DOSTRACE`.
+
+dosio.trace               the file `DOSTRACE` wrote over the guest's run from the reset vector:
+                          the shell EXECing mount.COM and the guest (`SWITCHED=1`), the guest's
+                          own opens, the missing file's carry and error 2, and a close whose
+                          get-date and get-time calls nest inside it before its `R` row
+pic-irq0-masked.txt       `PIC` on the guest's machine after `PIC MASKIRQ 0` and a second's run:
+                          IRQ 0 requested and masked, IRQ 2 the cascade, the slave's eight lines
+portinfo.txt              `PORTINFO` after three seconds of the bench: 2E8h no device, 3DAh an
+                          8-bit read only, 3C8h the DAC's 8 and 16-bit, 21h the PIC's 8-bit, 220h
+                          the Sound Blaster at every width

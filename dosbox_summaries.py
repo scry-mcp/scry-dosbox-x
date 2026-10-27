@@ -112,6 +112,9 @@ def close(args: dict[str, Any], reply: dict[str, Any]) -> str:
 # ------------------------------------------------------------------------ the guest's log
 
 def log(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    if "calls" in reply:
+        return (f"log dos /{args.get('pattern', '')}/: {len(reply.get('calls') or [])} of "
+                f"{_said(reply.get('lines_total'), 'call')}")
     return (f"log {args.get('channel', '')} /{args.get('pattern', '')}/: "
             f"{len(reply.get('lines') or [])} of {_said(reply.get('lines_total'), 'line')}")
 
@@ -416,6 +419,9 @@ def watch_add(args: dict[str, Any], reply: dict[str, Any]) -> str:
     if entry.startswith("TAP "):
         return (f"watch_add {args.get('ref', '')}: {reply.get('mode')} watch armed as {entry}, "
                 f"{_said(reply.get('length'), 'byte')}")
+    if entry.startswith("FM "):
+        return (f"watch_add {args.get('ref', '')}: freeze armed, "
+                f"{_said(reply.get('length'), 'byte')} pinned at {reply.get('frozen_hex')}")
     return f"watch_add {args.get('ref', '')}: {reply.get('state')}"
 
 
@@ -521,3 +527,36 @@ def perform(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 def drive(args: dict[str, Any], reply: dict[str, Any]) -> str:
     return f"drive: {_effect(_block(reply, 'verify'), 'no expectation')}"
+
+
+def port_read(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    return f"{reply.get('bits')}-bit read of {reply.get('port')}: {reply.get('value')}"
+
+
+def port_write(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    return f"{reply.get('bits')}-bit write of {reply.get('value')} to {reply.get('port')}"
+
+
+def pic_read(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    irqs = [r for r in reply.get("irqs") or [] if isinstance(r, dict)]
+    masked = [str(r.get("irq")) for r in irqs if r.get("masked")]
+    asked = [str(r.get("irq")) for r in irqs if r.get("requested")]
+    return (f"{_said(len(reply.get('controllers') or []), 'controller')}, masked "
+            f"{', '.join(masked) or 'none'}, requested {', '.join(asked) or 'none'}")
+
+
+def pic_action(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    found = reply.get("line")
+    line: dict[str, Any] = found if isinstance(found, dict) else {}
+    held = [word for word, key in (("masked", "masked"), ("requested", "requested"),
+                                   ("in service", "in_service")) if line.get(key)]
+    return f"IRQ {reply.get('irq')} {reply.get('method')}: now {', '.join(held) or 'clear'}"
+
+
+def a20(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    return f"the A20 gate is {'on' if reply.get('enabled') else 'off'}"
+
+
+def guest_file(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    size = f", {_said(reply.get('bytes'), 'byte')}" if "bytes" in reply else ""
+    return f"guest_file {args.get('path', '')}: {reply.get('state')}{size}"

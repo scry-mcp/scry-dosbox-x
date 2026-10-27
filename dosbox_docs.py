@@ -21,6 +21,7 @@ import dosbox_binary as binary
 import dosbox_capture_files as capture_files
 import dosbox_checks as checks
 import dosbox_grammar as grammar
+import dosbox_guest_files as guest_files
 import dosbox_inputs as inputs
 import dosbox_launch as launch
 import dosbox_logs as logs
@@ -47,6 +48,8 @@ DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES
               "DEBUGGER_COMMANDS": ", ".join(f"`{c}`" for c in binary.COMMANDS),
               "CHANGE_WATCH_MAX": str(checks.CHANGE_WATCH_MAX),
               "TAP_COUNT_MAX": str(checks.TAP_MAX["count"]),
+              "FREEZE_MAX": str(checks.FREEZE_MAX),
+              "GUEST_FILES_MAX": str(guest_files.GUEST_FILES_MAX),
               "TAP_BLOCK_MAX": str(checks.TAP_MAX["capture"]),
               "INSTRUCTIONS_MAX": str(trace.INSTRUCTIONS_MAX),
               "SYMBOLS_LIMIT_MAX": str(placement.SYMBOLS_LIMIT_MAX),

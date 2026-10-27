@@ -14,7 +14,10 @@ from scry_core import reply_contract as contract
 
 import dosbox_arming as arming
 import dosbox_binary as binaries
+import dosbox_debugger as dbg
 import dosbox_declarations as dec
+import dosbox_dos_calls as dos_calls_trace
+import dosbox_guest_files as guest
 import dosbox_launch as dlaunch
 import dosbox_paths as paths
 import dosbox_placement as placement
@@ -50,6 +53,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
           program: str, logfile: str, capture_video: bool, captures_dir: str,
           plan: list[dict[str, Any]] | None, settle_seconds: float | None, input_port: int,
           state_dir: str, binary: str, background: bool | None, presence: bool,
+          dos_calls: bool, log_categories: dict[str, str] | None, guest_files: list[str] | None,
           progress: ds.Progress, ops: Callable[[], sequence.Ops]) -> dict[str, Any]:
     """The body of the `start` tool; `ops` is the server's step vocabulary, for a `plan`."""
     # Paths first: refused before anything acts (an expired session closed, symbols forgotten).
@@ -60,6 +64,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     state_path = paths.absolute("state_dir", state_dir) if state_dir else None
     if binary:
         paths.absolute("binary", binary)
+    guest_paths = guest.check_guest_files(guest_files)
     window.check_display(shared, display)
     shown_display = window.shared_display(shared, display)
     if STATE.session is not None:
@@ -76,6 +81,9 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     # arrives with no session at all, so clearing only on the expired branch would miss it.
     STATE.forget_symbols()
     resolved = binaries.resolve(binary)
+    commands_built = frozenset(binaries.debugger_commands(resolved.path))
+    if dos_calls and dos_calls_trace.DOSTRACE not in commands_built:
+        raise dbg.missing(dos_calls_trace.DOSTRACE, "`start(dos_calls=True)`")
 
     cwd_path = paths.resolved("cwd", cwd_given)
     launch = dlaunch.Launch(
@@ -88,12 +96,13 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         capture_video=capture_video,
         captures_dir=captures_path,
         logfile=logfile_path,
+        log_categories=dict(log_categories or {}),
         # Input reaches the guest through this socket alone.
         input_port=input_port,
         state_dir=state_path if state_path is not None else cwd_path / dlaunch.DEFAULT_STATE_SUBDIR,
         binary=resolved.path,
         debugger_headless=binaries.debugger_headless(resolved.path),
-        debugger_commands=frozenset(binaries.debugger_commands(resolved.path)),
+        debugger_commands=commands_built,
         background=dlaunch.judge_background(background, shared),
     )
     dlaunch.validate(launch)
@@ -110,6 +119,8 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     # The probe is part of the start: what it spends comes off the wait for the debugger.
     asked = time.monotonic()
     binary_facts = dlaunch.binary_facts(resolved, binaries.VERSION_TIMEOUT_S)
+    # Taken before the emulator boots: a file the guest writes later is then never "before".
+    STATE.guest_files = guest.take(guest_paths)
     session = ds.Session(launch)
     STATE.starting = session
     try:
@@ -137,12 +148,27 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     STATE.conf_fingerprint = dlaunch.fingerprint(launch.conf)
     # Cleared first, or the clearing takes the first stop record with it.
     STATE.clear_running_state()
+    if dos_calls:
+        try:
+            STATE.dos_calls = dos_calls_trace.begin(session)
+        except ds.Invalid:
+            session.close(progress=progress)
+            STATE.session = None
+            raise
     rearm = arming.arm_at_start(session)   # before the park's survey, so the first stop lists them
     running.observe_stop(session)     # the park at the debugger is the session's first stop
     STATE.found_stop_last = {}        # ...its own, and never a stop "on its own" beside it
     session.presence = dpresence.open_shown(session, presence, shared)
     commands: dict[str, Any] = ({"debugger_commands": sorted(session.commands)}
                                 if session.commands else {})
+    channels: dict[str, Any] = {}
+    if STATE.dos_calls is not None:
+        channels["dos_calls"] = str(STATE.dos_calls.path)
+    if launch.log_categories:
+        channels["log_categories"] = dict(launch.log_categories)
+    if STATE.guest_files:
+        channels["guest_files"] = [{"path": str(p), "before": f.shown()}
+                                   for p, f in STATE.guest_files.items()]
     started = st.reply(**st.process_facts(), shared=shared, display=shown_display,
                        ready_after_s=ready,
                        argv=session.argv, **binary_facts,
@@ -151,7 +177,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
                        input_port=contract.or_unavailable(session.launch.input_port,
                                                           "no input route was opened"),
                        background=launch.background, presence=dpresence.of(session).reply(),
-                       **rearm)
+                       **channels, **rearm)
     if not plan:
         return started
     # A failing plan leaves the session open where it stopped, as `perform` does.
@@ -198,6 +224,8 @@ def close(progress: ds.Progress, detail: bool = False) -> dict[str, Any]:
     # Read before the session ends, so `pid` is the process this call ended.
     facts, was = st.process_facts(), st.session_block()
     rc = STATE.session.close(progress=progress)
+    # After the exit, so every file the emulator held is closed and flushed.
+    left = {"guest_files": guest.at_close()} if STATE.guest_files else {}
     # Read after the exit so the tails hold what the emulator said on the way out.
     clean = STATE.session.ended_how == "quit" and rc == 0
     tails = ({"stdout_tail": STATE.session.stdout_tail(log_marks.TAIL_CHARS),
@@ -215,7 +243,7 @@ def close(progress: ds.Progress, detail: bool = False) -> dict[str, Any]:
         f"the emulator was SIGKILLed and not reaped ({unreaped}): it may still be on the "
         f"machine" if unreaped else "the emulator's exit code could not be read")
     return {"status": "ok", "closed": True, **facts, "ended_by": ended_by,
-            "exit_code": exit_code, **tails,
+            "exit_code": exit_code, **tails, **left,
             **({"note": f"the emulator's output reader: {drained}"}
                if drained and drained != dprocess.DRAIN_EOF else {}),
             "session": was}

@@ -61,6 +61,10 @@ _ARGS: dict[str, dict[str, Any]] = {
     "perform_export": {"dest": _abs("nonexistent", "session.json")},
     "drive": {"act": [{"op": "status"}], "pattern": "."},
     "comment_write": {"method": "add", "ref": "x", "text": "t"},
+    "port": {"method": "read", "port": 0x3DA},
+    "pic": {"method": "read"},
+    "a20": {"method": "read"},
+    "guest_file": {"path": _abs("nonexistent", "OUT.TXT")},
 }
 
 
@@ -85,6 +89,8 @@ def test_every_tool_answers_the_contract_with_no_machine(
     # media tools refuse their missing file; a map save refuses the empty map
     expected = {"start": "bad_argument", "build_check": "host_failed",
                 "perform_export": "bad_argument", "map_write": "needs_call",
+                # reads a host file, no machine: one `start` did not fingerprint is refused
+                "guest_file": "bad_argument",
                 **dict.fromkeys(media_tools.IMAGE_TOOLS, "bad_argument")}.get(name, "no_session")
     contract.check_refusal(name, reply, expected)
 

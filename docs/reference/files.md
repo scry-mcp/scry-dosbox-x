@@ -121,7 +121,7 @@ Example, from a live run:
 ```json
 {
   "method": "region",
-  "manifest": "$TMPDIR/dosbox-x-session-vkia_h9h/series/series-1/manifest.json",
+  "manifest": "$TMPDIR/dosbox-x-session-2ny4oml_/series/series-1/manifest.json",
   "measure": "changed_pixels"
 }
 ```
@@ -150,10 +150,72 @@ Example, from a live run:
   ],
   "gaps": [],
   "transitions_total": 1,
-  "path": "$TMPDIR/dosbox-x-session-vkia_h9h/series/series-1/track-1.json",
-  "manifest": "$TMPDIR/dosbox-x-session-vkia_h9h/series/series-1/manifest.json"
+  "path": "$TMPDIR/dosbox-x-session-2ny4oml_/series/series-1/track-1.json",
+  "manifest": "$TMPDIR/dosbox-x-session-2ny4oml_/series/series-1/manifest.json"
 }
 ```
 <!-- scry-reference:end image_compare -->
 
 Replies echo the arguments they were given (`a`, `b`, `crop`, `shift`, `tolerance`, `manifest`, `dir`, `checksums`).
+<!-- scry-reference:begin guest_file -->
+## `guest_file`
+
+*What the guest left in a file*
+
+```text
+guest_file(path)
+```
+
+What the guest left at `path`, a host file `start(guest_files=)` fingerprinted before
+the emulator booted: `absent`, `empty`, `unchanged` (the bytes and time from before the
+run) or `written`. Reads the host's file, so it answers with the guest running or after
+`close`.
+
+Reply: `path`, `state`, `bytes`, `sha256`, `before` (`exists`, `bytes`, `sha256`),
+`same_bytes` (written again with the bytes it held). INVALID `readback_refused` on the
+first three, which hand nothing back; a path `start` did not name is refused.
+
+Reference: REFERENCE.md, The guest's files.
+
+| argument | type | default |
+|---|---|---|
+| `path` | string | required |
+
+| reply field | type |
+|---|---|
+| `before` | object |
+| `bytes` | integer |
+| `path` | string |
+| `same_bytes` | boolean |
+| `sha256` | string |
+| `state` | string |
+
+Example, from a live run:
+
+```json
+{
+  "path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/Y/n1-dosio/OUT.TXT"
+}
+```
+
+```json
+{
+  "summary": "guest_file $TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/Y/n1-dosio/OUT.TXT: written, 4 bytes",
+  "status": "ok",
+  "path": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/Y/n1-dosio/OUT.TXT",
+  "state": "written",
+  "before": {
+    "exists": false
+  },
+  "bytes": 4,
+  "sha256": "580175b2969134a0d8c6f325b442c6d25cf5b10f0643150ed45ffd3a8905bcba"
+}
+```
+<!-- scry-reference:end guest_file -->
+
+**The fingerprint is the size, the modification time and the SHA-256 together.** A file written
+again with the same bytes moves its time, so it is `written`, with `same_bytes`, and never
+`unchanged`; a file that keeps all three is the one from before the run. `close` judges each file
+after the emulator has exited: on a clean `quit` every handle the guest left open has been closed
+and flushed; an emulator that was killed may have left bytes unwritten. A file the host cannot
+read (the guest made a directory of it) is `unreadable`, and `close` still closes.

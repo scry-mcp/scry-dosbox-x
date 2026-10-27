@@ -1,0 +1,111 @@
+{
+ "task": {
+  "id": "D151",
+  "prompt": "Keep the byte at the symbol _lives at its current value while the game runs, whatever the game writes to it.",
+  "tool": "watch_add",
+  "args": {
+   "ref": "_lives",
+   "mode": "freeze"
+  },
+  "allow": [
+   "length",
+   "fmt",
+   "by"
+  ],
+  "grammar": [
+   "freeze"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D151: {\"tool\": \"watch_add\", \"args\": {\"ref\": \"_lives\", \"mode\": \"freeze\", \"length\": 1}}"
+   ],
+   "right": true
+  }
+ ]
+}

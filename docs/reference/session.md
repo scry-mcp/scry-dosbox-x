@@ -15,8 +15,9 @@ Whether a DOSBox-X binary resolves and carries the debugger. Run before `start`;
 refuses while a session is live. `binary`: omitted, `DOSBOX_X_BINARY`, else the PATH's
 `dosbox-x`; a named build that fails is refused.
 
-Reply: `binary`, `binary_origin`, `version`, `debugger`, `heavy_debug` (`trace` needs it),
-`debugger_commands` (which of `RUNSTATE`, `STEPIN`, `SAVESTATE`, `LOADSTATE`, `PRESENCE`, `VGAMEMDUMP`, `BPIF`, `CAPTURE`, `TAP` the build's debugger has; omitted when none).
+Reply: `binary`, `binary_origin`, `version`, `debugger`, `heavy_debug` (`trace` and a freeze
+watch need it), `debugger_commands` (which of `RUNSTATE`, `STEPIN`, `SAVESTATE`, `LOADSTATE`, `PRESENCE`, `VGAMEMDUMP`, `BPIF`, `CAPTURE`, `TAP`, `PORTINFO`, `DOSTRACE` the build's debugger has;
+omitted when none).
 
 | argument | type | default |
 |---|---|---|
@@ -40,9 +41,9 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "build_check: ~/.local/state/dosbox-x-builds/scry-bb5aadd5f/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
+  "summary": "build_check: ~/.local/state/dosbox-x-builds/scry-5bebee01b/dosbox-x (DOSBOX_X_BINARY), debugger True, heavy_debug True",
   "status": "ok",
-  "binary": "~/.local/state/dosbox-x-builds/scry-bb5aadd5f/dosbox-x",
+  "binary": "~/.local/state/dosbox-x-builds/scry-5bebee01b/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
   "debugger": true,
@@ -54,16 +55,16 @@ Example, from a live run:
     "LOADSTATE",
     "PRESENCE",
     "VGAMEMDUMP",
-    "... 3 more"
+    "... 5 more"
   ],
   "tools": [
+    "a20",
     "audio_record",
     "breakpoint_at",
     "breakpoint_interrupt",
     "build_check",
     "call_stack",
-    "capture_frame",
-    "... 48 more"
+    "... 52 more"
   ]
 }
 ```
@@ -71,7 +72,7 @@ Example, from a live run:
 
 A build without the debugger starts fine and then hangs `start` until its timeout. The debugger and its optional commands (`debugger_commands`) are read off the binary itself, never asked of it: `-helpdebug` lists `-break-start` in a build configured without the debugger too, and on Windows it prints to no stream and never exits. It refuses while a session is live because its version probe starts the emulator, which a build that does not know the option runs until the probe's bound.
 
-**`heavy_debug: false` is an answer, not a failure**: it is `trace` that refuses such a build. The tool is about the build, never about a reading. `binary_origin` is `argument`, `DOSBOX_X_BINARY` or `PATH`; `version` is the build's first line, or `{available: false, why}`.
+**`heavy_debug: false` is an answer, not a failure**: it is `trace` and a freeze watch that refuse such a build. The tool is about the build, never about a reading. `binary_origin` is `argument`, `DOSBOX_X_BINARY` or `PATH`; `version` is the build's first line, or `{available: false, why}`.
 
 <!-- scry-reference:begin start -->
 ## `start`
@@ -79,7 +80,7 @@ A build without the debugger starts fine and then hangs `start` until its timeou
 *Start a DOSBox-X session*
 
 ```text
-start(conf, cwd, session_seconds, shared=false, display="", flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="", plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null, presence=true)
+start(conf, cwd, session_seconds, shared=false, display="", flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="", plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null, presence=true, dos_calls=false, log_categories=null, guest_files=null)
 ```
 
 Open one live DOSBox-X session from your conf, parked at the debugger.
@@ -89,13 +90,19 @@ Paths are absolute or `~`-led. `session_seconds`: the lifetime. `shared`: watche
 guest's E9 channel, for `log`, `log_wait`, `drive`. `program` runs after autoexec;
 `capture_video` records it. `plan` runs as `perform` does, each wait bounded by
 `settle_seconds` (default 30). `input_port`: COM1's TCP port, 0 a free one.
-`state_dir`: where `state_write` saves; empty, under `cwd`.
+`state_dir`: where `state_write` saves; empty, under `cwd`. `dos_calls`: record every
+INT 21h for `log(channel="dos")`. `log_categories`: `[log]` category to level, into
+`logfile`. `guest_files`: host files the guest should leave, read by `guest_file` and
+`close`.
 
 Refused: a live session, a bad path, `session_seconds` out of range, `capture_video`
-without `program`, an `input_port` other than 0 outside 1024-65535, or
-busy.
+without `program`, an `input_port` other than 0 outside 1024-65535,
+`log_categories` without `logfile`, `dos_calls` on a build with no `DOSTRACE`,
+`guest_files` naming a directory, one file twice or more than 16, or busy.
 
-Reply: `pid`, `stub`, `input_port`, `declarations` (`rearm`); with `plan`, its account.
+Reply: `pid`, `stub`, `input_port`, `declarations` (`rearm`), `dos_calls`,
+`log_categories`, `guest_files` (each when asked for: the trace's path, the categories set,
+each file as it was before the boot); with `plan`, its account.
 
 Reference: REFERENCE.md, The session.
 
@@ -119,6 +126,9 @@ Reference: REFERENCE.md, The session.
 | `binary` | string | `""` |
 | `background` | boolean or null | `null` |
 | `presence` | boolean | `true` |
+| `dos_calls` | boolean | `false` |
+| `log_categories` | object or null | `null` |
+| `guest_files` | array of string or null | `null` |
 
 - `display`: Where a watched (`shared`) window opens: `main` or `secondary`; empty, the display `WINDOW_SHARED_DISPLAY` names, else the secondary.
 - `presence`: Draw an edge around the emulator's window while this session is open: dim while idle, bright while a call runs the machine. No capture of this server carries it.
@@ -155,8 +165,11 @@ Reference: REFERENCE.md, The session.
 | `debugger_commands` | array |
 | `declarations` | object |
 | `display` | string |
+| `dos_calls` | string |
 | `elapsed_s` | number |
+| `guest_files` | array |
 | `input_port` | integer or object |
+| `log_categories` | object |
 | `operations` | array |
 | `pid` | integer |
 | `presence` | boolean or object |
@@ -174,49 +187,49 @@ Example, from a live run:
 
 ```json
 {
-  "conf": "$TMPDIR/dosbox-x-live-job-u2b4gcki/A/tests/guest/probe.conf",
-  "cwd": "$TMPDIR/dosbox-x-live-job-u2b4gcki/A/tests/guest",
+  "conf": "$TMPDIR/dosbox-x-live-job-2pzcvbld/A/tests/guest/probe.conf",
+  "cwd": "$TMPDIR/dosbox-x-live-job-2pzcvbld/A/tests/guest",
   "session_seconds": 1200,
-  "logfile": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n817.log",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n818-save"
+  "logfile": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n961.log",
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n962-save"
 }
 ```
 
 ```json
 {
-  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry-bb5aadd5f/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.158s",
+  "summary": "start probe.conf: headless on ~/.local/state/dosbox-x-builds/scry-5bebee01b/dosbox-x (DOSBOX_X_BINARY), debugger answered after 0.161s",
   "status": "ok",
-  "pid": 76292,
-  "conf": "$TMPDIR/dosbox-x-live-job-u2b4gcki/A/tests/guest/probe.conf",
+  "pid": 16691,
+  "conf": "$TMPDIR/dosbox-x-live-job-2pzcvbld/A/tests/guest/probe.conf",
   "conf_digest": "78bdc38f360b9b4a",
   "bound_s": 1200,
-  "elapsed_s": 0.6,
+  "elapsed_s": 0.5,
   "captures": "off",
-  "state_dir": "$TMPDIR/dosbox-x-live-matrix-19dac76f2988/jobs-scratch/A/n818-save",
-  "ready_after_s": 0.158,
+  "state_dir": "$TMPDIR/dosbox-x-live-matrix-60ef74d68aef/jobs-scratch/A/n962-save",
+  "ready_after_s": 0.161,
   "argv": [
-    "~/.local/state/dosbox-x-builds/scry-bb5aadd5f/dosbox-x",
+    "~/.local/state/dosbox-x-builds/scry-5bebee01b/dosbox-x",
     "-conf",
-    "$TMPDIR/dosbox-x-live-job-u2b4gcki/A/tests/guest/probe.conf",
+    "$TMPDIR/dosbox-x-live-job-2pzcvbld/A/tests/guest/probe.conf",
     "-time-limit",
     "1200",
     "-break-start",
     "... 20 more"
   ],
-  "binary": "~/.local/state/dosbox-x-builds/scry-bb5aadd5f/dosbox-x",
+  "binary": "~/.local/state/dosbox-x-builds/scry-5bebee01b/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
   "debugger_commands": [
     "BPIF",
     "CAPTURE",
+    "DOSTRACE",
     "LOADSTATE",
+    "PORTINFO",
     "PRESENCE",
-    "RUNSTATE",
-    "SAVESTATE",
-    "... 3 more"
+    "... 5 more"
   ],
   "stub": "/path/to/scry-dosbox-x/guest/INJECT.COM",
-  "input_port": 51309,
+  "input_port": 54204,
   "background": true,
   "presence": {
     "available": false,
@@ -251,7 +264,7 @@ Example, from a live run:
 
 **`program` loads the stub itself when the conf's autoexec does not run it**, which is why the autoexec must not `exit` before `program` runs.
 
-**`state_dir`** is what `state_write(method="save")` writes to; empty, `save` under `cwd`. **`break_on_int3`** has two limits that are the debugger's.
+**`state_dir`** is what `state_write(method="save")` writes to; empty, `save` under `cwd`.
 
 **Also refused before anything starts**: a missing conf, `cwd` or `logfile` directory, an unresolved binary, `display` headless, `shared` with no window helper, a glued or shredded `-set`, and no drive free for the stub. `captures_dir` and `state_dir` are created with their parents. The reply also carries `shared`, `display`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `background`, `presence` and `rearm_refused` (why, when stored raw breakpoints could not re-arm).
 
@@ -339,7 +352,8 @@ End the session deliberately rather than waiting for its bound.
 Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid`, `stdout_tail` and
 `errorlog_tail` when the end was not a clean `quit`, or with `detail=True`. `exit_code` is
 an integer or unavailable with its `why`; `note` when the output was not read to its end.
-`session` is the block before closing.
+`guest_files`: each file `start` named, with `guest_file`'s `state`. `session` is the block
+before closing.
 
 | argument | type | default |
 |---|---|---|
@@ -356,6 +370,7 @@ an integer or unavailable with its `why`; `note` when the output was not read to
 | `elapsed_s` | number |
 | `ended_by` | string |
 | `errorlog_tail` | string or object |
+| `guest_files` | array |
 | `note` | string |
 | `pid` | integer |
 | `state_dir` | string |

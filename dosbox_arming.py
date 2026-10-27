@@ -18,6 +18,7 @@ import dosbox_checks as checks
 import dosbox_code as code
 import dosbox_declarations as dec
 import dosbox_dump as dumping
+import dosbox_freezes as freezes
 import dosbox_grammar as grammar
 import dosbox_placement as placement
 import dosbox_session as ds
@@ -232,6 +233,9 @@ def evaluate_watches(session: ds.Session, *,
                                 "length": decl.width, "fmt": decl.fmt}
         if orphan(decl):
             item["orphan"] = True       # nobody's: from a store that kept no origin
+        if decl.watch_mode == "freeze":
+            out.append({**item, **_freeze_item(session, decl, held, machine)})
+            continue
         if decl.watch_mode in dec.TAP_MODES:
             out.append({**item, **_tap_item(decl, counts, at_stop=True)})
             continue
@@ -249,7 +253,6 @@ def evaluate_watches(session: ds.Session, *,
             continue
         seg, off = res["seg"], res["off"]
         if decl.by == "pointer" and decl.watch_mode == "change":
-            # RE-RESOLVED AT EVERY STOP, because the pointer can move: a change watch armed
             # Re-resolved at every stop, since the pointer can move; a refused move leaves the watch
             # armed where it was and the state is judged there.
             moved = _follow(session, decl, seg, off, _mode(session, machine))
@@ -482,10 +485,16 @@ def _rearm_condition(session: ds.Session, decl: dec.Declaration, out: dict[str, 
     out["rearmed"].append(row)
 
 
-def _rearm_tap(session: ds.Session, decl: dec.Declaration, out: dict[str, Any]) -> None:
+FREEZE_REARM_WHY = ("a freeze pins the value its byte held at the stop it was declared at, so "
+                    "it is never armed again by itself: declare it again at a stop where the byte "
+                    "holds the value to keep")
+
+
+def _rearm_kept(session: ds.Session, decl: dec.Declaration, out: dict[str, Any]) -> None:
     """A stored count or capture tapped again where it resolves now; one already tapped where it
     resolves stays."""
     row = decl_row(decl)
+    keeper: Any = taps
     held = STATE.taps.get(decl.ref)
     waits = placement.waits(decl, RawPlaces(session).cpu)
     if waits is not None:
@@ -493,11 +502,11 @@ def _rearm_tap(session: ds.Session, decl: dec.Declaration, out: dict[str, Any]) 
         return
     try:
         if held is not None:
-            if (held.seg, held.off) == taps.place(decl, session) and taps.installed(
+            if (held.seg, held.off) == taps.place(decl, session) and keeper.installed(
                     session, decl.ref):
                 return
-            taps.drop(session, decl.ref)
-        taps.arm(session, decl)
+            keeper.drop(session, decl.ref)
+        keeper.arm(session, decl)
     except ds.Invalid as e:
         state = "unresolved" if e.code == "unknown_ref" else "unarmable"
         out[state].append({**row, "why": str(e)})
@@ -518,8 +527,15 @@ def rearm_declarations(session: ds.Session) -> dict[str, Any]:
         if decl.kind == "regpoint":
             _rearm_condition(session, decl, out)
             continue
-        if decl.kind == "watch" and decl.watch_mode in dec.TAP_MODES:
-            _rearm_tap(session, decl, out)
+        if decl.kind == "watch" and decl.watch_mode == "freeze":
+            # The value a freeze pins is the byte's at the stop it is declared at; armed again
+            # here it would pin whatever this stop holds (zero at a fresh park, before DOS loads
+            # the program over it).
+            if decl.ref not in STATE.freezes:
+                out["unarmable"].append({**decl_row(decl), "why": FREEZE_REARM_WHY})
+            continue
+        if decl.kind == "watch" and decl.watch_mode in dec.KEPT_MODES:
+            _rearm_kept(session, decl, out)
             continue
         if decl.kind != "breakpoint":
             continue
@@ -570,7 +586,7 @@ def arm_at_start(session: ds.Session) -> dict[str, Any]:
     The session is already installed, so a refusal is handed back as `rearm_refused`, not
     raised."""
     if STATE.store is None or not any(
-            d.kind == "regpoint" or (d.kind == "watch" and d.watch_mode in dec.TAP_MODES)
+            d.kind == "regpoint" or (d.kind == "watch" and d.watch_mode in dec.KEPT_MODES)
             or (d.kind == "breakpoint" and d.by == "address"
                 and not placement.is_stale(d, _nowhere))
             for d in STATE.store.declarations()):
@@ -630,6 +646,9 @@ def apply_pending(session: ds.Session) -> dict[str, Any]:
             elif spec["kind"] == "tap":
                 gone = {"entry": spec["entry"],
                         "removed": taps.remove(session, spec["ref"], spec["id"]) is not None}
+            elif spec["kind"] == "freeze":
+                gone = {"entry": spec["entry"],
+                        "removed": bool(freezes.remove(session, spec["ref"]))}
             else:
                 row = watch_held(session.breakpoints(), spec["seg"], spec["off"])
                 if row is not None:
@@ -1351,7 +1370,7 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
     except vf.FormatError as e:
         raise ds.Invalid("bad_argument", str(e)) from None
     checks.watch_width(mode, width)
-    if mode in dec.TAP_MODES:
+    if mode in dec.KEPT_MODES:
         return _tap_add(session, chosen, ref, mode, width, fmt, trig, side)
     places = RawPlaces(session)
     decl = declare("watch", chosen, ref,
@@ -1438,8 +1457,8 @@ def watch_add(session: ds.Session, ref: str, mode: str, width: int, fmt: str,
 
 def _tap_add(session: ds.Session, chosen: str, ref: str, mode: str, width: int, fmt: str,
              trigger: str | None, side: str | None) -> dict[str, Any]:
-    """A count or capture watch: stored once its tap is installed, which needs the machine
-    stopped. Declared again unchanged, a tap still installed is a no-op."""
+    """A count, capture or freeze watch: stored once its tap or freeze is in, which needs the
+    machine stopped. Declared again unchanged, one still in is a no-op."""
     places = RawPlaces(session)
     decl = declare("watch", chosen, ref,
                    cpu=places.mode_here(chosen, ref) if chosen == "address" else None,
@@ -1455,6 +1474,8 @@ def _tap_add(session: ds.Session, chosen: str, ref: str, mode: str, width: int, 
                              "stored": True}
     if side is not None:
         reply.update(trigger_type=side, **({"trigger": trigger} if trigger else {}))
+    if mode == "freeze":
+        return _freeze_add(session, store, stored, decl, reply)
     if stored is not None and stored.ref in STATE.taps and taps.installed(session, stored.ref):
         tap = STATE.taps[stored.ref]
         return st.reply(**{**reply, "ref": stored.ref}, already_stored=True, armed=True,
@@ -1472,6 +1493,38 @@ def _tap_add(session: ds.Session, chosen: str, ref: str, mode: str, width: int, 
                     addr=f"{tap.seg:04X}:{tap.off:08X}",
                     **({"trigger_addr": f"{tap.trigger[0]:04X}:{tap.trigger[1]:08X}"}
                        if tap.trigger else {}))
+
+
+def _freeze_add(session: ds.Session, store: dec.DeclarationStore,
+                stored: dec.Declaration | None, decl: dec.Declaration,
+                reply: dict[str, Any]) -> dict[str, Any]:
+    """A freeze declared, or declared again: in once per ref, its bytes pinned at their values
+    at the stop it goes in."""
+    if stored is not None and freezes.installed(session, stored.ref):
+        held = STATE.freezes[stored.ref]
+        return st.reply(**{**reply, "ref": stored.ref}, already_stored=True, armed=True,
+                        state="armed", entry=held.entries[0], entries=list(held.entries),
+                        addr=f"{held.seg:04X}:{held.off:08X}", frozen_hex=held.values.hex())
+    if stored is not None:
+        freezes.drop(session, stored.ref)
+    freeze = freezes.arm(session, stored or decl)
+    try:
+        already = not cast(bool, placement.to_invalid(lambda: store.add(stored or decl)))
+    except ds.Invalid:
+        freezes.drop(session, (stored or decl).ref)
+        raise
+    return st.reply(**reply, already_stored=already, armed=True, state="armed",
+                    entry=freeze.entries[0], entries=list(freeze.entries),
+                    addr=f"{freeze.seg:04X}:{freeze.off:08X}", frozen_hex=freeze.values.hex())
+
+
+def _freeze_item(session: ds.Session, decl: dec.Declaration, held: list[dict[str, str]],
+                 machine: tuple[str, dict[str, str]] | None) -> dict[str, Any]:
+    """A freeze's own fields in a survey or a listing, or why its bytes could not be read."""
+    try:
+        return freezes.evaluate(session, decl, held, machine[0] if machine is not None else None)
+    except ds.Invalid as e:
+        return {"state": "unreadable", "why": str(e)}
 
 
 def _unarm_moved(session: ds.Session, ref: str, covered: list[tuple[int, int]]) -> None:
@@ -1522,6 +1575,10 @@ def list_watches(session: ds.Session) -> dict[str, Any]:
             continue
         item: dict[str, Any] = decl_row(decl)
         item.update(mode=decl.watch_mode, length=decl.width, fmt=decl.fmt)
+        if decl.watch_mode == "freeze":
+            out.append({**item, **(_freeze_item(session, decl, held, machine) if read else
+                                   {"state": "unread", "why": "the guest is running"})})
+            continue
         if decl.watch_mode in dec.TAP_MODES:
             out.append({**item, **_tap_item(decl, counts, at_stop=False)})
             continue
@@ -1580,6 +1637,11 @@ def clear_watches(session: ds.Session, ref: str | None) -> dict[str, Any]:
     # The rows first, then the store, as in `declaration_clear(kind="breakpoint")`.
     plan: list[list[dict[str, Any]]] = []
     for decl in to_go:
+        if decl.watch_mode == "freeze":
+            frozen = STATE.freezes.get(decl.ref)
+            plan.append([] if frozen is None else
+                        [{"kind": "freeze", "ref": decl.ref, "entry": frozen.entries[0]}])
+            continue
         if decl.watch_mode in dec.TAP_MODES:
             tapped = STATE.taps.get(decl.ref)
             plan.append([] if tapped is None else
@@ -1607,6 +1669,9 @@ def clear_watches(session: ds.Session, ref: str | None) -> dict[str, Any]:
                 removed_tap = taps.remove(session, decl.ref)
                 if removed_tap is not None:
                     disarmed.append(removed_tap)
+                continue
+            if rows[0]["kind"] == "freeze":
+                disarmed.extend(freezes.remove(session, decl.ref))
                 continue
             # Read the list back: `disarmed` is the machine's answer, not a claim that a BPDEL must
             # have taken.

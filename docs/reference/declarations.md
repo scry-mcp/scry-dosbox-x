@@ -214,30 +214,38 @@ re-resolves on `symbols_load`.
 
 `mode`: `show` (read at each stop), `change` (stops when the bytes change), `count` (tallies
 every write and its writer), `capture` (a row per access of `trigger`, with the beam line
-and the time); count and capture never stop the machine. `ref`: a symbol, `SEG:OFF`, or
+and the time), `freeze` (pins the bytes at their value: the guest's writes are undone, and
+the session is `altered`);
+count, capture and freeze never stop the machine. `ref`: a symbol, `SEG:OFF`, or
 `[base]+0x28`, `base->field`. `fmt`: a scalar (`u8` .. `f64`), an array (`u16[8]`), a string
 (`char[16]`) or a struct (`{x:i16,y:i16}`). `length`: total bytes; at most 128 for
-show, 16 for change (a debugger row per byte, `entries`), 1024
-for count, 128 for capture. `trigger`, `trigger_type`: capture only; a capture
-of reads (`r`) is of `ref` itself, with no `trigger`, `length` or `fmt`. A count or capture
-is declared at a stop, by symbol or `SEG:OFF`, on a build whose debugger has `TAP`; from
-then on it records while the guest runs.
+show, 16 for change and 16 for freeze (a debugger row per byte,
+`entries`), 1024 for count, 128 for capture. `trigger`,
+`trigger_type`: capture only; a capture of reads (`r`) is of `ref` itself, with no
+`trigger`, `length` or `fmt`. A count or capture is declared at a stop, by symbol or
+`SEG:OFF`, on a build whose debugger has `TAP`; from then on it records while the guest
+runs. A freeze likewise, on a heavy-debug build, pinning the values of that stop; each stop
+reads its bytes back (`holding`, or `not_held` when something ran past it), and a stored
+freeze is not armed again at `start` or `symbols_load`, where its bytes hold other values.
 
 Refused: one ref declared two ways; a length over the ceiling; a pointer base the table
-lacks; a count or capture through a pointer, on a running machine or with no `TAP`; a write
-capture with no `trigger`; `trigger` or `trigger_type` on another mode.
+lacks; a count, capture or freeze through a pointer or on a running machine (`not_stopped`);
+a count or capture with no `TAP`, a freeze with no heavy debugger (`no_channel`); a freeze
+on an offset already frozen (`ambiguous_ref`); a write capture with no `trigger`; `trigger`
+or `trigger_type` on another mode.
 
 Reply: `ref`, `by`, `mode`, `fmt`, `length`, `stored`, `already_stored`, `state`
 (`evaluated`, `unresolved`, `unarmable`, `null_pointer`, `pending`, `armed`), `armed`,
 `pointer`, `entry`, `caveat`; a count or capture's `tally_id`, `addr`, `trigger`,
-`trigger_addr`, `trigger_type`; its account is `declaration_list`'s.
+`trigger_addr`, `trigger_type`; a freeze's `addr`, `entries`, `frozen_hex`; its account is
+`declaration_list`'s.
 
 Reference: REFERENCE.md, Declarations.
 
 | argument | type | default |
 |---|---|---|
 | `ref` | string | required |
-| `mode` | one of `"show"`, `"change"`, `"count"`, `"capture"` | required |
+| `mode` | one of `"show"`, `"change"`, `"count"`, `"capture"`, `"freeze"` | required |
 | `length` | integer | `0` |
 | `fmt` | string | `"auto"` |
 | `by` | one of `"auto"`, `"symbol"`, `"address"`, `"pointer"` | `"auto"` |
@@ -255,6 +263,7 @@ Reference: REFERENCE.md, Declarations.
 | `entries` | array |
 | `entry` | string |
 | `fmt` | string |
+| `frozen_hex` | string |
 | `length` | integer |
 | `mode` | string |
 | `note` | string |
@@ -294,10 +303,21 @@ Example, from a live run:
 ```
 <!-- scry-reference:end watch_add -->
 
-**A watch has four modes, and one ref is one declaration.** A show watch arms NOTHING: it is a
+**A watch has five modes, and one ref is one declaration.** A show watch arms NOTHING: it is a
 plain read at every stop (a NaN or infinite `f32`/`f64` is the text `nan`, `inf` or `-inf`, which
 JSON has no number for), and a region is `memdump`'s job. A change watch is read at every stop
-too. Count and capture never stop the machine; each is a tap the debugger's `TAP` puts in.
+too. Count and capture never stop the machine; each is a tap the debugger's `TAP` puts in. A
+freeze never stops it either: each byte is a debugger `FM` row.
+
+**A freeze is the debugger putting the byte back**, after every instruction its heavy path
+steps, so it holds against the guest's own writes and runs past anything that is not an
+instruction stepped there: a dynamic core, a DMA transfer. Each stop reads the bytes back and
+says `holding` or `not_held`, rather than trusting the row (`gone` when a row was deleted,
+`unarmed` in a session that has not armed it, `unread` on a running guest). It pins the values
+of the stop it is declared at, so a stored freeze is never armed again by `start` or
+`symbols_load`, where those bytes hold something else. The debugger lists a freeze by its
+offset alone, so any freeze already at the same offset refuses a new one: the two rows could not
+be told apart.
 
 **A change watch breaks when memory changes**, the thing most likely to be misread: a read never
 fires it, nor does a write storing the value already there. The debugger's memory breakpoint
@@ -425,8 +445,8 @@ Example, from a live run:
         "available": false,
         "why": "a DOS machine has one cpu, and every row acts on it"
       },
-      "created_at": "2026-10-26T16:03:10+00:00",
-      "origin": "2026-10-26T16:02:57+00:00#76251.1",
+      "created_at": "2026-10-27T01:04:36+00:00",
+      "origin": "2026-10-27T01:04:23+00:00#16647.1",
       "inherited": false,
       "age_s": 0,
       "entry": "BP 0000:0002",

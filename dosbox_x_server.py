@@ -114,10 +114,13 @@ import dosbox_code as code  # noqa: E402
 import dosbox_comments as comments  # noqa: E402
 import dosbox_dac as vgadac  # noqa: E402
 import dosbox_declarations as dec  # noqa: E402
+import dosbox_dos_calls as dos_calls_trace  # noqa: E402
 import dosbox_dump as dumping  # noqa: E402
 import dosbox_find as finder  # noqa: E402
 import dosbox_folds as folds  # noqa: E402
 import dosbox_grammar as grammar  # noqa: E402
+import dosbox_guest_files as guest  # noqa: E402
+import dosbox_hardware as hardware  # noqa: E402
 import dosbox_inputs as inputs  # noqa: E402
 import dosbox_launch as dlaunch  # noqa: E402
 import dosbox_lifecycle as lifecycle  # noqa: E402
@@ -155,8 +158,9 @@ def build_check(binary: str = "") -> dict[str, Any]:
     refuses while a session is live. `binary`: omitted, `DOSBOX_X_BINARY`, else the PATH's
     `dosbox-x`; a named build that fails is refused.
 
-    Reply: `binary`, `binary_origin`, `version`, `debugger`, `heavy_debug` (`trace` needs it),
-    `debugger_commands` (which of {DEBUGGER_COMMANDS} the build's debugger has; omitted when none).
+    Reply: `binary`, `binary_origin`, `version`, `debugger`, `heavy_debug` (`trace` and a freeze
+    watch need it), `debugger_commands` (which of {DEBUGGER_COMMANDS} the build's debugger has;
+    omitted when none).
     """
     if binary:          # the shape first, as every path's, whatever the session is
         paths.absolute("binary", binary)
@@ -199,6 +203,10 @@ def start(conf: str, cwd: str,
           state_dir: str = "",
           binary: str = "", background: bool | None = None,
           presence: Annotated[bool, Field(description=scry_presence.ARGUMENT)] = True,
+          dos_calls: bool = False,
+          log_categories: dict[Annotated[str, vocab.enum(dlaunch.LOG_CATEGORIES)],
+                               Annotated[str, vocab.enum(dlaunch.LOG_LEVELS)]] | None = None,
+          guest_files: list[str] | None = None,
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Open one live DOSBox-X session from your conf, parked at the debugger.
 
@@ -207,20 +215,27 @@ def start(conf: str, cwd: str,
     guest's E9 channel, for `log`, `log_wait`, `drive`. `program` runs after autoexec;
     `capture_video` records it. `plan` runs as `perform` does, each wait bounded by
     `settle_seconds` (default {SETTLE_S}). `input_port`: COM1's TCP port, 0 a free one.
-    `state_dir`: where `state_write` saves; empty, under `cwd`.
+    `state_dir`: where `state_write` saves; empty, under `cwd`. `dos_calls`: record every
+    INT 21h for `log(channel="dos")`. `log_categories`: `[log]` category to level, into
+    `logfile`. `guest_files`: host files the guest should leave, read by `guest_file` and
+    `close`.
 
     Refused: a live session, a bad path, `session_seconds` out of range, `capture_video`
-    without `program`, an `input_port` other than 0 outside {INPUT_PORT_MIN}-{INPUT_PORT_MAX}, or
-    busy.
+    without `program`, an `input_port` other than 0 outside {INPUT_PORT_MIN}-{INPUT_PORT_MAX},
+    `log_categories` without `logfile`, `dos_calls` on a build with no `DOSTRACE`,
+    `guest_files` naming a directory, one file twice or more than {GUEST_FILES_MAX}, or busy.
 
-    Reply: `pid`, `stub`, `input_port`, `declarations` (`rearm`); with `plan`, its account.
+    Reply: `pid`, `stub`, `input_port`, `declarations` (`rearm`), `dos_calls`,
+    `log_categories`, `guest_files` (each when asked for: the trace's path, the categories set,
+    each file as it was before the boot); with `plan`, its account.
 
     Reference: REFERENCE.md, The session.
     """
     return lifecycle.start(conf, cwd, session_seconds, shared, display, flags,
                            break_on_int3, program, logfile, capture_video, captures_dir, plan,
                            settle_seconds, input_port, state_dir, binary, background,
-                           presence, bridge(ctx), _step_ops)
+                           presence, dos_calls, log_categories, guest_files, bridge(ctx),
+                           _step_ops)
 
 
 @tool("Session status", summary=one_line.status, read_only=True)
@@ -254,7 +269,8 @@ def close(detail: bool = False, ctx: Context[Any, Any] | None = None) -> dict[st
     Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid`, `stdout_tail` and
     `errorlog_tail` when the end was not a clean `quit`, or with `detail=True`. `exit_code` is
     an integer or unavailable with its `why`; `note` when the output was not read to its end.
-    `session` is the block before closing.
+    `guest_files`: each file `start` named, with `guest_file`'s `state`. `session` is the block
+    before closing.
     """
     return lifecycle.close(bridge(ctx), detail)
 
@@ -266,18 +282,26 @@ def log(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS)],
         limit: Annotated[int, vocab.bounds(1, dlogs.LOG_LIMIT_MAX)] = 40,
         labels: bool = False,
         since_mark: Annotated[int, log_marks.SINCE_MARK_BOUND] = 0) -> dict[str, Any]:
-    """The session's log, one `channel` (`guest`, `emulator`, `all`) filtered by the Python regex
-    `pattern`; `limit` keeps the newest matches; `labels=True` adds `labels`. `since_mark` (a
-    byte position, from a `mark`) reads only what follows. Needs a session with `logfile`; works
-    on a running guest.
+    """The session's log, one `channel` (`guest`, `emulator`, `all`, `dos`) filtered by the
+    Python regex `pattern`; `limit` keeps the newest matches; `labels=True` adds `labels`.
+    `since_mark` (a byte position, from a `mark`) reads only what follows. Needs a session with
+    `logfile`. `dos`, the guest's INT 21h calls and no other interrupt, instead needs a session
+    started with `dos_calls`, matches `pattern` against each call's `line`, counts calls where
+    the others count lines, and takes no `since_mark` or `labels`. Works on a running guest.
 
-    Reply: `channel`, `lines`, `lines_total`, `truncated`, `labels`, `pattern`. INVALID with
-    `code`: no `logfile`, no log yet, no guest instrumentation, `limit` out of range, a bad
-    pattern, an unknown channel (`process` is refused by name), a `since_mark` naming no
-    position. To wait for a line use `log_wait`.
+    Reply: `channel`, `lines`, `lines_total`, `truncated`, `labels`, `pattern`, `note`; on the
+    DOS channel `calls` instead of `lines` (each `n`, `time_s`, `cpu_mode`, `caller`, `psp`,
+    `function`, `name`, `file`, `in`, `out`, `error`, `returned`, `returned_s`, `switched`,
+    `line`). INVALID with `code`: no
+    `logfile`, no log yet, no guest instrumentation, `limit` out of range, a bad pattern, an
+    unknown channel (`process` is refused by name), a `since_mark` naming no position.
+    To wait for a line use `log_wait`.
 
     Reference: REFERENCE.md, The log.
     """
+    if channel == dos_calls_trace.CHANNEL:
+        live()
+        return dos_calls_trace.log(pattern, limit, since_mark, labels)
     lines, total = live().log(pattern, limit, channel, since_mark)
     reply: dict[str, Any] = dict(pattern=pattern, channel=channel, lines_total=total,
                                  truncated=total > len(lines), lines=lines)
@@ -294,7 +318,8 @@ def log_wait(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS
     """When a line of `channel` matching `pattern` was logged: at once if the log already holds it,
     else wait up to `seconds`. `channel` and `since_mark` as in `log`. Works on a running guest.
 
-    Reply: `verdict` `TARGET`, `pattern`, `channel`, `line` (the first match), `already`,
+    Reply: `verdict` `TARGET`, `pattern`, `channel`, `line` (the first match; `call` on `dos`),
+    `already`,
     `waited_s`, `lines_before`, `lines_total`, `arrived_during`, `lines_examined`; on timeout
     `verdict` `TIMEOUT` with `note`, `arrived_during`, `lines_examined`, `waited_s`. `status:
     INVALID`: `wait_stopped` on a stopped machine whose log lacks the line, `session_broken`
@@ -304,6 +329,15 @@ def log_wait(pattern: str, channel: Annotated[str, vocab.enum(dlogs.LOG_CHANNELS
     Reference: REFERENCE.md, The log.
     """
     session = live()
+    if channel == dos_calls_trace.CHANNEL:
+        try:
+            return dos_calls_trace.log_wait(session, pattern, seconds, since_mark, bridge(ctx))
+        except ds.E9Stopped as e:
+            running.observe_stop(session)      # the stop the wait found is recorded and named
+            stop, where = STATE.stop_named(session)
+            return st.reply(status="INVALID", code=e.code,
+                            message=f"{e}. The machine is stopped{where}", pattern=pattern,
+                            last_stop=stop)
     if since_mark:
         log_reader.log_file_from(session, since_mark, channel)
     try:
@@ -457,11 +491,21 @@ def scan(method: Annotated[str, vocab.enum(tuple(folds.SCAN))], ref: str = "",
 
 #: The debugger's commands that write the guest, read in upstream's command parser: memory
 #: (`SM`, `SMV`), registers (`SR`), an interrupt taken (`INTT`), a timer IRQ raised at the PIC
-#: (`TIMERIRQ`), a state loaded (`LOADSTATE`), a port written (`OUTB`/`OUTP`/`OUTW`/`OUTD`), and
+#: (`TIMERIRQ`), a state loaded (`LOADSTATE`), a port read or written (`IN*`, `OUT*`: a read can
+#: change the device, as reading 3DAh resets the attribute flip-flop), a byte frozen (`FM`), and
 #: the BIOS clock (`TIME`, `DATE`: both reset its midnight flag, set or not). Breakpoints and
 #: listings write no guest state.
-DEBUG_WRITES = frozenset({"SM", "SMV", "SR", "INTT", "TIMERIRQ", "LOADSTATE", "OUTB", "OUTP",
-                          "OUTW", "OUTD", "TIME", "DATE"})
+DEBUG_WRITES = frozenset({"SM", "SMV", "SR", "INTT", "TIMERIRQ", "LOADSTATE", "INP", "INB", "INW",
+                          "IND", "OUTB", "OUTP", "OUTW", "OUTD", "FM", "TIME", "DATE"})
+#: Commands that list with no argument and write with one: the PIC's actions, the A20 gate set.
+DEBUG_WRITES_WITH_ARGUMENT = frozenset({"PIC", "A20"})
+
+
+def debug_writes(command: str) -> bool:
+    """Whether `command` writes the guest (`DEBUG_WRITES`, `DEBUG_WRITES_WITH_ARGUMENT`)."""
+    words = command.upper().split()
+    return bool(words) and (words[0] in DEBUG_WRITES
+                            or (words[0] in DEBUG_WRITES_WITH_ARGUMENT and len(words) > 1))
 
 
 @tool("Raw debugger command", summary=one_line.debug)
@@ -481,9 +525,9 @@ def debug(command: str) -> dict[str, Any]:
     # keeps, and may open a scan at another width, so both are dropped rather than answered stale.
     if command.strip().upper().startswith(("MEMS", "MEMFIND")):
         STATE.scan_forget()
-    # A COMMAND THAT WRITES THE GUEST (`DEBUG_WRITES`) marks the session as `write` and
+    # A COMMAND THAT WRITES THE GUEST (`debug_writes`) marks the session as `write` and
     # `set_register` do, before it is sent: what reaches the machine has been written.
-    if command.split()[:1] and command.split()[0].upper() in DEBUG_WRITES:
+    if debug_writes(command):
         session.altered = True
     ok, lines = session.exec(command)
     out = "\n".join(lines)
@@ -529,6 +573,73 @@ def write(ref: str, data_hex: str) -> dict[str, Any]:
 
 
 # ------------------------------------------------------------- advancing the machine
+
+# ---------------------------------------------------------------- the machine's hardware
+
+@tool("Read or write an I/O port", summary=methods.fold_line("port", folds.PORT))
+def port(method: Annotated[str, vocab.enum(tuple(folds.PORT))],
+         port: judges.NumberArg | None = None,
+         bits: Annotated[int, vocab.enum(tuple(hardware.BITS))] = 8,
+         value: judges.NumberArg | None = None) -> dict[str, Any]:
+    """One access of an I/O port, the one kind a memory write cannot make. Marks the session
+    `altered`, a read too: reading a port can change its device (3DAh resets the attribute
+    flip-flop, 60h takes the key). Needs the machine stopped and a build whose debugger has
+    `PORTINFO`. `port` and `value` are integers or `0x` hex, as the reply spells them.
+
+    `read`: `port`, `bits` (8, 16 or 32). Reply: `port`, `bits`, `value`.
+
+    `write`: `port`, `value`, `bits`. Reply: `port`, `bits`, `value`, `readback` (unavailable:
+    a port holds no value to read back).
+
+    Refused (`bad_argument`): a port past 0xFFFF, a value wider than `bits`, an argument the
+    method does not take. `no_channel`: a port no device answers at that size and side (the
+    emulator would answer all ones, or swallow the write, in silence), or no `PORTINFO`.
+    `not_stopped`: a running guest. `unexpected_answer`: the debugger answered another shape.
+
+    Reference: REFERENCE.md, The machine's hardware.
+    """
+    return methods.dispatch(folds.PORT, locals())
+
+
+@tool("Read or drive the interrupt controllers", summary=methods.fold_line("pic", folds.PIC))
+def pic(method: Annotated[str, vocab.enum(tuple(folds.PIC))],
+        irq: Annotated[int, vocab.bounds(0, hardware.IRQ_MAX)] | None = None) -> dict[str, Any]:
+    """The 8259 interrupt controllers, which decide which hardware interrupt reaches the CPU.
+    Needs the machine stopped.
+
+    `read`: Reply: `controllers` (each `controller`, `vector_base`, `isr`, `isrr`,
+    `auto_eoi`, ...), `irqs` (each `irq`, `vector`, `requested`, `masked`, `in_service`,
+    `cascade`).
+
+    `mask`, `unmask`, `ack` (clear its in-service bit), `raise`, `lower` (its request line):
+    `irq` 0 to 15. Marks the session `altered`. The timer is IRQ 0: `raise` it to run its
+    handler on demand. Reply: `method`, `irq`, `line` (its row after).
+
+    Refused (`bad_argument`): an `irq` out of range or on a slave this machine lacks, an
+    argument the method does not take. `readback_refused`: a mask or unmask the listing does
+    not show after. `not_stopped`: a running guest. `unexpected_answer`: a listing of another
+    shape.
+
+    Reference: REFERENCE.md, The machine's hardware.
+    """
+    return methods.dispatch(folds.PIC, locals())
+
+
+@tool("Read or set the A20 gate", summary=methods.fold_line("a20", folds.A20))
+def a20(method: Annotated[str, vocab.enum(tuple(folds.A20))]) -> dict[str, Any]:
+    """The A20 gate, which decides whether memory past 1 MB wraps to 0. Needs the machine
+    stopped.
+
+    `read`, `on`, `off`; the last two mark the session `altered` and read the gate back.
+    Reply: `enabled`.
+
+    Refused: a gate that does not read back as set (`readback_refused`); a running guest
+    (`not_stopped`); an answer of another shape (`unexpected_answer`).
+
+    Reference: REFERENCE.md, The machine's hardware.
+    """
+    return methods.dispatch(folds.A20, locals())
+
 
 @tool("Resume the machine", summary=one_line.resume, on_cancel="none", replay="wall")
 def resume(seconds: Annotated[float, vocab.WAIT_FROM_ZERO_BOUNDS] = 0.0, detail: bool = False,
@@ -1196,23 +1307,31 @@ def watch_add(ref: str, mode: Annotated[str, vocab.enum(dec.WATCH_MODES)], lengt
 
     `mode`: `show` (read at each stop), `change` (stops when the bytes change), `count` (tallies
     every write and its writer), `capture` (a row per access of `trigger`, with the beam line
-    and the time); count and capture never stop the machine. `ref`: a symbol, `SEG:OFF`, or
+    and the time), `freeze` (pins the bytes at their value: the guest's writes are undone, and
+    the session is `altered`);
+    count, capture and freeze never stop the machine. `ref`: a symbol, `SEG:OFF`, or
     `[base]+0x28`, `base->field`. `fmt`: a scalar (`u8` .. `f64`), an array (`u16[8]`), a string
     (`char[16]`) or a struct (`{x:i16,y:i16}`). `length`: total bytes; at most {READ_MAX} for
-    show, {CHANGE_WATCH_MAX} for change (a debugger row per byte, `entries`), {TAP_COUNT_MAX}
-    for count, {TAP_BLOCK_MAX} for capture. `trigger`, `trigger_type`: capture only; a capture
-    of reads (`r`) is of `ref` itself, with no `trigger`, `length` or `fmt`. A count or capture
-    is declared at a stop, by symbol or `SEG:OFF`, on a build whose debugger has `TAP`; from
-    then on it records while the guest runs.
+    show, {CHANGE_WATCH_MAX} for change and {FREEZE_MAX} for freeze (a debugger row per byte,
+    `entries`), {TAP_COUNT_MAX} for count, {TAP_BLOCK_MAX} for capture. `trigger`,
+    `trigger_type`: capture only; a capture of reads (`r`) is of `ref` itself, with no
+    `trigger`, `length` or `fmt`. A count or capture is declared at a stop, by symbol or
+    `SEG:OFF`, on a build whose debugger has `TAP`; from then on it records while the guest
+    runs. A freeze likewise, on a heavy-debug build, pinning the values of that stop; each stop
+    reads its bytes back (`holding`, or `not_held` when something ran past it), and a stored
+    freeze is not armed again at `start` or `symbols_load`, where its bytes hold other values.
 
     Refused: one ref declared two ways; a length over the ceiling; a pointer base the table
-    lacks; a count or capture through a pointer, on a running machine or with no `TAP`; a write
-    capture with no `trigger`; `trigger` or `trigger_type` on another mode.
+    lacks; a count, capture or freeze through a pointer or on a running machine (`not_stopped`);
+    a count or capture with no `TAP`, a freeze with no heavy debugger (`no_channel`); a freeze
+    on an offset already frozen (`ambiguous_ref`); a write capture with no `trigger`; `trigger`
+    or `trigger_type` on another mode.
 
     Reply: `ref`, `by`, `mode`, `fmt`, `length`, `stored`, `already_stored`, `state`
     (`evaluated`, `unresolved`, `unarmable`, `null_pointer`, `pending`, `armed`), `armed`,
     `pointer`, `entry`, `caveat`; a count or capture's `tally_id`, `addr`, `trigger`,
-    `trigger_addr`, `trigger_type`; its account is `declaration_list`'s.
+    `trigger_addr`, `trigger_type`; a freeze's `addr`, `entries`, `frozen_hex`; its account is
+    `declaration_list`'s.
 
     Reference: REFERENCE.md, Declarations.
     """
@@ -1283,6 +1402,23 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
 
 # ----------------------------------------------------------------------- the captures
 
+@tool("What the guest left in a file", summary=one_line.guest_file, read_only=True,
+      replay=("state",))
+def guest_file(path: str) -> dict[str, Any]:
+    """What the guest left at `path`, a host file `start(guest_files=)` fingerprinted before
+    the emulator booted: `absent`, `empty`, `unchanged` (the bytes and time from before the
+    run) or `written`. Reads the host's file, so it answers with the guest running or after
+    `close`.
+
+    Reply: `path`, `state`, `bytes`, `sha256`, `before` (`exists`, `bytes`, `sha256`),
+    `same_bytes` (written again with the bytes it held). INVALID `readback_refused` on the
+    first three, which hand nothing back; a path `start` did not name is refused.
+
+    Reference: REFERENCE.md, The guest's files.
+    """
+    return guest.guest_file(path)
+
+
 @tool("List this session's captures", summary=one_line.captures, read_only=True)
 def captures() -> dict[str, Any]:
     """Lists the files the session's tools wrote (`record` and `audio_record` among them), in
@@ -1328,8 +1464,8 @@ def perform_export(dest: str, overwrite: bool = False) -> dict[str, Any]:
     """Write the session's calls since `start` to `dest` as a `perform` document.
 
     Kept: moving calls and checks (`read_memory`, `registers`, `screen_signature`, `map_find`,
-    `image_compare(method="golden")`), each held to its `recorded` reply. Other calls drop;
-    the first no replay can place, or past {RECORD_MAX}, cuts the rest.
+    `guest_file`, `image_compare(method="golden")`), each held to its `recorded` reply. Other
+    calls drop; the first no replay can place, or past {RECORD_MAX}, cuts the rest.
 
     `dest` (`.json`) is refused if present unless `overwrite`. Reply: `path`, `steps`,
     `checks`, `dropped`, `dropped_total`, `cut`, `replay`; `no_recording` if empty.

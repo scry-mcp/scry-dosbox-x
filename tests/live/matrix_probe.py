@@ -159,7 +159,9 @@ _NEEDS_STOP = ("registers", "read_memory", "disassemble", "call_stack", "memdump
                "run_for", "trace", "record", "audio_record",
                "resume", "machine_map", "interrupt_vectors", "palette", "screen_view",
                "screen_signature", "screen_wait", "comment_write add", "comment_write delete",
-               "comment_write load", "map_write add", "map_find")
+               "comment_write load", "map_write add", "map_find", "port read", "port write",
+               "pic read", "pic unmask", "pic mask", "pic raise", "pic lower", "pic ack",
+               "a20 read", "a20 off", "a20 on")
 _NO_CAPTURE = ("capture_frame", "series_capture")
 #: A directory no host has, spelled absolute on this one.
 _ABSENT = Path(Path.cwd().anchor) / "nonexistent"
@@ -248,6 +250,13 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "map_write add": {"screen": f"probe_{state}", "match": [[0, 0, 8, 1]]},
         "map_find": {},
         "map_write save": {"dest": M.fresh(f"-{state}.scry-map.json"), "overwrite": True},
+        # IRQ 3 (COM2) is masked on this machine and nothing raises it: unmasked and masked back,
+        # then raised, lowered and acknowledged while masked, so the guest never takes it.
+        "port read": {"port": 0x3DA}, "port write": {"port": 0x3C8, "value": 0},
+        "pic read": {}, **{f"pic {a}": {"irq": 3} for a in ("unmask", "mask", "raise", "lower",
+                                                            "ack")},
+        "a20 read": {}, "a20 off": {}, "a20 on": {},
+        "guest_file": {"path": str(_ABSENT / "OUT.TXT")},
     }
     return table[tool]
 
@@ -284,6 +293,10 @@ _SEQUENCES: dict[str, tuple[Callable[[dict[str, Any]], bool], str]] = {
     "drive": (lambda r: ok(r) and (r.get("verify") or {}).get("checked") is False,
               "drive docstring: `checked: false` when no expect was given"),
 }
+
+def _altered(r: dict[str, Any]) -> bool:
+    return (r.get("session") or {}).get("altered") is True
+
 
 def _unavailable(datum: object) -> bool:
     """A datum a reply could not read: `{available: false, why}`, the reason beside it."""
@@ -447,6 +460,29 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
         "map_find": (lambda r: ok(r) and r.get("matched") is True
                      and r.get("screen") == "probe_stopped" and r.get("layer") == "session",
                      "map_find docstring: the screen just mapped, the session layer first"),
+        "port read": (lambda r: ok(r) and r.get("port") == "0x03DA" and r.get("bits") == 8
+                      and str(r.get("value")).startswith("0x") and _altered(r),
+                      "port docstring: a read, which marks the session altered"),
+        "port write": (lambda r: ok(r) and r.get("value") == "0x00"
+                       and _unavailable(r.get("readback")) and _altered(r),
+                       "port docstring: a write, no readback a port could give"),
+        "pic read": (lambda r: ok(r) and len(r.get("irqs") or []) == 16
+                     and len(r.get("controllers") or []) == 2,
+                     "pic docstring; known: an svga machine has the slave controller"),
+        "pic unmask": (lambda r: ok(r) and (r.get("line") or {}).get("masked") is False,
+                       "pic docstring: the line read back unmasked"),
+        "pic mask": (lambda r: ok(r) and (r.get("line") or {}).get("masked") is True,
+                     "pic docstring: the line read back masked"),
+        "pic raise": (lambda r: ok(r) and (r.get("line") or {}).get("requested") is True,
+                      "pic docstring; measured: a masked line raised stays requested"),
+        "pic lower": (lambda r: ok(r) and (r.get("line") or {}).get("requested") is False,
+                      "pic docstring; measured: lowered, the request clears"),
+        "pic ack": (lambda r: ok(r) and (r.get("line") or {}).get("in_service") is False,
+                    "pic docstring: its in-service bit cleared"),
+        "a20 read": (lambda r: ok(r) and isinstance(r.get("enabled"), bool),
+                     "a20 docstring"),
+        "a20 off": (lambda r: ok(r) and r.get("enabled") is False, "a20 docstring: read back"),
+        "a20 on": (lambda r: ok(r) and r.get("enabled") is True, "a20 docstring: read back"),
     }
     return d[tool]
 
@@ -529,6 +565,10 @@ def _expect(tool: str, state: str) -> tuple[Callable[[dict[str, Any]], bool], st
     if tool == "map_write load":
         return ((lambda r: refused(r, "bad_argument") and "no map file" in str(r.get("message"))),
                 "map_write load docstring: any state; a file that is not there refused by name")
+    if tool == "guest_file":
+        return ((lambda r: refused(r, "bad_argument")
+                 and "not fingerprinted" in str(r.get("message"))),
+                "guest_file docstring: a host file, any state; one `start` did not name refused")
     if tool == "map_write save":
         if state == "none":
             return ((lambda r: refused(r, "needs_call") and no_session(r)),
@@ -611,7 +651,8 @@ _STOPPED_ORDER = [
     "declaration_clear regpoint", "watch_add", "declaration_list watch",
                   "declaration_clear watch", "send_keys", "send_mouse",
     "captures", "capture_frame", "series_capture", *MEDIA_ABSENT, "perform", "drive",
-    "perform_export"]
+    "perform_export", "port read", "port write", "pic read", "pic unmask", "pic mask",
+    "pic raise", "pic lower", "pic ack", "a20 read", "a20 off", "a20 on", "guest_file"]
 
 
 TOOLS = [p for t in REGISTERED

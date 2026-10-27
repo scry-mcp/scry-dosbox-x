@@ -308,6 +308,13 @@ class Machine:
         self.breakpoints.insert(0, f"BPPM {seg}:{int(off, 16):08X} (00)")
         return True, [f"DEBUG: Set prot-mode memory breakpoint at {seg}:{int(off, 16):08X}"]
 
+    # A freeze is listed by its offset alone, its segment dropped, as the debugger lists it.
+    def _do_fm(self, args: list[str]) -> tuple[bool, list[str]]:
+        seg, off = (int(x, 16) for x in args[0].split(":"))
+        value = self.memory.get(seg * 16 + off, 0)
+        self.breakpoints.insert(0, f"FM {off:08X} ({value:02X})")
+        return True, [f"DEBUG: Set memory freeze at {seg:04X}:{off:04X} with value: {value:02X}"]
+
     def _do_bpdel(self, args: list[str]) -> tuple[bool, list[str]]:
         if args and args[0] == "*":
             self.breakpoints.clear()

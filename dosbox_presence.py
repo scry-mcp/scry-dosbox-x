@@ -20,11 +20,12 @@ import dosbox_debugger as dbg
 DRIVING_TOOLS = frozenset({
     "resume", "stop", "step", "run_to", "run_for", "trace", "screen_wait", "send_keys",
     "send_mouse", "drive", "perform", "state_write", "debug", "write", "set_register", "record",
-    "audio_record"})
+    "audio_record", "port", "pic", "a20"})
 STILL_TOOLS = frozenset({
     "breakpoint_at", "breakpoint_interrupt", "build_check", "call_stack", "capture_frame",
     "captures", "close", "comment_list", "comment_write", "declaration_clear",
-    "declaration_list", "disassemble", "find", "image_compare", "interrupt_vectors", "log",
+    "declaration_list", "disassemble", "find", "guest_file", "image_compare",
+    "interrupt_vectors", "log",
     "log_wait", "machine_map", "map_find", "map_write", "memdump", "palette", "perform_export",
     "read_memory", "registers", "regpoint_add", "scan", "screen_signature", "screen_view",
     "series_capture",

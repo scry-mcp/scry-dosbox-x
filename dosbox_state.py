@@ -88,6 +88,14 @@ class State:
         # The count and capture watches' taps this session's debugger holds, by ref
         # (`dosbox_taps.Tap`); a tap lives as long as the emulator.
         self.taps: dict[str, Any] = {}
+        # The freeze watches' pinned bytes this session's debugger holds, by ref
+        # (`dosbox_freezes.Freeze`).
+        self.freezes: dict[str, Any] = {}
+        # The DOS call trace `start(dos_calls=True)` turned on (`dosbox_dos_calls.Trace`).
+        self.dos_calls: Any = None
+        # The files `start(guest_files=)` fingerprinted, kept past `close` for its reply
+        # (`dosbox_guest_files.Print` by path).
+        self.guest_files: dict[Path, Any] = {}
         self.applied_last: dict[str, Any] = {}
         self.found_stop_last: dict[str, Any] = {}
         self.cancelled: cancel.Cancelled | None = None
@@ -233,6 +241,8 @@ class State:
                             drained_seq=-1)
         self.armed.clear()
         self.taps.clear()
+        self.freezes.clear()
+        self.dos_calls = None
         self.applied_last.clear()
         self.found_stop_last = {}
         self.e9_offset = 0

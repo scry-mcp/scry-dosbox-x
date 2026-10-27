@@ -305,7 +305,7 @@ def test_every_tool_this_server_promises_is_actually_registered() -> None:
         "state_write", "state_list", "snapshot", "captures", "capture_frame", "build_check",
         "symbols_load", "symbols_find", "send_keys", "send_mouse", "perform", "perform_export",
         "drive", "comment_list", "comment_write", "series_capture", "image_compare", "map_find",
-        "map_write", "record", "audio_record"}
+        "map_write", "record", "audio_record", "port", "pic", "a20", "guest_file"}
     got = dosbox_mcp.registered_tools()
     assert set(got) == expected
     # The registry is a dict keyed by name, so a length check cannot fail.
@@ -1364,7 +1364,8 @@ def test_every_tool_is_summarised_by_its_own_line() -> None:
     from scry_core import screen_map
     lines = dosbox_mcp.BOUNDARY.summaries
     folded = {"comment_write": folds.COMMENT, "map_write": folds.MAP, "scan": folds.SCAN,
-              "state_write": folds.STATE_METHODS}
+              "state_write": folds.STATE_METHODS, "port": folds.PORT, "pic": folds.PIC,
+              "a20": folds.A20}
     for name in dosbox_mcp.registered_tools():
         if name in media_tools.TOOLS:
             assert lines[name] is media_tools.TOOLS[name].summary, name
@@ -1416,15 +1417,26 @@ def test_the_pointer_names_the_bios_mode_and_the_screen_its_vga_mode(tmp_path: P
 
 def test_a_raw_command_that_writes_the_guest_marks_the_session_altered() -> None:
     fake = install()
-    for command in ("BPLIST", "BP 0000:0009", "BPDEL *", "MEMDUMPBIN 0:0 10", "IV 0:0 X"):
+    for command in ("BPLIST", "BP 0000:0009", "BPDEL *", "MEMDUMPBIN 0:0 10", "IV 0:0 X", "PIC",
+                    "A20", "PORTINFO 3DA", "DOSTRACE"):
         server.debug(command=command)
         assert fake.altered is False, f"{command} writes nothing and marked the session"
     for command in ("SM 0000:0400 0FF", "sr eax 1", "SMV 400 0FF", "INTT 21", "TIMERIRQ",
                     "LOADSTATE /x/a.sav", "OUTB E9 51", "OUTP E9 51", "OUTW 80 0", "OUTD 80 0",
-                    "TIME", "date 01-02-2026"):
+                    "TIME", "date 01-02-2026", "PIC MASKIRQ 0", "pic raiseirq 3", "A20 ON",
+                    "A20 0", "FM 0814:0100", "INP 3DA", "INB 60", "INW 3DA", "IND 3DA"):
         fake.altered = False
         got = cast(dict[str, Any], server.debug(command=command))
         assert fake.altered is True and got["session"]["altered"] is True, command
+
+
+def test_a_raw_dostrace_that_would_move_the_dos_channel_is_refused() -> None:
+    fake = install()
+    for command in ("DOSTRACE OFF", "dostrace /x/other.trace"):
+        got = cast(dict[str, Any], server.debug(command=command))
+        assert got["code"] == "bad_argument" and "dos_calls" in got["message"], got
+    server.debug(command="DOSTRACE")
+    assert fake.executed == ["DOSTRACE"]
 
 
 def test_debug_says_when_the_debugger_did_not_take_the_command() -> None:

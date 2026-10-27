@@ -201,6 +201,11 @@ def _args(tmp_path: Path) -> dict[str, dict[str, Any]]:
         "map_write load": {"path": str(tmp_path / "none.scry-map.json")},
         "map_write save": {"dest": str(tmp_path / "x.scry-map.json")},
         "map_write add": {"screen": "s", "match": [[0, 0, 1, 1]]}, "map_find": {},
+        "port read": {"port": 0x3DA}, "port write": {"port": 0x3C8, "value": 1},
+        "pic read": {}, **{f"pic {a}": {"irq": 3} for a in ("mask", "unmask", "ack", "raise",
+                                                            "lower")},
+        "a20 read": {}, "a20 on": {}, "a20 off": {},
+        "guest_file": {"path": str(tmp_path / "OUT.TXT")},
     }
 
 

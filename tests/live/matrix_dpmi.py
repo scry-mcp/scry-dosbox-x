@@ -1,6 +1,6 @@
 """Section F of the live matrix: the package's DPMI guest (`tests/guest/dpmi.c`), a DJGPP client
-under the host DOSBox-X provides, protected mode, paged, `nm` symbols. Its boot and its way out are
-shared with the windowed section and the trace section."""
+under the CWSDPMI DOSBox-X provides, which its stub loads resident, protected mode, paged, `nm`
+symbols. Its boot and its way out are shared with the windowed section and the trace section."""
 from __future__ import annotations
 
 import time
@@ -39,6 +39,9 @@ RETRACES_PLACED = 10
 #: The segment of the BIOS handlers a DJGPP guest spends part of every frame in.
 BIOS_SEGMENT = "F000"
 
+DPMI_DOS_CELL = ("F log dos tells CWSDPMI's own calls from the client's, which reach DOS from "
+                 "the host's code with the client's PSP")
+
 #: How long the program takes to leave after the confirm, before `close` is asked.
 LEAVE_S = 3.0
 
@@ -51,6 +54,8 @@ F_CELLS = cells(
     ("F the program carries its E9 channel", "known: dpmi.c writes `BOOT  . start` first"),
     ("F INT 31h AH=02h stops inside the DPMI client",
      "breakpoint_interrupt's description: 0x31 with ah=2 for DJGPP"),
+    (DPMI_DOS_CELL, "REFERENCE.md, The log: the caller and the PSP tell a DPMI host's calls "
+                    "from the program's; measured: CWSDPMI reflects the client's INT 21h"),
     ("F the stub announces the serial route", "REFERENCE.md, Input and the screen"),
     ("F screen_view at the client's first stop reads the shell's page through a flat segment",
      "screen_view docstring: protected mode through the GDT or LDT; known: the program is "
@@ -119,6 +124,26 @@ def dpmi_client(wait: float = 30, exempt: str = "",
     must(M.call(server.breakpoint_interrupt, number=0x31, ah=0x02), "arming INT 31h AH=02h")
     stop = M.call(server.resume, exempt=exempt, seconds=wait)
     return stop, M.call(server.symbols_load, path=str(guest.SYM), base_from="CS")
+
+
+def _dpmi_dos_calls() -> None:
+    """The host's PSP read off the MCB chain, then the trace held to it: the host's own calls
+    carry it, the client's reflected calls come from the host's code segment with the client's
+    PSP, and the client's real-mode stub calls DOS from its own code."""
+    mcbs = M.call(server.machine_map, sections=["mcbs"]).get("mcbs") or []
+    host = next((m.get("psp_seg") for m in mcbs if m.get("filename") == "CWSDPMI"), None)
+    calls = M.call(server.log, channel="dos", pattern=".", limit=400).get("calls") or []
+    own = [c for c in calls if c.get("psp") == f"0x{host}"]
+    host_cs = {str(c.get("caller")).split(":")[0] for c in own}
+    reflected = [c for c in calls if str(c.get("caller")).split(":")[0] in host_cs
+                 and c.get("psp") != f"0x{host}"]
+    client = {c.get("psp") for c in reflected}
+    stub = [c for c in calls if c.get("psp") in client and not str(c.get("caller")).startswith(
+        (*host_cs, BIOS_SEGMENT))]
+    M.judge(DPMI_DOS_CELL, host is not None and bool(own) and len(client) == 1
+            and bool(reflected) and bool(stub),
+            f"host psp {host}, own {len(own)}, reflected {len(reflected)} for {client}, "
+            f"stub {len(stub)}")
 
 
 def dpmi_leave() -> tuple[bool, str, dict[str, Any]]:
@@ -200,10 +225,11 @@ def _placed_retraces(program_cs: str) -> None:
 def section_f() -> None:
     M.judge("F the program carries its E9 channel", carries(guest.EXE, guest.BOOT_MARK.encode()),
             f"{guest.BOOT_MARK!r} in {guest.EXE.name}")
-    r, loaded = dpmi_client()
+    r, loaded = dpmi_client(dos_calls=True)
     client_cs = _cs_of(r)
     judged("F INT 31h AH=02h stops inside the DPMI client", reply=r,
            holds=ok(r) and "stop_seq" in r and r.get("cpu_mode") in ("protected", "paged"))
+    _dpmi_dos_calls()
     stub = stub_cell("F the stub announces the serial route")
     r = M.call(server.screen_view)
     judged("F screen_view at the client's first stop reads the shell's page through a flat "

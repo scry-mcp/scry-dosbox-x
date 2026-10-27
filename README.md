@@ -35,6 +35,12 @@ driven by look, act, verify, and so is this.
   to a file, over a number of display frames, headless, each file checked before you get it. A
   count watch tallies every value a variable takes and who wrote it; a capture keeps a row, with
   the beam's line and the time, for every write or read of a byte, and never stops the machine.
+- **Behind the CPU, and what DOS was asked.** `port` reads or writes an I/O port and refuses
+  one no device answers; `pic` reads and drives the interrupt controllers; `a20` reads or sets
+  the gate; a freeze watch pins a byte while the program runs. The `dos` log channel lists every
+  DOS call with its result ("open MISSING.TXT, error 2, file not found") and who made it, and
+  `guest_file` says whether the program wrote the file it was meant to leave, left it empty, or
+  left the old one.
 - **Press its keys, move its mouse, and prove it.** `send_keys` and `send_mouse` go in inside
   the machine, so no window comes to the front and your own pointer never moves. Give `expect`
   and the reply says whether the program acted; a swallowed key is reported as a miss.
@@ -52,8 +58,8 @@ named by `DOSBOX_X_BINARY` or by `start`'s `binary`. Some tools need debugger co
 release does not carry: waiting for a stop (`run_to`, `run_for`, `trace`, `screen_wait`, a step
 over, a bounded `resume`) needs `RUNSTATE`; stepping needs `STEPIN`; the saved states need
 `SAVESTATE` and `LOADSTATE`; a register condition needs `BPIF`; a picture in a mode past 13h's
-needs `VGAMEMDUMP`; a recording `CAPTURE`; a count or capture watch `TAP`
-([Platforms](#platforms)). Name a build that carries them with
+needs `VGAMEMDUMP`; a recording `CAPTURE`; a count or capture watch `TAP`; a port `PORTINFO`;
+the DOS calls `DOSTRACE` ([Platforms](#platforms)). Name a build that carries them with
 `DOSBOX_X_BINARY`. A missing piece is named by the tool that needs it, never worked around.
 
 ```sh
@@ -84,7 +90,8 @@ parks at. Waiting for a stop (`run_to`, `run_for`, `trace`, `screen_wait`, a ste
 `resume`) needs `RUNSTATE`, which tells whether the debugger holds the machine; stepping needs
 `STEPIN`; saved states need `SAVESTATE` and `LOADSTATE`; a stop on a register condition needs
 `BPIF`; the screen in a planar, unchained or linear mode needs `VGAMEMDUMP`; recording a stretch
-needs `CAPTURE`; a count or capture watch needs `TAP`. A tool whose command is missing says so
+needs `CAPTURE`; a count or capture watch needs `TAP`; a port needs `PORTINFO`; the DOS calls
+need `DOSTRACE`. A tool whose command is missing says so
 and does nothing ([REFERENCE.md](REFERENCE.md#debugger-commands)).
 
 ## See it run

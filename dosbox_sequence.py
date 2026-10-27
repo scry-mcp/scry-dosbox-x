@@ -39,7 +39,7 @@ RUNNING_OK_OPS = frozenset({
     "breakpoint_at", "breakpoint_interrupt", "regpoint_add", "declaration_list",
     "declaration_clear",
     "watch_add", "captures", "capture_frame", "series_capture", "send_keys", "send_mouse",
-    "state_write", "state_list", "snapshot", "stop", "map_write",
+    "state_write", "state_list", "snapshot", "stop", "map_write", "guest_file",
     *media.MEDIA_TOOLS})
 #: Methods of a folded tool that answer on a running guest; its others need a stop. Both state
 #: methods go down the debugger channel, breaking in on a running guest and releasing it after.

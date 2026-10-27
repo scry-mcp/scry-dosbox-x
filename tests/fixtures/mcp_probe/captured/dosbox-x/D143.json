@@ -1,0 +1,115 @@
+{
+ "task": {
+  "id": "D143",
+  "prompt": "Read the VGA input status register, port 3DA, once, as a byte.",
+  "tool": "port",
+  "args": {
+   "method": "read",
+   "port": {
+    "any_of": [
+     986,
+     "0x3DA",
+     "0x3da"
+    ]
+   }
+  },
+  "allow": [
+   "bits"
+  ],
+  "grammar": [
+   "read"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": 986}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": 986}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\", \"bits\": 8}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": 986}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\", \"bits\": 8}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": \"0x3DA\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D143: {\"tool\": \"port\", \"args\": {\"method\": \"read\", \"port\": 986}}"
+   ],
+   "right": true
+  }
+ ]
+}

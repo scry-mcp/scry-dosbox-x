@@ -15,6 +15,7 @@ import dosbox_arming as arming
 import dosbox_checks as checks
 import dosbox_comments as comments
 import dosbox_find as finder
+import dosbox_hardware as hardware
 import dosbox_placement as placement
 import dosbox_regpoints as regpoints
 import dosbox_screen as dscreen
@@ -154,9 +155,55 @@ STATE_METHODS = {
     "load": Method(_load_state, checks.check_state, one_line.load_state),
 }
 
+def _port_read(port: judges.NumberArg, bits: int = 8) -> dict[str, Any]:
+    return hardware.port_read(live(), port, bits)
+
+
+def _port_write(port: judges.NumberArg, value: judges.NumberArg, bits: int = 8
+                ) -> dict[str, Any]:
+    return hardware.port_write(live(), port, value, bits)
+
+
+PORT = {
+    "read": Method(_port_read, hardware.check_port, one_line.port_read),
+    "write": Method(_port_write, hardware.check_port_write, one_line.port_write),
+}
+
+
+def _pic_read() -> dict[str, Any]:
+    return hardware.pic_read(live())
+
+
+def _pic_action(action: str) -> Method:
+    def body(irq: int) -> dict[str, Any]:
+        return hardware.pic_action(live(), action, irq)
+    return Method(body, hardware.check_pic, one_line.pic_action)
+
+
+PIC = {"read": Method(_pic_read, methods.no_check, one_line.pic_read),
+       **{action: _pic_action(action) for action in hardware.PIC_ACTIONS}}
+
+
+def _a20_read() -> dict[str, Any]:
+    return hardware.a20_read(live())
+
+
+def _a20_on() -> dict[str, Any]:
+    return hardware.a20_set(live(), True)
+
+
+def _a20_off() -> dict[str, Any]:
+    return hardware.a20_set(live(), False)
+
+
+A20 = {"read": Method(_a20_read, methods.no_check, one_line.a20),
+       "on": Method(_a20_on, methods.no_check, one_line.a20),
+       "off": Method(_a20_off, methods.no_check, one_line.a20)}
+
 #: Each `method` fold's method names, which the running gate is held to.
 METHODS = {"comment_write": tuple(COMMENT), "map_write": tuple(MAP), "scan": tuple(SCAN),
-           "state_write": tuple(STATE_METHODS)}
+           "state_write": tuple(STATE_METHODS), "port": tuple(PORT), "pic": tuple(PIC),
+           "a20": tuple(A20)}
 
 #: Each fold's pre-gate judge, as `dosbox_checks.BY_OP` holds it.
 CHECKS = {
@@ -166,4 +213,7 @@ CHECKS = {
     "map_write": methods.fold_check(MAP),
     "scan": methods.fold_check(SCAN),
     "state_write": methods.fold_check(STATE_METHODS),
+    "port": methods.fold_check(PORT),
+    "pic": methods.fold_check(PIC),
+    "a20": methods.fold_check(A20),
 }

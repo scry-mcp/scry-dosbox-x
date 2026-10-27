@@ -92,7 +92,7 @@ def channel_marks(ses: ds.Session) -> dict[str, object]:
         end = ses.e9_mark()
     except OSError as e:
         return contract.unavailable(f"the logfile could not be sized: {e}")
-    return {channel: end for channel in dlogs.LOG_CHANNELS}
+    return {channel: end for channel in dlogs.FILE_CHANNELS}
 
 
 def save_state(ses: ds.Session, name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, object]:

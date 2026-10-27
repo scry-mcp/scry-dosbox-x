@@ -49,6 +49,7 @@ ROSTER = roster.Roster(families=(
                   "screen_view", "screen_signature", "map_find", "map_write", "debug")),
     ("Scan", ("scan",)),
     ("Write", ("set_register", "write")),
+    ("Hardware", ("port", "pic", "a20")),
     ("Advance", ("run_to", "run_for", "trace", "screen_wait", "step", "resume", "stop")),
     ("Declarations", ("breakpoint_at", "breakpoint_interrupt", "regpoint_add", "watch_add",
                       "declaration_list", "declaration_clear")),
@@ -58,7 +59,7 @@ ROSTER = roster.Roster(families=(
     ("Input", ("send_keys", "send_mouse", "drive")),
     ("Captures", ("captures", "capture_frame", "series_capture", "snapshot", "record",
                   "audio_record")),
-    ("Files", ("image_compare",)),
+    ("Files", ("image_compare", "guest_file")),
     ("Lists", ("perform", "perform_export")),
 ), answering=tuple(_ANSWERS_WHILE_RUNNING))
 
@@ -74,8 +75,8 @@ mcp = envelope.Envelope(
         '(`not_stopped`, naming `last_stop`); ' + ROSTER.running_sentence() + '\nIt stops at a '
         'breakpoint armed BEFORE the release '
         'or at `stop`. What you\n'
-        'declare while it runs is `pending` until the next stop (a count or capture is declared\n'
-        'at a stop, and records as it runs). After `symbols_load`, a `ref`\n'
+        'declare while it runs is `pending` until the next stop (a count, capture or freeze is\n'
+        'declared at a stop, and acts as it runs). After `symbols_load`, a `ref`\n'
         'is a symbol or a `SEG:OFF`. A cancel ends a call as its bound would; the next reply\n'
         'says `cancelled`.\n'
         'FOR A VALUE: `registers`, `read_memory`, `memdump`, `log`; `debug` last.\n\n'

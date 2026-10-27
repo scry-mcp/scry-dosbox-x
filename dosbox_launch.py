@@ -27,6 +27,7 @@ from typing import Any
 
 from scry_core import live_host, state_files
 from scry_core import reply_contract as contract
+from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Invalid
 
 import dosbox_binary as binaries
@@ -36,6 +37,14 @@ import dosbox_paths as paths
 # A ceiling as well as a floor: a bound so large it bounds nothing is no bound.
 MAX_SECONDS = 4 * 60 * 60
 INPUT_PORT_MIN, INPUT_PORT_MAX = 1024, 65535
+
+
+#: The emulator's `[log]` categories, as its `LOG::Init` registers them, and the levels its
+#: `ParseEnableSetting` reads (`true` and `false` are older spellings of `normal` and `error`).
+LOG_CATEGORIES = ("vga", "vgagfx", "vgamisc", "int10", "sblaster", "dma_control", "fpu", "cpu",
+                  "paging", "fcb", "files", "ioctl", "exec", "dosmisc", "pit", "keyboard", "pic",
+                  "mouse", "bios", "gui", "misc", "io", "pci", "sst")
+LOG_LEVELS = ("debug", "normal", "warn", "error", "fatal", "never")
 
 
 @dataclass
@@ -55,6 +64,8 @@ class Launch:
     capture_video: bool = False
     captures_dir: Path | None = None
     logfile: Path | None = None
+    # `[log]` category -> level, each a `-set log <category>=<level>`.
+    log_categories: dict[str, str] = field(default_factory=dict)
     # The absolute path `start` resolved; the bare name is the PATH's.
     binary: str = binaries.EXECUTABLE_NAME
     # TCP port the emulator's COM1 dials, read by `guest/INJECT.COM`; 0 takes a free one.
@@ -119,6 +130,8 @@ def build_argv(launch: Launch) -> list[str]:
         argv += ["-set", "dos break on int3=true"]
     if launch.logfile is not None:
         argv += ["-set", f"log logfile={launch.logfile}"]
+    for category, level in launch.log_categories.items():
+        argv += ["-set", f"log {category}={level}"]
     if launch.input_port is not None:
         # The integration device is read from `[cpu]`; under `[dosbox]` it is ignored.
         # `transparent`: else the nullmodem takes a 0xFF as its own escape.
@@ -257,7 +270,8 @@ OWNED_OPTIONS = {"-conf": "conf", "-time-limit": "session_seconds", "-break-star
 
 OWNED_SETS = {"sdl videodriver": "shared", "dos break on int3": "break_on_int3",
               "log logfile": "logfile", "serial serial1": "input_port",
-              "cpu integration device": "input_port", "dosbox captures": "captures_dir"}
+              "cpu integration device": "input_port", "dosbox captures": "captures_dir",
+              **{f"log {category}": "log_categories" for category in LOG_CATEGORIES}}
 
 
 # Keys the session owns with no argument behind them: a caller's value would point the debugger
@@ -369,10 +383,23 @@ def validate(launch: Launch) -> None:
                       "would be accepted and quietly do nothing")
     if launch.program and launch.input_port is not None:
         stub_drive(launch.conf)
+    check_log_categories(launch.log_categories, launch.logfile is not None)
     if launch.input_port and not INPUT_PORT_MIN <= launch.input_port <= INPUT_PORT_MAX:
         raise Invalid("bad_argument",
             f"input_port is the TCP port the emulator's COM1 dials, between "
                       f"{INPUT_PORT_MIN} and {INPUT_PORT_MAX}; got {launch.input_port}")
+
+
+def check_log_categories(categories: object, logfile: bool) -> None:
+    """`start`'s `log_categories`: known categories at known levels, with a logfile to land in."""
+    if not isinstance(categories, dict):
+        raise Invalid("bad_argument", "log_categories maps a `[log]` category to its level")
+    for category, level in categories.items():
+        vocab.one_of("log_categories key", category, LOG_CATEGORIES)
+        vocab.one_of(f"log_categories[{category!r}]", level, LOG_LEVELS)
+    if categories and not logfile:
+        raise Invalid("bad_argument", "log_categories writes the emulator's own lines into the "
+                      "session log, and this session has no `logfile` to hold them")
 
 
 # Members of a state ZIP that identify it without loading it; memory is in megabytes.
