@@ -50,7 +50,7 @@ def checked(run: Run) -> str:
     cwd = run.options.get("cwd")
     if not cwd:
         return "pass --cwd, the directory holding LineUp's PC port (EXES/LINEUP.EXE and its map)"
-    missing = [str(p) for p in (EXE, MAP) if not (game(run) / p).is_file()]
+    missing = [p.as_posix() for p in (EXE, MAP) if not (game(run) / p).is_file()]
     return f"no {' or '.join(missing)} under --cwd {cwd}" if missing else ""
 
 
