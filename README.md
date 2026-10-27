@@ -220,6 +220,10 @@ read_memory(ref="paddle_x", length=2)
 ```
 <!-- demo-flow:end bricks -->
 
+[`demos/dpaint/`](demos/dpaint/) paints a sunset in Electronic Arts' Deluxe Paint II,
+from your own copy of the program, and stops halfway to find with a value scan the byte where the
+program keeps its current colour.
+
 ## The tools
 
 The tools by family, each with its arguments, its reply and a real example, are in the index

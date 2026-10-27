@@ -6,19 +6,13 @@ the segment DOS loaded it at, a breakpoint on the routine every falling brick go
 score read by name, the paddle moved by the keyboard and by the mouse, and a state saved and
 loaded. The session is windowed so the game can be watched, and nothing in it needs the window:
 `stop` and the saved states go down the debugger channel, the keys and the mouse in inside the
-guest. The saved states need a DOSBox-X that carries SAVESTATE and LOADSTATE.
-
-Where the window goes is the host's to say, never this demo's: the server asks the placement
-helper `WINDOW_APP` names, for the secondary display on a run nobody watches and the main one
-with `--shared`. A run nobody watches that the helper cannot place away from the owner's work (no
-helper, or a helper that places nothing, as on one display) is refused rather than opened on top
-of it; `--shared` says somebody is watching, so it opens where they look; it still needs the helper.
+guest. The saved states need a DOSBox-X that carries SAVESTATE and LOADSTATE. Where the window
+goes is `demos/host.py`'s to decide.
 """
 
 from __future__ import annotations
 
 import atexit
-import functools
 import os
 import shutil
 import sys
@@ -26,11 +20,10 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from scry_core import live_host
-from scry_core import placement as window
 from scry_core.demo import Demo, Reply, Run, Step, StepFailed, main
 
-import dosbox_binary  # isort: skip -- a module of the repository root, installed in its environment
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
+from demos.host import display, precheck  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -59,39 +52,6 @@ def word(reply: Reply) -> int:
     """A little-endian 16-bit value out of `read_memory`'s hex."""
     raw = bytes.fromhex(reply["hex"])
     return raw[0] | raw[1] << 8
-
-
-def display(run: Run) -> str:
-    """The display the window opens on: the one being looked at with `--shared`, else the
-    secondary, away from the owner's work."""
-    return "main" if run.options.get("shared") else "secondary"
-
-
-@functools.cache
-def unplaced(where: str) -> str:
-    """Why the window cannot open on `where` as the server would place it (`scry_core.placement`,
-    the helper `WINDOW_APP` names), or ''. A run nobody watches that the helper cannot put away
-    from the owner's work (one display: no flags) is refused rather than opened on top of it."""
-    placed = window.ask("dosbox", True, where)
-    if placed.flags is None:
-        return placed.why
-    if not placed.flags and where == "secondary":
-        return ("the placement helper has nowhere to put a window away from your work (one "
-                "display); pass --shared if you are watching")
-    return ""
-
-
-def precheck(run: Run) -> str:
-    """Why the demo cannot run: a relative `--binary`, nowhere to put the window, or a host
-    that cannot start DOSBox-X (`live_host.canary`). A binary that resolves to nothing is left
-    to `start`, which names the ladder."""
-    binary = run.options.get("binary")
-    if binary and not Path(binary).is_absolute():
-        return f"the server takes absolute paths only: --binary {binary}"
-    if why := unplaced(display(run)):
-        return why
-    argv = dosbox_binary.canary_for(binary or "")
-    return live_host.canary(argv) if argv else ""
 
 
 def boot(run: Run) -> dict[str, Any]:

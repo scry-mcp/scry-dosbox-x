@@ -1,0 +1,153 @@
+{
+ "format": "scry-map/1",
+ "application": "dpaint",
+ "screens": [
+  {
+   "name": "paint",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      0,
+      96,
+      9
+     ],
+     "signature": "5c15bdd7d1099ae3"
+    },
+    {
+     "crop": [
+      192,
+      0,
+      96,
+      9
+     ],
+     "signature": "3ddce4b12dbfbd64"
+    }
+   ],
+   "controls": [
+    {
+     "name": "line",
+     "rect": [
+      297,
+      46,
+      10,
+      10
+     ]
+    },
+    {
+     "name": "fill",
+     "rect": [
+      297,
+      58,
+      10,
+      10
+     ]
+    },
+    {
+     "name": "rect_filled",
+     "rect": [
+      304,
+      75,
+      4,
+      5
+     ]
+    },
+    {
+     "name": "circle_filled",
+     "rect": [
+      315,
+      75,
+      4,
+      5
+     ]
+    },
+    {
+     "name": "text",
+     "rect": [
+      309,
+      93,
+      10,
+      10
+     ]
+    },
+    {
+     "name": "clear",
+     "rect": [
+      309,
+      128,
+      10,
+      11
+     ]
+    },
+    {
+     "name": "navy",
+     "rect": [
+      297,
+      162,
+      6,
+      2
+     ]
+    },
+    {
+     "name": "brown",
+     "rect": [
+      297,
+      172,
+      6,
+      2
+     ]
+    },
+    {
+     "name": "blue",
+     "rect": [
+      297,
+      178,
+      6,
+      2
+     ]
+    },
+    {
+     "name": "yellow",
+     "rect": [
+      297,
+      188,
+      6,
+      2
+     ]
+    },
+    {
+     "name": "white",
+     "rect": [
+      297,
+      190,
+      6,
+      2
+     ]
+    },
+    {
+     "name": "peach",
+     "rect": [
+      315,
+      168,
+      5,
+      2
+     ]
+    },
+    {
+     "name": "orange",
+     "rect": [
+      315,
+      174,
+      5,
+      2
+     ]
+    }
+   ]
+  }
+ ]
+}

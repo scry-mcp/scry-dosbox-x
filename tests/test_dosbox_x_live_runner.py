@@ -4,19 +4,22 @@ DOSBox-X outlived the run), `run_live_pytest`'s end, and the canary's form."""
 
 from __future__ import annotations
 
+import hashlib
 import importlib
 import os
 import sys
 import tempfile
 from pathlib import Path
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 from typing import Any
 
 import pytest
-from scry_core import live_host
+from scry_core import live_host, placement
+from scry_core.demo import Run
 
 import dosbox_binary
 import dosbox_x_server  # noqa: F401 -- imports the boundary the shape guard wraps, before the runners
+from demos import host as demo_host
 
 LIVE = Path(__file__).parent / "live"
 ROOT = Path(__file__).parents[1]
@@ -351,16 +354,50 @@ def test_no_binary_is_no_canary(monkeypatch: pytest.MonkeyPatch, tmp_path: Path)
     assert dosbox_binary.canary_for() is None
 
 
-def test_the_bricks_demo_refuses_a_host_that_cannot_start_dosbox_x(
+def test_the_demos_refuse_a_host_that_cannot_start_dosbox_x(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.syspath_prepend(str(ROOT / "demos" / "bricks"))
-    demo = importlib.import_module("demo")
-    monkeypatch.setattr(demo, "unplaced", lambda _where: "")
+    monkeypatch.setattr(demo_host, "unplaced", lambda _where: "")
     monkeypatch.setattr(dosbox_binary, "canary_for", lambda _b="": ["/opt/dosbox-x"])
     monkeypatch.setattr(live_host, "canary", lambda _argv: "dosbox-x did not return")
-    assert demo.precheck(demo.Run(dir=ROOT, options={})) == "dosbox-x did not return"
+    assert demo_host.precheck(Run(dir=ROOT, options={})) == "dosbox-x did not return"
+    assert "absolute or ~-led" in demo_host.precheck(Run(dir=ROOT, options={"binary": "dosbox-x"}))
     monkeypatch.setattr(dosbox_binary, "canary_for", lambda _b="": None)
-    assert demo.precheck(demo.Run(dir=ROOT, options={})) == ""
+    assert demo_host.precheck(Run(dir=ROOT, options={})) == ""
+
+
+@pytest.mark.parametrize(("flags", "why", "where", "said"), [
+    (None, "no helper", "secondary", "no helper"),
+    ([], "", "secondary", "nowhere to put a window away from your work"),
+    ([], "", "main", ""),
+    (["-set", "sdl display=1"], "", "secondary", "")])
+def test_a_demo_window_goes_only_where_the_helper_places_it(
+        monkeypatch: pytest.MonkeyPatch, flags: list[str] | None, why: str, where: str,
+        said: str) -> None:
+    """No helper refuses; one display has nowhere away from the reader's work, unless watched."""
+    demo_host.unplaced.cache_clear()
+    monkeypatch.setattr(placement, "ask",
+                        lambda *_a: SimpleNamespace(flags=flags, why=why))
+    got = demo_host.unplaced(where)
+    assert (said in got) if said else got == "", got
+    demo_host.unplaced.cache_clear()
+
+
+def test_the_dpaint_demo_refuses_any_copy_but_the_release_it_was_written_for(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Checked before the window: no `--cwd`, a relative one, no DP.EXE there, another build."""
+    dpaint = importlib.import_module("demos.dpaint.demo")
+    monkeypatch.setattr(demo_host, "precheck", lambda _run: "")
+    exe = tmp_path / "DP.EXE"
+
+    def why(**options: str) -> str:
+        return str(dpaint.precheck(Run(dir=tmp_path, options=options)))
+    assert "pass --cwd" in why()
+    assert "absolute or ~-led paths only: --cwd dpaint2" in why(cwd="dpaint2")
+    assert "no DP.EXE in" in why(cwd=str(tmp_path))
+    exe.write_bytes(b"MZ another build")
+    assert "is not the Deluxe Paint II v1.0" in why(cwd=str(tmp_path))
+    monkeypatch.setattr(dpaint, "DP_SHA256", hashlib.sha256(exe.read_bytes()).hexdigest())
+    assert why(cwd=str(tmp_path)) == ""
 
 
 def test_a_green_pytest_tier_that_launched_no_emulator_is_invalid(

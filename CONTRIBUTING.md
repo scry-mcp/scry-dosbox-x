@@ -10,7 +10,7 @@ change.
 `instructions`, the roster of tools by family). Each `dosbox_*.py` holds one concern, and its
 docstring opens with what it holds and why: read that before changing it. What both Scry servers
 share (the reply contract, the reference generator, the demo runner, the probe, the live bench)
-is the scry-core package, pinned by tag in `pyproject.toml`. `guest/` holds the resident input stub the server loads into the guest (`scry.asm`, built to `SCRY.COM`), `demos/` the demo game, and `bench.py` and `mapsweep.py` are the development scripts below. `tests/` holds the
+is the scry-core package, pinned by tag in `pyproject.toml`. `guest/` holds the resident input stub the server loads into the guest (`scry.asm`, built to `SCRY.COM`), `demos/` the demos, and `bench.py` and `mapsweep.py` are the development scripts below. `tests/` holds the
 contract tests and `tests/live/` the tiers that drive a real emulator.
 
 ## The battery
@@ -104,7 +104,8 @@ Nothing checks that for you. Three more things the overrides expect:
 `WINDOW_APP` names the placement helper the cases that open a watched window ask, as `start`
 does; its runs go to the display `WINDOW_SHARED_DISPLAY` names, the secondary when unset, so they
 stay off the one somebody works on. Without it those cases skip: where a window goes is not this
-package's decision.
+package's decision. The Deluxe Paint demo's case also needs `DELUXE_PAINT_DIR`, the directory of
+your own copy of the program, which this repository does not carry; without it, it skips.
 
 **The matrix.** Around those cases sits `tests/live/dosbox_x_live_matrix.py`, run as a script
 rather than collected: every tool in every machine state, at every argument edge, across the

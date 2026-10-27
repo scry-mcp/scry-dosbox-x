@@ -18,9 +18,9 @@ REPO = LIVE.parents[1]
 ASK = ("import live_private as p; print(p.guest_dir()); print(p.bricks_dir()); "
        "print((p.bricks_dir() / 'bricks.conf').is_file()); "
        "print((p.bricks_dir() / '..' / '..' / 'guest' / 'SCRY.COM').resolve().is_file())")
-#: The one live file that names the repository's own demo directory: it runs the demo whole,
+#: The one live file that names the repository's own demo directories: it runs each demo whole,
 #: windowed, alone after the pool, and compares its output with the files committed there.
-SERIAL_DEMO = "test_bricks_demo_live.py"
+SERIAL_DEMO = "test_demos_live.py"
 
 
 def _env(tmp_path: Path, private: dict[str, str] | None = None) -> dict[str, str]:
