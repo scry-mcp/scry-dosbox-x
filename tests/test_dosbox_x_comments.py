@@ -471,7 +471,9 @@ def test_save_refuses_the_declaration_stores_own_file() -> None:
     path = cast(dec.DeclarationStore, dstate.STATE.store).path
     ok(server.comment_write("add", ref="0814:010B", text="x"))
     before = path.read_bytes()
-    for spelled in (str(path), str(path).upper()):
+    # The second spelling names this file only where the file system folds case (macOS).
+    folded = str(path).upper()
+    for spelled in (str(path), *([folded] if Path(folded).parent.is_dir() else [])):
         assert "store's own file" in refused(server.comment_write("save", dest=spelled),
                                              "bad_argument")
     assert path.read_bytes() == before
