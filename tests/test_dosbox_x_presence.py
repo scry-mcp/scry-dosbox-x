@@ -94,6 +94,7 @@ def test_what_the_command_refuses_is_said_in_place_of_true() -> None:
     said = shown.reply()
     assert isinstance(said, dict) and said["available"] is False
     assert "refused PRESENCE" in said["why"] and "argument size" in said["why"], said
+    assert dbg.NOT_RECOGNIZED not in said["why"], "the command was recognised; only a key was not"
     assert shown.held is None
 
 
