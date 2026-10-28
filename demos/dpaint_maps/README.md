@@ -1,6 +1,6 @@
 # Deluxe Paint by screen maps: menus, a dialog and the tool in hand, found by name
 
-![A sunset painted in Deluxe Paint II at 640 x 480 through the server: an orange sky mixed in the Palette dialog, the sun on the horizon, and a boat stamped mirrored across the bay](screen.png)
+![A sunset painted in Deluxe Paint II at 640 x 480 through the server: an orange sky mixed in the Palette dialog with SCRY typed in it, the sun on the horizon, and a boat stamped mirrored across the bay](screen.png)
 
 Electronic Arts' Deluxe Paint II, the 1988 PC version, at VGA 640 x 480 in 16 colours: every
 menu, dialog button, tool and colour is picked by the name a screen map gives it, and the shapes
@@ -8,14 +8,14 @@ are dragged at pixels. Its menus drop only while the button is held, so the demo
 press on its title and chooses with the release over an item; after every move to another screen
 it asks the map where it landed, and the map knows each open menu, the Palette dialog, and the
 painting screen in the state of whichever tool is in hand. In the dialog it mixes an orange out of
-the brown slot and reads it back off the VGA DAC; then it paints a sunset, lifts the boat it drew
-as a brush, flips it with the Brush menu and stamps the mirror image across the bay. Last it opens
+the brown slot and reads it back off the VGA DAC; then it paints a sunset, types SCRY into the sky
+with the text tool, lifts the boat it drew as a brush, flips it with the Brush menu and stamps the mirror image across the bay. Last it opens
 the Pict menu and lets go over its title, which chooses nothing and leaves the painting screen as
 it was. The picture is checked by reading rows of it back out of the four bit planes, so a shape a
 pixel short, or a boat that did not flip, fails the run.
 
 The first Deluxe Paint demo, [`demos/dpaint/`](../dpaint/README.md), maps one screen at 320 x 200
-and stops halfway for a value scan; this one maps ten, the menus and the dialog among them.
+and stops halfway for a value scan; this one maps eleven, the menus and the dialog among them.
 
 ## The program
 
@@ -60,19 +60,19 @@ placement for the window, a DOSBox-X without relative motion, a server that did 
 
 ## The map
 
-`dpaint.scry-map.json` names ten screens of Deluxe Paint at 640 x 480, each known by regions
+`dpaint.scry-map.json` names eleven screens of Deluxe Paint at 640 x 480, each known by regions
 that stay still on it:
 
 | Screen | Known by | Its names |
 |---|---|---|
-| `paint: freehand`, `paint: rectangle`, `paint: circle`, `paint: line`, `paint: grab` | the menu bar at rest and that tool's cell, inverted | `pict`, `brush`, `color`; `freehand`, `line`, `rect_filled`, `circle_filled`, `brush_grab`; `black`, `blue`, `brown`, `yellow`; `brush_dot`, the one-pixel brush |
+| `paint: freehand`, `paint: rectangle`, `paint: circle`, `paint: line`, `paint: grab`, `paint: text` | the menu bar at rest and that tool's cell, inverted | `pict`, `brush`, `color`; `freehand`, `line`, `rect_filled`, `circle_filled`, `brush_grab`, `text`; `black`, `blue`, `brown`, `yellow`; `brush_dot`, the one-pixel brush |
 | `paint: custom brush` | the menu bar at rest, the dotted freehand tool lit and no built-in brush lit: a brush lifted off the picture is in hand | the same |
 | `color menu` | the body of the open menu | `palette`, `color` |
 | `brush menu` | the body of the open menu | `flip_horizontal`, `brush` |
 | `pict menu` | the body of the open menu | `pict` |
 | `palette` | the dialog's title and its buttons | `brown`, the slot; `red_up`, `green_up`, `blue_up`; `ok`, `cancel` |
 
-The map names only what the demo uses. The swatches keep the default palette's names, so the slot
+The map names what the demo uses and, in the dialog, the buttons beside them. The swatches keep the default palette's names, so the slot
 the dialog mixes to orange is still `brown`. The pointer is parked over the toolbox before a painting screen is read, because on the
 canvas a shape tool draws it as a crosshair across the whole screen, through the regions the
 map signs.
@@ -90,10 +90,11 @@ Give this to an MCP client with this server connected:
 > that slot off the DAC, and press OK. Paint a sunset, a few shapes a call: a sky in the
 > brown slot as a filled rectangle, a yellow sun as a filled circle on the horizon, a blue sea
 > over its lower half, three yellow glints as lines, a black hull, a black mast and a yellow
-> sail. Lift the boat with the brush tool, hold Brush and choose Flip Horizontal, stamp it
+> sail. Pick black and the text tool, click the sky at 40,60, type SCRY and pick the freehand
+> tool to end the text. Lift the boat with the brush tool, hold Brush and choose Flip Horizontal, stamp it
 > across the bay, then hold Pict and let go over its title, which chooses nothing. Put the lifted
-> brush down by picking the one-pixel brush and the freehand tool, read rows across the sun, the
-> glints, the sails and the hulls, show me the screen and close.
+> brush down by picking the one-pixel brush and the freehand tool, read rows across the word,
+> the sun, the glints, the sails and the hulls, show me the screen and close.
 
 ## What it walks
 
@@ -102,7 +103,7 @@ Give this to an MCP client with this server connected:
 | Session | `start` (windowed, running the program from `cwd`), `close` |
 | Advance | `run_for` by retraces on the conf's fixed clock |
 | Files | `map_write(method="load")`, `map_find` after every move between screens |
-| Input | `send_mouse` by control name off the map (a press to open a menu, a release to choose), at screen pixels, and as drags |
+| Input | `send_mouse` by control name off the map (a press to open a menu, a release to choose), at screen pixels, and as drags; `send_keys` for the word |
 | Read | `palette` for the mixed colour, `screen_view` for rows of the picture and the screen |
 | Sequences | `perform` (each move with the map's word on where it landed; a shape's tool, colour and drags) |
 
@@ -267,7 +268,7 @@ and where it put the window) is `<volatile>`, and the program's directory is `<h
 
 </details>
 
-**3. `map_write`**: OK map: 10 screens and 89 controls loaded
+**3. `map_write`**: OK map: 11 screens and 109 controls loaded
 
 <details><summary>call and reply</summary>
 
@@ -280,12 +281,12 @@ and where it put the window) is `<volatile>`, and the program's directory is `<h
 
 ```json
 {
-  "summary": "map_write load: 10 screens, 89 controls of dpaint",
+  "summary": "map_write load: 11 screens, 109 controls of dpaint",
   "status": "ok",
   "path": "./demos/dpaint_maps/dpaint.scry-map.json",
   "application": "dpaint",
-  "screens": 10,
-  "controls": 89,
+  "screens": 11,
+  "controls": 109,
   "session": {
     "alive": true,
     "running": false,
@@ -306,7 +307,7 @@ and where it put the window) is `<volatile>`, and the program's directory is `<h
 
 ```json
 {
-  "summary": "map_find: paint: freehand (file), 13 controls",
+  "summary": "map_find: paint: freehand (file), 14 controls",
   "status": "ok",
   "matched": true,
   "screen": "paint: freehand",
@@ -431,6 +432,19 @@ and where it put the window) is `<volatile>`, and the program's directory is `<h
       ],
       "centre": [
         605,
+        185
+      ]
+    },
+    {
+      "name": "text",
+      "rect": [
+        618,
+        174,
+        22,
+        22
+      ],
+      "centre": [
+        629,
         185
       ]
     },
@@ -794,7 +808,7 @@ and where it put the window) is `<volatile>`, and the program's directory is `<h
 
 </details>
 
-**7. `perform`**: OK mix: the brown slot picked, and red's arrow held 120 retraces until the channel tops out
+**7. `perform`**: OK mix: the brown slot picked, and red's arrow held from the press to the release
 
 <details><summary>call and reply</summary>
 
@@ -813,10 +827,6 @@ and where it put the window) is `<volatile>`, and the program's directory is `<h
       "action": "down"
     },
     {
-      "op": "run_for",
-      "frames": 120
-    },
-    {
       "op": "send_mouse",
       "button": "left",
       "action": "up"
@@ -828,7 +838,7 @@ and where it put the window) is `<volatile>`, and the program's directory is `<h
 
 ```json
 {
-  "summary": "perform: 4 of 4 steps",
+  "summary": "perform: 3 of 3 steps",
   "status": "ok",
   "ran": [
     {
@@ -853,19 +863,9 @@ and where it put the window) is `<volatile>`, and the program's directory is `<h
     },
     {
       "step": 2,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 120 frames: ELAPSED, 120 polls, at 0DA5:000000CD",
-        "status": "ok",
-        "stop_seq": 81,
-        "cause": "the retrace run_for ran to, at 0DA5:000000CD"
-      }
-    },
-    {
-      "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 7,39; posted, unverified, 11 retraces to frame 628",
+        "summary": "send_mouse: pointer at 7,39; posted, unverified, 15 retraces to frame 512",
         "status": "ok",
         "units": "screen",
         "button": "left",
@@ -888,11 +888,11 @@ and where it put the window) is `<volatile>`, and the program's directory is `<h
           "bios_mode": "0x12"
         },
         "arrived": true,
-        "polls": 11,
+        "polls": 15,
         "pc": "F000:0000CFC5",
         "cpu_mode": "real",
-        "stop_seq": 92,
-        "frame": 628,
+        "stop_seq": 95,
+        "frame": 512,
         "instruction": {
           "seg_off": "F000:0000CFC5",
           "bytes": "CF",
@@ -946,21 +946,20 @@ and where it put the window) is `<volatile>`, and the program's directory is `<h
       }
     }
   ],
-  "steps_total": 4,
+  "steps_total": 3,
   "truncated": false,
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
     "stop_seq_first": 40,
-    "stop_seq_last": 92,
-    "surveyed": 4,
+    "stop_seq_last": 95,
+    "surveyed": 3,
     "by_cause": {
-      "the retrace the input's post ran to,": 3,
-      "the retrace run_for ran to,": 1
+      "the retrace the input's post ran to,": 3
     },
-    "unaccounted": 49
+    "unaccounted": 53
   },
-  "steps_completed": 4,
+  "steps_completed": 3,
   "failed_at": {
     "available": false,
     "why": "no step failed"
@@ -1163,27 +1162,27 @@ Also attached: image/png.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 37,149; posted, unverified, 25 retraces to frame 653",
+        "summary": "send_mouse: pointer at 37,149; posted, unverified, 25 retraces to frame 537",
         "status": "ok",
-        "stop_seq": 117,
-        "cause": "the retrace the input's post ran to, at 0DA5:000000C9"
+        "stop_seq": 120,
+        "cause": "the retrace the input's post ran to, at 0DA5:000000B5"
       }
     },
     {
       "step": 1,
       "op": "run_for",
       "reply": {
-        "summary": "run_for 20 frames: ELAPSED, 20 polls, at 1009:00000363",
+        "summary": "run_for 20 frames: ELAPSED, 20 polls, at F000:0000CFC5",
         "status": "ok",
-        "stop_seq": 118,
-        "cause": "the retrace run_for ran to, at 1009:00000363"
+        "stop_seq": 121,
+        "cause": "the retrace run_for ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 2,
       "op": "map_find",
       "reply": {
-        "summary": "map_find: paint: freehand (file), 13 controls",
+        "summary": "map_find: paint: freehand (file), 14 controls",
         "status": "ok"
       }
     },
@@ -1191,67 +1190,67 @@ Also attached: image/png.
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,142; posted, unverified, 21 retraces to frame 694",
+        "summary": "send_mouse: pointer at 610,142; posted, unverified, 21 retraces to frame 578",
         "status": "ok",
-        "stop_seq": 139,
-        "cause": "the retrace the input's post ran to, at 0955:0000002D"
+        "stop_seq": 142,
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 604,448; posted, unverified, 25 retraces to frame 719",
+        "summary": "send_mouse: pointer at 604,448; posted, unverified, 25 retraces to frame 603",
         "status": "ok",
-        "stop_seq": 164,
-        "cause": "the retrace the input's post ran to, at 0955:00000030"
+        "stop_seq": 167,
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 4,14; posted, unverified, 20 retraces to frame 739",
+        "summary": "send_mouse: pointer at 4,14; posted, unverified, 20 retraces to frame 623",
         "status": "ok",
-        "stop_seq": 184,
-        "cause": "the retrace the input's post ran to, at 0E83:00000B2B"
+        "stop_seq": 187,
+        "cause": "the retrace the input's post ran to, at 1009:00000373"
       }
     },
     {
       "step": 6,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 587,259; posted, unverified, 15 retraces to frame 754",
+        "summary": "send_mouse: pointer at 587,259; posted, unverified, 15 retraces to frame 638",
         "status": "ok",
-        "stop_seq": 199,
-        "cause": "the retrace the input's post ran to, at 0B92:00000248"
+        "stop_seq": 202,
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 587,259; posted, unverified, 15 retraces to frame 769",
+        "summary": "send_mouse: pointer at 587,259; posted, unverified, 15 retraces to frame 653",
         "status": "ok",
-        "stop_seq": 214,
-        "cause": "the retrace the input's post ran to, at 0B92:00000200"
+        "stop_seq": 217,
+        "cause": "the retrace the input's post ran to, at 0955:00000059"
       }
     },
     {
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 784",
+        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 668",
         "status": "ok",
-        "stop_seq": 229,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 232,
+        "cause": "the retrace the input's post ran to, at 0955:00000041"
       }
     },
     {
       "step": 9,
       "op": "map_find",
       "reply": {
-        "summary": "map_find: paint: rectangle (file), 13 controls",
+        "summary": "map_find: paint: rectangle (file), 14 controls",
         "status": "ok"
       }
     },
@@ -1259,59 +1258,59 @@ Also attached: image/png.
       "step": 10,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 634,142; posted, unverified, 25 retraces to frame 809",
+        "summary": "send_mouse: pointer at 634,142; posted, unverified, 25 retraces to frame 693",
         "status": "ok",
-        "stop_seq": 254,
-        "cause": "the retrace the input's post ran to, at 0955:00000030"
+        "stop_seq": 257,
+        "cause": "the retrace the input's post ran to, at 1009:00000311"
       }
     },
     {
       "step": 11,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 628,448; posted, unverified, 25 retraces to frame 834",
+        "summary": "send_mouse: pointer at 628,448; posted, unverified, 25 retraces to frame 718",
         "status": "ok",
-        "stop_seq": 279,
-        "cause": "the retrace the input's post ran to, at 1009:0000023A"
+        "stop_seq": 282,
+        "cause": "the retrace the input's post ran to, at 0955:0000002C"
       }
     },
     {
       "step": 12,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 296,259; posted, unverified, 20 retraces to frame 854",
+        "summary": "send_mouse: pointer at 296,259; posted, unverified, 20 retraces to frame 738",
         "status": "ok",
-        "stop_seq": 299,
-        "cause": "the retrace the input's post ran to, at 0E83:0000097A"
+        "stop_seq": 302,
+        "cause": "the retrace the input's post ran to, at 0B92:0000023D"
       }
     },
     {
       "step": 13,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 356,259; posted, unverified, 15 retraces to frame 869",
+        "summary": "send_mouse: pointer at 356,259; posted, unverified, 15 retraces to frame 753",
         "status": "ok",
-        "stop_seq": 314,
-        "cause": "the retrace the input's post ran to, at 1009:00000320"
+        "stop_seq": 317,
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 14,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 356,259; posted, unverified, 15 retraces to frame 884",
+        "summary": "send_mouse: pointer at 356,259; posted, unverified, 15 retraces to frame 768",
         "status": "ok",
-        "stop_seq": 329,
-        "cause": "the retrace the input's post ran to, at 0B92:00000246"
+        "stop_seq": 332,
+        "cause": "the retrace the input's post ran to, at 0E83:00000A61"
       }
     },
     {
       "step": 15,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 899",
+        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 783",
         "status": "ok",
-        "stop_seq": 344,
+        "stop_seq": 347,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
@@ -1319,7 +1318,7 @@ Also attached: image/png.
       "step": 16,
       "op": "map_find",
       "reply": {
-        "summary": "map_find: paint: circle (file), 13 controls",
+        "summary": "map_find: paint: circle (file), 14 controls",
         "status": "ok"
       }
     },
@@ -1327,59 +1326,59 @@ Also attached: image/png.
       "step": 17,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,142; posted, unverified, 25 retraces to frame 924",
+        "summary": "send_mouse: pointer at 610,142; posted, unverified, 25 retraces to frame 808",
         "status": "ok",
-        "stop_seq": 369,
-        "cause": "the retrace the input's post ran to, at 13F6:000002DF"
+        "stop_seq": 372,
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 18,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 604,344; posted, unverified, 25 retraces to frame 949",
+        "summary": "send_mouse: pointer at 604,344; posted, unverified, 25 retraces to frame 833",
         "status": "ok",
-        "stop_seq": 394,
-        "cause": "the retrace the input's post ran to, at 0955:00000047"
+        "stop_seq": 397,
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 19,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 4,260; posted, unverified, 20 retraces to frame 969",
+        "summary": "send_mouse: pointer at 4,260; posted, unverified, 20 retraces to frame 853",
         "status": "ok",
-        "stop_seq": 414,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 417,
+        "cause": "the retrace the input's post ran to, at 0E83:00000B4B"
       }
     },
     {
       "step": 20,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 587,475; posted, unverified, 15 retraces to frame 984",
+        "summary": "send_mouse: pointer at 587,475; posted, unverified, 15 retraces to frame 868",
         "status": "ok",
-        "stop_seq": 429,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 432,
+        "cause": "the retrace the input's post ran to, at 0E83:00000B92"
       }
     },
     {
       "step": 21,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 587,475; posted, unverified, 15 retraces to frame 999",
+        "summary": "send_mouse: pointer at 587,475; posted, unverified, 15 retraces to frame 883",
         "status": "ok",
-        "stop_seq": 444,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 447,
+        "cause": "the retrace the input's post ran to, at 13F6:0000021E"
       }
     },
     {
       "step": 22,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1014",
+        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 898",
         "status": "ok",
-        "stop_seq": 459,
+        "stop_seq": 462,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
@@ -1387,7 +1386,7 @@ Also attached: image/png.
       "step": 23,
       "op": "map_find",
       "reply": {
-        "summary": "map_find: paint: rectangle (file), 13 controls",
+        "summary": "map_find: paint: rectangle (file), 14 controls",
         "status": "ok",
         "matched": true,
         "screen": "paint: rectangle",
@@ -1516,6 +1515,19 @@ Also attached: image/png.
             ]
           },
           {
+            "name": "text",
+            "rect": [
+              618,
+              174,
+              22,
+              22
+            ],
+            "centre": [
+              629,
+              185
+            ]
+          },
+          {
             "name": "black",
             "rect": [
               596,
@@ -1581,8 +1593,8 @@ Also attached: image/png.
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 93,
-    "stop_seq_last": 459,
+    "stop_seq_first": 96,
+    "stop_seq_last": 462,
     "surveyed": 20,
     "by_cause": {
       "the retrace the input's post ran to,": 19,
@@ -1731,49 +1743,49 @@ Also attached: image/png.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 605,89; posted, unverified, 25 retraces to frame 1039",
+        "summary": "send_mouse: pointer at 605,89; posted, unverified, 25 retraces to frame 923",
         "status": "ok",
-        "stop_seq": 484,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 487,
+        "cause": "the retrace the input's post ran to, at 0955:00000049"
       }
     },
     {
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 628,448; posted, unverified, 25 retraces to frame 1064",
+        "summary": "send_mouse: pointer at 628,448; posted, unverified, 25 retraces to frame 948",
         "status": "ok",
-        "stop_seq": 509,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC1"
+        "stop_seq": 512,
+        "cause": "the retrace the input's post ran to, at 0955:00000047"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 256,272; posted, unverified, 20 retraces to frame 1084",
+        "summary": "send_mouse: pointer at 256,272; posted, unverified, 20 retraces to frame 968",
         "status": "ok",
-        "stop_seq": 529,
-        "cause": "the retrace the input's post ran to, at 1009:0000036A"
+        "stop_seq": 532,
+        "cause": "the retrace the input's post ran to, at 0B92:000001FD"
       }
     },
     {
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 336,272; posted, unverified, 15 retraces to frame 1099",
+        "summary": "send_mouse: pointer at 336,272; posted, unverified, 15 retraces to frame 983",
         "status": "ok",
-        "stop_seq": 544,
-        "cause": "the retrace the input's post ran to, at 0E83:00000B0F"
+        "stop_seq": 547,
+        "cause": "the retrace the input's post ran to, at 0E83:00000A67"
       }
     },
     {
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 336,272; posted, unverified, 15 retraces to frame 1114",
+        "summary": "send_mouse: pointer at 336,272; posted, unverified, 15 retraces to frame 998",
         "status": "ok",
-        "stop_seq": 559,
+        "stop_seq": 562,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
@@ -1781,77 +1793,77 @@ Also attached: image/png.
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 270,284; posted, unverified, 20 retraces to frame 1134",
+        "summary": "send_mouse: pointer at 270,284; posted, unverified, 20 retraces to frame 1018",
         "status": "ok",
-        "stop_seq": 579,
-        "cause": "the retrace the input's post ran to, at 0E83:000004F0"
+        "stop_seq": 582,
+        "cause": "the retrace the input's post ran to, at 13F6:00000220"
       }
     },
     {
       "step": 6,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 322,284; posted, unverified, 15 retraces to frame 1149",
+        "summary": "send_mouse: pointer at 322,284; posted, unverified, 15 retraces to frame 1033",
         "status": "ok",
-        "stop_seq": 594,
-        "cause": "the retrace the input's post ran to, at 1009:0000026B"
+        "stop_seq": 597,
+        "cause": "the retrace the input's post ran to, at 1009:00000332"
       }
     },
     {
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 322,284; posted, unverified, 15 retraces to frame 1164",
+        "summary": "send_mouse: pointer at 322,284; posted, unverified, 15 retraces to frame 1048",
         "status": "ok",
-        "stop_seq": 609,
-        "cause": "the retrace the input's post ran to, at 0E83:00000B1C"
+        "stop_seq": 612,
+        "cause": "the retrace the input's post ran to, at 0E83:00000374"
       }
     },
     {
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 284,296; posted, unverified, 20 retraces to frame 1184",
+        "summary": "send_mouse: pointer at 284,296; posted, unverified, 20 retraces to frame 1068",
         "status": "ok",
-        "stop_seq": 629,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 632,
+        "cause": "the retrace the input's post ran to, at 0B92:00000200"
       }
     },
     {
       "step": 9,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 308,296; posted, unverified, 15 retraces to frame 1199",
+        "summary": "send_mouse: pointer at 308,296; posted, unverified, 15 retraces to frame 1083",
         "status": "ok",
-        "stop_seq": 644,
-        "cause": "the retrace the input's post ran to, at 0E83:00000153"
+        "stop_seq": 647,
+        "cause": "the retrace the input's post ran to, at 0E83:000004D7"
       }
     },
     {
       "step": 10,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 308,296; posted, unverified, 15 retraces to frame 1214",
+        "summary": "send_mouse: pointer at 308,296; posted, unverified, 15 retraces to frame 1098",
         "status": "ok",
-        "stop_seq": 659,
-        "cause": "the retrace the input's post ran to, at 1009:0000025E"
+        "stop_seq": 662,
+        "cause": "the retrace the input's post ran to, at 0E83:00000AFC"
       }
     },
     {
       "step": 11,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1229",
+        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1113",
         "status": "ok",
-        "stop_seq": 674,
-        "cause": "the retrace the input's post ran to, at 1009:000002A6"
+        "stop_seq": 677,
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 12,
       "op": "map_find",
       "reply": {
-        "summary": "map_find: paint: line (file), 13 controls",
+        "summary": "map_find: paint: line (file), 14 controls",
         "status": "ok"
       }
     },
@@ -1859,9 +1871,9 @@ Also attached: image/png.
       "step": 13,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,142; posted, unverified, 25 retraces to frame 1254",
+        "summary": "send_mouse: pointer at 610,142; posted, unverified, 25 retraces to frame 1138",
         "status": "ok",
-        "stop_seq": 699,
+        "stop_seq": 702,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
@@ -1869,9 +1881,9 @@ Also attached: image/png.
       "step": 14,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 604,323; posted, unverified, 25 retraces to frame 1279",
+        "summary": "send_mouse: pointer at 604,323; posted, unverified, 25 retraces to frame 1163",
         "status": "ok",
-        "stop_seq": 724,
+        "stop_seq": 727,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
@@ -1879,47 +1891,47 @@ Also attached: image/png.
       "step": 15,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 100,380; posted, unverified, 20 retraces to frame 1299",
+        "summary": "send_mouse: pointer at 100,380; posted, unverified, 20 retraces to frame 1183",
         "status": "ok",
-        "stop_seq": 744,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 747,
+        "cause": "the retrace the input's post ran to, at 0E83:00000A5E"
       }
     },
     {
       "step": 16,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 180,395; posted, unverified, 15 retraces to frame 1314",
+        "summary": "send_mouse: pointer at 180,395; posted, unverified, 15 retraces to frame 1198",
         "status": "ok",
-        "stop_seq": 759,
-        "cause": "the retrace the input's post ran to, at 1009:000001B5"
+        "stop_seq": 762,
+        "cause": "the retrace the input's post ran to, at 0E83:00000A8B"
       }
     },
     {
       "step": 17,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 180,395; posted, unverified, 15 retraces to frame 1329",
+        "summary": "send_mouse: pointer at 180,395; posted, unverified, 15 retraces to frame 1213",
         "status": "ok",
-        "stop_seq": 774,
-        "cause": "the retrace the input's post ran to, at 0E83:0000036E"
+        "stop_seq": 777,
+        "cause": "the retrace the input's post ran to, at 0955:00000035"
       }
     },
     {
       "step": 18,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1344",
+        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1228",
         "status": "ok",
-        "stop_seq": 789,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 792,
+        "cause": "the retrace the input's post ran to, at 13F6:00000225"
       }
     },
     {
       "step": 19,
       "op": "map_find",
       "reply": {
-        "summary": "map_find: paint: rectangle (file), 13 controls",
+        "summary": "map_find: paint: rectangle (file), 14 controls",
         "status": "ok",
         "matched": true,
         "screen": "paint: rectangle",
@@ -2048,6 +2060,19 @@ Also attached: image/png.
             ]
           },
           {
+            "name": "text",
+            "rect": [
+              618,
+              174,
+              22,
+              22
+            ],
+            "centre": [
+              629,
+              185
+            ]
+          },
+          {
             "name": "black",
             "rect": [
               596,
@@ -2113,8 +2138,8 @@ Also attached: image/png.
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 460,
-    "stop_seq_last": 789,
+    "stop_seq_first": 463,
+    "stop_seq_last": 792,
     "surveyed": 18,
     "by_cause": {
       "the retrace the input's post ran to,": 18
@@ -2240,9 +2265,9 @@ Also attached: image/png.
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 605,89; posted, unverified, 25 retraces to frame 1369",
+        "summary": "send_mouse: pointer at 605,89; posted, unverified, 25 retraces to frame 1253",
         "status": "ok",
-        "stop_seq": 814,
+        "stop_seq": 817,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
@@ -2250,57 +2275,57 @@ Also attached: image/png.
       "step": 1,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 604,323; posted, unverified, 25 retraces to frame 1394",
+        "summary": "send_mouse: pointer at 604,323; posted, unverified, 25 retraces to frame 1278",
         "status": "ok",
-        "stop_seq": 839,
-        "cause": "the retrace the input's post ran to, at 1009:00000380"
+        "stop_seq": 842,
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 140,379; posted, unverified, 20 retraces to frame 1414",
+        "summary": "send_mouse: pointer at 140,379; posted, unverified, 20 retraces to frame 1298",
         "status": "ok",
-        "stop_seq": 859,
-        "cause": "the retrace the input's post ran to, at 0B92:0000020C"
+        "stop_seq": 862,
+        "cause": "the retrace the input's post ran to, at 13F6:000002CF"
       }
     },
     {
       "step": 3,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 140,320; posted, unverified, 15 retraces to frame 1429",
+        "summary": "send_mouse: pointer at 140,320; posted, unverified, 15 retraces to frame 1313",
         "status": "ok",
-        "stop_seq": 874,
-        "cause": "the retrace the input's post ran to, at 0E83:000004EE"
+        "stop_seq": 877,
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 140,320; posted, unverified, 15 retraces to frame 1444",
+        "summary": "send_mouse: pointer at 140,320; posted, unverified, 15 retraces to frame 1328",
         "status": "ok",
-        "stop_seq": 889,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 892,
+        "cause": "the retrace the input's post ran to, at 0E83:00000A70"
       }
     },
     {
       "step": 5,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1459",
+        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1343",
         "status": "ok",
-        "stop_seq": 904,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 907,
+        "cause": "the retrace the input's post ran to, at 0955:00000047"
       }
     },
     {
       "step": 6,
       "op": "map_find",
       "reply": {
-        "summary": "map_find: paint: line (file), 13 controls",
+        "summary": "map_find: paint: line (file), 14 controls",
         "status": "ok"
       }
     },
@@ -2308,9 +2333,9 @@ Also attached: image/png.
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 628,448; posted, unverified, 25 retraces to frame 1484",
+        "summary": "send_mouse: pointer at 628,448; posted, unverified, 25 retraces to frame 1368",
         "status": "ok",
-        "stop_seq": 929,
+        "stop_seq": 932,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
@@ -2318,77 +2343,77 @@ Also attached: image/png.
       "step": 8,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 142,322; posted, unverified, 20 retraces to frame 1504",
+        "summary": "send_mouse: pointer at 142,322; posted, unverified, 20 retraces to frame 1388",
         "status": "ok",
-        "stop_seq": 949,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 952,
+        "cause": "the retrace the input's post ran to, at 0955:00000035"
       }
     },
     {
       "step": 9,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 176,374; posted, unverified, 15 retraces to frame 1519",
+        "summary": "send_mouse: pointer at 176,374; posted, unverified, 15 retraces to frame 1403",
         "status": "ok",
-        "stop_seq": 964,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 967,
+        "cause": "the retrace the input's post ran to, at 1009:0000026E"
       }
     },
     {
       "step": 10,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 176,374; posted, unverified, 15 retraces to frame 1534",
+        "summary": "send_mouse: pointer at 176,374; posted, unverified, 15 retraces to frame 1418",
         "status": "ok",
-        "stop_seq": 979,
-        "cause": "the retrace the input's post ran to, at 1009:000002A7"
+        "stop_seq": 982,
+        "cause": "the retrace the input's post ran to, at 0B92:000001FC"
       }
     },
     {
       "step": 11,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 176,374; posted, unverified, 20 retraces to frame 1554",
+        "summary": "send_mouse: pointer at 176,374; posted, unverified, 20 retraces to frame 1438",
         "status": "ok",
-        "stop_seq": 999,
-        "cause": "the retrace the input's post ran to, at 0E83:00000B2F"
+        "stop_seq": 1002,
+        "cause": "the retrace the input's post ran to, at 1009:000002D6"
       }
     },
     {
       "step": 12,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 142,374; posted, unverified, 15 retraces to frame 1569",
+        "summary": "send_mouse: pointer at 142,374; posted, unverified, 15 retraces to frame 1453",
         "status": "ok",
-        "stop_seq": 1014,
-        "cause": "the retrace the input's post ran to, at 1009:0000030D"
+        "stop_seq": 1017,
+        "cause": "the retrace the input's post ran to, at 0E83:00000B1B"
       }
     },
     {
       "step": 13,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 142,374; posted, unverified, 15 retraces to frame 1584",
+        "summary": "send_mouse: pointer at 142,374; posted, unverified, 15 retraces to frame 1468",
         "status": "ok",
-        "stop_seq": 1029,
-        "cause": "the retrace the input's post ran to, at 0E83:00000153"
+        "stop_seq": 1032,
+        "cause": "the retrace the input's post ran to, at 0E83:00000976"
       }
     },
     {
       "step": 14,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1599",
+        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1483",
         "status": "ok",
-        "stop_seq": 1044,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 1047,
+        "cause": "the retrace the input's post ran to, at 13F6:000002CF"
       }
     },
     {
       "step": 15,
       "op": "map_find",
       "reply": {
-        "summary": "map_find: paint: line (file), 13 controls",
+        "summary": "map_find: paint: line (file), 14 controls",
         "status": "ok",
         "matched": true,
         "screen": "paint: line",
@@ -2517,6 +2542,19 @@ Also attached: image/png.
             ]
           },
           {
+            "name": "text",
+            "rect": [
+              618,
+              174,
+              22,
+              22
+            ],
+            "centre": [
+              629,
+              185
+            ]
+          },
+          {
             "name": "black",
             "rect": [
               596,
@@ -2582,8 +2620,8 @@ Also attached: image/png.
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 790,
-    "stop_seq_last": 1044,
+    "stop_seq_first": 793,
+    "stop_seq_last": 1047,
     "surveyed": 14,
     "by_cause": {
       "the retrace the input's post ran to,": 14
@@ -2606,7 +2644,7 @@ Also attached: image/png.
 
 </details>
 
-**12. `perform`**: OK flip the boat: the map named paint: grab, then paint: custom brush, then brush menu, then paint: custom brush, then paint: custom brush
+**12. `perform`**: OK SCRY: the map named paint: text, then paint: freehand
 
 <details><summary>call and reply</summary>
 
@@ -2615,7 +2653,12 @@ Also attached: image/png.
   "steps": [
     {
       "op": "send_mouse",
-      "target": "brush_grab",
+      "target": "black",
+      "button": "left"
+    },
+    {
+      "op": "send_mouse",
+      "target": "text",
       "button": "left"
     },
     {
@@ -2628,520 +2671,21 @@ Also attached: image/png.
     },
     {
       "op": "send_mouse",
-      "x": 96,
-      "y": 316,
-      "button": "left",
-      "action": "down"
-    },
-    {
-      "op": "send_mouse",
-      "x": 184,
-      "y": 399
-    },
-    {
-      "op": "send_mouse",
-      "button": "left",
-      "action": "up"
-    },
-    {
-      "op": "run_for",
-      "frames": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 610,
-      "y": 300
-    },
-    {
-      "op": "map_find"
-    },
-    {
-      "op": "send_mouse",
-      "target": "brush",
-      "button": "left",
-      "action": "down"
-    },
-    {
-      "op": "map_find"
-    },
-    {
-      "op": "send_mouse",
-      "target": "flip_horizontal",
-      "button": "left",
-      "action": "up"
-    },
-    {
-      "op": "run_for",
-      "frames": 20
-    },
-    {
-      "op": "send_mouse",
-      "x": 610,
-      "y": 300
-    },
-    {
-      "op": "map_find"
-    },
-    {
-      "op": "send_mouse",
-      "x": 440,
-      "y": 357,
+      "x": 40,
+      "y": 60,
       "button": "left"
     },
     {
-      "op": "run_for",
-      "frames": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 610,
-      "y": 300
-    },
-    {
-      "op": "map_find"
-    }
-  ],
-  "summaries": true
-}
-```
-
-```json
-{
-  "summary": "perform: 19 of 19 steps",
-  "status": "ok",
-  "ran": [
-    {
-      "step": 0,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 605,185; posted, unverified, 25 retraces to frame 1624",
-        "status": "ok",
-        "stop_seq": 1069,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
-      }
-    },
-    {
-      "step": 1,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1639",
-        "status": "ok",
-        "stop_seq": 1084,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
-      }
-    },
-    {
-      "step": 2,
-      "op": "map_find",
-      "reply": {
-        "summary": "map_find: paint: grab (file), 13 controls",
-        "status": "ok"
-      }
-    },
-    {
-      "step": 3,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 96,316; posted, unverified, 20 retraces to frame 1659",
-        "status": "ok",
-        "stop_seq": 1104,
-        "cause": "the retrace the input's post ran to, at 0E83:000004EA"
-      }
-    },
-    {
-      "step": 4,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 184,399; posted, unverified, 15 retraces to frame 1674",
-        "status": "ok",
-        "stop_seq": 1119,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
-      }
-    },
-    {
-      "step": 5,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 184,399; posted, unverified, 15 retraces to frame 1689",
-        "status": "ok",
-        "stop_seq": 1134,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
-      }
-    },
-    {
-      "step": 6,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 10 frames: ELAPSED, 10 polls, at F000:0000CFC5",
-        "status": "ok",
-        "stop_seq": 1135,
-        "cause": "the retrace run_for ran to, at F000:0000CFC5"
-      }
-    },
-    {
-      "step": 7,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1710",
-        "status": "ok",
-        "stop_seq": 1146,
-        "cause": "the retrace the input's post ran to, at 13F6:0000023B"
-      }
-    },
-    {
-      "step": 8,
-      "op": "map_find",
-      "reply": {
-        "summary": "map_find: paint: custom brush (file), 13 controls",
-        "status": "ok"
-      }
-    },
-    {
-      "step": 9,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 203,5; posted, unverified, 20 retraces to frame 1730",
-        "status": "ok",
-        "stop_seq": 1166,
-        "cause": "the retrace the input's post ran to, at 1697:000002EE"
-      }
-    },
-    {
-      "step": 10,
-      "op": "map_find",
-      "reply": {
-        "summary": "map_find: brush menu (file), 2 controls",
-        "status": "ok"
-      }
-    },
-    {
-      "step": 11,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 269,18; posted, unverified, 20 retraces to frame 1750",
-        "status": "ok",
-        "stop_seq": 1186,
-        "cause": "the retrace the input's post ran to, at 19A5:000001B8"
-      }
-    },
-    {
-      "step": 12,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 20 frames: ELAPSED, 20 polls, at 0DA5:00000345",
-        "status": "ok",
-        "stop_seq": 1187,
-        "cause": "the retrace run_for ran to, at 0DA5:00000345"
-      }
-    },
-    {
-      "step": 13,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1781",
-        "status": "ok",
-        "stop_seq": 1198,
-        "cause": "the retrace the input's post ran to, at 1009:000002A6"
-      }
-    },
-    {
-      "step": 14,
-      "op": "map_find",
-      "reply": {
-        "summary": "map_find: paint: custom brush (file), 13 controls",
-        "status": "ok"
-      }
-    },
-    {
-      "step": 15,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 440,357; posted, unverified, 25 retraces to frame 1806",
-        "status": "ok",
-        "stop_seq": 1223,
-        "cause": "the retrace the input's post ran to, at 0955:00000058"
-      }
-    },
-    {
-      "step": 16,
-      "op": "run_for",
-      "reply": {
-        "summary": "run_for 10 frames: ELAPSED, 10 polls, at 0955:0000005A",
-        "status": "ok",
-        "stop_seq": 1224,
-        "cause": "the retrace run_for ran to, at 0955:0000005A"
-      }
-    },
-    {
-      "step": 17,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1827",
-        "status": "ok",
-        "stop_seq": 1235,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
-      }
-    },
-    {
-      "step": 18,
-      "op": "map_find",
-      "reply": {
-        "summary": "map_find: paint: custom brush (file), 13 controls",
-        "status": "ok",
-        "matched": true,
-        "screen": "paint: custom brush",
-        "layer": "file",
-        "kind": "pixel",
-        "size": [
-          640,
-          480
-        ],
-        "controls": [
-          {
-            "name": "pict",
-            "rect": [
-              103,
-              0,
-              33,
-              11
-            ],
-            "centre": [
-              119,
-              5
-            ]
-          },
-          {
-            "name": "brush",
-            "rect": [
-              183,
-              0,
-              41,
-              11
-            ],
-            "centre": [
-              203,
-              5
-            ]
-          },
-          {
-            "name": "color",
-            "rect": [
-              231,
-              0,
-              41,
-              11
-            ],
-            "centre": [
-              251,
-              5
-            ]
-          },
-          {
-            "name": "brush_dot",
-            "rect": [
-              598,
-              20,
-              3,
-              3
-            ],
-            "centre": [
-              599,
-              21
-            ]
-          },
-          {
-            "name": "freehand",
-            "rect": [
-              618,
-              54,
-              22,
-              22
-            ],
-            "centre": [
-              629,
-              65
-            ]
-          },
-          {
-            "name": "line",
-            "rect": [
-              594,
-              78,
-              22,
-              22
-            ],
-            "centre": [
-              605,
-              89
-            ]
-          },
-          {
-            "name": "rect_filled",
-            "rect": [
-              606,
-              138,
-              9,
-              9
-            ],
-            "centre": [
-              610,
-              142
-            ]
-          },
-          {
-            "name": "circle_filled",
-            "rect": [
-              630,
-              138,
-              9,
-              9
-            ],
-            "centre": [
-              634,
-              142
-            ]
-          },
-          {
-            "name": "brush_grab",
-            "rect": [
-              594,
-              174,
-              22,
-              22
-            ],
-            "centre": [
-              605,
-              185
-            ]
-          },
-          {
-            "name": "black",
-            "rect": [
-              596,
-              315,
-              17,
-              16
-            ],
-            "centre": [
-              604,
-              323
-            ]
-          },
-          {
-            "name": "blue",
-            "rect": [
-              596,
-              337,
-              17,
-              14
-            ],
-            "centre": [
-              604,
-              344
-            ]
-          },
-          {
-            "name": "brown",
-            "rect": [
-              596,
-              441,
-              17,
-              15
-            ],
-            "centre": [
-              604,
-              448
-            ]
-          },
-          {
-            "name": "yellow",
-            "rect": [
-              620,
-              441,
-              17,
-              15
-            ],
-            "centre": [
-              628,
-              448
-            ]
-          }
-        ],
-        "session": {
-          "alive": true,
-          "running": false,
-          "altered": false
-        }
-      }
-    }
-  ],
-  "steps_total": 19,
-  "truncated": false,
-  "ran_path": "<volatile>",
-  "replies_path": "<volatile>",
-  "stops": {
-    "stop_seq_first": 1045,
-    "stop_seq_last": 1235,
-    "surveyed": 14,
-    "by_cause": {
-      "the retrace the input's post ran to,": 11,
-      "the retrace run_for ran to,": 3
-    },
-    "unaccounted": 177
-  },
-  "steps_completed": 19,
-  "failed_at": {
-    "available": false,
-    "why": "no step failed"
-  },
-  "held": 0,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
-}
-```
-
-</details>
-
-**13. `perform`**: OK Pict, and the brush put down: the map named pict menu, then paint: custom brush, then paint: freehand
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "steps": [
-    {
-      "op": "send_mouse",
-      "target": "pict",
-      "button": "left",
-      "action": "down"
-    },
-    {
-      "op": "map_find"
-    },
-    {
-      "op": "send_mouse",
-      "button": "left",
-      "action": "up"
-    },
-    {
-      "op": "run_for",
-      "frames": 10
-    },
-    {
-      "op": "send_mouse",
-      "x": 610,
-      "y": 300
-    },
-    {
-      "op": "map_find"
-    },
-    {
-      "op": "send_mouse",
-      "target": "brush_dot",
-      "button": "left"
+      "op": "send_keys",
+      "keys": [
+        "S",
+        "C",
+        "R",
+        "Y"
+      ],
+      "modifiers": [
+        "shift"
+      ]
     },
     {
       "op": "send_mouse",
@@ -3163,72 +2707,74 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "perform: 10 of 10 steps",
+  "summary": "perform: 9 of 9 steps",
   "status": "ok",
   "ran": [
     {
       "step": 0,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 119,5; posted, unverified, 20 retraces to frame 1847",
+        "summary": "send_mouse: pointer at 604,323; posted, unverified, 25 retraces to frame 1508",
         "status": "ok",
-        "stop_seq": 1255,
-        "cause": "the retrace the input's post ran to, at 1697:000002EA"
+        "stop_seq": 1072,
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 1,
-      "op": "map_find",
+      "op": "send_mouse",
       "reply": {
-        "summary": "map_find: pict menu (file), 1 control",
-        "status": "ok"
+        "summary": "send_mouse: pointer at 629,185; posted, unverified, 25 retraces to frame 1533",
+        "status": "ok",
+        "stop_seq": 1097,
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 2,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 119,5; posted, unverified, 15 retraces to frame 1862",
+        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1548",
         "status": "ok",
-        "stop_seq": 1270,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 1112,
+        "cause": "the retrace the input's post ran to, at 1009:000002CE"
       }
     },
     {
       "step": 3,
-      "op": "run_for",
+      "op": "map_find",
       "reply": {
-        "summary": "run_for 10 frames: ELAPSED, 10 polls, at 1009:00000367",
-        "status": "ok",
-        "stop_seq": 1271,
-        "cause": "the retrace run_for ran to, at 1009:00000367"
+        "summary": "map_find: paint: text (file), 14 controls",
+        "status": "ok"
       }
     },
     {
       "step": 4,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1883",
+        "summary": "send_mouse: pointer at 40,60; posted, unverified, 25 retraces to frame 1573",
         "status": "ok",
-        "stop_seq": 1282,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+        "stop_seq": 1137,
+        "cause": "the retrace the input's post ran to, at 0E83:0000037B"
       }
     },
     {
       "step": 5,
-      "op": "map_find",
+      "op": "send_keys",
       "reply": {
-        "summary": "map_find: paint: custom brush (file), 13 controls",
-        "status": "ok"
+        "summary": "send_keys (guest): posted, unverified, 50 retraces to frame 1623",
+        "status": "ok",
+        "stop_seq": 1187,
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 6,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 599,21; posted, unverified, 25 retraces to frame 1908",
+        "summary": "send_mouse: pointer at 629,65; posted, unverified, 25 retraces to frame 1648",
         "status": "ok",
-        "stop_seq": 1307,
+        "stop_seq": 1212,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
@@ -3236,27 +2782,17 @@ Also attached: image/png.
       "step": 7,
       "op": "send_mouse",
       "reply": {
-        "summary": "send_mouse: pointer at 629,65; posted, unverified, 25 retraces to frame 1933",
+        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1663",
         "status": "ok",
-        "stop_seq": 1332,
+        "stop_seq": 1227,
         "cause": "the retrace the input's post ran to, at F000:0000CFC5"
       }
     },
     {
       "step": 8,
-      "op": "send_mouse",
-      "reply": {
-        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1948",
-        "status": "ok",
-        "stop_seq": 1347,
-        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
-      }
-    },
-    {
-      "step": 9,
       "op": "map_find",
       "reply": {
-        "summary": "map_find: paint: freehand (file), 13 controls",
+        "summary": "map_find: paint: freehand (file), 14 controls",
         "status": "ok",
         "matched": true,
         "screen": "paint: freehand",
@@ -3385,6 +2921,913 @@ Also attached: image/png.
             ]
           },
           {
+            "name": "text",
+            "rect": [
+              618,
+              174,
+              22,
+              22
+            ],
+            "centre": [
+              629,
+              185
+            ]
+          },
+          {
+            "name": "black",
+            "rect": [
+              596,
+              315,
+              17,
+              16
+            ],
+            "centre": [
+              604,
+              323
+            ]
+          },
+          {
+            "name": "blue",
+            "rect": [
+              596,
+              337,
+              17,
+              14
+            ],
+            "centre": [
+              604,
+              344
+            ]
+          },
+          {
+            "name": "brown",
+            "rect": [
+              596,
+              441,
+              17,
+              15
+            ],
+            "centre": [
+              604,
+              448
+            ]
+          },
+          {
+            "name": "yellow",
+            "rect": [
+              620,
+              441,
+              17,
+              15
+            ],
+            "centre": [
+              628,
+              448
+            ]
+          }
+        ],
+        "session": {
+          "alive": true,
+          "running": false,
+          "altered": false
+        }
+      }
+    }
+  ],
+  "steps_total": 9,
+  "truncated": false,
+  "ran_path": "<volatile>",
+  "replies_path": "<volatile>",
+  "stops": {
+    "stop_seq_first": 1048,
+    "stop_seq_last": 1227,
+    "surveyed": 7,
+    "by_cause": {
+      "the retrace the input's post ran to,": 7
+    },
+    "unaccounted": 173
+  },
+  "steps_completed": 9,
+  "failed_at": {
+    "available": false,
+    "why": "no step failed"
+  },
+  "held": 0,
+  "session": {
+    "alive": true,
+    "running": false,
+    "altered": false
+  }
+}
+```
+
+</details>
+
+**13. `perform`**: OK flip the boat: the map named paint: grab, then paint: custom brush, then brush menu, then paint: custom brush, then paint: custom brush
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "steps": [
+    {
+      "op": "send_mouse",
+      "target": "brush_grab",
+      "button": "left"
+    },
+    {
+      "op": "send_mouse",
+      "x": 610,
+      "y": 300
+    },
+    {
+      "op": "map_find"
+    },
+    {
+      "op": "send_mouse",
+      "x": 96,
+      "y": 316,
+      "button": "left",
+      "action": "down"
+    },
+    {
+      "op": "send_mouse",
+      "x": 184,
+      "y": 399
+    },
+    {
+      "op": "send_mouse",
+      "button": "left",
+      "action": "up"
+    },
+    {
+      "op": "run_for",
+      "frames": 10
+    },
+    {
+      "op": "send_mouse",
+      "x": 610,
+      "y": 300
+    },
+    {
+      "op": "map_find"
+    },
+    {
+      "op": "send_mouse",
+      "target": "brush",
+      "button": "left",
+      "action": "down"
+    },
+    {
+      "op": "map_find"
+    },
+    {
+      "op": "send_mouse",
+      "target": "flip_horizontal",
+      "button": "left",
+      "action": "up"
+    },
+    {
+      "op": "run_for",
+      "frames": 20
+    },
+    {
+      "op": "send_mouse",
+      "x": 610,
+      "y": 300
+    },
+    {
+      "op": "map_find"
+    },
+    {
+      "op": "send_mouse",
+      "x": 440,
+      "y": 357,
+      "button": "left"
+    },
+    {
+      "op": "run_for",
+      "frames": 10
+    },
+    {
+      "op": "send_mouse",
+      "x": 610,
+      "y": 300
+    },
+    {
+      "op": "map_find"
+    }
+  ],
+  "summaries": true
+}
+```
+
+```json
+{
+  "summary": "perform: 19 of 19 steps",
+  "status": "ok",
+  "ran": [
+    {
+      "step": 0,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 605,185; posted, unverified, 25 retraces to frame 1688",
+        "status": "ok",
+        "stop_seq": 1252,
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+      }
+    },
+    {
+      "step": 1,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 1703",
+        "status": "ok",
+        "stop_seq": 1267,
+        "cause": "the retrace the input's post ran to, at 0955:0000003F"
+      }
+    },
+    {
+      "step": 2,
+      "op": "map_find",
+      "reply": {
+        "summary": "map_find: paint: grab (file), 14 controls",
+        "status": "ok"
+      }
+    },
+    {
+      "step": 3,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 96,316; posted, unverified, 20 retraces to frame 1723",
+        "status": "ok",
+        "stop_seq": 1287,
+        "cause": "the retrace the input's post ran to, at 1009:000001C2"
+      }
+    },
+    {
+      "step": 4,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 184,399; posted, unverified, 15 retraces to frame 1738",
+        "status": "ok",
+        "stop_seq": 1302,
+        "cause": "the retrace the input's post ran to, at 0E83:00000146"
+      }
+    },
+    {
+      "step": 5,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 184,399; posted, unverified, 15 retraces to frame 1753",
+        "status": "ok",
+        "stop_seq": 1317,
+        "cause": "the retrace the input's post ran to, at 0B92:00000249"
+      }
+    },
+    {
+      "step": 6,
+      "op": "run_for",
+      "reply": {
+        "summary": "run_for 10 frames: ELAPSED, 10 polls, at 1009:00000341",
+        "status": "ok",
+        "stop_seq": 1318,
+        "cause": "the retrace run_for ran to, at 1009:00000341"
+      }
+    },
+    {
+      "step": 7,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1774",
+        "status": "ok",
+        "stop_seq": 1329,
+        "cause": "the retrace the input's post ran to, at 13F6:000002D4"
+      }
+    },
+    {
+      "step": 8,
+      "op": "map_find",
+      "reply": {
+        "summary": "map_find: paint: custom brush (file), 14 controls",
+        "status": "ok"
+      }
+    },
+    {
+      "step": 9,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 203,5; posted, unverified, 20 retraces to frame 1794",
+        "status": "ok",
+        "stop_seq": 1349,
+        "cause": "the retrace the input's post ran to, at 0955:0000033F"
+      }
+    },
+    {
+      "step": 10,
+      "op": "map_find",
+      "reply": {
+        "summary": "map_find: brush menu (file), 2 controls",
+        "status": "ok"
+      }
+    },
+    {
+      "step": 11,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 269,18; posted, unverified, 20 retraces to frame 1814",
+        "status": "ok",
+        "stop_seq": 1369,
+        "cause": "the retrace the input's post ran to, at 1483:00000158"
+      }
+    },
+    {
+      "step": 12,
+      "op": "run_for",
+      "reply": {
+        "summary": "run_for 20 frames: ELAPSED, 20 polls, at 0DA5:00000587",
+        "status": "ok",
+        "stop_seq": 1370,
+        "cause": "the retrace run_for ran to, at 0DA5:00000587"
+      }
+    },
+    {
+      "step": 13,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1845",
+        "status": "ok",
+        "stop_seq": 1381,
+        "cause": "the retrace the input's post ran to, at F000:0000CFC5"
+      }
+    },
+    {
+      "step": 14,
+      "op": "map_find",
+      "reply": {
+        "summary": "map_find: paint: custom brush (file), 14 controls",
+        "status": "ok"
+      }
+    },
+    {
+      "step": 15,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 440,357; posted, unverified, 25 retraces to frame 1870",
+        "status": "ok",
+        "stop_seq": 1406,
+        "cause": "the retrace the input's post ran to, at 13F6:000002DB"
+      }
+    },
+    {
+      "step": 16,
+      "op": "run_for",
+      "reply": {
+        "summary": "run_for 10 frames: ELAPSED, 10 polls, at 13F6:000002DF",
+        "status": "ok",
+        "stop_seq": 1407,
+        "cause": "the retrace run_for ran to, at 13F6:000002DF"
+      }
+    },
+    {
+      "step": 17,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1891",
+        "status": "ok",
+        "stop_seq": 1418,
+        "cause": "the retrace the input's post ran to, at 1009:00000336"
+      }
+    },
+    {
+      "step": 18,
+      "op": "map_find",
+      "reply": {
+        "summary": "map_find: paint: custom brush (file), 14 controls",
+        "status": "ok",
+        "matched": true,
+        "screen": "paint: custom brush",
+        "layer": "file",
+        "kind": "pixel",
+        "size": [
+          640,
+          480
+        ],
+        "controls": [
+          {
+            "name": "pict",
+            "rect": [
+              103,
+              0,
+              33,
+              11
+            ],
+            "centre": [
+              119,
+              5
+            ]
+          },
+          {
+            "name": "brush",
+            "rect": [
+              183,
+              0,
+              41,
+              11
+            ],
+            "centre": [
+              203,
+              5
+            ]
+          },
+          {
+            "name": "color",
+            "rect": [
+              231,
+              0,
+              41,
+              11
+            ],
+            "centre": [
+              251,
+              5
+            ]
+          },
+          {
+            "name": "brush_dot",
+            "rect": [
+              598,
+              20,
+              3,
+              3
+            ],
+            "centre": [
+              599,
+              21
+            ]
+          },
+          {
+            "name": "freehand",
+            "rect": [
+              618,
+              54,
+              22,
+              22
+            ],
+            "centre": [
+              629,
+              65
+            ]
+          },
+          {
+            "name": "line",
+            "rect": [
+              594,
+              78,
+              22,
+              22
+            ],
+            "centre": [
+              605,
+              89
+            ]
+          },
+          {
+            "name": "rect_filled",
+            "rect": [
+              606,
+              138,
+              9,
+              9
+            ],
+            "centre": [
+              610,
+              142
+            ]
+          },
+          {
+            "name": "circle_filled",
+            "rect": [
+              630,
+              138,
+              9,
+              9
+            ],
+            "centre": [
+              634,
+              142
+            ]
+          },
+          {
+            "name": "brush_grab",
+            "rect": [
+              594,
+              174,
+              22,
+              22
+            ],
+            "centre": [
+              605,
+              185
+            ]
+          },
+          {
+            "name": "text",
+            "rect": [
+              618,
+              174,
+              22,
+              22
+            ],
+            "centre": [
+              629,
+              185
+            ]
+          },
+          {
+            "name": "black",
+            "rect": [
+              596,
+              315,
+              17,
+              16
+            ],
+            "centre": [
+              604,
+              323
+            ]
+          },
+          {
+            "name": "blue",
+            "rect": [
+              596,
+              337,
+              17,
+              14
+            ],
+            "centre": [
+              604,
+              344
+            ]
+          },
+          {
+            "name": "brown",
+            "rect": [
+              596,
+              441,
+              17,
+              15
+            ],
+            "centre": [
+              604,
+              448
+            ]
+          },
+          {
+            "name": "yellow",
+            "rect": [
+              620,
+              441,
+              17,
+              15
+            ],
+            "centre": [
+              628,
+              448
+            ]
+          }
+        ],
+        "session": {
+          "alive": true,
+          "running": false,
+          "altered": false
+        }
+      }
+    }
+  ],
+  "steps_total": 19,
+  "truncated": false,
+  "ran_path": "<volatile>",
+  "replies_path": "<volatile>",
+  "stops": {
+    "stop_seq_first": 1228,
+    "stop_seq_last": 1418,
+    "surveyed": 14,
+    "by_cause": {
+      "the retrace the input's post ran to,": 11,
+      "the retrace run_for ran to,": 3
+    },
+    "unaccounted": 177
+  },
+  "steps_completed": 19,
+  "failed_at": {
+    "available": false,
+    "why": "no step failed"
+  },
+  "held": 0,
+  "session": {
+    "alive": true,
+    "running": false,
+    "altered": false
+  }
+}
+```
+
+</details>
+
+**14. `perform`**: OK Pict, and the brush put down: the map named pict menu, then paint: custom brush, then paint: freehand
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "steps": [
+    {
+      "op": "send_mouse",
+      "target": "pict",
+      "button": "left",
+      "action": "down"
+    },
+    {
+      "op": "map_find"
+    },
+    {
+      "op": "send_mouse",
+      "button": "left",
+      "action": "up"
+    },
+    {
+      "op": "run_for",
+      "frames": 10
+    },
+    {
+      "op": "send_mouse",
+      "x": 610,
+      "y": 300
+    },
+    {
+      "op": "map_find"
+    },
+    {
+      "op": "send_mouse",
+      "target": "brush_dot",
+      "button": "left"
+    },
+    {
+      "op": "send_mouse",
+      "target": "freehand",
+      "button": "left"
+    },
+    {
+      "op": "send_mouse",
+      "x": 610,
+      "y": 300
+    },
+    {
+      "op": "map_find"
+    }
+  ],
+  "summaries": true
+}
+```
+
+```json
+{
+  "summary": "perform: 10 of 10 steps",
+  "status": "ok",
+  "ran": [
+    {
+      "step": 0,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 119,5; posted, unverified, 20 retraces to frame 1911",
+        "status": "ok",
+        "stop_seq": 1438,
+        "cause": "the retrace the input's post ran to, at 0955:0000032E"
+      }
+    },
+    {
+      "step": 1,
+      "op": "map_find",
+      "reply": {
+        "summary": "map_find: pict menu (file), 1 control",
+        "status": "ok"
+      }
+    },
+    {
+      "step": 2,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 119,5; posted, unverified, 15 retraces to frame 1926",
+        "status": "ok",
+        "stop_seq": 1453,
+        "cause": "the retrace the input's post ran to, at 1009:0000033B"
+      }
+    },
+    {
+      "step": 3,
+      "op": "run_for",
+      "reply": {
+        "summary": "run_for 10 frames: ELAPSED, 10 polls, at F000:0000CFC5",
+        "status": "ok",
+        "stop_seq": 1454,
+        "cause": "the retrace run_for ran to, at F000:0000CFC5"
+      }
+    },
+    {
+      "step": 4,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 610,300; posted, unverified, 11 retraces to frame 1947",
+        "status": "ok",
+        "stop_seq": 1465,
+        "cause": "the retrace the input's post ran to, at 1009:0000023A"
+      }
+    },
+    {
+      "step": 5,
+      "op": "map_find",
+      "reply": {
+        "summary": "map_find: paint: custom brush (file), 14 controls",
+        "status": "ok"
+      }
+    },
+    {
+      "step": 6,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 599,21; posted, unverified, 25 retraces to frame 1972",
+        "status": "ok",
+        "stop_seq": 1490,
+        "cause": "the retrace the input's post ran to, at 13F6:00000223"
+      }
+    },
+    {
+      "step": 7,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 629,65; posted, unverified, 25 retraces to frame 1997",
+        "status": "ok",
+        "stop_seq": 1515,
+        "cause": "the retrace the input's post ran to, at 13F6:000002D7"
+      }
+    },
+    {
+      "step": 8,
+      "op": "send_mouse",
+      "reply": {
+        "summary": "send_mouse: pointer at 610,300; posted, unverified, 15 retraces to frame 2012",
+        "status": "ok",
+        "stop_seq": 1530,
+        "cause": "the retrace the input's post ran to, at 13F6:00000220"
+      }
+    },
+    {
+      "step": 9,
+      "op": "map_find",
+      "reply": {
+        "summary": "map_find: paint: freehand (file), 14 controls",
+        "status": "ok",
+        "matched": true,
+        "screen": "paint: freehand",
+        "layer": "file",
+        "kind": "pixel",
+        "size": [
+          640,
+          480
+        ],
+        "controls": [
+          {
+            "name": "pict",
+            "rect": [
+              103,
+              0,
+              33,
+              11
+            ],
+            "centre": [
+              119,
+              5
+            ]
+          },
+          {
+            "name": "brush",
+            "rect": [
+              183,
+              0,
+              41,
+              11
+            ],
+            "centre": [
+              203,
+              5
+            ]
+          },
+          {
+            "name": "color",
+            "rect": [
+              231,
+              0,
+              41,
+              11
+            ],
+            "centre": [
+              251,
+              5
+            ]
+          },
+          {
+            "name": "brush_dot",
+            "rect": [
+              598,
+              20,
+              3,
+              3
+            ],
+            "centre": [
+              599,
+              21
+            ]
+          },
+          {
+            "name": "freehand",
+            "rect": [
+              618,
+              54,
+              22,
+              22
+            ],
+            "centre": [
+              629,
+              65
+            ]
+          },
+          {
+            "name": "line",
+            "rect": [
+              594,
+              78,
+              22,
+              22
+            ],
+            "centre": [
+              605,
+              89
+            ]
+          },
+          {
+            "name": "rect_filled",
+            "rect": [
+              606,
+              138,
+              9,
+              9
+            ],
+            "centre": [
+              610,
+              142
+            ]
+          },
+          {
+            "name": "circle_filled",
+            "rect": [
+              630,
+              138,
+              9,
+              9
+            ],
+            "centre": [
+              634,
+              142
+            ]
+          },
+          {
+            "name": "brush_grab",
+            "rect": [
+              594,
+              174,
+              22,
+              22
+            ],
+            "centre": [
+              605,
+              185
+            ]
+          },
+          {
+            "name": "text",
+            "rect": [
+              618,
+              174,
+              22,
+              22
+            ],
+            "centre": [
+              629,
+              185
+            ]
+          },
+          {
             "name": "black",
             "rect": [
               596,
@@ -3450,8 +3893,8 @@ Also attached: image/png.
   "ran_path": "<volatile>",
   "replies_path": "<volatile>",
   "stops": {
-    "stop_seq_first": 1236,
-    "stop_seq_last": 1347,
+    "stop_seq_first": 1419,
+    "stop_seq_last": 1530,
     "surveyed": 7,
     "by_cause": {
       "the retrace the input's post ran to,": 6,
@@ -3475,7 +3918,61 @@ Also attached: image/png.
 
 </details>
 
-**14. `screen_view`**: OK sun row: the row reads frame x 4, then orange x 239, then yellow x 107, then orange x 238, then frame x 4
+**15. `screen_view`**: OK word row: the row reads frame x 4, then orange x 37, then black x 4, then orange x 3, then black x 2, then orange x 6, then black x 5, then orange x 4, then black x 5, then orange x 518, then frame x 4
+
+<details><summary>call and reply</summary>
+
+```json
+{
+  "crop": [
+    0,
+    57,
+    592,
+    1
+  ],
+  "scale": 1,
+  "dest": "./tmp/demos/dpaint_maps/row-57.png",
+  "attach": false
+}
+```
+
+```json
+{
+  "summary": "screen_view M_EGA: 592x1 at [0, 57] pixels; 592x1 PNG x1, not inlined",
+  "status": "ok",
+  "vga_mode": "M_EGA",
+  "kind": "pixel",
+  "width": 640,
+  "height": 480,
+  "crop": [
+    0,
+    57,
+    592,
+    1
+  ],
+  "image": {
+    "path": "./tmp/demos/dpaint_maps/row-57.png",
+    "bytes": 866,
+    "sha256": "c6542d54e76dc4220a85b889e41406d264ff5633e3602ed525a1d907bfe5b87a",
+    "width": 592,
+    "height": 1,
+    "scale": 1,
+    "indexed": true,
+    "inline": false,
+    "not_inlined": "attach=false"
+  },
+  "display_start": "0h",
+  "session": {
+    "alive": true,
+    "running": false,
+    "altered": false
+  }
+}
+```
+
+</details>
+
+**16. `screen_view`**: OK sun row: the row reads frame x 4, then orange x 239, then yellow x 107, then orange x 238, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -3529,7 +4026,7 @@ Also attached: image/png.
 
 </details>
 
-**15. `screen_view`**: OK glint row: the row reads frame x 4, then blue x 252, then yellow x 81, then blue x 251, then frame x 4
+**17. `screen_view`**: OK glint row: the row reads frame x 4, then blue x 252, then yellow x 81, then blue x 251, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -3583,7 +4080,7 @@ Also attached: image/png.
 
 </details>
 
-**16. `screen_view`**: OK sail row: the row reads frame x 4, then blue x 136, then black x 1, then blue x 19, then yellow x 1, then blue x 258, then yellow x 1, then blue x 20, then black x 1, then blue x 147, then frame x 4
+**18. `screen_view`**: OK sail row: the row reads frame x 4, then blue x 136, then black x 1, then blue x 19, then yellow x 1, then blue x 258, then yellow x 1, then blue x 20, then black x 1, then blue x 147, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -3637,7 +4134,7 @@ Also attached: image/png.
 
 </details>
 
-**17. `screen_view`**: OK hull row: the row reads frame x 4, then blue x 96, then black x 81, then blue x 219, then black x 81, then blue x 107, then frame x 4
+**19. `screen_view`**: OK hull row: the row reads frame x 4, then blue x 96, then black x 81, then blue x 219, then black x 81, then blue x 107, then frame x 4
 
 <details><summary>call and reply</summary>
 
@@ -3691,7 +4188,7 @@ Also attached: image/png.
 
 </details>
 
-**18. `screen_view`**: OK screen: mode M_EGA, 640x480 by palette index
+**20. `screen_view`**: OK screen: mode M_EGA, 640x480 by palette index
 
 <details><summary>call and reply</summary>
 
@@ -3717,8 +4214,8 @@ Also attached: image/png.
   ],
   "image": {
     "path": "./tmp/demos/dpaint_maps/screen.png",
-    "bytes": 3972,
-    "sha256": "80223dd3d17a991d7ab2955494daba067f756c3483be660d31877ef65a259b24",
+    "bytes": 4012,
+    "sha256": "64514af0c959a72efb2abe3dc58abdcc5190cb5acca2009d633537ca1fe08d7a",
     "width": 640,
     "height": 480,
     "scale": 1,
@@ -3738,7 +4235,7 @@ Also attached: image/png.
 
 </details>
 
-**19. `close`**: OK close: closed: quit
+**21. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 

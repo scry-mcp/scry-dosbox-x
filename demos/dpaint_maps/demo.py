@@ -1,6 +1,6 @@
 """The Deluxe Paint screen-map demo: Deluxe Paint II (1988) at VGA 640 x 480 in 16 colours,
-its menus, dialog buttons, tools and colours picked by screen-map names and its shapes dragged at
-pixels, each answer checked. `--help` says how to run it.
+its menus, dialog buttons, tools and colours picked by screen-map names, its shapes dragged at
+pixels and SCRY typed with the text tool, each answer checked. `--help` says how to run it.
 
 Its menus drop only while the button is held: a press on a title opens one, the release over an
 item chooses. The map knows each open menu, the Palette dialog, and the painting screen per tool
@@ -31,9 +31,6 @@ COLOURS = {"orange": 6, "blue": 1, "black": 0, "yellow": 14, "frame": 15}
 #: The orange the dialog mixes, as the DAC holds it in six bits a channel: brown's red raised to
 #: the top, its green and blue left as they were.
 ORANGE_DAC = "3f1500"
-#: Retraces the red arrow is held: past the 21 steps from brown's red to the top, so the channel
-#: clamps there whatever the program's repeat rate.
-HOLD_FRAMES = 120
 #: Retraces a menu choice or a dialog button takes to draw what it opens or closes.
 DRAWN_FRAMES = 20
 #: Where the pointer waits off every region the map signs, over the toolbox's colour indicator:
@@ -48,6 +45,9 @@ MAST = ((140, 379), (140, 320))
 SAIL = [((142, 322), (176, 374)), ((176, 374), (142, 374))]
 LIFT = ((96, 316), (184, 399))
 STAMP = (440, 357)
+#: Where the text tool's cursor is put down, in the sky; the word is typed there.
+TEXT_AT = (40, 60)
+WORD = "SCRY"
 PARKED = {"op": "send_mouse", "x": PARK[0], "y": PARK[1]}
 
 
@@ -95,8 +95,7 @@ def landed(*screens: str) -> Any:
 
 def held(reply: Reply, run: Run) -> str:
     completed(reply)
-    return (f"the brown slot picked, and red's arrow held {HOLD_FRAMES} retraces until the "
-            "channel tops out")
+    return "the brown slot picked, and red's arrow held from the press to the release"
 
 
 def mixed(reply: Reply, run: Run) -> str:
@@ -151,6 +150,9 @@ def crossing(*spans: tuple[str, int]) -> Any:
 
 
 ROWS = {
+    "word row": (57, crossing(("frame", 4), ("orange", 37), ("black", 4), ("orange", 3),
+                              ("black", 2), ("orange", 6), ("black", 5), ("orange", 4),
+                              ("black", 5), ("orange", 518), ("frame", 4))),
     "sun row": (230, crossing(("frame", 4), ("orange", 239), ("yellow", 107), ("orange", 238),
                               ("frame", 4))),
     "glint row": (272, crossing(("frame", 4), ("blue", 252), ("yellow", 81), ("blue", 251),
@@ -170,8 +172,9 @@ STEPS = [
     Step("is paint", "map_find", {}, found("paint: freehand")),
     moves("open Color", ([click("color", "down")], "color menu")),
     moves("choose Palette", ([click("palette", "up"), frames(DRAWN_FRAMES)], "palette")),
+    # The press and the release are each posted over retraces of their own, and the program's
+    # repeat climbs red's 21 steps to the top inside them; `mixed` reads the DAC to prove it.
     Step("mix", "perform", {"steps": [click("brown"), click("red_up", "down"),
-                                      frames(HOLD_FRAMES),
                                       {"op": "send_mouse", "button": "left", "action": "up"}],
                             "summaries": True}, held),
     Step("orange", "palette", orange_swatch, mixed),
@@ -183,6 +186,10 @@ STEPS = [
           shape(["rect_filled", "black"], [HULL], "paint: rectangle")),
     moves("mast and sail", shape(["line", "black"], [MAST], "paint: line"),
           shape(["yellow"], SAIL, "paint: line")),
+    moves("SCRY", ([click("black"), click("text"), PARKED], "paint: text"),
+          ([{"op": "send_mouse", "x": TEXT_AT[0], "y": TEXT_AT[1], "button": "left"},
+            {"op": "send_keys", "keys": list(WORD), "modifiers": ["shift"]},
+            click("freehand"), PARKED], "paint: freehand")),
     moves("flip the boat", ([click("brush_grab"), PARKED], "paint: grab"),
           ([*drag(*LIFT), frames(10), PARKED], "paint: custom brush"),
           ([click("brush", "down")], "brush menu"),
