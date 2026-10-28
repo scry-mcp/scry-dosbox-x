@@ -6,10 +6,6 @@
 
 **The command is the confirmation**: a refusal of its own is `unexpected_answer` quoting it. A name is never digits only: the emulator's own slot files are `<n>.sav` in the same directory.
 
-
-
-
-
 When the base moved, the breakpoints declared by name are cleared at their old places (the debugger's rows outlive a load) and armed anew.
 
 <!-- scry-reference:begin state_list -->

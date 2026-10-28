@@ -60,10 +60,10 @@ Give this to an MCP client with this server connected:
 | Session | `start` (windowed, stopping at the program's `int 3`), `close` |
 | Advance | `resume` to the `int 3`, `run_for` by retraces on the conf's fixed clock |
 | Names | `symbols_load` at the load segment |
-| Files | `screen_map_write(method="load")`, `screen_map_find` on every screen, `audio_compare` (`measure`, `diff`) |
+| Files | `screen_map_write(method="load")`, `audio_compare` (`measure`, `diff`) |
 | Input | `send_mouse` by control name off the map and at pixels, both buttons |
-| Sequences | `perform` (the flags in one call, the clicks that clear the board in another) |
-| Read | `read_memory` by symbol, `log`, `screen_view` |
+| Lists | `perform` (the flags in one call, the clicks that clear the board in another) |
+| Read | `screen_map_find` on every screen, `read_memory` by symbol, `log`, `screen_view` |
 | Captures | `audio_record` of the Sound Blaster's output |
 
 ## The transcript

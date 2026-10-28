@@ -1,10 +1,10 @@
 # The Files tools
 
-### The file tools
+## The file tools
 
 The file tools (`image_compare(method="image")`, `image_compare(method="series")`, `image_compare(method="region")`, `image_compare(method="golden")`, `audio_compare(method="measure")`, `audio_compare(method="diff")`) read files and touch no machine, so they answer with the guest running or with none. Every comparison carries its control, because a result that cannot come out the other way is no result: a series whose frames never change says nothing about another (`control_silent`), two series with no frame in common compare nothing, a region whose measure never moves was missed, goldens meeting no file examined nothing, and two silent recordings are refused (`control_silent`) rather than called equal. A manifest is re-hashed and re-signed on reading, so a frame changed since, or a row edited by hand, is refused.
 
-### Screen maps
+## Screen maps
 
 A screen map is a file, `<application>.screen-map.json`, kept in the application's own repository (a game both servers run keeps one map, beside its script in scry-core), in the format `scry-screen-map/1`.
 
@@ -26,17 +26,6 @@ Everything is in the program's own units, cells in a text mode and pixels in a g
 **A control is named against the identification it came from.** The click acts on the screen `screen_map_find` last identified. Before the pointer moves, only the kind and size of what the guest shows are read again, off the stub's report, which answers whether the guest runs or is parked; a guest showing a screen of another kind or size is `needs_call`. What is drawn is not compared again, so a changed screen of the same mode is yours to catch: `screen_map_find` again, at a stop, after anything that may have changed it.
 
 **In an export**, `screen_map_write(method="load")` and `screen_map_write(method="add")` are steps, so a replay knows the map an identification was made against; `screen_map_find` is a check; `screen_map_write(method="save")` is dropped, since a replay would find its file there. A `send_mouse` sent to a stopped machine is a step like any input to one ([Input and the screen](input.md), *The route*); one sent while the guest runs never reaches an export, which cuts at the release before it.
-
-
-
-
-
-
-
-
-
-
-
 
 <!-- scry-reference:begin image_compare -->
 ## `image_compare`

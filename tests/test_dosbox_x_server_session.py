@@ -1364,6 +1364,11 @@ def test_the_instructions_say_a_wrong_type_is_the_schemas_refusal() -> None:
     assert "wrong TYPE" in (server.mcp.instructions or ""), "the sentence is missing"
 
 
+def test_the_instructions_close_with_the_in_development_notice() -> None:
+    from scry_core.envelope import IN_DEVELOPMENT
+    assert (server.mcp.instructions or "").endswith("\n\n" + IN_DEVELOPMENT)
+
+
 
 def test_status_with_no_session_adds_no_machine_facts() -> None:
     dstate.STATE.session = None

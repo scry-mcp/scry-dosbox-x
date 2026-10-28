@@ -1,10 +1,10 @@
 # The Captures tools
 
-### Capturing what the screen shows
+## Capturing what the screen shows
 
 The video (`capture_video=True`, with a `program` for the recorder to wrap) is DOSBox-X's own doing and needs no keypress. A still of the running screen is `snapshot`, taken in the guest; a still out of a recording is `capture_frame`, an extraction that needs `ffmpeg`.
 
-### A series
+## A series
 
 A series is one `scry-series/1` manifest (`server`, `source`, `crop`, a row per frame `{frame, path, sha256, bytes, signature}`) beside its PNGs; the frames are the AVI's own, numbered from 0 at its first, not the display frames a stop's `frame` counts since power-on.
 

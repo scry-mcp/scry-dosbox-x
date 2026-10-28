@@ -95,10 +95,10 @@ Give this to an MCP client with this server connected:
 |---|---|
 | Session | `start` (windowed, running the program from `cwd`), `close` |
 | Advance | `run_for` by retraces on the conf's fixed clock |
-| Files | `screen_map_write(method="load")`, `screen_map_find` after every move between screens |
+| Files | `screen_map_write(method="load")` |
 | Input | `send_mouse` by control name off the map (a press to open a menu, a release to choose), at screen pixels, and as drags; `send_keys` for the word |
-| Read | `palette` for the mixed colour, `screen_view` for rows of the picture and the screen |
-| Sequences | `perform` (each move with the map's word on where it landed; a shape's tool, colour and drags) |
+| Read | `screen_map_find` after every move between screens, `palette` for the mixed colour, `screen_view` for rows of the picture and the screen |
+| Lists | `perform` (each move with the map's word on where it landed; a shape's tool, colour and drags) |
 
 ## The transcript
 

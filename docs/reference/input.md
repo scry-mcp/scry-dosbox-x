@@ -2,7 +2,7 @@
 
 Every input goes in inside the machine and nothing about the host is touched ([REFERENCE.md, Input and the screen](../../REFERENCE.md#input-and-the-screen)). A `send_mouse` `target` is a control of a [screen map](files.md#screen-maps).
 
-### The route
+## The route
 
 The emulator's COM1 is a TCP client of a port the session listens on (`input_port`; transparent, so a byte 0xFF is data) and DOSBox-X's integration device is switched on, both as `-set` overrides the conf need not carry. A resident stub, `guest/SCRY.COM` (its header is the protocol), takes each command off the socket on the UART's own interrupt and carries it out in the guest. A game that takes the timer for itself (INT 08h with no chain to the BIOS, so INT 1Ch never runs again) still gets its input this way, unless it also masks IRQ 4 at the PIC. The host sends the commands a BIOS tick apart, so a game that reads its keys once a frame sees the make before the break.
 
@@ -14,7 +14,7 @@ The conf owes the route one line: its autoexec runs the stub before the program.
 
 The stub announces itself on the E9 (`STUB  . scry device=present proto=6 motion=1`), and the first input refuses (`no_channel`) when that line is missing or the protocol differs, because an older stub would read the frames as other commands. `motion` says whether the build's device takes relative motion (below). Without a `logfile` there is no line to read and input goes out on the conf's word.
 
-### An input that went in is not one the program took
+## An input that went in is not one the program took
 
 `expect` tells them apart: a modal popup can capture the cue key while the post succeeds. A miss is `TIMEOUT` beside the post, because a swallowed key and a key never sent are different facts; in a `perform` or a `drive` act it ends the list there.
 

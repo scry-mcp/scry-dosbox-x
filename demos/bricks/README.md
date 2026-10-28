@@ -66,8 +66,7 @@ Give this to an MCP client with this server connected:
 | Names | `symbols_load` at the measured segment |
 | Read | `disassemble`, `read_memory` by symbol, `screen_view` |
 | Declarations | `breakpoint_at` by name, `declaration_clear(kind="breakpoint")`, `watch_add` (`score` in view at every stop), `declaration_clear(kind="watch")` |
-| Input | `send_keys`, `send_mouse` |
-| Sequences | `drive` (three keys and their proof in one call) |
+| Input | `send_keys`, `send_mouse`, `drive` (three keys and their proof in one call) |
 | States | `state_write(method="save")`, `state_write(method="load")` |
 
 ## The transcript

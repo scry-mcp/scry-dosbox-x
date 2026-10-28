@@ -74,12 +74,12 @@ Give this to an MCP client with this server connected:
 |---|---|
 | Session | `start` (windowed, running the program from `cwd`), `close` |
 | Advance | `run_for` by retraces on the conf's fixed clock |
-| Files | `screen_map_write(method="load")`, `screen_map_find` |
+| Files | `screen_map_write(method="load")` |
 | Input | `send_mouse` by control name off the map, at screen pixels, and as drags; `send_keys` for the word |
 | Scan | `scan` (`start`, `filter` twice, `clear`) |
 | Declarations | `watch_add` (the colour byte in view at every stop), `declaration_clear(kind="watch")` |
-| Sequences | `perform` (one shape a call: its tool, its colour, its drags) |
-| Read | `read_memory` of rows of video memory, `screen_view` |
+| Lists | `perform` (one shape a call: its tool, its colour, its drags) |
+| Read | `screen_map_find`, `read_memory` of rows of video memory, `screen_view` |
 
 ## The transcript
 

@@ -2,7 +2,7 @@
 
 The typed tools parse what the debugger prints for each command, read its lists back and refuse a shape they were not captured answering; `debug` is the raw command for the rest.
 
-### The picture attached
+## The picture attached
 
 A view's PNG goes to the session's scratch (`close` deletes it; `dest` keeps one) and is attached after the JSON. Past 1568 px a side, or 1568 tiles of 28 px, the API resamples, and a resampled picture of pixel art is a plausible wrong one: it is written and not attached, `not_inlined` says why, and the caller asks for a `crop` or a smaller `scale`. A picture inside a sequence's step is never attached, since only a reply's own picture crosses. The default `scale` is the largest integer factor that fits, so each pixel stays a square of one colour.
 
@@ -470,7 +470,6 @@ by the carry (AH 38h and up); an older call answers in AL and gets no `error`. `
 for a call DOS has not handed back yet, as at a stop inside it. `time_s` and `returned_s` are
 seconds of emulated time since power-on, the clock `run_for`'s `emulated_before_s` and
 `emulated_after_s` read.
-
 
 `guest` is the program's own 0xE9 instrumentation, one line per write; `emulator` is DOSBox-X's own lines; `all` is the file in order, each line tagged `[guest] ` or `[emulator] `. `labels` counts returned lines by first word (BOOT, PERF, UI...), one glance at who is talking. `lines_total` counts all matches, not those returned, and an empty `lines` is an answer. One file holds those three channels, so one mark position serves each; `dos` reads the DOS call trace instead and takes no mark. There is no `process` channel: the emulator's own stdout is `close(detail=True)`'s. Queued work applies on a stop, saying so in `applied_on_stop`.
 
@@ -1192,8 +1191,6 @@ Example, from a live run:
 }
 ```
 <!-- scry-reference:end screen_signature -->
-
-
 
 <!-- scry-reference:begin screen_map_find -->
 ## `screen_map_find`

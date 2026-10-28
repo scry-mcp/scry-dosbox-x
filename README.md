@@ -57,11 +57,7 @@ driven by look, act, verify, and so is this.
 You need git, Python 3.11 or newer, [uv](https://docs.astral.sh/uv/), and a DOSBox-X built with
 the debugger (`build_check` says whether yours is): the `dosbox-x` on your `PATH`, or another
 named by `DOSBOX_X_BINARY` or by `start`'s `binary`. Some tools need debugger commands a
-release does not carry: waiting for a stop (`run_to`, `run_for`, `trace`, `screen_wait`, a step
-over, a bounded `resume`) needs `RUNSTATE`; stepping needs `STEPIN`; the saved states need
-`SAVESTATE` and `LOADSTATE`; a register condition needs `BPIF`; a picture in a mode past 13h's
-needs `VGAMEMDUMP`; a recording `CAPTURE`; a count or capture watch `TAP`; a port `PORTINFO`;
-the DOS calls `DOSTRACE` ([Platforms](#platforms)). Name a build that carries them with
+release does not carry ([Platforms](#platforms)); name a build that carries them with
 `DOSBOX_X_BINARY`. A missing piece is named by the tool that needs it, never worked around.
 
 ```sh
@@ -83,18 +79,14 @@ comes from you; the server carries no default that points anywhere.
 
 macOS and Windows. The server talks to DOSBox-X's debugger over its debugger channel on both, the
 same requests and the same replies; on Windows the emulator runs in a console of its own, hidden.
-Linux runs the unit tests (`.github/workflows/ci.yml`) and nothing else: no emulator has run under
+Linux runs the unit tests (`.github/workflows/ci.yml`, started by hand until the repositories
+are public) and nothing else: no emulator has run under
 the server there.
 
-What a session can do depends on the debugger commands its build carries, and `build_check` lists
-them. Any DOSBox-X with the debugger starts a session and answers every reading at the stop it
-parks at. Waiting for a stop (`run_to`, `run_for`, `trace`, `screen_wait`, a step over, a bounded
-`resume`) needs `RUNSTATE`, which tells whether the debugger holds the machine; stepping needs
-`STEPIN`; saved states need `SAVESTATE` and `LOADSTATE`; a stop on a register condition needs
-`BPIF`; the screen in a planar, unchained or linear mode needs `VGAMEMDUMP`; recording a stretch
-needs `CAPTURE`; a count or capture watch needs `TAP`; a port needs `PORTINFO`; the DOS calls
-need `DOSTRACE`. A tool whose command is missing says so
-and does nothing ([REFERENCE.md](REFERENCE.md#debugger-commands)).
+What a session can do depends on the debugger commands its build carries, and `build_check`
+lists them. Any DOSBox-X with the debugger starts a session and answers every reading at the stop
+it parks at; a tool whose command is missing says so and does nothing. Which tool needs which
+command is the [debugger commands](REFERENCE.md#debugger-commands) table.
 
 ## See it run
 

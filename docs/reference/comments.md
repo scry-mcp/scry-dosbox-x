@@ -1,7 +1,5 @@
 # The Comments tools
 
-
-
 The place is the LINEAR address, and a `SEG:OFF` is read in the mode the machine is in, so a
 comment meant to survive a mode switch is made by symbol. Comments a rebuild or a load brought to
 one place are all kept, and a call reaches the one whose ref it spells.
@@ -68,14 +66,8 @@ Example, from a live run:
 ```
 <!-- scry-reference:end comment_list -->
 
-
-
-
-
 The `cpu` column is the format's and is written empty (one processor); a file that fills it is
 refused. There is no build column: a raw address is trusted for the build it is loaded into.
-
-
 
 A file saved before `symbols_load`, or on a running guest, can hold two rows a later stop places at
 one byte. Which refs alias depends on the table and the stop's mode, so a file is refused for

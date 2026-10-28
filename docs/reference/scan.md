@@ -1,10 +1,5 @@
 # The Scan tools
 
-
-
-
-
-
 <!-- scry-reference:begin scan -->
 ## `scan`
 

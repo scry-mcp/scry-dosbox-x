@@ -1,7 +1,7 @@
 [project]
 name = "scry-dosbox-x"
 version = "0.1.0"
-description = "One live DOSBox-X session held open, and its MCP server"
+description = "Drive and debug a DOS program from your MCP client, live"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
@@ -26,7 +26,7 @@ dependencies = [
     "capstone>=5.0.9,<6",
     # What the Scry servers share (the reply contract, the probe, the live bench), pinned by
     # its release tag so a build reads exactly the core it was tested against.
-    "scry-core @ git+https://github.com/scry-mcp/scry-core@v0.67.1",
+    "scry-core @ git+https://github.com/scry-mcp/scry-core@v0.68.1",
 ]
 
 [dependency-groups]
