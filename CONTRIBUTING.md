@@ -114,7 +114,8 @@ The cases that open a watched window open it as `start` does, and the host's own
 place it, so a host can keep those runs off the display somebody works on. The Deluxe Paint demos' cases also need `DELUXE_PAINT_DIR`, the directory holding version 1.0's
 `DP.EXE` (the demos refuse any other build); this repository carries none of the program, and
 without it they skip. The LineUp demo's case needs `LINEUP_MSDOS_DIR`, a copy of the game's PC port
-with its symbol map, and skips the same way.
+with its symbol map, and skips the same way. The Monkey Island demo's case needs `MONKEY_ISLAND_CD`,
+the directory holding the 1992 Enhanced CD's `monkey.cue` and its BINs, and skips the same way.
 
 **The matrix.** Around those cases sits `tests/live/dosbox_x_live_matrix.py`, run as a script
 rather than collected: every tool in every machine state, at every argument edge, across the

@@ -238,6 +238,12 @@ every screen recognised off one map signed by palette index, and the stage's mus
 for sample, to the Sound Blaster's own recording. It needs a copy of the game, which is not
 distributed here.
 
+[`demos/monkey/`](demos/monkey/) plays The Secret of Monkey Island off its CD by screen-map name,
+then rewrites the lookout's reply in guest memory while the game runs: new SCUMM bytecode for a
+whole conversation, and the CD driver's play request stopped and moved so the opening theme starts
+at the logo's bar, the recording held to the reader's own disc. It needs the disc, which is not
+distributed here.
+
 ## The tools
 
 The tools by family, each with its arguments, its reply and a real example, are in the index

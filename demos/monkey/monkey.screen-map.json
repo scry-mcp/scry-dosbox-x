@@ -1,0 +1,1211 @@
+{
+ "format": "scry-screen-map/1",
+ "application": "monkey",
+ "mode": "verified",
+ "screens": [
+  {
+   "name": "language",
+   "kind": "pixel",
+   "size": [
+    640,
+    480
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      452,
+      640,
+      16
+     ],
+     "signature": "0bdcc6b070ebf743"
+    },
+    {
+     "crop": [
+      0,
+      412,
+      640,
+      40
+     ],
+     "signature": "5627323882d5b73c"
+    }
+   ],
+   "controls": [
+    {
+     "name": "english",
+     "rect": [
+      60,
+      412,
+      40,
+      50
+     ]
+    },
+    {
+     "name": "french",
+     "rect": [
+      168,
+      412,
+      60,
+      50
+     ]
+    },
+    {
+     "name": "german",
+     "rect": [
+      280,
+      412,
+      60,
+      50
+     ]
+    },
+    {
+     "name": "italian",
+     "rect": [
+      395,
+      412,
+      60,
+      50
+     ]
+    },
+    {
+     "name": "spanish",
+     "rect": [
+      512,
+      412,
+      60,
+      50
+     ]
+    }
+   ]
+  },
+  {
+   "name": "dock",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      152,
+      144,
+      48
+     ],
+     "signature": "6d63e4da9544e99a"
+    },
+    {
+     "crop": [
+      256,
+      90,
+      32,
+      28
+     ],
+     "signature": "3f4958169cc30b90"
+    }
+   ],
+   "controls": [
+    {
+     "name": "give",
+     "rect": [
+      4,
+      154,
+      32,
+      12
+     ]
+    },
+    {
+     "name": "pick_up",
+     "rect": [
+      46,
+      154,
+      52,
+      12
+     ]
+    },
+    {
+     "name": "use",
+     "rect": [
+      104,
+      154,
+      34,
+      12
+     ]
+    },
+    {
+     "name": "open",
+     "rect": [
+      4,
+      170,
+      32,
+      12
+     ]
+    },
+    {
+     "name": "look_at",
+     "rect": [
+      46,
+      170,
+      52,
+      12
+     ]
+    },
+    {
+     "name": "push",
+     "rect": [
+      104,
+      170,
+      34,
+      12
+     ]
+    },
+    {
+     "name": "close",
+     "rect": [
+      4,
+      186,
+      32,
+      12
+     ]
+    },
+    {
+     "name": "talk_to",
+     "rect": [
+      46,
+      186,
+      52,
+      12
+     ]
+    },
+    {
+     "name": "pull",
+     "rect": [
+      104,
+      186,
+      34,
+      12
+     ]
+    },
+    {
+     "name": "cliffside",
+     "rect": [
+      30,
+      100,
+      20,
+      20
+     ]
+    },
+    {
+     "name": "poster",
+     "rect": [
+      262,
+      92,
+      18,
+      26
+     ]
+    }
+   ]
+  },
+  {
+   "name": "by the poster: walk to poster",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      144,
+      320,
+      8
+     ],
+     "signature": "620637792e19c503"
+    },
+    {
+     "crop": [
+      0,
+      152,
+      144,
+      48
+     ],
+     "signature": "ffca20276d3278e8"
+    },
+    {
+     "crop": [
+      100,
+      0,
+      60,
+      40
+     ],
+     "signature": "a9c8cb22e2badd77"
+    }
+   ],
+   "controls": [
+    {
+     "name": "poster",
+     "rect": [
+      158,
+      76,
+      20,
+      24
+     ]
+    },
+    {
+     "name": "way_back",
+     "rect": [
+      0,
+      105,
+      10,
+      20
+     ]
+    }
+   ]
+  },
+  {
+   "name": "dock: walk to poster",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      144,
+      320,
+      8
+     ],
+     "signature": "620637792e19c503"
+    },
+    {
+     "crop": [
+      0,
+      152,
+      144,
+      48
+     ],
+     "signature": "ffca20276d3278e8"
+    }
+   ],
+   "controls": [
+    {
+     "name": "poster",
+     "rect": [
+      262,
+      92,
+      18,
+      26
+     ]
+    }
+   ]
+  },
+  {
+   "name": "by the poster: look at poster",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      144,
+      320,
+      8
+     ],
+     "signature": "143545a3b15e92a7"
+    },
+    {
+     "crop": [
+      0,
+      152,
+      144,
+      48
+     ],
+     "signature": "ffca20276d3278e8"
+    },
+    {
+     "crop": [
+      100,
+      0,
+      60,
+      40
+     ],
+     "signature": "a9c8cb22e2badd77"
+    }
+   ],
+   "controls": [
+    {
+     "name": "poster",
+     "rect": [
+      158,
+      76,
+      20,
+      24
+     ]
+    }
+   ]
+  },
+  {
+   "name": "by the poster",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      144,
+      320,
+      8
+     ],
+     "signature": "39adf32d3c95c21f"
+    },
+    {
+     "crop": [
+      0,
+      152,
+      144,
+      48
+     ],
+     "signature": "6d63e4da9544e99a"
+    },
+    {
+     "crop": [
+      100,
+      0,
+      60,
+      40
+     ],
+     "signature": "a9c8cb22e2badd77"
+    }
+   ],
+   "controls": [
+    {
+     "name": "give",
+     "rect": [
+      4,
+      154,
+      32,
+      12
+     ]
+    },
+    {
+     "name": "pick_up",
+     "rect": [
+      46,
+      154,
+      52,
+      12
+     ]
+    },
+    {
+     "name": "use",
+     "rect": [
+      104,
+      154,
+      34,
+      12
+     ]
+    },
+    {
+     "name": "open",
+     "rect": [
+      4,
+      170,
+      32,
+      12
+     ]
+    },
+    {
+     "name": "look_at",
+     "rect": [
+      46,
+      170,
+      52,
+      12
+     ]
+    },
+    {
+     "name": "push",
+     "rect": [
+      104,
+      170,
+      34,
+      12
+     ]
+    },
+    {
+     "name": "close",
+     "rect": [
+      4,
+      186,
+      32,
+      12
+     ]
+    },
+    {
+     "name": "talk_to",
+     "rect": [
+      46,
+      186,
+      52,
+      12
+     ]
+    },
+    {
+     "name": "pull",
+     "rect": [
+      104,
+      186,
+      34,
+      12
+     ]
+    },
+    {
+     "name": "poster",
+     "rect": [
+      158,
+      76,
+      20,
+      24
+     ]
+    },
+    {
+     "name": "way_back",
+     "rect": [
+      0,
+      105,
+      10,
+      20
+     ]
+    }
+   ]
+  },
+  {
+   "name": "poster: re-elect governor marley",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      50,
+      320,
+      26
+     ],
+     "signature": "589d24df097ffe8d"
+    }
+   ],
+   "controls": []
+  },
+  {
+   "name": "poster: only one candidate",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      50,
+      320,
+      26
+     ],
+     "signature": "7c814bf6881bbea0"
+    }
+   ],
+   "controls": []
+  },
+  {
+   "name": "dock: walk to cliffside",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      144,
+      320,
+      8
+     ],
+     "signature": "1bcbfe9dfd68ad95"
+    },
+    {
+     "crop": [
+      0,
+      152,
+      144,
+      48
+     ],
+     "signature": "ffca20276d3278e8"
+    },
+    {
+     "crop": [
+      256,
+      90,
+      32,
+      28
+     ],
+     "signature": "3f4958169cc30b90"
+    }
+   ],
+   "controls": [
+    {
+     "name": "cliffside",
+     "rect": [
+      30,
+      100,
+      20,
+      20
+     ]
+    }
+   ]
+  },
+  {
+   "name": "cliff",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      144,
+      320,
+      8
+     ],
+     "signature": "39adf32d3c95c21f"
+    },
+    {
+     "crop": [
+      0,
+      152,
+      144,
+      48
+     ],
+     "signature": "6d63e4da9544e99a"
+    },
+    {
+     "crop": [
+      205,
+      0,
+      30,
+      15
+     ],
+     "signature": "3f513a4a43a5b7db"
+    }
+   ],
+   "controls": [
+    {
+     "name": "give",
+     "rect": [
+      4,
+      154,
+      32,
+      12
+     ]
+    },
+    {
+     "name": "pick_up",
+     "rect": [
+      46,
+      154,
+      52,
+      12
+     ]
+    },
+    {
+     "name": "use",
+     "rect": [
+      104,
+      154,
+      34,
+      12
+     ]
+    },
+    {
+     "name": "open",
+     "rect": [
+      4,
+      170,
+      32,
+      12
+     ]
+    },
+    {
+     "name": "look_at",
+     "rect": [
+      46,
+      170,
+      52,
+      12
+     ]
+    },
+    {
+     "name": "push",
+     "rect": [
+      104,
+      170,
+      34,
+      12
+     ]
+    },
+    {
+     "name": "close",
+     "rect": [
+      4,
+      186,
+      32,
+      12
+     ]
+    },
+    {
+     "name": "talk_to",
+     "rect": [
+      46,
+      186,
+      52,
+      12
+     ]
+    },
+    {
+     "name": "pull",
+     "rect": [
+      104,
+      186,
+      34,
+      12
+     ]
+    },
+    {
+     "name": "lookout",
+     "rect": [
+      94,
+      66,
+      16,
+      20
+     ]
+    }
+   ]
+  },
+  {
+   "name": "cliff: talk to lookout",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      144,
+      320,
+      8
+     ],
+     "signature": "2a97dbf01038acd6"
+    },
+    {
+     "crop": [
+      0,
+      152,
+      144,
+      48
+     ],
+     "signature": "15b8c26be2f70038"
+    },
+    {
+     "crop": [
+      205,
+      0,
+      30,
+      15
+     ],
+     "signature": "3f513a4a43a5b7db"
+    }
+   ],
+   "controls": [
+    {
+     "name": "lookout",
+     "rect": [
+      94,
+      66,
+      16,
+      20
+     ]
+    }
+   ]
+  },
+  {
+   "name": "greeting choices",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      144,
+      320,
+      32
+     ],
+     "signature": "9a813bad9078bc51"
+    },
+    {
+     "crop": [
+      205,
+      0,
+      30,
+      15
+     ],
+     "signature": "3f513a4a43a5b7db"
+    }
+   ],
+   "controls": [
+    {
+     "name": "weenie_roast",
+     "rect": [
+      0,
+      144,
+      120,
+      8
+     ]
+    },
+    {
+     "name": "looking_for_fun",
+     "rect": [
+      0,
+      152,
+      120,
+      8
+     ]
+    },
+    {
+     "name": "thousand_legs",
+     "rect": [
+      0,
+      160,
+      120,
+      8
+     ]
+    },
+    {
+     "name": "characters_in_a_novel",
+     "rect": [
+      0,
+      168,
+      320,
+      8
+     ]
+    }
+   ]
+  },
+  {
+   "name": "greeting: characters in a novel",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      168,
+      140,
+      8
+     ],
+     "signature": "0355a285fe7b6ccb"
+    },
+    {
+     "crop": [
+      205,
+      0,
+      30,
+      15
+     ],
+     "signature": "3f513a4a43a5b7db"
+    }
+   ],
+   "controls": [
+    {
+     "name": "characters_in_a_novel",
+     "rect": [
+      0,
+      168,
+      320,
+      8
+     ]
+    }
+   ]
+  },
+  {
+   "name": "name choices",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      144,
+      320,
+      40
+     ],
+     "signature": "5dcc7de49fc85aec"
+    },
+    {
+     "crop": [
+      205,
+      0,
+      30,
+      15
+     ],
+     "signature": "3f513a4a43a5b7db"
+    }
+   ],
+   "controls": [
+    {
+     "name": "im_guybrush_threepwood",
+     "rect": [
+      0,
+      144,
+      120,
+      8
+     ]
+    },
+    {
+     "name": "call_me_squinky",
+     "rect": [
+      0,
+      152,
+      120,
+      8
+     ]
+    },
+    {
+     "name": "im_over_this_way",
+     "rect": [
+      0,
+      160,
+      120,
+      8
+     ]
+    },
+    {
+     "name": "who_are_you",
+     "rect": [
+      0,
+      168,
+      120,
+      8
+     ]
+    },
+    {
+     "name": "seek_my_fortune",
+     "rect": [
+      0,
+      176,
+      120,
+      8
+     ]
+    }
+   ]
+  },
+  {
+   "name": "name: im guybrush threepwood",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      144,
+      50,
+      8
+     ],
+     "signature": "e3415fb40ee41b16"
+    },
+    {
+     "crop": [
+      205,
+      0,
+      30,
+      15
+     ],
+     "signature": "3f513a4a43a5b7db"
+    }
+   ],
+   "controls": [
+    {
+     "name": "im_guybrush_threepwood",
+     "rect": [
+      0,
+      144,
+      120,
+      8
+     ]
+    }
+   ]
+  },
+  {
+   "name": "name choices again",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      144,
+      320,
+      40
+     ],
+     "signature": "bc98def1db2a3bc0"
+    },
+    {
+     "crop": [
+      205,
+      0,
+      30,
+      15
+     ],
+     "signature": "3f513a4a43a5b7db"
+    }
+   ],
+   "controls": [
+    {
+     "name": "whats_wrong_with_my_name",
+     "rect": [
+      0,
+      144,
+      120,
+      8
+     ]
+    },
+    {
+     "name": "call_me_squinky",
+     "rect": [
+      0,
+      152,
+      120,
+      8
+     ]
+    },
+    {
+     "name": "im_over_this_way",
+     "rect": [
+      0,
+      160,
+      120,
+      8
+     ]
+    },
+    {
+     "name": "who_are_you",
+     "rect": [
+      0,
+      168,
+      120,
+      8
+     ]
+    },
+    {
+     "name": "seek_my_fortune",
+     "rect": [
+      0,
+      176,
+      120,
+      8
+     ]
+    }
+   ]
+  },
+  {
+   "name": "name: whats wrong with my name",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      144,
+      50,
+      8
+     ],
+     "signature": "0f70266c9201e552"
+    },
+    {
+     "crop": [
+      205,
+      0,
+      30,
+      15
+     ],
+     "signature": "3f513a4a43a5b7db"
+    }
+   ],
+   "controls": [
+    {
+     "name": "whats_wrong_with_my_name",
+     "rect": [
+      0,
+      144,
+      120,
+      8
+     ]
+    }
+   ]
+  },
+  {
+   "name": "lookout: sell shoes",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      26,
+      320,
+      24
+     ],
+     "signature": "c8315ad0000dab06"
+    }
+   ],
+   "controls": []
+  },
+  {
+   "name": "guybrush: a debugger that plays music",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      0,
+      320,
+      60
+     ],
+     "signature": "c34bec29e2b69939"
+    }
+   ],
+   "controls": []
+  },
+  {
+   "name": "lookout: the orange tycoon",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      0,
+      320,
+      60
+     ],
+     "signature": "bfe2ce92d356d561"
+    }
+   ],
+   "controls": []
+  },
+  {
+   "name": "lookout: those files",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      0,
+      320,
+      60
+     ],
+     "signature": "1a066a2935159f56"
+    }
+   ],
+   "controls": []
+  },
+  {
+   "name": "lookout: still not a wave",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      0,
+      320,
+      60
+     ],
+     "signature": "b6b6e72cf90b5cda"
+    }
+   ],
+   "controls": []
+  },
+  {
+   "name": "lookout: humor first",
+   "kind": "pixel",
+   "size": [
+    320,
+    200
+   ],
+   "match": [
+    {
+     "crop": [
+      0,
+      0,
+      320,
+      60
+     ],
+     "signature": "a58b657219759ce6"
+    }
+   ],
+   "controls": []
+  }
+ ]
+}
