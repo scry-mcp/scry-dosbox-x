@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/scry-logo.png" alt="Scry" width="480"></p>
+
 # scry-dosbox-x
 
 **Drive and debug a DOS program from your MCP client, live.** One DOSBox-X stays open; you ask
