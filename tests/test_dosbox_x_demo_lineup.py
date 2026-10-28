@@ -42,7 +42,7 @@ def test_the_conf_is_the_committed_one_with_this_checkouts_stub_written_in(
     assert conf == (demo.HERE / "lineup.conf").read_text().replace("@GUEST@",
                                                                     str(demo.ROOT / "guest"))
     assert "@GUEST@" not in conf and "core=normal" in conf
-    assert (args["shared"], args["display"]) == (True, "secondary")
+    assert args["shared"] is True and "display" not in args
 
 
 def test_the_symbols_go_at_the_segment_the_boot_stopped_in(tmp_path: Path) -> None:

@@ -80,13 +80,13 @@ A build without the debugger starts fine and then hangs `start` until its timeou
 *Start a DOSBox-X session*
 
 ```text
-start(conf, cwd, session_seconds, shared=false, display="", flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="", plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null, presence=true, dos_calls=false, log_categories=null, guest_files=null)
+start(conf, cwd, session_seconds, shared=false, flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="", plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null, presence=true, dos_calls=false, log_categories=null, guest_files=null)
 ```
 
 Open one live DOSBox-X session from your conf, parked at the debugger.
 
-Paths are absolute or `~`-led. `session_seconds`: the lifetime. `shared`: watched on
-`display`; false, headless. `flags`: argv tokens, a `-set` value one token. `logfile`: the
+Paths are absolute or `~`-led. `session_seconds`: the lifetime. `shared`: watched, in a
+window; false, headless. `flags`: argv tokens, a `-set` value one token. `logfile`: the
 guest's E9 channel, for `log`, `log_wait`, `drive`. `program` runs after autoexec;
 `capture_video` records it. `plan` runs as `perform` does, each wait bounded by
 `settle_seconds` (default 30). `input_port`: COM1's TCP port, 0 a free one.
@@ -112,7 +112,6 @@ Reference: REFERENCE.md, The session.
 | `cwd` | string | required |
 | `session_seconds` | integer (>= 1, <= 14400) | required |
 | `shared` | boolean | `false` |
-| `display` | one of `""`, `"main"`, `"secondary"` | `""` |
 | `flags` | array of string or null | `null` |
 | `break_on_int3` | boolean | `false` |
 | `program` | string | `""` |
@@ -130,7 +129,6 @@ Reference: REFERENCE.md, The session.
 | `log_categories` | object or null | `null` |
 | `guest_files` | array of string or null | `null` |
 
-- `display`: Where a watched (`shared`) window opens: `main` or `secondary`; empty, the display `WINDOW_SHARED_DISPLAY` names, else the secondary.
 - `presence`: Draw an edge around the emulator's window while this session is open: dim while idle, bright while a call runs the machine. No capture of this server carries it.
 
 | reply field | type |
@@ -164,7 +162,6 @@ Reference: REFERENCE.md, The session.
 | `conf_digest` | string |
 | `debugger_commands` | array |
 | `declarations` | object |
-| `display` | string |
 | `dos_calls` | string |
 | `elapsed_s` | number |
 | `guest_files` | array |
@@ -252,7 +249,7 @@ Example, from a live run:
 
 **`session_seconds` is a hard bound** because a DOSBox-X held at its debugger never reaches its own time limit. The emulator's `-time-limit` counts emulated time, which a machine held at the debugger never advances, so a guardian (`scry-dosbox-x-guardian` in the process list) also keeps the host's clock, ending the emulator a few seconds past the bound or within one poll of this server dying.
 
-**The server never decides where a window goes**: no helper, or a failing one, refuses a shared `start` `host_failed` rather than invent a geometry. No flags is an answer (one display).
+**The window, and the host's own arguments.** A watched start opens DOSBox-X's window as the conf sizes it (`windowresolution`, with `output=opengl` to scale it), on any host and with nothing to set. `SCRY_EMULATOR_ARGS` in the server's environment holds the host's own DOSBox-X arguments, one token a line so a `-set` value keeps its space (`-set`, then `sdl display=1`). They go after this server's own on every watched start, so which display the window opens on is the host's to say; only the caller's `flags`, which come last, could override them. A headless start opens no window and takes none of them (MAME's window opens either way, so MAME takes them on every start). A glued or shredded `-set` there refuses the start `host_failed` before anything else happens, for the same reasons as in `flags`.
 
 **`flags` come after this server's defaults**, so a `-set` for the same key wins, except the ones a named argument sets (`-time-limit`, `sdl videodriver`, `log logfile`, the conf, the program...): refused naming the argument, because after ours the flag would quietly undo it.
 
@@ -260,13 +257,13 @@ Example, from a live run:
 
 **`binary` and `background`**: `binary` omitted is `DOSBOX_X_BINARY`, else the PATH's `dosbox-x`, as `build_check` resolves it. `background` `true` starts behind, `false` in front, omitted by `shared`.
 
-**`flags` are argv tokens, so a `-set` value with spaces is one token**; a glued or shredded `-set` is refused because the emulator would read it as something else.
+**`flags` are argv tokens, so a `-set` value with spaces is one token**; a glued `-set` is refused because DOSBox-X hangs on it, a shredded one because DOSBox-X ignores it at rc 0 and the setting would silently not apply.
 
 **`program` loads the stub itself when the conf's autoexec does not run it**, which is why the autoexec must not `exit` before `program` runs.
 
 **`state_dir`** is what `state_write(method="save")` writes to; empty, `save` under `cwd`.
 
-**Also refused before anything starts**: a missing conf, `cwd` or `logfile` directory, an unresolved binary, `display` headless, `shared` with no window helper, a glued or shredded `-set`, and no drive free for the stub. `captures_dir` and `state_dir` are created with their parents. The reply also carries `shared`, `display`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `background`, `presence` and `rearm_refused` (why, when stored raw breakpoints could not re-arm).
+**Also refused before anything starts**: a missing conf, `cwd` or `logfile` directory, an unresolved binary, a glued or shredded `-set`, and no drive free for the stub. `captures_dir` and `state_dir` are created with their parents. The reply also carries `shared`, `ready_after_s`, `argv`, `binary`, `binary_origin`, `version`, `background`, `presence` and `rearm_refused` (why, when stored raw breakpoints could not re-arm).
 
 <!-- scry-reference:begin status -->
 ## `status`

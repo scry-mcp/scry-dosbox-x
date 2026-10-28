@@ -12,7 +12,6 @@ from typing import Any
 
 import pytest
 from scry_core import judges, media_tools, screen_map
-from scry_core import placement as window
 from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Invalid
 
@@ -45,7 +44,6 @@ CLOSED: list[tuple[str, str, tuple[Any, ...]]] = [
     ("send_mouse", "button", ("", *inputs.BUTTON_WORDS)),
     ("send_mouse", "action", inputs.ACTIONS), ("send_mouse", "units", inputs.UNITS),
     ("machine_map", "sections", machine.SECTION_NAMES),
-    ("start", "display", window.DISPLAY_OPTIONS),
     ("declaration_list", "kind", ("", *folds.KINDS)), ("declaration_clear", "kind", folds.KINDS),
     ("map_write", "cells", screen_map.CELLS_WORDS),
     # A fold's `method`, judged by `scry_core.methods` against the fold's own table.

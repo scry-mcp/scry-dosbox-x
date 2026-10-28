@@ -20,7 +20,7 @@ from unittest import mock
 
 import pytest
 from scry_core import (
-    host_program,
+    host_args,
     screen_map,
 )
 from scry_core import log_wait as core_wait
@@ -1055,15 +1055,9 @@ def runnable(path: Path) -> Path:
     """`path` named as this host finds a program by name: with `.exe` on Windows."""
     return path.with_name(path.name + ".exe") if sys.platform == "win32" else path
 
-def placed_by(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, said: str) -> Path:
-    """A placement helper at `WINDOW_APP` that prints `said` and records how it was asked."""
-    asked = tmp_path / "helper-asked.txt"
-    exe = host_program.write(tmp_path / "place-window", "import sys\n"
-                             f"open({str(asked)!r}, 'a').write(' '.join(sys.argv[1:]) + '\\n')\n"
-                             f"sys.stdout.buffer.write({said.encode()!r})\n")
-    monkeypatch.setenv("WINDOW_APP", str(exe))
-    monkeypatch.delenv("WINDOW_SHARED_DISPLAY", raising=False)
-    return asked
+def hosted(monkeypatch: pytest.MonkeyPatch, said: str) -> None:
+    """The host's own emulator arguments, `said` one token a line, as the server reads them."""
+    monkeypatch.setenv(host_args.VARIABLE, said)
 
 
 def _ok(reply: dict[str, Any]) -> dict[str, Any]:

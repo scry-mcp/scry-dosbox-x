@@ -10,11 +10,11 @@ import os
 import sys
 import tempfile
 from pathlib import Path
-from types import ModuleType, SimpleNamespace
+from types import ModuleType
 from typing import Any
 
 import pytest
-from scry_core import live_host, placement
+from scry_core import live_host
 from scry_core.demo import Run
 
 import dosbox_binary
@@ -356,30 +356,12 @@ def test_no_binary_is_no_canary(monkeypatch: pytest.MonkeyPatch, tmp_path: Path)
 
 def test_the_demos_refuse_a_host_that_cannot_start_dosbox_x(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(demo_host, "unplaced", lambda _where: "")
     monkeypatch.setattr(dosbox_binary, "canary_for", lambda _b="": ["/opt/dosbox-x"])
     monkeypatch.setattr(live_host, "canary", lambda _argv: "dosbox-x did not return")
     assert demo_host.precheck(Run(dir=ROOT, options={})) == "dosbox-x did not return"
     assert "absolute or ~-led" in demo_host.precheck(Run(dir=ROOT, options={"binary": "dosbox-x"}))
     monkeypatch.setattr(dosbox_binary, "canary_for", lambda _b="": None)
     assert demo_host.precheck(Run(dir=ROOT, options={})) == ""
-
-
-@pytest.mark.parametrize(("flags", "why", "where", "said"), [
-    (None, "no helper", "secondary", "no helper"),
-    ([], "", "secondary", "nowhere to put a window away from your work"),
-    ([], "", "main", ""),
-    (["-set", "sdl display=1"], "", "secondary", "")])
-def test_a_demo_window_goes_only_where_the_helper_places_it(
-        monkeypatch: pytest.MonkeyPatch, flags: list[str] | None, why: str, where: str,
-        said: str) -> None:
-    """No helper refuses; one display has nowhere away from the reader's work, unless watched."""
-    demo_host.unplaced.cache_clear()
-    monkeypatch.setattr(placement, "ask",
-                        lambda *_a: SimpleNamespace(flags=flags, why=why))
-    got = demo_host.unplaced(where)
-    assert (said in got) if said else got == "", got
-    demo_host.unplaced.cache_clear()
 
 
 @pytest.mark.parametrize("demo", ["dpaint", "dpaint_maps"])

@@ -26,7 +26,6 @@ from matrix_common import (
 )
 from matrix_dpmi import dpmi_boot, dpmi_leave
 
-HELPER_VAR = "WINDOW_APP"
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 
 DPMI_CELLS = ("G the DPMI guest: snapshot", "G the DPMI guest: a click reaches the program",
@@ -162,9 +161,9 @@ def _dpmi() -> None:
 
 
 @M.section("G", "the windowed tools, on the probe guest and on the DPMI guest", G_CELLS,
-           HELPER_VAR, alone=True)
+           alone=True)
 def section_g() -> None:
-    print("  windows open behind, on the display the placement flags name", flush=True)
+    print("  windows open behind, where the host's own arguments put them", flush=True)
     try:
         _probe()
         _scaled()

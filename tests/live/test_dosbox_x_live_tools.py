@@ -9,15 +9,13 @@ never merely that it returned.
 
 from __future__ import annotations
 
-import os
-import subprocess
 import time
 from pathlib import Path
 from typing import Any, cast
 
 import pytest
 from _live_teardown import no_session_left_behind  # noqa: F401  (registers the autouse teardown)
-from scry_core import guardian, prose
+from scry_core import guardian, host_args, prose
 from test_dosbox_x_live import (  # noqa: E402
     _OWN,
     CONF,
@@ -37,9 +35,6 @@ import dosbox_process as dprocess
 import dosbox_session as ds
 import dosbox_state as dstate
 import dosbox_x_server as server
-
-# Window placement is the host helper's call; the server refuses a watched start without one.
-HELPER = os.environ.get("WINDOW_APP", "").strip()
 
 pytestmark = LIVE_MARKS
 
@@ -102,20 +97,18 @@ def test_start_headless_reaches_the_debugger_and_declares_what_it_launched() -> 
 
 
 @pytest.mark.windowed
-@pytest.mark.skipif(not HELPER, reason="set WINDOW_APP to the placement helper "
-                                       "(`place-window`) to exercise the watched path")
-def test_start_shared_takes_the_helper_s_flags_and_adds_no_dummy_driver() -> None:
-    """The WATCHED path, on the real emulator, bounded to seconds."""
+def test_start_shared_takes_the_host_s_arguments_and_adds_no_dummy_driver(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The WATCHED path, on the real emulator, bounded to seconds. A setting of its own, so the
+    case holds a token to look for whatever the host exported."""
+    window_flags = [*host_args.emulator_args(), "-set", "sdl autolock=false"]
+    monkeypatch.setenv(host_args.VARIABLE, "\n".join(window_flags))
     reply = start_ok(session_seconds=30, shared=True)
     argv = cast(list[str], reply["argv"])
-    asked = subprocess.run([HELPER, "dosbox", "--shared", "--display", str(reply.get("display",
-                                                                                     ""))],
-                           capture_output=True, text=True, check=True)
-    window_flags = [ln for ln in asked.stdout.splitlines() if ln.strip()]
     assert reply.get("shared", False) is True
     assert "sdl videodriver=dummy" not in argv, "a watched session was forced headless"
     joined, want = "\x00".join(argv), "\x00".join(window_flags)
-    assert want in joined, f"the placement flags did not arrive intact: {argv}"
+    assert want in joined, f"the host's arguments did not arrive intact: {argv}"
     assert reply.get("watched", False) is True, reply
     regs = cast(dict[str, Any], server.registers())
     assert regs["status"] == "ok", regs

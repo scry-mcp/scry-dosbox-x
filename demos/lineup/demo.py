@@ -17,7 +17,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` impor
 from demos.host import (  # noqa: E402
     INPUT_TIMING,
     VOLATILE,
-    display,
     isolated_store,
     loaded,
     precheck,
@@ -61,7 +60,7 @@ def boot(run: Run) -> dict[str, Any]:
         "@GUEST@", str(ROOT / "guest")), encoding="utf-8")
     states = run.dir / "lineup-states"
     shutil.rmtree(states, ignore_errors=True)
-    return {"conf": conf, "session_seconds": 900, "shared": True, "display": display(run),
+    return {"conf": conf, "session_seconds": 900, "shared": True,
             "state_dir": states, "captures_dir": run.dir / "lineup-captures"}
 
 
@@ -98,7 +97,7 @@ DEMO = Demo(
     name="lineup", root=ROOT, server=[sys.executable, str(ROOT / "dosbox_x_server.py")],
     readme=HERE / "README.md", steps=lineup.steps(BINDING),
     capture=lambda run: run.dir / "screen.png",
-    offers=frozenset({"cwd", "shared"}), reads=frozenset({"shared", "cwd"}), precheck=checked,
+    offers=frozenset({"cwd"}), reads=frozenset({"cwd"}), precheck=checked,
     volatile=VOLATILE,
     host_args={"cwd": "the reader's copy of the game, wherever it was cloned"})
 

@@ -87,6 +87,6 @@ def declared(name: str, here: Path, steps: list[Step]) -> Demo:
         name=name, root=ROOT, server=[sys.executable, str(ROOT / "dosbox_x_server.py")],
         readme=here / "README.md", steps=steps,
         capture=lambda run: run.dir / "screen.png",
-        offers=frozenset({"cwd", "shared"}), reads=frozenset({"shared"}), precheck=precheck,
+        offers=frozenset({"cwd"}), precheck=precheck,
         host_args={"cwd": "the directory holding the program"},
         volatile=VOLATILE)

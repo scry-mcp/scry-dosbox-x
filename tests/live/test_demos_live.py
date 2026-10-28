@@ -10,10 +10,7 @@ from pathlib import Path
 import pytest
 from scry_core.demo import load, stale
 
-pytestmark = [pytest.mark.live, pytest.mark.windowed,
-              pytest.mark.skipif(not os.environ.get("WINDOW_APP"),
-                                 reason="set WINDOW_APP to a placement helper: a demo opens a "
-                                        "window")]
+pytestmark = [pytest.mark.live, pytest.mark.windowed]
 
 ROOT = Path(__file__).resolve().parents[2]
 # Above the runner's own per-call bound, so a hang ends as its FAIL.

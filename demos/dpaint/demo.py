@@ -25,7 +25,7 @@ from scry_core.demo import Reply, Run, Step, main
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos import host  # noqa: E402
 from demos.dpaint.program import click, declared, drag, opening  # noqa: E402
-from demos.host import display, expect, isolated_store, pictured  # noqa: E402
+from demos.host import expect, isolated_store, pictured  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 #: The palette indices of the swatches the screen map names.
@@ -54,7 +54,7 @@ def boot(run: Run) -> dict[str, Any]:
     and the saved states there too: left out, they would go into the program's directory."""
     (run.dir / "dpaint-e9.log").unlink(missing_ok=True)
     return {"conf": HERE / "dpaint.conf", "session_seconds": 900, "shared": True,
-            "display": display(run), "program": "DP.EXE f",
+            "program": "DP.EXE f",
             "logfile": run.dir / "dpaint-e9.log", "state_dir": run.dir / "dpaint-states"}
 
 

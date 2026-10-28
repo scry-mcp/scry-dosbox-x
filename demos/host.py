@@ -1,11 +1,10 @@
-"""What the demos share: where their window opens, whether this host can start DOSBox-X, what
-differs between two honest runs, a declaration store of each run's own, and the checks more than
+"""What the demos share: whether this host can start DOSBox-X, what differs between two honest
+runs, a declaration store of each run's own, and the checks more than
 one demo makes."""
 
 from __future__ import annotations
 
 import atexit
-import functools
 import os
 import shutil
 import tempfile
@@ -14,42 +13,22 @@ from pathlib import Path
 from typing import Any
 
 from scry_core import live_host
-from scry_core import placement as window
 from scry_core.demo import Reply, Run, StepFailed
 
 import dosbox_binary
-
-
-def display(run: Run) -> str:
-    return "main" if run.options.get("shared") else "secondary"
-
-
-@functools.cache
-def unplaced(where: str) -> str:
-    """Why the placement helper cannot open the window on `where`, or ''. A run nobody watches
-    is never opened on top of the reader's work."""
-    placed = window.ask("dosbox", True, where)
-    if placed.flags is None:
-        return placed.why
-    if not placed.flags and where == "secondary":
-        return ("the placement helper has nowhere to put a window away from your work (one "
-                "display); pass --shared if you are watching")
-    return ""
 
 
 def precheck(run: Run) -> str:
     binary = run.options.get("binary")
     if binary and not Path(binary).expanduser().is_absolute():
         return f"the server takes absolute or ~-led paths only: --binary {binary}"
-    if why := unplaced(display(run)):
-        return why
     argv = dosbox_binary.canary_for(binary or "")
     return live_host.canary(argv) if argv else ""
 
 
 #: Reply keys whose values differ between two honest runs on any host, hidden in every demo's
 #: transcript.
-VOLATILE = {"argv": "the emulator's command line, which carries the host's window placement",
+VOLATILE = {"argv": "the emulator's command line, which ends with the host's own arguments",
             "elapsed_s": "wall-clock time since the session started",
             "waited_s": "wall-clock time a wait took",
             "ready_after_s": "wall-clock time the debugger took to answer",

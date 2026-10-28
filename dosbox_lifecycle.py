@@ -8,8 +8,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
-from scry_core import log_marks, narrowing, session_block
-from scry_core import placement as window
+from scry_core import host_args, log_marks, narrowing, session_block
 from scry_core import reply_contract as contract
 
 import dosbox_arming as arming
@@ -35,21 +34,26 @@ DEFAULT_STATE_DIR = (f"the default state directory (`<cwd>/{dlaunch.DEFAULT_STAT
                      "`state_dir` names another)")
 
 
-def _window_flags(shared: bool, display: str) -> list[str]:
-    """The watched window's flags from the host placement helper; none for a headless session.
-    No flags is a one-display host's answer: DOSBox-X sizes its own window, so it opens
-    unplaced."""
+def _window_flags(shared: bool) -> list[str]:
+    """A watched window's flags: the host's own (`host_args`), since DOSBox-X sizes the window
+    from the conf. A headless session opens none."""
     if not shared:
         return []
-    placed = window.ask("dosbox", True, display)
-    if placed.flags is None:
-        raise ds.Invalid("host_failed", f"a watched session needs its window placed, and "
-                         f"{placed.why}. Fix that, or start without `shared`")
-    return placed.flags
+    tokens = host_args.emulator_args()
+    try:
+        dlaunch.check_flags(host_args.VARIABLE, tokens)
+    except ds.Invalid:
+        raise ds.Invalid("host_failed", f"{host_args.VARIABLE}, the host's window arguments in "
+                         f"this server's environment, holds {tokens!r}, which DOSBox-X would "
+                         "hang on or ignore: it is one token a line, a `-set` alone on its line "
+                         "and its `section key=value` on the next. It is the host's to fix, not "
+                         "an argument of this call; a start without `shared` runs headless, with "
+                         "no window, meanwhile") from None
+    return tokens
 
 
 def start(conf: str, cwd: str, session_seconds: int, shared: bool,
-          display: str, flags: list[str] | None, break_on_int3: bool,
+          flags: list[str] | None, break_on_int3: bool,
           program: str, logfile: str, capture_video: bool, captures_dir: str,
           plan: list[dict[str, Any]] | None, settle_seconds: float | None, input_port: int,
           state_dir: str, binary: str, background: bool | None, presence: bool,
@@ -65,8 +69,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     if binary:
         paths.absolute("binary", binary)
     guest_paths = guest.check_guest_files(guest_files)
-    window.check_display(shared, display)
-    shown_display = window.shared_display(shared, display)
+    window_flags = _window_flags(shared)
     if STATE.session is not None:
         if STATE.session.alive():
             raise ds.Invalid("session_live", "a session is already live. `close` it first: two "
@@ -89,7 +92,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     launch = dlaunch.Launch(
         conf=conf_path, cwd=cwd_path, seconds=session_seconds,
         watched=shared,
-        window_flags=_window_flags(shared, shown_display),
+        window_flags=window_flags,
         flags=list(flags or []),
         break_on_int3=break_on_int3,
         program=program or None,
@@ -169,7 +172,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     if STATE.guest_files:
         channels["guest_files"] = [{"path": str(p), "before": f.shown()}
                                    for p, f in STATE.guest_files.items()]
-    started = st.reply(**st.process_facts(), shared=shared, display=shown_display,
+    started = st.reply(**st.process_facts(), shared=shared,
                        ready_after_s=ready,
                        argv=session.argv, **binary_facts,
                        **commands,

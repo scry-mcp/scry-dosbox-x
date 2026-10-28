@@ -11,7 +11,7 @@ leaves the machine, a few retraces after the game took the click, so it holds th
 there on: what it holds is decided by the game's sound and timing and by the input route's own
 pacing, and a change to any of them makes that check fail. The run's own `boom.wav`, beside its
 transcript, is then the new reference to copy over it. The session is windowed so the game can be
-watched; nothing in it needs the window. Where the window goes is `demos/host.py`'s to decide.
+watched; nothing in it needs the window.
 """
 
 from __future__ import annotations
@@ -27,7 +27,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` impor
 from demos.host import (  # noqa: E402
     INPUT_TIMING,
     VOLATILE,
-    display,
     expect,
     isolated_store,
     loaded,
@@ -60,7 +59,7 @@ def boot(run: Run) -> dict[str, Any]:
     states = run.dir / "mines-states"
     shutil.rmtree(states, ignore_errors=True)
     return {"conf": HERE / "mines.conf", "cwd": HERE, "session_seconds": 900, "shared": True,
-            "display": display(run), "break_on_int3": True,
+            "break_on_int3": True,
             "logfile": run.dir / "mines-e9.log", "state_dir": states,
             "captures_dir": run.dir / "mines-captures"}
 
@@ -279,7 +278,7 @@ DEMO = Demo(
     name="mines", root=ROOT, server=[sys.executable, str(ROOT / "dosbox_x_server.py")],
     readme=HERE / "README.md", steps=STEPS,
     capture=lambda run: run.dir / "screen.png",
-    offers=frozenset({"shared"}), reads=frozenset({"shared"}), precheck=precheck,
+    precheck=precheck,
     volatile=VOLATILE)
 
 

@@ -18,12 +18,13 @@ from dosbox_x_server_support import (  # noqa: E402
     _start_over_a_store,
     build_of,
     clean_session,  # noqa: E402, F401
+    hosted,
     install,
-    placed_by,
     stub_build,
 )
 from scry_core import (
     declaration_rows,
+    host_args,
 )
 from scry_core import reply_contract as contract
 
@@ -1172,7 +1173,7 @@ def test_status_counts_the_declarations_on_a_running_machine_too(tmp_path: Path)
 @pytest.mark.parametrize(("shared", "said"), [(False, "headless"), (True, "shared")])
 def test_starts_line_names_how_the_session_is_watched(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch, shared: bool, said: str) -> None:
-    placed_by(tmp_path, monkeypatch, "-set\nsdl display=1\n")
+    hosted(monkeypatch, "-set\nsdl display=1\n")
     kw: dict[str, Any] = {"shared": True} if shared else {}
     got = _start_on_a_booted_fake(tmp_path, monkeypatch, **kw)
     assert got["status"] == "ok" and got["summary"].startswith(f"start g.conf: {said} on "), got
@@ -1520,9 +1521,9 @@ def test_a_stop_named_while_the_machine_is_in_it_names_its_declaration_too() -> 
     assert stop["pc"] == "0814:00001A27" and words == " at 0814:00001A27 (_tick)", words
 
 
-def test_a_watched_window_is_placed_by_the_host_s_helper_on_the_display_asked(
+def test_a_watched_start_hands_dosbox_x_the_host_s_arguments_and_opens_with_none(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    asked = placed_by(tmp_path, monkeypatch, "-set\nsdl display=1\n")
+    hosted(monkeypatch, "-set\nsdl display=1\n")
     seen: list[dlaunch.Launch] = []
 
     def booted(launch: dlaunch.Launch) -> Any:
@@ -1535,24 +1536,14 @@ def test_a_watched_window_is_placed_by_the_host_s_helper_on_the_display_asked(
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     with mock.patch("dosbox_x_server.ds.Session", booted):
-        server.start(conf=str(conf), cwd=str(tmp_path), session_seconds=60, shared=True,
-                     display="main")
+        server.start(conf=str(conf), cwd=str(tmp_path), session_seconds=60, shared=True)
     assert seen and seen[0].window_flags == ["-set", "sdl display=1"], seen
-    assert asked.read_text().split() == ["dosbox", "--shared", "--display", "main"]
     got = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True)
-    assert got["status"] == "ok" and got.get("display", "") == "secondary", got
-
-
-def test_a_watched_start_with_no_helper_is_refused_and_a_display_needs_a_watched_run(
-        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("WINDOW_APP", raising=False)
-    got = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True)
-    assert got["code"] == "host_failed" and "WINDOW_APP" in got["message"], got
-    got = _start_on_a_booted_fake(tmp_path, monkeypatch, display="main")
-    assert got["code"] == "bad_argument" and "nobody watches" in got["message"], got
-    placed_by(tmp_path, monkeypatch, "")
+    assert got["status"] == "ok" and "display" not in got, got
+    server.close()
+    monkeypatch.delenv(host_args.VARIABLE)
     quiet = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True)
-    assert quiet["status"] == "ok", "one display, no flags: an answer, and the window opens"
+    assert quiet["status"] == "ok", "nothing set: the window opens as the conf sizes it"
 
 
 def test_a_raw_breakpoint_stored_before_modes_were_kept_is_adopted_by_the_stop_that_places_it(

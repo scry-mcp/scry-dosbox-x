@@ -494,7 +494,6 @@ class StartReply(DosboxEnvelope, account.SequenceFields, total=False):
     conf_digest: str
     debugger_commands: Annotated[list[Any], OmitEmpty]
     declarations: dict[str, Any]
-    display: Annotated[str, OmitEmpty]
     dos_calls: str
     elapsed_s: float
     guest_files: list[Any]

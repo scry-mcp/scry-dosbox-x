@@ -22,7 +22,7 @@ from scry_core.verdict import Invalid
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` imports as it checks
 from demos import host  # noqa: E402
 from demos.dpaint.program import click, declared, drag, opening  # noqa: E402
-from demos.host import display, expect, isolated_store, pictured  # noqa: E402
+from demos.host import expect, isolated_store, pictured  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 #: The colours the checked rows cross, by palette index; the brown slot holds orange once mixed,
@@ -55,7 +55,7 @@ def boot(run: Run) -> dict[str, Any]:
     """A fresh log, and the saved states kept out of the program's directory."""
     (run.dir / "dpaint-maps-e9.log").unlink(missing_ok=True)
     return {"conf": HERE / "dpaint_maps.conf", "session_seconds": 900, "shared": True,
-            "display": display(run), "program": "DP.EXE k",
+            "program": "DP.EXE k",
             "logfile": run.dir / "dpaint-maps-e9.log",
             "state_dir": run.dir / "dpaint-maps-states"}
 

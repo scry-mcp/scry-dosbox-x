@@ -26,17 +26,13 @@ game's own `AUDIO/` and `GFX/`.
 ## Run it
 
 ```sh
-WINDOW_APP=/path/to/your/placement-helper uv run python demos/lineup/demo.py --cwd /path/to/game
+uv run python demos/lineup/demo.py --cwd /path/to/game
 ```
 
 The demo opens a window, the 320 x 200 screen drawn four times over by its conf, so the game can
-be watched; nothing in it needs the window. Where it goes is your machine's to say, exactly as for
-the [bricks demo](../bricks/README.md): the server asks the placement helper named by
-`WINDOW_APP`, for the secondary display on a run nobody watches, and the demo refuses to start
-rather than open the window on top of your work when the helper cannot place it.
+be watched; nothing in it needs the window.
 
 - `--cwd PATH` (absolute or `~`-led) is the copy of the game DOSBox-X runs from.
-- `--shared` says somebody is watching: the window opens on the main display.
 - `--binary PATH` (absolute or `~`-led) picks the DOSBox-X to start; left out, `DOSBOX_X_BINARY`,
   else the `dosbox-x` on your `PATH`.
 - `--transcript PATH` moves the whole transcript; the run's other files go beside it.
@@ -44,8 +40,7 @@ rather than open the window on top of your work when the helper cannot place it.
 
 Each step prints one `OK <step>: <summary>` or `FAIL <step>: <why>` line, then a `DEMO` verdict
 line and the paths of the two transcripts. Exit codes: 0 every step passed, 1 a step failed, 2 a
-usage error, 3 nothing was demonstrated (no copy of the game, no placement for the window, a
-server that did not start).
+usage error, 3 nothing was demonstrated (no copy of the game, a server that did not start).
 
 ## The prompt
 
@@ -76,7 +71,6 @@ Give this to an MCP client with this server connected:
   "conf": "./tmp/demos/lineup/lineup.conf",
   "session_seconds": 900,
   "shared": true,
-  "display": "secondary",
   "state_dir": "./tmp/demos/lineup/lineup-states",
   "captures_dir": "./tmp/demos/lineup/lineup-captures",
   "cwd": "<host>"
@@ -96,7 +90,6 @@ Give this to an MCP client with this server connected:
   "captures": "off",
   "state_dir": "./tmp/demos/lineup/lineup-states",
   "shared": true,
-  "display": "secondary",
   "ready_after_s": "<volatile>",
   "argv": "<volatile>",
   "binary": "<volatile>",

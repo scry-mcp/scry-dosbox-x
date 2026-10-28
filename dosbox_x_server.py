@@ -38,7 +38,7 @@ one instruction at a time (`step`), or arm a watch and leave it stopped (`watch`
 HONESTY, wired into the contract rather than into a prompt:
 
 - `start` refuses a session it cannot reproduce -- an unreadable config or working
-  directory, a watched session with no placement helper, a session with no bound or
+  directory, host arguments DOSBox-X would hang on, a session with no bound or
   with one so large it bounds nothing -- and refuses it BEFORE the process exists.
   When a session comes up but never reaches its debugger, it is CLOSED before the
   refusal is returned: a guarantee that leaves alive what it just declared invalid is
@@ -97,7 +97,6 @@ from scry_core import (  # noqa: E402
     screen_map,
     signalled_end,
 )
-from scry_core import placement as window  # noqa: E402
 from scry_core import presence as scry_presence  # noqa: E402
 from scry_core import sequence_account as account  # noqa: E402
 from scry_core import steps as core_steps  # noqa: E402
@@ -194,8 +193,6 @@ def build_check(binary: str = "") -> dict[str, Any]:
 def start(conf: str, cwd: str,
           session_seconds: Annotated[int, vocab.bounds(1, dlaunch.MAX_SECONDS)],
           shared: bool = False,
-          display: Annotated[str, vocab.enum(window.DISPLAY_OPTIONS),
-                             Field(description=window.DISPLAY_ARGUMENT)] = "",
           flags: list[str] | None = None, break_on_int3: bool = False, program: str = "",
           logfile: str = "", capture_video: bool = False, captures_dir: str = "",
           plan: list[dict[str, Any]] | None = None,
@@ -211,8 +208,8 @@ def start(conf: str, cwd: str,
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Open one live DOSBox-X session from your conf, parked at the debugger.
 
-    Paths are absolute or `~`-led. `session_seconds`: the lifetime. `shared`: watched on
-    `display`; false, headless. `flags`: argv tokens, a `-set` value one token. `logfile`: the
+    Paths are absolute or `~`-led. `session_seconds`: the lifetime. `shared`: watched, in a
+    window; false, headless. `flags`: argv tokens, a `-set` value one token. `logfile`: the
     guest's E9 channel, for `log`, `log_wait`, `drive`. `program` runs after autoexec;
     `capture_video` records it. `plan` runs as `perform` does, each wait bounded by
     `settle_seconds` (default {SETTLE_S}). `input_port`: COM1's TCP port, 0 a free one.
@@ -232,7 +229,7 @@ def start(conf: str, cwd: str,
 
     Reference: REFERENCE.md, The session.
     """
-    return lifecycle.start(conf, cwd, session_seconds, shared, display, flags,
+    return lifecycle.start(conf, cwd, session_seconds, shared, flags,
                            break_on_int3, program, logfile, capture_video, captures_dir, plan,
                            settle_seconds, input_port, state_dir, binary, background,
                            presence, dos_calls, log_categories, guest_files, bridge(ctx),

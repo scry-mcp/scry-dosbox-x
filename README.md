@@ -13,8 +13,8 @@ driven by look, act, verify, and so is this.
 
 ## What it can do
 
-- **Hold a live machine open.** `start` boots your conf headless (or in a window your host's
-  placement helper places) and parks the guest at the debugger. Registers, memory, the guest's
+- **Hold a live machine open.** `start` boots your conf headless (or in a window, for a run
+  somebody watches) and parks the guest at the debugger. Registers, memory, the guest's
   own log, a still frame: each is one call.
 - **Read the program's own account.** A guest that writes to the Bochs `0xE9` port has a log,
   filtered in the server: the last lines matching a pattern, when a line happened (or a wait
@@ -75,9 +75,8 @@ Any other MCP client starts the same command over stdio:
 
 Then ask your client to `start` your conf with `conf`, `cwd` and a `logfile` for the guest's log
 (your conf needs `bochs debug port e9 = true` for that log to exist). Every path you give is
-absolute or starts with `~`. A session nobody watches runs headless; one that opens a window asks
-the placement helper `WINDOW_APP` names where to put it (the [bricks demo's
-README](demos/bricks/README.md) says what the helper prints). Everything about your project
+absolute or starts with `~`. A session nobody watches runs headless; a watched one (`shared`) opens
+DOSBox-X's window, sized by your conf. Everything about your project
 comes from you; the server carries no default that points anywhere.
 
 ## Platforms
@@ -104,8 +103,7 @@ and does nothing ([REFERENCE.md](REFERENCE.md#debugger-commands)).
 the program to a breakpoint on the routine every falling brick goes through. The calls and
 replies below are the last run's, written here by the demo itself
 (`uv run python demos/bricks/demo.py --update-readme`), each cut to the fields that make its
-point. The demo opens a window so the game can be watched, so it needs the placement helper
-`WINDOW_APP` names; its README says what the helper prints.
+point. The demo opens a window so the game can be watched.
 
 ![Bricks in mode 13h, stopped as the ball reaches its second brick](demos/bricks/screen.png)
 

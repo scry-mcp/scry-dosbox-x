@@ -109,10 +109,9 @@ Nothing checks that for you. Three more things the overrides expect:
   case asks. A token that is already there makes that case report INVALID, which is the correct
   refusal and not a pass.
 
-`WINDOW_APP` names the placement helper the cases that open a watched window ask, as `start`
-does; its runs go to the display `WINDOW_SHARED_DISPLAY` names, the secondary when unset, so they
-stay off the one somebody works on. Without it those cases skip: where a window goes is not this
-package's decision. The Deluxe Paint demos' cases also need `DELUXE_PAINT_DIR`, the directory holding version 1.0's
+The cases that open a watched window open it as `start` does, and the host's own arguments
+(*The window, and the host's own arguments*, on [`start`'s page](docs/reference/session.md#start))
+place it, so a host can keep those runs off the display somebody works on. The Deluxe Paint demos' cases also need `DELUXE_PAINT_DIR`, the directory holding version 1.0's
 `DP.EXE` (the demos refuse any other build); this repository carries none of the program, and
 without it they skip. The LineUp demo's case needs `LINEUP_MSDOS_DIR`, a copy of the game's PC port
 with its symbol map, and skips the same way.

@@ -32,7 +32,6 @@ from scry_core import avi, presence, window_capture
 import dosbox_presence as dpresence  # isort: skip -- found through the path the matrix sets
 from dosbox_state import STATE  # isort: skip
 
-HELPER_VAR = "WINDOW_APP"
 LEAK_VAR = "DOSBOX_X_LEAK_BINARY"
 STOCK_VAR = "DOSBOX_X_STOCK_BINARY"
 SCREEN_CONF = GUEST / "screen.conf"
@@ -206,7 +205,7 @@ def _same(pair: Any) -> bool:
 
 
 @M.section("R", "the presence edge, drawn into the window and never into the evidence",
-           R_CELLS, HELPER_VAR, alone=True)
+           R_CELLS, alone=True)
 def section_r() -> None:
     started = _start(presence=True)
     status = M.call(server.status)

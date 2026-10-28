@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from scry_core import placement as window
+from scry_core import host_args
 
 import dosbox_launch as dlaunch
 import dosbox_lifecycle as lifecycle
@@ -90,8 +90,8 @@ def test_start_says_what_the_process_was_told(tmp_path: Path,
 
 def test_a_shared_start_goes_in_front_unless_told_otherwise(tmp_path: Path,
                                                            monkeypatch: pytest.MonkeyPatch) -> None:
-    from dosbox_x_server_support import _start_on_a_booted_fake, placed_by
-    placed_by(tmp_path, monkeypatch, "-set\nsdl display=1\n")
+    from dosbox_x_server_support import _start_on_a_booted_fake, hosted
+    hosted(monkeypatch, "-set\nsdl display=1\n")
     shared = _start_on_a_booted_fake(tmp_path, monkeypatch, shared=True)
     assert shared["status"] == "ok" and shared["background"] is False, shared
     server.close()
@@ -130,11 +130,33 @@ def test_a_live_runs_ledger_learns_the_emulator_the_session_spawned(
         assert (live_host.EmulatorLedger(ledger).recorded() == {4321: "dosbox-x"}) is named
 
 
-def test_a_watched_session_with_no_helper_is_refused_and_one_display_opens_unplaced(
+def test_a_watched_window_carries_the_host_s_arguments_and_a_headless_one_none(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(window, "ask", lambda *_a, **_k: window.Placed(None, "no helper is named"))
+    """With nothing set the window opens as the conf sizes it, never refused."""
+    assert lifecycle._window_flags(True) == [] == lifecycle._window_flags(False)
+    monkeypatch.setenv(host_args.VARIABLE, "-set\nsdl display=1\n-set\nsdl windowposition=0,0")
+    assert lifecycle._window_flags(True) == ["-set", "sdl display=1",
+                                             "-set", "sdl windowposition=0,0"]
+    assert lifecycle._window_flags(False) == [], "a headless session opens no window"
+
+
+@pytest.mark.parametrize("said", ["-set sdl display=1", "-set\nsdl"])
+def test_host_arguments_dosbox_x_would_hang_on_refuse_the_watched_start_naming_the_variable(
+        monkeypatch: pytest.MonkeyPatch, said: str) -> None:
+    monkeypatch.setenv(host_args.VARIABLE, said)
     with pytest.raises(ds.Invalid) as e:
-        lifecycle._window_flags(True, "")
-    assert e.value.code == "host_failed" and "needs its window placed" in str(e.value)
-    monkeypatch.setattr(window, "ask", lambda *_a, **_k: window.Placed([]))
-    assert lifecycle._window_flags(True, "") == [] == lifecycle._window_flags(False, "")
+        lifecycle._window_flags(True)
+    assert e.value.code == "host_failed" and host_args.VARIABLE in str(e.value), str(e.value)
+    assert "not an argument" in str(e.value)
+
+
+def test_host_arguments_that_refuse_are_refused_before_start_forgets_anything(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from dosbox_state import STATE
+    monkeypatch.setenv(host_args.VARIABLE, "-set sdl display=1")
+    forgot: list[bool] = []
+    monkeypatch.setattr(STATE, "forget_symbols", lambda: forgot.append(True))
+    conf = tmp_path / "g.conf"
+    conf.write_text("[sdl]\n", encoding="utf-8")
+    got = server.start(conf=str(conf), cwd=str(tmp_path), session_seconds=60, shared=True)
+    assert got["code"] == "host_failed" and forgot == [], (got, forgot)

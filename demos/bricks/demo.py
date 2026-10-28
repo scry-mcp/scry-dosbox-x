@@ -6,8 +6,7 @@ the segment DOS loaded it at, a breakpoint on the routine every falling brick go
 score read by name, the paddle moved by the keyboard and by the mouse, and a state saved and
 loaded. The session is windowed so the game can be watched, and nothing in it needs the window:
 `stop` and the saved states go down the debugger channel, the keys and the mouse in inside the
-guest. The saved states need a DOSBox-X that carries SAVESTATE and LOADSTATE. Where the window
-goes is `demos/host.py`'s to decide.
+guest. The saved states need a DOSBox-X that carries SAVESTATE and LOADSTATE.
 """
 
 from __future__ import annotations
@@ -23,7 +22,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # so `demos` impor
 from demos.host import (  # noqa: E402
     INPUT_TIMING,
     VOLATILE,
-    display,
     expect,
     isolated_store,
     loaded,
@@ -64,10 +62,7 @@ def boot(run: Run) -> dict[str, Any]:
     (run.dir / "bricks-e9.log").unlink(missing_ok=True)
     states = run.dir / "bricks-states"
     shutil.rmtree(states, ignore_errors=True)
-    # `shared` is the server's windowed session; the demo's own --shared only decides where the
-    # window goes.
     return {"conf": HERE / "bricks.conf", "cwd": HERE, "session_seconds": 900, "shared": True,
-            "display": display(run),
             "break_on_int3": True, "logfile": run.dir / "bricks-e9.log",
             "state_dir": states}
 
@@ -238,7 +233,7 @@ DEMO = Demo(
     name="bricks", root=ROOT, server=[sys.executable, str(ROOT / "dosbox_x_server.py")],
     readme=HERE / "README.md", front=ROOT / "README.md", steps=STEPS,
     capture=lambda run: run.dir / "screen.png",
-    offers=frozenset({"shared"}), reads=frozenset({"shared"}), precheck=precheck,
+    precheck=precheck,
     volatile={**VOLATILE, "saved_at": "the wall-clock time a state was saved at"})
 
 
