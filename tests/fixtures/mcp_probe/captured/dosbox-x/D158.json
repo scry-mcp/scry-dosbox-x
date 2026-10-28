@@ -2,7 +2,7 @@
  "task": {
   "id": "D158",
   "prompt": "The machine is stopped on the play screen of a game whose arcade original draws the same pixels through a palette of other colours. Map this screen as play, known by the strip at x 0, y 0, 320 wide and 8 high, signed so that one map knows it on both machines.",
-  "tool": "map_write",
+  "tool": "screen_map_write",
   "args": {
    "method": "add",
    "screen": "play",
@@ -24,19 +24,19 @@
  "runs": [
   {
    "lines": [
-    "D158: {\"tool\": \"map_write\", \"args\": {\"method\": \"add\", \"screen\": \"play\", \"match\": [[0, 0, 320, 8]], \"cells\": \"index\"}}"
+    "D158: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"play\", \"match\": [[0, 0, 320, 8]], \"cells\": \"index\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D158: {\"tool\": \"map_write\", \"args\": {\"method\": \"add\", \"screen\": \"play\", \"match\": [[0, 0, 320, 8]], \"cells\": \"index\"}}"
+    "D158: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"play\", \"match\": [[0, 0, 320, 8]], \"cells\": \"index\"}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D158: {\"tool\": \"map_write\", \"args\": {\"method\": \"add\", \"screen\": \"play\", \"match\": [[0, 0, 320, 8]], \"cells\": \"index\"}}"
+    "D158: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"play\", \"match\": [[0, 0, 320, 8]], \"cells\": \"index\"}}"
    ],
    "right": true
   }

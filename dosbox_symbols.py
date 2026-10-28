@@ -673,22 +673,54 @@ def decode(data: bytes) -> list[tuple[str, int]]:
 NameIndex = dict[str, list[Symbol]]
 
 
+def folded(name: str) -> str:
+    """The form a name is looked up by: a caller types a routine as it reads it, and a map may
+    spell it in another case."""
+    return name.upper()
+
+
 def index_by_name(symbols: list[Symbol]) -> NameIndex:
-    """Every symbol under its full name, in table order; built once per load."""
+    """Every symbol under its folded full name, in table order; built once per load."""
     out: NameIndex = {}
     for s in symbols:
-        out.setdefault(s.name, []).append(s)
+        out.setdefault(folded(s.name), []).append(s)
     return out
 
 
 def find_by_name(symbols: list[Symbol], name: str, index: NameIndex | None = None) -> list[Symbol]:
-    """Symbols whose full name matches: exact outright, else by prefix, in the linker's case,
-    where `_x` and `_X` are two symbols."""
-    exact = list(index[name]) if index is not None and name in index else (
-        [s for s in symbols if s.name == name])
+    """Symbols whose full name matches, case ignored: exact outright, else by prefix. Each keeps
+    its own spelling."""
+    key = folded(name)
+    exact = list(index[key]) if index is not None and key in index else (
+        [s for s in symbols if folded(s.name) == key])
     if exact:
         return exact
-    return [s for s in symbols if s.name.startswith(name)]
+    return [s for s in symbols if folded(s.name).startswith(key)]
+
+
+def _line_of(text: str, name: str) -> int | str:
+    """The first line of `text` that ends in `name` as its own word, else one that holds it."""
+    lines = text.splitlines()
+    for ends in (True, False):
+        for number, line in enumerate(lines, 1):
+            words = line.split()
+            if words and (words[-1] == name if ends else name in words):
+                return number
+    return "unknown"
+
+
+def check_folded(symbols: list[Symbol], text: str) -> None:
+    """Refuse a table in which two differently spelled names fold to one, naming both lines of
+    `text`: a lookup ignores case and could not tell them apart. The same spelling twice is
+    ambiguity, which lookups already report."""
+    first: dict[str, str] = {}
+    for s in symbols:
+        seen = first.setdefault(folded(s.name), s.name)
+        if seen != s.name:
+            raise BadSymbolText(
+                f"{seen!r} (line {_line_of(text, seen)}) and {s.name!r} (line "
+                f"{_line_of(text, s.name)}) are one name once case is ignored, and a lookup "
+                f"ignores case, so it could not tell them apart. Rename one in the map")
 
 
 def find_by_offset(symbols: list[Symbol], offset: int,

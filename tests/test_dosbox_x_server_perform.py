@@ -570,11 +570,11 @@ def test_perform_a_running_ok_step_leaves_the_machine_as_it_found_it(tmp_path: P
     released: list[bool] = []
     real_resume = fake.resume
 
-    def resume_and_run() -> dict[str, object]:
+    def resume_and_run(**kw: Any) -> dict[str, object]:
         released.append(True)
-        return real_resume()
+        return real_resume(**kw)
 
-    fake.resume = resume_and_run  # type: ignore[method-assign]
+    fake.resume = resume_and_run  # type: ignore[method-assign, assignment]
     fake.at_debugger = lambda: not released  # type: ignore[method-assign]
     out = cast(dict[str, Any], server.perform(steps=[
         {"op": "resume"},
@@ -848,15 +848,15 @@ def test_perform_does_not_wait_for_a_stop_when_the_last_step_was_a_running_guest
     # it running there too, and each case parks it again before its own `resume`.
     released, ran_to = fake.resume, fake.run_to
 
-    def _resume() -> dict[str, object]:
+    def _resume(**kw: Any) -> dict[str, object]:
         fake.running = True
-        return released()
+        return released(**kw)
 
     def _run_to(*a: Any, **k: Any) -> dict[str, object]:
         fake.running = fake.runto_running
         return ran_to(*a, **k)
 
-    fake.resume, fake.run_to = _resume, _run_to  # type: ignore[method-assign]
+    fake.resume, fake.run_to = _resume, _run_to  # type: ignore[method-assign, assignment]
     began = time.monotonic()
     out = server.perform(steps=[{"op": "resume"}, {"op": "status"}], settle_seconds=5.0)
     assert out["status"] == "ok" and out.get("still_running") is True, out
@@ -1447,12 +1447,12 @@ def test_a_list_that_waited_mid_way_and_ends_running_carries_no_target(
     fake.where_refusals = 2                     # the first resume's stop lands a moment later
     released, calls = fake.resume, [0]
 
-    def resume() -> dict[str, object]:
+    def resume(**kw: Any) -> dict[str, object]:
         calls[0] += 1
         fake.running = calls[0] == 2            # the second one runs on, nothing to stop it
-        return released()
+        return released(**kw)
 
-    fake.resume = resume  # type: ignore[method-assign]
+    fake.resume = resume  # type: ignore[method-assign, assignment]
     out = cast(dict[str, Any], server.perform(
         steps=[{"op": "resume"}, {"op": "registers"}, {"op": "resume"}, {"op": "status"}],
         settle_seconds=2.0))

@@ -57,7 +57,7 @@ Example, from a live run:
     },
     {
       "kind": "json",
-      "path": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1284-stopped.scry-map.json",
+      "path": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1284-stopped.screen-map.json",
       "present": true,
       "bytes": 313
     },
@@ -241,9 +241,11 @@ The frames are the AVI's own, not emulated frames, because the file is what is r
 snapshot(dest="", seconds=10.0)
 ```
 
-A still of the running screen, taken in the guest into the captures directory within
-`seconds`, moved to `dest` if given (absolute, new). Refused: parked at the debugger, no
-`logfile`, no stub in the log.
+A still of the screen as a PNG, at `dest` if given (absolute, new). Running: taken in the
+guest into the captures directory within `seconds` (`route` `guest`); refused with no `logfile`
+or no stub in the log. At a stop: written from video memory through `screen_view`'s decoder
+(`route` `video_memory`), unscaled, without running the machine; a text mode is refused
+(`no_channel`), and `seconds` is not used.
 
 Reply: `route`, `path`, `bytes`, `sha256`.
 
@@ -280,7 +282,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end snapshot -->
 
-The stub takes commands inside the running machine, so a parked machine cannot take one. Only the log says which stub is resident (the command is the Delete key's scan code to an older stub), hence the `logfile` requirement. No window or menu is needed, so any session works.
+**Two routes, chosen by whether the machine runs.** While it runs the stub takes the command inside the machine (`route: "guest"`), and only the log says which stub is resident (the command is the Delete key's scan code to an older stub), hence the `logfile` requirement there. No window or menu is needed, so any session works. At a stop no frame is drawn, so the still is written from video memory through the decoder `screen_view` uses (`route: "video_memory"`), unscaled, with no log or stub and without running the machine; a text mode has no picture to write there and is refused naming `screen_view`.
 
 <!-- scry-reference:begin record -->
 ## `record`

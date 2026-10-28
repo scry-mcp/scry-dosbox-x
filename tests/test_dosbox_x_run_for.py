@@ -273,7 +273,7 @@ def test_a_resume_that_stops_where_nothing_is_declared_names_the_pending_retrace
     """The release that ran on is the one the pending retrace stops: `resume`'s own stop."""
     live(frames(1), tmp_path)
     dstate.STATE.retrace_pending = True
-    got = cast(dict[str, Any], server.resume())
+    got = cast(dict[str, Any], server.resume(seconds=1.0))
     assert "stop_seq" in got, got
     assert got["cause"].startswith("most likely the retrace stop"), got["cause"]
     assert dstate.STATE.retrace_pending is False
@@ -386,10 +386,12 @@ def test_a_timed_run_reads_each_frame_s_clock_from_the_stop_it_waited_for(
     assert got["polls"] == 3
 
 
-def test_a_snapshot_of_a_stopped_machine_is_refused_pointing_at_the_screen_read_here(
+def test_a_snapshot_of_a_stopped_machine_reads_this_stop_and_never_runs_it(
         tmp_path: Path) -> None:
-    """It would have to run the machine to draw a frame; `screen_view` reads this stop's."""
+    """The guest route would have to run the machine to draw a frame; a stop is read from video
+    memory (the decoder's cases are `test_dosbox_x_screen.py`'s)."""
     machine = live(frames(1), tmp_path)
     got = cast(dict[str, Any], server.snapshot())
-    assert got["code"] == "not_running" and "`screen_view`" in got["message"], got
+    assert got["code"] != "not_running", got
+    assert any(c.startswith("EXEC VGA MODE") for c in machine.sent), machine.sent
     assert vrts(machine) == [] and "EXEC RUN" not in machine.sent, "nothing ran"

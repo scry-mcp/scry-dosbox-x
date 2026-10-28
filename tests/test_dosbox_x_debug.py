@@ -138,14 +138,27 @@ def test_an_interrupt_breakpoint_is_confirmed_from_the_list_not_from_the_word(
         s.breakpoint_interrupt(0x13)
 
 
-def test_arming_marks_the_session_altered_and_reads_the_row_back(tmp_path: Path) -> None:
+def test_arming_reads_the_row_back_and_leaves_the_session_unaltered(tmp_path: Path) -> None:
     machine = Machine()
     s = session_over(machine, tmp_path)
     got = s.arm_code_breakpoint(0x814, 0x130)
-    assert got["entry"] == "BP 0814:0130" and s.altered is True
+    assert got["entry"] == "BP 0814:0130" and s.altered is False
     machine.hooks["BP"] = lambda c: (True, ["DEBUG: Set breakpoint at 0814:0140"])
     with pytest.raises(ds.Invalid, match="NOT armed"):
         s.arm_code_breakpoint(0x814, 0x140)
+
+
+def test_a_build_without_the_heavy_debugger_alters_the_guest_by_arming(tmp_path: Path) -> None:
+    """Such a build plants a code breakpoint as an `INT 3` byte in guest memory; the heavy one
+    checks each instruction against its list and writes nothing."""
+    s = session_over(Machine(), tmp_path)
+    s.plants_int3 = True
+    s.arm_code_breakpoint(0x814, 0x130)
+    assert s.altered is True
+    again = session_over(Machine(), tmp_path)
+    again.plants_int3 = True
+    again.watch_places([(0x814, 0x200)])
+    assert again.altered is False, "a memory watch plants nothing"
 
 
 def test_a_clear_finds_its_row_by_value_and_reads_the_removal_back(tmp_path: Path) -> None:
@@ -349,6 +362,7 @@ def test_run_to_arrives_and_removes_the_breakpoint_it_created(tmp_path: Path) ->
     got = s.run_to(0x814, 0x140, 1.0)
     assert got["verdict"] == "TARGET" and got["breakpoint_removed"] is True, got
     assert machine.breakpoints == []
+    assert s.altered is False, "a debugger breakpoint changes neither memory nor registers"
 
 
 def test_run_to_in_real_mode_arrives_at_an_aliased_seg_off(tmp_path: Path) -> None:
@@ -462,7 +476,9 @@ def test_a_run_cancelled_in_flight_is_brought_back_and_takes_its_breakpoints_wit
 
 def test_a_watch_chooses_its_command_by_the_machines_mode(tmp_path: Path) -> None:
     real = Machine()
-    got = session_over(real, tmp_path).watch_places([(0x40, 0x6C)])[0]
+    armed = session_over(real, tmp_path)
+    got = armed.watch_places([(0x40, 0x6C)])[0]
+    assert armed.altered is False
     assert (got["command"], got["armed"]) == ("BPM 0040:006C", "BPMEM 0040:006C")
     pr32 = protected(Machine())
     got = session_over(pr32, tmp_path).watch_places([(0xAF, 0x16DF20)])[0]
@@ -489,6 +505,19 @@ def test_a_resume_that_stopped_straight_away_says_where(tmp_path: Path) -> None:
     got = session_over(machine, tmp_path).resume()
     assert got["halted"] is True and cast(dict[str, str], got["stopped_at"])["eip"] == "00000200"
     assert got["output"] == "OK"
+
+
+def test_a_resume_without_a_look_returns_straight_after_the_release(tmp_path: Path) -> None:
+    machine = Machine(releases=[Stop({"EIP": 0x200})])
+    got = session_over(machine, tmp_path).resume(look=False)
+    assert got["halted"] is False and got["stopped_at"] is None and got["output"] == "OK", got
+    assert "EXEC RUN" in machine.sent and "EXEC RUNSTATE" not in machine.sent, machine.sent
+
+
+def test_a_resume_without_a_look_still_says_when_the_build_cannot_tell(tmp_path: Path) -> None:
+    _, official = _official(tmp_path)
+    got = official.resume(look=False)
+    assert isinstance(got["halted"], dict) and "RUNSTATE" in got["halted"]["why"], got
 
 
 def test_a_resume_that_let_the_machine_go_says_that_instead(tmp_path: Path,

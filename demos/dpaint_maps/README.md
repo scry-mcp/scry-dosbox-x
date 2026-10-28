@@ -54,7 +54,7 @@ DOSBox-X without relative motion, a server that did not start).
 
 ## The map
 
-`dpaint.scry-map.json` names eleven screens of Deluxe Paint at 640 x 480, each known by regions
+`dpaint.screen-map.json` names eleven screens of Deluxe Paint at 640 x 480, each known by regions
 that stay still on it:
 
 | Screen | Known by | Its names |
@@ -76,7 +76,7 @@ map signs.
 Give this to an MCP client with this server connected:
 
 > Start DOSBox-X windowed on `demos/dpaint_maps/dpaint_maps.conf`, running from
-> `/path/to/your/dpaint2`, with `DP.EXE k` as the program and the log in a file. Run 400 retraces and load the screen map `dpaint.scry-map.json` beside the conf. Pick
+> `/path/to/your/dpaint2`, with `DP.EXE k` as the program and the log in a file. Run 400 retraces and load the screen map `dpaint.screen-map.json` beside the conf. Pick
 > menus, dialog buttons, tools and colours by the names it gives, drag the shapes at pixels, and
 > after every move to another screen tell me which screen the map says it is. Hold the button on
 > Color, choose Palette, pick the brown slot and hold the red arrow down until red tops out, read
@@ -95,7 +95,7 @@ Give this to an MCP client with this server connected:
 |---|---|
 | Session | `start` (windowed, running the program from `cwd`), `close` |
 | Advance | `run_for` by retraces on the conf's fixed clock |
-| Files | `map_write(method="load")`, `map_find` after every move between screens |
+| Files | `screen_map_write(method="load")`, `screen_map_find` after every move between screens |
 | Input | `send_mouse` by control name off the map (a press to open a menu, a release to choose), at screen pixels, and as drags; `send_keys` for the word |
 | Read | `palette` for the mixed colour, `screen_view` for rows of the picture and the screen |
 | Sequences | `perform` (each move with the map's word on where it landed; a shape's tool, colour and drags) |
@@ -259,23 +259,24 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 
 </details>
 
-**3. `map_write`**: OK map: 11 screens and 109 controls loaded
+**3. `screen_map_write`**: OK map: 11 screens and 109 controls loaded
 
 <details><summary>call and reply</summary>
 
 ```json
 {
   "method": "load",
-  "path": "./demos/dpaint_maps/dpaint.scry-map.json"
+  "path": "./demos/dpaint_maps/dpaint.screen-map.json"
 }
 ```
 
 ```json
 {
-  "summary": "map_write load: 11 screens, 109 controls of dpaint",
+  "summary": "screen_map_write load: 11 screens, 109 controls of dpaint",
   "status": "ok",
-  "path": "./demos/dpaint_maps/dpaint.scry-map.json",
+  "path": "./demos/dpaint_maps/dpaint.screen-map.json",
   "application": "dpaint",
+  "mode": "verified",
   "screens": 11,
   "controls": 109,
   "session": {
@@ -288,7 +289,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 
 </details>
 
-**4. `map_find`**: OK is paint: the map says: paint: freehand
+**4. `screen_map_find`**: OK is paint: the map says: paint: freehand
 
 <details><summary>call and reply</summary>
 
@@ -298,7 +299,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 
 ```json
 {
-  "summary": "map_find: paint: freehand (file), 14 controls",
+  "summary": "screen_map_find: paint: freehand (file), 14 controls",
   "status": "ok",
   "matched": true,
   "screen": "paint: freehand",
@@ -516,7 +517,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
       "action": "down"
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     }
   ],
   "summaries": true
@@ -540,9 +541,9 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
     },
     {
       "step": 1,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: color menu (file), 2 controls",
+        "summary": "screen_map_find: color menu (file), 2 controls",
         "status": "ok",
         "matched": true,
         "screen": "color menu",
@@ -635,7 +636,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
       "frames": 20
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     }
   ],
   "summaries": true
@@ -669,9 +670,9 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
     },
     {
       "step": 2,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: palette (file), 6 controls",
+        "summary": "screen_map_find: palette (file), 6 controls",
         "status": "ok",
         "matched": true,
         "screen": "palette",
@@ -1032,7 +1033,7 @@ Also attached: image/png.
       "frames": 20
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     },
     {
       "op": "send_mouse",
@@ -1067,7 +1068,7 @@ Also attached: image/png.
       "y": 300
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     },
     {
       "op": "send_mouse",
@@ -1102,7 +1103,7 @@ Also attached: image/png.
       "y": 300
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     },
     {
       "op": "send_mouse",
@@ -1137,7 +1138,7 @@ Also attached: image/png.
       "y": 300
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     }
   ],
   "summaries": true
@@ -1171,9 +1172,9 @@ Also attached: image/png.
     },
     {
       "step": 2,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: paint: freehand (file), 14 controls",
+        "summary": "screen_map_find: paint: freehand (file), 14 controls",
         "status": "ok"
       }
     },
@@ -1239,9 +1240,9 @@ Also attached: image/png.
     },
     {
       "step": 9,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: paint: rectangle (file), 14 controls",
+        "summary": "screen_map_find: paint: rectangle (file), 14 controls",
         "status": "ok"
       }
     },
@@ -1307,9 +1308,9 @@ Also attached: image/png.
     },
     {
       "step": 16,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: paint: circle (file), 14 controls",
+        "summary": "screen_map_find: paint: circle (file), 14 controls",
         "status": "ok"
       }
     },
@@ -1375,9 +1376,9 @@ Also attached: image/png.
     },
     {
       "step": 23,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: paint: rectangle (file), 14 controls",
+        "summary": "screen_map_find: paint: rectangle (file), 14 controls",
         "status": "ok",
         "matched": true,
         "screen": "paint: rectangle",
@@ -1683,7 +1684,7 @@ Also attached: image/png.
       "y": 300
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     },
     {
       "op": "send_mouse",
@@ -1718,7 +1719,7 @@ Also attached: image/png.
       "y": 300
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     }
   ],
   "summaries": true
@@ -1852,9 +1853,9 @@ Also attached: image/png.
     },
     {
       "step": 12,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: paint: line (file), 14 controls",
+        "summary": "screen_map_find: paint: line (file), 14 controls",
         "status": "ok"
       }
     },
@@ -1920,9 +1921,9 @@ Also attached: image/png.
     },
     {
       "step": 19,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: paint: rectangle (file), 14 controls",
+        "summary": "screen_map_find: paint: rectangle (file), 14 controls",
         "status": "ok",
         "matched": true,
         "screen": "paint: rectangle",
@@ -2193,7 +2194,7 @@ Also attached: image/png.
       "y": 300
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     },
     {
       "op": "send_mouse",
@@ -2240,7 +2241,7 @@ Also attached: image/png.
       "y": 300
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     }
   ],
   "summaries": true
@@ -2314,9 +2315,9 @@ Also attached: image/png.
     },
     {
       "step": 6,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: paint: line (file), 14 controls",
+        "summary": "screen_map_find: paint: line (file), 14 controls",
         "status": "ok"
       }
     },
@@ -2402,9 +2403,9 @@ Also attached: image/png.
     },
     {
       "step": 15,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: paint: line (file), 14 controls",
+        "summary": "screen_map_find: paint: line (file), 14 controls",
         "status": "ok",
         "matched": true,
         "screen": "paint: line",
@@ -2658,7 +2659,7 @@ Also attached: image/png.
       "y": 300
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     },
     {
       "op": "send_mouse",
@@ -2689,7 +2690,7 @@ Also attached: image/png.
       "y": 300
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     }
   ],
   "summaries": true
@@ -2733,9 +2734,9 @@ Also attached: image/png.
     },
     {
       "step": 3,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: paint: text (file), 14 controls",
+        "summary": "screen_map_find: paint: text (file), 14 controls",
         "status": "ok"
       }
     },
@@ -2781,9 +2782,9 @@ Also attached: image/png.
     },
     {
       "step": 8,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: paint: freehand (file), 14 controls",
+        "summary": "screen_map_find: paint: freehand (file), 14 controls",
         "status": "ok",
         "matched": true,
         "screen": "paint: freehand",
@@ -3032,7 +3033,7 @@ Also attached: image/png.
       "y": 300
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     },
     {
       "op": "send_mouse",
@@ -3061,7 +3062,7 @@ Also attached: image/png.
       "y": 300
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     },
     {
       "op": "send_mouse",
@@ -3070,7 +3071,7 @@ Also attached: image/png.
       "action": "down"
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     },
     {
       "op": "send_mouse",
@@ -3088,7 +3089,7 @@ Also attached: image/png.
       "y": 300
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     },
     {
       "op": "send_mouse",
@@ -3106,7 +3107,7 @@ Also attached: image/png.
       "y": 300
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     }
   ],
   "summaries": true
@@ -3140,9 +3141,9 @@ Also attached: image/png.
     },
     {
       "step": 2,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: paint: grab (file), 14 controls",
+        "summary": "screen_map_find: paint: grab (file), 14 controls",
         "status": "ok"
       }
     },
@@ -3198,9 +3199,9 @@ Also attached: image/png.
     },
     {
       "step": 8,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: paint: custom brush (file), 14 controls",
+        "summary": "screen_map_find: paint: custom brush (file), 14 controls",
         "status": "ok"
       }
     },
@@ -3216,9 +3217,9 @@ Also attached: image/png.
     },
     {
       "step": 10,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: brush menu (file), 2 controls",
+        "summary": "screen_map_find: brush menu (file), 2 controls",
         "status": "ok"
       }
     },
@@ -3254,9 +3255,9 @@ Also attached: image/png.
     },
     {
       "step": 14,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: paint: custom brush (file), 14 controls",
+        "summary": "screen_map_find: paint: custom brush (file), 14 controls",
         "status": "ok"
       }
     },
@@ -3292,9 +3293,9 @@ Also attached: image/png.
     },
     {
       "step": 18,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: paint: custom brush (file), 14 controls",
+        "summary": "screen_map_find: paint: custom brush (file), 14 controls",
         "status": "ok",
         "matched": true,
         "screen": "paint: custom brush",
@@ -3540,7 +3541,7 @@ Also attached: image/png.
       "action": "down"
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     },
     {
       "op": "send_mouse",
@@ -3557,7 +3558,7 @@ Also attached: image/png.
       "y": 300
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     },
     {
       "op": "send_mouse",
@@ -3575,7 +3576,7 @@ Also attached: image/png.
       "y": 300
     },
     {
-      "op": "map_find"
+      "op": "screen_map_find"
     }
   ],
   "summaries": true
@@ -3599,9 +3600,9 @@ Also attached: image/png.
     },
     {
       "step": 1,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: pict menu (file), 1 control",
+        "summary": "screen_map_find: pict menu (file), 1 control",
         "status": "ok"
       }
     },
@@ -3637,9 +3638,9 @@ Also attached: image/png.
     },
     {
       "step": 5,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: paint: custom brush (file), 14 controls",
+        "summary": "screen_map_find: paint: custom brush (file), 14 controls",
         "status": "ok"
       }
     },
@@ -3675,9 +3676,9 @@ Also attached: image/png.
     },
     {
       "step": 9,
-      "op": "map_find",
+      "op": "screen_map_find",
       "reply": {
-        "summary": "map_find: paint: freehand (file), 14 controls",
+        "summary": "screen_map_find: paint: freehand (file), 14 controls",
         "status": "ok",
         "matched": true,
         "screen": "paint: freehand",
@@ -3935,12 +3936,15 @@ Also attached: image/png.
   "kind": "pixel",
   "width": 640,
   "height": 480,
+  "mode": "render",
   "crop": [
     0,
     57,
     592,
     1
   ],
+  "screen_indexed": true,
+  "entries": 256,
   "image": {
     "path": "./tmp/demos/dpaint_maps/row-57.png",
     "bytes": 866,
@@ -3989,12 +3993,15 @@ Also attached: image/png.
   "kind": "pixel",
   "width": 640,
   "height": 480,
+  "mode": "render",
   "crop": [
     0,
     230,
     592,
     1
   ],
+  "screen_indexed": true,
+  "entries": 256,
   "image": {
     "path": "./tmp/demos/dpaint_maps/row-230.png",
     "bytes": 862,
@@ -4043,12 +4050,15 @@ Also attached: image/png.
   "kind": "pixel",
   "width": 640,
   "height": 480,
+  "mode": "render",
   "crop": [
     0,
     272,
     592,
     1
   ],
+  "screen_indexed": true,
+  "entries": 256,
   "image": {
     "path": "./tmp/demos/dpaint_maps/row-272.png",
     "bytes": 862,
@@ -4097,12 +4107,15 @@ Also attached: image/png.
   "kind": "pixel",
   "width": 640,
   "height": 480,
+  "mode": "render",
   "crop": [
     0,
     350,
     592,
     1
   ],
+  "screen_indexed": true,
+  "entries": 256,
   "image": {
     "path": "./tmp/demos/dpaint_maps/row-350.png",
     "bytes": 870,
@@ -4151,12 +4164,15 @@ Also attached: image/png.
   "kind": "pixel",
   "width": 640,
   "height": 480,
+  "mode": "render",
   "crop": [
     0,
     388,
     592,
     1
   ],
+  "screen_indexed": true,
+  "entries": 256,
   "image": {
     "path": "./tmp/demos/dpaint_maps/row-388.png",
     "bytes": 865,
@@ -4197,12 +4213,15 @@ Also attached: image/png.
   "kind": "pixel",
   "width": 640,
   "height": 480,
+  "mode": "render",
   "crop": [
     0,
     0,
     640,
     480
   ],
+  "screen_indexed": true,
+  "entries": 256,
   "image": {
     "path": "./tmp/demos/dpaint_maps/screen.png",
     "bytes": 4012,
@@ -4255,7 +4274,7 @@ Also attached: image/png.
   ],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
   "session": {
-    "alive": true,
+    "alive": false,
     "running": false,
     "altered": false
   }

@@ -26,7 +26,7 @@ def resume(seconds: float, detail: bool,
         raise ds.NotStopped("the guest is already running, so there is nothing to resume")
     if seconds > 0:
         session.require_run_state("a resume with a bound")
-    out = session.resume()
+    out = session.resume(look=seconds > 0)
     halted = out["halted"] is True
     stopped_at = cast(dict[str, str] | None, out["stopped_at"])
     base: dict[str, Any] = st.delta_if_asked(cast(str, out["output"]), st.DETAIL_TEXT_KEEP, detail)

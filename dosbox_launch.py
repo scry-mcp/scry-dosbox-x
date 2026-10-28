@@ -81,6 +81,8 @@ class Launch:
     # optional debugger commands it has (`binaries.debugger_commands`), read once at `start`.
     debugger_headless: bool = False
     debugger_commands: frozenset[str] = frozenset()
+    # `cpu_core`, read once at `start`.
+    core: str = "auto"
 
 
 def digest(path: Path) -> str:
@@ -182,6 +184,49 @@ def conf_mounts(conf: Path) -> list[str]:
             if letters and letters[0] not in found:
                 found.append(letters[0])
     return found
+
+
+def cpu_core(conf: Path, flags: list[str]) -> str:
+    """The core a session boots with: the conf's `[cpu] core=`, then the last `-set` of `flags`."""
+    core = "auto"
+    try:
+        text = conf.read_text(encoding="utf-8-sig", errors="replace")
+    except OSError:
+        text = ""                       # gone since `start`: `conf_changed_on_disk` says so
+    section = ""
+    for line in text.splitlines():
+        line = line.strip()
+        if line.startswith("["):
+            section = line.lower()
+        elif section == "[cpu]":
+            key, _, value = line.partition("=")
+            if key.strip().lower() == "core" and value.strip():
+                core = value.split("#")[0].strip().lower()
+    for flag, setting in zip(flags, flags[1:], strict=False):
+        words = setting.replace("=", " ").split()
+        if flag == "-set" and len(words) == 3 and words[:2] == ["cpu", "core"]:
+            core = words[2].lower()
+    return core
+
+
+#: The one wording `start`, `run_to` and `breakpoint_at` share.
+DYNAMIC_CORE_BREAKPOINTS = (
+    "this session runs the dynamic core, which checks breakpoints only between compiled blocks, so "
+    "a code breakpoint inside one can be passed over and a run that never reaches it proves "
+    "nothing. Start on the normal core: `start(flags=[\"-set\", \"cpu core=normal\"])`")
+
+
+def is_dynamic(core: str) -> bool:
+    """Whether `core` is a dynamic recompiler."""
+    return core.startswith("dynamic")
+
+
+def with_dynamic_core_note(reply: dict[str, Any], launch: Launch) -> dict[str, Any]:
+    """A code breakpoint's reply, its `note` carrying the dynamic core's limit when it applies."""
+    if not is_dynamic(launch.core):
+        return reply
+    note = "; ".join(n for n in (reply.get("note"), DYNAMIC_CORE_BREAKPOINTS) if n)
+    return {**reply, "note": note}
 
 
 def stub_drive(conf: Path) -> str:

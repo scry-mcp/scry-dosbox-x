@@ -283,13 +283,39 @@ def test_the_name_index_answers_exactly_what_the_scan_answers() -> None:
     table = [sym.Symbol("_main", 0x100), sym.Symbol("_main_loop", 0x200),
              sym.Symbol("_main", 0x300)]
     index = sym.index_by_name(table)
-    assert index["_main"] == [table[0], table[2]] and list(index) == ["_main", "_main_loop"]
+    assert index["_MAIN"] == [table[0], table[2]] and list(index) == ["_MAIN", "_MAIN_LOOP"]
     assert sym.find_by_name(table, "_main", index) == sym.find_by_name(table, "_main")
     assert len(sym.find_by_name(table, "_mai", index)) == 3
     assert sym.find_by_name(table, "_nope", index) == []
     got = sym.find_by_name(table, "_main", index)
     got.clear()
-    assert len(index["_main"]) == 2, "the caller emptied the index"
+    assert len(index["_MAIN"]) == 2, "the caller emptied the index"
+
+
+def test_a_lookup_ignores_case_and_answers_the_names_own_spelling() -> None:
+    table = [sym.Symbol("ShowCredits", 0x100), sym.Symbol("ShowCreditsEnd", 0x200)]
+    index = sym.index_by_name(table)
+    for found in (sym.find_by_name(table, "showcredits"),
+                  sym.find_by_name(table, "SHOWCREDITS", index)):
+        assert [s.name for s in found] == ["ShowCredits"]
+    assert [s.name for s in sym.find_by_name(table, "showcredits", index)] == ["ShowCredits"]
+    assert len(sym.find_by_name(table, "showcr")) == 2
+    assert len(sym.find_by_name(table, "SHOWCR", index)) == 2
+    assert sym.find_by_name(table, "showcreditz", index) == []
+
+
+def test_a_table_where_two_spellings_fold_to_one_is_refused_naming_both_lines() -> None:
+    text = "00000100 T ShowCredits\n00000200 T other\n00000300 T showcredits\n"
+    table = sym.parse_nm(text)
+    with pytest.raises(sym.BadSymbolText) as caught:
+        sym.check_folded(table, text)
+    said = str(caught.value)
+    assert "'ShowCredits' (line 1)" in said and "'showcredits' (line 3)" in said, said
+
+
+def test_a_name_defined_twice_in_one_spelling_is_ambiguity_and_not_a_fold_clash() -> None:
+    text = "00000100 T helper\n00000200 T helper\n00000300 T Other\n"
+    sym.check_folded(sym.parse_nm(text), text)
 
 
 def test_an_address_resolves_to_the_nearest_symbol_below_it_with_the_distance() -> None:

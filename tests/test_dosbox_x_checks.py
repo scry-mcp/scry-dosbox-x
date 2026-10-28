@@ -72,8 +72,8 @@ def test_a_refusal_opens_with_the_argument_it_refuses(
     ("send_mouse", {"target": "t", "units": "mouse"}, "`target` goes with units 'screen'"),
     ("send_mouse", {"x": -1, "y": 0}, "`x` is a whole number from 0 to 32767, in `units`; got -1"),
     ("send_mouse", {"x": 0, "y": -1}, "`y` is a whole number from 0 to 32767, in `units`; got -1"),
-    ("send_mouse", {"target": 5}, "target is a control's name on the screen `map_find` matched; "
-                                  "got 5"),
+    ("send_mouse", {"target": 5},
+     "target is a control's name on the screen `screen_map_find` matched; got 5"),
 ])
 def test_a_refusal_names_the_value_and_the_bound(
         tool: str, given: dict[str, Any], holds: str) -> None:

@@ -92,8 +92,8 @@ def _add_map(screen: str, match: list[list[int]],
     return st.reply(**STATE.maps.add(screen, match, controls, map_read(session), cells))
 
 
-def _load_map(path: str) -> dict[str, Any]:
-    return st.reply(**STATE.maps.load(path))
+def _load_map(path: str, scale: int = 1, margin: list[int] | None = None) -> dict[str, Any]:
+    return st.reply(**STATE.maps.load(path, scale, margin))
 
 
 def _save_map(dest: str, overwrite: bool = False) -> dict[str, Any]:
@@ -202,7 +202,7 @@ A20 = {"read": Method(_a20_read, methods.no_check, one_line.a20),
        "off": Method(_a20_off, methods.no_check, one_line.a20)}
 
 #: Each `method` fold's method names, which the running gate is held to.
-METHODS = {"comment_write": tuple(COMMENT), "map_write": tuple(MAP), "scan": tuple(SCAN),
+METHODS = {"comment_write": tuple(COMMENT), "screen_map_write": tuple(MAP), "scan": tuple(SCAN),
            "state_write": tuple(STATE_METHODS), "port": tuple(PORT), "pic": tuple(PIC),
            "a20": tuple(A20)}
 
@@ -211,7 +211,7 @@ CHECKS = {
     "declaration_list": check_list_declarations,
     "declaration_clear": check_clear_declarations,
     "comment_write": methods.fold_check(COMMENT),
-    "map_write": methods.fold_check(MAP),
+    "screen_map_write": methods.fold_check(MAP),
     "scan": methods.fold_check(SCAN),
     "state_write": methods.fold_check(STATE_METHODS),
     "port": methods.fold_check(PORT),

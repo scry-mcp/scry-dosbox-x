@@ -121,7 +121,7 @@ class FakeSession(SessionGates):
         self.memory: dict[int, int] = {}
         self.closed = 0
         self.proc = SimpleNamespace(poll=lambda: None if self._alive else -15, pid=4242)
-        self.launch = SimpleNamespace(cwd=Path("/"), logfile=None, watched=False)
+        self.launch = SimpleNamespace(cwd=Path("/"), logfile=None, watched=False, core="auto")
         self._avi_facts: dict[tuple[str, int, int], dict[str, object]] = {}
         self.e9_calls: list[tuple[str, int]] = []
         self.log_calls: list[tuple[str, int, str]] = []
@@ -259,7 +259,7 @@ class FakeSession(SessionGates):
     def stop_at_bound(self) -> bool:
         return False
 
-    def resume(self) -> dict[str, object]:
+    def resume(self, look: bool = True) -> dict[str, object]:
         # a constant: what `halted` is read off is exercised against captured deltas
         return {"output": "", "halted": False, "stopped_at": None}
 
@@ -454,7 +454,8 @@ def live_callers() -> set[str]:
     tree = ast.parse(Path(str(server.__file__)).read_text(encoding="utf-8"))
     direct = {node.name for node in tree.body if isinstance(node, ast.FunctionDef) and asks(node)}
     # a fold's methods ask in `dosbox_folds`, each in its own body
-    folded = {tool for tool, table in (("comment_write", folds.COMMENT), ("map_write", folds.MAP),
+    folded = {tool for tool, table in (("comment_write", folds.COMMENT),
+                                       ("screen_map_write", folds.MAP),
                                        ("scan", folds.SCAN), ("state_write", folds.STATE_METHODS))
               if any(asks(ast.parse(inspect.getsource(m.body))) for m in table.values())}
     return direct | folded
@@ -818,7 +819,8 @@ class NamesFake(SessionGates):
         self.mem[(seg, off)] = data
         return {"bytes_written": len(data), "readback": data.hex(), "verified": True}
 
-    def resume(self) -> dict[str, object]:
+    def resume(self, look: bool = True) -> dict[str, object]:
+        self.looks = getattr(self, "looks", []) + [look]
         if self.dies_on_resume:
             self.alive_flag = False
         if self.log is not None:

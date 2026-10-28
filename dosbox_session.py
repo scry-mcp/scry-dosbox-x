@@ -24,6 +24,7 @@ from scry_core.progress import Progress as Progress
 from scry_core.progress import no_progress as no_progress
 from scry_core.reply_contract import Invalid as Invalid
 
+import dosbox_binary as dbinary
 import dosbox_collect as dcollect
 import dosbox_debugger as dbg
 import dosbox_grammar as grammar
@@ -262,6 +263,12 @@ def refuse_parked_snapshot(session: Any) -> None:
 class Session(dprocess.Process):
     """A DOSBox-X process that stays put between questions."""
 
+    # WHETHER A CODE BREAKPOINT IS A WRITE: a build without the heavy debugger plants it as an
+    # `INT 3` byte in guest memory on release (`CBreakpoint::Activate`); the heavy one checks each
+    # instruction against its list and leaves memory alone. A memory watch plants nothing. Read
+    # off the build at the first arming; None until then.
+    plants_int3: bool | None = None
+
     def __init__(self, launch: dlaunch.Launch) -> None:
         dlaunch.validate(launch)
         self.launch = launch
@@ -293,6 +300,11 @@ class Session(dprocess.Process):
         # THE PROCESS COMES UP LAST, its own fields first.
         dprocess.Process.__init__(self)
         self._spawn(launch)
+
+    def _arming_writes(self) -> bool:
+        if self.plants_int3 is None:
+            self.plants_int3 = not dbinary.heavy_debug(self.launch.binary)
+        return self.plants_int3
 
     def stub_replaced(self) -> None:
         """The guest's memory was replaced (a loaded state), the stub's last sequence with it."""
@@ -533,14 +545,17 @@ class Session(dprocess.Process):
         return Session.await_stop(self, began, deadline, f"`{command}`", progress,
                                   label=f"trace: `{command}`")
 
-    def resume(self) -> dict[str, object]:
-        """Let the machine run, and SAY whether it stopped again straight away."""
+    def resume(self, look: bool = True) -> dict[str, object]:
+        """Let the machine run, and with `look` SAY whether it stopped again straight away; without
+        it the call returns after the release and a stop is what the next call finds."""
         output = "\n".join(self._release("RUN"))
         if not self.has(dbg.RUNSTATE):
             return {"halted": contract.unavailable(
                         f"this build's debugger has no `{dbg.RUNSTATE}` command to say whether "
                         f"the machine stopped again ({dbg.COMMANDS_SECTION})"),
                     "stopped_at": None, "output": output}
+        if not look:
+            return {"halted": False, "stopped_at": None, "output": output}
         began = time.monotonic()
         expired, _ = Session.await_stop(self, began, began + RESUME_LOOK_S, "a stop",
                                         label="resume")
@@ -584,9 +599,7 @@ class Session(dprocess.Process):
                     f"the control {ctl} is the same address as the target {target}: "
                               "a control proves the target COULD have fired, and the target "
                               "cannot prove that about itself")
-        # ARMING IS A WRITE TO THE MACHINE, so the session is marked BEFORE the command goes out
-        # and stays marked whatever happens next.
-        self.altered = True
+        self.altered |= self._arming_writes()
         self.command(f"BP {target}")
         if ctl is not None:
             self.command(f"BP {ctl}")
@@ -759,8 +772,7 @@ class Session(dprocess.Process):
             else:
                 sent.append((f"BPM {segment:04X}:{offset:04X}",
                              f"BPMEM {segment:04X}:{offset:04X}"))
-        # SAME AS `run_to`: arming is a write, and a watch is NEVER removed by this method.
-        self.altered = True
+        # A watch is NEVER removed by this method.
         for command, _ in sent:
             self.command(command)
         # READ BACK, for the same reason `run_to` does.
@@ -787,7 +799,7 @@ class Session(dprocess.Process):
         check_segment(seg)
         grammar.check_offset(off, stopped["mode"])
         target = f"{seg:04X}:{off:04X}"
-        self.altered = True
+        self.altered |= self._arming_writes()
         self.command(f"BP {target}")
         held = self.breakpoints()
         want = ("BP", seg, off)

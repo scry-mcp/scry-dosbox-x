@@ -20,10 +20,18 @@ def test_a_count_takes_its_noun_in_its_number(states: int, said: str) -> None:
     assert one_line.state_list({}, reply) == said
 
 
-def test_a_read_says_how_many_bytes_it_read_and_where() -> None:
+def test_a_read_says_how_many_bytes_it_read_where_and_which() -> None:
     reply = {"seg_off": "00AF:0017A6EC", "length": 4, "hex": "00112233"}
     assert one_line.read_memory({"ref": "g_rate"}, reply) == \
-        "read_memory g_rate: 4 bytes at 00AF:0017A6EC"
+        "read_memory g_rate: 4 bytes at 00AF:0017A6EC: 00112233"
+
+
+def test_a_long_read_shows_the_first_bytes_and_counts_the_rest() -> None:
+    cap = 64
+    image = bytes(range(cap + 3))
+    reply = {"seg_off": "0040:0000", "length": len(image), "hex": image.hex()}
+    assert one_line.read_memory({"ref": "x"}, reply).endswith(
+        image[:cap].hex() + "... (3 more bytes in `hex`)")
 
 
 def test_an_irregular_plural_is_said_as_english_says_it() -> None:

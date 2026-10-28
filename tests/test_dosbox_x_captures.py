@@ -22,16 +22,17 @@ def test_each_writer_is_kept_under_its_kind_once_and_a_refusal_or_a_reader_never
     dstate.STATE.written.clear()
     caps.note_written("series_capture", {"status": "ok", "manifest": "/s/manifest.json"})
     caps.note_written("trace", {"status": "ok", "trace": {"path": "/t/run.trace"}})
-    caps.note_written("map_write", {"status": "ok", "path": "/m/game.scry-map.json",
+    caps.note_written("screen_map_write", {"status": "ok", "path": "/m/game.screen-map.json",
                                     "promoted": []})
-    caps.note_written("map_write", {"status": "ok", "path": "/m/read.scry-map.json"})   # a load
+    caps.note_written("screen_map_write", {"status": "ok",
+                                           "path": "/m/read.screen-map.json"})   # a load
     caps.note_written("memdump", {"status": "ok", "path": "/d/ram.bin"})
     caps.note_written("memdump", {"status": "ok", "path": "/d/ram.bin"})       # once
     caps.note_written("memdump", {"status": "INVALID", "path": "/d/no.bin"})   # refused
     caps.note_written("read_memory", {"status": "ok", "path": "/r/x"})          # no writer
     caps.note_written("machine_map", {"status": "ok"})                          # wrote nothing
     assert dstate.STATE.written == [("series", "/s/manifest.json"), ("trace", "/t/run.trace"),
-                                    ("json", "/m/game.scry-map.json"), ("bin", "/d/ram.bin")]
+                                    ("json", "/m/game.screen-map.json"), ("bin", "/d/ram.bin")]
     dstate.STATE.clear_running_state()
     assert dstate.STATE.written == [], "a session's files are not the next one's"
 

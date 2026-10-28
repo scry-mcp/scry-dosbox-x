@@ -964,6 +964,34 @@ def test_screen_view_writes_the_256_colour_screen_as_its_indices(
                             "inline")
 
 
+def test_a_snapshot_at_a_stop_writes_the_graphics_screen_from_video_memory(
+        tmp_path: Path) -> None:
+    """The same picture `screen_view` writes at scale 1, with the route that made it."""
+    s = screen_bench("screen-13h", tmp_path)
+    s.launch.captures_dir = tmp_path / "caps"
+    kept = tmp_path / "kept.png"
+    r = cast(dict[str, Any], server.snapshot(dest=str(kept)))
+    assert r["status"] == "ok" and r["route"] == "video_memory" and r["path"] == str(kept), r
+    assert r["bytes"] == kept.stat().st_size
+    assert r["sha256"] == hashlib.sha256(kept.read_bytes()).hexdigest()
+    w, h, pixels, _, _ = decode_png(kept.read_bytes())
+    assert (w, h) == (320, 200) and pixels[:4] == bytes(range(4))
+    assert r["session"]["altered"] is False and s.dumps == [(0xA000, 0, 64000)]
+    again = cast(dict[str, Any], server.snapshot())
+    assert Path(again["path"]) == tmp_path / "caps" / "snapshot-1.png", again
+    assert again["sha256"] == r["sha256"]
+
+
+def test_a_snapshot_at_a_stop_in_a_text_mode_is_refused_naming_screen_view(
+        tmp_path: Path) -> None:
+    s = screen_bench("probe-booted", tmp_path)
+    s.launch.captures_dir = tmp_path / "caps"
+    r = cast(dict[str, Any], server.snapshot())
+    assert r["status"] == "INVALID" and r["code"] == "no_channel", r
+    assert "`screen_view`" in r["message"] and "text mode" in r["message"], r
+    assert s.dumps == [] and not (tmp_path / "caps").exists()
+
+
 def test_the_256_colour_screen_is_attached_enlarged_and_a_crop_is_the_zoom(
         tmp_path: Path) -> None:
     """With no `dest` the picture goes to the session's scratch; the default scale is the
@@ -981,6 +1009,100 @@ def test_the_256_colour_screen_is_attached_enlarged_and_a_crop_is_the_zoom(
     k = part["image"]["scale"]
     assert (w, h, k) == (16 * 8, 8 * 8, 8), "a small crop enlarged all the way"
     assert pixels[0] == (8 + 8) & 0xFF and pixels[k] == (9 + 8) & 0xFF
+
+
+def _ramp_pen(x: int, y: int) -> int:
+    return (x + y) & 0xFF
+
+
+def test_a_screen_read_names_its_view_and_the_pens_the_palette_holds(tmp_path: Path) -> None:
+    screen_bench("screen-13h", tmp_path)
+    r = cast(dict[str, Any], server.screen_view())
+    assert (r["mode"], r["screen_indexed"], r["entries"]) == ("render", True, 256), r
+    screen_bench("probe-booted", tmp_path)
+    assert cast(dict[str, Any], server.screen_view())["mode"] == "render"
+
+
+def test_isolate_marks_the_pens_asked_for_and_says_how_many_pixels_and_where(
+        tmp_path: Path) -> None:
+    screen_bench("screen-13h", tmp_path)
+    dest = tmp_path / "iso.png"
+    crop = [10, 20, 100, 50]
+    r = cast(dict[str, Any], server.screen_view(mode="isolate", pens=[40, 41], crop=crop, scale=1,
+                                                dest=str(dest)))
+    assert r["status"] == "ok" and r["mode"] == "isolate" and r["crop"] == crop, r
+    hits = [(x, y) for y in range(20, 70) for x in range(10, 110) if _ramp_pen(x, y) in (40, 41)]
+    assert r["pixels"] == len(hits) and r["pens"] == [40, 41], r
+    assert r["bbox"] == [min(x for x, _ in hits), min(y for _, y in hits),
+                         max(x for x, _ in hits), max(y for _, y in hits)], r
+    w, h, pixels, plte, _ = decode_png(dest.read_bytes())
+    assert (w, h) == (100, 50) and plte[40] == plte[41] == (255, 0, 255), (w, h)
+    grey = plte[42]
+    assert grey != (255, 0, 255) and grey[0] == grey[1] == grey[2], "the rest is grey"
+    assert pixels[0] == _ramp_pen(10, 20) and r["image"]["path"] == str(dest)
+    none = cast(dict[str, Any], server.screen_view(mode="isolate", pens=[5], crop=[0, 0, 2, 1]))
+    assert none["pixels"] == 0 and none["bbox"]["available"] is False, none
+
+
+def test_histogram_counts_the_pens_used_and_names_the_unused_runs(tmp_path: Path) -> None:
+    screen_bench("screen-13h", tmp_path)
+    r = cast(dict[str, Any], server.screen_view(mode="histogram", crop=[0, 0, 16, 1]))
+    assert r["status"] == "ok" and r["mode"] == "histogram" and "image" not in r, r
+    assert r["histogram"] == [[p, 1] for p in range(16)] and r["pens_used"] == 16, r
+    assert r["unused"] == ["0x10-0xff"] and r["entries"] == 256, r
+
+
+def test_pixel_names_the_pen_under_a_point_and_its_colour(tmp_path: Path) -> None:
+    s = screen_bench("screen-13h", tmp_path)
+    dest = tmp_path / "px.png"
+    r = cast(dict[str, Any], server.screen_view(mode="pixel", point=[10, 3], scale=1,
+                                                dest=str(dest)))
+    assert r["status"] == "ok" and r["mode"] == "pixel" and r["pen"] == 13, r
+    palette = vgadac.parse_dacpal(vga("screen-13h", "VGA DACPAL"))
+    assert r["color"] == "#{:02x}{:02x}{:02x}".format(*vgadac.rgb8(palette[13])), r
+    assert (r["x"], r["y"]) == (10, 3) and r["crop"] == [0, 0, 48, 48], r
+    assert r["point_in_crop"] == [10, 3] and "set_by" not in r, r
+    assert r["image"]["path"] == str(dest) and r["session"]["altered"] is False
+    assert s.dumps == [(0xA000, 0, 64000)]
+    edge = cast(dict[str, Any], server.screen_view(mode="pixel", point=[319, 199]))
+    assert edge["crop"] == [272, 152, 48, 48] and edge["point_in_crop"] == [47, 47], edge
+    off = cast(dict[str, Any], server.screen_view(mode="pixel", point=[320, 0]))
+    assert off["code"] == "bad_argument" and "320x200" in off["message"], off
+
+
+@pytest.mark.parametrize("mode", ["isolate", "histogram", "pixel"])
+def test_a_view_by_pens_is_refused_by_name_in_text_and_in_direct_colour(
+        tmp_path: Path, mode: str) -> None:
+    more: dict[str, Any] = {"isolate": {"pens": [1]}, "pixel": {"point": [0, 0]}}.get(mode, {})
+    for bench_name, word in (("probe-booted", "M_TEXT"), ("planes-lin15", "M_LIN15")):
+        screen_bench(bench_name, tmp_path)
+        r = cast(dict[str, Any], server.screen_view(mode=mode, **more))
+        assert r["status"] == "INVALID" and r["code"] == "no_channel", r
+        assert word in r["message"] and "render" in r["message"], r["message"]
+
+
+@pytest.mark.parametrize(("call", "said"), [
+    ({"mode": "bogus"}, "mode"),
+    ({"mode": "isolate"}, "pens"),
+    ({"mode": "isolate", "pens": []}, "pens"),
+    ({"mode": "isolate", "pens": [256]}, "pens"),
+    ({"mode": "isolate", "pens": [1] * 65}, "pens"),
+    ({"mode": "render", "pens": [1]}, "pens"),
+    ({"mode": "pixel"}, "point"),
+    ({"mode": "render", "point": [0, 0]}, "point"),
+    ({"mode": "pixel", "point": [0]}, "point"),
+    ({"mode": "pixel", "point": [0, 0], "crop": [0, 0, 4, 4]}, "crop"),
+    ({"mode": "histogram", "dest": "~/never.png"}, "histogram"),
+    ({"mode": "histogram", "scale": 2}, "histogram"),
+    ({"mode": "histogram", "attach": False}, "histogram"),
+])
+def test_the_arguments_of_a_view_are_judged_before_the_machine_is_asked(
+        tmp_path: Path, call: dict[str, Any], said: str) -> None:
+    s = screen_bench("screen-13h", tmp_path)
+    r = cast(dict[str, Any], server.screen_view(**call))
+    assert r["status"] == "INVALID" and r["code"] == "bad_argument", r
+    assert said in r["message"], r["message"]
+    assert s.asked == [] and s.dumps == []
 
 
 def test_the_256_colour_screen_asked_not_to_attach_is_written_and_says_why(

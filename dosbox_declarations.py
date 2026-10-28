@@ -613,8 +613,9 @@ class DeclarationStore:
         """
         if decl.by == "address":
             return Resolved(decl, state="address")
-        hits = (index.get(decl.ref, []) if index is not None
-                else [s for s in symbols if s.name == decl.ref])
+        key = sym.folded(decl.ref)
+        hits = (index.get(key, []) if index is not None
+                else [s for s in symbols if sym.folded(s.name) == key])
         if not hits:
             return Resolved(decl, state="unresolved")
         best = min(hits, key=lambda s: s.offset)

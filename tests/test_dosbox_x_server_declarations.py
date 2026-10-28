@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
@@ -98,6 +99,20 @@ def test_breakpoint_at_a_symbol_arms_stores_and_says_when_it_is_marked(
     marked = server.breakpoint_at(ref="ATRCT_RUN")
     assert marked["armed"] is True and marked.get("marked", False) is True
     assert "linker's mark" in str(marked["note"])
+
+
+def test_a_code_breakpoint_on_a_dynamic_core_is_armed_and_says_it_may_be_passed_over(
+        tmp_path: Path) -> None:
+    """A dynamic core checks breakpoints at block boundaries, so one inside a compiled block can
+    be passed over: armed, with the limit and the remedy said, never refused."""
+    fake = _names(tmp_path, symbols=[dsym.Symbol("_uicue_apply", 0x3D5E0, kind="T")])
+    fake.launch = dataclasses.replace(fake.launch, core="dynamic")
+    got = cast(dict[str, Any], server.breakpoint_at(ref="_uicue_apply"))
+    assert got["status"] == "ok" and got["armed"] is True, got
+    assert "cpu core=normal" in got["note"] and "dynamic" in got["note"], got
+    fake.launch = dataclasses.replace(fake.launch, core="auto")
+    plain = cast(dict[str, Any], server.breakpoint_at(ref="_uicue_apply"))
+    assert "dynamic" not in str(plain.get("note")), plain
 
 
 def test_re_declaring_a_breakpoint_is_a_no_op_that_re_arms_a_lost_row(
@@ -305,7 +320,7 @@ def test_every_tool_declares_a_title_and_the_readers_a_read_only_hint() -> None:
                          "disassemble", "call_stack",
                          "symbols_find",
                          "declaration_list", "captures", "build_check", "state_list",
-                         "comment_list", "screen_signature", "map_find", "guest_file",
+                         "comment_list", "screen_signature", "screen_map_find", "guest_file",
                          "audio_compare"}, read_only
 
 

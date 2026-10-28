@@ -35,6 +35,7 @@ REPLY_WORDS: dict[str, tuple[str, ...]] = {
     "log_wait": ("logfile",),
     "status": ("alive", "running", "altered"),
     "screen_signature": ("dest", "scale"),
+    "screen_view": ("isolate", "pixel"),
     "captures": ("bytes",),
     "audio_compare": ("peak_dbfs", "rms_dbfs", "silent", "silence_spans", "onset_s",
                       "clipping_run", "clipped"),

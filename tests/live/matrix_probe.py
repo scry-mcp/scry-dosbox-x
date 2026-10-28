@@ -159,7 +159,8 @@ _NEEDS_STOP = ("registers", "read_memory", "disassemble", "call_stack", "memdump
                "run_for", "trace", "record", "audio_record",
                "resume", "machine_map", "interrupt_vectors", "palette", "screen_view",
                "screen_signature", "screen_wait", "comment_write add", "comment_write delete",
-               "comment_write load", "map_write add", "map_find", "port read", "port write",
+               "comment_write load", "screen_map_write add", "screen_map_find", "port read",
+                   "port write",
                "pic read", "pic unmask", "pic mask", "pic raise", "pic lower", "pic ack",
                "a20 read", "a20 off", "a20 on")
 _NO_CAPTURE = ("capture_frame", "series_capture")
@@ -248,10 +249,10 @@ def _args(tool: str, state: str) -> dict[str, Any]:
         "comment_write delete": {"ref": COMMENT_REF},
         "comment_write save": {"dest": M.fresh(".comments.tsv")},
         "comment_write load": {"path": _header_only()},
-        "map_write load": {"path": str(_ABSENT / "probe.scry-map.json")},
-        "map_write add": {"screen": f"probe_{state}", "match": [[0, 0, 8, 1]]},
-        "map_find": {},
-        "map_write save": {"dest": M.fresh(f"-{state}.scry-map.json"), "overwrite": True},
+        "screen_map_write load": {"path": str(_ABSENT / "probe.screen-map.json")},
+        "screen_map_write add": {"screen": f"probe_{state}", "match": [[0, 0, 8, 1]]},
+        "screen_map_find": {},
+        "screen_map_write save": {"dest": M.fresh(f"-{state}.screen-map.json"), "overwrite": True},
         # IRQ 3 (COM2) is masked on this machine and nothing raises it: unmasked and masked back,
         # then raised, lowered and acknowledged while masked, so the guest never takes it.
         "port read": {"port": 0x3DA}, "port write": {"port": 0x3C8, "value": 0},
@@ -429,9 +430,9 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
                       "send_keys docstring: Refused: no stub"),
         "send_mouse": (lambda r: refused(r, "no_channel") and "STUB" in str(r.get("message")),
                        "send_mouse docstring: Refused: no stub"),
-        # Before it, this state's order has `memdump`, `map_write(method="save")` and others write
-        # files, so the
-        # list is not empty, and a session started without `capture_video` lists no video.
+        # Before it, this state's order has `memdump`, `screen_map_write(method="save")` and others
+        # write files, so the list is not empty, and a session started without `capture_video`
+        # lists no video.
         "captures": (lambda r: ok(r) and isinstance(r.get("captures"), list)
                      and bool(r["captures"])
                      and all(c.get("avi_frames") in (1, 2) for c in r["captures"]
@@ -457,12 +458,14 @@ def _stopped(tool: str) -> tuple[Callable[[dict[str, Any]], bool], str]:
         "comment_write delete": (lambda r: ok(r)
                                  and (r.get("deleted") or {}).get("ref") == COMMENT_REF,
                            "comment_write delete docstring"),
-        "map_write add": (lambda r: ok(r) and r.get("kind") == "text" and r.get("size") == [80, 25]
-                    and len(str((r.get("match") or [{}])[0].get("signature"))) == 16,
-                    "map_write add docstring: one read signs each crop, in the screen's own units"),
-        "map_find": (lambda r: ok(r) and r.get("matched") is True
+        "screen_map_write add": (lambda r: ok(r) and r.get("kind") == "text"
+                                 and r.get("size") == [80, 25]
+                                 and len(str((r.get("match") or [{}])[0].get("signature"))) == 16,
+                                 "screen_map_write add docstring: one read signs each crop, in "
+                                 "the screen's own units"),
+        "screen_map_find": (lambda r: ok(r) and r.get("matched") is True
                      and r.get("screen") == "probe_stopped" and r.get("layer") == "session",
-                     "map_find docstring: the screen just mapped, the session layer first"),
+                     "screen_map_find docstring: the screen just mapped, the session layer first"),
         "port read": (lambda r: ok(r) and r.get("port") == "0x03DA" and r.get("bits") == 8
                       and str(r.get("value")).startswith("0x") and _altered(r),
                       "port docstring: a read, which marks the session altered"),
@@ -565,19 +568,20 @@ def _expect(tool: str, state: str) -> tuple[Callable[[dict[str, Any]], bool], st
         return ((lambda r: refused(r, "bad_argument") and "no file at" in str(r.get("message"))
                  and (alive(r) if live else no_session(r))),
                 f"{tool} docstring: reads files, in any state; a missing one refused by name")
-    if tool == "map_write load":
+    if tool == "screen_map_write load":
         return ((lambda r: refused(r, "bad_argument") and "no map file" in str(r.get("message"))),
-                "map_write load docstring: any state; a file that is not there refused by name")
+                "screen_map_write load docstring: any state; a file that is not there refused "
+                "by name")
     if tool == "guest_file":
         return ((lambda r: refused(r, "bad_argument")
                  and "not fingerprinted" in str(r.get("message"))),
                 "guest_file docstring: a host file, any state; one `start` did not name refused")
-    if tool == "map_write save":
+    if tool == "screen_map_write save":
         if state == "none":
             return ((lambda r: refused(r, "needs_call") and no_session(r)),
-                    "map_write save docstring: nothing mapped yet is `needs_call`")
+                    "screen_map_write save docstring: nothing mapped yet is `needs_call`")
         return ((lambda r: ok(r) and Path(str(r.get("path"))).is_file()),
-                "map_write save docstring: any state; the maps the server holds, written")
+                "screen_map_write save docstring: any state; the maps the server holds, written")
     if tool == "perform_export" and state in ("none", "closed"):
         # Before any `start` there is nothing recorded; a closed session's recording is still
         # the last one, and it exports with no machine.
@@ -592,6 +596,9 @@ def _expect(tool: str, state: str) -> tuple[Callable[[dict[str, Any]], bool], st
         return (lambda r: refused(r, "no_session") and no_session(r),
                 "reply_contract no_session: no live machine, `start` first")
     predicate, source = _stopped(tool) if state == "stopped" else _running(tool)
+    if tool == "close":
+        # The block is the session after the close, which is over.
+        return (lambda r: predicate(r) and not alive(r)), source
     # A live machine in both states: every reply's session block has to say so.
     return (lambda r: predicate(r) and alive(r)), source
 
@@ -643,7 +650,7 @@ _STOPPED_ORDER = [
     "disassemble", "call_stack", "memdump",
     "find", "scan start", "scan filter", "scan clear", "debug", "machine_map",
     "interrupt_vectors", "palette", "screen_view", "screen_signature", "screen_wait",
-    "map_write add", "map_find", "map_write save", "map_write load",
+    "screen_map_write add", "screen_map_find", "screen_map_write save", "screen_map_write load",
     "set_register", "write", "stop",
     "step", "run_to", "run_for", "trace", "state_write save", "state_write load", "snapshot",
                   "record", "audio_record", "state_list",
@@ -708,7 +715,8 @@ def section_a() -> None:
     _a_one("start", "closed")
     r = M.call(server.close)
     M.judge("A stopped close",
-            ok(r) and r.get("closed") is True and r.get("ended_by") == CLOSED_BY, said(r))
+            ok(r) and r.get("closed") is True and r.get("ended_by") == CLOSED_BY
+            and not alive(r), said(r))
 
 
 # ================================================================ B: argument edges

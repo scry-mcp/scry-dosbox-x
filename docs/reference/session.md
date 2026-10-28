@@ -80,7 +80,7 @@ A build without the debugger starts fine and then hangs `start` until its timeou
 *Start a DOSBox-X session*
 
 ```text
-start(conf, cwd, session_seconds, shared=false, flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="", plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null, presence=true, dos_calls=false, log_categories=null, guest_files=null)
+start(conf, cwd, session_seconds, shared=false, flags=null, break_on_int3=false, program="", logfile="", capture_video=false, captures_dir="", plan=null, settle_seconds=null, input_port=0, state_dir="", binary="", background=null, presence=true, dos_calls=false, log_categories=null, guest_files=null, symbols="", base_from="program")
 ```
 
 Open one live DOSBox-X session from your conf, parked at the debugger.
@@ -93,16 +93,23 @@ guest's E9 channel, for `log`, `log_wait`, `drive`. `program` runs after autoexe
 `state_dir`: where `state_write` saves; empty, under `cwd`. `dos_calls`: record every
 INT 21h for `log(channel="dos")`. `log_categories`: `[log]` category to level, into
 `logfile`. `guest_files`: host files the guest should leave, read by `guest_file` and
-`close`.
+`close`. `symbols`: a table `symbols_load` reads, judged here and placed at the first stop
+where DOS holds the program its stem names (`<stem>.exe`); `base_from` `program` (its load
+segment) or a register, as `symbols_load` measures one, at a protected-mode stop. That stop's
+reply says `symbols_placed` once (`placed`, `path`, `load_segment`, `base`, `loaded`; a
+placement refused: `placed: false`, `code`, `why`); a later `symbols_load` replaces it.
 
-Refused: a live session, a bad path, `session_seconds` out of range, `capture_video`
-without `program`, an `input_port` other than 0 outside 1024-65535,
-`log_categories` without `logfile`, `dos_calls` on a build with no `DOSTRACE`,
-`guest_files` naming a directory, one file twice or more than 16, or busy.
+Refused: a live session, a bad path or `symbols` table, `session_seconds` out of range,
+`capture_video` without `program`, an `input_port` other than 0 outside
+1024-65535, `log_categories` without `logfile`, `dos_calls` on a build
+with no `DOSTRACE`, `guest_files` naming a directory, one file twice or more than
+16, or busy.
 
 Reply: `pid`, `stub`, `input_port`, `declarations` (`rearm`), `dos_calls`,
 `log_categories`, `guest_files` (each when asked for: the trace's path, the categories set,
-each file as it was before the boot); with `plan`, its account.
+each file as it was before the boot), `symbols` (`held`, `base_from`); with `plan`, its
+account. `note` when the conf or `flags` select a dynamic cpu core, which can pass over code
+breakpoints: start on `flags=["-set", "cpu core=normal"]`.
 
 Reference: REFERENCE.md, The session.
 
@@ -128,6 +135,8 @@ Reference: REFERENCE.md, The session.
 | `dos_calls` | boolean | `false` |
 | `log_categories` | object or null | `null` |
 | `guest_files` | array of string or null | `null` |
+| `symbols` | string | `""` |
+| `base_from` | string (matching `^([pP][rR][oO][gG][rR][aA][mM]\|[cC][sS]\|[dD][sS]\|[eE][sS]\|[sS][sS]\|[fF][sS]\|[gG][sS])$`) | `"program"` |
 
 - `presence`: Draw an edge around the emulator's window while this session is open: dim while idle, bright while a call runs the machine. No capture of this server carries it.
 
@@ -177,6 +186,7 @@ Reference: REFERENCE.md, The session.
 | `state_dir` | string |
 | `stub` | string |
 | `output_bytes_dropped` | integer |
+| `symbols` | object |
 | `version` | string or object |
 | `watched` | boolean |
 
@@ -350,7 +360,7 @@ Reply: `closed`, `ended_by` (`quit`, `killed`, `died`, `none`), `pid`, `stdout_t
 `errorlog_tail` when the end was not a clean `quit`, or with `detail=True`. `exit_code` is
 an integer or unavailable with its `why`; `note` when the output was not read to its end.
 `guest_files`: each file `start` named, with `guest_file`'s `state`. `session` is the block
-before closing.
+as it is after the close (`alive` and `running` false).
 
 | argument | type | default |
 |---|---|---|
@@ -393,5 +403,7 @@ Example, from a live run:
 <!-- scry-reference:end close -->
 
 **The `ended_by` values**: `quit` is the emulator leaving on the first signal, which is what a session launched here does, program loaded or not, because `start` turns the quit warning off; `killed` is a conf that puts the warning back or a wedged guest, ended by SIGKILL, and every close on Windows, which has no signal to ask with and terminates the process; `died` is already exited when called; `none` is nothing to close. **`exit_code`** is unavailable when SIGKILLed and still not reaped, since an emulator may still be on the machine.
+
+**The `session` block is the session after the close**: `alive` and `running` false and `altered` false, as with no session at all.
 
 **`note`** says how the reader of the emulator's output ended when that was not at the end of its output: it outlived the close, or a read failed, so the tails may be short. **The reply also carries** what the process was (`status`'s rows, `pid` first), read before the end, so `pid` is the process this call ended.

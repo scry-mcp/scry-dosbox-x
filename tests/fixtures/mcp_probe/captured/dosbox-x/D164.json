@@ -1,0 +1,36 @@
+{
+ "task": {
+  "id": "D164",
+  "prompt": "Start DOSBox-X on the conf /opt/lineup/lineup.conf with /opt/lineup as the working directory, for at most 900 seconds. Load the linker map /opt/lineup/EXES/LINEUP.MAP with the session, so its names are there as soon as DOS has loaded the game, wherever it puts it.",
+  "tool": "start",
+  "args": {
+   "conf": "/opt/lineup/lineup.conf",
+   "cwd": "/opt/lineup",
+   "session_seconds": 900,
+   "symbols": "/opt/lineup/EXES/LINEUP.MAP"
+  },
+  "allow": [
+   "base_from"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D164: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/lineup/lineup.conf\", \"cwd\": \"/opt/lineup\", \"session_seconds\": 900, \"symbols\": \"/opt/lineup/EXES/LINEUP.MAP\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D164: {\"tool\": \"start\", \"args\": {\"conf\": \"/opt/lineup/lineup.conf\", \"cwd\": \"/opt/lineup\", \"session_seconds\": 900, \"symbols\": \"/opt/lineup/EXES/LINEUP.MAP\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D164: {\"tool\":\"start\",\"args\":{\"conf\":\"/opt/lineup/lineup.conf\",\"cwd\":\"/opt/lineup\",\"session_seconds\":900,\"symbols\":\"/opt/lineup/EXES/LINEUP.MAP\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

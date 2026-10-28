@@ -39,7 +39,7 @@ INVENTORY = frozenset({
     ("capture_frame", "capture_path"), ("symbols_load", "path"), ("symbols_load", "types"),
     ("comment_write", "dest"), ("comment_write", "path"), ("start", "binary"),
     ("build_check", "binary"), ("machine_map", "dest"), ("series_capture", "dest"),
-    ("series_capture", "capture_path"), ("map_write", "path"), ("map_write", "dest"),
+    ("series_capture", "capture_path"), ("screen_map_write", "path"), ("screen_map_write", "dest"),
     ("perform_export", "dest"), ("audio_compare", "path"),
 })
 
@@ -189,8 +189,8 @@ def _base(tool: str, tmp_path: Path) -> dict[str, Any]:
         "comment_write path": {"method": "load", "path": str(tmp_path / "c.tsv")},
         "build_check": {},
         "machine_map": {"dest": str(tmp_path / "m.json")},
-        "map_write path": {"method": "load", "path": str(tmp_path / "m.scry-map.json")},
-        "map_write dest": {"method": "save", "dest": str(tmp_path / "m.scry-map.json")},
+        "screen_map_write path": {"method": "load", "path": str(tmp_path / "m.screen-map.json")},
+        "screen_map_write dest": {"method": "save", "dest": str(tmp_path / "m.screen-map.json")},
         "perform_export": {"dest": str(tmp_path / "p.json")},
         "guest_file": {"path": str(tmp_path / "OUT.TXT")},
         "audio_compare": {"method": "measure", "path": str(tmp_path / "s.wav")},
@@ -202,7 +202,8 @@ def _base(tool: str, tmp_path: Path) -> dict[str, Any]:
 
 def _base_for(tool: str, arg: str, tmp_path: Path) -> dict[str, Any]:
     """A call's other arguments: a fold's are its method's, the one the argument belongs to."""
-    return _base(f"{tool} {arg}" if tool in ("comment_write", "map_write") else tool, tmp_path)
+    return _base(f"{tool} {arg}" if tool in ("comment_write", "screen_map_write") else tool,
+                 tmp_path)
 
 
 @pytest.mark.parametrize(("tool", "arg"), sorted(INVENTORY))

@@ -1071,7 +1071,7 @@ def _bp_fake(tmp_path: Path, *, mode: str = "Pr32",
         where=lambda: {"cs": "00A7", "eip": "0", "mode": mode},
         command=lambda _t, **_k: "",
         breakpoints=lambda: list(held or []),
-        alive=lambda: True, altered=False)
+        alive=lambda: True, altered=False, _arming_writes=lambda: False)
     fake.delete_rows = lambda picks: ds.Session.delete_rows(fake, picks)  # type: ignore[arg-type]
     return fake
 
@@ -1081,7 +1081,7 @@ def test_arm_code_breakpoint_reads_the_list_back_and_refuses_a_wrong_mode(
     """It stages a breakpoint WITHOUT releasing the machine."""
     ok = _bp_fake(tmp_path, held=[{"index": "00", "entry": "BP 00A7:16DD80"}])
     got = ds.Session.arm_code_breakpoint(ok, 0x00A7, 0x16DD80)  # type: ignore[arg-type]
-    assert got["entry"] == "BP 00A7:16DD80" and ok.altered is True
+    assert got["entry"] == "BP 00A7:16DD80" and ok.altered is False
 
     real = _bp_fake(tmp_path, mode="Real")
     with pytest.raises(ds.Invalid, match="past 0xFFFF addresses nothing"):
@@ -1605,6 +1605,25 @@ def test_a_conf_s_mounts_are_read_past_options_case_and_a_bom(tmp_path: Path, au
     head = "" if autoexec.startswith("[") else "[autoexec]\n"
     conf.write_text(f"{head}{autoexec}\n[sdl]\nmount q .\n", encoding="utf-8-sig")
     assert dlaunch.conf_mounts(conf) == [taken], "a mount outside [autoexec] counted, or missed"
+
+
+@pytest.mark.parametrize(("conf_text", "flags", "core"), [
+    ("[cpu]\ncore=dynamic\n", [], "dynamic"),
+    ("[cpu]\nCore = Dynamic_x86\n", [], "dynamic_x86"),
+    ("[cpu]\ncore=normal\n", [], "normal"),
+    ("[cpu]\ncore=auto\n", [], "auto"),
+    ("[sdl]\ncore=dynamic\n", [], "auto"),
+    ("[cpu]\ncore=dynamic\n", ["-set", "cpu core=normal"], "normal"),
+    ("[cpu]\ncore=normal\n", ["-set", "cpu core=dynamic"], "dynamic"),
+    ("[cpu]\ncore=normal\n", ["-set", "cpu core=dynamic", "-set", "cpu core=auto"], "auto"),
+    ("[cpu]\ncore=dynamic\n", ["-set", "sdl fullscreen=true"], "dynamic"),
+    ("\ufeff[CPU]\ncore=dynamic\n", [], "dynamic"),
+])
+def test_the_core_a_session_boots_with_is_the_flags_last_word_over_the_confs(
+        tmp_path: Path, conf_text: str, flags: list[str], core: str) -> None:
+    conf = tmp_path / "g.conf"
+    conf.write_text(conf_text, encoding="utf-8")
+    assert dlaunch.cpu_core(conf, flags) == core
 
 
 @pytest.mark.parametrize("from_zero", [False, True])

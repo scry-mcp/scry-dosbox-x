@@ -5,15 +5,19 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from scry_core import judges, picture, png, raster, screen_map
+from scry_core import fresh, judges, picture, png, raster, screen_map
 from scry_core.reply_contract import unavailable
 
 import dosbox_dac as vgadac
+import dosbox_frames as frames
 import dosbox_paths as paths
+import dosbox_screen_pens as by_pens
 import dosbox_session as ds
 import dosbox_vga as vga
 import dosbox_video_memory as video
 
+#: `snapshot`'s `route` when it reads video memory at a stop (the running route is `guest`).
+STOP_ROUTE = "video_memory"
 #: The IBM PC's glyphs for the control bytes 01-1F.
 CONTROL_GLYPHS = "☺☻♥♦♣♠•◘○◙♂♀♪♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼"
 #: 00 and FF draw as blank cells, so they read as the space a blank cell is.
@@ -74,15 +78,21 @@ def _crop(crop: Sequence[int] | None, shape: vga.Geometry) -> list[int]:
 
 
 def screen_view(session: ds.Session, crop: Sequence[int] | None, scale: int, dest: Path | None,
-                scratch: Path, attach: bool = True) -> dict[str, Any]:
+                scratch: Path, attach: bool = True, view: str = "render",
+                pens: list[int] | None = None, point: list[int] | None = None) -> dict[str, Any]:
     """The body of `screen_view`; `dest`, `scale` and `attach` are judged on the mode alone,
-    before the other listings are typed."""
+    before the other listings are typed. `view` is the tool's `mode`, the VGA mode being `mode`
+    here."""
     picture.check_scale(scale)
     picture.check_attach(attach)
     if crop is not None:
         judges.rect("crop", crop)
+    by_pens.check_view(view, pens, point, None if crop is None else list(crop), scale,
+                       "" if dest is None else str(dest), attach)
     mode = vga.listed(session, vga.COMMAND_OF["mode"])
     source = vga.source_of(mode)
+    if source == vga.TEXT and view != "render":
+        raise by_pens.needs_pens(view, f"the screen is in `{mode.get('mode')}`, a text mode")
     if source == vga.TEXT and (dest is not None or scale or not attach):
         raise ds.Invalid("bad_argument", f"the screen is in `{mode.get('mode')}`, a text mode, "
                          f"which has no picture to write, scale or attach: leave `dest`, `scale` "
@@ -95,6 +105,7 @@ def screen_view(session: ds.Session, crop: Sequence[int] | None, scale: int, des
     area = _crop(crop, shape)
     data = vga.read_screen(session, shape)
     reply = shape.head()
+    reply["mode"] = view
     reply["crop"] = area
     x0, y0, w, h = area
     if shape.source == vga.TEXT:
@@ -106,10 +117,44 @@ def screen_view(session: ds.Session, crop: Sequence[int] | None, scale: int, des
                      unavailable("the cursor is hidden or outside the crop"))
     else:
         whole = pixels(session, shape, data)
-        reply["image"] = picture.publish(raster.cropped(whole, area), scale, dest, scratch,
-                                         "screen", attach=attach)
+        if whole.palette is None and view != "render":
+            raise by_pens.needs_pens(
+                view, f"the screen is in `{mode.get('mode')}`, drawn in direct colour")
+        if view == "render":
+            reply["screen_indexed"] = whole.palette is not None
+            if whole.palette is not None:
+                reply["entries"] = len(whole.palette)
+            reply["image"] = picture.publish(raster.cropped(whole, area), scale, dest, scratch,
+                                             "screen", attach=attach)
+        else:
+            reply.update(by_pens.view(whole, view, pens, point, area, scale, dest, scratch,
+                                      attach))
     reply["display_start"] = shape.display_start
     return reply
+
+
+def still(session: ds.Session, dest: Path | None) -> dict[str, Any]:
+    """`snapshot` at a stop: the graphics screen as one unscaled PNG written from video memory
+    through the decoder `screen_view` uses, at `dest` or the next free name in the captures
+    directory."""
+    mode = vga.listed(session, vga.COMMAND_OF["mode"])
+    if vga.source_of(mode) == vga.TEXT:
+        raise ds.Invalid("no_channel", f"the screen is in `{mode.get('mode')}`, a text mode, "
+                         f"which has no picture to snapshot at a stop: `screen_view` reads its "
+                         f"text, or `resume` and snapshot the running screen")
+    if dest is not None:
+        paths.fresh_dest("dest", dest)
+    listings = {"mode": mode, **{key: vga.listed(session, vga.COMMAND_OF[key])
+                                 for key in vga.SHAPE_KEYS[1:]}}
+    shape = vga.geometry(listings)
+    data = png.encode(pixels(session, shape, vga.read_screen(session, shape)))
+    if dest is None:
+        path = fresh.numbered(frames.folder(session), lambda n: f"snapshot-{n}.png", data,
+                              "the snapshot")
+    else:
+        fresh.create(dest, data, "the snapshot", named_by_caller=True)
+        path = dest
+    return {"route": STOP_ROUTE, **judges.file_facts(path)}
 
 
 def screen_signature(session: ds.Session, crop: Sequence[int] | None) -> dict[str, Any]:

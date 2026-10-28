@@ -47,6 +47,23 @@ def _asking(fake: NamesFake) -> list[str]:
     return asked
 
 
+def test_a_table_where_two_names_fold_to_one_is_refused_and_a_lookup_ignores_case(
+        tmp_path: Path) -> None:
+    _names(tmp_path)
+    clash = _map(tmp_path, "clash.nm",
+                 "00001000 T ShowCredits\n00002000 T x\n00003000 T showcredits\n")
+    got = cast(dict[str, Any], server.symbols_load(path=clash, base="400000"))
+    assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+    assert "line 1" in got["message"] and "line 3" in got["message"], got["message"]
+    assert not dstate.STATE.table, "a refused load installs nothing"
+    _ok(server.symbols_load(path=_map(tmp_path, "ok.nm", "00001000 T ShowCredits\n"),
+                            base="400000"))
+    found = _ok(server.symbols_find(name="showcredits"))
+    assert [row["name"] for row in found["symbols"]] == ["ShowCredits"], found
+    armed = _ok(server.breakpoint_at(ref="showcredits"))
+    assert armed["state"] == "armed" and armed["armed"] is True, armed
+
+
 def test_a_table_measured_off_another_register_keeps_the_selectors_when_cs_agrees(
         tmp_path: Path) -> None:
     fake = _names(tmp_path)

@@ -110,6 +110,13 @@ def test_resume_enriches_a_halt_and_leaves_a_running_machine_bare(tmp_path: Path
     assert "verdict" not in bare, "a resume that waited for nothing carries none"
 
 
+def test_resume_takes_a_look_for_a_stop_only_with_a_bound(tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    server.resume()
+    server.resume(seconds=0.1)
+    assert fake.looks == [False, True]
+
+
 def test_a_halt_whose_position_is_unreadable_keeps_the_halt(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A halt is a real observation."""

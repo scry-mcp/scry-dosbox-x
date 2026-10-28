@@ -2,7 +2,7 @@
  "task": {
   "id": "D119",
   "prompt": "The guest is stopped on its title screen, a text mode. Map it as title, known by the row at column 0, row 0, 40 cells wide and 1 high, with a control named play at column 10, row 12, 20 cells wide and 1 high.",
-  "tool": "map_write",
+  "tool": "screen_map_write",
   "args": {
    "method": "add",
    "screen": "title",
@@ -33,91 +33,91 @@
  "runs": [
   {
    "lines": [
-    "D119: {\"tool\": \"map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
+    "D119: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D119: {\"tool\": \"map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
+    "D119: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D119: {\"tool\":\"map_write\",\"args\":{\"method\":\"add\",\"screen\":\"title\",\"match\":[[0,0,40,1]],\"controls\":[{\"name\":\"play\",\"rect\":[10,12,20,1]}]}}"
+    "D119: {\"tool\":\"screen_map_write\",\"args\":{\"method\":\"add\",\"screen\":\"title\",\"match\":[[0,0,40,1]],\"controls\":[{\"name\":\"play\",\"rect\":[10,12,20,1]}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D119: {\"tool\": \"map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
+    "D119: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D119: {\"tool\": \"map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
+    "D119: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D119: {\"tool\": \"map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
+    "D119: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D119: {\"tool\": \"map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
+    "D119: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D119: {\"tool\": \"map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
+    "D119: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D119: {\"tool\": \"map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
+    "D119: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D119: {\"tool\": \"map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
+    "D119: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D119: {\"tool\": \"map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
+    "D119: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D119: {\"tool\": \"map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
+    "D119: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D119: {\"tool\":\"map_write\",\"args\":{\"method\":\"add\",\"screen\":\"title\",\"match\":[[0,0,40,1]],\"controls\":[{\"name\":\"play\",\"rect\":[10,12,20,1]}]}}"
+    "D119: {\"tool\":\"screen_map_write\",\"args\":{\"method\":\"add\",\"screen\":\"title\",\"match\":[[0,0,40,1]],\"controls\":[{\"name\":\"play\",\"rect\":[10,12,20,1]}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D119: {\"tool\": \"map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
+    "D119: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D119: {\"tool\": \"map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
+    "D119: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"add\", \"screen\": \"title\", \"match\": [[0, 0, 40, 1]], \"controls\": [{\"name\": \"play\", \"rect\": [10, 12, 20, 1]}]}}"
    ],
    "right": true
   }

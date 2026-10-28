@@ -35,32 +35,25 @@ def test_the_demo_needs_a_copy_of_the_game_with_its_map(tmp_path: Path) -> None:
     assert demo.checked(Run(dir=tmp_path, options={"cwd": str(full)})) == ""
 
 
-def test_the_conf_is_the_committed_one_with_this_checkouts_stub_written_in(
-        tmp_path: Path) -> None:
-    args = demo.boot(Run(dir=tmp_path))
+def test_the_conf_is_the_committed_one_and_the_map_goes_with_the_start(tmp_path: Path) -> None:
+    game = _game(tmp_path / "game")
+    args = demo.boot(Run(dir=tmp_path, options={"cwd": str(game)}))
     conf = Path(args["conf"]).read_text()
     assert conf == (demo.HERE / "lineup.conf").read_text().replace("@GUEST@",
                                                                     str(demo.ROOT / "guest"))
     assert "@GUEST@" not in conf and "core=normal" in conf
     assert args["shared"] is True and "display" not in args
-
-
-def test_the_symbols_go_at_the_segment_the_boot_stopped_in(tmp_path: Path) -> None:
-    game = _game(tmp_path / "game")
-    run = Run(dir=tmp_path, options={"cwd": str(game)},
-              replies={"boot": Reply({"pc": "08ED:00001CAE"})})
-    args = demo.symbols(run)
-    assert args == {"path": tmp_path / "LINEUP.MAP", "base": "8ed0"}
+    assert args["symbols"] == tmp_path / "LINEUP.MAP"
     assert (tmp_path / "LINEUP.MAP").read_text() == (game / "EXES" / "LINEUP.MAP").read_text()
 
 
-@pytest.mark.parametrize("pc", ["F000:0000CA40", "C000:00000010"])
-def test_a_boot_that_stopped_in_rom_is_no_load_segment(tmp_path: Path, pc: str) -> None:
-    reply = Reply({"verdict": "ELAPSED", "pc": pc})
-    with pytest.raises(StepFailed, match="outside the program"):
-        demo.in_game(reply, Run(dir=tmp_path))
-    assert "loaded at segment 08ED" in demo.in_game(
-        Reply({"verdict": "ELAPSED", "pc": "08ED:00001CAE"}), Run(dir=tmp_path))
+def test_the_boot_stop_must_have_placed_the_map(tmp_path: Path) -> None:
+    placed = {"placed": True, "load_segment": "08ED", "loaded": 385}
+    assert "its map placed at segment 08ED, 385 symbols" in demo.in_game(
+        Reply({"verdict": "ELAPSED", "symbols_placed": placed}), Run(dir=tmp_path))
+    for said in ({}, {"symbols_placed": {"placed": False, "why": "real mode"}}):
+        with pytest.raises(StepFailed, match="placed no map"):
+            demo.in_game(Reply({"verdict": "ELAPSED", **said}), Run(dir=tmp_path))
 
 
 def test_the_binding_fires_every_action_the_script_declares() -> None:

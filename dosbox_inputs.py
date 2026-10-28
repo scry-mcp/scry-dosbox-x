@@ -508,7 +508,7 @@ def check_mouse(x: int | None, y: int | None, button: str | None, action: str = 
     if target is not None:
         if not isinstance(cast(object, target), str) or not target:
             raise ds.Invalid("bad_argument", f"target is a control's name on the screen "
-                             f"`map_find` matched; got {target!r}")
+                             f"`screen_map_find` matched; got {target!r}")
         if x is not None or y is not None:
             raise ds.Invalid("bad_argument", "`target` names where the pointer goes: give it, "
                              "or `x` and `y`, not both")
@@ -625,9 +625,9 @@ def send_mouse_at(session: ds.Session, aimed: dict[str, Any], button: str | None
 
 
 def _still_the_screen(report: Report, aimed: dict[str, Any]) -> None:
-    """Refuse when the guest's mode changed since `map_find`: the same numbers would read a text
-    cell as a pixel. Only kind and size are visible while it runs; a changed screen of the same
-    mode is the caller's to catch with `map_find` at a stop."""
+    """Refuse when the guest's mode changed since `screen_map_find`: the same numbers would read a
+    text cell as a pixel. Only kind and size are visible while it runs; a changed screen of the
+    same mode is the caller's to catch with `screen_map_find` at a stop."""
     kind, (width, height) = aimed["kind"], aimed["size"]
     units = report.units()
     now = None if units is None else (report.kind(), units)
@@ -636,7 +636,7 @@ def _still_the_screen(report: Report, aimed: dict[str, Any]) -> None:
                 else f"a {now[0]} {now[1][0]}x{now[1][1]} screen")
         raise ds.Invalid("needs_call", f"target={aimed['target']!r} is a control of "
                          f"{aimed['screen']!r}, a {kind} {width}x{height} screen, and the guest "
-                         f"shows {said} now: `map_find` again at a stop")
+                         f"shows {said} now: `screen_map_find` again at a stop")
 
 
 def _landed(after: Report, target: tuple[int, int], x: int | None, y: int | None,

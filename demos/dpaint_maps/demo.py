@@ -4,7 +4,7 @@ pixels and SCRY typed with the text tool, each answer checked. `--help` says how
 
 Its menus drop only while the button is held: a press on a title opens one, the release over an
 item chooses. The map knows each open menu, the Palette dialog, and the painting screen per tool
-in hand, which the toolbox shows inverted; every move to another screen ends with `map_find`.
+in hand, which the toolbox shows inverted; every move to another screen ends with `screen_map_find`.
 """
 
 from __future__ import annotations
@@ -61,10 +61,10 @@ def boot(run: Run) -> dict[str, Any]:
 
 
 def found(name: str) -> Any:
-    """`map_find`'s reply names screen `name`."""
+    """`screen_map_find`'s reply names screen `name`."""
     def check(reply: Reply, run: Run) -> str:
         expect(reply["matched"] is True and reply["screen"] == name,
-               f"map_find answered {reply.get('screen', 'no screen')}, not {name}")
+               f"screen_map_find answered {reply.get('screen', 'no screen')}, not {name}")
         return f"the map says: {name}"
     return check
 
@@ -75,7 +75,7 @@ def completed(reply: Reply) -> None:
 
 
 def landed(*screens: str) -> Any:
-    """Every `map_find` of a `perform` names the screen its move was meant to land on, in
+    """Every `screen_map_find` of a `perform` names the screen its move was meant to land on, in
     order. The rows `ran` shows are summaries, so the check reads the whole replies, which the
     call keeps in a file beside them."""
     def check(reply: Reply, run: Run) -> str:
@@ -87,7 +87,8 @@ def landed(*screens: str) -> Any:
         short = [r["reply"]["verdict"] for r in rows
                  if r["op"] == "run_for" and r["reply"]["verdict"] != "ELAPSED"]
         expect(not short, f"a wait ended {short}, before its retraces")
-        named = [r["reply"].get("screen", "no screen") for r in rows if r["op"] == "map_find"]
+        named = [r["reply"].get("screen", "no screen")
+                 for r in rows if r["op"] == "screen_map_find"]
         expect(named == list(screens), f"the map named {named}, not {list(screens)}")
         return "the map named " + ", then ".join(screens)
     return check
@@ -114,7 +115,7 @@ def frames(n: int) -> dict[str, Any]:
     return {"op": "run_for", "frames": n}
 
 
-FIND = {"op": "map_find"}
+FIND = {"op": "screen_map_find"}
 Move = tuple[list[dict[str, Any]], str]
 
 
@@ -166,10 +167,10 @@ ROWS = {
 
 STEPS = [
     *opening(boot),
-    Step("map", "map_write", {"method": "load", "path": HERE / "dpaint.scry-map.json"},
+    Step("map", "screen_map_write", {"method": "load", "path": HERE / "dpaint.screen-map.json"},
          lambda reply, run: f"{reply['screens']} screens and {reply['controls']} controls "
                             "loaded"),
-    Step("is paint", "map_find", {}, found("paint: freehand")),
+    Step("is paint", "screen_map_find", {}, found("paint: freehand")),
     moves("open Color", ([click("color", "down")], "color menu")),
     moves("choose Palette", ([click("palette", "up"), frames(DRAWN_FRAMES)], "palette")),
     # The press and the release are each posted over retraces of their own, and the program's

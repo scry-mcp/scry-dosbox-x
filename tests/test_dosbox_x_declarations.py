@@ -399,6 +399,15 @@ def test_resolve_name_through_the_index_is_the_scan_resolution() -> None:
         dec.Declaration("breakpoint", "symbol", "_a"), table, index).offset == 0x100
 
 
+def test_resolve_name_ignores_case_through_the_index_and_the_scan() -> None:
+    table = [_sym("ShowCredits", 0x300)]
+    index = sym.index_by_name(table)
+    d = dec.Declaration("breakpoint", "symbol", "showcredits")
+    for how in (index, None):
+        got = dec.DeclarationStore.resolve_name(d, table, how)
+        assert (got.state, got.offset) == ("resolved", 0x300), how
+
+
 def test_a_write_that_fails_leaves_the_store_as_the_file_holds_it(tmp_path: Path) -> None:
     """A failed add or remove changes nothing in memory, so a refused clear cannot return later."""
     path = tmp_path / "decl.json"

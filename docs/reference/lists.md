@@ -150,9 +150,10 @@ perform_export(dest, overwrite=false)
 
 Write the session's calls since `start` to `dest` as a `perform` document.
 
-Kept: moving calls and checks (`read_memory`, `registers`, `screen_signature`, `map_find`,
-`guest_file`, `image_compare(method="golden")`), each held to its `recorded` reply. Other
-calls drop; the first no replay can place, or past 5000, cuts the rest.
+Kept: moving calls and checks (`read_memory`, `registers`, `screen_signature`,
+`screen_map_find`, `guest_file`, `image_compare(method="golden")`), each held to its
+`recorded` reply. Other calls drop; the first no replay can place, or past 5000, cuts
+the rest.
 
 `dest` (`.json`) is refused if present unless `overwrite`. Reply: `path`, `steps`,
 `checks`, `dropped`, `dropped_total`, `cut`, `replay`; `no_recording` if empty.

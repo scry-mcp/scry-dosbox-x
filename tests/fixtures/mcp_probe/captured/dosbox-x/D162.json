@@ -1,0 +1,31 @@
+{
+ "task": {
+  "id": "D162",
+  "prompt": "The screen map is loaded. Run to its title screen, with the control at main_loop counting on the way.",
+  "tool": "run_to",
+  "args": {
+   "screen": "title",
+   "control": "main_loop"
+  }
+ },
+ "runs": [
+  {
+   "lines": [
+    "D162: {\"tool\": \"run_to\", \"args\": {\"screen\": \"title\", \"control\": \"main_loop\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D162: {\"tool\": \"run_to\", \"args\": {\"screen\": \"title\", \"control\": \"main_loop\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D162: {\"tool\":\"run_to\",\"args\":{\"screen\":\"title\",\"control\":\"main_loop\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

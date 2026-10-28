@@ -77,6 +77,8 @@ class State:
         self.start_seq = 0
         # The file layer outlasts sessions; the session layer does not.
         self.maps = screen_map.Maps()
+        # `start(symbols=)`'s table until its program is in memory (`dosbox_start_symbols`).
+        self.start_symbols: Any = None
 
         # What the server can still say while the guest runs. Empty: no stop yet.
         self.last_stop: dict[str, Any] = {}
@@ -265,9 +267,9 @@ class State:
         """The one way a table arrives, so the name index never describes another table.
 
         `accumulate` keeps earlier loads, as the debugger's appending `LV` does; a name loaded
-        again takes the new row. The key is the exact name, as in `index_by_name`."""
-        fresh = {s.name for s in symbols}
-        kept = ([s for s in self.table if s.name not in fresh] if accumulate else [])
+        again takes the new row. The key is the folded name, as in `index_by_name`."""
+        fresh = {sym.folded(s.name) for s in symbols}
+        kept = ([s for s in self.table if sym.folded(s.name) not in fresh] if accumulate else [])
         self.table[:] = kept + symbols
         self.table_generation += 1
         self.name_index.clear()
@@ -288,6 +290,7 @@ class State:
         self.base.clear()
         self.base_measured_from = None
         self.map_batches = []
+        self.start_symbols = None
 
     def origin(self) -> str:
         """One stamp per `start`, unique across sessions and processes."""

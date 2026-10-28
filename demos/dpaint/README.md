@@ -58,7 +58,7 @@ Give this to an MCP client with this server connected:
 > running from `/path/to/your/dpaint2`, with `DP.EXE f` as the
 > program and the log in a file. Run
 > 400 retraces and tell me where its data segment is. Load the screen map
-> `dpaint.scry-map.json` beside the conf and tell me which screen this is. Pick blue off the
+> `dpaint.screen-map.json` beside the conf and tell me which screen this is. Pick blue off the
 > palette, start a value scan of the data segment, keep what holds 9; pick orange, keep what
 > holds 55, and tell me which survivors are static data and which are in the stack's frames.
 > Close the scan and watch the first static one, then paint a sunset, one call a shape: a peach
@@ -74,7 +74,7 @@ Give this to an MCP client with this server connected:
 |---|---|
 | Session | `start` (windowed, running the program from `cwd`), `close` |
 | Advance | `run_for` by retraces on the conf's fixed clock |
-| Files | `map_write(method="load")`, `map_find` |
+| Files | `screen_map_write(method="load")`, `screen_map_find` |
 | Input | `send_mouse` by control name off the map, at screen pixels, and as drags; `send_keys` for the word |
 | Scan | `scan` (`start`, `filter` twice, `clear`) |
 | Declarations | `watch_add` (the colour byte in view at every stop), `declaration_clear(kind="watch")` |
@@ -240,23 +240,24 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 
 </details>
 
-**3. `map_write`**: OK map: 1 screen and 13 controls loaded
+**3. `screen_map_write`**: OK map: 1 screen and 13 controls loaded
 
 <details><summary>call and reply</summary>
 
 ```json
 {
   "method": "load",
-  "path": "./demos/dpaint/dpaint.scry-map.json"
+  "path": "./demos/dpaint/dpaint.screen-map.json"
 }
 ```
 
 ```json
 {
-  "summary": "map_write load: 1 screen, 13 controls of dpaint",
+  "summary": "screen_map_write load: 1 screen, 13 controls of dpaint",
   "status": "ok",
-  "path": "./demos/dpaint/dpaint.scry-map.json",
+  "path": "./demos/dpaint/dpaint.screen-map.json",
   "application": "dpaint",
+  "mode": "verified",
   "screens": 1,
   "controls": 13,
   "session": {
@@ -269,7 +270,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 
 </details>
 
-**4. `map_find`**: OK find: the painting screen, 13 controls named
+**4. `screen_map_find`**: OK find: the painting screen, 13 controls named
 
 <details><summary>call and reply</summary>
 
@@ -279,7 +280,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 
 ```json
 {
-  "summary": "map_find: paint (file), 13 controls",
+  "summary": "screen_map_find: paint (file), 13 controls",
   "status": "ok",
   "matched": true,
   "screen": "paint",
@@ -2251,7 +2252,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 
 ```json
 {
-  "summary": "read_memory A000:7DA0: 128 bytes at A000:00007DA0",
+  "summary": "read_memory A000:7DA0: 128 bytes at A000:00007DA0: 343434343434343434343434343434343434343434343434340e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e... (64 more bytes in `hex`)",
   "status": "ok",
   "ref": "A000:7DA0",
   "seg_off": "A000:00007DA0",
@@ -2280,7 +2281,7 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
 
 ```json
 {
-  "summary": "read_memory A000:C09E: 112 bytes at A000:0000C09E",
+  "summary": "read_memory A000:C09E: 112 bytes at A000:0000C09E: 01010101010101010101010101010101010101010101010101010101010106060606060606060606060606060606060606060606060606060606060606060606... (48 more bytes in `hex`)",
   "status": "ok",
   "ref": "A000:C09E",
   "seg_off": "A000:0000C09E",
@@ -2314,12 +2315,15 @@ and its own arguments) is `<volatile>`, and the program's directory is `<host>`.
   "kind": "pixel",
   "width": 320,
   "height": 200,
+  "mode": "render",
   "crop": [
     0,
     0,
     320,
     200
   ],
+  "screen_indexed": true,
+  "entries": 256,
   "image": {
     "path": "./tmp/demos/dpaint/screen.png",
     "bytes": 7911,
@@ -2399,7 +2403,7 @@ Also attached: image/png.
   ],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
   "session": {
-    "alive": true,
+    "alive": false,
     "running": false,
     "altered": false
   }

@@ -305,7 +305,8 @@ def test_every_tool_this_server_promises_is_actually_registered() -> None:
         "state_write", "state_list", "snapshot", "captures", "capture_frame", "build_check",
         "symbols_load", "symbols_find", "send_keys", "send_mouse", "perform", "perform_export",
         "drive", "comment_list", "comment_write", "series_capture", "image_compare",
-        "audio_compare", "map_find", "map_write", "record", "audio_record", "port", "pic", "a20",
+        "audio_compare", "screen_map_find", "screen_map_write", "record", "audio_record", "port",
+        "pic", "a20",
         "guest_file"}
     got = dosbox_mcp.registered_tools()
     assert set(got) == expected
@@ -346,8 +347,9 @@ def test_every_tool_that_needs_a_session_says_so_when_there_is_none(
         "regpoint_add": lambda: server.regpoint_add(condition="AX==13"),
         "resume": server.resume, "stop": server.stop,
         "series_capture": lambda: server.series_capture(at_frames=[0]),
-        "map_write add": lambda: server.map_write("add", screen="s", match=[[0, 0, 1, 1]]),
-        "map_find": server.map_find,
+        "screen_map_write add": lambda: server.screen_map_write("add", screen="s",
+                                                                match=[[0, 0, 1, 1]]),
+        "screen_map_find": server.screen_map_find,
         "read_memory": lambda: server.read_memory(ref="0000:00000000"),
         "memdump": lambda: server.memdump(ref="0000:00000000", length=8, dest=_tmp("x")),
         "find": lambda: server.find(ref="0000:00000000", length=8, data_hex="00"),
@@ -1043,6 +1045,34 @@ def test_start_launches_the_binary_it_resolved_and_says_which(
         str(mine), "argument", "DOSBox-X version dev"), got
 
 
+@pytest.mark.parametrize(("core_text", "flags", "said"), [
+    ("dynamic", None, True), ("normal", None, False), ("auto", None, False),
+    ("dynamic", ["-set", "cpu core=normal"], False),
+    ("normal", ["-set", "cpu core=dynamic"], True),
+])
+def test_start_warns_that_a_dynamic_core_passes_over_code_breakpoints(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, core_text: str,
+        flags: list[str] | None, said: bool) -> None:
+    conf = tmp_path / "g.conf"
+    conf.write_text(f"[cpu]\ncore={core_text}\n", encoding="utf-8")
+
+    class Booted(NamesFake):
+        argv = ["dosbox-x", "-conf", "g.conf"]
+
+        def wait_ready(self, timeout: float = 30.0, progress: Any = None) -> float:
+            return 0.5
+
+    monkeypatch.setattr("shutil.which", lambda _b: "/usr/bin/dosbox-x")
+    monkeypatch.setattr("scry_core.binaries.version", lambda *_a, **_k: "DOSBox-X (a stub)")
+    stub_build(monkeypatch)
+    with mock.patch("dosbox_x_server.ds.Session", lambda launch: Booted(conf=conf)):
+        got = cast(dict[str, Any], server.start(
+            conf=str(conf), cwd=str(tmp_path), session_seconds=60, flags=flags))
+    assert got["status"] == "ok", got
+    note = str(got.get("note", ""))
+    assert ("can be passed over" in note and "cpu core=normal" in note) is said, got
+
+
 def test_start_with_no_rung_resolving_is_refused_before_anything_starts(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     conf = tmp_path / "g.conf"
@@ -1364,7 +1394,7 @@ def test_status_pc_is_where_the_machine_is_now_after_a_command_moved_it(tmp_path
 def test_every_tool_is_summarised_by_its_own_line() -> None:
     from scry_core import screen_map
     lines = dosbox_mcp.BOUNDARY.summaries
-    folded = {"comment_write": folds.COMMENT, "map_write": folds.MAP, "scan": folds.SCAN,
+    folded = {"comment_write": folds.COMMENT, "screen_map_write": folds.MAP, "scan": folds.SCAN,
               "state_write": folds.STATE_METHODS, "port": folds.PORT, "pic": folds.PIC,
               "a20": folds.A20}
     for name in dosbox_mcp.registered_tools():
@@ -1377,7 +1407,7 @@ def test_every_tool_is_summarised_by_its_own_line() -> None:
             for method in folded[name].values():
                 assert method.line.__module__ in ("dosbox_summaries", "scry_core.screen_map"), (
                     name, method.line)
-        elif name == "map_find":
+        elif name == "screen_map_find":
             assert lines[name] is screen_map.find_line, name
         elif name == "perform_export":
             assert lines[name] is recording.export_summary, name

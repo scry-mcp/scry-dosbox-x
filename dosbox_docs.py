@@ -27,6 +27,7 @@ import dosbox_inputs as inputs
 import dosbox_launch as launch
 import dosbox_logs as logs
 import dosbox_placement as placement
+import dosbox_screen_pens as by_pens
 import dosbox_sequence as sequence
 import dosbox_state as st
 import dosbox_trace as trace
@@ -55,6 +56,7 @@ DOC_VALUES = {**picture.DOC_VALUES, **series.DOC_VALUES, **screen_map.DOC_VALUES
               "TAP_BLOCK_MAX": str(checks.TAP_MAX["capture"]),
               "INSTRUCTIONS_MAX": str(trace.INSTRUCTIONS_MAX),
               "SYMBOLS_LIMIT_MAX": str(placement.SYMBOLS_LIMIT_MAX),
+              "SCREEN_PENS_MAX": str(by_pens.PENS_MAX),
               "EXPECT_WAIT_S": f"{inputs.DRIVE_EXPECT_WAIT_S:g}",
               "SETTLE_S": f"{sequence.SETTLE_DEFAULT_S:g}",
               "EFFECT_WAIT_S": f"{inputs.EFFECT_WAIT_DEFAULT_S:g}",

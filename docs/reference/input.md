@@ -191,13 +191,13 @@ send_mouse(x=null, y=null, button="", action="click", units="screen", expect="",
 Move the guest's mouse pointer, press buttons, and read the pointer back; `expect`
 proves the program reacted, as in `send_keys`.
 
-`x`, `y`: both or neither, in `units`. `target`: a control of the latest `map_find` screen,
-instead of `x`, `y`. A drag is `down`, a move, `up`. A stopped machine is run as for
+`x`, `y`: both or neither, in `units`. `target`: a control of the latest `screen_map_find`
+screen, instead of `x`, `y`. A drag is `down`, a move, `up`. A stopped machine is run as for
 `send_keys`.
 
 Refused: no move and no button, half a move, a place off the screen, no stub, a stopped
 machine with no `RUNSTATE`; `target` beside `x`, `y` or `units="mouse"` (`bad_argument`);
-no `map_find` match (`needs_call`); an unknown control (`unknown_ref`).
+no `screen_map_find` match (`needs_call`); an unknown control (`unknown_ref`).
 
 Reply: `route`, `pointer`, `arrived` (else `asked`), `motion` (a move reached the motion
 counters too), `verify`; with `target`: `target`, `screen`, `identified_at_stop`; from a

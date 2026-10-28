@@ -18,7 +18,6 @@ from demos.host import (  # noqa: E402
     INPUT_TIMING,
     VOLATILE,
     isolated_store,
-    loaded,
     precheck,
     started,
 )
@@ -35,8 +34,6 @@ INPUTS = {action: Press("send_keys", {"keys": [key]})
                               ("FIRE1", "space"), ("UP", "up"))}
 #: Long enough for DOS to boot and EXEC the game, which is then in its attract.
 BOOT_MS = 2000
-#: Where the video memory and the ROMs begin: no program is loaded at or above it.
-ROM_SEGMENT = 0xA000
 
 
 def game(run: Run) -> Path:
@@ -54,43 +51,34 @@ def checked(run: Run) -> str:
 
 
 def boot(run: Run) -> dict[str, Any]:
-    """The conf, with this checkout's stub written in, in the run's own directory."""
+    """The conf, with this checkout's stub written in, and the game's map, both in the run's own
+    directory: the map is placed where DOS loads the game, at the boot's stop."""
+    copy = run.dir / MAP.name
+    shutil.copyfile(game(run) / MAP, copy)
     conf = run.dir / "lineup.conf"
     conf.write_text((HERE / "lineup.conf").read_text(encoding="utf-8").replace(
         "@GUEST@", str(ROOT / "guest")), encoding="utf-8")
     states = run.dir / "lineup-states"
     shutil.rmtree(states, ignore_errors=True)
-    return {"conf": conf, "session_seconds": 900, "shared": True,
+    return {"conf": conf, "session_seconds": 900, "shared": True, "symbols": copy,
             "state_dir": states, "captures_dir": run.dir / "lineup-captures"}
 
 
-def symbols(run: Run) -> dict[str, Any]:
-    """The game's map, copied into the run, placed at the load segment the boot stopped in."""
-    copy = run.dir / MAP.name
-    shutil.copyfile(game(run) / MAP, copy)
-    return {"path": copy, "base": f"{segment(run.replies['boot']) * 16:x}"}
-
-
-def segment(reply: Reply) -> int:
-    return int(str(reply["pc"]).split(":")[0], 16)
-
-
 def in_game(reply: Reply, run: Run) -> str:
-    """The boot's stop is in the program's own code, whose segment is where DOS loaded it: a
-    stop in ROM (a BIOS call) would place every symbol at the ROM's segment."""
+    """The boot's stop placed the map `start` held, at the segment DOS loaded the game at."""
     booted = elapsed("booted")(reply, run)
-    if segment(reply) >= ROM_SEGMENT:
-        raise StepFailed(f"the boot stopped at {reply['pc']}, outside the program, so its "
-                         "segment is not the one DOS loaded the game at")
-    return f"{booted}: DOS running the game, loaded at segment {segment(reply):04X}"
+    placed = reply.get("symbols_placed") or {}
+    if placed.get("placed") is not True:
+        raise StepFailed(f"the boot's stop placed no map: {placed or 'no symbols_placed'}")
+    return (f"{booted}: DOS running the game, its map placed at segment "
+            f"{placed['load_segment']}, {placed['loaded']} symbols")
 
 
 BINDING = Binding(
     platform="dosbox-x",
     boot=[Step("start", "start", boot, started, options=frozenset({"binary", "cwd"}),
                volatile={"summary": "it carries how long the debugger took to answer"}),
-          Step("boot", "run_for", {"milliseconds": BOOT_MS, "seconds": 120}, in_game),
-          Step("symbols", "symbols_load", symbols, loaded)],
+          Step("boot", "run_for", {"milliseconds": BOOT_MS, "seconds": 120}, in_game)],
     inputs=INPUTS, rate_hz=RATE_HZ, sound=HERE / "music.wav", volatile=INPUT_TIMING)
 
 DEMO = Demo(

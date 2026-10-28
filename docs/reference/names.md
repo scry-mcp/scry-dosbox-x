@@ -18,7 +18,8 @@ required in real mode); sectioned maps take `section_bases`. `types`, `pattern`,
 
 Refused (INVALID): both `base` and `section_bases`; a sectioned map without
 `section_bases`; real mode or a running machine without `base`; a mostly unreadable file;
-a table the `<stem>.exe` contradicts.
+a table the `<stem>.exe` contradicts; a table in which two names differ only in case, naming
+both lines.
 
 Reply: `parsed`, `kept`, `loaded`, `table_mode`, `table_total`, `renamed`, `pending`,
 `base`, `checked`, `declarations`.
@@ -116,6 +117,8 @@ Example, from a live run:
 
 **The base is measured off the running machine.** Under a DPMI host the selector base is decided at load time, so it is read with `SELINFO`. In real mode `SELINFO` prints no answer, so a flat map with no `base` is refused before asking, rather than taken as base 0, which would load cleanly and place every symbol at its raw offset. An all-zero descriptor in protected mode is refused for the same reason.
 
+**A lookup ignores case, and a table in which two names differ only in case is refused.** `symbols_find`, a symbol `ref` and a comment's symbol all find `ShowCredits` by `showcredits`; `symbols_find` answers the name as the map spells it, and a declaration keeps the `ref` as it was typed. Two names that fold to one could not be told apart, so the load is refused naming both lines; the same spelling twice is an ambiguous name, which lookups already report.
+
 **The name field has 15 usable characters.** A collision keeps all its members, shortened for an index (`__poly_scan~0`). **Read `renamed`, not `truncated_names`**: a name that fitted is mutilated too when it carries a `~n`.
 
 **Counts that keep the accounting honest.** `parsed` and `unreadable` sit beside the buckets, so a half-unreadable file does not produce a plan whose every count adds up (`nm -C` demangles into names with spaces). `overlay_idle` is a subset of `kept`, not a bucket, and those symbols are loaded, not filtered: dropping a quarter of a table is the worse failure. What the linker's `idle` mark means is open, since maps contradict the reading "not resident"; it is matched per format (TLINK writes `idle`, ILINK32 `Idle`).
@@ -151,8 +154,8 @@ symbols_find(name="", offset=null, section=null, linear="", limit=10)
 ```
 
 Look a symbol up in the table `symbols_load` kept. `name`: exact, else prefixes up to
-`limit`. `offset` (an integer) or `linear` (hex text), with `section`: the nearest symbol at
-or below.
+`limit`, case ignored; a name keeps its own spelling in the reply. `offset` (an integer) or
+`linear` (hex text), with `section`: the nearest symbol at or below.
 
 Reply: `query`, `symbols_total`, `symbols` (`name`, `offset`, `addr`),
 `truncated`; by address, the symbol's fields and `delta`. INVALID: no table.

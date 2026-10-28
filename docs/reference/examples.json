@@ -283,7 +283,7 @@
     },
     {
      "kind": "json",
-     "path": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1284-stopped.scry-map.json",
+     "path": "$TMPDIR/dosbox-x-live-matrix-0fa8c3f37660/jobs-scratch/A/n1284-stopped.screen-map.json",
      "present": true,
      "bytes": 313
     },
@@ -952,11 +952,11 @@
    "how": "sections=[...] names the sections to read; dest=<absolute path> writes every section read whole"
   }
  },
- "map_find": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped map_find",
+ "screen_map_find": {
+  "from": "[A] every tool in every machine state, on the probe guest: A stopped screen_map_find",
   "call": {},
   "reply": {
-   "summary": "map_find: probe_stopped (session), 0 controls",
+   "summary": "screen_map_find: probe_stopped (session), 0 controls",
    "status": "ok",
    "matched": true,
    "screen": "probe_stopped",
@@ -969,8 +969,8 @@
    "controls": []
   }
  },
- "map_write": {
-  "from": "[A] every tool in every machine state, on the probe guest: A stopped map_write add",
+ "screen_map_write": {
+  "from": "[A] every tool in every machine state, on the probe guest: A stopped screen_map_write add",
   "call": {
    "method": "add",
    "screen": "probe_stopped",
@@ -984,7 +984,7 @@
    ]
   },
   "reply": {
-   "summary": "map_write add: probe_stopped (text 80x25), 1 region, 0 controls",
+   "summary": "screen_map_write add: probe_stopped (text 80x25), 1 region, 0 controls",
    "status": "ok",
    "screen": "probe_stopped",
    "kind": "text",

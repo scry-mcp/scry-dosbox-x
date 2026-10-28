@@ -156,7 +156,7 @@ def _symbol_place(name: str) -> dict[str, Any]:
     if not STATE.table:
         return {"state": "unresolved", "why": "no symbol table is loaded: `symbols_load` one and "
                                               "this comment is placed against it"}
-    hits = STATE.name_index.get(name, [])
+    hits = STATE.name_index.get(sym.folded(name), [])
     if not hits:
         return {"state": "unresolved", "why": f"{name!r} is not a symbol of the table loaded "
                                               "now: kept, it may be back after a rebuild"}

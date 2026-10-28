@@ -15,6 +15,7 @@ import dosbox_debugger as dbg
 import dosbox_grammar as grammar
 import dosbox_logs as dlogs
 import dosbox_session as ds
+import dosbox_start_symbols as start_symbols
 import dosbox_state as st
 from dosbox_state import STATE
 
@@ -75,6 +76,9 @@ def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
     `made_by` attributes a stop the calling tool made itself; `asked_by` names the cause when
     no declaration is at the address; `own` is the cause of a stop nothing declared could make,
     left unattributed."""
+    # The table `start` holds is placed before the queue drains, so the re-arm sees it.
+    placed = start_symbols.place_if_due(session)
+    said: dict[str, Any] = {"symbols_placed": placed} if placed is not None else {}
     # One survey serves where, registers and the watches' list.
     arming.apply_pending(session)
     where, registers, held = session.stop_survey()
@@ -103,7 +107,7 @@ def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
     return st.reply(**{**base, **position(where, getattr(session, "paging", None))},
                     frame=frame, regs=st.shown_regs(registers), watches=watches,
                     cause=st.cause(attribution),
-                    e9=e9, stop_seq=STATE.last_stop["seq"], **picture)
+                    e9=e9, stop_seq=STATE.last_stop["seq"], **picture, **said)
 
 
 def recorded_stop_reply(session: ds.Session, recorded: dict[str, Any]) -> dict[str, Any]:

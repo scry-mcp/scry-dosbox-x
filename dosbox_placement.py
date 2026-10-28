@@ -331,6 +331,7 @@ def load(session: ds.Session, source: str, src: Path, base: int | None, base_fro
                          f"was asked to load, so there is nothing to load") from None
     try:
         syms, unreadable = sym.parse(text)
+        sym.check_folded(syms, text)
     except sym.BadSymbolText as e:
         raise ds.Invalid("bad_argument", f"{source}: {e}") from None
     # A stale table resolves every name a few bytes off and nothing in it says so.

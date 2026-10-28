@@ -22,7 +22,7 @@ WRITERS: dict[str, Callable[[dict[str, Any]], object]] = {
     **{tool: (lambda r: r.get("path")) for tool in ("record", "audio_record")},
     # Only `save` writes; `load` answers the `path` it read.
     "comment_write": lambda r: r.get("path") if "dropped_total" in r else None,
-    "map_write": lambda r: r.get("path") if "promoted" in r else None,
+    "screen_map_write": lambda r: r.get("path") if "promoted" in r else None,
     **{tool: (lambda r: (r.get("image") or {}).get("path")) for tool in ("screen_view",
                                                                        "palette")},
     "series_capture": lambda r: r.get("manifest"),

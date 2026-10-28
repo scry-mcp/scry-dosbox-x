@@ -25,7 +25,7 @@ SOURCES = sorted(p for p in PACKAGE.glob("*.py") if p.name != "mapsweep.py")
 
 _ARGS: dict[str, dict[str, Any]] = {
     "series_capture": {"at_frames": [0]},
-    "map_write": {"method": "save", "dest": _abs("nonexistent", "x.scry-map.json")},
+    "screen_map_write": {"method": "save", "dest": _abs("nonexistent", "x.screen-map.json")},
     "image_compare": {"method": "image", "a": _abs("nonexistent", "a.png"),
                       "b": _abs("nonexistent", "b.png")},
     "audio_compare": {"method": "diff", "a": _abs("nonexistent", "a.wav"),
@@ -90,7 +90,7 @@ def test_every_tool_answers_the_contract_with_no_machine(
         return
     # media tools refuse their missing file; a map save refuses the empty map
     expected = {"start": "bad_argument", "build_check": "host_failed",
-                "perform_export": "bad_argument", "map_write": "needs_call",
+                "perform_export": "bad_argument", "screen_map_write": "needs_call",
                 # reads a host file, no machine: one `start` did not fingerprint is refused
                 "guest_file": "bad_argument",
                 **dict.fromkeys(media_tools.IMAGE_TOOLS + media_tools.AUDIO_TOOLS,
@@ -106,7 +106,7 @@ class _Running:
     drain_ended = ""
     ended_how = "none"
     launch = SimpleNamespace(cwd=Path(_abs()), logfile=None, watched=False,
-                             conf=Path(_abs("x.conf")))
+                             conf=Path(_abs("x.conf")), core="auto")
 
     def alive(self) -> bool:
         return True

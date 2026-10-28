@@ -25,6 +25,7 @@ class DosboxEnvelope(ReplyEnvelope, total=False):
     exit_code: int | dict[str, Any]
     last_stop: dict[str, Any]
     stopped_on_its_own: dict[str, Any]
+    symbols_placed: dict[str, Any]
 
 
 class BreakpointAtReply(DosboxEnvelope, total=False):
@@ -361,6 +362,7 @@ class RunToReply(DosboxEnvelope, total=False):
     pc: str
     ref: str
     regs: dict[str, Any]
+    screen: dict[str, Any]
     stop_seq: int
     target: str
     target_disarmed: bool
@@ -378,15 +380,30 @@ class ScreenSignatureReply(DosboxEnvelope, total=False):
 
 
 class ScreenViewReply(DosboxEnvelope, total=False):
+    bbox: list[Any] | dict[str, Any]
+    color: str
     crop: list[Any]
     cursor: list[Any] | dict[str, Any]
     display_start: str
+    entries: int
     height: int
+    histogram: list[Any]
     image: dict[str, Any]
+    isolate_color: str
     kind: str
+    mode: str
+    pen: int
+    pens: list[Any]
+    pens_used: int
+    pixels: int
+    point_in_crop: list[Any]
+    screen_indexed: bool
     text: list[Any]
+    unused: list[Any]
     vga_mode: str
     width: int
+    x: int
+    y: int
 
 
 class ScreenWaitReply(DosboxEnvelope, total=False):
@@ -509,6 +526,7 @@ class StartReply(DosboxEnvelope, account.SequenceFields, total=False):
     state_dir: str
     stub: str
     output_bytes_dropped: Annotated[int, OmitEmpty]
+    symbols: dict[str, Any]
     version: str | dict[str, Any]
     watched: Annotated[bool, OmitEmpty]
 
@@ -729,6 +747,7 @@ class MapWriteReply(DosboxEnvelope, total=False):
     controls: int
     kind: str
     match: list[Any]
+    mode: str
     path: str
     promoted: list[Any]
     replaced: bool
@@ -779,7 +798,7 @@ MODELS: dict[str, type] = {
     "guest_file": GuestFileReply,
     "declaration_clear": DeclarationClearReply,
     "declaration_list": DeclarationListReply,
-    "map_write": MapWriteReply,
+    "screen_map_write": MapWriteReply,
     "scan": ScanReply,
     "state_write": StateWriteReply,
     "breakpoint_at": BreakpointAtReply,
@@ -799,7 +818,7 @@ MODELS: dict[str, type] = {
     "log": LogReply,
     "log_wait": LogWaitReply,
     "machine_map": MachineMapReply,
-    "map_find": MapFindReply,
+    "screen_map_find": MapFindReply,
     "memdump": MemdumpReply,
     "palette": PaletteReply,
     "perform": PerformReply,

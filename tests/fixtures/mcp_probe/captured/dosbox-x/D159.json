@@ -1,0 +1,43 @@
+{
+ "task": {
+  "id": "D159",
+  "prompt": "The guest is stopped in mode 13h. Show where the pixels drawn with palette entries 40 and 41 are on the screen, and how many there are.",
+  "tool": "screen_view",
+  "args": {
+   "mode": "isolate",
+   "pens": [
+    40,
+    41
+   ]
+  },
+  "allow": [
+   "crop",
+   "scale",
+   "dest",
+   "attach"
+  ],
+  "grammar": [
+   "isolate"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D159: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"isolate\", \"pens\": [40, 41]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D159: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"isolate\", \"pens\": [40, 41]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D159: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"isolate\", \"pens\": [40, 41]}}"
+   ],
+   "right": true
+  }
+ ]
+}

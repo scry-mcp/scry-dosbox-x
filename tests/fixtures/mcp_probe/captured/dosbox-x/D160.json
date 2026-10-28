@@ -1,0 +1,36 @@
+{
+ "task": {
+  "id": "D160",
+  "prompt": "The guest is stopped in mode 13h. Which palette entries does the screen use, and which does it leave unused? I do not need a picture.",
+  "tool": "screen_view",
+  "args": {
+   "mode": "histogram"
+  },
+  "allow": [
+   "crop"
+  ],
+  "grammar": [
+   "histogram"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D160: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"histogram\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D160: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"histogram\"}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D160: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"histogram\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

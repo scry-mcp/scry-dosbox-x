@@ -200,9 +200,9 @@ def _args(tmp_path: Path) -> dict[str, dict[str, Any]]:
                                  "checksums": "/nonexistent/g.sha256"},
         "audio_compare measure": {"path": "/nonexistent/s.wav"},
         "audio_compare diff": {"a": "/nonexistent/a.wav", "b": "/nonexistent/b.wav"},
-        "map_write load": {"path": str(tmp_path / "none.scry-map.json")},
-        "map_write save": {"dest": str(tmp_path / "x.scry-map.json")},
-        "map_write add": {"screen": "s", "match": [[0, 0, 1, 1]]}, "map_find": {},
+        "screen_map_write load": {"path": str(tmp_path / "none.screen-map.json")},
+        "screen_map_write save": {"dest": str(tmp_path / "x.screen-map.json")},
+        "screen_map_write add": {"screen": "s", "match": [[0, 0, 1, 1]]}, "screen_map_find": {},
         "port read": {"port": 0x3DA}, "port write": {"port": 0x3C8, "value": 1},
         "pic read": {}, **{f"pic {a}": {"irq": 3} for a in ("mask", "unmask", "ack", "raise",
                                                             "lower")},
@@ -281,17 +281,23 @@ def test_a_stop_step_ends_the_run(tmp_path: Path) -> None:
     assert got["status"] == "ok" and "still_running" not in got and "stopped" in got, got
 
 
+def _leaves_it_running(fake: Any) -> None:
+    """Make the double's `resume` leave the guest running, as a real release does."""
+    released: Any = fake.resume
+
+    def _resume(**kw: Any) -> dict[str, object]:
+        fake.running = True
+        out: dict[str, object] = released(**kw)
+        return out
+
+    fake.resume = _resume
+
+
 def test_a_declaration_after_a_release_answers_pending(tmp_path: Path) -> None:
     """A declaration after a release queues `pending` and the guest stays running."""
     fake = _names(tmp_path, watched=True)
     server.status()
-    released = fake.resume
-
-    def _resume() -> dict[str, object]:
-        fake.running = True
-        return released()
-
-    fake.resume = _resume  # type: ignore[method-assign]
+    _leaves_it_running(fake)
     got = server.perform(steps=[{"op": "resume"}, {"op": "breakpoint_at", "ref": "0000:0400"}],
                          settle_seconds=0)
     assert got["status"] == "ok", got
@@ -306,13 +312,7 @@ def test_the_last_stops_registers_answer_in_a_list_without_waiting_for_a_stop(
     fake = _names(tmp_path, watched=True)
     server.status()
     server.registers()                       # a stop surveyed, so there is a last one
-    released = fake.resume
-
-    def _resume() -> dict[str, object]:
-        fake.running = True
-        return released()
-
-    fake.resume = _resume  # type: ignore[method-assign]
+    _leaves_it_running(fake)
     got = server.perform(steps=[{"op": "resume"},
                                 {"op": "registers", "from_last_stop": True}], settle_seconds=0)
     assert got["status"] == "ok" and got["ran"][1]["reply"]["regs"], got
@@ -366,13 +366,7 @@ def test_a_stop_the_stop_step_surveyed_is_not_numbered_again(tmp_path: Path) -> 
     """The tail reuses the `stop` tool's own stop, enriched, rather than surveying again."""
     fake = _names(tmp_path, watched=True)
     server.status()
-    released = fake.resume
-
-    def _resume() -> dict[str, object]:
-        fake.running = True
-        return released()
-
-    fake.resume = _resume  # type: ignore[method-assign]
+    _leaves_it_running(fake)
     got = server.perform(steps=[{"op": "resume"}, {"op": "stop"}])
     assert got["status"] == "ok", got
     stop = got["ran"][1]["reply"]
@@ -387,13 +381,7 @@ def test_a_queued_declaration_is_not_a_stopper_the_tail_waits_for(tmp_path: Path
     """A `pending` declaration cannot produce a stop, so the list returns at once."""
     fake = _names(tmp_path, watched=True)
     server.status()
-    released = fake.resume
-
-    def _resume() -> dict[str, object]:
-        fake.running = True
-        return released()
-
-    fake.resume = _resume  # type: ignore[method-assign]
+    _leaves_it_running(fake)
     fake.where_raises = True
     began = time.monotonic()
     got = server.perform(steps=[{"op": "resume"}, {"op": "breakpoint_at", "ref": "0000:0400"}],

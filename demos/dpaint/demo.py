@@ -130,10 +130,10 @@ def crossing(*spans: tuple[str, int]) -> Any:
 
 STEPS = [
     *opening(boot),
-    Step("map", "map_write", {"method": "load", "path": HERE / "dpaint.scry-map.json"},
+    Step("map", "screen_map_write", {"method": "load", "path": HERE / "dpaint.screen-map.json"},
          lambda reply, run: f"{reply['screens']} screen and {reply['controls']} controls "
                             "loaded"),
-    Step("find", "map_find", {}, found),
+    Step("find", "screen_map_find", {}, found),
     Step("blue", "send_mouse", {"target": "blue", "button": "left"},
          picked("blue picked off the palette")),
     Step("scan", "scan", scan_start, candidates),

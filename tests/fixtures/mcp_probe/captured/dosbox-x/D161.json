@@ -1,0 +1,42 @@
+{
+ "task": {
+  "id": "D161",
+  "prompt": "The guest is stopped in mode 13h. Which palette entry is the pixel at x 120, y 75, and what colour is it?",
+  "tool": "screen_view",
+  "args": {
+   "mode": "pixel",
+   "point": [
+    120,
+    75
+   ]
+  },
+  "allow": [
+   "scale",
+   "dest",
+   "attach"
+  ],
+  "grammar": [
+   "pixel"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D161: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"pixel\", \"point\": [120, 75]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D161: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"pixel\", \"point\": [120, 75]}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D161: {\"tool\": \"screen_view\", \"args\": {\"mode\": \"pixel\", \"point\": [120, 75]}}"
+   ],
+   "right": true
+  }
+ ]
+}

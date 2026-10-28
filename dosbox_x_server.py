@@ -138,8 +138,10 @@ import dosbox_replies  # noqa: E402
 import dosbox_retrace as retrace  # noqa: E402
 import dosbox_running as running  # noqa: E402
 import dosbox_screen as screen  # noqa: E402
+import dosbox_screen_pens as by_pens  # noqa: E402
 import dosbox_sequence as sequence  # noqa: E402
 import dosbox_session as ds  # noqa: E402
+import dosbox_start_symbols as start_symbols  # noqa: E402
 import dosbox_state as st  # noqa: E402
 import dosbox_stepping as stepping  # noqa: E402
 import dosbox_summaries as one_line  # noqa: E402
@@ -204,7 +206,8 @@ def start(conf: str, cwd: str,
           dos_calls: bool = False,
           log_categories: dict[Annotated[str, vocab.enum(dlaunch.LOG_CATEGORIES)],
                                Annotated[str, vocab.enum(dlaunch.LOG_LEVELS)]] | None = None,
-          guest_files: list[str] | None = None,
+          guest_files: list[str] | None = None, symbols: str = "",
+          base_from: Annotated[str, vocab.folded(start_symbols.BASE_FROM)] = start_symbols.PROGRAM,
           ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Open one live DOSBox-X session from your conf, parked at the debugger.
 
@@ -216,16 +219,23 @@ def start(conf: str, cwd: str,
     `state_dir`: where `state_write` saves; empty, under `cwd`. `dos_calls`: record every
     INT 21h for `log(channel="dos")`. `log_categories`: `[log]` category to level, into
     `logfile`. `guest_files`: host files the guest should leave, read by `guest_file` and
-    `close`.
+    `close`. `symbols`: a table `symbols_load` reads, judged here and placed at the first stop
+    where DOS holds the program its stem names (`<stem>.exe`); `base_from` `program` (its load
+    segment) or a register, as `symbols_load` measures one, at a protected-mode stop. That stop's
+    reply says `symbols_placed` once (`placed`, `path`, `load_segment`, `base`, `loaded`; a
+    placement refused: `placed: false`, `code`, `why`); a later `symbols_load` replaces it.
 
-    Refused: a live session, a bad path, `session_seconds` out of range, `capture_video`
-    without `program`, an `input_port` other than 0 outside {INPUT_PORT_MIN}-{INPUT_PORT_MAX},
-    `log_categories` without `logfile`, `dos_calls` on a build with no `DOSTRACE`,
-    `guest_files` naming a directory, one file twice or more than {GUEST_FILES_MAX}, or busy.
+    Refused: a live session, a bad path or `symbols` table, `session_seconds` out of range,
+    `capture_video` without `program`, an `input_port` other than 0 outside
+    {INPUT_PORT_MIN}-{INPUT_PORT_MAX}, `log_categories` without `logfile`, `dos_calls` on a build
+    with no `DOSTRACE`, `guest_files` naming a directory, one file twice or more than
+    {GUEST_FILES_MAX}, or busy.
 
     Reply: `pid`, `stub`, `input_port`, `declarations` (`rearm`), `dos_calls`,
     `log_categories`, `guest_files` (each when asked for: the trace's path, the categories set,
-    each file as it was before the boot); with `plan`, its account.
+    each file as it was before the boot), `symbols` (`held`, `base_from`); with `plan`, its
+    account. `note` when the conf or `flags` select a dynamic cpu core, which can pass over code
+    breakpoints: start on `flags=["-set", "cpu core=normal"]`.
 
     Reference: REFERENCE.md, The session.
     """
@@ -233,7 +243,7 @@ def start(conf: str, cwd: str,
                            break_on_int3, program, logfile, capture_video, captures_dir, plan,
                            settle_seconds, input_port, state_dir, binary, background,
                            presence, dos_calls, log_categories, guest_files, bridge(ctx),
-                           _step_ops)
+                           _step_ops, symbols=symbols, base_from=base_from)
 
 
 @tool("Session status", summary=one_line.status, read_only=True)
@@ -268,7 +278,7 @@ def close(detail: bool = False, ctx: Context[Any, Any] | None = None) -> dict[st
     `errorlog_tail` when the end was not a clean `quit`, or with `detail=True`. `exit_code` is
     an integer or unavailable with its `why`; `note` when the output was not read to its end.
     `guest_files`: each file `start` named, with `guest_file`'s `state`. `session` is the block
-    before closing.
+    as it is after the close (`alive` and `running` false).
     """
     return lifecycle.close(bridge(ctx), detail)
 
@@ -642,9 +652,9 @@ def a20(method: Annotated[str, vocab.enum(tuple(folds.A20))]) -> dict[str, Any]:
 @tool("Resume the machine", summary=one_line.resume, on_cancel="none", replay="wall")
 def resume(seconds: Annotated[float, vocab.WAIT_FROM_ZERO_BOUNDS] = 0.0, detail: bool = False,
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """Let the machine run. `seconds` 0 (the default) returns after a one-second look for a
-    stop; a bound up to {WAIT_MAX_S} waits for a stop and, if none comes, leaves it running. Needs
-    a stopped machine.
+    """Let the machine run. `seconds` 0 (the default) returns at once with no deadline; a bound
+    up to {WAIT_MAX_S} waits for a stop and, if none comes, leaves it running. Needs a stopped
+    machine.
 
     Reply: with a bound, `verdict` (`OTHER_STOP` with the stop reply of `run_to`; `TIMEOUT`,
     `waited_s`, `note`). `output` (with `detail=True`: the last {DETAIL_TEXT_KEEP} characters
@@ -703,21 +713,32 @@ def step(count: Annotated[int, vocab.bounds(1, stepping.STEP_MAX)] = 1,
 
 
 @tool("Run to a place, with a control", summary=one_line.run_to, on_cancel="stop")
-def run_to(ref: str, control: str, seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
+def run_to(ref: str = "", *, control: str, screen: str = "",
+           seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run until a symbol or a `SEG:OFF` and say where it stopped.
 
     `ref`: a loaded symbol or hex `SEG:OFF`. `control` is required: a second ref known to be
     hot, counted when it fires, so a bound that expires with no control hit is INVALID, not "it
-    did not arrive". Needs a stopped machine. Refused: an absent or ambiguous name.
+    did not arrive". Needs a stopped machine. Refused: an absent or ambiguous name. On a dynamic
+    cpu core, which can pass over a breakpoint inside a compiled block, `note` says so.
+
+    {MAP_RUN_TO}
 
     Reply: `verdict` (`TARGET`, `OTHER_STOP`, `TIMEOUT`), `target_disarmed`, `control_hits`,
     `controls` (`ref`, `at`, `hits_in_run`), `note`, the stop (`pc`, `frame`, `regs`, `cause`).
-    INVALID: `control_silent`, `cut_by_other_stop`, `not_settled`.
+    INVALID: `control_silent`, `cut_by_other_stop`, `not_settled`, `stale_map`.
 
     Reference: REFERENCE.md, Advancing the machine.
     """
-    return advance.run_to(ref, control, seconds, bridge(ctx))
+    session = live()
+    reply = advance.run_to(STATE.maps.anchor(screen) if screen else ref, control, seconds,
+                           bridge(ctx))
+    if screen:
+        current = STATE.as_of_current(session)
+        reply = screen_map.at_anchor(STATE.maps, screen, reply, folds.map_read(session),
+                                     None if current is None else current["stop_seq"])
+    return dlaunch.with_dynamic_core_note(reply, session.launch)
 
 
 @tool("Run for frames or emulated time", summary=one_line.run_for, on_cancel="stop")
@@ -790,14 +811,18 @@ def screen_wait(text: str, seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
 @tool("Snapshot the screen to a PNG", summary=one_line.snapshot, on_cancel="none", replay="drop")
 def snapshot(dest: str = "", seconds: Annotated[float, vocab.WAIT_BOUNDS] = ds.SNAPSHOT_WAIT_S,
              ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
-    """A still of the running screen, taken in the guest into the captures directory within
-    `seconds`, moved to `dest` if given (absolute, new). Refused: parked at the debugger, no
-    `logfile`, no stub in the log.
+    """A still of the screen as a PNG, at `dest` if given (absolute, new). Running: taken in the
+    guest into the captures directory within `seconds` (`route` `guest`); refused with no `logfile`
+    or no stub in the log. At a stop: written from video memory through `screen_view`'s decoder
+    (`route` `video_memory`), unscaled, without running the machine; a text mode is refused
+    (`no_channel`), and `seconds` is not used.
 
     Reply: `route`, `path`, `bytes`, `sha256`.
     """
     session = live()
-    ds.refuse_parked_snapshot(session)
+    if session.at_debugger():
+        vocab.check_wait(seconds)
+        return st.answer(screen.still(session, paths.absolute("dest", dest) if dest else None))
     if session.launch.logfile is None:
         # `S` IS ALSO THE DELETE KEY'S SCAN CODE: an older stub would press it, and with no log
         # there is no announce to tell the two apart.
@@ -955,7 +980,8 @@ def symbols_load(path: str, base: str = "",
 
     Refused (INVALID): both `base` and `section_bases`; a sectioned map without
     `section_bases`; real mode or a running machine without `base`; a mostly unreadable file;
-    a table the `<stem>.exe` contradicts.
+    a table the `<stem>.exe` contradicts; a table in which two names differ only in case, naming
+    both lines.
 
     Reply: `parsed`, `kept`, `loaded`, `table_mode`, `table_total`, `renamed`, `pending`,
     `base`, `checked`, `declarations`.
@@ -965,6 +991,7 @@ def symbols_load(path: str, base: str = "",
     session = live()
     src = judges.existing_file("path", path, "symbol file")
     typed = placement.read_types(types) if types else {}
+    STATE.start_symbols = None      # a table loaded by hand is the one the session keeps
     return placement.load(session, path, src,
                           placement.hex_arg("base", base) if base else None,
                           base_from, pattern or None, keep_noise,
@@ -980,8 +1007,8 @@ def symbols_find(name: str = "", offset: int | None = None,
                  limit: Annotated[int, vocab.bounds(1, placement.SYMBOLS_LIMIT_MAX)] = 10,
                  ) -> dict[str, Any]:
     """Look a symbol up in the table `symbols_load` kept. `name`: exact, else prefixes up to
-    `limit`. `offset` (an integer) or `linear` (hex text), with `section`: the nearest symbol at
-    or below.
+    `limit`, case ignored; a name keeps its own spelling in the reply. `offset` (an integer) or
+    `linear` (hex text), with `section`: the nearest symbol at or below.
 
     Reply: `query`, `symbols_total`, `symbols` (`name`, `offset`, `addr`),
     `truncated`; by address, the symbol's fields and `delta`. INVALID: no table.
@@ -1124,21 +1151,30 @@ def palette(first: Annotated[int, vocab.bounds(0, vgadac.DAC_ENTRIES - 1)] | str
 
 
 @tool("Read the screen", summary=one_line.screen_view, replay="drop")
-def screen_view(crop: list[int] | None = None, scale: int = 0,
+def screen_view(mode: Annotated[str, vocab.enum(by_pens.MODES)] = "render",
+                pens: list[int] | None = None, point: list[int] | None = None,
+                crop: list[int] | None = None, scale: int = 0,
                 dest: str = "", attach: bool = True) -> dict[str, Any]:
     """What the screen shows at this stop, read from video memory: text as text, a graphics mode
     as a PNG (256 colours chained or not, 16-colour planar, 8-, 15-, 16- or 32-bit linear; all
-    but chained through `VGAMEMDUMP`). `crop` is `[x, y, width, height]` in characters or pixels.
-    `scale` 0 fits the largest up to 8x; `dest` a new path (else a scratch); `attach` false
-    leaves it unattached.
+    but chained through `VGAMEMDUMP`). `mode`: `render`, `isolate` (`pens`, 1..{SCREEN_PENS_MAX},
+    in `isolate_color` over grey), `histogram` (pens used, no picture), `pixel` (`point`
+    `[x, y]`); the last three read a palette-indexed graphics mode, where a pen is the DAC entry
+    a pixel holds, and no `set_by` is answered. `crop` is `[x, y, width, height]` in characters
+    or pixels and narrows all but `pixel`. `scale` 0 fits the largest up to 8x; `dest` a new
+    path (else a scratch); `attach` false leaves it unattached.
 
-    Reply: `vga_mode`, `kind`, `width`, `height`, `crop`, `display_start`; in text `text`,
-    `cursor`; in graphics `image`.
+    Reply: `mode`, `vga_mode`, `kind`, `width`, `height`, `crop`, `display_start`; in text
+    `text`, `cursor`; in graphics `screen_indexed`, `entries` (indexed) and `image`; `isolate`:
+    `pixels`, `bbox`, `pens`, `isolate_color`; `histogram`: `histogram`, `pens_used`, `unused`;
+    `pixel`: `x`, `y`, `pen`, `color`, `point_in_crop`.
 
-    Refused: a relative or existing `dest`, a bad `scale` or `crop`, `dest`/`scale`/`attach` in
-    text (`bad_argument`); another mode or a build without `VGAMEMDUMP` (naming
-    `capture_frame`), or an undecodable layout (`no_channel`); a running guest
-    (`not_stopped`); a DAC not six-bit (`unexpected_answer`).
+    Refused: a relative or existing `dest`, a bad `scale`, `crop`, `mode`, `pens` or `point`, an
+    argument the mode ignores, `dest`/`scale`/`attach` in text or `histogram`, a `point` off the
+    screen (`bad_argument`); another mode or a build without `VGAMEMDUMP` (naming
+    `capture_frame`), an undecodable layout, or `isolate`/`histogram`/`pixel` on a text or
+    direct-colour mode (`no_channel`); a running guest (`not_stopped`); a DAC not six-bit
+    (`unexpected_answer`).
 
     Reference: REFERENCE.md, Media files.
     """
@@ -1146,7 +1182,7 @@ def screen_view(crop: list[int] | None = None, scale: int = 0,
     session.require_stopped("a listing")
     return st.reply(**screen.screen_view(session, crop, scale,
                                          paths.absolute("dest", dest) if dest else None,
-                                         STATE.session_scratch(), attach))
+                                         STATE.session_scratch(), attach, mode, pens, point))
 
 
 @tool("Signature of the screen", summary=one_line.screen_signature, read_only=True,
@@ -1170,9 +1206,9 @@ def screen_signature(crop: list[int] | None = None) -> dict[str, Any]:
 
 
 
-@tool("Which mapped screen is this", summary=one_line.map_find, read_only=True,
+@tool("Which mapped screen is this", summary=one_line.screen_map_find, read_only=True,
       replay=("matched", "screen"))
-def map_find() -> dict[str, Any]:
+def screen_map_find() -> dict[str, Any]:
     """{MAP_FIND}
 
     Reference: REFERENCE.md, Screen maps.
@@ -1186,12 +1222,13 @@ def map_find() -> dict[str, Any]:
                                       None if current is None else current["stop_seq"]))
 
 
-@tool("Write the screen map", summary=methods.fold_line("map_write", folds.MAP),
+@tool("Write the screen map", summary=methods.fold_line("screen_map_write", folds.MAP),
       replay={"add": "step", "load": "step", "save": "drop"})
-def map_write(method: Annotated[str, vocab.enum(tuple(folds.MAP))], screen: str = "",
+def screen_map_write(method: Annotated[str, vocab.enum(tuple(folds.MAP))], screen: str = "",
               match: list[list[int]] | None = None, controls: list[dict[str, Any]] | None = None,
               cells: Annotated[str, vocab.enum(screen_map.CELLS_WORDS)] = "",
-              path: str = "", dest: str = "", overwrite: bool | None = None) -> dict[str, Any]:
+              path: str = "", scale: int | None = None, margin: list[int] | None = None,
+              dest: str = "", overwrite: bool | None = None) -> dict[str, Any]:
     """The screen map: an application's screens, each known by the signatures of its stable
     regions, and their controls, in a session layer and a file layer.
 
@@ -1204,7 +1241,7 @@ def map_write(method: Annotated[str, vocab.enum(tuple(folds.MAP))], screen: str 
 
     {MAP_SAVE}
 
-    Refused: an argument the method does not take; a misshapen name, crop, control or file
+    Refused: an argument the method does not take; a misshapen name, crop, control, view or file
     (`bad_argument`); nothing mapped to save (`needs_call`); the modes `screen_view` refuses.
 
     Reference: REFERENCE.md, Screen maps.
@@ -1250,8 +1287,9 @@ def breakpoint_at(ref: str, by: Annotated[str, vocab.enum(checks.BREAKPOINT_BY)]
     """Declare a code breakpoint at a symbol or `SEG:OFF`, and arm it if it can be. Stored, and
     re-armed on `symbols_load`; a raw `SEG:OFF` goes `stale` over another build.
 
-    Refused: a name matching several symbols; an address another declaration holds, naming it.
-    A symbol absent from this build is stored `unresolved`.
+    Refused: a name matching several symbols; an address another declaration holds, naming it. On
+    a dynamic cpu core, which can pass over it inside a compiled block, `note` says so. A symbol
+    absent from this build is stored `unresolved`.
 
     Reply: `ref`, `stored`, `already_stored`, `armed`, `entry`, `state` (`armed`,
     `unresolved`, `unarmable`, `pending` while the guest runs), `why`, `marked` and `note` for
@@ -1259,7 +1297,8 @@ def breakpoint_at(ref: str, by: Annotated[str, vocab.enum(checks.BREAKPOINT_BY)]
 
     Reference: REFERENCE.md, Declarations.
     """
-    return arming.breakpoint_at(live(), ref, by)
+    session = live()
+    return dlaunch.with_dynamic_core_note(arming.breakpoint_at(session, ref, by), session.launch)
 
 
 @tool("List the declarations", summary=one_line.declaration_list, read_only=True)
@@ -1380,13 +1419,13 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
     """Move the guest's mouse pointer, press buttons, and read the pointer back; `expect`
     proves the program reacted, as in `send_keys`.
 
-    `x`, `y`: both or neither, in `units`. `target`: a control of the latest `map_find` screen,
-    instead of `x`, `y`. A drag is `down`, a move, `up`. A stopped machine is run as for
+    `x`, `y`: both or neither, in `units`. `target`: a control of the latest `screen_map_find`
+    screen, instead of `x`, `y`. A drag is `down`, a move, `up`. A stopped machine is run as for
     `send_keys`.
 
     Refused: no move and no button, half a move, a place off the screen, no stub, a stopped
     machine with no `RUNSTATE`; `target` beside `x`, `y` or `units="mouse"` (`bad_argument`);
-    no `map_find` match (`needs_call`); an unknown control (`unknown_ref`).
+    no `screen_map_find` match (`needs_call`); an unknown control (`unknown_ref`).
 
     Reply: `route`, `pointer`, `arrived` (else `asked`), `motion` (a move reached the motion
     counters too), `verify`; with `target`: `target`, `screen`, `identified_at_stop`; from a
@@ -1471,9 +1510,10 @@ checks.take_step_ops(_step_ops)
 def perform_export(dest: str, overwrite: bool = False) -> dict[str, Any]:
     """Write the session's calls since `start` to `dest` as a `perform` document.
 
-    Kept: moving calls and checks (`read_memory`, `registers`, `screen_signature`, `map_find`,
-    `guest_file`, `image_compare(method="golden")`), each held to its `recorded` reply. Other
-    calls drop; the first no replay can place, or past {RECORD_MAX}, cuts the rest.
+    Kept: moving calls and checks (`read_memory`, `registers`, `screen_signature`,
+    `screen_map_find`, `guest_file`, `image_compare(method="golden")`), each held to its
+    `recorded` reply. Other calls drop; the first no replay can place, or past {RECORD_MAX}, cuts
+    the rest.
 
     `dest` (`.json`) is refused if present unless `overwrite`. Reply: `path`, `steps`,
     `checks`, `dropped`, `dropped_total`, `cut`, `replay`; `no_recording` if empty.

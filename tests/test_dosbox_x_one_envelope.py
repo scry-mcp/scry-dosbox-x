@@ -65,11 +65,12 @@ def test_a_schema_refusal_is_closed_by_the_same_composer(monkeypatch: pytest.Mon
     assert out["session"]["altered"] is True, out["session"]
 
 
-def test_close_keeps_the_block_of_the_machine_it_ended() -> None:
+def test_close_reports_the_session_as_it_is_after_the_close() -> None:
     ses = install()
     ses.altered = True
     out = s.close()
-    assert out["closed"] is True and out["session"]["altered"] is True, out
+    assert out["closed"] is True, out
+    assert out["session"] == {"alive": False, "running": False, "altered": False}, out
 
 
 def test_the_block_is_composed_under_the_lock_over_the_one_machine(

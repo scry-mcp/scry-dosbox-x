@@ -138,7 +138,8 @@ def registers(args: dict[str, Any], reply: dict[str, Any]) -> str:
 def read_memory(args: dict[str, Any], reply: dict[str, Any]) -> str:
     at = _at(reply.get("seg_off"))
     read = _said(len(str(reply.get("hex") or "")) // 2, "byte")
-    return f"read_memory {args.get('ref', '')}: {read} at {at}"
+    shown = prose.hex_clipped(str(reply.get("hex") or ""))
+    return f"read_memory {args.get('ref', '')}: {read} at {at}: {shown}"
 
 
 def disassemble(args: dict[str, Any], reply: dict[str, Any]) -> str:
@@ -242,8 +243,8 @@ def trace(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 def run_to(args: dict[str, Any], reply: dict[str, Any]) -> str:
-    ref = args.get("ref", "")
-    out = f"run_to {ref}: {reply.get('verdict', 'refused')} at {_at(reply.get('pc'))}"
+    out = (f"run_to {screen_map.run_to_named(args, reply)}: {reply.get('verdict', 'refused')} at "
+           f"{_at(reply.get('pc'))}")
     # A COUNT, never `Nx`: `0x` reads as a hex prefix with nothing after it.
     return out + (f", control counted {reply['control_hits']}" if "control_hits" in reply
                   else "")
@@ -480,6 +481,17 @@ def _region(reply: dict[str, Any]) -> str:
 
 
 def screen_view(args: dict[str, Any], reply: dict[str, Any]) -> str:
+    mode = reply.get("mode")
+    if mode == "histogram":
+        return (f"screen_view histogram {reply.get('vga_mode')}: {reply.get('pens_used')} of "
+                f"{_said(reply.get('entries'), 'pen')} used in {_region(reply)}")
+    if mode == "isolate":
+        return (f"screen_view isolate {reply.get('vga_mode')}: "
+                f"{_said(reply.get('pixels'), 'pixel')} of pens {reply.get('pens')} in "
+                f"{_region(reply)}; {_picture(reply)}")
+    if mode == "pixel":
+        return (f"screen_view pixel {reply.get('vga_mode')}: ({reply.get('x')}, {reply.get('y')}) "
+                f"is pen {int(reply.get('pen') or 0):#x} {reply.get('color')}; {_picture(reply)}")
     if isinstance(reply.get("image"), dict):
         return f"screen_view {reply.get('vga_mode')}: {_region(reply)} pixels; {_picture(reply)}"
     cursor = reply.get("cursor")
@@ -492,7 +504,7 @@ def screen_signature(args: dict[str, Any], reply: dict[str, Any]) -> str:
 
 
 # The screen maps' lines are scry-core's, alike on both servers.
-map_find = screen_map.find_line
+screen_map_find = screen_map.find_line
 
 
 def series_capture(args: dict[str, Any], reply: dict[str, Any]) -> str:

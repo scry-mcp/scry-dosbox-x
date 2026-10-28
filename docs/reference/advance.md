@@ -6,25 +6,32 @@
 *Run to a place, with a control*
 
 ```text
-run_to(ref, control, seconds=30.0)
+run_to(ref="", control, screen="", seconds=30.0)
 ```
 
 Run until a symbol or a `SEG:OFF` and say where it stopped.
 
 `ref`: a loaded symbol or hex `SEG:OFF`. `control` is required: a second ref known to be
 hot, counted when it fires, so a bound that expires with no control hit is INVALID, not "it
-did not arrive". Needs a stopped machine. Refused: an absent or ambiguous name.
+did not arrive". Needs a stopped machine. Refused: an absent or ambiguous name. On a dynamic
+cpu core, which can pass over a breakpoint inside a compiled block, `note` says so.
+
+`screen`: a mapped screen's name instead of `ref` (exactly one), run to its `anchor`, the
+`control` still required; a `verified` map judges it there (`stale_map` when it no longer
+holds), a `consolidated` one takes it as shown. Reply: `screen` (`screen`, `layer`, `mode`,
+`judged`). Refused: an unmapped screen (`unknown_ref`), one with no `anchor` (`needs_call`).
 
 Reply: `verdict` (`TARGET`, `OTHER_STOP`, `TIMEOUT`), `target_disarmed`, `control_hits`,
 `controls` (`ref`, `at`, `hits_in_run`), `note`, the stop (`pc`, `frame`, `regs`, `cause`).
-INVALID: `control_silent`, `cut_by_other_stop`, `not_settled`.
+INVALID: `control_silent`, `cut_by_other_stop`, `not_settled`, `stale_map`.
 
 Reference: REFERENCE.md, Advancing the machine.
 
 | argument | type | default |
 |---|---|---|
-| `ref` | string | required |
+| `ref` | string | `""` |
 | `control` | string | required |
+| `screen` | string | `""` |
 | `seconds` | number (> 0, <= 600.0) | `30.0` |
 
 | reply field | type |
@@ -41,6 +48,7 @@ Reference: REFERENCE.md, Advancing the machine.
 | `pc` | string |
 | `ref` | string |
 | `regs` | object |
+| `screen` | object |
 | `stop_seq` | integer |
 | `target` | string |
 | `target_disarmed` | boolean |
@@ -129,6 +137,8 @@ Example, from a live run:
 The breakpoint it created is removed on every outcome, because `BP` is persistent and a leftover
 would silently stop the next `resume` at a place no declaration names; it looks the index up again,
 because `BPDEL` renumbers.
+
+**A dynamic core is refused, not waited out.** Its recompiled blocks run past a code breakpoint without checking it, so a `run_to` there would arrive at nothing and read as "never reached". `start` says so in its `note` when the conf's `[cpu] core=` or a `-set "cpu core=..."` flag selects it, and `run_to` and `breakpoint_at` refuse with `no_channel` naming `start(flags=["-set", "cpu core=normal"])`. `auto` and `normal` are not refused.
 
 **A control turns a silence into a measurement.** A `TIMEOUT` with zero control hits is
 `control_silent`, not "it did not arrive": nothing was proved about the target, the shape of the
@@ -600,9 +610,9 @@ a safety one: past it the question is `run_to`.
 resume(seconds=0.0, detail=false)
 ```
 
-Let the machine run. `seconds` 0 (the default) returns after a one-second look for a
-stop; a bound up to 600 waits for a stop and, if none comes, leaves it running. Needs
-a stopped machine.
+Let the machine run. `seconds` 0 (the default) returns at once with no deadline; a bound
+up to 600 waits for a stop and, if none comes, leaves it running. Needs a stopped
+machine.
 
 Reply: with a bound, `verdict` (`OTHER_STOP` with the stop reply of `run_to`; `TIMEOUT`,
 `waited_s`, `note`). `output` (with `detail=True`: the last 2000 characters
@@ -654,7 +664,7 @@ Example, from a live run:
 ```
 <!-- scry-reference:end resume -->
 
-It asks `RUNSTATE` as `run_to` does and reports progress. A running guest is refused because a `RUN` there does nothing and an `ok` would read like a release. Nothing has to be declared first: `stop` brings a running guest back, headless or windowed. A release that stopped at once is a stop too.
+It asks `RUNSTATE` as `run_to` does and reports progress. A running guest is refused because a `RUN` there does nothing and an `ok` would read like a release. Nothing has to be declared first: `stop` brings a running guest back, headless or windowed. A release that stopped at once is a stop too, but only for a call with a bound: `seconds` 0 returns straight after the release with no look for a stop, and a stop after it is what the next call finds.
 
 <!-- scry-reference:begin stop -->
 ## `stop`

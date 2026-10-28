@@ -26,6 +26,7 @@ import dosbox_run_state as run_state
 import dosbox_running as running
 import dosbox_sequence as sequence
 import dosbox_session as ds
+import dosbox_start_symbols as start_symbols
 import dosbox_state as st
 from dosbox_state import STATE
 
@@ -58,7 +59,8 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
           plan: list[dict[str, Any]] | None, settle_seconds: float | None, input_port: int,
           state_dir: str, binary: str, background: bool | None, presence: bool,
           dos_calls: bool, log_categories: dict[str, str] | None, guest_files: list[str] | None,
-          progress: ds.Progress, ops: Callable[[], sequence.Ops]) -> dict[str, Any]:
+          progress: ds.Progress, ops: Callable[[], sequence.Ops], *, symbols: str = "",
+          base_from: str = start_symbols.PROGRAM) -> dict[str, Any]:
     """The body of the `start` tool; `ops` is the server's step vocabulary, for a `plan`."""
     # Paths first: refused before anything acts (an expired session closed, symbols forgotten).
     cwd_given = paths.absolute("cwd", cwd)
@@ -69,6 +71,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     if binary:
         paths.absolute("binary", binary)
     guest_paths = guest.check_guest_files(guest_files)
+    held = start_symbols.check(symbols, base_from)
     window_flags = _window_flags(shared)
     if STATE.session is not None:
         if STATE.session.alive():
@@ -94,6 +97,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         watched=shared,
         window_flags=window_flags,
         flags=list(flags or []),
+        core=dlaunch.cpu_core(conf_path, list(flags or [])),
         break_on_int3=break_on_int3,
         program=program or None,
         capture_video=capture_video,
@@ -158,6 +162,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
             session.close(progress=progress)
             STATE.session = None
             raise
+    STATE.start_symbols = held
     rearm = arming.arm_at_start(session)   # before the park's survey, so the first stop lists them
     running.observe_stop(session)     # the park at the debugger is the session's first stop
     STATE.found_stop_last = {}        # ...its own, and never a stop "on its own" beside it
@@ -172,6 +177,8 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
     if STATE.guest_files:
         channels["guest_files"] = [{"path": str(p), "before": f.shown()}
                                    for p, f in STATE.guest_files.items()]
+    holding: dict[str, Any] = ({"symbols": {"held": held.path, "base_from": held.base_from}}
+                               if held is not None else {})
     started = st.reply(**st.process_facts(), shared=shared,
                        ready_after_s=ready,
                        argv=session.argv, **binary_facts,
@@ -180,7 +187,10 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
                        input_port=contract.or_unavailable(session.launch.input_port,
                                                           "no input route was opened"),
                        background=launch.background, presence=dpresence.of(session).reply(),
-                       **channels, **rearm)
+                       **channels, **rearm,
+                       **holding,
+                       **({"note": dlaunch.DYNAMIC_CORE_BREAKPOINTS}
+                          if dlaunch.is_dynamic(launch.core) else {}))
     if not plan:
         return started
     # A failing plan leaves the session open where it stopped, as `perform` does.
@@ -225,7 +235,7 @@ def close(progress: ds.Progress, detail: bool = False) -> dict[str, Any]:
     if STATE.session is None:
         return st.reply(closed=False, ended_by="none", note=session_block.NO_SESSION_CLOSE_NOTE)
     # Read before the session ends, so `pid` is the process this call ended.
-    facts, was = st.process_facts(), st.session_block()
+    facts = st.process_facts()
     rc = STATE.session.close(progress=progress)
     # After the exit, so every file the emulator held is closed and flushed.
     left = {"guest_files": guest.at_close()} if STATE.guest_files else {}
@@ -249,4 +259,4 @@ def close(progress: ds.Progress, detail: bool = False) -> dict[str, Any]:
             "exit_code": exit_code, **tails, **left,
             **({"note": f"the emulator's output reader: {drained}"}
                if drained and drained != dprocess.DRAIN_EOF else {}),
-            "session": was}
+            "session": st.session_block()}

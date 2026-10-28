@@ -12,8 +12,9 @@ breakpoint_at(ref, by="auto")
 Declare a code breakpoint at a symbol or `SEG:OFF`, and arm it if it can be. Stored, and
 re-armed on `symbols_load`; a raw `SEG:OFF` goes `stale` over another build.
 
-Refused: a name matching several symbols; an address another declaration holds, naming it.
-A symbol absent from this build is stored `unresolved`.
+Refused: a name matching several symbols; an address another declaration holds, naming it. On
+a dynamic cpu core, which can pass over it inside a compiled block, `note` says so. A symbol
+absent from this build is stored `unresolved`.
 
 Reply: `ref`, `stored`, `already_stored`, `armed`, `entry`, `state` (`armed`,
 `unresolved`, `unarmable`, `pending` while the guest runs), `why`, `marked` and `note` for

@@ -73,7 +73,7 @@ def at_ready(reply: Reply, run: Run) -> str:
 def found(name: str) -> Any:
     def check(reply: Reply, run: Run) -> str:
         expect(reply["matched"] is True and reply["screen"] == name,
-               f"map_find answered {reply.get('screen', 'no screen')}, not {name}")
+               f"screen_map_find answered {reply.get('screen', 'no screen')}, not {name}")
         named = ", ".join(c["name"] for c in reply["controls"])
         return f"the {name} screen, its controls {named}"
     return check
@@ -226,24 +226,24 @@ STEPS = [
          volatile={"summary": "it carries how long the debugger took to answer"}),
     Step("ready", "resume", {"seconds": WAIT_S}, at_ready),
     Step("symbols", "symbols_load", symbols_at(HERE / "mines.sym"), loaded),
-    Step("map", "map_write", {"method": "load", "path": HERE / "mines.scry-map.json"},
+    Step("map", "screen_map_write", {"method": "load", "path": HERE / "mines.screen-map.json"},
          lambda reply, run: f"{reply['screens']} screens and {reply['controls']} controls "
                             "loaded"),
     Step("title", "run_for", {"frames": 10, "seconds": WAIT_S},
          lambda reply, run: "ten retraces: the title drawn"),
-    Step("is title", "map_find", {}, found("title")),
+    Step("is title", "screen_map_find", {}, found("title")),
     Step("play", "send_mouse", {"target": "start", "button": "left", "expect": "NEW 9 9 10$",
                                 "seconds": 10},
          seen("a click on the title started a beginner's game"), volatile=INPUT_TIMING),
-    Step("is board", "map_find", {}, found("board")),
+    Step("is board", "screen_map_find", {}, found("board")),
     Step("menu", "send_mouse", {"target": "game", "button": "left", "expect": "MENU OPEN$",
                                 "seconds": 10},
          seen("Game opened the menu"), volatile=INPUT_TIMING),
-    Step("is menu", "map_find", {}, found("menu")),
+    Step("is menu", "screen_map_find", {}, found("menu")),
     Step("level", "send_mouse", {"target": "beginner", "button": "left",
                                  "expect": "NEW 9 9 10$", "seconds": 10},
          seen("Beginner started a new beginner's game"), volatile=INPUT_TIMING),
-    Step("is board again", "map_find", {}, found("board")),
+    Step("is board again", "screen_map_find", {}, found("board")),
     Step("size", "read_memory", {"ref": "rows", "length": 2}, size),
     Step("mines", "read_memory", {"ref": "mines", "length": ROWS * COLS}, mines_read),
     Step("origin", "read_memory", {"ref": "board_x", "length": 4}, origin_read),
@@ -251,7 +251,7 @@ STEPS = [
     Step("clear", "perform", clear, cleared),
     Step("won", "log", {"channel": "guest", "pattern": "WIN$"}, won),
     Step("park", "send_mouse", {"x": PARK[0], "y": PARK[1]}, parked),
-    Step("is win", "map_find", {}, found("win")),
+    Step("is win", "screen_map_find", {}, found("win")),
     Step("screen", "screen_view", lambda run: {"dest": run.dir / "screen.png"}, pictured),
     Step("again", "send_mouse", {"target": "ok", "button": "left", "expect": "NEW 9 9 10$",
                                  "seconds": 10},
@@ -269,7 +269,7 @@ STEPS = [
                                                 "b": HERE / "boom.wav", "align": False},
          exact, volatile={"a": "the run's own directory"}),
     Step("park again", "send_mouse", {"x": PARK[0], "y": PARK[1]}, parked),
-    Step("is lose", "map_find", {}, found("lose")),
+    Step("is lose", "screen_map_find", {}, found("lose")),
     Step("close", "close", {}, lambda reply, run: f"closed: {reply['ended_by']}"),
 ]
 

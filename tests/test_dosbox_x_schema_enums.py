@@ -29,7 +29,9 @@ import dosbox_launch as dlaunch
 import dosbox_logs as dlogs
 import dosbox_machine as machine
 import dosbox_placement as placement
+import dosbox_screen_pens as by_pens
 import dosbox_session as ds
+import dosbox_start_symbols as start_symbols
 import dosbox_stepping as stepping
 import dosbox_trace as tracing
 import dosbox_x_server as server
@@ -45,9 +47,11 @@ CLOSED: list[tuple[str, str, tuple[Any, ...]]] = [
     ("send_mouse", "action", inputs.ACTIONS), ("send_mouse", "units", inputs.UNITS),
     ("machine_map", "sections", machine.SECTION_NAMES),
     ("declaration_list", "kind", ("", *folds.KINDS)), ("declaration_clear", "kind", folds.KINDS),
-    ("map_write", "cells", screen_map.CELLS_WORDS),
+    ("screen_map_write", "cells", screen_map.CELLS_WORDS),
+    ("screen_view", "mode", by_pens.MODES),
     # A fold's `method`, judged by `scry_core.methods` against the fold's own table.
-    ("comment_write", "method", tuple(folds.COMMENT)), ("map_write", "method", tuple(folds.MAP)),
+    ("comment_write", "method", tuple(folds.COMMENT)),
+    ("screen_map_write", "method", tuple(folds.MAP)),
     ("scan", "method", tuple(folds.SCAN)), ("state_write", "method", tuple(folds.STATE_METHODS)),
     ("image_compare", "method", tuple(media_tools.IMAGE_METHODS)),
     ("audio_compare", "method", tuple(media_tools.AUDIO_METHODS)),
@@ -58,6 +62,7 @@ CLOSED: list[tuple[str, str, tuple[Any, ...]]] = [
 #: The two taken in any case: a pattern of their words, never an `enum` that would refuse one.
 FOLDED: list[tuple[str, str, tuple[str, ...]]] = [
     ("symbols_load", "base_from", ds.SELINFO_REGS),
+    ("start", "base_from", start_symbols.BASE_FROM),
     ("send_keys", "modifiers", inputs.MODIFIER_WORDS),
 ]
 RANGES: list[tuple[str, str, int, int]] = [

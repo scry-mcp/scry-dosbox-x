@@ -1,11 +1,11 @@
 {
  "task": {
   "id": "D121",
-  "prompt": "Write this session's screen maps to /tmp/maps/bricks.scry-map.json, replacing the file that is there.",
-  "tool": "map_write",
+  "prompt": "Write this session's screen maps to /tmp/maps/bricks.screen-map.json, replacing the file that is there.",
+  "tool": "screen_map_write",
   "args": {
    "method": "save",
-   "dest": "/tmp/maps/bricks.scry-map.json",
+   "dest": "/tmp/maps/bricks.screen-map.json",
    "overwrite": true
   },
   "grammar": [
@@ -15,91 +15,91 @@
  "runs": [
   {
    "lines": [
-    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+    "D121: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.screen-map.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+    "D121: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.screen-map.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D121: {\"tool\":\"map_write\",\"args\":{\"method\":\"save\",\"dest\":\"/tmp/maps/bricks.scry-map.json\",\"overwrite\":true}}"
+    "D121: {\"tool\":\"screen_map_write\",\"args\":{\"method\":\"save\",\"dest\":\"/tmp/maps/bricks.screen-map.json\",\"overwrite\":true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+    "D121: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.screen-map.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+    "D121: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.screen-map.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+    "D121: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.screen-map.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+    "D121: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.screen-map.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+    "D121: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.screen-map.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+    "D121: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.screen-map.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+    "D121: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.screen-map.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+    "D121: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.screen-map.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+    "D121: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.screen-map.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D121: {\"tool\":\"map_write\",\"args\":{\"method\":\"save\",\"dest\":\"/tmp/maps/bricks.scry-map.json\",\"overwrite\":true}}"
+    "D121: {\"tool\":\"screen_map_write\",\"args\":{\"method\":\"save\",\"dest\":\"/tmp/maps/bricks.screen-map.json\",\"overwrite\":true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+    "D121: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.screen-map.json\", \"overwrite\": true}}"
    ],
    "right": true
   },
   {
    "lines": [
-    "D121: {\"tool\": \"map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.scry-map.json\", \"overwrite\": true}}"
+    "D121: {\"tool\": \"screen_map_write\", \"args\": {\"method\": \"save\", \"dest\": \"/tmp/maps/bricks.screen-map.json\", \"overwrite\": true}}"
    ],
    "right": true
   }

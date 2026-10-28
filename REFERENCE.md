@@ -6,7 +6,7 @@ The [README](README.md) is the front door. This page holds the index, the envelo
 
 <!-- scry-reference:begin index -->
 - [Session](docs/reference/session.md): [`build_check`](docs/reference/session.md#build_check), [`start`](docs/reference/session.md#start), [`status`](docs/reference/session.md#status), [`close`](docs/reference/session.md#close)
-- [Read](docs/reference/read.md): [`registers`](docs/reference/read.md#registers), [`read_memory`](docs/reference/read.md#read_memory), [`disassemble`](docs/reference/read.md#disassemble), [`call_stack`](docs/reference/read.md#call_stack), [`memdump`](docs/reference/read.md#memdump), [`find`](docs/reference/read.md#find), [`log`](docs/reference/read.md#log), [`log_wait`](docs/reference/read.md#log_wait), [`machine_map`](docs/reference/read.md#machine_map), [`interrupt_vectors`](docs/reference/read.md#interrupt_vectors), [`palette`](docs/reference/read.md#palette), [`screen_view`](docs/reference/read.md#screen_view), [`screen_signature`](docs/reference/read.md#screen_signature), [`map_find`](docs/reference/read.md#map_find), [`map_write`](docs/reference/read.md#map_write), [`debug`](docs/reference/read.md#debug)
+- [Read](docs/reference/read.md): [`registers`](docs/reference/read.md#registers), [`read_memory`](docs/reference/read.md#read_memory), [`disassemble`](docs/reference/read.md#disassemble), [`call_stack`](docs/reference/read.md#call_stack), [`memdump`](docs/reference/read.md#memdump), [`find`](docs/reference/read.md#find), [`log`](docs/reference/read.md#log), [`log_wait`](docs/reference/read.md#log_wait), [`machine_map`](docs/reference/read.md#machine_map), [`interrupt_vectors`](docs/reference/read.md#interrupt_vectors), [`palette`](docs/reference/read.md#palette), [`screen_view`](docs/reference/read.md#screen_view), [`screen_signature`](docs/reference/read.md#screen_signature), [`screen_map_find`](docs/reference/read.md#screen_map_find), [`screen_map_write`](docs/reference/read.md#screen_map_write), [`debug`](docs/reference/read.md#debug)
 - [Scan](docs/reference/scan.md): [`scan`](docs/reference/scan.md#scan)
 - [Write](docs/reference/write.md): [`set_register`](docs/reference/write.md#set_register), [`write`](docs/reference/write.md#write)
 - [Hardware](docs/reference/hardware.md): [`port`](docs/reference/hardware.md#port), [`pic`](docs/reference/hardware.md#pic), [`a20`](docs/reference/hardware.md#a20)
@@ -57,9 +57,10 @@ While a session holds the window, an orange edge tells whoever sits at the host 
 | `exit_code` | integer or object |
 | `last_stop` | object |
 | `stopped_on_its_own` | object |
+| `symbols_placed` | object |
 <!-- scry-reference:end envelope -->
 
-**Every reply opens with a `summary` and closes with a `session` block carrying `altered`.** Writing to a live machine is allowed, and a measurement on a forced state is not a measurement of the program; the reader three questions later has no other way to know. The first contact after a stop applies the declarations made while the guest ran, so a reader can be the call that arms a breakpoint; that write belongs to the declaring call (`pending`), and the reader says `applied_on_stop`.
+**Every reply opens with a `summary` and closes with a `session` block carrying `altered`.** Writing to a live machine is allowed, and a measurement on a forced state is not a measurement of the program; the reader three questions later has no other way to know. The first contact after a stop applies the declarations made while the guest ran, so a reader can be the call that arms a breakpoint; that arming belongs to the declaring call (`pending`), and the reader says `applied_on_stop`. Arming writes nothing on a build with the heavy debugger, which checks each instruction against its list; a build without it plants a code breakpoint as an `INT 3` byte in guest memory, so arming one there sets `altered`. A watch plants nothing on either.
 
 **A session whose emulator died is kept until `close`**: every call that needs the machine answers `session_broken`, and `altered` survives, which a caller measuring a forced state must not lose.
 
@@ -81,7 +82,7 @@ An argument held to a vocabulary lists its words as its schema's `enum`, a scala
 
 - `pc` is `SSSS:OOOOOOOO` with `cpu_mode` beside it: a DOS place is segmented.
 - `run_for` counts frames as vertical retraces; `trace(instructions)` counts instructions run, `step(count)` steps taken.
-- `snapshot` refuses a machine parked at the debugger: it captures the next frame drawn, which only a run draws, and a tool that only looks does not move the machine; `screen_view` reads the stop's screen.
+- `snapshot` answers in either state: at a stop it writes the graphics screen from video memory (`route: "video_memory"`, a text mode refused naming `screen_view`), and while the guest runs the stub captures the next frame drawn (`route: "guest"`).
 - A breakpoint keeps the debugger's spelling (`target`, `controls[].at`, `entry`): it is the string `BPLIST` is matched against.
 
 ### A long wait, and a cancelled call
@@ -94,7 +95,7 @@ Every tool ends one of three ways, and one that declares no end ends `none`:
 |---|---|---|
 | `stop` | the guest back at the debugger by `BREAK`, as `stop` does (the cancelled call answers nothing, so that stop is read in the next reply's `last_stop`, its `cause` "a cancelled call's stop at SSSS:OOOOOOOO" when no declaration is at that address), or a stop it had already reached recorded as its own; a `run_to` removes the breakpoints it armed; a CPU log still open (a `trace`'s) is moved aside to `trace-cancelled-<n>.trace` in the session's captures directory (the working directory when there is none to write in) and closed | `stop`, `run_to`, `run_for`, `trace`, `screen_wait`, `record`, `audio_record`, `perform` |
 | `kill` | the emulator closed; a close cancelled half-way still finishes | `start`, `close` |
-| `none` | the guest as the call found it | `build_check`, `status`, `log`, `log_wait`, `registers`, `read_memory`, `disassemble`, `call_stack`, `memdump`, `find`, `scan`, `debug`, `set_register`, `write`, `resume`, `step`, `state_write`, `snapshot`, `state_list`, `breakpoint_interrupt`, `regpoint_add`, `symbols_load`, `symbols_find`, `comment_write`, `comment_list`, `machine_map`, `interrupt_vectors`, `palette`, `screen_view`, `screen_signature`, `map_write`, `map_find`, `series_capture`, `image_compare`, `audio_compare`, `breakpoint_at`, `declaration_list`, `declaration_clear`, `watch_add`, `send_keys`, `send_mouse`, `captures`, `capture_frame`, `perform_export`, `drive`, `port`, `pic`, `a20`, `guest_file` |
+| `none` | the guest as the call found it | `build_check`, `status`, `log`, `log_wait`, `registers`, `read_memory`, `disassemble`, `call_stack`, `memdump`, `find`, `scan`, `debug`, `set_register`, `write`, `resume`, `step`, `state_write`, `snapshot`, `state_list`, `breakpoint_interrupt`, `regpoint_add`, `symbols_load`, `symbols_find`, `comment_write`, `comment_list`, `machine_map`, `interrupt_vectors`, `palette`, `screen_view`, `screen_signature`, `screen_map_write`, `screen_map_find`, `series_capture`, `image_compare`, `audio_compare`, `breakpoint_at`, `declaration_list`, `declaration_clear`, `watch_add`, `send_keys`, `send_mouse`, `captures`, `capture_frame`, `perform_export`, `drive`, `port`, `pic`, `a20`, `guest_file` |
 
 Any other tool that meets a cancel ends `none`. A `send_keys` or `send_mouse` sent to a stopped machine runs it by retraces, and a cancel among them leaves it stopped where it stands, with the commands acknowledged by then in.
 
@@ -357,7 +358,7 @@ The tools that answer about pictures and sound follow one order: a signature or 
 
 ## Screen maps
 
-A screen map names an application's screens and their controls, so a caller says "the play screen" and "the court" instead of a picture and a coordinate. The file layers and the format are on [Files](docs/reference/files.md#screen-maps). The tools: [Read](docs/reference/read.md) (`map_write(method="add")`, `map_find`), [Files](docs/reference/files.md) (`map_write(method="load")`, `map_write(method="save")`), [Input](docs/reference/input.md) (`send_mouse`).
+A screen map names an application's screens and their controls, so a caller says "the play screen" and "the court" instead of a picture and a coordinate. The file layers and the format are on [Files](docs/reference/files.md#screen-maps). The tools: [Read](docs/reference/read.md) (`screen_map_write(method="add")`, `screen_map_find`), [Files](docs/reference/files.md) (`screen_map_write(method="load")`, `screen_map_write(method="save")`), [Input](docs/reference/input.md) (`send_mouse`).
 
 ## Saved states
 

@@ -1030,27 +1030,37 @@ Each six-bit component is widened as the emulator renders it, its two top bits r
 *Read the screen*
 
 ```text
-screen_view(crop=null, scale=0, dest="", attach=true)
+screen_view(mode="render", pens=null, point=null, crop=null, scale=0, dest="", attach=true)
 ```
 
 What the screen shows at this stop, read from video memory: text as text, a graphics mode
 as a PNG (256 colours chained or not, 16-colour planar, 8-, 15-, 16- or 32-bit linear; all
-but chained through `VGAMEMDUMP`). `crop` is `[x, y, width, height]` in characters or pixels.
-`scale` 0 fits the largest up to 8x; `dest` a new path (else a scratch); `attach` false
-leaves it unattached.
+but chained through `VGAMEMDUMP`). `mode`: `render`, `isolate` (`pens`, 1..64,
+in `isolate_color` over grey), `histogram` (pens used, no picture), `pixel` (`point`
+`[x, y]`); the last three read a palette-indexed graphics mode, where a pen is the DAC entry
+a pixel holds, and no `set_by` is answered. `crop` is `[x, y, width, height]` in characters
+or pixels and narrows all but `pixel`. `scale` 0 fits the largest up to 8x; `dest` a new
+path (else a scratch); `attach` false leaves it unattached.
 
-Reply: `vga_mode`, `kind`, `width`, `height`, `crop`, `display_start`; in text `text`,
-`cursor`; in graphics `image`.
+Reply: `mode`, `vga_mode`, `kind`, `width`, `height`, `crop`, `display_start`; in text
+`text`, `cursor`; in graphics `screen_indexed`, `entries` (indexed) and `image`; `isolate`:
+`pixels`, `bbox`, `pens`, `isolate_color`; `histogram`: `histogram`, `pens_used`, `unused`;
+`pixel`: `x`, `y`, `pen`, `color`, `point_in_crop`.
 
-Refused: a relative or existing `dest`, a bad `scale` or `crop`, `dest`/`scale`/`attach` in
-text (`bad_argument`); another mode or a build without `VGAMEMDUMP` (naming
-`capture_frame`), or an undecodable layout (`no_channel`); a running guest
-(`not_stopped`); a DAC not six-bit (`unexpected_answer`).
+Refused: a relative or existing `dest`, a bad `scale`, `crop`, `mode`, `pens` or `point`, an
+argument the mode ignores, `dest`/`scale`/`attach` in text or `histogram`, a `point` off the
+screen (`bad_argument`); another mode or a build without `VGAMEMDUMP` (naming
+`capture_frame`), an undecodable layout, or `isolate`/`histogram`/`pixel` on a text or
+direct-colour mode (`no_channel`); a running guest (`not_stopped`); a DAC not six-bit
+(`unexpected_answer`).
 
 Reference: REFERENCE.md, Media files.
 
 | argument | type | default |
 |---|---|---|
+| `mode` | one of `"render"`, `"isolate"`, `"histogram"`, `"pixel"` | `"render"` |
+| `pens` | array of integer or null | `null` |
+| `point` | array of integer or null | `null` |
 | `crop` | array of integer or null | `null` |
 | `scale` | integer | `0` |
 | `dest` | string | `""` |
@@ -1058,15 +1068,30 @@ Reference: REFERENCE.md, Media files.
 
 | reply field | type |
 |---|---|
+| `bbox` | array or object |
+| `color` | string |
 | `crop` | array |
 | `cursor` | array or object |
 | `display_start` | string |
+| `entries` | integer |
 | `height` | integer |
+| `histogram` | array |
 | `image` | object |
+| `isolate_color` | string |
 | `kind` | string |
+| `mode` | string |
+| `pen` | integer |
+| `pens` | array |
+| `pens_used` | integer |
+| `pixels` | integer |
+| `point_in_crop` | array |
+| `screen_indexed` | boolean |
 | `text` | array |
+| `unused` | array |
 | `vga_mode` | string |
 | `width` | integer |
+| `x` | integer |
+| `y` | integer |
 
 Example, from a live run:
 
@@ -1110,7 +1135,7 @@ Example, from a live run:
 
 **In protected mode the screen is read through a data segment that covers it** (the lowest present one of the GDT, then of the LDT), with paging on only when every page maps to the same physical address; none qualifying is `no_channel`.
 
-Protected mode reads through a covering GDT or LDT segment. `text` is one string a row of the crop as code page 437 draws it, trailing spaces dropped; `cursor` is `[column, row]` in the crop, unavailable when hidden or outside it. The PNG's PLTE is the DAC and its pixels the indices the guest wrote. It is attached after the JSON when within the inline ceiling (1568 px a side, 1568 tiles of 28 px); `image` names it either way (`path`, `bytes`, `sha256`, `width`, `height`, `scale`, `indexed`, `border`, `inline`, `not_inlined`). A dump file left in the emulator's working directory, a screen past its window, one no segment or page reaches, a layout with split or panning is refused, and a picture the disk could not take whole is `host_failed`.
+Protected mode reads through a covering GDT or LDT segment. `text` is one string a row of the crop as code page 437 draws it, trailing spaces dropped; `cursor` is `[column, row]` in the crop, unavailable when hidden or outside it. The PNG's PLTE is the DAC and its pixels the indices the guest wrote. It is attached after the JSON when within the inline ceiling (1568 px a side, 1568 tiles of 28 px); `image` names it either way (`path`, `bytes`, `sha256`, `width`, `height`, `scale`, `indexed`, `border`, `inline`, `not_inlined`). `mode` chooses the view: `render` is the picture; `isolate`, `histogram` and `pixel` read a palette-indexed graphics mode (256 colours chained or not, 16-colour planar, 8-bit linear), where a pen is the DAC entry a pixel holds, and are refused `no_channel` in a text or direct-colour mode. `isolate` draws the pens asked for in magenta over the rest in grey and counts them (`pixels`, `bbox`); `histogram` answers the pens a region uses and the runs it leaves unused, with no picture; `pixel` answers the pen and colour under a point with a 48-pixel crop round it. There is no `set_by`: the debugger does not log who wrote a DAC entry. A dump file left in the emulator's working directory, a screen past its window, one no segment or page reaches, a layout with split or panning is refused, and a picture the disk could not take whole is `host_failed`.
 
 <!-- scry-reference:begin screen_signature -->
 ## `screen_signature`
@@ -1170,18 +1195,19 @@ Example, from a live run:
 
 
 
-<!-- scry-reference:begin map_find -->
-## `map_find`
+<!-- scry-reference:begin screen_map_find -->
+## `screen_map_find`
 
 *Which mapped screen is this*
 
 ```text
-map_find()
+screen_map_find()
 ```
 
 Which mapped screen the machine shows. Reply: `matched`; matched, `screen`, `layer`, `kind`,
-`size`, `controls` (`name`, `rect`, `centre`); else `screens_mapped`, `screens_tried`,
-`screens_unjudged` (signed by index on a screen with no palette). None mapped: `needs_call`.
+`size`, `controls` (`name`, `rect`, `centre`), in the program's units; else the machine's
+`kind` and `size`, `screens_mapped`, `screens_tried`, `screens_unjudged` (signed by index on a
+screen with no palette), or `view_fits: false`. None mapped: `needs_call`.
 
 Reference: REFERENCE.md, Screen maps.
 
@@ -1207,7 +1233,7 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "map_find: probe_stopped (session), 0 controls",
+  "summary": "screen_map_find: probe_stopped (session), 0 controls",
   "status": "ok",
   "matched": true,
   "screen": "probe_stopped",
@@ -1220,17 +1246,17 @@ Example, from a live run:
   "controls": []
 }
 ```
-<!-- scry-reference:end map_find -->
+<!-- scry-reference:end screen_map_find -->
 
 Session layer first, then the file's; a screen matches when its kind and size are the screen's and every region's signature is. Matched controls are what `send_mouse(target=)` acts on. The modes `screen_view` refuses are refused.
 
-<!-- scry-reference:begin map_write -->
-## `map_write`
+<!-- scry-reference:begin screen_map_write -->
+## `screen_map_write`
 
 *Write the screen map*
 
 ```text
-map_write(method, screen="", match=null, controls=null, cells="", path="", dest="", overwrite=null)
+screen_map_write(method, screen="", match=null, controls=null, cells="", path="", scale=null, margin=null, dest="", overwrite=null)
 ```
 
 The screen map: an application's screens, each known by the signatures of its stable
@@ -1243,13 +1269,16 @@ units. `cells` `index` (a pixel screen; default
 shown through two palettes; a screen with no palette refuses it (`no_channel`). Reply: `screen`, `kind`, `size`, `cells`, `match`, `controls`,
 `replaced`, `shadows_file`.
 
-`load`: `path` (`<application>.scry-map.json`, absolute or `~`-led) as the file layer. Reply:
-`path`, `application`, `screens`, `controls`.
+`load`: `path` (`<application>.screen-map.json`, absolute or `~`-led) as the file layer, held by the
+server; nothing is written to disk. `scale` (1..8) and `margin` [x, y] (machine pixels on
+each side) say how the program's picture sits on this machine's screen; maps and `add`'s
+crops are in the program's units. Reply: `path`, `application`, `mode`, `screens`, `controls`.
 
 `save`: both layers as one map to `dest`, refused there without `overwrite`, made the file
-layer. Reply: `path`, `application`, `screens`, `controls`, `promoted`.
+layer, in the loaded map's `mode` (`verified` when none was loaded). Reply: `path`,
+`application`, `mode`, `screens`, `controls`, `promoted`.
 
-Refused: an argument the method does not take; a misshapen name, crop, control or file
+Refused: an argument the method does not take; a misshapen name, crop, control, view or file
 (`bad_argument`); nothing mapped to save (`needs_call`); the modes `screen_view` refuses.
 
 Reference: REFERENCE.md, Screen maps.
@@ -1262,6 +1291,8 @@ Reference: REFERENCE.md, Screen maps.
 | `controls` | array of object or null | `null` |
 | `cells` | one of `""`, `"rgb"`, `"index"` | `""` |
 | `path` | string | `""` |
+| `scale` | integer or null | `null` |
+| `margin` | array of integer or null | `null` |
 | `dest` | string | `""` |
 | `overwrite` | boolean or null | `null` |
 
@@ -1272,6 +1303,7 @@ Reference: REFERENCE.md, Screen maps.
 | `controls` | integer |
 | `kind` | string |
 | `match` | array |
+| `mode` | string |
 | `path` | string |
 | `promoted` | array |
 | `replaced` | boolean |
@@ -1299,7 +1331,7 @@ Example, from a live run:
 
 ```json
 {
-  "summary": "map_write add: probe_stopped (text 80x25), 1 region, 0 controls",
+  "summary": "screen_map_write add: probe_stopped (text 80x25), 1 region, 0 controls",
   "status": "ok",
   "screen": "probe_stopped",
   "kind": "text",
@@ -1323,7 +1355,7 @@ Example, from a live run:
   "shadows_file": false
 }
 ```
-<!-- scry-reference:end map_write -->
+<!-- scry-reference:end screen_map_write -->
 
 Units are cells in a text mode and pixels in 256 colours.
 

@@ -35,6 +35,7 @@ import dosbox_media as media
 import dosbox_paths as paths
 import dosbox_placement as placement
 import dosbox_screen as screen
+import dosbox_screen_pens as by_pens
 import dosbox_sequence as sequence
 import dosbox_session as ds
 import dosbox_stepping as stepping
@@ -181,8 +182,9 @@ def _send_mouse(x: int | None = None, y: int | None = None, button: str = "",
                        target or None)
 
 
-def check_load_map(path: str = "", **_: Any) -> None:
+def check_load_map(path: str = "", scale: object = 1, margin: object = None, **_: Any) -> None:
     screen_map.check_path("path", path)
+    screen_map.view(scale, margin)
 
 
 def check_add_map(screen: str = "", match: Any = None, controls: Any = None,
@@ -214,9 +216,12 @@ def _step(count: int = 1, mode: str = "into", **_: Any) -> None:
     stepping.check_step(mode, count)
 
 
-def _run_to(ref: str, control: str = "", seconds: float = 30.0, **_: Any) -> None:
+def _run_to(ref: str = "", control: str = "", seconds: float = 30.0, screen: str = "",
+            **_: Any) -> None:
     vocab.check_wait(seconds)
-    address_shape(ref)
+    screen_map.check_run_to(ref, screen)
+    if ref.strip():
+        address_shape(ref)
     if not control:
         raise ds.Invalid("bad_argument",
             "no control is named: `run_to` measures nothing without one. A `control` is a "
@@ -523,11 +528,13 @@ def _palette(first: object = 0, count: int = 0, scale: int = 0, dest: str = "",
 
 
 def _screen_view(crop: list[int] | None = None, scale: int = 0, dest: str = "",
-                 **_: Any) -> None:
+                 mode: str = "render", pens: list[int] | None = None,
+                 point: list[int] | None = None, attach: bool = True, **_: Any) -> None:
     if crop is not None:
         judges.rect("crop", crop)
     picture.check_scale(scale)
     optional_path("dest", dest)
+    by_pens.check_view(mode, pens, point, crop, scale, dest, attach)
 
 
 def _screen_signature(crop: list[int] | None = None, **_: Any) -> None:
@@ -628,7 +635,7 @@ BY_OP: dict[str, Check] = {
     "snapshot": _snapshot, "perform": _perform, "drive": _drive, "start": _start,
     "machine_map": _machine_map,
     **{name: _folded(name) for name in ("declaration_list", "declaration_clear", "comment_write",
-                                        "map_write", "scan", "state_write", "port", "pic",
+                                        "screen_map_write", "scan", "state_write", "port", "pic",
                                         "a20")},
     "guest_file": _guest_file,
 }
@@ -642,7 +649,7 @@ NOT_STEPS = SEQUENCES | {"build_check", "start", "close", "perform_export"}
 #: `close`).
 MACHINE_JUDGES = frozenset({
     "status", "stop", "registers", "state_list", "captures", "call_stack", "comment_list",
-    "map_find",
+    "screen_map_find",
 }) | (NOT_STEPS - BY_OP.keys())
 
 

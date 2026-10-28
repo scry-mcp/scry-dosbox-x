@@ -47,9 +47,9 @@ usage error, 3 nothing was demonstrated (no copy of the game, a server that did 
 Give this to an MCP client with this server connected:
 
 > Start a session from `demos/lineup/lineup.conf` (its `@GUEST@` replaced by this repository's
-> `guest` directory) running from the game's directory, and run it two seconds. Load
-> `EXES/LINEUP.MAP` there, based at the segment it stopped in. Load the screen map
-> `scry_core/games/lineup.scry-map.json` from scry-core. Run to
+> `guest` directory) running from the game's directory, with `EXES/LINEUP.MAP` as its symbols,
+> and run it two seconds, which places the map where DOS loaded the game. Load the screen map
+> `scry_core/games/lineup.screen-map.json` from scry-core. Run to
 > `Draw_High_Scores_Screen` counting `Check_Money25`, run a second and a half and tell me which
 > screen it is and what `Credits` holds. Press Tab, run a second, name the screen and read
 > `Credits` again. Press 1, run to `Level_Write`, run 200 ms, name the screen and read `Credits`
@@ -71,6 +71,7 @@ Give this to an MCP client with this server connected:
   "conf": "./tmp/demos/lineup/lineup.conf",
   "session_seconds": 900,
   "shared": true,
+  "symbols": "./tmp/demos/lineup/LINEUP.MAP",
   "state_dir": "./tmp/demos/lineup/lineup-states",
   "captures_dir": "./tmp/demos/lineup/lineup-captures",
   "cwd": "<host>"
@@ -121,6 +122,10 @@ Give this to an MCP client with this server connected:
       "unarmable": []
     }
   },
+  "symbols": {
+    "held": "./tmp/demos/lineup/LINEUP.MAP",
+    "base_from": "program"
+  },
   "session": {
     "alive": true,
     "running": false,
@@ -131,7 +136,7 @@ Give this to an MCP client with this server connected:
 
 </details>
 
-**2. `run_for`**: OK boot: booted: DOS running the game, loaded at segment 08ED
+**2. `run_for`**: OK boot: booted: DOS running the game, its map placed at segment 08ED, 385 symbols
 
 <details><summary>call and reply</summary>
 
@@ -182,14 +187,15 @@ Give this to an MCP client with this server connected:
     "flow": "branch",
     "code_bits": 16,
     "bytes_from": "memory",
-    "symbol": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    },
-    "delta": {
-      "available": false,
-      "why": "no symbol table is loaded"
-    }
+    "symbol": "Pal_Off",
+    "delta": 127
+  },
+  "symbols_placed": {
+    "placed": true,
+    "path": "./tmp/demos/lineup/LINEUP.MAP",
+    "load_segment": "08ED",
+    "base": 36560,
+    "loaded": 385
   },
   "emulated_before_s": 0.00094,
   "emulated_after_s": 2.00347702,
@@ -209,81 +215,24 @@ Give this to an MCP client with this server connected:
 
 </details>
 
-**3. `symbols_load`**: OK symbols: 385 symbols placed at base 0x8ed0
-
-<details><summary>call and reply</summary>
-
-```json
-{
-  "path": "./tmp/demos/lineup/LINEUP.MAP",
-  "base": "8ed0"
-}
-```
-
-```json
-{
-  "summary": "symbols_load: 385 loaded of 385 parsed, base 36560",
-  "status": "ok",
-  "base": 36560,
-  "limit": -1,
-  "descriptor": -1,
-  "declarations": {
-    "rearmed": [],
-    "stale": [],
-    "unresolved": [],
-    "ambiguous": [],
-    "unarmable": []
-  },
-  "pending": false,
-  "checked": {
-    "available": false,
-    "why": "the table carries no symbol kinds (a link map lists none), so its code symbols cannot be told from the rest"
-  },
-  "base_from": "caller",
-  "parsed": 385,
-  "kept": 385,
-  "excluded_sections": 0,
-  "excluded_pattern": 0,
-  "excluded_unplaceable": 0,
-  "unencodable": [],
-  "unencodable_total": 0,
-  "truncated_names": 44,
-  "disambiguated": 1,
-  "renamed": 44,
-  "unreadable": 6,
-  "overlay_idle": 0,
-  "table_mode": "replaced",
-  "table_total": 385,
-  "loaded": 385,
-  "bytes": 7702,
-  "symbols_typed": 0,
-  "session": {
-    "alive": true,
-    "running": false,
-    "altered": false
-  }
-}
-```
-
-</details>
-
-**4. `map_write`**: OK map: 4 screens and 10 controls loaded
+**3. `screen_map_write`**: OK map: 4 screens and 10 controls loaded
 
 <details><summary>call and reply</summary>
 
 ```json
 {
   "method": "load",
-  "path": "./tmp/demos/lineup/lineup.scry-map.json"
+  "path": "./tmp/demos/lineup/lineup.screen-map.json"
 }
 ```
 
 ```json
 {
-  "summary": "map_write load: 4 screens, 10 controls of lineup",
+  "summary": "screen_map_write load: 4 screens, 10 controls of lineup",
   "status": "ok",
-  "path": "./tmp/demos/lineup/lineup.scry-map.json",
+  "path": "./tmp/demos/lineup/lineup.screen-map.json",
   "application": "lineup",
+  "mode": "verified",
   "screens": 4,
   "controls": 10,
   "session": {
@@ -296,7 +245,7 @@ Give this to an MCP client with this server connected:
 
 </details>
 
-**5. `run_to`**: OK to the high scores: stopped at Draw_High_Scores_Screen
+**4. `run_to`**: OK to the high scores: stopped at Draw_High_Scores_Screen
 
 <details><summary>call and reply</summary>
 
@@ -365,14 +314,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**6. `run_for`**: OK drawn: the table drawn
+**5. `run_for`**: OK drawn: the table drawn
 
 <details><summary>call and reply</summary>
 
@@ -437,14 +386,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**7. `map_find`**: OK is hiscores: the hiscores screen, its controls table, credits
+**6. `screen_map_find`**: OK is hiscores: the hiscores screen, its controls table, credits
 
 <details><summary>call and reply</summary>
 
@@ -454,7 +403,7 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "summary": "map_find: hiscores (file), 2 controls",
+  "summary": "screen_map_find: hiscores (file), 2 controls",
   "status": "ok",
   "matched": true,
   "screen": "hiscores",
@@ -495,14 +444,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**8. `read_memory`**: OK no credits: Credits holds 0
+**7. `read_memory`**: OK no credits: Credits holds 0
 
 <details><summary>call and reply</summary>
 
@@ -515,7 +464,7 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "summary": "read_memory Credits: 2 bytes at 08ED:0000BC04",
+  "summary": "read_memory Credits: 2 bytes at 08ED:0000BC04: 0000",
   "status": "ok",
   "ref": "Credits",
   "seg_off": "08ED:0000BC04",
@@ -524,14 +473,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**9. `send_keys`**: OK press coin: COIN pressed
+**8. `send_keys`**: OK press coin: COIN pressed
 
 <details><summary>call and reply</summary>
 
@@ -606,14 +555,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**10. `run_for`**: OK counted: the coin counted
+**9. `run_for`**: OK counted: the coin counted
 
 <details><summary>call and reply</summary>
 
@@ -678,14 +627,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**11. `map_find`**: OK is insert: the insert screen, its controls banner, credits
+**10. `screen_map_find`**: OK is insert: the insert screen, its controls banner, credits
 
 <details><summary>call and reply</summary>
 
@@ -695,7 +644,7 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "summary": "map_find: insert (file), 2 controls",
+  "summary": "screen_map_find: insert (file), 2 controls",
   "status": "ok",
   "matched": true,
   "screen": "insert",
@@ -736,14 +685,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**12. `read_memory`**: OK credits: Credits holds 3
+**11. `read_memory`**: OK credits: Credits holds 3
 
 <details><summary>call and reply</summary>
 
@@ -756,7 +705,7 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "summary": "read_memory Credits: 2 bytes at 08ED:0000BC04",
+  "summary": "read_memory Credits: 2 bytes at 08ED:0000BC04: 0300",
   "status": "ok",
   "ref": "Credits",
   "seg_off": "08ED:0000BC04",
@@ -765,14 +714,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**13. `send_keys`**: OK press start: START pressed
+**12. `send_keys`**: OK press start: START pressed
 
 <details><summary>call and reply</summary>
 
@@ -841,14 +790,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**14. `run_to`**: OK to the level: stopped at Level_Write
+**13. `run_to`**: OK to the level: stopped at Level_Write
 
 <details><summary>call and reply</summary>
 
@@ -917,14 +866,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**15. `run_for`**: OK level shown: LEVEL 1 written
+**14. `run_for`**: OK level shown: LEVEL 1 written
 
 <details><summary>call and reply</summary>
 
@@ -989,14 +938,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**16. `map_find`**: OK is level: the level screen, its controls p1_well, p2_well, credits
+**15. `screen_map_find`**: OK is level: the level screen, its controls p1_well, p2_well, credits
 
 <details><summary>call and reply</summary>
 
@@ -1006,7 +955,7 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "summary": "map_find: level (file), 3 controls",
+  "summary": "screen_map_find: level (file), 3 controls",
   "status": "ok",
   "matched": true,
   "screen": "level",
@@ -1060,14 +1009,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**17. `read_memory`**: OK one spent: Credits holds 2
+**16. `read_memory`**: OK one spent: Credits holds 2
 
 <details><summary>call and reply</summary>
 
@@ -1080,7 +1029,7 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "summary": "read_memory Credits: 2 bytes at 08ED:0000BC04",
+  "summary": "read_memory Credits: 2 bytes at 08ED:0000BC04: 0200",
   "status": "ok",
   "ref": "Credits",
   "seg_off": "08ED:0000BC04",
@@ -1089,14 +1038,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**18. `read_memory`**: OK first stage: Stage_Act holds 0
+**17. `read_memory`**: OK first stage: Stage_Act holds 0
 
 <details><summary>call and reply</summary>
 
@@ -1109,7 +1058,7 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "summary": "read_memory Stage_Act: 2 bytes at 08ED:0000B0D8",
+  "summary": "read_memory Stage_Act: 2 bytes at 08ED:0000B0D8: 0000",
   "status": "ok",
   "ref": "Stage_Act",
   "seg_off": "08ED:0000B0D8",
@@ -1118,14 +1067,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**19. `run_for`**: OK play: the board filled
+**18. `run_for`**: OK play: the board filled
 
 <details><summary>call and reply</summary>
 
@@ -1190,14 +1139,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**20. `map_find`**: OK is play: the play screen, its controls p1_well, p2_well, credits
+**19. `screen_map_find`**: OK is play: the play screen, its controls p1_well, p2_well, credits
 
 <details><summary>call and reply</summary>
 
@@ -1207,7 +1156,7 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "summary": "map_find: play (file), 3 controls",
+  "summary": "screen_map_find: play (file), 3 controls",
   "status": "ok",
   "matched": true,
   "screen": "play",
@@ -1261,14 +1210,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**21. `read_memory`**: OK player in play: in play
+**20. `read_memory`**: OK player in play: in play
 
 <details><summary>call and reply</summary>
 
@@ -1281,7 +1230,7 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "summary": "read_memory Player1: 12 bytes at 08ED:0000AE32",
+  "summary": "read_memory Player1: 12 bytes at 08ED:0000AE32: 010003000100000003000000",
   "status": "ok",
   "ref": "Player1",
   "seg_off": "08ED:0000AE32",
@@ -1290,14 +1239,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**22. `send_keys`**: OK press right: RIGHT pressed
+**21. `send_keys`**: OK press right: RIGHT pressed
 
 <details><summary>call and reply</summary>
 
@@ -1366,14 +1315,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**23. `run_for`**: OK moved: the move taken
+**22. `run_for`**: OK moved: the move taken
 
 <details><summary>call and reply</summary>
 
@@ -1438,14 +1387,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**24. `read_memory`**: OK player one column right: one column right
+**23. `read_memory`**: OK player one column right: one column right
 
 <details><summary>call and reply</summary>
 
@@ -1458,7 +1407,7 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "summary": "read_memory Player1: 12 bytes at 08ED:0000AE32",
+  "summary": "read_memory Player1: 12 bytes at 08ED:0000AE32: 010004000100000003000000",
   "status": "ok",
   "ref": "Player1",
   "seg_off": "08ED:0000AE32",
@@ -1467,14 +1416,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**25. `send_keys`**: OK press fire1: FIRE1 pressed
+**24. `send_keys`**: OK press fire1: FIRE1 pressed
 
 <details><summary>call and reply</summary>
 
@@ -1543,14 +1492,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**26. `run_for`**: OK raised: the colour taken
+**25. `run_for`**: OK raised: the colour taken
 
 <details><summary>call and reply</summary>
 
@@ -1615,14 +1564,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**27. `read_memory`**: OK player the next colour: the next colour
+**26. `read_memory`**: OK player the next colour: the next colour
 
 <details><summary>call and reply</summary>
 
@@ -1635,7 +1584,7 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "summary": "read_memory Player1: 12 bytes at 08ED:0000AE32",
+  "summary": "read_memory Player1: 12 bytes at 08ED:0000AE32: 010004000200000003000000",
   "status": "ok",
   "ref": "Player1",
   "seg_off": "08ED:0000AE32",
@@ -1644,14 +1593,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**28. `send_keys`**: OK press up: UP pressed
+**27. `send_keys`**: OK press up: UP pressed
 
 <details><summary>call and reply</summary>
 
@@ -1720,14 +1669,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**29. `run_for`**: OK shot: the shot launched
+**28. `run_for`**: OK shot: the shot launched
 
 <details><summary>call and reply</summary>
 
@@ -1792,14 +1741,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**30. `read_memory`**: OK player a shot of it: a shot of it
+**29. `read_memory`**: OK player a shot of it: a shot of it
 
 <details><summary>call and reply</summary>
 
@@ -1812,7 +1761,7 @@ Give this to an MCP client with this server connected:
 
 ```json
 {
-  "summary": "read_memory Player1: 12 bytes at 08ED:0000AE32",
+  "summary": "read_memory Player1: 12 bytes at 08ED:0000AE32: 010004000200040003000200",
   "status": "ok",
   "ref": "Player1",
   "seg_off": "08ED:0000AE32",
@@ -1821,14 +1770,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**31. `audio_record`**: OK record: 141 frames recorded, the first whole frames past 2000 ms
+**30. `audio_record`**: OK record: 141 frames recorded, the first whole frames past 2000 ms
 
 <details><summary>call and reply</summary>
 
@@ -1905,14 +1854,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**32. `audio_compare`**: OK heard: a sound, peaking at -11.66 dBFS
+**31. `audio_compare`**: OK heard: a sound, peaking at -11.66 dBFS
 
 <details><summary>call and reply</summary>
 
@@ -1973,14 +1922,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**33. `audio_compare`**: OK exact: the recording is music.wav, sample for sample
+**32. `audio_compare`**: OK exact: the recording is music.wav, sample for sample
 
 <details><summary>call and reply</summary>
 
@@ -2012,14 +1961,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**34. `screen_view`**: OK screen: the board, 320x200
+**33. `screen_view`**: OK screen: the board, 320x200
 
 <details><summary>call and reply</summary>
 
@@ -2038,12 +1987,15 @@ Give this to an MCP client with this server connected:
   "kind": "pixel",
   "width": 320,
   "height": 200,
+  "mode": "render",
   "crop": [
     0,
     0,
     320,
     200
   ],
+  "screen_indexed": true,
+  "entries": 256,
   "image": {
     "path": "./tmp/demos/lineup/screen.png",
     "bytes": 16447,
@@ -2059,14 +2011,14 @@ Give this to an MCP client with this server connected:
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
 
 </details>
 
-**35. `close`**: OK close: closed: quit
+**34. `close`**: OK close: closed: quit
 
 <details><summary>call and reply</summary>
 
@@ -2095,9 +2047,9 @@ Give this to an MCP client with this server connected:
   ],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
   "session": {
-    "alive": true,
+    "alive": false,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```

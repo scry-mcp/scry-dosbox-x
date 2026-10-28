@@ -43,7 +43,7 @@ Give this to an MCP client with this server connected:
 > Start DOSBox-X windowed on `demos/mines/mines.conf`,
 > stopping at the program's own `int 3`, with the log in a file and the captures in my run's
 > directory. Load `mines.sym` at the segment it stopped in, and the screen map
-> `mines.scry-map.json` beside the conf. Run ten retraces and tell me which screen this is, click
+> `mines.screen-map.json` beside the conf. Run ten retraces and tell me which screen this is, click
 > its start, and tell me again. Open the Game menu by name, check it is the menu, and pick
 > Beginner. Read the board's size, where its mines are and the pixel of its top-left corner, all
 > by symbol. Flag two of the mines with the right button, then open every safe cell with as few
@@ -60,7 +60,7 @@ Give this to an MCP client with this server connected:
 | Session | `start` (windowed, stopping at the program's `int 3`), `close` |
 | Advance | `resume` to the `int 3`, `run_for` by retraces on the conf's fixed clock |
 | Names | `symbols_load` at the load segment |
-| Files | `map_write(method="load")`, `map_find` on every screen, `audio_compare` (`measure`, `diff`) |
+| Files | `screen_map_write(method="load")`, `screen_map_find` on every screen, `audio_compare` (`measure`, `diff`) |
 | Input | `send_mouse` by control name off the map and at pixels, both buttons |
 | Sequences | `perform` (the flags in one call, the clicks that clear the board in another) |
 | Read | `read_memory` by symbol, `log`, `screen_view` |
@@ -282,23 +282,24 @@ and its own arguments) is `<volatile>`.
 
 </details>
 
-**4. `map_write`**: OK map: 5 screens and 8 controls loaded
+**4. `screen_map_write`**: OK map: 5 screens and 8 controls loaded
 
 <details><summary>call and reply</summary>
 
 ```json
 {
   "method": "load",
-  "path": "./demos/mines/mines.scry-map.json"
+  "path": "./demos/mines/mines.screen-map.json"
 }
 ```
 
 ```json
 {
-  "summary": "map_write load: 5 screens, 8 controls of mines",
+  "summary": "screen_map_write load: 5 screens, 8 controls of mines",
   "status": "ok",
-  "path": "./demos/mines/mines.scry-map.json",
+  "path": "./demos/mines/mines.screen-map.json",
   "application": "mines",
+  "mode": "verified",
   "screens": 5,
   "controls": 8,
   "session": {
@@ -387,7 +388,7 @@ and its own arguments) is `<volatile>`.
 
 </details>
 
-**6. `map_find`**: OK is title: the title screen, its controls start
+**6. `screen_map_find`**: OK is title: the title screen, its controls start
 
 <details><summary>call and reply</summary>
 
@@ -397,7 +398,7 @@ and its own arguments) is `<volatile>`.
 
 ```json
 {
-  "summary": "map_find: title (file), 1 control",
+  "summary": "screen_map_find: title (file), 1 control",
   "status": "ok",
   "matched": true,
   "screen": "title",
@@ -540,7 +541,7 @@ and its own arguments) is `<volatile>`.
 
 </details>
 
-**8. `map_find`**: OK is board: the board screen, its controls game
+**8. `screen_map_find`**: OK is board: the board screen, its controls game
 
 <details><summary>call and reply</summary>
 
@@ -550,7 +551,7 @@ and its own arguments) is `<volatile>`.
 
 ```json
 {
-  "summary": "map_find: board (file), 1 control",
+  "summary": "screen_map_find: board (file), 1 control",
   "status": "ok",
   "matched": true,
   "screen": "board",
@@ -693,7 +694,7 @@ and its own arguments) is `<volatile>`.
 
 </details>
 
-**10. `map_find`**: OK is menu: the menu screen, its controls new game, beginner, intermediate, expert
+**10. `screen_map_find`**: OK is menu: the menu screen, its controls new game, beginner, intermediate, expert
 
 <details><summary>call and reply</summary>
 
@@ -703,7 +704,7 @@ and its own arguments) is `<volatile>`.
 
 ```json
 {
-  "summary": "map_find: menu (file), 4 controls",
+  "summary": "screen_map_find: menu (file), 4 controls",
   "status": "ok",
   "matched": true,
   "screen": "menu",
@@ -886,7 +887,7 @@ and its own arguments) is `<volatile>`.
 
 </details>
 
-**12. `map_find`**: OK is board again: the board screen, its controls game
+**12. `screen_map_find`**: OK is board again: the board screen, its controls game
 
 <details><summary>call and reply</summary>
 
@@ -896,7 +897,7 @@ and its own arguments) is `<volatile>`.
 
 ```json
 {
-  "summary": "map_find: board (file), 1 control",
+  "summary": "screen_map_find: board (file), 1 control",
   "status": "ok",
   "matched": true,
   "screen": "board",
@@ -944,7 +945,7 @@ and its own arguments) is `<volatile>`.
 
 ```json
 {
-  "summary": "read_memory rows: 2 bytes at 08DD:00000FFF",
+  "summary": "read_memory rows: 2 bytes at 08DD:00000FFF: 0909",
   "status": "ok",
   "ref": "rows",
   "seg_off": "08DD:00000FFF",
@@ -973,7 +974,7 @@ and its own arguments) is `<volatile>`.
 
 ```json
 {
-  "summary": "read_memory mines: 81 bytes at 08DD:00001030",
+  "summary": "read_memory mines: 81 bytes at 08DD:00001030: 00000001000000000000000100010000000001000000000000000000000000000000000000000000000000000000000000010000000000000000000100000100... (17 more bytes in `hex`)",
   "status": "ok",
   "ref": "mines",
   "seg_off": "08DD:00001030",
@@ -1002,7 +1003,7 @@ and its own arguments) is `<volatile>`.
 
 ```json
 {
-  "summary": "read_memory board_x: 4 bytes at 08DD:00001001",
+  "summary": "read_memory board_x: 4 bytes at 08DD:00001001: 2401c000",
   "status": "ok",
   "ref": "board_x",
   "seg_off": "08DD:00001001",
@@ -1777,7 +1778,7 @@ and its own arguments) is `<volatile>`.
 
 </details>
 
-**20. `map_find`**: OK is win: the win screen, its controls ok
+**20. `screen_map_find`**: OK is win: the win screen, its controls ok
 
 <details><summary>call and reply</summary>
 
@@ -1787,7 +1788,7 @@ and its own arguments) is `<volatile>`.
 
 ```json
 {
-  "summary": "map_find: win (file), 1 control",
+  "summary": "screen_map_find: win (file), 1 control",
   "status": "ok",
   "matched": true,
   "screen": "win",
@@ -1840,12 +1841,15 @@ and its own arguments) is `<volatile>`.
   "kind": "pixel",
   "width": 800,
   "height": 600,
+  "mode": "render",
   "crop": [
     0,
     0,
     800,
     600
   ],
+  "screen_indexed": true,
+  "entries": 256,
   "image": {
     "path": "./tmp/demos/mines/screen.png",
     "bytes": 4610,
@@ -1991,7 +1995,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory mines: 81 bytes at 08DD:00001030",
+  "summary": "read_memory mines: 81 bytes at 08DD:00001030: 00000000000000010000010000000000010001000000000000000000000000000000000000010000010000000001000100000000000000000000000000000000... (17 more bytes in `hex`)",
   "status": "ok",
   "ref": "mines",
   "seg_off": "08DD:00001030",
@@ -2421,7 +2425,7 @@ Also attached: image/png.
 
 </details>
 
-**30. `map_find`**: OK is lose: the lose screen, its controls ok
+**30. `screen_map_find`**: OK is lose: the lose screen, its controls ok
 
 <details><summary>call and reply</summary>
 
@@ -2431,7 +2435,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "map_find: lose (file), 1 control",
+  "summary": "screen_map_find: lose (file), 1 control",
   "status": "ok",
   "matched": true,
   "screen": "lose",
@@ -2495,7 +2499,7 @@ Also attached: image/png.
   ],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
   "session": {
-    "alive": true,
+    "alive": false,
     "running": false,
     "altered": false
   }

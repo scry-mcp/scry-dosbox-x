@@ -26,7 +26,8 @@ STILL_TOOLS = frozenset({
     "capture_frame", "captures", "close", "comment_list", "comment_write", "declaration_clear",
     "declaration_list", "disassemble", "find", "guest_file", "image_compare",
     "interrupt_vectors", "log",
-    "log_wait", "machine_map", "map_find", "map_write", "memdump", "palette", "perform_export",
+    "log_wait", "machine_map", "screen_map_find", "screen_map_write", "memdump", "palette",
+    "perform_export",
     "read_memory", "registers", "regpoint_add", "scan", "screen_signature", "screen_view",
     "series_capture",
     "snapshot", "start", "state_list", "status", "symbols_find", "symbols_load", "watch_add"})

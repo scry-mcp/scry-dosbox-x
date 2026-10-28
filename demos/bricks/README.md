@@ -411,7 +411,7 @@ and its own arguments) is `<volatile>`.
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -445,7 +445,7 @@ and its own arguments) is `<volatile>`.
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -527,7 +527,7 @@ and its own arguments) is `<volatile>`.
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -611,7 +611,7 @@ and its own arguments) is `<volatile>`.
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -631,7 +631,7 @@ and its own arguments) is `<volatile>`.
 
 ```json
 {
-  "summary": "read_memory score: 2 bytes at 08DD:00000615",
+  "summary": "read_memory score: 2 bytes at 08DD:00000615: 0a00",
   "status": "ok",
   "ref": "score",
   "seg_off": "08DD:00000615",
@@ -640,7 +640,7 @@ and its own arguments) is `<volatile>`.
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -665,12 +665,15 @@ and its own arguments) is `<volatile>`.
   "kind": "pixel",
   "width": 320,
   "height": 200,
+  "mode": "render",
   "crop": [
     0,
     0,
     320,
     200
   ],
+  "screen_indexed": true,
+  "entries": 256,
   "image": {
     "path": "./tmp/demos/bricks/screen.png",
     "bytes": 5608,
@@ -685,7 +688,7 @@ and its own arguments) is `<volatile>`.
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -716,7 +719,7 @@ Also attached: image/png.
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -778,7 +781,7 @@ Also attached: image/png.
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -798,7 +801,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory ball_x: 8 bytes at 08DD:00000621",
+  "summary": "read_memory ball_x: 8 bytes at 08DD:00000621: bc005200feff0200",
   "status": "ok",
   "ref": "ball_x",
   "seg_off": "08DD:00000621",
@@ -807,7 +810,7 @@ Also attached: image/png.
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -835,7 +838,7 @@ Also attached: image/png.
   "session": {
     "alive": true,
     "running": true,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -911,7 +914,7 @@ Also attached: image/png.
           "session": {
             "alive": true,
             "running": true,
-            "altered": true
+            "altered": false
           }
         }
       },
@@ -942,7 +945,7 @@ Also attached: image/png.
           "session": {
             "alive": true,
             "running": true,
-            "altered": true
+            "altered": false
           }
         }
       },
@@ -973,7 +976,7 @@ Also attached: image/png.
           "session": {
             "alive": true,
             "running": true,
-            "altered": true
+            "altered": false
           }
         }
       }
@@ -1010,7 +1013,7 @@ Also attached: image/png.
   "session": {
     "alive": true,
     "running": true,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -1043,7 +1046,7 @@ Also attached: image/png.
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -1063,7 +1066,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory paddle_x: 2 bytes at 08DD:0000061F",
+  "summary": "read_memory paddle_x: 2 bytes at 08DD:0000061F: a400",
   "status": "ok",
   "ref": "paddle_x",
   "seg_off": "08DD:0000061F",
@@ -1072,7 +1075,7 @@ Also attached: image/png.
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -1100,7 +1103,7 @@ Also attached: image/png.
   "session": {
     "alive": true,
     "running": true,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -1147,7 +1150,7 @@ Also attached: image/png.
   "session": {
     "alive": true,
     "running": true,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -1207,7 +1210,7 @@ Also attached: image/png.
   "session": {
     "alive": true,
     "running": true,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -1254,7 +1257,7 @@ Also attached: image/png.
   "session": {
     "alive": true,
     "running": true,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -1287,7 +1290,7 @@ Also attached: image/png.
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -1307,7 +1310,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory paddle_x: 2 bytes at 08DD:0000061F",
+  "summary": "read_memory paddle_x: 2 bytes at 08DD:0000061F: dc00",
   "status": "ok",
   "ref": "paddle_x",
   "seg_off": "08DD:0000061F",
@@ -1316,7 +1319,7 @@ Also attached: image/png.
   "session": {
     "alive": true,
     "running": false,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -1344,7 +1347,7 @@ Also attached: image/png.
   "session": {
     "alive": true,
     "running": true,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -1378,7 +1381,7 @@ Also attached: image/png.
   "session": {
     "alive": true,
     "running": true,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -1425,7 +1428,7 @@ Also attached: image/png.
   "session": {
     "alive": true,
     "running": true,
-    "altered": true
+    "altered": false
   }
 }
 ```
@@ -1512,7 +1515,7 @@ Also attached: image/png.
 
 ```json
 {
-  "summary": "read_memory paddle_x: 2 bytes at 08DD:0000061F",
+  "summary": "read_memory paddle_x: 2 bytes at 08DD:0000061F: dc00",
   "status": "ok",
   "ref": "paddle_x",
   "seg_off": "08DD:0000061F",
@@ -1659,9 +1662,9 @@ Also attached: image/png.
   ],
   "how": "close(detail=True) keeps the emulator's last words on a clean quit too; once a close has answered its output is gone (the logfile stays at its path)",
   "session": {
-    "alive": true,
-    "running": true,
-    "altered": true
+    "alive": false,
+    "running": false,
+    "altered": false
   }
 }
 ```

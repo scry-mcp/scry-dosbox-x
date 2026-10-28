@@ -171,7 +171,7 @@ resume(seconds=60)
 ```
 read_memory(ref="score", length=2)
 -> {
-  "summary": "read_memory score: 2 bytes at 08DD:00000615",
+  "summary": "read_memory score: 2 bytes at 08DD:00000615: 0a00",
   "hex": "0a00"
 }
 ```
@@ -215,7 +215,7 @@ state_write(method="load", name="bricks")
 ```
 read_memory(ref="paddle_x", length=2)
 -> {
-  "summary": "read_memory paddle_x: 2 bytes at 08DD:0000061F",
+  "summary": "read_memory paddle_x: 2 bytes at 08DD:0000061F: dc00",
   "hex": "dc00"
 }
 ```
