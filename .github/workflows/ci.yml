@@ -16,6 +16,9 @@ jobs:
   battery:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    # Every `uv run` refuses a lock that no longer matches pyproject.toml instead of re-resolving.
+    env:
+      UV_LOCKED: "1"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
@@ -27,13 +30,22 @@ jobs:
       # The duplication baseline was written by this jscpd; another release counts clones differently.
       - run: npm install --global jscpd@5.2.1 && jscpd --version
         timeout-minutes: 5
-      - run: uv sync --frozen
+      # The guest-building and media cases skip without these, so a green run would hide them.
+      - name: nasm and ffmpeg
+        timeout-minutes: 5
+        run: |
+          for _ in 1 2 3; do
+            sudo apt-get update -qq && sudo apt-get install -y -qq nasm ffmpeg && break
+            sleep 10
+          done
+          command -v nasm ffmpeg || { echo "apt-get could not install nasm and ffmpeg"; exit 1; }
+      - run: uv sync
         timeout-minutes: 5
       - run: uv run ruff check .
       - run: uv run mypy --strict .
       - run: uv run mypy --strict --platform win32 .
       # The coverage floor counts every platform branch of the tree as macOS runs it, so it is
       # judged there; here the suite judges behaviour.
-      - run: uv run pytest -q --no-cov
+      - run: uv run pytest -q --no-cov -rs
       - run: bash .githooks/pre-commit.test.sh
       - run: uv run python -m scry_core.hook

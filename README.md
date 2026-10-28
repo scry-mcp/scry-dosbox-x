@@ -82,7 +82,8 @@ comes from you; the server carries no default that points anywhere.
 
 macOS and Windows. The server talks to DOSBox-X's debugger over its debugger channel on both, the
 same requests and the same replies; on Windows the emulator runs in a console of its own, hidden.
-Linux is not supported: nothing here has run on it.
+Linux runs the unit tests (`.github/workflows/ci.yml`) and nothing else: no emulator has run under
+the server there.
 
 What a session can do depends on the debugger commands its build carries, and `build_check` lists
 them. Any DOSBox-X with the debugger starts a session and answers every reading at the stop it

@@ -32,9 +32,13 @@ On Windows the battery is the same, with `uv run pytest -q --no-cov`: the floor 
 only, because Windows skips by design the cases that need what it lacks (a FIFO, a mode bit, a
 symlink), and the floor counts the whole tree.
 
-`.github/workflows/ci.yml` runs this battery on GitHub's Linux runners, with `--no-cov` since the
-floor is macOS's, plus the pre-commit's checks; the live tier stays on macOS and Windows, where an
-emulator and a display are.
+`.github/workflows/ci.yml` runs this battery on GitHub's Linux runners when started by hand, with
+`--no-cov` since the floor is macOS's, plus the pre-commit's checks (which need `jscpd` on the
+`PATH`, here as on a contributor's machine); the live tier stays on macOS and Windows, where an
+emulator and a display are. Without `nasm` the guest-building cases skip, and without `ffmpeg` the
+media ones; the workflow installs both so that a green run covers them. The committed guest binaries
+are nasm 3's, so their byte-identity cases skip under the nasm 2 Ubuntu ships, and run on macOS and
+Windows.
 
 A change to a tool's arguments, reply model or description changes its reference page, and
 `tests/test_dosbox_x_reference_pages.py` goes red naming the tool, the page and the line. Regenerate the pages from the

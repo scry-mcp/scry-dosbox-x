@@ -66,8 +66,22 @@ def test_the_late_milestone_the_source_declares_is_the_one_it_tests_for() -> Non
         f"{announced.group(1)}: the milestone and the line naming it disagree")
 
 
+def _nasm_major() -> int:
+    said = subprocess.run(["nasm", "-v"], capture_output=True, text=True, check=False).stdout
+    found = re.search(r"version (\d+)\.", said)
+    return int(found.group(1)) if found else 0
+
+
+#: The committed binaries are nasm 3's: nasm 2 emits the operand- and address-size prefixes
+#: (0x66, 0x67) of one instruction in the other order, a valid encoding with other bytes.
+NASM_MAJOR = 3
+
+
 @pytest.mark.skipif(shutil.which("nasm") is None,
                     reason="no `nasm` on PATH, so the binary cannot be reassembled")
+@pytest.mark.skipif(shutil.which("nasm") is not None and _nasm_major() < NASM_MAJOR,
+                    reason=f"the binaries are nasm {NASM_MAJOR}'s, and nasm 2 orders prefixes "
+                           "differently")
 @pytest.mark.parametrize("name", GUESTS)
 def test_the_guest_binary_is_exactly_what_its_source_assembles_to(tmp_path: Path,
                                                                     name: str) -> None:
