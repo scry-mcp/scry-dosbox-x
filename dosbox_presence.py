@@ -40,8 +40,8 @@ NO_WINDOW = "a session started without `shared` has no window to draw on"
 def channel_args(look: presence.Look = presence.LOOK) -> str:
         return (f"rgb={look.rgb:06X} edge={look.edge:g} steps={look.steps} "
             f"acting={look.acting_alpha:.3f} held={look.held_alpha:.3f} fade={look.fade_s:g} "
-            f"outline={look.pointer_outline_rgb:06X} size={look.pointer_size:g} "
-            f"glide={look.pointer_glide_s:g} sprite={'/'.join(look.pointer)}")
+            f"outline={look.pointer_outline_rgb:06X} glide={look.pointer_glide_s:g} "
+            f"sprite={'/'.join(look.pointer)}")
 
 
 class Debugger(Protocol):
@@ -64,7 +64,8 @@ class ChannelAdapter:
         ok, lines = self._session.exec(
             f"PRESENCE {state} {self._args} pointer={int(self.pointer)}")
         if not ok:
-            if dbg.NOT_RECOGNIZED in lines:
+            # A refused key also ends with the debugger's own line, after its reason.
+            if lines == [dbg.NOT_RECOGNIZED]:
                 raise presence.Unavailable(NO_COMMAND)
             said = " / ".join(lines) or "no reason given"
             raise RuntimeError(f"the debugger refused PRESENCE: {said}")

@@ -28,14 +28,14 @@ def test_every_registered_tool_is_declared_driving_or_still_and_no_other() -> No
 
 def test_the_look_goes_to_the_channel_one_word_per_key_with_its_arrow() -> None:
     words = dict(w.split("=", 1) for w in dpresence.channel_args().split(" "))
-    assert list(words) == ["rgb", "edge", "steps", "acting", "held", "fade", "outline", "size",
-                           "glide", "sprite"]
+    assert list(words) == ["rgb", "edge", "steps", "acting", "held", "fade", "outline", "glide",
+                           "sprite"]
     look = presence.LOOK
     assert words == {"rgb": f"{look.rgb:06X}", "edge": f"{look.edge:g}",
                      "steps": str(look.steps), "acting": f"{look.acting_alpha:.3f}",
                      "held": f"{look.held_alpha:.3f}", "fade": f"{look.fade_s:g}",
                      "outline": f"{look.pointer_outline_rgb:06X}",
-                     "size": f"{look.pointer_size:g}", "glide": f"{look.pointer_glide_s:g}",
+                     "glide": f"{look.pointer_glide_s:g}",
                      "sprite": "/".join(look.pointer)}
 
 
@@ -89,10 +89,11 @@ def test_a_build_naming_presence_whose_debugger_does_not_parse_it_is_said_unavai
 
 
 def test_what_the_command_refuses_is_said_in_place_of_true() -> None:
-    shown, _ = _shown((False, ["PRESENCE edge=9 is not a value it takes"]))
+    """Captured off the build: a refusal names its reason, then the debugger's own line."""
+    shown, _ = _shown((False, ["PRESENCE does not know the argument size", dbg.NOT_RECOGNIZED]))
     said = shown.reply()
     assert isinstance(said, dict) and said["available"] is False
-    assert "refused PRESENCE" in said["why"], said
+    assert "refused PRESENCE" in said["why"] and "argument size" in said["why"], said
     assert shown.held is None
 
 

@@ -69,7 +69,7 @@ R_CELLS = cells(
      "dosbox_presence: NO_WINDOW"),
     ("R the first mouse move draws the arrow inside the picture, away from the edge, and only "
      "the arrow: turned off again, those pixels go back",
-     "REFERENCE.md, The presence indicator: an orange arrow marks the guest's pointer"),
+     "REFERENCE.md, The presence indicator: an orange arrow stands on the guest's pointer"),
 )
 MOUSE_CONF = GUEST / "mouse.conf"
 MOUSE_PROGRAM = "MOUSE.COM"
