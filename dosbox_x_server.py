@@ -1437,7 +1437,9 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
 
     `x`, `y`: both or neither, in `units`. `target`: a control of the latest `screen_map_find`
     screen, instead of `x`, `y`. `action="drag"` presses at that place and releases at `to_x`,
-    `to_y`, with the move between. A stopped machine is run as for `send_keys`.
+    `to_y`, with the move between. A stopped machine is run as for `send_keys`; under a map that
+    declares the program's own pointer, a move there nudges the driver until that pointer is on
+    the place and `arrived` judges it (`pointer.program`).
 
     Refused: no move and no button, half a move, a place off the screen, no stub, a stopped
     machine with no `RUNSTATE`; `target` beside `x`, `y` or `units="mouse"`, a drag without
@@ -1452,13 +1454,15 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
     """
     if not target:
         moved = inputs.send_mouse(live(), x, y, button or None, action, units, expect or None,
-                                  seconds, bridge(ctx), to_x=to_x, to_y=to_y)
+                                  seconds, bridge(ctx), to_x=to_x, to_y=to_y,
+                                  program=STATE.maps.pointer)
     else:
         inputs.check_mouse(x, y, button or None, action, units, expect or None, seconds, target,
                            to_x, to_y)
         aimed = STATE.maps.target(target)
         moved = inputs.send_mouse_at(live(), aimed, button or None, action, expect or None,
-                                     seconds, bridge(ctx), to_x=to_x, to_y=to_y)
+                                     seconds, bridge(ctx), to_x=to_x, to_y=to_y,
+                                     program=STATE.maps.pointer)
     # Read off the state, not `live()`: a session that died after the move went in must not
     # cost the caller the reply that says it was delivered.
     dpresence.pointer_moved(dpresence.of(STATE.session))

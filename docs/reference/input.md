@@ -120,7 +120,9 @@ proves the program reacted, as in `send_keys`.
 
 `x`, `y`: both or neither, in `units`. `target`: a control of the latest `screen_map_find`
 screen, instead of `x`, `y`. `action="drag"` presses at that place and releases at `to_x`,
-`to_y`, with the move between. A stopped machine is run as for `send_keys`.
+`to_y`, with the move between. A stopped machine is run as for `send_keys`; under a map that
+declares the program's own pointer, a move there nudges the driver until that pointer is on
+the place and `arrived` judges it (`pointer.program`).
 
 Refused: no move and no button, half a move, a place off the screen, no stub, a stopped
 machine with no `RUNSTATE`; `target` beside `x`, `y` or `units="mouse"`, a drag without

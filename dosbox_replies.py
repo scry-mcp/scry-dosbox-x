@@ -757,6 +757,7 @@ class MapWriteReply(DosboxEnvelope, total=False):
     match: list[Any]
     mode: Annotated[str, When("`load`", "`save`")]
     path: str
+    pointer: Annotated[dict[str, Any], When("a map that declares the program's pointer")]
     promoted: Annotated[list[Any], When("`save`")]
     replaced: Annotated[bool, When("`add`")]
     screen: str

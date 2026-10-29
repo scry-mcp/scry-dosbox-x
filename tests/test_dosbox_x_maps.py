@@ -303,3 +303,16 @@ def test_a_control_with_a_screen_that_has_no_anchor_is_refused(tmp_path: Path) -
     got = cast(dict[str, Any], server.run_to(screen="prompt", control="_main"))
     assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
     assert "no anchor" in got["message"] and "control" in got["message"], got["message"]
+
+
+def test_a_map_that_declares_the_programs_pointer_loads_and_says_so(tmp_path: Path) -> None:
+    screen_bench("probe-booted", tmp_path)
+    doc = {"format": "scry-screen-map/1", "application": "demo", "mode": "verified",
+           "pointer": {"x": "0100:0010", "y": "0100:0012"},
+           "screens": [{"name": "prompt", "kind": "text", "size": [80, 25],
+                        "match": [{"crop": PROMPT, "signature": "0" * 16}], "controls": []}]}
+    path = tmp_path / "demo.screen-map.json"
+    path.write_text(json.dumps(doc), encoding="utf-8")
+    got = _ok(server.screen_map_write("load", path=str(path)))
+    assert got["pointer"] == {"x": "0100:0010", "y": "0100:0012", "bytes": 2}, got
+    assert dstate.STATE.maps.pointer is not None and dstate.STATE.maps.pointer.y == "0100:0012"

@@ -21,10 +21,13 @@ from scry_core import cancel
 from scry_core import reply_contract as contract
 from scry_core import vocabulary as vocab
 from scry_core.reply_contract import Code, unavailable
+from scry_core.screen_map import Pointer
 
 import dosbox_debugger as dbg
 import dosbox_launch as dlaunch
 import dosbox_logs as dlogs
+import dosbox_placement as placement
+import dosbox_pointer as dpointer
 import dosbox_retrace as retrace
 import dosbox_running as running
 import dosbox_session as ds
@@ -627,14 +630,36 @@ def _pointer(report: Report) -> dict[str, Any]:
             **({"vbe_mode": f"{report.vbe:#05x}"} if report.is_vbe() else {})}
 
 
+def _steer(session: ds.Session, parked: Retraces, program: Pointer, aim: tuple[int, int],
+           after: Report) -> tuple[Report, dpointer.Steered | None]:
+    """The driver nudged until the program's own pointer is on `aim`; the report after the last
+    nudge. A mode with no known size has no ratio to nudge by, and is left as it is."""
+    size = after.units()
+    if size is None:
+        return after, None
+    latest = [after]
+
+    def nudge(dx: int, dy: int) -> None:
+        here = latest[0]
+        _send(session, [move_command(min(max(here.x + dx, 0), here.max_x),
+                                     min(max(here.y + dy, 0), here.max_y))], parked)
+        latest[0] = _report(session, parked)
+    steered = dpointer.steer(
+        aim,
+        lambda: dpointer.program_at(session.read_bytes, program,
+                                    lambda ref: placement.read_target(ref, "DS", session)),
+        nudge, ((after.max_x + 1) / size[0], (after.max_y + 1) / size[1]))
+    return latest[0], steered
+
+
 def send_mouse_at(session: ds.Session, aimed: dict[str, Any], button: str | None, action: str,
                   expect: str | None, seconds: float | None,
                   progress: ds.Progress = ds.no_progress, *, to_x: int | None = None,
-                  to_y: int | None = None) -> dict[str, Any]:
+                  to_y: int | None = None, program: Pointer | None = None) -> dict[str, Any]:
     """`send_mouse(target=)`: the pointer to the centre of the control `aimed` names."""
     x, y = aimed["centre"]
     reply = send_mouse(session, x, y, button, action, "screen", expect, seconds, progress, aimed,
-                       to_x=to_x, to_y=to_y)
+                       to_x=to_x, to_y=to_y, program=program)
     return {**reply, "target": aimed["target"], "screen": aimed["screen"],
             "identified_at_stop": aimed["identified_at_stop"]}
 
@@ -669,7 +694,7 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
                action: str, units: str, expect: str | None, seconds: float | None,
                progress: ds.Progress = ds.no_progress,
                aimed: dict[str, Any] | None = None, *, to_x: int | None = None,
-               to_y: int | None = None) -> dict[str, Any]:
+               to_y: int | None = None, program: Pointer | None = None) -> dict[str, Any]:
     """The body of the `send_mouse` tool. `aimed` is the control a `target` named
     (`screen_map.Maps.target`); a drag presses at `x`, `y` and releases at `to_x`, `to_y`."""
     check_mouse(x, y, button, action, units, expect, seconds, None, to_x, to_y)
@@ -681,22 +706,38 @@ def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | 
     end = None if to_x is None or to_y is None else _target(before, to_x, to_y, units)
 
     def post() -> dict[str, Any]:
-        commands = [] if target is None else [move_command(*target)]
+        moves = [] if target is None else [move_command(*target)]
+        buttons: list[bytes] = []
         if button is not None and action == "drag":
             assert end is not None
-            commands += [*button_commands(button, "down"), move_command(*end),
-                         *button_commands(button, "up")]
+            buttons = [*button_commands(button, "down"), move_command(*end),
+                       *button_commands(button, "up")]
         elif button is not None:
-            commands += button_commands(button, action)
+            buttons = button_commands(button, action)
+        steered: dpointer.Steered | None = None
         try:
-            _send(session, commands, parked)
-            after = _report(session, parked)
+            if program is not None and parked is not None and moves and units == "screen":
+                assert x is not None and y is not None
+                _send(session, moves, parked)
+                after = _report(session, parked)
+                after, steered = _steer(session, parked, program, (x, y), after)
+                if buttons:
+                    _send(session, buttons, parked)
+                    after = _report(session, parked)
+            else:
+                _send(session, moves + buttons, parked)
+                after = _report(session, parked)
         except ds.Invalid as e:
             raise _delivered(e, parked) from None
         arrival = end or target
-        landed = arrival is None or _landed(after, arrival, to_x if end else x,
-                                            to_y if end else y, units)
-        fields: dict[str, Any] = {"route": "guest", "pointer": _pointer(after),
+        landed = (steered.arrived if steered is not None and not end else
+                  arrival is None or _landed(after, arrival, to_x if end else x,
+                                             to_y if end else y, units))
+        shown = _pointer(after)
+        if steered is not None:
+            shown["program"] = {"x": steered.seen[0], "y": steered.seen[1],
+                                "corrections": steered.corrections}
+        fields: dict[str, Any] = {"route": "guest", "pointer": shown,
                                   "arrived": landed, **_parked_fields(parked)}
         if target is not None:
             fields["motion"] = _motion(session)
