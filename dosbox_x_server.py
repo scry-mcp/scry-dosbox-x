@@ -1419,16 +1419,19 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
                action: Annotated[str, vocab.enum(inputs.ACTIONS)] = "click",
                units: Annotated[str, vocab.enum(inputs.UNITS)] = "screen", expect: str = "",
                seconds: Annotated[float, vocab.WAIT_BOUNDS] | None = None, target: str = "",
+               to_x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = None,
+               to_y: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = None,
                ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Move the guest's mouse pointer, press buttons, and read the pointer back; `expect`
     proves the program reacted, as in `send_keys`.
 
     `x`, `y`: both or neither, in `units`. `target`: a control of the latest `screen_map_find`
-    screen, instead of `x`, `y`. A drag is `down`, a move, `up`. A stopped machine is run as for
-    `send_keys`.
+    screen, instead of `x`, `y`. `action="drag"` presses at that place and releases at `to_x`,
+    `to_y`, with the move between. A stopped machine is run as for `send_keys`.
 
     Refused: no move and no button, half a move, a place off the screen, no stub, a stopped
-    machine with no `RUNSTATE`; `target` beside `x`, `y` or `units="mouse"` (`bad_argument`);
+    machine with no `RUNSTATE`; `target` beside `x`, `y` or `units="mouse"`, a drag without
+    both ends, `to_x` and `to_y` without a drag (`bad_argument`);
     no `screen_map_find` match (`needs_call`); an unknown control (`unknown_ref`).
 
     Reply: `route`, `pointer`, `arrived` (else `asked`), `motion` (a move reached the motion
@@ -1439,12 +1442,13 @@ def send_mouse(x: Annotated[int, vocab.bounds(0, inputs.MAX_COORD)] | None = Non
     """
     if not target:
         moved = inputs.send_mouse(live(), x, y, button or None, action, units, expect or None,
-                                  seconds, bridge(ctx))
+                                  seconds, bridge(ctx), to_x=to_x, to_y=to_y)
     else:
-        inputs.check_mouse(x, y, button or None, action, units, expect or None, seconds, target)
+        inputs.check_mouse(x, y, button or None, action, units, expect or None, seconds, target,
+                           to_x, to_y)
         aimed = STATE.maps.target(target)
         moved = inputs.send_mouse_at(live(), aimed, button or None, action, expect or None,
-                                     seconds, bridge(ctx))
+                                     seconds, bridge(ctx), to_x=to_x, to_y=to_y)
     # Read off the state, not `live()`: a session that died after the move went in must not
     # cost the caller the reply that says it was delivered.
     dpresence.pointer_moved(dpresence.of(STATE.session))

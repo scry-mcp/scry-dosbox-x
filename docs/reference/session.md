@@ -48,24 +48,8 @@ Example, from a live run:
   "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
   "debugger": true,
   "heavy_debug": true,
-  "debugger_commands": [
-    "RUNSTATE",
-    "STEPIN",
-    "SAVESTATE",
-    "LOADSTATE",
-    "PRESENCE",
-    "VGAMEMDUMP",
-    "... 5 more"
-  ],
-  "tools": [
-    "a20",
-    "audio_compare",
-    "audio_record",
-    "breakpoint_at",
-    "breakpoint_interrupt",
-    "build_check",
-    "... 53 more"
-  ]
+  "debugger_commands": ["RUNSTATE", "STEPIN", "SAVESTATE", "LOADSTATE", "PRESENCE", "VGAMEMDUMP", "... 5 more"],
+  "tools": ["a20", "audio_compare", "audio_record", "breakpoint_at", "breakpoint_interrupt", "build_check", "... 53 more"]
 }
 ```
 <!-- scry-reference:end build_check -->
@@ -213,27 +197,11 @@ Example, from a live run:
   "captures": "off",
   "state_dir": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/A/n986-save",
   "ready_after_s": 0.108,
-  "argv": [
-    "~/.local/state/dosbox-x-builds/scry/dosbox-x",
-    "-conf",
-    "$TMPDIR/dosbox-x-live-job-vri600ji/A/tests/guest/probe.conf",
-    "-time-limit",
-    "1200",
-    "-break-start",
-    "... 20 more"
-  ],
+  "argv": ["~/.local/state/dosbox-x-builds/scry/dosbox-x", "-conf", "$TMPDIR/dosbox-x-live-job-vri600ji/A/tests/guest/probe.conf", "-time-limit", "1200", "-break-start", "... 20 more"],
   "binary": "~/.local/state/dosbox-x-builds/scry/dosbox-x",
   "binary_origin": "DOSBOX_X_BINARY",
   "version": "DOSBox-X version 2026.10.01 SDL2, copyright 2011-2026 The DOSBox-X Team.",
-  "debugger_commands": [
-    "BPIF",
-    "CAPTURE",
-    "DOSTRACE",
-    "LOADSTATE",
-    "PORTINFO",
-    "PRESENCE",
-    "... 5 more"
-  ],
+  "debugger_commands": ["BPIF", "CAPTURE", "DOSTRACE", "LOADSTATE", "PORTINFO", "PRESENCE", "... 5 more"],
   "stub": "/path/to/scry-dosbox-x/guest/SCRY.COM",
   "input_port": 58293,
   "background": true,

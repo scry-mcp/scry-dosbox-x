@@ -67,11 +67,9 @@ def click(target: str, action: str = "") -> dict[str, Any]:
 
 
 def drag(start: tuple[int, int], end: tuple[int, int]) -> list[dict[str, Any]]:
-    """A drag as Deluxe Paint takes one: press, move, release."""
+    """A drag as Deluxe Paint takes one: press, move, release, in one call."""
     return [{"op": "send_mouse", "x": start[0], "y": start[1], "button": "left",
-             "action": "down"},
-            {"op": "send_mouse", "x": end[0], "y": end[1]},
-            {"op": "send_mouse", "button": "left", "action": "up"}]
+             "action": "drag", "to_x": end[0], "to_y": end[1]}]
 
 
 def opening(boot: Callable[[Run], dict[str, Any]]) -> list[Step]:

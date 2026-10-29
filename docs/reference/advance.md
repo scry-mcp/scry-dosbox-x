@@ -107,9 +107,7 @@ Example, from a live run:
   "e9": {
     "lines_total": 1,
     "truncated": false,
-    "lines": [
-      "Bochs port E9h: [+ 00000.000] PROBE . tick"
-    ],
+    "lines": ["Bochs port E9h: [+ 00000.000] PROBE . tick"],
     "mark": 31992
   },
   "stop_seq": 6,
@@ -477,10 +475,7 @@ Example, from a live run:
   "already": true,
   "waited_s": 0.0,
   "polls": 0,
-  "point": [
-    0,
-    3
-  ],
+  "point": [0, 3],
   "line": "C:\\>PROBE.COM"
 }
 ```
@@ -648,11 +643,7 @@ Example, from a live run:
 {
   "summary": "resume: running",
   "status": "ok",
-  "omitted": [
-    "output",
-    "output_chars",
-    "clipped"
-  ],
+  "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command"
 }
 ```

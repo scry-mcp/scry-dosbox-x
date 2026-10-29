@@ -124,22 +124,14 @@ Example, from a live run:
   "summary": "image_compare region: changed_pixels, 1 transition over 5 frames",
   "status": "ok",
   "measure": "changed_pixels",
-  "crop": [
-    0,
-    0,
-    320,
-    8
-  ],
+  "crop": [0, 0, 320, 8],
   "frames": 5,
   "start": {
     "available": false,
     "why": "`changed_pixels` counts a change from the frame before, and the first frame has none"
   },
   "transitions": [
-    [
-      4,
-      2560
-    ]
+    [4, 2560]
   ],
   "gaps": [],
   "transitions_total": 1,
@@ -225,10 +217,7 @@ Example, from a live run:
   "sample_rate_hz": 48000,
   "channels": 2,
   "bits": 16,
-  "window": [
-    0.0,
-    0.999
-  ],
+  "window": [0.0, 0.999],
   "measures": [
     {
       "channel": 0,

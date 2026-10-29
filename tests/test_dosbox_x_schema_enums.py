@@ -75,6 +75,7 @@ RANGES: list[tuple[str, str, int, int]] = [
     ("breakpoint_interrupt", "number", 0, ds.BYTE_MAX),
     ("breakpoint_interrupt", "ah", 0, ds.BYTE_MAX), ("interrupt_vectors", "number", 0, ds.BYTE_MAX),
     ("send_mouse", "x", 0, inputs.MAX_COORD), ("send_mouse", "y", 0, inputs.MAX_COORD),
+    ("send_mouse", "to_x", 0, inputs.MAX_COORD), ("send_mouse", "to_y", 0, inputs.MAX_COORD),
     ("start", "session_seconds", 1, dlaunch.MAX_SECONDS),
     ("start", "input_port", 0, dlaunch.INPUT_PORT_MAX),
     ("palette", "first", 0, vgadac.DAC_ENTRIES - 1), ("palette", "count", 0, vgadac.DAC_ENTRIES),

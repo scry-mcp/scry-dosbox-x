@@ -166,6 +166,36 @@ def test_commands_that_went_in_are_said_when_the_read_back_fails(tmp_path: Path)
     assert acted == [[inputs.move_command(84, 44), b"B\x80", b"B\x00"]], fake.commands_sent
 
 
+def test_a_drag_presses_at_its_start_moves_and_releases_at_its_end(tmp_path: Path) -> None:
+    fake = _guest(tmp_path)
+    got = cast(dict[str, Any], server.send_mouse(x=10, y=5, button="left", action="drag",
+                                                 to_x=40, to_y=10))
+    assert got["status"] == "ok" and got["arrived"] is True, got
+    acted = [c for c in fake.commands_sent if c != [inputs.OP_REPORT]]
+    end = (inputs.to_driver(40, 80, 639), inputs.to_driver(10, 25, 199))
+    assert acted == [[inputs.move_command(84, 44), b"B\x80", inputs.move_command(*end),
+                      b"B\x00"]], acted
+    assert fake.pointer == end and fake.buttons == 0, (fake.pointer, fake.buttons)
+
+
+@pytest.mark.parametrize(("kw", "words"), [
+    ({"x": 10, "y": 5, "button": "left", "action": "drag"}, "`to_x` and `to_y`"),
+    ({"x": 10, "y": 5, "button": "left", "action": "drag", "to_x": 3}, "BOTH `to_x` and `to_y`"),
+    ({"button": "left", "action": "drag", "to_x": 3, "to_y": 4}, "starts at"),
+    ({"x": 10, "y": 5, "action": "drag", "to_x": 3, "to_y": 4}, "acts on a `button`"),
+    ({"x": 10, "y": 5, "button": "left", "to_x": 3, "to_y": 4}, "action='drag'"),
+    ({"x": 10, "y": 5, "button": "left", "action": "drag", "to_x": 99999, "to_y": 4},
+     "`to_x` is a whole number"),
+])
+def test_a_drag_is_refused_without_both_ends_and_the_ends_without_a_drag(
+        tmp_path: Path, kw: dict[str, Any], words: str) -> None:
+    fake = _guest(tmp_path)
+    got = cast(dict[str, Any], server.send_mouse(**kw))
+    assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+    assert words in got["message"], got["message"]
+    assert not [c for c in fake.commands_sent if c != [inputs.OP_REPORT]], fake.commands_sent
+
+
 def test_without_a_log_the_keys_go_out_on_the_conf_s_word(tmp_path: Path) -> None:
     fake = _names(tmp_path, watched=False)
     fake.running = True

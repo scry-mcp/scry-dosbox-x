@@ -173,7 +173,7 @@ def test_a_target_moves_the_pointer_to_its_controls_centre_and_says_which(
     sent: list[tuple[Any, ...]] = []
 
     def send(session: Any, x: Any, y: Any, button: Any, action: Any, units: Any, *rest: Any,
-             ) -> dict[str, Any]:
+             **_: Any) -> dict[str, Any]:
         sent.append((x, y, button, units, rest[-1]["size"], rest[0], rest[1]))
         return {"status": "ok", "route": "guest", "pointer": {"x": 1, "y": 1}, "arrived": True,
                 "verify": {"checked": False, "why": "no expect"}}

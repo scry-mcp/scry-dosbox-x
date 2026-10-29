@@ -120,11 +120,7 @@ Example, from a live run:
   "stored": true,
   "armed": true,
   "entry": "BPINT 21 AH=4C",
-  "omitted": [
-    "output",
-    "output_chars",
-    "clipped"
-  ],
+  "omitted": ["output", "output_chars", "clipped"],
   "how": "detail=True adds what the debugger printed for this command"
 }
 ```
@@ -509,9 +505,7 @@ Example, from a live run:
   "summary": "declaration_clear breakpoint 0000:0002: 1 cleared",
   "status": "ok",
   "declarations_cleared": 1,
-  "disarmed": [
-    "BP 0000:0002"
-  ]
+  "disarmed": ["BP 0000:0002"]
 }
 ```
 <!-- scry-reference:end declaration_clear -->

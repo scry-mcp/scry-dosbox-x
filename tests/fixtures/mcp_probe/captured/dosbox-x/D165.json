@@ -1,0 +1,39 @@
+{
+ "task": {
+  "id": "D165",
+  "prompt": "Drag with the left mouse button held: press it at screen pixel 100, 50 and release it at screen pixel 220, 90, in one call.",
+  "tool": "send_mouse",
+  "args": {
+   "x": 100,
+   "y": 50,
+   "button": "left",
+   "action": "drag",
+   "to_x": 220,
+   "to_y": 90
+  },
+  "grammar": [
+   "left",
+   "drag"
+  ]
+ },
+ "runs": [
+  {
+   "lines": [
+    "D165: {\"tool\": \"send_mouse\", \"args\": {\"x\": 100, \"y\": 50, \"action\": \"drag\", \"button\": \"left\", \"to_x\": 220, \"to_y\": 90}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D165: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"drag\", \"button\": \"left\", \"x\": 100, \"y\": 50, \"to_x\": 220, \"to_y\": 90}}"
+   ],
+   "right": true
+  },
+  {
+   "lines": [
+    "D165: {\"tool\": \"send_mouse\", \"args\": {\"action\": \"drag\", \"x\": 100, \"y\": 50, \"to_x\": 220, \"to_y\": 90, \"button\": \"left\"}}"
+   ],
+   "right": true
+  }
+ ]
+}

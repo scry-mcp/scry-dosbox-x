@@ -177,9 +177,10 @@ def _send_keys(keys: list[str], modifiers: list[str] | None = None, expect: str 
 
 def _send_mouse(x: int | None = None, y: int | None = None, button: str = "",
                 action: str = "click", units: str = "screen", expect: str = "",
-                seconds: float | None = None, target: str = "", **_: Any) -> None:
+                seconds: float | None = None, target: str = "", to_x: int | None = None,
+                to_y: int | None = None, **_: Any) -> None:
     inputs.check_mouse(x, y, button or None, action, units, expect or None, seconds,
-                       target or None)
+                       target or None, to_x, to_y)
 
 
 def check_load_map(path: str = "", scale: object = 1, margin: object = None, **_: Any) -> None:

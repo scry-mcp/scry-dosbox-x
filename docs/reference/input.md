@@ -80,72 +80,7 @@ Example, from a live run:
 
 ```json
 {
-  "keys": [
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a"
-  ]
+  "keys": ["a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a"]
 }
 ```
 
@@ -153,15 +88,7 @@ Example, from a live run:
 {
   "summary": "send_keys (guest): posted, unverified",
   "status": "ok",
-  "keys": [
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "a",
-    "... 58 more"
-  ],
+  "keys": ["a", "a", "a", "a", "a", "a", "... 58 more"],
   "modifiers": [],
   "route": "guest",
   "posted": 64,
@@ -185,18 +112,19 @@ A stop during the `expect` wait is INVALID (`wait_stopped`) with `last_stop`. `v
 *Send mouse input*
 
 ```text
-send_mouse(x=null, y=null, button="", action="click", units="screen", expect="", seconds=null, target="")
+send_mouse(x=null, y=null, button="", action="click", units="screen", expect="", seconds=null, target="", to_x=null, to_y=null)
 ```
 
 Move the guest's mouse pointer, press buttons, and read the pointer back; `expect`
 proves the program reacted, as in `send_keys`.
 
 `x`, `y`: both or neither, in `units`. `target`: a control of the latest `screen_map_find`
-screen, instead of `x`, `y`. A drag is `down`, a move, `up`. A stopped machine is run as for
-`send_keys`.
+screen, instead of `x`, `y`. `action="drag"` presses at that place and releases at `to_x`,
+`to_y`, with the move between. A stopped machine is run as for `send_keys`.
 
 Refused: no move and no button, half a move, a place off the screen, no stub, a stopped
-machine with no `RUNSTATE`; `target` beside `x`, `y` or `units="mouse"` (`bad_argument`);
+machine with no `RUNSTATE`; `target` beside `x`, `y` or `units="mouse"`, a drag without
+both ends, `to_x` and `to_y` without a drag (`bad_argument`);
 no `screen_map_find` match (`needs_call`); an unknown control (`unknown_ref`).
 
 Reply: `route`, `pointer`, `arrived` (else `asked`), `motion` (a move reached the motion
@@ -210,11 +138,13 @@ Reference: REFERENCE.md, Input and the screen.
 | `x` | integer (>= 0, <= 32767) or null | `null` |
 | `y` | integer (>= 0, <= 32767) or null | `null` |
 | `button` | one of `""`, `"left"`, `"right"`, `"middle"` | `""` |
-| `action` | one of `"click"`, `"double"`, `"down"`, `"up"` | `"click"` |
+| `action` | one of `"click"`, `"double"`, `"down"`, `"up"`, `"drag"` | `"click"` |
 | `units` | one of `"screen"`, `"mouse"` | `"screen"` |
 | `expect` | string | `""` |
 | `seconds` | number (> 0, <= 600.0) or null | `null` |
 | `target` | string | `""` |
+| `to_x` | integer (>= 0, <= 32767) or null | `null` |
+| `to_y` | integer (>= 0, <= 32767) or null | `null` |
 
 | reply field | type |
 |---|---|

@@ -105,7 +105,7 @@ MAX_COORD = 0x7FFF      # INT 33h takes a coordinate in a signed 16-bit register
 MODIFIER_WORDS = tuple(SCAN_MODIFIERS)
 #: The buttons as `send_mouse` names them.
 BUTTON_WORDS = tuple(BUTTONS)
-ACTIONS = ("click", "double", "down", "up")
+ACTIONS = ("click", "double", "down", "up", "drag")
 UNITS = ("screen", "mouse")
 
 # The units `screen_view` answers in per BIOS mode: cells for text, pixels for graphics. The
@@ -504,7 +504,8 @@ def check_keys(keys: list[str], modifiers: list[str] | None, expect: str | None 
 
 def check_mouse(x: int | None, y: int | None, button: str | None, action: str = "click",
                 units: str = "screen", expect: str | None = None,
-                seconds: float | None = None, target: str | None = None) -> None:
+                seconds: float | None = None, target: str | None = None,
+                to_x: int | None = None, to_y: int | None = None) -> None:
     """Everything `send_mouse` refuses before anything is sent."""
     if target is not None:
         if not isinstance(cast(object, target), str) or not target:
@@ -521,7 +522,7 @@ def check_mouse(x: int | None, y: int | None, button: str | None, action: str = 
             "name a move (`x` and `y`, or a `target`), a `button`, or both (the move goes first)")
     if (x is None) != (y is None):
         raise ds.Invalid("bad_argument", "a move needs BOTH `x` and `y`")
-    for name, value in (("x", x), ("y", y)):
+    for name, value in (("x", x), ("y", y), ("to_x", to_x), ("to_y", to_y)):
         if value is not None and (isinstance(cast(object, value), bool)
                                   or not isinstance(cast(object, value), int)
                                   or not 0 <= value <= MAX_COORD):
@@ -532,6 +533,17 @@ def check_mouse(x: int | None, y: int | None, button: str | None, action: str = 
     vocab.one_of("action", action, ACTIONS)
     if action != "click" and button is None:
         raise ds.Invalid("bad_argument", f"`action={action!r}` acts on a `button`; name one")
+    if (to_x is None) != (to_y is None):
+        raise ds.Invalid("bad_argument", "a drag's end needs BOTH `to_x` and `to_y`")
+    if action == "drag":
+        if x is None and target is None:
+            raise ds.Invalid("bad_argument", "a drag starts at a place: give `x` and `y`, or a "
+                             "`target`")
+        if to_x is None:
+            raise ds.Invalid("bad_argument", "a drag ends at a place: give `to_x` and `to_y`")
+    elif to_x is not None:
+        raise ds.Invalid("bad_argument", "`to_x` and `to_y` are where a drag ends: use them "
+                         "with action='drag'")
     vocab.one_of("units", units, UNITS, ": `screen` counts cells in a text mode and pixels in "
                  "a graphics one, as `screen_view` does; `mouse` the driver's own coordinates")
     check_expectation(expect, seconds)
@@ -617,10 +629,12 @@ def _pointer(report: Report) -> dict[str, Any]:
 
 def send_mouse_at(session: ds.Session, aimed: dict[str, Any], button: str | None, action: str,
                   expect: str | None, seconds: float | None,
-                  progress: ds.Progress = ds.no_progress) -> dict[str, Any]:
+                  progress: ds.Progress = ds.no_progress, *, to_x: int | None = None,
+                  to_y: int | None = None) -> dict[str, Any]:
     """`send_mouse(target=)`: the pointer to the centre of the control `aimed` names."""
     x, y = aimed["centre"]
-    reply = send_mouse(session, x, y, button, action, "screen", expect, seconds, progress, aimed)
+    reply = send_mouse(session, x, y, button, action, "screen", expect, seconds, progress, aimed,
+                       to_x=to_x, to_y=to_y)
     return {**reply, "target": aimed["target"], "screen": aimed["screen"],
             "identified_at_stop": aimed["identified_at_stop"]}
 
@@ -654,32 +668,41 @@ def _landed(after: Report, target: tuple[int, int], x: int | None, y: int | None
 def send_mouse(session: ds.Session, x: int | None, y: int | None, button: str | None,
                action: str, units: str, expect: str | None, seconds: float | None,
                progress: ds.Progress = ds.no_progress,
-               aimed: dict[str, Any] | None = None) -> dict[str, Any]:
+               aimed: dict[str, Any] | None = None, *, to_x: int | None = None,
+               to_y: int | None = None) -> dict[str, Any]:
     """The body of the `send_mouse` tool. `aimed` is the control a `target` named
-    (`screen_map.Maps.target`)."""
-    check_mouse(x, y, button, action, units, expect, seconds)
+    (`screen_map.Maps.target`); a drag presses at `x`, `y` and releases at `to_x`, `to_y`."""
+    check_mouse(x, y, button, action, units, expect, seconds, None, to_x, to_y)
     parked = _ready(session, "a mouse event", expect)
     before = _report(session, parked)
     if aimed is not None:
         _still_the_screen(before, aimed)
     target = None if x is None or y is None else _target(before, x, y, units)
+    end = None if to_x is None or to_y is None else _target(before, to_x, to_y, units)
 
     def post() -> dict[str, Any]:
         commands = [] if target is None else [move_command(*target)]
-        commands += [] if button is None else button_commands(button, action)
+        if button is not None and action == "drag":
+            assert end is not None
+            commands += [*button_commands(button, "down"), move_command(*end),
+                         *button_commands(button, "up")]
+        elif button is not None:
+            commands += button_commands(button, action)
         try:
             _send(session, commands, parked)
             after = _report(session, parked)
         except ds.Invalid as e:
             raise _delivered(e, parked) from None
-        landed = target is None or _landed(after, target, x, y, units)
+        arrival = end or target
+        landed = arrival is None or _landed(after, arrival, to_x if end else x,
+                                            to_y if end else y, units)
         fields: dict[str, Any] = {"route": "guest", "pointer": _pointer(after),
                                   "arrived": landed, **_parked_fields(parked)}
         if target is not None:
             fields["motion"] = _motion(session)
-        if target is not None and not landed:
+        if arrival is not None and not landed:
             # The driver's granularity or a program's own range (INT 33h AX=07h/08h) moved it out.
-            fields["asked"] = {"x": target[0], "y": target[1]}
+            fields["asked"] = {"x": arrival[0], "y": arrival[1]}
         return fields
     asked = {**({"x": x, "y": y} if x is not None and y is not None else {}), "units": units,
              **({"button": button, "action": action} if button is not None else {})}

@@ -172,16 +172,8 @@ Example, from a live run:
   "length": 4,
   "code_bits": 16,
   "code_bits_from": "real mode",
-  "lines": [
-    "0000:00000020 A5                   movsw word ptr es:[di], word ptr [si]",
-    "0000:00000021 FE00                 inc byte ptr [bx + si]",
-    "0000:00000023 F0                   .byte 0xf0"
-  ],
-  "flow": [
-    "sequential",
-    "sequential",
-    "unknown"
-  ],
+  "lines": ["0000:00000020 A5                   movsw word ptr es:[di], word ptr [si]", "0000:00000021 FE00                 inc byte ptr [bx + si]", "0000:00000023 F0                   .byte 0xf0"],
+  "flow": ["sequential", "sequential", "unknown"],
   "flow_source": "capstone"
 }
 ```
@@ -372,15 +364,7 @@ Example, from a live run:
     "length": 16,
     "source": "ref+length"
   },
-  "hits": [
-    "8000:00000000",
-    "8000:00000001",
-    "8000:00000002",
-    "8000:00000003",
-    "8000:00000004",
-    "8000:00000005",
-    "... 10 more"
-  ],
+  "hits": ["8000:00000000", "8000:00000001", "8000:00000002", "8000:00000003", "8000:00000004", "8000:00000005", "... 10 more"],
   "hits_total": 16,
   "truncated": false
 }
@@ -449,15 +433,7 @@ Example, from a live run:
   "channel": "emulator",
   "lines_total": 135,
   "truncated": true,
-  "lines": [
-    "-------------------------------------------------------------------------",
-    "00. BPINT 21 AH=4B",
-    "DEBUG: Breakpoint deletion success.",
-    "Breakpoint list:",
-    "-------------------------------------------------------------------------",
-    "Breakpoint list:",
-    "... 34 more"
-  ]
+  "lines": ["-------------------------------------------------------------------------", "00. BPINT 21 AH=4B", "DEBUG: Breakpoint deletion success.", "Breakpoint list:", "-------------------------------------------------------------------------", "Breakpoint list:", "... 34 more"]
 }
 ```
 <!-- scry-reference:end log -->
@@ -786,41 +762,19 @@ Example, from a live run:
     "ems_pages": 4
   },
   "sources": {
-    "mcbs": [
-      "DOS MCBS"
-    ],
-    "devs": [
-      "DOS DEVS"
-    ],
-    "kern": [
-      "DOS KERN"
-    ],
-    "xms": [
-      "DOS XMS"
-    ],
-    "ems": [
-      "DOS EMS"
-    ],
-    "ems_pages": [
-      "DOS EMS"
-    ],
-    "emu_mem": [
-      "EMU MEM"
-    ],
-    "machine": [
-      "EMU MACHINE"
-    ],
-    "control": [
-      "CPU"
-    ]
+    "mcbs": ["DOS MCBS"],
+    "devs": ["DOS DEVS"],
+    "kern": ["DOS KERN"],
+    "xms": ["DOS XMS"],
+    "ems": ["DOS EMS"],
+    "ems_pages": ["DOS EMS"],
+    "emu_mem": ["EMU MEM"],
+    "machine": ["EMU MACHINE"],
+    "control": ["CPU"]
   },
   "coverage_note": "read from the debugger's own listings at this stop. `gdt` and `ldt` are absent: the cpu is in real mode, where the debugger reads the interrupt vector table as descriptors. `paging` is absent: paging is off",
   "truncated": false,
-  "omitted": [
-    "bios_mem",
-    "callbacks",
-    "vga"
-  ],
+  "omitted": ["bios_mem", "callbacks", "vga"],
   "how": "sections=[...] names the sections to read; dest=<absolute path> writes every section read whole"
 }
 ```
@@ -910,21 +864,11 @@ Example, from a live run:
     "named": 0
   },
   "sources": {
-    "vectors": [
-      "INTVEC"
-    ],
-    "mcbs": [
-      "DOS MCBS"
-    ],
-    "kern": [
-      "DOS KERN"
-    ],
-    "bios_mem": [
-      "BIOS MEM"
-    ],
-    "control": [
-      "CPU"
-    ]
+    "vectors": ["INTVEC"],
+    "mcbs": ["DOS MCBS"],
+    "kern": ["DOS KERN"],
+    "bios_mem": ["BIOS MEM"],
+    "control": ["CPU"]
   },
   "coverage_note": "read from the debugger's own listings at this stop. `gdt` and `ldt` are absent: the cpu is in real mode, where the debugger reads the interrupt vector table as descriptors. `paging` is absent: paging is off"
 }
@@ -994,14 +938,8 @@ Example, from a live run:
   "entries": 256,
   "first": 0,
   "count": 2,
-  "colors": [
-    "#000000",
-    "#0000aa"
-  ],
-  "rgb": [
-    "000000",
-    "00002a"
-  ],
+  "colors": ["#000000", "#0000aa"],
+  "rgb": ["000000", "00002a"],
   "bits": 6,
   "pel_mask": "ffh",
   "image": {
@@ -1104,25 +1042,9 @@ Example, from a live run:
   "width": 80,
   "height": 25,
   "mode": "render",
-  "crop": [
-    0,
-    0,
-    80,
-    25
-  ],
-  "text": [
-    "Z:\\>mount c \".\"",
-    "Drive C is mounted as local directory ./",
-    "Z:\\>c:",
-    "C:\\>PROBE.COM",
-    "",
-    "",
-    "... 19 more"
-  ],
-  "cursor": [
-    0,
-    4
-  ],
+  "crop": [0, 0, 80, 25],
+  "text": ["Z:\\>mount c \".\"", "Drive C is mounted as local directory ./", "Z:\\>c:", "C:\\>PROBE.COM", "", "", "... 19 more"],
+  "cursor": [0, 4],
   "display_start": "0h"
 }
 ```
@@ -1180,12 +1102,7 @@ Example, from a live run:
   "vga_mode": "M_TEXT",
   "width": 80,
   "height": 25,
-  "crop": [
-    0,
-    0,
-    80,
-    25
-  ]
+  "crop": [0, 0, 80, 25]
 }
 ```
 <!-- scry-reference:end screen_signature -->
@@ -1236,10 +1153,7 @@ Example, from a live run:
   "screen": "probe_stopped",
   "layer": "session",
   "kind": "text",
-  "size": [
-    80,
-    25
-  ],
+  "size": [80, 25],
   "controls": []
 }
 ```
@@ -1316,12 +1230,7 @@ Example, from a live run:
   "method": "add",
   "screen": "probe_stopped",
   "match": [
-    [
-      0,
-      0,
-      8,
-      1
-    ]
+    [0, 0, 8, 1]
   ]
 }
 ```
@@ -1332,19 +1241,11 @@ Example, from a live run:
   "status": "ok",
   "screen": "probe_stopped",
   "kind": "text",
-  "size": [
-    80,
-    25
-  ],
+  "size": [80, 25],
   "cells": "rgb",
   "match": [
     {
-      "crop": [
-        0,
-        0,
-        8,
-        1
-      ],
+      "crop": [0, 0, 8, 1],
       "signature": "ed0b26b4f25ef236"
     }
   ],

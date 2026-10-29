@@ -197,12 +197,7 @@ Example, from a live run:
 {
   "first": 0,
   "last": 4,
-  "crop": [
-    0,
-    0,
-    320,
-    8
-  ],
+  "crop": [0, 0, 320, 8],
   "capture_path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/Q/n1-cap/screen_001.avi"
 }
 ```
@@ -220,12 +215,7 @@ Example, from a live run:
   "kept_after_close": false,
   "frame_source": "avi",
   "capture_path": "$TMPDIR/dosbox-x-live-matrix-c7eda17a48fc/jobs-scratch/Q/n1-cap/screen_001.avi",
-  "crop": [
-    0,
-    0,
-    320,
-    8
-  ]
+  "crop": [0, 0, 320, 8]
 }
 ```
 <!-- scry-reference:end series_capture -->
