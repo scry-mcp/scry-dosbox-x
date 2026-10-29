@@ -1,0 +1,44 @@
+diff --git a/include/render_presence.h b/include/render_presence.h
+index c95e6e051..2e910ba4a 100644
+--- a/include/render_presence.h
++++ b/include/render_presence.h
+@@ -176,6 +176,8 @@ const uint16_t *PRESENCE_EndFrame(uint8_t *buf, size_t pitch, const uint16_t *ch
+                                   bool shown = true);
+ /* Whether a frame the scaler did not write should still be presented. */
+ bool PRESENCE_WantsRepaint();
++/* Whether the overlay is on (held or acting): the scratch leak build asks. */
++bool PRESENCE_Lit();
+ /* The debugger holds the machine: repaint if the overlay moved (a fade, a new state). */
+ void PRESENCE_ParkedTick();
+ 
+diff --git a/src/gui/render.cpp b/src/gui/render.cpp
+index 45c41a717..7b702871a 100644
+--- a/src/gui/render.cpp
++++ b/src/gui/render.cpp
+@@ -517,6 +517,11 @@ void RENDER_EndUpdate( bool abort ) {
+             if (Scaler_ChangedLineIndex == 0)
+                 flags |= CAPTURE_FLAG_NOCHANGE;
+ 
++            /* SCRATCH BUILD FOR THE LIVE MATRIX, never merged: paint the first source row where
++               the capture reads when the overlay is on, so the leak cell has a build to go red on. */
++            if (PRESENCE_Lit())
++                memset(scalerSourceCacheBuffer, 0xA5, (size_t)render.src.width * ((render.src.bpp + 7) / 8));
++
+             CAPTURE_AddImage( render.src.width, render.src.height, render.src.bpp, pitch,
+                 flags, fps, (uint8_t*)scalerSourceCacheBuffer, (uint8_t*)&render.pal.rgb );
+         }
+diff --git a/src/gui/render_presence.cpp b/src/gui/render_presence.cpp
+index d595bac52..5ba5ce657 100644
+--- a/src/gui/render_presence.cpp
++++ b/src/gui/render_presence.cpp
+@@ -441,6 +441,10 @@ const uint16_t *PRESENCE_EndFrame(uint8_t *buf, size_t pitch, const uint16_t *ch
+                                         shown);
+ }
+ 
++bool PRESENCE_Lit() {
++    return presence::Instance().state() != presence::State::Off;
++}
++
+ bool PRESENCE_WantsRepaint() {
+     if (Idle()) return false;
+     float fx = 0, fy = 0;

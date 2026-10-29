@@ -459,9 +459,14 @@ STATE_META = {"version": "DOSBox-X_Version", "program": "Program_Name",
 DEFAULT_STATE_SUBDIR = "save"
 
 
+def default_state_dir(cwd: Path) -> Path:
+    """Where states go when `state_dir` is not named."""
+    return cwd / DEFAULT_STATE_SUBDIR
+
+
 def state_dir_of(launch: Launch) -> Path:
     """Where this session's states are written and listed."""
-    return launch.state_dir if launch.state_dir is not None else launch.cwd / DEFAULT_STATE_SUBDIR
+    return launch.state_dir if launch.state_dir is not None else default_state_dir(launch.cwd)
 
 #: A file in the state directory that is no state: said in its row, never refused.
 NOT_A_STATE = "not a save state: the file is not a ZIP the emulator wrote"

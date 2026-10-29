@@ -654,10 +654,14 @@ def _steer(session: ds.Session, parked: Retraces, program: Pointer,
         _send(session, [move_command(min(max(here.x + dx, 0), here.max_x),
                                      min(max(here.y + dy, 0), here.max_y))], parked)
         latest[0] = _report(session, parked)
+    def resync() -> None:
+        here = latest[0]
+        _send(session, [move_command(0, 0), move_command(here.max_x, here.max_y)], parked)
+        latest[0] = _report(session, parked)
     steered = dpointer.steer(
         aim,
         lambda: dpointer.program_at(session.read_bytes, program, places),
-        nudge, ((after.max_x + 1) / size[0], (after.max_y + 1) / size[1]))
+        nudge, ((after.max_x + 1) / size[0], (after.max_y + 1) / size[1]), resync)
     return latest[0], steered
 
 

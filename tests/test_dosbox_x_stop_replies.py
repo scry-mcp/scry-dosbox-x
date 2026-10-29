@@ -39,11 +39,11 @@ def test_a_stop_no_survey_placed_has_neither_pc_nor_mode() -> None:
 
 def test_a_stop_reply_and_a_reply_off_the_record_carry_the_paging_mark(tmp_path: Path) -> None:
     fake = _names(tmp_path)
-    fake.paging = True  # type: ignore[attr-defined]
+    fake.paging = True
     got = running.stop_reply(fake)  # type: ignore[arg-type]
     assert got["cpu_mode"] == "paged", got
     assert running.recorded_head({})["cpu_mode"] == "paged"
-    fake.paging = False  # type: ignore[attr-defined]
+    fake.paging = False
     assert running.stop_reply(fake)["cpu_mode"] == "protected"  # type: ignore[arg-type]
 
 

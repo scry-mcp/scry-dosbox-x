@@ -114,7 +114,7 @@ def _end_cancelled(name: str, on_cancel: cancel.OnCancel
         try:
             if on_cancel == "kill" and ses is not None:
                 ses.close()
-                if getattr(ses, "reap_failed", None):
+                if ses.reap_failed:
                     left = "unknown"
                 STATE.session = None
                 STATE.forget_symbols()
@@ -144,7 +144,7 @@ def _stop_of_its_own(ses: ds.Session, broke_in: bool = False) -> dict[str, Any]:
         if not broke_in:
             ses.break_in()
         return running.stop_reply(ses, interrupted=True, via="break", asked_by="cancel")
-    if getattr(ses, "stop_count", None) != STATE.last_stop.get("stop_count"):
+    if ses.stop_count != STATE.last_stop.get("stop_count"):
         return running.stop_or_base(ses, True, {}, asked_by="cancel")
     return {}
 
@@ -187,7 +187,7 @@ def _machine() -> recording.Machine:
         return recording.UNREAD
     # The flag, never a question to the debugger: recording a call must not cost a round trip.
     # A parked machine's last `RUNSTATE` is its stop's, so its frame is that stop's.
-    return recording.Machine(running=not ses.parked, seq=getattr(ses, "stop_count", None),
+    return recording.Machine(running=not ses.parked, seq=ses.stop_count,
                              frame=getattr(ses, "frames", None) if ses.parked else None)
 
 

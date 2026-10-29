@@ -53,6 +53,45 @@ def test_a_ratio_that_was_guessed_wrong_is_learnt_from_the_first_nudge() -> None
     assert got.arrived, got
 
 
+class Clamped:
+    """A driver holding an absolute place in `0..max` and a program that integrates each move's
+    motion at `ratio` driver units a program unit into a pointer of its own, held to `0..limit`:
+    a driver at its edge loses the motion the program never sees, which is how the two drift."""
+
+    def __init__(self, driver: int, program: int, ratio: float = 2.0, limit: int = 319) -> None:
+        self.driver, self.program, self.ratio, self.limit = driver, program, ratio, limit
+        self.max = int(limit * ratio) + 1
+
+    def move(self, to: int) -> None:
+        to = min(max(to, 0), self.max)
+        moved = self.program + round((to - self.driver) / self.ratio)
+        self.program = min(max(moved, 0), self.limit)
+        self.driver = to
+
+    def seen(self) -> tuple[int, int]:
+        return self.program, 0
+
+    def nudge(self, dx: int, _dy: int) -> None:
+        self.move(self.driver + dx)
+
+    def resync(self) -> None:
+        self.move(0)
+        self.move(self.max)
+
+
+def test_a_pointer_lagging_a_driver_at_its_edge_is_resynced_by_a_sweep_and_steered() -> None:
+    """The driver is at its right edge, 55 units behind: no nudge can reach the aim."""
+    world = Clamped(driver=639, program=264)
+    got = pointer.steer((271, 0), world.seen, world.nudge, (2.0, 2.0), world.resync)
+    assert got.arrived and got.seen == (271, 0), got
+
+
+def test_a_pointer_the_sweep_cannot_help_is_still_given_up_on() -> None:
+    world = Clamped(driver=0, program=0, limit=0)
+    got = pointer.steer((100, 0), world.seen, world.nudge, (2.0, 2.0), world.resync)
+    assert not got.arrived and got.corrections <= 2 * pointer.CORRECTIONS + 1, got
+
+
 def _place(ref: str) -> tuple[int, int]:
     seg, off = ref.split(":")
     return int(seg, 16), int(off, 16)

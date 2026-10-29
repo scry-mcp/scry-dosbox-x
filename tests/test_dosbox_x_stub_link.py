@@ -337,6 +337,35 @@ def test_frames_go_a_spacing_apart_and_the_spacing_outlasts_a_50_hz_frame(
     assert link.FRAME_SPACING_S > 1 / 50
 
 
+class StarvedClock:
+    """A running guest whose emulator keeps `speed` of real time: its clock, in emulated
+    milliseconds, and the emulated time each command was carried at."""
+
+    def __init__(self, stub: Stub, speed: float) -> None:
+        self.stub, self.speed, self.began = stub, speed, time.monotonic()
+        self.polls = 0
+
+    def __call__(self) -> float:
+        self.polls += 1
+        return (time.monotonic() - self.began) * 1000 * self.speed
+
+    def carried_ms(self) -> list[float]:
+        return [(at - self.began) * 1000 * self.speed for at in self.stub.carried_at]
+
+
+def test_a_running_guest_below_real_speed_still_gets_a_frame_of_its_own_time_between_commands(
+        pair: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Spaced by wall time, a make and its break land in one BIOS tick when the emulator is
+    starved; the guest's own clock is what a program that reads its keys once a frame sees."""
+    monkeypatch.setattr(link, "FRAME_SPACING_S", SPACING_S)
+    host, guest = pair
+    stub = Stub(guest)
+    clock = StarvedClock(stub, speed=0.25)
+    link.Link(host, clock=clock).send(KEYS[:2])
+    gaps = [b - a for a, b in zip(clock.carried_ms(), clock.carried_ms()[1:], strict=False)]
+    assert len(gaps) == 1 and gaps[0] >= link.FRAME_SPACING_MS, gaps
+
+
 class Retraces:
     """A parked machine: the stub runs only when the host advances it, once per retrace."""
 

@@ -36,7 +36,7 @@ class RunningGuest(SessionGates):
         self.altered = False
         self.stop_count = 1
         self.reap_failed = ""
-        self.drain_ended = ""
+        self.drain_failure = ""
         self.ended_how = "none"
         self.launch = dlaunch.Launch(conf=tmp_path / "g.conf", cwd=tmp_path / "cwd", seconds=60,
                                 watched=True)

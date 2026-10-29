@@ -162,7 +162,7 @@ def test_both_halves_of_the_capture_against_a_real_emulator(tmp_path: Path) -> N
     assert cast(int, biggest["avi_frames"]) > 100, got
 
     shot = tmp_path / "shot.png"
-    ds.Session.frame(s, 60, shot)
+    ds.Session.frame(s, 60, shot, Path(str(got[-1]["path"])))
     assert shot.stat().st_size > 1000
     assert shot.read_bytes()[:8] == b"\x89PNG\r\n\x1a\n", "that is not a PNG"
 

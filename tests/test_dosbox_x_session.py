@@ -339,7 +339,7 @@ def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
 
     sent: list[int] = []
     fake = SimpleNamespace(
-        proc=NeverDies(), reap_failed="", drain_ended="", _drainer=None,
+        proc=NeverDies(), reap_failed="", drain_failure="", _drainer=None,
         _out=None, _signal_group=sent.append)
     rc = ds.Session._close(fake, grace=0)  # type: ignore[arg-type]
     assert rc is None, "a child that was never reaped has no exit code"
@@ -371,7 +371,7 @@ def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
     proc = IgnoresTermDiesOnKill()
     ok_sent: list[int] = []
     ok = SimpleNamespace(
-        proc=proc, reap_failed="", drain_ended="", _drainer=None,
+        proc=proc, reap_failed="", drain_failure="", _drainer=None,
         _out=None, _signal_group=ok_sent.append)
     assert ds.Session._close(ok) == -9  # type: ignore[arg-type]
     assert ok_sent == [signal.SIGTERM, guardian.KILL], ok_sent
@@ -379,6 +379,10 @@ def test_a_child_that_could_not_be_reaped_is_recorded_and_not_reported_as_clean(
     assert ok.reap_failed == "", (
         "a child that WAS reaped after SIGKILL was reported as unreapable, which is "
         "the ordinary close of a running session")
+
+
+def _src(fake: Any) -> Path:
+    return Path(str(fake.captures()[-1]["path"]))
 
 
 def test_a_still_whose_destination_already_exists_is_refused_before_ffmpeg_runs(
@@ -396,7 +400,7 @@ def test_a_still_whose_destination_already_exists_is_refused_before_ffmpeg_runs(
     monkeypatch.setattr(shutil, "which", lambda name: _abs("usr", "bin", "ffmpeg"))
     monkeypatch.setattr(subprocess, "run", record_run)
     with pytest.raises(ds.Invalid, match="already exists"):
-        ds.Session.frame(fake, 9999, mine)  # type: ignore[arg-type]
+        ds.Session.frame(fake, 9999, mine, _src(fake))  # type: ignore[arg-type]
     assert mine.read_bytes() == b"the caller's own file, nothing to do with a frame", (
         "it deleted or overwrote the caller's file")
     assert ran == [], "ffmpeg was asked for a frame before the destination was judged"
@@ -404,7 +408,7 @@ def test_a_still_whose_destination_already_exists_is_refused_before_ffmpeg_runs(
     link = tmp_path / "shot.png"
     link.symlink_to(tmp_path / "elsewhere" / "victim.png")
     with pytest.raises(ds.Invalid, match="already exists"):
-        ds.Session.frame(fake, 7, link)  # type: ignore[arg-type]
+        ds.Session.frame(fake, 7, link, _src(fake))  # type: ignore[arg-type]
     assert ran == [] and not (tmp_path / "elsewhere" / "victim.png").exists()
 
 
@@ -414,10 +418,10 @@ def test_a_destination_that_is_a_numbering_template_is_refused(
     monkeypatch.setattr("shutil.which", lambda name: name)   # an ffmpeg, never run
     fake = SimpleNamespace(captures=lambda: [{"path": str(tmp_path / "cap.avi")}])
     with pytest.raises(ds.Invalid, match="containing `%` is refused"):
-        ds.Session.frame(fake, 7, tmp_path / "shot%03d.png")  # type: ignore[arg-type]
+        ds.Session.frame(fake, 7, tmp_path / "shot%03d.png", _src(fake))  # type: ignore[arg-type]
 
     with pytest.raises(ds.Invalid, match="containing `%` is refused"):
-        ds.Session.frame(fake, 7, tmp_path / "run%d" / "shot.png")  # type: ignore[arg-type]
+        ds.Session.frame(fake, 7, tmp_path / "run%d" / "shot.png", _src(fake))  # type: ignore[arg-type]
 
 
 def test_a_destination_with_no_directory_is_a_refusal_not_a_traceback(
@@ -427,7 +431,7 @@ def test_a_destination_with_no_directory_is_a_refusal_not_a_traceback(
     missing = tmp_path / "missing"
     fake = SimpleNamespace(captures=lambda: [{"path": str(tmp_path / "cap.avi")}])
     with pytest.raises(ds.Invalid, match="is not a directory"):
-        ds.Session.frame(fake, 7, missing / "shot.png")  # type: ignore[arg-type]
+        ds.Session.frame(fake, 7, missing / "shot.png", _src(fake))  # type: ignore[arg-type]
     conf = tmp_path / "g.conf"
     conf.write_text("[sdl]\n", encoding="utf-8")
     asked: list[str] = []
@@ -742,7 +746,8 @@ def test_a_negative_frame_is_refused(
     monkeypatch.setattr("shutil.which", lambda name: name)   # an ffmpeg, never run
     with pytest.raises(ds.Invalid, match="not a frame"):
         ds.Session.frame(
-            stopped(captures_dir=tmp_path, capture_video=True), -1, tmp_path / "x.png")
+            stopped(captures_dir=tmp_path, capture_video=True), -1, tmp_path / "x.png",
+            tmp_path / "cap.avi")
 
 
 MID_ROW = (
@@ -1241,7 +1246,7 @@ def test_close_records_which_ending_it_got() -> None:
         s._signal_group = lambda sig: None  # type: ignore[method-assign]
         s._drainer = None
         s._out = None
-        s.drain_ended = ""
+        s.drain_failure = ""
         s.reap_failed = ""
         s.ended_how = "none"
         return s

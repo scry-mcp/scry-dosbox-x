@@ -21,7 +21,6 @@ import dosbox_launch as dlaunch
 import dosbox_paths as paths
 import dosbox_placement as placement
 import dosbox_presence as dpresence
-import dosbox_process as dprocess
 import dosbox_run_state as run_state
 import dosbox_running as running
 import dosbox_sequence as sequence
@@ -106,7 +105,7 @@ def start(conf: str, cwd: str, session_seconds: int, shared: bool,
         log_categories=dict(log_categories or {}),
         # Input reaches the guest through this socket alone.
         input_port=input_port,
-        state_dir=state_path if state_path is not None else cwd_path / dlaunch.DEFAULT_STATE_SUBDIR,
+        state_dir=state_path if state_path is not None else dlaunch.default_state_dir(cwd_path),
         binary=resolved.path,
         debugger_headless=binaries.debugger_headless(resolved.path),
         debugger_commands=commands_built,
@@ -246,7 +245,7 @@ def close(progress: ds.Progress, detail: bool = False) -> dict[str, Any]:
              else narrowing.omission(["stdout_tail", "errorlog_tail"], CLOSE_HOW))
     # Set only by the close: a SIGKILLed, unreaped child has no exit code.
     unreaped = STATE.session.reap_failed
-    drained = STATE.session.drain_ended
+    drained = STATE.session.drain_failure
     ended_by = STATE.session.ended_how
     STATE.session = None
     STATE.forget_symbols()
@@ -258,5 +257,5 @@ def close(progress: ds.Progress, detail: bool = False) -> dict[str, Any]:
     return {"status": "ok", "closed": True, **facts, "ended_by": ended_by,
             "exit_code": exit_code, **tails, **left,
             **({"note": f"the emulator's output reader: {drained}"}
-               if drained and drained != dprocess.DRAIN_EOF else {}),
+               if drained else {}),
             "session": st.session_block()}

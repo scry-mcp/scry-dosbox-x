@@ -141,8 +141,8 @@ class State:
                               at=f"{where['cs']}:{where['eip']}", where=dict(where),
                               registers=dict(registers), held=[dict(r) for r in held],
                               attribution=dict(attribution), when=time.monotonic(),
-                              clock=now(), stop_count=getattr(session, "stop_count", None),
-                              paging=getattr(session, "paging", None))
+                              clock=now(), stop_count=session.stop_count,
+                              paging=session.paging)
 
     def as_of(self) -> dict[str, Any] | None:
         """The last stop as a dated reference, or None before the first stop."""
@@ -156,8 +156,7 @@ class State:
     def as_of_current(self, session: ds.Session) -> dict[str, Any] | None:
         """`as_of()` only when the record is of the stop the machine is IN."""
         stop = self.as_of()
-        if stop is None or self.last_stop.get("stop_count") != getattr(session,
-                                                                        "stop_count", None):
+        if stop is None or self.last_stop.get("stop_count") != session.stop_count:
             return None
         return stop
 

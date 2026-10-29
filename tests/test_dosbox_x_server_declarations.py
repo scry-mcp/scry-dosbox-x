@@ -1528,7 +1528,7 @@ def test_what_can_stop_the_guest_is_what_would_be_armed(tmp_path: Path,
 
 def test_a_stop_named_while_the_machine_is_in_it_names_its_declaration_too() -> None:
     state = dstate.State()
-    session = SimpleNamespace(stop_count=3)
+    session = SimpleNamespace(stop_count=3, paging=None)
     state.remember_stop(cast(ds.Session, session), {"cs": "0814", "eip": "00001A27"}, {}, [],
                         {"attributed": True, "ref": "_tick", "by": "symbol",
                          "at": "0814:00001A27"})

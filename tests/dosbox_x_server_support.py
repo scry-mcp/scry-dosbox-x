@@ -97,6 +97,12 @@ class SessionGates:
     def forget_stop(self) -> None:
         """A fake is stopped as long as its `at_debugger` says."""
 
+    # the fields every real session carries, which the server reads directly
+    stop_count: int | None = 0
+    paging: bool | None = None
+    machine_replaced = False
+    reap_failed = ""
+
     commands = frozenset(binaries.COMMANDS)
     has = ds.Session.has
     require_stopped = ds.Session.require_stopped
@@ -132,9 +138,11 @@ class FakeSession(SessionGates):
         self.conditions: list[str] = []
 
     reap_failed = ""
-    drain_ended = "the descriptor reached end of file"
+    drain_failure = ""
     survey_text = ""
     ended_how = "none"
+    # this double never counts a stop, so the server never takes it for one nobody read
+    stop_count: int | None = None
 
     def alive(self) -> bool:
         return self._alive
@@ -587,7 +595,7 @@ class NamesFake(SessionGates):
         self.stop_count = 0
         self.stop_unread = False
         self.reap_failed = ""
-        self.drain_ended = ""
+        self.drain_failure = ""
         self.ended_how = "none"
         self.mem: dict[tuple[int, int], bytes] = {}
         self.log: list[str] | None = []
@@ -755,7 +763,7 @@ class NamesFake(SessionGates):
     @running.setter
     def running(self, value: bool) -> None:
         if self._running and not value:
-            self.stop_count += 1
+            self.stop_count = (self.stop_count or 0) + 1
         self._running = value
 
     @property

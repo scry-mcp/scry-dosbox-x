@@ -644,7 +644,7 @@ def test_status_does_not_name_a_stop_it_could_not_read_as_the_one_it_is_in(
 
 def test_a_recorded_stop_keeps_the_paging_mark_its_survey_read(tmp_path: Path) -> None:
     fake = _names(tmp_path)
-    fake.paging = True  # type: ignore[attr-defined]   # what a paged stop survey leaves
+    fake.paging = True   # what a paged stop survey leaves
     server.step(mode="over")
     assert dstate.STATE.last_stop["paging"] is True
 
@@ -693,7 +693,7 @@ def test_a_bounded_resume_whose_f5_never_left_is_a_stop_with_its_verdict(
 def test_a_stop_whose_survey_came_back_cut_names_no_mode_off_the_stop_before(
         tmp_path: Path) -> None:
     fake = _names(tmp_path, mode="Pr32")
-    fake.paging = True  # type: ignore[attr-defined]   # the previous stop's mark
+    fake.paging = True   # the previous stop's mark
     fake.halted = True
     fake.registers_raises = True
     got = cast(dict[str, Any], server.resume())

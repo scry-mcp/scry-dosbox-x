@@ -331,7 +331,7 @@ def test_close_closes_the_channel() -> None:
     s._signal_group = lambda sig: None  # type: ignore[method-assign]
     s._drainer = None
     s._out = None
-    s.drain_ended = s.reap_failed = ""
+    s.drain_failure = s.reap_failed = ""
     s.ended_how = "none"
     channel = _Recording(lambda: None)
     s.control = channel  # type: ignore[assignment]

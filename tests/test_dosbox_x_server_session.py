@@ -68,6 +68,10 @@ def _faked_builds(monkeypatch: pytest.MonkeyPatch) -> None:
     stub_build(monkeypatch)
 
 
+
+def _src(fake: Any) -> Path:
+    return Path(str(fake.captures()[-1]["path"]))
+
 def test_the_server_reports_the_name_it_is_installed_as() -> None:
     assert server.mcp.name == "dosbox-x"
 
@@ -117,7 +121,7 @@ def test_a_close_whose_output_reader_did_not_end_at_end_of_file_says_why() -> No
     not."""
     class Leaky(FakeSession):
         def close(self, grace: float = 8.0, progress: Any = None) -> int | None:
-            self.drain_ended = "it was still reading 2 s after the emulator ended"
+            self.drain_failure = "it was still reading 2 s after the emulator ended"
             self._alive = False
             return 0
 
@@ -192,7 +196,7 @@ def test_an_ffmpeg_that_says_why_in_bytes_that_are_not_utf8_is_still_a_refusal(
     src.write_bytes(b"RIFF")
     fake = SimpleNamespace(captures=lambda: [{"path": str(src)}])
     with pytest.raises(ds.Invalid) as e:
-        ds.Session.frame(fake, 0, tmp_path / "out.png")  # type: ignore[arg-type]
+        ds.Session.frame(fake, 0, tmp_path / "out.png", _src(fake))  # type: ignore[arg-type]
     assert e.value.code == "host_failed" and "cannot open" in str(e.value), e.value
 
 
@@ -206,7 +210,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
     with (mock.patch("dosbox_frames.subprocess.run", hangs),
           mock.patch("dosbox_frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg")),
           pytest.raises(ds.Invalid, match="did not return within")):
-        ds.Session.frame(fake, 0, tmp_path / "out.png")  # type: ignore[arg-type]
+        ds.Session.frame(fake, 0, tmp_path / "out.png", _src(fake))  # type: ignore[arg-type]
 
     # The green beside it: an unconditional `raise Invalid` in `frame()` would otherwise pass.
     dest = tmp_path / "ok.png"
@@ -220,7 +224,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
 
     with (mock.patch("dosbox_frames.subprocess.run", writes),
           mock.patch("dosbox_frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg"))):
-        got = ds.Session.frame(fake, 0, dest)  # type: ignore[arg-type]
+        got = ds.Session.frame(fake, 0, dest, _src(fake))  # type: ignore[arg-type]
     assert got == dest and dest.stat().st_size > 1000
     # Without the forced format ffmpeg picks the encoder from the extension and writes a frameless
     # container at exit 0 (tests/fixtures/ffmpeg).
@@ -237,7 +241,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
     with (mock.patch("dosbox_frames.subprocess.run", writes_nothing),
           mock.patch("dosbox_frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg")),
           pytest.raises(ds.Invalid, match="ffmpeg exited 0 but no image")):
-        ds.Session.frame(fake, 99999, tmp_path / "never.png")  # type: ignore[arg-type]
+        ds.Session.frame(fake, 99999, tmp_path / "never.png", _src(fake))  # type: ignore[arg-type]
 
     # ffmpeg failing while leaving a non-empty file: the size check alone cannot see it.
     bad = tmp_path / "junk.png"
@@ -253,7 +257,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
     with (mock.patch("dosbox_frames.subprocess.run", fails_but_writes),
           mock.patch("dosbox_frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg")),
           pytest.raises(ds.Invalid, match=f"ffmpeg exited {corrupt['returncode']}")):
-        ds.Session.frame(fake, 5, bad)  # type: ignore[arg-type]
+        ds.Session.frame(fake, 5, bad, _src(fake))  # type: ignore[arg-type]
 
     # A well-formed file of the wrong kind at exit 0: a frameless container recorded when the format
     # was not forced (tests/fixtures/ffmpeg).
@@ -268,7 +272,7 @@ def test_a_hung_ffmpeg_is_invalid_and_not_a_traceback(tmp_path: Path) -> None:
     with (mock.patch("dosbox_frames.subprocess.run", writes_a_container),
           mock.patch("dosbox_frames.shutil.which", lambda _n: _abs("usr", "bin", "ffmpeg")),
           pytest.raises(ds.Invalid, match="is not a PNG")):
-        ds.Session.frame(fake, 99999, container)  # type: ignore[arg-type]
+        ds.Session.frame(fake, 99999, container, _src(fake))  # type: ignore[arg-type]
 
 
 def test_the_live_case_counter_ignores_helpers_comments_and_session_methods() -> None:

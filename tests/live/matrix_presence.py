@@ -69,9 +69,17 @@ R_CELLS = cells(
     ("R the first mouse move draws the arrow inside the picture, away from the edge, and only "
      "the arrow: turned off again, those pixels go back",
      "REFERENCE.md, The presence indicator: an orange arrow stands on the guest's pointer"),
+    ("R in the graphics modes the arrow is the sprite's height in guest pixels: the same "
+     "number of rows at 320x200 and at 640x480",
+     "REFERENCE.md, The presence indicator: sized by the guest's pixels"),
 )
 MOUSE_CONF = GUEST / "mouse.conf"
 MOUSE_PROGRAM = "MOUSE.COM"
+#: The mouse guest's mode keys and the rows each mode shows (`tests/guest/mouse.asm`).
+GRAPHICS_MODES = (("g", 200), ("v", 480))
+#: How far, as a share of the sprite's rows, the arrow's measured rows may be off: the window's
+#: scaling smears an edge by about a guest pixel each side.
+ROWS_TOLERANCE = 0.3
 
 
 def _digest(path: Path) -> str:
@@ -271,14 +279,21 @@ def section_r() -> None:
             f"headless {shown_headless!r}, asked off {asked_off.get('presence')!r}")
     close_whatever()
     _arrow(R_CELLS[8].label)
+    _arrow_rows(R_CELLS[9].label)
 
 
-def _arrow(label: str) -> None:
-    """Captures after a mouse move and again with the arrow off: the difference is the arrow."""
+def _arrow_difference(mode_key: str | None, x: int, y: int
+                      ) -> tuple[dict[str, Any], str, window_capture.Difference | str]:
+    """Captures after a mouse move and again with the arrow off: what differs is the arrow, or
+    the reason it cannot be judged. `mode_key` first switches the mouse guest's BIOS mode."""
     boot(conf=MOUSE_CONF, program=MOUSE_PROGRAM, shared=True, background=True, presence=True)
     must(M.call(server.resume), "releasing the mouse guest")
     time.sleep(QUIET_S)
-    moved = M.call(server.send_mouse, x=40, y=12, units="screen")    # a text cell
+    if mode_key is not None:
+        must(M.call(server.send_keys, keys=[mode_key], expect=r"MOUSE \. mode=", seconds=10),
+             f"switching the mouse guest's mode with {mode_key!r}")
+        time.sleep(QUIET_S)
+    moved = M.call(server.send_mouse, x=x, y=y, units="screen")
     # Edge back to held first, so the two captures differ by the arrow alone.
     time.sleep(presence.LOOK.fade_s + QUIET_S)
     after = _settled("after-mouse")
@@ -292,19 +307,43 @@ def _arrow(label: str) -> None:
     time.sleep(QUIET_S)
     hidden = _settled("arrow-off")
     if isinstance(hidden, str) or isinstance(after, str):
-        M.block(label, hidden if isinstance(hidden, str) else str(after))
+        return moved, answer, hidden if isinstance(hidden, str) else str(after)
+    try:
+        return moved, answer, window_capture.difference(hidden, after)
+    except ValueError as e:
+        return moved, answer, f"the window changed between its two captures: {e}"
+
+
+def _arrow(label: str) -> None:
+    moved, answer, d = _arrow_difference(None, 40, 12)      # a text cell
+    if isinstance(d, str):
+        M.block(label, d)
     else:
-        try:
-            d = window_capture.difference(hidden, after)
-        except ValueError as e:
-            M.block(label, f"the window changed between its two captures: {e}")
-        else:
-            M.judge(label, ok(moved) and "pointer=1" in answer and d.changed > 0
-                    and max(d.span) < ARROW_SPAN
-                    and d.deepest > window_capture.EDGE_REACH * presence.LOOK.edge,
-                    f"{said(moved)}; emulator {answer!r}; {d.changed} pixels changed over "
-                    f"{d.span[0]:.2f} x {d.span[1]:.2f} of the window, the deepest "
-                    f"{d.deepest:.3f} of the box's shorter side in")
+        M.judge(label, ok(moved) and "pointer=1" in answer and d.changed > 0
+                and max(d.span) < ARROW_SPAN
+                and d.deepest > window_capture.EDGE_REACH * presence.LOOK.edge,
+                f"{said(moved)}; emulator {answer!r}; {d.changed} pixels changed over "
+                f"{d.span[0]:.2f} x {d.span[1]:.2f} of the window, the deepest "
+                f"{d.deepest:.3f} of the box's shorter side in")
+    close_whatever()
+
+
+def _arrow_rows(label: str) -> None:
+    """The arrow's height in guest rows, measured in two graphics modes: a share of the window
+    would give a number of rows that follows the mode, the sprite's own does not."""
+    sprite_rows = len(presence.LOOK.pointer)
+    measured: dict[str, float] = {}
+    for key, guest_rows in GRAPHICS_MODES:
+        close_whatever()
+        _moved, _answer, d = _arrow_difference(key, 40, guest_rows // 2)
+        if isinstance(d, str):
+            M.block(label, d)
+            close_whatever()
+            return
+        measured[f"{guest_rows} rows"] = round(d.span[1] * guest_rows, 1)
+    M.judge(label, all(abs(rows - sprite_rows) <= ROWS_TOLERANCE * sprite_rows
+                       for rows in measured.values()),
+            f"guest rows the arrow spans, the sprite being {sprite_rows}: {measured}")
     close_whatever()
 
 

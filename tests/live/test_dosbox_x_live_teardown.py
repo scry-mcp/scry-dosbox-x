@@ -18,7 +18,7 @@ class _ClosesWithoutEnding:
     def __init__(self, proc: subprocess.Popen[bytes]) -> None:
         self.proc = proc
         self.reap_failed = ""
-        self.drain_ended = ""
+        self.drain_failure = ""
         self.ended_how = "none"
         self.launch = SimpleNamespace(logfile=None)
 

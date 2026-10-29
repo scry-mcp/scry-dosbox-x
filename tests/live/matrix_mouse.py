@@ -8,6 +8,7 @@ the driver wrote independently of the server's report."""
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import time
 from pathlib import Path
@@ -30,6 +31,13 @@ from matrix_common import (
 
 MOUSE_CONF = GUEST / "mouse.conf"
 MOUSE_PROGRAM = "MOUSE.COM"
+KEYS_CONF = GUEST / "keys.conf"
+KEYS_PROGRAM = "KEYS.COM"
+#: Far more cycles a millisecond than the host executes: the guest's clock then runs well below
+#: the wall's, which is what a make and its break spaced by wall time fall short in.
+STARVED_CYCLES = ["-set", "cpu cycles=fixed 1000000"]
+KEY_LINE = re.compile(r"KEYS \. ([0-9A-F]{2}) t=([0-9A-F]{4})")
+TICK_WRAP = 0x10000
 ANNOUNCE = rf"STUB  \. scry device=present proto={inputs.STUB_PROTOCOL}"
 WAIT_S = 20
 #: The guest's line for a pointer at (x, y) in the driver's coordinates.
@@ -78,6 +86,10 @@ P_CELLS = cells(
      "guest/scry.asm: the UART's own interrupt; known: mouse.asm's o takes the timer"),
     ("P without a logfile the mouse and a key go in, the pointer off the stub's link",
      "REFERENCE.md, Input and the screen: the report rides the stub's own serial link"),
+    ("P with the emulator starved below real speed, a key's break still lands a BIOS tick after "
+     "its make in the guest's own clock",
+     "send_keys docstring: the frames a guest tick apart; known: keys.asm logs each scan byte "
+     "with the tick count"),
     ("P ReChip, VBE 105h in protected mode: pixel 800,600 arrives, eight coordinates a pixel",
      "docs/reference/input.md: Allegro's I33 driver sets its range to the screen"),
     ("P ReChip: Allegro draws its arrow with its focus on the pixel asked",
@@ -186,7 +198,27 @@ def section_p() -> None:
     _twice()
     _twice(hooked=True)
     _no_log()
+    _keys_spacing()
     _rechip()
+
+
+def _keys_spacing() -> None:
+    """The guest's own tick count at each scan byte, with the emulator starved."""
+    label = P_CELLS[-4].label
+    boot(conf=KEYS_CONF, program=KEYS_PROGRAM, flags=STARVED_CYCLES)
+    release_running()
+    must(_guest_line(r"KEYS \. up"), "the keys guest is up")
+    sent = M.call(server.send_keys, keys=["a", "b", "c"], expect=r"KEYS \. AE t=",
+                  seconds=WAIT_S)
+    heard = M.call(server.log, pattern=KEY_LINE.pattern, channel="guest", limit=40)
+    scans = [(int(m[1], 16), int(m[2], 16)) for line in heard.get("lines", [])
+             if (m := KEY_LINE.search(line))]
+    makes = {code: tick for code, tick in scans if code < 0x80}
+    gaps = {f"{code:02X}": (tick - makes[code & 0x7F]) % TICK_WRAP
+            for code, tick in scans if code >= 0x80 and code & 0x7F in makes}
+    M.judge(label, ok(sent) and len(gaps) == 3 and all(gap >= 1 for gap in gaps.values()),
+            f"{said(sent, 60)}; ticks from each make to its break {gaps}")
+    must(M.call(server.close), "closing")
 
 
 def _timer_owned() -> None:

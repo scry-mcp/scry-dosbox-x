@@ -89,7 +89,7 @@ def test_a_new_process_holds_nothing_and_closes_once(monkeypatch: pytest.MonkeyP
     clock = _Clock(monkeypatch)
     child = _Deaf(clock, 0.0, None)
     p = _process(child)
-    assert (p.dropped, p.drain_ended, p.reap_failed, p._closed) == (0, "", "", False)
+    assert (p.dropped, p.drain_failure, p.reap_failed, p._closed) == (0, "", "", False)
     assert p.output_tail(10) == "" and p.ended_how == "none"
     p.close()
     assert p.ended_how == ("killed" if dprocess.TERMINATES else "quit") and child.sent == [15], (
@@ -227,7 +227,7 @@ def test_a_drainer_that_will_not_stop_leaves_the_descriptor_open_and_says_so(
         worker.start()
         worker.join(5)
         assert not worker.is_alive() and time.perf_counter() - began < 1.0
-        assert p.drain_ended.startswith("it was still reading 0.2 s after the emulator ended")
+        assert p.drain_failure.startswith("it was still reading 0.2 s after the emulator ended")
         os.fstat(r)                                    # still open, on purpose
     finally:
         hold.set()
@@ -276,11 +276,11 @@ def test_the_drain_gathers_while_idle_and_ends_at_end_of_file() -> None:
         time.sleep(0.2)                               # idle, the read blocked
         os.write(w, b"cd")
         _until(lambda: p.output_tail(10) == "abcd")
-        assert p.output_tail(10) == "abcd" and t.is_alive() and p.drain_ended == ""
+        assert p.output_tail(10) == "abcd" and t.is_alive() and p.drain_failure == ""
     finally:
         os.close(w)
     t.join(1)
-    assert not t.is_alive() and p.drain_ended == "the descriptor reached end of file"
+    assert not t.is_alive() and p.drain_failure == ""
     assert p._out is not None
     os.close(p._out)
 
@@ -292,7 +292,7 @@ def test_the_drain_names_a_read_that_failed(monkeypatch: pytest.MonkeyPatch) -> 
         failing.setattr(os, "read", broken)
         p, w, t = _draining()
         t.join(1)
-    assert p.drain_ended.startswith("a read failed"), p.drain_ended
+    assert p.drain_failure.startswith("a read failed"), p.drain_failure
     os.close(w)
     assert p._out is not None
     os.close(p._out)

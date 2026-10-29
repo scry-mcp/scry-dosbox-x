@@ -53,9 +53,23 @@ def unsteered(parked: bool, moved: bool, units: str, sized: bool) -> str | None:
 
 
 def steer(aim: tuple[int, int], seen_now: Callable[[], tuple[int, int]],
-          nudge: Callable[[int, int], None], ratio: tuple[float, float]) -> Steered:
+          nudge: Callable[[int, int], None], ratio: tuple[float, float],
+          resync: Callable[[], None] | None = None) -> Steered:
     """Nudge the driver by the gap to `aim` until the pointer is on it or stops moving; `ratio` is
-    driver units a program unit."""
+    driver units a program unit. A driver at its edge loses the motion its program never sees, so
+    when the nudges fail `resync` (a sweep to both edges, where each clamps) runs once and the
+    steering starts again."""
+    steered, ratio = _chase(aim, seen_now, nudge, ratio)
+    if steered.arrived or resync is None:
+        return steered
+    resync()
+    again, _ = _chase(aim, seen_now, nudge, ratio)
+    return Steered(again.seen, again.arrived, steered.corrections + again.corrections)
+
+
+def _chase(aim: tuple[int, int], seen_now: Callable[[], tuple[int, int]],
+           nudge: Callable[[int, int], None], ratio: tuple[float, float]
+           ) -> tuple[Steered, tuple[float, float]]:
     seen = seen_now()
     corrections = 0
     rx, ry = ratio
@@ -69,7 +83,7 @@ def steer(aim: tuple[int, int], seen_now: Callable[[], tuple[int, int]],
         rx = _learnt(rx, dx, moved[0] - seen[0])
         ry = _learnt(ry, dy, moved[1] - seen[1])
         seen = moved
-    return Steered(seen, seen == aim, corrections)
+    return Steered(seen, seen == aim, corrections), (rx, ry)
 
 
 def _nudge(gap: int, ratio: float) -> int:

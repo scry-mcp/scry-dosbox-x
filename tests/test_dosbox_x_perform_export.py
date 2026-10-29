@@ -78,7 +78,7 @@ def test_input_sent_to_a_parked_machine_is_an_export_step(
 def test_the_machine_around_a_call_is_the_sessions_stop_count_and_never_a_frame() -> None:
     """The count is the session's, never the last stop's record."""
     ses = install()
-    ses.stop_count = 4  # type: ignore[attr-defined]
+    ses.stop_count = 4
     got = dosbox_mcp._machine()
     assert got == recording.Machine(running=False, seq=4)
     ses.alive = lambda: False  # type: ignore[method-assign]
@@ -88,12 +88,12 @@ def test_the_machine_around_a_call_is_the_sessions_stop_count_and_never_a_frame(
 def test_a_stop_the_session_counted_before_its_record_moves_no_later_call(
         tmp_path: pathlib.Path, recorder: recording.Recorder) -> None:
     ses = install()
-    ses.stop_count = 1  # type: ignore[attr-defined]
+    ses.stop_count = 1
     sent = ses.command
 
     def counted(text: str, seconds: float | None = None) -> str:
         # Inside a call, as a parked `state_write(method="load")` counts its stop unsurveyed.
-        ses.stop_count = 2  # type: ignore[attr-defined]
+        ses.stop_count = 2
         return sent(text, seconds)
     ses.command = counted  # type: ignore[method-assign]
     server.write(ref="F000:0000", data_hex="aa")

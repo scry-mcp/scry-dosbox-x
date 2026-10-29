@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 import platform
 import re
 import subprocess
@@ -14,6 +15,7 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
+from scry_core import guardian
 
 import bench
 import dosbox_binary as dbinary
@@ -185,14 +187,12 @@ def test_the_rate_is_the_median_of_the_windows_after_the_settling_sample() -> No
 
 
 def _run_writing(log: Path, text: str | None) -> Any:
-    def run(cmd: list[str], **kw: object) -> Any:
+    def run(cmd: list[str], cwd: Path, timeout_s: float) -> None:
         assert cmd == ["make", "prof-log", "SONG=S", "SECS=30"], cmd
-        assert kw["cwd"] == str(log.parent.parent) and kw["check"] is False, kw
-        assert kw["stdout"] == kw["stderr"] == subprocess.DEVNULL, kw
+        assert cwd == log.parent.parent and timeout_s == bench.BATCH_TIMEOUT_S
         if text is not None:
             log.parent.mkdir(parents=True, exist_ok=True)
             log.write_bytes(text.encode("utf-8", "surrogateescape"))  # not valid UTF-8
-        return SimpleNamespace(returncode=0, stdout="", stderr="")
     return run
 
 
@@ -205,7 +205,7 @@ def test_a_batch_is_timed_only_when_it_answered(tmp_path: Path, monkeypatch: pyt
     log = tmp_path / "build" / "PROF.E9.log"
     log.parent.mkdir()
     log.write_text(f"{bench.MARKER}\n", encoding="utf-8")       # stale
-    monkeypatch.setattr("subprocess.run", _run_writing(log, written))
+    monkeypatch.setattr(bench, "run_group", _run_writing(log, written))
     monkeypatch.setattr(bench, "timed", lambda fn: (9994.0, fn()))
     if measured:
         assert bench.batch_cost(tmp_path, "S") == {"total_s": 9.99}
@@ -213,6 +213,24 @@ def test_a_batch_is_timed_only_when_it_answered(tmp_path: Path, monkeypatch: pyt
     with pytest.raises(SystemExit) as e:
         bench.batch_cost(tmp_path, "S")
     assert e.value.code == bench.INVALID_RC
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="the grandchild's pid comes through `sh`")
+def test_a_batch_past_its_bound_takes_its_descendants_with_it(tmp_path: Path) -> None:
+    """`make` runs the emulator as a grandchild: killing the leader alone leaves it running."""
+    pidfile = tmp_path / "grandchild.pid"
+    with pytest.raises(subprocess.TimeoutExpired):
+        bench.run_group(["sh", "-c", f"sleep 30 & echo $! > {pidfile}; wait"], tmp_path, 1.0)
+    grandchild = int(pidfile.read_text())
+    deadline = time.monotonic() + 5
+    while time.monotonic() < deadline:
+        try:
+            os.kill(grandchild, 0)
+        except ProcessLookupError:
+            return
+        time.sleep(0.05)
+    os.kill(grandchild, guardian.KILL)
+    pytest.fail("the batch's grandchild outlived the batch's bound")
 
 
 def test_the_stamp_names_a_host_other_than_macos_by_its_platform(

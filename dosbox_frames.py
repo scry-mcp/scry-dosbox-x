@@ -61,7 +61,7 @@ def captures(ses: ds.Session) -> list[dict[str, object]]:
     return out
 
 
-def frame(ses: ds.Session, at: int, dest: Path, source: Path | None = None) -> Path:
+def frame(ses: ds.Session, at: int, dest: Path, source: Path) -> Path:
     """One still out of the capture at frame `at`; always a PNG, whatever `dest` is named.
 
     From the video because DOSBox-X's screenshot needs a keypress."""
@@ -71,7 +71,6 @@ def frame(ses: ds.Session, at: int, dest: Path, source: Path | None = None) -> P
                       "only this does")
     ds.check_frame_args(at, dest)
     paths.fresh_dest("dest", dest)
-    src = source or Path(str(ses.captures()[-1]["path"]))
     # A `%` anywhere in `dest` is refused: `-f image2` treats the whole path as a printf
     # template, so the PNG can land at a path the caller never named. Broader than the hazard
     # on purpose: a false refusal is loud, the other failure is silent.
@@ -79,7 +78,7 @@ def frame(ses: ds.Session, at: int, dest: Path, source: Path | None = None) -> P
         got = subprocess.run(
             # Format forced: else a frame past the end with an `.mp4` dest writes a frameless
             # container at rc=0.
-            ["ffmpeg", "-v", "error", "-y", "-i", str(src),
+            ["ffmpeg", "-v", "error", "-y", "-i", str(source),
              "-vf", f"select='eq(n\\,{at})'", "-fps_mode", "passthrough",
              "-frames:v", "1", "-f", "image2", "-c:v", "png", str(dest)],
             capture_output=True, text=True, errors="replace", check=False,
@@ -87,7 +86,7 @@ def frame(ses: ds.Session, at: int, dest: Path, source: Path | None = None) -> P
     except subprocess.TimeoutExpired:
         # Not a raw traceback: `tool()` translates only `Invalid`.
         raise Invalid("host_failed", f"`ffmpeg` did not return within {ds.FFMPEG_SECS}s pulling "
-                      f"frame {at} from {src}. That is the tool hanging, not an "
+                      f"frame {at} from {source}. That is the tool hanging, not an "
                       f"answer about the capture") from None
     if got.returncode != 0 or not dest.exists() or dest.stat().st_size == 0:
         # rc!=0 is ffmpeg's own failure; rc=0 with no output leaves the cause a guess.
@@ -95,10 +94,10 @@ def frame(ses: ds.Session, at: int, dest: Path, source: Path | None = None) -> P
         if got.returncode != 0:
             raise Invalid("host_failed",
                 f"ffmpeg exited {got.returncode} extracting frame {at} "
-                          f"from {src} and said: {said!r}. Any file it left behind "
+                          f"from {source} and said: {said!r}. Any file it left behind "
                           f"is not a frame")
         raise Invalid("host_failed",
-            f"ffmpeg exited 0 but no image came out of {src} at frame {at}. It "
+            f"ffmpeg exited 0 but no image came out of {source} at frame {at}. It "
             f"said: {said!r}. The commonest cause is a frame past the end: "
             f"`captures` reports how many there are; an unindexed capture is not the "
             f"cause, a frame comes out of one fine")

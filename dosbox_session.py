@@ -1,8 +1,8 @@
 """One live DOSBox-X session, held open, driven through its debugger channel.
 
 Every question is a debugger command sent with the channel's `EXEC` and read from what it PRINTS
-(`dosbox_debugger`); nothing reads the debugger's screen. Launch, logs, collection, the process
-base and the log/frame/state/symbol bodies are the `dosbox_*` modules `Session` delegates to.
+(`dosbox_debugger`); nothing reads the debugger's screen. Launch, logs, runs, stepping, frames and
+states are the `dosbox_*` modules `Session` delegates to.
 """
 
 from __future__ import annotations
@@ -108,8 +108,7 @@ class NotStopped(Invalid):
 
 def _wait_stopped(pattern: str, arrived: int, waited_s: float, *, parked: bool,
                   at_bound: bool) -> Invalid:
-    """The one refusal a wait gives for a machine at the debugger: `parked` there at its first
-    poll, else stopped during the wait or as its bound ran out."""
+    """The refusal a wait gives for a machine at the debugger."""
     return E9Stopped(
         log_wait.stopped_message(pattern, arrived, waited_s, parked=parked, at_bound=at_bound)
         + ". The emulator flushes its log in its own time, so `log` may show more",
@@ -194,16 +193,6 @@ def check_frame_args(at: int, dest: Path) -> None:
                       f"somewhere else")
 
 
-def _still_armed(exc: Invalid, target: str, began: float, ctl: str | None = None) -> Invalid:
-    """The refusal that CARRIES the irreversible part."""
-    also = f" (and so is the control at {ctl})" if ctl else ""
-    return Invalid(exc.code,
-                   f"{exc} -- and the breakpoint at {target}{also} is STILL ARMED after "
-                   f"{round(time.monotonic() - began, 1)}s: this call wrote a trap byte "
-                    f"into the guest and could not read the machine back to remove it, so "
-                    f"it will stop the next `resume`")
-
-
 def _the_socket_itself(sock: socket.socket) -> socket.socket:
     return sock
 
@@ -211,11 +200,6 @@ def _the_socket_itself(sock: socket.socket) -> socket.socket:
 #: A TEST'S SEAM, never a caller's: what the input socket is wrapped in before the stub link takes
 #: it.
 INPUT_LINE: Callable[[socket.socket], Any] = _the_socket_itself
-
-
-def _entry_is(text: str) -> Callable[[str], bool]:
-    """A pick for `Session.delete_rows`: the row whose entry is `text`."""
-    return lambda entry: entry == text
 
 
 def gone_if_dead(session: Session, began: float, bound_s: float, what: str) -> None:
@@ -234,6 +218,7 @@ def check_segment(seg: int) -> None:
 
 
 # THE SESSION'S SEAMS, each its own module of the methods' bodies, which `Session` delegates to.
+import dosbox_driving as driving  # noqa: E402
 import dosbox_frames as frames  # noqa: E402
 import dosbox_log_reader as log_reader  # noqa: E402
 import dosbox_run_state as run_state  # noqa: E402
@@ -312,7 +297,17 @@ class Session(dprocess.Process):
             self._link.unprove()
 
     def _linked(self, sock: socket.socket) -> stub_link.Link:
-        return stub_link.Link(INPUT_LINE(sock), self.at_debugger)
+        return stub_link.Link(INPUT_LINE(sock), self.at_debugger, self._guest_ms)
+
+    def _guest_ms(self) -> float | None:
+        """The running guest's emulated ms from `RUNSTATE`; None without one."""
+        if not self.has(dbg.RUNSTATE):
+            return None
+        try:
+            dbg.read_run_state(self)
+        except Invalid:
+            return None
+        return self.clock_ms
 
     # ------------------------------------------------------------------ the channel
 
@@ -357,8 +352,7 @@ class Session(dprocess.Process):
         return self._at_debugger
 
     def at_debugger(self) -> bool:
-        """Whether the machine is parked at the debugger: known at once while it is, and asked
-        of `RUNSTATE` while it runs, which is how a stop it ran into is found."""
+        """Whether the machine is parked at the debugger; a running one is asked of `RUNSTATE`."""
         if self._at_debugger:
             return True
         if not self.has(dbg.RUNSTATE):
@@ -375,8 +369,7 @@ class Session(dprocess.Process):
 
     def wait_ready(self, timeout: float | None = None,
                    progress: Progress = no_progress) -> float:
-        """Seconds until the debugger answers that the machine stopped at its first
-        instruction (`-break-start`); `timeout` defaults to `run_state.READY_TIMEOUT_S`."""
+        """Seconds until the debugger answers that the machine stopped at its first instruction."""
         return run_state.wait_ready(
             self, run_state.READY_TIMEOUT_S if timeout is None else timeout, progress)
 
@@ -387,23 +380,11 @@ class Session(dprocess.Process):
     # ------------------------------------------------------------------ driving
 
     def _release(self, command: str) -> list[str]:
-        """Let the machine run with `command` (`RUN`, `VRT`, the `LOG` family, `STEPIN`); a
-        command the debugger refused released nothing."""
-        try:
-            ok, lines = self.exec(command)
-        except BaseException:
-            # sent, with no answer to say it was not taken: the next contact asks `RUNSTATE`
-            self.forget_stop()
-            raise
-        if not ok:
-            raise Invalid("unexpected_answer",
-                f"the debugger refused `{command}`: {' / '.join(lines) or 'no reason given'}")
-        self.forget_stop()
-        return lines
+        """Let the machine run with `command`."""
+        return driving.release(self, command)
 
     def _survey(self) -> tuple[dict[str, str], dict[str, str], bool]:
-        """ONE reading of the stopped machine: where, its registers, and its paging bit, read once
-        per stop and kept until the machine moves."""
+        """Where, the registers and the paging bit, read once per stop."""
         self.require_stopped("a register read")
         if self._surveyed is None:
             self._surveyed = dbg.survey(self)
@@ -461,8 +442,7 @@ class Session(dprocess.Process):
 
     def write_memory(self, seg: int, off: int, data: bytes,
                      mode: str | None = None) -> dict[str, object]:
-        """Write `data` at seg:off through the debugger's `SM`, READ IT BACK, and mark the session
-        altered for good."""
+        """Write `data` at seg:off through `SM`, read it back, and mark the session altered."""
         if not data:
             raise Invalid("bad_argument", "a write needs at least one byte")
         check_segment(seg)
@@ -528,42 +508,16 @@ class Session(dprocess.Process):
     def retrace(self, began: float, deadline: float,
                 progress: Progress = no_progress) -> tuple[bool, float]:
         """Run to the next vertical retrace."""
-        self.require_run_state("a retrace")
-        self._release(RETRACE_COMMAND)
-        return Session.await_stop(self, began, deadline, "the next retrace", progress,
-                                  label="run_for: the next retrace")
+        return driving.retrace(self, began, deadline, progress)
 
     def log_cpu(self, word: str, count: int, began: float, deadline: float,
                 progress: Progress = no_progress) -> tuple[bool, float]:
-        """`word` of the `LOG` family with its `count` in hex (`LOGC 41`), sent as the release it
-        is, and the stop it ends at asked of `RUNSTATE` until `deadline`."""
-        if word not in LOG_WORDS:
-            raise ValueError(f"{word!r} is not a word of the LOG family")
-        self.require_run_state("trace")
-        command = f"{word} {count:X}"
-        self._release(command)
-        return Session.await_stop(self, began, deadline, f"`{command}`", progress,
-                                  label=f"trace: `{command}`")
+        """A `LOG` word with its hex `count`, and the stop it ends at."""
+        return driving.log_cpu(self, word, count, began, deadline, progress)
 
     def resume(self, look: bool = True) -> dict[str, object]:
-        """Let the machine run, and with `look` SAY whether it stopped again straight away; without
-        it the call returns after the release and a stop is what the next call finds."""
-        output = "\n".join(self._release("RUN"))
-        if not self.has(dbg.RUNSTATE):
-            return {"halted": contract.unavailable(
-                        f"this build's debugger has no `{dbg.RUNSTATE}` command to say whether "
-                        f"the machine stopped again ({dbg.COMMANDS_SECTION})"),
-                    "stopped_at": None, "output": output}
-        if not look:
-            return {"halted": False, "stopped_at": None, "output": output}
-        began = time.monotonic()
-        expired, _ = Session.await_stop(self, began, began + RESUME_LOOK_S, "a stop",
-                                        label="resume")
-        stopped_at: dict[str, str] | None = None
-        if not expired:
-            with contextlib.suppress(Invalid):
-                stopped_at = self.where()
-        return {"halted": not expired, "stopped_at": stopped_at, "output": output}
+        """Let the machine run; `look` says whether it stopped again."""
+        return driving.resume(self, look)
 
     # --------------------------------------------------------------- the debugging
 
@@ -574,122 +528,8 @@ class Session(dprocess.Process):
     def run_to(self, seg: int, off: int, seconds: float,
                control: tuple[int, int] | None = None,
                progress: Progress = no_progress) -> dict[str, object]:
-        """Run until the machine reaches an address, and say where it really stopped."""
-        # THE ARGUMENT CHECKS THAT NEED NOTHING FROM THE MACHINE GO FIRST.
-        check_segment(seg)
-        vocab.check_wait(seconds)
-        self.require_run_state("run_to")
-        stopped = self.where()      # refuses a running machine BEFORE arming anything
-        # THE OFFSET'S WIDTH IS THE CPU MODE'S.
-        top = grammar.check_offset(off, stopped["mode"])
-        target = f"{seg:04X}:{off:04X}"
-        ctl = None
-        if control is not None:
-            cseg, coff = control
-            if not 0 <= cseg <= 0xFFFF or not 0 <= coff <= top:
-                raise Invalid("bad_argument", f"the control {cseg:04X}:{coff:X} is outside what "
-                              f"{stopped['mode']} mode can address")
-            ctl = f"{cseg:04X}:{coff:04X}"
-            # THE SAME PLACE, NOT THE SAME SPELLING: in real mode `1234:0010` and `1235:0000` are
-            # one byte.
-            same = (ctl == target if str(stopped["mode"]).startswith("Pr")
-                    else cseg * 16 + coff == seg * 16 + off)
-            if same:
-                raise Invalid("bad_argument",
-                    f"the control {ctl} is the same address as the target {target}: "
-                              "a control proves the target COULD have fired, and the target "
-                              "cannot prove that about itself")
-        self.altered |= self._arming_writes()
-        self.command(f"BP {target}")
-        if ctl is not None:
-            self.command(f"BP {ctl}")
-        armed = self.breakpoints()
-        for spelled in [target] + ([ctl] if ctl is not None else []):
-            if not any(f"BP {spelled}" == b["entry"] for b in armed):
-                raise Invalid("readback_refused",
-                    f"the debugger does not list a breakpoint at {spelled} after being "
-                    f"told to set one. What it holds: {[b['entry'] for b in armed]}. "
-                    f"Resuming now would run the machine with nothing to stop it, and the "
-                    f"reply would blame the address rather than the arming")
-        began = time.monotonic()
-        deadline = began + seconds
-        control_hits = 0
-        at: dict[str, str] | None = None
-        expired, interrupted = True, False
-        # THE CONTROL LOOP: released, waited for, read; a stop AT the control is counted and the
-        # machine let go again.
-        try:
-            while True:
-                self._release("RUN")
-                expired, _saw_at = Session.await_stop(self, began, deadline, target, progress)
-                if expired:
-                    break
-                try:
-                    at = self.where()
-                except Invalid as exc:
-                    raise _still_armed(exc, target, began, ctl) from None
-                # THE TARGET IS ASKED FIRST.
-                if control is None or Session._stopped_at(at, seg, off):
-                    break
-                if not Session._stopped_at(at, control[0], control[1]):
-                    break
-                control_hits += 1
-                if time.monotonic() >= deadline:
-                    # AT REST ON THE CONTROL WITH NO BOUND LEFT: reported as a stop elsewhere, and
-                    # the bound DID run out, whatever the last wait saw.
-                    expired = True
-                    break
-                at = None
-            read_after_bound = at is None
-            if at is None:
-                # THE BOUND RAN OUT: the machine is stopped where it stands and read after the
-                # loop, because it can be found at rest however the loop ended.
-                try:
-                    interrupted = Session.stop_at_bound(self)
-                    at = self.where()
-                except Invalid as exc:
-                    raise _still_armed(exc, target, began, ctl) from None
-        except BaseException as e:
-            if cancel.is_cancellation(e):
-                Session._abandon_run(self, [target] + ([ctl] if ctl is not None else []))
-            raise
-        # ARRIVAL IS THE SAME PLACE, NOT THE SAME SPELLING.
-        arrived = Session._stopped_at(at, seg, off)
-        on_control = control is not None and Session._stopped_at(at, control[0], control[1])
-        if on_control and read_after_bound and not interrupted:
-            control_hits += 1          # found resting on the control after the bound: it fired
-        # THE TARGET AND THE CONTROL ARE OURS ON EVERY STOPPED OUTCOME: a `BP` is persistent, and
-        # nobody asked to keep either.
-        removals = Session._remove_own(self, [target] + ([ctl] if ctl is not None else []))
-        removed, cleanup = removals[0]
-        control_removed = False
-        if ctl is not None:
-            control_removed, control_cleanup = removals[1]
-            cleanup += control_cleanup
-        # THE VERDICT IS WHAT ENDED THE RUN, read off the stop and not off the wait.
-        if arrived:
-            verdict, why = contract.TARGET, ""
-        elif interrupted or (expired and on_control):
-            verdict = contract.TIMEOUT
-            why = (f"the {seconds:g} s bound ran out and the run was interrupted at "
-                   f"{at['cs']}:{at['eip']}" if interrupted else
-                   f"it came to rest ON the control {ctl} (its hit number {control_hits}) when "
-                   f"the bound ran out")
-        else:
-            verdict = contract.OTHER_STOP
-            why = f"it stopped at {at['cs']}:{at['eip']}: something else got there first"
-        rom = (f" If {target} is in ROM (a BIOS or option-ROM segment such as F000), that is "
-               f"why: a code breakpoint in ROM is acknowledged, appears in BPLIST, and never "
-               f"fires" if interrupted else "")
-        return {"verdict": verdict, "target": target,
-                "stopped_at": at, "waited_s": round(time.monotonic() - began, 3),
-                "breakpoint_removed": removed,
-                "control": Session._control_block(ctl, control_hits,
-                                                  removed=control_removed),
-                "note": cleanup.strip() if arrived else
-                        f"{why}, and not at {target}{rom}." + (
-                            cleanup if not removed else
-                            f" The breakpoint at {target} was removed.{cleanup}")}
+        """Run to an address and say where it stopped."""
+        return driving.run_to(self, seg, off, seconds, control, progress)
 
     def await_stop(self, began: float, deadline: float, target: str,
                    progress: Progress = no_progress, label: str = "",
@@ -697,32 +537,11 @@ class Session(dprocess.Process):
         """Ask the debugger whether the machine stopped, until `deadline`."""
         return dbg.await_stop(self, began, deadline, target, progress, label, look_once)
 
-    @staticmethod
-    def _stopped_at(at: dict[str, str], seg: int, off: int) -> bool:
-        """Whether a stop position IS `seg:off`."""
-        if str(at["mode"]).startswith("Pr"):
-            return at["cs"] == f"{seg:04X}" and int(at["eip"], 16) == off
-        return int(at["cs"], 16) * 16 + int(at["eip"], 16) == seg * 16 + off
-
-    @staticmethod
-    def _control_block(ctl: str | None, hits: int, *, removed: bool) -> dict[str, object]:
-        """The `control` field of a `run_to` reply."""
-        if ctl is None:
-            return contract.unavailable("no control was named")
-        return {"at": ctl, "hits": hits, "removed": removed}
-
-    def _abandon_run(self, own: list[str]) -> None:
-        """A RUN CANCELLED IN FLIGHT LEAVES NOTHING ARMED."""
-        with cancel.shielded(), contextlib.suppress(Invalid, OSError):
-            if not self.at_debugger():
-                self.break_in()
-            Session._remove_own(self, own)
-
     def delete_rows(self, picks: list[Callable[[str], bool]]
                     ) -> list[tuple[dict[str, str] | None, bool]]:
-        """The first row each of `picks` takes, deleted: one list read, a `BPDEL` each from the
-        highest index down (a delete renumbers only the rows below), one read back. For each
-        pick, the row it found (None) and whether no row it takes is listed after."""
+        """The first row each of `picks` takes, deleted from the highest index down (a delete
+        renumbers the rows below), one read back: per pick, its row (None) and whether none is
+        listed after."""
         listed = self.breakpoints()
         found = [next((b for b in listed if pick(b["entry"])), None) for pick in picks]
         rows = {b["index"]: b for b in found if b is not None}
@@ -731,27 +550,6 @@ class Session(dprocess.Process):
         after = self.breakpoints() if rows else listed
         return [(row, not any(pick(b["entry"]) for b in after))
                 for row, pick in zip(found, picks, strict=True)]
-
-    def _remove_own(self, spelled: list[str]) -> list[tuple[bool, str]]:
-        """Remove the breakpoints THIS call armed, on a stopped machine; for each, whether it
-        went and the sentence a reply carries when it did not."""
-        try:
-            gone = Session.delete_rows(self, [_entry_is(f"BP {s}") for s in spelled])
-        except Invalid as exc:
-            return [(False, f" The stop is sound; the cleanup could not be confirmed ({exc}). "
-                            f"Assume the breakpoint at {s} is still armed.") for s in spelled]
-        out: list[tuple[bool, str]] = []
-        for s, (row, absent) in zip(spelled, gone, strict=True):
-            if row is None:
-                out.append((False, f" The breakpoint at {s} was not in the list at cleanup "
-                                   f"time, so nothing was removed and something else took it "
-                                   f"away."))
-            elif not absent:
-                out.append((False, f" `BPDEL` was sent and {s} is STILL in the debugger's "
-                                   f"list: it will stop the next `resume`."))
-            else:
-                out.append((True, ""))
-        return out
 
     def watch_places(self, places: list[tuple[int, int]]) -> list[dict[str, object]]:
         """Break when memory CHANGES at every one of `places`, the command chosen for the caller:
@@ -824,8 +622,7 @@ class Session(dprocess.Process):
         return {"entry": row["entry"], "removed": removed}
 
     def condition_breakpoint(self, row: str) -> str:
-        """Arm `BPIF row`, a canonical condition (`grammar.condition_row`), and READ THE LIST
-        BACK: a row the list does not hold armed nothing."""
+        """Arm `BPIF row` and read the list back: a row it does not hold armed nothing."""
         out = self.command(f"{grammar.CONDITION_ROW}{row}")
         want = f"{grammar.CONDITION_ROW}{row}"
         if not any(b["entry"] == want for b in self.breakpoints()):
@@ -898,8 +695,7 @@ class Session(dprocess.Process):
                        dest, (MEMDUMP_OK, MEMDUMP_FAIL), MEMDUMP_OK)
 
     def vgamemdump(self, offset: int, length: int, dest: Path) -> Path:
-        """Video memory, the four planes of each plane address interleaved, to a FILE through
-        `VGAMEMDUMP`, returning the path it ended up at."""
+        """Video memory, planes interleaved, to a file through `VGAMEMDUMP`; its path."""
         check_dump_length(length)
         return _dumped(self, f"VGAMEMDUMP {offset:X} {length:X} {MEMDUMP_FILE}", length, dest,
                        (VGAMEMDUMP_SAID,), VGAMEMDUMP_OK)
@@ -993,7 +789,7 @@ class Session(dprocess.Process):
     def captures(self) -> list[dict[str, object]]:
         return frames.captures(self)
 
-    def frame(self, at: int, dest: Path, source: Path | None = None) -> Path:
+    def frame(self, at: int, dest: Path, source: Path) -> Path:
         return frames.frame(self, at, dest, source)
 
     # ------------------------------------------------------------------ input to the guest
@@ -1003,8 +799,7 @@ class Session(dprocess.Process):
         return run_state.stop_at_bound(self)
 
     def break_in(self, seconds: float | None = None) -> float:
-        """Bring a RUNNING guest back to the debugger; the seconds until it said so. `seconds`
-        defaults to `run_state.BREAK_IN_WAIT_S`."""
+        """Bring a running guest back to the debugger; the seconds until it said so."""
         return run_state.break_in(
             self, run_state.BREAK_IN_WAIT_S if seconds is None else seconds)
 

@@ -26,8 +26,8 @@ def observe_stop(session: ds.Session) -> None:
     # compares stale state and `status` keeps naming the previous stop.
     if not session.at_debugger():
         return
-    count = getattr(session, "stop_count", None)
-    if count is None or count == STATE.last_stop.get("stop_count"):
+    count = session.stop_count
+    if count == STATE.last_stop.get("stop_count"):
         return
     try:
         where, registers, held = session.stop_survey()
@@ -114,7 +114,7 @@ def stop_reply(session: ds.Session, *, retrace_may_stop: bool = False,
             attribution, picture["instruction"], registers, held)
     e9 = e9_block(session)
     frame = STATE.last_stop["frame"] = dbg.frame_at_stop(session)
-    return st.reply(**{**base, **position(where, getattr(session, "paging", None))},
+    return st.reply(**{**base, **position(where, session.paging)},
                     frame=frame, regs=st.shown_regs(registers), watches=watches,
                     cause=st.cause(attribution),
                     e9=e9, stop_seq=STATE.last_stop["seq"], **picture, **said)

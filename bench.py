@@ -25,12 +25,13 @@ from pathlib import Path
 from typing import Any, NoReturn
 
 sys.path.append(str(Path(__file__).resolve().parent))
-from scry_core import verdict  # noqa: E402
+from scry_core import guardian, verdict  # noqa: E402
 from scry_core.reply_contract import Invalid  # noqa: E402
 
 import dosbox_binary as dbinary  # noqa: E402
 import dosbox_launch as dlaunch  # noqa: E402
 import dosbox_logs as dlogs  # noqa: E402
+import dosbox_process as dprocess  # noqa: E402
 import dosbox_session as ds  # noqa: E402
 
 STAMP = re.compile(r"\[\+\s*([0-9]+\.[0-9]+)\]")
@@ -121,6 +122,21 @@ def newest(log: Path) -> float | None:
     return max(found) if found else None
 
 
+def run_group(argv: list[str], cwd: Path, timeout_s: float) -> None:
+    """Run `argv` in a process group of its own to its end; past `timeout_s` the whole group goes
+    (`make` runs the emulator as a grandchild, which killing the leader leaves running) and
+    `TimeoutExpired` is raised."""
+    with subprocess.Popen(argv, cwd=str(cwd), stdout=subprocess.DEVNULL,
+                          stderr=subprocess.DEVNULL,
+                          start_new_session=sys.platform != "win32") as proc:
+        try:
+            proc.wait(timeout=timeout_s)
+        except subprocess.TimeoutExpired:
+            dprocess.signal_group(proc.pid, guardian.KILL)
+            proc.wait()
+            raise
+
+
 def batch_cost(cwd: Path, song: str) -> dict[str, float]:
     """What one question costs run as a batch: launch, reach the state, read, tear down.
 
@@ -130,10 +146,8 @@ def batch_cost(cwd: Path, song: str) -> dict[str, float]:
     if log.exists():
         log.unlink()          # a stale log must not read as this run's answer
     try:
-        ms, _ = timed(lambda: subprocess.run(
-            ["make", "prof-log", f"SONG={song}", f"SECS={BATCH_SECS}"], cwd=str(cwd),
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
-            timeout=BATCH_TIMEOUT_S))
+        ms, _ = timed(lambda: run_group(
+            ["make", "prof-log", f"SONG={song}", f"SECS={BATCH_SECS}"], cwd, BATCH_TIMEOUT_S))
     except subprocess.TimeoutExpired:
         no_measurement(f"the batch did not end within {BATCH_TIMEOUT_S} s, so it timed nothing")
     if not log.exists() or MARKER not in log.read_text(errors="replace"):

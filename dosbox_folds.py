@@ -147,7 +147,7 @@ def _load_state(name: str, seconds: float = ds.STATE_WAIT_S) -> dict[str, Any]:
         # A LOAD THAT REPLACED THE MACHINE, answered or cut short after it went (the session
         # decides, `dosbox_saved_states.load_state`): the table is kept and its base is measured
         # again at the next stop.
-        if getattr(session, "machine_replaced", False):
+        if session.machine_replaced:
             STATE.machine_replaced()
 
 

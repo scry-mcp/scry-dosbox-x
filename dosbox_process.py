@@ -63,8 +63,6 @@ DRAIN_KEEP = 4 * 1024 * 1024
 DRAIN_JOIN_SECS = 2.0
 #: Windows has no SIGTERM to ask with: `signal_group` terminates, a kill and never a quit.
 TERMINATES = sys.platform == "win32"
-#: The output reader's ending when nothing went wrong.
-DRAIN_EOF = "the descriptor reached end of file"
 
 # Small: with the quit warning off a guest answers SIGTERM at once, so what ignores it is deaf.
 TERM_GRACE = 2.0
@@ -106,9 +104,9 @@ class Process:
         self._out: int | None = None
         # False when the emulator writes to a console of its own, which nothing here reads
         self.captures_output = False
-        # Why it ended: else a transient error reads as a quiet machine while `alive` is true.
+        # Why the reader stopped short; empty at a clean end of output.
         self._drainer: threading.Thread | None = None
-        self.drain_ended = ""
+        self.drain_failure = ""
         # `quit`, `killed`, `died` (gone before `close`), `none`.
         self.ended_how = "none"
         self._closing = threading.Lock()
@@ -195,18 +193,17 @@ class Process:
     # ------------------------------------------------------------------ reading
 
     def _drain(self) -> None:
-        """Read the emulator's output while it lives, recording how it ended.
+        """Read the emulator's output while it lives, recording why it stopped short, if it did.
 
         It ends at end of file, which is the emulator gone; overflow drops the oldest bytes,
         counted.
         """
         assert self._out is not None
-        ended = DRAIN_EOF
         while True:
             try:
                 chunk = os.read(self._out, 65536)
             except OSError as exc:
-                ended = f"a read failed ({exc!r}), so the tails may be short"
+                self.drain_failure = f"a read failed ({exc!r}), so the tails may be short"
                 break
             if not chunk:
                 break
@@ -216,7 +213,6 @@ class Process:
                 if over > 0:
                     del self._buf[:over]
                     self.dropped += over
-        self.drain_ended = ended
 
     def output_tail(self, chars: int) -> str:
         """The last `chars` of what the emulator printed; empty when its console kept it."""
@@ -295,7 +291,7 @@ class Process:
             if self._drainer is not None:
                 self._drainer.join(timeout=DRAIN_JOIN_SECS)
             if self._drainer is not None and self._drainer.is_alive():
-                self.drain_ended = (f"it was still reading {DRAIN_JOIN_SECS} s after the "
+                self.drain_failure = (f"it was still reading {DRAIN_JOIN_SECS} s after the "
                                     f"emulator ended, so the tails may be short")
             elif self._out is not None:
                 with contextlib.suppress(OSError):

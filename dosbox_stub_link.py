@@ -30,6 +30,10 @@ READ_SLICE_S = 0.1
 ACK_RETRACES = 8
 FRAME_SPACING_MS = FRAME_SPACING_S * 1000
 AFTER_RETRACE_S = 0.02
+#: A running guest: how often its clock is asked while a frame's spacing is waited out, and the
+#: wall time that wait is capped at.
+CLOCK_POLL_S = 0.005
+SPACING_CEILING_S = 30.0
 
 
 class Advance(Protocol):
@@ -82,9 +86,11 @@ class Link:
     debugger, where the guest runs nothing and so no acknowledgement comes unless a send's
     `advance` runs it."""
 
-    def __init__(self, sock: socket.socket, parked: Callable[[], bool] = lambda: False) -> None:
+    def __init__(self, sock: socket.socket, parked: Callable[[], bool] = lambda: False,
+                 clock: Callable[[], float | None] = lambda: None) -> None:
         self.sock = sock
         self.parked = parked
+        self.clock = clock
         self.seq = 0
         self._pending = bytearray()
         self._acked_at = -FRAME_SPACING_S
@@ -93,6 +99,7 @@ class Link:
         self._advance: Advance | None = None
         self._clock_ms = 0.0
         self._acked_ms: float | None = None
+        self._acked_running_ms: float | None = None
         self._written: list[bytes] = []
 
     def unprove(self) -> None:
@@ -160,6 +167,7 @@ class Link:
             if carried or sent:
                 self._acked_at = time.monotonic()
                 self._acked_ms = self._clock_ms if self._advance is not None else None
+                self._acked_running_ms = self.clock() if self._advance is None else None
                 return
             # First send answered as a repeat (state loaded from another session): resend.
             seq = self._next()
@@ -175,9 +183,22 @@ class Link:
             while self._acked_ms is not None and self._clock_ms - self._acked_ms < FRAME_SPACING_MS:
                 self._clock_ms = self._advance()
             return
+        if self._acked_running_ms is not None:
+            self._space_by_guest_clock(self._acked_running_ms)
+            return
         while (left := self._acked_at + FRAME_SPACING_S - time.monotonic()) > 0:
             cancel.check()
             time.sleep(min(left, READ_SLICE_S))
+
+    def _space_by_guest_clock(self, acked_ms: float) -> None:
+        """A running guest's frame is its own milliseconds, which lag the wall's when starved."""
+        ceiling = time.monotonic() + SPACING_CEILING_S
+        while time.monotonic() < ceiling:
+            cancel.check()
+            now_ms = self.clock()
+            if now_ms is None or now_ms - acked_ms >= FRAME_SPACING_MS:
+                return
+            time.sleep(CLOCK_POLL_S)
 
     def _next(self) -> int:
         """1 to 255: the stub starts at 0, which no frame carries."""

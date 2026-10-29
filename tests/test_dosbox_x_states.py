@@ -269,6 +269,12 @@ def test_state_load_needs_a_named_state_and_marks_altered(tmp_path: Path) -> Non
     assert exc.value.code == "unknown_ref" and len(fake.control.sent) == 1
 
 
+def test_the_default_state_directory_is_one_spelling_for_start_and_the_session(
+        tmp_path: Path) -> None:
+    bare = dlaunch.Launch(conf=tmp_path / "g.conf", cwd=tmp_path, seconds=60, watched=False)
+    assert dlaunch.state_dir_of(bare) == dlaunch.default_state_dir(tmp_path) == tmp_path / "save"
+
+
 def test_state_list_reads_every_state_with_its_metadata_and_needs_no_window(
         tmp_path: Path) -> None:
     fake = StateFake(tmp_path / "save")

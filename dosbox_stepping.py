@@ -16,6 +16,7 @@ from scry_core.reply_contract import Invalid
 
 import dosbox_debugger as dbg
 import dosbox_disasm as disasm
+import dosbox_driving as driving
 import dosbox_grammar as grammar
 import dosbox_session as ds
 
@@ -122,14 +123,14 @@ def _one_step(ses: ds.Session, at: dict[str, str],
         if armed:
             raise
         with cancel.shielded():
-            removed = ses.at_debugger() and ds.Session._remove_own(ses, [target])[0][0]
+            removed = ses.at_debugger() and driving.remove_own(ses, [target])[0][0]
         if removed:
             raise
-        raise ds._still_armed(exc, target, began) from None
+        raise driving.still_armed(exc, target, began) from None
     finally:
         with cancel.shielded():
             if not armed and ses.at_debugger():
-                [(_removed, cleanup)] = ds.Session._remove_own(ses, [target])
+                [(_removed, cleanup)] = driving.remove_own(ses, [target])
     return ses.where(), expired, cleanup
 
 def _step_over_target(ses: ds.Session, at: dict[str, str]) -> int | None:
