@@ -7,7 +7,7 @@ import re
 import time
 from collections.abc import Iterator
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 import pytest
 from live_private import guest_dir
@@ -53,14 +53,20 @@ LIVE_MARKS = [
 pytestmark = LIVE_MARKS
 
 
+def _launch(**fields: Any) -> dlaunch.Launch:
+    """A Launch on the build under test: left to the default it would run the PATH's `dosbox-x`,
+    which is another emulator on one host and none on another."""
+    build = binaries.resolve("").path
+    return dlaunch.Launch(**{
+        "conf": Path(CONF), "cwd": Path(CWD), "binary": build,
+        "debugger_headless": binaries.debugger_headless(build),
+        "debugger_commands": frozenset(binaries.debugger_commands(build)), **fields})
+
+
 @pytest.fixture
 def session(tmp_path: Path) -> Iterator[ds.Session]:
     log = tmp_path / "guest.log"
-    build = binaries.resolve("").path
-    s = ds.Session(dlaunch.Launch(
-        conf=Path(CONF), cwd=Path(CWD), seconds=90, logfile=log, binary=build,
-        debugger_headless=binaries.debugger_headless(build),
-        debugger_commands=frozenset(binaries.debugger_commands(build))))
+    s = ds.Session(_launch(seconds=90, logfile=log))
     yield s
     s.close()
 
@@ -102,7 +108,7 @@ def test_the_instrumentation_channel_tells_the_two_nothings_apart(session: ds.Se
 
 
 def test_a_session_without_a_logfile_refuses_to_pretend(tmp_path: Path) -> None:
-    s = ds.Session(dlaunch.Launch(conf=Path(CONF), cwd=Path(CWD), seconds=30))
+    s = ds.Session(_launch(seconds=30))
     try:
         s.wait_ready()
         with pytest.raises(ds.Invalid, match="no (instrumentation|log) channel"):
@@ -113,7 +119,7 @@ def test_a_session_without_a_logfile_refuses_to_pretend(tmp_path: Path) -> None:
 
 def test_close_leaves_nothing_behind(tmp_path: Path) -> None:
     """A failure before `close()` must not leak an emulator."""
-    s = ds.Session(dlaunch.Launch(conf=Path(CONF), cwd=Path(CWD), seconds=60))
+    s = ds.Session(_launch(seconds=60))
     try:
         s.wait_ready()
         assert s.alive()
@@ -142,8 +148,8 @@ def test_both_halves_of_the_capture_against_a_real_emulator(tmp_path: Path) -> N
     """DX-CAPTURE records a headless session and a frame comes out of it."""
     caps = tmp_path / "caps"
     caps.mkdir()
-    s = ds.Session(dlaunch.Launch(
-        conf=conf_that_does_not_exit(tmp_path), cwd=Path(CWD), seconds=60,
+    s = ds.Session(_launch(
+        conf=conf_that_does_not_exit(tmp_path), seconds=60,
         program=GUEST_PROGRAM,
         capture_video=True, captures_dir=caps))
     try:
@@ -173,7 +179,7 @@ def test_a_dump_really_lands_and_carries_the_bytes_that_were_asked_for(
         tmp_path: Path) -> None:
     """The dump lands with the bytes asked for; F000:E000 because it is not uniform at reset."""
     dest = tmp_path / "dump.bin"
-    s = ds.Session(dlaunch.Launch(conf=Path(CONF), cwd=Path(CWD), seconds=90))
+    s = ds.Session(_launch(seconds=90))
     try:
         s.wait_ready()
         candidates = s._memdump_candidates()
@@ -218,8 +224,7 @@ def test_the_machine_keeps_running_while_nobody_is_asking(tmp_path: Path) -> Non
     Measured on the LOGFILE: a session read drains the pty and would hide the freeze.
     """
     log = tmp_path / "guest.log"
-    s = ds.Session(dlaunch.Launch(conf=Path(CONF), cwd=Path(CWD),
-                             seconds=180, logfile=log))
+    s = ds.Session(_launch(seconds=180, logfile=log))
     try:
         s.wait_ready()
         s.resume()

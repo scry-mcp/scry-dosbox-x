@@ -30,7 +30,7 @@ def test_a_real_mode_change_watch_stops_the_machine_when_the_memory_changes(
     # reach_realmode left INT 21 armed.
     server.declaration_clear("breakpoint", all=True)
 
-    out = cast(dict[str, Any], server.resume())
+    out = cast(dict[str, Any], server.resume(seconds=30))
     assert out["status"] == "ok", out
     assert "pc" in out, (
         "a real-mode change-watch on memory that is changing did not stop the machine: "

@@ -37,7 +37,7 @@ def test_a_stop_carries_the_registers_watches_attribution_and_e9(
     w = cast(dict[str, Any], server.watch_add(ref=watch, mode="show", length=4, fmt="u32"))
     assert w["status"] == "ok" and w["mode"] == "show", w
 
-    out = cast(dict[str, Any], server.resume())
+    out = cast(dict[str, Any], server.resume(seconds=30))
     assert out["status"] == "ok" and "pc" in out, out
     assert isinstance(out.get("regs"), dict) and out["regs"], out
 

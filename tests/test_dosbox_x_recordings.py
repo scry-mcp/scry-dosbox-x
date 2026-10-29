@@ -168,6 +168,17 @@ def test_a_rolled_over_run_moved_to_dest_still_names_all_its_files(tmp_path: Pat
     assert "3 files" in got["note"], got["note"]
 
 
+def test_a_file_a_coarse_file_system_clock_dates_just_before_the_call_is_this_runs(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Windows stamps a file from a clock that ticks about every 16 ms, so the first file of a run
+    can carry a time a few milliseconds before the `time.time()` read that began it."""
+    real = time.time
+    monkeypatch.setattr(time, "time", lambda: real() + 0.012)
+    live(tmp_path, capture_rollovers=1)
+    got = _ok(server.audio_record(frames=2, kind="dro"))
+    assert [f["path"].rsplit("_", 1)[1] for f in got["files"]] == ["000.dro", "001.dro"], got
+
+
 def test_the_file_the_previous_recording_closed_a_moment_ago_is_not_this_runs(
         tmp_path: Path) -> None:
     older = tmp_path / "capture" / "sound_000.dro"

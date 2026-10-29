@@ -159,7 +159,8 @@ def test_send_mouse_puts_the_pointer_where_asked_and_the_program_clicks_there(
             (screen_map.Control("c", (20, 10, 4, 2)),)), "file", None)
         aimed = cast(dict[str, Any], server.send_mouse(target="c", button="left"))
         assert aimed["code"] == "needs_call", aimed
-        assert "a mode this server does not map now" in aimed["message"], aimed
+        assert f"a {kind} {size[0]}x{size[1]} screen" in aimed["message"], aimed
+        assert "screen_map_find" in aimed["message"], aimed
     after = cast(dict[str, Any], server.send_mouse(x=0, y=0, units="mouse"))
     assert after["status"] == "ok", after
     # Reports ride the stub's line, not the program's.

@@ -18,6 +18,7 @@ pytestmark = pytest.mark.live
 BIOS_SEG = 0xF000
 WALK_MAX = int(os.environ.get("DOSBOX_X_WALK_MAX", "40"))
 SESSION_SECONDS = 300
+RESUME_S = 30
 STUB_LIMIT_MAX = 0xFFFF
 DELTA_MAX = 0x2000
 
@@ -33,7 +34,7 @@ def reach_djgpp(logfile: str | None = None) -> dict[str, int]:
     assert r["status"] == "ok", r
     assert server.breakpoint_interrupt(number=0x31, ah=0x00)["status"] == "ok"
     for i in range(1, WALK_MAX + 1):
-        res = cast(dict[str, Any], server.resume())
+        res = cast(dict[str, Any], server.resume(seconds=RESUME_S))
         assert res.get("status") == "ok", (
             f"the session went away at resume {i}: {res.get('message')}")
         assert "pc" in res, (
@@ -91,7 +92,7 @@ def reach_realmode(into: Path, logfile: str | None = None) -> tuple[int, int, in
     prev: str | None = None
     caught: tuple[int, int] | None = None
     for _ in range(WALK_MAX):
-        res = cast(dict[str, Any], server.resume())
+        res = cast(dict[str, Any], server.resume(seconds=RESUME_S))
         assert res.get("status") == "ok", (
             f"the session went away mid-walk: {res.get('message')}")
         pc = res.get("pc")

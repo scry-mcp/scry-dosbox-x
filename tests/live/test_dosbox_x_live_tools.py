@@ -9,6 +9,7 @@ never merely that it returned.
 
 from __future__ import annotations
 
+import signal
 import time
 from pathlib import Path
 from typing import Any, cast
@@ -414,8 +415,10 @@ def test_closing_a_running_session_does_not_wait_out_a_signal_it_ignores() -> No
     assert reply["ended_by"] == ("killed" if dprocess.TERMINATES else "quit"), (
         f"close ended a running session by {reply['ended_by']!r}, not a clean quit: the "
         f"emulator ignored the TERM, so the quit warning is back on")
-    assert cast(int, reply["exit_code"]) == 0, (
-        f"exit code {reply['exit_code']}: a clean quit on SIGTERM exits 0")
+    want = int(signal.SIGTERM) if dprocess.TERMINATES else 0
+    assert cast(int, reply["exit_code"]) == want, (
+        f"exit code {reply['exit_code']}: SIGTERM ends the emulator with {want} here (a clean "
+        f"quit exits 0; Windows terminates the process, which reports the signal's number)")
     assert took < 5.0, (
         f"closing a running session took {took:.2f}s. With the quit warning off the "
         f"emulator answers the TERM at once; a wait this long means it is sitting behind "

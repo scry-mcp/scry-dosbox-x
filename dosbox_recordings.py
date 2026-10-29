@@ -129,6 +129,8 @@ def _file_fields(kind: str, path: Path, ran: dict[str, Any]) -> dict[str, Any]:
     return found
 
 
+#: Windows stamps files from a clock that ticks about every 16 ms.
+MTIME_TICK_S = 0.05
 DRO_NAME = re.compile(r"^(?P<prefix>.*_)(?P<number>\d+)(?P<suffix>\.dro)$")
 
 def _opl_run_files(last: Path, began: float) -> list[Path]:
@@ -148,7 +150,7 @@ def _opl_run_files(last: Path, began: float) -> list[Path]:
             written = other.stat().st_mtime if other.is_file() else 0.0
         except OSError:
             continue        # gone, or a link to nothing: not a file of this run
-        if written >= began:
+        if written >= began - MTIME_TICK_S:
             mine.append((int(found["number"]), other))
     return [path for _, path in sorted(mine)]
 
