@@ -1231,7 +1231,7 @@ def test_perform_refuses_a_run_to_step_without_a_control_before_the_list_runs(
     fake = _names(tmp_path)
     out = cast(dict[str, Any], server.perform(steps=[{"op": "status"},
                                                      {"op": "run_to", "ref": "0000:0000"}]))
-    assert out["status"] == "INVALID" and "'control'" in str(out.get("errors")), out
+    assert out["status"] == "INVALID" and "no control" in str(out.get("errors")), out
     empty = cast(dict[str, Any], server.perform(steps=[
         {"op": "status"}, {"op": "run_to", "ref": "0000:0000", "control": ""}]))
     assert empty["status"] == "INVALID" and "no control" in str(empty.get("errors")), empty

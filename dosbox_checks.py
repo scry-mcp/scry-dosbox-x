@@ -223,14 +223,20 @@ def _run_to(ref: str = "", control: str = "", seconds: float = 30.0, screen: str
     screen_map.check_run_to(ref, screen)
     if ref.strip():
         address_shape(ref)
-    if not control:
-        raise ds.Invalid("bad_argument",
-            "no control is named: `run_to` measures nothing without one. A `control` is a "
-            "second ref known to be hot on this screen (the vblank or timer handler, a loop "
-            "the program is in): with it, a bound that expires with the control firing says "
-            "breakpoints work here and the target's did not fire; without it the silence "
-            "could be breakpoints never firing at all")
-    address_shape(control)
+    if not control and not screen:
+        raise no_control()
+    if control:
+        address_shape(control)
+
+
+def no_control() -> ds.Invalid:
+    """The refusal of a `run_to` to a place with no `control`."""
+    return ds.Invalid("bad_argument",
+        "no control is named: `run_to` measures nothing without one. A `control` is a "
+        "second ref known to be hot on this screen (the vblank or timer handler, a loop "
+        "the program is in): with it, a bound that expires with the control firing says "
+        "breakpoints work here and the target's did not fire; without it the silence "
+        "could be breakpoints never firing at all")
 
 
 def _count(name: str, value: object) -> int:

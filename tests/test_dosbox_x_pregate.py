@@ -139,9 +139,9 @@ def test_watch_add_names_its_own_by_words() -> None:
 # ------------------------------------------------------------------ run_to and the clears
 
 
-def test_run_to_without_a_control_is_refused_by_the_schema() -> None:
+def test_run_to_a_ref_without_a_control_is_refused_before_the_gate() -> None:
     reply = _call("run_to", {"ref": "0000:0100"})
-    _refused(reply, "bad_argument", "refused by the schema", "control")
+    _refused(reply, "bad_argument", "no control is named")
 
 
 def test_all_clears_every_declaration_of_the_family(tmp_path: Path) -> None:

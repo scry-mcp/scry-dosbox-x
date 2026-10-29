@@ -6,13 +6,34 @@ import time
 from typing import Any, cast
 
 from scry_core import reply_contract as contract
+from scry_core import screen_map
 
 import dosbox_debugger as dbg
+import dosbox_folds as folds
 import dosbox_placement as placement
+import dosbox_retrace as retrace
 import dosbox_running as running
 import dosbox_session as ds
 import dosbox_state as st
 from dosbox_running import live
+from dosbox_state import STATE
+
+#: What a `run_for` stop carries that a `run_to` reply has no field for.
+RUN_FOR_ONLY = frozenset({"polls", "emulated_before_s", "emulated_after_s", "frame_before",
+                          "frame_after", "cycles", "retrace_pending"})
+
+
+def run_to_screen(screen: str, seconds: float, progress: ds.Progress) -> dict[str, Any]:
+    """`run_to(screen=)` for a screen with no anchor: a retrace at a time until the map names
+    it, as `run_to` replies."""
+    session = live()
+    got = screen_map.run_until(
+        STATE.maps, screen,
+        lambda: retrace.run_for(session, 1, 0, seconds, progress, who="a run to a screen"),
+        folds.map_read(session), seconds)
+    if got.get("status") != "ok":
+        return got
+    return {k: v for k, v in got.items() if k not in RUN_FOR_ONLY}
 
 
 def resume(seconds: float, detail: bool,

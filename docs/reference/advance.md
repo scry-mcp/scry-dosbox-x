@@ -6,31 +6,34 @@
 *Run to a place, with a control*
 
 ```text
-run_to(ref="", control, screen="", seconds=30.0)
+run_to(ref="", control="", screen="", seconds=30.0)
 ```
 
 Run until a symbol or a `SEG:OFF` and say where it stopped.
 
-`ref`: a loaded symbol or hex `SEG:OFF`. `control` is required: a second ref known to be
-hot, counted when it fires, so a bound that expires with no control hit is INVALID, not "it
-did not arrive". Needs a stopped machine. Refused: an absent or ambiguous name. On a dynamic
-cpu core, which can pass over a breakpoint inside a compiled block, `note` says so.
+`ref`: a loaded symbol or hex `SEG:OFF`. `control` is required with a `ref` or an anchored
+screen: a second ref known to be hot, counted when it fires, so a bound that expires with no
+control hit is INVALID, not "it did not arrive". Needs a stopped machine. Refused: an absent
+or ambiguous name. On a dynamic cpu core, which can pass over a breakpoint inside a compiled
+block, `note` says so.
 
-`screen`: a mapped screen's name instead of `ref` (exactly one), run to its `anchor`, the
-`control` still required; a `verified` map judges it there (`stale_map` when it no longer
-holds), a `consolidated` one takes it as shown. Reply: `screen` (`screen`, `layer`, `mode`,
-`judged`). Refused: an unmapped screen (`unknown_ref`), one with no `anchor` (`needs_call`).
+`screen`: a mapped screen's name instead of `ref` (exactly one). With an `anchor`, run to it (`control`
+required): a `verified` map judges it there (`stale_map` when it no longer holds), a
+`consolidated` one takes it as shown. With none, a frame at a time until the map names it,
+within `seconds`; no `control`. Reply: `screen` (`screen`, `layer`, `mode`, `judged`),
+`frames` run. Refused: an unmapped screen (`unknown_ref`).
 
 Reply: `verdict` (`TARGET`, `OTHER_STOP`, `TIMEOUT`), `target_disarmed`, `control_hits`,
-`controls` (`ref`, `at`, `hits_in_run`), `note`, the stop (`pc`, `frame`, `regs`, `cause`).
-INVALID: `control_silent`, `cut_by_other_stop`, `not_settled`, `stale_map`.
+`controls` (`ref`, `at`, `hits_in_run`; a run to a ref or an anchor), `frames` (a screen with
+no anchor), `note`, the stop (`pc`, `frame`, `regs`, `cause`). INVALID: `control_silent`,
+`cut_by_other_stop`, `not_settled`, `stale_map`.
 
 Reference: REFERENCE.md, Advancing the machine.
 
 | argument | type | default |
 |---|---|---|
 | `ref` | string | `""` |
-| `control` | string | required |
+| `control` | string | `""` |
 | `screen` | string | `""` |
 | `seconds` | number (> 0, <= 600.0) | `30.0` |
 
@@ -48,6 +51,7 @@ Reference: REFERENCE.md, Advancing the machine.
 | `ref` | string |
 | `regs` | object |
 | `screen` | object |
+| `frames` | integer |
 | `stop_seq` | integer |
 | `target` | string |
 | `target_disarmed` | boolean |

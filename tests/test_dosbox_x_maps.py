@@ -255,3 +255,51 @@ def test_an_export_keeps_the_map_an_identification_was_made_against_and_replays_
     dstate.STATE.maps = screen_map.Maps()
     played = _ok(server.perform(steps=steps))
     assert played["steps_completed"] == 3, played
+
+
+def _canned_frames(monkeypatch: pytest.MonkeyPatch) -> list[int]:
+    """`run_for(frames=1)` as one retrace stop, counted."""
+    import dosbox_retrace as retrace
+    ran: list[int] = []
+
+    def one_frame(session: Any, frames: int, milliseconds: int, seconds: float, progress: Any,
+                  who: str = "run_for") -> dict[str, Any]:
+        ran.append(frames)
+        return dstate.reply(verdict="ELAPSED", polls=1, emulated_before_s=0.0,
+                            emulated_after_s=0.014, frame_before=len(ran),
+                            frame_after=len(ran) + 1, cycles=1000, stop_seq=len(ran),
+                            pc="0000:0100")
+    monkeypatch.setattr(retrace, "run_for", one_frame)
+    return ran
+
+
+def test_a_run_to_a_screen_with_no_anchor_runs_frames_until_the_map_names_it(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    screen_bench("probe-booted", tmp_path)
+    _ok(server.screen_map_write("add", screen="prompt", match=[PROMPT]))
+    ran = _canned_frames(monkeypatch)
+    got = _ok(server.run_to(screen="prompt"))
+    assert (got["verdict"], got["frames"], ran) == ("TARGET", 1, [1]), got
+    assert got["screen"]["judged"] is True and got["screen"]["screen"] == "prompt", got
+    assert "control_hits" not in got and "controls" not in got, got
+    found = dstate.STATE.maps.found
+    assert found is not None and found.screen.name == "prompt", "the screen is identified"
+
+
+def test_a_run_to_a_screen_the_guest_never_shows_times_out_saying_the_frames_it_ran(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    screen_bench("probe-booted", tmp_path)
+    _ok(server.screen_map_write("add", screen="prompt", match=[PROMPT]))
+    screen_bench("screen-13h", tmp_path)
+    ran = _canned_frames(monkeypatch)
+    got = _ok(server.run_to(screen="prompt", seconds=0.2))
+    assert got["verdict"] == "TIMEOUT" and got["frames"] == len(ran) >= 1, got
+    assert "screen" not in got
+
+
+def test_a_control_with_a_screen_that_has_no_anchor_is_refused(tmp_path: Path) -> None:
+    screen_bench("probe-booted", tmp_path)
+    _ok(server.screen_map_write("add", screen="prompt", match=[PROMPT]))
+    got = cast(dict[str, Any], server.run_to(screen="prompt", control="_main"))
+    assert got["status"] == "INVALID" and got["code"] == "bad_argument", got
+    assert "no anchor" in got["message"] and "control" in got["message"], got["message"]

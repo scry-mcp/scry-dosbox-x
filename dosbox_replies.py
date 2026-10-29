@@ -356,8 +356,8 @@ class AudioRecordReply(RunForReply, total=False):
 
 class RunToReply(DosboxEnvelope, total=False):
     cause: str
-    control_hits: Required[int]
-    controls: Required[list[Any]]
+    control_hits: Annotated[int, When("a run to a ref or an anchor")]
+    controls: Annotated[list[Any], When("a run to a ref or an anchor")]
     cpu_mode: str | dict[str, Any]
     e9: dict[str, Any]
     enrichment: dict[str, Any]
@@ -367,9 +367,10 @@ class RunToReply(DosboxEnvelope, total=False):
     ref: str
     regs: dict[str, Any]
     screen: dict[str, Any]
+    frames: Annotated[int, When("a screen with no anchor")]
     stop_seq: int
     target: str
-    target_disarmed: Required[bool]
+    target_disarmed: Annotated[bool, When("a run to a ref or an anchor")]
     verdict: Required[str]
     watches: list[Any]
 

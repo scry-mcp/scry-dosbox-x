@@ -712,25 +712,35 @@ def step(count: Annotated[int, vocab.bounds(1, stepping.STEP_MAX)] = 1,
 
 
 @tool("Run to a place, with a control", summary=one_line.run_to, on_cancel="stop")
-def run_to(ref: str = "", *, control: str, screen: str = "",
+def run_to(ref: str = "", *, control: str = "", screen: str = "",
            seconds: Annotated[float, vocab.WAIT_BOUNDS] = 30.0,
            ctx: Context[Any, Any] | None = None) -> dict[str, Any]:
     """Run until a symbol or a `SEG:OFF` and say where it stopped.
 
-    `ref`: a loaded symbol or hex `SEG:OFF`. `control` is required: a second ref known to be
-    hot, counted when it fires, so a bound that expires with no control hit is INVALID, not "it
-    did not arrive". Needs a stopped machine. Refused: an absent or ambiguous name. On a dynamic
-    cpu core, which can pass over a breakpoint inside a compiled block, `note` says so.
+    `ref`: a loaded symbol or hex `SEG:OFF`. `control` is required with a `ref` or an anchored
+    screen: a second ref known to be hot, counted when it fires, so a bound that expires with no
+    control hit is INVALID, not "it did not arrive". Needs a stopped machine. Refused: an absent
+    or ambiguous name. On a dynamic cpu core, which can pass over a breakpoint inside a compiled
+    block, `note` says so.
 
     {MAP_RUN_TO}
 
     Reply: `verdict` (`TARGET`, `OTHER_STOP`, `TIMEOUT`), `target_disarmed`, `control_hits`,
-    `controls` (`ref`, `at`, `hits_in_run`), `note`, the stop (`pc`, `frame`, `regs`, `cause`).
-    INVALID: `control_silent`, `cut_by_other_stop`, `not_settled`, `stale_map`.
+    `controls` (`ref`, `at`, `hits_in_run`; a run to a ref or an anchor), `frames` (a screen with
+    no anchor), `note`, the stop (`pc`, `frame`, `regs`, `cause`). INVALID: `control_silent`,
+    `cut_by_other_stop`, `not_settled`, `stale_map`.
 
     Reference: REFERENCE.md, Advancing the machine.
     """
     session = live()
+    if screen and not STATE.maps.is_anchored(screen):
+        if control:
+            raise ds.Invalid("bad_argument", f"screen {screen!r} names no anchor, so it is run "
+                             "to a frame at a time and a `control` has nothing to count: leave "
+                             "it out")
+        return advance.run_to_screen(screen, seconds, bridge(ctx))
+    if not control:
+        raise checks.no_control()
     reply = advance.run_to(STATE.maps.anchor(screen) if screen else ref, control, seconds,
                            bridge(ctx))
     if screen:
