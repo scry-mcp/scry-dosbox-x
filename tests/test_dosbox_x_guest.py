@@ -25,7 +25,7 @@ LIVE = Path(__file__).resolve().parent / "live"
 ASM = GUEST / "probe.asm"
 COM = GUEST / "probe.com"
 GUESTS = {"probe": 144, "screen": 212, "code": 195, "mouse": 465, "v86": 1328, "hook1c": 76,
-          "planes": 761, "sound": 221, "tap": 78}
+          "planes": 761, "sound": 221, "tap": 78, "stack": 1088}
 
 
 def _declared_strings(asm: Path = ASM) -> list[bytes]:
