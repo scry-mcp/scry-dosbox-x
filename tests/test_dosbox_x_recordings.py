@@ -400,3 +400,14 @@ def test_a_dest_taken_during_the_run_is_never_overwritten(tmp_path: Path) -> Non
     got = cast(dict[str, Any], server.audio_record(frames=2, dest=str(dest)))
     assert got["code"] == "readback_refused" and str(dest) in got["message"], got
     assert dest.read_bytes() == b"somebody's" and Path(got["path"]).is_file()
+
+
+def test_a_capture_path_the_debuggers_message_buffer_cut_is_refused_not_misread(
+        tmp_path: Path) -> None:
+    deep = tmp_path.joinpath(*["d" * 60] * 8)
+    deep.mkdir(parents=True)
+    machine = live(deep)
+    got = cast(dict[str, Any], server.audio_record(frames=2))
+    assert got["code"] == "readback_refused" and "cut" in got["message"], got
+    assert "shorter" in got["message"], got
+    assert _capture_commands(machine)[-1] == "CAPTURE WAV OFF", "the capture was still turned off"

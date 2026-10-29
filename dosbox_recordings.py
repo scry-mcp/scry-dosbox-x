@@ -24,6 +24,8 @@ LINE = re.compile(r"^DEBUG: CAPTURE (WAV|OPL|MIDI|VIDEO) (on|off) path=(.+)$")
 VIDEO = "VIDEO"
 #: Each `CAPTURE` word's file extension, which is the reply's `kind`.
 EXTENSION = {**{word: ext for ext, word in files.AUDIO_KINDS.items()}, VIDEO: "avi"}
+#: The debugger formats a message into 512 bytes, one of them the NUL: a line this long was cut.
+LINE_CUT = 511
 NO_FILE_WHY = {
     "OPL": "the guest keyed no OPL note on during the run, and the writer opens its file at the "
            "first one",
@@ -43,8 +45,21 @@ def _states(lines: list[str]) -> dict[str, tuple[bool, str | None]]:
     return out
 
 
-def _toggle(session: ds.Session, kind: str, on: bool) -> str | None:
-    """`CAPTURE kind ON|OFF`, read back; the file it names, if any."""
+def _cut_line(kind: str, word: str, lines: list[str]) -> Invalid | None:
+    """The refusal for a `CAPTURE` line the debugger's message buffer cut, its path with it."""
+    cut = next((ln for ln in lines
+                if ln.startswith("DEBUG: CAPTURE") and len(ln) >= LINE_CUT), None)
+    if cut is None:
+        return None
+    return Invalid("readback_refused",
+                   f"the debugger's message buffer cut its `{CAPTURE} {kind} {word}` line at "
+                   f"{len(cut)} characters, so the path in it cannot be trusted: record with a "
+                   "shorter `captures_dir` (or working directory)")
+
+
+def _toggle(session: ds.Session, kind: str, on: bool) -> tuple[str | None, Invalid | None]:
+    """`CAPTURE kind ON|OFF`, read back; the file it names, if any, and the refusal for a path
+    the debugger's buffer cut (raised at once for ON, which has no path to give)."""
     word = "ON" if on else "OFF"
     ok, lines = session.exec(f"{CAPTURE} {kind} {word}")
     said = _states(lines).get(kind)
@@ -52,7 +67,10 @@ def _toggle(session: ds.Session, kind: str, on: bool) -> str | None:
         raise Invalid("unexpected_answer",
                       f"`{CAPTURE} {kind} {word}` answered {' / '.join(lines) or 'nothing'}, "
                       f"not its line saying the {kind} capture is {word.lower()}")
-    return said[1]
+    cut = _cut_line(kind, word, lines)
+    if cut is not None and on:
+        raise cut
+    return said[1], cut
 
 
 def _wav_fields(path: Path, ran: dict[str, Any]) -> dict[str, Any]:
@@ -129,7 +147,7 @@ def recording(session: ds.Session, tool: str, kind: str, frames: int, dest: Path
                          if kind == VIDEO and session.launch.capture_video else "")
                       + ": a recording here would end that one. A stretch is recorded with the "
                       "capture off")
-    ended, closed, why = True, None, ""
+    ended, closed, why, cut = True, None, "", None
     try:
         _toggle(session, kind, True)
         ran = retrace.run_for(session, frames, 0, seconds, progress)
@@ -137,7 +155,7 @@ def recording(session: ds.Session, tool: str, kind: str, frames: int, dest: Path
         # Shielded: after a cancel the turn-off's own poll would raise and abandon its answer.
         with cancel.shielded():
             try:
-                closed = _toggle(session, kind, False)
+                closed, cut = _toggle(session, kind, False)
             except Invalid as e:
                 ended, why = False, str(e)
     own: dict[str, Any] = {"kind": EXTENSION[kind], "frames": frames,
@@ -150,6 +168,8 @@ def recording(session: ds.Session, tool: str, kind: str, frames: int, dest: Path
                 for name in ("path", "bytes", "avi_frames")} if kind == VIDEO else {}
         return st.extend(ran, **own, **gone,
                          note="; ".join(n for n in (ran.get("note"), left_on) if n))
+    if cut is not None:
+        raise cut
     if closed is None:
         if kind in NO_FILE_WHY:
             return st.extend(ran, **own, path=unavailable(NO_FILE_WHY[kind]))

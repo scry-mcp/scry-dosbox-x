@@ -1694,3 +1694,61 @@ def test_the_stop_a_list_ends_on_may_be_the_retrace_a_run_for_left_armed(
     out = cast(dict[str, Any], server.perform(steps=[{"op": "resume"}], settle_seconds=2.0))
     assert "retrace" in str(out["stopped"].get("cause")), out["stopped"]
     assert dstate.STATE.retrace_pending is False
+
+
+def test_a_registerpoint_on_a_build_without_bpif_is_refused_once_by_name_and_never_queued(
+        tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    fake.commands = frozenset(c for c in fake.commands if c != "BPIF")
+    refused = server.regpoint_add(condition="AX==13")
+    assert refused["code"] == "no_channel" and "`BPIF`" in str(refused["message"]), refused
+    arming.current_store().add(arming.declare("regpoint", "expr", "AX==13"))
+    unarmed = arming.rearm_declarations(cast(ds.Session, fake))["unarmable"]
+    assert [r["why"] for r in unarmed] == ["this build's debugger has no `BPIF` command"]
+    assert dstate.STATE.pending["arm"] == [], "nothing waits for a stop that cannot arm it"
+
+
+def test_a_registerpoint_cleared_while_still_queued_promises_no_row_to_remove(
+        tmp_path: Path) -> None:
+    fake = _names(tmp_path)
+    fake.halted = True
+    server.resume()
+    fake.running, fake.halted = True, False
+    queued = server.regpoint_add(condition="DX==3DA")
+    assert queued["state"] == "pending", queued
+    cleared = server.declaration_clear("regpoint", ref="DX==3DA")
+    assert not cleared.get("pending_disarm") and not cleared.get("note"), cleared
+    assert dstate.STATE.pending["arm"] == [] and dstate.STATE.pending["disarm"] == [], cleared
+    fake.running, fake.halted = False, True
+    stop = server.resume()
+    assert "disarmed" not in stop.get("applied_on_stop", {}) and fake.rows == [], stop
+
+
+def _clear_like_the_session(rows: int, refuses: bool = False) -> Any:
+    """`Session.clear_*_breakpoint`'s shape: one row taken out per call, `removed` only when none
+    is listed after, a `note` when no row was there at all."""
+    left = [rows]
+
+    def clear() -> dict[str, object]:
+        if refuses:
+            raise ds.Invalid("unexpected_answer", "BPDEL was refused")
+        if left[0] == 0:
+            return {"entry": "BPIF X", "removed": False, "note": "no such breakpoint to remove"}
+        left[0] -= 1
+        return {"entry": "BPIF X", "removed": left[0] == 0}
+    return clear
+
+
+@pytest.mark.parametrize(("rows", "refuses", "disarmed", "pending"), [
+    (1, False, ["BPIF X"], []), (2, False, ["BPIF X"], []), (5, False, ["BPIF X"], []),
+    (0, False, [], []), (2, True, [], ["X"]), (arming.DUPLICATE_ROWS_MAX + 1, False, [], ["X"])])
+def test_a_clear_takes_out_every_duplicate_row_and_queues_what_it_could_not(
+        rows: int, refuses: bool, disarmed: list[str], pending: list[str]) -> None:
+    got_disarmed: list[str] = []
+    got_pending: list[str] = []
+    dstate.STATE.pending["disarm"].clear()
+    arming.disarm_one({"kind": "cond", "entry": "BPIF X"}, "X", False, got_disarmed, got_pending,
+                      _clear_like_the_session(rows, refuses))
+    assert (got_disarmed, got_pending) == (disarmed, pending)
+    assert bool(dstate.STATE.pending["disarm"]) == bool(pending)
+    dstate.STATE.pending["disarm"].clear()

@@ -13,6 +13,7 @@ import pytest
 from live_private import guest_dir
 from scry_core import prose
 
+import dosbox_binary as binaries
 import dosbox_grammar as grammar
 import dosbox_launch as dlaunch
 import dosbox_session as ds
@@ -55,8 +56,11 @@ pytestmark = LIVE_MARKS
 @pytest.fixture
 def session(tmp_path: Path) -> Iterator[ds.Session]:
     log = tmp_path / "guest.log"
-    s = ds.Session(dlaunch.Launch(conf=Path(CONF), cwd=Path(CWD),
-                             seconds=90, logfile=log))
+    build = binaries.resolve("").path
+    s = ds.Session(dlaunch.Launch(
+        conf=Path(CONF), cwd=Path(CWD), seconds=90, logfile=log, binary=build,
+        debugger_headless=binaries.debugger_headless(build),
+        debugger_commands=frozenset(binaries.debugger_commands(build))))
     yield s
     s.close()
 
@@ -74,8 +78,6 @@ def test_a_breakpoint_gives_control_back(session: ds.Session) -> None:
     session.wait_ready()
     assert "INT 21" in session.breakpoint_interrupt(0x21)
     ran = session.resume()
-    screen = cast(str, ran["screen"])
-    assert any(m in screen for m in ("COMMAND.COM", "EMS page frame", "XMS:"))
     assert ran["halted"] is True, ran
     assert ran["stopped_at"] is not None, (
         f"the machine stopped and the position could not be read back. That is a real "

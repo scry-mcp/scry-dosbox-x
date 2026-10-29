@@ -1734,20 +1734,27 @@ def pending_states(rows: list[dict[str, Any]]) -> None:
             item.pop("why", None)
 
 
+#: The most identical rows one clear takes out: the debugger lists at most this many rows alike.
+DUPLICATE_ROWS_MAX = 16
+
+
 def disarm_one(spec: dict[str, Any], named: str, running: bool, disarmed: list[str],
                 pending_disarm: list[str], clear: Callable[[], dict[str, object]]) -> None:
     """One armed row taken out of the debugger, or queued for the next stop: while the guest
     runs, and when the removal refuses, since a row left in is one the next release meets."""
     if not running:
-        try:
-            gone = clear()
-        except ds.Invalid:
-            pass
-        else:
+        # One clear takes out one row; identical rows (put in with `debug`) need one each.
+        for _ in range(DUPLICATE_ROWS_MAX):
+            try:
+                gone = clear()
+            except ds.Invalid:
+                break
             if gone["removed"]:
                 disarmed.append(str(gone["entry"]))
                 STATE.snapshot_forget(str(gone["entry"]))
-            return
+                return
+            if "note" in gone:      # no row of it is listed
+                return
     STATE.pending["disarm"].append(spec)
     STATE.pending["dirty"] = True
     pending_disarm.append(named)

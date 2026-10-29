@@ -526,7 +526,7 @@ def test_stepping_a_running_machine_refuses_instead_of_pressing_keys_at_nobody(
     reply = cast(dict[str, Any], server.step(mode="over", count=1))
     assert reply["status"] == "INVALID", reply
     assert reply["code"] == "not_stopped", reply
-    assert "a step is a KEYSTROKE" in reply["message"], reply
+    assert "needs the machine STOPPED" in reply["message"], reply
 
 
 def a_return_address_in_ram() -> tuple[int, int]:
@@ -695,7 +695,7 @@ def test_interrupt_vectors_places_the_dos_handler_and_leaves_no_file(tmp_path: P
     mode = status_mode()
     assert bare["status"] == "ok" and isinstance(mode, str) and bare["cpu_mode"] == mode, bare
     assert ("addr" in bare["vectors"][0]) == (mode == "real"), bare
-    assert "logfile" in bare["coverage_note"] and not any(
+    assert "logfile" not in bare["coverage_note"] and any(
         k in bare["vectors"][0] for k in ("mcbs", "kern", "bios_mem")), bare
 
 

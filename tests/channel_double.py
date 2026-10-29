@@ -21,6 +21,8 @@ import dosbox_launch as dlaunch
 import dosbox_session as ds
 
 FIXTURES = Path(__file__).parent / "fixtures" / "channel"
+#: The longest line the debugger's message buffer holds: 512 bytes, one of them the NUL.
+DEBUGGER_LINE_MAX = 511
 EVERY_COMMAND = dosbox_binary.COMMANDS
 NOT_RECOGNIZED = "*** Debugger command not recognized"
 RULE = "-" * 73
@@ -186,7 +188,8 @@ class Machine:
     # ------------------------------------------------------------------ captures
 
     def _capture_line(self, kind: str, on: bool, path: Path | None) -> str:
-        return f"DEBUG: CAPTURE {kind} {'on' if on else 'off'} path={path or '-'}"
+        line = f"DEBUG: CAPTURE {kind} {'on' if on else 'off'} path={path or '-'}"
+        return line[:DEBUGGER_LINE_MAX]      # `DEBUG_ShowMsg` formats into `char buf[512]`
 
     def _do_capture(self, args: list[str]) -> tuple[bool, list[str]]:
         if not args:

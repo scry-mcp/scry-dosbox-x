@@ -100,7 +100,11 @@ def clear_regpoints(session: ds.Session, ref: str | None) -> dict[str, Any]:
     disarmed: list[str] = []
     pending_disarm: list[str] = []
     for decl in going:
+        # Declared while the guest ran and not yet armed: there is no debugger row to remove.
+        queued_only = decl.ref in STATE.pending["arm"] and ("bp", decl.ref) not in STATE.armed
         STATE.armed.pop(("bp", decl.ref), None)
+        if running and queued_only:
+            continue
         arming.disarm_one(spec_of(decl.ref), decl.ref, running, disarmed, pending_disarm,
                           functools.partial(session.clear_condition_breakpoint, decl.ref))
     arming.unqueue_cleared(store)
