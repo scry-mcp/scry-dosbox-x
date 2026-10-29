@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import math
 import re
 import socket
@@ -364,6 +365,32 @@ def test_a_running_guest_below_real_speed_still_gets_a_frame_of_its_own_time_bet
     link.Link(host, clock=clock).send(KEYS[:2])
     gaps = [b - a for a, b in zip(clock.carried_ms(), clock.carried_ms()[1:], strict=False)]
     assert len(gaps) == 1 and gaps[0] >= link.FRAME_SPACING_MS, gaps
+
+
+def test_a_guest_that_parks_between_frames_ends_the_spacing_wait_at_once(
+        pair: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A parked guest's clock is frozen, so the wait for a frame of it would run to its ceiling."""
+    monkeypatch.setattr(link, "SPACING_CEILING_S", 3.0)
+    host, guest = pair
+    stub = Stub(guest)
+    line = link.Link(host, parked=lambda: len(stub.carried) >= 1, clock=lambda: 100.0)
+    began = time.monotonic()
+    with contextlib.suppress(Invalid):
+        line.send(KEYS[:2])
+    assert time.monotonic() - began < 1.0
+
+
+def test_a_clock_that_went_back_since_the_last_ack_is_no_frame_to_wait_after_while_running(
+        pair: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A state load puts the guest's clock behind the last frame's, running or parked."""
+    monkeypatch.setattr(link, "SPACING_CEILING_S", 3.0)
+    host, guest = pair
+    Stub(guest)
+    readings = iter([5000.0] + [100.0] * 50)
+    line = link.Link(host, clock=lambda: next(readings))
+    began = time.monotonic()
+    line.send(KEYS[:2])
+    assert time.monotonic() - began < 1.0
 
 
 class Retraces:

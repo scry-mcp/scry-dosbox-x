@@ -997,8 +997,8 @@ def test_the_status_docstring_names_every_field_its_reply_carries() -> None:
     install(alive=True)
     got = cast(dict[str, Any], server.status())
     doc = server.status.__doc__ or ""
-    # MATCHED IN BACKTICKS, NOT AS A SUBSTRING: `alive` sits inside `drain_alive`, and `conf`
-    # inside `conf_digest`, so a bare substring would stay green over a field left out.
+    # MATCHED IN BACKTICKS, NOT AS A SUBSTRING: `conf` sits inside `conf_digest`, so a bare
+    # substring would stay green over a field left out.
     fields = {*cast(dict[str, Any], got["session"]), *dstate.process_facts()}
     unnamed = sorted(k for k in fields if f"`{k}`" not in doc)
     assert not unnamed, (

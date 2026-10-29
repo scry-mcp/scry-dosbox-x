@@ -1,7 +1,10 @@
 """Section R of the live matrix: the presence edge is drawn into the window, never into the
 evidence, on the screen guest (`tests/guest/screen.asm`). Why: REFERENCE.md, The presence
-indicator. The red for the capture cells is a scratch build that paints the rim where capture
-reads (`DOSBOX_X_LEAK_BINARY`); the screen readers have no red, since they read guest memory.
+indicator. The red for the capture cells is a scratch build (`DOSBOX_X_LEAK_BINARY`): the
+binary under test built with `presence_leak.patch` applied, which paints the first row of the
+source the capture reads while the overlay is on. `DOSBOX_X_STOCK_BINARY` names a release build,
+whose debugger has no PRESENCE command (section S reads the same variable). The screen readers
+have no red, since they read guest memory.
 """
 from __future__ import annotations
 
@@ -59,15 +62,15 @@ R_CELLS = cells(
      "REFERENCE.md, The presence indicator: never into the evidence"),
     ("R snapshot, capture_frame and series_capture of a still screen are byte-identical acting "
      "and off", "REFERENCE.md, The presence indicator: never into the evidence"),
-    ("R a build that paints the rim where capture reads changes snapshot and capture_frame: "
-     "the comparison can fail", "REFERENCE.md, The presence indicator: after the frame was "
-     "handed to capture"),
+    ("R a build that paints where capture reads changes snapshot, capture_frame and "
+     "series_capture: the comparison can fail",
+     "REFERENCE.md, The presence indicator: after the frame was handed to capture"),
     ("R a build whose debugger has no PRESENCE answers presence unavailable, naming it",
      "dosbox_presence: NO_COMMAND"),
     ("R a session with no window says it has none, and one asked off says false",
      "dosbox_presence: NO_WINDOW"),
     ("R the first mouse move draws the arrow inside the picture, away from the edge, and only "
-     "the arrow: turned off again, those pixels go back",
+     "the arrow: with it turned off the same screen differs by those pixels alone",
      "REFERENCE.md, The presence indicator: an orange arrow stands on the guest's pointer"),
     ("R in the graphics modes the arrow is the sprite's height in guest pixels: the same "
      "number of rows at 320x200 and at 640x480",
@@ -78,7 +81,7 @@ MOUSE_PROGRAM = "MOUSE.COM"
 #: The mouse guest's mode keys and the rows each mode shows (`tests/guest/mouse.asm`).
 GRAPHICS_MODES = (("g", 200), ("v", 480))
 #: How far, as a share of the sprite's rows, the arrow's measured rows may be off: the window's
-#: scaling smears an edge by about a guest pixel each side.
+#: scaling smears an edge.
 ROWS_TOLERANCE = 0.3
 
 
@@ -256,8 +259,8 @@ def section_r() -> None:
         with _by_hand() as adapter:
             spun = _spin_record(adapter)
         M.judge(R_CELLS[5].label, all(spun[k][0] and spun[k][1] and spun[k][0] != spun[k][1]
-                                      for k in ("snapshot", "capture_frame")),
-                f"{ {k: spun[k] for k in ('snapshot', 'capture_frame')} }")
+                                      for k in ("snapshot", "capture_frame", "series_capture")),
+                f"{ {k: spun[k] for k in ('snapshot', 'capture_frame', 'series_capture')} }")
         close_whatever()
 
     stock = ENV.get(STOCK_VAR, "").strip()

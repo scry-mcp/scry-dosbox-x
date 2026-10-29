@@ -36,6 +36,9 @@ KEYS_PROGRAM = "KEYS.COM"
 #: Far more cycles a millisecond than the host executes: the guest's clock then runs well below
 #: the wall's, which is what a make and its break spaced by wall time fall short in.
 STARVED_CYCLES = ["-set", "cpu cycles=fixed 1000000"]
+#: A BIOS tick, and the share of the wall time a starved guest's own time may reach.
+BIOS_TICK_S = 0.0549
+STARVED_SHARE = 0.75
 KEY_LINE = re.compile(r"KEYS \. ([0-9A-F]{2}) t=([0-9A-F]{4})")
 TICK_WRAP = 0x10000
 ANNOUNCE = rf"STUB  \. scry device=present proto={inputs.STUB_PROTOCOL}"
@@ -45,7 +48,7 @@ POS = r"MOUSE \. pos x={x} y={y} "
 
 P_CELLS = cells(
     ("P start loads the stub before the program, which announces our protocol",
-     "REFERENCE.md, Input and the screen: `program` needs no conf line"),
+     "docs/reference/input.md: `program` needs no conf line"),
     ("P a second copy the conf also runs stays out, and keys still arrive whole",
      "guest/scry.asm: already resident; known: the guest logs `key=97` for a"),
     ("P a second copy stays out though a TSR took INT 1Ch above the first",
@@ -85,10 +88,10 @@ P_CELLS = cells(
     ("P a guest that owns INT 08 without chaining still takes a key and a click",
      "guest/scry.asm: the UART's own interrupt; known: mouse.asm's o takes the timer"),
     ("P without a logfile the mouse and a key go in, the pointer off the stub's link",
-     "REFERENCE.md, Input and the screen: the report rides the stub's own serial link"),
+     "docs/reference/input.md: the report rides the stub's own serial link"),
     ("P with the emulator starved below real speed, a key's break still lands a BIOS tick after "
      "its make in the guest's own clock",
-     "send_keys docstring: the frames a guest tick apart; known: keys.asm logs each scan byte "
+     "send_keys docstring: a BIOS tick apart; known: keys.asm logs each scan byte "
      "with the tick count"),
     ("P ReChip, VBE 105h in protected mode: pixel 800,600 arrives, eight coordinates a pixel",
      "docs/reference/input.md: Allegro's I33 driver sets its range to the screen"),
@@ -208,16 +211,24 @@ def _keys_spacing() -> None:
     boot(conf=KEYS_CONF, program=KEYS_PROGRAM, flags=STARVED_CYCLES)
     release_running()
     must(_guest_line(r"KEYS \. up"), "the keys guest is up")
+    began = time.monotonic()
     sent = M.call(server.send_keys, keys=["a", "b", "c"], expect=r"KEYS \. AE t=",
                   seconds=WAIT_S)
+    wall_s = time.monotonic() - began
     heard = M.call(server.log, pattern=KEY_LINE.pattern, channel="guest", limit=40)
     scans = [(int(m[1], 16), int(m[2], 16)) for line in heard.get("lines", [])
              if (m := KEY_LINE.search(line))]
     makes = {code: tick for code, tick in scans if code < 0x80}
     gaps = {f"{code:02X}": (tick - makes[code & 0x7F]) % TICK_WRAP
             for code, tick in scans if code >= 0x80 and code & 0x7F in makes}
-    M.judge(label, ok(sent) and len(gaps) == 3 and all(gap >= 1 for gap in gaps.values()),
-            f"{said(sent, 60)}; ticks from each make to its break {gaps}")
+    emulated_s = ((scans[-1][1] - scans[0][1]) % TICK_WRAP) * BIOS_TICK_S if scans else 0.0
+    if emulated_s >= STARVED_SHARE * wall_s:
+        M.block(label, f"the host kept this emulator near real speed ({emulated_s:.2f} s of the "
+                       f"guest's time in {wall_s:.2f} s), so nothing here was starved")
+    else:
+        M.judge(label, ok(sent) and len(gaps) == 3 and all(gap >= 1 for gap in gaps.values()),
+                f"{said(sent, 60)}; ticks from each make to its break {gaps}, "
+                f"{emulated_s:.2f} s of the guest's time in {wall_s:.2f} s")
     must(M.call(server.close), "closing")
 
 

@@ -21,7 +21,7 @@ ACK_WAIT_S = 1.0
 SENDS = 3
 #: Between two frames: the stub carries a frame the moment it is whole, and a program reading its
 #: keys once a frame (50 Hz is common) never sees a make whose break came within that frame. One
-#: BIOS tick, so the guest's clock, which follows the host's while it runs, spaces them so too.
+#: BIOS tick of the guest's own time: the wall clock when a build offers no other.
 FRAME_SPACING_S = 0.055
 #: Read slice, so a cancel is noticed between reads.
 READ_SLICE_S = 0.1
@@ -196,7 +196,9 @@ class Link:
         while time.monotonic() < ceiling:
             cancel.check()
             now_ms = self.clock()
-            if now_ms is None or now_ms - acked_ms >= FRAME_SPACING_MS:
+            # a parked guest's clock is frozen, and a loaded state puts it behind the last ack
+            if (now_ms is None or self.parked() or now_ms < acked_ms
+                    or now_ms - acked_ms >= FRAME_SPACING_MS):
                 return
             time.sleep(CLOCK_POLL_S)
 

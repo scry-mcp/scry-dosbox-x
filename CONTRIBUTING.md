@@ -187,6 +187,15 @@ naming the flags. `--json`, `--reps` and `--song` are optional. The song, the bo
 waits for and the make target of its batch cost belong to the program it was written for, so a
 bench of another program names its own.
 
+**Iterate from a saved state, not from the demo's start.** A demo or an experiment that spends
+minutes booting a program before it reaches the thing under work is rerun from a state saved at
+that point: `state_write(method="save")` once, then each run starts the same session and
+`state_write(method="load")`. Check first that what the run judges survives a load, because a
+state restores the guest's memory and not always the emulator's devices: a program whose video
+memory or mouse driver the load leaves wrong (Monkey Island's screen comes back striped and its
+pointer stops following the driver) cannot be judged from one. Memory reads, scans and anything
+the program computes from its own memory can.
+
 ## Fixtures and the sweep off the commit path
 
 One artefact per toolchain is BUILT HERE and committed under `tests/fixtures/`: a Borland TLINK

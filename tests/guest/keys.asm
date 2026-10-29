@@ -1,9 +1,9 @@
 ; KEYS.COM -- the live tier's keyboard timing guest: it tells the E9 port every scan byte INT 9
 ; takes and the BIOS tick count (0040:006C) the byte arrived at.
 ;
-; WHY IT EXISTS. A host that spaces a key's make from its break by wall time only holds that
-; spacing in the guest's clock while the emulator keeps real speed. Whether the break lands a
-; tick after the make, with the emulator starved, is read here off the guest's own tick count.
+; WHY IT EXISTS. A program that reads its keys once a tick sees a make only if the break comes a
+; tick later in the guest's own clock. With the emulator starved the guest's clock falls behind
+; the wall's, so what the host did is read here off the guest's own tick count.
 ;
 ; EACH BYTE WRITES `KEYS . <scan hex2> t=<tick low word hex4>`. The ISR only queues the byte and
 ; the tick; the main loop prints, so a slow console never makes the ISR late. It never exits.

@@ -1,7 +1,7 @@
 """Run control for a `Session`: releasing the machine, waiting for its stop, and the runs built on
 them (`run_to`, `resume`, a retrace, a `LOG`), with the breakpoints they arm and remove.
 
-`Session` forwards the calls other modules make; the helpers a run needs live only here.
+`Session` forwards the calls other modules make; `dosbox_stepping` shares the breakpoint cleanup.
 """
 
 from __future__ import annotations
